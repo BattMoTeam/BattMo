@@ -103,15 +103,19 @@ classdef orgLiPF6 < handle
         end
         
         function ionicQuantities(obj)
-           
             
-            obj.ion.cvec = [obj.sp.Li.c, obj.sp.PF6.c];
-            obj.ion.tvec = [obj.sp.Li.t .* ones(size(obj.sp.Li.c)), ...
-                obj.sp.PF6.t .* ones(size(obj.sp.PF6.c))];
-            obj.ion.zvec = [obj.sp.Li.z, obj.sp.PF6.z];
-            obj.ion.dmudc = obj.con.R .* obj.T ./ obj.ion.cvec;
-            obj.IoSt = 0.5 .* sum(bsxfun(@times, obj.ion.cvec, obj.ion.zvec.^2), 2)./1000;
-            
+            obj.ion.cvec{1} = obj.sp.Li.c;
+            obj.ion.cvec{2} = obj.sp.PF6.c;
+            obj.ion.tvec{1} = obj.sp.Li.t .* ones(size(obj.sp.Li));
+            obj.ion.tvec{2} = obj.sp.PF6.t .* ones(size(obj.sp.PF6));
+            obj.ion.zvec{1} = obj.sp.Li.z;
+            obj.ion.zvec{2} = obj.sp.PF6.z;
+            for i = 1 : 2
+                obj.ion.dmudc{i} = obj.con.R .* obj.T ./ obj.ion.cvec{i};
+            end
+            IoSt = 0.5 .* obj.ion.cvec{1}.*obj.ion.zvec{1}.^2./1000;
+            IoSt = IoSt + 0.5 .* obj.ion.cvec{2}.*obj.ion.zvec{2}.^2./1000;
+            obj.IoSt = IoSt;
             
         end
         
