@@ -148,6 +148,7 @@ classdef lithiumIon < handle
             % Time discretization
             obj.fv.ti = 0;
             obj.fv.tf = 3600*24;
+            obj.fv.tf = 30;
             obj.fv.dt = 10;
             obj.fv.tUp = 0.1;
             obj.fv.tSpan = obj.fv.ti:obj.fv.dt:obj.fv.tf;
@@ -686,6 +687,9 @@ classdef lithiumIon < handle
             hold on
         end
         
+    end
+    
+    methods(Static)
         function map = magma(~,N)
             %MAGMA Defines the properties of the magma colormap
             %   obj.magma() calculates the magma colormap           

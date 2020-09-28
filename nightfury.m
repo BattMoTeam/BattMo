@@ -17,7 +17,9 @@ discrete = [172, 223, 245;
     255, 171, 118;
     255, 199, 129;
     255, 232, 168] ./ 255;
-map = magma();
+
+map = lithiumIon.magma();
+
 background = 0.2 .* [1 1 1];   
 
 if strcmp(varargin, 'subplot')
