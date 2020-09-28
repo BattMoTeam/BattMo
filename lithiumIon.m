@@ -159,8 +159,15 @@ classdef lithiumIon < handle
             % Solve the system of equations
             endFun = @(t,y,yp)obj.cutOff(t,y,yp);
             options = odeset('RelTol', 1e-4,'AbsTol', 1e-6,  'Stats', 'on', 'Events', endFun);%,'MaxStep', 1);%,'OutputFcn',@odeoutput);
-            fun = @(t,y,yp)obj.odefun(t,y,yp);
-            [t, y] = ode15i(fun, obj.fv.tSpan', obj.fv.y0, obj.fv.yp0, options);
+            fun = @(t,y,yp) obj.odefun(t,y,yp);
+            
+            [t, y] = deal([], []);
+            
+            obj.dynamicReadState(obj.fv.y0, obj.fv.yp0, 'getAD', true);
+            obj.dynamicBuildSOE(0);
+            y = obj.soe;            
+            
+            % [t, y] = ode15i(fun, obj.fv.tSpan', obj.fv.y0, obj.fv.yp0, options);
                 
             doplot = false;
             if doplot
@@ -522,7 +529,7 @@ classdef lithiumIon < handle
             disp(obj.pe.E - obj.ne.E)
             
             % Read the state vector
-            obj.dynamicReadState(y,yp);
+            obj.dynamicReadState(y, yp);
 
             % Build SOE
             obj.dynamicBuildSOE(t);

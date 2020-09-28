@@ -43,16 +43,20 @@ rightBCi = find(strcmpi(varargin, 'right'), 1);
         end
     end
 
+    coregrad = 1./diff(X).*loc_diff(y);
+    
     if strcmpi(conditions,'adiabatic-adiabatic') == 1
         %% Adiabatic boundry conditions
         % Calcualte first derivative
-        grad_boundary = [0; diff(y) ./ diff(X); 0]; % gradients on compartment boundaries
+        grad_boundary = [0; coregrad; 0]; % gradients on compartment boundaries
         B = (Xb(2:N)- X(1:N-1))./diff(X);
         A_boundary = [0; A(1:N-1).*A(2:N)./(B.*A(1:N-1) + (1-B).*A(2:N)); 0]; % harmonic mean of A on compartment boundaries
         
         % Calcualte second derivative
         Agrad = A_boundary.*grad_boundary;
-        res = diff(Agrad) ./ diff(Xb); % second derivative
+        
+        res = loc_diff(Agrad) ./ diff(Xb); % second derivative
+        
     elseif strcmpi(conditions,'adiabatic-dirlichet') == 1 
         %% Mixed adiabatic-dirlichet boundry conditions
         % Dirlichet boundary condition at right boundary
@@ -64,13 +68,13 @@ rightBCi = find(strcmpi(varargin, 'right'), 1);
         ABCR = A(end);%interp1(X,A,X(end)+0.5*dXBCR,'spline','extrap');
 
         % Calcualte first derivative
-        grad_boundary = [0; diff(y) ./ diff(X); NBCR]; % gradients on compartment boundaries
+        grad_boundary = [0; coregrad; NBCR]; % gradients on compartment boundaries
         B = (Xb(2:N)- X(1:N-1))./diff(X);
         A_boundary = [0; A(1:N-1).*A(2:N)./(B.*A(1:N-1) + (1-B).*A(2:N)); ABCR]; % harmonic mean of A on compartment boundaries
 
         % Calcualte second derivative
         Agrad = A_boundary.*grad_boundary;
-        res = diff(Agrad) ./ diff(Xb); % second derivative
+        res = loc_diff(Agrad) ./ diff(Xb); % second derivative
 
     elseif strcmpi(conditions,'adiabatic-neumann') == 1 
         %% Mixed adiabatic-neumann boundry conditions
@@ -78,14 +82,14 @@ rightBCi = find(strcmpi(varargin, 'right'), 1);
         NBCR = varargin{rightBCi + 2};
 
         % Calcualte first derivative
-        grad_boundary = [0; diff(y) ./ diff(X); NBCR]; % gradients on compartment boundaries
+        grad_boundary = [0; coregrad; NBCR]; % gradients on compartment boundaries
         B = (Xb(2:N)- X(1:N-1))./diff(X);
         A_boundary = [0; A(1:N-1).*A(2:N)./(B.*A(1:N-1) + (1-B).*A(2:N)); ABCR]; % harmonic mean of A on compartment boundaries
 
         % Calcualte second derivative
         Agrad = A_boundary.*grad_boundary;
         Agrad(end) = NBCR;
-        res = diff(Agrad) ./ diff(Xb); % second derivative
+        res = loc_diff(Agrad) ./ diff(Xb); % second derivative
 
     elseif strcmpi(conditions,'dirlichet-adiabatic') == 1 
         %% Mixed dirlichet-adiabatic boundry conditions
@@ -98,13 +102,13 @@ rightBCi = find(strcmpi(varargin, 'right'), 1);
         ABCL = A(1); %interp1(X,A,X(1)-0.5*dXBCL,'spline','extrap');
 
         % Calcualte first derivative
-        grad_boundary = [NBCL; diff(y) ./ diff(X); 0]; % gradients on compartment boundaries
+        grad_boundary = [NBCL; coregrad; 0]; % gradients on compartment boundaries
         B = (Xb(2:N)- X(1:N-1))./diff(X);
         A_boundary = [ABCL; A(1:N-1).*A(2:N)./(B.*A(1:N-1) + (1-B).*A(2:N)); 0]; % harmonic mean of A on compartment boundaries
 
         % Calcualte second derivative
         Agrad = A_boundary.*grad_boundary;
-        res = diff(Agrad) ./ diff(Xb); % second derivative
+        res = loc_diff(Agrad) ./ diff(Xb); % second derivative
 
     elseif strcmpi(conditions,'neumann-adiabatic') == 1 
         %% Mixed neumann-adiabatic boundry conditions
@@ -112,14 +116,14 @@ rightBCi = find(strcmpi(varargin, 'right'), 1);
         NBCL = varargin{leftBCi + 2};
 
         % Calcualte first derivative
-        grad_boundary = [0; diff(y) ./ diff(X); 0]; % gradients on compartment boundaries
+        grad_boundary = [0; coregrad; 0]; % gradients on compartment boundaries
         B = (Xb(2:N)- X(1:N-1))./diff(X);
         A_boundary = [0; A(1:N-1).*A(2:N)./(B.*A(1:N-1) + (1-B).*A(2:N)); 0]; % harmonic mean of A on compartment boundaries
 
         % Calcualte second derivative
         Agrad = A_boundary.*grad_boundary;
         Agrad(1) = NBCL;
-        res = diff(Agrad) ./ diff(Xb); % second derivative
+        res = loc_diff(Agrad) ./ diff(Xb); % second derivative
 
     elseif strcmpi(conditions,'dirlichet-neumann') == 1 
         %% Mixed dirlichet-neumann boundry conditions
@@ -135,14 +139,14 @@ rightBCi = find(strcmpi(varargin, 'right'), 1);
         NBCR = varargin{rightBCi + 2};
 
         % Calcualte first derivative
-        grad_boundary = [NBCL; diff(y) ./ diff(X); 0]; % gradients on compartment boundaries
+        grad_boundary = [NBCL; coregrad; 0]; % gradients on compartment boundaries
         B = (Xb(2:N)- X(1:N-1))./diff(X);
         A_boundary = [ABCL; A(1:N-1).*A(2:N)./(B.*A(1:N-1) + (1-B).*A(2:N)); 0]; % harmonic mean of A on compartment boundaries
 
         % Calcualte second derivative
         Agrad = A_boundary.*grad_boundary;
         Agrad(end) = NBCR;
-        res = diff(Agrad) ./ diff(Xb); % second derivative
+        res = loc_diff(Agrad) ./ diff(Xb); % second derivative
 
     elseif strcmpi(conditions,'dirlichet-dirlichet') == 1 
         %% Dirlichet-dirlichet boundry conditions
@@ -163,13 +167,13 @@ rightBCi = find(strcmpi(varargin, 'right'), 1);
         ABCR = interp1(X,A,X(end)+0.5*dXBCR,'spline','extrap');
 
         % Calcualte first derivative
-        grad_boundary = [NBCL; diff(y) ./ diff(X); NBCR]; % gradients on compartment boundaries
+        grad_boundary = [NBCL; coregrad; NBCR]; % gradients on compartment boundaries
         B = (Xb(2:N)- X(1:N-1))./diff(X);
         A_boundary = [ABCL; A(1:N-1).*A(2:N)./(B.*A(1:N-1) + (1-B).*A(2:N)); ABCR]; % harmonic mean of A on compartment boundaries
 
         % Calcualte second derivative
         Agrad = A_boundary.*grad_boundary;
-        res = diff(Agrad) ./ diff(Xb); % second derivative
+        res = loc_diff(Agrad) ./ diff(Xb); % second derivative
 
     elseif strcmpi(conditions,'neumann-dirlichet') == 1 
         %% Mixed neumann-dirlichet boundry conditions
@@ -185,14 +189,14 @@ rightBCi = find(strcmpi(varargin, 'right'), 1);
         ABCR = interp1(X,A,X(end)+0.5*dXBCR,'spline','extrap');
 
         % Calcualte first derivative
-        grad_boundary = [0; diff(y) ./ diff(X); NBCR]; % gradients on compartment boundaries
+        grad_boundary = [0; coregrad; NBCR]; % gradients on compartment boundaries
         B = (Xb(2:N)- X(1:N-1))./diff(X);
         A_boundary = [0; A(1:N-1).*A(2:N)./(B.*A(1:N-1) + (1-B).*A(2:N)); ABCR]; % harmonic mean of A on compartment boundaries
 
         % Calcualte second derivative
         Agrad = A_boundary.*grad_boundary;
         Agrad(1) = NBCL;
-        res = diff(Agrad) ./ diff(Xb); % second derivative
+        res = loc_diff(Agrad) ./ diff(Xb); % second derivative
 
     elseif strcmpi(conditions,'neumann-neumann') == 1 
         %% Neumann-neumann boundry conditions
@@ -203,7 +207,7 @@ rightBCi = find(strcmpi(varargin, 'right'), 1);
         NBCR = varargin{rightBCi + 2};
 
         % Calcualte first derivative
-        grad_boundary = [0; diff(y) ./ diff(X); 0]; % gradients on compartment boundaries
+        grad_boundary = [0; coregrad; 0]; % gradients on compartment boundaries
         B = (Xb(2:N)- X(1:N-1))./diff(X);
         A_boundary = [0; A(1:N-1).*A(2:N)./(B.*A(1:N-1) + (1-B).*A(2:N)); 0]; % harmonic mean of A on compartment boundaries
 
@@ -211,9 +215,14 @@ rightBCi = find(strcmpi(varargin, 'right'), 1);
         Agrad = A_boundary.*grad_boundary;
         Agrad(1) = NBCL;
         Agrad(end) = NBCR;
-        res = diff(Agrad) ./ diff(Xb); % second derivative
+        res = loc_diff(Agrad) ./ diff(Xb); % second derivative
 
     end
 
 end
 
+function dy = loc_diff(y)
+% variant of diff that is compatible for AD
+    N = numval(y);
+    dy = y(2 : N) - y(1 : (N - 1));
+end

@@ -1,6 +1,8 @@
 function result = grad(y, X, varargin)
-
+% We have only refactored 'adiabatic-adiabatic' case
 [~, n] = size(y);
+assert(n == 1, 'this function should only take in vector')
+N = numval(y); % note that numval is overloaded defined for double and AD variables
 
 conditions = [];
 
@@ -38,11 +40,13 @@ if isempty(varargin) == 1
             warning('Unrecognized boundary condition. Please define boundary conditions as either dirlichet or neumann.')
         end
 end
+
+coregrad = 1./diff(X).*(y(2 : N) - y(1 : (N - 1)));
     
 if strcmpi(conditions,'adiabatic-adiabatic') == 1
         %% Adiabatic boundry conditions
-        % Calcualte first derivative
-        result = [zeros(1,n); bsxfun(@rdivide, diff(y),  diff(X)); zeros(1,n)]; % gradients on compartment boundaries
+        % Calculate first derivative
+        result = [zeros(1, n); coregrad; zeros(1, n)]; % gradients on compartment boundaries
         
     elseif strcmpi(conditions,'adiabatic-dirlichet') == 1 
         %% Mixed adiabatic-dirlichet boundry conditions
@@ -52,8 +56,8 @@ if strcmpi(conditions,'adiabatic-adiabatic') == 1
         dXBCR = X(end) - X(end-1);
         NBCR = (yBCR - y(end)) / dXBCR;
 
-        % Calcualte first derivative
-        result = [zeros(1,n); bsxfun(@rdivide, diff(y),  diff(X)); NBCR]; % gradients on compartment boundaries
+        % Calculate first derivative
+        result = [zeros(1,n); coregrad; NBCR]; % gradients on compartment boundaries
 
     elseif strcmpi(conditions,'dirlichet-adiabatic') == 1 
         %% Mixed dirlichet-adiabatic boundry conditions
@@ -63,8 +67,8 @@ if strcmpi(conditions,'adiabatic-adiabatic') == 1
         dXBCL = X(2) - X(1);
         NBCL = (y(1) - yBCL) / dXBCL;
 
-        % Calcualte first derivative
-        result = [NBCL; bsxfun(@rdivide, diff(y),  diff(X)); zeros(1,n)]; % gradients on compartment boundaries
+        % Calculate first derivative
+        result = [NBCL; coregrad; zeros(1,n)]; % gradients on compartment boundaries
 
     elseif strcmpi(conditions,'dirlichet-dirlichet') == 1 
         %% Dirlichet-dirlichet boundry conditions
@@ -80,13 +84,13 @@ if strcmpi(conditions,'adiabatic-adiabatic') == 1
         dXBCR = X(end) - X(end-1);
         NBCR = (yBCR - y(end)) / dXBCR;
 
-        % Calcualte first derivative
-        result = [NBCL; bsxfun(@rdivide, diff(y),  diff(X)); NBCR]; % gradients on compartment boundaries
+        % Calculate first derivative
+        result = [NBCL; coregrad; NBCR]; % gradients on compartment boundaries
 
         
 end
 
-% % Calcualte first derivative
+% % Calculate first derivative
 % result = [  zeros(1,n); ...
 %             bsxfun(@rdivide, diff(y),  diff(X)); ...
 %             zeros(1,n)]; % gradients on compartment boundaries
