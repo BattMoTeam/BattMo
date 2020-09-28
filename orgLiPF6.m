@@ -69,8 +69,11 @@ classdef orgLiPF6 < handle
         N
         dombin
         
-        % Finite volume solution propertoes
+        % Finite volume solution properties
         chargeCont
+        
+        % number of components
+        ncomp % 2 components : Li and PF6
     end
     
     methods
@@ -82,6 +85,7 @@ classdef orgLiPF6 < handle
             obj.name = 'LiPF6';
             obj.c = c;
             obj.T = T;
+            obj.ncomp = 2; 
             
             obj.sp.Li.c = c;
             obj.sp.PF6.c = c;

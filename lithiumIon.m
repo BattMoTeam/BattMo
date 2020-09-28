@@ -148,8 +148,8 @@ classdef lithiumIon < handle
             % Time discretization
             obj.fv.ti = 0;
             obj.fv.tf = 3600*24;
-            obj.fv.tf = 30;
-            obj.fv.dt = 10;
+            obj.fv.tf = 1e-5;
+            obj.fv.dt = 1e-5;
             obj.fv.tUp = 0.1;
             obj.fv.tSpan = obj.fv.ti:obj.fv.dt:obj.fv.tf;
 
@@ -162,16 +162,19 @@ classdef lithiumIon < handle
             fun = @(t,y,yp)obj.odefun(t,y,yp);
             [t, y] = ode15i(fun, obj.fv.tSpan', obj.fv.y0, obj.fv.yp0, options);
                 
-            resultname = 'test';
-            path = 'C:\Users\simonc\Documents\01_Projects\Electrochemical Modelling Toolbox\Batteries\';
-            day = date();
-            hrmin = clock();
-            hr = num2str(hrmin(4));
-            min = num2str(hrmin(5));
-            save([path, resultname, '-', day,'-', hr,'h', min,'m','.mat']);
-            
-            if strcmpi(obj.display, 'final')
-                obj.plotSummary(t,y);
+            doplot = false;
+            if doplot
+                resultname = 'test';
+                path = 'C:\Users\simonc\Documents\01_Projects\Electrochemical Modelling Toolbox\Batteries\';
+                day = date();
+                hrmin = clock();
+                hr = num2str(hrmin(4));
+                min = num2str(hrmin(5));
+                save([path, resultname, '-', day,'-', hr,'h', min,'m','.mat']);
+                
+                if strcmpi(obj.display, 'final')
+                    obj.plotSummary(t,y);
+                end
             end
             
         end
@@ -300,7 +303,14 @@ classdef lithiumIon < handle
             
         end
         
-        function dynamicReadState(obj,y,yp)
+        function dynamicReadState(obj, y, yp, varargin)
+            
+            opt = struct('getAD', false);
+            opt = merge_options(opt, varargin{:});
+            
+            if opt.getAD
+                [y, yp] = initVariablesADI(y, yp);
+            end
             
             obj.elyte.sp.Li.ceps    = y(obj.fv.s1);
             obj.elyte.phi           = y(obj.fv.s2);
@@ -339,14 +349,21 @@ classdef lithiumIon < handle
             %% Ionic current density   
             % Ionic current density in the liquid
             %   Ionic current density due to the chemical potential gradient
-            obj.elyte.jchem = [zeros(size(obj.elyte.ion.tvec)); zeros(1,size(obj.elyte.ion.tvec,2))];         
-            for i = 1:size(obj.elyte.ion.tvec,2)
-                obj.elyte.jchem(:,i) = harm( ...
-                    obj.elyte.kappaeff .* obj.elyte.ion.tvec(:,i) .* obj.elyte.ion.dmudc(:,i) ./ ...
-                    (obj.elyte.ion.zvec(i).*obj.con.F), obj.fv.X, obj.fv.Xb) .* ...
-                    grad(obj.elyte.ion.cvec(:,i),obj.fv.X);
+            N = obj.elyte.N;
+            ncomp = obj.elyte.ncomp;
+            
+            jchems = cell(ncomp, 1);
+            for i = 1 : ncomp
+                jchems{i} = zeros(N + 1, 1);         
+                jchems{i} = harm(obj.elyte.kappaeff .* obj.elyte.ion.tvec{i} .* obj.elyte.ion.dmudc{i} ./ ...
+                                 (obj.elyte.ion.zvec{i}.*obj.con.F), obj.fv.X, obj.fv.Xb) .* grad(obj.elyte.ion.cvec{i}, ...
+                                                                  obj.fv.X);
             end
-            obj.elyte.jchem = sum(obj.elyte.jchem,2); 
+            obj.elyte.jchem = jchems{1};
+            for i = 2 : ncomp
+                obj.elyte.jchem = obj.elyte.jchem + jchems{i};
+            
+            end
             %   Ionic current density due to the electrochemical potential gradient
             obj.elyte.j = harm(obj.elyte.kappaeff, obj.fv.X, obj.fv.Xb).*(-1).*grad(obj.elyte.phi, obj.fv.X) ...
                 - obj.elyte.jchem;   
@@ -372,7 +389,7 @@ classdef lithiumIon < handle
             obj.U = obj.pe.E - obj.ne.E;
         end
         
-        function dynamicBuildSOE(obj,t)
+        function dynamicBuildSOE(obj, t)
             
             %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
             %% Source terms for continuity equations                    %%%
@@ -421,27 +438,27 @@ classdef lithiumIon < handle
             %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
             % Divergence of diffusion mass flux
             %   Electrolyte Li+ Diffusion
-            obj.elyte.sp.Li.divDiff   = divAgrad( obj.elyte.sp.Li.c, ...
-                                                    -obj.elyte.sp.Li.Deff, ...
-                                                    obj.fv.X, ...
-                                                    obj.fv.Xb);  
-                                                
-            obj.ne.am.Li.divDiff        = divAgrad( obj.ne.am.Li.cs, ...
-                                                    -obj.ne.am.Li.Deff, ...
-                                                    obj.ne.X, ...
-                                                    obj.ne.Xb);
-                                                
-            obj.pe.am.Li.divDiff        = divAgrad( obj.pe.am.Li.cs, ...
-                                                    -obj.pe.am.Li.Deff, ...
-                                                    obj.pe.X, ...
-                                                    obj.pe.Xb);
+            obj.elyte.sp.Li.divDiff = divAgrad( obj.elyte.sp.Li.c, ...
+                                                -obj.elyte.sp.Li.Deff, ...
+                                                obj.fv.X, ...
+                                                obj.fv.Xb);  
+            
+            obj.ne.am.Li.divDiff = divAgrad( obj.ne.am.Li.cs, ...
+                                             -obj.ne.am.Li.Deff, ...
+                                             obj.ne.X, ...
+                                             obj.ne.Xb);
+            
+            obj.pe.am.Li.divDiff = divAgrad( obj.pe.am.Li.cs, ...
+                                             -obj.pe.am.Li.Deff, ...
+                                             obj.pe.X, ...
+                                             obj.pe.Xb);
             
             %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
             %% Migration Flux                                           %%%
             %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
             % Divergence of the migration mass flux
             %   Electrolyte Li+ Migration
-            obj.elyte.sp.Li.divMig    = div(  obj.elyte.sp.Li.t ./ (obj.elyte.sp.Li.z .* obj.con.F) ...
+            obj.elyte.sp.Li.divMig    = div( obj.elyte.sp.Li.t ./ (obj.elyte.sp.Li.z .* obj.con.F) ...
                                                 .* obj.elyte.j, ...
                                                 obj.fv.Xb);
                                             
