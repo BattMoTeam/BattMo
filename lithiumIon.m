@@ -49,7 +49,8 @@ classdef lithiumIon < handle
         % Postprocessing properties
         display     % Display simulation output, |'final'|'monitor'|'off'|
         style       % Style for the display
-        
+
+        AutoDiffBackend
     end
     
     methods
@@ -88,7 +89,7 @@ classdef lithiumIon < handle
             obj.J       = 1;
             obj.Ucut    = 2;
             
-            
+            obj.AutoDiffBackend = AutoDiffBackend();
         end
         
         function spm(obj)
@@ -97,7 +98,14 @@ classdef lithiumIon < handle
             
             
         end
-        
+
+        function [dfdy, dfdyp] = odederfun(obj, t, y, yp) 
+            res = obj.odefun(t, y, yp, 'useAD', true);
+            dfdy = res.jac{1};
+            dfdyp = res.jac{2};
+        end
+    
+         
         function [t, y] = p2d(obj)
            
             % Generate the FV mesh
@@ -148,8 +156,7 @@ classdef lithiumIon < handle
             % Time discretization
             obj.fv.ti = 0;
             obj.fv.tf = 3600*24;
-            obj.fv.tf = 1e-5;
-            obj.fv.dt = 1e-5;
+            obj.fv.dt = 10;
             obj.fv.tUp = 0.1;
             obj.fv.tSpan = obj.fv.ti:obj.fv.dt:obj.fv.tf;
 
@@ -158,16 +165,17 @@ classdef lithiumIon < handle
 
             % Solve the system of equations
             endFun = @(t,y,yp)obj.cutOff(t,y,yp);
-            options = odeset('RelTol', 1e-4,'AbsTol', 1e-6,  'Stats', 'on', 'Events', endFun);%,'MaxStep', 1);%,'OutputFcn',@odeoutput);
-            fun = @(t,y,yp) obj.odefun(t,y,yp);
             
-            [t, y] = deal([], []);
+            fun = @(t,y,yp) obj.odefun(t, y, yp);
+            derfun = @(t,y,yp) obj.odederfun(t, y, yp);           
+
+            options = odeset('RelTol'  , 1e-4  , ...
+                             'AbsTol'  , 1e-6  , ... 
+                             'Stats'   , 'on'  , ... 
+                             'Events'  , endFun, ...
+                             'Jacobian', derfun);
             
-            obj.dynamicReadState(obj.fv.y0, obj.fv.yp0, 'getAD', true);
-            obj.dynamicBuildSOE(0);
-            y = obj.soe;            
-            
-            % [t, y] = ode15i(fun, obj.fv.tSpan', obj.fv.y0, obj.fv.yp0, options);
+            [t, y] = ode15i(fun, obj.fv.tSpan', obj.fv.y0, obj.fv.yp0, options);
                 
             doplot = false;
             if doplot
@@ -312,11 +320,13 @@ classdef lithiumIon < handle
         
         function dynamicReadState(obj, y, yp, varargin)
             
-            opt = struct('getAD', false);
+            opt = struct('useAD', false);
             opt = merge_options(opt, varargin{:});
+            useAD = opt.useAD;
             
-            if opt.getAD
-                [y, yp] = initVariablesADI(y, yp);
+            if useAD
+                adbackend = obj.AutoDiffBackend();
+                [y, yp] = adbackend.initVariablesAD(y, yp);
             end
             
             obj.elyte.sp.Li.ceps    = y(obj.fv.s1);
@@ -396,7 +406,26 @@ classdef lithiumIon < handle
             obj.U = obj.pe.E - obj.ne.E;
         end
         
-        function dynamicBuildSOE(obj, t)
+        function dynamicBuildSOE(obj, t, varargin)
+            
+            opt = struct('useAD', false);
+            opt = merge_options(opt, varargin{:});
+            useAD = opt.useAD;
+            
+            if useAD
+                adsample = getSampleAD(obj.elyte.sp.Li.ceps, ...    
+                                       obj.elyte.phi, ...           
+                                       obj.ne.am.Li.cseps, ...      
+                                       obj.ne.am.phi, ...           
+                                       obj.pe.am.Li.cseps, ...      
+                                       obj.pe.am.phi, ...           
+                                       obj.pe.E, ...                
+                                       obj.elyte.sp.Li.cepsdot, ... 
+                                       obj.ne.am.Li.csepsdot, ...   
+                                       obj.pe.am.Li.csepsdot);
+                adbackend = obj.AutoDiffBackend;
+            end
+            
             
             %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
             %% Source terms for continuity equations                    %%%
@@ -408,6 +437,14 @@ classdef lithiumIon < handle
             obj.ne.am.e.source      = zeros(obj.ne.N, 1);
             obj.pe.am.e.source      = zeros(obj.pe.N, 1);
             
+            if useAD
+                obj.elyte.sp.Li.source = adbackend.convertToAD(obj.elyte.sp.Li.source, adsample);
+                obj.ne.am.Li.source    = adbackend.convertToAD(obj.ne.am.Li.source, adsample);
+                obj.pe.am.Li.source    = adbackend.convertToAD(obj.pe.am.Li.source, adsample);
+                obj.ne.am.e.source     = adbackend.convertToAD(obj.ne.am.e.source, adsample);
+                obj.pe.am.e.source     = adbackend.convertToAD(obj.pe.am.e.source, adsample);
+            end
+            
             % Calculate reaction rates           
             obj.ne.reactBV(obj.elyte.phi(1:obj.ne.N));
             obj.pe.reactBV(obj.elyte.phi(obj.ne.N + obj.sep.N + 1:end));
@@ -415,30 +452,24 @@ classdef lithiumIon < handle
             % Set source terms            
             %%%%% Li+ Sources %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
             % Electrolyte NE Li+ source
-            obj.elyte.sp.Li.source(1:obj.ne.N) = ...
-                +1 .* obj.ne.R;
+            obj.elyte.sp.Li.source(1:obj.ne.N) = +1 .* obj.ne.R;
 
             % Electrolyte PE Li+ source
-            obj.elyte.sp.Li.source(obj.ne.N+obj.sep.N+1:end) = ...
-                -1 .* obj.pe.R;
+            obj.elyte.sp.Li.source(obj.ne.N+obj.sep.N+1:end) = -1 .* obj.pe.R;
             
             %%%%% Li0 Sources %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
             % Active Material NE Li0 source
-            obj.ne.am.Li.source = ...
-                -1 .* obj.ne.R;
+            obj.ne.am.Li.source = -1 .* obj.ne.R;
 
             % Active Material PE Li0 source
-            obj.pe.am.Li.source = ...
-                +1 .* obj.pe.R;
+            obj.pe.am.Li.source = +1 .* obj.pe.R;
             
             %%%%% e- Sources %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
             % Active Material NE Li0 source
-            obj.ne.am.e.source = ...
-                +1 .* obj.ne.R;
+            obj.ne.am.e.source = +1 .* obj.ne.R;
 
             % Active Material PE Li0 source
-            obj.pe.am.e.source = ...
-                -1 .* obj.pe.R;
+            obj.pe.am.e.source = -1 .* obj.pe.R;
             
             %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
             %% Diffusion Flux                                           %%%
@@ -505,39 +536,45 @@ classdef lithiumIon < handle
                             - (sum(obj.pe.R .* obj.con.F .* obj.fv.dXvec(3)));
             
             %% State vector %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%             
-            obj.soe = [ obj.elyte.sp.Li.massCont;
-                        obj.elyte.chargeCont;
-                        obj.ne.am.Li.massCont;
-                        obj.ne.am.e.chargeCont;
-                        obj.pe.am.Li.massCont;
-                        obj.pe.am.e.chargeCont;
-                        obj.chargeCont ];
+            obj.soe = vertcat(obj.elyte.sp.Li.massCont, ...
+                              obj.elyte.chargeCont, ...
+                              obj.ne.am.Li.massCont, ...
+                              obj.ne.am.e.chargeCont, ...
+                              obj.pe.am.Li.massCont, ...
+                              obj.pe.am.e.chargeCont, ...
+                              obj.chargeCont);
 
         end
         
-        function res = odefun(obj,t,y,yp)
-            %ODEFUN Compiles the system of differential equations
-            %   Detailed explanation goes here
-
-            % Display current time step
-            clc
-            disp('Time, s:')
-            disp(t)
-            disp('Current Density, A/cm2:')
-            disp(-1e-4.*currentSource(t, obj.fv.tUp, obj.fv.tf, obj.J))
-            disp('Cell Voltage, V:')
-            disp(obj.pe.E - obj.ne.E)
+        function res = odefun(obj, t, y, yp, varargin)
+        %ODEFUN Compiles the system of differential equations
+            
+            opt = struct('useAD', false);
+            opt = merge_options(opt, varargin{:});
+            useAD = opt.useAD;
+            
+            dodisplay = false;
+            if dodisplay
+                % Display current time step
+                clc
+                disp('Time, s:')
+                disp(t)
+                disp('Current Density, A/cm2:')
+                disp(-1e-4.*currentSource(t, obj.fv.tUp, obj.fv.tf, obj.J))
+                disp('Cell Voltage, V:')
+                disp(obj.pe.E - obj.ne.E)
+            end
             
             % Read the state vector
-            obj.dynamicReadState(y, yp);
+            obj.dynamicReadState(y, yp, 'useAD', useAD);
 
             % Build SOE
-            obj.dynamicBuildSOE(t);
+            obj.dynamicBuildSOE(t, 'useAD', useAD);
+            
             res = obj.soe;
         end     
         
         function plotMesh(obj)
-            
             
             subplot(3,1,1), plot(obj.fv.Xb.*1e3, zeros(size(obj.fv.Xb)),'+','MarkerSize',5, 'LineWidth',2, 'Color', obj.style.palette.discrete(1,:));
             hold on

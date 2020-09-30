@@ -223,6 +223,6 @@ end
 
 function dy = loc_diff(y)
 % variant of diff that is compatible for AD
-    N = numval(y);
+    N = numelValue(y);
     dy = y(2 : N) - y(1 : (N - 1));
 end

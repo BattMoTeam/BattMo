@@ -2,7 +2,7 @@ function result = grad(y, X, varargin)
 % We have only refactored 'adiabatic-adiabatic' case
 [~, n] = size(y);
 assert(n == 1, 'this function should only take in vector')
-N = numval(y); % note that numval is overloaded defined for double and AD variables
+N = numelValue(y); % note that numelValue is overloaded defined for double and AD variables
 
 conditions = [];
 
