@@ -90,6 +90,8 @@ classdef lithiumIonAD < handle
             obj.Ucut    = 2;
             
             obj.AutoDiffBackend = AutoDiffBackend();
+            %obj.AutoDiffBackend = DiagonalAutoDiffBackend();
+            %obj.AutoDiffBackend.useMex=false;
         end
         
         function spm(obj)
@@ -101,8 +103,13 @@ classdef lithiumIonAD < handle
 
         function [dfdy, dfdyp] = odederfun(obj, t, y, yp) 
             res = obj.odefun(t, y, yp, 'useAD', true);
-            dfdy = res.jac{1};
-            dfdyp = res.jac{2};
+            if(numel(res.jac)==2)
+                dfdy = res.jac{1};
+                dfdyp = res.jac{2};
+            else
+                dfdy = res.jac{1}(:,1:res.numVars(1));
+                dfdyp = res.jac{1}(:,res.numVars(1)+1:end);
+            end
         end
     
          
