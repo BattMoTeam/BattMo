@@ -1,4 +1,4 @@
-classdef nmc111Electrode < handle
+classdef nmc111Electrode < FvModel
     %NMC111ELECTRODE Summary of this class goes here
     %   Detailed explanation goes here
     

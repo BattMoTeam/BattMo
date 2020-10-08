@@ -1,4 +1,4 @@
-classdef graphiteElectrode < handle
+classdef graphiteElectrode < FvModel
     %UNTITLED6 Summary of this class goes here
     %   Detailed explanation goes here
     

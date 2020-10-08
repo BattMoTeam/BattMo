@@ -1,4 +1,4 @@
-classdef celgard2500
+classdef celgard2500 < FvModel
     %UNTITLED10 Summary of this class goes here
     %   Detailed explanation goes here
     
@@ -19,6 +19,7 @@ classdef celgard2500
         Xb
         N
         dombin
+     
         
     end
     

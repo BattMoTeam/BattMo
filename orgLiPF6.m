@@ -1,4 +1,4 @@
-classdef orgLiPF6 < handle
+classdef orgLiPF6 < FvModel
     %orgLiPF6 An electrolyte class for electrochemical modelling
     %   The orgLiPF6 class describes the properties and
     %   parameterization for organic electrolytes featuring lithium
@@ -69,6 +69,7 @@ classdef orgLiPF6 < handle
         N
         dombin
         
+        
         % Finite volume solution properties
         chargeCont
         
@@ -127,7 +128,7 @@ classdef orgLiPF6 < handle
             %conductivity Calculates the ionic conductivity of the
             %eletrolyte in units [S m^-1].
             %   Electrolyte conductivity according to the model proposed by
-            %   Valøen et al [1]. The model was made by performing a
+            %   Valï¿½en et al [1]. The model was made by performing a
             %   least-squares fit of experimental data with LiPF6 
             %   concenrations from 7.7e-6 M to 3.9 M and temperatures from
             %   263 K to 333 K. The solvent is 10 vol% PC, 27 vol% EC, 63
@@ -150,7 +151,7 @@ classdef orgLiPF6 < handle
             %diffusion Calculates the diffusion coefficient of Li+ ions in
             %the electrolyte in units [m2 s^-1].
             %   Diffusion coefficient according to the model proposed by
-            %   Valøen et al [1]. The model was made by performing a
+            %   Valï¿½en et al [1]. The model was made by performing a
             %   least-squares fit of experimental data with LiPF6 
             %   concenrations from 7.7e-6 M to 3.9 M and temperatures from
             %   263 K to 333 K. The solvent is 10 vol% PC, 27 vol% EC, 63
