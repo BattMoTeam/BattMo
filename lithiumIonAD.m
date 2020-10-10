@@ -49,7 +49,7 @@ classdef lithiumIonAD < handle
         % Postprocessing properties
         display     % Display simulation output, |'final'|'monitor'|'off'|
         style       % Style for the display
-
+        use_org
         AutoDiffBackend
     end
     
@@ -65,7 +65,7 @@ classdef lithiumIonAD < handle
                 SOC = varargin(1);
                 T   = varargin(2);
             end
-            
+            obj.use_org=false;
             %% Set default simulation parameters
             obj.sim{1}          = 'dynamic';        % Definition of simulation type
             obj.sim{2}          = 'isothermal';     % Definition of simulation type
@@ -117,7 +117,7 @@ classdef lithiumIonAD < handle
            
             % Generate the FV mesh
             names           = {'NE';'SEP';'PE'};
-            sizes           = [ 1e-6; 1e-6; 1e-6 ];
+            sizes           = [ 1e-6; 1e-6; 1e-6 ]*10;
             lengths         = [ obj.ne.t; ...
                                 obj.sep.t; ...
                                 obj.pe.t ];
@@ -152,7 +152,12 @@ classdef lithiumIonAD < handle
                 obj.(dd).Grid = computeGeometry(obj.(dd).Grid);
                 rock = struct('perm',ones(obj.(dd).Grid.cells.num,1),'poro',ones(obj.(dd).Grid.cells.num,1));
                 obj.(dd).operators = setupOperatorsTPFA(obj.(dd).Grid,rock);
-                obj.(dd).operators.allDiv = getAllDiv(obj.(dd).Grid)
+                obj.(dd).operators.allDiv = getAllDiv(obj.(dd).Grid);
+                %a =getTwoPointOperator(obj.(dd).Grid)
+                %b=getHarmonicAvgOpeartor(obj.(dd).Grid)
+                %obj.(dd).operators.harmFace =@(cvalue) b(a(cvalue));
+                obj.(dd).operators.harmFace = getFaceHarmMean(obj.(dd).Grid);
+                obj.(dd).operators.harmFaceBC =@(cvalue,faces) getFaceHarmBC(obj.(dd).Grid,cvalue,faces);
             end
             % Set initial conditions
             obj.icp2d();
@@ -406,10 +411,16 @@ classdef lithiumIonAD < handle
             
             jchems = cell(ncomp, 1);
             for i = 1 : ncomp
-                jchems{i} = zeros(N + 1, 1);         
-                jchems{i} = harm(obj.elyte.kappaeff .* obj.elyte.ion.tvec{i} .* obj.elyte.ion.dmudc{i} ./ ...
-                                 (obj.elyte.ion.zvec{i}.*obj.con.F), obj.fv.X, obj.fv.Xb) .* grad(obj.elyte.ion.cvec{i}, ...
-                                                                  obj.fv.X);
+                jchems{i} = zeros(N + 1, 1);
+                if(obj.use_org)
+                    jchems{i} = harm(obj.elyte.kappaeff .* obj.elyte.ion.tvec{i} .* obj.elyte.ion.dmudc{i} ./ ...
+                                     (obj.elyte.ion.zvec{i}.*obj.con.F), obj.fv.X, obj.fv.Xb) .* grad(obj.elyte.ion.cvec{i}, ...
+                                                                      obj.fv.X);
+                else
+                    coeff =  obj.elyte.kappaeff .* obj.elyte.ion.tvec{i} .* obj.elyte.ion.dmudc{i} ./ ...
+                                     (obj.elyte.ion.zvec{i}.*obj.con.F);                                             
+                    jchems{i} = obj.elyte.operators.harmFace(coeff).* obj.elyte.operators.Grad(obj.elyte.ion.cvec{i});
+                end
             end
             obj.elyte.jchem = jchems{1};
             for i = 2 : ncomp
@@ -417,12 +428,16 @@ classdef lithiumIonAD < handle
             
             end
             %   Ionic current density due to the electrochemical potential gradient
-            obj.elyte.j = harm(obj.elyte.kappaeff, obj.fv.X, obj.fv.Xb).*(-1).*grad(obj.elyte.phi, obj.fv.X) ...
-                - obj.elyte.jchem;   
-            
+            if(obj.use_org)
+                obj.elyte.j = harm(obj.elyte.kappaeff, obj.fv.X, obj.fv.Xb).*(-1).*grad(obj.elyte.phi, obj.fv.X) ...
+                    - obj.elyte.jchem;
+            else
+                obj.elyte.j = obj.elyte.operators.harmFace(obj.elyte.kappaeff).*(-1).*obj.elyte.operators.Grad(obj.elyte.phi) - obj.elyte.jchem;
+            end
             %% Electric current density
             % Active material NE
-            obj.ne.j =  harm(obj.ne.sigmaeff, obj.ne.X, obj.ne.Xb) ...
+            if(obj.use_org)
+                obj.ne.j =  harm(obj.ne.sigmaeff, obj.ne.X, obj.ne.Xb) ...
                         .* (-1) .* grad(obj.ne.am.phi, ...
                                         obj.ne.X, ...
                                         'left', ...
@@ -430,13 +445,34 @@ classdef lithiumIonAD < handle
                                         0);
                                     
             % Active material PE                        
-            obj.pe.j = harm(obj.pe.sigmaeff, obj.pe.X, obj.pe.Xb) ...
+                obj.pe.j = harm(obj.pe.sigmaeff, obj.pe.X, obj.pe.Xb) ...
                         .* (-1) .* grad(obj.pe.am.phi, ...
                                         obj.pe.X, ...
                                         'right',...
                                         'dirlichet', ...
                                         obj.pe.E);
+            else
+               obj.ne.j =  obj.ne.operators.harmFace(obj.ne.sigmaeff) ...
+                        .* (-1) .* obj.ne.operators.Grad(obj.ne.am.phi);
+               
+               
+               % add bc
+               faceleft=1;
+               bcLeft = 0;
+               [t,cells] = obj.ne.operators.harmFaceBC(obj.ne.sigmaeff,faceleft)
+               obj.ne.j_bcsource = obj.ne.am.phi*0.0;%NB hack to initialize zero ad
+               obj.ne.j_bcsource(cells) =  t.*(bcLeft-obj.ne.am.phi(cells));
                                     
+                % Active material PE                 
+               obj.pe.j = obj.pe.operators.harmFace(obj.pe.sigmaeff)...
+                            .* (-1) .* obj.pe.operators.Grad(obj.pe.am.phi);
+               %ad bc
+               faceright=obj.pe.Grid.faces.num;
+               bcRight = obj.pe.E;
+               [t,cells] = obj.pe.operators.harmFaceBC(obj.pe.sigmaeff,faceright);
+               obj.pe.j_bcsource = obj.pe.am.phi*0.0;%NB hack to initialize zero ad
+               obj.pe.j_bcsource(cells) =  t.*(bcRight-obj.pe.am.phi(cells));                       
+            end
             %% Cell voltage
             obj.U = obj.pe.E - obj.ne.E;
         end
@@ -511,38 +547,34 @@ classdef lithiumIonAD < handle
             %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
             % Divergence of diffusion mass flux
             %   Electrolyte Li+ Diffusion
-            if(false)
-            obj.elyte.sp.Li.divDiff = divAgradCreate( obj.elyte.sp.Li.c, ...
+            if(obj.use_org)
+                obj.elyte.sp.Li.divDiff = divAgradCreate( obj.elyte.sp.Li.c, ...
                                                 -obj.elyte.sp.Li.Deff, ...
                                                 obj.fv.X, ...
                                                 obj.fv.Xb);  
-            obj.ne.am.Li.divDiff = divAgradCreate( obj.ne.am.Li.cs, ...
+                obj.ne.am.Li.divDiff = divAgradCreate( obj.ne.am.Li.cs, ...
                                              -obj.ne.am.Li.Deff, ...
                                              obj.ne.X, ...
                                              obj.ne.Xb);
             
-            obj.pe.am.Li.divDiff = divAgradCreate( obj.pe.am.Li.cs, ...
+                obj.pe.am.Li.divDiff = divAgradCreate( obj.pe.am.Li.cs, ...
                                              -obj.pe.am.Li.Deff, ...
                                              obj.pe.X, ...
                                              obj.pe.Xb);
             else
-               assert( isa(obj.pe.am.Li.Deff,'double') && isa(obj.ne.am.Li.Deff,'double') && isa(obj.elyte.sp.Li.Deff,'double') )
-            x = obj.elyte.sp.Li.c;
-            flux = obj.elyte.sp.Li.Trans.*obj.elyte.operators.Grad(x);
-            obj.elyte.sp.Li.divDiff=  obj.elyte.operators.Div(flux)./obj.elyte.Grid.cells.volumes;
+                assert( isa(obj.pe.am.Li.Deff,'double') && isa(obj.ne.am.Li.Deff,'double') && isa(obj.elyte.sp.Li.Deff,'double') )
+                x = obj.elyte.sp.Li.c;
+                flux = obj.elyte.sp.Li.Trans.*obj.elyte.operators.Grad(x);
+                obj.elyte.sp.Li.divDiff=  obj.elyte.operators.Div(flux)./obj.elyte.Grid.cells.volumes;
             %%
-            x= obj.ne.am.Li.cs;
-            flux = obj.ne.am.Li.Trans.*obj.ne.operators.Grad(x);
-            obj.ne.am.Li.divDiff=  obj.ne.operators.Div(flux)./obj.ne.Grid.cells.volumes;
+                x= obj.ne.am.Li.cs;
+                flux = obj.ne.am.Li.Trans.*obj.ne.operators.Grad(x);
+                obj.ne.am.Li.divDiff=  obj.ne.operators.Div(flux)./obj.ne.Grid.cells.volumes;
             
             %%
-            x = obj.pe.am.Li.cs;
-            flux = obj.pe.am.Li.Trans.*obj.pe.operators.Grad(x);
-            obj.pe.am.Li.divDiff=  obj.pe.operators.Div(flux)./obj.pe.Grid.cells.volumes;
-            
-            
-                
-                
+                x = obj.pe.am.Li.cs;
+                flux = obj.pe.am.Li.Trans.*obj.pe.operators.Grad(x);
+                obj.pe.am.Li.divDiff=  obj.pe.operators.Div(flux)./obj.pe.Grid.cells.volumes;
                 
             end
             %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -552,9 +584,11 @@ classdef lithiumIonAD < handle
             %   Electrolyte Li+ Migration
             flux = obj.elyte.sp.Li.t ./ (obj.elyte.sp.Li.z .* obj.con.F) ...
                                                 .* obj.elyte.j;
-            %obj.elyte.sp.Li.divMig    = div( flux, obj.fv.Xb);
-                                            
-            obj.elyte.sp.Li.divMig   =  obj.elyte.operators.allDiv(flux);%./obj.elyte.Grid.cells.volumes;                           
+            if(obj.use_org)                                
+                obj.elyte.sp.Li.divMig    = div( flux, obj.fv.Xb);
+            else                                
+                obj.elyte.sp.Li.divMig   =  obj.elyte.operators.Div(flux)./obj.elyte.Grid.cells.volumes;                           
+            end
             %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
             %% System of Equations                                      %%%
             %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -567,11 +601,13 @@ classdef lithiumIonAD < handle
                                                 - obj.elyte.sp.Li.cepsdot);
            
             %% Liquid electrolyte charge continuity %%%%%%%%%%%%%%%%%%%%%%%
-            
-            %obj.elyte.chargeCont = -div(  obj.elyte.j, obj.fv.Xb) ./ obj.con.F + ...
-            %                         obj.elyte.sp.Li.source .* obj.elyte.sp.Li.z;       
-            obj.elyte.chargeCont = -obj.elyte.operators.allDiv(  obj.elyte.j) ./ obj.con.F + ...
+            if(obj.use_org)
+                obj.elyte.chargeCont = -div(  obj.elyte.j, obj.fv.Xb) ./ obj.con.F + ...
                                      obj.elyte.sp.Li.source .* obj.elyte.sp.Li.z;
+            else
+                obj.elyte.chargeCont = -(obj.elyte.operators.Div(  obj.elyte.j)./obj.elyte.Grid.cells.volumes) ./ obj.con.F+ ...
+                                         obj.elyte.sp.Li.source .* obj.elyte.sp.Li.z;
+            end
             %a = -div(  obj.elyte.j, obj.fv.Xb);
             %b = -obj.elyte.operators.allDiv(  obj.elyte.j)
             %assert(all(a==b))
@@ -584,7 +620,8 @@ classdef lithiumIonAD < handle
                                             + obj.pe.am.Li.source ...
                                             - obj.pe.am.Li.csepsdot);
                                         
-            %% Active material charge continuity %%%%%%%%%%%%%%%%%%%%%%%%%%
+            %% Active material charge conobj.ne.operators.harmFaceBc(obj.ne.sigmaeff,faceleft);          
+         if(obj.use_org)
             % obj.ne.am.e.chargeCont = -div(  obj.ne.j, obj.ne.Xb) ./ -obj.con.F + ...
             %                         obj.ne.am.e.source .* -1;   
             obj.ne.am.e.chargeCont = -obj.ne.operators.allDiv(  obj.ne.j) ./ -obj.con.F + ...
@@ -593,7 +630,19 @@ classdef lithiumIonAD < handle
            %obj.pe.am.e.chargeCont = -div(  obj.pe.j, obj.pe.Xb) ./ -obj.con.F + ...
            %                          obj.pe.am.e.source .* -1;   
            obj.pe.am.e.chargeCont = -obj.pe.operators.allDiv(  obj.pe.j) ./ -obj.con.F + ...
-                                     obj.pe.am.e.source .* -1;              
+                                     obj.pe.am.e.source .* -1;
+                                 
+                                 
+         else
+           obj.ne.am.e.chargeCont = ((-(obj.ne.operators.Div(  obj.ne.j)-obj.ne.j_bcsource))./obj.ne.Grid.cells.volumes)./-obj.con.F + ...
+                                     obj.ne.am.e.source .* -1;
+                                 
+           %obj.pe.am.e.chargeCont = -div(  obj.pe.j, obj.pe.Xb) ./ -obj.con.F + ...
+           %                          obj.pe.am.e.source .* -1;   
+           obj.pe.am.e.chargeCont = ((-(obj.pe.operators.Div(obj.pe.j) - obj.pe.j_bcsource))./obj.pe.Grid.cells.volumes) ./ -obj.con.F + ...
+                                     obj.pe.am.e.source .* -1;
+                                  
+         end
             %% Global charge continuity %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
             obj.chargeCont = currentSource(t, obj.fv.tUp, obj.fv.tf, obj.J) ...
                             - (sum(obj.pe.R .* obj.con.F .* obj.fv.dXvec(3)));
@@ -606,7 +655,33 @@ classdef lithiumIonAD < handle
                               obj.pe.am.Li.massCont, ...
                               obj.pe.am.e.chargeCont, ...
                               obj.chargeCont);
-
+          if(false)               
+            tmp = vertcat(obj.elyte.sp.Li.massCont, ...
+                         obj.elyte.chargeCont, ...
+                         obj.ne.am.Li.massCont, ...
+                         obj.ne.am.e.chargeCont, ...
+                         obj.pe.am.Li.massCont, ...
+                         obj.pe.am.e.chargeCont);
+            X = vertcat(obj.elyte.Grid.cells.centroids(:,1),...
+                       obj.elyte.Grid.cells.centroids(:,1),....
+                       obj.ne.Grid.cells.centroids(:,1),...
+                       obj.ne.Grid.cells.centroids(:,1),...
+                       obj.pe.Grid.cells.centroids(:,1),...
+                       obj.pe.Grid.cells.centroids(:,1));
+            ii = vertcat(ones(obj.elyte.Grid.cells.num,1)*1,...
+                       ones(obj.elyte.Grid.cells.num,1)*3,....
+                       ones(obj.ne.Grid.cells.num,1)*2,...
+                       ones(obj.ne.Grid.cells.num,1)*4,...
+                       ones(obj.pe.Grid.cells.num,1)*2,...
+                       ones(obj.pe.Grid.cells.num,1)*4);
+           
+                   
+                   
+            [v,ind] =sortrows([X,ii]);
+            obj.soe = vertcat(tmp(ind,:),obj.chargeCont);
+           end
+                          
+                          
         end
         
         %function a = divAgrad(y)
@@ -798,7 +873,7 @@ classdef lithiumIonAD < handle
            
             
         end
-        
+
         function figureWindow(obj,font)
             figure()
             set(gca,'FontSize',28, ...
@@ -1100,10 +1175,21 @@ classdef lithiumIonAD < handle
     end
 end
 %------------------
+function [T,cells] = getFaceHarmBC(G,cvalue,faces)
+        cells=sum(G.faces.neighbors(faces,:));
+        cn = sqrt(sum((G.faces.centroids(faces,:)- G.cells.centroids(cells,:)).^2,2));
+        t = G.faces.areas(faces)./cn;
+        T = t.*cvalue(cells);
+end
+
 function hm = getFaceHarmMean(G)
-  tp =@(clambda) getTwoPointOperator(G);
-  hmf =@(hflambda) getHarmonicAvgOpeartor(G);
-  hm =@(clambda) hmf(tp(clambda));
+    internal = all(G.faces.neighbors>0,2);
+    N = G.faces.neighbors(internal,:);
+    ni = sum(internal);
+    cd = sqrt(sum(G.cells.centroids(N(:,1)) - G.cells.centroids(N(:,2)).^2,2));%NB
+    t= G.faces.areas(internal)./cd;
+    A = sparse([[1:ni]';[1:ni]'],N,1,ni,G.cells.num);
+    hm = @(cellvalue) 2.*t./(A*(1./cellvalue));
 end
 
 
