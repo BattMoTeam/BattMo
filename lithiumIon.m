@@ -16,10 +16,12 @@ classdef lithiumIon < handle
         con = physicalConstants();        
         
         % Domain properties
-        ne          % Negative electrode object
-        pe          % Positive electrode object
-        sep         % Separator object
-        elyte       % Electrolyte object
+        ne       % Negative electrode object
+        pe       % Positive electrode object
+        sep      % Separator object
+        elyte    % Electrolyte object
+        ccne     % Current collector object (negative electrode side)
+        ccpe     % Current collector object (positive electrode side)
         
         % Model properties
         ...ecm
@@ -75,19 +77,21 @@ classdef lithiumIon < handle
             obj.style.aspect    = 1/sqrt(2);        % Set plot aspect ratio
             
             %% Define battery components
-            obj.ne      = graphiteElectrode(SOC, T);
-            obj.pe      = nmc111Electrode(SOC, T);
-            obj.sep     = celgard2500();
-            obj.elyte   = orgLiPF6(1000, T);
+            obj.ne    = graphiteElectrode(SOC, T);
+            obj.pe    = nmc111Electrode(SOC, T);
+            obj.sep   = celgard2500();
+            obj.ccne  = currentCollector();
+            obj.ccpe  = currentCollector();
+            obj.elyte = orgLiPF6(1000, T);
             
-            obj.OCV     = obj.pe.am.OCP - obj.ne.am.OCP;
-            obj.U       = obj.OCV;
-            obj.T       = T;
+            obj.OCV  = obj.pe.am.OCP - obj.ne.am.OCP;
+            obj.U    = obj.OCV;
+            obj.T    = T;
             
-            obj.I       = 0;
-            obj.A       = 100 ./ 10000; 
-            obj.J       = 1;
-            obj.Ucut    = 2;
+            obj.I    = 0;
+            obj.A    = 100 ./ 10000; 
+            obj.J    = 1;
+            obj.Ucut = 2;
             
             obj.AutoDiffBackend = AutoDiffBackend();
         end
@@ -109,32 +113,49 @@ classdef lithiumIon < handle
         function [t, y] = p2d(obj)
            
             % Generate the FV mesh
-            names           = {'NE';'SEP';'PE'};
-            sizes           = [ 1e-6; 1e-6; 1e-6 ];
-            lengths         = [ obj.ne.t; ...
-                                obj.sep.t; ...
-                                obj.pe.t ];
+            names           = {'CCNE';'NE';'SEP';'PE'; 'CCPE'};
+            sizes           = [ 1e-6; 1e-6; 1e-6; 1e-6; 1e-6 ];
+            lengths         = [ obj.ccne.t; obj.ne.t; obj.sep.t; obj.pe.t; obj.ccpe.t];
                             
             obj.fv = fv1d(names, sizes, lengths);
             
-            obj.ne.dombin   = obj.fv.dombin{1};
-            obj.sep.dombin  = obj.fv.dombin{2};
-            obj.pe.dombin   = obj.fv.dombin{3};
+            dombin = obj.fv;
+            obj.ccne.dombin = dombin{1};
+            obj.ne.dombin   = dombin{2};
+            obj.sep.dombin  = dombin{3};
+            obj.pe.dombin   = dombin{4};
+            obj.ccpe.dombin = dombin{5};
             
-            obj.ne.N        = obj.fv.Nvec(1);
-            obj.sep.N       = obj.fv.Nvec(2);
-            obj.pe.N        = obj.fv.Nvec(3);
-            obj.elyte.N     = obj.fv.N;
+            Nvec = obj.fv.Nvec;
+            obj.ccne.N  = Nvec(1);
+            obj.ne.N    = Nvec(2);
+            obj.sep.N   = Nvec(3);
+            obj.pe.N    = Nvec(4);
+            obj.ccpe.N  = Nvec(5);
+            obj.elyte.N = sum(Nvec(2 : 4));
             
-            obj.ne.X        = obj.fv.X(obj.ne.dombin>0);
-            obj.sep.X       = obj.fv.X(obj.sep.dombin>0);
-            obj.pe.X        = obj.fv.X(obj.pe.dombin>0);
-            obj.elyte.X     = obj.fv.X;
+            X = obj.fv.X;
+            obj.ne.X     = X(obj.ne.dombin > 0);
+            obj.sep.X    = X(obj.sep.dombin > 0);
+            obj.pe.X     = X(obj.pe.dombin > 0);
+            elyte_dombin = (obj.ne.dombin > 0) | (obj.sep.dombin > 0) | (obj.pe.dombin > 0);
+            obj.elyte.X  = X(elyte_dombin);;
             
-            obj.ne.Xb       = obj.fv.Xb(1:obj.ne.N+1);
-            obj.sep.Xb      = obj.fv.Xb(obj.ne.N+1:obj.ne.N + obj.sep.N + 1);
-            obj.pe.Xb       = obj.fv.Xb(obj.ne.N + obj.sep.N + 1:end);
-            obj.elyte.Xb    = obj.fv.Xb;
+            Xb = obj.fv;
+            i = 0; di = obj.ccne.N;
+            obj.ccne.Xb = Xb(i + (1 : (di + 1)));
+            i = i + di; di = obj.ne.N;
+            obj.ne.Xb = Xb(i + (1 : (di + 1)));
+            i = i + di; di = obj.sep.N;
+            obj.sep.Xb = Xb(i + (1 : (di + 1)));
+            i = i + di; di = obj.pe.N;            
+            obj.pe.Xb = Xb(i + (1 : (di + 1)));
+            i = i + di; di = obj.ccpe.N;            
+            obj.ccpe.Xb = Xb(i + (1 : (di + 1)));
+            
+            i = obj.ccne.N;
+            di = obj.ne.N + obj.sep.N + obj.pe.N;
+            obj.elyte.Xb = Xb(i + (1 : (di + 1));
             
             % Perform manual mesh check
             if strcmpi(obj.check, 'on')==1
@@ -386,22 +407,35 @@ classdef lithiumIon < handle
                 - obj.elyte.jchem;   
             
             %% Electric current density
+            
             % Active material NE
-            obj.ne.j =  harm(obj.ne.sigmaeff, obj.ne.X, obj.ne.Xb) ...
-                        .* (-1) .* grad(obj.ne.am.phi, ...
-                                        obj.ne.X, ...
-                                        'left', ...
-                                        'dirichlet', ...
-                                        0);
-                                    
+
+            ccne = obj.ccne;
+            ne   = obj.ne;
+            phi      = [ccne.am.phi  ; ne.am.phi];
+            X        = [ccne.X       ; ne.X]
+            sigmaeff = [ccne.sigmaeff; ne.sigmaeff];
+            Xb       = [ccne.Xb      ; ne.Xb];
+            
+            j = harm(sigmaeff, X, Xb) .* (-1) .* grad(phi, X, 'left', 'dirichlet', 0);
+            
+            obj.ccne.j = j(1 : (ccne.N + 1));
+            obj.ne.j   = j(ccne.N + (1 : (ne.N + 1)));
+            
             % Active material PE                        
-            obj.pe.j = harm(obj.pe.sigmaeff, obj.pe.X, obj.pe.Xb) ...
-                        .* (-1) .* grad(obj.pe.am.phi, ...
-                                        obj.pe.X, ...
-                                        'right',...
-                                        'dirichlet', ...
-                                        obj.pe.E);
+            
+            ccpe = obj.ccpe;
+            pe   = obj.pe;
+            phi      = [pe.am.phi  ; ccpe.am.phi];
+            X        = [pe.X       ; ccpe.X]
+            sigmaeff = [pe.sigmaeff; ccpe.sigmaeff];
+            Xb       = [pe.Xb      ; ccpe.Xb];
+            
+            j =  harm(sigmaeff, X, Xb) .* (-1) .* grad(phi, X, 'right', 'dirichlet', 0);
                                     
+            obj.pe.j   = j(1 : (pe.N + 1));
+            obj.ccpe.j = j((pe.N + 1) + (1 : (ccpe.N + 1)));
+            
             %% Cell voltage
             obj.U = obj.pe.E - obj.ne.E;
         end
@@ -496,9 +530,9 @@ classdef lithiumIon < handle
             %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
             % Divergence of the migration mass flux
             %   Electrolyte Li+ Migration
-            obj.elyte.sp.Li.divMig    = div( obj.elyte.sp.Li.t ./ (obj.elyte.sp.Li.z .* obj.con.F) ...
-                                                .* obj.elyte.j, ...
-                                                obj.fv.Xb);
+            obj.elyte.sp.Li.divMig = div( obj.elyte.sp.Li.t ./ (obj.elyte.sp.Li.z .* obj.con.F) ...
+                                          .* obj.elyte.j, ...
+                                          obj.fv.Xb);
                                             
             %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
             %% System of Equations                                      %%%
@@ -506,43 +540,47 @@ classdef lithiumIon < handle
             
             %% Liquid electrolyte dissolved ionic species mass continuity %
             %   Electrolyte Li+ Mass Continuity
-            obj.elyte.sp.Li.massCont =    (   - obj.elyte.sp.Li.divDiff ...
-                                                - obj.elyte.sp.Li.divMig  ...
-                                                + obj.elyte.sp.Li.source  ...
-                                                - obj.elyte.sp.Li.cepsdot); 
+            obj.elyte.sp.Li.massCont = ( - obj.elyte.sp.Li.divDiff ...
+                                         - obj.elyte.sp.Li.divMig  ...
+                                         + obj.elyte.sp.Li.source  ...
+                                         - obj.elyte.sp.Li.cepsdot); 
            
             %% Liquid electrolyte charge continuity %%%%%%%%%%%%%%%%%%%%%%%
             obj.elyte.chargeCont = -div(  obj.elyte.j, obj.fv.Xb) ./ obj.con.F + ...
                                      obj.elyte.sp.Li.source .* obj.elyte.sp.Li.z;       
                                  
-             %% Active material mass continuity %%%%%%%%%%%%%%%%%%%%%%%%%%%
-             obj.ne.am.Li.massCont = (-obj.ne.am.Li.divDiff ...
-                                        + obj.ne.am.Li.source ...
-                                        - obj.ne.am.Li.csepsdot);
-                                    
-             obj.pe.am.Li.massCont = (-obj.pe.am.Li.divDiff ...
-                                            + obj.pe.am.Li.source ...
-                                            - obj.pe.am.Li.csepsdot);
-                                        
+            %% Active material mass continuity %%%%%%%%%%%%%%%%%%%%%%%%%%%
+            obj.ne.am.Li.massCont = (-obj.ne.am.Li.divDiff ...
+                                       + obj.ne.am.Li.source ...
+                                       - obj.ne.am.Li.csepsdot);
+                                   
+            obj.pe.am.Li.massCont = (-obj.pe.am.Li.divDiff ...
+                                           + obj.pe.am.Li.source ...
+                                           - obj.pe.am.Li.csepsdot);
+                                       
             %% Active material charge continuity %%%%%%%%%%%%%%%%%%%%%%%%%%
-             obj.ne.am.e.chargeCont = -div(  obj.ne.j, obj.ne.Xb) ./ -obj.con.F + ...
-                                     obj.ne.am.e.source .* -1;   
-                                    
-             obj.pe.am.e.chargeCont = -div(  obj.pe.j, obj.pe.Xb) ./ -obj.con.F + ...
-                                     obj.pe.am.e.source .* -1;   
-                          
-            %% Global charge continuity %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-            obj.chargeCont = currentSource(t, obj.fv.tUp, obj.fv.tf, obj.J) ...
-                            - (sum(obj.pe.R .* obj.con.F .* obj.fv.dXvec(3)));
+            obj.ne.am.e.chargeCont = -div( obj.ne.j, obj.ne.Xb) ./ -obj.con.F + ...
+                                    obj.ne.am.e.source .* -1;   
+                                   
+            obj.pe.am.e.chargeCont = -div( obj.pe.j, obj.pe.Xb) ./ -obj.con.F + ...
+                                    obj.pe.am.e.source .* -1;   
+            
+            obj.ccne.am.e.chargeCont = -div( obj.ccne.j, obj.ccne.Xb);   
+            
+            source = currentSource(t, obj.fv.tUp, obj.fv.tf, obj.J);
+            source = (source/sum(dx)).*dx;
+            obj.ccpe.am.e.chargeCont = -div( obj.ccpe.j, obj.ccpe.Xb) + source;   
+                         
             
             %% State vector %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%             
             obj.soe = vertcat(obj.elyte.sp.Li.massCont, ...
-                              obj.elyte.chargeCont, ...
-                              obj.ne.am.Li.massCont, ...
-                              obj.ne.am.e.chargeCont, ...
-                              obj.pe.am.Li.massCont, ...
-                              obj.pe.am.e.chargeCont, ...
-                              obj.chargeCont);
+                              obj.elyte.chargeCont    , ...
+                              obj.ne.am.Li.massCont   , ...
+                              obj.ne.am.e.chargeCont  , ...
+                              obj.pe.am.Li.massCont   , ...
+                              obj.pe.am.e.chargeCont  , ...
+                              obj.cpne.am.e.chargeCont, ...
+                              obj.cppe.am.e.chargeCont);
 
         end
         
