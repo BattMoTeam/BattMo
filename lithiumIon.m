@@ -16,12 +16,12 @@ classdef lithiumIon < handle
         con = physicalConstants();        
         
         % Domain properties
-        ne       % Negative electrode object
-        pe       % Positive electrode object
-        sep      % Separator object
-        elyte    % Electrolyte object
-        ccne     % Current collector object (negative electrode side)
-        ccpe     % Current collector object (positive electrode side)
+        ne      % Negative electrode object
+        pe      % Positive electrode object
+        sep     % Separator object
+        elyte   % Electrolyte object
+        ccne    % Current collector object (negative electrode side)
+        ccpe    % Current collector object (positive electrode side)
         
         % Model properties
         ...ecm
@@ -32,25 +32,25 @@ classdef lithiumIon < handle
         fv          % Finite volume object
         
         % State properties
-        T           % Temperature,              [K]
-        A           % Cell area,                [m2]
-        OCV         % Cell open circuit voltage,[V]
-        U           % Cell voltage,             [V]
-        Ucut        % Cutoff voltage,           [V]
-        I           % Cell current,             [A]
-        J           % Cell current density,     [A m^-2]
-        soe         % System of equations
+        T      % Temperature,              [K]
+        A      % Cell area,                [m2]
+        OCV    % Cell open circuit voltage,[V]
+        U      % Cell voltage,             [V]
+        Ucut   % Cutoff voltage,           [V]
+        I      % Cell current,             [A]
+        J      % Cell current density,     [A m^-2]
+        soe    % System of equations
         
         % Boundary condition properties
         chargeCont  % Galvanostatic operation BC
         
         % Preprocessing properties
         sim
-        check       % Check the simulation setup, |'on'|'off'|
+        check    % Check the simulation setup, |'on'|'off'|
         
         % Postprocessing properties
-        display     % Display simulation output, |'final'|'monitor'|'off'|
-        style       % Style for the display
+        display  % Display simulation output, |'final'|'monitor'|'off'|
+        style    % Style for the display
 
         AutoDiffBackend
     end
@@ -69,12 +69,12 @@ classdef lithiumIon < handle
             end
             
             %% Set default simulation parameters
-            obj.sim{1}          = 'dynamic';        % Definition of simulation type
-            obj.sim{2}          = 'isothermal';     % Definition of simulation type
-            obj.check           = 'off';            % Perform user checks during preprocessing
-            obj.display         = 'final';          % Regularity of output display
-            obj.style.name      = 'nightfury';      % Set style of the output
-            obj.style.aspect    = 1/sqrt(2);        % Set plot aspect ratio
+            obj.sim{1}       = 'dynamic';        % Definition of simulation type
+            obj.sim{2}       = 'isothermal';     % Definition of simulation type
+            obj.check        = 'off';            % Perform user checks during preprocessing
+            obj.display      = 'final';          % Regularity of output display
+            obj.style.name   = 'nightfury';      % Set style of the output
+            obj.style.aspect = 1/sqrt(2);        % Set plot aspect ratio
             
             %% Define battery components
             obj.ne    = graphiteElectrode(SOC, T);
@@ -322,10 +322,12 @@ classdef lithiumIon < handle
                             obj.ne.am.phi;
                             obj.pe.am.Li.cseps;
                             obj.pe.am.phi;
+                            obj.ccne.am.phi;
+                            obj.ccpe.am.phi;
                             obj.pe.E];
             
             %% Inititalize the state time derivative vector
-            obj.fv.yp0  = zeros(length(obj.fv.y0),1);
+            obj.fv.yp0  = zeros(length(obj.fv.y0), 1);
             
             %% Store state slots
             i = 0; di = obj.elyte.N
@@ -356,24 +358,26 @@ classdef lithiumIon < handle
             opt = merge_options(opt, varargin{:});
             useAD = opt.useAD;
             
+            fv = obj;
+            
             if useAD
                 adbackend = obj.AutoDiffBackend();
                 [y, yp] = adbackend.initVariablesAD(y, yp);
             end
             
-            obj.elyte.sp.Li.ceps = y(obj.fv.s1);
-            obj.elyte.phi        = y(obj.fv.s2);
-            obj.ne.am.Li.cseps   = y(obj.fv.s3);
-            obj.ne.am.phi        = y(obj.fv.s4);
-            obj.pe.am.Li.cseps   = y(obj.fv.s5);
-            obj.pe.am.phi        = y(obj.fv.s6);
-            obj.ccpe.am.phi      = y(obj.fv.s7);
-            obj.ccne.am.phi      = y(obj.fv.s8);
-            obj.pe.E             = y(9);
+            obj.elyte.sp.Li.ceps = y(fv.s1);
+            obj.elyte.phi        = y(fv.s2);
+            obj.ne.am.Li.cseps   = y(fv.s3);
+            obj.ne.am.phi        = y(fv.s4);
+            obj.pe.am.Li.cseps   = y(fv.s5);
+            obj.pe.am.phi        = y(fv.s6);
+            obj.ccpe.am.phi      = y(fv.s7);
+            obj.ccne.am.phi      = y(fv.s8);
+            obj.pe.E             = y(fv.s9);
             
-            obj.elyte.sp.Li.cepsdot = yp(obj.fv.s1);
-            obj.ne.am.Li.csepsdot   = yp(obj.fv.s3);
-            obj.pe.am.Li.csepsdot   = yp(obj.fv.s5);
+            obj.elyte.sp.Li.cepsdot = yp(fv.s1);
+            obj.ne.am.Li.csepsdot   = yp(fv.s3);
+            obj.pe.am.Li.csepsdot   = yp(fv.s5);
             
             obj.elyte.sp.Li.c  = obj.elyte.sp.Li.ceps ./ obj.elyte.eps;
             obj.elyte.sp.PF6.c = obj.elyte.sp.Li.c;
@@ -383,18 +387,16 @@ classdef lithiumIon < handle
             
             %% Update electrolyte physicochemical and transport properties
             obj.elyte.update()
+            obj.elyte.kappaeff   = obj.elyte.kappa .* obj.elyte.eps .^1.5;
+            obj.elyte.sp.Li.Deff = obj.elyte.sp.Li.D .* obj.elyte.eps .^1.5;
+            
             obj.ne.am.update()
+            obj.ne.am.Li.Deff = obj.ne.am.Li.D .* obj.ne.am.eps.^1.5;
+            obj.ne.sigmaeff   = obj.ne.am.sigma .* obj.ne.am.eps.^1.5;
+            
             obj.pe.am.update()
-            
-            obj.elyte.kappaeff = obj.elyte.kappa .* ...
-                obj.elyte.eps .^1.5;
-            obj.elyte.sp.Li.Deff = obj.elyte.sp.Li.D .* ...
-                obj.elyte.eps .^1.5;
-            
-            obj.ne.am.Li.Deff  = obj.ne.am.Li.D .* obj.ne.am.eps.^1.5;
-            obj.ne.sigmaeff = obj.ne.am.sigma .* obj.ne.am.eps.^1.5;
-            obj.pe.am.Li.Deff  = obj.pe.am.Li.D .* obj.pe.am.eps.^1.5;
-            obj.pe.sigmaeff = obj.pe.am.sigma .* obj.pe.am.eps.^1.5;
+            obj.pe.am.Li.Deff = obj.pe.am.Li.D .* obj.pe.am.eps.^1.5;
+            obj.pe.sigmaeff   = obj.pe.am.sigma .* obj.pe.am.eps.^1.5;
             
             
             %% Ionic current density   
@@ -407,8 +409,8 @@ classdef lithiumIon < handle
             for i = 1 : ncomp
                 jchems{i} = zeros(N + 1, 1);         
                 jchems{i} = harm(obj.elyte.kappaeff .* obj.elyte.ion.tvec{i} .* obj.elyte.ion.dmudc{i} ./ ...
-                                 (obj.elyte.ion.zvec{i}.*obj.con.F), obj.fv.X, obj.fv.Xb) .* grad(obj.elyte.ion.cvec{i}, ...
-                                                                  obj.fv.X);
+                                 (obj.elyte.ion.zvec{i}.*obj.con.F), fv.X, fv.Xb) .* grad(obj.elyte.ion.cvec{i}, ...
+                                                                  fv.X);
             end
             obj.elyte.jchem = jchems{1};
             for i = 2 : ncomp
@@ -416,12 +418,12 @@ classdef lithiumIon < handle
             
             end
             %   Ionic current density due to the electrochemical potential gradient
-            obj.elyte.j = harm(obj.elyte.kappaeff, obj.fv.X, obj.fv.Xb).*(-1).*grad(obj.elyte.phi, obj.fv.X) ...
-                - obj.elyte.jchem;   
+            obj.elyte.j = harm(obj.elyte.kappaeff, fv.X, fv.Xb).*(-1).*grad(obj.elyte.phi, fv.X) - obj.elyte.jchem;
+                
             
             %% Electric current density
             
-            % Active material NE
+            % Active material NE and current collector
 
             ccne = obj.ccne;
             ne   = obj.ne;
@@ -435,7 +437,7 @@ classdef lithiumIon < handle
             obj.ccne.j = j(1 : (ccne.N + 1));
             obj.ne.j   = j(ccne.N + (1 : (ne.N + 1)));
             
-            % Active material PE                        
+            % Active material PE and current collector                        
             
             ccpe = obj.ccpe;
             pe   = obj.pe;
@@ -444,13 +446,14 @@ classdef lithiumIon < handle
             sigmaeff = [pe.sigmaeff; ccpe.sigmaeff];
             Xb       = [pe.Xb      ; ccpe.Xb];
             
-            j =  harm(sigmaeff, X, Xb) .* (-1) .* grad(phi, X, 'right', 'dirichlet', 0);
+            j = harm(sigmaeff, X, Xb) .* (-1) .* grad(phi, X, 'right', 'dirichlet', 0);
                                     
             obj.pe.j   = j(1 : (pe.N + 1));
             obj.ccpe.j = j((pe.N + 1) + (1 : (ccpe.N + 1)));
             
             %% Cell voltage
             obj.U = obj.pe.E - obj.ne.E;
+            
         end
         
         function dynamicBuildSOE(obj, t, varargin)
@@ -581,9 +584,9 @@ classdef lithiumIon < handle
             src = currentSource(t, obj.fv.tUp, obj.fv.tf, obj.J);
             
             ccne_src = src/obj.ccne.N;
-            obj.ccne.am.e.chargeCont = -div( obj.ccne.j, obj.ccne.Xb) - ccne_src;   
+            obj.ccne.am.e.chargeCont = div( obj.ccne.j, obj.ccne.Xb) + ccne_src;   
             ccpe_src = src/obj.ccpe.N;
-            obj.ccpe.am.e.chargeCont = -div( obj.ccpe.j, obj.ccpe.Xb) + ccpe_src;   
+            obj.ccpe.am.e.chargeCont = div( obj.ccpe.j, obj.ccpe.Xb) - ccpe_src;   
             
             %% State vector %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%             
             obj.soe = vertcat(obj.elyte.sp.Li.massCont, ...
