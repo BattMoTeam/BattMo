@@ -113,9 +113,9 @@ classdef lithiumIon < handle
         function [t, y] = p2d(obj)
            
             % Generate the FV mesh
-            names           = {'CCNE';'NE';'SEP';'PE'; 'CCPE'};
-            sizes           = [ 1e-6; 1e-6; 1e-6; 1e-6; 1e-6 ];
-            lengths         = [ obj.ccne.t; obj.ne.t; obj.sep.t; obj.pe.t; obj.ccpe.t];
+            names   = { 'CCNE'; 'NE'; 'SEP'; 'PE'; 'CCPE'};
+            sizes   = [ 1e-6; 1e-6; 1e-6; 1e-6; 1e-6 ];
+            lengths = [ obj.ccne.t; obj.ne.t; obj.sep.t; obj.pe.t; obj.ccpe.t];
                             
             obj.fv = fv1d(names, sizes, lengths);
             
@@ -179,7 +179,7 @@ classdef lithiumIon < handle
             obj.fv.tf = 3600*24;
             obj.fv.dt = 10;
             obj.fv.tUp = 0.1;
-            obj.fv.tSpan = obj.fv.ti:obj.fv.dt:obj.fv.tf;
+            obj.fv.tSpan = (obj.fv.ti:obj.fv.dt:obj.fv.tf);
 
             % Pre-process
             obj.dynamicPreprocess();
@@ -235,13 +235,12 @@ classdef lithiumIon < handle
             
             % Volume fractions
                 % Solid volume fractions
-            obj.ne.am.eps           = obj.ne.am.eps  .* ones(obj.ne.N, 1);
-            obj.ne.bin.eps          = obj.ne.bin.eps .* ones(obj.ne.N, 1);
-            obj.ne.sei.eps          = obj.ne.sei.eps .* ones(obj.ne.N, 1);
-            obj.ne.eps              = obj.ne.am.eps ...
-                                    + obj.ne.bin.eps ...
-                                    + obj.ne.sei.eps;
-                % Void volume fraction
+            obj.ne.am.eps  = obj.ne.am.eps  .* ones(obj.ne.N, 1);
+            obj.ne.bin.eps = obj.ne.bin.eps .* ones(obj.ne.N, 1);
+            obj.ne.sei.eps = obj.ne.sei.eps .* ones(obj.ne.N, 1);
+            obj.ne.eps     = obj.ne.am.eps + obj.ne.bin.eps + obj.ne.sei.eps;
+            
+            % Void volume fraction
             obj.ne.void             = 1 - obj.ne.eps;
                             
             % SEI thickness
@@ -329,13 +328,25 @@ classdef lithiumIon < handle
             obj.fv.yp0  = zeros(length(obj.fv.y0),1);
             
             %% Store state slots
-            obj.fv.s1   = 1:obj.elyte.N; 
-            obj.fv.s2   = (obj.fv.s1(end)+1):(obj.fv.s1(end)+obj.elyte.N);
-            obj.fv.s3   = (obj.fv.s2(end)+1):(obj.fv.s2(end)+obj.ne.N);
-            obj.fv.s4   = (obj.fv.s3(end)+1):(obj.fv.s3(end)+obj.ne.N);
-            obj.fv.s5   = (obj.fv.s4(end)+1):(obj.fv.s4(end)+obj.pe.N);
-            obj.fv.s6   = (obj.fv.s5(end)+1):(obj.fv.s5(end)+obj.pe.N);
-            obj.fv.s7   = length(obj.fv.y0);
+            i = 0; di = obj.elyte.N
+            obj.fv.s1   = i + (1 : di);
+            i = i + di; di = obj.elyte.N;
+            obj.fv.s2   = i + (1 : di);
+            i = i + di; di = obj.ne.N;
+            obj.fv.s3   = i + (1 : di);
+            i = i + di; di = obj.ne.N;
+            obj.fv.s4   = i + (1 : di);
+            i = i + di; di = obj.pe.N;
+            obj.fv.s5   = i + (1 : di);
+            i = i + di; di = obj.pe.N;
+            obj.fv.s6   = i + (1 : di);
+            i = i + di; di = obj.ccne.N;
+            obj.fv.s7   = i + (1 : di);
+            i = i + di; di = obj.ccpe.N;
+            obj.fv.s8   = i + (1 : di);
+            
+            i = i + di;
+            obj.fv.s9   = (i + 1);
             
         end
         
@@ -350,13 +361,15 @@ classdef lithiumIon < handle
                 [y, yp] = adbackend.initVariablesAD(y, yp);
             end
             
-            obj.elyte.sp.Li.ceps    = y(obj.fv.s1);
-            obj.elyte.phi           = y(obj.fv.s2);
-            obj.ne.am.Li.cseps      = y(obj.fv.s3);
-            obj.ne.am.phi           = y(obj.fv.s4);
-            obj.pe.am.Li.cseps      = y(obj.fv.s5);
-            obj.pe.am.phi           = y(obj.fv.s6);
-            obj.pe.E                = y(end);
+            obj.elyte.sp.Li.ceps = y(obj.fv.s1);
+            obj.elyte.phi        = y(obj.fv.s2);
+            obj.ne.am.Li.cseps   = y(obj.fv.s3);
+            obj.ne.am.phi        = y(obj.fv.s4);
+            obj.pe.am.Li.cseps   = y(obj.fv.s5);
+            obj.pe.am.phi        = y(obj.fv.s6);
+            obj.ccpe.am.phi      = y(obj.fv.s7);
+            obj.ccne.am.phi      = y(obj.fv.s8);
+            obj.pe.E             = y(9);
             
             obj.elyte.sp.Li.cepsdot = yp(obj.fv.s1);
             obj.ne.am.Li.csepsdot   = yp(obj.fv.s3);
@@ -565,12 +578,12 @@ classdef lithiumIon < handle
             obj.pe.am.e.chargeCont = -div( obj.pe.j, obj.pe.Xb) ./ -obj.con.F + ...
                                     obj.pe.am.e.source .* -1;   
             
-            obj.ccne.am.e.chargeCont = -div( obj.ccne.j, obj.ccne.Xb);   
+            src = currentSource(t, obj.fv.tUp, obj.fv.tf, obj.J);
             
-            source = currentSource(t, obj.fv.tUp, obj.fv.tf, obj.J);
-            source = (source/sum(dx)).*dx;
-            obj.ccpe.am.e.chargeCont = -div( obj.ccpe.j, obj.ccpe.Xb) + source;   
-                         
+            ccne_src = src/obj.ccne.N;
+            obj.ccne.am.e.chargeCont = -div( obj.ccne.j, obj.ccne.Xb) - ccne_src;   
+            ccpe_src = src/obj.ccpe.N;
+            obj.ccpe.am.e.chargeCont = -div( obj.ccpe.j, obj.ccpe.Xb) + ccpe_src;   
             
             %% State vector %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%             
             obj.soe = vertcat(obj.elyte.sp.Li.massCont, ...

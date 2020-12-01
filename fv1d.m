@@ -48,8 +48,8 @@ classdef fv1d
             % Define finite volume domains, cell sizes, component lengths
             % and number of cells in the mesh
             obj.domnames = names;
-            obj.dXvec    = sizes;
-            obj.Lvec     = lengths;
+            obj.dXvec = sizes;
+            obj.Lvec = lengths;
            
             obj.Nvec    = round(obj.Lvec ./ obj.dXvec);
             obj.N = sum(obj.Nvec);
