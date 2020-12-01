@@ -446,7 +446,7 @@ classdef lithiumIon < handle
             sigmaeff = [pe.sigmaeff; ccpe.sigmaeff];
             Xb       = [pe.Xb      ; ccpe.Xb];
             
-            j = harm(sigmaeff, X, Xb) .* (-1) .* grad(phi, X, 'right', 'dirichlet', 0);
+            j = harm(sigmaeff, X, Xb) .* (-1) .* grad(phi, X, 'right', 'dirichlet', obj.pe.E);
                                     
             obj.pe.j   = j(1 : (pe.N + 1));
             obj.ccpe.j = j((pe.N + 1) + (1 : (ccpe.N + 1)));
