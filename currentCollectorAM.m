@@ -54,17 +54,12 @@ classdef currentCollectorAM < handle
             obj.name = 'current collector';
             
             % Define material constants
-            obj.sigma = 100; % [S m^-1]
-            obj.T = T;      
+            obj.sigma = 500; % [S m^-1]
+            obj.T = T;
             
-            % Update the properties
-            obj.phi = obj.OCP;
         end
         
     end
 end
 
-%% References
-%   [1] Torchio et al, Journal of The Electrochemical Society, 163 (7)
-%   A1192-A1205 (2016), DOI: 10.1149/2.0291607jes
 

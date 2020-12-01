@@ -135,13 +135,13 @@ classdef lithiumIon < handle
             obj.elyte.N = sum(Nvec(2 : 4));
             
             X = obj.fv.X;
-            obj.ne.X     = X(obj.ne.dombin > 0);
-            obj.sep.X    = X(obj.sep.dombin > 0);
-            obj.pe.X     = X(obj.pe.dombin > 0);
+            obj.ne.X  = X(obj.ne.dombin > 0);
+            obj.sep.X = X(obj.sep.dombin > 0);
+            obj.pe.X  = X(obj.pe.dombin > 0);
             elyte_dombin = (obj.ne.dombin > 0) | (obj.sep.dombin > 0) | (obj.pe.dombin > 0);
             obj.elyte.X  = X(elyte_dombin);;
             
-            Xb = obj.fv;
+            Xb = obj.fv.Xb;
             i = 0; di = obj.ccne.N;
             obj.ccne.Xb = Xb(i + (1 : (di + 1)));
             i = i + di; di = obj.ne.N;
@@ -230,87 +230,97 @@ classdef lithiumIon < handle
         function icp2d(obj)
             
             %% Negative electrode properties
+            
             % Temperature
-            obj.ne.am.T             = obj.ne.am.T .* ones(obj.ne.N, 1);
+            obj.ne.am.T = obj.ne.am.T .* ones(obj.ne.N, 1);
             
             % Volume fractions
-                % Solid volume fractions
-            obj.ne.am.eps  = obj.ne.am.eps  .* ones(obj.ne.N, 1);
-            obj.ne.bin.eps = obj.ne.bin.eps .* ones(obj.ne.N, 1);
-            obj.ne.sei.eps = obj.ne.sei.eps .* ones(obj.ne.N, 1);
+            % Solid volume fractions
+            Nne = obj.ne.N;
+            obj.ne.am.eps  = obj.ne.am.eps .* ones(Nne, 1);
+            obj.ne.bin.eps = obj.ne.bin.eps .* ones(Nne, 1);
+            obj.ne.sei.eps = obj.ne.sei.eps .* ones(Nne, 1);
             obj.ne.eps     = obj.ne.am.eps + obj.ne.bin.eps + obj.ne.sei.eps;
             
             % Void volume fraction
-            obj.ne.void             = 1 - obj.ne.eps;
+            obj.ne.void = 1 - obj.ne.eps;
                             
             % SEI thickness
-            obj.ne.sei.t            = obj.ne.sei.t .* ones(obj.ne.N, 1);
+            obj.ne.sei.t = obj.ne.sei.t .* ones(Nne, 1);
             
             % Lithiation
-            obj.ne.am.Li.cs         = obj.ne.am.Li.cs .* ones(obj.ne.N, 1);
-            obj.ne.am.Li.cseps      = obj.ne.am.Li.cs .* obj.ne.am.eps;
-            obj.ne.am.theta         = obj.ne.am.theta .* ones(obj.ne.N, 1);
-            obj.ne.am.SOC           = obj.ne.am.SOC   .* ones(obj.ne.N, 1);
+            obj.ne.am.Li.cs    = obj.ne.am.Li.cs .* ones(Nne, 1);
+            obj.ne.am.Li.cseps = obj.ne.am.Li.cs .* obj.ne.am.eps;
+            obj.ne.am.theta    = obj.ne.am.theta .* ones(Nne, 1);
+            obj.ne.am.SOC      = obj.ne.am.SOC   .* ones(Nne, 1);
             
             % Open-circuit potential
-            obj.ne.am.OCP           = obj.ne.am.OCP .* ones(obj.ne.N, 1);
-            obj.ne.am.phi           = obj.ne.am.OCP;
+            obj.ne.am.OCP = obj.ne.am.OCP .* ones(Nne, 1);
+            obj.ne.am.phi = obj.ne.am.OCP;
             
             % Kinetic Coefficients
-            obj.ne.am.k             = obj.ne.am.k .* ones(obj.ne.N, 1);
+            obj.ne.am.k = obj.ne.am.k .* ones(Nne, 1);
             
             % Transport Coefficients
-            obj.ne.am.Li.D          = obj.ne.am.Li.D .* ones(obj.ne.N, 1);
-            obj.ne.am.Li.Deff       = obj.ne.am.Li.D .* obj.ne.am.eps.^1.5;
+            obj.ne.am.Li.D    = obj.ne.am.Li.D .* ones(Nne, 1);
+            obj.ne.am.Li.Deff = obj.ne.am.Li.D .* obj.ne.am.eps.^1.5;
             
             %% Positive electrode properties
+            
+            Npe = obj.pe.N;
             % Temperature
-            obj.pe.am.T             = obj.pe.am.T .* ones(obj.pe.N, 1);
+            obj.pe.am.T = obj.pe.am.T .* ones(Npe, 1);
             
             % Volume fractions
-                % Solid volume fractions
-            obj.pe.am.eps           = obj.pe.am.eps .* ones(obj.pe.N, 1);
-            obj.pe.bin.eps          = obj.pe.bin.eps .* ones(obj.pe.N, 1);
-            obj.pe.eps              = obj.pe.am.eps ...
-                                    + obj.pe.bin.eps;
-                % Void volume fraction
-            obj.pe.void             = 1 - obj.pe.eps;
+            % Solid volume fractions
+            obj.pe.am.eps  = obj.pe.am.eps .* ones(Npe, 1);
+            obj.pe.bin.eps = obj.pe.bin.eps .* ones(Npe, 1);
+            obj.pe.eps     = obj.pe.am.eps + obj.pe.bin.eps;
+            % Void volume fraction
+            obj.pe.void = 1 - obj.pe.eps;
             
             % Lithiation
-            obj.pe.am.Li.cs         = obj.pe.am.Li.cs .* ones(obj.pe.N, 1);
-            obj.pe.am.Li.cseps      = obj.pe.am.Li.cs .* obj.pe.am.eps;
-            obj.pe.am.theta         = obj.pe.am.theta .* ones(obj.pe.N, 1);
-            obj.pe.am.SOC           = obj.pe.am.SOC .* ones(obj.pe.N, 1);
+            obj.pe.am.Li.cs    = obj.pe.am.Li.cs .* ones(Npe, 1);
+            obj.pe.am.Li.cseps = obj.pe.am.Li.cs .* obj.pe.am.eps;
+            obj.pe.am.theta    = obj.pe.am.theta .* ones(Npe, 1);
+            obj.pe.am.SOC      = obj.pe.am.SOC .* ones(Npe, 1);
             
             % Open-circuit potential
-            obj.pe.am.OCP           = obj.pe.am.OCP .* ones(obj.pe.N, 1);
-            obj.pe.am.phi           = obj.pe.am.OCP;
+            obj.pe.am.OCP = obj.pe.am.OCP .* ones(Npe, 1);
+            obj.pe.am.phi = obj.pe.am.OCP;
             
             % Kinetic Coefficients
-            obj.pe.am.k             = obj.pe.am.k .* ones(obj.pe.N, 1);
+            obj.pe.am.k = obj.pe.am.k .* ones(Npe, 1);
             
             % Transport Coefficients
-            obj.pe.am.Li.D          = obj.pe.am.Li.D .* ones(obj.pe.N, 1);
-            obj.pe.am.Li.Deff       = obj.pe.am.Li.D .* obj.pe.am.eps.^1.5;
+            obj.pe.am.Li.D    = obj.pe.am.Li.D .* ones(Npe, 1);
+            obj.pe.am.Li.Deff = obj.pe.am.Li.D .* obj.pe.am.eps.^1.5;
             
             %% Separator properties
-            obj.sep.eps             = obj.sep.eps .* ones(obj.sep.N, 1);
-            obj.sep.void            = 1 - obj.sep.eps;
+            obj.sep.eps  = obj.sep.eps .* ones(obj.sep.N, 1);
+            obj.sep.void = 1 - obj.sep.eps;
             
             %% Electrolyte properties
-            obj.elyte.eps           = [ obj.ne.void; ...
-                                        obj.sep.void; ...
-                                        obj.pe.void ];
+            obj.elyte.eps = [ obj.ne.void; obj.sep.void; obj.pe.void ];
                             
-            obj.elyte.phi           = zeros(obj.elyte.N, 1);
-            obj.elyte.sp.Li.c       = obj.elyte.sp.Li.c .* ones(obj.elyte.N, 1);
-            obj.elyte.sp.Li.ceps    = obj.elyte.sp.Li.c .* obj.elyte.eps;
-            obj.elyte.T             = obj.elyte.T .* ones(obj.elyte.N, 1);
-            obj.elyte.sp.Li.D       = obj.elyte.sp.Li.D .* ones(obj.elyte.N, 1);
-            obj.elyte.sp.Li.Deff    = obj.elyte.sp.Li.D .* obj.elyte.eps .^1.5;
-            obj.elyte.kappa         = obj.elyte.kappa .* ones(obj.elyte.N, 1);
-            obj.elyte.kappaeff      = obj.elyte.kappa .* obj.elyte.eps .^1.5;
+            obj.elyte.phi        = zeros(obj.elyte.N, 1);
+            obj.elyte.sp.Li.c    = obj.elyte.sp.Li.c .* ones(obj.elyte.N, 1);
+            obj.elyte.sp.Li.ceps = obj.elyte.sp.Li.c .* obj.elyte.eps;
+            obj.elyte.T          = obj.elyte.T .* ones(obj.elyte.N, 1);
+            obj.elyte.sp.Li.D    = obj.elyte.sp.Li.D .* ones(obj.elyte.N, 1);
+            obj.elyte.sp.Li.Deff = obj.elyte.sp.Li.D .* obj.elyte.eps .^1.5;
+            obj.elyte.kappa      = obj.elyte.kappa .* ones(obj.elyte.N, 1);
+            obj.elyte.kappaeff   = obj.elyte.kappa .* obj.elyte.eps .^1.5;
             
+            %% Current collectors
+            Ncne = obj.ccne.N;
+            obj.ccne.am.OCP = obj.pe.am.OCP(1) .* ones(Ncne, 1);
+            obj.ccne.am.phi = obj.ccne.am.OCP;
+            
+            Ncpe = obj.ccpe.N;
+            obj.ccpe.am.OCP = obj.pe.am.OCP(1) .* ones(Ncpe, 1);
+            obj.ccpe.am.phi = obj.ccpe.am.OCP;
+                        
         end
         
         function dynamicPreprocess(obj)
@@ -556,15 +566,15 @@ classdef lithiumIon < handle
             obj.pe.am.Li.massCont = (-obj.pe.am.Li.divDiff + obj.pe.am.Li.source - obj.pe.am.Li.csepsdot);
                                        
             %% Active material charge continuity %%%%%%%%%%%%%%%%%%%%%%%%%%
-            obj.ne.am.e.chargeCont = div(obj.ne.j, obj.ne.Xb) ./ obj.con.F + obj.ne.am.e.source .* -1;
-            obj.pe.am.e.chargeCont = div(obj.pe.j, obj.pe.Xb) ./ obj.con.F + obj.pe.am.e.source .* -1;
+            obj.ne.am.e.chargeCont = div(obj.ne.j, obj.ne.Xb) ./ obj.con.F + obj.ne.am.e.source .* (-1);
+            obj.pe.am.e.chargeCont = div(obj.pe.j, obj.pe.Xb) ./ obj.con.F + obj.pe.am.e.source .* (-1);
             
             src = currentSource(t, fv.tUp, fv.tf, obj.J);
             
-            ccne_src = src/obj.ccne.N;
-            obj.ccne.am.e.chargeCont = div( obj.ccne.j, obj.ccne.Xb) + ccne_src;   
-            ccpe_src = src/obj.ccpe.N;
-            obj.ccpe.am.e.chargeCont = div( obj.ccpe.j, obj.ccpe.Xb) - ccpe_src;   
+            ccne_src = - src/(obj.ccne.N);
+            obj.ccne.am.e.chargeCont = div( obj.ccne.j, obj.ccne.Xb) - ccne_src;
+            ccpe_src = src/(obj.ccpe.N);
+            obj.ccpe.am.e.chargeCont = div( obj.ccpe.j, obj.ccpe.Xb) - ccpe_src;
             
             %% State vector %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%             
             obj.soe = vertcat(obj.elyte.sp.Li.massCont, ...
