@@ -23,12 +23,6 @@ classdef seiAM
             obj.eps = 0;
             obj.t = 0;
         end
-        
-        function outputArg = method1(obj,inputArg)
-            %METHOD1 Summary of this method goes here
-            %   Detailed explanation goes here
-            outputArg = obj.Property1 + inputArg;
-        end
     end
 end
 
