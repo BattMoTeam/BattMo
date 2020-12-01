@@ -14,32 +14,32 @@ rightBCi = find(strcmpi(varargin, 'right'), 1);
     if isempty(varargin) == 1
         conditions = 'adiabatic-adiabatic';
     elseif isempty(leftBCi) == 1 && isempty(rightBCi) == 0
-        if strcmpi(varargin(rightBCi+1), 'dirlichet') == 1
-            conditions = 'adiabatic-dirlichet';
+        if strcmpi(varargin(rightBCi+1), 'dirichlet') == 1
+            conditions = 'adiabatic-dirichlet';
         elseif strcmpi(varargin(rightBCi+1), 'neumann') == 1
             conditions = 'adiabatic-neumann';
         else
-            warning('Unrecognized boundary condition. Please define boundary conditions as either dirlichet or neumann.')
+            warning('Unrecognized boundary condition. Please define boundary conditions as either dirichlet or neumann.')
         end
     elseif isempty(leftBCi) == 0 && isempty(rightBCi) == 1
-        if strcmpi(varargin(leftBCi+1), 'dirlichet') == 1
-            conditions = 'dirlichet-adiabatic';
+        if strcmpi(varargin(leftBCi+1), 'dirichlet') == 1
+            conditions = 'dirichlet-adiabatic';
         elseif strcmpi(varargin(leftBCi+1), 'neumann') == 1
             conditions = 'neumann-adiabatic';
         else
-            warning('Unrecognized boundary condition. Please define boundary conditions as either dirlichet or neumann.')
+            warning('Unrecognized boundary condition. Please define boundary conditions as either dirichlet or neumann.')
         end
     elseif isempty(leftBCi) == 0 && isempty(rightBCi) == 0
-        if strcmpi(varargin(leftBCi+1), 'dirlichet') == 1 && strcmpi(varargin(rightBCi+1), 'dirlichet') == 1
-            conditions = 'dirlichet-dirlichet';
-        elseif strcmpi(varargin(leftBCi+1), 'dirlichet') == 1 && strcmpi(varargin(rightBCi+1), 'neumann') == 1
-            conditions = 'dirlichet-neumann';
-        elseif strcmpi(varargin(leftBCi+1), 'neumann') == 1 && strcmpi(varargin(rightBCi+1), 'dirlichet') == 1
-            conditions = 'neumann-dirlichet';
+        if strcmpi(varargin(leftBCi+1), 'dirichlet') == 1 && strcmpi(varargin(rightBCi+1), 'dirichlet') == 1
+            conditions = 'dirichlet-dirichlet';
+        elseif strcmpi(varargin(leftBCi+1), 'dirichlet') == 1 && strcmpi(varargin(rightBCi+1), 'neumann') == 1
+            conditions = 'dirichlet-neumann';
+        elseif strcmpi(varargin(leftBCi+1), 'neumann') == 1 && strcmpi(varargin(rightBCi+1), 'dirichlet') == 1
+            conditions = 'neumann-dirichlet';
         elseif strcmpi(varargin(leftBCi+1), 'neumann') == 1 && strcmpi(varargin(rightBCi+1), 'neumann') == 1
             conditions = 'neumann-neumann';
         else
-            warning('Unrecognized boundary condition. Please define boundary conditions as either dirlichet or neumann.')
+            warning('Unrecognized boundary condition. Please define boundary conditions as either dirichlet or neumann.')
         end
     end
 
@@ -57,9 +57,9 @@ rightBCi = find(strcmpi(varargin, 'right'), 1);
         
         res = loc_diff(Agrad) ./ diff(Xb); % second derivative
         
-    elseif strcmpi(conditions,'adiabatic-dirlichet') == 1 
-        %% Mixed adiabatic-dirlichet boundry conditions
-        % Dirlichet boundary condition at right boundary
+    elseif strcmpi(conditions,'adiabatic-dirichlet') == 1 
+        %% Mixed adiabatic-dirichlet boundry conditions
+        % Dirichlet boundary condition at right boundary
         yBCR = varargin{rightBCi + 2};
         % Flux over the right boundary
         dXBCR = X(end) - X(end-1);
@@ -91,9 +91,9 @@ rightBCi = find(strcmpi(varargin, 'right'), 1);
         Agrad(end) = NBCR;
         res = loc_diff(Agrad) ./ diff(Xb); % second derivative
 
-    elseif strcmpi(conditions,'dirlichet-adiabatic') == 1 
-        %% Mixed dirlichet-adiabatic boundry conditions
-        % Dirlichet boundary condition at left boundary
+    elseif strcmpi(conditions,'dirichlet-adiabatic') == 1 
+        %% Mixed dirichlet-adiabatic boundry conditions
+        % Dirichlet boundary condition at left boundary
         yBCL = varargin{leftBCi + 2};
         % Flux over the right boundary
         dXBCL = X(2) - X(1);
@@ -125,9 +125,9 @@ rightBCi = find(strcmpi(varargin, 'right'), 1);
         Agrad(1) = NBCL;
         res = loc_diff(Agrad) ./ diff(Xb); % second derivative
 
-    elseif strcmpi(conditions,'dirlichet-neumann') == 1 
-        %% Mixed dirlichet-neumann boundry conditions
-        % Dirlichet boundary condition at left boundary
+    elseif strcmpi(conditions,'dirichlet-neumann') == 1 
+        %% Mixed dirichlet-neumann boundry conditions
+        % Dirichlet boundary condition at left boundary
         yBCL = varargin{leftBCi + 2};
         % Flux over the right boundary
         dXBCL = X(2) - X(1);
@@ -148,9 +148,9 @@ rightBCi = find(strcmpi(varargin, 'right'), 1);
         Agrad(end) = NBCR;
         res = loc_diff(Agrad) ./ diff(Xb); % second derivative
 
-    elseif strcmpi(conditions,'dirlichet-dirlichet') == 1 
-        %% Dirlichet-dirlichet boundry conditions
-        % Dirlichet boundary condition at left boundary
+    elseif strcmpi(conditions,'dirichlet-dirichlet') == 1 
+        %% Dirichlet-dirichlet boundry conditions
+        % Dirichlet boundary condition at left boundary
         yBCL = varargin{leftBCi + 2};
         % Flux over the right boundary
         dXBCL = X(2) - X(1);
@@ -158,7 +158,7 @@ rightBCi = find(strcmpi(varargin, 'right'), 1);
         % Value of A at right boundary
         ABCL = interp1(X,A,X(1)-0.5*dXBCL,'spline','extrap');
 
-        % Dirlichet boundary condition at right boundary
+        % Dirichlet boundary condition at right boundary
         yBCR = varargin{rightBCi + 2};
         % Flux over the right boundary
         dXBCR = X(end) - X(end-1);
@@ -175,12 +175,12 @@ rightBCi = find(strcmpi(varargin, 'right'), 1);
         Agrad = A_boundary.*grad_boundary;
         res = loc_diff(Agrad) ./ diff(Xb); % second derivative
 
-    elseif strcmpi(conditions,'neumann-dirlichet') == 1 
-        %% Mixed neumann-dirlichet boundry conditions
+    elseif strcmpi(conditions,'neumann-dirichlet') == 1 
+        %% Mixed neumann-dirichlet boundry conditions
         % Flux over the left boundary
         NBCL = varargin{leftBCi + 2};
 
-        % Dirlichet boundary condition at right boundary
+        % Dirichlet boundary condition at right boundary
         yBCR = varargin{rightBCi + 2};
         % Flux over the right boundary
         dXBCR = X(end) - X(end-1);

@@ -14,32 +14,32 @@ rightBCi = find(strcmpi(varargin, 'right'), 1);
     if isempty(varargin) == 1
         conditions = 'adiabatic-adiabatic';
     elseif isempty(leftBCi) == 1 && isempty(rightBCi) == 0
-        if strcmpi(varargin(rightBCi+1), 'dirlichet') == 1
-            conditions = 'adiabatic-dirlichet';
+        if strcmpi(varargin(rightBCi+1), 'dirichlet') == 1
+            conditions = 'adiabatic-dirichlet';
         elseif strcmpi(varargin(rightBCi+1), 'neumann') == 1
             conditions = 'adiabatic-neumann';
         else
-            warning('Unrecognized boundary condition. Please define boundary conditions as either dirlichet or neumann.')
+            warning('Unrecognized boundary condition. Please define boundary conditions as either dirichlet or neumann.')
         end
     elseif isempty(leftBCi) == 0 && isempty(rightBCi) == 1
-        if strcmpi(varargin(leftBCi+1), 'dirlichet') == 1
-            conditions = 'dirlichet-adiabatic';
+        if strcmpi(varargin(leftBCi+1), 'dirichlet') == 1
+            conditions = 'dirichlet-adiabatic';
         elseif strcmpi(varargin(leftBCi+1), 'neumann') == 1
             conditions = 'neumann-adiabatic';
         else
-            warning('Unrecognized boundary condition. Please define boundary conditions as either dirlichet or neumann.')
+            warning('Unrecognized boundary condition. Please define boundary conditions as either dirichlet or neumann.')
         end
     elseif isempty(leftBCi) == 0 && isempty(rightBCi) == 0
-        if strcmpi(varargin(leftBCi+1), 'dirlichet') == 1 && strcmpi(varargin(rightBCi+1), 'dirlichet') == 1
-            conditions = 'dirlichet-dirlichet';
-        elseif strcmpi(varargin(leftBCi+1), 'dirlichet') == 1 && strcmpi(varargin(rightBCi+1), 'neumann') == 1
-            conditions = 'dirlichet-neumann';
-        elseif strcmpi(varargin(leftBCi+1), 'neumann') == 1 && strcmpi(varargin(rightBCi+1), 'dirlichet') == 1
-            conditions = 'neumann-dirlichet';
+        if strcmpi(varargin(leftBCi+1), 'dirichlet') == 1 && strcmpi(varargin(rightBCi+1), 'dirichlet') == 1
+            conditions = 'dirichlet-dirichlet';
+        elseif strcmpi(varargin(leftBCi+1), 'dirichlet') == 1 && strcmpi(varargin(rightBCi+1), 'neumann') == 1
+            conditions = 'dirichlet-neumann';
+        elseif strcmpi(varargin(leftBCi+1), 'neumann') == 1 && strcmpi(varargin(rightBCi+1), 'dirichlet') == 1
+            conditions = 'neumann-dirichlet';
         elseif strcmpi(varargin(leftBCi+1), 'neumann') == 1 && strcmpi(varargin(rightBCi+1), 'neumann') == 1
             conditions = 'neumann-neumann';
         else
-            warning('Unrecognized boundary condition. Please define boundary conditions as either dirlichet or neumann.')
+            warning('Unrecognized boundary condition. Please define boundary conditions as either dirichlet or neumann.')
         end
     end
 
