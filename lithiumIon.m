@@ -323,8 +323,7 @@ classdef lithiumIon < handle
                             obj.pe.am.Li.cseps;
                             obj.pe.am.phi;
                             obj.ccne.am.phi;
-                            obj.ccpe.am.phi;
-                            obj.pe.E];
+                            obj.ccpe.am.phi];
             
             %% Inititalize the state time derivative vector
             obj.fv.yp0  = zeros(length(obj.fv.y0), 1);
@@ -347,9 +346,6 @@ classdef lithiumIon < handle
             i = i + di; di = obj.ccpe.N;
             obj.fv.s8   = i + (1 : di);
             
-            i = i + di;
-            obj.fv.s9   = (i + 1);
-            
         end
         
         function dynamicReadState(obj, y, yp, varargin)
@@ -358,7 +354,7 @@ classdef lithiumIon < handle
             opt = merge_options(opt, varargin{:});
             useAD = opt.useAD;
             
-            fv = obj;
+            fv = obj.fv;
             
             if useAD
                 adbackend = obj.AutoDiffBackend();
@@ -373,7 +369,6 @@ classdef lithiumIon < handle
             obj.pe.am.phi        = y(fv.s6);
             obj.ccpe.am.phi      = y(fv.s7);
             obj.ccne.am.phi      = y(fv.s8);
-            obj.pe.E             = y(fv.s9);
             
             obj.elyte.sp.Li.cepsdot = yp(fv.s1);
             obj.ne.am.Li.csepsdot   = yp(fv.s3);
@@ -446,7 +441,7 @@ classdef lithiumIon < handle
             sigmaeff = [pe.sigmaeff; ccpe.sigmaeff];
             Xb       = [pe.Xb      ; ccpe.Xb];
             
-            j = harm(sigmaeff, X, Xb) .* (-1) .* grad(phi, X, 'right', 'dirichlet', obj.pe.E);
+            j = harm(sigmaeff, X, Xb) .* (-1) .* grad(phi, X);
                                     
             obj.pe.j   = j(1 : (pe.N + 1));
             obj.ccpe.j = j((pe.N + 1) + (1 : (ccpe.N + 1)));
@@ -461,18 +456,21 @@ classdef lithiumIon < handle
             opt = struct('useAD', false);
             opt = merge_options(opt, varargin{:});
             useAD = opt.useAD;
+
+            fv = obj.fv;
             
             if useAD
-                adsample = getSampleAD(obj.elyte.sp.Li.ceps, ...    
-                                       obj.elyte.phi, ...           
-                                       obj.ne.am.Li.cseps, ...      
-                                       obj.ne.am.phi, ...           
-                                       obj.pe.am.Li.cseps, ...      
-                                       obj.pe.am.phi, ...           
-                                       obj.pe.E, ...                
+                adsample = getSampleAD(obj.elyte.sp.Li.ceps   , ...    
+                                       obj.elyte.phi          , ...           
+                                       obj.ne.am.Li.cseps     , ...      
+                                       obj.ne.am.phi          , ...           
+                                       obj.pe.am.Li.cseps     , ...      
+                                       obj.pe.am.phi          , ...           
                                        obj.elyte.sp.Li.cepsdot, ... 
-                                       obj.ne.am.Li.csepsdot, ...   
-                                       obj.pe.am.Li.csepsdot);
+                                       obj.ne.am.Li.csepsdot  , ...   
+                                       obj.pe.am.Li.csepsdot  , ...
+                                       obj.ccne.am.phi        , ...
+                                       obj.ccpe.am.phi);
                 adbackend = obj.AutoDiffBackend;
             end
             
@@ -481,7 +479,7 @@ classdef lithiumIon < handle
             %% Source terms for continuity equations                    %%%
             %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
             %   Inititalize vectors
-            obj.elyte.sp.Li.source  = zeros(obj.fv.N, 1);
+            obj.elyte.sp.Li.source  = zeros(fv.N, 1);
             obj.ne.am.Li.source     = zeros(obj.ne.N, 1);
             obj.pe.am.Li.source     = zeros(obj.pe.N, 1);
             obj.ne.am.e.source      = zeros(obj.ne.N, 1);
@@ -526,29 +524,18 @@ classdef lithiumIon < handle
             %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
             % Divergence of diffusion mass flux
             %   Electrolyte Li+ Diffusion
-            obj.elyte.sp.Li.divDiff = divAgrad( obj.elyte.sp.Li.c, ...
-                                                -obj.elyte.sp.Li.Deff, ...
-                                                obj.fv.X, ...
-                                                obj.fv.Xb);  
+            obj.elyte.sp.Li.divDiff = divAgrad( obj.elyte.sp.Li.c, -obj.elyte.sp.Li.Deff, fv.X, fv.Xb);  
             
-            obj.ne.am.Li.divDiff = divAgrad( obj.ne.am.Li.cs, ...
-                                             -obj.ne.am.Li.Deff, ...
-                                             obj.ne.X, ...
-                                             obj.ne.Xb);
-            
-            obj.pe.am.Li.divDiff = divAgrad( obj.pe.am.Li.cs, ...
-                                             -obj.pe.am.Li.Deff, ...
-                                             obj.pe.X, ...
-                                             obj.pe.Xb);
+            obj.ne.am.Li.divDiff = divAgrad( obj.ne.am.Li.cs, -obj.ne.am.Li.Deff, obj.ne.X, obj.ne.Xb);
+            obj.pe.am.Li.divDiff = divAgrad( obj.pe.am.Li.cs, -obj.pe.am.Li.Deff, obj.pe.X, obj.pe.Xb);
             
             %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
             %% Migration Flux                                           %%%
             %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
             % Divergence of the migration mass flux
             %   Electrolyte Li+ Migration
-            obj.elyte.sp.Li.divMig = div( obj.elyte.sp.Li.t ./ (obj.elyte.sp.Li.z .* obj.con.F) ...
-                                          .* obj.elyte.j, ...
-                                          obj.fv.Xb);
+            obj.elyte.sp.Li.divMig = div( obj.elyte.sp.Li.t ./ (obj.elyte.sp.Li.z .* obj.con.F) .* obj.elyte.j, ...
+                                          fv.Xb);
                                             
             %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
             %% System of Equations                                      %%%
@@ -562,26 +549,17 @@ classdef lithiumIon < handle
                                          - obj.elyte.sp.Li.cepsdot); 
            
             %% Liquid electrolyte charge continuity %%%%%%%%%%%%%%%%%%%%%%%
-            obj.elyte.chargeCont = -div(  obj.elyte.j, obj.fv.Xb) ./ obj.con.F + ...
-                                     obj.elyte.sp.Li.source .* obj.elyte.sp.Li.z;       
+            obj.elyte.chargeCont = -div(  obj.elyte.j, fv.Xb) ./ obj.con.F + obj.elyte.sp.Li.source .* obj.elyte.sp.Li.z; ...
                                  
             %% Active material mass continuity %%%%%%%%%%%%%%%%%%%%%%%%%%%
-            obj.ne.am.Li.massCont = (-obj.ne.am.Li.divDiff ...
-                                       + obj.ne.am.Li.source ...
-                                       - obj.ne.am.Li.csepsdot);
-                                   
-            obj.pe.am.Li.massCont = (-obj.pe.am.Li.divDiff ...
-                                           + obj.pe.am.Li.source ...
-                                           - obj.pe.am.Li.csepsdot);
+            obj.ne.am.Li.massCont = (-obj.ne.am.Li.divDiff + obj.ne.am.Li.source - obj.ne.am.Li.csepsdot);
+            obj.pe.am.Li.massCont = (-obj.pe.am.Li.divDiff + obj.pe.am.Li.source - obj.pe.am.Li.csepsdot);
                                        
             %% Active material charge continuity %%%%%%%%%%%%%%%%%%%%%%%%%%
-            obj.ne.am.e.chargeCont = -div( obj.ne.j, obj.ne.Xb) ./ -obj.con.F + ...
-                                    obj.ne.am.e.source .* -1;   
-                                   
-            obj.pe.am.e.chargeCont = -div( obj.pe.j, obj.pe.Xb) ./ -obj.con.F + ...
-                                    obj.pe.am.e.source .* -1;   
+            obj.ne.am.e.chargeCont = div(obj.ne.j, obj.ne.Xb) ./ obj.con.F + obj.ne.am.e.source .* -1;
+            obj.pe.am.e.chargeCont = div(obj.pe.j, obj.pe.Xb) ./ obj.con.F + obj.pe.am.e.source .* -1;
             
-            src = currentSource(t, obj.fv.tUp, obj.fv.tf, obj.J);
+            src = currentSource(t, fv.tUp, fv.tf, obj.J);
             
             ccne_src = src/obj.ccne.N;
             obj.ccne.am.e.chargeCont = div( obj.ccne.j, obj.ccne.Xb) + ccne_src;   
