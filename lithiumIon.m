@@ -622,7 +622,7 @@ classdef lithiumIon < handle
                 disp('Current Density, A/cm2:')
                 disp(-1e-4.*currentSource(t, obj.fv.tUp, obj.fv.tf, obj.J))
                 disp('Cell Voltage, V:')
-                disp(obj.pe.E - obj.ne.E)
+                disp(obj.ccpe.E - obj.ccne.E)
             end
             
             % Read the state vector

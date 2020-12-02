@@ -35,7 +35,7 @@ classdef currentCollector < FvModel
             obj.am.eps = 1;
             
             obj.T = T;
-            obj.t = 1e-6;
+            obj.t = 10e-6;
             
         end
         
