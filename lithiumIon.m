@@ -80,8 +80,8 @@ classdef lithiumIon < handle
             obj.ne    = graphiteElectrode(SOC, T);
             obj.pe    = nmc111Electrode(SOC, T);
             obj.sep   = celgard2500();
-            obj.ccne  = currentCollector();
-            obj.ccpe  = currentCollector();
+            obj.ccne  = currentCollector(T);
+            obj.ccpe  = currentCollector(T);
             obj.elyte = orgLiPF6(1000, T);
             
             obj.OCV  = obj.pe.am.OCP - obj.ne.am.OCP;
@@ -119,7 +119,7 @@ classdef lithiumIon < handle
                             
             obj.fv = fv1d(names, sizes, lengths);
             
-            dombin = obj.fv;
+            dombin = obj.fv.dombin;
             obj.ccne.dombin = dombin{1};
             obj.ne.dombin   = dombin{2};
             obj.sep.dombin  = dombin{3};
@@ -135,9 +135,11 @@ classdef lithiumIon < handle
             obj.elyte.N = sum(Nvec(2 : 4));
             
             X = obj.fv.X;
-            obj.ne.X  = X(obj.ne.dombin > 0);
-            obj.sep.X = X(obj.sep.dombin > 0);
-            obj.pe.X  = X(obj.pe.dombin > 0);
+            obj.ccne.X = X(obj.ccne.dombin > 0);
+            obj.ne.X   = X(obj.ne.dombin > 0);
+            obj.sep.X  = X(obj.sep.dombin > 0);
+            obj.pe.X   = X(obj.pe.dombin > 0);
+            obj.ccpe.X = X(obj.ccpe.dombin > 0);
             elyte_dombin = (obj.ne.dombin > 0) | (obj.sep.dombin > 0) | (obj.pe.dombin > 0);
             obj.elyte.X  = X(elyte_dombin);;
             
@@ -155,7 +157,7 @@ classdef lithiumIon < handle
             
             i = obj.ccne.N;
             di = obj.ne.N + obj.sep.N + obj.pe.N;
-            obj.elyte.Xb = Xb(i + (1 : (di + 1));
+            obj.elyte.Xb = Xb(i + (1 : (di + 1)));
             
             % Perform manual mesh check
             if strcmpi(obj.check, 'on')==1
@@ -184,11 +186,10 @@ classdef lithiumIon < handle
             % Pre-process
             obj.dynamicPreprocess();
 
-            % Solve the system of equations
-            endFun = @(t,y,yp)obj.cutOff(t,y,yp);
-            
-            fun = @(t,y,yp) obj.odefun(t, y, yp);
-            derfun = @(t,y,yp) obj.odederfun(t, y, yp);           
+            % Set up and solve the system of equations
+            endFun = @(t,y,yp) obj.cutOff(t,y,yp);
+            fun    = @(t,y,yp) obj.odefun(t, y, yp);
+            derfun = @(t,y,yp) obj.odederfun(t, y, yp);
 
             options = odeset('RelTol'  , 1e-4  , ...
                              'AbsTol'  , 1e-6  , ... 
@@ -198,7 +199,8 @@ classdef lithiumIon < handle
             
             [t, y] = ode15i(fun, obj.fv.tSpan', obj.fv.y0, obj.fv.yp0, options);
                 
-            doplot = false;
+            doplot = true;
+            dosave = false;
             if doplot
                 resultname = 'test';
                 path = 'C:\Users\simonc\Documents\01_Projects\Electrochemical Modelling Toolbox\Batteries\';
@@ -206,8 +208,9 @@ classdef lithiumIon < handle
                 hrmin = clock();
                 hr = num2str(hrmin(4));
                 min = num2str(hrmin(5));
-                save([path, resultname, '-', day,'-', hr,'h', min,'m','.mat']);
-                
+                if dosave
+                    save([path, resultname, '-', day,'-', hr,'h', min,'m','.mat']);
+                end
                 if strcmpi(obj.display, 'final')
                     obj.plotSummary(t,y);
                 end
@@ -316,11 +319,12 @@ classdef lithiumIon < handle
             Ncne = obj.ccne.N;
             obj.ccne.am.OCP = obj.pe.am.OCP(1) .* ones(Ncne, 1);
             obj.ccne.am.phi = obj.ccne.am.OCP;
+            obj.ccne.am.eps = obj.ccne.am.eps .* ones(Ncne, 1);
             
             Ncpe = obj.ccpe.N;
             obj.ccpe.am.OCP = obj.pe.am.OCP(1) .* ones(Ncpe, 1);
             obj.ccpe.am.phi = obj.ccpe.am.OCP;
-                        
+            obj.ccpe.am.eps = obj.ccpe.am.eps .* ones(Ncpe, 1);
         end
         
         function dynamicPreprocess(obj)
@@ -339,7 +343,7 @@ classdef lithiumIon < handle
             obj.fv.yp0  = zeros(length(obj.fv.y0), 1);
             
             %% Store state slots
-            i = 0; di = obj.elyte.N
+            i = 0; di = obj.elyte.N;
             obj.fv.s1   = i + (1 : di);
             i = i + di; di = obj.elyte.N;
             obj.fv.s2   = i + (1 : di);
@@ -402,8 +406,10 @@ classdef lithiumIon < handle
             obj.pe.am.update()
             obj.pe.am.Li.Deff = obj.pe.am.Li.D .* obj.pe.am.eps.^1.5;
             obj.pe.sigmaeff   = obj.pe.am.sigma .* obj.pe.am.eps.^1.5;
-            
-            
+
+            obj.ccne.sigmaeff = obj.ccne.am.sigma .* obj.ccne.am.eps.^1.5;
+            obj.ccpe.sigmaeff = obj.ccpe.am.sigma .* obj.ccpe.am.eps.^1.5;
+                        
             %% Ionic current density   
             % Ionic current density in the liquid
             %   Ionic current density due to the chemical potential gradient
@@ -411,11 +417,12 @@ classdef lithiumIon < handle
             ncomp = obj.elyte.ncomp;
             
             jchems = cell(ncomp, 1);
+            X = obj.elyte.X;
+            Xb = obj.elyte.Xb;
             for i = 1 : ncomp
                 jchems{i} = zeros(N + 1, 1);         
                 jchems{i} = harm(obj.elyte.kappaeff .* obj.elyte.ion.tvec{i} .* obj.elyte.ion.dmudc{i} ./ ...
-                                 (obj.elyte.ion.zvec{i}.*obj.con.F), fv.X, fv.Xb) .* grad(obj.elyte.ion.cvec{i}, ...
-                                                                  fv.X);
+                                 (obj.elyte.ion.zvec{i}.*obj.con.F), X, Xb) .* grad(obj.elyte.ion.cvec{i}, X);
             end
             obj.elyte.jchem = jchems{1};
             for i = 2 : ncomp
@@ -423,7 +430,7 @@ classdef lithiumIon < handle
             
             end
             %   Ionic current density due to the electrochemical potential gradient
-            obj.elyte.j = harm(obj.elyte.kappaeff, fv.X, fv.Xb).*(-1).*grad(obj.elyte.phi, fv.X) - obj.elyte.jchem;
+            obj.elyte.j = harm(obj.elyte.kappaeff, X, Xb).*(-1).*grad(obj.elyte.phi, X) - obj.elyte.jchem;
                 
             
             %% Electric current density
@@ -433,9 +440,9 @@ classdef lithiumIon < handle
             ccne = obj.ccne;
             ne   = obj.ne;
             phi      = [ccne.am.phi  ; ne.am.phi];
-            X        = [ccne.X       ; ne.X]
+            X        = [ccne.X       ; ne.X];
             sigmaeff = [ccne.sigmaeff; ne.sigmaeff];
-            Xb       = [ccne.Xb      ; ne.Xb];
+            Xb       = [ccne.Xb      ; ne.Xb(2 : end)];
             
             j = harm(sigmaeff, X, Xb) .* (-1) .* grad(phi, X, 'left', 'dirichlet', 0);
             
@@ -447,14 +454,14 @@ classdef lithiumIon < handle
             ccpe = obj.ccpe;
             pe   = obj.pe;
             phi      = [pe.am.phi  ; ccpe.am.phi];
-            X        = [pe.X       ; ccpe.X]
+            X        = [pe.X       ; ccpe.X];
             sigmaeff = [pe.sigmaeff; ccpe.sigmaeff];
-            Xb       = [pe.Xb      ; ccpe.Xb];
+            Xb       = [pe.Xb      ; ccpe.Xb(2 : end)];
             
             j = harm(sigmaeff, X, Xb) .* (-1) .* grad(phi, X);
                                     
             obj.pe.j   = j(1 : (pe.N + 1));
-            obj.ccpe.j = j((pe.N + 1) + (1 : (ccpe.N + 1)));
+            obj.ccpe.j = j(pe.N + (1 : (ccpe.N + 1)));
             
             %% Cell voltage
             obj.U = obj.pe.E - obj.ne.E;
@@ -489,7 +496,7 @@ classdef lithiumIon < handle
             %% Source terms for continuity equations                    %%%
             %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
             %   Inititalize vectors
-            obj.elyte.sp.Li.source  = zeros(fv.N, 1);
+            obj.elyte.sp.Li.source  = zeros(obj.elyte.N, 1);
             obj.ne.am.Li.source     = zeros(obj.ne.N, 1);
             obj.pe.am.Li.source     = zeros(obj.pe.N, 1);
             obj.ne.am.e.source      = zeros(obj.ne.N, 1);
@@ -534,7 +541,7 @@ classdef lithiumIon < handle
             %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
             % Divergence of diffusion mass flux
             %   Electrolyte Li+ Diffusion
-            obj.elyte.sp.Li.divDiff = divAgrad( obj.elyte.sp.Li.c, -obj.elyte.sp.Li.Deff, fv.X, fv.Xb);  
+            obj.elyte.sp.Li.divDiff = divAgrad( obj.elyte.sp.Li.c, -obj.elyte.sp.Li.Deff, obj.elyte.X, obj.elyte.Xb);  
             
             obj.ne.am.Li.divDiff = divAgrad( obj.ne.am.Li.cs, -obj.ne.am.Li.Deff, obj.ne.X, obj.ne.Xb);
             obj.pe.am.Li.divDiff = divAgrad( obj.pe.am.Li.cs, -obj.pe.am.Li.Deff, obj.pe.X, obj.pe.Xb);
@@ -545,7 +552,7 @@ classdef lithiumIon < handle
             % Divergence of the migration mass flux
             %   Electrolyte Li+ Migration
             obj.elyte.sp.Li.divMig = div( obj.elyte.sp.Li.t ./ (obj.elyte.sp.Li.z .* obj.con.F) .* obj.elyte.j, ...
-                                          fv.Xb);
+                                          obj.elyte.Xb);
                                             
             %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
             %% System of Equations                                      %%%
@@ -559,7 +566,7 @@ classdef lithiumIon < handle
                                          - obj.elyte.sp.Li.cepsdot); 
            
             %% Liquid electrolyte charge continuity %%%%%%%%%%%%%%%%%%%%%%%
-            obj.elyte.chargeCont = -div(  obj.elyte.j, fv.Xb) ./ obj.con.F + obj.elyte.sp.Li.source .* obj.elyte.sp.Li.z; ...
+            obj.elyte.chargeCont = -div(  obj.elyte.j, obj.elyte.Xb) ./ obj.con.F + obj.elyte.sp.Li.source .* obj.elyte.sp.Li.z; ...
                                  
             %% Active material mass continuity %%%%%%%%%%%%%%%%%%%%%%%%%%%
             obj.ne.am.Li.massCont = (-obj.ne.am.Li.divDiff + obj.ne.am.Li.source - obj.ne.am.Li.csepsdot);
@@ -583,8 +590,8 @@ classdef lithiumIon < handle
                               obj.ne.am.e.chargeCont  , ...
                               obj.pe.am.Li.massCont   , ...
                               obj.pe.am.e.chargeCont  , ...
-                              obj.cpne.am.e.chargeCont, ...
-                              obj.cppe.am.e.chargeCont);
+                              obj.ccne.am.e.chargeCont, ...
+                              obj.ccpe.am.e.chargeCont);
 
         end
         

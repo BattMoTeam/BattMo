@@ -8,17 +8,17 @@ classdef currentCollector < FvModel
         con = physicalConstants();
         
         % Design properties
-        t       % Thickness,        [m]
+        t % Thickness,        [m]
         
         % Material properties
         am % Active material object
         
         % State properties
-        E % Electric potential,   [V]
         j % Current density,      [A/m2]
         T % Temperature
+        sigmaeff % effective solid conductivity
         
-        % Mesh properties
+        % Mesh properties (setup before simulation) s
         X
         Xb
         N
@@ -26,35 +26,16 @@ classdef currentCollector < FvModel
                 
     end
     
-    method
+    methods
         function obj = currentCollector(T)
             
             obj.am  = currentCollectorAM(T);
-            
             obj.am.eps = 1;
             
-            obj.eps = 1;
-            
+            obj.T = T;
             obj.t = 88e-6;
             
-            obj.T = T;
-            
-            obj.thermodynamics()
-            obj.E = obj.am.OCP;
         end
-        
-        function thermodynamics(obj)
-            %THERMODYNAMICS Summary of this method goes here
-            %   Detailed explanation goes here
-           
-            
-            % Electrochemical Thermodynamics
-            obj.am.equilibrium();
-            
-            
-        end
-        
-
         
     end
 end

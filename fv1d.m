@@ -51,7 +51,7 @@ classdef fv1d
             obj.dXvec = sizes;
             obj.Lvec = lengths;
            
-            obj.Nvec    = round(obj.Lvec ./ obj.dXvec);
+            obj.Nvec = round(obj.Lvec ./ obj.dXvec);
             obj.N = sum(obj.Nvec);
                         
             % Build FV size vector

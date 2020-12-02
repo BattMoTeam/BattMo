@@ -19,6 +19,7 @@ classdef graphiteElectrode < FvModel
         sei     % Solid-electrolyte interphase (SEI) object
         elyte   % Liquid electrolyte data structure
         
+        % Effective conductivity
         sigmaeff
         
         % State properties
@@ -28,7 +29,7 @@ classdef graphiteElectrode < FvModel
         R       % Reaction Rate
         T       % Temperature
         
-        % Mesh properties
+        % Mesh properties (updated before simulation)
         X
         Xb
         N
