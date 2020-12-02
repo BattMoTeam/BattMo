@@ -16,6 +16,8 @@ classdef currentCollector < FvModel
         % State properties
         j % Current density,      [A/m2]
         T % Temperature
+        E % Potential at the end of collector
+        
         sigmaeff % effective solid conductivity
         
         % Mesh properties (setup before simulation) s

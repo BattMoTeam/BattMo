@@ -198,7 +198,8 @@ classdef lithiumIon < handle
                              'Jacobian', derfun);
             
             [t, y] = ode15i(fun, obj.fv.tSpan', obj.fv.y0, obj.fv.yp0, options);
-                
+           
+            
             doplot = true;
             dosave = false;
             if doplot
@@ -343,20 +344,28 @@ classdef lithiumIon < handle
             obj.fv.yp0  = zeros(length(obj.fv.y0), 1);
             
             %% Store state slots
+            % s1 : obj.elyte.sp.Li.ceps
             i = 0; di = obj.elyte.N;
             obj.fv.s1   = i + (1 : di);
+            % s2 : obj.elyte.phi
             i = i + di; di = obj.elyte.N;
             obj.fv.s2   = i + (1 : di);
+            % s3 : obj.ne.am.Li.cseps
             i = i + di; di = obj.ne.N;
             obj.fv.s3   = i + (1 : di);
+            % s4 : obj.ne.am.phi
             i = i + di; di = obj.ne.N;
             obj.fv.s4   = i + (1 : di);
+            % s5 : obj.pe.am.Li.cseps
             i = i + di; di = obj.pe.N;
             obj.fv.s5   = i + (1 : di);
+            % s6 : obj.pe.am.phi
             i = i + di; di = obj.pe.N;
             obj.fv.s6   = i + (1 : di);
+            % s7 : obj.ccne.am.phi
             i = i + di; di = obj.ccne.N;
             obj.fv.s7   = i + (1 : di);
+            % s8 : obj.ccpe.am.phi
             i = i + di; di = obj.ccpe.N;
             obj.fv.s8   = i + (1 : di);
             
@@ -464,7 +473,9 @@ classdef lithiumIon < handle
             obj.ccpe.j = j(pe.N + (1 : (ccpe.N + 1)));
             
             %% Cell voltage
-            obj.U = obj.pe.E - obj.ne.E;
+            obj.ccpe.E = obj.ccpe.am.phi(end);
+            obj.ccne.E = 0;            
+            obj.U = obj.ccpe.E - obj.ccne.E;
             
         end
         
@@ -718,7 +729,7 @@ classdef lithiumIon < handle
             
         end
         
-        function plotSummary(obj,t,y,varargin)
+        function plotSummary(obj, t, y, varargin)
             
             close all
             
@@ -729,58 +740,60 @@ classdef lithiumIon < handle
                 idt = length(t);
             end
             
-          figure(1), plot(t./3600, y(:,end)-obj.ne.E, 'LineWidth', 5) 
-           ylim([2, 4.2])
-           xlabel('Time  /  h')
-           ylabel('Cell Voltage  /  V')
-           eval(obj.style.name)
-           
-           figure(2)
-           subplot(2,3,1:3), plot(obj.fv.X.*1e3, 1e-3.*y(idt, obj.fv.s1)./obj.elyte.eps', 'LineWidth', 5)
-                xlabel('Position  /  mm')
-                ylabel('LiPF_6 Conc.  /  mol\cdotL^{-1}')
-                eval([obj.style.name, '("subplot")'])
-                set(gca, 'FontSize', 14)
-                
+            Epe = y(:, obj.fv.s8);
+            Epe = Epe(:, end);
+            figure(1), plot(t./3600, Epe -obj.ne.E, 'LineWidth', 5) 
+            ylim([2, 4.2])
+            xlabel('Time  /  h')
+            ylabel('Cell Voltage  /  V')
+            eval(obj.style.name)
+            
+            figure(2)
+            subplot(2,3,1:3), plot(obj.elyte.X.*1e3, 1e-3.*y(idt, obj.fv.s1)./obj.elyte.eps', 'LineWidth', 5)
+            xlabel('Position  /  mm')
+            ylabel('LiPF_6 Conc.  /  mol\cdotL^{-1}')
+            eval([obj.style.name, '("subplot")'])
+            set(gca, 'FontSize', 14)
+            
             subplot(2,3,4), plot(obj.ne.X.*1e3, y(idt, obj.fv.s3)./obj.ne.am.eps' ./ obj.ne.am.Li.cmax, 'LineWidth', 5)
-                xlabel('Position  /  mm')
-                %ylabel('Li Conc.  /  mol\cdotL^{-1}')
-                eval([obj.style.name, '("subplot")'])
-                set(gca, 'FontSize', 14)
-                
+            xlabel('Position  /  mm')
+            %ylabel('Li Conc.  /  mol\cdotL^{-1}')
+            eval([obj.style.name, '("subplot")'])
+            set(gca, 'FontSize', 14)
+            
             subplot(2,3,6), plot(obj.pe.X.*1e3, y(idt, obj.fv.s5)./obj.pe.am.eps'./ obj.pe.am.Li.cmax, 'LineWidth', 5)
-                xlabel('Position  /  mm')
-                %ylabel('Li Conc.  /  mol\cdotL^{-1}')
-                eval([obj.style.name, '("subplot")'])
-                set(gca, 'FontSize', 14)
-                
+            xlabel('Position  /  mm')
+            %ylabel('Li Conc.  /  mol\cdotL^{-1}')
+            eval([obj.style.name, '("subplot")'])
+            set(gca, 'FontSize', 14)
+            
             figure(3)
-           subplot(2,3,1:3), plot(obj.fv.X.*1e3, y(idt, obj.fv.s2), 'LineWidth', 5)
-                xlabel('Position  /  mm')
-                ylabel('Electric Potential  /  V')
-                eval([obj.style.name, '("subplot")'])
-                set(gca, 'FontSize', 14)
-                
+            subplot(2,3,1:3), plot(obj.elyte.X.*1e3, y(idt, obj.fv.s2), 'LineWidth', 5)
+            xlabel('Position  /  mm')
+            ylabel('Electric Potential  /  V')
+            eval([obj.style.name, '("subplot")'])
+            set(gca, 'FontSize', 14)
+            
             subplot(2,3,4), plot(obj.ne.X.*1e3, y(idt, obj.fv.s4), 'LineWidth', 5)
-                xlabel('Position  /  mm')
-                %ylabel('Li Conc.  /  mol\cdotL^{-1}')
-                eval([obj.style.name, '("subplot")'])
-                set(gca, 'FontSize', 14)
-                
+            xlabel('Position  /  mm')
+            %ylabel('Li Conc.  /  mol\cdotL^{-1}')
+            eval([obj.style.name, '("subplot")'])
+            set(gca, 'FontSize', 14)
+            
             subplot(2,3,6), plot(obj.pe.X.*1e3, y(idt, obj.fv.s6), 'LineWidth', 5)
-                xlabel('Position  /  mm')
-                %ylabel('Li Conc.  /  mol\cdotL^{-1}')
-                eval([obj.style.name, '("subplot")'])
-                set(gca, 'FontSize', 14)
-           
+            xlabel('Position  /  mm')
+            %ylabel('Li Conc.  /  mol\cdotL^{-1}')
+            eval([obj.style.name, '("subplot")'])
+            set(gca, 'FontSize', 14)
+            
             
         end
         
         function figureWindow(obj,font)
             figure()
             set(gca,'FontSize',28, ...
-                'color',obj.style.background, ...
-                'ColorOrder', obj.style.palette.discrete)
+                    'color',obj.style.background, ...
+                    'ColorOrder', obj.style.palette.discrete)
             ax = gca;
             ax.XColor = 'w';
             ax.YColor = 'w';
