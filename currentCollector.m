@@ -31,11 +31,11 @@ classdef currentCollector < FvModel
     methods
         function obj = currentCollector(T)
             
-            obj.am  = currentCollectorAM(T);
+            obj.am = currentCollectorAM(T);
             obj.am.eps = 1;
             
             obj.T = T;
-            obj.t = 88e-6;
+            obj.t = 1e-6;
             
         end
         
