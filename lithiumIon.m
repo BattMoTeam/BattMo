@@ -390,8 +390,8 @@ classdef lithiumIon < handle
             obj.ne.am.phi        = y(fv.s4);
             obj.pe.am.Li.cseps   = y(fv.s5);
             obj.pe.am.phi        = y(fv.s6);
-            obj.ccpe.am.phi      = y(fv.s7);
-            obj.ccne.am.phi      = y(fv.s8);
+            obj.ccne.am.phi      = y(fv.s7);
+            obj.ccpe.am.phi      = y(fv.s8);
             
             obj.elyte.sp.Li.cepsdot = yp(fv.s1);
             obj.ne.am.Li.csepsdot   = yp(fv.s3);
