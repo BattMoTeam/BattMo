@@ -167,27 +167,28 @@ classdef lithiumIonADGrid < handle
             obj.elyte.Xb = Xb(i + (1 : (di + 1)));
             
             obj.icp2d();
-            ff={'ne','sep','pe','elyte'};
-            for i=1:numel(ff)
-                dd=ff{i};
-                obj.(dd).Grid = cartGrid([obj.(dd).N],[max(obj.(dd).Xb)-min(obj.(dd).Xb)]);
-                obj.(dd).Grid.nodes.coords(:,1)=obj.(dd).Grid.nodes.coords(:,1)+min(obj.(dd).Xb);
-                obj.(dd).Grid = computeGeometry(obj.(dd).Grid);
-                rock = struct('perm',ones(obj.(dd).Grid.cells.num,1),'poro',ones(obj.(dd).Grid.cells.num,1));
-                obj.(dd).operators = setupOperatorsTPFA(obj.(dd).Grid,rock);
-                obj.(dd).operators.allDiv = getAllDiv(obj.(dd).Grid);
-                %a =getTwoPointOperator(obj.(dd).Grid)
-                %b=getHarmonicAvgOpeartor(obj.(dd).Grid)
-                %obj.(dd).operators.harmFace =@(cvalue) b(a(cvalue));
-                obj.(dd).operators.harmFace = getFaceHarmMean(obj.(dd).Grid);
-                obj.(dd).operators.harmFaceBC =@(cvalue,faces) getFaceHarmBC(obj.(dd).Grid,cvalue,faces);
+            
+            ff={'ne','sep','pe','elyte', 'ccne', 'ccpe'};
+            for i = 1:numel(ff)
+                dd = ff{i}; 
+                obj.(dd).Grid = cartGrid([obj.(dd).N], [max(obj.(dd).Xb) - min(obj.(dd).Xb)]); 
+                obj.(dd).Grid.nodes.coords(:, 1) = obj.(dd).Grid.nodes.coords(:, 1) + min(obj.(dd).Xb); 
+                obj.(dd).Grid = computeGeometry(obj.(dd).Grid); 
+                % We use MRST to setup discrete differential operators (Div and Grad).
+                cst = ones(obj.(dd).Grid.cells.num, 1);
+                rock = struct('perm', cst, 'poro', cst); 
+                obj.(dd).operators = setupOperatorsTPFA(obj.(dd).Grid, rock); 
+                obj.(dd).operators.allDiv = getAllDiv(obj.(dd).Grid); 
+                obj.(dd).operators.harmFace = getFaceHarmMean(obj.(dd).Grid); 
+                obj.(dd).operators.harmFaceBC = @(cvalue, faces) getFaceHarmBC(obj.(dd).Grid, cvalue, faces); 
             end
+            
             % Set initial conditions
             obj.icp2d();
-            %% Is this constant?obj.elyte.sp.Li.Deff
-
             
-            obj.elyte.sp.Li.Trans =  obj.elyte.operators.harmFace(obj.elyte.sp.Li.Deff);
+            %% Is this constant? obj.elyte.sp.Li.Deff
+            
+            obj.elyte.sp.Li.Trans = obj.elyte.operators.harmFace(obj.elyte.sp.Li.Deff);
             obj.ne.am.Li.Trans = obj.ne.operators.harmFace(obj.ne.am.Li.Deff);
             obj.pe.am.Li.Trans = obj.pe.operators.harmFace(obj.pe.am.Li.Deff);
             
@@ -462,7 +463,6 @@ classdef lithiumIonADGrid < handle
             obj.elyte.jchem = jchems{1};
             for i = 2 : ncomp
                 obj.elyte.jchem = obj.elyte.jchem + jchems{i};
-            
             end
             %   Ionic current density due to the electrochemical potential gradient
             obj.elyte.j = obj.elyte.operators.harmFace(obj.elyte.kappaeff).*(-1).*obj.elyte.operators.Grad(obj.elyte.phi) - obj.elyte.jchem;
@@ -470,29 +470,64 @@ classdef lithiumIonADGrid < handle
             %% Electric current density
             % Active material NE
 
-            obj.ne.j =  obj.ne.operators.harmFace(obj.ne.sigmaeff) ...
-                            .* (-1) .* obj.ne.operators.Grad(obj.ne.am.phi);
-               
-            %% FIX THAT
-            % add bc
-             faceleft=1;
-               bcLeft = 0;
-               [t,cells] = obj.ne.operators.harmFaceBC(obj.ne.sigmaeff,faceleft)
-               obj.ne.j_bcsource = obj.ne.am.phi*0.0;%NB hack to initialize zero ad
-               obj.ne.j_bcsource(cells) =  t.*(bcLeft-obj.ne.am.phi(cells));
-                                    
-                % Active material PE                 
-               obj.pe.j = obj.pe.operators.harmFace(obj.pe.sigmaeff)...
-                            .* (-1) .* obj.pe.operators.Grad(obj.pe.am.phi);
-               %ad bc
-               faceright=obj.pe.Grid.faces.num;
-               bcRight = obj.pe.E;
-               [t,cells] = obj.pe.operators.harmFaceBC(obj.pe.sigmaeff,faceright);
-               obj.pe.j_bcsource = obj.pe.am.phi*0.0;%NB hack to initialize zero ad
-               obj.pe.j_bcsource(cells) =  t.*(bcRight-obj.pe.am.phi(cells));                       
+            ccne = obj.ccne;
+            ne   = obj.ne;
+            
+            obj.ne.j =  ne.operators.harmFace(ne.sigmaeff) .* (-1) .* ne.operators.Grad(ne.am.phi);
+            obj.ccne.j =  ccne.operators.harmFace(ccne.sigmaeff) .* (-1) .* ccne.operators.Grad(ccne.am.phi);
+            
+            % Add current transfers between ccne collector and ne material. They correspond to flux continuity
+            face_ne = 1;
+            face_ccne = ccne.Grid.faces.num;
+            [tne, bccell_ne] = ne.operators.harmFaceBC(ne.sigmaeff, face_ne);
+            [tccne, bccellcc_ne] = ne.operators.harmFaceBC(ne.sigmaeff, face_ccne);
+            bcphi_ne = ne.am.phi(bccell_ne);
+            bcphi_ccne = ne.am.phi(bccell_ccne);
+            
+            obj.ne.j_bcsource   = ne.am.phi*0.0; %NB hack to initialize zero ad
+            obj.ccne.j_bcsource = ccne.am.phi*0.0; %NB hack to initialize zero ad
+            
+            t = 2./(1./tne + 1./tccne);
+            crosscurrent = t.*(bcphi_ccne - bcphi_ccne);
+            warning('check sign');
+            obj.ne.j_bcsource(bccell_ne) = crosscurrent;
+            obj.ccne.j_bcsource(bccell_ccne) = -crosscurrent;
+            
+            % We impose the boundary condition at some of the boundary cells of the anode current collector
+            faceleft = 1; 
+            bcLeft = 0; 
+            [t, cells] = obj.ccne.operators.harmFaceBC(obj.ccne.sigmaeff, faceleft)
+            obj.ccne.j_bcsource(cells) = obj.ccne.j_bcsource(cells) + t.*(bcLeft - obj.ccne.am.phi(cells));
+            
+            % Active material PE and current collector                        
+            
+            ccpe = obj.ccpe;
+            pe   = obj.pe;
+            
+            obj.pe.j =  pe.operators.harmFace(pe.sigmaeff) .* (-1) .* pe.operators.Grad(pe.am.phi);
+            obj.ccpe.j =  ccpe.operators.harmFace(ccpe.sigmaeff) .* (-1) .* ccpe.operators.Grad(ccpe.am.phi);
+            
+            % Add current transfers between ccne collector and ne material. They correspond to flux continuity
+            face_pe = 1;
+            face_ccpe = ccpe.Grid.faces.num;
+            [tpe, bccell_pe] = pe.operators.harmFaceBC(pe.sigmaeff, face_pe);
+            [tccpe, bccellcc_pe] = pe.operators.harmFaceBC(pe.sigmaeff, face_ccpe);
+            bcphi_pe = pe.am.phi(bccell_pe);
+            bcphi_ccpe = pe.am.phi(bccell_ccpe);
+            
+            obj.pe.j_bcsource   = pe.am.phi*0.0; %NB hack to initialize zero ad
+            obj.ccpe.j_bcsource = ccpe.am.phi*0.0; %NB hack to initialize zero ad
+            
+            t = 2./(1./tpe + 1./tccpe);
+            crosscurrent = t.*(bcphi_ccpe - bcphi_ccpe);
+            obj.pe.j_bcsource(bccell_pe) = crosscurrent;
+            obj.ccpe.j_bcsource(bccell_ccpe) = -crosscurrent;
             
             %% Cell voltage
-            obj.U = obj.pe.E - obj.ne.E;
+            obj.ccpe.E = obj.ccpe.am.phi(end);
+            obj.ccne.E = 0;            
+            obj.U = obj.ccpe.E - obj.ccne.E;
+            
         end
         
         function dynamicBuildSOE(obj, t, varargin)
@@ -523,6 +558,7 @@ classdef lithiumIonADGrid < handle
             %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
             %% Source terms for continuity equations                    %%%
             %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+            
             %   Inititalize vectors
             obj.elyte.sp.Li.source  = zeros(obj.elyte.N, 1);
             obj.ne.am.Li.source     = zeros(obj.ne.N, 1);
@@ -540,19 +576,21 @@ classdef lithiumIonADGrid < handle
             
             % Calculate reaction rates
             
-            %% FIX THAT
-            from = 1:obj.ne.N;
-            to = 1:obj.ne.N;% not it is all
-            elyte_ne=struct('from',from,'to',to);
-            from = (obj.ne.N + obj.sep.N + 1):obj.elyte.N;
-            to = 1:obj.pe.N;% now it is all
-            elyte_pe=struct('from',from,'to',to);
+            % Set up cell mappings from electrolyte to anode
+            from = 1 : obj.ne.N; 
+            to = 1 : obj.ne.N; % now it is all
+            elyte_ne = struct('from', from, 'to', to); 
             
+            % Set up cell mappings from electrolyte to anode
+            from = (obj.ne.N + obj.sep.N + 1) : obj.elyte.N; 
+            to = 1 : obj.pe.N; % now it is all
+            elyte_pe = struct('from', from, 'to', to);
             
+            % Update reaction values
             obj.ne.reactBV(obj.elyte.phi(elyte_ne.from));
             obj.pe.reactBV(obj.elyte.phi(elyte_pe.from));
             
-            % Set source terms            
+            % Set up chemical source terms            
             %%%%% Li+ Sources %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
             % Electrolyte NE Li+ source
             obj.elyte.sp.Li.source(elyte_ne.from) = +1 .* obj.ne.R;
@@ -578,21 +616,19 @@ classdef lithiumIonADGrid < handle
             %% Diffusion Flux                                           %%%
             %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
             % Divergence of diffusion mass flux
-            %   Electrolyte Li+ Diffusion
-            %%
+            % Electrolyte Li+ Diffusion
+            
             x = obj.elyte.sp.Li.c;
             flux = - obj.elyte.sp.Li.Trans.*obj.elyte.operators.Grad(x);
-            obj.elyte.sp.Li.divDiff=  obj.elyte.operators.Div(flux)./obj.elyte.Grid.cells.volumes;
+            obj.elyte.sp.Li.divDiff = obj.elyte.operators.Div(flux)./obj.elyte.Grid.cells.volumes;
             
-            %%
             x= obj.ne.am.Li.cs;
             flux = - obj.ne.am.Li.Trans.*obj.ne.operators.Grad(x);
-            obj.ne.am.Li.divDiff=  obj.ne.operators.Div(flux)./obj.ne.Grid.cells.volumes;
+            obj.ne.am.Li.divDiff =  obj.ne.operators.Div(flux)./obj.ne.Grid.cells.volumes;
             
-            %%
             x = obj.pe.am.Li.cs;
             flux = - obj.pe.am.Li.Trans.*obj.pe.operators.Grad(x);
-            obj.pe.am.Li.divDiff=  obj.pe.operators.Div(flux)./obj.pe.Grid.cells.volumes;
+            obj.pe.am.Li.divDiff = obj.pe.operators.Div(flux)./obj.pe.Grid.cells.volumes;
                 
             
             %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -600,10 +636,9 @@ classdef lithiumIonADGrid < handle
             %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
             % Divergence of the migration mass flux
             %   Electrolyte Li+ Migration
-            flux = obj.elyte.sp.Li.t ./ (obj.elyte.sp.Li.z .* obj.con.F) ...
-                                                .* obj.elyte.j;
-                                
-            obj.elyte.sp.Li.divMig   =  obj.elyte.operators.Div(flux)./obj.elyte.Grid.cells.volumes;                           
+            flux = obj.elyte.sp.Li.t ./ (obj.elyte.sp.Li.z .* obj.con.F) .* obj.elyte.j;
+            
+            obj.elyte.sp.Li.divMig = obj.elyte.operators.Div(flux)./obj.elyte.Grid.cells.volumes;
 
             %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
             %% System of Equations                                      %%%
@@ -611,41 +646,35 @@ classdef lithiumIonADGrid < handle
             
             %% Liquid electrolyte dissolved ionic species mass continuity %
             %   Electrolyte Li+ Mass Continuity
-            obj.elyte.sp.Li.massCont =    (   - obj.elyte.sp.Li.divDiff ...
-                                                - obj.elyte.sp.Li.divMig  ...
-                                                + obj.elyte.sp.Li.source  ...
-                                                - obj.elyte.sp.Li.cepsdot);
-           
+            obj.elyte.sp.Li.massCont = ( - obj.elyte.sp.Li.divDiff - obj.elyte.sp.Li.divMig + obj.elyte.sp.Li.source ...
+                                         - obj.elyte.sp.Li.cepsdot);
+            
             %% Liquid electrolyte charge continuity %%%%%%%%%%%%%%%%%%%%%%%
 
-            obj.elyte.chargeCont = -(obj.elyte.operators.Div(  obj.elyte.j)./obj.elyte.Grid.cells.volumes) ./ obj.con.F+ ...
-                                       obj.elyte.sp.Li.source .* obj.elyte.sp.Li.z;
+            obj.elyte.chargeCont = -(obj.elyte.operators.Div( obj.elyte.j)./obj.elyte.Grid.cells.volumes) ./ obj.con.F+ ...
+                obj.elyte.sp.Li.source .* obj.elyte.sp.Li.z;
 
-            %a = -div(  obj.elyte.j, obj.fv.Xb);
-            %b = -obj.elyte.operators.allDiv(  obj.elyte.j)
-            %assert(all(a==b))
-             %% Active material mass continuity %%%%%%%%%%%%%%%%%%%%%%%%%%%
-             obj.ne.am.Li.massCont = (-obj.ne.am.Li.divDiff ...
-                                        + obj.ne.am.Li.source ...
-                                        - obj.ne.am.Li.csepsdot);
-                                    
-             obj.pe.am.Li.massCont = (-obj.pe.am.Li.divDiff ...
-                                            + obj.pe.am.Li.source ...
-                                            - obj.pe.am.Li.csepsdot);
-                                        
-            %% Active material charge conobj.ne.operators.harmFaceBc(obj.ne.sigmaeff,faceleft);          
+            %% Active material mass continuity %%%%%%%%%%%%%%%%%%%%%%%%%%%
+            obj.ne.am.Li.massCont = (-obj.ne.am.Li.divDiff + obj.ne.am.Li.source - obj.ne.am.Li.csepsdot);
+            obj.pe.am.Li.massCont = (-obj.pe.am.Li.divDiff + obj.pe.am.Li.source - obj.pe.am.Li.csepsdot);
+            
+            %% Active material charge continuity %%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-           obj.ne.am.e.chargeCont = ((-(obj.ne.operators.Div(  obj.ne.j)-obj.ne.j_bcsource))./obj.ne.Grid.cells.volumes)./-obj.con.F + ...
-                                     obj.ne.am.e.source .* -1;
-                                 
-           %obj.pe.am.e.chargeCont = -div(  obj.pe.j, obj.pe.Xb) ./ -obj.con.F + ...
-           %                          obj.pe.am.e.source .* -1;   
-           obj.pe.am.e.chargeCont = ((-(obj.pe.operators.Div(obj.pe.j) - obj.pe.j_bcsource))./obj.pe.Grid.cells.volumes) ./ -obj.con.F + ...
-                                     obj.pe.am.e.source .* -1;
-                                  
-            %% Global charge continuity %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-            obj.chargeCont = currentSource(t, obj.fv.tUp, obj.fv.tf, obj.J) ...
-                            - (sum(obj.pe.R .* obj.con.F .* obj.fv.dXvec(3)));
+            obj.ne.am.e.chargeCont = ((-(obj.ne.operators.Div(obj.ne.j) - obj.ne.j_bcsource))./ ...
+                                      obj.ne.Grid.cells.volumes)./-obj.con.F + obj.ne.am.e.source .* -1;
+            obj.pe.am.e.chargeCont = ((-(obj.pe.operators.Div(obj.pe.j) - obj.pe.j_bcsource))./ ...
+                                      obj.pe.Grid.cells.volumes)./-obj.con.F + obj.pe.am.e.source .* -1;
+            
+            
+            src = currentSource(t, fv.tUp, fv.tf, obj.J);
+            warning('check sign'); 
+            ccne_src = -src;
+            obj.ccne.am.e.chargeCont = ((-(obj.ccne.operators.Div(obj.ccne.j) - obj.ccne.j_bcsource))./ ...
+                                        obj.ccne.Grid.cells.volumes./obj.con.F - ccne_src;
+            ccpe_src = src;
+            obj.ccpe.am.e.chargeCont = ((-(obj.ccpe.operators.Div(obj.ccpe.j) - obj.ccpe.j_bcsource))./ ...
+                                        obj.ccpe.Grid.cells.volumes./obj.con.F - ccpe_src;
+            
             
             %% State vector %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%             
             obj.soe = vertcat(obj.elyte.sp.Li.massCont, ...
@@ -686,247 +715,241 @@ classdef lithiumIonADGrid < handle
             
             res = obj.soe;
         end     
-       
-        
     end
    
 end
-%------------------
-function [T,cells] = getFaceHarmBC(G,cvalue,faces)
-        cells=sum(G.faces.neighbors(faces,:));
-        cn = sqrt(sum((G.faces.centroids(faces,:)- G.cells.centroids(cells,:)).^2,2));
-        t = G.faces.areas(faces)./cn;
-        T = t.*cvalue(cells);
+
+function [T, cells] = getFaceHarmBC(G, cvalue, faces)
+    cells = sum(G.faces.neighbors(faces, :)); 
+    cn = sqrt(sum((G.faces.centroids(faces, :) - G.cells.centroids(cells, :)).^2, 2)); 
+    t = G.faces.areas(faces)./cn; 
+    T = t.*cvalue(cells); 
 end
 
 function hm = getFaceHarmMean(G)
-    internal = all(G.faces.neighbors>0,2);
-    N = G.faces.neighbors(internal,:);
-    ni = sum(internal);
-    cd = sqrt(sum((G.cells.centroids(N(:,1),:) - G.cells.centroids(N(:,2),:)).^2,2));%NB
-    t= G.faces.areas(internal)./cd
-    A = sparse([[1:ni]';[1:ni]'],N,1,ni,G.cells.num);
-    hm = @(cellvalue) 2.*t./(A*(1./cellvalue));
+    internal = all(G.faces.neighbors>0, 2); 
+    N = G.faces.neighbors(internal, :); 
+    ni = sum(internal); 
+    cd = sqrt(sum((G.cells.centroids(N(:, 1), :) - G.cells.centroids(N(:, 2), :)).^2, 2)); % NB
+    t = G.faces.areas(internal)./cd
+    A = sparse([[1:ni]'; [1:ni]'], N, 1, ni, G.cells.num); 
+    hm = @(cellvalue) 2.*t./(A*(1./cellvalue)); 
 end
 
-
-%-------------------------------------------------------------------------%
 function tp = getTwoPointOperator(G)
 % Mappings from cells to its faces
-cells = rldecode(1:G.cells.num, diff(G.cells.facePos), 2)';
-faces = G.cells.faces(:,1);
-% Vector from cell to face centroid
-C = G.faces.centroids(faces,:) - G.cells.centroids(cells,:);
-% Oriented normals
-sgn = 2*(cells == G.faces.neighbors(faces, 1)) - 1;
-N   = bsxfun(@times, sgn, G.faces.normals(faces, :));
-% Make function
-cn  = sum(C.*N,2)./sum(C.*C,2);
-tp = @(lambda) cn.*lambda(cells);
+    cells = rldecode(1:G.cells.num, diff(G.cells.facePos), 2)'; 
+    faces = G.cells.faces(:, 1); 
+    % Vector from cell to face centroid
+    C = G.faces.centroids(faces, :) - G.cells.centroids(cells, :); 
+    % Oriented normals
+    sgn = 2*(cells == G.faces.neighbors(faces, 1)) - 1; 
+    N = bsxfun(@times, sgn, G.faces.normals(faces, :)); 
+    % Make function
+    cn = sum(C.*N, 2)./sum(C.*C, 2); 
+    tp = @(lambda) cn.*lambda(cells); 
 end
 
-%-------------------------------------------------------------------------%
-function ha = getHarmonicAvgOpeartor(G)
-% Harmonig averaging operator
-faces = G.cells.faces(:,1);
-M = sparse(faces, 1:numel(faces), 1, G.faces.num, numel(faces));
-ha = @(T) 1./(M*(1./T));
+function ha = getHarmonicAvgOperator(G)
+% Harmonic averaging operator
+    faces = G.cells.faces(:, 1); 
+    M = sparse(faces, 1:numel(faces), 1, G.faces.num, numel(faces)); 
+    ha = @(T) 1./(M*(1./T)); 
 end
+
+
 function allDiv = getAllDiv(G)
-%% 
-   nc = G.cells.num;
-   nf = G.faces.num;
-   Nall = G.faces.neighbors;
-   internal = all(Nall>0,2);
-   ifn = find(internal);
-   efn = find(~internal);
-   inf = numel(ifn);
-   N=Nall(internal,:);
-   Nb = Nall(~internal,:);
-   signb = 2*(Nb(:,1)>0)-1;
-   Nb=sum(Nb,2);
-   C  = sparse([ifn; ifn], N, ones(inf, 1) * [1, -1], nf, nc);
-   C  = C + sparse(efn, Nb, signb, nf, nc);
-   allDiv =@(x) (C'*x)./G.cells.volumes;
+    nc = G.cells.num; 
+    nf = G.faces.num; 
+    Nall = G.faces.neighbors; 
+    internal = all(Nall>0, 2); 
+    ifn = find(internal); 
+    efn = find(~internal); 
+    inf = numel(ifn); 
+    N = Nall(internal, :); 
+    Nb = Nall(~internal, :); 
+    signb = 2*(Nb(:, 1)>0) - 1; 
+    Nb = sum(Nb, 2); 
+    C = sparse([ifn; ifn], N, ones(inf, 1) * [1,- 1], nf, nc); 
+    C = C + sparse(efn, Nb, signb, nf, nc); 
+    allDiv = @(x) (C'*x)./G.cells.volumes; 
 end
 
 
-
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-        function plotMesh(obj)
-            
-            subplot(3,1,1), plot(obj.fv.Xb.*1e3, zeros(size(obj.fv.Xb)),'+','MarkerSize',5, 'LineWidth',2, 'Color', obj.style.palette.discrete(1,:));
-            hold on
-            plot(obj.fv.X.*1e3, zeros(size(obj.fv.X)),'o','MarkerSize',5, 'LineWidth',2, 'Color', obj.style.palette.discrete(7,:));
-            hold off
-            xlim([min(obj.fv.Xb), obj.fv.Xb(10)].*1e3);
-            set(gca,'FontSize',28, ...
-                'color',obj.style.background, ...
-                'ColorOrder', obj.style.palette.discrete)
-            ax = gca;
-            ax.XColor = 'w';
-            ax.YColor = 'w';
-            title('Finite Volume Mesh: Left Bound', 'Color', 'w')
-            
-            subplot(3,1,2), plot(obj.fv.Xb.*1e3, zeros(size(obj.fv.Xb)),'+','MarkerSize',5, 'LineWidth',2, 'Color', obj.style.palette.discrete(1,:));
-            hold on
-            plot(obj.fv.X.*1e3, zeros(size(obj.fv.X)),'o','MarkerSize',5, 'LineWidth',2, 'Color', obj.style.palette.discrete(7,:));
-            hold off
-            xlim([min(obj.fv.Xb), max(obj.fv.Xb)].*1e3);
-            set(gca,'FontSize',28, ...
-                'color',obj.style.background, ...
-                'ColorOrder', obj.style.palette.discrete)
-            ax = gca;
-            ax.XColor = 'w';
-            ax.YColor = 'w';
-            title('Finite Volume Mesh: Whole Domain', 'Color', 'w')
-            
-            subplot(3,1,3), plot(obj.fv.Xb.*1e3, zeros(size(obj.fv.Xb)),'+','MarkerSize',5, 'LineWidth',2, 'Color', obj.style.palette.discrete(1,:));
-            hold on
-            plot(obj.fv.X.*1e3, zeros(size(obj.fv.X)),'o','MarkerSize',5, 'LineWidth',2, 'Color', obj.style.palette.discrete(7,:));
-            hold off
-            xlim([obj.fv.Xb(end-10), max(obj.fv.Xb)].*1e3);
-            set(gca,'FontSize',28, ...
-                'color',obj.style.background, ...
-                'ColorOrder', obj.style.palette.discrete)
-            ax = gca;
-            ax.XColor = 'w';
-            ax.YColor = 'w';
-            title('Finite Volume Mesh: Right Bound', 'Color', 'w')
-            hold off
-            xlabel('Location  /  mm')
-            
-        end
-        
-        function plotElyteConcentration(obj, varargin)
-            
-            if isempty(varargin)
-                plot(obj.fv.X.*1e3, obj.elyte.sp.Li.c.*1e-3, 'LineWidth', 5)
-                xlabel('Position  /  mm')
-                ylabel('LiPF_6 Conc.  /  mol\cdotL^{-1}')
-                eval(obj.style.name)
-            end
-            
-        end
-        
-        function plotElytePotential(obj, varargin)
-            
-            if isempty(varargin)
-                plot(obj.fv.X.*1e3, obj.elyte.phi, 'LineWidth', 5)
-                xlabel('Position  /  mm')
-                ylabel('Electric Potential  /  V')
-                eval(obj.style.name)
-            end
-            
-        end
-        
-        function plotPotentials(obj, varargin)
-            
-            if isempty(varargin)
-                plot(obj.fv.X.*1e3, obj.elyte.phi, 'LineWidth', 5)
-                hold on
-                plot(obj.ne.X.*1e3, obj.ne.am.phi, 'LineWidth', 5)
-                plot(obj.pe.X.*1e3, obj.pe.am.phi, 'LineWidth', 5)
-                xlabel('Position  /  mm')
-                ylabel('Electric Potential  /  V')
-                eval(obj.style.name)
-            end
-            
-        end
-        
-        function plotCurrentDensity(obj, varargin)
-            
-            if isempty(varargin)
-                plot(obj.fv.Xb.*1e3, obj.elyte.j, 'LineWidth', 5)
-                hold on
-                plot(obj.ne.Xb.*1e3, obj.ne.j, 'LineWidth', 5)
-                plot(obj.pe.Xb.*1e3, obj.pe.j, 'LineWidth', 5)
-                xlabel('Position  /  mm')
-                ylabel('Current Density  /  A m^{-2}')
-                eval(obj.style.name)
-            end
-            
-        end
-        
-        function plotSummary(obj,t,y,varargin)
-            
-            close all
-            
-            if ~isempty(varargin)
-                teval = varargin;
-                [~,~,idt]=unique(round(abs(t-teval)),'stable');
-            else
-                idt = length(t);
-            end
-            
-            Epe = y(:, obj.fv.s8);
-            Epe = Epe(:, end);
-            figure(1), plot(t./3600, Epe -obj.ne.E, 'LineWidth', 5) 
-           ylim([2, 4.2])
-           xlabel('Time  /  h')
-           ylabel('Cell Voltage  /  V')
-           eval(obj.style.name)
-           
-           figure(2)
-            subplot(2,3,1:3), plot(obj.elyte.X.*1e3, 1e-3.*y(idt, obj.fv.s1)./obj.elyte.eps', 'LineWidth', 5)
-                xlabel('Position  /  mm')
-                ylabel('LiPF_6 Conc.  /  mol\cdotL^{-1}')
-                eval([obj.style.name, '("subplot")'])
-                set(gca, 'FontSize', 14)
-                
-            subplot(2,3,4), plot(obj.ne.X.*1e3, y(idt, obj.fv.s3)./obj.ne.am.eps' ./ obj.ne.am.Li.cmax, 'LineWidth', 5)
-                xlabel('Position  /  mm')
-                %ylabel('Li Conc.  /  mol\cdotL^{-1}')
-                eval([obj.style.name, '("subplot")'])
-                set(gca, 'FontSize', 14)
-                
-            subplot(2,3,6), plot(obj.pe.X.*1e3, y(idt, obj.fv.s5)./obj.pe.am.eps'./ obj.pe.am.Li.cmax, 'LineWidth', 5)
-                xlabel('Position  /  mm')
-                %ylabel('Li Conc.  /  mol\cdotL^{-1}')
-                eval([obj.style.name, '("subplot")'])
-                set(gca, 'FontSize', 14)
-                
-            figure(3)
-            subplot(2,3,1:3), plot(obj.elyte.X.*1e3, y(idt, obj.fv.s2), 'LineWidth', 5)
-                xlabel('Position  /  mm')
-                ylabel('Electric Potential  /  V')
-                eval([obj.style.name, '("subplot")'])
-                set(gca, 'FontSize', 14)
-                
-            subplot(2,3,4), plot(obj.ne.X.*1e3, y(idt, obj.fv.s4), 'LineWidth', 5)
-                xlabel('Position  /  mm')
-                %ylabel('Li Conc.  /  mol\cdotL^{-1}')
-                eval([obj.style.name, '("subplot")'])
-                set(gca, 'FontSize', 14)
-                
-            subplot(2,3,6), plot(obj.pe.X.*1e3, y(idt, obj.fv.s6), 'LineWidth', 5)
-                xlabel('Position  /  mm')
-                %ylabel('Li Conc.  /  mol\cdotL^{-1}')
-                eval([obj.style.name, '("subplot")'])
-                set(gca, 'FontSize', 14)
-           
-            
-        end
-
-        function figureWindow(obj,font)
-            figure()
-            set(gca,'FontSize',28, ...
-                'color',obj.style.background, ...
-                'ColorOrder', obj.style.palette.discrete)
-            ax = gca;
-            ax.XColor = 'w';
-            ax.YColor = 'w';
-            set(gcf,'units','centimeter',...
-                'position',[5,5,obj.style.width,obj.style.height], ...
-                'color',obj.style.background)
-            if nargin < 2 
-                set(gca, 'FontName', 'Helvetica')
-            elseif srtcmpi(font, 'serif') == 1
-                set(gca, 'FontName', 'Baskerville Old Face')
-            else
-                set(gca, 'FontName', 'Helvetica')
-            end     
-            hold on
-        end
-        
+function plotMesh(obj)
     
+    subplot(3,1,1), plot(obj.fv.Xb.*1e3, zeros(size(obj.fv.Xb)),'+','MarkerSize',5, 'LineWidth',2, 'Color', obj.style.palette.discrete(1,:));
+    hold on
+    plot(obj.fv.X.*1e3, zeros(size(obj.fv.X)),'o','MarkerSize',5, 'LineWidth',2, 'Color', obj.style.palette.discrete(7,:));
+    hold off
+    xlim([min(obj.fv.Xb), obj.fv.Xb(10)].*1e3);
+    set(gca,'FontSize',28, ...
+            'color',obj.style.background, ...
+            'ColorOrder', obj.style.palette.discrete)
+    ax = gca;
+    ax.XColor = 'w';
+    ax.YColor = 'w';
+    title('Finite Volume Mesh: Left Bound', 'Color', 'w')
+    
+    subplot(3,1,2), plot(obj.fv.Xb.*1e3, zeros(size(obj.fv.Xb)),'+','MarkerSize',5, 'LineWidth',2, 'Color', obj.style.palette.discrete(1,:));
+    hold on
+    plot(obj.fv.X.*1e3, zeros(size(obj.fv.X)),'o','MarkerSize',5, 'LineWidth',2, 'Color', obj.style.palette.discrete(7,:));
+    hold off
+    xlim([min(obj.fv.Xb), max(obj.fv.Xb)].*1e3);
+    set(gca,'FontSize',28, ...
+            'color',obj.style.background, ...
+            'ColorOrder', obj.style.palette.discrete)
+    ax = gca;
+    ax.XColor = 'w';
+    ax.YColor = 'w';
+    title('Finite Volume Mesh: Whole Domain', 'Color', 'w')
+    
+    subplot(3,1,3), plot(obj.fv.Xb.*1e3, zeros(size(obj.fv.Xb)),'+','MarkerSize',5, 'LineWidth',2, 'Color', obj.style.palette.discrete(1,:));
+    hold on
+    plot(obj.fv.X.*1e3, zeros(size(obj.fv.X)),'o','MarkerSize',5, 'LineWidth',2, 'Color', obj.style.palette.discrete(7,:));
+    hold off
+    xlim([obj.fv.Xb(end-10), max(obj.fv.Xb)].*1e3);
+    set(gca,'FontSize',28, ...
+            'color',obj.style.background, ...
+            'ColorOrder', obj.style.palette.discrete)
+    ax = gca;
+    ax.XColor = 'w';
+    ax.YColor = 'w';
+    title('Finite Volume Mesh: Right Bound', 'Color', 'w')
+    hold off
+    xlabel('Location  /  mm')
+    
+end
+
+function plotElyteConcentration(obj, varargin)
+    
+    if isempty(varargin)
+        plot(obj.fv.X.*1e3, obj.elyte.sp.Li.c.*1e-3, 'LineWidth', 5)
+        xlabel('Position  /  mm')
+        ylabel('LiPF_6 Conc.  /  mol\cdotL^{-1}')
+        eval(obj.style.name)
+    end
+    
+end
+
+function plotElytePotential(obj, varargin)
+    
+    if isempty(varargin)
+        plot(obj.fv.X.*1e3, obj.elyte.phi, 'LineWidth', 5)
+        xlabel('Position  /  mm')
+        ylabel('Electric Potential  /  V')
+        eval(obj.style.name)
+    end
+    
+end
+
+function plotPotentials(obj, varargin)
+    
+    if isempty(varargin)
+        plot(obj.fv.X.*1e3, obj.elyte.phi, 'LineWidth', 5)
+        hold on
+        plot(obj.ne.X.*1e3, obj.ne.am.phi, 'LineWidth', 5)
+        plot(obj.pe.X.*1e3, obj.pe.am.phi, 'LineWidth', 5)
+        xlabel('Position  /  mm')
+        ylabel('Electric Potential  /  V')
+        eval(obj.style.name)
+    end
+    
+end
+
+function plotCurrentDensity(obj, varargin)
+    
+    if isempty(varargin)
+        plot(obj.fv.Xb.*1e3, obj.elyte.j, 'LineWidth', 5)
+        hold on
+        plot(obj.ne.Xb.*1e3, obj.ne.j, 'LineWidth', 5)
+        plot(obj.pe.Xb.*1e3, obj.pe.j, 'LineWidth', 5)
+        xlabel('Position  /  mm')
+        ylabel('Current Density  /  A m^{-2}')
+        eval(obj.style.name)
+    end
+    
+end
+
+function plotSummary(obj,t,y,varargin)
+    
+    close all
+    
+    if ~isempty(varargin)
+        teval = varargin;
+        [~,~,idt]=unique(round(abs(t-teval)),'stable');
+    else
+        idt = length(t);
+    end
+    
+    Epe = y(:, obj.fv.s8);
+    Epe = Epe(:, end);
+    figure(1), plot(t./3600, Epe -obj.ne.E, 'LineWidth', 5) 
+    ylim([2, 4.2])
+    xlabel('Time  /  h')
+    ylabel('Cell Voltage  /  V')
+    eval(obj.style.name)
+    
+    figure(2)
+    subplot(2,3,1:3), plot(obj.elyte.X.*1e3, 1e-3.*y(idt, obj.fv.s1)./obj.elyte.eps', 'LineWidth', 5)
+    xlabel('Position  /  mm')
+    ylabel('LiPF_6 Conc.  /  mol\cdotL^{-1}')
+    eval([obj.style.name, '("subplot")'])
+    set(gca, 'FontSize', 14)
+    
+    subplot(2,3,4), plot(obj.ne.X.*1e3, y(idt, obj.fv.s3)./obj.ne.am.eps' ./ obj.ne.am.Li.cmax, 'LineWidth', 5)
+    xlabel('Position  /  mm')
+    %ylabel('Li Conc.  /  mol\cdotL^{-1}')
+    eval([obj.style.name, '("subplot")'])
+    set(gca, 'FontSize', 14)
+    
+    subplot(2,3,6), plot(obj.pe.X.*1e3, y(idt, obj.fv.s5)./obj.pe.am.eps'./ obj.pe.am.Li.cmax, 'LineWidth', 5)
+    xlabel('Position  /  mm')
+    %ylabel('Li Conc.  /  mol\cdotL^{-1}')
+    eval([obj.style.name, '("subplot")'])
+    set(gca, 'FontSize', 14)
+    
+    figure(3)
+    subplot(2,3,1:3), plot(obj.elyte.X.*1e3, y(idt, obj.fv.s2), 'LineWidth', 5)
+    xlabel('Position  /  mm')
+    ylabel('Electric Potential  /  V')
+    eval([obj.style.name, '("subplot")'])
+    set(gca, 'FontSize', 14)
+    
+    subplot(2,3,4), plot(obj.ne.X.*1e3, y(idt, obj.fv.s4), 'LineWidth', 5)
+    xlabel('Position  /  mm')
+    %ylabel('Li Conc.  /  mol\cdotL^{-1}')
+    eval([obj.style.name, '("subplot")'])
+    set(gca, 'FontSize', 14)
+    
+    subplot(2,3,6), plot(obj.pe.X.*1e3, y(idt, obj.fv.s6), 'LineWidth', 5)
+    xlabel('Position  /  mm')
+    %ylabel('Li Conc.  /  mol\cdotL^{-1}')
+    eval([obj.style.name, '("subplot")'])
+    set(gca, 'FontSize', 14)
+    
+    
+end
+
+function figureWindow(obj,font)
+    figure()
+    set(gca,'FontSize',28, ...
+            'color',obj.style.background, ...
+            'ColorOrder', obj.style.palette.discrete)
+    ax = gca;
+    ax.XColor = 'w';
+    ax.YColor = 'w';
+    set(gcf,'units','centimeter',...
+            'position',[5,5,obj.style.width,obj.style.height], ...
+            'color',obj.style.background)
+    if nargin < 2 
+        set(gca, 'FontName', 'Helvetica')
+    elseif srtcmpi(font, 'serif') == 1
+        set(gca, 'FontName', 'Baskerville Old Face')
+    else
+        set(gca, 'FontName', 'Helvetica')
+    end     
+    hold on
+end
+
+
