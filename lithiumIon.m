@@ -438,7 +438,8 @@ classdef lithiumIon < handle
                 obj.elyte.jchem = obj.elyte.jchem + jchems{i};
             
             end
-            %   Ionic current density due to the electrochemical potential gradient
+            
+            % Ionic current density due to the electrochemical potential gradient
             obj.elyte.j = harm(obj.elyte.kappaeff, X, Xb).*(-1).*grad(obj.elyte.phi, X) - obj.elyte.jchem;
                 
             

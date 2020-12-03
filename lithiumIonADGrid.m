@@ -20,6 +20,8 @@ classdef lithiumIonADGrid < handle
         pe          % Positive electrode object
         sep         % Separator object
         elyte       % Electrolyte object
+        ccne    % Current collector object (negative electrode side)
+        ccpe    % Current collector object (positive electrode side)
         
         % Model properties
         ...ecm
@@ -78,6 +80,8 @@ classdef lithiumIonADGrid < handle
             obj.ne      = graphiteElectrode(SOC, T);
             obj.pe      = nmc111Electrode(SOC, T);
             obj.sep     = celgard2500();
+            obj.ccne  = currentCollector(T);
+            obj.ccpe  = currentCollector(T);
             obj.elyte   = orgLiPF6(1000, T);
             
             obj.OCV     = obj.pe.am.OCP - obj.ne.am.OCP;
@@ -116,32 +120,51 @@ classdef lithiumIonADGrid < handle
         function [t, y] = p2d(obj)
            
             % Generate the FV mesh
-            names           = {'NE';'SEP';'PE'};
-            sizes           = [ 1e-6; 1e-6; 1e-6 ]*10;
-            lengths         = [ obj.ne.t; ...
-                                obj.sep.t; ...
-                                obj.pe.t ];
+            names   = { 'CCNE'; 'NE'; 'SEP'; 'PE'; 'CCPE'};
+            sizes   = [ 1e-6; 1e-6; 1e-6; 1e-6; 1e-6 ];
+            lengths = [ obj.ccne.t; obj.ne.t; obj.sep.t; obj.pe.t; obj.ccpe.t];
                             
             obj.fv = fv1d(names, sizes, lengths);
             
-            obj.ne.dombin   = obj.fv.dombin{1};
-            obj.sep.dombin  = obj.fv.dombin{2};
-            obj.pe.dombin   = obj.fv.dombin{3};
+            dombin = obj.fv.dombin;
+            obj.ccne.dombin = dombin{1};
+            obj.ne.dombin   = dombin{2};
+            obj.sep.dombin  = dombin{3};
+            obj.pe.dombin   = dombin{4};
+            obj.ccpe.dombin = dombin{5};
             
-            obj.ne.N        = obj.fv.Nvec(1);
-            obj.sep.N       = obj.fv.Nvec(2);
-            obj.pe.N        = obj.fv.Nvec(3);
-            obj.elyte.N     = obj.fv.N;
+            Nvec = obj.fv.Nvec;
+            obj.ccne.N  = Nvec(1);
+            obj.ne.N    = Nvec(2);
+            obj.sep.N   = Nvec(3);
+            obj.pe.N    = Nvec(4);
+            obj.ccpe.N  = Nvec(5);
+            obj.elyte.N = sum(Nvec(2 : 4));
             
-            obj.ne.X        = obj.fv.X(obj.ne.dombin>0);
-            obj.sep.X       = obj.fv.X(obj.sep.dombin>0);
-            obj.pe.X        = obj.fv.X(obj.pe.dombin>0);
-            obj.elyte.X     = obj.fv.X;
+            X = obj.fv.X;
+            obj.ccne.X = X(obj.ccne.dombin > 0);
+            obj.ne.X   = X(obj.ne.dombin > 0);
+            obj.sep.X  = X(obj.sep.dombin > 0);
+            obj.pe.X   = X(obj.pe.dombin > 0);
+            obj.ccpe.X = X(obj.ccpe.dombin > 0);
+            elyte_dombin = (obj.ne.dombin > 0) | (obj.sep.dombin > 0) | (obj.pe.dombin > 0);
+            obj.elyte.X  = X(elyte_dombin);;
             
-            obj.ne.Xb       = obj.fv.Xb(1:obj.ne.N+1);
-            obj.sep.Xb      = obj.fv.Xb(obj.ne.N+1:obj.ne.N + obj.sep.N + 1);
-            obj.pe.Xb       = obj.fv.Xb(obj.ne.N + obj.sep.N + 1:end);
-            obj.elyte.Xb    = obj.fv.Xb;
+            Xb = obj.fv.Xb;
+            i = 0; di = obj.ccne.N;
+            obj.ccne.Xb = Xb(i + (1 : (di + 1)));
+            i = i + di; di = obj.ne.N;
+            obj.ne.Xb = Xb(i + (1 : (di + 1)));
+            i = i + di; di = obj.sep.N;
+            obj.sep.Xb = Xb(i + (1 : (di + 1)));
+            i = i + di; di = obj.pe.N;            
+            obj.pe.Xb = Xb(i + (1 : (di + 1)));
+            i = i + di; di = obj.ccpe.N;            
+            obj.ccpe.Xb = Xb(i + (1 : (di + 1)));
+            
+            i = obj.ccne.N;
+            di = obj.ne.N + obj.sep.N + obj.pe.N;
+            obj.elyte.Xb = Xb(i + (1 : (di + 1)));
             
             obj.icp2d();
             ff={'ne','sep','pe','elyte'};
@@ -182,14 +205,13 @@ classdef lithiumIonADGrid < handle
             obj.fv.tf = 30;
             obj.fv.dt = 10;
             obj.fv.tUp = 0.1;
-            obj.fv.tSpan = obj.fv.ti:obj.fv.dt:obj.fv.tf;
+            obj.fv.tSpan = (obj.fv.ti:obj.fv.dt:obj.fv.tf);
 
             % Pre-process
             obj.dynamicPreprocess();
 
-            % Solve the system of equations
+            % Set up and solve the system of equations
             endFun = @(t,y,yp)obj.cutOff(t,y,yp);
-            
             fun = @(t,y,yp) obj.odefun(t, y, yp);
             derfun = @(t,y,yp) obj.odederfun(t, y, yp);           
 
@@ -201,7 +223,9 @@ classdef lithiumIonADGrid < handle
             
             [t, y] = ode15i(fun, obj.fv.tSpan', obj.fv.y0, obj.fv.yp0, options);
                 
+            
             doplot = true;
+            dosave = false;
             if doplot
                 resultname = 'test';
                 path = 'C:\Users\simonc\Documents\01_Projects\Electrochemical Modelling Toolbox\Batteries\';
@@ -209,8 +233,9 @@ classdef lithiumIonADGrid < handle
                 hrmin = clock();
                 hr = num2str(hrmin(4));
                 minhr = num2str(hrmin(5));
-                save([path, resultname, '-', day,'-', hr,'h', minhr,'m','.mat']);
-                
+                if dosave
+                    save([path, resultname, '-', day,'-', hr,'h', minhr,'m','.mat']);
+                end
                 if strcmpi(obj.display, 'final')
                     plotSummary(obj,t,y);
                 end
@@ -233,68 +258,70 @@ classdef lithiumIonADGrid < handle
         function icp2d(obj)
             
             %% Negative electrode properties
+            
             % Temperature
             obj.ne.am.T             = obj.ne.am.T .* ones(obj.ne.N, 1);
             
             % Volume fractions
                 % Solid volume fractions
-            obj.ne.am.eps           = obj.ne.am.eps  .* ones(obj.ne.N, 1);
-            obj.ne.bin.eps          = obj.ne.bin.eps .* ones(obj.ne.N, 1);
-            obj.ne.sei.eps          = obj.ne.sei.eps .* ones(obj.ne.N, 1);
-            obj.ne.eps              = obj.ne.am.eps ...
-                                    + obj.ne.bin.eps ...
-                                    + obj.ne.sei.eps;
+            Nne = obj.ne.N;
+            obj.ne.am.eps  = obj.ne.am.eps .* ones(Nne, 1);
+            obj.ne.bin.eps = obj.ne.bin.eps .* ones(Nne, 1);
+            obj.ne.sei.eps = obj.ne.sei.eps .* ones(Nne, 1);
+            obj.ne.eps     = obj.ne.am.eps + obj.ne.bin.eps + obj.ne.sei.eps;
+            
                 % Void volume fraction
             obj.ne.void             = 1 - obj.ne.eps;
                             
             % SEI thickness
-            obj.ne.sei.t            = obj.ne.sei.t .* ones(obj.ne.N, 1);
+            obj.ne.sei.t = obj.ne.sei.t .* ones(Nne, 1);
             
             % Lithiation
-            obj.ne.am.Li.cs         = obj.ne.am.Li.cs .* ones(obj.ne.N, 1);
+            obj.ne.am.Li.cs    = obj.ne.am.Li.cs .* ones(Nne, 1);
             obj.ne.am.Li.cseps      = obj.ne.am.Li.cs .* obj.ne.am.eps;
-            obj.ne.am.theta         = obj.ne.am.theta .* ones(obj.ne.N, 1);
-            obj.ne.am.SOC           = obj.ne.am.SOC   .* ones(obj.ne.N, 1);
+            obj.ne.am.theta    = obj.ne.am.theta .* ones(Nne, 1);
+            obj.ne.am.SOC      = obj.ne.am.SOC   .* ones(Nne, 1);
             
             % Open-circuit potential
-            obj.ne.am.OCP           = obj.ne.am.OCP .* ones(obj.ne.N, 1);
+            obj.ne.am.OCP = obj.ne.am.OCP .* ones(Nne, 1);
             obj.ne.am.phi           = obj.ne.am.OCP;
             
             % Kinetic Coefficients
-            obj.ne.am.k             = obj.ne.am.k .* ones(obj.ne.N, 1);
+            obj.ne.am.k = obj.ne.am.k .* ones(Nne, 1);
             
             % Transport Coefficients
-            obj.ne.am.Li.D          = obj.ne.am.Li.D .* ones(obj.ne.N, 1);
+            obj.ne.am.Li.D    = obj.ne.am.Li.D .* ones(Nne, 1);
             obj.ne.am.Li.Deff       = obj.ne.am.Li.D .* obj.ne.am.eps.^1.5;
             
             %% Positive electrode properties
+            
+            Npe = obj.pe.N;
             % Temperature
-            obj.pe.am.T             = obj.pe.am.T .* ones(obj.pe.N, 1);
+            obj.pe.am.T = obj.pe.am.T .* ones(Npe, 1);
             
             % Volume fractions
                 % Solid volume fractions
-            obj.pe.am.eps           = obj.pe.am.eps .* ones(obj.pe.N, 1);
-            obj.pe.bin.eps          = obj.pe.bin.eps .* ones(obj.pe.N, 1);
-            obj.pe.eps              = obj.pe.am.eps ...
-                                    + obj.pe.bin.eps;
+            obj.pe.am.eps  = obj.pe.am.eps .* ones(Npe, 1);
+            obj.pe.bin.eps = obj.pe.bin.eps .* ones(Npe, 1);
+            obj.pe.eps     = obj.pe.am.eps + obj.pe.bin.eps;
                 % Void volume fraction
             obj.pe.void             = 1 - obj.pe.eps;
             
             % Lithiation
-            obj.pe.am.Li.cs         = obj.pe.am.Li.cs .* ones(obj.pe.N, 1);
+            obj.pe.am.Li.cs    = obj.pe.am.Li.cs .* ones(Npe, 1);
             obj.pe.am.Li.cseps      = obj.pe.am.Li.cs .* obj.pe.am.eps;
-            obj.pe.am.theta         = obj.pe.am.theta .* ones(obj.pe.N, 1);
-            obj.pe.am.SOC           = obj.pe.am.SOC .* ones(obj.pe.N, 1);
+            obj.pe.am.theta    = obj.pe.am.theta .* ones(Npe, 1);
+            obj.pe.am.SOC      = obj.pe.am.SOC .* ones(Npe, 1);
             
             % Open-circuit potential
-            obj.pe.am.OCP           = obj.pe.am.OCP .* ones(obj.pe.N, 1);
+            obj.pe.am.OCP = obj.pe.am.OCP .* ones(Npe, 1);
             obj.pe.am.phi           = obj.pe.am.OCP;
             
             % Kinetic Coefficients
-            obj.pe.am.k             = obj.pe.am.k .* ones(obj.pe.N, 1);
+            obj.pe.am.k = obj.pe.am.k .* ones(Npe, 1);
             
             % Transport Coefficients
-            obj.pe.am.Li.D          = obj.pe.am.Li.D .* ones(obj.pe.N, 1);
+            obj.pe.am.Li.D    = obj.pe.am.Li.D .* ones(Npe, 1);
             obj.pe.am.Li.Deff       = obj.pe.am.Li.D .* obj.pe.am.eps.^1.5;
             
             %% Separator properties
@@ -302,9 +329,7 @@ classdef lithiumIonADGrid < handle
             obj.sep.void            = 1 - obj.sep.eps;
             
             %% Electrolyte properties
-            obj.elyte.eps           = [ obj.ne.void; ...
-                                        obj.sep.void; ...
-                                        obj.pe.void ];
+            obj.elyte.eps = [ obj.ne.void; obj.sep.void; obj.pe.void ];
                             
             obj.elyte.phi           = zeros(obj.elyte.N, 1);
             obj.elyte.sp.Li.c       = obj.elyte.sp.Li.c .* ones(obj.elyte.N, 1);
@@ -315,6 +340,16 @@ classdef lithiumIonADGrid < handle
             obj.elyte.kappa         = obj.elyte.kappa .* ones(obj.elyte.N, 1);
             obj.elyte.kappaeff      = obj.elyte.kappa .* obj.elyte.eps .^1.5;
             
+            %% Current collectors
+            Ncne = obj.ccne.N;
+            obj.ccne.am.OCP = obj.pe.am.OCP(1) .* ones(Ncne, 1);
+            obj.ccne.am.phi = obj.ccne.am.OCP;
+            obj.ccne.am.eps = obj.ccne.am.eps .* ones(Ncne, 1);
+            
+            Ncpe = obj.ccpe.N;
+            obj.ccpe.am.OCP = obj.pe.am.OCP(1) .* ones(Ncpe, 1);
+            obj.ccpe.am.phi = obj.ccpe.am.OCP;
+            obj.ccpe.am.eps = obj.ccpe.am.eps .* ones(Ncpe, 1);
         end
         
         function dynamicPreprocess(obj)
@@ -326,19 +361,37 @@ classdef lithiumIonADGrid < handle
                             obj.ne.am.phi;
                             obj.pe.am.Li.cseps;
                             obj.pe.am.phi;
-                            obj.pe.E];
+                            obj.ccne.am.phi;
+                            obj.ccpe.am.phi];
             
             %% Inititalize the state time derivative vector
             obj.fv.yp0  = zeros(length(obj.fv.y0),1);
             
             %% Store state slots
-            obj.fv.s1   = 1:obj.elyte.N; 
-            obj.fv.s2   = (obj.fv.s1(end)+1):(obj.fv.s1(end)+obj.elyte.N);
-            obj.fv.s3   = (obj.fv.s2(end)+1):(obj.fv.s2(end)+obj.ne.N);
-            obj.fv.s4   = (obj.fv.s3(end)+1):(obj.fv.s3(end)+obj.ne.N);
-            obj.fv.s5   = (obj.fv.s4(end)+1):(obj.fv.s4(end)+obj.pe.N);
-            obj.fv.s6   = (obj.fv.s5(end)+1):(obj.fv.s5(end)+obj.pe.N);
-            obj.fv.s7   = length(obj.fv.y0);
+            % s1 : obj.elyte.sp.Li.ceps
+            i = 0; di = obj.elyte.N;
+            obj.fv.s1   = i + (1 : di);
+            % s2 : obj.elyte.phi
+            i = i + di; di = obj.elyte.N;
+            obj.fv.s2   = i + (1 : di);
+            % s3 : obj.ne.am.Li.cseps
+            i = i + di; di = obj.ne.N;
+            obj.fv.s3   = i + (1 : di);
+            % s4 : obj.ne.am.phi
+            i = i + di; di = obj.ne.N;
+            obj.fv.s4   = i + (1 : di);
+            % s5 : obj.pe.am.Li.cseps
+            i = i + di; di = obj.pe.N;
+            obj.fv.s5   = i + (1 : di);
+            % s6 : obj.pe.am.phi
+            i = i + di; di = obj.pe.N;
+            obj.fv.s6   = i + (1 : di);
+            % s7 : obj.ccne.am.phi
+            i = i + di; di = obj.ccne.N;
+            obj.fv.s7   = i + (1 : di);
+            % s8 : obj.ccpe.am.phi
+            i = i + di; di = obj.ccpe.N;
+            obj.fv.s8   = i + (1 : di);
             
         end
         
@@ -348,22 +401,25 @@ classdef lithiumIonADGrid < handle
             opt = merge_options(opt, varargin{:});
             useAD = opt.useAD;
             
+            fv = obj.fv;
+            
             if useAD
                 adbackend = obj.AutoDiffBackend();
                 [y, yp] = adbackend.initVariablesAD(y, yp);
             end
             
-            obj.elyte.sp.Li.ceps    = y(obj.fv.s1);
-            obj.elyte.phi           = y(obj.fv.s2);
-            obj.ne.am.Li.cseps      = y(obj.fv.s3);
-            obj.ne.am.phi           = y(obj.fv.s4);
-            obj.pe.am.Li.cseps      = y(obj.fv.s5);
-            obj.pe.am.phi           = y(obj.fv.s6);
-            obj.pe.E                = y(end);
+            obj.elyte.sp.Li.ceps = y(fv.s1);
+            obj.elyte.phi        = y(fv.s2);
+            obj.ne.am.Li.cseps   = y(fv.s3);
+            obj.ne.am.phi        = y(fv.s4);
+            obj.pe.am.Li.cseps   = y(fv.s5);
+            obj.pe.am.phi        = y(fv.s6);
+            obj.ccne.am.phi      = y(fv.s7);
+            obj.ccpe.am.phi      = y(fv.s8);
             
-            obj.elyte.sp.Li.cepsdot = yp(obj.fv.s1);
-            obj.ne.am.Li.csepsdot   = yp(obj.fv.s3);
-            obj.pe.am.Li.csepsdot   = yp(obj.fv.s5);
+            obj.elyte.sp.Li.cepsdot = yp(fv.s1);
+            obj.ne.am.Li.csepsdot   = yp(fv.s3);
+            obj.pe.am.Li.csepsdot   = yp(fv.s5);
             
             obj.elyte.sp.Li.c  = obj.elyte.sp.Li.ceps ./ obj.elyte.eps;
             obj.elyte.sp.PF6.c = obj.elyte.sp.Li.c;
@@ -373,19 +429,19 @@ classdef lithiumIonADGrid < handle
             
             %% Update electrolyte physicochemical and transport properties
             obj.elyte.update()
+            obj.elyte.kappaeff   = obj.elyte.kappa .* obj.elyte.eps .^1.5;
+            obj.elyte.sp.Li.Deff = obj.elyte.sp.Li.D .* obj.elyte.eps .^1.5;
+            
             obj.ne.am.update()
-            obj.pe.am.update()
-            
-            obj.elyte.kappaeff = obj.elyte.kappa .* ...
-                obj.elyte.eps .^1.5;
-            obj.elyte.sp.Li.Deff = obj.elyte.sp.Li.D .* ...
-                obj.elyte.eps .^1.5;
-            
             obj.ne.am.Li.Deff  = obj.ne.am.Li.D .* obj.ne.am.eps.^1.5;
             obj.ne.sigmaeff = obj.ne.am.sigma .* obj.ne.am.eps.^1.5;
+            
+            obj.pe.am.update()
             obj.pe.am.Li.Deff  = obj.pe.am.Li.D .* obj.pe.am.eps.^1.5;
             obj.pe.sigmaeff = obj.pe.am.sigma .* obj.pe.am.eps.^1.5;
             
+            obj.ccne.sigmaeff = obj.ccne.am.sigma .* obj.ccne.am.eps.^1.5;
+            obj.ccpe.sigmaeff = obj.ccpe.am.sigma .* obj.ccpe.am.eps.^1.5;
             
             %% Ionic current density   
             % Ionic current density in the liquid
@@ -394,6 +450,8 @@ classdef lithiumIonADGrid < handle
             ncomp = obj.elyte.ncomp;
             
             jchems = cell(ncomp, 1);
+            X = obj.elyte.X;
+            Xb = obj.elyte.Xb;
             for i = 1 : ncomp
                 jchems{i} = zeros(N + 1, 1);
                 coeff =  obj.elyte.kappaeff .* obj.elyte.ion.tvec{i} .* obj.elyte.ion.dmudc{i} ./ ...
@@ -415,7 +473,7 @@ classdef lithiumIonADGrid < handle
             obj.ne.j =  obj.ne.operators.harmFace(obj.ne.sigmaeff) ...
                             .* (-1) .* obj.ne.operators.Grad(obj.ne.am.phi);
                
-               
+            %% FIX THAT
             % add bc
              faceleft=1;
                bcLeft = 0;
@@ -443,6 +501,8 @@ classdef lithiumIonADGrid < handle
             opt = merge_options(opt, varargin{:});
             useAD = opt.useAD;
             
+            fv = obj.fv;
+            
             if useAD
                 adsample = getSampleAD(obj.elyte.sp.Li.ceps, ...    
                                        obj.elyte.phi, ...           
@@ -453,7 +513,9 @@ classdef lithiumIonADGrid < handle
                                        obj.pe.E, ...                
                                        obj.elyte.sp.Li.cepsdot, ... 
                                        obj.ne.am.Li.csepsdot, ...   
-                                       obj.pe.am.Li.csepsdot);
+                                       obj.pe.am.Li.csepsdot  , ...
+                                       obj.ccne.am.phi        , ...
+                                       obj.ccpe.am.phi);
                 adbackend = obj.AutoDiffBackend;
             end
             
@@ -462,7 +524,7 @@ classdef lithiumIonADGrid < handle
             %% Source terms for continuity equations                    %%%
             %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
             %   Inititalize vectors
-            obj.elyte.sp.Li.source  = zeros(obj.fv.N, 1);
+            obj.elyte.sp.Li.source  = zeros(obj.elyte.N, 1);
             obj.ne.am.Li.source     = zeros(obj.ne.N, 1);
             obj.pe.am.Li.source     = zeros(obj.pe.N, 1);
             obj.ne.am.e.source      = zeros(obj.ne.N, 1);
@@ -477,6 +539,8 @@ classdef lithiumIonADGrid < handle
             end
             
             % Calculate reaction rates
+            
+            %% FIX THAT
             from = 1:obj.ne.N;
             to = 1:obj.ne.N;% not it is all
             elyte_ne=struct('from',from,'to',to);
@@ -590,10 +654,10 @@ classdef lithiumIonADGrid < handle
                               obj.ne.am.e.chargeCont, ...
                               obj.pe.am.Li.massCont, ...
                               obj.pe.am.e.chargeCont, ...
-                              obj.chargeCont);        
+                              obj.ccne.am.e.chargeCont, ...
+                              obj.ccpe.am.e.chargeCont);
                              
         end
-        
         
         function res = odefun(obj, t, y, yp, varargin)
         %ODEFUN Compiles the system of differential equations
@@ -611,7 +675,7 @@ classdef lithiumIonADGrid < handle
                 disp('Current Density, A/cm2:')
                 disp(-1e-4.*currentSource(t, obj.fv.tUp, obj.fv.tf, obj.J))
                 disp('Cell Voltage, V:')
-                disp(obj.pe.E - obj.ne.E)
+                disp(obj.ccpe.E - obj.ccne.E)
             end
             
             % Read the state vector
@@ -795,14 +859,16 @@ end
                 idt = length(t);
             end
             
-          figure(1), plot(t./3600, y(:,end)-obj.ne.E, 'LineWidth', 5) 
+            Epe = y(:, obj.fv.s8);
+            Epe = Epe(:, end);
+            figure(1), plot(t./3600, Epe -obj.ne.E, 'LineWidth', 5) 
            ylim([2, 4.2])
            xlabel('Time  /  h')
            ylabel('Cell Voltage  /  V')
            eval(obj.style.name)
            
            figure(2)
-           subplot(2,3,1:3), plot(obj.fv.X.*1e3, 1e-3.*y(idt, obj.fv.s1)./obj.elyte.eps', 'LineWidth', 5)
+            subplot(2,3,1:3), plot(obj.elyte.X.*1e3, 1e-3.*y(idt, obj.fv.s1)./obj.elyte.eps', 'LineWidth', 5)
                 xlabel('Position  /  mm')
                 ylabel('LiPF_6 Conc.  /  mol\cdotL^{-1}')
                 eval([obj.style.name, '("subplot")'])
@@ -821,7 +887,7 @@ end
                 set(gca, 'FontSize', 14)
                 
             figure(3)
-           subplot(2,3,1:3), plot(obj.fv.X.*1e3, y(idt, obj.fv.s2), 'LineWidth', 5)
+            subplot(2,3,1:3), plot(obj.elyte.X.*1e3, y(idt, obj.fv.s2), 'LineWidth', 5)
                 xlabel('Position  /  mm')
                 ylabel('Electric Potential  /  V')
                 eval([obj.style.name, '("subplot")'])
