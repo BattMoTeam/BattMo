@@ -589,10 +589,10 @@ classdef lithiumIon < handle
             
             src = currentSource(t, fv.tUp, fv.tf, obj.J);
             
-            ccne_src = - src/(obj.ccne.N);
-            obj.ccne.am.e.chargeCont = div( obj.ccne.j, obj.ccne.Xb) - ccne_src;
-            ccpe_src = src/(obj.ccpe.N);
-            obj.ccpe.am.e.chargeCont = div( obj.ccpe.j, obj.ccpe.Xb) - ccpe_src;
+            ccne_src = -src;
+            obj.ccne.am.e.chargeCont = div( obj.ccne.j, obj.ccne.Xb) ./ obj.con.F   - ccne_src;
+            ccpe_src = src;
+            obj.ccpe.am.e.chargeCont = div( obj.ccpe.j, obj.ccpe.Xb) ./ obj.con.F  - ccpe_src;
             
             %% State vector %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%             
             obj.soe = vertcat(obj.elyte.sp.Li.massCont, ...
