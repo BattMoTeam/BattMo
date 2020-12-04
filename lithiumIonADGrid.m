@@ -480,7 +480,7 @@ classdef lithiumIonADGrid < handle
             face_ne = 1;
             face_ccne = ccne.Grid.faces.num;
             [tne, bccell_ne] = ne.operators.harmFaceBC(ne.sigmaeff, face_ne);
-            [tccne, bccellcc_ne] = ne.operators.harmFaceBC(ne.sigmaeff, face_ccne);
+            [tccne, bccell_ccne] = ccne.operators.harmFaceBC(ccne.sigmaeff, face_ccne);
             bcphi_ne = ne.am.phi(bccell_ne);
             bcphi_ccne = ne.am.phi(bccell_ccne);
             
@@ -488,21 +488,20 @@ classdef lithiumIonADGrid < handle
             obj.ccne.j_bcsource = ccne.am.phi*0.0; %NB hack to initialize zero ad
             
             t = 2./(1./tne + 1./tccne);
-            crosscurrent = t.*(bcphi_ccne - bcphi_ccne);
-            warning('check sign');
+            crosscurrent = t.*(bcphi_ccne - bcphi_ne);
             obj.ne.j_bcsource(bccell_ne) = crosscurrent;
             obj.ccne.j_bcsource(bccell_ccne) = -crosscurrent;
             
             % We impose the boundary condition at some of the boundary cells of the anode current collector
             faceleft = 1; 
             bcLeft = 0; 
-            [t, cells] = obj.ccne.operators.harmFaceBC(obj.ccne.sigmaeff, faceleft)
+            [t, cells] = obj.ccne.operators.harmFaceBC(obj.ccne.sigmaeff, faceleft);
             obj.ccne.j_bcsource(cells) = obj.ccne.j_bcsource(cells) + t.*(bcLeft - obj.ccne.am.phi(cells));
             
             % Active material PE and current collector                        
             
             ccpe = obj.ccpe;
-            pe   = obj.pe;
+            pe = obj.pe;
             
             obj.pe.j =  pe.operators.harmFace(pe.sigmaeff) .* (-1) .* pe.operators.Grad(pe.am.phi);
             obj.ccpe.j =  ccpe.operators.harmFace(ccpe.sigmaeff) .* (-1) .* ccpe.operators.Grad(ccpe.am.phi);
@@ -511,7 +510,7 @@ classdef lithiumIonADGrid < handle
             face_pe = 1;
             face_ccpe = ccpe.Grid.faces.num;
             [tpe, bccell_pe] = pe.operators.harmFaceBC(pe.sigmaeff, face_pe);
-            [tccpe, bccellcc_pe] = pe.operators.harmFaceBC(pe.sigmaeff, face_ccpe);
+            [tccpe, bccell_ccpe] = ccpe.operators.harmFaceBC(ccpe.sigmaeff, face_ccpe);
             bcphi_pe = pe.am.phi(bccell_pe);
             bcphi_ccpe = pe.am.phi(bccell_ccpe);
             
@@ -660,20 +659,18 @@ classdef lithiumIonADGrid < handle
             
             %% Active material charge continuity %%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-            obj.ne.am.e.chargeCont = ((-(obj.ne.operators.Div(obj.ne.j) - obj.ne.j_bcsource))./ ...
-                                      obj.ne.Grid.cells.volumes)./-obj.con.F + obj.ne.am.e.source .* -1;
-            obj.pe.am.e.chargeCont = ((-(obj.pe.operators.Div(obj.pe.j) - obj.pe.j_bcsource))./ ...
-                                      obj.pe.Grid.cells.volumes)./-obj.con.F + obj.pe.am.e.source .* -1;
-            
+            obj.ne.am.e.chargeCont = (obj.ne.operators.Div(obj.ne.j) - obj.ne.j_bcsource)./ ...
+                obj.ne.Grid.cells.volumes./obj.con.F - obj.ne.am.e.source;
+            obj.pe.am.e.chargeCont = (obj.pe.operators.Div(obj.pe.j) - obj.pe.j_bcsource)./ ...
+                obj.pe.Grid.cells.volumes./obj.con.F - obj.pe.am.e.source;
             
             src = currentSource(t, fv.tUp, fv.tf, obj.J);
-            warning('check sign'); 
             ccne_src = -src;
-            obj.ccne.am.e.chargeCont = ((-(obj.ccne.operators.Div(obj.ccne.j) - obj.ccne.j_bcsource))./ ...
-                                        obj.ccne.Grid.cells.volumes./obj.con.F - ccne_src;
+            obj.ccne.am.e.chargeCont = (obj.ccne.operators.Div(obj.ccne.j) - obj.ccne.j_bcsource)./ ...
+                obj.ccne.Grid.cells.volumes./obj.con.F - ccne_src;
             ccpe_src = src;
-            obj.ccpe.am.e.chargeCont = ((-(obj.ccpe.operators.Div(obj.ccpe.j) - obj.ccpe.j_bcsource))./ ...
-                                        obj.ccpe.Grid.cells.volumes./obj.con.F - ccpe_src;
+            obj.ccpe.am.e.chargeCont = (obj.ccpe.operators.Div(obj.ccpe.j) - obj.ccpe.j_bcsource)./ ...
+                obj.ccpe.Grid.cells.volumes./obj.con.F - ccpe_src;
             
             
             %% State vector %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%             
@@ -731,7 +728,7 @@ function hm = getFaceHarmMean(G)
     N = G.faces.neighbors(internal, :); 
     ni = sum(internal); 
     cd = sqrt(sum((G.cells.centroids(N(:, 1), :) - G.cells.centroids(N(:, 2), :)).^2, 2)); % NB
-    t = G.faces.areas(internal)./cd
+    t = G.faces.areas(internal)./cd;
     A = sparse([[1:ni]'; [1:ni]'], N, 1, ni, G.cells.num); 
     hm = @(cellvalue) 2.*t./(A*(1./cellvalue)); 
 end
