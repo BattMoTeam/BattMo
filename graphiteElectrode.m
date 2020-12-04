@@ -51,7 +51,7 @@ classdef graphiteElectrode < FvModel
                         + obj.bin.eps ...
                         + obj.sei.eps;
             
-            obj.t   = 88e-6;
+            obj.t   = 10e-6;
             
             obj.T = T;
             

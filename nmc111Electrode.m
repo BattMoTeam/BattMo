@@ -48,7 +48,7 @@ classdef nmc111Electrode < FvModel
             obj.eps =   obj.am.eps ...
                         + obj.bin.eps;
                     
-            obj.t   = 80e-6;
+            obj.t   = 10e-6;
             obj.T   = T;
             
             obj.thermodynamics()

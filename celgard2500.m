@@ -27,7 +27,7 @@ classdef celgard2500 < FvModel
         function obj = celgard2500()
             %UNTITLED10 Construct an instance of this class
             %   Detailed explanation goes here
-            obj.t       = 25e-6;
+            obj.t       = 10e-6;
             obj.void    = 0.55;
             obj.eps     = 1 - obj.void;
             obj.rp      = 0.064e-6 ./ 2;
