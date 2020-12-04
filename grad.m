@@ -54,7 +54,7 @@ if strcmpi(conditions,'adiabatic-adiabatic') == 1
         yBCR = varargin{rightBCi + 2};
         % Flux over the right boundary
         dXBCR = X(end) - X(end-1);
-        NBCR = (yBCR - y(end)) / dXBCR;
+        NBCR = (yBCR - y(end)) / (dXBCR/2); % ok for uniform mesh
 
         % Calculate first derivative
         result = [zeros(1,n); coregrad; NBCR]; % gradients on compartment boundaries
@@ -65,7 +65,7 @@ if strcmpi(conditions,'adiabatic-adiabatic') == 1
         yBCL = varargin{leftBCi + 2};
         % Flux over the right boundary
         dXBCL = X(2) - X(1);
-        NBCL = (y(1) - yBCL) / dXBCL;
+        NBCL = (y(1) - yBCL) / (dXBCL/2); % ok for uniform mesh
 
         % Calculate first derivative
         result = [NBCL; coregrad; zeros(1,n)]; % gradients on compartment boundaries
@@ -76,13 +76,13 @@ if strcmpi(conditions,'adiabatic-adiabatic') == 1
         yBCL = varargin{leftBCi + 2};
         % Flux over the right boundary
         dXBCL = X(2) - X(1);
-        NBCL = (y(1) - yBCL) / dXBCL;
+        NBCL = (y(1) - yBCL) / (dXBCL/2); % ok for uniform mesh
 
         % Dirichlet boundary condition at right boundary
         yBCR = varargin{rightBCi + 2};
         % Flux over the right boundary
         dXBCR = X(end) - X(end-1);
-        NBCR = (yBCR - y(end)) / dXBCR;
+        NBCR = (yBCR - y(end)) / (dXBCR/2); % ok for uniform mesh
 
         % Calculate first derivative
         result = [NBCL; coregrad; NBCR]; % gradients on compartment boundaries
