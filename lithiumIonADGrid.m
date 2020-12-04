@@ -482,9 +482,9 @@ classdef lithiumIonADGrid < handle
             [tne, bccell_ne] = ne.operators.harmFaceBC(ne.sigmaeff, face_ne);
             [tccne, bccell_ccne] = ccne.operators.harmFaceBC(ccne.sigmaeff, face_ccne);
             bcphi_ne = ne.am.phi(bccell_ne);
-            bcphi_ccne = ne.am.phi(bccell_ccne);
+            bcphi_ccne = ccne.am.phi(bccell_ccne);
             
-            obj.ne.j_bcsource   = ne.am.phi*0.0; %NB hack to initialize zero ad
+            obj.ne.j_bcsource = ne.am.phi*0.0; %NB hack to initialize zero ad
             obj.ccne.j_bcsource = ccne.am.phi*0.0; %NB hack to initialize zero ad
             
             t = 2./(1./tne + 1./tccne);
@@ -512,7 +512,7 @@ classdef lithiumIonADGrid < handle
             [tpe, bccell_pe] = pe.operators.harmFaceBC(pe.sigmaeff, face_pe);
             [tccpe, bccell_ccpe] = ccpe.operators.harmFaceBC(ccpe.sigmaeff, face_ccpe);
             bcphi_pe = pe.am.phi(bccell_pe);
-            bcphi_ccpe = pe.am.phi(bccell_ccpe);
+            bcphi_ccpe = ccpe.am.phi(bccell_ccpe);
             
             obj.pe.j_bcsource   = pe.am.phi*0.0; %NB hack to initialize zero ad
             obj.ccpe.j_bcsource = ccpe.am.phi*0.0; %NB hack to initialize zero ad
