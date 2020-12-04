@@ -487,7 +487,7 @@ classdef lithiumIonADGrid < handle
             obj.ne.j_bcsource = ne.am.phi*0.0; %NB hack to initialize zero ad
             obj.ccne.j_bcsource = ccne.am.phi*0.0; %NB hack to initialize zero ad
             
-            t = 2./(1./tne + 1./tccne);
+            t = 1./(1./tne + 1./tccne);
             crosscurrent = t.*(bcphi_ccne - bcphi_ne);
             obj.ne.j_bcsource(bccell_ne) = crosscurrent;
             obj.ccne.j_bcsource(bccell_ccne) = -crosscurrent;
@@ -507,8 +507,8 @@ classdef lithiumIonADGrid < handle
             obj.ccpe.j =  ccpe.operators.harmFace(ccpe.sigmaeff) .* (-1) .* ccpe.operators.Grad(ccpe.am.phi);
             
             % Add current transfers between ccne collector and ne material. They correspond to flux continuity
-            face_pe = 1;
-            face_ccpe = ccpe.Grid.faces.num;
+            face_pe = pe.Grid.faces.num;
+            face_ccpe = 1;
             [tpe, bccell_pe] = pe.operators.harmFaceBC(pe.sigmaeff, face_pe);
             [tccpe, bccell_ccpe] = ccpe.operators.harmFaceBC(ccpe.sigmaeff, face_ccpe);
             bcphi_pe = pe.am.phi(bccell_pe);
@@ -517,8 +517,8 @@ classdef lithiumIonADGrid < handle
             obj.pe.j_bcsource   = pe.am.phi*0.0; %NB hack to initialize zero ad
             obj.ccpe.j_bcsource = ccpe.am.phi*0.0; %NB hack to initialize zero ad
             
-            t = 2./(1./tpe + 1./tccpe);
-            crosscurrent = t.*(bcphi_ccpe - bcphi_ccpe);
+            t = 1./(1./tpe + 1./tccpe);
+            crosscurrent = t.*(bcphi_ccpe - bcphi_pe);
             obj.pe.j_bcsource(bccell_pe) = crosscurrent;
             obj.ccpe.j_bcsource(bccell_ccpe) = -crosscurrent;
             
