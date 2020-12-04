@@ -318,7 +318,7 @@ classdef lithiumIon < handle
             
             %% Current collectors
             Ncne = obj.ccne.N;
-            obj.ccne.am.OCP = obj.pe.am.OCP(1) .* ones(Ncne, 1);
+            obj.ccne.am.OCP = obj.ne.am.OCP(1) .* ones(Ncne, 1);
             obj.ccne.am.phi = obj.ccne.am.OCP;
             obj.ccne.am.eps = obj.ccne.am.eps .* ones(Ncne, 1);
             
