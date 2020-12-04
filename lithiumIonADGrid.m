@@ -51,7 +51,6 @@ classdef lithiumIonADGrid < handle
         % Postprocessing properties
         display     % Display simulation output, |'final'|'monitor'|'off'|
         style       % Style for the display
-        use_org
         AutoDiffBackend
     end
     
@@ -67,7 +66,6 @@ classdef lithiumIonADGrid < handle
                 SOC = varargin(1);
                 T   = varargin(2);
             end
-            obj.use_org=false;
             %% Set default simulation parameters
             obj.sim{1}          = 'dynamic';        % Definition of simulation type
             obj.sim{2}          = 'isothermal';     % Definition of simulation type
