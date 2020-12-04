@@ -203,7 +203,6 @@ classdef lithiumIonADGrid < handle
             % Time discretization
             obj.fv.ti = 0;
             obj.fv.tf = 3600*24;
-            obj.fv.tf = 30;
             obj.fv.dt = 10;
             obj.fv.tUp = 0.1;
             obj.fv.tSpan = (obj.fv.ti:obj.fv.dt:obj.fv.tf);
