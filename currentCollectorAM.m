@@ -54,7 +54,12 @@ classdef currentCollectorAM < handle
             obj.name = 'current collector';
             
             % Define material constants
-            obj.sigma = 1e3; % [S m^-1]
+            % negative current collector (copper)
+            % obj.sigma = 5.96e7; % [S m^-1]
+            % positive current collector (aluminium)
+            % obj.sigma = 3.77e7; % [S m^-1]
+            % for now 
+            obj.sigma = 100; % [S m^-1]
             obj.T = T;
             
         end
