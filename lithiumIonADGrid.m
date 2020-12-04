@@ -355,6 +355,7 @@ classdef lithiumIonADGrid < handle
         function dynamicPreprocess(obj)
             
             %% Initialize the state vector
+            obj.ccpe.E = obj.pe.E;
             obj.fv.y0   = [ obj.elyte.sp.Li.ceps;
                             obj.elyte.phi;
                             obj.ne.am.Li.cseps;
@@ -362,7 +363,8 @@ classdef lithiumIonADGrid < handle
                             obj.pe.am.Li.cseps;
                             obj.pe.am.phi;
                             obj.ccne.am.phi;
-                            obj.ccpe.am.phi];
+                            obj.ccpe.am.phi;
+                            obj.ccpe.E];
             
             %% Inititalize the state time derivative vector
             obj.fv.yp0  = zeros(length(obj.fv.y0),1);
@@ -370,29 +372,31 @@ classdef lithiumIonADGrid < handle
             %% Store state slots
             % s1 : obj.elyte.sp.Li.ceps
             i = 0; di = obj.elyte.N;
-            obj.fv.s1   = i + (1 : di);
+            obj.fv.s1 = i + (1 : di);
             % s2 : obj.elyte.phi
             i = i + di; di = obj.elyte.N;
-            obj.fv.s2   = i + (1 : di);
+            obj.fv.s2 = i + (1 : di);
             % s3 : obj.ne.am.Li.cseps
             i = i + di; di = obj.ne.N;
-            obj.fv.s3   = i + (1 : di);
+            obj.fv.s3 = i + (1 : di);
             % s4 : obj.ne.am.phi
             i = i + di; di = obj.ne.N;
-            obj.fv.s4   = i + (1 : di);
+            obj.fv.s4 = i + (1 : di);
             % s5 : obj.pe.am.Li.cseps
             i = i + di; di = obj.pe.N;
-            obj.fv.s5   = i + (1 : di);
+            obj.fv.s5 = i + (1 : di);
             % s6 : obj.pe.am.phi
             i = i + di; di = obj.pe.N;
-            obj.fv.s6   = i + (1 : di);
+            obj.fv.s6 = i + (1 : di);
             % s7 : obj.ccne.am.phi
             i = i + di; di = obj.ccne.N;
-            obj.fv.s7   = i + (1 : di);
+            obj.fv.s7 = i + (1 : di);
             % s8 : obj.ccpe.am.phi
             i = i + di; di = obj.ccpe.N;
-            obj.fv.s8   = i + (1 : di);
-            
+            obj.fv.s8 = i + (1 : di);
+            i = i + di;
+            obj.fv.s9 = i + 1;  
+             
         end
         
         function dynamicReadState(obj, y, yp, varargin)
@@ -416,6 +420,7 @@ classdef lithiumIonADGrid < handle
             obj.pe.am.phi        = y(fv.s6);
             obj.ccne.am.phi      = y(fv.s7);
             obj.ccpe.am.phi      = y(fv.s8);
+            obj.ccpe.E           = y(fv.s9);
             
             obj.elyte.sp.Li.cepsdot = yp(fv.s1);
             obj.ne.am.Li.csepsdot   = yp(fv.s3);
@@ -491,7 +496,7 @@ classdef lithiumIonADGrid < handle
             obj.ne.j_bcsource(bccell_ne) = crosscurrent;
             obj.ccne.j_bcsource(bccell_ccne) = -crosscurrent;
             
-            % We impose the boundary condition at some of the boundary cells of the anode current collector
+            % We impose the boundary condition at chosen boundary cells of the anode current collector
             faceleft = 1; 
             bcLeft = 0; 
             [t, cells] = obj.ccne.operators.harmFaceBC(obj.ccne.sigmaeff, faceleft);
@@ -521,8 +526,13 @@ classdef lithiumIonADGrid < handle
             obj.pe.j_bcsource(bccell_pe) = crosscurrent;
             obj.ccpe.j_bcsource(bccell_ccpe) = -crosscurrent;
             
+            % We impose the boundary condition at chosen boundary cells of the anode current collector
+            faceright = obj.ccpe.Grid.faces.num; 
+            bcright = obj.ccpe.E; 
+            [t, cells] = obj.ccpe.operators.harmFaceBC(obj.ccpe.sigmaeff, faceright);
+            obj.ccpe.j_bcsource(cells) = obj.ccpe.j_bcsource(cells) + t.*(bcright - obj.ccpe.am.phi(cells));
+            
             %% Cell voltage
-            obj.ccpe.E = obj.ccpe.am.phi(end);
             obj.ccne.E = 0;            
             obj.U = obj.ccpe.E - obj.ccne.E;
             
@@ -663,24 +673,28 @@ classdef lithiumIonADGrid < handle
             obj.pe.am.e.chargeCont = (obj.pe.operators.Div(obj.pe.j) - obj.pe.j_bcsource)./ ...
                 obj.pe.Grid.cells.volumes./obj.con.F - obj.pe.am.e.source;
             
-            src = currentSource(t, fv.tUp, fv.tf, obj.J);
-            ccne_src = -src;
-            obj.ccne.am.e.chargeCont = (obj.ccne.operators.Div(obj.ccne.j) - obj.ccne.j_bcsource)./ ...
-                obj.ccne.Grid.cells.volumes./obj.con.F - ccne_src;
-            ccpe_src = src;
-            obj.ccpe.am.e.chargeCont = (obj.ccpe.operators.Div(obj.ccpe.j) - obj.ccpe.j_bcsource)./ ...
-                obj.ccpe.Grid.cells.volumes./obj.con.F - ccpe_src;
             
+            obj.ccne.am.e.chargeCont = (obj.ccne.operators.Div(obj.ccne.j) - obj.ccne.j_bcsource)./ ...
+                obj.ccne.Grid.cells.volumes./obj.con.F;
+            obj.ccpe.am.e.chargeCont = (obj.ccpe.operators.Div(obj.ccpe.j) - obj.ccpe.j_bcsource)./ ...
+                obj.ccpe.Grid.cells.volumes./obj.con.F;
+            
+            src = currentSource(t, fv.tUp, fv.tf, obj.J);
+            faceright = obj.pe.Grid.faces.num; 
+            bcright = obj.ccpe.E; 
+            [t, cells] = obj.ccpe.operators.harmFaceBC(obj.ccpe.sigmaeff, faceright);
+            control = src - t.*(bcright - obj.ccpe.am.phi(cells));
             
             %% State vector %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%             
             obj.soe = vertcat(obj.elyte.sp.Li.massCont, ...
-                              obj.elyte.chargeCont, ...
-                              obj.ne.am.Li.massCont, ...
-                              obj.ne.am.e.chargeCont, ...
-                              obj.pe.am.Li.massCont, ...
-                              obj.pe.am.e.chargeCont, ...
+                              obj.elyte.chargeCont    , ...
+                              obj.ne.am.Li.massCont   , ...
+                              obj.ne.am.e.chargeCont  , ...
+                              obj.pe.am.Li.massCont   , ...
+                              obj.pe.am.e.chargeCont  , ...
                               obj.ccne.am.e.chargeCont, ...
-                              obj.ccpe.am.e.chargeCont);
+                              obj.ccpe.am.e.chargeCont, ...
+                              control);
                              
         end
         
