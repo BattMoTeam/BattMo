@@ -24,9 +24,10 @@ classdef celgard2500 < FvModel
     end
     
     methods
-        function obj = celgard2500(dims, sizes)
-            %UNTITLED10 Construct an instance of this class
-            %   Detailed explanation goes here
+        function obj = celgard2500(compname, dims, sizes)
+            
+            obj = obj@FvModel(compname);
+            
             obj.t       = 10e-6;
             obj.void    = 0.55;
             obj.eps     = 1 - obj.void;
@@ -34,6 +35,10 @@ classdef celgard2500 < FvModel
             obj.G       = 200;
             
             obj.Grid = cartGrid(dims, sizes);
+            
+            obj.varnames = {'phi', 'Li'};
+            nc = obj.Grid.cells.num;
+            obj.varsizes = [nc, nc];
         end
 
     end

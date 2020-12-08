@@ -78,11 +78,10 @@ classdef orgLiPF6 < FvModel
     end
     
     methods
-        function obj = orgLiPF6(c, T, dims, sizes)
-            %orgLiPF6 Construct an instance of the orgLIPF6 class
-            %   obj = orgLiPF6(c, T) c is the concentration of LiPF6 with
-            %   units [mol m^-3] and T is electrolyte temperature in Kelvin
-            %   [K].
+        function obj = orgLiPF6(compname, c, T, dims, sizes)
+            
+            obj = obj@FvModel(compname);
+            
             obj.name = 'LiPF6';
             obj.c = c;
             obj.T = T;
@@ -123,6 +122,12 @@ classdef orgLiPF6 < FvModel
             IoSt = 0.5 .* obj.ion.cvec{1}.*obj.ion.zvec{1}.^2./1000;
             IoSt = IoSt + 0.5 .* obj.ion.cvec{2}.*obj.ion.zvec{2}.^2./1000;
             obj.IoSt = IoSt;
+                        
+            obj.Grid = cartGrid(dims, sizes);
+                        
+            obj.varnames = {'phi', 'Li'};
+            nc = obj.Grid.cells.num;
+            obj.varsizes = [nc, nc];
             
         end
         

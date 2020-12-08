@@ -38,9 +38,10 @@ classdef graphiteElectrode < FvModel
     end
     
     methods
-        function obj = graphiteElectrode(SOC, T, dims, sizes)
-            %UNTITLED6 Construct an instance of this class
-            %   Detailed explanation goes here
+        function obj = graphiteElectrode(compname, SOC, T, dims, sizes)
+            
+            obj = obj@FvModel(compname);
+            
             obj.am  = graphiteAM(SOC, T);
             obj.bin = ptfe();
             obj.sei = seiAM();
@@ -59,6 +60,10 @@ classdef graphiteElectrode < FvModel
             obj.E = obj.am.OCP;
             
             obj.Grid = cartGrid(dims, sizes);
+            
+            obj.varnames = {'phi', 'Li'};
+            nc = obj.Grid.cells.num;
+            obj.varsizes = [nc, nc];
             
         end
         

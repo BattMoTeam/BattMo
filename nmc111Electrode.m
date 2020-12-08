@@ -37,24 +37,29 @@ classdef nmc111Electrode < FvModel
     end
     
     methods
-        function obj = nmc111Electrode(SOC, T, dims, sizes)
-            %UNTITLED7 Construct an instance of this class
-            %   Detailed explanation goes here
+        function obj = nmc111Electrode(compname, SOC, T, dims, sizes)
+            
+            obj = obj@FvModel(compname);
+            
             obj.am = nmc111AM(SOC, T);
             obj.bin = ptfe();
             
             obj.am.eps = 0.8;
             
-            obj.eps =   obj.am.eps ...
-                        + obj.bin.eps;
+            obj.eps = obj.am.eps + obj.bin.eps;
                     
-            obj.t   = 10e-6;
-            obj.T   = T;
+            obj.t = 10e-6;
+            obj.T = T;
             
             obj.thermodynamics()
             obj.E = obj.am.OCP;
         
             obj.Grid = cartGrid(dims, sizes);
+            
+            obj.varnames = {'phi', 'Li'};
+            nc = obj.Grid.cells.num;
+            obj.varsizes = [nc, nc];
+            
         end
         
         function thermodynamics(obj)

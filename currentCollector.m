@@ -19,7 +19,7 @@ classdef currentCollector < FvModel
         E % Potential at the end of collector
         
         sigmaeff % effective solid conductivity
-        
+
         % Mesh properties (setup before simulation) s
         X
         Xb
@@ -29,7 +29,9 @@ classdef currentCollector < FvModel
     end
     
     methods
-        function obj = currentCollector(T, dims, grid)
+        function obj = currentCollector(compname, T, dims, grid)
+            
+            obj = obj@FvModel(compname);
             
             obj.am = currentCollectorAM(T);
             obj.am.eps = 1;
@@ -37,6 +39,9 @@ classdef currentCollector < FvModel
             obj.T = T;
 
             obj.Grid = cartGrid(dims, sizes);
+            
+            obj.varnames = {'phi'};
+            obj.varsizes = obj.Grid.cells.num;
         end
         
     end
