@@ -38,7 +38,7 @@ classdef graphiteElectrode < FvModel
     end
     
     methods
-        function obj = graphiteElectrode(SOC, T)
+        function obj = graphiteElectrode(SOC, T, dims, sizes)
             %UNTITLED6 Construct an instance of this class
             %   Detailed explanation goes here
             obj.am  = graphiteAM(SOC, T);
@@ -51,12 +51,15 @@ classdef graphiteElectrode < FvModel
                         + obj.bin.eps ...
                         + obj.sei.eps;
             
-            obj.t   = 10e-6;
+            obj.t = 10e-6;
             
             obj.T = T;
             
             obj.thermodynamics()
             obj.E = obj.am.OCP;
+            
+            obj.Grid = cartGrid(dims, sizes);
+            
         end
         
         function thermodynamics(obj)

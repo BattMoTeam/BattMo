@@ -29,14 +29,14 @@ classdef currentCollector < FvModel
     end
     
     methods
-        function obj = currentCollector(T)
+        function obj = currentCollector(T, dims, grid)
             
             obj.am = currentCollectorAM(T);
             obj.am.eps = 1;
             
             obj.T = T;
-            obj.t = 10e-6;
-            
+
+            obj.Grid = cartGrid(dims, sizes);
         end
         
     end
