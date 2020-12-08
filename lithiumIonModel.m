@@ -27,6 +27,10 @@ classdef lithiumIonModel < handle
         
         sep   % Separator object (not included in compnames)
 
+        % Coupling
+        coupnames
+        couplingTerms
+        
         % Model properties
         ...ecm
         ...spm
@@ -113,6 +117,18 @@ classdef lithiumIonModel < handle
             dims = [sepnx, ny]; sizes = [1e-6, 1e-6];
             obj.sep = celgard2500(dims, sizes);
 
+            %% setup couplings
+            coupTerms = {};
+            
+            % coupling term 'ne-cc'
+            coupTerms{end + 1} = setupNeElyteCoupTerm(obj);
+            coupTerms{end + 1} = setupPeElyteCoupTerm(obj);
+            coupTerms{end + 1} = setupCcneNeCoupTerm(obj);
+            coupTerms{end + 1} = setupCcpePeCoupTerm(obj);
+            coupTerms{end + 1} = setupBcCoupTerm(obj);
+            
+            coupnames = cellfun(@(x) x.name, coupTerms);
+            
             %% other properties
             
             obj.OCV = obj.pe.am.OCP - obj.ne.am.OCP;
@@ -132,7 +148,6 @@ classdef lithiumIonModel < handle
         function spm(obj)
             %SPM Creates a single particle model of the Li-ion battery
             %   Detailed explanation goes here
-
         end
 
         function [dfdy, dfdyp] = odederfun(obj, t, y, yp)
@@ -367,30 +382,24 @@ classdef lithiumIonModel < handle
                 [y, yp] = adbackend.initVariablesAD(y, yp);
             end
 
-            % mapping of variables is hacky : You should check that it matches with the defnition of the model (see setup in fv2d
-            % and order in compnames) 
+            % mapping of variables  
             
             % elyte variables
             obj.elyte.sp.Li.ceps = y(fv.getSlot{'elyte-Li'});
-            obj.elyte.phi        = y(fv.getSlot{'elyte-phi'});
-            
+            obj.elyte.phi = y(fv.getSlot{'elyte-phi'});
             % ne variables
             obj.ne.am.Li.cseps = y(fv.getSlot{'ne-Li'});
-            obj.ne.am.phi      = y(fv.getSlot{'ne-phi'});
-            
+            obj.ne.am.phi = y(fv.getSlot{'ne-phi'});
             % pe variables
             obj.pe.am.Li.cseps = y(fv.getSlot{'pe-Li'});
-            obj.pe.am.phi      = y(fv.getSlot{'pe-phi'});
-            
+            obj.pe.am.phi = y(fv.getSlot{'pe-phi'});
             % ccne variables
             obj.ccne.am.phi = y(fv.getSlot{'ccne-phi'});
-            
             % ccpe variables
             obj.ccpe.am.phi = y(fv.getSlot{'ccpe-phi'});
-            
             % voltage closure variable
             obj.ccpe.E = y(fv.getSlot{'E'});
-
+            
             % variables for time derivatives
             obj.elyte.sp.Li.cepsdot = yp(fv.getSlot{'elyte-Li'});
             obj.ne.am.Li.csepsdot   = yp(fv.getSlot{'ne-Li'});
@@ -404,15 +413,15 @@ classdef lithiumIonModel < handle
 
             %% Update electrolyte physicochemical and transport properties
             obj.elyte.update()
-            obj.elyte.kappaeff   = obj.elyte.kappa .* obj.elyte.eps .^1.5;
+            obj.elyte.kappaeff = obj.elyte.kappa .* obj.elyte.eps .^1.5;
             obj.elyte.sp.Li.Deff = obj.elyte.sp.Li.D .* obj.elyte.eps .^1.5;
 
             obj.ne.am.update()
-            obj.ne.am.Li.Deff  = obj.ne.am.Li.D .* obj.ne.am.eps.^1.5;
+            obj.ne.am.Li.Deff = obj.ne.am.Li.D .* obj.ne.am.eps.^1.5;
             obj.ne.sigmaeff = obj.ne.am.sigma .* obj.ne.am.eps.^1.5;
 
             obj.pe.am.update()
-            obj.pe.am.Li.Deff  = obj.pe.am.Li.D .* obj.pe.am.eps.^1.5;
+            obj.pe.am.Li.Deff = obj.pe.am.Li.D .* obj.pe.am.eps.^1.5;
             obj.pe.sigmaeff = obj.pe.am.sigma .* obj.pe.am.eps.^1.5;
 
             obj.ccne.sigmaeff = obj.ccne.am.sigma .* obj.ccne.am.eps.^1.5;
@@ -666,6 +675,68 @@ classdef lithiumIonModel < handle
 
             res = obj.soe;
         end
+        
+        function coupterm = getCoupTerm(obj, coupname)
+            coupnames = obj.coupnames;
+            
+            [isok, ind] = ismember(coupname, coupnames)
+            assert(isok, 'name of coupling term is not recognized.');
+            
+            coupterm = obj.coupTerms{ind};
+            
+        end
+      
+        
+        function coupTerm = setupNeElyteCoupTerm(obj)
+            gelyte = obj.elyte.Grid;
+            gne = obj.ne.Grid;
+            
+            compnames = {'ne', 'elyte'};
+            
+            coupTerm = couplingTerm('ne-elyte', compnames);
+            
+            nelyte = gelyte.cells.num;
+            elyte_x = gelyte.centroids(:, 1);
+            elyte_y = gelyte.centroids(:, 2);
+            
+            nne = gne.cells.num;
+            ne_x = gne.centroids(:, 1);
+            ne_y = gne.centroids(:, 2);
+            
+            elyte_x = repmat(elyte_x', nne, 1);
+            elyte_y = repmat(elyte_y', nne, 1);
+            ne_x = repmat(ne_x, 1, nelyte);
+            ne_y = repmat(ne_y, 1, nelyte);
+            
+            match_x = abs(elyte_x - ne_x) < eps;
+            match_y = abs(elyte_y - ne_y) < eps;
+            
+            match = match_x & match_y;
+            
+            [cells1, cells2] = find(match);
+            
+            coupcells{1} = cells1;
+            coupcells{2} = cells2;
+            
+            coupTerm.coupcells =  coupcells;
+            
+            % no coupling throug faces. We set it as empty
+            coupTerm.coupfaces = [];
+            
+        end
+            
+        function coupTerm = setupPeElyteCoupTerm(obj)
+        end
+            
+        function coupTerm = setupCcneNeCoupTerm(obj)
+        end
+            
+        function coupTerm = setupCcpePeCoupTerm(obj)
+        end
+            
+        function coupTerm = setupBcCoupTerm(obj)
+        end
+            
     end
 
 end
