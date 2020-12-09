@@ -4,7 +4,6 @@ classdef fv2d
 
         varnames
         varsizes
-        varnum
         
         % Time discretization properties
         ti          % Initial time, s
@@ -25,11 +24,13 @@ classdef fv2d
     end
     
     methods
+        
         function obj = fv2d(model)
             
-            compnames = model.compnames
+            compnames = model.componentnames;
             
             varnames = {};
+            varsizes = {};
             slots = {};
             ind = 0;
             
@@ -40,30 +41,40 @@ classdef fv2d
                 compvarnum   = model.(compname).varnum;
                 for icv = 1 : compvarnum
                     compvarname = compvarnames{icv};
-                    compvarsize = compvarsizes{icv};
-                    varnames{end + 1} = fprintf('%s-%s', compname, compvarname);
+                    compvarsize = compvarsizes(icv);
+                    varnames{end + 1} = sprintf('%s-%s', compname, compvarname);
                     varsizes{end + 1} = compvarsize;
                     slots{end + 1} = ind + (1 : compvarsize)';
                     ind = ind + compvarsize;
                 end                
             end
             
+            % we add the potential
+            varnames{end + 1} = 'E';
+            varsizes{end + 1} = 1;
+            slots{end + 1} = ind + 1;
+            
+            obj.varnames = varnames;
+            obj.varsizes = varsizes;
+            obj.slots = slots;
+            
         end
-    end
-    
-    function n = varnum(obj)
-        n = numel(obj.varnames);
-    end
-    
-    function slot = getSlot(obj, varname)
         
-        slots = obj.slots;
-        varnames = obj.varnames;
+        function n = varnum(obj)
+            n = numel(obj.varnames);
+        end
         
-        [isok, ind] = ismember(varname, varnames);
-        assert(isok, 'variable name not found');
+        function slot = getSlot(obj, varname)
         
-        slot = slots{ind};
+            slots = obj.slots;
+            varnames = obj.varnames;
+            
+            [isok, ind] = ismember(varname, varnames);
+            assert(isok, 'variable name not found');
+            
+            slot = slots{ind};
+        end
+        
     end
     
 end
