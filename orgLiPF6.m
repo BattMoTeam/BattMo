@@ -100,6 +100,11 @@ classdef orgLiPF6 < FvModel
             obj.update();
             
             obj.Grid = genSubGrid(G, cells);
+            
+            obj.varnames = {'phi', 'Li'};
+            nc = obj.Grid.cells.num;
+            obj.varsizes = [nc, nc];
+        
         end
         
         function update(obj)
@@ -122,12 +127,6 @@ classdef orgLiPF6 < FvModel
             IoSt = 0.5 .* obj.ion.cvec{1}.*obj.ion.zvec{1}.^2./1000;
             IoSt = IoSt + 0.5 .* obj.ion.cvec{2}.*obj.ion.zvec{2}.^2./1000;
             obj.IoSt = IoSt;
-                        
-            obj.Grid = cartGrid(dims, sizes);
-                        
-            obj.varnames = {'phi', 'Li'};
-            nc = obj.Grid.cells.num;
-            obj.varsizes = [nc, nc];
             
         end
         
