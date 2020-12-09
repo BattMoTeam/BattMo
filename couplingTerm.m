@@ -11,7 +11,7 @@ classdef couplingTerm
         
         function obj = couplingTerm(name, compnames)
             obj.name = name;
-            obj.compnames = compnames;
+            obj.componentnames = compnames;
         end
         
     end
