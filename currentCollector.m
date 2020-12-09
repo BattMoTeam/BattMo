@@ -29,7 +29,7 @@ classdef currentCollector < FvModel
     end
     
     methods
-        function obj = currentCollector(compname, T, dims, grid)
+        function obj = currentCollector(compname, T, G, cells)
             
             obj = obj@FvModel(compname);
             
