@@ -14,13 +14,6 @@ classdef celgard2500 < FvModel
         rp      % Pore radius,      [m]
         G       % Gurley number,    [s]
         
-        % Mesh properties
-        X
-        Xb
-        N
-        dombin
-     
-        
     end
     
     methods

@@ -28,12 +28,6 @@ classdef graphiteElectrode < FvModel
         j       % Current density,      [A/m2]
         R       % Reaction Rate
         T       % Temperature
-        
-        % Mesh properties (updated before simulation)
-        X
-        Xb
-        N
-        dombin
                 
     end
     

@@ -63,13 +63,6 @@ classdef orgLiPF6 < FvModel
         D           % Diffusion coefficient,                [m^2 s^-1]
         Deff        % Porous media diffusion coefficient,   [m^2 s^-1]
         
-        % Mesh properties
-        X
-        Xb
-        N
-        dombin
-        
-        
         % Finite volume solution properties
         chargeCont
         

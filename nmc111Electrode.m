@@ -28,12 +28,6 @@ classdef nmc111Electrode < FvModel
         R
         T       % Temperature
         
-        % Mesh properties
-        X
-        Xb
-        N
-        dombin
-        
     end
     
     methods

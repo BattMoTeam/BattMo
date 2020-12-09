@@ -20,11 +20,6 @@ classdef currentCollector < FvModel
         
         sigmaeff % effective solid conductivity
 
-        % Mesh properties (setup before simulation) s
-        X
-        Xb
-        N
-        dombin
                 
     end
     
