@@ -92,7 +92,7 @@ classdef lithiumIonModel < handle
             ccpenx = 5;
             
             nxs = [ccnenx; nenx; sepnx; penx; ccpenx];
-            ny = 10;
+            ny = 1;
 
             xlength = 1e-6*ones(5, 1);
             ylength = 1e-6;
@@ -194,20 +194,17 @@ classdef lithiumIonModel < handle
 
             % Generate the FV mesh
             obj.fv = fv2d(obj);
-            compnames = obj.compnames;
+            compnames = obj.componentnames;
             
-            for i = 1 : numel(compnames)
-                dd = ff{i};
-                obj.(dd).Grid = cartGrid([obj.(dd).N], [max(obj.(dd).Xb) - min(obj.(dd).Xb)]);
-                obj.(dd).Grid.nodes.coords(:, 1) = obj.(dd).Grid.nodes.coords(:, 1) + min(obj.(dd).Xb);
-                obj.(dd).Grid = computeGeometry(obj.(dd).Grid);
+            for icomp = 1 : numel(compnames)
+                compname = compnames{icomp};
                 % We use MRST to setup discrete differential operators (Div and Grad).
-                cst = ones(obj.(dd).Grid.cells.num, 1);
+                cst = ones(obj.(compname).Grid.cells.num, 1);
                 rock = struct('perm', cst, 'poro', cst);
-                obj.(dd).operators = setupOperatorsTPFA(obj.(dd).Grid, rock);
-                obj.(dd).operators.allDiv = getAllDiv(obj.(dd).Grid);
-                obj.(dd).operators.harmFace = getFaceHarmMean(obj.(dd).Grid);
-                obj.(dd).operators.harmFaceBC = @(cvalue, faces) getFaceHarmBC(obj.(dd).Grid, cvalue, faces);
+                obj.(compname).operators = setupOperatorsTPFA(obj.(compname).Grid, rock);
+                obj.(compname).operators.allDiv = getAllDiv(obj.(compname).Grid);
+                obj.(compname).operators.harmFace = getFaceHarmMean(obj.(compname).Grid);
+                obj.(compname).operators.harmFaceBC = @(cvalue, faces) getFaceHarmBC(obj.(compname).Grid, cvalue, faces);
             end
 
             % Set initial conditions
@@ -249,23 +246,6 @@ classdef lithiumIonModel < handle
                              'Jacobian', derfun);
 
             [t, y] = ode15i(fun, obj.fv.tSpan', obj.fv.y0, obj.fv.yp0, options);
-
-            doplot = true;
-            dosave = false;
-            if doplot
-                resultname = 'test';
-                path = 'C:\Users\simonc\Documents\01_Projects\Electrochemical Modelling Toolbox\Batteries\';
-                day = date();
-                hrmin = clock();
-                hr = num2str(hrmin(4));
-                minhr = num2str(hrmin(5));
-                if dosave
-                    save([path, resultname, '-', day,'-', hr,'h', minhr,'m','.mat']);
-                end
-                if strcmpi(obj.display, 'final')
-                    plotSummary(obj,t,y);
-                end
-            end
 
         end
 
@@ -414,25 +394,25 @@ classdef lithiumIonModel < handle
             % Mapping of variables  
             
             % elyte variables
-            obj.elyte.sp.Li.ceps = y(fv.getSlot{'elyte-Li'});
-            obj.elyte.phi = y(fv.getSlot{'elyte-phi'});
+            obj.elyte.sp.Li.ceps = y(fv.getSlot('elyte-Li'));
+            obj.elyte.phi = y(fv.getSlot('elyte-phi'));
             % ne variables
-            obj.ne.am.Li.cseps = y(fv.getSlot{'ne-Li'});
-            obj.ne.am.phi = y(fv.getSlot{'ne-phi'});
+            obj.ne.am.Li.cseps = y(fv.getSlot('ne-Li'));
+            obj.ne.am.phi = y(fv.getSlot('ne-phi'));
             % pe variables
-            obj.pe.am.Li.cseps = y(fv.getSlot{'pe-Li'});
-            obj.pe.am.phi = y(fv.getSlot{'pe-phi'});
+            obj.pe.am.Li.cseps = y(fv.getSlot('pe-Li'));
+            obj.pe.am.phi = y(fv.getSlot('pe-phi'));
             % ccne variables
-            obj.ccne.am.phi = y(fv.getSlot{'ccne-phi'});
+            obj.ccne.am.phi = y(fv.getSlot('ccne-phi'));
             % ccpe variables
-            obj.ccpe.am.phi = y(fv.getSlot{'ccpe-phi'});
+            obj.ccpe.am.phi = y(fv.getSlot('ccpe-phi'));
             % voltage closure variable
-            obj.ccpe.E = y(fv.getSlot{'E'});
+            obj.ccpe.E = y(fv.getSlot('E'));
             
             % variables for time derivatives
-            obj.elyte.sp.Li.cepsdot = yp(fv.getSlot{'elyte-Li'});
-            obj.ne.am.Li.csepsdot   = yp(fv.getSlot{'ne-Li'});
-            obj.pe.am.Li.csepsdot   = yp(fv.getSlot{'pe-Li'});
+            obj.elyte.sp.Li.cepsdot = yp(fv.getSlot('elyte-Li'));
+            obj.ne.am.Li.csepsdot   = yp(fv.getSlot('ne-Li'));
+            obj.pe.am.Li.csepsdot   = yp(fv.getSlot('pe-Li'));
 
             obj.elyte.sp.Li.c  = obj.elyte.sp.Li.ceps ./ obj.elyte.eps;
             obj.elyte.sp.PF6.c = obj.elyte.sp.Li.c;
@@ -488,8 +468,8 @@ classdef lithiumIonModel < handle
 
             % Add current transfers between ccne collector and ne material. They correspond to flux continuity
             coupterm = obj.getCoupTerm('ccne-ne');
-            face_ccne = coupTerm.couplingfaces(:, 1);
-            face_ne = coupTerm.couplingfaces(:, 2);
+            face_ccne = coupterm.couplingfaces(:, 1);
+            face_ne = coupterm.couplingfaces(:, 2);
             [tne, bccell_ne] = ne.operators.harmFaceBC(ne.sigmaeff, face_ne);
             [tccne, bccell_ccne] = ccne.operators.harmFaceBC(ccne.sigmaeff, face_ccne);
             bcphi_ne = ne.am.phi(bccell_ne);
@@ -498,8 +478,8 @@ classdef lithiumIonModel < handle
             obj.ne.j_bcsource = ne.am.phi*0.0; %NB hack to initialize zero ad
             obj.ccne.j_bcsource = ccne.am.phi*0.0; %NB hack to initialize zero ad
 
-            t = 1./(1./tne + 1./tccne);
-            crosscurrent = t.*(bcphi_ccne - bcphi_ne);
+            trans = 1./(1./tne + 1./tccne);
+            crosscurrent = trans.*(bcphi_ccne - bcphi_ne);
             obj.ne.j_bcsource(bccell_ne) = crosscurrent;
             obj.ccne.j_bcsource(bccell_ccne) = -crosscurrent;
 
@@ -507,8 +487,8 @@ classdef lithiumIonModel < handle
             coupterm = obj.getCoupTerm('bc-ccne');
             faces = coupterm.couplingfaces;
             bcval = zeros(numel(faces), 1);
-            [t, cells] = obj.ccne.operators.harmFaceBC(obj.ccne.sigmaeff, faceleft);
-            obj.ccne.j_bcsource(cells) = obj.ccne.j_bcsource(cells) + t.*(bcval - obj.ccne.am.phi(cells));
+            [tccne, cells] = obj.ccne.operators.harmFaceBC(obj.ccne.sigmaeff, faces);
+            obj.ccne.j_bcsource(cells) = obj.ccne.j_bcsource(cells) + tccne.*(bcval - obj.ccne.am.phi(cells));
 
             % Active material PE and current collector
 
@@ -520,8 +500,8 @@ classdef lithiumIonModel < handle
 
             % Add current transfers between ccpe collector and pe material. They correspond to flux continuity
             coupterm = obj.getCoupTerm('ccpe-pe');
-            face_ccpe = coupTerm.couplingfaces(:, 1);
-            face_pe = coupTerm.couplingfaces(:, 2);
+            face_ccpe = coupterm.couplingfaces(:, 1);
+            face_pe = coupterm.couplingfaces(:, 2);
             [tpe, bccell_pe] = pe.operators.harmFaceBC(pe.sigmaeff, face_pe);
             [tccpe, bccell_ccpe] = ccpe.operators.harmFaceBC(ccpe.sigmaeff, face_ccpe);
             bcphi_pe = pe.am.phi(bccell_pe);
@@ -530,17 +510,17 @@ classdef lithiumIonModel < handle
             obj.pe.j_bcsource   = pe.am.phi*0.0; %NB hack to initialize zero ad
             obj.ccpe.j_bcsource = ccpe.am.phi*0.0; %NB hack to initialize zero ad
 
-            t = 1./(1./tpe + 1./tccpe);
-            crosscurrent = t.*(bcphi_ccpe - bcphi_pe);
+            trans = 1./(1./tpe + 1./tccpe);
+            crosscurrent = trans.*(bcphi_ccpe - bcphi_pe);
             obj.pe.j_bcsource(bccell_pe) = crosscurrent;
             obj.ccpe.j_bcsource(bccell_ccpe) = -crosscurrent;
 
             % We impose the boundary condition at chosen boundary cells of the anode current collector
-            coupterm = obj.getCoupTerm('bc-ccpe')
+            coupterm = obj.getCoupTerm('bc-ccpe');
             faces = coupterm.couplingfaces;
             bcval = obj.ccpe.E;
-            [t, cells] = obj.ccpe.operators.harmFaceBC(obj.ccpe.sigmaeff, faces);
-            obj.ccpe.j_bcsource(cells) = obj.ccpe.j_bcsource(cells) + t.*(bcval - obj.ccpe.am.phi(cells));
+            [tccpe, cells] = obj.ccpe.operators.harmFaceBC(obj.ccpe.sigmaeff, faces);
+            obj.ccpe.j_bcsource(cells) = obj.ccpe.j_bcsource(cells) + tccpe.*(bcval - obj.ccpe.am.phi(cells));
 
             %% Cell voltage
             obj.ccne.E = 0;
@@ -570,38 +550,44 @@ classdef lithiumIonModel < handle
                 obj.pe.am.e.source     = adbackend.convertToAD(obj.pe.am.e.source, adsample);
             end
 
-            % Calculate reaction rates
+            %%%%% Set up chemical source terms %%%%%%%%%%%%%%%%%k
+            
+            %%%%% NE  %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+            
+            coupterm = obj.getCoupTerm('ne-elyte');
+            necells = coupterm.couplingcells(:, 1);
+            elytecells = coupterm.couplingcells(:, 2);
 
-            % Update reaction values
-            coupterm = obj.getCoupTerm('elyte-ne');
-            elytecells = coupterm.couplingcells(:, 1);
+            % calculate rection rate
             obj.ne.reactBV(obj.elyte.phi(elytecells));
 
-            coupterm = obj.getCoupTerm('elyte-pe');
-            elytecells = coupterm.couplingcells(:, 1);
-            obj.pe.reactBV(obj.elyte.phi(elytecells));
-
-            % Set up chemical source terms
-            %%%%% Li+ Sources %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
             % Electrolyte NE Li+ source
-            obj.elyte.sp.Li.source(elyte_ne.from) = +1 .* obj.ne.R;
+            obj.elyte.sp.Li.source(elytecells) = +1 .* obj.ne.R;
+            
+            % Active Material NE Li0 source
+            obj.ne.am.Li.source(necells) = -1 .* obj.ne.R;
+            
+            % Active Material NE current source
+            obj.ne.am.e.source(necells) = +1 .* obj.ne.R;
+
+            %%%%% PE %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
             % Electrolyte PE Li+ source
-            obj.elyte.sp.Li.source(elyte_pe.from) = -1 .* obj.pe.R;
+            coupterm = obj.getCoupTerm('pe-elyte');
+            pecells = coupterm.couplingcells(:, 1);
+            elytecells = coupterm.couplingcells(:, 2);
+            
+            % calculate rection rate
+            obj.pe.reactBV(obj.elyte.phi(elytecells));
 
-            %%%%% Li0 Sources %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-            % Active Material NE Li0 source
-            obj.ne.am.Li.source(elyte_ne.to) = -1 .* obj.ne.R;
-
-            % Active Material PE Li0 source
-            obj.pe.am.Li.source(elyte_pe.to) = +1 .* obj.pe.R;
-
-            %%%%% e- Sources %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-            % Active Material NE Li0 source
-            obj.ne.am.e.source(elyte_ne.to) = +1 .* obj.ne.R;
+            % Electrolyte PE Li+ source
+            obj.elyte.sp.Li.source(elytecells) = -1 .* obj.pe.R;
 
             % Active Material PE Li0 source
-            obj.pe.am.e.source(elyte_pe.to) = -1 .* obj.pe.R;
+            obj.pe.am.Li.source(pecells) = +1 .* obj.pe.R;
+
+            % Active Material PE current source
+            obj.pe.am.e.source(pecells) = -1 .* obj.pe.R;
 
             %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
             %% Diffusion Flux                                           %%%
@@ -661,10 +647,11 @@ classdef lithiumIonModel < handle
                 obj.ccpe.Grid.cells.volumes./obj.con.F;
 
             src = currentSource(t, fv.tUp, fv.tf, obj.J);
-            faceright = obj.pe.Grid.faces.num;
-            bcright = obj.ccpe.E;
-            [t, cells] = obj.ccpe.operators.harmFaceBC(obj.ccpe.sigmaeff, faceright);
-            control = src - t.*(bcright - obj.ccpe.am.phi(cells));
+            coupterm = obj.getCoupTerm('bc-ccpe');
+            faces = coupterm.couplingfaces;
+            bcval = obj.ccpe.E;
+            [tccpe, cells] = obj.ccpe.operators.harmFaceBC(obj.ccpe.sigmaeff, faces);
+            control = src - sum(tccpe.*(bcval - obj.ccpe.am.phi(cells)));
 
             %% State vector %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
             obj.soe = vertcat(obj.elyte.sp.Li.massCont, ...
@@ -716,8 +703,8 @@ classdef lithiumIonModel < handle
       
         
         function coupTerm = setupNeElyteCoupTerm(obj)
-            Gelyte = obj.elyte.Grid;
             Gne = obj.ne.Grid;
+            Gelyte = obj.elyte.Grid;
             
             % parent Grid
             G = Gne.mappings.parentGrid;
@@ -739,8 +726,8 @@ classdef lithiumIonModel < handle
             
         function coupTerm = setupPeElyteCoupTerm(obj)
             
-            Gelyte = obj.elyte.Grid;
             Gpe = obj.pe.Grid;
+            Gelyte = obj.elyte.Grid;
             
             % parent Grid
             G = Gpe.mappings.parentGrid;
@@ -951,135 +938,6 @@ function plotMesh(obj)
 
 end
 
-function plotElyteConcentration(obj, varargin)
-
-    if isempty(varargin)
-        plot(obj.fv.X.*1e3, obj.elyte.sp.Li.c.*1e-3, 'LineWidth', 5)
-        xlabel('Position  /  mm')
-        ylabel('LiPF_6 Conc.  /  mol\cdotL^{-1}')
-        eval(obj.style.name)
-    end
-
-end
-
-function plotElytePotential(obj, varargin)
-
-    if isempty(varargin)
-        plot(obj.fv.X.*1e3, obj.elyte.phi, 'LineWidth', 5)
-        xlabel('Position  /  mm')
-        ylabel('Electric Potential  /  V')
-        eval(obj.style.name)
-    end
-
-end
-
-function plotPotentials(obj, varargin)
-
-    if isempty(varargin)
-        plot(obj.fv.X.*1e3, obj.elyte.phi, 'LineWidth', 5)
-        hold on
-        plot(obj.ne.X.*1e3, obj.ne.am.phi, 'LineWidth', 5)
-        plot(obj.pe.X.*1e3, obj.pe.am.phi, 'LineWidth', 5)
-        xlabel('Position  /  mm')
-        ylabel('Electric Potential  /  V')
-        eval(obj.style.name)
-    end
-
-end
-
-function plotCurrentDensity(obj, varargin)
-
-    if isempty(varargin)
-        plot(obj.fv.Xb.*1e3, obj.elyte.j, 'LineWidth', 5)
-        hold on
-        plot(obj.ne.Xb.*1e3, obj.ne.j, 'LineWidth', 5)
-        plot(obj.pe.Xb.*1e3, obj.pe.j, 'LineWidth', 5)
-        xlabel('Position  /  mm')
-        ylabel('Current Density  /  A m^{-2}')
-        eval(obj.style.name)
-    end
-
-end
-
-function plotSummary(obj,t,y,varargin)
-
-    close all
-
-    if ~isempty(varargin)
-        teval = varargin;
-        [~,~,idt]=unique(round(abs(t-teval)),'stable');
-    else
-        idt = length(t);
-    end
-
-    Epe = y(:, obj.fv.s8);
-    Epe = Epe(:, end);
-    figure(1), plot(t./3600, Epe -obj.ne.E, 'LineWidth', 5)
-    ylim([2, 4.2])
-    xlabel('Time  /  h')
-    ylabel('Cell Voltage  /  V')
-    eval(obj.style.name)
-
-    figure(2)
-    subplot(2,3,1:3), plot(obj.elyte.X.*1e3, 1e-3.*y(idt, obj.fv.s1)./obj.elyte.eps', 'LineWidth', 5)
-    xlabel('Position  /  mm')
-    ylabel('LiPF_6 Conc.  /  mol\cdotL^{-1}')
-    eval([obj.style.name, '("subplot")'])
-    set(gca, 'FontSize', 14)
-
-    subplot(2,3,4), plot(obj.ne.X.*1e3, y(idt, obj.fv.s3)./obj.ne.am.eps' ./ obj.ne.am.Li.cmax, 'LineWidth', 5)
-    xlabel('Position  /  mm')
-    %ylabel('Li Conc.  /  mol\cdotL^{-1}')
-    eval([obj.style.name, '("subplot")'])
-    set(gca, 'FontSize', 14)
-
-    subplot(2,3,6), plot(obj.pe.X.*1e3, y(idt, obj.fv.s5)./obj.pe.am.eps'./ obj.pe.am.Li.cmax, 'LineWidth', 5)
-    xlabel('Position  /  mm')
-    %ylabel('Li Conc.  /  mol\cdotL^{-1}')
-    eval([obj.style.name, '("subplot")'])
-    set(gca, 'FontSize', 14)
-
-    figure(3)
-    subplot(2,3,1:3), plot(obj.elyte.X.*1e3, y(idt, obj.fv.s2), 'LineWidth', 5)
-    xlabel('Position  /  mm')
-    ylabel('Electric Potential  /  V')
-    eval([obj.style.name, '("subplot")'])
-    set(gca, 'FontSize', 14)
-
-    subplot(2,3,4), plot(obj.ne.X.*1e3, y(idt, obj.fv.s4), 'LineWidth', 5)
-    xlabel('Position  /  mm')
-    %ylabel('Li Conc.  /  mol\cdotL^{-1}')
-    eval([obj.style.name, '("subplot")'])
-    set(gca, 'FontSize', 14)
-
-    subplot(2,3,6), plot(obj.pe.X.*1e3, y(idt, obj.fv.s6), 'LineWidth', 5)
-    xlabel('Position  /  mm')
-    %ylabel('Li Conc.  /  mol\cdotL^{-1}')
-    eval([obj.style.name, '("subplot")'])
-    set(gca, 'FontSize', 14)
-
-end
-
-function figureWindow(obj,font)
-    figure()
-    set(gca,'FontSize',28, ...
-            'color',obj.style.background, ...
-            'ColorOrder', obj.style.palette.discrete)
-    ax = gca;
-    ax.XColor = 'w';
-    ax.YColor = 'w';
-    set(gcf,'units','centimeter',...
-            'position',[5,5,obj.style.width,obj.style.height], ...
-            'color',obj.style.background)
-    if nargin < 2
-        set(gca, 'FontName', 'Helvetica')
-    elseif srtcmpi(font, 'serif') == 1
-        set(gca, 'FontName', 'Baskerville Old Face')
-    else
-        set(gca, 'FontName', 'Helvetica')
-    end
-    hold on
-end
 
 function cells = pickTensorCells(istart, ni, nx, ny)
     cells = (istart : (istart + ni - 1));
