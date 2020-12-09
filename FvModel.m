@@ -12,18 +12,22 @@ classdef FvModel < handle
         
     end
     
-    function obj = FvModel(compname)
-        obj.compname = compname;
-    end
-    
-    function n = varnum(obj)
-    % number of variables used for this model
-        n = numel(varnames);
-    end
-    
-    function n = N(obj)
-    % number of grid cell (function used a short-cut)
-        n = obj.Grid.cells.num;
+    methods
+
+        function obj = FvModel(compname)
+            obj.compname = compname;
+        end
+        
+        function n = varnum(obj)
+        % number of variables used for this model
+            n = numel(varnames);
+        end
+        
+        function n = N(obj)
+        % number of grid cell (function used a short-cut)
+            n = obj.Grid.cells.num;
+        end
+        
     end
         
 end
