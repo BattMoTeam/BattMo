@@ -15,8 +15,11 @@ classdef lithiumIonModel < handle
         % Physical constants
         con = physicalConstants();
 
+        % Grid
+        G
+        
         % Component names
-        compnames
+        componentnames
         
         % Component properties
         elyte % Electrolyte object
@@ -28,7 +31,7 @@ classdef lithiumIonModel < handle
         sep   % Separator object (not included in compnames)
 
         % Coupling
-        coupnames
+        couplingnames
         couplingTerms
         
         % Model properties
@@ -36,8 +39,7 @@ classdef lithiumIonModel < handle
         ...spm
         ...p2d
 
-        % Finite volume properties
-        fv          % Finite volume object
+        fv % Variable mapping structure
 
         % State properties
         T           % Temperature,              [K]
@@ -104,8 +106,10 @@ classdef lithiumIonModel < handle
             y = [0; cumsum(y)];
             
             G = tensorGrid(x, y);
+            G = computeGeometry(G);
+            obj.G = G;
             
-            compnames = {'elyte', 'ne', 'pe', 'ccne', 'ccpe'};
+            obj.componentnames = {'elyte', 'ne', 'pe', 'ccne', 'ccpe'};
             
             %% setup elyte
             nx = sum(nxs); 
@@ -113,12 +117,12 @@ classdef lithiumIonModel < handle
             istart = ccnenx + 1;
             ni = nenx + sepnx + penx;
             cells = pickTensorCells(istart, ni, nx, ny);
-            obj.elyte = orgLiPF6(1000, T, G, cells);
+            obj.elyte = orgLiPF6('elyte', 1000, T, G, cells);
             
             %% setup ne
             istart = ccnenx + 1;
             cells = pickTensorCells(istart, nenx, nx, ny);
-            obj.ne = graphiteElectrode('ne', SOC,_T, G, cells);
+            obj.ne = graphiteElectrode('ne', SOC, T, G, cells);
             
             %% setup pe
             istart = ccnenx + nenx + sepnx + 1;
@@ -138,7 +142,7 @@ classdef lithiumIonModel < handle
             %% setup sep 
             istart = ccnenx + nenx + 1;
             cells = pickTensorCells(istart, sepnx, nx, ny);
-            obj.sep = celgard2500(G, cells);
+            obj.sep = celgard2500('sep', G, cells);
 
             %% setup couplings
             coupTerms = {};
@@ -148,9 +152,11 @@ classdef lithiumIonModel < handle
             coupTerms{end + 1} = setupPeElyteCoupTerm(obj);
             coupTerms{end + 1} = setupCcneNeCoupTerm(obj);
             coupTerms{end + 1} = setupCcpePeCoupTerm(obj);
-            coupTerms{end + 1} = setupBcCoupTerm(obj);
+            coupTerms{end + 1} = setupCcneBcCoupTerm(obj);
+            coupTerms{end + 1} = setupCcpeBcCoupTerm(obj);
             
-            coupnames = cellfun(@(x) x.name, coupTerms);
+            obj.couplingTerms = coupTerms;
+            obj.couplingnames = cellfun(@(x) x.name, coupTerms, 'uniformoutput', false);
             
             %% other properties
             
@@ -699,12 +705,12 @@ classdef lithiumIonModel < handle
         end
         
         function coupterm = getCoupTerm(obj, coupname)
-            coupnames = obj.coupnames;
+            coupnames = obj.couplingnames;
             
-            [isok, ind] = ismember(coupname, coupnames)
+            [isok, ind] = ismember(coupname, coupnames);
             assert(isok, 'name of coupling term is not recognized.');
             
-            coupterm = obj.coupTerms{ind};
+            coupterm = obj.couplingTerms{ind};
             
         end
       
@@ -714,7 +720,7 @@ classdef lithiumIonModel < handle
             Gne = obj.ne.Grid;
             
             % parent Grid
-            G = Gne.mappings.parentG;
+            G = Gne.mappings.parentGrid;
             
             % All the cells from ne are coupled with elyte
             cells1 = (1 : Gne.cells.num)';
@@ -737,7 +743,7 @@ classdef lithiumIonModel < handle
             Gpe = obj.pe.Grid;
             
             % parent Grid
-            G = Gpe.mappings.parentG;
+            G = Gpe.mappings.parentGrid;
             
             % All the cells from pe are coupled with elyte
             cells1 = (1 : Gpe.cells.num)';
@@ -760,7 +766,7 @@ classdef lithiumIonModel < handle
             Gne = obj.ne.Grid;
             
             % parent Grid
-            G = Gne.mappings.parentG;
+            G = Gne.mappings.parentGrid;
             
             % We pick up the faces at the right of Cccne
             xf = Gccne.faces.centroids(:, 1);
@@ -769,11 +775,11 @@ classdef lithiumIonModel < handle
             
             pfaces = Gccne.mappings.facemap(faces1);
             mapping = zeros(G.faces.num, 1);
-            mapping(Gpe.mappings.facemap) = (1 : Gpe.faces.num)';
+            mapping(Gne.mappings.facemap) = (1 : Gne.faces.num)';
             faces2 = mapping(pfaces);
             
-            cells1 = sum(Gne.faces.neighbors(faces1, :));
-            cells2 = sum(Gccne.faces.neighbors(faces2, :));
+            cells1 = sum(Gccne.faces.neighbors(faces1, :), 2);
+            cells2 = sum(Gne.faces.neighbors(faces2, :), 2);
             
             compnames = {'ccne', 'ne'};
             coupTerm = couplingTerm('ccne-ne', compnames);
@@ -787,20 +793,20 @@ classdef lithiumIonModel < handle
             Gpe = obj.pe.Grid;
             
             % parent Grid
-            G = Gpe.mappings.parentG;
+            G = Gpe.mappings.parentGrid;
             
             % We pick up the faces at the left of Cccpe
             xf = Gccpe.faces.centroids(:, 1);
             mxf = min(xf);
-            faces1 = find(xf < (1 - eps)*mxf);
+            faces1 = find(xf < (1 + eps)*mxf);
             
             pfaces = Gccpe.mappings.facemap(faces1);
             mapping = zeros(G.faces.num, 1);
             mapping(Gpe.mappings.facemap) = (1 : Gpe.faces.num)';
             faces2 = mapping(pfaces);
             
-            cells1 = sum(Gpe.faces.neighbors(faces1, :));
-            cells2 = sum(Gccpe.faces.neighbors(faces2, :));
+            cells1 = sum(Gccpe.faces.neighbors(faces1, :), 2);
+            cells2 = sum(Gpe.faces.neighbors(faces2, :), 2);
             
             compnames = {'ccpe', 'pe'};
             coupTerm = couplingTerm('ccpe-pe', compnames);
@@ -814,9 +820,9 @@ classdef lithiumIonModel < handle
             G = obj.ccne.Grid;
             % We pick up the faces at the top of Cccne
             yf = G.faces.centroids(:, 2);
-            myf = min(yf);
-            faces = find(yf < (1 - eps)*myf);            
-            cells = sum(G.faces.neighbors(faces, :));
+            myf = max(yf);
+            faces = find(yf > (1 - eps)*myf);            
+            cells = sum(G.faces.neighbors(faces, :), 2);
             
             compnames = {'ccne'};
             coupTerm = couplingTerm('bc-ccne', compnames);
@@ -825,14 +831,14 @@ classdef lithiumIonModel < handle
         
         end
            
-        function coupTerm = setupCcneBcCoupTerm(obj)
+        function coupTerm = setupCcpeBcCoupTerm(obj)
             
             G = obj.ccpe.Grid;
             % We pick up the faces at the top of Cccpe
             yf = G.faces.centroids(:, 2);
-            myf = min(yf);
-            faces = find(yf < (1 - eps)*myf);            
-            cells = sum(G.faces.neighbors(faces, :));
+            myf = max(yf);
+            faces = find(yf > (1 - eps)*myf);            
+            cells = sum(G.faces.neighbors(faces, :), 2);
             
             compnames = {'ccpe'};
             coupTerm = couplingTerm('bc-ccpe', compnames);
@@ -846,7 +852,7 @@ classdef lithiumIonModel < handle
 end
 
 function [T, cells] = getFaceHarmBC(G, cvalue, faces)
-    cells = sum(G.faces.neighbors(faces, :));
+    cells = sum(G.faces.neighbors(faces, :), 2);
     cn = sqrt(sum((G.faces.centroids(faces, :) - G.cells.centroids(cells, :)).^2, 2));
     t = G.faces.areas(faces)./cn;
     T = t.*cvalue(cells);
