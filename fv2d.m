@@ -42,7 +42,7 @@ classdef fv2d
                 for icv = 1 : compvarnum
                     compvarname = compvarnames{icv};
                     compvarsize = compvarsizes(icv);
-                    varnames{end + 1} = sprintf('%s-%s', compname, compvarname);
+                    varnames{end + 1} = sprintf('%s_%s', compname, compvarname);
                     varsizes{end + 1} = compvarsize;
                     slots{end + 1} = ind + (1 : compvarsize)';
                     ind = ind + compvarsize;

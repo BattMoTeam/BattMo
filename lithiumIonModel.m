@@ -92,7 +92,7 @@ classdef lithiumIonModel < handle
             ccpenx = 5;
             
             nxs = [ccnenx; nenx; sepnx; penx; ccpenx];
-            ny = 1;
+            ny = 10;
 
             xlength = 1e-6*ones(5, 1);
             ylength = 1e-6;
@@ -394,25 +394,25 @@ classdef lithiumIonModel < handle
             % Mapping of variables  
             
             % elyte variables
-            obj.elyte.sp.Li.ceps = y(fv.getSlot('elyte-Li'));
-            obj.elyte.phi = y(fv.getSlot('elyte-phi'));
+            obj.elyte.sp.Li.ceps = y(fv.getSlot('elyte_Li'));
+            obj.elyte.phi = y(fv.getSlot('elyte_phi'));
             % ne variables
-            obj.ne.am.Li.cseps = y(fv.getSlot('ne-Li'));
-            obj.ne.am.phi = y(fv.getSlot('ne-phi'));
+            obj.ne.am.Li.cseps = y(fv.getSlot('ne_Li'));
+            obj.ne.am.phi = y(fv.getSlot('ne_phi'));
             % pe variables
-            obj.pe.am.Li.cseps = y(fv.getSlot('pe-Li'));
-            obj.pe.am.phi = y(fv.getSlot('pe-phi'));
+            obj.pe.am.Li.cseps = y(fv.getSlot('pe_Li'));
+            obj.pe.am.phi = y(fv.getSlot('pe_phi'));
             % ccne variables
-            obj.ccne.am.phi = y(fv.getSlot('ccne-phi'));
+            obj.ccne.am.phi = y(fv.getSlot('ccne_phi'));
             % ccpe variables
-            obj.ccpe.am.phi = y(fv.getSlot('ccpe-phi'));
+            obj.ccpe.am.phi = y(fv.getSlot('ccpe_phi'));
             % voltage closure variable
             obj.ccpe.E = y(fv.getSlot('E'));
             
             % variables for time derivatives
-            obj.elyte.sp.Li.cepsdot = yp(fv.getSlot('elyte-Li'));
-            obj.ne.am.Li.csepsdot   = yp(fv.getSlot('ne-Li'));
-            obj.pe.am.Li.csepsdot   = yp(fv.getSlot('pe-Li'));
+            obj.elyte.sp.Li.cepsdot = yp(fv.getSlot('elyte_Li'));
+            obj.ne.am.Li.csepsdot   = yp(fv.getSlot('ne_Li'));
+            obj.pe.am.Li.csepsdot   = yp(fv.getSlot('pe_Li'));
 
             obj.elyte.sp.Li.c  = obj.elyte.sp.Li.ceps ./ obj.elyte.eps;
             obj.elyte.sp.PF6.c = obj.elyte.sp.Li.c;
@@ -891,51 +891,6 @@ function allDiv = getAllDiv(G)
     C = sparse([ifn; ifn], N, ones(inf, 1) * [1,- 1], nf, nc);
     C = C + sparse(efn, Nb, signb, nf, nc);
     allDiv = @(x) (C'*x)./G.cells.volumes;
-end
-
-function plotMesh(obj)
-
-    subplot(3,1,1), plot(obj.fv.Xb.*1e3, zeros(size(obj.fv.Xb)),'+','MarkerSize',5, 'LineWidth',2, 'Color', obj.style.palette.discrete(1,:));
-    hold on
-    plot(obj.fv.X.*1e3, zeros(size(obj.fv.X)),'o','MarkerSize',5, 'LineWidth',2, 'Color', obj.style.palette.discrete(7,:));
-    hold off
-    xlim([min(obj.fv.Xb), obj.fv.Xb(10)].*1e3);
-    set(gca,'FontSize',28, ...
-            'color',obj.style.background, ...
-            'ColorOrder', obj.style.palette.discrete)
-    ax = gca;
-    ax.XColor = 'w';
-    ax.YColor = 'w';
-    title('Finite Volume Mesh: Left Bound', 'Color', 'w')
-
-    subplot(3,1,2), plot(obj.fv.Xb.*1e3, zeros(size(obj.fv.Xb)),'+','MarkerSize',5, 'LineWidth',2, 'Color', obj.style.palette.discrete(1,:));
-    hold on
-    plot(obj.fv.X.*1e3, zeros(size(obj.fv.X)),'o','MarkerSize',5, 'LineWidth',2, 'Color', obj.style.palette.discrete(7,:));
-    hold off
-    xlim([min(obj.fv.Xb), max(obj.fv.Xb)].*1e3);
-    set(gca,'FontSize',28, ...
-            'color',obj.style.background, ...
-            'ColorOrder', obj.style.palette.discrete)
-    ax = gca;
-    ax.XColor = 'w';
-    ax.YColor = 'w';
-    title('Finite Volume Mesh: Whole Domain', 'Color', 'w')
-
-    subplot(3,1,3), plot(obj.fv.Xb.*1e3, zeros(size(obj.fv.Xb)),'+','MarkerSize',5, 'LineWidth',2, 'Color', obj.style.palette.discrete(1,:));
-    hold on
-    plot(obj.fv.X.*1e3, zeros(size(obj.fv.X)),'o','MarkerSize',5, 'LineWidth',2, 'Color', obj.style.palette.discrete(7,:));
-    hold off
-    xlim([obj.fv.Xb(end-10), max(obj.fv.Xb)].*1e3);
-    set(gca,'FontSize',28, ...
-            'color',obj.style.background, ...
-            'ColorOrder', obj.style.palette.discrete)
-    ax = gca;
-    ax.XColor = 'w';
-    ax.YColor = 'w';
-    title('Finite Volume Mesh: Right Bound', 'Color', 'w')
-    hold off
-    xlabel('Location  /  mm')
-
 end
 
 

@@ -94,7 +94,7 @@ classdef orgLiPF6 < FvModel
             
             obj.Grid = genSubGrid(G, cells);
             
-            obj.varnames = {'phi', 'Li'};
+            obj.varnames = {'Li', 'phi'};
             nc = obj.Grid.cells.num;
             obj.varsizes = [nc, nc];
         
