@@ -37,7 +37,7 @@ classdef nmc111Electrode < FvModel
     end
     
     methods
-        function obj = nmc111Electrode(compname, SOC, T, dims, sizes)
+        function obj = nmc111Electrode(compname, SOC, T, G, cells)
             
             obj = obj@FvModel(compname);
             
@@ -54,7 +54,7 @@ classdef nmc111Electrode < FvModel
             obj.thermodynamics()
             obj.E = obj.am.OCP;
         
-            obj.Grid = cartGrid(dims, sizes);
+            obj.Grid = genSubGrid(G, cells);
             
             obj.varnames = {'phi', 'Li'};
             nc = obj.Grid.cells.num;

@@ -38,7 +38,7 @@ classdef graphiteElectrode < FvModel
     end
     
     methods
-        function obj = graphiteElectrode(compname, SOC, T, dims, sizes)
+        function obj = graphiteElectrode(compname, SOC, T, G, cells)
             
             obj = obj@FvModel(compname);
             
@@ -59,7 +59,7 @@ classdef graphiteElectrode < FvModel
             obj.thermodynamics()
             obj.E = obj.am.OCP;
             
-            obj.Grid = cartGrid(dims, sizes);
+            obj.Grid = genSubGrid(G, cells);
             
             obj.varnames = {'phi', 'Li'};
             nc = obj.Grid.cells.num;

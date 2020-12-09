@@ -78,7 +78,7 @@ classdef orgLiPF6 < FvModel
     end
     
     methods
-        function obj = orgLiPF6(compname, c, T, dims, sizes)
+        function obj = orgLiPF6(compname, c, T, G, cells)
             
             obj = obj@FvModel(compname);
             
@@ -99,7 +99,7 @@ classdef orgLiPF6 < FvModel
             
             obj.update();
             
-            obj.Grid = cartGrid(dims, sizes);
+            obj.Grid = genSubGrid(G, cells);
         end
         
         function update(obj)

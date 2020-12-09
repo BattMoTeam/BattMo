@@ -38,7 +38,7 @@ classdef currentCollector < FvModel
             
             obj.T = T;
 
-            obj.Grid = cartGrid(dims, sizes);
+            obj.Grid = genSubGrid(G, cells);
             
             obj.varnames = {'phi'};
             obj.varsizes = obj.Grid.cells.num;

@@ -24,7 +24,7 @@ classdef celgard2500 < FvModel
     end
     
     methods
-        function obj = celgard2500(compname, dims, sizes)
+        function obj = celgard2500(compname, G, cells)
             
             obj = obj@FvModel(compname);
             
@@ -34,7 +34,7 @@ classdef celgard2500 < FvModel
             obj.rp      = 0.064e-6 ./ 2;
             obj.G       = 200;
             
-            obj.Grid = cartGrid(dims, sizes);
+            obj.Grid = genSubGrid(G, cells);
             
             obj.varnames = {'phi', 'Li'};
             nc = obj.Grid.cells.num;
