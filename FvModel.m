@@ -20,7 +20,7 @@ classdef FvModel < handle
         
         function n = varnum(obj)
         % number of variables used for this model
-            n = numel(varnames);
+            n = numel(obj.varnames);
         end
         
         function n = N(obj)
