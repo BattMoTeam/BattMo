@@ -655,6 +655,7 @@ classdef lithiumIonModel < handle
             obj.ccpe.am.e.chargeCont = (obj.ccpe.operators.Div(obj.ccpe.j) - obj.ccpe.j_bcsource)./ ...
                 obj.ccpe.Grid.cells.volumes./obj.con.F;
 
+            %% control equation
             src = currentSource(t, fv.tUp, fv.tf, obj.J);
             coupterm = obj.getCoupTerm('bc-ccpe');
             faces = coupterm.couplingfaces;
