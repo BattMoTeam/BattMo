@@ -75,6 +75,9 @@ classdef lithiumIonModel < handle
                 SOC = varargin(1);
                 T   = varargin(2);
             end
+            
+            obj.T   = T;
+            
             %% Set default simulation parameters
             obj.sim{1}        = 'dynamic';        % Definition of simulation type
             obj.sim{2}        = 'isothermal';     % Definition of simulation type
@@ -83,6 +86,41 @@ classdef lithiumIonModel < handle
             obj.style.name    = 'nightfury';      % Set style of the output
             obj.style.aspect  = 1/sqrt(2);        % Set plot aspect ratio
 
+            obj = setupComponents(obj, SOC);
+
+            %% setup couplings
+            coupTerms = {};
+            
+            % coupling term 'ne-cc'
+            coupTerms{end + 1} = setupNeElyteCoupTerm(obj);
+            coupTerms{end + 1} = setupPeElyteCoupTerm(obj);
+            coupTerms{end + 1} = setupCcneNeCoupTerm(obj);
+            coupTerms{end + 1} = setupCcpePeCoupTerm(obj);
+            coupTerms{end + 1} = setupCcneBcCoupTerm(obj);
+            coupTerms{end + 1} = setupCcpeBcCoupTerm(obj);
+            
+            obj.couplingTerms = coupTerms;
+            obj.couplingnames = cellfun(@(x) x.name, coupTerms, 'uniformoutput', false);
+            
+            %% other properties
+            
+            obj.OCV = obj.pe.am.OCP - obj.ne.am.OCP;
+            obj.U   = obj.OCV;
+
+            obj.I    = 0;
+            obj.A    = 100 ./ 10000;
+            obj.J    = 1;
+            obj.Ucut = 2;
+
+            obj.AutoDiffBackend = AutoDiffBackend();
+            %obj.AutoDiffBackend = DiagonalAutoDiffBackend();
+            %obj.AutoDiffBackend.useMex=false;
+        end
+
+        function obj = setupComponents(obj, SOC)
+        
+            T = obj.T;
+            
             %% Define battery components
             
             sepnx  = 10;
@@ -143,37 +181,8 @@ classdef lithiumIonModel < handle
             istart = ccnenx + nenx + 1;
             cells = pickTensorCells(istart, sepnx, nx, ny);
             obj.sep = celgard2500('sep', G, cells);
-
-            %% setup couplings
-            coupTerms = {};
-            
-            % coupling term 'ne-cc'
-            coupTerms{end + 1} = setupNeElyteCoupTerm(obj);
-            coupTerms{end + 1} = setupPeElyteCoupTerm(obj);
-            coupTerms{end + 1} = setupCcneNeCoupTerm(obj);
-            coupTerms{end + 1} = setupCcpePeCoupTerm(obj);
-            coupTerms{end + 1} = setupCcneBcCoupTerm(obj);
-            coupTerms{end + 1} = setupCcpeBcCoupTerm(obj);
-            
-            obj.couplingTerms = coupTerms;
-            obj.couplingnames = cellfun(@(x) x.name, coupTerms, 'uniformoutput', false);
-            
-            %% other properties
-            
-            obj.OCV = obj.pe.am.OCP - obj.ne.am.OCP;
-            obj.U   = obj.OCV;
-            obj.T   = T;
-
-            obj.I    = 0;
-            obj.A    = 100 ./ 10000;
-            obj.J    = 1;
-            obj.Ucut = 2;
-
-            obj.AutoDiffBackend = AutoDiffBackend();
-            %obj.AutoDiffBackend = DiagonalAutoDiffBackend();
-            %obj.AutoDiffBackend.useMex=false;
         end
-
+        
         function spm(obj)
             %SPM Creates a single particle model of the Li-ion battery
             %   Detailed explanation goes here
@@ -891,12 +900,4 @@ function allDiv = getAllDiv(G)
     C = sparse([ifn; ifn], N, ones(inf, 1) * [1,- 1], nf, nc);
     C = C + sparse(efn, Nb, signb, nf, nc);
     allDiv = @(x) (C'*x)./G.cells.volumes;
-end
-
-
-function cells = pickTensorCells(istart, ni, nx, ny)
-    cells = (istart : (istart + ni - 1));
-    cells = repmat(cells, ny, 1);
-    cells = bsxfun(@plus, nx*(0 : (ny - 1))', cells);
-    cells = reshape(cells', [], 1);
 end
