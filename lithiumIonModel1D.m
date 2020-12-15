@@ -21,7 +21,7 @@ classdef lithiumIonModel1D < lithiumIonModel
             ny = 1;
 
             xlength = 1e-6*ones(5, 1);
-            ylength = 1e-6;
+            ylength = 1;
             
             x = xlength./nxs;
             x = rldecode(x, nxs);
