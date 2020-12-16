@@ -1,44 +1,41 @@
-classdef currentCollector < FvModel
-    %UNTITLED6 Summary of this class goes here
-    %   Detailed explanation goes here
+classdef currentCollector < SimpleModel
+% Current collector model 
     
     properties
-        
-        % Physical constants
-        con = physicalConstants();
-        
-        % Design properties
-        t % Thickness,        [m]
-        
-        % Material properties
-        am % Active material object
-        
-        % State properties
-        j % Current density,      [A/m2]
-        T % Temperature
-        E % Potential at the end of collector
-        
-        sigmaeff % effective solid conductivity
-
-                
+        eps;
+        sigma;
     end
     
     methods
-        function obj = currentCollector(compname, T, G, cells)
+        function model = currentCollector(G, cells)
             
-            obj = obj@FvModel(compname);
+            model = model@SimpleModel();
+            model.eps = 1;
+            model.G = genSubGrid(G, cells);
             
-            obj.am = currentCollectorAM(T);
-            obj.am.eps = 1;
-            
-            obj.T = T;
+        end
 
-            obj.Grid = genSubGrid(G, cells);
-            
-            obj.varnames = {'phi'};
-            obj.varsizes = obj.Grid.cells.num;
+        function [globalnames, localnames] = getModelPrimaryVarNames(model)
+            localnames = {'phi'};
+            globalnames = model.setupGlobalNames(localnames);
         end
         
+        function [globalnames, localnames] = getModelVarNames(model)
+            localnames = {'E', ...       % Potential at the end of collector
+                          'j', ...       % Current density, [A/m2]
+                          'sigmaeff' ... % effective solid conductivity
+                          'OCP', ...     % Open-circuit potential [V];
+                          'refOCP', ...  % Reference open circuit potential at standard temperature [V]
+                         };
+            globalnames = model.setupGlobalNames(localnames);
+        end        
+
+        function [globalnames, localnames] = getVarNames(model)
+            [globalnames, localnames] = getVarNames@SimpleModel(model);
+            globalnames{end + 1} = 'T';
+            localnames{end + 1} = 'T';
+        end
+
     end
 end
 

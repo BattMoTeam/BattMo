@@ -20,7 +20,6 @@ classdef graphiteElectrode < CompositeModel
         
         % Effective conductivity
         sigmaeff
-
                 
     end
     

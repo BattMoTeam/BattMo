@@ -1,5 +1,5 @@
-classdef nmc111Electrode < FvModel
-    %NMC111ELECTRODE Summary of this class goes here
+classdef nmc111Electrode < CompositeModel
+    %  NMC111ELECTRODE Summary of this class goes here
     %   Detailed explanation goes here
     
     properties
@@ -13,7 +13,6 @@ classdef nmc111Electrode < FvModel
         void    % Porosity,         [-]
         
         % Material properties
-        am      % Active material object
         bin     % Binder object
         ca      % Conducting additive object
         cei     % Cathode-electrolyte interphase (CEI) object
@@ -33,54 +32,80 @@ classdef nmc111Electrode < FvModel
     methods
         function obj = nmc111Electrode(compname, SOC, T, G, cells)
             
-            obj = obj@FvModel(compname);
+            model = model@CompositeModel();
+            model.G = genSubGrid(G, cells);
             
-            obj.am = nmc111AM(SOC, T);
-            obj.bin = ptfe();
+            % setup graphite submodel
+            nmc111model = nmc111AM();
+            model.SubModels{1} = nmc111model;
+            model.SubModelNames{1} = 'nmc111';
+            model = model.initiateCompositeModel();
             
-            obj.am.eps = 0.8;
-            
-            obj.eps = obj.am.eps + obj.bin.eps;
-                    
-            obj.t = 10e-6;
-            obj.T = T;
-            
-            obj.thermodynamics()
-            obj.E = obj.am.OCP;
-        
-            obj.Grid = genSubGrid(G, cells);
-            
-            obj.varnames = {'Li', 'phi'};
-            nc = obj.Grid.cells.num;
-            obj.varsizes = [nc, nc];
-            
+            model.bin = ptfe();
+            model.eps = nmc111model.eps + model.bin.eps;
+            model.t = 10e-6;
         end
         
-        function thermodynamics(obj)
-            %THERMODYNAMICS Summary of this method goes here
-            %   Detailed explanation goes here
-           
+        function state = initializeState(model, state)
+
+            varnames = model.getVarNames();
+            for i = 1 : numel(varnames)
+                varname = varnames{i};
+                if ~isfield(state, varname)
+                    state.(varname) = [];
+                end
+            end
+            nmc111model = model.getSubModel('nmc111');
+            state = nmc111model.initializeState(state);
+            OCP   = model.getProp(state, 'nmc111_OCP');
+            state = model.setProp(state, 'E', OCP);
+
+        end
+
+        
+        function [globalnames, localnames] = getModelVarNames(model)
             
-            % Electrochemical Thermodynamics
-            obj.am.equilibrium();
+            [globalnames1, localnames1] = getModelVarNames@CompositeModel(model);
             
+            localnames2 = {'E'  ,  ... % Electric potential,   [V]
+                           'eta',  ... % Overpotential,        [V]
+                           'j'  ,  ... % Current density,      [A/m2]
+                           'R'  ... % Reaction Rate,
+                          };
+            globalnames2 = model.setupGlobalNames(localnames2);
+            
+            globalnames = horzcat(globalnames1, globalnames2);
+            localnames = horzcat(localnames1, localnames2);
             
         end
+
+        function [globalnames, localnames] = getVarNames(model)
+            [globalnames, localnames] = model.getVarNames@CompositeModel();
+            localnames  = horzcat(localnames, {'T', 'SOC', 'phielyte'});
+            globalnames = horzcat(globalnames, {'T', 'SOC', 'phielyte'});
+        end
         
-        function reactBV(obj, phiElyte)
+        
+        function state = reactBV(model, state)
             
-            obj.thermodynamics();
+            nmc111model = model.getSubModel('nmc111');
             
-            obj.eta    =   -(obj.am.phi - ...
-                                phiElyte - ...
-                                obj.am.OCP);
+            state = nmc111model.updateEquilibrium(state);
+
+            T   = model.getProp(state, 'T');
+            eta = model.getProp(state, 'eta');
+            phiElite = model.getProp(state, 'phielyte');
+            
+            phi = nmc111model.getProp(state, 'phi');
+            OCP = nmc111model.getProp(state, 'OCP');
+            k   = nmc111model.getProp(state, 'k');
+            
+            eta = - (phi - phiElyte - OCP);
                                     
-            obj.R   =   obj.am.Asp .* butlerVolmer(   obj.am.k .* 1 .* obj.con.F, ...
-                                        0.5, ...
-                                        1, ...
-                                        obj.eta, ...
-                                        obj.T ) ./ (1 .* obj.con.F);
-                                    
+            R = nmc111model.Asp.*butlerVolmer(k.*model.con.F, 0.5, 1, eta, T) ./ (1 .* model.con.F);
+            
+            state = model.setProp(state, 'R');
+            
         end
     end
 end

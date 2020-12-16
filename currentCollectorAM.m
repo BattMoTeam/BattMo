@@ -12,11 +12,6 @@ classdef currentCollectorAM < handle
         
         % State properties
         T           % Temperature,                  [K]
-        phi         % Local electric potential,     [V]
-        refOCP      % Reference open circuit 
-                    % potential at standard
-                    % temperature                   [V]
-        OCP         % Open-circuit potential        [V]
         
         % State properties (not relevant or not used for the moment)
         dUdT        % Entropy change                [V K^-1]

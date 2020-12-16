@@ -1,4 +1,4 @@
-classdef nmc111AM < handle
+classdef nmc111AM < SimpleModel
     %NMC111AM An electrode active material class for electrochemical
     %modelling. 
     %   The nmc111 class describes the properties and
@@ -48,19 +48,18 @@ classdef nmc111AM < handle
         theta       % Lithiation,                   [-]
         k           % Reaction rate constant,       [m^2.5 mol^-0.5 s^-1]
         eps         % Volume fraction,              [-]
-        Asp         % Surface area,                 [m2 m^-3]
         
         % Physicochemical properties
-        MW          % Molecular weight,             [kg mol^-1]
         spCAh       % Specific Capacity,            [Ah kg^-1]
+        rho         % Mass Density,                 [kg m^-3] or [g L^-1]
         theta0      % Minimum lithiation, 0% SOC    [-]
         theta100    % Maximum lithiation, 100% SOC  [-]
-        rho         % Mass Density,                 [kg m^-3] or [g L^-1]
         sigma       % Solid conductivity,           [S m^-1]
-        lambda      % Thermal Conductivity,         [W m^-1 K^-1]
         cp          % Molar Heat Capacity,          [J kg^-1 K^-1]             
         k0          % Reference rate constant,      [m^2.5 mol^-0.5 s^-1]
-        Eak         % Reaction activation energy,   [J mol^-1]
+        Eak         % Reaction activation energy,   [J mol^-1] 
+        Asp         % Surface area,                 [m2 m^-3]
+        
     end
     
     methods
@@ -73,46 +72,57 @@ classdef nmc111AM < handle
             obj.name = 'nmc111';
             
             % Define material constants
-            obj.spCAh       = 155;      % [Ah kg^-1]
-            obj.rho         = 4650;     % [kg m^-3]
-            obj.theta0    = 0.99174;  % at 0% SOC [-]
-            obj.theta100    = 0.49550;  % at 100% SOC [-]
-            obj.Li.cmax        = 51554;    % [mol m^-3]
-            obj.Li.D0          = 1e-14;    % [m^2 s^-1]
-            obj.Li.EaD         = 5000;     % [J mol^-1]
-            obj.sigma       = 100;      % [S m^-1]
-            obj.cp          = 700;      % [J kg^-1 K^-1]
-            obj.k0          = 2.334e-11;% [m^2.5 mol^-0.5 s^-1]
-            obj.Eak         = 5000;     % [J mol^-1]
-            obj.Asp         = 885000;   % [m2 m^-3]
+            obj.spCAh    = 155;      % [Ah kg^-1]
+            obj.rho      = 4650;     % [kg m^-3]
+            obj.theta0   = 0.99174;  % at 0% SOC [-]
+            obj.theta100 = 0.49550;  % at 100% SOC [-]
+            obj.Li.cmax  = 51554;    % [mol m^-3]
+            obj.Li.D0    = 1e-14;    % [m^2 s^-1]
+            obj.Li.EaD   = 5000;     % [J mol^-1]
+            obj.sigma    = 100;      % [S m^-1]
+            obj.cp       = 700;      % [J kg^-1 K^-1]
+            obj.k0       = 2.334e-11;% [m^2.5 mol^-0.5 s^-1]
+            obj.Eak      = 5000;     % [J mol^-1]
+            obj.Asp      = 885000;   % [m2 m^-3]
             
-            % Define material state
-            obj.SOC = SOC;
-            m = (1 ./ (obj.theta100 - obj.theta0));
-            b = -m .* obj.theta0;
-            obj.theta = (obj.SOC - b) ./ m;
-            obj.Li.cs = obj.theta .* obj.Li.cmax;
-            obj.T = T;      
-            
-            % Update the properties
-            obj.update()
-            
-            obj.phi = obj.OCP;
+        end
 
+        function state = initializeState(model, state)
+        % Initialize material state
+
+            T = model.getProp(state, 'T');
+            SOC = model.getProp(state, 'SOC');
+            
+            m     = (1 ./ (model.theta100 - model.theta0));
+            b     = -m .* model.theta0;
+            theta = (SOC - b) ./ m;
+            cs    = theta .* model.Li.cmax;
+
+            state = model.setProp(state, 'theta', theta);
+            state = model.setProp(state, 'Li', cs);
+            
+            state = model.updateGraphiteModel(state);
+            
+            % set COP
+            OCP = model.getProp(state, 'OCP');
+            state = model.setProp(state, 'phi', OCP);
         end
+
         
-        function update(obj)
-            %UPDATE Update the electrode properties
-            %   Calculate the updated properties of the active material
-            %   at the given state.
-            obj.equilibrium()
-            obj.kinetics()
-            obj.diffusionCoefficient()
+        function state = updateNMC111Model(model, state)
+        % Update the electrode properties
+        % Calculate the updated properties of the active material
+        % at the given state.
+            state = model.updateEquilibrium(state);
+            state = model.updateDiffusion(state);
+            state = model.updateKinetics(state);
         end
+
         
-        function kinetics(obj)
-            %KINETICS Calculate the kinetic parameters for the Li+
-            %intercalation reaction
+        function state = updateKinetics(model, state)
+        %KINETICS Calculate the kinetic parameters for the Li+ intercalation reaction
+            
+            T = model.getProp(state, 'T');
             
             % Define ideal gas constant
             R = 8.314;      % [J mol^-1 K^-1]
@@ -121,11 +131,15 @@ classdef nmc111AM < handle
             refT = 298.15;  % [K]
             
             % Calculate reaction rate constant
-            obj.k = obj.k0 .* exp( -obj.Eak ./ R .* (1./obj.T-1/refT));
-            
+            model.k = model.k0 .* exp( -model.Eak ./ R .* (1./model.T-1/refT));
+            k = model.k0 .* exp( -model.Eak ./ model.con.R .* (1./T-1/refT));
+                
+            state = model.setProp(state, 'k', k);
+                
+                
         end
         
-        function diffusionCoefficient(obj)
+        function diffusionCoefficient(model)
             %DIFFUSIONCOEFFICIENT Calculate the solid diffusion coefficient of Li+ in
             %the active material
             %   Calculate the solid phase diffusion coefficient of Li+ in
@@ -136,62 +150,75 @@ classdef nmc111AM < handle
             
             % Define reference temperature
             refT = 298.15;  % [K]
-           
-            % Calculate solid diffusion coefficient, [m^2 s^-1]
-            obj.Li.D = obj.Li.D0 .* exp(-obj.Li.EaD./R*(1./obj.T-1/refT));
             
+            T = model.getProp(state, 'T');
+                       
+            % Calculate solid diffusion coefficient, [m^2 s^-1]
+            D = model.Li.D0.*exp(-model.Li.EaD./R*(1./T - 1/refT));
+            
+            state = model.setProp(state, 'D', D);
             
         end
         
-        function equilibrium(obj)
-            %EQUILIBRIUM Calculate the equilibrium properties of the
-            %electrode active material
-            %   Calculate the equilibrium open cirucuit potential of
-            %   nmc111 according to the model used by Torchio et al [1].
+        function equilibrium(model)
+        %EQUILIBRIUM Calculate the equilibrium properties of the
+        %electrode active material
+        %   Calculate the equilibrium open cirucuit potential of
+        %   nmc111 according to the model used by Torchio et al [1].
 
+
+            T     = model.getProp(state, 'T');
+            cs    = model.getProp(state, 'Li');
+            theta = model.getProp(state, 'theta');
+            
             % Set the reference temperature
             refT = 298.15;
 
-                    % Calculate the lithiation of the active material. This
-                    % is a simplification for the initial code! The "real"
-                    % value of theta should be calculated using the surface
-                    % concentration of Li and the maximum lithium
-                    % concentration:
-                    %
-                    obj.theta = obj.Li.cs ./ obj.Li.cmax;
-                    %obj.theta = (obj.theta0 - obj.theta100) .* obj.SOC + obj.theta100;
-                    
-                    % Calculate the open-circuit potential at the reference
-                    % temperature for the given lithiation
-                    obj.refOCP =  ( -4.656 ...
-                        + 88.669 .* obj.theta.^2 ...
-                        - 401.119 .* obj.theta.^4 ...
-                        + 342.909 .* obj.theta.^6 ...
-                        - 462.471 .* obj.theta.^8 ...
-                        + 433.434 .* obj.theta.^10 ) ./ ...
-                       ( -1 ...
-                        + 18.933 .* obj.theta.^2 ...
-                        - 79.532 .* obj.theta.^4 ...
-                        + 37.311 .* obj.theta.^6 ...
-                        - 73.083 .* obj.theta.^8 ...
-                        + 95.960 .* obj.theta.^10 );
+            % Calculate the lithiation of the active material. This
+            % is a simplification for the initial code! The "real"
+            % value of theta should be calculated using the surface
+            % concentration of Li and the maximum lithium
+            % concentration:
+            %
+            theta = cs ./ model.Li.cmax;
+            %model.theta = (model.theta0 - model.theta100) .* model.SOC + model.theta100;
+            
+            % Calculate the open-circuit potential at the reference
+            % temperature for the given lithiation
+            refOCP =  ( -4.656 ...
+                        + 88.669 .* theta.^2 ...
+                        - 401.119 .* theta.^4 ...
+                        + 342.909 .* theta.^6 ...
+                        - 462.471 .* theta.^8 ...
+                        + 433.434 .* theta.^10 ) ./ ...
+                      ( -1 ...
+                        + 18.933 .* theta.^2 ...
+                        - 79.532 .* theta.^4 ...
+                        + 37.311 .* theta.^6 ...
+                        - 73.083 .* theta.^8 ...
+                        + 95.960 .* theta.^10 );
 
-                    % Calculate the entropy change at the given lithiation
-                    obj.dUdT = -1e-3 .* ...
-                       (  0.199521039 ...
-                        - 0.928373822 .* obj.theta ...
-                        + 1.364550689000003 .* obj.theta.^2 ...
-                        - 0.611544893999998 .* obj.theta.^3 ) ./ ...
-                       (  1 ...
-                        - 5.661479886999997 .* obj.theta ...
-                        + 11.47636191 .* obj.theta.^2 ...
-                        - 9.82431213599998 .* obj.theta.^3 ...
-                        + 3.048755063 .* obj.theta.^4 );
+            % Calculate the entropy change at the given lithiation
+            dUdT = -1e-3 .* ...
+                   (  0.199521039 ...
+                      - 0.928373822 .* model.theta ...
+                      + 1.364550689000003 .* model.theta.^2 ...
+                      - 0.611544893999998 .* model.theta.^3 ) ./ ...
+                   (  1 ...
+                      - 5.661479886999997 .* model.theta ...
+                      + 11.47636191 .* model.theta.^2 ...
+                      - 9.82431213599998 .* model.theta.^3 ...
+                      + 3.048755063 .* model.theta.^4 );
 
-                    % Calculate the open-circuit potential of the active
-                    % material
-                    obj.OCP = obj.refOCP + (obj.T - refT) .* obj.dUdT;
+            % Calculate the open-circuit potential of the active
+            % material
+            OCP = refOCP + (T - refT) .* dUdT;
 
+            state = model.setProp(state, 'theta' , theta);
+            state = model.setProp(state, 'refOCP', refOCP);
+            state = model.setProp(state, 'OCP'   , OCP);
+            state = model.setProp(state, 'dUdT'  , dUdT);
+            
         end
         
     end

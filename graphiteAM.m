@@ -46,7 +46,6 @@ classdef graphiteAM < SimpleModel
         lambda      % Thermal Conductivity          [W m^-1 K^-1]
         cp          % Molar Heat Capacity           [J kg^-1 K^-1]             
         D0          % Diffusion coefficient         [m^2 s^-1]
-        D           % Diffusion coefficient         [m^2 s^-1]
         EaD         % Diffusion activ. energy       [J mol^-1]
         k0          % Reference rate constant       [m^2.5 mol^-0.5 s^-1]
         Eak         % Reaction activation energy    [J mol^-1]
@@ -90,9 +89,9 @@ classdef graphiteAM < SimpleModel
             cs    = theta .* model.Li.cmax;
 
             state = model.setProp(state, 'theta', theta);
-            state = model.setProp(state, 'cs', cs);
+            state = model.setProp(state, 'Li', cs);
             
-            state = model.update(state);
+            state = model.updateGraphiteModel(state);
             
             % set COP
             OCP = model.getProp(state, 'OCP');
@@ -118,6 +117,7 @@ classdef graphiteAM < SimpleModel
                           'dUdT', ...   % Entropy change                [V K^-1]
                           'theta', ...  % Lithiation                    [-]
                           'k', ...      % Reaction rate constant        [m^2.5 mol^-0.5 s^-1]
+                          'D', ...      % Diffusion
                           'eps' ...     % Volume fraction,              [-]    
                         };
             globalnames = model.setupGlobalNames(localnames);             
@@ -150,7 +150,7 @@ classdef graphiteAM < SimpleModel
                 % Calculate reaction rate constant
                 k = model.k0 .* exp( -model.Eak ./ model.con.R .* (1./T-1/refT));
                 
-                state = model.setProp(state, 'k');
+                state = model.setProp(state, 'k', k);
             
         end
         
@@ -167,14 +167,16 @@ classdef graphiteAM < SimpleModel
             % Calculate solid diffusion coefficient, [m^2 s^-1]
             D = model.Li.D0 .* exp(-model.Li.EaD./model.con.R*(1./T - 1/refT));
             
-            state = model.setProp(state, 'D');
+            state = model.setProp(state, 'D', D);
         end
   
         function state = updateEquilibrium(model, state)
         % Calculate the equilibrium properties of the electrode active material. Calculate the equilibrium open cirucuit
         % potential of graphite according to the model used by Torchio et al [1].
 
-            cs = model.getProp(state, 'cs');
+            T     = model.getProp(state, 'T');
+            cs    = model.getProp(state, 'Li');
+            theta = model.getProp(state, 'theta');
             
             % Set the reference temperature
             refT = 298.15;
@@ -188,8 +190,13 @@ classdef graphiteAM < SimpleModel
             theta = cs ./ model.Li.cmax;
             
             % Calculate the open-circuit potential at the reference temperature for the given lithiation
-            refOCP = 0.7222 + 0.1387 .* theta + 0.0290 .* theta.^0.5 - 0.0172 ./ theta + 0.0019 ./ theta.^1.5 + 0.2808 ...
-                     .* exp(0.9-15.*theta) - 0.7984 .* exp(0.4465 .* theta - 0.4108);
+            refOCP = (0.7222 ...
+                      + 0.1387 .* theta ...
+                      + 0.0290 .* theta.^0.5 ...
+                      - 0.0172 ./ theta ... 
+                      + 0.0019 ./ theta.^1.5 ...
+                      + 0.2808 .* exp(0.9-15.*theta) ... 
+                      - 0.7984 .* exp(0.4465 .* theta - 0.4108);
 
             % Calculate the entropy change at the given lithiation
             dUdT = 1e-3 .* ...
@@ -213,12 +220,12 @@ classdef graphiteAM < SimpleModel
                    + 165705.8597 .* theta.^8 );
 
             % Calculate the open-circuit potential of the active material
-            OCP = (model.refOCP + T - refT) .* dUdT;
+            OCP = (refOCP + T - refT) .* dUdT;
             
-            state = model.setProp(state, 'theta');
-            state = model.setProp(state, 'refOCP');
-            state = model.setProp(state, 'OCP');
-            state = model.setProp(state, 'dUdT');
+            state = model.setProp(state, 'theta' , theta);
+            state = model.setProp(state, 'refOCP', refOCP);
+            state = model.setProp(state, 'OCP'   , OCP);
+            state = model.setProp(state, 'dUdT'  , dUdT);
             
         end
         
