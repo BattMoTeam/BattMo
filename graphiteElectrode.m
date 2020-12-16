@@ -1,4 +1,4 @@
-classdef graphiteElectrode < FvModel
+classdef graphiteElectrode < CompositeModel
     %UNTITLED6 Summary of this class goes here
     %   Detailed explanation goes here
     
@@ -13,7 +13,6 @@ classdef graphiteElectrode < FvModel
         void    % Porosity,         [-]
         
         % Material properties
-        am      % Active material object
         bin     % Binder object
         ca      % Conducting additive object
         sei     % Solid-electrolyte interphase (SEI) object
@@ -21,73 +20,88 @@ classdef graphiteElectrode < FvModel
         
         % Effective conductivity
         sigmaeff
-        
-        % State properties
-        E       % Electric potential,   [V]
-        eta     % Overpotential,        [V]
-        j       % Current density,      [A/m2]
-        R       % Reaction Rate
-        T       % Temperature
+
                 
     end
     
     methods
-        function obj = graphiteElectrode(compname, SOC, T, G, cells)
+        
+        function model = graphiteElectrode(G, cells)
             
-            obj = obj@FvModel(compname);
+            model = model@CompositeModel();
+            model.G = genSubGrid(G, cells);
             
-            obj.am  = graphiteAM(SOC, T);
-            obj.bin = ptfe();
-            obj.sei = seiAM();
+            % setup graphite submodel
+            graphitemodel = graphiteAM();
+            model.SubModels{1} = graphitemodel;
+            model.SubModelNames{1} = 'graphite';
+            model = model.initiateCompositeModel();
             
-            obj.am.eps = 0.8;
-            
-            obj.eps =   obj.am.eps ...
-                        + obj.bin.eps ...
-                        + obj.sei.eps;
-            
-            obj.t = 10e-6;
-            
-            obj.T = T;
-            
-            obj.thermodynamics()
-            obj.E = obj.am.OCP;
-            
-            obj.Grid = genSubGrid(G, cells);
-            
-            obj.varnames = {'Li', 'phi'};
-            nc = obj.Grid.cells.num;
-            obj.varsizes = [nc, nc];
+            model.bin  = ptfe();
+            model.sei  = seiAM();
+            model.eps  = graphitemodel.eps + model.bin.eps + model.sei.eps;
+            model.t    = 10e-6;
             
         end
         
-        function thermodynamics(obj)
-            %THERMODYNAMICS Summary of this method goes here
-            %   Detailed explanation goes here
-           
+        function state = initializeState(model, state, SOC, T)
             
-            % Electrochemical Thermodynamics
-            obj.am.equilibrium();
+            graphitemodel = model.getSubModel(model, 'graphite');
             
+            state = graphitemodel.initializeState(state);
+            OCP   = model.getProp(state, 'graphite_OCP');
+            state = model.setProp(state, 'E', OCP);
+
+        end
+
+        function name = getModelName(model)
+            
+            name = 'ne';
             
         end
         
-        function reactBV(obj, phiElyte)
+        function [globalnames, localnames] = getModelVarNames(model)
             
-            obj.thermodynamics();
+            [globalnames, localnames] = getModelVarNames@CompositeModel(model);
             
-            obj.eta    =   (obj.am.phi - ...
-                                phiElyte - ...
-                                obj.am.OCP);
+            localnames = {'E'  ,  ... % Electric potential,   [V]
+                          'eta',  ... % Overpotential,        [V]
+                          'j'  ,  ... % Current density,      [A/m2]
+                          'R'  ,  ... % Reaction Rate,
+                          'T' ... % Temperature
+                         };
+            globalnames = model.setupGlobalNames(localnames);
+        end
+
+        function [globalnames, localnames] = getVarNames(model)
+            [globalnames, localnames] = model.getVarNames@CompositeModel();
+            localnames  = horzcat(localnames, {'T', 'SOC', 'phielyte'});
+            globalnames = horzcat(globalnames, {'T', 'SOC', 'phielyte'});
+        end
+        
+        function state = reactBV(model, state)
+            
+            graphitemodel = model.getSubModel('graphite');
+            
+            state = graphitemodel.updateEquilibrium(state);
+
+            T   = model.getProp(state, 'T');
+            eta = model.getProp(state, 'eta');
+            phiElite = model.getProp(state, 'phielyte');
+            
+            phi = graphitemodel.getProp(state, 'phi');
+            OCP = graphitemodel.getProp(state, 'OCP');
+            k   = graphitemodel.getProp(state, 'k');
+            
+            eta = (phi - phiElyte - OCP);
                                     
-            obj.R   =   obj.am.Asp .* butlerVolmer(   obj.am.k .* 1 .* obj.con.F, ...
-                                        0.5, ...
-                                        1, ...
-                                        obj.eta, ...
-                                        obj.T ) ./ (1 .* obj.con.F);
-                                    
+            R = graphitemodel.Asp.*butlerVolmer(k.*model.con.F, 0.5, 1, eta, T) ./ (1 .* model.con.F);
+            
+            state = model.setProp(state, 'R');
+            
         end
         
     end
 end
 
+                        
