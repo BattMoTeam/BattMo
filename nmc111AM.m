@@ -24,8 +24,6 @@ classdef nmc111AM < SimpleModel
     %                   Initial version (0.0-alpha)
     
     properties
-        % Identification properties
-        name        % Name of the electrode material
         
         % Physical constants
         con = physicalConstants();
@@ -35,21 +33,9 @@ classdef nmc111AM < SimpleModel
         
         % Electron data structure
         e
-        
-        % State properties
-        T           % Temperature,                  [K]
-        phi         % Local electric potential,     [V]
-        refOCP      % Reference open circuit, 
-                    % potential at standard,
-                    % teperature,                   [V]
-        OCP         % Open-circuit potential,       [V]
-        dUdT        % Entropy change,               [V K^-1]
-        SOC         % State of charge,              [-]
-        theta       % Lithiation,                   [-]
-        k           % Reaction rate constant,       [m^2.5 mol^-0.5 s^-1]
-        eps         % Volume fraction,              [-]
-        
+
         % Physicochemical properties
+        eps
         spCAh       % Specific Capacity,            [Ah kg^-1]
         rho         % Mass Density,                 [kg m^-3] or [g L^-1]
         theta0      % Minimum lithiation, 0% SOC    [-]
@@ -63,28 +49,28 @@ classdef nmc111AM < SimpleModel
     end
     
     methods
-        function obj = nmc111AM(SOC, T)
+        function model = nmc111AM(SOC, T)
             %NMC111 Construct an instance of the nmc111 class
-            %   obj = nmc111(cLi, T) SOC is the state-of-charge of the
+            %   model = nmc111(cLi, T) SOC is the state-of-charge of the
             %   battery (0-1) and T is the temperature in Kelvin [K]  
             
-            % Set object name
-            obj.name = 'nmc111';
+            % Set modelect name
+            model.name = 'nmc111';
             
             % Define material constants
-            obj.spCAh    = 155;      % [Ah kg^-1]
-            obj.rho      = 4650;     % [kg m^-3]
-            obj.theta0   = 0.99174;  % at 0% SOC [-]
-            obj.theta100 = 0.49550;  % at 100% SOC [-]
-            obj.Li.cmax  = 51554;    % [mol m^-3]
-            obj.Li.D0    = 1e-14;    % [m^2 s^-1]
-            obj.Li.EaD   = 5000;     % [J mol^-1]
-            obj.sigma    = 100;      % [S m^-1]
-            obj.cp       = 700;      % [J kg^-1 K^-1]
-            obj.k0       = 2.334e-11;% [m^2.5 mol^-0.5 s^-1]
-            obj.Eak      = 5000;     % [J mol^-1]
-            obj.Asp      = 885000;   % [m2 m^-3]
-            
+            model.spCAh    = 155;      % [Ah kg^-1]
+            model.rho      = 4650;     % [kg m^-3]
+            model.theta0   = 0.99174;  % at 0% SOC [-]
+            model.theta100 = 0.49550;  % at 100% SOC [-]
+            model.Li.cmax  = 51554;    % [mol m^-3]
+            model.Li.D0    = 1e-14;    % [m^2 s^-1]
+            model.Li.EaD   = 5000;     % [J mol^-1]
+            model.sigma    = 100;      % [S m^-1]
+            model.cp       = 700;      % [J kg^-1 K^-1]
+            model.k0       = 2.334e-11;% [m^2.5 mol^-0.5 s^-1]
+            model.Eak      = 5000;     % [J mol^-1]
+            model.Asp      = 885000;   % [m2 m^-3]
+            model.eps      =  
         end
 
         function state = initializeState(model, state)
@@ -101,15 +87,47 @@ classdef nmc111AM < SimpleModel
             state = model.setProp(state, 'theta', theta);
             state = model.setProp(state, 'Li', cs);
             
-            state = model.updateGraphiteModel(state);
+            state = model.updateNmc111Model(state);
             
             % set COP
             OCP = model.getProp(state, 'OCP');
             state = model.setProp(state, 'phi', OCP);
         end
-
         
-        function state = updateNMC111Model(model, state)
+        function name = getModelName(model)
+
+            name = 'graphite';
+            
+        end        
+        
+        function [globalnames, localnames] = getModelPrimaryVarNames(model)
+            localnames = {'phi', 'Li'};
+            globalnames = model.setupGlobalNames(localnames); 
+        end
+        
+        
+        function [globalnames, localnames] = getModelVarNames(model)
+            
+            localnames = {'refOCP', ... % Reference open circuit potential at standard  teperature [V]
+                          'OCP', ...    % Open-circuit potential        [V]
+                          'dUdT', ...   % Entropy change                [V K^-1]
+                          'theta', ...  % Lithiation                    [-]
+                          'k', ...      % Reaction rate constant        [m^2.5 mol^-0.5 s^-1]
+                          'D', ...      % Diffusion
+                          'eps' ...     % Volume fraction,              [-]    
+                        };
+            globalnames = model.setupGlobalNames(localnames);             
+        end
+
+        function [globalnames, localnames] = getVarNames(model)
+        % this function 
+            [globalnames, localnames] = model.getVarNames@SimpleModel();
+            localnames                = horzcat(localnames, {'T', 'SOC'});
+            globalnames               = horzcat(globalnames, {'T', 'SOC'});
+        end
+        
+        
+        function state = updateNmc111Model(model, state)
         % Update the electrode properties
         % Calculate the updated properties of the active material
         % at the given state.
@@ -136,10 +154,9 @@ classdef nmc111AM < SimpleModel
                 
             state = model.setProp(state, 'k', k);
                 
-                
         end
         
-        function diffusionCoefficient(model)
+        function state = updateDiffusion(model, state)
             %DIFFUSIONCOEFFICIENT Calculate the solid diffusion coefficient of Li+ in
             %the active material
             %   Calculate the solid phase diffusion coefficient of Li+ in
@@ -160,7 +177,7 @@ classdef nmc111AM < SimpleModel
             
         end
         
-        function equilibrium(model)
+        function state = updateEquilibrium(model, state)
         %EQUILIBRIUM Calculate the equilibrium properties of the
         %electrode active material
         %   Calculate the equilibrium open cirucuit potential of
@@ -201,14 +218,14 @@ classdef nmc111AM < SimpleModel
             % Calculate the entropy change at the given lithiation
             dUdT = -1e-3 .* ...
                    (  0.199521039 ...
-                      - 0.928373822 .* model.theta ...
-                      + 1.364550689000003 .* model.theta.^2 ...
-                      - 0.611544893999998 .* model.theta.^3 ) ./ ...
+                      - 0.928373822 .* theta ...
+                      + 1.364550689000003 .* theta.^2 ...
+                      - 0.611544893999998 .* theta.^3 ) ./ ...
                    (  1 ...
-                      - 5.661479886999997 .* model.theta ...
-                      + 11.47636191 .* model.theta.^2 ...
-                      - 9.82431213599998 .* model.theta.^3 ...
-                      + 3.048755063 .* model.theta.^4 );
+                      - 5.661479886999997 .* theta ...
+                      + 11.47636191 .* theta.^2 ...
+                      - 9.82431213599998 .* theta.^3 ...
+                      + 3.048755063 .* theta.^4 );
 
             % Calculate the open-circuit potential of the active
             % material

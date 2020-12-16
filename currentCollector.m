@@ -2,8 +2,9 @@ classdef currentCollector < SimpleModel
 % Current collector model 
     
     properties
-        eps;
-        sigma;
+        eps
+        sigma
+        sigmaeff
     end
     
     methods
@@ -23,7 +24,6 @@ classdef currentCollector < SimpleModel
         function [globalnames, localnames] = getModelVarNames(model)
             localnames = {'E', ...       % Potential at the end of collector
                           'j', ...       % Current density, [A/m2]
-                          'sigmaeff' ... % effective solid conductivity
                           'OCP', ...     % Open-circuit potential [V];
                           'refOCP', ...  % Reference open circuit potential at standard temperature [V]
                          };

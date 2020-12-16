@@ -1,6 +1,6 @@
 classdef nmc111Electrode < CompositeModel
-    %  NMC111ELECTRODE Summary of this class goes here
-    %   Detailed explanation goes here
+    % NMC111ELECTRODE Summary of this class goes here
+    % Detailed explanation goes here
     
     properties
         
@@ -18,19 +18,13 @@ classdef nmc111Electrode < CompositeModel
         cei     % Cathode-electrolyte interphase (CEI) object
         elyte   % Liquid electrolyte data structure
         
+        % Effective conductivity
         sigmaeff
-        
-        % State properties
-        E       % Electric potential,   [V]
-        eta     % Overpotential,        [V]
-        j       % Current density,      [A/m2]
-        R
-        T       % Temperature
         
     end
     
     methods
-        function obj = nmc111Electrode(compname, SOC, T, G, cells)
+        function model = nmc111Electrode(G, cells)
             
             model = model@CompositeModel();
             model.G = genSubGrid(G, cells);
@@ -62,6 +56,11 @@ classdef nmc111Electrode < CompositeModel
 
         end
 
+        function name = getModelName(model)
+            
+            name = 'ne';
+            
+        end        
         
         function [globalnames, localnames] = getModelVarNames(model)
             

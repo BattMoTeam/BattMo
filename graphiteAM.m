@@ -220,7 +220,7 @@ classdef graphiteAM < SimpleModel
                    + 165705.8597 .* theta.^8 );
 
             % Calculate the open-circuit potential of the active material
-            OCP = (refOCP + T - refT) .* dUdT;
+            OCP = refOCP + (T - refT) .* dUdT;
             
             state = model.setProp(state, 'theta' , theta);
             state = model.setProp(state, 'refOCP', refOCP);
