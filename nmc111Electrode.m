@@ -29,7 +29,7 @@ classdef nmc111Electrode < CompositeModel
             model = model@CompositeModel();
             model.G = genSubGrid(G, cells);
             
-            % setup graphite submodel
+            % setup nmc111 submodel
             nmc111model = nmc111AM();
             model.SubModels{1} = nmc111model;
             model.SubModelNames{1} = 'nmc111';

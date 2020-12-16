@@ -54,9 +54,6 @@ classdef nmc111AM < SimpleModel
             %   model = nmc111(cLi, T) SOC is the state-of-charge of the
             %   battery (0-1) and T is the temperature in Kelvin [K]  
             
-            % Set modelect name
-            model.name = 'nmc111';
-            
             % Define material constants
             model.spCAh    = 155;      % [Ah kg^-1]
             model.rho      = 4650;     % [kg m^-3]
@@ -70,7 +67,7 @@ classdef nmc111AM < SimpleModel
             model.k0       = 2.334e-11;% [m^2.5 mol^-0.5 s^-1]
             model.Eak      = 5000;     % [J mol^-1]
             model.Asp      = 885000;   % [m2 m^-3]
-            model.eps      =  
+            model.eps      = 0.8;  
         end
 
         function state = initializeState(model, state)
@@ -96,7 +93,7 @@ classdef nmc111AM < SimpleModel
         
         function name = getModelName(model)
 
-            name = 'graphite';
+            name = 'nmc111';
             
         end        
         
@@ -149,8 +146,7 @@ classdef nmc111AM < SimpleModel
             refT = 298.15;  % [K]
             
             % Calculate reaction rate constant
-            model.k = model.k0 .* exp( -model.Eak ./ R .* (1./model.T-1/refT));
-            k = model.k0 .* exp( -model.Eak ./ model.con.R .* (1./T-1/refT));
+            k = model.k0 .* exp( -model.Eak ./ model.con.R .* (1./T - 1/refT));
                 
             state = model.setProp(state, 'k', k);
                 
