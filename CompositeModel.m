@@ -60,12 +60,13 @@ classdef CompositeModel < SimpleModel
             localnames = {};
             for i = 1 : nsubmodels
                 submodel = model.SubModels{i};
-                submodelvarnames = submodel.getModelPrimaryVarNames();
+                submodelvarnames = submodel.getModelVarNames();
                 localnames = horzcat(localnames, submodelvarnames);
             end
             globalnames = cellfun(@(name) (model.setupGlobalName(name)), localnames, 'uniformoutput', false);
-            
         end
+        
+        
         
         function [state, report] = updateState(model, state, problem, dx, drivingForces)
             waring('to be updated');

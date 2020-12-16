@@ -77,7 +77,7 @@ classdef graphiteAM < SimpleModel
             model.eps      = 0.8;
             
         end
-
+        
         function state = initializeState(model, state)
         % Initialize material state
 
@@ -89,8 +89,8 @@ classdef graphiteAM < SimpleModel
             theta = (SOC - b) ./ m;
             cs    = theta .* model.Li.cmax;
 
-            state = model.setProp(state, 'theta');
-            state = model.setProp(state, 'cs');
+            state = model.setProp(state, 'theta', theta);
+            state = model.setProp(state, 'cs', cs);
             
             state = model.update(state);
             
@@ -116,7 +116,6 @@ classdef graphiteAM < SimpleModel
             localnames = {'refOCP', ... % Reference open circuit potential at standard  teperature [V]
                           'OCP', ...    % Open-circuit potential        [V]
                           'dUdT', ...   % Entropy change                [V K^-1]
-                          'SOC', ...    % State of charge               [-]
                           'theta', ...  % Lithiation                    [-]
                           'k', ...      % Reaction rate constant        [m^2.5 mol^-0.5 s^-1]
                           'eps' ...     % Volume fraction,              [-]    

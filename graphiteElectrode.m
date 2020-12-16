@@ -43,11 +43,18 @@ classdef graphiteElectrode < CompositeModel
             model.t    = 10e-6;
             
         end
+
         
-        function state = initializeState(model, state, SOC, T)
-            
-            graphitemodel = model.getSubModel(model, 'graphite');
-            
+        function state = initializeState(model, state)
+
+            varnames = model.getVarNames();
+            for i = 1 : numel(varnames)
+                varname = varnames{i};
+                if ~isfield(state, varname)
+                    state.(varname) = [];
+                end
+            end
+            graphitemodel = model.getSubModel('graphite');
             state = graphitemodel.initializeState(state);
             OCP   = model.getProp(state, 'graphite_OCP');
             state = model.setProp(state, 'E', OCP);
@@ -62,15 +69,18 @@ classdef graphiteElectrode < CompositeModel
         
         function [globalnames, localnames] = getModelVarNames(model)
             
-            [globalnames, localnames] = getModelVarNames@CompositeModel(model);
+            [globalnames1, localnames1] = getModelVarNames@CompositeModel(model);
             
-            localnames = {'E'  ,  ... % Electric potential,   [V]
-                          'eta',  ... % Overpotential,        [V]
-                          'j'  ,  ... % Current density,      [A/m2]
-                          'R'  ,  ... % Reaction Rate,
-                          'T' ... % Temperature
-                         };
-            globalnames = model.setupGlobalNames(localnames);
+            localnames2 = {'E'  ,  ... % Electric potential,   [V]
+                           'eta',  ... % Overpotential,        [V]
+                           'j'  ,  ... % Current density,      [A/m2]
+                           'R'  ... % Reaction Rate,
+                          };
+            globalnames2 = model.setupGlobalNames(localnames2);
+            
+            globalnames = horzcat(globalnames1, globalnames2);
+            localnames = horzcat(localnames1, localnames2);
+            
         end
 
         function [globalnames, localnames] = getVarNames(model)
