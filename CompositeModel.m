@@ -33,44 +33,40 @@ classdef CompositeModel < SimpleModel
 
         function model = setupCompositeModel(model)
             nsubmodels = numel(model.SubModels);
-            model.nSubModels     = nsubmodels;
+            model.nSubModels = nsubmodels;
             model.isCompositeModel = true;
         end
-
         
         function primaryVarNames = getPrimaryVarNames(model)
             nsubmodels = model.nSubModels;
-            primaryVarNames = {};
+            
+            primaryVarNames = model.getModelPrimaryVarNames;
             for i = 1 : nsubmodels
-                submodel          = model.SubModels{i};
-                submodel          = submodel.setPrimaryVarNames();
-                model.SubModels{i} = submodel;
-
+                submodel = model.SubModels{i};
+                submodelname = submodel.getModelName();
                 submodelprimaryvarnames = submodel.getPrimaryVarNames();
-                primaryVarNames         = horzcat(primaryVarNames, ...
-                                                  submodelprimaryvarnames);
+                submodelprimaryvarnames = cellfun(@(str) (sprintf('%s_%s', submodelname, varname)), submodelprimaryvarnames)
+                primaryVarNames = horzcat(primaryVarNames, submodelprimaryvarnames);
             end
+            
+        end
+
+        function varNames = getVarNames(model)
+            nsubmodels = model.nSubModels;
+            
+            varNames = model.getModelVarNames();
+            for i = 1 : nsubmodels
+                submodel = model.SubModels{i};
+                submodelname = submodel.getModelName();
+                submodelvarnames = submodel.getPrimaryVarNames();
+                submodelvarnames = cellfun(@(str) (sprintf('%s_%s', modelname, submodelname, varname)), submodelvarnames)
+                varNames = horzcat(VarNames, submodelvarnames);
+            end
+            
         end
         
-        function [fn, index] = getVariableField(model, name, varargin)
-            nsubmodels = model.nSubModels;
-
-            found = false;
-            i = 1;
-            while ~found & (i <= nsubmodels)
-                submodel = model.SubModels{i};
-                [fn, index] = submodel.getVariableField(name);
-                if ~isempty(index)
-                    found = true;
-                end
-                i = i + 1;
-            end
-            assert(found, 'unknown variable');
-        end
-
-        function [state, report] = updateState(model, state, problem, dx, ...
-                                               drivingForces)
-
+        function [state, report] = updateState(model, state, problem, dx, drivingForces)
+            waring('to be updated');
             % Due to current use of function updateState, we need to
             % reinitiate the primary variable (this is unfortunate).
             model = model.setPrimaryVarNames();
@@ -84,6 +80,7 @@ classdef CompositeModel < SimpleModel
 
         
         function [state, report] = updateAfterConvergence(model, state0, state, dt, drivingForces)
+            waring('to be updated');
             nsubmodels = model.nSubModels;
             for i = 1 : nsubmodels
                 submodel = model.SubModels{i};
