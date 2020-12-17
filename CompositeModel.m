@@ -10,11 +10,12 @@ classdef CompositeModel < SimpleModel
 
     methods
         
-        function model = CompositeModel(varargin)
+        function model = CompositeModel(name, varargin)
         % The constructor function should be complemented so that the properties
         % SubModels, SubModelNames are defined and the function
         % initiateCompositeModel is called.
-            model = model@SimpleModel(varargin{:});
+            model = model@SimpleModel(name, varargin{:});
+            model.isnamespaceroot = false;
         end
         
         function ind = getSubModelInd(model, name)
@@ -26,30 +27,35 @@ classdef CompositeModel < SimpleModel
             submodel = model.SubModels{ind};
         end
 
-        function model = setSubModel(model, name, submodel)
-            ind = model.getSubModelInd(name);
-            submodel.usenamespace = true;
-            model.SubModels{ind} = submodel;
-        end
-
         function model = initiateCompositeModel(model)
             nsubmodels = numel(model.SubModels);
             model.nSubModels = nsubmodels;
             model.isCompositeModel = true;
+            
+            if model.isnamespaceroot
+                model.namespace = {};
+            end
+            
+            % Setup the namespaces for all the submodels
             for ind = 1 : nsubmodels
                 submodel = model.SubModels{ind};
-                submodel.usenamespace = true; 
+                submodel.isnamespaceroot = false; 
+                submodelname = submodel.getModelName();
                 
-                if model.usenamespace
-                    subnamespace = sprintf('%s_%s', model.namespace, submodel.namespace);
-                    submodel.namespace = subnamespace;
+                if ~model.isnamespaceroot
+                    subnamespace = sprintf('%s_%s', model.namespace, submodelname);
+                else
+                    subnamespace = submodelname;
                 end
+                submodel.namespace = subnamespace;
                 
                 if isa(submodel, 'CompositeModel')
                     submodel = submodel.initiateCompositeModel();
                 end
+                
                 model.SubModels{ind} = submodel;
             end
+            
         end
         
         function [namespaces, names] = getModelPrimaryVarNames(model)

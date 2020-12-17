@@ -1,17 +1,18 @@
 classdef SimpleModel < PhysicalModel
     
     properties
-        usenamespace;
+        modelname
+        isnamespaceroot
         namespace;
     end
     
     
     methods
-        function model = SimpleModel(varargin)
+        function model = SimpleModel(modelname, varargin)
             model = model@PhysicalModel([]);
             model = merge_options(model, varargin{:});
-            model.usenamespace = false; % default choice
-            model.namespace = model.getModelName;
+            model.modelname = modelname;
+            model.namespace = model.getModelName();
         end
 
         function state = validateState(model, state)
@@ -29,8 +30,7 @@ classdef SimpleModel < PhysicalModel
         end
         
         function modelname = getModelName(model);
-        % This is a virtual method that should be implemented by the model.
-            error('virtual method');
+            modelname = model.modelname;
         end
         
         function [namespaces, names] = getModelPrimaryVarNames(model)
@@ -55,6 +55,20 @@ classdef SimpleModel < PhysicalModel
             names = [names1, names2];
         end
 
+        function names = getPrimaryVarNames(model)
+        % Returns full primary variable names (i.e. including namespaces)
+            [namespaces, names] = model.getModelPrimaryVarNames();
+            names = model.addNameSpace(namespaces, names);
+        end
+        
+        function names = getFullVarNames(model)
+        % Returns full names (i.e. including namespaces)
+            [namespaces, names] = model.getVarNames();
+            names = model.addNameSpace(namespaces, names);
+        end
+
+        
+        
         function fullnames = addNameSpace(model, namespaces, names)
         % Return a name (string) which identify uniquely the pair (namespace, name). This is handled here by adding "_" at the
         % end of the namespace and join it to the name.
@@ -71,19 +85,25 @@ classdef SimpleModel < PhysicalModel
             end
         end
         
-        
         function [fn, index] = getVariableField(model, name, varargin)
         % In this function the variable name is associated to a field name (fn) which corresponds to the field where the
         % variable is stored in the state.  See PhysicalModel
-            [namespaces, names] = model.getVarNames();
             
-            [isok, ind] = ismember(name, names);
-            assert(isok, 'unknown variables');
-            
-            if model.usenamespace
-                fn = model.addNameSpace(namespaces{ind}, name);
-            else
+            if model.isnamespaceroot
+                
+                names = model.getFullVarNames();
+                [isok, ind] = ismember(name, names);
+                assert(isok, 'unknown variables');
                 fn = name;
+                
+            else
+                
+                [namespaces, names] = model.getVarNames();
+                [isok, ind] = ismember(name, names);
+                assert(isok, 'unknown variables');
+                
+                fn = model.addNameSpace(namespaces{ind}, name);
+                
             end
             
             index = 1;
