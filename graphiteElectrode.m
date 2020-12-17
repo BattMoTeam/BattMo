@@ -17,7 +17,7 @@ classdef graphiteElectrode < CompositeModel
         ca      % Conducting additive object
         sei     % Solid-electrolyte interphase (SEI) object
         elyte   % Liquid electrolyte data structure
-        E       % Electric potential,   [V]E
+        E       % Electric potential,   [V]
         
         % Effective conductivity
         sigmaeff
@@ -52,8 +52,6 @@ classdef graphiteElectrode < CompositeModel
             graphitemodel = model.getSubModel('graphite');
             state = graphitemodel.initializeState(state);
             OCP   = graphitemodel.getProp(state, 'OCP');
-            state = model.setProp(state, 'E', OCP);
-
         end
         
         function [namespaces, names] = getModelVarNames(model)

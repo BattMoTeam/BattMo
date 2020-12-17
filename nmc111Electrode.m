@@ -50,8 +50,6 @@ classdef nmc111Electrode < CompositeModel
             nmc111model = model.getSubModel('nmc111');
             state = nmc111model.initializeState(state);
             OCP   = nmc111model.getProp(state, 'OCP');
-            state = model.setProp(state, 'E', OCP);
-
         end
 
         function [namespaces, names] = getModelVarNames(model)

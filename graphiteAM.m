@@ -95,7 +95,7 @@ classdef graphiteAM < SimpleModel
             
             state = model.updateGraphiteModel(state);
             
-            % set COP
+            % set OCP
             OCP = model.getProp(state, 'OCP');
             state = model.setProp(state, 'phi', OCP);
         end
