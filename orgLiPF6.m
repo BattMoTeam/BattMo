@@ -48,14 +48,12 @@ classdef orgLiPF6 < SimpleModel
         % Physicochemical properties
         rho         % Mass Density,                         [kg m^-3]
         mu          % Viscosity             
-        kappa       % Conductivity,                         [S m^-1]
         kappaeff    % Porous media conductivity,            [S m^-1]
         lambda      % Thermal conductivity,                 [W m^-1 K^-1]
         lambdaeff   % Porous media thermal conductivity,    [W m^-1 K^-1]
         cp          % Heat Capacity
         sigma       % Surface Tension
         pvap        % Vapor Pressure    
-        D           % Diffusion coefficient,                [m^2 s^-1]
         Deff        % Porous media diffusion coefficient,   [m^2 s^-1]
         
         % Finite volume solution properties
@@ -68,8 +66,8 @@ classdef orgLiPF6 < SimpleModel
         function model = orgLiPF6(G, cells)
             model = model@SimpleModel();
             model.G = genSubGrid(G, cells);
-            model.speciesnames = {'Li', 'PF6'};
-            nodel.ncomp = numel(model.speciesnames);
+            model.compnames = {'Li', 'PF6'};
+            nodel.ncomp = numel(model.compnames);
         end
         
         function state = initializeState(model, state)
@@ -82,8 +80,8 @@ classdef orgLiPF6 < SimpleModel
                 end
             end
 
-            c = model.getProp(state, 'c-Li');
-            state = model.setProp(state, 'c-PF6');
+            c = model.getProp(state, 'c_Li');
+            state = model.setProp(state, 'c_PF6', c);
             
             % Set constant values
             [~, ind] = ismember('Li', compnames);
@@ -100,20 +98,23 @@ classdef orgLiPF6 < SimpleModel
         end
         
         function [globalnames, localnames] = getModelPrimaryVarNames(model)
-            localnames = {'phi', 'c-Li'}; % name 'c-Li' should match setup in getAffiliatedComponentNames
+            localnames = {'phi', 'c_Li'}; % name 'c_Li' should match setup in getAffiliatedComponentNames
             globalnames = model.setupGlobalNames(localnames); 
         end
         
         function [globalnames, localnames] = getModelVarNames(model)
             
-            [concnames, ionconcnames, jchemnames] = model.getAffiliatedComponentNames();
+            [concnames, ionconcnames, jchemnames, dmudcnames] = model.getAffiliatedComponentNames();
 
-            localnames =  {m, ...    % Molality,                 [mol kg^-1]
-                           wtp, ...  % Weight percentace,        [wt%]
-                           eps, ...  % Volume fraction,          [-]
-                           IoSt, ... % Ionic strength
-                           j ...     % Ionic current density
-                          };
+            localnames = {'m', ...     % Molality,              [mol kg^-1]
+                          'kappa', ... % Conductivity,          [S m^-1]
+                          'D', ...     % Diffusion coefficient, [m^2 s^-1]
+                          'wtp', ...   % Weight percentace,     [wt%]
+                          'eps', ...   % Volume fraction,       [-]
+                           'IoSt', ... % Ionic strength
+                           'j' ...     % Ionic current density
+                         };
+            
             localnames = horzcat(concnames, ionconcnames, jchemnames, localnames);
             
             globalnames = model.setupGlobalNames(localnames);             
@@ -121,107 +122,118 @@ classdef orgLiPF6 < SimpleModel
         end
         
         function [globalnames, localnames] = getVarNames(model)
-        % this function 
             [globalnames, localnames] = model.getVarNames@SimpleModel();
-            localnames                = horzcat(localnames, {'T'});
-            globalnames               = horzcat(globalnames, {'T'});
+            localnames  = horzcat(localnames, {'T'});
+            globalnames = horzcat(globalnames, {'T'});
         end
         
         
-        function update(model)
-            model.ionicQuantities();
-            model.conductivity();
-            model.diffusion();
+        function state =update(model, state)
+            state = model.updateIonicQuantities(state);
+            state = model.updateConductivity(state);
+            state = model.updateDiffusion(state);
         end
+
+        function [concnames, ionconcnames, jchemnames, dmudcnames] = getAffiliatedComponentNames(model)
+            compnames = model.compnames;
+            
+            concnames    = cellfun(@(x) sprintf('c_%s', x), compnames, 'uniformoutput', false);
+            ionconcnames = cellfun(@(x) sprintf('ionc_%s', x), compnames, 'uniformoutput', false);            
+            jchemnames   = cellfun(@(x) sprintf('jchem_%s', x), compnames, 'uniformoutput', false);
+            dmudcnames   = cellfun(@(x) sprintf('dmucd_%s', x), compnames, 'uniformoutput', false);
+        end
+        
+        function state = updateIonicQuantities(model, state)
+            
+            T = model.getProp(state, 'T');
+            
+            ncomp = model.comp
+            [concnames, ionconcnames, jchemnames, dmudcnnames] = getAffiliatedComponentNames(model)
+            
+            for ind = 1 : numel(concnames)
+                cname     = concnames{ind};
+                ionname   = ionconcnames{ind};
+                dmudcname = dmudcnames{ind};            
+                
+                cvec{ind} = model.getProp(state, cname);
+                
+                dmudc = model.con.R .* T ./ model.ion.cvec{ind};
+                
+                state = model.setProp(state, ionname, cvec{ind});
+                state = model.setProp(state, dmudcname, dmudc);
+                
+            end
+
+            IoSt = 0.5 .* cvec{1}.*model.sp.z{1}.^2./1000;
+            IoSt = IoSt + 0.5 .* cvec{2}.*model.sp.z{2}.^2./1000;
+            
+            state = model.setProp(state, 'IoSt');
+            
+        end
+        
+        function state = updateConductivity(model, state)
+        %   conductivity Calculates the ionic conductivity of the
+        %   eletrolyte in units [S m^-1].
+        %   Electrolyte conductivity according to the model proposed by
+        %   Val�en et al [1]. The model was made by performing a
+        %   least-squares fit of experimental data with LiPF6 
+        %   concenrations from 7.7e-6 M to 3.9 M and temperatures from
+        %   263 K to 333 K. The solvent is 10 vol% PC, 27 vol% EC, 63
+        %   vol% DMC.
+            
+        % Empirical fitting parameters
+            cnst = [-10.5   ,    0.074    ,    -6.96e-5; ...
+                    0.668e-3,    -1.78e-5 ,    2.80e-8; ...
+                    0.494e-6,    -8.86e-10,    0];
+            
+            % Electrolyte conductivity
+            T = model.getProp(state, 'T');
+            c = model.getProp(state, 'c_Li');
+            
+            kappa = 1e-4 .* c .* (...
+                (cnst(1,1) + cnst(2,1) .* c + cnst(3,1) .* c.^2) + ...
+                (cnst(1,2) + cnst(2,2) .* c + cnst(3,2) .* c.^2) .* T + ...
+                (cnst(1,3) + cnst(2,3) .* c) .* T.^2) .^2;
+            
+            state = model.setProp(state, 'kappa', kappa);
+            
+        end
+        
+        function state = updateDiffusion(model, state)
+        %   diffusion Calculates the diffusion coefficient of Li+ ions in
+        %   the electrolyte in units [m2 s^-1].
+        %   Diffusion coefficient according to the model proposed by
+        %   Val�en et al [1]. The model was made by performing a
+        %   least-squares fit of experimental data with LiPF6 
+        %   concenrations from 7.7e-6 M to 3.9 M and temperatures from
+        %   263 K to 333 K. The solvent is 10 vol% PC, 27 vol% EC, 63
+        %   vol% DMC.
+            
+        % Empirical fitting parameters [1]
+            cnst = [ -4.43, -54;
+                     -0.22, 0.0 ];
+            Tgi = [ 229;
+                    5.0 ];
+            
+            T = model.getProp(state, 'T');
+            
+            % Diffusion coefficient, [m^2 s^-1]
+            D = 1e-4 .* 10 .^ ( ( cnst(1,1) + cnst(1,2) ./ ( T - Tgi(1) - Tgi(2) .* c .* 1e-3) + cnst(2,1) .* ...
+                                  c .* 1e-3) );
+            
+            state = model.setProp(state, 'D', D);
+            
+        end
+        
         
     end
 
+    %% References
+    %
+    %   [1] Journal ofThe Electrochemical Society, 152 (5) A882-A891 (2005),
+    %   DOI: 10.1149/1.1872737
 
-    function [concnames, ionconcnames, jchemnames] = getAffiliatedComponentNames(model)
-        compnames = model.compnames;
-        concnames    = cellfun(@(x) sprintf('c-%s', x), compnames, 'uniformoutput', false);
-        ionconcnames = cellfun(@(x) sprintf('ionc-%s', x), compnames, 'uniformoutput', false);            
-        jchemnames   = cellfun(@(x) sprintf('jchem-%s', x), compnames, 'uniformoutput', false);
-    end
-    
-    function state = ionicQuantities(model, state)
-        
-        ncomp = model.comp
-        [concnames, ionconcnames, jchemnames] = getAffiliatedComponentNames(model)
-        for i = 1 : numel(concnames)
-            ionname = ionconcnames{i};
-            cname = concnames{i};
-            c = model.getProp(state, cname);
-            state = model.setProp(state, ionname, c);
-            tvec
-            model.ion.tvec{1} = model.sp.Li.t .* ones(size(model.sp.Li));
-            model.ion.tvec{2} = model.sp.PF6.t .* ones(size(model.sp.PF6));
-            model.ion.zvec{1} = model.sp.Li.z;
-            model.ion.zvec{2} = model.sp.PF6.z;
-        end
-        
-        for i = 1 : 2
-            model.ion.dmudc{i} = model.con.R .* model.T ./ model.ion.cvec{i};
-        end
-        IoSt = 0.5 .* model.ion.cvec{1}.*model.ion.zvec{1}.^2./1000;
-        IoSt = IoSt + 0.5 .* model.ion.cvec{2}.*model.ion.zvec{2}.^2./1000;
-        model.IoSt = IoSt;
-        
-    end
-    
-    function conductivity(model, varargin)
-    %conductivity Calculates the ionic conductivity of the
-    %eletrolyte in units [S m^-1].
-    %   Electrolyte conductivity according to the model proposed by
-    %   Val�en et al [1]. The model was made by performing a
-    %   least-squares fit of experimental data with LiPF6 
-    %   concenrations from 7.7e-6 M to 3.9 M and temperatures from
-    %   263 K to 333 K. The solvent is 10 vol% PC, 27 vol% EC, 63
-    %   vol% DMC.
-        
-    % Empirical fitting parameters
-        cnst = [-10.5, 0.074, -6.96e-5; ...
-                0.668e-3, -1.78e-5, 2.80e-8; ...
-                0.494e-6, -8.86e-10, 0];
-        
-        % Electrolyte conductivity
-        model.kappa = 1e-4 .* model.c .* (...
-            (cnst(1,1) + cnst(2,1) .* model.c + cnst(3,1) .* model.c.^2) + ...
-            (cnst(1,2) + cnst(2,2) .* model.c + cnst(3,2) .* model.c.^2) .* model.T + ...
-            (cnst(1,3) + cnst(2,3) .* model.c) .* model.T.^2) .^2;
-        
-    end
-    
-    function diffusion(model)
-    %diffusion Calculates the diffusion coefficient of Li+ ions in
-    %the electrolyte in units [m2 s^-1].
-    %   Diffusion coefficient according to the model proposed by
-    %   Val�en et al [1]. The model was made by performing a
-    %   least-squares fit of experimental data with LiPF6 
-    %   concenrations from 7.7e-6 M to 3.9 M and temperatures from
-    %   263 K to 333 K. The solvent is 10 vol% PC, 27 vol% EC, 63
-    %   vol% DMC.
-        
-    % Empirical fitting parameters [1]
-        cnst = [ -4.43, -54;
-                 -0.22, 0.0 ];
-        Tgi = [ 229;
-                5.0 ];
-        
-        % Diffusion coefficient, [m^2 s^-1]
-        model.sp.Li.D = 1e-4 .* ...
-            10 .^ ( ( cnst(1,1) + cnst(1,2) ./ ...
-                      ( model.T - Tgi(1) - Tgi(2) .* model.c .* 1e-3) + ...
-                      cnst(2,1) .* model.c .* 1e-3) );
-        
-    end
-    
-    
+
+
 end
-
-%% References
-%
-%   [1] Journal ofThe Electrochemical Society, 152 (5) A882-A891 (2005),
-%   DOI: 10.1149/1.1872737
-
 

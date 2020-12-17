@@ -75,21 +75,21 @@ classdef lithiumIonADGrid < handle
             obj.style.aspect    = 1/sqrt(2);        % Set plot aspect ratio
             
             %% Define battery components
-            obj.ne      = graphiteElectrode(SOC, T);
-            obj.pe      = nmc111Electrode(SOC, T);
-            obj.sep     = celgard2500();
+            obj.ne    = graphiteElectrode(SOC, T);
+            obj.pe    = nmc111Electrode(SOC, T);
+            obj.sep   = celgard2500();
             obj.ccne  = currentCollector(T);
             obj.ccpe  = currentCollector(T);
-            obj.elyte   = orgLiPF6(1000, T);
+            obj.elyte = orgLiPF6(1000, T);
             
-            obj.OCV     = obj.pe.am.OCP - obj.ne.am.OCP;
-            obj.U       = obj.OCV;
-            obj.T       = T;
+            obj.OCV = obj.pe.am.OCP - obj.ne.am.OCP;
+            obj.U   = obj.OCV;
+            obj.T   = T;
             
-            obj.I       = 0;
-            obj.A       = 100 ./ 10000; 
-            obj.J       = 1;
-            obj.Ucut    = 2;
+            obj.I    = 0;
+            obj.A    = 100 ./ 10000; 
+            obj.J    = 1;
+            obj.Ucut = 2;
             
             obj.AutoDiffBackend = AutoDiffBackend();
             %obj.AutoDiffBackend = DiagonalAutoDiffBackend();
@@ -258,7 +258,7 @@ classdef lithiumIonADGrid < handle
             %% Negative electrode properties
             
             % Temperature
-            obj.ne.am.T             = obj.ne.am.T .* ones(obj.ne.N, 1);
+            obj.ne.am.T = obj.ne.am.T .* ones(obj.ne.N, 1);
             
             % Volume fractions
                 % Solid volume fractions
@@ -276,20 +276,20 @@ classdef lithiumIonADGrid < handle
             
             % Lithiation
             obj.ne.am.Li.cs    = obj.ne.am.Li.cs .* ones(Nne, 1);
-            obj.ne.am.Li.cseps      = obj.ne.am.Li.cs .* obj.ne.am.eps;
+            obj.ne.am.Li.cseps = obj.ne.am.Li.cs .* obj.ne.am.eps;
             obj.ne.am.theta    = obj.ne.am.theta .* ones(Nne, 1);
             obj.ne.am.SOC      = obj.ne.am.SOC   .* ones(Nne, 1);
             
             % Open-circuit potential
             obj.ne.am.OCP = obj.ne.am.OCP .* ones(Nne, 1);
-            obj.ne.am.phi           = obj.ne.am.OCP;
+            obj.ne.am.phi = obj.ne.am.OCP;
             
             % Kinetic Coefficients
             obj.ne.am.k = obj.ne.am.k .* ones(Nne, 1);
             
             % Transport Coefficients
             obj.ne.am.Li.D    = obj.ne.am.Li.D .* ones(Nne, 1);
-            obj.ne.am.Li.Deff       = obj.ne.am.Li.D .* obj.ne.am.eps.^1.5;
+            obj.ne.am.Li.Deff = obj.ne.am.Li.D .* obj.ne.am.eps.^1.5;
             
             %% Positive electrode properties
             
@@ -307,13 +307,13 @@ classdef lithiumIonADGrid < handle
             
             % Lithiation
             obj.pe.am.Li.cs    = obj.pe.am.Li.cs .* ones(Npe, 1);
-            obj.pe.am.Li.cseps      = obj.pe.am.Li.cs .* obj.pe.am.eps;
+            obj.pe.am.Li.cseps = obj.pe.am.Li.cs .* obj.pe.am.eps;
             obj.pe.am.theta    = obj.pe.am.theta .* ones(Npe, 1);
             obj.pe.am.SOC      = obj.pe.am.SOC .* ones(Npe, 1);
             
             % Open-circuit potential
             obj.pe.am.OCP = obj.pe.am.OCP .* ones(Npe, 1);
-            obj.pe.am.phi           = obj.pe.am.OCP;
+            obj.pe.am.phi = obj.pe.am.OCP;
             
             % Kinetic Coefficients
             obj.pe.am.k = obj.pe.am.k .* ones(Npe, 1);
