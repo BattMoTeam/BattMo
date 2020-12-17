@@ -67,11 +67,13 @@ classdef orgLiPF6 < SimpleModel
             model = model@SimpleModel();
             model.G = genSubGrid(G, cells);
             model.compnames = {'Li', 'PF6'};
-            nodel.ncomp = numel(model.compnames);
+            model.ncomp = numel(model.compnames);
         end
         
         function state = initializeState(model, state)
 
+            compnames = model.compnames;
+            
             varnames = model.getVarNames();
             for i = 1 : numel(varnames)
                 varname = varnames{i};
@@ -93,7 +95,7 @@ classdef orgLiPF6 < SimpleModel
             model.sp.t{ind} = 1 - tLi;           % Li+ transference number, [-]
             model.sp.z{ind} = -1;
             
-            model.update();
+            state = model.update(state);
             
         end
         
@@ -115,7 +117,7 @@ classdef orgLiPF6 < SimpleModel
                            'j' ...     % Ionic current density
                          };
             
-            localnames = horzcat(concnames, ionconcnames, jchemnames, localnames);
+            localnames = horzcat(concnames, ionconcnames, jchemnames, dmudcnames, localnames);
             
             globalnames = model.setupGlobalNames(localnames);             
             
@@ -147,27 +149,28 @@ classdef orgLiPF6 < SimpleModel
             
             T = model.getProp(state, 'T');
             
-            ncomp = model.comp
-            [concnames, ionconcnames, jchemnames, dmudcnnames] = getAffiliatedComponentNames(model)
+            ncomp = model.ncomp;
+            [concnames, ionconcnames, jchemnames, dmudcnames] = getAffiliatedComponentNames(model);
             
-            for ind = 1 : numel(concnames)
+            for ind = 1 : ncomp
                 cname     = concnames{ind};
                 ionname   = ionconcnames{ind};
                 dmudcname = dmudcnames{ind};            
                 
                 cvec{ind} = model.getProp(state, cname);
                 
-                dmudc = model.con.R .* T ./ model.ion.cvec{ind};
+                dmudc = model.con.R .* T ./ cvec{ind};
                 
                 state = model.setProp(state, ionname, cvec{ind});
                 state = model.setProp(state, dmudcname, dmudc);
                 
             end
 
+            % this part is specific to 2 component system
             IoSt = 0.5 .* cvec{1}.*model.sp.z{1}.^2./1000;
             IoSt = IoSt + 0.5 .* cvec{2}.*model.sp.z{2}.^2./1000;
             
-            state = model.setProp(state, 'IoSt');
+            state = model.setProp(state, 'IoSt', IoSt);
             
         end
         
