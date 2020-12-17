@@ -28,7 +28,7 @@ classdef CompositeModel < SimpleModel
 
         function model = setSubModel(model, name, submodel)
             ind = model.getSubModelInd(name);
-            submodel.useglobalnames = true;
+            submodel.usenamespace = true;
             model.SubModels{ind} = submodel;
         end
 
@@ -37,35 +37,49 @@ classdef CompositeModel < SimpleModel
             model.nSubModels = nsubmodels;
             model.isCompositeModel = true;
             for ind = 1 : nsubmodels
-                model.SubModels{ind}.useglobalnames = true; 
+                submodel = model.SubModels{ind};
+                submodel.usenamespace = true; 
+                
+                if model.usenamespace
+                    subnamespace = sprintf('%s_%s', model.namespace, submodel.namespace);
+                    submodel.namespace = subnamespace;
+                end
+                
+                if isa(submodel, 'CompositeModel')
+                    submodel = submodel.initiateCompositeModel();
+                end
+                model.SubModels{ind} = submodel;
             end
         end
         
-        function [globalnames, localnames] = getModelPrimaryVarNames(model)
-            
+        function [namespaces, names] = getModelPrimaryVarNames(model)
+        
             nsubmodels = model.nSubModels;
-            localnames = {};
+            namespaces = {};
+            names = {};
             for i = 1 : nsubmodels
                 submodel = model.SubModels{i};
-                submodelvarnames = submodel.getModelPrimaryVarNames();
-                localnames = horzcat(localnames, submodelvarnames);
+                [namespaces1, names1] = submodel.getModelPrimaryVarNames();
+                namespaces = horzcat(namespaces, namespaces1);
+                names = horzcat(names, names1);
             end
-            globalnames = cellfun(@(name) (model.setupGlobalName(name)), localnames, 'uniformoutput', false);
             
         end
         
-        function [globalnames, localnames] = getModelVarNames(model)
+        function [namespaces, names] = getModelVarNames(model)
         % default for compositemodel : fetch all the defined names in the submodels
+        
             nsubmodels = model.nSubModels;
-            localnames = {};
+            namespaces = {};
+            names = {};
             for i = 1 : nsubmodels
                 submodel = model.SubModels{i};
-                submodelvarnames = submodel.getModelVarNames();
-                localnames = horzcat(localnames, submodelvarnames);
+                [namespaces1, names1] = submodel.getModelVarNames();
+                namespaces = horzcat(namespaces, namespaces1);
+                names = horzcat(names, names1);
             end
-            globalnames = cellfun(@(name) (model.setupGlobalName(name)), localnames, 'uniformoutput', false);
+            
         end
-        
         
         
         function [state, report] = updateState(model, state, problem, dx, drivingForces)
