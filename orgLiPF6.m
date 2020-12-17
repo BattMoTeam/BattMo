@@ -69,18 +69,16 @@ classdef orgLiPF6 < SimpleModel
             model.compnames = {'Li', 'PF6'};
             model.ncomp = numel(model.compnames);
         end
-        
+
+        function name = getModelName(model)
+            name = 'elyte';
+        end
+
         function state = initializeState(model, state)
 
-            compnames = model.compnames;
+            state = model.validateState(state);
             
-            varnames = model.getVarNames();
-            for i = 1 : numel(varnames)
-                varname = varnames{i};
-                if ~isfield(state, varname)
-                    state.(varname) = [];
-                end
-            end
+            compnames = model.compnames;
 
             c = model.getProp(state, 'c_Li');
             state = model.setProp(state, 'c_PF6', c);
@@ -98,35 +96,36 @@ classdef orgLiPF6 < SimpleModel
             state = model.update(state);
             
         end
+
+
         
-        function [globalnames, localnames] = getModelPrimaryVarNames(model)
-            localnames = {'phi', 'c_Li'}; % name 'c_Li' should match setup in getAffiliatedComponentNames
-            globalnames = model.setupGlobalNames(localnames); 
+        function [namespaces, names] = getModelPrimaryVarNames(model)
+            names = {'phi', 'c_Li'}; % name 'c_Li' should match setup in getAffiliatedComponentNames
+            namespaces = model.assignCurrentNameSpace(names); 
         end
         
-        function [globalnames, localnames] = getModelVarNames(model)
+        function [namespaces, names] = getModelVarNames(model)
             
             [concnames, ionconcnames, jchemnames, dmudcnames] = model.getAffiliatedComponentNames();
 
-            localnames = {'m', ...     % Molality,              [mol kg^-1]
-                          'kappa', ... % Conductivity,          [S m^-1]
-                          'D', ...     % Diffusion coefficient, [m^2 s^-1]
-                          'wtp', ...   % Weight percentace,     [wt%]
-                          'eps', ...   % Volume fraction,       [-]
-                           'IoSt', ... % Ionic strength
-                           'j' ...     % Ionic current density
-                         };
+            names = {'m', ...     % Molality,              [mol kg^-1]
+                     'kappa', ... % Conductivity,          [S m^-1]
+                     'D', ...     % Diffusion coefficient, [m^2 s^-1]
+                     'wtp', ...   % Weight percentace,     [wt%]
+                     'eps', ...   % Volume fraction,       [-]
+                     'IoSt', ...  % Ionic strength
+                     'j' ...      % Ionic current density
+                    };
             
-            localnames = horzcat(concnames, ionconcnames, jchemnames, dmudcnames, localnames);
-            
-            globalnames = model.setupGlobalNames(localnames);             
+            names = horzcat(concnames, ionconcnames, jchemnames, dmudcnames, names);
+            namespaces = model.assignCurrentNameSpace(names);
             
         end
         
-        function [globalnames, localnames] = getVarNames(model)
-            [globalnames, localnames] = model.getVarNames@SimpleModel();
-            localnames  = horzcat(localnames, {'T'});
-            globalnames = horzcat(globalnames, {'T'});
+        function [namespaces, names ]= getVarNames(model)
+            [namespaces, names] = model.getVarNames@SimpleModel();
+            namespaces = horzcat(namespaces, {{}});
+            names = horzcat(names, {'T'});
         end
         
         
@@ -219,6 +218,7 @@ classdef orgLiPF6 < SimpleModel
                     5.0 ];
             
             T = model.getProp(state, 'T');
+            c = model.getProp(state, 'c_Li');
             
             % Diffusion coefficient, [m^2 s^-1]
             D = 1e-4 .* 10 .^ ( ( cnst(1,1) + cnst(1,2) ./ ( T - Tgi(1) - Tgi(2) .* c .* 1e-3) + cnst(2,1) .* ...

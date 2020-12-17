@@ -42,48 +42,42 @@ classdef nmc111Electrode < CompositeModel
         
         function state = initializeState(model, state)
 
-            varnames = model.getVarNames();
-            for i = 1 : numel(varnames)
-                varname = varnames{i};
-                if ~isfield(state, varname)
-                    state.(varname) = [];
-                end
-            end
+            state = model.validateState(state);
+
             nmc111model = model.getSubModel('nmc111');
             state = nmc111model.initializeState(state);
-            OCP   = model.getProp(state, 'nmc111_OCP');
+            OCP   = nmc111model.getProp(state, 'OCP');
             state = model.setProp(state, 'E', OCP);
 
         end
 
         function name = getModelName(model)
             
-            name = 'ne';
+            name = 'pe';
             
         end        
         
-        function [globalnames, localnames] = getModelVarNames(model)
+        function [namespaces, names] = getModelVarNames(model)
             
-            [globalnames1, localnames1] = getModelVarNames@CompositeModel(model);
+            [namespaces1, names1] = getModelVarNames@CompositeModel(model);
             
-            localnames2 = {'E'  ,  ... % Electric potential,   [V]
-                           'eta',  ... % Overpotential,        [V]
-                           'j'  ,  ... % Current density,      [A/m2]
-                           'R'  ... % Reaction Rate,
-                          };
-            globalnames2 = model.setupGlobalNames(localnames2);
+            names2 = {'E'  ,  ... % Electric potential,   [V]
+                      'eta',  ... % Overpotential,        [V]
+                      'j'  ,  ... % Current density,      [A/m2]
+                      'R'  ... % Reaction Rate,
+                     };
+            namespaces2 = model.assignCurrentNameSpace(names2);
             
-            globalnames = horzcat(globalnames1, globalnames2);
-            localnames = horzcat(localnames1, localnames2);
+            namespaces = horzcat(namespaces1, namespaces2);
+            names = horzcat(names1, names2);
             
         end
 
-        function [globalnames, localnames] = getVarNames(model)
-            [globalnames, localnames] = model.getVarNames@CompositeModel();
-            localnames  = horzcat(localnames, {'T', 'SOC', 'phielyte'});
-            globalnames = horzcat(globalnames, {'T', 'SOC', 'phielyte'});
+        function [namespaces, names] = getVarNames(model)
+            [namespaces, names] = model.getVarNames@SimpleModel();
+            namespaces = {namespaces{:}, {}, {}, {}};
+            names = {names{:}, 'T', 'SOC', 'phielyte'};
         end
-        
         
         function state = reactBV(model, state)
             

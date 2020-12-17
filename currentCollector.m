@@ -16,24 +16,24 @@ classdef currentCollector < SimpleModel
             
         end
 
-        function [globalnames, localnames] = getModelPrimaryVarNames(model)
-            localnames = {'phi'};
-            globalnames = model.setupGlobalNames(localnames);
+        function [namespaces, names] = getModelPrimaryVarNames(model)
+            names = {'phi'};
+            namespaces = model.assignCurrentNameSpace(names);
         end
         
-        function [globalnames, localnames] = getModelVarNames(model)
-            localnames = {'E', ...       % Potential at the end of collector
-                          'j', ...       % Current density, [A/m2]
-                          'OCP', ...     % Open-circuit potential [V];
-                          'refOCP', ...  % Reference open circuit potential at standard temperature [V]
-                         };
-            globalnames = model.setupGlobalNames(localnames);
+        function [namespaces, names] = getModelVarNames(model)
+            names = {'E', ...       % Potential at the end of collector
+                     'j', ...       % Current density, [A/m2]
+                     'OCP', ...     % Open-circuit potential [V];
+                     'refOCP', ...  % Reference open circuit potential at standard temperature [V]
+                    };
+            namespaces = model.assignCurrentNameSpace(names);
         end        
 
-        function [globalnames, localnames] = getVarNames(model)
-            [globalnames, localnames] = getVarNames@SimpleModel(model);
-            globalnames{end + 1} = 'T';
-            localnames{end + 1} = 'T';
+        function [namespaces, names] = getVarNames(model)
+            [namespaces, names] = getVarNames@SimpleModel(model);
+            names = horzcat(names, {'T'});
+            namespaces = horzcat(namespaces, {{}});
         end
 
     end

@@ -104,30 +104,30 @@ classdef graphiteAM < SimpleModel
             
         end
 
-        function [globalnames, localnames] = getModelPrimaryVarNames(model)
-            localnames = {'phi', 'Li'};
-            globalnames = model.setupGlobalNames(localnames); 
+        function [namespaces, names] = getModelPrimaryVarNames(model)
+            names = {'phi', 'Li'};
+            namespaces = model.assignCurrentNameSpace(names); 
         end
         
         
-        function [globalnames, localnames] = getModelVarNames(model)
+        function [namespaces, names] = getModelVarNames(model)
             
-            localnames = {'refOCP', ... % Reference open circuit potential at standard  teperature [V]
-                          'OCP', ...    % Open-circuit potential        [V]
-                          'dUdT', ...   % Entropy change                [V K^-1]
-                          'theta', ...  % Lithiation                    [-]
-                          'k', ...      % Reaction rate constant        [m^2.5 mol^-0.5 s^-1]
-                          'D', ...      % Diffusion
-                          'eps' ...     % Volume fraction,              [-]    
-                        };
-            globalnames = model.setupGlobalNames(localnames);             
+            names = {'refOCP', ... % Reference open circuit potential at standard  teperature [V]
+                     'OCP', ...    % Open-circuit potential        [V]
+                     'dUdT', ...   % Entropy change                [V K^-1]
+                     'theta', ...  % Lithiation                    [-]
+                     'k', ...      % Reaction rate constant        [m^2.5 mol^-0.5 s^-1]
+                     'D', ...      % Diffusion
+                     'eps' ...     % Volume fraction,              [-]    
+                    };
+            namespaces = model.assignCurrentNameSpace(names);
         end
         
-        function [globalnames, localnames] = getVarNames(model)
+        function [namespaces, names] = getVarNames(model)
         % this function 
-            [globalnames, localnames] = model.getVarNames@SimpleModel();
-            localnames                = horzcat(localnames, {'T', 'SOC'});
-            globalnames               = horzcat(globalnames, {'T', 'SOC'});
+            [namespaces, names] = model.getVarNames@SimpleModel();
+            namespaces = {namespaces{:}, {}, {}};
+            names = {names{:}, 'T', 'SOC'};
         end
         
         
@@ -196,7 +196,7 @@ classdef graphiteAM < SimpleModel
                       - 0.0172 ./ theta ... 
                       + 0.0019 ./ theta.^1.5 ...
                       + 0.2808 .* exp(0.9-15.*theta) ... 
-                      - 0.7984 .* exp(0.4465 .* theta - 0.4108);
+                      - 0.7984 .* exp(0.4465 .* theta - 0.4108));
 
             % Calculate the entropy change at the given lithiation
             dUdT = 1e-3 .* ...
