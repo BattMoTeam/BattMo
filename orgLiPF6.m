@@ -63,23 +63,23 @@ classdef orgLiPF6 < SimpleModel
     
     methods
         
-        function model = orgLiPF6(G, cells)
-            model = model@SimpleModel();
+        function model = orgLiPF6(name, G, cells)
+            
+            model = model@SimpleModel(name);
             model.G = genSubGrid(G, cells);
             model.compnames = {'Li', 'PF6'};
             model.ncomp = numel(model.compnames);
-        end
-
-        function name = getModelName(model)
-            name = 'elyte';
         end
 
         function state = initializeState(model, state)
 
             state = model.validateState(state);
             
+            nc = model.G.cells.num;
             compnames = model.compnames;
 
+            state = model.setProp(state, 'phi', zeros(nc, 1));
+            
             c = model.getProp(state, 'c_Li');
             state = model.setProp(state, 'c_PF6', c);
             

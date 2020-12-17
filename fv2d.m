@@ -5,19 +5,6 @@ classdef fv2d
         varnames
         varsizes
         
-        % Time discretization properties
-        ti          % Initial time, s
-        tf          % Final time, s
-        dt          % Time step, s
-        tUp         % Ramp up time, s
-        tSpan       % Time span vector, s
-        
-        % State properties
-        y
-        y0
-        yp
-        yp0
-        
         % State data slots
         slots
         
@@ -25,39 +12,23 @@ classdef fv2d
     
     methods
         
-        function obj = fv2d(model)
+        function obj = fv2d(model, state)
             
-            compnames = model.componentnames;
+            varnames = model.getPrimaryVarNames();
             
-            varnames = {};
-            varsizes = {};
-            slots = {};
             ind = 0;
-            
-            for icn = 1 : numel(compnames)
-                compname = compnames{icn};
-                compvarnames = model.(compname).varnames;
-                compvarsizes = model.(compname).varsizes;
-                compvarnum   = model.(compname).varnum;
-                for icv = 1 : compvarnum
-                    compvarname = compvarnames{icv};
-                    compvarsize = compvarsizes(icv);
-                    varnames{end + 1} = sprintf('%s_%s', compname, compvarname);
-                    varsizes{end + 1} = compvarsize;
-                    slots{end + 1} = ind + (1 : compvarsize)';
-                    ind = ind + compvarsize;
-                end                
+            for i = 1 : numel(varnames)
+                val = model.getProp(state, varnames{i});
+                varsize =  size(val, 1);
+                varsizes{i} = varsize;
+                slots{i} = ind + (1 : varsize)';
+                ind = ind + varsize;
             end
-            
-            % we add the potential
-            varnames{end + 1} = 'E';
-            varsizes{end + 1} = 1;
-            slots{end + 1} = ind + 1;
             
             obj.varnames = varnames;
             obj.varsizes = varsizes;
             obj.slots = slots;
-            
+
         end
         
         function n = varnum(obj)

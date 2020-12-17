@@ -1,4 +1,4 @@
-classdef celgard2500 < FvModel
+classdef celgard2500 < SimpleModel
     %UNTITLED10 Summary of this class goes here
     %   Detailed explanation goes here
     
@@ -12,26 +12,27 @@ classdef celgard2500 < FvModel
         eps     % Volume fraction,  [-]
         void    % Porosity,         [-]
         rp      % Pore radius,      [m]
-        G       % Gurley number,    [s]
+        Gurley  % Gurley number,    [s]
         
     end
     
     methods
-        function obj = celgard2500(compname, G, cells)
+        function model = celgard2500(name, G, cells)
             
-            obj = obj@FvModel(compname);
+            model = model@SimpleModel(name);
             
-            obj.t       = 10e-6;
-            obj.void    = 0.55;
-            obj.eps     = 1 - obj.void;
-            obj.rp      = 0.064e-6 ./ 2;
-            obj.G       = 200;
+            model.t      = 10e-6;
+            model.void   = 0.55;
+            model.eps    = 1 - model.void;
+            model.rp     = 0.064e-6 ./ 2;
+            model.Gurley = 200;
             
-            obj.Grid = genSubGrid(G, cells);
-            
-            obj.varnames = {'Li', 'phi'};
-            nc = obj.Grid.cells.num;
-            obj.varsizes = [nc, nc];
+            model.G = genSubGrid(G, cells);
+
+        end
+        
+        function state = initializeState(model, state)
+            warning('to be implemented');
         end
 
     end

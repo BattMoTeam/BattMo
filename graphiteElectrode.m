@@ -25,9 +25,9 @@ classdef graphiteElectrode < CompositeModel
     
     methods
         
-        function model = graphiteElectrode(G, cells)
+        function model = graphiteElectrode(name, G, cells)
             
-            model = model@CompositeModel();
+            model = model@CompositeModel(name);
             model.G = genSubGrid(G, cells);
             
             % setup graphite submodel
@@ -54,12 +54,6 @@ classdef graphiteElectrode < CompositeModel
             state = model.setProp(state, 'E', OCP);
 
         end
-
-        function name = getModelName(model)
-            
-            name = 'ne';
-            
-        end
         
         function [namespaces, names] = getModelVarNames(model)
             
@@ -68,7 +62,7 @@ classdef graphiteElectrode < CompositeModel
             names2 = {'E'  ,  ... % Electric potential,   [V]
                       'eta',  ... % Overpotential,        [V]
                       'j'  ,  ... % Current density,      [A/m2]
-                      'R'  ... % Reaction Rate,
+                      'R'  ...    % Reaction Rate,
                      };
             namespaces2 = model.assignCurrentNameSpace(names2);
             

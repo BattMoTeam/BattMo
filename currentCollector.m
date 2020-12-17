@@ -8,12 +8,16 @@ classdef currentCollector < SimpleModel
     end
     
     methods
-        function model = currentCollector(G, cells)
+        function model = currentCollector(name, G, cells)
             
-            model = model@SimpleModel();
+            model = model@SimpleModel(name);
             model.eps = 1;
             model.G = genSubGrid(G, cells);
             
+        end
+        
+        function state = initializeState(model, state)
+        % nothing to do here
         end
 
         function [namespaces, names] = getModelPrimaryVarNames(model)

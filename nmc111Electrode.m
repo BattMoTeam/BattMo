@@ -23,10 +23,11 @@ classdef nmc111Electrode < CompositeModel
         
     end
     
-    methods
-        function model = nmc111Electrode(G, cells)
+    methods 
+        
+        function model = nmc111Electrode(name, G, cells)
             
-            model = model@CompositeModel();
+            model = model@CompositeModel(name);
             model.G = genSubGrid(G, cells);
             
             % setup nmc111 submodel
@@ -51,12 +52,6 @@ classdef nmc111Electrode < CompositeModel
 
         end
 
-        function name = getModelName(model)
-            
-            name = 'pe';
-            
-        end        
-        
         function [namespaces, names] = getModelVarNames(model)
             
             [namespaces1, names1] = getModelVarNames@CompositeModel(model);

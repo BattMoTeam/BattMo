@@ -49,11 +49,13 @@ classdef nmc111AM < SimpleModel
     end
     
     methods
-        function model = nmc111AM(SOC, T)
-            %NMC111 Construct an instance of the nmc111 class
-            %   model = nmc111(cLi, T) SOC is the state-of-charge of the
-            %   battery (0-1) and T is the temperature in Kelvin [K]  
-            
+        function model = nmc111AM()
+        %NMC111 Construct an instance of the nmc111 class
+        %   model = nmc111(cLi, T) SOC is the state-of-charge of the
+        %   battery (0-1) and T is the temperature in Kelvin [K]  
+
+            model = model@SimpleModel('nmc111');
+                
             % Define material constants
             model.spCAh    = 155;      % [Ah kg^-1]
             model.rho      = 4650;     % [kg m^-3]
@@ -90,12 +92,7 @@ classdef nmc111AM < SimpleModel
             OCP = model.getProp(state, 'OCP');
             state = model.setProp(state, 'phi', OCP);
         end
-        
-        function name = getModelName(model)
 
-            name = 'nmc111';
-            
-        end        
         
         function [namespaces, names] = getModelPrimaryVarNames(model)
             names = {'phi', 'Li'};
