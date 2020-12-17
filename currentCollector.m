@@ -2,6 +2,7 @@ classdef currentCollector < SimpleModel
 % Current collector model 
     
     properties
+        E    % Potential at the end of collector
         eps
         sigma
         sigmaeff
@@ -26,8 +27,7 @@ classdef currentCollector < SimpleModel
         end
         
         function [namespaces, names] = getModelVarNames(model)
-            names = {'E', ...       % Potential at the end of collector
-                     'j', ...       % Current density, [A/m2]
+            names = { 'j', ...      % Current density, [A/m2]
                      'OCP', ...     % Open-circuit potential [V];
                      'refOCP', ...  % Reference open circuit potential at standard temperature [V]
                     };

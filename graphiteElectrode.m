@@ -17,6 +17,7 @@ classdef graphiteElectrode < CompositeModel
         ca      % Conducting additive object
         sei     % Solid-electrolyte interphase (SEI) object
         elyte   % Liquid electrolyte data structure
+        E       % Electric potential,   [V]E
         
         % Effective conductivity
         sigmaeff
@@ -59,8 +60,7 @@ classdef graphiteElectrode < CompositeModel
             
             [namespaces1, names1] = getModelVarNames@CompositeModel(model);
             
-            names2 = {'E'  ,  ... % Electric potential,   [V]
-                      'eta',  ... % Overpotential,        [V]
+            names2 = {'eta',  ... % Overpotential,        [V]
                       'j'  ,  ... % Current density,      [A/m2]
                       'R'  ...    % Reaction Rate,
                      };

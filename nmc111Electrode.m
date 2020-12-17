@@ -13,6 +13,8 @@ classdef nmc111Electrode < CompositeModel
         void    % Porosity,         [-]
         
         % Material properties
+        E   % Electric potential,   [V]
+        
         bin     % Binder object
         ca      % Conducting additive object
         cei     % Cathode-electrolyte interphase (CEI) object
@@ -56,8 +58,7 @@ classdef nmc111Electrode < CompositeModel
             
             [namespaces1, names1] = getModelVarNames@CompositeModel(model);
             
-            names2 = {'E'  ,  ... % Electric potential,   [V]
-                      'eta',  ... % Overpotential,        [V]
+            names2 = {'eta',  ... % Overpotential,        [V]
                       'j'  ,  ... % Current density,      [A/m2]
                       'R'  ... % Reaction Rate,
                      };
