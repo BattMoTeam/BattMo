@@ -1,10 +1,12 @@
+% 2D test case
+
 clear all
 close all
 
-%% add MRST module
+%% Add MRST module
 mrstModule add ad-core
 
-% setup object and run simulation
+% Setup object and run simulation
 % delete('temp2.txt');
 obj = lithiumIonModel();
 obj.J = 0.1;
@@ -73,7 +75,7 @@ for icn = 1 : numel(compnames)
     
 end
 
-%% combined plot
+%% Combined plot for the positive electrod and current collector
 
 % compnames = {'ne', 'ccne', 'pe', 'ccpe'};
 % compnames = {'ne', 'ccne'};
