@@ -42,6 +42,13 @@ classdef graphiteElectrode < CompositeModel
             model.eps  = graphitemodel.eps + model.bin.eps + model.sei.eps;
             model.t    = 10e-6;
             
+            names = {'eta',  ... % Overpotential,        [V]
+                     'j'  ,  ... % Current density,      [A/m2]
+                     'R'  ...    % Reaction Rate,
+                    };
+            
+            model.varnames = model.assignCurrentNameSpace(names);
+            
         end
 
         
@@ -53,25 +60,12 @@ classdef graphiteElectrode < CompositeModel
             state = graphitemodel.initializeState(state);
             OCP   = graphitemodel.getProp(state, 'OCP');
         end
-        
-        function varnames = getModelVarNames(model)
-            
-            varnames = getModelVarNames@CompositeModel(model);
-            
-            names2 = {'eta',  ... % Overpotential,        [V]
-                      'j'  ,  ... % Current density,      [A/m2]
-                      'R'  ...    % Reaction Rate,
-                     };
-            varnames2 = model.assignCurrentNameSpace(names2);
-            
-            varnames = horzcat(varnames1, varnames2);
-            
-        end
+
 
         function varnames = getVarNames(model)
             varnames1 = model.getVarNames@CompositeModel();
             names2 = {'T', 'SOC', 'phielyte'};
-            varnames2 = @(name) (VarName({}, name), names2);
+            varnames2 = cellfun(@(name) (VarName({}, name)), names2, 'uniformoutput', false);
             varnames = horzcat(varnames1, varnames2);
         end
         

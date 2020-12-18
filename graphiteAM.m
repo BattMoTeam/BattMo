@@ -77,6 +77,19 @@ classdef graphiteAM < SimpleModel
             model.Asp      = 723600;   % [m2 m^-3]
             model.eps      = 0.8;
             
+            names = {'refOCP', ... % Reference open circuit potential at standard  teperature [V]
+                     'OCP', ...    % Open-circuit potential        [V]
+                     'dUdT', ...   % Entropy change                [V K^-1]
+                     'theta', ...  % Lithiation                    [-]
+                     'k', ...      % Reaction rate constant        [m^2.5 mol^-0.5 s^-1]
+                     'D', ...      % Diffusion
+                     'eps' ...     % Volume fraction,              [-]    
+                    };
+            model.varnames = model.assignCurrentNameSpace(names);
+            
+            names = {'phi', 'Li'};
+            model.pvarnames = model.assignCurrentNameSpace(names);             
+            
         end
         
         function state = initializeState(model, state)
@@ -100,30 +113,13 @@ classdef graphiteAM < SimpleModel
             state = model.setProp(state, 'phi', OCP);
         end
 
-        function [namespaces, names] = getModelPrimaryVarNames(model)
-            names = {'phi', 'Li'};
-            namespaces = model.assignCurrentNameSpace(names); 
-        end
         
-        
-        function [namespaces, names] = getModelVarNames(model)
-            
-            names = {'refOCP', ... % Reference open circuit potential at standard  teperature [V]
-                     'OCP', ...    % Open-circuit potential        [V]
-                     'dUdT', ...   % Entropy change                [V K^-1]
-                     'theta', ...  % Lithiation                    [-]
-                     'k', ...      % Reaction rate constant        [m^2.5 mol^-0.5 s^-1]
-                     'D', ...      % Diffusion
-                     'eps' ...     % Volume fraction,              [-]    
-                    };
-            namespaces = model.assignCurrentNameSpace(names);
-        end
-        
-        function [namespaces, names] = getVarNames(model)
+        function varnames = getVarNames(model)
         % this function 
-            [namespaces, names] = model.getVarNames@SimpleModel();
-            namespaces = {namespaces{:}, {}, {}};
-            names = {names{:}, 'T', 'SOC'};
+            varnames = model.getVarNames@SimpleModel();
+            varname1 = VarName({}, 'T');
+            varname2 = VarName({}, 'SOC');
+            varnames = {varnames{:}, varname1, varname2};
         end
         
         

@@ -127,8 +127,8 @@ classdef BatteryModel < CompositeModel
             model.fv = fv2d(model, state);
         end
         
-        function [namespaces, names] = getModelPrimaryVarNames(model)
-           [namespaces, names] = getModelPrimaryVarNames@CompositeModel(model);
+        function varnames = getModelPrimaryVarNames(model)
+           varnames1 = getModelPrimaryVarNames@CompositeModel(model);
            namespaces = {namespaces{:}, 'ccpe'};
            names = {names{:}, 'E'};
         end

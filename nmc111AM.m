@@ -116,7 +116,7 @@ classdef nmc111AM < SimpleModel
         function varnames = getVarNames(model)
             varnames1 = model.getVarNames@SimpleModel();
             names2 = {'T', 'SOC'};
-            varnames2 = @(name) (VarName({}, name), names2);
+            varnames2 = cellfun(@(name) (VarName({}, name)), names2, 'uniformoutput', false);
             varnames = horzcat(varnames1, varnames2);
         end
         
