@@ -12,10 +12,24 @@ obj = lithiumIonModel1D();
 
 [t, y] = obj.p2d();
 
-%%
+%% plotting
 
-% obj = lithiumIon();
-% [t, y] = obj.p2d();
+mrstModule add mrst-gui
 
+fv = obj.fv;
+
+%%  plot of potential
+
+for iy = 1 : size(y, 1)
+    yy = y(iy, :)';
+    varname = 'E';
+    E(iy) = yy(fv.getSlot(varname));
+end
+
+%% 
+figure
+plot(t, E)
+title('Potential (E)')
+xlabel('time')
 
 

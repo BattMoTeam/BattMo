@@ -132,8 +132,8 @@ classdef lithiumIonModel < handle
             nxs = [ccnenx; nenx; sepnx; penx; ccpenx];
             ny = 10;
 
-            xlength = 1e-6*ones(5, 1);
-            ylength = 1e-6;
+            xlength = 1e-6*[10; 100; 50; 80; 10];
+            ylength = 1e-2;
             
             x = xlength./nxs;
             x = rldecode(x, nxs);

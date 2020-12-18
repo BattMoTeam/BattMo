@@ -7,18 +7,35 @@ mrstModule add ad-core
 % setup object and run simulation
 % delete('temp2.txt');
 obj = lithiumIonModel();
-obj.J = 1e-6;
+obj.J = 0.1;
 
 %% run simulation
 
 [t, y] = obj.p2d();
 
 %% plotting
-% Parse output
 
 mrstModule add mrst-gui
 
 fv = obj.fv;
+
+
+%%  plot of potential
+
+for iy = 1 : size(y, 1)
+    yy = y(iy, :)';
+    varname = 'E';
+    E(iy) = yy(fv.getSlot(varname));
+end
+
+figure
+plot(t/hour, E)
+title('Potential (E)')
+xlabel('time (hours)')
+
+return
+
+%% plot of each component
 
 compnames = obj.componentnames;
 
@@ -56,6 +73,8 @@ for icn = 1 : numel(compnames)
     
 end
 
+%% combined plot
+
 % compnames = {'ne', 'ccne', 'pe', 'ccpe'};
 % compnames = {'ne', 'ccne'};
 compnames = {'pe', 'ccpe'};
@@ -91,24 +110,6 @@ end
 
 figure
 plotToolbar(G, states);
-title('ne + ccne');
-
-
-%% 
-
-
-for iy = 1 : size(y, 1)
-    yy = y(iy, :)';
-    varname = 'E';
-    E(iy) = yy(fv.getSlot(varname));
-end
-
-%%
-
-figure
-plot(E)
-
-
-
+title(join(compnames, ' and '));
 
 
