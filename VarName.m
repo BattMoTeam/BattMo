@@ -6,17 +6,18 @@ classdef VarName
     end
     
     methods
-        function varname = VarName(namespace, varname)
-            varname = {};
-            name = '';
+        function varname = VarName(namespace, name)
+            varname.namespace = namespace;
+            varname.name = name;
         end
         
         function name = fullname(varname)
             name = join({varname.namespace{:}, varname.name}, '_');
+            name = name{1};
         end
     end
     
-    methods (statics)
+    methods (Static)
         function name = joinvarnames(names)
             name = join({varname.namespace{:}, varname.name}, '_')
         end

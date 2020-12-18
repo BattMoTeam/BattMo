@@ -4,8 +4,10 @@ classdef SimpleModel < PhysicalModel
         modelname
         isnamespaceroot
         namespace
+        
         varnames
         pvarnames
+        
     end
     
     
@@ -14,18 +16,18 @@ classdef SimpleModel < PhysicalModel
             model = model@PhysicalModel([]);
             model = merge_options(model, varargin{:});
             model.modelname = modelname;
-            model.namespace = model.getModelName();
+            model.namespace = {model.getModelName()};
         end
 
         function state = validateState(model, state)
             
-            [namespaces, names] = model.getVarNames();
-            varnames = model.addNameSpace(namespaces, names);
+            varnames = model.getVarNames();
             
             for i = 1 : numel(varnames)
                 varname = varnames{i};
-                if ~isfield(state, varname)
-                    state.(varname) = [];
+                name = varname.fullname;
+                if ~isfield(state, name)
+                    state.(name) = [];
                 end
             end
             
@@ -37,14 +39,14 @@ classdef SimpleModel < PhysicalModel
         
         function varnames = getModelPrimaryVarNames(model)
         % List the primary variables. For SimpleModel the variable names only consist of those declared in the model (no child)
-            varnames = {};
+            varnames = model.pvarnames;
         end
         
         
         function varnames = getModelVarNames(model)
         % List the variable names (primary variables are handled separately). For SimpleModel the variable names only consist of
         % those declared in the model (no child)
-            varnames = {};
+            varnames = model.varnames;
         end
         
         function varnames = getVarNames(model)
@@ -62,7 +64,7 @@ classdef SimpleModel < PhysicalModel
         
         function names = getFullVarNames(model)
         % Returns full names (i.e. including namespaces)
-            [namespaces, names] = model.getVarNames();
+            varnames = model.getVarNames();
             names = model.addNameSpace(namespaces, names);
         end
 
@@ -87,8 +89,15 @@ classdef SimpleModel < PhysicalModel
                 fn = name.fullname();
             elseif iscell(name)
                 name = join({model.namespace{:}, name{:}}, '_');
+                fn = name{1};
             else
-                fn = name;
+                % search in the local name
+                varnames = model.getVarNames();
+                for i = 1 : numel(varnames)
+                    if strcmp(name, varnames{i}.name)
+                        fn = varnames{i}.fullname;
+                    end
+                end
             end
 
             index = 1;

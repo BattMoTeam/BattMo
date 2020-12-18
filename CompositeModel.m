@@ -43,7 +43,7 @@ classdef CompositeModel < SimpleModel
                 submodelname = submodel.getModelName();
                 
                 if ~model.isnamespaceroot
-                    subnamespace = sprintf('%s_%s', model.namespace, submodelname);
+                    subnamespace = horzcat({model.namespace}, submodelname);
                 else
                     subnamespace = submodelname;
                 end
@@ -60,8 +60,8 @@ classdef CompositeModel < SimpleModel
         
         function varnames = getModelPrimaryVarNames(model)
         
+            varnames = model.pvarnames;
             nsubmodels = model.nSubModels;
-            varnames = {};
             for i = 1 : nsubmodels
                 submodel = model.SubModels{i};
                 varnames1 = submodel.getModelPrimaryVarNames();
@@ -73,8 +73,8 @@ classdef CompositeModel < SimpleModel
         function varnames = getModelVarNames(model)
         % default for compositemodel : fetch all the defined names in the submodels
         
+            varnames = model.varnames;
             nsubmodels = model.nSubModels;
-            varnames = {};
             for i = 1 : nsubmodels
                 submodel = model.SubModels{i};
                 varnames1 = submodel.getModelVarNames();
