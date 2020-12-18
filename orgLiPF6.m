@@ -58,6 +58,7 @@ classdef orgLiPF6 < SimpleModel
         
         % Finite volume solution properties
         chargeCont
+
         
     end
     
@@ -69,6 +70,25 @@ classdef orgLiPF6 < SimpleModel
             model.G = genSubGrid(G, cells);
             model.compnames = {'Li', 'PF6'};
             model.ncomp = numel(model.compnames);
+            
+            % primary variables
+            names = {'phi', 'c_Li'}; % name 'c_Li' should match the setup in getAffiliatedComponentNames
+            model.pnames = names;
+            
+            % state variables
+            [concnames, ionconcnames, jchemnames, dmudcnames] = model.getAffiliatedComponentNames('init', true);
+            % note that the 'c_Li' variable has been removed from concnames in method getAffiliatedComponentNames
+            names = {'m', ...     % Molality,              [mol kg^-1]
+                     'kappa', ... % Conductivity,          [S m^-1]
+                     'D', ...     % Diffusion coefficient, [m^2 s^-1]
+                     'wtp', ...   % Weight percentace,     [wt%]
+                     'eps', ...   % Volume fraction,       [-]
+                     'IoSt', ...  % Ionic strength
+                     'j' ...      % Ionic current density
+                    };
+            
+            model.names = horzcat(concnames, ionconcnames, jchemnames, dmudcnames, names);
+            
         end
 
         function state = initializeState(model, state)
@@ -97,35 +117,10 @@ classdef orgLiPF6 < SimpleModel
             
         end
 
-
-        
-        function varnames = getModelPrimaryVarNames(model)
-            names = {'phi', 'c_Li'}; % name 'c_Li' should match setup in getAffiliatedComponentNames
-            varnames = model.assignCurrentNameSpace(names); 
-        end
-        
-        function varnames = getModelVarNames(model)
-            
-            [concnames, ionconcnames, jchemnames, dmudcnames] = model.getAffiliatedComponentNames();
-
-            names = {'m', ...     % Molality,              [mol kg^-1]
-                     'kappa', ... % Conductivity,          [S m^-1]
-                     'D', ...     % Diffusion coefficient, [m^2 s^-1]
-                     'wtp', ...   % Weight percentace,     [wt%]
-                     'eps', ...   % Volume fraction,       [-]
-                     'IoSt', ...  % Ionic strength
-                     'j' ...      % Ionic current density
-                    };
-            
-            names = horzcat(concnames, ionconcnames, jchemnames, dmudcnames, names);
-            varnames = model.assignCurrentNameSpace(names);
-            
-        end
-        
         function varnames = getVarNames(model)
             varnames1 = model.getVarNames@SimpleModel();
             varnames2 = VarName({}, 'T');
-            varnames = horzcat(varnames1, varnames2);
+            varnames = horzcat(varnames1, {varnames2});
         end
         
         
@@ -135,10 +130,26 @@ classdef orgLiPF6 < SimpleModel
             state = model.updateDiffusion(state);
         end
 
-        function [concnames, ionconcnames, jchemnames, dmudcnames] = getAffiliatedComponentNames(model)
+        function [concnames, ionconcnames, jchemnames, dmudcnames] = getAffiliatedComponentNames(model, varargin)
+            
+            opt = struct('init', false);
+            opt = merge_options(opt, varargin{:});
+            
             compnames = model.compnames;
             
-            concnames    = cellfun(@(x) sprintf('c_%s', x), compnames, 'uniformoutput', false);
+            concnames1 = cellfun(@(x) sprintf('c_%s', x), compnames, 'uniformoutput', false);
+            if opt.init
+                concnames = {};
+                for i = 1 : numel(concnames1)
+                    if ~strcmp(concnames1{i}, 'c_Li')
+                        concnames{end + 1} = concnames1{i};
+                    end
+                end
+            else
+                concnames = concnames1;
+            end
+            
+            
             ionconcnames = cellfun(@(x) sprintf('ionc_%s', x), compnames, 'uniformoutput', false);            
             jchemnames   = cellfun(@(x) sprintf('jchem_%s', x), compnames, 'uniformoutput', false);
             dmudcnames   = cellfun(@(x) sprintf('dmucd_%s', x), compnames, 'uniformoutput', false);

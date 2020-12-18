@@ -45,7 +45,6 @@ classdef nmc111AM < SimpleModel
         k0          % Reference rate constant,      [m^2.5 mol^-0.5 s^-1]
         Eak         % Reaction activation energy,   [J mol^-1] 
         Asp         % Surface area,                 [m2 m^-3]
-        
     end
     
     methods
@@ -56,6 +55,20 @@ classdef nmc111AM < SimpleModel
 
             model = model@SimpleModel('nmc111');
                 
+            % primary variables
+            model.pnames = {'phi', 'Li'};
+
+            % state variables
+            names = {'refOCP', ... % Reference open circuit potential at standard  teperature [V]
+                     'OCP', ...    % Open-circuit potential        [V]
+                     'dUdT', ...   % Entropy change                [V K^-1]
+                     'theta', ...  % Lithiation                    [-]
+                     'k', ...      % Reaction rate constant        [m^2.5 mol^-0.5 s^-1]
+                     'D', ...      % Diffusion
+                     'eps' ...     % Volume fraction,              [-]    
+                    };
+            model.names = names;
+            
             % Define material constants
             model.spCAh    = 155;      % [Ah kg^-1]
             model.rho      = 4650;     % [kg m^-3]
@@ -93,25 +106,6 @@ classdef nmc111AM < SimpleModel
             state = model.setProp(state, 'phi', OCP);
         end
 
-        
-        function varnames = getModelPrimaryVarNames(model)
-            names = {'phi', 'Li'};
-            varnames = model.assignCurrentNameSpace(names); 
-        end
-        
-        
-        function varnames = getModelVarNames(model)
-            
-            names = {'refOCP', ... % Reference open circuit potential at standard  teperature [V]
-                     'OCP', ...    % Open-circuit potential        [V]
-                     'dUdT', ...   % Entropy change                [V K^-1]
-                     'theta', ...  % Lithiation                    [-]
-                     'k', ...      % Reaction rate constant        [m^2.5 mol^-0.5 s^-1]
-                     'D', ...      % Diffusion
-                     'eps' ...     % Volume fraction,              [-]    
-                    };
-            varnames = model.assignCurrentNameSpace(names);             
-        end
 
         function varnames = getVarNames(model)
             varnames1 = model.getVarNames@SimpleModel();

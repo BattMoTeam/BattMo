@@ -2,6 +2,7 @@ classdef BatteryModel < CompositeModel
 
     properties
         fv
+        
     end
     
     methods
@@ -14,7 +15,10 @@ classdef BatteryModel < CompositeModel
             G = computeGeometry(G);
             
             model.G = G;
+            
 
+            
+            
             nc = G.cells.num;
             cells = (1 : nc)';
             
@@ -81,11 +85,19 @@ classdef BatteryModel < CompositeModel
             submodels{end + 1} = celgard2500('sep', G, cells);
 
             submodelnames = cellfun(@(m) m.getModelName(), submodels, 'uniformoutput', false);
-            
+
             model.SubModels = submodels;
             model.SubModelNames = submodelnames;
-            
+
             model.isnamespaceroot = true;
+
+            ccpe = model.getSubModel('ccpe');
+            ccpe.pnames = {ccpe.pnames{:}, 'E'};
+            model = model.setSubModel(ccpe, 'ccpe');
+            
+            names = {'T', 'SOC'};
+            varnames = model.assignCurrentNameSpace(names);
+            
             model = model.initiateCompositeModel();
             
         end
@@ -102,7 +114,7 @@ classdef BatteryModel < CompositeModel
             ccne = model.getSubModel('ccne');
             ne = model.getSubModel('ne');
             
-            OCP_ne = ne.getProp(state, 'graphite_OCP');
+            OCP_ne = ne.getProp(state, {'graphite', 'OCP'});
             nc = ccne.G.cells.num;
             OCP_ccne = OCP_ne(1)*ones(nc, 1);
             
@@ -112,7 +124,7 @@ classdef BatteryModel < CompositeModel
             ccpe = model.getSubModel('ccpe');
             pe = model.getSubModel('pe');
             
-            OCP_pe = pe.getProp(state, 'nmc111_OCP');
+            OCP_pe = pe.getProp(state, {'nmc111', 'OCP'});
             nc = ccpe.G.cells.num;
             OCP_ccpe = OCP_pe(1)*ones(nc, 1);
             
@@ -125,21 +137,6 @@ classdef BatteryModel < CompositeModel
 
         function model = setupFV(model, state)
             model.fv = fv2d(model, state);
-        end
-        
-        function varnames = getModelPrimaryVarNames(model)
-           varnames1 = getModelPrimaryVarNames@CompositeModel(model);
-           namespaces = {namespaces{:}, 'ccpe'};
-           names = {names{:}, 'E'};
-        end
-        
-        function [namespaces, names] = getModelVarNames(model)
-            [namespaces1, names1] = getModelVarNames@CompositeModel(model);
-            names2 = {'T', 'SOC'};
-            namespaces2 = model.assignCurrentNameSpace(names2);
-            
-            namespaces = horzcat(namespaces1, namespaces2);
-            names = horzcat(names1, names2);
         end
         
         function [y, yp] = dynamicPreprocess(model, state)

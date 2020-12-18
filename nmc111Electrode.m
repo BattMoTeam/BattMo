@@ -22,6 +22,8 @@ classdef nmc111Electrode < CompositeModel
         
         % Effective conductivity
         sigmaeff
+
+
         
     end
     
@@ -31,6 +33,14 @@ classdef nmc111Electrode < CompositeModel
             
             model = model@CompositeModel(name);
             model.G = genSubGrid(G, cells);
+            
+            % state variables
+            names = {'eta',  ... % Overpotential,        [V]
+                     'j',  ... % Current density,      [A/m2]
+                     'R'... % Reaction Rate,
+                    };
+        
+            model.names = names;
             
             % setup nmc111 submodel
             nmc111model = nmc111AM();
@@ -52,25 +62,11 @@ classdef nmc111Electrode < CompositeModel
             OCP   = nmc111model.getProp(state, 'OCP');
         end
 
-        function [namespaces, names] = getModelVarNames(model)
-            
-            [namespaces1, names1] = getModelVarNames@CompositeModel(model);
-            
-            names2 = {'eta',  ... % Overpotential,        [V]
-                      'j'  ,  ... % Current density,      [A/m2]
-                      'R'  ... % Reaction Rate,
-                     };
-            namespaces2 = model.assignCurrentNameSpace(names2);
-            
-            namespaces = horzcat(namespaces1, namespaces2);
-            names = horzcat(names1, names2);
-            
-        end
-
-        function [namespaces, names] = getVarNames(model)
-            [namespaces, names] = model.getVarNames@SimpleModel();
-            namespaces = {namespaces{:}, {}, {}, {}};
-            names = {names{:}, 'T', 'SOC', 'phielyte'};
+        function varnames = getVarNames(model)
+            varnames1 = model.getVarNames@CompositeModel();
+            names2 = {'T', 'SOC', 'phielyte'};
+            varnames2 = cellfun(@(name) (VarName({}, name)), names2, 'uniformoutput', false);
+            varnames = horzcat(varnames1, varnames2);
         end
         
         function state = reactBV(model, state)

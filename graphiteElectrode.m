@@ -42,12 +42,12 @@ classdef graphiteElectrode < CompositeModel
             model.eps  = graphitemodel.eps + model.bin.eps + model.sei.eps;
             model.t    = 10e-6;
             
+            % state variables
             names = {'eta',  ... % Overpotential,        [V]
                      'j'  ,  ... % Current density,      [A/m2]
                      'R'  ...    % Reaction Rate,
                     };
-            
-            model.varnames = model.assignCurrentNameSpace(names);
+            model.names = names;
             
         end
 

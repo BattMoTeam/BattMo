@@ -77,6 +77,11 @@ classdef graphiteAM < SimpleModel
             model.Asp      = 723600;   % [m2 m^-3]
             model.eps      = 0.8;
             
+            % primary variables
+            names = {'phi', 'Li'};
+            model.pnames = names;
+
+            % state variables
             names = {'refOCP', ... % Reference open circuit potential at standard  teperature [V]
                      'OCP', ...    % Open-circuit potential        [V]
                      'dUdT', ...   % Entropy change                [V K^-1]
@@ -85,11 +90,8 @@ classdef graphiteAM < SimpleModel
                      'D', ...      % Diffusion
                      'eps' ...     % Volume fraction,              [-]    
                     };
-            model.varnames = model.assignCurrentNameSpace(names);
-            
-            names = {'phi', 'Li'};
-            model.pvarnames = model.assignCurrentNameSpace(names);             
-            
+            model.names = names;
+
         end
         
         function state = initializeState(model, state)

@@ -14,6 +14,15 @@ classdef currentCollector < SimpleModel
             model = model@SimpleModel(name);
             model.eps = 1;
             model.G = genSubGrid(G, cells);
+
+            model.pnames = {'phi'};
+        
+            % state variables
+            names = { 'j', ...      % Current density, [A/m2]
+                     'OCP', ...     % Open-circuit potential [V];
+                     'refOCP', ...  % Reference open circuit potential at standard temperature [V]
+                    };
+            model.names = names;
             
         end
         
@@ -21,23 +30,10 @@ classdef currentCollector < SimpleModel
         % nothing to do here
         end
 
-        function [namespaces, names] = getModelPrimaryVarNames(model)
-            names = {'phi'};
-            namespaces = model.assignCurrentNameSpace(names);
-        end
-        
-        function [namespaces, names] = getModelVarNames(model)
-            names = { 'j', ...      % Current density, [A/m2]
-                     'OCP', ...     % Open-circuit potential [V];
-                     'refOCP', ...  % Reference open circuit potential at standard temperature [V]
-                    };
-            namespaces = model.assignCurrentNameSpace(names);
-        end        
-
-        function [namespaces, names] = getVarNames(model)
-            [namespaces, names] = getVarNames@SimpleModel(model);
-            names = horzcat(names, {'T'});
-            namespaces = horzcat(namespaces, {{}});
+        function varnames = getVarNames(model)
+            varnames1 = model.getVarNames@SimpleModel();
+            varnames2 = VarName({}, 'T');
+            varnames = horzcat(varnames1, {varnames2});
         end
 
     end
