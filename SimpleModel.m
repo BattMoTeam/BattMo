@@ -3,7 +3,9 @@ classdef SimpleModel < PhysicalModel
     properties
         modelname
         isnamespaceroot
-        namespace;
+        namespace
+        varnames
+        pvarnames
     end
     
     
@@ -33,31 +35,28 @@ classdef SimpleModel < PhysicalModel
             modelname = model.modelname;
         end
         
-        function [namespaces, names] = getModelPrimaryVarNames(model)
+        function varnames = getModelPrimaryVarNames(model)
         % List the primary variables. For SimpleModel the variable names only consist of those declared in the model (no child)
-            names = {};
-            namespaces = {};
+            varnames = {};
         end
         
         
-        function [namespaces, names] = getModelVarNames(model)
+        function varnames = getModelVarNames(model)
         % List the variable names (primary variables are handled separately). For SimpleModel the variable names only consist of
         % those declared in the model (no child)
-            names = {};
-            namespaces = {};
+            varnames = {};
         end
         
-        function [namespaces, names] = getVarNames(model)
+        function varnames = getVarNames(model)
         % Collect all the variable names (primary and the others). External variable names can be added there
-            [namespaces1, names1] = model.getModelPrimaryVarNames;
-            [namespaces2, names2] = model.getModelVarNames;
-            namespaces = [namespaces1, namespaces2];
-            names = [names1, names2];
+            varnames1 = model.getModelPrimaryVarNames;
+            varnames2 = model.getModelVarNames;
+            varnames = horzcat(varnames1, varnames2);
         end
 
         function names = getPrimaryVarNames(model)
         % Returns full primary variable names (i.e. including namespaces)
-            [namespaces, names] = model.getModelPrimaryVarNames();
+            varnames = model.getModelPrimaryVarNames();
             names = model.addNameSpace(namespaces, names);
         end
         
@@ -68,8 +67,7 @@ classdef SimpleModel < PhysicalModel
         end
 
         
-        
-        function fullnames = addNameSpace(model, namespaces, names)
+        function fullnames = addNameSpace(model, varnames)
         % Return a name (string) which identify uniquely the pair (namespace, name). This is handled here by adding "_" at the
         % end of the namespace and join it to the name.
             if iscell(names)
@@ -77,11 +75,7 @@ classdef SimpleModel < PhysicalModel
                     fullnames{ind} = model.addNameSpace(namespaces{ind}, names{ind});
                 end
             else
-                if ~isempty(namespaces)
-                    fullnames = sprintf('%s_%s', namespaces, names);
-                else
-                    fullnames = names;
-                end                    
+                fullnames = varnames.join();
             end
         end
         
@@ -89,32 +83,25 @@ classdef SimpleModel < PhysicalModel
         % In this function the variable name is associated to a field name (fn) which corresponds to the field where the
         % variable is stored in the state.  See PhysicalModel
             
-            if model.isnamespaceroot
-                
-                names = model.getFullVarNames();
-                [isok, ind] = ismember(name, names);
-                assert(isok, 'unknown variables');
-                fn = name;
-                
+            if isa(name, 'VarName')
+                fn = name.fullname();
+            elseif iscell(name)
+                name = join({model.namespace{:}, name{:}}, '_');
             else
-                
-                [namespaces, names] = model.getVarNames();
-                [isok, ind] = ismember(name, names);
-                assert(isok, 'unknown variables');
-                
-                fn = model.addNameSpace(namespaces{ind}, name);
-                
+                fn = name;
             end
-            
+
             index = 1;
             
         end
 
-        function namespaces = assignCurrentNameSpace(model, names)
+        function varnames = assignCurrentNameSpace(model, names)
         % utility function which returns a cell consisting of the current model namespace with the same size as names.
             namespace = model.namespace;
             n = numel(names);
-            namespaces = repmat({namespace}, 1, n);
+            for ind = 1 : n
+                varnames{ind} = VarName(namespace, names{ind});
+            end
         end
         
     end
