@@ -54,28 +54,25 @@ classdef graphiteElectrode < CompositeModel
             OCP   = graphitemodel.getProp(state, 'OCP');
         end
         
-        function [namespaces, names] = getModelVarNames(model)
+        function varnames = getModelVarNames(model)
             
-            [namespaces1, names1] = getModelVarNames@CompositeModel(model);
+            varnames = getModelVarNames@CompositeModel(model);
             
             names2 = {'eta',  ... % Overpotential,        [V]
                       'j'  ,  ... % Current density,      [A/m2]
                       'R'  ...    % Reaction Rate,
                      };
-            namespaces2 = model.assignCurrentNameSpace(names2);
+            varnames2 = model.assignCurrentNameSpace(names2);
             
-            namespaces = horzcat(namespaces1, namespaces2);
-            names = horzcat(names1, names2);
+            varnames = horzcat(varnames1, varnames2);
             
         end
 
-        function [namespaces, names] = getVarNames(model)
-            [namespaces1, names1] = model.getVarNames@CompositeModel();
-            namespaces2 = repmat({{}}, 1, 3);
+        function varnames = getVarNames(model)
+            varnames1 = model.getVarNames@CompositeModel();
             names2 = {'T', 'SOC', 'phielyte'};
-
-            namespaces = horzcat(namespaces1, namespaces2);
-            names = horzcat(names1, names2);
+            varnames2 = @(name) (VarName({}, name), names2);
+            varnames = horzcat(varnames1, varnames2);
         end
         
         function state = reactBV(model, state)

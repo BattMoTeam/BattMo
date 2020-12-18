@@ -99,12 +99,12 @@ classdef orgLiPF6 < SimpleModel
 
 
         
-        function [namespaces, names] = getModelPrimaryVarNames(model)
+        function varnames = getModelPrimaryVarNames(model)
             names = {'phi', 'c_Li'}; % name 'c_Li' should match setup in getAffiliatedComponentNames
-            namespaces = model.assignCurrentNameSpace(names); 
+            varnames = model.assignCurrentNameSpace(names); 
         end
         
-        function [namespaces, names] = getModelVarNames(model)
+        function varnames = getModelVarNames(model)
             
             [concnames, ionconcnames, jchemnames, dmudcnames] = model.getAffiliatedComponentNames();
 
@@ -118,18 +118,18 @@ classdef orgLiPF6 < SimpleModel
                     };
             
             names = horzcat(concnames, ionconcnames, jchemnames, dmudcnames, names);
-            namespaces = model.assignCurrentNameSpace(names);
+            varnames = model.assignCurrentNameSpace(names);
             
         end
         
-        function [namespaces, names ]= getVarNames(model)
-            [namespaces, names] = model.getVarNames@SimpleModel();
-            namespaces = horzcat(namespaces, {{}});
-            names = horzcat(names, {'T'});
+        function varnames = getVarNames(model)
+            varnames1 = model.getVarNames@SimpleModel();
+            varnames2 = VarName({}, 'T');
+            varnames = horzcat(varnames1, varnames2);
         end
         
         
-        function state =update(model, state)
+        function state = update(model, state)
             state = model.updateIonicQuantities(state);
             state = model.updateConductivity(state);
             state = model.updateDiffusion(state);

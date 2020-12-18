@@ -94,13 +94,13 @@ classdef nmc111AM < SimpleModel
         end
 
         
-        function [namespaces, names] = getModelPrimaryVarNames(model)
+        function varnames = getModelPrimaryVarNames(model)
             names = {'phi', 'Li'};
-            namespaces = model.assignCurrentNameSpace(names); 
+            varnames = model.assignCurrentNameSpace(names); 
         end
         
         
-        function [namespaces, names] = getModelVarNames(model)
+        function varnames = getModelVarNames(model)
             
             names = {'refOCP', ... % Reference open circuit potential at standard  teperature [V]
                      'OCP', ...    % Open-circuit potential        [V]
@@ -110,13 +110,14 @@ classdef nmc111AM < SimpleModel
                      'D', ...      % Diffusion
                      'eps' ...     % Volume fraction,              [-]    
                     };
-            namespaces = model.assignCurrentNameSpace(names);             
+            varnames = model.assignCurrentNameSpace(names);             
         end
 
-        function [namespaces, names] = getVarNames(model)
-            [namespaces, names] = model.getVarNames@SimpleModel();
-            names = {names{:}, 'T', 'SOC'};
-            namespaces = {namespaces{:}, {}, {}};
+        function varnames = getVarNames(model)
+            varnames1 = model.getVarNames@SimpleModel();
+            names2 = {'T', 'SOC'};
+            varnames2 = @(name) (VarName({}, name), names2);
+            varnames = horzcat(varnames1, varnames2);
         end
         
         
