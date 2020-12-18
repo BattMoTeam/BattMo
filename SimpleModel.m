@@ -3,8 +3,13 @@ classdef SimpleModel < PhysicalModel
     properties
         modelname
         isnamespaceroot
-        namespace
         
+        % Own variables
+        namespace
+        names
+        pnames
+        
+        % Variables that are added externally
         varnames
         pvarnames
         
@@ -17,6 +22,12 @@ classdef SimpleModel < PhysicalModel
             model = merge_options(model, varargin{:});
             model.modelname = modelname;
             model.namespace = {model.getModelName()};
+            model.isnamespaceroot = true;
+            % no variables listed by default
+            model.names     = {};
+            model.pnames    = {};
+            model.varnames  = {};
+            model.pvarnames = {};
         end
 
         function state = validateState(model, state)
@@ -39,14 +50,18 @@ classdef SimpleModel < PhysicalModel
         
         function varnames = getModelPrimaryVarNames(model)
         % List the primary variables. For SimpleModel the variable names only consist of those declared in the model (no child)
-            varnames = model.pvarnames;
+            varnames1 = model.assignCurrentNameSpace(model.pnames);
+            varnames2 = model.pvarnames;
+            varnames = horzcat(varnames1, varnames2);
         end
         
         
         function varnames = getModelVarNames(model)
         % List the variable names (primary variables are handled separately). For SimpleModel the variable names only consist of
         % those declared in the model (no child)
-            varnames = model.varnames;
+            varnames1 = model.assignCurrentNameSpace(model.names);
+            varnames2 = model.varnames;
+            varnames = horzcat(varnames1, varnames2);
         end
         
         function varnames = getVarNames(model)
@@ -56,18 +71,14 @@ classdef SimpleModel < PhysicalModel
             varnames = horzcat(varnames1, varnames2);
         end
 
-        function names = getPrimaryVarNames(model)
-        % Returns full primary variable names (i.e. including namespaces)
-            varnames = model.getModelPrimaryVarNames();
-            names = model.addNameSpace(namespaces, names);
-        end
-        
         function names = getFullVarNames(model)
         % Returns full names (i.e. including namespaces)
             varnames = model.getVarNames();
-            names = model.addNameSpace(namespaces, names);
+            names = {};
+            for i = 1 : numel(varnames)
+                names{end + 1} = varnames{i}.fullname;
+            end
         end
-
         
         function fullnames = addNameSpace(model, varnames)
         % Return a name (string) which identify uniquely the pair (namespace, name). This is handled here by adding "_" at the
@@ -103,13 +114,15 @@ classdef SimpleModel < PhysicalModel
             index = 1;
             
         end
-
+        
+        
         function varnames = assignCurrentNameSpace(model, names)
         % utility function which returns a cell consisting of the current model namespace with the same size as names.
             namespace = model.namespace;
             n = numel(names);
+            varnames = {};
             for ind = 1 : n
-                varnames{ind} = VarName(namespace, names{ind});
+                varnames{end + 1} = VarName(namespace, names{ind});
             end
         end
         

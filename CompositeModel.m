@@ -20,6 +20,13 @@ classdef CompositeModel < SimpleModel
         
         function ind = getSubModelInd(model, name)
             ind = strcmp(name, model.SubModelNames);
+            if all(ind == 0)
+                error('submodel not found');
+            end
+            ind = find(ind);
+            if numel(ind) > 1
+                error('submodels have same name');
+            end
         end
         
         function submodel = getSubModel(model, name)
@@ -27,6 +34,12 @@ classdef CompositeModel < SimpleModel
             submodel = model.SubModels{ind};
         end
 
+        function model = setSubModel(model, submodel, name)
+            ind = getSubModelInd(model, name);
+            model.SubModels{ind} = submodel;
+        end
+        
+        
         function model = initiateCompositeModel(model)
             nsubmodels = numel(model.SubModels);
             model.nSubModels = nsubmodels;
@@ -43,9 +56,9 @@ classdef CompositeModel < SimpleModel
                 submodelname = submodel.getModelName();
                 
                 if ~model.isnamespaceroot
-                    subnamespace = horzcat({model.namespace}, submodelname);
+                    subnamespace = horzcat(model.namespace, {submodelname});
                 else
-                    subnamespace = submodelname;
+                    subnamespace = {submodelname};
                 end
                 submodel.namespace = subnamespace;
                 
