@@ -11,7 +11,7 @@ classdef VarName
             varname.name = name;
         end
         
-        function name = fullname(varname)
+        function name = getfieldname(varname)
             name = join({varname.namespace{:}, varname.name}, '_');
             name = name{1};
         end

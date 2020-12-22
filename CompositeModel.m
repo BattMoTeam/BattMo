@@ -12,10 +12,10 @@ classdef CompositeModel < SimpleModel
         
         function model = CompositeModel(name, varargin)
         % The constructor function should be complemented so that the properties
-        % SubModels, SubModelNames are defined and the function
-        % initiateCompositeModel is called.
+        % SubModels, SubModelNames are defined and 
+        % the function initiateCompositeModel must be called AT THE END.
             model = model@SimpleModel(name, varargin{:});
-            model.isnamespaceroot = false;
+            model.hasparent = false;
         end
         
         function ind = getSubModelInd(model, name)
@@ -30,8 +30,22 @@ classdef CompositeModel < SimpleModel
         end
         
         function submodel = getSubModel(model, name)
-            ind = model.getSubModelInd(name);
-            submodel = model.SubModels{ind};
+            if isa(name, 'char')
+                ind = model.getSubModelInd(name);
+                submodel = model.SubModels{ind};
+            elseif isa(name, 'cell') && isempty(name)
+                submodel = model;
+            elseif isa(name, 'cell') && numel(name) > 1
+                firstparentname = name{1};
+                name = name{2 : end};
+                submodel = model.getSubModel{firstparentname};
+                submodel = submodel.getSubModel(name)
+            elseif isa(name, 'cell') && numel(name) == 1
+                name = name{1};
+                submodel = model.getSubModel(name);
+            else
+                error('name type not recognized');
+            end
         end
 
         function model = setSubModel(model, submodel, name)
@@ -41,26 +55,21 @@ classdef CompositeModel < SimpleModel
         
         
         function model = initiateCompositeModel(model)
+            
             nsubmodels = numel(model.SubModels);
             model.nSubModels = nsubmodels;
             model.isCompositeModel = true;
             
-            if model.isnamespaceroot
+            if ~model.hasparent
                 model.namespace = {};
             end
             
             % Setup the namespaces for all the submodels
             for ind = 1 : nsubmodels
                 submodel = model.SubModels{ind};
-                submodel.isnamespaceroot = false; 
-                submodelname = submodel.getModelName();
-                
-                if ~model.isnamespaceroot
-                    subnamespace = horzcat(model.namespace, {submodelname});
-                else
-                    subnamespace = {submodelname};
-                end
-                submodel.namespace = subnamespace;
+                submodel.hasparent = true; 
+                submodel.parentmodel = model;
+                submodel.namespace = horzcat(model.namespace, {submodel.getModelName()});
                 
                 if isa(submodel, 'CompositeModel')
                     submodel = submodel.initiateCompositeModel();
@@ -123,7 +132,31 @@ classdef CompositeModel < SimpleModel
             report = [];
         end
         
+        
+        function [fn, index] = getVariableField(model, name, varargin)
+        % In this function the variable name is associated to a field name (fn) which corresponds to the field where the
+        % variable is stored in the state.  See PhysicalModel
+            
+            if isa(name, 'VarName')
+                namespace = name.namespace;
+                name = name.name;
+                submodel = model.getSubModel(namespace);
+                [fn, index] = submodel.getVariableField(name);
+            elseif iscell(name)
+                % syntaxic sugar (do not need to setup VarName)
+                namespace1 = model.namespace;
+                namespace2 = name{1 : end - 1};
+                namespace = horzcat(namespace1, namespace2);
+                varname = VarName(namespace, name{end});
+                [fn, index] = model.getVariableField(varname);
+            elseif ischar(name)
+                [fn, index] = getVariableField@SimpleModel(model, name);
+            else
+                error('type of name is not recognized')
+            end
+
+            
+        end
     end
     
-
 end

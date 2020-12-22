@@ -1,13 +1,18 @@
 classdef SimpleModel < PhysicalModel
     
     properties
+        parentmodel
+        hasparent
+
         modelname
-        isnamespaceroot
         
         % Own variables
         namespace
+        
         names
         pnames
+        
+        aliases
         
         % Variables that are added externally
         varnames
@@ -22,10 +27,11 @@ classdef SimpleModel < PhysicalModel
             model = merge_options(model, varargin{:});
             model.modelname = modelname;
             model.namespace = {model.getModelName()};
-            model.isnamespaceroot = true;
+            model.hasparent = false;
             % no variables listed by default
             model.names     = {};
             model.pnames    = {};
+            model.aliases   = {};
             model.varnames  = {};
             model.pvarnames = {};
         end
@@ -46,6 +52,10 @@ classdef SimpleModel < PhysicalModel
         
         function modelname = getModelName(model);
             modelname = model.modelname;
+        end
+        
+        function parentmodel = getParentModel(model)
+             parentmodel = model.parentmodel;
         end
         
         function varnames = getModelPrimaryVarNames(model)
@@ -92,27 +102,50 @@ classdef SimpleModel < PhysicalModel
             end
         end
         
+        function [isalias, varname] = setupVarName(model, name)
+        % check if name is an alias
+            aliases = model.aliases;
+            isalias = false;
+            varname = [];
+            
+            if isempty(aliases)
+                return
+            end
+            
+            for ind = 1 : numel(aliases)
+                alias = aliases{ind};
+                if strcmp(name, alias{1})
+                    varname = alias{2};
+                    isalias = true;
+                    return
+                end
+            end
+        end
+            
         function [fn, index] = getVariableField(model, name, varargin)
         % In this function the variable name is associated to a field name (fn) which corresponds to the field where the
         % variable is stored in the state.  See PhysicalModel
             
-            if isa(name, 'VarName')
-                fn = name.fullname();
-            elseif iscell(name)
-                name = join({model.namespace{:}, name{:}}, '_');
-                fn = name{1};
-            else
-                % search in the local name
-                varnames = model.getVarNames();
-                for i = 1 : numel(varnames)
-                    if strcmp(name, varnames{i}.name)
-                        fn = varnames{i}.fullname;
-                    end
-                end
-            end
-
-            index = 1;
+            % Check if there exist an alias
+            [isalias, varname] = model.setupVarName(name);
             
+            if isalias & model.hasparent
+                % Call alias
+                parentmodel = model.getParentModel();
+                [fn, index] = parentmodel.getVariableField(varname);
+            else
+                % Check that name is declared in model.names
+                isok = ismember(name, model.names);
+                % Otherwise it can be an alias with empty namespace (we do not check for empty name space)
+                isok = isok | isalias;
+                assert(isok, 'name is not declared/recognized by the model');
+                
+                % Construct name from namespace
+                namespace = model.namespace;
+                varname = VarName(namespace, name);
+                fn = varname.getfieldname();
+                index = 1;
+            end
         end
         
         
