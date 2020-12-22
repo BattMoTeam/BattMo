@@ -14,10 +14,6 @@ classdef SimpleModel < PhysicalModel
         
         aliases
         
-        % Variables that are added externally
-        varnames
-        pvarnames
-        
     end
     
     
@@ -32,8 +28,6 @@ classdef SimpleModel < PhysicalModel
             model.names     = {};
             model.pnames    = {};
             model.aliases   = {};
-            model.varnames  = {};
-            model.pvarnames = {};
         end
 
         function state = validateState(model, state)
@@ -42,7 +36,7 @@ classdef SimpleModel < PhysicalModel
             
             for i = 1 : numel(varnames)
                 varname = varnames{i};
-                name = varname.fullname;
+                name = varname.getfieldname;
                 if ~isfield(state, name)
                     state.(name) = [];
                 end
@@ -60,18 +54,33 @@ classdef SimpleModel < PhysicalModel
         
         function varnames = getModelPrimaryVarNames(model)
         % List the primary variables. For SimpleModel the variable names only consist of those declared in the model (no child)
-            varnames1 = model.assignCurrentNameSpace(model.pnames);
-            varnames2 = model.pvarnames;
-            varnames = horzcat(varnames1, varnames2);
+            varnames = model.assignCurrentNameSpace(model.pnames);
         end
         
         
         function varnames = getModelVarNames(model)
         % List the variable names (primary variables are handled separately). For SimpleModel the variable names only consist of
         % those declared in the model (no child)
-            varnames1 = model.assignCurrentNameSpace(model.names);
-            varnames2 = model.varnames;
-            varnames = horzcat(varnames1, varnames2);
+            varnames = model.assignCurrentNameSpace(model.names);
+            if model.hasparent
+                return
+            else
+                % we add the alias if they belong to the root
+                varnames2 = cellfun(@(alias) alias{2}, model.aliases, 'uniformoutput', false);
+                for ind = 1 : numel(varnames2)
+                    fieldnames{ind} = varnames2{ind}.getfieldname;
+                end
+                [~, ind] = unique(fieldnames);
+                varnames2 = varnames2(ind);
+                % we remove the alias when they point to child (namespace is non-empty)
+                varnames3 = {};
+                for ind = 1 : numel(varnames2)
+                    if isempty(varnames2{ind}.namespace)
+                        varnames{end + 1} = varnames2{ind};
+                    end
+                end
+                varnames = horzcat(varnames, varnames3);
+            end
         end
         
         function varnames = getVarNames(model)
@@ -86,7 +95,7 @@ classdef SimpleModel < PhysicalModel
             varnames = model.getVarNames();
             names = {};
             for i = 1 : numel(varnames)
-                names{end + 1} = varnames{i}.fullname;
+                names{end + 1} = varnames{i}.getfieldname;
             end
         end
         

@@ -82,7 +82,7 @@ classdef CompositeModel < SimpleModel
         
         function varnames = getModelPrimaryVarNames(model)
         
-            varnames = model.pvarnames;
+            varnames = model.assignCurrentNameSpace(model.pnames);
             nsubmodels = model.nSubModels;
             for i = 1 : nsubmodels
                 submodel = model.SubModels{i};
@@ -95,7 +95,7 @@ classdef CompositeModel < SimpleModel
         function varnames = getModelVarNames(model)
         % default for compositemodel : fetch all the defined names in the submodels
         
-            varnames = model.varnames;
+            varnames = getModelVarNames@SimpleModel(model);
             nsubmodels = model.nSubModels;
             for i = 1 : nsubmodels
                 submodel = model.SubModels{i};
