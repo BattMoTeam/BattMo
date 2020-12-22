@@ -38,7 +38,7 @@ classdef CompositeModel < SimpleModel
             elseif isa(name, 'cell') && numel(name) > 1
                 firstparentname = name{1};
                 name = name{2 : end};
-                submodel = model.getSubModel{firstparentname};
+                submodel = model.getSubModel(firstparentname);
                 submodel = submodel.getSubModel(name)
             elseif isa(name, 'cell') && numel(name) == 1
                 name = name{1};
@@ -144,10 +144,7 @@ classdef CompositeModel < SimpleModel
                 [fn, index] = submodel.getVariableField(name);
             elseif iscell(name)
                 % syntaxic sugar (do not need to setup VarName)
-                namespace1 = model.namespace;
-                namespace2 = name{1 : end - 1};
-                namespace = horzcat(namespace1, namespace2);
-                varname = VarName(namespace, name{end});
+                varname = VarName(name{1 : end - 1}, name{end});
                 [fn, index] = model.getVariableField(varname);
             elseif ischar(name)
                 [fn, index] = getVariableField@SimpleModel(model, name);
