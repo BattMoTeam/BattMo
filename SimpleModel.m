@@ -134,8 +134,9 @@ classdef SimpleModel < PhysicalModel
                 parentmodel = model.getParentModel();
                 [fn, index] = parentmodel.getVariableField(varname);
             else
-                % Check that name is declared in model.names
-                isok = ismember(name, model.names);
+                % Check that name is declare
+                names = horzcat(model.names, model.pnames);
+                isok = ismember(name, names);
                 % Otherwise it can be an alias with empty namespace (we do not check for empty name space)
                 isok = isok | isalias;
                 assert(isok, 'name is not declared/recognized by the model');
