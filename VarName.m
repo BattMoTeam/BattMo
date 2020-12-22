@@ -12,8 +12,13 @@ classdef VarName
         end
         
         function name = getfieldname(varname)
-            name = join({varname.namespace{:}, varname.name}, '_');
-            name = name{1};
+            if isempty(varname.namespace)
+                name = varname.name;
+                return
+            else
+                name = join({varname.namespace{:}, varname.name}, '_');
+                name = name{1};
+            end
         end
 
         function isnequal = ne(varname, varname1)
