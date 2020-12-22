@@ -11,15 +11,6 @@ classdef BatteryModel < CompositeModel
             
             model = model@CompositeModel('battery');
             
-            G = cartGrid([5, 5]);
-            G = computeGeometry(G);
-            
-            model.G = G;
-            
-            
-            nc = G.cells.num;
-            cells = (1 : nc)';
-            
             sepnx  = 10;
             nenx   = 10;
             penx   = 10;
@@ -42,7 +33,7 @@ classdef BatteryModel < CompositeModel
             
             G = tensorGrid(x, y);
             G = computeGeometry(G);
-            obj.G = G;
+            model.G = G;
             
             obj.componentnames = {'elyte', 'ne', 'pe', 'ccne', 'ccpe'};
             
