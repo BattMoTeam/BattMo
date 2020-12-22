@@ -48,7 +48,10 @@ classdef graphiteElectrode < CompositeModel
                     };
             model.names = names;
             
-            model.aliases = {{'T', VarName({}, 'T')}};
+            model.aliases = {{'T', VarName({}, 'T')}, ...
+                             {'SOC', VarName({}, 'SOC')}, ...
+                             {'phielyte', VarName({}, 'phielyte')}, ...
+                            };
             
             model = model.initiateCompositeModel();
         end
@@ -61,14 +64,6 @@ classdef graphiteElectrode < CompositeModel
             graphitemodel = model.getSubModel('graphite');
             state = graphitemodel.initializeState(state);
             OCP   = graphitemodel.getProp(state, 'OCP');
-        end
-
-
-        function varnames = getVarNames(model)
-            varnames1 = model.getVarNames@CompositeModel();
-            names2 = {'T', 'SOC', 'phielyte'};
-            varnames2 = cellfun(@(name) (VarName({}, name)), names2, 'uniformoutput', false);
-            varnames = horzcat(varnames1, varnames2);
         end
         
         function state = reactBV(model, state)

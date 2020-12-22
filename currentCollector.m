@@ -23,19 +23,13 @@ classdef currentCollector < SimpleModel
                      'refOCP', ...  % Reference open circuit potential at standard temperature [V]
                     };
             model.names = names;
+            model.aliases = {{'T', VarName({}, 'T')}};
             
         end
         
         function state = initializeState(model, state)
         % nothing to do here
         end
-
-        function varnames = getVarNames(model)
-            varnames1 = model.getVarNames@SimpleModel();
-            varnames2 = VarName({}, 'T');
-            varnames = horzcat(varnames1, {varnames2});
-        end
-
     end
 end
-
+                             

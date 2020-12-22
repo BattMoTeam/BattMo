@@ -83,6 +83,11 @@ classdef nmc111AM < SimpleModel
             model.Eak      = 5000;     % [J mol^-1]
             model.Asp      = 885000;   % [m2 m^-3]
             model.eps      = 0.8;  
+            
+            model.aliases = {{'T', VarName({}, 'T')}, ...
+                             {'SOC', VarName({}, 'SOC')}, ...
+                            };
+
         end
 
         function state = initializeState(model, state)
@@ -106,14 +111,6 @@ classdef nmc111AM < SimpleModel
             state = model.setProp(state, 'phi', OCP);
         end
 
-
-        function varnames = getVarNames(model)
-            varnames1 = model.getVarNames@SimpleModel();
-            names2 = {'T', 'SOC'};
-            varnames2 = cellfun(@(name) (VarName({}, name)), names2, 'uniformoutput', false);
-            varnames = horzcat(varnames1, varnames2);
-        end
-        
         
         function state = updateNmc111Model(model, state)
         % Update the electrode properties

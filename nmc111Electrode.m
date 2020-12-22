@@ -23,7 +23,6 @@ classdef nmc111Electrode < CompositeModel
         % Effective conductivity
         sigmaeff
 
-
         
     end
     
@@ -46,11 +45,18 @@ classdef nmc111Electrode < CompositeModel
             nmc111model = nmc111AM();
             model.SubModels{1} = nmc111model;
             model.SubModelNames{1} = 'nmc111';
-            model = model.initiateCompositeModel();
             
             model.bin = ptfe();
             model.eps = nmc111model.eps + model.bin.eps;
             model.t = 10e-6;
+            
+            model.aliases = {{'T', VarName({}, 'T')}, ...
+                             {'SOC', VarName({}, 'SOC')}, ...
+                             {'phielyte', VarName({}, 'phielyte')}, ...
+                            };
+            
+            model = model.initiateCompositeModel();
+            
         end
         
         function state = initializeState(model, state)
@@ -62,12 +68,6 @@ classdef nmc111Electrode < CompositeModel
             OCP   = nmc111model.getProp(state, 'OCP');
         end
 
-        function varnames = getVarNames(model)
-            varnames1 = model.getVarNames@CompositeModel();
-            names2 = {'T', 'SOC', 'phielyte'};
-            varnames2 = cellfun(@(name) (VarName({}, name)), names2, 'uniformoutput', false);
-            varnames = horzcat(varnames1, varnames2);
-        end
         
         function state = reactBV(model, state)
             

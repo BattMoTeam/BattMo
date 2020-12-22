@@ -16,8 +16,6 @@ classdef BatteryModel < CompositeModel
             
             model.G = G;
             
-
-            
             
             nc = G.cells.num;
             cells = (1 : nc)';
@@ -95,8 +93,8 @@ classdef BatteryModel < CompositeModel
             ccpe.pnames = {ccpe.pnames{:}, 'E'};
             model = model.setSubModel(ccpe, 'ccpe');
             
-            names = {'T', 'SOC'};
-            varnames = model.assignCurrentNameSpace(names);
+            model.names = {'T', 'SOC'};
+            model.aliases = {{'phielyte', VarName({'elyte'}, 'c_Li')}};
             
             model = model.initiateCompositeModel();
             

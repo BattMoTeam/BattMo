@@ -89,6 +89,8 @@ classdef orgLiPF6 < SimpleModel
             
             model.names = horzcat(concnames, ionconcnames, jchemnames, dmudcnames, names);
             
+            model.aliases = {{'T', VarName({}, 'T')}};
+            
         end
 
         function state = initializeState(model, state)
@@ -115,12 +117,6 @@ classdef orgLiPF6 < SimpleModel
             
             state = model.update(state);
             
-        end
-
-        function varnames = getVarNames(model)
-            varnames1 = model.getVarNames@SimpleModel();
-            varnames2 = VarName({}, 'T');
-            varnames = horzcat(varnames1, {varnames2});
         end
         
         

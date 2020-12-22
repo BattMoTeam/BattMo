@@ -92,8 +92,10 @@ classdef graphiteAM < SimpleModel
                     };
             model.names = names;
             
-            model.aliases = {{'T', VarName({}, 'T')}};
-
+            model.aliases = {{'T', VarName({}, 'T')}, ...
+                             {'SOC', VarName({}, 'SOC')}, ...
+                            };
+            
         end
         
         function state = initializeState(model, state)
@@ -117,15 +119,6 @@ classdef graphiteAM < SimpleModel
             state = model.setProp(state, 'phi', OCP);
         end
 
-        
-        function varnames = getVarNames(model)
-        % this function 
-            varnames = model.getVarNames@SimpleModel();
-            varname1 = VarName({}, 'T');
-            varname2 = VarName({}, 'SOC');
-            varnames = {varnames{:}, varname1, varname2};
-        end
-        
         
         function state = updateGraphiteModel(model, state)
         % Update the electrode properties
