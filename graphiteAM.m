@@ -91,6 +91,8 @@ classdef graphiteAM < SimpleModel
                      'eps' ...     % Volume fraction,              [-]    
                     };
             model.names = names;
+            
+            model.aliases = {{'T', VarName({}, 'T')}};
 
         end
         

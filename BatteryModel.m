@@ -89,7 +89,7 @@ classdef BatteryModel < CompositeModel
             model.SubModels = submodels;
             model.SubModelNames = submodelnames;
 
-            model.isnamespaceroot = true;
+            model.hasparent = false;
 
             ccpe = model.getSubModel('ccpe');
             ccpe.pnames = {ccpe.pnames{:}, 'E'};

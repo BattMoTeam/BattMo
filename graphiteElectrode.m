@@ -35,7 +35,6 @@ classdef graphiteElectrode < CompositeModel
             graphitemodel = graphiteAM();
             model.SubModels{1} = graphitemodel;
             model.SubModelNames{1} = 'graphite';
-            model = model.initiateCompositeModel();
             
             model.bin  = ptfe();
             model.sei  = seiAM();
@@ -49,6 +48,9 @@ classdef graphiteElectrode < CompositeModel
                     };
             model.names = names;
             
+            model.aliases = {{'T', VarName({}, 'T')}};
+            
+            model = model.initiateCompositeModel();
         end
 
         
