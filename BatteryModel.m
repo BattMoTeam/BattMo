@@ -82,6 +82,7 @@ classdef BatteryModel < CompositeModel
 
             ccpe = model.getSubModel('ccpe');
             ccpe.pnames = {ccpe.pnames{:}, 'E'};
+            ccpe.names = {ccpe.names{:}, 'E'};
             model = model.setSubModel(ccpe, 'ccpe');
             
             model.names = {'T', 'SOC'};

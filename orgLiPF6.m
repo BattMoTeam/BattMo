@@ -76,9 +76,10 @@ classdef orgLiPF6 < SimpleModel
             model.pnames = names;
             
             % state variables
-            [concnames, ionconcnames, jchemnames, dmudcnames] = model.getAffiliatedComponentNames('init', true);
+            [concnames, ionconcnames, jchemnames, dmudcnames] = model.getAffiliatedComponentNames();
             % note that the 'c_Li' variable has been removed from concnames in method getAffiliatedComponentNames
-            names = {'m', ...     % Molality,              [mol kg^-1]
+            names = {'phi', ...   
+                     'm', ...     % Molality,              [mol kg^-1]
                      'kappa', ... % Conductivity,          [S m^-1]
                      'D', ...     % Diffusion coefficient, [m^2 s^-1]
                      'wtp', ...   % Weight percentace,     [wt%]
@@ -133,19 +134,7 @@ classdef orgLiPF6 < SimpleModel
             
             compnames = model.compnames;
             
-            concnames1 = cellfun(@(x) sprintf('c_%s', x), compnames, 'uniformoutput', false);
-            if opt.init
-                concnames = {};
-                for i = 1 : numel(concnames1)
-                    if ~strcmp(concnames1{i}, 'c_Li')
-                        concnames{end + 1} = concnames1{i};
-                    end
-                end
-            else
-                concnames = concnames1;
-            end
-            
-            
+            concnames    = cellfun(@(x) sprintf('c_%s', x), compnames, 'uniformoutput', false);
             ionconcnames = cellfun(@(x) sprintf('ionc_%s', x), compnames, 'uniformoutput', false);            
             jchemnames   = cellfun(@(x) sprintf('jchem_%s', x), compnames, 'uniformoutput', false);
             dmudcnames   = cellfun(@(x) sprintf('dmucd_%s', x), compnames, 'uniformoutput', false);

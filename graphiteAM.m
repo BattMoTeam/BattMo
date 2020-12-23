@@ -82,7 +82,9 @@ classdef graphiteAM < SimpleModel
             model.pnames = names;
 
             % state variables
-            names = {'refOCP', ... % Reference open circuit potential at standard  teperature [V]
+            names = {'phi', ...    % Potential
+                     'Li', ...     % Lithium concentration
+                     'refOCP', ... % Reference open circuit potential at standard  teperature [V]
                      'OCP', ...    % Open-circuit potential        [V]
                      'dUdT', ...   % Entropy change                [V K^-1]
                      'theta', ...  % Lithiation                    [-]

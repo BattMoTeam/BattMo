@@ -18,7 +18,8 @@ classdef currentCollector < SimpleModel
             model.pnames = {'phi'};
         
             % state variables
-            names = { 'j', ...      % Current density, [A/m2]
+            names = {'phi', ...     % Potential
+                     'j', ...       % Current density, [A/m2]
                      'OCP', ...     % Open-circuit potential [V];
                      'refOCP', ...  % Reference open circuit potential at standard temperature [V]
                     };
