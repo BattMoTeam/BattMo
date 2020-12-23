@@ -18,7 +18,7 @@ classdef VarName
         end
         
         function name = getfieldname(varname)
-            if isempty(varname.namespace)
+            if isempty(varname.namespace) | varname.isexternal
                 name = varname.name;
             else
                 name = join({varname.namespace{:}, varname.name}, '_');
@@ -29,6 +29,15 @@ classdef VarName
             end
         end
 
+        function res = isexternal(varname)
+            namespace = varname.namespace;
+            if ~isempty(namespace) && (numel(namespace) == 1) && strcmp(namespace{1}, '..')
+                res = true;
+            else
+                res = false;
+            end
+            
+        end
         
         function isnequal = ne(varname, varname1)
             isequal  = varname.eq(varname1);

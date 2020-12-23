@@ -16,10 +16,15 @@ cells = (1 : G.cells.num)';
 state.T = ones(nc, 1);
 state.SOC = ones(nc, 1);
 state.elyte_c_Li = ones(nc, 1);
-state.c_Li = ones(nc, 1);
+cs = cell(1, 2);
+cs{1} = ones(nc, 1);
+cs{2} = [];
+state.cs = cs;
 
 model = orgLiPF6('elyte', G, cells);
 % model = BatteryModel();
+
+[fn, ind] = model.getVariableField('jchem_Li');
 
 state = model.initializeState(state);
             

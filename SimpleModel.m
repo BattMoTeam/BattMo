@@ -52,6 +52,7 @@ classdef SimpleModel < PhysicalModel
         function parentmodel = getParentModel(model)
              parentmodel = model.parentmodel;
         end
+
         
         function varnames = getModelPrimaryVarNames(model)
         % List the primary variables. For SimpleModel the variable names only consist of those declared in the model (no child)
@@ -140,33 +141,37 @@ classdef SimpleModel < PhysicalModel
         % In this function the variable name is associated to a field name (fn) which corresponds to the field where the
         % variable is stored in the state.  See PhysicalModel
             
-            opt = struct('index', ':');
+            opt = struct('index', []);
             opt = merge_options(opt, varargin{:});
-            index = opt.index;
+            if isempty(opt.index)
+                index = ':';
+            else
+                index = opt.index;
+            end
             
             % Check if there exist an alias
             [isalias, varname] = model.setupVarName(name);
             
-            if isalias && isempty(varname.namespace)
+            if isalias && (varname.isexternal)
                 isexternal = true;
             else
                 isexternal = false;
             end
             
             if isalias & ~isexternal
-                if strcmp(varname.namespace, model.namespace)
-                    [fn, index] = model.getVariableField(model, varname.name, throwError, 'index', varname.index);
+                if isa(varname, 'LocalName')
+                    [fn, index] = model.getVariableField(varname.name, true, 'index', varname.index);
                 elseif model.hasparent
                     % Call alias
                     parentmodel = model.getParentModel();
                     [fn, index] = parentmodel.getVariableField(varname);
                 else
-                    isexternal = true;
+                    error('this case is not handled');
                 end
             else
                 % Check that name is declare
                 isok = ismember(name, model.names);
-                % Otherwise it can be an alias with empty namespace
+                % Otherwise it can be an alias refering to an external field 
                 isok = isok | isexternal;
                 assert(isok, 'name is not declared/recognized by the model');
                 

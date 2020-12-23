@@ -76,31 +76,56 @@ classdef orgLiPF6 < SimpleModel
             model.pnames = names;
             
             % state variables
-            [concnames, ionconcnames, jchemnames, dmudcnames] = model.getAffiliatedComponentNames();
-            % note that the 'c_Li' variable has been removed from concnames in method getAffiliatedComponentNames
-            names = {'phi', ...   
-                     'm', ...     % Molality,              [mol kg^-1]
-                     'kappa', ... % Conductivity,          [S m^-1]
-                     'D', ...     % Diffusion coefficient, [m^2 s^-1]
-                     'wtp', ...   % Weight percentace,     [wt%]
-                     'eps', ...   % Volume fraction,       [-]
-                     'IoSt', ...  % Ionic strength
-                     'j' ...      % Ionic current density
+            names = {'phi', ...    % Potential
+                     'cs', ...     % Concentrations
+                     'ioncs', ...   % Ions concentrations (?)
+                     'jchems', ... % Chemical fluxes
+                     'dmudcs', ... % Chemical potentials (derivatives)
+                     'm', ...      % Molality,              [mol kg^-1]
+                     'kappa', ...  % Conductivity,          [S m^-1]
+                     'D', ...      % Diffusion coefficient, [m^2 s^-1]
+                     'wtp', ...    % Weight percentace,     [wt%]
+                     'eps', ...    % Volume fraction,       [-]
+                     'IoSt', ...   % Ionic strength
+                     'j' ...       % Ionic current density
                     };
+            model.names = names;
             
-            model.names = horzcat(concnames, ionconcnames, jchemnames, dmudcnames, names);
+            aliases = {{'T', VarName({'..'}, 'T')}};
             
-            model.aliases = {{'T', VarName({}, 'T')}};
+            % add local aliases for each component
+            fieldnames = {'c', 'ionc', 'jchem', 'dmudc'};
+            for ifn = 1 : numel(fieldnames)
+                fieldname = fieldnames{ifn};
+                for icn = 1 : model.ncomp
+                    compname = model.compnames{icn};
+                    name = sprintf('%s_%s', fieldname, compname);
+                    lname = sprintf('%ss', fieldname);
+                    varname = LocalName(lname, icn);
+                    aliases{end + 1} = {name, varname};
+                end
+            end
             
+            model.aliases = aliases;
+
         end
 
         function state = initializeState(model, state)
 
             state = model.validateState(state);
             
+            % instantiate cell variables
             nc = model.G.cells.num;
             compnames = model.compnames;
-
+            ncomp = model.ncomp;
+            fieldnames = {'cs', 'ioncs', 'jchems', 'dmudcs'};
+            for ifn = 1 : numel(fieldnames)
+                fieldname = fieldnames{ifn};
+                if ~isfield(state, fieldname)
+                    state.(fieldname) = cell(1, ncomp);
+                end
+            end
+            
             state = model.setProp(state, 'phi', zeros(nc, 1));
             
             c = model.getProp(state, 'c_Li');
