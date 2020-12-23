@@ -66,28 +66,38 @@ classdef SimpleModel < PhysicalModel
             if model.hasparent
                 return
             else
-                % we add the alias if they belong to the root
+                % We add the alias if they belong to the root
+                
                 varnames2 = cellfun(@(alias) alias{2}, model.aliases, 'uniformoutput', false);
                 for ind = 1 : numel(varnames2)
                     fieldnames{ind} = varnames2{ind}.getfieldname;
                 end
                 [~, ind] = unique(fieldnames);
                 varnames2 = varnames2(ind);
-                % we remove the alias when they point to child (namespace is non-empty)
+                
+                % We remove the alias when they point to child (namespace is non-empty)
                 varnames3 = {};
                 for ind = 1 : numel(varnames2)
                     if isempty(varnames2{ind}.namespace)
-                        varnames{end + 1} = varnames2{ind};
+                        varnames3{end + 1} = varnames2{ind};
                     end
                 end
                 varnames = horzcat(varnames, varnames3);
             end
         end
-        
 
         function names = getFullVarNames(model)
         % Returns full names (i.e. including namespaces)
             varnames = model.getModelVarNames();
+            names = {};
+            for i = 1 : numel(varnames)
+                names{end + 1} = varnames{i}.getfieldname;
+            end
+        end
+        
+        function names = getFullPrimaryVarNames(model)
+        % Returns full names (i.e. including namespaces)
+            varnames = model.getModelPrimaryVarNames();
             names = {};
             for i = 1 : numel(varnames)
                 names{end + 1} = varnames{i}.getfieldname;
@@ -126,30 +136,45 @@ classdef SimpleModel < PhysicalModel
             end
         end
             
-        function [fn, index] = getVariableField(model, name, varargin)
+        function [fn, index] = getVariableField(model, name, throwError, varargin)
         % In this function the variable name is associated to a field name (fn) which corresponds to the field where the
         % variable is stored in the state.  See PhysicalModel
+            
+            opt = struct('index', ':');
+            opt = merge_options(opt, varargin{:});
+            index = opt.index;
             
             % Check if there exist an alias
             [isalias, varname] = model.setupVarName(name);
             
-            if isalias & model.hasparent
-                % Call alias
-                parentmodel = model.getParentModel();
-                [fn, index] = parentmodel.getVariableField(varname);
+            if isalias && isempty(varname.namespace)
+                isexternal = true;
+            else
+                isexternal = false;
+            end
+            
+            if isalias & ~isexternal
+                if strcmp(varname.namespace, model.namespace)
+                    [fn, index] = model.getVariableField(model, varname.name, throwError, 'index', varname.index);
+                elseif model.hasparent
+                    % Call alias
+                    parentmodel = model.getParentModel();
+                    [fn, index] = parentmodel.getVariableField(varname);
+                else
+                    isexternal = true;
+                end
             else
                 % Check that name is declare
-                names = horzcat(model.names, model.pnames);
-                isok = ismember(name, names);
-                % Otherwise it can be an alias with empty namespace (we do not check for empty name space)
-                isok = isok | isalias;
+                isok = ismember(name, model.names);
+                % Otherwise it can be an alias with empty namespace
+                isok = isok | isexternal;
                 assert(isok, 'name is not declared/recognized by the model');
                 
                 % Construct name from namespace
                 namespace = model.namespace;
                 varname = VarName(namespace, name);
                 fn = varname.getfieldname();
-                index = 1;
+                index = index;
             end
         end
         
