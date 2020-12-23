@@ -118,10 +118,11 @@ classdef orgLiPF6 < SimpleModel
             nc = model.G.cells.num;
             compnames = model.compnames;
             ncomp = model.ncomp;
+            
             fieldnames = {'cs', 'ioncs', 'jchems', 'dmudcs'};
             for ifn = 1 : numel(fieldnames)
                 fieldname = fieldnames{ifn};
-                if ~isfield(state, fieldname)
+                if isempty(state.(fieldname))
                     state.(fieldname) = cell(1, ncomp);
                 end
             end
@@ -162,7 +163,7 @@ classdef orgLiPF6 < SimpleModel
             concnames    = cellfun(@(x) sprintf('c_%s', x), compnames, 'uniformoutput', false);
             ionconcnames = cellfun(@(x) sprintf('ionc_%s', x), compnames, 'uniformoutput', false);            
             jchemnames   = cellfun(@(x) sprintf('jchem_%s', x), compnames, 'uniformoutput', false);
-            dmudcnames   = cellfun(@(x) sprintf('dmucd_%s', x), compnames, 'uniformoutput', false);
+            dmudcnames   = cellfun(@(x) sprintf('dmudc_%s', x), compnames, 'uniformoutput', false);
         end
         
         function state = updateIonicQuantities(model, state)
