@@ -11,6 +11,7 @@ classdef nmc111Electrode < CompositeModel
         t       % Thickness,        [m]
         eps     % Volume fraction,  [-]
         void    % Porosity,         [-]
+        sigmaeff % effective sigma
         
         % Material properties
         E   % Electric potential,   [V]
@@ -19,10 +20,6 @@ classdef nmc111Electrode < CompositeModel
         ca      % Conducting additive object
         cei     % Cathode-electrolyte interphase (CEI) object
         elyte   % Liquid electrolyte data structure
-        
-        % Effective conductivity
-        sigmaeff
-
         
     end
     
@@ -42,14 +39,19 @@ classdef nmc111Electrode < CompositeModel
             model.names = names;
             
             % setup nmc111 submodel
-            nmc111model = nmc111AM();
-            model.SubModels{1} = nmc111model;
-            model.SubModelNames{1} = 'nmc111';
+            amModel = nmc111AM();
+            model.SubModels{1} = amModel;
+            model.SubModelNames{1} = amModel.getModelName;
             
             model.bin = ptfe();
-            model.eps = nmc111model.eps + model.bin.eps;
+            model.eps = amModel.eps + model.bin.eps;
             model.t = 10e-6;
-            
+
+            % setup sigmaeff
+            eps = amModel.eps;
+            sigma = amModel.sigma;
+            model.sigmaeff = sigma .* eps.^1.5;
+                        
             model.aliases = {{'T', VarName({}, 'T')}, ...
                              {'SOC', VarName({}, 'SOC')}, ...
                              {'phielyte', VarName({}, 'phielyte')}, ...
@@ -63,33 +65,46 @@ classdef nmc111Electrode < CompositeModel
 
             state = model.validateState(state);
 
-            nmc111model = model.getSubModel('nmc111');
-            state = nmc111model.initializeState(state);
-            OCP   = nmc111model.getProp(state, 'OCP');
+            amModel = model.getSubModel('nmc111');
+            state = amModel.initializeState(state);
+            OCP   = amModel.getProp(state, 'OCP');
         end
 
         
-        function state = reactBV(model, state)
+        function state = updateReactBV(model, state)
             
-            nmc111model = model.getSubModel('nmc111');
+            amModel = model.getSubModel('nmc111');
             
-            state = nmc111model.updateEquilibrium(state);
+            state = amModel.updateEquilibrium(state);
 
             T   = model.getProp(state, 'T');
             eta = model.getProp(state, 'eta');
             phiElite = model.getProp(state, 'phielyte');
             
-            phi = nmc111model.getProp(state, 'phi');
-            OCP = nmc111model.getProp(state, 'OCP');
-            k   = nmc111model.getProp(state, 'k');
+            phi = amModel.getProp(state, 'phi');
+            OCP = amModel.getProp(state, 'OCP');
+            k   = amModel.getProp(state, 'k');
             
             eta = - (phi - phiElyte - OCP);
                                     
-            R = nmc111model.Asp.*butlerVolmer(k.*model.con.F, 0.5, 1, eta, T) ./ (1 .* model.con.F);
+            R = amModel.Asp.*butlerVolmer(k.*model.con.F, 0.5, 1, eta, T) ./ (1 .* model.con.F);
             
             state = model.setProp(state, 'R');
             
         end
+        
+        function state = updateFlux(model, state)
+            
+            phi = model.getProp(state, 'phi');
+            op = model.operators;
+            sigmaeff = model.sigmaeff;
+
+            j = - op.harmFace(sigmaeff).*op.Grad(phi); 
+            
+            state = model.setProp(state, 'j', j);
+            
+        end
+        
     end
 end
 

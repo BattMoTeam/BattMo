@@ -31,6 +31,19 @@ classdef currentCollector < SimpleModel
         function state = initializeState(model, state)
         % nothing to do here
         end
+        
+        function state = updateFlux(model, state)
+            op = model.operators;
+            sigmaeff = model.sigmaeff;
+            
+            phi = model.getProp(state, 'phi');
+            
+            j = - op.harmFace(sigmaeff).*op.Grad(phi); 
+            
+            state = model.setProp(state, 'j', j);
+            
+        end
+        
     end
 end
                              

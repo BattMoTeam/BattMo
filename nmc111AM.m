@@ -35,7 +35,7 @@ classdef nmc111AM < SimpleModel
         e
 
         % Physicochemical properties
-        eps
+        eps         % constant ? 
         spCAh       % Specific Capacity,            [Ah kg^-1]
         rho         % Mass Density,                 [kg m^-3] or [g L^-1]
         theta0      % Minimum lithiation, 0% SOC    [-]
@@ -67,7 +67,6 @@ classdef nmc111AM < SimpleModel
                      'theta', ...  % Lithiation                    [-]
                      'k', ...      % Reaction rate constant        [m^2.5 mol^-0.5 s^-1]
                      'D', ...      % Diffusion
-                     'eps' ...     % Volume fraction,              [-]    
                     };
             model.names = names;
             
@@ -114,7 +113,7 @@ classdef nmc111AM < SimpleModel
         end
 
         
-        function state = updateNmc111Model(model, state)
+        function state = updateModel(model, state)
         % Update the electrode properties
         % Calculate the updated properties of the active material
         % at the given state.

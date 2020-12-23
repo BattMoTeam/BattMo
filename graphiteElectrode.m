@@ -41,6 +41,11 @@ classdef graphiteElectrode < CompositeModel
             model.eps  = graphitemodel.eps + model.bin.eps + model.sei.eps;
             model.t    = 10e-6;
             
+            % setup sigmaeff
+            eps = graphitemodel.eps;
+            sigma = graphitemodel.sigma;
+            model.sigmaeff = sigma .* eps.^1.5;            
+            
             % state variables
             names = {'eta',  ... % Overpotential,        [V]
                      'j'  ,  ... % Current density,      [A/m2]
@@ -85,6 +90,19 @@ classdef graphiteElectrode < CompositeModel
             R = graphitemodel.Asp.*butlerVolmer(k.*model.con.F, 0.5, 1, eta, T) ./ (1 .* model.con.F);
             
             state = model.setProp(state, 'R');
+            
+        end
+        
+        function state = updateFlux(model, state)
+            
+            phi = model.getProp(state, 'phi');
+            op = model.operators;
+            
+            sigmaeff = model.sigmaeff;
+                                
+            j = - op.harmFace(sigmaeff).*op.Grad(phi); 
+            
+            state = model.setProp(state, 'j', j);
             
         end
         

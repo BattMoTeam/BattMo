@@ -127,9 +127,9 @@ classdef orgLiPF6 < SimpleModel
                 end
             end
             
-            state = model.setProp(state, 'phi', zeros(nc, 1));
-            
             c = model.getProp(state, 'c_Li');
+
+            state = model.setProp(state, 'phi', zeros(nc, 1));
             state = model.setProp(state, 'c_PF6', c);
             
             % Set constant values
@@ -152,45 +152,24 @@ classdef orgLiPF6 < SimpleModel
             state = model.updateConductivity(state);
             state = model.updateDiffusion(state);
         end
-
-        function [concnames, ionconcnames, jchemnames, dmudcnames] = getAffiliatedComponentNames(model, varargin)
-            
-            opt = struct('init', false);
-            opt = merge_options(opt, varargin{:});
-            
-            compnames = model.compnames;
-            
-            concnames    = cellfun(@(x) sprintf('c_%s', x), compnames, 'uniformoutput', false);
-            ionconcnames = cellfun(@(x) sprintf('ionc_%s', x), compnames, 'uniformoutput', false);            
-            jchemnames   = cellfun(@(x) sprintf('jchem_%s', x), compnames, 'uniformoutput', false);
-            dmudcnames   = cellfun(@(x) sprintf('dmudc_%s', x), compnames, 'uniformoutput', false);
-        end
         
         function state = updateIonicQuantities(model, state)
             
-            T = model.getProp(state, 'T');
-            
             ncomp = model.ncomp;
-            [concnames, ionconcnames, jchemnames, dmudcnames] = getAffiliatedComponentNames(model);
+           
+            T  = model.getProp(state, 'T');
+            cs = model.getProp(state, 'cs');
             
             for ind = 1 : ncomp
-                cname     = concnames{ind};
-                ionname   = ionconcnames{ind};
-                dmudcname = dmudcnames{ind};            
-                
-                cvec{ind} = model.getProp(state, cname);
-                
-                dmudc = model.con.R .* T ./ cvec{ind};
-                
-                state = model.setProp(state, ionname, cvec{ind});
-                state = model.setProp(state, dmudcname, dmudc);
-                
+                dmudcs{ind} = model.con.R .* T ./ cs{ind};
             end
-
-            % this part is specific to 2 component system
-            IoSt = 0.5 .* cvec{1}.*model.sp.z{1}.^2./1000;
-            IoSt = IoSt + 0.5 .* cvec{2}.*model.sp.z{2}.^2./1000;
             
+            % this part is specific to 2 component system
+            IoSt = 0.5 .* cs{1}.*model.sp.z{1}.^2./1000;
+            IoSt = IoSt + 0.5 .* cs{2}.*model.sp.z{2}.^2./1000;
+            
+            state = model.setProp(state, 'dmudcs', dmudcs);
+            state = model.setProp(state, 'ioncs', cs);
             state = model.setProp(state, 'IoSt', IoSt);
             
         end
@@ -249,8 +228,43 @@ classdef orgLiPF6 < SimpleModel
             state = model.setProp(state, 'D', D);
             
         end
+
+        function state = updateChemicalFluxes(model, state);
+            ncomp = model.ncomp;
+            nf = model.G.faces.num;
+            sp = model.sp;
+            op = model.operators;
+            
+            dmudcs = model.getProp(state, 'dmudcs');
+            cs     = model.getProp(state, 'cs');
+            phi    = model.getProp(state, 'phi');            
+            kappa  = model.getProp(state, 'kappa');
+            eps    = model.getProp(state, 'eps');
+            
+            % compute kappaeff
+            kappaeff = kappa .* eps .^1.5;
+            
+            % setup chemical fluxes
+            jchems = cell(1, ncomp);
+            for i = 1 : ncomp
+                coeff = kappaeff .* sp.t{i} .* dmudcs{i} ./ (sp.z{i}.*model.con.F);
+                jchems{i} = op.harmFace(coeff).* op.Grad(cs{i});
+            end
+            
+            jchem = jchems{1};
+            for i = 2 : ncomp
+                jchem = jchem + jchems{i};
+            end
+            
+            % Ionic current density due to the electrochemical potential gradient
+            j = op.harmFace(kappaeff).*(-1).*op.Grad(phi) - jchem;
+            
+            state = model.setProp(state, 'jchems', jchems);
+            state = model.setProp(state, 'j', j);
+            
+        end
         
-        
+   
     end
 
     %% References
