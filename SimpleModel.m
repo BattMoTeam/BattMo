@@ -22,7 +22,8 @@ classdef SimpleModel < PhysicalModel
             model = model@PhysicalModel([]);
             model = merge_options(model, varargin{:});
             model.modelname = modelname;
-            model.namespace = {model.getModelName()};
+            % By default, the model has no parent so that the namespace is empty
+            model.namespace = {};
             model.hasparent = false;
             % no variables listed by default
             model.names     = {};
