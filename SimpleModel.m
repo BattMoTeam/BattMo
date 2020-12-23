@@ -67,8 +67,9 @@ classdef SimpleModel < PhysicalModel
             if model.hasparent
                 return
             else
-                % We add the alias if they belong to the root
+                % We add the alias if they belong to external quantities
                 
+                % First, we list them up and get unique instances
                 varnames2 = cellfun(@(alias) alias{2}, model.aliases, 'uniformoutput', false);
                 for ind = 1 : numel(varnames2)
                     fieldnames{ind} = varnames2{ind}.getfieldname;
@@ -76,10 +77,10 @@ classdef SimpleModel < PhysicalModel
                 [~, ind] = unique(fieldnames);
                 varnames2 = varnames2(ind);
                 
-                % We remove the alias when they point to child (namespace is non-empty)
+                % We remove the alias that are not external
                 varnames3 = {};
                 for ind = 1 : numel(varnames2)
-                    if isempty(varnames2{ind}.namespace)
+                    if varnames2{ind}.isexternal()
                         varnames3{end + 1} = varnames2{ind};
                     end
                 end
