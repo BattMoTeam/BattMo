@@ -32,7 +32,7 @@ classdef SimpleModel < PhysicalModel
 
         function state = validateState(model, state)
             
-            varnames = model.getVarNames();
+            varnames = model.getModelVarNames();
             
             for i = 1 : numel(varnames)
                 varname = varnames{i};
@@ -83,16 +83,10 @@ classdef SimpleModel < PhysicalModel
             end
         end
         
-        function varnames = getVarNames(model)
-        % Collect all the variable names (primary and the others). External variable names can be added there
-            varnames1 = model.getModelPrimaryVarNames;
-            varnames2 = model.getModelVarNames;
-            varnames = horzcat(varnames1, varnames2);
-        end
 
         function names = getFullVarNames(model)
         % Returns full names (i.e. including namespaces)
-            varnames = model.getVarNames();
+            varnames = model.getModelVarNames();
             names = {};
             for i = 1 : numel(varnames)
                 names{end + 1} = varnames{i}.getfieldname;
