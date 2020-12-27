@@ -33,6 +33,8 @@ classdef BatteryModel < CompositeModel
             G = tensorGrid(x, y);
             G = computeGeometry(G);
             model.G = G;
+
+            warning('setup eps');
             
             obj.componentnames = {'elyte', 'ne', 'pe', 'ccne', 'ccpe'};
             
@@ -159,7 +161,7 @@ classdef BatteryModel < CompositeModel
             % Mapping of variables  
             state = [];
             state = model.validateState(state);
-            
+
             % short cut
             fun = @(state, name) (model.setProp(state, name, y(fv.getSlot(name))));
             

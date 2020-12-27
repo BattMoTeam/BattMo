@@ -46,6 +46,7 @@ classdef orgLiPF6 < SimpleModel
         
 
         % Physicochemical properties
+        eps         % 
         rho         % Mass Density,                         [kg m^-3]
         mu          % Viscosity             
         kappaeff    % Porous media conductivity,            [S m^-1]
@@ -68,6 +69,11 @@ classdef orgLiPF6 < SimpleModel
             
             model = model@SimpleModel(name);
             model.G = genSubGrid(G, cells);
+            
+            % setup operators
+            % We use MRST to setup discrete differential operators (Div and Grad).
+            model.operators = localSetupOperators(model.G);
+            
             model.compnames = {'Li', 'PF6'};
             model.ncomp = numel(model.compnames);
             
@@ -85,11 +91,52 @@ classdef orgLiPF6 < SimpleModel
                      'kappa', ...  % Conductivity,          [S m^-1]
                      'D', ...      % Diffusion coefficient, [m^2 s^-1]
                      'wtp', ...    % Weight percentace,     [wt%]
-                     'eps', ...    % Volume fraction,       [-]
                      'IoSt', ...   % Ionic strength
                      'j' ...       % Ionic current density
                     };
             model.names = names;
+
+            varfunctions = {};
+            % setup updating function for dmudcs
+            name = 'dmudcs';
+            updatefn = @(model, state) model.updateIonicQuantities(state);
+            varfunction = {name, updatefn};
+            varfunctions{end + 1} = varfunction;
+            
+            % setup updating function for ioncs            
+            name = 'ioncs';
+            varfunction = {name, updatefn};
+            varfunctions{end + 1} = varfunction;
+            
+            % setup updating function for IoSt
+            name = 'IoSt';
+            varfunction = {name, updatefn};
+            varfunctions{end + 1} = varfunction;
+            
+             % setup updating function for kappa
+            name = 'kappa';
+            updatefn = @(model, state) model.updateConductivity(state);
+            varfunction = {name, updatefn};
+            varfunctions{end + 1} = varfunction;
+            
+            % setup updating function for D
+            name = 'D';
+            updatefn = @(model, state) model.updateDiffusion(state);
+            varfunction = {name, updatefn};
+            varfunctions{end + 1} = varfunction;
+            
+            % setup updating function for jchem
+            name = 'jchems';
+            updatefn = @(model, state) model.updateChemicalFluxes(state);
+            varfunction = {name, updatefn};
+            varfunctions{end + 1} = varfunction;
+
+            % setup updating function for jchem
+            name = 'j';
+            varfunction = {name, updatefn};
+            varfunctions{end + 1} = varfunction;
+            
+            model.varfunctions = varfunctions;
             
             aliases = {{'T', VarName({'..'}, 'T')}};
             
@@ -108,6 +155,20 @@ classdef orgLiPF6 < SimpleModel
             
             model.aliases = aliases;
 
+            % Set constant values
+            [~, ind] = ismember('Li', model.compnames);
+            tLi = 0.399;
+            model.sp.t{ind} = tLi; % Li+ transference number, [-]
+            model.sp.z{ind} = 1;
+            
+            [~, ind] = ismember('PF6', model.compnames);
+            model.sp.t{ind} = 1 - tLi; % Li+ transference number, [-]
+            model.sp.z{ind} = -1;
+            
+            nc = model.G.cells.num;
+            % dummy value (for the moment)
+            model.eps = 0.1*ones(nc, 1);
+            
         end
 
         function state = initializeState(model, state)
@@ -132,33 +193,16 @@ classdef orgLiPF6 < SimpleModel
             state = model.setProp(state, 'phi', zeros(nc, 1));
             state = model.setProp(state, 'c_PF6', c);
             
-            % Set constant values
-            [~, ind] = ismember('Li', compnames);
-            tLi = 0.399;
-            model.sp.t{ind} = tLi;           % Li+ transference number, [-]
-            model.sp.z{ind} = 1;
-            
-            [~, ind] = ismember('PF6', compnames);
-            model.sp.t{ind} = 1 - tLi;           % Li+ transference number, [-]
-            model.sp.z{ind} = -1;
-            
-            state = model.update(state);
-            
+
         end
         
-        
-        function state = update(model, state)
-            state = model.updateIonicQuantities(state);
-            state = model.updateConductivity(state);
-            state = model.updateDiffusion(state);
-        end
         
         function state = updateIonicQuantities(model, state)
             
             ncomp = model.ncomp;
            
-            T  = model.getProp(state, 'T');
-            cs = model.getProp(state, 'cs');
+            [T, state]  = model.getUpdatedProp(state, 'T');
+            [cs, state] = model.getUpdatedProp(state, 'cs');
             
             for ind = 1 : ncomp
                 dmudcs{ind} = model.con.R .* T ./ cs{ind};
@@ -190,8 +234,8 @@ classdef orgLiPF6 < SimpleModel
                     0.494e-6,    -8.86e-10,    0];
             
             % Electrolyte conductivity
-            T = model.getProp(state, 'T');
-            c = model.getProp(state, 'c_Li');
+            [T, state] = model.getUpdatedProp(state, 'T');
+            [c, state] = model.getUpdatedProp(state, 'c_Li');
             
             kappa = 1e-4 .* c .* (...
                 (cnst(1,1) + cnst(2,1) .* c + cnst(3,1) .* c.^2) + ...
@@ -235,11 +279,12 @@ classdef orgLiPF6 < SimpleModel
             sp = model.sp;
             op = model.operators;
             
-            dmudcs = model.getProp(state, 'dmudcs');
-            cs     = model.getProp(state, 'cs');
-            phi    = model.getProp(state, 'phi');            
-            kappa  = model.getProp(state, 'kappa');
-            eps    = model.getProp(state, 'eps');
+            [dmudcs, state] = model.getUpdatedProp(state, 'dmudcs');
+            [cs, state]     = model.getUpdatedProp(state, 'cs');
+            [phi, state]    = model.getUpdatedProp(state, 'phi');            
+            [kappa, state]  = model.getUpdatedProp(state, 'kappa');
+
+            eps = model.eps;
             
             % compute kappaeff
             kappaeff = kappa .* eps .^1.5;

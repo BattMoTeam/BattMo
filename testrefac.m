@@ -24,7 +24,6 @@ state.cs = cs;
 model = orgLiPF6('elyte', G, cells);
 % model = BatteryModel();
 
-[fn, ind] = model.getVariableField('jchem_Li');
-
 state = model.initializeState(state);
-            
+
+state = model.updateProp(state, 'jchems');
