@@ -13,7 +13,8 @@ classdef SimpleModel < PhysicalModel
         pnames
         
         aliases
-        
+
+        varfunctions
     end
     
     
@@ -138,6 +139,66 @@ classdef SimpleModel < PhysicalModel
             end
         end
             
+        
+        function [val, state] = getUpdatedProp(model, state, name)
+            state = model.updateProp(state, name);
+            val = model.getProp(state, name);
+        end
+        
+        function state = updateProp(model, state, name)
+            val = model.getProp(state, name);
+            
+            % check for vector variables
+            isupdated = false;
+            
+            if ~isempty(val) 
+                isupdated = true;
+            end
+            
+            % Check for cell variables
+            if iscell(val)
+                isupdated = true;
+                for ind = 1 : numel(val)
+                    if isempty(val{ind})
+                        isupdated = false;
+                        break
+                    end
+                end
+            end
+            
+            if isupdated
+                return
+            end
+            
+            
+            % We look for an updating function for the variable
+            [isalias, varname] = model.setupVarName(name);
+            if isalias
+                if isa(varname, 'LocalName')
+                    name = varname.name;
+                elseif model.hasparent
+                    % Call alias
+                    parentmodel = model.getParentModel();
+                    state = parentmodel.updateProp(state, varname.name);
+                    return
+                else
+                    error('this case is not handled');
+                end
+            end
+            % find the updating property
+            varfunctions = model.varfunctions;
+            updatefn = [];
+            for ind = 1 : numel(varfunctions)
+                varfunction = varfunctions{ind};
+                if strcmp(varfunction{1}, name)
+                    updatefn = varfunction{2};
+                    break
+                end
+            end
+            state = updatefn(model, state);
+            
+        end
+        
         function [fn, index] = getVariableField(model, name, throwError, varargin)
         % In this function the variable name is associated to a field name (fn) which corresponds to the field where the
         % variable is stored in the state.  See PhysicalModel
@@ -170,7 +231,7 @@ classdef SimpleModel < PhysicalModel
                     error('this case is not handled');
                 end
             else
-                % Check that name is declare
+                % Check that name is declared
                 isok = ismember(name, model.names);
                 % Otherwise it can be an alias refering to an external field 
                 isok = isok | isexternal;
