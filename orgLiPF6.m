@@ -71,7 +71,6 @@ classdef orgLiPF6 < SimpleModel
             model.G = genSubGrid(G, cells);
             
             % setup operators
-            % We use MRST to setup discrete differential operators (Div and Grad).
             model.operators = localSetupOperators(model.G);
             
             model.compnames = {'Li', 'PF6'};

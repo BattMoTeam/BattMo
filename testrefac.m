@@ -22,8 +22,10 @@ cs{2} = [];
 state.cs = cs;
 
 model = orgLiPF6('elyte', G, cells);
+model = graphiteElectrode('ne', G, cells);
+
 % model = BatteryModel();
 
 state = model.initializeState(state);
 
-state = model.updateProp(state, 'jchems');
+state = model.updateProp(state, 'j');

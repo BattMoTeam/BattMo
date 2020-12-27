@@ -31,6 +31,9 @@ classdef graphiteElectrode < CompositeModel
             model = model@CompositeModel(name);
             model.G = genSubGrid(G, cells);
             
+            % setup operators
+            model.operators = localSetupOperators(model.G);
+            
             % setup graphite submodel
             graphitemodel = graphiteAM();
             model.SubModels{1} = graphitemodel;
@@ -53,12 +56,31 @@ classdef graphiteElectrode < CompositeModel
                     };
             model.names = names;
             
-            model.aliases = {{'T', VarName({}, 'T')}, ...
-                             {'SOC', VarName({}, 'SOC')}, ...
-                             {'phielyte', VarName({}, 'phielyte')}, ...
+            model.aliases = {{'T', VarName({'..'}, 'T')}, ...
+                             {'SOC', VarName({'..'}, 'SOC')}, ...
+                             {'phielyte', VarName({'..'}, 'phielyte')}, ...
                             };
             
+            % setup varfunctions
+            
+            varfunctions = {};
+            
+            % setup updating function for R
+            name = 'R';
+            updatefn = @(model, state) model.reactBV(state);
+            varfunction = {name, updatefn};
+            varfunctions{end + 1} = varfunction;
+
+            % setup updating function for j
+            name = 'j';
+            updatefn = @(model, state) model.updateFlux(state);
+            varfunction = {name, updatefn};
+            varfunctions{end + 1} = varfunction;
+
+            model.varfunctions = varfunctions;
+            
             model = model.initiateCompositeModel();
+            
         end
 
         
@@ -68,7 +90,7 @@ classdef graphiteElectrode < CompositeModel
 
             graphitemodel = model.getSubModel('graphite');
             state = graphitemodel.initializeState(state);
-            OCP   = graphitemodel.getProp(state, 'OCP');
+            
         end
         
         function state = reactBV(model, state)
@@ -77,13 +99,13 @@ classdef graphiteElectrode < CompositeModel
             
             state = graphitemodel.updateEquilibrium(state);
 
-            T   = model.getProp(state, 'T');
-            eta = model.getProp(state, 'eta');
-            phiElite = model.getProp(state, 'phielyte');
+            [T, state]   = model.getUpdatedProp(state, 'T');
+            [eta, state] = model.getUpdatedProp(state, 'eta');
+            [phiElite, state] = model.getUpdatedProp(state, 'phielyte');
             
-            phi = graphitemodel.getProp(state, 'phi');
-            OCP = graphitemodel.getProp(state, 'OCP');
-            k   = graphitemodel.getProp(state, 'k');
+            [phi, state] = graphitemodel.getUpdatedProp(state, 'phi');
+            [OCP, state] = graphitemodel.getUpdatedProp(state, 'OCP');
+            [k, state]   = graphitemodel.getUpdatedProp(state, 'k');
             
             eta = (phi - phiElyte - OCP);
                                     
@@ -95,7 +117,7 @@ classdef graphiteElectrode < CompositeModel
         
         function state = updateFlux(model, state)
             
-            phi = model.getProp(state, 'phi');
+            [phi, state] = model.getUpdatedProp(state, {'graphite', 'phi'});
             op = model.operators;
             
             sigmaeff = model.sigmaeff;

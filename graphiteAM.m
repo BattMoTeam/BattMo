@@ -94,6 +94,42 @@ classdef graphiteAM < SimpleModel
                     };
             model.names = names;
             
+            
+            varfunctions = {};
+            % setup updating function for k
+            name = 'k';
+            updatefn = @(model, state) model.updateKinetics(state);
+            varfunction = {name, updatefn};
+            varfunctions{end + 1} = varfunction;
+            
+            % setup updating function for D
+            name = 'D';
+            updatefn = @(model, state) model.updateDiffusion(state);
+            varfunction = {name, updatefn};
+            varfunctions{end + 1} = varfunction;
+            
+            name = 'theta';
+            updatefn = @(model, state) model.updateEquilibrium(state);
+            varfunction = {name, updatefn};
+            varfunctions{end + 1} = varfunction;
+            
+            name =  'refOCP';
+            updatefn = @(model, state) model.updateEquilibrium(state);
+            varfunction = {name, updatefn};
+            varfunctions{end + 1} = varfunction;
+
+            name =  'OCP';
+            updatefn = @(model, state) model.updateEquilibrium(state);
+            varfunction = {name, updatefn};
+            varfunctions{end + 1} = varfunction;
+
+            name =  'dUdT';
+            updatefn = @(model, state) model.updateEquilibrium(state);
+            varfunction = {name, updatefn};
+            varfunctions{end + 1} = varfunction;
+            
+            model.varfunctions = varfunctions;
+            
             model.aliases = {{'T', VarName({}, 'T')}, ...
                              {'SOC', VarName({}, 'SOC')}, ...
                             };
@@ -114,27 +150,15 @@ classdef graphiteAM < SimpleModel
             state = model.setProp(state, 'theta', theta);
             state = model.setProp(state, 'Li', cs);
             
-            state = model.updateGraphiteModel(state);
-            
-            % set OCP
-            OCP = model.getProp(state, 'OCP');
+            OCP = model.getUpdatedProp(state, 'OCP');
             state = model.setProp(state, 'phi', OCP);
         end
 
         
-        function state = updateGraphiteModel(model, state)
-        % Update the electrode properties
-        % Calculate the updated properties of the active material
-        % at the given state.
-            state = model.updateEquilibrium(state);
-            state = model.updateDiffusion(state);
-            state = model.updateKinetics(state);
-        end
-        
         function state = updateKinetics(model, state)
         %KINETICS Calculate the kinetic parameters for the Li+ intercalation reaction
            
-                T = model.getProp(state, 'T');
+                [T, state] = model.getUpdatedProp(state, 'T');
                 
                 % Define reference temperature
                 refT = 298.15;  % [K]
@@ -153,7 +177,7 @@ classdef graphiteAM < SimpleModel
             % Define reference temperature
             refT = 298.15;  % [K]
             
-            T = model.getProp(state, 'T');
+            T = model.getUpdatedProp(state, 'T');
             
             % Calculate solid diffusion coefficient, [m^2 s^-1]
             D = model.Li.D0 .* exp(-model.Li.EaD./model.con.R*(1./T - 1/refT));
@@ -165,9 +189,9 @@ classdef graphiteAM < SimpleModel
         % Calculate the equilibrium properties of the electrode active material. Calculate the equilibrium open cirucuit
         % potential of graphite according to the model used by Torchio et al [1].
 
-            T     = model.getProp(state, 'T');
-            cs    = model.getProp(state, 'Li');
-            theta = model.getProp(state, 'theta');
+            [T, state]     = model.getUpdatedProp(state, 'T');
+            [cs, state]    = model.getUpdatedProp(state, 'Li');
+            [theta, state] = model.getUpdatedProp(state, 'theta');
             
             % Set the reference temperature
             refT = 298.15;
