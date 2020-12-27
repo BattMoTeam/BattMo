@@ -132,6 +132,23 @@ classdef CompositeModel < SimpleModel
             report = [];
         end
         
+        function [val, state] = getUpdatedProp(model, state, name)
+            if isa(name, 'VarName')
+                namespace = name.namespace;
+                name = name.name;
+                submodel = model.getSubModel(namespace);
+                [val, state] = submodel.getUpdatedProp(state, name);
+            elseif iscell(name)
+                % syntaxic sugar (do not need to setup VarName)
+                varname = VarName(name{1 : end - 1}, name{end});
+                [val, state] = model.getUpdatedProp(state, varname);
+            elseif ischar(name)
+                [val, state] = getUpdatedProp@SimpleModel(state, name);
+            else
+                error('type of name is not recognized')
+            end
+        end
+        
         
         function [fn, index] = getVariableField(model, name, varargin)
         % In this function the variable name is associated to a field name (fn) which corresponds to the field where the
