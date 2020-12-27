@@ -119,7 +119,7 @@ classdef SimpleModel < PhysicalModel
             end
         end
         
-        function [isalias, varname] = setupVarName(model, name)
+        function [isalias, varname] = aliasLookup(model, name)
         % check if name is an alias
             aliases = model.aliases;
             isalias = false;
@@ -172,7 +172,7 @@ classdef SimpleModel < PhysicalModel
             
             
             % We look for an updating function for the variable
-            [isalias, varname] = model.setupVarName(name);
+            [isalias, varname] = model.aliasLookup(name);
             if isalias
                 if isa(varname, 'LocalName')
                     name = varname.name;
@@ -212,7 +212,7 @@ classdef SimpleModel < PhysicalModel
             end
             
             % Check if there exist an alias
-            [isalias, varname] = model.setupVarName(name);
+            [isalias, varname] = model.aliasLookup(name);
             
             if isalias && (varname.isexternal)
                 isexternal = true;
