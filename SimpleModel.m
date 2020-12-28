@@ -53,7 +53,26 @@ classdef SimpleModel < PhysicalModel
         function parentmodel = getParentModel(model)
              parentmodel = model.parentmodel;
         end
-
+         
+        function submodel = getSubModel(model, name)
+            if isa(name, 'char')
+                if strcmp(name, '..')
+                    submoodel = model.parentmodel;
+                elseif strcmp(name, '.')
+                    submodel = model;
+                end
+            elseif isa(name, 'cell') && numel(name) > 1
+                firstparentname = name{1};
+                name = name{2 : end};
+                submodel = model.getSubModel(firstparentname);
+                submodel = submodel.getSubModel(name);
+            elseif isa(name, 'cell') && numel(name) == 1
+                name = name{1};
+                submodel = model.getSubModel(name);
+            else
+                error('name type not recognized');
+            end
+        end
         
         function varnames = getModelPrimaryVarNames(model)
         % List the primary variables. For SimpleModel the variable names only consist of those declared in the model (no child)
@@ -145,6 +164,7 @@ classdef SimpleModel < PhysicalModel
             val = model.getProp(state, name);
         end
         
+        
         function state = updateProp(model, state, name)
             val = model.getProp(state, name);
             
@@ -170,7 +190,6 @@ classdef SimpleModel < PhysicalModel
                 return
             end
             
-            
             % We look for an updating function for the variable
             [isalias, varname] = model.aliasLookup(name);
             if isalias
@@ -185,17 +204,20 @@ classdef SimpleModel < PhysicalModel
                     error('this case is not handled');
                 end
             end
+            
             % find the updating property
             varfunctions = model.varfunctions;
             updatefn = [];
             for ind = 1 : numel(varfunctions)
                 varfunction = varfunctions{ind};
                 if strcmp(varfunction{1}, name)
-                    updatefn = varfunction{2};
+                    updatefn = varfunction{2}{1};
+                    fnmodelname = varfunction{2}{2};
+                    fnmodel = model.getSubModel(fnmodelname);
                     break
                 end
             end
-            state = updatefn(model, state);
+            state = updatefn(fnmodel, state);
             
         end
         

@@ -30,21 +30,11 @@ classdef CompositeModel < SimpleModel
         end
         
         function submodel = getSubModel(model, name)
-            if isa(name, 'char')
+            if isa(name, 'char') & ~any(strcmp(name, {'..', '.'}))
                 ind = model.getSubModelInd(name);
                 submodel = model.SubModels{ind};
-            elseif isa(name, 'cell') && isempty(name)
-                submodel = model;
-            elseif isa(name, 'cell') && numel(name) > 1
-                firstparentname = name{1};
-                name = name{2 : end};
-                submodel = model.getSubModel(firstparentname);
-                submodel = submodel.getSubModel(name)
-            elseif isa(name, 'cell') && numel(name) == 1
-                name = name{1};
-                submodel = model.getSubModel(name);
             else
-                error('name type not recognized');
+                submodel = getSubModel@SimpleModel(model, name);
             end
         end
 
