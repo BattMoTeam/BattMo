@@ -57,7 +57,7 @@ classdef SimpleModel < PhysicalModel
         function submodel = getAssocModel(model, name)
             if isa(name, 'char')
                 if strcmp(name, '..')
-                    submoodel = model.parentmodel;
+                    submodel = model.parentmodel;
                 elseif strcmp(name, '.')
                     submodel = model;
                 end
@@ -84,28 +84,6 @@ classdef SimpleModel < PhysicalModel
         % List the variable names (primary variables are handled separately). For SimpleModel the variable names only consist of
         % those declared in the model (no child)
             varnames = model.assignCurrentNameSpace(model.names);
-            if model.hasparent
-                return
-            else
-                % We add the alias if they belong to external quantities
-                
-                % First, we list them up and get unique instances
-                varnames2 = cellfun(@(alias) alias{2}, model.aliases, 'uniformoutput', false);
-                for ind = 1 : numel(varnames2)
-                    fieldnames{ind} = varnames2{ind}.getfieldname;
-                end
-                [~, ind] = unique(fieldnames);
-                varnames2 = varnames2(ind);
-                
-                % We remove the alias that are not external
-                varnames3 = {};
-                for ind = 1 : numel(varnames2)
-                    if varnames2{ind}.isexternal()
-                        varnames3{end + 1} = varnames2{ind};
-                    end
-                end
-                varnames = horzcat(varnames, varnames3);
-            end
         end
 
         function names = getFullVarNames(model)
@@ -193,16 +171,8 @@ classdef SimpleModel < PhysicalModel
             % We look for an updating function for the variable
             [isalias, varname] = model.aliasLookup(name);
             if isalias
-                if isa(varname, 'LocalName')
-                    name = varname.name;
-                elseif model.hasparent
-                    % Call alias
-                    parentmodel = model.getParentModel();
-                    state = parentmodel.updateProp(state, varname.name);
-                    return
-                else
-                    error('this case is not handled');
-                end
+                fnmodel = model.getAssocModel(varname.namespace);
+                state  = fnmodel.updateProp(state, varname.name);
             end
             
             % find the updating property
@@ -233,37 +203,32 @@ classdef SimpleModel < PhysicalModel
                 index = opt.index;
             end
             
-            % Check if there exist an alias
-            [isalias, varname] = model.aliasLookup(name);
-            
-            if isalias && (varname.isexternal)
-                isexternal = true;
+            if isa(name, 'VarName')
+                varname = name;
+                varmodel = model.getAssocModel(varname.namespace);
+                [fn, index] = varmodel.getVariableField(varname.name, true, 'index', varname.index);
+            elseif iscell(name)
+                % syntaxic sugar (do not need to setup VarName)
+                varname = VarName(name{1 : end - 1}, name{end});
+                [fn, index] = model.getVariableField(varname);
             else
-                isexternal = false;
-            end
-            
-            if isalias & ~isexternal
-                if isa(varname, 'LocalName')
-                    [fn, index] = model.getVariableField(varname.name, true, 'index', varname.index);
-                elseif model.hasparent
-                    % Call alias
-                    parentmodel = model.getParentModel();
-                    [fn, index] = parentmodel.getVariableField(varname);
+                % Check if there exist an alias
+                [isalias, varname] = model.aliasLookup(name);
+
+                if isalias
+                    [fn, index] = model.getVariableField(varname);
                 else
-                    error('this case is not handled');
+                    % Check that name is declared
+                    isok = ismember(name, model.names);
+                    % Otherwise it can be an alias refering to an external field 
+                    assert(isok, 'name is not declared/recognized by the model');
+                    
+                    % Construct name from namespace
+                    namespace = model.namespace;
+                    varname = VarName(namespace, name);
+                    fn = varname.getfieldname();
+                    index = index;
                 end
-            else
-                % Check that name is declared
-                isok = ismember(name, model.names);
-                % Otherwise it can be an alias refering to an external field 
-                isok = isok | isexternal;
-                assert(isok, 'name is not declared/recognized by the model');
-                
-                % Construct name from namespace
-                namespace = model.namespace;
-                varname = VarName(namespace, name);
-                fn = varname.getfieldname();
-                index = index;
             end
         end
         

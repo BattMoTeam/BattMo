@@ -139,28 +139,6 @@ classdef CompositeModel < SimpleModel
             end
         end
         
-        
-        function [fn, index] = getVariableField(model, name, varargin)
-        % In this function the variable name is associated to a field name (fn) which corresponds to the field where the
-        % variable is stored in the state.  See PhysicalModel
-            
-            if isa(name, 'VarName')
-                namespace = name.namespace;
-                name = name.name;
-                submodel = model.getAssocModel(namespace);
-                [fn, index] = submodel.getVariableField(name);
-            elseif iscell(name)
-                % syntaxic sugar (do not need to setup VarName)
-                varname = VarName(name{1 : end - 1}, name{end});
-                [fn, index] = model.getVariableField(varname);
-            elseif ischar(name)
-                [fn, index] = getVariableField@SimpleModel(model, name);
-            else
-                error('type of name is not recognized')
-            end
-
-            
-        end
     end
     
 end
