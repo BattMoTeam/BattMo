@@ -204,6 +204,7 @@ classdef SimpleModel < PhysicalModel
             if isalias
                 fnmodel = model.getAssocModel(varname.namespace);
                 state  = fnmodel.updateProp(state, varname.name);
+                return
             end
             
             % find the updating property
