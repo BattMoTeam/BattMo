@@ -22,7 +22,7 @@ cs{2} = [];
 state.cs = cs;
 
 model = orgLiPF6('elyte', G, cells);
-model = graphiteElectrode('ne', G, cells);
+% model = graphiteElectrode('ne', G, cells);
 
 % model = BatteryModel();
 
