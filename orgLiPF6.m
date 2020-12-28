@@ -82,8 +82,9 @@ classdef orgLiPF6 < SimpleModel
             
             % state variables
             names = {'phi', ...    % Potential
+                     'T', ...      % Temperature
                      'cs', ...     % Concentrations
-                     'ioncs', ...   % Ions concentrations (?)
+                     'ioncs', ...  % Ions concentrations (?)
                      'jchems', ... % Chemical fluxes
                      'dmudcs', ... % Chemical potentials (derivatives)
                      'm', ...      % Molality,              [mol kg^-1]
@@ -137,9 +138,8 @@ classdef orgLiPF6 < SimpleModel
             
             model.varfunctions = varfunctions;
             
-            aliases = {{'T', VarName({'..'}, 'T')}};
-            
             % add local aliases for each component
+            aliases = {};
             fieldnames = {'c', 'ionc', 'jchem', 'dmudc'};
             for ifn = 1 : numel(fieldnames)
                 fieldname = fieldnames{ifn};
@@ -147,7 +147,7 @@ classdef orgLiPF6 < SimpleModel
                     compname = model.compnames{icn};
                     name = sprintf('%s_%s', fieldname, compname);
                     lname = sprintf('%ss', fieldname);
-                    varname = LocalName(lname, icn);
+                    varname = VarName('.', lname, icn);
                     aliases{end + 1} = {name, varname};
                 end
             end
