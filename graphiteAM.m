@@ -83,6 +83,8 @@ classdef graphiteAM < SimpleModel
 
             % state variables
             names = {'phi', ...    % Potential
+                     'T', ...      % Temperature
+                     'SOC', ...
                      'Li', ...     % Lithium concentration
                      'refOCP', ... % Reference open circuit potential at standard  teperature [V]
                      'OCP', ...    % Open-circuit potential        [V]
@@ -99,40 +101,36 @@ classdef graphiteAM < SimpleModel
             % setup updating function for k
             name = 'k';
             updatefn = @(model, state) model.updateKinetics(state);
-            varfunction = {name, updatefn};
+            varfunction = {name, {updatefn, '.'}};
             varfunctions{end + 1} = varfunction;
             
             % setup updating function for D
             name = 'D';
             updatefn = @(model, state) model.updateDiffusion(state);
-            varfunction = {name, updatefn};
+            varfunction = {name, {updatefn, '.'}};
             varfunctions{end + 1} = varfunction;
             
             name = 'theta';
             updatefn = @(model, state) model.updateEquilibrium(state);
-            varfunction = {name, updatefn};
+            varfunction = {name, {updatefn, '.'}};
             varfunctions{end + 1} = varfunction;
             
             name =  'refOCP';
             updatefn = @(model, state) model.updateEquilibrium(state);
-            varfunction = {name, updatefn};
+            varfunction = {name, {updatefn, '.'}};
             varfunctions{end + 1} = varfunction;
 
             name =  'OCP';
             updatefn = @(model, state) model.updateEquilibrium(state);
-            varfunction = {name, updatefn};
+            varfunction = {name, {updatefn, '.'}};
             varfunctions{end + 1} = varfunction;
 
             name =  'dUdT';
             updatefn = @(model, state) model.updateEquilibrium(state);
-            varfunction = {name, updatefn};
+            varfunction = {name, {updatefn, '.'}};
             varfunctions{end + 1} = varfunction;
             
             model.varfunctions = varfunctions;
-            
-            model.aliases = {{'T', VarName({}, 'T')}, ...
-                             {'SOC', VarName({}, 'SOC')}, ...
-                            };
             
         end
         

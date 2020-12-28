@@ -36,6 +36,9 @@ classdef graphiteElectrode < CompositeModel
             
             % setup graphite submodel
             graphitemodel = graphiteAM();
+            
+            graphitemodel = graphitemodel.addAlias({'T', VarName({'..'}, 'T')});
+            graphitemodel = graphitemodel.addAlias({'SOC', VarName({'..'}, 'SOC')});
             model.SubModels{1} = graphitemodel;
             model.SubModelNames{1} = 'graphite';
             
@@ -53,14 +56,11 @@ classdef graphiteElectrode < CompositeModel
             names = {'eta',  ... % Overpotential,        [V]
                      'j'  ,  ... % Current density,      [A/m2]
                      'R'  ...    % Reaction Rate,
-                    };
+                     'T', ...
+                     'SOC', ...
+                     'phielyte'};
             model.names = names;
-            
-            model.aliases = {{'T', VarName({'..'}, 'T')}, ...
-                             {'SOC', VarName({'..'}, 'SOC')}, ...
-                             {'phielyte', VarName({'..'}, 'phielyte')}, ...
-                            };
-            
+
             % setup varfunctions
             
             varfunctions = {};
@@ -68,13 +68,13 @@ classdef graphiteElectrode < CompositeModel
             % setup updating function for R
             name = 'R';
             updatefn = @(model, state) model.reactBV(state);
-            varfunction = {name, updatefn};
+            varfunction = {name, {updatefn, '.'}};
             varfunctions{end + 1} = varfunction;
 
             % setup updating function for j
             name = 'j';
             updatefn = @(model, state) model.updateFlux(state);
-            varfunction = {name, updatefn};
+            varfunction = {name, {updatefn, '.'}};
             varfunctions{end + 1} = varfunction;
 
             model.varfunctions = varfunctions;
