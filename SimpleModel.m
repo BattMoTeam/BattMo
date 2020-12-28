@@ -115,6 +115,13 @@ classdef SimpleModel < PhysicalModel
                 fullnames = varnames.join();
             end
         end
+
+        function model = addAlias(model, alias)
+            aliases = model.aliases;
+            aliases{end + 1} = alias;
+            model.aliases = aliases;
+        end
+        
         
         function [isalias, varname] = aliasLookup(model, name)
         % check if name is an alias
@@ -190,7 +197,7 @@ classdef SimpleModel < PhysicalModel
             state = updatefn(fnmodel, state);
             
         end
-        
+
         function [fn, index] = getVariableField(model, name, throwError, varargin)
         % In this function the variable name is associated to a field name (fn) which corresponds to the field where the
         % variable is stored in the state.  See PhysicalModel
