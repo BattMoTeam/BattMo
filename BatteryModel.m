@@ -81,7 +81,7 @@ classdef BatteryModel < CompositeModel
 
             model.hasparent = false;
 
-            ccpe = model.getSubModel('ccpe');
+            ccpe = model.getAssocModel('ccpe');
             ccpe.pnames = {ccpe.pnames{:}, 'E'};
             ccpe.names = {ccpe.names{:}, 'E'};
             model = model.setSubModel(ccpe, 'ccpe');
@@ -102,8 +102,8 @@ classdef BatteryModel < CompositeModel
                 state = model.SubModels{i}.initializeState(state);
             end
             
-            ccne = model.getSubModel('ccne');
-            ne = model.getSubModel('ne');
+            ccne = model.getAssocModel('ccne');
+            ne = model.getAssocModel('ne');
             
             OCP_ne = ne.getProp(state, {'graphite', 'OCP'});
             nc = ccne.G.cells.num;
@@ -112,8 +112,8 @@ classdef BatteryModel < CompositeModel
             state = ccne.setProp(state, 'OCP', OCP_ccne);
             state = ccne.setProp(state, 'phi', OCP_ccne);
             
-            ccpe = model.getSubModel('ccpe');
-            pe = model.getSubModel('pe');
+            ccpe = model.getAssocModel('ccpe');
+            pe = model.getAssocModel('pe');
             
             OCP_pe = pe.getProp(state, {'nmc111', 'OCP'});
             nc = ccpe.G.cells.num;
@@ -197,11 +197,11 @@ classdef BatteryModel < CompositeModel
             ccpe_phi   = model.getProp(state, 'ccpe_phi');
             ccpe_E     = model.getProp(state, 'ccpe_E');
             
-            elyte = model.getSubModel('elyte');
-            ne    = model.getSubModel('ne');
-            pe    = model.getSubModel('pe');
-            ccne  = model.getSubModel('ccne');
-            ccpe  = model.getSubModel('ccpe');
+            elyte = model.getAssocModel('elyte');
+            ne    = model.getAssocModel('ne');
+            pe    = model.getAssocModel('pe');
+            ccne  = model.getAssocModel('ccne');
+            ccpe  = model.getAssocModel('ccpe');
             
             sp_Li_c  = elyte_c_Li ./ elyte.eps;
             sp_PF6_c = sp_Li_c;

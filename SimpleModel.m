@@ -54,7 +54,7 @@ classdef SimpleModel < PhysicalModel
              parentmodel = model.parentmodel;
         end
          
-        function submodel = getSubModel(model, name)
+        function submodel = getAssocModel(model, name)
             if isa(name, 'char')
                 if strcmp(name, '..')
                     submoodel = model.parentmodel;
@@ -64,11 +64,11 @@ classdef SimpleModel < PhysicalModel
             elseif isa(name, 'cell') && numel(name) > 1
                 firstparentname = name{1};
                 name = name{2 : end};
-                submodel = model.getSubModel(firstparentname);
-                submodel = submodel.getSubModel(name);
+                submodel = model.getAssocModel(firstparentname);
+                submodel = submodel.getAssocModel(name);
             elseif isa(name, 'cell') && numel(name) == 1
                 name = name{1};
-                submodel = model.getSubModel(name);
+                submodel = model.getAssocModel(name);
             else
                 error('name type not recognized');
             end
@@ -213,7 +213,7 @@ classdef SimpleModel < PhysicalModel
                 if strcmp(varfunction{1}, name)
                     updatefn = varfunction{2}{1};
                     fnmodelname = varfunction{2}{2};
-                    fnmodel = model.getSubModel(fnmodelname);
+                    fnmodel = model.getAssocModel(fnmodelname);
                     break
                 end
             end

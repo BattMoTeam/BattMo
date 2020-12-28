@@ -88,14 +88,14 @@ classdef graphiteElectrode < CompositeModel
 
             state = model.validateState(state);
 
-            graphitemodel = model.getSubModel('graphite');
+            graphitemodel = model.getAssocModel('graphite');
             state = graphitemodel.initializeState(state);
             
         end
         
         function state = reactBV(model, state)
             
-            graphitemodel = model.getSubModel('graphite');
+            graphitemodel = model.getAssocModel('graphite');
             
             state = graphitemodel.updateEquilibrium(state);
 

@@ -18,7 +18,7 @@ classdef CompositeModel < SimpleModel
             model.hasparent = false;
         end
         
-        function ind = getSubModelInd(model, name)
+        function ind = getAssocModelInd(model, name)
             ind = strcmp(name, model.SubModelNames);
             if all(ind == 0)
                 error('submodel not found');
@@ -29,17 +29,17 @@ classdef CompositeModel < SimpleModel
             end
         end
         
-        function submodel = getSubModel(model, name)
+        function submodel = getAssocModel(model, name)
             if isa(name, 'char') & ~any(strcmp(name, {'..', '.'}))
-                ind = model.getSubModelInd(name);
+                ind = model.getAssocModelInd(name);
                 submodel = model.SubModels{ind};
             else
-                submodel = getSubModel@SimpleModel(model, name);
+                submodel = getAssocModel@SimpleModel(model, name);
             end
         end
 
         function model = setSubModel(model, submodel, name)
-            ind = getSubModelInd(model, name);
+            ind = getAssocModelInd(model, name);
             model.SubModels{ind} = submodel;
         end
         
@@ -126,7 +126,7 @@ classdef CompositeModel < SimpleModel
             if isa(name, 'VarName')
                 namespace = name.namespace;
                 name = name.name;
-                submodel = model.getSubModel(namespace);
+                submodel = model.getAssocModel(namespace);
                 [val, state] = submodel.getUpdatedProp(state, name);
             elseif iscell(name)
                 % syntaxic sugar (do not need to setup VarName)
@@ -147,7 +147,7 @@ classdef CompositeModel < SimpleModel
             if isa(name, 'VarName')
                 namespace = name.namespace;
                 name = name.name;
-                submodel = model.getSubModel(namespace);
+                submodel = model.getAssocModel(namespace);
                 [fn, index] = submodel.getVariableField(name);
             elseif iscell(name)
                 % syntaxic sugar (do not need to setup VarName)

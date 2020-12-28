@@ -65,7 +65,7 @@ classdef nmc111Electrode < CompositeModel
 
             state = model.validateState(state);
 
-            amModel = model.getSubModel('nmc111');
+            amModel = model.getAssocModel('nmc111');
             state = amModel.initializeState(state);
             OCP   = amModel.getProp(state, 'OCP');
         end
@@ -73,7 +73,7 @@ classdef nmc111Electrode < CompositeModel
         
         function state = updateReactBV(model, state)
             
-            amModel = model.getSubModel('nmc111');
+            amModel = model.getAssocModel('nmc111');
             
             state = amModel.updateEquilibrium(state);
 
