@@ -48,12 +48,12 @@ classdef nmc111AM < SimpleModel
     end
     
     methods
-        function model = nmc111AM()
+        function model = nmc111AM(name)
         %NMC111 Construct an instance of the nmc111 class
         %   model = nmc111(cLi, T) SOC is the state-of-charge of the
         %   battery (0-1) and T is the temperature in Kelvin [K]  
 
-            model = model@SimpleModel('nmc111');
+            model = model@SimpleModel(name);
                 
             % primary variables
             model.pnames = {'phi', 'Li'};
@@ -61,6 +61,8 @@ classdef nmc111AM < SimpleModel
             % state variables
             names = {'phi', ...    % Potential
                      'Li', ...     % Lithium concentration
+                     'T', ...      % temperature
+                     'SOC', ...
                      'refOCP', ... % Reference open circuit potential at standard  teperature [V]
                      'OCP', ...    % Open-circuit potential        [V]
                      'dUdT', ...   % Entropy change                [V K^-1]
@@ -69,6 +71,41 @@ classdef nmc111AM < SimpleModel
                      'D', ...      % Diffusion
                     };
             model.names = names;
+            
+            varfunctions = {};
+            % setup updating function for k
+            name = 'k';
+            updatefn = @(model, state) model.updateKinetics(state);
+            varfunction = {name, {updatefn, '.'}};
+            varfunctions{end + 1} = varfunction;
+            
+            % setup updating function for D
+            name = 'D';
+            updatefn = @(model, state) model.updateDiffusion(state);
+            varfunction = {name, {updatefn, '.'}};
+            varfunctions{end + 1} = varfunction;
+            
+            name = 'theta';
+            updatefn = @(model, state) model.updateEquilibrium(state);
+            varfunction = {name, {updatefn, '.'}};
+            varfunctions{end + 1} = varfunction;
+            
+            name =  'refOCP';
+            updatefn = @(model, state) model.updateEquilibrium(state);
+            varfunction = {name, {updatefn, '.'}};
+            varfunctions{end + 1} = varfunction;
+
+            name =  'OCP';
+            updatefn = @(model, state) model.updateEquilibrium(state);
+            varfunction = {name, {updatefn, '.'}};
+            varfunctions{end + 1} = varfunction;
+
+            name =  'dUdT';
+            updatefn = @(model, state) model.updateEquilibrium(state);
+            varfunction = {name, {updatefn, '.'}};
+            varfunctions{end + 1} = varfunction;
+            
+            model.varfunctions = varfunctions;
             
             % Define material constants
             model.spCAh    = 155;      % [Ah kg^-1]
@@ -85,17 +122,13 @@ classdef nmc111AM < SimpleModel
             model.Asp      = 885000;   % [m2 m^-3]
             model.eps      = 0.8;  
             
-            model.aliases = {{'T', VarName({}, 'T')}, ...
-                             {'SOC', VarName({}, 'SOC')}, ...
-                            };
-
         end
 
         function state = initializeState(model, state)
         % Initialize material state
 
-            T = model.getProp(state, 'T');
-            SOC = model.getProp(state, 'SOC');
+            T = model.getUpdatedProp(state, 'T');
+            SOC = model.getUpdatedProp(state, 'SOC');
             
             m     = (1 ./ (model.theta100 - model.theta0));
             b     = -m .* model.theta0;
@@ -105,10 +138,7 @@ classdef nmc111AM < SimpleModel
             state = model.setProp(state, 'theta', theta);
             state = model.setProp(state, 'Li', cs);
             
-            state = model.updateNmc111Model(state);
-            
-            % set COP
-            OCP = model.getProp(state, 'OCP');
+            OCP = model.getUpdatedProp(state, 'OCP');
             state = model.setProp(state, 'phi', OCP);
         end
 
@@ -126,7 +156,7 @@ classdef nmc111AM < SimpleModel
         function state = updateKinetics(model, state)
         %KINETICS Calculate the kinetic parameters for the Li+ intercalation reaction
             
-            T = model.getProp(state, 'T');
+            [T, state] = model.getUpdatedProp(state, 'T');
             
             % Define ideal gas constant
             R = 8.314;      % [J mol^-1 K^-1]
@@ -153,7 +183,7 @@ classdef nmc111AM < SimpleModel
             % Define reference temperature
             refT = 298.15;  % [K]
             
-            T = model.getProp(state, 'T');
+            [T, state] = model.getUpdatedProp(state, 'T');
                        
             % Calculate solid diffusion coefficient, [m^2 s^-1]
             D = model.Li.D0.*exp(-model.Li.EaD./R*(1./T - 1/refT));
@@ -169,9 +199,9 @@ classdef nmc111AM < SimpleModel
         %   nmc111 according to the model used by Torchio et al [1].
 
 
-            T     = model.getProp(state, 'T');
-            cs    = model.getProp(state, 'Li');
-            theta = model.getProp(state, 'theta');
+            [T, state]     = model.getUpdatedProp(state, 'T');
+            [cs, state]    = model.getUpdatedProp(state, 'Li');
+            [theta, state] = model.getUpdatedProp(state, 'theta');
             
             % Set the reference temperature
             refT = 298.15;

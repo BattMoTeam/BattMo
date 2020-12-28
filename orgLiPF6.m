@@ -180,18 +180,17 @@ classdef orgLiPF6 < SimpleModel
             ncomp = model.ncomp;
             
             fieldnames = {'cs', 'ioncs', 'jchems', 'dmudcs'};
-            for ifn = 1 : numel(fieldnames)
-                fieldname = fieldnames{ifn};
+            varnames = model.assignCurrentNameSpace(fieldnames);
+            for ifn = 1 : numel(varnames)
+                fieldname = varnames{ifn}.getfieldname;
                 if isempty(state.(fieldname))
                     state.(fieldname) = cell(1, ncomp);
                 end
             end
             
-            c = model.getProp(state, 'c_Li');
+            [c, state] = model.getUpdatedProp(state, 'c_Li');
 
-            state = model.setProp(state, 'phi', zeros(nc, 1));
             state = model.setProp(state, 'c_PF6', c);
-            
 
         end
         
@@ -261,8 +260,8 @@ classdef orgLiPF6 < SimpleModel
             Tgi = [ 229;
                     5.0 ];
             
-            T = model.getProp(state, 'T');
-            c = model.getProp(state, 'c_Li');
+            [T, state] = model.getUpdatedProp(state, 'T');
+            [c, state] = model.getUpdatedProp(state, 'c_Li');
             
             % Diffusion coefficient, [m^2 s^-1]
             D = 1e-4 .* 10 .^ ( ( cnst(1,1) + cnst(1,2) ./ ( T - Tgi(1) - Tgi(2) .* c .* 1e-3) + cnst(2,1) .* ...

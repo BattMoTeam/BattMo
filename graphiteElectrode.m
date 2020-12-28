@@ -35,26 +35,24 @@ classdef graphiteElectrode < CompositeModel
             model.operators = localSetupOperators(model.G);
             
             % setup graphite submodel
-            graphitemodel = graphiteAM();
-            
-            graphitemodel = graphitemodel.addAlias({'T', VarName({'..'}, 'T')});
-            graphitemodel = graphitemodel.addAlias({'SOC', VarName({'..'}, 'SOC')});
-            model.SubModels{1} = graphitemodel;
-            model.SubModelNames{1} = 'graphite';
+            ammodel = graphiteAM('am');
+            ammodel = ammodel.addAlias({'T', VarName({'..'}, 'T')});
+            ammodel = ammodel.addAlias({'SOC', VarName({'..'}, 'SOC')});
+
+            model.SubModels{1} = ammodel;
             
             model.bin  = ptfe();
             model.sei  = seiAM();
-            model.eps  = graphitemodel.eps + model.bin.eps + model.sei.eps;
+            model.eps  = ammodel.eps + model.bin.eps + model.sei.eps;
             model.t    = 10e-6;
             
             % setup sigmaeff
-            eps = graphitemodel.eps;
-            sigma = graphitemodel.sigma;
+            eps = ammodel.eps;
+            sigma = ammodel.sigma;
             model.sigmaeff = sigma .* eps.^1.5;            
             
             % state variables
-            names = {'eta',  ... % Overpotential,        [V]
-                     'j'  ,  ... % Current density,      [A/m2]
+            names = {'j'  ,  ... % Current density,      [A/m2]
                      'R'  ...    % Reaction Rate,
                      'T', ...
                      'SOC', ...
@@ -67,7 +65,7 @@ classdef graphiteElectrode < CompositeModel
             
             % setup updating function for R
             name = 'R';
-            updatefn = @(model, state) model.reactBV(state);
+            updatefn = @(model, state) model.updateReactBV(state);
             varfunction = {name, {updatefn, '.'}};
             varfunctions{end + 1} = varfunction;
 
@@ -88,36 +86,33 @@ classdef graphiteElectrode < CompositeModel
 
             state = model.validateState(state);
 
-            graphitemodel = model.getAssocModel('graphite');
-            state = graphitemodel.initializeState(state);
+            ammodel = model.getAssocModel('am');
+            state = ammodel.initializeState(state);
             
         end
         
-        function state = reactBV(model, state)
+        function state = updateReactBV(model, state)
             
-            graphitemodel = model.getAssocModel('graphite');
-            
-            state = graphitemodel.updateEquilibrium(state);
-
             [T, state]   = model.getUpdatedProp(state, 'T');
-            [eta, state] = model.getUpdatedProp(state, 'eta');
-            [phiElite, state] = model.getUpdatedProp(state, 'phielyte');
-            
-            [phi, state] = graphitemodel.getUpdatedProp(state, 'phi');
-            [OCP, state] = graphitemodel.getUpdatedProp(state, 'OCP');
-            [k, state]   = graphitemodel.getUpdatedProp(state, 'k');
+            [phiElyte, state] = model.getUpdatedProp(state, 'phielyte');
+
+            ammodel = model.getAssocModel('am');
+
+            [phi, state] = ammodel.getUpdatedProp(state, 'phi');
+            [OCP, state] = ammodel.getUpdatedProp(state, 'OCP');
+            [k, state]   = ammodel.getUpdatedProp(state, 'k');
             
             eta = (phi - phiElyte - OCP);
                                     
-            R = graphitemodel.Asp.*butlerVolmer(k.*model.con.F, 0.5, 1, eta, T) ./ (1 .* model.con.F);
+            R = ammodel.Asp.*butlerVolmer(k.*model.con.F, 0.5, 1, eta, T) ./ (1 .* model.con.F);
             
-            state = model.setProp(state, 'R');
+            state = model.setProp(state, 'R', R);
             
         end
         
         function state = updateFlux(model, state)
             
-            [phi, state] = model.getUpdatedProp(state, {'graphite', 'phi'});
+            [phi, state] = model.getUpdatedProp(state, {'am', 'phi'});
             op = model.operators;
             
             sigmaeff = model.sigmaeff;

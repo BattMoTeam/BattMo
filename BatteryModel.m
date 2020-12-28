@@ -36,13 +36,10 @@ classdef BatteryModel < CompositeModel
 
             warning('setup eps');
             
-            obj.componentnames = {'elyte', 'ne', 'pe', 'ccne', 'ccpe'};
-            
             %% setup elyte
             nx = sum(nxs); 
             
             submodels = {};
-            submodelnames = {};
             
             istart = ccnenx + 1;
             ni = nenx + sepnx + penx;
@@ -74,20 +71,70 @@ classdef BatteryModel < CompositeModel
             cells = pickTensorCells(istart, sepnx, nx, ny);
             submodels{end + 1} = celgard2500('sep', G, cells);
 
-            submodelnames = cellfun(@(m) m.getModelName(), submodels, 'uniformoutput', false);
-
             model.SubModels = submodels;
-            model.SubModelNames = submodelnames;
-
             model.hasparent = false;
+            
+            model = model.initiateCompositeModel();
 
             ccpe = model.getAssocModel('ccpe');
             ccpe.pnames = {ccpe.pnames{:}, 'E'};
             ccpe.names = {ccpe.names{:}, 'E'};
-            model = model.setSubModel(ccpe, 'ccpe');
+            model = model.setSubModel('ccpe', ccpe);
             
             model.names = {'T', 'SOC'};
-            model.aliases = {{'phielyte', VarName({'elyte'}, 'c_Li')}};
+
+            % setup ne
+            
+            ne = model.getAssocModel('ne');
+            
+            fnupdate = @(model, state) model.dispatchValues(state);
+            fnmodel = {'..'};
+            ne = ne.setVarFunction({'T', {fnupdate, fnmodel}});
+            ne = ne.setVarFunction({'SOC', {fnupdate, fnmodel}});
+            
+            fnupdate = @(model, state) model.updatePhiElyte(state);
+            fnmodel = {'..'};
+            ne = ne.setVarFunction({'phielyte', {fnupdate, fnmodel}});
+            
+            model = model.setSubModel('ne', ne);
+            
+            % setup pe
+            
+            pe = model.getAssocModel('pe');
+            
+            fnupdate = @(model, state) model.dispatchValues(state);
+            fnmodel = {'..'};
+            pe = pe.setVarFunction({'T', {fnupdate, fnmodel}});
+            pe = pe.setVarFunction({'SOC', {fnupdate, fnmodel}});
+            
+            fnupdate = @(model, state) model.updatePhiElyte(state);
+            fnmodel = {'..'};
+            pe = pe.setVarFunction({'phielyte', {fnupdate, fnmodel}});
+            
+            model = model.setSubModel('pe', pe);
+            
+            % setup ccne
+            ccne = model.getAssocModel('ccne');
+            fnupdate = @(model, state) model.dispatchValues(state);
+            fnmodel = {'..'};
+            ccne = ccne.setVarFunction({'T', {fnupdate, fnmodel}});
+            model = model.setSubModel('ccne', ccne);
+            
+            
+            % setup ccpe
+            ccpe = model.getAssocModel('ccpe');
+            fnupdate = @(model, state) model.dispatchValues(state);
+            fnmodel = {'..'};
+            ccpe = ccpe.setVarFunction({'T', {fnupdate, fnmodel}});
+            model = model.setSubModel('ccpe', ccpe);
+            
+            % setup elyte
+            elyte = model.getAssocModel('elyte');
+            fnupdate = @(model, state) model.dispatchValues(state);
+            fnmodel = {'..'};
+            elyte = elyte.setVarFunction({'T', {fnupdate, fnmodel}});
+            model = model.setSubModel('elyte', elyte);
+            
             
             model = model.initiateCompositeModel();
             
@@ -105,17 +152,18 @@ classdef BatteryModel < CompositeModel
             ccne = model.getAssocModel('ccne');
             ne = model.getAssocModel('ne');
             
-            OCP_ne = ne.getProp(state, {'graphite', 'OCP'});
+            [OCP_ne, state] = ne.getUpdatedProp(state, {'am', 'OCP'});
             nc = ccne.G.cells.num;
             OCP_ccne = OCP_ne(1)*ones(nc, 1);
             
             state = ccne.setProp(state, 'OCP', OCP_ccne);
             state = ccne.setProp(state, 'phi', OCP_ccne);
             
-            ccpe = model.getAssocModel('ccpe');
+            ne = model.getAssocModel('ccpe');
             pe = model.getAssocModel('pe');
-            
-            OCP_pe = pe.getProp(state, {'nmc111', 'OCP'});
+            ccpe = model.getAssocModel('ccpe');
+
+            [OCP_pe, state] = pe.getUpdatedProp(state, {'am', 'OCP'});
             nc = ccpe.G.cells.num;
             OCP_ccpe = OCP_pe(1)*ones(nc, 1);
             
@@ -126,6 +174,61 @@ classdef BatteryModel < CompositeModel
             
         end
 
+        
+        function state = dispatchValues(model, state)
+            
+            [T, state] = model.getUpdatedProp(state, 'T');
+            [SOC, state] = model.getUpdatedProp(state, 'SOC');
+            
+            elyte = model.getAssocModel('elyte');
+            G = elyte.G;
+            Telyte = T(G.mappings.cellmap);
+            
+            ne = model.getAssocModel('ne');
+            G = ne.G;
+            Tne = T(G.mappings.cellmap);
+            SOCne = SOC(G.mappings.cellmap);
+            
+            pe = model.getAssocModel('pe');
+            G = pe.G;
+            Tpe = T(G.mappings.cellmap);
+            SOCpe = SOC(G.mappings.cellmap);
+            
+            ccpe = model.getAssocModel('ccpe');
+            G = ccpe.G;
+            Tccpe = T(G.mappings.cellmap);
+            
+            ccne = model.getAssocModel('ccne');
+            G = ccne.G;
+            Tccne = T(G.mappings.cellmap);
+            
+            state = model.setProp(state, {'elyte', 'T'}, Telyte);
+            state = model.setProp(state, {'ne', 'T'}, Tne);
+            state = model.setProp(state, {'pe', 'T'}, Tpe);
+            state = model.setProp(state, {'ccpe', 'T'}, Tccpe);
+            state = model.setProp(state, {'ccne', 'T'}, Tccne);
+            state = model.setProp(state, {'ne', 'SOC'}, SOCne);
+            state = model.setProp(state, {'pe', 'SOC'}, SOCpe);
+            
+        end
+
+        function state = updatePhiElyte(model, state)
+            
+            [phielyte, state] = model.getUpdatedProp(state, {'elyte', 'phi'});
+            
+            ne = model.getAssocModel('ne');
+            G = ne.G;
+            phine = phielyte(G.cellmap);
+            
+            pe = model.getAssocModel('pe');
+            G = pe.G;
+            phipe = phielyte(G.cellmap);
+            
+            state = model.setProp(state, {'ne', 'phielyte'}, phine);
+            state = model.setProp(state, {'pe', 'phielyte'}, phipe);
+            
+        end
+        
         function model = setupFV(model, state)
             model.fv = fv2d(model, state);
         end

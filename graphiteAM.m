@@ -54,13 +54,13 @@ classdef graphiteAM < SimpleModel
     end
     
     methods
-        function model = graphiteAM()
+        function model = graphiteAM(name)
             
         % GRAPHITE Construct an instance of the graphite class
         % model = graphite(SOC, T) SOC is the state of charge of the
         % electrode (0-1) and T is the temperature in Kelvin [K]
 
-            model = model@SimpleModel('graphite');
+            model = model@SimpleModel(name);
                 
             % Define material constants
             model.spCAh    = 360;      % [Ah kg^-1]
@@ -137,8 +137,8 @@ classdef graphiteAM < SimpleModel
         function state = initializeState(model, state)
         % Initialize material state
 
-            T = model.getProp(state, 'T');
-            SOC = model.getProp(state, 'SOC');
+            T = model.getUpdatedProp(state, 'T');
+            SOC = model.getUpdatedProp(state, 'SOC');
             
             m     = (1 ./ (model.theta100 - model.theta0));
             b     = -m .* model.theta0;

@@ -30,33 +30,54 @@ classdef nmc111Electrode < CompositeModel
             model = model@CompositeModel(name);
             model.G = genSubGrid(G, cells);
             
-            % state variables
-            names = {'eta',  ... % Overpotential,        [V]
-                     'j',  ... % Current density,      [A/m2]
-                     'R'... % Reaction Rate,
-                    };
-        
-            model.names = names;
-            
+            % setup operators
+            model.operators = localSetupOperators(model.G);
+
             % setup nmc111 submodel
-            amModel = nmc111AM();
-            model.SubModels{1} = amModel;
-            model.SubModelNames{1} = amModel.getModelName;
+            ammodel = nmc111AM('am');
+            ammodel = ammodel.addAlias({'T', VarName({'..'}, 'T')});
+            ammodel = ammodel.addAlias({'SOC', VarName({'..'}, 'SOC')});
+
+            model.SubModels{1} = ammodel;
+            
+            
             
             model.bin = ptfe();
-            model.eps = amModel.eps + model.bin.eps;
+            model.eps = ammodel.eps + model.bin.eps;
             model.t = 10e-6;
 
             % setup sigmaeff
-            eps = amModel.eps;
-            sigma = amModel.sigma;
+            eps = ammodel.eps;
+            sigma = ammodel.sigma;
             model.sigmaeff = sigma .* eps.^1.5;
-                        
-            model.aliases = {{'T', VarName({}, 'T')}, ...
-                             {'SOC', VarName({}, 'SOC')}, ...
-                             {'phielyte', VarName({}, 'phielyte')}, ...
-                            };
+
+            % state variables
+            names = {'j',  ... % Current density,      [A/m2]
+                     'R', ... % Reaction Rate,
+                     'T', ... % temperature
+                     'SOC', ...
+                     'phielyte'};
+        
+            model.names = names;
             
+            % setup varfunctions
+            
+            varfunctions = {};
+            
+            % setup updating function for R
+            name = 'R';
+            updatefn = @(model, state) model.updateReactBV(state);
+            varfunction = {name, {updatefn, '.'}};
+            varfunctions{end + 1} = varfunction;
+
+            % setup updating function for j
+            name = 'j';
+            updatefn = @(model, state) model.updateFlux(state);
+            varfunction = {name, {updatefn, '.'}};
+            varfunctions{end + 1} = varfunction;
+
+            model.varfunctions = varfunctions;
+
             model = model.initiateCompositeModel();
             
         end
@@ -65,46 +86,44 @@ classdef nmc111Electrode < CompositeModel
 
             state = model.validateState(state);
 
-            amModel = model.getAssocModel('nmc111');
-            state = amModel.initializeState(state);
-            OCP   = amModel.getProp(state, 'OCP');
+            ammodel = model.getAssocModel('am');
+            state = ammodel.initializeState(state);
         end
 
         
         function state = updateReactBV(model, state)
             
-            amModel = model.getAssocModel('nmc111');
-            
-            state = amModel.updateEquilibrium(state);
 
-            T   = model.getProp(state, 'T');
-            eta = model.getProp(state, 'eta');
-            phiElite = model.getProp(state, 'phielyte');
+            [T, state]   = model.getUpdatedProp(state, 'T');
+            [phiElyte, state] = model.getUpdatedProp(state, 'phielyte');
+
+            ammodel = model.getAssocModel('am');
+
+            [phi, state] = ammodel.getUpdatedProp(state, 'phi');
+            [OCP, state] = ammodel.getUpdatedProp(state, 'OCP');
+            [k, state]   = ammodel.getUpdatedProp(state, 'k');
             
-            phi = amModel.getProp(state, 'phi');
-            OCP = amModel.getProp(state, 'OCP');
-            k   = amModel.getProp(state, 'k');
-            
-            eta = - (phi - phiElyte - OCP);
+            eta = (phi - phiElyte - OCP);
                                     
-            R = amModel.Asp.*butlerVolmer(k.*model.con.F, 0.5, 1, eta, T) ./ (1 .* model.con.F);
+            R = ammodel.Asp.*butlerVolmer(k.*model.con.F, 0.5, 1, eta, T) ./ (1 .* model.con.F);
             
-            state = model.setProp(state, 'R');
+            state = model.setProp(state, 'R', R);
             
         end
         
         function state = updateFlux(model, state)
             
-            phi = model.getProp(state, 'phi');
+            [phi, state] = model.getUpdatedProp(state, {'am', 'phi'});
             op = model.operators;
+            
             sigmaeff = model.sigmaeff;
-
+                                
             j = - op.harmFace(sigmaeff).*op.Grad(phi); 
             
             state = model.setProp(state, 'j', j);
             
         end
-        
+
     end
 end
 
