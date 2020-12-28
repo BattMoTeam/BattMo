@@ -216,7 +216,7 @@ classdef SimpleModel < PhysicalModel
                 [fn, index] = varmodel.getVariableField(varname.name, true, 'index', varname.index);
             elseif iscell(name)
                 % syntaxic sugar (do not need to setup VarName)
-                varname = VarName(name{1 : end - 1}, name{end});
+                varname = VarName({name{1 : end - 1}}, name{end});
                 [fn, index] = model.getVariableField(varname);
             else
                 % Check if there exist an alias
