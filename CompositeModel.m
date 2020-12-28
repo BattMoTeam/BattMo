@@ -38,7 +38,7 @@ classdef CompositeModel < SimpleModel
             end
         end
 
-        function model = setSubModel(model, submodel, name)
+        function model = setSubModel(model, name, submodel)
             ind = getAssocModelInd(model, name);
             model.SubModels{ind} = submodel;
         end
@@ -54,11 +54,12 @@ classdef CompositeModel < SimpleModel
                 model.namespace = {};
             end
             
-            % Setup the namespaces for all the submodels
+            % Setup the namespaces and names for all the submodels
             for ind = 1 : nsubmodels
                 submodel = model.SubModels{ind};
                 submodel.hasparent = true; 
                 submodel.parentmodel = model;
+                
                 submodel.namespace = horzcat(model.namespace, {submodel.getModelName()});
                 
                 if isa(submodel, 'CompositeModel')
@@ -66,6 +67,7 @@ classdef CompositeModel < SimpleModel
                 end
                 
                 model.SubModels{ind} = submodel;
+                model.SubModelNames{ind} = submodel.getModelName;
             end
             
         end
@@ -133,7 +135,7 @@ classdef CompositeModel < SimpleModel
                 varname = VarName(name{1 : end - 1}, name{end});
                 [val, state] = model.getUpdatedProp(state, varname);
             elseif ischar(name)
-                [val, state] = getUpdatedProp@SimpleModel(state, name);
+                [val, state] = getUpdatedProp@SimpleModel(model, state, name);
             else
                 error('type of name is not recognized')
             end
