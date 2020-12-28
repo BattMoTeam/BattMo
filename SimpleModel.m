@@ -123,6 +123,30 @@ classdef SimpleModel < PhysicalModel
         end
         
         
+        function model = setVarFunction(model, varfunction)
+        % If there exist a name in varfunctions that correspond to varfunction, overwrite this entry with
+        % varfunction. Otherwise, add varfunction to varfunctions.
+            isdefined = false;
+            name = varfunction{1};
+            varfunctions = model.varfunctions;
+            for ind = 1 : numel(varfunctions)
+                if strcmp(name, varfunctions{ind}{1})
+                    isdefined = true;
+                    break
+                end
+            end
+            
+            if isdefined
+                varfunctions{ind} = varfunction;
+            else
+                varfunctions{end + 1} = varfunction;
+            end
+            
+            model.varfunctions = varfunctions;
+            
+        end
+        
+        
         function [isalias, varname] = aliasLookup(model, name)
         % check if name is an alias
             aliases = model.aliases;
