@@ -38,7 +38,7 @@ classdef ComponentModel < PhysicalModel
             
             for i = 1 : numel(varnames)
                 varname = varnames{i};
-                name = varname.getfieldname;
+                name = varname.getfieldname();
                 if ~isfield(state, name)
                     state.(name) = [];
                 end

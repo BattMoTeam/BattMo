@@ -37,36 +37,41 @@ classdef VarName
             end
         end
         
-        function isequal = eq(varname, varname1)
-            
-            namespace = varname.namespace;
-            name      = varname.name;
-            index     = varname.index;
+        function isequal = eq(varname1, varname2)
             
             namespace1 = varname1.namespace;
             name1      = varname1.name;
             index1     = varname1.index;
             
+            namespace2 = varname2.namespace;
+            name2      = varname2.name;
+            index2     = varname2.index;
+            
+            % for the moment, we do not handle the special fields '..', '.'
+            namespace = horzcat(namespace1, namespace2);
+            assert(all(~strcmp('..', namespace)), 'we do not handle double dots');
+            assert(all(~strcmp('.', namespace)), 'we do not handle dot');
+                
             isequal = true;
             
-            if ~strcmp(name, name1)
+            if ~strcmp(name1, name2)
+                isequal = false;
+                return
+            end
+
+            if numel(namespace1) ~= numel(namespace2)
                 isequal = false;
                 return
             end
             
-            if numel(namespace) ~= numel(namespace1)
-                isequal = false;
-                return
-            end
-            
-            for i = 1 : numel(namespace)
-                if ~strcmp(namespace{i}, namespace{i})
+            for i = 1 : numel(namespace1)
+                if ~strcmp(namespace1{i}, namespace2{i})
                     isequal = false;
                     return
                 end
             end
             
-            if not(ischar(index1) & ischar(index2)) | not(isnumeric(index1) & isisnumeric(index2)) 
+            if (~ischar(index1) & ischar(index2)) | (ischar(index1) & ~ischar(index2))
                 isequal = false;
                 return
             end
