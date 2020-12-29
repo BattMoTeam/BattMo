@@ -96,47 +96,47 @@ classdef orgLiPF6 < ComponentModel
                     };
             model.names = names;
 
-            varfunctions = {};
+            propfunctions = {};
             % setup updating function for dmudcs
             name = 'dmudcs';
             updatefn = @(model, state) model.updateIonicQuantities(state);
-            varfunction = {name, {updatefn, '.'}};
-            varfunctions{end + 1} = varfunction;
+            propfunction = {name, {updatefn, '.'}};
+            propfunctions{end + 1} = propfunction;
             
             % setup updating function for ioncs            
             name = 'ioncs';
-            varfunction = {name, {updatefn, '.'}};
-            varfunctions{end + 1} = varfunction;
+            propfunction = {name, {updatefn, '.'}};
+            propfunctions{end + 1} = propfunction;
             
             % setup updating function for IoSt
             name = 'IoSt';
-            varfunction = {name, {updatefn, '.'}};
-            varfunctions{end + 1} = varfunction;
+            propfunction = {name, {updatefn, '.'}};
+            propfunctions{end + 1} = propfunction;
             
              % setup updating function for kappa
             name = 'kappa';
             updatefn = @(model, state) model.updateConductivity(state);
-            varfunction = {name, {updatefn, '.'}};
-            varfunctions{end + 1} = varfunction;
+            propfunction = {name, {updatefn, '.'}};
+            propfunctions{end + 1} = propfunction;
             
             % setup updating function for D
             name = 'D';
             updatefn = @(model, state) model.updateDiffusion(state);
-            varfunction = {name, {updatefn, '.'}};
-            varfunctions{end + 1} = varfunction;
+            propfunction = {name, {updatefn, '.'}};
+            propfunctions{end + 1} = propfunction;
             
             % setup updating function for jchem
             name = 'jchems';
             updatefn = @(model, state) model.updateChemicalFluxes(state);
-            varfunction = {name, {updatefn, '.'}};
-            varfunctions{end + 1} = varfunction;
+            propfunction = {name, {updatefn, '.'}};
+            propfunctions{end + 1} = propfunction;
 
             % setup updating function for jchem
             name = 'j';
-            varfunction = {name, {updatefn, '.'}};
-            varfunctions{end + 1} = varfunction;
+            propfunction = {name, {updatefn, '.'}};
+            propfunctions{end + 1} = propfunction;
             
-            model.varfunctions = varfunctions;
+            model.propfunctions = propfunctions;
             
             % add local aliases for each component
             aliases = {};

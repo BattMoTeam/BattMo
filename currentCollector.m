@@ -32,15 +32,15 @@ classdef currentCollector < ComponentModel
                     };
             model.names = names;
             
-            varfunctions = {};
+            propfunctions = {};
             
             % setup updating function for j
             name = 'j';
             updatefn = @(model, state) model.updateFlux(state);
-            varfunction = {name, {updatefn, '.'}};
-            varfunctions{end + 1} = varfunction;
+            propfunction = {name, {updatefn, '.'}};
+            propfunctions{end + 1} = propfunction;
 
-            model.varfunctions = varfunctions;
+            model.propfunctions = propfunctions;
             
         end
         

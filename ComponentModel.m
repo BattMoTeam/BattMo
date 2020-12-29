@@ -14,7 +14,7 @@ classdef ComponentModel < PhysicalModel
         
         aliases
 
-        varfunctions
+        propfunctions
     end
     
     
@@ -123,26 +123,26 @@ classdef ComponentModel < PhysicalModel
         end
         
         
-        function model = setVarFunction(model, varfunction)
-        % If there exist a name in varfunctions that correspond to varfunction, overwrite this entry with
-        % varfunction. Otherwise, add varfunction to varfunctions.
+        function model = setPropfunction(model, propfunction)
+        % If there exist a name in propfunctions that correspond to propfunction, overwrite this entry with
+        % propfunction. Otherwise, add propfunction to propfunctions.
             isdefined = false;
-            name = varfunction{1};
-            varfunctions = model.varfunctions;
-            for ind = 1 : numel(varfunctions)
-                if strcmp(name, varfunctions{ind}{1})
+            name = propfunction{1};
+            propfunctions = model.propfunctions;
+            for ind = 1 : numel(propfunctions)
+                if strcmp(name, propfunctions{ind}{1})
                     isdefined = true;
                     break
                 end
             end
             
             if isdefined
-                varfunctions{ind} = varfunction;
+                propfunctions{ind} = propfunction;
             else
-                varfunctions{end + 1} = varfunction;
+                propfunctions{end + 1} = propfunction;
             end
             
-            model.varfunctions = varfunctions;
+            model.propfunctions = propfunctions;
             
         end
         
@@ -208,13 +208,13 @@ classdef ComponentModel < PhysicalModel
             end
             
             % find the updating property
-            varfunctions = model.varfunctions;
+            propfunctions = model.propfunctions;
             updatefn = [];
-            for ind = 1 : numel(varfunctions)
-                varfunction = varfunctions{ind};
-                if strcmp(varfunction{1}, name)
-                    updatefn = varfunction{2}{1};
-                    fnmodelname = varfunction{2}{2};
+            for ind = 1 : numel(propfunctions)
+                propfunction = propfunctions{ind};
+                if strcmp(propfunction{1}, name)
+                    updatefn = propfunction{2}{1};
+                    fnmodelname = propfunction{2}{2};
                     fnmodel = model.getAssocModel(fnmodelname);
                     break
                 end

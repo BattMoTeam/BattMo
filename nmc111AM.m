@@ -72,40 +72,40 @@ classdef nmc111AM < ComponentModel
                     };
             model.names = names;
             
-            varfunctions = {};
+            propfunctions = {};
             % setup updating function for k
             name = 'k';
             updatefn = @(model, state) model.updateKinetics(state);
-            varfunction = {name, {updatefn, '.'}};
-            varfunctions{end + 1} = varfunction;
+            propfunction = {name, {updatefn, '.'}};
+            propfunctions{end + 1} = propfunction;
             
             % setup updating function for D
             name = 'D';
             updatefn = @(model, state) model.updateDiffusion(state);
-            varfunction = {name, {updatefn, '.'}};
-            varfunctions{end + 1} = varfunction;
+            propfunction = {name, {updatefn, '.'}};
+            propfunctions{end + 1} = propfunction;
             
             name = 'theta';
             updatefn = @(model, state) model.updateEquilibrium(state);
-            varfunction = {name, {updatefn, '.'}};
-            varfunctions{end + 1} = varfunction;
+            propfunction = {name, {updatefn, '.'}};
+            propfunctions{end + 1} = propfunction;
             
             name =  'refOCP';
             updatefn = @(model, state) model.updateEquilibrium(state);
-            varfunction = {name, {updatefn, '.'}};
-            varfunctions{end + 1} = varfunction;
+            propfunction = {name, {updatefn, '.'}};
+            propfunctions{end + 1} = propfunction;
 
             name =  'OCP';
             updatefn = @(model, state) model.updateEquilibrium(state);
-            varfunction = {name, {updatefn, '.'}};
-            varfunctions{end + 1} = varfunction;
+            propfunction = {name, {updatefn, '.'}};
+            propfunctions{end + 1} = propfunction;
 
             name =  'dUdT';
             updatefn = @(model, state) model.updateEquilibrium(state);
-            varfunction = {name, {updatefn, '.'}};
-            varfunctions{end + 1} = varfunction;
+            propfunction = {name, {updatefn, '.'}};
+            propfunctions{end + 1} = propfunction;
             
-            model.varfunctions = varfunctions;
+            model.propfunctions = propfunctions;
             
             % Define material constants
             model.spCAh    = 155;      % [Ah kg^-1]

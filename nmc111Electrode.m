@@ -60,23 +60,23 @@ classdef nmc111Electrode < CompositeModel
         
             model.names = names;
             
-            % setup varfunctions
+            % setup propfunctions
             
-            varfunctions = {};
+            propfunctions = {};
             
             % setup updating function for R
             name = 'R';
             updatefn = @(model, state) model.updateReactBV(state);
-            varfunction = {name, {updatefn, '.'}};
-            varfunctions{end + 1} = varfunction;
+            propfunction = {name, {updatefn, '.'}};
+            propfunctions{end + 1} = propfunction;
 
             % setup updating function for j
             name = 'j';
             updatefn = @(model, state) model.updateFlux(state);
-            varfunction = {name, {updatefn, '.'}};
-            varfunctions{end + 1} = varfunction;
+            propfunction = {name, {updatefn, '.'}};
+            propfunctions{end + 1} = propfunction;
 
-            model.varfunctions = varfunctions;
+            model.propfunctions = propfunctions;
 
             model = model.initiateCompositeModel();
             
