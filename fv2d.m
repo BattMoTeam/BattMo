@@ -14,7 +14,7 @@ classdef fv2d
         
         function obj = fv2d(model, state)
             
-            varnames = model.getPrimaryVarNames();
+            varnames = model.getModelPrimaryVarNames();
             
             ind = 0;
             for i = 1 : numel(varnames)
@@ -40,8 +40,14 @@ classdef fv2d
             slots = obj.slots;
             varnames = obj.varnames;
             
-            [isok, ind] = ismember(varname, varnames);
-            assert(isok, 'variable name not found');
+            isfound = false;
+            for ind = 1 : numel(varnames)
+                if varname == varnames{ind}
+                    isfound = true;
+                    break
+                end
+            end
+            assert(isfound, 'variable name not found');
             
             slot = slots{ind};
         end

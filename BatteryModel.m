@@ -33,8 +33,6 @@ classdef BatteryModel < CompositeModel
             G = tensorGrid(x, y);
             G = computeGeometry(G);
             model.G = G;
-
-            warning('setup eps');
             
             %% setup elyte
             nx = sum(nxs); 
@@ -521,7 +519,7 @@ classdef BatteryModel < CompositeModel
             [ccpe_j, state] = ccpe.getUpdatedProp(state, 'j');
             
             ccne_e_chargeCont = (ccne.operators.Div(ccne_j) - ccne_j_bcsource)./ ccne.G.cells.volumes./model.con.F;
-            ccpe_e_chargeCont = (ccpe.operators.Div(ccpe_j) - ccpe.j_bcsource)./ ccpe.G.cells.volumes./model.con.F;_
+            ccpe_e_chargeCont = (ccpe.operators.Div(ccpe_j) - ccpe.j_bcsource)./ ccpe.G.cells.volumes./model.con.F;
             
             %% control equation
             
