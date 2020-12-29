@@ -1,4 +1,4 @@
-classdef celgard2500 < SimpleModel
+classdef celgard2500 < ComponentModel
     %UNTITLED10 Summary of this class goes here
     %   Detailed explanation goes here
     
@@ -19,7 +19,7 @@ classdef celgard2500 < SimpleModel
     methods
         function model = celgard2500(name, G, cells)
             
-            model = model@SimpleModel(name);
+            model = model@ComponentModel(name);
             
             model.t      = 10e-6;
             model.void   = 0.55;

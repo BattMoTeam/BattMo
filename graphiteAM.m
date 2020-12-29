@@ -1,4 +1,4 @@
-classdef graphiteAM < SimpleModel
+classdef graphiteAM < ComponentModel
     %GRAPHITEAM An electrode active material class for electrochemical
     %modelling. 
     %   The graphite class describes the properties and
@@ -60,7 +60,7 @@ classdef graphiteAM < SimpleModel
         % model = graphite(SOC, T) SOC is the state of charge of the
         % electrode (0-1) and T is the temperature in Kelvin [K]
 
-            model = model@SimpleModel(name);
+            model = model@ComponentModel(name);
                 
             % Define material constants
             model.spCAh    = 360;      % [Ah kg^-1]

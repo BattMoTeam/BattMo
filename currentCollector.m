@@ -1,4 +1,4 @@
-classdef currentCollector < SimpleModel
+classdef currentCollector < ComponentModel
 % Current collector model 
     
     properties
@@ -11,7 +11,7 @@ classdef currentCollector < SimpleModel
     methods
         function model = currentCollector(name, G, cells)
             
-            model = model@SimpleModel(name);
+            model = model@ComponentModel(name);
             model.G = genSubGrid(G, cells);
 
             model.sigma = 500;

@@ -1,4 +1,4 @@
-classdef orgLiPF6 < SimpleModel
+classdef orgLiPF6 < ComponentModel
 %orgLiPF6 An electrolyte class for electrochemical modelling
 %   The orgLiPF6 class describes the properties and
 %   parameterization for organic electrolytes featuring lithium
@@ -67,7 +67,7 @@ classdef orgLiPF6 < SimpleModel
         
         function model = orgLiPF6(name, G, cells)
             
-            model = model@SimpleModel(name);
+            model = model@ComponentModel(name);
             model.G = genSubGrid(G, cells);
             
             % setup operators

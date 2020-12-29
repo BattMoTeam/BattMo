@@ -1,4 +1,4 @@
-classdef nmc111AM < SimpleModel
+classdef nmc111AM < ComponentModel
     %NMC111AM An electrode active material class for electrochemical
     %modelling. 
     %   The nmc111 class describes the properties and
@@ -53,7 +53,7 @@ classdef nmc111AM < SimpleModel
         %   model = nmc111(cLi, T) SOC is the state-of-charge of the
         %   battery (0-1) and T is the temperature in Kelvin [K]  
 
-            model = model@SimpleModel(name);
+            model = model@ComponentModel(name);
                 
             % primary variables
             model.pnames = {'phi', 'Li'};

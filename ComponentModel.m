@@ -1,4 +1,4 @@
-classdef SimpleModel < PhysicalModel
+classdef ComponentModel < PhysicalModel
     
     properties
         parentmodel
@@ -19,7 +19,7 @@ classdef SimpleModel < PhysicalModel
     
     
     methods
-        function model = SimpleModel(modelname, varargin)
+        function model = ComponentModel(modelname, varargin)
             model = model@PhysicalModel([]);
             model = merge_options(model, varargin{:});
             model.modelname = modelname;
@@ -75,13 +75,13 @@ classdef SimpleModel < PhysicalModel
         end
         
         function varnames = getModelPrimaryVarNames(model)
-        % List the primary variables. For SimpleModel the variable names only consist of those declared in the model (no child)
+        % List the primary variables. For ComponentModel the variable names only consist of those declared in the model (no child)
             varnames = model.assignCurrentNameSpace(model.pnames);
         end
         
         
         function varnames = getModelVarNames(model)
-        % List the variable names (primary variables are handled separately). For SimpleModel the variable names only consist of
+        % List the variable names (primary variables are handled separately). For ComponentModel the variable names only consist of
         % those declared in the model (no child)
             varnames = model.assignCurrentNameSpace(model.names);
         end

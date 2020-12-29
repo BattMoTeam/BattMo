@@ -1,4 +1,4 @@
-classdef CompositeModel < SimpleModel
+classdef CompositeModel < ComponentModel
 
     properties
         SubModels;
@@ -14,7 +14,7 @@ classdef CompositeModel < SimpleModel
         % The constructor function should be complemented so that the properties
         % SubModels, SubModelNames are defined and 
         % the function initiateCompositeModel must be called AT THE END.
-            model = model@SimpleModel(name, varargin{:});
+            model = model@ComponentModel(name, varargin{:});
             model.hasparent = false;
         end
         
@@ -34,7 +34,7 @@ classdef CompositeModel < SimpleModel
                 ind = model.getAssocModelInd(name);
                 submodel = model.SubModels{ind};
             else
-                submodel = getAssocModel@SimpleModel(model, name);
+                submodel = getAssocModel@ComponentModel(model, name);
             end
         end
 
@@ -87,7 +87,7 @@ classdef CompositeModel < SimpleModel
         function varnames = getModelVarNames(model)
         % default for compositemodel : fetch all the defined names in the submodels
         
-            varnames = getModelVarNames@SimpleModel(model);
+            varnames = getModelVarNames@ComponentModel(model);
             nsubmodels = model.nSubModels;
             for i = 1 : nsubmodels
                 submodel = model.SubModels{i};
@@ -135,7 +135,7 @@ classdef CompositeModel < SimpleModel
                 varname = VarName(name{1 : end - 1}, name{end});
                 [val, state] = model.getUpdatedProp(state, varname);
             elseif ischar(name)
-                [val, state] = getUpdatedProp@SimpleModel(model, state, name);
+                [val, state] = getUpdatedProp@ComponentModel(model, state, name);
             else
                 error('type of name is not recognized')
             end
