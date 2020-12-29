@@ -86,7 +86,7 @@ classdef ComponentModel < PhysicalModel
             varnames = model.assignCurrentNameSpace(model.names);
         end
 
-        function names = getFullVarNames(model)
+        function names = getVarFieldNames(model)
         % Returns full names (i.e. including namespaces)
             varnames = model.getModelVarNames();
             names = {};
@@ -95,7 +95,7 @@ classdef ComponentModel < PhysicalModel
             end
         end
         
-        function names = getFullPrimaryVarNames(model)
+        function names = getPrimaryVarFieldNames(model)
         % Returns full names (i.e. including namespaces)
             varnames = model.getModelPrimaryVarNames();
             names = {};
