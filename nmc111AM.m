@@ -143,16 +143,6 @@ classdef nmc111AM < ComponentModel
         end
 
         
-        function state = updateModel(model, state)
-        % Update the electrode properties
-        % Calculate the updated properties of the active material
-        % at the given state.
-            state = model.updateEquilibrium(state);
-            state = model.updateDiffusion(state);
-            state = model.updateKinetics(state);
-        end
-
-        
         function state = updateKinetics(model, state)
         %KINETICS Calculate the kinetic parameters for the Li+ intercalation reaction
             
