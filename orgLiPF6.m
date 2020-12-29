@@ -100,40 +100,40 @@ classdef orgLiPF6 < ComponentModel
             % setup updating function for dmudcs
             name = 'dmudcs';
             updatefn = @(model, state) model.updateIonicQuantities(state);
-            propfunction = {name, {updatefn, '.'}};
+            propfunction = PropFunction(name, updatefn, '.');
             propfunctions{end + 1} = propfunction;
             
             % setup updating function for ioncs            
             name = 'ioncs';
-            propfunction = {name, {updatefn, '.'}};
+            propfunction = PropFunction(name, updatefn, '.');
             propfunctions{end + 1} = propfunction;
             
             % setup updating function for IoSt
             name = 'IoSt';
-            propfunction = {name, {updatefn, '.'}};
+            propfunction = PropFunction(name, updatefn, '.');
             propfunctions{end + 1} = propfunction;
             
              % setup updating function for kappa
             name = 'kappa';
             updatefn = @(model, state) model.updateConductivity(state);
-            propfunction = {name, {updatefn, '.'}};
+            propfunction = PropFunction(name, updatefn, '.');
             propfunctions{end + 1} = propfunction;
             
             % setup updating function for D
             name = 'D';
             updatefn = @(model, state) model.updateDiffusion(state);
-            propfunction = {name, {updatefn, '.'}};
+            propfunction = PropFunction(name, updatefn, '.');
             propfunctions{end + 1} = propfunction;
             
             % setup updating function for jchem
             name = 'jchems';
             updatefn = @(model, state) model.updateChemicalFluxes(state);
-            propfunction = {name, {updatefn, '.'}};
+            propfunction = PropFunction(name, updatefn, '.');
             propfunctions{end + 1} = propfunction;
 
             % setup updating function for jchem
             name = 'j';
-            propfunction = {name, {updatefn, '.'}};
+            propfunction = PropFunction(name, updatefn, '.');
             propfunctions{end + 1} = propfunction;
             
             model.propfunctions = propfunctions;

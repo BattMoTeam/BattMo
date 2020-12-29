@@ -89,12 +89,12 @@ classdef BatteryModel < CompositeModel
             
             fnupdate = @(model, state) model.dispatchValues(state);
             fnmodel = {'..'};
-            ne = ne.setVarFunction({'T', {fnupdate, fnmodel}});
-            ne = ne.setVarFunction({'SOC', {fnupdate, fnmodel}});
+            ne = ne.setPropFunction(PropFunction('T', fnupdate, fnmodel));
+            ne = ne.setPropFunction(PropFunction('SOC', fnupdate, fnmodel));
             
             fnupdate = @(model, state) model.updatePhiElyte(state);
             fnmodel = {'..'};
-            ne = ne.setVarFunction({'phielyte', {fnupdate, fnmodel}});
+            ne = ne.setPropFunction(PropFunction('phielyte', fnupdate, fnmodel));
             
             model = model.setSubModel('ne', ne);
             
@@ -104,12 +104,12 @@ classdef BatteryModel < CompositeModel
             
             fnupdate = @(model, state) model.dispatchValues(state);
             fnmodel = {'..'};
-            pe = pe.setVarFunction({'T', {fnupdate, fnmodel}});
-            pe = pe.setVarFunction({'SOC', {fnupdate, fnmodel}});
+            pe = pe.setPropFunction(PropFunction('T', fnupdate, fnmodel));
+            pe = pe.setPropFunction(PropFunction('SOC', fnupdate, fnmodel));
             
             fnupdate = @(model, state) model.updatePhiElyte(state);
             fnmodel = {'..'};
-            pe = pe.setVarFunction({'phielyte', {fnupdate, fnmodel}});
+            pe = pe.setPropFunction(PropFunction('phielyte', fnupdate, fnmodel));
             
             model = model.setSubModel('pe', pe);
             
@@ -117,7 +117,7 @@ classdef BatteryModel < CompositeModel
             ccne = model.getAssocModel('ccne');
             fnupdate = @(model, state) model.dispatchValues(state);
             fnmodel = {'..'};
-            ccne = ccne.setVarFunction({'T', {fnupdate, fnmodel}});
+            ccne = ccne.setPropFunction(PropFunction('T', fnupdate, fnmodel));
             model = model.setSubModel('ccne', ccne);
             
             
@@ -125,14 +125,14 @@ classdef BatteryModel < CompositeModel
             ccpe = model.getAssocModel('ccpe');
             fnupdate = @(model, state) model.dispatchValues(state);
             fnmodel = {'..'};
-            ccpe = ccpe.setVarFunction({'T', {fnupdate, fnmodel}});
+            ccpe = ccpe.setPropFunction(PropFunction('T', fnupdate, fnmodel));
             model = model.setSubModel('ccpe', ccpe);
             
             % setup elyte
             elyte = model.getAssocModel('elyte');
             fnupdate = @(model, state) model.dispatchValues(state);
             fnmodel = {'..'};
-            elyte = elyte.setVarFunction({'T', {fnupdate, fnmodel}});
+            elyte = elyte.setPropFunction(PropFunction('T', fnupdate, fnmodel));
             model = model.setSubModel('elyte', elyte);
             
             

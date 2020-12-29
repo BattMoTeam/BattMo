@@ -37,7 +37,7 @@ classdef currentCollector < ComponentModel
             % setup updating function for j
             name = 'j';
             updatefn = @(model, state) model.updateFlux(state);
-            propfunction = {name, {updatefn, '.'}};
+            propfunction = PropFunction(name, updatefn, '.');
             propfunctions{end + 1} = propfunction;
 
             model.propfunctions = propfunctions;

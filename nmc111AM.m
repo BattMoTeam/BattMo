@@ -76,33 +76,33 @@ classdef nmc111AM < ComponentModel
             % setup updating function for k
             name = 'k';
             updatefn = @(model, state) model.updateKinetics(state);
-            propfunction = {name, {updatefn, '.'}};
+            propfunction = PropFunction(name, updatefn, '.');
             propfunctions{end + 1} = propfunction;
             
             % setup updating function for D
             name = 'D';
             updatefn = @(model, state) model.updateDiffusion(state);
-            propfunction = {name, {updatefn, '.'}};
+            propfunction = PropFunction(name, updatefn, '.');
             propfunctions{end + 1} = propfunction;
             
             name = 'theta';
             updatefn = @(model, state) model.updateEquilibrium(state);
-            propfunction = {name, {updatefn, '.'}};
+            propfunction = PropFunction(name, updatefn, '.');
             propfunctions{end + 1} = propfunction;
             
             name =  'refOCP';
             updatefn = @(model, state) model.updateEquilibrium(state);
-            propfunction = {name, {updatefn, '.'}};
+            propfunction = PropFunction(name, updatefn, '.');
             propfunctions{end + 1} = propfunction;
 
             name =  'OCP';
             updatefn = @(model, state) model.updateEquilibrium(state);
-            propfunction = {name, {updatefn, '.'}};
+            propfunction = PropFunction(name, updatefn, '.');
             propfunctions{end + 1} = propfunction;
 
             name =  'dUdT';
             updatefn = @(model, state) model.updateEquilibrium(state);
-            propfunction = {name, {updatefn, '.'}};
+            propfunction = PropFunction(name, updatefn, '.');
             propfunctions{end + 1} = propfunction;
             
             model.propfunctions = propfunctions;
