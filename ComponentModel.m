@@ -123,14 +123,14 @@ classdef ComponentModel < PhysicalModel
         end
         
         
-        function model = setPropfunction(model, propfunction)
+        function model = setPropFunction(model, propfunction)
         % If there exist a name in propfunctions that correspond to propfunction, overwrite this entry with
         % propfunction. Otherwise, add propfunction to propfunctions.
             isdefined = false;
-            name = propfunction{1};
+            name = propfunction.name;
             propfunctions = model.propfunctions;
             for ind = 1 : numel(propfunctions)
-                if strcmp(name, propfunctions{ind}{1})
+                if strcmp(name, propfunctions{ind}.name)
                     isdefined = true;
                     break
                 end
@@ -212,9 +212,9 @@ classdef ComponentModel < PhysicalModel
             updatefn = [];
             for ind = 1 : numel(propfunctions)
                 propfunction = propfunctions{ind};
-                if strcmp(propfunction{1}, name)
-                    updatefn = propfunction{2}{1};
-                    fnmodelname = propfunction{2}{2};
+                if strcmp(propfunction.name, name)
+                    updatefn = propfunction.fn;
+                    fnmodelname = propfunction.namespace;
                     fnmodel = model.getAssocModel(fnmodelname);
                     break
                 end

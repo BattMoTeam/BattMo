@@ -1,9 +1,11 @@
 classdef VarName
     
     properties
+        
         namespace
         name
         index
+        
     end
     
     methods
