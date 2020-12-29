@@ -124,23 +124,22 @@ classdef CompositeModel < ComponentModel
             report = [];
         end
         
-        function [val, state] = getUpdatedProp(model, state, name)
+        function state = updateProp(model, state, name)
             if isa(name, 'VarName')
                 namespace = name.namespace;
                 name = name.name;
                 submodel = model.getAssocModel(namespace);
-                [val, state] = submodel.getUpdatedProp(state, name);
+                state = submodel.updateProp(state, name);
             elseif iscell(name)
                 % syntaxic sugar (do not need to setup VarName)
                 varname = VarName(name{1 : end - 1}, name{end});
-                [val, state] = model.getUpdatedProp(state, varname);
+                state = model.updateProp(state, varname);
             elseif ischar(name)
-                [val, state] = getUpdatedProp@ComponentModel(model, state, name);
+                state = updateProp@ComponentModel(model, state, name);
             else
                 error('type of name is not recognized')
             end
         end
-        
     end
     
 end
