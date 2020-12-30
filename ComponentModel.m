@@ -52,7 +52,9 @@ classdef ComponentModel < PhysicalModel
         end
          
         function submodel = getAssocModel(model, name)
-            if isa(name, 'char')
+            if isempty(name)
+                submodel = model;
+            elseif isa(name, 'char')
                 if strcmp(name, '..')
                     submodel = model.parentmodel;
                 elseif strcmp(name, '.')
@@ -101,18 +103,6 @@ classdef ComponentModel < PhysicalModel
             end
         end
         
-        function fullnames = addNameSpace(model, varnames)
-        % Return a name (string) which identify uniquely the pair (namespace, name). This is handled here by adding "_" at the
-        % end of the namespace and join it to the name.
-            if iscell(names)
-                for ind = 1 : numel(namespaces)
-                    fullnames{ind} = model.addNameSpace(namespaces{ind}, names{ind});
-                end
-            else
-                fullnames = varnames.join();
-            end
-        end
-
         function model = addAlias(model, alias)
             aliases = model.aliases;
             aliases{end + 1} = alias;
