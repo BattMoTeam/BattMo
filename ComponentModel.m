@@ -32,10 +32,8 @@ classdef ComponentModel < PhysicalModel
             model.aliases   = {};
         end
 
-        function state = validateState(model, state)
-            
-            varnames = model.getModelVarNames();
-            
+        function state = initiateState(model, state)
+            varnames = model.assignCurrentNameSpace(model.names);
             for i = 1 : numel(varnames)
                 varname = varnames{i};
                 name = varname.getfieldname();
@@ -43,7 +41,6 @@ classdef ComponentModel < PhysicalModel
                     state.(name) = [];
                 end
             end
-            
         end
         
         function modelname = getModelName(model);
@@ -210,6 +207,7 @@ classdef ComponentModel < PhysicalModel
             % find the updating property
             propfunctions = model.propfunctions;
             updatefn = [];
+            fnmodel = [];
             for ind = 1 : numel(propfunctions)
                 propfunction = propfunctions{ind};
                 if strcmp(propfunction.name, name)
@@ -219,6 +217,8 @@ classdef ComponentModel < PhysicalModel
                     break
                 end
             end
+            
+            assert(~isempty(updatefn), 'property is empty and no property function is provided.')
             state = updatefn(fnmodel, state);
             
         end

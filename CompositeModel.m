@@ -72,6 +72,15 @@ classdef CompositeModel < ComponentModel
             
         end
         
+        function state = initiateState(model, state)
+            state = initiateState@ComponentModel(model, state);
+            nsubmodels = model.nSubModels;
+            for i = 1 : nsubmodels
+                submodel = model.SubModels{i};
+                state = submodel.initiateState(state);
+            end
+        end
+        
         function varnames = getModelPrimaryVarNames(model)
         
             varnames = model.assignCurrentNameSpace(model.pnames);
