@@ -1,7 +1,26 @@
 classdef BatteryModel < CompositeModel
 
     properties
+
+        con = physicalConstants();
+        
+        % Coupling structures
+        couplingnames
+        couplingTerms
+        
+        % fv2d structure (will disappear when we switch to own Newton solver)
         fv
+        
+        % Temperature and SOC
+        % for the moment here, for convenience. Will be moved
+        T
+        SOC
+        
+        % Input current
+        J
+        % Voltage cut
+        Ucut
+                
     end
     
     methods
@@ -10,17 +29,17 @@ classdef BatteryModel < CompositeModel
             
             model = model@CompositeModel('battery');
             
-            sepnx  = 10;
-            nenx   = 10;
-            penx   = 10;
-            ccnenx = 5;
-            ccpenx = 5;
+            sepnx  = 3;
+            nenx   = 3;
+            penx   = 3;
+            ccnenx = 2;
+            ccpenx = 2;
             
             nxs = [ccnenx; nenx; sepnx; penx; ccpenx];
-            ny = 10;
+            ny = 1;
 
-            xlength = 1e-6*ones(5, 1);
-            ylength = 1e-6;
+            xlength = 1e-6*[10; 100; 50; 80; 10];
+            ylength = 1e-2;
             
             x = xlength./nxs;
             x = rldecode(x, nxs);
@@ -93,7 +112,7 @@ classdef BatteryModel < CompositeModel
             fnupdate = @(model, state) model.updatePhiElyte(state);
             fnmodel = {'..'};
             ne = ne.setPropFunction(PropFunction('phielyte', fnupdate, fnmodel));
-            
+           
             model = model.setSubModel('ne', ne);
             
             % setup pe
@@ -130,15 +149,39 @@ classdef BatteryModel < CompositeModel
             fnupdate = @(model, state) model.dispatchValues(state);
             fnmodel = {'..'};
             elyte = elyte.setPropFunction(PropFunction('T', fnupdate, fnmodel));
+            
             model = model.setSubModel('elyte', elyte);
             
             model = model.initiateCompositeModel();
+
+            model = model.setElytePorosity();
+            
+            %% setup couplings
+            coupTerms = {};
+            
+            % coupling term 'ne-cc'
+            coupTerms{end + 1} = setupNeElyteCoupTerm(model);
+            coupTerms{end + 1} = setupPeElyteCoupTerm(model);
+            coupTerms{end + 1} = setupCcneNeCoupTerm(model);
+            coupTerms{end + 1} = setupCcpePeCoupTerm(model);
+            coupTerms{end + 1} = setupCcneBcCoupTerm(model);
+            coupTerms{end + 1} = setupCcpeBcCoupTerm(model);
+            
+            model.couplingTerms = coupTerms;
+            model.couplingnames = cellfun(@(x) x.name, coupTerms, 'uniformoutput', false);
+            
+            model.SOC = 0.5;
+            model.T   = 298.15;
+            
+            model.J = 1;
+            model.Ucut = 2;
             
         end
 
         function state = initializeState(model, state)
-            
-            state = model.validateState(state);
+        % Used only in debugging for the moment
+
+            state = model.initiateState(state);
             
             % initialize each of the submodels
             for i = 1 : model.nSubModels
@@ -211,17 +254,38 @@ classdef BatteryModel < CompositeModel
         function state = updatePhiElyte(model, state)
             
             [phielyte, state] = model.getUpdatedProp(state, {'elyte', 'phi'});
+            elyte = model.getAssocModel('elyte');
+            
+            elytecells = zeros(model.G.cells.num, 1);
+            elytecells(elyte.G.mappings.cellmap) = (1 : elyte.G.cells.num)';
             
             ne = model.getAssocModel('ne');
-            G = ne.G;
-            phine = phielyte(G.cellmap);
+            phielyte_ne = phielyte(elytecells(ne.G.mappings.cellmap));
             
             pe = model.getAssocModel('pe');
-            G = pe.G;
-            phipe = phielyte(G.cellmap);
+            phielyte_pe = phielyte(elytecells(pe.G.mappings.cellmap));
             
-            state = model.setProp(state, {'ne', 'phielyte'}, phine);
-            state = model.setProp(state, {'pe', 'phielyte'}, phipe);
+            state = model.setProp(state, {'ne', 'phielyte'}, phielyte_ne);
+            state = model.setProp(state, {'pe', 'phielyte'}, phielyte_pe);
+            
+        end
+        
+        function model = setElytePorosity(model)
+            
+            elyte = model.getAssocModel('elyte');
+            ne = model.getAssocModel('ne');
+            pe = model.getAssocModel('pe');
+            sep = model.getAssocModel('sep');
+            
+            elytecells = zeros(model.G.cells.num, 1);
+            elytecells(elyte.G.mappings.cellmap) = (1 : elyte.G.cells.num)';
+
+            elyte.eps = NaN(elyte.G.cells.num, 1);
+            elyte.eps(elytecells(ne.G.mappings.cellmap)) = ne.void;
+            elyte.eps(elytecells(pe.G.mappings.cellmap)) = pe.void;
+            elyte.eps(elytecells(sep.G.mappings.cellmap)) = sep.void;
+            
+            model = model.setSubModel('elyte', elyte);
             
         end
         
@@ -230,7 +294,7 @@ classdef BatteryModel < CompositeModel
         end
         
         function [y, yp] = dynamicPreprocess(model, state)
-
+        % 
             %% Initialize the state vector
             
             y0 = [];
@@ -241,6 +305,115 @@ classdef BatteryModel < CompositeModel
             
             yp0  = zeros(length(y0), 1);
             
+        end
+
+        function [t, y] = p2d(model)
+
+            % Set initial conditions
+            initstate = model.icp2d();
+            
+            % Generate the FV structure
+            model.fv = fv2d(model, initstate);
+
+            %% Solution space (time or current) discretization
+
+            % Time discretization
+            model.fv.ti = 0;
+            model.fv.tf = 3600*24;
+            model.fv.dt = 10;
+            model.fv.tUp = 0.1;
+            model.fv.tSpan = (model.fv.ti:model.fv.dt:model.fv.tf);
+
+            % Pre-process
+            model.dynamicPreprocess();
+
+            % Set up and solve the system of equations
+            endFun = @(t,y,yp)model.cutOff(t,y,yp);
+            fun = @(t,y,yp) model.odefun(t, y, yp);
+            derfun = @(t,y,yp) model.odederfun(t, y, yp);
+
+            options = odeset('RelTol'  , 1e-4  , ...
+                             'AbsTol'  , 1e-6  , ...
+                             'Stats'   , 'on'  , ...
+                             'Events'  , endFun, ...
+                             'Jacobian', derfun);
+
+            [t, y] = ode15i(fun, model.fv.tSpan', model.fv.y0, model.fv.yp0, options);
+
+        end
+        function [value,isterminal,direction] = cutOff(model, t, y, yp)
+        % This will be reimplemented when we move away from ode15i
+            
+            varname = VarName({'ccpe'}, 'E');
+            
+            % here we assume E at ccne is equal to zero
+            U = y(model.fv.getSlot(varname));
+            
+            value = U - model.Ucut;
+            isterminal = 1;
+            direction = 0;
+
+        end
+
+        function initstate = icp2d(model)
+        % Setup initial state
+            
+            nc = model.G.cells.num;
+            
+            initstate = model.initiateState();
+            
+            SOC = model.SOC;
+            T   = model.T;
+            initstate = model.setProp(initstate, 'T', T*ones(nc, 1));
+            initstate = model.setProp(initstate, 'SOC', SOC*ones(nc, 1));
+            
+            elyte = model.getAssocModel('elyte');
+            ne    = model.getAssocModel('ne');
+            pe    = model.getAssocModel('pe');
+            ccne  = model.getAssocModel('ccne');
+            ccpe  = model.getAssocModel('ccpe');
+            
+            ne_am = ne.getAssocModel('am');
+            pe_am = pe.getAssocModel('am');
+            
+            %% setup initial ne state
+            
+            m = (1 ./ (ne_am.theta100 - ne_am.theta0));
+            b = -m .* ne_am.theta0;
+            theta = (SOC - b) ./ m;
+            c = theta .* ne_am.Li.cmax;
+            c = c*ones(ne.G.cells.num, 1);
+            
+            initstate = ne_am.setProp(initstate, {'Li'}, c);
+            [OCP, initstate] = ne_am.getUpdatedProp('OCP');
+            initstate = ne_am.setProp(initstate, 'phi', OCP);
+
+            %% setup initial pe state
+
+            m = (1 ./ (pe_am.theta100 - pe_am.theta0));
+            b = -m .* pe_am.theta0;
+            theta = (SOC - b) ./ m;
+            c = theta .* pe_am.Li.cmax;
+            c = c*ones(ne.G.cells.num, 1);            
+            
+            initstate = pe_am.setProp(initstate, {'Li'}, c);
+            [OCP, initstate] = pe_am.getUpdatedProp('OCP');
+            initstate = pe_am.setProp(initstate, 'phi', OCP);            
+
+            %% setup initial elyte state
+            
+            initstate = elyte.setProp(initstate, 'phi', zeros(elyte.G.cells.num, 1));
+            initstate = elyte.setProp(initstate, 'c_Li', 1000*ones(elyte.G.cells.num, 1));
+
+            %% setup initial Current collectors state
+            [OCP, initstate] = ne_am.getUpdatedProp('OCP');
+            OCP = OCP(1) .* ones(ccne.G.cells.num, 1);
+            initstate = ccne.setProp(initstate, 'phi', OCP);
+            
+            [OCP, initstate] = pe_am.getUpdatedProp('OCP');
+            OCP = OCP(1) .* ones(ccpe.G.cells.num, 1);
+            initstate = ccpe.setProp(initstate, 'phi', OCP);
+
         end
 
         
@@ -259,31 +432,25 @@ classdef BatteryModel < CompositeModel
 
             % Mapping of variables  
             state = [];
-            state = model.validateState(state);
-
-            % short cut
-            fun = @(state, name) (model.setProp(state, name, y(fv.getSlot(name))));
+            state = model.initiateState(state);
+            nc = model.G.cells.num;
             
-            % elyte variable
-            state = fun(state, 'elyte_c_Li');
-            state = fun(state, 'elyte_phi');
-            % ne variables
-            state = fun(state, 'ne_Li');
-            state = fun(state, 'ne_phi');
-            % pe variables
-            state = fun(state, 'pe_Li');
-            state = fun(state, 'pe_phi');
-            % ccne variables
-            state = fun(state, 'ccne_phi');
-            % ccpe variables
-            state = fun(state, 'ccpe_phi');
-            % voltage closure variable
-            state = fun(state, 'ccpe_E');
+            % setup temperature and SOC here
+            SOC = model.SOC;
+            T   = model.T;
+            state = model.setProp(state, 'T', T*ones(nc, 1));
+            state = model.setProp(state, 'SOC', SOC*ones(nc, 1));
+            
+            pvarnames = model.getModelPrimaryVarNames();
+            for ind = 1 : numel(pvarnames)
+                varname = pvarnames{ind};
+                state = model.setProp(state, varname, y(fv.getSlot(varname)));
+            end
             
             % variables for time derivatives
-            model.elyte.Li.cepsdot = yp(fv.getSlot('elyte_Li'));
-            model.ne.am.Li.csepsdot   = yp(fv.getSlot('ne_Li'));
-            model.pe.am.Li.csepsdot   = yp(fv.getSlot('pe_Li'));
+            elyte_Li_cdot = yp(fv.getSlot(VarName({'elyte'}, 'c_Li')));
+            ne_Li_csdot   = yp(fv.getSlot(VarName({'ne', 'am'}, 'Li')));
+            pe_Li_csdot   = yp(fv.getSlot(VarName({'pe', 'am'}, 'Li')));
 
             elyte = model.getAssocModel('elyte');
             ne    = model.getAssocModel('ne');
@@ -291,6 +458,9 @@ classdef BatteryModel < CompositeModel
             ccne  = model.getAssocModel('ccne');
             ccpe  = model.getAssocModel('ccpe');
 
+            ne_am = ne.getAssocModel('am');
+            pe_am = pe.getAssocModel('am');
+            
             elyte_c_Li = elyte.getUpdatedProp(state, 'c_Li');
             elyte_phi  = elyte.getUpdatedProp(state, 'phi');
             ne_Li      = ne.getUpdatedProp(state, {'am', 'Li'});
@@ -301,31 +471,26 @@ classdef BatteryModel < CompositeModel
             ccpe_phi   = ccpe.getUpdatedProp(state, 'phi');
             ccpe_E     = ccpe.getUpdatedProp(state, 'E');
             
-            sp_Li_c  = elyte_c_Li ./ elyte.eps;
-            sp_PF6_c = sp_Li_c;
-
-            ne.am.Li.cs = ne.am.Li.cseps ./ ne.am.eps;
-            pe.am.Li.cs = pe.am.Li.cseps ./ pe.am.eps;
-
+            elyte_Li_cepsdot = elyte.eps.*elyte_Li_cdot;
+            ne_Li_csepsdot   = ne_am.eps.*ne_Li_csdot;
+            pe_Li_csepsdot   = pe_am.eps.*pe_Li_csdot;
+            
             %% We compute the effective conductivity and diffusion
             
             [D, state] = elyte.getUpdatedProp(state, 'D');
-            [sigma, state] = elyte.getUpdatedProp(state, 'D');
             elyte_Deff = D .* elyte.eps .^1.5;
-            elyte_sigmaeff = sigma .* elyte.eps .^1.5;            
 
-            [D, state] = ne.getUpdatedProp(state, 'D');
-            [sigma, state] = ne.getUpdatedProp(state, 'D');
-            ne_Deff = D .* ne.eps .^1.5;
-            ne_sigmaeff = sigma .* ne.eps .^1.5;            
+            [D, state] = ne.getUpdatedProp(state, {'am', 'D'});
+            ne_Deff = D.*ne_am.eps.^1.5;
 
-            [D, state] = pe.getUpdatedProp(state, 'D');
-            [sigma, state] = pe.getUpdatedProp(state, 'D');
-            pe_Deff = D .* pe.eps .^1.5;
-            pe_sigmaeff = sigma .* pe.eps .^1.5;            
+            [D, state] = pe.getUpdatedProp(state, {'am', 'D'});
+            am = pe.getAssocModel('am');
+            pe_Deff = D.*pe_am.eps.^1.5;
 
+            ne_sigmaeff = ne.sigmaeff;
+            pe_sigmaeff = pe.sigmaeff;
             ccne_sigmaeff = ccne.sigmaeff;
-            ccpe_sigmaeff = ccpe.sigmaeff;
+            ccpe_sigmaeff = ccpe.sigmaeff;            
             
             %% We setup the current transfers between ccne collector and ne material with ne_j_bcsource and ccne_j_bcsource
             
@@ -335,7 +500,7 @@ classdef BatteryModel < CompositeModel
             coupterm = model.getCoupTerm('ccne-ne');
             face_ccne = coupterm.couplingfaces(:, 1);
             face_ne = coupterm.couplingfaces(:, 2);
-            [tne, bccell_ne] = ne.operators.harmFaceBC(ne.sigmaeff, face_ne);
+            [tne, bccell_ne] = ne.operators.harmFaceBC(ne_sigmaeff, face_ne);
             [tccne, bccell_ccne] = ccne.operators.harmFaceBC(ccne_sigmaeff, face_ccne);
             
             bcphi_ne = ne_phi(bccell_ne);
@@ -351,7 +516,7 @@ classdef BatteryModel < CompositeModel
             coupterm = model.getCoupTerm('bc-ccne');
             faces = coupterm.couplingfaces;
             bcval = zeros(numel(faces), 1);
-            [tccne, cells] = ccne.operators.harmFaceBC(ccne.sigmaeff, faces);
+            [tccne, cells] = ccne.operators.harmFaceBC(ccne_sigmaeff, faces);
             ccne_j_bcsource(cells) = ccne_j_bcsource(cells) + tccne.*(bcval - ccne_phi(cells));
 
             %% We setup the current transfers between ccpe collector and pe material with pe_j_bcsource and ccpe_j_bcsource
@@ -362,10 +527,10 @@ classdef BatteryModel < CompositeModel
             coupterm = model.getCoupTerm('ccpe-pe');
             face_ccpe = coupterm.couplingfaces(:, 1);
             face_pe = coupterm.couplingfaces(:, 2);
-            [tpe, bccell_pe] = pe.operators.harmFaceBC(pe.sigmaeff, face_pe);
-            [tccpe, bccell_ccpe] = ccpe.operators.harmFaceBC(ccpe.sigmaeff, face_ccpe);
-            bcphi_pe = pe.am.phi(bccell_pe);
-            bcphi_ccpe = ccpe.am.phi(bccell_ccpe);
+            [tpe, bccell_pe] = pe.operators.harmFaceBC(pe_sigmaeff, face_pe);
+            [tccpe, bccell_ccpe] = ccpe.operators.harmFaceBC(ccpe_sigmaeff, face_ccpe);
+            bcphi_pe = pe_phi(bccell_pe);
+            bcphi_ccpe = ccpe_phi(bccell_ccpe);
 
             trans = 1./(1./tpe + 1./tccpe);
             crosscurrent = trans.*(bcphi_ccpe - bcphi_pe);
@@ -376,8 +541,8 @@ classdef BatteryModel < CompositeModel
             
             coupterm = model.getCoupTerm('bc-ccpe');
             faces = coupterm.couplingfaces;
-            bcval = model.ccpe.E;
-            [tccpe, cells] = model.ccpe.operators.harmFaceBC(model.ccpe.sigmaeff, faces);
+            bcval = ccpe_E;
+            [tccpe, cells] = ccpe.operators.harmFaceBC(ccpe_sigmaeff, faces);
             ccpe_j_bcsource(cells) = ccpe_j_bcsource(cells) + tccpe.*(bcval - ccpe_phi(cells));
 
             %% Cell voltage
@@ -402,11 +567,11 @@ classdef BatteryModel < CompositeModel
             %
             
             % Inititalize vectors
-            elyte_Li_source = zeros(elyte.N, 1);
-            ne_Li_source    = zeros(ne.N, 1);
-            pe_Li_source    = zeros(pe.N, 1);
-            ne_e_source     = zeros(ne.N, 1);
-            pe_e_source     = zeros(pe.N, 1);
+            elyte_Li_source = zeros(elyte.G.cells.num, 1);
+            ne_Li_source    = zeros(ne.G.cells.num, 1);
+            pe_Li_source    = zeros(pe.G.cells.num, 1);
+            ne_e_source     = zeros(ne.G.cells.num, 1);
+            pe_e_source     = zeros(pe.G.cells.num, 1);
 
             if useAD
                 elyte_Li_source = adbackend.convertToAD(elyte_Li_source, adsample);
@@ -425,16 +590,16 @@ classdef BatteryModel < CompositeModel
             elytecells = coupterm.couplingcells(:, 2);
 
             % calculate rection rate
-            [ne_R, state] = ne.getUpdatedProp(state, 'R')
+            [ne_R, state] = ne.getUpdatedProp(state, 'R');
 
             % Electrolyte NE Li+ source
             elyte_Li_source(elytecells) = ne_R;
             
             % Active Material NE Li0 source
-            ne_Li_source(necells) = - ne.R;
+            ne_Li_source(necells) = - ne_R;
             
             % Active Material NE current source
-            ne_e_source(necells) = + ne.R;
+            ne_e_source(necells) = + ne_R;
 
             %%%%% PE %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
@@ -444,34 +609,33 @@ classdef BatteryModel < CompositeModel
             elytecells = coupterm.couplingcells(:, 2);
             
             % calculate rection rate
-            [pe_R, state] = pe.getUpdatedProp(state, 'R')
+            [pe_R, state] = pe.getUpdatedProp(state, 'R');
 
             % Electrolyte PE Li+ source
-            elyte_Li_source(elytecells) = - pe.R;
+            elyte_Li_source(elytecells) = - pe_R;
 
             % Active Material PE Li0 source
-            pe_Li_source(pecells) = + pe.R;
+            pe_Li_source(pecells) = + pe_R;
 
             % Active Material PE current source
-            pe_e_source(pecells) = - pe.R;
+            pe_e_source(pecells) = - pe_R;
 
             %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
             %% Diffusion Flux                                           %%%
             %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
             % Divergence of diffusion mass flux
             
+            x = elyte.getUpdatedProp(state, 'c_Li');
             trans = elyte.operators.harmFace(elyte_Deff);
             flux = - trans.*elyte.operators.Grad(x);
             elyte_Li_divDiff = elyte.operators.Div(flux)./elyte.G.cells.volumes;
 
-            warning('problem between ceps and c');
-            x = ne.getUpdatedProp(state, 'c_Li');
+            x = ne.getUpdatedProp(state, {'am', 'Li'});
             trans = ne.operators.harmFace(ne_Deff);
             flux = - trans.*ne.operators.Grad(x);
             ne_Li_divDiff = ne.operators.Div(flux)./ne.G.cells.volumes;
             
-            warning('problem between ceps and c');
-            x = pe.getUpdatedProp(state, 'c_Li');
+            x = pe.getUpdatedProp(state, {'am', 'Li'});
             trans = pe.operators.harmFace(pe_Deff);
             flux = - trans.*pe.operators.Grad(x);
             pe_Li_divDiff = pe.operators.Div(flux)./pe.G.cells.volumes;
@@ -482,7 +646,8 @@ classdef BatteryModel < CompositeModel
             % Divergence of the migration mass flux for the electrolyte Li+ Migration
             
             [elyte_j, state] = elyte.getUpdatedProp(state, 'j');
-            flux = elyte.sp.t ./ (elyte.sp.z .* model.con.F) .* elyte_j;
+            ind_Li = 1;
+            flux = elyte.sp.t{ind_Li} ./ (elyte.sp.z{ind_Li} .* model.con.F) .* elyte_j;
             elyte_Li_divMig = elyte.operators.Div(flux)./elyte.G.cells.volumes;
 
             %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -496,7 +661,7 @@ classdef BatteryModel < CompositeModel
             %% Liquid electrolyte charge continuity %%%%%%%%%%%%%%%%%%%%%%%
 
             elyte_chargeCont = -(elyte.operators.Div(elyte_j)./elyte.G.cells.volumes)./model.con.F + ...
-                elyte_Li_source.*elyte_sp_z;
+                elyte_Li_source.*elyte.sp.z{ind_Li};
 
             %% Electrode Active material mass continuity %%%%%%%%%%%%%%%%%%%%%%%%%%%
             
@@ -519,15 +684,15 @@ classdef BatteryModel < CompositeModel
             [ccpe_j, state] = ccpe.getUpdatedProp(state, 'j');
             
             ccne_e_chargeCont = (ccne.operators.Div(ccne_j) - ccne_j_bcsource)./ ccne.G.cells.volumes./model.con.F;
-            ccpe_e_chargeCont = (ccpe.operators.Div(ccpe_j) - ccpe.j_bcsource)./ ccpe.G.cells.volumes./model.con.F;
+            ccpe_e_chargeCont = (ccpe.operators.Div(ccpe_j) - ccpe_j_bcsource)./ ccpe.G.cells.volumes./model.con.F;
             
             %% control equation
             
             src = currentSource(t, fv.tUp, fv.tf, model.J);
             coupterm = model.getCoupTerm('bc-ccpe');
             faces = coupterm.couplingfaces;
-            bcval = model.ccpe.E;
-            [tccpe, cells] = model.ccpe.operators.harmFaceBC(ccpe_sigmaeff, faces);
+            bcval = ccpe_E;
+            [tccpe, cells] = ccpe.operators.harmFaceBC(ccpe_sigmaeff, faces);
             control = src - sum(tccpe.*(bcval - ccpe_phi(cells)));
 
             %% Governing equations 
@@ -543,7 +708,169 @@ classdef BatteryModel < CompositeModel
                           control);
 
         end
-
+        
+        function coupterm = getCoupTerm(model, coupname)
+            coupnames = model.couplingnames;
+            
+            [isok, ind] = ismember(coupname, coupnames);
+            assert(isok, 'name of coupling term is not recognized.');
+            
+            coupterm = model.couplingTerms{ind};
+            
+        end
+        
+        
+        function coupTerm = setupNeElyteCoupTerm(model)
+            
+            ne = model.getAssocModel('ne');
+            elyte = model.getAssocModel('elyte');
+            
+            Gne = ne.G;
+            Gelyte = elyte.G;
+            
+            % parent Grid
+            G = Gne.mappings.parentGrid;
+            
+            % All the cells from ne are coupled with elyte
+            cells1 = (1 : Gne.cells.num)';
+            pcells = Gne.mappings.cellmap(cells1);
+            
+            mapping = zeros(G.cells.num, 1);
+            mapping(Gelyte.mappings.cellmap) = (1 : Gelyte.cells.num)';
+            cells2 = mapping(pcells);
+            
+            compnames = {'ne', 'elyte'};
+            coupTerm = couplingTerm('ne-elyte', compnames);
+            coupTerm.couplingcells =  [cells1, cells2];
+            coupTerm.couplingfaces = []; % no coupling throug faces. We set it as empty
+            
+        end
+        
+        function coupTerm = setupPeElyteCoupTerm(model)
+            
+            pe = model.getAssocModel('pe');
+            elyte = model.getAssocModel('elyte');
+            
+            Gpe = pe.G;
+            Gelyte = elyte.G;
+            
+            % parent Grid
+            G = Gpe.mappings.parentGrid;
+            
+            % All the cells from pe are coupled with elyte
+            cells1 = (1 : Gpe.cells.num)';
+            pcells = Gpe.mappings.cellmap(cells1);
+            
+            mapping = zeros(G.cells.num, 1);
+            mapping(Gelyte.mappings.cellmap) = (1 : Gelyte.cells.num)';
+            cells2 = mapping(pcells);
+            
+            compnames = {'pe', 'elyte'};
+            coupTerm = couplingTerm('pe-elyte', compnames);
+            coupTerm.couplingcells = [cells1, cells2];
+            coupTerm.couplingfaces = []; % no coupling between faces
+            
+        end
+        
+        function coupTerm = setupCcneNeCoupTerm(model)
+            
+            ne = model.getAssocModel('ne');
+            ccne = model.getAssocModel('ccne');
+            
+            Gne = ne.G;
+            Gccne = ccne.G;
+            
+            % parent Grid
+            G = Gne.mappings.parentGrid;
+            
+            % We pick up the faces at the right of Cccne
+            xf = Gccne.faces.centroids(:, 1);
+            mxf = max(xf);
+            faces1 = find(xf > (1 - eps)*mxf);
+            
+            pfaces = Gccne.mappings.facemap(faces1);
+            mapping = zeros(G.faces.num, 1);
+            mapping(Gne.mappings.facemap) = (1 : Gne.faces.num)';
+            faces2 = mapping(pfaces);
+            
+            cells1 = sum(Gccne.faces.neighbors(faces1, :), 2);
+            cells2 = sum(Gne.faces.neighbors(faces2, :), 2);
+            
+            compnames = {'ccne', 'ne'};
+            coupTerm = couplingTerm('ccne-ne', compnames);
+            coupTerm.couplingfaces =  [faces1, faces2];
+            coupTerm.couplingcells = [cells1, cells2];
+            
+        end
+        
+        function coupTerm = setupCcpePeCoupTerm(model)
+            
+            pe = model.getAssocModel('pe');
+            ccpe = model.getAssocModel('ccpe');
+            
+            Gpe = pe.G;
+            Gccpe = ccpe.G;
+            
+            % parent Grid
+            G = Gpe.mappings.parentGrid;
+            
+            % We pick up the faces at the left of Cccpe
+            xf = Gccpe.faces.centroids(:, 1);
+            mxf = min(xf);
+            faces1 = find(xf < (1 + eps)*mxf);
+            
+            pfaces = Gccpe.mappings.facemap(faces1);
+            mapping = zeros(G.faces.num, 1);
+            mapping(Gpe.mappings.facemap) = (1 : Gpe.faces.num)';
+            faces2 = mapping(pfaces);
+            
+            cells1 = sum(Gccpe.faces.neighbors(faces1, :), 2);
+            cells2 = sum(Gpe.faces.neighbors(faces2, :), 2);
+            
+            compnames = {'ccpe', 'pe'};
+            coupTerm = couplingTerm('ccpe-pe', compnames);
+            coupTerm.couplingfaces =  [faces1, faces2];
+            coupTerm.couplingcells = [cells1, cells2];
+            
+        end
+        
+        function coupTerm = setupCcneBcCoupTerm(model)
+            
+            ccne = model.getAssocModel('ccne');
+            G = ccne.G;
+            
+            % We pick up the faces at the top of Cccne
+            yf = G.faces.centroids(:, 2);
+            myf = max(yf);
+            faces = find(yf > (1 - eps)*myf);            
+            cells = sum(G.faces.neighbors(faces, :), 2);
+            
+            compnames = {'ccne'};
+            coupTerm = couplingTerm('bc-ccne', compnames);
+            coupTerm.couplingfaces = faces;
+            coupTerm.couplingcells = cells;
+            
+        end
+        
+        function coupTerm = setupCcpeBcCoupTerm(model)
+            
+            ccpe = model.getAssocModel('ccpe');
+            G = ccpe.G;
+            
+            % We pick up the faces at the top of Cccpe
+            yf = G.faces.centroids(:, 2);
+            myf = max(yf);
+            faces = find(yf > (1 - eps)*myf);            
+            cells = sum(G.faces.neighbors(faces, :), 2);
+            
+            compnames = {'ccpe'};
+            coupTerm = couplingTerm('bc-ccpe', compnames);
+            coupTerm.couplingfaces = faces;
+            coupTerm.couplingcells = cells;
+            
+        end
+            
+    
     end
     
     

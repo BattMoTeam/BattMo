@@ -14,7 +14,7 @@ classdef currentCollector < ComponentModel
             model = model@ComponentModel(name);
             model.G = genSubGrid(G, cells);
 
-            model.sigma = 500;
+            model.sigma = 100;
             model.eps = ones(model.G.cells.num, 1);
             model.sigmaeff = (model.sigma) .* (model.eps).^1.5;            
 
@@ -45,7 +45,8 @@ classdef currentCollector < ComponentModel
         end
         
         function state = initializeState(model, state)
-            state = model.validateState(state);
+            % Used only in debugging for the moment
+            state = model.initiateState(state);
         end
         
         function state = updateFlux(model, state)

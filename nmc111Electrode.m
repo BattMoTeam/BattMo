@@ -29,6 +29,7 @@ classdef nmc111Electrode < CompositeModel
             
             model = model@CompositeModel(name);
             model.G = genSubGrid(G, cells);
+            nc = model.G.cells.num;
             
             % setup operators
             model.operators = localSetupOperators(model.G);
@@ -40,14 +41,13 @@ classdef nmc111Electrode < CompositeModel
 
             model.SubModels{1} = ammodel;
             
-            
-            
             model.bin = ptfe();
-            model.eps = ammodel.eps + model.bin.eps;
+            model.eps = (ammodel.eps + model.bin.eps)*ones(nc, 1);
+            model.void = 1 - model.eps;
             model.t = 10e-6;
 
             % setup sigmaeff
-            eps = ammodel.eps;
+            eps = (ammodel.eps)*ones(nc, 1);
             sigma = ammodel.sigma;
             model.sigmaeff = sigma .* eps.^1.5;
 
@@ -83,8 +83,8 @@ classdef nmc111Electrode < CompositeModel
         end
         
         function state = initializeState(model, state)
-
-            state = model.validateState(state);
+           % Used only in debugging for the moment
+            state = model.initiateState(state);
 
             ammodel = model.getAssocModel('am');
             state = ammodel.initializeState(state);
@@ -103,7 +103,7 @@ classdef nmc111Electrode < CompositeModel
             [OCP, state] = ammodel.getUpdatedProp(state, 'OCP');
             [k, state]   = ammodel.getUpdatedProp(state, 'k');
             
-            eta = (phi - phiElyte - OCP);
+            eta = -(phi - phiElyte - OCP);
                                     
             R = ammodel.Asp.*butlerVolmer(k.*model.con.F, 0.5, 1, eta, T) ./ (1 .* model.con.F);
             

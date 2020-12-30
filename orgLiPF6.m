@@ -43,10 +43,9 @@ classdef orgLiPF6 < ComponentModel
         
         % Physical constants
         con = physicalConstants();
-        
 
         % Physicochemical properties
-        eps         % 
+        eps         % Porosity
         rho         % Mass Density,                         [kg m^-3]
         mu          % Viscosity             
         kappaeff    % Porous media conductivity,            [S m^-1]
@@ -97,6 +96,13 @@ classdef orgLiPF6 < ComponentModel
             model.names = names;
 
             propfunctions = {};
+            
+            % setup updating function for concentrations
+            name = 'cs';
+            updatefn = @(model, state) model.updateConcentrations(state);
+            propfunction = PropFunction(name, updatefn, '.');
+            propfunctions{end + 1} = propfunction;
+            
             % setup updating function for dmudcs
             name = 'dmudcs';
             updatefn = @(model, state) model.updateIonicQuantities(state);
@@ -164,15 +170,33 @@ classdef orgLiPF6 < ComponentModel
             model.sp.t{ind} = 1 - tLi; % Li+ transference number, [-]
             model.sp.z{ind} = -1;
             
-            nc = model.G.cells.num;
-            % dummy value (for the moment)
-            model.eps = 0.1*ones(nc, 1);
-            
         end
 
-        function state = initializeState(model, state)
+        function state = initiateState(model, state)
 
-            state = model.validateState(state);
+            state = initiateState@ComponentModel(model, state);
+            
+            % instantiate the cell variables
+            nc = model.G.cells.num;
+            compnames = model.compnames;
+            ncomp = model.ncomp;
+            
+            fieldnames = {'cs', 'ioncs', 'jchems', 'dmudcs'};
+            varnames = model.assignCurrentNameSpace(fieldnames);
+            for ifn = 1 : numel(varnames)
+                fieldname = varnames{ifn}.getfieldname;
+                if isempty(state.(fieldname))
+                    state.(fieldname) = cell(1, ncomp);
+                end
+            end
+            
+            
+        end
+        
+        function state = initializeState(model, state)
+            % used only in debugging for the moment
+                
+            state = model.initiateState(state);
             
             % instantiate cell variables
             nc = model.G.cells.num;
@@ -193,7 +217,11 @@ classdef orgLiPF6 < ComponentModel
             state = model.setProp(state, 'c_PF6', c);
 
         end
-        
+
+        function state = updateConcentrations(model, state)
+            [c_Li, state] = model.getUpdatedProp(state, 'c_Li');
+            state = model.setProp(state, 'c_PF6', c_Li);
+        end
         
         function state = updateIonicQuantities(model, state)
             

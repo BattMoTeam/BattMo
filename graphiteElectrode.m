@@ -30,6 +30,7 @@ classdef graphiteElectrode < CompositeModel
             
             model = model@CompositeModel(name);
             model.G = genSubGrid(G, cells);
+            nc = model.G.cells.num;
             
             % setup operators
             model.operators = localSetupOperators(model.G);
@@ -43,11 +44,12 @@ classdef graphiteElectrode < CompositeModel
             
             model.bin  = ptfe();
             model.sei  = seiAM();
-            model.eps  = ammodel.eps + model.bin.eps + model.sei.eps;
+            model.eps  = (ammodel.eps + model.bin.eps + model.sei.eps)*ones(nc, 1);
+            model.void = 1 - model.eps;
             model.t    = 10e-6;
             
             % setup sigmaeff
-            eps = ammodel.eps;
+            eps = (ammodel.eps)*ones(nc, 1);
             sigma = ammodel.sigma;
             model.sigmaeff = sigma .* eps.^1.5;            
             
@@ -83,8 +85,8 @@ classdef graphiteElectrode < CompositeModel
 
         
         function state = initializeState(model, state)
-
-            state = model.validateState(state);
+           % Used only in debugging for the moment
+            state = model.initiateState(state);
 
             ammodel = model.getAssocModel('am');
             state = ammodel.initializeState(state);

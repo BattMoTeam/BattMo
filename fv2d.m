@@ -1,4 +1,6 @@
 classdef fv2d
+% structure to map state into variable y, yp that are needed for ode15i
+% This is going to disappear when we switch to own Newton solver
     
     properties
 
@@ -8,11 +10,20 @@ classdef fv2d
         % State data slots
         slots
         
+        % Time discretization properties
+        % should be moved elsewhere
+        
+        ti          % Initial time, s
+        tf          % Final time, s
+        dt          % Time step, s
+        tUp         % Ramp up time, s
+        tSpan       % Time span vector, s
+    
     end
     
     methods
         
-        function obj = fv2d(model, state)
+        function fv = fv2d(model, state)
             
             varnames = model.getModelPrimaryVarNames();
             
@@ -25,20 +36,27 @@ classdef fv2d
                 ind = ind + varsize;
             end
             
-            obj.varnames = varnames;
-            obj.varsizes = varsizes;
-            obj.slots = slots;
+            fv.varnames = varnames;
+            fv.varsizes = varsizes;
+            fv.slots = slots;
 
+            % Time discretization
+            fv.ti = 0;
+            fv.tf = 3600*24;
+            fv.dt = 10;
+            fv.tUp = 0.1;
+            fv.tSpan = (fv.ti : fv.dt : fv.tf);
+            
         end
         
-        function n = varnum(obj)
-            n = numel(obj.varnames);
+        function n = varnum(fv)
+            n = numel(fv.varnames);
         end
         
-        function slot = getSlot(obj, varname)
+        function slot = getSlot(fv, varname)
         
-            slots = obj.slots;
-            varnames = obj.varnames;
+            slots = fv.slots;
+            varnames = fv.varnames;
             
             isfound = false;
             for ind = 1 : numel(varnames)

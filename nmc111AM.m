@@ -125,7 +125,7 @@ classdef nmc111AM < ComponentModel
         end
 
         function state = initializeState(model, state)
-        % Initialize material state
+        % Used only in debugging for the moment
 
             T = model.getUpdatedProp(state, 'T');
             SOC = model.getUpdatedProp(state, 'SOC');
@@ -191,7 +191,6 @@ classdef nmc111AM < ComponentModel
 
             [T, state]     = model.getUpdatedProp(state, 'T');
             [cs, state]    = model.getUpdatedProp(state, 'Li');
-            [theta, state] = model.getUpdatedProp(state, 'theta');
             
             % Set the reference temperature
             refT = 298.15;
