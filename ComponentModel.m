@@ -223,22 +223,18 @@ classdef ComponentModel < PhysicalModel
             
         end
 
-        function [fn, index] = getVariableField(model, name, throwError, varargin)
+        function [fn, index] = getVariableField(model, name, index)
         % In this function the variable name is associated to a field name (fn) which corresponds to the field where the
         % variable is stored in the state.  See PhysicalModel
             
-            opt = struct('index', []);
-            opt = merge_options(opt, varargin{:});
-            if isempty(opt.index)
+            if nargin < 3
                 index = ':';
-            else
-                index = opt.index;
             end
             
             if isa(name, 'VarName')
                 varname = name;
                 varmodel = model.getAssocModel(varname.namespace);
-                [fn, index] = varmodel.getVariableField(varname.name, true, 'index', varname.index);
+                [fn, index] = varmodel.getVariableField(varname.name, varname.index);
             elseif iscell(name)
                 % syntaxic sugar (do not need to setup VarName)
                 varname = VarName({name{1 : end - 1}}, name{end});
