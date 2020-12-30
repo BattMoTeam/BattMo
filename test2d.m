@@ -6,28 +6,24 @@ close all
 %% Add MRST module
 mrstModule add ad-core
 
-% Setup object and run simulation
-% delete('temp2.txt');
-obj = lithiumIonModel();
-obj.J = 0.1;
+model = BatteryModel();
+model.J = 0.1;
 
 %% run simulation
 
-[t, y] = obj.p2d();
 
-%% plotting
+[t, y] = model.p2d();
 
-mrstModule add mrst-gui
+%% 
 
-fv = obj.fv;
-
-
-%%  plot of potential
+% We set up the structure fv in this "hacky" way for the moment (it will be cleaned up in the future)
+initstate = icp2d(model);
+model = setupFV(model, initstate);
+fv = model.fv;
 
 for iy = 1 : size(y, 1)
     yy = y(iy, :)';
-    varname = 'E';
-    E(iy) = yy(fv.getSlot(varname));
+    E(iy) = yy(fv.getSlot(VarName({'ccpe'}, 'E')));
 end
 
 figure

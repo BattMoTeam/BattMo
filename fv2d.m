@@ -43,7 +43,8 @@ classdef fv2d
             % Time discretization
             fv.ti = 0;
             fv.tf = 3600*24;
-            fv.dt = 10;
+            fv.tf = 360*24;
+            fv.dt = 50;
             fv.tUp = 0.1;
             fv.tSpan = (fv.ti : fv.dt : fv.tf);
             
