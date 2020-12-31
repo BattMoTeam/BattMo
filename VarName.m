@@ -22,9 +22,6 @@ classdef VarName
         function name = getfieldname(varname)
             name = join({varname.namespace{:}, varname.name}, '_');
             name = name{1};
-            if ~strcmp(varname.index, ':')
-                name = sprintf('%s_%d', name, varname.index);
-            end
         end
 
         
