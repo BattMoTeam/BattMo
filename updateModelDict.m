@@ -1,11 +1,11 @@
-function models = updateModelDict(models, model)
+function modeldict = updateModelDict(modeldict, model)
     
     name = model.getModelFullName;
-    models(name) = model;
+    modeldict(name) = model;
     
     if isa(model, 'CompositeModel')
         for ind = 1 : numel(model.SubModels)
-            models = updateModelDict(models, model.SubModels{ind});
+            modeldict = updateModelDict(modeldict, model.SubModels{ind});
         end
     end
     
