@@ -1,4 +1,4 @@
-classdef BatteryModel < CompositeModel
+classdef BatteryModel < RootModel
 
     properties
 
@@ -27,7 +27,7 @@ classdef BatteryModel < CompositeModel
 
         function model = BatteryModel(varargin)
 
-            model = model@CompositeModel('battery');
+            model = model@RootModel('battery');
 
             sepnx  = 30;
             nenx   = 30;
@@ -176,6 +176,8 @@ classdef BatteryModel < CompositeModel
             model.J = 0.1;
             model.Ucut = 2;
 
+            model = model.initiateRootModel();
+            
         end
 
         function state = initializeState(model, state)
@@ -408,7 +410,7 @@ classdef BatteryModel < CompositeModel
             c = theta .* ne_am.Li.cmax;
             c = c*ones(ne.G.cells.num, 1);
 
-            initstate = ne_am.setProp(initstate, {'Li'}, c);
+            initstate = ne_am.setProp(initstate, 'Li', c);
             [OCP, initstate] = ne_am.getUpdatedProp(initstate, 'OCP');
             initstate = ne_am.setProp(initstate, 'phi', OCP);
 
@@ -420,7 +422,7 @@ classdef BatteryModel < CompositeModel
             c = theta .* pe_am.Li.cmax;
             c = c*ones(ne.G.cells.num, 1);
 
-            initstate = pe_am.setProp(initstate, {'Li'}, c);
+            initstate = pe_am.setProp(initstate, 'Li', c);
             [OCP, initstate] = pe_am.getUpdatedProp(initstate, 'OCP');
             initstate = pe_am.setProp(initstate, 'phi', OCP);
 

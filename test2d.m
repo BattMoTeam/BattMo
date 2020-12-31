@@ -9,6 +9,7 @@ mrstModule add ad-core
 model = BatteryModel();
 model.J = 0.1;
 
+
 %% run simulation
 
 
