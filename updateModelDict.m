@@ -1,12 +1,7 @@
 function models = updateModelDict(models, model)
     
-    if model.hasparent
-        name = model.getModelFullName;
-        models(name) = model;
-    else
-        name = 'root';
-        models(name) = model;
-    end
+    name = model.getModelFullName;
+    models(name) = model;
     
     if isa(model, 'CompositeModel')
         for ind = 1 : numel(model.SubModels)

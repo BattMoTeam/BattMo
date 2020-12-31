@@ -52,8 +52,12 @@ classdef ComponentModel < PhysicalModel
         end
 
         function name = getModelFullName(model)
-            name = join(model.namespace, '_');
-            name = name{1};
+            if model.hasparent
+                name = join(model.namespace, '_');
+                name = name{1};
+            else
+                name = 'root';
+            end
         end
         
         function submodel = getAssocModel(model, name)
