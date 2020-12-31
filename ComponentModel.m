@@ -48,9 +48,14 @@ classdef ComponentModel < PhysicalModel
         end
         
         function parentmodel = getParentModel(model)
-             parentmodel = model.parentmodel;
+            parentmodel = model.parentmodel;
         end
-         
+
+        function name = getModelFullName(model)
+            name = join(model.namespace, '_');
+            name = name{1};
+        end
+        
         function submodel = getAssocModel(model, name)
             if isempty(name)
                 submodel = model;
@@ -132,7 +137,6 @@ classdef ComponentModel < PhysicalModel
             model.propfunctions = propfunctions;
             
         end
-        
         
         function [isalias, varname] = aliasLookup(model, name)
         % check if name is an alias
