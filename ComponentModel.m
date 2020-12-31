@@ -4,6 +4,9 @@ classdef ComponentModel < PhysicalModel
         parentmodel
         hasparent
 
+        rootmodel
+        hasroot
+        
         modelname
         
         % Own variables
@@ -58,6 +61,11 @@ classdef ComponentModel < PhysicalModel
             else
                 name = 'root';
             end
+        end
+        
+        function model = addRootModel(model, rootmodel)
+            model.hasroot = true;
+            model.rootmodel = rootmodel;
         end
         
         function submodel = getAssocModel(model, name)
@@ -162,14 +170,71 @@ classdef ComponentModel < PhysicalModel
             end
         end
             
-        
         function [val, state] = getUpdatedProp(model, state, name)
             state = model.updateProp(state, name);
             val = model.getProp(state, name);
         end
         
+        function state = updatePropUsingRoot(model, state, name)
+
+            val = model.getProp(state, name);
+            
+            % check for vector variables
+            isupdated = false;
+            
+            if ~isempty(val) 
+                isupdated = true;
+            end
+            
+            % Check for cell variables
+            if iscell(val)
+                isupdated = true;
+                for ind = 1 : numel(val)
+                    if isempty(val{ind})
+                        isupdated = false;
+                        break
+                    end
+                end
+            end
+            
+            if isupdated
+                return
+            end
+            
+            if isa(name, 'VarName')
+                varname = name;
+            elseif iscell(name)
+                % syntaxic sugar (do not need to setup VarName)
+                varname = VarName({model.namespace{:}, name{1 : end - 1}}, name{end});
+            else
+                varname = VarName(model.namespace, name);
+            end
+            fieldname = varname.getfieldname;
+            
+            if model.hasparent
+                rootmodel = model.rootmodel;
+            else
+                rootmodel = model;
+            end
+
+            reffieldname = rootmodel.varfieldnames(fieldname);
+            
+            fn = rootmodel.propfunctdict(reffieldname);
+            fnmodelname = rootmodel.propmodeldict(reffieldname);
+            fnmodel = rootmodel.modeldict(fnmodelname);
+            
+            state = fn(fnmodel, state);
+
+        end
+                            
         
         function state = updateProp(model, state, name)
+            
+            if model.hasroot
+                state = model.updatePropUsingRoot(state, name);
+                return
+            end
+            
             val = model.getProp(state, name);
             
             % check for vector variables
@@ -221,9 +286,39 @@ classdef ComponentModel < PhysicalModel
             
         end
 
+        function [fn, index] = getVariableFieldFromRoot(model, name)
+            
+            if isa(name, 'VarName')
+                varname = name;
+            elseif iscell(name)
+                % syntaxic sugar (do not need to setup VarName)
+                varname = VarName({model.namespace{:}, name{1 : end - 1}}, name{end});
+            else
+                varname = VarName(model.namespace, name);
+            end
+            fieldname = varname.getfieldname;
+            
+            if model.hasparent
+                rootmodel = model.rootmodel;
+            else
+                rootmodel = model;
+            end
+            
+            fn = rootmodel.varfieldnames(fieldname);
+            index = rootmodel.varindices(fieldname);
+                
+        end
+        
+        
         function [fn, index] = getVariableField(model, name, index)
         % In this function the variable name is associated to a field name (fn) which corresponds to the field where the
         % variable is stored in the state.  See PhysicalModel
+            
+            
+            if model.hasroot
+                [fn, index] = model.getVariableFieldFromRoot(name);
+                return
+            end
             
             if nargin < 3
                 index = ':';

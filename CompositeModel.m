@@ -72,6 +72,18 @@ classdef CompositeModel < ComponentModel
             
         end
         
+        function model = addRootModel(model, rootmodel)
+            
+            model = addRootModel@ComponentModel(model, rootmodel);
+            
+            for ind = 1 : numel(model.SubModels)
+                submodel = model.SubModels{ind};
+                submodel = submodel.addRootModel(rootmodel);
+                model.SubModels{ind} = submodel;
+            end
+            
+        end
+        
         function state = initiateState(model, state)
             state = initiateState@ComponentModel(model, state);
             nsubmodels = model.nSubModels;
@@ -134,6 +146,12 @@ classdef CompositeModel < ComponentModel
         end
         
         function state = updateProp(model, state, name)
+            
+            if model.hasroot
+                state = model.updatePropUsingRoot(state, name);
+                return
+            end
+            
             if isa(name, 'VarName')
                 namespace = name.namespace;
                 name = name.name;
