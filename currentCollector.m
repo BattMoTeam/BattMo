@@ -27,6 +27,7 @@ classdef currentCollector < ComponentModel
             names = {'phi', ...     % Potential
                      'T', ...       % Temperature
                      'j', ...       % Current density, [A/m2]
+                     'jBcSource', ...
                      'OCP', ...     % Open-circuit potential [V];
                      'refOCP', ...  % Reference open circuit potential at standard temperature [V]
                     };

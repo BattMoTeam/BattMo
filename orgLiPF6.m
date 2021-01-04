@@ -88,6 +88,7 @@ classdef orgLiPF6 < ComponentModel
                      'dmudcs', ... % Chemical potentials (derivatives)
                      'm', ...      % Molality,              [mol kg^-1]
                      'kappa', ...  % Conductivity,          [S m^-1]
+                     'LiSource', ...
                      'D', ...      % Diffusion coefficient, [m^2 s^-1]
                      'wtp', ...    % Weight percentace,     [wt%]
                      'IoSt', ...   % Ionic strength

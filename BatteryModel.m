@@ -1,4 +1,4 @@
-classdef BatteryModel < RootModel
+classdef BatteryModel < CompositeModel
 
     properties
 
@@ -27,7 +27,7 @@ classdef BatteryModel < RootModel
 
         function model = BatteryModel(varargin)
 
-            model = model@RootModel('battery');
+            model = model@CompositeModel('battery');
 
             sepnx  = 30;
             nenx   = 30;
@@ -100,60 +100,114 @@ classdef BatteryModel < RootModel
 
             model.names = {'T', 'SOC'};
 
-            % setup ne
+            %% Setup property update functions for negative electrode (ne)
 
             ne = model.getAssocModel('ne');
 
+            % update function for temperature and soc
             fnupdate = @(model, state) model.dispatchValues(state);
             fnmodel = {'..'};
             ne = ne.setPropFunction(PropFunction('T', fnupdate, fnmodel));
             ne = ne.setPropFunction(PropFunction('SOC', fnupdate, fnmodel));
 
+            % update function for exchange term (ne-elyte)
+            fnupdate = @(model, state) setupExchanges(model, state);
+            fnmodel = {'..'};
+            ne = ne.setPropFunction(PropFunction('LiSource', fnupdate, fnmodel));
+            ne = ne.setPropFunction(PropFunction('eSource', fnupdate, fnmodel));
+            
+            % update function for phielyte (electrolyte potential)
             fnupdate = @(model, state) model.updatePhiElyte(state);
             fnmodel = {'..'};
             ne = ne.setPropFunction(PropFunction('phielyte', fnupdate, fnmodel));
+            
+            % update function for boundary terms (ne-ccne)
+            fnupdate = @(model, state) setupBCSources(model, state);
+            fnmodel = {'..'};
+            ne = ne.setPropFunction(PropFunction('jBcSource', fnupdate, fnmodel));
+
+
 
             model = model.setSubModel('ne', ne);
 
-            % setup pe
+            %% Setup property update functions for positive electrode (pe)
 
             pe = model.getAssocModel('pe');
 
+            % update function for temperature and soc
             fnupdate = @(model, state) model.dispatchValues(state);
             fnmodel = {'..'};
             pe = pe.setPropFunction(PropFunction('T', fnupdate, fnmodel));
             pe = pe.setPropFunction(PropFunction('SOC', fnupdate, fnmodel));
 
+            % update function for exchange term (pe-elyte)
+            fnupdate = @(model, state) setupExchanges(model, state);
+            fnmodel = {'..'};
+            pe = pe.setPropFunction(PropFunction('LiSource', fnupdate, fnmodel));
+            pe = pe.setPropFunction(PropFunction('eSource', fnupdate, fnmodel));
+            
+            % update function for phielyte (electrolyte potential)
             fnupdate = @(model, state) model.updatePhiElyte(state);
             fnmodel = {'..'};
             pe = pe.setPropFunction(PropFunction('phielyte', fnupdate, fnmodel));
 
+            % update function for boundary terms (pe-ccpe)
+            fnupdate = @(model, state) setupBCSources(model, state);
+            fnmodel = {'..'};
+            pe = pe.setPropFunction(PropFunction('jBcSource', fnupdate, fnmodel));
+            
             model = model.setSubModel('pe', pe);
 
-            % setup ccne
+            %% Setup property update functions for negative current collector (ccne)
+            
             ccne = model.getAssocModel('ccne');
+
+            % update function for temperature
             fnupdate = @(model, state) model.dispatchValues(state);
             fnmodel = {'..'};
             ccne = ccne.setPropFunction(PropFunction('T', fnupdate, fnmodel));
+            
+            % update function for boundary term (ccne - ne)
+            fnupdate = @(model, state) setupBCSources(model, state);
+            fnmodel = {'..'};
+            ccne = ccne.setPropFunction(PropFunction('jBcSource', fnupdate, fnmodel));
+            
             model = model.setSubModel('ccne', ccne);
 
-            % setup ccpe
+            %% Setup property update functions for positive current collector (ccpe)
+
             ccpe = model.getAssocModel('ccpe');
+
+            % update function for temperature
             fnupdate = @(model, state) model.dispatchValues(state);
             fnmodel = {'..'};
             ccpe = ccpe.setPropFunction(PropFunction('T', fnupdate, fnmodel));
+
+            % update function for boundary term (ccpe - pe)
+            fnupdate = @(model, state) setupBCSources(model, state);
+            fnmodel = {'..'};
+            ccpe = ccpe.setPropFunction(PropFunction('jBcSource', fnupdate, fnmodel));
+            
             model = model.setSubModel('ccpe', ccpe);
 
-            % setup elyte
+            %% Setup property update functions for electrolyte (elyte)
             elyte = model.getAssocModel('elyte');
+            
+            % update function for temperature
             fnupdate = @(model, state) model.dispatchValues(state);
             fnmodel = {'..'};
             elyte = elyte.setPropFunction(PropFunction('T', fnupdate, fnmodel));
 
+            % update function for exchange terms (pe-elyte and ne-elyte)
+            fnupdate = @(model, state) setupExchanges(model, state);
+            fnmodel = {'..'};
+            elyte = elyte.setPropFunction(PropFunction('LiSource', fnupdate, fnmodel));
+            
             model = model.setSubModel('elyte', elyte);
 
             model = model.initiateCompositeModel();
 
+            %% setup porosity in all components
             model = model.setElytePorosity();
 
             %% setup couplings
@@ -171,12 +225,12 @@ classdef BatteryModel < RootModel
             model.couplingnames = cellfun(@(x) x.name, coupTerms, 'uniformoutput', false);
 
             model.SOC = 0.5;
-            model.T   = 298.15;
+            model.T = 298.15;
 
             model.J = 0.1;
             model.Ucut = 2;
-
-            model = model.initiateRootModel();
+            
+            model = model.initiateCompositeModel();
             
         end
 
@@ -271,6 +325,7 @@ classdef BatteryModel < RootModel
 
         end
 
+        
         function model = setElytePorosity(model)
 
             elyte = model.getAssocModel('elyte');
@@ -489,10 +544,10 @@ classdef BatteryModel < RootModel
 
             elyte_c_Li = elyte.getUpdatedProp(state, 'c_Li');
             elyte_phi  = elyte.getUpdatedProp(state, 'phi');
-            ne_Li      = ne.getUpdatedProp(state, {'am', 'Li'});
-            ne_phi     = ne.getUpdatedProp(state, {'am', 'phi'});
-            pe_Li      = pe.getUpdatedProp(state, {'am', 'Li'});
-            pe_phi     = pe.getUpdatedProp(state, {'am', 'phi'});
+            ne_Li      = ne_am.getUpdatedProp(state, 'Li');
+            ne_phi     = ne_am.getUpdatedProp(state, 'phi');
+            pe_Li      = pe_am.getUpdatedProp(state, 'Li');
+            pe_phi     = pe_am.getUpdatedProp(state, 'phi');
             ccne_phi   = ccne.getUpdatedProp(state, 'phi');
             ccpe_phi   = ccpe.getUpdatedProp(state, 'phi');
             ccpe_E     = ccpe.getUpdatedProp(state, 'E');
@@ -501,7 +556,16 @@ classdef BatteryModel < RootModel
             ne_Li_csepsdot   = ne_am.eps.*ne_Li_csdot;
             pe_Li_csepsdot   = pe_am.eps.*pe_Li_csdot;
 
-            %% We compute the effective conductivity and diffusion
+            %% Cell voltage
+            ccne_E = 0;
+            ccpe_E = ccpe.getProp(state, 'E');
+
+            U = ccpe_E - ccne_E;
+
+            %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+            %% Diffusion Flux                                           %%%
+            %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+            % Divergence of diffusion mass flux
 
             [D, state] = elyte.getUpdatedProp(state, 'D');
             elyte_Deff = D .* elyte.eps .^1.5;
@@ -510,147 +574,8 @@ classdef BatteryModel < RootModel
             ne_Deff = D.*ne_am.eps.^1.5;
 
             [D, state] = pe.getUpdatedProp(state, {'am', 'D'});
-            am = pe.getAssocModel('am');
             pe_Deff = D.*pe_am.eps.^1.5;
-
-            ne_sigmaeff = ne.sigmaeff;
-            pe_sigmaeff = pe.sigmaeff;
-            ccne_sigmaeff = ccne.sigmaeff;
-            ccpe_sigmaeff = ccpe.sigmaeff;
-
-            %% We setup the current transfers between ccne collector and ne material with ne_j_bcsource and ccne_j_bcsource
-
-            ne_j_bcsource = ne_phi*0.0; %NB hack to initialize zero ad
-            ccne_j_bcsource = ccne_phi*0.0; %NB hack to initialize zero ad
-
-            coupterm = model.getCoupTerm('ccne-ne');
-            face_ccne = coupterm.couplingfaces(:, 1);
-            face_ne = coupterm.couplingfaces(:, 2);
-            [tne, bccell_ne] = ne.operators.harmFaceBC(ne_sigmaeff, face_ne);
-            [tccne, bccell_ccne] = ccne.operators.harmFaceBC(ccne_sigmaeff, face_ccne);
-
-            bcphi_ne = ne_phi(bccell_ne);
-            bcphi_ccne = ccne_phi(bccell_ccne);
-
-            trans = 1./(1./tne + 1./tccne);
-            crosscurrent = trans.*(bcphi_ccne - bcphi_ne);
-            ne_j_bcsource(bccell_ne) = crosscurrent;
-            ccne_j_bcsource(bccell_ccne) = -crosscurrent;
-
-            %% We impose the boundary condition at chosen boundary cells of the ne current collector by updating ccne_j_bcsource
-
-            coupterm = model.getCoupTerm('bc-ccne');
-            faces = coupterm.couplingfaces;
-            bcval = zeros(numel(faces), 1);
-            [tccne, cells] = ccne.operators.harmFaceBC(ccne_sigmaeff, faces);
-            ccne_j_bcsource(cells) = ccne_j_bcsource(cells) + tccne.*(bcval - ccne_phi(cells));
-
-            %% We setup the current transfers between ccpe collector and pe material with pe_j_bcsource and ccpe_j_bcsource
-
-            pe_j_bcsource   = pe_phi*0.0; %NB hack to initialize zero ad
-            ccpe_j_bcsource = ccpe_phi*0.0; %NB hack to initialize zero ad
-
-            coupterm = model.getCoupTerm('ccpe-pe');
-            face_ccpe = coupterm.couplingfaces(:, 1);
-            face_pe = coupterm.couplingfaces(:, 2);
-            [tpe, bccell_pe] = pe.operators.harmFaceBC(pe_sigmaeff, face_pe);
-            [tccpe, bccell_ccpe] = ccpe.operators.harmFaceBC(ccpe_sigmaeff, face_ccpe);
-            bcphi_pe = pe_phi(bccell_pe);
-            bcphi_ccpe = ccpe_phi(bccell_ccpe);
-
-            trans = 1./(1./tpe + 1./tccpe);
-            crosscurrent = trans.*(bcphi_ccpe - bcphi_pe);
-            pe_j_bcsource(bccell_pe) = crosscurrent;
-            ccpe_j_bcsource(bccell_ccpe) = -crosscurrent;
-
-            %% We impose the boundary condition at chosen boundary cells of the anode current collector by updating ccpe_j_bcsource
-
-            coupterm = model.getCoupTerm('bc-ccpe');
-            faces = coupterm.couplingfaces;
-            bcval = ccpe_E;
-            [tccpe, cells] = ccpe.operators.harmFaceBC(ccpe_sigmaeff, faces);
-            ccpe_j_bcsource(cells) = ccpe_j_bcsource(cells) + tccpe.*(bcval - ccpe_phi(cells));
-
-            %% Cell voltage
-            ccne_E = 0;
-            ccpe_E = ccpe.getProp(state, 'E');
-
-            U = ccpe_E - ccne_E;
-
-            if useAD
-                adsample = getSampleAD(y, yp);
-                adbackend = model.AutoDiffBackend;
-            end
-
-            %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-            %% Source terms for continuity equations                    %%%
-            %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-
-            % We setup the exchange terms between the electrolyte and the electrodes for Li due to chemical reacions:
-            % elyte_Li_source, ne_Li_source, pe_Li_source.
-            %
-            % We setup also the electron production in the electrod: ne_e_source, pe_e_source.
-            %
-
-            % Inititalize vectors
-            elyte_Li_source = zeros(elyte.G.cells.num, 1);
-            ne_Li_source    = zeros(ne.G.cells.num, 1);
-            pe_Li_source    = zeros(pe.G.cells.num, 1);
-            ne_e_source     = zeros(ne.G.cells.num, 1);
-            pe_e_source     = zeros(pe.G.cells.num, 1);
-
-            if useAD
-                elyte_Li_source = adbackend.convertToAD(elyte_Li_source, adsample);
-                ne_Li_source    = adbackend.convertToAD(ne_Li_source, adsample);
-                pe_Li_source    = adbackend.convertToAD(pe_Li_source, adsample);
-                ne_e_source     = adbackend.convertToAD(ne_e_source, adsample);
-                pe_e_source     = adbackend.convertToAD(pe_e_source, adsample);
-            end
-
-            %%%%% Set up chemical source terms %%%%%%%%%%%%%%%%%k
-
-            %%%%% NE  %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-
-            coupterm = model.getCoupTerm('ne-elyte');
-            necells = coupterm.couplingcells(:, 1);
-            elytecells = coupterm.couplingcells(:, 2);
-
-            % calculate rection rate
-            [ne_R, state] = ne.getUpdatedProp(state, 'R');
-
-            % Electrolyte NE Li+ source
-            elyte_Li_source(elytecells) = ne_R;
-
-            % Active Material NE Li0 source
-            ne_Li_source(necells) = - ne_R;
-
-            % Active Material NE current source
-            ne_e_source(necells) = + ne_R;
-
-            %%%%% PE %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-
-            % Electrolyte PE Li+ source
-            coupterm = model.getCoupTerm('pe-elyte');
-            pecells = coupterm.couplingcells(:, 1);
-            elytecells = coupterm.couplingcells(:, 2);
-
-            % calculate rection rate
-            [pe_R, state] = pe.getUpdatedProp(state, 'R');
-
-            % Electrolyte PE Li+ source
-            elyte_Li_source(elytecells) = - pe_R;
-
-            % Active Material PE Li0 source
-            pe_Li_source(pecells) = + pe_R;
-
-            % Active Material PE current source
-            pe_e_source(pecells) = - pe_R;
-
-            %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-            %% Diffusion Flux                                           %%%
-            %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-            % Divergence of diffusion mass flux
-
+    
             x = elyte.getUpdatedProp(state, 'c_Li');
             trans = elyte.operators.harmFace(elyte_Deff);
             flux = - trans.*elyte.operators.Grad(x);
@@ -680,6 +605,13 @@ classdef BatteryModel < RootModel
             %% System of Equations                                      %%%
             %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
+            [elyte_Li_source, state] = elyte.getUpdatedProp(state, 'LiSource');
+            [ne_Li_source, state]    = ne.getUpdatedProp(state, 'LiSource');
+            [ne_e_source, state]     = ne.getUpdatedProp(state, 'eSource');
+            [pe_Li_source, state]    = pe.getUpdatedProp(state, 'LiSource');
+            [pe_e_source, state]     = pe.getUpdatedProp(state, 'eSource');
+            
+            
             %% Liquid electrolyte dissolved ionic species mass continuity %
             %   Electrolyte Li+ Mass Continuity
             elyte_Li_massCont = (-elyte_Li_divDiff - elyte_Li_divMig + elyte_Li_source - elyte_Li_cepsdot);
@@ -696,28 +628,26 @@ classdef BatteryModel < RootModel
 
             %% Electode Active material charge continuity %%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-            [ne_j, state] = ne.getUpdatedProp(state, 'j');
-            [pe_j, state] = pe.getUpdatedProp(state, 'j');
-
-            ne_e_chargeCont = (ne.operators.Div(ne_j) - ne_j_bcsource)./ ne.G.cells.volumes./model.con.F - ...
-                ne_e_source;
-            pe_e_chargeCont = (pe.operators.Div(pe_j) - pe_j_bcsource)./ pe.G.cells.volumes./model.con.F - ...
-                pe_e_source;
+            [ne_e_chargeCont, state] = ne.getUpdatedProp(state, 'chargeCont');
+            [pe_e_chargeCont, state] = pe.getUpdatedProp(state, 'chargeCont');
 
             %% Collector charge continuity
 
             [ccne_j, state] = ccne.getUpdatedProp(state, 'j');
             [ccpe_j, state] = ccpe.getUpdatedProp(state, 'j');
-
+            [ccne_j_bcsource, state] = ccne.getUpdatedProp(state, 'jBcSource');
+            [ccpe_j_bcsource, state] = ccpe.getUpdatedProp(state, 'jBcSource');
+            
             ccne_e_chargeCont = (ccne.operators.Div(ccne_j) - ccne_j_bcsource)./ ccne.G.cells.volumes./model.con.F;
             ccpe_e_chargeCont = (ccpe.operators.Div(ccpe_j) - ccpe_j_bcsource)./ ccpe.G.cells.volumes./model.con.F;
 
-            %% control equation
+            %% Control equation
 
             src = currentSource(t, fv.tUp, fv.tf, model.J);
             coupterm = model.getCoupTerm('bc-ccpe');
             faces = coupterm.couplingfaces;
             bcval = ccpe_E;
+            ccpe_sigmaeff = ccpe.sigmaeff;
             [tccpe, cells] = ccpe.operators.harmFaceBC(ccpe_sigmaeff, faces);
             control = src - sum(tccpe.*(bcval - ccpe_phi(cells)));
 

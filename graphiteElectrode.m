@@ -56,27 +56,37 @@ classdef graphiteElectrode < CompositeModel
             % state variables
             names = {'j'  ,  ... % Current density,      [A/m2]
                      'R'  ...    % Reaction Rate,
+                     'jBcSource', ...
+                     'LiSource', ...
+                     'eSource', ...
+                     'chargeCont', ...
                      'T', ...
                      'SOC', ...
                      'phielyte'};
             model.names = names;
 
-            % setup propfunctions
+            %% setup Update property functions
             
             propfunctions = {};
             
-            % setup updating function for R
+            % setup update property function for R
             name = 'R';
             updatefn = @(model, state) model.updateReactBV(state);
             propfunction = PropFunction(name, updatefn, '.');
             propfunctions{end + 1} = propfunction;
 
-            % setup updating function for j
+            % setup update property function for j
             name = 'j';
             updatefn = @(model, state) model.updateFlux(state);
             propfunction = PropFunction(name, updatefn, '.');
             propfunctions{end + 1} = propfunction;
 
+            % setup update property function for charge continuity (chargeCont)
+            name = 'chargeCont';
+            updatefn = @(model, state) model.updateChargeCont(state);
+            propfunction = PropFunction(name, updatefn, '.');
+            propfunctions{end + 1} = propfunction;
+            
             model.propfunctions = propfunctions;
             
             model = model.initiateCompositeModel();
@@ -109,6 +119,20 @@ classdef graphiteElectrode < CompositeModel
             R = ammodel.Asp.*butlerVolmer(k.*model.con.F, 0.5, 1, eta, T) ./ (1 .* model.con.F);
             
             state = model.setProp(state, 'R', R);
+            
+        end
+        
+        function state = updateChargeCont(model, state)
+            
+            op = model.operators;
+            
+            [j, state]         = model.getUpdatedProp(state, 'j');
+            [jBcSource, state] = model.getUpdatedProp(state, 'jBcSource');
+            [eSource, state]   = model.getUpdatedProp(state, 'eSource');
+            
+            chargeCont = (op.Div(j) - jBcSource)./ model.G.cells.volumes./model.con.F - eSource;
+            
+            state = model.setProp(state, 'chargeCont', chargeCont);
             
         end
         
