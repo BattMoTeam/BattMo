@@ -552,94 +552,50 @@ classdef BatteryModel < CompositeModel
             ccpe_phi   = ccpe.getUpdatedProp(state, 'phi');
             ccpe_E     = ccpe.getUpdatedProp(state, 'E');
 
-            elyte_Li_cepsdot = elyte.eps.*elyte_Li_cdot;
-            ne_Li_csepsdot   = ne_am.eps.*ne_Li_csdot;
-            pe_Li_csepsdot   = pe_am.eps.*pe_Li_csdot;
-
             %% Cell voltage
+            
             ccne_E = 0;
             ccpe_E = ccpe.getProp(state, 'E');
 
             U = ccpe_E - ccne_E;
 
             %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-            %% Diffusion Flux                                           %%%
-            %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-            % Divergence of diffusion mass flux
-
-            [D, state] = elyte.getUpdatedProp(state, 'D');
-            elyte_Deff = D .* elyte.eps .^1.5;
-
-            [D, state] = ne.getUpdatedProp(state, {'am', 'D'});
-            ne_Deff = D.*ne_am.eps.^1.5;
-
-            [D, state] = pe.getUpdatedProp(state, {'am', 'D'});
-            pe_Deff = D.*pe_am.eps.^1.5;
-    
-            x = elyte.getUpdatedProp(state, 'c_Li');
-            trans = elyte.operators.harmFace(elyte_Deff);
-            flux = - trans.*elyte.operators.Grad(x);
-            elyte_Li_divDiff = elyte.operators.Div(flux)./elyte.G.cells.volumes;
-
-            x = ne.getUpdatedProp(state, {'am', 'Li'});
-            trans = ne.operators.harmFace(ne_Deff);
-            flux = - trans.*ne.operators.Grad(x);
-            ne_Li_divDiff = ne.operators.Div(flux)./ne.G.cells.volumes;
-
-            x = pe.getUpdatedProp(state, {'am', 'Li'});
-            trans = pe.operators.harmFace(pe_Deff);
-            flux = - trans.*pe.operators.Grad(x);
-            pe_Li_divDiff = pe.operators.Div(flux)./pe.G.cells.volumes;
-
-            %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-            %% Migration Flux                                           %%%
-            %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-            % Divergence of the migration mass flux for the electrolyte Li+ Migration
-
-            [elyte_j, state] = elyte.getUpdatedProp(state, 'j');
-            ind_Li = 1;
-            flux = elyte.sp.t{ind_Li} ./ (elyte.sp.z{ind_Li} .* model.con.F) .* elyte_j;
-            elyte_Li_divMig = elyte.operators.Div(flux)./elyte.G.cells.volumes;
-
-            %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
             %% System of Equations                                      %%%
             %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-
+            
+            %% Liquid electrolyte dissolved ionic species mass continuity and charge continuity
+            
             [elyte_Li_source, state] = elyte.getUpdatedProp(state, 'LiSource');
-            [ne_Li_source, state]    = ne.getUpdatedProp(state, 'LiSource');
-            [ne_e_source, state]     = ne.getUpdatedProp(state, 'eSource');
-            [pe_Li_source, state]    = pe.getUpdatedProp(state, 'LiSource');
-            [pe_e_source, state]     = pe.getUpdatedProp(state, 'eSource');
+            [elyte_Li_flux, state] = elyte.getUpdatedProp(state, 'LiFlux');
+
+            elyte_Li_div = elyte.operators.Div(elyte_Li_flux)./elyte.G.cells.volumes;
+            elyte_Li_cepsdot = elyte.eps.*elyte_Li_cdot;
+            elyte_Li_massCont = (-elyte_Li_div + elyte_Li_source - elyte_Li_cepsdot);
             
-            
-            %% Liquid electrolyte dissolved ionic species mass continuity %
-            %   Electrolyte Li+ Mass Continuity
-            elyte_Li_massCont = (-elyte_Li_divDiff - elyte_Li_divMig + elyte_Li_source - elyte_Li_cepsdot);
+            [elyte_chargeCont, state] = elyte.getUpdatedProp(state, 'chargeCont');
 
-            %% Liquid electrolyte charge continuity %%%%%%%%%%%%%%%%%%%%%%%
+            %% Electrode Active material mass continuity and charge continuity %%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-            elyte_chargeCont = -(elyte.operators.Div(elyte_j)./elyte.G.cells.volumes)./model.con.F + ...
-                elyte_Li_source.*elyte.sp.z{ind_Li};
-
-            %% Electrode Active material mass continuity %%%%%%%%%%%%%%%%%%%%%%%%%%%
-
+            [ne_Li_source, state] = ne.getUpdatedProp(state, 'LiSource');
+            [ne_Li_flux, state]   = ne.getUpdatedProp(state, 'LiFlux');
+            ne_Li_divDiff = ne.operators.Div(ne_Li_flux)./ne.G.cells.volumes;
+            ne_Li_csepsdot = ne_am.eps.*ne_Li_csdot;
             ne_Li_massCont = (-ne_Li_divDiff + ne_Li_source - ne_Li_csepsdot);
-            pe_Li_massCont = (-pe_Li_divDiff + pe_Li_source - pe_Li_csepsdot);
-
-            %% Electode Active material charge continuity %%%%%%%%%%%%%%%%%%%%%%%%%%%
 
             [ne_e_chargeCont, state] = ne.getUpdatedProp(state, 'chargeCont');
+
+            [pe_Li_source, state] = pe.getUpdatedProp(state, 'LiSource');            
+            [pe_Li_flux, state]   = pe.getUpdatedProp(state, 'LiFlux');
+            pe_Li_csepsdot = pe_am.eps.*pe_Li_csdot;
+            pe_Li_divDiff = pe.operators.Div(pe_Li_flux)./pe.G.cells.volumes;
+            pe_Li_massCont = (-pe_Li_divDiff + pe_Li_source - pe_Li_csepsdot);
+
             [pe_e_chargeCont, state] = pe.getUpdatedProp(state, 'chargeCont');
 
             %% Collector charge continuity
 
-            [ccne_j, state] = ccne.getUpdatedProp(state, 'j');
-            [ccpe_j, state] = ccpe.getUpdatedProp(state, 'j');
-            [ccne_j_bcsource, state] = ccne.getUpdatedProp(state, 'jBcSource');
-            [ccpe_j_bcsource, state] = ccpe.getUpdatedProp(state, 'jBcSource');
-            
-            ccne_e_chargeCont = (ccne.operators.Div(ccne_j) - ccne_j_bcsource)./ ccne.G.cells.volumes./model.con.F;
-            ccpe_e_chargeCont = (ccpe.operators.Div(ccpe_j) - ccpe_j_bcsource)./ ccpe.G.cells.volumes./model.con.F;
+            [ccne_e_chargeCont, state] = ccne.getUpdatedProp(state, 'chargeCont');
+            [ccpe_e_chargeCont, state] = ccpe.getUpdatedProp(state, 'chargeCont');
 
             %% Control equation
 

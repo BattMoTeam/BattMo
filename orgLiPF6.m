@@ -89,6 +89,8 @@ classdef orgLiPF6 < ComponentModel
                      'm', ...      % Molality,              [mol kg^-1]
                      'kappa', ...  % Conductivity,          [S m^-1]
                      'LiSource', ...
+                     'LiFlux', ...
+                     'chargeCont', ...
                      'D', ...      % Diffusion coefficient, [m^2 s^-1]
                      'wtp', ...    % Weight percentace,     [wt%]
                      'IoSt', ...   % Ionic strength
@@ -138,8 +140,20 @@ classdef orgLiPF6 < ComponentModel
             propfunction = PropFunction(name, updatefn, '.');
             propfunctions{end + 1} = propfunction;
 
-            % setup updating function for jchem
+            % setup updating function for j
             name = 'j';
+            propfunction = PropFunction(name, updatefn, '.');
+            propfunctions{end + 1} = propfunction;
+
+            % setup update property function for charge continuity (chargeCont)
+            name = 'chargeCont';
+            updatefn = @(model, state) model.updateChargeCont(state);
+            propfunction = PropFunction(name, updatefn, '.');
+            propfunctions{end + 1} = propfunction;
+
+            % setup update property function for Li flux (LiFlux)
+            name = 'LiFlux';
+            updatefn = @(model, state) model.updateLiFlux(state);
             propfunction = PropFunction(name, updatefn, '.');
             propfunctions{end + 1} = propfunction;
             
@@ -300,6 +314,44 @@ classdef orgLiPF6 < ComponentModel
             
         end
 
+        function state = updateChargeCont(model, state)
+            
+            op = model.operators;
+            
+            [j, state] = model.getUpdatedProp(state, 'j');
+            [LiSource, state] = model.getUpdatedProp(state, 'LiSource');
+            
+            ind_Li = 1;
+            chargeCont = - op.Div(j)./model.G.cells.volumes./model.con.F + LiSource.*model.sp.z{ind_Li};
+                    
+            state = model.setProp(state, 'chargeCont', chargeCont);
+            
+        end
+        
+        
+        function state = updateLiFlux(model, state)
+            
+            op = model.operators;
+
+            [D, state]   = model.getUpdatedProp(state, 'D');
+            [cLi, state] = model.getUpdatedProp(state, 'c_Li');
+            [j, state]   = model.getUpdatedProp(state, 'j');
+            
+            Deff = D .* model.eps .^1.5;
+            
+            trans = op.harmFace(Deff);
+            fluxDiff = - trans.*op.Grad(cLi);
+            
+            ind_Li = 1;
+            fluxE = model.sp.t{ind_Li} ./ (model.sp.z{ind_Li} .* model.con.F) .* j;
+            
+            flux = fluxDiff + fluxE;
+            
+            state = model.setProp(state, 'LiFlux', flux);
+            
+        end
+        
+        
         function state = updateChemicalFluxes(model, state);
             ncomp = model.ncomp;
             nf = model.G.faces.num;

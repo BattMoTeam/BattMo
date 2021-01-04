@@ -2,6 +2,8 @@ classdef currentCollector < ComponentModel
 % Current collector model 
     
     properties
+        con = physicalConstants();
+        
         E    % Potential at the end of collector
         eps
         sigma
@@ -28,6 +30,7 @@ classdef currentCollector < ComponentModel
                      'T', ...       % Temperature
                      'j', ...       % Current density, [A/m2]
                      'jBcSource', ...
+                     'chargeCont', ...
                      'OCP', ...     % Open-circuit potential [V];
                      'refOCP', ...  % Reference open circuit potential at standard temperature [V]
                     };
@@ -40,7 +43,14 @@ classdef currentCollector < ComponentModel
             updatefn = @(model, state) model.updateFlux(state);
             propfunction = PropFunction(name, updatefn, '.');
             propfunctions{end + 1} = propfunction;
-
+            
+            % setup update property function for charge continuity (chargeCont)
+            name = 'chargeCont';
+            updatefn = @(model, state) model.updateChargeCont(state);
+            propfunction = PropFunction(name, updatefn, '.');
+            propfunctions{end + 1} = propfunction;
+            
+            
             model.propfunctions = propfunctions;
             
         end
@@ -62,6 +72,19 @@ classdef currentCollector < ComponentModel
             
         end
         
+        function state = updateChargeCont(model, state)
+            
+            op = model.operators;
+            
+            [j, state]         = model.getUpdatedProp(state, 'j');
+            [jBcSource, state] = model.getUpdatedProp(state, 'jBcSource');
+            
+            chargeCont = (op.Div(j) - jBcSource)./ model.G.cells.volumes./model.con.F;
+            
+            state = model.setProp(state, 'chargeCont', chargeCont);
+            
+        end
+         
     end
 end
                              

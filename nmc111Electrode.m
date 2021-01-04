@@ -52,14 +52,15 @@ classdef nmc111Electrode < CompositeModel
             model.sigmaeff = sigma .* eps.^1.5;
 
             % state variables
-            names = {'j',  ... % Current density,      [A/m2]
-                     'R', ... % Reaction Rate,
-                     'jBcSource', ...
-                     'LiSource', ...
-                     'eSource', ...
+            names = {'j'         , ... % Current density,      [A/m2]
+                     'R'         , ... % Reaction Rate   ,
+                     'jBcSource' , ...
+                     'LiSource'  , ...
+                     'eSource'   , ...
                      'chargeCont', ...
-                     'T', ... % temperature
-                     'SOC', ...
+                     'LiFlux'    , ...
+                     'T'         , ... % temperature
+                     'SOC'       , ...
                      'phielyte'};
         
             model.names = names;
@@ -86,6 +87,12 @@ classdef nmc111Electrode < CompositeModel
             propfunction = PropFunction(name, updatefn, '.');
             propfunctions{end + 1} = propfunction;
             
+            % setup update property function for Li flux (LiFlux)
+            name = 'LiFlux';
+            updatefn = @(model, state) model.updateLiFlux(state);
+            propfunction = PropFunction(name, updatefn, '.');
+            propfunctions{end + 1} = propfunction;
+
             model.propfunctions = propfunctions;
 
             model = model.initiateCompositeModel();
@@ -135,6 +142,21 @@ classdef nmc111Electrode < CompositeModel
             
         end
         
+        function state = updateLiFlux(model, state)
+            
+            op = model.operators;
+
+            [D, state]   = model.getUpdatedProp(state, {'am', 'D'});
+            [cLi, state] = model.getUpdatedProp(state, {'am', 'Li'});
+            
+            Deff = D .* model.eps .^1.5;
+            
+            trans = op.harmFace(Deff);
+            flux = - trans.*op.Grad(cLi);
+            
+            state = model.setProp(state, 'LiFlux', flux);
+            
+        end
         
         function state = updateFlux(model, state)
             

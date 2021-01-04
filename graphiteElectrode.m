@@ -60,6 +60,7 @@ classdef graphiteElectrode < CompositeModel
                      'LiSource', ...
                      'eSource', ...
                      'chargeCont', ...
+                     'LiFlux', ...
                      'T', ...
                      'SOC', ...
                      'phielyte'};
@@ -87,6 +88,12 @@ classdef graphiteElectrode < CompositeModel
             propfunction = PropFunction(name, updatefn, '.');
             propfunctions{end + 1} = propfunction;
             
+            % setup update property function for Li flux (LiFlux)
+            name = 'LiFlux';
+            updatefn = @(model, state) model.updateLiFlux(state);
+            propfunction = PropFunction(name, updatefn, '.');
+            propfunctions{end + 1} = propfunction;
+
             model.propfunctions = propfunctions;
             
             model = model.initiateCompositeModel();
@@ -149,6 +156,21 @@ classdef graphiteElectrode < CompositeModel
             
         end
         
+        function state = updateLiFlux(model, state)
+            
+            op = model.operators;
+
+            [D, state]   = model.getUpdatedProp(state, {'am', 'D'});
+            [cLi, state] = model.getUpdatedProp(state, {'am', 'Li'});
+            
+            Deff = D .* model.eps .^1.5;
+            
+            trans = op.harmFace(Deff);
+            flux = - trans.*op.Grad(cLi);
+            
+            state = model.setProp(state, 'LiFlux', flux);
+            
+        end        
     end
 end
 
