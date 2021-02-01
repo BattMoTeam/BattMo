@@ -36,8 +36,8 @@ classdef nmc111Electrode < CompositeModel
 
             % setup nmc111 submodel
             ammodel = nmc111AM('am');
-            ammodel = ammodel.addAlias({'T', VarName({'..'}, 'T')});
-            ammodel = ammodel.addAlias({'SOC', VarName({'..'}, 'SOC')});
+            ammodel = ammodel.setAlias({'T', VarName({'..'}, 'T')});
+            ammodel = ammodel.setAlias({'SOC', VarName({'..'}, 'SOC')});
 
             model.SubModels{1} = ammodel;
             

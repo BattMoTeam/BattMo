@@ -37,8 +37,8 @@ classdef graphiteElectrode < CompositeModel
             
             % setup graphite submodel
             ammodel = graphiteAM('am');
-            ammodel = ammodel.addAlias({'T', VarName({'..'}, 'T')});
-            ammodel = ammodel.addAlias({'SOC', VarName({'..'}, 'SOC')});
+            ammodel = ammodel.setAlias({'T', VarName({'..'}, 'T')});
+            ammodel = ammodel.setAlias({'SOC', VarName({'..'}, 'SOC')});
 
             model.SubModels{1} = ammodel;
             

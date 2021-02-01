@@ -9,7 +9,6 @@ mrstModule add ad-core multimodel
 model = BatteryModel();
 model.J = 0.1;
 
-
 %% run simulation
 
 [t, y] = model.p2d();
