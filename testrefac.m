@@ -41,7 +41,7 @@ switch modelcase
     model = currentCollector('ccpe', G, cells);
   case 'battery'
     
-    model = BatteryModel();
+    model = BatteryModelRoot();
 
     nc = model.G.cells.num;
     state.T = ones(nc, 1);
@@ -59,6 +59,8 @@ switch modelcase
 end
 
 state = model.initializeState(state);
+
+return
 
 switch modelcase
   case {'elyte', 'currentCollector'}

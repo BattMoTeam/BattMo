@@ -4,7 +4,7 @@ clear all
 close all
 
 %% add MRST module
-mrstModule add ad-core
+mrstModule add ad-core multimodel
 
 G = cartGrid(10, 10);
 G = computeGeometry(G);
