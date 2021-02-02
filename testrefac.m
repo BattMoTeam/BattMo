@@ -4,7 +4,7 @@ clear all
 close all
 
 %% add MRST module
-mrstModule add ad-core
+mrstModule add ad-core multimodel
 
 G = cartGrid(10, 10);
 G = computeGeometry(G);
@@ -43,7 +43,7 @@ switch modelcase
     
     model = BatteryModel();
     adminmodel = AdminModel();
-    model = adminmodel.initiateAdminModel(model);
+    model = model.setupAdminModel(adminmodel);
 
     nc = model.G.cells.num;
     state.T = ones(nc, 1);

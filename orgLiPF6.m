@@ -76,8 +76,8 @@ classdef orgLiPF6 < ComponentModel
             model.ncomp = numel(model.compnames);
             
             % primary variables
-            names = {'phi', 'c_Li'}; % name 'c_Li' should match the setup in getAffiliatedComponentNames
-            model.pnames = names;
+            pnames = {'phi', 'c_Li'}; % name 'c_Li' should match the setup in getAffiliatedComponentNames
+            model.pnames = pnames;
             
             % state variables
             names = {'phi', ...    % Potential
