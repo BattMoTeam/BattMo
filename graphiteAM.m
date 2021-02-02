@@ -88,48 +88,21 @@ classdef graphiteAM < ComponentModel
                      'Li', ...     % Lithium concentration
                      'refOCP', ... % Reference open circuit potential at standard  teperature [V]
                      'OCP', ...    % Open-circuit potential        [V]
-                     'dUdT', ...   % Entropy change                [V K^-1]
-                     'theta', ...  % Lithiation                    [-]
                      'k', ...      % Reaction rate constant        [m^2.5 mol^-0.5 s^-1]
                      'D', ...      % Diffusion
                      'eps' ...     % Volume fraction,              [-]    
                     };
-            model.names = names;
-            
+            model.names = names; 
             
             propfunctions = {};
-            % setup updating function for k
-            name = 'k';
-            updatefn = @(model, state) model.updateKinetics(state);
-            propfunction = PropFunction(name, updatefn, '.');
-            propfunctions{end + 1} = propfunction;
-            
-            % setup updating function for D
-            name = 'D';
-            updatefn = @(model, state) model.updateDiffusion(state);
-            propfunction = PropFunction(name, updatefn, '.');
-            propfunctions{end + 1} = propfunction;
-            
-            name = 'theta';
-            updatefn = @(model, state) model.updateEquilibrium(state);
-            propfunction = PropFunction(name, updatefn, '.');
-            propfunctions{end + 1} = propfunction;
-            
-            name =  'refOCP';
-            updatefn = @(model, state) model.updateEquilibrium(state);
-            propfunction = PropFunction(name, updatefn, '.');
-            propfunctions{end + 1} = propfunction;
+            names = {'k', 'D', 'refOCP', 'OCP'};
+            updatefn = @(model, state) model.updateQuantities(state);
+            for ind = 1 : numel(names)
+                name = names{ind};
+                propfunction = PropFunction(name, updatefn, '.');
+                propfunctions{end + 1} = propfunction;
+            end
 
-            name =  'OCP';
-            updatefn = @(model, state) model.updateEquilibrium(state);
-            propfunction = PropFunction(name, updatefn, '.');
-            propfunctions{end + 1} = propfunction;
-
-            name =  'dUdT';
-            updatefn = @(model, state) model.updateEquilibrium(state);
-            propfunction = PropFunction(name, updatefn, '.');
-            propfunctions{end + 1} = propfunction;
-            
             model.propfunctions = propfunctions;
             
         end
@@ -145,7 +118,6 @@ classdef graphiteAM < ComponentModel
             theta = (SOC - b) ./ m;
             cs    = theta .* model.Li.cmax;
 
-            state = model.setProp(state, 'theta', theta);
             state = model.setProp(state, 'Li', cs);
             
             OCP = model.getUpdatedProp(state, 'OCP');
@@ -153,21 +125,7 @@ classdef graphiteAM < ComponentModel
         end
 
         
-        function state = updateKinetics(model, state)
-        %KINETICS Calculate the kinetic parameters for the Li+ intercalation reaction
-           
-                [T, state] = model.getUpdatedProp(state, 'T');
-                
-                % Define reference temperature
-                refT = 298.15;  % [K]
-                % Calculate reaction rate constant
-                k = model.k0 .* exp( -model.Eak ./ model.con.R .* (1./T-1/refT));
-                
-                state = model.setProp(state, 'k', k);
-            
-        end
-        
-        function state = updateDiffusion(model, state)
+        function state = updateQuantities(model, state)
         % Calculate the solid diffusion coefficient of Li+ in the active material
         % Calculate the solid phase diffusion coefficient of Li+ in
         % graphite according to the model used by Torchio et al [1].
@@ -177,17 +135,16 @@ classdef graphiteAM < ComponentModel
             
             T = model.getUpdatedProp(state, 'T');
             
+            % Define reference temperature
+            refT = 298.15;  % [K]
+
+            % Calculate reaction rate constant
+            k = model.k0 .* exp( -model.Eak ./ model.con.R .* (1./T-1/refT));
+                
+                
             % Calculate solid diffusion coefficient, [m^2 s^-1]
             D = model.Li.D0 .* exp(-model.Li.EaD./model.con.R*(1./T - 1/refT));
-            
-            state = model.setProp(state, 'D', D);
-        end
-  
-        function state = updateEquilibrium(model, state)
-        % Calculate the equilibrium properties of the electrode active material. Calculate the equilibrium open cirucuit
-        % potential of graphite according to the model used by Torchio et al [1].
 
-            [T, state]     = model.getUpdatedProp(state, 'T');
             [cs, state]    = model.getUpdatedProp(state, 'Li');
             
             % Set the reference temperature
@@ -234,10 +191,10 @@ classdef graphiteAM < ComponentModel
             % Calculate the open-circuit potential of the active material
             OCP = refOCP + (T - refT) .* dUdT;
             
-            state = model.setProp(state, 'theta' , theta);
+            state = model.setProp(state, 'D', D);
             state = model.setProp(state, 'refOCP', refOCP);
             state = model.setProp(state, 'OCP'   , OCP);
-            state = model.setProp(state, 'dUdT'  , dUdT);
+            state = model.setProp(state, 'k', k);
             
         end
         

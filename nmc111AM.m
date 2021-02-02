@@ -48,6 +48,7 @@ classdef nmc111AM < ComponentModel
     end
     
     methods
+
         function model = nmc111AM(name)
         %NMC111 Construct an instance of the nmc111 class
         %   model = nmc111(cLi, T) SOC is the state-of-charge of the
@@ -60,50 +61,24 @@ classdef nmc111AM < ComponentModel
 
             % state variables
             names = {'phi', ...    % Potential
-                     'Li', ...     % Lithium concentration
                      'T', ...      % temperature
                      'SOC', ...
+                     'Li', ...     % Lithium concentration
                      'refOCP', ... % Reference open circuit potential at standard  teperature [V]
                      'OCP', ...    % Open-circuit potential        [V]
-                     'dUdT', ...   % Entropy change                [V K^-1]
-                     'theta', ...  % Lithiation                    [-]
                      'k', ...      % Reaction rate constant        [m^2.5 mol^-0.5 s^-1]
                      'D', ...      % Diffusion
                     };
             model.names = names;
             
             propfunctions = {};
-            % setup updating function for k
-            name = 'k';
-            updatefn = @(model, state) model.updateKinetics(state);
-            propfunction = PropFunction(name, updatefn, '.');
-            propfunctions{end + 1} = propfunction;
-            
-            % setup updating function for D
-            name = 'D';
-            updatefn = @(model, state) model.updateDiffusion(state);
-            propfunction = PropFunction(name, updatefn, '.');
-            propfunctions{end + 1} = propfunction;
-            
-            name = 'theta';
-            updatefn = @(model, state) model.updateEquilibrium(state);
-            propfunction = PropFunction(name, updatefn, '.');
-            propfunctions{end + 1} = propfunction;
-            
-            name =  'refOCP';
-            updatefn = @(model, state) model.updateEquilibrium(state);
-            propfunction = PropFunction(name, updatefn, '.');
-            propfunctions{end + 1} = propfunction;
-
-            name =  'OCP';
-            updatefn = @(model, state) model.updateEquilibrium(state);
-            propfunction = PropFunction(name, updatefn, '.');
-            propfunctions{end + 1} = propfunction;
-
-            name =  'dUdT';
-            updatefn = @(model, state) model.updateEquilibrium(state);
-            propfunction = PropFunction(name, updatefn, '.');
-            propfunctions{end + 1} = propfunction;
+            names = {'k', 'D', 'refOCP', 'OCP'};
+            updatefn = @(model, state) model.updateQuantities(state);
+            for ind = 1 : numel(names)
+                name = names{ind};
+                propfunction = PropFunction(name, updatefn, '.');
+                propfunctions{end + 1} = propfunction;
+            end
             
             model.propfunctions = propfunctions;
             
@@ -143,46 +118,7 @@ classdef nmc111AM < ComponentModel
         end
 
         
-        function state = updateKinetics(model, state)
-        %KINETICS Calculate the kinetic parameters for the Li+ intercalation reaction
-            
-            [T, state] = model.getUpdatedProp(state, 'T');
-            
-            % Define ideal gas constant
-            R = 8.314;      % [J mol^-1 K^-1]
-            
-            % Define reference temperature
-            refT = 298.15;  % [K]
-            
-            % Calculate reaction rate constant
-            k = model.k0 .* exp( -model.Eak ./ model.con.R .* (1./T - 1/refT));
-                
-            state = model.setProp(state, 'k', k);
-                
-        end
-        
-        function state = updateDiffusion(model, state)
-            %DIFFUSIONCOEFFICIENT Calculate the solid diffusion coefficient of Li+ in
-            %the active material
-            %   Calculate the solid phase diffusion coefficient of Li+ in
-            %   nmc111 according to the model used by Torchio et al [1].
-            
-            % Define ideal gas constant
-            R = 8.314;      % [J mol^-1 K^-1]
-            
-            % Define reference temperature
-            refT = 298.15;  % [K]
-            
-            [T, state] = model.getUpdatedProp(state, 'T');
-                       
-            % Calculate solid diffusion coefficient, [m^2 s^-1]
-            D = model.Li.D0.*exp(-model.Li.EaD./R*(1./T - 1/refT));
-            
-            state = model.setProp(state, 'D', D);
-            
-        end
-        
-        function state = updateEquilibrium(model, state)
+        function state = updateQuantities(model, state)
         %EQUILIBRIUM Calculate the equilibrium properties of the
         %electrode active material
         %   Calculate the equilibrium open cirucuit potential of
@@ -192,9 +128,20 @@ classdef nmc111AM < ComponentModel
             [T, state]     = model.getUpdatedProp(state, 'T');
             [cs, state]    = model.getUpdatedProp(state, 'Li');
             
-            % Set the reference temperature
-            refT = 298.15;
-
+            
+            % Define ideal gas constant
+            R = 8.314;      % [J mol^-1 K^-1]
+            
+            % Define reference temperature
+            refT = 298.15;  % [K]
+            
+            % Calculate reaction rate constant
+            k = model.k0 .* exp( -model.Eak ./ model.con.R .* (1./T - 1/refT));
+            
+            % Calculate solid diffusion coefficient, [m^2 s^-1]
+            D = model.Li.D0.*exp(-model.Li.EaD./R*(1./T - 1/refT));
+            
+            
             % Calculate the lithiation of the active material. This
             % is a simplification for the initial code! The "real"
             % value of theta should be calculated using the surface
@@ -235,11 +182,10 @@ classdef nmc111AM < ComponentModel
             % material
             OCP = refOCP + (T - refT) .* dUdT;
 
-            state = model.setProp(state, 'theta' , theta);
+            state = model.setProp(state, 'D', D);
             state = model.setProp(state, 'refOCP', refOCP);
             state = model.setProp(state, 'OCP'   , OCP);
-            state = model.setProp(state, 'dUdT'  , dUdT);
-            
+            state = model.setProp(state, 'k', k);
         end
         
     end
