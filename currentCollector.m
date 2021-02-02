@@ -28,28 +28,18 @@ classdef currentCollector < ComponentModel
             % state variables
             names = {'phi', ...     % Potential
                      'T', ...       % Temperature
-                     'j', ...       % Current density, [A/m2]
                      'jBcSource', ...
                      'chargeCont', ...
-                     'OCP', ...     % Open-circuit potential [V];
-                     'refOCP', ...  % Reference open circuit potential at standard temperature [V]
                     };
             model.names = names;
             
             propfunctions = {};
-            
-            % setup updating function for j
-            name = 'j';
-            updatefn = @(model, state) model.updateFlux(state);
-            propfunction = PropFunction(name, updatefn, '.');
-            propfunctions{end + 1} = propfunction;
             
             % setup update property function for charge continuity (chargeCont)
             name = 'chargeCont';
             updatefn = @(model, state) model.updateChargeCont(state);
             propfunction = PropFunction(name, updatefn, '.');
             propfunctions{end + 1} = propfunction;
-            
             
             model.propfunctions = propfunctions;
             
@@ -60,24 +50,16 @@ classdef currentCollector < ComponentModel
             state = model.initiateState(state);
         end
         
-        function state = updateFlux(model, state)
-            op = model.operators;
-            sigmaeff = model.sigmaeff;
-            
-            [phi, state] = model.getUpdatedProp(state, 'phi');
-            
-            j = - op.harmFace(sigmaeff).*op.Grad(phi); 
-            
-            state = model.setProp(state, 'j', j);
-            
-        end
         
         function state = updateChargeCont(model, state)
             
             op = model.operators;
+            sigmaeff = model.sigmaeff;
             
-            [j, state]         = model.getUpdatedProp(state, 'j');
+            [phi, state] = model.getUpdatedProp(state, 'phi');
             [jBcSource, state] = model.getUpdatedProp(state, 'jBcSource');
+            
+            j = - op.harmFace(sigmaeff).*op.Grad(phi); 
             
             chargeCont = (op.Div(j) - jBcSource)./ model.G.cells.volumes./model.con.F;
             
