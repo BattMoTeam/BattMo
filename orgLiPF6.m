@@ -58,7 +58,6 @@ classdef orgLiPF6 < ComponentModel
         
         % Finite volume solution properties
         chargeCont
-
         
     end
     
@@ -83,85 +82,30 @@ classdef orgLiPF6 < ComponentModel
             names = {'phi', ...    % Potential
                      'T', ...      % Temperature
                      'cs', ...     % Concentrations
-                     'ioncs', ...  % Ions concentrations (?)
-                     'jchems', ... % Chemical fluxes
-                     'dmudcs', ... % Chemical potentials (derivatives)
-                     'm', ...      % Molality,              [mol kg^-1]
-                     'kappa', ...  % Conductivity,          [S m^-1]
                      'LiSource', ...
                      'LiFlux', ...
                      'chargeCont', ...
-                     'D', ...      % Diffusion coefficient, [m^2 s^-1]
-                     'wtp', ...    % Weight percentace,     [wt%]
-                     'IoSt', ...   % Ionic strength
-                     'j' ...       % Ionic current density
                     };
             model.names = names;
 
             propfunctions = {};
             
             % setup updating function for concentrations
-            name = 'cs';
-            updatefn = @(model, state) model.updateConcentrations(state);
-            propfunction = PropFunction(name, updatefn, '.');
-            propfunctions{end + 1} = propfunction;
+            % names = {'cs', 'dmudcs', 'ioncs', 'IoSt', 'kappa', 'D', 'jchems', 'j', 'chargeCont', 'LiFlux'};
+            names = {'cs', 'chargeCont', 'LiFlux'};
+            updatefn = @(model, state) model.updateQuantities(state);
             
-            % setup updating function for dmudcs
-            name = 'dmudcs';
-            updatefn = @(model, state) model.updateIonicQuantities(state);
-            propfunction = PropFunction(name, updatefn, '.');
-            propfunctions{end + 1} = propfunction;
-            
-            % setup updating function for ioncs            
-            name = 'ioncs';
-            propfunction = PropFunction(name, updatefn, '.');
-            propfunctions{end + 1} = propfunction;
-            
-            % setup updating function for IoSt
-            name = 'IoSt';
-            propfunction = PropFunction(name, updatefn, '.');
-            propfunctions{end + 1} = propfunction;
-            
-             % setup updating function for kappa
-            name = 'kappa';
-            updatefn = @(model, state) model.updateConductivity(state);
-            propfunction = PropFunction(name, updatefn, '.');
-            propfunctions{end + 1} = propfunction;
-            
-            % setup updating function for D
-            name = 'D';
-            updatefn = @(model, state) model.updateDiffusion(state);
-            propfunction = PropFunction(name, updatefn, '.');
-            propfunctions{end + 1} = propfunction;
-            
-            % setup updating function for jchem
-            name = 'jchems';
-            updatefn = @(model, state) model.updateChemicalFluxes(state);
-            propfunction = PropFunction(name, updatefn, '.');
-            propfunctions{end + 1} = propfunction;
-
-            % setup updating function for j
-            name = 'j';
-            propfunction = PropFunction(name, updatefn, '.');
-            propfunctions{end + 1} = propfunction;
-
-            % setup update property function for charge continuity (chargeCont)
-            name = 'chargeCont';
-            updatefn = @(model, state) model.updateChargeCont(state);
-            propfunction = PropFunction(name, updatefn, '.');
-            propfunctions{end + 1} = propfunction;
-
-            % setup update property function for Li flux (LiFlux)
-            name = 'LiFlux';
-            updatefn = @(model, state) model.updateLiFlux(state);
-            propfunction = PropFunction(name, updatefn, '.');
-            propfunctions{end + 1} = propfunction;
+            for ind = 1 : numel(names)
+                name = names{ind};
+                propfunction = PropFunction(name, updatefn, '.');
+                propfunctions{end + 1} = propfunction;
+            end
             
             model.propfunctions = propfunctions;
             
             % add local aliases for each component
             aliases = {};
-            fieldnames = {'c', 'ionc', 'jchem', 'dmudc'};
+            fieldnames = {'c'};
             for ifn = 1 : numel(fieldnames)
                 fieldname = fieldnames{ifn};
                 for icn = 1 : model.ncomp
@@ -196,7 +140,7 @@ classdef orgLiPF6 < ComponentModel
             compnames = model.compnames;
             ncomp = model.ncomp;
             
-            fieldnames = {'cs', 'ioncs', 'jchems', 'dmudcs'};
+            fieldnames = {'cs'};
             varnames = model.assignCurrentNameSpace(fieldnames);
             for ifn = 1 : numel(varnames)
                 fieldname = varnames{ifn}.getfieldname;
@@ -233,17 +177,17 @@ classdef orgLiPF6 < ComponentModel
 
         end
 
-        function state = updateConcentrations(model, state)
-            [c_Li, state] = model.getUpdatedProp(state, 'c_Li');
-            state = model.setProp(state, 'c_PF6', c_Li);
-        end
         
-        function state = updateIonicQuantities(model, state)
+        function state = updateQuantities(model, state)
             
             ncomp = model.ncomp;
            
+            [c_Li, state] = model.getUpdatedProp(state, 'c_Li');
+
             [T, state]  = model.getUpdatedProp(state, 'T');
+            state = model.setProp(state, 'c_PF6', c_Li);
             [cs, state] = model.getUpdatedProp(state, 'cs');
+            [phi, state]    = model.getUpdatedProp(state, 'phi');
             
             for ind = 1 : ncomp
                 dmudcs{ind} = model.con.R .* T ./ cs{ind};
@@ -253,116 +197,30 @@ classdef orgLiPF6 < ComponentModel
             IoSt = 0.5 .* cs{1}.*model.sp.z{1}.^2./1000;
             IoSt = IoSt + 0.5 .* cs{2}.*model.sp.z{2}.^2./1000;
             
-            state = model.setProp(state, 'dmudcs', dmudcs);
-            state = model.setProp(state, 'ioncs', cs);
-            state = model.setProp(state, 'IoSt', IoSt);
             
-        end
-        
-        function state = updateConductivity(model, state)
-        %   conductivity Calculates the ionic conductivity of the
-        %   eletrolyte in units [S m^-1].
-        %   Electrolyte conductivity according to the model proposed by
-        %   Val�en et al [1]. The model was made by performing a
-        %   least-squares fit of experimental data with LiPF6 
-        %   concenrations from 7.7e-6 M to 3.9 M and temperatures from
-        %   263 K to 333 K. The solvent is 10 vol% PC, 27 vol% EC, 63
-        %   vol% DMC.
-            
-        % Empirical fitting parameters
             cnst = [-10.5   ,    0.074    ,    -6.96e-5; ...
                     0.668e-3,    -1.78e-5 ,    2.80e-8; ...
-                    0.494e-6,    -8.86e-10,    0];
+                    0.494e-6,    -8.86e-10,    0];            
             
-            % Electrolyte conductivity
-            [T, state] = model.getUpdatedProp(state, 'T');
-            [c, state] = model.getUpdatedProp(state, 'c_Li');
-            
+            c = c_Li;
             kappa = 1e-4 .* c .* (...
                 (cnst(1,1) + cnst(2,1) .* c + cnst(3,1) .* c.^2) + ...
                 (cnst(1,2) + cnst(2,2) .* c + cnst(3,2) .* c.^2) .* T + ...
                 (cnst(1,3) + cnst(2,3) .* c) .* T.^2) .^2;
             
-            state = model.setProp(state, 'kappa', kappa);
             
-        end
-        
-        function state = updateDiffusion(model, state)
-        %   diffusion Calculates the diffusion coefficient of Li+ ions in
-        %   the electrolyte in units [m2 s^-1].
-        %   Diffusion coefficient according to the model proposed by
-        %   Val�en et al [1]. The model was made by performing a
-        %   least-squares fit of experimental data with LiPF6 
-        %   concenrations from 7.7e-6 M to 3.9 M and temperatures from
-        %   263 K to 333 K. The solvent is 10 vol% PC, 27 vol% EC, 63
-        %   vol% DMC.
-            
-        % Empirical fitting parameters [1]
             cnst = [ -4.43, -54;
                      -0.22, 0.0 ];
             Tgi = [ 229;
-                    5.0 ];
-            
-            [T, state] = model.getUpdatedProp(state, 'T');
-            [c, state] = model.getUpdatedProp(state, 'c_Li');
-            
-            % Diffusion coefficient, [m^2 s^-1]
+                    5.0 ];            % Diffusion coefficient, [m^2 s^-1]
             D = 1e-4 .* 10 .^ ( ( cnst(1,1) + cnst(1,2) ./ ( T - Tgi(1) - Tgi(2) .* c .* 1e-3) + cnst(2,1) .* ...
                                   c .* 1e-3) );
             
-            state = model.setProp(state, 'D', D);
-            
-        end
-
-        function state = updateChargeCont(model, state)
-            
-            op = model.operators;
-            
-            [j, state] = model.getUpdatedProp(state, 'j');
-            [LiSource, state] = model.getUpdatedProp(state, 'LiSource');
-            
-            ind_Li = 1;
-            chargeCont = - op.Div(j)./model.G.cells.volumes./model.con.F + LiSource.*model.sp.z{ind_Li};
-                    
-            state = model.setProp(state, 'chargeCont', chargeCont);
-            
-        end
-        
-        
-        function state = updateLiFlux(model, state)
-            
-            op = model.operators;
-
-            [D, state]   = model.getUpdatedProp(state, 'D');
-            [cLi, state] = model.getUpdatedProp(state, 'c_Li');
-            [j, state]   = model.getUpdatedProp(state, 'j');
-            
-            Deff = D .* model.eps .^1.5;
-            
-            trans = op.harmFace(Deff);
-            fluxDiff = - trans.*op.Grad(cLi);
-            
-            ind_Li = 1;
-            fluxE = model.sp.t{ind_Li} ./ (model.sp.z{ind_Li} .* model.con.F) .* j;
-            
-            flux = fluxDiff + fluxE;
-            
-            state = model.setProp(state, 'LiFlux', flux);
-            
-        end
-        
-        
-        function state = updateChemicalFluxes(model, state);
             ncomp = model.ncomp;
             nf = model.G.faces.num;
             sp = model.sp;
             op = model.operators;
             
-            [dmudcs, state] = model.getUpdatedProp(state, 'dmudcs');
-            [cs, state]     = model.getUpdatedProp(state, 'cs');
-            [phi, state]    = model.getUpdatedProp(state, 'phi');            
-            [kappa, state]  = model.getUpdatedProp(state, 'kappa');
-
             eps = model.eps;
             
             % compute kappaeff
@@ -383,11 +241,36 @@ classdef orgLiPF6 < ComponentModel
             % Ionic current density due to the electrochemical potential gradient
             j = op.harmFace(kappaeff).*(-1).*op.Grad(phi) - jchem;
             
-            state = model.setProp(state, 'jchems', jchems);
-            state = model.setProp(state, 'j', j);
+            [LiSource, state] = model.getUpdatedProp(state, 'LiSource');
+            
+            ind_Li = 1;
+            chargeCont = - op.Div(j)./model.G.cells.volumes./model.con.F + LiSource.*model.sp.z{ind_Li};
+
+            op = model.operators;
+            cLi = c_Li;
+            
+            Deff = D .* model.eps .^1.5;
+            
+            trans = op.harmFace(Deff);
+            fluxDiff = - trans.*op.Grad(cLi);
+            
+            ind_Li = 1;
+            fluxE = model.sp.t{ind_Li} ./ (model.sp.z{ind_Li} .* model.con.F) .* j;
+            
+            flux = fluxDiff + fluxE;
+            
+            % state = model.setProp(state, 'jchems', jchems);
+            % state = model.setProp(state, 'j', j);
+            % state = model.setProp(state, 'dmudcs', dmudcs);
+            % state = model.setProp(state, 'ioncs', cs);
+            % state = model.setProp(state, 'IoSt', IoSt);
+            % state = model.setProp(state, 'kappa', kappa);
+            % state = model.setProp(state, 'D', D);
+            state = model.setProp(state, 'LiFlux', flux);
+            state = model.setProp(state, 'chargeCont', chargeCont);
             
         end
-        
+
    
     end
 
