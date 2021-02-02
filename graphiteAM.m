@@ -86,7 +86,6 @@ classdef graphiteAM < ComponentModel
                      'T', ...      % Temperature
                      'SOC', ...
                      'Li', ...     % Lithium concentration
-                     'refOCP', ... % Reference open circuit potential at standard  teperature [V]
                      'OCP', ...    % Open-circuit potential        [V]
                      'k', ...      % Reaction rate constant        [m^2.5 mol^-0.5 s^-1]
                      'D', ...      % Diffusion
@@ -95,7 +94,7 @@ classdef graphiteAM < ComponentModel
             model.names = names; 
             
             propfunctions = {};
-            names = {'k', 'D', 'refOCP', 'OCP'};
+            names = {'k', 'D', 'OCP'};
             updatefn = @(model, state) model.updateQuantities(state);
             for ind = 1 : numel(names)
                 name = names{ind};
@@ -192,7 +191,6 @@ classdef graphiteAM < ComponentModel
             OCP = refOCP + (T - refT) .* dUdT;
             
             state = model.setProp(state, 'D', D);
-            state = model.setProp(state, 'refOCP', refOCP);
             state = model.setProp(state, 'OCP'   , OCP);
             state = model.setProp(state, 'k', k);
             

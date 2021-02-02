@@ -143,10 +143,7 @@ classdef nmc111Electrode < CompositeModel
             state = model.setProp(state, 'chargeCont', chargeCont);
             state = model.setProp(state, 'LiFlux', flux);
             
-            
         end
-        
-
 
     end
 end
