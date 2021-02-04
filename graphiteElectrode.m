@@ -67,26 +67,24 @@ classdef graphiteElectrode < CompositeModel
                      'SOC', ...
                      'phielyte'};
             model.names = names;
-
+            model.vardims = model.setupVarDims();
+            
             %% setup Update property functions
             
             propfunctions = {};
 
             updatefn = @(model, state) model.updateQuantities(state);
             names = {'chargeCont', 'LiFlux'};
-            
+            inputnames = {'jBcSource', 'eSource'};            
             for ind = 1 : numel(names)
                 name = names{ind};
-                propfunction = PropFunction(name, updatefn, '.');
-                propfunctions{end + 1} = propfunction;
+                model = model.setPropFunction(name, updatefn, inputnames, {'.'});
             end
             
             name = 'R';
             updatefn = @(model, state) model.updateReactionRate(state);
-            propfunction = PropFunction(name, updatefn, '.');
-            propfunctions{end + 1} = propfunction;
-            
-            model.propfunctions = propfunctions;
+            inputnames = {{'am', 'T'}, 'elyte', {'am', 'phi'}, {'am', 'OCP'}, {'am', 'k'}};
+            model = model.setPropFunction(name, updatefn, inputnames, {'.'});
             
             model = model.initiateCompositeModel();
         

@@ -107,107 +107,63 @@ classdef BatteryModel < CompositeModel
 
             model.names = {'T', 'SOC'};
 
-            %% Setup property update functions for negative electrode (ne)
+            %% Setup property update functions 
 
             ne = model.getAssocModel('ne');
-
+            pe = model.getAssocModel('pe');
+            ccne = model.getAssocModel('ccne');
+            ccpe = model.getAssocModel('ccpe');
+            elyte = model.getAssocModel('elyte');
+            
             % update function for temperature and soc
             fnupdate = @(model, state) model.dispatchValues(state);
+            inputnames = {VarName({'..'}, 'T'), ...
+                          VarName({'..'}, 'SOC')};
             fnmodel = {'..'};
-            ne = ne.setPropFunction(PropFunction('T', fnupdate, fnmodel));
-            ne = ne.setPropFunction(PropFunction('SOC', fnupdate, fnmodel));
-
+            ne = ne.setPropFunction('T'  , fnupdate, fnmodel));
+            ne = ne.setPropFunction('SOC', fnupdate, fnmodel));
+            pe = pe.setPropFunction('T'  , fnupdate, fnmodel));
+            pe = pe.setPropFunction('SOC', fnupdate, fnmodel));
+            ccne = ccne.setPropFunction('T', fnupdate, fnmodel));
+            ccpe = ccpe.setPropFunction('T', fnupdate, fnmodel));
+            elyte = elyte.setPropFunction('T', fnupdate, fnmodel));
+            
             % update function for exchange term (ne-elyte)
             fnupdate = @(model, state) setupExchanges(model, state);
+            inputnames = {VarName({'..', 'pe'}, 'R'), ...
+                          VarName({'..', 'pe'}, 'R')};
             fnmodel = {'..'};
-            ne = ne.setPropFunction(PropFunction('LiSource', fnupdate, fnmodel));
-            ne = ne.setPropFunction(PropFunction('eSource', fnupdate, fnmodel));
+            ne = ne.setPropFunction('LiSource', fnupdate, inputnames, fnmodel));
+            ne = ne.setPropFunction('eSource' , fnupdate, inputnames, fnmodel));
+            pe = pe.setPropFunction('LiSource', fnupdate, inputnames, fnmodel));
+            pe = pe.setPropFunction('eSource' , fnupdate, inputnames, fnmodel));
+            elyte = elyte.setPropFunction('LiSource', fnupdate, inputnames, fnmodel));
             
             % update function for phielyte (electrolyte potential)
             fnupdate = @(model, state) model.updatePhiElyte(state);
+            inputnames = {VarName({'..', 'elyte'}, 'phi')};
             fnmodel = {'..'};
-            ne = ne.setPropFunction(PropFunction('phielyte', fnupdate, fnmodel));
+            ne = ne.setPropFunction('phielyte', fnupdate, inputnames, fnmodel));
+            pe = pe.setPropFunction('phielyte', fnupdate, inputnames, fnmodel));
             
             % update function for boundary terms (ne-ccne)
             fnupdate = @(model, state) setupBCSources(model, state);
+            inputnames = {VarName({'ne', 'am'}, 'phi'), ...
+                          VarName({'pe', 'am'}, 'phi'), ... 
+                          VarName({'ccne'}, 'phi'), ...
+                          VarName({'ccpe'}, 'phi'), ...
+                          VarName({'ccpe'}, 'E'), ...
+                         };
             fnmodel = {'..'};
-            ne = ne.setPropFunction(PropFunction('jBcSource', fnupdate, fnmodel));
-
+            ne   = ne.setPropFunction('jBcSource', fnupdate, inputnames, fnmodel));
+            pe   = pe.setPropFunction('jBcSource', fnupdate, inputnames, fnmodel));
+            ccne = ccne.setPropFunction('jBcSource', fnupdate, inputnames, fnmodel));
+            ccpe = ccpe.setPropFunction('jBcSource', fnupdate, inputnames, fnmodel));
+            
             model = model.setSubModel('ne', ne);
-
-            %% Setup property update functions for positive electrode (pe)
-
-            pe = model.getAssocModel('pe');
-
-            % update function for temperature and soc
-            fnupdate = @(model, state) model.dispatchValues(state);
-            fnmodel = {'..'};
-            pe = pe.setPropFunction(PropFunction('T', fnupdate, fnmodel));
-            pe = pe.setPropFunction(PropFunction('SOC', fnupdate, fnmodel));
-
-            % update function for exchange term (pe-elyte)
-            fnupdate = @(model, state) setupExchanges(model, state);
-            fnmodel = {'..'};
-            pe = pe.setPropFunction(PropFunction('LiSource', fnupdate, fnmodel));
-            pe = pe.setPropFunction(PropFunction('eSource', fnupdate, fnmodel));
-            
-            % update function for phielyte (electrolyte potential)
-            fnupdate = @(model, state) model.updatePhiElyte(state);
-            fnmodel = {'..'};
-            pe = pe.setPropFunction(PropFunction('phielyte', fnupdate, fnmodel));
-
-            % update function for boundary terms (pe-ccpe)
-            fnupdate = @(model, state) setupBCSources(model, state);
-            fnmodel = {'..'};
-            pe = pe.setPropFunction(PropFunction('jBcSource', fnupdate, fnmodel));
-            
             model = model.setSubModel('pe', pe);
-
-            %% Setup property update functions for negative current collector (ccne)
-            
-            ccne = model.getAssocModel('ccne');
-
-            % update function for temperature
-            fnupdate = @(model, state) model.dispatchValues(state);
-            fnmodel = {'..'};
-            ccne = ccne.setPropFunction(PropFunction('T', fnupdate, fnmodel));
-            
-            % update function for boundary term (ccne - ne)
-            fnupdate = @(model, state) setupBCSources(model, state);
-            fnmodel = {'..'};
-            ccne = ccne.setPropFunction(PropFunction('jBcSource', fnupdate, fnmodel));
-            
             model = model.setSubModel('ccne', ccne);
-
-            %% Setup property update functions for positive current collector (ccpe)
-
-            ccpe = model.getAssocModel('ccpe');
-
-            % update function for temperature
-            fnupdate = @(model, state) model.dispatchValues(state);
-            fnmodel = {'..'};
-            ccpe = ccpe.setPropFunction(PropFunction('T', fnupdate, fnmodel));
-
-            % update function for boundary term (ccpe - pe)
-            fnupdate = @(model, state) setupBCSources(model, state);
-            fnmodel = {'..'};
-            ccpe = ccpe.setPropFunction(PropFunction('jBcSource', fnupdate, fnmodel));
-            
-            model = model.setSubModel('ccpe', ccpe);
-
-            %% Setup property update functions for electrolyte (elyte)
-            elyte = model.getAssocModel('elyte');
-            
-            % update function for temperature
-            fnupdate = @(model, state) model.dispatchValues(state);
-            fnmodel = {'..'};
-            elyte = elyte.setPropFunction(PropFunction('T', fnupdate, fnmodel));
-
-            % update function for exchange terms (pe-elyte and ne-elyte)
-            fnupdate = @(model, state) setupExchanges(model, state);
-            fnmodel = {'..'};
-            elyte = elyte.setPropFunction(PropFunction('LiSource', fnupdate, fnmodel));
-            
+            model = model.setSubModel('ccne', ccne);
             model = model.setSubModel('elyte', elyte);
 
             model = model.initiateCompositeModel();
@@ -563,10 +519,10 @@ classdef BatteryModel < CompositeModel
             state.pe.am = pe_am.updateQuantities(state.pe.am);
             
             state = setupBCSources(model, state);
-
+            
             state.ne = ne.updateReactionRate(state.ne);
             state.pe = pe.updateReactionRate(state.pe);
-            
+
             state = setupExchanges(model, state);
             
             state.elyte = elyte.updateQuantities(state.elyte);
@@ -576,7 +532,6 @@ classdef BatteryModel < CompositeModel
 
             state.ccpe = ccpe.updateChargeCont(state.ccpe);
             state.ccne = ccne.updateChargeCont(state.ccne);
-
             
             %% Liquid electrolyte dissolved ionic species mass continuity and charge continuity
 

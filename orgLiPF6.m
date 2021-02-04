@@ -79,29 +79,29 @@ classdef orgLiPF6 < ComponentModel
             model.pnames = pnames;
             
             % state variables
-            names = {'phi', ...    % Potential
-                     'T', ...      % Temperature
-                     'cs', ...     % Concentrations
-                     'LiSource', ...
-                     'LiFlux', ...
+            names = {'phi'       , ...  % Potential
+                     'T'         , ...  % Temperature
+                     'cs'        , ...  % Concentrations
+                     'LiSource'  , ...
+                     'LiFlux'    , ...
                      'chargeCont', ...
                     };
-            model.names = names;
+            model.names = names
+            
+            model = model.setupVarDims();
+            model.vardims('cs') = 2;
 
             propfunctions = {};
             
             % setup updating function for concentrations
-            % names = {'cs', 'dmudcs', 'ioncs', 'IoSt', 'kappa', 'D', 'jchems', 'j', 'chargeCont', 'LiFlux'};
             names = {'cs', 'chargeCont', 'LiFlux'};
+            inputnames = {'c_Li', 'T', 'LiSource'};
             updatefn = @(model, state) model.updateQuantities(state);
             
             for ind = 1 : numel(names)
                 name = names{ind};
-                propfunction = PropFunction(name, updatefn, '.');
-                propfunctions{end + 1} = propfunction;
+                model = model.setPropFunction(name, updatefn, inputnames, {'.'});
             end
-            
-            model.propfunctions = propfunctions;
             
             % add local aliases for each component
             aliases = {};

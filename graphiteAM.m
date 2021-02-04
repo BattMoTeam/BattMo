@@ -92,18 +92,17 @@ classdef graphiteAM < ComponentModel
                      'eps' ...     % Volume fraction,              [-]    
                     };
             model.names = names; 
+            model.vardims = model.setupVarDims();
             
             propfunctions = {};
             names = {'k', 'D', 'OCP'};
             updatefn = @(model, state) model.updateQuantities(state);
+            inputnames = {'T', 'Li'};
             for ind = 1 : numel(names)
                 name = names{ind};
-                propfunction = PropFunction(name, updatefn, '.');
-                propfunctions{end + 1} = propfunction;
+                model = model.setPropFunction(name, updatefn, inputnames, {'.'});
             end
 
-            model.propfunctions = propfunctions;
-            
         end
         
         function state = initializeState(model, state)

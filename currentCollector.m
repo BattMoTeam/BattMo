@@ -32,16 +32,13 @@ classdef currentCollector < ComponentModel
                      'chargeCont', ...
                     };
             model.names = names;
-            
-            propfunctions = {};
+            model.vardims = model.setupVarDims();
             
             % setup update property function for charge continuity (chargeCont)
             name = 'chargeCont';
             updatefn = @(model, state) model.updateChargeCont(state);
-            propfunction = PropFunction(name, updatefn, '.');
-            propfunctions{end + 1} = propfunction;
-            
-            model.propfunctions = propfunctions;
+            inputnames = {'phi', 'jBcSource'};
+            model = model.setPropFunction(name, updatefn, inputname, {'.'});
             
         end
         

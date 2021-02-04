@@ -69,17 +69,16 @@ classdef nmc111AM < ComponentModel
                      'D', ...      % Diffusion
                     };
             model.names = names;
+            model = model.setupVarDims();
             
-            propfunctions = {};
             names = {'k', 'D', 'OCP'};
+            inputnames = {'T', 'Li'};
             updatefn = @(model, state) model.updateQuantities(state);
             for ind = 1 : numel(names)
                 name = names{ind};
-                propfunction = PropFunction(name, updatefn, '.');
-                propfunctions{end + 1} = propfunction;
+                model = model.setPropFunction(name, updatefn, inputnames, {'.'});
             end
             
-            model.propfunctions = propfunctions;
             
             % Define material constants
             model.spCAh    = 155;      % [Ah kg^-1]
@@ -106,7 +105,6 @@ classdef nmc111AM < ComponentModel
 
             T     = state.T;
             cs    = state.Li;
-            
             
             % Define ideal gas constant
             R = 8.314;      % [J mol^-1 K^-1]
