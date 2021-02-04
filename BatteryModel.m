@@ -126,8 +126,6 @@ classdef BatteryModel < CompositeModel
             fnmodel = {'..'};
             ne = ne.setPropFunction(PropFunction('jBcSource', fnupdate, fnmodel));
 
-
-
             model = model.setSubModel('ne', ne);
 
             %% Setup property update functions for positive electrode (pe)
@@ -234,45 +232,10 @@ classdef BatteryModel < CompositeModel
             
         end
 
-        function state = initializeState(model, state)
-        % Used only in debugging for the moment
-
-            state = model.initiateState(state);
-
-            % initialize each of the submodels
-            for i = 1 : model.nSubModels
-                state = model.SubModels{i}.initializeState(state);
-            end
-
-            ccne = model.getAssocModel('ccne');
-            ne = model.getAssocModel('ne');
-
-            [OCP_ne, state] = ne.getUpdatedProp(state, {'am', 'OCP'});
-            nc = ccne.G.cells.num;
-            OCP_ccne = OCP_ne(1)*ones(nc, 1);
-
-            state = ccne.setProp(state, 'OCP', OCP_ccne);
-            state = ccne.setProp(state, 'phi', OCP_ccne);
-
-            ne = model.getAssocModel('ccpe');
-            pe = model.getAssocModel('pe');
-            ccpe = model.getAssocModel('ccpe');
-
-            [OCP_pe, state] = pe.getUpdatedProp(state, {'am', 'OCP'});
-            nc = ccpe.G.cells.num;
-            OCP_ccpe = OCP_pe(1)*ones(nc, 1);
-
-            state = ccpe.setProp(state, 'OCP', OCP_ccpe);
-            state = ccpe.setProp(state, 'phi', OCP_ccpe);
-
-            state = ccpe.setProp(state, 'E', OCP_ccpe(1));
-
-        end
-
         function state = dispatchValues(model, state)
 
-            [T, state] = model.getUpdatedProp(state, 'T');
-            [SOC, state] = model.getUpdatedProp(state, 'SOC');
+            T = state.T;
+            SOC = state.SOC;
 
             elyte = model.getAssocModel('elyte');
             G = elyte.G;
@@ -282,12 +245,12 @@ classdef BatteryModel < CompositeModel
             G = ne.G;
             Tne = T(G.mappings.cellmap);
             SOCne = SOC(G.mappings.cellmap);
-
+            
             pe = model.getAssocModel('pe');
             G = pe.G;
             Tpe = T(G.mappings.cellmap);
             SOCpe = SOC(G.mappings.cellmap);
-
+            
             ccpe = model.getAssocModel('ccpe');
             G = ccpe.G;
             Tccpe = T(G.mappings.cellmap);
@@ -296,19 +259,24 @@ classdef BatteryModel < CompositeModel
             G = ccne.G;
             Tccne = T(G.mappings.cellmap);
 
-            state = model.setProp(state, {'elyte', 'T'}, Telyte);
-            state = model.setProp(state, {'ne', 'T'}, Tne);
-            state = model.setProp(state, {'pe', 'T'}, Tpe);
-            state = model.setProp(state, {'ccpe', 'T'}, Tccpe);
-            state = model.setProp(state, {'ccne', 'T'}, Tccne);
-            state = model.setProp(state, {'ne', 'SOC'}, SOCne);
-            state = model.setProp(state, {'pe', 'SOC'}, SOCpe);
-
+            state.elyte.T = Telyte;
+            state.ne.T    = Tne;
+            state.ne.am.T = Tne;
+            state.pe.T    = Tpe;
+            state.pe.am.T = Tpe;
+            state.ccpe.T  = Tccpe;
+            state.ccne.T  = Tccne;
+            
+            state.ne.SOC    = SOCne;
+            state.ne.am.SOC = SOCne;
+            state.pe.SOC    = SOCpe;
+            state.pe.am.SOC = SOCpe;
+            
         end
 
         function state = updatePhiElyte(model, state)
 
-            [phielyte, state] = model.getUpdatedProp(state, {'elyte', 'phi'});
+            phielyte = state.elyte.phi;
             elyte = model.getAssocModel('elyte');
 
             elytecells = zeros(model.G.cells.num, 1);
@@ -320,8 +288,8 @@ classdef BatteryModel < CompositeModel
             pe = model.getAssocModel('pe');
             phielyte_pe = phielyte(elytecells(pe.G.mappings.cellmap));
 
-            state = model.setProp(state, {'ne', 'phielyte'}, phielyte_ne);
-            state = model.setProp(state, {'pe', 'phielyte'}, phielyte_pe);
+            state.ne.phielyte = phielyte_ne;
+            state.pe.phielyte = phielyte_pe;
 
         end
 
@@ -351,13 +319,19 @@ classdef BatteryModel < CompositeModel
 
         function [y0, yp0] = dynamicPreprocess(model, state)
             %% Initialize the state vector
+            
+            fv = model.fv;
 
-            y0 = [];
-            pvarnames = model.getModelPrimaryVarNames();
-            for ind = 1 : numel(pvarnames);
-                y0 = [y0; model.getProp(state, pvarnames{ind})];
-            end
-
+            y0(fv.getSlot(VarName({'elyte'}, 'phi')))    = state.elyte.phi;
+            y0(fv.getSlot(VarName({'elyte'}, 'c_Li')))   = state.elyte.cs{1};
+            y0(fv.getSlot(VarName({'ne', 'am'}, 'Li')))  = state.ne.am.Li;
+            y0(fv.getSlot(VarName({'ne', 'am'}, 'phi'))) = state.ne.am.phi;
+            y0(fv.getSlot(VarName({'pe', 'am'}, 'Li')))  = state.pe.am.Li;
+            y0(fv.getSlot(VarName({'pe', 'am'}, 'phi'))) = state.pe.am.phi;
+            y0(fv.getSlot(VarName({'ccne'}, 'phi')))     = state.ccne.phi;
+            y0(fv.getSlot(VarName({'ccpe'}, 'phi')))    = state.ccpe.phi;
+            y0(fv.getSlot(VarName({'ccpe'} , 'E')))      = state.ccpe.E;
+            
             yp0  = zeros(length(y0), 1);
 
         end
@@ -440,14 +414,14 @@ classdef BatteryModel < CompositeModel
 
             nc = model.G.cells.num;
 
-            initstate = [];
-            initstate = model.initiateState(initstate);
-
             SOC = model.SOC;
             T   = model.T;
-            initstate = model.setProp(initstate, 'T', T*ones(nc, 1));
-            initstate = model.setProp(initstate, 'SOC', SOC*ones(nc, 1));
+            
+            initstate.T   =  T*ones(nc, 1);
+            initstate.SOC =  SOC*ones(nc, 1);
 
+            initstate = model.dispatchValues(initstate);
+            
             elyte = model.getAssocModel('elyte');
             ne    = model.getAssocModel('ne');
             pe    = model.getAssocModel('pe');
@@ -465,9 +439,11 @@ classdef BatteryModel < CompositeModel
             c = theta .* ne_am.Li.cmax;
             c = c*ones(ne.G.cells.num, 1);
 
-            initstate = ne_am.setProp(initstate, 'Li', c);
-            [OCP, initstate] = ne_am.getUpdatedProp(initstate, 'OCP');
-            initstate = ne_am.setProp(initstate, 'phi', OCP);
+            initstate.ne.am.Li = c;
+            initstate.ne.am = ne_am.updateQuantities(initstate.ne.am);
+
+            OCP = initstate.ne.am.OCP;
+            initstate.ne.am.phi = OCP;
 
             %% setup initial pe state
 
@@ -477,24 +453,28 @@ classdef BatteryModel < CompositeModel
             c = theta .* pe_am.Li.cmax;
             c = c*ones(ne.G.cells.num, 1);
 
-            initstate = pe_am.setProp(initstate, 'Li', c);
-            [OCP, initstate] = pe_am.getUpdatedProp(initstate, 'OCP');
-            initstate = pe_am.setProp(initstate, 'phi', OCP);
+            initstate.pe.am.Li = c;
+            initstate.pe.am = pe_am.updateQuantities(initstate.pe.am);
+
+            OCP = initstate.pe.am.OCP;
+            initstate.pe.am.phi = OCP;
 
             %% setup initial elyte state
 
-            initstate = elyte.setProp(initstate, 'phi', zeros(elyte.G.cells.num, 1));
-            initstate = elyte.setProp(initstate, 'c_Li', 1000*ones(elyte.G.cells.num, 1));
+            initstate.elyte.phi = zeros(elyte.G.cells.num, 1);
+            initstate.elyte.cs{1} = 1000*ones(elyte.G.cells.num, 1);
 
             %% setup initial Current collectors state
-            [OCP, initstate] = ne_am.getUpdatedProp(initstate, 'OCP');
+            
+            OCP = initstate.ne.am.OCP;
             OCP = OCP(1) .* ones(ccne.G.cells.num, 1);
-            initstate = ccne.setProp(initstate, 'phi', OCP);
+            initstate.ccne.phi = OCP;
 
-            [OCP, initstate] = pe_am.getUpdatedProp(initstate, 'OCP');
+            OCP = initstate.pe.am.OCP;
             OCP = OCP(1) .* ones(ccpe.G.cells.num, 1);
-            initstate = ccpe.setProp(initstate, 'phi', OCP);
-            initstate = ccpe.setProp(initstate, 'E', OCP(1));
+            initstate.ccpe.phi = OCP;
+            
+            initstate.ccpe.E = OCP(1);
             
         end
 
@@ -512,22 +492,24 @@ classdef BatteryModel < CompositeModel
             end
 
             % Mapping of variables
-            state = [];
-            state = model.initiateState(state);
             nc = model.G.cells.num;
 
             % setup temperature and SOC here
             SOC = model.SOC;
             T   = model.T;
-            state = model.setProp(state, 'T', T*ones(nc, 1));
-            state = model.setProp(state, 'SOC', SOC*ones(nc, 1));
+            state.T =  T*ones(nc, 1);
+            state.SOC =  SOC*ones(nc, 1);
 
-            pvarnames = model.getModelPrimaryVarNames();
-            for ind = 1 : numel(pvarnames)
-                varname = pvarnames{ind};
-                state = model.setProp(state, varname, y(fv.getSlot(varname)));
-            end
-
+            state.elyte.phi   = y(fv.getSlot(VarName({'elyte'}, 'phi')));
+            state.elyte.cs{1} = y(fv.getSlot(VarName({'elyte'}, 'c_Li')));
+            state.ne.am.Li    = y(fv.getSlot(VarName({'ne', 'am'}, 'Li')));
+            state.ne.am.phi   = y(fv.getSlot(VarName({'ne', 'am'}, 'phi')));
+            state.pe.am.Li    = y(fv.getSlot(VarName({'pe', 'am'}, 'Li')));
+            state.pe.am.phi   = y(fv.getSlot(VarName({'pe', 'am'}, 'phi')));
+            state.ccne.phi    = y(fv.getSlot(VarName({'ccne'}, 'phi')));                    
+            state.ccpe.phi    = y(fv.getSlot(VarName({'ccpe'}, 'phi')));
+            state.ccpe.E      = y(fv.getSlot(VarName({'ccpe'} , 'E')));
+            
             % variables for time derivatives
             elyte_Li_cdot = yp(fv.getSlot(VarName({'elyte'}, 'c_Li')));
             ne_Li_csdot   = yp(fv.getSlot(VarName({'ne', 'am'}, 'Li')));
@@ -542,60 +524,82 @@ classdef BatteryModel < CompositeModel
             ne_am = ne.getAssocModel('am');
             pe_am = pe.getAssocModel('am');
 
-            elyte_c_Li = elyte.getUpdatedProp(state, 'c_Li');
-            elyte_phi  = elyte.getUpdatedProp(state, 'phi');
-            ne_Li      = ne_am.getUpdatedProp(state, 'Li');
-            ne_phi     = ne_am.getUpdatedProp(state, 'phi');
-            pe_Li      = pe_am.getUpdatedProp(state, 'Li');
-            pe_phi     = pe_am.getUpdatedProp(state, 'phi');
-            ccne_phi   = ccne.getUpdatedProp(state, 'phi');
-            ccpe_phi   = ccpe.getUpdatedProp(state, 'phi');
-            ccpe_E     = ccpe.getUpdatedProp(state, 'E');
+            elyte_c_Li = state.elyte.cs{1};
+            elyte_phi  = state.elyte.phi;
+            ne_Li      = state.ne.am.Li;
+            ne_phi     = state.ne.am.phi;
+            pe_Li      = state.pe.am.Li;
+            pe_phi     = state.pe.am.phi;
+            ccne_phi   = state.ccne.phi;
+            ccpe_phi   = state.ccpe.phi;
+            ccpe_E     = state.ccpe.E;
 
             %% Cell voltage
             
             ccne_E = 0;
-            ccpe_E = ccpe.getProp(state, 'E');
-
             U = ccpe_E - ccne_E;
 
             %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
             %% System of Equations                                      %%%
             %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
             
-            %% Liquid electrolyte dissolved ionic species mass continuity and charge continuity
+            %% dispatch T and SOC in submodels (need dispatch because the grids are different)
+
+            state = model.dispatchValues(state);
+            state = model.updatePhiElyte(state);
             
-            [elyte_Li_source, state] = elyte.getUpdatedProp(state, 'LiSource');
-            [elyte_Li_flux, state] = elyte.getUpdatedProp(state, 'LiFlux');
+            state.ne.am = ne_am.updateQuantities(state.ne.am);
+            state.pe.am = pe_am.updateQuantities(state.pe.am);
+            
+            state = setupBCSources(model, state);
+
+            state.ne = ne.updateReactionRate(state.ne);
+            state.pe = pe.updateReactionRate(state.pe);
+            
+            state = setupExchanges(model, state);
+            
+            state.elyte = elyte.updateQuantities(state.elyte);
+
+            state.ne = ne.updateQuantities(state.ne);
+            state.pe = pe.updateQuantities(state.pe);
+
+            state.ccpe = ccpe.updateChargeCont(state.ccpe);
+            state.ccne = ccne.updateChargeCont(state.ccne);
+
+            
+            %% Liquid electrolyte dissolved ionic species mass continuity and charge continuity
+
+            elyte_Li_source = state.elyte.LiSource;
+            elyte_Li_flux = state.elyte.LiFlux;
 
             elyte_Li_div = elyte.operators.Div(elyte_Li_flux)./elyte.G.cells.volumes;
             elyte_Li_cepsdot = elyte.eps.*elyte_Li_cdot;
             elyte_Li_massCont = (-elyte_Li_div + elyte_Li_source - elyte_Li_cepsdot);
             
-            [elyte_chargeCont, state] = elyte.getUpdatedProp(state, 'chargeCont');
+            elyte_chargeCont = state.elyte.chargeCont;
 
             %% Electrode Active material mass continuity and charge continuity %%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-            [ne_Li_source, state] = ne.getUpdatedProp(state, 'LiSource');
-            [ne_Li_flux, state]   = ne.getUpdatedProp(state, 'LiFlux');
+            ne_Li_source = state.ne.LiSource;
+            ne_Li_flux = state.ne.LiFlux;
             ne_Li_divDiff = ne.operators.Div(ne_Li_flux)./ne.G.cells.volumes;
             ne_Li_csepsdot = ne_am.eps.*ne_Li_csdot;
             ne_Li_massCont = (-ne_Li_divDiff + ne_Li_source - ne_Li_csepsdot);
 
-            [ne_e_chargeCont, state] = ne.getUpdatedProp(state, 'chargeCont');
+            ne_e_chargeCont = state.ne.chargeCont;
 
-            [pe_Li_source, state] = pe.getUpdatedProp(state, 'LiSource');            
-            [pe_Li_flux, state]   = pe.getUpdatedProp(state, 'LiFlux');
+            pe_Li_source = state.pe.LiSource;
+            pe_Li_flux   = state.pe.LiFlux;
             pe_Li_csepsdot = pe_am.eps.*pe_Li_csdot;
             pe_Li_divDiff = pe.operators.Div(pe_Li_flux)./pe.G.cells.volumes;
             pe_Li_massCont = (-pe_Li_divDiff + pe_Li_source - pe_Li_csepsdot);
 
-            [pe_e_chargeCont, state] = pe.getUpdatedProp(state, 'chargeCont');
+            pe_e_chargeCont =  state.pe.chargeCont;
 
             %% Collector charge continuity
 
-            [ccne_e_chargeCont, state] = ccne.getUpdatedProp(state, 'chargeCont');
-            [ccpe_e_chargeCont, state] = ccpe.getUpdatedProp(state, 'chargeCont');
+            ccne_e_chargeCont = state.ccne.chargeCont;
+            ccpe_e_chargeCont = state.ccpe.chargeCont;
 
             %% Control equation
 

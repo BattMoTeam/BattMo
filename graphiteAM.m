@@ -109,18 +109,19 @@ classdef graphiteAM < ComponentModel
         function state = initializeState(model, state)
         % Used only in debugging for the moment
 
-            T = model.getUpdatedProp(state, 'T');
-            SOC = model.getUpdatedProp(state, 'SOC');
+            T = state.T;
+            SOC = state.SOC;
             
             m     = (1 ./ (model.theta100 - model.theta0));
             b     = -m .* model.theta0;
             theta = (SOC - b) ./ m;
             cs    = theta .* model.Li.cmax;
 
-            state = model.setProp(state, 'Li', cs);
+            state.Li = cs;
+            state = model.updateQuantities(state);
             
-            OCP = model.getUpdatedProp(state, 'OCP');
-            state = model.setProp(state, 'phi', OCP);
+            state.phi = state.OCP;
+            
         end
 
         
@@ -132,7 +133,7 @@ classdef graphiteAM < ComponentModel
             % Define reference temperature
             refT = 298.15;  % [K]
             
-            T = model.getUpdatedProp(state, 'T');
+            T = state.T;
             
             % Define reference temperature
             refT = 298.15;  % [K]
@@ -144,7 +145,7 @@ classdef graphiteAM < ComponentModel
             % Calculate solid diffusion coefficient, [m^2 s^-1]
             D = model.Li.D0 .* exp(-model.Li.EaD./model.con.R*(1./T - 1/refT));
 
-            [cs, state]    = model.getUpdatedProp(state, 'Li');
+            cs = state.Li;
             
             % Set the reference temperature
             refT = 298.15;
@@ -190,9 +191,9 @@ classdef graphiteAM < ComponentModel
             % Calculate the open-circuit potential of the active material
             OCP = refOCP + (T - refT) .* dUdT;
             
-            state = model.setProp(state, 'D', D);
-            state = model.setProp(state, 'OCP'   , OCP);
-            state = model.setProp(state, 'k', k);
+            state.D = D;
+            state.OCP = OCP;
+            state.k = k;
             
         end
         

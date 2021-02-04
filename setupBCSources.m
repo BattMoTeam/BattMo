@@ -8,19 +8,19 @@ function state = setupBCSources(model, state)
     ne_am = ne.getAssocModel('am');
     pe_am = pe.getAssocModel('am');
     
-    ne_phi   = ne_am.getUpdatedProp(state, 'phi');
-    pe_phi   = pe_am.getUpdatedProp(state, 'phi');
-    ccne_phi = ccne.getUpdatedProp(state, 'phi');
-    ccpe_phi = ccpe.getUpdatedProp(state, 'phi');
-    ccpe_E = ccpe.getUpdatedProp(state, 'E');
+    ne_phi   = state.ne.am.phi;
+    pe_phi   = state.pe.am.phi;
+    ccne_phi = state.ccne.phi;
+    ccpe_phi = state.ccpe.phi;
+    ccpe_E   = state.ccpe.E;
     
     
-    %% We compute the effective conductivity and diffusion
+    %% We assume state.ne.am.D and state.ne.am.D  have been updated
 
-    [D, state] = ne.getUpdatedProp(state, {'am', 'D'});
+    D = state.ne.am.D;
     ne_Deff = D.*ne_am.eps.^1.5;
 
-    [D, state] = pe.getUpdatedProp(state, {'am', 'D'});
+    D = state.pe.am.D;
     pe_Deff = D.*pe_am.eps.^1.5;
 
     ne_sigmaeff = ne.sigmaeff;
@@ -81,10 +81,9 @@ function state = setupBCSources(model, state)
     [tccpe, cells] = ccpe.operators.harmFaceBC(ccpe_sigmaeff, faces);
     ccpe_j_bcsource(cells) = ccpe_j_bcsource(cells) + tccpe.*(bcval - ccpe_phi(cells));
     
-
-    state = ne.setProp(state, 'jBcSource', ne_j_bcsource);
-    state = pe.setProp(state, 'jBcSource', pe_j_bcsource);
-    state = ccne.setProp(state, 'jBcSource', ccne_j_bcsource);
-    state = ccpe.setProp(state, 'jBcSource', ccpe_j_bcsource);
+    state.ne.jBcSource   =  ne_j_bcsource;
+    state.pe.jBcSource   =  pe_j_bcsource;
+    state.ccne.jBcSource =  ccne_j_bcsource;
+    state.ccpe.jBcSource =  ccpe_j_bcsource;
     
 end

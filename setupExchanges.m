@@ -16,7 +16,7 @@ function state = setupExchanges(model, state)
     ne_e_source     = zeros(ne.G.cells.num, 1);
     pe_e_source     = zeros(pe.G.cells.num, 1);
 
-    [phi, state] = elyte.getUpdatedProp(state, 'phi');
+    phi = state.elyte.phi;
     if isa(phi, 'ADI')
         adsample = getSampleAD(phi);
         adbackend = model.AutoDiffBackend;
@@ -35,8 +35,9 @@ function state = setupExchanges(model, state)
     necells = coupterm.couplingcells(:, 1);
     elytecells = coupterm.couplingcells(:, 2);
 
-    % calculate rection rate
-    [ne_R, state] = ne.getUpdatedProp(state, 'R');
+    % We compute the reaction rate
+    state.ne = ne.updateReactionRate(state.ne);
+    ne_R = state.ne.R;
 
     % Electrolyte NE Li+ source
     elyte_Li_source(elytecells) = ne_R;
@@ -55,7 +56,8 @@ function state = setupExchanges(model, state)
     elytecells = coupterm.couplingcells(:, 2);
 
     % calculate rection rate
-    [pe_R, state] = pe.getUpdatedProp(state, 'R');
+    state.pe = pe.updateReactionRate(state.pe);
+    pe_R = state.pe.R;
 
     % Electrolyte PE Li+ source
     elyte_Li_source(elytecells) = - pe_R;
@@ -66,10 +68,10 @@ function state = setupExchanges(model, state)
     % Active Material PE current source
     pe_e_source(pecells) = - pe_R;
 
-    state = elyte.setProp(state, 'LiSource', elyte_Li_source);
-    state = ne.setProp(state, 'LiSource', ne_Li_source);
-    state = ne.setProp(state, 'eSource', ne_e_source);
-    state = pe.setProp(state, 'LiSource', pe_Li_source);
-    state = pe.setProp(state, 'eSource', pe_e_source);
+    state.elyte.LiSource =  elyte_Li_source;
+    state.ne.LiSource    =  ne_Li_source;
+    state.ne.eSource     =  ne_e_source;
+    state.pe.LiSource    =  pe_Li_source;
+    state.pe.eSource     =  pe_e_source;
     
 end

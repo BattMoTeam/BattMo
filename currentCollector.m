@@ -45,25 +45,19 @@ classdef currentCollector < ComponentModel
             
         end
         
-        function state = initializeState(model, state)
-            % Used only in debugging for the moment
-            state = model.initiateState(state);
-        end
-        
-        
         function state = updateChargeCont(model, state)
             
             op = model.operators;
             sigmaeff = model.sigmaeff;
-            
-            [phi, state] = model.getUpdatedProp(state, 'phi');
-            [jBcSource, state] = model.getUpdatedProp(state, 'jBcSource');
+         
+            phi = state.phi;
+            jBcSource = state.jBcSource;
             
             j = - op.harmFace(sigmaeff).*op.Grad(phi); 
             
             chargeCont = (op.Div(j) - jBcSource)./ model.G.cells.volumes./model.con.F;
             
-            state = model.setProp(state, 'chargeCont', chargeCont);
+            state.chargeCont = chargeCont;
             
         end
          

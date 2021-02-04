@@ -1,4 +1,4 @@
-% 2D test case
+%_2D_test_case
 
 clear all
 close all

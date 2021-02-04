@@ -97,25 +97,6 @@ classdef nmc111AM < ComponentModel
             model.eps      = 0.8;  
             
         end
-
-        function state = initializeState(model, state)
-        % Used only in debugging for the moment
-
-            T = model.getUpdatedProp(state, 'T');
-            SOC = model.getUpdatedProp(state, 'SOC');
-            
-            m     = (1 ./ (model.theta100 - model.theta0));
-            b     = -m .* model.theta0;
-            theta = (SOC - b) ./ m;
-            cs    = theta .* model.Li.cmax;
-
-            state = model.setProp(state, 'theta', theta);
-            state = model.setProp(state, 'Li', cs);
-            
-            OCP = model.getUpdatedProp(state, 'OCP');
-            state = model.setProp(state, 'phi', OCP);
-        end
-
         
         function state = updateQuantities(model, state)
         %EQUILIBRIUM Calculate the equilibrium properties of the
@@ -123,9 +104,8 @@ classdef nmc111AM < ComponentModel
         %   Calculate the equilibrium open cirucuit potential of
         %   nmc111 according to the model used by Torchio et al [1].
 
-
-            [T, state]     = model.getUpdatedProp(state, 'T');
-            [cs, state]    = model.getUpdatedProp(state, 'Li');
+            T     = state.T;
+            cs    = state.Li;
             
             
             % Define ideal gas constant
@@ -181,9 +161,10 @@ classdef nmc111AM < ComponentModel
             % material
             OCP = refOCP + (T - refT) .* dUdT;
 
-            state = model.setProp(state, 'D', D);
-            state = model.setProp(state, 'OCP'   , OCP);
-            state = model.setProp(state, 'k', k);
+            state.D   = D;
+            state.OCP = OCP;
+            state.k   = k;
+            
         end
         
     end

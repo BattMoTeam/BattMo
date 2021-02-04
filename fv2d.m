@@ -28,8 +28,36 @@ classdef fv2d
             varnames = model.getModelPrimaryVarNames();
             
             ind = 0;
+            
             for i = 1 : numel(varnames)
-                val = model.getProp(state, varnames{i});
+                
+                varname = varnames{i};
+                
+                varmodel = model.getAssocModel(varname.namespace);
+                [isalias, newvarname] = varmodel.aliasLookup(varname.name);
+                
+                if isalias
+                    varname = newvarname;
+                    if strcmp(varname.namespace{1}, '.')
+                        varname.namespace = varmodel.namespace;
+                    end
+                end
+                
+                namespace = varname.namespace;
+                name      = varname.name;
+                index     = varname.index;
+                
+                val = state;
+                while ~isempty(namespace)
+                    val = val.(namespace{1});
+                    namespace = namespace(2 : end);
+                end
+                val = val.(name);
+                
+                if isnumeric(index)
+                    val = val{index};
+                end
+                
                 varsize =  size(val, 1);
                 varsizes{i} = varsize;
                 slots{i} = ind + (1 : varsize)';

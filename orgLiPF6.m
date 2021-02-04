@@ -75,7 +75,7 @@ classdef orgLiPF6 < ComponentModel
             model.ncomp = numel(model.compnames);
             
             % primary variables
-            pnames = {'phi', 'c_Li'}; % name 'c_Li' should match the setup in getAffiliatedComponentNames
+            pnames = {'phi', 'c_Li'}; 
             model.pnames = pnames;
             
             % state variables
@@ -112,7 +112,7 @@ classdef orgLiPF6 < ComponentModel
                     compname = model.compnames{icn};
                     name = sprintf('%s_%s', fieldname, compname);
                     lname = sprintf('%ss', fieldname);
-                    varname = VarName('.', lname, icn);
+                    varname = VarName({'.'}, lname, icn);
                     aliases{end + 1} = {name, varname};
                 end
             end
@@ -132,7 +132,9 @@ classdef orgLiPF6 < ComponentModel
         end
 
         function state = initiateState(model, state)
-
+            
+            error('should not be used now');
+            
             state = initiateState@ComponentModel(model, state);
             
             % instantiate the cell variables
@@ -152,42 +154,17 @@ classdef orgLiPF6 < ComponentModel
             
         end
         
-        function state = initializeState(model, state)
-            % used only in debugging for the moment
-                
-            state = model.initiateState(state);
-            
-            % instantiate cell variables
-            nc = model.G.cells.num;
-            compnames = model.compnames;
-            ncomp = model.ncomp;
-            
-            fieldnames = {'cs', 'ioncs', 'jchems', 'dmudcs'};
-            varnames = model.assignCurrentNameSpace(fieldnames);
-            for ifn = 1 : numel(varnames)
-                fieldname = varnames{ifn}.getfieldname;
-                if isempty(state.(fieldname))
-                    state.(fieldname) = cell(1, ncomp);
-                end
-            end
-            
-            [c, state] = model.getUpdatedProp(state, 'c_Li');
-
-            state = model.setProp(state, 'c_PF6', c);
-
-        end
-
-        
         function state = updateQuantities(model, state)
             
             ncomp = model.ncomp;
            
-            [c_Li, state] = model.getUpdatedProp(state, 'c_Li');
-
-            [T, state]  = model.getUpdatedProp(state, 'T');
-            state = model.setProp(state, 'c_PF6', c_Li);
-            [cs, state] = model.getUpdatedProp(state, 'cs');
-            [phi, state]    = model.getUpdatedProp(state, 'phi');
+            c_Li = state.cs{1};
+            T = state.T;
+            
+            state.cs{2} = c_Li;
+            
+            cs  = state.cs;
+            phi = state.phi;
             
             for ind = 1 : ncomp
                 dmudcs{ind} = model.con.R .* T ./ cs{ind};
@@ -241,7 +218,8 @@ classdef orgLiPF6 < ComponentModel
             % Ionic current density due to the electrochemical potential gradient
             j = op.harmFace(kappaeff).*(-1).*op.Grad(phi) - jchem;
             
-            [LiSource, state] = model.getUpdatedProp(state, 'LiSource');
+            % We assume that LiSource has been setup
+            LiSource = state.LiSource;
             
             ind_Li = 1;
             chargeCont = - op.Div(j)./model.G.cells.volumes./model.con.F + LiSource.*model.sp.z{ind_Li};
@@ -259,15 +237,8 @@ classdef orgLiPF6 < ComponentModel
             
             flux = fluxDiff + fluxE;
             
-            % state = model.setProp(state, 'jchems', jchems);
-            % state = model.setProp(state, 'j', j);
-            % state = model.setProp(state, 'dmudcs', dmudcs);
-            % state = model.setProp(state, 'ioncs', cs);
-            % state = model.setProp(state, 'IoSt', IoSt);
-            % state = model.setProp(state, 'kappa', kappa);
-            % state = model.setProp(state, 'D', D);
-            state = model.setProp(state, 'LiFlux', flux);
-            state = model.setProp(state, 'chargeCont', chargeCont);
+            state.LiFlux = flux;
+            state.chargeCont = chargeCont;
             
         end
 

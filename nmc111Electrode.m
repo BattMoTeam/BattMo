@@ -1,7 +1,7 @@
 classdef nmc111Electrode < CompositeModel
     % NMC111ELECTRODE Summary of this class goes here
     % Detailed explanation goes here
-    
+
     properties
         
         % Physical constants
@@ -88,60 +88,55 @@ classdef nmc111Electrode < CompositeModel
             
         end
         
-        function state = initializeState(model, state)
-           % Used only in debugging for the moment
-            state = model.initiateState(state);
-
-            ammodel = model.getAssocModel('am');
-            state = ammodel.initializeState(state);
-        end
-
         
         function state = updateReactionRate(model, state)
             
 
-            [T, state]   = model.getUpdatedProp(state, 'T');
-            [phiElyte, state] = model.getUpdatedProp(state, 'phielyte');
-
-            ammodel = model.getAssocModel('am');
-
-            [phi, state] = ammodel.getUpdatedProp(state, 'phi');
-            [OCP, state] = ammodel.getUpdatedProp(state, 'OCP');
-            [k, state]   = ammodel.getUpdatedProp(state, 'k');
+            T = state.am.T;
+            phiElyte = state.phielyte;
             
+            ammodel = model.getAssocModel('am');
+                        
+            state.am = ammodel.updateQuantities(state.am);
+            phi = state.am.phi;
+            OCP = state.am.OCP;
+            k = state.am.k;
+
             eta = -(phi - phiElyte - OCP);
                                     
             R = ammodel.Asp.*butlerVolmer(k.*model.con.F, 0.5, 1, eta, T) ./ (1 .* model.con.F);
             
-            state = model.setProp(state, 'R', R);
+            state.R = R;
             
         end
         
         function state = updateQuantities(model, state)
             
-            op = model.operators;
-            [phi, state] = model.getUpdatedProp(state, {'am', 'phi'});
+            phi = state.am.phi;
+
             op = model.operators;
             
             sigmaeff = model.sigmaeff;
                                 
             j = - op.harmFace(sigmaeff).*op.Grad(phi); 
-
-            [jBcSource, state] = model.getUpdatedProp(state, 'jBcSource');
-            [eSource, state]   = model.getUpdatedProp(state, 'eSource');
+                       
+            % We assume the source have been computed before this function is run
+            jBcSource = state.jBcSource;
+            eSource   = state.eSource;
             
             chargeCont = (op.Div(j) - jBcSource)./ model.G.cells.volumes./model.con.F - eSource;
 
-            [D, state]   = model.getUpdatedProp(state, {'am', 'D'});
-            [cLi, state] = model.getUpdatedProp(state, {'am', 'Li'});
+            % We assume the following quantities have been updated in am model
+            D =  state.am.D;
+            cLi =  state.am.Li;
             
             Deff = D .* model.eps .^1.5;
             
             trans = op.harmFace(Deff);
             flux = - trans.*op.Grad(cLi);
             
-            state = model.setProp(state, 'chargeCont', chargeCont);
-            state = model.setProp(state, 'LiFlux', flux);
+            state.chargeCont = chargeCont;
+            state.LiFlux = flux;
             
         end
 
