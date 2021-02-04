@@ -4,10 +4,7 @@ classdef fv2d
     
     properties
 
-        varnames
         varsizes
-        
-        % State data slots
         slots
         
         % Time discretization properties
@@ -25,49 +22,25 @@ classdef fv2d
         
         function fv = fv2d(model, state)
             
-            varnames = model.getModelPrimaryVarNames();
-            
-            ind = 0;
-            
-            for i = 1 : numel(varnames)
-                
-                varname = varnames{i};
-                
-                varmodel = model.getAssocModel(varname.namespace);
-                [isalias, newvarname] = varmodel.aliasLookup(varname.name);
-                
-                if isalias
-                    varname = newvarname;
-                    if strcmp(varname.namespace{1}, '.')
-                        varname.namespace = varmodel.namespace;
-                    end
-                end
-                
-                namespace = varname.namespace;
-                name      = varname.name;
-                index     = varname.index;
-                
-                val = state;
-                while ~isempty(namespace)
-                    val = val.(namespace{1});
-                    namespace = namespace(2 : end);
-                end
-                val = val.(name);
-                
-                if isnumeric(index)
-                    val = val{index};
-                end
-                
-                varsize =  size(val, 1);
-                varsizes{i} = varsize;
-                slots{i} = ind + (1 : varsize)';
-                ind = ind + varsize;
+            varsizes = [];
+            varsizes(end + 1) = size(state.elyte.cs{1}, 1);
+            varsizes(end + 1) = size(state.elyte.phi, 1);
+            varsizes(end + 1) = size(state.ne.am.Li, 1);
+            varsizes(end + 1) = size(state.ne.am.phi, 1);
+            varsizes(end + 1) = size(state.pe.am.Li, 1);
+            varsizes(end + 1) = size(state.pe.am.phi, 1);
+            varsizes(end + 1) = size(state.ccne.phi, 1);
+            varsizes(end + 1) = size(state.ccpe.phi, 1);
+            varsizes(end + 1) = size(state.ccpe.E, 1);
+
+            ind = 1;
+            for i = 1 : numel(varsizes)
+                slots{i} = ind : (ind + varsizes(i) - 1);
+                ind = ind + varsizes(i);
             end
             
-            fv.varnames = varnames;
-            fv.varsizes = varsizes;
             fv.slots = slots;
-
+            
             % Time discretization
             fv.ti = 0;
             fv.tf = 3600*24;
@@ -77,28 +50,7 @@ classdef fv2d
             fv.tSpan = (fv.ti : fv.dt : fv.tf);
             
         end
-        
-        function n = varnum(fv)
-            n = numel(fv.varnames);
-        end
-        
-        function slot = getSlot(fv, varname)
-        
-            slots = fv.slots;
-            varnames = fv.varnames;
-            
-            isfound = false;
-            for ind = 1 : numel(varnames)
-                if varname == varnames{ind}
-                    isfound = true;
-                    break
-                end
-            end
-            assert(isfound, 'variable name not found');
-            
-            slot = slots{ind};
-        end
-        
+
     end
     
 end

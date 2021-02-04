@@ -6,9 +6,9 @@ function state = setupExchanges(model, state)
 % We setup also the electron production in the electrod: ne_e_source, pe_e_source.
 %
                 
-    elyte = model.getAssocModel('elyte');
-    ne    = model.getAssocModel('ne');
-    pe    = model.getAssocModel('pe');
+    elyte = model.elyte;
+    ne    = model.ne;
+    pe    = model.pe;
     
     elyte_Li_source = zeros(elyte.G.cells.num, 1);
     ne_Li_source    = zeros(ne.G.cells.num, 1);

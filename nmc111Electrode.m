@@ -21,6 +21,9 @@ classdef nmc111Electrode < CompositeModel
         cei     % Cathode-electrolyte interphase (CEI) object
         elyte   % Liquid electrolyte data structure
         
+        % submodels
+        am
+
     end
     
     methods 
@@ -86,6 +89,8 @@ classdef nmc111Electrode < CompositeModel
 
             model = model.initiateCompositeModel();
             
+            model.am = model.getAssocModel('am');
+        
         end
         
         
@@ -95,7 +100,7 @@ classdef nmc111Electrode < CompositeModel
             T = state.am.T;
             phiElyte = state.phielyte;
             
-            ammodel = model.getAssocModel('am');
+            ammodel = model.am;
                         
             state.am = ammodel.updateQuantities(state.am);
             phi = state.am.phi;

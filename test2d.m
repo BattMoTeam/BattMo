@@ -24,7 +24,7 @@ fv = model.fv;
 
 for iy = 1 : size(y, 1)
     yy = y(iy, :)';
-    E(iy) = yy(fv.getSlot(VarName({'ccpe'}, 'E')));
+    E(iy) = yy(model.fv.slots{end});
 end
 
 figure

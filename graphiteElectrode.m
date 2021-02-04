@@ -21,7 +21,10 @@ classdef graphiteElectrode < CompositeModel
         
         % Effective conductivity
         sigmaeff
-                
+
+        % submodels
+        am
+        
     end
     
     methods
@@ -86,6 +89,8 @@ classdef graphiteElectrode < CompositeModel
             model.propfunctions = propfunctions;
             
             model = model.initiateCompositeModel();
+        
+            model.am = model.getAssocModel('am');
             
         end
         
@@ -94,7 +99,7 @@ classdef graphiteElectrode < CompositeModel
             T = state.T;
             phiElyte = state.phielyte;
             
-            ammodel = model.getAssocModel('am');
+            ammodel = model.am;
                         
             state.am = ammodel.updateQuantities(state.am);
             phi = state.am.phi;

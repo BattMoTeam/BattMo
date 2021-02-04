@@ -1,12 +1,12 @@
 function state = setupBCSources(model, state)
     
-    ne    = model.getAssocModel('ne');
-    pe    = model.getAssocModel('pe');
-    ccne  = model.getAssocModel('ccne');
-    ccpe  = model.getAssocModel('ccpe');
+    ne    = model.ne;
+    pe    = model.pe;
+    ccne  = model.ccne;
+    ccpe  = model.ccpe;
     
-    ne_am = ne.getAssocModel('am');
-    pe_am = pe.getAssocModel('am');
+    ne_am = ne.am;
+    pe_am = pe.am;
     
     ne_phi   = state.ne.am.phi;
     pe_phi   = state.pe.am.phi;

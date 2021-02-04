@@ -21,6 +21,13 @@ classdef BatteryModel < CompositeModel
         % Voltage cut
         Ucut
 
+        % submodels
+        elyte
+        ne
+        pe
+        ccpe
+        ccne
+        
     end
 
     methods
@@ -207,7 +214,14 @@ classdef BatteryModel < CompositeModel
 
             %% setup porosity in all components
             model = model.setElytePorosity();
-
+            model = model.initiateCompositeModel();
+            
+            model.elyte = model.getAssocModel('elyte');
+            model.ne    = model.getAssocModel('ne');
+            model.pe    = model.getAssocModel('pe');
+            model.ccne  = model.getAssocModel('ccne');
+            model.ccpe  = model.getAssocModel('ccpe');
+            
             %% setup couplings
             coupTerms = {};
 
@@ -228,8 +242,6 @@ classdef BatteryModel < CompositeModel
             model.J = 0.1;
             model.Ucut = 2;
             
-            model = model.initiateCompositeModel();
-            
         end
 
         function state = dispatchValues(model, state)
@@ -237,25 +249,25 @@ classdef BatteryModel < CompositeModel
             T = state.T;
             SOC = state.SOC;
 
-            elyte = model.getAssocModel('elyte');
+            elyte = model.elyte;
             G = elyte.G;
             Telyte = T(G.mappings.cellmap);
 
-            ne = model.getAssocModel('ne');
+            ne = model.ne;
             G = ne.G;
             Tne = T(G.mappings.cellmap);
             SOCne = SOC(G.mappings.cellmap);
             
-            pe = model.getAssocModel('pe');
+            pe = model.pe;
             G = pe.G;
             Tpe = T(G.mappings.cellmap);
             SOCpe = SOC(G.mappings.cellmap);
             
-            ccpe = model.getAssocModel('ccpe');
+            ccpe = model.ccpe;
             G = ccpe.G;
             Tccpe = T(G.mappings.cellmap);
 
-            ccne = model.getAssocModel('ccne');
+            ccne = model.ccne;
             G = ccne.G;
             Tccne = T(G.mappings.cellmap);
 
@@ -277,15 +289,15 @@ classdef BatteryModel < CompositeModel
         function state = updatePhiElyte(model, state)
 
             phielyte = state.elyte.phi;
-            elyte = model.getAssocModel('elyte');
+            elyte = model.elyte;
 
             elytecells = zeros(model.G.cells.num, 1);
             elytecells(elyte.G.mappings.cellmap) = (1 : elyte.G.cells.num)';
 
-            ne = model.getAssocModel('ne');
+            ne = model.ne;
             phielyte_ne = phielyte(elytecells(ne.G.mappings.cellmap));
 
-            pe = model.getAssocModel('pe');
+            pe = model.pe;
             phielyte_pe = phielyte(elytecells(pe.G.mappings.cellmap));
 
             state.ne.phielyte = phielyte_ne;
@@ -320,17 +332,15 @@ classdef BatteryModel < CompositeModel
         function [y0, yp0] = dynamicPreprocess(model, state)
             %% Initialize the state vector
             
-            fv = model.fv;
-
-            y0(fv.getSlot(VarName({'elyte'}, 'phi')))    = state.elyte.phi;
-            y0(fv.getSlot(VarName({'elyte'}, 'c_Li')))   = state.elyte.cs{1};
-            y0(fv.getSlot(VarName({'ne', 'am'}, 'Li')))  = state.ne.am.Li;
-            y0(fv.getSlot(VarName({'ne', 'am'}, 'phi'))) = state.ne.am.phi;
-            y0(fv.getSlot(VarName({'pe', 'am'}, 'Li')))  = state.pe.am.Li;
-            y0(fv.getSlot(VarName({'pe', 'am'}, 'phi'))) = state.pe.am.phi;
-            y0(fv.getSlot(VarName({'ccne'}, 'phi')))     = state.ccne.phi;
-            y0(fv.getSlot(VarName({'ccpe'}, 'phi')))    = state.ccpe.phi;
-            y0(fv.getSlot(VarName({'ccpe'} , 'E')))      = state.ccpe.E;
+            y0   = [ state.elyte.cs{1};
+                     state.elyte.phi;
+                     state.ne.am.Li;
+                     state.ne.am.phi;
+                     state.pe.am.Li;
+                     state.pe.am.phi;
+                     state.ccne.phi;
+                     state.ccpe.phi;
+                     state.ccpe.E];
             
             yp0  = zeros(length(y0), 1);
 
@@ -399,10 +409,8 @@ classdef BatteryModel < CompositeModel
         function [value, isterminal, direction] = cutOff(model, t, y, yp)
         % This will be reimplemented when we move away from ode15i
 
-            varname = VarName({'ccpe'}, 'E');
-
             % here we assume E at ccne is equal to zero
-            U = y(model.fv.getSlot(varname));
+            U = y(model.fv.slots{end});
 
             value = U - model.Ucut;
             isterminal = 1;
@@ -422,14 +430,14 @@ classdef BatteryModel < CompositeModel
 
             initstate = model.dispatchValues(initstate);
             
-            elyte = model.getAssocModel('elyte');
-            ne    = model.getAssocModel('ne');
-            pe    = model.getAssocModel('pe');
-            ccne  = model.getAssocModel('ccne');
-            ccpe  = model.getAssocModel('ccpe');
+            elyte = model.elyte;
+            ne    = model.ne;
+            pe    = model.pe;
+            ccne  = model.ccne;
+            ccpe  = model.ccpe;
 
-            ne_am = ne.getAssocModel('am');
-            pe_am = pe.getAssocModel('am');
+            ne_am = ne.am;
+            pe_am = pe.am;
 
             %% setup initial ne state
 
@@ -500,30 +508,33 @@ classdef BatteryModel < CompositeModel
             state.T =  T*ones(nc, 1);
             state.SOC =  SOC*ones(nc, 1);
 
-            state.elyte.phi   = y(fv.getSlot(VarName({'elyte'}, 'phi')));
-            state.elyte.cs{1} = y(fv.getSlot(VarName({'elyte'}, 'c_Li')));
-            state.ne.am.Li    = y(fv.getSlot(VarName({'ne', 'am'}, 'Li')));
-            state.ne.am.phi   = y(fv.getSlot(VarName({'ne', 'am'}, 'phi')));
-            state.pe.am.Li    = y(fv.getSlot(VarName({'pe', 'am'}, 'Li')));
-            state.pe.am.phi   = y(fv.getSlot(VarName({'pe', 'am'}, 'phi')));
-            state.ccne.phi    = y(fv.getSlot(VarName({'ccne'}, 'phi')));                    
-            state.ccpe.phi    = y(fv.getSlot(VarName({'ccpe'}, 'phi')));
-            state.ccpe.E      = y(fv.getSlot(VarName({'ccpe'} , 'E')));
+            sl = fv.slots;
+            
+            state.elyte.cs{1} = y(sl{1});
+            state.elyte.phi   = y(sl{2});
+            state.ne.am.Li    = y(sl{3});
+            state.ne.am.phi   = y(sl{4});
+            state.pe.am.Li    = y(sl{5});
+            state.pe.am.phi   = y(sl{6});
+            state.ccne.phi    = y(sl{7});
+            state.ccpe.phi    = y(sl{8});
+            state.ccpe.E      = y(sl{9});
             
             % variables for time derivatives
-            elyte_Li_cdot = yp(fv.getSlot(VarName({'elyte'}, 'c_Li')));
-            ne_Li_csdot   = yp(fv.getSlot(VarName({'ne', 'am'}, 'Li')));
-            pe_Li_csdot   = yp(fv.getSlot(VarName({'pe', 'am'}, 'Li')));
+            elyte_Li_cdot = yp(sl{1});
+            ne_Li_csdot   = yp(sl{3});
+            pe_Li_csdot   = yp(sl{5});
 
-            elyte = model.getAssocModel('elyte');
-            ne    = model.getAssocModel('ne');
-            pe    = model.getAssocModel('pe');
-            ccne  = model.getAssocModel('ccne');
-            ccpe  = model.getAssocModel('ccpe');
+            elyte = model.elyte;
+            ne    = model.ne;
+            pe    = model.pe;
+            ccne  = model.ccne;
+            ccpe  = model.ccpe;
 
-            ne_am = ne.getAssocModel('am');
-            pe_am = pe.getAssocModel('am');
+            ne_am = ne.am;
+            pe_am = pe.am;
 
+            
             elyte_c_Li = state.elyte.cs{1};
             elyte_phi  = state.elyte.phi;
             ne_Li      = state.ne.am.Li;
@@ -637,8 +648,8 @@ classdef BatteryModel < CompositeModel
 
         function coupTerm = setupNeElyteCoupTerm(model)
 
-            ne = model.getAssocModel('ne');
-            elyte = model.getAssocModel('elyte');
+            ne = model.ne;
+            elyte = model.elyte;
 
             Gne = ne.G;
             Gelyte = elyte.G;
@@ -663,8 +674,8 @@ classdef BatteryModel < CompositeModel
 
         function coupTerm = setupPeElyteCoupTerm(model)
 
-            pe = model.getAssocModel('pe');
-            elyte = model.getAssocModel('elyte');
+            pe = model.pe;
+            elyte = model.elyte;
 
             Gpe = pe.G;
             Gelyte = elyte.G;
@@ -689,8 +700,8 @@ classdef BatteryModel < CompositeModel
 
         function coupTerm = setupCcneNeCoupTerm(model)
 
-            ne = model.getAssocModel('ne');
-            ccne = model.getAssocModel('ccne');
+            ne = model.ne;
+            ccne = model.ccne;
 
             Gne = ne.G;
             Gccne = ccne.G;
@@ -720,8 +731,8 @@ classdef BatteryModel < CompositeModel
 
         function coupTerm = setupCcpePeCoupTerm(model)
 
-            pe = model.getAssocModel('pe');
-            ccpe = model.getAssocModel('ccpe');
+            pe = model.pe;
+            ccpe = model.ccpe;
 
             Gpe = pe.G;
             Gccpe = ccpe.G;
@@ -751,7 +762,7 @@ classdef BatteryModel < CompositeModel
 
         function coupTerm = setupCcneBcCoupTerm(model)
 
-            ccne = model.getAssocModel('ccne');
+            ccne = model.ccne;
             G = ccne.G;
 
             % We pick up the faces at the top of Cccne
@@ -769,7 +780,7 @@ classdef BatteryModel < CompositeModel
 
         function coupTerm = setupCcpeBcCoupTerm(model)
 
-            ccpe = model.getAssocModel('ccpe');
+            ccpe = model.ccpe;
             G = ccpe.G;
 
             % We pick up the faces at the top of Cccpe
