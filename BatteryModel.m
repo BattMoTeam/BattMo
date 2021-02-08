@@ -36,6 +36,11 @@ classdef BatteryModel < CompositeModel
 
             model = model@CompositeModel('battery');
 
+            names = {'T', 'SOC'};
+            model.names = names;
+            
+            model = model.setupVarDims();
+            
             sepnx  = 30;
             nenx   = 30;
             penx   = 30;
@@ -103,6 +108,7 @@ classdef BatteryModel < CompositeModel
             ccpe = model.getAssocModel('ccpe');
             ccpe.pnames = {ccpe.pnames{:}, 'E'};
             ccpe.names = {ccpe.names{:}, 'E'};
+            ccpe.vardims('E') = 1;
             model = model.setSubModel('ccpe', ccpe);
 
             model.names = {'T', 'SOC'};
@@ -120,45 +126,60 @@ classdef BatteryModel < CompositeModel
             inputnames = {VarName({'..'}, 'T'), ...
                           VarName({'..'}, 'SOC')};
             fnmodel = {'..'};
-            ne = ne.setPropFunction('T'  , fnupdate, fnmodel));
-            ne = ne.setPropFunction('SOC', fnupdate, fnmodel));
-            pe = pe.setPropFunction('T'  , fnupdate, fnmodel));
-            pe = pe.setPropFunction('SOC', fnupdate, fnmodel));
-            ccne = ccne.setPropFunction('T', fnupdate, fnmodel));
-            ccpe = ccpe.setPropFunction('T', fnupdate, fnmodel));
-            elyte = elyte.setPropFunction('T', fnupdate, fnmodel));
+            ne = ne.addPropFunction('T'  , fnupdate, inputnames, fnmodel);
+            ne = ne.addPropFunction('SOC', fnupdate, inputnames, fnmodel);
+            pe = pe.addPropFunction('T'  , fnupdate, inputnames, fnmodel);
+            pe = pe.addPropFunction('SOC', fnupdate, inputnames, fnmodel);
+            ccne = ccne.addPropFunction('T', fnupdate, inputnames, fnmodel);
+            ccpe = ccpe.addPropFunction('T', fnupdate, inputnames, fnmodel);
+            elyte = elyte.addPropFunction('T', fnupdate, inputnames, fnmodel);
             
             % update function for exchange term (ne-elyte)
             fnupdate = @(model, state) setupExchanges(model, state);
-            inputnames = {VarName({'..', 'pe'}, 'R'), ...
+            inputnames = {VarName({'..', 'ne'}, 'R'), ...
                           VarName({'..', 'pe'}, 'R')};
             fnmodel = {'..'};
-            ne = ne.setPropFunction('LiSource', fnupdate, inputnames, fnmodel));
-            ne = ne.setPropFunction('eSource' , fnupdate, inputnames, fnmodel));
-            pe = pe.setPropFunction('LiSource', fnupdate, inputnames, fnmodel));
-            pe = pe.setPropFunction('eSource' , fnupdate, inputnames, fnmodel));
-            elyte = elyte.setPropFunction('LiSource', fnupdate, inputnames, fnmodel));
+            ne = ne.addPropFunction('LiSource', fnupdate, inputnames, fnmodel);
+            ne = ne.addPropFunction('eSource' , fnupdate, inputnames, fnmodel);
+            pe = pe.addPropFunction('LiSource', fnupdate, inputnames, fnmodel);
+            pe = pe.addPropFunction('eSource' , fnupdate, inputnames, fnmodel);
+            elyte = elyte.addPropFunction('LiSource', fnupdate, inputnames, fnmodel);
             
             % update function for phielyte (electrolyte potential)
             fnupdate = @(model, state) model.updatePhiElyte(state);
             inputnames = {VarName({'..', 'elyte'}, 'phi')};
             fnmodel = {'..'};
-            ne = ne.setPropFunction('phielyte', fnupdate, inputnames, fnmodel));
-            pe = pe.setPropFunction('phielyte', fnupdate, inputnames, fnmodel));
+            ne = ne.addPropFunction('phielyte', fnupdate, inputnames, fnmodel);
+            pe = pe.addPropFunction('phielyte', fnupdate, inputnames, fnmodel);
             
             % update function for boundary terms (ne-ccne)
             fnupdate = @(model, state) setupBCSources(model, state);
-            inputnames = {VarName({'ne', 'am'}, 'phi'), ...
-                          VarName({'pe', 'am'}, 'phi'), ... 
-                          VarName({'ccne'}, 'phi'), ...
-                          VarName({'ccpe'}, 'phi'), ...
-                          VarName({'ccpe'}, 'E'), ...
+            inputnames = {VarName({'..', 'ne', 'am'}, 'phi'), ...
+                          VarName({'..', 'pe', 'am'}, 'phi'), ... 
+                          VarName({'..', 'ccne'}, 'phi'), ...
+                          VarName({'..', 'ccpe'}, 'phi'), ...
+                          VarName({'..', 'ccpe'}, 'E'), ...
                          };
             fnmodel = {'..'};
-            ne   = ne.setPropFunction('jBcSource', fnupdate, inputnames, fnmodel));
-            pe   = pe.setPropFunction('jBcSource', fnupdate, inputnames, fnmodel));
-            ccne = ccne.setPropFunction('jBcSource', fnupdate, inputnames, fnmodel));
-            ccpe = ccpe.setPropFunction('jBcSource', fnupdate, inputnames, fnmodel));
+            ne   = ne.addPropFunction('jBcSource', fnupdate, inputnames, fnmodel);
+            pe   = pe.addPropFunction('jBcSource', fnupdate, inputnames, fnmodel);
+            ccne = ccne.addPropFunction('jBcSource', fnupdate, inputnames, fnmodel);
+            ccpe = ccpe.addPropFunction('jBcSource', fnupdate, inputnames, fnmodel);
+            
+            
+            fnupdate = @(model, state) model.dynamicBuildSOE(state); 
+            % function above is not correct. This is just used now to inform the graph
+            inputnames = {VarName({'..', 'ne'}   , 'LiSource'), ...
+                          VarName({'..', 'pe'}   , 'LiSource'), ...
+                          VarName({'..', 'elyte'}, 'LiSource'), ...
+                          VarName({'..', 'ne'}   , 'LiFlux'), ...
+                          VarName({'..', 'pe'}   , 'LiFlux'), ...
+                          VarName({'..', 'elyte'}, 'LiFlux'), ...
+                         };
+            fnmodel = {'..'};
+            ne    = ne.addPropFunction('massCont', fnupdate, inputnames, fnmodel);
+            pe    = pe.addPropFunction('massCont', fnupdate, inputnames, fnmodel);
+            elyte = elyte.addPropFunction('massCont', fnupdate, inputnames, fnmodel);
             
             model = model.setSubModel('ne', ne);
             model = model.setSubModel('pe', pe);
@@ -170,6 +191,8 @@ classdef BatteryModel < CompositeModel
 
             %% setup porosity in all components
             model = model.setElytePorosity();
+            
+            
             model = model.initiateCompositeModel();
             
             model.elyte = model.getAssocModel('elyte');

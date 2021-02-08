@@ -85,14 +85,13 @@ classdef orgLiPF6 < ComponentModel
                      'LiSource'  , ...
                      'LiFlux'    , ...
                      'chargeCont', ...
+                     'massCont', ...
                     };
-            model.names = names
+            model.names = names;
             
             model = model.setupVarDims();
             model.vardims('cs') = 2;
 
-            propfunctions = {};
-            
             % setup updating function for concentrations
             names = {'cs', 'chargeCont', 'LiFlux'};
             inputnames = {'c_Li', 'T', 'LiSource'};
@@ -100,21 +99,17 @@ classdef orgLiPF6 < ComponentModel
             
             for ind = 1 : numel(names)
                 name = names{ind};
-                model = model.setPropFunction(name, updatefn, inputnames, {'.'});
+                model = model.addPropFunction(name, updatefn, inputnames, {'.'});
             end
             
             % add local aliases for each component
             aliases = {};
-            fieldnames = {'c'};
-            for ifn = 1 : numel(fieldnames)
-                fieldname = fieldnames{ifn};
-                for icn = 1 : model.ncomp
-                    compname = model.compnames{icn};
-                    name = sprintf('%s_%s', fieldname, compname);
-                    lname = sprintf('%ss', fieldname);
-                    varname = VarName({'.'}, lname, icn);
-                    aliases{end + 1} = {name, varname};
-                end
+            for icn = 1 : model.ncomp
+                compname = model.compnames{icn};
+                name = sprintf('c%s', compname);
+                lname = 'cs';
+                varname = VarName({'.'}, lname, model.ncomp, icn);
+                aliases{end + 1} = {name, varname};
             end
             
             model.aliases = aliases;

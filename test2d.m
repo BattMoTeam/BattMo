@@ -7,9 +7,15 @@ close all
 mrstModule add ad-core multimodel
 
 model = BatteryModel();
-adminmodel = AdminModel();
-model = model.setupAdminModel(adminmodel);
+% adminmodel = AdminModel();
+% model = model.setupAdminModel(adminmodel);
 model.J = 0.1;
+
+g = setupGraph(model);
+
+% clf
+% plot(g)
+% return
 
 %% run simulation
 

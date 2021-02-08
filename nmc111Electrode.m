@@ -60,12 +60,14 @@ classdef nmc111Electrode < CompositeModel
                      'LiSource'  , ...
                      'eSource'   , ...
                      'chargeCont', ...
+                     'massCont'  , ...
                      'LiFlux'    , ...
                      'T'         , ... % temperature
                      'SOC'       , ...
                      'phielyte'};
         
             model.names = names;
+            model = model.setupVarDims();
             
             %% setup Update property functions
             
@@ -74,13 +76,13 @@ classdef nmc111Electrode < CompositeModel
             inputnames = {'jBcSource', 'eSource'};
             for ind = 1 : numel(names)
                 name = names{ind};
-                model = model.setPropFunction(name, updatefn, inputnames, {'.'});
+                model = model.addPropFunction(name, updatefn, inputnames, {'.'});
             end
             
             name = 'R';
             updatefn = @(model, state) model.updateReactionRate(state);
-            inputnames = {{'am', 'T'}, 'elyte', {'am', 'phi'}, {'am', 'OCP'}, {'am', 'k'}};
-            model = model.setPropFunction(name, updatefn, inputnames, {'.'});
+            inputnames = {'phielyte', {'am', 'T'}, {'am', 'phi'}, {'am', 'OCP'}, {'am', 'k'}};
+            model = model.addPropFunction(name, updatefn, inputnames, {'.'});
 
             model = model.initiateCompositeModel();
             

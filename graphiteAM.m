@@ -92,7 +92,7 @@ classdef graphiteAM < ComponentModel
                      'eps' ...     % Volume fraction,              [-]    
                     };
             model.names = names; 
-            model.vardims = model.setupVarDims();
+            model = model.setupVarDims();
             
             propfunctions = {};
             names = {'k', 'D', 'OCP'};
@@ -100,7 +100,7 @@ classdef graphiteAM < ComponentModel
             inputnames = {'T', 'Li'};
             for ind = 1 : numel(names)
                 name = names{ind};
-                model = model.setPropFunction(name, updatefn, inputnames, {'.'});
+                model = model.addPropFunction(name, updatefn, inputnames, {'.'});
             end
 
         end

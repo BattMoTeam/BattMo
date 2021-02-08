@@ -76,7 +76,7 @@ classdef nmc111AM < ComponentModel
             updatefn = @(model, state) model.updateQuantities(state);
             for ind = 1 : numel(names)
                 name = names{ind};
-                model = model.setPropFunction(name, updatefn, inputnames, {'.'});
+                model = model.addPropFunction(name, updatefn, inputnames, {'.'});
             end
             
             
