@@ -19,8 +19,14 @@ switch modelcase
     error('modelcase not recognized');
 end
 
-g = setupGraph(model);
+[g, edgelabels] = setupGraph(model);
 
 figure
-plot(g)
+h = plot(g);
+
+doaddlabel = false;
+if doaddlabel
+    labeledge(h, (1 : g.numedges), edgelabels);
+end
+
 
