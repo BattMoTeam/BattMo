@@ -75,7 +75,7 @@ classdef orgLiPF6 < ComponentModel
             model.ncomp = numel(model.compnames);
             
             % primary variables
-            pnames = {'phi', 'c_Li'}; 
+            pnames = {'phi', 'cLi'}; 
             model.pnames = pnames;
             
             % state variables
@@ -94,7 +94,7 @@ classdef orgLiPF6 < ComponentModel
 
             % setup updating function for concentrations
             names = {'cs', 'chargeCont', 'LiFlux'};
-            inputnames = {'c_Li', 'T', 'LiSource'};
+            inputnames = {'cLi', 'T', 'LiSource'};
             updatefn = @(model, state) model.updateQuantities(state);
             
             for ind = 1 : numel(names)
@@ -156,10 +156,10 @@ classdef orgLiPF6 < ComponentModel
             
             ncomp = model.ncomp;
            
-            c_Li = state.cs{1};
+            cLi = state.cs{1};
             T = state.T;
             
-            state.cs{2} = c_Li;
+            state.cs{2} = cLi;
             
             cs  = state.cs;
             phi = state.phi;
@@ -176,7 +176,7 @@ classdef orgLiPF6 < ComponentModel
                     0.668e-3, -1.78e-5 , 2.80e-8; ...
                     0.494e-6, -8.86e-10, 0];            
             
-            c = c_Li;
+            c = cLi;
 
             kappa = 1e-4.* c .*(...
                 polyval(cnst(end:-1:1,1),c) + ...
@@ -225,7 +225,6 @@ classdef orgLiPF6 < ComponentModel
             chargeCont = - op.Div(j)./model.G.cells.volumes./model.con.F + LiSource.*model.sp.z{ind_Li};
 
             op = model.operators;
-            cLi = c_Li;
             
             Deff = D .* model.eps .^1.5;
             

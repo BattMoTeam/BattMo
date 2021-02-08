@@ -448,7 +448,7 @@ classdef BatteryModelRoot < RootModel
             %% setup initial elyte state
 
             initstate = elyte.setProp(initstate, 'phi', zeros(elyte.G.cells.num, 1));
-            initstate = elyte.setProp(initstate, 'c_Li', 1000*ones(elyte.G.cells.num, 1));
+            initstate = elyte.setProp(initstate, 'cLi', 1000*ones(elyte.G.cells.num, 1));
 
             %% setup initial Current collectors state
             [OCP, initstate] = ne_am.getUpdatedProp(initstate, 'OCP');
@@ -493,7 +493,7 @@ classdef BatteryModelRoot < RootModel
             end
 
             % variables for time derivatives
-            elyte_Li_cdot = yp(fv.getSlot(VarName({'elyte'}, 'c_Li')));
+            elyte_Li_cdot = yp(fv.getSlot(VarName({'elyte'}, 'cLi')));
             ne_Li_csdot   = yp(fv.getSlot(VarName({'ne', 'am'}, 'Li')));
             pe_Li_csdot   = yp(fv.getSlot(VarName({'pe', 'am'}, 'Li')));
 
@@ -506,7 +506,7 @@ classdef BatteryModelRoot < RootModel
             ne_am = ne.getAssocModel('am');
             pe_am = pe.getAssocModel('am');
 
-            elyte_c_Li = elyte.getUpdatedProp(state, 'c_Li');
+            elyte_cLi = elyte.getUpdatedProp(state, 'cLi');
             elyte_phi  = elyte.getUpdatedProp(state, 'phi');
             ne_Li      = ne.getUpdatedProp(state, {'am', 'Li'});
             ne_phi     = ne.getUpdatedProp(state, {'am', 'phi'});
@@ -606,7 +606,7 @@ classdef BatteryModelRoot < RootModel
             elyte_Deff = D .* elyte.eps .^1.5;
 
 
-            x = elyte.getUpdatedProp(state, 'c_Li');
+            x = elyte.getUpdatedProp(state, 'cLi');
             trans = elyte.operators.harmFace(elyte_Deff);
             flux = - trans.*elyte.operators.Grad(x);
             elyte_Li_divDiff = elyte.operators.Div(flux)./elyte.G.cells.volumes;

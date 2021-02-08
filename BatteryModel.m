@@ -514,7 +514,7 @@ classdef BatteryModel < CompositeModel
             pe_am = pe.am;
 
             
-            elyte_c_Li = state.elyte.cs{1};
+            elyte_cLi = state.elyte.cs{1};
             elyte_phi  = state.elyte.phi;
             ne_Li      = state.ne.am.Li;
             ne_phi     = state.ne.am.phi;
