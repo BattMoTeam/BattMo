@@ -99,6 +99,9 @@ classdef orgLiPF6 < ComponentModel
             
             for ind = 1 : numel(names)
                 name = names{ind};
+                if strcmp(name, 'cs')
+                    name = VarName({'.'}, 'cs', 2);
+                end
                 model = model.addPropFunction(name, updatefn, inputnames, {'.'});
             end
             
