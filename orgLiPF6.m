@@ -165,22 +165,16 @@ classdef orgLiPF6 < ComponentModel
                 dmudcs{ind} = model.con.R .* T ./ cs{ind};
             end
             
-            % this part is specific to 2 component system
+            % This part is specific to 2 component system
             IoSt = 0.5 .* cs{1}.*model.sp.z{1}.^2./1000;
             IoSt = IoSt + 0.5 .* cs{2}.*model.sp.z{2}.^2./1000;
             
-            
-            cnst = [-10.5   ,    0.074    ,    -6.96e-5; ...
-                    0.668e-3,    -1.78e-5 ,    2.80e-8; ...
-                    0.494e-6,    -8.86e-10,    0];            
+            cnst = [-10.5   , 0.074    , -6.96e-5; ...
+                    0.668e-3, -1.78e-5 , 2.80e-8; ...
+                    0.494e-6, -8.86e-10, 0];            
             
             c = c_Li;
-%             kappa = 1e-4 .* c .* (...
-%                 (cnst(1,1) + cnst(2,1) .* c + cnst(3,1) .* c.^2) + ...
-%                 (cnst(1,2) + cnst(2,2) .* c + cnst(3,2) .* c.^2) .* T + ...
-%                 (cnst(1,3) + cnst(2,3) .* c) .* T.^2) .^2;
 
-%% may have no gain due to superior flow in polyval for for small systems 
             kappa = 1e-4.* c .*(...
                 polyval(cnst(end:-1:1,1),c) + ...
                 polyval(cnst(end:-1:1,2),c) .* T + ...
@@ -188,8 +182,11 @@ classdef orgLiPF6 < ComponentModel
             
             cnst = [ -4.43, -54;
                      -0.22, 0.0 ];
+
             Tgi = [ 229;
-                    5.0 ];            % Diffusion coefficient, [m^2 s^-1]
+                    5.0 ];
+            
+            % Diffusion coefficient, [m^2 s^-1]
             D = 1e-4 .* 10 .^ ( ( cnst(1,1) + cnst(1,2) ./ ( T - Tgi(1) - Tgi(2) .* c .* 1e-3) + cnst(2,1) .* ...
                                   c .* 1e-3) );
             
