@@ -13,11 +13,8 @@ model.J = 0.1;
 
 g = setupGraph(model);
 
-% clf
-% plot(g)
-% return
-
-%% run simulation
+figure
+plot(g)
 
 [t, y] = model.p2d();
 
