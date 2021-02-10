@@ -71,36 +71,11 @@ for iy = 1 : size(y, 1)
 end
 
 figure
-plot(t/hour, E)
+plot(cumsum(schedule.step.val)/hour, cellfun(@(x) x.ccpe.E,states),'*',t/hour, E)
 title('Potential (E)')
 xlabel('time (hours)')
 
 
-%% plot of each component
 
-figure
-G = model.elyte.G
-plotToolbar(G, states_elyte)
-title('elyte')
-
-figure
-G = model.ne.G
-plotToolbar(G, states_ne)
-title('negative electrode')
-
-figure
-G = model.pe.G
-plotToolbar(G, states_pe)
-title('positive electrode')
-
-figure
-G = model.ccne.G
-plotToolbar(G, states_ccne)
-title('negative current collector')
-
-figure
-G = model.ccpe.G
-plotToolbar(G, states_ccpe)
-title('positive current collector')
 
 
