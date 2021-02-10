@@ -614,7 +614,7 @@ classdef BatteryModel < CompositeModel
 
         end
 
-      function state = initStateAD(state)
+      function state = initStateAD(model,state)
           adbackend = model.AutoDiffBackend();
            [state.elyte.cs{1},...
            state.elyte.phi,...   
@@ -656,7 +656,9 @@ classdef BatteryModel < CompositeModel
             if(nname==1)
                 state.(names{1})=val;
             elseif(nname==2)
-                state.(names{2})=val;
+                state.(names{1}).(names{2})=val;
+            elseif(nname==3)
+                 state.(names{1}).(names{2}).(names{3}) = val;
             else
                 error('not implmented')
             end
@@ -675,6 +677,9 @@ classdef BatteryModel < CompositeModel
       function [problem, state] = getEquations(model, state0, state,dt, drivingForces, varargin)
 
             % Mapping of variables
+            %maybe we should have ottion to only calculate residual
+            state=model.initStateAD(state);
+            
             nc = model.G.cells.num;
 
             % setup temperature and SOC here
@@ -810,7 +815,7 @@ classdef BatteryModel < CompositeModel
                    control};
                
           types={'cell','cell','cell','cell',...
-              'cell','cell','cell','cell','boundary'};
+              'cell','cell','cell','cell','cell'};
           names = {'elyte_Li_massCont', ...
                           'elyte_chargeCont' , ...
                           'ne_Li_massCont'   , ...
@@ -820,11 +825,41 @@ classdef BatteryModel < CompositeModel
                           'ccne_e_chargeCont', ...
                           'ccpe_e_chargeCont', ...
                           'control'};
-          primaryVars = getPrimaryVariables();            
+          primaryVars = model.getPrimaryVariables();            
           problem = LinearizedProblem(eqs, types, names, primaryVars, state, dt);            
 
         end
+        function [state, report] = updateState(model,state, problem, dx, drivingForces)
+            p = model.getPrimaryVariables();
+            for i=2:numel(dx)
+               val = model.getProps(state,p{i});
+               val = val + dx{i};
+               state = model.setProp(state,p{i},val);
+            end
+            %% not sure how to handle cells
+            state.elyte.cs{1} =  state.elyte.cs{1} + dx{1};
+            report = []; 
+        end
         
+        function state = reduceState(model, state, removeContainers)
+        % Reduce state to doubles, and optionally remove the property
+        % containers to reduce storage space
+        
+            state = value(state);
+
+        end
+        
+    function [convergence, values, names] = checkConvergence(model, problem, varargin)
+
+        [values, tolerances, names] = getConvergenceValues(model, problem, varargin{:});
+        convergence = values < tolerances;
+        fprintf('Iteration %i ',problem.iterationNo);
+        fprintf(' residual ');
+        fprintf(' %d ',values);
+        fprintf('\n');
+        disp(values)
+        %disp(log(abs(values)))
+    end
         
         function coupterm = getCoupTerm(model, coupname)
             coupnames = model.couplingnames;

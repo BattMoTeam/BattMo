@@ -37,18 +37,32 @@ xlabel('time (hours)')
 
 return
 %%
-tt=t(2:end);
+n=30
+dt=repmat(1e-3,n,1).*1.5.^[1:n]'
+dt=[dt;repmat(dt(end),n*1.3,1)];
+times=[0;cumsum(dt)];
+%times=linspace(0,1e-3,100)';
+tt=times(2:end);
 initstate = icp2d(model)
-step=struct('val',diff(t),'control',ones(numel(tt),1));
-%%
+step=struct('val',diff(times),'control',ones(numel(tt),1));
+%
 src=nan(numel(tt),1);
 for i=1:numel(tt)
     src(i)=currentSource(tt(i), 0.1, 86400, model.J);
 end
-%%
-control=struct('src',src);
+%
+control=repmat(struct('src',[]),numel(src),1);
+for i=1:numel(src)
+    control(i).src=src(i);
+end
+step.control=[1:numel(src)]';
 schedule=struct('control',control, 'step',step)
-[wellSols, state, report]  = simulateScheduleAD(initstate, model, schedule)
+model.nonlinearTolerance=1e-3;
+initstate.wellSol=[];
+%%
+tic;
+[wellSols, states, report]  = simulateScheduleAD(initstate, model, schedule)
+toc;
 %% plot of each component
 
 compnames = obj.componentnames;
