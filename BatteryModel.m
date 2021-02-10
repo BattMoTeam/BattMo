@@ -614,6 +614,218 @@ classdef BatteryModel < CompositeModel
 
         end
 
+      function state = initStateAD(state)
+          adbackend = model.AutoDiffBackend();
+           [state.elyte.cs{1},...
+           state.elyte.phi,...   
+           state.ne.am.Li,...    
+           state.ne.am.phi,...   
+           state.pe.am.Li,...    
+           state.pe.am.phi,...   
+           state.ccne.phi,...    
+           state.ccpe.phi,...    
+           state.ccpe.E]=....
+           adbackend.initVariablesAD(...
+            state.elyte.cs{1},...
+            state.elyte.phi,...   
+            state.ne.am.Li,...    
+            state.ne.am.phi,...   
+            state.pe.am.Li,...    
+            state.pe.am.phi,...   
+            state.ccne.phi,...    
+            state.ccpe.phi,...    
+            state.ccpe.E);       
+      end
+      
+     function p = getPrimaryVariables(model)
+        p ={{'elyte','cs'},...
+            {'elyte','phi'},...   
+            {'ne','am','Li'},...    
+            {'ne','am','phi'},...   
+            {'pe','am','Li'},...    
+            {'pe','am','phi'},...   
+            {'ccne','phi'},...    
+            {'ccpe','phi'},...    
+            {'ccpe','E'}
+          };
+     end
+      
+      
+      function state = setProp(model,state,names,val)
+            nname=numel(names);
+            if(nname==1)
+                state.(names{1})=val;
+            elseif(nname==2)
+                state.(names{2})=val;
+            else
+                error('not implmented')
+            end
+      end
+      
+      function var = getProp(model, state,names)
+            var = state.(names{1});
+            for i=2:numel(names)
+                var = var.(names{i});
+            end
+      end
+      function validforces = getValidDrivingForces(model)
+         validforces=struct('src',[]); 
+      end
+      
+      function [problem, state] = getEquations(model, state0, state,dt, drivingForces, varargin)
+
+            % Mapping of variables
+            nc = model.G.cells.num;
+
+            % setup temperature and SOC here
+            %% for now this is kept constant?
+            state.T =  model.T*ones(nc, 1);
+            state.SOC =  model.SOC*ones(nc, 1);
+
+            %sl = fv.slots;
+            
+            %state.elyte.cs{1} = y(sl{1});
+            %state.elyte.phi   = y(sl{2});
+            %state.ne.am.Li    = y(sl{3});
+            %state.ne.am.phi   = y(sl{4});
+            %state.pe.am.Li    = y(sl{5});
+            %state.pe.am.phi   = y(sl{6});
+            %state.ccne.phi    = y(sl{7});
+            %state.ccpe.phi    = y(sl{8});
+            %state.ccpe.E      = y(sl{9});
+            
+            % variables for time derivatives
+            elyte_Li_cdot = (state.elyte.cs{1} - state0.elyte.cs{1})/dt;
+            ne_Li_csdot   = (state.ne.am.Li - state0.ne.am.Li)/dt;
+            pe_Li_csdot   = (state.pe.am.Li - state0.pe.am.Li)/dt;
+
+            elyte = model.elyte;
+            ne    = model.ne;
+            pe    = model.pe;
+            ccne  = model.ccne;
+            ccpe  = model.ccpe;
+
+            ne_am = ne.am;
+            pe_am = pe.am;
+
+            
+            elyte_c_Li = state.elyte.cs{1};
+            elyte_phi  = state.elyte.phi;
+            ne_Li      = state.ne.am.Li;
+            ne_phi     = state.ne.am.phi;
+            pe_Li      = state.pe.am.Li;
+            pe_phi     = state.pe.am.phi;
+            ccne_phi   = state.ccne.phi;
+            ccpe_phi   = state.ccpe.phi;
+            ccpe_E     = state.ccpe.E;
+
+            %% Cell voltage
+            
+            ccne_E = 0;
+            U = ccpe_E - ccne_E;
+
+            %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+            %% System of Equations                                      %%%
+            %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+            
+            %% dispatch T and SOC in submodels (need dispatch because the grids are different)
+
+            state = model.dispatchValues(state);
+            state = model.updatePhiElyte(state);
+            
+            state.ne.am = ne_am.updateQuantities(state.ne.am);
+            state.pe.am = pe_am.updateQuantities(state.pe.am);
+            
+            state = setupBCSources(model, state);
+
+            state.ne = ne.updateReactionRate(state.ne);
+            state.pe = pe.updateReactionRate(state.pe);
+            
+            state = setupExchanges(model, state);
+            
+            state.elyte = elyte.updateQuantities(state.elyte);
+
+            state.ne = ne.updateQuantities(state.ne);
+            state.pe = pe.updateQuantities(state.pe);
+
+            state.ccpe = ccpe.updateChargeCont(state.ccpe);
+            state.ccne = ccne.updateChargeCont(state.ccne);
+
+            
+            %% Liquid electrolyte dissolved ionic species mass continuity and charge continuity
+
+            elyte_Li_source = state.elyte.LiSource;
+            elyte_Li_flux = state.elyte.LiFlux;
+
+            elyte_Li_div = elyte.operators.Div(elyte_Li_flux)./elyte.G.cells.volumes;
+            elyte_Li_cepsdot = elyte.eps.*elyte_Li_cdot;
+            elyte_Li_massCont = (-elyte_Li_div + elyte_Li_source - elyte_Li_cepsdot);
+            
+            elyte_chargeCont = state.elyte.chargeCont;
+
+            %% Electrode Active material mass continuity and charge continuity %%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+            ne_Li_source = state.ne.LiSource;
+            ne_Li_flux = state.ne.LiFlux;
+            ne_Li_divDiff = ne.operators.Div(ne_Li_flux)./ne.G.cells.volumes;
+            ne_Li_csepsdot = ne_am.eps.*ne_Li_csdot;
+            ne_Li_massCont = (-ne_Li_divDiff + ne_Li_source - ne_Li_csepsdot);
+
+            ne_e_chargeCont = state.ne.chargeCont;
+
+            pe_Li_source = state.pe.LiSource;
+            pe_Li_flux   = state.pe.LiFlux;
+            pe_Li_csepsdot = pe_am.eps.*pe_Li_csdot;
+            pe_Li_divDiff = pe.operators.Div(pe_Li_flux)./pe.G.cells.volumes;
+            pe_Li_massCont = (-pe_Li_divDiff + pe_Li_source - pe_Li_csepsdot);
+
+            pe_e_chargeCont =  state.pe.chargeCont;
+
+            %% Collector charge continuity
+
+            ccne_e_chargeCont = state.ccne.chargeCont;
+            ccpe_e_chargeCont = state.ccpe.chargeCont;
+
+            %% Control equation
+
+            %src = currentSource(t, fv.tUp, fv.tf, model.J);
+            src = drivingForces.src;%%(t, fv.tUp, fv.tf, model.J);
+            coupterm = model.getCoupTerm('bc-ccpe');
+            faces = coupterm.couplingfaces;
+            bcval = ccpe_E;
+            ccpe_sigmaeff = ccpe.sigmaeff;
+            [tccpe, cells] = ccpe.operators.harmFaceBC(ccpe_sigmaeff, faces);
+            control = src - sum(tccpe.*(bcval - ccpe_phi(cells)));
+
+            %% Governing equations
+
+            eqs = {elyte_Li_massCont, ...
+                   elyte_chargeCont , ...
+                   ne_Li_massCont   , ...
+                   ne_e_chargeCont  , ...
+                   pe_Li_massCont   , ...
+                   pe_e_chargeCont  , ...
+                   ccne_e_chargeCont, ...
+                   ccpe_e_chargeCont, ...
+                   control};
+               
+          types={'cell','cell','cell','cell',...
+              'cell','cell','cell','cell','boundary'};
+          names = {'elyte_Li_massCont', ...
+                          'elyte_chargeCont' , ...
+                          'ne_Li_massCont'   , ...
+                          'ne_e_chargeCont'  , ...
+                          'pe_Li_massCont'   , ...
+                          'pe_e_chargeCont'  , ...
+                          'ccne_e_chargeCont', ...
+                          'ccpe_e_chargeCont', ...
+                          'control'};
+          primaryVars = getPrimaryVariables();            
+          problem = LinearizedProblem(eqs, types, names, primaryVars, state, dt);            
+
+        end
+        
+        
         function coupterm = getCoupTerm(model, coupname)
             coupnames = model.couplingnames;
 

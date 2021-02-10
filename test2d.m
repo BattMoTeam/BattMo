@@ -36,7 +36,19 @@ title('Potential (E)')
 xlabel('time (hours)')
 
 return
-
+%%
+tt=t(2:end);
+initstate = icp2d(model)
+step=struct('val',diff(t),'control',ones(numel(tt),1));
+%%
+src=nan(numel(tt),1);
+for i=1:numel(tt)
+    src(i)=currentSource(tt(i), 0.1, 86400, model.J);
+end
+%%
+control=struct('src',src);
+schedule=struct('control',control, 'step',step)
+[wellSols, state, report]  = simulateScheduleAD(initstate, model, schedule)
 %% plot of each component
 
 compnames = obj.componentnames;
