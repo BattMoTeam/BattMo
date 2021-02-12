@@ -35,7 +35,7 @@ classdef BatteryModel < CompositeModel
         function model = BatteryModel(varargin)
 
             model = model@CompositeModel('battery');
-
+            model.AutoDiffBackend =  SparseAutoDiffBackend('useBlocks',false);
             names = {'T', 'SOC'};
             model.names = names;
             
@@ -340,7 +340,8 @@ classdef BatteryModel < CompositeModel
             model.fv.tf = 3600*24;
             model.fv.dt = 10;
             model.fv.tUp = 0.1;
-            model.fv.tSpan = (model.fv.ti:model.fv.dt:model.fv.tf);
+            %model.fv.tSpan = (model.fv.ti:model.fv.dt:model.fv.tf);
+            model.fv.tSpan = [model.fv.ti,model.fv.tf];
 
             % Pre-process
             [y0, yp0] = model.dynamicPreprocess(initstate);
@@ -449,6 +450,8 @@ classdef BatteryModel < CompositeModel
             %% setup initial elyte state
 
             initstate.elyte.phi = zeros(elyte.G.cells.num, 1);
+            cs=cell(2,1);
+            initstate.elyte.cs=cs;
             initstate.elyte.cs{1} = 1000*ones(elyte.G.cells.num, 1);
 
             %% setup initial Current collectors state
@@ -580,7 +583,7 @@ classdef BatteryModel < CompositeModel
             pe_Li_source = state.pe.LiSource;
             pe_Li_flux   = state.pe.LiFlux;
             pe_Li_csepsdot = pe_am.eps.*pe_Li_csdot;
-            pe_Li_divDiff = pe.operators.Div(pe_Li_flux)./pe.G.cells.volumes;
+            pe_Li_divDiff = model.pe.operators.Div(pe_Li_flux)./model.pe.G.cells.volumes;
             pe_Li_massCont = (-pe_Li_divDiff + pe_Li_source - pe_Li_csepsdot);
 
             pe_e_chargeCont =  state.pe.chargeCont;
@@ -596,8 +599,8 @@ classdef BatteryModel < CompositeModel
             coupterm = model.getCoupTerm('bc-ccpe');
             faces = coupterm.couplingfaces;
             bcval = ccpe_E;
-            ccpe_sigmaeff = ccpe.sigmaeff;
-            [tccpe, cells] = ccpe.operators.harmFaceBC(ccpe_sigmaeff, faces);
+            ccpe_sigmaeff = model.ccpe.sigmaeff;
+            [tccpe, cells] = model.ccpe.operators.harmFaceBC(ccpe_sigmaeff, faces);
             control = src - sum(tccpe.*(bcval - ccpe_phi(cells)));
 
             %% Governing equations
@@ -704,30 +707,30 @@ classdef BatteryModel < CompositeModel
             ne_Li_csdot   = (state.ne.am.Li - state0.ne.am.Li)/dt;
             pe_Li_csdot   = (state.pe.am.Li - state0.pe.am.Li)/dt;
 
-            elyte = model.elyte;
-            ne    = model.ne;
-            pe    = model.pe;
-            ccne  = model.ccne;
-            ccpe  = model.ccpe;
+            %elyte = model.elyte;
+            %ne    = model.ne;
+            %pe    = model.pe;
+            %ccne  = model.ccne;
+            %ccpe  = model.ccpe;
 
-            ne_am = ne.am;
-            pe_am = pe.am;
+            %ne_am = ne.am;
+            %pe_am = pe.am;
 
             
-            elyte_c_Li = state.elyte.cs{1};
-            elyte_phi  = state.elyte.phi;
-            ne_Li      = state.ne.am.Li;
-            ne_phi     = state.ne.am.phi;
-            pe_Li      = state.pe.am.Li;
-            pe_phi     = state.pe.am.phi;
-            ccne_phi   = state.ccne.phi;
-            ccpe_phi   = state.ccpe.phi;
-            ccpe_E     = state.ccpe.E;
+            %elyte_c_Li = state.elyte.cs{1};
+            %elyte_phi  = state.elyte.phi;
+            %ne_Li      = state.ne.am.Li;
+            %ne_phi     = state.ne.am.phi;
+            %pe_Li      = state.pe.am.Li;
+            %pe_phi     = state.pe.am.phi;
+            %ccne_phi   = state.ccne.phi;
+            %ccpe_phi   = state.ccpe.phi;
+            %ccpe_E     = state.ccpe.E;
 
             %% Cell voltage
             
-            ccne_E = 0;
-            U = ccpe_E - ccne_E;
+            %ccne_E = 0;
+            %U = ccpe_E - ccne_E;
 
             %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
             %% System of Equations                                      %%%
@@ -738,23 +741,23 @@ classdef BatteryModel < CompositeModel
             state = model.dispatchValues(state);
             state = model.updatePhiElyte(state);
             
-            state.ne.am = ne_am.updateQuantities(state.ne.am);
-            state.pe.am = pe_am.updateQuantities(state.pe.am);
+            state.ne.am = model.ne.am.updateQuantities(state.ne.am);
+            state.pe.am = model.pe.am.updateQuantities(state.pe.am);
             
             state = setupBCSources(model, state);
 
-            state.ne = ne.updateReactionRate(state.ne);
-            state.pe = pe.updateReactionRate(state.pe);
+            state.ne = model.ne.updateReactionRate(state.ne);
+            state.pe = model.pe.updateReactionRate(state.pe);
             
             state = setupExchanges(model, state);
             
-            state.elyte = elyte.updateQuantities(state.elyte);
+            state.elyte = model.elyte.updateQuantities(state.elyte);
 
-            state.ne = ne.updateQuantities(state.ne);
-            state.pe = pe.updateQuantities(state.pe);
+            state.ne = model.ne.updateQuantities(state.ne);
+            state.pe = model.pe.updateQuantities(state.pe);
 
-            state.ccpe = ccpe.updateChargeCont(state.ccpe);
-            state.ccne = ccne.updateChargeCont(state.ccne);
+            state.ccpe = model.ccpe.updateChargeCont(state.ccpe);
+            state.ccne = model.ccne.updateChargeCont(state.ccne);
 
             
             %% Liquid electrolyte dissolved ionic species mass continuity and charge continuity
@@ -762,8 +765,8 @@ classdef BatteryModel < CompositeModel
             elyte_Li_source = state.elyte.LiSource;
             elyte_Li_flux = state.elyte.LiFlux;
 
-            elyte_Li_div = elyte.operators.Div(elyte_Li_flux)./elyte.G.cells.volumes;
-            elyte_Li_cepsdot = elyte.eps.*elyte_Li_cdot;
+            elyte_Li_div = model.elyte.operators.Div(elyte_Li_flux)./model.elyte.G.cells.volumes;
+            elyte_Li_cepsdot = model.elyte.eps.*elyte_Li_cdot;
             elyte_Li_massCont = (-elyte_Li_div + elyte_Li_source - elyte_Li_cepsdot);
             
             elyte_chargeCont = state.elyte.chargeCont;
@@ -772,16 +775,16 @@ classdef BatteryModel < CompositeModel
 
             ne_Li_source = state.ne.LiSource;
             ne_Li_flux = state.ne.LiFlux;
-            ne_Li_divDiff = ne.operators.Div(ne_Li_flux)./ne.G.cells.volumes;
-            ne_Li_csepsdot = ne_am.eps.*ne_Li_csdot;
+            ne_Li_divDiff = model.ne.operators.Div(ne_Li_flux)./model.ne.G.cells.volumes;
+            ne_Li_csepsdot = model.ne.am.eps.*ne_Li_csdot;
             ne_Li_massCont = (-ne_Li_divDiff + ne_Li_source - ne_Li_csepsdot);
 
             ne_e_chargeCont = state.ne.chargeCont;
 
             pe_Li_source = state.pe.LiSource;
             pe_Li_flux   = state.pe.LiFlux;
-            pe_Li_csepsdot = pe_am.eps.*pe_Li_csdot;
-            pe_Li_divDiff = pe.operators.Div(pe_Li_flux)./pe.G.cells.volumes;
+            pe_Li_csepsdot = model.pe.am.eps.*pe_Li_csdot;
+            pe_Li_divDiff = model.pe.operators.Div(pe_Li_flux)./model.pe.G.cells.volumes;
             pe_Li_massCont = (-pe_Li_divDiff + pe_Li_source - pe_Li_csepsdot);
 
             pe_e_chargeCont =  state.pe.chargeCont;
@@ -797,10 +800,10 @@ classdef BatteryModel < CompositeModel
             src = drivingForces.src;%%(t, fv.tUp, fv.tf, model.J);
             coupterm = model.getCoupTerm('bc-ccpe');
             faces = coupterm.couplingfaces;
-            bcval = ccpe_E;
-            ccpe_sigmaeff = ccpe.sigmaeff;
-            [tccpe, cells] = ccpe.operators.harmFaceBC(ccpe_sigmaeff, faces);
-            control = src - sum(tccpe.*(bcval - ccpe_phi(cells)));
+            bcval = state.ccpe.E;
+            ccpe_sigmaeff = model.ccpe.sigmaeff;
+            [tccpe, cells] = model.ccpe.operators.harmFaceBC(ccpe_sigmaeff, faces);
+            control = src - sum(tccpe.*(bcval - state.ccpe.phi(cells)));
 
             %% Governing equations
 
@@ -828,7 +831,8 @@ classdef BatteryModel < CompositeModel
           primaryVars = model.getPrimaryVariables();            
           problem = LinearizedProblem(eqs, types, names, primaryVars, state, dt);            
 
-        end
+      end
+        
         function [state, report] = updateState(model,state, problem, dx, drivingForces)
             p = model.getPrimaryVariables();
             for i=2:numel(dx)
