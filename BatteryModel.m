@@ -48,7 +48,7 @@ classdef BatteryModel < CompositeModel
             ccpenx = 20;
 
             nxs = [ccnenx; nenx; sepnx; penx; ccpenx];
-            ny = 1;
+            ny = 10;
 
             xlength = 1e-6*[10; 100; 50; 80; 10];
             ylength = 1e-2;
