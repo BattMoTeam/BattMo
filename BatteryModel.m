@@ -681,7 +681,7 @@ classdef BatteryModel < CompositeModel
             end
       end
       function validforces = getValidDrivingForces(model)
-         validforces=struct('src',[]); 
+         validforces=struct('src',[],'stopFunc',[]); 
       end
       
       function [problem, state] = getEquations(model, state0, state,dt, drivingForces, varargin)
@@ -696,7 +696,7 @@ classdef BatteryModel < CompositeModel
       end
       
       function [problem, state] = getEquationsExp(model, state0, state,dt, drivingForces, varargin)
-
+            time = state0.time+dt;
             % Mapping of variables
             %maybe we should have ottion to only calculate residual
             state=model.initStateAD(state);
@@ -784,7 +784,7 @@ classdef BatteryModel < CompositeModel
             %% Control equation
 
             %src = currentSource(t, fv.tUp, fv.tf, model.J);
-            src = drivingForces.src;%%(t, fv.tUp, fv.tf, model.J);
+            src = drivingForces.src(time);%%(t, fv.tUp, fv.tf, model.J);
             coupterm = model.getCoupTerm('bc-ccpe');
             faces = coupterm.couplingfaces;
             bcval = state.ccpe.E;
@@ -821,6 +821,7 @@ classdef BatteryModel < CompositeModel
 
       end
       function [problem, state] = getEquationsGen(model, state0, state,dt, drivingForces, varargin)
+              time = state0.time+dt;
               state=model.initStateAD(state);
               
               nc = model.G.cells.num;
@@ -900,7 +901,7 @@ classdef BatteryModel < CompositeModel
               end
               
               %src = currentSource(t, fv.tUp, fv.tf, model.J);
-              src = drivingForces.src;%%(t, fv.tUp, fv.tf, model.J);
+              src = drivingForces.src(time);%%(t, fv.tUp, fv.tf, model.J);
               coupterm = model.getCoupTerm('bc-ccpe');
               faces = coupterm.couplingfaces;
               bcval = state.ccpe.E;

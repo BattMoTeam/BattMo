@@ -23,6 +23,7 @@ profile on
 [t, y] = model.p2d();
 profile off
 profile report
+%%
 initstate = icp2d(model);
 model = setupFV(model, initstate);
 sl = model.fv.slots;
@@ -77,11 +78,10 @@ for i=1:numel(tt)
     src(i)=currentSource(tt(i), 0.1, 86400, model.J);
 end
 %
-control=repmat(struct('src',[]),numel(src),1);
-for i=1:numel(src)
-    control(i).src=src(i);
-end
-step.control=[1:numel(src)]';
+stopFunc =@(model,state) state.ccpe.E<2.0;
+srcfunc= @(time) currentSource(time, 0.1, 86400, model.J);
+
+control=repmat(struct('src',srcfunc,'stopFunc',stopFunc),1,1);
 schedule=struct('control',control, 'step',step)
 model.nonlinearTolerance=1e-3;
 nls=NonLinearSolver();
@@ -100,26 +100,27 @@ initstate.wellSol=[];
 %profile -detail builtin
 %afterStepFn =  @(model, states,  reports, solver, schedule, simtime)....
 %      deal(model,states,reports,solver,states{end}.ccpe.E<2);
-stopFunc =@(model,state) state.ccpe.E<2.0;
+
 if(true)
-nls.timeStepSelector=IterationCountTimeStepSelector('targetIterationCount', 5);
+%nls.timeStepSelector=IterationCountTimeStepSelector('targetIterationCount', 5);
 nls.timeStepSelector=StateChangeTimeStepSelector()
 nls.timeStepSelector.targetProps={{'ccpe','E'}};
-nls.timeStepSelector.targetChangeAbs=[10];
+nls.timeStepSelector.targetChangeAbs=[0.05];
 nls.timeStepSelector.targetChangeRel=[1e9];
 end
+nls.errorOnFailure=false;
 profile off
 profile on
 model.nonlinearTolerance=1e-3
 [wellSols, states, report]  = simulateScheduleAD(initstate, model, schedule,...
-        'OutputMinisteps',true,'stopFunction',stopFunc,...
+        'OutputMinisteps',true,...
         'NonLinearSolver',nls)
 profile off
 profile viewer
-%
+%%
 ind = cellfun(@(x) not(isempty(x)),states);
 Enew= cellfun(@(x) x.ccpe.E,{states{ind}});
-time = cellfun(@(x) x.t,{states{ind}});
+time = cellfun(@(x) x.time,{states{ind}});
 %
 figure
 plot(log(time/hour), Enew,'*')
@@ -127,7 +128,10 @@ plot((time/hour), Enew,'*')
 title('Potential (E)')
 xlabel('time (hours)')
 %return
-
+ss=nan(size(t));
+for i=1:numel(t)
+   ss(i) = schedule.control.src(t(i)); 
+end
 %% plotting 
 
 % We set up the structure fv in this "hacky" way for the moment (it will be cleaned up in the future)
@@ -153,7 +157,7 @@ ind = cellfun(@(x) not(isempty(x)),states);
 %dt = schedule.step.val(ind);
 
 Enew= cellfun(@(x) x.ccpe.E,{states{ind}});
-time = cellfun(@(x) x.t,{states{ind}});
+time = cellfun(@(x) x.time,{states{ind}});
 figure
 plot(time/hour, Enew,'*',t/hour, E)
 title('Potential (E)')
