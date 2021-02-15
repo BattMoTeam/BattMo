@@ -40,15 +40,15 @@ classdef BatteryModel < CompositeModel
             model.names = names;
             
             model = model.setupVarDims();
-            
-            sepnx  = 30;
-            nenx   = 30;
-            penx   = 30;
-            ccnenx = 20;
-            ccpenx = 20;
+            fac=1
+            sepnx  = 30*fac;
+            nenx   = 30*fac;
+            penx   = 30*fac;
+            ccnenx = 20*fac;
+            ccpenx = 20*fac;
 
             nxs = [ccnenx; nenx; sepnx; penx; ccpenx];
-            ny = 10;
+            ny = 10*fac;
 
             xlength = 1e-6*[10; 100; 50; 80; 10];
             ylength = 1e-2;
