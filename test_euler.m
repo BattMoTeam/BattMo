@@ -17,7 +17,7 @@ plot(g)
 
 %% run simulation
 %profile -detail builtin
-if(true)
+if(false)
 profile off
 profile on
 [t, y] = model.p2d();
@@ -108,10 +108,11 @@ nls.timeStepSelector.targetProps={{'ccpe','E'}};
 nls.timeStepSelector.targetChangeAbs=[0.1];
 nls.timeStepSelector.targetChangeRel=[1e9];
 end
+nls.maxIterations=5
 nls.errorOnFailure=false;
 profile off
 profile on
-model.nonlinearTolerance=1e-5
+model.nonlinearTolerance=1e-3
 [wellSols, states, report]  = simulateScheduleAD(initstate, model, schedule,...
         'OutputMinisteps',true,...
         'NonLinearSolver',nls)
