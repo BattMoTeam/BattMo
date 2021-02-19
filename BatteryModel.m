@@ -681,7 +681,7 @@ classdef BatteryModel < CompositeModel
             end
       end
       function validforces = getValidDrivingForces(model)
-         validforces=struct('src',[],'stopFunc',[]); 
+         validforces=struct('src',[],'stopFunction',[]); 
       end
       
       function [problem, state] = getEquations(model, state0, state,dt, drivingForces, varargin)

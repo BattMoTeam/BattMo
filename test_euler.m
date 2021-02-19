@@ -78,16 +78,16 @@ for i=1:numel(tt)
     src(i)=currentSource(tt(i), 0.1, 86400, model.J);
 end
 %
-stopFunc =@(model,state) state.ccpe.E<2.0;
+stopFunc =@(model,state, state_prev) state.ccpe.E<2.0;
 srcfunc= @(time) currentSource(time, 0.1, 86400, model.J);
 
-control=repmat(struct('src',srcfunc,'stopFunc',stopFunc),1,1);
+control=repmat(struct('src',srcfunc,'stopFunction',stopFunc),1,1);
 schedule=struct('control',control, 'step',step)
 model.nonlinearTolerance=1e-3;
 nls=NonLinearSolver();
 
 %nls.LinearSolver=AMGCLSolverAD('verbose',true,'write_params',true,...
- %   'preconditioner','amg','relaxation','ilu0');
+%    'preconditioner','relaxation','relaxation','ilu0');
 %nls.LinearSolver.verbose=true;
 %nls.LinearSolver.amgcl_setup.verbose
 %nls.LinearSolver.amgcl_setup.verbose=true
@@ -101,17 +101,17 @@ initstate.wellSol=[];
 %afterStepFn =  @(model, states,  reports, solver, schedule, simtime)....
 %      deal(model,states,reports,solver,states{end}.ccpe.E<2);
 
-if(true)
+if(false)
 %nls.timeStepSelector=IterationCountTimeStepSelector('targetIterationCount', 5);
 nls.timeStepSelector=StateChangeTimeStepSelector()
 nls.timeStepSelector.targetProps={{'ccpe','E'}};
-nls.timeStepSelector.targetChangeAbs=[0.05];
+nls.timeStepSelector.targetChangeAbs=[0.1];
 nls.timeStepSelector.targetChangeRel=[1e9];
 end
 nls.errorOnFailure=false;
 profile off
 profile on
-model.nonlinearTolerance=1e-3
+model.nonlinearTolerance=1e-5
 [wellSols, states, report]  = simulateScheduleAD(initstate, model, schedule,...
         'OutputMinisteps',true,...
         'NonLinearSolver',nls)
@@ -162,7 +162,7 @@ figure
 plot(time/hour, Enew,'*',t/hour, E)
 title('Potential (E)')
 xlabel('time (hours)')
-return
+%return
 %%
 figure
 plot(log(time/hour), Enew,'*',log(t/hour), E,'-')
