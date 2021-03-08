@@ -2,19 +2,19 @@ close all
 clear all
 
 
-sepnz  = 30;
-nenz   = 30;
-penz   = 30;
+sepnz  = 10;
+nenz   = 10;
+penz   = 10;
 
 elnz = sepnz + nenz + penz;
 
-ccnenx = 5;
-ccpenx = 5;
-elnx   = 20;
+ccnenx = 2;
+ccpenx = 2;
+elnx   = 10;
 
 ccneny = 2;
 ccpeny = 2;
-elny   = 20;
+elny   = 10;
 
 nxs = [ccnenx; elnx; ccpenx];
 nys = [ccneny; elny; ccpeny];
