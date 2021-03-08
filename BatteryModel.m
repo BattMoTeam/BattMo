@@ -1044,26 +1044,48 @@ classdef BatteryModel < CompositeModel
             Gne = ne.G;
             Gccne = ccne.G;
 
-            % parent Grid
             G = Gne.mappings.parentGrid;
 
-            % We pick up the faces at the right of Cccne
-            xf = Gccne.faces.centroids(:, 1);
-            mxf = max(xf);
-            faces1 = find(xf > (1 - eps)*mxf);
+            netbls = setupSimpleTables(Gne);
+            ccnetbls = setupSimpleTables(Gccne);
+            tbls = setupSimpleTables(G);            
+            
+            necelltbl = netbls.celltbl;
+            necelltbl = necelltbl.addInd('globcells', Gne.mappings.cellmap);
+            nefacetbl = netbls.facetbl;
+            nefacetbl = nefacetbl.addInd('globfaces', Gne.mappings.facemap);
 
-            pfaces = Gccne.mappings.facemap(faces1);
-            mapping = zeros(G.faces.num, 1);
-            mapping(Gne.mappings.facemap) = (1 : Gne.faces.num)';
-            faces2 = mapping(pfaces);
+            necellfacetbl = netbls.cellfacetbl;
+            necellfacetbl = crossIndexArray(necellfacetbl, necelltbl, {'cells'});
+            necellfacetbl = crossIndexArray(necellfacetbl, nefacetbl, {'faces'});
+            
+            ccnecelltbl = ccnetbls.celltbl;
+            ccnecelltbl = ccnecelltbl.addInd('globcells', Gccne.mappings.cellmap);
+            ccnefacetbl = ccnetbls.facetbl;
+            ccnefacetbl = ccnefacetbl.addInd('globfaces', Gccne.mappings.facemap);
+            
+            ccnecellfacetbl = ccnetbls.cellfacetbl;
+            ccnecellfacetbl = crossIndexArray(ccnecellfacetbl, ccnecelltbl, {'cells'});
+            ccnecellfacetbl = crossIndexArray(ccnecellfacetbl, ccnefacetbl, {'faces'});
+            
+            gen = CrossIndexArrayGenerator();
+            gen.tbl1 = necellfacetbl;
+            gen.tbl2 = ccnecellfacetbl;
+            gen.replacefds1 = {{'cells', 'necells'}, {'faces', 'nefaces'}, {'globcells', 'neglobcells'}};
+            gen.replacefds2 = {{'cells', 'ccnecells'}, {'faces', 'ccnefaces'}, {'globcells', 'ccneglobcells'}};
+            gen.mergefds = {'globfaces'};
+            
+            cell12facetbl = gen.eval();
 
-            cells1 = sum(Gccne.faces.neighbors(faces1, :), 2);
-            cells2 = sum(Gne.faces.neighbors(faces2, :), 2);
-
+            ccnefaces = cell12facetbl.get('ccnefaces');
+            nefaces = cell12facetbl.get('nefaces');
+            ccnecells = cell12facetbl.get('ccnecells');
+            necells = cell12facetbl.get('necells');            
+            
             compnames = {'ccne', 'ne'};
             coupTerm = couplingTerm('ccne-ne', compnames);
-            coupTerm.couplingfaces =  [faces1, faces2];
-            coupTerm.couplingcells = [cells1, cells2];
+            coupTerm.couplingfaces =  [ccnefaces, nefaces];
+            coupTerm.couplingcells = [ccnecells, necells];
 
         end
 
@@ -1075,27 +1097,49 @@ classdef BatteryModel < CompositeModel
             Gpe = pe.G;
             Gccpe = ccpe.G;
 
-            % parent Grid
             G = Gpe.mappings.parentGrid;
 
-            % We pick up the faces at the left of Cccpe
-            xf = Gccpe.faces.centroids(:, 1);
-            mxf = min(xf);
-            faces1 = find(xf < (1 + eps)*mxf);
+            petbls = setupSimpleTables(Gpe);
+            ccpetbls = setupSimpleTables(Gccpe);
+            tbls = setupSimpleTables(G);            
+            
+            pecelltbl = petbls.celltbl;
+            pecelltbl = pecelltbl.addInd('globcells', Gpe.mappings.cellmap);
+            pefacetbl = petbls.facetbl;
+            pefacetbl = pefacetbl.addInd('globfaces', Gpe.mappings.facemap);
 
-            pfaces = Gccpe.mappings.facemap(faces1);
-            mapping = zeros(G.faces.num, 1);
-            mapping(Gpe.mappings.facemap) = (1 : Gpe.faces.num)';
-            faces2 = mapping(pfaces);
+            pecellfacetbl = petbls.cellfacetbl;
+            pecellfacetbl = crossIndexArray(pecellfacetbl, pecelltbl, {'cells'});
+            pecellfacetbl = crossIndexArray(pecellfacetbl, pefacetbl, {'faces'});
+            
+            ccpecelltbl = ccpetbls.celltbl;
+            ccpecelltbl = ccpecelltbl.addInd('globcells', Gccpe.mappings.cellmap);
+            ccpefacetbl = ccpetbls.facetbl;
+            ccpefacetbl = ccpefacetbl.addInd('globfaces', Gccpe.mappings.facemap);
+            
+            ccpecellfacetbl = ccpetbls.cellfacetbl;
+            ccpecellfacetbl = crossIndexArray(ccpecellfacetbl, ccpecelltbl, {'cells'});
+            ccpecellfacetbl = crossIndexArray(ccpecellfacetbl, ccpefacetbl, {'faces'});
+            
+            gen = CrossIndexArrayGenerator();
+            gen.tbl1 = pecellfacetbl;
+            gen.tbl2 = ccpecellfacetbl;
+            gen.replacefds1 = {{'cells', 'pecells'}, {'faces', 'pefaces'}, {'globcells', 'peglobcells'}};
+            gen.replacefds2 = {{'cells', 'ccpecells'}, {'faces', 'ccpefaces'}, {'globcells', 'ccpeglobcells'}};
+            gen.mergefds = {'globfaces'};
+            
+            cell12facetbl = gen.eval();
 
-            cells1 = sum(Gccpe.faces.neighbors(faces1, :), 2);
-            cells2 = sum(Gpe.faces.neighbors(faces2, :), 2);
-
+            ccpefaces = cell12facetbl.get('ccpefaces');
+            pefaces = cell12facetbl.get('pefaces');
+            ccpecells = cell12facetbl.get('ccpecells');
+            pecells = cell12facetbl.get('pecells');            
+            
             compnames = {'ccpe', 'pe'};
             coupTerm = couplingTerm('ccpe-pe', compnames);
-            coupTerm.couplingfaces =  [faces1, faces2];
-            coupTerm.couplingcells = [cells1, cells2];
-
+            coupTerm.couplingfaces =  [ccpefaces, pefaces];
+            coupTerm.couplingcells = [ccpecells, pecells];
+            
         end
 
         function coupTerm = setupCcneBcCoupTerm(model)
