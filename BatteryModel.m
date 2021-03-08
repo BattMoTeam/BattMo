@@ -625,85 +625,85 @@ classdef BatteryModel < CompositeModel
 
         end
 
-      function state = initStateAD(model,state)
-          adbackend = model.AutoDiffBackend();
-           [state.elyte.cs{1},...
-           state.elyte.phi,...   
-           state.ne.am.Li,...    
-           state.ne.am.phi,...   
-           state.pe.am.Li,...    
-           state.pe.am.phi,...   
-           state.ccne.phi,...    
-           state.ccpe.phi,...    
-           state.ccpe.E]=....
-           adbackend.initVariablesAD(...
-            state.elyte.cs{1},...
-            state.elyte.phi,...   
-            state.ne.am.Li,...    
-            state.ne.am.phi,...   
-            state.pe.am.Li,...    
-            state.pe.am.phi,...   
-            state.ccne.phi,...    
-            state.ccpe.phi,...    
-            state.ccpe.E);       
-      end
-      
-     function p = getPrimaryVariables(model)
-        p ={{'elyte','cs'},...
-            {'elyte','phi'},...   
-            {'ne','am','Li'},...    
-            {'ne','am','phi'},...   
-            {'pe','am','Li'},...    
-            {'pe','am','phi'},...   
-            {'ccne','phi'},...    
-            {'ccpe','phi'},...    
-            {'ccpe','E'}
-          };
-     end
-      
-      
-      function state = setProp(model,state,names,val)
+        function state = initStateAD(model,state)
+            adbackend = model.AutoDiffBackend();
+            [state.elyte.cs{1},...
+             state.elyte.phi,...   
+             state.ne.am.Li,...    
+             state.ne.am.phi,...   
+             state.pe.am.Li,...    
+             state.pe.am.phi,...   
+             state.ccne.phi,...    
+             state.ccpe.phi,...    
+             state.ccpe.E]=....
+                adbackend.initVariablesAD(...
+                    state.elyte.cs{1},...
+                    state.elyte.phi,...   
+                    state.ne.am.Li,...    
+                    state.ne.am.phi,...   
+                    state.pe.am.Li,...    
+                    state.pe.am.phi,...   
+                    state.ccne.phi,...    
+                    state.ccpe.phi,...    
+                    state.ccpe.E);       
+        end
+        
+        function p = getPrimaryVariables(model)
+            p ={{'elyte','cs'},...
+                {'elyte','phi'},...   
+                {'ne','am','Li'},...    
+                {'ne','am','phi'},...   
+                {'pe','am','Li'},...    
+                {'pe','am','phi'},...   
+                {'ccne','phi'},...    
+                {'ccpe','phi'},...    
+                {'ccpe','E'}
+               };
+        end
+        
+        function state = setProp(model,state,names,val)
             nname=numel(names);
             if(nname==1)
                 state.(names{1})=val;
             elseif(nname==2)
                 state.(names{1}).(names{2})=val;
             elseif(nname==3)
-                 state.(names{1}).(names{2}).(names{3}) = val;
+                state.(names{1}).(names{2}).(names{3}) = val;
             else
                 error('not implmented')
             end
-      end
-      
-      function var = getProp(model, state,names)
+        end
+        
+        function var = getProp(model, state,names)
             var = state.(names{1});
             for i=2:numel(names)
                 var = var.(names{i});
             end
-      end
-      
-      function submod = getSubmodel(model, names)
+        end
+        
+        function submod = getSubmodel(model, names)
             submod = model.(names{1});
             for i=2:numel(names)
                 submod = submod.(names{i});
             end
-      end
-      function validforces = getValidDrivingForces(model)
-         validforces=struct('src',[],'stopFunction',[]); 
-      end
-      
-      function [problem, state] = getEquations(model, state0, state,dt, drivingForces, varargin)
-          %state_old=state;
-          [problem, state] = getEquationsGen(model, state0, state,dt, drivingForces, varargin{:});
-          %[pp, ss] = getEquationsGen(model, state0, state_old,dt, drivingForces, varargin{:});
-          %for i=1:numel(pp.equations)
-          %    assert(all(pp.equations{i}.val == problem.equations{i}.val))
-          %end
-              
-         
-      end
-      
-      function [problem, state] = getEquationsExp(model, state0, state,dt, drivingForces, varargin)
+        end
+
+        function validforces = getValidDrivingForces(model)
+            validforces=struct('src', [], 'stopFunction', []); 
+        end
+        
+        function [problem, state] = getEquations(model, state0, state,dt, drivingForces, varargin)
+        %state_old=state;
+            [problem, state] = getEquationsGen(model, state0, state,dt, drivingForces, varargin{:});
+            %[pp, ss] = getEquationsGen(model, state0, state_old,dt, drivingForces, varargin{:});
+            %for i=1:numel(pp.equations)
+            %    assert(all(pp.equations{i}.val == problem.equations{i}.val))
+            %end
+            
+            
+        end
+        
+        function [problem, state] = getEquationsExp(model, state0, state,dt, drivingForces, varargin)
             time = state0.time+dt;
             % Mapping of variables
             %maybe we should have ottion to only calculate residual
@@ -811,230 +811,230 @@ classdef BatteryModel < CompositeModel
                    ccne_e_chargeCont, ...
                    ccpe_e_chargeCont, ...
                    control};
-               
-          types={'cell','cell','cell','cell',...
-              'cell','cell','cell','cell','cell'};
-          names = {'elyte_Li_massCont', ...
-                          'elyte_chargeCont' , ...
-                          'ne_Li_massCont'   , ...
-                          'ne_e_chargeCont'  , ...
-                          'pe_Li_massCont'   , ...
-                          'pe_e_chargeCont'  , ...
-                          'ccne_e_chargeCont', ...
-                          'ccpe_e_chargeCont', ...
-                          'control'};
-          primaryVars = model.getPrimaryVariables();            
-          problem = LinearizedProblem(eqs, types, names, primaryVars, state, dt);
-          %state.cdotLi=cdotLi;
+            
+            types={'cell','cell','cell','cell',...
+                   'cell','cell','cell','cell','cell'};
+            names = {'elyte_Li_massCont', ...
+                     'elyte_chargeCont' , ...
+                     'ne_Li_massCont'   , ...
+                     'ne_e_chargeCont'  , ...
+                     'pe_Li_massCont'   , ...
+                     'pe_e_chargeCont'  , ...
+                     'ccne_e_chargeCont', ...
+                     'ccpe_e_chargeCont', ...
+                     'control'};
+            primaryVars = model.getPrimaryVariables();            
+            problem = LinearizedProblem(eqs, types, names, primaryVars, state, dt);
+            %state.cdotLi=cdotLi;
 
-      end
-      function [problem, state] = getEquationsGen(model, state0, state,dt, drivingForces, varargin)
-              time = state0.time+dt;
-              state=model.initStateAD(state);
-              
-              nc = model.G.cells.num;
-              
-              % setup temperature and SOC here
-              %% for now this is kept constant?
-              state.T =  model.T*ones(nc, 1);
-              state.SOC =  model.SOC*ones(nc, 1);
-              
-              % variables for time derivatives
-              cdotLi=struct();
-              cdotLi.elyte = (state.elyte.cs{1} - state0.elyte.cs{1})/dt;
-              cdotLi.ne    = (state.ne.am.Li - state0.ne.am.Li)/dt;
-              cdotLi.pe   = (state.pe.am.Li - state0.pe.am.Li)/dt;
-              
-              state = model.dispatchValues(state);
-              state = model.updatePhiElyte(state);
-              %% first update level 2
-              names={{'pe','am'},{'pe','am'}};
-              for i=1:numel(names)
-                  submodel = model.getSubmodel(names{i});
-                  val = submodel.updateQuantities(model.getProp(state,names{i}));
-                  state = model.setProp(state,names{i},val);
-              end
-              
-              
-              state = setupBCSources(model, state);
-              
-              names={{'ne'},{'pe'}};
-              for i=1:numel(names)
-                  submodel=model.getSubmodel(names{i});
-                  val = submodel.updateReactionRate(model.getProp(state,names{i}));
-                  state = model.setProp(state,names{i},val);
-              end
-              state = setupExchanges(model, state);
-              
-              %%update level 1
-              names={{'elyte'},{'ne'},{'pe'}};
-              for i=1:numel(names)
-                  submodel=model.getSubmodel(names{i});
-                  val = submodel.updateQuantities(model.getProp(state,names{i}));
-                  state = model.setProp(state,names{i},val);
-              end
-              
-              names={{'ccpe'},{'ccne'}};
-              for i=1:numel(names)
-                  submodel=model.getSubmodel(names{i});
-                  val = submodel.updateChargeCont(model.getProp(state,names{i}));
-                  state = model.setProp(state,names{i},val);
-              end
-              
-              %% set equations
-              names={'elyte','ne','pe'};
-              eqs={};
-              for i=1:numel(names)
-                  submodel=model.getSubmodel({names{i}});
-                  %% probably only be done on the submodel
-                  source = model.getProp(state,{names{i},'LiSource'});
-                  flux = model.getProp(state,{names{i},'LiFlux'});
-                  %% could use submodel
-                  div =  submodel.operators.Div(flux)./submodel.G.cells.volumes;
-                  %% HAC
-                  if(strcmp(names{i},'elyte'))
-                      cepsdot = submodel.eps.*cdotLi.(names{i});
-                  else
-                      cepsdot = submodel.am.eps.*cdotLi.(names{i});
-                  end
-                  %% Li conservation
-                  eqs{end+1} = -div + source - cepsdot;
-                  % charge continutity
-                  %% should probably be done on the sub model
-                  eqs{end+1} = model.getProp(state,{names{i},'chargeCont'});
-              end
-              names={'ccne','ccpe'};
-              for i=1:numel(names)
-                  eqs{end+1} = model.getProps(state,{names{i},'chargeCont'});
-              end
-              
-              %src = currentSource(t, fv.tUp, fv.tf, model.J);
-              src = drivingForces.src(time);%%(t, fv.tUp, fv.tf, model.J);
-              coupterm = model.getCoupTerm('bc-ccpe');
-              faces = coupterm.couplingfaces;
-              bcval = state.ccpe.E;
-              ccpe_sigmaeff = model.ccpe.sigmaeff;
-              [tccpe, cells] = model.ccpe.operators.harmFaceBC(ccpe_sigmaeff, faces);
-              control = src - sum(tccpe.*(bcval - state.ccpe.phi(cells)));
-              
-              %% Governing equations
-              
-              eqs{end+1} = control;
-          
-              
-              types={'cell','cell','cell','cell',...
-                  'cell','cell','cell','cell','cell'};
-              names = {'elyte_Li_massCont', ...
-                  'elyte_chargeCont' , ...
-                  'ne_Li_massCont'   , ...
-                  'ne_e_chargeCont'  , ...
-                  'pe_Li_massCont'   , ...
-                  'pe_e_chargeCont'  , ...
-                  'ccne_e_chargeCont', ...
-                  'ccpe_e_chargeCont', ...
-                  'control'};
-              primaryVars = model.getPrimaryVariables();
-              problem = LinearizedProblem(eqs, types, names, primaryVars, state, dt);
-              %state.cdotLi=cdotLi;
-          end
-          
-          
-          function [state, report] = updateState(model,state, problem, dx, drivingForces)
-              p = model.getPrimaryVariables();
-              for i=2:numel(dx)
-                  val = model.getProps(state,p{i});
-                  val = val + dx{i};
-                  state = model.setProp(state,p{i},val);
-              end
-              %% not sure how to handle cells
-              state.elyte.cs{1} =  state.elyte.cs{1} + dx{1};
-              report = [];
-          end
-          
-          
-          
-          function state = reduceState(model, state, removeContainers)
-              % Reduce state to doubles, and optionally remove the property
-              % containers to reduce storage space only p = model.getPrimaryVariables();
-              % should be need
-              state = value(state);
-              
-          end
-          
-          function [convergence, values, names] = checkConvergence(model, problem, varargin)
-              
-              [values, tolerances, names] = getConvergenceValues(model, problem, varargin{:});
-              convergence = values < tolerances;
-              if model.verbose
-                  fprintf('Iteration %i ',problem.iterationNo);
-                  fprintf(' residual ');
-                  fprintf(' %d ',values);
-                  fprintf('\n');
-                  disp(values)
-              end
-          end
-          
-          function coupterm = getCoupTerm(model, coupname)
-              coupnames = model.couplingnames;
-              
-              [isok, ind] = ismember(coupname, coupnames);
-              assert(isok, 'name of coupling term is not recognized.');
-              
-              coupterm = model.couplingTerms{ind};
-              
-          end
-          
-          function coupTerm = setupNeElyteCoupTerm(model)
-              
-              ne = model.ne;
-              elyte = model.elyte;
-              
-              Gne = ne.G;
-              Gelyte = elyte.G;
-              
-              % parent Grid
-              G = Gne.mappings.parentGrid;
-              
-              % All the cells from ne are coupled with elyte
-              cells1 = (1 : Gne.cells.num)';
-              pcells = Gne.mappings.cellmap(cells1);
-              
-              mapping = zeros(G.cells.num, 1);
-              mapping(Gelyte.mappings.cellmap) = (1 : Gelyte.cells.num)';
-              cells2 = mapping(pcells);
-              
-              compnames = {'ne', 'elyte'};
-              coupTerm = couplingTerm('ne-elyte', compnames);
-              coupTerm.couplingcells =  [cells1, cells2];
-              coupTerm.couplingfaces = []; % no coupling throug faces. We set it as empty
-              
-          end
-          
-          function coupTerm = setupPeElyteCoupTerm(model)
-              
-              pe = model.pe;
-              elyte = model.elyte;
-              
-              Gpe = pe.G;
-              Gelyte = elyte.G;
-              
-              % parent Grid
-              G = Gpe.mappings.parentGrid;
-              
-              % All the cells from pe are coupled with elyte
-              cells1 = (1 : Gpe.cells.num)';
-              pcells = Gpe.mappings.cellmap(cells1);
-              
-              mapping = zeros(G.cells.num, 1);
-              mapping(Gelyte.mappings.cellmap) = (1 : Gelyte.cells.num)';
-              cells2 = mapping(pcells);
-              
-              compnames = {'pe', 'elyte'};
-              coupTerm = couplingTerm('pe-elyte', compnames);
-              coupTerm.couplingcells = [cells1, cells2];
-              coupTerm.couplingfaces = []; % no coupling between faces
-              
-          end
+        end
+        function [problem, state] = getEquationsGen(model, state0, state,dt, drivingForces, varargin)
+            time = state0.time+dt;
+            state=model.initStateAD(state);
+            
+            nc = model.G.cells.num;
+            
+            % setup temperature and SOC here
+            %% for now this is kept constant?
+            state.T =  model.T*ones(nc, 1);
+            state.SOC =  model.SOC*ones(nc, 1);
+            
+            % variables for time derivatives
+            cdotLi=struct();
+            cdotLi.elyte = (state.elyte.cs{1} - state0.elyte.cs{1})/dt;
+            cdotLi.ne    = (state.ne.am.Li - state0.ne.am.Li)/dt;
+            cdotLi.pe   = (state.pe.am.Li - state0.pe.am.Li)/dt;
+            
+            state = model.dispatchValues(state);
+            state = model.updatePhiElyte(state);
+            %% first update level 2
+            names={{'pe','am'},{'pe','am'}};
+            for i=1:numel(names)
+                submodel = model.getSubmodel(names{i});
+                val = submodel.updateQuantities(model.getProp(state,names{i}));
+                state = model.setProp(state,names{i},val);
+            end
+            
+            
+            state = setupBCSources(model, state);
+            
+            names={{'ne'},{'pe'}};
+            for i=1:numel(names)
+                submodel=model.getSubmodel(names{i});
+                val = submodel.updateReactionRate(model.getProp(state,names{i}));
+                state = model.setProp(state,names{i},val);
+            end
+            state = setupExchanges(model, state);
+            
+            %%update level 1
+            names={{'elyte'},{'ne'},{'pe'}};
+            for i=1:numel(names)
+                submodel=model.getSubmodel(names{i});
+                val = submodel.updateQuantities(model.getProp(state,names{i}));
+                state = model.setProp(state,names{i},val);
+            end
+            
+            names={{'ccpe'},{'ccne'}};
+            for i=1:numel(names)
+                submodel=model.getSubmodel(names{i});
+                val = submodel.updateChargeCont(model.getProp(state,names{i}));
+                state = model.setProp(state,names{i},val);
+            end
+            
+            %% set equations
+            names={'elyte','ne','pe'};
+            eqs={};
+            for i=1:numel(names)
+                submodel=model.getSubmodel({names{i}});
+                %% probably only be done on the submodel
+                source = model.getProp(state,{names{i},'LiSource'});
+                flux = model.getProp(state,{names{i},'LiFlux'});
+                %% could use submodel
+                div =  submodel.operators.Div(flux)./submodel.G.cells.volumes;
+                %% HAC
+                if(strcmp(names{i},'elyte'))
+                    cepsdot = submodel.eps.*cdotLi.(names{i});
+                else
+                    cepsdot = submodel.am.eps.*cdotLi.(names{i});
+                end
+                %% Li conservation
+                eqs{end+1} = -div + source - cepsdot;
+                % charge continutity
+                %% should probably be done on the sub model
+                eqs{end+1} = model.getProp(state,{names{i},'chargeCont'});
+            end
+            names={'ccne','ccpe'};
+            for i=1:numel(names)
+                eqs{end+1} = model.getProps(state,{names{i},'chargeCont'});
+            end
+            
+            %src = currentSource(t, fv.tUp, fv.tf, model.J);
+            src = drivingForces.src(time);%%(t, fv.tUp, fv.tf, model.J);
+            coupterm = model.getCoupTerm('bc-ccpe');
+            faces = coupterm.couplingfaces;
+            bcval = state.ccpe.E;
+            ccpe_sigmaeff = model.ccpe.sigmaeff;
+            [tccpe, cells] = model.ccpe.operators.harmFaceBC(ccpe_sigmaeff, faces);
+            control = src - sum(tccpe.*(bcval - state.ccpe.phi(cells)));
+            
+            %% Governing equations
+            
+            eqs{end+1} = control;
+            
+            
+            types={'cell','cell','cell','cell',...
+                   'cell','cell','cell','cell','cell'};
+            names = {'elyte_Li_massCont', ...
+                     'elyte_chargeCont' , ...
+                     'ne_Li_massCont'   , ...
+                     'ne_e_chargeCont'  , ...
+                     'pe_Li_massCont'   , ...
+                     'pe_e_chargeCont'  , ...
+                     'ccne_e_chargeCont', ...
+                     'ccpe_e_chargeCont', ...
+                     'control'};
+            primaryVars = model.getPrimaryVariables();
+            problem = LinearizedProblem(eqs, types, names, primaryVars, state, dt);
+            %state.cdotLi=cdotLi;
+        end
+        
+        
+        function [state, report] = updateState(model,state, problem, dx, drivingForces)
+            p = model.getPrimaryVariables();
+            for i=2:numel(dx)
+                val = model.getProps(state,p{i});
+                val = val + dx{i};
+                state = model.setProp(state,p{i},val);
+            end
+            %% not sure how to handle cells
+            state.elyte.cs{1} =  state.elyte.cs{1} + dx{1};
+            report = [];
+        end
+        
+        
+        
+        function state = reduceState(model, state, removeContainers)
+        % Reduce state to doubles, and optionally remove the property
+        % containers to reduce storage space only p = model.getPrimaryVariables();
+        % should be need
+            state = value(state);
+            
+        end
+        
+        function [convergence, values, names] = checkConvergence(model, problem, varargin)
+            
+            [values, tolerances, names] = getConvergenceValues(model, problem, varargin{:});
+            convergence = values < tolerances;
+            if model.verbose
+                fprintf('Iteration %i ',problem.iterationNo);
+                fprintf(' residual ');
+                fprintf(' %d ',values);
+                fprintf('\n');
+                disp(values)
+            end
+        end
+        
+        function coupterm = getCoupTerm(model, coupname)
+            coupnames = model.couplingnames;
+            
+            [isok, ind] = ismember(coupname, coupnames);
+            assert(isok, 'name of coupling term is not recognized.');
+            
+            coupterm = model.couplingTerms{ind};
+            
+        end
+        
+        function coupTerm = setupNeElyteCoupTerm(model)
+            
+            ne = model.ne;
+            elyte = model.elyte;
+            
+            Gne = ne.G;
+            Gelyte = elyte.G;
+            
+            % parent Grid
+            G = Gne.mappings.parentGrid;
+            
+            % All the cells from ne are coupled with elyte
+            cells1 = (1 : Gne.cells.num)';
+            pcells = Gne.mappings.cellmap(cells1);
+            
+            mapping = zeros(G.cells.num, 1);
+            mapping(Gelyte.mappings.cellmap) = (1 : Gelyte.cells.num)';
+            cells2 = mapping(pcells);
+            
+            compnames = {'ne', 'elyte'};
+            coupTerm = couplingTerm('ne-elyte', compnames);
+            coupTerm.couplingcells =  [cells1, cells2];
+            coupTerm.couplingfaces = []; % no coupling throug faces. We set it as empty
+            
+        end
+        
+        function coupTerm = setupPeElyteCoupTerm(model)
+            
+            pe = model.pe;
+            elyte = model.elyte;
+            
+            Gpe = pe.G;
+            Gelyte = elyte.G;
+            
+            % parent Grid
+            G = Gpe.mappings.parentGrid;
+            
+            % All the cells from pe are coupled with elyte
+            cells1 = (1 : Gpe.cells.num)';
+            pcells = Gpe.mappings.cellmap(cells1);
+            
+            mapping = zeros(G.cells.num, 1);
+            mapping(Gelyte.mappings.cellmap) = (1 : Gelyte.cells.num)';
+            cells2 = mapping(pcells);
+            
+            compnames = {'pe', 'elyte'};
+            coupTerm = couplingTerm('pe-elyte', compnames);
+            coupTerm.couplingcells = [cells1, cells2];
+            coupTerm.couplingfaces = []; % no coupling between faces
+            
+        end
 
         function coupTerm = setupCcneNeCoupTerm(model)
 
