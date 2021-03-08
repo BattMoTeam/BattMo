@@ -1,7 +1,6 @@
 close all
 clear all
 
-
 sepnz  = 10;
 nenz   = 10;
 penz   = 10;
@@ -49,18 +48,10 @@ startSubGrid = [ccnenx + 1; ccpeny + 1; 1];
 dimSubGrid   = [elnx; elny; elnz];
 elytecells   = pickTensorCells3D(startSubGrid, dimSubGrid, dimGlobGrid);
 
-plotGrid(G, 'facecolor', 'none');
-plotGrid(G, elytecells, 'facecolor', 'yellow');
-
-
 %% setup ne
 startSubGrid = [ccnenx + 1; ccpeny + 1; 1];
 dimSubGrid   = [elnx; elny; nenz];
 necells      = pickTensorCells3D(startSubGrid, dimSubGrid, dimGlobGrid);
-
-plotGrid(G, 'facecolor', 'none');
-plotGrid(G, necells, 'facecolor', 'blue');
-
 
 %% setup pe
 
@@ -68,28 +59,49 @@ startSubGrid = [ccnenx + 1; ccpeny + 1; nenz + sepnz + 1];
 dimSubGrid   = [elnx; elny; penz];
 pecells      = pickTensorCells3D(startSubGrid, dimSubGrid, dimGlobGrid);
 
-plotGrid(G, 'facecolor', 'none');
-plotGrid(G, pecells, 'facecolor', 'red');
-
-
 %% setup ccne
 
 startSubGrid = [1; ccpeny + 1; 1];
 dimSubGrid   = [ccnenx; elny + ccneny; nenz];
-ccnecells      = pickTensorCells3D(startSubGrid, dimSubGrid, dimGlobGrid);
-
-plotGrid(G, 'facecolor', 'none');
-plotGrid(G, ccnecells, 'facecolor', 'green');
-
+ccnecells    = pickTensorCells3D(startSubGrid, dimSubGrid, dimGlobGrid);
 
 %% setup ccpe
 
 startSubGrid = [ccnenx + elnx + 1; 1; nenz + sepnz];
 dimSubGrid   = [ccpenx; elny + ccpeny; penz];
-ccpecells      = pickTensorCells3D(startSubGrid, dimSubGrid, dimGlobGrid);
+ccpecells    = pickTensorCells3D(startSubGrid, dimSubGrid, dimGlobGrid);
 
-plotGrid(G, 'facecolor', 'none');
-plotGrid(G, ccpecells, 'facecolor', 'magenta');
+%% 
 
-            
-            
+cellid = zeros(G.cells.num);
+cellid(elytecells) = 1;
+cellid(necells)    = 2;
+cellid(pecells)    = 3;
+cellid(ccnecells)  = 4;
+cellid(ccpecells)  = 5;
+
+cells = [elytecells; necells; pecells; ccnecells; ccpecells];
+
+rcells = setdiff((1 : G.cells.num)', cells);
+
+nGlob = G.cells.num;
+
+[G, cellmap, facemap, nodemap] = removeCells(G, rcells);
+
+globtbl.gind = (1 : nGlob)';
+globtbl = IndexArray(globtbl);
+
+globloctbl.gind = cellmap;
+globloctbl.lind = (1 : G.cells.num)';
+globloctbl = IndexArray(globloctbl);
+
+map = TensorMap();
+map.fromTbl = globtbl;
+map.toTbl = globloctbl;
+map.mergefds = {'gind'};
+map = map.setup();
+
+cellid = map.eval(cellid);
+
+plotCellData(G, cellid);
+

@@ -35,7 +35,7 @@ classdef BatteryModel < CompositeModel
         function model = BatteryModel(varargin)
 
             model = model@CompositeModel('battery');
-            model.AutoDiffBackend =  SparseAutoDiffBackend('useBlocks',false);
+            model.AutoDiffBackend = SparseAutoDiffBackend('useBlocks',false);
             names = {'T', 'SOC'};
             model.names = names;
             model = model.setupVarDims();
