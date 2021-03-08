@@ -7,7 +7,7 @@ close all
 mrstModule add ad-core multimodel mrst-gui
 mrstVerbose off
 
-model = BatteryModel(); 
+model = BatteryModel3D();
 model.J = 0.1; 
 
 %% plot of the computational graph
