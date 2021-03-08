@@ -965,12 +965,13 @@ classdef BatteryModel < CompositeModel
               
               [values, tolerances, names] = getConvergenceValues(model, problem, varargin{:});
               convergence = values < tolerances;
-              fprintf('Iteration %i ',problem.iterationNo);
-              fprintf(' residual ');
-              fprintf(' %d ',values);
-              fprintf('\n');
-              disp(values)
-              %disp(log(abs(values)))
+              if model.verbose
+                  fprintf('Iteration %i ',problem.iterationNo);
+                  fprintf(' residual ');
+                  fprintf(' %d ',values);
+                  fprintf('\n');
+                  disp(values)
+              end
           end
           
           function coupterm = getCoupTerm(model, coupname)
