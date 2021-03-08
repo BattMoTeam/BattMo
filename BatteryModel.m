@@ -38,69 +38,10 @@ classdef BatteryModel < CompositeModel
             model.AutoDiffBackend =  SparseAutoDiffBackend('useBlocks',false);
             names = {'T', 'SOC'};
             model.names = names;
-            
             model = model.setupVarDims();
-            fac=1
-            sepnx  = 30*fac;
-            nenx   = 30*fac;
-            penx   = 30*fac;
-            ccnenx = 20*fac;
-            ccpenx = 20*fac;
 
-            nxs = [ccnenx; nenx; sepnx; penx; ccpenx];
-            ny = 10*fac;
-
-            xlength = 1e-6*[10; 100; 50; 80; 10];
-            ylength = 1e-2;
-
-            x = xlength./nxs;
-            x = rldecode(x, nxs);
-            x = [0; cumsum(x)];
-
-            y = ylength/ny;
-            y = rldecode(y, ny);
-            y = [0; cumsum(y)];
-
-            G = tensorGrid(x, y);
-            G = computeGeometry(G);
-            model.G = G;
-
-            %% setup elyte
-            nx = sum(nxs);
-
-            submodels = {};
-
-            istart = ccnenx + 1;
-            ni = nenx + sepnx + penx;
-            cells = pickTensorCells(istart, ni, nx, ny);
-            submodels{end + 1} = orgLiPF6('elyte', G, cells);
-
-            %% setup ne
-            istart = ccnenx + 1;
-            cells = pickTensorCells(istart, nenx, nx, ny);
-            submodels{end + 1} = graphiteElectrode('ne', G, cells);
-
-            %% setup pe
-            istart = ccnenx + nenx + sepnx + 1;
-            cells = pickTensorCells(istart, penx, nx, ny);
-            submodels{end + 1} = nmc111Electrode('pe', G, cells);
-
-            %% setup ccne
-            istart = 1;
-            cells = pickTensorCells(istart, ccnenx, nx, ny);
-            submodels{end + 1} = currentCollector('ccne', G, cells);
-
-            %% setup ccpe
-            istart = ccnenx + nenx + sepnx + penx + 1;
-            cells = pickTensorCells(istart, ccpenx, nx, ny);
-            submodels{end + 1}  = currentCollector('ccpe', G, cells);
-
-            %% setup sep
-            istart = ccnenx + nenx + 1;
-            cells = pickTensorCells(istart, sepnx, nx, ny);
-            submodels{end + 1} = celgard2500('sep', G, cells);
-
-            model.SubModels = submodels;
+            model = model.setupBatteryComponents();
+            
             model.hasparent = false;
 
             model = model.initiateCompositeModel();
@@ -222,7 +163,74 @@ classdef BatteryModel < CompositeModel
             model.Ucut = 2;
             
         end
+        
+        
+        function model = setupBatteryComponents(model)
+            
+            fac = 1;
+            sepnx  = 30*fac;
+            nenx   = 30*fac;
+            penx   = 30*fac;
+            ccnenx = 20*fac;
+            ccpenx = 20*fac;
 
+            nxs = [ccnenx; nenx; sepnx; penx; ccpenx];
+            ny = 10*fac;
+
+            xlength = 1e-6*[10; 100; 50; 80; 10];
+            ylength = 1e-2;
+
+            x = xlength./nxs;
+            x = rldecode(x, nxs);
+            x = [0; cumsum(x)];
+
+            y = ylength/ny;
+            y = rldecode(y, ny);
+            y = [0; cumsum(y)];
+
+            G = tensorGrid(x, y);
+            G = computeGeometry(G);
+            model.G = G;
+
+            %% setup elyte
+            nx = sum(nxs);
+
+            submodels = {};
+
+            istart = ccnenx + 1;
+            ni = nenx + sepnx + penx;
+            cells = pickTensorCells(istart, ni, nx, ny);
+            submodels{end + 1} = orgLiPF6('elyte', G, cells);
+
+            %% setup ne
+            istart = ccnenx + 1;
+            cells = pickTensorCells(istart, nenx, nx, ny);
+            submodels{end + 1} = graphiteElectrode('ne', G, cells);
+
+            %% setup pe
+            istart = ccnenx + nenx + sepnx + 1;
+            cells = pickTensorCells(istart, penx, nx, ny);
+            submodels{end + 1} = nmc111Electrode('pe', G, cells);
+
+            %% setup ccne
+            istart = 1;
+            cells = pickTensorCells(istart, ccnenx, nx, ny);
+            submodels{end + 1} = currentCollector('ccne', G, cells);
+
+            %% setup ccpe
+            istart = ccnenx + nenx + sepnx + penx + 1;
+            cells = pickTensorCells(istart, ccpenx, nx, ny);
+            submodels{end + 1}  = currentCollector('ccpe', G, cells);
+
+            %% setup sep
+            istart = ccnenx + nenx + 1;
+            cells = pickTensorCells(istart, sepnx, nx, ny);
+            submodels{end + 1} = celgard2500('sep', G, cells);
+
+            model.SubModels = submodels;
+            
+        end
+        
         function state = dispatchValues(model, state)
 
             T = state.T;
