@@ -8,7 +8,8 @@ mrstModule add ad-core multimodel mrst-gui
 mrstVerbose off
 
 model = BatteryModel3Dextra();
-model = BatteryModel();
+% model = BatteryModel();
+% model.verbose = true;
 model.J = 0.1; 
 
 %% plot of the computational graph
@@ -54,7 +55,7 @@ end
 
 %% run the same with euler
 
-caseno = 3; 
+caseno = 2; 
 
 switch caseno
     
@@ -139,22 +140,18 @@ end
 
 nls.maxIterations = 10; 
 nls.errorOnFailure = false; 
-profile off
-profile on
-model.nonlinearTolerance = 1e-6;
+model.nonlinearTolerance = 1e-4;
 [wellSols, states, report] = simulateScheduleAD(initstate, model, schedule,...
                                                 'OutputMinisteps', true,...
                                                 'NonLinearSolver', nls); 
-profile off
-profile viewer
 
 %% 
 ind = cellfun(@(x) not(isempty(x)), states); 
 Enew = cellfun(@(x) x.ccpe.E, {states{ind}}); 
 time = cellfun(@(x) x.time, {states{ind}}); 
-% 
+
 figure
-plot(log(time/hour), Enew, '*')
+% plot(log(time/hour), Enew, '*')
 plot((time/hour), Enew, '*')
 title('Potential (E)')
 xlabel('time (hours)')
