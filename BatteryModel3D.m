@@ -120,7 +120,7 @@ classdef BatteryModel3D < BatteryModel
             % We pick up the faces at the top of ccne
             yf = G.faces.centroids(:, 2);
             myf = max(yf);
-            faces = find(yf > (1 - eps)*myf);
+            faces = find(yf >= (1 - eps)*myf);
             cells = sum(G.faces.neighbors(faces, :), 2);
 
             compnames = {'ccne'};
@@ -138,7 +138,7 @@ classdef BatteryModel3D < BatteryModel
             % We pick up the faces at the bottom of ccpe
             yf = G.faces.centroids(:, 2);
             myf = min(yf);
-            faces = find(yf < (1 + eps)*myf);
+            faces = find(yf <= (1 + eps)*myf);
             cells = sum(G.faces.neighbors(faces, :), 2);
 
             compnames = {'ccpe'};
