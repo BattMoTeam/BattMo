@@ -7,14 +7,18 @@ close all
 mrstModule add ad-core multimodel mrst-gui
 mrstVerbose off
 
-model = BatteryModel3D();
+model = BatteryModel3Dextra();
+model = BatteryModel();
 model.J = 0.1; 
 
 %% plot of the computational graph
 
-g = setupGraph(model); 
-figure
-plot(g)
+doplotgraph = false;
+if doplotgraph
+    g = setupGraph(model); 
+    figure
+    plot(g)
+end
 
 %% run simulation
 % profile - detail builtin
@@ -44,13 +48,13 @@ if doode15i
         E(iy) = yy(sl{9}); 
     end
 
-    % plot(t/hour, E)
-    % return
+    plot(t/hour, E)
+    return
 end
 
 %% run the same with euler
 
-caseno = 2; 
+caseno = 3; 
 
 switch caseno
     
@@ -73,6 +77,19 @@ switch caseno
     dt = [dt; repmat(dt(end)*1.5, floor(n*1.5), 1)]; 
     times = [0; cumsum(dt)]; 
     times(end); 
+    
+  case 3
+    dt = []; 
+    % n = 37;
+    % dt = [dt; repmat(1e-4, n, 1).*1.1.^[1:n]']; 
+    n = 30;
+    dt = [dt; repmat(1e-3, n, 1)];
+    % n = 13
+    % dt = [dt; dt(end).*2.^[1:n]']
+    % dt = [dt; repmat(dt(end), floor(n*1.5), 1)]; 
+    times = [0; cumsum(dt)]; 
+    times(end) 
+    
 end
 
 %% 
@@ -87,12 +104,11 @@ for i = 1:numel(tt)
     src(i) = currentSource(tt(i), 0.1, 86400, model.J); 
 end
 
-stopFunc = @(model, state, state_prev) state.ccpe.E<2.0; 
+stopFunc = @(model, state, state_prev) (state.ccpe.E < 2.0); 
 srcfunc = @(time) currentSource(time, 0.1, 86400, model.J); 
 
 control = repmat(struct('src', srcfunc, 'stopFunction', stopFunc), 1, 1); 
 schedule = struct('control', control, 'step', step); 
-model.nonlinearTolerance = 1e-3; 
 nls = NonLinearSolver(); 
 
 useAMGCL = false;
@@ -121,11 +137,11 @@ if(false)
     nls.timeStepSelector.targetChangeRel = [1e9]; 
 end
 
-nls.maxIterations = 5; 
+nls.maxIterations = 10; 
 nls.errorOnFailure = false; 
 profile off
 profile on
-model.nonlinearTolerance = 1e-3;
+model.nonlinearTolerance = 1e-6;
 [wellSols, states, report] = simulateScheduleAD(initstate, model, schedule,...
                                                 'OutputMinisteps', true,...
                                                 'NonLinearSolver', nls); 
@@ -142,6 +158,7 @@ plot(log(time/hour), Enew, '*')
 plot((time/hour), Enew, '*')
 title('Potential (E)')
 xlabel('time (hours)')
+
 return
 
 ss = nan(size(t)); 
