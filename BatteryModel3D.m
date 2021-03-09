@@ -82,7 +82,7 @@ classdef BatteryModel3D < BatteryModel
 
             %% setup ccpe
 
-            startSubGrid = [ccnenx + elnx + 1; 1; nenz + sepnz];
+            startSubGrid = [ccnenx + elnx + 1; 1; nenz + sepnz + 1];
             dimSubGrid   = [ccpenx; elny + ccpeny; penz];
             ccpecells    = pickTensorCells3D(startSubGrid, dimSubGrid, dimGlobGrid);
 
