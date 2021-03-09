@@ -24,7 +24,7 @@ classdef BatteryModel3Dextra < BatteryModel
             
             xlength = 1e-6*[10; 100; 50; 80; 10];
             ylength = 1e-2;
-            zlength = 1e-2;
+            zlength = 1;
             
             x = xlength./nxs;
             x = rldecode(x, nxs);
