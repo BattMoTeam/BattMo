@@ -609,7 +609,7 @@ classdef BatteryModel < CompositeModel
             bcval = ccpe_E;
             ccpe_sigmaeff = model.ccpe.sigmaeff;
             [tccpe, cells] = model.ccpe.operators.harmFaceBC(ccpe_sigmaeff, faces);
-            control = src - sum(tccpe.*(bcval - ccpe_phi(cells)));
+            control = (src - sum(tccpe.*(bcval - ccpe_phi(cells))))/model.con.F;
 
             %% Governing equations
 
@@ -720,7 +720,7 @@ classdef BatteryModel < CompositeModel
             cdotLi=struct();
             cdotLi.elyte = (state.elyte.cs{1} - state0.elyte.cs{1})/dt;
             cdotLi.ne    = (state.ne.am.Li - state0.ne.am.Li)/dt;
-            cdotLi.pe   = (state.pe.am.Li - state0.pe.am.Li)/dt;
+            cdotLi.pe    = (state.pe.am.Li - state0.pe.am.Li)/dt;
 
             %% Cell voltage
             
@@ -791,15 +791,15 @@ classdef BatteryModel < CompositeModel
 
             %% Control equation
 
-            %src = currentSource(t, fv.tUp, fv.tf, model.J);
-            src = drivingForces.src(time);%%(t, fv.tUp, fv.tf, model.J);
+            % src = currentSource(t, fv.tUp, fv.tf, model.J);
+            src = drivingForces.src(time); %%(t, fv.tUp, fv.tf, model.J);
             coupterm = model.getCoupTerm('bc-ccpe');
             faces = coupterm.couplingfaces;
             bcval = state.ccpe.E;
             ccpe_sigmaeff = model.ccpe.sigmaeff;
             [tccpe, cells] = model.ccpe.operators.harmFaceBC(ccpe_sigmaeff, faces);
-            control = src - sum(tccpe.*(bcval - state.ccpe.phi(cells)));
-
+            control = (src - sum(tccpe.*(bcval - state.ccpe.phi(cells))))*model.con.F;
+            
             %% Governing equations
 
             eqs = {elyte_Li_massCont, ...
@@ -965,13 +965,13 @@ classdef BatteryModel < CompositeModel
             
             [values, tolerances, names] = getConvergenceValues(model, problem, varargin{:});
             convergence = values < tolerances;
-            if model.verbose
-                fprintf('Iteration %i ',problem.iterationNo);
-                fprintf(' residual ');
-                fprintf(' %d ',values);
-                fprintf('\n');
-                disp(values)
-            end
+            % if model.verbose
+                % fprintf('Iteration %i ',problem.iterationNo);
+                % fprintf(' residual ');
+                % fprintf(' %d ',values);
+                % fprintf('\n');
+                % disp(values)
+            % end
         end
         
         function coupterm = getCoupTerm(model, coupname)

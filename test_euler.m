@@ -83,7 +83,7 @@ switch caseno
     dt = []; 
     % n = 37;
     % dt = [dt; repmat(1e-4, n, 1).*1.1.^[1:n]']; 
-    n = 30;
+    n = 100;
     dt = [dt; repmat(1e-3, n, 1)];
     % n = 13
     % dt = [dt; dt(end).*2.^[1:n]']
@@ -141,6 +141,7 @@ end
 nls.maxIterations = 10; 
 nls.errorOnFailure = false; 
 model.nonlinearTolerance = 1e-4;
+model.verbose = true;
 [wellSols, states, report] = simulateScheduleAD(initstate, model, schedule,...
                                                 'OutputMinisteps', true,...
                                                 'NonLinearSolver', nls); 
