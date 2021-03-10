@@ -50,3 +50,12 @@ Thumbs.db
 *.mov
 *.wmv
 
+# Other media files
+*.gif
+
+# Result files
+*.mat
+
+# Other MATLAB files
+*.asv
+
