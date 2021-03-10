@@ -93,6 +93,8 @@ classdef orgLiPF6 < ComponentModel
                     };
             model.names = names;
             
+            % This initiates a dictionary for variable dimensions and
+            % assigns a value
             model = model.setupVarDims();
             model.vardims('cs') = 2;
 

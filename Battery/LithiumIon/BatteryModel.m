@@ -44,8 +44,17 @@ classdef BatteryModel < CompositeModel
             names = {'T', 'SOC'};
             model.names = names;
             
-            % ?????? What does this do?
+            % This sets up a dictionary to support numerical indexing for
+            % variable dimensions 
             model = model.setupVarDims();
+            
+            % ???? This should be defined separately, right? We should
+            % create a separate input 
+            % Define initial conditions, current BC, and curoff voltage
+            model.SOC = 1;
+            model.T = 298.15;
+            model.J = 0.1;
+            model.Ucut = 2;
             
             %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
             %%                 Finite Volume Meshing                    %%%
@@ -64,7 +73,7 @@ classdef BatteryModel < CompositeModel
             nx      = sum(nxs);  % Total number of cells in the x-direction
             
             % Define number of cells in the y-direction
-            ny = 50;
+            ny = 10;
 
             % Define the length of the battery domains in the x-direction
             xlength = 1e-6*[10; 100; 50; 80; 10];
@@ -152,7 +161,7 @@ classdef BatteryModel < CompositeModel
             % Step 8) Build the composite model
             model = model.initiateCompositeModel();
 
-            % ????? What is this doing?
+            % Add a variable E to the positive current collector
             ccpe = model.getAssocModel('ccpe');
             ccpe.pnames = {ccpe.pnames{:}, 'E'};
             ccpe.names = {ccpe.names{:}, 'E'};
@@ -160,7 +169,7 @@ classdef BatteryModel < CompositeModel
             model = model.setSubModel('ccpe', ccpe);
 
             % ????? This was defined above. Is it necessary?
-            model.names = {'T', 'SOC'};
+            %model.names = {'T', 'SOC'};
 
             %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
             %%                  Set Update Functions                    %%%
@@ -168,6 +177,10 @@ classdef BatteryModel < CompositeModel
             % PROPERTY functions describe the physicochemical properties of
             % a submodel. EXCHANGE functions describe the physical and/or
             % electrochemical processes coupling submodels.
+            % 
+            % Currently, this is done to assemble graphs of connections
+            % between the models. In future versions it will be used to
+            % setup equations.
             %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
             
             % Define easy short names for the submodels
@@ -186,12 +199,12 @@ classdef BatteryModel < CompositeModel
             fnupdate = @(model, state) model.dispatchValues(state);
             inputnames = {VarName({'..'}, 'T'), ...
                           VarName({'..'}, 'SOC')};
-            % ????? What does this mean again?
+            % Define the relevnt model for the property function, in this
+            % case the parent of the model to be updated.
             fnmodel = {'..'};
             
-            % ????? What does addPropFunction do?
-            % ????? Is it necessary to reassign for both? ne = ..., ne =
-            % ...
+            % Updates the property functions of submodels for temperature
+            % and state-of-charge
             ne = ne.addPropFunction('T'  , fnupdate, inputnames, fnmodel);
             ne = ne.addPropFunction('SOC', fnupdate, inputnames, fnmodel);
             pe = pe.addPropFunction('T'  , fnupdate, inputnames, fnmodel);
@@ -255,7 +268,7 @@ classdef BatteryModel < CompositeModel
             %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
             %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
             
-            % ????? Reassign the shortnames to the composite model?
+            % ;?? Reassign the shortnames to the composite model?
             model = model.setSubModel('ne', ne);
             model = model.setSubModel('pe', pe);
             model = model.setSubModel('ccne', ccne);
@@ -270,12 +283,14 @@ classdef BatteryModel < CompositeModel
             %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
             
             %%% Electrolyte
-            % ????? Do you mean volume fraction?
-            model = model.setElytePorosity();            
-            % ????? Should this be placed in setElytePorosity instead?
+            % This sets the volume fraction of the electrolyte
+            model = model.setElytePorosity();    
+            
+            % Set the updated electrolyte submodel in the composite model
             model = model.initiateCompositeModel();
             
-            % ????? What is the purpose of this?
+            % This gives direct access to the submodels as a property. This
+            % is done for performance.
             model.elyte = model.getAssocModel('elyte');
             model.ne    = model.getAssocModel('ne');
             model.pe    = model.getAssocModel('pe');
@@ -302,12 +317,7 @@ classdef BatteryModel < CompositeModel
             model.couplingTerms = coupTerms;
             model.couplingnames = cellfun(@(x) x.name, coupTerms, 'uniformoutput', false);
 
-            % ???? This should be defined separately, right?
-            % Define initial conditions, current BC, and curoff voltage
-            model.SOC = 1;
-            model.T = 298.15;
-            model.J = 0.1;
-            model.Ucut = 2;
+
             
         end
 
@@ -420,7 +430,7 @@ classdef BatteryModel < CompositeModel
             elyte.eps(elytecells(pe.G.mappings.cellmap)) = pe.void;
             elyte.eps(elytecells(sep.G.mappings.cellmap)) = sep.void;
 
-            % Set the updated submodel in the composite model
+            % @Xavier, please check the best way to do this
             model = model.setSubModel('elyte', elyte);
 
         end
@@ -485,6 +495,7 @@ classdef BatteryModel < CompositeModel
                              'Jacobian', derfun);
 
             [t, y] = ode15i(fun, model.fv.tSpan', y0, yp0, options);
+            %[t, y] = ode15i(fun, [model.fv.ti, model.fv.tf], y0, yp0, options);
 
         end
 
@@ -790,14 +801,20 @@ classdef BatteryModel < CompositeModel
             % All the cells from negative electrode are coupled with the
             % electrolyte
             
-            % ????? What exactly is going on here?
+            % Map cells between grids
+            % Indices of the cells in the negative electrode to be coupled
+            % (everything)
             cells1 = (1 : Gne.cells.num)';
-            pcells = Gne.mappings.cellmap(cells1);
+            % Indices of the same cells in the parent grid
+            pcells = Gne.mappings.cellmap(cells1); % p is for parent
 
-            mapping = zeros(G.cells.num, 1);
+            % Find corresponding cells in the electrolyte
+            mapping = zeros(G.cells.num, 1);            
             mapping(Gelyte.mappings.cellmap) = (1 : Gelyte.cells.num)';
             cells2 = mapping(pcells);
 
+            % Couple the cells in the negative electrode and the
+            % electrolyte
             compnames = {'ne', 'elyte'};
             coupTerm = couplingTerm('ne-elyte', compnames);
             coupTerm.couplingcells =  [cells1, cells2];
