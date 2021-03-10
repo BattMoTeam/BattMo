@@ -948,6 +948,13 @@ classdef BatteryModel < CompositeModel
             end
             %% not sure how to handle cells
             state.elyte.cs{1} =  state.elyte.cs{1} + dx{1};
+            
+            % docheck;
+            
+            state.elyte.cs{1} = max(state.elyte.cs{1}, 0);
+            state.ne.am.Li = max(state.ne.am.Li, 0);
+            state.pe.am.Li = max(state.pe.am.Li, 0);
+
             report = [];
         end
         
