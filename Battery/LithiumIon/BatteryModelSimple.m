@@ -1,4 +1,4 @@
-classdef BatteryModelSimple < PhysicalModel %< CompositeModel
+classdef BatteryModelSimple < PhysicalModel
 
     properties
 
@@ -18,7 +18,7 @@ classdef BatteryModelSimple < PhysicalModel %< CompositeModel
         % Voltage cut
         Ucut
 
-        % submodels
+        % Submodels
         elyte
         ne
         pe
@@ -30,172 +30,167 @@ classdef BatteryModelSimple < PhysicalModel %< CompositeModel
 
     methods
 
-        function model = BatteryModelSimple(varargin)
+        function model = BatteryModelSimple(params)
 
             model = model@PhysicalModel([]);
             model.AutoDiffBackend = SparseAutoDiffBackend('useBlocks',false);
-            names = {'T', 'SOC'};
 
-            %model.names = names;
-            %model = model.setupVarDims();
+            %% Setup the model using the input parameters
+            model.T     = params.T;
+            model.SOC   = params.SOC;
+            model.J     = params.J;
+            model.Ucut  = params.Ucut;
 
-            model = model.setupBatteryComponents();
+            model.G = params.G;
+
+            model.elyte = params.elyte;
+            model.ne    = params.ne;
+            model.pe    = params.pe;
+            model.ccpe  = params.ccpe;
+            model.ccne  = params.ccne;
+            model.sep   = params.sep;
+            
             model = model.setElytePorosity();
             
-            %% setup couplings
+            %% Setup the couplings using the input parameters
             coupTerms = {};
-
-            coupTerms{end + 1} = setupNeElyteCoupTerm(model);
-            coupTerms{end + 1} = setupPeElyteCoupTerm(model);
-            coupTerms{end + 1} = setupCcneNeCoupTerm(model);
-            coupTerms{end + 1} = setupCcpePeCoupTerm(model);
-            coupTerms{end + 1} = setupCcneBcCoupTerm(model);
-            coupTerms{end + 1} = setupCcpeBcCoupTerm(model);
-
+            coupTerms{end + 1} = params.coupTermNeElyte;
+            coupTerms{end + 1} = params.coupTermPeElyte;
+            coupTerms{end + 1} = params.coupTermCcneNe;
+            coupTerms{end + 1} = params.coupTermCcpePe;
+            coupTerms{end + 1} = params.coupTermCcneBc;
+            coupTerms{end + 1} = params.coupTermCcpeBc;
             model.couplingTerms = coupTerms;
             model.couplingnames = cellfun(@(x) x.name, coupTerms, 'uniformoutput', false);
-
-            model.SOC = 0.5;
-            model.T = 298.15;
-
-            model.J = 0.1;
-            model.Ucut = 2;
             
         end
         
-        
-        function model = setupBatteryComponents(model)
+        function [problem, state] = getEquations(model, state0, state,dt, drivingForces, varargin)
             
-            fac = 1;
-            sepnx  = 30*fac;
-            nenx   = 30*fac;
-            penx   = 30*fac;
-            ccnenx = 20*fac;
-            ccpenx = 20*fac;
-
-            nxs = [ccnenx; nenx; sepnx; penx; ccpenx];
-            ny = 10*fac;
-
-            xlength = 1e-6*[10; 100; 50; 80; 10];
-            ylength = 1e-2;
-
-            x = xlength./nxs;
-            x = rldecode(x, nxs);
-            x = [0; cumsum(x)];
-
-            y = ylength/ny;
-            y = rldecode(y, ny);
-            y = [0; cumsum(y)];
-
-            G = tensorGrid(x, y);
-            G = computeGeometry(G);
-            model.G = G;
-
-            %% setup elyte
-            nx = sum(nxs);
-
-            istart = ccnenx + 1;
-            ni = nenx + sepnx + penx;
-            cells = pickTensorCells(istart, ni, nx, ny);
-            %submodels{end + 1} = orgLiPF6('elyte', G, cells);
-            model.elyte = orgLiPF6('elyte', G, cells);
-            %% setup ne
-            istart = ccnenx + 1;
-            cells = pickTensorCells(istart, nenx, nx, ny);
-            %submodels{end + 1} = graphiteElectrode('ne', G, cells);
-            model.ne = graphiteElectrode('ne', G, cells);
-            %% setup pe
-            istart = ccnenx + nenx + sepnx + 1;
-            cells = pickTensorCells(istart, penx, nx, ny);
-            %submodels{end + 1} = nmc111Electrode('pe', G, cells);
-            model.pe = nmc111Electrode('pe', G, cells);
-            %% setup ccne
-            istart = 1;
-            cells = pickTensorCells(istart, ccnenx, nx, ny);
-            %submodels{end + 1} = currentCollector('ccne', G, cells);
-            model.ccne = currentCollector('ccne', G, cells);
-            %% setup ccpe
-            istart = ccnenx + nenx + sepnx + penx + 1;
-            cells = pickTensorCells(istart, ccpenx, nx, ny);
-            %submodels{end + 1}  = currentCollector('ccpe', G, cells);
-            model.ccpe = currentCollector('ccpe', G, cells);
-            %% setup sep
-            istart = ccnenx + nenx + 1;
-            cells = pickTensorCells(istart, sepnx, nx, ny);
-            %submodels{end + 1} = celgard2500('sep', G, cells);
-            model.sep = celgard2500('sep', G, cells);
-            %model.SubModels = submodels;
+            time = state0.time+dt;
+            state=model.initStateAD(state);
             
-        end
-        
-        function initstate = icp2d(model)
-        % Setup initial state
-
+            %% for now temperature and SOC are kept constant
             nc = model.G.cells.num;
-
-            SOC = model.SOC;
-            T   = model.T;
+            state.T   = model.T*ones(nc, 1);
+            state.SOC = model.SOC*ones(nc, 1);
             
-            initstate.T   =  T*ones(nc, 1);
-            initstate.SOC =  SOC*ones(nc, 1);
-
-            initstate = model.dispatchValues(initstate);
+            state = model.dispatchValues(state);
+            state = model.updatePhiElyte(state);
             
-            elyte = model.elyte;
-            ne    = model.ne;
-            pe    = model.pe;
-            ccne  = model.ccne;
-            ccpe  = model.ccpe;
-
-            ne_am = ne.am;
-            pe_am = pe.am;
-
-            %% setup initial ne state
-
-            m = (1 ./ (ne_am.theta100 - ne_am.theta0));
-            b = -m .* ne_am.theta0;
-            theta = (SOC - b) ./ m;
-            c = theta .* ne_am.Li.cmax;
-            c = c*ones(ne.G.cells.num, 1);
-
-            initstate.ne.am.Li = c;
-            initstate.ne.am = ne_am.updateQuantities(initstate.ne.am);
-
-            OCP = initstate.ne.am.OCP;
-            initstate.ne.am.phi = OCP;
-
-            %% setup initial pe state
-
-            m = (1 ./ (pe_am.theta100 - pe_am.theta0));
-            b = -m .* pe_am.theta0;
-            theta = (SOC - b) ./ m;
-            c = theta .* pe_am.Li.cmax;
-            c = c*ones(ne.G.cells.num, 1);
-
-            initstate.pe.am.Li = c;
-            initstate.pe.am = pe_am.updateQuantities(initstate.pe.am);
-
-            OCP = initstate.pe.am.OCP;
-            initstate.pe.am.phi = OCP;
-
-            %% setup initial elyte state
-
-            initstate.elyte.phi = zeros(elyte.G.cells.num, 1);
-            cs=cell(2,1);
-            initstate.elyte.cs=cs;
-            initstate.elyte.cs{1} = 1000*ones(elyte.G.cells.num, 1);
-
-            %% setup initial Current collectors state
+            %% Update Source and BC term variables
             
-            OCP = initstate.ne.am.OCP;
-            OCP = OCP(1) .* ones(ccne.G.cells.num, 1);
-            initstate.ccne.phi = OCP;
-
-            OCP = initstate.pe.am.OCP;
-            OCP = OCP(1) .* ones(ccpe.G.cells.num, 1);
-            initstate.ccpe.phi = OCP;
+            names={{'pe','am'},{'pe','am'}};
+            for i=1:numel(names)
+                submodel = model.getSubmodel(names{i});
+                val = submodel.updateQuantities(model.getProp(state,names{i}));
+                state = model.setProp(state,names{i},val);
+            end
             
-            initstate.ccpe.E = OCP(1);
+            state = setupBCSources(model, state);
+            
+            %% Update Reaction Coupling variables
+            
+            names={{'ne'},{'pe'}};
+            for i=1:numel(names)
+                submodel=model.getSubmodel(names{i});
+                val = submodel.updateReactionRate(model.getProp(state,names{i}));
+                state = model.setProp(state,names{i},val);
+            end
+            
+            state = setupExchanges(model, state);
+            
+            %% Update Fluxes variables
+            
+            names={{'elyte'},{'ne'},{'pe'}};
+            for i=1:numel(names)
+                submodel=model.getSubmodel(names{i});
+                val = submodel.updateQuantities(model.getProp(state,names{i}));
+                state = model.setProp(state,names{i},val);
+            end
+            
+            names={{'ccpe'},{'ccne'}};
+            for i=1:numel(names)
+                submodel=model.getSubmodel(names{i});
+                val = submodel.updateChargeCont(model.getProp(state,names{i}));
+                state = model.setProp(state,names{i},val);
+            end
+            
+            %% Set up the governing equations
+            
+            %% Mass and charge conservation for the electorlyte and the electrode
+            
+            % Accumulation terms for the mass conservation equtions
+            cdotLi=struct();
+            cdotLi.elyte = (state.elyte.cs{1} - state0.elyte.cs{1})/dt;
+            cdotLi.ne    = (state.ne.am.Li - state0.ne.am.Li)/dt;
+            cdotLi.pe    = (state.pe.am.Li - state0.pe.am.Li)/dt;
+            
+            names={'elyte','ne','pe'};
+            eqs={};
+            
+            for i = 1 : numel(names)
+                
+                submodel = model.getSubmodel({names{i}});
+
+                %% probably only be done on the submodel
+                source = model.getProp(state,{names{i},'LiSource'});
+                flux = model.getProp(state,{names{i},'LiFlux'});
+
+                %% could use submodel
+                div = submodel.operators.Div(flux)./submodel.G.cells.volumes;
+
+                %% HAC
+                if(strcmp(names{i},'elyte'))
+                    cepsdot = submodel.eps.*cdotLi.(names{i});
+                else
+                    cepsdot = submodel.am.eps.*cdotLi.(names{i});
+                end
+                %% Li conservation
+                eqs{end+1} = -div + source - cepsdot;
+                
+                %¤ charge continutity
+                %% should probably be done on the sub model
+                eqs{end+1} = model.getProp(state,{names{i},'chargeCont'});
+            end
+            
+            %% charge conservation for the current collectors
+            
+            names = {'ccne','ccpe'};
+            for i = 1 : numel(names)
+                eqs{end+1} = model.getProps(state, {names{i}, 'chargeCont'});
+            end
+            
+            %% setup control equation (fixed total current at ccpe)
+            
+            src = drivingForces.src(time);
+            coupterm = model.getCoupTerm('bc-ccpe');
+            faces = coupterm.couplingfaces;
+            bcval = state.ccpe.E;
+            ccpe_sigmaeff = model.ccpe.sigmaeff;
+            [tccpe, cells] = model.ccpe.operators.harmFaceBC(ccpe_sigmaeff, faces);
+            control = src - sum(tccpe.*(bcval - state.ccpe.phi(cells)));
+            
+            eqs{end+1} = control;
+            
+            
+            %% Give type and names to equations and names of the primary variables (for book-keeping)
+            
+            types={'cell','cell','cell','cell',...
+                   'cell','cell','cell','cell','cell'};
+            names = {'elyte_Li_massCont', ...
+                     'elyte_chargeCont' , ...
+                     'ne_Li_massCont'   , ...
+                     'ne_e_chargeCont'  , ...
+                     'pe_Li_massCont'   , ...
+                     'pe_e_chargeCont'  , ...
+                     'ccne_e_chargeCont', ...
+                     'ccpe_e_chargeCont', ...
+                     'control'};
+            primaryVars = model.getPrimaryVariables();
+
+            %% setup LinearizedProblem that can be processed by MRST Newton API
+            problem = LinearizedProblem(eqs, types, names, primaryVars, state, dt);
             
         end
         
@@ -279,7 +274,90 @@ classdef BatteryModelSimple < PhysicalModel %< CompositeModel
             model.elyte =elyte;
 
         end
+        
 
+        function initstate = setupInitialState(model)
+            
+            % Setup initial state
+
+            nc = model.G.cells.num;
+
+            SOC = model.SOC;
+            T   = model.T;
+            
+            initstate.T   =  T*ones(nc, 1);
+            initstate.SOC =  SOC*ones(nc, 1);
+
+            initstate = model.dispatchValues(initstate);
+            
+            elyte = model.elyte;
+            ne    = model.ne;
+            pe    = model.pe;
+            ccne  = model.ccne;
+            ccpe  = model.ccpe;
+
+            ne_am = ne.am;
+            pe_am = pe.am;
+
+            %% setup initial ne state
+
+            m = (1 ./ (ne_am.theta100 - ne_am.theta0));
+            b = -m .* ne_am.theta0;
+            theta = (SOC - b) ./ m;
+            c = theta .* ne_am.Li.cmax;
+            c = c*ones(ne.G.cells.num, 1);
+
+            initstate.ne.am.Li = c;
+            initstate.ne.am = ne_am.updateQuantities(initstate.ne.am);
+
+            OCP = initstate.ne.am.OCP;
+            initstate.ne.am.phi = OCP;
+
+            %% setup initial pe state
+
+            m = (1 ./ (pe_am.theta100 - pe_am.theta0));
+            b = -m .* pe_am.theta0;
+            theta = (SOC - b) ./ m;
+            c = theta .* pe_am.Li.cmax;
+            c = c*ones(ne.G.cells.num, 1);
+
+            initstate.pe.am.Li = c;
+            initstate.pe.am = pe_am.updateQuantities(initstate.pe.am);
+
+            OCP = initstate.pe.am.OCP;
+            initstate.pe.am.phi = OCP;
+
+            %% setup initial elyte state
+
+            initstate.elyte.phi = zeros(elyte.G.cells.num, 1);
+            cs=cell(2,1);
+            initstate.elyte.cs=cs;
+            initstate.elyte.cs{1} = 1000*ones(elyte.G.cells.num, 1);
+
+            %% setup initial Current collectors state
+            
+            OCP = initstate.ne.am.OCP;
+            OCP = OCP(1) .* ones(ccne.G.cells.num, 1);
+            initstate.ccne.phi = OCP;
+
+            OCP = initstate.pe.am.OCP;
+            OCP = OCP(1) .* ones(ccpe.G.cells.num, 1);
+            initstate.ccpe.phi = OCP;
+            
+            initstate.ccpe.E = OCP(1);
+            
+        end
+        
+        function coupterm = getCoupTerm(model, coupname)
+            coupnames = model.couplingnames;
+            
+            [isok, ind] = ismember(coupname, coupnames);
+            assert(isok, 'name of coupling term is not recognized.');
+            
+            coupterm = model.couplingTerms{ind};
+            
+        end
+        
         function state = initStateAD(model,state)
             adbackend = model.AutoDiffBackend();
             [state.elyte.cs{1},...
@@ -347,137 +425,6 @@ classdef BatteryModelSimple < PhysicalModel %< CompositeModel
             validforces=struct('src', [], 'stopFunction', []); 
         end
          
-        function [problem, state] = getEquations(model, state0, state,dt, drivingForces, varargin)
-            time = state0.time+dt;
-            state=model.initStateAD(state);
-            
-            nc = model.G.cells.num;
-            
-            % setup temperature and SOC here
-
-            %% for now this is kept constant
-            state.T   =  model.T*ones(nc, 1);
-            state.SOC =  model.SOC*ones(nc, 1);
-            
-            % variables for time derivatives
-            cdotLi=struct();
-            cdotLi.elyte = (state.elyte.cs{1} - state0.elyte.cs{1})/dt;
-            cdotLi.ne    = (state.ne.am.Li - state0.ne.am.Li)/dt;
-            cdotLi.pe    = (state.pe.am.Li - state0.pe.am.Li)/dt;
-            
-            state = model.dispatchValues(state);
-            state = model.updatePhiElyte(state);
-            
-            %% Update Source and BC term variables
-            
-            names={{'pe','am'},{'pe','am'}};
-            for i=1:numel(names)
-                submodel = model.getSubmodel(names{i});
-                val = submodel.updateQuantities(model.getProp(state,names{i}));
-                state = model.setProp(state,names{i},val);
-            end
-            
-            state = setupBCSources(model, state);
-            
-            %% Update Reaction Coupling variables
-            
-            names={{'ne'},{'pe'}};
-            for i=1:numel(names)
-                submodel=model.getSubmodel(names{i});
-                val = submodel.updateReactionRate(model.getProp(state,names{i}));
-                state = model.setProp(state,names{i},val);
-            end
-            
-            state = setupExchanges(model, state);
-            
-            %% Update Fluxes variables
-            
-            names={{'elyte'},{'ne'},{'pe'}};
-            for i=1:numel(names)
-                submodel=model.getSubmodel(names{i});
-                val = submodel.updateQuantities(model.getProp(state,names{i}));
-                state = model.setProp(state,names{i},val);
-            end
-            
-            names={{'ccpe'},{'ccne'}};
-            for i=1:numel(names)
-                submodel=model.getSubmodel(names{i});
-                val = submodel.updateChargeCont(model.getProp(state,names{i}));
-                state = model.setProp(state,names{i},val);
-            end
-            
-            %% Set up the governing equations
-            
-            %% Mass and charge conservation for the electorlyte and the electrode
-            
-            names={'elyte','ne','pe'};
-            eqs={};
-            
-            for i = 1 : numel(names)
-                
-                submodel = model.getSubmodel({names{i}});
-
-                %% probably only be done on the submodel
-                source = model.getProp(state,{names{i},'LiSource'});
-                flux = model.getProp(state,{names{i},'LiFlux'});
-
-                %% could use submodel
-                div = submodel.operators.Div(flux)./submodel.G.cells.volumes;
-
-                %% HAC
-                if(strcmp(names{i},'elyte'))
-                    cepsdot = submodel.eps.*cdotLi.(names{i});
-                else
-                    cepsdot = submodel.am.eps.*cdotLi.(names{i});
-                end
-                %% Li conservation
-                eqs{end+1} = -div + source - cepsdot;
-                
-                %¤ charge continutity
-                %% should probably be done on the sub model
-                eqs{end+1} = model.getProp(state,{names{i},'chargeCont'});
-            end
-            
-            %% charge conservation for the current collectors
-            
-            names = {'ccne','ccpe'};
-            for i = 1 : numel(names)
-                eqs{end+1} = model.getProps(state, {names{i}, 'chargeCont'});
-            end
-            
-            %% setup control equation (fixed total current at ccpe)
-            
-            src = drivingForces.src(time);
-            coupterm = model.getCoupTerm('bc-ccpe');
-            faces = coupterm.couplingfaces;
-            bcval = state.ccpe.E;
-            ccpe_sigmaeff = model.ccpe.sigmaeff;
-            [tccpe, cells] = model.ccpe.operators.harmFaceBC(ccpe_sigmaeff, faces);
-            control = src - sum(tccpe.*(bcval - state.ccpe.phi(cells)));
-            
-            eqs{end+1} = control;
-            
-            
-            %% Give type and names to equations and names of the primary variables (for book-keeping)
-            
-            types={'cell','cell','cell','cell',...
-                   'cell','cell','cell','cell','cell'};
-            names = {'elyte_Li_massCont', ...
-                     'elyte_chargeCont' , ...
-                     'ne_Li_massCont'   , ...
-                     'ne_e_chargeCont'  , ...
-                     'pe_Li_massCont'   , ...
-                     'pe_e_chargeCont'  , ...
-                     'ccne_e_chargeCont', ...
-                     'ccpe_e_chargeCont', ...
-                     'control'};
-            primaryVars = model.getPrimaryVariables();
-
-            %% setup LinearizedProblem that can be processed by MRST Newton API
-            problem = LinearizedProblem(eqs, types, names, primaryVars, state, dt);
-            
-        end
-        
         
         function [state, report] = updateState(model,state, problem, dx, drivingForces)
             p = model.getPrimaryVariables();
@@ -495,17 +442,6 @@ classdef BatteryModelSimple < PhysicalModel %< CompositeModel
         function state = reduceState(model, state, removeContainers)
         % Reduce state to double (do not use property containers)
             state = value(state);
-        end
-
-        
-        function coupterm = getCoupTerm(model, coupname)
-            coupnames = model.couplingnames;
-            
-            [isok, ind] = ismember(coupname, coupnames);
-            assert(isok, 'name of coupling term is not recognized.');
-            
-            coupterm = model.couplingTerms{ind};
-            
         end
 
     end

@@ -7,9 +7,12 @@ close all
 mrstModule add ad-core multimodel mrst-gui battery
 mrstVerbose off
 
-model = BatteryModel3DSimpleextra();
-% model = BatteryModel();
-% model.verbose = true;
+inputparams = BatteryInputParams2D();
+
+model = BatteryModelSimple(inputparams);
+
+return
+
 model.J = 0.1; 
 
 %% run the same with euler
