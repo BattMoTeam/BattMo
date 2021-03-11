@@ -44,8 +44,9 @@ classdef nmc111Electrode < CompositeModel
 
             model.SubModels{1} = ammodel;
             
-            model.bin = ptfe();
-            model.eps = (ammodel.eps + model.bin.eps)*ones(nc, 1);
+            % model.bin = ptfe();
+            % model.eps = (ammodel.eps + model.bin.eps)*ones(nc, 1);
+            model.eps = ammodel.eps*ones(nc, 1);
             model.void = 1 - model.eps;
             model.t = 10e-6;
 

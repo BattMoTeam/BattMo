@@ -45,9 +45,10 @@ classdef graphiteElectrode < CompositeModel
 
             model.SubModels{1} = ammodel;
             
-            model.bin  = ptfe();
-            model.sei  = seiAM();
-            model.eps  = (ammodel.eps + model.bin.eps + model.sei.eps)*ones(nc, 1);
+            % model.bin  = ptfe();
+            % model.sei  = seiAM();
+            % model.eps  = (ammodel.eps + model.bin.eps + model.sei.eps)*ones(nc, 1);
+            model.eps  = ammodel.eps*ones(nc, 1);
             model.void = 1 - model.eps;
             model.t    = 10e-6;
             
