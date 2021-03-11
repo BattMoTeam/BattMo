@@ -1,4 +1,4 @@
-classdef BatteryInputParams3D < BatteryInputParams2D
+classdef BatteryInputParams3D_1 < BatteryInputParams2D
     
     methods
 

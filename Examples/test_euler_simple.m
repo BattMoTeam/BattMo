@@ -5,19 +5,21 @@ close all
 mrstModule add ad-core multimodel mrst-gui battery
 mrstVerbose off
 
-modelcase = '2D';
+modelcase = '3D_2';
 
 switch modelcase
   case '2D'
     inputparams = BatteryInputParams2D();
-  case '3D'
-    inputparams = BatteryInputParams3D();
+  case '3D_1'
+    inputparams = BatteryInputParams3D_1();
+  case '3D_2'
+    inputparams = BatteryInputParams3D_2();
 end
 
 % setup Battery model using parameter inputs.
 model = BatteryModelSimple(inputparams);
 
-schedulecase = 2; 
+schedulecase = 3; 
 
 switch schedulecase
     
