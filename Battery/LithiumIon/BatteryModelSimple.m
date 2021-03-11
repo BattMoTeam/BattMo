@@ -8,9 +8,6 @@ classdef BatteryModelSimple < PhysicalModel %< CompositeModel
         couplingnames
         couplingTerms
 
-        % fv2d structure (will disappear when we switch to own Newton solver)
-        fv
-
         % Temperature and SOC
         % for the moment here, for convenience. Will be moved
         T
@@ -38,15 +35,16 @@ classdef BatteryModelSimple < PhysicalModel %< CompositeModel
             model = model@PhysicalModel([]);
             model.AutoDiffBackend = SparseAutoDiffBackend('useBlocks',false);
             names = {'T', 'SOC'};
+
             %model.names = names;
             %model = model.setupVarDims();
 
             model = model.setupBatteryComponents();
             model = model.setElytePorosity();
+            
             %% setup couplings
             coupTerms = {};
 
-            % coupling term 'ne-cc'
             coupTerms{end + 1} = setupNeElyteCoupTerm(model);
             coupTerms{end + 1} = setupPeElyteCoupTerm(model);
             coupTerms{end + 1} = setupCcneNeCoupTerm(model);
@@ -265,10 +263,6 @@ classdef BatteryModelSimple < PhysicalModel %< CompositeModel
         
         function model = setElytePorosity(model)
 
-            %elyte = model.getAssocModel('elyte');
-            %ne = model.getAssocModel('ne');
-            %pe = model.getAssocModel('pe');
-            
             elyte = model.getSubmodel({'elyte'});
             ne = model.getSubmodel({'ne'});
             pe = model.getSubmodel({'pe'});
@@ -281,13 +275,11 @@ classdef BatteryModelSimple < PhysicalModel %< CompositeModel
             elyte.eps(elytecells(ne.G.mappings.cellmap)) = ne.void;
             elyte.eps(elytecells(pe.G.mappings.cellmap)) = pe.void;
             elyte.eps(elytecells(sep.G.mappings.cellmap)) = sep.void;
+
             model.elyte =elyte;
-            %model = model.setSubModel('elyte', elyte);
 
         end
 
-
- 
         function state = initStateAD(model,state)
             adbackend = model.AutoDiffBackend();
             [state.elyte.cs{1},...
@@ -362,19 +354,22 @@ classdef BatteryModelSimple < PhysicalModel %< CompositeModel
             nc = model.G.cells.num;
             
             % setup temperature and SOC here
-            %% for now this is kept constant?
-            state.T =  model.T*ones(nc, 1);
+
+            %% for now this is kept constant
+            state.T   =  model.T*ones(nc, 1);
             state.SOC =  model.SOC*ones(nc, 1);
             
             % variables for time derivatives
             cdotLi=struct();
             cdotLi.elyte = (state.elyte.cs{1} - state0.elyte.cs{1})/dt;
             cdotLi.ne    = (state.ne.am.Li - state0.ne.am.Li)/dt;
-            cdotLi.pe   = (state.pe.am.Li - state0.pe.am.Li)/dt;
+            cdotLi.pe    = (state.pe.am.Li - state0.pe.am.Li)/dt;
             
             state = model.dispatchValues(state);
             state = model.updatePhiElyte(state);
-            %% first update level 2
+            
+            %% Update Source and BC term variables
+            
             names={{'pe','am'},{'pe','am'}};
             for i=1:numel(names)
                 submodel = model.getSubmodel(names{i});
@@ -382,8 +377,9 @@ classdef BatteryModelSimple < PhysicalModel %< CompositeModel
                 state = model.setProp(state,names{i},val);
             end
             
-            
             state = setupBCSources(model, state);
+            
+            %% Update Reaction Coupling variables
             
             names={{'ne'},{'pe'}};
             for i=1:numel(names)
@@ -391,9 +387,11 @@ classdef BatteryModelSimple < PhysicalModel %< CompositeModel
                 val = submodel.updateReactionRate(model.getProp(state,names{i}));
                 state = model.setProp(state,names{i},val);
             end
+            
             state = setupExchanges(model, state);
             
-            %%update level 1
+            %% Update Fluxes variables
+            
             names={{'elyte'},{'ne'},{'pe'}};
             for i=1:numel(names)
                 submodel=model.getSubmodel(names{i});
@@ -408,16 +406,24 @@ classdef BatteryModelSimple < PhysicalModel %< CompositeModel
                 state = model.setProp(state,names{i},val);
             end
             
-            %% set equations
+            %% Set up the governing equations
+            
+            %% Mass and charge conservation for the electorlyte and the electrode
+            
             names={'elyte','ne','pe'};
             eqs={};
-            for i=1:numel(names)
-                submodel=model.getSubmodel({names{i}});
+            
+            for i = 1 : numel(names)
+                
+                submodel = model.getSubmodel({names{i}});
+
                 %% probably only be done on the submodel
                 source = model.getProp(state,{names{i},'LiSource'});
                 flux = model.getProp(state,{names{i},'LiFlux'});
+
                 %% could use submodel
-                div =  submodel.operators.Div(flux)./submodel.G.cells.volumes;
+                div = submodel.operators.Div(flux)./submodel.G.cells.volumes;
+
                 %% HAC
                 if(strcmp(names{i},'elyte'))
                     cepsdot = submodel.eps.*cdotLi.(names{i});
@@ -426,17 +432,22 @@ classdef BatteryModelSimple < PhysicalModel %< CompositeModel
                 end
                 %% Li conservation
                 eqs{end+1} = -div + source - cepsdot;
-                % charge continutity
+                
+                %¤ charge continutity
                 %% should probably be done on the sub model
                 eqs{end+1} = model.getProp(state,{names{i},'chargeCont'});
             end
-            names={'ccne','ccpe'};
-            for i=1:numel(names)
-                eqs{end+1} = model.getProps(state,{names{i},'chargeCont'});
+            
+            %% charge conservation for the current collectors
+            
+            names = {'ccne','ccpe'};
+            for i = 1 : numel(names)
+                eqs{end+1} = model.getProps(state, {names{i}, 'chargeCont'});
             end
             
-            %src = currentSource(t, fv.tUp, fv.tf, model.J);
-            src = drivingForces.src(time);%%(t, fv.tUp, fv.tf, model.J);
+            %% setup control equation (fixed total current at ccpe)
+            
+            src = drivingForces.src(time);
             coupterm = model.getCoupTerm('bc-ccpe');
             faces = coupterm.couplingfaces;
             bcval = state.ccpe.E;
@@ -444,10 +455,10 @@ classdef BatteryModelSimple < PhysicalModel %< CompositeModel
             [tccpe, cells] = model.ccpe.operators.harmFaceBC(ccpe_sigmaeff, faces);
             control = src - sum(tccpe.*(bcval - state.ccpe.phi(cells)));
             
-            %% Governing equations
-            
             eqs{end+1} = control;
             
+            
+            %% Give type and names to equations and names of the primary variables (for book-keeping)
             
             types={'cell','cell','cell','cell',...
                    'cell','cell','cell','cell','cell'};
@@ -461,8 +472,10 @@ classdef BatteryModelSimple < PhysicalModel %< CompositeModel
                      'ccpe_e_chargeCont', ...
                      'control'};
             primaryVars = model.getPrimaryVariables();
+
+            %% setup LinearizedProblem that can be processed by MRST Newton API
             problem = LinearizedProblem(eqs, types, names, primaryVars, state, dt);
-            %state.cdotLi=cdotLi;
+            
         end
         
         

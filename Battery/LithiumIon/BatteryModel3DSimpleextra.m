@@ -5,11 +5,10 @@ classdef BatteryModel3DSimpleextra < BatteryModelSimple
         function model = BatteryModel3DSimpleextra(varargin)
             model = model@BatteryModelSimple(varargin{:});
         end
-
-        
         
         function model = setupBatteryComponents(model)
-            fac=1/5
+            
+            fac=1/5;
             sepnx  = 30*fac;
             nenx   = 30*fac;
             penx   = 30*fac;
