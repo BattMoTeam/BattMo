@@ -1,10 +1,20 @@
 classdef couplingTerm
-    
+% Structure that describes the topology of a coupling: Two components (each with their own grid structure) are coupled
+% through cells or faces
+%
+% The nature of the coupling (which physical process it corresponds to) is not addressed here.
+%
     properties
-        name
-        componentnames
-        couplingcells
-        couplingfaces
+        name           % The coupling is given an name (string)
+        
+        componentnames % List of the component names that enter in this coupling (cell array of string)
+        
+        couplingcells  % Array of cells : For everey i, we have a coupling from the cell indexed by couplingcells(i, 1) in
+                       % component 1 with cell indexed by couplingcells(i, 2) in the component 2. The ordering of the
+                       % component follows the ordering in componentnames
+        
+        couplingfaces  % Same as couplingcells but for faces (need not be assigned - it depends on how the coupling is used in
+                       % practice)
     end
     
     methods
