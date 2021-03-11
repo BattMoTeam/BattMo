@@ -1,25 +1,25 @@
-% _2D_test_case
-
 clear all
 close all
 
-%% Add MRST module
+% setup mrst modules
 mrstModule add ad-core multimodel mrst-gui battery
 mrstVerbose off
 
-inputparams = BatteryInputParams2D();
+modelcase = '2D';
 
+switch modelcase
+  case '2D'
+    inputparams = BatteryInputParams2D();
+  case '3D'
+    inputparams = BatteryInputParams3D();
+end
+
+% setup Battery model using parameter inputs.
 model = BatteryModelSimple(inputparams);
 
-return
+schedulecase = 2; 
 
-model.J = 0.1; 
-
-%% run the same with euler
-
-caseno = 2; 
-
-switch caseno
+switch schedulecase
     
   case 1
     dt = []; 
@@ -32,6 +32,7 @@ switch caseno
     times(end)
     
   case 2
+
     n = 15; 
     dt = []; 
     dt = [dt; repmat(1e-4, n, 1).*1.5.^[1:n]']; 
@@ -55,11 +56,8 @@ switch caseno
     
 end
 
-%% 
-
-% times = linspace(0, 1e-3, 100)'; 
-tt = times(2:end); 
-initstate = icp2d(model); 
+tt = times(2 : end); 
+initstate = model.setupInitialState(); 
 step = struct('val', diff(times), 'control', ones(numel(tt), 1)); 
 
 src = nan(numel(tt), 1); 
@@ -72,10 +70,20 @@ srcfunc = @(time) currentSource(time, 0.1, 86400, model.J);
 
 control = repmat(struct('src', srcfunc, 'stopFunction', stopFunc), 1, 1); 
 schedule = struct('control', control, 'step', step); 
+
+% Setup nonlinear solver 
+
 nls = NonLinearSolver(); 
 
-useAMGCL = false;
+% Change default maximum iteration number in nonlinear solver
+nls.maxIterations = 10; 
+% Change default behavior of nonlinear solver, in case of error
+nls.errorOnFailure = false; 
+% Change default tolerance for nonlinear solver
+model.nonlinearTolerance = 1e-4;
 
+% We can use a linear preconditioner (not yet fully tested, require extra setup)
+useAMGCL = false;
 if useAMGCL
     nls.LinearSolver = AMGCLSolverAD('verbose', true, 'write_params', true, 'preconditioner', 'relaxation', 'relaxation', ...
                                      'ilu0'); 
@@ -87,81 +95,19 @@ if useAMGCL
     nls.LinearSolver.tolerance = 1e-5
 end
 
-initstate.wellSol = []; 
-% profile - detail builtin
-% afterStepFn = @(model, states, reports, solver, schedule, simtime)....
-% deal(model, states, reports, solver, states{end}.ccpe.E<2); 
 
-if(false)
-    % nls.timeStepSelector = IterationCountTimeStepSelector('targetIterationCount', 5); 
-    nls.timeStepSelector = StateChangeTimeStepSelector(); 
-    nls.timeStepSelector.targetProps = {{'ccpe', 'E'}}; 
-    nls.timeStepSelector.targetChangeAbs = [0.1]; 
-    nls.timeStepSelector.targetChangeRel = [1e9]; 
-end
-%nls.timeStepSelector = SimpleTimeStepSelector()
-nls.maxIterations = 10; 
-nls.errorOnFailure = false; 
-model.nonlinearTolerance = 1e-4;
+% Run simulation
 [wellSols, states, report] = simulateScheduleAD(initstate, model, schedule,...
                                                 'OutputMinisteps', true,...
                                                 'NonLinearSolver', nls); 
 
-%% 
+%%  Process output
+
 ind = cellfun(@(x) not(isempty(x)), states); 
 Enew = cellfun(@(x) x.ccpe.E, {states{ind}}); 
 time = cellfun(@(x) x.time, {states{ind}}); 
 
 figure
-plot(log(time/hour), Enew, '*')
-%plot((time/hour), Enew, '*')
+plot((time/hour), Enew, '*')
 title('Potential (E)')
 xlabel('time (hours)')
-%figure
-%plotGrid(model.G)
-return
-
-ss = nan(size(t)); 
-for i = 1:numel(t)
-    ss(i) = schedule.control.src(t(i)); 
-end
-%% plotting 
-
-% We set up the structure fv in this "hacky" way for the moment (it will be cleaned up in the future)
-initstate = icp2d(model); 
-model = setupFV(model, initstate); 
-sl = model.fv.slots; 
-
-clear state E
-for iy = 1 : size(y, 1)
-    yy = y(iy, :)'; 
-    states_elyte{iy}.Li = yy(sl{1}); 
-    states_elyte{iy}.phi = yy(sl{2}); 
-    states_ne{iy}.Li = yy(sl{3}); 
-    states_ne{iy}.phi = yy(sl{4}); 
-    states_pe{iy}.Li = yy(sl{5}); 
-    states_pe{iy}.phi = yy(sl{6}); 
-    states_ccne{iy}.phi = yy(sl{7}); 
-    states_ccpe{iy}.phi = yy(sl{8}); 
-    E(iy) = yy(sl{9}); 
-end
-
-ind = cellfun(@(x) not(isempty(x)), states); 
-% dt = schedule.step.val(ind); 
-
-Enew = cellfun(@(x) x.ccpe.E, {states{ind}}); 
-time = cellfun(@(x) x.time, {states{ind}}); 
-figure
-plot(time/hour, Enew, '*', t/hour, E)
-title('Potential (E)')
-xlabel('time (hours)')
-% return
-%% 
-figure
-plot(log(time/hour), Enew, '*', log(t/hour), E, ' - ')
-title('Potential (E)')
-xlabel('time (hours)')
-
-
-
-
