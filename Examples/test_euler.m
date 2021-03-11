@@ -4,11 +4,11 @@ clear all
 close all
 
 %% Add MRST module
-mrstModule add ad-core multimodel mrst-gui
+mrstModule add ad-core multimodel mrst-gui battery
 mrstVerbose off
 
-model = BatteryModel3Dextra();
-% model = BatteryModel();
+% model = BatteryModel3Dextra();
+model = BatteryModel();
 % model.verbose = true;
 model.J = 0.1; 
 
@@ -141,7 +141,7 @@ end
 nls.maxIterations = 10; 
 nls.errorOnFailure = false; 
 model.nonlinearTolerance = 1e-4;
-model.verbose = true;
+model.verbose = false;
 [wellSols, states, report] = simulateScheduleAD(initstate, model, schedule,...
                                                 'OutputMinisteps', true,...
                                                 'NonLinearSolver', nls); 
