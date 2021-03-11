@@ -96,8 +96,6 @@ classdef BatteryModelSimple < PhysicalModel %< CompositeModel
             %% setup elyte
             nx = sum(nxs);
 
-
-
             istart = ccnenx + 1;
             ni = nenx + sepnx + penx;
             cells = pickTensorCells(istart, ni, nx, ny);
@@ -697,7 +695,7 @@ classdef BatteryModelSimple < PhysicalModel %< CompositeModel
             % We pick up the faces at the top of Cccpe
             yf = G.faces.centroids(:, 2);
             myf = max(yf);
-            faces = find(abs(yf-myf) < eps*1000q);
+            faces = find(abs(yf-myf) < eps*1000);
             cells = sum(G.faces.neighbors(faces, :), 2);
 
             compnames = {'ccpe'};
