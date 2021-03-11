@@ -4,24 +4,29 @@ clear all
 close all
 
 %% Add MRST module
-mrstModule add ad-core multimodel mrst-gui
+mrstModule add ad-core multimodel mrst-gui battery
 mrstVerbose off
 
-model = BatteryModel3Dextra15i();
-% model = BatteryModel();
-% model.verbose = true;
-model.J = 0.1; 
+modelcase = '2D';
+switch modelcase
+  case '2D'
+    inputparams = BatteryInputParams2D();
+  case '3D'
+    inputparams = BatteryInputParams3D();
+end
 
-
+model = BatteryModel15i(inputparams);
 
 %% run simulation
-% profile - detail builtin
 
-[t, y] = model.p2d(); 
+[t, y] = model.runSimulation(); 
 
-initstate = icp2d(model); 
+%% process output data
+
+initstate = model.setupInitialState(); 
 model = setupFV(model, initstate); 
 sl = model.fv.slots; 
+
 clear state E
 for iy = 1 : size(y, 1)
     yy = y(iy, :)'; 

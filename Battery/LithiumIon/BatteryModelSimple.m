@@ -275,7 +275,6 @@ classdef BatteryModelSimple < PhysicalModel
 
         end
         
-
         function initstate = setupInitialState(model)
             
             % Setup initial state
