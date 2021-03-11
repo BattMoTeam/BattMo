@@ -271,7 +271,7 @@ classdef BatteryModelSimple < PhysicalModel %< CompositeModel
             
             elyte = model.getSubmodel({'elyte'});
             ne = model.getSubmodel({'ne'});
-            pe = model.getSubmodel({'pe'})
+            pe = model.getSubmodel({'pe'});
             sep = model.getSubmodel({'sep'});
 
             elytecells = zeros(model.G.cells.num, 1);
@@ -479,27 +479,11 @@ classdef BatteryModelSimple < PhysicalModel %< CompositeModel
         end
         
         
-        
         function state = reduceState(model, state, removeContainers)
-        % Reduce state to doubles, and optionally remove the property
-        % containers to reduce storage space only p = model.getPrimaryVariables();
-        % should be need
+        % Reduce state to double (do not use property containers)
             state = value(state);
-            
         end
-        
-        function [convergence, values, names] = checkConvergence(model, problem, varargin)
-            
-            [values, tolerances, names] = getConvergenceValues(model, problem, varargin{:});
-            convergence = values < tolerances;
-            %if model.verbose
-            %    fprintf('Iteration %i ',problem.iterationNo);
-            %    fprintf(' residual ');
-            %    fprintf(' %d ',values);
-            %    fprintf('\n');
-            %    disp(values)
-            %end
-        end
+
         
         function coupterm = getCoupTerm(model, coupname)
             coupnames = model.couplingnames;
@@ -509,200 +493,6 @@ classdef BatteryModelSimple < PhysicalModel %< CompositeModel
             
             coupterm = model.couplingTerms{ind};
             
-        end
-        
-        function coupTerm = setupNeElyteCoupTerm(model)
-            
-            ne = model.ne;
-            elyte = model.elyte;
-            
-            Gne = ne.G;
-            Gelyte = elyte.G;
-            
-            % parent Grid
-            G = Gne.mappings.parentGrid;
-            
-            % All the cells from ne are coupled with elyte
-            cells1 = (1 : Gne.cells.num)';
-            pcells = Gne.mappings.cellmap(cells1);
-            
-            mapping = zeros(G.cells.num, 1);
-            mapping(Gelyte.mappings.cellmap) = (1 : Gelyte.cells.num)';
-            cells2 = mapping(pcells);
-            
-            compnames = {'ne', 'elyte'};
-            coupTerm = couplingTerm('ne-elyte', compnames);
-            coupTerm.couplingcells =  [cells1, cells2];
-            coupTerm.couplingfaces = []; % no coupling throug faces. We set it as empty
-            
-        end
-        
-        function coupTerm = setupPeElyteCoupTerm(model)
-            
-            pe = model.pe;
-            elyte = model.elyte;
-            
-            Gpe = pe.G;
-            Gelyte = elyte.G;
-            
-            % parent Grid
-            G = Gpe.mappings.parentGrid;
-            
-            % All the cells from pe are coupled with elyte
-            cells1 = (1 : Gpe.cells.num)';
-            pcells = Gpe.mappings.cellmap(cells1);
-            
-            mapping = zeros(G.cells.num, 1);
-            mapping(Gelyte.mappings.cellmap) = (1 : Gelyte.cells.num)';
-            cells2 = mapping(pcells);
-            
-            compnames = {'pe', 'elyte'};
-            coupTerm = couplingTerm('pe-elyte', compnames);
-            coupTerm.couplingcells = [cells1, cells2];
-            coupTerm.couplingfaces = []; % no coupling between faces
-            
-        end
-
-        function coupTerm = setupCcneNeCoupTerm(model)
-
-            ne = model.ne;
-            ccne = model.ccne;
-
-            Gne = ne.G;
-            Gccne = ccne.G;
-
-            G = Gne.mappings.parentGrid;
-
-            netbls = setupSimpleTables(Gne);
-            ccnetbls = setupSimpleTables(Gccne);
-            tbls = setupSimpleTables(G);            
-            
-            necelltbl = netbls.celltbl;
-            necelltbl = necelltbl.addInd('globcells', Gne.mappings.cellmap);
-            nefacetbl = netbls.facetbl;
-            nefacetbl = nefacetbl.addInd('globfaces', Gne.mappings.facemap);
-
-            necellfacetbl = netbls.cellfacetbl;
-            necellfacetbl = crossIndexArray(necellfacetbl, necelltbl, {'cells'});
-            necellfacetbl = crossIndexArray(necellfacetbl, nefacetbl, {'faces'});
-            
-            ccnecelltbl = ccnetbls.celltbl;
-            ccnecelltbl = ccnecelltbl.addInd('globcells', Gccne.mappings.cellmap);
-            ccnefacetbl = ccnetbls.facetbl;
-            ccnefacetbl = ccnefacetbl.addInd('globfaces', Gccne.mappings.facemap);
-            
-            ccnecellfacetbl = ccnetbls.cellfacetbl;
-            ccnecellfacetbl = crossIndexArray(ccnecellfacetbl, ccnecelltbl, {'cells'});
-            ccnecellfacetbl = crossIndexArray(ccnecellfacetbl, ccnefacetbl, {'faces'});
-            
-            gen = CrossIndexArrayGenerator();
-            gen.tbl1 = necellfacetbl;
-            gen.tbl2 = ccnecellfacetbl;
-            gen.replacefds1 = {{'cells', 'necells'}, {'faces', 'nefaces'}, {'globcells', 'neglobcells'}};
-            gen.replacefds2 = {{'cells', 'ccnecells'}, {'faces', 'ccnefaces'}, {'globcells', 'ccneglobcells'}};
-            gen.mergefds = {'globfaces'};
-            
-            cell12facetbl = gen.eval();
-
-            ccnefaces = cell12facetbl.get('ccnefaces');
-            nefaces = cell12facetbl.get('nefaces');
-            ccnecells = cell12facetbl.get('ccnecells');
-            necells = cell12facetbl.get('necells');            
-            
-            compnames = {'ccne', 'ne'};
-            coupTerm = couplingTerm('ccne-ne', compnames);
-            coupTerm.couplingfaces =  [ccnefaces, nefaces];
-            coupTerm.couplingcells = [ccnecells, necells];
-
-        end
-
-        function coupTerm = setupCcpePeCoupTerm(model)
-
-            pe = model.pe;
-            ccpe = model.ccpe;
-
-            Gpe = pe.G;
-            Gccpe = ccpe.G;
-
-            G = Gpe.mappings.parentGrid;
-
-            petbls = setupSimpleTables(Gpe);
-            ccpetbls = setupSimpleTables(Gccpe);
-            tbls = setupSimpleTables(G);            
-            
-            pecelltbl = petbls.celltbl;
-            pecelltbl = pecelltbl.addInd('globcells', Gpe.mappings.cellmap);
-            pefacetbl = petbls.facetbl;
-            pefacetbl = pefacetbl.addInd('globfaces', Gpe.mappings.facemap);
-
-            pecellfacetbl = petbls.cellfacetbl;
-            pecellfacetbl = crossIndexArray(pecellfacetbl, pecelltbl, {'cells'});
-            pecellfacetbl = crossIndexArray(pecellfacetbl, pefacetbl, {'faces'});
-            
-            ccpecelltbl = ccpetbls.celltbl;
-            ccpecelltbl = ccpecelltbl.addInd('globcells', Gccpe.mappings.cellmap);
-            ccpefacetbl = ccpetbls.facetbl;
-            ccpefacetbl = ccpefacetbl.addInd('globfaces', Gccpe.mappings.facemap);
-            
-            ccpecellfacetbl = ccpetbls.cellfacetbl;
-            ccpecellfacetbl = crossIndexArray(ccpecellfacetbl, ccpecelltbl, {'cells'});
-            ccpecellfacetbl = crossIndexArray(ccpecellfacetbl, ccpefacetbl, {'faces'});
-            
-            gen = CrossIndexArrayGenerator();
-            gen.tbl1 = pecellfacetbl;
-            gen.tbl2 = ccpecellfacetbl;
-            gen.replacefds1 = {{'cells', 'pecells'}, {'faces', 'pefaces'}, {'globcells', 'peglobcells'}};
-            gen.replacefds2 = {{'cells', 'ccpecells'}, {'faces', 'ccpefaces'}, {'globcells', 'ccpeglobcells'}};
-            gen.mergefds = {'globfaces'};
-            
-            cell12facetbl = gen.eval();
-
-            ccpefaces = cell12facetbl.get('ccpefaces');
-            pefaces = cell12facetbl.get('pefaces');
-            ccpecells = cell12facetbl.get('ccpecells');
-            pecells = cell12facetbl.get('pecells');            
-            
-            compnames = {'ccpe', 'pe'};
-            coupTerm = couplingTerm('ccpe-pe', compnames);
-            coupTerm.couplingfaces =  [ccpefaces, pefaces];
-            coupTerm.couplingcells = [ccpecells, pecells];
-            
-        end
-
-        function coupTerm = setupCcneBcCoupTerm(model)
-
-            ccne = model.ccne;
-            G = ccne.G;
-
-            % We pick up the faces at the top of Cccne
-            yf = G.faces.centroids(:, 2);
-            myf = max(yf);
-            faces = find(abs(yf-myf) < eps*1000);
-            cells = sum(G.faces.neighbors(faces, :), 2);
-
-            compnames = {'ccne'};
-            coupTerm = couplingTerm('bc-ccne', compnames);
-            coupTerm.couplingfaces = faces;
-            coupTerm.couplingcells = cells;
-
-        end
-
-        function coupTerm = setupCcpeBcCoupTerm(model)
-
-            ccpe = model.ccpe;
-            G = ccpe.G;
-
-            % We pick up the faces at the top of Cccpe
-            yf = G.faces.centroids(:, 2);
-            myf = max(yf);
-            faces = find(abs(yf-myf) < eps*1000);
-            cells = sum(G.faces.neighbors(faces, :), 2);
-
-            compnames = {'ccpe'};
-            coupTerm = couplingTerm('bc-ccpe', compnames);
-            coupTerm.couplingfaces = faces;
-            coupTerm.couplingcells = cells;
-
         end
 
     end
