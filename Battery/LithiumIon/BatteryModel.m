@@ -51,7 +51,7 @@ classdef BatteryModel < CompositeModel
             % ???? This should be defined separately, right? We should
             % create a separate input 
             % Define initial conditions, current BC, and curoff voltage
-            model.SOC = 1;
+            model.SOC = 0.5;
             model.T = 298.15;
             model.J = 0.1;
             model.Ucut = 2;
