@@ -33,7 +33,7 @@ classdef BatteryModelSimple < PhysicalModel
         function model = BatteryModelSimple(params)
 
             model = model@PhysicalModel([]);
-            model.AutoDiffBackend = SparseAutoDiffBackend('useBlocks',false);
+            model.AutoDiffBackend = SparseAutoDiffBackend('useBlocks',true);
 
             %% Setup the model using the input parameters
             model.T     = params.T;
@@ -147,7 +147,7 @@ classdef BatteryModelSimple < PhysicalModel
                     cepsdot = submodel.am.eps.*cdotLi.(names{i});
                 end
                 %% Li conservation
-                eqs{end+1} = -div + source - cepsdot;
+                eqs{end+1} = div - source + cepsdot;
                 
                 %¤ charge continutity
                 %% should probably be done on the sub model
@@ -171,7 +171,7 @@ classdef BatteryModelSimple < PhysicalModel
             [tccpe, cells] = model.ccpe.operators.harmFaceBC(ccpe_sigmaeff, faces);
             control = src - sum(tccpe.*(bcval - state.ccpe.phi(cells)));
             
-            eqs{end+1} = control;
+            eqs{end+1} = -control;
             
             
             %% Give type and names to equations and names of the primary variables (for book-keeping)

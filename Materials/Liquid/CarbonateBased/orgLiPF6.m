@@ -239,7 +239,7 @@ classdef orgLiPF6 < ComponentModel
             
             % setup the charge continuity equation
             ind_Li = 1;
-            chargeCont = - op.Div(j)./model.G.cells.volumes./model.con.F + LiSource.*model.sp.z{ind_Li};
+            chargeCont =  op.Div(j)./model.G.cells.volumes./model.con.F - LiSource.*model.sp.z{ind_Li};
 
             op = model.operators;
             
