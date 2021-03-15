@@ -19,7 +19,7 @@ Other variable names may be nouns in lowerCamelCase.
 ## Contributors, in alphabetical order
 Dr. Simon Clark, SINTEF Industry  
 Dr. Mike Gerhardt, SINTEF Industry  
-Dr. Halvor Moll-Nielsen, SINTEF Digital  
+Dr. Halvor Møll Nilsen, SINTEF Digital  
 Dr. Xavier Raynaud, SINTEF Digital  
 Dr. Roberto Scipioni, SINTEF Industry  
 
