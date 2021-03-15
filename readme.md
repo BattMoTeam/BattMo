@@ -17,11 +17,11 @@ Common variable names are represented by Latin letters (case set according to co
 Other variable names may be nouns in lowerCamelCase.
 
 ## Contributors, in alphabetical order
-Dr. Simon Clark, SINTEF Industry
-Dr. Mike Gerhardt, SINTEF Industry
-Dr. Halvor Moll-Nielsen, SINTEF Digital
-Dr. Xavier Raynaud, SINTEF Digital 
-Dr. Roberto Scipioni, SINTEF Industry
+Dr. Simon Clark, SINTEF Industry\
+Dr. Mike Gerhardt, SINTEF Industry\
+Dr. Halvor Moll-Nielsen, SINTEF Digital\
+Dr. Xavier Raynaud, SINTEF Digital\
+Dr. Roberto Scipioni, SINTEF Industry\
 
 ### Acknowledgements
 List of projects and funding sources that contribute to the development.
