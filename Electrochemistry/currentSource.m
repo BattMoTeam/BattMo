@@ -4,10 +4,14 @@ function res = currentSource(t, tup, tlim, jnom)
 
 N = length(jnom);
 
+rampupcase = 'sineup';
 if N == 1
-    res = (t <= tup) .* sineup(0, jnom, 0, tup, t) + ...
-        ... Initial Ramp Up
-        (t > tup && t <= tlim) .* jnom;
+    switch rampupcase
+      case 'sineup'
+        res = (t <= tup) .* sineup(0, jnom, 0, tup, t) + (t > tup && t <= tlim) .* jnom;
+      case 'linear'
+        res = (t <= tup).*t./tup .* jnom +  (t > tup && t <= tlim) .* jnom;
+    end
 else
     tboundslow = zeros(N, 1);
     tboundsup = zeros(N, 1);
