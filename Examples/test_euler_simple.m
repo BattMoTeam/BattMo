@@ -115,8 +115,23 @@ ind = cellfun(@(x) not(isempty(x)), states);
 Enew = cellfun(@(x) x.ccpe.E, {states{ind}}); 
 time = cellfun(@(x) x.time, {states{ind}}); 
 
+%% plot
+
+doplotJ = true;
+if doplotJ
+    figure
+    for i = 1 : numel(time)
+        src(i) = srcfunc(time(i));
+    end
+    plot((time/hour), src, '*-')
+    xlabel('time (hours)')
+    title('J (sine rampup)')
+end
+
 figure
-%plot(log((time/hour)), Enew, '*')
-plot((time/hour), Enew, '*')
+plot((time/hour), Enew, '*-')
 title('Potential (E)')
 xlabel('time (hours)')
+
+
+
