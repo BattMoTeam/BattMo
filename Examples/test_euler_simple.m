@@ -6,7 +6,7 @@ mrstModule add ad-core multimodel mrst-gui battery
 mrstVerbose off
 
 modelcase = '3D_2';
-
+tfac=1;
 switch modelcase
   case '2D'
     inputparams = BatteryInputParams2D();
@@ -14,12 +14,18 @@ switch modelcase
     inputparams = BatteryInputParams3D_1();
   case '3D_2'
     inputparams = BatteryInputParams3D_2();
+    inputparams.J=1e-4;
+    tfac=40;
+    %fac=400;
+    %inputparams.ccne.sigma = inputparams.ccne.sigma*fac;
+    %inputparams.ccpe.sigma =  inputparams.ccpe.sigma*fac;
+    %inputparams.ccne.sigmaeff=inputparams.ccne.sigmaeff*fac;
+    %inputparams.ccpe.sigmaeff=inputparams.ccne.sigmaeff*fac;
 end
-
 % setup Battery model using parameter inputs.
 model = BatteryModelSimple(inputparams);
 
-schedulecase = 3; 
+schedulecase = 2; 
 
 switch schedulecase
     
@@ -30,7 +36,7 @@ switch schedulecase
     % n = 13
     % dt = [dt; dt(end).*2.^[1:n]']
     dt = [dt; repmat(dt(end), floor(n*1.5), 1)]; 
-    times = [0; cumsum(dt)]; 
+    times = [0; cumsum(dt)]*tfac; 
     times(end)
     
   case 2
@@ -41,14 +47,14 @@ switch schedulecase
     n = 13; 
     dt = [dt; dt(end).*2.^[1:n]']; 
     dt = [dt; repmat(dt(end)*1.5, floor(n*1.5), 1)]; 
-    times = [0; cumsum(dt)]; 
+    times = [0; cumsum(dt)]*tfac; 
     times(end); 
     
   case 3
     dt = []; 
     % n = 37;
     % dt = [dt; repmat(1e-4, n, 1).*1.1.^[1:n]']; 
-    n = 1;
+    n = 100;
     dt = [dt; repmat(1e-3, n, 1)];
     % n = 13
     % dt = [dt; dt(end).*2.^[1:n]']
@@ -64,11 +70,11 @@ step = struct('val', diff(times), 'control', ones(numel(tt), 1));
 
 src = nan(numel(tt), 1); 
 for i = 1:numel(tt)
-    src(i) = currentSource(tt(i), 0.1, 86400, model.J); 
+    src(i) = currentSource(tt(i), 0.1, 86400*tfac, model.J); 
 end
 
 stopFunc = @(model, state, state_prev) (state.ccpe.E < 2.0); 
-srcfunc = @(time) currentSource(time, 0.1, 86400, model.J); 
+srcfunc = @(time) currentSource(time, 0.1, 86400*tfac, model.J); 
 
 control = repmat(struct('src', srcfunc, 'stopFunction', stopFunc), 1, 1); 
 schedule = struct('control', control, 'step', step); 
@@ -110,6 +116,7 @@ Enew = cellfun(@(x) x.ccpe.E, {states{ind}});
 time = cellfun(@(x) x.time, {states{ind}}); 
 
 figure
+%plot(log((time/hour)), Enew, '*')
 plot((time/hour), Enew, '*')
 title('Potential (E)')
 xlabel('time (hours)')

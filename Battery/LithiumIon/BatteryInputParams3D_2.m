@@ -10,24 +10,26 @@ classdef BatteryInputParams3D_2 < BatteryInputParams2D
             zlength = 1e-6*[10; 100; 50; 80; 10];
             
             % discretization in z direction 
-            fac= 1/5;
-            sepnz  = 30*fac;
-            nenz   = 30*fac;
-            penz   = 30*fac;
-            ccnenz = 20*fac;
-            ccpenz = 20*fac;
+            facz= 1;
+            sepnz  = 6*facz;
+            nenz   = 6*facz;
+            penz   = 6*facz;
+            ccnenz = 4*facz;
+            ccpenz = 4*facz;
             
             elnz = sepnz + nenz + penz;
 
             % discretization in x direction 
-            intelnx = 10; % "interior" of electrolyte
-            ccnenx  = 5;
-            ccpenx  = 5;
+            facx = 1;
+            intelnx = 10*facx; % "interior" of electrolyte
+            ccnenx  = 5*facx;
+            ccpenx  = 5*facx;
             
             % discretization in y direction
-            ccneny = 2;
-            ccpeny = 2;
-            elny   = 4;
+            facy = 1;
+            ccneny = 2*facy;
+            ccpeny = 2*facy;
+            elny   = 4*facy;
 
             nxs = [ccnenx; intelnx; ccpenx];
             nys = [ccneny; elny; ccpeny];
