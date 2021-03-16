@@ -140,8 +140,7 @@ classdef BatteryModelSimple < PhysicalModel
                 %% could use submodel
                 div = submodel.operators.Div(flux)./submodel.G.cells.volumes;
 
-                %% HAC
-                if(strcmp(names{i},'elyte'))
+                if strcmp(names{i}, 'elyte')
                     cepsdot = submodel.eps.*cdotLi.(names{i});
                 else
                     cepsdot = submodel.am.eps.*cdotLi.(names{i});

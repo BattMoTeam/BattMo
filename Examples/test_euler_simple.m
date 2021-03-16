@@ -30,6 +30,9 @@ end
 % setup Battery model using parameter inputs.
 model = BatteryModelSimple(inputparams);
 
+% Value used in rampup function, see currentSource.
+tup = 0.1;
+
 switch schedulecase
 
   case 1
@@ -48,15 +51,12 @@ switch schedulecase
     % Time scaling can be adding using variable tfac
     times = [0; cumsum(dt)]*tfac; 
     
-    times(end); 
-    
   case 2
 
-    % Schedule with constant time steping
-    n = 100;
-    dt = repmat(1e-3, n, 1);
+    % Schedule used in activation test 
+    n = 10;
+    dt = rampupTimesteps(1.5*tup, tup/n, 10);
     times = [0; cumsum(dt)]; 
-    times(end) 
 
   case 3
     
@@ -74,7 +74,7 @@ step = struct('val', diff(times), 'control', ones(numel(tt), 1));
 
 stopFunc = @(model, state, state_prev) (state.ccpe.E < 2.0); 
 
-srcfunc = @(time) currentSource(time, 0.1, times(end), model.J); 
+srcfunc = @(time) currentSource(time, tup, times(end), model.J); 
 
 control = repmat(struct('src', srcfunc, 'stopFunction', stopFunc), 1, 1); 
 schedule = struct('control', control, 'step', step); 
