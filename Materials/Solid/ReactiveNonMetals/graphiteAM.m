@@ -114,6 +114,7 @@ classdef graphiteAM < ComponentModel
             m     = (1 ./ (model.theta100 - model.theta0));
             b     = -m .* model.theta0;
             theta = (SOC - b) ./ m;
+            state.theta=theta;
             cs    = theta .* model.Li.cmax;
 
             state.Li = cs;
@@ -156,7 +157,7 @@ classdef graphiteAM < ComponentModel
             % concentration:
             %
             theta = cs ./ model.Li.cmax;
-            
+            state.theta = theta;
             % Calculate the open-circuit potential at the reference temperature for the given lithiation
             refOCP = (0.7222 ...
                       + 0.1387 .* theta ...

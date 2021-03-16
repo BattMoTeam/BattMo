@@ -126,6 +126,7 @@ classdef nmc111AM < ComponentModel
             % concentration:
             %
             theta = cs ./ model.Li.cmax;
+            state.theta=theta;
             %model.theta = (model.theta0 - model.theta100) .* model.SOC + model.theta100;
             
             % Calculate the open-circuit potential at the reference

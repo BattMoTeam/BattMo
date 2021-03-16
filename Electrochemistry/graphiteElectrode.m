@@ -107,7 +107,7 @@ classdef graphiteElectrode < CompositeModel
             k = state.am.k;
             
             eta = (phi - phiElyte - OCP);
-            
+            state.eta = eta;
             R = ammodel.Asp.*butlerVolmer(k.*model.con.F, 0.5, 1, eta, T) ./ (1 .* model.con.F);
              
             state.R = R;
