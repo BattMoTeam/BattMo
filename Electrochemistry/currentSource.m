@@ -4,7 +4,7 @@ function res = currentSource(t, tup, tlim, jnom)
 
 N = length(jnom);
 
-ramupcase = 'linear';
+rampupcase = 'sineup';
 if N == 1
     switch rampupcase
       case 'sineup'
