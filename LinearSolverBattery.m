@@ -27,9 +27,10 @@ classdef LinearSolverBattery
                     % equation 4,6 seems ok.
                     % 2 have very large onditionnumber, 7,8 also seems to
                     % heigh
-                    vars=[4,6]
-                    vars=[8]
+                    %vars=[4,6]
+                    %vars=[]
                     %vars=[7,9];
+                    %vars=[8]
                     pos=cumsum(numVars)
                     pos=[[1;pos(1:end-1)+1],pos];
                     posvar=pos(vars,:);
@@ -39,10 +40,11 @@ classdef LinearSolverBattery
                     f =@(x) solver.precond(x,A,indb);
                     AA=A(indb,indb);
                     bb=b(indb);
-                    x=agmg(AA,rand(size(bb)),1,[],[],1);
-                    condest(AA)
-                    %x = gmres(A,b,10,solver.tol,solver.maxiter,f);
+                    %x=agmg(AA,rand(size(bb)),1,[],[],1);
+                    %condest(AA)
+                    x = gmres(A,b,10,solver.tol,solver.maxiter,f);
                     %max(abs(x-result))
+                    %A(1,:)
                     %%
                 otherwise
                     error('Method not implemented');
