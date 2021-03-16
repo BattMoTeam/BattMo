@@ -11,7 +11,12 @@ classdef BatteryInputParams1D < BatteryInputParams
     
     methods
         
-        function params = BatteryInputParams1D()
+        function params = setupVariousParams(params)
+            
+            params.SOC  = 0.5;
+            params.T    = 298.15;
+            params.J    = 0.1;
+            params.Ucut = 2;
             
             fac = 1;
             params.sepnx  = 30*fac;
@@ -20,16 +25,6 @@ classdef BatteryInputParams1D < BatteryInputParams
             params.ccnenx = 20*fac;
             params.ccpenx = 20*fac;
             
-            params = params@BatteryInputParams();
-        
-        end
-        
-        function params = setupVariousParams(params)
-            
-            params.SOC  = 0.5;
-            params.T    = 298.15;
-            params.J    = 0.1;
-            params.Ucut = 2;
         end
 
         function params = setupSubModels(params)
@@ -68,7 +63,7 @@ classdef BatteryInputParams1D < BatteryInputParams
             params.ne = graphiteElectrode('ne', G, cells);
 
             %% setup pe
-            istart = ccnenx + nenx + sepnx + 1;
+            istart = ccnenx + nenx + sepnx;
             ncells = penx;
             cells = istart + (1 : ncells)';
             params.pe = nmc111Electrode('pe', G, cells);
@@ -80,13 +75,13 @@ classdef BatteryInputParams1D < BatteryInputParams
             params.ccne = currentCollector('ccne', G, cells);
 
             %% setup ccpe
-            istart = ccnenx + nenx + sepnx + penx + 1;
+            istart = ccnenx + nenx + sepnx + penx;
             ncells = ccpenx;
             cells = istart + (1 : ncells)';
             params.ccpe = currentCollector('ccpe', G, cells);
 
             %% setup sep
-            istart = ccnenx + nenx + 1;
+            istart = ccnenx + nenx;
             ncells = sepnx;
             cells = istart + (1 : ncells)';
             params.sep = celgard2500('sep', G, cells);
@@ -108,7 +103,7 @@ classdef BatteryInputParams1D < BatteryInputParams
             
             compnames = {'ccne', 'ne'};
             coupTerm = couplingTerm('ccne-ne', compnames);
-            coupTerm.couplingfaces = [ccnenx, 1];
+            coupTerm.couplingfaces = [ccnenx + 1, 1];
             coupTerm.couplingcells = [ccnenx, 1];
 
         end
@@ -119,8 +114,8 @@ classdef BatteryInputParams1D < BatteryInputParams
 
             compnames = {'ccpe'};
             coupTerm = couplingTerm('bc-ccpe', compnames);
-            coupTerm.couplingfaces = ccpenxx;
-            coupTerm.couplingcells = ccpenxx;
+            coupTerm.couplingfaces = ccpenx + 1;
+            coupTerm.couplingcells = ccpenx;
 
         end
 
@@ -130,7 +125,7 @@ classdef BatteryInputParams1D < BatteryInputParams
             
             compnames = {'ccpe', 'pe'};
             coupTerm = couplingTerm('ccpe-pe', compnames);
-            coupTerm.couplingfaces = [1, penx];
+            coupTerm.couplingfaces = [1, penx + 1];
             coupTerm.couplingcells = [1, penx];
             
         end
