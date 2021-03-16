@@ -5,7 +5,7 @@ close all
 mrstModule add ad-core multimodel mrst-gui battery
 mrstVerbose off
 
-modelcase = '2D';
+modelcase = '3D_2';
 
 switch modelcase
   case '1D'
