@@ -82,7 +82,7 @@ classdef BatteryInputParams2D < BatteryInputParams
             % We pick up the faces at the top of Cccne
             yf = G.faces.centroids(:, 2);
             myf = max(yf);
-            faces = find(abs(yf-myf) < eps*1000);
+            faces = find(abs(yf - myf) < eps*1000);
             cells = sum(G.faces.neighbors(faces, :), 2);
 
             compnames = {'ccne'};
@@ -153,7 +153,7 @@ classdef BatteryInputParams2D < BatteryInputParams
             % We pick up the faces at the top of Cccpe
             yf = G.faces.centroids(:, 2);
             myf = max(yf);
-            faces = find(abs(yf-myf) < eps*1000);
+            faces = find(abs(yf - myf) < eps*1000);
             cells = sum(G.faces.neighbors(faces, :), 2);
 
             compnames = {'ccpe'};
