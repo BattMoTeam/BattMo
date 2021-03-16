@@ -5,62 +5,66 @@ close all
 mrstModule add ad-core multimodel mrst-gui battery
 mrstVerbose off
 
-modelcase = '3D_2';
-tfac=1;
+modelcase = '2D';
+
 switch modelcase
+  case '1D'
+    inputparams = BatteryInputParams1D();
+    inputparams.J = 1;
+    schedulecase = 3; 
   case '2D'
     inputparams = BatteryInputParams2D();
+    schedulecase = 1;
+    tfac = 1; % used in schedule setup
   case '3D_1'
     inputparams = BatteryInputParams3D_1();
+    schedulecase = 1;
+    tfac = 1; % used in schedule setup
   case '3D_2'
     inputparams = BatteryInputParams3D_2();
-    inputparams.J=1e-4;
-    tfac=40;
-    %fac=400;
-    %inputparams.ccne.sigma = inputparams.ccne.sigma*fac;
-    %inputparams.ccpe.sigma =  inputparams.ccpe.sigma*fac;
-    %inputparams.ccne.sigmaeff=inputparams.ccne.sigmaeff*fac;
-    %inputparams.ccpe.sigmaeff=inputparams.ccne.sigmaeff*fac;
+    inputparams.J = 1e-4;
+    schedulecase = 1;
+    tfac = 40; % used in schedule setup
 end
+
 % setup Battery model using parameter inputs.
 model = BatteryModelSimple(inputparams);
 
-schedulecase = 2; 
-
 switch schedulecase
-    
-  case 1
-    dt = []; 
-    n = 10
-    dt = [dt; repmat(1e-3, n, 1).*1.5.^[1:n]']; 
-    % n = 13
-    % dt = [dt; dt(end).*2.^[1:n]']
-    dt = [dt; repmat(dt(end), floor(n*1.5), 1)]; 
-    times = [0; cumsum(dt)]*tfac; 
-    times(end)
-    
-  case 2
 
+  case 1
+
+    % Schedule with two phases : activation and operation
+    % 
+    % Activation phase with exponentially increasing time step
     n = 15; 
     dt = []; 
     dt = [dt; repmat(1e-4, n, 1).*1.5.^[1:n]']; 
+    % Operation phase with constant time step
     n = 13; 
     dt = [dt; dt(end).*2.^[1:n]']; 
     dt = [dt; repmat(dt(end)*1.5, floor(n*1.5), 1)]; 
+    
+    % Time scaling can be adding using variable tfac
     times = [0; cumsum(dt)]*tfac; 
+    
     times(end); 
     
-  case 3
-    dt = []; 
-    % n = 37;
-    % dt = [dt; repmat(1e-4, n, 1).*1.1.^[1:n]']; 
+  case 2
+
+    % Schedule with constant time steping
     n = 100;
-    dt = [dt; repmat(1e-3, n, 1)];
-    % n = 13
-    % dt = [dt; dt(end).*2.^[1:n]']
-    % dt = [dt; repmat(dt(end), floor(n*1.5), 1)]; 
+    dt = repmat(1e-3, n, 1);
     times = [0; cumsum(dt)]; 
     times(end) 
+
+  case 3
+    
+    % Schedule adjusted for 1D case
+    dt1 = rampupTimesteps(0.1, 0.1, 10);
+    dt2 = 5e3*ones(40, 1);
+    dt = [dt1; dt2];
+    times = [0; cumsum(dt)]; 
     
 end
 
@@ -68,13 +72,9 @@ tt = times(2 : end);
 initstate = model.setupInitialState(); 
 step = struct('val', diff(times), 'control', ones(numel(tt), 1)); 
 
-src = nan(numel(tt), 1); 
-for i = 1:numel(tt)
-    src(i) = currentSource(tt(i), 0.1, 86400*tfac, model.J); 
-end
-
 stopFunc = @(model, state, state_prev) (state.ccpe.E < 2.0); 
-srcfunc = @(time) currentSource(time, 0.1, 86400*tfac, model.J); 
+
+srcfunc = @(time) currentSource(time, 0.1, times(end), model.J); 
 
 control = repmat(struct('src', srcfunc, 'stopFunction', stopFunc), 1, 1); 
 schedule = struct('control', control, 'step', step); 
