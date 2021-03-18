@@ -5,12 +5,12 @@ classdef celgard2500 < ComponentModel
     properties
         
         % Physical constants
-        con = physicalConstants()
+        con = PhysicalConstants()
         
         % Physicochemical properties
-        t       % Thickness,        [m]
-        eps     % Volume fraction,  [-]
-        void    % Porosity,         [-]
+        thickness       % Thickness,        [m]
+        volumeFraction     % Volume fraction,  [-]
+        porosity    % Porosity,         [-]
         rp      % Pore radius,      [m]
         Gurley  % Gurley number,    [s]
         
@@ -21,9 +21,9 @@ classdef celgard2500 < ComponentModel
             
             model = model@ComponentModel(name);
             
-            model.t      = 10e-6;
-            model.void   = 0.55;
-            model.eps    = 1 - model.void;
+            model.thickness      = 10e-6;
+            model.porosity   = 0.55;
+            model.volumeFraction    = 1 - model.porosity;
             model.rp     = 0.064e-6 ./ 2;
             model.Gurley = 200;
             

@@ -6,14 +6,14 @@ classdef BatteryInputParams3D_1 < BatteryInputParams2D
             
             fac = 1/5;
             sepnx  = 30*fac;
-            nenx   = 30*fac;
-            penx   = 30*fac;
-            ccnenx = 20*fac;
-            ccpenx = 20*fac;
+            NegativeElectrodenx   = 30*fac;
+            PositiveElectrodenx   = 30*fac;
+            NegativeCurrentCollectornx = 20*fac;
+            PositiveCurrentCollectornx = 20*fac;
 
-            nelyte = nenx + sepnx + penx;
+            nElectrolyte = NegativeElectrodenx + sepnx + PositiveElectrodenx;
             
-            nxs = [ccnenx; nenx; sepnx; penx; ccpenx];
+            nxs = [NegativeCurrentCollectornx; NegativeElectrodenx; sepnx; PositiveElectrodenx; PositiveCurrentCollectornx];
             ny = 5;
             nz = 1;
             
@@ -40,86 +40,86 @@ classdef BatteryInputParams3D_1 < BatteryInputParams2D
 
             dimGlobGrid = [nx; ny; nz];
 
-            %% setup elyte
+            %% setup Electrolyte
 
-            startSubGrid = [ccnenx + 1; 1; 1];
-            dimSubGrid   = [nelyte; ny; nz];
-            elytecells   = pickTensorCells3D(startSubGrid, dimSubGrid, dimGlobGrid);
+            startSubGrid = [NegativeCurrentCollectornx + 1; 1; 1];
+            dimSubGrid   = [nElectrolyte; ny; nz];
+            Electrolytecells   = pickTensorCells3D(startSubGrid, dimSubGrid, dimGlobGrid);
 
-            %% setup ne
+            %% setup NegativeElectrode
 
-            startSubGrid = [ccnenx + 1; 1; 1];
-            dimSubGrid   = [nenx; ny; nz];
-            necells      = pickTensorCells3D(startSubGrid, dimSubGrid, dimGlobGrid);
+            startSubGrid = [NegativeCurrentCollectornx + 1; 1; 1];
+            dimSubGrid   = [NegativeElectrodenx; ny; nz];
+            NegativeElectrodecells      = pickTensorCells3D(startSubGrid, dimSubGrid, dimGlobGrid);
 
-            %% setup pe
+            %% setup PositiveElectrode
 
-            startSubGrid = [ccnenx + nenx + sepnx + 1; 1; 1];
-            dimSubGrid   = [penx; ny; nz];
-            pecells      = pickTensorCells3D(startSubGrid, dimSubGrid, dimGlobGrid);
+            startSubGrid = [NegativeCurrentCollectornx + NegativeElectrodenx + sepnx + 1; 1; 1];
+            dimSubGrid   = [PositiveElectrodenx; ny; nz];
+            PositiveElectrodecells      = pickTensorCells3D(startSubGrid, dimSubGrid, dimGlobGrid);
             
             %% setup sep
 
-            startSubGrid = [ccnenx + nenx + 1; 1;  1];
+            startSubGrid = [NegativeCurrentCollectornx + NegativeElectrodenx + 1; 1;  1];
             dimSubGrid   = [sepnx; ny; nz];
             sepcells     = pickTensorCells3D(startSubGrid, dimSubGrid, dimGlobGrid);
 
-            %% setup ccne
+            %% setup NegativeCurrentCollector
 
             startSubGrid = [1; 1; 1];
-            dimSubGrid   = [ccnenx; ny; nz];
-            ccnecells    = pickTensorCells3D(startSubGrid, dimSubGrid, dimGlobGrid);
+            dimSubGrid   = [NegativeCurrentCollectornx; ny; nz];
+            NegativeCurrentCollectorcells    = pickTensorCells3D(startSubGrid, dimSubGrid, dimGlobGrid);
 
-            %% setup ccpe
+            %% setup PositiveCurrentCollector
 
-            startSubGrid = [ccnenx + nelyte + 1; 1; 1];
-            dimSubGrid   = [ccpenx; ny; nz];
-            ccpecells    = pickTensorCells3D(startSubGrid, dimSubGrid, dimGlobGrid);
+            startSubGrid = [NegativeCurrentCollectornx + nElectrolyte + 1; 1; 1];
+            dimSubGrid   = [PositiveCurrentCollectornx; ny; nz];
+            PositiveCurrentCollectorcells    = pickTensorCells3D(startSubGrid, dimSubGrid, dimGlobGrid);
 
             %% assign the parameters
             
             params.G = G;
 
-            params.elyte = orgLiPF6('elyte', G, elytecells);
-            params.ne    = graphiteElectrode('ne', G, necells);
-            params.pe    = nmc111Electrode('pe', G, pecells);
-            params.ccne  = currentCollector('ccne', G, ccnecells);
-            params.ccpe  = currentCollector('ccpe', G, ccpecells);
+            params.Electrolyte = orgLiPF6('Electrolyte', G, Electrolytecells);
+            params.NegativeElectrode    = graphiteElectrode('NegativeElectrode', G, NegativeElectrodecells);
+            params.PositiveElectrode    = nmc111Electrode('PositiveElectrode', G, PositiveElectrodecells);
+            params.NegativeCurrentCollector  = currentCollector('NegativeCurrentCollector', G, NegativeCurrentCollectorcells);
+            params.PositiveCurrentCollector  = currentCollector('PositiveCurrentCollector', G, PositiveCurrentCollectorcells);
             params.sep   = celgard2500('sep', G, sepcells);
             
         end
         
-        function coupTerm = setupCcneBcCoupTerm(params)
+        function coupTerm = setupNegativeCurrentCollectorBcCoupTerm(params)
 
-            ccne = params.ccne;
-            G = ccne.G;
+            NegativeCurrentCollector = params.NegativeCurrentCollector;
+            G = NegativeCurrentCollector.G;
 
-            % We pick up the faces at the top of ccne
+            % We pick up the faces at the top of NegativeCurrentCollector
             yf = G.faces.centroids(:, 2);
             myf = max(yf);
             faces = find(abs(yf-myf) < eps*1000);
             cells = sum(G.faces.neighbors(faces, :), 2);
 
-            compnames = {'ccne'};
-            coupTerm = couplingTerm('bc-ccne', compnames);
+            compnames = {'NegativeCurrentCollector'};
+            coupTerm = couplingTerm('bc-NegativeCurrentCollector', compnames);
             coupTerm.couplingfaces = faces;
             coupTerm.couplingcells = cells;
 
         end
 
-        function coupTerm = setupCcpeBcCoupTerm(params)
+        function coupTerm = setupPositiveCurrentCollectorBcCoupTerm(params)
 
-            ccpe = params.ccpe;
-            G = ccpe.G;
+            PositiveCurrentCollector = params.PositiveCurrentCollector;
+            G = PositiveCurrentCollector.G;
 
-            % We pick up the faces at the bottom of ccpe
+            % We pick up the faces at the bottom of PositiveCurrentCollector
             yf = G.faces.centroids(:, 2);
             myf = max(yf);
             faces =  find(abs(yf-myf) < eps*1000);
             cells = sum(G.faces.neighbors(faces, :), 2);
 
-            compnames = {'ccpe'};
-            coupTerm = couplingTerm('bc-ccpe', compnames);
+            compnames = {'PositiveCurrentCollector'};
+            coupTerm = couplingTerm('bc-PositiveCurrentCollector', compnames);
             coupTerm.couplingfaces = faces;
             coupTerm.couplingcells = cells;
 

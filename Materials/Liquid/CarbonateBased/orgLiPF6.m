@@ -42,10 +42,10 @@ classdef orgLiPF6 < ComponentModel
         
         
         % Physical constants
-        con = physicalConstants();
+        con = PhysicalConstants();
 
         % Physicochemical properties
-        eps         % Porosity
+        volumeFraction         % Porosity
         rho         % Mass Density,                         [kg m^-3]
         mu          % Viscosity             
         kappaeff    % Porous media conductivity,            [S m^-1]
@@ -214,7 +214,7 @@ classdef orgLiPF6 < ComponentModel
             op = model.operators;
             
             % volume fraction of electrolyte
-            eps = model.eps;
+            eps = model.volumeFraction;
             
             % compute effective ionic conductivity in porous media
             kappaeff = kappa .* eps .^1.5;
@@ -245,7 +245,7 @@ classdef orgLiPF6 < ComponentModel
             
             % calculate the effective diffusion coefficients in porous
             % media
-            Deff = D .* model.eps .^1.5;
+            Deff = D .* model.volumeFraction .^1.5;
             
             trans = op.harmFace(Deff);
             fluxDiff = - trans.*op.Grad(cLi);

@@ -16,38 +16,38 @@ classdef BatteryInputParams
         G
 
         %% Electrolyte model
-        elyte
+        Electrolyte
         
         %% Negative electrode model
-        ne
+        NegativeElectrode
         
         %% Positive electrode model
-        pe
+        PositiveElectrode
         
         %% Separator model
         sep
         
         %% Current collector for negative electrode model
-        ccne
+        NegativeCurrentCollector
         
         %% Current collector for positive electrode model 
-        ccpe
+        PositiveCurrentCollector
         
         %% Coupling terms (describe the topological structure of the coupling)
 
         % electrolyte - negative electrode (location where chemical reactions take place)
-        coupTermNeElyte
+        coupTermNegativeElectrodeElectrolyte
         
         % electrolyte - positive electrode (location where chemical reactions take place)
-        coupTermPeElyte 
+        coupTermPositiveElectrodeElectrolyte 
 
         % current collector and electrode (current continuity is imposed at the faces)
-        coupTermCcneNe  
-        coupTermCcpePe  
+        coupTermNegativeCurrentCollectorNegativeElectrode  
+        coupTermPositiveCurrentCollectorPositiveElectrode  
 
         % Boundary conditions for the current collectors
-        coupTermCcneBc  
-        coupTermCcpeBc  
+        coupTermNegativeCurrentCollectorBc  
+        coupTermPositiveCurrentCollectorBc  
         
     end
     
@@ -67,45 +67,45 @@ classdef BatteryInputParams
         end
         
         function params = setupSubModels(params)
-        % In this function, we setup: G and the models (elyte, sep, ne, pe, ccne, ccpe)
+        % In this function, we setup: G and the models (Electrolyte, sep, NegativeElectrode, PositiveElectrode, NegativeCurrentCollector, PositiveCurrentCollector)
             error('Virtual Function');
         end
         
         function params = setupCouplingTerms(params)
-            params.coupTermNeElyte = setupNeElyteCoupTerm(params);
-            params.coupTermPeElyte = setupPeElyteCoupTerm(params);
-            params.coupTermCcneNe  = setupCcneNeCoupTerm(params);
-            params.coupTermCcpePe  = setupCcpePeCoupTerm(params);
-            params.coupTermCcneBc  = setupCcneBcCoupTerm(params);
-            params.coupTermCcpeBc  = setupCcpeBcCoupTerm(params);
+            params.coupTermNegativeElectrodeElectrolyte = setupNegativeElectrodeElectrolyteCoupTerm(params);
+            params.coupTermPositiveElectrodeElectrolyte = setupPositiveElectrodeElectrolyteCoupTerm(params);
+            params.coupTermNegativeCurrentCollectorNegativeElectrode  = setupNegativeCurrentCollectorNegativeElectrodeCoupTerm(params);
+            params.coupTermPositiveCurrentCollectorPositiveElectrode  = setupPositiveCurrentCollectorPositiveElectrodeCoupTerm(params);
+            params.coupTermNegativeCurrentCollectorBc  = setupNegativeCurrentCollectorBcCoupTerm(params);
+            params.coupTermPositiveCurrentCollectorBc  = setupPositiveCurrentCollectorBcCoupTerm(params);
         end
 
-        function coupTerm = setupCcneBcCoupTerm(params)
+        function coupTerm = setupNegativeCurrentCollectorBcCoupTerm(params)
         % In this function, we setup coupling corresponding coupling 
             error('Virtual Function');
         end
 
-        function coupTerm = setupCcneNeCoupTerm(params)
+        function coupTerm = setupNegativeCurrentCollectorNegativeElectrodeCoupTerm(params)
         % In this function, we setup coupling corresponding coupling 
             error('Virtual Function');
         end
         
-        function coupTerm = setupCcpeBcCoupTerm(params)
+        function coupTerm = setupPositiveCurrentCollectorBcCoupTerm(params)
         % In this function, we setup coupling corresponding coupling 
             error('Virtual Function');
         end
 
-        function coupTerm = setupCcpePeCoupTerm(params)
+        function coupTerm = setupPositiveCurrentCollectorPositiveElectrodeCoupTerm(params)
         % In this function, we setup coupling corresponding coupling 
             error('Virtual Function');            
         end
 
-        function coupTerm = setupNeElyteCoupTerm(params)
+        function coupTerm = setupNegativeElectrodeElectrolyteCoupTerm(params)
         % In this function, we setup coupling corresponding coupling 
             error('Virtual Function');
         end
 
-        function coupTerm = setupPeElyteCoupTerm(params)
+        function coupTerm = setupPositiveElectrodeElectrolyteCoupTerm(params)
         % In this function, we setup coupling corresponding coupling 
             error('Virtual Function');
         end

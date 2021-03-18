@@ -1,5 +1,5 @@
-classdef graphiteAM < ComponentModel
-    %GRAPHITEAM An electrode active material class for electrochemical
+classdef Graphite < ComponentModel
+    %GRAPHITE An electrode active material class for electrochemical
     %modelling. 
     %   The graphite class describes the properties and
     %   parameterization for the active material of graphite electrodes.
@@ -26,7 +26,7 @@ classdef graphiteAM < ComponentModel
     properties
         
         % Physical constants
-        con = physicalConstants();
+        con = PhysicalConstants();
         
         % Lithium data structure
         Li
@@ -35,14 +35,14 @@ classdef graphiteAM < ComponentModel
         e
         
         % Physicochemical properties
-        eps
-        Asp         % Surface area,                 [m2 m^-3]
-        spCAh       % Specific Capacity             [Ah kg^-1]
+        volumeFraction
+        volumetricSurfaceArea         % Surface area,                 [m2 m^-3]
+        specificCapacity       % Specific Capacity             [Ah kg^-1]
         theta0      % Minimum lithiation, 0% SOC    [-]
         theta100    % Maximum lithiation, 100% SOC  [-]
         maxc        % Maximum lithium concentration [mol m^-3]
         rho         % Mass Density                  [kg m^-3] or [g L^-1]
-        sigma       % Solid conductivity            [S m^-1]
+        electronicConductivity       % Solid conductivity            [S m^-1]
         lambda      % Thermal Conductivity          [W m^-1 K^-1]
         cp          % Molar Heat Capacity           [J kg^-1 K^-1]             
         D0          % Diffusion coefficient         [m^2 s^-1]
@@ -54,7 +54,7 @@ classdef graphiteAM < ComponentModel
     end
     
     methods
-        function model = graphiteAM(name)
+        function model = Graphite(name)
             
         % GRAPHITE Construct an instance of the graphite class
         % model = graphite(SOC, T) SOC is the state of charge of the
@@ -63,19 +63,19 @@ classdef graphiteAM < ComponentModel
             model = model@ComponentModel(name);
                 
             % Define material constants
-            model.spCAh    = 360;      % [Ah kg^-1]
+            model.specificCapacity    = 360;      % [Ah kg^-1]
             model.rho      = 2240;     % [kg m^-3]
             model.theta0   = 0.1429;   % at 0% SOC [-]
             model.theta100 = 0.85510;  % at 100% SOC[-]
             model.Li.cmax  = 30555;    % [mol m^-3]
             model.Li.D0    = 3.9e-14;  % [m^2 s^-1]
             model.Li.EaD   = 5000;     % [J mol^-1]
-            model.sigma    = 100;      % [S m^-1]
+            model.electronicConductivity    = 100;      % [S m^-1]
             model.cp       = 700;      % [J kg^-1 K^-1]
             model.k0       = 5.031e-11;% [m^2.5 mol^-0.5 s^-1]
             model.Eak      = 5000;     % [J mol^-1]
-            model.Asp      = 723600;   % [m2 m^-3]
-            model.eps      = 0.8;
+            model.volumetricSurfaceArea      = 723600;   % [m2 m^-3]
+            model.volumeFraction      = 0.8;
             
             % primary variables
             names = {'phi', 'Li'};

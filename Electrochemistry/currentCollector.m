@@ -1,24 +1,24 @@
-classdef currentCollector < ComponentModel
+classdef CurrentCollector < ComponentModel
 % Current collector model 
     
     properties
-        con = physicalConstants();
+        constants = PhysicalConstants();
         
         E    % Potential at the end of collector
-        eps
-        sigma
-        sigmaeff
+        volumeFraction
+        electronicConductivity
+        effectiveElectronicConductivity
     end
     
     methods
-        function model = currentCollector(name, G, cells)
+        function model = CurrentCollector(name, G, cells)
             
             model = model@ComponentModel(name);
             model.G = genSubGrid(G, cells);
 
-            model.sigma = 100;
-            model.eps = ones(model.G.cells.num, 1);
-            model.sigmaeff = (model.sigma) .* (model.eps).^1.5;            
+            model.electronicConductivity = 100;
+            model.volumeFraction = ones(model.G.cells.num, 1);
+            model.effectiveElectronicConductivity = (model.electronicConductivity) .* (model.volumeFraction).^1.5;            
 
             % setup operators
             model.operators = localSetupOperators(model.G);
@@ -45,14 +45,14 @@ classdef currentCollector < ComponentModel
         function state = updateChargeCont(model, state)
             
             op = model.operators;
-            sigmaeff = model.sigmaeff;
+            sigmaeff = model.effectiveElectronicConductivity;
          
             phi = state.phi;
             jBcSource = state.jBcSource;
             
             j = - op.harmFace(sigmaeff).*op.Grad(phi); 
             
-            chargeCont = (op.Div(j) - jBcSource)./ model.G.cells.volumes./model.con.F;
+            chargeCont = (op.Div(j) - jBcSource)./ model.G.cells.volumes./model.constants.F;
             
             state.chargeCont = chargeCont;
             

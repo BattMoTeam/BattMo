@@ -1,4 +1,4 @@
-function res = currentSource(t, tup, tlim, jnom)
+function res = CurrentSource(t, tup, tlim, jnom)
 %CURRENTSOURCE Summary of this function goes here
 %   Detailed explanation goes here
 

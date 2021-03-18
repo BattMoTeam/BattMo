@@ -1,7 +1,7 @@
-classdef nmc111AM < ComponentModel
-    %NMC111AM An electrode active material class for electrochemical
+classdef NMC111 < ComponentModel
+    %NMC111 An electrode active material class for electrochemical
     %modelling. 
-    %   The nmc111 class describes the properties and
+    %   The NMC111 class describes the properties and
     %   parameterization for the active material of nmc111 electrodes.
     %
     %   The class calculates properties based on experimental
@@ -26,7 +26,7 @@ classdef nmc111AM < ComponentModel
     properties
         
         % Physical constants
-        con = physicalConstants();
+        con = PhysicalConstants();
         
         % Lithium data structure
         Li
@@ -35,21 +35,21 @@ classdef nmc111AM < ComponentModel
         e
 
         % Physicochemical properties
-        eps         % constant ? 
-        spCAh       % Specific Capacity,            [Ah kg^-1]
+        volumeFraction         % constant ? 
+        specificCapacity       % Specific Capacity,            [Ah kg^-1]
         rho         % Mass Density,                 [kg m^-3] or [g L^-1]
         theta0      % Minimum lithiation, 0% SOC    [-]
         theta100    % Maximum lithiation, 100% SOC  [-]
-        sigma       % Solid conductivity,           [S m^-1]
+        electronicConductivity       % Solid conductivity,           [S m^-1]
         cp          % Molar Heat Capacity,          [J kg^-1 K^-1]             
         k0          % Reference rate constant,      [m^2.5 mol^-0.5 s^-1]
         Eak         % Reaction activation energy,   [J mol^-1] 
-        Asp         % Surface area,                 [m2 m^-3]
+        volumetricSurfaceArea         % Surface area,                 [m2 m^-3]
     end
     
     methods
 
-        function model = nmc111AM(name)
+        function model = NMC111(name)
         %NMC111 Construct an instance of the nmc111 class
         %   model = nmc111(cLi, T) SOC is the state-of-charge of the
         %   battery (0-1) and T is the temperature in Kelvin [K]  
@@ -81,19 +81,19 @@ classdef nmc111AM < ComponentModel
             
             
             % Define material constants
-            model.spCAh    = 155;      % [Ah kg^-1]
+            model.specificCapacity    = 155;      % [Ah kg^-1]
             model.rho      = 4650;     % [kg m^-3]
             model.theta0   = 0.99174;  % at 0% SOC [-]
             model.theta100 = 0.49550;  % at 100% SOC [-]
             model.Li.cmax  = 51554;    % [mol m^-3]
             model.Li.D0    = 1e-14;    % [m^2 s^-1]
             model.Li.EaD   = 5000;     % [J mol^-1]
-            model.sigma    = 100;      % [S m^-1]
+            model.electronicConductivity    = 100;      % [S m^-1]
             model.cp       = 700;      % [J kg^-1 K^-1]
             model.k0       = 2.334e-11;% [m^2.5 mol^-0.5 s^-1]
             model.Eak      = 5000;     % [J mol^-1]
-            model.Asp      = 885000;   % [m2 m^-3]
-            model.eps      = 0.8;  
+            model.volumetricSurfaceArea      = 885000;   % [m2 m^-3]
+            model.volumeFraction      = 0.8;  
             
         end
         

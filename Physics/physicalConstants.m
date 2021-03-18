@@ -1,4 +1,4 @@
-classdef physicalConstants
+classdef PhysicalConstants
     %PHYSICALCONSTANTS Summary of this class goes here
     %   Detailed explanation goes here
     
@@ -9,7 +9,7 @@ classdef physicalConstants
     end
     
     methods
-        function obj = physicalConstants()
+        function obj = PhysicalConstants()
             %PHYSICALCONSTANTS Construct an instance of this class
             %   Detailed explanation goes here
             obj.R = 8.31446261815324;

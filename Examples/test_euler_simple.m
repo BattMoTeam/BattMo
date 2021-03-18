@@ -5,7 +5,7 @@ close all
 mrstModule add ad-core multimodel mrst-gui battery
 mrstVerbose off
 
-modelcase = '3D_2';
+modelcase = '2D';
 
 switch modelcase
   case '1D'
@@ -15,6 +15,7 @@ switch modelcase
   case '2D'
     inputparams = BatteryInputParams2D();
     schedulecase = 1;
+    %inputparams.J = 1e-4;
     tfac = 1; % used in schedule setup
   case '3D_1'
     inputparams = BatteryInputParams3D_1();
@@ -72,9 +73,9 @@ tt = times(2 : end);
 initstate = model.setupInitialState(); 
 step = struct('val', diff(times), 'control', ones(numel(tt), 1)); 
 
-stopFunc = @(model, state, state_prev) (state.ccpe.E < 2.0); 
+stopFunc = @(model, state, state_prev) (state.PositiveCurrentCollector.E < 2.0); 
 
-srcfunc = @(time) currentSource(time, tup, times(end), model.J); 
+srcfunc = @(time) CurrentSource(time, tup, times(end), model.J); 
 
 control = repmat(struct('src', srcfunc, 'stopFunction', stopFunc), 1, 1); 
 schedule = struct('control', control, 'step', step); 
@@ -112,7 +113,7 @@ end
 %%  Process output
 
 ind = cellfun(@(x) not(isempty(x)), states); 
-Enew = cellfun(@(x) x.ccpe.E, {states{ind}}); 
+Enew = cellfun(@(x) x.PositiveCurrentCollector.E, {states{ind}}); 
 time = cellfun(@(x) x.time, {states{ind}}); 
 
 %% plot

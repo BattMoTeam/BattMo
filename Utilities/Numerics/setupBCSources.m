@@ -1,89 +1,89 @@
 function state = setupBCSources(model, state)
     
-    ne    = model.ne;
-    pe    = model.pe;
-    ccne  = model.ccne;
-    ccpe  = model.ccpe;
+    NegativeElectrode    = model.NegativeElectrode;
+    PositiveElectrode    = model.PositiveElectrode;
+    NegativeCurrentCollector  = model.NegativeCurrentCollector;
+    PositiveCurrentCollector  = model.PositiveCurrentCollector;
     
-    ne_am = ne.am;
-    pe_am = pe.am;
+    NegativeElectrode_ActiveMaterial = NegativeElectrode.ActiveMaterial;
+    PositiveElectrode_ActiveMaterial = PositiveElectrode.ActiveMaterial;
     
-    ne_phi   = state.ne.am.phi;
-    pe_phi   = state.pe.am.phi;
-    ccne_phi = state.ccne.phi;
-    ccpe_phi = state.ccpe.phi;
-    ccpe_E   = state.ccpe.E;
+    NegativeElectrode_phi   = state.NegativeElectrode.ActiveMaterial.phi;
+    PositiveElectrode_phi   = state.PositiveElectrode.ActiveMaterial.phi;
+    NegativeCurrentCollector_phi = state.NegativeCurrentCollector.phi;
+    PositiveCurrentCollector_phi = state.PositiveCurrentCollector.phi;
+    PositiveCurrentCollector_E   = state.PositiveCurrentCollector.E;
     
     
-    %% We assume state.ne.am.D and state.ne.am.D  have been updated
+    %% We assume state.NegativeElectrode.ActiveMaterial.D and state.NegativeElectrode.ActiveMaterial.D  have been updated
 
-    D = state.ne.am.D;
-    ne_Deff = D.*ne_am.eps.^1.5;
+    D = state.NegativeElectrode.ActiveMaterial.D;
+    NegativeElectrode_Deff = D.*NegativeElectrode_ActiveMaterial.volumeFraction.^1.5;
 
-    D = state.pe.am.D;
-    pe_Deff = D.*pe_am.eps.^1.5;
+    D = state.PositiveElectrode.ActiveMaterial.D;
+    PositiveElectrode_Deff = D.*PositiveElectrode_ActiveMaterial.volumeFraction.^1.5;
 
-    ne_sigmaeff = ne.sigmaeff;
-    pe_sigmaeff = pe.sigmaeff;
-    ccne_sigmaeff = ccne.sigmaeff;
-    ccpe_sigmaeff = ccpe.sigmaeff;
+    NegativeElectrode_sigmaeff = NegativeElectrode.effectiveElectronicConductivity;
+    PositiveElectrode_sigmaeff = PositiveElectrode.effectiveElectronicConductivity;
+    NegativeCurrentCollector_sigmaeff = NegativeCurrentCollector.effectiveElectronicConductivity;
+    PositiveCurrentCollector_sigmaeff = PositiveCurrentCollector.effectiveElectronicConductivity;
 
-    %% We setup the current transfers between ccne collector and ne material with ne_j_bcsource and ccne_j_bcsource
+    %% We setup the current transfers between NegativeCurrentCollector collector and NegativeElectrode material with NegativeElectrode_j_bcsource and NegativeCurrentCollector_j_bcsource
 
-    ne_j_bcsource = ne_phi*0.0; %NB hack to initialize zero ad
-    ccne_j_bcsource = ccne_phi*0.0; %NB hack to initialize zero ad
+    NegativeElectrode_j_bcsource = NegativeElectrode_phi*0.0; %NB hack to initialize zero ad
+    NegativeCurrentCollector_j_bcsource = NegativeCurrentCollector_phi*0.0; %NB hack to initialize zero ad
 
-    coupterm = model.getCoupTerm('ccne-ne');
-    face_ccne = coupterm.couplingfaces(:, 1);
-    face_ne = coupterm.couplingfaces(:, 2);
-    [tne, bccell_ne] = ne.operators.harmFaceBC(ne_sigmaeff, face_ne);
-    [tccne, bccell_ccne] = ccne.operators.harmFaceBC(ccne_sigmaeff, face_ccne);
+    coupterm = model.getCoupTerm('NegativeCurrentCollector-NegativeElectrode');
+    face_NegativeCurrentCollector = coupterm.couplingfaces(:, 1);
+    face_NegativeElectrode = coupterm.couplingfaces(:, 2);
+    [tNegativeElectrode, bccell_NegativeElectrode] = NegativeElectrode.operators.harmFaceBC(NegativeElectrode_sigmaeff, face_NegativeElectrode);
+    [tNegativeCurrentCollector, bccell_NegativeCurrentCollector] = NegativeCurrentCollector.operators.harmFaceBC(NegativeCurrentCollector_sigmaeff, face_NegativeCurrentCollector);
 
-    bcphi_ne = ne_phi(bccell_ne);
-    bcphi_ccne = ccne_phi(bccell_ccne);
+    bcphi_NegativeElectrode = NegativeElectrode_phi(bccell_NegativeElectrode);
+    bcphi_NegativeCurrentCollector = NegativeCurrentCollector_phi(bccell_NegativeCurrentCollector);
 
-    trans = 1./(1./tne + 1./tccne);
-    crosscurrent = trans.*(bcphi_ccne - bcphi_ne);
-    ne_j_bcsource(bccell_ne) = crosscurrent;
-    ccne_j_bcsource(bccell_ccne) = -crosscurrent;
+    trans = 1./(1./tNegativeElectrode + 1./tNegativeCurrentCollector);
+    crosscurrent = trans.*(bcphi_NegativeCurrentCollector - bcphi_NegativeElectrode);
+    NegativeElectrode_j_bcsource(bccell_NegativeElectrode) = crosscurrent;
+    NegativeCurrentCollector_j_bcsource(bccell_NegativeCurrentCollector) = -crosscurrent;
 
-    %% We impose the boundary condition at chosen boundary cells of the ne current collector by updating ccne_j_bcsource
+    %% We impose the boundary condition at chosen boundary cells of the NegativeElectrode current collector by updating NegativeCurrentCollector_j_bcsource
 
-    coupterm = model.getCoupTerm('bc-ccne');
+    coupterm = model.getCoupTerm('bc-NegativeCurrentCollector');
     faces = coupterm.couplingfaces;
     bcval = zeros(numel(faces), 1);
-    [tccne, cells] = ccne.operators.harmFaceBC(ccne_sigmaeff, faces);
-    ccne_j_bcsource(cells) = ccne_j_bcsource(cells) + tccne.*(bcval - ccne_phi(cells));
+    [tNegativeCurrentCollector, cells] = NegativeCurrentCollector.operators.harmFaceBC(NegativeCurrentCollector_sigmaeff, faces);
+    NegativeCurrentCollector_j_bcsource(cells) = NegativeCurrentCollector_j_bcsource(cells) + tNegativeCurrentCollector.*(bcval - NegativeCurrentCollector_phi(cells));
 
-    %% We setup the current transfers between ccpe collector and pe material with pe_j_bcsource and ccpe_j_bcsource
+    %% We setup the current transfers between PositiveCurrentCollector collector and PositiveElectrode material with PositiveElectrode_j_bcsource and PositiveCurrentCollector_j_bcsource
 
-    pe_j_bcsource   = pe_phi*0.0; %NB hack to initialize zero ad
-    ccpe_j_bcsource = ccpe_phi*0.0; %NB hack to initialize zero ad
+    PositiveElectrode_j_bcsource   = PositiveElectrode_phi*0.0; %NB hack to initialize zero ad
+    PositiveCurrentCollector_j_bcsource = PositiveCurrentCollector_phi*0.0; %NB hack to initialize zero ad
 
-    coupterm = model.getCoupTerm('ccpe-pe');
-    face_ccpe = coupterm.couplingfaces(:, 1);
-    face_pe = coupterm.couplingfaces(:, 2);
-    [tpe, bccell_pe] = pe.operators.harmFaceBC(pe_sigmaeff, face_pe);
-    [tccpe, bccell_ccpe] = ccpe.operators.harmFaceBC(ccpe_sigmaeff, face_ccpe);
-    bcphi_pe = pe_phi(bccell_pe);
-    bcphi_ccpe = ccpe_phi(bccell_ccpe);
+    coupterm = model.getCoupTerm('PositiveCurrentCollector-PositiveElectrode');
+    face_PositiveCurrentCollector = coupterm.couplingfaces(:, 1);
+    face_PositiveElectrode = coupterm.couplingfaces(:, 2);
+    [tPositiveElectrode, bccell_PositiveElectrode] = PositiveElectrode.operators.harmFaceBC(PositiveElectrode_sigmaeff, face_PositiveElectrode);
+    [tPositiveCurrentCollector, bccell_PositiveCurrentCollector] = PositiveCurrentCollector.operators.harmFaceBC(PositiveCurrentCollector_sigmaeff, face_PositiveCurrentCollector);
+    bcphi_PositiveElectrode = PositiveElectrode_phi(bccell_PositiveElectrode);
+    bcphi_PositiveCurrentCollector = PositiveCurrentCollector_phi(bccell_PositiveCurrentCollector);
 
-    trans = 1./(1./tpe + 1./tccpe);
-    crosscurrent = trans.*(bcphi_ccpe - bcphi_pe);
-    pe_j_bcsource(bccell_pe) = crosscurrent;
-    ccpe_j_bcsource(bccell_ccpe) = -crosscurrent;
+    trans = 1./(1./tPositiveElectrode + 1./tPositiveCurrentCollector);
+    crosscurrent = trans.*(bcphi_PositiveCurrentCollector - bcphi_PositiveElectrode);
+    PositiveElectrode_j_bcsource(bccell_PositiveElectrode) = crosscurrent;
+    PositiveCurrentCollector_j_bcsource(bccell_PositiveCurrentCollector) = -crosscurrent;
 
-    %% We impose the boundary condition at chosen boundary cells of the anode current collector by updating ccpe_j_bcsource
+    %% We impose the boundary condition at chosen boundary cells of the anode current collector by updating PositiveCurrentCollector_j_bcsource
 
-    coupterm = model.getCoupTerm('bc-ccpe');
+    coupterm = model.getCoupTerm('bc-PositiveCurrentCollector');
     faces = coupterm.couplingfaces;
-    bcval = ccpe_E;
-    [tccpe, cells] = ccpe.operators.harmFaceBC(ccpe_sigmaeff, faces);
-    ccpe_j_bcsource(cells) = ccpe_j_bcsource(cells) + tccpe.*(bcval - ccpe_phi(cells));
+    bcval = PositiveCurrentCollector_E;
+    [tPositiveCurrentCollector, cells] = PositiveCurrentCollector.operators.harmFaceBC(PositiveCurrentCollector_sigmaeff, faces);
+    PositiveCurrentCollector_j_bcsource(cells) = PositiveCurrentCollector_j_bcsource(cells) + tPositiveCurrentCollector.*(bcval - PositiveCurrentCollector_phi(cells));
     
-    state.ne.jBcSource   =  ne_j_bcsource;
-    state.pe.jBcSource   =  pe_j_bcsource;
-    state.ccne.jBcSource =  ccne_j_bcsource;
-    state.ccpe.jBcSource =  ccpe_j_bcsource;
+    state.NegativeElectrode.jBcSource   =  NegativeElectrode_j_bcsource;
+    state.PositiveElectrode.jBcSource   =  PositiveElectrode_j_bcsource;
+    state.NegativeCurrentCollector.jBcSource =  NegativeCurrentCollector_j_bcsource;
+    state.PositiveCurrentCollector.jBcSource =  PositiveCurrentCollector_j_bcsource;
     
 end
