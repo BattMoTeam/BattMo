@@ -57,7 +57,7 @@ classdef NMC111 < ComponentModel
             model = model@ComponentModel(name);
                 
             % primary variables
-            model.pnames = {'phi', 'Li'};
+            model.pnames = {'phi', 'Li', 'T'};
 
             % state variables
             names = {'phi', ...    % Potential
@@ -81,19 +81,19 @@ classdef NMC111 < ComponentModel
             
             
             % Define material constants
-            model.specificCapacity    = 155;      % [Ah kg^-1]
-            model.rho      = 4650;     % [kg m^-3]
-            model.theta0   = 0.99174;  % at 0% SOC [-]
-            model.theta100 = 0.49550;  % at 100% SOC [-]
-            model.Li.cmax  = 51554;    % [mol m^-3]
-            model.Li.D0    = 1e-14;    % [m^2 s^-1]
-            model.Li.EaD   = 5000;     % [J mol^-1]
+            model.specificCapacity          = 155;      % [Ah kg^-1]
+            model.rho                       = 4650;     % [kg m^-3]
+            model.theta0                    = 0.99174;  % at 0% SOC [-]
+            model.theta100                  = 0.49550;  % at 100% SOC [-]
+            model.Li.cmax                   = 51554;    % [mol m^-3]
+            model.Li.D0                     = 1e-14;    % [m^2 s^-1]
+            model.Li.EaD                    = 5000;     % [J mol^-1]
             model.electronicConductivity    = 100;      % [S m^-1]
-            model.cp       = 700;      % [J kg^-1 K^-1]
-            model.k0       = 2.334e-11;% [m^2.5 mol^-0.5 s^-1]
-            model.Eak      = 5000;     % [J mol^-1]
-            model.volumetricSurfaceArea      = 885000;   % [m2 m^-3]
-            model.volumeFraction      = 0.8;  
+            model.cp                        = 700;      % [J kg^-1 K^-1]
+            model.k0                        = 2.334e-11;% [m^2.5 mol^-0.5 s^-1]
+            model.Eak                       = 5000;     % [J mol^-1]
+            model.volumetricSurfaceArea     = 885000;   % [m2 m^-3]
+            model.volumeFraction            = 0.8;  
             
         end
         
