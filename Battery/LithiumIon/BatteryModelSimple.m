@@ -166,9 +166,9 @@ classdef BatteryModelSimple < PhysicalModel
             coupterm = model.getCoupTerm('bc-PositiveCurrentCollector');
             faces = coupterm.couplingfaces;
             bcval = state.PositiveCurrentCollector.E;
-            pcc_eec = model.PositiveCurrentCollector.effectiveElectronicConductivity;
-            [tpcc, cells] = model.PositiveCurrentCollector.operators.harmFaceBC(ppc_eec, faces);
-            control = src - sum(tppc.*(bcval - state.PositiveCurrentCollector.phi(cells)));
+            cond_pcc = model.PositiveCurrentCollector.effectiveElectronicConductivity;
+            [trans_pcc, cells] = model.PositiveCurrentCollector.operators.harmFaceBC(cond_pcc, faces);
+            control = src - sum(trans_pcc.*(bcval - state.PositiveCurrentCollector.phi(cells)));
             
             eqs{end+1} = -control;
             
@@ -198,8 +198,8 @@ classdef BatteryModelSimple < PhysicalModel
         % elyte : Electrolyte
         % ne    : NegativeElectrode
         % pe    : PositiveElectrode
+        % ncc   : NegativeCurrentCollector
         % pcc   : PositiveCurrentCollector
-        % ncc   : PositiveCurrentCollector
             
             T = state.T;
             SOC = state.SOC;
@@ -280,10 +280,10 @@ classdef BatteryModelSimple < PhysicalModel
             elyte_cells = zeros(model.G.cells.num, 1);
             elyte_cells(elyte.G.mappings.cellmap) = (1 : elyte.G.cells.num)';
 
-            Electrolyte.volumeFraction = NaN(elyte.G.cells.num, 1);
-            Electrolyte.volumeFraction(elyte_cells(ne.G.mappings.cellmap))  = ne.porosity;
-            Electrolyte.volumeFraction(elyte_cells(pe.G.mappings.cellmap))  = pe.porosity;
-            Electrolyte.volumeFraction(elyte_cells(sep.G.mappings.cellmap)) = sep.porosity;
+            elyte.volumeFraction = NaN(elyte.G.cells.num, 1);
+            elyte.volumeFraction(elyte_cells(ne.G.mappings.cellmap))  = ne.porosity;
+            elyte.volumeFraction(elyte_cells(pe.G.mappings.cellmap))  = pe.porosity;
+            elyte.volumeFraction(elyte_cells(sep.G.mappings.cellmap)) = sep.porosity;
 
             model.Electrolyte = elyte;
 
@@ -296,8 +296,8 @@ classdef BatteryModelSimple < PhysicalModel
         % elyte : Electrolyte
         % ne    : NegativeElectrode
         % pe    : PositiveElectrode
+        % ncc   : NegativeCurrentCollector
         % pcc   : PositiveCurrentCollector
-        % ncc   : PositiveCurrentCollector
             
             nc = model.G.cells.num;
 
@@ -314,7 +314,6 @@ classdef BatteryModelSimple < PhysicalModel
             pe    = model.PositiveElectrode;
             ncc   = model.NegativeCurrentCollector;
             pcc   = model.PositiveCurrentCollector;
-
             ne_am = ne.ActiveMaterial;
             pe_am = pe.ActiveMaterial;
 
@@ -356,11 +355,11 @@ classdef BatteryModelSimple < PhysicalModel
             %% setup initial Current collectors state
             
             OCP = initstate.NegativeElectrode.ActiveMaterial.OCP;
-            OCP = OCP(1) .* ones(ne.G.cells.num, 1);
+            OCP = OCP(1) .* ones(ncc.G.cells.num, 1);
             initstate.NegativeCurrentCollector.phi = OCP;
 
             OCP = initstate.PositiveElectrode.ActiveMaterial.OCP;
-            OCP = OCP(1) .* ones(pe.G.cells.num, 1);
+            OCP = OCP(1) .* ones(pcc.G.cells.num, 1);
             initstate.PositiveCurrentCollector.phi = OCP;
             
             initstate.PositiveCurrentCollector.E = OCP(1);

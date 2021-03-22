@@ -12,16 +12,22 @@ classdef BatteryInputParams2D < BatteryInputParams
         end
 
         function params = setupSubModels(params)
+        % Abbreviations used in this function:
+        % elyte : Electrolyte
+        % ne    : NegativeElectrode
+        % pe    : PositiveElectrode
+        % ncc   : NegaticeCurrentCollector
+        % pcc   : PositiveCurrentCollector
             
             fac = 1;
             
             sepnx  = 30*fac;
-            NegativeElectrodenx   = 30*fac;
-            PositiveElectrodenx   = 30*fac;
-            NegativeCurrentCollectornx = 20*fac;
-            PositiveCurrentCollectornx = 20*fac;
+            ne_nx  = 30*fac;
+            pe_nx  = 30*fac;
+            ncc_nx = 20*fac;
+            pcc_nx = 20*fac;
 
-            nxs = [NegativeCurrentCollectornx; NegativeElectrodenx; sepnx; PositiveElectrodenx; PositiveCurrentCollectornx];
+            nxs = [ncc_nx; ne_nx; sepnx; pe_nx; pcc_nx];
             ny = 10*fac;
 
             xlength = 1e-6*[10; 100; 50; 80; 10];
@@ -42,33 +48,33 @@ classdef BatteryInputParams2D < BatteryInputParams
             %% setup Electrolyte
             nx = sum(nxs);
 
-            istart = NegativeCurrentCollectornx + 1;
-            ni = NegativeElectrodenx + sepnx + PositiveElectrodenx;
+            istart = ncc_nx + 1;
+            ni = ne_nx + sepnx + pe_nx;
             cells = pickTensorCells(istart, ni, nx, ny);
             params.Electrolyte = orgLiPF6('Electrolyte', G, cells);
 
             %% setup NegativeElectrode
-            istart = NegativeCurrentCollectornx + 1;
-            cells = pickTensorCells(istart, NegativeElectrodenx, nx, ny);
+            istart = ncc_nx + 1;
+            cells = pickTensorCells(istart, ne_nx, nx, ny);
             params.NegativeElectrode = GraphiteElectrode('NegativeElectrode', G, cells);
 
             %% setup PositiveElectrode
-            istart = NegativeCurrentCollectornx + NegativeElectrodenx + sepnx + 1;
-            cells = pickTensorCells(istart, PositiveElectrodenx, nx, ny);
+            istart = ncc_nx + ne_nx + sepnx + 1;
+            cells = pickTensorCells(istart, pe_nx, nx, ny);
             params.PositiveElectrode = NMC111Electrode('PositiveElectrode', G, cells);
 
             %% setup NegativeCurrentCollector
             istart = 1;
-            cells = pickTensorCells(istart, NegativeCurrentCollectornx, nx, ny);
+            cells = pickTensorCells(istart, ncc_nx, nx, ny);
             params.NegativeCurrentCollector = CurrentCollector('NegativeCurrentCollector', G, cells);
 
             %% setup PositiveCurrentCollector
-            istart = NegativeCurrentCollectornx + NegativeElectrodenx + sepnx + PositiveElectrodenx + 1;
-            cells = pickTensorCells(istart, PositiveCurrentCollectornx, nx, ny);
+            istart = ncc_nx + ne_nx + sepnx + pe_nx + 1;
+            cells = pickTensorCells(istart, pcc_nx, nx, ny);
             params.PositiveCurrentCollector = CurrentCollector('PositiveCurrentCollector', G, cells);
 
             %% setup sep
-            istart = NegativeCurrentCollectornx + NegativeElectrodenx + 1;
+            istart = ncc_nx + ne_nx + 1;
             cells = pickTensorCells(istart, sepnx, nx, ny);
             params.sep = celgard2500('sep', G, cells);
         
@@ -93,64 +99,69 @@ classdef BatteryInputParams2D < BatteryInputParams
         end
 
         function coupTerm = setupNegativeCurrentCollectorNegativeElectrodeCoupTerm(params)
-
-            NegativeElectrode = params.NegativeElectrode;
-            NegativeCurrentCollector = params.NegativeCurrentCollector;
-
-            GNegativeElectrode = NegativeElectrode.G;
-            GNegativeCurrentCollector = NegativeCurrentCollector.G;
-
-            G = GNegativeElectrode.mappings.parentGrid;
-
-            NegativeElectrodetbls = setupSimpleTables(GNegativeElectrode);
-            NegativeCurrentCollectortbls = setupSimpleTables(GNegativeCurrentCollector);
-            tbls = setupSimpleTables(G);            
+        % Abbreviations used in this function:
+        % ne    : NegativeElectrode
+        % ncc   : NegativeCurrentCollector
             
-            NegativeElectrodecelltbl = NegativeElectrodetbls.celltbl;
-            NegativeElectrodecelltbl = NegativeElectrodecelltbl.addInd('globcells', GNegativeElectrode.mappings.cellmap);
-            NegativeElectrodefacetbl = NegativeElectrodetbls.facetbl;
-            NegativeElectrodefacetbl = NegativeElectrodefacetbl.addInd('globfaces', GNegativeElectrode.mappings.facemap);
+            ne = params.NegativeElectrode;
+            ncc = params.NegativeCurrentCollector;
 
-            NegativeElectrodecellfacetbl = NegativeElectrodetbls.cellfacetbl;
-            NegativeElectrodecellfacetbl = crossIndexArray(NegativeElectrodecellfacetbl, NegativeElectrodecelltbl, {'cells'});
-            NegativeElectrodecellfacetbl = crossIndexArray(NegativeElectrodecellfacetbl, NegativeElectrodefacetbl, {'faces'});
+            G_ne = ne.G;
+            G_ncc = ncc.G;
             
-            NegativeCurrentCollectorcelltbl = NegativeCurrentCollectortbls.celltbl;
-            NegativeCurrentCollectorcelltbl = NegativeCurrentCollectorcelltbl.addInd('globcells', GNegativeCurrentCollector.mappings.cellmap);
-            NegativeCurrentCollectorfacetbl = NegativeCurrentCollectortbls.facetbl;
-            NegativeCurrentCollectorfacetbl = NegativeCurrentCollectorfacetbl.addInd('globfaces', GNegativeCurrentCollector.mappings.facemap);
+            G = G_ne.mappings.parentGrid;
+
+            tbls_ne  = setupSimpleTables(G_ne);
+            tbls_ncc = setupSimpleTables(G_ncc);
+            tbls     = setupSimpleTables(G);
             
-            NegativeCurrentCollectorcellfacetbl = NegativeCurrentCollectortbls.cellfacetbl;
-            NegativeCurrentCollectorcellfacetbl = crossIndexArray(NegativeCurrentCollectorcellfacetbl, NegativeCurrentCollectorcelltbl, {'cells'});
-            NegativeCurrentCollectorcellfacetbl = crossIndexArray(NegativeCurrentCollectorcellfacetbl, NegativeCurrentCollectorfacetbl, {'faces'});
+            celltbl_ne = tbls_ne.celltbl;
+            celltbl_ne = celltbl_ne.addInd('globcells', G_ne.mappings.cellmap);
+            facetbl_ne = tbls_ne.facetbl;
+            facetbl_ne = facetbl_ne.addInd('globfaces', G_ne.mappings.facemap);
+
+            cellfacetbl_ne = tbls_ne.cellfacetbl;
+            cellfacetbl_ne = crossIndexArray(cellfacetbl_ne, celltbl_ne, {'cells'});
+            cellfacetbl_ne = crossIndexArray(cellfacetbl_ne, facetbl_ne, {'faces'});
+            
+            celltbl_ncc = tbls_ncc.celltbl;
+            celltbl_ncc = celltbl_ncc.addInd('globcells', G_ncc.mappings.cellmap);
+            facetbl_ncc = tbls_ncc.facetbl;
+            facetbl_ncc = facetbl_ncc.addInd('globfaces', G_ncc.mappings.facemap);
+            
+            cellfacetbl_ncc = tbls_ncc.cellfacetbl;
+            cellfacetbl_ncc = crossIndexArray(cellfacetbl_ncc, celltbl_ncc, {'cells'});
+            cellfacetbl_ncc = crossIndexArray(cellfacetbl_ncc, facetbl_ncc, {'faces'});
             
             gen = CrossIndexArrayGenerator();
-            gen.tbl1 = NegativeElectrodecellfacetbl;
-            gen.tbl2 = NegativeCurrentCollectorcellfacetbl;
-            gen.replacefds1 = {{'cells', 'NegativeElectrodecells'}, {'faces', 'NegativeElectrodefaces'}, {'globcells', 'NegativeElectrodeglobcells'}};
-            gen.replacefds2 = {{'cells', 'NegativeCurrentCollectorcells'}, {'faces', 'NegativeCurrentCollectorfaces'}, {'globcells', 'NegativeCurrentCollectorglobcells'}};
+            gen.tbl1 = cellfacetbl_ne;
+            gen.tbl2 = cellfacetbl_ncc;
+            gen.replacefds1 = {{'cells', 'cells_ne'}, {'faces', 'faces_ne'}};
+            gen.replacefds2 = {{'cells', 'cells_ncc'}, {'faces', 'faces_ncc'}};
             gen.mergefds = {'globfaces'};
             
             cell12facetbl = gen.eval();
 
-            NegativeCurrentCollectorfaces = cell12facetbl.get('NegativeCurrentCollectorfaces');
-            NegativeElectrodefaces = cell12facetbl.get('NegativeElectrodefaces');
-            NegativeCurrentCollectorcells = cell12facetbl.get('NegativeCurrentCollectorcells');
-            NegativeElectrodecells = cell12facetbl.get('NegativeElectrodecells');            
+            faces_ncc = cell12facetbl.get('faces_ncc');
+            faces_ne  = cell12facetbl.get('faces_ne');
+            cells_ncc = cell12facetbl.get('cells_ncc');
+            cells_ne  = cell12facetbl.get('cells_ne');
             
             compnames = {'NegativeCurrentCollector', 'NegativeElectrode'};
             coupTerm = couplingTerm('NegativeCurrentCollector-NegativeElectrode', compnames);
-            coupTerm.couplingfaces =  [NegativeCurrentCollectorfaces, NegativeElectrodefaces];
-            coupTerm.couplingcells = [NegativeCurrentCollectorcells, NegativeElectrodecells];
+            coupTerm.couplingfaces =  [faces_ncc, faces_ne];
+            coupTerm.couplingcells = [cells_ncc, cells_ne];
 
         end
         
         function coupTerm = setupPositiveCurrentCollectorBcCoupTerm(params)
+        % Abbreviations used in this function:
+        % pcc   : PositiveCurrentCollector
+            
+            pcc = params.PositiveCurrentCollector;
+            G = pcc.G;
 
-            PositiveCurrentCollector = params.PositiveCurrentCollector;
-            G = PositiveCurrentCollector.G;
-
-            % We pick up the faces at the top of CPositiveCurrentCollector
+            % We pick up the faces at the top of PositiveCurrentCollector
             yf = G.faces.centroids(:, 2);
             myf = max(yf);
             faces = find(abs(yf - myf) < eps*1000);
@@ -164,75 +175,81 @@ classdef BatteryInputParams2D < BatteryInputParams
         end
 
         function coupTerm = setupPositiveCurrentCollectorPositiveElectrodeCoupTerm(params)
-
-            PositiveElectrode = params.PositiveElectrode;
-            PositiveCurrentCollector = params.PositiveCurrentCollector;
-
-            GPositiveElectrode = PositiveElectrode.G;
-            GPositiveCurrentCollector = PositiveCurrentCollector.G;
-
-            G = GPositiveElectrode.mappings.parentGrid;
-
-            PositiveElectrodetbls = setupSimpleTables(GPositiveElectrode);
-            PositiveCurrentCollectortbls = setupSimpleTables(GPositiveCurrentCollector);
-            tbls = setupSimpleTables(G);            
+        % Abbreviations used in this function:
+        % pe    : NegativeElectrode
+        % pcc   : NegativeCurrentCollector
             
-            PositiveElectrodecelltbl = PositiveElectrodetbls.celltbl;
-            PositiveElectrodecelltbl = PositiveElectrodecelltbl.addInd('globcells', GPositiveElectrode.mappings.cellmap);
-            PositiveElectrodefacetbl = PositiveElectrodetbls.facetbl;
-            PositiveElectrodefacetbl = PositiveElectrodefacetbl.addInd('globfaces', GPositiveElectrode.mappings.facemap);
+            pe = params.PositiveElectrode;
+            pcc = params.PositiveCurrentCollector;
 
-            PositiveElectrodecellfacetbl = PositiveElectrodetbls.cellfacetbl;
-            PositiveElectrodecellfacetbl = crossIndexArray(PositiveElectrodecellfacetbl, PositiveElectrodecelltbl, {'cells'});
-            PositiveElectrodecellfacetbl = crossIndexArray(PositiveElectrodecellfacetbl, PositiveElectrodefacetbl, {'faces'});
+            G_pe = pe.G;
+            G_pcc = pcc.G;
+
+            G = G_pe.mappings.parentGrid;
+
+            tbls_pe  = setupSimpleTables(G_pe);
+            tbls_pcc = setupSimpleTables(G_pcc);
+            tbls     = setupSimpleTables(G);            
             
-            PositiveCurrentCollectorcelltbl = PositiveCurrentCollectortbls.celltbl;
-            PositiveCurrentCollectorcelltbl = PositiveCurrentCollectorcelltbl.addInd('globcells', GPositiveCurrentCollector.mappings.cellmap);
-            PositiveCurrentCollectorfacetbl = PositiveCurrentCollectortbls.facetbl;
-            PositiveCurrentCollectorfacetbl = PositiveCurrentCollectorfacetbl.addInd('globfaces', GPositiveCurrentCollector.mappings.facemap);
+            celltbl_pe = tbls_pe.celltbl;
+            celltbl_pe = celltbl_pe.addInd('globcells', G_pe.mappings.cellmap);
+            facetbl_pe = tbls_pe.facetbl;
+            facetbl_pe = facetbl_pe.addInd('globfaces', G_pe.mappings.facemap);
+
+            cellfacetbl_pe = tbls_pe.cellfacetbl;
+            cellfacetbl_pe = crossIndexArray(cellfacetbl_pe, celltbl_pe, {'cells'});
+            cellfacetbl_pe = crossIndexArray(cellfacetbl_pe, facetbl_pe, {'faces'});
             
-            PositiveCurrentCollectorcellfacetbl = PositiveCurrentCollectortbls.cellfacetbl;
-            PositiveCurrentCollectorcellfacetbl = crossIndexArray(PositiveCurrentCollectorcellfacetbl, PositiveCurrentCollectorcelltbl, {'cells'});
-            PositiveCurrentCollectorcellfacetbl = crossIndexArray(PositiveCurrentCollectorcellfacetbl, PositiveCurrentCollectorfacetbl, {'faces'});
+            celltbl_pcc = tbls_pcc.celltbl;
+            celltbl_pcc = celltbl_pcc.addInd('globcells', G_pcc.mappings.cellmap);
+            facetbl_pcc = tbls_pcc.facetbl;
+            facetbl_pcc = facetbl_pcc.addInd('globfaces', G_pcc.mappings.facemap);
+            
+            cellfacetbl_pcc = tbls_pcc.cellfacetbl;
+            cellfacetbl_pcc = crossIndexArray(cellfacetbl_pcc, celltbl_pcc, {'cells'});
+            cellfacetbl_pcc = crossIndexArray(cellfacetbl_pcc, facetbl_pcc, {'faces'});
             
             gen = CrossIndexArrayGenerator();
-            gen.tbl1 = PositiveElectrodecellfacetbl;
-            gen.tbl2 = PositiveCurrentCollectorcellfacetbl;
-            gen.replacefds1 = {{'cells', 'PositiveElectrodecells'}, {'faces', 'PositiveElectrodefaces'}, {'globcells', 'PositiveElectrodeglobcells'}};
-            gen.replacefds2 = {{'cells', 'PositiveCurrentCollectorcells'}, {'faces', 'PositiveCurrentCollectorfaces'}, {'globcells', 'PositiveCurrentCollectorglobcells'}};
+            gen.tbl1 = cellfacetbl_pe;
+            gen.tbl2 = cellfacetbl_pcc;
+            gen.replacefds1 = {{'cells', 'cells_pe'}, {'faces', 'faces_pe'}};
+            gen.replacefds2 = {{'cells', 'cells_pcc'}, {'faces', 'faces_pcc'}};
             gen.mergefds = {'globfaces'};
             
             cell12facetbl = gen.eval();
 
-            PositiveCurrentCollectorfaces = cell12facetbl.get('PositiveCurrentCollectorfaces');
-            PositiveElectrodefaces = cell12facetbl.get('PositiveElectrodefaces');
-            PositiveCurrentCollectorcells = cell12facetbl.get('PositiveCurrentCollectorcells');
-            PositiveElectrodecells = cell12facetbl.get('PositiveElectrodecells');            
+            faces_pcc = cell12facetbl.get('faces_pcc');
+            faces_pe  = cell12facetbl.get('faces_pe');
+            cells_pcc = cell12facetbl.get('cells_pcc');
+            cells_pe  = cell12facetbl.get('cells_pe');
             
             compnames = {'PositiveCurrentCollector', 'PositiveElectrode'};
             coupTerm = couplingTerm('PositiveCurrentCollector-PositiveElectrode', compnames);
-            coupTerm.couplingfaces =  [PositiveCurrentCollectorfaces, PositiveElectrodefaces];
-            coupTerm.couplingcells = [PositiveCurrentCollectorcells, PositiveElectrodecells];
+            coupTerm.couplingfaces =  [faces_pcc, faces_pe];
+            coupTerm.couplingcells = [cells_pcc, cells_pe];
             
         end
 
         function coupTerm = setupNegativeElectrodeElectrolyteCoupTerm(params)
+        % Abbreviations used in this function:
+        % elyte : Electrolyte
+        % ne    : NegativeElectrode
+
+            ne = params.NegativeElectrode;
+            elyte = params.Electrolyte;
             
-            NegativeElectrode = params.NegativeElectrode;
-            Electrolyte = params.Electrolyte;
-            
-            GNegativeElectrode = NegativeElectrode.G;
-            GElectrolyte = Electrolyte.G;
+            G_ne = ne.G;
+            G_elyte = elyte.G;
             
             % parent Grid
-            G = GNegativeElectrode.mappings.parentGrid;
+            G = G_ne.mappings.parentGrid;
             
             % All the cells from NegativeElectrode are coupled with Electrolyte
-            cells1 = (1 : GNegativeElectrode.cells.num)';
-            pcells = GNegativeElectrode.mappings.cellmap(cells1);
+            cells1 = (1 : G_ne.cells.num)';
+            pcells = G_ne.mappings.cellmap(cells1);
             
             mapping = zeros(G.cells.num, 1);
-            mapping(GElectrolyte.mappings.cellmap) = (1 : GElectrolyte.cells.num)';
+            mapping(G_elyte.mappings.cellmap) = (1 : G_elyte.cells.num)';
             cells2 = mapping(pcells);
             
             compnames = {'NegativeElectrode', 'Electrolyte'};
@@ -243,22 +260,25 @@ classdef BatteryInputParams2D < BatteryInputParams
         end
         
         function coupTerm = setupPositiveElectrodeElectrolyteCoupTerm(params)
+        % Abbreviations used in this function:
+        % elyte : Electrolyte
+        % pe    : NegativeElectrode
             
-            PositiveElectrode = params.PositiveElectrode;
-            Electrolyte = params.Electrolyte;
+            pe = params.PositiveElectrode;
+            elyte = params.Electrolyte;
             
-            GPositiveElectrode = PositiveElectrode.G;
-            GElectrolyte = Electrolyte.G;
+            G_pe = pe.G;
+            G_elyte = elyte.G;
             
             % parent Grid
-            G = GPositiveElectrode.mappings.parentGrid;
+            G = G_pe.mappings.parentGrid;
             
             % All the cells from PositiveElectrode are coupled with Electrolyte
-            cells1 = (1 : GPositiveElectrode.cells.num)';
-            pcells = GPositiveElectrode.mappings.cellmap(cells1);
+            cells1 = (1 : G_pe.cells.num)';
+            pcells = G_pe.mappings.cellmap(cells1);
             
             mapping = zeros(G.cells.num, 1);
-            mapping(GElectrolyte.mappings.cellmap) = (1 : GElectrolyte.cells.num)';
+            mapping(G_elyte.mappings.cellmap) = (1 : G_elyte.cells.num)';
             cells2 = mapping(pcells);
             
             compnames = {'PositiveElectrode', 'Electrolyte'};
