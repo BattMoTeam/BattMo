@@ -317,7 +317,7 @@ classdef BatteryModelSimple < PhysicalModel
             b = -m .* PositiveElectrode_am.theta0;
             theta = (SOC - b) ./ m;
             c = theta .* PositiveElectrode_am.Li.cmax;
-            c = c*ones(NegativeElectrode.G.cells.num, 1);
+            c = c*ones(PositiveElectrode.G.cells.num, 1);
 
             initstate.PositiveElectrode.ActiveMaterial.Li = c;
             initstate.PositiveElectrode.ActiveMaterial = PositiveElectrode_am.updateQuantities(initstate.PositiveElectrode.ActiveMaterial);
