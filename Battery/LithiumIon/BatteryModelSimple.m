@@ -43,12 +43,12 @@ classdef BatteryModelSimple < PhysicalModel
 
             model.G = params.G;
 
-            model.Electrolyte = params.Electrolyte;
-            model.NegativeElectrode    = params.NegativeElectrode;
-            model.PositiveElectrode    = params.PositiveElectrode;
-            model.PositiveCurrentCollector  = params.PositiveCurrentCollector;
-            model.NegativeCurrentCollector  = params.NegativeCurrentCollector;
-            model.sep   = params.sep;
+            model.Electrolyte              = params.Electrolyte;
+            model.NegativeElectrode        = params.NegativeElectrode;
+            model.PositiveElectrode        = params.PositiveElectrode;
+            model.PositiveCurrentCollector = params.PositiveCurrentCollector;
+            model.NegativeCurrentCollector = params.NegativeCurrentCollector;
+            model.sep                      = params.sep;
             
             model = model.setElectrolytePorosity();
             
@@ -67,8 +67,8 @@ classdef BatteryModelSimple < PhysicalModel
         
         function [problem, state] = getEquations(model, state0, state,dt, drivingForces, varargin)
             
-            time = state0.time+dt;
-            state=model.initStateAD(state);
+            time = state0.time + dt;
+            state = model.initStateAD(state);
             
             %% for now temperature and SOC are kept constant
             nc = model.G.cells.num;
@@ -121,12 +121,12 @@ classdef BatteryModelSimple < PhysicalModel
             %% Mass and charge conservation for the electorlyte and the electrode
             
             % Accumulation terms for the mass conservation equtions
-            cdotLi=struct();
+            cdotLi = struct();
             cdotLi.Electrolyte = (state.Electrolyte.cs{1} - state0.Electrolyte.cs{1})/dt;
-            cdotLi.NegativeElectrode    = (state.NegativeElectrode.ActiveMaterial.Li - state0.NegativeElectrode.ActiveMaterial.Li)/dt;
-            cdotLi.PositiveElectrode    = (state.PositiveElectrode.ActiveMaterial.Li - state0.PositiveElectrode.ActiveMaterial.Li)/dt;
+            cdotLi.NegativeElectrode = (state.NegativeElectrode.ActiveMaterial.Li - state0.NegativeElectrode.ActiveMaterial.Li)/dt;
+            cdotLi.PositiveElectrode = (state.PositiveElectrode.ActiveMaterial.Li - state0.PositiveElectrode.ActiveMaterial.Li)/dt;
             
-            names={'Electrolyte','NegativeElectrode','PositiveElectrode'};
+            names = {'Electrolyte','NegativeElectrode','PositiveElectrode'};
             eqs={};
             
             for i = 1 : numel(names)
@@ -166,9 +166,9 @@ classdef BatteryModelSimple < PhysicalModel
             coupterm = model.getCoupTerm('bc-PositiveCurrentCollector');
             faces = coupterm.couplingfaces;
             bcval = state.PositiveCurrentCollector.E;
-            PositiveCurrentCollector_effectiveElectronicConductivity = model.PositiveCurrentCollector.effectiveElectronicConductivity;
-            [tPositiveCurrentCollector, cells] = model.PositiveCurrentCollector.operators.harmFaceBC(PositiveCurrentCollector_effectiveElectronicConductivity, faces);
-            control = src - sum(tPositiveCurrentCollector.*(bcval - state.PositiveCurrentCollector.phi(cells)));
+            pcc_eec = model.PositiveCurrentCollector.effectiveElectronicConductivity;
+            [tpcc, cells] = model.PositiveCurrentCollector.operators.harmFaceBC(ppc_eec, faces);
+            control = src - sum(tppc.*(bcval - state.PositiveCurrentCollector.phi(cells)));
             
             eqs{end+1} = -control;
             
@@ -194,90 +194,111 @@ classdef BatteryModelSimple < PhysicalModel
         end
         
         function state = dispatchValues(model, state)
-
+        % Abbreviations used in this function:
+        % elyte : Electrolyte
+        % ne    : NegativeElectrode
+        % pe    : PositiveElectrode
+        % pcc   : PositiveCurrentCollector
+        % ncc   : PositiveCurrentCollector
+            
             T = state.T;
             SOC = state.SOC;
 
-            Electrolyte = model.Electrolyte;
-            G = Electrolyte.G;
-            TElectrolyte = T(G.mappings.cellmap);
+            elyte = model.Electrolyte;
+            G = elyte.G;
+            T_elyte = T(G.mappings.cellmap);
 
-            NegativeElectrode = model.NegativeElectrode;
-            G = NegativeElectrode.G;
-            TNegativeElectrode = T(G.mappings.cellmap);
-            SOCNegativeElectrode = SOC(G.mappings.cellmap);
+            ne = model.NegativeElectrode;
+            G = ne.G;
+            T_ne = T(G.mappings.cellmap);
+            SOC_ne = SOC(G.mappings.cellmap);
             
-            PositiveElectrode = model.PositiveElectrode;
-            G = PositiveElectrode.G;
-            TPositiveElectrode = T(G.mappings.cellmap);
-            SOCPositiveElectrode = SOC(G.mappings.cellmap);
+            pe = model.PositiveElectrode;
+            G = pe.G;
+            T_pe = T(G.mappings.cellmap);
+            SOC_pe = SOC(G.mappings.cellmap);
             
-            PositiveCurrentCollector = model.PositiveCurrentCollector;
-            G = PositiveCurrentCollector.G;
-            TPositiveCurrentCollector = T(G.mappings.cellmap);
+            pcc = model.PositiveCurrentCollector;
+            G = pcc.G;
+            T_pcc = T(G.mappings.cellmap);
 
-            NegativeCurrentCollector = model.NegativeCurrentCollector;
-            G = NegativeCurrentCollector.G;
-            TNegativeCurrentCollector = T(G.mappings.cellmap);
+            ncc = model.NegativeCurrentCollector;
+            G = ncc.G;
+            T_ncc = T(G.mappings.cellmap);
 
-            state.Electrolyte.T = TElectrolyte;
-            state.NegativeElectrode.T    = TNegativeElectrode;
-            state.NegativeElectrode.ActiveMaterial.T = TNegativeElectrode;
-            state.PositiveElectrode.T    = TPositiveElectrode;
-            state.PositiveElectrode.ActiveMaterial.T = TPositiveElectrode;
-            state.PositiveCurrentCollector.T  = TPositiveCurrentCollector;
-            state.NegativeCurrentCollector.T  = TNegativeCurrentCollector;
+            state.Electrolyte.T                      = T_elyte;
+            state.NegativeElectrode.T                = T_ne;
+            state.NegativeElectrode.ActiveMaterial.T = T_ne;
+            state.PositiveElectrode.T                = T_pe;
+            state.PositiveElectrode.ActiveMaterial.T = T_pe;
+            state.PositiveCurrentCollector.T         = T_pcc;
+            state.NegativeCurrentCollector.T         = T_ncc;
             
-            state.NegativeElectrode.SOC    = SOCNegativeElectrode;
-            state.NegativeElectrode.ActiveMaterial.SOC = SOCNegativeElectrode;
-            state.PositiveElectrode.SOC    = SOCPositiveElectrode;
-            state.PositiveElectrode.ActiveMaterial.SOC = SOCPositiveElectrode;
+            state.NegativeElectrode.SOC                = SOC_ne;
+            state.NegativeElectrode.ActiveMaterial.SOC = SOC_ne;
+            state.PositiveElectrode.SOC                = SOC_pe;
+            state.PositiveElectrode.ActiveMaterial.SOC = SOC_pe;
             
         end
 
         function state = updatePhiElectrolyte(model, state)
+        % Abbreviations used in this function 
+        % elyte : Electrolyte
+        % ne    : NegativeElectrode
+        % pe    : PositiveElectrode
+            
+            
+            phi_elyte = state.Electrolyte.phi;
+            elyte = model.Electrolyte;
 
-            phiElectrolyte = state.Electrolyte.phi;
-            Electrolyte = model.Electrolyte;
+            elyte_cells = zeros(model.G.cells.num, 1);
+            elyte_cells(elyte.G.mappings.cellmap) = (1 : elyte.G.cells.num)';
 
-            Electrolytecells = zeros(model.G.cells.num, 1);
-            Electrolytecells(Electrolyte.G.mappings.cellmap) = (1 : Electrolyte.G.cells.num)';
+            ne = model.NegativeElectrode;
+            phi_elyte_ne = phi_elyte(elyte_cells(ne.G.mappings.cellmap));
 
-            NegativeElectrode = model.NegativeElectrode;
-            phiElectrolyte_NegativeElectrode = phiElectrolyte(Electrolytecells(NegativeElectrode.G.mappings.cellmap));
+            pe = model.PositiveElectrode;
+            phi_elyte_pe = phi_elyte(elyte_cells(pe.G.mappings.cellmap));
 
-            PositiveElectrode = model.PositiveElectrode;
-            phiElectrolyte_PositiveElectrode = phiElectrolyte(Electrolytecells(PositiveElectrode.G.mappings.cellmap));
-
-            state.NegativeElectrode.phiElectrolyte = phiElectrolyte_NegativeElectrode;
-            state.PositiveElectrode.phiElectrolyte = phiElectrolyte_PositiveElectrode;
+            state.NegativeElectrode.phiElectrolyte = phi_elyte_ne;
+            state.PositiveElectrode.phiElectrolyte = phi_elyte_pe;
 
         end
 
         
         function model = setElectrolytePorosity(model)
-
-            Electrolyte = model.getSubmodel({'Electrolyte'});
-            NegativeElectrode = model.getSubmodel({'NegativeElectrode'});
-            PositiveElectrode = model.getSubmodel({'PositiveElectrode'});
+        % Abbreviations used in this function 
+        % elyte : Electrolyte
+        % ne    : NegativeElectrode
+        % pe    : PositiveElectrode
+            
+            elyte = model.getSubmodel({'Electrolyte'});
+            ne = model.getSubmodel({'NegativeElectrode'});
+            pe = model.getSubmodel({'PositiveElectrode'});
             sep = model.getSubmodel({'sep'});
 
-            Electrolytecells = zeros(model.G.cells.num, 1);
-            Electrolytecells(Electrolyte.G.mappings.cellmap) = (1 : Electrolyte.G.cells.num)';
+            elyte_cells = zeros(model.G.cells.num, 1);
+            elyte_cells(elyte.G.mappings.cellmap) = (1 : elyte.G.cells.num)';
 
-            Electrolyte.volumeFraction = NaN(Electrolyte.G.cells.num, 1);
-            Electrolyte.volumeFraction(Electrolytecells(NegativeElectrode.G.mappings.cellmap)) = NegativeElectrode.porosity;
-            Electrolyte.volumeFraction(Electrolytecells(PositiveElectrode.G.mappings.cellmap)) = PositiveElectrode.porosity;
-            Electrolyte.volumeFraction(Electrolytecells(sep.G.mappings.cellmap)) = sep.porosity;
+            Electrolyte.volumeFraction = NaN(elyte.G.cells.num, 1);
+            Electrolyte.volumeFraction(elyte_cells(ne.G.mappings.cellmap))  = ne.porosity;
+            Electrolyte.volumeFraction(elyte_cells(pe.G.mappings.cellmap))  = pe.porosity;
+            Electrolyte.volumeFraction(elyte_cells(sep.G.mappings.cellmap)) = sep.porosity;
 
-            model.Electrolyte =Electrolyte;
+            model.Electrolyte = elyte;
 
         end
         
         function initstate = setupInitialState(model)
+        % Setup initial state
+        %
+        % Abbreviations used in this function 
+        % elyte : Electrolyte
+        % ne    : NegativeElectrode
+        % pe    : PositiveElectrode
+        % pcc   : PositiveCurrentCollector
+        % ncc   : PositiveCurrentCollector
             
-            % Setup initial state
-
             nc = model.G.cells.num;
 
             SOC = model.SOC;
@@ -288,58 +309,58 @@ classdef BatteryModelSimple < PhysicalModel
 
             initstate = model.dispatchValues(initstate);
             
-            Electrolyte = model.Electrolyte;
-            NegativeElectrode    = model.NegativeElectrode;
-            PositiveElectrode    = model.PositiveElectrode;
-            NegativeCurrentCollector  = model.NegativeCurrentCollector;
-            PositiveCurrentCollector  = model.PositiveCurrentCollector;
+            elyte = model.Electrolyte;
+            ne    = model.NegativeElectrode;
+            pe    = model.PositiveElectrode;
+            ncc   = model.NegativeCurrentCollector;
+            pcc   = model.PositiveCurrentCollector;
 
-            NegativeElectrode_am = NegativeElectrode.ActiveMaterial;
-            PositiveElectrode_am = PositiveElectrode.ActiveMaterial;
+            ne_am = ne.ActiveMaterial;
+            pe_am = pe.ActiveMaterial;
 
             %% setup initial NegativeElectrode state
 
-            m = (1 ./ (NegativeElectrode_am.theta100 - NegativeElectrode_am.theta0));
-            b = -m .* NegativeElectrode_am.theta0;
+            m = (1 ./ (ne_am.theta100 - ne_am.theta0));
+            b = -m .* ne_am.theta0;
             theta = (SOC - b) ./ m;
-            c = theta .* NegativeElectrode_am.Li.cmax;
-            c = c*ones(NegativeElectrode.G.cells.num, 1);
+            c = theta .* ne_am.Li.cmax;
+            c = c*ones(ne.G.cells.num, 1);
 
             initstate.NegativeElectrode.ActiveMaterial.Li = c;
-            initstate.NegativeElectrode.ActiveMaterial = NegativeElectrode_am.updateQuantities(initstate.NegativeElectrode.ActiveMaterial);
+            initstate.NegativeElectrode.ActiveMaterial = ne_am.updateQuantities(initstate.NegativeElectrode.ActiveMaterial);
 
             OCP = initstate.NegativeElectrode.ActiveMaterial.OCP;
             initstate.NegativeElectrode.ActiveMaterial.phi = OCP;
 
             %% setup initial PositiveElectrode state
 
-            m = (1 ./ (PositiveElectrode_am.theta100 - PositiveElectrode_am.theta0));
-            b = -m .* PositiveElectrode_am.theta0;
+            m = (1 ./ (pe_am.theta100 - pe_am.theta0));
+            b = -m .* pe_am.theta0;
             theta = (SOC - b) ./ m;
-            c = theta .* PositiveElectrode_am.Li.cmax;
-            c = c*ones(PositiveElectrode.G.cells.num, 1);
+            c = theta .* pe_am.Li.cmax;
+            c = c*ones(pe.G.cells.num, 1);
 
             initstate.PositiveElectrode.ActiveMaterial.Li = c;
-            initstate.PositiveElectrode.ActiveMaterial = PositiveElectrode_am.updateQuantities(initstate.PositiveElectrode.ActiveMaterial);
+            initstate.PositiveElectrode.ActiveMaterial = pe_am.updateQuantities(initstate.PositiveElectrode.ActiveMaterial);
 
             OCP = initstate.PositiveElectrode.ActiveMaterial.OCP;
             initstate.PositiveElectrode.ActiveMaterial.phi = OCP;
 
             %% setup initial Electrolyte state
 
-            initstate.Electrolyte.phi = zeros(Electrolyte.G.cells.num, 1);
+            initstate.Electrolyte.phi = zeros(elyte.G.cells.num, 1);
             cs=cell(2,1);
-            initstate.Electrolyte.cs=cs;
-            initstate.Electrolyte.cs{1} = 1000*ones(Electrolyte.G.cells.num, 1);
+            initstate.Electrolyte.cs = cs;
+            initstate.Electrolyte.cs{1} = 1000*ones(elyte.G.cells.num, 1);
 
             %% setup initial Current collectors state
             
             OCP = initstate.NegativeElectrode.ActiveMaterial.OCP;
-            OCP = OCP(1) .* ones(NegativeCurrentCollector.G.cells.num, 1);
+            OCP = OCP(1) .* ones(ne.G.cells.num, 1);
             initstate.NegativeCurrentCollector.phi = OCP;
 
             OCP = initstate.PositiveElectrode.ActiveMaterial.OCP;
-            OCP = OCP(1) .* ones(PositiveCurrentCollector.G.cells.num, 1);
+            OCP = OCP(1) .* ones(pe.G.cells.num, 1);
             initstate.PositiveCurrentCollector.phi = OCP;
             
             initstate.PositiveCurrentCollector.E = OCP(1);
