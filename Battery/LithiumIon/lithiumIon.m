@@ -42,7 +42,7 @@ classdef lithiumIon < handle
         soe    % System of equations
         
         % Boundary condition properties
-        chargeCont  % Galvanostatic operation BC
+        chargeCons  % Galvanostatic operation BC
         
         % Preprocessing properties
         sim
@@ -582,20 +582,20 @@ classdef lithiumIon < handle
                                          - obj.elyte.sp.Li.cepsdot); 
            
             %% Liquid electrolyte charge continuity %%%%%%%%%%%%%%%%%%%%%%%
-            obj.elyte.chargeCont = -div(  obj.elyte.j, obj.elyte.Xb) ./ obj.con.F + obj.elyte.sp.Li.source .* obj.elyte.sp.Li.z; ...
+            obj.elyte.chargeCons = -div(  obj.elyte.j, obj.elyte.Xb) ./ obj.con.F + obj.elyte.sp.Li.source .* obj.elyte.sp.Li.z; ...
                                  
             %% Active material mass continuity %%%%%%%%%%%%%%%%%%%%%%%%%%%
             obj.ne.am.Li.massCont = (-obj.ne.am.Li.divDiff + obj.ne.am.Li.source - obj.ne.am.Li.csepsdot);
             obj.pe.am.Li.massCont = (-obj.pe.am.Li.divDiff + obj.pe.am.Li.source - obj.pe.am.Li.csepsdot);
                                        
             %% Active material charge continuity %%%%%%%%%%%%%%%%%%%%%%%%%%
-            obj.ne.am.e.chargeCont = div(obj.ne.j, obj.ne.Xb) ./ obj.con.F + obj.ne.am.e.source .* (-1);
-            obj.pe.am.e.chargeCont = div(obj.pe.j, obj.pe.Xb) ./ obj.con.F + obj.pe.am.e.source .* (-1);
+            obj.ne.am.e.chargeCons = div(obj.ne.j, obj.ne.Xb) ./ obj.con.F + obj.ne.am.e.source .* (-1);
+            obj.pe.am.e.chargeCons = div(obj.pe.j, obj.pe.Xb) ./ obj.con.F + obj.pe.am.e.source .* (-1);
             
             
             %% Current Collector's charge continuity %%%%%%%%%%%%%%%%%%%%%%%%%%
-            obj.ccne.am.e.chargeCont = div( obj.ccne.j, obj.ccne.Xb) ./ obj.con.F;
-            obj.ccpe.am.e.chargeCont = div( obj.ccpe.j, obj.ccpe.Xb) ./ obj.con.F;
+            obj.ccne.am.e.chargeCons = div( obj.ccne.j, obj.ccne.Xb) ./ obj.con.F;
+            obj.ccpe.am.e.chargeCons = div( obj.ccpe.j, obj.ccpe.Xb) ./ obj.con.F;
             
             %% control %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
             src = currentSource(t, fv.tUp, fv.tf, obj.J);
@@ -603,13 +603,13 @@ classdef lithiumIon < handle
             
             %% State vector %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%             
             obj.soe = vertcat(obj.elyte.sp.Li.massCont, ...
-                              obj.elyte.chargeCont    , ...
+                              obj.elyte.chargeCons    , ...
                               obj.ne.am.Li.massCont   , ...
-                              obj.ne.am.e.chargeCont  , ...
+                              obj.ne.am.e.chargeCons  , ...
                               obj.pe.am.Li.massCont   , ...
-                              obj.pe.am.e.chargeCont  , ...
-                              obj.ccne.am.e.chargeCont, ...
-                              obj.ccpe.am.e.chargeCont, ...
+                              obj.pe.am.e.chargeCons  , ...
+                              obj.ccne.am.e.chargeCons, ...
+                              obj.ccpe.am.e.chargeCons, ...
                               control);
 
         end

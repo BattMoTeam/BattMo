@@ -205,7 +205,7 @@ classdef BatteryModel15i < BatteryModelSimple
             elyte_Li_cepsdot = elyte.eps.*elyte_Li_cdot;
             elyte_Li_massCont = (-elyte_Li_div + elyte_Li_source - elyte_Li_cepsdot);
             
-            elyte_chargeCont = state.elyte.chargeCont;
+            elyte_chargeCons = state.elyte.chargeCons;
 
             %% Electrode Active material mass continuity and charge continuity %%%%%%%%%%%%%%%%%%%%%%%%%%%
 
@@ -215,7 +215,7 @@ classdef BatteryModel15i < BatteryModelSimple
             ne_Li_csepsdot = ne_am.eps.*ne_Li_csdot;
             ne_Li_massCont = (-ne_Li_divDiff + ne_Li_source - ne_Li_csepsdot);
 
-            ne_e_chargeCont = state.ne.chargeCont;
+            ne_e_chargeCons = state.ne.chargeCons;
 
             pe_Li_source = state.pe.LiSource;
             pe_Li_flux   = state.pe.LiFlux;
@@ -223,12 +223,12 @@ classdef BatteryModel15i < BatteryModelSimple
             pe_Li_divDiff = model.pe.operators.Div(pe_Li_flux)./model.pe.G.cells.volumes;
             pe_Li_massCont = (-pe_Li_divDiff + pe_Li_source - pe_Li_csepsdot);
 
-            pe_e_chargeCont =  state.pe.chargeCont;
+            pe_e_chargeCons =  state.pe.chargeCons;
 
             %% Collector charge continuity
 
-            ccne_e_chargeCont = state.ccne.chargeCont;
-            ccpe_e_chargeCont = state.ccpe.chargeCont;
+            ccne_e_chargeCons = state.ccne.chargeCons;
+            ccpe_e_chargeCons = state.ccpe.chargeCons;
 
             %% Control equation
 
@@ -243,13 +243,13 @@ classdef BatteryModel15i < BatteryModelSimple
             %% Governing equations
 
             soe = vertcat(elyte_Li_massCont, ...
-                          elyte_chargeCont , ...
+                          elyte_chargeCons , ...
                           ne_Li_massCont   , ...
-                          ne_e_chargeCont  , ...
+                          ne_e_chargeCons  , ...
                           pe_Li_massCont   , ...
-                          pe_e_chargeCont  , ...
-                          ccne_e_chargeCont, ...
-                          ccpe_e_chargeCont, ...
+                          pe_e_chargeCons  , ...
+                          ccne_e_chargeCons, ...
+                          ccpe_e_chargeCons, ...
                           control);
 
         end
