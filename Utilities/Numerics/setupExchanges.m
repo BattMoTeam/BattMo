@@ -79,13 +79,18 @@ function state = setupExchanges(model, state)
     % Active Material PE current source
     pe_e_source(pecells) = - pe_R;
 
+    % Current source for Electrolyte
+    ind_Li = 1; % index of Lithium in z structure
+    elyte_e_source = elyte_Li_source.*elyte.sp.z{ind_Li};
+    
     state.Electrolyte.LiSource = elyte_Li_source;
-    state.Electrolyte.eSource  = 0;
+    state.Electrolyte.eSource  = elyte_e_source;
     state.NegativeElectrode.LiSource = ne_Li_source;
     state.NegativeElectrode.eSource  = ne_e_source;
     state.PositiveElectrode.LiSource = pe_Li_source;
     state.PositiveElectrode.eSource  = pe_e_source;
 
+    % No (volumetric) current source for the current collectors
     state.NegativeCurrentCollector.eSource = 0;
     state.PositiveCurrentCollector.eSource = 0;
     
