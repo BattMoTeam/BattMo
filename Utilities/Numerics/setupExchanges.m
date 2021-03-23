@@ -1,30 +1,41 @@
 function state = setupExchanges(model, state)
     
 % We setup the exchange terms between the electrolyte and the electrodes for Li due to chemical reacions:
-% Electrolyte_Li_source, NegativeElectrode_Li_source, PositiveElectrode_Li_source.
+%   state.Electrolyte.LiSource 
+%   state.NegativeElectrode.LiSource 
+%   state.PositiveElectrode.LiSource 
 %
-% We setup also the electron production in the electrod: NegativeElectrode_e_source, PositiveElectrode_e_source.
+% We setup the corresponding electron exchange   
 %
-                
-    Electrolyte = model.Electrolyte;
-    NegativeElectrode    = model.NegativeElectrode;
-    PositiveElectrode    = model.PositiveElectrode;
+%   state.Electrolyte.eSource (equal to zero)
+%   state.NegativeElectrode.eSource  
+%   state.PositiveElectrode.eSource  
+%
+% We use the following standard abbreviation
+%
+% elyte : Electrolyte
+% ne    : NegativeElectrode
+% pe    : PositiveElectrode    
     
-    Electrolyte_Li_source = zeros(Electrolyte.G.cells.num, 1);
-    NegativeElectrode_Li_source    = zeros(NegativeElectrode.G.cells.num, 1);
-    PositiveElectrode_Li_source    = zeros(PositiveElectrode.G.cells.num, 1);
-    NegativeElectrode_e_source     = zeros(NegativeElectrode.G.cells.num, 1);
-    PositiveElectrode_e_source     = zeros(PositiveElectrode.G.cells.num, 1);
+    elyte       = model.Electrolyte;
+    ne = model.NegativeElectrode;
+    pe = model.PositiveElectrode;
+    
+    elyte_Li_source = zeros(elyte.G.cells.num, 1);
+    ne_Li_source    = zeros(ne.G.cells.num, 1);
+    pe_Li_source    = zeros(pe.G.cells.num, 1);
+    ne_e_source     = zeros(ne.G.cells.num, 1);
+    pe_e_source     = zeros(pe.G.cells.num, 1);
 
     phi = state.Electrolyte.phi;
     if isa(phi, 'ADI')
         adsample = getSampleAD(phi);
         adbackend = model.AutoDiffBackend;
-        Electrolyte_Li_source = adbackend.convertToAD(Electrolyte_Li_source, adsample);
-        NegativeElectrode_Li_source    = adbackend.convertToAD(NegativeElectrode_Li_source, adsample);
-        PositiveElectrode_Li_source    = adbackend.convertToAD(PositiveElectrode_Li_source, adsample);
-        NegativeElectrode_e_source     = adbackend.convertToAD(NegativeElectrode_e_source, adsample);
-        PositiveElectrode_e_source     = adbackend.convertToAD(PositiveElectrode_e_source, adsample);
+        elyte_Li_source = adbackend.convertToAD(elyte_Li_source, adsample);
+        ne_Li_source    = adbackend.convertToAD(ne_Li_source, adsample);
+        pe_Li_source    = adbackend.convertToAD(pe_Li_source, adsample);
+        ne_e_source     = adbackend.convertToAD(ne_e_source, adsample);
+        pe_e_source     = adbackend.convertToAD(pe_e_source, adsample);
     end
 
     %%%%% Set up chemical source terms %%%%%%%%%%%%%%%%%k
@@ -32,46 +43,47 @@ function state = setupExchanges(model, state)
     %%%%% NE  %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
     coupterm = model.getCoupTerm('NegativeElectrode-Electrolyte');
-    NegativeElectrodecells = coupterm.couplingcells(:, 1);
-    Electrolytecells = coupterm.couplingcells(:, 2);
+    necells = coupterm.couplingcells(:, 1);
+    elytecells = coupterm.couplingcells(:, 2);
 
     % We compute the reaction rate
-    state.NegativeElectrode = NegativeElectrode.updateReactionRate(state.NegativeElectrode);
-    NegativeElectrode_R = state.NegativeElectrode.R;
+    state.NegativeElectrode = ne.updateReactionRate(state.NegativeElectrode);
+    ne_R = state.NegativeElectrode.R;
 
-    % Electrolyte NE Li+ source
-    Electrolyte_Li_source(Electrolytecells) = NegativeElectrode_R;
+    % elyte NE Li+ source
+    elyte_Li_source(elytecells) = ne_R;
 
     % Active Material NE Li0 source
-    NegativeElectrode_Li_source(NegativeElectrodecells) = - NegativeElectrode_R;
+    ne_Li_source(necells) = - ne_R;
 
     % Active Material NE current source
-    NegativeElectrode_e_source(NegativeElectrodecells) = + NegativeElectrode_R;
+    ne_e_source(necells) = + ne_R;
 
     %%%%% PE %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-    % Electrolyte PE Li+ source
+    % elyte PE Li+ source
     coupterm = model.getCoupTerm('PositiveElectrode-Electrolyte');
-    PositiveElectrodecells = coupterm.couplingcells(:, 1);
-    Electrolytecells = coupterm.couplingcells(:, 2);
+    pecells = coupterm.couplingcells(:, 1);
+    elytecells = coupterm.couplingcells(:, 2);
 
     % calculate rection rate
-    state.PositiveElectrode = PositiveElectrode.updateReactionRate(state.PositiveElectrode);
-    PositiveElectrode_R = state.PositiveElectrode.R;
+    state.PositiveElectrode = pe.updateReactionRate(state.PositiveElectrode);
+    pe_R = state.PositiveElectrode.R;
 
-    % Electrolyte PE Li+ source
-    Electrolyte_Li_source(Electrolytecells) = - PositiveElectrode_R;
+    % elyte PE Li+ source
+    elyte_Li_source(elytecells) = - pe_R;
 
     % Active Material PE Li0 source
-    PositiveElectrode_Li_source(PositiveElectrodecells) = + PositiveElectrode_R;
+    pe_Li_source(pecells) = + pe_R;
 
     % Active Material PE current source
-    PositiveElectrode_e_source(PositiveElectrodecells) = - PositiveElectrode_R;
+    pe_e_source(pecells) = - pe_R;
 
-    state.Electrolyte.LiSource =  Electrolyte_Li_source;
-    state.NegativeElectrode.LiSource    =  NegativeElectrode_Li_source;
-    state.NegativeElectrode.eSource     =  NegativeElectrode_e_source;
-    state.PositiveElectrode.LiSource    =  PositiveElectrode_Li_source;
-    state.PositiveElectrode.eSource     =  PositiveElectrode_e_source;
+    state.Electrolyte.LiSource = elyte_Li_source;
+    state.Electrolyte.eSource  = 0;
+    state.NegativeElectrode.LiSource = ne_Li_source;
+    state.NegativeElectrode.eSource  = ne_e_source;
+    state.PositiveElectrode.LiSource = pe_Li_source;
+    state.PositiveElectrode.eSource  = pe_e_source;
     
 end
