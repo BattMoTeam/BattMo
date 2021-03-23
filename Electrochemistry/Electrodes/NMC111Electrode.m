@@ -39,9 +39,6 @@ classdef NMC111Electrode < Electrode
             T = state.ActiveMaterial.T;
             phiElyte = state.phiElectrolyte;
             
-            ActiveMaterialmodel = model.ActiveMaterial;
-                        
-            state.ActiveMaterial = ActiveMaterialmodel.updateQuantities(state.ActiveMaterial);
             phi = state.ActiveMaterial.phi;
             OCP = state.ActiveMaterial.OCP;
             k = state.ActiveMaterial.k;

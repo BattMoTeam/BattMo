@@ -44,9 +44,6 @@ classdef GraphiteElectrode < Electrode
             T = state.T;
             phiElyte = state.phiElectrolyte;
             
-            ActiveMaterialmodel = model.ActiveMaterial;
-                        
-            state.ActiveMaterial = ActiveMaterialmodel.updateQuantities(state.ActiveMaterial);
             phi = state.ActiveMaterial.phi;
             OCP = state.ActiveMaterial.OCP;
             k = state.ActiveMaterial.k;
