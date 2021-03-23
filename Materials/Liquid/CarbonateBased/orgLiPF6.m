@@ -148,8 +148,9 @@ classdef orgLiPF6 < ElectrochemicalComponent
             
             % We assume that LiSource and current have been updated
             LiSource = state.LiSource;
+            c = state.cs{1};
             j = state.j;
-            
+            T = state.T;
             
             %% 1 . Compute Flux from diffustion
             % Calculate diffusion coefficients constant for the diffusion coefficient calcuation
@@ -159,8 +160,6 @@ classdef orgLiPF6 < ElectrochemicalComponent
             Tgi = [ 229;
                     5.0 ];
             
-            c = cLi;
-            
             % Diffusion coefficient, [m^2 s^-1]
             D = 1e-4 .* 10 .^ ( ( cnst(1,1) + cnst(1,2) ./ ( T - Tgi(1) - Tgi(2) .* c .* 1e-3) + cnst(2,1) .* ...
                                   c .* 1e-3) );
@@ -168,11 +167,12 @@ classdef orgLiPF6 < ElectrochemicalComponent
             Deff = D .* model.volumeFraction .^1.5;
             
             % Flux from diffusion
-            fluxDiff = assembleFlux(model, cLi, Deff);
+            fluxDiff = assembleFlux(model, c, Deff);
             
             %% 2. Compute Flux from electrical forces
             ind_Li = 1;
-            fluxE = model.sp.t{ind_Li} ./ (model.sp.z{ind_Li} .* model.con.F) .* j;
+            F = model.constants.F;
+            fluxE = model.sp.t{ind_Li} ./ (model.sp.z{ind_Li} .* F) .* j;
             
             %% 3. Sum the two flux contributions
             flux = fluxDiff + fluxE;

@@ -92,5 +92,5 @@ function state = setupBCSources(model, state)
     state.PositiveElectrode.jBcSource =  pe_j_bcsource;
     state.NegativeCurrentCollector.jBcSource =  ncc_j_bcsource;
     state.PositiveCurrentCollector.jBcSource =  pcc_j_bcsource;
-    
+   
 end

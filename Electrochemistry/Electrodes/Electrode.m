@@ -20,16 +20,15 @@ classdef Electrode < ElectrochemicalComponent
 
     methods
        
-        function state = updateChargeConservation(model, state)
+        function state = updateCurrent(model, state)
             
-            phi       = state.ActiveMaterial.phi;
-            jBcSource = state.jBcSource;
-            eSource   = state.eSource;
+            sigmaeff = model.EffectiveElectronicConductivity;
+            phi = state.ActiveMaterial.phi;
             
-            massCons = assembleChargeConservationEq(model, phi)
-            
-            state.massCons = massCons;
+            j = assembleFlux(model, phi, sigmaeff); 
 
+            state.j = j;
+            
         end
 
         function state = updateIonFlux(model, state)

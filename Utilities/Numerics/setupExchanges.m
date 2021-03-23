@@ -85,5 +85,8 @@ function state = setupExchanges(model, state)
     state.NegativeElectrode.eSource  = ne_e_source;
     state.PositiveElectrode.LiSource = pe_Li_source;
     state.PositiveElectrode.eSource  = pe_e_source;
+
+    state.NegativeCurrentCollector.eSource = 0;
+    state.PositiveCurrentCollector.eSource = 0;
     
 end

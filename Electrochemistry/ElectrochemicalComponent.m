@@ -9,7 +9,6 @@ classdef ElectrochemicalComponent < PhysicalModel
         
     end
 
-    
     methods
         
         function model = ElectrochemicalComponent()
@@ -36,9 +35,9 @@ classdef ElectrochemicalComponent < PhysicalModel
             jBcSource = state.jBcSource;
             eSource   = state.eSource;
             
-            massCons = assembleConservationEquation(model, j, jBcSource, eSource);
+            chargeCont = assembleConservationEquation(model, j, jBcSource, eSource);
             
-            state.massCons = massCons;
+            state.chargeCont = chargeCont;
             
         end
         
