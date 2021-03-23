@@ -47,6 +47,8 @@ classdef Electrode < ElectrochemicalComponent
             Deff = D .* model.volumeFraction .^1.5;
             
             ionflux = assembleFlux(model, c, Deff);
+            F = model.constants.F;
+            ionflux = ionflux*F;
             
             state.(ionFluxName) = ionflux;
         end

@@ -148,11 +148,10 @@ classdef BatteryModelSimple < PhysicalModel
             
             %% Set up the governing equations
             
+            eqs={};
             
             %% We collect mass and charge conservation equations for the electrolyte and the electrodes
 
-            eqs={};
-            
             names = {'Electrolyte', 'NegativeElectrode', 'PositiveElectrode'};
             
             for i = 1 : numel(names)

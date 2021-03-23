@@ -191,6 +191,7 @@ classdef orgLiPF6 < ElectrochemicalComponent
             
             %% 3. Sum the two flux contributions
             flux = fluxDiff + fluxE;
+            flux = flux*F;
             state.LiFlux = flux;
            
         end
