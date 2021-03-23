@@ -54,31 +54,31 @@ classdef BatteryInputParams1D < BatteryInputParams
             istart = ccnenx;
             ncells = nenx + sepnx + penx;
             cells = istart + (1 : ncells)';
-            params.elyte = orgLiPF6('elyte', G, cells);
+            params.Electrolyte = orgLiPF6('elyte', G, cells);
 
             %% setup ne
             istart = ccnenx;
             ncells = nenx;
             cells = istart + (1 : ncells)';
-            params.ne = graphiteElectrode('ne', G, cells);
+            params.NegativeElectrode = GraphiteElectrode('ne', G, cells);
 
             %% setup pe
             istart = ccnenx + nenx + sepnx;
             ncells = penx;
             cells = istart + (1 : ncells)';
-            params.pe = nmc111Electrode('pe', G, cells);
+            params.PositiveElectrode = NMC111Electrode('pe', G, cells);
 
             %% setup ccne
             istart = 1;
             ncells = ccnenx;
             cells = istart + (1 : ncells)';
-            params.ccne = currentCollector('ccne', G, cells);
+            params.NegativeCurrentCollector = CurrentCollector('ccne', G, cells);
 
             %% setup ccpe
             istart = ccnenx + nenx + sepnx + penx;
             ncells = ccpenx;
             cells = istart + (1 : ncells)';
-            params.ccpe = currentCollector('ccpe', G, cells);
+            params.PositiveCurrentCollector = CurrentCollector('ccpe', G, cells);
 
             %% setup sep
             istart = ccnenx + nenx;
@@ -88,54 +88,54 @@ classdef BatteryInputParams1D < BatteryInputParams
         
         end
         
-        function coupTerm = setupCcneBcCoupTerm(params)
+        function coupTerm = setupNegativeCurrentCollectorBcCoupTerm(params)
 
-            compnames = {'ccne'};
-            coupTerm = couplingTerm('bc-ccne', compnames);
+            compnames = {'NegativeCurrentCollector'};
+            coupTerm = couplingTerm('bc-NegativeCurrentCollector', compnames);
             coupTerm.couplingfaces = 1;
             coupTerm.couplingcells = 1;
 
         end
 
-        function coupTerm = setupCcneNeCoupTerm(params)
+        function coupTerm = setupNegativeCurrentCollectorNegativeElectrodeCoupTerm(params)
 
             ccnenx = params.ccnenx;
             
-            compnames = {'ccne', 'ne'};
-            coupTerm = couplingTerm('ccne-ne', compnames);
+            compnames = {'NegativeCurrentCollector', 'NegativeElectrode'};
+            coupTerm = couplingTerm('NegativeCurrentCollector-NegativeElectrode', compnames);
             coupTerm.couplingfaces = [ccnenx + 1, 1];
             coupTerm.couplingcells = [ccnenx, 1];
 
         end
         
-        function coupTerm = setupCcpeBcCoupTerm(params)
+        function coupTerm = setupPositiveCurrentCollectorBcCoupTerm(params)
 
             ccpenx = params.ccpenx;
 
-            compnames = {'ccpe'};
-            coupTerm = couplingTerm('bc-ccpe', compnames);
+            compnames = {'PositiveCurrentCollector'};
+            coupTerm = couplingTerm('bc-PositiveCurrentCollector', compnames);
             coupTerm.couplingfaces = ccpenx + 1;
             coupTerm.couplingcells = ccpenx;
 
         end
 
-        function coupTerm = setupCcpePeCoupTerm(params)
+        function coupTerm = setupPositiveCurrentCollectorPositiveElectrodeCoupTerm(params)
 
             penx = params.penx;
             
-            compnames = {'ccpe', 'pe'};
-            coupTerm = couplingTerm('ccpe-pe', compnames);
+            compnames = {'PositiveCurrentCollector', 'PositiveElectrode'};
+            coupTerm = couplingTerm('PositiveCurrentCollector-PositiveElectrode', compnames);
             coupTerm.couplingfaces = [1, penx + 1];
             coupTerm.couplingcells = [1, penx];
             
         end
 
-        function coupTerm = setupNeElyteCoupTerm(params)
+        function coupTerm = setupNegativeElectrodeElectrolyteCoupTerm(params)
             
             nenx   = params.nenx;
 
-            compnames = {'ne', 'elyte'};
-            coupTerm = couplingTerm('ne-elyte', compnames);
+            compnames = {'NegativeElectrode', 'Electrolyte'};
+            coupTerm = couplingTerm('NegativeElectrode-Electrolyte', compnames);
             cells1 = (1 : nenx)';
             cells2 = (1 : nenx)';
             coupTerm.couplingcells =  [cells1, cells2];
@@ -143,14 +143,14 @@ classdef BatteryInputParams1D < BatteryInputParams
             
         end
         
-        function coupTerm = setupPeElyteCoupTerm(params)
+        function coupTerm = setupPositiveElectrodeElectrolyteCoupTerm(params)
             
             sepnx  = params.sepnx;
             nenx   = params.nenx;
             penx   = params.penx;
             
-            compnames = {'pe', 'elyte'};
-            coupTerm = couplingTerm('pe-elyte', compnames);
+            compnames = {'PositiveElectrode', 'Electrolyte'};
+            coupTerm = couplingTerm('PositiveElectrode-Electrolyte', compnames);
             cells1 = (1 : penx)';
             cells2 = nenx + sepnx + (1 : penx)';
             coupTerm.couplingcells = [cells1, cells2];
