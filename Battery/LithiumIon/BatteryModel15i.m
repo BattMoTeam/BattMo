@@ -1,4 +1,4 @@
-classdef BatteryModel15i < BatteryModelSimple
+classdef BatteryModel15i < BatteryModel
 
     properties
         fv
@@ -7,7 +7,7 @@ classdef BatteryModel15i < BatteryModelSimple
     methods
 
         function model = BatteryModel15i(params)
-            model = model@BatteryModelSimple(params)    
+            model = model@BatteryModel(params)    
         end
         
         function [t, y] = runSimulation(model)
