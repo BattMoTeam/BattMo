@@ -1,4 +1,4 @@
-classdef NMC111 < ComponentModel
+classdef NMC111 < PhysicalModel
     %NMC111 An electrode active material class for electrochemical
     %modelling. 
     %   The NMC111 class describes the properties and
@@ -44,41 +44,18 @@ classdef NMC111 < ComponentModel
         cp          % Molar Heat Capacity,          [J kg^-1 K^-1]             
         k0          % Reference rate constant,      [m^2.5 mol^-0.5 s^-1]
         Eak         % Reaction activation energy,   [J mol^-1] 
+
         volumetricSurfaceArea         % Surface area,                 [m2 m^-3]
     end
     
     methods
 
-        function model = NMC111(name)
+        function model = NMC111()
         %NMC111 Construct an instance of the nmc111 class
         %   model = nmc111(cLi, T) SOC is the state-of-charge of the
         %   battery (0-1) and T is the temperature in Kelvin [K]  
 
-            model = model@ComponentModel(name);
-                
-            % primary variables
-            model.pnames = {'phi', 'Li', 'T'};
-
-            % state variables
-            names = {'phi', ...    % Potential
-                     'T', ...      % temperature
-                     'SOC', ...
-                     'Li', ...     % Lithium concentration
-                     'OCP', ...    % Open-circuit potential        [V]
-                     'k', ...      % Reaction rate constant        [m^2.5 mol^-0.5 s^-1]
-                     'D', ...      % Diffusion
-                    };
-            model.names = names;
-            model = model.setupVarDims();
-            
-            names = {'k', 'D', 'OCP'};
-            inputnames = {'T', 'Li'};
-            updatefn = @(model, state) model.updateQuantities(state);
-            for ind = 1 : numel(names)
-                name = names{ind};
-                model = model.addPropFunction(name, updatefn, inputnames, {'.'});
-            end
-            
+            model = model@PhysicalModel([]);
             
             % Define material constants
             model.specificCapacity          = 155;      % [Ah kg^-1]
@@ -103,8 +80,8 @@ classdef NMC111 < ComponentModel
         %   Calculate the equilibrium open cirucuit potential of
         %   nmc111 according to the model used by Torchio et al [1].
 
-            T     = state.T;
-            cs    = state.Li;
+            T  = state.T;
+            cs = state.Li;
             
             % Define ideal gas constant
             R = 8.314;      % [J mol^-1 K^-1]

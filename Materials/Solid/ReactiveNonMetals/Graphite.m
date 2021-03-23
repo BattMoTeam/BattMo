@@ -1,6 +1,6 @@
-classdef Graphite < ComponentModel
-    %GRAPHITE An electrode active material class for electrochemical
-    %modelling. 
+classdef Graphite < PhysicalModel
+    % GRAPHITE An electrode active material class for electrochemical modelling.
+    %
     %   The graphite class describes the properties and
     %   parameterization for the active material of graphite electrodes.
     %
@@ -36,94 +36,49 @@ classdef Graphite < ComponentModel
         
         % Physicochemical properties
         volumeFraction
-        volumetricSurfaceArea         % Surface area,                 [m2 m^-3]
+        volumetricSurfaceArea  % Surface area,                 [m2 m^-3]
         specificCapacity       % Specific Capacity             [Ah kg^-1]
-        theta0      % Minimum lithiation, 0% SOC    [-]
-        theta100    % Maximum lithiation, 100% SOC  [-]
-        maxc        % Maximum lithium concentration [mol m^-3]
-        rho         % Mass Density                  [kg m^-3] or [g L^-1]
-        electronicConductivity       % Solid conductivity            [S m^-1]
-        lambda      % Thermal Conductivity          [W m^-1 K^-1]
-        cp          % Molar Heat Capacity           [J kg^-1 K^-1]             
-        D0          % Diffusion coefficient         [m^2 s^-1]
-        EaD         % Diffusion activ. energy       [J mol^-1]
-        k0          % Reference rate constant       [m^2.5 mol^-0.5 s^-1]
-        Eak         % Reaction activation energy    [J mol^-1]
-        rp          % Particle radius               [m]
+        theta0                 % Minimum lithiation, 0% SOC    [-]
+        theta100               % Maximum lithiation, 100% SOC  [-]
+        maxc                   % Maximum lithium concentration [mol m^-3]
+        rho                    % Mass Density                  [kg m^-3] or [g L^-1]
+        electronicConductivity % Solid conductivity            [S m^-1]
+        lambda                 % Thermal Conductivity          [W m^-1 K^-1]
+        cp                     % Molar Heat Capacity           [J kg^-1 K^-1]             
+        D0                     % Diffusion coefficient         [m^2 s^-1]
+        EaD                    % Diffusion activ. energy       [J mol^-1]
+        k0                     % Reference rate constant       [m^2.5 mol^-0.5 s^-1]
+        Eak                    % Reaction activation energy    [J mol^-1]
+        rp                     % Particle radius               [m]
         
     end
     
     methods
-        function model = Graphite(name)
+
+        function model = Graphite()
             
         % GRAPHITE Construct an instance of the graphite class
         % model = graphite(SOC, T) SOC is the state of charge of the
         % electrode (0-1) and T is the temperature in Kelvin [K]
 
-            model = model@ComponentModel(name);
+            model = model@PhysicalModel([]);
                 
             % Define material constants
-            model.specificCapacity    = 360;      % [Ah kg^-1]
-            model.rho      = 2240;     % [kg m^-3]
-            model.theta0   = 0.1429;   % at 0% SOC [-]
-            model.theta100 = 0.85510;  % at 100% SOC[-]
-            model.Li.cmax  = 30555;    % [mol m^-3]
-            model.Li.D0    = 3.9e-14;  % [m^2 s^-1]
-            model.Li.EaD   = 5000;     % [J mol^-1]
-            model.electronicConductivity    = 100;      % [S m^-1]
-            model.cp       = 700;      % [J kg^-1 K^-1]
-            model.k0       = 5.031e-11;% [m^2.5 mol^-0.5 s^-1]
-            model.Eak      = 5000;     % [J mol^-1]
-            model.volumetricSurfaceArea      = 723600;   % [m2 m^-3]
-            model.volumeFraction      = 0.8;
-            
-            % primary variables
-            names = {'phi', 'Li'};
-            model.pnames = names;
-
-            % state variables
-            names = {'phi', ...    % Potential
-                     'T', ...      % Temperature
-                     'SOC', ...
-                     'Li', ...     % Lithium concentration
-                     'OCP', ...    % Open-circuit potential        [V]
-                     'k', ...      % Reaction rate constant        [m^2.5 mol^-0.5 s^-1]
-                     'D', ...      % Diffusion
-                     'eps' ...     % Volume fraction,              [-]    
-                    };
-            model.names = names; 
-            model = model.setupVarDims();
-            
-            propfunctions = {};
-            names = {'k', 'D', 'OCP'};
-            updatefn = @(model, state) model.updateQuantities(state);
-            inputnames = {'T', 'Li'};
-            for ind = 1 : numel(names)
-                name = names{ind};
-                model = model.addPropFunction(name, updatefn, inputnames, {'.'});
-            end
-
-        end
-        
-        function state = initializeState(model, state)
-        % Used only in debugging for the moment
-
-            T = state.T;
-            SOC = state.SOC;
-            
-            m     = (1 ./ (model.theta100 - model.theta0));
-            b     = -m .* model.theta0;
-            theta = (SOC - b) ./ m;
-            state.theta=theta;
-            cs    = theta .* model.Li.cmax;
-
-            state.Li = cs;
-            state = model.updateQuantities(state);
-            
-            state.phi = state.OCP;
+            model.specificCapacity       = 360;      % [Ah kg^-1]
+            model.rho                    = 2240;     % [kg m^-3]
+            model.theta0                 = 0.1429;   % at 0% SOC [-]
+            model.theta100               = 0.85510;  % at 100% SOC[-]
+            model.Li.cmax                = 30555;    % [mol m^-3]
+            model.Li.D0                  = 3.9e-14;  % [m^2 s^-1]
+            model.Li.EaD                 = 5000;     % [J mol^-1]
+            model.electronicConductivity = 100;      % [S m^-1]
+            model.cp                     = 700;      % [J kg^-1 K^-1]
+            model.k0                     = 5.031e-11;% [m^2.5 mol^-0.5 s^-1]
+            model.Eak                    = 5000;     % [J mol^-1]
+            model.volumetricSurfaceArea  = 723600;   % [m2 m^-3]
+            model.volumeFraction         = 0.8;
             
         end
-
         
         function state = updateQuantities(model, state)
         % Calculate the solid diffusion coefficient of Li+ in the active material

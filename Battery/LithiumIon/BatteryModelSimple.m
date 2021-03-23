@@ -91,7 +91,7 @@ classdef BatteryModelSimple < PhysicalModel
             
             %% Update Reaction Coupling variables
             
-            names={{'NegativeElectrode'},{'PositiveElectrode'}};
+            names={{'NegativeElectrode'}, {'PositiveElectrode'}};
             for i=1:numel(names)
                 submodel=model.getSubmodel(names{i});
                 val = submodel.updateReactionRate(model.getProp(state,names{i}));
@@ -105,14 +105,16 @@ classdef BatteryModelSimple < PhysicalModel
             names={{'Electrolyte'},{'NegativeElectrode'},{'PositiveElectrode'}};
             for i=1:numel(names)
                 submodel=model.getSubmodel(names{i});
-                val = submodel.updateQuantities(model.getProp(state,names{i}));
-                state = model.setProp(state,names{i},val);
+                val = submodel.updateChargeConservation(model.getProp(state,names{i}));
+                state = model.setProp(state, names{i}, val);
+                val = submodel.updateIonFlux(model.getProp(state,names{i}));
+                state = model.setProp(state, names{i}, val);
             end
             
             names={{'PositiveCurrentCollector'},{'NegativeCurrentCollector'}};
             for i=1:numel(names)
                 submodel=model.getSubmodel(names{i});
-                val = submodel.updateChargeCont(model.getProp(state,names{i}));
+                val = submodel.updateChargeConservation(model.getProp(state,names{i}));
                 state = model.setProp(state,names{i},val);
             end
             
@@ -166,7 +168,7 @@ classdef BatteryModelSimple < PhysicalModel
             coupterm = model.getCoupTerm('bc-PositiveCurrentCollector');
             faces = coupterm.couplingfaces;
             bcval = state.PositiveCurrentCollector.E;
-            cond_pcc = model.PositiveCurrentCollector.effectiveElectronicConductivity;
+            cond_pcc = model.PositiveCurrentCollector.EffectiveElectronicConductivity;
             [trans_pcc, cells] = model.PositiveCurrentCollector.operators.harmFaceBC(cond_pcc, faces);
             control = src - sum(trans_pcc.*(bcval - state.PositiveCurrentCollector.phi(cells)));
             

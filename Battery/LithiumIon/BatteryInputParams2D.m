@@ -51,27 +51,27 @@ classdef BatteryInputParams2D < BatteryInputParams
             istart = ncc_nx + 1;
             ni = ne_nx + sepnx + pe_nx;
             cells = pickTensorCells(istart, ni, nx, ny);
-            params.Electrolyte = orgLiPF6('Electrolyte', G, cells);
+            params.Electrolyte = orgLiPF6(G, cells);
 
             %% setup NegativeElectrode
             istart = ncc_nx + 1;
             cells = pickTensorCells(istart, ne_nx, nx, ny);
-            params.NegativeElectrode = GraphiteElectrode('NegativeElectrode', G, cells);
+            params.NegativeElectrode = GraphiteElectrode(G, cells);
 
             %% setup PositiveElectrode
             istart = ncc_nx + ne_nx + sepnx + 1;
             cells = pickTensorCells(istart, pe_nx, nx, ny);
-            params.PositiveElectrode = NMC111Electrode('PositiveElectrode', G, cells);
+            params.PositiveElectrode = NMC111Electrode(G, cells);
 
             %% setup NegativeCurrentCollector
             istart = 1;
             cells = pickTensorCells(istart, ncc_nx, nx, ny);
-            params.NegativeCurrentCollector = CurrentCollector('NegativeCurrentCollector', G, cells);
+            params.NegativeCurrentCollector = CurrentCollector(G, cells);
 
             %% setup PositiveCurrentCollector
             istart = ncc_nx + ne_nx + sepnx + pe_nx + 1;
             cells = pickTensorCells(istart, pcc_nx, nx, ny);
-            params.PositiveCurrentCollector = CurrentCollector('PositiveCurrentCollector', G, cells);
+            params.PositiveCurrentCollector = CurrentCollector(G, cells);
 
             %% setup sep
             istart = ncc_nx + ne_nx + 1;

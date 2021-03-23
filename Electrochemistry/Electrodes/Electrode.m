@@ -1,23 +1,42 @@
-classdef Electrode < CompositeModel
-    %ELECTRODE Summary of this class goes here
-    %   Detailed explanation goes here
+classdef Electrode < ElectrochemicalComponent
     
     properties
-        Property1
+        
+        % Design properties
+        thickness       % Thickness,        [m]
+        volumeFraction  % Volume fraction,  [-]
+        porosity        % Porosity,         [-]
+        mass            % Mass,             [kg]
+        volume          % Volume,           [m3]
+        area            % Area,             [m2]
+        
+        % SubModels
+        ActiveMaterial
+        Binder              % Binder object
+        ConductingAdditive  % Conducting additive object        
+        Electrolyte         % Electrolyte data structure
+        
     end
-    
+
     methods
-        function obj = Electrode(inputArg1,inputArg2)
-            %ELECTRODE Construct an instance of this class
-            %   Detailed explanation goes here
-            obj.Property1 = inputArg1 + inputArg2;
+       
+        function state = updateChargeConservation(model, state)
+            
+            phi       = state.ActiveMaterial.phi;
+            jBcSource = state.jBcSource;
+            eSource   = state.eSource;
+            
+            massCons = assembleChargeConservationEq(model, phi)
+            
+            state.massCons = massCons;
+
+        end
+
+        function state = updateIonFlux(model, state)
+        % update Ion fluxes in electrode (this depends on the type of electrode - because it depends on the name of the ion!)
+            error('virtual function')
         end
         
-        function outputArg = method1(obj,inputArg)
-            %METHOD1 Summary of this method goes here
-            %   Detailed explanation goes here
-            outputArg = obj.Property1 + inputArg;
-        end
-    end
+    end    
 end
 

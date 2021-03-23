@@ -1,4 +1,4 @@
-classdef orgLiPF6 < ComponentModel
+classdef orgLiPF6 < ElectrochemicalComponent
 %orgLiPF6 An electrolyte class for electrochemical modelling
 %   The orgLiPF6 class describes the properties and
 %   parameterization for organic electrolytes featuring lithium
@@ -36,13 +36,8 @@ classdef orgLiPF6 < ComponentModel
         solv    % Solvent data structure
 
         % number of components
-        
         compnames % 2 components in this implementation : Li and PF6 (can be generalized)
         ncomp % number of components
-        
-        
-        % Physical constants
-        con = PhysicalConstants();
 
         % Physicochemical properties
         volumeFraction         % Porosity
@@ -56,17 +51,14 @@ classdef orgLiPF6 < ComponentModel
         pvap        % Vapor Pressure    
         Deff        % Porous media diffusion coefficient,   [m^2 s^-1]
         
-        % Finite volume solution properties
-        chargeCont
-        
     end
     
     methods
         
-        function model = orgLiPF6(name, G, cells)
+        function model = orgLiPF6(G, cells)
             
             % initialize as a ComponentModel in MRST
-            model = model@ComponentModel(name);
+            model = model@ElectrochemicalComponent();
             
             % generate the cell subgrid for the model
             model.G = genSubGrid(G, cells);
@@ -79,49 +71,6 @@ classdef orgLiPF6 < ComponentModel
             model.ncomp = numel(model.compnames);
             
             % define primary variables of the model
-            pnames = {'phi', 'cLi'}; 
-            model.pnames = pnames;
-            
-            % define state variables of the model
-            names = {'phi'       , ...  % Electric potential
-                     'T'         , ...  % Temperature
-                     'cs'        , ...  % Concentrations
-                     'LiSource'  , ...  % Li source term
-                     'LiFlux'    , ...  % Li flux term
-                     'chargeCont', ...  % Charge continuity
-                     'massCont', ...    % Mass continuity
-                    };
-            model.names = names;
-            
-            % This initiates a dictionary for variable dimensions and
-            % assigns a value
-            model = model.setupVarDims();
-            model.vardims('cs') = 2;
-
-            % setup updating function for concentrations
-            names = {'cs', 'chargeCont', 'LiFlux'};
-            inputnames = {'cLi', 'T', 'LiSource'};
-            updatefn = @(model, state) model.updateQuantities(state);
-            
-            for ind = 1 : numel(names)
-                name = names{ind};
-                if strcmp(name, 'cs')
-                    name = VarName({'.'}, 'cs', 2);
-                end
-                model = model.addPropFunction(name, updatefn, inputnames, {'.'});
-            end
-            
-            % add local aliases for each component
-            aliases = {};
-            for icn = 1 : model.ncomp
-                compname = model.compnames{icn};
-                name = sprintf('c%s', compname);
-                lname = 'cs';
-                varname = VarName({'.'}, lname, model.ncomp, icn);
-                aliases{end + 1} = {name, varname};
-            end
-            
-            model.aliases = aliases;
 
             % Set constant values
             [~, ind] = ismember('Li', model.compnames);
@@ -135,55 +84,29 @@ classdef orgLiPF6 < ComponentModel
             
         end
 
-        function state = initiateState(model, state)
-            
-            error('should not be used now');
-            
-            state = initiateState@ComponentModel(model, state);
-            
-            % instantiate the cell variables
-            nc = model.G.cells.num;
-            compnames = model.compnames;
-            ncomp = model.ncomp;
-            
-            fieldnames = {'cs'};
-            varnames = model.assignCurrentNameSpace(fieldnames);
-            for ifn = 1 : numel(varnames)
-                fieldname = varnames{ifn}.getfieldname;
-                if isempty(state.(fieldname))
-                    state.(fieldname) = cell(1, ncomp);
-                end
-            end
-            
-            
-        end
-        
-        function state = updateQuantities(model, state)
-            
-     
-            ncomp = model.ncomp;    % number of components
+
+        function state  = updateCurrent(model, state) 
            
-            cLi = state.cs{1};      % concentration of Li+
-            T = state.T;            % temperature
+            cLi = state.cs{1}; % concentration of Li+
+            T   = state.T;     % temperature
+            phi = state.phi;   % potential
             
-            state.cs{2} = cLi;      % set counterion concentration?
+            state.cs{2} = cLi; % set counterion concentration?
             
             cs  = state.cs;         
-            phi = state.phi;
             
-            % calculate the concentration derivative of the chemical
-            % potential for each species in the electrolyte
+            ncomp = model.ncomp; % number of components
+            sp = model.sp;
+
+            % calculate the concentration derivative of the chemical potential for each species in the electrolyte
             for ind = 1 : ncomp
                 dmudcs{ind} = model.con.R .* T ./ cs{ind};
             end
             
-            % calculate ionic strength for a 2-component system
-            IoSt = 0.5 .* cs{1}.*model.sp.z{1}.^2./1000;
-            IoSt = IoSt + 0.5 .* cs{2}.*model.sp.z{2}.^2./1000;
             
+                        
             %% Calculate transport parameters
-            % Calcualte ionic conductivity
-            % consntants for the ionic conductivity calculation
+            % Calculate ionic conductivity consntants for the ionic conductivity calculation
             cnst = [-10.5   , 0.074    , -6.96e-5; ...
                     0.668e-3, -1.78e-5 , 2.80e-8; ...
                     0.494e-6, -8.86e-10, 0];            
@@ -195,71 +118,67 @@ classdef orgLiPF6 < ComponentModel
                 polyval(cnst(end:-1:1,1),c) + ...
                 polyval(cnst(end:-1:1,2),c) .* T + ...
                 polyval(cnst(end:-1:1,3),c) .* T.^2).^2;
-            
-            % Calculate diffusion coefficients
-            % constant for the diffusion coefficient calcuation
-            cnst = [ -4.43, -54;
-                     -0.22, 0.0 ];
 
-            Tgi = [ 229;
-                    5.0 ];
-            
-            % Diffusion coefficient, [m^2 s^-1]
-            D = 1e-4 .* 10 .^ ( ( cnst(1,1) + cnst(1,2) ./ ( T - Tgi(1) - Tgi(2) .* c .* 1e-3) + cnst(2,1) .* ...
-                                  c .* 1e-3) );
-            
-            ncomp = model.ncomp;
-            nf = model.G.faces.num;
-            sp = model.sp;
-            op = model.operators;
-            
             % volume fraction of electrolyte
             eps = model.volumeFraction;
-            
-            % compute effective ionic conductivity in porous media
+            % Compute effective ionic conductivity in porous media
             kappaeff = kappa .* eps .^1.5;
             
             % setup chemical fluxes
             jchems = cell(1, ncomp);
             for i = 1 : ncomp
                 coeff = kappaeff .* sp.t{i} .* dmudcs{i} ./ (sp.z{i}.*model.con.F);
-                jchems{i} = op.harmFace(coeff).* op.Grad(cs{i});
+                jchems{i} = assembleFlux(model, cs{i}, coeff);
             end
             
-            jchem = jchems{1};
-            for i = 2 : ncomp
-                jchem = jchem + jchems{i};
+            j = assembleFlux(model, phi, kappeff);
+            for ind = 1 : ncomp
+                j = j + jchems{ind};
             end
-            
-            % Ionic current density due to the electrochemical potential gradient
-            j = op.harmFace(kappaeff).*(-1).*op.Grad(phi) - jchem;
-            
-            % We assume that LiSource has been setup
-            LiSource = state.LiSource;
-            
-            % setup the charge continuity equation
-            ind_Li = 1;
-            chargeCont =  op.Div(j)./model.G.cells.volumes./model.con.F - LiSource.*model.sp.z{ind_Li};
 
-            op = model.operators;
-            
-            % calculate the effective diffusion coefficients in porous
-            % media
-            Deff = D .* model.volumeFraction .^1.5;
-            
-            trans = op.harmFace(Deff);
-            fluxDiff = - trans.*op.Grad(cLi);
-            
-            ind_Li = 1;
-            fluxE = model.sp.t{ind_Li} ./ (model.sp.z{ind_Li} .* model.con.F) .* j;
-            
-            flux = fluxDiff + fluxE;
-            
-            state.LiFlux = flux;
-            state.chargeCont = chargeCont;
+            state.j = j;
             
         end
 
+        function state = updateIonFlux(model, state)
+            state = model.updateLithiumFlux(state);
+        end
+        
+        function state = updateLithiumFlux(model, state)
+            
+            % We assume that LiSource and current have been updated
+            LiSource = state.LiSource;
+            j = state.j;
+            
+            
+            %% 1 . Compute Flux from diffustion
+            % Calculate diffusion coefficients constant for the diffusion coefficient calcuation
+            cnst = [ -4.43, -54;
+                     -0.22, 0.0 ];
+
+            Tgi = [ 229;
+                    5.0 ];
+            
+            c = cLi;
+            
+            % Diffusion coefficient, [m^2 s^-1]
+            D = 1e-4 .* 10 .^ ( ( cnst(1,1) + cnst(1,2) ./ ( T - Tgi(1) - Tgi(2) .* c .* 1e-3) + cnst(2,1) .* ...
+                                  c .* 1e-3) );
+            % calculate the effective diffusion coefficients in porous media
+            Deff = D .* model.volumeFraction .^1.5;
+            
+            % Flux from diffusion
+            fluxDiff = assembleFlux(model, cLi, Deff);
+            
+            %% 2. Compute Flux from electrical forces
+            ind_Li = 1;
+            fluxE = model.sp.t{ind_Li} ./ (model.sp.z{ind_Li} .* model.con.F) .* j;
+            
+            %% 3. Sum the two flux contributions
+            flux = fluxDiff + fluxE;
+            state.LiFlux = flux;
+           
+        end
    
     end
 
