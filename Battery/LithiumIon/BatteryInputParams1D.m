@@ -54,31 +54,31 @@ classdef BatteryInputParams1D < BatteryInputParams
             istart = ccnenx;
             ncells = nenx + sepnx + penx;
             cells = istart + (1 : ncells)';
-            params.Electrolyte = orgLiPF6('elyte', G, cells);
+            params.Electrolyte = orgLiPF6(G, cells);
 
             %% setup ne
             istart = ccnenx;
             ncells = nenx;
             cells = istart + (1 : ncells)';
-            params.NegativeElectrode = GraphiteElectrode('ne', G, cells);
+            params.NegativeElectrode = GraphiteElectrode(G, cells);
 
             %% setup pe
             istart = ccnenx + nenx + sepnx;
             ncells = penx;
             cells = istart + (1 : ncells)';
-            params.PositiveElectrode = NMC111Electrode('pe', G, cells);
+            params.PositiveElectrode = NMC111Electrode(G, cells);
 
             %% setup ccne
             istart = 1;
             ncells = ccnenx;
-            cells = istart + (1 : ncells)';
-            params.NegativeCurrentCollector = CurrentCollector('ccne', G, cells);
+            cells = istart + (1 : ncells)'; 
+            params.NegativeCurrentCollector = CurrentCollector(G, cells);
 
             %% setup ccpe
             istart = ccnenx + nenx + sepnx + penx;
             ncells = ccpenx;
             cells = istart + (1 : ncells)';
-            params.PositiveCurrentCollector = CurrentCollector('ccpe', G, cells);
+            params.PositiveCurrentCollector = CurrentCollector(G, cells);
 
             %% setup sep
             istart = ccnenx + nenx;
