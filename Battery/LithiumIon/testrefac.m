@@ -41,7 +41,7 @@ switch modelcase
     model = currentCollector('ccpe', G, cells);
   case 'battery'
     
-    model = BatteryModel();
+    model = Battery();
     adminmodel = AdminModel();
     model = model.setupAdminModel(adminmodel);
 

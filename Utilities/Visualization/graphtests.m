@@ -13,7 +13,7 @@ switch modelcase
     G = computeGeometry(G);
     model = orgLiPF6('elyte', G, (1 : G.cells.num));
   case 'battery'
-    model = BatteryModel();
+    model = Battery();
     model.J = 0.1;
   otherwise
     error('modelcase not recognized');

@@ -13,7 +13,7 @@ nc = G.cells.num;
 
 cells = (1 : G.cells.num)';
 
-model = BatteryModel();
+model = Battery();
 
 elyte = model.getAssocModel('elyte');
 ne    = model.getAssocModel('ne');

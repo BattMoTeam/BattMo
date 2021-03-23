@@ -15,7 +15,7 @@ switch modelcase
     inputparams = BatteryInputParams3D();
 end
 
-model = BatteryModel15i(inputparams);
+model = Battery15i(inputparams);
 
 %% run simulation
 

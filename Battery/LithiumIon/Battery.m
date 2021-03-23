@@ -1,4 +1,4 @@
-classdef BatteryModel < PhysicalModel
+classdef Battery < PhysicalModel
 
     properties
 
@@ -30,7 +30,7 @@ classdef BatteryModel < PhysicalModel
 
     methods
 
-        function model = BatteryModel(params)
+        function model = Battery(params)
 
             model = model@PhysicalModel([]);
             model.AutoDiffBackend = SparseAutoDiffBackend('useBlocks',true);

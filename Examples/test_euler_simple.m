@@ -29,7 +29,7 @@ switch modelcase
 end
 
 % setup Battery model using parameter inputs.
-model = BatteryModel(inputparams);
+model = Battery(inputparams);
 
 % Value used in rampup function, see currentSource.
 tup = 0.1;

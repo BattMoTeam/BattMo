@@ -7,7 +7,7 @@ clc
 %% Add MRST module
 mrstModule add ad-core multimodel mrst-gui
 
-model = BatteryModel();
+model = Battery();
 model.J = 0.1;
 
 %% plot of the computational graph
