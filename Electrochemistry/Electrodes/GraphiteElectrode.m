@@ -40,7 +40,11 @@ classdef GraphiteElectrode < Electrode
         end
         
         function state = updateReactionRate(model, state)
-             
+        % Abbreviation used in this function
+        % am : ActiveMaterial
+            
+            am = model.ActiveMaterial;
+            
             T = state.T;
             phiElyte = state.phiElectrolyte;
             
@@ -49,9 +53,10 @@ classdef GraphiteElectrode < Electrode
             k = state.ActiveMaterial.k;
             
             eta = (phi - phiElyte - OCP);
-            state.eta = eta;
-            R = ActiveMaterialmodel.volumetricSurfaceArea.*ButlerVolmerEquation(k.*model.constants.F, 0.5, 1, eta, T) ./ (1 .* model.constants.F);
+            F = model.constants.F;
+            R = am.volumetricSurfaceArea.*ButlerVolmerEquation(k.*model.constants.F, 0.5, 1, eta, T)/F;
              
+            state.eta = eta;
             state.R = R;
             
         end

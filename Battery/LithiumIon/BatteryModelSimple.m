@@ -80,10 +80,10 @@ classdef BatteryModelSimple < PhysicalModel
             
             %% Update Source and BC term variables
             
-            names={{'PositiveElectrode','ActiveMaterial'},{'PositiveElectrode','ActiveMaterial'}};
+            names={{'PositiveElectrode', 'ActiveMaterial'}, {'PositiveElectrode', 'ActiveMaterial'}};
             for i=1:numel(names)
                 submodel = model.getSubmodel(names{i});
-                val = submodel.updateQuantities(model.getProp(state,names{i}));
+                val = submodel.updateMaterialProperties(model.getProp(state,names{i}));
                 state = model.setProp(state,names{i},val);
             end
             
@@ -102,7 +102,7 @@ classdef BatteryModelSimple < PhysicalModel
             
             %% Update Fluxes variables
             
-            names={{'Electrolyte'},{'NegativeElectrode'},{'PositiveElectrode'}};
+            names={{'Electrolyte'}, {'NegativeElectrode'}, {'PositiveElectrode'}};
             for i=1:numel(names)
                 submodel=model.getSubmodel(names{i});
                 val = submodel.updateChargeConservation(model.getProp(state,names{i}));
@@ -111,7 +111,7 @@ classdef BatteryModelSimple < PhysicalModel
                 state = model.setProp(state, names{i}, val);
             end
             
-            names={{'PositiveCurrentCollector'},{'NegativeCurrentCollector'}};
+            names={{'PositiveCurrentCollector'}, {'NegativeCurrentCollector'}};
             for i=1:numel(names)
                 submodel=model.getSubmodel(names{i});
                 val = submodel.updateChargeConservation(model.getProp(state,names{i}));
@@ -330,7 +330,7 @@ classdef BatteryModelSimple < PhysicalModel
             c = c*ones(ne.G.cells.num, 1);
 
             initstate.NegativeElectrode.ActiveMaterial.Li = c;
-            initstate.NegativeElectrode.ActiveMaterial = ne_am.updateQuantities(initstate.NegativeElectrode.ActiveMaterial);
+            initstate.NegativeElectrode.ActiveMaterial = ne_am.updateMaterialProperties(initstate.NegativeElectrode.ActiveMaterial);
 
             OCP = initstate.NegativeElectrode.ActiveMaterial.OCP;
             initstate.NegativeElectrode.ActiveMaterial.phi = OCP;
@@ -344,7 +344,7 @@ classdef BatteryModelSimple < PhysicalModel
             c = c*ones(pe.G.cells.num, 1);
 
             initstate.PositiveElectrode.ActiveMaterial.Li = c;
-            initstate.PositiveElectrode.ActiveMaterial = pe_am.updateQuantities(initstate.PositiveElectrode.ActiveMaterial);
+            initstate.PositiveElectrode.ActiveMaterial = pe_am.updateMaterialProperties(initstate.PositiveElectrode.ActiveMaterial);
 
             OCP = initstate.PositiveElectrode.ActiveMaterial.OCP;
             initstate.PositiveElectrode.ActiveMaterial.phi = OCP;

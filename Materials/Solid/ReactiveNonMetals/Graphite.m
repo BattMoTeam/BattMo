@@ -80,7 +80,7 @@ classdef Graphite < PhysicalModel
             
         end
         
-        function state = updateQuantities(model, state)
+        function state = updateMaterialProperties(model, state)
         % Calculate the solid diffusion coefficient of Li+ in the active material
         % Calculate the solid phase diffusion coefficient of Li+ in
         % graphite according to the model used by Torchio et al [1].
