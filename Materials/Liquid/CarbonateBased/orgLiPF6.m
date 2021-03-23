@@ -99,11 +99,10 @@ classdef orgLiPF6 < ElectrochemicalComponent
             sp = model.sp;
 
             % calculate the concentration derivative of the chemical potential for each species in the electrolyte
+            R = model.constants.R;
             for ind = 1 : ncomp
-                dmudcs{ind} = model.con.R .* T ./ cs{ind};
+                dmudcs{ind} = R .* T ./ cs{ind};
             end
-            
-            
                         
             %% Calculate transport parameters
             % Calculate ionic conductivity consntants for the ionic conductivity calculation
@@ -126,12 +125,13 @@ classdef orgLiPF6 < ElectrochemicalComponent
             
             % setup chemical fluxes
             jchems = cell(1, ncomp);
+            F = model.constants.F;
             for i = 1 : ncomp
-                coeff = kappaeff .* sp.t{i} .* dmudcs{i} ./ (sp.z{i}.*model.con.F);
+                coeff = kappaeff .* sp.t{i} .* dmudcs{i} ./ (sp.z{i}.*F);
                 jchems{i} = assembleFlux(model, cs{i}, coeff);
             end
             
-            j = assembleFlux(model, phi, kappeff);
+            j = assembleFlux(model, phi, kappaeff);
             for ind = 1 : ncomp
                 j = j + jchems{ind};
             end

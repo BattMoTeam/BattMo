@@ -29,10 +29,10 @@ function state = setupBCSources(model, state)
     D = state.PositiveElectrode.ActiveMaterial.D;
     pe_Deff = D.*pe_am.volumeFraction.^1.5;
 
-    ne_sigmaeff  = ne.effectiveElectronicConductivity;
-    pe_sigmaeff  = pe.effectiveElectronicConductivity;
-    ncc_sigmaeff = ncc.effectiveElectronicConductivity;
-    pcc_sigmaeff = pcc.effectiveElectronicConductivity;
+    ne_sigmaeff  = ne.EffectiveElectronicConductivity;
+    pe_sigmaeff  = pe.EffectiveElectronicConductivity;
+    ncc_sigmaeff = ncc.EffectiveElectronicConductivity;
+    pcc_sigmaeff = pcc.EffectiveElectronicConductivity;
 
     %% We setup the current transfers between NegativeCurrentCollector collector and ne material with ne_j_bcsource and ncc_j_bcsource
 

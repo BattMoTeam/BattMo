@@ -1,6 +1,6 @@
 function flux = assembleFlux(model, potential, fluxCoefficient)
     
     op = model.operators;
-    flux = - op.harmFace(fluxCoefficient).*op.Grad(phi); 
+    flux = - op.harmFace(fluxCoefficient).*op.Grad(potential); 
     
 end
