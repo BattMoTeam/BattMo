@@ -15,7 +15,13 @@ classdef Electrode < ElectrochemicalComponent
         Binder              % Binder object
         ConductingAdditive  % Conducting additive object        
         Electrolyte         % Electrolyte data structure
-        
+
+        % names for book-keeping
+        ionName
+        ionFluxName 
+        ionSourceName
+        ionMassConsName
+        ionAccumName
     end
 
     methods
@@ -32,8 +38,33 @@ classdef Electrode < ElectrochemicalComponent
         end
 
         function state = updateIonFlux(model, state)
-        % update Ion fluxes in electrode (this depends on the type of electrode - because it depends on the name of the ion!)
-            error('virtual function')
+            ionName = model.ionName;
+            ionFluxName = model.ionFluxName;
+            
+            D = state.ActiveMaterial.D;
+            c = state.ActiveMaterial.(ionName);
+            Deff = D .* model.volumeFraction .^1.5;
+            
+            ionflux = assembleFlux(model, c, Deff);
+            
+            state.(ionFluxName) = ionflux;
+        end
+  
+        function state = updateMassConservationEquation(model, state)
+            
+            ionName       = model.ionName;
+            ionFluxName   = model.ionFluxName;
+            ionSourceName = model.ionSourceName;
+            
+            flux   = state.(ionFluxName);
+            source = state.(ionSourceName);
+            accum  = state.(ionAccumName);
+            bcflux = 0;
+            
+            masscons = assembleConservationEquation(model, flux, bcflux, source, accum);
+            
+            state.(ionMassConsName) = masscons;
+            
         end
         
     end    

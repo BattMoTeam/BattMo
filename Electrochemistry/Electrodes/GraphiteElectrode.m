@@ -36,7 +36,14 @@ classdef GraphiteElectrode < Electrode
             % setup effective electronic conductivity
             econd = ActiveMaterial.electronicConductivity;
             model.EffectiveElectronicConductivity = econd .* volumeFraction.^1.5;
-            
+                        
+            % Book-keeping variables (see Electrode class)
+            model.ionName         = 'Li';
+            model.ionFluxName     = 'LiFlux';
+            model.ionSourceName   = 'LiSource';
+            model.ionMassConsName = 'massCons';
+            model.ionAccumName    = 'LiAccum';
+
         end
         
         function state = updateReactionRate(model, state)
@@ -60,10 +67,6 @@ classdef GraphiteElectrode < Electrode
             state.R = R;
             
         end
-
-        function state = updateIonFlux(model, state)
-            state = assembleLithiumFlux(model, state);
-        end 
         
     end
 end

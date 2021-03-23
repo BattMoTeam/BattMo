@@ -50,6 +50,14 @@ classdef orgLiPF6 < ElectrochemicalComponent
         sigma       % Surface Tension
         pvap        % Vapor Pressure    
         Deff        % Porous media diffusion coefficient,   [m^2 s^-1]
+
+        
+        % names for book-keeping
+        ionName
+        ionFluxName 
+        ionSourceName
+        ionMassConsName
+        ionAccumName
         
     end
     
@@ -81,6 +89,13 @@ classdef orgLiPF6 < ElectrochemicalComponent
             [~, ind] = ismember('PF6', model.compnames);
             model.sp.t{ind} = 1 - tLi; % Li+ transference number, [-]
             model.sp.z{ind} = -1;
+            
+            % book-keeping variables
+            model.ionName         = 'Li';
+            model.ionFluxName     = 'LiFlux';
+            model.ionSourceName   = 'LiSource';
+            model.ionMassConsName = 'massCons';
+            model.ionAccumName    = 'LiAccum';
             
         end
 
@@ -180,6 +195,22 @@ classdef orgLiPF6 < ElectrochemicalComponent
            
         end
    
+        function state = updateMassConservationEquation(model, state)
+            
+            ionName       = model.ionName;
+            ionFluxName   = model.ionFluxName;
+            ionSourceName = model.ionSourceName;
+            
+            flux   = state.(ionFluxName);
+            source = state.(ionSourceName);
+            accum  = state.(ionAccumName);
+            bcflux = 0;
+            
+            masscons = assembleConservationEquation(model, flux, bcflux, source, accum);
+            
+            state.(ionMassConsName) = masscons;
+            
+        end
     end
 
     %% References

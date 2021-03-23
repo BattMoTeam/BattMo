@@ -31,11 +31,12 @@ classdef ElectrochemicalComponent < PhysicalModel
             
             state = model.updateCurrent(state);
 
-            j = state.j;
-            jBcSource = state.jBcSource;
-            eSource   = state.eSource;
+            flux     = state.j;
+            bcsource = state.jBcSource;
+            source   = state.eSource;
+            accum    = 0;
             
-            chargeCons = assembleConservationEquation(model, j, jBcSource, eSource);
+            chargeCons = assembleConservationEquation(model, flux, bcflux, source, accum);
             
             state.chargeCons = chargeCons;
             

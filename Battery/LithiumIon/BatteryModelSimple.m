@@ -78,7 +78,7 @@ classdef BatteryModelSimple < PhysicalModel
             state = model.dispatchValues(state);
             state = model.updatePhiElectrolyte(state);
             
-            %% Update Source and BC term variables
+            %% Update the material properties
             
             names={{'PositiveElectrode', 'ActiveMaterial'}, {'PositiveElectrode', 'ActiveMaterial'}};
             for i=1:numel(names)
@@ -87,9 +87,11 @@ classdef BatteryModelSimple < PhysicalModel
                 state = model.setProp(state,names{i},val);
             end
             
+            %% Update the boundary source and coupling term variables
+            
             state = setupBCSources(model, state);
             
-            %% Update Reaction Coupling variables
+            %% Update the reaction coupling variables
             
             names={{'NegativeElectrode'}, {'PositiveElectrode'}};
             for i=1:numel(names)
@@ -98,71 +100,72 @@ classdef BatteryModelSimple < PhysicalModel
                 state = model.setProp(state,names{i},val);
             end
             
+            %% Update the exchange terms (current and fluxes between Electrodes and Electrolyte, and current between electrodes and current collectors)
             state = setupExchanges(model, state);
+
+            %% Update the charge conservation terms
             
-            %% Update Fluxes variables
-            
-            names={{'Electrolyte'}, {'NegativeElectrode'}, {'PositiveElectrode'}};
-            for i=1:numel(names)
-                submodel=model.getSubmodel(names{i});
-                val = submodel.updateChargeConservation(model.getProp(state,names{i}));
-                state = model.setProp(state, names{i}, val);
-                val = submodel.updateIonFlux(model.getProp(state,names{i}));
-                state = model.setProp(state, names{i}, val);
-            end
-            
-            names={{'PositiveCurrentCollector'}, {'NegativeCurrentCollector'}};
+            names={{'Electrolyte'}, {'NegativeElectrode'}, {'PositiveElectrode'}, {'PositiveCurrentCollector'}, {'NegativeCurrentCollector'}};
             for i=1:numel(names)
                 submodel=model.getSubmodel(names{i});
                 val = submodel.updateChargeConservation(model.getProp(state,names{i}));
                 state = model.setProp(state,names{i},val);
             end
             
-            %% Set up the governing equations
+            %% Update the Lithium fluxes within the components
             
-            %% Mass and charge conservation for the electorlyte and the electrode
-            
-            % Accumulation terms for the mass conservation equtions
-            cdotLi = struct();
-            cdotLi.Electrolyte = (state.Electrolyte.cs{1} - state0.Electrolyte.cs{1})/dt;
-            cdotLi.NegativeElectrode = (state.NegativeElectrode.ActiveMaterial.Li - state0.NegativeElectrode.ActiveMaterial.Li)/dt;
-            cdotLi.PositiveElectrode = (state.PositiveElectrode.ActiveMaterial.Li - state0.PositiveElectrode.ActiveMaterial.Li)/dt;
-            
-            names = {'Electrolyte', 'NegativeElectrode', 'PositiveElectrode'};
-            eqs={};
-            
-            for i = 1 : numel(names)
-                
-                submodel = model.getSubmodel({names{i}});
-
-                %% probably only be done on the submodel
-                source = model.getProp(state,{names{i},'LiSource'});
-                flux = model.getProp(state,{names{i},'LiFlux'});
-
-                %% could use submodel
-                div = submodel.operators.Div(flux)./submodel.G.cells.volumes;
-
-                if strcmp(names{i}, 'Electrolyte')
-                    cepsdot = submodel.volumeFraction.*cdotLi.(names{i});
-                else
-                    cepsdot = submodel.ActiveMaterial.volumeFraction.*cdotLi.(names{i});
-                end
-                %% Li conservation
-                eqs{end+1} = div - source + cepsdot;
-                
-                %¤ charge continutity
-                %% should probably be done on the sub model
-                eqs{end+1} = model.getProp(state,{names{i}, 'chargeCons'});
+            names={{'Electrolyte'}, {'NegativeElectrode'}, {'PositiveElectrode'}};
+            for i=1:numel(names)
+                submodel=model.getSubmodel(names{i});
+                val = submodel.updateIonFlux(model.getProp(state,names{i}));
+                state = model.setProp(state, names{i}, val);
             end
             
-            %% charge conservation for the current collectors
+            %% Update the accumulation terms for the mass conservation 
+            
+            cdotLi  = (state.Electrolyte.cs{1} - state0.Electrolyte.cs{1})/dt;
+            LiAccum = submodel.volumeFraction.*cdotLi.(names{i});
+            state   = model.setProp(state, {'Electrolyte', 'LiAccum'}, LiAccum);
+            
+            names = {'NegativeElectrode', 'PositiveElectrode'};
+            for i = 1 : numel(names)
+                cdotLi   = (state.(names{i}).ActiveMaterial.Li - state0.(names{i}).ActiveMaterial.Li)/dt;
+                submodel = model.getSubmodel({names{i}});
+                LiAccum  = submodel.ActiveMaterial.volumeFraction.*cdotLi;
+                state    = model.setProp(state, {names(i), 'LiAccum'}, LiAccum);
+            end
+
+            %% Update the mass conservation term
+            names = {'Electrolyte', 'NegativeElectrode', 'PositiveElectrode'};
+            for i = 1 : numel(names)
+                submodel = model.getSubmodel({names{i}});
+                massCons = submodel.updateMassConservationEquation(state.(names{i}));
+                state    = model.setProp(state, {names(i), 'massCons'}, massCons);
+            end
+            
+            
+            %% Set up the governing equations
+            
+            
+            %% We collect mass and charge conservation equations for the electrolyte and the electrodes
+
+            eqs={};
+            
+            names = {'Electrolyte', 'NegativeElectrode', 'PositiveElectrode'};
+            
+            for i = 1 : numel(names)
+                eqs{end + 1} = model.getProp(state,{names{i}, 'massCons'});
+                eqs{end + 1} = model.getProp(state,{names{i}, 'chargeCons'});
+            end
+            
+            %% We collect charge conservation equations for the current collectors
             
             names = {'NegativeCurrentCollector', 'PositiveCurrentCollector'};
             for i = 1 : numel(names)
-                eqs{end+1} = model.getProps(state, {names{i}, 'chargeCons'});
+                eqs{end + 1} = model.getProp(state, {names{i}, 'chargeCons'});
             end
             
-            %% setup control equation (fixed total current at PositiveCurrentCollector)
+            %% We setup and add the control equation (fixed total current at PositiveCurrentCollector)
             
             src = drivingForces.src(time);
             coupterm = model.getCoupTerm('bc-PositiveCurrentCollector');
