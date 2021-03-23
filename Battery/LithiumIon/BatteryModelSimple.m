@@ -84,7 +84,7 @@ classdef BatteryModelSimple < PhysicalModel
             for i=1:numel(names)
                 submodel = model.getSubmodel(names{i});
                 val = submodel.updateMaterialProperties(model.getProp(state,names{i}));
-                state = model.setProp(state,names{i},val);
+                state = model.setProp(state,names{i}, val);
             end
             
             %% Update the boundary source and coupling term variables
@@ -109,7 +109,7 @@ classdef BatteryModelSimple < PhysicalModel
             for i=1:numel(names)
                 submodel=model.getSubmodel(names{i});
                 val = submodel.updateChargeConservation(model.getProp(state,names{i}));
-                state = model.setProp(state,names{i},val);
+                state = model.setProp(state, names{i}, val);
             end
             
             %% Update the Lithium fluxes within the components
@@ -117,30 +117,32 @@ classdef BatteryModelSimple < PhysicalModel
             names={{'Electrolyte'}, {'NegativeElectrode'}, {'PositiveElectrode'}};
             for i=1:numel(names)
                 submodel=model.getSubmodel(names{i});
-                val = submodel.updateIonFlux(model.getProp(state,names{i}));
+                val = submodel.updateIonFlux(model.getProp(state, names{i}));
                 state = model.setProp(state, names{i}, val);
             end
             
             %% Update the accumulation terms for the mass conservation 
             
-            cdotLi  = (state.Electrolyte.cs{1} - state0.Electrolyte.cs{1})/dt;
-            LiAccum = submodel.volumeFraction.*cdotLi.(names{i});
-            state   = model.setProp(state, {'Electrolyte', 'LiAccum'}, LiAccum);
+            name = 'Electrolyte';
+            cdotLi  = (state.(name).cs{1} - state0.(name).cs{1})/dt;
+            submodel = model.getSubmodel({name});
+            LiAccum = submodel.volumeFraction.*cdotLi;
+            state.(name).LiAccum = LiAccum;
             
             names = {'NegativeElectrode', 'PositiveElectrode'};
             for i = 1 : numel(names)
                 cdotLi   = (state.(names{i}).ActiveMaterial.Li - state0.(names{i}).ActiveMaterial.Li)/dt;
                 submodel = model.getSubmodel({names{i}});
                 LiAccum  = submodel.ActiveMaterial.volumeFraction.*cdotLi;
-                state    = model.setProp(state, {names(i), 'LiAccum'}, LiAccum);
+                state.(names{i}).LiAccum = LiAccum;
             end
 
             %% Update the mass conservation term
-            names = {'Electrolyte', 'NegativeElectrode', 'PositiveElectrode'};
+            names = {{'Electrolyte'}, {'NegativeElectrode'}, {'PositiveElectrode'}};
             for i = 1 : numel(names)
-                submodel = model.getSubmodel({names{i}});
-                massCons = submodel.updateMassConservationEquation(state.(names{i}));
-                state    = model.setProp(state, {names(i), 'massCons'}, massCons);
+                submodel = model.getSubmodel(names{i});
+                val = submodel.updateMassConservation(model.getProp(state, names{i}));
+                state = model.setProp(state, names{i}, val);
             end
             
             
@@ -432,9 +434,9 @@ classdef BatteryModelSimple < PhysicalModel
             end
         end
         
-        function var = getProp(model, state,names)
+        function var = getProp(model, state, names)
             var = state.(names{1});
-            for i=2:numel(names)
+            for i = 2 : numel(names)
                 var = var.(names{i});
             end
         end

@@ -195,11 +195,13 @@ classdef orgLiPF6 < ElectrochemicalComponent
            
         end
    
-        function state = updateMassConservationEquation(model, state)
+        function state = updateMassConservation(model, state)
             
-            ionName       = model.ionName;
-            ionFluxName   = model.ionFluxName;
-            ionSourceName = model.ionSourceName;
+            ionName         = model.ionName;
+            ionFluxName     = model.ionFluxName;
+            ionSourceName   = model.ionSourceName;
+            ionAccumName    = model.ionAccumName;
+            ionMassConsName = model.ionMassConsName;
             
             flux   = state.(ionFluxName);
             source = state.(ionSourceName);

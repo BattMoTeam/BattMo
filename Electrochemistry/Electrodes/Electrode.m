@@ -16,12 +16,13 @@ classdef Electrode < ElectrochemicalComponent
         ConductingAdditive  % Conducting additive object        
         Electrolyte         % Electrolyte data structure
 
-        % names for book-keeping
+        % Names for book-keeping
         ionName
         ionFluxName 
         ionSourceName
         ionMassConsName
         ionAccumName
+
     end
 
     methods
@@ -50,11 +51,13 @@ classdef Electrode < ElectrochemicalComponent
             state.(ionFluxName) = ionflux;
         end
   
-        function state = updateMassConservationEquation(model, state)
+        function state = updateMassConservation(model, state)
             
-            ionName       = model.ionName;
-            ionFluxName   = model.ionFluxName;
-            ionSourceName = model.ionSourceName;
+            ionName         = model.ionName;
+            ionFluxName     = model.ionFluxName;
+            ionSourceName   = model.ionSourceName;
+            ionAccumName    = model.ionAccumName;
+            ionMassConsName = model.ionMassConsName;
             
             flux   = state.(ionFluxName);
             source = state.(ionSourceName);
