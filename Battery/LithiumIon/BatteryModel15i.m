@@ -203,7 +203,7 @@ classdef BatteryModel15i < BatteryModelSimple
 
             elyte_Li_div = elyte.operators.Div(elyte_Li_flux)./elyte.G.cells.volumes;
             elyte_Li_cepsdot = elyte.eps.*elyte_Li_cdot;
-            elyte_Li_massCont = (-elyte_Li_div + elyte_Li_source - elyte_Li_cepsdot);
+            elyte_Li_massCons = (-elyte_Li_div + elyte_Li_source - elyte_Li_cepsdot);
             
             elyte_chargeCons = state.elyte.chargeCons;
 
@@ -213,7 +213,7 @@ classdef BatteryModel15i < BatteryModelSimple
             ne_Li_flux = state.ne.LiFlux;
             ne_Li_divDiff = ne.operators.Div(ne_Li_flux)./ne.G.cells.volumes;
             ne_Li_csepsdot = ne_am.eps.*ne_Li_csdot;
-            ne_Li_massCont = (-ne_Li_divDiff + ne_Li_source - ne_Li_csepsdot);
+            ne_Li_massCons = (-ne_Li_divDiff + ne_Li_source - ne_Li_csepsdot);
 
             ne_e_chargeCons = state.ne.chargeCons;
 
@@ -221,7 +221,7 @@ classdef BatteryModel15i < BatteryModelSimple
             pe_Li_flux   = state.pe.LiFlux;
             pe_Li_csepsdot = pe_am.eps.*pe_Li_csdot;
             pe_Li_divDiff = model.pe.operators.Div(pe_Li_flux)./model.pe.G.cells.volumes;
-            pe_Li_massCont = (-pe_Li_divDiff + pe_Li_source - pe_Li_csepsdot);
+            pe_Li_massCons = (-pe_Li_divDiff + pe_Li_source - pe_Li_csepsdot);
 
             pe_e_chargeCons =  state.pe.chargeCons;
 
@@ -242,11 +242,11 @@ classdef BatteryModel15i < BatteryModelSimple
 
             %% Governing equations
 
-            soe = vertcat(elyte_Li_massCont, ...
+            soe = vertcat(elyte_Li_massCons, ...
                           elyte_chargeCons , ...
-                          ne_Li_massCont   , ...
+                          ne_Li_massCons   , ...
                           ne_e_chargeCons  , ...
-                          pe_Li_massCont   , ...
+                          pe_Li_massCons   , ...
                           pe_e_chargeCons  , ...
                           ccne_e_chargeCons, ...
                           ccpe_e_chargeCons, ...
