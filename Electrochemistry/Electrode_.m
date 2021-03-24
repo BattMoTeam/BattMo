@@ -18,7 +18,7 @@ classdef Electrode_ < ElectrochemicalComponent_
             
             propfunctions = model.propfunctions;
             
-            fn = @updatePhi;
+            fn = @Electrode.updatePhi;
             inputnames = {VarName({'am'}, 'phi')};
             fnmodel = {'am'};
             propfunctions{end + 1} = PropFunction('phi', fn, inputnames, fnmodel);

@@ -39,7 +39,7 @@ classdef Battery_ < CompositeModel
             elyte = model.getAssocModel('elyte');
 
             %% Declare update function for temperature and soc
-            fn = @(model, state) model.dispatchValues(state);
+            fn = @Battery.dispatchValues;
             inputnames = {VarName({'..'}, 'T'), ...
                           VarName({'..'}, 'SOC')};
             fnmodel = {'..'};
@@ -50,6 +50,20 @@ classdef Battery_ < CompositeModel
             ccne = ccne.addPropFunction('T', fn, inputnames, fnmodel);
             ccpe = ccpe.addPropFunction('T', fn, inputnames, fnmodel);
             elyte = elyte.addPropFunction('T', fn, inputnames, fnmodel);
+
+            inputnames = {VarName({'..', '..'}, 'T'), ...
+                          VarName({'..', '..'}, 'SOC')};
+            fnmodel = {'..', '..'};
+
+            am = ne.getAssocModel('am');
+            am = am.addPropFunction('T', fn, inputnames, fnmodel);
+            am = am.addPropFunction('SOC', fn, inputnames, fnmodel);
+            ne = ne.setSubModel('am', am);
+
+            am = pe.getAssocModel('am');
+            am = am.addPropFunction('T', fn, inputnames, fnmodel);
+            am = am.addPropFunction('SOC', fn, inputnames, fnmodel);
+            pe = pe.setSubModel('am', am);
             
             %% Declare update functions for accumulation term
             fn = @Battery.updatAccumTerm;
@@ -62,7 +76,7 @@ classdef Battery_ < CompositeModel
             
             %%  Declare update function for exchange terms (ne-elyte, pe-elyte)
             
-            fn = @(model, state) setupExchanges(model, state);
+            fn =  @Battery.setupExchanges;
             inputnames = {VarName({'..', 'ne'}, 'R'), ...
                           VarName({'..', 'pe'}, 'R')};
             fnmodel = {'..'};
@@ -77,14 +91,14 @@ classdef Battery_ < CompositeModel
             
             %% Declare update function for phielyte (electrolyte potential is property of the electrode)
             
-            fn = @(model, state) model.updatePhiElyte(state);
+            fn =  @Battery.updatePhiElyte;
             inputnames = {VarName({'..', 'elyte'}, 'phi')};
             fnmodel = {'..'};
             ne = ne.addPropFunction('phielyte', fn, inputnames, fnmodel);
             pe = pe.addPropFunction('phielyte', fn, inputnames, fnmodel);
             
             %% Declare update functions for boundary terms (for ne, ccne, pe, ccpe)
-            fn = @(model, state) setupBCSources(model, state);
+            fn =  @Battery.setupBCSources;
             inputnames = {VarName({'..', 'ne', 'am'}, 'phi'), ...
                           VarName({'..', 'pe', 'am'}, 'phi'), ... 
                           VarName({'..', 'ccne'}, 'phi'), ...
