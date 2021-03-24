@@ -18,12 +18,12 @@ classdef NMC111_ < ComponentModel
             model.vardims('cs') = 2;
             
             % Alias: cLi for cs{1}
-            model = model.setAlias({'cLi', VarName({'.'}, 'cs', 2, 1)});
+            model = model.setAlias({'Li', VarName({'.'}, 'cs', 2, 1)});
             
             propfunctions = model.propfunctions;
             
             fn = @NMC111.updateMaterialProperties;
-            inputnames = {'cLi', 'T'};
+            inputnames = {'Li', 'T'};
             fnmodel = {'.'};
                         
             propfunctions = model.propfunctions;

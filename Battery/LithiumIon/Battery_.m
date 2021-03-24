@@ -53,7 +53,7 @@ classdef Battery_ < CompositeModel
             
             %% Declare update functions for accumulation term
             fn = @Battery.updatAccumTerm;
-            inputnames = {'cLi', {'..', 'prevstate'}, {'..', 'dt'}};
+            inputnames = {'Li', {'..', 'prevstate'}, {'..', 'dt'}};
             fnmodel = {'.'};
 
             ne = ne.addPropFunction('LiAccum', fn, inputnames, fnmodel);
@@ -71,6 +71,9 @@ classdef Battery_ < CompositeModel
             pe = pe.addPropFunction('LiSource', fn, inputnames, fnmodel);
             pe = pe.addPropFunction('eSource' , fn, inputnames, fnmodel);
             elyte = elyte.addPropFunction('LiSource', fn, inputnames, fnmodel);
+            elyte = elyte.addPropFunction('eSource', fn, inputnames, fnmodel);
+            ccne = ccne.addPropFunction('eSource', fn, inputnames, fnmodel);
+            ccpe = ccpe.addPropFunction('eSource', fn, inputnames, fnmodel);
             
             %% Declare update function for phielyte (electrolyte potential is property of the electrode)
             
@@ -93,11 +96,12 @@ classdef Battery_ < CompositeModel
             pe   = pe.addPropFunction('jBcSource', fn, inputnames, fnmodel);
             ccne = ccne.addPropFunction('jBcSource', fn, inputnames, fnmodel);
             ccpe = ccpe.addPropFunction('jBcSource', fn, inputnames, fnmodel);
+            elyte = elyte.addPropFunction('jBcSource', fn, inputnames, fnmodel);
             
             model = model.setSubModel('ne', ne);
             model = model.setSubModel('pe', pe);
             model = model.setSubModel('ccne', ccne);
-            model = model.setSubModel('ccne', ccne);
+            model = model.setSubModel('ccpe', ccpe);
             model = model.setSubModel('elyte', elyte);
 
             model = model.initiateCompositeModel();

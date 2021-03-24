@@ -15,22 +15,22 @@ classdef orgLiPF6_ < ElectrochemicalComponent_
             
             model.vardims('cs') = 2;
 
-            model = model.setAlias({'cLi', VarName({'.'}, 'cs', 2, 1)});
+            model = model.setAlias({'Li', VarName({'.'}, 'cs', 2, 1)});
             
             fn = @orgLiPF6.updateCurrent;
-            inputnames = {'cLi', 'T', 'phi'};
+            inputnames = {'Li', 'T', 'phi'};
             fnmodel = {'.'};
             model = model.addPropFunction('j', fn, inputnames, fnmodel);
             
             fn = @orgLiPF6.updateLithiumFlux;
-            inputnames = {'cLi', 'j', 'T'};
+            inputnames = {'Li', 'j', 'T'};
             fnmodel = {'.'};
             model = model.addPropFunction('LiFlux', fn, inputnames, fnmodel);        
             
             fn = @orgLiPF6.updateMassConservation;
-            inputnames = {'cLi', 'LiSource', 'LiAccum'};
+            inputnames = {'LiFlux', 'LiSource', 'LiAccum'};
             fnmodel = {'.'};
-            model = model.addPropFunction('LiFlux', fn, inputnames, fnmodel);
+            model = model.addPropFunction('massCons', fn, inputnames, fnmodel);
 
         end
         
