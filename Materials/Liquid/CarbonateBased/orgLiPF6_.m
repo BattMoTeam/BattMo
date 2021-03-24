@@ -11,6 +11,7 @@ classdef orgLiPF6_ < ElectrochemicalComponent_
                      'LiFlux'    , ...
                      'LiAccum'   , ...
                      'massCons'};
+            model.names = names;
             
             model.vardims('cs') = 2;
 

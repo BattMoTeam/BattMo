@@ -11,7 +11,8 @@ classdef ElectrochemicalComponent_ < ComponentModel
                      'eSource'  , ...
                      'j'        , ...
                      'chargeCons'};
-
+            model.names = names;
+            
             propfunctions = model.propfunctions;
             
             fn = @ElectrochemicalComponent.updateCurrent;

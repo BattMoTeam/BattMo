@@ -15,6 +15,8 @@ classdef Electrode_ < ElectrochemicalComponent_
                      'LiFlux'        , ...
                      'LiAccum'       , ...
                      'massCons'};
+            model.names = names;
+            
             propfunctions = model.propfunctions;
             
             fn = @updatePhi;

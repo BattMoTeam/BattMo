@@ -13,6 +13,8 @@ classdef NMC111_ < ComponentModel
                      'OCP'  , ...
                      'k'    , ...
                      'phi'};
+            model.names = names;
+            
             model.vardims('cs') = 2;
             
             % Alias: cLi for cs{1}
