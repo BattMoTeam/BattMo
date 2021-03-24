@@ -5,10 +5,13 @@ classdef GraphiteElectrode_ < CompositeModel
         function model = GraphiteElectrode_(name)
 
             model = model@CompositeModel(name);
+
             submodels = {};
             submodels{end + 1} = Graphite_('am');
-            
             model.SubModels = submodels;
+        
+            model = model.setAlias({'cLi', VarName({'am'}, 'cLi')});
+
         end
         
         
