@@ -1,10 +1,10 @@
-classdef NMC111Electrode_ < CompositeModel
+classdef NMC111Electrode_ < Electrode_
 
     methods
 
         function model = NMC111Electrode_(name)
 
-            model = model@CompositeModel(name);
+            model = model@Electrode_(name);
             
             submodels = {};
             submodels{end + 1} = NMC111_('am');

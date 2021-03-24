@@ -1,10 +1,10 @@
-classdef ElectrochemicalComponent_ < ComponentModel
+classdef ElectrochemicalComponent_ < CompositeModel
 
     methods
 
         function model = ElectrochemicalComponent_(name)
 
-            model = model@ComponentModel(name);
+            model = model@CompositeModel(name);
             names = {'T'        , ...
                      'phi'      , ...
                      'jBcSource', ...

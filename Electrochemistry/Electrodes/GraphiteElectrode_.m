@@ -1,10 +1,10 @@
-classdef GraphiteElectrode_ < CompositeModel
+classdef GraphiteElectrode_ < Electrode_
 
     methods
 
         function model = GraphiteElectrode_(name)
 
-            model = model@CompositeModel(name);
+            model = model@Electrode_(name);
 
             submodels = {};
             submodels{end + 1} = Graphite_('am');

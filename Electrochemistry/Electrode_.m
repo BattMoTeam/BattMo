@@ -9,7 +9,6 @@ classdef Electrode_ < ElectrochemicalComponent_
             names = {model.names{:}, ...
                      'SOC'           , ...
                      'phiElectrolyte', ...
-                     'eta'           , ...
                      'R'             , ...
                      'LiSource'      , ...
                      'LiFlux'        , ...
@@ -24,16 +23,22 @@ classdef Electrode_ < ElectrochemicalComponent_
             fnmodel = {'am'};
             propfunctions{end + 1} = PropFunction('phi', fn, inputnames, fnmodel);
 
-            fn = @Eletrode.updateIonFlux();
-            inputnames = {VarName({'am'}, D), VarName({'am'}, 'cLi')};
+            fn = @Eletrode.updateIonFlux;
+            inputnames = {VarName({'am'}, 'D'), VarName({'am'}, 'cLi')};
             fnmodel = {'.'};
             propfunctions{end + 1} = PropFunction('LiFlux', fn, inputnames, fnmodel);
             
-            fn = @Electrode.updateMassConservation();
+            fn = @Electrode.updateMassConservation;
             inputnames = {'LiFlux', 'LiSource', 'LiAccum'};
             fnmodel = {'.'};
             propfunctions{end + 1} = PropFunction('massCons', fn, inputnames, fnmodel);
-                        
+            
+            fn = @Electrode.updateReactionRate;
+            inputnames = {'T', 'phiElectrolyte', VarName({'am'}, 'phi'), VarName({'am'}, 'OCP'), VarName({'am'}, 'k')};
+            fnmodel = {'.'};
+            propfunctions{end + 1} = PropFunction('R', fn, inputnames, fnmodel);
+
+            model.propfunctions = propfunctions;
         end
         
     end
