@@ -162,7 +162,6 @@ classdef orgLiPF6 < ElectrochemicalComponent
         function state = updateLithiumFlux(model, state)
             
             % We assume that LiSource and current have been updated
-            LiSource = state.LiSource;
             c = state.cs{1};
             j = state.j;
             T = state.T;
