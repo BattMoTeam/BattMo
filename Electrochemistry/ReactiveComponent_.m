@@ -1,10 +1,10 @@
-classdef Electrode_ < ElectrochemicalComponent_
+classdef ReactiveComponent_ < ElectronicComponent_
 
     methods
 
-        function model = Electrode_(name)
+        function model = ReactiveComponent_(name)
 
-            model = model@ElectrochemicalComponent_(name);
+            model = model@ElectroChemicalCompoent_(name);
             
             names = {model.names{:}, ...
                      'SOC'           , ...
@@ -15,6 +15,8 @@ classdef Electrode_ < ElectrochemicalComponent_
                      'LiAccum'       , ...
                      'massCons'};
             model.names = names;
+            
+            model.SubModels{1} = ActiveComponent_('am');
             
             propfunctions = model.propfunctions;
             

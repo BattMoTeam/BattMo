@@ -1,8 +1,8 @@
-classdef ElectrochemicalComponent_ < CompositeModel
+classdef ElectronicComponent_ < CompositeModel
 
     methods
 
-        function model = ElectrochemicalComponent_(name)
+        function model = ElectronicComponent_(name)
 
             model = model@CompositeModel(name);
             names = {'T'        , ...
@@ -26,7 +26,6 @@ classdef ElectrochemicalComponent_ < CompositeModel
             propfunctions{end + 1} = PropFunction('chargeCons', fn, inputnames, fnmodel);
             
             model.propfunctions = propfunctions;
-            
             
         end
         

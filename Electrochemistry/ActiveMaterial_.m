@@ -1,8 +1,8 @@
-classdef NMC111_ < ComponentModel
+classdef ActiveMaterial_ < ComponentModel
     
     methods
         
-        function model = NMC111_(name)
+        function model = ActiveMaterial_(name)
 
             model = model@ComponentModel(name);
             names = {'T'    , ...
@@ -14,18 +14,14 @@ classdef NMC111_ < ComponentModel
                      'k'    , ...
                      'phi'};
             model.names = names;
-            
-            model.vardims('cs') = 2;
-            
+
             % Alias: Li for cs{1}
             model = model.setAlias({'Li', VarName({'.'}, 'cs', 2, 1)});
             
-            propfunctions = model.propfunctions;
-            
-            fn = @NMC111.updateMaterialProperties;
-            inputnames = {'Li', 'T'};
+            fn = @ActiveMaterial.updateMaterialProperties;
+            inputnames = {'c', 'T'};
             fnmodel = {'.'};
-                        
+            
             propfunctions = model.propfunctions;
             
             propfunctions{end + 1} = PropFunction('theta', fn, inputnames, fnmodel);
@@ -34,9 +30,9 @@ classdef NMC111_ < ComponentModel
             propfunctions{end + 1} = PropFunction('k', fn, inputnames, fnmodel);
             
             model.propfunctions = propfunctions;
-            
-        end
+
+        end        
         
     end
-   
+    
 end
