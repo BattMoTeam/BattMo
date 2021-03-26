@@ -8,6 +8,7 @@ classdef ElectroChemicalComponent_ < ElectronicComponent_
             
             names = {model.names{:}, ...
                      'cs', ...
+                     'D', ...
                      'chargeCarrierSource', ...
                      'chargeCarrierFlux'  , ...
                      'chargeCarrierAccum' , ...
@@ -19,10 +20,15 @@ classdef ElectroChemicalComponent_ < ElectronicComponent_
             model = model.setAlias({'chargeCarrier', VarName({'.'}, 'cs', 2, 1)});
             
             fn = @ElectroChemicalComponent.updateChargeCarrierFlux;
-            inputnames = {'chargeCarrier', 'phi', 'T'};
+            inputnames = {'chargeCarrier', 'D'};
             fnmodel = {'.'};
             model = model.addPropFunction('chargeCarrierFlux', fn, inputnames, fnmodel);        
             
+            fn = @ElectroChemicalComponent.updateDiffusionCoefficient;
+            inputnames = {'T'};
+            fnmodel = {'.'};
+            model = model.addPropFunction('D', fn, inputnames, fnmodel);        
+
             fn = @ElectroChemicalComponent.updateCurrent;
             inputnames = {'chargeCarrier', 'phi'};
             fnmodel = {'.'};
@@ -33,8 +39,6 @@ classdef ElectroChemicalComponent_ < ElectronicComponent_
             fnmodel = {'.'};
             model = model.addPropFunction('massCons', fn, inputnames, fnmodel);
 
-            
-            
         end
         
     end
