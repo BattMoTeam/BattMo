@@ -29,7 +29,7 @@ classdef ActiveElectroChemicalComponent_ < ElectroChemicalComponent_
             inputnames = {VarName({'..'}, 'phi')};
             fnmodel = {'..'};
             am = am.addPropFunction('phi', fn, inputnames, fnmodel);
-
+            
             fn = @ActiveElectroChemicalComponent.updateT;
             inputnames = {VarName({'..'}, 'T')};
             fnmodel = {'..'};

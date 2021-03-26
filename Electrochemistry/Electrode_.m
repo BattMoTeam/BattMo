@@ -9,28 +9,28 @@ classdef Electrode_ < CompositeModel
             names = {model.names{:}, ...
                      'T' };
             
-            model.SubModels{1} = ActiveElectroChemicalComponent_('main');
+            model.SubModels{1} = ActiveElectroChemicalComponent_('aecm');
             model.SubModels{2} = ElectronicComponent_('cc');
 
             % Add potential coupling between the two
-            main = model.getAssocModel('main');
+            aecm = model.getAssocModel('aecm');
             cc = model.getAssocModel('cc');
             
-            inputnames = {VarName({'..', 'main'}, 'phi'), ...
+            inputnames = {VarName({'..', 'aecm'}, 'phi'), ...
                           VarName({'..', 'cc'}, 'phi')};
             fn = @Electrode.setupMainAndCCcoupling;
             fnmodel = {'..'};
-            main = main.addPropFunction('jBcSource', fn, inputnames, fnmodel);
+            aecm = aecm.addPropFunction('jBcSource', fn, inputnames, fnmodel);
             cc = cc.addPropFunction('jBcSource', fn, inputnames, fnmodel);
 
             inputnames = {VarName({'..'}, 'T')};
             fn = @Electrode.updateT;
             fnmodel = {'..'};
-            main = main.addPropFunction('T', fn, inputnames, fnmodel);
+            aecm = aecm.addPropFunction('T', fn, inputnames, fnmodel);
             cc = cc.addPropFunction('T', fn, inputnames, fnmodel);
             
             
-            model = model.setSubModel('main', main);
+            model = model.setSubModel('aecm', aecm);
             model = model.setSubModel('cc', cc);
             
         end
