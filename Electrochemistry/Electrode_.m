@@ -18,7 +18,7 @@ classdef Electrode_ < CompositeModel
             
             inputnames = {VarName({'..', 'aecm'}, 'phi'), ...
                           VarName({'..', 'cc'}, 'phi')};
-            fn = @Electrode.setupMainAndCCcoupling;
+            fn = @Electrode.setupCCcoupling;
             fnmodel = {'..'};
             aecm = aecm.addPropFunction('jBcSource', fn, inputnames, fnmodel);
             cc = cc.addPropFunction('jBcSource', fn, inputnames, fnmodel);
