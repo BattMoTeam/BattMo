@@ -10,11 +10,12 @@ classdef ActiveElectroChemicalComponent_ < ElectroChemicalComponent_
             
             propfunctions = model.propfunctions;
             
-            fn = @Eletrode.updateIonSource;
+            fn = @ActiveElectroChemicalComponent.updateIonAndCurrentSource;
             inputnames = {VarName({'am'}, 'R')};
             fnmodel = {'.'};
             propfunctions{end + 1} = PropFunction('chargeCarrierSource', fn, inputnames, fnmodel);
-                        
+            propfunctions{end + 1} = PropFunction('eSource', fn, inputnames, fnmodel);
+            
             model.propfunctions = propfunctions;
             
             am = model.getAssocModel('am');
