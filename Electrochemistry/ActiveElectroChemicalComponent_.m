@@ -8,34 +8,26 @@ classdef ActiveElectroChemicalComponent_ < ElectroChemicalComponent_
             
             model.SubModels{1} = ActiveMaterial_('am');
             
-            propfunctions = model.propfunctions;
-            
             fn = @ActiveElectroChemicalComponent.updateIonAndCurrentSource;
             inputnames = {VarName({'am'}, 'R')};
             fnmodel = {'.'};
-            propfunctions{end + 1} = PropFunction('chargeCarrierSource', fn, inputnames, fnmodel);
-            propfunctions{end + 1} = PropFunction('eSource', fn, inputnames, fnmodel);
-            
-            model.propfunctions = propfunctions;
-            
-            am = model.getAssocModel('am');
+            model = model.addPropFunction('chargeCarrierSource', fn, inputnames, fnmodel);
+            model = model.addPropFunction('eSource', fn, inputnames, fnmodel);
             
             fn = @ActiveElectroChemicalComponent.updateChargeCarrier;
             inputnames = {VarName({'..'}, 'cs')};
             fnmodel = {'..'};
-            am = am.addPropFunction('cs', fn, inputnames, fnmodel);
+            model = model.addPropFunction({'am', 'cs'}, fn, inputnames, fnmodel);
 
             fn = @ActiveElectroChemicalComponent.updatePhi;
             inputnames = {VarName({'..'}, 'phi')};
             fnmodel = {'..'};
-            am = am.addPropFunction('phi', fn, inputnames, fnmodel);
+            model = model.addPropFunction({'am', 'phi'}, fn, inputnames, fnmodel);
             
             fn = @ActiveElectroChemicalComponent.updateT;
             inputnames = {VarName({'..'}, 'T')};
             fnmodel = {'..'};
-            am = am.addPropFunction('T', fn, inputnames, fnmodel);
-            
-            model = model.setSubModel('am', am);
+            model = model.addPropFunction({'am', 'T'}, fn, inputnames, fnmodel);
             
         end
         

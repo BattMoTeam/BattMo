@@ -117,7 +117,7 @@ classdef Battery < PhysicalModel
             names={{'Electrolyte'}, {'NegativeElectrode'}, {'PositiveElectrode'}};
             for i=1:numel(names)
                 submodel=model.getSubmodel(names{i});
-                val = submodel.updateIonFlux(model.getProp(state, names{i}));
+                val = submodel.updateChargeCarrierFlux(model.getProp(state, names{i}));
                 state = model.setProp(state, names{i}, val);
             end
             

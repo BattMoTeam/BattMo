@@ -1,4 +1,4 @@
-classdef CurrentCollector_ < ElectrochemicalComponent_
+classdef CurrentCollector_ < ElectronicComponent_
     
 end
 

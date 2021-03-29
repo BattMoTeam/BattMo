@@ -155,7 +155,7 @@ classdef orgLiPF6 < ElectrochemicalComponent
             
         end
 
-        function state = updateIonFlux(model, state)
+        function state = updateChargeCarrierFlux(model, state)
             state = model.updateLithiumFlux(state);
         end
         

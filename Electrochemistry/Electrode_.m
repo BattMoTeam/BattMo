@@ -13,25 +13,19 @@ classdef Electrode_ < CompositeModel
             model.SubModels{2} = ElectronicComponent_('cc');
 
             % Add potential coupling between the two
-            aecm = model.getAssocModel('aecm');
-            cc = model.getAssocModel('cc');
             
             inputnames = {VarName({'..', 'aecm'}, 'phi'), ...
                           VarName({'..', 'cc'}, 'phi')};
             fn = @Electrode.setupCCcoupling;
             fnmodel = {'..'};
-            aecm = aecm.addPropFunction('jBcSource', fn, inputnames, fnmodel);
-            cc = cc.addPropFunction('jBcSource', fn, inputnames, fnmodel);
+            model = model.addPropFunction({'aecm', 'jBcSource'}, fn, inputnames, fnmodel);
+            model = model.addPropFunction({'cc', 'jBcSource'}, fn, inputnames, fnmodel);
 
             inputnames = {VarName({'..'}, 'T')};
             fn = @Electrode.updateT;
             fnmodel = {'..'};
-            aecm = aecm.addPropFunction('T', fn, inputnames, fnmodel);
-            cc = cc.addPropFunction('T', fn, inputnames, fnmodel);
-            
-            
-            model = model.setSubModel('aecm', aecm);
-            model = model.setSubModel('cc', cc);
+            model = model.addPropFunction({'aecm', 'T'}, fn, inputnames, fnmodel);
+            model = model.addPropFunction({'cc', 'T'}, fn, inputnames, fnmodel);
             
         end
         

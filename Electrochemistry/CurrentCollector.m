@@ -1,4 +1,4 @@
-classdef CurrentCollector < ElectrochemicalComponent
+classdef CurrentCollector < ElectronicComponent
 % Current collector model 
     
     properties
@@ -7,9 +7,10 @@ classdef CurrentCollector < ElectrochemicalComponent
     end
     
     methods
+        
         function model = CurrentCollector(G, cells)
             
-            model = model@ElectrochemicalComponent();
+            model = model@ElectronicComponent();
             
             % setup grid
             G = genSubGrid(G, cells);

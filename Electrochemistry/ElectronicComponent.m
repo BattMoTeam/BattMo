@@ -1,17 +1,14 @@
-classdef ElectrochemicalComponent < PhysicalModel
+classdef ElectronicComponent < PhysicalModel
     
     properties
         
-        constants 
-        
-        Volume
-        EffectiveElectronicConductivity
-        
+        constants; % physical constants, see PhysicalConstants
+        EffectiveElectronicConductivity;
     end
 
     methods
         
-        function model = ElectrochemicalComponent()
+        function model = ElectronicComponent()
             model = model@PhysicalModel([]);
             model.constants = PhysicalConstants();
         end

@@ -25,18 +25,14 @@ classdef ActiveMaterial_ < CompositeModel
             fn = @ActiveMaterial.updateMaterialProperties;
             inputnames = {'chargeCarrier', 'T'};
             fnmodel = {'.'};
-            
-            propfunctions = model.propfunctions;
-            
-            propfunctions{end + 1} = PropFunction('OCP', fn, inputnames, fnmodel);
-            propfunctions{end + 1} = PropFunction('k', fn, inputnames, fnmodel);
+            model = model.addPropFunction('OCP', fn, inputnames, fnmodel);
+            model = model.addPropFunction('k', fn, inputnames, fnmodel);
             
             fn = @ActiveMaterial.updateReactionRate;
             inputnames = {'T', 'phiElyte', 'phi', 'chargeCarrier', 'chargeCarrierElyte', 'OCP', 'k'};
             fnmodel = {'.'};
-            propfunctions{end + 1} = PropFunction('R', fn, inputnames, fnmodel);
+            model = model.addPropFunction('R', fn, inputnames, fnmodel);
 
-            model.propfunctions = propfunctions;
 
         end        
         

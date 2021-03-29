@@ -1,76 +1,39 @@
-classdef Electrode < ElectrochemicalComponent
+classdef Electrode < PhysicalModel
     
     properties
         
-        % Design properties
-        thickness       % Thickness,        [m]
-        volumeFraction  % Volume fraction,  [-]
-        porosity        % Porosity,         [-]
-        mass            % Mass,             [kg]
-        volume          % Volume,           [m3]
-        area            % Area,             [m2]
+        % submodels
+        ElectrodeActiveComponent % is a ActiveElectroChemicalComponent
+        CurrentCollector % is a ElectronicComponent
         
-        % SubModels
-        ActiveMaterial
-        Binder              % Binder object
-        ConductingAdditive  % Conducting additive object        
-        Electrolyte         % Electrolyte data structure
-
-        % Names for book-keeping
-        ionName
-        ionFluxName 
-        ionSourceName
-        ionMassConsName
-        ionAccumName
-
     end
 
     methods
-       
-        function state = updateCurrent(model, state)
+        
+        function model = Electrode()
+            model = PhysicalModel([]);
             
-            sigmaeff = model.EffectiveElectronicConductivity;
-            phi = state.ActiveMaterial.phi;
-            
-            j = assembleFlux(model, phi, sigmaeff); 
-
-            state.j = j;
+            % Setup the two components
             
         end
-
-        function state = updateIonFlux(model, state)
-            ionName = model.ionName;
-            ionFluxName = model.ionFluxName;
+        
+        function state  = setupCurrentCollectorCoupling(model, state)
+        % setup electrical coupling between current collector and the electrode active component
             
-            D = state.ActiveMaterial.D;
-            c = state.ActiveMaterial.(ionName);
-            Deff = D .* model.volumeFraction .^1.5;
+            error('to be implemented')
             
-            ionflux = assembleFlux(model, c, Deff);
-            F = model.constants.F;
-            ionflux = ionflux*F;
+            eac_phi = state.ElectrodeActiveComponent.phi;
+            cc_phi = state.CurrentCollector.phi;
             
-            state.(ionFluxName) = ionflux;
-        end
-  
-        function state = updateMassConservation(model, state)
-            
-            ionName         = model.ionName;
-            ionFluxName     = model.ionFluxName;
-            ionSourceName   = model.ionSourceName;
-            ionAccumName    = model.ionAccumName;
-            ionMassConsName = model.ionMassConsName;
-            
-            flux   = state.(ionFluxName);
-            source = state.(ionSourceName);
-            accum  = state.(ionAccumName);
-            bcflux = 0;
-            
-            masscons = assembleConservationEquation(model, flux, bcflux, source, accum);
-            
-            state.(ionMassConsName) = masscons;
+            state.ElectrodeActiveComponent.jBcSource = someFunctionOf(eac_phi, cc_phi);
+            state.CurrentCollector.jBcSource = someFunctionOf(eac_phi, cc_phi);
             
         end
+        
+        function state = updateT(model, state)
+            state.ElectrodeActiveComponent.T = state.T;
+            state.CurrentCollector.T = state.T;
+        end        
         
     end    
 end
