@@ -23,12 +23,6 @@ function state = setupBCSources(model, state)
     
     %% We assume state.NegativeElectrode.ActiveMaterial.D and state.NegativeElectrode.ActiveMaterial.D  have been updated
 
-    D = state.NegativeElectrode.ActiveMaterial.D;
-    ne_Deff = D.*ne_am.volumeFraction.^1.5;
-
-    D = state.PositiveElectrode.ActiveMaterial.D;
-    pe_Deff = D.*pe_am.volumeFraction.^1.5;
-
     ne_sigmaeff  = ne.EffectiveElectronicConductivity;
     pe_sigmaeff  = pe.EffectiveElectronicConductivity;
     ncc_sigmaeff = ncc.EffectiveElectronicConductivity;
