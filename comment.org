@@ -1,0 +1,62 @@
+#+OPTIONS: num:nil
+#+OPTIONS: toc:nil
+
+* Introduce hierarchy
+  - ~ElectrochemicalComponent~
+  - ~ElectrochemicalComponent < orgLiPF6~ (did not introduce ~Electrolyte~ class because for the moment we have only that one)
+  - ~ElectrochemicalComponent < Electrode~
+  - ~ElectrochemicalComponent < CurrentCollector~
+  - ~Electrode < GraphiteElectrode~
+  - ~Electrode < NMC111~
+* The discrete differential operator 
+  - The use of the discrete differential operators is limited the two (very short!) functions
+    - ~flux = assembleFlux(model, potential, fluxCoefficient)~ 
+
+      computes a flux given a potential (like ~phi~) and flux coefficient (such as electronic conductivity)
+    - ~cons = assembleConservationEquation(model, flux, bcflux, source, accum)~ 
+       
+      Assemble a conservation equation $accum + div(j) = q$ with boundary condition (sent by ~bcflux~). The ~accum~ term
+      is called /accumulation/ term and will represente dicretization of time derivative.
+* ~ElectrochemicalComponent~ 
+  - has method
+    - ~updateCurrent~ : update current.
+    - ~updateChargeConservation~ : update the charge conservation equation (~chargeCons~)
+* Both ~orgLiPF6~ and ~Electrode~
+   - have method ~updateMassConservation~
+   - The Lithium fluxes and sources must be updated before calling ~updateMassConservation~
+   - Introduced an /accumlation/ term in ~state~
+   - To handle different name of ions (not only Lithium for electrodes), we introduce some string properties in the
+     ~Electrode~ class (~ionName~, ~ionFluxName~, ...)
+* We simply collect the equations
+#+BEGIN_SRC octave
+  %% Set up the governing equations
+  
+  eqs={};
+  
+  %% We collect mass and charge conservation equations for the electrolyte and the electrodes
+  names = {'Electrolyte', 'NegativeElectrode', 'PositiveElectrode'};
+  
+  for i = 1 : numel(names)
+      eqs{end + 1} = model.getProp(state,{names{i}, 'massCons'});
+      eqs{end + 1} = model.getProp(state,{names{i}, 'chargeCons'});
+  end
+  
+  %% We collect charge conservation equations for the current collectors
+  
+  names = {'NegativeCurrentCollector', 'PositiveCurrentCollector'};
+  for i = 1 : numel(names)
+      eqs{end + 1} = model.getProp(state, {names{i}, 'chargeCons'});
+  end
+#+END_SRC
+* Still code duplication in updateReactionRate
+  - different sign.
+  - It is not clear why we use different sign (in the reaction rate and in the source term so that minus*minus =
+    plus). Maybe we should change that
+* addition of ~updateIonFlux~ in ~orgLiPF6~ looks artificial
+  - It is done to make BatteryModelSimple more generic
+* change from uppercase to downcase for first letter in camelCase?
+  - adapt some rule when we capitalized variable=
+* Code compaction is not obvious because we may not anticipate the way we store variables:
+  - see [[file:Electrochemistry/Electrodes/Electrode.m::function state = updateCurrent(model, state)][here]] (link not working for you)
+* Double computation was done because we were a bit lost in the computational graph...
+  - see commit 8833a1b7269502b8990f29194168a19faa7b6a87
