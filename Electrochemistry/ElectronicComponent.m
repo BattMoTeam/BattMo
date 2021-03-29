@@ -4,12 +4,21 @@ classdef ElectronicComponent < PhysicalModel
         
         constants; % physical constants, see PhysicalConstants
         EffectiveElectronicConductivity;
+        
     end
 
     methods
         
-        function model = ElectronicComponent()
-            model = model@PhysicalModel([]);
+        function model = ElectronicComponent(params)
+            
+            G = params.G;
+            model.EffectiveElectronicConductivity = params.EffectiveElectronicConductivity;
+            
+            model = model@PhysicalModel(G);
+            
+            % setup discrete differential operators
+            model.operators = localSetupOperators(G);
+            
             model.constants = PhysicalConstants();
         end
 

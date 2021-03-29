@@ -1,13 +1,9 @@
 classdef ActiveElectroChemicalComponent < ElectroChemicalComponent
     
-    properties
-        
-    end
-
     methods
         
-        function model = ActiveElectroChemicalComponent()
-            model = model@ElectroChemicalComponent([]);
+        function model = ActiveElectroChemicalComponent(params)
+            model = model@ElectroChemicalComponent(params);
         end
 
         function state = updateIonAndCurrentSource(model, state)

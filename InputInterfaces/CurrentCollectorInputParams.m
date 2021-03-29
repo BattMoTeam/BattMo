@@ -1,17 +1,26 @@
 classdef CurrentCollectorInputParams < ElectronicComponentInputParams
     
     properties
-        
         volumeFraction 
         electronicConductivity
     end
     
     methods
         
-        function params = CurrentCollectorInputParams(params)
+        function paramobj = CurrentCollectorInputParams(params)
+        %
+        % params should contain fields for ComponentInputParams and 
+        % - volumeFraction
+        % - electronicConductivity
+            
+            volumeFraction = params.volumeFraction;
+            electronicConductivity = params.electronicConductivity;
+            params.EffectiveElectronicConductivity = (electronicConductivity) .* (volumeFraction).^1.5;
+            
+            paramobj = params@ElectronicComponentInputParams(params);
 
-            params = params@ElectronicComponentInputParams(params);
-            params.EffectiveElectronicConductivity = (params.electronicConductivity) .* (params.volumeFraction).^1.5;
+            paramobj.volumeFraction = volumeFraction;
+            paramobj.electronicConductivity = electronicConductivity;
             
         end
 

@@ -35,9 +35,8 @@ classdef ActiveMaterial < PhysicalModel
     
     methods
 
-        function model = ActiveMaterial()
-            
-            model = model@PhysicalModel([]);
+        function model = ActiveMaterial(G)
+            model = model@PhysicalModel(G);
         end
         
         function state = updateMaterialProperties(model, state)

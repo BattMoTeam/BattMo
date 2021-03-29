@@ -8,21 +8,12 @@ classdef CurrentCollector < ElectronicComponent
     
     methods
         
-        function model = CurrentCollector(G, cells)
+        function model = CurrentCollector(params)
             
-            model = model@ElectronicComponent();
+            model = model@ElectronicComponent(params);
             
-            % setup grid
-            G = genSubGrid(G, cells);
-            model.G = G;
-            
-            % setup discrete differential operators
-            model.operators = localSetupOperators(G);
-
-            model.electronicConductivity = 100;
-            model.volumeFraction = ones(G.cells.num, 1);
-            model.EffectiveElectronicConductivity = (model.electronicConductivity) .* (model.volumeFraction).^1.5;            
-
+            model.electronicConductivity = params.electronicConductivity;
+            model.volumeFraction = params.volumeFraction;
             
         end
     end

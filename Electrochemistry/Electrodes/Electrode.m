@@ -2,9 +2,11 @@ classdef Electrode < PhysicalModel
     
     properties
         
-        % submodels
-        ElectrodeActiveComponent % is a ActiveElectroChemicalComponent
-        CurrentCollector % is a ElectronicComponent
+        %% submodels:
+        % electrode active component
+        ElectrodeActiveComponent %  (class ActiveElectroChemicalComponent)
+        % current collector
+        CurrentCollector % (class ElectronicComponent)
 
         couplingTerms;
         
@@ -12,10 +14,19 @@ classdef Electrode < PhysicalModel
 
     methods
         
-        function model = Electrode()
-            model = PhysicalModel([]);
+        function model = Electrode(paramobj)
             
-            % Setup the two components
+            model = PhysicalModel(paramobj.G);
+            
+            % Assign the autodiff backend
+            model.G = paramobj.AutoDiffBackend;            
+            
+            % Assign the two components
+            model.ElectrodeActiveComponent = ActiveElectroChemicalComponent(paramobj.eac);
+            model.CurrentCollector = ElectronicComponent(paramobj.cc);
+
+            % Assign the coupling terms
+            model.couplingTerms = paramobj.couplingTerms;
             
         end
 
@@ -27,7 +38,9 @@ classdef Electrode < PhysicalModel
         function state = setupBoundaryCoupling(model, state);
         % We impose the boundary condition at chosen boundary cells of the current collector
         % shortcuts:
-        % cc  : CurrentCollector            coupterm = model.getCoupTerm('bc-NegativeCurrentCollector');
+        % cc  : CurrentCollector            
+            
+            coupterm = model.getCoupTerm('bc-NegativeCurrentCollector');
             
             cc = model.CurrentCollector;            
             phi = state.CurrentCollector.phi;

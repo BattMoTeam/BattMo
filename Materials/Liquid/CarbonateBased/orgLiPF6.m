@@ -63,16 +63,10 @@ classdef orgLiPF6 < ElectroChemicalComponent
     
     methods
         
-        function model = orgLiPF6(G, cells)
+        function model = orgLiPF6(G)
             
             % initialize as a ComponentModel in MRST
-            model = model@ElectroChemicalComponent();
-            
-            % generate the cell subgrid for the model
-            model.G = genSubGrid(G, cells);
-            
-            % setup operators
-            model.operators = localSetupOperators(model.G);
+            model = model@ElectroChemicalComponent(G);
             
             % initialize the components of the model
             model.compnames = {'Li', 'PF6'};

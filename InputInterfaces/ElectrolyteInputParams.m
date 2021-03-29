@@ -1,27 +1,23 @@
-classdef ElectrolyteInputParams
+classdef ElectrolyteInputParams < ActiveElectroChemicalComponentInputParams
     
     properties
-        
-        %% Global grid
-        globG
-        
-        %% Electrode grid
-        G
-
-        %% cell indices (indexed with respect to global grid)
-        cellind
-        
-        
-    end
-    
+        electrolyteType
     methods
         
-        function params = ElectrolyteInputParams(params)
-
-            globG = params.globG;
-            params.G = genSubGrid(globG, params.cellind)
+        function paramobj = ElectrolyteInputParams(params)
+        % params struct should contain valid fields for ActiveElectroChemicalComponentInputParams
+        %
+        % and fields
+        %
+        % - electrolyteType
+        %
+            
+            paramobj = paramobj@ActiveElectroChemicalComponent(params);
             
         end
+        
+        
+        
         
     end
     

@@ -2,12 +2,12 @@ classdef ElectrodeInputParams < ComponentInputParams
     
     properties
         
-        %% cell indices (in global grid)
+        %% parameters for the electrode components
         % shortcut used here
-        % eac : ElectrodeActiveComponent
-        % cc  : CurrentCollector
-        eac_cellind
-        cc_cellind
+        % eac : ElectrodeActiveComponent parameters (class ActiveElectroChemicalComponentInputParams)
+        % cc  : CurrentCollector parameters (class CurrentCollectorInputParams)
+        eac
+        cc
         
         %% coupling terms (setup by setupCouplingTerms)
         couplingTerms
@@ -16,55 +16,49 @@ classdef ElectrodeInputParams < ComponentInputParams
     
     methods
         
-        function params = ElectrodeInputParams(params)
-
-            params = params@ComponentInputParams(params);
-
+        function paramobj = ElectrodeInputParams(params)
+        % params struct should contain valid fields for ComponentInputParams
+        %
+        % and valid fields for the methods (see implementation of those methods)
+        %
+        % - setupElectrodeActiveComponent
+        % - setupCurrentCollector
+        % - setupCurrentCollectorBcCoupTerm
+        % - setupCurrentCollectorElectrodeActiveComponentCoupTerm
+            
+            paramobj = paramobj@ComponentInputParams(params);
+            paramobj.eac = paramobj.setupElectrodeActiveComponent(params);
+            paramobj.cc  = paramobj.setupCurrentCollector(params);
+            paramobj.couplingTerms = paramobj.setupCouplingTerms(params);
             
         end
         
-        function params = setupSubParams(params)
-        % In this function, we setup the models ElectrodeActiveComponent and CurrentCollector
-        % shortcut used here
-        % eac : ElectrodeActiveComponent
-        % cc  : CurrentCollector
-            
-            globG = params.globG;
-            
-            % setup ElectrodeActiveComponent
-            G_eac = genSubGrid(globG, params.eac_cellind);
-            params.ElectrodeActiveComponent = params.setupElectrodeActiveComponent(G_eac);
-            
-            % setup CurrentCollector
-            G_cc = genSubGrid(globG, params.cc_cellind);
-            params.CurrentCollector = CurrentCollector(G_eac);
-            
-        end
-        
-        function ElectrodeActiveComponent = setupElectrodeActiveComponent(G)
-            error('virtual function')
-        end
-        
-        function params = setupCouplingTerms(params)
+        function paramobj = setupCouplingTerms(paramobj, params)
         % We collect the coupling terms
             couplingTerms = {};
-            couplingTerms{end + 1} = params.setupCurrentCollectorBcCoupTerm();
-            couplingTerms{end + 1} = params.setupCurrentCollectorElectrodeActiveComponentCoupTerm();
-            params.couplingTerms = couplingTerms;
+            couplingTerms{end + 1} = paramobj.setupCurrentCollectorBcCoupTerm(params);
+            couplingTerms{end + 1} = paramobj.setupCurrentCollectorElectrodeActiveComponentCoupTerm(params);
+            paramobj.couplingTerms = couplingTerms;
         end
 
-        function coupTerm = setupCurrentCollectorBcCoupTerm(params)
-        % In this function, we setup coupling corresponding coupling 
-            error('Virtual Function');
-        end
-
-        function coupTerm = setupCurrentCollectorElectrodeActiveComponentCoupTerm(params)
-        % In this function, we setup coupling corresponding coupling 
-            error('Virtual Function');
+        function eac_paramobj = setupElectrodeActiveComponent(paramobj, params)
+        % return object from class ElectrodeActiveComponentInputParams
+            error('virtual function')            
         end
         
-        function params = setupModel(params)
-            params.Electrode = Electrode(params);
+        function eac_paramobj = setupCurrentCollector(paramobj, params)
+        % return object from class CurrentCollectorInputParams
+            error('virtual function')            
+        end
+        
+        function coupTerm = setupCurrentCollectorBcCoupTerm(paramobj, params)
+        % In this function, we setup coupling corresponding coupling 
+            error('Virtual Function');
+        end
+
+        function coupTerm = setupCurrentCollectorElectrodeActiveComponentCoupTerm(paramobj, params)
+        % In this function, we setup coupling corresponding coupling 
+            error('Virtual Function');
         end
 
     end

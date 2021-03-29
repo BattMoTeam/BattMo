@@ -27,7 +27,7 @@ classdef Battery_ < CompositeModel
             model = model.addPropFunction({'pe', 'T'}, fn, inputnames, fnmodel);
             model = model.addPropFunction({'elyte', 'T'}, fn, inputnames, fnmodel);
             
-            fn = @Battery.updateActiveMaterialFromElyte;
+            fn = @Battery.setupElectrodeCoupling;
             
             clear inputnames;
             inputnames{1} = VarName({'elyte'}, 'chargeCarrier');
@@ -36,12 +36,25 @@ classdef Battery_ < CompositeModel
             inputnames{2}.isNamingRelative = false;
             
             fnmodel = {'..', '..', '..'};
-            model = model.addPropFunction({'ne', 'aecm', 'am', 'phiElyte'}, fn, inputnames, fnmodel);
-            model = model.addPropFunction({'ne', 'aecm', 'am', 'chargeCarrierElyte'}, fn, inputnames, fnmodel);
-            model = model.addPropFunction({'pe', 'aecm', 'am', 'phiElyte'}, fn, inputnames, fnmodel);
-            model = model.addPropFunction({'pe', 'aecm', 'am', 'chargeCarrierElyte'}, fn, inputnames, fnmodel);
+            model = model.addPropFunction({'ne', 'eac', 'am', 'phiElyte'}, fn, inputnames, fnmodel);
+            model = model.addPropFunction({'ne', 'eac', 'am', 'chargeCarrierElyte'}, fn, inputnames, fnmodel);
+            model = model.addPropFunction({'pe', 'eac', 'am', 'phiElyte'}, fn, inputnames, fnmodel);
+            model = model.addPropFunction({'pe', 'eac', 'am', 'chargeCarrierElyte'}, fn, inputnames, fnmodel);
+            
+            fn = @Battery.setupElectrolyteCoupling;
+            
+            clear inputnames;
+            inputnames{1} = VarName({'ne', 'eac', 'am'}, 'R');
+            inputnames{1}.isNamingRelative = false;
+            inputnames{1} = VarName({'pe', 'eac', 'am'}, 'R');
+            inputnames{2}.isNamingRelative = false;
+            
+            fnmodel = {'..'};
+            model = model.addPropFunction({'elyte', 'chargeCarrierSource'}, fn, inputnames, fnmodel);
             
             model = model.initiateCompositeModel();
+            
+            
         end
         
     end

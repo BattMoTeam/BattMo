@@ -17,9 +17,12 @@ classdef ComponentInputParams
         
         function paramobj = ComponentInputParams(params)
 
-            paramobj.globG = params.globG;
-            paramobj.cellind = params.cellind;
-            paramobj.G = genSubGrid(params.globG, params.cellind)
+            globG = params.globG;
+            cellind = params.cellind;
+            
+            paramobj.globG = globG;
+            paramobj.cellind = cellind;
+            paramobj.G = genSubGrid(globG, cellind)
             
         end
         

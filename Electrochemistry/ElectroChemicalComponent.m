@@ -12,14 +12,18 @@ classdef ElectroChemicalComponent < ElectronicComponent
 
     methods
         
-        function model = ElectroChemicalComponent()
-            model = model@ElectronicComponent([]);
+        function model = ElectroChemicalComponent(params)
+            model = model@ElectronicComponent(params);
+            model.ionName         = params.ionName;
+            model.ionFluxName     = params.ionFluxName;
+            model.ionSourceName   = params.ionSourceName;
+            model.ionMassConsName = params.ionMassConsName;
+            model.ionAccumName    = params.ionAccumName;
         end
 
         function state = updateDiffusionCoefficient(model, state)
             error('virtual function : diffusion coefficient is model dependent')
         end
-        
 
         function state = updateChargeCarrierFlux(model, state)
             

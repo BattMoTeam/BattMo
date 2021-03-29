@@ -3,8 +3,9 @@ classdef ActiveElectroChemicalComponentInputParams < ElectroChemicalComponentInp
     
     methods
         
-        function params = ActiveElectroChemicalComponentInputParams(params)
-            params = params@ElectroChemicalComponentInputParams(params);
+        function paramobj = ActiveElectroChemicalComponentInputParams(params)
+        % params struct should contain valid fields for ElectroChemicalComponentInputParams
+            paramobj = paramobj@ElectroChemicalComponentInputParams(params);
         end
         
     end
