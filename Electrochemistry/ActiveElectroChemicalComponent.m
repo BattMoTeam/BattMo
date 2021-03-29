@@ -12,17 +12,10 @@ classdef ActiveElectroChemicalComponent < ElectroChemicalComponent
 
         function state = updateIonAndCurrentSource(model, state)
             
-            error('virtual function');
+            R = state.ActiveMaterial.R;
             
-            % Uses reaction rate from active material to define the current and chargeCarrier sources:
-            % Sketch of the method
-            %
-            % ionSourceName = model.ionSourceName;
-            % R = state.ActiveMaterial.R;
-            %
-            % state.eSource = someFunctionOf(R);
-            % state.(ionSourceName) = someFunctionOf(R);
-            %
+            state.eSource = R;
+            state.(ionSourceName) = -R;
             
         end
         

@@ -1,21 +1,15 @@
-classdef orgLiPF6_ < ElectrochemicalComponent_
+classdef orgLiPF6_ < Electrolyte_
 
     methods
 
         function model = orgLiPF6_(name)
 
-            model = model@ElectrochemicalComponent_(name);
+            model = model@Electrolyte_(name);
 
-            names = {'cs'        , ...
-                     'LiSource'  , ...
-                     'LiFlux'    , ...
-                     'LiAccum'   , ...
-                     'massCons'};
-            model.names = names;
-            
-            model.vardims('cs') = 2;
-
-            model = model.setAlias({'Li', VarName({'.'}, 'cs', 2, 1)});
+            model = model.setAlias({'Li'      , 'chargeCarrier')});
+            model = model.setAlias({'LiSource', 'chargeCarrierSource')});
+            model = model.setAlias({'LiFlux'  , 'chargeCarrierFlux')});
+            model = model.setAlias({'LiAccum' , 'chargeCarrierAccum')});
             
             fn = @orgLiPF6.updateCurrent;
             inputnames = {'Li', 'T', 'phi'};
@@ -26,12 +20,9 @@ classdef orgLiPF6_ < ElectrochemicalComponent_
             inputnames = {'Li', 'j', 'T'};
             fnmodel = {'.'};
             model = model.addPropFunction('LiFlux', fn, inputnames, fnmodel);        
-            
-            fn = @orgLiPF6.updateMassConservation;
-            inputnames = {'LiFlux', 'LiSource', 'LiAccum'};
-            fnmodel = {'.'};
-            model = model.addPropFunction('massCons', fn, inputnames, fnmodel);
 
+            
+            
         end
         
     end

@@ -2,7 +2,7 @@ clear all
 close all
 
 % setup mrst modules
-mrstModule add ad-core multimodel mrst-gui battery
+mrstModule add ad-core multimodel mrst-gui battery matlab_bgl
 mrstVerbose off
       
 set(0, 'DefaultAxesFontSize', 16);
@@ -82,6 +82,11 @@ title('Battery');
 
 model.adminmodel.printPropfunctions;
 
+
+setupOrderedGraph(model, 'temp.txt');
+
+return
+
 dosave = false;
 if dosave
     f = fopen('test.csv', 'w');
@@ -92,8 +97,5 @@ if dosave
     end
     fclose(f);
 end
-
-
-
 
 

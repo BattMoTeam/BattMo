@@ -1,4 +1,4 @@
-classdef orgLiPF6 < ElectrochemicalComponent
+classdef orgLiPF6 < ElectroChemicalComponent
 %orgLiPF6 An electrolyte class for electrochemical modelling
 %   The orgLiPF6 class describes the properties and
 %   parameterization for organic electrolytes featuring lithium
@@ -66,7 +66,7 @@ classdef orgLiPF6 < ElectrochemicalComponent
         function model = orgLiPF6(G, cells)
             
             % initialize as a ComponentModel in MRST
-            model = model@ElectrochemicalComponent();
+            model = model@ElectroChemicalComponent();
             
             % generate the cell subgrid for the model
             model.G = genSubGrid(G, cells);
@@ -155,18 +155,8 @@ classdef orgLiPF6 < ElectrochemicalComponent
             
         end
 
-        function state = updateChargeCarrierFlux(model, state)
-            state = model.updateLithiumFlux(state);
-        end
-        
-        function state = updateLithiumFlux(model, state)
+        function state = updateDiffusionCoefficient(model, state)
             
-            % We assume that LiSource and current have been updated
-            c = state.cs{1};
-            j = state.j;
-            T = state.T;
-            
-            %% 1 . Compute Flux from diffustion
             % Calculate diffusion coefficients constant for the diffusion coefficient calcuation
             cnst = [ -4.43, -54;
                      -0.22, 0.0 ];
@@ -178,41 +168,38 @@ classdef orgLiPF6 < ElectrochemicalComponent
             D = 1e-4 .* 10 .^ ( ( cnst(1,1) + cnst(1,2) ./ ( T - Tgi(1) - Tgi(2) .* c .* 1e-3) + cnst(2,1) .* ...
                                   c .* 1e-3) );
             % calculate the effective diffusion coefficients in porous media
-            Deff = D .* model.volumeFraction .^1.5;
+            state.D = D .* model.volumeFraction .^1.5;
+        
+        end
+        
+        function state = updateLithiumFlux(model, state)
             
-            % Flux from diffusion
-            fluxDiff = assembleFlux(model, c, Deff);
+            % We assume that LiSource and current have been updated
+            c = state.cs{1};
+            j = state.j;
+            T = state.T;
+            D = state.D;
             
-            %% 2. Compute Flux from electrical forces
+            %% 1. Flux from diffusion
+            fluxDiff = assembleFlux(model, c, D);
+            
+            %% 2. Flux from electrical forces
             ind_Li = 1;
             F = model.constants.F;
             fluxE = model.sp.t{ind_Li} ./ (model.sp.z{ind_Li} .* F) .* j;
             
             %% 3. Sum the two flux contributions
             flux = fluxDiff + fluxE;
-            flux = flux*F;
+            
+            %% 4. Apply scaling (maybe not the right place but consistent  with assembleConservationEquation - at
+            %% least when this comment has beem written...)
+            flux = flux*F; 
+            
             state.LiFlux = flux;
            
         end
    
-        function state = updateMassConservation(model, state)
-            
-            ionName         = model.ionName;
-            ionFluxName     = model.ionFluxName;
-            ionSourceName   = model.ionSourceName;
-            ionAccumName    = model.ionAccumName;
-            ionMassConsName = model.ionMassConsName;
-            
-            flux   = state.(ionFluxName);
-            source = state.(ionSourceName);
-            accum  = state.(ionAccumName);
-            bcflux = 0;
-            
-            masscons = assembleConservationEquation(model, flux, bcflux, source, accum);
-            
-            state.(ionMassConsName) = masscons;
-            
-        end
+
     end
 
     %% References

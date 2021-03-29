@@ -25,4 +25,5 @@
   - for example chemistry and electronic could be set at same level
   - now, we have ~ElectroChemicalComponent~ as a child of ~ElectronicComponent~
   - (Relies on last-in priority : maybe not robust)
+* use now negative electrode convention for reaction rate
 

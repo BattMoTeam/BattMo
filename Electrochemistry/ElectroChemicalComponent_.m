@@ -19,15 +19,15 @@ classdef ElectroChemicalComponent_ < ElectronicComponent_
 
             model = model.setAlias({'chargeCarrier', VarName({'.'}, 'cs', 2, 1)});
             
-            fn = @ElectroChemicalComponent.updateChargeCarrierFlux;
-            inputnames = {'chargeCarrier', 'D'};
-            fnmodel = {'.'};
-            model = model.addPropFunction('chargeCarrierFlux', fn, inputnames, fnmodel);        
-            
             fn = @ElectroChemicalComponent.updateDiffusionCoefficient;
             inputnames = {'T'};
             fnmodel = {'.'};
             model = model.addPropFunction('D', fn, inputnames, fnmodel);        
+
+            fn = @ElectroChemicalComponent.updateChargeCarrierFlux;
+            inputnames = {'chargeCarrier', 'D'};
+            fnmodel = {'.'};
+            model = model.addPropFunction('chargeCarrierFlux', fn, inputnames, fnmodel);        
 
             fn = @ElectroChemicalComponent.updateCurrent;
             inputnames = {'chargeCarrier', 'phi'};

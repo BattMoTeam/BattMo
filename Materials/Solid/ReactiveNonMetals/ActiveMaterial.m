@@ -3,7 +3,7 @@ classdef ActiveMaterial < PhysicalModel
     properties
         
         % Physical constants
-        con = PhysicalConstants();
+        constants = PhysicalConstants();
         
         % Lithium data structure
         Li
@@ -27,6 +27,9 @@ classdef ActiveMaterial < PhysicalModel
         k0                     % Reference rate constant       [m^2.5 mol^-0.5 s^-1]
         Eak                    % Reaction activation energy    [J mol^-1]
         rp                     % Particle radius               [m]
+        
+        % Names for book-keeping (may not be used)
+        ionName
         
     end
     
@@ -109,6 +112,24 @@ classdef ActiveMaterial < PhysicalModel
             state.k = k;
             
         end
+        
+        function state = updateReactionRate(model, state);
+            
+            T        = state.T;
+            phiElyte = state.phiElectrolyte;
+            csElyte  = state.csElectrolyte; % not used for the moment
+            phi      = state.phi;
+            cs       = state.cs;
+            OCP      = state.OCP;
+            k        = state.k;
+            
+            eta = (phi - phiElyte - OCP);
+            F = model.constants.F;
+            R = model.volumetricSurfaceArea.*ButlerVolmerEquation(k.*model.constants.F, 0.5, 1, eta, T)/F;
+             
+            state.R = R;
+        end
+        
         
     end
 end
