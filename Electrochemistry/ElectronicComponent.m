@@ -9,17 +9,20 @@ classdef ElectronicComponent < PhysicalModel
 
     methods
         
-        function model = ElectronicComponent(params)
+        function model = ElectronicComponent(paramobj)
             
-            G = params.G;
-            model.EffectiveElectronicConductivity = params.EffectiveElectronicConductivity;
+            model = model@PhysicalModel([]);
+
+            fdnames = {'G', ...
+                       'EffectiveElectronicConductivity'};
             
-            model = model@PhysicalModel(G);
+            model = dispatchParams(model, paramobj, fdnames);
             
             % setup discrete differential operators
-            model.operators = localSetupOperators(G);
+            model.operators = localSetupOperators(model.G);
             
             model.constants = PhysicalConstants();
+            
         end
 
         function state = updateCurrent(model, state)

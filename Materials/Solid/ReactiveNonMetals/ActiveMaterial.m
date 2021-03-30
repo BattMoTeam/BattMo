@@ -35,8 +35,13 @@ classdef ActiveMaterial < PhysicalModel
     
     methods
 
-        function model = ActiveMaterial(G)
-            model = model@PhysicalModel(G);
+        function model = ActiveMaterial(paramobj)
+            
+            model = model@PhysicalModel([]);
+            
+            fdnames = {'G'};
+            model = dispatchParams(model, paramobj, fdnames);
+            
         end
         
         function state = updateMaterialProperties(model, state)

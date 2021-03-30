@@ -8,4 +8,5 @@ mrstVerbose off
 paramobj = BatteryInputParams();
 paramobj = setupBatteryInputParams1D(paramobj);
 
+battery = Battery2(paramobj);
 

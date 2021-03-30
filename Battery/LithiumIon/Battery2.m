@@ -25,32 +25,94 @@ classdef Battery2 < PhysicalModel
     
     methods
         
-        function model = Battery2(params)
+        function model = Battery2(paramobj)
             
-            model = PhysicalModel([]);
+            model = model@PhysicalModel([]);
+            
+            model.AutoDiffBackend = SparseAutoDiffBackend('useBlocks',true);
             
             %% Setup the model using the input parameters
-            model.T     = params.T;
-            model.SOC   = params.SOC;
-            model.J     = params.J;
-            model.Ucut  = params.Ucut;
+            fdnames = {'G', ...
+                       'couplingTerms', ...
+                       'T'  , ...
+                       'SOC', ...
+                       'J'  , ...
+                       'Ucut'};
             
-            % Assign the grid
-            model.G = params.G;
-            
-            % Assign the autodiff backend
-            model.G = params.AutoDiffBackend;            
+            model = dispatchParams(model, paramobj, fdnames);
             
             % Assign the components : Electrolyte, NegativeElectrode, PositiveElectrode
-            model.Electrolyte       = params.Electrolyte;
-            model.NegativeElectrode = params.NegativeElectrode;
-            model.PositiveElectrode = params.PositiveElectrode;
-            
-            % Assign the coupling term structure
-            model.couplingTerms = params.couplingTerms;
+            model.Electrolyte       = ElectroChemicalComponent(paramobj.elyte);
+            model.NegativeElectrode = Electrode(paramobj.ne);
+            model.PositiveElectrode = Electrode(paramobj.pe);
             
         end
     
+        function [problem, state] = getEquations(model, state0, state,dt, drivingForces, varargin)
+            
+            time = state0.time + dt;
+            state = model.initStateAD(state);
+            
+            %% for now temperature and SOC are kept constant
+            nc = model.G.cells.num;
+            state.T   = model.T*ones(nc, 1);
+            state.SOC = model.SOC*ones(nc, 1);
+            
+            % shortcuts
+            battery = model;
+            ne = 'NegativeElectrode';
+            pe = 'PositiveElectrode';
+            eac = 'ElectrodeActiveComponent';
+            cc = 'CurrentCollector';
+            elyte = 'Electrolyte';
+
+            automaticAssembly;
+            
+            %% Set up the governing equations
+            
+            eqs={};
+            
+            %% We collect mass and charge conservation equations for the electrolyte and the electrodes
+
+            names = {'Electrolyte', 'NegativeElectrode', 'PositiveElectrode'};
+            
+            for i = 1 : numel(names)
+                eqs{end + 1} = model.getProp(state,{names{i}, 'massCons'});
+                eqs{end + 1} = model.getProp(state,{names{i}, 'chargeCons'});
+            end
+            
+            %% We collect charge conservation equations for the current collectors
+            
+            names = {'NegativeCurrentCollector', 'PositiveCurrentCollector'};
+            for i = 1 : numel(names)
+                eqs{end + 1} = model.getProp(state, {names{i}, 'chargeCons'});
+            end
+            
+            %% We setup and add the control equation (fixed total current at PositiveCurrentCollector)
+            
+            src = drivingForces.src(time);
+            coupterm = model.getCoupTerm('bc-PositiveCurrentCollector');
+            faces = coupterm.couplingfaces;
+            bcval = state.PositiveCurrentCollector.E;
+            cond_pcc = model.PositiveCurrentCollector.EffectiveElectronicConductivity;
+            [trans_pcc, cells] = model.PositiveCurrentCollector.operators.harmFaceBC(cond_pcc, faces);
+            control = src - sum(trans_pcc.*(bcval - state.PositiveCurrentCollector.phi(cells)));
+            
+            eqs{end+1} = -control;
+
+
+            
+        end
+
+        function state = updateT(model, state)
+            names = {'NegativeElectrode', 'PositiveElectrode', 'Electrolyte'};
+            for ind = 1 : numel(names);
+                name = names{ind};
+                nc = model.(name).G.cells.num;
+                state.(name).T = state.T(1)*ones(nc, 1);
+            end
+        end
+        
         function state = setupElectrolyteCoupling(model, state)
         % Setup the electrolyte coupling by adding ion sources from the electrodes
         % shortcuts:

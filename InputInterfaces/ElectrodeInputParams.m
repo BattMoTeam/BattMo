@@ -32,9 +32,11 @@ classdef ElectrodeInputParams < ComponentInputParams
         % - couplingTerms
             
 
-            paramobj.eac = getparam(params, 'eac');
-            paramobj.cc  = getparam(params, 'cc');
-            paramobj.couplingTerms = getparam(params, 'couplingTerms');
+            fdname = {'eac', ...
+                      'cc', ...
+                      'couplingTerms'};
+            
+            paramobj = dispatchParams(paramobj, params, 'eac');
         
             paramobj = setup@ComponentInputParams(paramobj, params);
         

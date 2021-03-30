@@ -1,11 +1,14 @@
-function paramobj = dispatchParams(paramobj, params, fdnames)
+function obj = dispatchParams(obj, params, fdnames)
     if iscell(fdnames)
         for ind = 1 : numel(fdnames)
             fdname = fdnames{ind};
-            paramobj.(fdname) = getparam(params, fdname);
+            obj = dispatchParams(obj, params, fdname);
         end
     elseif ischar(fdnames)
-        paramobj.(fdnames) = getparam(params, fdnames);        
+        fdname = fdnames;
+        if isfield(params, fdname) | isprop(params, fdname)
+            obj.(fdname) = params.(fdname);
+        end
     else
         error('type of fdnames not recognized');
     end

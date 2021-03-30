@@ -16,20 +16,21 @@ classdef Electrode < PhysicalModel
         
         function model = Electrode(paramobj)
             
-            model = PhysicalModel(paramobj.G);
+            model = model@PhysicalModel([]);
             
-            % Assign the autodiff backend
-            model.G = paramobj.AutoDiffBackend;            
+            fdnames = {'G', ...
+                       'couplingTerms'};
+            model = dispatchParams(model, paramobj, fdnames);
             
             % Assign the two components
             model.ElectrodeActiveComponent = ActiveElectroChemicalComponent(paramobj.eac);
             model.CurrentCollector = ElectronicComponent(paramobj.cc);
-
-            % Assign the coupling terms
-            model.couplingTerms = paramobj.couplingTerms;
             
         end
 
+        
+        
+        
         function state = setupCoupling(model, state)
             state = model.setupCurrentCollectorCoupling(state);
             state = model.setupBoundaryCoupling(state);
@@ -99,8 +100,12 @@ classdef Electrode < PhysicalModel
         end
         
         function state = updateT(model, state)
-            state.ElectrodeActiveComponent.T = state.T;
-            state.CurrentCollector.T = state.T;
+            names = {'ElectrodeActiveComponent', 'CurrentCollector'};
+            for ind = 1 : numel(names)
+                ame = names{ind};
+                nc = model.(name).G.cells.num;
+                state.(name).T = state.T(1)*ones(nc, 1);
+            end
         end        
         
     end    

@@ -83,10 +83,12 @@ title('Battery');
 model.adminmodel.printPropfunctions;
 
 
-setupOrderedGraph(model, 'temp.txt');
+%% setup ordered graph
+setupOrderedGraph(model, 'automaticAssembly.m');
 
 return
 
+%%
 dosave = false;
 if dosave
     f = fopen('test.csv', 'w');

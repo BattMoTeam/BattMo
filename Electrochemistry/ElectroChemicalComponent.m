@@ -12,13 +12,17 @@ classdef ElectroChemicalComponent < ElectronicComponent
 
     methods
         
-        function model = ElectroChemicalComponent(params)
-            model = model@ElectronicComponent(params);
-            model.ionName         = params.ionName;
-            model.ionFluxName     = params.ionFluxName;
-            model.ionSourceName   = params.ionSourceName;
-            model.ionMassConsName = params.ionMassConsName;
-            model.ionAccumName    = params.ionAccumName;
+        function model = ElectroChemicalComponent(paramobj)
+            
+            model = model@ElectronicComponent(paramobj);
+            
+            fdnames = {'ionName', ...
+                       'ionFluxName', ...
+                       'ionSourceName', ...
+                       'ionMassConsName', ...
+                       'ionAccumName'};
+            model = dispatchParams(model, paramobj, fdnames);
+            
         end
 
         function state = updateDiffusionCoefficient(model, state)
