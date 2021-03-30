@@ -30,4 +30,8 @@
   - not sure if we need both componentnames and name
 * change name in BatteryInputParams1D
   nenx -> eacnx
+* ComponentInputParams
+  - may not need to have properties globG and cellind
+* dummy update function of T
+
 
