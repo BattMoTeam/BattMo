@@ -17,7 +17,7 @@ function paramobj = setupBatteryInputParams1D(paramobj)
     paramobj = setupGrid(paramobj, params);
     paramobj = setupNegativeElectrode(paramobj, params);
     paramobj = setupPositiveElectrode(paramobj, params);
-    paramobj = setupGridElectrolyte(paramobj, params);
+    paramobj = setupElectrolyte(paramobj, params);
     paramobj = setupCouplingTerms(paramobj, params);
     
 end
@@ -41,7 +41,8 @@ function paramobj = setupGrid(paramobj, params)
 
     G = tensorGrid(x);
     G = computeGeometry(G); 
-    
+
+    paramobj.G = G;
 end
 
 
@@ -71,7 +72,7 @@ function paramobj = setupNegativeElectrode(paramobj, params)
     
 end
 
-function pe_paramobj = setupPositiveElectrode(paramobj, params)
+function paramobj = setupPositiveElectrode(paramobj, params)
 % setup grid and coupling term
     
     sepnx = params.sepnx; 
@@ -98,21 +99,31 @@ function pe_paramobj = setupPositiveElectrode(paramobj, params)
     
 end
 
-function elyte_paramobj = setupElectrolyte(paramobj, params)
+function paramobj = setupElectrolyte(paramobj, params)
 % setup grid
+    
+    sepnx = params.sepnx; 
+    nenx = params.nenx; 
+    penx = params.penx; 
+    ccnenx = params.ccnenx; 
+    ccpenx = params.ccpenx;     
     
     params_elyte.globG = paramobj.G;
     params_elyte.cellind = ccnenx + (1 : (nenx + sepnx + penx))';
     
-    paramobj.elyte = setupGrid(paramobj.elyte, params_elyte);
+    paramobj.elyte = paramobj.elyte.setupGrid(params_elyte);
    
 end
 
 
-function coupterms = setupCouplingTerms(paramobj, params)
+function paramobj = setupCouplingTerms(paramobj, params)
+    
     coupterms = {};
-    coupterms{end + 1} = setupNegativeElectrodeElectrolyteCoupTerm(paramobj, param);
-    coupterms{end + 1} = setupPositiveElectrodeElectrolyteCoupTerm(paramobj, param);
+    coupterms{end + 1} = setupNegativeElectrodeElectrolyteCoupTerm(paramobj, params);
+    coupterms{end + 1} = setupPositiveElectrodeElectrolyteCoupTerm(paramobj, params);
+    
+    paramobj.couplingTerms = coupterms;
+    
 end
 
 

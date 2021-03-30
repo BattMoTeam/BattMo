@@ -20,12 +20,13 @@ classdef ElectroChemicalComponentInputParams < ElectronicComponentInputParams
         % - ionMassConsName
         % - ionAccumName        
             
-            paramobj.ionName         = params.ionName;
-            paramobj.ionFluxName     = params.ionFluxName;
-            paramobj.ionSourceName   = params.ionSourceName;
-            paramobj.ionMassConsName = params.ionMassConsName;
-            paramobj.ionAccumName    = params.ionAccumName;
-            
+            fdnames = {'ionName', ...
+                       'ionFluxName', ...
+                       'ionSourceName', ...
+                       'ionMassConsName', ...
+                       'ionAccumName'};
+            paramobj = dispatchParams(paramobj, params, fdnames);
+
             paramobj = setup@ElectronicComponentInputParams(paramobj, params);
             
         end

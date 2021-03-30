@@ -27,39 +27,39 @@ classdef BatteryInputParams
     end
     
     methods
-
-        function paramobj = setup(paramobj, params)
-        % params struct should contain valid fields for ComponentInputParams,
-        %
-        % valid fields for the methods (see implementation of those methods)
-        %
-        %
-        % and fields
-        %
-        % - T
-        % - SOC
-        % - J
-        % - Ucut
-        %
-        % - G
-        % - ne
-        % - pe            
-        % - elyte
-        % - couplingTerms
-            
-            paramobj = paramobj.setupVariousParams(params);
-            paramobj.G  = getparam(params, G);
-            paramobj.ne = getparam(params, 'ne');
-            paramobj.pe = params.pe;
-            paramobj.elyte = params.elyte;
-            paramobj.coupltingTerms = params.couplingTerms;
+        
+        function paramobj = BatteryInputParams()
+            paramobj.ne = ElectrodeInputParams();
+            paramobj.pe = ElectrodeInputParams();
+            paramobj.elyte = ElectrolyteInputParams();
+            parmobj.couplingTerms = {};
         end
 
-        function paramobj = setupVariousParams(paramobj, params)
-            paramobj.T    = params.T;
-            paramobj.SOC  = params.SOC;
-            paramobj.J    = params.J;
-            paramobj.Ucut = params.Ucut;
+        function paramobj = setup(paramobj, params)
+
+            fdnames = {'ionName', ...
+                       'ionFluxName', ...
+                       'ionSourceName', ...
+                       'ionMassConsName', ...
+                       'ionAccumName'};
+            
+            paramobj = dispatchParams(paramobj, params, fdnames);
+            
+            fdnames = {'T', ...
+                       'SOC', ...
+                       'J', ...
+                       'Ucut'};
+            
+            paramobj = dispatchParams(paramobj, params, fdnames);
+                        
+            fdnames = {'G', ...
+                       'ne', ...
+                       'pe', ...
+                       'elyte', ...
+                       'couplingTerms'};
+
+            paramobj = dispatchParams(paramobj, params, fdnames);
+            
         end
 
 

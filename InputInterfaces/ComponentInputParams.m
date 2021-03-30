@@ -21,14 +21,14 @@ classdef ComponentInputParams
             
         end
         
-        function paramobl = setupGrid(paramobj, params)
+        function paramobj = setupGrid(paramobj, params)
             
             globG = params.globG;
             cellind = params.cellind;
             
             paramobj.globG = globG;
             paramobj.cellind = cellind;
-            paramobj.G = genSubGrid(globG, cellind)
+            paramobj.G = genSubGrid(globG, cellind);
         
         end
         

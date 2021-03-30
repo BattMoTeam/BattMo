@@ -13,7 +13,7 @@ classdef ElectronicComponentInputParams < ComponentInputParams
         % and the field
         %
         % - EffectiveElectronicConductivity
-            paramobj = setup@ComponentInputParams(paramobj@, arams);
+            paramobj = setup@ComponentInputParams(paramobj, params);
             paramobj.EffectiveElectronicConductivity = params.EffectiveElectronicConductivity;        
         end
         

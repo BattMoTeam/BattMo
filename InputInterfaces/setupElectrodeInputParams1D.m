@@ -19,6 +19,7 @@ function paramobj = setupElectrodeInputParams1D(paramobj, params)
 % - eac.cc_cell
 % - eac.cc_face
     
+    paramobj = paramobj.setupGrid(params);
     paramobj = setupElectrodeActiveComponent(paramobj, params);
     paramobj = setupCurrentCollector(paramobj, params);
     paramobj = setupCouplingTerms(paramobj, params);
@@ -46,9 +47,9 @@ end
 function paramobj = setupCouplingTerms(paramobj, params)
     
     coupterms = {};
-    coupterms{end + 1} = setupCurrentCollectorBcCoupTerm(paramobj, param);
-    coupterms{end + 1} = setupCurrentCollectorElectrodeActiveComponentCoupTerm(paramobj, param);
-    paramobj.coulingTerms = coupterms;
+    coupterms{end + 1} = setupCurrentCollectorBcCoupTerm(paramobj, params);
+    coupterms{end + 1} = setupCurrentCollectorElectrodeActiveComponentCoupTerm(paramobj, params);
+    paramobj.couplingTerms = coupterms;
     
 end
 
@@ -59,8 +60,8 @@ function coupTerm = setupCurrentCollectorBcCoupTerm(paramobj, params)
     
     compnames = {'CurrentCollector'};
     coupTerm = couplingTerm('bc-CurrentCollector', compnames);
-    coupTerm.couplingfaces = params.cc.bc_faces;
-    coupTerm.couplingcells = params.cc.bc_cells;
+    coupTerm.couplingfaces = params.cc.bc_face;
+    coupTerm.couplingcells = params.cc.bc_cell;
     
 end
 
@@ -69,7 +70,7 @@ function coupTerm = setupCurrentCollectorElectrodeActiveComponentCoupTerm(paramo
 % eac : ElectrodeActiveComponent
 % cc  : CurrentCollector
     
-    compnames = {'CurrentCollector', 'ElectrodeActiveComponent'}
+    compnames = {'CurrentCollector', 'ElectrodeActiveComponent'};
     coupTerm = couplingTerm('CurrentCollector-ElectrodeActiveComponent', compnames);
     coupTerm.couplingfaces = [params.cc.eac_face, params.eac.cc_face];
     coupTerm.couplingcells = [params.cc.eac_cell, params.eac.cc_cell];

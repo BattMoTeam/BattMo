@@ -59,7 +59,7 @@ classdef ElectrodeInputParams1D < ElectrodeInputParams
         % eac : ElectrodeActiveComponent
         % cc  : CurrentCollector
             
-            compnames = {'CurrentCollector', 'ElectrodeActiveComponent'}
+            compnames = {'CurrentCollector', 'ElectrodeActiveComponent'};
             coupTerm = couplingTerm('CurrentCollector-ElectrodeActiveComponent', compnames);
             coupTerm.couplingfaces =  [params.cc.eac_face, params.eac.cc_face];
             coupTerm.couplingcells =  [params.cc.eac_cell, params.eac.cc_cell];
