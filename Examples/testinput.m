@@ -5,7 +5,8 @@ close all
 mrstModule add ad-core multimodel mrst-gui battery
 mrstVerbose off
 
-paramobj = BatteryInputParams();
+paramobj = LithiumBatteryInputParams();
+
 paramobj = setupBatteryInputParams1D(paramobj);
 
 battery = Battery2(paramobj);

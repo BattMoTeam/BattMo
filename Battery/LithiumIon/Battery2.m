@@ -42,7 +42,7 @@ classdef Battery2 < PhysicalModel
             model = dispatchParams(model, paramobj, fdnames);
             
             % Assign the components : Electrolyte, NegativeElectrode, PositiveElectrode
-            model.Electrolyte       = ElectroChemicalComponent(paramobj.elyte);
+            model.Electrolyte       = Electrolyte(paramobj.elyte);
             model.NegativeElectrode = Electrode(paramobj.ne);
             model.PositiveElectrode = Electrode(paramobj.pe);
             
@@ -111,6 +111,83 @@ classdef Battery2 < PhysicalModel
                 nc = model.(name).G.cells.num;
                 state.(name).T = state.T(1)*ones(nc, 1);
             end
+        end
+        
+        function initstate = setupInitialState(model)
+        % Setup initial state
+        %
+        % Abbreviations used in this function 
+        % elyte : Electrolyte
+        % ne    : NegativeElectrode
+        % pe    : PositiveElectrode
+        % ncc   : NegativeCurrentCollector
+        % pcc   : PositiveCurrentCollector
+            
+            nc = model.G.cells.num;
+
+            SOC = model.SOC;
+            T   = model.T;
+            
+            initstate.T   =  T*ones(nc, 1);
+            initstate.SOC =  SOC*ones(nc, 1);
+
+            initstate = model.updateT(initstate);
+            
+            elyte = model.Electrolyte;
+            ne    = model.NegativeElectrode;
+            pe    = model.PositiveElectrode;
+            ncc   = model.NegativeCurrentCollector;
+            pcc   = model.PositiveCurrentCollector;
+            ne_am = ne.ActiveMaterial;
+            pe_am = pe.ActiveMaterial;
+
+            %% setup initial NegativeElectrode state
+
+            m = (1 ./ (ne_am.theta100 - ne_am.theta0));
+            b = -m .* ne_am.theta0;
+            theta = (SOC - b) ./ m;
+            c = theta .* ne_am.Li.cmax;
+            c = c*ones(ne.G.cells.num, 1);
+
+            initstate.NegativeElectrode.ActiveMaterial.Li = c;
+            initstate.NegativeElectrode.ActiveMaterial = ne_am.updateMaterialProperties(initstate.NegativeElectrode.ActiveMaterial);
+
+            OCP = initstate.NegativeElectrode.ActiveMaterial.OCP;
+            initstate.NegativeElectrode.ActiveMaterial.phi = OCP;
+
+            %% setup initial PositiveElectrode state
+
+            m = (1 ./ (pe_am.theta100 - pe_am.theta0));
+            b = -m .* pe_am.theta0;
+            theta = (SOC - b) ./ m;
+            c = theta .* pe_am.Li.cmax;
+            c = c*ones(pe.G.cells.num, 1);
+
+            initstate.PositiveElectrode.ActiveMaterial.Li = c;
+            initstate.PositiveElectrode.ActiveMaterial = pe_am.updateMaterialProperties(initstate.PositiveElectrode.ActiveMaterial);
+
+            OCP = initstate.PositiveElectrode.ActiveMaterial.OCP;
+            initstate.PositiveElectrode.ActiveMaterial.phi = OCP;
+
+            %% setup initial Electrolyte state
+
+            initstate.Electrolyte.phi = zeros(elyte.G.cells.num, 1);
+            cs=cell(2,1);
+            initstate.Electrolyte.cs = cs;
+            initstate.Electrolyte.cs{1} = 1000*ones(elyte.G.cells.num, 1);
+
+            %% setup initial Current collectors state
+            
+            OCP = initstate.NegativeElectrode.ActiveMaterial.OCP;
+            OCP = OCP(1) .* ones(ncc.G.cells.num, 1);
+            initstate.NegativeCurrentCollector.phi = OCP;
+
+            OCP = initstate.PositiveElectrode.ActiveMaterial.OCP;
+            OCP = OCP(1) .* ones(pcc.G.cells.num, 1);
+            initstate.PositiveCurrentCollector.phi = OCP;
+            
+            initstate.PositiveCurrentCollector.E = OCP(1);
+            
         end
         
         function state = setupElectrolyteCoupling(model, state)

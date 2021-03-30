@@ -27,8 +27,6 @@ classdef Electrode < PhysicalModel
             model.CurrentCollector = ElectronicComponent(paramobj.cc);
             
         end
-
-        
         
         
         function state = setupCoupling(model, state)
