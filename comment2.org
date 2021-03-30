@@ -33,5 +33,6 @@
 * ComponentInputParams
   - may not need to have properties globG and cellind
 * dummy update function of T
-
+* in ActiveMaterialInputParams
+  - change property Li to default name
 
