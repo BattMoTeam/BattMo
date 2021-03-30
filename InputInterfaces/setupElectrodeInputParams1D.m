@@ -46,8 +46,8 @@ end
 function paramobj = setupCouplingTerms(paramobj, params)
     
     coupterms = {};
-    coupterms{end + 1} = paramobj.setupCurrentCollectorBcCoupTerm(paramobj, param);
-    coupterms{end + 1} = paramobj.setupCurrentCollectorElectrodeActiveComponentCoupTerm(paramobj, param);
+    coupterms{end + 1} = setupCurrentCollectorBcCoupTerm(paramobj, param);
+    coupterms{end + 1} = setupCurrentCollectorElectrodeActiveComponentCoupTerm(paramobj, param);
     paramobj.coulingTerms = coupterms;
     
 end

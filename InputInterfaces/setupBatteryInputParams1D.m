@@ -111,8 +111,8 @@ end
 
 function coupterms = setupCouplingTerms(paramobj, params)
     coupterms = {};
-    coupterms{end + 1} = paramobj.setupCurrentCollectorBcCoupTerm(paramobj, param);
-    coupterms{end + 1} = paramobj.setupCurrentCollectorElectrodeActiveComponentCoupTerm(paramobj, param);
+    coupterms{end + 1} = setupNegativeElectrodeElectrolyteCoupTerm(paramobj, param);
+    coupterms{end + 1} = setupPositiveElectrodeElectrolyteCoupTerm(paramobj, param);
 end
 
 
