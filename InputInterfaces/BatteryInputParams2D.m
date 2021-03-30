@@ -76,7 +76,7 @@ classdef BatteryInputParams2D < BatteryInputParams
             %% setup sep
             istart = ncc_nx + ne_nx + 1;
             cells = pickTensorCells(istart, sepnx, nx, ny);
-            params.sep = celgard2500('sep', G, cells);
+            params.sep = celgard2500(G, cells);
         
         end
         

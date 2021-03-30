@@ -2,11 +2,11 @@ classdef ElectroChemicalComponentInputParams < ElectronicComponentInputParams
     
     properties
        
-        ionName
-        ionFluxName 
-        ionSourceName
-        ionMassConsName
-        ionAccumName        
+        chargeCarrierName
+        chargeCarrierFluxName 
+        chargeCarrierSourceName
+        chargeCarrierMassConsName
+        chargeCarrierAccumName        
 
     end
     
@@ -14,17 +14,17 @@ classdef ElectroChemicalComponentInputParams < ElectronicComponentInputParams
         
         function paramobj = setup(parmobj, params)
         % params struct should contain valid fields for ElectronicComponentInputParams and the fields
-        % - ionName
-        % - ionFluxName 
-        % - ionSourceName
-        % - ionMassConsName
-        % - ionAccumName        
+        % - chargeCarrierName
+        % - chargeCarrierFluxName 
+        % - chargeCarrierSourceName
+        % - chargeCarrierMassConsName
+        % - chargeCarrierAccumName        
             
-            fdnames = {'ionName', ...
-                       'ionFluxName', ...
-                       'ionSourceName', ...
-                       'ionMassConsName', ...
-                       'ionAccumName'};
+            fdnames = {'chargeCarrierName', ...
+                       'chargeCarrierFluxName', ...
+                       'chargeCarrierSourceName', ...
+                       'chargeCarrierMassConsName', ...
+                       'chargeCarrierAccumName'};
             paramobj = dispatchParams(paramobj, params, fdnames);
 
             paramobj = setup@ElectronicComponentInputParams(paramobj, params);

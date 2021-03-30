@@ -135,9 +135,9 @@ classdef ActiveMaterial < PhysicalModel
             
             T        = state.T;
             phiElyte = state.phiElectrolyte;
-            csElyte  = state.csElectrolyte; % not used for the moment
+            % csElyte  = state.csElectrolyte; % not used for the moment
             phi      = state.phi;
-            cs       = state.cs;
+            % cs       = state.cs; % not used for the moment
             OCP      = state.OCP;
             k        = state.k;
             

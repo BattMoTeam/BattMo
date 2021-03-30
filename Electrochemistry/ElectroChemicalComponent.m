@@ -3,11 +3,11 @@ classdef ElectroChemicalComponent < ElectronicComponent
     properties
 
         % Names for book-keeping
-        ionName
-        ionFluxName 
-        ionSourceName
-        ionMassConsName
-        ionAccumName
+        chargeCarrierName
+        chargeCarrierFluxName 
+        chargeCarrierSourceName
+        chargeCarrierMassConsName
+        chargeCarrierAccumName
     end
 
     methods
@@ -16,11 +16,11 @@ classdef ElectroChemicalComponent < ElectronicComponent
             
             model = model@ElectronicComponent(paramobj);
             
-            fdnames = {'ionName', ...
-                       'ionFluxName', ...
-                       'ionSourceName', ...
-                       'ionMassConsName', ...
-                       'ionAccumName'};
+            fdnames = {'chargeCarrierName', ...
+                       'chargeCarrierFluxName', ...
+                       'chargeCarrierSourceName', ...
+                       'chargeCarrierMassConsName', ...
+                       'chargeCarrierAccumName'};
             model = dispatchParams(model, paramobj, fdnames);
             
         end
@@ -52,20 +52,20 @@ classdef ElectroChemicalComponent < ElectronicComponent
         
         function state = updateMassConservation(model, state)
             
-            ionName         = model.ionName;
-            ionFluxName     = model.ionFluxName;
-            ionSourceName   = model.ionSourceName;
-            ionAccumName    = model.ionAccumName;
-            ionMassConsName = model.ionMassConsName;
+            ccName         = model.chargeCarrierName;
+            ccFluxName     = model.chargeCarrierFluxName;
+            ccSourceName   = model.chargeCarrierSourceName;
+            ccAccumName    = model.chargeCarrierAccumName;
+            ccMassConsName = model.chargeCarrierMassConsName;
             
-            flux   = state.(ionFluxName);
-            source = state.(ionSourceName);
-            accum  = state.(ionAccumName);
+            flux   = state.(ccFluxName);
+            source = state.(ccSourceName);
+            accum  = state.(ccAccumName);
             bcflux = 0;
             
             masscons = assembleConservationEquation(model, flux, bcflux, source, accum);
             
-            state.(ionMassConsName) = masscons;
+            state.(ccMassConsName) = masscons;
             
         end
     end

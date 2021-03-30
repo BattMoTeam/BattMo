@@ -21,6 +21,13 @@ classdef orgLiPF6InputParams < ElectrolyteInputParams
             
             paramobj.sp = sp;
             
+            paramobj.chargeCarrierName         = 'Li';
+            paramobj.chargeCarrierFluxName     = 'LiFlux';
+            paramobj.chargeCarrierSourceName   = 'LiSource';
+            paramobj.chargeCarrierMassConsName = 'massCons';
+            paramobj.chargeCarrierAccumName    = 'LiAccum';
+            
+            paramobj.sep = celgard2500InputParams();
         end
         
     end

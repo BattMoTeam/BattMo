@@ -20,7 +20,7 @@ classdef Battery_ < CompositeModel
             
             model.SubModels = submodels;
             
-            fn = @Battery.UpdateT;
+            fn = @Battery.updateT;
             inputnames = {VarName({'..'}, 'T')};
             fnmodel = {'..'};
             model = model.addPropFunction({'ne', 'T'}, fn, inputnames, fnmodel);
@@ -36,10 +36,10 @@ classdef Battery_ < CompositeModel
             inputnames{2}.isNamingRelative = false;
             
             fnmodel = {'..', '..', '..'};
-            model = model.addPropFunction({'ne', 'eac', 'am', 'phiElyte'}, fn, inputnames, fnmodel);
-            model = model.addPropFunction({'ne', 'eac', 'am', 'chargeCarrierElyte'}, fn, inputnames, fnmodel);
-            model = model.addPropFunction({'pe', 'eac', 'am', 'phiElyte'}, fn, inputnames, fnmodel);
-            model = model.addPropFunction({'pe', 'eac', 'am', 'chargeCarrierElyte'}, fn, inputnames, fnmodel);
+            model = model.addPropFunction({'ne', 'eac', 'am', 'phiElectrolyte'}, fn, inputnames, fnmodel);
+            model = model.addPropFunction({'ne', 'eac', 'am', 'chargeCarrierElectrolyte'}, fn, inputnames, fnmodel);
+            model = model.addPropFunction({'pe', 'eac', 'am', 'phiElectrolyte'}, fn, inputnames, fnmodel);
+            model = model.addPropFunction({'pe', 'eac', 'am', 'chargeCarrierElectrolyte'}, fn, inputnames, fnmodel);
             
             fn = @Battery.setupElectrolyteCoupling;
             
@@ -51,6 +51,33 @@ classdef Battery_ < CompositeModel
             
             fnmodel = {'..'};
             model = model.addPropFunction({'elyte', 'chargeCarrierSource'}, fn, inputnames, fnmodel);
+            
+                
+            fn = @Battery.updateAccumTerms;
+            
+            inputnames = {VarName({'.'}, 'chargeCarrier'), ...
+                          VarName({'..', 'ne', 'eac', 'am'}, 'chargeCarrier'), ...
+                          VarName({'..', 'pe', 'eac', 'am'}, 'chargeCarrier')};
+            
+            fnmodel = {'..'};
+            model = model.addPropFunction({'elyte', 'chargeCarrierAccum'}, fn, inputnames, fnmodel);            
+
+
+            inputnames = {VarName({'..', '..', 'elyte'}, 'chargeCarrier'), ...
+                          VarName({'am'}, 'chargeCarrier'), ...
+                          VarName({'..', '..', 'pe', 'eac', 'am'}, 'chargeCarrier')};
+            
+            fnmodel = {'..', '..'};
+            
+            model = model.addPropFunction({'ne', 'eac', 'chargeCarrierAccum'}, fn, inputnames, fnmodel);
+            
+            inputnames = {VarName({'..', '..', 'elyte'}, 'chargeCarrier'), ...
+                          VarName({'..', '..', 'ne', 'eac', 'am'}, 'chargeCarrier'), ...
+                          VarName({'am'}, 'chargeCarrier')};
+            
+            fnmodel = {'..', '..'};
+            
+            model = model.addPropFunction({'pe', 'eac', 'chargeCarrierAccum'}, fn, inputnames, fnmodel);                        
             
             model = model.initiateCompositeModel();
             

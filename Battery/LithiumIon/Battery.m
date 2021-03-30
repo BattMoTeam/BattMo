@@ -18,8 +18,9 @@ classdef Battery < PhysicalModel
         Electrolyte
         NegativeElectrode
         PositiveElectrode
-    
+        
         couplingTerms
+        couplingNames
         
     end
     
@@ -49,6 +50,12 @@ classdef Battery < PhysicalModel
             model.Electrolyte       = Electrolyte(paramobj.elyte);
             model.NegativeElectrode = Electrode(paramobj.ne);
             model.PositiveElectrode = Electrode(paramobj.pe);
+
+            % setup couplingNames
+            model.couplingNames = cellfun(@(x) x.name, model.couplingTerms, 'uniformoutput', false);
+            
+            % setup Electrolyte porosity
+            model = model.setElectrolytePorosity();
             
         end
     
@@ -69,7 +76,8 @@ classdef Battery < PhysicalModel
             eac     = 'ElectrodeActiveComponent';
             cc      = 'CurrentCollector';
             elyte   = 'Electrolyte';
-
+            am      = 'ActiveMaterial';
+            
             automaticAssembly;
             
             %% Set up the governing equations
@@ -108,6 +116,7 @@ classdef Battery < PhysicalModel
             
         end
 
+        
         function state = updateT(model, state)
             names = {'NegativeElectrode', 'PositiveElectrode', 'Electrolyte'};
             for ind = 1 : numel(names);
@@ -115,6 +124,29 @@ classdef Battery < PhysicalModel
                 nc = model.(name).G.cells.num;
                 state.(name).T = state.T(1)*ones(nc, 1);
             end
+        end
+        
+        function model = setElectrolytePorosity(model)
+        % Abbreviations used in this function 
+        % elyte : Electrolyte
+        % ne    : NegativeElectrode
+        % pe    : PositiveElectrode
+            
+            elyte = 'Electrolyte';
+            ne    = 'NegativeElectrode';
+            pe    = 'PositiveElectrode';
+            eac   = 'ElectrodeActiveComponent';
+            sep   = 'Separator';
+
+            elyte_cells = zeros(model.G.cells.num, 1);
+            elyte_cells(model.(elyte).G.mappings.cellmap) = (1 : model.(elyte).G.cells.num)';
+
+            model.(elyte).volumeFraction = NaN(model.(elyte).G.cells.num, 1);
+            model.(elyte).volumeFraction(elyte_cells(model.(ne).(eac).G.mappings.cellmap))  = model.(ne).(eac).porosity;
+            model.(elyte).volumeFraction(elyte_cells(model.(pe).(eac).G.mappings.cellmap))  = model.(pe).(eac).porosity;
+            model.(elyte).volumeFraction(elyte_cells(model.(elyte).(sep).G.mappings.cellmap)) = model.(elyte).(sep).porosity;
+
+
         end
         
         function initstate = setupInitialState(model)
@@ -212,35 +244,71 @@ classdef Battery < PhysicalModel
         function state = setupElectrolyteCoupling(model, state)
         % Setup the electrolyte coupling by adding ion sources from the electrodes
         % shortcuts:
-        % elyte : Electrolyte
-        % ne : NegativeElectrode
-        % pe : PositiveElectrode
+        % c_source : Source term for charge carrier.
+                        
+            bat = model;
+            elyte = 'Electrolyte';
+            ne    = 'NegativeElectrode';
+            pe    = 'PositiveElectrode';
+            am    = 'ActiveMaterial';
+            eac   = 'ElectrodeActiveComponent';
             
-            elyte = model.Electrolyte;
-            ionSourceName = elyte.ionSourceName;
-            coupterms = model.couplingTerms;
+            ccSourceName = bat.(elyte).chargeCarrierSourceName;
+            couplingterms = bat.couplingTerms;
+
+            phi = state.(elyte).phi;
+
+            elyte_c_source = zeros(bat.(elyte).G.cells.num, 1);
             
-            phi = state.Electrolyte.phi;
             if isa(phi, 'ADI')
                 adsample = getSampleAD(phi);
                 adbackend = model.AutoDiffBackend;
-                elyte_Li_source = adbackend.convertToAD(elyte_Li_source, adsample);
+                elyte_c_source = adbackend.convertToAD(elyte_c_source, adsample);
             end
             
-            ne_R = state.NegativeElectrode.ElectrodeActiveComponent.ActiveMaterial.R;
-            coupterm = getCoupTerm(couplingterms, 'NegativeElectrode-Electrolyte');
-            elytecells = coupterm.couplingcells(:, 2);
-            elyte_Li_source(elytecells) = ne_R;            
+            coupnames = model.couplingNames;
             
-            pe_R = state.PositiveElectrode.ElectrodeActiveComponent.ActiveMaterial.R;
-            coupterm = getCoupTerm(couplingterms, 'PositiveElectrode-Electrolyte');
+            ne_R = state.(ne).(eac).(am).R;
+            coupterm = getCoupTerm(couplingterms, 'NegativeElectrode-Electrolyte', coupnames);
             elytecells = coupterm.couplingcells(:, 2);
-            elyte_Li_source(elytecells) = pe_R;
+            elyte_c_source(elytecells) = ne_R;            
             
-            state.Electrolyte.(ionSourceName) = elyte_Li_source;
+            pe_R = state.(pe).(eac).(am).R;
+            coupterm = getCoupTerm(couplingterms, 'PositiveElectrode-Electrolyte', coupnames);
+            elytecells = coupterm.couplingcells(:, 2);
+            elyte_c_source(elytecells) = pe_R;
+            
+            state.Electrolyte.(ccSourceName) = elyte_c_source; 
         
         end
         
+        function state = updateAccumTerms(model, state, state0, dt)
+                    
+            bat = model;
+            elyte = 'Electrolyte';
+            ne    = 'NegativeElectrode';
+            pe    = 'PositiveElectrode';
+            am    = 'ActiveMaterial';
+            eac   = 'ElectrodeActiveComponent';
+            
+            
+            ccAccumName = bat.(elyte).chargeCarrierAccumName;
+            ccName = bat.(elyte).chargeCarrierName;
+            
+            cdotcc  = (state.(elyte).cs{1} - state0.(elyte).cs{1})/dt;
+            ccAccum = bat.(elyte).volumeFraction.*cdotcc;
+            state.(elyte).(ccAccumName) = ccAccum;
+            
+            names = {ne, pe};
+            for i = 1 : numel(names)
+                elde = names{i}; % electrode name
+                cdotcc   = (state.(elde).(eac).(am).(ccName) - state0.(elde).(eac).(am).(ccName))/dt;
+                ccAccum  = bat.(elde).(eac).volumeFraction.*cdotcc;
+                state.(elde).(ccAccumName) = ccAccum;
+            end
+            
+        end
+
         
         function state = setupElectrodeCoupling(model, state)
         % Setup electrod coupling by updating the potential and concentration of the electrolyte in the active component of the
@@ -254,23 +322,132 @@ classdef Battery < PhysicalModel
         % neac  : NegativeElectrode.ElectrodeActiveComponent 
         % peac  : PositiveElectrode.ElectrodeActiveComponent
             
-            elyte = model.Electrolyte;
-            neac = model.NegativeElectrode.ElectrodeActiveComponent;
-            peac = model.PositiveElectrode.ElectrodeActiveComponent;
+            bat = model;
+            elyte = 'Electrolyte';
+            ne    = 'NegativeElectrode';
+            pe    = 'PositiveElectrode';
+            am    = 'ActiveMaterial';
+            eac   = 'ElectrodeActiveComponent';
+            cc    = 'CurrentCollector';
             
-            phi_elyte = state.Electrolyte.phi;
+            
+            phi_elyte = state.(elyte).phi;
             
             elyte_cells = zeros(model.G.cells.num, 1);
-            elyte_cells(elyte.G.mappings.cellmap) = (1 : elyte.G.cells.num)';
+            elyte_cells(bat.(elyte).G.mappings.cellmap) = (1 : bat.(elyte).G.cells.num)';
 
-            phi_elyte_neac = phi_elyte(elyte_cells(neac.G.mappings.cellmap));
-            phi_elyte_peac = phi_elyte(elyte_cells(peac.G.mappings.cellmap));
+            phi_elyte_neac = phi_elyte(elyte_cells(bat.(ne).(eac).G.mappings.cellmap));
+            phi_elyte_peac = phi_elyte(elyte_cells(bat.(ne).(eac).G.mappings.cellmap));
 
-            state.NegativeElectrode.ElectrodeActiveComponent.phiElectrolyte = phi_elyte_neac;
-            state.PositiveElectrode.ElectrodeActiveComponent.phiElectrolyte = phi_elyte_peac;
+            state.(ne).(eac).(am).phiElectrolyte = phi_elyte_neac;
+            state.(pe).(eac).(am).phiElectrolyte = phi_elyte_peac;
             
         end
         
+        function state = initStateAD(model,state)
+            
+            bat = model;
+            elyte = 'Electrolyte';
+            ne    = 'NegativeElectrode';
+            pe    = 'PositiveElectrode';
+            am    = 'ActiveMaterial';
+            eac   = 'ElectrodeActiveComponent';
+            cc    = 'CurrentCollector';
+            
+            adbackend = model.AutoDiffBackend();
+            [state.(elyte).cs{1}      ,...
+             state.(elyte).phi        ,...   
+             state.(ne).(eac).(am).Li ,...    
+             state.(ne).(eac).(am).phi,...   
+             state.(pe).(eac).(am).Li ,...    
+             state.(pe).(eac).(am).phi,...   
+             state.(ne).(cc).phi      ,...    
+             state.(pe).(cc).phi      ,...    
+             state.(pe).(cc).E] = ...
+                adbackend.initVariablesAD(...
+                    state.(elyte).cs{1}      ,...
+                    state.(elyte).phi        ,...   
+                    state.(ne).(eac).(am).Li ,...    
+                    state.(ne).(eac).(am).phi,...   
+                    state.(pe).(eac).(am).Li ,...    
+                    state.(pe).(eac).(am).phi,...   
+                    state.(ne).(cc).phi      ,...    
+                    state.(pe).(cc).phi      ,...    
+                    state.(pe).(cc).E);       
+        end
+        
+        function p = getPrimaryVariables(model)
+            bat = model;
+            elyte = 'Electrolyte';
+            ne    = 'NegativeElectrode';
+            pe    = 'PositiveElectrode';
+            am    = 'ActiveMaterial';
+            eac   = 'ElectrodeActiveComponent';
+            cc    = 'CurrentCollector';
+            
+            p ={{elyte,'cs'}         , ...
+                {elyte,'phi'}        , ...   
+                {ne, eac, am, 'Li'}  , ...    
+                {ne, eac, am, 'phi'} , ...   
+                {pe, eac, am, 'Li'}  , ...    
+                {pe, eac, am, 'phi'} , ...   
+                {ne, cc,'phi'}       , ...    
+                {pe, cc,'phi'}       , ...    
+                {pe, cc,'E'}
+               };
+            
+        end
+        
+        function state = setProp(model,state,names,val)
+            nname=numel(names);
+            if(nname==1)
+                state.(names{1})=val;
+            elseif(nname==2)
+                state.(names{1}).(names{2})=val;
+            elseif(nname==3)
+                state.(names{1}).(names{2}).(names{3}) = val;
+            else
+                error('not implmented')
+            end
+        end
+        
+        function var = getProp(model, state, names)
+            var = state.(names{1});
+            for i = 2 : numel(names)
+                var = var.(names{i});
+            end
+        end
+        
+        function submod = getSubmodel(model, names)
+            submod = model.(names{1});
+            for i=2:numel(names)
+                submod = submod.(names{i});
+            end
+        end
+
+        function validforces = getValidDrivingForces(model)
+            validforces=struct('src', [], 'stopFunction', []); 
+        end
+         
+        
+        function [state, report] = updateState(model,state, problem, dx, drivingForces)
+            p = model.getPrimaryVariables();
+            for i=2:numel(dx)
+                val = model.getProps(state,p{i});
+                val = val + dx{i};
+                state = model.setProp(state,p{i},val);
+            end
+            %% not sure how to handle cells
+            state.Electrolyte.cs{1} =  state.Electrolyte.cs{1} + dx{1};
+            report = [];
+        end
+        
+        
+        function state = reduceState(model, state, removeContainers)
+        % Reduce state to double (do not use property containers)
+            state = value(state);
+        end
+
         
     end
     

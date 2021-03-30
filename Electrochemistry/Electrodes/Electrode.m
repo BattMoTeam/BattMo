@@ -9,6 +9,7 @@ classdef Electrode < PhysicalModel
         CurrentCollector % (class ElectronicComponent)
 
         couplingTerms;
+        couplingNames;
         
     end
 
@@ -26,6 +27,9 @@ classdef Electrode < PhysicalModel
             model.ElectrodeActiveComponent = ActiveElectroChemicalComponent(paramobj.eac);
             model.CurrentCollector = ElectronicComponent(paramobj.cc);
             
+            % setup couplingNames
+            model.couplingNames = cellfun(@(x) x.name, model.couplingTerms, 'uniformoutput', false);
+           
         end
         
         
@@ -63,25 +67,27 @@ classdef Electrode < PhysicalModel
         % eac : ElectrodeActiveComponent
         % cc  : CurrentCollector
             
-            eac = model.ElectrodeActiveComponent;
-            cc = model.CurrentCollector;            
+            elde  = model;
+            eac   = 'ElectrodeActiveComponent';
+            cc    = 'CurrentCollector';
 
-            eac_phi = state.ElectrodeActiveComponent.phi;
-            cc_phi = state.CurrentCollector.phi;
+            eac_phi = state.(eac).phi;
+            cc_phi = state.(cc).phi;
 
-            eac_sigmaeff = ne.EffectiveElectronicConductivity;
-            cc_sigmaeff = cc.EffectiveElectronicConductivity;
+            eac_sigmaeff = elde.(eac).EffectiveElectronicConductivity;
+            cc_sigmaeff = elde.(cc).EffectiveElectronicConductivity;
     
             %% We setup the current transfers between CurrentCollector and ElectrodeActiveComponent
             
             eac_j_bcsource  = eac_phi*0.0; %NB hack to initialize zero ad
             cc_j_bcsource = cc_phi*0.0; %NB hack to initialize zero ad
 
-            coupterm = getCoupTerm(model, 'CurrentCollector-ElectrodeActiveComponent');
+            coupnames = model.couplingNames;
+            coupterm = getCoupTerm(model.couplingTerms, 'CurrentCollector-ElectrodeActiveComponent', coupnames);
             face_cc = coupterm.couplingfaces(:, 1);
             face_eac = coupterm.couplingfaces(:, 2);
-            [teac, bccell_eac] = eac.operators.harmFaceBC(eac_sigmaeff, face_eac);
-            [tcc, bccell_cc] = cc.operators.harmFaceBC(cc_sigmaeff, face_cc);
+            [teac, bccell_eac] = elde.(eac).operators.harmFaceBC(eac_sigmaeff, face_eac);
+            [tcc, bccell_cc] = elde.(cc).operators.harmFaceBC(cc_sigmaeff, face_cc);
 
             bcphi_eac = eac_phi(bccell_eac);
             bcphi_cc = cc_phi(bccell_cc);
@@ -91,9 +97,8 @@ classdef Electrode < PhysicalModel
             eac_j_bcsource(bccell_eac) = crosscurrent;
             cc_j_bcsource(bccell_cc) = -crosscurrent;
 
-
-            state.ElectrodeActiveComponent.jBcSource = state.ElectrodeActiveComponent.jBcSource + eac_j_bcsource;
-            state.CurrentCollector.jBcSource = state.CurrentCollector.jBcSource + cc_j_bcsource;
+            state.(elde).(eac).jBcSource = state.(elde).(eac).jBcSource + eac_j_bcsource;
+            state.(elde).(cc).jBcSource = state.(elde).(ccc).jBcSource + cc_j_bcsource;
             
         end
         

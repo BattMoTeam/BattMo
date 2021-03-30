@@ -38,6 +38,8 @@ classdef ActiveElectroChemicalComponent < ElectroChemicalComponent
 
         function state = updateIonAndCurrentSource(model, state)
             
+            ccSourceName = model.chargeCarrierSourceName;
+            
             R = state.ActiveMaterial.R;
             
             state.eSource = R;
@@ -46,11 +48,11 @@ classdef ActiveElectroChemicalComponent < ElectroChemicalComponent
         end
         
         function state = updateChargeCarrier(model, state)
-            state.ActiveMaterial.(ionName) = state.(ionName);
+            state.(ionName) = state.ActiveMaterial.(ionName);
         end 
         
         function state = updatePhi(model, state)
-            state.ActiveMaterial.phi = state.phi;            
+            state.phi = state.ActiveMaterial.phi;
         end         
         
         function state = updateT(model, state)

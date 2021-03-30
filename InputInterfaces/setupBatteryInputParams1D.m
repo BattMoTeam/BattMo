@@ -112,8 +112,14 @@ function paramobj = setupElectrolyte(paramobj, params)
     params_elyte.cellind = ccnenx + (1 : (nenx + sepnx + penx))';
     
     paramobj.elyte = paramobj.elyte.setupGrid(params_elyte);
-   
+    
+    params_sep.globG = paramobj.G;
+    params_sep.cellind = ccnenx + nenx + (1 : sepnx)';
+    
+    paramobj.elyte.sep = paramobj.elyte.sep.setupGrid(params_sep);
+    
 end
+
 
 
 function paramobj = setupCouplingTerms(paramobj, params)

@@ -15,14 +15,14 @@ classdef ActiveElectroChemicalComponent_ < ElectroChemicalComponent_
             model = model.addPropFunction('eSource', fn, inputnames, fnmodel);
             
             fn = @ActiveElectroChemicalComponent.updateChargeCarrier;
-            inputnames = {VarName({'..'}, 'cs')};
-            fnmodel = {'..'};
-            model = model.addPropFunction({'am', 'cs'}, fn, inputnames, fnmodel);
+            inputnames = {VarName({'am'}, 'cs')};
+            fnmodel = {'.'};
+            model = model.addPropFunction('cs', fn, inputnames, fnmodel);
 
             fn = @ActiveElectroChemicalComponent.updatePhi;
-            inputnames = {VarName({'..'}, 'phi')};
-            fnmodel = {'..'};
-            model = model.addPropFunction({'am', 'phi'}, fn, inputnames, fnmodel);
+            inputnames = {VarName({'am'}, 'phi')};
+            fnmodel = {'.'};
+            model = model.addPropFunction('phi', fn, inputnames, fnmodel);
             
             fn = @ActiveElectroChemicalComponent.updateT;
             inputnames = {VarName({'..'}, 'T')};
