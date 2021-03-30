@@ -1,30 +1,12 @@
 classdef CurrentCollectorInputParams < ElectronicComponentInputParams
-    
-    properties
-        volumeFraction 
-        electronicConductivity
-    end
-    
+% It is now an instantiation (we set the EffectiveElectronicConductivity here). Done for simplicity.
     methods
-
-        function paramobj = setup(paramobj, params)
-        %
-        % params should contain fields for ComponentInputParams and 
-        % - volumeFraction
-        % - electronicConductivity
-            
-            
-            volumeFraction = params.volumeFraction;
-            electronicConductivity = params.electronicConductivity;
-            params.EffectiveElectronicConductivity = (electronicConductivity) .* (volumeFraction).^1.5;
-            
-            paramobj = setup@ElectronicComponentInputParams(paramobj, params);
-
-            paramobj.volumeFraction = volumeFraction;
-            paramobj.electronicConductivity = electronicConductivity;
-            
+        
+        function paramobj = CurrentCollectorInputParams();
+            paramobj = paramobj@ElectronicComponentInputParams();
+            paramobj.EffectiveElectronicConductivity = 100;
         end
         
     end
-    
+
 end

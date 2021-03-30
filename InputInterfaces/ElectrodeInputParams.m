@@ -22,26 +22,6 @@ classdef ElectrodeInputParams < ComponentInputParams
             paramobj.couplingTerms = {};
         end
 
-        function paramobj = setup(paramobj, params)
-        % params struct should contain valid fields for ComponentInputParams
-        %
-        % and valid fields for the methods (see implementation of those methods)
-        %
-        % - eac
-        % - cc
-        % - couplingTerms
-            
-
-            fdname = {'eac', ...
-                      'cc', ...
-                      'couplingTerms'};
-            
-            paramobj = dispatchParams(paramobj, params, 'eac');
-        
-            paramobj = setup@ComponentInputParams(paramobj, params);
-        
-        end
-
     end
     
 end

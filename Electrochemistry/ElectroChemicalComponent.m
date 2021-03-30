@@ -31,23 +31,21 @@ classdef ElectroChemicalComponent < ElectronicComponent
 
         function state = updateChargeCarrierFlux(model, state)
             
-            ionName = model.ionName;
-            ionFluxName = model.ionFluxName;
+            ccName = model.chargeCarrierName;
+            ccFluxName = model.chargeCarrierFluxName;
             
             D = state.D;
-            c = state.(ionName);
+            c = state.(ccName);
 
-            ionflux = assembleFlux(model, c, D);
+            ccflux = assembleFlux(model, c, D);
             
+            %% apply scaling (maybe not the right place but consistent with assembleConservationEquation - at
+            %% least when this comment was written...)
             F = model.constants.F;
-            ionflux = ionflux*F;
+            ccflux = ccflux*F;
             
-            state.(ionFluxName) = ionflux;
-        end
-
-        function state = updateCurrent(model, state)
-        % typically will be overloaded to take into account charge Carrier presence
-            state = updateCurrent@ElectronicComponent(model, state)
+            state.(ccFluxName) = ccflux;
+            
         end
         
         function state = updateMassConservation(model, state)

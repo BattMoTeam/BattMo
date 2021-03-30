@@ -39,6 +39,9 @@ classdef ActiveMaterial < PhysicalModel
             
             model = model@PhysicalModel([]);
             
+             % OBS : All the submodels should have same backend (this is not assigned automaticallly for the moment)
+            model.AutoDiffBackend = SparseAutoDiffBackend('useBlocks', true);
+            
             fdnames = {'G', ...
                        'specificCapacity', ...
                        'rho', ...

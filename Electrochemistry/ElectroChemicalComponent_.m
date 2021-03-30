@@ -25,14 +25,9 @@ classdef ElectroChemicalComponent_ < ElectronicComponent_
             model = model.addPropFunction('D', fn, inputnames, fnmodel);        
 
             fn = @ElectroChemicalComponent.updateChargeCarrierFlux;
-            inputnames = {'chargeCarrier', 'D'};
+            inputnames = {'D'};
             fnmodel = {'.'};
             model = model.addPropFunction('chargeCarrierFlux', fn, inputnames, fnmodel);        
-
-            fn = @ElectroChemicalComponent.updateCurrent;
-            inputnames = {'chargeCarrier', 'phi'};
-            fnmodel = {'.'};
-            model = model.addPropFunction('j', fn, inputnames, fnmodel);        
             
             fn = @ElectroChemicalComponent.updateMassConservation;
             inputnames = {'chargeCarrierFlux', 'chargeCarrierSource', 'chargeCarrierAccum'};

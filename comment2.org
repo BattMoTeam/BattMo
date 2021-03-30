@@ -40,4 +40,6 @@
   - handle case where inputnames is empty
   - used for example to setup jBcSource to zero for electrolyte
 * Hack for state0 in graph approach
+* AD-backend for submodels
+* generic name for charge carrier
 

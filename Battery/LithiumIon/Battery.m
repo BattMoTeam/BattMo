@@ -34,7 +34,8 @@ classdef Battery < PhysicalModel
             
             model = model@PhysicalModel([]);
             
-            model.AutoDiffBackend = SparseAutoDiffBackend('useBlocks',true);
+            % OBS : All the submodels should have same backend (this is not assigned automaticallly for the moment)
+            model.AutoDiffBackend = SparseAutoDiffBackend('useBlocks', true);
             
             %% Setup the model using the input parameters
             fdnames = {'G', ...
@@ -86,34 +87,51 @@ classdef Battery < PhysicalModel
             
             %% We collect mass and charge conservation equations for the electrolyte and the electrodes
 
-            names = {'Electrolyte', 'NegativeElectrode', 'PositiveElectrode'};
+            eqs{end + 1} = state.(elyte).massCons;
+            eqs{end + 1} = state.(elyte).chargeCons;
             
-            for i = 1 : numel(names)
-                eqs{end + 1} = model.getProp(state,{names{i}, 'massCons'});
-                eqs{end + 1} = model.getProp(state,{names{i}, 'chargeCons'});
-            end
+            eqs{end + 1} = state.(ne).(eac).massCons;
+            eqs{end + 1} = state.(ne).(eac).chargeCons;
+            eqs{end + 1} = state.(ne).(cc).chargeCons;
             
-            %% We collect charge conservation equations for the current collectors
-            
-            names = {'NegativeCurrentCollector', 'PositiveCurrentCollector'};
-            for i = 1 : numel(names)
-                eqs{end + 1} = model.getProp(state, {names{i}, 'chargeCons'});
-            end
+            eqs{end + 1} = state.(pe).(eac).massCons;
+            eqs{end + 1} = state.(pe).(eac).chargeCons;
+            eqs{end + 1} = state.(pe).(cc).chargeCons;
             
             %% We setup and add the control equation (fixed total current at PositiveCurrentCollector)
             
             src = drivingForces.src(time);
-            coupterm = model.getCoupTerm('bc-PositiveCurrentCollector');
+            coupterms = battery.(ne).couplingTerms;
+            coupnames = battery.(ne).couplingNames;
+            coupterm = getCoupTerm(coupterms, 'bc-CurrentCollector', coupnames);
             faces = coupterm.couplingfaces;
-            bcval = state.PositiveCurrentCollector.E;
-            cond_pcc = model.PositiveCurrentCollector.EffectiveElectronicConductivity;
-            [trans_pcc, cells] = model.PositiveCurrentCollector.operators.harmFaceBC(cond_pcc, faces);
-            control = src - sum(trans_pcc.*(bcval - state.PositiveCurrentCollector.phi(cells)));
+            bcval = state.(pe).(cc).E;
+            cond_pcc = battery.(pe).(cc).EffectiveElectronicConductivity;
+            [trans_pcc, cells] = battery.(pe).(cc).operators.harmFaceBC(cond_pcc, faces);
+            control = src - sum(trans_pcc.*(bcval - state.(pe).(cc).phi(cells)));
             
-            eqs{end+1} = -control;
+            eqs{end + 1} = -control;
 
-
+            %% Give type and names to equations and names of the primary variables (for book-keeping)
             
+            types = {'cell','cell','cell','cell',...
+                     'cell','cell','cell','cell','cell'};
+            
+            names = {'elyte_massCons'   , ...
+                     'elyte_chargeCons' , ...
+                     'ne_eac_massCons'  , ...
+                     'ne_eac_chargeCons', ...
+                     'ne_cc_chargeCons' , ...
+                     'ne_eac_massCons'  , ...
+                     'ne_eac_chargeCons', ...
+                     'ne_cc_chargeCons' , ...
+                     'control'};
+            
+            primaryVars = model.getPrimaryVariables();
+
+            %% setup LinearizedProblem that can be processed by MRST Newton API
+            problem = LinearizedProblem(eqs, types, names, primaryVars, state, dt);
+        
         end
 
         
@@ -304,7 +322,7 @@ classdef Battery < PhysicalModel
                 elde = names{i}; % electrode name
                 cdotcc   = (state.(elde).(eac).(am).(ccName) - state0.(elde).(eac).(am).(ccName))/dt;
                 ccAccum  = bat.(elde).(eac).volumeFraction.*cdotcc;
-                state.(elde).(ccAccumName) = ccAccum;
+                state.(elde).(eac).(ccAccumName) = ccAccum;
             end
             
         end
@@ -385,37 +403,47 @@ classdef Battery < PhysicalModel
             eac   = 'ElectrodeActiveComponent';
             cc    = 'CurrentCollector';
             
-            p ={{elyte,'cs'}         , ...
-                {elyte,'phi'}        , ...   
-                {ne, eac, am, 'Li'}  , ...    
-                {ne, eac, am, 'phi'} , ...   
-                {pe, eac, am, 'Li'}  , ...    
-                {pe, eac, am, 'phi'} , ...   
-                {ne, cc,'phi'}       , ...    
-                {pe, cc,'phi'}       , ...    
-                {pe, cc,'E'}
+            p ={{elyte, 'cs', 1}       , ...
+                {elyte, 'phi'}         , ...   
+                {ne, eac, am, 'cs', 1} , ...    
+                {ne, eac, am, 'phi'}   , ...   
+                {pe, eac, am, 'cs', 1} , ...    
+                {pe, eac, am, 'phi'}   , ...   
+                {ne, cc, 'phi'}        , ...    
+                {pe, cc, 'phi'}        , ...    
+                {pe, cc, 'E'}
                };
             
         end
         
-        function state = setProp(model,state,names,val)
-            nname=numel(names);
-            if(nname==1)
-                state.(names{1})=val;
-            elseif(nname==2)
-                state.(names{1}).(names{2})=val;
-            elseif(nname==3)
-                state.(names{1}).(names{2}).(names{3}) = val;
-            else
-                error('not implmented')
-            end
+        function state = setProp(model, state, names, val)
+            if iscell(names) & numel(names) > 1
+                name = names{1};
+                names = names(2 : end);
+                state.(name) = model.setProp(state.(name), names);
+            else iscell(names) & numel(names) == 1
+                name = names{1};
+                if isnumeric(name)
+                    state{name} = val;
+                else
+                    state.(name) = val;
+                end
+            end                
         end
         
         function var = getProp(model, state, names)
-            var = state.(names{1});
-            for i = 2 : numel(names)
-                var = var.(names{i});
-            end
+            if iscell(names) & numel(names) > 1
+                name = names{1};
+                names = names(2 : end);
+                var = model.getProp(state.(name), names);
+            else iscell(names) & numel(names) == 1
+                name = names{1};
+                if isnumeric(name)
+                    var = state{name};
+                else
+                    var = state.(name);
+                end
+            end                
         end
         
         function submod = getSubmodel(model, names)
@@ -430,12 +458,12 @@ classdef Battery < PhysicalModel
         end
          
         
-        function [state, report] = updateState(model,state, problem, dx, drivingForces)
+        function [state, report] = updateState(model, state, problem, dx, drivingForces)
             p = model.getPrimaryVariables();
             for i=2:numel(dx)
-                val = model.getProps(state,p{i});
+                val = model.getProps(state, p{i});
                 val = val + dx{i};
-                state = model.setProp(state,p{i},val);
+                state = model.setProp(state, p{i}, val);
             end
             %% not sure how to handle cells
             state.Electrolyte.cs{1} =  state.Electrolyte.cs{1} + dx{1};

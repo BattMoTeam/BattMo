@@ -19,13 +19,15 @@ classdef Electrode < PhysicalModel
             
             model = model@PhysicalModel([]);
             
+            model.AutoDiffBackend = SparseAutoDiffBackend('useBlocks', true);
+            
             fdnames = {'G', ...
                        'couplingTerms'};
             model = dispatchParams(model, paramobj, fdnames);
             
             % Assign the two components
             model.ElectrodeActiveComponent = ActiveElectroChemicalComponent(paramobj.eac);
-            model.CurrentCollector = ElectronicComponent(paramobj.cc);
+            model.CurrentCollector = CurrentCollector(paramobj.cc);
             
             % setup couplingNames
             model.couplingNames = cellfun(@(x) x.name, model.couplingTerms, 'uniformoutput', false);
@@ -34,6 +36,28 @@ classdef Electrode < PhysicalModel
         
         
         function state = setupCoupling(model, state)
+        % initiate jBcSource
+
+            elde  = model;
+            eac   = 'ElectrodeActiveComponent';
+            cc    = 'CurrentCollector';
+            
+            eac_jBcSource = zeros(elde.(eac).G.cells.num, 1);
+            cc_jBcSource = zeros(elde.(cc).G.cells.num, 1);
+            cc_eSource = zeros(elde.(cc).G.cells.num, 1);
+            
+            phi = state.(cc).phi;
+            if isa(phi, 'ADI')
+                adsample = getSampleAD(phi);
+                adbackend = model.AutoDiffBackend;
+                eac_jBcSource = adbackend.convertToAD(eac_jBcSource, adsample);
+                cc_jBcSource = adbackend.convertToAD(cc_jBcSource, adsample);
+            end
+            
+            state.(eac).jBcSource = eac_jBcSource;
+            state.(cc).jBcSource = cc_jBcSource;
+            state.(cc).eSource = cc_eSource; % always zero, no volumetric electron source
+            
             state = model.setupCurrentCollectorCoupling(state);
             state = model.setupBoundaryCoupling(state);
         end
@@ -43,20 +67,23 @@ classdef Electrode < PhysicalModel
         % shortcuts:
         % cc  : CurrentCollector            
             
-            coupterm = model.getCoupTerm('bc-NegativeCurrentCollector');
+            coupnames = model.couplingNames;
+            coupterm = getCoupTerm(model.couplingTerms, 'bc-CurrentCollector', coupnames);
             
-            cc = model.CurrentCollector;            
-            phi = state.CurrentCollector.phi;
+            elde = model;
+            cc = 'CurrentCollector';
+            
+            phi = state.(cc).phi;
             
             j_bcsource = phi*0.0; %NB hack to initialize zero ad
             
-            sigmaeff = cc.EffectiveElectronicConductivity;
+            sigmaeff = elde.(cc).EffectiveElectronicConductivity;
             faces = coupterm.couplingfaces;
             bcval = zeros(numel(faces), 1);
-            [t, cells] = cc.operators.harmFaceBC(sigmaeff, faces);
+            [t, cells] = elde.(cc).operators.harmFaceBC(sigmaeff, faces);
             j_bcsource(cells) = j_bcsource(cells) + t.*(bcval - phi(cells));
             
-            state.CurrentCollector.jBcSource = state.CurrentCollector.jBcSource + cc_j_bcsource;
+            state.(cc).jBcSource = state.(cc).jBcSource + j_bcsource;
             
         end
         
@@ -97,8 +124,8 @@ classdef Electrode < PhysicalModel
             eac_j_bcsource(bccell_eac) = crosscurrent;
             cc_j_bcsource(bccell_cc) = -crosscurrent;
 
-            state.(elde).(eac).jBcSource = state.(elde).(eac).jBcSource + eac_j_bcsource;
-            state.(elde).(cc).jBcSource = state.(elde).(ccc).jBcSource + cc_j_bcsource;
+            state.(eac).jBcSource = state.(eac).jBcSource + eac_j_bcsource;
+            state.(cc).jBcSource = state.(cc).jBcSource + cc_j_bcsource;
             
         end
         

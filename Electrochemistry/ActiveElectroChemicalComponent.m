@@ -1,6 +1,7 @@
 classdef ActiveElectroChemicalComponent < ElectroChemicalComponent
     
     properties
+        
         ActiveMaterial
         
         volumeFraction
@@ -43,12 +44,22 @@ classdef ActiveElectroChemicalComponent < ElectroChemicalComponent
             R = state.ActiveMaterial.R;
             
             state.eSource = R;
-            state.(ionSourceName) = -R;
+            state.(ccSourceName) = -R;
+            
+        end
+        
+        function state = updateDiffusionCoefficient(model, state)
+            
+            D = state.ActiveMaterial.D;
+            state.D = D .* model.volumeFraction .^1.5;
             
         end
         
         function state = updateChargeCarrier(model, state)
-            state.(ionName) = state.ActiveMaterial.(ionName);
+            
+            ccName = model.chargeCarrierName;
+            state.(ccName) = state.ActiveMaterial.(ccName);
+            
         end 
         
         function state = updatePhi(model, state)

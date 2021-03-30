@@ -1,21 +1,18 @@
 classdef CurrentCollector < ElectronicComponent
-% Current collector model 
-    
-    properties
-        volumeFraction
-        electronicConductivity
-    end
+% Current collector model : At the moment equivalent to an ElectronicComponent
     
     methods
         
-        function model = CurrentCollector(params)
+        function model = CurrentCollector(paramobj)
             
-            model = model@ElectronicComponent(params);
+            model = model@ElectronicComponent(paramobj);
             
-            model.electronicConductivity = params.electronicConductivity;
-            model.volumeFraction = params.volumeFraction;
+            % The parameter EffectiveElectronicConductivity in CurrentCollectorInputParams is given as scalar
+            
+            model.EffectiveElectronicConductivity = model.EffectiveElectronicConductivity*ones(model.G.cells.num, 1);
             
         end
+        
     end
     
 end
