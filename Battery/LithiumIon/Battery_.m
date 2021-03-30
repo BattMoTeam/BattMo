@@ -46,7 +46,7 @@ classdef Battery_ < CompositeModel
             clear inputnames;
             inputnames{1} = VarName({'ne', 'eac', 'am'}, 'R');
             inputnames{1}.isNamingRelative = false;
-            inputnames{1} = VarName({'pe', 'eac', 'am'}, 'R');
+            inputnames{2} = VarName({'pe', 'eac', 'am'}, 'R');
             inputnames{2}.isNamingRelative = false;
             
             fnmodel = {'..'};
