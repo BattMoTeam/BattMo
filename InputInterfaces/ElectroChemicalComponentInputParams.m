@@ -12,7 +12,7 @@ classdef ElectroChemicalComponentInputParams < ElectronicComponentInputParams
     
     methods
         
-        function paramobj = ElectroChemicalComponentInputParams(params)
+        function paramobj = setup(parmobj, params)
         % params struct should contain valid fields for ElectronicComponentInputParams and the fields
         % - ionName
         % - ionFluxName 
@@ -20,12 +20,13 @@ classdef ElectroChemicalComponentInputParams < ElectronicComponentInputParams
         % - ionMassConsName
         % - ionAccumName        
             
-            paramobj = paramobj@ElectronicComponentInputParams(params);
             paramobj.ionName         = params.ionName;
             paramobj.ionFluxName     = params.ionFluxName;
             paramobj.ionSourceName   = params.ionSourceName;
             paramobj.ionMassConsName = params.ionMassConsName;
             paramobj.ionAccumName    = params.ionAccumName;
+            
+            paramobj = setup@ElectronicComponentInputParams(paramobj, params);
             
         end
         

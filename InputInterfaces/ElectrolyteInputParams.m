@@ -2,9 +2,11 @@ classdef ElectrolyteInputParams < ActiveElectroChemicalComponentInputParams
     
     properties
         electrolyteType
+    end
+    
     methods
         
-        function paramobj = ElectrolyteInputParams(params)
+        function paramobj = setup(paramobj, params)
         % params struct should contain valid fields for ActiveElectroChemicalComponentInputParams
         %
         % and fields
@@ -12,12 +14,9 @@ classdef ElectrolyteInputParams < ActiveElectroChemicalComponentInputParams
         % - electrolyteType
         %
             
-            paramobj = paramobj@ActiveElectroChemicalComponent(params);
+            paramobj = setup@ActiveElectroChemicalComponent(paramobj, params);
             
         end
-        
-        
-        
         
     end
     

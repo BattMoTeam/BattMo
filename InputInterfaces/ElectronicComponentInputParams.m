@@ -6,16 +6,18 @@ classdef ElectronicComponentInputParams < ComponentInputParams
     
     methods
         
-        function paramobj = ElectronicComponentInputParams(params)
+
+        function paramobj = setup(paramobj, params)
         % params struct should contain valid fields for ComponentInputParams
         %
         % and the field
         %
         % - EffectiveElectronicConductivity
-            paramobj = paramobj@ComponentInputParams(params);
-            paramobj.EffectiveElectronicConductivity = params.EffectiveElectronicConductivity;
+            paramobj = setup@ComponentInputParams(paramobj@, arams);
+            paramobj.EffectiveElectronicConductivity = params.EffectiveElectronicConductivity;        
         end
         
+    
     end
     
 end
