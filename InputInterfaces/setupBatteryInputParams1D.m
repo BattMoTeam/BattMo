@@ -7,8 +7,12 @@ function paramobj = setupBatteryInputParams1D(paramobj)
 % - ccnenx 
 % - ccpenx 
 
-    params.sepnx = 
-    
+    fac = 1;
+    params.sepnx  = 30*fac;
+    params.nenx   = 30*fac;
+    params.penx   = 30*fac;
+    params.ccnenx = 20*fac;
+    params.ccpenx = 20*fac;
     
     paramobj = setupGrid(paramobj, params);
     paramobj = setupNegativeElectrode(paramobj, params);
