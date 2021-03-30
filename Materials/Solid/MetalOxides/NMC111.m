@@ -37,15 +37,15 @@ classdef NMC111 < PhysicalModel
         % Physicochemical properties
         volumeFraction         % constant ? 
         specificCapacity       % Specific Capacity,            [Ah kg^-1]
-        rho         % Mass Density,                 [kg m^-3] or [g L^-1]
-        theta0      % Minimum lithiation, 0% SOC    [-]
-        theta100    % Maximum lithiation, 100% SOC  [-]
-        electronicConductivity       % Solid conductivity,           [S m^-1]
-        cp          % Molar Heat Capacity,          [J kg^-1 K^-1]             
-        k0          % Reference rate constant,      [m^2.5 mol^-0.5 s^-1]
-        Eak         % Reaction activation energy,   [J mol^-1] 
-
-        volumetricSurfaceArea         % Surface area,                 [m2 m^-3]
+        rho                    % Mass Density,                 [kg m^-3] or [g L^-1]
+        theta0                 % Minimum lithiation, 0% SOC    [-]
+        theta100               % Maximum lithiation, 100% SOC  [-]
+        electronicConductivity % Solid conductivity,           [S m^-1]
+        cp                     % Molar Heat Capacity,          [J kg^-1 K^-1]             
+        k0                     % Reference rate constant,      [m^2.5 mol^-0.5 s^-1]
+        Eak                    % Reaction activation energy,   [J mol^-1] 
+        volumetricSurfaceArea  % Surface area,                 [m2 m^-3]
+        
     end
     
     methods

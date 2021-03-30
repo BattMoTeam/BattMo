@@ -40,17 +40,14 @@ classdef orgLiPF6 < ElectroChemicalComponent
         ncomp % number of components
 
         % Physicochemical properties
-        volumeFraction         % Porosity
+        volumeFraction % Porosity
         rho         % Mass Density,                         [kg m^-3]
         mu          % Viscosity             
-        kappaeff    % Porous media conductivity,            [S m^-1]
         lambda      % Thermal conductivity,                 [W m^-1 K^-1]
         lambdaeff   % Porous media thermal conductivity,    [W m^-1 K^-1]
         cp          % Heat Capacity
         sigma       % Surface Tension
         pvap        % Vapor Pressure    
-        Deff        % Porous media diffusion coefficient,   [m^2 s^-1]
-
         
         % names for book-keeping
         ionName
