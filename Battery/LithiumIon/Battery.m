@@ -26,6 +26,10 @@ classdef Battery < PhysicalModel
     methods
         
         function model = Battery(paramobj)
+        % Shorcuts used here
+        % elyte : Electrolyte
+        % ne : NegativeElectrode
+        % pe : PositiveElectrode
             
             model = model@PhysicalModel([]);
             
@@ -58,13 +62,13 @@ classdef Battery < PhysicalModel
             state.T   = model.T*ones(nc, 1);
             state.SOC = model.SOC*ones(nc, 1);
             
-            % shortcuts
+            % Shortcuts
             battery = model;
-            ne = 'NegativeElectrode';
-            pe = 'PositiveElectrode';
-            eac = 'ElectrodeActiveComponent';
-            cc = 'CurrentCollector';
-            elyte = 'Electrolyte';
+            ne      = 'NegativeElectrode';
+            pe      = 'PositiveElectrode';
+            eac     = 'ElectrodeActiveComponent';
+            cc      = 'CurrentCollector';
+            elyte   = 'Electrolyte';
 
             automaticAssembly;
             
@@ -120,8 +124,8 @@ classdef Battery < PhysicalModel
         % elyte : Electrolyte
         % ne    : NegativeElectrode
         % pe    : PositiveElectrode
-        % ncc   : NegativeCurrentCollector
-        % pcc   : PositiveCurrentCollector
+        % eac   : ElectrodeActiveComponent
+        % cc    : CurrentCollector
             
             nc = model.G.cells.num;
 
@@ -130,63 +134,78 @@ classdef Battery < PhysicalModel
             
             initstate.T   =  T*ones(nc, 1);
             initstate.SOC =  SOC*ones(nc, 1);
-
-            initstate = model.updateT(initstate);
             
-            elyte = model.Electrolyte;
-            ne    = model.NegativeElectrode;
-            pe    = model.PositiveElectrode;
-            ncc   = model.NegativeCurrentCollector;
-            pcc   = model.PositiveCurrentCollector;
-            ne_am = ne.ActiveMaterial;
-            pe_am = pe.ActiveMaterial;
-
+            bat = model;
+            elyte = 'Electrolyte';
+            ne    = 'NegativeElectrode';
+            pe    = 'PositiveElectrode';
+            am    = 'ActiveMaterial';
+            eac   = 'ElectrodeActiveComponent';
+            cc    = 'CurrentCollector';
+            
+            %% synchronize temperatures
+            initstate = model.updateT(initstate);
+            initstate.(ne) = bat.(ne).updateT(initstate.(ne));
+            initstate.(ne).(eac) = bat.(ne).(eac).updateT(initstate.(ne).(eac));
+            initstate.(pe) = bat.(pe).updateT(initstate.(pe));
+            initstate.(pe).(eac) = bat.(pe).(eac).updateT(initstate.(pe).(eac));
+            
             %% setup initial NegativeElectrode state
-
-            m = (1 ./ (ne_am.theta100 - ne_am.theta0));
-            b = -m .* ne_am.theta0;
+            
+            % shortcut
+            % negAm : ActiveMaterial of the negative electrode
+            
+            negAm = bat.(ne).(eac).(am); 
+            
+            m = (1 ./ (negAm.theta100 - negAm.theta0));
+            b = -m .* negAm.theta0;
             theta = (SOC - b) ./ m;
-            c = theta .* ne_am.Li.cmax;
-            c = c*ones(ne.G.cells.num, 1);
+            c = theta .* negAm.Li.cmax;
+            c = c*ones(negAm.G.cells.num, 1);
 
-            initstate.NegativeElectrode.ActiveMaterial.Li = c;
-            initstate.NegativeElectrode.ActiveMaterial = ne_am.updateMaterialProperties(initstate.NegativeElectrode.ActiveMaterial);
+            initstate.(ne).(eac).(am).Li = c;
+            initstate.(ne).(eac).(am) = negAm.updateMaterialProperties(initstate.(ne).(eac).(am));
 
-            OCP = initstate.NegativeElectrode.ActiveMaterial.OCP;
-            initstate.NegativeElectrode.ActiveMaterial.phi = OCP;
+            OCP = initstate.(ne).(eac).(am).OCP;
+            initstate.(ne).(eac).(am).phi = OCP;
 
             %% setup initial PositiveElectrode state
 
-            m = (1 ./ (pe_am.theta100 - pe_am.theta0));
-            b = -m .* pe_am.theta0;
+            % shortcut
+            % posAm : ActiveMaterial of the positive electrode
+            
+            posAm = bat.(pe).(eac).(am);
+            
+            m = (1 ./ (posAm.theta100 - posAm.theta0));
+            b = -m .* posAm.theta0;
             theta = (SOC - b) ./ m;
-            c = theta .* pe_am.Li.cmax;
-            c = c*ones(pe.G.cells.num, 1);
+            c = theta .* posAm.Li.cmax;
+            c = c*ones(posAm.G.cells.num, 1);
 
-            initstate.PositiveElectrode.ActiveMaterial.Li = c;
-            initstate.PositiveElectrode.ActiveMaterial = pe_am.updateMaterialProperties(initstate.PositiveElectrode.ActiveMaterial);
+            initstate.(pe).(eac).(am).Li = c;
+            initstate.(pe).(eac).(am) = posAm.updateMaterialProperties(initstate.(pe).(eac).(am));
 
-            OCP = initstate.PositiveElectrode.ActiveMaterial.OCP;
-            initstate.PositiveElectrode.ActiveMaterial.phi = OCP;
+            OCP = initstate.(pe).(eac).(am).OCP;
+            initstate.(pe).(eac).(am).phi = OCP;
 
             %% setup initial Electrolyte state
 
-            initstate.Electrolyte.phi = zeros(elyte.G.cells.num, 1);
-            cs=cell(2,1);
-            initstate.Electrolyte.cs = cs;
-            initstate.Electrolyte.cs{1} = 1000*ones(elyte.G.cells.num, 1);
+            initstate.(elyte).phi = zeros(bat.(elyte).G.cells.num, 1);
+            cs = cell(2,1);
+            initstate.(elyte).cs = cs;
+            initstate.(elyte).cs{1} = 1000*ones(bat.(elyte).G.cells.num, 1);
 
             %% setup initial Current collectors state
-            
-            OCP = initstate.NegativeElectrode.ActiveMaterial.OCP;
-            OCP = OCP(1) .* ones(ncc.G.cells.num, 1);
-            initstate.NegativeCurrentCollector.phi = OCP;
 
-            OCP = initstate.PositiveElectrode.ActiveMaterial.OCP;
-            OCP = OCP(1) .* ones(pcc.G.cells.num, 1);
-            initstate.PositiveCurrentCollector.phi = OCP;
+            OCP = initstate.(ne).(eac).(am).OCP;
+            OCP = OCP(1) .* ones(bat.(ne).(cc).G.cells.num, 1);
+            initstate.(ne).(cc).phi = OCP;
+
+            OCP = initstate.(pe).(eac).(am).OCP;
+            OCP = OCP(1) .* ones(bat.(pe).(cc).G.cells.num, 1);
+            initstate.(pe).(cc).phi = OCP;
             
-            initstate.PositiveCurrentCollector.E = OCP(1);
+            initstate.(pe).(cc).E = OCP(1);
             
         end
         

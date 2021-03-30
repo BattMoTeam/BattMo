@@ -39,7 +39,19 @@ classdef ActiveMaterial < PhysicalModel
             
             model = model@PhysicalModel([]);
             
-            fdnames = {'G'};
+            fdnames = {'G', ...
+                       'specificCapacity', ...
+                       'rho', ...
+                       'theta0', ...
+                       'theta100', ...
+                       'Li', ...
+                       'electronicConductivity', ...
+                       'cp', ...
+                       'k0', ...
+                       'Eak', ...
+                       'volumetricSurfaceArea', ...
+                       'volumeFraction'};
+            
             model = dispatchParams(model, paramobj, fdnames);
             
         end
@@ -57,12 +69,14 @@ classdef ActiveMaterial < PhysicalModel
             % Define reference temperature
             refT = 298.15;  % [K]
 
+            % shortcut
+            R = model.constants.R;
+            
             % Calculate reaction rate constant
-            k = model.k0 .* exp( -model.Eak ./ model.con.R .* (1./T-1/refT));
-                
+            k = model.k0 .* exp( -model.Eak ./ R .* (1./T - 1/refT));
                 
             % Calculate solid diffusion coefficient, [m^2 s^-1]
-            D = model.Li.D0 .* exp(-model.Li.EaD./model.con.R*(1./T - 1/refT));
+            D = model.Li.D0 .* exp(-model.Li.EaD./R*(1./T - 1/refT));
 
             cs = state.Li;
             

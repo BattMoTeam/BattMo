@@ -9,5 +9,5 @@ paramobj = LithiumBatteryInputParams();
 
 paramobj = setupBatteryInputParams1D(paramobj);
 
-battery = Battery2(paramobj);
+battery = Battery(paramobj);
 

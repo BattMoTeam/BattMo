@@ -2,14 +2,38 @@ classdef ActiveElectroChemicalComponent < ElectroChemicalComponent
     
     properties
         ActiveMaterial
+        
+        volumeFraction
+        porosity
+        thickness
+        
     end
     
     methods
         
         function model = ActiveElectroChemicalComponent(paramobj)
+        % shortcut used here:
+        % am = ActiveMaterial
+            
             model = model@ElectroChemicalComponent(paramobj);
+            
+            % Setup ActiveMaterial component
             paramobj.am.G = model.G;
-            model.ActiveMaterial = ActiveMaterial(paramobj.am);
+            am = ActiveMaterial(paramobj.am);
+            model.ActiveMaterial = am;
+
+            % setup volumeFraction, porosity, thickness
+            nc = model.G.cells.num;
+            volumeFraction = am.volumeFraction*ones(nc, 1);
+            model.volumeFraction = volumeFraction;
+            model.porosity = 1 - model.volumeFraction;
+            model.thickness = 10e-6;
+            
+            % setup effective electronic conductivity
+            econd = am.electronicConductivity;
+            model.EffectiveElectronicConductivity = econd .* volumeFraction.^1.5;
+            
+            
         end
 
         function state = updateIonAndCurrentSource(model, state)

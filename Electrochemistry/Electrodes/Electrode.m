@@ -100,7 +100,7 @@ classdef Electrode < PhysicalModel
         function state = updateT(model, state)
             names = {'ElectrodeActiveComponent', 'CurrentCollector'};
             for ind = 1 : numel(names)
-                ame = names{ind};
+                name = names{ind};
                 nc = model.(name).G.cells.num;
                 state.(name).T = state.T(1)*ones(nc, 1);
             end
