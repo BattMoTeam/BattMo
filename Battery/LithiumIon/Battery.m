@@ -35,7 +35,7 @@ classdef Battery < PhysicalModel
             model = model@PhysicalModel([]);
             
             % OBS : All the submodels should have same backend (this is not assigned automaticallly for the moment)
-            model.AutoDiffBackend = SparseAutoDiffBackend('useBlocks', true);
+            model.AutoDiffBackend = SparseAutoDiffBackend('useBlocks', false);
             
             %% Setup the model using the input parameters
             fdnames = {'G', ...

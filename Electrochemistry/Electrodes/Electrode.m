@@ -19,7 +19,7 @@ classdef Electrode < PhysicalModel
             
             model = model@PhysicalModel([]);
             
-            model.AutoDiffBackend = SparseAutoDiffBackend('useBlocks', true);
+            model.AutoDiffBackend = SparseAutoDiffBackend('useBlocks', false);
             
             fdnames = {'G', ...
                        'couplingTerms'};

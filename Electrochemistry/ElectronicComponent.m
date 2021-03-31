@@ -14,7 +14,7 @@ classdef ElectronicComponent < PhysicalModel
             model = model@PhysicalModel([]);
 
             % OBS : All the models should have same backend (this is not assigned automaticallly for the moment)
-            model.AutoDiffBackend = SparseAutoDiffBackend('useBlocks', true);
+            model.AutoDiffBackend = SparseAutoDiffBackend('useBlocks', false);
             
             fdnames = {'G', ...
                        'EffectiveElectronicConductivity'};
