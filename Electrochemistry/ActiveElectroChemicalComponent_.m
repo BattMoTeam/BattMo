@@ -30,7 +30,7 @@ classdef ActiveElectroChemicalComponent_ < ElectroChemicalComponent_
             model = model.addPropFunction({'am', 'T'}, fn, inputnames, fnmodel);
             
             fn = @ActiveElectroChemicalComponent.updateDiffusionCoefficient;
-            inputname = {VarName({'am'}, 'D')};
+            inputnames = {VarName({'am'}, 'D')};
             fnmodel = {'.'};
             model = model.addPropFunction('D', fn, inputnames, fnmodel);
             
