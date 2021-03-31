@@ -25,7 +25,7 @@ classdef ElectroChemicalComponent_ < ElectronicComponent_
             model = model.addPropFunction('D', fn, inputnames, fnmodel);        
 
             fn = @ElectroChemicalComponent.updateChargeCarrierFlux;
-            inputnames = {'D'};
+            inputnames = {'D', 'chargeCarrier'};
             fnmodel = {'.'};
             model = model.addPropFunction('chargeCarrierFlux', fn, inputnames, fnmodel);        
             
