@@ -10,15 +10,15 @@ classdef Electrode_ < CompositeModel
                      'T' };
             
             model.SubModels{1} = ActiveElectroChemicalComponent_('eac');
-            model.SubModels{2} = ElectronicComponent_('cc');
+            model.SubModels{2} = CurrentCollector_('cc');
 
             % Add coupling between the two components
             inputnames = {VarName({'..', 'eac'}, 'phi'), ...
                           VarName({'..', 'cc'}, 'phi')};
             fn = @Electrode.setupCoupling;
             fnmodel = {'..'};
-            model = model.addPropFunction({'eac', 'jBcSource'}, fn, inputnames, fnmodel);
-            model = model.addPropFunction({'cc', 'jBcSource'}, fn, inputnames, fnmodel);
+            model = model.addPropFunction({'eac', 'jCoupling'}, fn, inputnames, fnmodel);
+            model = model.addPropFunction({'cc', 'jCoupling'}, fn, inputnames, fnmodel);
             model = model.addPropFunction({'cc', 'eSource'}, fn, inputnames, fnmodel);
             
             % dispatch temperature

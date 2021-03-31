@@ -45,4 +45,6 @@
 * Li is still there hanging in some functions
   - and it is assumed all over that cs{1} is charge carrier.
 * Do we have a ionic composition in Electrodes as in Electrolyte
+* Set up external coupling
+  Example where an external function is handy
 

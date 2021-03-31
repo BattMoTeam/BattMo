@@ -6,7 +6,16 @@ classdef ActiveElectroChemicalComponent_ < ElectroChemicalComponent_
 
             model = model@ElectroChemicalComponent_(name);
             
+            names = {model.names{:}, ...
+                     'jCoupling'};
+            model.names = names;
+
             model.SubModels{1} = ActiveMaterial_('am');
+            
+            fn = @ActiveElectroChemicalComponent.updatejBcSource;
+            inputnames = {'jCoupling'};
+            fnmodel = {'.'};
+            model = model.addPropFunction('jBcSource', fn, inputnames, fnmodel);            
             
             fn = @ActiveElectroChemicalComponent.updateIonAndCurrentSource;
             inputnames = {VarName({'am'}, 'R')};

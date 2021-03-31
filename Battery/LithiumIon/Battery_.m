@@ -80,6 +80,21 @@ classdef Battery_ < CompositeModel
             
             model = model.addPropFunction({'pe', 'eac', 'chargeCarrierAccum'}, fn, inputnames, fnmodel);                        
             
+            
+            %% setup external coupling at positive and negative electrodes
+            
+            fn = @Battery.setupExternalCouplingNegativeElectrode;
+            inputnames = {'phi'};
+            fnmodel = {'.'};
+                      
+            model = model.addPropFunction({'ne', 'cc', 'jExternal'}, fn, inputnames, fnmodel);
+            
+            fn = @Battery.setupExternalCouplingPositiveElectrode;
+            inputnames = {'phi', ...
+                          'E'};
+            fnmodel = {'.'};
+            model = model.addPropFunction({'pe', 'cc', 'jExternal'}, fn, inputnames, fnmodel);
+            
             model = model.initiateCompositeModel();
             
             
