@@ -42,7 +42,6 @@ classdef Electrolyte_ < ElectroChemicalComponent_
             inputnames = {''};
             fnmodel = {'.'};
             model = model.addPropFunction('jBcSource', fn, inputnames, fnmodel);
-            model = model.addPropFunction('eSource', fn, inputnames, fnmodel);
             
         end        
     end

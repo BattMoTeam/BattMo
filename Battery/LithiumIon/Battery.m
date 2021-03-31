@@ -344,20 +344,21 @@ classdef Battery < PhysicalModel
         % shortcuts:
         % c_source : Source term for charge carrier.
                         
-            bat = model;
+            battery = model;
             elyte = 'Electrolyte';
             ne    = 'NegativeElectrode';
             pe    = 'PositiveElectrode';
             am    = 'ActiveMaterial';
             eac   = 'ElectrodeActiveComponent';
             
-            ccSourceName = bat.(elyte).chargeCarrierSourceName;
-            couplingterms = bat.couplingTerms;
+            ccSourceName = battery.(elyte).chargeCarrierSourceName;
+            couplingterms = battery.couplingTerms;
 
-            phi = state.(elyte).phi;
-
-            elyte_c_source = zeros(bat.(elyte).G.cells.num, 1);
+            elyte_c_source = zeros(battery.(elyte).G.cells.num, 1);
+            elyte_e_source = zeros(battery.(elyte).G.cells.num, 1);
             
+            % setup AD 
+            phi = state.(elyte).phi;
             if isa(phi, 'ADI')
                 adsample = getSampleAD(phi);
                 adbackend = model.AutoDiffBackend;
@@ -376,8 +377,11 @@ classdef Battery < PhysicalModel
             elytecells = coupterm.couplingcells(:, 2);
             elyte_c_source(elytecells) = pe_R;
             
+            elyte_e_source = elyte_c_source.*battery.(elyte).sp.z{1};
+            
             state.Electrolyte.(ccSourceName) = elyte_c_source; 
-        
+            state.Electrolyte.eSource = elyte_e_source;
+            
         end
         
         function state = updateAccumTerms(model, state, state0, dt)
@@ -425,7 +429,6 @@ classdef Battery < PhysicalModel
             am    = 'ActiveMaterial';
             eac   = 'ElectrodeActiveComponent';
             cc    = 'CurrentCollector';
-            
             
             phi_elyte = state.(elyte).phi;
             

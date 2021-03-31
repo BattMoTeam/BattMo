@@ -51,6 +51,7 @@ classdef Battery_ < CompositeModel
             
             fnmodel = {'..'};
             model = model.addPropFunction({'elyte', 'chargeCarrierSource'}, fn, inputnames, fnmodel);
+            model = model.addPropFunction({'elyte', 'eSource'}, fn, inputnames, fnmodel);
             
                 
             fn = @Battery.updateAccumTerms;
