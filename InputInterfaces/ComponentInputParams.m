@@ -15,11 +15,6 @@ classdef ComponentInputParams
     
     methods
 
-        function paramobj = setup(paramobj, params)
-            
-            paramobj = setupGrid(paramobj, params);
-            
-        end
         
         function paramobj = setupGrid(paramobj, params)
             

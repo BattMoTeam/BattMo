@@ -12,14 +12,9 @@ classdef ActiveElectroChemicalComponentInputParams < ElectroChemicalComponentInp
         function paramobj = ActiveElectroChemicalComponentInputParams()
             paramobj = paramobj@ElectroChemicalComponentInputParams();
             paramobj.am = ActiveMaterialInputParams();
+            paramobj.EffectiveElectronicConductivity = 'not used';
         end
         
-        
-        function paramobj = setup(parmobj, params)
-        % params struct should contain valid fields for ElectroChemicalComponentInputParams
-            paramobj = setup@ElectroChemicalComponentInputParams(paramobj, params);
-        end
-
     end
     
 end

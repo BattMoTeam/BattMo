@@ -89,9 +89,9 @@ classdef Electrolyte < ElectroChemicalComponent
            
             ncomp = model.ncomp;
             
-            phi = state.phi;
+            phi    = state.phi;
             jchems = state.jchems;
-            kappa = state.kappa;
+            kappa  = state.kappa;
             
             j = assembleFlux(model, phi, kappa);
             for ind = 1 : ncomp

@@ -86,7 +86,6 @@ classdef Battery < PhysicalModel
             % temperature
             state = battery.updateT(state);
             
-            
             for ind = 1 : numel(electrodes)
                 elde = electrodes{ind};
                 
@@ -94,7 +93,7 @@ classdef Battery < PhysicalModel
                 state.(elde) = battery.(elde).updateT(state.(elde));
                 state.(elde).(eac) = battery.(elde).(eac).updateT(state.(elde).(eac));
 
-                %% potential and concentration between active material and electode active component
+                % potential and concentration between active material and electode active component
                 state.(elde).(eac) = battery.(elde).(eac).updatePhi(state.(elde).(eac));
                 state.(elde).(eac) = battery.(elde).(eac).updateChargeCarrier(state.(elde).(eac));
                 
