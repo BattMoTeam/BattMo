@@ -69,7 +69,10 @@ classdef ActiveElectroChemicalComponent < ElectroChemicalComponent
         function state = updateT(model, state)
             state.ActiveMaterial.T = state.T;
         end
-        
+
+        function state = updatejBcSource(model, state)
+            state.jBcSource = state.jCoupling;
+        end
         
     end
 end

@@ -442,6 +442,38 @@ classdef Battery < PhysicalModel
             state.(pe).(eac).(am).phiElectrolyte = phi_elyte_peac;
             
         end
+
+        function state = setupExternalCouplingNegativeElectrode(model, state);
+            
+            ne = 'NegativeElectrode';
+            cc = 'CurrentCollector';
+           
+            phi = state.(ne).(cc).phi;
+
+            cc = model.(ne).(cc);
+            
+            jExternal = cc.setupExternalCoupling(phi, 0);
+            
+            state.(ne).(cc).jExternal = jExternal;
+            
+        end
+        
+        function state = setupExternalCouplingNegativeElectrode(model, state);
+            
+            pe = 'PositiveElectrode';
+            cc = 'CurrentCollector';
+           
+            phi = state.(pe).(cc).phi;
+            E = state.(pe).(cc).E;
+            
+            cc = model.(pe).(cc);
+            
+            jExternal = cc.setupExternalCoupling(phi, E);
+            
+            state.(pe).(cc).jExternal = jExternal;
+            
+        end
+        
         
         function state = initStateAD(model,state)
             

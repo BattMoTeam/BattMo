@@ -10,7 +10,7 @@ classdef ElectrodeInputParams < ComponentInputParams
         cc
         
         %% coupling terms
-        couplingTerms
+        couplingTerm
         
     end
     
@@ -20,7 +20,7 @@ classdef ElectrodeInputParams < ComponentInputParams
             paramobj = paramobj@ComponentInputParams();
             paramobj.eac = ActiveElectroChemicalComponentInputParams();
             paramobj.cc = CurrentCollectorInputParams();
-            paramobj.couplingTerms = {};
+            paramobj.couplingTerm = struct();
         end
 
     end

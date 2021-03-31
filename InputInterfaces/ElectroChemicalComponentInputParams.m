@@ -15,11 +15,11 @@ classdef ElectroChemicalComponentInputParams < ElectronicComponentInputParams
         function paramobj = ElectroChemicalComponentInputParams()
             paramobj = paramobj@ElectronicComponentInputParams();
             
-            paramobj.chargeCarrierName         = char;
-            paramobj.chargeCarrierFluxName     = char;
-            paramobj.chargeCarrierSourceName   = char;
-            paramobj.chargeCarrierMassConsName = char;
-            paramobj.chargeCarrierAccumName    = char;
+            paramobj.chargeCarrierName         = char();
+            paramobj.chargeCarrierFluxName     = char();
+            paramobj.chargeCarrierSourceName   = char();
+            paramobj.chargeCarrierMassConsName = char();
+            paramobj.chargeCarrierAccumName    = char();
             
         end
         

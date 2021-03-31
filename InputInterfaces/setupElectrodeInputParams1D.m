@@ -46,22 +46,11 @@ end
 
 function paramobj = setupCouplingTerms(paramobj, params)
     
-    coupterms = {};
-    coupterms{end + 1} = setupCurrentCollectorBcCoupTerm(paramobj, params);
-    coupterms{end + 1} = setupCurrentCollectorElectrodeActiveComponentCoupTerm(paramobj, params);
-    paramobj.couplingTerms = coupterms;
+    coupterm = setupCurrentCollectorElectrodeActiveComponentCoupTerm(paramobj, params);
+    paramobj.couplingTerm = coupterm;
     
-end
-
-
-function coupTerm = setupCurrentCollectorBcCoupTerm(paramobj, params)
-% Abbreviations used in this function:
-% cc   : CurrentCollector
-    
-    compnames = {'CurrentCollector'};
-    coupTerm = couplingTerm('bc-CurrentCollector', compnames);
-    coupTerm.couplingfaces = params.cc.bc_face;
-    coupTerm.couplingcells = params.cc.bc_cell;
+    coupterm = setupCurrentCollectorBcCoupTerm(paramobj, params);
+    paramobj.cc.couplingTerm = coupterm;
     
 end
 
@@ -77,3 +66,13 @@ function coupTerm = setupCurrentCollectorElectrodeActiveComponentCoupTerm(paramo
     
 end
 
+function coupTerm = setupCurrentCollectorBcCoupTerm(paramobj, params)
+% Abbreviations used in this function:
+% cc   : CurrentCollector
+    
+    compnames = {'CurrentCollector'};
+    coupTerm = couplingTerm('bc-CurrentCollector', compnames);
+    coupTerm.couplingfaces = params.cc.bc_face;
+    coupTerm.couplingcells = params.cc.bc_cell;
+    
+end

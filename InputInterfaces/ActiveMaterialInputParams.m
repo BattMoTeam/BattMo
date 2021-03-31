@@ -26,7 +26,7 @@ classdef ActiveMaterialInputParams
         
         function paramobj = ActiveMaterialInputParams();
             paramobj.G = struct();
-            paramobj.name = char;
+            paramobj.name = char();
             paramobj.Li = struct();
         end
         

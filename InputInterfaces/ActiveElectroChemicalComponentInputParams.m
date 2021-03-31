@@ -13,7 +13,7 @@ classdef ActiveElectroChemicalComponentInputParams < ElectroChemicalComponentInp
         function paramobj = ActiveElectroChemicalComponentInputParams()
             paramobj = paramobj@ElectroChemicalComponentInputParams();
             paramobj.am = ActiveMaterialInputParams();
-            paramobj.amName = char;
+            paramobj.amName = char();
             paramobj.EffectiveElectronicConductivity = 'not used';
         end
         
