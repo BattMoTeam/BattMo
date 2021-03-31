@@ -433,7 +433,7 @@ classdef Battery < PhysicalModel
             elyte_cells(bat.(elyte).G.mappings.cellmap) = (1 : bat.(elyte).G.cells.num)';
 
             phi_elyte_neac = phi_elyte(elyte_cells(bat.(ne).(eac).G.mappings.cellmap));
-            phi_elyte_peac = phi_elyte(elyte_cells(bat.(ne).(eac).G.mappings.cellmap));
+            phi_elyte_peac = phi_elyte(elyte_cells(bat.(pe).(eac).G.mappings.cellmap));
 
             state.(ne).(eac).(am).phiElectrolyte = phi_elyte_neac;
             state.(pe).(eac).(am).phiElectrolyte = phi_elyte_peac;
