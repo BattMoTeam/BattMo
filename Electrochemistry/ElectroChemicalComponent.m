@@ -8,6 +8,7 @@ classdef ElectroChemicalComponent < ElectronicComponent
         chargeCarrierSourceName
         chargeCarrierMassConsName
         chargeCarrierAccumName
+        
     end
 
     methods
@@ -31,11 +32,10 @@ classdef ElectroChemicalComponent < ElectronicComponent
 
         function state = updateChargeCarrierFlux(model, state)
             
-            ccName = model.chargeCarrierName;
             ccFluxName = model.chargeCarrierFluxName;
             
             D = state.D;
-            c = state.(ccName);
+            c = state.c;
 
             ccflux = assembleFlux(model, c, D);
             

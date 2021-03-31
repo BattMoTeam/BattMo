@@ -28,9 +28,6 @@ classdef ActiveMaterial < PhysicalModel
         Eak                    % Reaction activation energy    [J mol^-1]
         rp                     % Particle radius               [m]
         
-        % Names for book-keeping (may not be used)
-        ionName
-        
     end
     
     methods
@@ -76,12 +73,12 @@ classdef ActiveMaterial < PhysicalModel
             R = model.constants.R;
             
             % Calculate reaction rate constant
-            k = model.k0 .* exp( -model.Eak ./ R .* (1./T - 1/refT));
+            k = model.k0.*exp(-model.Eak./ R.*(1./T - 1/refT));
                 
             % Calculate solid diffusion coefficient, [m^2 s^-1]
-            D = model.Li.D0 .* exp(-model.Li.EaD./R*(1./T - 1/refT));
+            D = model.Li.D0.*exp(-model.Li.EaD./R*(1./T - 1/refT));
 
-            cs = state.Li;
+            c = state.c;
             
             % Set the reference temperature
             refT = 298.15;
@@ -92,7 +89,8 @@ classdef ActiveMaterial < PhysicalModel
             % concentration of Li and the maximum lithium
             % concentration:
             %
-            theta = cs ./ model.Li.cmax;
+            theta = c ./ model.Li.cmax;
+            
             state.theta = theta;
             % Calculate the open-circuit potential at the reference temperature for the given lithiation
             refOCP = (0.7222 ...
@@ -138,9 +136,9 @@ classdef ActiveMaterial < PhysicalModel
             
             T        = state.T;
             phiElyte = state.phiElectrolyte;
-            % csElyte  = state.csElectrolyte; % not used for the moment
+            % cElyte  = state.cElectrolyte; % not used for the moment
             phi      = state.phi;
-            % cs       = state.cs; % not used for the moment
+            % c       = state.c; % not used for the moment
             OCP      = state.OCP;
             k        = state.k;
             

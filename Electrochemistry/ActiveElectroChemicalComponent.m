@@ -57,8 +57,7 @@ classdef ActiveElectroChemicalComponent < ElectroChemicalComponent
         
         function state = updateChargeCarrier(model, state)
             
-            ccName = model.chargeCarrierName;
-            state.(ccName) = state.ActiveMaterial.(ccName);
+            state.c = state.ActiveMaterial.c;
             
         end 
         

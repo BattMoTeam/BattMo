@@ -42,4 +42,7 @@
 * Hack for state0 in graph approach
 * AD-backend for submodels
 * generic name for charge carrier
+* Li is still there hanging in some functions
+  - and it is assumed all over that cs{1} is charge carrier.
+* Do we have a ionic composition in Electrodes as in Electrolyte
 
