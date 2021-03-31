@@ -59,7 +59,7 @@ classdef Battery < PhysicalModel
             model = model.setElectrolytePorosity();
             
         end
-    
+        
         function [problem, state] = getEquations(model, state0, state,dt, drivingForces, varargin)
             
             time = state0.time + dt;
@@ -79,7 +79,87 @@ classdef Battery < PhysicalModel
             elyte   = 'Electrolyte';
             am      = 'ActiveMaterial';
             
-            automaticAssembly;
+            electrodes = {'NegativeElectrode', 'PositiveElectrode'};
+
+            %% Synchronization across components
+
+            % temperature
+            state = battery.updateT(state);
+            
+            
+            for ind = 1 : numel(electrodes)
+                elde = electrodes{ind};
+                
+                % temperature
+                state.(elde) = battery.(elde).updateT(state.(elde));
+                state.(elde).(eac) = battery.(elde).(eac).updateT(state.(elde).(eac));
+
+                %% potential and concentration between active material and electode active component
+                state.(elde).(eac) = battery.(elde).(eac).updatePhi(state.(elde).(eac));
+                state.(elde).(eac) = battery.(elde).(eac).updateChargeCarrier(state.(elde).(eac));
+                
+            end
+            
+            %% Accumulation terms
+
+            state = battery.updateAccumTerms(state, state0, dt);
+
+            %% Update Electrolyte -> Electrodes coupling 
+            
+            state = battery.setupElectrodeCoupling(state); 
+
+            %% Update reaction rates in both electrodes
+
+            for ind = 1 : numel(electrodes)
+                elde = electrodes{ind};
+                state.(elde).(eac).(am) = battery.(elde).(eac).(am).updateMaterialProperties(state.(elde).(eac).(am));
+                state.(elde).(eac).(am) = battery.(elde).(eac).(am).updateReactionRate(state.(elde).(eac).(am));
+            end
+
+            %% Update Electrodes -> Electrolyte  coupling
+
+            state = battery.setupElectrolyteCoupling(state);
+            
+            %% Update Current collectors <-> Electrode active components couplings
+            
+            state.(ne) = battery.(ne).setupCoupling(state.(ne));
+            state.(pe) = battery.(pe).setupCoupling(state.(pe));
+
+            %% elyte charge conservation
+
+            state.(elyte) = battery.(elyte).updateCurrentBcSource(state.(elyte));
+            state.(elyte) = battery.(elyte).updateChemicalCurrent(state.(elyte));
+            state.(elyte) = battery.(elyte).updateCurrent(state.(elyte));
+            state.(elyte) = battery.(elyte).updateChargeConservation(state.(elyte));
+
+            %% Electrodes charge conservation - Active material part
+
+            for ind = 1 : numel(electrodes)
+                elde = electrodes{ind};
+                state.(elde).(eac) = battery.(elde).(eac).updateIonAndCurrentSource(state.(elde).(eac));
+                state.(elde).(eac) = battery.(elde).(eac).updateCurrent(state.(elde).(eac));
+                state.(elde).(eac) = battery.(elde).(eac).updateChargeConservation(state.(elde).(eac));
+            end
+            
+            %% elyte mass conservation
+
+            state.(elyte) = battery.(elyte).updateDiffusionCoefficient(state.(elyte));
+            state.(elyte) = battery.(elyte).updateChargeCarrierFlux(state.(elyte));
+            state.(elyte) = battery.(elyte).updateMassConservation(state.(elyte));
+
+            for ind = 1 : numel(electrodes)
+                elde = electrodes{ind};
+                
+                %% Electrodes mass conservation
+                state.(elde).(eac) = battery.(elde).(eac).updateDiffusionCoefficient(state.(elde).(eac));
+                state.(elde).(eac) = battery.(elde).(eac).updateChargeCarrierFlux(state.(elde).(eac));
+                state.(elde).(eac) = battery.(elde).(eac).updateMassConservation(state.(elde).(eac));
+                
+                %% Electrodes charge conservation - current collector part
+                state.(elde).(cc) = battery.(elde).(cc).updateCurrent(state.(elde).(cc));
+                state.(elde).(cc) = battery.(elde).(cc).updateChargeConservation(state.(elde).(cc));
+            
+            end
             
             %% Set up the governing equations
             
@@ -327,7 +407,7 @@ classdef Battery < PhysicalModel
 
         
         function state = setupElectrodeCoupling(model, state)
-        % Setup electrod coupling by updating the potential and concentration of the electrolyte in the active component of the
+        % Setup electrode coupling by updating the potential and concentration of the electrolyte in the active component of the
         % electrode. There, those quantities are considered as input and used to compute the reaction rate.
         %
         %
