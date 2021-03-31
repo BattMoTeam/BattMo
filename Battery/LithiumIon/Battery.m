@@ -120,11 +120,21 @@ classdef Battery < PhysicalModel
 
             state = battery.setupElectrolyteCoupling(state);
             
-            %% Update Current collectors <-> Electrode active components couplings
+
+            %% Update coupling within electrodes and external coupling
             
             state.(ne) = battery.(ne).setupCoupling(state.(ne));
             state.(pe) = battery.(pe).setupCoupling(state.(pe));
 
+            state.(ne).(eac) = battery.(ne).(eac).updatejBcSource(state.(ne).(eac));
+            state.(pe).(eac) = battery.(pe).(eac).updatejBcSource(state.(ne).(eac));
+            
+            state = model.setupExternalCouplingNegativeElectrode(state);
+            state = model.setupExternalCouplingPositiveElectrode(state);
+            
+            state.(ne).(cc) = battery.(ne).(cc).updatejBcSource(state.(ne).(cc));
+            state.(pe).(cc) = battery.(pe).(cc).updatejBcSource(state.(pe).(cc));
+                        
             %% elyte charge conservation
 
             state.(elyte) = battery.(elyte).updateCurrentBcSource(state.(elyte));
@@ -181,9 +191,7 @@ classdef Battery < PhysicalModel
             %% We setup and add the control equation (fixed total current at PositiveCurrentCollector)
             
             src = drivingForces.src(time);
-            coupterms = battery.(ne).couplingTerms;
-            coupnames = battery.(ne).couplingNames;
-            coupterm = getCoupTerm(coupterms, 'bc-CurrentCollector', coupnames);
+            coupterm = battery.(ne).(cc).couplingTerm;
             faces = coupterm.couplingfaces;
             bcval = state.(pe).(cc).E;
             cond_pcc = battery.(pe).(cc).EffectiveElectronicConductivity;
@@ -450,15 +458,13 @@ classdef Battery < PhysicalModel
            
             phi = state.(ne).(cc).phi;
 
-            cc = model.(ne).(cc);
-            
-            jExternal = cc.setupExternalCoupling(phi, 0);
+            jExternal = model.(ne).(cc).setupExternalCoupling(phi, 0);
             
             state.(ne).(cc).jExternal = jExternal;
             
         end
         
-        function state = setupExternalCouplingNegativeElectrode(model, state);
+        function state = setupExternalCouplingPositiveElectrode(model, state);
             
             pe = 'PositiveElectrode';
             cc = 'CurrentCollector';
@@ -466,9 +472,7 @@ classdef Battery < PhysicalModel
             phi = state.(pe).(cc).phi;
             E = state.(pe).(cc).E;
             
-            cc = model.(pe).(cc);
-            
-            jExternal = cc.setupExternalCoupling(phi, E);
+            jExternal = model.(pe).(cc).setupExternalCoupling(phi, E);
             
             state.(pe).(cc).jExternal = jExternal;
             

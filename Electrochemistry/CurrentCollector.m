@@ -11,7 +11,7 @@ classdef CurrentCollector < ElectronicComponent
             
             model = model@ElectronicComponent(paramobj);
 
-            model = model.dispatchParams(paramobj, 'couplingTerm');
+            model = dispatchParams(model, paramobj, 'couplingTerm');
             
             % The parameter EffectiveElectronicConductivity in CurrentCollectorInputParams is given as scalar
             model.EffectiveElectronicConductivity = model.EffectiveElectronicConductivity*ones(model.G.cells.num, 1);
