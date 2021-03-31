@@ -4,6 +4,9 @@ classdef ActiveMaterial < PhysicalModel
         
         % Physical constants
         constants = PhysicalConstants();
+
+        % Appelation name of the active material
+        name 
         
         % Lithium data structure
         Li
@@ -40,6 +43,7 @@ classdef ActiveMaterial < PhysicalModel
             model.AutoDiffBackend = SparseAutoDiffBackend('useBlocks', true);
             
             fdnames = {'G', ...
+                       'name', ...
                        'specificCapacity', ...
                        'rho', ...
                        'theta0', ...
@@ -56,79 +60,23 @@ classdef ActiveMaterial < PhysicalModel
             
         end
         
-        function state = updateMaterialProperties(model, state)
-        % Calculate the solid diffusion coefficient of Li+ in the active material
-        % Calculate the solid phase diffusion coefficient of Li+ in
-        % graphite according to the model used by Torchio et al [1].
-            
-            % Define reference temperature
-            refT = 298.15;  % [K]
-            
-            T = state.T;
-            
+        function state = updateDiffusionConductivityCoefficients(model, state)
+
             % Define reference temperature
             refT = 298.15;  % [K]
 
-            % shortcut
+            T = state.T;
+
             R = model.constants.R;
             
             % Calculate reaction rate constant
-            k = model.k0.*exp(-model.Eak./ R.*(1./T - 1/refT));
+            k = model.k0.*exp(-model.Eak./R .*(1./T - 1/refT));
                 
             % Calculate solid diffusion coefficient, [m^2 s^-1]
             D = model.Li.D0.*exp(-model.Li.EaD./R*(1./T - 1/refT));
 
-            c = state.c;
-            
-            % Set the reference temperature
-            refT = 298.15;
-
-            % Calculate the lithiation of the active material. This
-            % is a simplification for the initial code! The "real"
-            % value of theta should be calculated using the surface
-            % concentration of Li and the maximum lithium
-            % concentration:
-            %
-            theta = c ./ model.Li.cmax;
-            
-            state.theta = theta;
-            % Calculate the open-circuit potential at the reference temperature for the given lithiation
-            refOCP = (0.7222 ...
-                      + 0.1387 .* theta ...
-                      + 0.0290 .* theta.^0.5 ...
-                      - 0.0172 ./ theta ... 
-                      + 0.0019 ./ theta.^1.5 ...
-                      + 0.2808 .* exp(0.9-15.*theta) ... 
-                      - 0.7984 .* exp(0.4465 .* theta - 0.4108));
-                  
-            coeff1 = [0.005269056 ,...
-                      + 3.299265709,...
-                      - 91.79325798,...
-                      + 1004.911008,...
-                      - 5812.278127,...
-                      + 19329.75490,...
-                      - 37147.89470,...
-                      + 38379.18127,...
-                      - 16515.05308];
-               
-            coeff2= [1, ...
-                     - 48.09287227,...
-                     + 1017.234804,...
-                     - 10481.80419,...
-                     + 59431.30000,...
-                     - 195881.6488,...
-                     + 374577.3152,...
-                     - 385821.1607,...
-                     + 165705.8597];
-            
-            dUdT = 1e-3.*polyval(coeff1(end:-1:1),theta)./ polyval(coeff2(end:-1:1),theta);
-
-            % Calculate the open-circuit potential of the active material
-            OCP = refOCP + (T - refT) .* dUdT;
-            
-            state.D = D;
-            state.OCP = OCP;
             state.k = k;
+            state.D = D;
             
         end
         

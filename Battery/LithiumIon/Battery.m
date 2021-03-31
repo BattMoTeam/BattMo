@@ -111,7 +111,8 @@ classdef Battery < PhysicalModel
 
             for ind = 1 : numel(electrodes)
                 elde = electrodes{ind};
-                state.(elde).(eac).(am) = battery.(elde).(eac).(am).updateMaterialProperties(state.(elde).(eac).(am));
+                state.(elde).(eac).(am) = battery.(elde).(eac).(am).updateDiffusionConductivityCoefficients(state.(elde).(eac).(am));
+                state.(elde).(eac).(am) = battery.(elde).(eac).(am).updateOCP(state.(elde).(eac).(am));
                 state.(elde).(eac).(am) = battery.(elde).(eac).(am).updateReactionRate(state.(elde).(eac).(am));
             end
 
@@ -162,7 +163,7 @@ classdef Battery < PhysicalModel
             
             %% Set up the governing equations
             
-            eqs={};
+            eqs = {};
             
             %% We collect mass and charge conservation equations for the electrolyte and the electrodes
 
@@ -189,7 +190,7 @@ classdef Battery < PhysicalModel
             [trans_pcc, cells] = battery.(pe).(cc).operators.harmFaceBC(cond_pcc, faces);
             control = src - sum(trans_pcc.*(bcval - state.(pe).(cc).phi(cells)));
             
-            eqs{end + 1} = -control;
+            eqs{end + 1} = - control;
 
             %% Give type and names to equations and names of the primary variables (for book-keeping)
             
@@ -293,7 +294,7 @@ classdef Battery < PhysicalModel
             c = c*ones(negAm.G.cells.num, 1);
 
             initstate.(ne).(eac).(am).c = c;
-            initstate.(ne).(eac).(am) = negAm.updateMaterialProperties(initstate.(ne).(eac).(am));
+            initstate.(ne).(eac).(am) = negAm.updateOCP(initstate.(ne).(eac).(am));
 
             OCP = initstate.(ne).(eac).(am).OCP;
             initstate.(ne).(eac).(am).phi = OCP;
@@ -312,8 +313,8 @@ classdef Battery < PhysicalModel
             c = c*ones(posAm.G.cells.num, 1);
 
             initstate.(pe).(eac).(am).c = c;
-            initstate.(pe).(eac).(am) = posAm.updateMaterialProperties(initstate.(pe).(eac).(am));
-
+            initstate.(pe).(eac).(am) = posAm.updateOCP(initstate.(pe).(eac).(am));
+            
             OCP = initstate.(pe).(eac).(am).OCP;
             initstate.(pe).(eac).(am).phi = OCP;
 

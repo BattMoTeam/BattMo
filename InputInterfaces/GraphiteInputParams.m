@@ -1,11 +1,12 @@
 classdef GraphiteInputParams < ActiveMaterialInputParams 
     
-    
     methods
         
         function paramobj = GraphiteInputParams()
             
             paramobj = paramobj@ActiveMaterialInputParams();
+            
+            paramobj.name = 'Graphite';
             
             paramobj.specificCapacity       = 360;      % [Ah kg^-1]
             paramobj.rho                    = 2240;     % [kg m^-3]

@@ -4,7 +4,8 @@ classdef ActiveElectroChemicalComponentInputParams < ElectroChemicalComponentInp
         %% parameters for the electrode components
         % shortcut used here
         % am : ActiveMaterial parameters (class ActiveMaterialInputParams)
-        am 
+        am
+        amName
     end
 
     methods
@@ -12,6 +13,7 @@ classdef ActiveElectroChemicalComponentInputParams < ElectroChemicalComponentInp
         function paramobj = ActiveElectroChemicalComponentInputParams()
             paramobj = paramobj@ElectroChemicalComponentInputParams();
             paramobj.am = ActiveMaterialInputParams();
+            paramobj.amName = char;
             paramobj.EffectiveElectronicConductivity = 'not used';
         end
         

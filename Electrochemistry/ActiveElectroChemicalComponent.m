@@ -20,7 +20,8 @@ classdef ActiveElectroChemicalComponent < ElectroChemicalComponent
             
             % Setup ActiveMaterial component
             paramobj.am.G = model.G;
-            am = ActiveMaterial(paramobj.am);
+            
+            am = setupActiveMaterial(paramobj.am);
             model.ActiveMaterial = am;
 
             % setup volumeFraction, porosity, thickness

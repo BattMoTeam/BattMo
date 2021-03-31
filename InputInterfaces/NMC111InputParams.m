@@ -7,7 +7,8 @@ classdef NMC111InputParams < ActiveMaterialInputParams
             
             paramobj = paramobj@ActiveMaterialInputParams();
             
-            % Define material constants
+            paramobj.name = 'NMC111';
+                        
             paramobj.specificCapacity       = 155;      % [Ah kg^-1]
             paramobj.rho                    = 4650;     % [kg m^-3]
             paramobj.theta0                 = 0.99174;  % at 0% SOC [-]

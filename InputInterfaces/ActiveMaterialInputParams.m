@@ -2,6 +2,8 @@ classdef ActiveMaterialInputParams
     properties
         
         G
+
+        name
         
         specificCapacity        % [Ah kg^-1]
         rho                     % [kg m^-3]
@@ -21,9 +23,11 @@ classdef ActiveMaterialInputParams
     end
     
     methods
+        
         function paramobj = ActiveMaterialInputParams();
-            paramobj.Li = struct();
             paramobj.G = struct();
+            paramobj.name = char;
+            paramobj.Li = struct();
         end
         
     end

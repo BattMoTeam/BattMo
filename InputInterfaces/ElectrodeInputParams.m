@@ -17,6 +17,7 @@ classdef ElectrodeInputParams < ComponentInputParams
     methods
 
         function paramobj = ElectrodeInputParams()
+            paramobj = paramobj@ComponentInputParams();
             paramobj.eac = ActiveElectroChemicalComponentInputParams();
             paramobj.cc = CurrentCollectorInputParams();
             paramobj.couplingTerms = {};
