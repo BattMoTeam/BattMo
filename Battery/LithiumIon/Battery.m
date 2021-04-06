@@ -127,7 +127,7 @@ classdef Battery < PhysicalModel
             state.(pe) = battery.(pe).setupCoupling(state.(pe));
 
             state.(ne).(eac) = battery.(ne).(eac).updatejBcSource(state.(ne).(eac));
-            state.(pe).(eac) = battery.(pe).(eac).updatejBcSource(state.(ne).(eac));
+            state.(pe).(eac) = battery.(pe).(eac).updatejBcSource(state.(pe).(eac));
             
             state = model.setupExternalCouplingNegativeElectrode(state);
             state = model.setupExternalCouplingPositiveElectrode(state);
