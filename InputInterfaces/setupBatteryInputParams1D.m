@@ -7,7 +7,7 @@ function paramobj = setupBatteryInputParams1D(paramobj)
 % - ccnenx 
 % - ccpenx 
 
-    fac = 1/10;
+    fac = 1;
     params.sepnx  = 30*fac;
     params.nenx   = 30*fac;
     params.penx   = 30*fac;
