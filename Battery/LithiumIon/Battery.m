@@ -182,16 +182,17 @@ classdef Battery < PhysicalModel
             
             eqs{end + 1} = state.(ne).(eac).massCons;
             eqs{end + 1} = state.(ne).(eac).chargeCons;
-            eqs{end + 1} = state.(ne).(cc).chargeCons;
             
             eqs{end + 1} = state.(pe).(eac).massCons;
             eqs{end + 1} = state.(pe).(eac).chargeCons;
+
+            eqs{end + 1} = state.(ne).(cc).chargeCons;
             eqs{end + 1} = state.(pe).(cc).chargeCons;
             
             %% We setup and add the control equation (fixed total current at PositiveCurrentCollector)
             
             src = drivingForces.src(time);
-            coupterm = battery.(ne).(cc).couplingTerm;
+            coupterm = battery.(pe).(cc).couplingTerm;
             faces = coupterm.couplingfaces;
             bcval = state.(pe).(cc).E;
             cond_pcc = battery.(pe).(cc).EffectiveElectronicConductivity;
@@ -209,10 +210,10 @@ classdef Battery < PhysicalModel
                      'elyte_chargeCons' , ...
                      'ne_eac_massCons'  , ...
                      'ne_eac_chargeCons', ...
+                     'pe_eac_massCons'  , ...
+                     'pe_eac_chargeCons', ...
                      'ne_cc_chargeCons' , ...
-                     'ne_eac_massCons'  , ...
-                     'ne_eac_chargeCons', ...
-                     'ne_cc_chargeCons' , ...
+                     'pe_cc_chargeCons' , ...
                      'control'};
             
             primaryVars = model.getPrimaryVariables();
