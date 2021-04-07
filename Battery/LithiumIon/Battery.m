@@ -80,7 +80,7 @@ classdef Battery < PhysicalModel
             
             %% Update the material properties
             
-            names={{'PositiveElectrode', 'ActiveMaterial'}, {'PositiveElectrode', 'ActiveMaterial'}};
+            names={{'NegativeElectrode', 'ActiveMaterial'}, {'PositiveElectrode', 'ActiveMaterial'}};
             for i=1:numel(names)
                 submodel = model.getSubmodel(names{i});
                 val = submodel.updateMaterialProperties(model.getProp(state,names{i}));
