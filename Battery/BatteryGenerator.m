@@ -89,7 +89,7 @@ classdef BatteryGenerator
         end
 
         function paramobj = setupElectrodeActiveComponentGrid(gen, paramobj, params)
-        % paramobj is instance of ActiveElectroChemicalComponentInputParams
+        % paramobj is instance of ElectrodeActiveComponentInputParams
         % setup paramobj.G
             
             % Default setup

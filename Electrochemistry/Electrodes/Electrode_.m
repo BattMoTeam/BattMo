@@ -9,7 +9,7 @@ classdef Electrode_ < CompositeModel
             names = {model.names{:}, ...
                      'T' };
             
-            model.SubModels{1} = ActiveElectroChemicalComponent_('eac');
+            model.SubModels{1} = ElectrodeActiveComponent_('eac');
             model.SubModels{2} = CurrentCollector_('cc');
 
             % Add coupling between the two components

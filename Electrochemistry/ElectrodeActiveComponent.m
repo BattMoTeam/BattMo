@@ -1,4 +1,4 @@
-classdef ActiveElectroChemicalComponent < ElectroChemicalComponent
+classdef ElectrodeActiveComponent < ElectroChemicalComponent
     
     properties
         
@@ -12,7 +12,7 @@ classdef ActiveElectroChemicalComponent < ElectroChemicalComponent
     
     methods
         
-        function model = ActiveElectroChemicalComponent(paramobj)
+        function model = ElectrodeActiveComponent(paramobj)
         % shortcut used here:
         % am = ActiveMaterial
             

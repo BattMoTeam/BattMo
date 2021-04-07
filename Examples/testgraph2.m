@@ -48,14 +48,14 @@ title('ActiveMaterial');
 
 model.adminmodel.printPropfunctions;
 
-%% ActiveElectroChemicalComponent
+%% ElectrodeActiveComponent
 
 figure
-model = ActiveElectroChemicalComponent_('main');
+model = ElectrodeActiveComponent_('main');
 model = model.initiateCompositeModel();
 [g, edgelabels] = setupGraph(model);
 plot(g, gstyle{:});
-title('ActiveElectroChemicalComponent');
+title('ElectrodeActiveComponent');
 
 model.adminmodel.printPropfunctions;
 

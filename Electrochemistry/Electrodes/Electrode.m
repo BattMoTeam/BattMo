@@ -4,7 +4,7 @@ classdef Electrode < PhysicalModel
         
         %% submodels:
         % electrode active component
-        ElectrodeActiveComponent %  (class ActiveElectroChemicalComponent)
+        ElectrodeActiveComponent %  (class ElectrodeActiveComponent)
         % current collector
         CurrentCollector % (class ElectronicComponent)
 
@@ -25,14 +25,14 @@ classdef Electrode < PhysicalModel
             model = dispatchParams(model, paramobj, fdnames);
             
             % Assign the two components
-            model.ElectrodeActiveComponent = model.setupActiveElectroChemicalComponent(paramobj.eac);
+            model.ElectrodeActiveComponent = model.setupElectrodeActiveComponent(paramobj.eac);
             model.CurrentCollector = model.setupCurrentCollector(paramobj.cc);
            
         end
         
-        function eac = setupActiveElectroChemicalComponent(model, paramobj)
+        function eac = setupElectrodeActiveComponent(model, paramobj)
         % standard instantiation (ActiveMaterial is specified in ElectrodeActiveComponent instantiation)
-            eac = ActiveElectroChemicalComponent(paramobj);
+            eac = ElectrodeActiveComponent(paramobj);
         end
         
         function cc = setupCurrentCollector(model, paramobj)

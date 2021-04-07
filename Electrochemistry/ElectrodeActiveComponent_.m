@@ -1,8 +1,8 @@
-classdef ActiveElectroChemicalComponent_ < ElectroChemicalComponent_
+classdef ElectrodeActiveComponent_ < ElectroChemicalComponent_
 
     methods
 
-        function model = ActiveElectroChemicalComponent_(name)
+        function model = ElectrodeActiveComponent_(name)
 
             model = model@ElectroChemicalComponent_(name);
             
@@ -12,33 +12,33 @@ classdef ActiveElectroChemicalComponent_ < ElectroChemicalComponent_
 
             model.SubModels{1} = ActiveMaterial_('am');
             
-            fn = @ActiveElectroChemicalComponent.updatejBcSource;
+            fn = @ElectrodeActiveComponent.updatejBcSource;
             inputnames = {'jCoupling'};
             fnmodel = {'.'};
             model = model.addPropFunction('jBcSource', fn, inputnames, fnmodel);            
             
-            fn = @ActiveElectroChemicalComponent.updateIonAndCurrentSource;
+            fn = @ElectrodeActiveComponent.updateIonAndCurrentSource;
             inputnames = {VarName({'am'}, 'R')};
             fnmodel = {'.'};
             model = model.addPropFunction('chargeCarrierSource', fn, inputnames, fnmodel);
             model = model.addPropFunction('eSource', fn, inputnames, fnmodel);
             
-            fn = @ActiveElectroChemicalComponent.updateChargeCarrier;
+            fn = @ElectrodeActiveComponent.updateChargeCarrier;
             inputnames = {VarName({'am'}, 'cs')};
             fnmodel = {'.'};
             model = model.addPropFunction('cs', fn, inputnames, fnmodel);
 
-            fn = @ActiveElectroChemicalComponent.updatePhi;
+            fn = @ElectrodeActiveComponent.updatePhi;
             inputnames = {VarName({'am'}, 'phi')};
             fnmodel = {'.'};
             model = model.addPropFunction('phi', fn, inputnames, fnmodel);
             
-            fn = @ActiveElectroChemicalComponent.updateT;
+            fn = @ElectrodeActiveComponent.updateT;
             inputnames = {VarName({'..'}, 'T')};
             fnmodel = {'..'};
             model = model.addPropFunction({'am', 'T'}, fn, inputnames, fnmodel);
             
-            fn = @ActiveElectroChemicalComponent.updateDiffusionCoefficient;
+            fn = @ElectrodeActiveComponent.updateDiffusionCoefficient;
             inputnames = {VarName({'am'}, 'D')};
             fnmodel = {'.'};
             model = model.addPropFunction('D', fn, inputnames, fnmodel);

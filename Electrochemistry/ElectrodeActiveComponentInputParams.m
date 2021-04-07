@@ -1,4 +1,4 @@
-classdef ActiveElectroChemicalComponentInputParams < ElectroChemicalComponentInputParams
+classdef ElectrodeActiveComponentInputParams < ElectroChemicalComponentInputParams
  
     properties
         %% parameters for the electrode components
@@ -10,7 +10,7 @@ classdef ActiveElectroChemicalComponentInputParams < ElectroChemicalComponentInp
 
     methods
 
-        function paramobj = ActiveElectroChemicalComponentInputParams()
+        function paramobj = ElectrodeActiveComponentInputParams()
             paramobj = paramobj@ElectroChemicalComponentInputParams();
             paramobj.am = ActiveMaterialInputParams();
             paramobj.amName = char();
