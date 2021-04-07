@@ -15,6 +15,8 @@ model.adminmodel.printPropfunctions;
 
 plot(g, 'interpreter', 'none');
 
+return
+
 f = fopen('test.csv', 'w');
 edges = g.Edges;
 edges = edges.Variables;
