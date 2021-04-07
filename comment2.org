@@ -47,4 +47,6 @@
 * Do we have a ionic composition in Electrodes as in Electrolyte
 * Set up external coupling
   Example where an external function is handy
+* Various directory in utilities
+  - likely to grow...
 
