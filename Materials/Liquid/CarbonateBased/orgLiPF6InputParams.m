@@ -6,8 +6,12 @@ classdef orgLiPF6InputParams < ElectrolyteInputParams
             
             paramobj = paramobj@ElectrolyteInputParams();
             
+            paramobj.name = 'orgLiPF6';
+            
             paramobj.compnames = {'Li', 'PF6'};
             paramobj.ncomp = 2;
+            
+            paramobj.indchargecarrier = 1;
             
             % Set constant values
             [~, ind] = ismember('Li', paramobj.compnames);

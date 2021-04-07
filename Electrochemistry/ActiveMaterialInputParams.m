@@ -1,4 +1,5 @@
 classdef ActiveMaterialInputParams 
+    
     properties
         
         G
@@ -10,9 +11,9 @@ classdef ActiveMaterialInputParams
         theta0                  % at 0% SOC [-]
         theta100                % at 100% SOC[-]
         Li % struct with fields
-        %  - cmax               % [mol m^-3]
-        %  - D0                 % [m^2 s^-1]
-        %  - EaD                % [J mol^-1]
+           %  - cmax            % [mol m^-3]
+           %  - D0              % [m^2 s^-1]
+           %  - EaD             % [J mol^-1]
         electronicConductivity  % [S m^-1]
         cp                      % [J kg^-1 K^-1]
         k0                      % [m^2.5 mol^-0.5 s^-1]

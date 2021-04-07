@@ -49,4 +49,5 @@
   Example where an external function is handy
 * Various directory in utilities
   - likely to grow...
+* is updateChargeCarrierFlux generic in Electrolyte?
 

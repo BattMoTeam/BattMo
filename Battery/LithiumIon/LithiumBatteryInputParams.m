@@ -9,6 +9,7 @@ classdef LithiumBatteryInputParams < BatteryInputParams
             paramobj.ne = LithiumElectrodeInputParams();
             paramobj.pe = LithiumElectrodeInputParams();
             
+            % Once the electrode are instantiated, we fill in the active material inputs
             paramobj.ne.eac.am = GraphiteInputParams();
             paramobj.pe.eac.am = NMC111InputParams();
             

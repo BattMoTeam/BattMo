@@ -21,20 +21,18 @@ classdef ActiveElectroChemicalComponent < ElectroChemicalComponent
             % Setup ActiveMaterial component
             paramobj.am.G = model.G;
             
-            am = setupActiveMaterial(paramobj.am);
-            model.ActiveMaterial = am;
+            model.ActiveMaterial = setupActiveMaterial(paramobj.am);
 
             % setup volumeFraction, porosity, thickness
             nc = model.G.cells.num;
-            volumeFraction = am.volumeFraction*ones(nc, 1);
+            volumeFraction = model.ActiveMaterial.volumeFraction*ones(nc, 1);
             model.volumeFraction = volumeFraction;
             model.porosity = 1 - model.volumeFraction;
             model.thickness = 10e-6;
             
             % setup effective electronic conductivity
-            econd = am.electronicConductivity;
+            econd = model.ActiveMaterial.electronicConductivity;
             model.EffectiveElectronicConductivity = econd .* volumeFraction.^1.5;
-            
             
         end
 

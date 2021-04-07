@@ -14,9 +14,9 @@ classdef BatteryInputParams
         
         %% parameters for the battery components
         % shortcut used here
-        % ne : Negative electrode parameters (class ElectrodeInputParams)
-        % pe : Positive electrode parameters (class ElectrodeInputParams)
-        % elyte : Electrolyte (class ElectrolyteInputParams)
+        % ne : Negative electrode parameters (instance of ElectrodeInputParams)
+        % pe : Positive electrode parameters (instance of ElectrodeInputParams)
+        % elyte : Electrolyte (instance ElectrolyteInputParams)
         ne;
         pe;
         elyte;        

@@ -4,8 +4,8 @@ classdef ElectrodeInputParams < ComponentInputParams
         
         %% parameters for the electrode components
         % shortcut used here
-        % eac : ElectrodeActiveComponent parameters (class ActiveElectroChemicalComponentInputParams)
-        % cc  : CurrentCollector parameters (class CurrentCollectorInputParams)
+        % eac : ElectrodeActiveComponent parameters (instance of ActiveElectroChemicalComponentInputParams)
+        % cc  : CurrentCollector parameters (instance of CurrentCollectorInputParams)
         eac
         cc
         

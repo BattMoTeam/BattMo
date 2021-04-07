@@ -27,6 +27,7 @@ classdef Battery < PhysicalModel
     methods
         
         function model = Battery(paramobj)
+        % paramobj is instance of BatteryInputParams
         % Shorcuts used here
         % elyte : Electrolyte
         % ne : NegativeElectrode
@@ -48,9 +49,9 @@ classdef Battery < PhysicalModel
             model = dispatchParams(model, paramobj, fdnames);
             
             % Assign the components : Electrolyte, NegativeElectrode, PositiveElectrode
-            model.Electrolyte       = Electrolyte(paramobj.elyte);
-            model.NegativeElectrode = Electrode(paramobj.ne);
-            model.PositiveElectrode = Electrode(paramobj.pe);
+            model.NegativeElectrode = model.setupElectrode(paramobj.ne);
+            model.PositiveElectrode = model.setupElectrode(paramobj.pe);
+            model.Electrolyte       = model.setupElectrolyte(paramobj.elyte);
 
             % setup couplingNames
             model.couplingNames = cellfun(@(x) x.name, model.couplingTerms, 'uniformoutput', false);
@@ -58,6 +59,20 @@ classdef Battery < PhysicalModel
             % setup Electrolyte porosity
             model = model.setElectrolytePorosity();
             
+        end
+        
+        function electrode = setupElectrode(model, paramobj)
+        % Standard setup (ActiveMaterial is specified in Electrode instantiations)
+            electrode = Electrode(paramobj);
+        end
+        
+        function electrode = setupElectrolyte(model, paramobj)
+            switch paramobj.name
+              case 'orgLiPF6'
+                electrode = orgLiPF6(paramobj);
+              otherwise
+                error('electrolyte name not recognized');
+            end
         end
         
         function [problem, state] = getEquations(model, state0, state,dt, drivingForces, varargin)
