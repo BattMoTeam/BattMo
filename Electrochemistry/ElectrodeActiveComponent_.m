@@ -24,7 +24,7 @@ classdef ElectrodeActiveComponent_ < ElectroChemicalComponent_
             model = model.addPropFunction('eSource', fn, inputnames, fnmodel);
             
             fn = @ElectrodeActiveComponent.updateChargeCarrier;
-            inputnames = {VarName({'am'}, 'cs')};
+            inputnames = {VarName({'am'}, 'c')};
             fnmodel = {'.'};
             model = model.addPropFunction('cs', fn, inputnames, fnmodel);
 
