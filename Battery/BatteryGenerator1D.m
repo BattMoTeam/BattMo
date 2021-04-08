@@ -1,15 +1,13 @@
 classdef BatteryGenerator1D < BatteryGenerator
-% Object that add to a paramobj instance of BatteryInputParams the grids and coupling parameters.
-%
-% This class goes through the whole setup and is meant to be used as a base class.
-%
- 
+% setup 1D grid 
     properties
         sepnx  = 30;
         nenx   = 30;
         penx   = 30;
         ccnenx = 20;
         ccpenx = 20;
+        
+        J = 1;
     end
     
     methods
@@ -20,6 +18,7 @@ classdef BatteryGenerator1D < BatteryGenerator
             
         function paramobj = updateBatteryInputParams(gen, paramobj)
             paramobj = gen.setupBatteryInputParams(paramobj, []);
+            paramobj.J = gen.J; 
         end
         
         function [paramobj, gen] = setupGrid(gen, paramobj, ~)

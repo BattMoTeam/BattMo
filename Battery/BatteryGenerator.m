@@ -1,8 +1,13 @@
 classdef BatteryGenerator
-% Object that add to a paramobj instance of BatteryInputParams the grids and coupling parameters.
+% Object that add grids and coupling terms to a paramobj instance of BatteryInputParams (through method 
+% updateBatteryInputParams)
 %
 % This class goes through the whole setup and is meant to be used as a base class.
 %
+% This class (or rather an subclass of it) can also be used to setup values of the paramobj instance that is sent to it
+% (just overload the updateBatteryInputParams method by adding the desired setup)
+%
+% Example : BatteryGenerator1D.m, BatteryGenerator2D.m
 
     properties
         % Global grid 
@@ -27,7 +32,7 @@ classdef BatteryGenerator
 
         function [paramobj, gen] = setupGrid(gen, paramobj, params)
         % paramobj is instance of BatteryInputParams
-        % setup paramobj.G
+        % setup paramobj.G and update gen.G 
             error('virtual function');
         end
         

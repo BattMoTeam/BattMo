@@ -32,7 +32,7 @@ classdef CurrentCollector < ElectronicComponent
             
             sigmaeff = model.EffectiveElectronicConductivity;
             faces = coupterm.couplingfaces;
-            bcval = phiExternal*ones(numel(faces), 1);
+            bcval = ones(numel(faces), 1)*phiExternal;
             [t, cells] = model.operators.harmFaceBC(sigmaeff, faces);
             jExternal(cells) = jExternal(cells) + t.*(bcval - phi(cells));
             
