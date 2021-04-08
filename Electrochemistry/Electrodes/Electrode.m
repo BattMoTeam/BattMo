@@ -15,7 +15,7 @@ classdef Electrode < PhysicalModel
     methods
         
         function model = Electrode(paramobj)
-            
+        % paramobj is instance of ElectrodeInputParams
             model = model@PhysicalModel([]);
             
             model.AutoDiffBackend = SparseAutoDiffBackend('useBlocks', false);
@@ -31,6 +31,7 @@ classdef Electrode < PhysicalModel
         end
         
         function eac = setupElectrodeActiveComponent(model, paramobj)
+        % paramobj is instanceo of ElectrodeActiveComponentInputParams
         % standard instantiation (ActiveMaterial is specified in ElectrodeActiveComponent instantiation)
             eac = ElectrodeActiveComponent(paramobj);
         end

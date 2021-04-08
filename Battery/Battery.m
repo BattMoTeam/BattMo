@@ -52,7 +52,7 @@ classdef Battery < PhysicalModel
             model.NegativeElectrode = model.setupElectrode(paramobj.ne);
             model.PositiveElectrode = model.setupElectrode(paramobj.pe);
             model.Electrolyte       = model.setupElectrolyte(paramobj.elyte);
-
+            
             % setup couplingNames
             model.couplingNames = cellfun(@(x) x.name, model.couplingTerms, 'uniformoutput', false);
             
@@ -67,6 +67,7 @@ classdef Battery < PhysicalModel
         end
         
         function electrode = setupElectrolyte(model, paramobj)
+        % paramobj is instance of ElectrolyteInputParams
             switch paramobj.name
               case 'orgLiPF6'
                 electrode = orgLiPF6(paramobj);
@@ -135,7 +136,6 @@ classdef Battery < PhysicalModel
 
             state = battery.setupElectrolyteCoupling(state);
             
-
             %% Update coupling within electrodes and external coupling
             
             state.(ne) = battery.(ne).setupCoupling(state.(ne));

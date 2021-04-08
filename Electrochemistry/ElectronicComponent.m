@@ -10,7 +10,7 @@ classdef ElectronicComponent < PhysicalModel
     methods
         
         function model = ElectronicComponent(paramobj)
-            
+        % paramobj is instance of ElectronicComponentInputParams
             model = model@PhysicalModel([]);
 
             % OBS : All the models should have same backend (this is not assigned automaticallly for the moment)
