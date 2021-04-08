@@ -8,6 +8,6 @@ function cons = assembleConservationEquation(model, flux, bcflux, source, accum)
     op = model.operators;
     F = model.constants.F;
     
-    cons = accum + (op.Div(flux) - bcflux)./model.G.cells.volumes./F - source;
-    
+    %cons = accum + (op.Div(flux) - bcflux)./model.G.cells.volumes./F - source;
+    cons = accum + (op.Div(flux) - bcflux) - source.*model.G.cells.volumes.*F;
 end

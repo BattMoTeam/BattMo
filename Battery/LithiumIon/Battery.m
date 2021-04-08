@@ -127,14 +127,14 @@ classdef Battery < PhysicalModel
             cdotLi  = (state.(name).cs{1} - state0.(name).cs{1})/dt;
             submodel = model.getSubmodel({name});
             LiAccum = submodel.volumeFraction.*cdotLi;
-            state.(name).LiAccum = LiAccum;
+            state.(name).LiAccum = LiAccum.*submodel.G.cells.volumes.*submodel.constants.F;
             
             names = {'NegativeElectrode', 'PositiveElectrode'};
             for i = 1 : numel(names)
                 cdotLi   = (state.(names{i}).ActiveMaterial.Li - state0.(names{i}).ActiveMaterial.Li)/dt;
                 submodel = model.getSubmodel({names{i}});
                 LiAccum  = submodel.ActiveMaterial.volumeFraction.*cdotLi;
-                state.(names{i}).LiAccum = LiAccum;
+                state.(names{i}).LiAccum = LiAccum.*submodel.G.cells.volumes.*submodel.constants.F;
             end
 
             %% Update the mass conservation term

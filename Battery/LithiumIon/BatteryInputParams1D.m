@@ -18,12 +18,12 @@ classdef BatteryInputParams1D < BatteryInputParams
             params.J    = 0.1;
             params.Ucut = 2;
             
-            fac = 1;
-            params.sepnx  = 30*fac;
-            params.nenx   = 30*fac;
-            params.penx   = 30*fac;
-            params.ccnenx = 20*fac;
-            params.ccpenx = 20*fac;
+            fac = 1/1;
+            params.sepnx  = 10*fac;
+            params.nenx   = 10*fac;
+            params.penx   = 10*fac;
+            params.ccnenx = 10*fac;
+            params.ccpenx = 10*fac;
             
         end
 
@@ -69,7 +69,7 @@ classdef BatteryInputParams1D < BatteryInputParams
             params.PositiveElectrode = NMC111Electrode(G, cells);
 
             %% setup ccne
-            istart = 1;
+            istart = 0;
             ncells = ccnenx;
             cells = istart + (1 : ncells)'; 
             params.NegativeCurrentCollector = CurrentCollector(G, cells);
