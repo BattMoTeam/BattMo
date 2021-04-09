@@ -17,7 +17,7 @@ classdef Electrolyte < ElectroChemicalComponent
     methods
         
         function model = Electrolyte(paramobj)
-            
+        % paramobj is instance of ElectrolyteInputParams or a derived class
             model = model@ElectroChemicalComponent(paramobj);
             
             model.Separator = Separator(paramobj.sep);
