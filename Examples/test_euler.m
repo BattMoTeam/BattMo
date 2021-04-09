@@ -48,7 +48,7 @@ switch schedulecase
     dt = [dt; repmat(dt(end)*1.5, floor(n*1.5), 1)]; 
     
     % Time scaling can be adding using variable tfac
-    times = [0; cumsum(dt)]; 
+    times = [0; cumsum(dt)]*tfac; 
     
   case 2
 

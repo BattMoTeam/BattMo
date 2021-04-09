@@ -11,7 +11,7 @@ classdef BatteryGenerator3D < BatteryGenerator
 
         % Input current
         
-        J = 0.1;
+        J = 1e-4;
 
         % Shortcuts used below
         % ne    : NegativeElectrode
