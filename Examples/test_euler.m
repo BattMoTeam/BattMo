@@ -12,7 +12,7 @@ paramobj = LithiumBatteryInputParams();
 
 % setup battery
 
-modelcase = '2D';
+modelcase = '3D';
 
 switch modelcase
   case '1D'
@@ -22,13 +22,8 @@ switch modelcase
     gen = BatteryGenerator2D();
     schedulecase = 1;
     tfac = 1; % used in schedule setup
-  case '3D_1'
-    inputparams = BatteryInputParams3D_1();
-    schedulecase = 1;
-    tfac = 1; % used in schedule setup
-  case '3D_2'
-    inputparams = BatteryInputParams3D_2();
-    inputparams.J = 1e-4;
+  case '3D'
+    gen = BatteryGenerator3D();
     schedulecase = 1;
     tfac = 40; % used in schedule setup
 end
