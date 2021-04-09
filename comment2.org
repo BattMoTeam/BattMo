@@ -1,0 +1,53 @@
+#+OPTIONS: num:nil
+#+OPTIONS: toc:nil
+
+* Inconsistencies easily occur
+  - ~Electrode~ is childe of ~ElectrochemicalComponent~ but does not have ~phi~ variable
+* Case where model input matters
+  - when we update the accumulation term
+  - In the graph function can have the same name but since they are used with different model they may give different
+    results (for example reaction rate for GraphiteElectrode and Nmc111electrode)
+* Example of alias
+  - cLi in graphiteelectroe see [[file:Electrochemistry/Electrodes/GraphiteElectrode_.m::model = model.setAlias('cLi', VarName({'am'}, 'cLi'));][here]]
+* Consistency check for the graphs are not implemented.
+  - duplicate variable names
+  - duplicate aliases (can be conflicting)
+  - alias name is same as already declared variable name
+* Property setup not completely robust
+  - If properties have same name, we keep the last one added (last in the list).
+* to get automatic graph based assembly
+  needs to introduce multiple output (we often write functions that return multiple outputs)
+* removed theta from active material state variable
+* missing concentration from elyte in active material
+* Example of double side coupling between collector and main electrode component
+* move D from ActiveMaterial
+* different kind of structures  
+  - for example chemistry and electronic could be set at same level
+  - now, we have ~ElectroChemicalComponent~ as a child of ~ElectronicComponent~
+  - (Relies on last-in priority : maybe not robust)
+* use now negative electrode convention for reaction rate
+* couplingTerms class could be simplified
+  - not sure if we need both componentnames and name
+* change name in BatteryInputParams1D
+  nenx -> eacnx
+* ComponentInputParams
+  - may not need to have properties globG and cellind
+* dummy update function of T
+* in ActiveMaterialInputParams
+  - change property Li to default name
+* move function setupElectrodeInputParams1D in setupBatteryInputParams1D
+* In graph setup
+  - handle case where inputnames is empty
+  - used for example to setup jBcSource to zero for electrolyte
+* Hack for state0 in graph approach
+* AD-backend for submodels
+* generic name for charge carrier
+* Li is still there hanging in some functions
+  - and it is assumed all over that cs{1} is charge carrier.
+* Do we have a ionic composition in Electrodes as in Electrolyte
+* Set up external coupling
+  Example where an external function is handy
+* Various directory in utilities
+  - likely to grow...
+* is updateChargeCarrierFlux generic in Electrolyte?
+

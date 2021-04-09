@@ -1,29 +1,43 @@
-classdef CurrentCollector < ElectrochemicalComponent
-% Current collector model 
-    
+classdef CurrentCollector < ElectronicComponent
+% Current collector model : At the moment equivalent to an ElectronicComponent
+
     properties
-        volumeFraction
-        electronicConductivity
+        couplingTerm
     end
     
     methods
-        function model = CurrentCollector(G, cells)
+        
+        function model = CurrentCollector(paramobj)
             
-            model = model@ElectrochemicalComponent();
-            
-            % setup grid
-            G = genSubGrid(G, cells);
-            model.G = G;
-            
-            % setup discrete differential operators
-            model.operators = localSetupOperators(G);
+            model = model@ElectronicComponent(paramobj);
 
-            model.electronicConductivity = 100;
-            model.volumeFraction = ones(G.cells.num, 1);
-            model.EffectiveElectronicConductivity = (model.electronicConductivity) .* (model.volumeFraction).^1.5;            
-
+            model = dispatchParams(model, paramobj, 'couplingTerm');
+            
+            % The parameter EffectiveElectronicConductivity in CurrentCollectorInputParams is given as scalar
+            model.EffectiveElectronicConductivity = model.EffectiveElectronicConductivity*ones(model.G.cells.num, 1);
             
         end
+        
+        function state = updatejBcSource(model, state)
+            
+            state.jBcSource = state.jCoupling + state.jExternal;
+            
+        end
+        
+        function jExternal = setupExternalCoupling(model, phi, phiExternal);
+            
+            coupterm = model.couplingTerm;
+            
+            jExternal = phi*0.0; %NB hack to initialize zero ad
+            
+            sigmaeff = model.EffectiveElectronicConductivity;
+            faces = coupterm.couplingfaces;
+            bcval = ones(numel(faces), 1)*phiExternal;
+            [t, cells] = model.operators.harmFaceBC(sigmaeff, faces);
+            jExternal(cells) = jExternal(cells) + t.*(bcval - phi(cells));
+            
+        end
+        
     end
     
 end

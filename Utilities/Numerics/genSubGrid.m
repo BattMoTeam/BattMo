@@ -1,10 +1,10 @@
-function G = genSubGrid(G0, cells)
-    nc = G0.cells.num;
+function G = genSubGrid(globG, cells)
+    nc = globG.cells.num;
     rcells = (1 : nc)';
     rcells(cells) = [];
-    [G, cellmap, facemap, nodemap] = removeCells(G0, rcells);
+    [G, cellmap, facemap, nodemap] = removeCells(globG, rcells);
     G = computeGeometry(G);
-    mappings = struct('parentGrid', G0     , ...
+    mappings = struct('parentGrid', globG     , ...
                       'cellmap'   , cellmap, ...
                       'facemap'   , facemap, ...
                       'nodemap'   , nodemap);

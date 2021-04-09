@@ -2,37 +2,35 @@ clear all
 close all
 
 % setup mrst modules
-mrstModule add ad-core mrst-gui battery
+mrstModule add ad-core multimodel mrst-gui battery matlab_bgl
 mrstVerbose off
 
-modelcase = '2D';
+% Value used in rampup function, see currentSource.
+tup = 0.1;
+
+paramobj = LithiumBatteryInputParams();
+
+% setup battery
+
+modelcase = '3D';
 
 switch modelcase
   case '1D'
-    inputparams = BatteryInputParams1D();
-    inputparams.J = 1;
+    gen = BatteryGenerator1D();
     schedulecase = 3; 
   case '2D'
-    inputparams = BatteryInputParams2D();
-    schedulecase = 1;
-    %inputparams.J = 1e-4;
-    tfac = 1; % used in schedule setup
-  case '3D_1'
-    inputparams = BatteryInputParams3D_1();
+    gen = BatteryGenerator2D();
     schedulecase = 1;
     tfac = 1; % used in schedule setup
-  case '3D_2'
-    inputparams = BatteryInputParams3D_2();
-    inputparams.J = 1e-4;
+  case '3D'
+    gen = BatteryGenerator3D();
     schedulecase = 1;
     tfac = 40; % used in schedule setup
 end
 
-% setup Battery model using parameter inputs.
-model = Battery(inputparams);
+paramobj = gen.updateBatteryInputParams(paramobj);
 
-% Value used in rampup function, see currentSource.
-tup = 0.1;
+model = Battery(paramobj);
 
 switch schedulecase
 
@@ -71,9 +69,12 @@ end
 
 tt = times(2 : end); 
 initstate = model.setupInitialState(); 
+
 step = struct('val', diff(times), 'control', ones(numel(tt), 1)); 
 
-stopFunc = @(model, state, state_prev) (state.PositiveCurrentCollector.E < 2.0); 
+pe = 'PositiveElectrode';
+cc = 'CurrentCollector';
+stopFunc = @(model, state, state_prev) (state.(pe).(cc).E < 2.0); 
 
 srcfunc = @(time) CurrentSource(time, tup, times(end), model.J); 
 
@@ -104,7 +105,6 @@ if useAMGCL
     nls.LinearSolver.tolerance = 1e-5
 end
 
-
 % Run simulation
 [wellSols, states, report] = simulateScheduleAD(initstate, model, schedule,...
                                                 'OutputMinisteps', true,...
@@ -113,7 +113,7 @@ end
 %%  Process output
 
 ind = cellfun(@(x) not(isempty(x)), states); 
-Enew = cellfun(@(x) x.PositiveCurrentCollector.E, {states{ind}}); 
+Enew = cellfun(@(x) x.(pe).(cc).E, {states{ind}}); 
 time = cellfun(@(x) x.time, {states{ind}}); 
 
 %% plot

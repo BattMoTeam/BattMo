@@ -1,76 +1,95 @@
-classdef Electrode < ElectrochemicalComponent
+classdef Electrode < PhysicalModel
     
     properties
         
-        % Design properties
-        thickness       % Thickness,        [m]
-        volumeFraction  % Volume fraction,  [-]
-        porosity        % Porosity,         [-]
-        mass            % Mass,             [kg]
-        volume          % Volume,           [m3]
-        area            % Area,             [m2]
+        %% submodels:
+        % electrode active component
+        ElectrodeActiveComponent %  (class ElectrodeActiveComponent)
+        % current collector
+        CurrentCollector % (class ElectronicComponent)
+
+        couplingTerm;
         
-        % SubModels
-        ActiveMaterial
-        Binder              % Binder object
-        ConductingAdditive  % Conducting additive object        
-        Electrolyte         % Electrolyte data structure
-
-        % Names for book-keeping
-        ionName
-        ionFluxName 
-        ionSourceName
-        ionMassConsName
-        ionAccumName
-
     end
 
     methods
-       
-        function state = updateCurrent(model, state)
+        
+        function model = Electrode(paramobj)
+        % paramobj is instance of ElectrodeInputParams
+            model = model@PhysicalModel([]);
             
-            sigmaeff = model.EffectiveElectronicConductivity;
-            phi = state.ActiveMaterial.phi;
+            model.AutoDiffBackend = SparseAutoDiffBackend('useBlocks', false);
             
-            j = assembleFlux(model, phi, sigmaeff); 
+            fdnames = {'G', ...
+                       'couplingTerm'};
+            model = dispatchParams(model, paramobj, fdnames);
+            
+            % Assign the two components
+            model.ElectrodeActiveComponent = model.setupElectrodeActiveComponent(paramobj.eac);
+            model.CurrentCollector = model.setupCurrentCollector(paramobj.cc);
+           
+        end
+        
+        function eac = setupElectrodeActiveComponent(model, paramobj)
+        % paramobj is instanceo of ElectrodeActiveComponentInputParams
+        % standard instantiation (ActiveMaterial is specified in ElectrodeActiveComponent instantiation)
+            eac = ElectrodeActiveComponent(paramobj);
+        end
+        
+        function cc = setupCurrentCollector(model, paramobj)
+        % standard instantiation 
+            cc = CurrentCollector(paramobj);
+        end
+        
+        function state = setupCoupling(model, state)
+        % setup coupling terms between the current collector and the electrode active component            
+            
+            elde  = model;
+            eac   = 'ElectrodeActiveComponent';
+            cc    = 'CurrentCollector';
 
-            state.j = j;
+            eac_phi = state.(eac).phi;
+            cc_phi = state.(cc).phi;
+
+            eac_sigmaeff = elde.(eac).EffectiveElectronicConductivity;
+            cc_sigmaeff = elde.(cc).EffectiveElectronicConductivity;
+    
+            %% We setup the current transfers between CurrentCollector and ElectrodeActiveComponent
             
+            eac_jCoupling  = eac_phi*0.0; %NB hack to initialize zero ad
+            cc_jCoupling = cc_phi*0.0; %NB hack to initialize zero ad
+
+            coupterm = model.couplingTerm;
+            face_cc = coupterm.couplingfaces(:, 1);
+            face_eac = coupterm.couplingfaces(:, 2);
+            [teac, bccell_eac] = elde.(eac).operators.harmFaceBC(eac_sigmaeff, face_eac);
+            [tcc, bccell_cc] = elde.(cc).operators.harmFaceBC(cc_sigmaeff, face_cc);
+
+            bcphi_eac = eac_phi(bccell_eac);
+            bcphi_cc = cc_phi(bccell_cc);
+
+            trans = 1./(1./teac + 1./tcc);
+            crosscurrent = trans.*(bcphi_cc - bcphi_eac);
+            eac_jCoupling(bccell_eac) = crosscurrent;
+            cc_jCoupling(bccell_cc) = -crosscurrent;
+
+            % We set here volumetric current source to zero for current collector (could have been done at a more logical place but
+            % let us do it here, for simplicity)
+            state.(cc).eSource = zeros(elde.(cc).G.cells.num, 1);
+            
+            state.(eac).jCoupling = eac_jCoupling;
+            state.(cc).jCoupling  = cc_jCoupling;
+
         end
 
-        function state = updateIonFlux(model, state)
-            ionName = model.ionName;
-            ionFluxName = model.ionFluxName;
-            
-            D = state.ActiveMaterial.D;
-            c = state.ActiveMaterial.(ionName);
-            Deff = D .* model.volumeFraction .^1.5;
-            
-            ionflux = assembleFlux(model, c, Deff);
-            F = model.constants.F;
-            ionflux = ionflux*F;
-            
-            state.(ionFluxName) = ionflux;
-        end
-  
-        function state = updateMassConservation(model, state)
-            
-            ionName         = model.ionName;
-            ionFluxName     = model.ionFluxName;
-            ionSourceName   = model.ionSourceName;
-            ionAccumName    = model.ionAccumName;
-            ionMassConsName = model.ionMassConsName;
-            
-            flux   = state.(ionFluxName);
-            source = state.(ionSourceName);
-            accum  = state.(ionAccumName);
-            bcflux = 0;
-            
-            masscons = assembleConservationEquation(model, flux, bcflux, source, accum);
-            
-            state.(ionMassConsName) = masscons;
-            
-        end
+        function state = updateT(model, state)
+            names = {'ElectrodeActiveComponent', 'CurrentCollector'};
+            for ind = 1 : numel(names)
+                name = names{ind};
+                nc = model.(name).G.cells.num;
+                state.(name).T = state.T(1)*ones(nc, 1);
+            end
+        end        
         
     end    
 end

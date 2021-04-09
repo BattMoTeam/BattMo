@@ -8,16 +8,16 @@ classdef celgard2500 < PhysicalModel
         con = PhysicalConstants()
         
         % Physicochemical properties
-        thickness       % Thickness,        [m]
-        volumeFraction     % Volume fraction,  [-]
-        porosity    % Porosity,         [-]
-        rp      % Pore radius,      [m]
-        Gurley  % Gurley number,    [s]
+        thickness      % Thickness,        [m]
+        volumeFraction % Volume fraction,  [-]
+        porosity       % Porosity,         [-]
+        rp             % Pore radius,      [m]
+        Gurley         % Gurley number,    [s]
         
     end
     
     methods
-        function model = celgard2500(name, G, cells)
+        function model = celgard2500(G, cells)
             
             model = model@PhysicalModel(G);
             

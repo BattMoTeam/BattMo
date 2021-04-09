@@ -1,109 +1,21 @@
-classdef Graphite < PhysicalModel
-    % GRAPHITE An electrode active material class for electrochemical modelling.
-    %
-    %   The graphite class describes the properties and
-    %   parameterization for the active material of graphite electrodes.
-    %
-    %   The class calculates properties based on experimental
-    %   parameterization studies described in the scientific literature.
-    %   The validity of the parameterization is limited to the conditions
-    %   in which it was reported.
-    %
-    %   Author: Simon Clark (simon.clark@sintef.no)
-    %   Usage:  This code is free to use "as-is" for the purpose of 
-    %           research at SINTEF without warranty of any kind. The code
-    %           is provided with the hope that it will be helpful. The 
-    %           author assumes no liability.         
-    %
-    %   Acknowledgement: This code builds on the work of many other
-    %   scientists over decades of research. Their work is gratefully
-    %   acknowledged and cited throughout the code. 
-    %
-    %   Revision History:
-    %       03.06.2020: SC (simon.clark@sintef.no) - New Energy Solutions 
-    %                   Initial version (0.0.0-alpha)
-    
-    properties
-        
-        % Physical constants
-        con = PhysicalConstants();
-        
-        % Lithium data structure
-        Li
-        
-        % Electron data structure
-        e
-        
-        % Physicochemical properties
-        volumeFraction
-        volumetricSurfaceArea  % Surface area,                 [m2 m^-3]
-        specificCapacity       % Specific Capacity             [Ah kg^-1]
-        theta0                 % Minimum lithiation, 0% SOC    [-]
-        theta100               % Maximum lithiation, 100% SOC  [-]
-        maxc                   % Maximum lithium concentration [mol m^-3]
-        rho                    % Mass Density                  [kg m^-3] or [g L^-1]
-        electronicConductivity % Solid conductivity            [S m^-1]
-        lambda                 % Thermal Conductivity          [W m^-1 K^-1]
-        cp                     % Molar Heat Capacity           [J kg^-1 K^-1]             
-        D0                     % Diffusion coefficient         [m^2 s^-1]
-        EaD                    % Diffusion activ. energy       [J mol^-1]
-        k0                     % Reference rate constant       [m^2.5 mol^-0.5 s^-1]
-        Eak                    % Reaction activation energy    [J mol^-1]
-        rp                     % Particle radius               [m]
-        
-    end
-    
+classdef Graphite < ActiveMaterial
+
     methods
 
-        function model = Graphite()
+        function model = Graphite(paramobj)
             
-        % GRAPHITE Construct an instance of the graphite class
-        % model = graphite(SOC, T) SOC is the state of charge of the
-        % electrode (0-1) and T is the temperature in Kelvin [K]
-
-            model = model@PhysicalModel([]);
-                
-            % Define material constants
-            model.specificCapacity       = 360;      % [Ah kg^-1]
-            model.rho                    = 2240;     % [kg m^-3]
-            model.theta0                 = 0.1429;   % at 0% SOC [-]
-            model.theta100               = 0.85510;  % at 100% SOC[-]
-            model.Li.cmax                = 30555;    % [mol m^-3]
-            model.Li.D0                  = 3.9e-14;  % [m^2 s^-1]
-            model.Li.EaD                 = 5000;     % [J mol^-1]
-            model.electronicConductivity = 100;      % [S m^-1]
-            model.cp                     = 700;      % [J kg^-1 K^-1]
-            model.k0                     = 5.031e-11;% [m^2.5 mol^-0.5 s^-1]
-            model.Eak                    = 5000;     % [J mol^-1]
-            model.volumetricSurfaceArea  = 723600;   % [m2 m^-3]
-            model.volumeFraction         = 0.8;
+            model = model@ActiveMaterial(paramobj);
             
         end
         
-        function state = updateMaterialProperties(model, state)
-        % Calculate the solid diffusion coefficient of Li+ in the active material
-        % Calculate the solid phase diffusion coefficient of Li+ in
-        % graphite according to the model used by Torchio et al [1].
+        function state = updateOCP(model, state)
+        % Calculate the solid diffusion coefficient of Li+ in the active material Calculate the solid phase diffusion
+        % coefficient of Li+ in graphite according to the model used by Torchio et al [1].
             
-            % Define reference temperature
             refT = 298.15;  % [K]
-            
+
             T = state.T;
-            
-            % Define reference temperature
-            refT = 298.15;  % [K]
-
-            % Calculate reaction rate constant
-            k = model.k0 .* exp( -model.Eak ./ model.con.R .* (1./T-1/refT));
-                
-                
-            % Calculate solid diffusion coefficient, [m^2 s^-1]
-            D = model.Li.D0 .* exp(-model.Li.EaD./model.con.R*(1./T - 1/refT));
-
-            cs = state.Li;
-            
-            % Set the reference temperature
-            refT = 298.15;
+            c = state.c;
 
             % Calculate the lithiation of the active material. This
             % is a simplification for the initial code! The "real"
@@ -111,16 +23,16 @@ classdef Graphite < PhysicalModel
             % concentration of Li and the maximum lithium
             % concentration:
             %
-            theta = cs ./ model.Li.cmax;
-            state.theta = theta;
+            theta = c ./ model.Li.cmax;
+            
             % Calculate the open-circuit potential at the reference temperature for the given lithiation
             refOCP = (0.7222 ...
                       + 0.1387 .* theta ...
                       + 0.0290 .* theta.^0.5 ...
                       - 0.0172 ./ theta ... 
                       + 0.0019 ./ theta.^1.5 ...
-                      + 0.2808 .* exp(0.9-15.*theta) ... 
-                      - 0.7984 .* exp(0.4465 .* theta - 0.4108));
+                      + 0.2808 .* exp(0.9 - 15.*theta) ... 
+                      - 0.7984 .* exp(0.4465.*theta - 0.4108));
                   
             coeff1 = [0.005269056 ,...
                       + 3.299265709,...
@@ -147,9 +59,7 @@ classdef Graphite < PhysicalModel
             % Calculate the open-circuit potential of the active material
             OCP = refOCP + (T - refT) .* dUdT;
             
-            state.D = D;
             state.OCP = OCP;
-            state.k = k;
             
         end
         
