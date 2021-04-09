@@ -41,7 +41,7 @@ classdef Electrode < PhysicalModel
             cc = CurrentCollector(paramobj);
         end
         
-        function state = setupCoupling(model, state)
+        function state = updateCoupling(model, state)
         % setup coupling terms between the current collector and the electrode active component            
             
             elde  = model;

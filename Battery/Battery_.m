@@ -27,7 +27,7 @@ classdef Battery_ < CompositeModel
             model = model.addPropFunction({'pe', 'T'}, fn, inputnames, fnmodel);
             model = model.addPropFunction({'elyte', 'T'}, fn, inputnames, fnmodel);
             
-            fn = @Battery.setupElectrodeCoupling;
+            fn = @Battery.updateElectrodeCoupling;
             
             clear inputnames;
             inputnames{1} = VarName({'elyte'}, 'chargeCarrier');
@@ -41,7 +41,7 @@ classdef Battery_ < CompositeModel
             model = model.addPropFunction({'pe', 'eac', 'am', 'phiElectrolyte'}, fn, inputnames, fnmodel);
             model = model.addPropFunction({'pe', 'eac', 'am', 'chargeCarrierElectrolyte'}, fn, inputnames, fnmodel);
             
-            fn = @Battery.setupElectrolyteCoupling;
+            fn = @Battery.updateElectrolyteCoupling;
             
             clear inputnames;
             inputnames{1} = VarName({'ne', 'eac', 'am'}, 'R');

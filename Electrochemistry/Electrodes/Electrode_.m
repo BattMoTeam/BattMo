@@ -15,7 +15,7 @@ classdef Electrode_ < CompositeModel
             % Add coupling between the two components
             inputnames = {VarName({'..', 'eac'}, 'phi'), ...
                           VarName({'..', 'cc'}, 'phi')};
-            fn = @Electrode.setupCoupling;
+            fn = @Electrode.updateCoupling;
             fnmodel = {'..'};
             model = model.addPropFunction({'eac', 'jCoupling'}, fn, inputnames, fnmodel);
             model = model.addPropFunction({'cc', 'jCoupling'}, fn, inputnames, fnmodel);

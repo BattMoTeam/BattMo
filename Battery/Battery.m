@@ -86,7 +86,7 @@ classdef Battery < PhysicalModel
             state.T   = model.T*ones(nc, 1);
             state.SOC = model.SOC*ones(nc, 1);
             
-            % Shortcuts
+            % Shortcuts used in this function
             battery = model;
             ne      = 'NegativeElectrode';
             pe      = 'PositiveElectrode';
@@ -121,7 +121,7 @@ classdef Battery < PhysicalModel
 
             %% Update Electrolyte -> Electrodes coupling 
             
-            state = battery.setupElectrodeCoupling(state); 
+            state = battery.updateElectrodeCoupling(state); 
 
             %% Update reaction rates in both electrodes
 
@@ -134,12 +134,12 @@ classdef Battery < PhysicalModel
 
             %% Update Electrodes -> Electrolyte  coupling
 
-            state = battery.setupElectrolyteCoupling(state);
+            state = battery.updateElectrolyteCoupling(state);
             
             %% Update coupling within electrodes and external coupling
             
-            state.(ne) = battery.(ne).setupCoupling(state.(ne));
-            state.(pe) = battery.(pe).setupCoupling(state.(pe));
+            state.(ne) = battery.(ne).updateCoupling(state.(ne));
+            state.(pe) = battery.(pe).updateCoupling(state.(pe));
 
             state.(ne).(eac) = battery.(ne).(eac).updatejBcSource(state.(ne).(eac));
             state.(pe).(eac) = battery.(pe).(eac).updatejBcSource(state.(pe).(eac));
@@ -363,7 +363,7 @@ classdef Battery < PhysicalModel
             
         end
         
-        function state = setupElectrolyteCoupling(model, state)
+        function state = updateElectrolyteCoupling(model, state)
         % Setup the electrolyte coupling by adding ion sources from the electrodes
         % shortcuts:
         % c_source : Source term for charge carrier.
@@ -434,7 +434,7 @@ classdef Battery < PhysicalModel
         end
 
         
-        function state = setupElectrodeCoupling(model, state)
+        function state = updateElectrodeCoupling(model, state)
         % Setup electrode coupling by updating the potential and concentration of the electrolyte in the active component of the
         % electrode. There, those quantities are considered as input and used to compute the reaction rate.
         %
