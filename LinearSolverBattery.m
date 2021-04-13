@@ -43,15 +43,15 @@ classdef LinearSolverBattery
                     AA=A(indb,indb);
                     bb=b(indb);
                     dv=posvar(:,2)-posvar(:,1);pos=cumsum(dv+1);ptmp=[[0;pos(1:end-1)]+1,pos(1:end)];
-                    eind = mcolon(ptmp(1,1),ptmp(1,2));
-                    neind = mcolon(ptmp(2:end,1),ptmp(2:end,2));
-                    AAtmp=0*AA;
-                    AAtmp(eind,neind)=AA(eind,neind);
-                    AAtmp(neind,eind)=AA(neind,eind);
-                    AAtmp = AAtmp - diag(sum(AAtmp,2));
-                    AAorg=AA;
-                    AA=AA-AAtmp;
-                    f =@(x) solver.precond(x,A,indb,AA);
+                    %eind = mcolon(ptmp(1,1),ptmp(1,2));
+                    %neind = mcolon(ptmp(2:end,1),ptmp(2:end,2));
+                    %AAtmp=0*AA;
+                    %AAtmp(eind,neind)=AA(eind,neind);
+                    %AAtmp(neind,eind)=AA(neind,eind);
+                    %AAtmp = AAtmp - diag(sum(AAtmp,2));
+                    %AAorg=AA;
+                    %AA=AA-AAtmp;
+                    f =@(x) solver.precond(x,A,indb);%,AA);
                     %x=agmg(AA,rand(size(bb)),1,[],[],1);
                     %condest(AA)
                     result = gmres(A,b,10,solver.tol,solver.maxiter,f);
@@ -74,7 +74,7 @@ classdef LinearSolverBattery
             end
         end
         
-        function r = precond(solver,x,A,ind,AA)
+        function r = precond(solver,x,A,ind)%,AA)
             r=x*0;
             %[L,U,p] = lu(A,'vector');
             %% post smooth
@@ -86,7 +86,7 @@ classdef LinearSolverBattery
             if(true)
             %rphi = A(ind,ind)\x(ind);
             %rphi = AA\x(ind);
-            rphi=  agmg(AA,x(ind),0,1e-2,20,0);
+            rphi=  agmg(A(ind,ind),x(ind),0,1e-4,20,0);
             r(ind)=r(ind)+rphi;
             x(ind)=x(ind)-A(ind,ind)*rphi;
             end

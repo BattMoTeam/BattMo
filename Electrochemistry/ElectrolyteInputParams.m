@@ -12,6 +12,8 @@ classdef ElectrolyteInputParams < ElectroChemicalComponentInputParams
         
         sep
         
+        conductivityFactor
+        
     end
     
     methods

@@ -1,11 +1,15 @@
 classdef orgLiPF6 < Electrolyte
-
+    properties
+       conductivityFactor = 1e-4 
+    end
     methods
         
         function model = orgLiPF6(paramobj)
             
             model = model@Electrolyte(paramobj);
-            
+            fdnames = {'conductivityFactor'}
+
+            model = dispatchParams(model, paramobj, fdnames);
         end
         
         function state = updateChemicalCurrent(model, state)
@@ -36,7 +40,7 @@ classdef orgLiPF6 < Electrolyte
             c = cLi;
 
             % Ionic conductivity, [S m^-1]
-            kappa = 1e-4.* c .*(...
+            kappa = model.conductivityFactor.* c .*(...
                 polyval(cnst(end:-1:1,1),c) + ...
                 polyval(cnst(end:-1:1,2),c) .* T + ...
                 polyval(cnst(end:-1:1,3),c) .* T.^2).^2;
