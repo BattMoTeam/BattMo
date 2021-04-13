@@ -12,7 +12,7 @@ paramobj = LithiumBatteryInputParams();
 
 % setup battery
 
-modelcase = '1D';
+modelcase = '3D';
 
 switch modelcase
   case '1D'
@@ -21,15 +21,31 @@ switch modelcase
   case '2D'
     gen = BatteryGenerator2D();
     schedulecase = 1;
-    tfac = 1; % used in schedule setup
+    tfac = 10; % used in schedule setup
   case '3D'
     gen = BatteryGenerator3D();
     schedulecase = 1;
     tfac = 40; % used in schedule setup
 end
-
+if(false)
+fac=1/10
+gen.sepnx=10*fac;
+gen.nenx=10*fac;
+gen.penx=10*fac;
+gen.ccnenx=10*fac;
+gen.ccpenx=10*fac;
+end
 paramobj = gen.updateBatteryInputParams(paramobj);
-
+if(false)
+fac_e=10*1e-6;
+fac_p=10*1e-8;
+paramobj.ne.eac.am.electronicConductivity=100*fac_e;
+paramobj.ne.cc.EffectiveElectronicConductivity=100*fac_e;
+paramobj.pe.eac.am.electronicConductivity=100*fac_e;
+paramobj.pe.cc.EffectiveElectronicConductivity=100*fac_e;
+paramobj.pe.eac.am.electronicConductivity=100*fac_e;
+paramobj.elyte.conductivityFactor=fac_p;
+end
 model = Battery(paramobj);
 
 switch schedulecase
@@ -39,11 +55,11 @@ switch schedulecase
     % Schedule with two phases : activation and operation
     % 
     % Activation phase with exponentially increasing time step
-    n = 15; 
+    n = 25; 
     dt = []; 
     dt = [dt; repmat(1e-4, n, 1).*1.5.^[1:n]']; 
     % Operation phase with constant time step
-    n = 13; 
+    n = 24; 
     dt = [dt; dt(end).*2.^[1:n]']; 
     dt = [dt; repmat(dt(end)*1.5, floor(n*1.5), 1)]; 
     
@@ -61,7 +77,7 @@ switch schedulecase
     
     % Schedule adjusted for 1D case
     dt1 = rampupTimesteps(0.1, 0.1, 10);
-    dt2 = 5e3*ones(40, 1);
+    dt2 = 2*5e3*ones(40, 1);
     dt = [dt1; dt2];
     times = [0; cumsum(dt)]; 
     
@@ -104,7 +120,7 @@ if useAMGCL
     nls.LinearSolver.reduceToCell = true
     nls.LinearSolver.tolerance = 1e-5
 end
-
+nls.LinearSolver=LinearSolverBattery('method','iterative');
 % Run simulation
 [wellSols, states, report] = simulateScheduleAD(initstate, model, schedule,...
                                                 'OutputMinisteps', true,...
@@ -135,4 +151,53 @@ title('Potential (E)')
 xlabel('time (hours)')
 
 
-
+if(strcmp(modelcase,'1D'))
+    %% 1D plot
+    sind=[10]
+    figure(1),clf,hold on
+    
+    ffields = {'phi','c','j','LiFlux'}
+    
+    for k=1:numel(ffields)
+        mnames={{'Electrolyte'},{'PositiveElectrode','ElectrodeActiveComponent'},{'NegativeElectrode','ElectrodeActiveComponent'},...
+            {'NegativeElectrode','CurrentCollector'},{'PositiveElectrode','CurrentCollector'}}
+        subplot(2,2,k),cla,hold on
+        if(strcmp(ffields{k},'phi') || strcmp(ffields{k},'j') )
+            ind=1:5;
+        else
+            ind=1:3;
+        end
+        
+        for kk=sind
+            state = states{kk};
+            for i=ind%
+                %for i=[2,3,1]
+                mname=mnames{i};
+                submodel = model.getSubmodel(mname)
+                substate = model.getProp(state,mname);
+                %fname=snames{i};
+                if(not(isempty(state)))
+                    if(strcmp(ffields{k},'c') && i==1)
+                        var=substate.cs;
+                    else
+                        var = substate.(ffields{k});
+                    end
+                    if(iscell(var))
+                        var=var{1};
+                    end
+                    if(k<3)
+                        plot(submodel.G.cells.centroids(:,1), var,'*-')
+                        hold on
+                    else
+                        iface = all(submodel.G.faces.neighbors>0,2);
+                        plot(submodel.G.faces.centroids(iface,1), var,'*-')
+                        hold on 
+                    end
+                    subtitle(ffields{k})
+                    %pause()
+                end
+            end
+        end
+    end
+    %%
+end

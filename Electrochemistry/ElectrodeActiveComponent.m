@@ -42,7 +42,7 @@ classdef ElectrodeActiveComponent < ElectroChemicalComponent
             
             R = state.ActiveMaterial.R;
             
-            state.eSource = R;
+            state.eSource = -R;
             state.(ccSourceName) = -R;
             
         end

@@ -206,7 +206,7 @@ classdef Battery < PhysicalModel
             
             %% We setup and add the control equation (fixed total current at PositiveCurrentCollector)
             
-            src = drivingForces.src(time);
+            src = -drivingForces.src(time);
             coupterm = battery.(pe).(cc).couplingTerm;
             faces = coupterm.couplingfaces;
             bcval = state.(pe).(cc).E;
