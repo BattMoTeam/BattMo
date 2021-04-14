@@ -12,7 +12,7 @@ paramobj = LithiumBatteryInputParams();
 
 % setup battery
 
-modelcase = '3D';
+modelcase = '1D';
 
 switch modelcase
   case '1D'
@@ -27,8 +27,8 @@ switch modelcase
     schedulecase = 1;
     tfac = 40; % used in schedule setup
 end
-if(false)
-fac=1/10
+if(true)
+fac=1/5
 gen.sepnx=10*fac;
 gen.nenx=10*fac;
 gen.penx=10*fac;
@@ -55,13 +55,13 @@ switch schedulecase
     % Schedule with two phases : activation and operation
     % 
     % Activation phase with exponentially increasing time step
-    n = 25; 
+    n = 4;%25; 
     dt = []; 
     dt = [dt; repmat(1e-4, n, 1).*1.5.^[1:n]']; 
     % Operation phase with constant time step
     n = 24; 
-    dt = [dt; dt(end).*2.^[1:n]']; 
-    dt = [dt; repmat(dt(end)*1.5, floor(n*1.5), 1)]; 
+    %dt = [dt; dt(end).*2.^[1:n]']; 
+    %dt = [dt; repmat(dt(end)*1.5, floor(n*1.5), 1)]; 
     
     % Time scaling can be adding using variable tfac
     times = [0; cumsum(dt)]*tfac; 
@@ -77,7 +77,7 @@ switch schedulecase
     
     % Schedule adjusted for 1D case
     dt1 = rampupTimesteps(0.1, 0.1, 10);
-    dt2 = 2*5e3*ones(40, 1);
+    dt2 = 10*5e3*ones(40, 1);
     dt = [dt1; dt2];
     times = [0; cumsum(dt)]; 
     
@@ -120,12 +120,21 @@ if useAMGCL
     nls.LinearSolver.reduceToCell = true
     nls.LinearSolver.tolerance = 1e-5
 end
-nls.LinearSolver=LinearSolverBattery('method','iterative');
+
+%nls.LinearSolver=LinearSolverBattery('method','iterative');
+%nls.LinearSolver=LinearSolverBattery('method','direct');
+%nls.LinearSolver=LinearSolverBattery('method','agmg');
 % Run simulation
+model.AutoDiffBackend=DiagonalAutoDiffBackend();
+%%
+%profile -detail builtin
+profile off
+profile on
 [wellSols, states, report] = simulateScheduleAD(initstate, model, schedule,...
                                                 'OutputMinisteps', true,...
                                                 'NonLinearSolver', nls); 
-
+profile off
+profile report
 %%  Process output
 
 ind = cellfun(@(x) not(isempty(x)), states); 
@@ -149,11 +158,11 @@ figure
 plot((time/hour), Enew, '*-')
 title('Potential (E)')
 xlabel('time (hours)')
-
+return
 
 if(strcmp(modelcase,'1D'))
     %% 1D plot
-    sind=[10]
+    sind=[12,34]
     figure(1),clf,hold on
     
     ffields = {'phi','c','j','LiFlux'}
