@@ -52,3 +52,5 @@
 * is updateChargeCarrierFlux generic in Electrolyte?
 * not same kappa for j and jchem in org6
   - check that
+* check initialization
+  - what is the right way to do it for potential?

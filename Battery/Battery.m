@@ -326,7 +326,7 @@ classdef Battery < PhysicalModel
 
             OCP = initstate.(ne).(eac).(am).OCP;
             ref = OCP(1);
-            initstate.(ne).(eac).(am).phi = OCP-ref;
+            initstate.(ne).(eac).(am).phi = OCP - ref;
 
             %% setup initial PositiveElectrode state
 
@@ -345,7 +345,7 @@ classdef Battery < PhysicalModel
             initstate.(pe).(eac).(am) = posAm.updateOCP(initstate.(pe).(eac).(am));
             
             OCP = initstate.(pe).(eac).(am).OCP;
-            initstate.(pe).(eac).(am).phi = OCP-ref;
+            initstate.(pe).(eac).(am).phi = OCP - ref;
 
             %% setup initial Electrolyte state
 
@@ -362,9 +362,9 @@ classdef Battery < PhysicalModel
 
             OCP = initstate.(pe).(eac).(am).OCP;
             OCP = OCP(1) .* ones(bat.(pe).(cc).G.cells.num, 1);
-            initstate.(pe).(cc).phi = OCP-ref;
+            initstate.(pe).(cc).phi = OCP - ref;
             
-            initstate.(pe).(cc).E = OCP(1)-ref;
+            initstate.(pe).(cc).E = OCP(1) - ref;
             
         end
         
@@ -539,6 +539,7 @@ classdef Battery < PhysicalModel
         end
         
         function p = getPrimaryVariables(model)
+            
             bat = model;
             elyte = 'Electrolyte';
             ne    = 'NegativeElectrode';
@@ -547,16 +548,16 @@ classdef Battery < PhysicalModel
             eac   = 'ElectrodeActiveComponent';
             cc    = 'CurrentCollector';
             
-            p ={{elyte, 'cs', 1}       , ...
-                {elyte, 'phi'}         , ...   
-                {ne, eac, am, 'c'} , ...    
-                {ne, eac, am, 'phi'}   , ...   
-                {pe, eac, am, 'c'} , ...    
-                {pe, eac, am, 'phi'}   , ...   
-                {ne, cc, 'phi'}        , ...    
-                {pe, cc, 'phi'}        , ...    
-                {pe, cc, 'E'}
-               };
+            p = {{elyte, 'cs', 1}     , ...
+                 {elyte, 'phi'}       , ...   
+                 {ne, eac, am, 'c'}   , ...    
+                 {ne, eac, am, 'phi'} , ...   
+                 {pe, eac, am, 'c'}   , ...    
+                 {pe, eac, am, 'phi'} , ...   
+                 {ne, cc, 'phi'}      , ...    
+                 {pe, cc, 'phi'}      , ...    
+                 {pe, cc, 'E'}
+                };
             
         end
         
