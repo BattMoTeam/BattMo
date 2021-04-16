@@ -20,6 +20,8 @@ classdef LinearSolverBattery
             switch solver.method    
                 case 'direct'
                     result=A\b;
+                case 'agmg'
+                    result=agmg(A,b,0,solver.tol,solver.maxiter,0);
                 case 'iterative'
                     %%
                     numVars = problem.equations{1}.getNumVars();%

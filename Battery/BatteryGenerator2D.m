@@ -3,11 +3,11 @@ classdef BatteryGenerator2D < BatteryGenerator
     
     properties
         
-        sepnx  = 30;
-        nenx   = 30;
-        penx   = 30;
-        ccnenx = 20;
-        ccpenx = 20;
+        sepnx  = 10;
+        nenx   = 10;
+        penx   = 10;
+        ccnenx = 10;
+        ccpenx = 10;
 
         ny = 10;
         
@@ -27,7 +27,6 @@ classdef BatteryGenerator2D < BatteryGenerator
         end
 
         function [paramobj, gen] = setupGrid(gen, paramobj, params)
-            
             sepnx  = gen.sepnx;
             nenx   = gen.nenx;
             penx   = gen.penx;

@@ -12,7 +12,7 @@ paramobj = LithiumBatteryInputParams();
 
 % setup battery
 
-modelcase = '1D';
+modelcase = '2D';
 
 switch modelcase
   case '1D'
@@ -28,12 +28,13 @@ switch modelcase
     tfac = 40; % used in schedule setup
 end
 if(true)
-fac=1/5
+fac=1/10
 gen.sepnx=10*fac;
 gen.nenx=10*fac;
 gen.penx=10*fac;
 gen.ccnenx=10*fac;
 gen.ccpenx=10*fac;
+gen.ny=10*fac;
 end
 paramobj = gen.updateBatteryInputParams(paramobj);
 if(false)
@@ -55,13 +56,13 @@ switch schedulecase
     % Schedule with two phases : activation and operation
     % 
     % Activation phase with exponentially increasing time step
-    n = 4;%25; 
+    n = 25; 
     dt = []; 
-    dt = [dt; repmat(1e-4, n, 1).*1.5.^[1:n]']; 
+    dt = [dt; repmat(0.5e-4, n, 1).*1.5.^[1:n]']; 
     % Operation phase with constant time step
     n = 24; 
-    %dt = [dt; dt(end).*2.^[1:n]']; 
-    %dt = [dt; repmat(dt(end)*1.5, floor(n*1.5), 1)]; 
+    dt = [dt; dt(end).*2.^[1:n]']; 
+    dt = [dt; repmat(dt(end)*1.5, floor(n*1.5), 1)]; 
     
     % Time scaling can be adding using variable tfac
     times = [0; cumsum(dt)]*tfac; 
@@ -76,8 +77,8 @@ switch schedulecase
   case 3
     
     % Schedule adjusted for 1D case
-    dt1 = rampupTimesteps(0.1, 0.1, 10);
-    dt2 = 10*5e3*ones(40, 1);
+    dt1 = rampupTimesteps(0.1, 0.1, 5);
+    dt2 = 2e4*ones(15, 1);
     dt = [dt1; dt2];
     times = [0; cumsum(dt)]; 
     
@@ -123,10 +124,11 @@ end
 
 %nls.LinearSolver=LinearSolverBattery('method','iterative');
 %nls.LinearSolver=LinearSolverBattery('method','direct');
-%nls.LinearSolver=LinearSolverBattery('method','agmg');
+%nls.LinearSolver=LinearSolverBattery('method','agmg');nls.LinearSolver.tol=1e-10;nls.verbose=10
+model.nonlinearTolerance=1e-7
 % Run simulation
 model.AutoDiffBackend=DiagonalAutoDiffBackend();
-%%
+%
 %profile -detail builtin
 profile off
 profile on
@@ -158,11 +160,11 @@ figure
 plot((time/hour), Enew, '*-')
 title('Potential (E)')
 xlabel('time (hours)')
-return
+%%
 
 if(strcmp(modelcase,'1D'))
     %% 1D plot
-    sind=[12,34]
+    sind=[0]
     figure(1),clf,hold on
     
     ffields = {'phi','c','j','LiFlux'}
@@ -178,11 +180,23 @@ if(strcmp(modelcase,'1D'))
         end
         
         for kk=sind
-            state = states{kk};
+            if(kk==0)
+                %%
+               dt=schedule.step.val(1);
+               state=initstate;
+               state.time=0;
+               drivingForces=schedule.control;
+               %model.AutoDiffBackend=DiagonalAutoDiffBackend();
+               [problem, state] = model.getEquations(state, state, dt, drivingForces,'ResOnly',false,'iteration',1);
+               model.AutoDiffBackend=DiagonalAutoDiffBackend();
+               [problem1, state] = model.getEquations(state, state, dt, drivingForces,'ResOnly',false,'iteration',1)
+            else
+                state = states{kk};
+            end
             for i=ind%
                 %for i=[2,3,1]
                 mname=mnames{i};
-                submodel = model.getSubmodel(mname)
+                submodel = model.getSubmodel(mname);
                 substate = model.getProp(state,mname);
                 %fname=snames{i};
                 if(not(isempty(state)))
