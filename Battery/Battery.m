@@ -210,13 +210,13 @@ classdef Battery < PhysicalModel
             
             %% We setup and add the control equation (fixed total current at PositiveCurrentCollector)
             
-            src = -drivingForces.src(time);
+            src = drivingForces.src(time);
             coupterm = battery.(pe).(cc).couplingTerm;
             faces = coupterm.couplingfaces;
             bcval = state.(pe).(cc).E;
             cond_pcc = battery.(pe).(cc).EffectiveElectronicConductivity;
             [trans_pcc, cells] = battery.(pe).(cc).operators.harmFaceBC(cond_pcc, faces);
-            control = src - sum(trans_pcc.*(bcval - state.(pe).(cc).phi(cells)));
+            control = sum(trans_pcc.*(state.(pe).(cc).phi(cells) - bcval)) - src;
             
             eqs{end + 1} = - control;
 
