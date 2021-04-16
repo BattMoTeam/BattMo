@@ -39,11 +39,6 @@ classdef ElectroChemicalComponent < ElectronicComponent
 
             ccflux = assembleFlux(model, c, D);
             
-            %% apply scaling (maybe not the right place but consistent with assembleConservationEquation - at
-            %% least when this comment was written...)
-            F = model.constants.F;
-            ccflux = ccflux*F;
-            
             state.(ccFluxName) = ccflux;
             
         end

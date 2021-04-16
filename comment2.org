@@ -50,4 +50,5 @@
 * Various directory in utilities
   - likely to grow...
 * is updateChargeCarrierFlux generic in Electrolyte?
-
+* not same kappa for j and jchem in org6
+  - check that

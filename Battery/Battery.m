@@ -380,6 +380,9 @@ classdef Battery < PhysicalModel
             am    = 'ActiveMaterial';
             eac   = 'ElectrodeActiveComponent';
             
+            vols = battery.(elyte).G.cells.volumes;
+            F = battery.con.F;
+            
             ccSourceName = battery.(elyte).chargeCarrierSourceName;
             couplingterms = battery.couplingTerms;
 
@@ -399,16 +402,16 @@ classdef Battery < PhysicalModel
             ne_R = state.(ne).(eac).(am).R;
             coupterm = getCoupTerm(couplingterms, 'NegativeElectrode-Electrolyte', coupnames);
             elytecells = coupterm.couplingcells(:, 2);
-            elyte_c_source(elytecells) = ne_R;            
+            elyte_c_source(elytecells) = ne_R.*vols(elytecells); % we divide with F later
             
             pe_R = state.(pe).(eac).(am).R;
             coupterm = getCoupTerm(couplingterms, 'PositiveElectrode-Electrolyte', coupnames);
             elytecells = coupterm.couplingcells(:, 2);
-            elyte_c_source(elytecells) = pe_R;
+            elyte_c_source(elytecells) = pe_R.*vols(elytecells);
             
-            elyte_e_source = elyte_c_source.*battery.(elyte).sp.z{1};
+            elyte_e_source = elyte_c_source.*battery.(elyte).sp.z{1}; % we divide with F later
             
-            state.Electrolyte.(ccSourceName) = elyte_c_source; 
+            state.Electrolyte.(ccSourceName) = elyte_c_source/F; 
             state.Electrolyte.eSource = elyte_e_source;
             
         end
@@ -432,7 +435,8 @@ classdef Battery < PhysicalModel
             for i = 1 : numel(names)
                 elde = names{i}; % electrode name
                 cdotcc   = (state.(elde).(eac).(am).c - state0.(elde).(eac).(am).c)/dt;
-                ccAccum  = bat.(elde).(eac).volumeFraction.*cdotcc;
+                effectiveVolumes = bat.(elde).(eac).volumeFraction.*bat.(elde).(eac).G.cells.volumes;
+                ccAccum  = effectiveVolumes.*cdotcc;
                 state.(elde).(eac).(ccAccumName) = ccAccum;
             end
             

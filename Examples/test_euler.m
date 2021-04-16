@@ -70,7 +70,7 @@ switch schedulecase
     
     % Schedule adjusted for 1D case
     dt1 = rampupTimesteps(0.1, 0.1, 5);
-    dt2 = 2e4*ones(15, 1);
+    dt2 = 3e3*ones(30, 1);
     dt = [dt1; dt2];
     times = [0; cumsum(dt)]; 
     
