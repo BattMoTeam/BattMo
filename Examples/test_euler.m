@@ -108,7 +108,6 @@ model.nonlinearTolerance = 1e-4;
 model.nonlinearTolerance=1e-7;
 
 % Run simulation
-model.AutoDiffBackend = DiagonalAutoDiffBackend();
 
 doprofiling = false;
 if doprofiling
