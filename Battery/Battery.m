@@ -428,7 +428,8 @@ classdef Battery < PhysicalModel
             ccAccumName = bat.(elyte).chargeCarrierAccumName;
             
             cdotcc  = (state.(elyte).cs{1} - state0.(elyte).cs{1})/dt;
-            ccAccum = bat.(elyte).volumeFraction.*cdotcc;
+            effectiveVolumes = bat.(elyte).volumeFraction.*bat.(elyte).G.cells.volumes;
+            ccAccum  = effectiveVolumes.*cdotcc;
             state.(elyte).(ccAccumName) = ccAccum;
             
             names = {ne, pe};

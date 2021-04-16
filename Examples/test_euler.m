@@ -13,7 +13,7 @@ paramobj = LithiumBatteryInputParams();
 
 % setup battery
 
-modelcase = '1D';
+modelcase = '2D';
 
 switch modelcase
 
