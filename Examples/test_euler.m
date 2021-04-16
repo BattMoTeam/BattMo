@@ -2,7 +2,8 @@ clear all
 close all
 
 % setup mrst modules
-mrstModule add ad-core multimodel mrst-gui battery matlab_bgl
+mrstModule add ad-core multimodel mrst-gui battery
+
 mrstVerbose off
 
 % Value used in rampup function, see currentSource.
@@ -12,41 +13,32 @@ paramobj = LithiumBatteryInputParams();
 
 % setup battery
 
-modelcase = '2D';
+modelcase = '1D';
 
 switch modelcase
+
   case '1D'
+
     gen = BatteryGenerator1D();
     schedulecase = 3; 
+
   case '2D'
+
     gen = BatteryGenerator2D();
     schedulecase = 1;
+
     tfac = 10; % used in schedule setup
+  
   case '3D'
+
     gen = BatteryGenerator3D();
     schedulecase = 1;
     tfac = 40; % used in schedule setup
+    
 end
-if(true)
-fac=1/10
-gen.sepnx=10*fac;
-gen.nenx=10*fac;
-gen.penx=10*fac;
-gen.ccnenx=10*fac;
-gen.ccpenx=10*fac;
-gen.ny=10*fac;
-end
+
 paramobj = gen.updateBatteryInputParams(paramobj);
-if(false)
-fac_e=10*1e-6;
-fac_p=10*1e-8;
-paramobj.ne.eac.am.electronicConductivity=100*fac_e;
-paramobj.ne.cc.EffectiveElectronicConductivity=100*fac_e;
-paramobj.pe.eac.am.electronicConductivity=100*fac_e;
-paramobj.pe.cc.EffectiveElectronicConductivity=100*fac_e;
-paramobj.pe.eac.am.electronicConductivity=100*fac_e;
-paramobj.elyte.conductivityFactor=fac_p;
-end
+
 model = Battery(paramobj);
 
 switch schedulecase
@@ -109,39 +101,36 @@ nls.errorOnFailure = false;
 % Change default tolerance for nonlinear solver
 model.nonlinearTolerance = 1e-4;
 
-% We can use a linear preconditioner (not yet fully tested, require extra setup)
-useAMGCL = false;
-if useAMGCL
-    nls.LinearSolver = AMGCLSolverAD('verbose', true, 'write_params', true, 'preconditioner', 'relaxation', 'relaxation', ...
-                                     'ilu0'); 
-    nls.LinearSolver.verbose = true; 
-    nls.LinearSolver.amgcl_setup.verbose
-    nls.LinearSolver.amgcl_setup.verbose = true
-    nls.LinearSolver = AGMGSolverAD(); 
-    nls.LinearSolver.reduceToCell = true
-    nls.LinearSolver.tolerance = 1e-5
-end
 
 %nls.LinearSolver=LinearSolverBattery('method','iterative');
 %nls.LinearSolver=LinearSolverBattery('method','direct');
 %nls.LinearSolver=LinearSolverBattery('method','agmg');nls.LinearSolver.tol=1e-10;nls.verbose=10
-model.nonlinearTolerance=1e-7
+model.nonlinearTolerance=1e-7;
+
 % Run simulation
-model.AutoDiffBackend=DiagonalAutoDiffBackend();
-%
-%profile -detail builtin
-profile off
-profile on
+model.AutoDiffBackend = DiagonalAutoDiffBackend();
+
+doprofiling = false;
+if doprofiling
+    profile off
+    profile on
+end
+
 [wellSols, states, report] = simulateScheduleAD(initstate, model, schedule,...
                                                 'OutputMinisteps', true,...
                                                 'NonLinearSolver', nls); 
-profile off
-profile report
+if doprofiling
+    profile off
+    profile report
+end 
+
+
 %%  Process output
 
 ind = cellfun(@(x) not(isempty(x)), states); 
-Enew = cellfun(@(x) x.(pe).(cc).E, {states{ind}}); 
-time = cellfun(@(x) x.time, {states{ind}}); 
+states = states(ind);
+Enew = cellfun(@(x) x.(pe).(cc).E, states); 
+time = cellfun(@(x) x.time, states); 
 
 %% plot
 
@@ -160,67 +149,67 @@ figure
 plot((time/hour), Enew, '*-')
 title('Potential (E)')
 xlabel('time (hours)')
-%%
 
-if(strcmp(modelcase,'1D'))
-    %% 1D plot
-    sind=[0]
-    figure(1),clf,hold on
+
+%% 1D plot
+
+if strcmp(modelcase, '1D')
+
+    h = figure;
     
-    ffields = {'phi','c','j','LiFlux'}
+    ffields = {'phi', 'c', 'j', 'LiFlux'};
+
+    mnames = {{'Electrolyte'}, ...
+              {'PositiveElectrode','ElectrodeActiveComponent'}, ...
+              {'NegativeElectrode','ElectrodeActiveComponent'}, ...
+              {'NegativeElectrode','CurrentCollector'}, ...
+              {'PositiveElectrode','CurrentCollector'}};    
     
-    for k=1:numel(ffields)
-        mnames={{'Electrolyte'},{'PositiveElectrode','ElectrodeActiveComponent'},{'NegativeElectrode','ElectrodeActiveComponent'},...
-            {'NegativeElectrode','CurrentCollector'},{'PositiveElectrode','CurrentCollector'}}
-        subplot(2,2,k),cla,hold on
-        if(strcmp(ffields{k},'phi') || strcmp(ffields{k},'j') )
-            ind=1:5;
-        else
-            ind=1:3;
+    for i = 1 : numel(states)
+        
+        state = states{i}; 
+
+        for k = 1 : numel(ffields)
+
+            ffield = ffields{k};
+            
+            figure(h)
+            subplot(2, 2, k)
+            cla, hold on
+            
+            if (strcmp(ffield, 'phi') || strcmp(ffield, 'j'))
+                inds = 1 : 5; 
+            else
+                inds = 1 : 3; 
+            end
+            
+            for ind = inds
+                
+                mname = mnames{ind}; 
+                submodel = model.getSubmodel(mname); 
+                substate = model.getProp(state, mname); 
+                
+                if strcmp(ffield, 'c') && (ind == 1)
+                    var = substate.cs{1}; 
+                else
+                    var = substate.(ffield); 
+                end
+                
+                if (k < 3)
+                    plot(submodel.G.cells.centroids(:, 1), var, '* - ')
+                else
+                    iface = all(submodel.G.faces.neighbors > 0, 2); 
+                    plot(submodel.G.faces.centroids(iface, 1), var, '* - ')
+                end
+                
+                subtitle(ffield)
+                
+            end
         end
         
-        for kk=sind
-            if(kk==0)
-                %%
-               dt=schedule.step.val(1);
-               state=initstate;
-               state.time=0;
-               drivingForces=schedule.control;
-               %model.AutoDiffBackend=DiagonalAutoDiffBackend();
-               [problem, state] = model.getEquations(state, state, dt, drivingForces,'ResOnly',false,'iteration',1);
-               model.AutoDiffBackend=DiagonalAutoDiffBackend();
-               [problem1, state] = model.getEquations(state, state, dt, drivingForces,'ResOnly',false,'iteration',1)
-            else
-                state = states{kk};
-            end
-            for i=ind%
-                %for i=[2,3,1]
-                mname=mnames{i};
-                submodel = model.getSubmodel(mname);
-                substate = model.getProp(state,mname);
-                %fname=snames{i};
-                if(not(isempty(state)))
-                    if(strcmp(ffields{k},'c') && i==1)
-                        var=substate.cs;
-                    else
-                        var = substate.(ffields{k});
-                    end
-                    if(iscell(var))
-                        var=var{1};
-                    end
-                    if(k<3)
-                        plot(submodel.G.cells.centroids(:,1), var,'*-')
-                        hold on
-                    else
-                        iface = all(submodel.G.faces.neighbors>0,2);
-                        plot(submodel.G.faces.centroids(iface,1), var,'*-')
-                        hold on 
-                    end
-                    subtitle(ffields{k})
-                    %pause()
-                end
-            end
-        end
+        drawnow;
+        pause(0.01);
+        
     end
-    %%
+    
 end

@@ -1,13 +1,17 @@
 classdef orgLiPF6 < Electrolyte
+    
     properties
-       conductivityFactor = 1e-4 
+
+        conductivityFactor = 1e-4
+        
     end
+    
     methods
         
         function model = orgLiPF6(paramobj)
             
             model = model@Electrolyte(paramobj);
-            fdnames = {'conductivityFactor'}
+            fdnames = {'conductivityFactor'};
 
             model = dispatchParams(model, paramobj, fdnames);
         end
