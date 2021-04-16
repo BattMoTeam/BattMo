@@ -1,5 +1,5 @@
 classdef BatteryGenerator2D < BatteryGenerator
-% Setup 2D gri    
+% Setup 2D grid
     
     properties
         

@@ -22,7 +22,7 @@ classdef BatteryGenerator3D < BatteryGenerator
         
         % Discretization resolution in z-direction
         
-        facz = 3;
+        facz = 1;
         
         sep_nz    = 6;
         ne_eac_nz = 6;
@@ -32,7 +32,7 @@ classdef BatteryGenerator3D < BatteryGenerator
         
         % Discretization resolution in x-direction
         
-        facx = 3;
+        facx = 1;
         
         int_elyte_nx  = 10; 
         ne_cc_nx = 5;
@@ -40,7 +40,7 @@ classdef BatteryGenerator3D < BatteryGenerator
 
         % Discretization resolution in y-direction
 
-        facy = 3;
+        facy = 1;
         
         ne_cc_ny = 2;
         pe_cc_ny = 2;
