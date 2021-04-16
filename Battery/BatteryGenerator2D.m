@@ -1,5 +1,5 @@
 classdef BatteryGenerator2D < BatteryGenerator
-% Setup 2D gri    
+% Setup 2D grid
     
     properties
         
@@ -27,7 +27,6 @@ classdef BatteryGenerator2D < BatteryGenerator
         end
 
         function [paramobj, gen] = setupGrid(gen, paramobj, params)
-            
             sepnx  = gen.sepnx;
             nenx   = gen.nenx;
             penx   = gen.penx;

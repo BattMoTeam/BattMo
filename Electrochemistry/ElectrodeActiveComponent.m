@@ -39,11 +39,13 @@ classdef ElectrodeActiveComponent < ElectroChemicalComponent
         function state = updateIonAndCurrentSource(model, state)
             
             ccSourceName = model.chargeCarrierSourceName;
+            F = model.ActiveMaterial.constants.F;
+            vols = model.G.cells.volumes;
             
             R = state.ActiveMaterial.R;
             
-            state.eSource = R;
-            state.(ccSourceName) = -R;
+            state.eSource = - vols.*R;
+            state.(ccSourceName) = - vols.*R/F;
             
         end
         

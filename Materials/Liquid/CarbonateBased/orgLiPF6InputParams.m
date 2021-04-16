@@ -12,6 +12,7 @@ classdef orgLiPF6InputParams < ElectrolyteInputParams
             paramobj.ncomp = 2;
             
             paramobj.indchargecarrier = 1;
+            paramobj.conductivityFactor=1e-4;
             
             % Set constant values
             [~, ind] = ismember('Li', paramobj.compnames);

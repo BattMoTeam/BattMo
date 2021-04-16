@@ -77,9 +77,13 @@ classdef Battery < PhysicalModel
         end
         
         function [problem, state] = getEquations(model, state0, state,dt, drivingForces, varargin)
+            opts=struct('ResOnly',false,'iteration',0);
+            opts = merge_options(opts,varargin{:});
             
             time = state0.time + dt;
-            state = model.initStateAD(state);
+            if(not(opts.ResOnly))
+                state = model.initStateAD(state);
+            end
             
             %% for now temperature and SOC are kept constant
             nc = model.G.cells.num;
@@ -212,7 +216,7 @@ classdef Battery < PhysicalModel
             bcval = state.(pe).(cc).E;
             cond_pcc = battery.(pe).(cc).EffectiveElectronicConductivity;
             [trans_pcc, cells] = battery.(pe).(cc).operators.harmFaceBC(cond_pcc, faces);
-            control = src - sum(trans_pcc.*(bcval - state.(pe).(cc).phi(cells)));
+            control = sum(trans_pcc.*(state.(pe).(cc).phi(cells) - bcval)) - src;
             
             eqs{end + 1} = - control;
 
@@ -321,7 +325,8 @@ classdef Battery < PhysicalModel
             initstate.(ne).(eac).(am) = negAm.updateOCP(initstate.(ne).(eac).(am));
 
             OCP = initstate.(ne).(eac).(am).OCP;
-            initstate.(ne).(eac).(am).phi = OCP;
+            ref = OCP(1);
+            initstate.(ne).(eac).(am).phi = OCP-ref;
 
             %% setup initial PositiveElectrode state
 
@@ -340,11 +345,11 @@ classdef Battery < PhysicalModel
             initstate.(pe).(eac).(am) = posAm.updateOCP(initstate.(pe).(eac).(am));
             
             OCP = initstate.(pe).(eac).(am).OCP;
-            initstate.(pe).(eac).(am).phi = OCP;
+            initstate.(pe).(eac).(am).phi = OCP-ref;
 
             %% setup initial Electrolyte state
 
-            initstate.(elyte).phi = zeros(bat.(elyte).G.cells.num, 1);
+            initstate.(elyte).phi = zeros(bat.(elyte).G.cells.num, 1)-ref;
             cs = cell(2,1);
             initstate.(elyte).cs = cs;
             initstate.(elyte).cs{1} = 1000*ones(bat.(elyte).G.cells.num, 1);
@@ -353,13 +358,13 @@ classdef Battery < PhysicalModel
 
             OCP = initstate.(ne).(eac).(am).OCP;
             OCP = OCP(1) .* ones(bat.(ne).(cc).G.cells.num, 1);
-            initstate.(ne).(cc).phi = OCP;
+            initstate.(ne).(cc).phi = OCP-ref;
 
             OCP = initstate.(pe).(eac).(am).OCP;
             OCP = OCP(1) .* ones(bat.(pe).(cc).G.cells.num, 1);
-            initstate.(pe).(cc).phi = OCP;
+            initstate.(pe).(cc).phi = OCP-ref;
             
-            initstate.(pe).(cc).E = OCP(1);
+            initstate.(pe).(cc).E = OCP(1)-ref;
             
         end
         
@@ -374,6 +379,9 @@ classdef Battery < PhysicalModel
             pe    = 'PositiveElectrode';
             am    = 'ActiveMaterial';
             eac   = 'ElectrodeActiveComponent';
+            
+            vols = battery.(elyte).G.cells.volumes;
+            F = battery.con.F;
             
             ccSourceName = battery.(elyte).chargeCarrierSourceName;
             couplingterms = battery.couplingTerms;
@@ -394,16 +402,16 @@ classdef Battery < PhysicalModel
             ne_R = state.(ne).(eac).(am).R;
             coupterm = getCoupTerm(couplingterms, 'NegativeElectrode-Electrolyte', coupnames);
             elytecells = coupterm.couplingcells(:, 2);
-            elyte_c_source(elytecells) = ne_R;            
+            elyte_c_source(elytecells) = ne_R.*vols(elytecells); % we divide with F later
             
             pe_R = state.(pe).(eac).(am).R;
             coupterm = getCoupTerm(couplingterms, 'PositiveElectrode-Electrolyte', coupnames);
             elytecells = coupterm.couplingcells(:, 2);
-            elyte_c_source(elytecells) = pe_R;
+            elyte_c_source(elytecells) = pe_R.*vols(elytecells);
             
-            elyte_e_source = elyte_c_source.*battery.(elyte).sp.z{1};
+            elyte_e_source = elyte_c_source.*battery.(elyte).sp.z{1}; % we divide with F later
             
-            state.Electrolyte.(ccSourceName) = elyte_c_source; 
+            state.Electrolyte.(ccSourceName) = elyte_c_source/F; 
             state.Electrolyte.eSource = elyte_e_source;
             
         end
@@ -420,14 +428,16 @@ classdef Battery < PhysicalModel
             ccAccumName = bat.(elyte).chargeCarrierAccumName;
             
             cdotcc  = (state.(elyte).cs{1} - state0.(elyte).cs{1})/dt;
-            ccAccum = bat.(elyte).volumeFraction.*cdotcc;
+            effectiveVolumes = bat.(elyte).volumeFraction.*bat.(elyte).G.cells.volumes;
+            ccAccum  = effectiveVolumes.*cdotcc;
             state.(elyte).(ccAccumName) = ccAccum;
             
             names = {ne, pe};
             for i = 1 : numel(names)
                 elde = names{i}; % electrode name
                 cdotcc   = (state.(elde).(eac).(am).c - state0.(elde).(eac).(am).c)/dt;
-                ccAccum  = bat.(elde).(eac).volumeFraction.*cdotcc;
+                effectiveVolumes = bat.(elde).(eac).volumeFraction.*bat.(elde).(eac).G.cells.volumes;
+                ccAccum  = effectiveVolumes.*cdotcc;
                 state.(elde).(eac).(ccAccumName) = ccAccum;
             end
             
@@ -506,6 +516,7 @@ classdef Battery < PhysicalModel
             cc    = 'CurrentCollector';
             
             adbackend = model.AutoDiffBackend();
+            opts=struct('types',[1,1,2,2,3,3,4,5,6],'useMex',true);
             [state.(elyte).cs{1}      , ...
              state.(elyte).phi        , ...   
              state.(ne).(eac).(am).c  , ...   
@@ -524,7 +535,7 @@ classdef Battery < PhysicalModel
                     state.(pe).(eac).(am).phi, ...   
                     state.(ne).(cc).phi      , ...    
                     state.(pe).(cc).phi      , ...    
-                    state.(pe).(cc).E);       
+                    state.(pe).(cc).E,opts);       
         end
         
         function p = getPrimaryVariables(model)
