@@ -3,11 +3,11 @@ classdef BatteryGenerator2D < BatteryGenerator
     
     properties
         
-        sepnx  = 10;
-        nenx   = 10;
-        penx   = 10;
-        ccnenx = 10;
-        ccpenx = 10;
+        sepnx  = 30;
+        nenx   = 30;
+        penx   = 30;
+        ccnenx = 20;
+        ccpenx = 20;
 
         ny = 10;
         

@@ -27,7 +27,7 @@ switch modelcase
     gen = BatteryGenerator2D();
     schedulecase = 1;
 
-    tfac = 10; % used in schedule setup
+    tfac = 1; % used in schedule setup
   
   case '3D'
 
