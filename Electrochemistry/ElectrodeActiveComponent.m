@@ -74,5 +74,6 @@ classdef ElectrodeActiveComponent < ElectroChemicalComponent
         end
         
     end
+    
 end
 
