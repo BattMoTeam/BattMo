@@ -15,7 +15,7 @@ classdef Graphite < ActiveMaterial
             refT = 298.15;  % [K]
 
             T = state.T;
-            c = state.c;
+            c = state.cElectrode;
 
             % Calculate the lithiation of the active material. This
             % is a simplification for the initial code! The "real"

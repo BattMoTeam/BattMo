@@ -18,7 +18,7 @@ classdef NMC111 < ActiveMaterial
             refT = 298.15;  % [K]
 
             T = state.T;
-            c = state.c;
+            c = state.cElectrode;
             
             theta = c ./ model.Li.cmax;
             % model.theta = (model.theta0 - model.theta100) .* model.SOC + model.theta100;

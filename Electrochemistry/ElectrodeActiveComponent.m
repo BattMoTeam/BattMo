@@ -57,13 +57,12 @@ classdef ElectrodeActiveComponent < ElectroChemicalComponent
         end
         
         function state = updateChargeCarrier(model, state)
-            
-            state.c = state.ActiveMaterial.c;
-            
-        end 
+            state.ActiveMaterial.cElectrode = state.c; 
+        end
+        
         
         function state = updatePhi(model, state)
-            state.phi = state.ActiveMaterial.phi;
+            state.ActiveMaterial.phiElectrode = state.phi;
         end         
         
         function state = updateT(model, state)

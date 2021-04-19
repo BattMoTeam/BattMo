@@ -24,14 +24,14 @@ classdef ElectrodeActiveComponent_ < ElectroChemicalComponent_
             model = model.addPropFunction('eSource', fn, inputnames, fnmodel);
             
             fn = @ElectrodeActiveComponent.updateChargeCarrier;
-            inputnames = {VarName({'am'}, 'c')};
-            fnmodel = {'.'};
-            model = model.addPropFunction('cs', fn, inputnames, fnmodel);
+            inputnames = {VarName({'..'}, 'chargeCarrier')};
+            fnmodel = {'..'};
+            model = model.addPropFunction({'am', 'cElectrode'}, fn, inputnames, fnmodel);
 
             fn = @ElectrodeActiveComponent.updatePhi;
-            inputnames = {VarName({'am'}, 'phi')};
-            fnmodel = {'.'};
-            model = model.addPropFunction('phi', fn, inputnames, fnmodel);
+            inputnames = {VarName({'..'}, 'phi')};
+            fnmodel = {'..'};
+            model = model.addPropFunction({'am', 'phiElectrode'}, fn, inputnames, fnmodel);
             
             fn = @ElectrodeActiveComponent.updateT;
             inputnames = {VarName({'..'}, 'T')};

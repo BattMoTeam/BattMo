@@ -4,16 +4,21 @@ close all
 % setup mrst modules
 mrstModule add ad-core multimodel mrst-gui battery
 mrstVerbose off
-            
-model = Battery_();
-% model = CurrentCollector_('cc');
-% model = model.initiateCompositeModel();
+
+set(0, 'DefaultAxesFontSize', 16);
+set(0, 'defaulttextfontsize', 18);
+set(0, 'DefaultFigurePosition', [278 109 1570 822]);
+
+gstyle = {'interpreter', 'none', 'LineWidth', 3, 'ArrowSize', 20, 'NodeFontSize', 14};
+
+model = ElectrodeActiveComponent_('eac');
+model = model.initiateCompositeModel();
 
 model.adminmodel.printPropfunctions;
 
 [g, edgelabels] = setupGraph(model);
 
-plot(g, 'interpreter', 'none');
+plot(g, gstyle{:});
 
 return
 
