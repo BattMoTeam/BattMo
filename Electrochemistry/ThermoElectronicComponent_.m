@@ -1,12 +1,12 @@
-classdef ThermoElectroChemicalComponent_ < ElectroChemicalComponent_
+classdef ThermoElectronicComponent_ < ElectronicComponent_
     
     methods
         
-        function model = ThermoElectroChemicalComponent_(name)
+        function model = ThermoElectronicComponent_(name)
             
-            model = model@ElectroChemicalComponent_(name);
+            model = model@ElectronicComponent_(name);
             
-            names = {model.names{:}  , ...
+            names = {model.names{:}, ...
                      'jHeatBcSource' , ...
                      'jHeatOhmSource', ...
                      'jHeatSource'   , ...
@@ -38,7 +38,7 @@ classdef ThermoElectroChemicalComponent_ < ElectroChemicalComponent_
             inputnames = {'jHeatOhmSource'};
             fnmodel = {'.'};
             model = model.addPropFunction('jHeatSource', fn, inputnames, fnmodel);
-                                    
+            
         end
 
     end

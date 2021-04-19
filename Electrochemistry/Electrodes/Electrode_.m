@@ -21,16 +21,9 @@ classdef Electrode_ < CompositeModel
             model = model.addPropFunction({'cc', 'jCoupling'}, fn, inputnames, fnmodel);
             model = model.addPropFunction({'cc', 'eSource'}, fn, inputnames, fnmodel);
             
-            % dispatch temperature
-            inputnames = {VarName({'..'}, 'T')};
-            fn = @Electrode.updateT;
-            fnmodel = {'..'};
-            model = model.addPropFunction({'eac', 'T'}, fn, inputnames, fnmodel);
-            model = model.addPropFunction({'cc', 'T'}, fn, inputnames, fnmodel);
-            
             % Temperature coupling between current collector and electrode active component
             inputnames = {VarName({'..', 'eac'}, 'T'), VarName({'..', 'cc'}, 'T')};
-            fn = @Electrode.updateTemperatureSourceAndCoupling;
+            fn = @Electrode.updateTemperatureCoupling;
             fnmodel = {'..'};
             model = model.addPropFunction({'eac', 'jHeatBcSource'}, fn, inputnames, fnmodel);
             model = model.addPropFunction({'cc', 'jHeatBcSource'}, fn, inputnames, fnmodel);

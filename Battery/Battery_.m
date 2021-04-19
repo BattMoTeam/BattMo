@@ -20,12 +20,21 @@ classdef Battery_ < CompositeModel
             
             model.SubModels = submodels;
             
-            fn = @Battery.updateT;
-            inputnames = {VarName({'..'}, 'T')};
+            %% update temperatures (dispatching)
+            fn = @Battery.updateTemperature;
+            
+            fnmodel = {'..', '..'};
+            inputnames = {VarName(fnmodel, 'T')};
+            model = model.addPropFunction({'ne', 'eac', 'T'}, fn, inputnames, fnmodel);
+            model = model.addPropFunction({'ne', 'cc', 'T'}, fn, inputnames, fnmodel);
+            model = model.addPropFunction({'pe', 'eac', 'T'}, fn, inputnames, fnmodel);
+            model = model.addPropFunction({'pe', 'cc', 'T'}, fn, inputnames, fnmodel);            
             fnmodel = {'..'};
-            model = model.addPropFunction({'ne', 'T'}, fn, inputnames, fnmodel);
-            model = model.addPropFunction({'pe', 'T'}, fn, inputnames, fnmodel);
+            inputnames = {VarName(fnmodel, 'T')};            
             model = model.addPropFunction({'elyte', 'T'}, fn, inputnames, fnmodel);
+            
+            
+            %% 
             
             fn = @Battery.updateElectrodeCoupling;
             
@@ -80,6 +89,20 @@ classdef Battery_ < CompositeModel
             
             model = model.addPropFunction({'pe', 'eac', 'chargeCarrierAccum'}, fn, inputnames, fnmodel);                        
             
+            %% update Energy accumulation terms
+            
+            fn = @Battery.updateEnergyAccumTerms;
+            
+            fnmodel = {'..'};
+            inputnames = {VarName(fnmodel, 'T')};
+            model = model.addPropFunction({'elyte', 'accumHeat'}, fn, inputnames, fnmodel);
+
+            fnmodel = {'..', '..'};
+            inputnames = {VarName(fnmodel, 'T')};
+            model = model.addPropFunction({'ne', 'eac', 'accumHeat'}, fn, inputnames, fnmodel);
+            model = model.addPropFunction({'ne', 'cc', 'accumHeat'}, fn, inputnames, fnmodel);
+            model = model.addPropFunction({'pe', 'eac', 'accumHeat'}, fn, inputnames, fnmodel);
+            model = model.addPropFunction({'pe', 'cc', 'accumHeat'}, fn, inputnames, fnmodel);            
             
             %% setup external coupling at positive and negative electrodes
             
@@ -96,7 +119,6 @@ classdef Battery_ < CompositeModel
             model = model.addPropFunction({'pe', 'cc', 'jExternal'}, fn, inputnames, fnmodel);
             
             model = model.initiateCompositeModel();
-            
             
         end
         

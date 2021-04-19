@@ -54,3 +54,7 @@
   - check that
 * check initialization
   - what is the right way to do it for potential?
+* use setProp
+  - in Battery Accumterm
+* fix specificHeat
+  - account for density/porevolume

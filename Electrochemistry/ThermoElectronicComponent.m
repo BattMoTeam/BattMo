@@ -1,24 +1,24 @@
-classdef ThermoElectroChemicalComponent < ElectroChemicalComponent
+classdef ThermoElectronicComponent < ElectronicComponent
     
     properties
         
-        thermalConductivity
-        heatCapacity
-        ohmicResistance
-    
+       thermalConductivity
+       heatCapacity
+       ohmicResistance
+       
     end
-
+    
     methods
         
-        function model = ThermoElectroChemicalCompoenent(paramobj)
+        function model = ThermoElectronicComponent(paramobj)
             
-            model = model@ElectroChemicalComponent(paramobj);
+            model = model@ElectronicComponent(component);
             
-            fdnames = {'thermalConductivity', ...
+            fdnames = {'thermaConductivity', ...
                        'heatCapacity', ...
                        'ohmicResistance'};
             model = dispatchParams(model, paramobj, fdnames);
-
+            
         end
 
         function state = updateHeatFlux(model, state)
@@ -62,7 +62,7 @@ classdef ThermoElectroChemicalComponent < ElectroChemicalComponent
             state.jHeatSource = state.jHeatOhmSource; 
             
         end
-
+                            
     end
 end
 

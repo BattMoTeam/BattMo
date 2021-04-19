@@ -33,15 +33,16 @@ classdef ElectrodeActiveComponent_ < ThermoElectroChemicalComponent_
             fnmodel = {'..'};
             model = model.addPropFunction({'am', 'phiElectrode'}, fn, inputnames, fnmodel);
             
-            fn = @ElectrodeActiveComponent.updateT;
-            inputnames = {VarName({'..'}, 'T')};
+            fn = @ElectrodeActiveComponent.updateTemperature;
             fnmodel = {'..'};
+            inputnames = {VarName(fnmodel, 'T')};
             model = model.addPropFunction({'am', 'T'}, fn, inputnames, fnmodel);
             
             fn = @ElectrodeActiveComponent.updateDiffusionCoefficient;
             inputnames = {VarName({'am'}, 'D')};
             fnmodel = {'.'};
             model = model.addPropFunction('D', fn, inputnames, fnmodel);
+
             
         end
         

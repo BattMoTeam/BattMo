@@ -2,8 +2,10 @@ classdef ThermoElectroChemicalComponentInputParams < ElectroChemicalComponentInp
     
     properties
        
-        ThermalConductivity
-
+        thermalConductivity
+        heatCapacity
+        ohmicResistance
+        
     end
     
     methods

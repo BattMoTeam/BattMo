@@ -1,5 +1,4 @@
-classdef CurrentCollector < ElectronicComponent
-% Current collector model : At the moment equivalent to an ElectronicComponent
+classdef CurrentCollector < ThermoElectronicComponent
 
     properties
         couplingTerm
@@ -9,7 +8,7 @@ classdef CurrentCollector < ElectronicComponent
         
         function model = CurrentCollector(paramobj)
             
-            model = model@ElectronicComponent(paramobj);
+            model = model@ThermoElectronicComponent(paramobj);
 
             model = dispatchParams(model, paramobj, 'couplingTerm');
             

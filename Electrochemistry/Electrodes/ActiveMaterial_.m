@@ -38,7 +38,6 @@ classdef ActiveMaterial_ < CompositeModel
             fnmodel = {'.'};
             model = model.addPropFunction('R', fn, inputnames, fnmodel);
 
-
         end        
         
     end

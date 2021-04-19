@@ -60,12 +60,11 @@ classdef ElectrodeActiveComponent < ThermoElectroChemicalComponent
             state.ActiveMaterial.cElectrode = state.c; 
         end
         
-        
         function state = updatePhi(model, state)
             state.ActiveMaterial.phiElectrode = state.phi;
         end         
         
-        function state = updateT(model, state)
+        function state = updateTemperature(model, state)
             state.ActiveMaterial.T = state.T;
         end
 

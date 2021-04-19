@@ -1,4 +1,4 @@
-classdef Electrolyte < ElectroChemicalComponent
+classdef Electrolyte < ThermoElectroChemicalComponent
     
     properties
         
@@ -18,7 +18,7 @@ classdef Electrolyte < ElectroChemicalComponent
         
         function model = Electrolyte(paramobj)
         % paramobj is instance of ElectrolyteInputParams or a derived class
-            model = model@ElectroChemicalComponent(paramobj);
+            model = model@ThermoElectroChemicalComponent(paramobj);
             
             model.Separator = Separator(paramobj.sep);
             

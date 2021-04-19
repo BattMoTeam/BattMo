@@ -82,15 +82,44 @@ classdef Electrode < PhysicalModel
 
         end
 
-        function state = updateT(model, state)
-            names = {'ElectrodeActiveComponent', 'CurrentCollector'};
-            for ind = 1 : numel(names)
-                name = names{ind};
-                nc = model.(name).G.cells.num;
-                state.(name).T = state.T(1)*ones(nc, 1);
-            end
-        end        
         
+        function state = updateTemperatureCoupling(model, state)
+        % setup coupling terms between the current collector and the electrode active component            
+            
+            elde  = model;
+            eac   = 'ElectrodeActiveComponent';
+            cc    = 'CurrentCollector';
+
+            eac_T = state.(eac).T;
+            cc_T = state.(cc).T;
+
+            eac_tC = elde.(eac).thermalConductivity;
+            cc_tC = elde.(cc).thermalConductivity;
+    
+            %% We setup the current transfers between CurrentCollector and ElectrodeActiveComponent
+            
+            eac_heatCoupling  = eac_T*0.0; %NB hack to initialize zero ad
+            cc_heatCoupling = cc_T*0.0; %NB hack to initialize zero ad
+
+            coupterm = model.couplingTerm;
+            face_cc = coupterm.couplingfaces(:, 1);
+            face_eac = coupterm.couplingfaces(:, 2);
+            [teac, bccell_eac] = elde.(eac).operators.harmFaceBC(eac_tC, face_eac);
+            [tcc, bccell_cc] = elde.(cc).operators.harmFaceBC(cc_tC, face_cc);
+
+            bcT_eac = eac_T(bccell_eac);
+            bcT_cc = cc_T(bccell_cc);
+
+            trans = 1./(1./teac + 1./tcc);
+            crossFluxT = trans.*(bcT_cc - bcT_eac);
+            eac_heatCoupling(bccell_eac) = crossFluxT;
+            cc_heatCoupling(bccell_cc) = - crossFluxT;
+
+            state.(eac).jHeatBcSource = eac_heatCoupling;
+            state.(cc).jHeatBcSource = cc_heatCoupling;
+
+        end
+
     end    
 end
 

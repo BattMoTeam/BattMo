@@ -1,4 +1,4 @@
-classdef ElectrodeActiveComponentInputParams < ElectroChemicalComponentInputParams
+classdef ElectrodeActiveComponentInputParams < ThermoElectroChemicalComponentInputParams
  
     properties
         %% parameters for the electrode components
@@ -11,7 +11,7 @@ classdef ElectrodeActiveComponentInputParams < ElectroChemicalComponentInputPara
     methods
 
         function paramobj = ElectrodeActiveComponentInputParams()
-            paramobj = paramobj@ElectroChemicalComponentInputParams();
+            paramobj = paramobj@ThermoElectroChemicalComponentInputParams();
             paramobj.am = ActiveMaterialInputParams();
             paramobj.amName = char();
             paramobj.EffectiveElectronicConductivity = 'not used';
