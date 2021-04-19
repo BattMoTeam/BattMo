@@ -12,6 +12,9 @@ set(0, 'DefaultFigurePosition', [278 109 1570 822]);
 gstyle = {'interpreter', 'none', 'LineWidth', 3, 'ArrowSize', 20, 'NodeFontSize', 14};
 
 model = ElectrodeActiveComponent_('eac');
+model = CurrentCollector_('cc');
+model = Electrode_('pn');
+% model = Electrolyte_('elyte');
 model = model.initiateCompositeModel();
 
 model.adminmodel.printPropfunctions;

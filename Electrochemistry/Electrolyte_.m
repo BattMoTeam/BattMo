@@ -1,4 +1,4 @@
-classdef Electrolyte_ < ElectroChemicalComponent_
+classdef Electrolyte_ < ThermoElectroChemicalComponent_
 %
 % The function that couples the electolyte and the electrode is not implemented here (but at the battery level)
 %
@@ -7,7 +7,7 @@ classdef Electrolyte_ < ElectroChemicalComponent_
         
         function model = Electrolyte_(name)
             
-            model = model@ElectroChemicalComponent_(name);
+            model = model@ThermoElectroChemicalComponent_(name);
             
             names = {model.names{:}, ...
                      'kappa'       , ...

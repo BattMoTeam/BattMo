@@ -1,4 +1,4 @@
-classdef ElectrodeActiveComponent < ElectroChemicalComponent
+classdef ElectrodeActiveComponent < ThermoElectroChemicalComponent
     
     properties
         
@@ -16,7 +16,7 @@ classdef ElectrodeActiveComponent < ElectroChemicalComponent
         % shortcut used here:
         % am = ActiveMaterial
             
-            model = model@ElectroChemicalComponent(paramobj);
+            model = model@ThermoElectroChemicalComponent(paramobj);
             
             % Setup ActiveMaterial component
             paramobj.am.G = model.G;
