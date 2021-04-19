@@ -12,7 +12,6 @@ classdef ThermoElectroChemicalComponentInputParams < ElectroChemicalComponentInp
             
             paramobj = paramobj@ElectroChemicalComponentInputParams();
             
-            
         end
         
     end
