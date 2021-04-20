@@ -516,7 +516,11 @@ classdef Battery < PhysicalModel
             cc    = 'CurrentCollector';
             
             adbackend = model.AutoDiffBackend();
-            opts=struct('types',[1,1,2,2,3,3,4,5,6],'useMex',true);
+            useMex=false;
+            if(isprop(adbackend,'useMex'))
+               useMex = adbackend.useMex; 
+            end
+            opts=struct('types',[1,1,2,2,3,3,4,5,6],'useMex',useMex);
             [state.(elyte).cs{1}      , ...
              state.(elyte).phi        , ...   
              state.(ne).(eac).(am).c  , ...   
@@ -602,10 +606,35 @@ classdef Battery < PhysicalModel
             end
         end
 
+
+        
         function validforces = getValidDrivingForces(model)
             validforces=struct('src', [], 'stopFunction', []); 
         end
-         
+       function model = validateModel(model, varargin)
+            mnames = {{'Electrolyte'}, ...
+              {'PositiveElectrode','ElectrodeActiveComponent'}, ...
+              {'NegativeElectrode','ElectrodeActiveComponent'}, ...
+              {'NegativeElectrode','CurrentCollector'}, ...
+              {'PositiveElectrode','CurrentCollector'}};
+            model.Electrolyte.AutoDiffBackend=model.AutoDiffBackend;
+            model.Electrolyte=model.Electrolyte.validateModel(varargin{:});
+            model.PositiveElectrode.ElectrodeActiveComponent.AutoDiffBackend= model.AutoDiffBackend;
+            model.PositiveElectrode.ElectrodeActiveComponent = model.PositiveElectrode.ElectrodeActiveComponent.validateModel(varargin{:});
+            model.NegativeElectrode.ElectrodeActiveComponent.AutoDiffBackend= model.AutoDiffBackend;
+            model.NegativeElectrode.ElectrodeActiveComponent = model.NegativeElectrode.ElectrodeActiveComponent.validateModel(varargin{:});
+            model.NegativeElectrode.CurrentCollector.AutoDiffBackend= model.AutoDiffBackend;
+            model.NegativeElectrode.CurrentCollector=model.NegativeElectrode.CurrentCollector.validateModel(varargin{:});
+            model.PositiveElectrode.CurrentCollector.AutoDiffBackend=model.AutoDiffBackend;
+            model.PositiveElectrode.CurrentCollector= model.PositiveElectrode.CurrentCollector.validateModel(varargin{:});
+          %for i=1:numel(mnames)
+          %    mname=mnames{i}
+          %    submodel=model.getSubmodel(mname);
+          %    submodel.AutoDiffBackend = model.AutoDiffBackend;
+          %    submodel=submodel.validateModel(varargin{:});
+          %    model  = model.setProp(model,mname,submodel);
+          %end
+        end
         
         function [state, report] = updateState(model, state, problem, dx, drivingForces)
             p = model.getPrimaryVariables();
