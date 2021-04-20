@@ -1,13 +1,14 @@
 function  state = updateOhmSourceFunc(model, state)
 
-    op = model.operators;
+    op = model.operators.cellFluxOp;
     R = model.ohmicResistance;
     vols = G.cells.volumes;
     
     j = state.j;
-    jsq = op.faceToNorm(j);
-    jsq = jsq.^2;
+    j = op.P*j;
+    jsq = j.^2;
+    jsq = op.S*jsq;
     
-    state.jHeatOhmSource = vols.*(jsq.^2)./R;
+    state.jHeatOhmSource = vols.*jsq./R;
     
 end
