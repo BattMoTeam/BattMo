@@ -12,7 +12,7 @@ classdef ThermoElectronicComponent < ElectronicComponent
         
         function model = ThermoElectronicComponent(paramobj)
             
-            model = model@ElectronicComponent(component);
+            model = model@ElectronicComponent(paramobj);
             
             fdnames = {'thermaConductivity', ...
                        'heatCapacity', ...

@@ -9,7 +9,7 @@ classdef ThermoElectronicComponentInputParams < ElectronicComponentInputParams
     end
     
     methods
-        function paramobj = ThermoChemicalComponentInputParams()
+        function paramobj = ThermoElectronicComponentInputParams()
             paramobj = paramobj@ElectronicComponentInputParams();
         end
         

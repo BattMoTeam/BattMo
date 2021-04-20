@@ -10,7 +10,7 @@ classdef ThermoElectroChemicalComponent < ElectroChemicalComponent
 
     methods
         
-        function model = ThermoElectroChemicalCompoenent(paramobj)
+        function model = ThermoElectroChemicalComponent(paramobj)
             
             model = model@ElectroChemicalComponent(paramobj);
             
