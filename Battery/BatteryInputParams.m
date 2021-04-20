@@ -4,13 +4,14 @@ classdef BatteryInputParams
         
         % Global Grid
         G
-        % Temperature and SOC
-        T
+        %  SOC
         SOC
         % Input current
         J
         % Voltage cut
         Ucut
+        % initial temperature
+        initT
         
         %% parameters for the battery components
         % shortcut used here
@@ -34,34 +35,6 @@ classdef BatteryInputParams
             paramobj.elyte = ElectrolyteInputParams();
             parmobj.couplingTerms = {};
         end
-
-        function paramobj = setup(paramobj, params)
-
-            fdnames = {'chargeCarrierName', ...
-                       'chargeCarrierFluxName', ...
-                       'chargeCarrierSourceName', ...
-                       'chargeCarrierMassConsName', ...
-                       'chargeCarrierAccumName'};
-            
-            paramobj = dispatchParams(paramobj, params, fdnames);
-            
-            fdnames = {'T', ...
-                       'SOC', ...
-                       'J', ...
-                       'Ucut'};
-            
-            paramobj = dispatchParams(paramobj, params, fdnames);
-                        
-            fdnames = {'G', ...
-                       'ne', ...
-                       'pe', ...
-                       'elyte', ...
-                       'couplingTerms'};
-
-            paramobj = dispatchParams(paramobj, params, fdnames);
-            
-        end
-
 
     end
     

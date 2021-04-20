@@ -1,4 +1,4 @@
-classdef ElectrolyteInputParams < ElectroChemicalComponentInputParams
+classdef ElectrolyteInputParams < ThermoElectroChemicalComponentInputParams
 
     properties
         
@@ -19,7 +19,7 @@ classdef ElectrolyteInputParams < ElectroChemicalComponentInputParams
     methods
 
         function paramobj = ElectrolyteInputParams();
-            paramobj = paramobj@ElectroChemicalComponentInputParams();
+            paramobj = paramobj@ThermoElectroChemicalComponentInputParams();
             paramobj.sp = struct();
             paramobj.compnames = {};
             paramobj.sep = SeparatorInputParams();

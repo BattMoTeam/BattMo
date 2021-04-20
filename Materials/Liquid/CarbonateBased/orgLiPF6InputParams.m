@@ -33,6 +33,7 @@ classdef orgLiPF6InputParams < ElectrolyteInputParams
             paramobj.chargeCarrierAccumName    = 'LiAccum';
             
             paramobj.sep = celgard2500InputParams();
+            
         end
         
     end

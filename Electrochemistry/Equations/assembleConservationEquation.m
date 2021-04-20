@@ -1,4 +1,4 @@
-function cons = assembleConservationEquation(model, flux, bcflux, source, accum)
+function cons = assembleConservationEquation(model, flux, bcsource, source, accum)
     
     if nargin < 5
         accum = 0;
@@ -6,6 +6,6 @@ function cons = assembleConservationEquation(model, flux, bcflux, source, accum)
         
     op = model.operators;
     
-    cons = accum + (op.Div(flux) - bcflux) - source;
+    cons = accum + (op.Div(flux) - bcsource) - source;
     
 end

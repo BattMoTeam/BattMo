@@ -9,6 +9,7 @@ classdef Battery_ < CompositeModel
             names = {'T', ...
                      'SOC', ...
                      'prevstate', ...
+                     'energyCons', ...
                      'dt'};
             
             model.names = names;
@@ -32,9 +33,20 @@ classdef Battery_ < CompositeModel
             fnmodel = {'..'};
             inputnames = {VarName(fnmodel, 'T')};            
             model = model.addPropFunction({'elyte', 'T'}, fn, inputnames, fnmodel);
+           
             
-            
-            %% 
+            %% setup of Energy equation
+            fn = @Battery.updateEnergyConservation;
+            fnmodel = {'.'};
+            inputnames = {VarName({'elyte'}, 'energyCons')     , ...
+                          VarName({'ne', 'eac'}, 'energyCons') , ...
+                          VarName({'ne', 'cc'}, 'energyCons')  , ...
+                          VarName({'pe', 'eac'}, 'energyCons') , ...
+                          VarName({'pe', 'cc'}, 'energyCons')  , ...
+                         };
+            model = model.addPropFunction('energyCons', fn, inputnames, fnmodel);
+                  
+            %% setup couplings
             
             fn = @Battery.updateElectrodeCoupling;
             
@@ -88,6 +100,13 @@ classdef Battery_ < CompositeModel
             fnmodel = {'..', '..'};
             
             model = model.addPropFunction({'pe', 'eac', 'chargeCarrierAccum'}, fn, inputnames, fnmodel);                        
+           
+            %% trivial update to zero of boundary energy source term for electrolyte
+            
+            fn = @Battery.updateElyteHeatBcSource;
+            fnmodel = {'.'};
+            inputnames = {};
+            model = model.addPropFunction({'elyte', 'jHeatBcSource'}, fn, inputnames, fnmodel);
             
             %% update Energy accumulation terms
             

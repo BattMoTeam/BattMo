@@ -15,10 +15,27 @@ classdef LithiumBatteryInputParams < BatteryInputParams
             
             paramobj.elyte = orgLiPF6InputParams();
             
-            paramobj.SOC  = 0.5;
-            paramobj.T    = 298.15;
-            paramobj.J    = 0.001;
-            paramobj.Ucut = 2;
+            % some (dummy) values for energy eqution
+            tC = 1;
+            hC = 1;
+            oR = 1;
+            paramobj.elyte.thermalConductivity = tC;
+            paramobj.elyte.heatCapacity = hC;
+            paramobj.elyte.ohmicResistance = oR;
+            eldes = {'pe', 'ne'};
+            cpts = {'eac', 'cc'};
+            for i = 1 : numel(eldes)
+                for j = 1 : numel(cpts)
+                    paramobj.(eldes{i}).(cpts{j}).thermalConductivity = tC;
+                    paramobj.(eldes{i}).(cpts{j}).heatCapacity = hC;
+                    paramobj.(eldes{i}).(cpts{j}).ohmicResistance = oR;
+                end
+            end
+            
+            paramobj.SOC   = 0.5;
+            paramobj.initT = 298.15;
+            paramobj.J     = 0.001;
+            paramobj.Ucut  = 2;
             
         end
 

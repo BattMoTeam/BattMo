@@ -24,11 +24,11 @@ model.adminmodel.printPropfunctions;
 
 plot(g, gstyle{:});
 
-f = fopen('test.csv', 'w');
+f = fopen('test.sif', 'w');
 edges = g.Edges;
 edges = edges.Variables;
 for ind = 1 : size(edges, 1)
-    fprintf(f, '%s;%s\n', edges{ind, 1}, edges{ind, 2});
+    fprintf(f, '%s x %s\n', edges{ind, 1}, edges{ind, 2});
 end
 fclose(f);
 

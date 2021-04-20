@@ -18,7 +18,12 @@ classdef ThermoElectroChemicalComponent < ElectroChemicalComponent
                        'heatCapacity', ...
                        'ohmicResistance'};
             model = dispatchParams(model, paramobj, fdnames);
-
+            
+            nc = model.G.cells.num;
+            model.thermalConductivity = model.thermalConductivity*ones(nc, 1);
+            model.heatCapacity = model.heatCapacity*ones(nc, 1);
+            model.ohmicResistance = model.ohmicResistance*ones(nc, 1);
+            
         end
 
         function state = updateHeatFlux(model, state)
@@ -41,13 +46,13 @@ classdef ThermoElectroChemicalComponent < ElectroChemicalComponent
             state = model.updateHeatFlux(state);
             
             flux   = state.jHeat;
-            bcflux = state.jHeatBcSource;
+            bcsource = state.jHeatBcSource;
             source = state.jHeatSource;
             accum  = state.accumHeat;
             
-            energyCons = assembleConservationEquation(model, flux, bcflux, source, accum);
+            energyCons = assembleConservationEquation(model, flux, bcsource, source, accum);
             
-            state.chargeCons = chargeCons;
+            state.energyCons = energyCons;
             
         end
             

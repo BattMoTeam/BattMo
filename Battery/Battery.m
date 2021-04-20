@@ -4,13 +4,15 @@ classdef Battery < PhysicalModel
         
         con = PhysicalConstants();
 
-        % Temperature and SOC
-        % for the moment here, for convenience. Will be moved
-        T
+        % SOC
         SOC
+
+        % Initial temperature
+        initT
 
         % Input current
         J
+        
         % Voltage cut
         Ucut
 
@@ -21,6 +23,8 @@ classdef Battery < PhysicalModel
         
         couplingTerms
         couplingNames
+        
+        mappings
         
     end
     
@@ -39,11 +43,11 @@ classdef Battery < PhysicalModel
             model.AutoDiffBackend = SparseAutoDiffBackend('useBlocks', false);
             
             %% Setup the model using the input parameters
-            fdnames = {'G', ...
-                       'couplingTerms', ...
-                       'T'  , ...
-                       'SOC', ...
-                       'J'  , ...
+            fdnames = {'G'             , ...
+                       'couplingTerms' , ...
+                       'initT'         , ...
+                       'SOC'           , ...
+                       'J'             , ...
                        'Ucut'};
             
             model = dispatchParams(model, paramobj, fdnames);
@@ -59,6 +63,9 @@ classdef Battery < PhysicalModel
             % setup Electrolyte porosity
             model = model.setElectrolytePorosity();
             
+            % setup mappings (electrodes -> electrolyte)
+            model = model.setupMappings();
+           
         end
         
         function electrode = setupElectrode(model, paramobj)
@@ -76,6 +83,47 @@ classdef Battery < PhysicalModel
             end
         end
         
+        function model = setupMappings(model)
+            
+            ne      = 'NegativeElectrode';
+            pe      = 'PositiveElectrode';
+            eac     = 'ElectrodeActiveComponent';
+            cc      = 'CurrentCollector';
+            elyte   = 'Electrolyte';
+            
+            
+            G_elyte = model.(elyte).G;
+            elytecelltbl.cells = (1 : G_elyte.cells.num)';
+            elytecelltbl.globalcells = G_elyte.mappings.cellmap;
+            elytecelltbl = IndexArray(elytecelltbl);
+
+            eldes = {ne, pe};
+
+            for ind = 1 : numel(eldes)
+
+                elde = eldes{ind};
+                G_elde  = model.(elde).(eac).G;
+                clear eldecelltbl;
+                eldecelltbl.cells = (1 : G_elde.cells.num)';
+                eldecelltbl.globalcells = G_elde.mappings.cellmap;
+                eldecelltbl = IndexArray(eldecelltbl);
+                
+                map = TensorMap();
+                map.fromTbl = elytecelltbl;
+                map.toTbl = eldecelltbl;
+                map.replaceFromTblfds = {{'cells', 'elytecells'}};
+                map.replaceToTblfds = {{'cells', 'eldecells'}};
+                map.mergefds = {'globalcells'};
+                
+                mappings.(elde) = map.getDispatchInd();
+                
+            end
+            
+            model.mappings = mappings;
+            
+        end
+        
+        
         function [problem, state] = getEquations(model, state0, state,dt, drivingForces, varargin)
             
             opts = struct('ResOnly', false, 'iteration', 0); 
@@ -88,7 +136,6 @@ classdef Battery < PhysicalModel
             
             %% for now temperature and SOC are kept constant
             nc = model.G.cells.num;
-            state.T   = model.T*ones(nc, 1);
             state.SOC = model.SOC*ones(nc, 1);
             
             % Shortcuts used in this function
@@ -100,20 +147,16 @@ classdef Battery < PhysicalModel
             elyte   = 'Electrolyte';
             am      = 'ActiveMaterial';
             
-            electrodes = {'NegativeElectrode', 'PositiveElectrode'};
+            electrodes = {ne, pe};
+            electrodecomponents = {eac, cc};
 
             %% Synchronization across components
 
             % temperature
-            state = battery.updateT(state);
+            state = battery.updateTemperature(state);
             
             for ind = 1 : numel(electrodes)
                 elde = electrodes{ind};
-                
-                % temperature
-                state.(elde) = battery.(elde).updateT(state.(elde));
-                state.(elde).(eac) = battery.(elde).(eac).updateT(state.(elde).(eac));
-
                 % potential and concentration between active material and electode active component
                 state.(elde).(eac) = battery.(elde).(eac).updatePhi(state.(elde).(eac));
                 state.(elde).(eac) = battery.(elde).(eac).updateChargeCarrier(state.(elde).(eac));
@@ -176,7 +219,8 @@ classdef Battery < PhysicalModel
             state.(elyte) = battery.(elyte).updateDiffusionCoefficient(state.(elyte));
             state.(elyte) = battery.(elyte).updateChargeCarrierFlux(state.(elyte));
             state.(elyte) = battery.(elyte).updateMassConservation(state.(elyte));
-            state.(elyte) = battery.(elyte).updateEnergyConservation(state.(elyte));
+            
+
             
             for ind = 1 : numel(electrodes)
                 elde = electrodes{ind};
@@ -190,12 +234,32 @@ classdef Battery < PhysicalModel
                 state.(elde).(cc) = battery.(elde).(cc).updateCurrent(state.(elde).(cc));
                 state.(elde).(cc) = battery.(elde).(cc).updateChargeConservation(state.(elde).(cc));
 
-                
-                %% Electrodes energy conservation
-                state.(elde).(eac) = battery.(elde).(eac).updateEnergyConservation(state.(elde).(eac));
-                state.(elde).(cc)  = battery.(elde).(cc).updateEnergyConservation(state.(elde).(cc));
+            end
+
+            %% update Accumulation terms for the energy equation
+            state = battery.updateEnergyAccumTerms(state, state0, dt);
+            
+            %% elyte energy conservation 
+            state = battery.updateElyteHeatBcSource(state);
+            state.(elyte) = battery.(elyte).updateOhmSource(state.(elyte));
+            state.(elyte) = battery.(elyte).updateHeatSource(state.(elyte));
+            state.(elyte) = battery.(elyte).updateEnergyConservation(state.(elyte));
+            
+            %% energy conservation in the electrodes
+            for ind1 = 1 : numel(electrodes)
+                elde = electrodes{ind1};
+                state.(elde) = battery.(elde).updateTemperatureCoupling(state.(elde));
+                for ind2 = 1 : numel(electrodecomponents)
+                    comp = electrodecomponents{ind2};
+                    state.(elde).(comp) = battery.(elde).(comp).updateOhmSource(state.(elde).(comp));
+                    state.(elde).(comp) = battery.(elde).(comp).updateHeatSource(state.(elde).(comp));
+                    state.(elde).(comp) = battery.(elde).(comp).updateEnergyConservation(state.(elde).(comp));
+                end
                 
             end
+
+            %% energy conservation equation 
+            state = battery.updateEnergyConservation(state);
             
             %% Set up the governing equations
             
@@ -205,21 +269,17 @@ classdef Battery < PhysicalModel
 
             eqs{end + 1} = state.(elyte).massCons;
             eqs{end + 1} = state.(elyte).chargeCons;
-            eqs{end + 1} = state.(elyte).energyCons;
             
             eqs{end + 1} = state.(ne).(eac).massCons;
             eqs{end + 1} = state.(ne).(eac).chargeCons;
-            eqs{end + 1} = state.(ne).(eac).energyCons;
             
             eqs{end + 1} = state.(pe).(eac).massCons;
             eqs{end + 1} = state.(pe).(eac).chargeCons;
-            eqs{end + 1} = state.(pe).(eac).energyCons;
             
             eqs{end + 1} = state.(ne).(cc).chargeCons;
-            eqs{end + 1} = state.(ne).(cc).energyCons;
-            
             eqs{end + 1} = state.(pe).(cc).chargeCons;
-            eqs{end + 1} = state.(pe).(cc).energyCons;
+            
+            eqs{end + 1} = state.energyCons;
             
             %% We setup and add the control equation (fixed total current at PositiveCurrentCollector)
             
@@ -236,7 +296,7 @@ classdef Battery < PhysicalModel
             %% Give type and names to equations and names of the primary variables (for book-keeping)
             
             types = {'cell','cell','cell','cell',...
-                     'cell','cell','cell','cell','cell'};
+                     'cell','cell','cell','cell','cell','cell'};
             
             names = {'elyte_massCons'   , ...
                      'elyte_chargeCons' , ...
@@ -246,6 +306,7 @@ classdef Battery < PhysicalModel
                      'pe_eac_chargeCons', ...
                      'ne_cc_chargeCons' , ...
                      'pe_cc_chargeCons' , ...
+                     'energyCons'       , ...
                      'control'};
             
             primaryVars = model.getPrimaryVariables();
@@ -263,11 +324,15 @@ classdef Battery < PhysicalModel
             eac   = 'ElectrodeActiveComponent';
             cc    = 'CurrentCollector';
             
-            state.(elyte).T    = state.T(model.(elyte).G.mapping.cellmap);
-            state.(ne).(eac).T = state.T(model.(ne).(eac).G.mapping.cellmap);
-            state.(ne).(cc).T  = state.T(model.(ne).(cc).G.mapping.cellmap);
-            state.(pe).(eac).T = state.T(model.(pe).(eac).G.mapping.cellmap);
-            state.(pe).(cc).T  = state.T(model.(pe).(cc).G.mapping.cellmap);
+            state.(elyte).T    = state.T(model.(elyte).G.mappings.cellmap);
+            state.(ne).(eac).T = state.T(model.(ne).(eac).G.mappings.cellmap);
+            state.(ne).(cc).T  = state.T(model.(ne).(cc).G.mappings.cellmap);
+            state.(pe).(eac).T = state.T(model.(pe).(eac).G.mappings.cellmap);
+            state.(pe).(cc).T  = state.T(model.(pe).(cc).G.mappings.cellmap);
+            
+            % Update temperature in the active materials of the electrodes.
+            state.(ne).(eac) = model.(ne).(eac).updateTemperature(state.(ne).(eac));
+            state.(pe).(eac) = model.(pe).(eac).updateTemperature(state.(pe).(eac));
             
         end
         
@@ -307,7 +372,7 @@ classdef Battery < PhysicalModel
             nc = model.G.cells.num;
 
             SOC = model.SOC;
-            T   = model.T;
+            T   = model.initT;
             
             initstate.T   = T*ones(nc, 1);
             initstate.SOC = SOC*ones(nc, 1);
@@ -460,6 +525,16 @@ classdef Battery < PhysicalModel
             
         end
 
+        function state = updateElyteHeatBcSource(model, state)
+        % trivial update to zero.
+            elyte = 'Electrolyte';
+            nc = model.(elyte).G.cells.num;
+
+            state.(elyte).jHeatBcSource = zeros(nc, 1);
+            
+        end
+        
+        
         function state = updateEnergyAccumTerms(model, state, state0, dt)
                     
             elyte = 'Electrolyte';
@@ -481,18 +556,18 @@ classdef Battery < PhysicalModel
                    {pe, cc, 'accumHeat'}};
             
             globT = state.T;
-            globT0 = state.T0;
+            globT0 = state0.T;
             
             for ind = 1 : numel(fds)
                 
                 submodel = submodels{ind};
                 hC       = submodel.heatCapacity;
-                cellmap  = submodel.G.mapping.cellmap;
+                cellmap  = submodel.G.mappings.cellmap;
                 
                 T  = globT(cellmap);
                 T0 = globT0(cellmap);
                 
-                accumHeat = hC.*(T - T0)/dt
+                accumHeat = hC.*(T - T0)/dt;
                 
                 state = model.setProp(state, fds{ind}, accumHeat);
             end            
@@ -559,7 +634,44 @@ classdef Battery < PhysicalModel
             state.(pe).(cc).jExternal = jExternal;
             
         end
+
         
+        function state =updateEnergyConservation(model, state);
+            
+            elyte = 'Electrolyte';
+            ne    = 'NegativeElectrode';
+            pe    = 'PositiveElectrode';
+            am    = 'ActiveMaterial';
+            eac   = 'ElectrodeActiveComponent';
+            cc    = 'CurrentCollector';
+            
+            % We recover energy equation for electrolyte
+            
+            energyCons = state.(elyte).energyCons;
+            
+            %  we have to add the contribution from the electrode's active component
+           
+            eldes = {ne, pe};
+            
+            for ind = 1 : numel(eldes)
+                elde = eldes{ind};
+                cellmap = model.mappings.(elde);
+                elde_energyCons = state.(elde).(eac).energyCons;
+                energyCons(cellmap) = elde_energyCons;
+            end
+            
+            % We retrieve the energy equation from the current collectors.
+            
+            necc_energyCons = state.(ne).(cc).energyCons;
+            pecc_energyCons = state.(pe).(cc).energyCons;
+            
+            % We concatenate the contributions
+            
+            state.energyCons = vertcat(necc_energyCons, ...
+                                       energyCons, ...
+                                       pecc_energyCons);
+        
+        end
         
         function state = initStateAD(model,state)
             
@@ -572,7 +684,7 @@ classdef Battery < PhysicalModel
             cc    = 'CurrentCollector';
             
             adbackend = model.AutoDiffBackend();
-            opts=struct('types', [1,1,2,2,3,3,4,5,6], 'useMex', true);
+            opts=struct('types', [1,1,2,2,3,3,4,5,6,7], 'useMex', true);
             [state.(elyte).cs{1}  , ...
              state.(elyte).phi    , ...   
              state.(ne).(eac).c   , ...   
@@ -581,6 +693,7 @@ classdef Battery < PhysicalModel
              state.(pe).(eac).phi , ...   
              state.(ne).(cc).phi  , ...    
              state.(pe).(cc).phi  , ...    
+             state.T              , ...
              state.(pe).(cc).E] = ...
                 adbackend.initVariablesAD(...
                     state.(elyte).cs{1}  , ...
@@ -591,6 +704,7 @@ classdef Battery < PhysicalModel
                     state.(pe).(eac).phi , ...   
                     state.(ne).(cc).phi  , ...    
                     state.(pe).(cc).phi  , ...    
+                    state.T              , ...
                     state.(pe).(cc).E,opts);       
         end
         
@@ -611,7 +725,8 @@ classdef Battery < PhysicalModel
                  {pe, eac, 'c'}   , ...    
                  {pe, eac, 'phi'} , ...   
                  {ne, cc, 'phi'}  , ...    
-                 {pe, cc, 'phi'}  , ...    
+                 {pe, cc, 'phi'}  , ...
+                 {'T'}            , ...
                  {pe, cc, 'E'}
                 };
             

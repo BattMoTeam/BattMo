@@ -54,9 +54,9 @@ classdef ElectroChemicalComponent < ElectronicComponent
             flux   = state.(ccFluxName);
             source = state.(ccSourceName);
             accum  = state.(ccAccumName);
-            bcflux = 0;
+            bcsource = 0;
             
-            masscons = assembleConservationEquation(model, flux, bcflux, source, accum);
+            masscons = assembleConservationEquation(model, flux, bcsource, source, accum);
             
             state.(ccMassConsName) = masscons;
             

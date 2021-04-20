@@ -2,7 +2,7 @@ clear all
 close all
 
 % setup mrst modules
-mrstModule add ad-core multimodel mrst-gui battery
+mrstModule add ad-core multimodel mrst-gui battery mpfa
 
 mrstVerbose off
 
@@ -10,6 +10,7 @@ mrstVerbose off
 tup = 0.1;
 
 paramobj = LithiumBatteryInputParams();
+
 
 % setup battery
 
@@ -38,7 +39,6 @@ switch modelcase
 end
 
 paramobj = gen.updateBatteryInputParams(paramobj);
-
 model = Battery(paramobj);
 
 switch schedulecase

@@ -23,7 +23,7 @@ function op = getCellFluxOperators(G)
     cellfacetbl = tbls.cellfacetbl;
 
     N = G.faces.neighbors;
-    intInx = all(N ~= 0, 2);
+    intInx = all(N ~= 0, 2); % same definition as in setupOperatorsTPFA
     intfacetbl.faces = find(intInx);
     intfacetbl = IndexArray(intfacetbl);
 
@@ -136,33 +136,25 @@ function op = getCellFluxOperators(G)
 
     sN = prod.eval(N, sgn); % sN is in cellintfacevecttbl
 
-    map = TensorMap();
-    map.fromTbl = cellintfacevecttbl;
-    map.toTbl = cellfacevecttbl;
-    map.mergefds = {'cells', 'faces', 'vect'};
-    map = map.setup();
-
-    sN = map.eval(sN); % sN is in cellfacevecttbl
-
     % We compute P = (invNtN)*sN
 
     prod = TensorProd();
     prod.tbl1 = cellvect12tbl;
-    prod.tbl2 = cellfacevecttbl;
-    prod.tbl3 = cellfacevecttbl;
+    prod.tbl2 = cellintfacevecttbl;
+    prod.tbl3 = cellintfacevecttbl;
     prod.replacefds1 = {{'vect1', 'vect'}};
     prod.replacefds2 = {{'vect', 'vect2'}};
     prod.mergefds = {'cells'};
     prod.reducefds = {'vect2'};
     prod = prod.setup;
 
-    P = prod.eval(invNtN, sN); % P is in cellfacevectbl
+    P = prod.eval(invNtN, sN); % P is in cellintfacevectbl
 
-    % Setup vector flux reconstruction matrix from facetbl to cellvecttbl.
+    % Setup matrix for vector flux reconstruction, from facetbl to cellvecttbl.
     
     prod = TensorProd();
-    prod.tbl1 = cellfacevecttbl;
-    prod.tbl2 = facetbl;
+    prod.tbl1 = cellintfacevecttbl;
+    prod.tbl2 = intfacetbl;
     prod.tbl3 = cellvecttbl;
     prod.reducefds = {'faces'};
 
