@@ -657,7 +657,7 @@ classdef Battery < PhysicalModel
                 elde = eldes{ind};
                 cellmap = model.mappings.(elde);
                 elde_energyCons = state.(elde).(eac).energyCons;
-                energyCons(cellmap) = elde_energyCons;
+                energyCons(cellmap) = energyCons(cellmap) + elde_energyCons;
             end
             
             % We retrieve the energy equation from the current collectors.
