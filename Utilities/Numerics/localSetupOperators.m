@@ -6,6 +6,7 @@ function operators = localSetupOperators(G)
     operators.allDiv = getAllDiv(G);
     operators.harmFace = getFaceHarmMean(G);
     operators.harmFaceBC = @(cvalue, faces) getFaceHarmBC(G, cvalue, faces);
+    operators.cellFluxOp = getCellFluxOperators(G);
 end
 
 function [T, cells] = getFaceHarmBC(G, cvalue, faces)
