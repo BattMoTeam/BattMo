@@ -11,21 +11,28 @@ tup = 0.1;
 
 paramobj = LithiumBatteryInputParams();
 
+% Setup battery
 
-% setup battery
-
-modelcase = '2D';
+modelcase = '1D';
 
 switch modelcase
 
   case '1D'
 
     gen = BatteryGenerator1D();
+    paramobj = gen.updateBatteryInputParams(paramobj);
+    paramobj.elyte.thermalConductivity = 1e-3;
+    paramobj.elyte.heatCapacity = 1e1;
+    paramobj.elyte.ohmicResistance = 1e-2;
     schedulecase = 3; 
 
   case '2D'
 
     gen = BatteryGenerator2D();
+    paramobj = gen.updateBatteryInputParams(paramobj);
+    paramobj.elyte.thermalConductivity = 1;
+    paramobj.elyte.heatCapacity = 1;
+    paramobj.elyte.ohmicResistance = 1;
     schedulecase = 1;
 
     tfac = 1; % used in schedule setup
@@ -33,12 +40,12 @@ switch modelcase
   case '3D'
 
     gen = BatteryGenerator3D();
+    paramobj = gen.updateBatteryInputParams(paramobj);
     schedulecase = 1;
     tfac = 40; % used in schedule setup
     
 end
 
-paramobj = gen.updateBatteryInputParams(paramobj);
 model = Battery(paramobj);
 
 switch schedulecase
@@ -164,6 +171,11 @@ if strcmp(modelcase, '1D')
               {'NegativeElectrode','CurrentCollector'}, ...
               {'PositiveElectrode','CurrentCollector'}};    
     
+    tM = max(states{end}.T);
+    tm = min(states{1}.T);
+    tM = tM + 1e-1*(tM - tm);
+    tm = tm - 1e-1*(tM - tm);
+    
     for i = 1 : numel(states)
         
         state = states{i}; 
@@ -173,7 +185,7 @@ if strcmp(modelcase, '1D')
             ffield = ffields{k};
             
             figure(h)
-            subplot(2, 2, k)
+            subplot(2, 3, k)
             cla, hold on
             
             if (strcmp(ffield, 'phi') || strcmp(ffield, 'j'))
@@ -206,6 +218,11 @@ if strcmp(modelcase, '1D')
             end
         end
         
+        % plot temperature
+        subplot(2, 3, 5);
+        c = model.G.cells.centroids(:, 1);
+        plot(model.G.cells.centroids(:, 1), state.T, '* - ');
+        axis([min(c), max(c), tm, tM]);
         drawnow;
         pause(0.01);
         
