@@ -58,3 +58,10 @@
   - in Battery Accumterm
 * fix specificHeat
   - account for density/porevolume
+* Brurggi factor
+  - add as input parameter
+  - function
+* Check effective volume / heat capacity
+* Check the ohmic resistance computation
+  - consistency with j
+* Check energy equation assembly

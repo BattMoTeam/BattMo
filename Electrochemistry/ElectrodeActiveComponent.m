@@ -32,6 +32,7 @@ classdef ElectrodeActiveComponent < ThermoElectroChemicalComponent
             
             % setup effective electronic conductivity
             econd = model.ActiveMaterial.electronicConductivity;
+            % Brugaman approximation for tortuosity
             model.EffectiveElectronicConductivity = econd .* volumeFraction.^1.5;
             
         end

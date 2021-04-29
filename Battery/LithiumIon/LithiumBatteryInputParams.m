@@ -16,9 +16,11 @@ classdef LithiumBatteryInputParams < BatteryInputParams
             paramobj.elyte = orgLiPF6InputParams();
             
             % some (dummy) values for energy equation
-            tC = 1;
-            hC = 1;
-            oR = 1;
+            tC = 1e-3;
+            tC = 0;
+            hC = 1e1;
+            oR = 1e-4;
+            
             paramobj.elyte.thermalConductivity = tC;
             paramobj.elyte.heatCapacity = hC;
             paramobj.elyte.ohmicResistance = oR;

@@ -21,9 +21,6 @@ switch modelcase
 
     gen = BatteryGenerator1D();
     paramobj = gen.updateBatteryInputParams(paramobj);
-    paramobj.elyte.thermalConductivity = 1e-3;
-    paramobj.elyte.heatCapacity = 1e1;
-    paramobj.elyte.ohmicResistance = 1e-2;
     schedulecase = 3; 
 
   case '2D'
