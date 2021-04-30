@@ -3,16 +3,18 @@ classdef LinearSolverBattery
         method
         maxiter
         tol
+        verbosity
     end
     methods
         function solver = LinearSolverBattery(varargin)
             opt=struct(...
                 'method','direct',...
-                'tol',1e-4,'maxiter',40);
+                'tol',1e-4,'maxiter',40,'verbosity',0);
             opt = merge_options(opt,varargin{:});
             solver.method = opt.method;
             solver.maxiter = opt.maxiter;
             solver.tol = opt.tol;
+            solver.verbosity=opt.verbosity;
         end
     
         function [dx, result, report] = solveLinearProblem(solver, problem, model)
@@ -21,9 +23,21 @@ classdef LinearSolverBattery
                 case 'direct'
                     result=A\b;
                 case 'agmg'
-                    result=agmg(A,b,0,solver.tol,solver.maxiter,0);
+                    result=agmg(A,b,0,solver.tol,solver.maxiter,solver.verbosity);
                 case 'iterative'
                     %%
+                    numVars = problem.equations{1}.getNumVars();%
+                    vars=[2,4,6,7,8,9];
+                    pos=cumsum(numVars);
+                    pos=[[1;pos(1:end-1)+1],pos];
+                    posvar=pos(vars,:);
+                    ind=mcolon(posvar(:,1),posvar(:,2));
+                    indb=false(size(A,1),1);                    
+                    indb(ind) = true;                    
+                    f =@(x) solver.precond(x,A,indb);%,AA);
+                    result = gmres(A,b,10,solver.tol,solver.maxiter,f);
+                case 'tests'     
+                     %%
                     numVars = problem.equations{1}.getNumVars();%
                     vars=[2,4,6,7,8,9];
                     % equation 4,6 seems ok.
@@ -40,8 +54,7 @@ classdef LinearSolverBattery
                     neind = mcolon(posvar(2:end,1),posvar(2:end,2));
                     ind=mcolon(posvar(:,1),posvar(:,2));
                     indb=false(size(A,1),1);                    
-                    indb(ind) = true;
-                    
+                    indb(ind) = true;                    
                     AA=A(indb,indb);
                     bb=b(indb);
                     dv=posvar(:,2)-posvar(:,1);pos=cumsum(dv+1);ptmp=[[0;pos(1:end-1)]+1,pos(1:end)];
@@ -86,17 +99,14 @@ classdef LinearSolverBattery
             r=r+dr;
             x=x-A*dr;
             if(true)
-            %rphi = A(ind,ind)\x(ind);
-            %rphi = AA\x(ind);
-            rphi=  agmg(A(ind,ind),x(ind),0,1e-4,20,0);
-            r(ind)=r(ind)+rphi;
-            x(ind)=x(ind)-A(ind,ind)*rphi;
+                rphi=  agmg(A(ind,ind),x(ind),0,1e-4,20,0);
+                r(ind)=r(ind)+rphi;
+                x(ind)=x(ind)-A(ind,ind)*rphi;
             end
             %% pre smooth
              %% post smooth
             dr= U\(L\x);
             r=r+dr;
-            
             %x=x-A*dr;
         end
     end
