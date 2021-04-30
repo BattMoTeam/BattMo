@@ -55,7 +55,11 @@ classdef ThermoElectronicComponent < ElectronicComponent
             
         function state = updateOhmSource(model, state)
             
-            state = updateOhmSourceFunc(model, state);
+        % The default is a the effective electric conductivity given by the model (but this may be overridden, see for example
+        % the electrolyte)
+            
+            conductivity = model.EffectiveElectronicConductivity
+            state = updateOhmSourceFunc(model, state, conductivity);
             
         end
                     

@@ -85,9 +85,17 @@ classdef Electrolyte < ThermoElectroChemicalComponent
             flux = flux*F; 
             
             state.LiFlux = flux;
-           
+            
         end
 
+        function state = updateOhmSource(model, state)
+            
+        % We use the effective conducivity which has been computed and depends on the concentration
+            
+            conductivity = state.conductivity;
+            state = updateOhmSourceFunc(model, state, conductivity);
+            
+        end
         
     end
 end

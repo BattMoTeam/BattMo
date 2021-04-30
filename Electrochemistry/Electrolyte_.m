@@ -10,7 +10,7 @@ classdef Electrolyte_ < ThermoElectroChemicalComponent_
             model = model@ThermoElectroChemicalComponent_(name);
             
             names = {model.names{:}, ...
-                     'conductivity'       , ...
+                     'conductivity', ...
                      'jchems'};
             model.names = names;
             
@@ -42,6 +42,11 @@ classdef Electrolyte_ < ThermoElectroChemicalComponent_
             inputnames = {''};
             fnmodel = {'.'};
             model = model.addPropFunction('jBcSource', fn, inputnames, fnmodel);
+            
+            fn = @Electrolyte.updateOhmSource;
+            inputnames = {'j', 'conductivity'};
+            fnmodel = {'.'};
+            model = model.addPropFunction('jHeatOhmSource', fn, inputnames, fnmodel);
             
         end        
     end
