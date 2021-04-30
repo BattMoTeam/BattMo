@@ -2,7 +2,7 @@ clear all
 close all
 
 % setup mrst modules
-mrstModule add ad-core multimodel mrst-gui battery
+mrstModule add ad-core multimodel mrst-gui battery agmg
 
 mrstVerbose off
 
@@ -13,18 +13,14 @@ paramobj = LithiumBatteryInputParams();
 
 % setup battery
 
-modelcase = '3D';
+modelcase = '1D';
 
 switch modelcase
 
   case '1D'
 
     gen = BatteryGenerator1D();
-    fac=1/10;
-    gen.fac=fac;
-    gen = gen.applyResolutionFactors();
-    %schedulecase = 1;
-    schedulecase = 3; 
+    schedulecase = 3;
 
   case '2D'
 
@@ -125,23 +121,26 @@ nls.maxIterations = 10;
 nls.errorOnFailure = false; 
 % Change default tolerance for nonlinear solver
 model.nonlinearTolerance = 1e-4;
-use_diagonal_ad=true
+use_diagonal_ad = true
 if(use_diagonal_ad)
-model.AutoDiffBackend=DiagonalAutoDiffBackend();
-model.AutoDiffBackend.useMex=true;
-model.AutoDiffBackend.modifyOperators=true;
-model.AutoDiffBackend.rowMajor=true;
-model.AutoDiffBackend.deferredAssembly=false;%error with true for now
+    model.AutoDiffBackend = DiagonalAutoDiffBackend(); 
+    model.AutoDiffBackend.useMex = true; 
+    model.AutoDiffBackend.modifyOperators = true; 
+    model.AutoDiffBackend.rowMajor = true; 
+    model.AutoDiffBackend.deferredAssembly = false; % error with true for now
 end
 
-use_iterative=true;
+use_iterative = false; 
 if(use_iterative)
-    %nls.LinearSolver=LinearSolverBattery('method','iterative');
-    %nls.LinearSolver=LinearSolverBattery('method','direct');
-    nls.LinearSolver=LinearSolverBattery('method','agmg','verbosity',1);nls.LinearSolver.tol=1e-3;nls.verbose=10
+    % nls.LinearSolver = LinearSolverBattery('method', 'iterative'); 
+    % nls.LinearSolver = LinearSolverBattery('method', 'direct'); 
+    nls.LinearSolver = LinearSolverBattery('method', 'agmg', 'verbosity', 1);
+    nls.LinearSolver.tol = 1e-3;
+    nls.verbose = 10
 end
-model.nonlinearTolerance=1e-5;
-model.verbose=true;
+model.nonlinearTolerance = 1e-5; 
+model.verbose = false;
+
 % Run simulation
 
 doprofiling = true;

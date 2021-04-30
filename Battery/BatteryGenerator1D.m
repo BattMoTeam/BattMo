@@ -1,13 +1,15 @@
 classdef BatteryGenerator1D < BatteryGenerator
 % setup 1D grid 
     properties
+        
         sepnx  = 10;
         nenx   = 10;
         penx   = 10;
         ccnenx = 10;
         ccpenx = 10;
-        fac=1;
+        fac = 1;
         J = 1;
+        
     end
     
     methods
@@ -48,12 +50,15 @@ classdef BatteryGenerator1D < BatteryGenerator
         end
 
         function gen = applyResolutionFactors(gen)
+            
             fac = gen.fac;
-            gen.sepnx = gen.sepnx*fac;
-            gen.nenx = gen.nenx*fac;
-            gen.penx =gen.penx*fac;
+            
+            gen.sepnx  = gen.sepnx*fac;
+            gen.nenx   = gen.nenx*fac;
+            gen.penx   = gen.penx*fac;
             gen.ccnenx = gen.ccnenx*fac;
             gen.ccpenx = gen.ccpenx*fac;
+            
         end
             
         function paramobj = setupElectrolyte(gen, paramobj, params)
