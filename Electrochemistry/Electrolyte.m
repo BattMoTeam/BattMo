@@ -48,9 +48,9 @@ classdef Electrolyte < ThermoElectroChemicalComponent
            
             ncomp = model.ncomp;
             
-            phi    = state.phi;
+            phi = state.phi;
             jchems = state.jchems;
-            conductivity  = state.conductivity;
+            conductivity = state.conductivity;
             
             j = assembleFlux(model, phi, conductivity);
             for ind = 1 : ncomp
