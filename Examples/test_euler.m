@@ -29,7 +29,6 @@ switch modelcase
     paramobj = gen.updateBatteryInputParams(paramobj);
     paramobj.elyte.thermalConductivity = 1;
     paramobj.elyte.heatCapacity = 1;
-    paramobj.elyte.ohmicResistance = 1;
     schedulecase = 1;
 
     tfac = 1; % used in schedule setup

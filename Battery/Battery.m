@@ -562,12 +562,14 @@ classdef Battery < PhysicalModel
                 
                 submodel = submodels{ind};
                 hC       = submodel.heatCapacity;
+                volfrac  = submodel.volumeFraction;
+                vols     = submodel.G.cells.volumes;
                 cellmap  = submodel.G.mappings.cellmap;
                 
                 T  = globT(cellmap);
                 T0 = globT0(cellmap);
                 
-                accumHeat = hC.*(T - T0)/dt;
+                accumHeat = hC.*volfrac.*vols.*(T - T0)/dt;
                 
                 state = model.setProp(state, fds{ind}, accumHeat);
             end            
