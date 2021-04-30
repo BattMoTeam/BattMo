@@ -10,7 +10,7 @@ classdef Electrolyte_ < ElectroChemicalComponent_
             model = model@ElectroChemicalComponent_(name);
             
             names = {model.names{:}, ...
-                     'kappa'       , ...
+                     'conductivity'       , ...
                      'jchems'};
             model.names = names;
             
@@ -20,7 +20,7 @@ classdef Electrolyte_ < ElectroChemicalComponent_
             fn = @Electrolyte.updateChemicalCurrent;
             inputnames = {'chargeCarrier', 'T', 'phi'};
             fnmodel = {'.'};
-            model = model.addPropFunction('kappa', fn, inputnames, fnmodel);
+            model = model.addPropFunction('conductivity', fn, inputnames, fnmodel);
             model = model.addPropFunction('jchems', fn, inputnames, fnmodel);
 
             fn = @Electrolyte.updateDiffusionCoefficient;
@@ -29,7 +29,7 @@ classdef Electrolyte_ < ElectroChemicalComponent_
             model = model.addPropFunction('D', fn, inputnames, fnmodel);
 
             fn = @Electrolyte.updateCurrent;
-            inputnames = {'phi', 'jchems', 'kappa'};
+            inputnames = {'phi', 'jchems', 'conductivity'};
             fnmodel = {'.'};
             model = model.addPropFunction('j', fn, inputnames, fnmodel);
             
