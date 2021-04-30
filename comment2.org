@@ -54,3 +54,12 @@
   - check that
 * check initialization
   - what is the right way to do it for potential?
+* parameterize Bruggeman
+  - Take the coefficient 1.5 is an input parameter?
+* porosity and volumefraction
+  - should we store both values? (volumeFraction only seems better. Imagine three materials)
+* effective diffusion coefficient
+  - shall we weight with volume fraction? also with coef 1.5 as Bruggeman? it is presented in [[pdfview:/home/xavier/Projects/2021-robin/documents/VidtsWhite.pdf::5][Vidts]]
+  - in electrolyte [[file:Materials/Liquid/CarbonateBased/orgLiPF6.m::D = 1e-4 .* 10 .^ ( ( cnst(1,1) + cnst(1,2) ./ ( T - Tgi(1) - Tgi(2) .* c .* 1e-3) + cnst(2,1) .* ...][orgLiPF6]] (non-linear effects?)
+  - in [[file:Electrochemistry/ElectrodeActiveComponent.m::state.D = D .* model.volumeFraction .^1.5;][ElectrodeActiveComponent]] set as property of active material. it is rather a property of the component (later
+    active material will be set as interface). maybe the same holds for conductivity
