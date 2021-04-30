@@ -2,7 +2,7 @@ clear all
 close all
 
 % setup mrst modules
-mrstModule add ad-core multimodel mrst-gui battery mpfa
+mrstModule add ad-core multimodel mrst-gui battery agmg mpfa
 
 mrstVerbose off
 
@@ -37,8 +37,13 @@ switch modelcase
   case '3D'
 
     gen = BatteryGenerator3D();
-    paramobj = gen.updateBatteryInputParams(paramobj);
+    fac=1;
+    gen.facx=fac;
+    gen.facy=fac;
+    gen.facz=fac;
+    gen = gen.applyResolutionFactors();
     schedulecase = 1;
+    %schedulecase = 4;% for testing
     tfac = 40; % used in schedule setup
     
 end
@@ -77,6 +82,21 @@ switch schedulecase
     dt2 = 3e3*ones(30, 1);
     dt = [dt1; dt2];
     times = [0; cumsum(dt)]; 
+  case 4
+
+    % Schedule with two phases : activation and operation
+    % 
+    % Activation phase with exponentially increasing time step
+    n = 5; 
+    dt = []; 
+    dt = [dt; repmat(0.5e-4, n, 1).*1.5.^[1:n]']; 
+    % Operation phase with constant time step
+    %n = 24; 
+    %dt = [dt; dt(end).*2.^[1:n]']; 
+    %dt = [dt; repmat(dt(end)*1.5, floor(n*1.5), 1)]; 
+    
+    % Time scaling can be adding using variable tfac
+    times = [0; cumsum(dt)]*tfac; 
     
 end
 
@@ -104,16 +124,29 @@ nls.maxIterations = 10;
 nls.errorOnFailure = false; 
 % Change default tolerance for nonlinear solver
 model.nonlinearTolerance = 1e-4;
+use_diagonal_ad = false;
+if(use_diagonal_ad)
+    model.AutoDiffBackend = DiagonalAutoDiffBackend(); 
+    model.AutoDiffBackend.useMex = true; 
+    model.AutoDiffBackend.modifyOperators = true; 
+    model.AutoDiffBackend.rowMajor = true; 
+    model.AutoDiffBackend.deferredAssembly = false; % error with true for now
+end
 
-
-%nls.LinearSolver=LinearSolverBattery('method','iterative');
-%nls.LinearSolver=LinearSolverBattery('method','direct');
-%nls.LinearSolver=LinearSolverBattery('method','agmg');nls.LinearSolver.tol=1e-10;nls.verbose=10
-model.nonlinearTolerance=1e-7;
+use_iterative = false; 
+if(use_iterative)
+    % nls.LinearSolver = LinearSolverBattery('method', 'iterative'); 
+    % nls.LinearSolver = LinearSolverBattery('method', 'direct'); 
+    nls.LinearSolver = LinearSolverBattery('method', 'agmg', 'verbosity', 1);
+    nls.LinearSolver.tol = 1e-3;
+    nls.verbose = 10
+end
+model.nonlinearTolerance = 1e-5; 
+model.verbose = false;
 
 % Run simulation
 
-doprofiling = false;
+doprofiling = true;
 if doprofiling
     profile off
     profile on

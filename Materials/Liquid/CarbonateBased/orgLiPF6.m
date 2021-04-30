@@ -44,7 +44,7 @@ classdef orgLiPF6 < Electrolyte
             c = cLi;
 
             % Ionic conductivity, [S m^-1]
-            kappa = model.conductivityFactor.* c .*(...
+            conductivity = model.conductivityFactor.* c .*(...
                 polyval(cnst(end:-1:1,1),c) + ...
                 polyval(cnst(end:-1:1,2),c) .* T + ...
                 polyval(cnst(end:-1:1,3),c) .* T.^2).^2;
@@ -52,18 +52,18 @@ classdef orgLiPF6 < Electrolyte
             % volume fraction of electrolyte
             eps = model.volumeFraction;
             % Compute effective ionic conductivity in porous media
-            kappaeff = kappa .* eps .^1.5;
+            conductivityeff = conductivity .* eps .^1.5;
             
             % setup chemical fluxes
             jchems = cell(1, ncomp);
             F = model.constants.F;
             for i = 1 : ncomp
-                coeff = kappaeff .* sp.t{i} .* dmudcs{i} ./ (sp.z{i}.*F);
+                coeff = conductivityeff .* sp.t{i} .* dmudcs{i} ./ (sp.z{i}.*F);
                 jchems{i} = assembleFlux(model, cs{i}, coeff);
             end
             
             state.jchems = jchems;
-            state.kappa  = kappaeff;
+            state.conductivity  = conductivityeff;
             
         end
 

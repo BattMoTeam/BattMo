@@ -4,7 +4,8 @@ function operators = localSetupOperators(G)
     rock = struct('perm', cst, 'poro', cst);
     operators = setupOperatorsTPFA(G, rock);
     operators.allDiv = getAllDiv(G);
-    operators.harmFace = getFaceHarmMean(G);
+    %operators.harmFace = getFaceHarmMean(G);
+    operators.harmFace =@(cellvalue) getTrans(G).*(1./operators.faceAvg(1./cellvalue));
     operators.harmFaceBC = @(cvalue, faces) getFaceHarmBC(G, cvalue, faces);
     operators.cellFluxOp = getCellFluxOperators(G);
 end
@@ -25,6 +26,14 @@ function hm = getFaceHarmMean(G)
     A = sparse([[1:ni]'; [1:ni]'], N, 1, ni, G.cells.num);
     hm = @(cellvalue) 2.*t./(A*(1./cellvalue));
 end
+
+function t = getTrans(G)
+    internal = all(G.faces.neighbors>0, 2);
+    N = G.faces.neighbors(internal, :);
+    cd = sqrt(sum((G.cells.centroids(N(:, 1), :) - G.cells.centroids(N(:, 2), :)).^2, 2)); % NB
+    t = G.faces.areas(internal)./cd;
+end
+
 
 function tp = getTwoPointOperator(G)
 % Mappings from cells to its faces
