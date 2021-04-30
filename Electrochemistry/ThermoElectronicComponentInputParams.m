@@ -4,7 +4,6 @@ classdef ThermoElectronicComponentInputParams < ElectronicComponentInputParams
         
         thermalConductivity
         heatCapacity
-        ohmicResistance
         
     end
     

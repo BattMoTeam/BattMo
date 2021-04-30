@@ -4,7 +4,6 @@ classdef ThermoElectroChemicalComponent < ElectroChemicalComponent
         
         thermalConductivity
         heatCapacity
-        ohmicResistance
     
     end
 
@@ -15,14 +14,12 @@ classdef ThermoElectroChemicalComponent < ElectroChemicalComponent
             model = model@ElectroChemicalComponent(paramobj);
             
             fdnames = {'thermalConductivity', ...
-                       'heatCapacity', ...
-                       'ohmicResistance'};
+                       'heatCapacity'};
             model = dispatchParams(model, paramobj, fdnames);
             
             nc = model.G.cells.num;
             model.thermalConductivity = model.thermalConductivity*ones(nc, 1);
             model.heatCapacity = model.heatCapacity*ones(nc, 1);
-            model.ohmicResistance = model.ohmicResistance*ones(nc, 1);
             
         end
 

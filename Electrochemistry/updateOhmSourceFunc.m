@@ -1,7 +1,6 @@
 function  state = updateOhmSourceFunc(model, state)
 
     op = model.operators.cellFluxOp;
-    R = model.ohmicResistance;
     vols = model.G.cells.volumes;
     
     j = state.j;
