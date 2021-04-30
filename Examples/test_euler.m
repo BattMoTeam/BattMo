@@ -36,10 +36,10 @@ switch modelcase
   case '3D'
 
     gen = BatteryGenerator3D();
-    fac=1;
-    gen.facx=fac;
-    gen.facy=fac;
-    gen.facz=fac;
+    fac = 1; 
+    gen.facx = fac; 
+    gen.facy = fac; 
+    gen.facz = fac;
     gen = gen.applyResolutionFactors();
     schedulecase = 1;
     %schedulecase = 4;% for testing
