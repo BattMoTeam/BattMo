@@ -3,7 +3,7 @@ classdef ThermoElectronicComponent < ElectronicComponent
     properties
         
        thermalConductivity
-       heatCapacity
+       heatCapacity % in [J][K]^-1[m]^-3
        
     end
     
