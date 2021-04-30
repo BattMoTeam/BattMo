@@ -15,7 +15,11 @@ function  state = updateOhmSourceFunc(model, state, conductivity)
     
     op = model.operators.cellFluxOp;
     
-    volfrac = model.volumeFractions;
+    if isprop(model, 'volumeFraction')
+        volfrac = model.volumeFraction;
+    else
+        volfrac = 1;
+    end
     vols = model.G.cells.volumes;
 
     j = state.j;
