@@ -121,7 +121,7 @@ nls.maxIterations = 10;
 nls.errorOnFailure = false; 
 % Change default tolerance for nonlinear solver
 model.nonlinearTolerance = 1e-4;
-use_diagonal_ad = true
+use_diagonal_ad = false;
 if(use_diagonal_ad)
     model.AutoDiffBackend = DiagonalAutoDiffBackend(); 
     model.AutoDiffBackend.useMex = true; 
