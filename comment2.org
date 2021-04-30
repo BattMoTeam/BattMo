@@ -55,7 +55,7 @@
 * check initialization
   - what is the right way to do it for potential?
 * use setProp
-  - in Battery Accumterm
+  - in Battery Accumterm for energy
 * fix specificHeat
   - account for density/porevolume
 * Brurggi factor
