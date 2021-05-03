@@ -1,10 +1,10 @@
-classdef ElectronicComponent_ < CompositeModel
+classdef ElectronicComponent_ < ComponentModel
 
     methods
 
         function model = ElectronicComponent_(name)
 
-            model = model@CompositeModel(name);
+            model = model@ComponentModel(name);
             names = {'T'        , ...
                      'phi'      , ...
                      'jBcSource', ...
