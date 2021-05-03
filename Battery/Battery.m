@@ -61,7 +61,7 @@ classdef Battery < PhysicalModel
             model.couplingNames = cellfun(@(x) x.name, model.couplingTerms, 'uniformoutput', false);
             
             % setup Electrolyte porosity
-            model = model.setElectrolytePorosity();
+            model = model.setElectrolyteVolumeFraction();
             
             % setup mappings (electrodes -> electrolyte)
             model = model.setupMappings();
@@ -219,7 +219,6 @@ classdef Battery < PhysicalModel
             state.(elyte) = battery.(elyte).updateDiffusionCoefficient(state.(elyte));
             state.(elyte) = battery.(elyte).updateChargeCarrierFlux(state.(elyte));
             state.(elyte) = battery.(elyte).updateMassConservation(state.(elyte));
-            
 
             
             for ind = 1 : numel(electrodes)
@@ -336,7 +335,7 @@ classdef Battery < PhysicalModel
             
         end
         
-        function model = setElectrolytePorosity(model)
+        function model = setElectrolyteVolumeFraction(model)
         % Abbreviations used in this function 
         % elyte : Electrolyte
         % ne    : NegativeElectrode
