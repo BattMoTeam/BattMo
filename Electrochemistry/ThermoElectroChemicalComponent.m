@@ -2,7 +2,7 @@ classdef ThermoElectroChemicalComponent < ElectroChemicalComponent
     
     properties
         
-        thermalConductivity
+        EffectiveThermalConductivity
         heatCapacity % in [J][K]^-1[m]^-3
     
     end
@@ -13,7 +13,7 @@ classdef ThermoElectroChemicalComponent < ElectroChemicalComponent
             
             model = model@ElectroChemicalComponent(paramobj);
             
-            fdnames = {'thermalConductivity', ...
+            fdnames = {'EffectiveThermalConductivity', ...
                        'heatCapacity'};
             model = dispatchParams(model, paramobj, fdnames);
             
@@ -25,7 +25,7 @@ classdef ThermoElectroChemicalComponent < ElectroChemicalComponent
 
         function state = updateHeatFlux(model, state)
 
-            k = model.thermalConductivity;
+            k = model.EffectiveThermalConductivity;
             T = state.T;
             
             jHeat = assembleFlux(model, T, k); 

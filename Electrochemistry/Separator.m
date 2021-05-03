@@ -1,4 +1,4 @@
-classdef Separator < PhysicalModel
+classdef Separator < ThermalComponent.m
     
     properties
         
@@ -14,9 +14,9 @@ classdef Separator < PhysicalModel
     methods
         function model = Separator(paramobj)
             
-            model = model@PhysicalModel([]);
+            model = model@ThermalComponent(paramobj);
             
-            fdnames = {'G', ...
+            fdnames = {'thermalConductivity', ...
                        'thickness', ...
                        'porosity' , ...
                        'rp'       , ...
@@ -24,6 +24,7 @@ classdef Separator < PhysicalModel
             model = dispatchParams(model, paramobj, fdnames);
             
             model.volumeFraction = 1 - model.porosity;
+            model.EffectiveThermalConductivity = model.volumeFraction.*model.thermalConductivity;
 
         end
     end

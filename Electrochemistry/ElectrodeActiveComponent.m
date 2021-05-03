@@ -8,6 +8,8 @@ classdef ElectrodeActiveComponent < ThermoElectroChemicalComponent
         porosity
         thickness
         
+        thermalConductivity
+        
     end
     
     methods
@@ -17,6 +19,9 @@ classdef ElectrodeActiveComponent < ThermoElectroChemicalComponent
         % am = ActiveMaterial
             
             model = model@ThermoElectroChemicalComponent(paramobj);
+            
+            fdnames = {'thermalConductivity'};
+            model = dispatchParams(model, paramobj, fdnames);
             
             % Setup ActiveMaterial component
             paramobj.am.G = model.G;
@@ -34,6 +39,8 @@ classdef ElectrodeActiveComponent < ThermoElectroChemicalComponent
             econd = model.ActiveMaterial.electronicConductivity;
             % Brugaman approximation for tortuosity
             model.EffectiveElectronicConductivity = econd .* volumeFraction.^1.5;
+            
+            model.EffectiveThermalConductivity = model.thermalConductivity.*volumFraction;
             
         end
 

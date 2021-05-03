@@ -12,6 +12,8 @@ classdef Electrolyte < ThermoElectroChemicalComponent
         
         volumeFraction
         
+        thermalConductivity
+        
     end
 
     methods

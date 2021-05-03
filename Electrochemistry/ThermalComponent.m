@@ -1,4 +1,4 @@
-classdef ThermoElectronicComponent < ElectronicComponent
+classdef ThermalComponent < PhysicalModel
     
     properties
         
@@ -9,13 +9,21 @@ classdef ThermoElectronicComponent < ElectronicComponent
     
     methods
         
-        function model = ThermoElectronicComponent(paramobj)
+        function model = ThermalComponent(paramobj)
             
-            model = model@ElectronicComponent(paramobj);
+            model = model@PhysicalModel([]);
+            
+            % OBS : All the models should have same backend (this is not assigned automaticallly for the moment)
+            model.AutoDiffBackend = SparseAutoDiffBackend('useBlocks', false);
             
             fdnames = {'EffectiveThermalConductivity', ...
                        'heatCapacity'};
             model = dispatchParams(model, paramobj, fdnames);
+            
+            % setup discrete differential operators
+            model.operators = localSetupOperators(model.G);
+            
+            model.constants = PhysicalConstants();
             
             nc = model.G.cells.num;
             model.thermalConductivity = model.thermalConductivity*ones(nc, 1);
@@ -53,22 +61,7 @@ classdef ThermoElectronicComponent < ElectronicComponent
             
         end
             
-        function state = updateOhmSource(model, state)
-            
-        % The default is a the effective electric conductivity given by the model (but this may be overridden, see for example
-        % the electrolyte)
-            
-            conductivity = model.EffectiveElectronicConductivity;
-            state = updateOhmSourceFunc(model, state, conductivity);
-            
-        end
-                    
-        function state = updateHeatSource(model, state)
-            
-            state.jHeatSource = state.jHeatOhmSource; 
-            
-        end
-                            
     end
+    
 end
 
