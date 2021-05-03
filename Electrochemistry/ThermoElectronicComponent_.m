@@ -16,12 +16,12 @@ classdef ThermoElectronicComponent_ < ElectronicComponent_
 
             model.names = names;
             
-            fn = @ThermoElectroChemicalComponent.updateHeatFlux;
+            fn = @ThermoElectronicComponent.updateHeatFlux;
             inputnames = {'T'};
             fnmodel = {'.'};
             model = model.addPropFunction('jHeat', fn, inputnames, fnmodel);
             
-            fn = @ThermoElectroChemicalComponent.updateEnergyConservation;
+            fn = @ThermoElectronicComponent.updateEnergyConservation;
             inputnames = {'jHeatBcSource', ...
                           'jHeatSource'  , ...
                           'jHeat'        , ...
@@ -29,12 +29,12 @@ classdef ThermoElectronicComponent_ < ElectronicComponent_
             fnmodel = {'.'};
             model = model.addPropFunction('energyCons', fn, inputnames, fnmodel);
             
-            fn = @ThermoElectroChemicalComponent.updateOhmSource;
+            fn = @ThermoElectronicComponent.updateOhmSource;
             inputnames = {'j'};
             fnmodel = {'.'};
             model = model.addPropFunction('jHeatOhmSource', fn, inputnames, fnmodel);
                         
-            fn = @ThermoElectroChemicalComponent.updateHeatSource;
+            fn = @ThermoElectronicComponent.updateHeatSource;
             inputnames = {'jHeatOhmSource'};
             fnmodel = {'.'};
             model = model.addPropFunction('jHeatSource', fn, inputnames, fnmodel);
