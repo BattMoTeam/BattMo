@@ -58,7 +58,7 @@
   - in Battery Accumterm for energy
 * fix specificHeat
   - account for density/porevolume
-* Brurggi factor
+* Bruggeman factor
   - add as input parameter
   - function
 * Check effective volume / heat capacity
@@ -80,3 +80,5 @@
 * code duplicate problems
   - ThermalComponent, ThermalElectronicComponent, ... : Object hierarchy implies duplicates.
   - We fix this later.
+* heat exchanges
+  - see [[file:heatexchange.xcf][illustration]]

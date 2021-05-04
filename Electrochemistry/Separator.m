@@ -1,4 +1,4 @@
-classdef Separator < ThermalComponent.m
+classdef Separator < ThermalComponent
     
     properties
         

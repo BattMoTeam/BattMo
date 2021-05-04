@@ -63,6 +63,9 @@ classdef Battery < PhysicalModel
             % setup Electrolyte porosity
             model = model.setElectrolyteVolumeFraction();
             
+            % setup Electrolyte effective thermal conductivity
+            model = model.setElectrolyteEffectiveThermalConductivity();
+            
             % setup mappings (electrodes -> electrolyte)
             model = model.setupMappings();
            
@@ -356,6 +359,21 @@ classdef Battery < PhysicalModel
             model.(elyte).volumeFraction(elyte_cells(model.(elyte).(sep).G.mappings.cellmap)) = model.(elyte).(sep).porosity;
 
 
+        end
+        
+        function model = setElectrolyteEffectiveThermalConductivity(model)
+            
+            elyte = 'Electrolyte';
+            ne    = 'NegativeElectrode';
+            pe    = 'PositiveElectrode';
+            eac   = 'ElectrodeActiveComponent';
+
+            elyte_cells = zeros(model.G.cells.num, 1);
+            elyte_cells(model.(elyte).G.mappings.cellmap) = (1 : model.(elyte).G.cells.num)';
+            elyte_cells_sep = elyte_cells(model.(sep).G.mappings.cellmap);
+            model.(elyte).EffectiveThermalConductivity(elyte_cells_sep)  = model.(ne).(eac).porosity.*model.(elyte).thermalConductivity;
+            model.(elyte).EffectiveThermalConductivity(elyte_cells_sep)  = model.(pe).(eac).porosity.*model.(elyte).thermalConductivity;
+            
         end
         
         function initstate = setupInitialState(model)
@@ -714,7 +732,9 @@ classdef Battery < PhysicalModel
                     state.(ne).(cc).phi  , ...    
                     state.(pe).(cc).phi  , ...    
                     state.T              , ...
-                    state.(pe).(cc).E,opts);       
+                    state.(pe).(cc).E, ...
+                    opts); 
+            % PRIMARY variables
         end
         
         function p = getPrimaryVariables(model)

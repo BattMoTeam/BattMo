@@ -27,9 +27,31 @@ classdef Electrolyte < ThermoElectroChemicalComponent
             fdnames = {'sp', ...
                        'compnames', ...
                        'indchargecarrier', ...
-                       'ncomp'};
+                       'ncomp', ...
+                       'thermalConductivity'};
 
             model = dispatchParams(model, paramobj, fdnames);
+            
+            sep = 'Separator';
+
+            % We set the electrolyte volumeFraction based on the porisity of the separator
+            G = model.G;
+            Gp = G.mappings.parentGrid;
+            
+            model.volumeFraction = NaN(G.cells.num, 1);
+            
+            elyte_cells = zeros(Gp.cells.num, 1);
+            elyte_cells(G.mappings.cellmap) = (1 : model.G.cells.num)';
+            elyte_cells_sep = elyte_cells(model.(sep).G.mappings.cellmap);
+            model.volumeFraction(elyte_cells_sep) = model.(sep).porosity;
+            
+            % The effective thermal conductivity in the common region between electrode and electrolyte is setup when the battery is
+            % set up. Here we set up the thermal conductivity of the electrolyte in the separator region (we assume for
+            % the moment constant values for both porosity and thermal conductivity but this can be changed).
+            
+            model.EffectiveThermalConductivity = NaN(G.cells.num, 1);
+            model.EffectiveThermalConductivity(elyte_cells_sep) = model.(sep).porosity.*model.thermalConductivity;
+            
             
         end
         

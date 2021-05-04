@@ -50,9 +50,9 @@ classdef orgLiPF6 < Electrolyte
                 polyval(cnst(end:-1:1,3),c) .* T.^2).^2;
 
             % volume fraction of electrolyte
-            eps = model.volumeFraction;
+            volfrac = model.volumeFraction;
             % Compute effective ionic conductivity in porous media
-            conductivityeff = conductivity .* eps .^1.5;
+            conductivityeff = conductivity .* volfrac .^1.5;
             
             % setup chemical fluxes
             jchems = cell(1, ncomp);
