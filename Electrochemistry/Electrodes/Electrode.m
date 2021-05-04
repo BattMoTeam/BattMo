@@ -51,8 +51,8 @@ classdef Electrode < PhysicalModel
             eac_phi = state.(eac).phi;
             cc_phi = state.(cc).phi;
 
-            eac_sigmaeff = elde.(eac).EffectiveElectronicConductivity;
-            cc_sigmaeff = elde.(cc).EffectiveElectronicConductivity;
+            eac_sigmaeff = elde.(eac).EffectiveElectricalConductivity;
+            cc_sigmaeff = elde.(cc).EffectiveElectricalConductivity;
     
             %% We setup the current transfers between CurrentCollector and ElectrodeActiveComponent
             

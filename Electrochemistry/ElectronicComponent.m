@@ -3,7 +3,7 @@ classdef ElectronicComponent < PhysicalModel
     properties
         
         constants; % physical constants, see PhysicalConstants
-        EffectiveElectronicConductivity;
+        EffectiveElectricalConductivity;
         
     end
 
@@ -17,7 +17,7 @@ classdef ElectronicComponent < PhysicalModel
             model.AutoDiffBackend = SparseAutoDiffBackend('useBlocks', false);
             
             fdnames = {'G', ...
-                       'EffectiveElectronicConductivity'};
+                       'EffectiveElectricalConductivity'};
             
             model = dispatchParams(model, paramobj, fdnames);
             
@@ -30,7 +30,7 @@ classdef ElectronicComponent < PhysicalModel
 
         function state = updateCurrent(model, state)
             
-            sigmaeff = model.EffectiveElectronicConductivity;
+            sigmaeff = model.EffectiveElectricalConductivity;
             phi = state.phi;
             
             j = assembleFlux(model, phi, sigmaeff); 

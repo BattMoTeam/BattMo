@@ -1,4 +1,4 @@
-classdef ElectrolyteInputParams < ThermoElectroChemicalComponentInputParams
+classdef ElectrolyteInputParams < ElectroChemicalComponentInputParams
 
     properties
         
@@ -14,16 +14,19 @@ classdef ElectrolyteInputParams < ThermoElectroChemicalComponentInputParams
         
         conductivityFactor
         
+        thermalConductivity
+        heatCapacity
+        
     end
     
     methods
 
         function paramobj = ElectrolyteInputParams();
-            paramobj = paramobj@ThermoElectroChemicalComponentInputParams();
+            paramobj = paramobj@ElectroChemicalComponentInputParams();
             paramobj.sp = struct();
             paramobj.compnames = {};
             paramobj.sep = SeparatorInputParams();
-            paramobj.EffectiveElectronicConductivity = 'not used';
+            paramobj.EffectiveElectricalConductivity = 'not used';
         end
 
     end

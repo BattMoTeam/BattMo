@@ -1,6 +1,4 @@
-function  state = updateOhmSourceFunc(model, state, conductivity)
-%
-% conductivity corresponds to the effective electric conductivity
+function  jHeatOhmSource = updateOhmSourceFunc(model, state)
 %
 % reference : 
 % @misc{Latz_2016,
@@ -27,6 +25,9 @@ function  state = updateOhmSourceFunc(model, state, conductivity)
     jsq = j.^2;
     jsq = op.S*jsq;
     
-    state.jHeatOhmSource = (volfrac.*vols).*jsq./conductivity;
+    elcond = model.EffectiveElectricalConductivity;
+    
+    jHeatOhmSource = (volfrac.*vols).*jsq./elcond;
+    
     
 end

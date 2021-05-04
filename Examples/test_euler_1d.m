@@ -13,10 +13,10 @@ switch modelcase
     inputparams.J = 1;
     schedulecase = 3;
     cond=100*1e-9;
-    inputparams.NegativeElectrode.ActiveMaterial.electronicConductivity=cond
-    inputparams.PositiveElectrode.ActiveMaterial.electronicConductivity=cond
-    inputparams.PositiveCurrentCollector.electronicConductivity=cond;
-    inputparams.NegativeCurrentCollector.electronicConductivity=cond;
+    inputparams.NegativeElectrode.ActiveMaterial.electricalConductivity=cond
+    inputparams.PositiveElectrode.ActiveMaterial.electricalConductivity=cond
+    inputparams.PositiveCurrentCollector.electricalConductivity=cond;
+    inputparams.NegativeCurrentCollector.electricalConductivity=cond;
     %inputparams.Electrolyte.eps=
   case '2D'
     inputparams = BatteryInputParams2D();

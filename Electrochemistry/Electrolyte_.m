@@ -1,4 +1,4 @@
-classdef Electrolyte_ < ThermoElectroChemicalComponent_
+classdef Electrolyte_ < ElectroChemicalComponent_
 %
 % The function that couples the electolyte and the electrode is not implemented here (but at the battery level)
 %
@@ -7,7 +7,7 @@ classdef Electrolyte_ < ThermoElectroChemicalComponent_
         
         function model = Electrolyte_(name)
             
-            model = model@ThermoElectroChemicalComponent_(name);
+            model = model@ElectroChemicalComponent_(name);
             
             names = {model.names{:}, ...
                      'conductivity', ...
@@ -42,11 +42,6 @@ classdef Electrolyte_ < ThermoElectroChemicalComponent_
             inputnames = {''};
             fnmodel = {'.'};
             model = model.addPropFunction('jBcSource', fn, inputnames, fnmodel);
-            
-            fn = @Electrolyte.updateOhmSource;
-            inputnames = {'j', 'conductivity'};
-            fnmodel = {'.'};
-            model = model.addPropFunction('jHeatOhmSource', fn, inputnames, fnmodel);
             
         end        
     end

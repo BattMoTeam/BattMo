@@ -3,7 +3,7 @@ classdef ThermalComponent < PhysicalModel
     properties
         
        EffectiveThermalConductivity
-       heatCapacity % in [J][K]^-1[m]^-3
+       EffectiveHeatCapacity % in [J][K]^-1[m]^-3
        
     end
     
@@ -17,7 +17,7 @@ classdef ThermalComponent < PhysicalModel
             model.AutoDiffBackend = SparseAutoDiffBackend('useBlocks', false);
             
             fdnames = {'EffectiveThermalConductivity', ...
-                       'heatCapacity'};
+                       'EffectiveHeatCapacity'};
             model = dispatchParams(model, paramobj, fdnames);
             
             % setup discrete differential operators
@@ -26,8 +26,8 @@ classdef ThermalComponent < PhysicalModel
             model.constants = PhysicalConstants();
             
             nc = model.G.cells.num;
-            model.thermalConductivity = model.thermalConductivity*ones(nc, 1);
-            model.heatCapacity = model.heatCapacity*ones(nc, 1);
+            model.EffectiveThermalConductivity = model.EffectiveThermalConductivity*ones(nc, 1);
+            model.EffectiveHeatCapacity = model.EffectiveHeatCapacity*ones(nc, 1);
         
         end
 
@@ -50,10 +50,10 @@ classdef ThermalComponent < PhysicalModel
             
             state = model.updateHeatFlux(state);
             
-            flux   = state.jHeat;
+            flux     = state.jHeat;
             bcsource = state.jHeatBcSource;
-            source = state.jHeatSource;
-            accum  = state.accumHeat;
+            source   = state.jHeatSource;
+            accum    = state.accumHeat;
             
             energyCons = assembleConservationEquation(model, flux, bcsource, source, accum);
             

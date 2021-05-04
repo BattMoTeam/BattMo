@@ -15,7 +15,7 @@ classdef GraphiteInputParams < ActiveMaterialInputParams
             paramobj.Li.cmax                = 30555;    % [mol m^-3]
             paramobj.Li.D0                  = 3.9e-14;  % [m^2 s^-1]
             paramobj.Li.EaD                 = 5000;     % [J mol^-1]
-            paramobj.electronicConductivity = 100;      % [S m^-1]
+            paramobj.electricalConductivity = 100;      % [S m^-1]
             paramobj.cp                     = 700;      % [J kg^-1 K^-1]
             paramobj.k0                     = 5.031e-11;% [m^2.5 mol^-0.5 s^-1]
             paramobj.Eak                    = 5000;     % [J mol^-1]

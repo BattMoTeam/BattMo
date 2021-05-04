@@ -21,6 +21,8 @@ classdef Battery < PhysicalModel
         NegativeElectrode
         PositiveElectrode
         
+        ThermalModel
+        
         couplingTerms
         couplingNames
         
@@ -56,20 +58,96 @@ classdef Battery < PhysicalModel
             model.NegativeElectrode = model.setupElectrode(paramobj.ne);
             model.PositiveElectrode = model.setupElectrode(paramobj.pe);
             model.Electrolyte       = model.setupElectrolyte(paramobj.elyte);
+            model.ThermalModel = ThermalComponent();
+            
+            % setup Electrolyte volume fraction
+            model = model.setElectrolyteVolumeFraction();            
+            
+            % setup Thermal Model by assigning the effective heat capacity and conductivity, which is computed from the sub-models.
+            model = model.setupThermalModel();
             
             % setup couplingNames
             model.couplingNames = cellfun(@(x) x.name, model.couplingTerms, 'uniformoutput', false);
             
-            % setup Electrolyte porosity
-            model = model.setElectrolyteVolumeFraction();
-            
-            % setup Electrolyte effective thermal conductivity
-            model = model.setElectrolyteEffectiveThermalConductivity();
-            
-            % setup mappings (electrodes -> electrolyte)
+            % setup some mappings (mappings from electrodes to electrolyte)
             model = model.setupMappings();
            
         end
+
+        function model = setupThermalModel(model)
+
+            ne    = 'NegativeElectrode';
+            pe    = 'PositiveElectrode';
+            eac   = 'ElectrodeActiveComponent';
+            cc    = 'CurrentCollector';
+            elyte = 'Electrolyte';
+            sep   = 'Separator';
+            
+            eldes = {ne, pe}; % electrodes
+            
+            G = model.G;
+            nc = G.cells.num;
+            
+            hcap = zeros(nc, 1); % effective heat capacity
+            hcond = zeros(nc, 1); % effective heat conductivity
+            
+            for ind = 1 : numel(eldes)
+                elde = eldes{ind};
+                
+                % The effecive and intrinsic thermal parameters for the current collector are the same.
+                cc_map = model.(elde).(cc).G.mappings.cellmap;
+                cc_hcap = model.(elde).(cc).thermalConductivity;
+                cc_hcond = model.(elde).(cc).heatConductivity;
+
+                hcap(cc_map) = hcap(cc_map) + cc_cap;
+                hcond(cc_map) = hcond(cc_map) + cc_cond;
+                
+                % Effective parameters from the Electrode Active Component region.
+                eac_map = model.(elde).(eac).G.mappings.cellmap;
+                eac_hcap = model.(elde).(eac).thermalConductivity;
+                eac_hcond = model.(elde).(eac).heatConductivity;
+                eac_volfrac = model.(elde).(eac).volumeFraction;
+                
+                eac_hcap = eac_hcap.*eac_volfrac;
+                eac_hcond = eac_hcond.*eac_volfrac.^1.5;
+                
+                hcap(eac_map) = hcap(eac_map) + eac_cap;
+                hcond(eac_map) = hcond(eac_map) + eac_cond;
+                
+            end
+
+            % Electrolyte
+            
+            elyte_map = model.(elyte).G.mappings.cellmap;
+            elyte_hcap = model.(elyte).thermalConductivity;
+            elyte_hcond = model.(elyte).heatConductivity;
+            elyte_volfrac = model.(elyte).volumeFraction;
+            
+            elyte_hcap = elyte_hcap.*elyte_volfrac;
+            elyte_hcond = elyte_hcond.*elyte_volfrac.^1.5;
+            
+            hcap(elyte_map) = hcap(elyte_map) + elyte_cap;
+            hcond(elyte_map) = hcond(elyte_map) + elyte_cond;            
+                
+            % Separator
+            
+            sep_map = model.(elyte).(sep).G.mappings.cellmap;
+            
+            sep_hcap = model.(elyte).(sep).thermalConductivity;
+            sep_hcond = model.(elyte).(sep).heatConductivity;
+            sep_volfrac = model.(elyte).(sep).volumeFraction;
+            
+            sep_hcap = sep_hcap.*sep_volfrac;
+            sep_hcond = sep_hcond.*sep_volfrac.^1.5;
+            
+            hcap(sep_map) = hcap(sep_map) + sep_cap;
+            hcond(sep_map) = hcond(sep_map) + sep_cond;            
+
+            model.ThermalModel.EffectiveHeatCapacity = hcap;
+            model.ThermalModel.EffectiveHeatConductivity = hcond;
+            
+        end
+        
         
         function electrode = setupElectrode(model, paramobj)
         % Standard setup (ActiveMaterial is specified in Electrode instantiations)
@@ -91,7 +169,7 @@ classdef Battery < PhysicalModel
             ne      = 'NegativeElectrode';
             pe      = 'PositiveElectrode';
             eac     = 'ElectrodeActiveComponent';
-            cc      = 'CurrentCollector';
+            elyte      = 'CurrentCollector';
             elyte   = 'Electrolyte';
             
             
@@ -126,6 +204,120 @@ classdef Battery < PhysicalModel
             
         end
         
+        function model = setElectrolyteVolumeFraction(model)
+        % Abbreviations used in this function 
+        % elyte : Electrolyte
+        % ne    : NegativeElectrode
+        % pe    : PositiveElectrode
+            
+            elyte = 'Electrolyte';
+            ne    = 'NegativeElectrode';
+            pe    = 'PositiveElectrode';
+            eac   = 'ElectrodeActiveComponent';
+            sep   = 'Separator';
+
+            elyte_cells = zeros(model.G.cells.num, 1);
+            elyte_cells(model.(elyte).G.mappings.cellmap) = (1 : model.(elyte).G.cells.num)';
+
+            model.(elyte).volumeFraction = NaN(model.(elyte).G.cells.num, 1);
+            model.(elyte).volumeFraction(elyte_cells(model.(ne).(eac).G.mappings.cellmap))  = model.(ne).(eac).porosity;
+            model.(elyte).volumeFraction(elyte_cells(model.(pe).(eac).G.mappings.cellmap))  = model.(pe).(eac).porosity;
+            model.(elyte).volumeFraction(elyte_cells(model.(elyte).(sep).G.mappings.cellmap)) = model.(elyte).(sep).porosity;
+
+
+        end
+        
+        function initstate = setupInitialState(model)
+        % Setup initial state
+        %
+        % Abbreviations used in this function 
+        % elyte : Electrolyte
+        % ne    : NegativeElectrode
+        % pe    : PositiveElectrode
+        % eac   : ElectrodeActiveComponent
+        % cc    : CurrentCollector
+            
+            nc = model.G.cells.num;
+
+            SOC = model.SOC;
+            T   = model.initT;
+            
+            initstate.T   = T*ones(nc, 1);
+            initstate.SOC = SOC*ones(nc, 1);
+            
+            bat = model;
+            elyte = 'Electrolyte';
+            ne    = 'NegativeElectrode';
+            pe    = 'PositiveElectrode';
+            am    = 'ActiveMaterial';
+            eac   = 'ElectrodeActiveComponent';
+            cc    = 'CurrentCollector';
+            
+            %% synchronize temperatures
+            initstate = model.updateTemperature(initstate);
+            
+            %% setup initial NegativeElectrode state
+            
+            % shortcut
+            % negAm : ActiveMaterial of the negative electrode
+            
+            negAm = bat.(ne).(eac).(am); 
+            
+            m = (1 ./ (negAm.theta100 - negAm.theta0));
+            b = -m .* negAm.theta0;
+            theta = (SOC - b) ./ m;
+            c = theta .* negAm.Li.cmax;
+            c = c*ones(negAm.G.cells.num, 1);
+
+            initstate.(ne).(eac).c = c;
+            initstate.(ne).(eac) = model.(ne).(eac).updateChargeCarrier(initstate.(ne).(eac));
+            initstate.(ne).(eac).(am) = negAm.updateOCP(initstate.(ne).(eac).(am));
+
+            OCP = initstate.(ne).(eac).(am).OCP;
+            ref = OCP(1);
+            
+            initstate.(ne).(eac).phi = OCP - ref;
+
+            %% setup initial PositiveElectrode state
+
+            % shortcut
+            % posAm : ActiveMaterial of the positive electrode
+            
+            posAm = bat.(pe).(eac).(am);
+            
+            m = (1 ./ (posAm.theta100 - posAm.theta0));
+            b = -m .* posAm.theta0;
+            theta = (SOC - b) ./ m;
+            c = theta .* posAm.Li.cmax;
+            c = c*ones(posAm.G.cells.num, 1);
+
+            initstate.(pe).(eac).c = c;
+            initstate.(pe).(eac) = model.(pe).(eac).updateChargeCarrier(initstate.(pe).(eac));
+            initstate.(pe).(eac).(am) = posAm.updateOCP(initstate.(pe).(eac).(am));
+            
+            OCP = initstate.(pe).(eac).(am).OCP;
+            initstate.(pe).(eac).phi = OCP - ref;
+
+            %% setup initial Electrolyte state
+
+            initstate.(elyte).phi = zeros(bat.(elyte).G.cells.num, 1)-ref;
+            cs = cell(2,1);
+            initstate.(elyte).cs = cs;
+            initstate.(elyte).cs{1} = 1000*ones(bat.(elyte).G.cells.num, 1);
+
+            %% setup initial Current collectors state
+
+            OCP = initstate.(ne).(eac).(am).OCP;
+            OCP = OCP(1) .* ones(bat.(ne).(cc).G.cells.num, 1);
+            initstate.(ne).(cc).phi = OCP-ref;
+
+            OCP = initstate.(pe).(eac).(am).OCP;
+            OCP = OCP(1) .* ones(bat.(pe).(cc).G.cells.num, 1);
+            initstate.(pe).(cc).phi = OCP - ref;
+            
+            initstate.(pe).(cc).E = OCP(1) - ref;
+            
+        end
         
         function [problem, state] = getEquations(model, state0, state,dt, drivingForces, varargin)
             
@@ -289,7 +481,7 @@ classdef Battery < PhysicalModel
             coupterm = battery.(pe).(cc).couplingTerm;
             faces = coupterm.couplingfaces;
             bcval = state.(pe).(cc).E;
-            cond_pcc = battery.(pe).(cc).EffectiveElectronicConductivity;
+            cond_pcc = battery.(pe).(cc).EffectiveElectricalConductivity;
             [trans_pcc, cells] = battery.(pe).(cc).operators.harmFaceBC(cond_pcc, faces);
             control = sum(trans_pcc.*(state.(pe).(cc).phi(cells) - bcval)) - src;
             
@@ -325,12 +517,14 @@ classdef Battery < PhysicalModel
             pe    = 'PositiveElectrode';
             eac   = 'ElectrodeActiveComponent';
             cc    = 'CurrentCollector';
+            thermal = 'ThermalModel';
             
-            state.(elyte).T    = state.T(model.(elyte).G.mappings.cellmap);
-            state.(ne).(eac).T = state.T(model.(ne).(eac).G.mappings.cellmap);
-            state.(ne).(cc).T  = state.T(model.(ne).(cc).G.mappings.cellmap);
-            state.(pe).(eac).T = state.T(model.(pe).(eac).G.mappings.cellmap);
-            state.(pe).(cc).T  = state.T(model.(pe).(cc).G.mappings.cellmap);
+            % (here we assume that the ThermalModel has the "parent" grid)
+            state.(elyte).T    = state.(thermal).T(model.(elyte).G.mappings.cellmap);
+            state.(ne).(eac).T = state.(thermal).T(model.(ne).(eac).G.mappings.cellmap);
+            state.(ne).(cc).T  = state.(thermal).T(model.(ne).(cc).G.mappings.cellmap);
+            state.(pe).(eac).T = state.(thermal).T(model.(pe).(eac).G.mappings.cellmap);
+            state.(pe).(cc).T  = state.(thermal).T(model.(pe).(cc).G.mappings.cellmap);
             
             % Update temperature in the active materials of the electrodes.
             state.(ne).(eac) = model.(ne).(eac).updateTemperature(state.(ne).(eac));
@@ -338,135 +532,6 @@ classdef Battery < PhysicalModel
             
         end
         
-        function model = setElectrolyteVolumeFraction(model)
-        % Abbreviations used in this function 
-        % elyte : Electrolyte
-        % ne    : NegativeElectrode
-        % pe    : PositiveElectrode
-            
-            elyte = 'Electrolyte';
-            ne    = 'NegativeElectrode';
-            pe    = 'PositiveElectrode';
-            eac   = 'ElectrodeActiveComponent';
-            sep   = 'Separator';
-
-            elyte_cells = zeros(model.G.cells.num, 1);
-            elyte_cells(model.(elyte).G.mappings.cellmap) = (1 : model.(elyte).G.cells.num)';
-
-            model.(elyte).volumeFraction = NaN(model.(elyte).G.cells.num, 1);
-            model.(elyte).volumeFraction(elyte_cells(model.(ne).(eac).G.mappings.cellmap))  = model.(ne).(eac).porosity;
-            model.(elyte).volumeFraction(elyte_cells(model.(pe).(eac).G.mappings.cellmap))  = model.(pe).(eac).porosity;
-            model.(elyte).volumeFraction(elyte_cells(model.(elyte).(sep).G.mappings.cellmap)) = model.(elyte).(sep).porosity;
-
-
-        end
-        
-        function model = setElectrolyteEffectiveThermalConductivity(model)
-            
-            elyte = 'Electrolyte';
-            ne    = 'NegativeElectrode';
-            pe    = 'PositiveElectrode';
-            eac   = 'ElectrodeActiveComponent';
-
-            elyte_cells = zeros(model.G.cells.num, 1);
-            elyte_cells(model.(elyte).G.mappings.cellmap) = (1 : model.(elyte).G.cells.num)';
-            elyte_cells_sep = elyte_cells(model.(sep).G.mappings.cellmap);
-            model.(elyte).EffectiveThermalConductivity(elyte_cells_sep)  = model.(ne).(eac).porosity.*model.(elyte).thermalConductivity;
-            model.(elyte).EffectiveThermalConductivity(elyte_cells_sep)  = model.(pe).(eac).porosity.*model.(elyte).thermalConductivity;
-            
-        end
-        
-        function initstate = setupInitialState(model)
-        % Setup initial state
-        %
-        % Abbreviations used in this function 
-        % elyte : Electrolyte
-        % ne    : NegativeElectrode
-        % pe    : PositiveElectrode
-        % eac   : ElectrodeActiveComponent
-        % cc    : CurrentCollector
-            
-            nc = model.G.cells.num;
-
-            SOC = model.SOC;
-            T   = model.initT;
-            
-            initstate.T   = T*ones(nc, 1);
-            initstate.SOC = SOC*ones(nc, 1);
-            
-            bat = model;
-            elyte = 'Electrolyte';
-            ne    = 'NegativeElectrode';
-            pe    = 'PositiveElectrode';
-            am    = 'ActiveMaterial';
-            eac   = 'ElectrodeActiveComponent';
-            cc    = 'CurrentCollector';
-            
-            %% synchronize temperatures
-            initstate = model.updateTemperature(initstate);
-            
-            %% setup initial NegativeElectrode state
-            
-            % shortcut
-            % negAm : ActiveMaterial of the negative electrode
-            
-            negAm = bat.(ne).(eac).(am); 
-            
-            m = (1 ./ (negAm.theta100 - negAm.theta0));
-            b = -m .* negAm.theta0;
-            theta = (SOC - b) ./ m;
-            c = theta .* negAm.Li.cmax;
-            c = c*ones(negAm.G.cells.num, 1);
-
-            initstate.(ne).(eac).c = c;
-            initstate.(ne).(eac) = model.(ne).(eac).updateChargeCarrier(initstate.(ne).(eac));
-            initstate.(ne).(eac).(am) = negAm.updateOCP(initstate.(ne).(eac).(am));
-
-            OCP = initstate.(ne).(eac).(am).OCP;
-            ref = OCP(1);
-            
-            initstate.(ne).(eac).phi = OCP - ref;
-
-            %% setup initial PositiveElectrode state
-
-            % shortcut
-            % posAm : ActiveMaterial of the positive electrode
-            
-            posAm = bat.(pe).(eac).(am);
-            
-            m = (1 ./ (posAm.theta100 - posAm.theta0));
-            b = -m .* posAm.theta0;
-            theta = (SOC - b) ./ m;
-            c = theta .* posAm.Li.cmax;
-            c = c*ones(posAm.G.cells.num, 1);
-
-            initstate.(pe).(eac).c = c;
-            initstate.(pe).(eac) = model.(pe).(eac).updateChargeCarrier(initstate.(pe).(eac));
-            initstate.(pe).(eac).(am) = posAm.updateOCP(initstate.(pe).(eac).(am));
-            
-            OCP = initstate.(pe).(eac).(am).OCP;
-            initstate.(pe).(eac).phi = OCP - ref;
-
-            %% setup initial Electrolyte state
-
-            initstate.(elyte).phi = zeros(bat.(elyte).G.cells.num, 1)-ref;
-            cs = cell(2,1);
-            initstate.(elyte).cs = cs;
-            initstate.(elyte).cs{1} = 1000*ones(bat.(elyte).G.cells.num, 1);
-
-            %% setup initial Current collectors state
-
-            OCP = initstate.(ne).(eac).(am).OCP;
-            OCP = OCP(1) .* ones(bat.(ne).(cc).G.cells.num, 1);
-            initstate.(ne).(cc).phi = OCP-ref;
-
-            OCP = initstate.(pe).(eac).(am).OCP;
-            OCP = OCP(1) .* ones(bat.(pe).(cc).G.cells.num, 1);
-            initstate.(pe).(cc).phi = OCP - ref;
-            
-            initstate.(pe).(cc).E = OCP(1) - ref;
-            
-        end
         
         function state = updateElectrolyteCoupling(model, state)
         % Setup the electrolyte coupling by adding ion sources from the electrodes
@@ -542,61 +607,82 @@ classdef Battery < PhysicalModel
             
         end
 
-        function state = updateElyteHeatBcSource(model, state)
-        % trivial update to zero.
-            elyte = 'Electrolyte';
-            nc = model.(elyte).G.cells.num;
+        
+        function state = updateThermalAccumTerms(model, state, state0, dt)
+                    
+            thermal = 'ThermalModel';
+         
+            hcap = model.(thermal).EffectiveHeatCapacity;
+            
+            T = state.(thermal).T;
+            T0 = state.(thermal).T0;
 
-            state.(elyte).jHeatBcSource = zeros(nc, 1);
+            % (here we assume that the ThermalModel has the "parent" grid)
+            vols = model.G.cells.volues;
+            
+            state.(thermal).accumHeat = hcap.*vols.*(T - T0)/dt;
             
         end
-        
-        
-        function state = updateEnergyAccumTerms(model, state, state0, dt)
-                    
-            elyte = 'Electrolyte';
+
+
+        function state = updateThermalOhmicSourceTerms(model, state)
+            
             ne    = 'NegativeElectrode';
             pe    = 'PositiveElectrode';
             eac   = 'ElectrodeActiveComponent';
             cc    = 'CurrentCollector';
+            elyte = 'Electrolyte';
+
+            eldes = {ne, pe}; % electrodes
             
-            submodels = {model.(elyte)   , ...
-                         model.(ne).(eac), ...
-                         model.(ne).(cc) , ...
-                         model.(pe).(eac), ...
-                         model.(pe).(cc)};
+            nc = model.G.cells.num;
             
-            fds = {{elyte, 'accumHeat'}  , ...
-                   {ne, eac, 'accumHeat'}, ...
-                   {ne, cc, 'accumHeat'} , ...
-                   {pe, eac, 'accumHeat'}, ...
-                   {pe, cc, 'accumHeat'}};
+            src = zeros(nc, 1);
             
-            globT = state.T;
-            globT0 = state0.T;
+            for ind = 1 : numel(eldes)
+
+                elde = eldes{ind};
+                
+                cc_model = 
+                cc_map = model.(elde).(cc).G.mappings.cellmap;
+                
+                
+                cc_hcap = model.(elde).(cc).thermalConductivity;
+                cc_hcond = model.(elde).(cc).heatConductivity;
+
+                hcap(cc_map) = hcap(cc_map) + cc_cap;
+                hcond(cc_map) = hcond(cc_map) + cc_cond;
+                
+                % Effective parameters from the Electrode Active Component region.
+                eac_map = model.(elde).(eac).G.mappings.cellmap;
+                eac_hcap = model.(elde).(eac).thermalConductivity;
+                eac_hcond = model.(elde).(eac).heatConductivity;
+                eac_volfrac = model.(elde).(eac).volumeFraction;
+                
+                eac_hcap = eac_hcap.*eac_volfrac;
+                eac_hcond = eac_hcond.*eac_volfrac.^1.5;
+                
+                hcap(eac_map) = hcap(eac_map) + eac_cap;
+                hcond(eac_map) = hcond(eac_map) + eac_cond;
+                
+            end
+
+            % Electrolyte
             
-            for ind = 1 : numel(fds)
-                
-                submodel = submodels{ind};
-                hC       = submodel.heatCapacity;
-                if isprop(submodel, 'volumeFraction')
-                    volfrac  = submodel.volumeFraction;
-                else
-                    volfrac = 1;
-                end
-                vols     = submodel.G.cells.volumes;
-                cellmap  = submodel.G.mappings.cellmap;
-                
-                T  = globT(cellmap);
-                T0 = globT0(cellmap);
-                
-                accumHeat = hC.*volfrac.*vols.*(T - T0)/dt;
-                
-                state = model.setProp(state, fds{ind}, accumHeat);
-            end            
+            elyte_map = model.(elyte).G.mappings.cellmap;
+            elyte_hcap = model.(elyte).thermalConductivity;
+            elyte_hcond = model.(elyte).heatConductivity;
+            elyte_volfrac = model.(elyte).volumeFraction;
+            
+            elyte_hcap = elyte_hcap.*elyte_volfrac;
+            elyte_hcond = elyte_hcond.*elyte_volfrac.^1.5;
+            
+            hcap(elyte_map) = hcap(elyte_map) + elyte_cap;
+            hcond(elyte_map) = hcond(elyte_map) + elyte_cond;            
+
             
         end
-
+        
         
         function state = updateElectrodeCoupling(model, state)
         % Setup electrode coupling by updating the potential and concentration of the electrolyte in the active component of the

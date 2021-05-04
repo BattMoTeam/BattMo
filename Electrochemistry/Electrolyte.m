@@ -1,4 +1,4 @@
-classdef Electrolyte < ThermoElectroChemicalComponent
+classdef Electrolyte < ElectroChemicalComponent
     
     properties
         
@@ -13,6 +13,7 @@ classdef Electrolyte < ThermoElectroChemicalComponent
         volumeFraction
         
         thermalConductivity
+        heatCapacity
         
     end
 
@@ -20,15 +21,16 @@ classdef Electrolyte < ThermoElectroChemicalComponent
         
         function model = Electrolyte(paramobj)
         % paramobj is instance of ElectrolyteInputParams or a derived class
-            model = model@ThermoElectroChemicalComponent(paramobj);
+            model = model@ElectroChemicalComponent(paramobj);
             
             model.Separator = Separator(paramobj.sep);
             
-            fdnames = {'sp', ...
-                       'compnames', ...
-                       'indchargecarrier', ...
-                       'ncomp', ...
-                       'thermalConductivity'};
+            fdnames = {'sp'                 , ...
+                       'compnames'          , ...
+                       'indchargecarrier'   , ...
+                       'ncomp'              , ...
+                       'thermalConductivity', ...
+                       'heatCapacity'};
 
             model = dispatchParams(model, paramobj, fdnames);
             
@@ -109,15 +111,6 @@ classdef Electrolyte < ThermoElectroChemicalComponent
             flux = flux*F; 
             
             state.LiFlux = flux;
-            
-        end
-
-        function state = updateOhmSource(model, state)
-            
-        % We use the effective conducivity which has been computed and depends on the concentration
-            
-            conductivity = state.conductivity;
-            state = updateOhmSourceFunc(model, state, conductivity);
             
         end
         

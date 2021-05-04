@@ -1,19 +1,28 @@
-classdef CurrentCollector < ThermoElectronicComponent
+classdef CurrentCollector < ElectronicComponent
 
     properties
+        
         couplingTerm
+
+        thermalConductivity
+        heatCapacity
+        
     end
     
     methods
         
         function model = CurrentCollector(paramobj)
             
-            model = model@ThermoElectronicComponent(paramobj);
+            model = model@ElectronicComponent(paramobj);
 
-            model = dispatchParams(model, paramobj, 'couplingTerm');
+            fdnames = {'couplingTerm', ...
+                       'thermalConductivity', ...
+                       'heatCapacity'};
             
-            % The parameter EffectiveElectronicConductivity in CurrentCollectorInputParams is given as scalar
-            model.EffectiveElectronicConductivity = model.EffectiveElectronicConductivity*ones(model.G.cells.num, 1);
+            model = dispatchParams(model, paramobj, fdnames);
+            
+            % The parameter EffectiveElectricalConductivity in CurrentCollectorInputParams is given as scalar
+            model.EffectiveElectricalConductivity = model.EffectiveElectricalConductivity*ones(model.G.cells.num, 1);
             
         end
         
@@ -29,7 +38,7 @@ classdef CurrentCollector < ThermoElectronicComponent
             
             jExternal = phi*0.0; %NB hack to initialize zero ad
             
-            sigmaeff = model.EffectiveElectronicConductivity;
+            sigmaeff = model.EffectiveElectricalConductivity;
             faces = coupterm.couplingfaces;
             bcval = phiExternal;
             [t, cells] = model.operators.harmFaceBC(sigmaeff, faces);

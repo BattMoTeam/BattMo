@@ -1,10 +1,6 @@
-classdef Separator_ < ThermalComponent_
-   
+classdef Separator_ < ComponentModel
     
-    methods model = Separator_(name)
-        
-        model = model@ThermalComponent_(name);
-        
-    end
+% Empty because no "dynamic" variables (i.e. that depends on the state of the system) are directly associated to the separator 
+    
 end
 

@@ -1,12 +1,14 @@
-classdef SeparatorInputParams < ThermalComponentInputParams
+classdef SeparatorInputParams < ComponentInputParams
 
     properties
         
-        thermalConductivity % (not weighted by porosity)
         thickness
         porosity
         rp
         Gurley
+        
+        thermalConductivity
+        heatCapacity
         
     end
     
@@ -14,7 +16,7 @@ classdef SeparatorInputParams < ThermalComponentInputParams
 
         function paramobj = SeparatorInputParams()
             
-            paramobj = paramobj@ThermalComponentInputParams();
+            paramobj = paramobj@ComponentInputParams();
             
         end
         

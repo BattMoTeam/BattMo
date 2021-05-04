@@ -1,10 +1,10 @@
-classdef CurrentCollector_ < ThermoElectronicComponent_
+classdef CurrentCollector_ < ElectronicComponent_
     
     methods
 
         function model = CurrentCollector_(name)
 
-            model = model@ThermoElectronicComponent_(name);
+            model = model@ElectronicComponent_(name);
             
             names = {model.names{:}, ...
                      'jCoupling', ...

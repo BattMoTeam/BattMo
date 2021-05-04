@@ -1,4 +1,4 @@
-classdef Separator < ThermalComponent
+classdef Separator < PhysicalModel
     
     properties
         
@@ -9,18 +9,27 @@ classdef Separator < ThermalComponent
         Gurley         % Gurley number,    [s]
         volumeFraction % Volume fraction,  [-]
         
+        thermalConductivity
+        heatCapacity
+        
     end
     
     methods
         function model = Separator(paramobj)
             
-            model = model@ThermalComponent(paramobj);
+            model = model@PhysicalModel([]);
+
+            % OBS : All the models should have same backend (this is not assigned automaticallly for the moment)
+            % in the case of the separator, probably this does not matter as no computation is actually done on this grid
+            model.AutoDiffBackend = SparseAutoDiffBackend('useBlocks', false);
             
-            fdnames = {'thermalConductivity', ...
-                       'thickness', ...
-                       'porosity' , ...
-                       'rp'       , ...
-                       'Gurley'};
+            fdnames = {'G'                  , ...
+                       'thickness'          , ...
+                       'porosity'           , ...
+                       'rp'                 , ...
+                       'Gurley'             , ...
+                       'thermalConductivity', ...
+                       'heatCapacity'};
             model = dispatchParams(model, paramobj, fdnames);
             
             model.volumeFraction = 1 - model.porosity;

@@ -1,7 +1,7 @@
 classdef ElectronicComponentInputParams < ComponentInputParams
 
     properties
-        EffectiveElectronicConductivity;
+        EffectiveElectricalConductivity;
     end
     
 end

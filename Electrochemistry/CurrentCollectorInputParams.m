@@ -1,7 +1,12 @@
-classdef CurrentCollectorInputParams < ThermoElectronicComponentInputParams
+classdef CurrentCollectorInputParams < ElectronicComponentInputParams
 
     properties
-        couplingTerm;
+        
+        couplingTerm
+
+        thermalConductivity
+        heatCapacity
+        
     end
     
     methods
@@ -11,7 +16,7 @@ classdef CurrentCollectorInputParams < ThermoElectronicComponentInputParams
             paramobj.couplingTerm = struct();
             
             % we set 100 here directly just for simplicity for the moment (hacky...)
-            paramobj.EffectiveElectronicConductivity = 100;
+            paramobj.EffectiveElectricalConductivity = 100;
         end
         
     end

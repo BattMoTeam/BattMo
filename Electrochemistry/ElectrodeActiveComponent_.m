@@ -1,10 +1,10 @@
-classdef ElectrodeActiveComponent_ < ThermoElectroChemicalComponent_
+classdef ElectrodeActiveComponent_ < ElectroChemicalComponent_
 
     methods
 
         function model = ElectrodeActiveComponent_(name)
 
-            model = model@ThermoElectroChemicalComponent_(name);
+            model = model@ElectroChemicalComponent_(name);
             
             names = {model.names{:}, ...
                      'jCoupling'};

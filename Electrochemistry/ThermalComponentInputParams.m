@@ -3,7 +3,7 @@ classdef ThermalComponentInputParams < ComponentInputParams
     properties
         
         EffectiveThermalConductivity
-        heatCapacity
+        EffectiveHeatCapacity
         
     end
     

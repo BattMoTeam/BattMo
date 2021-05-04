@@ -1,4 +1,4 @@
-classdef ElectrodeActiveComponent < ThermoElectroChemicalComponent
+classdef ElectrodeActiveComponent < ElectroChemicalComponent
     
     properties
         
@@ -7,8 +7,9 @@ classdef ElectrodeActiveComponent < ThermoElectroChemicalComponent
         volumeFraction
         porosity
         thickness
-        
+                    
         thermalConductivity
+        heatCapacity
         
     end
     
@@ -18,9 +19,10 @@ classdef ElectrodeActiveComponent < ThermoElectroChemicalComponent
         % shortcut used here:
         % am = ActiveMaterial
             
-            model = model@ThermoElectroChemicalComponent(paramobj);
+            model = model@ElectroChemicalComponent(paramobj);
             
-            fdnames = {'thermalConductivity'};
+            fdnames = {'thermalConductivity', ...
+                       'heatCapacity'};
             model = dispatchParams(model, paramobj, fdnames);
             
             % Setup ActiveMaterial component
@@ -35,10 +37,10 @@ classdef ElectrodeActiveComponent < ThermoElectroChemicalComponent
             model.porosity = 1 - model.volumeFraction;
             model.thickness = 10e-6;
             
-            % setup effective electronic conductivity
-            econd = model.ActiveMaterial.electronicConductivity;
+            % setup effective electrical conductivity
+            econd = model.ActiveMaterial.electricalConductivity;
             % Bruggeman approximation 
-            model.EffectiveElectronicConductivity = econd .* volumeFraction.^1.5;
+            model.EffectiveElectricalConductivity = econd .* volumeFraction.^1.5;
             % setup effective thermal conductivity            
             model.EffectiveThermalConductivity = model.thermalConductivity.*volumFraction;
             

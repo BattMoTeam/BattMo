@@ -14,7 +14,7 @@ classdef ActiveMaterialInputParams
            %  - cmax            % [mol m^-3]
            %  - D0              % [m^2 s^-1]
            %  - EaD             % [J mol^-1]
-        electronicConductivity  % [S m^-1]
+        electricalConductivity  % [S m^-1]
         cp                      % [J kg^-1 K^-1]
         k0                      % [m^2.5 mol^-0.5 s^-1]
         Eak                     % [J mol^-1]

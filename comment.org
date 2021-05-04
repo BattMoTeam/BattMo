@@ -12,7 +12,7 @@
   - The use of the discrete differential operators is limited the two (very short!) functions
     - ~flux = assembleFlux(model, potential, fluxCoefficient)~ 
 
-      computes a flux given a potential (like ~phi~) and flux coefficient (such as electronic conductivity)
+      computes a flux given a potential (like ~phi~) and flux coefficient (such as electrical conductivity)
     - ~cons = assembleConservationEquation(model, flux, bcflux, source, accum)~ 
        
       Assemble a conservation equation $accum + div(j) = q$ with boundary condition (sent by ~bcflux~). The ~accum~ term
