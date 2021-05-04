@@ -82,3 +82,5 @@
   - We fix this later.
 * heat exchanges
   - see [[file:heatexchange.xcf][illustration]]
+* effective electrical conductivity for electrolyte
+  - in master commit e5407d4880dfb7faece26da3f94630483a6e426b it looks like it is not assembled for the electrolyte

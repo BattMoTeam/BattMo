@@ -2,7 +2,7 @@ clear all
 close all
 
 % setup mrst modules
-mrstModule add ad-core multimodel mrst-gui battery agmg mpfa
+mrstModule add ad-core multimodel mrst-gui battery mpfa
 
 mrstVerbose off
 
@@ -136,6 +136,7 @@ use_iterative = false;
 if(use_iterative)
     % nls.LinearSolver = LinearSolverBattery('method', 'iterative'); 
     % nls.LinearSolver = LinearSolverBattery('method', 'direct'); 
+    mrstModule add agmg
     nls.LinearSolver = LinearSolverBattery('method', 'agmg', 'verbosity', 1);
     nls.LinearSolver.tol = 1e-3;
     nls.verbose = 10
