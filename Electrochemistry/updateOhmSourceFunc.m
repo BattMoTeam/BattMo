@@ -1,4 +1,4 @@
-function  jHeatOhmSource = updateOhmSourceFunc(model, state)
+function  jHeatOhmSource = updateOhmSourceFunc(model, j, effectiveElectricalConductivity)
 %
 % reference : 
 % @misc{Latz_2016,
@@ -20,14 +20,12 @@ function  jHeatOhmSource = updateOhmSourceFunc(model, state)
     end
     vols = model.G.cells.volumes;
 
-    j = state.j;
     j = op.P*j;
     jsq = j.^2;
     jsq = op.S*jsq;
     
-    elcond = model.EffectiveElectricalConductivity;
     
-    jHeatOhmSource = (volfrac.*vols).*jsq./elcond;
+    jHeatOhmSource = (volfrac.*vols).*jsq./effectiveElectricalConductivity;
     
     
 end

@@ -60,8 +60,8 @@ classdef Battery < PhysicalModel
             model.Electrolyte       = model.setupElectrolyte(paramobj.elyte);
             model.ThermalModel = ThermalComponent();
             
-            % setup Electrolyte volume fraction
-            model = model.setElectrolyteVolumeFraction();            
+            % setup Electrolyte model (setup electrolyte volume fractions in the different regions)
+            model = model.setupElectrolyteModel();            
             
             % setup Thermal Model by assigning the effective heat capacity and conductivity, which is computed from the sub-models.
             model = model.setupThermalModel();
@@ -204,7 +204,9 @@ classdef Battery < PhysicalModel
             
         end
         
-        function model = setElectrolyteVolumeFraction(model)
+        function model = setupElectrolyteModel(model)
+        % setup electrolyte volume fractions in the different regions
+        %
         % Abbreviations used in this function 
         % elyte : Electrolyte
         % ne    : NegativeElectrode
@@ -223,7 +225,6 @@ classdef Battery < PhysicalModel
             model.(elyte).volumeFraction(elyte_cells(model.(ne).(eac).G.mappings.cellmap))  = model.(ne).(eac).porosity;
             model.(elyte).volumeFraction(elyte_cells(model.(pe).(eac).G.mappings.cellmap))  = model.(pe).(eac).porosity;
             model.(elyte).volumeFraction(elyte_cells(model.(elyte).(sep).G.mappings.cellmap)) = model.(elyte).(sep).porosity;
-
 
         end
         
@@ -643,43 +644,34 @@ classdef Battery < PhysicalModel
 
                 elde = eldes{ind};
                 
-                cc_model = 
-                cc_map = model.(elde).(cc).G.mappings.cellmap;
+                cc_model = model.(elde).(cc);
+                cc_map   = cc_model.G.mappings.cellmap;
+                cc_j     = state.(elde).(cc).j;
+                cc_econd = cc_model.EffectiveElectricalConductivity;
                 
-                
-                cc_hcap = model.(elde).(cc).thermalConductivity;
-                cc_hcond = model.(elde).(cc).heatConductivity;
+                cc_src = updateOhmSourceFunc(cc_model, cc_j, cc_econd);
+                src(cc_map) = src(cc_map) + cc_src;
 
-                hcap(cc_map) = hcap(cc_map) + cc_cap;
-                hcond(cc_map) = hcond(cc_map) + cc_cond;
+                eac_model = model.(elde).(eac);
+                eac_map   = eac_model.G.mappings.cellmap;
+                eac_j     = state.(elde).(eac).j;
+                eac_econd = eac_model.EffectiveElectricalConductivity;
                 
-                % Effective parameters from the Electrode Active Component region.
-                eac_map = model.(elde).(eac).G.mappings.cellmap;
-                eac_hcap = model.(elde).(eac).thermalConductivity;
-                eac_hcond = model.(elde).(eac).heatConductivity;
-                eac_volfrac = model.(elde).(eac).volumeFraction;
-                
-                eac_hcap = eac_hcap.*eac_volfrac;
-                eac_hcond = eac_hcond.*eac_volfrac.^1.5;
-                
-                hcap(eac_map) = hcap(eac_map) + eac_cap;
-                hcond(eac_map) = hcond(eac_map) + eac_cond;
+                eac_src = updateOhmSourceFunc(eac_model, eac_j, eac_econd);
+                src(eac_map) = src(eac_map) + eac_src;
                 
             end
 
             % Electrolyte
+            elyte_model = model.(elyte);
+            elyte_map   = elyte_model.G.mappings.cellmap;
+            elyte_j     = state.(elyte).j;
+            elyte_econd = state.(elyte).conductivity;
             
-            elyte_map = model.(elyte).G.mappings.cellmap;
-            elyte_hcap = model.(elyte).thermalConductivity;
-            elyte_hcond = model.(elyte).heatConductivity;
-            elyte_volfrac = model.(elyte).volumeFraction;
-            
-            elyte_hcap = elyte_hcap.*elyte_volfrac;
-            elyte_hcond = elyte_hcond.*elyte_volfrac.^1.5;
-            
-            hcap(elyte_map) = hcap(elyte_map) + elyte_cap;
-            hcond(elyte_map) = hcond(elyte_map) + elyte_cond;            
+            elyte_src = updateOhmSourceFunc(elyte_model, elyte_j, elyte_econd);
+            src(elyte_map) = src(elyte_map) + elyte_src;
 
+            state.jHeatOhmSource = src;
             
         end
         

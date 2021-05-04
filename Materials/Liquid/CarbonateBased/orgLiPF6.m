@@ -83,6 +83,7 @@ classdef orgLiPF6 < Electrolyte
             % Diffusion coefficient, [m^2 s^-1]
             D = 1e-4 .* 10 .^ ( ( cnst(1,1) + cnst(1,2) ./ ( T - Tgi(1) - Tgi(2) .* c .* 1e-3) + cnst(2,1) .* ...
                                   c .* 1e-3) );
+            
             % calculate the effective diffusion coefficients in porous media
             state.D = D .* model.volumeFraction .^1.5;
         
