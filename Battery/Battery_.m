@@ -107,6 +107,7 @@ classdef Battery_ < CompositeModel
                           VarName({'pe', 'cc'}, 'j')  , ...
                           VarName({'pe', 'eac'}, 'j')};
             model = model.addPropFunction({'thermal', 'jHeatOhmSource'}, fn, inputnames, fnmodel);
+            model = model.addPropFunction({'thermal', 'jHeatBcSource'}, fn, inputnames, fnmodel);
             
             
             %% setup external coupling at positive and negative electrodes

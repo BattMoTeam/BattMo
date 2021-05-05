@@ -243,7 +243,6 @@ classdef Battery < PhysicalModel
             SOC = model.SOC;
             T   = model.initT;
             
-            initstate.T   = T*ones(nc, 1);
             initstate.SOC = SOC*ones(nc, 1);
             
             bat = model;
@@ -253,6 +252,9 @@ classdef Battery < PhysicalModel
             am    = 'ActiveMaterial';
             eac   = 'ElectrodeActiveComponent';
             cc    = 'CurrentCollector';
+            thermal    = 'ThermalModel';
+            
+            initstate.(thermal).T = T;
             
             %% synchronize temperatures
             initstate = model.updateTemperature(initstate);
@@ -342,6 +344,7 @@ classdef Battery < PhysicalModel
             cc      = 'CurrentCollector';
             elyte   = 'Electrolyte';
             am      = 'ActiveMaterial';
+            thermal = 'ThermalModel';
             
             electrodes = {ne, pe};
             electrodecomponents = {eac, cc};
@@ -430,9 +433,19 @@ classdef Battery < PhysicalModel
                 state.(elde).(cc) = battery.(elde).(cc).updateChargeConservation(state.(elde).(cc));
 
             end
+            
+            %% update Thermal source term from electrical resistance
+
+            state = battery.updateThermalOhmicSourceTerms(state)
 
             %% update Accumulation terms for the energy equation
-            state = battery.updateEnergyAccumTerms(state, state0, dt);
+            
+            state = battery.updateThermalAccumTerms(state, state0, dt);
+            
+            %% Update energy conservation residual term
+            
+            state.(thermal) = model.(thermal).updateEnergyConservation(state.(thermal));
+            
             
             %% elyte energy conservation 
             state = battery.updateElyteHeatBcSource(state);
@@ -453,8 +466,6 @@ classdef Battery < PhysicalModel
                 
             end
 
-            %% energy conservation equation 
-            state = battery.updateEnergyConservation(state);
             
             %% Set up the governing equations
             
@@ -474,7 +485,7 @@ classdef Battery < PhysicalModel
             eqs{end + 1} = state.(ne).(cc).chargeCons;
             eqs{end + 1} = state.(pe).(cc).chargeCons;
             
-            eqs{end + 1} = state.energyCons;
+            eqs{end + 1} = state.(thermal).energyCons;
             
             %% We setup and add the control equation (fixed total current at PositiveCurrentCollector)
             
@@ -619,7 +630,7 @@ classdef Battery < PhysicalModel
             T0 = state.(thermal).T0;
 
             % (here we assume that the ThermalModel has the "parent" grid)
-            vols = model.G.cells.volues;
+            vols = model.G.cells.volumes;
             
             state.(thermal).accumHeat = hcap.*vols.*(T - T0)/dt;
             
@@ -628,12 +639,13 @@ classdef Battery < PhysicalModel
 
         function state = updateThermalOhmicSourceTerms(model, state)
             
-            ne    = 'NegativeElectrode';
-            pe    = 'PositiveElectrode';
-            eac   = 'ElectrodeActiveComponent';
-            cc    = 'CurrentCollector';
-            elyte = 'Electrolyte';
-
+            ne      = 'NegativeElectrode';
+            pe      = 'PositiveElectrode';
+            eac     = 'ElectrodeActiveComponent';
+            cc      = 'CurrentCollector';
+            elyte   = 'Electrolyte';
+            thermal = 'ThermalModel';
+            
             eldes = {ne, pe}; % electrodes
             
             nc = model.G.cells.num;
@@ -671,10 +683,12 @@ classdef Battery < PhysicalModel
             elyte_src = updateOhmSourceFunc(elyte_model, elyte_j, elyte_econd);
             src(elyte_map) = src(elyte_map) + elyte_src;
 
-            state.jHeatOhmSource = src;
+            state.(thermal).jHeatOhmSource = src;
+            
+            % For simplicity, we set the boundary heat transfer term equal to zero here.
+            state.(thermal).jHeatBcSource = 0;
             
         end
-        
         
         function state = updateElectrodeCoupling(model, state)
         % Setup electrode coupling by updating the potential and concentration of the electrolyte in the active component of the
@@ -736,43 +750,6 @@ classdef Battery < PhysicalModel
             
         end
 
-        
-        function state =updateEnergyConservation(model, state);
-            
-            elyte = 'Electrolyte';
-            ne    = 'NegativeElectrode';
-            pe    = 'PositiveElectrode';
-            am    = 'ActiveMaterial';
-            eac   = 'ElectrodeActiveComponent';
-            cc    = 'CurrentCollector';
-            
-            % We recover energy equation for electrolyte
-            
-            energyCons = state.(elyte).energyCons;
-            
-            %  we have to add the contribution from the electrode's active component
-           
-            eldes = {ne, pe};
-            
-            for ind = 1 : numel(eldes)
-                elde = eldes{ind};
-                cellmap = model.mappings.(elde);
-                elde_energyCons = state.(elde).(eac).energyCons;
-                energyCons(cellmap) = energyCons(cellmap) + elde_energyCons;
-            end
-            
-            % We retrieve the energy equation from the current collectors.
-            
-            necc_energyCons = state.(ne).(cc).energyCons;
-            pecc_energyCons = state.(pe).(cc).energyCons;
-            
-            % We concatenate the contributions
-            
-            state.energyCons = vertcat(necc_energyCons, ...
-                                       energyCons, ...
-                                       pecc_energyCons);
-        
-        end
         
         function state = initStateAD(model,state)
             
