@@ -12,8 +12,12 @@ classdef Electrolyte < ElectroChemicalComponent
         
         volumeFraction
         
-        thermalConductivity
-        heatCapacity
+                            
+        thermalConductivity % intrinsic thermal conductivity value
+        heatCapacity % intrinsic heat capacity value
+
+        EffectiveThermalConductivity
+        EffectiveHeatCapacity
         
     end
 

@@ -8,8 +8,11 @@ classdef ElectrodeActiveComponent < ElectroChemicalComponent
         porosity
         thickness
                     
-        thermalConductivity
-        heatCapacity
+        thermalConductivity % intrinsic thermal conductivity value
+        heatCapacity % intrinsic heat capacity value
+
+        EffectiveThermalConductivity
+        EffectiveHeatCapacity
         
     end
     
@@ -42,7 +45,8 @@ classdef ElectrodeActiveComponent < ElectroChemicalComponent
             % Bruggeman approximation 
             model.EffectiveElectricalConductivity = econd .* volumeFraction.^1.5;
             % setup effective thermal conductivity            
-            model.EffectiveThermalConductivity = model.thermalConductivity.*volumFraction;
+            model.EffectiveThermalConductivity = model.thermalConductivity.*volumeFraction.^1.5;
+            model.EffectiveHeatCapacity = model.heatCapacity.*volumeFraction;
             
         end
 

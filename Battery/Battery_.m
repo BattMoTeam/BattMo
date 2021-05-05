@@ -93,14 +93,14 @@ classdef Battery_ < CompositeModel
             %% update Thermal accumulation terms
             
             fn = @Battery.updateThermalAccumTerms;
-            
+            fnmodel = {'..'};
             inputnames = {VarName({'thermal'}, 'T')};
             model = model.addPropFunction({'thermal', 'accumHeat'}, fn, inputnames, fnmodel);
             
             %% update Thermal Ohmic Terms
             
             fn = @Battery.updateThermalOhmicSourceTerms;
-            
+            fnmodel = {'..'};
             inputnames = {VarName({'elyte'}, 'j')     , ...
                           VarName({'ne', 'cc'}, 'j')  , ...
                           VarName({'ne', 'eac'}, 'j') , ...
@@ -109,7 +109,12 @@ classdef Battery_ < CompositeModel
             model = model.addPropFunction({'thermal', 'jHeatOhmSource'}, fn, inputnames, fnmodel);
             model = model.addPropFunction({'thermal', 'jHeatBcSource'}, fn, inputnames, fnmodel);
             
-            
+            fn = @Battery.updateThermalSourceTerms;
+            fnmodel = {'..'};
+            inputnames = {VarName({'thermal'}, 'jHeatSource')};
+            model = model.addPropFunction({'thermal', 'jHeatSource'}, fn, inputnames, fnmodel);
+                          
+                          
             %% setup external coupling at positive and negative electrodes
             
             fn = @Battery.setupExternalCouplingNegativeElectrode;

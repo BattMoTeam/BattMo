@@ -16,18 +16,19 @@ classdef ThermalComponent < PhysicalModel
             % OBS : All the models should have same backend (this is not assigned automaticallly for the moment)
             model.AutoDiffBackend = SparseAutoDiffBackend('useBlocks', false);
             
-            fdnames = {'EffectiveThermalConductivity', ...
+            fdnames = {'G', ...
+                       'EffectiveThermalConductivity', ...
                        'EffectiveHeatCapacity'};
             model = dispatchParams(model, paramobj, fdnames);
             
             % setup discrete differential operators
             model.operators = localSetupOperators(model.G);
             
-            model.constants = PhysicalConstants();
-            
-            nc = model.G.cells.num;
-            model.EffectiveThermalConductivity = model.EffectiveThermalConductivity*ones(nc, 1);
-            model.EffectiveHeatCapacity = model.EffectiveHeatCapacity*ones(nc, 1);
+            if ~isempty(model.EffectiveThermalConductivity)
+                nc = model.G.cells.num;
+                model.EffectiveThermalConductivity = model.EffectiveThermalConductivity*ones(nc, 1);
+                model.EffectiveHeatCapacity = model.EffectiveHeatCapacity*ones(nc, 1);
+            end
         
         end
 

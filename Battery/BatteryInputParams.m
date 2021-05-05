@@ -21,6 +21,7 @@ classdef BatteryInputParams
         ne;
         pe;
         elyte;        
+        thermal;
                 
         %% Coupling terms (describe the topological structure of the coupling)
         couplingTerms
@@ -33,6 +34,7 @@ classdef BatteryInputParams
             paramobj.ne = ElectrodeInputParams();
             paramobj.pe = ElectrodeInputParams();
             paramobj.elyte = ElectrolyteInputParams();
+            paramobj.thermal = ThermalComponentInputParams();
             parmobj.couplingTerms = {};
         end
 

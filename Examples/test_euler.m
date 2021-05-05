@@ -146,7 +146,7 @@ model.verbose = false;
 
 % Run simulation
 
-doprofiling = true;
+doprofiling = false;
 if doprofiling
     profile off
     profile on
@@ -191,6 +191,8 @@ xlabel('time (hours)')
 
 if strcmp(modelcase, '1D')
 
+    thermal = 'ThermalModel';
+    
     h = figure;
     
     ffields = {'phi', 'c', 'j', 'LiFlux'};
@@ -201,8 +203,9 @@ if strcmp(modelcase, '1D')
               {'NegativeElectrode','CurrentCollector'}, ...
               {'PositiveElectrode','CurrentCollector'}};    
     
-    tM = max(states{end}.T);
-    tm = min(states{1}.T);
+    
+    tM = max(states{end}.(thermal).T);
+    tm = min(states{1}.(thermal).T);
     tM = tM + 1e-1*(tM - tm);
     tm = tm - 1e-1*(tM - tm);
     
@@ -251,7 +254,7 @@ if strcmp(modelcase, '1D')
         % plot temperature
         subplot(2, 3, 5);
         c = model.G.cells.centroids(:, 1);
-        plot(model.G.cells.centroids(:, 1), state.T, '* - ');
+        plot(model.G.cells.centroids(:, 1), state.(thermal).T, '* - ');
         axis([min(c), max(c), tm, tM]);
         drawnow;
         pause(0.01);

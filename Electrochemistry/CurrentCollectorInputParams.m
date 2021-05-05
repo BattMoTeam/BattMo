@@ -12,7 +12,7 @@ classdef CurrentCollectorInputParams < ElectronicComponentInputParams
     methods
         
         function paramobj = CurrentCollectorInputParams();
-            paramobj = paramobj@ThermoElectronicComponentInputParams();
+            paramobj = paramobj@ElectronicComponentInputParams();
             paramobj.couplingTerm = struct();
             
             % we set 100 here directly just for simplicity for the moment (hacky...)

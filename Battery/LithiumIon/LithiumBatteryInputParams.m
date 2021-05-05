@@ -21,6 +21,9 @@ classdef LithiumBatteryInputParams < BatteryInputParams
             
             paramobj.elyte.thermalConductivity = tC;
             paramobj.elyte.heatCapacity = hC;
+            paramobj.elyte.sep.thermalConductivity = tC;
+            paramobj.elyte.sep.heatCapacity = hC;            
+            
             eldes = {'pe', 'ne'};
             cpts = {'eac', 'cc'};
             for i = 1 : numel(eldes)

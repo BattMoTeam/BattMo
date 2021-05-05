@@ -9,8 +9,11 @@ classdef Separator < PhysicalModel
         Gurley         % Gurley number,    [s]
         volumeFraction % Volume fraction,  [-]
         
-        thermalConductivity
-        heatCapacity
+        thermalConductivity % intrinsic thermal conductivity value
+        heatCapacity % intrinsic heat capacity value
+
+        EffectiveThermalConductivity
+        EffectiveHeatCapacity
         
     end
     
@@ -33,8 +36,9 @@ classdef Separator < PhysicalModel
             model = dispatchParams(model, paramobj, fdnames);
             
             model.volumeFraction = 1 - model.porosity;
-            model.EffectiveThermalConductivity = model.volumeFraction.*model.thermalConductivity;
-
+            model.EffectiveThermalConductivity = model.thermalConductivity.*(model.volumeFraction).^1.5;
+            model.EffectiveHeatCapacity = model.heatCapacity.*model.volumeFraction;
+            
         end
     end
     
