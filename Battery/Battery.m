@@ -764,9 +764,12 @@ classdef Battery < PhysicalModel
                 src(am_map) = src(am_map) + am_src;
                 
             end
+
+            % We multiply by volumes
+            src = model.G.cells.volumes.*src;
             
             state.(thermal).jHeatReactionSource = src;
-            
+
         end
         
         
