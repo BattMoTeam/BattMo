@@ -1,5 +1,15 @@
 classdef Battery < PhysicalModel
-
+% reference list : 
+% @misc{ref1,
+% 	doi = {10.1515/nano.bjneah.6.102},
+% 	url = {https://doi.org/10.1515%2Fnano.bjneah.6.102},
+% 	year = 2016,
+% 	month = {jul},
+% 	publisher = {De Gruyter},
+% 	author = {Arnulf Latz and Jochen Zausch},
+% 	title = {Multiscale modeling of lithium ion batteries: thermal aspects}
+% }
+    
     properties
         
         con = PhysicalConstants();
@@ -437,7 +447,10 @@ classdef Battery < PhysicalModel
             %% update Thermal source term from electrical resistance
 
             state = battery.updateThermalOhmicSourceTerms(state);
-            state = battery.updateThermalSourceTerms(state);
+            state = battery.updateThermalChemicalSourceTerms(state);
+            state = battery.updateThermalReactionSourceTerms(state);
+            
+            state.(thermal) = battery.(thermal).updateHeatSourceTerm(state.(thermal));
             
             %% update Accumulation terms for the energy equation
             
@@ -619,7 +632,8 @@ classdef Battery < PhysicalModel
 
 
         function state = updateThermalOhmicSourceTerms(model, state)
-            
+        % reference Latz et al (ref1 in reference list)
+
             ne      = 'NegativeElectrode';
             pe      = 'PositiveElectrode';
             eac     = 'ElectrodeActiveComponent';
@@ -649,15 +663,16 @@ classdef Battery < PhysicalModel
                 cc_j     = state.(elde).(cc).j;
                 cc_econd = cc_model.EffectiveElectricalConductivity;
                 
-                cc_src = updateOhmSourceFunc(cc_model, cc_j, cc_econd);
+                cc_src = computeCellFluxNorm(cc_model, cc_j, 1, cc_econd); % note that we send volumeFraction = 1
                 src(cc_map) = src(cc_map) + cc_src;
 
                 eac_model = model.(elde).(eac);
                 eac_map   = eac_model.G.mappings.cellmap;
                 eac_j     = state.(elde).(eac).j;
                 eac_econd = eac_model.EffectiveElectricalConductivity;
+                eac_vf    = eac_model.volumeFraction;
                 
-                eac_src = updateOhmSourceFunc(eac_model, eac_j, eac_econd);
+                eac_src = computeCellFluxNorm(eac_model, eac_j, eac_vf, eac_econd);
                 src(eac_map) = src(eac_map) + eac_src;
                 
             end
@@ -667,10 +682,11 @@ classdef Battery < PhysicalModel
             elyte_map   = elyte_model.G.mappings.cellmap;
             elyte_j     = state.(elyte).j;
             elyte_econd = state.(elyte).conductivity;
+            elyte_vf    = elyte_model.volumeFraction;            
             
-            elyte_src = updateOhmSourceFunc(elyte_model, elyte_j, elyte_econd);
+            elyte_src = computeCellFluxNorm(elyte_model, elyte_j, elyte_vf, elyte_econd);
             src(elyte_map) = src(elyte_map) + elyte_src;
-
+            
             state.(thermal).jHeatOhmSource = src;
             
             % For simplicity, we set the boundary heat transfer term equal to zero here.
@@ -678,11 +694,81 @@ classdef Battery < PhysicalModel
             
         end
         
-        function state = updateThermalSourceTerms(model, state)
-        % for the moment, only ohmic contribution
+        function state = updateThermalChemicalSourceTerms(model, state)
+        % reference Latz et al (ref1 in reference list)            
+            
+            elyte = 'Electrolyte';
             thermal = 'ThermalModel';
-            state.(thermal).jHeatSource = state.(thermal).jHeatOhmSource;
+              
+            % prepare term
+            nc = model.G.cells.num;
+            src = zeros(nc, 1);
+            T = state.(thermal).T;
+            if isa(T, 'ADI')
+                adsample = getSampleAD(T);
+                adbackend = model.AutoDiffBackend;
+                src = adbackend.convertToAD(src, adsample);
+            end            
+
+            % Compute chemical heat source in electrolyte
+            dmudcs = state.(elyte).dmudcs; % Derivative of chemical potential with respect to concentration
+            D = state.(elyte).D;           % Diffusion coefficient 
+            Ddc = state.(elyte).diffFlux;  % Diffusion flux (-D*grad(c))
+            
+            elyte_map = model.(elyte).G.mappings.cellmap;
+            vf = model.(elyte).volumeFraction;
+            
+            elyte_src = computeCellFluxNorm(model.(elyte), Ddc, vf, D);
+            % This is a bit hacky for the moment (we should any way consider all the species)
+            elyte_src = dmudcs{1}.*elyte_src;
+            
+            % map to source term at battery level
+            src(elyte_map) = src(elyte_map) + elyte_src;
+            
+            state.(thermal).jHeatChemicalSource = src;
+            
         end
+        
+        
+        function state = updateThermalReactionSourceTerms(model, state)
+        % reference Latz et al (ref1 in reference list)            
+            
+            ne      = 'NegativeElectrode';
+            pe      = 'PositiveElectrode';
+            eac     = 'ElectrodeActiveComponent';
+            am      = 'ActiveMaterial';
+            thermal = 'ThermalModel';
+            
+            eldes = {ne, pe}; % electrodes
+            
+            nc = model.G.cells.num;
+            
+            src = zeros(nc, 1);
+            
+            T = state.(thermal).T;
+            if isa(T, 'ADI')
+                adsample = getSampleAD(T);
+                adbackend = model.AutoDiffBackend;
+                src = adbackend.convertToAD(src, adsample);
+            end
+            
+            for ind = 1 : numel(eldes)
+
+                elde = eldes{ind};
+                am_model = model.(elde).(eac).(am);
+                am_map   = am_model.G.mappings.cellmap;
+                R = state.(elde).(eac).(am).R;
+                eta = state.(elde).(eac).(am).eta;
+                am_src = R.*eta;
+                
+                src(am_map) = src(am_map) + am_src;
+                
+            end
+            
+            state.(thermal).jHeatReactionSource = src;
+            
+        end
+        
         
         function state = updateElectrodeCoupling(model, state)
         % Setup electrode coupling by updating the potential and concentration of the electrolyte in the active component of the

@@ -91,6 +91,7 @@ classdef ActiveMaterial < PhysicalModel
             k        = state.k;
             
             eta = (phiElde - phiElyte - OCP);
+            state.eta = eta;
             
             R = model.volumetricSurfaceArea.*ButlerVolmerEquation(k.*model.constants.F, 0.5, 1, eta, T);
              

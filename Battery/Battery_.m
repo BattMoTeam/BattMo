@@ -109,12 +109,25 @@ classdef Battery_ < CompositeModel
             model = model.addPropFunction({'thermal', 'jHeatOhmSource'}, fn, inputnames, fnmodel);
             model = model.addPropFunction({'thermal', 'jHeatBcSource'}, fn, inputnames, fnmodel);
             
-            fn = @Battery.updateThermalSourceTerms;
+            %% update Thermal Chemical Terms
+            
+            fn = @Battery.updateThermalChemicalSourceTerms;
             fnmodel = {'..'};
-            inputnames = {VarName({'thermal'}, 'jHeatSource')};
-            model = model.addPropFunction({'thermal', 'jHeatSource'}, fn, inputnames, fnmodel);
+            inputnames = {VarName({'elyte'}, 'diffFlux'), ...
+                          VarName({'elyte'}, 'D'), ...
+                          VarName({'elyte'}, 'dmudcs')};
+            model = model.addPropFunction({'thermal', 'jHeatChemicalSource'}, fn, inputnames, fnmodel);
                           
-                          
+            %% update Thermal Chemical Terms
+            
+            fn = @Battery.updateThermalReactionSourceTerms;
+            fnmodel = {'..'};
+            inputnames = {VarName({'ne', 'am'}, 'R'), ...
+                          VarName({'ne', 'am'}, 'eta'), ...
+                          VarName({'pe', 'am'}, 'R'), ...
+                          VarName({'pe', 'am'}, 'eta')};
+            model = model.addPropFunction({'thermal', 'jHeatReactionSource'}, fn, inputnames, fnmodel);
+                                                    
             %% setup external coupling at positive and negative electrodes
             
             fn = @Battery.setupExternalCouplingNegativeElectrode;

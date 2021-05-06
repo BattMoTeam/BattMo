@@ -58,7 +58,6 @@ classdef Electrolyte < ElectroChemicalComponent
             model.EffectiveThermalConductivity = NaN(G.cells.num, 1);
             model.EffectiveThermalConductivity(elyte_cells_sep) = model.(sep).porosity.*model.thermalConductivity;
             
-            
         end
         
         function state = updateChemicalCurrent(model, state)
@@ -101,16 +100,17 @@ classdef Electrolyte < ElectroChemicalComponent
             D = state.D;
             
             %% 1. Flux from diffusion
-            fluxDiff = assembleFlux(model, c, D);
+            diffFlux = assembleFlux(model, c, D);
+            state.diffFlux = diffFlux;
             
             %% 2. Flux from electrical forces
             F = model.constants.F;
             fluxE = model.sp.t{ind} ./ (model.sp.z{ind} .* F) .* j;
             
             %% 3. Sum the two flux contributions
-            flux = fluxDiff + fluxE;
+            flux = diffFlux + fluxE;
             
-            %% 4. Apply scaling (maybe not the right place but consistent  with assembleConservationEquation - at
+            %% 4. Apply scaling (maybe not the right place but consistent with assembleConservationEquation - at
             %% least when this comment has beem written...)
             flux = flux*F; 
             

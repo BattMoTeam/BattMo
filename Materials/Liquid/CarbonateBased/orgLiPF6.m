@@ -34,6 +34,7 @@ classdef orgLiPF6 < Electrolyte
             for ind = 1 : ncomp
                 dmudcs{ind} = R .* T ./ cs{ind};
             end
+            state.dmudcs = dmudcs;
                         
             %% Calculate transport parameters
             % Calculate ionic conductivity consntants for the ionic conductivity calculation

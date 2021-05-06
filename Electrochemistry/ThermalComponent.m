@@ -42,6 +42,12 @@ classdef ThermalComponent < PhysicalModel
             state.jHeat = jHeat;
             
         end
+        
+        function state = updateHeatSourceTerm(model, state)
+        % sum up the heat source terms
+            state.jHeatSource = state.jHeatOhmSource + state.jHeatChemicalSource + state.jHeatReactionSource;
+            
+        end
             
         function state = updateEnergyConservation(model, state)
         % Here, we assume that the fields are updated

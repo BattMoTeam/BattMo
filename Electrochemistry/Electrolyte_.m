@@ -10,19 +10,22 @@ classdef Electrolyte_ < ElectroChemicalComponent_
             model = model@ElectroChemicalComponent_(name);
             
             names = {model.names{:}, ...
+                     'dmudcs', ...
                      'conductivity', ...
-                     'jchems'};
+                     'jchems', ...
+                     'diffFlux'};
             model.names = names;
             
-            model.vardims('dmucs') = 2;
+            model.vardims('dmudcs') = 2;
             model.vardims('jchems') = 2;
             
             fn = @Electrolyte.updateChemicalCurrent;
             inputnames = {'chargeCarrier', 'T', 'phi'};
             fnmodel = {'.'};
             model = model.addPropFunction('conductivity', fn, inputnames, fnmodel);
+            model = model.addPropFunction('dmudcs', fn, inputnames, fnmodel);
             model = model.addPropFunction('jchems', fn, inputnames, fnmodel);
-
+            
             fn = @Electrolyte.updateDiffusionCoefficient;
             inputnames = {'chargeCarrier', 'T'};
             fnmodel = {'.'};
@@ -37,6 +40,7 @@ classdef Electrolyte_ < ElectroChemicalComponent_
             inputnames = {'chargeCarrier', 'j', 'D'};
             fnmodel = {'.'};
             model = model.addPropFunction('chargeCarrierFlux', fn, inputnames, fnmodel);
+            model = model.addPropFunction('diffFlux', fn, inputnames, fnmodel);
 
             fn = @Electrolyte.updateCurrentBcSource;
             inputnames = {''};

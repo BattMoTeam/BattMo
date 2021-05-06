@@ -145,3 +145,5 @@
   - in master commit e5407d4880dfb7faece26da3f94630483a6e426b it looks like it is not assembled for the electrolyte
 * In computation of chemical heat source
   We only consider one specie.
+* decide which property belongs to active material and which to electrode active components
+  

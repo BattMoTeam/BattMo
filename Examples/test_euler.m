@@ -81,6 +81,7 @@ switch schedulecase
     dt2 = 3e3*ones(30, 1);
     dt = [dt1; dt2];
     times = [0; cumsum(dt)]; 
+
   case 4
 
     % Schedule with two phases : activation and operation
