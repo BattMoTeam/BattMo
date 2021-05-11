@@ -20,7 +20,6 @@ classdef ElectrodeInputParams < ComponentInputParams
             paramobj = paramobj@ComponentInputParams();
             paramobj.eac = ElectrodeActiveComponentInputParams();
             paramobj.cc = CurrentCollectorInputParams();
-            paramobj.couplingTerm = struct();
         end
 
     end
