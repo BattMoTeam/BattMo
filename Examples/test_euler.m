@@ -22,17 +22,18 @@ switch modelcase
     gen = BatteryGenerator1D();
     paramobj = gen.updateBatteryInputParams(paramobj);
     schedulecase = 3;
-    paramobj.thermal.externalHeatTransferCoefficient = 1e5;
+    paramobj.thermal.externalHeatTransferCoefficient = 1000;
     paramobj.thermal.externalTemperature = paramobj.initT;
 
   case '2D'
 
     gen = BatteryGenerator2D();
     paramobj = gen.updateBatteryInputParams(paramobj);
-    paramobj.elyte.thermalConductivity = 1;
-    paramobj.elyte.heatCapacity = 1;
     schedulecase = 1;
 
+    paramobj.thermal.externalHeatTransferCoefficient = 1000;
+    paramobj.thermal.externalTemperature = paramobj.initT;
+    
     tfac = 1; % used in schedule setup
   
   case '3D'

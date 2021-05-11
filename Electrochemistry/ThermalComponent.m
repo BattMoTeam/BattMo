@@ -101,7 +101,7 @@ classdef ThermalComponent < PhysicalModel
                 
                 t = model.operators.harmFaceBC(lambda, coupfaces);
                 
-                t_eff = (1./t + 1./t_ext);
+                t_eff = 1./(1./t + 1./t_ext);
             end
             
             jHeatBcSource = zeros(nc, 1);
@@ -111,7 +111,7 @@ classdef ThermalComponent < PhysicalModel
                 jHeatBcSource = adbackend.convertToAD(jHeatBcSource, adsample);
             end
             
-            jHeatBcSource(coupcells) = t_eff.*(T - T_ext);
+            jHeatBcSource(coupcells) = t_eff.*(T_ext - T);
             
             state.jHeatBcSource = jHeatBcSource;
             
