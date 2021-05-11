@@ -201,6 +201,9 @@ if strcmp(modelcase, '1D')
     h2 = figure;
     
     ffields = {'phi', 'c', 'j', 'LiFlux'};
+    % Field that will be plotted for the thermal model
+    % (If the field contains the substring 'Source', then it is assumed it correspond to a volume weighted source and we
+    % divide it by the cell volume before plotting.)
     tfields = {'T', ...
                'jHeatOhmSource', ...
                'jHeatBcSource', ...
@@ -270,6 +273,7 @@ if strcmp(modelcase, '1D')
         % plot temperature
         subplot(2, 3, 5);
         cc = model.G.cells.centroids(:, 1);
+        vols = model.G.cells.volumes;
         plot(cc, state.(thermal).T, '* - ');
         if doFixedTempScale
             axis([min(c), max(c), tm, tM]);
@@ -282,7 +286,12 @@ if strcmp(modelcase, '1D')
             figure(h2)
             subplot(2, 3, k)
             cla, hold on
-            plot(cc, state.(thermal).(tfield), '* - ');
+            val = state.(thermal).(tfield);
+            if contains(tfield, 'Source')
+                % we divide with volume if we have a source term.
+                val = val./vols;
+            end
+            plot(cc, val, '* - ');
             subtitle(tfield);
             
         end
