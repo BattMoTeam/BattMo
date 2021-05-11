@@ -22,7 +22,7 @@ switch modelcase
     gen = BatteryGenerator1D();
     paramobj = gen.updateBatteryInputParams(paramobj);
     schedulecase = 3;
-    paramobj.thermal.externalHeatTransferCoefficient = 1000;
+    paramobj.thermal.externalHeatTransferCoefficient = 1e5;
     paramobj.thermal.externalTemperature = paramobj.initT;
 
   case '2D'

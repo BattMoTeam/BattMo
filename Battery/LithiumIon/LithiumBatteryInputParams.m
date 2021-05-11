@@ -1,4 +1,14 @@
 classdef LithiumBatteryInputParams < BatteryInputParams
+% reference
+% @misc{Latz_2016,
+% 	doi = {10.1515/nano.bjneah.6.102},
+% 	url = {https://doi.org/10.1515%2Fnano.bjneah.6.102},
+% 	year = 2016,
+% 	month = {jul},
+% 	publisher = {De Gruyter},
+% 	author = {Arnulf Latz and Jochen Zausch},
+% 	title = {Multiscale modeling of lithium ion batteries: thermal aspects}
+% }
     
     methods
         
@@ -15,9 +25,15 @@ classdef LithiumBatteryInputParams < BatteryInputParams
             
             paramobj.elyte = orgLiPF6InputParams();
             
-            % some (dummy) values for energy equation
-            tC = 1e-5;
-            hC = 1e5;
+            % Values from Latz (reference Latz_2016)
+            tC = 0.006;  % Thermal Conductivity (in W/(cm K))
+            rho = 0.001; % Density (in kg/(cm^3))
+            hC = 4180;   % Heat Capacity (in J/(kg K))
+            
+            % volumetric heat capacity (in SI unit: J/(m^3 K))
+            hC = rho*hC*1e6;
+            % thermal conducivity (in SI unit: W/(m K))
+            tC = tC*1e-2;
             
             paramobj.elyte.thermalConductivity = tC;
             paramobj.elyte.heatCapacity = hC;
