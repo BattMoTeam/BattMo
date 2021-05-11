@@ -449,8 +449,9 @@ classdef Battery < PhysicalModel
             state = battery.updateThermalOhmicSourceTerms(state);
             state = battery.updateThermalChemicalSourceTerms(state);
             state = battery.updateThermalReactionSourceTerms(state);
-            
+           
             state.(thermal) = battery.(thermal).updateHeatSourceTerm(state.(thermal));
+            state.(thermal) = battery.(thermal).updateThermalBoundarySourceTerms(state.(thermal));
             
             %% update Accumulation terms for the energy equation
             

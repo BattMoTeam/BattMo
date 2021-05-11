@@ -150,3 +150,5 @@
   Do not consider derivative of OCP.
 * In Lastz paper, they neglect dmu/dT
   - we do not do it in our implementation, see [[file:Materials/Liquid/CarbonateBased/orgLiPF6.m::dmudcs{ind} = R .* T ./ cs{ind};][code]] and [[pdfview:/home/xavier/Projects/2020-batman/documents/LatzZausch2.pdf::4][paper]]
+* removed non-dynamical preprocessing
+  - for example in [[file:Electrochemistry/ThermalComponent.m::t = model.operators.harmFaceBC(lambda, coupfaces);][coupling terms]]

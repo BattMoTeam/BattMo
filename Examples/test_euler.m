@@ -21,7 +21,9 @@ switch modelcase
 
     gen = BatteryGenerator1D();
     paramobj = gen.updateBatteryInputParams(paramobj);
-    schedulecase = 3; 
+    schedulecase = 3;
+    paramobj.thermal.externalHeatTransferCoefficient = 1000;
+    paramobj.thermal.externalTemperature = paramobj.initT;
 
   case '2D'
 
@@ -204,9 +206,13 @@ if strcmp(modelcase, '1D')
               {'NegativeElectrode','CurrentCollector'}, ...
               {'PositiveElectrode','CurrentCollector'}};    
     
-    
-    tM = max(states{end}.(thermal).T);
+
+    tM = max(states{1}.(thermal).T);
     tm = min(states{1}.(thermal).T);
+    for i = 1 : numel(states)
+        tM = max(tM, max(states{i}.(thermal).T));
+        tm = min(tm, min(states{i}.(thermal).T));
+    end
     tM = tM + 1e-1*(tM - tm);
     tm = tm - 1e-1*(tM - tm);
     

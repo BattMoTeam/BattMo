@@ -4,6 +4,10 @@ classdef ThermalComponent < PhysicalModel
         
        EffectiveThermalConductivity
        EffectiveHeatCapacity % in [J][K]^-1[m]^-3
+
+       couplingTerm
+       externalHeatTransferCoefficient
+       externalTemperature
        
     end
     
@@ -18,7 +22,10 @@ classdef ThermalComponent < PhysicalModel
             
             fdnames = {'G', ...
                        'EffectiveThermalConductivity', ...
-                       'EffectiveHeatCapacity'};
+                       'EffectiveHeatCapacity', ...
+                       'couplingTerm', ...
+                       'externalHeatTransferCoefficient', ...
+                       'externalTemperature'};
             model = dispatchParams(model, paramobj, fdnames);
             
             % setup discrete differential operators
@@ -67,7 +74,49 @@ classdef ThermalComponent < PhysicalModel
             state.energyCons = energyCons;
             
         end
+
+        function state = updateThermalBoundarySourceTerms(model, state)
+
+            G          = model.G;
+            coupterm   = model.couplingTerm;
+            T_ext      = model.externalTemperature;
+            lambda_ext = model.externalHeatTransferCoefficient;
+            lambda     = model.EffectiveThermalConductivity;
             
+            coupcells = coupterm.couplingcells;
+            coupfaces = coupterm.couplingfaces;
+            nc = model.G.cells.num;
+              
+            T = state.T;
+            T = T(coupcells);
+            
+            if isempty(coupfaces)
+                % 1D case (External faces are not available, we consider a volumetric cooling instead)
+                A = G.cells.volumes(coupcells);
+                t_eff = lambda_ext*A;
+            else
+                % Face couling (multidimensional case)
+                A = G.faces.areas(coupfaces);
+                t_ext = lambda_ext*A;
+                
+                t = model.operators.harmFaceBC(lambda, coupfaces);
+                
+                t_eff = (1./t + 1./t_ext);
+            end
+            
+            jHeatBcSource = zeros(nc, 1);
+            if isa(T, 'ADI')
+                adsample = getSampleAD(T);
+                adbackend = model.AutoDiffBackend;
+                jHeatBcSource = adbackend.convertToAD(jHeatBcSource, adsample);
+            end
+            
+            jHeatBcSource(coupcells) = t_eff.*(T - T_ext);
+            
+            state.jHeatBcSource = jHeatBcSource;
+            
+        end
+        
     end
     
 end

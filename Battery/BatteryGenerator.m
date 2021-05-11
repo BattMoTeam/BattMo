@@ -41,6 +41,10 @@ classdef BatteryGenerator
         % paramobj is instance of ThermalModelInputParams
         % setup paramobj.G
             paramobj.G = gen.G;
+            coupTerm = couplingTerm('ThermalConvectiveCooling', {'ThermalModel'});
+            coupTerm.couplingcells = params.couplingcells;
+            coupTerm.couplingfaces = params.couplingfaces;
+            paramobj.couplingTerm = coupTerm;
         end
         
         function paramobj = setupElectrolyte(gen, paramobj, params)

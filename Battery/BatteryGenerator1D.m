@@ -101,6 +101,13 @@ classdef BatteryGenerator1D < BatteryGenerator
             paramobj = setupElectrodes@BatteryGenerator(gen, paramobj, params);
 
         end            I
+                
+        function paramobj = setupThermalModel(gen, paramobj, params)
+        % paramobj is instance of ThermalModelInputParams
+            params.couplingfaces = [];
+            params.couplingcells = (1 : gen.G.cells.num)';
+            paramobj = setupThermalModel@BatteryGenerator(gen, paramobj, params);
+        end
         
     end
     
