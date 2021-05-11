@@ -197,25 +197,33 @@ if strcmp(modelcase, '1D')
 
     thermal = 'ThermalModel';
     
-    h = figure;
+    h1 = figure;
+    h2 = figure;
     
     ffields = {'phi', 'c', 'j', 'LiFlux'};
-
+    tfields = {'T', ...
+               'jHeatOhmSource', ...
+               'jHeatBcSource', ...
+               'jHeatChemicalSource', ...
+               'jHeatReactionSource'};
+    
     mnames = {{'Electrolyte'}, ...
               {'PositiveElectrode','ElectrodeActiveComponent'}, ...
               {'NegativeElectrode','ElectrodeActiveComponent'}, ...
               {'NegativeElectrode','CurrentCollector'}, ...
               {'PositiveElectrode','CurrentCollector'}};    
     
-
-    tM = max(states{1}.(thermal).T);
-    tm = min(states{1}.(thermal).T);
-    for i = 1 : numel(states)
-        tM = max(tM, max(states{i}.(thermal).T));
-        tm = min(tm, min(states{i}.(thermal).T));
+    doFixedTempScale = false;
+    if doFixedTempScale
+        tM = max(states{1}.(thermal).T);
+        tm = min(states{1}.(thermal).T);
+        for i = 1 : numel(states)
+            tM = max(tM, max(states{i}.(thermal).T));
+            tm = min(tm, min(states{i}.(thermal).T));
+        end
+        tM = tM + 1e-1*(tM - tm);
+        tm = tm - 1e-1*(tM - tm);
     end
-    tM = tM + 1e-1*(tM - tm);
-    tm = tm - 1e-1*(tM - tm);
     
     for i = 1 : numel(states)
         
@@ -225,7 +233,7 @@ if strcmp(modelcase, '1D')
 
             ffield = ffields{k};
             
-            figure(h)
+            figure(h1)
             subplot(2, 3, k)
             cla, hold on
             
@@ -258,15 +266,30 @@ if strcmp(modelcase, '1D')
                 
             end
         end
-        
+     
         % plot temperature
         subplot(2, 3, 5);
-        c = model.G.cells.centroids(:, 1);
-        plot(model.G.cells.centroids(:, 1), state.(thermal).T, '* - ');
-        axis([min(c), max(c), tm, tM]);
+        cc = model.G.cells.centroids(:, 1);
+        plot(cc, state.(thermal).T, '* - ');
+        if doFixedTempScale
+            axis([min(c), max(c), tm, tM]);
+        end
+        
+        for k = 1 : numel(tfields)
+            
+            tfield = tfields{k};
+
+            figure(h2)
+            subplot(2, 3, k)
+            cla, hold on
+            plot(cc, state.(thermal).(tfield), '* - ');
+            subtitle(tfield);
+            
+        end
+        
         drawnow;
         pause(0.01);
-        
+            
     end
     
 end
