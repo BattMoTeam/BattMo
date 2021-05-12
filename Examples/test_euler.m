@@ -13,7 +13,7 @@ paramobj = LithiumBatteryInputParams();
 
 % Setup battery
 
-modelcase = '1D';
+modelcase = '2D';
 
 switch modelcase
 
@@ -31,7 +31,6 @@ switch modelcase
     paramobj = gen.updateBatteryInputParams(paramobj);
     schedulecase = 1;
 
-    paramobj.thermal.externalHeatTransferCoefficient = 1000;
     paramobj.thermal.externalTemperature = paramobj.initT;
     
     tfac = 1; % used in schedule setup

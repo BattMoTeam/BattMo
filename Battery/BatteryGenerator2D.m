@@ -13,6 +13,9 @@ classdef BatteryGenerator2D < BatteryGenerator
         
         J = 0.1;
         
+        externalHeatTransferCoefficientTab = 1e6;
+        externalHeatTransferCoefficient = 1e3;
+        
     end
     
     methods
@@ -144,7 +147,46 @@ classdef BatteryGenerator2D < BatteryGenerator
         
         end
 
-
+        function paramobj = setupThermalModel(gen, paramobj, params)
+        % paramobj is instance of BatteryInputParams
+        % 
+        % We recover the external coupling terms for the current collectors
+            
+            coupterm_necc = paramobj.ne.cc.couplingTerm;
+            facemap_necc = paramobj.ne.cc.G.mappings.facemap;
+            coupterm_pecc = paramobj.pe.cc.couplingTerm;
+            facemap_pecc = paramobj.pe.cc.G.mappings.facemap;
+            
+            % the cooling is done on the external faces
+            G = gen.G;
+            extfaces = any(G.faces.neighbors == 0, 2);
+            couplingfaces = find(extfaces);
+            couplingcells = sum(G.faces.neighbors(couplingfaces, :), 2);
+            
+            params = struct('couplingfaces', couplingfaces, ...
+                            'couplingcells', couplingcells);
+            paramobj = setupThermalModel@BatteryGenerator(gen, paramobj, params);
+            
+            % We assign the values different values to the tab
+            tabtbl.faces = [facemap_necc(coupterm_necc.couplingfaces); 
+                            facemap_pecc(coupterm_pecc.couplingfaces)];
+            tabtbl = IndexArray(tabtbl);
+            bcfacetbl.faces = couplingfaces;
+            bcfacetbl = IndexArray(bcfacetbl);
+            
+            map = TensorMap();
+            map.fromTbl = bcfacetbl;
+            map.toTbl = tabtbl;
+            map.mergefds = {'faces'};
+            ind = map.getDispatchInd();
+            
+            coef = gen.externalHeatTransferCoefficient*ones(bcfacetbl.num, 1);
+            coef(ind) = gen.externalHeatTransferCoefficientTab;
+            
+            paramobj.thermal.externalHeatTransferCoefficient = coef;
+            
+        end
+        
     end
     
     

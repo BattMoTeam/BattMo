@@ -97,7 +97,7 @@ classdef ThermalComponent < PhysicalModel
             else
                 % Face couling (multidimensional case)
                 A = G.faces.areas(coupfaces);
-                t_ext = lambda_ext*A;
+                t_ext = lambda_ext.*A;
                 
                 t = model.operators.harmFaceBC(lambda, coupfaces);
                 

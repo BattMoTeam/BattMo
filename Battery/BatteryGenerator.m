@@ -26,8 +26,8 @@ classdef BatteryGenerator
         % main function : add grid and coupling to paramobj structure
             [paramobj, gen] = gen.setupGrid(paramobj, params);
             paramobj.elyte = gen.setupElectrolyte(paramobj.elyte, params);
-            paramobj.thermal = gen.setupThermalModel(paramobj.thermal, params);
             paramobj = gen.setupElectrodes(paramobj, params);
+            paramobj = gen.setupThermalModel(paramobj, params);
             paramobj = gen.setupElectrodeElectrolyteCoupTerm(paramobj);
         end
 
@@ -38,13 +38,12 @@ classdef BatteryGenerator
         end
         
         function paramobj = setupThermalModel(gen, paramobj, params)
-        % paramobj is instance of ThermalModelInputParams
-        % setup paramobj.G
-            paramobj.G = gen.G;
+        % paramobj is instance of BatteryInputParams
+            paramobj.thermal.G = gen.G;
             coupTerm = couplingTerm('ThermalConvectiveCooling', {'ThermalModel'});
             coupTerm.couplingcells = params.couplingcells;
             coupTerm.couplingfaces = params.couplingfaces;
-            paramobj.couplingTerm = coupTerm;
+            paramobj.thermal.couplingTerm = coupTerm;
         end
         
         function paramobj = setupElectrolyte(gen, paramobj, params)
