@@ -13,7 +13,8 @@ classdef BatteryGenerator2D < BatteryGenerator
         
         J = 0.1;
         
-        externalHeatTransferCoefficientTab = 1e6;
+        % externalHeatTransferCoefficientTab = 1e6;
+        externalHeatTransferCoefficientTab = 1e3;
         externalHeatTransferCoefficient = 1e3;
         
     end

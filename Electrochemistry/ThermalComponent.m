@@ -9,6 +9,9 @@ classdef ThermalComponent < PhysicalModel
        externalHeatTransferCoefficient
        externalTemperature
        
+       bcfacecellmap
+       bccells
+       
     end
     
     methods
@@ -36,9 +39,35 @@ classdef ThermalComponent < PhysicalModel
                 model.EffectiveThermalConductivity = model.EffectiveThermalConductivity*ones(nc, 1);
                 model.EffectiveHeatCapacity = model.EffectiveHeatCapacity*ones(nc, 1);
             end
+            
+            model = setupMapping(model);
         
         end
 
+        function model = setupMapping(model)
+        % Aggregate face contribution to cell
+            
+            bccellfacetbl.cells = model.couplingTerm.couplingcells;
+            bccellfacetbl.faces = model.couplingTerm.couplingfaces;
+            bccellfacetbl = IndexArray(bccellfacetbl);
+            bccelltbl = projIndexArray(bccellfacetbl, {'cells'});
+            
+            map = TensorMap();
+            map.fromTbl = bccellfacetbl;
+            map.toTbl = bccelltbl;
+            map.mergefds = {'cells'};
+            
+            bcfacecellmap = SparseTensor();
+            bcfacecellmap = bcfacecellmap.setFromTensorMap(map);
+            bcfacecellmap = bcfacecellmap.getMatrix();
+            
+            model.bcfacecellmap = bcfacecellmap;
+            model.bccells = bccelltbl.get('cells');
+            
+        end
+        
+            
+            
         function state = updateHeatFlux(model, state)
 
             k = model.EffectiveThermalConductivity;
@@ -111,7 +140,7 @@ classdef ThermalComponent < PhysicalModel
                 jHeatBcSource = adbackend.convertToAD(jHeatBcSource, adsample);
             end
             
-            jHeatBcSource(coupcells) = t_eff.*(T_ext - T);
+            jHeatBcSource(model.bccells) = model.bcfacecellmap*(t_eff.*(T_ext - T));
             
             state.jHeatBcSource = jHeatBcSource;
             
