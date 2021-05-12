@@ -760,7 +760,8 @@ classdef Battery < PhysicalModel
                 am_map   = am_model.G.mappings.cellmap;
                 R = state.(elde).(eac).(am).R;
                 eta = state.(elde).(eac).(am).eta;
-                am_src = R.*eta;
+                vols = model.(elde).(eac).G.cells.volumes;
+                am_src = vols.*R.*eta;
                 
                 src(am_map) = src(am_map) + am_src;
                 
