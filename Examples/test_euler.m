@@ -196,5 +196,5 @@ switch modelcase
   case '1D'
     plot1D;
   case '2D'
-    plotThermal2D;
+    plotThermal(model,states);
 end
