@@ -82,22 +82,25 @@ classdef ActiveMaterial < PhysicalModel
         
         function state = updateReactionRate(model, state);
             
+            cmax = model.Li.cmax;
+            
             T        = state.T;
             phiElyte = state.phiElectrolyte;
-            % cElyte = state.cElectrolyte; % not used for the moment
+            cElyte   = state.cElectrolyte; 
             phiElde  = state.phiElectrode;
-            % c      = state.c; % not used for the moment
+            c        = state.cElectrolyte; 
             OCP      = state.OCP;
             k        = state.k;
             
             eta = (phiElde - phiElyte - OCP);
             state.eta = eta;
             
-            R = model.volumetricSurfaceArea.*ButlerVolmerEquation(k.*model.constants.F, 0.5, 1, eta, T);
-             
+            Rcoef = model.volumetricSurfaceArea*(cElyte.*(cmax - c).*c);
+            R = Rcoef.*ButlerVolmerEquation(k.*model.constants.F, 0.5, 1, eta, T);
+            
             state.R = R;
+            
         end
-        
         
     end
 end

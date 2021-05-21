@@ -34,8 +34,7 @@ classdef ActiveMaterial_ < CompositeModel
             model = model.addPropFunction('OCP', fn, inputnames, fnmodel);
 
             fn = @ActiveMaterial.updateReactionRate;
-            % inputnames = {'T', 'phiElectrolyte', 'phiElectrode', 'chargeCarrierElectrode', 'chargeCarrierElectrolyte', 'OCP', 'k'};
-            inputnames = {'T','phiElectrode', 'phiElectrolyte', 'OCP', 'k'}; % for the moment, we do not consider dependance on concentration
+            inputnames = {'T', 'phiElectrolyte', 'phiElectrode', 'chargeCarrierElectrode', 'chargeCarrierElectrolyte', 'OCP', 'k'};
             fnmodel = {'.'};
             model = model.addPropFunction('R', fn, inputnames, fnmodel);
             model = model.addPropFunction('eta', fn, inputnames, fnmodel);

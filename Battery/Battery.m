@@ -795,16 +795,18 @@ classdef Battery < PhysicalModel
             eac   = 'ElectrodeActiveComponent';
             cc    = 'CurrentCollector';
             
+            eldes = {ne, pe};
             phi_elyte = state.(elyte).phi;
+            c_elyte = state.(elyte).cs{1};
             
             elyte_cells = zeros(model.G.cells.num, 1);
             elyte_cells(bat.(elyte).G.mappings.cellmap) = (1 : bat.(elyte).G.cells.num)';
 
-            phi_elyte_neac = phi_elyte(elyte_cells(bat.(ne).(eac).G.mappings.cellmap));
-            phi_elyte_peac = phi_elyte(elyte_cells(bat.(pe).(eac).G.mappings.cellmap));
-
-            state.(ne).(eac).(am).phiElectrolyte = phi_elyte_neac;
-            state.(pe).(eac).(am).phiElectrolyte = phi_elyte_peac;
+            for ind = 1 : numel(eldes)
+                elde = eldes{ind};
+                state.(elde).(eac).(am).phiElectrolyte = phi_elyte(elyte_cells(bat.(elde).(eac).G.mappings.cellmap));
+                state.(elde).(eac).(am).cElectrolyte = c_elyte(elyte_cells(bat.(elde).(eac).G.mappings.cellmap));
+            end
             
         end
 
