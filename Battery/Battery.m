@@ -978,13 +978,31 @@ classdef Battery < PhysicalModel
         
         function [state, report] = updateState(model, state, problem, dx, drivingForces)
             p = model.getPrimaryVariables();
-            for i=2:numel(dx)
+            for i = 2:numel(dx)
                 val = model.getProps(state, p{i});
                 val = val + dx{i};
                 state = model.setProp(state, p{i}, val);
             end
             %% not sure how to handle cells
             state.Electrolyte.cs{1} =  state.Electrolyte.cs{1} + dx{1};
+            
+            %% cap concentrations
+            elyte = 'Electrolyte';
+            ne    = 'NegativeElectrode';
+            pe    = 'PositiveElectrode';
+            eac   = 'ElectrodeActiveComponent';
+            am    = 'ActiveMaterial';
+
+            state.(elyte).cs{1} = max(0, state.(elyte).cs{1});
+            
+            eldes = {ne, pe};
+            for ind = 1 : numel(eldes)
+                elde = eldes{ind};
+                state.(elde).(eac).c = max(0, state.(elde).(eac).c);
+                cmax = model.(elde).(eac).(am).Li.cmax;
+                state.(elde).(eac).c = min(cmax, state.(elde).(eac).c);
+            end
+            
             report = [];
         end
         

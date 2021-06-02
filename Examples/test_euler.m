@@ -190,6 +190,14 @@ title('Potential (E)')
 xlabel('time (hours)')
 
 
+elyte = 'Electrolyte';
+ne    = 'NegativeElectrode';
+pe    = 'PositiveElectrode';
+eac   = 'ElectrodeActiveComponent';
+am    = 'ActiveMaterial';
+
+return
+
 %% more plotting (case dependent)
 
 switch modelcase
