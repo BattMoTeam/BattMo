@@ -88,7 +88,7 @@ classdef ActiveMaterial < PhysicalModel
             phiElyte = state.phiElectrolyte;
             cElyte   = state.cElectrolyte; 
             phiElde  = state.phiElectrode;
-            c        = state.cElectrolyte; 
+            c        = state.cElectrode; 
             OCP      = state.OCP;
             k        = state.k;
             
