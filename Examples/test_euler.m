@@ -32,6 +32,7 @@ switch modelcase
     schedulecase = 1;
 
     paramobj.thermal.externalTemperature = paramobj.initT;
+    paramobj.SOC = 0.99;
     
     tfac = 1; % used in schedule setup
   
@@ -62,9 +63,8 @@ switch schedulecase
     dt = []; 
     dt = [dt; repmat(0.5e-4, n, 1).*1.5.^[1:n]']; 
     % Operation phase with constant time step
-    n = 24; 
-    dt = [dt; dt(end).*2.^[1:n]']; 
-    dt = [dt; repmat(dt(end)*1.5, floor(n*1.5), 1)]; 
+    n = 40; 
+    dt = [dt; repmat(2e-1*hour, n, 1)]; 
     
     % Time scaling can be adding using variable tfac
     times = [0; cumsum(dt)]*tfac; 
@@ -190,11 +190,7 @@ title('Potential (E)')
 xlabel('time (hours)')
 
 
-elyte = 'Electrolyte';
-ne    = 'NegativeElectrode';
-pe    = 'PositiveElectrode';
-eac   = 'ElectrodeActiveComponent';
-am    = 'ActiveMaterial';
+elyte = 'Electrolyte'; ne = 'NegativeElectrode'; pe    = 'PositiveElectrode'; eac   = 'ElectrodeActiveComponent'; am    = 'ActiveMaterial';
 
 return
 
