@@ -95,9 +95,8 @@ classdef ActiveMaterial < PhysicalModel
             eta = (phiElde - phiElyte - OCP);
             state.eta = eta;
             
-            % Add regularization of the square root. This is a bit hacky
-            epsi = 1e-5;
-            Rcoef = model.volumetricSurfaceArea*(cElyte.*(cmax - c).*c + epsi*cmax).^0.5;
+            th = 1e-3*cmax;
+            Rcoef = model.volumetricSurfaceArea*regularizedSqrt(cElyte.*(cmax - c).*c, th);
             R = Rcoef.*ButlerVolmerEquation(k.*model.constants.F, 0.5, 1, eta, T);
             
             state.R = R;
