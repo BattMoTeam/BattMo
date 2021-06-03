@@ -1,12 +1,11 @@
-close all
-
 thermal = 'ThermalModel';
 G = model.G;
 
-h = figure(1); 
+
+h = figure(); 
 set(h, 'Position', [10 10 1700 500]);
 
-dovideo = true;
+dovideo = false;
 
 if dovideo
     filename = 'temperature.avi';
@@ -16,6 +15,7 @@ if dovideo
 end
 
 for ind = 1 : numel(states)
+
     subplot(1, 2, 1);
     plotCellData(G, states{ind}.(thermal).T)
     colorbar

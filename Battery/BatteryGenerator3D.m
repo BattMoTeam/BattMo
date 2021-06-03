@@ -5,8 +5,8 @@ classdef BatteryGenerator3D < BatteryGenerator
             
         % Physical dimension
         
-        xlength = 3e-2*[0.1; 1; 0.1];
-        ylength = 1e-2*[0.1; 1; 0.1];
+        xlength = 1e-2*[0.4; 0.2; 0.4];
+        ylength = 1e-2*[0.1; 2; 0.1];
         zlength = 1e-6*[10; 100; 50; 80; 10];
 
         % Input current
@@ -34,17 +34,17 @@ classdef BatteryGenerator3D < BatteryGenerator
         
         facx = 1;
         
-        int_elyte_nx  = 10; 
-        ne_cc_nx = 5;
-        pe_cc_nx = 5;
+        int_elyte_nx  = 5; 
+        ne_cc_nx = 10;
+        pe_cc_nx = 10;
 
         % Discretization resolution in y-direction
 
         facy = 1;
         
-        ne_cc_ny = 2;
-        pe_cc_ny = 2;
-        elyte_ny = 4;
+        ne_cc_ny = 4;
+        pe_cc_ny = 4;
+        elyte_ny = 10;
 
         % Utility variables computed once and then shared by methods (should not be set)
         elyte_nz;
@@ -176,7 +176,7 @@ classdef BatteryGenerator3D < BatteryGenerator
             gen.pe_cc_nz  = facz*gen.pe_cc_nz;
             
             facx = gen.facx;
-            
+           
             gen.int_elyte_nx = facx*gen.int_elyte_nx;
             gen.ne_cc_nx= facx*gen.ne_cc_nx;
             gen.pe_cc_nx= facx*gen.pe_cc_nx;
