@@ -38,6 +38,7 @@ classdef Battery < PhysicalModel
         
         mappings
         
+        cmin % mininum concentration allows in capping
     end
     
     methods
@@ -81,6 +82,15 @@ classdef Battery < PhysicalModel
             
             % setup some mappings (mappings from electrodes to electrolyte)
             model = model.setupMappings();
+            
+            % setup capping
+            ne    = 'NegativeElectrode';
+            pe    = 'PositiveElectrode';
+            eac   = 'ElectrodeActiveComponent';
+            am    = 'ActiveMaterial';
+            cmax_ne = model.(ne).(eac).(am).Li.cmax;
+            cmax_pe = model.(pe).(eac).(am).Li.cmax;
+            model.cmin = 1e-5*max(cmax_ne, cmax_pe);
            
         end
 
@@ -179,7 +189,7 @@ classdef Battery < PhysicalModel
             ne      = 'NegativeElectrode';
             pe      = 'PositiveElectrode';
             eac     = 'ElectrodeActiveComponent';
-            elyte      = 'CurrentCollector';
+            cc      = 'CurrentCollector';
             elyte   = 'Electrolyte';
             
             
@@ -993,17 +1003,20 @@ classdef Battery < PhysicalModel
             eac   = 'ElectrodeActiveComponent';
             am    = 'ActiveMaterial';
 
-            state.(elyte).cs{1} = max(0, state.(elyte).cs{1});
+            cmin = model.cmin;
+            
+            state.(elyte).cs{1} = max(cmin, state.(elyte).cs{1});
             
             eldes = {ne, pe};
             for ind = 1 : numel(eldes)
                 elde = eldes{ind};
-                state.(elde).(eac).c = max(0, state.(elde).(eac).c);
+                state.(elde).(eac).c = max(cmin, state.(elde).(eac).c);
                 cmax = model.(elde).(eac).(am).Li.cmax;
                 state.(elde).(eac).c = min(cmax, state.(elde).(eac).c);
             end
             
             report = [];
+            
         end
         
         
@@ -1012,7 +1025,6 @@ classdef Battery < PhysicalModel
             state = value(state);
         end
 
-        
     end
     
 end
