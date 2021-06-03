@@ -12,8 +12,7 @@ tup = 0.1;
 paramobj = LithiumBatteryInputParams();
 
 % Setup battery
-
-modelcase = '2D';
+modelcase = '3D';
 
 switch modelcase
 
@@ -39,14 +38,18 @@ switch modelcase
   case '3D'
 
     gen = BatteryGenerator3D();
+    
     fac = 1; 
     gen.facx = fac; 
     gen.facy = fac; 
     gen.facz = fac;
     gen = gen.applyResolutionFactors();
-    schedulecase = 1;
-    %schedulecase = 4;% for testing
-    tfac = 40; % used in schedule setup
+    paramobj = gen.updateBatteryInputParams(paramobj);
+    
+    schedulecase = 5;
+    
+    paramobj.thermal.externalTemperature = paramobj.initT;
+    paramobj.J = 5e-4;
     
 end
 
@@ -99,6 +102,21 @@ switch schedulecase
     
     % Time scaling can be adding using variable tfac
     times = [0; cumsum(dt)]*tfac; 
+
+  case 5
+
+    % Schedule with two phases : activation and operation
+    % 
+    % Activation phase with exponentially increasing time step
+    n = 25; 
+    dt = []; 
+    dt = [dt; repmat(0.5e-4, n, 1).*1.5.^[1:n]']; 
+    % Operation phase with constant time step
+    n = 40; 
+    dt = [dt; repmat(8e-1*hour, n, 1)]; 
+    
+    % Time scaling can be adding using variable tfac
+    times = [0; cumsum(dt)]; 
     
 end
 
@@ -189,11 +207,6 @@ plot((time/hour), Enew, '*-')
 title('Potential (E)')
 xlabel('time (hours)')
 
-
-elyte = 'Electrolyte'; ne = 'NegativeElectrode'; pe    = 'PositiveElectrode'; eac   = 'ElectrodeActiveComponent'; am    = 'ActiveMaterial';
-
-return
-
 %% more plotting (case dependent)
 
 switch modelcase
@@ -201,4 +214,6 @@ switch modelcase
     plot1D;
   case '2D'
     plotThermal(model,states);
+  case '3D'
+    plot3D;
 end

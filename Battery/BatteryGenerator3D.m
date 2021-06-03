@@ -51,6 +51,10 @@ classdef BatteryGenerator3D < BatteryGenerator
         allparams;
         invcellmap;
         
+        % Heat parameters
+        externalHeatTransferCoefficientTab = 1e3;
+        externalHeatTransferCoefficient = 1e3;
+        
     end
     
     methods
@@ -124,9 +128,9 @@ classdef BatteryGenerator3D < BatteryGenerator
 
             startSubGrid = [1; 1; 1];
             dimSubGrid   = [gen.ne_cc_nx; gen.ne_cc_ny; gen.ne_cc_nz];
-            allparams.ne.cc.cellind2 = pickTensorCells3D(startSubGrid, dimSubGrid, dimGrid);
+            allparams.ne.cc.cellindtab = pickTensorCells3D(startSubGrid, dimSubGrid, dimGrid);
 
-            allparams.ne.cc.cellind = [allparams.ne.cc.cellind1; allparams.ne.cc.cellind2];
+            allparams.ne.cc.cellind = [allparams.ne.cc.cellind1; allparams.ne.cc.cellindtab];
 
             %% setup gen.pe_cc
 
@@ -138,9 +142,9 @@ classdef BatteryGenerator3D < BatteryGenerator
 
             startSubGrid = [gen.ne_cc_nx + gen.int_elyte_nx + 1; gen.ne_cc_ny + gen.elyte_ny + 1; gen.ne_cc_nz + gen.elyte_nz + 1];
             dimSubGrid   = [gen.pe_cc_nx; gen.pe_cc_ny; gen.pe_cc_nz];
-            allparams.pe.cc.cellind2 = pickTensorCells3D(startSubGrid, dimSubGrid, dimGrid);
+            allparams.pe.cc.cellindtab = pickTensorCells3D(startSubGrid, dimSubGrid, dimGrid);
 
-            allparams.pe.cc.cellind = [allparams.pe.cc.cellind1; allparams.pe.cc.cellind2];
+            allparams.pe.cc.cellind = [allparams.pe.cc.cellind1; allparams.pe.cc.cellindtab];
 
             cellind = [allparams.elyte.cellind; allparams.ne.eac.cellind; allparams.pe.eac.cellind; allparams.ne.cc.cellind; allparams.pe.cc.cellind];
 
@@ -151,6 +155,8 @@ classdef BatteryGenerator3D < BatteryGenerator
             invcellmap = zeros(nGlob, 1);
             invcellmap(cellmap) = (1 : G.cells.num)';
 
+            G = computeGeometry(G);
+            
             paramobj.G = G;
             
             gen.invcellmap = invcellmap;
@@ -232,7 +238,51 @@ classdef BatteryGenerator3D < BatteryGenerator
         
         end
 
+        function paramobj = setupThermalModel(gen, paramobj, params)
+        % paramobj is instance of BatteryInputParams
+        % 
+        % We recover the external coupling terms for the current collectors
 
+            
+            % the cooling is done on the external faces
+            G = gen.G;
+            extfaces = any(G.faces.neighbors == 0, 2);
+            couplingfaces = find(extfaces);
+            couplingcells = sum(G.faces.neighbors(couplingfaces, :), 2);
+            
+            params = struct('couplingfaces', couplingfaces, ...
+                            'couplingcells', couplingcells);
+            paramobj = setupThermalModel@BatteryGenerator(gen, paramobj, params);
+            
+            
+            tabcellinds = [gen.allparams.pe.cc.cellindtab; gen.allparams.ne.cc.cellindtab];
+            tabtbl.cells = tabcellinds;
+            tabtbl = IndexArray(tabtbl);
+            
+            tbls = setupSimpleTables(G);
+            cellfacetbl = tbls.cellfacetbl;
+            
+            tabcellfacetbl = crossIndexArray(tabtbl, cellfacetbl, {'cells'});
+            tabfacetbl = projIndexArray(tabcellfacetbl, {'faces'});
+            
+            bcfacetbl.faces = couplingfaces;
+            bcfacetbl = IndexArray(bcfacetbl);
+            
+            tabbcfacetbl = crossIndexArray(bcfacetbl, tabfacetbl, {'faces'});
+            
+            map = TensorMap();
+            map.fromTbl = bcfacetbl;
+            map.toTbl = tabbcfacetbl;
+            map.mergefds = {'faces'};
+            ind = map.getDispatchInd();
+            
+            coef = gen.externalHeatTransferCoefficient*ones(bcfacetbl.num, 1);
+            coef(ind) = gen.externalHeatTransferCoefficientTab;
+            
+            paramobj.thermal.externalHeatTransferCoefficient = coef;
+            
+        end
+        
     end
     
 end
