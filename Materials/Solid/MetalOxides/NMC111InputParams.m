@@ -22,6 +22,7 @@ classdef NMC111InputParams < ActiveMaterialInputParams
             paramobj.Eak                    = 5000;     % [J mol^-1]
             paramobj.volumetricSurfaceArea  = 885000;   % [m2 m^-3]
             paramobj.volumeFraction         = 0.8;  
+            paramobj.rp                     = 1e-6;     % [m]
             
         end
         
