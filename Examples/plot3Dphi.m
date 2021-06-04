@@ -14,7 +14,7 @@ set(h, 'Position', [10 10 900 1000]);
 dovideo = false;
 
 if dovideo
-    filename = 'concentration.avi';
+    filename = 'phi.avi';
     video = VideoWriter(filename);
     video.FrameRate = 3;
     open(video);
