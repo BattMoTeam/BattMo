@@ -47,22 +47,30 @@ classdef ThermalComponent < PhysicalModel
         function model = setupMapping(model)
         % Aggregate face contribution to cell
             
-            bccellfacetbl.cells = model.couplingTerm.couplingcells;
-            bccellfacetbl.faces = model.couplingTerm.couplingfaces;
-            bccellfacetbl = IndexArray(bccellfacetbl);
-            bccelltbl = projIndexArray(bccellfacetbl, {'cells'});
-            
-            map = TensorMap();
-            map.fromTbl = bccellfacetbl;
-            map.toTbl = bccelltbl;
-            map.mergefds = {'cells'};
-            
-            bcfacecellmap = SparseTensor();
-            bcfacecellmap = bcfacecellmap.setFromTensorMap(map);
-            bcfacecellmap = bcfacecellmap.getMatrix();
-            
-            model.bcfacecellmap = bcfacecellmap;
-            model.bccells = bccelltbl.get('cells');
+            if isempty(model.couplingTerm.couplingfaces)
+                % this corresponds the the 1D case where the heat transfer with the exterior is given as a volumetric transfer and not a
+                % transfer across external faces
+                model.bccells = model.couplingTerm.couplingcells;
+                model.bcfacecellmap = speye(numel(model.bccells));
+                
+            else
+                bccellfacetbl.cells = model.couplingTerm.couplingcells;
+                bccellfacetbl.faces = model.couplingTerm.couplingfaces;
+                bccellfacetbl = IndexArray(bccellfacetbl);
+                bccelltbl = projIndexArray(bccellfacetbl, {'cells'});
+                
+                map = TensorMap();
+                map.fromTbl = bccellfacetbl;
+                map.toTbl = bccelltbl;
+                map.mergefds = {'cells'};
+                
+                bcfacecellmap = SparseTensor();
+                bcfacecellmap = bcfacecellmap.setFromTensorMap(map);
+                bcfacecellmap = bcfacecellmap.getMatrix();
+                
+                model.bcfacecellmap = bcfacecellmap;
+                model.bccells = bccelltbl.get('cells');
+            end
             
         end
         
@@ -93,9 +101,9 @@ classdef ThermalComponent < PhysicalModel
             
             state = model.updateHeatFlux(state);
             
-            flux     = state.jHeat;
-            bcsource = state.jHeatBcSource;
-            source   = state.jHeatSource;
+            flux     = 0*state.jHeat;
+            bcsource = 0*state.jHeatBcSource;
+            source   = 0*state.jHeatSource;
             accum    = state.accumHeat;
             
             energyCons = assembleConservationEquation(model, flux, bcsource, source, accum);

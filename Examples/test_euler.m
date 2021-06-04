@@ -12,7 +12,7 @@ tup = 0.1;
 paramobj = LithiumBatteryInputParams();
 
 % Setup battery
-modelcase = '3D';
+modelcase = '1D';
 
 switch modelcase
 
@@ -20,7 +20,11 @@ switch modelcase
 
     gen = BatteryGenerator1D();
     paramobj = gen.updateBatteryInputParams(paramobj);
+    paramobj.ne.cc.EffectiveElectricalConductivity = 100;
+    paramobj.pe.cc.EffectiveElectricalConductivity = 100;
     schedulecase = 3;
+    
+    paramobj.J = 1e1;
     paramobj.thermal.externalHeatTransferCoefficient = 1000;
     paramobj.thermal.externalTemperature = paramobj.initT;
 
@@ -83,7 +87,7 @@ switch schedulecase
     
     % Schedule adjusted for 1D case
     dt1 = rampupTimesteps(0.1, 0.1, 5);
-    dt2 = 3e3*ones(30, 1);
+    dt2 = 0.1*hour*ones(30, 1);
     dt = [dt1; dt2];
     times = [0; cumsum(dt)]; 
 
@@ -211,7 +215,7 @@ xlabel('time (hours)')
 
 switch modelcase
   case '1D'
-    plot1D;
+    % plot1D;
   case '2D'
     plotThermal(model,states);
   case '3D'
