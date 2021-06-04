@@ -16,15 +16,15 @@ classdef ElectrodeActiveComponent_ < ElectroChemicalComponent_
             inputnames = {'jCoupling'};
             fnmodel = {'.'};
             model = model.addPropFunction('jBcSource', fn, inputnames, fnmodel);            
-            
+
             fn = @ElectrodeActiveComponent.updateIonAndCurrentSource;
             inputnames = {VarName({'am'}, 'R')};
             fnmodel = {'.'};
             model = model.addPropFunction('chargeCarrierSource', fn, inputnames, fnmodel);
             model = model.addPropFunction('eSource', fn, inputnames, fnmodel);
             
-            fn = @ElectrodeActiveComponent.updateChargeCarrier;
-            inputnames = {VarName({'..'}, 'chargeCarrier')};
+            fn = @ElectrodeActiveComponent.updateSurfaceConcentration;
+            inputnames = {VarName({'..'}, 'chargeCarrier'), 'D', 'R'};
             fnmodel = {'..'};
             model = model.addPropFunction({'am', 'cElectrode'}, fn, inputnames, fnmodel);
 
@@ -37,12 +37,6 @@ classdef ElectrodeActiveComponent_ < ElectroChemicalComponent_
             fnmodel = {'..'};
             inputnames = {VarName(fnmodel, 'T')};
             model = model.addPropFunction({'am', 'T'}, fn, inputnames, fnmodel);
-            
-            fn = @ElectrodeActiveComponent.updateDiffusionCoefficient;
-            inputnames = {VarName({'am'}, 'D')};
-            fnmodel = {'.'};
-            model = model.addPropFunction('D', fn, inputnames, fnmodel);
-
             
         end
         

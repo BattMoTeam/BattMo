@@ -9,6 +9,8 @@ classdef ElectroChemicalComponent < ElectronicComponent
         chargeCarrierMassConsName
         chargeCarrierAccumName
         
+        EffectiveDiffusionCoefficient
+        
     end
 
     methods
@@ -26,15 +28,12 @@ classdef ElectroChemicalComponent < ElectronicComponent
             
         end
 
-        function state = updateDiffusionCoefficient(model, state)
-            error('virtual function : diffusion coefficient is model dependent')
-        end
-
         function state = updateChargeCarrierFlux(model, state)
             
             ccFluxName = model.chargeCarrierFluxName;
+
+            D = model.EffectiveDiffusionCoefficient;
             
-            D = state.D;
             c = state.c;
 
             ccflux = assembleFlux(model, c, D);

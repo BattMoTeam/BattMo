@@ -444,7 +444,6 @@ classdef Battery < PhysicalModel
                 elde = electrodes{ind};
                 
                 %% Electrodes mass conservation
-                state.(elde).(eac) = battery.(elde).(eac).updateDiffusionCoefficient(state.(elde).(eac));
                 state.(elde).(eac) = battery.(elde).(eac).updateChargeCarrierFlux(state.(elde).(eac));
                 state.(elde).(eac) = battery.(elde).(eac).updateMassConservation(state.(elde).(eac));
                 

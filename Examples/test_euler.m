@@ -207,7 +207,8 @@ if doplotJ
 end
 
 figure
-plot((time/hour), Enew, '*-')
+% plot((time/hour), Enew, '*-')
+plot(Enew, '*-')
 title('Potential (E)')
 xlabel('time (hours)')
 

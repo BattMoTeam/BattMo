@@ -8,6 +8,9 @@ classdef ElectrodeActiveComponentInputParams < ElectroChemicalComponentInputPara
         am
         amName
                 
+        % Interdiffusion coefficient parameter (diffusion between the particles)
+        InterDiffusionCoefficient
+        
         thermalConductivity
         heatCapacity
         

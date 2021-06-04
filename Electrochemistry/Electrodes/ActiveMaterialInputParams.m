@@ -18,6 +18,7 @@ classdef ActiveMaterialInputParams
         cp                      % [J kg^-1 K^-1]
         k0                      % [m^2.5 mol^-0.5 s^-1]
         Eak                     % [J mol^-1]
+        rp                      % [m]
         volumetricSurfaceArea   % [m2 m^-3]
         volumeFraction         
         

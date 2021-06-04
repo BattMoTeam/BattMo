@@ -1,4 +1,11 @@
 classdef ElectrodeActiveComponent < ElectroChemicalComponent
+% reference used here
+% @article{ref1,
+% 	year = 2007,
+% 	author = {Qi Zhang and Ralph E. White},
+% 	title = {Comparison of approximate solution methods for the solid phase diffusion equation in a porous electrode model},
+% 	journal = {Journal of Power Sources}
+% }
     
     properties
         
@@ -7,7 +14,10 @@ classdef ElectrodeActiveComponent < ElectroChemicalComponent
         volumeFraction
         porosity
         thickness
-                    
+                
+        % Inter particle diffusion coefficient parameter (diffusion between the particles)
+        InterDiffusionCoefficient
+        
         thermalConductivity % intrinsic thermal conductivity value
         heatCapacity % intrinsic heat capacity value
 
@@ -25,7 +35,8 @@ classdef ElectrodeActiveComponent < ElectroChemicalComponent
             model = model@ElectroChemicalComponent(paramobj);
             
             fdnames = {'thermalConductivity', ...
-                       'heatCapacity'};
+                       'heatCapacity', ...
+                       'InterDiffusionCoefficient'};
             model = dispatchParams(model, paramobj, fdnames);
             
             % Setup ActiveMaterial component
@@ -44,6 +55,10 @@ classdef ElectrodeActiveComponent < ElectroChemicalComponent
             econd = model.ActiveMaterial.electricalConductivity;
             % Bruggeman approximation 
             model.EffectiveElectricalConductivity = econd .* volumeFraction.^1.5;
+            
+            % setup effective diffusion coefficient (inter-particle diffusion)
+            model.EffectiveDiffusionCoefficient = model.InterDiffusionCoefficient.*volumeFraction.^1.5
+            
             % setup effective thermal conductivity            
             model.EffectiveThermalConductivity = model.thermalConductivity.*volumeFraction.^1.5;
             model.EffectiveHeatCapacity = model.heatCapacity.*volumeFraction;
@@ -62,16 +77,22 @@ classdef ElectrodeActiveComponent < ElectroChemicalComponent
             state.(ccSourceName) = - vols.*R/F;
             
         end
-        
-        function state = updateDiffusionCoefficient(model, state)
+
+        function state = updateSurfaceConcentration(model, state)
+        % We update the surface concentration of the charge carrier in the active material. 
+        % The surface concentration value is computed following polynomial method, as described in ref1 (see header)
             
-            D = state.ActiveMaterial.D;
-            state.D = D .* model.volumeFraction .^1.5;
+            am = 'ActiveMaterial';
             
-        end
-        
-        function state = updateChargeCarrier(model, state)
-            state.ActiveMaterial.cElectrode = state.c; 
+            c = state.c;
+            D = state.(am).D;
+            R = state.(am).R;
+
+            rp = model.(am).rp;
+            
+            cElectrode = c + (rp.*R)./(5*D);
+            state.ActiveMaterial.cElectrode = cElectrode;
+            
         end
         
         function state = updatePhi(model, state)
