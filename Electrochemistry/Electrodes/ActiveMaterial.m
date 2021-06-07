@@ -116,7 +116,8 @@ classdef ActiveMaterial < PhysicalModel
 
             rp = model.rp;
             
-            state.solidDiffusionEq = cElectrode - c - (rp.*R)./(5*D);;
+            state.solidDiffusionEq = csurf - cavg - (rp.*R)./(5*D);
+            state.solidDiffusionEq = csurf - cavg;
             
         end
         

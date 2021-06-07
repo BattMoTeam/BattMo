@@ -34,8 +34,8 @@ switch modelcase
     paramobj = gen.updateBatteryInputParams(paramobj);
     schedulecase = 1;
 
-    paramobj.ne.cc.EffectiveElectricalConductivity = 1e6;
-    paramobj.pe.cc.EffectiveElectricalConductivity = 1e6;
+    paramobj.ne.cc.EffectiveElectricalConductivity = 1e5;
+    paramobj.pe.cc.EffectiveElectricalConductivity = 1e5;
     
     paramobj.thermal.externalTemperature = paramobj.initT;
     paramobj.SOC = 0.99;
@@ -210,10 +210,12 @@ if doplotJ
 end
 
 figure
-% plot((time/hour), Enew, '*-')
-plot(Enew, '*-')
+plot((time/hour), Enew, '*-')
+% plot(Enew, '*-')
 title('Potential (E)')
 xlabel('time (hours)')
+
+return
 
 %% more plotting (case dependent)
 
