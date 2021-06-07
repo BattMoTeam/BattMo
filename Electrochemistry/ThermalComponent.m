@@ -101,9 +101,9 @@ classdef ThermalComponent < PhysicalModel
             
             state = model.updateHeatFlux(state);
             
-            flux     = 0*state.jHeat;
-            bcsource = 0*state.jHeatBcSource;
-            source   = 0*state.jHeatSource;
+            flux     = state.jHeat;
+            bcsource = state.jHeatBcSource;
+            source   = state.jHeatSource;
             accum    = state.accumHeat;
             
             energyCons = assembleConservationEquation(model, flux, bcsource, source, accum);

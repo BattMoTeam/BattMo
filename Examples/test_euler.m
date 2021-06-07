@@ -12,7 +12,7 @@ tup = 0.1;
 paramobj = LithiumBatteryInputParams();
 
 % Setup battery
-modelcase = '1D';
+modelcase = '2D';
 
 switch modelcase
 
@@ -34,6 +34,9 @@ switch modelcase
     paramobj = gen.updateBatteryInputParams(paramobj);
     schedulecase = 1;
 
+    paramobj.ne.cc.EffectiveElectricalConductivity = 1e6;
+    paramobj.pe.cc.EffectiveElectricalConductivity = 1e6;
+    
     paramobj.thermal.externalTemperature = paramobj.initT;
     paramobj.SOC = 0.99;
     
