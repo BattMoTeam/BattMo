@@ -13,9 +13,10 @@ classdef ActiveMaterial_ < CompositeModel
             names{end + 1} = 'SOC';
             % potential in electrode
             names{end + 1} = 'phiElectrode';
-            % charge carrier concentration in electrode
-            % NOTE : this is value at the surface of the particle (as used in Butler-Volmer)
+            % charge carrier concentration in electrode - value at surface
             names{end + 1} = 'cElectrode';
+            % charge carrier concentration in electrode - Averaged value
+            names{end + 1} = 'cElectrodeAveraged';
             % potential in electrolyte
             names{end + 1} = 'phiElectrolyte';
             % charge carrier concentration in electrolyte
@@ -31,6 +32,8 @@ classdef ActiveMaterial_ < CompositeModel
             names{end + 1} = 'OCP';
             % Reaction constant
             names{end + 1} = 'k';
+            % Solid diffusion equation
+            names{end + 1} = 'solidDiffusionEq';
             
             model.names = names;
             
@@ -53,8 +56,13 @@ classdef ActiveMaterial_ < CompositeModel
             inputnames = {'T', 'phiElectrolyte', 'phiElectrode', 'chargeCarrierElectrode', 'chargeCarrierElectrolyte', 'OCP', 'k'};
             fnmodel = {'.'};
             model = model.addPropFunction('R', fn, inputnames, fnmodel);
-            model = model.addPropFunction('eta', fn, inputnames, fnmodel);
+            % model = model.addPropFunction('eta', fn, inputnames, fnmodel);
             
+            fn = @ActiveMaterial.assembleSolidDiffusionEquation;
+            inputnames = {'D', 'R', 'cElectrode', 'cElectrodeAveraged'};
+            fnmodel = {'.'};
+            model = model.addPropFunction('solidDiffusionEq', fn, inputnames, fnmodel);
+        
         end        
         
     end

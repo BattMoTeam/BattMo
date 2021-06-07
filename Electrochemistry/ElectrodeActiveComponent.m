@@ -57,7 +57,7 @@ classdef ElectrodeActiveComponent < ElectroChemicalComponent
             model.EffectiveElectricalConductivity = econd .* volumeFraction.^1.5;
             
             % setup effective diffusion coefficient (inter-particle diffusion)
-            model.EffectiveDiffusionCoefficient = model.InterDiffusionCoefficient.*volumeFraction.^1.5
+            model.EffectiveDiffusionCoefficient = model.InterDiffusionCoefficient.*volumeFraction.^1.5;
             
             % setup effective thermal conductivity            
             model.EffectiveThermalConductivity = model.thermalConductivity.*volumeFraction.^1.5;
@@ -77,22 +77,9 @@ classdef ElectrodeActiveComponent < ElectroChemicalComponent
             state.(ccSourceName) = - vols.*R/F;
             
         end
-
-        function state = updateSurfaceConcentration(model, state)
-        % We update the surface concentration of the charge carrier in the active material. 
-        % The surface concentration value is computed following polynomial method, as described in ref1 (see header)
-            
-            am = 'ActiveMaterial';
-            
-            c = state.c;
-            D = state.(am).D;
-            R = state.(am).R;
-
-            rp = model.(am).rp;
-            
-            cElectrode = c + (rp.*R)./(5*D);
-            state.ActiveMaterial.cElectrode = cElectrode;
-            
+        
+        function state = updateChargeCarrier(model, state)
+            state.ActiveMaterial.cElectrodeAveraged = state.c; 
         end
         
         function state = updatePhi(model, state)

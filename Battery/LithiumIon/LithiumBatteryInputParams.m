@@ -18,6 +18,10 @@ classdef LithiumBatteryInputParams < BatteryInputParams
 
             paramobj.ne = LithiumElectrodeInputParams();
             paramobj.pe = LithiumElectrodeInputParams();
+
+            % We set interdiffusion coefficient here
+            paramobj.ne.eac.InterDiffusionCoefficient = 1e-10;
+            paramobj.pe.eac.InterDiffusionCoefficient = 1e-10;
             
             % Once the electrode are instantiated, we fill in the active material inputs
             paramobj.ne.eac.am = GraphiteInputParams();

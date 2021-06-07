@@ -104,6 +104,22 @@ classdef ActiveMaterial < PhysicalModel
             
         end
         
+        function state = assembleSolidDiffusionEquation(model, state)
+        % We update the surface concentration of the charge carrier in the active material. 
+        % The surface concentration value is computed following polynomial method, as described in ref1 (see header)
+            
+            
+            csurf = state.cElectrode;
+            cavg = state.cElectrodeAveraged;
+            D = state.D;
+            R = state.R;
+
+            rp = model.rp;
+            
+            state.solidDiffusionEq = cElectrode - c - (rp.*R)./(5*D);;
+            
+        end
+        
     end
 end
 

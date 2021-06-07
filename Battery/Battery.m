@@ -293,7 +293,8 @@ classdef Battery < PhysicalModel
             c = c*ones(negAm.G.cells.num, 1);
 
             initstate.(ne).(eac).c = c;
-            initstate.(ne).(eac) = model.(ne).(eac).updateChargeCarrier(initstate.(ne).(eac));
+            % We bypass the solid diffusion equation to set directly the particle surface concentration (this is a bit hacky)
+            initstate.(ne).(eac).(am).cElectrode = c;
             initstate.(ne).(eac).(am) = negAm.updateOCP(initstate.(ne).(eac).(am));
 
             OCP = initstate.(ne).(eac).(am).OCP;
@@ -315,7 +316,8 @@ classdef Battery < PhysicalModel
             c = c*ones(posAm.G.cells.num, 1);
 
             initstate.(pe).(eac).c = c;
-            initstate.(pe).(eac) = model.(pe).(eac).updateChargeCarrier(initstate.(pe).(eac));
+            % We bypass the solid diffusion equation to set directly the particle surface concentration (this is a bit hacky)
+            initstate.(pe).(eac).(am).cElectrode = c;
             initstate.(pe).(eac).(am) = posAm.updateOCP(initstate.(pe).(eac).(am));
             
             OCP = initstate.(pe).(eac).(am).OCP;
@@ -452,6 +454,12 @@ classdef Battery < PhysicalModel
                 state.(elde).(cc) = battery.(elde).(cc).updateChargeConservation(state.(elde).(cc));
 
             end
+
+            %% update solid diffustion equations
+            for ind = 1 : numel(electrodes)
+                elde = electrodes{ind};
+                state.(elde).(eac).(am) = battery.(elde).(eac).(am).assembleSolidDiffusionEquation(state.(elde).(eac).(am));
+            end
             
             %% update Thermal source term from electrical resistance
 
@@ -482,9 +490,11 @@ classdef Battery < PhysicalModel
             
             eqs{end + 1} = state.(ne).(eac).massCons;
             eqs{end + 1} = state.(ne).(eac).chargeCons;
+            eqs{end + 1} = state.(ne).(eac).(am).solidDiffusionEq;
             
             eqs{end + 1} = state.(pe).(eac).massCons;
             eqs{end + 1} = state.(pe).(eac).chargeCons;
+            eqs{end + 1} = state.(pe).(eac).(am).solidDiffusionEq;
             
             eqs{end + 1} = state.(ne).(cc).chargeCons;
             eqs{end + 1} = state.(pe).(cc).chargeCons;
@@ -505,15 +515,16 @@ classdef Battery < PhysicalModel
 
             %% Give type and names to equations and names of the primary variables (for book-keeping)
             
-            types = {'cell','cell','cell','cell',...
-                     'cell','cell','cell','cell','cell','cell'};
+            types = {'cell','cell','cell','cell', 'cell','cell','cell','cell','cell','cell', 'cell', 'cell'};
             
             names = {'elyte_massCons'   , ...
                      'elyte_chargeCons' , ...
                      'ne_eac_massCons'  , ...
                      'ne_eac_chargeCons', ...
+                     'ne_eac_am_soliddiffeq', ...
                      'pe_eac_massCons'  , ...
                      'pe_eac_chargeCons', ...
+                     'pe_eac_am_soliddiffeq', ...
                      'ne_cc_chargeCons' , ...
                      'pe_cc_chargeCons' , ...
                      'energyCons'       , ...
@@ -904,8 +915,10 @@ classdef Battery < PhysicalModel
                  {elyte, 'phi'}   , ...   
                  {ne, eac, 'c'}   , ...    
                  {ne, eac, 'phi'} , ...   
+                 {ne, eac, am, 'cElectrode'} , ...
                  {pe, eac, 'c'}   , ...    
                  {pe, eac, 'phi'} , ...   
+                 {pe, eac, am, 'cElectrode'} , ...
                  {ne, cc, 'phi'}  , ...    
                  {pe, cc, 'phi'}  , ...
                  {thermal, 'T'}   , ...
