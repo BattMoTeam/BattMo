@@ -8,7 +8,7 @@ classdef BatteryGenerator1D < BatteryGenerator
         ccnenx = 10;
         ccpenx = 10;
         fac = 1;
-        J = 1;
+        I = 1;
         
     end
     
@@ -20,7 +20,7 @@ classdef BatteryGenerator1D < BatteryGenerator
             
         function paramobj = updateBatteryInputParams(gen, paramobj)
             paramobj = gen.setupBatteryInputParams(paramobj, []);
-            paramobj.J = gen.J; 
+            paramobj.I = gen.I; 
         end
         
         function [paramobj, gen] = setupGrid(gen, paramobj, ~)

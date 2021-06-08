@@ -21,7 +21,7 @@ classdef Battery < PhysicalModel
         initT
 
         % Input current
-        J
+        I
         
         % Voltage cut
         Ucut
@@ -60,7 +60,7 @@ classdef Battery < PhysicalModel
                        'couplingTerms' , ...
                        'initT'         , ...
                        'SOC'           , ...
-                       'J'             , ...
+                       'I'             , ...
                        'Ucut'};
             
             model = dispatchParams(model, paramobj, fdnames);

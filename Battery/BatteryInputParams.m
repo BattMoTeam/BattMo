@@ -7,7 +7,7 @@ classdef BatteryInputParams
         %  SOC
         SOC
         % Input current
-        J
+        I
         % Voltage cut
         Ucut
         % initial temperature

@@ -11,7 +11,7 @@ classdef BatteryGenerator2D < BatteryGenerator
 
         ny = 10;
         
-        J = 0.1;
+        I = 0.1;
         
         % externalHeatTransferCoefficientTab = 1e6;
         externalHeatTransferCoefficientTab = 1e3;
@@ -27,7 +27,7 @@ classdef BatteryGenerator2D < BatteryGenerator
         
         function paramobj = updateBatteryInputParams(gen, paramobj)
             paramobj = gen.setupBatteryInputParams(paramobj, []);
-            paramobj.J = gen.J;
+            paramobj.I = gen.I;
         end
 
         function [paramobj, gen] = setupGrid(gen, paramobj, params)

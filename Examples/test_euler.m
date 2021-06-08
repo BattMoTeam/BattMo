@@ -6,8 +6,6 @@ mrstModule add ad-core multimodel mrst-gui battery mpfa
 
 mrstVerbose off
 
-% Value used in rampup function, see currentSource.
-tup = 0.1;
 
 paramobj = LithiumBatteryInputParams();
 
@@ -24,7 +22,6 @@ switch modelcase
     paramobj.pe.cc.EffectiveElectricalConductivity = 100;
     schedulecase = 3;
     
-    paramobj.J = 1e1;
     paramobj.thermal.externalHeatTransferCoefficient = 1000;
     paramobj.thermal.externalTemperature = paramobj.initT;
 
@@ -56,11 +53,18 @@ switch modelcase
     schedulecase = 5;
     
     paramobj.thermal.externalTemperature = paramobj.initT;
-    paramobj.J = 5e-4;
     
 end
 
 model = Battery(paramobj);
+
+C = computeCellCapacity(model);
+% C Rate
+CRate = 1/5;
+model.I  = (C/hour)*CRate;
+
+% Value used in rampup function, see currentSource.
+tup = 0.1;
 
 switch schedulecase
 
@@ -136,7 +140,7 @@ pe = 'PositiveElectrode';
 cc = 'CurrentCollector';
 stopFunc = @(model, state, state_prev) (state.(pe).(cc).E < 2.0); 
 
-srcfunc = @(time) CurrentSource(time, tup, times(end), model.J); 
+srcfunc = @(time) CurrentSource(time, tup, times(end), model.I);
 
 control = repmat(struct('src', srcfunc, 'stopFunction', stopFunc), 1, 1); 
 schedule = struct('control', control, 'step', step); 
@@ -198,15 +202,15 @@ time = cellfun(@(x) x.time, states);
 
 %% plot
 
-doplotJ = true;
-if doplotJ
+doplotI = true;
+if doplotI
     figure
     for i = 1 : numel(time)
         src(i) = srcfunc(time(i));
     end
     plot((time/hour), src, '*-')
     xlabel('time (hours)')
-    title('J (sine rampup)')
+    title('I (sine rampup)')
 end
 
 figure

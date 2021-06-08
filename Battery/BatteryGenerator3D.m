@@ -11,7 +11,7 @@ classdef BatteryGenerator3D < BatteryGenerator
 
         % Input current
         
-        J = 1e-4;
+        I = 1e-4;
 
         % Shortcuts used below
         % ne    : NegativeElectrode
@@ -65,7 +65,7 @@ classdef BatteryGenerator3D < BatteryGenerator
         
         function paramobj = updateBatteryInputParams(gen, paramobj)
             paramobj = gen.setupBatteryInputParams(paramobj, []);
-            paramobj.J = gen.J;
+            paramobj.I = gen.I;
         end
         
         function [paramobj, gen] = setupGrid(gen, paramobj, params)

@@ -14,7 +14,7 @@ switch modelcase
     model = orgLiPF6('elyte', G, (1 : G.cells.num));
   case 'battery'
     model = Battery();
-    model.J = 0.1;
+    model.I = 0.1;
   otherwise
     error('modelcase not recognized');
 end

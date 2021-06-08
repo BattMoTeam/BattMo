@@ -41,7 +41,7 @@ end
             colorbar();
             cbar = get(gca, 'Colorbar');
             cbar.Color = fs.fontColor;
-            title('Heat Source  /  J \cdot m^{-3}', 'color', fs.fontColor)
+            title('Heat Source  /  I \cdot m^{-3}', 'color', fs.fontColor)
             set(gca, 'XColor', fs.fontColor);
             set(gca, 'YColor', fs.fontColor);
             
@@ -64,7 +64,7 @@ end
             colorbar();
             cbar = get(gca, 'Colorbar');
             cbar.Color = fs.fontColor;
-            title('Heat Source  /  J \cdot m^{-3}', 'color', fs.fontColor)
+            title('Heat Source  /  I \cdot m^{-3}', 'color', fs.fontColor)
             set(gca, 'XColor', fs.fontColor);
             set(gca, 'YColor', fs.fontColor);
             

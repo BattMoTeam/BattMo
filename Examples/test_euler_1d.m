@@ -10,7 +10,7 @@ modelcase = '2D';
 switch modelcase
   case '1D'
     inputparams = BatteryInputParams1D();
-    inputparams.J = 1;
+    inputparams.I = 1;
     schedulecase = 3;
     cond=100*1e-9;
     inputparams.NegativeElectrode.ActiveMaterial.electricalConductivity=cond
@@ -21,7 +21,7 @@ switch modelcase
   case '2D'
     inputparams = BatteryInputParams2D();
     schedulecase = 1;
-    %inputparams.J = 1e-4;
+    %inputparams.I = 1e-4;
     tfac = 1; % used in schedule setup
   case '3D_1'
     inputparams = BatteryInputParams3D_1();
@@ -29,7 +29,7 @@ switch modelcase
     tfac = 1; % used in schedule setup
   case '3D_2'
     inputparams = BatteryInputParams3D_2();
-    inputparams.J = 1e-4;
+    inputparams.I = 1e-4;
     schedulecase = 1;
     tfac = 40; % used in schedule setup
 end
@@ -81,7 +81,7 @@ step = struct('val', diff(times), 'control', ones(numel(tt), 1));
 
 stopFunc = @(model, state, state_prev) (state.PositiveCurrentCollector.E < 2.0); 
 
-srcfunc = @(time) CurrentSource(time, tup, times(end), model.J); 
+srcfunc = @(time) CurrentSource(time, tup, times(end), model.I); 
 
 control = repmat(struct('src', srcfunc, 'stopFunction', stopFunc), 1, 1); 
 schedule = struct('control', control, 'step', step); 
@@ -125,15 +125,15 @@ time = cellfun(@(x) x.time, {states{ind}});
 
 %% plot
 
-doplotJ = true;
-if doplotJ
+doplotI = true;
+if doplotI
     figure
     for i = 1 : numel(time)
         src(i) = srcfunc(time(i));
     end
     plot((time/hour), src, '*-')
     xlabel('time (hours)')
-    title('J (sine rampup)')
+    title('I (sine rampup)')
 end
 
 figure

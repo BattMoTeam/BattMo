@@ -232,7 +232,7 @@ classdef Battery15i < Battery
 
             %% Control equation
 
-            src = currentSource(t, fv.tUp, fv.tf, model.J);
+            src = currentSource(t, fv.tUp, fv.tf, model.I);
             coupterm = model.getCoupTerm('bc-ccpe');
             faces = coupterm.couplingfaces;
             bcval = ccpe_E;
