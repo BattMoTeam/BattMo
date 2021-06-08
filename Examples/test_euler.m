@@ -223,7 +223,8 @@ switch modelcase
   case '1D'
     % plot1D;
   case '2D'
-    plotThermal(model,states);
+    plotThermal(model, states);
+    plot2Dconc;
   case '3D'
     plot3D;
     plot3Dconc;
