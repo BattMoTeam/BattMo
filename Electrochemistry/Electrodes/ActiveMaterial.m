@@ -101,8 +101,8 @@ classdef ActiveMaterial < PhysicalModel
             eta = (phiElde - phiElyte - OCP);
             state.eta = eta;
             
+            % We use regularizedSqrt to regularize the square root function and avoid the blow-up of derivative at zero.
             th = 1e-3*cmax;
-            
             j0 = k.*regularizedSqrt(cElyte.*(cmax - c).*c, th)*n*F;
             R = model.volumetricSurfaceArea.*ButlerVolmerEquation(j0, 0.5, n, eta, T);
             
