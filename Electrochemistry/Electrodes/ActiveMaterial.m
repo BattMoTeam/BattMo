@@ -14,6 +14,9 @@ classdef ActiveMaterial < PhysicalModel
         % Electron data structure
         e
         
+        % number of electron transfer
+        n
+        
         % Physicochemical properties
         volumeFraction
         volumetricSurfaceArea  % Surface area,                 [m2 m^-3]
@@ -84,6 +87,8 @@ classdef ActiveMaterial < PhysicalModel
         function state = updateReactionRate(model, state);
             
             cmax = model.Li.cmax;
+            n = model.n;
+            F = model.constants.F;
             
             T        = state.T;
             phiElyte = state.phiElectrolyte;
@@ -97,10 +102,11 @@ classdef ActiveMaterial < PhysicalModel
             state.eta = eta;
             
             th = 1e-3*cmax;
-            Rcoef = model.volumetricSurfaceArea*regularizedSqrt(cElyte.*(cmax - c).*c, th);
-            R = Rcoef.*ButlerVolmerEquation(k.*model.constants.F, 0.5, 1, eta, T);
             
-            state.R = R;
+            j0 = k.*regularizedSqrt(cElyte.*(cmax - c).*c, th)*n*F;
+            R = model.volumetricSurfaceArea.*ButlerVolmerEquation(j0, 0.5, n, eta, T);
+            
+            state.R = R/(n*F); % reaction rate in mole/meter^3/second
             
         end
         
@@ -115,9 +121,9 @@ classdef ActiveMaterial < PhysicalModel
             R = state.R;
 
             rp = model.rp;
+            a = model.volumetricSurfaceArea;
             
-            state.solidDiffusionEq = csurf - cavg - (rp.*R)./(5*D);
-            state.solidDiffusionEq = csurf - cavg;
+            state.solidDiffusionEq = csurf - cavg + (rp.*R)./(5*a*D);
             
         end
         

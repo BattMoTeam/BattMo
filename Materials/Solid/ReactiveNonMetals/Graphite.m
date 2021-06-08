@@ -5,6 +5,7 @@ classdef Graphite < ActiveMaterial
         function model = Graphite(paramobj)
             
             model = model@ActiveMaterial(paramobj);
+            model.n = 1;
             
         end
         

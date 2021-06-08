@@ -70,11 +70,11 @@ classdef ElectrodeActiveComponent < ElectroChemicalComponent
             ccSourceName = model.chargeCarrierSourceName;
             F = model.ActiveMaterial.constants.F;
             vols = model.G.cells.volumes;
-            
+            n = model.ActiveMaterial.n;
             R = state.ActiveMaterial.R;
             
-            state.eSource = - vols.*R;
-            state.(ccSourceName) = - vols.*R/F;
+            state.eSource = - vols.*R*n*F; % C/second
+            state.(ccSourceName) = - vols.*R; % mol/second
             
         end
         

@@ -601,9 +601,9 @@ classdef Battery < PhysicalModel
             elytecells = coupterm.couplingcells(:, 2);
             elyte_c_source(elytecells) = pe_R.*vols(elytecells);
             
-            elyte_e_source = elyte_c_source.*battery.(elyte).sp.z{1}; % we divide with F later
+            elyte_e_source = elyte_c_source.*battery.(elyte).sp.z{1}*F; 
             
-            state.Electrolyte.(ccSourceName) = elyte_c_source/F; 
+            state.Electrolyte.(ccSourceName) = elyte_c_source; 
             state.Electrolyte.eSource = elyte_e_source;
             
         end

@@ -5,6 +5,7 @@ classdef NMC111 < ActiveMaterial
         function model = NMC111(paramobj)
             
             model = model@ActiveMaterial(paramobj);
+            model.n = 1;
             
         end
         
