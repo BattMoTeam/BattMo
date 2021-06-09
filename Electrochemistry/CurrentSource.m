@@ -1,5 +1,5 @@
 function res = CurrentSource(t, tup, tlim, jnom)
-%CURRENTSOURCE Summary of this function goes here
+% CURRENTSOURCE Summary of this function goes here
 %   Detailed explanation goes here
 
 N = length(jnom);

@@ -20,8 +20,11 @@ classdef Battery < PhysicalModel
         % Initial temperature
         initT
 
-        % Input current
-        I
+        % Input current (see function standardControl.m)
+        inputI
+        
+        % Input voltage (see function standardControl.m)
+        inputE
         
         % Voltage cut
         Ucut
@@ -341,6 +344,7 @@ classdef Battery < PhysicalModel
             initstate.(pe).(cc).phi = OCP - ref;
             
             initstate.(pe).(cc).E = OCP(1) - ref;
+            initstate.(pe).(cc).I = model.inputI;
             
         end
         
@@ -478,6 +482,9 @@ classdef Battery < PhysicalModel
             
             state.(thermal) = model.(thermal).updateEnergyConservation(state.(thermal));
             
+            %% setup relation between E and I at positive current collectror
+            
+            state = model.setupEIEquation(state);
             
             %% Set up the governing equations
             
@@ -501,21 +508,22 @@ classdef Battery < PhysicalModel
             
             eqs{end + 1} = state.(thermal).energyCons;
             
-            %% We setup and add the control equation (fixed total current at PositiveCurrentCollector)
+            eqs{end + 1} = state.EIeq;
             
-            src = drivingForces.src(time);
-            coupterm = battery.(pe).(cc).couplingTerm;
-            faces = coupterm.couplingfaces;
-            bcval = state.(pe).(cc).E;
-            cond_pcc = battery.(pe).(cc).EffectiveElectricalConductivity;
-            [trans_pcc, cells] = battery.(pe).(cc).operators.harmFaceBC(cond_pcc, faces);
-            control = sum(trans_pcc.*(state.(pe).(cc).phi(cells) - bcval)) - src;
-            
-            eqs{end + 1} = - control;
+            % we add the control equation
+            I = state.(pe).(cc).I;
+            E = state.(pe).(cc).E;
+            [val, ctrltype] = drivingForces.src(time, value(I), value(E));
+            switch ctrltype
+              case 'I'
+                eqs{end + 1} = I - val;
+              case 'E'
+                eqs{end + 1} = E - val;
+            end
 
             %% Give type and names to equations and names of the primary variables (for book-keeping)
             
-            types = {'cell','cell','cell','cell', 'cell','cell','cell','cell','cell','cell', 'cell', 'cell'};
+            types = {'cell','cell','cell','cell', 'cell','cell','cell','cell','cell','cell', 'cell', 'cell', 'cell'};
             
             names = {'elyte_massCons'   , ...
                      'elyte_chargeCons' , ...
@@ -528,7 +536,8 @@ classdef Battery < PhysicalModel
                      'ne_cc_chargeCons' , ...
                      'pe_cc_chargeCons' , ...
                      'energyCons'       , ...
-                     'control'};
+                     'EIeq', ...
+                     'controlEq'};
             
             primaryVars = model.getPrimaryVariables();
 
@@ -857,6 +866,23 @@ classdef Battery < PhysicalModel
             
         end
 
+        function state = setupEIEquation(model, state)
+            
+            pe = 'PositiveElectrode';
+            cc = 'CurrentCollector';
+            
+            I = state.(pe).(cc).I;
+            E = state.(pe).(cc).E;
+            phi = state.(pe).(cc).phi;
+            
+            coupterm = model.(pe).(cc).couplingTerm;
+            faces = coupterm.couplingfaces;
+            cond_pcc = model.(pe).(cc).EffectiveElectricalConductivity;
+            [trans_pcc, cells] = model.(pe).(cc).operators.harmFaceBC(cond_pcc, faces);
+            state.EIeq = sum(trans_pcc.*(state.(pe).(cc).phi(cells) - E)) - I;
+
+        end
+        
         
         function state = initStateAD(model,state)
             
@@ -874,7 +900,7 @@ classdef Battery < PhysicalModel
             if(isprop(adbackend,'useMex'))
                useMex = adbackend.useMex; 
             end
-            opts=struct('types',[1,1,2,2,3,3,4,5,6,7],'useMex',useMex);
+            opts=struct('types',[1,1,2,2,3,3,4,5,6,7,8],'useMex',useMex);
             [state.(elyte).cs{1}  , ...
              state.(elyte).phi    , ...   
              state.(ne).(eac).c   , ...   
@@ -886,7 +912,8 @@ classdef Battery < PhysicalModel
              state.(ne).(cc).phi  , ...    
              state.(pe).(cc).phi  , ...    
              state.(thermal).T    , ...
-             state.(pe).(cc).E] = ...
+             state.(pe).(cc).E, ...
+             state.(pe).(cc).I] = ...
                 adbackend.initVariablesAD(...
                     state.(elyte).cs{1}  , ...
                     state.(elyte).phi    , ...   
@@ -900,6 +927,7 @@ classdef Battery < PhysicalModel
                     state.(pe).(cc).phi  , ...    
                     state.(thermal).T    , ...
                     state.(pe).(cc).E, ...
+                    state.(pe).(cc).I, ...
                     opts); 
             % PRIMARY variables
         end
@@ -926,8 +954,8 @@ classdef Battery < PhysicalModel
                  {ne, cc, 'phi'}  , ...    
                  {pe, cc, 'phi'}  , ...
                  {thermal, 'T'}   , ...
-                 {pe, cc, 'E'}
-                };
+                 {pe, cc, 'E'}, ...
+                 {pe, cc, 'I'}};
             
         end
         

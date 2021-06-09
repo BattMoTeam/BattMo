@@ -52,11 +52,13 @@ classdef LithiumBatteryInputParams < BatteryInputParams
                     paramobj.(eldes{i}).(cpts{j}).heatCapacity = hC;
                 end
             end
-            
-            paramobj.SOC   = 0.5;
-            paramobj.initT = 298.15;
-            paramobj.I     = 0.001;
-            paramobj.Ucut  = 2;
+
+            % some default values (use with care)
+            paramobj.SOC    = 0.5;
+            paramobj.initT  = 298.15;
+            paramobj.inputI = 0.001; % [A]
+            paramobj.inputE = 3; % [V]
+            paramobj.Ucut   = 2;
             
         end
 

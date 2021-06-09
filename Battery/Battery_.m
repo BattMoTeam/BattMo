@@ -9,6 +9,7 @@ classdef Battery_ < CompositeModel
             names = {'SOC', ...
                      'prevstate', ...
                      'energyCons', ...
+                     'controlEq', ...
                      'dt'};
             
             model.names = names;
@@ -16,7 +17,10 @@ classdef Battery_ < CompositeModel
             submodels = {};
             submodels{end + 1} = Electrolyte_('elyte');
             submodels{end + 1} = Electrode_('ne');
-            submodels{end + 1} = Electrode_('pe');
+            pe_model = Electrode_('pe');
+            pe_model.names{end + 1} = 'E';
+            pe_model.names{end + 1} = 'I';
+            submodels{end + 1} = pe_model;
             submodels{end + 1} = ThermalComponent_('thermal');
             
             model.SubModels = submodels;
@@ -90,22 +94,31 @@ classdef Battery_ < CompositeModel
             
             model = model.addPropFunction({'pe', 'eac', 'chargeCarrierAccum'}, fn, inputnames, fnmodel);                        
             
+            %% setup control equation
+            fn = @Batter.setupEIEquation;
+            fnmodel = {'.'};
+            inputnames = {{'pe', 'cc', 'E'}, ...
+                          {'pe', 'cc', 'I'}, ...
+                          {'pe', 'cc', 'phi'}, ...
+                         };
+            model = model.addPropFunction({'controlEq'}, fn, inputnames, fnmodel);
+            
             %% update Thermal accumulation terms
             
             fn = @Battery.updateThermalAccumTerms;
             fnmodel = {'..'};
-            inputnames = {VarName({'thermal'}, 'T')};
+            inputnames = {'T'};
             model = model.addPropFunction({'thermal', 'accumHeat'}, fn, inputnames, fnmodel);
             
             %% update Thermal Ohmic Terms
             
             fn = @Battery.updateThermalOhmicSourceTerms;
             fnmodel = {'..'};
-            inputnames = {VarName({'elyte'}, 'j')     , ...
-                          VarName({'ne', 'cc'}, 'j')  , ...
-                          VarName({'ne', 'eac'}, 'j') , ...
-                          VarName({'pe', 'cc'}, 'j')  , ...
-                          VarName({'pe', 'eac'}, 'j')};
+            inputnames = {VarName({'..', 'elyte'}, 'j')     , ...
+                          VarName({'..', 'ne', 'cc'}, 'j')  , ...
+                          VarName({'..', 'ne', 'eac'}, 'j') , ...
+                          VarName({'..', 'pe', 'cc'}, 'j')  , ...
+                          VarName({'..', 'pe', 'eac'}, 'j')};
             model = model.addPropFunction({'thermal', 'jHeatOhmSource'}, fn, inputnames, fnmodel);
             model = model.addPropFunction({'thermal', 'jHeatBcSource'}, fn, inputnames, fnmodel);
             
@@ -113,26 +126,26 @@ classdef Battery_ < CompositeModel
             
             fn = @Battery.updateThermalChemicalSourceTerms;
             fnmodel = {'..'};
-            inputnames = {VarName({'elyte'}, 'diffFlux'), ...
-                          VarName({'elyte'}, 'D'), ...
-                          VarName({'elyte'}, 'dmudcs')};
+            inputnames = {VarName({'..', 'elyte'}, 'diffFlux'), ...
+                          VarName({'..', 'elyte'}, 'D'), ...
+                          VarName({'..', 'elyte'}, 'dmudcs')};
             model = model.addPropFunction({'thermal', 'jHeatChemicalSource'}, fn, inputnames, fnmodel);
                           
             %% update Thermal Chemical Terms
             
             fn = @Battery.updateThermalReactionSourceTerms;
             fnmodel = {'..'};
-            inputnames = {VarName({'ne', 'am'}, 'R'), ...
-                          VarName({'ne', 'am'}, 'eta'), ...
-                          VarName({'pe', 'am'}, 'R'), ...
-                          VarName({'pe', 'am'}, 'eta')};
+            inputnames = {VarName({'..', 'ne', 'eac', 'am'}, 'R'), ...
+                          VarName({'..', 'ne', 'eac', 'am'}, 'eta'), ...
+                          VarName({'..', 'pe', 'eac', 'am'}, 'R'), ...
+                          VarName({'..', 'pe', 'eac', 'am'}, 'eta')};
             model = model.addPropFunction({'thermal', 'jHeatReactionSource'}, fn, inputnames, fnmodel);
                                                     
             %% setup external coupling at positive and negative electrodes
             
             fn = @Battery.setupExternalCouplingNegativeElectrode;
             inputnames = {'phi'};
-            fnmodel = {'.'};
+            fnmodel = {'..', '..'};
                       
             model = model.addPropFunction({'ne', 'cc', 'jExternal'}, fn, inputnames, fnmodel);
             

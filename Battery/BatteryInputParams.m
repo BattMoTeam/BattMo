@@ -6,8 +6,10 @@ classdef BatteryInputParams
         G
         %  SOC
         SOC
-        % Input current
-        I
+        % Input current (see function standardControl.m)
+        inputI
+        % Input voltage (see function standardControl.m)
+        inputE
         % Voltage cut
         Ucut
         % initial temperature

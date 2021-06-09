@@ -12,12 +12,12 @@ set(0, 'DefaultFigurePosition', [278 109 1570 822]);
 gstyle = {'interpreter', 'none', 'LineWidth', 3, 'ArrowSize', 20, 'NodeFontSize', 14};
 
 % model = ActiveMaterial_('am');
-model = ElectrodeActiveComponent_('eac');
+% model = ElectrodeActiveComponent_('eac');
 % model = CurrentCollector_('cc');
 % model = Electrode_('pn');
 % model = Electrolyte_('elyte');
-model = model.initiateCompositeModel();
-% model = Battery_();
+% model = model.initiateCompositeModel();
+model = Battery_();
 
 model.adminmodel.printPropfunctions;
 

@@ -6,7 +6,6 @@ mrstModule add ad-core multimodel mrst-gui battery mpfa
 
 mrstVerbose off
 
-
 paramobj = LithiumBatteryInputParams();
 
 % Setup battery
@@ -61,7 +60,8 @@ model = Battery(paramobj);
 C = computeCellCapacity(model);
 % C Rate
 CRate = 1/5;
-model.I  = (C/hour)*CRate;
+model.inputI  = (C/hour)*CRate;
+model.inputE = 3.6;
 
 % Value used in rampup function, see currentSource.
 tup = 0.1;
@@ -140,7 +140,9 @@ pe = 'PositiveElectrode';
 cc = 'CurrentCollector';
 stopFunc = @(model, state, state_prev) (state.(pe).(cc).E < 2.0); 
 
-srcfunc = @(time) CurrentSource(time, tup, times(end), model.I);
+inputI = model.inputI; 
+inputE = model.inputE;
+srcfunc = @(time, I, E) standardControl(time, tup, times(end), I, E, inputI, inputE);
 
 control = repmat(struct('src', srcfunc, 'stopFunction', stopFunc), 1, 1); 
 schedule = struct('control', control, 'step', step); 
@@ -198,25 +200,19 @@ end
 ind = cellfun(@(x) not(isempty(x)), states); 
 states = states(ind);
 Enew = cellfun(@(x) x.(pe).(cc).E, states); 
+Inew = cellfun(@(x) x.(pe).(cc).I, states);
 time = cellfun(@(x) x.time, states); 
 
-%% plot
-
-doplotI = true;
-if doplotI
-    figure
-    for i = 1 : numel(time)
-        src(i) = srcfunc(time(i));
-    end
-    plot((time/hour), src, '*-')
-    xlabel('time (hours)')
-    title('I (sine rampup)')
-end
+%%
 
 figure
-plot((time/hour), Enew, '*-')
-% plot(Enew, '*-')
+plot((time/hour), Enew, '*-', 'linewidth', 3)
 title('Potential (E)')
+xlabel('time (hours)')
+
+figure
+plot((time/hour), Inew, '*-', 'linewidth', 3)
+title('Current (I)')
 xlabel('time (hours)')
 
 return
