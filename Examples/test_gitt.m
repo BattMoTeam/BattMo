@@ -66,47 +66,52 @@ stopFunc = @(model, state, state_prev) (state.(pe).(cc).E < 2.0);
 % Cell capacity
 C = computeCellCapacity(model);
 % C Rate
-CRate = 1;
+CRate = 2;
 inputI  = (C/hour)*CRate;
 inputE = 4.2;
 
-% First phase : activation phase (with rampup) and charging to inputE
-tup = 0.1;
+% Activtation phase : activation phase (with rampup) and charging to inputE
+tup = 0.1; % rampup time
+time_init = 5*minute;
 srcfunc_init = @(time, I, E) rampupSwitchControl(time, tup, I, E, inputI, inputE);
 
-% Second phase : Alternate discharging and relaxation 
-srcfunc_dis = @(time, I, E) Icontrol(I, inputI);
-srcfunc_rel = @(time, I, E) Icontrol(I, 0);
+
+% Gitt phase : Alternate discharging and relaxation 
+
+% we setup tabulated input for the gitt part
+time_dis = 2*minute; % time of discharging
+time_rel = 3*minute; % time of relaxation
+time_rampup = 30*second; % rampup time (linear interpolation between the two states)
+dtpoints = [time_rampup; ...
+            time_dis - time_rampup;
+            time_rampup;
+            time_rel - time_rampup];
+dIpoints = [1; 0; -1; 0];
+
+N = 20; % number of cycle
+tpoints = [0; cumsum(repmat(dtpoints, N, 1))];
+Ipoints = [0; cumsum(repmat(dIpoints, N, 1))];
+
+tpoints = time_init + tpoints; % starts at end of activation phase
+Ipoints = inputI*Ipoints; % scales with Iinput
+
+srcfunc_gitt = @(time, I, E) tabulatedIControl(time, tpoints, Ipoints);
 
 control(1) = struct('src', srcfunc_init, 'stopFunction', stopFunc); 
-control(2) = struct('src', srcfunc_dis, 'stopFunction', stopFunc);
-control(3) = struct('src', srcfunc_rel, 'stopFunction', stopFunc);
+control(2) = struct('src', srcfunc_gitt, 'stopFunction', stopFunc);
 
-% Setup time steps
-n_init = 10;
-dt_init = rampupTimesteps(1.5*tup, tup/n_init, 10);
-controlInd_init = ones(numel(dt_init), 1);
+n_init = 5;
+dt_init = rampupTimesteps(time_init, time_init/n_init, 3);
 
-time_dis = 2*minute;
-time_rel = 20*minute;
-n_dis = 3;
-n_rel = 3;
+n_per_cycle = 10;
+time_cycle = time_dis + time_rel;
+dt_cycle = time_cycle/n_per_cycle;
 
-dt_dis = time_dis/n_dis*ones(n_dis, 1);
-dt_rel = time_rel/n_rel;
-dt_rel = rampupTimesteps(time_rel, dt_rel, 3);
-n_rel = numel(dt_rel);
+dt_cycle = dt_cycle*ones(N*n_per_cycle, 1);
 
-dt_cycle = [dt_dis; dt_rel];
-controlInd_cycle = [2*ones(n_dis, 1); 3*ones(n_rel, 1)];
-
-% N : number of discharging cycles
-N = 40;
-
-step.val = [dt_init; ...
-            repmat(dt_cycle, N, 1)];
-step.control = [controlInd_init; ...
-                repmat(controlInd_cycle, N, 1)];
+step.val = [dt_init; dt_cycle];
+step.control = [ones(numel(dt_init), 1); ...
+                2*ones(numel(dt_cycle), 1)];
 
 schedule = struct('control', control, 'step', step); 
 
@@ -169,7 +174,7 @@ time = cellfun(@(x) x.time, states);
 %%
 
 figure
-plot((time/hour), Enew, '*-', 'linewidth', 1)
+plot((time/hour), Enew, '-', 'linewidth', 1)
 title('Potential (E)')
 xlabel('time (hours)')
 

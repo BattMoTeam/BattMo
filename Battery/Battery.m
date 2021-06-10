@@ -20,12 +20,6 @@ classdef Battery < PhysicalModel
         % Initial temperature
         initT
 
-        % Input current (see function standardControl.m)
-        inputI
-        
-        % Input voltage (see function standardControl.m)
-        inputE
-        
         % Voltage cut
         Ucut
 
@@ -344,7 +338,7 @@ classdef Battery < PhysicalModel
             initstate.(pe).(cc).phi = OCP - ref;
             
             initstate.(pe).(cc).E = OCP(1) - ref;
-            initstate.(pe).(cc).I = model.inputI;
+            initstate.(pe).(cc).I = 0;
             
         end
         

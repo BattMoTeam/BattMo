@@ -56,8 +56,6 @@ classdef LithiumBatteryInputParams < BatteryInputParams
             % some default values (use with care)
             paramobj.SOC    = 0.5;
             paramobj.initT  = 298.15;
-            paramobj.inputI = 0.001; % [A]
-            paramobj.inputE = 3; % [V]
             paramobj.Ucut   = 2;
             
         end
