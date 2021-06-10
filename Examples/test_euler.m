@@ -57,11 +57,7 @@ end
 
 model = Battery(paramobj);
 
-C = computeCellCapacity(model);
-% C Rate
-CRate = 1/5;
-model.inputI  = (C/hour)*CRate;
-model.inputE = 3.6;
+
 
 % Value used in rampup function, see currentSource.
 tup = 0.1;
@@ -140,9 +136,13 @@ pe = 'PositiveElectrode';
 cc = 'CurrentCollector';
 stopFunc = @(model, state, state_prev) (state.(pe).(cc).E < 2.0); 
 
-inputI = model.inputI; 
-inputE = model.inputE;
-srcfunc = @(time, I, E) standardControl(time, tup, times(end), I, E, inputI, inputE);
+C = computeCellCapacity(model);
+% C Rate
+CRate = 1/5;
+inputI  = (C/hour)*CRate;
+inputE = 3.6;
+
+srcfunc = @(time, I, E) rampupSwitchControl(time, tup, I, E, inputI, inputE);
 
 control = repmat(struct('src', srcfunc, 'stopFunction', stopFunc), 1, 1); 
 schedule = struct('control', control, 'step', step); 
