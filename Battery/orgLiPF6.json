@@ -19,6 +19,6 @@
             0.601
         ]
     },
-    "Separator": { "filename": "/home/xavier/Matlab/Projects/project-batman/Materials/Solid/Polymers/celgard2500.json",
+    "Separator": { "filename": "Materials/Solid/Polymers/celgard2500.json",
                    "isFile": true }
 }

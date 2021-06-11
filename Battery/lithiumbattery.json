@@ -11,12 +11,12 @@
             "thermalConductivity": 6e-05,
             "ActiveMaterial": {
                 "isFile": true,
-                "filename": "/home/xavier/Matlab/Projects/project-batman/Battery/graphite.json"
+                "filename": "Battery/graphite.json"
             }
         },
         "CurrentCollector": {
             "isFile": true,
-            "filename": "/home/xavier/Matlab/Projects/project-batman/Battery/currentcollector.json"
+            "filename": "Battery/currentcollector.json"
         }
     },
     "PositiveElectrode": {
@@ -27,16 +27,16 @@
             "chargeCarrierName": "Li",
             "ActiveMaterial": {
                 "isFile": true,
-                "filename": "/home/xavier/Matlab/Projects/project-batman/Battery/nmc111.json"
+                "filename": "Battery/nmc111.json"
             }
         },
         "CurrentCollector": {
             "isFile": true,
-            "filename": "/home/xavier/Matlab/Projects/project-batman/Battery/currentcollector.json"
+            "filename": "Battery/currentcollector.json"
         }
     },
     "Electrolyte": {
-        "filename": "/home/xavier/Matlab/Projects/project-batman/Battery/orgLiPF6.json",
+        "filename": "Battery/orgLiPF6.json",
         "isFile": true
     },
     "ThermalModel": {
