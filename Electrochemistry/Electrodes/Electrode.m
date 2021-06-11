@@ -25,8 +25,8 @@ classdef Electrode < PhysicalModel
             model = dispatchParams(model, paramobj, fdnames);
             
             % Assign the two components
-            model.ElectrodeActiveComponent = model.setupElectrodeActiveComponent(paramobj.eac);
-            model.CurrentCollector = model.setupCurrentCollector(paramobj.cc);
+            model.ElectrodeActiveComponent = model.setupElectrodeActiveComponent(paramobj.ElectrodeActiveComponent);
+            model.CurrentCollector = model.setupCurrentCollector(paramobj.CurrentCollector);
            
         end
         

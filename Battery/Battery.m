@@ -63,10 +63,10 @@ classdef Battery < PhysicalModel
             model = dispatchParams(model, paramobj, fdnames);
             
             % Assign the components : Electrolyte, NegativeElectrode, PositiveElectrode
-            model.NegativeElectrode = model.setupElectrode(paramobj.ne);
-            model.PositiveElectrode = model.setupElectrode(paramobj.pe);
-            model.Electrolyte = model.setupElectrolyte(paramobj.elyte);
-            model.ThermalModel = ThermalComponent(paramobj.thermal);
+            model.NegativeElectrode = model.setupElectrode(paramobj.NegativeElectrode);
+            model.PositiveElectrode = model.setupElectrode(paramobj.PositiveElectrode);
+            model.Electrolyte = model.setupElectrolyte(paramobj.Electrolyte);
+            model.ThermalModel = ThermalComponent(paramobj.ThermalModel);
             
             % setup Electrolyte model (setup electrolyte volume fractions in the different regions)
             model = model.setupElectrolyteModel();            

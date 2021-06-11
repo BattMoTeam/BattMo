@@ -27,7 +27,7 @@ classdef Electrolyte < ElectroChemicalComponent
         % paramobj is instance of ElectrolyteInputParams or a derived class
             model = model@ElectroChemicalComponent(paramobj);
             
-            model.Separator = Separator(paramobj.sep);
+            model.Separator = Separator(paramobj.Separator);
             
             fdnames = {'sp'                 , ...
                        'compnames'          , ...

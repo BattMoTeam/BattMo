@@ -3,11 +3,8 @@ classdef ElectrodeInputParams < ComponentInputParams
     properties
         
         %% parameters for the electrode components
-        % shortcut used here
-        % eac : ElectrodeActiveComponent parameters (instance of ElectrodeActiveComponentInputParams)
-        % cc  : CurrentCollector parameters (instance of CurrentCollectorInputParams)
-        eac
-        cc
+        ElectrodeActiveComponent
+        CurrentCollector
         
         %% coupling terms
         couplingTerm
@@ -17,9 +14,15 @@ classdef ElectrodeInputParams < ComponentInputParams
     methods
 
         function paramobj = ElectrodeInputParams()
+
+            eac = 'ElectrodeActiveComponent';
+            cc  = 'CurrentCollector';
+
             paramobj = paramobj@ComponentInputParams();
-            paramobj.eac = ElectrodeActiveComponentInputParams();
-            paramobj.cc = CurrentCollectorInputParams();
+            
+            paramobj.(eac) = ElectrodeActiveComponentInputParams();
+            paramobj.(cc) = CurrentCollectorInputParams();
+            
         end
 
     end

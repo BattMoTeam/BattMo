@@ -8,7 +8,6 @@ classdef BatteryGenerator1D < BatteryGenerator
         ccnenx = 10;
         ccpenx = 10;
         fac = 1;
-        I = 1;
         
     end
     
@@ -20,7 +19,6 @@ classdef BatteryGenerator1D < BatteryGenerator
             
         function paramobj = updateBatteryInputParams(gen, paramobj)
             paramobj = gen.setupBatteryInputParams(paramobj, []);
-            paramobj.I = gen.I; 
         end
         
         function [paramobj, gen] = setupGrid(gen, paramobj, ~)
@@ -64,12 +62,17 @@ classdef BatteryGenerator1D < BatteryGenerator
         function paramobj = setupElectrolyte(gen, paramobj, params)
             
             params.cellind = gen.ccnenx + (1 : (gen.nenx + gen.sepnx + gen.penx))';
-            params.sep.cellind = gen.ccnenx + gen.nenx + (1 : gen.sepnx)';
+            params.Separator.cellind = gen.ccnenx + gen.nenx + (1 : gen.sepnx)';
             
             paramobj = setupElectrolyte@BatteryGenerator(gen, paramobj, params);
         end
         
         function paramobj = setupElectrodes(gen, paramobj, params)
+
+            ne  = 'NegativeElectrode';
+            pe  = 'PositiveElectrode';
+            cc  = 'CurrentCollector';
+            eac = 'ElectrodeActiveComponent';
             
             sepnx = gen.sepnx; 
             nenx = gen.nenx; 
@@ -79,24 +82,24 @@ classdef BatteryGenerator1D < BatteryGenerator
             
             %% parameters for negative electrode
 
-            params.ne.cellind = (1 : ccnenx + nenx)';
-            params.ne.eac.cellind = ccnenx + (1 : nenx)';
-            params.ne.cc.cellind = (1 : ccnenx)';
+            params.(ne).cellind = (1 : ccnenx + nenx)';
+            params.(ne).(eac).cellind = ccnenx + (1 : nenx)';
+            params.(ne).(cc).cellind = (1 : ccnenx)';
             
             % boundary setup for negative current collector
-            params.ne.cc.bcfaces = 1;
-            params.ne.cc.bccells = 1;
+            params.(ne).(cc).bcfaces = 1;
+            params.(ne).(cc).bccells = 1;
             
             %% parameters for positive electrode
             
             pe_indstart = ccnenx + nenx + sepnx;
-            params.pe.cellind =  pe_indstart + (1 : ccpenx + penx)';
-            params.pe.eac.cellind = pe_indstart + (1 : penx)';
-            params.pe.cc.cellind = pe_indstart + penx + (1 : ccpenx)';
+            params.(pe).cellind =  pe_indstart + (1 : ccpenx + penx)';
+            params.(pe).(eac).cellind = pe_indstart + (1 : penx)';
+            params.(pe).(cc).cellind = pe_indstart + penx + (1 : ccpenx)';
             
             % boundary setup for positive current collector
-            params.pe.cc.bcfaces = ccpenx + 1;
-            params.pe.cc.bccells = ccpenx;
+            params.(pe).(cc).bcfaces = ccpenx + 1;
+            params.(pe).(cc).bccells = ccpenx;
             
             paramobj = setupElectrodes@BatteryGenerator(gen, paramobj, params);
 

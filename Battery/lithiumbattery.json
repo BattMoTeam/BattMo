@@ -3,35 +3,43 @@
     "SOC": 0.5,
     "Ucut": 2,
     "initT": 298.15,
-    "ne": {
-        "eac": {
+    "NegativeElectrode": {
+        "ElectrodeActiveComponent": {
             "heatCapacity": 4180000.0,
             "chargeCarrierName": "Li",
             "InterDiffusionCoefficient": 1e-10,
             "thermalConductivity": 6e-05,
-            "am": {"isFile": true,
-                   "filename": "/home/xavier/Matlab/Projects/project-batman/Battery/graphite.json"}
+            "ActiveMaterial": {
+                "isFile": true,
+                "filename": "/home/xavier/Matlab/Projects/project-batman/Battery/graphite.json"
+            }
         },
-        "cc": {"isFile": true,
-               "filename": "/home/xavier/Matlab/Projects/project-batman/Battery/currentcollector.json"}
+        "CurrentCollector": {
+            "isFile": true,
+            "filename": "/home/xavier/Matlab/Projects/project-batman/Battery/currentcollector.json"
+        }
     },
-    "pe": {
-        "eac": {
+    "PositiveElectrode": {
+        "ElectrodeActiveComponent": {
             "thermalConductivity": 6e-05,
             "heatCapacity": 4180000.0,
             "InterDiffusionCoefficient": 1e-10,
             "chargeCarrierName": "Li",
-            "am": {"isFile": true,
-                   "filename": "/home/xavier/Matlab/Projects/project-batman/Battery/nmc111.json"}
+            "ActiveMaterial": {
+                "isFile": true,
+                "filename": "/home/xavier/Matlab/Projects/project-batman/Battery/nmc111.json"
+            }
         },
-        "cc": {"isFile": true,
-               "filename": "/home/xavier/Matlab/Projects/project-batman/Battery/currentcollector.json"}
+        "CurrentCollector": {
+            "isFile": true,
+            "filename": "/home/xavier/Matlab/Projects/project-batman/Battery/currentcollector.json"
+        }
     },
-    "elyte": {
-        "filename": "/home/xavier/Matlab/Projects/project-batman/Battery/lithiumelyte.json",
+    "Electrolyte": {
+        "filename": "/home/xavier/Matlab/Projects/project-batman/Battery/orgLiPF6.json",
         "isFile": true
     },
-    "thermal": {
+    "ThermalModel": {
         "externalHeatTransferCoefficient": 1000.0,
         "externalTemperature": 298.15
     }

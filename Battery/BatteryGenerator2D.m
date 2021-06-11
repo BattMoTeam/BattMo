@@ -77,7 +77,7 @@ classdef BatteryGenerator2D < BatteryGenerator
 
             istart = ccnenx + nenx + 1;
             ni = sepnx;
-            params.sep.cellind = pickTensorCells(istart, ni, nx, ny);
+            params.Separator.cellind = pickTensorCells(istart, ni, nx, ny);
             
             paramobj = setupElectrolyte@BatteryGenerator(gen, paramobj, params);
             
@@ -86,6 +86,11 @@ classdef BatteryGenerator2D < BatteryGenerator
 
         function paramobj = setupElectrodes(gen, paramobj, params)
         % setup grid and coupling term
+            
+            ne  = 'NegativeElectrode';
+            pe  = 'PositiveElectrode';
+            cc  = 'CurrentCollector';
+            eac = 'ElectrodeActiveComponent';
             
             sepnx  = gen.sepnx; 
             nenx   = gen.nenx; 
@@ -101,32 +106,32 @@ classdef BatteryGenerator2D < BatteryGenerator
             %% Negative electrode
             istart = 1;
             ni = ccnenx + nenx;
-            params.ne.cellind = pickTensorCells(istart, ni, nx, ny);
+            params.(ne).cellind = pickTensorCells(istart, ni, nx, ny);
             
             % Negative electrode - current collector
             istart = 1;
             ni = ccnenx;
-            params.ne.cc.cellind = pickTensorCells(istart, ni, nx, ny);
+            params.(ne).(cc).cellind = pickTensorCells(istart, ni, nx, ny);
             
             % Negative electrode - electode active component
             istart = ccnenx + 1;
             ni = nenx;
-            params.ne.eac.cellind = pickTensorCells(istart, ni, nx, ny);
+            params.(ne).(eac).cellind = pickTensorCells(istart, ni, nx, ny);
         
             %% Positive electrode
             istart = ccnenx + nenx + sepnx + 1;
             ni = penx + ccpenx;
-            params.pe.cellind = pickTensorCells(istart, ni, nx, ny);
+            params.(pe).cellind = pickTensorCells(istart, ni, nx, ny);
             
             % Positive electrode - current collector
             istart = ccnenx + nenx + sepnx + penx + 1;
             ni = ccpenx;
-            params.pe.cc.cellind = pickTensorCells(istart, ni, nx, ny);
+            params.(pe).(cc).cellind = pickTensorCells(istart, ni, nx, ny);
 
             % Positive electrode - electode active component
             istart = ccnenx + nenx + sepnx + 1;
             ni = penx;
-            params.pe.eac.cellind = pickTensorCells(istart, ni, nx, ny);
+            params.(pe).(eac).cellind = pickTensorCells(istart, ni, nx, ny);
 
             paramobj = setupElectrodes@BatteryGenerator(gen, paramobj, params);
             
@@ -149,11 +154,14 @@ classdef BatteryGenerator2D < BatteryGenerator
         % paramobj is instance of BatteryInputParams
         % 
         % We recover the external coupling terms for the current collectors
+            ne    = 'NegativeElectrode';
+            pe    = 'PositiveElectrode';
+            cc    = 'CurrentCollector';
             
-            coupterm_necc = paramobj.ne.cc.couplingTerm;
-            facemap_necc = paramobj.ne.cc.G.mappings.facemap;
-            coupterm_pecc = paramobj.pe.cc.couplingTerm;
-            facemap_pecc = paramobj.pe.cc.G.mappings.facemap;
+            coupterm_necc = paramobj.(ne).(cc).couplingTerm;
+            facemap_necc = paramobj.(ne).(cc).G.mappings.facemap;
+            coupterm_pecc = paramobj.(pe).(cc).couplingTerm;
+            facemap_pecc = paramobj.(pe).(cc).G.mappings.facemap;
             
             % the cooling is done on the external faces
             G = gen.G;
@@ -181,7 +189,7 @@ classdef BatteryGenerator2D < BatteryGenerator
             coef = gen.externalHeatTransferCoefficient*ones(bcfacetbl.num, 1);
             coef(ind) = gen.externalHeatTransferCoefficientTab;
             
-            paramobj.thermal.externalHeatTransferCoefficient = coef;
+            paramobj.ThermalModel.externalHeatTransferCoefficient = coef;
             
         end
         

@@ -12,14 +12,10 @@ classdef BatteryInputParams
         initT
         
         %% parameters for the battery components
-        % shortcut used here
-        % ne : Negative electrode parameters (instance of ElectrodeInputParams)
-        % pe : Positive electrode parameters (instance of ElectrodeInputParams)
-        % elyte : Electrolyte (instance ElectrolyteInputParams)
-        ne;
-        pe;
-        elyte;        
-        thermal;
+        NegativeElectrode % (instance of ElectrodeInputParams)
+        PositiveElectrode % (instance of ElectrodeInputParams)
+        Electrolyte       % (instance ElectrolyteInputParams)
+        ThermalModel      % (instance ThermalModelInputParams)
                 
         %% Coupling terms (describe the topological structure of the coupling)
         couplingTerms
@@ -29,11 +25,18 @@ classdef BatteryInputParams
     methods
         
         function paramobj = BatteryInputParams()
-            paramobj.ne = ElectrodeInputParams();
-            paramobj.pe = ElectrodeInputParams();
-            paramobj.elyte = ElectrolyteInputParams();
-            paramobj.thermal = ThermalComponentInputParams();
-            parmobj.couplingTerms = {};
+            
+            ne    = 'NegativeElectrode';
+            pe    = 'PositiveElectrode';
+            elyte = 'Electrolyte';
+            thermal = 'ThermalModel';
+            
+            paramobj.(ne) = ElectrodeInputParams();
+            paramobj.(pe) = ElectrodeInputParams();
+            paramobj.(elyte) = ElectrolyteInputParams();
+            paramobj.(thermal) = ThermalComponentInputParams();
+            paramobj.couplingTerms = {};
+            
         end
 
     end

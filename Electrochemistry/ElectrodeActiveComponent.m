@@ -40,9 +40,9 @@ classdef ElectrodeActiveComponent < ElectroChemicalComponent
             model = dispatchParams(model, paramobj, fdnames);
             
             % Setup ActiveMaterial component
-            paramobj.am.G = model.G;
+            paramobj.ActiveMaterial.G = model.G;
             
-            model.ActiveMaterial = setupActiveMaterial(paramobj.am);
+            model.ActiveMaterial = setupActiveMaterial(paramobj.ActiveMaterial);
 
             % setup volumeFraction, porosity, thickness
             nc = model.G.cells.num;

@@ -7,7 +7,7 @@ classdef ElectrolyteInputParams < ElectroChemicalComponentInputParams
         sp
         compnames
         
-        sep
+        Separator
         
         conductivityFactor
         
@@ -22,7 +22,7 @@ classdef ElectrolyteInputParams < ElectroChemicalComponentInputParams
             paramobj = paramobj@ElectroChemicalComponentInputParams();
             paramobj.sp = struct();
             paramobj.compnames = {};
-            paramobj.sep = SeparatorInputParams();
+            paramobj.Separator = SeparatorInputParams();
             paramobj.EffectiveElectricalConductivity = 'not used';
         end
 

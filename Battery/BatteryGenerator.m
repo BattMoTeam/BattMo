@@ -25,7 +25,7 @@ classdef BatteryGenerator
         function paramobj = setupBatteryInputParams(gen, paramobj, params)
         % main function : add grid and coupling to paramobj structure
             [paramobj, gen] = gen.setupGrid(paramobj, params);
-            paramobj.elyte = gen.setupElectrolyte(paramobj.elyte, params);
+            paramobj.Electrolyte = gen.setupElectrolyte(paramobj.Electrolyte, params);
             paramobj = gen.setupElectrodes(paramobj, params);
             paramobj = gen.setupThermalModel(paramobj, params);
             paramobj = gen.setupElectrodeElectrolyteCoupTerm(paramobj);
@@ -39,17 +39,17 @@ classdef BatteryGenerator
         
         function paramobj = setupThermalModel(gen, paramobj, params)
         % paramobj is instance of BatteryInputParams
-            paramobj.thermal.G = gen.G;
+            paramobj.ThermalModel.G = gen.G;
             coupTerm = couplingTerm('ThermalConvectiveCooling', {'ThermalModel'});
             coupTerm.couplingcells = params.couplingcells;
             coupTerm.couplingfaces = params.couplingfaces;
-            paramobj.thermal.couplingTerm = coupTerm;
+            paramobj.ThermalModel.couplingTerm = coupTerm;
         end
         
         function paramobj = setupElectrolyte(gen, paramobj, params)
         % paramobj is instance of ElectrolyteInputParams
             paramobj = gen.setupElectrolyteGrid(paramobj, params);
-            paramobj.sep = gen.setupSeparatorGrid(paramobj.sep, params.sep);
+            paramobj.Separator = gen.setupSeparatorGrid(paramobj.Separator, params.Separator);
         end
 
         
@@ -73,23 +73,28 @@ classdef BatteryGenerator
 
         function paramobj = setupElectrodes(gen, paramobj, params)
         % paramobj is instance of BatteryInputParams
-            
+            ne = 'NegativeElectrode';
+            pe = 'PositiveElectrode';
             % setup Negative Electrode 
-            paramobj.ne = gen.setupElectrode(paramobj.ne, params.ne);
+            paramobj.(ne) = gen.setupElectrode(paramobj.(ne), params.(ne));
             % setup Positive Electrode
-            paramobj.pe = gen.setupElectrode(paramobj.pe, params.pe);
+            paramobj.(pe) = gen.setupElectrode(paramobj.(pe), params.(pe));
             
         end
                 
         function paramobj = setupElectrode(gen, paramobj, params)
         % paramobj is instance of ElectrodeInputParams
+        
+            % shortcuts 
+            eac = 'ElectrodeActiveComponent';
+            cc  = 'CurrentCollector';            
             
             % setup Electrode grid
             paramobj = gen.setupElectrodeGrid(paramobj, params);
             % setup Electrode active component (eac)
-            paramobj.eac = gen.setupElectrodeActiveComponentGrid(paramobj.eac, params.eac);
+            paramobj.(eac) = gen.setupElectrodeActiveComponentGrid(paramobj.(eac), params.(eac));
             % setup current collector (cc)
-            paramobj.cc = gen.setupCurrentCollector(paramobj.cc, params.cc);
+            paramobj.(cc) = gen.setupCurrentCollector(paramobj.(cc), params.(cc));
             % setup coupling term between eac and cc
             paramobj = gen.setupCurrentCollectorElectrodeActiveComponentCoupTerm(paramobj, params);
             
@@ -128,11 +133,15 @@ classdef BatteryGenerator
         function paramobj = setupElectrodeElectrolyteCoupTerm(gen, paramobj, params)
         % paramobj is instance of BatteryInputParams
         % setup paramobj.couplingTerms
+            ne    = 'NegativeElectrode';
+            pe    = 'PositiveElectrode';
+            elyte = 'Electrolyte';
+            eac   = 'ElectrodeActiveComponent';
             
             couplingTerms = {};
             
-            G_ne = paramobj.ne.eac.G;
-            G_elyte = paramobj.elyte.G;
+            G_ne = paramobj.(ne).(eac).G;
+            G_elyte = paramobj.(elyte).G;
             
             % parent Grid
             G = G_ne.mappings.parentGrid;
@@ -152,8 +161,8 @@ classdef BatteryGenerator
             
             couplingTerms{end + 1} = coupTerm;
             
-            G_pe = paramobj.pe.eac.G;
-            G_elyte = paramobj.elyte.G;
+            G_pe = paramobj.(pe).(eac).G;
+            G_elyte = paramobj.(elyte).G;
             
             % parent Grid
             G = G_pe.mappings.parentGrid;
@@ -180,12 +189,14 @@ classdef BatteryGenerator
         function paramobj = setupCurrentCollectorElectrodeActiveComponentCoupTerm(gen, paramobj, params)
         % paramobj is instance of ElectrodeInputParams
         % setup paramobj.couplingTerm
+            eac = 'ElectrodeActiveComponent';
+            cc  = 'CurrentCollector';
             
             compnames = {'CurrentCollector', 'ElectrodeActiveComponent'};
             coupTerm = couplingTerm('CurrentCollector-ElectrodeActiveComponent', compnames);
             
-            G_eac = paramobj.eac.G;
-            G_cc = paramobj.cc.G;
+            G_eac = paramobj.(eac).G;
+            G_cc = paramobj.(cc).G;
             
             cctbl.faces = (1 : G_cc.faces.num)';
             cctbl.globfaces = G_cc.mappings.facemap;

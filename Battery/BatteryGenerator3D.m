@@ -65,10 +65,18 @@ classdef BatteryGenerator3D < BatteryGenerator
         
         function paramobj = updateBatteryInputParams(gen, paramobj)
             paramobj = gen.setupBatteryInputParams(paramobj, []);
-            paramobj.I = gen.I;
         end
         
         function [paramobj, gen] = setupGrid(gen, paramobj, params)
+            
+            % shortcuts
+            ne    = 'NegativeElectrode';
+            pe    = 'PositiveElectrode';
+            eac   = 'ElectrodeActiveComponent';
+            cc    = 'CurrentCollector';
+            elyte = 'Electrolyte';
+            sep   = 'Separator';
+
             
             gen = gen.applyResolutionFactors();
             
@@ -100,53 +108,53 @@ classdef BatteryGenerator3D < BatteryGenerator
             
             startSubGrid = [1; gen.ne_cc_ny + 1; gen.ne_cc_nz + 1];
             dimSubGrid   = [nx; gen.elyte_ny; gen.elyte_nz];
-            allparams.elyte.cellind = pickTensorCells3D(startSubGrid, dimSubGrid, dimGrid);
+            allparams.(elyte).cellind = pickTensorCells3D(startSubGrid, dimSubGrid, dimGrid);
             
             startSubGrid = [1; gen.ne_cc_ny + 1; gen.ne_cc_nz + gen.ne_eac_nz + 1];
             dimSubGrid   = [nx; gen.elyte_ny; gen.sep_nz];
-            allparams.elyte.sep.cellind = pickTensorCells3D(startSubGrid, dimSubGrid, dimGrid);
+            allparams.(elyte).(sep).cellind = pickTensorCells3D(startSubGrid, dimSubGrid, dimGrid);
             
             %% setup gen.ne_eac
 
             startSubGrid = [1; gen.ne_cc_ny + 1; gen.ne_cc_nz + 1];
             dimSubGrid   = [nx; gen.elyte_ny; gen.ne_eac_nz];
-            allparams.ne.eac.cellind = pickTensorCells3D(startSubGrid, dimSubGrid, dimGrid);
+            allparams.(ne).(eac).cellind = pickTensorCells3D(startSubGrid, dimSubGrid, dimGrid);
 
             %% setup gen.pe_eac
 
             startSubGrid = [1; gen.ne_cc_ny + 1; gen.ne_cc_nz + gen.ne_eac_nz + gen.sep_nz + 1];
             dimSubGrid   = [nx; gen.elyte_ny; gen.pe_eac_nz];
-            allparams.pe.eac.cellind = pickTensorCells3D(startSubGrid, dimSubGrid, dimGrid);
+            allparams.(pe).(eac).cellind = pickTensorCells3D(startSubGrid, dimSubGrid, dimGrid);
 
             %% setup gen.ne_cc
 
             startSubGrid = [1; gen.ne_cc_ny + 1; 1];
             dimSubGrid   = [nx; gen.elyte_ny; gen.ne_cc_nz];
-            allparams.ne.cc.cellind1 = pickTensorCells3D(startSubGrid, dimSubGrid, dimGrid);
+            allparams.(ne).(cc).cellind1 = pickTensorCells3D(startSubGrid, dimSubGrid, dimGrid);
 
             % We add the tab
 
             startSubGrid = [1; 1; 1];
             dimSubGrid   = [gen.ne_cc_nx; gen.ne_cc_ny; gen.ne_cc_nz];
-            allparams.ne.cc.cellindtab = pickTensorCells3D(startSubGrid, dimSubGrid, dimGrid);
+            allparams.(ne).(cc).cellindtab = pickTensorCells3D(startSubGrid, dimSubGrid, dimGrid);
 
-            allparams.ne.cc.cellind = [allparams.ne.cc.cellind1; allparams.ne.cc.cellindtab];
+            allparams.(ne).(cc).cellind = [allparams.(ne).(cc).cellind1; allparams.(ne).(cc).cellindtab];
 
             %% setup gen.pe_cc
 
             startSubGrid = [1; gen.ne_cc_ny + 1; gen.ne_cc_nz + gen.elyte_nz + 1];
             dimSubGrid   = [nx; gen.elyte_ny; gen.pe_cc_nz];
-            allparams.pe.cc.cellind1 = pickTensorCells3D(startSubGrid, dimSubGrid, dimGrid);
+            allparams.(pe).(cc).cellind1 = pickTensorCells3D(startSubGrid, dimSubGrid, dimGrid);
 
             % We add the tab
 
             startSubGrid = [gen.ne_cc_nx + gen.int_elyte_nx + 1; gen.ne_cc_ny + gen.elyte_ny + 1; gen.ne_cc_nz + gen.elyte_nz + 1];
             dimSubGrid   = [gen.pe_cc_nx; gen.pe_cc_ny; gen.pe_cc_nz];
-            allparams.pe.cc.cellindtab = pickTensorCells3D(startSubGrid, dimSubGrid, dimGrid);
+            allparams.(pe).(cc).cellindtab = pickTensorCells3D(startSubGrid, dimSubGrid, dimGrid);
 
-            allparams.pe.cc.cellind = [allparams.pe.cc.cellind1; allparams.pe.cc.cellindtab];
+            allparams.(pe).(cc).cellind = [allparams.(pe).(cc).cellind1; allparams.(pe).(cc).cellindtab];
 
-            cellind = [allparams.elyte.cellind; allparams.ne.eac.cellind; allparams.pe.eac.cellind; allparams.ne.cc.cellind; allparams.pe.cc.cellind];
+            cellind = [allparams.(elyte).cellind; allparams.(ne).(eac).cellind; allparams.(pe).(eac).cellind; allparams.(ne).(cc).cellind; allparams.(pe).(cc).cellind];
 
             rcellind = setdiff((1 : G.cells.num)', cellind);
 
@@ -191,29 +199,36 @@ classdef BatteryGenerator3D < BatteryGenerator
 
         function paramobj = setupElectrolyte(gen, paramobj, params)
             
-            params = gen.allparams.elyte;
+            params = gen.allparams.Electrolyte;
             imap = gen.invcellmap;
             params.cellind = imap(params.cellind);
-            params.sep.cellind = imap(params.sep.cellind);
+            params.Separator.cellind = imap(params.Separator.cellind);
             
             paramobj = setupElectrolyte@BatteryGenerator(gen, paramobj, params);
             
         end
         
         function paramobj = setupElectrodes(gen, paramobj, params)
+
             
+            % shortcuts 
+            ne  = 'NegativeElectrode';
+            pe  = 'PositiveElectrode';
+            cc  = 'CurrentCollector';
+            eac = 'ElectrodeActiveComponent';
+
             params = gen.allparams;
             imap = gen.invcellmap;
             
-            params.ne.eac.cellind = imap(params.ne.eac.cellind);
-            params.ne.cc.cellind = imap(params.ne.cc.cellind);
-            params.ne.cc.name = 'negative';
-            params.ne.cellind = [params.ne.eac.cellind; params.ne.cc.cellind];
+            params.(ne).(eac).cellind = imap(params.(ne).(eac).cellind);
+            params.(ne).(cc).cellind = imap(params.(ne).(cc).cellind);
+            params.(ne).(cc).name = 'negative';
+            params.(ne).cellind = [params.(ne).(eac).cellind; params.(ne).(cc).cellind];
             
-            params.pe.eac.cellind = imap(params.pe.eac.cellind);
-            params.pe.cc.cellind = imap(params.pe.cc.cellind);
-            params.pe.cc.name = 'positive';
-            params.pe.cellind = [params.pe.eac.cellind; params.pe.cc.cellind];
+            params.(pe).(eac).cellind = imap(params.(pe).(eac).cellind);
+            params.(pe).(cc).cellind = imap(params.(pe).(cc).cellind);
+            params.(pe).(cc).name = 'positive';
+            params.(pe).cellind = [params.(pe).(eac).cellind; params.(pe).(cc).cellind];
             
             paramobj = setupElectrodes@BatteryGenerator(gen, paramobj, params);            
             
@@ -243,7 +258,11 @@ classdef BatteryGenerator3D < BatteryGenerator
         % 
         % We recover the external coupling terms for the current collectors
 
-            
+            % shortcuts
+            ne    = 'NegativeElectrode';
+            pe    = 'PositiveElectrode';
+            cc    = 'CurrentCollector';
+                
             % the cooling is done on the external faces
             G = gen.G;
             extfaces = any(G.faces.neighbors == 0, 2);
@@ -254,8 +273,7 @@ classdef BatteryGenerator3D < BatteryGenerator
                             'couplingcells', couplingcells);
             paramobj = setupThermalModel@BatteryGenerator(gen, paramobj, params);
             
-            
-            tabcellinds = [gen.allparams.pe.cc.cellindtab; gen.allparams.ne.cc.cellindtab];
+            tabcellinds = [gen.allparams.(pe).(cc).cellindtab; gen.allparams.(ne).(cc).cellindtab];
             tabtbl.cells = tabcellinds;
             tabtbl = IndexArray(tabtbl);
             
@@ -279,7 +297,7 @@ classdef BatteryGenerator3D < BatteryGenerator
             coef = gen.externalHeatTransferCoefficient*ones(bcfacetbl.num, 1);
             coef(ind) = gen.externalHeatTransferCoefficientTab;
             
-            paramobj.thermal.externalHeatTransferCoefficient = coef;
+            paramobj.ThermalModel.externalHeatTransferCoefficient = coef;
             
         end
         

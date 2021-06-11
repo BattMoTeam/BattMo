@@ -3,9 +3,7 @@ classdef ElectrodeActiveComponentInputParams < ElectroChemicalComponentInputPara
     properties
         
         %% parameters for the electrode components
-        % shortcut used here
-        % am : ActiveMaterial parameters (class ActiveMaterialInputParams)
-        am
+        ActiveMaterial
         amName
                 
         % Interdiffusion coefficient parameter (diffusion between the particles)
@@ -20,7 +18,7 @@ classdef ElectrodeActiveComponentInputParams < ElectroChemicalComponentInputPara
 
         function paramobj = ElectrodeActiveComponentInputParams()
             paramobj = paramobj@ElectroChemicalComponentInputParams();
-            paramobj.am = ActiveMaterialInputParams();
+            paramobj.ActiveMaterial = ActiveMaterialInputParams();
             paramobj.amName = char();
             paramobj.EffectiveElectricalConductivity = 'not used';
         end

@@ -12,8 +12,16 @@ paramobj = BatteryInputParams();
 paramobj = jsonfileToParams(paramobj, filename);
 
 
+% some shortcuts
+ne      = 'NegativeElectrode';
+pe      = 'PositiveElectrode';
+eac     = 'ElectrodeActiveComponent';
+cc      = 'CurrentCollector';
+elyte   = 'Electrolyte';
+thermal = 'ThermalModel';
+
 % Setup battery
-modelcase = '2D';
+modelcase = '3D';
 
 switch modelcase
 
@@ -21,12 +29,12 @@ switch modelcase
 
     gen = BatteryGenerator1D();
     paramobj = gen.updateBatteryInputParams(paramobj);
-    paramobj.ne.cc.EffectiveElectricalConductivity = 100;
-    paramobj.pe.cc.EffectiveElectricalConductivity = 100;
+    paramobj.(ne).(cc).EffectiveElectricalConductivity = 100;
+    paramobj.(pe).(cc).EffectiveElectricalConductivity = 100;
     schedulecase = 3;
     
-    paramobj.thermal.externalHeatTransferCoefficient = 1000;
-    paramobj.thermal.externalTemperature = paramobj.initT;
+    paramobj.(thermal).externalHeatTransferCoefficient = 1000;
+    paramobj.(thermal).externalTemperature = paramobj.initT;
 
   case '2D'
 
@@ -34,10 +42,10 @@ switch modelcase
     paramobj = gen.updateBatteryInputParams(paramobj);
     schedulecase = 1;
 
-    paramobj.ne.cc.EffectiveElectricalConductivity = 1e5;
-    paramobj.pe.cc.EffectiveElectricalConductivity = 1e5;
+    paramobj.(ne).(cc).EffectiveElectricalConductivity = 1e5;
+    paramobj.(pe).(cc).EffectiveElectricalConductivity = 1e5;
     
-    paramobj.thermal.externalTemperature = paramobj.initT;
+    paramobj.(thermal).externalTemperature = paramobj.initT;
     paramobj.SOC = 0.99;
     
     tfac = 1; % used in schedule setup
@@ -55,7 +63,7 @@ switch modelcase
     
     schedulecase = 5;
     
-    paramobj.thermal.externalTemperature = paramobj.initT;
+    paramobj.(thermal).externalTemperature = paramobj.initT;
     
 end
 
