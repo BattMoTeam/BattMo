@@ -13,10 +13,6 @@ data = jsondecode(jsonsrc);
 paramobj = BatteryInputParams();
 paramobj = assignStructParams(paramobj, data.battery);
 
-paramobj1 = LithiumBatteryInputParams();
-
-% return
-
 % Setup battery
 modelcase = '2D';
 
