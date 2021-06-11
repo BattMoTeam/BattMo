@@ -1,0 +1,20 @@
+{
+    "Li": {
+        "EaD": 5000,
+        "D0": 1e-14,
+        "cmax": 55554
+    },
+    "electricalConductivity": 100,
+    "volumeFraction": 0.8,
+    "volumetricSurfaceArea": 885000,
+    "rp": 1e-06,
+    "Eak": 5000,
+    "k0": 2.33e-11,
+    "cp": 700,
+    "theta100": 0.4955,
+    "theta0": 0.99174,
+    "rho": 4650,
+    "specificCapacity": 155,
+    "name": "NMC111",
+    "G": null
+}

@@ -12,7 +12,10 @@ function paramobj = assignStructParams(paramobj, structdata)
             % assert(ismember(fd, fields_pobj), 'field in input data is not recognized');
         % end
         
-        if isnumeric(structdata.(fd))
+        if isstruct(structdata.(fd)) && isfield(structdata.(fd), 'isFile') && structdata.(fd).isFile
+            filename = structdata.(fd).filename;
+            paramobj.(fd) = jsonfileToParams(paramobj.(fd), filename);
+        elseif isnumeric(structdata.(fd))
             paramobj.(fd) = structdata.(fd);
         elseif ischar(structdata.(fd))
             paramobj.(fd) = structdata.(fd);

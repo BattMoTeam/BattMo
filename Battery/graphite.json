@@ -1,0 +1,20 @@
+{
+    "Li": {
+        "EaD": 5000,
+        "D0": 3.9e-14,
+        "cmax": 30555
+    },
+    "volumeFraction": 0.8,
+    "electricalConductivity": 100,
+    "volumetricSurfaceArea": 723600,
+    "rp": 1e-06,
+    "Eak": 5000,
+    "k0": 5.031e-11,
+    "cp": 700,
+    "theta100": 0.88551,
+    "theta0": 0.1429,
+    "rho": 2240,
+    "specificCapacity": 360,
+    "name": "Graphite",
+    "G": null
+}

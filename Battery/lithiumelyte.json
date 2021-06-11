@@ -1,0 +1,28 @@
+{
+    "G": null,
+    "heatCapacity": 4180000.0,
+    "conductivityFactor": 0.0001,
+    "thermalConductivity": 6e-05,
+    "chargeCarrierName": "Li",
+    "compnames": [
+        "Li",
+        "PF6"
+    ],
+    "name": "orgLiPF6",
+    "sp": {
+        "z": [
+            1,
+            -1
+        ],
+        "t": [
+            0.399,
+            0.601
+        ]
+    },
+    "sep": {
+        "G": null,
+        "heatCapacity": 4180000.0,
+        "thermalConductivity": 6e-05,
+        "porosity": 0.55
+    }
+}
