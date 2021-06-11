@@ -1,0 +1,108 @@
+{
+    "battery": {
+        "thermal": {
+            "externalTemperature": 298.15,
+            "externalHeatTransferCoefficient": 1000.0
+        },
+        "elyte": {
+            "sep": {
+                "porosity": 0.55,
+                "thermalConductivity": 6e-05,
+                "heatCapacity": 4180000.0,
+                "G": null
+            },
+            "sp": {
+                "t": [
+                    0.399,
+                    0.611
+                ],
+                "z": [
+                    1,
+                    -1
+                ]
+            },
+            "name": "orgLiPF6",
+            "compnames": [
+                "Li",
+                "PF6"
+            ],
+            "chargeCarrierName": "Li",
+            "thermalConductivity": 6e-05,
+            "conductivityFactor": 0.0001,
+            "heatCapacity": 4180000.0,
+            "G": null
+        },
+        "pe": {
+            "cc": {
+                "EffectiveElectricalConductivity": 35500000.0,
+                "thermalConductivity": 6e-05,
+                "heatCapacity": 4180000.0,
+                "G": null
+            },
+            "eac": {
+                "am": {
+                    "Li": {
+                        "EaD": 5000,
+                        "D0": 3.9e-14,
+                        "cmax": 30555
+                    },
+                    "volumeFraction": 0.8,
+                    "electricalConductivity": 100,
+                    "volumetricSurfaceArea": 723600,
+                    "rp": 1e-06,
+                    "Eak": 5000,
+                    "k0": 5.031e-11,
+                    "cp": 700,
+                    "theta100": 0.88551,
+                    "theta0": 0.1429,
+                    "rho": 2240,
+                    "specificCapacity": 360,
+                    "name": "Graphite",
+                    "G": null
+                },
+                "chargeCarrierName": "Li",
+                "InterDiffusionCoefficient": 1e-10,
+                "heatCapacity": 4180000.0,
+                "thermalConductivity": 6e-05
+            }
+        },
+        "ne": {
+            "cc": {
+                "EffectiveElectricalConductivity": 35500000.0,
+                "thermalConductivity": 6e-05,
+                "heatCapacity": 4180000.0,
+                "G": null
+            },
+            "eac": {
+                "am": {
+                    "Li": {
+                        "EaD": 5000,
+                        "D0": 1e-14,
+                        "cmax": 55554
+                    },
+                    "electricalConductivity": 100,
+                    "volumeFraction": 0.8,
+                    "volumetricSurfaceArea": 885000,
+                    "rp": 1e-06,
+                    "Eak": 5000,
+                    "k0": 2.33e-11,
+                    "cp": 700,
+                    "theta100": 0.4955,
+                    "theta0": 0.99174,
+                    "rho": 4650,
+                    "specificCapacity": 155,
+                    "name": "NMC111",
+                    "G": null
+                },
+                "thermalConductivity": 6e-05,
+                "InterDiffusionCoefficient": 1e-10,
+                "chargeCarrierName": "Li",
+                "heatCapacity": 4180000.0
+            }
+        },
+        "initT": 298.15,
+        "Ucut": 2,
+        "SOC": 0.5,
+        "G": null
+    }
+}
