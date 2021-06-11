@@ -19,12 +19,14 @@ classdef ElectroChemicalComponent < ElectronicComponent
             
             model = model@ElectronicComponent(paramobj);
             
-            fdnames = {'chargeCarrierName', ...
-                       'chargeCarrierFluxName', ...
-                       'chargeCarrierSourceName', ...
-                       'chargeCarrierMassConsName', ...
-                       'chargeCarrierAccumName'};
+            fdnames = {'chargeCarrierName'};
             model = dispatchParams(model, paramobj, fdnames);
+            
+            ccname = model.chargeCarrierName;
+            model.chargeCarrierFluxName     = sprintf('%sFlux', ccname);
+            model.chargeCarrierSourceName   = sprintf('%sSource', ccname);
+            model.chargeCarrierMassConsName = 'massCons';
+            model.chargeCarrierAccumName    = sprintf('%sAccum', ccname);
             
         end
 

@@ -4,11 +4,8 @@ classdef ElectrolyteInputParams < ElectroChemicalComponentInputParams
         
         name
         
-        indchargecarrier % (index of the charge carrier in the sp structure)
-        
         sp
         compnames
-        ncomp
         
         sep
         

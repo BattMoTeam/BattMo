@@ -31,12 +31,16 @@ classdef Electrolyte < ElectroChemicalComponent
             
             fdnames = {'sp'                 , ...
                        'compnames'          , ...
-                       'indchargecarrier'   , ...
-                       'ncomp'              , ...
+                       'chargeCarrierName'  , ...
                        'thermalConductivity', ...
                        'heatCapacity'};
 
             model = dispatchParams(model, paramobj, fdnames);
+
+            model.ncomp = numel(model.compnames);
+            [isok, indchargecarrier] = ismember(model.chargeCarrierName, model.compnames);
+            assert(isok, 'charge carrier not found in the list of components');
+            model.indchargecarrier = indchargecarrier;
             
             sep = 'Separator';
 
@@ -105,7 +109,7 @@ classdef Electrolyte < ElectroChemicalComponent
             
             %% 2. Flux from electrical forces
             F = model.constants.F;
-            fluxE = model.sp.t{ind} ./ (model.sp.z{ind} .* F) .* j;
+            fluxE = model.sp.t(ind) ./ (model.sp.z(ind) .* F) .* j;
             
             %% 3. Sum the two flux contributions
             flux = diffFlux + fluxE;

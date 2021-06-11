@@ -6,7 +6,16 @@ mrstModule add ad-core multimodel mrst-gui battery mpfa
 
 mrstVerbose off
 
-paramobj = LithiumBatteryInputParams();
+filename = '/home/xavier/Matlab/Projects/project-batman/Battery/battery.json';
+jsonsrc = fileread(filename);
+data = jsondecode(jsonsrc);
+
+paramobj = BatteryInputParams();
+paramobj = assignStructParams(paramobj, data.battery);
+
+paramobj1 = LithiumBatteryInputParams();
+
+% return
 
 % Setup battery
 modelcase = '2D';

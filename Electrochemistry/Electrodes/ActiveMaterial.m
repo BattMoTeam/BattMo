@@ -29,7 +29,6 @@ classdef ActiveMaterial < PhysicalModel
         lambda                 % Thermal Conductivity          [W m^-1 K^-1]
         cp                     % Molar Heat Capacity           [J kg^-1 K^-1]             
         D0                     % Diffusion coefficient         [m^2 s^-1]
-        EaD                    % Diffusion activ. energy       [J mol^-1]
         k0                     % Reference rate constant       [m^2.5 mol^-0.5 s^-1]
         Eak                    % Reaction activation energy    [J mol^-1]
         rp                     % Particle radius               [m]

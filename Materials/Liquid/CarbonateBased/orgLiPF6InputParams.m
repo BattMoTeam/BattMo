@@ -9,28 +9,22 @@ classdef orgLiPF6InputParams < ElectrolyteInputParams
             paramobj.name = 'orgLiPF6';
             
             paramobj.compnames = {'Li', 'PF6'};
-            paramobj.ncomp = 2;
             
-            paramobj.indchargecarrier = 1;
-            paramobj.conductivityFactor=1e-4;
+            paramobj.conductivityFactor = 1e-4;
             
             % Set constant values
             [~, ind] = ismember('Li', paramobj.compnames);
             tLi = 0.399;
-            sp.t{ind} = tLi; % Li+ transference number, [-]
-            sp.z{ind} = 1;
+            sp.t(ind) = tLi; % Li+ transference number, [-]
+            sp.z(ind) = 1;
             
             [~, ind] = ismember('PF6', paramobj.compnames);
-            sp.t{ind} = 1 - tLi; % Li+ transference number, [-]
-            sp.z{ind} = -1;
+            sp.t(ind) = 1 - tLi; % Li+ transference number, [-]
+            sp.z(ind) = -1;
             
             paramobj.sp = sp;
             
-            paramobj.chargeCarrierName         = 'Li';
-            paramobj.chargeCarrierFluxName     = 'LiFlux';
-            paramobj.chargeCarrierSourceName   = 'LiSource';
-            paramobj.chargeCarrierMassConsName = 'massCons';
-            paramobj.chargeCarrierAccumName    = 'LiAccum';
+            paramobj.chargeCarrierName = 'Li';
             
             paramobj.sep = celgard2500InputParams();
             

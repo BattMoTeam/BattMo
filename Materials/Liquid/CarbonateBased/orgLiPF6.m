@@ -59,7 +59,7 @@ classdef orgLiPF6 < Electrolyte
             jchems = cell(1, ncomp);
             F = model.constants.F;
             for i = 1 : ncomp
-                coeff = conductivityeff .* sp.t{i} .* dmudcs{i} ./ (sp.z{i}.*F);
+                coeff = conductivityeff .* sp.t(i) .* dmudcs{i} ./ (sp.z(i).*F);
                 jchems{i} = assembleFlux(model, cs{i}, coeff);
             end
             
