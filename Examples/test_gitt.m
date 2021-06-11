@@ -63,32 +63,55 @@ pe = 'PositiveElectrode';
 cc = 'CurrentCollector';
 stopFunc = @(model, state, state_prev) (state.(pe).(cc).E < 2.0); 
 
-% Cell capacity
-C = computeCellCapacity(model);
+
+%% Gitt inputs
+
 % C Rate
 CRate = 2;
-inputI  = (C/hour)*CRate;
+
+% pulseFraction
+pulsefraction = 0.01;
+
+% time relaxation
+time_rel = 4*hour;
+
+% Rampup time (to cope with the abrupt change on control)
+time_rampup = 1*second; % rampup time (linear interpolation between the two states)
+
+% number of cycle (default could be 1/pulfraction)
+N = 2;
+
+% Discretization parameters
+N_per_dis    = 5; % Number of time step in discharge phase
+N_per_rel    = 5; % Number of time step in relaxation phase
+N_per_rampup = 3; % Number of time step in rampup phase
+
+%% setup 
+
+% discharge time
+time_dis    = pulsefraction*CRate*hour; % time of discharging
+
+% Cell capacity
+C = computeCellCapacity(model);
+inputI = (C/hour)*CRate;
 inputE = 4.2;
 
 % Activtation phase : activation phase (with rampup) and charging to inputE
+
 tup = 0.1; % rampup time
 time_init = 5*minute;
 srcfunc_init = @(time, I, E) rampupSwitchControl(time, tup, I, E, inputI, inputE);
 
-
 % Gitt phase : Alternate discharging and relaxation 
 
 % we setup tabulated input for the gitt part
-time_dis = 2*minute; % time of discharging
-time_rel = 3*minute; % time of relaxation
-time_rampup = 30*second; % rampup time (linear interpolation between the two states)
+
 dtpoints = [time_rampup; ...
             time_dis - time_rampup;
             time_rampup;
             time_rel - time_rampup];
 dIpoints = [1; 0; -1; 0];
 
-N = 20; % number of cycle
 tpoints = [0; cumsum(repmat(dtpoints, N, 1))];
 Ipoints = [0; cumsum(repmat(dIpoints, N, 1))];
 
@@ -103,11 +126,13 @@ control(2) = struct('src', srcfunc_gitt, 'stopFunction', stopFunc);
 n_init = 5;
 dt_init = rampupTimesteps(time_init, time_init/n_init, 3);
 
-n_per_cycle = 10;
-time_cycle = time_dis + time_rel;
-dt_cycle = time_cycle/n_per_cycle;
 
-dt_cycle = dt_cycle*ones(N*n_per_cycle, 1);
+dt_cycle = [time_rampup/N_per_rampup*ones(N_per_rampup, 1); ...
+            (time_dis - time_rampup)/N_per_dis*ones(N_per_dis, 1); ...
+            time_rampup/N_per_rampup*ones(N_per_rampup, 1); ...
+            (time_rel - time_rampup)/N_per_rel*ones(N_per_rel, 1)];
+
+dt_cycle = repmat(dt_cycle, N, 1);
 
 step.val = [dt_init; dt_cycle];
 step.control = [ones(numel(dt_init), 1); ...
@@ -174,7 +199,7 @@ time = cellfun(@(x) x.time, states);
 %%
 
 figure
-plot((time/hour), Enew, '-', 'linewidth', 1)
+plot((time/hour), Enew, '*-', 'linewidth', 1)
 title('Potential (E)')
 xlabel('time (hours)')
 
