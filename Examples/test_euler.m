@@ -6,7 +6,7 @@ mrstModule add ad-core multimodel mrst-gui battery mpfa
 
 mrstVerbose off
 
-filename = '/home/xavier/Matlab/Projects/project-batman/Battery/battery.json';
+filename = '../Battery/lithiumbattery.json';
 jsonsrc = fileread(filename);
 data = jsondecode(jsonsrc);
 
