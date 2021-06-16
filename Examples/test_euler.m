@@ -6,7 +6,10 @@ mrstModule add ad-core multimodel mrst-gui battery mpfa
 
 mrstVerbose off
 
-filename = '../Battery/lithiumbattery.json';
+p = mfilename('fullpath');
+p = fileparts(p);
+filename = fullfile(p, '../Battery/lithiumbattery.json');
+
 paramobj = BatteryInputParams();
 
 paramobj = jsonfileToParams(paramobj, filename);
