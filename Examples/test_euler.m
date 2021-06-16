@@ -6,14 +6,14 @@ mrstModule add ad-core multimodel mrst-gui battery mpfa
 
 mrstVerbose off
 
+% We create an instance of BatteryInputParams
+paramobj = BatteryInputParams();
+
+% We parse a json input file to populate paramobj
 p = mfilename('fullpath');
 p = fileparts(p);
 filename = fullfile(p, '../Battery/lithiumbattery.json');
-
-paramobj = BatteryInputParams();
-
 paramobj = jsonfileToParams(paramobj, filename);
-
 
 % some shortcuts
 ne      = 'NegativeElectrode';
@@ -24,7 +24,7 @@ elyte   = 'Electrolyte';
 thermal = 'ThermalModel';
 
 % Setup battery
-modelcase = '3D';
+modelcase = '1D';
 
 switch modelcase
 
@@ -70,9 +70,13 @@ switch modelcase
     
 end
 
+
+%%  The model is setup
+
 model = Battery(paramobj);
 
 
+%% We setup the schedule
 
 % Value used in rampup function, see currentSource.
 tup = 0.1;
@@ -142,8 +146,18 @@ switch schedulecase
     
 end
 
+
+%%  We compute the cell capacity
+C = computeCellCapacity(model);
+% C Rate
+CRate = 1/5;
+inputI  = (C/hour)*CRate;
+inputE = 3.6;
+
+
+%% We setup the schedule 
+
 tt = times(2 : end); 
-initstate = model.setupInitialState(); 
 
 step = struct('val', diff(times), 'control', ones(numel(tt), 1)); 
 
@@ -151,16 +165,12 @@ pe = 'PositiveElectrode';
 cc = 'CurrentCollector';
 stopFunc = @(model, state, state_prev) (state.(pe).(cc).E < 2.0); 
 
-C = computeCellCapacity(model);
-% C Rate
-CRate = 1/5;
-inputI  = (C/hour)*CRate;
-inputE = 3.6;
-
 srcfunc = @(time, I, E) rampupSwitchControl(time, tup, I, E, inputI, inputE);
-
 control = repmat(struct('src', srcfunc, 'stopFunction', stopFunc), 1, 1); 
 schedule = struct('control', control, 'step', step); 
+
+%%  We setup the initial state
+initstate = model.setupInitialState(); 
 
 % Setup nonlinear solver 
 
