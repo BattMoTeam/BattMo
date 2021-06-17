@@ -12,7 +12,7 @@ thermal = 'ThermalModel';
 h = figure(); 
 set(h, 'Position', [107 28 1357 902]);
 
-dovideo = true;
+dovideo = false;
 
 if dovideo
     filename = 'concentration.avi';
