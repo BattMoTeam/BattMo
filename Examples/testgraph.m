@@ -13,12 +13,15 @@ gstyle = {'interpreter', 'none', 'LineWidth', 3, 'ArrowSize', 20, 'NodeFontSize'
 
 % model = ActiveMaterial_('am');
 % model = ElectrodeActiveComponent_('eac');
+% model = ElectronicComponent_('eac');
+% model = ElectroChemicalComponent_('eac');
 % model = CurrentCollector_('cc');
+model = Electrolyte_('cc');
 % model = Electrode_('pn');
 % model = Electrolyte_('elyte');
-% model = model.initiateCompositeModel();
-model = Battery_();
+% model = Battery_();
 
+model = model.initiateCompositeModel();
 model.adminmodel.printPropfunctions;
 
 [g, edgelabels] = setupGraph(model);

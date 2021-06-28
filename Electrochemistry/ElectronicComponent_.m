@@ -13,12 +13,12 @@ classdef ElectronicComponent_ < CompositeModel
                      'chargeCons'};
             model.names = names;
             
-            fn = @ElectrochemicalComponent.updateCurrent;
+            fn = @ElectronicComponent.updateCurrent;
             inputnames = {'phi'};
             fnmodel = {'.'};
             model = model.addPropFunction('j', fn, inputnames, fnmodel);
             
-            fn = @ElectrochemicalComponent.updateChargeConservation;
+            fn = @ElectronicComponent.updateChargeConservation;
             inputnames = {'j', 'jBcSource', 'eSource'};
             fnmodel = {'.'};
             model = model.addPropFunction('chargeCons', fn, inputnames, fnmodel);
