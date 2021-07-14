@@ -6,8 +6,8 @@ classdef BatteryGenerator2D < BatteryGenerator
         sepnx  = 30;
         nenx   = 30;
         penx   = 30;
-        ccnenx = 20;
-        ccpenx = 20;
+        ccnenx = 10;
+        ccpenx = 10;
 
         ny = 10;
         
