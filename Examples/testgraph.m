@@ -2,7 +2,7 @@ clear all
 close all
 
 % setup mrst modules
-mrstModule add ad-core multimodel mrst-gui battery
+mrstModule add ad-core multimodel mrst-gui battery bgl
 mrstVerbose off
 
 set(0, 'DefaultAxesFontSize', 16);
@@ -23,6 +23,9 @@ model = Electrolyte_('cc');
 
 model = model.initiateCompositeModel();
 model.adminmodel.printPropfunctions;
+
+% NB : require matlab_bgl module (must be installed separately)
+setupOrderedGraph(model, 'orderedfunctions.m');
 
 [g, edgelabels] = setupGraph(model);
 
