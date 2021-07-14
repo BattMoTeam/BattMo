@@ -139,7 +139,7 @@ switch schedulecase
     dt = [dt; repmat(0.5e-4, n, 1).*1.5.^[1:n]']; 
     % Operation phase with constant time step
     n = 40; 
-    dt = [dt; repmat(4e-1*hour, n, 1)]; 
+    dt = [dt; repmat(1e-1*hour, n, 1)]; 
     
     % Time scaling can be adding using variable tfac
     times = [0; cumsum(dt)]; 
