@@ -114,10 +114,6 @@ classdef Electrolyte < ElectroChemicalComponent
             %% 3. Sum the two flux contributions
             flux = diffFlux + fluxE;
             
-            %% 4. Apply scaling (maybe not the right place but consistent with assembleConservationEquation - at
-            %% least when this comment has beem written...)
-            flux = flux*F; 
-            
             state.LiFlux = flux;
             
         end
