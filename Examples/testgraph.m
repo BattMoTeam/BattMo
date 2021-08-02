@@ -16,7 +16,8 @@ gstyle = {'interpreter', 'none', 'LineWidth', 3, 'ArrowSize', 20, 'NodeFontSize'
 % model = ElectronicComponent_('eac');
 % model = ElectroChemicalComponent_('eac');
 % model = CurrentCollector_('cc');
-model = Electrolyte_('cc');
+% model = Electrolyte_('cc');
+model = orgLiPF6_('cc');
 % model = Electrode_('pn');
 % model = Electrolyte_('elyte');
 % model = Battery_();
@@ -25,7 +26,7 @@ model = model.initiateCompositeModel();
 model.adminmodel.printPropfunctions;
 
 % NB : require matlab_bgl module (must be installed separately)
-setupOrderedGraph(model, 'orderedfunctions.m');
+% setupOrderedGraph(model, 'orderedfunctions.m');
 
 [g, edgelabels] = setupGraph(model);
 

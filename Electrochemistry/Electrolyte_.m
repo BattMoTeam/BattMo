@@ -43,11 +43,6 @@ classdef Electrolyte_ < ElectroChemicalComponent_
             model = model.addPropFunction('chargeCarrierFlux', fn, inputnames, fnmodel);
             model = model.addPropFunction('diffFlux', fn, inputnames, fnmodel);
 
-            fn = @Electrolyte.updateCurrentBcSource;
-            inputnames = {''};
-            fnmodel = {'.'};
-            model = model.addPropFunction('jBcSource', fn, inputnames, fnmodel);
-            
         end        
     end
     

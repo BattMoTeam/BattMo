@@ -373,6 +373,8 @@ classdef Battery < PhysicalModel
 
             % temperature
             state = battery.updateTemperature(state);
+
+            state.(elyte) = battery.(elyte).updateConcentrations(state.(elyte));
             
             for ind = 1 : numel(electrodes)
                 elde = electrodes{ind};

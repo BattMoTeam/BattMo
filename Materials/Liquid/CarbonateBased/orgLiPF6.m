@@ -16,13 +16,15 @@ classdef orgLiPF6 < Electrolyte
             model = dispatchParams(model, paramobj, fdnames);
         end
         
+        function state = updateConcentrations(model, state)
+            state.cs{2} = state.cs{1};
+        end
+        
         function state = updateChemicalCurrent(model, state)
             
             cLi = state.cs{1}; % concentration of Li+
             T   = state.T;     % temperature
             phi = state.phi;   % potential
-            
-            state.cs{2} = cLi; % set counterion concentration?
             
             cs  = state.cs;         
             
