@@ -1,23 +1,23 @@
 [submodule "mrst-solvers"]
-	path = mrst-solvers
+	path = MRST/mrst-solvers
 	url = https://bitbucket.org/mrst/mrst-solvers.git
         branch = release/2021b/final
 [submodule "mrst-core"]
-	path = mrst-core
+	path = MRST/mrst-core
 	url = https://bitbucket.org/mrst/mrst-core.git
         branch = release/2021b/final
 [submodule "mrst-autodiff"]
-	path = mrst-autodiff
+	path = MRST/mrst-autodiff
 	url = https://bitbucket.org/mrst/mrst-autodiff.git
         branch = release/2021b/final
 [submodule "mrst-model-io"]
-	path = mrst-model-io
+	path = MRST/mrst-model-io
 	url = https://bitbucket.org/mrst/mrst-model-io.git
         branch = release/2021b/final
 [submodule "mrst-visualization"]
-	path = mrst-visualization
+	path = MRST/mrst-visualization
 	url = https://bitbucket.org/mrst/mrst-visualization.git
         branch = release/2021b/final
 [submodule "project-multimodel"]
-	path = project-multimodel
+	path = MRST/mrst-multimodel
 	url = https://bitbucket.org/mrst/project-multimodel.git
