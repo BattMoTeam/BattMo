@@ -17,6 +17,10 @@ function tbls = setupSimpleTables(G)
     cellfacetbl.faces = G.cells.faces(:, 1);
     cellfacetbl = IndexArray(cellfacetbl);
     
+    facenodetbl.faces = rldecode((1 : nf)', diff(G.faces.nodePos));
+    facenodetbl.nodes = G.faces.nodes(:, 1);
+    facenodetbl = IndexArray(facenodetbl);
+    
     tbls = struct('celltbl'         , celltbl         , ...
                   'facetbl'         , facetbl         , ...
                   'nodetbl'         , nodetbl         , ...
