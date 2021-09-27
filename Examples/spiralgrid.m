@@ -3,38 +3,55 @@ close all
 
 mrstModule add ad-core multimodel mrst-gui battery mpfa
 
-nelyte = 3;
-npe    = 3;
-nne    = 3;
-nccpe  = 3;
-nccne  = 3;
+%% Parameters 
 
-nlayers = 2;
+% number of layers
+nlayers = 4;
+
+% "radius" at the middle
 r0 = 0.5;
-n = 20; 
-
-ns = [nccne; nne; nelyte; nccpe; npe];
-compinds = rldecode((1 : 5)', ns);
+% widths of each component ordered as
+%  - negative current collector
+%  - negative electrode
+%  - electrolyte separator 
+%  - positive electrode
+%  - positive current collector
 widths = [1; 2; 3; 2; 1];
+
+% number of cell in radial direction for each component (same ordering as above).
+nrs = [3; 3; 3; 3; 3]; 
+% number of cells in the angular direction
+nas = 20; 
+
+
+params = struct('nlayers', nlayers, ...
+                'r0'     , r0     , ...
+                'widths' , widths , ...
+                'nrs'    , nrs    , ...
+                'nas'    , nas);
+
+%% Grid setup
+
+
 
 layerwidth = sum(widths);
 
-w = widths./ns;
-w = rldecode(w, ns);
+w = widths./nrs;
+w = rldecode(w, nrs);
 
 w = repmat(w, [nlayers, 1]);
 w = [0; cumsum(w)];
 
-h = linspace(0, 2*pi*r0, n);
+h = linspace(0, 2*pi*r0, nas*nlayers + 1);
 
-nperlayer = sum(ns);
+nperlayer = sum(nrs);
 
 G = tensorGrid(h, w);
 
-n = numel(h);
-m = numel(w);
+m = numel(w) - 1;
+n = numel(h) - 1;
 
-plotGrid(G)
+% plotGrid(G)
 
 % We roll the domain into a spirale
 dotransform = true;
@@ -205,6 +222,25 @@ newG.griddim = 2;
 
 newG = computeGeometry(newG);
 
-plotGrid(newG)
+% plotGrid(newG)
 
+comptag = rldecode((1 : 5)', nrs);
+comptag = repmat(comptag, [nlayers, 1]);
+
+comptagtbl.tag = comptag;
+comptagtbl.indj = (1 : (sum(nrs)*nlayers))';
+comptagtbl = IndexArray(comptagtbl);
+
+celltbl.cells = (1 : G.cells.num)';
+celltbl.indi = repmat((1 : nas*nlayers)', [sum(nrs)*nlayers, 1]);
+celltbl.indj = rldecode((1 : sum(nrs)*nlayers)', nas*nlayers*ones(sum(nrs)*nlayers, 1));
+celltbl = IndexArray(celltbl);
+
+celltagtbl = crossIndexArray(celltbl, comptagtbl, {'indj'});
+celltagtbl = sortIndexArray(celltagtbl, {'cells', 'tag'});
+
+tag = celltagtbl.get('tag');
+
+plotGrid(newG);
+plotCellData(newG, tag);
 
