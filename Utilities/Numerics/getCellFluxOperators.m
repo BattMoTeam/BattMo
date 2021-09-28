@@ -59,13 +59,18 @@ function op = getCellFluxOperators(G)
 
     vect12tbl = gen.eval();
 
-    intfacevecttbl       = crossIndexArray(intfacetbl    , vecttbl  , {}, 'optpureproduct', true);
-    facevecttbl          = crossIndexArray(facetbl       , vecttbl  , {}, 'optpureproduct', true);
-    cellvecttbl          = crossIndexArray(celltbl       , vecttbl  , {}, 'optpureproduct', true);
-    cellvect12tbl        = crossIndexArray(celltbl       , vect12tbl, {}, 'optpureproduct', true);
-    cellintfacevecttbl   = crossIndexArray(cellintfacetbl, vecttbl  , {}, 'optpureproduct', true);
-    cellintfacevect12tbl = crossIndexArray(cellintfacetbl, vect12tbl, {}, 'optpureproduct', true);
-    cellfacevecttbl      = crossIndexArray(cellfacetbl   , vecttbl  , {}, 'optpureproduct', true);
+    if doOptimized
+        opts = {'optpureproduct', true, 'virtual', true};
+    else
+        opts = {'optpureproduct', true};
+    end
+    intfacevecttbl       = crossIndexArray(intfacetbl    , vecttbl  , {}, opts{:});
+    facevecttbl          = crossIndexArray(facetbl       , vecttbl  , {}, opts{:});
+    cellvecttbl          = crossIndexArray(celltbl       , vecttbl  , {}, opts{:});
+    cellvect12tbl        = crossIndexArray(celltbl       , vect12tbl, {}, opts{:});
+    cellintfacevecttbl   = crossIndexArray(cellintfacetbl, vecttbl  , {}, opts{:});
+    cellintfacevect12tbl = crossIndexArray(cellintfacetbl, vect12tbl, {}, opts{:});
+    cellfacevecttbl      = crossIndexArray(cellfacetbl   , vecttbl  , {}, opts{:});
 
     if doOptimized
         % some shortcuts
@@ -217,9 +222,9 @@ function op = getCellFluxOperators(G)
     if doOptimized
         prod.pivottbl = cellintfacevecttbl;
         [r, i] = ind2sub([d_num, c_num], (1 : cellintfacevecttbl.num)');
-        prod.dispind1 = (1 : cellvect12tbl.num)';
+        prod.dispind1 = (1 : cellintfacevecttbl.num)';
         prod.dispind2 = i;
-        prod.dispind3 = (1 : cellvect12tbl.num)';
+        prod.dispind3 = (1 : cellintfacevecttbl.num)';
         prod.issetup = true;
     else
         prod = prod.setup();
@@ -242,8 +247,8 @@ function op = getCellFluxOperators(G)
         prod.pivottbl = cellintfacevect12tbl;
         [r2, r1, i] = ind2sub([d_num, d_num, icf_num], (1 : cellintfacevect12tbl.num)');
         prod.dispind1 = sub2ind([d_num, d_num, c_num], r2, r1, cell_from_cellface(cellface_from_cellintface(i)));
-        prod.dispind2 = sub2ind([d_num, c_num], r2, i);
-        prod.dispind3 = sub2ind([d_num, c_num], r1, i);
+        prod.dispind2 = sub2ind([d_num, icf_num], r2, i);
+        prod.dispind3 = sub2ind([d_num, icf_num], r1, i);
         prod.issetup = true;
     else
         prod = prod.setup();
@@ -261,7 +266,7 @@ function op = getCellFluxOperators(G)
     if doOptimized
         prod.pivottbl = cellintfacevecttbl;
         [r, i] = ind2sub([d_num, icf_num], (1 : cellintfacevecttbl.num)');
-        prod.dispind1 = (1 : cellintfacevecttbl');
+        prod.dispind1 = (1 : cellintfacevecttbl.num)';
         prod.dispind2 = intface_from_face(face_from_cellface(cellface_from_cellintface(i)));
         prod.dispind3 = sub2ind([d_num, c_num], r, cell_from_cellface(cellface_from_cellintface(i)));
         prod.issetup = true;
@@ -284,6 +289,7 @@ function op = getCellFluxOperators(G)
         [r, i] = ind2sub([d_num, c_num], (1 : cellvecttbl.num)');
         map.dispind1 = (1 : cellvecttbl.num)';
         map.dispind2 = i;
+        map.issetup = true;
     else
         map = map.setup();
     end
