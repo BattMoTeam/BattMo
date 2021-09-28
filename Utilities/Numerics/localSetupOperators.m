@@ -1,4 +1,7 @@
-function operators = localSetupOperators(G)
+function operators = localSetupOperators(G, varargin)
+    opts = struct('assembleCellFluxOperator', false);
+    opts = merge_options(opts, varargin{:});
+    
     nc = G.cells.num;
     cst = ones(nc, 1);
     rock = struct('perm', cst, 'poro', cst);
@@ -7,7 +10,10 @@ function operators = localSetupOperators(G)
     %operators.harmFace = getFaceHarmMean(G);
     operators.harmFace =@(cellvalue) getTrans(G).*(1./operators.faceAvg(1./cellvalue));
     operators.harmFaceBC = @(cvalue, faces) getFaceHarmBC(G, cvalue, faces);
-    operators.cellFluxOp = getCellFluxOperators(G);
+    
+    if opts.assembleCellFluxOperator
+        operators.cellFluxOp = getCellFluxOperators(G);
+    end
 end
 
 function [T, cells] = getFaceHarmBC(G, cvalue, faces)

@@ -22,7 +22,7 @@ classdef ElectronicComponent < PhysicalModel
             model = dispatchParams(model, paramobj, fdnames);
             
             % setup discrete differential operators
-            model.operators = localSetupOperators(model.G);
+            model.operators = localSetupOperators(model.G, 'assembleCellFluxOperator', true);
             
             model.constants = PhysicalConstants();
             
