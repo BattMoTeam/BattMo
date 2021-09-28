@@ -18,7 +18,7 @@ classdef BatteryGenerator
 
     methods
         
-        function paramobj = updateBatteryInputParams(gen, paramobj)
+        function paramobj = updateBatteryInputParams(gen, paramobj, params)
             error('virtual function - should call setupBatteryInputParams with some argument for params');
         end
         
