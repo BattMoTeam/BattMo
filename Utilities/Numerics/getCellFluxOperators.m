@@ -16,11 +16,25 @@ function op = getCellFluxOperators(G)
 %      v = S*v;
 %      v = sqrt(v);
     
+    doOptimized = true;
+    
     tbls = setupSimpleTables(G);
 
     celltbl = tbls.celltbl;
     facetbl = tbls.facetbl;
     cellfacetbl = tbls.cellfacetbl;
+    
+    if doOptimized
+        map = TensorMap();
+        map.fromTbl = celltbl;
+        map.toTbl = cellfacetbl;
+        map.mergefds = {'cells'};
+        cell_from_cellface = map.getDispatchInd();
+        map.fromTbl = facetbl;
+        map.toTbl = cellfacetbl;
+        map.mergefds = {'faces'};
+        face_from_cellface = map.getDispatchInd();
+    end
 
     N = G.faces.neighbors;
     intInx = all(N ~= 0, 2); % same definition as in setupOperatorsTPFA
@@ -45,13 +59,38 @@ function op = getCellFluxOperators(G)
 
     vect12tbl = gen.eval();
 
-    intfacevecttbl = crossIndexArray(intfacetbl, vecttbl, {}, 'optpureproduct', true);
-    facevecttbl = crossIndexArray(facetbl, vecttbl, {}, 'optpureproduct', true);
-    cellvecttbl = crossIndexArray(celltbl, vecttbl, {}, 'optpureproduct', true);
-    cellvect12tbl = crossIndexArray(celltbl, vect12tbl, {}, 'optpureproduct', true);
-    cellintfacevecttbl = crossIndexArray(cellintfacetbl, vecttbl, {}, 'optpureproduct', true);
-    cellfacevecttbl = crossIndexArray(cellfacetbl, vecttbl, {}, 'optpureproduct', true);
+    intfacevecttbl     = crossIndexArray(intfacetbl    , vecttbl  , {}, 'optpureproduct', true);
+    facevecttbl        = crossIndexArray(facetbl       , vecttbl  , {}, 'optpureproduct', true);
+    cellvecttbl        = crossIndexArray(celltbl       , vecttbl  , {}, 'optpureproduct', true);
+    cellvect12tbl      = crossIndexArray(celltbl       , vect12tbl, {}, 'optpureproduct', true);
+    cellintfacevecttbl = crossIndexArray(cellintfacetbl, vecttbl  , {}, 'optpureproduct', true);
+    cellfacevecttbl    = crossIndexArray(cellfacetbl   , vecttbl  , {}, 'optpureproduct', true);
 
+    if doOptimized
+        % some shortcuts
+        d_num   = vecttbl.num;
+        if_num  = intfacetbl.num;
+        icf_num = cellintfacetbl.num;
+        f_num   = facetbl.num;
+        cf_num  = cellfacetbl.num;
+        
+        face_from_intface = intfacetbl.get('faces');
+        
+        map = TensorMap();
+        map.fromTbl = cellfacetbl;
+        map.toTbl = cellintfacetbl;
+        map.mergefds = {'cells', 'faces'};
+        map = map.setup();
+        
+        cellface_from_cellintface = map.getDispatchInd();
+        
+        intface_from_face = zeros(facetbl.num, 1);
+        intface_from_face(face_from_intface) = (1 : intfacetbl.num)';
+        
+        cellintface_from_cellface = zeros(cellfacetbl.num, 1);
+        cellintface_from_cellface(cellface_from_cellintface) = (1 : cellintfacetbl.num)';        
+    end
+    
     N = G.faces.normals;
     N = reshape(N', [], 1); % N is in facevecttbl
 
@@ -59,8 +98,16 @@ function op = getCellFluxOperators(G)
     map.fromTbl = facevecttbl;
     map.toTbl = intfacevecttbl;
     map.mergefds = {'faces', 'vect'};
-    map = map.setup();
-
+    
+    if doOptimized
+        map.pivottbl = intfacevecttbl;
+        [r, i] = ind2sub([d_num, if_num], (1 : intfacevecttbl.num)');
+        map.dispind1 = sub2ind([d_num, f_num], r, face_from_intface(i));
+        map.dispind2 = (1 : intfacevecttbl.num)';
+        map.issetup = true;
+    else
+        map = map.setup();
+    end
     N = map.eval(N); % N is in intfacevecttbl
 
     prod = TensorProd();
@@ -68,7 +115,16 @@ function op = getCellFluxOperators(G)
     prod.tbl2 = intfacevecttbl;
     prod.tbl3 = cellintfacevecttbl;
     prod.mergefds = {'faces'};
-    prod = prod.setup();
+    if doOptimized
+        prod.pivottbl = cellintfacevecttbl;
+        [r, i] = ind2sub([d_num, icf_num], (1 : cellintfacevecttbl.num)');
+        prod.dispind1 = i;
+        prod.dispind2 = sub2ind([d_num, f_num], r, intface_from_face(face_from_cellface(cellface_from_cellintface(i))));
+        prod.dispind3 = (1 : cellintfacevecttbl.num)';
+        prod.issetup = true;
+    else
+        prod = prod.setup();
+    end
 
     N = prod.eval(sgn, N); % N is in cellintfacevecttbl
 
