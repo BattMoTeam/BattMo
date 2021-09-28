@@ -5,7 +5,7 @@ classdef ThermalComponentInputParams < ComponentInputParams
         EffectiveThermalConductivity
         EffectiveHeatCapacity
         couplingTerm
-        externalHeatTransferCoefficient
+        externalHeatTransferCoefficient % scalar value
         externalTemperature
         
     end

@@ -3,7 +3,6 @@ classdef SpiralBatteryGenerator < BatteryGenerator
     
     properties
             
-        
         nwindings % number of windings in the spiral
         r0        % "radius" at the middle
         widths    % vector of widths for each component indexed in following order
@@ -24,27 +23,15 @@ classdef SpiralBatteryGenerator < BatteryGenerator
         positiveExtCurrentFaces
         negativeExtCurrentFaces
         
-        % Utility variables computed once and then shared by methods (should not be set)
-        allparams;
-        invcellmap;
-        
-        % Heat parameters
-        externalHeatTransferCoefficientTab = 1e3;
-        externalHeatTransferCoefficient = 1e3;
-        
     end
     
     methods
         
-        function gen = BatteryGenerator()
+        function gen = SpiralBatteryGenerator()
             gen = gen@BatteryGenerator();  
         end
         
-        function paramobj = updateBatteryInputParams(gen, paramobj)
-            paramobj = gen.setupBatteryInputParams(paramobj, []);
-        end
-        
-        function [paramobj, gen] = setupGrid(gen, paramobj, params)
+        function paramobj = updateBatteryInputParams(gen, paramobj, params)
             
             gen.nwindings = params.nwindings;
             gen.r0        = params.r0     ;
@@ -53,9 +40,14 @@ classdef SpiralBatteryGenerator < BatteryGenerator
             gen.nas       = params.nas    ;
             gen.L         = params.L      ;
             gen.nL        = params.nL;
+            
+            paramobj = gen.setupBatteryInputParams(paramobj, []);
+            
+        end
+        
+        function [paramobj, gen] = setupGrid(gen, paramobj, params)
     
             gen = spiralGrid(gen);
-            
             paramobj.G = gen.G;
             
         end
@@ -78,7 +70,6 @@ classdef SpiralBatteryGenerator < BatteryGenerator
         
         function paramobj = setupElectrodes(gen, paramobj, params)
 
-            
             % shortcuts 
             ne  = 'NegativeElectrode';
             pe  = 'PositiveElectrode';
@@ -106,10 +97,17 @@ classdef SpiralBatteryGenerator < BatteryGenerator
         end
 
         function paramobj = setupCurrentCollectorBcCoupTerm(gen, paramobj, params)
+        % paramobj is instance of CurrentCollectorInputParams
             
-            G = paramobj.G;
+            G = paramobj.G; % grid of the current collector
+            extfaces = params.extfaces;
             
-            params.bcfaces = find(abs(yf - myf) < eps*1000);
+            clear params
+            globG = G.parentGrid;
+            invfacemap = zeros(globG.faces.num, 1);
+            invfacemap(facemap) = (1 : G.faces.num)';
+            
+            params.bcfaces = invfacemap(extfaces)
             params.bccells = sum(G.faces.neighbors(params.bcfaces, :), 2);
 
             paramobj = setupCurrentCollectorBcCoupTerm@BatteryGenerator(gen, paramobj, params);
@@ -136,31 +134,7 @@ classdef SpiralBatteryGenerator < BatteryGenerator
                             'couplingcells', couplingcells);
             paramobj = setupThermalModel@BatteryGenerator(gen, paramobj, params);
             
-            tabcellinds = [gen.allparams.(pe).(cc).cellindtab; gen.allparams.(ne).(cc).cellindtab];
-            tabtbl.cells = tabcellinds;
-            tabtbl = IndexArray(tabtbl);
-            
-            tbls = setupSimpleTables(G);
-            cellfacetbl = tbls.cellfacetbl;
-            
-            tabcellfacetbl = crossIndexArray(tabtbl, cellfacetbl, {'cells'});
-            tabfacetbl = projIndexArray(tabcellfacetbl, {'faces'});
-            
-            bcfacetbl.faces = couplingfaces;
-            bcfacetbl = IndexArray(bcfacetbl);
-            
-            tabbcfacetbl = crossIndexArray(bcfacetbl, tabfacetbl, {'faces'});
-            
-            map = TensorMap();
-            map.fromTbl = bcfacetbl;
-            map.toTbl = tabbcfacetbl;
-            map.mergefds = {'faces'};
-            ind = map.getDispatchInd();
-            
-            coef = gen.externalHeatTransferCoefficient*ones(bcfacetbl.num, 1);
-            coef(ind) = gen.externalHeatTransferCoefficientTab;
-            
-            paramobj.ThermalModel.externalHeatTransferCoefficient = coef;
+            paramobj.ThermalModel.externalHeatTransferCoefficient = paramobj.ThermalModel.externalHeatTransferCoefficient*ones(numel(couplingfaces), 1);
             
         end
         
