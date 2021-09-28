@@ -59,18 +59,20 @@ function op = getCellFluxOperators(G)
 
     vect12tbl = gen.eval();
 
-    intfacevecttbl     = crossIndexArray(intfacetbl    , vecttbl  , {}, 'optpureproduct', true);
-    facevecttbl        = crossIndexArray(facetbl       , vecttbl  , {}, 'optpureproduct', true);
-    cellvecttbl        = crossIndexArray(celltbl       , vecttbl  , {}, 'optpureproduct', true);
-    cellvect12tbl      = crossIndexArray(celltbl       , vect12tbl, {}, 'optpureproduct', true);
-    cellintfacevecttbl = crossIndexArray(cellintfacetbl, vecttbl  , {}, 'optpureproduct', true);
-    cellfacevecttbl    = crossIndexArray(cellfacetbl   , vecttbl  , {}, 'optpureproduct', true);
+    intfacevecttbl       = crossIndexArray(intfacetbl    , vecttbl  , {}, 'optpureproduct', true);
+    facevecttbl          = crossIndexArray(facetbl       , vecttbl  , {}, 'optpureproduct', true);
+    cellvecttbl          = crossIndexArray(celltbl       , vecttbl  , {}, 'optpureproduct', true);
+    cellvect12tbl        = crossIndexArray(celltbl       , vect12tbl, {}, 'optpureproduct', true);
+    cellintfacevecttbl   = crossIndexArray(cellintfacetbl, vecttbl  , {}, 'optpureproduct', true);
+    cellintfacevect12tbl = crossIndexArray(cellintfacetbl, vect12tbl, {}, 'optpureproduct', true);
+    cellfacevecttbl      = crossIndexArray(cellfacetbl   , vecttbl  , {}, 'optpureproduct', true);
 
     if doOptimized
         % some shortcuts
         d_num   = vecttbl.num;
         if_num  = intfacetbl.num;
         icf_num = cellintfacetbl.num;
+        c_num   = celltbl.num;
         f_num   = facetbl.num;
         cf_num  = cellfacetbl.num;
         
@@ -80,8 +82,6 @@ function op = getCellFluxOperators(G)
         map.fromTbl = cellfacetbl;
         map.toTbl = cellintfacetbl;
         map.mergefds = {'cells', 'faces'};
-        map = map.setup();
-        
         cellface_from_cellintface = map.getDispatchInd();
         
         intface_from_face = zeros(facetbl.num, 1);
@@ -138,8 +138,18 @@ function op = getCellFluxOperators(G)
     prod.replacefds2 = {{'vect', 'vect2'}};
     prod.mergefds = {'cells'};
     prod.reducefds = {'faces'};
-    prod = prod.setup();
-
+    
+    if doOptimized
+        prod.pivottbl = cellintfacevect12tbl;
+        [r2, r1, i] = ind2sub([d_num, d_num, icf_num], (1 : cellintfacevect12tbl.num)');
+        prod.dispind1 = sub2ind([d_num, icf_num], r1, i);
+        prod.dispind2 = sub2ind([d_num, icf_num], r2, i);
+        prod.dispind3 = sub2ind([d_num, d_num, c_num], r1, r2, cell_from_cellface(cellface_from_cellintface(i)));
+        prod.issetup = true;
+    else
+        prod = prod.setup();
+    end
+    
     NtN = prod.eval(N, N); % NtN is in cellvect12tbl
 
     %% We setup the tensor so that we can compute block inverse
@@ -152,7 +162,17 @@ function op = getCellFluxOperators(G)
     prod.replacefds2 = {{'vect', 'vect2'}};
     prod.mergefds = {'cells'};
     prod.reducefds = {'vect2'};
-
+    if doOptimized
+        prod.pivottbl = cellvect12tbl;
+        [r2, r1, i] = ind2sub([d_num, d_num, c_num], (1 : cellvect12tbl.num)');
+        prod.dispind1 = (1 : cellvect12tbl.num)';
+        prod.dispind2 = sub2ind([d_num, c_num], r2, i);
+        prod.dispind3 = sub2ind([d_num, c_num], r1, i);
+        prod.issetup = true;
+    else
+        prod = prod.setup();
+    end
+    
     A = SparseTensor();
     A = A.setFromTensorProd(NtN, prod);
     A = A.getMatrix();
@@ -163,19 +183,25 @@ function op = getCellFluxOperators(G)
     sz = vecttbl.num*ones(celltbl.num, 1);
     invNtN = bi(A, sz);
 
-    map = TensorMap();
-    map.fromTbl = cellvecttbl;
-    map.toTbl = cellvect12tbl;
-    map.replaceFromTblfds = {{'vect', 'vect1'}};
-    map.mergefds = {'cells', 'vect1'};
-    ind1 = map.getDispatchInd();
-
-    map = TensorMap();
-    map.fromTbl = cellvecttbl;
-    map.toTbl = cellvect12tbl;
-    map.replaceFromTblfds = {{'vect', 'vect2'}};
-    map.mergefds = {'cells', 'vect2'};
-    ind2 = map.getDispatchInd();
+    if doOptimized
+        [r2, r1, i] = ind2sub([d_num, d_num, c_num], (1 : cellvect12tbl.num)');
+        ind1 = sub2ind([d_num, c_num], r1, i);
+        ind2 = sub2ind([d_num, c_num], r2, i);
+    else
+        map = TensorMap();
+        map.fromTbl = cellvecttbl;
+        map.toTbl = cellvect12tbl;
+        map.replaceFromTblfds = {{'vect', 'vect1'}};
+        map.mergefds = {'cells', 'vect1'};
+        ind1 = map.getDispatchInd();
+        
+        map = TensorMap();
+        map.fromTbl = cellvecttbl;
+        map.toTbl = cellvect12tbl;
+        map.replaceFromTblfds = {{'vect', 'vect2'}};
+        map.mergefds = {'cells', 'vect2'};
+        ind2 = map.getDispatchInd();
+    end
 
     ind = sub2ind([cellvecttbl.num, cellvecttbl.num], ind1, ind2);
 
@@ -188,8 +214,17 @@ function op = getCellFluxOperators(G)
     prod.tbl2 = cellintfacetbl;
     prod.tbl3 = cellintfacevecttbl;
     prod.mergefds = {'cells', 'faces'};
-    prod = prod.setup();
-
+    if doOptimized
+        prod.pivottbl = cellintfacevecttbl;
+        [r, i] = ind2sub([d_num, c_num], (1 : cellintfacevecttbl.num)');
+        prod.dispind1 = (1 : cellvect12tbl.num)';
+        prod.dispind2 = i;
+        prod.dispind3 = (1 : cellvect12tbl.num)';
+        prod.issetup = true;
+    else
+        prod = prod.setup();
+    end
+    
     sN = prod.eval(N, sgn); % sN is in cellintfacevecttbl
 
     % We compute P = (invNtN)*sN
@@ -202,8 +237,18 @@ function op = getCellFluxOperators(G)
     prod.replacefds2 = {{'vect', 'vect2'}};
     prod.mergefds = {'cells'};
     prod.reducefds = {'vect2'};
-    prod = prod.setup;
-
+    
+    if doOptimized
+        prod.pivottbl = cellintfacevect12tbl;
+        [r2, r1, i] = ind2sub([d_num, d_num, icf_num], (1 : cellintfacevect12tbl.num)');
+        prod.dispind1 = sub2ind([d_num, d_num, c_num], r2, r1, cell_from_cellface(cellface_from_cellintface(i)));
+        prod.dispind2 = sub2ind([d_num, c_num], r2, i);
+        prod.dispind3 = sub2ind([d_num, c_num], r1, i);
+        prod.issetup = true;
+    else
+        prod = prod.setup();
+    end
+    
     P = prod.eval(invNtN, sN); % P is in cellintfacevectbl
 
     % Setup matrix for vector flux reconstruction, from facetbl to cellvecttbl.
@@ -213,7 +258,17 @@ function op = getCellFluxOperators(G)
     prod.tbl2 = intfacetbl;
     prod.tbl3 = cellvecttbl;
     prod.reducefds = {'faces'};
-
+    if doOptimized
+        prod.pivottbl = cellintfacevecttbl;
+        [r, i] = ind2sub([d_num, icf_num], (1 : cellintfacevecttbl.num)');
+        prod.dispind1 = (1 : cellintfacevecttbl');
+        prod.dispind2 = intface_from_face(face_from_cellface(cellface_from_cellintface(i)));
+        prod.dispind3 = sub2ind([d_num, c_num], r, cell_from_cellface(cellface_from_cellintface(i)));
+        prod.issetup = true;
+    else
+        prod = prod.setup();
+    end
+    
     P_T = SparseTensor();
     P_T = P_T.setFromTensorProd(P, prod);
 
@@ -224,7 +279,15 @@ function op = getCellFluxOperators(G)
     map.fromTbl = cellvecttbl;
     map.toTbl = celltbl;
     map.mergefds = {'cells'};
-
+    if doOptimized
+        map.pivottbl = cellvecttbl;
+        [r, i] = ind2sub([d_num, c_num], (1 : cellvecttbl.num)');
+        map.dispind1 = (1 : cellvecttbl.num)';
+        map.dispind2 = i;
+    else
+        map = map.setup();
+    end
+    
     S_T = SparseTensor();
     S_T = S_T.setFromTensorMap(map);
 
