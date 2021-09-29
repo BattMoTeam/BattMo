@@ -22,7 +22,7 @@ classdef SpiralBatteryGenerator < BatteryGenerator
         
         positiveExtCurrentFaces
         negativeExtCurrentFaces
-        
+        thermalExchangeFaces
     end
     
     methods
@@ -121,15 +121,9 @@ classdef SpiralBatteryGenerator < BatteryGenerator
         % 
         % We recover the external coupling terms for the current collectors
 
-            % shortcuts
-            ne    = 'NegativeElectrode';
-            pe    = 'PositiveElectrode';
-            cc    = 'CurrentCollector';
-                
-            % the cooling is done on the external faces
             G = gen.G;
-            extfaces = any(G.faces.neighbors == 0, 2);
-            couplingfaces = find(extfaces);
+            
+            couplingfaces = gen.thermalExchangeFaces;
             couplingcells = sum(G.faces.neighbors(couplingfaces, :), 2);
             
             params = struct('couplingfaces', couplingfaces, ...

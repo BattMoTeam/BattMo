@@ -57,8 +57,8 @@ function output = spiralGrid(params)
 
     cartG = tensorGrid(h, w);
 
-    m = numel(w) - 1;
     n = numel(h) - 1;
+    m = numel(w) - 1;
 
     % plotGrid(G)
 
@@ -258,16 +258,92 @@ function output = spiralGrid(params)
     G = computeGeometry(G);
     
     tag = repmat(tag, [nL, 1]);
-   
-    %% recover faces on top and bottom for the current collector
-    
-    tbls = setupSimpleTables(G);
 
+    % setup the standard tables
+    tbls = setupSimpleTables(G);
     cellfacetbl = tbls.cellfacetbl;
+    
     clear extfacetbl
     extfacetbl.faces = find(any(G.faces.neighbors == 0, 2));
     extfacetbl = IndexArray(extfacetbl);
     extcellfacetbl = crossIndexArray(extfacetbl, cellfacetbl, {'faces'});
+    
+    
+    %%  recover the external faces that are inside the spiral
+    % we get them using the Cartesian indexin
+
+
+    [indi, indj, indk] = ind2sub([n, m, nL], (1 : G.cells.num)');
+    
+    clear celltbl
+    celltbl.cells = (1 : G.cells.num)';
+    celltbl.indi = indi;
+    celltbl.indj = indj;
+    celltbl.indk = indk;
+    celltbl = IndexArray(celltbl);
+
+    % We add vertical (1) and horizontal (2) direction index for the faces (see makeLayeredGrid for the setup)
+    
+    nf = G.faces.num;
+    clear facetbl
+    facetbl.faces = (1 : nf)';
+    dir = 2*ones(nf, 1);
+    dir(1 : (nL + 1)*n*m) = 1;
+    facetbl.dir = dir;
+    facetbl = IndexArray(facetbl);
+    
+    scelltbl.indi = (1: n)';
+    scelltbl.indj = 1*ones(n, 1);
+    scelltbl.dir = 2*ones(n, 1);
+    scelltbl = IndexArray(scelltbl);
+    
+    scelltbl = crossIndexArray(celltbl, scelltbl, {'indi', 'indj'});
+    scelltbl = projIndexArray(scelltbl, 'cells');
+    extscellfacetbl = crossIndexArray(scelltbl, extcellfacetbl, {'cells'});
+    sfacetbl = projIndexArray(extscellfacetbl, {'faces'});
+    
+    sfacetbl = sfacetbl.addInd('dir', 2*ones(sfacetbl.num, 1));
+    sfacetbl = crossIndexArray(sfacetbl, facetbl, {'faces', 'dir'});
+    
+    sfaces = sfacetbl.get('faces');
+    
+    
+    clear scelltbl
+    nnrs = sum(nrs);
+    scelltbl.indi = ones(nnrs, 1);
+    scelltbl.indj = (1 : nnrs)';
+    scelltbl = IndexArray(scelltbl);
+    
+    scelltbl = crossIndexArray(celltbl, scelltbl, {'indi', 'indj'});
+    scelltbl = projIndexArray(scelltbl, 'cells');
+    extscellfacetbl = crossIndexArray(scelltbl, extcellfacetbl, {'cells'});
+    sfacetbl = projIndexArray(extscellfacetbl, {'faces'});
+    
+    sfacetbl = sfacetbl.addInd('dir', 2*ones(sfacetbl.num, 1));
+    sfacetbl = crossIndexArray(sfacetbl, facetbl, {'faces', 'dir'});
+
+    sfaces = [sfaces; sfacetbl.get('faces')];
+    
+    % some faces have been taken twice
+    sfaces = unique(sfaces);
+
+    clear sfacetbl
+    sfacetbl.faces = sfaces;
+    sfacetbl = IndexArray(sfacetbl);
+    
+    map = TensorMap();
+    map.fromTbl = extfacetbl;
+    map.toTbl = sfacetbl;
+    map.mergefds = {'faces'};
+    
+    ind = map.getDispatchInd();
+    
+    thermalExchangeFaces = extfacetbl.get('faces');
+    thermalExchangeFaces(ind) = [];
+    
+    
+    %% recover faces on top and bottom for the current collector
+    % we could do that using cartesian indices (easier)
 
     ccnames = {'PositiveCurrentCollector', 'NegativeCurrentCollector'};
 
@@ -311,6 +387,6 @@ function output = spiralGrid(params)
     output.tagdict                 = tagdict;
     output.positiveExtCurrentFaces = positiveExtCurrentFaces;
     output.negativeExtCurrentFaces = negativeExtCurrentFaces;
-   
+    output.thermalExchangeFaces    = thermalExchangeFaces;   
     
 end
