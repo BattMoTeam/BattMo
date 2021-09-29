@@ -24,4 +24,4 @@ Dr. Xavier Raynaud, SINTEF Digital
 Dr. Roberto Scipioni, SINTEF Industry  
 
 ### Acknowledgements
-List of projects and funding sources that contribute to the development.
+HYDRA - This project has received funding from the European Union’s Horizon 2020 innovation program under grant agreement number: 875527.
