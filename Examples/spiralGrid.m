@@ -60,19 +60,16 @@ function output = spiralGrid(params)
     n = numel(h) - 1;
     m = numel(w) - 1;
 
-    % plotGrid(G)
+    % plotGrid(cartG)
 
     % We roll the domain into a spirale
-    dotransform = true;
-    if dotransform
-        x = cartG.nodes.coords(:, 1);
-        y = cartG.nodes.coords(:, 2);
+    x = cartG.nodes.coords(:, 1);
+    y = cartG.nodes.coords(:, 2);
 
-        theta = x./r0;
+    theta = x./r0;
 
-        cartG.nodes.coords(:, 1) = (r0 + y + (theta/(2*pi))*layerwidth).*cos(theta);
-        cartG.nodes.coords(:, 2) = (r0 + y + (theta/(2*pi))*layerwidth).*sin(theta);
-    end
+    cartG.nodes.coords(:, 1) = (r0 + y + (theta/(2*pi))*layerwidth).*cos(theta);
+    cartG.nodes.coords(:, 2) = (r0 + y + (theta/(2*pi))*layerwidth).*sin(theta);
 
     tbls = setupSimpleTables(cartG);
 
@@ -270,7 +267,7 @@ function output = spiralGrid(params)
     
     
     %%  recover the external faces that are inside the spiral
-    % we get them using the Cartesian indexin
+    % we get them using the Cartesian indexing
 
 
     [indi, indj, indk] = ind2sub([n, m, nL], (1 : G.cells.num)');
