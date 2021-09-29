@@ -715,9 +715,6 @@ classdef Battery < PhysicalModel
             
             state.(thermal).jHeatOhmSource = src;
             
-            % For simplicity, we set the boundary heat transfer term equal to zero here.
-            state.(thermal).jHeatBcSource = 0;
-            
         end
         
         function state = updateThermalChemicalSourceTerms(model, state)
