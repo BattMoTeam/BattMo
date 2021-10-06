@@ -1,0 +1,3 @@
+* install sphinx
+* install https://pypi.org/project/sphinxcontrib-matlabdomain/
+* install https://pypi.org/project/sphinx-rtd-theme/

@@ -1,21 +1,15 @@
 classdef Battery < PhysicalModel
-% reference list : 
-% @misc{ref1,
-% 	doi = {10.1515/nano.bjneah.6.102},
-% 	url = {https://doi.org/10.1515%2Fnano.bjneah.6.102},
-% 	year = 2016,
-% 	month = {jul},
-% 	publisher = {De Gruyter},
-% 	author = {Arnulf Latz and Jochen Zausch},
-% 	title = {Multiscale modeling of lithium ion batteries: thermal aspects}
-% }
+% 
+% Battery model
+%     
+%
     
     properties
         
         con = PhysicalConstants();
 
-        % SOC
-        SOC
+        SOC % SOC
+
 
         % Initial temperature
         initT
@@ -39,17 +33,21 @@ classdef Battery < PhysicalModel
     end
     
     methods
-        
-        function model = Battery(paramobj)
-        % paramobj is instance of BatteryInputParams
-        % Shorcuts used here
-        % elyte : Electrolyte
-        % ne : NegativeElectrode
-        % pe : PositiveElectrode
             
+        function model = Battery(paramobj)
+        %
+        % Constructor
+        %
+        % Args : 
+        %      paramobj : instance of :class:`BatteryInputParams`
+        %
+        % Returns : 
+        %      Battery model  
+        %
+
             model = model@PhysicalModel([]);
             
-            % OBS : All the submodels should have same backend (this is not assigned automaticallly for the moment)
+            % All the submodels should have same backend (this is not assigned automaticallly for the moment)
             model.AutoDiffBackend = SparseAutoDiffBackend('useBlocks', false);
             
             %% Setup the model using the input parameters
@@ -92,7 +90,11 @@ classdef Battery < PhysicalModel
         end
 
         function model = setupThermalModel(model)
-
+        % setup the thermal model.
+        %
+        % Args : 
+        %      model : input model
+            
             ne    = 'NegativeElectrode';
             pe    = 'PositiveElectrode';
             eac   = 'ElectrodeActiveComponent';
@@ -223,12 +225,7 @@ classdef Battery < PhysicalModel
         
         function model = setupElectrolyteModel(model)
         % setup electrolyte volume fractions in the different regions
-        %
-        % Abbreviations used in this function 
-        % elyte : Electrolyte
-        % ne    : NegativeElectrode
-        % pe    : PositiveElectrode
-            
+
             elyte = 'Electrolyte';
             ne    = 'NegativeElectrode';
             pe    = 'PositiveElectrode';
@@ -247,14 +244,7 @@ classdef Battery < PhysicalModel
         
         function initstate = setupInitialState(model)
         % Setup initial state
-        %
-        % Abbreviations used in this function 
-        % elyte : Electrolyte
-        % ne    : NegativeElectrode
-        % pe    : PositiveElectrode
-        % eac   : ElectrodeActiveComponent
-        % cc    : CurrentCollector
-            
+
             nc = model.G.cells.num;
 
             SOC = model.SOC;
@@ -567,8 +557,6 @@ classdef Battery < PhysicalModel
         
         function state = updateElectrolyteCoupling(model, state)
         % Setup the electrolyte coupling by adding ion sources from the electrodes
-        % shortcuts:
-        % c_source : Source term for charge carrier.
                         
             battery = model;
             elyte = 'Electrolyte';
@@ -803,11 +791,7 @@ classdef Battery < PhysicalModel
         %
         %
         % WARNING : at the moment, we do not pass the concentrations
-        %
-        % shortcuts:
-        % elyte : Electrolyte
-        % neac  : NegativeElectrode.ElectrodeActiveComponent 
-        % peac  : PositiveElectrode.ElectrodeActiveComponent
+
             
             bat = model;
             elyte = 'Electrolyte';

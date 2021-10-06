@@ -8,17 +8,19 @@ Welcome to BATMO's documentation!
 
 .. toctree::
    :maxdepth: 2
-   :caption: Contents:
 
-Chapter
-=======
 
-test
-----
+A Handle Class
+++++++++++++++
+Should show inheritance and members.
 
-.. automodule:: Temp
-   :members: 
+.. automodule:: Battery
+                
+.. autoclass:: Battery
+    :show-inheritance:
+    :members: setupThermalModel
 
+       
 Indices and tables
 ==================
 
