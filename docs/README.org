@@ -1,5 +1,21 @@
-* install sphinx
-* install https://pypi.org/project/sphinxcontrib-matlabdomain/
-* install https://pypi.org/project/sphinx-rtd-theme/
-* use theme https://sphinx-rtd-theme.readthedocs.io/en/stable/
-* use bibtex support https://sphinxcontrib-bibtex.readthedocs.io/en/latest/usage.html
+#+TITLE: Documentation generation for BATMO
+* Requirements
+** sphinx
+   installation instruction described [[https://www.sphinx-doc.org/en/master/usage/installation.html][here]]
+** matlab extension
+   https://pypi.org/project/sphinxcontrib-matlabdomain/
+** install sphinx rtd theme
+   https://pypi.org/project/sphinx-rtd-theme/
+** bibtex extension
+   https://sphinxcontrib-bibtex.readthedocs.io/en/latest/quickstart.html#installation
+* Command
+  #+BEGIN_SRC sh
+  make html
+  #+END_SRC
+* Interesting Manuals
+** sphinx manual
+   https://www.sphinx-doc.org/en/master/index.html
+** rtd theme manual
+   https://sphinx-rtd-theme.readthedocs.io/en/stable/
+** bibtex extension manual
+   https://sphinxcontrib-bibtex.readthedocs.io/en/latest/index.html
