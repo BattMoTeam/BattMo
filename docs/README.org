@@ -14,7 +14,7 @@
   #+END_SRC
 * Interesting Manuals
 ** sphinx manual
-   https://www.sphinx-doc.org/en/master/index.html
+   https://www.sphinx-doc.org/en/master/contents.html
 ** rtd theme manual
    https://sphinx-rtd-theme.readthedocs.io/en/stable/
 ** bibtex extension manual
