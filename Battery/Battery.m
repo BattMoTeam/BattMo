@@ -965,10 +965,10 @@ classdef Battery < PhysicalModel
                     state.(name) = val;
                 end
             else
-                error('format not recognized');                
-            end                
+                error('format not recognized');
+            end
         end
-        
+
         function var = getProp(model, state, names)
             if iscell(names) && (numel(names) > 1)
                 name = names{1};
@@ -983,7 +983,7 @@ classdef Battery < PhysicalModel
                 end
             else
                 error('format not recognized');
-            end                
+            end
         end
         
         function submod = getSubmodel(model, names)
@@ -992,8 +992,6 @@ classdef Battery < PhysicalModel
                 submod = submod.(names{i});
             end
         end
-
-
         
         function validforces = getValidDrivingForces(model)
             validforces=struct('src', [], 'stopFunction', []); 
@@ -1023,15 +1021,16 @@ classdef Battery < PhysicalModel
           %end
         end
         
+
         function [state, report] = updateState(model, state, problem, dx, drivingForces)
+
             p = model.getPrimaryVariables();
-            for i = 2:numel(dx)
-                val = model.getProps(state, p{i});
+
+            for i = 1 : numel(dx)
+                val = model.getProp(state, p{i});
                 val = val + dx{i};
                 state = model.setProp(state, p{i}, val);
             end
-            %% not sure how to handle cells
-            state.Electrolyte.cs{1} =  state.Electrolyte.cs{1} + dx{1};
             
             %% cap concentrations
             elyte = 'Electrolyte';
@@ -1059,7 +1058,7 @@ classdef Battery < PhysicalModel
         
         function state = reduceState(model, state, removeContainers)
         % Reduce state to double (do not use property containers)
-            state = value(state);
+            state = removeAD(state);
         end
 
     end
