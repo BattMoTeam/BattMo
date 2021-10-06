@@ -23,17 +23,18 @@ classdef Battery < PhysicalModel
         Ucut % Voltage cut
         
         couplingTerms % Coupling terms
-        couplingNames
+        cmin % mininum concentration used in capping
+
+        couplingNames 
         
         mappings
         
-        cmin % mininum concentration used in capping
+        
     end
     
     methods
         
         function model = Battery(paramobj)
-        % 
 
             model = model@PhysicalModel([]);
             
@@ -79,8 +80,9 @@ classdef Battery < PhysicalModel
             
         end
 
-        function model = setupThermalModel(model)
-        % setup the thermal model.
+        function model = setupThermalModel(model, paramobj)
+        % Setup the thermal model :attr:`ThermalModel`. Here, :code:`paramobj` is instance of
+        % :class:`ThermalComponentInputParams <Electrochemistry.ThermalComponentInputParams>`
             
             ne    = 'NegativeElectrode';
             pe    = 'PositiveElectrode';
@@ -156,15 +158,17 @@ classdef Battery < PhysicalModel
         
         
         function electrode = setupElectrode(model, paramobj)
-        % Standard setup (ActiveMaterial is specified in Electrode instantiations)
+        % Setup the electrode models (both :attr:`NegativeElectrode` and :attr:`PositiveElectrode`). Here, :code:`paramobj`
+        % is instance of :class:`ElectrodeInputParams <Electrochemistry.Electrodes.ElectrodeInputParams>`
             electrode = Electrode(paramobj);
         end
         
-        function electrode = setupElectrolyte(model, paramobj)
-        % paramobj is instance of ElectrolyteInputParams
+        function electrolyte = setupElectrolyte(model, paramobj)
+        % Setup the electrolyte model :attr:`Electrolyte`. Here, :code:`paramobj` is instance of
+        % :class:`ElectrolyteInputParams <Electrochemistry.ElectrolyteInputParams>`
             switch paramobj.name
               case 'orgLiPF6'
-                electrode = orgLiPF6(paramobj);
+                electrolyte = orgLiPF6(paramobj);
               otherwise
                 error('electrolyte name not recognized');
             end
@@ -211,7 +215,7 @@ classdef Battery < PhysicalModel
         end
         
         function model = setupElectrolyteModel(model)
-        % setup electrolyte volume fractions in the different regions
+        % Assign the electrolyte volume fractions in the different regions
 
             elyte = 'Electrolyte';
             ne    = 'NegativeElectrode';
@@ -230,7 +234,7 @@ classdef Battery < PhysicalModel
         end
         
         function initstate = setupInitialState(model)
-        % Setup initial state
+        % Setup the initial state
 
             nc = model.G.cells.num;
 
@@ -320,7 +324,7 @@ classdef Battery < PhysicalModel
         end
         
         function [problem, state] = getEquations(model, state0, state,dt, drivingForces, varargin)
-            
+        % Assembly of the governing equation
             opts = struct('ResOnly', false, 'iteration', 0); 
             opts = merge_options(opts, varargin{:});
             
@@ -520,7 +524,8 @@ classdef Battery < PhysicalModel
         end
 
         function state = updateTemperature(model, state)
-            
+        % Dispatch the temperature in all the submodels
+
             elyte = 'Electrolyte';
             ne    = 'NegativeElectrode';
             pe    = 'PositiveElectrode';
@@ -543,7 +548,7 @@ classdef Battery < PhysicalModel
         
         
         function state = updateElectrolyteCoupling(model, state)
-        % Setup the electrolyte coupling by adding ion sources from the electrodes
+        % Assemble the electrolyte coupling by adding the ion sources from the electrodes
             
             battery = model;
             elyte = 'Electrolyte';
@@ -589,6 +594,7 @@ classdef Battery < PhysicalModel
         end
         
         function state = updateAccumTerms(model, state, state0, dt)
+        % Assemble the accumulation terms for transport equations (in electrolyte and electrodes)
             
             elyte = 'Electrolyte';
             ne    = 'NegativeElectrode';
@@ -616,7 +622,7 @@ classdef Battery < PhysicalModel
 
         
         function state = updateThermalAccumTerms(model, state, state0, dt)
-            
+        % Assemble the accumulation term for the energy equation
             thermal = 'ThermalModel';
             
             hcap = model.(thermal).EffectiveHeatCapacity;
@@ -1029,9 +1035,7 @@ classdef Battery < PhysicalModel
             
         end
         
-        
         function state = reduceState(model, state, removeContainers)
-        % Reduce state to double (do not use property containers)
             state = removeAD(state);
         end
 

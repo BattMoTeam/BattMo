@@ -2,15 +2,16 @@ classdef ElectronicComponent < PhysicalModel
     
     properties
         
-        constants; % physical constants, see PhysicalConstants
-        EffectiveElectricalConductivity;
+        EffectiveElectricalConductivity % Effective electrical conductivity
+        constants
         
     end
 
     methods
         
         function model = ElectronicComponent(paramobj)
-        % paramobj is instance of ElectronicComponentInputParams
+        % Here, :code:`paramobj` is instance of :class:`ElectronicComponentInputParams <Electrochemistry.ElectronicComponentInputParams>`
+            
             model = model@PhysicalModel([]);
 
             % OBS : All the models should have same backend (this is not assigned automaticallly for the moment)
@@ -29,7 +30,7 @@ classdef ElectronicComponent < PhysicalModel
         end
 
         function state = updateCurrent(model, state)
-            
+        % Assemble electrical current which is stored in :code:`state.j`
             sigmaeff = model.EffectiveElectricalConductivity;
             phi = state.phi;
             
@@ -40,7 +41,8 @@ classdef ElectronicComponent < PhysicalModel
         end
         
         function state = updateChargeConservation(model, state)
-            
+        % Assemble residual of the charge conservation equation which is stored in :code:`state.chargeCons`
+           
             state = model.updateCurrent(state);
 
             flux   = state.j;

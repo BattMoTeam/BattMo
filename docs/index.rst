@@ -8,6 +8,7 @@ BATMO documentation
 
 .. toctree::
 
+   installation
    batterymodel
    genmodels
    electrodes

@@ -2,21 +2,22 @@ classdef ElectroChemicalComponent < ElectronicComponent
     
     properties
 
-        % Names for book-keeping
+        EffectiveDiffusionCoefficient % Effective diffusion coefficient
+
         chargeCarrierName
         chargeCarrierFluxName 
         chargeCarrierSourceName
         chargeCarrierMassConsName
         chargeCarrierAccumName
         
-        EffectiveDiffusionCoefficient
         
     end
 
     methods
         
         function model = ElectroChemicalComponent(paramobj)
-            
+        % Here, :code:`paramobj` is instance of :class:`ElectronicChemicalInputParams <Electrochemistry.ElectronicChemicalInputParams>`
+        
             model = model@ElectronicComponent(paramobj);
             
             fdnames = {'chargeCarrierName'};
@@ -31,7 +32,7 @@ classdef ElectroChemicalComponent < ElectronicComponent
         end
 
         function state = updateChargeCarrierFlux(model, state)
-            
+        % Assemble diffusion flux which is stored in :code:`state.Flux`
             ccFluxName = model.chargeCarrierFluxName;
 
             D = model.EffectiveDiffusionCoefficient;
@@ -45,6 +46,7 @@ classdef ElectroChemicalComponent < ElectronicComponent
         end
         
         function state = updateMassConservation(model, state)
+        % Assemble residual of the mass conservation equation which is stored in :code:`state.massCons`
             
             ccName         = model.chargeCarrierName;
             ccFluxName     = model.chargeCarrierFluxName;
