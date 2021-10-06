@@ -1,5 +1,7 @@
 classdef SeparatorInputParams < ComponentInputParams
-
+%
+% Input class for :class:`Separator <Electrochemistry.Separator>`
+%    
     properties
         
         thickness

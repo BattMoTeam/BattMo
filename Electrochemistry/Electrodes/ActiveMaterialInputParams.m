@@ -1,5 +1,7 @@
 classdef ActiveMaterialInputParams 
-    
+%
+% Input class for :class:`ActiveMaterial <Electrochemistry.Electrodes.ActiveMaterial>`
+%    
     properties
         
         G

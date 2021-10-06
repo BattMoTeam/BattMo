@@ -1,49 +1,39 @@
 classdef Battery < PhysicalModel
 % 
-% Battery model
-%     
+% The battery model consists of 
 %
-    
+% * an Electrolyte model given in :attr:`Electrolyte` property
+% * a Negative Electrode Model given in :attr:`NegativeElectrode` property
+% * a Positive Electrode Model given in :attr:`PositiveElectrode` property
+% * a Thermal model given in :attr:`ThermalModel` property
+%
     properties
         
         con = PhysicalConstants();
 
-        SOC % SOC
-
-
-        % Initial temperature
-        initT
-
-        % Voltage cut
-        Ucut
-
-        % Components
-        Electrolyte
-        NegativeElectrode
-        PositiveElectrode
+        Electrolyte       % Electrolyte model, instance of :class:`Electrolyte <Electrochemistry.Electrodes.Electrolyte>`
+        NegativeElectrode % Negative Electrode Model, instance of :class:`Electrode <Electrochemistry.Electrodes.Electrode>`
+        PositiveElectrode % Positive Electrode Model, instance of :class:`Electrode <Electrochemistry.Electrodes.Electrode>`
+        ThermalModel      % Thermal model, instance of :class:`ThermalComponent <Electrochemistry.ThermalComponent>`
         
-        ThermalModel
+        SOC % State Of Charge
+
+        initT % Initial temperature
         
-        couplingTerms
+        Ucut % Voltage cut
+        
+        couplingTerms % Coupling terms
         couplingNames
         
         mappings
         
-        cmin % mininum concentration allows in capping
+        cmin % mininum concentration used in capping
     end
     
     methods
-            
+        
         function model = Battery(paramobj)
-        %
-        % Constructor
-        %
-        % Args : 
-        %      paramobj : instance of :class:`BatteryInputParams`
-        %
-        % Returns : 
-        %      Battery model  
-        %
+        % 
 
             model = model@PhysicalModel([]);
             
@@ -86,14 +76,11 @@ classdef Battery < PhysicalModel
             cmax_ne = model.(ne).(eac).(am).Li.cmax;
             cmax_pe = model.(pe).(eac).(am).Li.cmax;
             model.cmin = 1e-5*max(cmax_ne, cmax_pe);
-           
+            
         end
 
         function model = setupThermalModel(model)
         % setup the thermal model.
-        %
-        % Args : 
-        %      model : input model
             
             ne    = 'NegativeElectrode';
             pe    = 'PositiveElectrode';
@@ -147,7 +134,7 @@ classdef Battery < PhysicalModel
             
             hcap(elyte_map) = hcap(elyte_map) + elyte_hcap;
             hcond(elyte_map) = hcond(elyte_map) + elyte_hcond;            
-                
+            
             % Separator
             
             sep_map = model.(elyte).(sep).G.mappings.cellmap;
@@ -408,7 +395,7 @@ classdef Battery < PhysicalModel
             
             state.(ne).(cc) = battery.(ne).(cc).updatejBcSource(state.(ne).(cc));
             state.(pe).(cc) = battery.(pe).(cc).updatejBcSource(state.(pe).(cc));
-                        
+            
             %% elyte charge conservation
 
             state.(elyte) = battery.(elyte).updateCurrentBcSource(state.(elyte));
@@ -456,7 +443,7 @@ classdef Battery < PhysicalModel
             state = battery.updateThermalOhmicSourceTerms(state);
             state = battery.updateThermalChemicalSourceTerms(state);
             state = battery.updateThermalReactionSourceTerms(state);
-           
+            
             state.(thermal) = battery.(thermal).updateHeatSourceTerm(state.(thermal));
             state.(thermal) = battery.(thermal).updateThermalBoundarySourceTerms(state.(thermal));
             
@@ -529,7 +516,7 @@ classdef Battery < PhysicalModel
 
             %% setup LinearizedProblem that can be processed by MRST Newton API
             problem = LinearizedProblem(eqs, types, names, primaryVars, state, dt);
-        
+            
         end
 
         function state = updateTemperature(model, state)
@@ -557,7 +544,7 @@ classdef Battery < PhysicalModel
         
         function state = updateElectrolyteCoupling(model, state)
         % Setup the electrolyte coupling by adding ion sources from the electrodes
-                        
+            
             battery = model;
             elyte = 'Electrolyte';
             ne    = 'NegativeElectrode';
@@ -602,7 +589,7 @@ classdef Battery < PhysicalModel
         end
         
         function state = updateAccumTerms(model, state, state0, dt)
-                    
+            
             elyte = 'Electrolyte';
             ne    = 'NegativeElectrode';
             pe    = 'PositiveElectrode';
@@ -629,9 +616,9 @@ classdef Battery < PhysicalModel
 
         
         function state = updateThermalAccumTerms(model, state, state0, dt)
-                    
+            
             thermal = 'ThermalModel';
-         
+            
             hcap = model.(thermal).EffectiveHeatCapacity;
             
             T = state.(thermal).T;
@@ -646,7 +633,7 @@ classdef Battery < PhysicalModel
 
 
         function state = updateThermalOhmicSourceTerms(model, state)
-        % reference Latz et al (ref1 in reference list)
+        % Assemble the ohmic source term :code:`state.jHeatOhmSource`, see :cite:t:`Latz2016`
 
             ne      = 'NegativeElectrode';
             pe      = 'PositiveElectrode';
@@ -706,11 +693,11 @@ classdef Battery < PhysicalModel
         end
         
         function state = updateThermalChemicalSourceTerms(model, state)
-        % reference Latz et al (ref1 in reference list)            
+        % Assemble the thermal source term from transport :code:`state.jHeatChemicalSource`, see :cite:t:`Latz2016`
             
             elyte = 'Electrolyte';
             thermal = 'ThermalModel';
-              
+            
             % prepare term
             nc = model.G.cells.num;
             src = zeros(nc, 1);
@@ -742,8 +729,7 @@ classdef Battery < PhysicalModel
         
         
         function state = updateThermalReactionSourceTerms(model, state)
-        % reference Latz et al (ref1 in reference list)            
-            
+        % Assemble the source term from chemical reaction :code:`state.jHeatReactionSource`, see :cite:t:`Latz2016`            
             ne      = 'NegativeElectrode';
             pe      = 'PositiveElectrode';
             eac     = 'ElectrodeActiveComponent';
@@ -786,9 +772,9 @@ classdef Battery < PhysicalModel
         
         
         function state = updateElectrodeCoupling(model, state)
-        % Setup electrode coupling by updating the potential and concentration of the electrolyte in the active component of the
-        % electrode. There, those quantities are considered as input and used to compute the reaction rate.
-        %
+        % Setup the electrode coupling by updating the potential and concentration of the electrolyte in the active
+        % component of the electrodes. There, those quantities are considered as input and used to compute the reaction
+        % rate.
         %
         % WARNING : at the moment, we do not pass the concentrations
 
@@ -817,10 +803,12 @@ classdef Battery < PhysicalModel
         end
 
         function state = setupExternalCouplingNegativeElectrode(model, state)
-            
+        %
+        % Setup external electronic coupling of the negative electrode at the current collector
+        %
             ne = 'NegativeElectrode';
             cc = 'CurrentCollector';
-           
+            
             phi = state.(ne).(cc).phi;
 
             jExternal = model.(ne).(cc).setupExternalCoupling(phi, 0);
@@ -830,10 +818,12 @@ classdef Battery < PhysicalModel
         end
         
         function state = setupExternalCouplingPositiveElectrode(model, state)
-            
+        %
+        % Setup external electronic coupling of the positive electrode at the current collector
+        %            
             pe = 'PositiveElectrode';
             cc = 'CurrentCollector';
-           
+            
             phi = state.(pe).(cc).phi;
             E = state.(pe).(cc).E;
             
@@ -875,7 +865,7 @@ classdef Battery < PhysicalModel
             adbackend = model.AutoDiffBackend();
             useMex=false;
             if(isprop(adbackend,'useMex'))
-               useMex = adbackend.useMex; 
+                useMex = adbackend.useMex; 
             end
             opts=struct('types',[1,1,2,2,3,3,4,5,6,7,8],'useMex',useMex);
             [state.(elyte).cs{1}  , ...
@@ -980,12 +970,12 @@ classdef Battery < PhysicalModel
         function validforces = getValidDrivingForces(model)
             validforces=struct('src', [], 'stopFunction', []); 
         end
-       function model = validateModel(model, varargin)
+        function model = validateModel(model, varargin)
             mnames = {{'Electrolyte'}, ...
-              {'PositiveElectrode','ElectrodeActiveComponent'}, ...
-              {'NegativeElectrode','ElectrodeActiveComponent'}, ...
-              {'NegativeElectrode','CurrentCollector'}, ...
-              {'PositiveElectrode','CurrentCollector'}};
+                      {'PositiveElectrode','ElectrodeActiveComponent'}, ...
+                      {'NegativeElectrode','ElectrodeActiveComponent'}, ...
+                      {'NegativeElectrode','CurrentCollector'}, ...
+                      {'PositiveElectrode','CurrentCollector'}};
             model.Electrolyte.AutoDiffBackend=model.AutoDiffBackend;
             model.Electrolyte=model.Electrolyte.validateModel(varargin{:});
             model.PositiveElectrode.ElectrodeActiveComponent.AutoDiffBackend= model.AutoDiffBackend;
@@ -996,13 +986,13 @@ classdef Battery < PhysicalModel
             model.NegativeElectrode.CurrentCollector=model.NegativeElectrode.CurrentCollector.validateModel(varargin{:});
             model.PositiveElectrode.CurrentCollector.AutoDiffBackend=model.AutoDiffBackend;
             model.PositiveElectrode.CurrentCollector= model.PositiveElectrode.CurrentCollector.validateModel(varargin{:});
-          %for i=1:numel(mnames)
-          %    mname=mnames{i}
-          %    submodel=model.getSubmodel(mname);
-          %    submodel.AutoDiffBackend = model.AutoDiffBackend;
-          %    submodel=submodel.validateModel(varargin{:});
-          %    model  = model.setProp(model,mname,submodel);
-          %end
+            %for i=1:numel(mnames)
+            %    mname=mnames{i}
+            %    submodel=model.getSubmodel(mname);
+            %    submodel.AutoDiffBackend = model.AutoDiffBackend;
+            %    submodel=submodel.validateModel(varargin{:});
+            %    model  = model.setProp(model,mname,submodel);
+            %end
         end
         
 

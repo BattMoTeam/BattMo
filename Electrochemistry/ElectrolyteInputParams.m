@@ -1,5 +1,7 @@
 classdef ElectrolyteInputParams < ElectroChemicalComponentInputParams
-
+%
+% Input class for :class:`Electrolyte <Electrochemistry.Electrolyte>`
+%    
     properties
         
         name

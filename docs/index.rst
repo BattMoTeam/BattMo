@@ -3,23 +3,17 @@
    You can adapt this file completely to your liking, but it should at least
    contain the root `toctree` directive.
 
-Welcome to BATMO's documentation!
+BATMO documentation
 =================================
 
 .. toctree::
-   :maxdepth: 2
 
-
-A Handle Class
-++++++++++++++
-Should show inheritance and members.
-
-.. automodule:: Battery
-                
-.. autoclass:: Battery
-    :show-inheritance:
-    :members: setupThermalModel
-
+   batterymodel
+   genmodels
+   electrodes
+   electrolyte
+   inputs
+   bibliography
        
 Indices and tables
 ==================

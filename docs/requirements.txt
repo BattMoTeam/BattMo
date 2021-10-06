@@ -1,3 +1,5 @@
 * install sphinx
 * install https://pypi.org/project/sphinxcontrib-matlabdomain/
 * install https://pypi.org/project/sphinx-rtd-theme/
+* use theme https://sphinx-rtd-theme.readthedocs.io/en/stable/
+* use bibtex support https://sphinxcontrib-bibtex.readthedocs.io/en/latest/usage.html

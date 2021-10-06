@@ -1,21 +1,20 @@
 classdef BatteryInputParams 
-    
+%
+% Input class for :class:`Battery <Battery.Battery>`
+%
     properties
         
-        % Global Grid
-        G
-        %  SOC
-        SOC
-        % Voltage cut
-        Ucut
-        % initial temperature
-        initT
+        
+        G     % Global Grid
+        SOC   % State of charge
+        Ucut  % Voltage cut 
+        initT % initial temperature
         
         %% parameters for the battery components
-        NegativeElectrode % (instance of ElectrodeInputParams)
-        PositiveElectrode % (instance of ElectrodeInputParams)
-        Electrolyte       % (instance ElectrolyteInputParams)
-        ThermalModel      % (instance ThermalModelInputParams)
+        NegativeElectrode % instance of :class:`ElectrodeInputParams`
+        PositiveElectrode % instance of :class:`ElectrodeInputParams`
+        Electrolyte       % instance of :class:`ElectrolyteInputParams`
+        ThermalModel      % instance of :class:`ThermalModelInputParams`
                 
         %% Coupling terms (describe the topological structure of the coupling)
         couplingTerms

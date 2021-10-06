@@ -1,5 +1,7 @@
 classdef ElectrodeActiveComponentInputParams < ElectroChemicalComponentInputParams
- 
+%
+% Input class for :class:`ElectrodeActiveComponent <Electrochemistry.ElectrodeActiveComponent>`
+% 
     properties
         
         %% parameters for the electrode components

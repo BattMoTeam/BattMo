@@ -1,39 +1,29 @@
 classdef ElectrodeActiveComponent < ElectroChemicalComponent
-% reference used here
-% @article{ref1,
-% 	year = 2007,
-% 	author = {Qi Zhang and Ralph E. White},
-% 	title = {Comparison of approximate solution methods for the solid phase diffusion equation in a porous electrode model},
-% 	journal = {Journal of Power Sources}
-% }
     
     properties
         
-        ActiveMaterial
+        ActiveMaterial % instance of :class:`hello <Electrochemistry.Electrodes.ActiveMaterial>`
         
-        volumeFraction
-        porosity
-        thickness
-                
-        % Inter particle diffusion coefficient parameter (diffusion between the particles)
-        InterDiffusionCoefficient
-        
-        thermalConductivity % intrinsic thermal conductivity value
-        heatCapacity % intrinsic heat capacity value
+        volumeFraction % Volume fraction
+        porosity       % Porosity
+        thickness      % Thickness
 
-        EffectiveThermalConductivity
-        EffectiveHeatCapacity
+        InterDiffusionCoefficient % Inter particle diffusion coefficient parameter (diffusion between the particles)
+        
+        thermalConductivity % Intrinsic Thermal conductivity
+        heatCapacity        % Intrinsic Heat capacity
+
+        EffectiveThermalConductivity % Effective Thermal Conductivity
+        EffectiveHeatCapacity % Effective Heat Capacity
         
     end
     
     methods
         
         function model = ElectrodeActiveComponent(paramobj)
-        % shortcut used here:
-        % am = ActiveMaterial
-            
-            model = model@ElectroChemicalComponent(paramobj);
-            
+        %
+        % ``paramobj`` is instance of :class:`ElectrodeActiveComponentInputParams <Electrochemistry.ElectrodeActiveComponentInputParams>`
+        %    
             fdnames = {'thermalConductivity', ...
                        'heatCapacity', ...
                        'InterDiffusionCoefficient'};
