@@ -24,6 +24,8 @@ classdef ElectrodeActiveComponent < ElectroChemicalComponent
         %
         % ``paramobj`` is instance of :class:`ElectrodeActiveComponentInputParams <Electrochemistry.ElectrodeActiveComponentInputParams>`
         %    
+            model = model@ElectroChemicalComponent(paramobj);
+            
             fdnames = {'thermalConductivity', ...
                        'heatCapacity', ...
                        'InterDiffusionCoefficient'};
