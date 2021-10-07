@@ -43,6 +43,7 @@ CRate  = 1/5;
 inputI = (C/hour)*CRate; % current 
 
 %% We setup the schedule 
+% We use different time step for the activation phase (small time steps) and the following discharging phase
 
 % We start with rampup time steps to go through the activation phase 
 dt1   = rampupTimesteps(0.1, 0.1, 5);
