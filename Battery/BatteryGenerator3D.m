@@ -24,27 +24,27 @@ classdef BatteryGenerator3D < BatteryGenerator
         
         facz = 1;
         
-        sep_nz    = 6;
-        ne_eac_nz = 6;
-        pe_eac_nz = 6;
-        ne_cc_nz  = 4;
-        pe_cc_nz  = 4;
+        sep_nz    = 3;
+        ne_eac_nz = 3;
+        pe_eac_nz = 3;
+        ne_cc_nz  = 2;
+        pe_cc_nz  = 2;
         
         % Discretization resolution in x-direction
         
         facx = 1;
         
-        int_elyte_nx  = 5; 
-        ne_cc_nx = 10;
-        pe_cc_nx = 10;
+        int_elyte_nx  = 3; 
+        ne_cc_nx = 3;
+        pe_cc_nx = 3;
 
         % Discretization resolution in y-direction
 
         facy = 1;
         
-        ne_cc_ny = 4;
-        pe_cc_ny = 4;
-        elyte_ny = 10;
+        ne_cc_ny = 2;
+        pe_cc_ny = 2;
+        elyte_ny = 4;
 
         % Utility variables computed once and then shared by methods (should not be set)
         elyte_nz;

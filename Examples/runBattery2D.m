@@ -21,7 +21,7 @@ elyte   = 'Electrolyte';
 thermal = 'ThermalModel';
 
 %% We setup the battery geometry.
-% Here, we use a 1D model and the class BatteryGenerator1D already contains the discretization parameters
+% Here, we use a 2D model and the class BatteryGenerator2D already contains the discretization parameters
 gen = BatteryGenerator2D();
 % We update pamobj with grid data
 paramobj = gen.updateBatteryInputParams(paramobj);
@@ -87,7 +87,7 @@ model.nonlinearTolerance = 1e-5;
 % Set verbosity
 model.verbose = false;
 
-% Run simulation
+%% Run simulation
 
 [wellSols, states, report] = simulateScheduleAD(initstate, model, schedule, 'OutputMinisteps', true, 'NonLinearSolver', nls); 
 

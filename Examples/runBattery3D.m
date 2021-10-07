@@ -21,36 +21,29 @@ elyte   = 'Electrolyte';
 thermal = 'ThermalModel';
 
 %% We setup the battery geometry.
-% Here, we use a 1D model and the class BatteryGenerator1D already contains the discretization parameters
-gen = BatteryGenerator1D();
-% We update pamobj with grid data
+% Here, we use a 3D model and the class BatteryGenerator3D already contains the discretization parameters
+gen = BatteryGenerator3D();
 paramobj = gen.updateBatteryInputParams(paramobj);
-
-% In this case, we change some of the values of the paramaters that were given in the json file to other values. This is
-% done directly on the object paramobj.
-paramobj.(ne).(cc).EffectiveElectricalConductivity = 100;
-paramobj.(pe).(cc).EffectiveElectricalConductivity = 100;
-paramobj.(thermal).externalHeatTransferCoefficient = 1000;
-paramobj.(thermal).externalTemperature = paramobj.initT;
 
 %%  The Battery model is initialized by sending paramobj to the Battery class constructor
 
 model = Battery(paramobj);
 
 %% We compute the cell capacity and chose a discharge rate
-C      = computeCellCapacity(model);
-CRate  = 1/5; 
+C = computeCellCapacity(model);
+CRate = 1/5;
 inputI = (C/hour)*CRate; % current 
 
-%% We setup the schedule 
+%% We setup the schedule
 % We use different time step for the activation phase (small time steps) and the following discharging phase
 
-% We start with rampup time steps to go through the activation phase 
-dt1   = rampupTimesteps(0.1, 0.1, 5);
+% We use exponentially increasing time step for the activation phase
+n  = 25;
+dt = [];
+dt = [dt; repmat(0.5e-4, n, 1).*1.5.^[1:n]'];
 % We choose time steps for the rest of the simulation (discharge phase)
-dt2   = 0.1*hour*ones(30, 1);
-% We concatenate the time steps
-dt    = [dt1; dt2];
+n     = 40; 
+dt    = [dt; repmat(1e-1*hour, n, 1)]; 
 times = [0; cumsum(dt)]; 
 tt    = times(2 : end); 
 step  = struct('val', diff(times), 'control', ones(numel(tt), 1)); 
@@ -83,11 +76,10 @@ nls.maxIterations = 10;
 nls.errorOnFailure = false; 
 % Change default tolerance for nonlinear solver
 model.nonlinearTolerance = 1e-5; 
-% Set verbosity
+% Set verbosity of the solver (if true, value of the residuals for every equation is given)
 model.verbose = false;
 
 % Run simulation
-
 [wellSols, states, report] = simulateScheduleAD(initstate, model, schedule, 'OutputMinisteps', true, 'NonLinearSolver', nls); 
 
 %%  We process output and recover the output voltage and current from the output states.
