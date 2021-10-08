@@ -23,6 +23,7 @@ BATMO documentation
    electrodes
    electrolyte
    inputs
+   examples
    bibliography
        
 Indices and tables

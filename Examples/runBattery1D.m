@@ -1,3 +1,4 @@
+%% Battery 1D model
 % Include presentation of the test case (use rst format)
 
 % load MRST modules
