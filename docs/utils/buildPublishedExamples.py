@@ -113,7 +113,10 @@ def parse_publish_to_xml(exfile):
 
     return output
 
-publishedExampleDir = join('..', 'publishedExamples')
+publishedExampleDir = os.path.realpath(__file__)
+publishedExampleDir = os.path.dirname(publishedExampleDir)
+publishedExampleDir = join(publishedExampleDir, '..', 'publishedExamples')
+
 allfiles = os.walk(publishedExampleDir)
 allfiles = [f[-1] for f in allfiles]
 xmlfiles = [f for f in allfiles[0] if splitext(f)[-1] == '.xml']
