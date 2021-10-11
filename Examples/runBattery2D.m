@@ -1,3 +1,4 @@
+%% Battery 2D model
 % Include presentation of the test case (use rst format)
 
 % load MRST modules
@@ -18,6 +19,7 @@ pe      = 'PositiveElectrode';
 eac     = 'ElectrodeActiveComponent';
 cc      = 'CurrentCollector';
 elyte   = 'Electrolyte';
+sep     = 'Separator';
 thermal = 'ThermalModel';
 
 %% We setup the battery geometry.
@@ -36,6 +38,20 @@ paramobj.SOC = 0.99;
 %%  The Battery model is initialized by sending paramobj to the Battery class constructor
 
 model = Battery(paramobj);
+
+
+%% plot the model
+
+figure
+plotGrid(model.(elyte).(sep).G, 'facecolor', 'green');
+plotGrid(model.(ne).(eac).G, 'facecolor', 'red');
+plotGrid(model.(pe).(eac).G, 'facecolor', 'blue');
+plotGrid(model.(ne).(cc).G, 'facecolor', 'yellow');
+plotGrid(model.(pe).(cc).G, 'facecolor', 'yellow');
+
+legend({'separator', 'negative electrode (active material)', 'positive electrode (active material)', ['current ' ...
+                    'collector']}, 'location', 'south west'),
+
 
 %% We compute the cell capacity and chose a discharge rate
 C      = computeCellCapacity(model);
@@ -109,4 +125,11 @@ figure
 plot((time/hour), Inew, '*-', 'linewidth', 3)
 title('Current (I)')
 xlabel('time (hours)')
+
+%% Plot of the lithium concentration
+
+figure
+plotCellData(model.(elyte).G, states{50}.(elyte).cs{1}, 'edgealpha', 0.1);
+title('Lithium concentration in Electrolyte at time step 50')
+colorbar
 
