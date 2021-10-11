@@ -1,5 +1,9 @@
 function publishExamplesXML(varargin)
-    
+%
+% Example: publishExamplesXML('exampleNames', {'runBattery1D'})
+% 
+% The scripts ('runBattery1D' in example above) should be in path
+%
     opt = struct('replace'     , false, ...
                  'extension'   , 'xml', ...
                  'catchError'  , false, ...

@@ -34,7 +34,8 @@ paramobj.(pe).(cc).EffectiveElectricalConductivity = 100;
 paramobj.(thermal).externalHeatTransferCoefficient = 1000;
 paramobj.(thermal).externalTemperature = paramobj.initT;
 
-%%  The Battery model is initialized by sending paramobj to the Battery class constructor
+%%  The Battery model is initialized by sending paramobj to the Battery class constructor 
+% see :class:`Battery.Battery`
 
 model = Battery(paramobj);
 
