@@ -1,18 +1,12 @@
-function fd = pickField(jsonstruct, fdname)
+function jsonfd = pickField(jsonstruct, fdname)
     if ~isempty(jsonstruct) 
-        if isfield(jsonstruct, 'isFile')
-            fileroot = batmoDir(); 
-            filename = jsonstruct.filename;
-            fullfilename = fullfile(fileroot, filename);
-            jsonsrc = fileread(fullfilename);
-            parsedjson = jsondecode(jsonsrc);
-            jsonstruct = parsedjson; 
-        end
+        jsonstruct = resolveFileInputJson(jsonstruct);
         if isfield(jsonstruct, fdname)
-            fd = jsonstruct.(fdname);
+            jsonfd = jsonstruct.(fdname);
+            jsonfd = resolveFileInputJson(jsonfd);
         end
     else
-        fd = [];
+        jsonfd = [];
     end
 end
 
