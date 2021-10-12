@@ -18,11 +18,11 @@ classdef ElectrodeActiveComponentInputParams < ElectroChemicalComponentInputPara
 
     methods
 
-        function paramobj = ElectrodeActiveComponentInputParams()
-            paramobj = paramobj@ElectroChemicalComponentInputParams();
-            paramobj.ActiveMaterial = ActiveMaterialInputParams();
-            paramobj.amName = char();
-            paramobj.EffectiveElectricalConductivity = 'not used';
+        function paramobj = ElectrodeActiveComponentInputParams(jsonstruct)
+            paramobj = paramobj@ElectroChemicalComponentInputParams(jsonstruct);
+
+            pick = @(fd) pickField(jsonstruct, fd);
+            paramobj.ActiveMaterial = ActiveMaterialInputParams(pick('ActiveMaterial'));
         end
         
     end

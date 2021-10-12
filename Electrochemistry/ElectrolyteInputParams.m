@@ -20,12 +20,14 @@ classdef ElectrolyteInputParams < ElectroChemicalComponentInputParams
     
     methods
 
-        function paramobj = ElectrolyteInputParams();
-            paramobj = paramobj@ElectroChemicalComponentInputParams();
-            paramobj.sp = struct();
-            paramobj.compnames = {};
-            paramobj.Separator = SeparatorInputParams();
+        function paramobj = ElectrolyteInputParams(jsonstruct);
+            
+            paramobj = paramobj@ElectroChemicalComponentInputParams(jsonstruct);
+            
+            pick = @(fd) pickField(jsonstruct, fd);
+            paramobj.Separator = SeparatorInputParams(pick('Separator'));
             paramobj.EffectiveElectricalConductivity = 'not used';
+            
         end
 
     end

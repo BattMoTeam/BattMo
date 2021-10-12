@@ -6,4 +6,15 @@ classdef ElectronicComponentInputParams < ComponentInputParams
         EffectiveElectricalConductivity;
     end
     
+    
+    methods
+
+        function paramobj = ElectronicComponentInputParams(jsonstruct)
+            paramobj = paramobj@ComponentInputParams(jsonstruct);
+        end
+        
+    end
+    
+
+    
 end

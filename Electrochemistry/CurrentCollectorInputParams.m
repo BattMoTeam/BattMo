@@ -13,12 +13,9 @@ classdef CurrentCollectorInputParams < ElectronicComponentInputParams
     
     methods
         
-        function paramobj = CurrentCollectorInputParams();
-            paramobj = paramobj@ElectronicComponentInputParams();
+        function paramobj = CurrentCollectorInputParams(jsonstruct);
+            paramobj = paramobj@ElectronicComponentInputParams(jsonstruct);
             paramobj.couplingTerm = struct();
-            
-            % we set here directly just for simplicity for the moment (hacky...)
-            paramobj.EffectiveElectricalConductivity = 3.55e7;
         end
         
     end

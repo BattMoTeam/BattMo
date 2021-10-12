@@ -6,12 +6,11 @@ mrstModule add ad-core multimodel mrst-gui battery mpfa
 
 % We create an instance of BatteryInputParams. This class is used to initiate the battery simulator and it propagates
 % all the parameters through out the submodels.
-paramobj = BatteryInputParams();
 
 % The input parameters can be given in json format. The json file is read and used to populate the paramobj object.
-p = mfilename('fullpath'); p = fileparts(p);
-filename = fullfile(p, '../Battery/lithiumbattery.json');
-paramobj = jsonfileToParams(paramobj, filename);
+
+
+paramobj = BatteryInputParams(jsoninput);
 
 % Some shortcuts used for the sub-models
 ne      = 'NegativeElectrode';

@@ -1,4 +1,4 @@
-classdef ActiveMaterialInputParams 
+classdef ActiveMaterialInputParams < InputParams 
 %
 % Input class for :class:`ActiveMaterial <Electrochemistry.Electrodes.ActiveMaterial>`
 %    
@@ -28,10 +28,8 @@ classdef ActiveMaterialInputParams
     
     methods
         
-        function paramobj = ActiveMaterialInputParams();
-            paramobj.G = struct();
-            paramobj.name = char();
-            paramobj.Li = struct();
+        function paramobj = ActiveMaterialInputParams(jsonstruct);
+            paramobj = paramobj@InputParams(jsonstruct);
         end
         
     end

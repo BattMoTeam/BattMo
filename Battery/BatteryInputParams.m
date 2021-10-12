@@ -1,4 +1,4 @@
-classdef BatteryInputParams 
+classdef BatteryInputParams < InputParams
 %
 % Input class for :class:`Battery <Battery.Battery>`
 %
@@ -23,17 +23,21 @@ classdef BatteryInputParams
     
     methods
         
-        function paramobj = BatteryInputParams()
+        function paramobj = BatteryInputParams(jsonstruct)
             
-            ne    = 'NegativeElectrode';
-            pe    = 'PositiveElectrode';
-            elyte = 'Electrolyte';
+            paramobj = paramobj@InputParams(jsonstruct);
+            
+            ne      = 'NegativeElectrode';
+            pe      = 'PositiveElectrode';
+            elyte   = 'Electrolyte';
             thermal = 'ThermalModel';
             
-            paramobj.(ne) = ElectrodeInputParams();
-            paramobj.(pe) = ElectrodeInputParams();
-            paramobj.(elyte) = ElectrolyteInputParams();
-            paramobj.(thermal) = ThermalComponentInputParams();
+            pick = @(fd) pickField(jsonstruct, fd);
+            
+            paramobj.(ne)      = ElectrodeInputParams(pick(ne));
+            paramobj.(pe)      = ElectrodeInputParams(pick(pe));
+            paramobj.(elyte)   = ElectrolyteInputParams(pick(elyte));
+            paramobj.(thermal) = ThermalComponentInputParams(pick(thermal));
             paramobj.couplingTerms = {};
             
         end

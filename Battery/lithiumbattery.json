@@ -36,7 +36,7 @@
         }
     },
     "Electrolyte": {
-        "filename": "Battery/orgLiPF6.json",
+        "filename": "Materials/Liquid/CarbonateBased/orgLiPF6.json",
         "isFile": true
     },
     "ThermalModel": {

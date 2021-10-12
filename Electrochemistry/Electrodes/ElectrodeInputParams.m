@@ -15,15 +15,16 @@ classdef ElectrodeInputParams < ComponentInputParams
     
     methods
 
-        function paramobj = ElectrodeInputParams()
+        function paramobj = ElectrodeInputParams(jsonstruct)
+
+            paramobj = paramobj@ComponentInputParams(jsonstruct);
 
             eac = 'ElectrodeActiveComponent';
             cc  = 'CurrentCollector';
-
-            paramobj = paramobj@ComponentInputParams();
             
-            paramobj.(eac) = ElectrodeActiveComponentInputParams();
-            paramobj.(cc) = CurrentCollectorInputParams();
+            pick = @(fd) pickField(jsonstruct, fd);
+            paramobj.(eac) = ElectrodeActiveComponentInputParams(pick(eac));
+            paramobj.(cc) = CurrentCollectorInputParams(pick(cc));
             
         end
 
