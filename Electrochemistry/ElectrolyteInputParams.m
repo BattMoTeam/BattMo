@@ -16,6 +16,8 @@ classdef ElectrolyteInputParams < ElectroChemicalComponentInputParams
         thermalConductivity
         heatCapacity
         
+        electrolyteType
+        
     end
     
     methods

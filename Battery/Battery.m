@@ -166,11 +166,11 @@ classdef Battery < PhysicalModel
         function electrolyte = setupElectrolyte(model, paramobj)
         % Setup the electrolyte model :attr:`Electrolyte`. Here, :code:`paramobj` is instance of
         % :class:`ElectrolyteInputParams <Electrochemistry.ElectrolyteInputParams>`
-            switch paramobj.name
-              case 'orgLiPF6'
-                electrolyte = orgLiPF6(paramobj);
+            switch paramobj.electrolyteType
+              case 'binary'
+                electrolyte = BinaryElectrolyte(paramobj);
               otherwise
-                error('electrolyte name not recognized');
+                electrolyte = Electrolyte(paramobj)
             end
         end
         
