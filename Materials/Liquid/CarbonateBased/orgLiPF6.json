@@ -1,5 +1,4 @@
 {
-    "G": null,
     "electrolyteType" : "binary",
     "heatCapacity": 4180000.0,
     "thermalConductivity": 6e-05,
@@ -16,16 +15,6 @@
         "PF6"
     ],
     "name": "orgLiPF6",
-    "sp": {
-        "z": [
-            1,
-            -1
-        ],
-        "t": [
-            0.399,
-            0.601
-        ]
-    },
-    "Separator": { "filename": "Materials/Solid/Polymers/celgard2500.json",
-                   "isFile": true }
+    "sp": { "z": [1,-1],
+            "t": [0.399, 0.601]}
 }

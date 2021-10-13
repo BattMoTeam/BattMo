@@ -1,0 +1,25 @@
+{
+    "$schema": "https://json-schema.org/draft/2020-12/schema",
+    "$id": "https://example.com/product.schema.json",
+    "title": "Product",
+    "description": "A product in the catalog",
+    "type": "object",
+    "properties" : {
+        "electrolyteType" : {"type" : "string"},
+        "heatCapacity": {"type" : "number"},
+        "thermalConductivity": {"type" : "number"}, 
+        "chargeCarrierName": {"type" : "string"},
+        "conductivityFactor": {"type" : "number"},
+        "ionicConductivityFittingCoefficients" : {"type" : "array"},
+        "diffusionConcentrationFittingCoefficients" : {"type" : "array"},
+        "diffusionTemperatureFittingCoefficients" : {"type" : "array"},
+        "compnames": {"type" : "array"},
+        "name": {"type" : "string"},
+        "sp": { "type" : "object",
+                "properties" : {
+                    "z": {"type" : "array"},
+                    "t": {"type" : "array"}
+                }
+              }
+    }
+}
