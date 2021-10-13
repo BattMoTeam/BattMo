@@ -9,6 +9,7 @@ mrstModule add ad-core multimodel mrst-gui battery mpfa
 
 % The input parameters can be given in json format. The json file is read and used to populate the paramobj object.
 jsonstruct = parseBatmoJson('Battery/lithiumbattery.json');
+
 paramobj = BatteryInputParams(jsonstruct);
 
 % Some shortcuts used for the sub-models

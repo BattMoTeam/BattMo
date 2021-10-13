@@ -1,11 +1,10 @@
 function paramobj = assignJsonParams(paramobj, jsonstruct)
     
-    jsonstruct = resolveFileInputJson(jsonstruct);
-    fields_pobj = properties(paramobj);
+    paramobjFds = properties(paramobj);
 
-    for ind = 1 : numel(fields_pobj)
+    for ind = 1 : numel(paramobjFds)
         
-        fd = fields_pobj{ind};
+        fd = paramobjFds{ind};
         if isfield(jsonstruct, fd)
             paramobj.(fd) = jsonstruct.(fd);
         end
