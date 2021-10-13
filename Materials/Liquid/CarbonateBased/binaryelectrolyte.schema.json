@@ -1,25 +1,14 @@
 {
-    "$schema": "https://json-schema.org/draft/2020-12/schema",
-    "$id": "https://example.com/product.schema.json",
-    "title": "Product",
-    "description": "A product in the catalog",
-    "type": "object",
-    "properties" : {
-        "electrolyteType" : {"type" : "string"},
-        "heatCapacity": {"type" : "number"},
-        "thermalConductivity": {"type" : "number"}, 
-        "chargeCarrierName": {"type" : "string"},
-        "conductivityFactor": {"type" : "number"},
-        "ionicConductivityFittingCoefficients" : {"type" : "array"},
-        "diffusionConcentrationFittingCoefficients" : {"type" : "array"},
-        "diffusionTemperatureFittingCoefficients" : {"type" : "array"},
-        "compnames": {"type" : "array"},
-        "name": {"type" : "string"},
-        "sp": { "type" : "object",
+    "$id": "file://batmo/schemas/binaryelectrolyte",
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "description": "A binary electroyte",
+    "AllOf" : [{"$ref" : "electrolyte"},
+               {"type": "object",
                 "properties" : {
-                    "z": {"type" : "array"},
-                    "t": {"type" : "array"}
+                    "ionicConductivityFittingCoefficients" : {"type" : "array",
+                                                              "description" : "3x3 Array with the diffusion coefficient fitting coefficients, see model"},
+                    "diffusionConcentrationFittingCoefficients" : {"type" : "array"},
+                    "diffusionTemperatureFittingCoefficients" : {"type" : "array"}
                 }
-              }
-    }
+               }]
 }

@@ -1,0 +1,22 @@
+{
+    "$id": "file://batmo/schemas/electrolyte",
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "description": "A standard electrolyte",
+    "type": "object",
+    "properties" : {
+        "electrolyteType" : {"type" : "string",
+                             "description" : "type of electrolyte (binary or ...)"},
+        "heatCapacity": {"type" : "number"},
+        "thermalConductivity": {"type" : "number"}, 
+        "chargeCarrierName": {"type" : "string"},
+        "conductivityFactor": {"type" : "number"},
+        "compnames": {"type" : "array"},
+        "name": {"type" : "string"},
+        "sp": { "type" : "object",
+                "properties" : {
+                    "z": {"type" : "array"},
+                    "t": {"type" : "array"}
+                }
+              }
+    }
+}
