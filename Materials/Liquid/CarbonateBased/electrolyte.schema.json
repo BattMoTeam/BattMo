@@ -17,6 +17,7 @@
                     "z": {"type" : "array"},
                     "t": {"type" : "array"}
                 }
-              }
+              },
+        "Separator" : {"$ref" : "separator"}
     }
 }
