@@ -1,0 +1,11 @@
+{
+    "$id": "file://batmo/schemas/currentcollector",
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "description": "A current collector",
+    "type": "object",
+    "properties" : { 
+        "EffectiveElectricalConductivity": {"type" : "number"},
+        "thermalConductivity": {"type" : "number"},
+        "heatCapacity": {"type" : "number"}
+    }
+}

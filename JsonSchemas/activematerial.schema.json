@@ -1,0 +1,27 @@
+{
+    "$id": "file://batmo/schemas/activematerial",
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "description": "active material",
+    "type": "object",
+    "properties" : {
+        "Li": { "type" : "object",
+                "properties" : {
+                    "EaD": {"type" : "number"},
+                    "D0": {"type" : "number"},
+                    "cmax": {"type" : "number"}
+                }
+              },
+        "volumeFraction": {"type" : "number"},
+        "electricalConductivity": {"type" : "number"},
+        "volumetricSurfaceArea": {"type" : "number"},
+        "rp": {"type" : "number"},
+        "Eak": {"type" : "number"},
+        "k0": {"type" : "number"},
+        "cp": {"type" : "number"},
+        "theta100": {"type" : "number"},
+        "theta0": {"type" : "number"},
+        "rho": {"type" : "number"},
+        "specificCapacity": {"type" : "number"},
+        "name": {"type" : "string"},
+    }
+}

@@ -1,0 +1,10 @@
+{
+    "$id": "file://batmo/schemas/electrode",
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "description": "Electrode",
+    "type": "object",
+    "properties" : {
+        "ElectrodeActiveComponent" : {"$ref" : "electrodeactivecomponent"},
+        "CurrentCollector" : {"$ref" : "currentcollector"},
+    }
+}

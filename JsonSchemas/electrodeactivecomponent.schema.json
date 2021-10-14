@@ -1,0 +1,14 @@
+{
+    "$id": "file://batmo/schemas/electrodeactivecomponent",
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "description": "Electrode active component",
+    "type": "object",
+    "properties" : {
+        "thermalConductivity": {"type" : "number"},
+        "heatCapacity": {"type" : "number"},
+        "InterDiffusionCoefficient": {"type" : "number"},
+        "chargeCarrierName": {"type" : "string",
+                              "description" : "name use in implementation..."},
+        "ActiveMaterial": {"$ref" : "activematerial"}
+    }
+}
