@@ -11,7 +11,7 @@ def batmoDir():
 
 
 schema_folder = batmoDir() / Path('JsonSchemas')
-schema_filename = schema_folder / 'electrolyte.schema.json'
+schema_filename = schema_folder / 'battery.schema.json'
 
 base_uri = 'file://batmo/schemas/'
 
@@ -37,10 +37,7 @@ schemaList = ["activematerial", "battery", "binaryelectrolyte",
               "currentcollector", "electrodeactivecomponent",
               "electrode", "electrolyte", "separator", "thermalmodel"]
 for schema in schemaList:
-    try:
-        addJsonSchema(schema)
-    except:
-        print(schema)
+    addJsonSchema(schema)
 
 v = jsonschema.Draft7Validator(mainschema, resolver=resolver)
 

@@ -12,6 +12,6 @@
         "NegativeElectrode" : {"$ref": "electrode"},
         "PositiveElectrode" : {"$ref": "electrode"},
         "Electrolyte" : {"$ref": "binaryelectrolyte"},
-        "ThermalModel" : {"$ref": "thermalmodel"},
+        "ThermalModel" : {"$ref": "thermalmodel"}
     }
 }

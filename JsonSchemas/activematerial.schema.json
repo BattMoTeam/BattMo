@@ -22,6 +22,6 @@
         "theta0": {"type" : "number"},
         "rho": {"type" : "number"},
         "specificCapacity": {"type" : "number"},
-        "name": {"type" : "string"},
+        "name": {"type" : "string"}
     }
 }

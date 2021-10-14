@@ -5,6 +5,6 @@
     "type": "object",
     "properties" : {
         "ElectrodeActiveComponent" : {"$ref" : "electrodeactivecomponent"},
-        "CurrentCollector" : {"$ref" : "currentcollector"},
+        "CurrentCollector" : {"$ref" : "currentcollector"}
     }
 }
