@@ -3,11 +3,12 @@
 import json
 import jsonschema
 from pathlib import Path
+import resolveFileInputJson as rjson
 
 def batmoDir():
     return Path("/home/xavier/Matlab/Projects/project-batman/")
 
-schema_folder = batmoDir() / Path('Liquid/CarbonateBased/')
+schema_folder = batmoDir() / Path('Materials/Liquid/CarbonateBased/')
 schema_filename = schema_folder / 'binaryelectrolyte.schema.json'
 
 base_uri = 'file://batmo/schemas/'
@@ -15,8 +16,8 @@ base_uri = 'file://batmo/schemas/'
 with open(schema_filename) as schema_file:
     schema = json.load(schema_file)
 
-with open(instance_filename) as instance_file:
-    instance = json.load(instance_file)
+# example
+jsoninput = rjson.loadJsonBatmo('Materials/Liquid/CarbonateBased/orgLiPF6.json')
 
 resolver = jsonschema.RefResolver(base_uri=base_uri, referrer=schema)
 
