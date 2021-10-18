@@ -11,12 +11,12 @@
             "thermalConductivity": 6e-05,
             "ActiveMaterial": {
                 "isFile": true,
-                "filename": "Battery/graphite.json"
+                "filename": "JsonDatas/graphite.json"
             }
         },
         "CurrentCollector": {
             "isFile": true,
-            "filename": "Battery/currentcollector.json"
+            "filename": "JsonDatas/currentcollector.json"
         }
     },
     "PositiveElectrode": {
@@ -27,16 +27,16 @@
             "chargeCarrierName": "Li",
             "ActiveMaterial": {
                 "isFile": true,
-                "filename": "Battery/nmc111.json"
+                "filename": "JsonDatas/nmc111.json"
             }
         },
         "CurrentCollector": {
             "isFile": true,
-            "filename": "Battery/currentcollector.json"
+            "filename": "JsonDatas/currentcollector.json"
         }
     },
     "Electrolyte": {
-        "filename": "Materials/Liquid/CarbonateBased/orgLiPF6.json",
+        "filename": "JsonDatas/orgLiPF6.json",
         "isFile": true
     },
     "ThermalModel": {

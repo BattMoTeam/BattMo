@@ -57,11 +57,12 @@ classdef ActiveMaterial < PhysicalModel
                        'Eak'                    , ...
                        'rp'                     , ...
                        'volumetricSurfaceArea'  , ...
+                       'n'                      , ...
                        'volumeFraction'};
             
             model = dispatchParams(model, paramobj, fdnames);
        
-            model.updateOCPFunc = str2fun(paramobj.updateOCPFunc.functionname);
+            model.updateOCPFunc = str2func(paramobj.updateOCPFunc.functionname);
             
         end
        
@@ -69,9 +70,11 @@ classdef ActiveMaterial < PhysicalModel
             c = state.cElectrode;
             T = state.T;
             
+            cmax = model.Li.cmax;
+            
             func = model.updateOCPFunc;
             
-            state.OCP = func(c, T);
+            state.OCP = func(c, T, cmax);
         end
        
         function state = updateDiffusionConductivityCoefficients(model, state)

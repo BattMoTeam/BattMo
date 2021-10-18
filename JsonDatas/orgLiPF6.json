@@ -20,6 +20,6 @@
     "name": "orgLiPF6",
     "sp": { "z": [1,-1],
             "t": [0.399, 0.601]},
-    "Separator": { "filename": "Materials/Solid/Polymers/celgard2500.json",
+    "Separator": { "filename": "JsonDatas/celgard2500.json",
                    "isFile": true }
 }
