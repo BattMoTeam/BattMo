@@ -13,9 +13,6 @@
                                         "argumentlist" : ["concentration", "temperature"],
                                         "name" : "diffusion coefficient"
                                        },
-    "diffusionConcentrationFittingCoefficients" : [ [-4.43, -54],
-                                                    [-0.22, 0.0] ],
-    "diffusionTemperatureFittingCoefficients" : [229, 5.0],
     "compnames": [
         "Li",
         "PF6"

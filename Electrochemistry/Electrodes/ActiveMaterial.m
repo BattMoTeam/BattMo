@@ -23,7 +23,6 @@ classdef ActiveMaterial < PhysicalModel
         specificCapacity       % Specific Capacity             [Ah kg^-1]
         theta0                 % Minimum lithiation, 0% SOC    [-]
         theta100               % Maximum lithiation, 100% SOC  [-]
-        maxc                   % Maximum lithium concentration [mol m^-3]
         rho                    % Mass Density                  [kg m^-3] or [g L^-1]
         electricalConductivity % Solid conductivity            [S m^-1]
         lambda                 % Thermal Conductivity          [W m^-1 K^-1]
