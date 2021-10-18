@@ -1,0 +1,20 @@
+{
+    "Li": {
+        "EaD": null,
+        "D0": 4e-15,
+        "cmax": 63104
+    },
+    "bruggemanCoeffcient": 1.5,
+    "volumeFraction": 0.665,
+    "electricalConductivity": 0.18,
+    "volumetricSurfaceArea": null,
+    "rp": null,
+    "Eak": null,
+    "k0": null,
+    "cp": null,
+    "theta100": null,
+    "theta0": null,
+    "rho": null,
+    "specificCapacity": null,
+    "name": null,
+}

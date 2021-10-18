@@ -1,0 +1,46 @@
+{
+    "G": null,
+    "SOC": 0.5,
+    "Ucut": 2.5,
+    "initT": 298.15,
+    "NegativeElectrode": {
+        "ElectrodeActiveComponent": {
+            "heatCapacity": 4180000.0,
+            "chargeCarrierName": "Li",
+            "InterDiffusionCoefficient": 1e-10,
+            "thermalConductivity": 6e-05,
+            "ActiveMaterial": {
+                "isFile": true,
+                "filename": "Battery/chenNegativeElectrodeActiveMaterial.json"
+            }
+        },
+        "CurrentCollector": {
+            "isFile": true,
+            "filename": "Battery/currentcollector.json"
+        }
+    },
+    "PositiveElectrode": {
+        "ElectrodeActiveComponent": {
+            "thermalConductivity": 6e-05,
+            "heatCapacity": 4180000.0,
+            "InterDiffusionCoefficient": 1e-10,
+            "chargeCarrierName": "Li",
+            "ActiveMaterial": {
+                "isFile": true,
+                "filename": "Battery/chenNmc111.json"
+            }
+        },
+        "CurrentCollector": {
+            "isFile": true,
+            "filename": "Battery/currentcollector.json"
+        }
+    },
+    "Electrolyte": {
+        "filename": "Materials/Liquid/CarbonateBased/chenElectrolyte.json",
+        "isFile": true
+    },
+    "ThermalModel": {
+        "externalHeatTransferCoefficient": 1000.0,
+        "externalTemperature": 298.15
+    }
+}
