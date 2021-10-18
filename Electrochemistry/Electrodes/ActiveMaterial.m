@@ -11,20 +11,14 @@ classdef ActiveMaterial < PhysicalModel
         % Lithium data structure
         Li
 
-        % Electron data structure
-        e
-
         % number of electron transfer
         n
 
         % Physicochemical properties
         volumeFraction
         volumetricSurfaceArea  % Surface area,                 [m2 m^-3]
-        specificCapacity       % Specific Capacity             [Ah kg^-1]
         theta0                 % Minimum lithiation, 0% SOC    [-]
         theta100               % Maximum lithiation, 100% SOC  [-]
-        rho                    % Mass Density                  [kg m^-3] or [g L^-1]
-        cp                     % Molar Heat Capacity           [J kg^-1 K^-1]
         k0                     % Reference rate constant       [m^2.5 mol^-0.5 s^-1]
         Eak                    % Reaction activation energy    [J mol^-1]
         rp                     % Particle radius               [m]
