@@ -9,6 +9,8 @@ classdef BinaryElectrolyte < Electrolyte
         diffusionTemperatureFittingCoefficients
         conductivityFactor = 1e-4
         
+        
+        
     end
     
     methods
@@ -26,12 +28,23 @@ classdef BinaryElectrolyte < Electrolyte
         function state = updateConcentrations(model, state)
             state.cs{2} = state.cs{1};
         end
+
+        function state = updateConductivity(model, state)
+            
+            cLi = state.cs{1};
+            T = state.T;
+            
+            func = model.updateConductivityFunc;
+            
+            state.conductivity = func(cLi, T);
+        end
         
         function state = updateChemicalCurrent(model, state)
             
-            cLi = state.cs{1}; % concentration of Li+
-            T   = state.T;     % temperature
-            phi = state.phi;   % potential
+            cLi          = state.cs{1}; % concentration of Li+
+            T            = state.T;     % temperature
+            phi          = state.phi;   % potential
+            conductivity = state.conductivity;   % potential
             
             cs  = state.cs;         
             
@@ -43,19 +56,7 @@ classdef BinaryElectrolyte < Electrolyte
             for ind = 1 : ncomp
                 dmudcs{ind} = R .* T ./ cs{ind};
             end
-            state.dmudcs = dmudcs;
                         
-            %% Calculate transport parameters
-            % Calculate ionic conductivity consntants for the ionic conductivity calculation
-            cnst = model.ionicConductivityFittingCoefficients;            
-           
-            c = cLi;
-
-            % Ionic conductivity, [S m^-1]
-            conductivity = model.conductivityFactor.* c .*(polyval(cnst(end:-1:1, 1), c) + ...
-                                                           polyval(cnst(end:-1:1, 2), c) .* T + ...
-                                                           polyval(cnst(end:-1:1, 3), c) .* T.^2).^2;
-
             % volume fraction of electrolyte
             volfrac = model.volumeFraction;
             % Compute effective ionic conductivity in porous media
@@ -69,8 +70,8 @@ classdef BinaryElectrolyte < Electrolyte
                 jchems{i} = assembleFlux(model, cs{i}, coeff);
             end
             
+            state.dmudcs = dmudcs;
             state.jchems = jchems;
-            state.conductivity  = conductivityeff;
             
         end
 

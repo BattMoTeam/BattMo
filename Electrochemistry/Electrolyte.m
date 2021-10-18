@@ -18,6 +18,8 @@ classdef Electrolyte < ElectroChemicalComponent
 
         EffectiveThermalConductivity
         EffectiveHeatCapacity
+
+        updateConductivityFunc
         
     end
 

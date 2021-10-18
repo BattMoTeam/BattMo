@@ -20,7 +20,13 @@ classdef Electrolyte_ < ElectroChemicalComponent_
             model.vardims('dmudcs') = 2;
             model.vardims('jchems') = 2;
             
-            fn = @Electrolyte.updateChemicalCurrent;
+            fn = @Electrolyte.updateConductivity;
+            inputnames = {'chargeCarrier', 'T', 'phi'};
+            fnmodel = {'.'};
+            model = model.addPropFunction('conductivity', fn, inputnames, fnmodel);
+
+            
+            fn = @Electrolyte.updateConductivity;
             inputnames = {'chargeCarrier', 'T', 'phi'};
             fnmodel = {'.'};
             model = model.addPropFunction('conductivity', fn, inputnames, fnmodel);
