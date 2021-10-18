@@ -4,7 +4,6 @@ classdef BinaryElectrolyteInputParams < ElectrolyteInputParams
 %    
     properties
         
-        ionicConductivityFittingCoefficients
         diffusionConcentrationFittingCoefficients
         diffusionTemperatureFittingCoefficients
         

@@ -1,0 +1,19 @@
+{
+    "$id": "file://batmo/schemas/function",
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "description": "A standard functino input",
+    "type": "object",
+    "properties" : {
+        "functionname" : {"type" : "string",
+                      "description" : "The name of the function file (for the moment should be included in path) without the matlab suffix (.m)"},
+        "filepath" : {"type" : "string",
+                      "description" : "name of file path (only for reference)"},
+        "argumentlist" : {"type" : "array",
+                          "items" : {"type" : "string",
+                                     "description" : "description of the argument"},
+                          "description" : "list of arguments ordered as in function call, (only for reference)"
+                         },
+        "name" : {"type" : "string",
+                  "description" : "name of the variable that is computed by this function (only for reference)"}
+    }
+}

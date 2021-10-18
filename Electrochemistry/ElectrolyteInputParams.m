@@ -18,6 +18,8 @@ classdef ElectrolyteInputParams < ElectroChemicalComponentInputParams
         
         electrolyteType
         
+        updateConductivityFunc
+        
     end
     
     methods
@@ -28,8 +30,9 @@ classdef ElectrolyteInputParams < ElectroChemicalComponentInputParams
             
             pick = @(fd) pickField(jsonstruct, fd);
             paramobj.Separator = SeparatorInputParams(pick('Separator'));
-            paramobj.EffectiveElectricalConductivity = 'not used';
+            paramobj.updateConductivityFunc = FunctionInputParams(pick('updateConductivityFunc'));
             
+            paramobj.EffectiveElectricalConductivity = 'not used';
         end
 
     end

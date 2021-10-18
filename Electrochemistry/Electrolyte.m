@@ -12,7 +12,6 @@ classdef Electrolyte < ElectroChemicalComponent
         
         volumeFraction
         
-                            
         thermalConductivity % intrinsic thermal conductivity value
         heatCapacity % intrinsic heat capacity value
 
@@ -39,6 +38,8 @@ classdef Electrolyte < ElectroChemicalComponent
 
             model = dispatchParams(model, paramobj, fdnames);
 
+            model.updateConductivityFunc = str2func(paramobj.updateConductivityFunc.functionname);
+            
             model.ncomp = numel(model.compnames);
             [isok, indchargecarrier] = ismember(model.chargeCarrierName, model.compnames);
             assert(isok, 'charge carrier not found in the list of components');
@@ -66,8 +67,51 @@ classdef Electrolyte < ElectroChemicalComponent
             
         end
         
+
+        function state = updateConductivity(model, state)
+            
+            cLi = state.cs{1};
+            T = state.T;
+            
+            func = model.updateConductivityFunc;
+            
+            state.conductivity = func(cLi, T);
+        end
+        
         function state = updateChemicalCurrent(model, state)
-            error('virtual function');
+            
+            cLi          = state.cs{1}; % concentration of Li+
+            T            = state.T;     % temperature
+            phi          = state.phi;   % potential
+            conductivity = state.conductivity;   % potential
+            
+            cs  = state.cs;         
+            
+            ncomp = model.ncomp; % number of components
+            sp = model.sp;
+
+            % calculate the concentration derivative of the chemical potential for each species in the electrolyte
+            R = model.constants.R;
+            for ind = 1 : ncomp
+                dmudcs{ind} = R .* T ./ cs{ind};
+            end
+                        
+            % volume fraction of electrolyte
+            volfrac = model.volumeFraction;
+            % Compute effective ionic conductivity in porous media
+            conductivityeff = conductivity .* volfrac .^1.5;
+            
+            % setup chemical fluxes
+            jchems = cell(1, ncomp);
+            F = model.constants.F;
+            for i = 1 : ncomp
+                coeff = conductivityeff .* sp.t(i) .* dmudcs{i} ./ (sp.z(i).*F);
+                jchems{i} = assembleFlux(model, cs{i}, coeff);
+            end
+            
+            state.dmudcs = dmudcs;
+            state.jchems = jchems;
+            
         end
         
         function state = updateDiffusionCoefficient(model, state)
