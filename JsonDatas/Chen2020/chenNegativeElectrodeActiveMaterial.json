@@ -6,7 +6,6 @@
     },
     "volumeFraction": 0.75,
     "bruggemanCoeffcient": 1.5,
-    "electricalConductivity": 215,
     "volumetricSurfaceArea": 1,
     "n": 1,
     "rp": null,

@@ -4,7 +4,6 @@
         "D0": 1e-14,
         "cmax": 55554
     },
-    "electricalConductivity": 100,
     "volumeFraction": 0.8,
     "volumetricSurfaceArea": 885000,
     "n" : 1,

@@ -8,6 +8,7 @@
             "heatCapacity": 4180000.0,
             "chargeCarrierName": "Li",
             "InterDiffusionCoefficient": 1e-10,
+            "electricalConductivity": 100,
             "thermalConductivity": 6e-05,
             "ActiveMaterial": {
                 "isFile": true,
@@ -24,6 +25,7 @@
             "thermalConductivity": 6e-05,
             "heatCapacity": 4180000.0,
             "InterDiffusionCoefficient": 1e-10,
+            "electricalConductivity": 100,
             "chargeCarrierName": "Li",
             "ActiveMaterial": {
                 "isFile": true,

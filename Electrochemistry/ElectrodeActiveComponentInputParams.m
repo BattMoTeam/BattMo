@@ -13,7 +13,9 @@ classdef ElectrodeActiveComponentInputParams < ElectroChemicalComponentInputPara
         
         thermalConductivity
         heatCapacity
-        
+
+        electricalConductivity % [S m^-1]
+
     end
 
     methods

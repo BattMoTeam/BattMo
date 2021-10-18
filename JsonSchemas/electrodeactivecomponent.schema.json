@@ -6,6 +6,7 @@
     "properties" : {
         "bruggemanCoefficient" : {"type" : "number"},
         "thermalConductivity": {"type" : "number"},
+        "electricalConductivity": {"type" : "number"},
         "heatCapacity": {"type" : "number"},
         "InterDiffusionCoefficient": {"type" : "number"},
         "chargeCarrierName": {"type" : "string",

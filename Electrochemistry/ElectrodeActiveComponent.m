@@ -16,6 +16,7 @@ classdef ElectrodeActiveComponent < ElectroChemicalComponent
         EffectiveThermalConductivity % Effective Thermal Conductivity
         EffectiveHeatCapacity % Effective Heat Capacity
         
+        electricalConductivity
     end
     
     methods
@@ -27,6 +28,7 @@ classdef ElectrodeActiveComponent < ElectroChemicalComponent
             model = model@ElectroChemicalComponent(paramobj);
             
             fdnames = {'thermalConductivity', ...
+                       'electricalConductivity', ...
                        'heatCapacity', ...
                        'InterDiffusionCoefficient'};
             model = dispatchParams(model, paramobj, fdnames);
@@ -43,10 +45,8 @@ classdef ElectrodeActiveComponent < ElectroChemicalComponent
             model.porosity = 1 - model.volumeFraction;
             model.thickness = 10e-6;
             
-            % setup effective electrical conductivity
-            econd = model.ActiveMaterial.electricalConductivity;
-            % Bruggeman approximation 
-            model.EffectiveElectricalConductivity = econd .* volumeFraction.^1.5;
+            % setup effective electrical conductivity using Bruggeman approximation 
+            model.EffectiveElectricalConductivity = model.electricalConductivity.*volumeFraction.^1.5;
             
             % setup effective diffusion coefficient (inter-particle diffusion)
             model.EffectiveDiffusionCoefficient = model.InterDiffusionCoefficient.*volumeFraction.^1.5;

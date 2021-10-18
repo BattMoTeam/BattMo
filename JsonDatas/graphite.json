@@ -5,7 +5,6 @@
         "cmax": 30555
     },
     "volumeFraction": 0.8,
-    "electricalConductivity": 100,
     "volumetricSurfaceArea": 723600,
     "n" : 1,
     "rp": 1e-06,

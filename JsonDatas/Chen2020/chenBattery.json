@@ -7,6 +7,7 @@
         "ElectrodeActiveComponent": {
             "heatCapacity": 4180000.0,
             "chargeCarrierName": "Li",
+            "electricalConductivity": 215,
             "InterDiffusionCoefficient": 1e-10,
             "thermalConductivity": 6e-05,
             "ActiveMaterial": {
@@ -23,6 +24,7 @@
         "ElectrodeActiveComponent": {
             "thermalConductivity": 6e-05,
             "heatCapacity": 4180000.0,
+            "electricalConductivity": 0.18,
             "InterDiffusionCoefficient": 1e-10,
             "chargeCarrierName": "Li",
             "ActiveMaterial": {

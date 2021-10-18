@@ -14,7 +14,6 @@
         "n" : {"type" : "integer",
                "description" : "number of electron transfer"},
         "volumeFraction": {"type" : "number"},
-        "electricalConductivity": {"type" : "number"},
         "volumetricSurfaceArea": {"type" : "number"},
         "rp": {"type" : "number"},
         "Eak": {"type" : "number"},
