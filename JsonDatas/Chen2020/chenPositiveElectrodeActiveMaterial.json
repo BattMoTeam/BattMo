@@ -8,6 +8,7 @@
     "volumeFraction": 0.665,
     "electricalConductivity": 0.18,
     "volumetricSurfaceArea": null,
+    "n" : 1,
     "rp": null,
     "Eak": null,
     "k0": null,
@@ -17,4 +18,9 @@
     "rho": null,
     "specificCapacity": null,
     "name": null,
+    "updateOCPFunc" : {"functionname" : "updateOCPFunc_nmc111_Chen",
+                       "filepath" : "Materials/Solid/MetalOxides/updateOCPFunc_nmc111_Chen.m",
+                       "argumentlist" : ["concentration", "temperature", "maximum concentration"],
+                       "name" : "nmc111 OCP"
+                      }
 }

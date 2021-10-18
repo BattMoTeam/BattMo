@@ -8,6 +8,7 @@
     "bruggemanCoeffcient": 1.5,
     "electricalConductivity": 215,
     "volumetricSurfaceArea": null,
+    "n": 1,
     "rp": null,
     "Eak": null,
     "k0": null,
@@ -17,4 +18,9 @@
     "rho": null,
     "specificCapacity": null,
     "name": null,
+    "updateOCPFunc" : {"functionname" : "updateOCPFunc_graphite_Chen",
+                       "filepath" : "Materials/Solid/ReactiveNonMetals/updateOCPFunc_graphite_Chen.m",
+                       "argumentlist" : ["concentration", "temperature", "maximum concentration"],
+                       "name" : "graphite OCP"
+                      }
 }
