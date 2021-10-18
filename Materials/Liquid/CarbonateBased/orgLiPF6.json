@@ -8,6 +8,11 @@
                                 "argumentlist" : ["concentration", "temperature"],
                                 "name" : "conductivity"
                                },
+    "updateDiffusionCoefficientFunc" : {"functionname" : "updateDiffusionCoefficientFunc_default",
+                                        "filepath" : "Materials/Liquid/CarbonateBased/updateDiffusionCoefficientFunc_default.m",
+                                        "argumentlist" : ["concentration", "temperature"],
+                                        "name" : "diffusion coefficient"
+                                       },
     "diffusionConcentrationFittingCoefficients" : [ [-4.43, -54],
                                                     [-0.22, 0.0] ],
     "diffusionTemperatureFittingCoefficients" : [229, 5.0],

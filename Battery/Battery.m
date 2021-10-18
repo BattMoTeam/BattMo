@@ -168,8 +168,9 @@ classdef Battery < PhysicalModel
         % :class:`ElectrolyteInputParams <Electrochemistry.ElectrolyteInputParams>`
             switch paramobj.electrolyteType
               case 'binary'
-                electrolyte = BinaryElectrolyte(paramobj);
+                electrolyte = Electrolyte(paramobj);
               otherwise
+                % binary is default
                 electrolyte = Electrolyte(paramobj)
             end
         end

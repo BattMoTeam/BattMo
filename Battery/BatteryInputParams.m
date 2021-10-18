@@ -39,9 +39,10 @@ classdef BatteryInputParams < InputParams
             jsonelytestruct = pick(elyte);
             switch jsonelytestruct.electrolyteType
               case 'binary'
-                  paramobj.(elyte)   = BinaryElectrolyteInputParams(pick(elyte));
+                paramobj.(elyte) = ElectrolyteInputParams(pick(elyte));
               otherwise
-                  paramobj.(elyte)   = ElectrolyteInputParams(pick(elyte));                
+                % binary is default
+                paramobj.(elyte) = ElectrolyteInputParams(pick(elyte));                
             end
             paramobj.(thermal) = ThermalComponentInputParams(pick(thermal));
             paramobj.couplingTerms = {};

@@ -19,6 +19,7 @@ classdef Electrolyte < ElectroChemicalComponent
         EffectiveHeatCapacity
 
         updateConductivityFunc
+        updateDiffusionCoefficientFunc
         
     end
 
@@ -39,7 +40,8 @@ classdef Electrolyte < ElectroChemicalComponent
             model = dispatchParams(model, paramobj, fdnames);
 
             model.updateConductivityFunc = str2func(paramobj.updateConductivityFunc.functionname);
-            
+            model.updateDiffusionCoefficientFunc = str2func(paramobj.updateDiffusionCoefficientFunc.functionname);            
+
             model.ncomp = numel(model.compnames);
             [isok, indchargecarrier] = ismember(model.chargeCarrierName, model.compnames);
             assert(isok, 'charge carrier not found in the list of components');
@@ -67,6 +69,10 @@ classdef Electrolyte < ElectroChemicalComponent
             
         end
         
+        function state = updateConcentrations(model, state)
+            state.cs{2} = state.cs{1};
+        end
+                
 
         function state = updateConductivity(model, state)
             
@@ -77,7 +83,7 @@ classdef Electrolyte < ElectroChemicalComponent
             
             state.conductivity = func(cLi, T);
         end
-        
+
         function state = updateChemicalCurrent(model, state)
             
             cLi          = state.cs{1}; % concentration of Li+
@@ -115,9 +121,19 @@ classdef Electrolyte < ElectroChemicalComponent
         end
         
         function state = updateDiffusionCoefficient(model, state)
-            error('virtual function');
-        end
+            
+            c = state.cs{1};
+            T = state.T;
+
+            func = model.updateDiffusionCoefficientFunc;
+            
+            D = func(c, T);
+            
+            % set effective coefficient
+            state.D = D .* model.volumeFraction .^1.5;
         
+        end
+
         function state = updateCurrentBcSource(model, state)
         % no boundary current fluxes (only volumetric from the reactions)
             state.jBcSource = 0;

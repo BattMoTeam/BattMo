@@ -19,6 +19,7 @@ classdef ElectrolyteInputParams < ElectroChemicalComponentInputParams
         electrolyteType
         
         updateConductivityFunc
+        updateDiffusionCoefficientFunc
         
     end
     
@@ -31,6 +32,7 @@ classdef ElectrolyteInputParams < ElectroChemicalComponentInputParams
             pick = @(fd) pickField(jsonstruct, fd);
             paramobj.Separator = SeparatorInputParams(pick('Separator'));
             paramobj.updateConductivityFunc = FunctionInputParams(pick('updateConductivityFunc'));
+            paramobj.updateDiffusionCoefficientFunc = FunctionInputParams(pick('updateDiffusionCoefficientFunc'));
             
             paramobj.EffectiveElectricalConductivity = 'not used';
         end
