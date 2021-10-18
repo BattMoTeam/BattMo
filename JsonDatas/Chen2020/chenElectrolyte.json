@@ -2,14 +2,16 @@
     "electrolyteType" : "binary",
     "heatCapacity": 4180000.0,
     "thermalConductivity": 6e-05,
+    "negativeDomainBruggemanCoefficient" : 1.5,
+    "positiveDomainBruggemanCoefficient" : 1.5,
     "chargeCarrierName": "Li",
-    "updateConductivityFunc" : {"functionname" : "updateElectrolyteConductivityFunc_nyman2008",
-                                "filepath" : "Materials/Liquid/CarbonateBased/updateElectrolyteConductivityFunc_nyman2008.m",
+    "updateConductivityFunc" : {"functionname" : "updateElectrolyteConductivityFunc_Nyman2008",
+                                "filepath" : "Materials/Liquid/CarbonateBased/updateElectrolyteConductivityFunc_Nyman2008.m",
                                 "argumentlist" : ["concentration", "temperature"],
                                 "name" : "conductivity"
                                },
-    "updateDiffusionCoefficientFunc" : {"functionname" : "updateDiffusionCoefficientFunc_default",
-                                        "filepath" : "Materials/Liquid/CarbonateBased/updateDiffusionCoefficientFunc_default.m",
+    "updateDiffusionCoefficientFunc" : {"functionname" : "updateDiffusionCoefficientFunc_Nyman2008",
+                                        "filepath" : "Materials/Liquid/CarbonateBased/updateDiffusionCoefficientFunc_Nyman2008.m",
                                         "argumentlist" : ["concentration", "temperature"],
                                         "name" : "diffusion coefficient"
                                        },
@@ -18,8 +20,8 @@
         "PF6"
     ],
     "name": "Chen Electrolyte model",
-    "sp": { "z": [1,-1],
-            "t": [0.399, 0.601]},
+    "sp": { "z": [1, -1],
+            "t": [0.2594, null]},
     "Separator": { "filename": "Materials/Solid/Polymers/chenSeparator.json",
                    "isFile": true }
 }

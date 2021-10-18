@@ -1,9 +1,10 @@
 {
     "$id": "file://batmo/schemas/separator",
     "$schema": "http://json-schema.org/draft-07/schema#",
-    "description": "A standard separator",
+    "description": "A separator",
     "type": "object",
     "properties" : {
+        "bruggemanCoefficient" : {"type" : "number"},
         "porosity": {"type" : "number"},
         "thermalConductivity": {"type" : "number"}, 
         "heatCapacity": {"type" : "number"}

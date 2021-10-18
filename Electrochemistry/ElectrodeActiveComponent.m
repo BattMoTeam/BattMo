@@ -34,7 +34,7 @@ classdef ElectrodeActiveComponent < ElectroChemicalComponent
             % Setup ActiveMaterial component
             paramobj.ActiveMaterial.G = model.G;
             
-            model.ActiveMaterial = setupActiveMaterial(paramobj.ActiveMaterial);
+            model.ActiveMaterial = ActiveMaterial(paramobj);
 
             % setup volumeFraction, porosity, thickness
             nc = model.G.cells.num;

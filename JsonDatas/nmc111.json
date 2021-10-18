@@ -16,5 +16,9 @@
     "rho": 4650,
     "specificCapacity": 155,
     "name": "NMC111",
-    "G": null
+    "updateOCPFunc" : {"functionname" : "updateOCPFunc_nmc111",
+                       "filepath" : "Materials/Liquid/CarbonateBased/updateDiffusionCoefficientFunc_default.m",
+                       "argumentlist" : ["concentration", "temperature", "maximum concentration"],
+                       "name" : "nmc111 OCP"
+                      }
 }

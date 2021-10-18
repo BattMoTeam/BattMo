@@ -9,7 +9,10 @@
         "heatCapacity": {"type" : "number"},
         "thermalConductivity": {"type" : "number"}, 
         "chargeCarrierName": {"type" : "string"},
-        "updateConductivityFunc": {"$ref" : "function"},
+        "updateConductivityFunc": {"$ref" : "function",
+                                   "description" : "function to update conductivity"},
+        "updateDiffusionCoefficientFunc" : {"$ref" : "function",
+                                            "description" : "function to update diffusion coefficient"},
         "compnames": {"type" : "array"},
         "name": {"type" : "string"},
         "sp": { "type" : "object",
@@ -18,6 +21,10 @@
                     "t": {"type" : "array"}
                 }
               },
-        "Separator" : {"$ref" : "separator"}
+        "Separator" : {"$ref" : "separator"},
+        "negativeDomainBruggemanCoefficient" : {"type" : "number", ...
+                                                "description": "Bruggeman coefficient for the electrolyte in the negative electrode domain"},
+        "positiveDomainBruggemanCoefficient" : {"type" : "number", ...
+                                                "description": "Bruggeman coefficient for the electrolyte in the positive electrode domain"}
     }
 }

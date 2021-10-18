@@ -23,5 +23,7 @@
         "rho": {"type" : "number"},
         "specificCapacity": {"type" : "number"},
         "name": {"type" : "string"}
+        "updateOCPFunc" : {"$ref" : "function",
+                           "description" : "Function to update OCP"}
     }
 }

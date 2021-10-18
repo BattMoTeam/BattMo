@@ -1,5 +1,5 @@
 classdef ActiveMaterial < PhysicalModel
-    
+
     properties
         
         % Physical constants
@@ -32,6 +32,7 @@ classdef ActiveMaterial < PhysicalModel
         Eak                    % Reaction activation energy    [J mol^-1]
         rp                     % Particle radius               [m]
         
+        updateOCPFunc % Function handler to update OCP
     end
     
     methods
@@ -59,9 +60,20 @@ classdef ActiveMaterial < PhysicalModel
                        'volumeFraction'};
             
             model = dispatchParams(model, paramobj, fdnames);
+       
+            model.updateOCPFunc = str2fun(paramobj.updateOCPFunc.functionname);
             
         end
-        
+       
+        function state = updateOCP(model, state)
+            c = state.cElectrode;
+            T = state.T;
+            
+            func = model.updateOCPFunc;
+            
+            state.OCP = func(c, T);
+        end
+       
         function state = updateDiffusionConductivityCoefficients(model, state)
 
             % Define reference temperature

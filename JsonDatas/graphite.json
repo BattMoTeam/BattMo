@@ -16,5 +16,9 @@
     "rho": 2240,
     "specificCapacity": 360,
     "name": "Graphite",
-    "G": null
+    "updateOCPFunc" : {"functionname" : "updateOCPFunc_graphite",
+                       "filepath" : "Materials/Liquid/CarbonateBased/updateDiffusionCoefficientFunc_default.m",
+                       "argumentlist" : ["concentration", "temperature", "maximum concentration"],
+                       "name" : "graphite OCP"
+                      }
 }

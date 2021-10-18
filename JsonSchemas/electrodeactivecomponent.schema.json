@@ -4,6 +4,7 @@
     "description": "Electrode active component",
     "type": "object",
     "properties" : {
+        "bruggemanCoefficient" : {"type" : "number"},
         "thermalConductivity": {"type" : "number"},
         "heatCapacity": {"type" : "number"},
         "InterDiffusionCoefficient": {"type" : "number"},
