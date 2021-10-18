@@ -378,7 +378,8 @@ classdef Battery < PhysicalModel
 
             for ind = 1 : numel(electrodes)
                 elde = electrodes{ind};
-                state.(elde).(eac).(am) = battery.(elde).(eac).(am).updateDiffusionConductivityCoefficients(state.(elde).(eac).(am));
+                state.(elde).(eac).(am) = battery.(elde).(eac).(am).updateReactionRateCoefficient(state.(elde).(eac).(am));
+                state.(elde).(eac).(am) = battery.(elde).(eac).(am).updateDiffusionCoefficient(state.(elde).(eac).(am));
                 state.(elde).(eac).(am) = battery.(elde).(eac).(am).updateOCP(state.(elde).(eac).(am));
                 state.(elde).(eac).(am) = battery.(elde).(eac).(am).updateReactionRate(state.(elde).(eac).(am));
             end

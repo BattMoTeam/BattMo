@@ -30,8 +30,8 @@ classdef ActiveMaterial_ < CompositeModel
             names{end + 1} = 'D';
             % OCP
             names{end + 1} = 'OCP';
-            % Reaction constant
-            names{end + 1} = 'k';
+            % Reaction rate coefficient
+            names{end + 1} = 'j0';
             % Solid diffusion equation
             names{end + 1} = 'solidDiffusionEq';
             
@@ -41,12 +41,16 @@ classdef ActiveMaterial_ < CompositeModel
             model = model.setAlias({'chargeCarrierElectrode', VarName({'.'}, 'cElectrode')});
             model = model.setAlias({'chargeCarrierElectrolyte', VarName({'.'}, 'cElectrolyte')});
             
-            fn = @ActiveMaterial.updateDiffusionConductivityCoefficients;
-            inputnames = {'T'};
+            fn = @ActiveMaterial.updateReactionRateCoefficient;
+            inputnames = {'cElectrode', 'cElectrolyte', 'T'};
             fnmodel = {'.'};
+            model = model.addPropFunction('j0', fn, inputnames, fnmodel);
+
+            fn = @ActiveMaterial.updateDiffusionCoefficient;
+            inputnames = {'T'};
+            fnmodel = {'.'}
             model = model.addPropFunction('D', fn, inputnames, fnmodel);
-            model = model.addPropFunction('k', fn, inputnames, fnmodel);
-            
+
             fn = @ActiveMaterial.updateOCP;
             inputnames = {'chargeCarrierElectrode', 'T'};
             fnmodel = {'.'};
