@@ -2,5 +2,4 @@
     "porosity": 0.55,
     "thermalConductivity": 6e-05,
     "heatCapacity": 4180000.0,
-    "G": null
 }
