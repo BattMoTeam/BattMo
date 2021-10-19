@@ -1,4 +1,4 @@
-classdef Separator < PhysicalModel
+classdef Separator < BaseModel
     
     properties
         
@@ -20,7 +20,7 @@ classdef Separator < PhysicalModel
     methods
         function model = Separator(paramobj)
             
-            model = model@PhysicalModel([]);
+            model = model@BaseModel();
 
             % OBS : All the models should have same backend (this is not assigned automaticallly for the moment)
             % in the case of the separator, probably this does not matter as no computation is actually done on this grid

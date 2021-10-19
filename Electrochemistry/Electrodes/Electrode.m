@@ -1,4 +1,4 @@
-classdef Electrode < PhysicalModel
+classdef Electrode < BaseModel
 %
 % The Electrode model is made of two sub-models : an electrode active component (see
 % :class:`Electrochemistry.ElectrodeActiveComponent`) and a current collector (see
@@ -16,7 +16,7 @@ classdef Electrode < PhysicalModel
         
         function model = Electrode(paramobj)
         % paramobj is instance of :class:`Electrochemistry.Electrodes.ElectrodeInputParams`
-            model = model@PhysicalModel([]);
+            model = model@BaseModel();
             
             model.AutoDiffBackend = SparseAutoDiffBackend('useBlocks', false);
             

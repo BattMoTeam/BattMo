@@ -1,4 +1,4 @@
-classdef ActiveMaterial < PhysicalModel
+classdef ActiveMaterial < BaseModel
 
     properties
 
@@ -30,7 +30,7 @@ classdef ActiveMaterial < PhysicalModel
 
         function model = ActiveMaterial(paramobj)
 
-            model = model@PhysicalModel([]);
+            model = model@BaseModel();
 
              % OBS : All the submodels should have same backend (this is not assigned automaticallly for the moment)
             model.AutoDiffBackend = SparseAutoDiffBackend('useBlocks', false);

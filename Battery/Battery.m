@@ -1,4 +1,4 @@
-classdef Battery < PhysicalModel
+classdef Battery < BaseModel
 % 
 % The battery model consists of 
 %
@@ -36,7 +36,7 @@ classdef Battery < PhysicalModel
         
         function model = Battery(paramobj)
 
-            model = model@PhysicalModel([]);
+            model = model@BaseModel();
             
             % All the submodels should have same backend (this is not assigned automaticallly for the moment)
             model.AutoDiffBackend = SparseAutoDiffBackend('useBlocks', false);
@@ -935,46 +935,6 @@ classdef Battery < PhysicalModel
             
         end
         
-        function state = setProp(model, state, names, val)
-            if iscell(names) & (numel(names) > 1)
-                name = names{1};
-                names = names(2 : end);
-                state.(name) = model.setProp(state.(name), names, val);
-            elseif iscell(names) & (numel(names) == 1)
-                name = names{1};
-                if isnumeric(name)
-                    state{name} = val;
-                else
-                    state.(name) = val;
-                end
-            else
-                error('format not recognized');
-            end
-        end
-
-        function var = getProp(model, state, names)
-            if iscell(names) && (numel(names) > 1)
-                name = names{1};
-                names = names(2 : end);
-                var = model.getProp(state.(name), names);
-            elseif iscell(names) & (numel(names) == 1)
-                name = names{1};
-                if isnumeric(name)
-                    var = state{name};
-                else
-                    var = state.(name);
-                end
-            else
-                error('format not recognized');
-            end
-        end
-        
-        function submod = getSubmodel(model, names)
-            submod = model.(names{1});
-            for i=2:numel(names)
-                submod = submod.(names{i});
-            end
-        end
         
         function validforces = getValidDrivingForces(model)
             validforces=struct('src', [], 'stopFunction', []); 
@@ -1007,13 +967,8 @@ classdef Battery < PhysicalModel
 
         function [state, report] = updateState(model, state, problem, dx, drivingForces)
 
-            p = model.getPrimaryVariables();
-
-            for i = 1 : numel(dx)
-                val = model.getProp(state, p{i});
-                val = val + dx{i};
-                state = model.setProp(state, p{i}, val);
-            end
+            
+            [state, report] = updateState@BaseModel(model, state, problem, dx, drivingForces);
             
             %% cap concentrations
             elyte = 'Electrolyte';
@@ -1038,9 +993,7 @@ classdef Battery < PhysicalModel
             
         end
         
-        function state = reduceState(model, state, removeContainers)
-            state = removeAD(state);
-        end
+
 
     end
     

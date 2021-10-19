@@ -1,4 +1,4 @@
-classdef ElectronicComponent < PhysicalModel
+classdef ElectronicComponent < BaseModel
     
     properties
         
@@ -12,7 +12,7 @@ classdef ElectronicComponent < PhysicalModel
         function model = ElectronicComponent(paramobj)
         % Here, :code:`paramobj` is instance of :class:`ElectronicComponentInputParams <Electrochemistry.ElectronicComponentInputParams>`
             
-            model = model@PhysicalModel([]);
+            model = model@BaseModel();
 
             % OBS : All the models should have same backend (this is not assigned automaticallly for the moment)
             model.AutoDiffBackend = SparseAutoDiffBackend('useBlocks', false);

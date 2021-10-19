@@ -1,4 +1,4 @@
-classdef ThermalComponent < PhysicalModel
+classdef ThermalComponent < BaseModel
     
     properties
         
@@ -18,7 +18,7 @@ classdef ThermalComponent < PhysicalModel
         
         function model = ThermalComponent(paramobj)
             
-            model = model@PhysicalModel([]);
+            model = model@BaseModel();
             
             % OBS : All the models should have same backend (this is not assigned automaticallly for the moment)
             model.AutoDiffBackend = SparseAutoDiffBackend('useBlocks', false);
