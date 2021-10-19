@@ -8,7 +8,7 @@
     "volumeFraction": 0.665,
     "volumetricSurfaceArea": 1,
     "n" : 1,
-    "rp": 1e-6,
+    "rp": 1e-12,
     "Eak": 17800,
     "k0": 3.42e-6,
     "theta100": 0.5,
