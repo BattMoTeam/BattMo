@@ -41,14 +41,29 @@ function op = getCellFluxOperators(G)
     intfacetbl.faces = find(intInx);
     intfacetbl = IndexArray(intfacetbl);
 
+    vecttbl.vect = (1 : G.griddim)';
+    vecttbl = IndexArray(vecttbl);
+
     cellintfacetbl = crossIndexArray(cellfacetbl, intfacetbl, {'faces'});
+    
+    % For a given cell, compute the number of internal faces. If for some cell this number is less than the spatial
+    % dimension number, then we cannot get a flux reconstruction from only internal fluxes. In this case, we return an
+    % empty operator
+    map = TensorMap;
+    map.fromTbl = cellintfacetbl;
+    map.toTbl = celltbl;
+    map.mergefds = {'cells'};
+    map = map.setup();
+    nintfacepercell = map.eval(ones(cellintfacetbl.num, 1));
+    if any(nintfacepercell < vecttbl.num)
+        op = [];
+        return
+    end
 
     cn = cellintfacetbl.get('cells');
     cf = cellintfacetbl.get('faces');
     sgn = 2*double(G.faces.neighbors(cf, 1) == cn) - 1;
 
-    vecttbl.vect = (1 : G.griddim)';
-    vecttbl = IndexArray(vecttbl);
 
     gen = CrossIndexArrayGenerator();
     gen.tbl1 = vecttbl;
