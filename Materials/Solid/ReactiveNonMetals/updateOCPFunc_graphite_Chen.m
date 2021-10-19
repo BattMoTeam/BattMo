@@ -9,7 +9,7 @@ function OCP = updateOCPFunc_graphite_Chen(c, T, cmax)
     % Parameterization of Multi-scale Lithium-ion Battery Models." Journal of the
     % Electrochemical Society 167 (2020): 080534.
 
-    OCP = 1.9793*exp(-39.3631*c) + 0.2482 - 0.0909*tanh(29.8538*(c - 0.1234)) - 0.04478*tanh(14.9159*(c - 0.2769)) - ...
-          0.0205*tanh(30.4444*(c - 0.6103));
+    sto = c./cmax;
+    OCP = 1.9793*exp(-39.3631*sto) + 0.2482 - 0.0909*tanh(29.8538*(sto - 0.1234)) - 0.04478*tanh(14.9159*(sto - 0.2769)) - 0.0205*tanh(30.4444*(sto - 0.6103));
     
 end
