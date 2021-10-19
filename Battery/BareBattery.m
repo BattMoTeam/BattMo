@@ -354,15 +354,8 @@ classdef BareBattery < BaseModel
             eqs{end + 1} = state.EIeq;
             
             % we add the control equation
-            I = state.(pe).I;
-            E = state.(pe).E;
-            [val, ctrltype] = drivingForces.src(time, value(I), value(E));
-            switch ctrltype
-              case 'I'
-                eqs{end + 1} = I - val;
-              case 'E'
-                eqs{end + 1} = E - val;
-            end
+            val = drivingForces.src(time);
+            eqs{end + 1} = state.(pe).I - val;
 
             %% Give type and names to equations and names of the primary variables (for book-keeping)
             

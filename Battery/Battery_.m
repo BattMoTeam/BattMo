@@ -7,10 +7,8 @@ classdef Battery_ < CompositeModel
             model = model@CompositeModel('battery');
             
             names = {'SOC', ...
-                     'prevstate', ...
                      'energyCons', ...
-                     'controlEq', ...
-                     'dt'};
+                     'controlEq'};
             
             model.names = names;
             
@@ -37,7 +35,6 @@ classdef Battery_ < CompositeModel
             fnmodel = {'..'};
             inputnames = {VarName({'..', 'thermal'}, 'T')};            
             model = model.addPropFunction({'elyte', 'T'}, fn, inputnames, fnmodel);
-           
                   
             %% setup couplings
             
@@ -66,33 +63,6 @@ classdef Battery_ < CompositeModel
             fnmodel = {'..'};
             model = model.addPropFunction({'elyte', 'chargeCarrierSource'}, fn, inputnames, fnmodel);
             model = model.addPropFunction({'elyte', 'eSource'}, fn, inputnames, fnmodel);
-            
-                
-            fn = @Battery.updateAccumTerms;
-            
-            inputnames = {VarName({'.'}, 'chargeCarrier'), ...
-                          VarName({'..', 'ne', 'eac', 'am'}, 'chargeCarrier'), ...
-                          VarName({'..', 'pe', 'eac', 'am'}, 'chargeCarrier')};
-            
-            fnmodel = {'..'};
-            model = model.addPropFunction({'elyte', 'chargeCarrierAccum'}, fn, inputnames, fnmodel);            
-
-
-            inputnames = {VarName({'..', '..', 'elyte'}, 'chargeCarrier'), ...
-                          VarName({'am'}, 'chargeCarrier'), ...
-                          VarName({'..', '..', 'pe', 'eac', 'am'}, 'chargeCarrier')};
-            
-            fnmodel = {'..', '..'};
-            
-            model = model.addPropFunction({'ne', 'eac', 'chargeCarrierAccum'}, fn, inputnames, fnmodel);
-            
-            inputnames = {VarName({'..', '..', 'elyte'}, 'chargeCarrier'), ...
-                          VarName({'..', '..', 'ne', 'eac', 'am'}, 'chargeCarrier'), ...
-                          VarName({'am'}, 'chargeCarrier')};
-            
-            fnmodel = {'..', '..'};
-            
-            model = model.addPropFunction({'pe', 'eac', 'chargeCarrierAccum'}, fn, inputnames, fnmodel);                        
             
             %% setup control equation
             fn = @Batter.setupEIEquation;
