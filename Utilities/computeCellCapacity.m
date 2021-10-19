@@ -18,6 +18,8 @@ function c = computeCellCapacity(model)
 % SEE ALSO:
 %
 
+% We handle the battery and bare battery structure (without current collector)
+    
     ne  = 'NegativeElectrode';
     pe  = 'PositiveElectrode';
     eac = 'ElectrodeActiveComponent';
@@ -25,10 +27,20 @@ function c = computeCellCapacity(model)
     
     eldes = {ne, pe};
     
+    isBare = false;
+    if strcmp(class(model), 'BareBattery')
+        isBare = true;
+    end
+    
     for ind = 1 : numel(eldes)
         
         elde = eldes{ind};
-        ammodel = model.(elde).(eac).(am);
+        
+        if isBare
+            ammodel = model.(elde).(am);
+        else
+            ammodel = model.(elde).(eac).(am);
+        end
         
         n = ammodel.n;
         F = ammodel.constants.F;

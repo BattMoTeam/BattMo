@@ -1,4 +1,4 @@
-classdef BatteryInputParams < InputParams
+classdef BareBatteryInputParams < InputParams
 %
 % Input class for :class:`Battery <Battery.Battery>`
 %
@@ -14,7 +14,6 @@ classdef BatteryInputParams < InputParams
         NegativeElectrode % instance of :class:`ElectrodeInputParams`
         PositiveElectrode % instance of :class:`ElectrodeInputParams`
         Electrolyte       % instance of :class:`ElectrolyteInputParams`
-        ThermalModel      % instance of :class:`ThermalModelInputParams`
                 
         %% Coupling terms (describe the topological structure of the coupling)
         couplingTerms
@@ -23,19 +22,18 @@ classdef BatteryInputParams < InputParams
     
     methods
         
-        function paramobj = BatteryInputParams(jsonstruct)
+        function paramobj = BareBatteryInputParams(jsonstruct)
             
             paramobj = paramobj@InputParams(jsonstruct);
             
             ne      = 'NegativeElectrode';
             pe      = 'PositiveElectrode';
             elyte   = 'Electrolyte';
-            thermal = 'ThermalModel';
             
             pick = @(fd) pickField(jsonstruct, fd);
             
-            paramobj.(ne) = ElectrodeInputParams(pick(ne));
-            paramobj.(pe) = ElectrodeInputParams(pick(pe));
+            paramobj.(ne) = ElectrodeActiveComponentInputParams(pick(ne));
+            paramobj.(pe) = ElectrodeActiveComponentInputParams(pick(pe));
             jsonelytestruct = pick(elyte);
             switch jsonelytestruct.electrolyteType
               case 'binary'
@@ -44,9 +42,6 @@ classdef BatteryInputParams < InputParams
                 % binary is default
                 paramobj.(elyte) = ElectrolyteInputParams(pick(elyte));                
             end
-            paramobj.(thermal) = ThermalComponentInputParams(pick(thermal));
-            paramobj.couplingTerms = {};
-            
         end
 
     end

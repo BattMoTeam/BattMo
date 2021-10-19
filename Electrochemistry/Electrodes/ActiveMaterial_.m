@@ -48,7 +48,7 @@ classdef ActiveMaterial_ < CompositeModel
 
             fn = @ActiveMaterial.updateDiffusionCoefficient;
             inputnames = {'T'};
-            fnmodel = {'.'}
+            fnmodel = {'.'};
             model = model.addPropFunction('D', fn, inputnames, fnmodel);
 
             fn = @ActiveMaterial.updateOCP;

@@ -18,10 +18,11 @@ gstyle = {'interpreter', 'none', 'LineWidth', 3, 'ArrowSize', 20, 'NodeFontSize'
 % model = ElectronicComponent_('eac');
 % model = ElectroChemicalComponent_('eac');
 % model = CurrentCollector_('cc');
-model = Electrolyte_('elyte');
+% model = Electrolyte_('elyte');
 % model = orgLiPF6_('cc');
 % model = Electrode_('pn');
-% model = Battery_();
+model = Battery_();
+% model = BareBattery_();
 
 % setup the model
 model = model.initiateCompositeModel();

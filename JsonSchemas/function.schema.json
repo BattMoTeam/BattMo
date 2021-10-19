@@ -5,7 +5,7 @@
     "type": "object",
     "properties" : {
         "functionname" : {"type" : "string",
-                      "description" : "The name of the function file (for the moment should be included in path) without the matlab suffix (.m)"},
+                          "description" : "The name of the function file (for the moment should be included in path) without the matlab suffix (.m)"},
         "filepath" : {"type" : "string",
                       "description" : "name of file path (only for reference)"},
         "argumentlist" : {"type" : "array",
