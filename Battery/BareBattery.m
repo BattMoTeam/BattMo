@@ -15,11 +15,7 @@ classdef BareBattery < BaseModel
         NegativeElectrode % Negative Electrode Model, instance of :class:`Electrode <Electrochemistry.Electrodes.Electrode>`
         PositiveElectrode % Positive Electrode Model, instance of :class:`Electrode <Electrochemistry.Electrodes.Electrode>`
         
-        SOC % State Of Charge
-
         initT % Initial temperature
-        
-        Ucut % Voltage cut
         
         couplingTerms % Coupling terms
         cmin % mininum concentration used in capping
@@ -43,10 +39,7 @@ classdef BareBattery < BaseModel
             %% Setup the model using the input parameters
             fdnames = {'G'             , ...
                        'couplingTerms' , ...
-                       'initT'         , ...
-                       'SOC'           , ...
-                       'I'             , ...
-                       'Ucut'};
+                       'initT'};
             
             model = dispatchParams(model, paramobj, fdnames);
             
@@ -215,7 +208,7 @@ classdef BareBattery < BaseModel
 
             %% setup initial Electrolyte state
 
-            initstate.(elyte).phi = zeros(bat.(elyte).G.cells.num, 1)-ref;
+            initstate.(elyte).phi = zeros(bat.(elyte).G.cells.num, 1) - ref;
             cs = cell(2,1);
             initstate.(elyte).cs = cs;
             initstate.(elyte).cs{1} = 1000*ones(bat.(elyte).G.cells.num, 1);
@@ -239,7 +232,6 @@ classdef BareBattery < BaseModel
             
             %% for now temperature and SOC are kept constant
             nc = model.G.cells.num;
-            state.SOC = model.SOC*ones(nc, 1);
             
             % Shortcuts used in this function
             battery = model;

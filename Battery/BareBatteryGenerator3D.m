@@ -22,9 +22,9 @@ classdef BareBatteryGenerator3D < BareBatteryGenerator
         function [paramobj, gen] = setupGrid(gen, paramobj, ~)
         % paramobj is instance of BatteryInputParams
         % setup paramobj.G
-            sepnx  = gen.sepnx;
-            nenx   = gen.nenx;
-            penx   = gen.penx;
+            sepnx = gen.sepnx;
+            nenx  = gen.nenx;
+            penx  = gen.penx;
 
             nxs = [nenx; sepnx; penx];
 

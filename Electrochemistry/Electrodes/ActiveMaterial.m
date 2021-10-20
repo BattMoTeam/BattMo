@@ -16,7 +16,7 @@ classdef ActiveMaterial < BaseModel
 
         % Physicochemical properties
         volumeFraction
-        volumetricSurfaceArea  % Surface area,                 [m2 m^-3]
+        volumetricSurfaceArea  % Surface area to volume,       [m2 m^-3]
         theta0                 % Minimum lithiation, 0% SOC    [-]
         theta100               % Maximum lithiation, 100% SOC  [-]
         k0                     % Reference rate constant       [m^2.5 mol^-0.5 s^-1]
@@ -131,7 +131,7 @@ classdef ActiveMaterial < BaseModel
 
         function state = assembleSolidDiffusionEquation(model, state)
         % We update the surface concentration of the charge carrier in the active material.
-        % The surface concentration value is computed following polynomial method, as described in ref1 (see header)
+        % The surface concentration value is computed following polynomial method, as described in ref1 (see below)
 
             csurf = state.cElectrode;
             cavg = state.cElectrodeAveraged;
@@ -140,7 +140,7 @@ classdef ActiveMaterial < BaseModel
 
             rp = model.rp;
             a = model.volumetricSurfaceArea;
-
+            % We divide with volumetricSurfaceArea because it was added in the definition of R 
             state.solidDiffusionEq = csurf - cavg + (rp.*R)./(5*a*D);
 
         end
