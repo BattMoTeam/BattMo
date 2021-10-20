@@ -1,22 +1,20 @@
 {
-    "SOC": 0.5,
-    "Ucut": 2.5,
     "initT": 298.15,
     "NegativeElectrode": {
-        "heatCapacity": 4180000.0,
-        "chargeCarrierName": "Li",
         "electricalConductivity": 215,
-        "InterDiffusionCoefficient": 1e-10,
+        "heatCapacity": 4180000.0,
         "thermalConductivity": 6e-05,
+        "InterDiffusionCoefficient": 1e-10,
+        "chargeCarrierName": "Li",
         "ActiveMaterial": {
             "isFile": true,
             "filename": "JsonDatas/Chen2020/chenNegativeElectrodeActiveMaterial.json"
         }
     },
     "PositiveElectrode": {
-        "thermalConductivity": 6e-05,
-        "heatCapacity": 4180000.0,
         "electricalConductivity": 0.18,
+        "heatCapacity": 4180000.0,
+        "thermalConductivity": 6e-05,
         "InterDiffusionCoefficient": 1e-10,
         "chargeCarrierName": "Li",
         "ActiveMaterial": {

@@ -1,5 +1,6 @@
 %% Battery 1D model
 % Include presentation of the test case (use rst format)
+clear all
 
 % load MRST modules
 mrstModule add ad-core multimodel mrst-gui battery mpfa
@@ -12,14 +13,26 @@ jsonstruct = parseBatmoJson('JsonDatas/Chen2020/chenBattery.json');
 
 paramobj = BareBatteryInputParams(jsonstruct);
 
+amn = paramobj.NegativeElectrode.ActiveMaterial;
+amp = paramobj.PositiveElectrode.ActiveMaterial;
+
+amn.volumetricSurfaceArea = 1;
+amp.volumetricSurfaceArea = 1;
+
+amn.rp = (amn.rp^2)/(3*amn.volumeFraction);
+amp.rp = (amp.rp^2)/(3*amp.volumeFraction);
+
+paramobj.NegativeElectrode.ActiveMaterial = amn;
+paramobj.PositiveElectrode.ActiveMaterial = amp;
+
 % Some shortcuts used for the sub-models
-ne      = 'NegativeElectrode';
-pe      = 'PositiveElectrode';
-elyte   = 'Electrolyte';
+ne    = 'NegativeElectrode';
+pe    = 'PositiveElectrode';
+elyte = 'Electrolyte';
 
 %% We setup the battery geometry.
 % Here, we use a 1D model and the class BatteryGenerator1D already contains the discretization parameters
-gen = BareBatteryGenerator1D();
+gen = BareBatteryGenerator3D();
 % We update pamobj with grid data
 paramobj = gen.updateBatteryInputParams(paramobj);
 
@@ -28,9 +41,10 @@ paramobj = gen.updateBatteryInputParams(paramobj);
 model = BareBattery(paramobj);
 
 %% We compute the cell capacity and chose a discharge rate
-C      = computeCellCapacity(model);
-CRate  = 1/5; 
-inputI = (C/hour)*CRate; % current 
+% C      = computeCellCapacity(model);
+% CRate  = 1/5; 
+% inputI = (C/hour)*CRate; % current 
+inputI = 5;
 
 %% We setup the schedule 
 % We use different time step for the activation phase (small time steps) and the following discharging phase
@@ -58,7 +72,58 @@ control = repmat(struct('src', srcfunc, 'stopFunction', stopFunc), 1, 1);
 schedule = struct('control', control, 'step', step); 
 
 %%  We setup the initial state
-initstate = model.setupInitialState(); 
+
+nc = model.G.cells.num;
+T = model.initT;
+initstate.T = T*ones(nc, 1);
+
+bat = model;
+elyte = 'Electrolyte';
+ne    = 'NegativeElectrode';
+pe    = 'PositiveElectrode';
+am    = 'ActiveMaterial';
+
+initstate = model.updateTemperature(initstate);
+
+% we setup negative electrode initial state
+nam = bat.(ne).(am); 
+
+c = 29866.0;
+c = c*ones(nam.G.cells.num, 1);
+initstate.(ne).c = c;
+% We bypass the solid diffusion equation to set directly the particle surface concentration (this is a bit hacky)
+initstate.(ne).(am).cElectrode = c;
+initstate.(ne).(am) = nam.updateOCP(initstate.(ne).(am));
+
+OCP = initstate.(ne).(am).OCP;
+ref = OCP(1);
+
+initstate.(ne).phi = OCP - ref;
+
+% we setup positive electrode initial state
+pam = bat.(pe).(am); 
+
+c = 17038.0;
+c = c*ones(pam.G.cells.num, 1);
+initstate.(pe).c = c;
+% We bypass the solid diffusion equation to set directly the particle surface concentration (this is a bit hacky)
+initstate.(pe).(am).cElectrode = c;
+initstate.(pe).(am) = pam.updateOCP(initstate.(pe).(am));
+
+OCP = initstate.(pe).(am).OCP;
+
+initstate.(pe).phi = OCP - ref;
+
+initstate.(elyte).phi = zeros(bat.(elyte).G.cells.num, 1) - ref;
+cs = cell(2,1);
+initstate.(elyte).cs = cs;
+initstate.(elyte).cs{1} = 1000*ones(bat.(elyte).G.cells.num, 1);
+
+% setup initial positive electrode external coupling values
+
+initstate.(pe).E = OCP(1) - ref;
+initstate.(pe).I = 0;
+            
 
 % Setup nonlinear solver 
 nls = NonLinearSolver(); 
@@ -89,7 +154,10 @@ figure
 plot((time/hour), Enew, '*-', 'linewidth', 3)
 title('Potential (E)')
 xlabel('time (hours)')
-
+hold on
+loadChenPybammSolution
+plot(t, u, 'linewidth', 3, 'color', 'green')
+legend({'batmo', 'pybamm'})
 figure
 plot((time/hour), Inew, '*-', 'linewidth', 3)
 title('Current (I)')
