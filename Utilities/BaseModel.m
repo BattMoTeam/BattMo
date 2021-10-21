@@ -62,7 +62,7 @@ classdef BaseModel < PhysicalModel
         end
         
         function state = reduceState(model, state, removeContainers)
-            state = removeAD(state);
+            state = value(state);
         end
         
     end
