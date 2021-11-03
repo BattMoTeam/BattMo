@@ -23,23 +23,45 @@ function output = spiralGrid(params)
     % - tagdict : dictionary giving the component number
     
     nwindings = params.nwindings;
-    r0        = params.r0     ;
-    widths    = params.widths ;
-    nrs       = params.nrs    ;
-    nas       = params.nas    ;
-    L         = params.L      ;
+    r0        = params.r0;
+    widthDict = params.widthDict ;
+    nrDict    = params.nrDict;
+    nas       = params.nas;
+    L         = params.L;
     nL        = params.nL;
 
     %% component names
-    compnames = {'PositiveCurrentCollector', ...
-                 'PositiveActiveMaterial'  , ...
-                 'ElectrolyteSeparator'    , ...
-                 'NegativeActiveMaterial'  , ...
-                 'NegativeCurrentCollector'};
+    
+    compnames = {'PositiveElectrode1', ...
+                 'PositiveElectrodeCurrentCollector', ...
+                 'PositiveElectrode2', ...
+                 'Separator2', ...
+                 'NegativeElectrode2', ...
+                 'NegativeElectrodeCurrentCollector', ...
+                 'NegativeElectrode1', ...
+                 'Separator1'};
     
     comptag = (1 : numel(compnames));
     tagdict = containers.Map(compnames, comptag);
-
+    
+    %% 
+    widths = [widthDict('PositiveElectrode'); ...
+              widthDict('PositiveElectrodeCurrentCollector'); ...
+              widthDict('PositiveElectrode'); ...
+              widthDict('Separator'); ...
+              widthDict('NegativeElectrode'); ...
+              widthDict('NegativeElectrodeCurrentCollector'); ...
+              widthDict('NegativeElectrode'); ...
+              widthDict('Separator')];
+    
+    nrs = [nrDict('PositiveElectrode'); ...
+           nrDict('PositiveElectrodeCurrentCollector'); ...
+           nrDict('PositiveElectrode'); ...
+           nrDict('Separator'); ...
+           nrDict('NegativeElectrode'); ...
+           nrDict('NegativeElectrodeCurrentCollector'); ...
+           nrDict('NegativeElectrode'); ...
+           nrDict('Separator')];
     
     %% Grid setup
 
@@ -269,7 +291,6 @@ function output = spiralGrid(params)
     %%  recover the external faces that are inside the spiral
     % we get them using the Cartesian indexing
 
-
     [indi, indj, indk] = ind2sub([n, m, nL], (1 : G.cells.num)');
     
     clear celltbl
@@ -304,7 +325,7 @@ function output = spiralGrid(params)
     
     sfaces = sfacetbl.get('faces');
     
-    
+
     clear scelltbl
     nnrs = sum(nrs);
     scelltbl.indi = ones(nnrs, 1);
@@ -342,7 +363,7 @@ function output = spiralGrid(params)
     %% recover faces on top and bottom for the current collector
     % we could do that using cartesian indices (easier)
 
-    ccnames = {'PositiveCurrentCollector', 'NegativeCurrentCollector'};
+    ccnames = {'PositiveElectrodeCurrentCollector', 'NegativeElectrodeCurrentCollector'};
 
     for ind = 1 : numel(ccnames)
 
@@ -365,9 +386,9 @@ function output = spiralGrid(params)
         scalprod = sum(scalprod, 2);
 
         switch ccnames{ind}
-          case 'PositiveCurrentCollector'
+          case 'PositiveElectrodeCurrentCollector'
             ccfaces{ind} = ccextfaces(scalprod > 0.9);
-          case 'NegativeCurrentCollector'
+          case 'NegativeElectrodeCurrentCollector'
             ccfaces{ind} = ccextfaces(scalprod < -0.9);
           otherwise
             error('name not recognized');
