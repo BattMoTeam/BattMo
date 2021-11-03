@@ -20,11 +20,11 @@ classdef ElectrodeActiveComponent_ < ElectroChemicalComponent_
             fn = @ElectrodeActiveComponent.updateIonAndCurrentSource;
             inputnames = {VarName({'am'}, 'R')};
             fnmodel = {'.'};
-            model = model.addPropFunction('chargeCarrierSource', fn, inputnames, fnmodel);
+            model = model.addPropFunction('massSource', fn, inputnames, fnmodel);
             model = model.addPropFunction('eSource', fn, inputnames, fnmodel);
 
             fn = @ElectrodeActiveComponent.updateChargeCarrier;
-            inputnames = {VarName({'..'}, 'chargeCarrier')};
+            inputnames = {VarName({'..'}, 'c')};
             fnmodel = {'..'};
             model = model.addPropFunction({'am', 'cElectrodeAveraged'}, fn, inputnames, fnmodel);
 

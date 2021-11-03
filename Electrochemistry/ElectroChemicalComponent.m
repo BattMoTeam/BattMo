@@ -3,12 +3,6 @@ classdef ElectroChemicalComponent < ElectronicComponent
     properties
 
         EffectiveDiffusionCoefficient % Effective diffusion coefficient
-
-        chargeCarrierName
-        chargeCarrierFluxName 
-        chargeCarrierSourceName
-        chargeCarrierMassConsName
-        chargeCarrierAccumName
         
         
     end
@@ -20,50 +14,35 @@ classdef ElectroChemicalComponent < ElectronicComponent
         
             model = model@ElectronicComponent(paramobj);
             
-            fdnames = {'chargeCarrierName'};
-            model = dispatchParams(model, paramobj, fdnames);
-            
-            ccname = model.chargeCarrierName;
-            model.chargeCarrierFluxName     = sprintf('%sFlux', ccname);
-            model.chargeCarrierSourceName   = sprintf('%sSource', ccname);
-            model.chargeCarrierMassConsName = 'massCons';
-            model.chargeCarrierAccumName    = sprintf('%sAccum', ccname);
-            
         end
 
-        function state = updateChargeCarrierFlux(model, state)
+        function state = updateMassFlux(model, state)
         % Assemble diffusion flux which is stored in :code:`state.Flux`
-            ccFluxName = model.chargeCarrierFluxName;
 
             D = model.EffectiveDiffusionCoefficient;
             
             c = state.c;
 
-            ccflux = assembleFlux(model, c, D);
+            massflux = assembleFlux(model, c, D);
             
-            state.(ccFluxName) = ccflux;
+            state.massFlux = massflux;
             
         end
         
         function state = updateMassConservation(model, state)
         % Assemble residual of the mass conservation equation which is stored in :code:`state.massCons`
             
-            ccName         = model.chargeCarrierName;
-            ccFluxName     = model.chargeCarrierFluxName;
-            ccSourceName   = model.chargeCarrierSourceName;
-            ccAccumName    = model.chargeCarrierAccumName;
-            ccMassConsName = model.chargeCarrierMassConsName;
-            
-            flux   = state.(ccFluxName);
-            source = state.(ccSourceName);
-            accum  = state.(ccAccumName);
+            flux   = state.massFlux;
+            source = state.massSource;
+            accum  = state.massAccum;
             bcsource = 0;
             
             masscons = assembleConservationEquation(model, flux, bcsource, source, accum);
             
-            state.(ccMassConsName) = masscons;
+            state.massCons = masscons;
             
         end
+        
     end
 end
 

@@ -44,16 +44,16 @@ classdef BareBattery_ < CompositeModel
             fn = @Battery.updateElectrodeCoupling;
             
             clear inputnames;
-            inputnames{1} = VarName({'elyte'}, 'chargeCarrier');
+            inputnames{1} = VarName({'elyte'}, 'c');
             inputnames{1}.isNamingRelative = false;
             inputnames{2} = VarName({'elyte'}, 'phi');
             inputnames{2}.isNamingRelative = false;
             
             fnmodel = {'..', '..'};
             model = model.addPropFunction({'ne', 'am', 'phiElectrolyte'}, fn, inputnames, fnmodel);
-            model = model.addPropFunction({'ne', 'am', 'chargeCarrierElectrolyte'}, fn, inputnames, fnmodel);
+            model = model.addPropFunction({'ne', 'am', 'cElectrolyte'}, fn, inputnames, fnmodel);
             model = model.addPropFunction({'pe', 'am', 'phiElectrolyte'}, fn, inputnames, fnmodel);
-            model = model.addPropFunction({'pe', 'am', 'chargeCarrierElectrolyte'}, fn, inputnames, fnmodel);
+            model = model.addPropFunction({'pe', 'am', 'cElectrolyte'}, fn, inputnames, fnmodel);
             
             fn = @Battery.updateElectrolyteCoupling;
             
@@ -64,7 +64,7 @@ classdef BareBattery_ < CompositeModel
             inputnames{2}.isNamingRelative = false;
             
             fnmodel = {'..'};
-            model = model.addPropFunction({'elyte', 'chargeCarrierSource'}, fn, inputnames, fnmodel);
+            model = model.addPropFunction({'elyte', 'massSource'}, fn, inputnames, fnmodel);
             model = model.addPropFunction({'elyte', 'eSource'}, fn, inputnames, fnmodel);
             
             

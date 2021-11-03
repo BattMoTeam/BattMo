@@ -305,9 +305,7 @@ classdef Battery < BaseModel
             %% setup initial Electrolyte state
 
             initstate.(elyte).phi = zeros(bat.(elyte).G.cells.num, 1)-ref;
-            cs = cell(2,1);
-            initstate.(elyte).cs = cs;
-            initstate.(elyte).cs{1} = 1000*ones(bat.(elyte).G.cells.num, 1);
+            initstate.(elyte).c = 1000*ones(bat.(elyte).G.cells.num, 1);
 
             %% setup initial Current collectors state
 
@@ -422,7 +420,7 @@ classdef Battery < BaseModel
             %% elyte mass conservation
 
             state.(elyte) = battery.(elyte).updateDiffusionCoefficient(state.(elyte));
-            state.(elyte) = battery.(elyte).updateChargeCarrierFlux(state.(elyte));
+            state.(elyte) = battery.(elyte).updateMassFlux(state.(elyte));
             state.(elyte) = battery.(elyte).updateMassConservation(state.(elyte));
 
             
@@ -430,7 +428,7 @@ classdef Battery < BaseModel
                 elde = electrodes{ind};
                 
                 %% Electrodes mass conservation
-                state.(elde).(eac) = battery.(elde).(eac).updateChargeCarrierFlux(state.(elde).(eac));
+                state.(elde).(eac) = battery.(elde).(eac).updateMassFlux(state.(elde).(eac));
                 state.(elde).(eac) = battery.(elde).(eac).updateMassConservation(state.(elde).(eac));
                 
                 %% Electrodes charge conservation - current collector part
@@ -563,7 +561,6 @@ classdef Battery < BaseModel
             vols = battery.(elyte).G.cells.volumes;
             F = battery.con.F;
             
-            ccSourceName = battery.(elyte).chargeCarrierSourceName;
             couplingterms = battery.couplingTerms;
 
             elyte_c_source = zeros(battery.(elyte).G.cells.num, 1);
@@ -591,7 +588,7 @@ classdef Battery < BaseModel
             
             elyte_e_source = elyte_c_source.*battery.(elyte).sp.z(1)*F; 
             
-            state.Electrolyte.(ccSourceName) = elyte_c_source; 
+            state.Electrolyte.massSource = elyte_c_source; 
             state.Electrolyte.eSource = elyte_e_source;
             
         end
@@ -605,20 +602,18 @@ classdef Battery < BaseModel
             am    = 'ActiveMaterial';
             eac   = 'ElectrodeActiveComponent';
             
-            ccAccumName = model.(elyte).chargeCarrierAccumName;
-            
-            cdotcc  = (state.(elyte).cs{1} - state0.(elyte).cs{1})/dt;
+            cdotcc  = (state.(elyte).c - state0.(elyte).c)/dt;
             effectiveVolumes = model.(elyte).volumeFraction.*model.(elyte).G.cells.volumes;
-            ccAccum  = effectiveVolumes.*cdotcc;
-            state.(elyte).(ccAccumName) = ccAccum;
+            massAccum  = effectiveVolumes.*cdotcc;
+            state.(elyte).massAccum = massAccum;
             
             names = {ne, pe};
             for i = 1 : numel(names)
                 elde = names{i}; % electrode name
                 cdotcc   = (state.(elde).(eac).c - state0.(elde).(eac).c)/dt;
                 effectiveVolumes = model.(elde).(eac).volumeFraction.*model.(elde).(eac).G.cells.volumes;
-                ccAccum  = effectiveVolumes.*cdotcc;
-                state.(elde).(eac).(ccAccumName) = ccAccum;
+                massAccum  = effectiveVolumes.*cdotcc;
+                state.(elde).(eac).massAccum = massAccum;
             end
             
         end
@@ -877,7 +872,7 @@ classdef Battery < BaseModel
                 useMex = adbackend.useMex; 
             end
             opts=struct('types',[1,1,2,2,2,3,3,3,4,5,6,7,8],'useMex',useMex);
-            [state.(elyte).cs{1}  , ...
+            [state.(elyte).c  , ...
              state.(elyte).phi    , ...   
              state.(ne).(eac).c   , ...   
              state.(ne).(eac).phi , ...   
@@ -891,7 +886,7 @@ classdef Battery < BaseModel
              state.(pe).(cc).E, ...
              state.(pe).(cc).I] = ...
                 adbackend.initVariablesAD(...
-                    state.(elyte).cs{1}  , ...
+                    state.(elyte).c  , ...
                     state.(elyte).phi    , ...   
                     state.(ne).(eac).c   , ...    
                     state.(ne).(eac).phi , ...   
@@ -919,18 +914,18 @@ classdef Battery < BaseModel
             cc    = 'CurrentCollector';
             thermal = 'ThermalModel';
             
-            p = {{elyte, 'cs', 1} , ...
-                 {elyte, 'phi'}   , ...   
-                 {ne, eac, 'c'}   , ...    
-                 {ne, eac, 'phi'} , ...   
+            p = {{elyte, 'c'}                , ...
+                 {elyte, 'phi'}              , ...   
+                 {ne, eac, 'c'}              , ...    
+                 {ne, eac, 'phi'}            , ...   
                  {ne, eac, am, 'cElectrode'} , ...
-                 {pe, eac, 'c'}   , ...    
-                 {pe, eac, 'phi'} , ...   
+                 {pe, eac, 'c'}              , ...    
+                 {pe, eac, 'phi'}            , ...   
                  {pe, eac, am, 'cElectrode'} , ...
-                 {ne, cc, 'phi'}  , ...    
-                 {pe, cc, 'phi'}  , ...
-                 {thermal, 'T'}   , ...
-                 {pe, cc, 'E'}, ...
+                 {ne, cc, 'phi'}             , ...    
+                 {pe, cc, 'phi'}             , ...
+                 {thermal, 'T'}              , ...
+                 {pe, cc, 'E'}               , ...
                  {pe, cc, 'I'}};
             
         end
@@ -979,7 +974,7 @@ classdef Battery < BaseModel
 
             cmin = model.cmin;
             
-            state.(elyte).cs{1} = max(cmin, state.(elyte).cs{1});
+            state.(elyte).c = max(cmin, state.(elyte).c);
             
             eldes = {ne, pe};
             for ind = 1 : numel(eldes)

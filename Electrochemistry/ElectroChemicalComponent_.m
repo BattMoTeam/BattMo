@@ -7,24 +7,22 @@ classdef ElectroChemicalComponent_ < ElectronicComponent_
             model = model@ElectronicComponent_(name);
             
             names = {model.names{:}        , ...
-                     'cs'                  , ... % Species concentration (cell)
-                     'chargeCarrierSource' , ...
-                     'chargeCarrierFlux'   , ...
-                     'chargeCarrierAccum'  , ...
+                     'c'
+                     'massSource' , ...
+                     'massFlux'   , ...
+                     'massAccum'  , ...
                      'massCons'};
             model.names = names;
             
             model.vardims('cs') = 2;
 
-            model = model.setAlias({'chargeCarrier', VarName({'.'}, 'cs', 2, 1)});
-
-            fn = @ElectroChemicalComponent.updateChargeCarrierFlux;
-            inputnames = {'chargeCarrier'};
+            fn = @ElectroChemicalComponent.updateMassFlux;
+            inputnames = {'c'};
             fnmodel = {'.'};
-            model = model.addPropFunction('chargeCarrierFlux', fn, inputnames, fnmodel);        
+            model = model.addPropFunction('massFlux', fn, inputnames, fnmodel);        
             
             fn = @ElectroChemicalComponent.updateMassConservation;
-            inputnames = {'chargeCarrierFlux', 'chargeCarrierSource', 'chargeCarrierAccum'};
+            inputnames = {'massFlux', 'massSource', 'massAccum'};
             fnmodel = {'.'};
             model = model.addPropFunction('massCons', fn, inputnames, fnmodel);
 

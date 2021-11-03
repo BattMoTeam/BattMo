@@ -37,10 +37,6 @@ classdef ActiveMaterial_ < CompositeModel
             
             model.names = names;
             
-            % Alias: charge Carrier for cs{1}
-            model = model.setAlias({'chargeCarrierElectrode', VarName({'.'}, 'cElectrode')});
-            model = model.setAlias({'chargeCarrierElectrolyte', VarName({'.'}, 'cElectrolyte')});
-            
             fn = @ActiveMaterial.updateReactionRateCoefficient;
             inputnames = {'cElectrode', 'cElectrolyte', 'T'};
             fnmodel = {'.'};
@@ -52,12 +48,12 @@ classdef ActiveMaterial_ < CompositeModel
             model = model.addPropFunction('D', fn, inputnames, fnmodel);
 
             fn = @ActiveMaterial.updateOCP;
-            inputnames = {'chargeCarrierElectrode', 'T'};
+            inputnames = {'cElectrode', 'T'};
             fnmodel = {'.'};
             model = model.addPropFunction('OCP', fn, inputnames, fnmodel);
 
             fn = @ActiveMaterial.updateReactionRate;
-            inputnames = {'T', 'phiElectrolyte', 'phiElectrode', 'chargeCarrierElectrode', 'chargeCarrierElectrolyte', 'OCP', 'k'};
+            inputnames = {'T', 'phiElectrolyte', 'phiElectrode', 'cElectrode', 'cElectrolyte', 'OCP', 'k'};
             fnmodel = {'.'};
             model = model.addPropFunction('R', fn, inputnames, fnmodel);
             % model = model.addPropFunction('eta', fn, inputnames, fnmodel);

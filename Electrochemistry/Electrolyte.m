@@ -2,12 +2,13 @@ classdef Electrolyte < ElectroChemicalComponent
     
     properties
         
-        indchargecarrier
-        
         sp
         compnames
         ncomp
 
+        indchargecarrier
+        chargeCarrierName
+        
         Separator
         
         volumeFraction
@@ -70,7 +71,12 @@ classdef Electrolyte < ElectroChemicalComponent
         end
         
         function state = updateConcentrations(model, state)
-            state.cs{2} = state.cs{1};
+            
+            cs{1} = state.c;
+            cs{2} = state.c;
+            
+            state.cs = cs;
+            
         end
                 
 
@@ -156,7 +162,7 @@ classdef Electrolyte < ElectroChemicalComponent
             
         end
         
-        function state = updateChargeCarrierFlux(model, state)
+        function state = updateMassFlux(model, state)
             
             ind = model.indchargecarrier;
             
@@ -176,7 +182,7 @@ classdef Electrolyte < ElectroChemicalComponent
             %% 3. Sum the two flux contributions
             flux = diffFlux + fluxE;
             
-            state.LiFlux = flux;
+            state.massFlux = flux;
             
         end
         

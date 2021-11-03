@@ -304,14 +304,14 @@ classdef BareBattery < BaseModel
             %% elyte mass conservation
 
             state.(elyte) = battery.(elyte).updateDiffusionCoefficient(state.(elyte));
-            state.(elyte) = battery.(elyte).updateChargeCarrierFlux(state.(elyte));
+            state.(elyte) = battery.(elyte).updateMassFlux(state.(elyte));
             state.(elyte) = battery.(elyte).updateMassConservation(state.(elyte));
             
             for ind = 1 : numel(electrodes)
                 elde = electrodes{ind};
                 
                 %% Electrodes mass conservation
-                state.(elde) = battery.(elde).updateChargeCarrierFlux(state.(elde));
+                state.(elde) = battery.(elde).updateMassFlux(state.(elde));
                 state.(elde) = battery.(elde).updateMassConservation(state.(elde));
                 
             end
@@ -403,7 +403,6 @@ classdef BareBattery < BaseModel
             vols = battery.(elyte).G.cells.volumes;
             F = battery.con.F;
             
-            ccSourceName = battery.(elyte).chargeCarrierSourceName;
             couplingterms = battery.couplingTerms;
 
             elyte_c_source = zeros(battery.(elyte).G.cells.num, 1);
@@ -431,7 +430,7 @@ classdef BareBattery < BaseModel
             
             elyte_e_source = elyte_c_source.*battery.(elyte).sp.z(1)*F; 
             
-            state.Electrolyte.(ccSourceName) = elyte_c_source; 
+            state.Electrolyte.massSource = elyte_c_source; 
             state.Electrolyte.eSource = elyte_e_source;
             
         end
@@ -444,20 +443,19 @@ classdef BareBattery < BaseModel
             pe    = 'PositiveElectrode';
             am    = 'ActiveMaterial';
             
-            ccAccumName = model.(elyte).chargeCarrierAccumName;
             
             cdotcc  = (state.(elyte).cs{1} - state0.(elyte).cs{1})/dt;
             effectiveVolumes = model.(elyte).volumeFraction.*model.(elyte).G.cells.volumes;
-            ccAccum  = effectiveVolumes.*cdotcc;
-            state.(elyte).(ccAccumName) = ccAccum;
+            massAccum  = effectiveVolumes.*cdotcc;
+            state.(elyte).massAccum = massAccum;
             
             names = {ne, pe};
             for i = 1 : numel(names)
                 elde = names{i}; % electrode name
                 cdotcc   = (state.(elde).c - state0.(elde).c)/dt;
                 effectiveVolumes = model.(elde).volumeFraction.*model.(elde).G.cells.volumes;
-                ccAccum  = effectiveVolumes.*cdotcc;
-                state.(elde).(ccAccumName) = ccAccum;
+                massAccum  = effectiveVolumes.*cdotcc;
+                state.(elde).massAccum = massAccum;
             end
             
         end
