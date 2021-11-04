@@ -390,14 +390,14 @@ classdef IsothermalBattery < BaseModel
             eqs{end + 1} = state.(ne).(eac).massCons*massConsScaling;
             eqs{end + 1} = state.(ne).(eac).chargeCons;
             if(model.use_solid_diffusion)
-                eqs{end + 1} = state.(ne).(eac).(am).solidDiffusionEq;
+                eqs{end + 1} = massConsScaling*state.(ne).(eac).(am).solidDiffusionEq.*battery.(ne).(eac).(am).G.cells.volumes/dt;
             end
             
             resistance = 1/model.(pe).(eac).EffectiveElectricalConductivity(1);
             eqs{end + 1} = state.(pe).(eac).massCons*massConsScaling;
             eqs{end + 1} = state.(pe).(eac).chargeCons;
             if(model.use_solid_diffusion)
-                eqs{end + 1} = massConsScaling*state.(pe).(eac).(am).solidDiffusionEq;
+                eqs{end + 1} = massConsScaling*state.(pe).(eac).(am).solidDiffusionEq.*battery.(pe).(eac).(am).G.cells.volumes/dt;
             end
             
             resistance = 1/model.(ne).(cc).EffectiveElectricalConductivity(1);
@@ -434,11 +434,12 @@ classdef IsothermalBattery < BaseModel
                      'EIeq', ...
                      'controlEq'};
                   types = {'cell','cell','cell','cell', 'sdiff','cell','cell','sdiff','cell','cell', 'cntrl', 'cntrl'};
+                  %types = {'cell','cell','cell','cell', 'cell','cell','cell','cell','cell','cell', 'cntrl', 'cntrl'};
                   switch ctrltype
                      case 'I'
                         types{end-1} = 'cell';   
                     case 'E'    
-                        order = [1:9,11,10];
+                        order = [1:10,12,11];
                         eqs = {eqs{order}};
                         names = {names{order}};
                       otherwise 
