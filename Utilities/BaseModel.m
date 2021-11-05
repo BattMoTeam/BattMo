@@ -73,13 +73,12 @@ classdef BaseModel < PhysicalModel
         end
 
         
-        function [state, report] = updateStateOld(model, state, problem, dx, drivingForces)
+        function [state, report] = updateState(model, state, problem, dx, drivingForces)
 
             p = model.getPrimaryVariables();
 
             for i = 1 : numel(dx)
                 val = model.getProp(state, p{i});
-                scale = model.getScalings(p{i})
                 val = val + dx{i};
                 state = model.setProp(state, p{i}, val);
             end
@@ -92,7 +91,7 @@ classdef BaseModel < PhysicalModel
             error();
         end
         
-        function [state, report] = updateState(model, state, problem, ...
+        function [state, report] = updateStateNew(model, state, problem, ...
                                                dx, drivingForces)
             scales = model.getScales();
             for i = 1:numel(problem.primaryVariables)

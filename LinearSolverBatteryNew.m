@@ -33,11 +33,12 @@ classdef LinearSolverBatteryNew < LinearSolverAD
                             agmg(A,b,20,solver.tolerance,solver.maxIterations,solver.verbosity,[],-1);
                             agmg(A,b,20,solver.tolerance,solver.maxIterations,solver.verbosity,[],1);
                         end
-                        [result,flag]=agmg(A,b,20,solver.tolerance,solver.maxIterations,solver.verbosity,[],2);
+                        [result,flag,relres,iter]=agmg(A,b,20,solver.tolerance,solver.maxIterations,solver.verbosity,[],2);
                         if(flag == 1)
                             agmg(A,b,20,solver.tolerance,solver.maxIterations,solver.verbosity,[],-1);
                             agmg(A,b,20,solver.tolerance,solver.maxIterations,solver.verbosity,[],1);
-                            result=agmg(A,b,20,solver.tolerance,solver.maxIterations,solver.verbosity,[],2);
+                            [result,flag,relres,iter_new]=agmg(A,b,20,solver.tolerance,solver.maxIterations,solver.verbosity,result,2);
+                            iter = iter+iter_new;
                             solver.first=true;
                         end
                     else
