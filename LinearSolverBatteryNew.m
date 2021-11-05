@@ -19,15 +19,14 @@ classdef LinearSolverBatteryNew < LinearSolverAD
             solver.reuse_setup =  opt.reuse_setup;
         end
     
-        function [result, report] = solveLinearSystem(solver, A, b, x0)
+        function [result, report] = solveLinearSystem(solver, A, b, x0, problem)
             report = solver.getSolveReport();
             switch solver.method
                 case 'direct'
                     result=A\b;
                 case 'agmg'
                     a=tic();
-                    if(solver.reuse_setup)
-                        
+                    if(solver.reuse_setup)                        
                         if(solver.first)
                             solver.first = false;
                             agmg(A,b,20,solver.tolerance,solver.maxIterations,solver.verbosity,[],-1);
@@ -52,6 +51,21 @@ classdef LinearSolverBatteryNew < LinearSolverAD
                     %if(reset)
                     %    result=agmg(A,b,20,solver.tolerance,solver.maxIterations,solver.verbosity,-1);
                     %end
+                case 'matlab_agmg'
+                    agmg(A,b,20,solver.tolerance,solver.maxIterations,solver.verbosity,[],-1);
+                    agmg(A,b,20,solver.tolerance,solver.maxIterations,solver.verbosity,[],1);
+                    f=@(b) solver.amgprecond(b,A)
+                    result = gmres(A,b,10,solver.tol,solver.maxiter,f);
+                case 'matlab_cpr_amg'
+                    indb = getPotentialIndex(problem)
+                    agmg(A(indb,indb),b(inb),20,solver.tolerance,solver.maxIterations,solver.verbosity,[],-1);
+                    agmg(A(indb,indb),b(indb),20,solver.tolerance,solver.maxIterations,solver.verbosity,[],1);
+                    f=@(b) solver.amgprecondcpr(b,A,indb,false)
+                    result = gmres(A,b,10,solver.tol,solver.maxiter,f);
+                case 'matlab_cpr'
+                    indb = solver.getPotentialIndex(problem) ;
+                    f=@(b) solver.precondcpr(b,A,indb,true);
+                    result = gmres(A,b,20,solver.tolerance,solver.maxIterations,f);
                 case 'amgcl'
                       mycase = 'amg';
                       switch mycase
@@ -92,7 +106,25 @@ classdef LinearSolverBatteryNew < LinearSolverAD
             %% fill report
         end
         
-        function r = precond(solver,x,A,ind)%,AA)
+        function indb = getPotentialIndex(solver,problem)
+            numVars = problem.equations{1}.getNumVars();
+            %eqnames = problem.
+            if(numel(problem.equations)>8)
+                vars=[2,4,6,7,8,9];
+            else
+                vars=[2,4,6,7,8];
+            end
+                    % equation 4,6 seems ok.
+            pos=cumsum(numVars);
+            pos=[[1;pos(1:end-1)+1],pos];
+            posvar=pos(vars,:);
+            %eind = mcolon(posvar(1,1),posvar(1,2));
+            %neind = mcolon(posvar(2:end,1),posvar(2:end,2));
+            ind=mcolon(posvar(:,1),posvar(:,2));
+            indb=false(pos(end),1);      
+            indb(ind) = true;
+        end            
+        function r = precondcpr(solver,x,A,ind,use_matlab)%,AA)
             r=x*0;
             %[L,U,p] = lu(A,'vector');
             %% post smooth
@@ -102,7 +134,11 @@ classdef LinearSolverBatteryNew < LinearSolverAD
             r=r+dr;
             x=x-A*dr;
             if(true)
-                rphi=  agmg(A(ind,ind),x(ind),0,1e-4,20,0);
+                if(use_matlab)
+                    rphi = A(ind,ind)\x(ind);
+                else
+                    rphi=  agmg(A(ind,ind),x(ind),0,1e-4,20,0,2);
+                end
                 r(ind)=r(ind)+rphi;
                 x(ind)=x(ind)-A(ind,ind)*rphi;
             end
@@ -112,5 +148,11 @@ classdef LinearSolverBatteryNew < LinearSolverAD
             r=r+dr;
             %x=x-A*dr;
         end
+        
+        function r = agmgprecond(solver,x,A)            
+                r= agmg(A,x,0,1e-4,20,0,2);                
+        end
+
+        
     end
 end
