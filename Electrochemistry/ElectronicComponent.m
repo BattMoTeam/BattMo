@@ -23,7 +23,7 @@ classdef ElectronicComponent < BaseModel
             model = dispatchParams(model, paramobj, fdnames);
             
             % setup discrete differential operators
-            model.operators = localSetupOperators(model.G, 'assembleCellFluxOperator', false);
+            model.operators = localSetupOperators(model.G, 'assembleCellFluxOperator', true);
             
             model.constants = PhysicalConstants();
             
@@ -48,7 +48,7 @@ classdef ElectronicComponent < BaseModel
             flux   = state.j;
             bcsource = state.jBcSource;
             source = state.eSource;
-            accum  = 0;
+            accum  = zeros(model.G.cells.num,1);
             
             chargeCons = assembleConservationEquation(model, flux, bcsource, source, accum);
             
