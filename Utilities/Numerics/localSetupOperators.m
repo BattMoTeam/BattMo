@@ -12,7 +12,7 @@ function operators = localSetupOperators(G, varargin)
     operators.harmFaceBC = @(cvalue, faces) getFaceHarmBC(G, cvalue, faces);
     
     if opts.assembleCellFluxOperator
-        operators.cellFluxOp = getCellFluxOperator(G);
+        operators.cellFluxOp = getCellFluxOperators(G);
     end
 end
 

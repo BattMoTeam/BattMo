@@ -1,4 +1,4 @@
-function op = getCellFluxOperators(G)
+function op = getCellFluxOperators(G, varargin)
 % Setup the operators P and S that are necessary to compute norm of cell flux
 %
 % The operator P : facetbl (face-valued) to cellvecttbl (cell-valued vector)
