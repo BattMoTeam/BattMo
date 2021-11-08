@@ -73,7 +73,7 @@ function output = spiralGrid(params)
     w = repmat(w, [nwindings, 1]);
     w = [0; cumsum(w)];
 
-    h = linspace(0, 2*pi*r0, nas*nwindings + 1);
+    h = linspace(0, 2*pi*r0, nas + 1);
 
     nperlayer = sum(nrs);
 
@@ -243,7 +243,6 @@ function output = spiralGrid(params)
     cells.faces = cellfacetbl.get('faces');
     cells.num = cartG.cells.num;
 
-
     G.cells = cells;
     G.faces = faces;
     G.nodes = nodes;
@@ -262,8 +261,8 @@ function output = spiralGrid(params)
     comptagtbl = IndexArray(comptagtbl);
 
     celltbl.cells = (1 : cartG.cells.num)';
-    celltbl.indi = repmat((1 : nas*nwindings)', [sum(nrs)*nwindings, 1]);
-    celltbl.indj = rldecode((1 : sum(nrs)*nwindings)', nas*nwindings*ones(sum(nrs)*nwindings, 1));
+    celltbl.indi = repmat((1 : nas)', [sum(nrs)*nwindings, 1]);
+    celltbl.indj = rldecode((1 : sum(nrs)*nwindings)', nas*ones(sum(nrs)*nwindings, 1));
     celltbl = IndexArray(celltbl);
 
     celltagtbl = crossIndexArray(celltbl, comptagtbl, {'indj'});
