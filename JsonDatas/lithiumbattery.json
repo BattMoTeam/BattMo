@@ -9,7 +9,7 @@
             "thermalConductivity": 1.04,
             "chargeCarrierName": "Li",
             "InterDiffusionCoefficient": 1e-14,
-            "InterDiffusionCoefficientComment" : "from Ecker 2015"
+            "InterDiffusionCoefficientComment" : "from Ecker 2015",
             "electricalConductivity": 100,
             "ActiveMaterial": {
                 "isFile": true,
