@@ -1,18 +1,19 @@
 function output = flatGrid(params)
     
+    
     %% Parameters 
     % 
     % params structure with following fields
     % - nwindings : number of windings in the spiral
     % - r0        : "radius" at the middle
-    % - widths    : vector of widths for each component indexed in following order (see tagdict below in code)
-    %                 - positive current collector
-    %                 - positive active material
-    %                 - electrolyte separator 
-    %                 - negative active material
-    %                 - negative current collector
+    % - widthDict : dictionary of widths for each component. The required key names for the dictionary are
+    %                 - 'Separator'
+    %                 - 'NegativeActiveMaterial'
+    %                 - 'NegativeCurrentCollector'
+    %                 - 'PositiveActiveMaterial'
+    %                 - 'PositiveCurrentCollector'
+    % - nrDict    : dicionary with number of cell in radial direction for each component (same keys as in widthDict).
     % - L         : length of the battery
-    % - nrs       : number of cell in radial direction for each component (same ordering as above).
     % - nas       : number of cells in the angular direction
     % - nL        : number of discretization cells in the longitudonal
     %
@@ -24,22 +25,46 @@ function output = flatGrid(params)
     
     nwindings = params.nwindings;
     r0        = params.r0;
-    widths    = params.widths;
-    nrs       = params.nrs;
+    widthDict = params.widthDict ;
+    nrDict    = params.nrDict;
     nas       = params.nas;
     L         = params.L;
     nL        = params.nL;
 
     %% component names
-    compnames = {'PositiveCurrentCollector', ...
-                 'PositiveActiveMaterial'  , ...
-                 'ElectrolyteSeparator'    , ...
-                 'NegativeActiveMaterial'  , ...
-                 'NegativeCurrentCollector'};
+    
+    compnames = {'PositiveActiveMaterial1', ...
+                 'PositiveCurrentCollector', ...
+                 'PositiveActiveMaterial2', ...
+                 'ElectrolyteSeparator2', ...
+                 'NegativeActiveMaterial2', ...
+                 'NegativeCurrentCollector', ...
+                 'NegativeActiveMaterial1', ...
+                 'ElectrolyteSeparator1'};
     
     comptag = (1 : numel(compnames));
     tagdict = containers.Map(compnames, comptag);
+    
 
+    %% 
+    widths = [widthDict('PositiveActiveMaterial'); ...
+              widthDict('PositiveCurrentCollector'); ...
+              widthDict('PositiveActiveMaterial'); ...
+              widthDict('ElectrolyteSeparator'); ...
+              widthDict('NegativeActiveMaterial'); ...
+              widthDict('NegativeCurrentCollector'); ...
+              widthDict('NegativeActiveMaterial'); ...
+              widthDict('ElectrolyteSeparator')];
+    
+    nrs = [nrDict('PositiveActiveMaterial'); ...
+           nrDict('PositiveCurrentCollector'); ...
+           nrDict('PositiveActiveMaterial'); ...
+           nrDict('ElectrolyteSeparator'); ...
+           nrDict('NegativeActiveMaterial'); ...
+           nrDict('NegativeCurrentCollector'); ...
+           nrDict('NegativeActiveMaterial'); ...
+           nrDict('ElectrolyteSeparator')];
+    
     
     %% Grid setup
 
@@ -51,16 +76,16 @@ function output = flatGrid(params)
     w = repmat(w, [nwindings, 1]);
     w = [0; cumsum(w)];
 
-    h = linspace(0, 2*pi*r0, nas*nwindings + 1);
+    h = linspace(0, 2*pi*r0, nas + 1);
 
     nperlayer = sum(nrs);
 
     G = tensorGrid(h, w);
+    G.type = {'flatGrid'};
+    G = computeGeometry(G, 'findNeighbors', true);
 
     n = numel(h) - 1;
     m = numel(w) - 1;
-
-    tbls = setupSimpleTables(G);
 
     ncomp = numel(widths);
     comptag = rldecode((1 : ncomp)', nrs);
@@ -71,25 +96,23 @@ function output = flatGrid(params)
     comptagtbl = IndexArray(comptagtbl);
 
     celltbl.cells = (1 : G.cells.num)';
-    celltbl.indi = repmat((1 : nas*nwindings)', [sum(nrs)*nwindings, 1]);
-    celltbl.indj = rldecode((1 : sum(nrs)*nwindings)', nas*nwindings*ones(sum(nrs)*nwindings, 1));
+    celltbl.indi = repmat((1 : nas)', [sum(nrs)*nwindings, 1]);
+    celltbl.indj = rldecode((1 : sum(nrs)*nwindings)', nas*ones(sum(nrs)*nwindings, 1));
     celltbl = IndexArray(celltbl);
 
     celltagtbl = crossIndexArray(celltbl, comptagtbl, {'indj'});
     celltagtbl = sortIndexArray(celltagtbl, {'cells', 'tag'});
 
     tag = celltagtbl.get('tag');
-
-    % Extrude battery in z-direction
+    
+    %% Extrude battery in z-direction
+    
     zwidths = (L/nL)*ones(nL, 1);
     G = makeLayeredGrid(G, zwidths);
     G = computeGeometry(G);
     
-    G.faces = rmfield(G.faces, 'tag');
-    
     tag = repmat(tag, [nL, 1]);
-
-    % setup the standard tables
+    
     tbls = setupSimpleTables(G);
     cellfacetbl = tbls.cellfacetbl;
     
@@ -97,9 +120,9 @@ function output = flatGrid(params)
     extfacetbl.faces = find(any(G.faces.neighbors == 0, 2));
     extfacetbl = IndexArray(extfacetbl);
     extcellfacetbl = crossIndexArray(extfacetbl, cellfacetbl, {'faces'});
-    
-    thermalExchangeFaces = extfacetbl.get('faces');
-    
+
+    %% We set up Cartesian indexing for the cells
+
     [indi, indj, indk] = ind2sub([n, m, nL], (1 : G.cells.num)');
     
     clear celltbl
@@ -109,7 +132,7 @@ function output = flatGrid(params)
     celltbl.indk = indk;
     celltbl = IndexArray(celltbl);
 
-    % We add horizontal (1) and vertical (2) direction index for the faces (see makeLayeredGrid for the setup)
+    %% We add vertical (1) and horizontal (2) direction index for the faces (see makeLayeredGrid for the setup)
     
     nf = G.faces.num;
     clear facetbl
@@ -119,36 +142,105 @@ function output = flatGrid(params)
     facetbl.dir = dir;
     facetbl = IndexArray(facetbl);
 
+    
+    %% We extract the faces at the exterior for thermal exchange, using Cartesian indexing
+    
+    scelltbl.indi = (1: n)';
+    scelltbl.indj = 1*ones(n, 1);
+    scelltbl      = IndexArray(scelltbl);
+    
+    scelltbl = crossIndexArray(celltbl, scelltbl, {'indi', 'indj'});
+    scelltbl = projIndexArray(scelltbl, 'cells');
+    extscellfacetbl = crossIndexArray(scelltbl, extcellfacetbl, {'cells'});
+    sfacetbl = projIndexArray(extscellfacetbl, {'faces'});
+    
+    sfacetbl = sfacetbl.addInd('dir', 2*ones(sfacetbl.num, 1));
+    sfacetbl = crossIndexArray(sfacetbl, facetbl, {'faces', 'dir'});
+    
+    sfaces = sfacetbl.get('faces');
+
+    clear scelltbl
+    nnrs = sum(nrs);
+    scelltbl.indk = [1; nL];
+    scelltbl = IndexArray(scelltbl);
+    
+    scelltbl = crossIndexArray(celltbl, scelltbl, {'indk'});
+    scelltbl = projIndexArray(scelltbl, 'cells');
+    extscellfacetbl = crossIndexArray(scelltbl, extcellfacetbl, {'cells'});
+    sfacetbl = projIndexArray(extscellfacetbl, {'faces'});
+    
+    sfacetbl = sfacetbl.addInd('dir', 1*ones(sfacetbl.num, 1));
+    sfacetbl = crossIndexArray(sfacetbl, facetbl, {'faces', 'dir'});
+
+    sfaces = [sfaces; sfacetbl.get('faces')];
+    
+    thermalExchangeFaces = sfaces;
+
+    %% recover faces on top and bottom for the current collector
+    % we could do that using cartesian indices (easier)
+
     ccnames = {'PositiveCurrentCollector', 'NegativeCurrentCollector'};
 
     for ind = 1 : numel(ccnames)
 
         clear cccelltbl
         cccelltbl.cells = find(tag == tagdict(ccnames{ind}));
+        cccelltbl = IndexArray(cccelltbl);
+
+        extcccellfacetbl = crossIndexArray(extcellfacetbl, cccelltbl, {'cells'});
+        extccfacetbl = projIndexArray(extcccellfacetbl, {'faces'});
+
+        ccextfaces = extccfacetbl.get('faces');
+
+        normals = G.faces.normals(ccextfaces, :);
+        sgn = ones(numel(ccextfaces), 1);
+        sgn(G.faces.neighbors(ccextfaces, 1) == 0) = -1;
+        areas = G.faces.areas(ccextfaces, :);
+        nnormals = sgn.*normals./areas;
+
+        scalprod = bsxfun(@times, [0, 0, 1], nnormals);
+        scalprod = sum(scalprod, 2);
+
         switch ccnames{ind}
           case 'PositiveCurrentCollector'
-            cccelltbl.indk = nL;
+            ccfaces{ind} = ccextfaces(scalprod > 0.9);
           case 'NegativeCurrentCollector'
-            cccelltbl.indk = 1;
+            ccfaces{ind} = ccextfaces(scalprod < -0.9);
           otherwise
             error('name not recognized');
         end
-        cccelltbl = IndexArray(cccelltbl);
-
-        cccelltbl = crossIndexArray(cccelltbl, celltbl, {'cells', 'indk'});
-        extcccellfacetbl = crossIndexArray(extcellfacetbl, cccelltbl, {'cells'});
-        ccfacetbl = projIndexArray(extcccellfacetbl, {'faces'});
-        
-        ccfacetbl = ccfacetbl.addInd('dir', 1*ones(ccfacetbl.num, 1));
-        
-        ccfacetbl = crossIndexArray(ccfacetbl, facetbl, {'faces', 'dir'});
-
-        ccfaces{ind} = ccfacetbl.get('faces');
-
     end
 
     positiveExtCurrentFaces = ccfaces{1};
     negativeExtCurrentFaces = ccfaces{2};
+   
+    %% 
+    detailedtag = tag;
+    detailedtagdict = tagdict;
+
+    tag = nan(G.cells.num);
+    tagdict = containers.Map(...
+        {'PositiveActiveMaterial'  , ...
+         'PositiveCurrentCollector', ...
+         'ElectrolyteSeparator'    , ...
+         'NegativeActiveMaterial'  , ...
+         'NegativeCurrentCollector'}, [1 : 5]');
+    
+    mappings = {{'PositiveActiveMaterial', {'PositiveActiveMaterial1', 'PositiveActiveMaterial2'}}, ...
+                {'NegativeActiveMaterial', {'NegativeActiveMaterial1', 'NegativeActiveMaterial2'}}, ...
+                {'ElectrolyteSeparator', {'ElectrolyteSeparator1', 'ElectrolyteSeparator2'}}, ...
+                {'PositiveCurrentCollector', {'PositiveCurrentCollector'}}, ...
+                {'NegativeCurrentCollector', {'NegativeCurrentCollector'}}};
+    
+    for ind1 = 1 : numel(mappings)
+        mapping = mappings{ind1};
+        tagvalue1 = tagdict(mapping{1});
+        for ind2 = 1 : numel(mapping{2})
+            tagvalue2 = detailedtagdict(mapping{2}{ind2});
+            tag(detailedtag == tagvalue2) = tagvalue1;
+        end
+    end
+    
     
     %% setup output structure
     output = params;
@@ -158,5 +250,6 @@ function output = flatGrid(params)
     output.positiveExtCurrentFaces = positiveExtCurrentFaces;
     output.negativeExtCurrentFaces = negativeExtCurrentFaces;
     output.thermalExchangeFaces    = thermalExchangeFaces;   
+    
     
 end
