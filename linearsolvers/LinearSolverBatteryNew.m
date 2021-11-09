@@ -41,8 +41,9 @@ classdef LinearSolverBatteryNew < LinearSolverAD
                             solver.first=true;
                         end
                     else
+                        tic;
                         [result,flag,relres,iter]=agmg(A,b,20,solver.tolerance,solver.maxIterations,solver.verbosity);
-                        
+                        toc;
                     end
                     report.Iterations = iter;
                     report.Residual = relres;
@@ -54,28 +55,39 @@ classdef LinearSolverBatteryNew < LinearSolverAD
                 case 'matlab_agmg'
                     agmg(A,b,20,solver.tolerance,solver.maxIterations,solver.verbosity,[],-1);
                     agmg(A,b,20,solver.tolerance,solver.maxIterations,solver.verbosity,[],1);
-                    f=@(b) solver.amgprecond(b,A)
-                    result = gmres(A,b,10,solver.tol,solver.maxiter,f);
-               case 'matlab_cpr_amg_prec'
+                    f=@(b) solver.agmgprecond(b,A)
+                    tic;
+                    result = gmres(A,b,10,solver.tolerance,solver.maxIterations,f);
+                    toc;
+               case 'matlab_cpr_agmg_prec'
                     indb = solver.getPotentialIndex(problem);
                     agmg(A(indb,indb),b(indb),20,solver.tolerance,solver.maxIterations,solver.verbosity,[],-1);
                     agmg(A(indb,indb),b(indb),20,solver.tolerance,solver.maxIterations,solver.verbosity,[],1);
                     %rphi=  agmg(A(indb,indb),b(indb),20,1e-4,20,1,,-1);
                     %rphi=  agmg(A(indb,indb),b(indb),20,1e-4,20,1,[],1);
-                    voltage_solver = 'amgsolve_prec';
-                    opt=struct();
+                    voltage_solver = 'agmgsolver_prec';
+                    inds=true(size(indb));%not(indb);
+                    iluopt =struct('type','nofill');%,'droptol',0.1);
+                    [L,U]=ilu(A(inds,inds),iluopt);
+                    opt=struct('L',L,'U',U,'ind',inds);
                     f=@(b) solver.precondcpr(b,A,indb,voltage_solver,opt)
                     result = gmres(A,b,20,solver.tolerance,solver.maxIterations,f);  
-                case 'matlab_cpr_amg'
+                case 'matlab_cpr_agmg'
                     indb = solver.getPotentialIndex(problem);
                     agmg(A(indb,indb),b(indb),20,solver.tolerance,solver.maxIterations,solver.verbosity,[],-1);
                     agmg(A(indb,indb),b(indb),20,solver.tolerance,solver.maxIterations,solver.verbosity,[],1);
                     %rphi=  agmg(A(indb,indb),b(indb),20,1e-4,20,1,,-1);
                     %rphi=  agmg(A(indb,indb),b(indb),20,1e-4,20,1,[],1);
-                    voltage_solver = 'amgsolve';
-                    opt=struct();
+                    voltage_solver = 'agmgsolver';
+                    inds=true(size(indb));%not(indb);
+                                          %inds = not(indb);
+                    iluopt =struct('type','nofill');%,'droptol',0.1);
+                    [L,U]=ilu(A(inds,inds),iluopt);
+                    opt=struct('L',L,'U',U,'ind',inds);
                     f=@(b) solver.precondcpr(b,A,indb,voltage_solver,opt)
+                    tic;
                     result = gmres(A,b,20,solver.tolerance,solver.maxIterations,f);
+                    toc;
                 case 'matlab_cpr_amgcl'
                     %isolver = struct('type','gmres','M',20,'verbosity',3);
                     isolver = struct('type','bicgstab','M',50);   
@@ -94,11 +106,13 @@ classdef LinearSolverBatteryNew < LinearSolverAD
                     options = struct('solver',isolver,'precond',precond,...
                                      'reuse_mode',1,'solver_type','regular','write_params',false,'block_size',1,'verbosity',10);
                     options_reuse=options;
-                    
+                    iluopt =struct('type','nofill','droptol',0.1); 
                     options_reuse.reuse_mode=1;
                     indb = solver.getPotentialIndex(problem);
                     voltage_solver = 'amgcl';
                     [rphi,extra] = amgcl(A(indb,indb),b(indb),'amgcloptions', options,'blocksize', 1,'tol', 1e-1,'maxiter', 1);
+                    [L,U]=ilu(A,iluopt);
+                    opt=struct('L',L,'U',U);
                     f=@(b) solver.precondcpr(b,A,indb,voltage_solver,options_reuse);
                     result = gmres(A,b,20,solver.tolerance,solver.maxIterations,f);    
                 case 'matlab_cpr'
@@ -182,33 +196,35 @@ classdef LinearSolverBatteryNew < LinearSolverAD
             indb=false(pos(end),1);      
             indb(ind) = true;
         end            
-        function r = precondcpr(solver,x,A,ind,voltage_solver,options)%,AA)
+        function r = precondcpr(solver,x,A,ind,voltage_solver,opt)%,AA)
             r=x*0;
             %[L,U,p] = lu(A,'vector');
             %% post smooth
-            [L,U]=ilu(A);
-            dr= U\(L\x);
+            %[L,U]=ilu(A);
+            dr = x;
+            dr(opt.ind)= opt.U\(opt.L\x(opt.ind));
             %r=A\x;
             r=r+dr;
             x=x-A*dr;
             switch voltage_solver
-                case 'amgsolver'
+                case 'agmgsolver'
                     rphi=  agmg(A(ind,ind),x(ind),20,1e-4,20,0,[],2);
-                case 'amgsolver_prec'
+                case 'agmgsolver_prec'
                     rphi=  agmg(A(ind,ind),x(ind),20,1e-4,20,0,[],3);
                 case 'matlab'
                     rphi = A(ind,ind)\x(ind);
                 case 'amgcl'        
-                    [rphi,extra] = amgcl(A(ind,ind),x(ind),'amgcloptions', options,'blocksize', 1,'tol', 1e-4,'maxiter', 20); 
+                    [rphi,extra] = amgcl(A(ind,ind),x(ind),'amgcloptions', opt.amg,'blocksize', 1,'tol', 1e-4,'maxiter', 20); 
                     extra
                 otherwise
-                    error()
+                    error('Wrong solver type for cpr voltage preconditioner')
             end
             r(ind)=r(ind)+rphi;
             x(ind)=x(ind)-A(ind,ind)*rphi;
             %% pre smooth
              %% post smooth
-            dr= U\(L\x);
+            dr = x;
+            dr(opt.ind)= opt.U\(opt.L\x(opt.ind));
             r=r+dr;
             %x=x-A*dr;
         end

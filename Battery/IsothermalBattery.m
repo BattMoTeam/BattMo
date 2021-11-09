@@ -404,7 +404,7 @@ classdef IsothermalBattery < BaseModel
             eqs{end + 1} = state.(ne).(cc).chargeCons;
             eqs{end + 1} = state.(pe).(cc).chargeCons;
             
-            eqs{end + 1} = state.EIeq;
+            eqs{end + 1} = -state.EIeq;%NB negative sign to get consisten with other equations
             
             % we add the control equation
             I = state.(pe).(cc).I;
