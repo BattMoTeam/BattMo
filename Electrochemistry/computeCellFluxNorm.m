@@ -6,18 +6,12 @@ function  src = computeCellFluxNorm(model, j, volumeFraction, coefficient)
 
     
     op = model.operators.cellFluxOp;
-    
-    if isprop(model, 'volumeFraction')
-        volfrac = model.volumeFraction;
-    else
-        volfrac = 1;
-    end
+
     vols = model.G.cells.volumes;
 
     j = op.P*j;
     jsq = j.^2;
     jsq = op.S*jsq;
-    
     
     src = (volumeFraction.*vols).*jsq./coefficient;
     
