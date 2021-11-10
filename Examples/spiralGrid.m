@@ -288,7 +288,7 @@ function output = spiralGrid(params)
     
     
     %%  recover the external faces that are inside the spiral
-    % we get them using the Cartesian indexing
+    % We get them using the Cartesian indexing
 
     [indi, indj, indk] = ind2sub([n, m, nL], (1 : G.cells.num)');
     
@@ -309,9 +309,10 @@ function output = spiralGrid(params)
     facetbl.dir = dir;
     facetbl = IndexArray(facetbl);
     
+    %% We extract the faces at the exterior for thermal exchange, using Cartesian indexing
     scelltbl.indi = (1: n)';
     scelltbl.indj = 1*ones(n, 1);
-    scelltbl.dir = 2*ones(n, 1);
+    scelltbl.dir  = 2*ones(n, 1);
     scelltbl = IndexArray(scelltbl);
     
     scelltbl = crossIndexArray(celltbl, scelltbl, {'indi', 'indj'});
@@ -324,7 +325,6 @@ function output = spiralGrid(params)
     
     sfaces = sfacetbl.get('faces');
     
-
     clear scelltbl
     nnrs = sum(nrs);
     scelltbl.indi = ones(nnrs, 1);
