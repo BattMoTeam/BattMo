@@ -725,7 +725,7 @@ classdef Battery < BaseModel
             elyte_map   = elyte_model.G.mappings.cellmap;
             elyte_vols  = elyte_model.G.cells.volumes;
             
-            elyte_src = elyte_vols.*computeCellFluxNorm(model_elyte, Ddc)./D;
+            elyte_src = elyte_vols.*computeCellFluxNorm(elyte_model, Ddc)./D;
             
             % This is a bit hacky for the moment (we should any way consider all the species)
             elyte_src = dmudcs{1}.*elyte_src;

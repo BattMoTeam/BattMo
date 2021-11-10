@@ -1,4 +1,4 @@
-function  src = computeCellFluxNorm(model, j)
+function  jsq = computeCellFluxNorm(model, j)
 %
 % - Compute cell-valued square of the norm of a face-valued flux (j)
 %
