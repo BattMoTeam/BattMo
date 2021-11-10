@@ -1,19 +1,12 @@
-function  src = computeCellFluxNorm(model, j, volumeFraction, coefficient)
+function  src = computeCellFluxNorm(model, j)
 %
-% - Compute cell-valued square of the norm of a face-valued flux (j), weighted by inverse of coefficient (coef)
-% - We weight also by volume and volume fraction.
+% - Compute cell-valued square of the norm of a face-valued flux (j)
 %
-
     
     op = model.operators.cellFluxOp;
-
-    vols = model.G.cells.volumes;
 
     j = op.P*j;
     jsq = j.^2;
     jsq = op.S*jsq;
-    
-    src = (volumeFraction.*vols).*jsq./coefficient;
-    
     
 end

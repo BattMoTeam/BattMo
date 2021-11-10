@@ -667,30 +667,33 @@ classdef Battery < BaseModel
                 cc_map   = cc_model.G.mappings.cellmap;
                 cc_j     = state.(elde).(cc).j;
                 cc_econd = cc_model.EffectiveElectricalConductivity;
+                cc_vols  = cc_model.G.cells.volumes;
+                cc_src   = computeCellFluxNorm(cc_model, cc_j); 
                 
-                cc_src = computeCellFluxNorm(cc_model, cc_j, 1, cc_econd); % note that we send volumeFraction = 1
-                src(cc_map) = src(cc_map) + cc_src;
+                src(cc_map) = src(cc_map) + cc_vols.*cc_src./cc_econd;
 
                 eac_model = model.(elde).(eac);
                 eac_map   = eac_model.G.mappings.cellmap;
                 eac_j     = state.(elde).(eac).j;
                 eac_econd = eac_model.EffectiveElectricalConductivity;
-                eac_vf    = eac_model.volumeFraction;
+                eac_vols   = eac_model.G.cells.volumes;
+                eac_src   = computeCellFluxNorm(eac_model, eac_j);
                 
-                eac_src = computeCellFluxNorm(eac_model, eac_j, eac_vf, eac_econd);
-                src(eac_map) = src(eac_map) + eac_src;
+                src(eac_map) = src(eac_map) + eac_vols.*eac_src./eac_econd;
                 
             end
 
             % Electrolyte
             elyte_model = model.(elyte);
             elyte_map   = elyte_model.G.mappings.cellmap;
+            elyte_vf    = elyte_model.volumeFraction;
             elyte_j     = state.(elyte).j;
-            elyte_econd = state.(elyte).conductivity;
-            elyte_vf    = elyte_model.volumeFraction;            
+            elyte_cond  = state.(elyte).conductivity;
+            elyte_econd = elyte_cond.*elyte_vf.^1.5;
+            elyte_vols  = elyte_model.G.cells.volumes;
+            elyte_src   = computeCellFluxNorm(elyte_model, elyte_j);
             
-            elyte_src = computeCellFluxNorm(elyte_model, elyte_j, elyte_vf, elyte_econd);
-            src(elyte_map) = src(elyte_map) + elyte_src;
+            src(elyte_map) = src(elyte_map) + elyte_vols.*elyte_src./elyte_econd;
             
             state.(thermal).jHeatOhmSource = src;
             
@@ -713,14 +716,17 @@ classdef Battery < BaseModel
             end            
 
             % Compute chemical heat source in electrolyte
-            dmudcs = state.(elyte).dmudcs; % Derivative of chemical potential with respect to concentration
-            D = state.(elyte).D;           % Diffusion coefficient 
-            Ddc = state.(elyte).diffFlux;  % Diffusion flux (-D*grad(c))
+            dmudcs = state.(elyte).dmudcs;   % Derivative of chemical potential with respect to concentration
+            D      = state.(elyte).D;        % Effective diffusion coefficient 
+            Ddc    = state.(elyte).diffFlux; % Diffusion flux (-D*grad(c))
             
-            elyte_map = model.(elyte).G.mappings.cellmap;
-            vf = model.(elyte).volumeFraction;
+            % compute norm of square norm of diffusion flux
+            elyte_model = model.(elyte);
+            elyte_map   = elyte_model.G.mappings.cellmap;
+            elyte_vols  = elyte_model.G.cells.volumes;
             
-            elyte_src = computeCellFluxNorm(model.(elyte), Ddc, vf, D);
+            elyte_src = elyte_vols.*computeCellFluxNorm(model_elyte, Ddc)./D;
+            
             % This is a bit hacky for the moment (we should any way consider all the species)
             elyte_src = dmudcs{1}.*elyte_src;
             
