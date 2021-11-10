@@ -81,6 +81,7 @@ function output = flatGrid(params)
     nperlayer = sum(nrs);
 
     G = tensorGrid(h, w);
+    G.faces = rmfield(G.faces, 'tag');
     G.type = {'flatGrid'};
     G = computeGeometry(G, 'findNeighbors', true);
 
