@@ -1,4 +1,4 @@
-classdef LinearSolverBatteryNew < LinearSolverAD
+classdef LinearSolverBatteryExtra < LinearSolverADExtra
     properties
         method
         verbosity
@@ -6,7 +6,7 @@ classdef LinearSolverBatteryNew < LinearSolverAD
         reuse_setup
     end
     methods
-        function solver = LinearSolverBatteryNew(varargin)            
+        function solver = LinearSolverBatteryExtra(varargin)            
             opt=struct(...
                 'method','direct',...
                 'verbosity',0,...

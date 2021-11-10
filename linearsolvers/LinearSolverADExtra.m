@@ -2,7 +2,7 @@ classdef LinearSolverAD < handle
     % Base class for linear solvers in the AD framework
     %
     % SYNOPSIS:
-    %   solver = LinearSolverAD()
+    %   solver = LinearSolverADExtra()
     %
     % DESCRIPTION:
     %   Base class for linear solvers. Implement methods for solving linearized
@@ -20,7 +20,7 @@ classdef LinearSolverAD < handle
     %   problems.
     %
     % SEE ALSO:
-    %   `BackslashSolverAD`, `CPRSolverAD`, `LinearizedProblem`
+    %   `BackslashSolverADExtra`, `CPRSolverADExtra`, `LinearizedProblem`
     
     properties
         tolerance % Linear solver tolerance
@@ -44,7 +44,7 @@ classdef LinearSolverAD < handle
     end
 
     methods
-        function solver = LinearSolverAD(varargin)
+        function solver = LinearSolverADExtra(varargin)
             solver.tolerance       = 1e-8;
             solver.maxIterations   = 25;
             solver.extraReport     = false;
