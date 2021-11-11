@@ -72,6 +72,7 @@ classdef Electrolyte < ElectroChemicalComponent
         
         function state = updateConcentrations(model, state)
             
+            cs = cell(2, 1);
             cs{1} = state.c;
             cs{2} = state.c;
             
