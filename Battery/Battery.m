@@ -710,18 +710,18 @@ classdef Battery < BaseModel
                 cc_j     = locstate.(elde).(cc).j;
                 cc_econd = cc_model.EffectiveElectricalConductivity;
                 cc_vols  = cc_model.G.cells.volumes;
-                cc_src   = computeCellFluxNorm(cc_model, cc_j); 
+                cc_jsq   = computeCellFluxNorm(cc_model, cc_j); 
                 
-                src(cc_map) = src(cc_map) + cc_vols.*cc_src./cc_econd;
+                src(cc_map) = src(cc_map) + cc_vols.*cc_jsq./cc_econd;
 
                 eac_model = model.(elde).(eac);
                 eac_map   = eac_model.G.mappings.cellmap;
                 eac_j     = locstate.(elde).(eac).j;
                 eac_econd = eac_model.EffectiveElectricalConductivity;
                 eac_vols   = eac_model.G.cells.volumes;
-                eac_src   = computeCellFluxNorm(eac_model, eac_j);
+                eac_jsq   = computeCellFluxNorm(eac_model, eac_j);
                 
-                src(eac_map) = src(eac_map) + eac_vols.*eac_src./eac_econd;
+                src(eac_map) = src(eac_map) + eac_vols.*eac_jsq./eac_econd;
                 
             end
 
@@ -733,9 +733,9 @@ classdef Battery < BaseModel
             elyte_cond  = locstate.(elyte).conductivity;
             elyte_econd = elyte_cond.*elyte_vf.^1.5;
             elyte_vols  = elyte_model.G.cells.volumes;
-            elyte_src   = computeCellFluxNorm(elyte_model, elyte_j);
+            elyte_jsq   = computeCellFluxNorm(elyte_model, elyte_j);
             
-            src(elyte_map) = src(elyte_map) + elyte_vols.*elyte_src./elyte_econd;
+            src(elyte_map) = src(elyte_map) + elyte_vols.*elyte_jsq./elyte_econd;
             
             state.(thermal).jHeatOhmSource = src;
             
@@ -769,8 +769,8 @@ classdef Battery < BaseModel
             elyte_model = model.(elyte);
             elyte_map   = elyte_model.G.mappings.cellmap;
             elyte_vols  = elyte_model.G.cells.volumes;
-            
-            elyte_src = elyte_vols.*computeCellFluxNorm(elyte_model, Ddc)./D;
+            elyte_jchemsq = computeCellFluxNorm(elyte_model, Ddc)
+            elyte_src = elyte_vols.*elyte_jchemsq./D;
             
             % This is a bit hacky for the moment (we should any way consider all the species)
             elyte_src = dmudcs{1}.*elyte_src;
