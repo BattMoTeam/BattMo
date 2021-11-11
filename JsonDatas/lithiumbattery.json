@@ -5,7 +5,8 @@
     "initT": 298.15,
     "NegativeElectrode": {
         "ElectrodeActiveComponent": {
-            "heatCapacity": 632.0,
+            "specificHeatCapacity": 632.0,
+            "heatCapacity": 632000.0,
             "thermalConductivity": 1.04,
             "chargeCarrierName": "Li",
             "InterDiffusionCoefficient": 1e-14,
@@ -23,7 +24,8 @@
     },
     "PositiveElectrode": {
         "ElectrodeActiveComponent": {
-            "heatCapacity": 700.0,
+            "specificHeatCapacity": 700.0,
+            "heatCapacity": 700000.0,
             "thermalConductivity": 2.1,
             "InterDiffusionCoefficient": 1e-14,
             "electricalConductivity": 100,

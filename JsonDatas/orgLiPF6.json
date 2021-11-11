@@ -1,6 +1,7 @@
 {
     "electrolyteType" : "binary",
-    "heatCapacity": 2055.0,
+    "specificHeatCapacity": 2055.0,
+    "heatCapacity": 2055000.0,
     "thermalConductivity": 0.6,
     "chargeCarrierName": "Li",
     "updateConductivityFunc" : {"functionname" : "updateElectrolyteConductivityFunc_default",

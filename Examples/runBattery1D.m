@@ -49,7 +49,7 @@ inputI = (C/hour)*CRate; % current
 % We start with rampup time steps to go through the activation phase 
 dt1   = rampupTimesteps(0.1, 0.1, 5);
 % We choose time steps for the rest of the simulation (discharge phase)
-dt2   = 0.1*hour*ones(30, 1);
+dt2   = 0.4*hour*ones(30, 1);
 % We concatenate the time steps
 dt    = [dt1; dt2];
 times = [0; cumsum(dt)]; 
@@ -85,7 +85,7 @@ nls.errorOnFailure = false;
 % Change default tolerance for nonlinear solver
 model.nonlinearTolerance = 1e-5; 
 % Set verbosity
-model.verbose = false;
+model.verbose = true;
 
 % Run simulation
 

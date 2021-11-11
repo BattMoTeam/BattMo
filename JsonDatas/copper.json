@@ -1,5 +1,6 @@
 {
     "EffectiveElectricalConductivity": 59600000.0,
     "thermalConductivity": 398,
-    "heatCapacity": 385
+    "specificHeatCapacity": 385,
+    "heatCapacity": 600000
 }

@@ -1,5 +1,6 @@
 {
     "porosity": 0.55,
-    "heatCapacity": 1978,
+    "specificHeatCapacity": 1978,
+    "heatCapacity": 1978000,
     "thermalConductivity": 0.334
 }
