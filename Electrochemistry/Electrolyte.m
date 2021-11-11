@@ -105,6 +105,7 @@ classdef Electrolyte < ElectroChemicalComponent
 
             % calculate the concentration derivative of the chemical potential for each species in the electrolyte
             R = model.constants.R;
+            dmudcs = cell(2, 1);
             for ind = 1 : ncomp
                 dmudcs{ind} = R .* T ./ cs{ind};
             end
