@@ -28,9 +28,8 @@ paramobj = gen.updateBatteryInputParams(paramobj);
 
 % In this case, we change some of the values of the paramaters that were given in the json file to other values. This is
 % done directly on the object paramobj.
-paramobj.(ne).(cc).EffectiveElectricalConductivity = 100;
-paramobj.(pe).(cc).EffectiveElectricalConductivity = 100;
-paramobj.(thermal).externalHeatTransferCoefficient = 1000;
+% paramobj.(ne).(cc).EffectiveElectricalConductivity = 100;
+% paramobj.(pe).(cc).EffectiveElectricalConductivity = 100;
 paramobj.(thermal).externalTemperature = paramobj.initT;
 
 %%  The Battery model is initialized by sending paramobj to the Battery class constructor 
