@@ -362,8 +362,13 @@ classdef Battery < BaseModel
                 elde = electrodes{ind};
                 % potential and concentration between active material and electode active component
                 state.(elde).(eac) = battery.(elde).(eac).updatePhi(state.(elde).(eac));
-                state.(elde).(eac) = battery.(elde).(eac).updateChargeCarrier(state.(elde).(eac));
-                
+                if(model.use_solid_diffusion)
+                    state.(elde).(eac) = battery.(elde).(eac).updateChargeCarrier(state.(elde).(eac));
+                else
+                    state.(elde).(eac) = battery.(elde).(eac).updateChargeCarrier(state.(elde).(eac));
+                    state.(elde).(eac).(am).cElectrode = state.(elde).(eac).c;
+                    
+                end              
             end
             
             %% Accumulation terms
@@ -478,11 +483,11 @@ classdef Battery < BaseModel
             
             eqs{end + 1} = state.(ne).(eac).massCons*massConsScaling;
             eqs{end + 1} = state.(ne).(eac).chargeCons;
-            eqs{end + 1} = state.(ne).(eac).(am).solidDiffusionEq;
+            eqs{end + 1} = state.(ne).(eac).(am).solidDiffusionEq.*massConsScaling.*battery.(ne).(eac).(am).G.cells.volumes/dt;
             
             eqs{end + 1} = state.(pe).(eac).massCons*massConsScaling;
             eqs{end + 1} = state.(pe).(eac).chargeCons;
-            eqs{end + 1} = state.(pe).(eac).(am).solidDiffusionEq;
+            eqs{end + 1} = state.(pe).(eac).(am).solidDiffusionEq.*massConsScaling.*battery.(pe).(eac).(am).G.cells.volumes/dt;
             
             eqs{end + 1} = state.(ne).(cc).chargeCons;
             eqs{end + 1} = state.(pe).(cc).chargeCons;
