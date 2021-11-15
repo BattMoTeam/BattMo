@@ -5,7 +5,7 @@ function output = flatGrid(params)
     % 
     % params structure with following fields
     % - nwindings : number of windings in the spiral
-    % - r0        : "radius" at the middle
+    % - depth     : depth of domain
     % - widthDict : dictionary of widths for each component. The required key names for the dictionary are
     %                 - 'Separator'
     %                 - 'NegativeActiveMaterial'
@@ -24,7 +24,7 @@ function output = flatGrid(params)
     % - tagdict : dictionary giving the component number
     
     nwindings = params.nwindings;
-    r0        = params.r0;
+    depth     = params.depth;
     widthDict = params.widthDict ;
     nrDict    = params.nrDict;
     nas       = params.nas;
@@ -76,7 +76,7 @@ function output = flatGrid(params)
     w = repmat(w, [nwindings, 1]);
     w = [0; cumsum(w)];
 
-    h = linspace(0, 2*pi*r0, nas + 1);
+    h = linspace(0, depth, nas + 1);
 
     nperlayer = sum(nrs);
 
@@ -109,7 +109,13 @@ function output = flatGrid(params)
     %% Extrude battery in z-direction
     
     zwidths = (L/nL)*ones(nL, 1);
-    G = makeLayeredGrid(G, zwidths);
+    if nL == 1
+        G = makeLayeredGrid(G, 1);
+        k  = G.nodes.coords(:, 3) > 0;
+        G.nodes.coords(k, 3) = zwidths;    
+    else
+        G = makeLayeredGrid(G, zwidths);
+    end
     G = computeGeometry(G);
     
     tag = repmat(tag, [nL, 1]);
@@ -147,7 +153,7 @@ function output = flatGrid(params)
     %% We extract the faces at the exterior for thermal exchange, using Cartesian indexing
     
     scelltbl.indi = (1: n)';
-    scelltbl.indj = 1*ones(n, 1);
+    scelltbl.indj = m*ones(n, 1);
     scelltbl      = IndexArray(scelltbl);
     
     scelltbl = crossIndexArray(celltbl, scelltbl, {'indi', 'indj'});
