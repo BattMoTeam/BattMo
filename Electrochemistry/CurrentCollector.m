@@ -6,7 +6,7 @@ classdef CurrentCollector < ElectronicComponent
 
         thermalConductivity
         heatCapacity
-        
+        density
     end
     
     methods
@@ -15,9 +15,10 @@ classdef CurrentCollector < ElectronicComponent
             
             model = model@ElectronicComponent(paramobj);
 
-            fdnames = {'couplingTerm', ...
-                       'thermalConductivity', ...
-                       'heatCapacity'};
+            fdnames = {'couplingTerm'        , ...
+                       'thermalConductivity' , ...
+                       'heatCapacity'        , ...
+                       'density'};
             
             model = dispatchParams(model, paramobj, fdnames);
             

@@ -19,6 +19,7 @@ classdef ActiveMaterialInputParams < InputParams
         rp                      % [m]
         volumetricSurfaceArea   % [m2 m^-3]
         volumeFraction         
+        density                 % [kg m^-3]
         n                       % number of electron transfer
 
         updateOCPFunc % Function to update OCP value

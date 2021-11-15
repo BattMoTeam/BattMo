@@ -11,7 +11,8 @@ classdef SeparatorInputParams < ComponentInputParams
         
         thermalConductivity
         heatCapacity
-        
+
+        density % [kg m^-3]
     end
     
     methods

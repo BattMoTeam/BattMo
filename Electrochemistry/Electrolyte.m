@@ -15,7 +15,8 @@ classdef Electrolyte < ElectroChemicalComponent
         
         thermalConductivity % intrinsic thermal conductivity value
         heatCapacity % intrinsic heat capacity value
-
+        density % [kg m^-3] (Note : only of the liquid part, the density of the separator is given there)
+        
         EffectiveThermalConductivity
         EffectiveHeatCapacity
 
@@ -36,7 +37,8 @@ classdef Electrolyte < ElectroChemicalComponent
                        'compnames'          , ...
                        'chargeCarrierName'  , ...
                        'thermalConductivity', ...
-                       'heatCapacity'};
+                       'heatCapacity'       , ...
+                       'density'};
 
             model = dispatchParams(model, paramobj, fdnames);
 

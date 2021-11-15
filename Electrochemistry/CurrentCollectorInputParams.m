@@ -8,7 +8,8 @@ classdef CurrentCollectorInputParams < ElectronicComponentInputParams
 
         thermalConductivity
         heatCapacity
-        
+
+        density % [kg m^-3]
     end
     
     methods

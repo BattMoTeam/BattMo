@@ -21,6 +21,8 @@ classdef ElectrolyteInputParams < ElectroChemicalComponentInputParams
         updateConductivityFunc
         updateDiffusionCoefficientFunc
         
+        density % [kg m^-3] (Note : only of the liquid part, the density of the separator is given there)
+        
     end
     
     methods

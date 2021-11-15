@@ -6,6 +6,7 @@
     },
     "volumeFraction": 0.8,
     "volumetricSurfaceArea": 723600,
+    "density": 2240,
     "n" : 1,
     "rp": 1e-06,
     "Eak": 5000,

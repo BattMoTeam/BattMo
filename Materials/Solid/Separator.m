@@ -14,7 +14,7 @@ classdef Separator < BaseModel
 
         EffectiveThermalConductivity
         EffectiveHeatCapacity
-        
+        density % [kg m^-3]        
     end
     
     methods
@@ -32,7 +32,8 @@ classdef Separator < BaseModel
                        'rp'                 , ...
                        'Gurley'             , ...
                        'thermalConductivity', ...
-                       'heatCapacity'};
+                       'heatCapacity'       , ...
+                       'density'};
             model = dispatchParams(model, paramobj, fdnames);
             
             model.volumeFraction = 1 - model.porosity;
