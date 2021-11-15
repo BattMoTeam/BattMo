@@ -2,8 +2,17 @@ function [val, ctrltype] = rampupSwitchControl(t, tup, I, E, inputI, inputE)
 % CURRENTSOURCE Summary of this function goes here
 %   Detailed explanation goes here
 
-    if (E > inputE) | (t < tup)
-        
+    if(inputI<0)
+        %notuseVolt = ((E - inputE)<1e-3);
+        %notuseVolt = not(useVolt);
+        useCurrent = (E < inputE);
+    else
+        %notuseVolt = ((E - inputE)>-1e-3);
+        useCurrent = (E > inputE);
+        %useVolt = not(useVolt);
+    end
+    %if not(useVolt) || (t < tup)
+    if  useCurrent | (t < tup)   
         % We control with current
         ctrltype = 'I';
         
