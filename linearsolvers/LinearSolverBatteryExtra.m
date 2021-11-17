@@ -12,7 +12,7 @@ classdef LinearSolverBatteryExtra < LinearSolverADExtra
                 'verbosity',0,...
                 'reuse_setup',false)
             [opt,extra] = merge_options(opt,varargin{:});
-            solver = solver@LinearSolverAD(extra{:});
+            solver = solver@LinearSolverADExtra(extra{:});
             solver.method = opt.method;           
             solver.verbosity=opt.verbosity;
             solver.first=true;
@@ -84,6 +84,13 @@ classdef LinearSolverBatteryExtra < LinearSolverADExtra
                     iluopt =struct('type','nofill');%,'droptol',0.1);
                     [L,U]=ilu(A(inds,inds),iluopt);
                     opt=struct('L',L,'U',U,'ind',inds);
+                    %gs structure
+                    Atmp = A(inds,inds);
+                    U = triu(Atmp);%- diag(diag(Atmp));
+                    L = Atmp-U;
+                    %invLower = inv(Lower);
+                    opt = struct('L',L,'U',U,'ind',inds);
+            %r=A\x;                    
                     f=@(b) solver.precondcpr(b,A,indb,voltage_solver,opt)
                     tic;
                     result = gmres(A,b,20,solver.tolerance,solver.maxIterations,f);
@@ -202,13 +209,21 @@ classdef LinearSolverBatteryExtra < LinearSolverADExtra
             %% post smooth
             %[L,U]=ilu(A);
             dr = x;
-            dr(opt.ind)= opt.U\(opt.L\x(opt.ind));
-            %r=A\x;
+            %% ilu
+            %dr(opt.ind)= opt.U\(opt.L\x(opt.ind));
+            % gs
+            rhs = opt.U\x(opt.ind);
+            drtmp = 0*rhs;
+            for i=1:4
+                drtmp = -opt.U\(opt.L*drtmp) + rhs;
+            end
+            dr(opt.ind) = drtmp;
+            %
             r=r+dr;
             x=x-A*dr;
             switch voltage_solver
                 case 'agmgsolver'
-                    rphi=  agmg(A(ind,ind),x(ind),20,1e-4,20,0,[],2);
+                    rphi=  agmg(A(ind,ind),x(ind),20,1e-4,20,1,[],2);
                 case 'agmgsolver_prec'
                     rphi=  agmg(A(ind,ind),x(ind),20,1e-4,20,0,[],3);
                 case 'matlab'
@@ -220,12 +235,12 @@ classdef LinearSolverBatteryExtra < LinearSolverADExtra
                     error('Wrong solver type for cpr voltage preconditioner')
             end
             r(ind)=r(ind)+rphi;
-            x(ind)=x(ind)-A(ind,ind)*rphi;
+            %x(ind)=x(ind)-A(ind,ind)*rphi;
             %% pre smooth
              %% post smooth
-            dr = x;
-            dr(opt.ind)= opt.U\(opt.L\x(opt.ind));
-            r=r+dr;
+            %dr = x;
+            %dr(opt.ind)= opt.U\(opt.L\x(opt.ind));
+            %r=r+dr;
             %x=x-A*dr;
         end
         

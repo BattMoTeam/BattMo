@@ -1,4 +1,4 @@
-classdef LinearSolverAD < handle
+classdef LinearSolverADExtra < handle
     % Base class for linear solvers in the AD framework
     %
     % SYNOPSIS:
