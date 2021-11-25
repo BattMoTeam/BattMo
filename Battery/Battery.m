@@ -752,7 +752,7 @@ classdef Battery < BaseModel
                 
                 cc_model = model.(elde).(cc);
                 cc_map   = cc_model.G.mappings.cellmap;
-                cc_j     = state.(elde).(cc).jFace;
+                cc_j     = locstate.(elde).(cc).jFace;
                 cc_econd = cc_model.EffectiveElectricalConductivity;
                 cc_vols  = cc_model.G.cells.volumes;
                 cc_jsq   = computeCellFluxNorm(cc_model, cc_j); 
@@ -762,9 +762,9 @@ classdef Battery < BaseModel
 
                 eac_model = model.(elde).(eac);
                 eac_map   = eac_model.G.mappings.cellmap;
-                eac_j     = state.(elde).(eac).jFace;
+                eac_j     = locstate.(elde).(eac).jFace;
                 eac_econd = eac_model.EffectiveElectricalConductivity;
-                eac_vols   = eac_model.G.cells.volumes;
+                eac_vols  = eac_model.G.cells.volumes;
                 eac_jsq   = computeCellFluxNorm(eac_model, eac_j);
                 state.(elde).(eac).jsq = eac_jsq;
                 
@@ -776,8 +776,8 @@ classdef Battery < BaseModel
             elyte_model = model.(elyte);
             elyte_map   = elyte_model.G.mappings.cellmap;
             elyte_vf    = elyte_model.volumeFraction;
-            elyte_j     = state.(elyte).jFace;
-            elyte_cond  = state.(elyte).conductivity;
+            elyte_j     = locstate.(elyte).jFace;
+            elyte_cond  = locstate.(elyte).conductivity;
             elyte_econd = elyte_cond.*elyte_vf.^1.5;
             elyte_vols  = elyte_model.G.cells.volumes;
             elyte_jsq   = computeCellFluxNorm(elyte_model, elyte_j);
@@ -800,32 +800,33 @@ classdef Battery < BaseModel
             src = zeros(nc, 1);
             T = state.(thermal).T;
             phi = state.(elyte).phi;
+            nf = model.(elyte).G.faces.num;
+            intfaces = model.(elyte).operators.internalConn;
             if isa(T, 'ADI')
                 adsample = getSampleAD(T);
                 adbackend = model.AutoDiffBackend;
                 src = adbackend.convertToAD(src, adsample);
+                zeroFace = model.AutoDiffBackend.convertToAD(zeros(nf, 1), phi);
                 locstate = state;
             else
                 locstate = value(state);
+                zeroFace = zeros(nf, 1);
             end
 
             % Compute chemical heat source in electrolyte
             dmudcs = locstate.(elyte).dmudcs;   % Derivative of chemical potential with respect to concentration
             D      = locstate.(elyte).D;        % Effective diffusion coefficient 
-            Dgradc    = locstate.(elyte).diffFlux; % Diffusion flux (-D*grad(c))
-            nf = model.(elyte).G.faces.num;
-            intfaces = model.(elyte).operators.internalConn;
-            zeroFaceAD = model.AutoDiffBackend.convertToAD(zeros(nf, 1), phi);
-            DFaceGradc = zeroFaceAD;
+            Dgradc = locstate.(elyte).diffFlux; % Diffusion flux (-D*grad(c))
+            DFaceGradc = zeroFace;
             DFaceGradc(intfaces) = Dgradc;
             
             
             % compute norm of square norm of diffusion flux
-            elyte_model = model.(elyte);
-            elyte_map   = elyte_model.G.mappings.cellmap;
-            elyte_vols  = elyte_model.G.cells.volumes;
+            elyte_model   = model.(elyte);
+            elyte_map     = elyte_model.G.mappings.cellmap;
+            elyte_vols    = elyte_model.G.cells.volumes;
             elyte_jchemsq = computeCellFluxNorm(elyte_model, DFaceGradc);
-            elyte_src = elyte_vols.*elyte_jchemsq./D;
+            elyte_src     = elyte_vols.*elyte_jchemsq./D;
             
             % This is a bit hacky for the moment (we should any way consider all the species)
             elyte_src = dmudcs{1}.*elyte_src;
