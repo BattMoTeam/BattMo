@@ -49,12 +49,12 @@ classdef CurrentCollector < ElectronicComponent
             
             G = model.G;
             nf = G.faces.num;
-            %sgn = model.operators.sgn;
+            sgn = model.operators.sgn;
             zeroFaceAD = model.AutoDiffBackend.convertToAD(zeros(nf, 1), phi);
             jFaceExternal = zeroFaceAD;
-            sgn = 2*(cells == G.faces.neighbors(faces,1))-1;
-            jFaceExternal(faces) = -sgn.*current;
+            jFaceExternal(faces) = -sgn(faces).*current;
             
+            assert(~any(isnan(sgn(faces))));
         end
         
     end

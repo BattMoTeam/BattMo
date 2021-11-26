@@ -11,10 +11,21 @@ function operators = localSetupOperators(G, varargin)
     operators.harmFace =@(cellvalue) getTrans(G).*(1./operators.faceAvg(1./cellvalue));
     operators.harmFaceBC = @(cvalue, faces) getFaceHarmBC(G, cvalue, faces);
     
-    cells = rldecode(1:G.cells.num, diff(G.cells.facePos), 2)';
-    faces = G.cells.faces(:, 1);
-    operators.sgn = 2*(cells == G.faces.neighbors(faces, 1)) - 1;
+    %% setup the sign for *external* faces
+    cells  = rldecode(1:G.cells.num, diff(G.cells.facePos), 2)';
+    faces  = G.cells.faces(:, 1);
     
+    extfaces = find(any(G.faces.neighbors == 0, 2));
+    extcells = sum(G.faces.neighbors(extfaces, :), 2);
+
+    extsgn = 2*(extcells == G.faces.neighbors(extfaces, 1)) - 1;
+
+    sgn = nan(G.faces.num, 1);
+    sgn(extfaces) = extsgn;
+
+    operators.sgn = sgn;
+    
+    %% setup cell flux reconstruction operator
     if opts.assembleCellFluxOperator
         operators.cellFluxOp = getCellFluxOperators2(G);
     end

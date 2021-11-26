@@ -75,19 +75,19 @@ classdef Electrode < BaseModel
 
             G = model.(cc).G;
             nf = G.faces.num;
-            %sgn = model.(cc).operators.sgn;
+            sgn = model.(cc).operators.sgn;
             zeroFaceAD = model.AutoDiffBackend.convertToAD(zeros(nf, 1), cc_phi);
             cc_jFaceCoupling = zeroFaceAD;
-            sgn = 2*(bccell_cc == G.faces.neighbors(face_cc,1))-1;
-            cc_jFaceCoupling(face_cc) = sgn.*crosscurrent;
+            cc_jFaceCoupling(face_cc) = sgn(face_cc).*crosscurrent;
+            assert(~any(isnan(sgn(face_cc))));
             
             G = model.(eac).G;
             nf = G.faces.num;
-            %sgn = model.(eac).operators.sgn;
+            sgn = model.(eac).operators.sgn;
             zeroFaceAD = model.AutoDiffBackend.convertToAD(zeros(nf, 1), eac_phi);
             eac_jFaceCoupling = zeroFaceAD;
-            sgn = 2*(bccell_eac == G.faces.neighbors(face_eac,1))-1;
-            eac_jFaceCoupling(face_eac) = -sgn.*crosscurrent;
+            eac_jFaceCoupling(face_eac) = -sgn(face_eac).*crosscurrent;
+            assert(~any(isnan(sgn(face_eac))));
             
             % We set here volumetric current source to zero for current collector (could have been done at a more logical place but
             % let us do it here, for simplicity)
