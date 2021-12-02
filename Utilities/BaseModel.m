@@ -22,7 +22,8 @@ classdef BaseModel < PhysicalModel
                 error('format not recognized');
             end
         end
-
+        
+        
         function state = setNewProp(model, state, names, val)
             if iscell(names) & (numel(names) > 1)
                 name = names{1};
@@ -72,7 +73,7 @@ classdef BaseModel < PhysicalModel
             end
         end
 
-        
+
         function [state, report] = updateState(model, state, problem, dx, drivingForces)
 
             p = model.getPrimaryVariables();
@@ -85,14 +86,52 @@ classdef BaseModel < PhysicalModel
            
             report = [];
         end
+        
+        function [state, report] = updateAfterConvergence(model, state0, state, dt, drivingForces)
 
+            [state, report] = updateAfterConvergence@PhysicalModel(model, state0, state, dt, drivingForces);
+            p = model.getPrimaryVariables();
+            cleanState = [];
+            for ind = 1 : numel(p)
+                cleanState = model.copyProp(cleanState, state, p{ind});
+            end
+            cleanState.time = state.time;
+            
+            state = cleanState;
+            report = [];
+            
+        end
+        
+        function state = copyProp(model, state, refState, names)
+            
+            if iscell(names) & (numel(names) > 1)
+                name = names{1};
+                names = names(2 : end);
+                if isfield(state, name)
+                    state.(name) = model.copyProp(state.(name), refState.(name), names);
+                else
+                    state.(name) = model.copyProp([], refState.(name), names);
+                end
+            elseif iscell(names) & (numel(names) == 1)
+                name = names{1};
+                if isnumeric(name)
+                    state{name} = refState{name};
+                else
+                    state.(name) = refState.(name);
+                end
+            else
+                error('format not recognized');
+            end
+        end
+
+        
         function scale = getScales()
             scale = [];
             error();
         end
         
         function [state, report] = updateStateNew(model, state, problem, ...
-                                               dx, drivingForces)
+                                                  dx, drivingForces)
             scales = model.getScales();
             for i = 1:numel(problem.primaryVariables)
                 p = problem.primaryVariables{i};
