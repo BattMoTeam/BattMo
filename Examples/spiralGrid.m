@@ -30,7 +30,14 @@ function output = spiralGrid(params)
     L         = params.L;
     nL        = params.nL;
     unifang   = params.angleuniform;
+    tabparams = params.tabparams;
 
+    usetab = false;
+    if ~isempty(tabparams)
+        usetab = true;
+    end
+        
+    
     %% component names
     
     compnames = {'PositiveActiveMaterial1', ...
@@ -73,18 +80,19 @@ function output = spiralGrid(params)
 
     w = repmat(w, [nwindings, 1]);
     w = [0; cumsum(w)];
+
     if(unifang)
         h = linspace(0, 2*pi*r0, nas + 1);
     else
-       sigma = 0.3;
-       f = @(x) exp(-x.^2/(2*sigma.^2));
-       x = linspace(-1, 1, nas);
-       dx= f(x);% a positve function symmetric function with small values at 1
-       x=cumsum(dx);
-       assert(all(dx>0));
-       h=([0,x]/x(end))*2*pi;
-       h(end) = 2*pi;
-       h =h*r0;
+        sigma = 0.3; 
+        f = @(x) exp(-x.^2/(2*sigma.^2)); 
+        x = linspace(-1, 1, nas); 
+        dx = f(x); % a positve function symmetric function with small values at 1
+        x = cumsum(dx); 
+        assert(all(dx > 0)); 
+        h = ([0, x]/x(end))*2*pi; 
+        h(end) = 2*pi; 
+        h = h*r0;
     end
     nperlayer = sum(nrs);
 
@@ -93,14 +101,33 @@ function output = spiralGrid(params)
     n = numel(h) - 1;
     m = numel(w) - 1;
 
-    % plotGrid(cartG)
-
+    if usetab
+        % shorcuts
+        nx = nas;
+        ny = sum(nrs);
+        
+        indj0 = floor(nrDict('PositiveActiveMaterial') + nrDict('PositiveCurrentCollector')/2);
+        
+        cclinecelltbl.indi = repmat((1 : nx)', [nwindings, 1]);
+        cclinecelltbl.indj = indj0 + rldecode(ny*(0 : (nwindings - 1))', nx*ones(nwindings, 1));
+        cclinecelltbl = IndexArray(cclinecelltbl);
+        cclinecelltbl = cclinecelltbl.addInd('curvind', (1 : cclinecelltbl.num)');
+        
+        celltbl.cells = (1 : cartG.cells.num)';
+        celltbl.indi = repmat((1 : nas)', [sum(nrs)*nwindings, 1]);
+        celltbl.indj = rldecode((1 : sum(nrs)*nwindings)', nas*ones(sum(nrs)*nwindings, 1));
+        celltbl.curvind = celltbl.indi + nx*floor((celltbl.indj - 1)./ny);
+        celltbl = IndexArray(celltbl);
+        
+        cclinecelltbl = crossIndexArray(cclinecelltbl, celltbl, {'indi', 'indj', 'curvind'});
+    end
+    
     % We roll the domain into a spirale
     x = cartG.nodes.coords(:, 1);
     y = cartG.nodes.coords(:, 2);
 
     theta = x./r0;
-
+    
     cartG.nodes.coords(:, 1) = (r0 + y + (theta/(2*pi))*layerwidth).*cos(theta);
     cartG.nodes.coords(:, 2) = (r0 + y + (theta/(2*pi))*layerwidth).*sin(theta);
 
@@ -271,16 +298,75 @@ function output = spiralGrid(params)
     comptagtbl.indj = (1 : (sum(nrs)*nwindings))';
     comptagtbl = IndexArray(comptagtbl);
 
-    celltbl.cells = (1 : cartG.cells.num)';
-    celltbl.indi = repmat((1 : nas)', [sum(nrs)*nwindings, 1]);
-    celltbl.indj = rldecode((1 : sum(nrs)*nwindings)', nas*ones(sum(nrs)*nwindings, 1));
-    celltbl = IndexArray(celltbl);
+    if ~usetab
+        celltbl.cells = (1 : cartG.cells.num)';
+        celltbl.indi = repmat((1 : nas)', [sum(nrs)*nwindings, 1]);
+        celltbl.indj = rldecode((1 : sum(nrs)*nwindings)', nas*ones(sum(nrs)*nwindings, 1));
+        celltbl = IndexArray(celltbl);
+    end
 
     celltagtbl = crossIndexArray(celltbl, comptagtbl, {'indj'});
     celltagtbl = sortIndexArray(celltagtbl, {'cells', 'tag'});
 
     tag = celltagtbl.get('tag');
 
+    if usetab
+        
+        cclinecelltbl = crossIndexArray(cclinecelltbl, celltbl, {'indi', 'indj', 'curvind'});
+        cclinecelltbl = sortIndexArray(cclinecelltbl,  {'curvind', 'cells'});
+
+        cccelltbl.tag = tagdict('PositiveCurrentCollector');
+        cccelltbl = IndexArray(cccelltbl);
+        cccelltbl = crossIndexArray(cccelltbl, celltagtbl, {'tag'});
+        cccelltbl = crossIndexArray(cccelltbl, celltbl, {'cells'});
+        
+        c = cclinecelltbl.get('cells');
+        o = cclinecelltbl.get('curvind');
+        d = diff(G.cells.centroids(c, :));
+        d = sqrt(sum(d.^2, 2));
+        l = cumsum(d);
+        l = (2*pi*r0/nas)/2 + [0; l]; % adding first length (approx. Do not use node)
+
+        tabwidths = tabparams.widths;
+        ntab = numel(tabwidths);
+        assert(ntab == 3); % only this is supported. It could be easily changed
+        
+        tabcells = [];
+        
+        for tabind = 1 : ntab
+            
+            switch tabind
+              case 1
+                ind = (l > pi*r0 - tabwidths(tabind)/2);
+                ind = ind & (l < pi*r0 + tabwidths(tabind)/2);
+              case 2
+                ind = (l > l(end)/2 - tabwidths(tabind)/2);
+                ind = ind & (l < l(end)/2 + tabwidths(tabind)/2);
+              case 3
+                ind = (l > l(end) - tabwidths(tabind));
+            end
+            
+            otab = o(ind);
+            
+            clear selcurvindtbl;
+            selcurvindtbl.curvind = otab;
+            selcurvindtbl = IndexArray(selcurvindtbl);
+            
+            tabcelltbl = crossIndexArray(cccelltbl, selcurvindtbl, {'curvind'});
+            c = tabcelltbl.get('cells');
+            
+            tabcells = vertcat(tabcells, c);
+        end
+        
+        clear tabcelltbl
+        tabcelltbl.cells = tabcells;
+        tabcelltbl = IndexArray(tabcelltbl);
+        tabcelltbl = crossIndexArray(tabcelltbl, celltbl, {'cells'});
+        tabcelltbl = projIndexArray(tabcelltbl, {'indi', 'indj'});
+        
+    end
+    
+    
     % Extrude battery in z-direction
     zwidths = (L/nL)*ones(nL, 1);
     G = makeLayeredGrid(G, zwidths);
@@ -310,7 +396,7 @@ function output = spiralGrid(params)
     celltbl.indk = indk;
     celltbl = IndexArray(celltbl);
 
-    % We add vertical (1) and horizontal (2) direction index for the faces (see makeLayeredGrid for the setup)
+    % We add vertical (2) and horizontal (1) direction index for the faces (see makeLayeredGrid for the setup)
     
     nf = G.faces.num;
     clear facetbl
@@ -371,43 +457,39 @@ function output = spiralGrid(params)
     
     
     %% recover faces on top and bottom for the current collector
-    % we could do that using cartesian indices (easier)
 
     ccnames = {'PositiveCurrentCollector', 'NegativeCurrentCollector'};
 
     for ind = 1 : numel(ccnames)
 
+        ccname = ccnames{ind};
         clear cccelltbl
         cccelltbl.cells = find(tag == tagdict(ccnames{ind}));
         cccelltbl = IndexArray(cccelltbl);
-
-        extcccellfacetbl = crossIndexArray(extcellfacetbl, cccelltbl, {'cells'});
-        extccfacetbl = projIndexArray(extcccellfacetbl, {'faces'});
-
-        ccextfaces = extccfacetbl.get('faces');
-
-        normals = G.faces.normals(ccextfaces, :);
-        sgn = ones(numel(ccextfaces), 1);
-        sgn(G.faces.neighbors(ccextfaces, 1) == 0) = -1;
-        areas = G.faces.areas(ccextfaces, :);
-        nnormals = sgn.*normals./areas;
-
-        scalprod = bsxfun(@times, [0, 0, 1], nnormals);
-        scalprod = sum(scalprod, 2);
-
-        switch ccnames{ind}
-          case 'PositiveCurrentCollector'
-            ccfaces{ind} = ccextfaces(scalprod > 0.9);
-          case 'NegativeCurrentCollector'
-            ccfaces{ind} = ccextfaces(scalprod < -0.9);
-          otherwise
-            error('name not recognized');
+        if strcmp(ccname, 'PositiveCurrentCollector')
+            cccelltbl = cccelltbl.addInd('indk', nL*ones(cccelltbl.num, 1));
+        else
+            cccelltbl = cccelltbl.addInd('indk', 1*ones(cccelltbl.num, 1));
         end
+        cccelltbl = crossIndexArray(cccelltbl, celltbl, {'cells', 'indk'});
+        
+        if strcmp(ccname, 'PositiveCurrentCollector')
+            cccelltbl = crossIndexArray(cccelltbl, tabcelltbl, {'indi', 'indj'});
+        end
+        ccfacetbl = crossIndexArray(cccelltbl, cellfacetbl, {'cells'});
+        ccfacetbl = projIndexArray(ccfacetbl, {'faces'});
+        ccfacetbl = ccfacetbl.addInd('dir', ones(ccfacetbl.num, 1));
+        
+        ccfacetbl = crossIndexArray(facetbl, ccfacetbl, {'faces', 'dir'});
+        ccfacetbl = crossIndexArray(ccfacetbl, extfacetbl, {'faces'});
+        
+        ccfaces{ind} = ccfacetbl.get('faces');
+
     end
 
     positiveExtCurrentFaces = ccfaces{1};
     negativeExtCurrentFaces = ccfaces{2};
-   
+    
     %% 
     detailedtag = tag;
     detailedtagdict = tagdict;
