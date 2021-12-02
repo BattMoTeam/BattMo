@@ -1170,7 +1170,7 @@ classdef Battery < BaseModel
             
         end
         
-        function outputvars = extractControlVariables(model, states)
+        function outputvars = extractGlobalVariables(model, states)
             ns = numel(states);
             ws = cell(ns, 1);
             for i = 1 : ns
