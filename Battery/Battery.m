@@ -1176,8 +1176,10 @@ classdef Battery < BaseModel
             for i = 1 : ns
                 E = states{i}.PositiveElectrode.CurrentCollector.E;
                 I = states{i}.PositiveElectrode.CurrentCollector.I;
+                time = states{i}.time;
                 outputvars{i} = struct('E', E, ...
-                                       'I', I);
+                                       'I', I, ...
+                                       'time', time);
             end
         end
 
