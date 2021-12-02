@@ -1170,7 +1170,16 @@ classdef Battery < BaseModel
             
         end
         
-
+        function outputvars = extractControlVariables(model, states)
+            ns = numel(states);
+            ws = cell(ns, 1);
+            for i = 1 : ns
+                E = states{i}.PositiveElectrode.CurrentCollector.E;
+                I = states{i}.PositiveElectrode.CurrentCollector.I;
+                outputvars{i} = struct('E', E, ...
+                                       'I', I);
+            end
+        end
 
     end
     
