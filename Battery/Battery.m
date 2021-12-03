@@ -1174,11 +1174,15 @@ classdef Battery < BaseModel
             ns = numel(states);
             ws = cell(ns, 1);
             for i = 1 : ns
-                E = states{i}.PositiveElectrode.CurrentCollector.E;
-                I = states{i}.PositiveElectrode.CurrentCollector.I;
+                E    = states{i}.PositiveElectrode.CurrentCollector.E;
+                I    = states{i}.PositiveElectrode.CurrentCollector.I;
+                T    = states{i}.ThermalModel.T;
                 time = states{i}.time;
-                outputvars{i} = struct('E', E, ...
-                                       'I', I, ...
+                
+                Tmax = max(T);
+                outputvars{i} = struct('E'   , E   , ...
+                                       'I'   , I   , ...
+                                       'Tmax', Tmax, ...
                                        'time', time);
             end
         end
