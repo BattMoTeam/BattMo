@@ -107,6 +107,9 @@ function output = spiralGrid(params)
         ny = sum(nrs);
         
         indj0 = floor(nrDict('PositiveActiveMaterial') + nrDict('PositiveCurrentCollector')/2);
+        w = widths./nrs;
+        w = rldecode(w, nrs);
+        cclinewidth = w(indj0);
         
         cclinecelltbl.indi = repmat((1 : nx)', [nwindings, 1]);
         cclinecelltbl.indj = indj0 + rldecode(ny*(0 : (nwindings - 1))', nx*ones(nwindings, 1));
@@ -322,10 +325,7 @@ function output = spiralGrid(params)
         
         c = cclinecelltbl.get('cells');
         o = cclinecelltbl.get('curvind');
-        d = diff(G.cells.centroids(c, :));
-        d = sqrt(sum(d.^2, 2));
-        l = cumsum(d);
-        l = (2*pi*r0/nas)/2 + [0; l]; % adding first length (approx. Do not use node)
+        l = cumsum(G.cells.volumes(c)/cclinewidth);
 
         tabwidths = tabparams.widths;
         ntab = numel(tabwidths);
