@@ -337,15 +337,25 @@ function output = spiralGrid(params)
             
             switch tabind
               case 1
-                ind = (l > pi*r0 - tabwidths(tabind)/2);
-                ind = ind & (l < pi*r0 + tabwidths(tabind)/2);
+                tabcenter = pi*r0;
+                ind = (l > tabcenter - tabwidths(tabind)/2);
+                ind = ind & (l < tabcenter + tabwidths(tabind)/2);
               case 2
-                ind = (l > l(end)/2 - tabwidths(tabind)/2);
-                ind = ind & (l < l(end)/2 + tabwidths(tabind)/2);
+                tabcenter = l(end)/2;
+                ind = (l > tabcenter - tabwidths(tabind)/2);
+                ind = ind & (l < tabcenter + tabwidths(tabind)/2);
               case 3
+                tabcenter = l(end);
                 ind = (l > l(end) - tabwidths(tabind));
             end
             
+            if isempty(ind)
+                ind = find(l >= tabcenter, 1, 'first');
+                if ind > 0 && abs(l(ind - 1) - tabcenter)  < abs(l(ind) - tabcenter);
+                    ind = ind - 1
+                end
+            end
+                
             otab = o(ind);
             
             clear selcurvindtbl;
