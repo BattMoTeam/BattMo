@@ -473,7 +473,7 @@ function output = spiralGrid(params)
         end
         cccelltbl = crossIndexArray(cccelltbl, celltbl, {'cells', 'indk'});
         
-        if strcmp(ccname, 'PositiveCurrentCollector')
+        if usetab && strcmp(ccname, 'PositiveCurrentCollector') 
             cccelltbl = crossIndexArray(cccelltbl, tabcelltbl, {'indi', 'indj'});
         end
         ccfacetbl = crossIndexArray(cccelltbl, cellfacetbl, {'cells'});
