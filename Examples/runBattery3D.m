@@ -4,7 +4,7 @@
 mrstModule add ad-core multimodel mrst-gui battery mpfa
 
 % The input parameters can be given in json format. The json file is read and used to populate the paramobj object.
-jsonstruct = parseBatmoJson('Battery/lithiumbattery.json');
+jsonstruct = parseBatmoJson('JsonDatas/lithiumbattery.json');
 paramobj = BatteryInputParams(jsonstruct);
 
 % Some shortcuts used for the sub-models
@@ -26,7 +26,7 @@ model = Battery(paramobj);
 
 %% We compute the cell capacity and chose a discharge rate
 C = computeCellCapacity(model);
-CRate = 1/5;
+CRate = 1;
 inputI = (C/hour)*CRate; % current 
 
 %% We setup the schedule
@@ -35,10 +35,11 @@ inputI = (C/hour)*CRate; % current
 % We use exponentially increasing time step for the activation phase
 n  = 25;
 dt = [];
-dt = [dt; repmat(0.5e-4, n, 1).*1.5.^[1:n]'];
+dt = [dt; repmat(0.5e-4, n, 1).*1.5.^[1 : n]'];
 % We choose time steps for the rest of the simulation (discharge phase)
+totalTime = 1.4*hour/CRate;
 n     = 40; 
-dt    = [dt; repmat(1e-1*hour, n, 1)]; 
+dt    = [dt; repmat(totalTime/n, n, 1)]; 
 times = [0; cumsum(dt)]; 
 tt    = times(2 : end); 
 step  = struct('val', diff(times), 'control', ones(numel(tt), 1)); 
@@ -51,7 +52,7 @@ cc = 'CurrentCollector';
 stopFunc = @(model, state, state_prev) (state.(pe).(cc).E < 2.0); 
 
 tup = 0.1; % rampup value for the current function, see rampupSwitchControl
-inputE = 3.6; % Value when current control switches to voltage control
+inputE = 3; % Value when current control switches to voltage control
 srcfunc = @(time, I, E) rampupSwitchControl(time, tup, I, E, inputI, inputE);
 
 % we setup the control by assigning a source and stop function.
@@ -69,6 +70,11 @@ nls = NonLinearSolver();
 nls.maxIterations = 10; 
 % Change default behavior of nonlinear solver, in case of error
 nls.errorOnFailure = false; 
+% Timestep selector
+nls.timeStepSelector = StateChangeTimeStepSelector('TargetProps', ...
+                                                  {{'PositiveElectrode', 'CurrentCollector', 'E'}}, ...
+                                                  'targetChangeAbs', 0.03);
+
 % Change default tolerance for nonlinear solver
 model.nonlinearTolerance = 1e-5; 
 % Set verbosity of the solver (if true, value of the residuals for every equation is given)
