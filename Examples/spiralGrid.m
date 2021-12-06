@@ -101,28 +101,28 @@ function output = spiralGrid(params)
     n = numel(h) - 1;
     m = numel(w) - 1;
 
+    % shorcuts
+    nx = nas;
+    ny = sum(nrs);
+    
+    celltbl.cells = (1 : cartG.cells.num)';
+    celltbl.indi = repmat((1 : nas)', [sum(nrs)*nwindings, 1]);
+    celltbl.indj = rldecode((1 : sum(nrs)*nwindings)', nas*ones(sum(nrs)*nwindings, 1));
+    celltbl.curvindi = celltbl.indi + nas*floor((celltbl.indj - 1)./ny);
+    celltbl.curvindj = repmat(rldecode((1 : ny)', nx*ones(ny, 1)), nwindings, 1);
+    celltbl = IndexArray(celltbl);
+    
     if usetab
-        % shorcuts
-        nx = nas;
-        ny = sum(nrs);
         
         indj0 = floor(nrDict('PositiveActiveMaterial') + nrDict('PositiveCurrentCollector')/2);
         w = widths./nrs;
         w = rldecode(w, nrs);
         cclinewidth = w(indj0);
         
-        cclinecelltbl.indi = repmat((1 : nx)', [nwindings, 1]);
-        cclinecelltbl.indj = indj0 + rldecode(ny*(0 : (nwindings - 1))', nx*ones(nwindings, 1));
+        cclinecelltbl.curvindj = indj0;
         cclinecelltbl = IndexArray(cclinecelltbl);
-        cclinecelltbl = cclinecelltbl.addInd('curvind', (1 : cclinecelltbl.num)');
+        cclinecelltbl = crossIndexArray(cclinecelltbl, celltbl, {'curvindj'});
         
-        celltbl.cells = (1 : cartG.cells.num)';
-        celltbl.indi = repmat((1 : nas)', [sum(nrs)*nwindings, 1]);
-        celltbl.indj = rldecode((1 : sum(nrs)*nwindings)', nas*ones(sum(nrs)*nwindings, 1));
-        celltbl.curvind = celltbl.indi + nx*floor((celltbl.indj - 1)./ny);
-        celltbl = IndexArray(celltbl);
-        
-        cclinecelltbl = crossIndexArray(cclinecelltbl, celltbl, {'indi', 'indj', 'curvind'});
     end
     
     % We roll the domain into a spirale
@@ -301,13 +301,6 @@ function output = spiralGrid(params)
     comptagtbl.indj = (1 : (sum(nrs)*nwindings))';
     comptagtbl = IndexArray(comptagtbl);
 
-    if ~usetab
-        celltbl.cells = (1 : cartG.cells.num)';
-        celltbl.indi = repmat((1 : nas)', [sum(nrs)*nwindings, 1]);
-        celltbl.indj = rldecode((1 : sum(nrs)*nwindings)', nas*ones(sum(nrs)*nwindings, 1));
-        celltbl = IndexArray(celltbl);
-    end
-
     celltagtbl = crossIndexArray(celltbl, comptagtbl, {'indj'});
     celltagtbl = sortIndexArray(celltagtbl, {'cells', 'tag'});
 
@@ -315,8 +308,8 @@ function output = spiralGrid(params)
 
     if usetab
         
-        cclinecelltbl = crossIndexArray(cclinecelltbl, celltbl, {'indi', 'indj', 'curvind'});
-        cclinecelltbl = sortIndexArray(cclinecelltbl,  {'curvind', 'cells'});
+        cclinecelltbl = crossIndexArray(cclinecelltbl, celltbl, {'indi', 'indj', 'curvindi'});
+        cclinecelltbl = sortIndexArray(cclinecelltbl,  {'curvindi', 'cells'});
 
         cccelltbl.tag = tagdict('PositiveCurrentCollector');
         cccelltbl = IndexArray(cccelltbl);
@@ -324,7 +317,7 @@ function output = spiralGrid(params)
         cccelltbl = crossIndexArray(cccelltbl, celltbl, {'cells'});
         
         c = cclinecelltbl.get('cells');
-        o = cclinecelltbl.get('curvind');
+        o = cclinecelltbl.get('curvindi');
         l = cumsum(G.cells.volumes(c)/cclinewidth);
 
         tabwidths = tabparams.widths;
@@ -359,10 +352,10 @@ function output = spiralGrid(params)
             otab = o(ind);
             
             clear selcurvindtbl;
-            selcurvindtbl.curvind = otab;
+            selcurvindtbl.curvindi = otab;
             selcurvindtbl = IndexArray(selcurvindtbl);
             
-            tabcelltbl = crossIndexArray(cccelltbl, selcurvindtbl, {'curvind'});
+            tabcelltbl = crossIndexArray(cccelltbl, selcurvindtbl, {'curvindi'});
             c = tabcelltbl.get('cells');
             
             tabcells = vertcat(tabcells, c);
@@ -397,14 +390,12 @@ function output = spiralGrid(params)
     %%  recover the external faces that are inside the spiral
     % We get them using the Cartesian indexing
 
-    [indi, indj, indk] = ind2sub([n, m, nL], (1 : G.cells.num)');
-    
-    clear celltbl
-    celltbl.cells = (1 : G.cells.num)';
-    celltbl.indi = indi;
-    celltbl.indj = indj;
-    celltbl.indk = indk;
-    celltbl = IndexArray(celltbl);
+    cellindktbl.indk = (1 : nL)';
+    cellindktbl = IndexArray(cellindktbl);
+    celltbl = celltbl.removeInd({'cells'});
+    celltbl = crossIndexArray(cellindktbl, celltbl, {});
+    celltbl = sortIndexArray(celltbl, {'indk', 'indj', 'indi', 'curvindi', 'curvindj'});
+    celltbl = celltbl.addInd('cells', (1 : G.cells.num)');
 
     % We add vertical (2) and horizontal (1) direction index for the faces (see makeLayeredGrid for the setup)
     
@@ -535,5 +526,17 @@ function output = spiralGrid(params)
     output.positiveExtCurrentFaces = positiveExtCurrentFaces;
     output.negativeExtCurrentFaces = negativeExtCurrentFaces;
     output.thermalExchangeFaces    = thermalExchangeFaces;   
+
+    
+    w = widths./nrs;
+    w = rldecode(w, nrs);
+    h = L/nL;
+    h = repmat(h, nL, 1);
+    
+    output.widthLayer   = w;
+    output.nWidthLayer  = nrs;
+    output.heightLayer  = h;
+    output.nHeightLayer = nL;
+    output.celltbl      = celltbl;
     
 end

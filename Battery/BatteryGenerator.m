@@ -18,11 +18,11 @@ classdef BatteryGenerator
 
     methods
         
-        function paramobj = updateBatteryInputParams(gen, paramobj, params)
+        function [paramobj, gen] = updateBatteryInputParams(gen, paramobj, params)
             error('virtual function - should call setupBatteryInputParams with some argument for params');
         end
         
-        function paramobj = setupBatteryInputParams(gen, paramobj, params)
+        function [paramobj, gen] = setupBatteryInputParams(gen, paramobj, params)
         % main function : add grid and coupling to paramobj structure
             [paramobj, gen] = gen.setupGrid(paramobj, params);
             paramobj.Electrolyte = gen.setupElectrolyte(paramobj.Electrolyte, params);

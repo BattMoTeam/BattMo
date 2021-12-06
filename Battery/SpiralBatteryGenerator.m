@@ -27,6 +27,12 @@ classdef SpiralBatteryGenerator < BatteryGenerator
         positiveExtCurrentFaces
         negativeExtCurrentFaces
         thermalExchangeFaces
+
+        celltbl
+        widthLayer
+        nWidthLayer
+        heightLayer
+        nHeightLayer
         
     end
     
@@ -36,7 +42,7 @@ classdef SpiralBatteryGenerator < BatteryGenerator
             gen = gen@BatteryGenerator();  
         end
         
-        function paramobj = updateBatteryInputParams(gen, paramobj, params)
+        function [paramobj, gen] = updateBatteryInputParams(gen, paramobj, params)
             
             gen.nwindings = params.nwindings;
             gen.r0        = params.r0;
@@ -49,7 +55,7 @@ classdef SpiralBatteryGenerator < BatteryGenerator
             
             gen.angleuniform = params.angleuniform;
         
-            paramobj = gen.setupBatteryInputParams(paramobj, []);
+            [paramobj, gen] = gen.setupBatteryInputParams(paramobj, []);
             
         end
         
@@ -60,6 +66,206 @@ classdef SpiralBatteryGenerator < BatteryGenerator
             
         end
 
+        function UGrids = setupUnRolledGrids(gen, paramobj)
+            
+            assert(gen.angleuniform, 'does not support non uniform angular discretisation. could be easily added');
+            
+            G            = gen.G;
+            widthLayer   = gen.widthLayer;
+            nWidthLayer  = gen.nWidthLayer;
+            heightLayer  = gen.heightLayer;
+            nHeightLayer = gen.nHeightLayer;
+            nas          = gen.nas;
+            nL           = gen.nL;
+            nwindings    = gen.nwindings;
+            celltbl      = gen.celltbl;
+            
+            cartG = cartGrid([nas*nwindings, sum(nWidthLayer), nL]);
+
+            vecttbl.vect = (1 : cartG.griddim)';
+            vecttbl = IndexArray(vecttbl)';
+
+            [indi, indj, indk] = ind2sub([nas*nwindings, sum(nWidthLayer), nL], (1 : cartG.cells.num)');
+            cartcelltbl.indi = indi;
+            cartcelltbl.indj = indj;
+            cartcelltbl.indk = indk;
+            cartcelltbl.cells = (1 : cartG.cells.num)';
+            cartcelltbl = IndexArray(cartcelltbl);
+
+            cellindjtbl.indj = (1 : sum(nWidthLayer))';
+            cellindjtbl = IndexArray(cellindjtbl);
+
+            map = TensorMap();
+            map.fromTbl = cellindjtbl;
+            map.toTbl = cartcelltbl;
+            map.mergefds = {'indj'};
+            map = map.setup();
+
+            w = map.eval(widthLayer);
+
+            cellindktbl.indk = (1 : sum(nHeightLayer))';
+            cellindktbl = IndexArray(cellindktbl);
+
+            map = TensorMap();
+            map.fromTbl = cellindktbl;
+            map.toTbl = cartcelltbl;
+            map.mergefds = {'indk'};
+            map = map.setup();
+
+            h = map.eval(heightLayer);
+
+            vol = G.cells.volumes;
+
+            celltbl = celltbl.removeInd({'cells', 'indi', 'indj'});
+
+            map = TensorMap();
+            map.fromTbl = celltbl;
+            map.toTbl = cartcelltbl;
+            map.replaceFromTblfds = {{'curvindi', 'indi'}, {'curvindj', 'indj'}};
+            map.mergefds = {'indi', 'indj', 'indk'};
+
+            cartInd = map.getDispatchInd();
+
+            map = map.setup();
+            
+            vol = map.eval(vol);
+            l = vol./(h.*w);
+
+            % Here, we assume knowledge on ordering of cartcelltbl;
+            l = l(1 : nas*nwindings);
+
+            % we add cartesian indexing to the nodes
+            [indi, indj, indk] = ind2sub([nas*nwindings + 1, sum(nWidthLayer) + 1, nL + 1], (1 : cartG.nodes.num)');
+
+            nodetbl.nodes = (1 : cartG.nodes.num)';
+            nodetbl.indi = indi;
+            nodetbl.indj = indj; 
+            nodetbl.indk = indk;
+            nodetbl = IndexArray(nodetbl);
+
+            xnode = [0; cumsum(l)];
+            ynode = [0; cumsum(widthLayer)];
+            znode = [0; cumsum(heightLayer)];
+
+            nodeinditbl.indi = (1 : (nas*nwindings + 1))';
+            nodeinditbl = IndexArray(nodeinditbl);
+
+            map = TensorMap();
+            map.fromTbl = nodeinditbl;
+            map.toTbl = nodetbl;
+            map.mergefds = {'indi'};
+            map = map.setup();
+
+            xnode = map.eval(xnode);
+
+            nodeindjtbl.indj = (1 : (sum(nWidthLayer) + 1))';
+            nodeindjtbl = IndexArray(nodeindjtbl);
+
+            map = TensorMap();
+            map.fromTbl = nodeindjtbl;
+            map.toTbl = nodetbl;
+            map.mergefds = {'indj'};
+            map = map.setup();
+
+            ynode = map.eval(ynode);
+
+            nodeindktbl.indk = (1 : (nL + 1))';
+            nodeindktbl = IndexArray(nodeindktbl);
+
+            map = TensorMap();
+            map.fromTbl = nodeindktbl;
+            map.toTbl = nodetbl;
+            map.mergefds = {'indk'};
+            map = map.setup();
+
+            znode = map.eval(znode);
+
+            cartG.nodes.coords = [xnode, ynode, znode];
+            cartG = computeGeometry(cartG);
+            
+            %% we setup the mappings between the different grids
+            
+            ne    = 'NegativeElectrode';
+            pe    = 'PositiveElectrode';
+            eac   = 'ElectrodeActiveComponent';
+            cc    = 'CurrentCollector';
+            elyte = 'Electrolyte';
+            sep   = 'Separator';
+            
+            tagdict = gen.tagdict;
+            tag     = gen.tag;
+            
+            clear celltbl
+            celltbl.cartcells = (1 : cartG.cells.num)';
+            celltbl.cells = cartInd;
+            celltbl = IndexArray(celltbl);            
+
+            UGrids.G = cartG;
+            UGrids.G.mappings.ind = cartInd;            
+            
+            compG = paramobj.(pe).(cc).G;
+            comptag = tagdict('PositiveCurrentCollector');
+            compCartG = genSubGrid(cartG, find(tag(cartInd) == comptag));
+            compCartG = setupCompCartGrid(gen, compG, compCartG, celltbl);
+            Gs.CurrentCollector = compCartG;
+            
+            compG = paramobj.(pe).(eac).G;
+            comptag = tagdict('PositiveActiveMaterial');
+            compCartG = genSubGrid(cartG, find(tag(cartInd) == comptag));
+            compCartG = setupCompCartGrid(gen, compG, compCartG, celltbl);
+            Gs.ElectrodeActiveComponent = compCartG;
+            
+            UGrids.PositiveElectrode = Gs;
+            clear Gs;
+            
+            compG = paramobj.(ne).(cc).G;
+            comptag = tagdict('NegativeCurrentCollector');
+            compCartG = genSubGrid(cartG, find(tag(cartInd) == comptag));
+            compCartG = setupCompCartGrid(gen, compG, compCartG, celltbl);
+            Gs.CurrentCollector = compCartG;
+            
+            compG = paramobj.(ne).(eac).G;
+            comptag = tagdict('NegativeActiveMaterial');
+            compCartG = genSubGrid(cartG, find(tag(cartInd) == comptag));
+            compCartG = setupCompCartGrid(gen, compG, compCartG, celltbl);
+            Gs.ElectrodeActiveComponent = compCartG;
+            
+            UGrids.NegativeElectrode = Gs;
+            clear Gs;
+            
+            compG = paramobj.(elyte).G;
+            comptags = [tagdict('ElectrolyteSeparator'); tagdict('NegativeActiveMaterial'); tagdict('PositiveActiveMaterial')];
+            compCartG = genSubGrid(cartG, find(ismember(tag(cartInd), comptags)));
+            compCartG = setupCompCartGrid(gen, compG, compCartG, celltbl);
+            UGrids.Electrolyte = compCartG;
+            
+            UGrids.ThermalModel = UGrids.G;
+
+        end
+        
+        function compCartG = setupCompCartGrid(gen, compG, compCartG, celltbl)
+
+            compcelltbl.loccells = (1 : compG.cells.num)';
+            compcelltbl.cells = compG.mappings.cellmap;
+            compcelltbl = IndexArray(compcelltbl);
+            compcelltbl = crossIndexArray(compcelltbl, celltbl, {'cells'});
+            compcelltbl = compcelltbl.removeInd({'cells'});
+
+            compcartcelltbl.cartloccells = (1 : compCartG.cells.num)';
+            compcartcelltbl.cartcells = compCartG.mappings.cellmap;
+            compcartcelltbl = IndexArray(compcartcelltbl);
+
+            map = TensorMap();
+            map.fromTbl = compcelltbl;
+            map.toTbl = compcartcelltbl;
+            map.mergefds = {'cartcells'};
+
+            ind = map.getDispatchInd();
+            
+            compCartG.mappings.ind = ind;
+            
+        end
+        
         function paramobj = setupElectrolyte(gen, paramobj, params)
             
             tagdict = gen.tagdict;
