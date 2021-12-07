@@ -5,7 +5,7 @@
 mrstModule add ad-core multimodel mrst-gui battery mpfa
 
 % The input parameters can be given in json format. The json file is read and used to populate the paramobj object.
-jsonstruct = parseBatmoJson('Battery/lithiumbattery.json');
+jsonstruct = parseBatmoJson('JsonDatas/lithiumbattery.json');
 paramobj = BatteryInputParams(jsonstruct);
 
 % Some shortcuts used for the sub-models
@@ -22,13 +22,8 @@ thermal = 'ThermalModel';
 gen = BatteryGenerator2D();
 % We update pamobj with grid data
 paramobj = gen.updateBatteryInputParams(paramobj);
-
-% In this case, we change some of the values of the paramaters that were given in the json file to other values. This is
-% done directly on the object paramobj.
 paramobj.(ne).(cc).EffectiveElectricalConductivity = 1e5;
 paramobj.(pe).(cc).EffectiveElectricalConductivity = 1e5;
-paramobj.(thermal).externalTemperature = paramobj.initT;
-paramobj.SOC = 0.99;
 
 %%  The Battery model is initialized by sending paramobj to the Battery class constructor
 
@@ -50,19 +45,20 @@ legend({'separator', 'negative electrode (active material)', 'positive electrode
 
 %% We compute the cell capacity and chose a discharge rate
 C      = computeCellCapacity(model);
-CRate  = 1/5; 
+CRate = 1;
 inputI = (C/hour)*CRate; % current 
 
 %% We setup the schedule 
 % We use different time step for the activation phase (small time steps) and the following discharging phase
-%
-% Activation phase with exponentially increasing time step
+
+% We use exponentially increasing time step for the activation phase
 n = 25; 
 dt = []; 
 dt = [dt; repmat(0.5e-4, n, 1).*1.5.^[1:n]']; 
-% Operation phase with constant time step
+% We choose time steps for the rest of the simulation (discharge phase)
+totalTime = 1.4*hour/CRate;
 n = 40; 
-dt = [dt; repmat(2e-1*hour, n, 1)]; 
+dt    = [dt; repmat(totalTime/n, n, 1)]; 
 times = [0; cumsum(dt)]; 
 tt = times(2 : end); 
 step = struct('val', diff(times), 'control', ones(numel(tt), 1)); 
@@ -75,7 +71,7 @@ cc = 'CurrentCollector';
 stopFunc = @(model, state, state_prev) (state.(pe).(cc).E < 2.0); 
 
 tup = 0.1; % rampup value for the current function, see rampupSwitchControl
-inputE = 3.6; % Value when current control switches to voltage control
+inputE = 3; % Value when current control switches to voltage control
 srcfunc = @(time, I, E) rampupSwitchControl(time, tup, I, E, inputI, inputE);
 
 % we setup the control by assigning a source and stop function.
@@ -93,14 +89,20 @@ nls = NonLinearSolver();
 nls.maxIterations = 10; 
 % Change default behavior of nonlinear solver, in case of error
 nls.errorOnFailure = false; 
+% Timestep selector
+nls.timeStepSelector = StateChangeTimeStepSelector('TargetProps', ...
+                                                  {{'PositiveElectrode', 'CurrentCollector', 'E'}}, ...
+                                                  'targetChangeAbs', 0.03);
+
 % Change default tolerance for nonlinear solver
 model.nonlinearTolerance = 1e-5; 
-% Set verbosity
-model.verbose = false;
+% Set verbosity of the solver (if true, value of the residuals for every equation is given)
+model.verbose = true;
 
-%% Run simulation
-
-[wellSols, states, report] = simulateScheduleAD(initstate, model, schedule, 'OutputMinisteps', true, 'NonLinearSolver', nls); 
+% Run simulation
+[wellSols, states, report] = simulateScheduleAD(initstate, model, schedule, ...
+                                                'OutputMinisteps', true, ...
+                                                'NonLinearSolver', nls); 
 
 %%  We process output and recover the output voltage and current from the output states.
 ind = cellfun(@(x) not(isempty(x)), states); 
@@ -124,7 +126,14 @@ xlabel('time (hours)')
 %% Plot of the lithium concentration
 
 figure
-plotCellData(model.(elyte).G, states{50}.(elyte).cs{1}, 'edgealpha', 0.1);
+plotCellData(model.(elyte).G, states{50}.(elyte).c, 'edgealpha', 0.1);
+title('Lithium concentration in Electrolyte at time step 50')
+colorbar
+
+%% Plot of the lithium concentration
+
+figure
+plotToolbar(model.(thermal).G, states{50}.(elyte).c, 'edgealpha', 0.1);
 title('Lithium concentration in Electrolyte at time step 50')
 colorbar
 
