@@ -164,10 +164,8 @@ classdef Electrolyte < ElectroChemicalComponent
             conductivityeff = conductivity.*volfrac.^1.5;
             state.conductivityeff = conductivityeff;
             j = assembleFlux(model, phi, conductivityeff);
-            for ind = 1 : ncomp
-                j = j + jchems{ind};
-            end
-
+            j = j + jchems{1};
+                
             state.j = j;
             
         end
