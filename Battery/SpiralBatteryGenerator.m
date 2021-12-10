@@ -71,8 +71,6 @@ classdef SpiralBatteryGenerator < BatteryGenerator
 
         function UGrids = setupUnRolledGrids(gen, paramobj)
             
-            assert(gen.angleuniform, 'does not support non uniform angular discretisation. could be easily added');
-            
             G            = gen.G;
             widthLayer   = gen.widthLayer;
             nWidthLayer  = gen.nWidthLayer;
