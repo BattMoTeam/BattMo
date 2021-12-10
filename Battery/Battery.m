@@ -847,6 +847,7 @@ classdef Battery < BaseModel
             am      = 'ActiveMaterial';
             thermal = 'ThermalModel';
             
+            
             eldes = {ne, pe}; % electrodes
             
             nc = model.G.cells.num;
@@ -867,19 +868,20 @@ classdef Battery < BaseModel
 
                 elde = eldes{ind};
                 am_model = model.(elde).(eac).(am);
+
+                F = am_model.constants.F;
+                n = am_model.n;
+
                 am_map   = am_model.G.mappings.cellmap;
                 R = locstate.(elde).(eac).(am).R;
                 eta = locstate.(elde).(eac).(am).eta;
                 vols = model.(elde).(eac).G.cells.volumes;
-                am_src = vols.*R.*eta;
+                am_src = n*F*vols.*R.*eta;
                 
                 src(am_map) = src(am_map) + am_src;
                 
             end
 
-            % We multiply by volumes
-            src = model.G.cells.volumes.*src;
-            
             state.(thermal).jHeatReactionSource = src;
 
         end
