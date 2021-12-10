@@ -1,4 +1,4 @@
-function OCP = updateOCPFunc_nmc111(c, T, cmax)
+function [OCP, dUdT] = updateOCPFunc_nmc111(c, T, cmax)
     
     Tref = 298.15;  % [K]
 
@@ -47,6 +47,5 @@ function OCP = updateOCPFunc_nmc111(c, T, cmax)
     
     % Calculate the open-circuit potential of the active material
     OCP = refOCP + (T - Tref) .* dUdT;
-
     
 end

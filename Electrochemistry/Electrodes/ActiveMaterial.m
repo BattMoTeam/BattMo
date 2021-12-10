@@ -66,7 +66,7 @@ classdef ActiveMaterial < BaseModel
 
             func = model.updateOCPFunc;
 
-            state.OCP = func(c, T, cmax);
+            [state.OCP, state.dUdT] = func(c, T, cmax);
         end
 
         function state = updateReactionRateCoefficient(model, state)

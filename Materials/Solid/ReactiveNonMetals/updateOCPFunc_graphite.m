@@ -1,4 +1,4 @@
-function OCP = updateOCPFunc_graphite(c, T, cmax)
+function [OCP, dUdT] = updateOCPFunc_graphite(c, T, cmax)
 
     Tref = 298.15;  % [K]
     

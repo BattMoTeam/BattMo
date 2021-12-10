@@ -867,16 +867,18 @@ classdef Battery < BaseModel
             for ind = 1 : numel(eldes)
 
                 elde = eldes{ind};
+                
                 am_model = model.(elde).(eac).(am);
-
-                F = am_model.constants.F;
-                n = am_model.n;
-
+                F        = am_model.constants.F;
+                n        = am_model.n;
                 am_map   = am_model.G.mappings.cellmap;
-                R = locstate.(elde).(eac).(am).R;
-                eta = locstate.(elde).(eac).(am).eta;
-                vols = model.(elde).(eac).G.cells.volumes;
-                am_src = n*F*vols.*R.*eta;
+                vols     = model.(elde).(eac).G.cells.volumes;
+
+                R      = locstate.(elde).(eac).(am).R;
+                dUdT   = locstate.(elde).(eac).(am).dUdT;
+                eta    = locstate.(elde).(eac).(am).eta;
+                
+                am_src = n*F*vols.*R.*(eta + T(am_map).*dUdT);
                 
                 src(am_map) = src(am_map) + am_src;
                 
