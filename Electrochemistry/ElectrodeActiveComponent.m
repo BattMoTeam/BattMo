@@ -85,8 +85,23 @@ classdef ElectrodeActiveComponent < ElectroChemicalComponent
             state.jBcSource = state.jCoupling;
             state.jFaceBc = state.jFaceCoupling;
         end
+
+        function state = addSOC(model, state)
+
+            am = model.ActiveMaterial; 
+            c = state.c; 
+            
+            theta = c/am.Li.cmax; 
+            m = (1 ./ (am.theta100 - am.theta0)); 
+            b = - m.*am.theta0; 
+            
+            state.SOC = theta*m + b;
+            state.theta = theta;
+            
+        end
         
     end
     
 end
+
 
