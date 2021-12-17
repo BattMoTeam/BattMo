@@ -27,7 +27,7 @@
             "chargeCarrierName": "Li",
             "ActiveMaterial": {
                 "isFile": true,
-                "filename": "Battery/nmc111.json"
+                "filename": "Battery/lnmo.json"
             }
         },
         "CurrentCollector": {

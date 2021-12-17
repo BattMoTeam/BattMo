@@ -7,6 +7,8 @@ function am = setupActiveMaterial(paramobj)
         am = NMC111(paramobj);
       case 'Graphite'
         am = Graphite(paramobj);
+      case 'LNMO'
+        am = LNMO(paramobj);
       otherwise
         error('active material not recognized');
     end
