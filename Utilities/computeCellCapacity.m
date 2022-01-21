@@ -50,7 +50,7 @@ function c = computeCellCapacity(model)
         theta100 = ammodel.theta100;
         volume_fraction = ammodel.volumeFraction;
         
-        volume_electrode = sum(G.cells.volumes);
+        volume_electrode = sum(model.(elde).(eac).G.cells.volumes);
         
         c_usable = abs(theta100 - theta0) * c_max;
         mol_usable = c_usable * volume_fraction * volume_electrode;
