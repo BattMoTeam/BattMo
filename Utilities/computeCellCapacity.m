@@ -1,4 +1,4 @@
-function c = computeCellCapacity(model)
+function [cap, cap_neg, cap_pos] = computeCellCapacity(model)
 
 %
 %
@@ -59,6 +59,8 @@ function c = computeCellCapacity(model)
         
     end
     
-    c = min(cap_usable); 
+    cap_neg = cap_usable(1);
+    cap_pos = cap_usable(2);
+    cap = min(cap_usable); 
     
 end
