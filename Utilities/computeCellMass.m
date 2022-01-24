@@ -1,4 +1,4 @@
-function mass = computeCellMass(model)
+function [mass, masses] = computeCellMass(model)
 
     
     elyte = 'Electrolyte';
@@ -22,12 +22,16 @@ function mass = computeCellMass(model)
         vols = model.(elde).(eac).G.cells.volumes;
         poro = model.(elde).(eac).volumeFraction;
         
-        mass = mass + sum(rho.*vols.*poro);
+
+        masses.(elde).(eac) = sum(rho.*vols.*poro);
+        
+        mass = mass + masses.(elde).(eac);
         
         rho  = model.(elde).(cc).density;
         vols = model.(elde).(cc).G.cells.volumes;
         
-        mass = mass + sum(rho.*vols);
+        masses.(elde).(cc) = sum(rho.*vols);
+        mass = mass + masses.(elde).(cc);
         
     end
     
@@ -35,13 +39,14 @@ function mass = computeCellMass(model)
     vols = model.(elyte).G.cells.volumes;
     poro = model.(elyte).volumeFraction;
     
-    mass = mass + sum(rho.*vols.*poro);
+    masses.(elyte) = sum(rho.*vols.*poro);
+    mass = mass + masses.(elyte);
     
     rho  = model.(elyte).(sep).density;
     vols = model.(elyte).(sep).G.cells.volumes;
     poro = model.(elyte).(sep).volumeFraction;
     
-    mass = mass + sum(rho.*vols.*poro);
-    
+    masses.(elyte).(sep) = sum(rho.*vols.*poro);
+    mass = mass + masses.(elyte).(sep);
     
 end
