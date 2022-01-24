@@ -1,11 +1,11 @@
-function [cap, cap_neg, cap_pos] = computeCellCapacity(model)
+function [cap, cap_neg, cap_pos, specificEnergy] = computeCellCapacity(model)
 
 %
 %
 % SYNOPSIS:
 %   function c = computeCellCapacity(model, state)
 %
-% DESCRIPTION: computes the cell usable capacity
+% DESCRIPTION: computes the cell usable capacity in Coulomb
 %
 % PARAMETERS:
 %   model - battery model
@@ -42,25 +42,93 @@ function [cap, cap_neg, cap_pos] = computeCellCapacity(model)
             ammodel = model.(elde).(eac).(am);
         end
         
-        n = ammodel.n;
-        F = ammodel.constants.F;
-        G = ammodel.G;
-        c_max    = ammodel.Li.cmax;
-        theta0   = ammodel.theta0;
-        theta100 = ammodel.theta100;
+        n    = ammodel.n;
+        F    = ammodel.constants.F;
+        G    = ammodel.G;
+        cMax = ammodel.Li.cmax;
+
+        switch elde
+          case 'NegativeElectrode'
+            thetaMax = ammodel.theta100;
+            thetaMin = ammodel.theta0;
+          case 'PositiveElectrode'
+            thetaMax = ammodel.theta0;
+            thetaMin = ammodel.theta100;            
+          otherwise
+            error('Electrode not recognized');
+        end
+        
         volume_fraction = ammodel.volumeFraction;
-        
         volume_electrode = sum(model.(elde).(eac).G.cells.volumes);
+        volume = volume_fraction*volume_electrode;
         
-        c_usable = abs(theta100 - theta0) * c_max;
-        mol_usable = c_usable * volume_fraction * volume_electrode;
-        
-        cap_usable(ind) = mol_usable * n * F;
+        cap_usable(ind) = (thetaMax - thetaMin)*cMax*volume*n*F;
         
     end
     
     cap_neg = cap_usable(1);
     cap_pos = cap_usable(2);
+    
     cap = min(cap_usable); 
+
+    doComputeEnergy = true;
+    
+    if doComputeEnergy
+        
+        r = cap_pos/cap_neg;
+        
+        thetaMinPos = model.(pe).(eac).(am).theta100;
+        thetaMaxPos = model.(pe).(eac).(am).theta0;
+        thetaMinNeg = model.(ne).(eac).(am).theta0;
+        thetaMaxNeg = model.(ne).(eac).(am).theta100;
+        
+        elde = 'PositiveElectrode';
+
+        ammodel = model.(elde).(eac).(am);
+        F = ammodel.constants.F;
+        G = ammodel.G;
+        n = ammodel.n;
+        assert(n == 1, 'not implemented yet');
+        cMax = ammodel.Li.cmax;
+        
+        volume_fraction = ammodel.volumeFraction;
+        volume_electrode = sum(model.(elde).(eac).G.cells.volumes);
+        volume = volume_fraction*volume_electrode;
+        
+        func = @(theta) model.(elde).(eac).(am).updateOCPFunc(theta, 298, 1);
+
+        thetaMax = min(thetaMaxPos, thetaMinPos + r*(thetaMaxNeg - thetaMinNeg));
+
+        theta = linspace(thetaMinPos, thetaMax, 100);
+        energy = sum(func(theta(1 : end - 1)).*diff(theta)*volume*F*cMax);
+        
+        elde = 'NegativeElectrode';        
+        
+        ammodel = model.(elde).(eac).(am);
+        F = ammodel.constants.F;
+        G = ammodel.G;
+        n = ammodel.n;
+        assert(n == 1, 'not implemented yet');
+        cMax = ammodel.Li.cmax;
+        volume_fraction = ammodel.volumeFraction;
+        volume_electrode = sum(model.(elde).(eac).G.cells.volumes);
+        volume = volume_fraction*volume_electrode;
+        
+        func = @(theta) model.(elde).(eac).(am).updateOCPFunc(theta, 298, 1);
+
+        thetaMin = max(thetaMinNeg, thetaMaxNeg - 1/r*(thetaMaxPos - thetaMinPos));
+
+        theta = linspace(thetaMin, thetaMaxNeg, 100);
+        energy = energy - sum(func(theta(1 : end - 1)).*diff(theta)*volume*F*cMax);
+        
+        mass = computeCellMass(model);
+        
+        specificEnergy = energy/mass;
+        
+    else
+        
+        specificEnergy = [];
+        
+    end
     
 end
