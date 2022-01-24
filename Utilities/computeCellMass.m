@@ -23,15 +23,15 @@ function [mass, masses] = computeCellMass(model)
         poro = model.(elde).(eac).volumeFraction;
         
 
-        masses.(elde).(eac) = sum(rho.*vols.*poro);
+        masses.(elde).(eac).val = sum(rho.*vols.*poro);
         
-        mass = mass + masses.(elde).(eac);
+        mass = mass + masses.(elde).(eac).val;
         
         rho  = model.(elde).(cc).density;
         vols = model.(elde).(cc).G.cells.volumes;
         
-        masses.(elde).(cc) = sum(rho.*vols);
-        mass = mass + masses.(elde).(cc);
+        masses.(elde).(cc).val = sum(rho.*vols);
+        mass = mass + masses.(elde).(cc).val;
         
     end
     
@@ -39,14 +39,14 @@ function [mass, masses] = computeCellMass(model)
     vols = model.(elyte).G.cells.volumes;
     poro = model.(elyte).volumeFraction;
     
-    masses.(elyte) = sum(rho.*vols.*poro);
-    mass = mass + masses.(elyte);
+    masses.(elyte).val = sum(rho.*vols.*poro);
+    mass = mass + masses.(elyte).val;
     
     rho  = model.(elyte).(sep).density;
     vols = model.(elyte).(sep).G.cells.volumes;
     poro = model.(elyte).(sep).volumeFraction;
     
-    masses.(elyte).(sep) = sum(rho.*vols.*poro);
-    mass = mass + masses.(elyte).(sep);
+    masses.(elyte).(sep).val = sum(rho.*vols.*poro);
+    mass = mass + masses.(elyte).(sep).val;
     
 end
