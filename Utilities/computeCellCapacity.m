@@ -123,7 +123,8 @@ function [cap, cap_neg, cap_pos, specificEnergy] = computeCellCapacity(model)
         
         mass = computeCellMass(model);
         
-        specificEnergy = energy/mass;
+        warning('Adding packing mass in computation of optimal energy');
+        specificEnergy = energy/(mass + 10e-3);
         
     else
         
