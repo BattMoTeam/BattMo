@@ -75,7 +75,7 @@ function [cap, cap_neg, cap_pos, specificEnergy] = computeCellCapacity(model)
     
     if doComputeEnergy
         
-        r = cap_pos/cap_neg;
+        r = cap_neg/cap_pos;
         
         thetaMinPos = model.(pe).(eac).(am).theta100;
         thetaMaxPos = model.(pe).(eac).(am).theta0;
@@ -97,7 +97,7 @@ function [cap, cap_neg, cap_pos, specificEnergy] = computeCellCapacity(model)
         
         func = @(theta) model.(elde).(eac).(am).updateOCPFunc(theta, 298, 1);
 
-        thetaMax = min(thetaMaxPos, thetaMinPos + r*(thetaMaxNeg - thetaMinNeg));
+        thetaMax = min(thetaMaxPos, thetaMinPos + r*(thetaMaxPos - thetaMinPos));
 
         theta = linspace(thetaMinPos, thetaMax, 100);
         energy = sum(func(theta(1 : end - 1)).*diff(theta)*volume*F*cMax);
@@ -116,7 +116,7 @@ function [cap, cap_neg, cap_pos, specificEnergy] = computeCellCapacity(model)
         
         func = @(theta) model.(elde).(eac).(am).updateOCPFunc(theta, 298, 1);
 
-        thetaMin = max(thetaMinNeg, thetaMaxNeg - 1/r*(thetaMaxPos - thetaMinPos));
+        thetaMin = max(thetaMinNeg, thetaMaxNeg - 1/r*(thetaMaxNeg - thetaMinNeg));
 
         theta = linspace(thetaMin, thetaMaxNeg, 100);
         energy = energy - sum(func(theta(1 : end - 1)).*diff(theta)*volume*F*cMax);
