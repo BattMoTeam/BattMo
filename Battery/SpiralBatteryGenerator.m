@@ -29,13 +29,14 @@ classdef SpiralBatteryGenerator < BatteryGenerator
         thermalExchangeFaces
         thermalExchangeFacesTag
 
-        tabwidth % computed tab width 
         celltbl
         widthLayer
         nWidthLayer
         heightLayer
         nHeightLayer
-        
+
+        tabwidths      % computed tab width (due to discretization, we cannot enforce the tab widths)
+        windingnumbers % for the tabs (implmented only for aligned tabs now)
     end
     
     methods

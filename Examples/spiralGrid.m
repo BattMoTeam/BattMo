@@ -87,9 +87,9 @@ function output = spiralGrid(params)
     if (unifang)
         h = linspace(0, 2*pi*r0, nas + 1);
     else
-        n1 = 1;
+        n1 = 4;
         n2 = nas - n1;
-        dtheta1 = 2*pi*0.03;
+        dtheta1 = 2*pi*0.05;
         dtheta2 = 2*pi - dtheta1;
         dtheta = [repmat(dtheta1/n1, n1, 1); repmat(dtheta2/n2, n2, 1)];
         theta = [0; cumsum(dtheta)];
@@ -310,6 +310,44 @@ function output = spiralGrid(params)
         
         switch tabparams.tabcase
 
+          case 'aligned tabs'
+            
+            windingnumbers = computeWindingNumbers(tabparams.fractions, r0, layerwidth, nwindings);
+
+            for ind = 1 :  numel(windingnumbers)
+                
+                indjwinding = indj0 + sum(nrs)*(windingnumbers(ind) - 1);
+                clear cclinecelltbl
+                cclinecelltbl.indj = repmat(indjwinding, nas, 1);
+                cclinecelltbl.indi = (1 : nas)';
+                cclinecelltbl = IndexArray(cclinecelltbl);
+                
+                cclinecelltbl = crossIndexArray(cclinecelltbl, celltbl, {'indi', 'indj'});
+                cclinecelltbl = sortIndexArray(cclinecelltbl,  {'curvindi', 'cells'});            
+
+                c = cclinecelltbl.get('cells');
+                o = cclinecelltbl.get('curvindi');
+                l = cumsum(G.cells.volumes(c)/cclinewidth);
+                
+                indl = find(l > tabparams.width, 1, 'first');
+                tabwidths(ind) = l(indl);
+                
+                clear tabcelltbl
+                tabcelltbl.curvindi = o(1 : indl);
+                tabcelltbl = IndexArray(tabcelltbl);
+                tabcelltbl = crossIndexArray(cccelltbl, tabcelltbl, {'curvindi'});
+                tabcelltbl = projIndexArray(tabcelltbl, {'indi', 'indj'});
+                
+                tabcelltbls{ind} = tabcelltbl;
+                
+            end
+            
+            clear tabcelltbl
+            tabcelltbl = tabcelltbls{1};
+            for ind = 2 : numel(tabcelltbls)
+                tabcelltbl = concatIndexArray(tabcelltbl, tabcelltbls{ind}, {'indi', 'indj'}, 'checkUnique', true);
+            end
+            
           case '1 tab'
             
             nmw = computeMiddleWinding(r0, layerwidth, nwindings);
@@ -326,7 +364,7 @@ function output = spiralGrid(params)
             l = cumsum(G.cells.volumes(c)/cclinewidth);
             
             ind = find(l > tabparams.width, 1, 'first');
-            tabwidth = l(ind);
+            tabwidths = l(ind);
             tabcelltbl.curvindi = o(1 : ind);
             tabcelltbl = IndexArray(tabcelltbl);
             
@@ -589,8 +627,12 @@ function output = spiralGrid(params)
     output.thermalExchangeFaces    = thermalExchangeFaces;   
     output.thermalExchangeFacesTag = thermalExchangeFacesTag;
     
-    if strcmp(tabcase, '1 tab')
-        output.tabwidth = tabwidth;
+    switch tabcase
+      case '1 tab'
+        output.tabwidths = tabwidths;
+      case 'aligned tabs'
+        output.tabwidths = tabwidths;
+        output.windingnumbers = windingnumbers;
     end
     
     w = widths./nrs;

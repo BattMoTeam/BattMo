@@ -9,20 +9,21 @@ mrstDebug(20);
 %% Indexing of the different cases
 
 %% Tab cases
-tabparamscases = {'no tab', '1 tab', '3 tabs'};
+tabparamscases = {'no tab', 'aligned tabs', '1 tab', '3 tabs'};
 
 %% Cooling cases
-uniform_coolingcases = {true, false};
+coolingparamscases = {};
+coolingparams = struct('top', 10, ...
+                       'side', 10);
+coolingparamscases{end + 1} = coolingparams;
 
 %% battery cases
-batterycases = {'18650', '4680'};
-
+batterycases = {'4680', '18650'};
 
 %% Choice of case index
-
-batterycase         = batterycases{2};
-tabparamscase       = tabparamscases{2};
-uniform_coolingcase = uniform_coolingcases{1};
+batterycase       = batterycases{1};
+tabparamscase     = tabparamscases{2};
+coolingparamscase = coolingparamscases{1};
 
 %% Start setup
 
@@ -93,6 +94,9 @@ nL = 2;
 tabparams.tabcase = tabparamscase;
 switch tabparamscase
   case 'no tab'
+  case 'aligned tabs'
+    tabparams.width = 3*milli*meter;
+    tabparams.fractions = [0.01, 0.5, 0.9];
   case '1 tab'
     tabparams.width = 3*milli*meter;
   case '3 tabs'
@@ -121,3 +125,5 @@ positiveExtCurrentFaces = output.positiveExtCurrentFaces;
 close all
 plotGrid(G);
 plotFaces(G, positiveExtCurrentFaces, 'edgecolor', 'red', 'linewidth', 3);
+view([-2, -90]);
+
