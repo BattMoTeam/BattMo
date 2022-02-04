@@ -58,11 +58,11 @@ classdef SpiralBatteryGenerator < BatteryGenerator
             tag = gen.tag;
 
             inds = [tagdict('PositiveActiveMaterial'); tagdict('ElectrolyteSeparator'); tagdict('NegativeActiveMaterial')];
-            cellind = ismember(tag, ind);
+            cellind = ismember(tag, inds);
             params.cellind = find(cellind);
             inds = tagdict('ElectrolyteSeparator'); 
-            cellind = ismember(tag, ind);            
-            parames.Separator.cellind = find(cellind);
+            cellind = ismember(tag, inds);            
+            params.Separator.cellind = find(cellind);
             
             paramobj = setupElectrolyte@BatteryGenerator(gen, paramobj, params);
             
@@ -89,6 +89,7 @@ classdef SpiralBatteryGenerator < BatteryGenerator
             cellind = ismember(tag, tagdict('PositiveActiveMaterial'));
             params.(pe).(eac).cellind = find(cellind);
             cellind = ismember(tag, tagdict('PositiveCurrentCollector'));
+            params.(pe).(cc).cellind = find(cellind);
             params.(pe).(cc).extfaces = gen.positiveExtCurrentFaces;
             params.(pe).cellind = [params.(pe).(eac).cellind; params.(pe).(cc).cellind];
 
@@ -103,11 +104,12 @@ classdef SpiralBatteryGenerator < BatteryGenerator
             extfaces = params.extfaces;
             
             clear params
-            globG = G.parentGrid;
+            globG = G.mappings.parentGrid;
+            facemap = G.mappings.facemap;
             invfacemap = zeros(globG.faces.num, 1);
             invfacemap(facemap) = (1 : G.faces.num)';
             
-            params.bcfaces = invfacemap(extfaces)
+            params.bcfaces = invfacemap(extfaces);
             params.bccells = sum(G.faces.neighbors(params.bcfaces, :), 2);
 
             paramobj = setupCurrentCollectorBcCoupTerm@BatteryGenerator(gen, paramobj, params);
