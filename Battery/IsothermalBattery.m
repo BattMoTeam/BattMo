@@ -435,13 +435,7 @@ classdef IsothermalBattery < BaseModel
                      'EIeq', ...
                      'controlEq'};
             else
-                switch ctrltype
-                    case 'I'
-                        types = {'cell','cell','cell','cell', 'cell','cell','cell','cell', 'cell', 'cntrl'};
-                    case 'E'
-                        types = {'cell','cell','cell','cell', 'cell','cell','cell','cell', 'cntrl', 'cntrl'};
-                end
-                  names = {'elyte_massCons'   , ...
+                names = {'elyte_massCons'   , ...
                      'elyte_chargeCons' , ...
                      'ne_eac_massCons'  , ...
                      'ne_eac_chargeCons', ...
@@ -451,6 +445,15 @@ classdef IsothermalBattery < BaseModel
                      'pe_cc_chargeCons' , ...
                      'EIeq', ...
                      'controlEq'};
+                switch ctrltype
+                    case 'I'
+                        types = {'cell','cell','cell','cell', 'cell','cell','cell','cell', 'cell', 'cntrl'};
+                    case 'E'
+                        types = {'cell','cell','cell','cell', 'cell','cell','cell','cell', 'cell', 'cntrl'};
+                        order = [1:8,10,9];
+                        eqs = {eqs{order}};
+                        names = {names{order}};
+                end
             end
             primaryVars = model.getPrimaryVariables();
 

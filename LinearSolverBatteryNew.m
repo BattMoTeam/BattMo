@@ -2,16 +2,21 @@ classdef LinearSolverBatteryNew < LinearSolverAD
     properties
         method
         verbosity
+        first
+        reuse_setup
     end
     methods
         function solver = LinearSolverBatteryNew(varargin)            
             opt=struct(...
                 'method','direct',...
-                'verbosity',0)
+                'verbosity',0,...
+                'reuse_setup',false)
             [opt,extra] = merge_options(opt,varargin{:});
             solver = solver@LinearSolverAD(extra{:});
             solver.method = opt.method;           
-            solver.verbosity=opt.verbosity;           
+            solver.verbosity=opt.verbosity;
+            solver.first=true;
+            solver.reuse_setup =  opt.reuse_setup;
         end
     
         function [result, report] = solveLinearSystem(solver, A, b, x0)                           
@@ -19,7 +24,24 @@ classdef LinearSolverBatteryNew < LinearSolverAD
                 case 'direct'
                     result=A\b;
                 case 'agmg'
-                    result=agmg(A,b,0,solver.tolerance,solver.maxIterations,solver.verbosity);
+                    if(solver.reuse_setup)
+                        
+                        if(solver.first)
+                            solver.first = false;
+                            agmg(A,b,20,solver.tolerance,solver.maxIterations,solver.verbosity,[],-1);
+                            agmg(A,b,20,solver.tolerance,solver.maxIterations,solver.verbosity,[],1);
+                        end
+                        [result,flag]=agmg(A,b,20,solver.tolerance,solver.maxIterations,solver.verbosity,[],2);
+                        if(flag == 1)
+                            solver.first=true;
+                        end
+                    else
+                        result=agmg(A,b,20,solver.tolerance,solver.maxIterations,solver.verbosity);
+                    end
+                    
+                    %if(reset)
+                    %    result=agmg(A,b,20,solver.tolerance,solver.maxIterations,solver.verbosity,-1);
+                    %end
                 case 'amgcl'
                       mycase = 'amg';
                       switch mycase
