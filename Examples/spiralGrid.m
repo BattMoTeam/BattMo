@@ -29,6 +29,7 @@ function output = spiralGrid(params)
     nas       = params.nas;
     L         = params.L;
     nL        = params.nL;
+    unifang   = params.angleuniform;
 
     %% component names
     
@@ -72,9 +73,19 @@ function output = spiralGrid(params)
 
     w = repmat(w, [nwindings, 1]);
     w = [0; cumsum(w)];
-
-    h = linspace(0, 2*pi*r0, nas + 1);
-
+    if(unifang)
+        h = linspace(0, 2*pi*r0, nas + 1);
+    else
+       sigma = 0.3;
+       f = @(x) exp(-x.^2/(2*sigma.^2));
+       x = linspace(-1, 1, nas);
+       dx= f(x);% a positve function symmetric function with small values at 1
+       x=cumsum(dx);
+       assert(all(dx>0));
+       h=([0,x]/x(end))*2*pi;
+       h(end) = 2*pi;
+       h =h*r0;
+    end
     nperlayer = sum(nrs);
 
     cartG = tensorGrid(h, w);

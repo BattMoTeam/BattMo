@@ -16,7 +16,7 @@ classdef SpiralBatteryGenerator < BatteryGenerator
         L         % length of the battery
         nas       % number of cells in the angular direction
         nL        % number of discretization cells in the longitudonal
-
+        angleuniform % 
         tag       % cell-valued vector giving component number (indexing is given by tagdict)
         tagdict   % dictionary giving the component number
         
@@ -40,7 +40,7 @@ classdef SpiralBatteryGenerator < BatteryGenerator
             gen.nas       = params.nas;
             gen.L         = params.L;
             gen.nL        = params.nL;
-            
+            gen.angleuniform = params.angleuniform;
             paramobj = gen.setupBatteryInputParams(paramobj, []);
             
         end
