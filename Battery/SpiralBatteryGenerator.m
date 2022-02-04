@@ -34,11 +34,11 @@ classdef SpiralBatteryGenerator < BatteryGenerator
         function paramobj = updateBatteryInputParams(gen, paramobj, params)
             
             gen.nwindings = params.nwindings;
-            gen.r0        = params.r0     ;
-            gen.widthDict = params.widthDict ;
-            gen.nrDict    = params.nrDict    ;
-            gen.nas       = params.nas    ;
-            gen.L         = params.L      ;
+            gen.r0        = params.r0;
+            gen.widthDict = params.widthDict;
+            gen.nrDict    = params.nrDict;
+            gen.nas       = params.nas;
+            gen.L         = params.L;
             gen.nL        = params.nL;
             
             paramobj = gen.setupBatteryInputParams(paramobj, []);

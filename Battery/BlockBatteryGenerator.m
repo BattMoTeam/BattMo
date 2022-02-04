@@ -1,7 +1,4 @@
 classdef BlockBatteryGenerator < SpiralBatteryGenerator
-% Setup 3D grid with tab
-    
-
     
     methods
         
