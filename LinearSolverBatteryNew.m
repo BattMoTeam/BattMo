@@ -57,13 +57,15 @@ classdef LinearSolverBatteryNew < LinearSolverAD
                     f=@(b) solver.amgprecond(b,A)
                     result = gmres(A,b,10,solver.tol,solver.maxiter,f);
                 case 'matlab_cpr_amg'
-                    indb = getPotentialIndex(problem)
-                    agmg(A(indb,indb),b(inb),20,solver.tolerance,solver.maxIterations,solver.verbosity,[],-1);
+                    indb = solver.getPotentialIndex(problem);
+                    agmg(A(indb,indb),b(indb),20,solver.tolerance,solver.maxIterations,solver.verbosity,[],-1);
                     agmg(A(indb,indb),b(indb),20,solver.tolerance,solver.maxIterations,solver.verbosity,[],1);
-                    f=@(b) solver.amgprecondcpr(b,A,indb,false)
-                    result = gmres(A,b,10,solver.tol,solver.maxiter,f);
+                    %rphi=  agmg(A(indb,indb),b(indb),20,1e-4,20,1,,-1);
+                    %rphi=  agmg(A(indb,indb),b(indb),20,1e-4,20,1,[],1);
+                    f=@(b) solver.precondcpr(b,A,indb,false)
+                    result = gmres(A,b,20,solver.tolerance,solver.maxIterations,f);
                 case 'matlab_cpr'
-                    indb = solver.getPotentialIndex(problem) ;
+                    indb = solver.getPotentialIndex(problem);
                     f=@(b) solver.precondcpr(b,A,indb,true);
                     result = gmres(A,b,20,solver.tolerance,solver.maxIterations,f);
                 case 'amgcl'
@@ -137,7 +139,8 @@ classdef LinearSolverBatteryNew < LinearSolverAD
                 if(use_matlab)
                     rphi = A(ind,ind)\x(ind);
                 else
-                    rphi=  agmg(A(ind,ind),x(ind),0,1e-4,20,0,2);
+                    %agmg(A,b,20,solver.tolerance,solver.maxIterations,solver.verbosity);
+                    rphi=  agmg(A(ind,ind),x(ind),20,1e-4,20,0,[],3);
                 end
                 r(ind)=r(ind)+rphi;
                 x(ind)=x(ind)-A(ind,ind)*rphi;
@@ -150,7 +153,7 @@ classdef LinearSolverBatteryNew < LinearSolverAD
         end
         
         function r = agmgprecond(solver,x,A)            
-                r= agmg(A,x,0,1e-4,20,0,2);                
+                r= agmg(A,x,0,1e-4,20,0,[],3);                
         end
 
         
