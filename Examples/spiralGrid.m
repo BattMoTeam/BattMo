@@ -369,7 +369,6 @@ function output = spiralGrid(params)
         
     end
     
-    
     % Extrude battery in z-direction
     zwidths = (L/nL)*ones(nL, 1);
     G = makeLayeredGrid(G, zwidths);
@@ -408,6 +407,7 @@ function output = spiralGrid(params)
     facetbl = IndexArray(facetbl);
     
     %% We extract the faces at the exterior for thermal exchange, using Cartesian indexing
+    
     scelltbl.indi = (1: n)';
     scelltbl.indj = 1*ones(n, 1);
     scelltbl.dir  = 2*ones(n, 1);
@@ -421,7 +421,8 @@ function output = spiralGrid(params)
     sfacetbl = sfacetbl.addInd('dir', 2*ones(sfacetbl.num, 1));
     sfacetbl = crossIndexArray(sfacetbl, facetbl, {'faces', 'dir'});
     
-    sfaces = sfacetbl.get('faces');
+    sfaces = sfacetbl.get('faces'); % external vertical faces of the internal layer (inside the roll). It does not
+                                    % include the border of the layer.
     
     clear scelltbl
     nnrs = sum(nrs);
@@ -437,18 +438,18 @@ function output = spiralGrid(params)
     sfacetbl = sfacetbl.addInd('dir', 2*ones(sfacetbl.num, 1));
     sfacetbl = crossIndexArray(sfacetbl, facetbl, {'faces', 'dir'});
 
-    sfaces = [sfaces; sfacetbl.get('faces')];
+    sfaces = [sfaces; sfacetbl.get('faces')]; % We add the external faces of the border of the internal layer.
     
     % some faces have been taken twice
     sfaces = unique(sfaces);
 
-    clear sfacetbl
-    sfacetbl.faces = sfaces;
-    sfacetbl = IndexArray(sfacetbl);
+    clear nonthfacetbl
+    nonthfacetbl.faces = sfaces;
+    nonthfacetbl = IndexArray(nonthfacetbl);
     
     map = TensorMap();
     map.fromTbl = extfacetbl;
-    map.toTbl = sfacetbl;
+    map.toTbl = nonthfacetbl;
     map.mergefds = {'faces'};
     
     ind = map.getDispatchInd();
@@ -456,7 +457,35 @@ function output = spiralGrid(params)
     thermalExchangeFaces = extfacetbl.get('faces');
     thermalExchangeFaces(ind) = [];
     
+    %% We capture the top faces of the internal 
+    clear scelltbl
+    topcelltbl.indk = nL;
+    topcelltbl = IndexArray(topcelltbl);
     
+    topcelltbl = crossIndexArray(topcelltbl, celltbl, {'indk'});
+    topcellfacetbl = crossIndexArray(extcellfacetbl, topcelltbl, {'cells'});
+    topfacetbl = projIndexArray(topcellfacetbl, {'faces'});
+    
+    hfacetbl.dir = 1;
+    hfacetbl = IndexArray(hfacetbl);
+    hfacetbl = crossIndexArray(facetbl, hfacetbl, {'dir'});
+    
+    topfacetbl = crossIndexArray(topfacetbl, hfacetbl, {'faces'});
+    
+    thfacetbl.faces = thermalExchangeFaces;
+    thfacetbl = IndexArray(thfacetbl);
+    
+    map = TensorMap();
+    map.fromTbl = thfacetbl;
+    map.toTbl = topfacetbl;
+    map.mergefds =  {'faces'};
+    
+    ind = map.getDispatchInd();
+    
+    % Thermal faces tag is equal to 1 if top faces and equal to 2 otherwise.
+    thermalExchangeFacesTag = 2*ones(thfacetbl.num, 1);
+    thermalExchangeFacesTag(ind) = 1;
+
     %% recover faces on top and bottom for the current collector
 
     ccnames = {'PositiveCurrentCollector', 'NegativeCurrentCollector'};
@@ -526,7 +555,8 @@ function output = spiralGrid(params)
     output.positiveExtCurrentFaces = positiveExtCurrentFaces;
     output.negativeExtCurrentFaces = negativeExtCurrentFaces;
     output.thermalExchangeFaces    = thermalExchangeFaces;   
-
+    output.thermalExchangeFacesTag = thermalExchangeFacesTag;
+    
     
     w = widths./nrs;
     w = rldecode(w, nrs);

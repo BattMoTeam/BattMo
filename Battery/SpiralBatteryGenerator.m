@@ -27,7 +27,8 @@ classdef SpiralBatteryGenerator < BatteryGenerator
         positiveExtCurrentFaces
         negativeExtCurrentFaces
         thermalExchangeFaces
-
+        thermalExchangeFacesTag
+        
         celltbl
         widthLayer
         nWidthLayer
@@ -338,14 +339,25 @@ classdef SpiralBatteryGenerator < BatteryGenerator
             G = gen.G;
             
             couplingfaces = gen.thermalExchangeFaces;
+            couplingtags  = gen.thermalExchangeFacesTag;
             couplingcells = sum(G.faces.neighbors(couplingfaces, :), 2);
             
             params = struct('couplingfaces', couplingfaces, ...
                             'couplingcells', couplingcells);
             paramobj = setupThermalModel@BatteryGenerator(gen, paramobj, params);
+           
+            thermal = 'ThermalModel'; % shorcut
             
-            paramobj.ThermalModel.externalHeatTransferCoefficient = paramobj.ThermalModel.externalHeatTransferCoefficient*ones(numel(couplingfaces), 1);
-            
+            if isempty(paramobj.(thermal).externalHeatTransferCoefficientTopFaces) | ...
+                    isempty(paramobj.(thermal).externalHeatTransferCoefficientSideFaces) 
+                paramobj.(thermal).externalHeatTransferCoefficient = ...
+                    paramobj.(thermal).externalHeatTransferCoefficient*ones(numel(couplingfaces), 1);
+            else
+                externalHeatTransferCoefficient = nan(numel(couplingfaces), 1);
+                externalHeatTransferCoefficient(couplingtags == 1) = paramobj.(thermal).externalHeatTransferCoefficientTopFaces;
+                externalHeatTransferCoefficient(couplingtags == 2) = paramobj.(thermal).externalHeatTransferCoefficientSideFaces;
+                paramobj.(thermal).externalHeatTransferCoefficient = externalHeatTransferCoefficient;
+            end         
         end
         
     end
