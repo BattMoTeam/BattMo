@@ -147,6 +147,7 @@ classdef Electrolyte < ElectroChemicalComponent
         function state = updateCurrentBcSource(model, state)
         % no boundary current fluxes (only volumetric from the reactions)
             state.jBcSource = 0;
+            state.jFaceBc = 0;
         end
         
         function state  = updateCurrent(model, state) 

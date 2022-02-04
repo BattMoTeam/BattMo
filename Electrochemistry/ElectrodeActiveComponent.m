@@ -27,9 +27,9 @@ classdef ElectrodeActiveComponent < ElectroChemicalComponent
         %    
             model = model@ElectroChemicalComponent(paramobj);
             
-            fdnames = {'thermalConductivity', ...
+            fdnames = {'thermalConductivity'   , ...
                        'electricalConductivity', ...
-                       'heatCapacity', ...
+                       'heatCapacity'          , ...
                        'InterDiffusionCoefficient'};
             model = dispatchParams(model, paramobj, fdnames);
             
@@ -83,6 +83,7 @@ classdef ElectrodeActiveComponent < ElectroChemicalComponent
 
         function state = updatejBcSource(model, state)
             state.jBcSource = state.jCoupling;
+            state.jFaceBc = state.jFaceCoupling;
         end
         
     end

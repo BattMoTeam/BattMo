@@ -29,6 +29,25 @@ classdef ElectronicComponent < BaseModel
             
         end
 
+
+        function state = updateFaceCurrent(model, state)
+            
+            G = model.G;
+            nf = G.faces.num;
+            intfaces = model.operators.internalConn;
+            
+            j       = state.j;
+            jFaceBc = state.jFaceBc;
+            
+            zeroFaceAD = model.AutoDiffBackend.convertToAD(zeros(nf, 1), j);
+            jFace = zeroFaceAD + jFaceBc;
+            jFace(intfaces) = j;
+            
+            state.jFace = jFace;
+            
+        end
+        
+        
         function state = updateCurrent(model, state)
         % Assemble electrical current which is stored in :code:`state.j`
             sigmaeff = model.EffectiveElectricalConductivity;

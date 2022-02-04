@@ -479,6 +479,14 @@ classdef Battery < BaseModel
                 state.(elde).(eac).(am) = battery.(elde).(eac).(am).assembleSolidDiffusionEquation(state.(elde).(eac).(am));
             end
             
+            %% update Face fluxes
+            for ind = 1 : numel(electrodes)
+                elde = electrodes{ind};
+                state.(elde).(eac) = battery.(elde).(eac).updateFaceCurrent(state.(elde).(eac));
+                state.(elde).(cc) = battery.(elde).(cc).updateFaceCurrent(state.(elde).(cc));
+            end
+            state.(elyte) = battery.(elyte).updateFaceCurrent(state.(elyte));
+            
             %% update Thermal source term from electrical resistance
 
             state = battery.updateThermalOhmicSourceTerms(state);
@@ -744,7 +752,7 @@ classdef Battery < BaseModel
                 
                 cc_model = model.(elde).(cc);
                 cc_map   = cc_model.G.mappings.cellmap;
-                cc_j     = locstate.(elde).(cc).j;
+                cc_j     = state.(elde).(cc).jFace;
                 cc_econd = cc_model.EffectiveElectricalConductivity;
                 cc_vols  = cc_model.G.cells.volumes;
                 cc_jsq   = computeCellFluxNorm(cc_model, cc_j); 
@@ -754,7 +762,7 @@ classdef Battery < BaseModel
 
                 eac_model = model.(elde).(eac);
                 eac_map   = eac_model.G.mappings.cellmap;
-                eac_j     = locstate.(elde).(eac).j;
+                eac_j     = state.(elde).(eac).jFace;
                 eac_econd = eac_model.EffectiveElectricalConductivity;
                 eac_vols   = eac_model.G.cells.volumes;
                 eac_jsq   = computeCellFluxNorm(eac_model, eac_j);
@@ -768,8 +776,8 @@ classdef Battery < BaseModel
             elyte_model = model.(elyte);
             elyte_map   = elyte_model.G.mappings.cellmap;
             elyte_vf    = elyte_model.volumeFraction;
-            elyte_j     = locstate.(elyte).j;
-            elyte_cond  = locstate.(elyte).conductivity;
+            elyte_j     = state.(elyte).jFace;
+            elyte_cond  = state.(elyte).conductivity;
             elyte_econd = elyte_cond.*elyte_vf.^1.5;
             elyte_vols  = elyte_model.G.cells.volumes;
             elyte_jsq   = computeCellFluxNorm(elyte_model, elyte_j);
@@ -791,6 +799,7 @@ classdef Battery < BaseModel
             nc = model.G.cells.num;
             src = zeros(nc, 1);
             T = state.(thermal).T;
+            phi = state.(elyte).phi;
             if isa(T, 'ADI')
                 adsample = getSampleAD(T);
                 adbackend = model.AutoDiffBackend;
@@ -803,13 +812,19 @@ classdef Battery < BaseModel
             % Compute chemical heat source in electrolyte
             dmudcs = locstate.(elyte).dmudcs;   % Derivative of chemical potential with respect to concentration
             D      = locstate.(elyte).D;        % Effective diffusion coefficient 
-            Ddc    = locstate.(elyte).diffFlux; % Diffusion flux (-D*grad(c))
+            Dgradc    = locstate.(elyte).diffFlux; % Diffusion flux (-D*grad(c))
+            nf = model.(elyte).G.faces.num;
+            intfaces = model.(elyte).operators.internalConn;
+            zeroFaceAD = model.AutoDiffBackend.convertToAD(zeros(nf, 1), phi);
+            DFaceGradc = zeroFaceAD;
+            DFaceGradc(intfaces) = Dgradc;
+            
             
             % compute norm of square norm of diffusion flux
             elyte_model = model.(elyte);
             elyte_map   = elyte_model.G.mappings.cellmap;
             elyte_vols  = elyte_model.G.cells.volumes;
-            elyte_jchemsq = computeCellFluxNorm(elyte_model, Ddc);
+            elyte_jchemsq = computeCellFluxNorm(elyte_model, DFaceGradc);
             elyte_src = elyte_vols.*elyte_jchemsq./D;
             
             % This is a bit hacky for the moment (we should any way consider all the species)
@@ -909,9 +924,10 @@ classdef Battery < BaseModel
             
             phi = state.(ne).(cc).phi;
 
-            jExternal = model.(ne).(cc).setupExternalCoupling(phi, 0);
+            [jExternal, jFaceExternal] = model.(ne).(cc).setupExternalCoupling(phi, 0);
             
             state.(ne).(cc).jExternal = jExternal;
+            state.(ne).(cc).jFaceExternal = jFaceExternal;
             
         end
         
@@ -925,9 +941,10 @@ classdef Battery < BaseModel
             phi = state.(pe).(cc).phi;
             E = state.(pe).(cc).E;
             
-            jExternal = model.(pe).(cc).setupExternalCoupling(phi, E);
+            [jExternal, jFaceExternal] = model.(pe).(cc).setupExternalCoupling(phi, E);
             
             state.(pe).(cc).jExternal = jExternal;
+            state.(pe).(cc).jFaceExternal = jFaceExternal;
             
         end
 
