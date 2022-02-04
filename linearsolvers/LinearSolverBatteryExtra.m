@@ -81,15 +81,30 @@ classdef LinearSolverBatteryExtra < LinearSolverADExtra
                     voltage_solver = 'agmgsolver';
                     inds=true(size(indb));%not(indb);
                                           %inds = not(indb);
-                    iluopt =struct('type','nofill');%,'droptol',0.1);
-                    [L,U]=ilu(A(inds,inds),iluopt);
-                    opt=struct('L',L,'U',U,'ind',inds);
+                    smoother = 'gs'  ;                    
+                    switch smoother
+                        case 'ilu0'
+                            iluopt =struct('type','nofill');%,'droptol',0.1);
+                            [L,U]=ilu(A(inds,inds),iluopt);
+                            opt=struct('L',L,'U',U,'ind',inds,'smoother','ilu0');
+                            dd=abs(diag(U));
+                            if(max(dd)/min(dd)>1e14)
+                                error();
+                            end
                     %gs structure
-                    Atmp = A(inds,inds);
-                    U = triu(Atmp);%- diag(diag(Atmp));
-                    L = Atmp-U;
-                    %invLower = inv(Lower);
-                    opt = struct('L',L,'U',U,'ind',inds);
+                        case 'gs'
+                            Atmp = A(inds,inds);
+                            U = triu(Atmp);%- diag(diag(Atmp));
+                            L = Atmp-U;
+                            dd=abs(diag(U));
+                            if(max(dd)/min(dd)>1e14)
+                                error();
+                            end
+                            %invLower = inv(Lower);
+                            opt = struct('L',L,'U',U,'ind',inds,'smoother','gs','n',4);
+                        otherwise
+                            error()
+                    end
             %r=A\x;                    
                     f=@(b) solver.precondcpr(b,A,indb,voltage_solver,opt)
                     tic;
@@ -210,14 +225,19 @@ classdef LinearSolverBatteryExtra < LinearSolverADExtra
             %[L,U]=ilu(A);
             dr = x;
             %% ilu
-            %dr(opt.ind)= opt.U\(opt.L\x(opt.ind));
-            % gs
-            rhs = opt.U\x(opt.ind);
-            drtmp = 0*rhs;
-            for i=1:4
-                drtmp = -opt.U\(opt.L*drtmp) + rhs;
+            switch opt.smoother
+                case 'ilu0'
+                   dr(opt.ind)= opt.U\(opt.L\x(opt.ind));
+                case 'gs'
+                    rhs = opt.U\x(opt.ind);
+                    drtmp = 0*rhs;
+                    for i=1:opt.n
+                        drtmp = -opt.U\(opt.L*drtmp) + rhs;
+                    end
+                    dr(opt.ind) = drtmp;
+                otherwise
+                    error()
             end
-            dr(opt.ind) = drtmp;
             %
             r=r+dr;
             x=x-A*dr;
@@ -235,12 +255,27 @@ classdef LinearSolverBatteryExtra < LinearSolverADExtra
                     error('Wrong solver type for cpr voltage preconditioner')
             end
             r(ind)=r(ind)+rphi;
-            %x(ind)=x(ind)-A(ind,ind)*rphi;
+            x(ind)=x(ind)-A(ind,ind)*rphi;
+            dr = x;
+            switch opt.smoother
+                case 'ilu0'
+                   dr(opt.ind)= opt.U\(opt.L\x(opt.ind));
+                case 'gs'
+                    rhs = opt.U\x(opt.ind);
+                    drtmp = 0*rhs;
+                    for i=1:opt.n
+                        drtmp = -opt.U\(opt.L*drtmp) + rhs;
+                    end
+                    dr(opt.ind) = drtmp;
+                otherwise
+                    error()
+            end
+            
             %% pre smooth
              %% post smooth
             %dr = x;
             %dr(opt.ind)= opt.U\(opt.L\x(opt.ind));
-            %r=r+dr;
+            r=r+dr;
             %x=x-A*dr;
         end
         

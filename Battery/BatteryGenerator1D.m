@@ -31,10 +31,11 @@ classdef BatteryGenerator1D < BatteryGenerator
             ccpenx = gen.ccpenx;
 
             nxs = [ccnenx; nenx; sepnx; penx; ccpenx];
-
-            xlength = 1e-6*[10; 100; 50; 80; 10];
-            ylength = 1e-2;
-
+        
+            %xlength = 1e-6*[10; 100; 50; 80; 10];
+            afac=1;
+            xlength = 1e-6*[25, 64*afac, 15, 57*afac, 15]';
+    
             x = xlength./nxs;
             x = rldecode(x, nxs);
             x = [0; cumsum(x)];

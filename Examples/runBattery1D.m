@@ -23,37 +23,40 @@ thermal = 'ThermalModel';
 %% We setup the battery geometry.
 % Here, we use a 1D model and the class BatteryGenerator1D already contains the discretization parameters
 gen = BatteryGenerator1D();
+gen.fac = 10,
+gen = gen.applyResolutionFactors()
+
 % We update pamobj with grid data
 paramobj = gen.updateBatteryInputParams(paramobj);
 
 % In this case, we change some of the values of the paramaters that were given in the json file to other values. This is
 % done directly on the object paramobj.
-% paramobj.(ne).(cc).EffectiveElectricalConductivity = 100;
-% paramobj.(pe).(cc).EffectiveElectricalConductivity = 100;
+paramobj.(ne).(cc).EffectiveElectricalConductivity = 1e5;
+paramobj.(pe).(cc).EffectiveElectricalConductivity = 1e5;
 paramobj.(thermal).externalTemperature = paramobj.initT;
 
 %%  The Battery model is initialized by sending paramobj to the Battery class constructor 
 % see :class:`Battery.Battery`
 
-model = Battery(paramobj);
-
+model = Battery(paramobj,'use_thermal',true,'use_solid_diffusion',true);
+model.AutoDiffBackend= AutoDiffBackend();
 %% We compute the cell capacity and chose a discharge rate
 C      = computeCellCapacity(model);
-CRate  = 1/5; 
+CRate  = 1; 
 inputI = (C/hour)*CRate; % current 
 
 %% We setup the schedule 
 % We use different time step for the activation phase (small time steps) and the following discharging phase
 
 % We start with rampup time steps to go through the activation phase 
-dt1   = rampupTimesteps(0.1, 0.1, 5);
-% We choose time steps for the rest of the simulation (discharge phase)
-dt2   = 0.4*hour*ones(30, 1);
-% We concatenate the time steps
-dt    = [dt1; dt2];
-times = [0; cumsum(dt)]; 
-tt    = times(2 : end); 
-step  = struct('val', diff(times), 'control', ones(numel(tt), 1)); 
+fac=2;
+total = 1.4*hour/CRate;
+n=10;
+dt0=total*1e-6;
+times = getTimeSteps(dt0,n, total,fac);
+dt= diff(times);
+step = struct('val',diff(times),'control',ones(size(dt)));
+
 
 % We set up a stopping function. Here, the simulation will stop if the output voltage reach a value smaller than 2. This
 % stopping function will not be triggered in this case as we switch to voltage control when E=3.6 (see value of inputE
@@ -63,7 +66,7 @@ cc = 'CurrentCollector';
 stopFunc = @(model, state, state_prev) (state.(pe).(cc).E < 2.0); 
 
 tup = 0.1; % rampup value for the current function, see rampupSwitchControl
-inputE = 3.6; % Value when current control switches to voltage control
+inputE = 3.0; % Value when current control switches to voltage control
 srcfunc = @(time, I, E) rampupSwitchControl(time, tup, I, E, inputI, inputE);
 
 % we setup the control by assigning a source and stop function.
@@ -81,8 +84,9 @@ nls = NonLinearSolver();
 nls.maxIterations = 10; 
 % Change default behavior of nonlinear solver, in case of error
 nls.errorOnFailure = false; 
+nls.timeStepSelector=StateChangeTimeStepSelector('TargetProps',{{'PositiveElectrode','CurrentCollector','E'}},'targetChangeAbs',0.03)
 % Change default tolerance for nonlinear solver
-model.nonlinearTolerance = 1e-5; 
+model.nonlinearTolerance = 1e-3*inputI; 
 % Set verbosity
 model.verbose = true;
 
@@ -95,6 +99,8 @@ ind = cellfun(@(x) not(isempty(x)), states);
 states = states(ind);
 Enew = cellfun(@(x) x.(pe).(cc).E, states); 
 Inew = cellfun(@(x) x.(pe).(cc).I, states);
+Tmax = cellfun(@(x) max(x.ThermalModel.T), states);
+[SOCN,SOCP] =  cellfun(@(x) model.calculateSOC(x), states);
 time = cellfun(@(x) x.time, states); 
 
 %% We plot the the output voltage and current
@@ -109,3 +115,13 @@ plot((time/hour), Inew, '*-', 'linewidth', 3)
 title('Current (I)')
 xlabel('time (hours)')
 
+figure
+plot((time/hour), Tmax, '*-', 'linewidth', 3)
+title('max(T)')
+xlabel('time (hours)')
+
+figure
+plot((time/hour), [SOCP,SOCN], '*-', 'linewidth', 3)
+title('SOC')
+xlabel('time (hours)')
+legend('SOC positive','SOC negative')

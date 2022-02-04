@@ -236,6 +236,36 @@ classdef Battery < BaseModel
 
         end
         
+        function [SOCN,SOCP] = calculateSOC(model,state)
+            bat = model;
+            %elyte = 'Electrolyte';
+            ne    = 'NegativeElectrode';
+            pe    = 'PositiveElectrode';
+            am    = 'ActiveMaterial';
+            eac   = 'ElectrodeActiveComponent';
+            %cc    = 'CurrentCollector';
+            %thermal = 'ThermalModel';
+            
+            negAm = bat.(ne).(eac).(am);
+            c =state.NegativeElectrode.ElectrodeActiveComponent.c;%ActiveMaterial.cElectrode
+            theta = c/negAm.Li.cmax;
+            negAm = bat.(ne).(eac).(am); 
+            m = (1 ./ (negAm.theta100 - negAm.theta0));
+            b = -m .* negAm.theta0;
+            SOCN = theta*m+b;
+            vol = model.NegativeElectrode.ElectrodeActiveComponent.volumeFraction;
+            SOCN = sum(SOCN.*vol)/sum(vol);
+            
+            posAm = bat.(pe).(eac).(am);
+            c =state.PositiveElectrode.ElectrodeActiveComponent.c;
+            theta = c/posAm.Li.cmax;
+            m = (1 ./ (posAm.theta100 - posAm.theta0));
+            b = -m .* posAm.theta0;
+            SOCP = theta*m+b;
+            vol = model.PositiveElectrode.ElectrodeActiveComponent.volumeFraction;
+            SOCP = sum(SOCP.*vol)/sum(vol);
+        end
+        
         function initstate = setupInitialState(model)
         % Setup the initial state
 
@@ -244,7 +274,7 @@ classdef Battery < BaseModel
             SOC = model.SOC;
             T   = model.initT;
             
-            initstate.SOC = SOC*ones(nc, 1);
+            %initstate.SOC = SOC*ones(nc, 1);
             
             bat = model;
             elyte = 'Electrolyte';
@@ -336,7 +366,7 @@ classdef Battery < BaseModel
             
             %% for now temperature and SOC are kept constant
             nc = model.G.cells.num;
-            state.SOC = model.SOC*ones(nc, 1);
+            %state.SOC = model.SOC*ones(nc, 1);
             
             % Shortcuts used in this function
             battery = model;
@@ -503,7 +533,7 @@ classdef Battery < BaseModel
               case 'I'
                 eqs{end + 1} = I - val;
               case 'E'
-                eqs{end + 1} = E - val;
+                eqs{end + 1} = (E - val)*1e5;
             end
 
             eqs{1} = eqs{1} - model.Electrolyte.sp.t(1)*eqs{2};
@@ -589,6 +619,7 @@ classdef Battery < BaseModel
                 keep(11)=false;
             end
         end
+        
         function keep = getVariablesToUses(model,neq)
              %% reduction will not work if not this is equalt to equations: if need one need to change LinearSolverAD.m
              keep = model.getEquationsToUses(neq);
@@ -717,6 +748,7 @@ classdef Battery < BaseModel
                 cc_econd = cc_model.EffectiveElectricalConductivity;
                 cc_vols  = cc_model.G.cells.volumes;
                 cc_jsq   = computeCellFluxNorm(cc_model, cc_j); 
+                state.(elde).(cc).jsq = cc_jsq;  %store square of current density
                 
                 src(cc_map) = src(cc_map) + cc_vols.*cc_jsq./cc_econd;
 
@@ -726,6 +758,7 @@ classdef Battery < BaseModel
                 eac_econd = eac_model.EffectiveElectricalConductivity;
                 eac_vols   = eac_model.G.cells.volumes;
                 eac_jsq   = computeCellFluxNorm(eac_model, eac_j);
+                state.(elde).(eac).jsq = eac_jsq;
                 
                 src(eac_map) = src(eac_map) + eac_vols.*eac_jsq./eac_econd;
                 
@@ -740,6 +773,7 @@ classdef Battery < BaseModel
             elyte_econd = elyte_cond.*elyte_vf.^1.5;
             elyte_vols  = elyte_model.G.cells.volumes;
             elyte_jsq   = computeCellFluxNorm(elyte_model, elyte_j);
+            state.(elyte).jsq = elyte_jsq; %store square of current density
             
             src(elyte_map) = src(elyte_map) + elyte_vols.*elyte_jsq./elyte_econd;
             

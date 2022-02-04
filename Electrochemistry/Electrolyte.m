@@ -161,7 +161,7 @@ classdef Electrolyte < ElectroChemicalComponent
             volfrac = model.volumeFraction;
             % Compute effective ionic conductivity in porous media
             conductivityeff = conductivity.*volfrac.^1.5;
-            
+            state.conductivityeff = conductivityeff;
             j = assembleFlux(model, phi, conductivityeff);
             for ind = 1 : ncomp
                 j = j + jchems{ind};
