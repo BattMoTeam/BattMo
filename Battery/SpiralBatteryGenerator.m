@@ -13,16 +13,21 @@ classdef SpiralBatteryGenerator < BatteryGenerator
                   %                 - 'PositiveCurrentCollector'
         nrDict    % dicionary with number of cell in radial direction for each component (same keys as in widthDict).
 
-        L         % length of the battery
-        nas       % number of cells in the angular direction
-        nL        % number of discretization cells in the longitudonal
+        L            % length of the battery
+        nas          % number of cells in the angular direction
+        nL           % number of discretization cells in the longitudonal
         angleuniform % 
-        tag       % cell-valued vector giving component number (indexing is given by tagdict)
-        tagdict   % dictionary giving the component number
+
+        tag     % cell-valued vector giving component number (indexing is given by tagdict)
+        tagdict % dictionary giving the component number
+    
+        tabparams % parameters for the tab on the positive current collector
+                  % if no tab, set as empty.
         
         positiveExtCurrentFaces
         negativeExtCurrentFaces
         thermalExchangeFaces
+        
     end
     
     methods
@@ -40,7 +45,10 @@ classdef SpiralBatteryGenerator < BatteryGenerator
             gen.nas       = params.nas;
             gen.L         = params.L;
             gen.nL        = params.nL;
+            gen.tabparams = params.tabparams;
+            
             gen.angleuniform = params.angleuniform;
+        
             paramobj = gen.setupBatteryInputParams(paramobj, []);
             
         end
