@@ -19,11 +19,13 @@ classdef LinearSolverBatteryNew < LinearSolverAD
             solver.reuse_setup =  opt.reuse_setup;
         end
     
-        function [result, report] = solveLinearSystem(solver, A, b, x0)                           
-            switch solver.method    
+        function [result, report] = solveLinearSystem(solver, A, b, x0)
+            report = solver.getSolveReport();
+            switch solver.method
                 case 'direct'
                     result=A\b;
                 case 'agmg'
+                    a=tic();
                     if(solver.reuse_setup)
                         
                         if(solver.first)
@@ -33,12 +35,19 @@ classdef LinearSolverBatteryNew < LinearSolverAD
                         end
                         [result,flag]=agmg(A,b,20,solver.tolerance,solver.maxIterations,solver.verbosity,[],2);
                         if(flag == 1)
+                            agmg(A,b,20,solver.tolerance,solver.maxIterations,solver.verbosity,[],-1);
+                            agmg(A,b,20,solver.tolerance,solver.maxIterations,solver.verbosity,[],1);
+                            result=agmg(A,b,20,solver.tolerance,solver.maxIterations,solver.verbosity,[],2);
                             solver.first=true;
                         end
                     else
-                        result=agmg(A,b,20,solver.tolerance,solver.maxIterations,solver.verbosity);
+                        [result,flag,relres,iter]=agmg(A,b,20,solver.tolerance,solver.maxIterations,solver.verbosity);
+                        
                     end
-                    
+                    report.Iterations = iter;
+                    report.Residual = relres;
+                    report.LinearSolutionTime = toc(a);
+                    report.Converged = flag; %% should we set always true?                    
                     %if(reset)
                     %    result=agmg(A,b,20,solver.tolerance,solver.maxIterations,solver.verbosity,-1);
                     %end
@@ -78,7 +87,7 @@ classdef LinearSolverBatteryNew < LinearSolverAD
                 otherwise
                     error('Method not implemented');
             end
-            report = solver.getSolveReport();
+            
             %% fill report
         end
         

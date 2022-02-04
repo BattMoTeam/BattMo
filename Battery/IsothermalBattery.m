@@ -397,7 +397,7 @@ classdef IsothermalBattery < BaseModel
             eqs{end + 1} = state.(pe).(eac).massCons*massConsScaling;
             eqs{end + 1} = state.(pe).(eac).chargeCons;
             if(model.use_solid_diffusion)
-                eqs{end + 1} = state.(pe).(eac).(am).solidDiffusionEq;
+                eqs{end + 1} = massConsScaling*state.(pe).(eac).(am).solidDiffusionEq;
             end
             
             resistance = 1/model.(ne).(cc).EffectiveElectricalConductivity(1);
@@ -414,14 +414,13 @@ classdef IsothermalBattery < BaseModel
               case 'I'
                 eqs{end + 1} = I - val;
               case 'E'
-                eqs{end + 1} = E - val;
+                eqs{end + 1} = (E - val)*max(model.NegativeElectrode.CurrentCollector.operators.T_all);
             end
 
             %% Give type and names to equations and names of the primary variables (for book-keeping)
             
             
-            if(model.use_solid_diffusion)
-                types = {'cell','cell','cell','cell', 'cell','cell','cell','cell','cell','cell', 'cntrl', 'cntrl'};
+            if(model.use_solid_diffusion)                
                 names = {'elyte_massCons'   , ...
                      'elyte_chargeCons' , ...
                      'ne_eac_massCons'  , ...
@@ -434,6 +433,17 @@ classdef IsothermalBattery < BaseModel
                      'pe_cc_chargeCons' , ...
                      'EIeq', ...
                      'controlEq'};
+                  types = {'cell','cell','cell','cell', 'sdiff','cell','cell','sdiff','cell','cell', 'cntrl', 'cntrl'};
+                  switch ctrltype
+                     case 'I'
+                        types{end-1} = 'cell';   
+                    case 'E'    
+                        order = [1:9,11,10];
+                        eqs = {eqs{order}};
+                        names = {names{order}};
+                      otherwise 
+                          error()
+                  end
             else
                 names = {'elyte_massCons'   , ...
                      'elyte_chargeCons' , ...
@@ -449,10 +459,12 @@ classdef IsothermalBattery < BaseModel
                     case 'I'
                         types = {'cell','cell','cell','cell', 'cell','cell','cell','cell', 'cell', 'cntrl'};
                     case 'E'
-                        types = {'cell','cell','cell','cell', 'cell','cell','cell','cell', 'cell', 'cntrl'};
+                        types = {'cell','cell','cell','cell', 'cell','cell','cell','cell', 'cntrl', 'cntrl'};
                         order = [1:8,10,9];
                         eqs = {eqs{order}};
                         names = {names{order}};
+                    otherwise
+                        error()
                 end
             end
             primaryVars = model.getPrimaryVariables();
@@ -736,6 +748,58 @@ classdef IsothermalBattery < BaseModel
                  {pe, cc, 'I'}};
             end
             
+        end
+
+        function scales = getScales(model)
+            prims = model.getPrimaryVariables();
+            scales = struct();
+            for i=1:numel(prims)
+                p = prims{i};
+                scale = struct('min',-inf,'max',inf', ...
+                               'relchangemax',1,'abschangemax',inf);
+                if( strcmp(p{end},'c'))
+                    % assumes consentration
+                    cmin = model.cmin;
+                    mname=p;
+                    mname{end} = 'ActiveMaterial';
+                    mname{end+1}= 'Li';
+                    mname{end+1} = 'cmax';
+                    cmax = model.getProp(model,mname);
+                    scale = struct('min',0.001*cmax,...
+                                   'max',cmax, ...
+                                   'relchangemax',inf, ...
+                                   'abschangemax',0.1*cmax);
+                elseif(strcmp(p{end},'cElectrode'))
+                    % assumes consentration
+                    cmin = model.cmin;
+                    mname=p;
+                    mname{end}= 'Li';
+                    mname{end+1} = 'cmax';
+                    cmax = model.getProp(model,mname);
+                    scale = struct('min',0.001*cmax,...
+                                   'max',cmax, ...
+                                   'relchangemax',inf,'abschangemax',0.1*cmax);
+    
+                elseif(isnumeric(p{end}) && strcmp(p{1},'Electrolyte'))
+                    cmin = model.cmin;
+                    mname=p;
+                    %cmax = model.getProp(model,mname);
+                    scale = struct('min',100,'max',2000, ...
+                               'relchangemax',inf,'abschangemax',100);
+                elseif(strcmp(p{end},'phi') || strcmp(p{end},'E'))
+                    scale = struct('min',-10,'max',10, ...
+                               'relchangemax',inf,'abschangemax',0.2);
+                elseif(strcmp(p{end},'I'))
+                    scale = struct('min',-inf,'max',inf, ...
+                               'relchangemax',inf,'abschangemax',inf);
+                else
+                    error();
+                end
+                   
+                scales = model.setNewProp(scales,p,scale);
+                
+            end
+            %            scales =[];
         end
         
         

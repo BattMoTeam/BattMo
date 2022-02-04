@@ -23,6 +23,31 @@ classdef BaseModel < PhysicalModel
             end
         end
 
+        function state = setNewProp(model, state, names, val)
+            if iscell(names) & (numel(names) > 1)
+                name = names{1};
+                names = names(2 : end);
+                if(not(isfield(state,name)))
+                    state.(name)=struct();
+                end
+                state.(name) = model.setNewProp(state.(name), names, ...
+                                                               val);
+            elseif iscell(names) & (numel(names) == 1)
+                name = names{1};
+                if isnumeric(name)
+                    if(not(iscell(state)))
+                        state = {};
+                    end
+                    state{name} = val;
+                else
+                    state.(name) = val;
+                end
+            else
+                error('format not recognized');
+            end
+        end
+
+        
         function var = getProp(model, state, names)
             if iscell(names) && (numel(names) > 1)
                 name = names{1};
@@ -48,17 +73,47 @@ classdef BaseModel < PhysicalModel
         end
 
         
-        function [state, report] = updateState(model, state, problem, dx, drivingForces)
+        function [state, report] = updateStateOld(model, state, problem, dx, drivingForces)
 
             p = model.getPrimaryVariables();
 
             for i = 1 : numel(dx)
                 val = model.getProp(state, p{i});
+                scale = model.getScalings(p{i})
                 val = val + dx{i};
                 state = model.setProp(state, p{i}, val);
             end
            
             report = [];
+        end
+
+        function scale = getScales()
+            scale = [];
+            error();
+        end
+        
+        function [state, report] = updateState(model, state, problem, ...
+                                               dx, drivingForces)
+            scales = model.getScales();
+            for i = 1:numel(problem.primaryVariables)
+                p = problem.primaryVariables{i};
+                % Update the state
+                scale=model.getProp(scales,p);
+                if(isempty(scale))
+                     state = model.updateStateFromIncrement(state, dx{i}, ...
+                                                            problem, p);
+                else
+                    state = model.updateStateFromIncrement(state, dx{i}, ...
+                                                           problem, p, ...
+                                                           scale.relchangemax, ...
+                                                           scale.abschangemax);
+                    val = model.getProp(state, p);
+                    val = max(val,scale.min);
+                    val = min(val,scale.max);
+                    state = model.setProp(state, p, val);
+                end               
+            end
+            report = []
         end
         
         function state = reduceState(model, state, removeContainers)
