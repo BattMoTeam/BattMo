@@ -19,7 +19,7 @@ classdef LinearSolverBatteryNew < LinearSolverAD
                 case 'direct'
                     result=A\b;
                 case 'agmg'
-                    result=agmg(A,b,0,solver.tol,solver.maxiter,solver.verbosity);
+                    result=agmg(A,b,0,solver.tolerance,solver.maxIterations,solver.verbosity);
                 case 'amgcl'
                       mycase = 'amg';
                       switch mycase

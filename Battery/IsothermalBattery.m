@@ -435,7 +435,12 @@ classdef IsothermalBattery < BaseModel
                      'EIeq', ...
                      'controlEq'};
             else
-                types = {'cell','cell','cell','cell', 'cell','cell','cell','cell', 'cntrl', 'cntrl'};
+                switch ctrltype
+                    case 'I'
+                        types = {'cell','cell','cell','cell', 'cell','cell','cell','cell', 'cell', 'cntrl'};
+                    case 'E'
+                        types = {'cell','cell','cell','cell', 'cell','cell','cell','cell', 'cntrl', 'cntrl'};
+                end
                   names = {'elyte_massCons'   , ...
                      'elyte_chargeCons' , ...
                      'ne_eac_massCons'  , ...
