@@ -58,22 +58,15 @@ dr = sum(nwidths);
 
 switch batterycase
   case '18650'
-    rOuter    = 18*milli*meter/2;
+    rOuter = 18*milli*meter/2;
+    L      = 65*milli*meter; 
   case '4680'
-    rOuter    = 46*milli*meter/2;
+    rOuter = 46*milli*meter/2;
+    L      = 80*milli*meter; 
 end
 
 dR        = rOuter - r0; 
 nwindings = ceil(dR/dr);
-
-%% 
-% length of the battery
-switch batterycase
-  case '18650'
-    L = 65*milli*meter; 
-  case '4680'
-    L = 80*milli*meter; 
-end
 
 % number of cell in radial direction for each component (same ordering as above).
 
