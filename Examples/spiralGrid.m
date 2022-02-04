@@ -32,8 +32,11 @@ function output = spiralGrid(params)
     unifang   = params.angleuniform;
     tabparams = params.tabparams;
 
+    
+    tabcase = tabparams.tabcase;
+    
     usetab = false;
-    if ~isempty(tabparams)
+    if ~strcmp('no tab', tabcase)
         usetab = true;
     end
         
@@ -81,18 +84,16 @@ function output = spiralGrid(params)
     w = repmat(w, [nwindings, 1]);
     w = [0; cumsum(w)];
 
-    if(unifang)
+    if (unifang)
         h = linspace(0, 2*pi*r0, nas + 1);
     else
-        sigma = 0.3; 
-        f = @(x) exp(-x.^2/(2*sigma.^2)); 
-        x = linspace(-1, 1, nas); 
-        dx = f(x); % a positve function symmetric function with small values at 1
-        x = cumsum(dx); 
-        assert(all(dx > 0)); 
-        h = ([0, x]/x(end))*2*pi; 
-        h(end) = 2*pi; 
-        h = h*r0;
+        n1 = 1;
+        n2 = nas - n1;
+        dtheta1 = 2*pi*0.03;
+        dtheta2 = 2*pi - dtheta1;
+        dtheta = [repmat(dtheta1/n1, n1, 1); repmat(dtheta2/n2, n2, 1)];
+        theta = [0; cumsum(dtheta)];
+        h = theta*r0;
     end
     nperlayer = sum(nrs);
 
@@ -112,18 +113,6 @@ function output = spiralGrid(params)
     celltbl.curvindj = repmat(rldecode((1 : ny)', nx*ones(ny, 1)), nwindings, 1);
     celltbl = IndexArray(celltbl);
     
-    if usetab
-        
-        indj0 = floor(nrDict('PositiveActiveMaterial') + nrDict('PositiveCurrentCollector')/2);
-        w = widths./nrs;
-        w = rldecode(w, nrs);
-        cclinewidth = w(indj0);
-        
-        cclinecelltbl.curvindj = indj0;
-        cclinecelltbl = IndexArray(cclinecelltbl);
-        cclinecelltbl = crossIndexArray(cclinecelltbl, celltbl, {'curvindj'});
-        
-    end
     
     % We roll the domain into a spirale
     x = cartG.nodes.coords(:, 1);
@@ -306,67 +295,110 @@ function output = spiralGrid(params)
 
     tag = celltagtbl.get('tag');
 
-    if usetab
+    if usetab 
         
-        cclinecelltbl = crossIndexArray(cclinecelltbl, celltbl, {'indi', 'indj', 'curvindi'});
-        cclinecelltbl = sortIndexArray(cclinecelltbl,  {'curvindi', 'cells'});
-
+        w = widths./nrs;
+        w = rldecode(w, nrs);
+        indj0 = floor(nrDict('PositiveActiveMaterial') + nrDict('PositiveCurrentCollector')/2);
+        cclinewidth = w(indj0);        
+        
         cccelltbl.tag = tagdict('PositiveCurrentCollector');
         cccelltbl = IndexArray(cccelltbl);
         cccelltbl = crossIndexArray(cccelltbl, celltagtbl, {'tag'});
         cccelltbl = crossIndexArray(cccelltbl, celltbl, {'cells'});
         
-        c = cclinecelltbl.get('cells');
-        o = cclinecelltbl.get('curvindi');
-        l = cumsum(G.cells.volumes(c)/cclinewidth);
+        
+        switch tabparams.tabcase
 
-        tabwidths = tabparams.widths;
-        ntab = numel(tabwidths);
-        assert(ntab == 3); % only this is supported. It could be easily changed
-        
-        tabcells = [];
-        
-        for tabind = 1 : ntab
+          case '1 tab'
             
-            switch tabind
-              case 1
-                tabcenter = pi*r0;
-                ind = (l > tabcenter - tabwidths(tabind)/2);
-                ind = ind & (l < tabcenter + tabwidths(tabind)/2);
-              case 2
-                tabcenter = l(end)/2;
-                ind = (l > tabcenter - tabwidths(tabind)/2);
-                ind = ind & (l < tabcenter + tabwidths(tabind)/2);
-              case 3
-                tabcenter = l(end);
-                ind = (l > l(end) - tabwidths(tabind));
-            end
+            nmw = computeMiddleWinding(r0, layerwidth, nwindings);
+            indj0 = indj0 + sum(nrs)*(nmw - 1);
+            cclinecelltbl.indj = repmat(indj0, nas, 1);
+            cclinecelltbl.indi = (1 : nas)';
+            cclinecelltbl = IndexArray(cclinecelltbl);
             
-            if isempty(ind)
-                ind = find(l >= tabcenter, 1, 'first');
-                if ind > 0 && abs(l(ind - 1) - tabcenter)  < abs(l(ind) - tabcenter);
-                    ind = ind - 1
-                end
-            end
+            cclinecelltbl = crossIndexArray(cclinecelltbl, celltbl, {'indi', 'indj'});
+            cclinecelltbl = sortIndexArray(cclinecelltbl,  {'curvindi', 'cells'});            
+
+            c = cclinecelltbl.get('cells');
+            o = cclinecelltbl.get('curvindi');
+            l = cumsum(G.cells.volumes(c)/cclinewidth);
+            
+            ind = find(l > tabparams.width, 1, 'first');
+            tabwidth = l(ind);
+            tabcelltbl.curvindi = o(1 : ind);
+            tabcelltbl = IndexArray(tabcelltbl);
+            
+            tabcelltbl = crossIndexArray(cccelltbl, tabcelltbl, {'curvindi'});
+            tabcelltbl = projIndexArray(tabcelltbl, {'indi', 'indj'});            
+
+          case '3 tabs'
+
+            indj0 = floor(nrDict('PositiveActiveMaterial') + nrDict('PositiveCurrentCollector')/2);
+            
+            cclinecelltbl.curvindj = indj0;
+            cclinecelltbl = IndexArray(cclinecelltbl);
+            cclinecelltbl = crossIndexArray(cclinecelltbl, celltbl, {'curvindj'});
+            cclinecelltbl = crossIndexArray(cclinecelltbl, celltbl, {'indi', 'indj', 'curvindi'});
+            cclinecelltbl = sortIndexArray(cclinecelltbl,  {'curvindi', 'cells'});
+
+
+            
+            c = cclinecelltbl.get('cells');
+            o = cclinecelltbl.get('curvindi');
+            l = cumsum(G.cells.volumes(c)/cclinewidth);
+
+            tabwidths = tabparams.widths;
+            ntab = numel(tabwidths);
+            assert(ntab == 3); % only this is supported. It could be easily changed
+            
+            tabcells = [];
+            
+            for tabind = 1 : ntab
                 
-            otab = o(ind);
+                switch tabind
+                  case 1
+                    tabcenter = pi*r0;
+                    ind = (l > tabcenter - tabwidths(tabind)/2);
+                    ind = ind & (l < tabcenter + tabwidths(tabind)/2);
+                  case 2
+                    tabcenter = l(end)/2;
+                    ind = (l > tabcenter - tabwidths(tabind)/2);
+                    ind = ind & (l < tabcenter + tabwidths(tabind)/2);
+                  case 3
+                    tabcenter = l(end);
+                    ind = (l > l(end) - tabwidths(tabind));
+                end
+                
+                if isempty(ind)
+                    ind = find(l >= tabcenter, 1, 'first');
+                    if ind > 0 && abs(l(ind - 1) - tabcenter)  < abs(l(ind) - tabcenter);
+                        ind = ind - 1
+                    end
+                end
+                
+                otab = o(ind);
+                
+                clear selcurvindtbl;
+                selcurvindtbl.curvindi = otab;
+                selcurvindtbl = IndexArray(selcurvindtbl);
+                
+                tabcelltbl = crossIndexArray(cccelltbl, selcurvindtbl, {'curvindi'});
+                c = tabcelltbl.get('cells');
+                
+                tabcells = vertcat(tabcells, c);
+            end
             
-            clear selcurvindtbl;
-            selcurvindtbl.curvindi = otab;
-            selcurvindtbl = IndexArray(selcurvindtbl);
-            
-            tabcelltbl = crossIndexArray(cccelltbl, selcurvindtbl, {'curvindi'});
-            c = tabcelltbl.get('cells');
-            
-            tabcells = vertcat(tabcells, c);
-        end
-        
-        clear tabcelltbl
-        tabcelltbl.cells = tabcells;
-        tabcelltbl = IndexArray(tabcelltbl);
-        tabcelltbl = crossIndexArray(tabcelltbl, celltbl, {'cells'});
-        tabcelltbl = projIndexArray(tabcelltbl, {'indi', 'indj'});
-        
+            clear tabcelltbl
+            tabcelltbl.cells = tabcells;
+            tabcelltbl = IndexArray(tabcelltbl);
+            tabcelltbl = crossIndexArray(tabcelltbl, celltbl, {'cells'});
+            tabcelltbl = projIndexArray(tabcelltbl, {'indi', 'indj'});
+
+          otherwise
+            error('tabcase not recognized');
+        end    
     end
     
     % Extrude battery in z-direction
@@ -557,6 +589,9 @@ function output = spiralGrid(params)
     output.thermalExchangeFaces    = thermalExchangeFaces;   
     output.thermalExchangeFacesTag = thermalExchangeFacesTag;
     
+    if strcmp(tabcase, '1 tab')
+        output.tabwidth = tabwidth;
+    end
     
     w = widths./nrs;
     w = rldecode(w, nrs);
@@ -570,3 +605,5 @@ function output = spiralGrid(params)
     output.celltbl      = celltbl;
     
 end
+    
+

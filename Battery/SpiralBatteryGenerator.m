@@ -28,7 +28,8 @@ classdef SpiralBatteryGenerator < BatteryGenerator
         negativeExtCurrentFaces
         thermalExchangeFaces
         thermalExchangeFacesTag
-        
+
+        tabwidth % computed tab width 
         celltbl
         widthLayer
         nWidthLayer
