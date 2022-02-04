@@ -89,7 +89,7 @@ switch tabparamscase
   case 'no tab'
   case 'aligned tabs'
     tabparams.width = 3*milli*meter;
-    tabparams.fractions = [0.01, 0.5, 0.9];
+    tabparams.fractions = linspace(0.01, 0.9, 6);
   case '1 tab'
     tabparams.width = 3*milli*meter;
   case '3 tabs'
@@ -120,3 +120,4 @@ plotGrid(G);
 plotFaces(G, positiveExtCurrentFaces, 'edgecolor', 'red', 'linewidth', 3);
 view([-2, -90]);
 
+output.tabwidths
