@@ -27,7 +27,8 @@ function operators = localSetupOperators(G, varargin)
     
     %% setup cell flux reconstruction operator
     if opts.assembleCellFluxOperator
-        operators.cellFluxOp = getCellFluxOperators2(G);
+        %operators.cellFluxOp = getCellFluxOperators2(G);
+        operators.cellFluxOp = getCellFluxOperatorsAll(G);
     end
 end
 
