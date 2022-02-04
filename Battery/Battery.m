@@ -28,14 +28,14 @@ classdef Battery < BaseModel
         couplingNames 
         
         mappings
-        
-        
+        use_solid_diffusion        
     end
     
     methods
         
-        function model = Battery(paramobj)
-
+        function model = Battery(paramobj,varargin)
+            opt = struct('use_solid_diffusion',true);
+            opt = merge_options(opt,varargin{:});
             model = model@BaseModel();
             
             % All the submodels should have same backend (this is not assigned automaticallly for the moment)
@@ -77,7 +77,7 @@ classdef Battery < BaseModel
             cmax_ne = model.(ne).(eac).(am).Li.cmax;
             cmax_pe = model.(pe).(eac).(am).Li.cmax;
             model.cmin = 1e-5*max(cmax_ne, cmax_pe);
-            
+            model.use_solid_diffusion = opt.use_solid_diffusion;
         end
 
         function model = setupThermalModel(model, paramobj)
@@ -469,15 +469,16 @@ classdef Battery < BaseModel
             eqs = {};
             
             %% We collect mass and charge conservation equations for the electrolyte and the electrodes
-
-            eqs{end + 1} = state.(elyte).massCons;
+            massConsScaling = model.con.F;
+            
+            eqs{end + 1} = state.(elyte).massCons*massConsScaling;
             eqs{end + 1} = state.(elyte).chargeCons;
             
-            eqs{end + 1} = state.(ne).(eac).massCons;
+            eqs{end + 1} = state.(ne).(eac).massCons*massConsScaling;
             eqs{end + 1} = state.(ne).(eac).chargeCons;
             eqs{end + 1} = state.(ne).(eac).(am).solidDiffusionEq;
             
-            eqs{end + 1} = state.(pe).(eac).massCons;
+            eqs{end + 1} = state.(pe).(eac).massCons*massConsScaling;
             eqs{end + 1} = state.(pe).(eac).chargeCons;
             eqs{end + 1} = state.(pe).(eac).(am).solidDiffusionEq;
             
@@ -486,7 +487,7 @@ classdef Battery < BaseModel
             
             eqs{end + 1} = state.(thermal).energyCons;
             
-            eqs{end + 1} = state.EIeq;
+            eqs{end + 1} = -state.EIeq;
             
             % we add the control equation
             I = state.(pe).(cc).I;
@@ -501,8 +502,9 @@ classdef Battery < BaseModel
 
             %% Give type and names to equations and names of the primary variables (for book-keeping)
             
-            types = {'cell','cell','cell','cell', 'cell','cell','cell','cell','cell','cell', 'cell', 'cell', 'cell'};
+ 
             
+            types = {'cell','cell','cell','cell', 'sdiff','cell','cell','cdiff','cell','cell', 'cell', 'cntrl', 'cntrl'};
             names = {'elyte_massCons'   , ...
                      'elyte_chargeCons' , ...
                      'ne_eac_massCons'  , ...
@@ -516,6 +518,25 @@ classdef Battery < BaseModel
                      'energyCons'       , ...
                      'EIeq', ...
                      'controlEq'};
+            if(not(model.use_solid_diffusion))) 
+                ind = [1:4,6:7,9:numel(eqs)];
+                eqs={eqs{ind}};
+                types = {types{ind}}
+                names = {names{ind}}
+            end
+            switch ctrltype
+                case 'I'
+                   types{end-1} = 'cell';   
+                case 'E'
+                   neqs = numel(types);
+                   order = [1:neqs-3,neqs,neqs-1];
+                   types = { types{order} };
+                   eqs = {eqs{order}};
+                   names = {names{order}};
+                otherwise 
+                          error()
+            end
+               
             
             primaryVars = model.getPrimaryVariables();
 
@@ -877,6 +898,7 @@ classdef Battery < BaseModel
             if(isprop(adbackend,'useMex'))
                 useMex = adbackend.useMex; 
             end
+            if(model.use_solid_diffusion)
             opts=struct('types',[1,1,2,2,2,3,3,3,4,5,6,7,8],'useMex',useMex);
             [state.(elyte).c  , ...
              state.(elyte).phi    , ...   
@@ -905,7 +927,35 @@ classdef Battery < BaseModel
                     state.(thermal).T    , ...
                     state.(pe).(cc).E, ...
                     state.(pe).(cc).I, ...
-                    opts); 
+                    opts);
+            else
+            opts=struct('types',[1,1,2,2,3,3,4,5,6,7,8],'useMex',useMex);
+            [state.(elyte).c  , ...
+             state.(elyte).phi    , ...   
+             state.(ne).(eac).c   , ...   
+             state.(ne).(eac).phi , ...   
+             state.(pe).(eac).c   , ...    
+             state.(pe).(eac).phi , ...   
+             state.(ne).(cc).phi  , ...    
+             state.(pe).(cc).phi  , ...    
+             state.(thermal).T    , ...
+             state.(pe).(cc).E, ...
+             state.(pe).(cc).I] = ...
+                adbackend.initVariablesAD(...
+                    state.(elyte).c  , ...
+                    state.(elyte).phi    , ...   
+                    state.(ne).(eac).c   , ...    
+                    state.(ne).(eac).phi , ...   
+                    state.(pe).(eac).c   , ...    
+                    state.(pe).(eac).phi , ...   
+                    state.(ne).(cc).phi  , ...    
+                    state.(pe).(cc).phi  , ...    
+                    state.(thermal).T    , ...
+                    state.(pe).(cc).E, ...
+                    state.(pe).(cc).I, ...
+                    opts);
+                
+            end
             % PRIMARY variables
         end
         
@@ -919,7 +969,7 @@ classdef Battery < BaseModel
             eac   = 'ElectrodeActiveComponent';
             cc    = 'CurrentCollector';
             thermal = 'ThermalModel';
-            
+            if(model.use_solid_diffusion)
             p = {{elyte, 'c'}                , ...
                  {elyte, 'phi'}              , ...   
                  {ne, eac, 'c'}              , ...    
@@ -933,6 +983,19 @@ classdef Battery < BaseModel
                  {thermal, 'T'}              , ...
                  {pe, cc, 'E'}               , ...
                  {pe, cc, 'I'}};
+            else
+               p = {{elyte, 'c'}                , ...
+                 {elyte, 'phi'}              , ...   
+                 {ne, eac, 'c'}              , ...    
+                 {ne, eac, 'phi'}            , ...   
+                 {pe, eac, 'c'}              , ...    
+                 {pe, eac, 'phi'}            , ...   
+                 {ne, cc, 'phi'}             , ...    
+                 {pe, cc, 'phi'}             , ...
+                 {thermal, 'T'}              , ...
+                 {pe, cc, 'E'}               , ...
+                 {pe, cc, 'I'}}; 
+            end
             
         end
         
