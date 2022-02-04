@@ -5,15 +5,15 @@ classdef SpiralBatteryGenerator < BatteryGenerator
             
         nwindings % number of windings in the spiral
         r0        % "radius" at the middle
-        widths    % vector of widths for each component indexed in following order
-                  %                 - positive current collector
-                  %                 - positive electrode
-                  %                 - electrolyte separator 
-                  %                 - negative electrode
-                  %                 - negative current collector
-                  %                 - separator
+        widthDict % dictionary of widths for each component. The required key names for the dictionary are
+                  %                 - 'Separator'
+                  %                 - 'NegativeActiveMaterial'
+                  %                 - 'NegativeCurrentCollector'
+                  %                 - 'PositiveActiveMaterial'
+                  %                 - 'PositiveCurrentCollector'
+        nrDict    % dicionary with number of cell in radial direction for each component (same keys as in widthDict).
+
         L         % length of the battery
-        nrs       % number of cell in radial direction for each component (same ordering as above).
         nas       % number of cells in the angular direction
         nL        % number of discretization cells in the longitudonal
 
@@ -35,8 +35,8 @@ classdef SpiralBatteryGenerator < BatteryGenerator
             
             gen.nwindings = params.nwindings;
             gen.r0        = params.r0     ;
-            gen.widths    = params.widths ;
-            gen.nrs       = params.nrs    ;
+            gen.widthDict = params.widthDict ;
+            gen.nrDict    = params.nrDict    ;
             gen.nas       = params.nas    ;
             gen.L         = params.L      ;
             gen.nL        = params.nL;
