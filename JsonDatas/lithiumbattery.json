@@ -5,11 +5,12 @@
     "initT": 298.15,
     "NegativeElectrode": {
         "ElectrodeActiveComponent": {
-            "heatCapacity": 4180000.0,
+            "heatCapacity": 632.0,
+            "thermalConductivity": 1.04,
             "chargeCarrierName": "Li",
-            "InterDiffusionCoefficient": 1e-10,
+            "InterDiffusionCoefficient": 1e-14,
+            "InterDiffusionCoefficientComment" : "from Ecker 2015"
             "electricalConductivity": 100,
-            "thermalConductivity": 6e-05,
             "ActiveMaterial": {
                 "isFile": true,
                 "filename": "JsonDatas/graphite.json"
@@ -17,14 +18,14 @@
         },
         "CurrentCollector": {
             "isFile": true,
-            "filename": "JsonDatas/currentcollector.json"
+            "filename": "JsonDatas/copper.json"
         }
     },
     "PositiveElectrode": {
         "ElectrodeActiveComponent": {
-            "thermalConductivity": 6e-05,
-            "heatCapacity": 4180000.0,
-            "InterDiffusionCoefficient": 1e-10,
+            "heatCapacity": 700.0,
+            "thermalConductivity": 2.1,
+            "InterDiffusionCoefficient": 1e-14,
             "electricalConductivity": 100,
             "chargeCarrierName": "Li",
             "ActiveMaterial": {
@@ -34,7 +35,7 @@
         },
         "CurrentCollector": {
             "isFile": true,
-            "filename": "JsonDatas/currentcollector.json"
+            "filename": "JsonDatas/aluminium.json"
         }
     },
     "Electrolyte": {

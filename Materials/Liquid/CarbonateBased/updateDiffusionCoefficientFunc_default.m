@@ -1,6 +1,6 @@
 function D = updateDiffusionCoefficientFunc_default(c, T)
     
-    % Calculate diffusion coefficients constant for the diffusion coefficient calcuation
+    % Calculate diffusion coefficients constant for the diffusion coefficient calculation
     cnst = [ -4.43, -54; 
              -0.22, 0.0 ];
 
