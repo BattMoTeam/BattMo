@@ -9,7 +9,7 @@
 [submodule "mrst-autodiff"]
 	path = MRST/mrst-autodiff
 	url = https://bitbucket.org/mrst/mrst-autodiff.git
-        branch = master
+        branch = hnil/battery
 [submodule "mrst-model-io"]
 	path = MRST/mrst-model-io
 	url = https://bitbucket.org/mrst/mrst-model-io.git
