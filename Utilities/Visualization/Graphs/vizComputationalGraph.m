@@ -2,7 +2,7 @@ clear all
 close all
 
 % setup mrst modules
-mrstModule add ad-core multimodel mrst-gui battery 
+mrstModule add ad-core multimodel mrst-gui 
 mrstVerbose off
 
 set(0, 'DefaultAxesFontSize', 16);

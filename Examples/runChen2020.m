@@ -3,7 +3,7 @@
 clear all
 
 % load MRST modules
-mrstModule add ad-core multimodel mrst-gui battery mpfa
+mrstModule add ad-core multimodel mrst-gui mpfa
 
 % We create an instance of BatteryInputParams. This class is used to initiate the battery simulator and it propagates
 % all the parameters through out the submodels.

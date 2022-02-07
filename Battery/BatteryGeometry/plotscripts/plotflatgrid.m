@@ -5,7 +5,7 @@ clear all
 try
     require ad-core multimodel mrst-gui battery mpfa
 catch
-    mrstModule add ad-core multimodel mrst-gui battery mpfa
+    mrstModule add ad-core multimodel mrst-gui mpfa
 end
 
 %% Parameters 

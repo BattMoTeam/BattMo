@@ -2,7 +2,7 @@
 % Include presentation of the test case (use rst format)
 
 % load MRST modules
-mrstModule add ad-core multimodel mrst-gui battery mpfa
+mrstModule add ad-core multimodel mrst-gui mpfa
 
 % We create an instance of BatteryInputParams. This class is used to initiate the battery simulator and it propagates
 % all the parameters through out the submodels.
@@ -24,7 +24,7 @@ thermal = 'ThermalModel';
 % Here, we use a 1D model and the class BatteryGenerator1D already contains the discretization parameters
 gen = BatteryGenerator1D();
 gen.fac = 10,
-gen = gen.applyResolutionFactors()
+gen = gen.applyResolutionFactors();
 
 % We update pamobj with grid data
 paramobj = gen.updateBatteryInputParams(paramobj);

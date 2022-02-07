@@ -2,7 +2,7 @@ clear all
 close all
 
 % setup mrst modules
-mrstModule add ad-core multimodel mrst-gui battery mpfa
+mrstModule add ad-core multimodel mrst-gui mpfa
 
 mrstVerbose off
 
