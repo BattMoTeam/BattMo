@@ -4,7 +4,7 @@ function output = radialGrid(params)
     % 
     % params structure with following fields
     % - nwindings : number of windings in the spiral
-    % - r0        : "radius" at the middle
+    % - rInner        : "radius" at the middle
     % - widthDict : dictionary of widths for each component. The required key names for the dictionary are
     %                 - 'Separator'
     %                 - 'NegativeActiveMaterial'
@@ -23,7 +23,7 @@ function output = radialGrid(params)
     % - tagdict : dictionary giving the component number
     
     nwindings = params.nwindings;
-    r0        = params.r0;
+    rInner        = params.rInner;
     widthDict = params.widthDict ;
     nrDict    = params.nrDict;
     nas       = params.nas;
@@ -76,7 +76,7 @@ function output = radialGrid(params)
     w = repmat(w, [nwindings, 1]);
     w = [0; cumsum(w)];
 
-    h = linspace(0, 2*pi*r0, nas + 1);
+    h = linspace(0, 2*pi*rInner, nas + 1);
 
     nperlayer = sum(nrs);
 
@@ -91,10 +91,10 @@ function output = radialGrid(params)
     x = cartG.nodes.coords(:, 1);
     y = cartG.nodes.coords(:, 2);
 
-    theta = x./r0;
+    theta = x./rInner;
 
-    cartG.nodes.coords(:, 1) = (r0 + y).*cos(theta);
-    cartG.nodes.coords(:, 2) = (r0 + y).*sin(theta);
+    cartG.nodes.coords(:, 1) = (rInner + y).*cos(theta);
+    cartG.nodes.coords(:, 2) = (rInner + y).*sin(theta);
     
     tbls = setupSimpleTables(cartG);
 

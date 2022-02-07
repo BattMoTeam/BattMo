@@ -1,9 +1,9 @@
 function dlperdx = spiralDeltaLength(x, y, params)
 
     w  = params.w;
-    r0 = params.r0;
+    rInner = params.rInner;
 
-    theta = x./r0;
-    dlperdx = 1/(2*pi*r0)*sqrt((y + w).^2 + (2*pi*r0 + theta.*(y + w)).^2);
+    theta = x./rInner;
+    dlperdx = 1/(2*pi*rInner)*sqrt((y + w).^2 + (2*pi*rInner + theta.*(y + w)).^2);
     
 end

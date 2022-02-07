@@ -27,7 +27,7 @@ coolingparamscase = coolingparamscases{1};
 
 %% Start setup
 
-r0 = 2*milli*meter; 
+rInner = 2*milli*meter; 
 
 % widths of each component ordered as
 % - positive current collector
@@ -65,7 +65,7 @@ switch batterycase
     L      = 80*milli*meter; 
 end
 
-dR        = rOuter - r0; 
+dR        = rOuter - rInner; 
 nwindings = ceil(dR/dr);
 
 % number of cell in radial direction for each component (same ordering as above).
@@ -93,13 +93,13 @@ switch tabparamscase
   case '1 tab'
     tabparams.width = 3*milli*meter;
   case '3 tabs'
-    tabparams.widths = [2*pi*r0/5; 3*milli*meter; 3*milli*meter];
+    tabparams.widths = [2*pi*rInner/5; 3*milli*meter; 3*milli*meter];
   otherwise
     error('tabparamscase not recognized');
 end
 
 params = struct('nwindings'   , nwindings, ...
-                'r0'          , r0       , ...
+                'rInner'          , rInner       , ...
                 'widthDict'   , widthDict, ...
                 'nrDict'      , nrDict   , ...
                 'nas'         , nas      , ...

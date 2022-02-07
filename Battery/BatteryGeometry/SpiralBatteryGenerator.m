@@ -4,7 +4,7 @@ classdef SpiralBatteryGenerator < BatteryGenerator
     properties
             
         nwindings % number of windings in the spiral
-        r0        % "radius" at the middle
+        rInner    % Inner Radius (for the empty space in the middle)
         widthDict % dictionary of widths for each component. The required key names for the dictionary are
                   %                 - 'Separator'
                   %                 - 'NegativeActiveMaterial'
@@ -48,7 +48,7 @@ classdef SpiralBatteryGenerator < BatteryGenerator
         function [paramobj, gen] = updateBatteryInputParams(gen, paramobj, params)
             
             gen.nwindings = params.nwindings;
-            gen.r0        = params.r0;
+            gen.rInner    = params.rInner;
             gen.widthDict = params.widthDict;
             gen.nrDict    = params.nrDict;
             gen.nas       = params.nas;

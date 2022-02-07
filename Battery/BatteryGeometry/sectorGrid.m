@@ -4,7 +4,7 @@ function output = sectorGrid(params)
     % 
     % params structure with following fields
     % - nwindings : number of windings in the spiral
-    % - r0        : "radius" at the middle
+    % - rInner        : "radius" at the middle
     % - widthDict : dictionary of widths for each component. The required key names for the dictionary are
     %                 - 'Separator'
     %                 - 'NegativeActiveMaterial'

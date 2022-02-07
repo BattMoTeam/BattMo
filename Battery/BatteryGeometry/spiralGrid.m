@@ -4,7 +4,7 @@ function output = spiralGrid(params)
     % 
     % params structure with following fields
     % - nwindings : number of windings in the spiral
-    % - r0        : "radius" at the middle
+    % - rInner        : "radius" at the middle
     % - widthDict : dictionary of widths for each component. The required key names for the dictionary are
     %                 - 'Separator'
     %                 - 'NegativeActiveMaterial'
@@ -23,7 +23,7 @@ function output = spiralGrid(params)
     % - tagdict : dictionary giving the component number
     
     nwindings = params.nwindings;
-    r0        = params.r0;
+    rInner        = params.rInner;
     widthDict = params.widthDict ;
     nrDict    = params.nrDict;
     nas       = params.nas;
@@ -85,7 +85,7 @@ function output = spiralGrid(params)
     w = [0; cumsum(w)];
 
     if (unifang)
-        h = linspace(0, 2*pi*r0, nas + 1);
+        h = linspace(0, 2*pi*rInner, nas + 1);
     else
         n1 = 4;
         n2 = nas - n1;
@@ -93,7 +93,7 @@ function output = spiralGrid(params)
         dtheta2 = 2*pi - dtheta1;
         dtheta = [repmat(dtheta1/n1, n1, 1); repmat(dtheta2/n2, n2, 1)];
         theta = [0; cumsum(dtheta)];
-        h = theta*r0;
+        h = theta*rInner;
     end
     nperlayer = sum(nrs);
 
@@ -118,10 +118,10 @@ function output = spiralGrid(params)
     x = cartG.nodes.coords(:, 1);
     y = cartG.nodes.coords(:, 2);
 
-    theta = x./r0;
+    theta = x./rInner;
     
-    cartG.nodes.coords(:, 1) = (r0 + y + (theta/(2*pi))*layerwidth).*cos(theta);
-    cartG.nodes.coords(:, 2) = (r0 + y + (theta/(2*pi))*layerwidth).*sin(theta);
+    cartG.nodes.coords(:, 1) = (rInner + y + (theta/(2*pi))*layerwidth).*cos(theta);
+    cartG.nodes.coords(:, 2) = (rInner + y + (theta/(2*pi))*layerwidth).*sin(theta);
 
     tbls = setupSimpleTables(cartG);
 
@@ -312,7 +312,7 @@ function output = spiralGrid(params)
 
           case 'aligned tabs'
             
-            windingnumbers = computeWindingNumbers(tabparams.fractions, r0, layerwidth, nwindings);
+            windingnumbers = computeWindingNumbers(tabparams.fractions, rInner, layerwidth, nwindings);
 
             for ind = 1 :  numel(windingnumbers)
                 
@@ -350,7 +350,7 @@ function output = spiralGrid(params)
             
           case '1 tab'
             
-            nmw = computeMiddleWinding(r0, layerwidth, nwindings);
+            nmw = computeMiddleWinding(rInner, layerwidth, nwindings);
             indj0 = indj0 + sum(nrs)*(nmw - 1);
             cclinecelltbl.indj = repmat(indj0, nas, 1);
             cclinecelltbl.indi = (1 : nas)';
@@ -397,7 +397,7 @@ function output = spiralGrid(params)
                 
                 switch tabind
                   case 1
-                    tabcenter = pi*r0;
+                    tabcenter = pi*rInner;
                     ind = (l > tabcenter - tabwidths(tabind)/2);
                     ind = ind & (l < tabcenter + tabwidths(tabind)/2);
                   case 2
