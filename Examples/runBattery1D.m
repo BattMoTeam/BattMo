@@ -23,7 +23,7 @@ thermal = 'ThermalModel';
 %% We setup the battery geometry.
 % Here, we use a 1D model and the class BatteryGenerator1D already contains the discretization parameters
 gen = BatteryGenerator1D();
-gen.fac = 10,
+gen.fac = 10;
 gen = gen.applyResolutionFactors();
 
 % We update pamobj with grid data
@@ -84,7 +84,7 @@ nls = NonLinearSolver();
 nls.maxIterations = 10; 
 % Change default behavior of nonlinear solver, in case of error
 nls.errorOnFailure = false; 
-nls.timeStepSelector=StateChangeTimeStepSelector('TargetProps',{{'PositiveElectrode','CurrentCollector','E'}},'targetChangeAbs',0.03)
+nls.timeStepSelector=StateChangeTimeStepSelector('TargetProps',{{'PositiveElectrode','CurrentCollector','E'}},'targetChangeAbs',0.03);
 % Change default tolerance for nonlinear solver
 model.nonlinearTolerance = 1e-3*inputI; 
 % Set verbosity
