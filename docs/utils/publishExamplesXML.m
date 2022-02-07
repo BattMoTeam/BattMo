@@ -4,6 +4,9 @@ function publishExamplesXML(varargin)
 % 
 % The scripts ('runBattery1D' in example above) should be in path
 %
+% To convert the examples from xml to rst format (as needed by documentation), it should be enough to run 
+%    python buildPublishedExamples
+% in terminal (script buildPublishedExamples.py is located in the same directory as publishExamplesXML.m)
     opt = struct('replace'     , false, ...
                  'extension'   , 'xml', ...
                  'catchError'  , false, ...
