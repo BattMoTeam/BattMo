@@ -1,6 +1,9 @@
 Batmo (TBD) is an electrochemical continuum modelling framework.
 ================================================================
 
+.. image:: Documentation/batmologo.png
+   :width: 400           
+
 Installation
 ------------
 Installation instructions go here
