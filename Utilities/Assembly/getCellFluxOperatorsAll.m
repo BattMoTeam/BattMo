@@ -33,9 +33,17 @@ function op = getCellFluxOperatorsAll(G, varargin)
     N      = sparse(I, J, reshape(sN', [], 1), dims*nc, nhf)';
     
     %% 
-    opt = struct('invertBlocks', 'mex');
-    opt = merge_options(opt, varargin{:});
-    bi = blockInverter(opt);
+    try 
+        opt = struct('invertBlocks', 'mex');
+        opt = merge_options(opt, varargin{:});
+        bi = blockInverter(opt);
+    catch
+        warning('Problem when compilation of invertBlock.');
+        opt = [];
+        opt = merge_options(opt, varargin{:});        
+        bi = blockInverter(opt);
+    end
+    
     NTN = N'*N;
     NTNinv = bi(NTN, n);
     
