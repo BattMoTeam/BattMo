@@ -1,10 +1,82 @@
 classdef BaseModel < PhysicalModel
-    
+
+    properties
+        propertyFunctionList
+        varNameList
+    end
+        
     methods
 
         function model = BaseModel()
             model = model@PhysicalModel([]);
+            model.propertyFunctionList = {};
+            model.varNameList = {};
         end
+        
+        function model = registerVarName(model, varname)
+            model.varNameList = mergeList(model.varNameList, {varname});
+        end
+
+        function model = registerPropFunction(model, propfunc)
+            model.propertyFunctionList = mergeList(model.propertyFunctionList, {propfunc});
+        end
+        
+        
+        function model = registerSubModels(model, submodelnames)
+        % submodels is a list of submodel given as submodel and name. They should have been already assigned before this
+        % function is called
+            
+            propfuncs = model.propertyFunctionList;
+            varnames = model.varNameList;
+            
+            for isub = 1 : numel(submodelnames)
+
+                submodelname = submodelnames{isub};
+                submodel = model.(submodelname);
+                
+                % Register the variable names from the submodel after adding the model name in the name space
+
+                subvarnames = submodel.varNameList;
+                
+                for isubvar = 1 : numel(subvarnames)
+                    subvarname = subvarnames{isubvar};
+                    subvarname.namespace = {submodelname, subvarname.namespace{:}};
+                    subvarnames{isubvar} = subvarname;
+                end
+                
+                varnames = mergeList(varnames, subvarnames);
+                
+                % Register the property functions from the submodel after adding the model name in the name space
+                
+                subpropfuncs = submodel.propertyFunctionList;
+
+                for isubpropfunc = 1 : numel(subpropfuncs)
+
+                    subpropfunc = subpropfuncs{isubpropfunc};
+                    
+                    subpropfunc.varname.namespace = {submodelname, subpropfunc.varname.namespace{:}};
+                    subpropfunc.modelnamespace = {submodelname, subpropfunc.modelnamespace{:}};
+                    
+                    subinputvarnames = subpropfunc.inputvarnames;
+                    for isubinput = 1 : numel(subinputvarnames)
+                        subinputvarname = subinputvarnames{isubinput};
+                        subinputvarname.namespace = {submodelname, subinputvarname.namespace{:}};
+                        subinputvarnames{isubinput} = subinputvarname;
+                    end
+                    subpropfunc.inputvarnames = subinputvarnames;
+                    
+                    subpropfuncs{isubpropfunc} = subpropfunc;
+                end               
+                
+                propfuncs = mergeList(propfuncs, subpropfuncs);
+                
+            end
+            
+             model.varNameList = varnames;
+             model.propertyFunctionList = propfuncs;
+            
+        end
+        
         
         function state = setProp(model, state, names, val)
             if iscell(names) & (numel(names) > 1)
