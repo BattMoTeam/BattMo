@@ -1,5 +1,7 @@
 classdef ElectronicComponent < BaseModel
-    
+%
+% The ElectronicComponent class is model to assemble charge conservation equation
+% 
     properties
         
         EffectiveElectricalConductivity % Effective electrical conductivity
@@ -49,7 +51,7 @@ classdef ElectronicComponent < BaseModel
         
         
         function state = updateCurrent(model, state)
-        % Assemble electrical current which is stored in :code:`state.j`
+        % Assemble electrical current which is stored in :code:`state.j` 
             sigmaeff = model.EffectiveElectricalConductivity;
             phi = state.phi;
             

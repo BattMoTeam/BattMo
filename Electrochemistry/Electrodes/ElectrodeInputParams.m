@@ -1,14 +1,25 @@
 classdef ElectrodeInputParams < ComponentInputParams
 %
-% Input class for :class:`Electrode <Electrochemistry.Electrodes.Electrode>`
+% Input parameter class for :class:`Electrode <Electrochemistry.Electrodes.Electrode>`
 %        
     properties
         
-        %% parameters for the electrode components
+        %
+        % Input parameter for the electrode active component (:class:`ElectrodeActiveComponentInputParams
+        % <Electrochemistry.ElectrodeActiveComponentInputParams>`)
+        %
         ElectrodeActiveComponent
+        
+        
+        %
+        % Input parameter for the current collector (:class:`CurrentCollectorInputParams
+        % <Electrochemistry.CurrentCollectorInputParams>`)
+        %
         CurrentCollector
         
-        %% coupling terms
+        %
+        % Coupling term specification
+        %
         couplingTerm
         
     end

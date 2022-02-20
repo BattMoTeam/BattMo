@@ -1,11 +1,12 @@
 %% Battery 1D model
-% Include presentation of the test case (use rst format)
+% 
 
 % load MRST modules
 mrstModule add ad-core multimodel mrst-gui mpfa
 
-% We create an instance of BatteryInputParams. This class is used to initiate the battery simulator and it propagates
-% all the parameters through out the submodels.
+%%
+% We create an instance of :class:`BatteryInputParams <Battery.BatteryInputParams>`. This class is used to initiate the
+% battery simulator and it propagates all the parameters through out the submodels.
 
 % The input parameters can be given in json format. The json file is read and used to populate the paramobj object.
 jsonstruct = parseBatmoJson('JsonDatas/lithiumbattery.json');
@@ -36,10 +37,11 @@ paramobj.(pe).(cc).EffectiveElectricalConductivity = 1e5;
 paramobj.(thermal).externalTemperature = paramobj.initT;
 
 %%  The Battery model is initialized by sending paramobj to the Battery class constructor 
-% see :class:`Battery.Battery`
+% see :class:`Battery <Battery.Battery>`
 
 model = Battery(paramobj,'use_thermal',true,'use_solid_diffusion',true);
 model.AutoDiffBackend= AutoDiffBackend();
+
 %% We compute the cell capacity and chose a discharge rate
 C      = computeCellCapacity(model);
 CRate  = 1; 

@@ -1,15 +1,15 @@
 classdef CurrentCollectorInputParams < ElectronicComponentInputParams
 %
-% Input class for :class:`CurrentCollector <Electrochemistry.CurrentCollector>`
+% Input parameter class for :class:`CurrentCollector <Electrochemistry.CurrentCollector>`
 %
     properties
         
-        couplingTerm
+        couplingTerm % coupling term specification of the current collector (with external stimulation)
 
-        thermalConductivity
-        heatCapacity
+        thermalConductivity % Thermal conductivity of current collector
+        heatCapacity % Heat capacity of current collector
 
-        density % [kg m^-3]
+        density % Density of current collector [kg m^-3]
     end
     
     methods

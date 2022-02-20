@@ -1,20 +1,23 @@
 classdef ElectrodeActiveComponentInputParams < ElectroChemicalComponentInputParams
 %
-% Input class for :class:`ElectrodeActiveComponent <Electrochemistry.ElectrodeActiveComponent>`
+% Input parameter class for :class:`ElectrodeActiveComponent <Electrochemistry.ElectrodeActiveComponent>`
 % 
     properties
         
-        %% parameters for the electrode components
+        %
+        % Input parameter for the active material  :class:`ActiveMaterialInputParams <Electrochemistry.Electrodes.ActiveMaterialInputParams>`
+        %
         ActiveMaterial
-        amName
-                
-        % Interdiffusion coefficient parameter (diffusion between the particles)
-        InterDiffusionCoefficient
         
-        thermalConductivity
-        heatCapacity
+        amName % Given name for the active material
+                
+        
+        InterDiffusionCoefficient % Interdiffusion coefficient parameter (diffusion between the particles)
+        
+        thermalConductivity % Intrinsic Thermal conductivity of the active component
+        heatCapacity       % Intrinsic Heat capacity of the active component
 
-        electricalConductivity % [S m^-1]
+        electricalConductivity % Electrical conductivity / [S m^-1]
 
     end
 

@@ -1,6 +1,6 @@
 classdef SeparatorInputParams < ComponentInputParams
 %
-% Input class for :class:`Separator <Electrochemistry.Separator>`
+% Input parameter class for :class:`Separator <Electrochemistry.Separator>`
 %    
     properties
         

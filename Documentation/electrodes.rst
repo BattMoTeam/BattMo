@@ -21,7 +21,7 @@ Electrode components
    .. autoclass:: ActiveMaterial
       :show-inheritance:
 
-.. automodule:: Electrochemistry
+.. currentmodule:: Electrochemistry
 
-   .. autoclass:: CurrentCollector
-      :show-inheritance:                  
+.. autoclass:: CurrentCollector
+   :show-inheritance:                  

@@ -1,6 +1,6 @@
 classdef BareBatteryInputParams < InputParams
 %
-% Input class for :class:`Battery <Battery.Battery>`
+% Input parameter class for :class:`Battery <Battery.Battery>`
 %
     properties
         

@@ -15,7 +15,24 @@
 * Interesting Manuals
 ** sphinx manual
    https://www.sphinx-doc.org/en/master/contents.html
+** reStucturedText (rst) format
+   https://www.sphinx-doc.org/en/master/usage/restructuredtext/basics.html
 ** rtd theme manual
    https://sphinx-rtd-theme.readthedocs.io/en/stable/
 ** bibtex extension manual
    https://sphinxcontrib-bibtex.readthedocs.io/en/latest/index.html
+* Configuratiom file
+  - ~conf.py~ see https://www.sphinx-doc.org/en/master/usage/configuration.html
+* Examples
+** Compilation
+   - run ~publishExamplesXML~ in ~utils~ directory (see documentation there) : It creates XML outputs
+   - run python script ~buildPublishedExamples.py~ : converts XML to rST output
+** rST description file
+   - Matlab uses own markup language which complicates transformation to rST file and therefore it *should not* be used
+   - We offer possibility to include extra rST description file automatically. If the example is named ~myexample.m~,
+     then the extra rST file should be named ~myexample_.rst~ (note the underscore sign)
+** Guidelines
+   - To make sure that a comment you include in matlab example file appears as a comment in rST output (and not at a
+     comment in the matlab code formatting), start a cell with eventually no title. In Matlab cells start with ~%%~ and
+     a title
+   - The directive ~.. automodule::~ makes sure a directory is parsed. 

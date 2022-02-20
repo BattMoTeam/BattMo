@@ -1,28 +1,33 @@
 classdef ActiveMaterialInputParams < InputParams 
 %
-% Input class for :class:`ActiveMaterial <Electrochemistry.Electrodes.ActiveMaterial>`
+% Input parameter class for :class:`ActiveMaterial <Electrochemistry.Electrodes.ActiveMaterial>`
 %    
     properties
         
-        G
+        G  % Grid
 
-        name
+        name % Given name
         
-        theta0                  % at 0% SOC [-]
-        theta100                % at 100% SOC[-]
-        Li % struct with fields
-           %  - cmax            % [mol m^-3]
-           %  - D0              % [m^2 s^-1]
-           %  - EaD             % [J mol^-1]
+        theta0   % Lithiation value at 0% SOC [-]
+        theta100 % Lithiation value at 100% SOC[-]
+
+        %
+        % struct with fields
+        %
+        %  * cmax            % [mol m^-3]
+        %  * D0              % [m^2 s^-1]
+        %  * EaD             % [J mol^-1]
+        Li 
+        
         k0                      % [m^2.5 mol^-0.5 s^-1]
-        Eak                     % [J mol^-1]
-        rp                      % [m]
-        volumetricSurfaceArea   % [m2 m^-3]
-        volumeFraction         
-        density                 % [kg m^-3]
+        Eak                     % Activation energy [J mol^-1]
+        rp                      % Particle radius [m]
+        volumetricSurfaceArea   % Volumetric surface area [m2 m^-3]
+        volumeFraction          % Volume fraction of the active material
+        density                 % Density of the active material [kg m^-3]
         n                       % number of electron transfer
 
-        updateOCPFunc % Function to update OCP value
+        updateOCPFunc % Function to update OCP value (matlab function handler)
     end
     
     methods

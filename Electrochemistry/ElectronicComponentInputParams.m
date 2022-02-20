@@ -1,9 +1,11 @@
 classdef ElectronicComponentInputParams < ComponentInputParams
 %
-% Input class for :class:`ElectronicComponent <Electrochemistry.ElectronicComponent>`
+% Input parameter class for :class:`ElectronicComponent <Electrochemistry.ElectronicComponent>`
 %    
     properties
-        EffectiveElectricalConductivity;
+        
+        EffectiveElectricalConductivity % conductivity
+        
     end
     
     

@@ -26,3 +26,5 @@ You can check that that your installation is setup correctly by running one of t
    runBattery1D
 
 .. _MRST: https://www.sintef.no/Projectweb/MRST/
+
+For large models, iterative solvers are necessary. We are providing here agmg `http://agmg.eu/`_ from 2012 

@@ -18,12 +18,12 @@ BATMO documentation
 .. toctree::
 
    installation
+   inputs
+   examples
    batterymodel
    genmodels
    electrodes
    electrolyte
-   inputs
-   examples
    bibliography
        
 Indices and tables

@@ -23,7 +23,7 @@ function publishExamplesXML(varargin)
     BatMoExampleDir = fileparts(BatMoExampleDir);
     BatMoExampleDir = fullfile(BatMoExampleDir, '..', '..', 'Examples');
 
-    outputDir = fullfile(BatMoExampleDir, '..', 'docs', 'publishedExamples');
+    outputDir = fullfile(BatMoExampleDir, '..', 'Documentation', 'publishedExamples');
     if ~exist(outputDir, 'dir')
         mkdir(outputDir);
     end 

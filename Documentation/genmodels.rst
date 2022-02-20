@@ -10,12 +10,19 @@ conservation (:class:`ElectroChemicalComponent <Electrochemistry.ElectroChemical
    .. autoclass:: ElectronicComponent
       :show-inheritance:
       :members:
-      :exclude-members: ElectronicComponent
-
+      :exclude-members: ElectronicComponents
+                        
    .. autoclass:: ElectroChemicalComponent
       :show-inheritance:
       :members:
       :exclude-members: ElectroChemicalComponent
+                        
 
+.. automodule:: Utilities
+
+   .. autoclass:: BaseModel
+      :show-inheritance:
+      :members:
+      :exclude-members: BaseModel                
 
 

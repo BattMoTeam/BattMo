@@ -2,21 +2,25 @@ classdef ElectrodeActiveComponent < ElectroChemicalComponent
     
     properties
         
-        ActiveMaterial % instance of :class:`hello <Electrochemistry.Electrodes.ActiveMaterial>`
+        %
+        % instance of :class:`ActiveMaterial <Electrochemistry.Electrodes.ActiveMaterial>`
+        %
+        ActiveMaterial 
         
         volumeFraction % Volume fraction
         porosity       % Porosity
-        thickness      % Thickness
+        thickness      % Thickness / [m]
 
         InterDiffusionCoefficient % Inter particle diffusion coefficient parameter (diffusion between the particles)
         
-        thermalConductivity % Intrinsic Thermal conductivity
-        heatCapacity        % Intrinsic Heat capacity
+        thermalConductivity % Intrinsic Thermal conductivity of the active component
+        heatCapacity        % Intrinsic Heat capacity of the active component
 
-        EffectiveThermalConductivity % Effective Thermal Conductivity
-        EffectiveHeatCapacity % Effective Heat Capacity
+        EffectiveThermalConductivity % Effective Thermal Conductivity of the active component
+        EffectiveHeatCapacity % Effective Heat Capacity of the active component
         
-        electricalConductivity
+        electricalConductivity % Electrical conductivity
+        
     end
     
     methods
