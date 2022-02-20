@@ -28,12 +28,16 @@ def parse_publish_to_xml(exfile):
     f.close()
     example = example.replace("<tt>", "`")
     example = example.replace("</tt>", "`")
+    # example = re.sub("<a [^>]*>([^<]*)</a>", "", example)
+    example = re.sub(r'<a [^>]*>([^<]*)</a>', r'XMLLT\1XMLGT', example)
     #example = re.sub('\.\.\.\s+', '...' + os.linesep, example)
     #example = example.replace("...", "...\n")
     e = xml.etree.ElementTree.fromstring(example)
     # e = xml.etree.ElementTree.parse(exfile).getroot()
     # outfile  = open("D:/jobb/bitbucket/mrst-documentation/flowSolverTutorial1.txt", "w")
     output = ''
+    rstDescriptionFile = tmp[-1].replace('.xml', '_.rst')
+    includeRstDescriptionFile = ".. include:: " + rstDescriptionFile + "\n\n"
 
     def addIdent(txt):
         return "  ".join(("\n"+txt.lstrip()).splitlines(True)) + "\n"
@@ -57,6 +61,7 @@ def parse_publish_to_xml(exfile):
                     sect = '\n' + sect + '\n' + ch * tit_length + '\n'
                     if headcount == 0:
                         sect = sect + '*Generated from ' + example_filename + '*\n\n'
+                        sect = sect + includeRstDescriptionFile
                     headcount += 1;
                     output += sect
                 elif ptag == "text":
@@ -110,7 +115,8 @@ def parse_publish_to_xml(exfile):
                     output += '.. figure:: ' + img + "\n"
                     output += "  :figwidth: 100%\n"
                     output += "\n"
-
+    output = output.replace("XMLLT", "<")
+    output = output.replace("XMLGT", ">")
     return output
 
 publishedExampleDir = os.path.realpath(__file__)
