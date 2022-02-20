@@ -14,11 +14,55 @@ classdef BaseModel < PhysicalModel
         end
         
         function model = registerVarName(model, varname)
-            model.varNameList = mergeList(model.varNameList, {varname});
+            if isa(varname, 'VarName')
+                model.varNameList = mergeList(model.varNameList, {varname});
+            elseif isa(varname, 'char')
+                varname = VarName({}, varname);
+                model = model.registerVarName(varname)
+            else
+                error('varname not recognized');
+            end
+        end
+        
+        function model = registerVarNames(model, varnames)
+            for ivarnames = 1 : numel(varnames)
+                model = model.registerVarNames(varnames{ivarnames});
+            end
         end
 
         function model = registerPropFunction(model, propfunc)
+            if isa(propfunc, 'PropFunction')
             model.propertyFunctionList = mergeList(model.propertyFunctionList, {propfunc});
+            elseif isa(propfunc, 'cell')
+                assert(numel(propfunc) == 3, 'format of propfunc not recognized');
+                varname = propfunc{1};
+                if isa(varname, 'VarName')
+                    % ok
+                elseif isa(varname, 'char')
+                    varname = VarName({}, varname);
+                else
+                    error('format of propfunc not recognized');
+                end
+                fn = propfunc{2};
+                assert(isa(propfunc{3}, 'cell'), 'format of propfunc not recognized');
+                inputvarnames = cell(1, numel(propfunc{3}));
+                for iinputvarnames = 1 : numel(propfunc{3})
+                    inputvarname = propfunc{3}{iinputvarnames};
+                    if isa(inputvarname, 'VarName')
+                        % ok
+                    elseif isa(inputvarname, 'char')
+                        inputvarname = VarName({}, inputvarname);
+                    else
+                        error('format of propfunc not recognized');
+                    end
+                    inputvarnames{iinputvarnames} = inputvarname;
+                end
+                modelnamespace = {};
+                propfunc = PropFunction(varname, fn, inputvarnames, modelnamespace);
+                model = model.registerPropFunction(propfunc);
+            else
+                error('propfunc not recognized');
+            end                
         end
         
         
