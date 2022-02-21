@@ -39,6 +39,12 @@ classdef Separator < BaseModel
             model.volumeFraction = 1 - model.porosity;
             model.EffectiveThermalConductivity = model.thermalConductivity.*(model.volumeFraction).^1.5;
             model.EffectiveHeatCapacity = model.heatCapacity.*model.volumeFraction;
+
+
+            %% Declaration of the Dynamical Variables and Function of the model
+            % (setup of varnameList and propertyFunctionList)
+            
+            % no dynamical variable in the separator
             
         end
     end

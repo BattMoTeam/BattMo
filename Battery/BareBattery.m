@@ -47,7 +47,13 @@ classdef BareBattery < BaseModel
             model.NegativeElectrode = model.setupElectrode(paramobj.NegativeElectrode);
             model.PositiveElectrode = model.setupElectrode(paramobj.PositiveElectrode);
             model.Electrolyte = model.setupElectrolyte(paramobj.Electrolyte);
-            
+
+            % defines shortcuts
+            elyte   = 'Electrolyte';
+            ne      = 'NegativeElectrode';
+            pe      = 'PositiveElectrode';
+            am      = 'ActiveMaterial';
+
             % setup Electrolyte model (setup electrolyte volume fractions in the different regions)
             model = model.setupElectrolyteModel();            
             
@@ -58,13 +64,60 @@ classdef BareBattery < BaseModel
             model = model.setupMappings();
             
             % setup capping
-            ne    = 'NegativeElectrode';
-            pe    = 'PositiveElectrode';
-            am    = 'ActiveMaterial';
             cmax_ne = model.(ne).(am).Li.cmax;
             cmax_pe = model.(pe).(am).Li.cmax;
             model.cmin = 1e-5*max(cmax_ne, cmax_pe);
+
+            %% Declaration of the Dynamical Variables and Function of the model
+            % (setup of varnameList and propertyFunctionList)
             
+            model = model.registerSubModels({'Electrolyte'       , ...
+                                             'NegativeElectrode' , ...
+                                             'PositiveElectrode'});
+                        
+            varnames = {'SOC', ...
+                        'T', ...
+                        'controlEq'};
+            
+            model = model.registerVarNames(varnames);
+            
+            % function that dispatch the temperatures in the submodels
+            fn = @Battery.updateTemperature;
+            model = model.registerPropFunction({{ne   , 'T'}, fn, {'T'}});
+            model = model.registerPropFunction({{pe   , 'T'}, fn, {'T'}});
+            model = model.registerPropFunction({{elyte, 'T'}, fn, {'T'}});
+           
+            % function that setups the couplings
+            
+            fn = @Battery.updateElectrodeCoupling;
+            
+            inputnames = {{elyte, 'c'}, ...
+                          {elyte, 'phi'}};
+            model = model.registerPropFunction({{ne, am, 'phiElectrolyte'}, fn, inputnames});
+            model = model.registerPropFunction({{ne, am, 'cElectrolyte'}  , fn, inputnames});
+            model = model.registerPropFunction({{pe, am, 'phiElectrolyte'}, fn, inputnames});
+            model = model.registerPropFunction({{pe, am, 'cElectrolyte'}  , fn, inputnames});
+            
+            fn = @Battery.updateElectrolyteCoupling;
+            
+            inputnames = {{ne, am, 'R'}, ...
+                          {pe, am, 'R'}};
+            model = model.registerPropFunction({{elyte, 'massSource'}, fn, inputnames});
+            model = model.registerPropFunction({{elyte, 'eSource'}   , fn, inputnames});
+            
+            fn = @Battery.setupExternalCouplingNegativeElectrode;
+            model = model.registerPropFunction({{ne, 'jBcSource'}, fn, {'phi'}});
+            
+            fn = @Battery.setupExternalCouplingPositiveElectrode;
+            model = model.registerPropFunction({{pe, 'jBcSource'}, fn, {'phi', 'E'}});
+            
+            %% setup control equation
+            fn = @Batter.setupEIEquation;
+            inputnames = {{pe, 'E'}, ...
+                          {pe, 'I'}, ...
+                          {pe, 'phi'}};
+            model = model.registerPropFunction({'controlEq', fn, inputnames});
+
         end
 
         

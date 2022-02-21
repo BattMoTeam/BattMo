@@ -1,10 +1,131 @@
 classdef BaseModel < PhysicalModel
-    
+
+    properties
+        propertyFunctionList
+        varNameList
+    end
+        
     methods
 
         function model = BaseModel()
             model = model@PhysicalModel([]);
+            model.propertyFunctionList = {};
+            model.varNameList = {};
         end
+        
+        function model = registerVarName(model, varname)
+            if isa(varname, 'VarName')
+                model.varNameList = mergeList(model.varNameList, {varname});
+            elseif isa(varname, 'char')
+                varname = VarName({}, varname);
+                model = model.registerVarName(varname);
+            elseif isa(varname, 'cell')
+                varname = VarName(varname(1 : end - 1), varname{end});
+                model = model.registerVarName(varname);
+            else
+                error('varname not recognized');
+            end
+        end
+        
+        function model = registerVarNames(model, varnames)
+            for ivarnames = 1 : numel(varnames)
+                model = model.registerVarName(varnames{ivarnames});
+            end
+        end
+
+        function model = registerPropFunction(model, propfunc)
+            if isa(propfunc, 'PropFunction')
+            model.propertyFunctionList = mergeList(model.propertyFunctionList, {propfunc});
+            elseif isa(propfunc, 'cell')
+                assert(numel(propfunc) == 3, 'format of propfunc not recognized');
+                varname = propfunc{1};
+                if isa(varname, 'VarName')
+                    % ok
+                elseif isa(varname, 'char')
+                    varname = VarName({}, varname);
+                elseif isa(varname, 'cell')
+                    varname = VarName(varname(1 : end - 1), varname{end});
+                else
+                    error('format of propfunc not recognized');
+                end
+                fn = propfunc{2};
+                assert(isa(propfunc{3}, 'cell'), 'format of propfunc not recognized');
+                inputvarnames = cell(1, numel(propfunc{3}));
+                for iinputvarnames = 1 : numel(propfunc{3})
+                    inputvarname = propfunc{3}{iinputvarnames};
+                    if isa(inputvarname, 'VarName')
+                        % ok
+                    elseif isa(inputvarname, 'char')
+                        inputvarname = VarName({}, inputvarname);
+                    elseif isa(varname, 'iscell')
+                        varname = VarName(varname(1 : end - 1), varname{end});
+                    end
+                    inputvarnames{iinputvarnames} = inputvarname;
+                end
+                modelnamespace = {};
+                propfunc = PropFunction(varname, fn, inputvarnames, modelnamespace);
+                model = model.registerPropFunction(propfunc);
+            else
+                error('propfunc not recognized');
+            end                
+        end
+        
+        
+        function model = registerSubModels(model, submodelnames)
+        % submodels is a list of submodel given as submodel and name. They should have been already assigned before this
+        % function is called
+            
+            propfuncs = model.propertyFunctionList;
+            varnames = model.varNameList;
+            
+            for isub = 1 : numel(submodelnames)
+
+                submodelname = submodelnames{isub};
+                submodel = model.(submodelname);
+                
+                % Register the variable names from the submodel after adding the model name in the name space
+
+                subvarnames = submodel.varNameList;
+                
+                for isubvar = 1 : numel(subvarnames)
+                    subvarname = subvarnames{isubvar};
+                    subvarname.namespace = {submodelname, subvarname.namespace{:}};
+                    subvarnames{isubvar} = subvarname;
+                end
+                
+                varnames = mergeList(varnames, subvarnames);
+                
+                % Register the property functions from the submodel after adding the model name in the name space
+                
+                subpropfuncs = submodel.propertyFunctionList;
+
+                for isubpropfunc = 1 : numel(subpropfuncs)
+
+                    subpropfunc = subpropfuncs{isubpropfunc};
+                    
+                    subpropfunc.varname.namespace = {submodelname, subpropfunc.varname.namespace{:}};
+                    subpropfunc.modelnamespace = {submodelname, subpropfunc.modelnamespace{:}};
+                    
+                    subinputvarnames = subpropfunc.inputvarnames;
+                    for isubinput = 1 : numel(subinputvarnames)
+                        subinputvarname = subinputvarnames{isubinput};
+                        subinputvarname.namespace = {submodelname, subinputvarname.namespace{:}};
+                        subinputvarnames{isubinput} = subinputvarname;
+                    end
+                    subpropfunc.inputvarnames = subinputvarnames;
+                    
+                    subpropfuncs{isubpropfunc} = subpropfunc;
+                end               
+                
+                propfuncs = mergeList(propfuncs, subpropfuncs);
+                
+            end
+            
+             model.varNameList = varnames;
+             model.propertyFunctionList = propfuncs;
+            
+        end
+        
         
         function state = setProp(model, state, names, val)
             if iscell(names) & (numel(names) > 1)

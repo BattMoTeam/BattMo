@@ -30,7 +30,7 @@ classdef ElectrodeActiveComponent < ElectroChemicalComponent
         % ``paramobj`` is instance of :class:`ElectrodeActiveComponentInputParams <Electrochemistry.ElectrodeActiveComponentInputParams>`
         %    
             model = model@ElectroChemicalComponent(paramobj);
-            
+
             fdnames = {'thermalConductivity'   , ...
                        'electricalConductivity', ...
                        'heatCapacity'          , ...
@@ -58,7 +58,36 @@ classdef ElectrodeActiveComponent < ElectroChemicalComponent
             % setup effective thermal conductivity            
             model.EffectiveThermalConductivity = model.thermalConductivity.*volumeFraction.^1.5;
             model.EffectiveHeatCapacity = model.heatCapacity.*volumeFraction;
+        
+            %% Declaration of the Dynamical Variables and Function of the model
+            % (setup of varnameList and propertyFunctionList)
             
+            model = model.registerSubModels({'ActiveMaterial'});
+
+            varnames =  {'jCoupling'};
+            model = model.registerVarNames(varnames);
+
+            fn = @ElectrodeActiveComponent.updatejBcSource;
+            inputnames = {'jCoupling'};
+            model = model.registerPropFunction({'jBcSource', fn, inputnames});            
+
+            fn = @ElectrodeActiveComponent.updateIonAndCurrentSource;
+            inputnames = {VarName({'am'}, 'R')};
+            model = model.registerPropFunction({'massSource', fn, inputnames});
+            model = model.registerPropFunction({'eSource', fn, inputnames});
+
+            fn = @ElectrodeActiveComponent.updateChargeCarrier;
+            varname = VarName({'am'}, 'cElectrodeAveraged');
+            model = model.registerPropFunction({varname, fn, {'c'}});
+
+            fn = @ElectrodeActiveComponent.updatePhi;
+            varname = VarName({'am'}, 'phiElectrode');
+            model = model.registerPropFunction({varname, fn, {'phi'}});
+            
+            fn = @ElectrodeActiveComponent.updateTemperature;
+            varname = VarName({'am'}, 'T');
+            model = model.registerPropFunction({varname, fn, {'T'}});
+
         end
 
         function state = updateIonAndCurrentSource(model, state)

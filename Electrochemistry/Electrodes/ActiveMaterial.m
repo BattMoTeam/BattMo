@@ -25,6 +25,8 @@ classdef ActiveMaterial < BaseModel
         rp                     % Particle radius               [m]
 
         updateOCPFunc % Function handler to update OCP
+        
+        
     end
 
     methods
@@ -55,6 +57,61 @@ classdef ActiveMaterial < BaseModel
             model = dispatchParams(model, paramobj, fdnames);
 
             model.updateOCPFunc = str2func(paramobj.updateOCPFunc.functionname);
+
+            %% Declaration of the Dynamical Variables and Function of the model
+            % (setup of varnameList and propertyFunctionList)
+
+            varnames = {};
+            % Temperature
+            varnames{end + 1} = 'T';
+            % Status of Charge
+            varnames{end + 1} = 'SOC';
+            % potential in electrode
+            varnames{end + 1} = 'phiElectrode';
+            % charge carrier concentration in electrode - value at surface
+            varnames{end + 1} = 'cElectrode';
+            % charge carrier concentration in electrode - Averaged value
+            varnames{end + 1} = 'cElectrodeAveraged';
+            % potential in electrolyte
+            varnames{end + 1} = 'phiElectrolyte';
+            % charge carrier concentration in electrolyte
+            varnames{end + 1} = 'cElectrolyte';
+            % eta
+            varnames{end + 1} = 'eta';
+            % Reaction rate
+            varnames{end + 1} = 'R';
+            % Diffusion coefficient
+            % Note : This is the inner particle diffusion coefficient
+            varnames{end + 1} = 'D';
+            % OCP
+            varnames{end + 1} = 'OCP';
+            % Reaction rate coefficient
+            varnames{end + 1} = 'j0';
+            % Solid diffusion equation
+            varnames{end + 1} = 'solidDiffusionEq';
+            
+            model = model.registerVarNames(varnames);
+            
+            fn = @ActiveMaterial.updateReactionRateCoefficient;
+            inputnames = {'cElectrode', 'cElectrolyte', 'T'};
+            model = model.registerPropFunction({'j0', fn, inputnames});
+
+            fn = @ActiveMaterial.updateDiffusionCoefficient;
+            inputnames = {'T'};
+            model = model.registerPropFunction({'D', fn, inputnames});
+
+            fn = @ActiveMaterial.updateOCP;
+            inputnames = {'cElectrode', 'T'};
+            model = model.registerPropFunction({'OCP', fn, inputnames});
+
+            fn = @ActiveMaterial.updateReactionRate;
+            inputnames = {'T', 'phiElectrolyte', 'phiElectrode', 'cElectrode', 'cElectrolyte', 'OCP', 'k'};
+            model = model.registerPropFunction({'R', fn, inputnames});
+            % model = model.registerPropFunction({'eta', fn, inputnames});
+            
+            fn = @ActiveMaterial.assembleSolidDiffusionEquation;
+            inputnames = {'D', 'R', 'cElectrode', 'cElectrodeAveraged'};
+            model = model.registerPropFunction({'solidDiffusionEq', fn, inputnames});
 
         end
 
