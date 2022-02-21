@@ -3,7 +3,7 @@
 clear all
 
 % load MRST modules
-mrstModule add ad-core multimodel mrst-gui mpfa
+mrstModule add ad-core mrst-gui mpfa
 
 % We create an instance of BatteryInputParams. This class is used to initiate the battery simulator and it propagates
 % all the parameters through out the submodels.
@@ -40,6 +40,7 @@ paramobj = gen.updateBatteryInputParams(paramobj);
 
 model = BareBattery(paramobj);
 
+return
 %% We compute the cell capacity and chose a discharge rate
 % C      = computeCellCapacity(model);
 % CRate  = 1/5; 

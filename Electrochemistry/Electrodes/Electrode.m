@@ -27,7 +27,28 @@ classdef Electrode < BaseModel
             % Assign the two components
             model.ElectrodeActiveComponent = model.setupElectrodeActiveComponent(paramobj.ElectrodeActiveComponent);
             model.CurrentCollector = model.setupCurrentCollector(paramobj.CurrentCollector);
-           
+
+            %% Declaration of the Dynamical Variables and Function of the model
+            % (setup of varnameList and propertyFunctionList)
+            
+            model = model.registerSubModels({'ElectrodeActiveComponent', 'CurrentCollector'});
+            
+            model = model.registerVarName('T');
+            
+            fn = @Electrode.updateCoupling;
+            inputnames = {VarName({'eac'}, 'phi'), ...
+                          VarName({'cc'}, 'phi')};
+            model = model.registerPropFunction({VarName({'eac'}, 'jCoupling'), fn, inputnames});
+            model = model.registerPropFunction({VarName({'cc'} , 'jCoupling'), fn, inputnames});
+            model = model.registerPropFunction({VarName({'cc'} , 'eSource')  , fn, inputnames});
+            
+            % Temperature coupling between current collector and electrode active component
+            inputnames = {VarName({'eac'}, 'T'), ...
+                          VarName({'cc'}, 'T')};
+            fn = @Electrode.updateTemperatureCoupling;
+            model = model.registerPropFunction({VarName({'eac'}, 'jHeatBcSource'), fn, inputnames});
+            model = model.registerPropFunction({VarName({'cc'}, 'jHeatBcSource'), fn, inputnames});
+            
         end
         
         function eac = setupElectrodeActiveComponent(model, paramobj)

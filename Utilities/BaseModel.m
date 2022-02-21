@@ -18,7 +18,10 @@ classdef BaseModel < PhysicalModel
                 model.varNameList = mergeList(model.varNameList, {varname});
             elseif isa(varname, 'char')
                 varname = VarName({}, varname);
-                model = model.registerVarName(varname)
+                model = model.registerVarName(varname);
+            elseif isa(varname, 'cell')
+                varname = VarName(varname(1 : end - 1), varname{end});
+                model = model.registerVarName(varname);
             else
                 error('varname not recognized');
             end
@@ -26,7 +29,7 @@ classdef BaseModel < PhysicalModel
         
         function model = registerVarNames(model, varnames)
             for ivarnames = 1 : numel(varnames)
-                model = model.registerVarNames(varnames{ivarnames});
+                model = model.registerVarName(varnames{ivarnames});
             end
         end
 
@@ -40,6 +43,8 @@ classdef BaseModel < PhysicalModel
                     % ok
                 elseif isa(varname, 'char')
                     varname = VarName({}, varname);
+                elseif isa(varname, 'cell')
+                    varname = VarName(varname(1 : end - 1), varname{end});
                 else
                     error('format of propfunc not recognized');
                 end
@@ -52,8 +57,8 @@ classdef BaseModel < PhysicalModel
                         % ok
                     elseif isa(inputvarname, 'char')
                         inputvarname = VarName({}, inputvarname);
-                    else
-                        error('format of propfunc not recognized');
+                    elseif isa(varname, 'iscell')
+                        varname = VarName(varname(1 : end - 1), varname{end});
                     end
                     inputvarnames{iinputvarnames} = inputvarname;
                 end

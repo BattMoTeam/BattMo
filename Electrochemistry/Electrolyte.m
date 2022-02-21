@@ -70,6 +70,39 @@ classdef Electrolyte < ElectroChemicalComponent
             model.EffectiveThermalConductivity = NaN(G.cells.num, 1);
             model.EffectiveThermalConductivity(elyte_cells_sep) = model.(sep).porosity.*model.thermalConductivity;
             
+            %% Declaration of the Dynamical Variables and Function of the model
+            % (setup of varnameList and propertyFunctionList)
+
+            model = model.registerSubModels({'Separator'});
+            
+            varnames = { VarName({}, 'cs', 2)     , ...
+                         'D'                      , ...
+                         VarName({}, 'dmudcs', 2) , ...
+                         'conductivity'           , ...
+                         VarName({}, 'jchems', 2) , ...
+                         'diffFlux'};
+            varnames = model.registerVarNames(varnames);
+            
+            fn = @Electrolyte.updateConductivity;
+            model = model.registerPropFunction({'cs', fn, {'c'}});
+            
+            fn = @Electrolyte.updateConductivity;
+            model = model.registerPropFunction({'conductivity', fn, {'c', 'T', 'phi'}});
+            
+            fn = @Electrolyte.updateChemicalCurrent;
+            model = model.registerPropFunction({'dmudcs', fn, {'c', 'T', 'phi'}});
+            model = model.registerPropFunction({'jchems', fn, {'c', 'T', 'phi'}});
+            
+            fn = @Electrolyte.updateDiffusionCoefficient;
+            model = model.registerPropFunction({'D', fn, {'c', 'T'}});
+
+            fn = @Electrolyte.updateCurrent;
+            model = model.registerPropFunction({'j', fn, {'phi', 'jchems', 'conductivity'}});
+            
+            fn = @Electrolyte.updateMassFlux;
+            model = model.registerPropFunction({'massFlux', fn, {'c', 'j', 'D'}});
+            model = model.registerPropFunction({'diffFlux', fn, {'c', 'j', 'D'}});
+
         end
         
         function state = updateConcentrations(model, state)

@@ -13,9 +13,9 @@ classdef ElectronicComponent < BaseModel
         
         function model = ElectronicComponent(paramobj)
         % Here, :code:`paramobj` is instance of :class:`ElectronicComponentInputParams <Electrochemistry.ElectronicComponentInputParams>`
-            
-            model = model@BaseModel();
 
+            model = model@BaseModel();
+            
             % OBS : All the models should have same backend (this is not assigned automaticallly for the moment)
             model.AutoDiffBackend = SparseAutoDiffBackend('useBlocks', false);
             
@@ -28,6 +28,26 @@ classdef ElectronicComponent < BaseModel
             model.operators = localSetupOperators(model.G, 'assembleCellFluxOperator', true);
             
             model.constants = PhysicalConstants();
+
+            %% Declaration of the Dynamical Variables and Function of the model
+            % (setup of varnameList and propertyFunctionList)
+        
+            varnames = {'T'        , ...
+                        'phi'      , ...
+                        'jBcSource', ...
+                        'eSource'  , ...
+                        'j'        , ...
+                        'chargeCons'};
+            model = model.registerVarNames(varnames);
+
+
+            fn = @ElectronicComponent.updateCurrent;
+            inputnames = {'phi'};
+            model = model.registerPropFunction({'j', fn, inputnames});
+            
+            fn = @ElectronicComponent.updateChargeConservation;
+            inputnames = {'j', 'jBcSource', 'eSource'};
+            model = model.registerPropFunction({'chargeCons', fn, inputnames});
             
         end
 

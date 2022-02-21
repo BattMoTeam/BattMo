@@ -4,7 +4,6 @@ classdef ElectroChemicalComponent < ElectronicComponent
 
         EffectiveDiffusionCoefficient % Effective diffusion coefficient
         
-        
     end
 
     methods
@@ -13,6 +12,22 @@ classdef ElectroChemicalComponent < ElectronicComponent
         % Here, :code:`paramobj` is instance of :class:`ElectronicChemicalInputParams <Electrochemistry.ElectronicChemicalInputParams>`
         
             model = model@ElectronicComponent(paramobj);
+            
+            %% Declaration of the Dynamical Variables and Function of the model
+            % (setup of varnameList and propertyFunctionList)
+        
+            varnames = {VarName({}, 'c', 2), ...
+                        'massSource' , ...
+                        'massFlux'   , ...
+                        'massAccum'  , ...
+                        'massCons'};
+            model = model.registerVarNames(varnames);
+            
+            fn = @ElectroChemicalComponent.updateMassFlux;
+            model = model.registerPropFunction({'massFlux', fn, {'c'}});
+            
+            fn = @ElectroChemicalComponent.updateMassConservation;
+            model = model.registerPropFunction({'massCons', fn, {'massFlux', 'massSource', 'massAccum'}});
             
         end
 

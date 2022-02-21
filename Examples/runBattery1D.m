@@ -2,7 +2,7 @@
 % 
 
 % load MRST modules
-mrstModule add ad-core multimodel mrst-gui mpfa
+mrstModule add ad-core mrst-gui mpfa
 
 %%
 % We create an instance of :class:`BatteryInputParams <Battery.BatteryInputParams>`. This class is used to initiate the
@@ -40,6 +40,9 @@ paramobj.(thermal).externalTemperature = paramobj.initT;
 % see :class:`Battery <Battery.Battery>`
 
 model = Battery(paramobj,'use_thermal',true,'use_solid_diffusion',true);
+
+return
+
 model.AutoDiffBackend= AutoDiffBackend();
 
 %% We compute the cell capacity and chose a discharge rate

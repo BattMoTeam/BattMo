@@ -51,13 +51,22 @@ classdef Battery < BaseModel
                        'Ucut'};
             
             model = dispatchParams(model, paramobj, fdnames);
-            
+
             % Assign the components : Electrolyte, NegativeElectrode, PositiveElectrode
             model.NegativeElectrode = model.setupElectrode(paramobj.NegativeElectrode);
             model.PositiveElectrode = model.setupElectrode(paramobj.PositiveElectrode);
             model.Electrolyte = model.setupElectrolyte(paramobj.Electrolyte);
             model.ThermalModel = ThermalComponent(paramobj.ThermalModel);
             
+            % defines shortcuts
+            elyte   = 'Electrolyte';
+            ne      = 'NegativeElectrode';
+            pe      = 'PositiveElectrode';
+            eac     = 'ElectrodeActiveComponent';
+            cc      = 'CurrentCollector';
+            am      = 'ActiveMaterial';
+            thermal = 'ThermalModel';
+           
             % setup Electrolyte model (setup electrolyte volume fractions in the different regions)
             model = model.setupElectrolyteModel();            
             
@@ -71,15 +80,106 @@ classdef Battery < BaseModel
             model = model.setupMappings();
             
             % setup capping
-            ne    = 'NegativeElectrode';
-            pe    = 'PositiveElectrode';
-            eac   = 'ElectrodeActiveComponent';
-            am    = 'ActiveMaterial';
             cmax_ne = model.(ne).(eac).(am).Li.cmax;
             cmax_pe = model.(pe).(eac).(am).Li.cmax;
             model.cmin = 1e-5*max(cmax_ne, cmax_pe);
             model.use_solid_diffusion = opt.use_solid_diffusion;
             model.use_thermal = opt.use_thermal;
+            
+            %% Declaration of the Dynamical Variables and Function of the model
+            % (setup of varnameList and propertyFunctionList)
+            
+            model = model.registerSubModels({'Electrolyte'       , ...
+                                             'NegativeElectrode' , ...
+                                             'PositiveElectrode' , ...
+                                             'ThermalModel'});
+            
+            varnames = {'SOC', ...
+                        'controlEq'};
+            
+            model = model.registerVarNames(varnames);
+            
+            %% Temperature dispatch functions
+            fn = @Battery.updateTemperature;
+            
+            inputnames = {{thermal, 'T'}};
+            model = model.registerPropFunction({{ne, eac, 'T'}, fn, inputnames});
+            model = model.registerPropFunction({{ne, cc , 'T'}, fn, inputnames});
+            model = model.registerPropFunction({{pe, eac, 'T'}, fn, inputnames});
+            model = model.registerPropFunction({{pe, cc , 'T'}, fn, inputnames});  
+            model = model.registerPropFunction({{elyte, 'T'}  , fn, inputnames});
+                  
+            %% Coupling functions
+            
+            % dispatch electrolyte concentration and potential in the electrodes
+            fn = @Battery.updateElectrodeCoupling;
+            inputnames = {{elyte, 'c'}, ...
+                          {elyte, 'phi'}};
+            model = model.registerPropFunction({{ne, eac, am, 'phiElectrolyte'}, fn, inputnames});
+            model = model.registerPropFunction({{ne, eac, am, 'cElectrolyte'}  , fn, inputnames});
+            model = model.registerPropFunction({{pe, eac, am, 'phiElectrolyte'}, fn, inputnames});
+            model = model.registerPropFunction({{pe, eac, am, 'cElectrolyte'}  , fn, inputnames});
+            
+            % Functions that update the source terms in the electolyte
+            
+            fn = @Battery.updateElectrolyteCoupling;
+            
+            inputnames = {{ne, eac, am, 'R'}, ...
+                          {pe, eac, am, 'R'}};
+            model = model.registerPropFunction({{elyte, 'cSource'}, fn, inputnames});
+            model = model.registerPropFunction({{elyte, 'eSource'}, fn, inputnames});
+            
+            % Function that assemble the control equation
+            
+            fn = @Batter.setupEIEquation;
+            inputnames = {{'pe', 'cc', 'E'}, ...
+                          {'pe', 'cc', 'I'}, ...
+                          {'pe', 'cc', 'phi'}, ...
+                         };
+            model = model.registerPropFunction({{'controlEq'}, fn, inputnames});
+            
+            % Function that update Thermal accumulation terms
+            
+            fn = @Battery.updateThermalAccumTerms;
+            inputnames = {'T'};
+            model = model.registerPropFunction({{thermal, 'accumHeat'}, fn, inputnames});
+            
+            % Function that update the Thermal Ohmic Terms
+            
+            fn = @Battery.updateThermalOhmicSourceTerms;
+            inputnames = {{elyte, 'j'}   , ...
+                          {ne, cc, 'j'}  , ...
+                          {ne, eac, 'j'} , ...
+                          {pe, cc, 'j'}  , ...
+                          {pe, eac, 'j'}};
+            model = model.registerPropFunction({{thermal, 'jHeatOhmSource'}, fn, inputnames});
+            model = model.registerPropFunction({{thermal, 'jHeatBcSource'} , fn, inputnames});
+            
+            %% Function that updates the Thermal Chemical Terms
+            
+            fn = @Battery.updateThermalChemicalSourceTerms;
+            inputnames = {{elyte, 'diffFlux'}, ...
+                          {elyte, 'D'}       , ...
+                          {elyte, 'dmudcs'}};
+            model = model.registerPropFunction({{thermal, 'jHeatChemicalSource'}, fn, inputnames});
+                          
+            %% Functio that updates Thermal Reaction Terms
+            
+            fn = @Battery.updateThermalReactionSourceTerms;
+            inputnames = {{ne, eac, am, 'R'}  , ...
+                          {ne, eac, am, 'eta'}, ...
+                          {pe, eac, am, 'R'}  , ...
+                          {pe, eac, am, 'eta'}};
+            model = model.registerPropFunction({{thermal, 'jHeatReactionSource'}, fn, inputnames});
+                                                    
+            %% Function that setup external coupling at positive and negative electrodes
+            
+            fn = @Battery.setupExternalCouplingNegativeElectrode;
+            model = model.registerPropFunction({{ne, cc, 'jExternal'}, fn, {'phi'}});
+            
+            fn = @Battery.setupExternalCouplingPositiveElectrode;
+            model = model.registerPropFunction({{pe, cc, 'jExternal'}, fn, {'phi', 'E'}});
+            
         end
 
         function model = setupThermalModel(model, paramobj)
