@@ -130,16 +130,6 @@ plotCellData(model.(elyte).G, states{50}.(elyte).c, 'edgealpha', 0.1);
 title('Lithium concentration in Electrolyte at time step 50')
 colorbar
 
-%% Plot of the lithium concentration
-
-figure
-plotToolbar(model.(thermal).G, states{50}.(elyte).c, 'edgealpha', 0.1);
-title('Lithium concentration in Electrolyte at time step 50')
-colorbar
-
-
-
-
 %{
 Copyright 2009-2021 SINTEF Industry, Sustainable Energy Technology
 and SINTEF Digital, Mathematics & Cybernetics.
