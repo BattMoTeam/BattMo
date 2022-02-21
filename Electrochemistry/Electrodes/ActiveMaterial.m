@@ -93,7 +93,7 @@ classdef ActiveMaterial < BaseModel
             model = model.registerVarNames(varnames);
             
             fn = @ActiveMaterial.updateReactionRateCoefficient;
-            inputnames = {'cElectrode', 'cElectrolyte', 'T'};
+            inputnames = {'T', 'cElectrolyte', 'cElectrode'};
             model = model.registerPropFunction({'j0', fn, inputnames});
 
             fn = @ActiveMaterial.updateDiffusionCoefficient;
@@ -105,12 +105,12 @@ classdef ActiveMaterial < BaseModel
             model = model.registerPropFunction({'OCP', fn, inputnames});
 
             fn = @ActiveMaterial.updateReactionRate;
-            inputnames = {'T', 'phiElectrolyte', 'phiElectrode', 'cElectrode', 'cElectrolyte', 'OCP', 'k'};
+            inputnames = {'T', 'phiElectrolyte', 'phiElectrode', 'j0', 'OCP'};
             model = model.registerPropFunction({'R', fn, inputnames});
-            % model = model.registerPropFunction({'eta', fn, inputnames});
+            model = model.registerPropFunction({'eta', fn, inputnames});
             
             fn = @ActiveMaterial.assembleSolidDiffusionEquation;
-            inputnames = {'D', 'R', 'cElectrode', 'cElectrodeAveraged'};
+            inputnames = {'cElectrode', 'cElectrodeAveraged', 'D', 'R'};
             model = model.registerPropFunction({'solidDiffusionEq', fn, inputnames});
 
         end

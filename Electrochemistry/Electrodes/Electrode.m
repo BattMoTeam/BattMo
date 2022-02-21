@@ -28,6 +28,11 @@ classdef Electrode < BaseModel
             model.ElectrodeActiveComponent = model.setupElectrodeActiveComponent(paramobj.ElectrodeActiveComponent);
             model.CurrentCollector = model.setupCurrentCollector(paramobj.CurrentCollector);
 
+            % defines shortcuts
+            eac     = 'ElectrodeActiveComponent';
+            cc      = 'CurrentCollector';
+            am      = 'ActiveMaterial';
+            
             %% Declaration of the Dynamical Variables and Function of the model
             % (setup of varnameList and propertyFunctionList)
             
@@ -36,18 +41,18 @@ classdef Electrode < BaseModel
             model = model.registerVarName('T');
             
             fn = @Electrode.updateCoupling;
-            inputnames = {VarName({'eac'}, 'phi'), ...
-                          VarName({'cc'}, 'phi')};
-            model = model.registerPropFunction({VarName({'eac'}, 'jCoupling'), fn, inputnames});
-            model = model.registerPropFunction({VarName({'cc'} , 'jCoupling'), fn, inputnames});
-            model = model.registerPropFunction({VarName({'cc'} , 'eSource')  , fn, inputnames});
+            inputnames = {{eac, 'phi'}, ...
+                          {cc , 'phi'}};
+            model = model.registerPropFunction({{eac, 'jCoupling'}, fn, inputnames});
+            model = model.registerPropFunction({{cc , 'jCoupling'}, fn, inputnames});
+            model = model.registerPropFunction({{cc , 'eSource'}  , fn, inputnames});
             
             % Temperature coupling between current collector and electrode active component
-            inputnames = {VarName({'eac'}, 'T'), ...
-                          VarName({'cc'}, 'T')};
+            inputnames = {{eac, 'T'}, ...
+                          {cc , 'T'}};
             fn = @Electrode.updateTemperatureCoupling;
-            model = model.registerPropFunction({VarName({'eac'}, 'jHeatBcSource'), fn, inputnames});
-            model = model.registerPropFunction({VarName({'cc'}, 'jHeatBcSource'), fn, inputnames});
+            model = model.registerPropFunction({{eac, 'jHeatBcSource'}, fn, inputnames});
+            model = model.registerPropFunction({{cc , 'jHeatBcSource'}, fn, inputnames});
             
         end
         

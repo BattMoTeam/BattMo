@@ -58,8 +58,7 @@ classdef ThermalComponent < BaseModel
             model = model.registerVarNames(varnames);
             
             fn = @ThermalComponent.updateHeatFlux;
-            inputnames = {'T'};
-            model = model.registerPropFunction({'jHeat', {'T'}, inputnames});
+            model = model.registerPropFunction({'jHeat', fn, {'T'}});
             
             fn = @ThermalComponent.updateHeatSourceTerm;
             inputnames = {'jHeatOhmSource', ...

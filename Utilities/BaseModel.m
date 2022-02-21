@@ -1,8 +1,10 @@
 classdef BaseModel < PhysicalModel
 
     properties
+
         propertyFunctionList
         varNameList
+        
     end
         
     methods
@@ -57,8 +59,10 @@ classdef BaseModel < PhysicalModel
                         % ok
                     elseif isa(inputvarname, 'char')
                         inputvarname = VarName({}, inputvarname);
-                    elseif isa(varname, 'iscell')
-                        varname = VarName(varname(1 : end - 1), varname{end});
+                    elseif isa(inputvarname, 'cell')
+                        inputvarname = VarName(inputvarname(1 : end - 1), inputvarname{end});
+                    else
+                        error('format not recognized')
                     end
                     inputvarnames{iinputvarnames} = inputvarname;
                 end

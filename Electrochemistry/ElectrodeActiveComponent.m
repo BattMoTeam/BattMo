@@ -41,7 +41,12 @@ classdef ElectrodeActiveComponent < ElectroChemicalComponent
             paramobj.ActiveMaterial.G = model.G;
             
             model.ActiveMaterial = ActiveMaterial(paramobj.ActiveMaterial);
-
+            
+            % defines shortcuts
+            eac = 'ElectrodeActiveComponent';
+            cc  = 'CurrentCollector';
+            am  = 'ActiveMaterial';
+            
             % setup volumeFraction, porosity, thickness
             nc = model.G.cells.num;
             volumeFraction = model.ActiveMaterial.volumeFraction*ones(nc, 1);
@@ -68,25 +73,23 @@ classdef ElectrodeActiveComponent < ElectroChemicalComponent
             model = model.registerVarNames(varnames);
 
             fn = @ElectrodeActiveComponent.updatejBcSource;
-            inputnames = {'jCoupling'};
-            model = model.registerPropFunction({'jBcSource', fn, inputnames});            
+            model = model.registerPropFunction({'jBcSource', fn, {'jCoupling'}});            
 
             fn = @ElectrodeActiveComponent.updateIonAndCurrentSource;
-            inputnames = {VarName({'am'}, 'R')};
-            model = model.registerPropFunction({'massSource', fn, inputnames});
-            model = model.registerPropFunction({'eSource', fn, inputnames});
+            model = model.registerPropFunction({'massSource', fn, {{am, 'R'}}});
+            model = model.registerPropFunction({'eSource', fn, {{am, 'R'}}});
 
             fn = @ElectrodeActiveComponent.updateChargeCarrier;
-            varname = VarName({'am'}, 'cElectrodeAveraged');
-            model = model.registerPropFunction({varname, fn, {'c'}});
+            model = model.registerPropFunction({{am, 'cElectrodeAveraged'}, fn, {'c'}});
 
             fn = @ElectrodeActiveComponent.updatePhi;
-            varname = VarName({'am'}, 'phiElectrode');
-            model = model.registerPropFunction({varname, fn, {'phi'}});
+            model = model.registerPropFunction({{am, 'phiElectrode'}, fn, {'phi'}});
+            
+            fn = @ElectrodeActiveComponent.updateChargeCarrier;
+            model = model.registerPropFunction({{am, 'cElectrodeAveraged'}, fn, {'c'}});
             
             fn = @ElectrodeActiveComponent.updateTemperature;
-            varname = VarName({'am'}, 'T');
-            model = model.registerPropFunction({varname, fn, {'T'}});
+            model = model.registerPropFunction({{am, 'T'}, fn, {'T'}});
 
         end
 
