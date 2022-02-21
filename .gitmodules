@@ -18,7 +18,3 @@
 	path = MRST/mrst-visualization
 	url = https://bitbucket.org/mrst/mrst-visualization.git
         branch = master
-[submodule "project-multimodel"]
-	path = MRST/mrst-multimodel
-	url = https://bitbucket.org/mrst/project-multimodel.git
-
