@@ -41,8 +41,6 @@ paramobj.(thermal).externalTemperature = paramobj.initT;
 
 model = Battery(paramobj,'use_thermal',true,'use_solid_diffusion',true);
 
-return
-
 model.AutoDiffBackend= AutoDiffBackend();
 
 %% We compute the cell capacity and chose a discharge rate
