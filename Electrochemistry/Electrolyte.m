@@ -165,7 +165,7 @@ classdef Electrolyte < ElectroChemicalComponent
         
         function state = updateDiffusionCoefficient(model, state)
             
-            c = state.cs{1};
+            c = state.c;
             T = state.T;
 
             func = model.updateDiffusionCoefficientFunc;
@@ -186,9 +186,13 @@ classdef Electrolyte < ElectroChemicalComponent
         function state  = updateCurrent(model, state) 
            
             ncomp = model.ncomp;
+            sp    = model.sp;
+            R     = model.constants.R;
+            F     = model.constants.F;
             
-            phi = state.phi;
-            jchems = state.jchems;
+            phi          = state.phi;
+            T            = state.T;
+            c            = state.c;
             conductivity = state.conductivity;
             
             % volume fraction of electrolyte
@@ -197,7 +201,11 @@ classdef Electrolyte < ElectroChemicalComponent
             conductivityeff = conductivity.*volfrac.^1.5;
             state.conductivityeff = conductivityeff;
             j = assembleFlux(model, phi, conductivityeff);
-            j = j + jchems{1};
+            
+            coef = 2*R/F.*(1 - sp.t(1))*conductivityeff.*T./c;
+            jchem = assembleFlux(model, c, coef);
+            
+            j = j - jchem;
                 
             state.j = j;
             
