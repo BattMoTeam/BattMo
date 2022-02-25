@@ -1,4 +1,4 @@
-%% Battery 1D model
+%% Chen model
 % Include presentation of the test case (use rst format)
 
 % clear the workspace and close open figures
