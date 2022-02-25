@@ -6,6 +6,7 @@
     },
     "volumeFraction": 0.75,
     "bruggemanCoeffcient": 1.5,
+    "volumetricSurfaceArea": 383959,
     "n": 1,
     "rp": 5.86e-06,
     "Eak": 35000,
