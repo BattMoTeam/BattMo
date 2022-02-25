@@ -283,6 +283,10 @@ classdef BareBattery < BaseModel
                 state = model.initStateAD(state);
             end
             
+            T = model.initT;
+            nc = model.G.cells.num;
+            state.T = T*ones(nc, 1);
+            
             %% for now temperature and SOC are kept constant
             nc = model.G.cells.num;
             
@@ -307,7 +311,6 @@ classdef BareBattery < BaseModel
                 % potential and concentration between active material and electode active component
                 state.(elde) = battery.(elde).updatePhi(state.(elde));
                 state.(elde) = battery.(elde).updateChargeCarrier(state.(elde));
-                
             end
             
             %% Accumulation terms
@@ -384,23 +387,31 @@ classdef BareBattery < BaseModel
             eqs = {};
             
             %% We collect mass and charge conservation equations for the electrolyte and the electrodes
-
-            eqs{end + 1} = state.(elyte).massCons;
+            massConsScaling = model.con.F;
+            
+            eqs{end + 1} = state.(elyte).massCons*massConsScaling;
             eqs{end + 1} = state.(elyte).chargeCons;
             
-            eqs{end + 1} = state.(ne).massCons;
+            eqs{end + 1} = state.(ne).massCons*massConsScaling;
             eqs{end + 1} = state.(ne).chargeCons;
-            eqs{end + 1} = state.(ne).(am).solidDiffusionEq;
+            eqs{end + 1} = state.(ne).(am).solidDiffusionEq.*massConsScaling.*battery.(ne).(am).G.cells.volumes/dt;
             
-            eqs{end + 1} = state.(pe).massCons;
+            eqs{end + 1} = state.(pe).massCons*massConsScaling;
             eqs{end + 1} = state.(pe).chargeCons;
-            eqs{end + 1} = state.(pe).(am).solidDiffusionEq;
+            eqs{end + 1} = state.(pe).(am).solidDiffusionEq.*massConsScaling.*battery.(ne).(am).G.cells.volumes/dt;
             
             eqs{end + 1} = state.EIeq;
             
             % we add the control equation
-            val = drivingForces.src(time);
-            eqs{end + 1} = state.(pe).I - val;
+            I = state.(pe).I;
+            E = state.(pe).E;
+            [val, ctrltype] = drivingForces.src(time, value(I), value(E));
+            switch ctrltype
+              case 'I'
+                eqs{end + 1} = I - val;
+              case 'E'
+                eqs{end + 1} = (E - val)*1e5;
+            end
 
             %% Give type and names to equations and names of the primary variables (for book-keeping)
             
@@ -433,7 +444,7 @@ classdef BareBattery < BaseModel
             cc    = 'CurrentCollector';
             
             % (here we assume that the ThermalModel has the "parent" grid)
-            state.(elyte).T    = state.T(model.(elyte).G.mappings.cellmap);
+            state.(elyte).T = state.T(model.(elyte).G.mappings.cellmap);
             state.(ne).T = state.T(model.(ne).G.mappings.cellmap);
             state.(pe).T = state.T(model.(pe).G.mappings.cellmap);
             
@@ -614,53 +625,42 @@ classdef BareBattery < BaseModel
         end
         
         
-        function state = initStateAD(model,state)
+        function state = initStateAD(model, state)
             
-            bat = model;
-            elyte = 'Electrolyte';
-            ne    = 'NegativeElectrode';
-            pe    = 'PositiveElectrode';
-            am    = 'ActiveMaterial';
+            [pnames, extras]  = model.getPrimaryVariables();
             
-            adbackend = model.AutoDiffBackend();
-            useMex=false;
-            if(isprop(adbackend, 'useMex'))
-                useMex = adbackend.useMex; 
+            vars = cell(numel(pnames),1);
+            for i=1:numel(pnames)
+                vars{i} = model.getProp(state,pnames{i});
             end
-            opts=struct('types',[1,1,2,2,3,3,4,5,6,7,8],'useMex',useMex);
-            [state.(elyte).cs           , ...
-             state.(elyte).phi          , ...   
-             state.(ne).c               , ...   
-             state.(ne).phi             , ...   
-             state.(ne).(am).cElectrode , ...
-             state.(pe).c               , ...    
-             state.(pe).phi             , ...   
-             state.(pe).(am).cElectrode , ...
-             state.(pe).E               , ...
-             state.(pe).I] = ...
-                adbackend.initVariablesAD(...
-                    state.(elyte).c            , ...
-                    state.(elyte).phi          , ...   
-                    state.(ne).c               , ...    
-                    state.(ne).phi             , ...   
-                    state.(ne).(am).cElectrode , ...
-                    state.(pe).c               , ...    
-                    state.(pe).phi             , ...   
-                    state.(pe).(am).cElectrode , ...
-                    state.(pe).E               , ...
-                    state.(pe).I               , ...
-                    opts); 
-            % PRIMARY variables
-        end
+            % Get the AD state for this model           
+            [vars{:}] = model.AutoDiffBackend.initVariablesAD(vars{:});
+            newstate =struct();
         
-        function p = getPrimaryVariables(model)
+            for i = 1 : numel(pnames)
+               newstate = model.setNewProp(newstate, pnames{i}, vars{i});
+            end
+            
+            for i = 1 : numel(extras)
+                var = model.getProp(state, extras{i});
+                assert(isnumeric(var));
+                newstate = model.setNewProp(newstate, extras{i}, var);
+            end
+            
+            time = state.time;
+            state = newstate;
+            state.time = time;
+            
+        end 
+        
+        function [p, extra] = getPrimaryVariables(model)
             
             bat = model;
             elyte = 'Electrolyte';
             ne    = 'NegativeElectrode';
             pe    = 'PositiveElectrode';
             am    = 'ActiveMaterial';
-            p = {{elyte, 'cs', 1}       , ...
+            p = {{elyte, 'c'}           , ...
                  {elyte, 'phi'}         , ...   
                  {ne, 'c'}              , ...    
                  {ne, 'phi'}            , ...   
@@ -670,6 +670,8 @@ classdef BareBattery < BaseModel
                  {pe, am, 'cElectrode'} , ...
                  {pe, 'E'}              , ...
                  {pe, 'I'}};
+            
+            extra = [];
             
         end
         
@@ -705,7 +707,7 @@ classdef BareBattery < BaseModel
 
             cmin = model.cmin;
             
-            state.(elyte).cs{1} = max(cmin, state.(elyte).cs{1});
+            state.(elyte).c = max(cmin, state.(elyte).c);
             
             eldes = {ne, pe};
             for ind = 1 : numel(eldes)
@@ -717,6 +719,25 @@ classdef BareBattery < BaseModel
             
             report = [];
             
+        
+        end
+        
+        function outputvars = extractGlobalVariables(model, states)
+
+            pe = 'PositiveElectrode';
+
+            ns = numel(states);
+            ws = cell(ns, 1);
+            
+            for i = 1 : ns
+                E    = states{i}.(pe).E;
+                I    = states{i}.(pe).I;
+                time = states{i}.time;
+                
+                outputvars{i} = struct('E'   , E   , ...
+                                       'I'   , I   , ...
+                                       'time', time);
+            end
         end
         
     end

@@ -17,25 +17,12 @@ jsonstruct = parseBatmoJson('JsonDatas/Chen2020/chenBattery.json');
 
 paramobj = BareBatteryInputParams(jsonstruct);
 
-amn = paramobj.NegativeElectrode.ActiveMaterial;
-amp = paramobj.PositiveElectrode.ActiveMaterial;
-
-amn.volumetricSurfaceArea = 1;
-amp.volumetricSurfaceArea = 1;
-
-amn.rp = (amn.rp^2)/(3*amn.volumeFraction);
-amp.rp = (amp.rp^2)/(3*amp.volumeFraction);
-
-paramobj.NegativeElectrode.ActiveMaterial = amn;
-paramobj.PositiveElectrode.ActiveMaterial = amp;
-
 % Some shortcuts used for the sub-models
 ne    = 'NegativeElectrode';
 pe    = 'PositiveElectrode';
 elyte = 'Electrolyte';
 
 %% We setup the battery geometry.
-% Here, we use a 1D model and the class BatteryGenerator1D already contains the discretization parameters
 gen = BareBatteryGenerator3D();
 % We update pamobj with grid data
 paramobj = gen.updateBatteryInputParams(paramobj);
@@ -52,28 +39,34 @@ inputI = 5;
 
 %% We setup the schedule 
 % We use different time step for the activation phase (small time steps) and the following discharging phase
-
 % We start with rampup time steps to go through the activation phase 
-dt1   = rampupTimesteps(0.1, 0.1, 20);
-% We choose time steps for the rest of the simulation (discharge phase)
-dt2   = 2e-2*hour*ones(200, 1);
-% We concatenate the time steps
-dt    = [dt1; dt2];
-times = [0; cumsum(dt)]; 
-tt    = times(2 : end); 
-step  = struct('val', diff(times), 'control', ones(numel(tt), 1)); 
 
-stopFunc = @(model, state, state_prev) (state.(pe).E < 2.0); 
+fac   = 2; 
+total = 1.4*hour; 
+n     = 100; 
+dt0   = total*1e-6; 
+times = getTimeSteps(dt0, n, total, fac); 
+dt    = diff(times);
+dt    = dt(4 : end);
+step  = struct('val', dt, 'control', ones(size(dt)));
 
-tup = 0.1; % rampup value for the current function, see rampupSwitchControl
-inputE = 3.6; % Value when current control switches to voltage control
-srcfunc = @(time) rampupControl(time, tup, inputI);
+% We set up a stopping function. Here, the simulation will stop if the output voltage reach a value smaller than 2. This
+% stopping function will not be triggered in this case as we switch to voltage control when E=3.6 (see value of inputE
+% below).
+pe = 'PositiveElectrode';
+cc = 'CurrentCollector';
+stopFunc = @(model, state, state_prev) (state.(pe).E < 2.6); 
+
+tup     = 0.1; % rampup value for the current function, see rampupSwitchControl
+inputE  = 2;   % Value when current control switches to voltage control
+srcfunc = @(time, I, E) rampupSwitchControl(time, tup, I, E, inputI, inputE);
 
 % we setup the control by assigning a source and stop function.
 control = repmat(struct('src', srcfunc, 'stopFunction', stopFunc), 1, 1); 
 
 % This control is used to set up the schedule
 schedule = struct('control', control, 'step', step); 
+
 
 %%  We setup the initial state
 
@@ -119,16 +112,13 @@ OCP = initstate.(pe).(am).OCP;
 initstate.(pe).phi = OCP - ref;
 
 initstate.(elyte).phi = zeros(bat.(elyte).G.cells.num, 1) - ref;
-cs = cell(2,1);
-initstate.(elyte).cs = cs;
-initstate.(elyte).cs{1} = 1000*ones(bat.(elyte).G.cells.num, 1);
+initstate.(elyte).c = 1000*ones(bat.(elyte).G.cells.num, 1);
 
 % setup initial positive electrode external coupling values
 
 initstate.(pe).E = OCP(1) - ref;
 initstate.(pe).I = 0;
             
-
 % Setup nonlinear solver 
 nls = NonLinearSolver(); 
 % Change default maximum iteration number in nonlinear solver
@@ -138,12 +128,10 @@ nls.errorOnFailure = false;
 % Change default tolerance for nonlinear solver
 model.nonlinearTolerance = 1e-5; 
 % Set verbosity
-model.verbose = false;
+model.verbose = true;
 
 % Run simulation
-
 [wellSols, states, report] = simulateScheduleAD(initstate, model, schedule, 'OutputMinisteps', true, 'NonLinearSolver', nls); 
-
 
 %%  We process output and recover the output voltage and current from the output states.
 ind = cellfun(@(x) not(isempty(x)), states); 
@@ -154,16 +142,19 @@ time = cellfun(@(x) x.time, states);
 
 %% We plot the the output voltage and current
 
+loadChenPybammSolution
+
 figure
-plot((time/hour), Enew, '*-', 'linewidth', 3)
+plot((time/hour), Enew, 'linewidth', 3, 'displayname', 'batmo')
+hold on
+plot(t, u, 'linewidth', 3, 'color', 'green', 'displayname', 'pybamm')
+set(gca, 'fontsize', 18);
 title('Potential (E)')
 xlabel('time (hours)')
-hold on
-loadChenPybammSolution
-plot(t, u, 'linewidth', 3, 'color', 'green')
-legend({'batmo', 'pybamm'})
+legend('fontsize', 18)
+
 figure
-plot((time/hour), Inew, '*-', 'linewidth', 3)
+plot((time/hour), Inew, 'linewidth', 3)
 title('Current (I)')
 xlabel('time (hours)')
 

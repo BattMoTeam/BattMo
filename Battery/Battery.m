@@ -1153,7 +1153,6 @@ classdef Battery < BaseModel
 
         function [state, report] = updateState(model, state, problem, dx, drivingForces)
 
-            
             [state, report] = updateState@BaseModel(model, state, problem, dx, drivingForces);
             
             %% cap concentrations

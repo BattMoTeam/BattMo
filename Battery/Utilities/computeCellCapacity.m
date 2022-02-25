@@ -37,10 +37,11 @@ function [cap, cap_neg, cap_pos, specificEnergy] = computeCellCapacity(model)
         elde = eldes{ind};
         
         if isBare
-            ammodel = model.(elde).(am);
+            eacmodel = model.(elde);
         else
-            ammodel = model.(elde).(eac).(am);
+            eacmodel = model.(elde).(eac);
         end
+        ammodel = eacmodel.(am);
         
         n    = ammodel.n;
         F    = ammodel.constants.F;
@@ -59,7 +60,7 @@ function [cap, cap_neg, cap_pos, specificEnergy] = computeCellCapacity(model)
         end
         
         volume_fraction = ammodel.volumeFraction;
-        volume_electrode = sum(model.(elde).(eac).G.cells.volumes);
+        volume_electrode = sum(eacmodel.G.cells.volumes);
         volume = volume_fraction*volume_electrode;
         
         cap_usable(ind) = (thetaMax - thetaMin)*cMax*volume*n*F;
@@ -71,10 +72,10 @@ function [cap, cap_neg, cap_pos, specificEnergy] = computeCellCapacity(model)
     
     cap = min(cap_usable); 
 
-    doComputeEnergy = true;
     
-    if doComputeEnergy
+    if nargout > 3
         
+        assert(~iBare, 'not implemented yet for BareBattery model')
         r = cap_neg/cap_pos;
         
         thetaMinPos = model.(pe).(eac).(am).theta100;
