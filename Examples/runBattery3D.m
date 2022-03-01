@@ -1,4 +1,5 @@
-% Include presentation of the test case (use rst format)
+%% Battery 3D model
+% 
 
 % load MRST modules
 mrstModule add ad-core multimodel mrst-gui mpfa
