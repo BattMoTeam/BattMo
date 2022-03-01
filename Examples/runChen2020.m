@@ -27,6 +27,9 @@ gen = BareBatteryGenerator3D();
 % We update pamobj with grid data
 paramobj = gen.updateBatteryInputParams(paramobj);
 
+paramobj.NegativeElectrode.InterDiffusionCoefficient = 0;
+paramobj.PositiveElectrode.InterDiffusionCoefficient = 0;
+
 %%  The Battery model is initialized by sending paramobj to the Battery class constructor 
 
 model = BareBattery(paramobj);
