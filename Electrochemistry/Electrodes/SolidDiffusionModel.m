@@ -121,10 +121,10 @@ classdef SolidDiffusionModel < BaseModel
             Sfacetbl.Sfaces = (1 : (N - 1))'; % index of the internal faces (correspond to image of C')
             Sfacetbl = IndexArray(Sfacetbl);
             cellSfacetbl = crossIndexArray(celltbl, Sfacetbl, {}, 'optpureproduct', true);
+            
+            Grad = -diag(T)*C;
 
-            F = -diag(T)*C;
-
-            [i, j, f] = find(F);
+            [i, j, grad] = find(Grad);
             ScellSfacetbl.Sfaces = i;
             ScellSfacetbl.Scells = j;
             ScellSfacetbl = IndexArray(ScellSfacetbl);
@@ -137,7 +137,7 @@ classdef SolidDiffusionModel < BaseModel
             map.mergefds = {'Scells', 'Sfaces'};
             map = map.setup();
 
-            f = map.eval(f);
+            grad = map.eval(grad);
 
             prod = TensorProd();
             prod.tbl1 = cellScellSfacetbl;
@@ -146,9 +146,9 @@ classdef SolidDiffusionModel < BaseModel
             prod.mergefds = {'cells'};
             prod.reducefds = {'Scells'};
 
-            F = SparseTensor();
-            F = F.setFromTensorProd(f, prod);
-            F = F.getMatrix();
+            Grad = SparseTensor();
+            Grad = Grad.setFromTensorProd(grad, prod);
+            Grad = Grad.getMatrix();
 
             map = TensorMap();
             map.fromTbl = celltbl;
@@ -156,7 +156,7 @@ classdef SolidDiffusionModel < BaseModel
             map.mergefds = {'cells'};
             map = map.setup();
 
-            flux = @(D, c) map.eval(D).*(F*c);
+            flux = @(D, c) - map.eval(D).*(Grad*c);
 
             [i, j, d] = find(C');
 

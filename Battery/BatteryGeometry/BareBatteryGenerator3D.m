@@ -2,11 +2,11 @@ classdef BareBatteryGenerator3D < BareBatteryGenerator
 % setup 1D grid 
     properties
         
-        sepnx  = 4;
-        nenx   = 4;
-        penx   = 4;
-        nenr  = 3; % discretization for solid diffusion
-        penr  = 3; % discretization for solid diffusion
+        sepnx  = 10;
+        nenx   = 10;
+        penx   = 10;
+        nenr  = 40; % discretization for solid diffusion
+        penr  = 40; % discretization for solid diffusion
         fac = 1;
         
     end
