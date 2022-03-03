@@ -1,6 +1,11 @@
 %% Battery 2D model
 % Include presentation of the test case (use rst format)
 
+% clear the workspace and close open figures
+clear
+close all
+clc
+
 % load MRST modules
 mrstModule add ad-core multimodel mrst-gui mpfa
 
@@ -31,7 +36,6 @@ model = Battery(paramobj);
 
 
 %% plot the model
-
 figure
 plotGrid(model.(elyte).(sep).G, 'facecolor', 'green');
 plotGrid(model.(ne).(eac).G, 'facecolor', 'red');
@@ -112,23 +116,26 @@ Inew = cellfun(@(x) x.(pe).(cc).I, states);
 time = cellfun(@(x) x.time, states); 
 
 %% We plot the the output voltage and current
-
 figure
 plot((time/hour), Enew, '*-', 'linewidth', 3)
-title('Potential (E)')
-xlabel('time (hours)')
+title('Cell Voltage  /  V')
+xlabel('Time  /  h')
 
 figure
 plot((time/hour), Inew, '*-', 'linewidth', 3)
-title('Current (I)')
-xlabel('time (hours)')
+title('Cell Current  /  A')
+xlabel('Time  /  h')
 
 %% Plot of the lithium concentration
-
 figure
 plotCellData(model.(elyte).G, states{50}.(elyte).c, 'edgealpha', 0.1);
+xlabel('Position  /  m')
+ylabel('Position  /  m')
 title('Lithium concentration in Electrolyte at time step 50')
 colorbar
+
+%% Set figure styles
+setFigureStyle();
 
 %{
 Copyright 2009-2021 SINTEF Industry, Sustainable Energy Technology

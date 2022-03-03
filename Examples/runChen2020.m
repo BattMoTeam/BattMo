@@ -1,6 +1,10 @@
 %% Battery 1D model
 % Include presentation of the test case (use rst format)
-clear all
+
+% clear the workspace and close open figures
+clear
+close all
+clc
 
 % load MRST modules
 mrstModule add ad-core mrst-gui mpfa
@@ -40,7 +44,6 @@ paramobj = gen.updateBatteryInputParams(paramobj);
 
 model = BareBattery(paramobj);
 
-return
 %% We compute the cell capacity and chose a discharge rate
 % C      = computeCellCapacity(model);
 % CRate  = 1/5; 
