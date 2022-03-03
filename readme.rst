@@ -42,6 +42,6 @@ Conntributors, in alphabetical order
 
 Acknowledgements
 -----------------
-BatMo has received funding from the European Union’s Horizon 2020 innovation program under grant agreement numbers:  
-* 875527 HYDRA  
-* 957189 BIG-MAP  
+BatMo has received funding from the European Union’s Horizon 2020 innovation program under grant agreement numbers:
+|* 875527 HYDRA  
+|* 957189 BIG-MAP  
