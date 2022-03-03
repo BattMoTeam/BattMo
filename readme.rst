@@ -8,9 +8,9 @@ BatMo is framework for continuum modelling of electrochemical devices.
 Installation
 ------------
 
-BATMO is based on `MRST <https://www.sintef.no/Projectweb/MRST/>`_, which provides a general unstructured grid format,
+BatMo is based on `MRST <https://www.sintef.no/Projectweb/MRST/>`_, which provides a general unstructured grid format,
 generic MATLAB automatic differentiation tools and Newton solvers. The MRST code source wil be installed directly via
-git submodules. To install batmo, you have therefore to clone this repository with the submodule option
+**git submodules**. To install batmo, you have therefore to clone this repository with the submodule option
 ``--recurse-submodules``, as follows:
 
 ``git clone --recurse-submodules  git@github.com:batmoTeam/batmo.git``
@@ -48,5 +48,6 @@ Conntributors, in alphabetical order
 Acknowledgements
 -----------------
 BatMo has received funding from the European Union’s Horizon 2020 innovation program under grant agreement numbers:
-|* 875527 HYDRA  
-|* 957189 BIG-MAP  
+
+* 875527 HYDRA  
+* 957189 BIG-MAP  
