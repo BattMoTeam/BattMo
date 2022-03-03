@@ -22,7 +22,7 @@ runBattery1D
 Tutorials
 ---------
 
-Tutorials are presented in `documentation <https://batmoteam.github.io/batmo-doc/>`_ (in progres...)
+Tutorials are presented in `documentation <https://batmoteam.github.io/batmo-doc/>`_ (in progress ...)
 
 Naming Conventions (TBC)
 ------------------------
