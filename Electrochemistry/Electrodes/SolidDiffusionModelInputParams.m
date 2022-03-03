@@ -5,6 +5,8 @@ classdef SolidDiffusionModelInputParams < InputParams
         D0
         rp                      % Particle radius [m]
         volumetricSurfaceArea   % Volumetric surface area [m2 m^-3]
+        N
+        np
     end
     
     methods

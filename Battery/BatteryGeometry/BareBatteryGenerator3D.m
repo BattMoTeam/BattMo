@@ -2,9 +2,11 @@ classdef BareBatteryGenerator3D < BareBatteryGenerator
 % setup 1D grid 
     properties
         
-        sepnx  = 20;
-        nenx   = 20;
-        penx   = 20;
+        sepnx  = 4;
+        nenx   = 4;
+        penx   = 4;
+        nenr  = 3; % discretization for solid diffusion
+        penr  = 3; % discretization for solid diffusion
         fac = 1;
         
     end
@@ -67,6 +69,8 @@ classdef BareBatteryGenerator3D < BareBatteryGenerator
 
             ne  = 'NegativeElectrode';
             pe  = 'PositiveElectrode';
+            am  = 'ActiveMaterial';
+            sd  = 'SolidDiffusion';
             
             sepnx = gen.sepnx; 
             nenx = gen.nenx; 
@@ -90,6 +94,11 @@ classdef BareBatteryGenerator3D < BareBatteryGenerator
             params.(pe).bccells = penx;
             
             paramobj = setupElectrodes@BareBatteryGenerator(gen, paramobj, params);
+            
+            paramobj.(ne).(am).(sd).N  = gen.nenr;
+            paramobj.(ne).(am).(sd).np = gen.nenx;
+            paramobj.(pe).(am).(sd).N  = gen.penr;
+            paramobj.(pe).(am).(sd).np = gen.penx;
 
         end            I
                 

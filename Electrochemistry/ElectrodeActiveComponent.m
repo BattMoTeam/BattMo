@@ -1,4 +1,4 @@
-classdef ElectrodeActiveComponent < ElectroChemicalComponent
+classdef ElectrodeActiveComponent < ElectronicComponent
     
     properties
         
@@ -11,8 +11,6 @@ classdef ElectrodeActiveComponent < ElectroChemicalComponent
         porosity       % Porosity
         thickness      % Thickness / [m]
 
-        InterDiffusionCoefficient % Inter particle diffusion coefficient parameter (diffusion between the particles)
-        
         thermalConductivity % Intrinsic Thermal conductivity of the active component
         heatCapacity        % Intrinsic Heat capacity of the active component
 
@@ -29,12 +27,12 @@ classdef ElectrodeActiveComponent < ElectroChemicalComponent
         %
         % ``paramobj`` is instance of :class:`ElectrodeActiveComponentInputParams <Electrochemistry.ElectrodeActiveComponentInputParams>`
         %    
-            model = model@ElectroChemicalComponent(paramobj);
+            model = model@ElectronicComponent(paramobj);
 
             fdnames = {'thermalConductivity'   , ...
                        'electricalConductivity', ...
-                       'heatCapacity'          , ...
-                       'InterDiffusionCoefficient'};
+                       'heatCapacity'};
+            
             model = dispatchParams(model, paramobj, fdnames);
             
             % Setup ActiveMaterial component
@@ -58,9 +56,6 @@ classdef ElectrodeActiveComponent < ElectroChemicalComponent
             % setup effective electrical conductivity using Bruggeman approximation 
             model.EffectiveElectricalConductivity = model.electricalConductivity.*volumeFraction.^1.5;
             
-            % setup effective diffusion coefficient (inter-particle diffusion)
-            model.EffectiveDiffusionCoefficient = model.InterDiffusionCoefficient.*volumeFraction.^1.5;
-            
             % setup effective thermal conductivity            
             model.EffectiveThermalConductivity = model.thermalConductivity.*volumeFraction.^1.5;
             model.EffectiveHeatCapacity = model.heatCapacity.*volumeFraction;
@@ -76,8 +71,7 @@ classdef ElectrodeActiveComponent < ElectroChemicalComponent
             fn = @ElectrodeActiveComponent.updatejBcSource;
             model = model.registerPropFunction({'jBcSource', fn, {'jCoupling'}});            
 
-            fn = @ElectrodeActiveComponent.updateIonAndCurrentSource;
-            model = model.registerPropFunction({'massSource', fn, {{am, 'R'}}});
+            fn = @ElectrodeActiveComponent.updateCurrentSource;
             model = model.registerPropFunction({'eSource', fn, {{am, 'R'}}});
 
             fn = @ElectrodeActiveComponent.updateChargeCarrier;
@@ -92,7 +86,7 @@ classdef ElectrodeActiveComponent < ElectroChemicalComponent
             
         end
 
-        function state = updateIonAndCurrentSource(model, state)
+        function state = updateCurrentSource(model, state)
             
             F = model.ActiveMaterial.constants.F;
             vols = model.G.cells.volumes;
@@ -100,13 +94,7 @@ classdef ElectrodeActiveComponent < ElectroChemicalComponent
             R = state.ActiveMaterial.R;
             
             state.eSource = - vols.*R*n*F; % C/second
-            state.massSource = - vols.*R; % mol/second
             
-        end
-        
-        function state = updateChargeCarrier(model, state)
-            state.ActiveMaterial.SolidDiffusion.c = state.c; 
-            state.ActiveMaterial.cElectrode = state.c;
         end
         
         function state = updatePhi(model, state)

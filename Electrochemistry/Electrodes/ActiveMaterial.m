@@ -57,7 +57,7 @@ classdef ActiveMaterial < BaseModel
             model.updateOCPFunc = str2func(paramobj.updateOCPFunc.functionname);
 
             paramobj.SolidDiffusion.volumetricSurfaceArea = paramobj.volumetricSurfaceArea;
-            model.SolidDiffusion = SimplifiedSolidDiffusionModel(paramobj.SolidDiffusion);
+            model.SolidDiffusion = SolidDiffusionModel(paramobj.SolidDiffusion);
             
             %% Declaration of the Dynamical Variables and Function of the model
             % (setup of varnameList and propertyFunctionList)
@@ -73,8 +73,6 @@ classdef ActiveMaterial < BaseModel
             varnames{end + 1} = 'phiElectrode';
             % charge carrier concentration in electrode - value at surface
             varnames{end + 1} = 'cElectrodeSurface';
-            % charge carrier concentration in electrode - Averaged value
-            varnames{end + 1} = 'cElectrode';
             % potential in electrolyte
             varnames{end + 1} = 'phiElectrolyte';
             % charge carrier concentration in electrolyte
@@ -106,22 +104,36 @@ classdef ActiveMaterial < BaseModel
             model = model.registerPropFunction({'eta', fn, inputnames});
             
             fn = @ActiveMaterial.updateSurfaceConcentration;
+            model = model.registerPropFunction({{sd, 'cSurface'}, fn, {{sd, 'c'}}});
             model = model.registerPropFunction({'cElectrodeSurface', fn, {{sd, 'cSurface'}}});
             
-            fn = @ActiveMaterial.dispatchRateToSolidDiffusionModel;
-            model = model.registerPropFunction({{sd, 'R'}, fn, {'R'}});
+            fn = @ActiveMaterial.dispatchSolidRate;
+            model = model.registerPropFunction({{sd, 'Rsolid'}, fn, {'R'}});
+            
+            fn = @ActiveMaterial.dispatchTemperature;
+            model = model.registerPropFunction({{sd, 'T'}, fn, {'T'}});
+        
+        end
+        
+        function state = dipatchTemperature(model, state)
+
+            sd = 'SolidDiffusion';
+            state.(sd).T = state.T;
             
         end
-
+        
         function state = updateSurfaceConcentration(model, state)
-        % only for simplified model at the moment
+
             sd = 'SolidDiffusion';
+            state.(sd) = model.(sd).updateSurfaceConcentration(state.(sd));
             state.cElectrodeSurface = state.(sd).cSurface;
             
         end
         
-        function state = dispatchRateToSolidDiffusionModel(model, state)
-            state.SolidDiffusion.R = state.R;
+        function state = dispatchSolidRate(model, state)
+            
+            state.SolidDiffusion.Rsolid = state.R;
+            
         end
         
         function state = updateOCP(model, state)

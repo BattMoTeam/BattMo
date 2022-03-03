@@ -323,7 +323,6 @@ classdef BareBattery < BaseModel
                 elde = electrodes{ind};
                 % dispatch potential and concentration from electode active component to submodels
                 state.(elde) = battery.(elde).updatePhi(state.(elde));
-                state.(elde) = battery.(elde).updateChargeCarrier(state.(elde));
             end
             
             %% Accumulation terms
@@ -365,7 +364,7 @@ classdef BareBattery < BaseModel
 
             for ind = 1 : numel(electrodes)
                 elde = electrodes{ind};
-                state.(elde) = battery.(elde).updateIonAndCurrentSource(state.(elde));
+                state.(elde) = battery.(elde).updateCurrentSource(state.(elde));
                 state.(elde) = battery.(elde).updateCurrent(state.(elde));
                 state.(elde) = battery.(elde).updateChargeConservation(state.(elde));
             end
@@ -375,22 +374,16 @@ classdef BareBattery < BaseModel
             state.(elyte) = battery.(elyte).updateDiffusionCoefficient(state.(elyte));
             state.(elyte) = battery.(elyte).updateMassFlux(state.(elyte));
             state.(elyte) = battery.(elyte).updateMassConservation(state.(elyte));
-            
-            for ind = 1 : numel(electrodes)
-                elde = electrodes{ind};
-                
-                %% Electrodes mass conservation
-                state.(elde) = battery.(elde).updateMassFlux(state.(elde));
-                state.(elde) = battery.(elde).updateMassConservation(state.(elde));
-                
-            end
 
-            %% update solid diffustion equations
+            %% update solid diffustion mass conservation equations
             for ind = 1 : numel(electrodes)
                 elde = electrodes{ind};
-                state.(elde).(am) = battery.(elde).(am).dispatchRateToSolidDiffusionModel(state.(elde).(am));
+                state.(elde).(am) = battery.(elde).(am).dispatchSolidRate(state.(elde).(am));
                 state.(elde).(am).(sd) = battery.(elde).(am).(sd).updateDiffusionCoefficient(state.(elde).(am).(sd));
-                state.(elde).(am).(sd) = battery.(elde).(am).(sd).assembleSolidDiffusionEquation(state.(elde).(am).(sd));
+                state.(elde).(am).(sd) = battery.(elde).(am).(sd).updateMassSource(state.(elde).(am).(sd));
+                state.(elde).(am).(sd) = battery.(elde).(am).(sd).updateFlux(state.(elde).(am).(sd));
+                state.(elde).(am).(sd) = battery.(elde).(am).(sd).updateAccumTerm(state.(elde).(am).(sd), state0.(elde).(am).(sd), dt);
+                state.(elde).(am).(sd) = battery.(elde).(am).(sd).updateMassConservation(state.(elde).(am).(sd));
             end
             
             %% setup relation between E and I at positive current collectror
@@ -406,15 +399,10 @@ classdef BareBattery < BaseModel
             
             eqs{end + 1} = state.(elyte).massCons*massConsScaling;
             eqs{end + 1} = state.(elyte).chargeCons;
-            
-            eqs{end + 1} = state.(ne).massCons*massConsScaling;
             eqs{end + 1} = state.(ne).chargeCons;
-            eqs{end + 1} = state.(ne).(am).(sd).solidDiffusionEq.*massConsScaling.*battery.(ne).(am).G.cells.volumes/dt;
-            
-            eqs{end + 1} = state.(pe).massCons*massConsScaling;
+            eqs{end + 1} = state.(ne).(am).(sd).massCons.*massConsScaling;
             eqs{end + 1} = state.(pe).chargeCons;
-            eqs{end + 1} = state.(pe).(am).(sd).solidDiffusionEq.*massConsScaling.*battery.(ne).(am).G.cells.volumes/dt;
-            
+            eqs{end + 1} = state.(pe).(am).(sd).massCons.*massConsScaling;
             eqs{end + 1} = state.EIeq;
             
             % we add the control equation
@@ -430,17 +418,15 @@ classdef BareBattery < BaseModel
 
             %% Give type and names to equations and names of the primary variables (for book-keeping)
             
-            types = {'cell', 'cell', 'cell', 'cell', 'cell', 'cell', 'cell', 'cell', 'cell', 'cell'};
+            types = {'cell', 'cell', 'cell', 'cell', 'cell', 'cell', 'cell', 'cell'};
             
-            names = {'elyte_massCons'   , ...
-                     'elyte_chargeCons' , ...
-                     'ne_massCons'      , ...
-                     'ne_chargeCons'    , ...
-                     'ne_am_soliddiffeq', ...
-                     'pe_massCons'      , ...
-                     'pe_chargeCons'    , ...
-                     'pe_am_soliddiffeq', ...
-                     'EIeq', ...
+            names = {'elyte_massCons'       , ...
+                     'elyte_chargeCons'     , ...
+                     'ne_chargeCons'        , ...
+                     'ne_am_sd_soliddiffeq' , ...
+                     'pe_chargeCons'        , ...
+                     'pe_am_sd_soliddiffeq' , ...
+                     'EIeq'                 , ...
                      'controlEq'};
             
             primaryVars = model.getPrimaryVariables();
@@ -500,7 +486,7 @@ classdef BareBattery < BaseModel
             ne_R = state.(ne).(am).R;
             coupterm = getCoupTerm(couplingterms, 'NegativeElectrode-Electrolyte', coupnames);
             elytecells = coupterm.couplingcells(:, 2);
-            elyte_c_source(elytecells) = ne_R.*vols(elytecells); % we divide with F later
+            elyte_c_source(elytecells) = ne_R.*vols(elytecells);
             
             pe_R = state.(pe).(am).R;
             coupterm = getCoupTerm(couplingterms, 'PositiveElectrode-Electrolyte', coupnames);
@@ -526,15 +512,6 @@ classdef BareBattery < BaseModel
             effectiveVolumes = model.(elyte).volumeFraction.*model.(elyte).G.cells.volumes;
             massAccum  = effectiveVolumes.*cdotcc;
             state.(elyte).massAccum = massAccum;
-            
-            names = {ne, pe};
-            for i = 1 : numel(names)
-                elde = names{i}; % electrode name
-                cdotcc   = (state.(elde).c - state0.(elde).c)/dt;
-                effectiveVolumes = model.(elde).volumeFraction.*model.(elde).G.cells.volumes;
-                massAccum  = effectiveVolumes.*cdotcc;
-                state.(elde).massAccum = massAccum;
-            end
             
         end
         
@@ -677,15 +654,13 @@ classdef BareBattery < BaseModel
             am    = 'ActiveMaterial';
             sd    = 'SolidDiffusion';
             
-            p = {{elyte, 'c'}             , ...
-                 {elyte, 'phi'}           , ...   
-                 {ne, 'c'}                , ...    
-                 {ne, 'phi'}              , ...   
-                 {ne, am, sd, 'cSurface'} , ...
-                 {pe, 'c'}                , ...    
-                 {pe, 'phi'}              , ...   
-                 {pe, am, sd, 'cSurface'} , ...
-                 {pe, 'E'}                , ...
+            p = {{elyte, 'c'}      , ...
+                 {elyte, 'phi'}    , ...   
+                 {ne, 'phi'}       , ...   
+                 {ne, am, sd, 'c'} , ...
+                 {pe, 'phi'}       , ...   
+                 {pe, am, sd, 'c'} , ...
+                 {pe, 'E'}         , ...
                  {pe, 'I'}};
             
             extra = [];
@@ -721,7 +696,8 @@ classdef BareBattery < BaseModel
             ne    = 'NegativeElectrode';
             pe    = 'PositiveElectrode';
             am    = 'ActiveMaterial';
-
+            sd    = 'SolidDiffusion';
+            
             cmin = model.cmin;
             
             state.(elyte).c = max(cmin, state.(elyte).c);
@@ -729,9 +705,9 @@ classdef BareBattery < BaseModel
             eldes = {ne, pe};
             for ind = 1 : numel(eldes)
                 elde = eldes{ind};
-                state.(elde).c = max(cmin, state.(elde).c);
+                state.(elde).(am).(sd).c = max(cmin, state.(elde).(am).(sd).c);
                 cmax = model.(elde).(am).cmax;
-                state.(elde).c = min(cmax, state.(elde).c);
+                state.(elde).(am).(sd).c = min(cmax, state.(elde).(am).(sd).c);
             end
             
             report = [];

@@ -29,7 +29,7 @@ classdef ActiveMaterialInputParams < InputParams
         function paramobj = ActiveMaterialInputParams(jsonstruct);
 
             paramobj = paramobj@InputParams(jsonstruct);
-            paramobj.SolidDiffusion = SimplifiedSolidDiffusionModelInputParams(pickField(jsonstruct, 'SolidDiffusion'));
+            paramobj.SolidDiffusion = SolidDiffusionModelInputParams(pickField(jsonstruct, 'SolidDiffusion'));
             
         end
         

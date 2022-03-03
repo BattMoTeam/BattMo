@@ -9,6 +9,7 @@ classdef SolidDiffusionModel < BaseModel
         volumetricSurfaceArea  % Surface area to volume,       [m2 m^-3]
         rp                     % Particle radius               [m]
         D0                     % Diffusion coefficient         [m]
+        EaD
         
         np  % Number of particles
         N   % Discretization parameters in spherical direction
@@ -26,6 +27,7 @@ classdef SolidDiffusionModel < BaseModel
 
             fdnames = {'rp'                    , ...
                        'volumetricSurfaceArea' , ...
+                       'EaD'                   , ...
                        'D0'                    , ...
                        'np'                    , ...
                        'N'};
@@ -39,10 +41,14 @@ classdef SolidDiffusionModel < BaseModel
             varnames = {};
             % concentration
             varnames{end + 1} = 'c';
+            % concentration
+            varnames{end + 1} = 'cSurface';
             % Temperature
             varnames{end + 1} = 'T';
             % Diffusion coefficient
             varnames{end + 1} = 'D';
+            %
+            varnames{end + 1} = 'Rsolid';
             % Mass accumulation term
             varnames{end + 1} = 'massAccum';
             % flux term
@@ -54,17 +60,23 @@ classdef SolidDiffusionModel < BaseModel
             
             model = model.registerVarNames(varnames);
 
-            fn = @ActiveMaterial.updateDiffusionCoefficient;
+            fn = @SolidDiffusionModel.updateDiffusionCoefficient;
             inputnames = {'T'};
             model = model.registerPropFunction({'D', fn, inputnames});
 
-            fn = @ActiveMaterial.updateFlux;
+            fn = @SolidDiffusionModel.updateFlux;
             inputnames = {'c', 'D'};
             model = model.registerPropFunction({'flux', fn, inputnames});
             
-            fn = @ActiveMaterial.updateMassConservation;
-            inputnames = {'massAccum', 'divTerm', 'massSource'};
+            fn = @SolidDiffusionModel.updateMassConservation;
+            inputnames = {'massAccum', 'flux', 'massSource'};
             model = model.registerPropFunction({'massCons', fn, inputnames});
+
+            fn = @SolidDiffusionModel.updateMassSource;
+            model = model.registerPropFunction({'massSource', fn, {'Rsolid'}});
+            
+            fn = @SolidDiffusionModel.updateSurfaceConcentration;
+            model = model.registerPropFunction({'cSurface', fn, {'c'}});
             
         end
 
@@ -193,10 +205,12 @@ classdef SolidDiffusionModel < BaseModel
             prod.tbl3 = cellScelltbl;
             prod.mergefds = {'cells'};
 
-            bcMap = SparseTensor();
-            bcMap = bcMap.setFromTensorProd(f, prod);
-            bcMap = bcMap.getMatrix();
+            mapFromBc = SparseTensor();
+            mapFromBc = mapFromBc.setFromTensorProd(f, prod);
+            mapFromBc = mapFromBc.getMatrix();
 
+            mapToBc = mapFromBc';
+            
             vols = G.cells.volumes;
 
             map = TensorMap();
@@ -207,19 +221,34 @@ classdef SolidDiffusionModel < BaseModel
 
             vols = map.eval(vols);
 
-            operators = struct('div'  , div  , ...
-                               'flux' , flux , ...
-                               'bcMap', bcMap, ...
-                               'vols' , vols);
+            operators = struct('div'      , div       , ...
+                               'flux'     , flux      , ...
+                               'mapFromBc', mapFromBc , ...
+                               'mapToBc'  , mapToBc   , ...
+                               'vols'     , vols);
             
         end
-      
+
+        function state = updateMassSource(model, state)
+            
+            op = model.operators;
+            rp = model.rp;
+            volumetricSurfaceArea = model.volumetricSurfaceArea;
+            
+            R = state.Rsolid;
+
+            R = op.mapFromBc*R;
+            
+            state.massSource = -R/(volumetricSurfaceArea)*(4*pi*rp^2);
+            
+        end
+        
         function state = updateAccumTerm(model, state, state0, dt)
 
             op = model.operators;
             
             c = state.c;
-            c0 = state.c0;
+            c0 = state0.c;
             
             state.accumTerm = 1/dt*op.vols.*(c - c0);
             
@@ -231,11 +260,12 @@ classdef SolidDiffusionModel < BaseModel
             
             flux       = state.flux;
             massSource = state.massSource;
-            accumTerm = state.accumTerm;
+            accumTerm  = state.accumTerm;
             
             state.massCons = accumTerm + op.div(flux) - massSource;
 
         end
+        
         
         
         function state = updateFlux(model, state)
@@ -266,6 +296,16 @@ classdef SolidDiffusionModel < BaseModel
             
         end
     
+        function state = updateSurfaceConcentration(model, state)
+            
+            op = model.operators;
+            
+            c = state.c;
+            
+            state.cSurface = op.mapToBc*c;
+            
+        end
+        
     end
     
 end
