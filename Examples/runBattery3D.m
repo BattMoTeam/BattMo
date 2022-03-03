@@ -1,6 +1,11 @@
 %% Battery 3D model
 % 
 
+% clear the workspace and close open figures
+clear
+close all
+clc
+
 % load MRST modules
 mrstModule add ad-core multimodel mrst-gui mpfa
 

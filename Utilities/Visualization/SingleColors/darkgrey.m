@@ -1,8 +1,8 @@
-function rgb = navyblue()
+function rgb = darkgrey()
 %UNTITLED5 Summary of this function goes here
 %   Detailed explanation goes here
 
-rgb = [0, 60, 101] ./ 255;
+rgb = [64, 64, 64] ./ 255;
 
 end
 

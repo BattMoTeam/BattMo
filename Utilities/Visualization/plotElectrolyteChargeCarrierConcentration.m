@@ -1,7 +1,8 @@
-function [] = plotTemperature(model, states, varargin)
+function [fig] = plotElectrolyteChargeCarrierConcentration(model, states, varargin)
 %UNTITLED6 Summary of this function goes here
 %   Detailed explanation goes here
 
+%
 close all
 
 %% Parse inputs            
@@ -30,39 +31,39 @@ fig = figure;
 
 if step ~= 0
     if model.G.griddim == 1
-        plotCellData(model.ThermalModel.G, states{step}.ThermalModel.T - 273.15);
+        plotCellData(model.Electrolyte.G, states{step}.Electrolyte.c ./ 1000);
         xlabel(gca, 'Position  /  m')
-        ylabel(gca, 'Temperature  /  ^{\circ}C')
+        ylabel(gca, 'Concentration  /  mol \cdot L^{-1}')
 
     elseif model.G.griddim == 2
-        plotCellData(model.ThermalModel.G, states{step}.ThermalModel.T - 273.15, 'edgealpha', 0.1);
-        colormap(inferno);
+        plotCellData(model.Electrolyte.G, states{step}.Electrolyte.c ./ 1000, 'edgealpha', 0.1);
+        colormap(cmocean('curl'));
         xlabel(gca, 'Position  /  m')
         ylabel(gca, 'Position  /  m')
-        title('Temperature  /  ^{\circ}C')
-        Tmin = min(states{step}.ThermalModel.T - 273.15);
-        Tmax = max(states{step}.ThermalModel.T - 273.15);
-        Tnom = mean(states{1}.ThermalModel.T - 273.15);
-        deltac = max(abs(Tmin-Tnom), abs(Tmax-Tnom));
-        Tmin = Tnom-deltac;
-        Tmax = Tnom+deltac;
-        caxis([Tmin, Tmax]);
+        title('Concentration  /  mol \cdot L^{-1}')
+        cmin = min(states{step}.Electrolyte.c ./ 1000);
+        cmax = max(states{step}.Electrolyte.c ./ 1000);
+        cnom = mean(states{1}.Electrolyte.c ./ 1000);
+        deltac = max(abs(cmin-cnom), abs(cmax-cnom));
+        cmin = cnom-deltac;
+        cmax = cnom+deltac;
+        caxis([cmin, cmax]);
         colorbar;
 
     elseif model.G.griddim == 3
-        plotCellData(model.ThermalModel.G, states{step}.ThermalModel.T - 273.15, 'edgealpha', 0.1);
-        colormap(inferno);
+        plotCellData(model.Electrolyte.G, states{step}.Electrolyte.c ./ 1000, 'edgealpha', 0.1);
+        colormap(cmocean('curl'));
         xlabel(gca, 'Position  /  m')
         ylabel(gca, 'Position  /  m')
         zlabel(gca, 'Position  /  m')
-        title('Temperature  /  ^{\circ}C')
-        Tmin = min(states{step}.ThermalModel.T - 273.15);
-        Tmax = max(states{step}.ThermalModel.T - 273.15);
-        Tnom = mean(states{1}.ThermalModel.T - 273.15);
-        deltac = max(abs(Tmin-Tnom), abs(Tmax-Tnom));
-        Tmin = Tnom-deltac;
-        Tmax = Tnom+deltac;
-        caxis([Tmin, Tmax]);
+        title('Concentration  /  mol \cdot L^{-1}')
+        cmin = min(states{step}.Electrolyte.c ./ 1000);
+        cmax = max(states{step}.Electrolyte.c ./ 1000);
+        cnom = mean(states{1}.Electrolyte.c ./ 1000);
+        deltac = max(abs(cmin-cnom), abs(cmax-cnom));
+        cmin = cnom-deltac;
+        cmax = cnom+deltac;
+        caxis([cmin, cmax]);
         colorbar;
         view(45,45)
     end
@@ -70,22 +71,22 @@ if step ~= 0
 else
     for i = 1:length(states)
         if i == 1
-            Tmax = max(max(states{i}.ThermalModel.T - 273.15));
-            Tmin = min(max(states{i}.ThermalModel.T - 273.15));
-            xmin = min(model.ThermalModel.G.nodes.coords(:,1));
-            xmax = max(model.ThermalModel.G.nodes.coords(:,1));
+            cmax = max(max(states{i}.Electrolyte.c ./ 1000));
+            cmin = min(max(states{i}.Electrolyte.c ./ 1000));
+            xmin = min(model.Electrolyte.G.nodes.coords(:,1));
+            xmax = max(model.Electrolyte.G.nodes.coords(:,1));
             if model.G.griddim == 2
-                ymin = min(model.ThermalModel.G.nodes.coords(:,2));
-                ymax = max(model.ThermalModel.G.nodes.coords(:,2));
+                ymin = min(model.Electrolyte.G.nodes.coords(:,2));
+                ymax = max(model.Electrolyte.G.nodes.coords(:,2));
             elseif model.G.griddim == 3
-                ymin = min(model.ThermalModel.G.nodes.coords(:,2));
-                ymax = max(model.ThermalModel.G.nodes.coords(:,2));
-                zmin = min(model.ThermalModel.G.nodes.coords(:,3));
-                zmax = max(model.ThermalModel.G.nodes.coords(:,3));
+                ymin = min(model.Electrolyte.G.nodes.coords(:,2));
+                ymax = max(model.Electrolyte.G.nodes.coords(:,2));
+                zmin = min(model.Electrolyte.G.nodes.coords(:,3));
+                zmax = max(model.Electrolyte.G.nodes.coords(:,3));
             end
         else
-            Tmax = max( Tmax, max(max(states{i}.ThermalModel.T - 273.15)));
-            Tmin = min( Tmin, min(min(states{i}.ThermalModel.T - 273.15)));
+            cmax = max( cmax, max(max(states{i}.Electrolyte.c ./ 1000)));
+            cmin = min( cmin, min(min(states{i}.Electrolyte.c ./ 1000)));
         end
     end
     
@@ -94,9 +95,9 @@ else
             style = setFigureStyle('theme', p.Results.theme, 'size', p.Results.size, 'orientation', p.Results.orientation, 'quantity', 'single'); 
         end
         if model.G.griddim == 1
-            plotCellData(model.ThermalModel.G, states{i}.ThermalModel.T - 273.15, 'LineWidth', style.lineWidth);
+            plotCellData(model.Electrolyte.G, states{i}.Electrolyte.c ./ 1000, 'LineWidth', style.lineWidth);
             xlabel(gca, 'Position  /  m', 'FontSize', style.fontSize)
-            ylabel(gca, 'Temperature  /  ^{\circ}C', 'FontSize', style.fontSize)
+            ylabel(gca, 'Concentration  /  mol \cdot L^{-1}', 'FontSize', style.fontSize)
             set(gca, ...
                 'FontSize', style.fontSize, ...
                 'FontName', style.fontName, ...
@@ -104,41 +105,41 @@ else
                 'XColor', style.fontColor, ...
                 'YColor', style.fontColor, ...
                 'GridColor', style.fontColor)
-            ylim([Tmin, Tmax]);
+            ylim([cmin, cmax]);
             xlim([xmin, xmax]);
 
         elseif model.G.griddim == 2
-            plotCellData(model.ThermalModel.G, states{i}.ThermalModel.T - 273.15, 'edgealpha', 0.1);
-            colormap(inferno);
+            plotCellData(model.Electrolyte.G, states{i}.Electrolyte.c ./ 1000, 'edgealpha', 0.1);
+            colormap(cmocean('curl'));
             xlabel(gca, 'Position  /  m')
             ylabel(gca, 'Position  /  m')
-            title('Temperature  /  ^{\circ}C')
+            title('Concentration  /  mol \cdot L^{-1}')
             
             xlim([xmin, xmax]);
             ylim([ymin, ymax]);
-            Tnom = mean(states{1}.ThermalModel.T - 273.15);
-            deltac = max(abs(Tmin-Tnom), abs(Tmax-Tnom));
-            Tmin = Tnom-deltac;
-            Tmax = Tnom+deltac;
-            caxis([Tmin, Tmax]);
+            cnom = mean(states{1}.Electrolyte.c ./ 1000);
+            deltac = max(abs(cmin-cnom), abs(cmax-cnom));
+            cmin = cnom-deltac;
+            cmax = cnom+deltac;
+            caxis([cmin, cmax]);
             c = colorbar;
             c.Color = style.fontColor;
 
         elseif model.G.griddim == 3
-            plotCellData(model.ThermalModel.G, states{i}.ThermalModel.T - 273.15, 'edgealpha', 0.1);
-            colormap(inferno);
+            plotCellData(model.Electrolyte.G, states{i}.Electrolyte.c ./ 1000, 'edgealpha', 0.1);
+            colormap(cmocean('curl'));
             xlabel(gca, 'Position  /  m')
             ylabel(gca, 'Position  /  m')
             zlabel(gca, 'Position  /  m')
-            title('Temperature  /  ^{\circ}C')
+            title('Concentration  /  mol \cdot L^{-1}')
             xlim([xmin, xmax]);
             ylim([ymin, ymax]);
             zlim([zmin, zmax]);
-            Tnom = mean(states{1}.ThermalModel.T - 273.15);
-            deltac = max(abs(Tmin-Tnom), abs(Tmax-Tnom));
-            Tmin = Tnom-deltac;
-            Tmax = Tnom+deltac;
-            caxis([Tmin, Tmax]);
+            cnom = mean(states{1}.Electrolyte.c ./ 1000);
+            deltac = max(abs(cmin-cnom), abs(cmax-cnom));
+            cmin = cnom-deltac;
+            cmax = cnom+deltac;
+            caxis([cmin, cmax]);
             c = colorbar;
             c.Color = style.fontColor;
             view(45,45)
@@ -148,10 +149,9 @@ else
         pause(0.1)
     end
 end
+  
+    
 end
-
-
-
 
 %{
 Copyright 2009-2021 SINTEF Industry, Sustainable Energy Technology
