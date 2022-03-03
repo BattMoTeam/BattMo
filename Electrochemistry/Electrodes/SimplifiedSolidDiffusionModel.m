@@ -9,6 +9,7 @@ classdef SimplifiedSolidDiffusionModel < BaseModel
         volumetricSurfaceArea  % Surface area to volume,       [m2 m^-3]
         rp                     % Particle radius               [m]
         D0                     % Diffusion coefficient         [m]
+        EaD                    % 
         
         np  % Number of particles
         N   % Discretization parameters in spherical direction
@@ -25,6 +26,7 @@ classdef SimplifiedSolidDiffusionModel < BaseModel
 
             fdnames = {'rp'                    , ...
                        'volumetricSurfaceArea' , ...
+                       'EaD'                    , ...
                        'np'                    , ...
                        'D0'};
 
@@ -42,6 +44,8 @@ classdef SimplifiedSolidDiffusionModel < BaseModel
             varnames{end + 1} = 'c';
             % Diffusion coefficient
             varnames{end + 1} = 'D';
+            % Reaction Rate
+            varnames{end + 1} = 'R';
             % Solid diffusion equation
             varnames{end + 1} = 'solidDiffusionEq';
             
@@ -52,7 +56,7 @@ classdef SimplifiedSolidDiffusionModel < BaseModel
             model = model.registerPropFunction({'D', fn, inputnames});
 
             fn = @ActiveMaterial.assembleSolidDiffusionEquation;
-            inputnames = {'cSurface', 'c'};
+            inputnames = {'cSurface', 'c', 'R'};
             model = model.registerPropFunction({'solidDiffusionEq', fn, inputnames});
             
         end

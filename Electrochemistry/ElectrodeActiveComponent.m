@@ -46,6 +46,7 @@ classdef ElectrodeActiveComponent < ElectroChemicalComponent
             eac = 'ElectrodeActiveComponent';
             cc  = 'CurrentCollector';
             am  = 'ActiveMaterial';
+            sd  = 'SolidDiffusion';
             
             % setup volumeFraction, porosity, thickness
             nc = model.G.cells.num;
@@ -80,14 +81,15 @@ classdef ElectrodeActiveComponent < ElectroChemicalComponent
             model = model.registerPropFunction({'eSource', fn, {{am, 'R'}}});
 
             fn = @ElectrodeActiveComponent.updateChargeCarrier;
-            model = model.registerPropFunction({c, fn, {am, sd, 'c'}});
+            model = model.registerPropFunction({'c', fn, {am, sd, 'c'}});
 
             fn = @ElectrodeActiveComponent.updatePhi;
             model = model.registerPropFunction({{am, 'phiElectrode'}, fn, {'phi'}});
             
             fn = @ElectrodeActiveComponent.updateTemperature;
             model = model.registerPropFunction({{am, 'T'}, fn, {'T'}});
-
+            model = model.registerPropFunction({{am, sd, 'T'}, fn, {'T'}});
+            
         end
 
         function state = updateIonAndCurrentSource(model, state)
@@ -113,6 +115,7 @@ classdef ElectrodeActiveComponent < ElectroChemicalComponent
         
         function state = updateTemperature(model, state)
             state.ActiveMaterial.T = state.T;
+            state.ActiveMaterial.SolidDiffusion.T = state.T;
         end
 
         function state = updatejBcSource(model, state)

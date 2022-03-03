@@ -65,8 +65,8 @@ classdef BareBattery < BaseModel
             model = model.setupMappings();
             
             % setup capping
-            cmax_ne = model.(ne).(am).Li.cmax;
-            cmax_pe = model.(pe).(am).Li.cmax;
+            cmax_ne = model.(ne).(am).cmax;
+            cmax_pe = model.(pe).(am).cmax;
             model.cmin = 1e-5*max(cmax_ne, cmax_pe);
 
             %% Declaration of the Dynamical Variables and Function of the model
@@ -84,8 +84,12 @@ classdef BareBattery < BaseModel
             
             % function that dispatch the temperatures in the submodels
             fn = @Battery.updateTemperature;
-            model = model.registerPropFunction({{ne   , 'T'}, fn, {'T'}});
-            model = model.registerPropFunction({{pe   , 'T'}, fn, {'T'}});
+            model = model.registerPropFunction({{ne, 'T'}, fn, {'T'}});
+            model = model.registerPropFunction({{ne, am, 'T'}, fn, {'T'}});
+            model = model.registerPropFunction({{ne, am, sd, 'T'}, fn, {'T'}});
+            model = model.registerPropFunction({{pe, 'T'}, fn, {'T'}});
+            model = model.registerPropFunction({{pe, am, 'T'}, fn, {'T'}});
+            model = model.registerPropFunction({{pe, am, sd, 'T'}, fn, {'T'}});
             model = model.registerPropFunction({{elyte, 'T'}, fn, {'T'}});
            
             % function that setups the couplings
@@ -304,6 +308,7 @@ classdef BareBattery < BaseModel
             pe      = 'PositiveElectrode';
             elyte   = 'Electrolyte';
             am      = 'ActiveMaterial';
+            sd      = 'SolidDiffusion';
             
             electrodes = {ne, pe};
 
@@ -335,7 +340,6 @@ classdef BareBattery < BaseModel
                 elde = electrodes{ind};
                 state.(elde).(am) = battery.(elde).(am).updateSurfaceConcentration(state.(elde).(am));
                 state.(elde).(am) = battery.(elde).(am).updateReactionRateCoefficient(state.(elde).(am));
-                state.(elde).(am) = battery.(elde).(am).updateDiffusionCoefficient(state.(elde).(am));
                 state.(elde).(am) = battery.(elde).(am).updateOCP(state.(elde).(am));
                 state.(elde).(am) = battery.(elde).(am).updateReactionRate(state.(elde).(am));
             end
@@ -384,6 +388,8 @@ classdef BareBattery < BaseModel
             %% update solid diffustion equations
             for ind = 1 : numel(electrodes)
                 elde = electrodes{ind};
+                state.(elde).(am) = battery.(elde).(am).dispatchRateToSolidDiffusionModel(state.(elde).(am));
+                state.(elde).(am).(sd) = battery.(elde).(am).(sd).updateDiffusionCoefficient(state.(elde).(am).(sd));
                 state.(elde).(am).(sd) = battery.(elde).(am).(sd).assembleSolidDiffusionEquation(state.(elde).(am).(sd));
             end
             
@@ -724,7 +730,7 @@ classdef BareBattery < BaseModel
             for ind = 1 : numel(eldes)
                 elde = eldes{ind};
                 state.(elde).c = max(cmin, state.(elde).c);
-                cmax = model.(elde).(am).Li.cmax;
+                cmax = model.(elde).(am).cmax;
                 state.(elde).c = min(cmax, state.(elde).c);
             end
             

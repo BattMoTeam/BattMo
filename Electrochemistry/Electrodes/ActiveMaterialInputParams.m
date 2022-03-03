@@ -11,29 +11,26 @@ classdef ActiveMaterialInputParams < InputParams
         theta0   % Lithiation value at 0% SOC [-]
         theta100 % Lithiation value at 100% SOC[-]
 
-        %
-        % struct with fields
-        %
-        %  * cmax            % [mol m^-3]
-        %  * D0              % [m^2 s^-1]
-        %  * EaD             % [J mol^-1]
-        Li 
-        
+        cmax
         k0                      % [m^2.5 mol^-0.5 s^-1]
         Eak                     % Activation energy [J mol^-1]
-        rp                      % Particle radius [m]
         volumetricSurfaceArea   % Volumetric surface area [m2 m^-3]
         volumeFraction          % Volume fraction of the active material
         density                 % Density of the active material [kg m^-3]
         n                       % number of electron transfer
 
         updateOCPFunc % Function to update OCP value (matlab function handler)
+        
+        SolidDiffusion
     end
     
     methods
         
         function paramobj = ActiveMaterialInputParams(jsonstruct);
+
             paramobj = paramobj@InputParams(jsonstruct);
+            paramobj.SolidDiffusion = SimplifiedSolidDiffusionModelInputParams(pickField(jsonstruct, 'SolidDiffusion'));
+            
         end
         
     end

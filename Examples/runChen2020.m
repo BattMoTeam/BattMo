@@ -82,6 +82,7 @@ elyte = 'Electrolyte';
 ne    = 'NegativeElectrode';
 pe    = 'PositiveElectrode';
 am    = 'ActiveMaterial';
+sd    = 'SolidDiffusion';
 
 initstate = model.updateTemperature(initstate);
 
@@ -92,7 +93,8 @@ c = 29866.0;
 c = c*ones(nam.G.cells.num, 1);
 initstate.(ne).c = c;
 % We bypass the solid diffusion equation to set directly the particle surface concentration (this is a bit hacky)
-initstate.(ne).(am).cElectrode = c;
+initstate.(ne).(am).(sd).cSurface = c;
+initstate.(ne).(am) = nam.updateSurfaceConcentration(initstate.(ne).(am));
 initstate.(ne).(am) = nam.updateOCP(initstate.(ne).(am));
 
 OCP = initstate.(ne).(am).OCP;
@@ -107,7 +109,8 @@ c = 17038.0;
 c = c*ones(pam.G.cells.num, 1);
 initstate.(pe).c = c;
 % We bypass the solid diffusion equation to set directly the particle surface concentration (this is a bit hacky)
-initstate.(pe).(am).cElectrode = c;
+initstate.(pe).(am).(sd).cSurface = c;
+initstate.(pe).(am) = pam.updateSurfaceConcentration(initstate.(pe).(am));
 initstate.(pe).(am) = pam.updateOCP(initstate.(pe).(am));
 
 OCP = initstate.(pe).(am).OCP;

@@ -1,14 +1,14 @@
 {
-    "Li": {
+    "cmax": 63104,
+    "SolidDiffusion": {
         "EaD": 0,
         "D0": 4e-15,
-        "cmax": 63104
+        "rp": 5.22e-6
     },
     "bruggemanCoeffcient": 1.5,
     "volumeFraction": 0.665,
     "volumetricSurfaceArea": 382183,
     "n" : 1,
-    "rp": 5.22e-6,
     "Eak": 17800,
     "k0": 3.544e-11,
     "theta100": 0.5,

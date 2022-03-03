@@ -56,7 +56,8 @@ classdef ActiveMaterial < BaseModel
 
             model.updateOCPFunc = str2func(paramobj.updateOCPFunc.functionname);
 
-            model.SolidDiffusion = SolidDiffusion(paramobj.SolidDiffusion);
+            paramobj.SolidDiffusion.volumetricSurfaceArea = paramobj.volumetricSurfaceArea;
+            model.SolidDiffusion = SimplifiedSolidDiffusionModel(paramobj.SolidDiffusion);
             
             %% Declaration of the Dynamical Variables and Function of the model
             % (setup of varnameList and propertyFunctionList)
@@ -104,8 +105,11 @@ classdef ActiveMaterial < BaseModel
             model = model.registerPropFunction({'R', fn, inputnames});
             model = model.registerPropFunction({'eta', fn, inputnames});
             
-            fn = @ActiveMaterial.updateSurfaceConcentration()
-            model = model.registerPropFunction{'cElectrodeSurface', fn, {{sd, 'cSurface'}}};
+            fn = @ActiveMaterial.updateSurfaceConcentration;
+            model = model.registerPropFunction({'cElectrodeSurface', fn, {{sd, 'cSurface'}}});
+            
+            fn = @ActiveMaterial.dispatchRateToSolidDiffusionModel;
+            model = model.registerPropFunction({{sd, 'R'}, fn, {'R'}});
             
         end
 
@@ -114,6 +118,10 @@ classdef ActiveMaterial < BaseModel
             sd = 'SolidDiffusion';
             state.cElectrodeSurface = state.(sd).cSurface;
             
+        end
+        
+        function state = dispatchRateToSolidDiffusionModel(model, state)
+            state.SolidDiffusion.R = state.R;
         end
         
         function state = updateOCP(model, state)
