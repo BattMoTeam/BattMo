@@ -400,9 +400,9 @@ classdef BareBattery < BaseModel
             eqs{end + 1} = state.(elyte).massCons*massConsScaling;
             eqs{end + 1} = state.(elyte).chargeCons;
             eqs{end + 1} = state.(ne).chargeCons;
-            eqs{end + 1} = state.(ne).(am).(sd).massCons.*massConsScaling;
+            eqs{end + 1} = 1e18*state.(ne).(am).(sd).massCons;
             eqs{end + 1} = state.(pe).chargeCons;
-            eqs{end + 1} = state.(pe).(am).(sd).massCons.*massConsScaling;
+            eqs{end + 1} = 1e18*state.(pe).(am).(sd).massCons;
             eqs{end + 1} = state.EIeq;
             
             % we add the control equation
