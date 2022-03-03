@@ -1,4 +1,4 @@
-Batmo (TBD) is an electrochemical continuum modelling framework.
+The Battery Modelling Toolbox (BatMo) is framework for continuum modelling of electrochemical devices.
 ================================================================
 
 .. raw:: html
@@ -7,7 +7,19 @@ Batmo (TBD) is an electrochemical continuum modelling framework.
 
 Installation
 ------------
-Installation instructions go here
+BATMO is based on MRST which provides a general unstructured grid format, generic MATLAB automatic differentiation tools and Newton solvers.
+
+The MRST code source can be installed directlu using git submodules:
+
+git clone --recurse-submodules  git@github.com:batmoTeam/batmo.git
+
+Then start Matlab and in the directory project-batman where you cloned the repo, run:
+
+startup
+
+You can check that that your installation is setup correctly by running one of the example scripts
+
+runBattery1D
 
 Tutorials
 ---------
@@ -32,4 +44,6 @@ Conntributors, in alphabetical order
 
 Acknowledgements
 -----------------
-List of projects and funding sources that contribute to the development.
+BatMo has received funding from the European Union’s Horizon 2020 innovation program under grant agreement numbers: 
+* 875527 HYDRA
+* 957189 BIG-MAP
