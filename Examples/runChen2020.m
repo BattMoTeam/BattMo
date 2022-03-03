@@ -159,10 +159,10 @@ set(0, 'defaultFigurePosition', [671 510 900 600]);
 
 l = lines(3);
 figure
-plot((time/hour), Enew,'-', 'linewidth', 3, 'color', l(1, :), 'displayname', 'batmo - instantaneous diffusion')
+plot((time/hour), Enew,'-', 'linewidth', 3, 'color', l(1, :), 'displayname', 'batmo - simplified diffusion model')
 hold on
-plot(t1, u1, 'linewidth', 3, 'color', l(2, :), 'displayname', 'pybamm')
-plot(t2, u2, 'linewidth', 3, 'color', l(3, :), 'displayname', 'pybamm - instantaneous diffusion')
+plot(t1, u1, 'linewidth', 3, 'color', l(2, :), 'displayname', 'pybamm - solid diffusion')
+plot(t2, u2, 'linewidth', 3, 'color', l(3, :), 'displayname', 'pybamm - instantaneous solid diffusion')
 % plot(t_pybamm/hour, u_pybamm, '-', 'linewidth', 3, 'color', l(3, :), 'displayname', 'pybamm hello')
 set(gca, 'fontsize', 18);
 title('Potential (E)')
