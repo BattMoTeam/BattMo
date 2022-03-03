@@ -50,7 +50,7 @@ n     = 100;
 dt0   = total*1e-6; 
 times = getTimeSteps(dt0, n, total, fac); 
 dt    = diff(times);
-dt    = dt(4 : end);
+dt    = dt(1 : end);
 step  = struct('val', dt, 'control', ones(size(dt)));
 
 % We set up a stopping function. Here, the simulation will stop if the output voltage reach a value smaller than 2. This
@@ -146,15 +146,25 @@ time = cellfun(@(x) x.time, states);
 %% We plot the the output voltage and current
 
 loadChenPybammSolution
+[t1, u1] = deal(t, u);
+loadChenPybammSolution2
+[t2, u2] = deal(t, u);
 
+run('/home/xavier/Python/PyBaMM/readme.m')
+
+set(0, 'defaultFigurePosition', [671 510 900 600]);
+
+l = lines(3);
 figure
-plot((time/hour), Enew, 'linewidth', 3, 'displayname', 'batmo')
+plot((time/hour), Enew,'-', 'linewidth', 3, 'color', l(1, :), 'displayname', 'batmo - instantaneous diffusion')
 hold on
-plot(t, u, 'linewidth', 3, 'color', 'green', 'displayname', 'pybamm')
+plot(t1, u1, 'linewidth', 3, 'color', l(2, :), 'displayname', 'pybamm')
+plot(t2, u2, 'linewidth', 3, 'color', l(3, :), 'displayname', 'pybamm - instantaneous diffusion')
+% plot(t_pybamm/hour, u_pybamm, '-', 'linewidth', 3, 'color', l(3, :), 'displayname', 'pybamm hello')
 set(gca, 'fontsize', 18);
 title('Potential (E)')
 xlabel('time (hours)')
-legend('fontsize', 18)
+legend('fontsize', 18, 'location', 'south west')
 
 figure
 plot((time/hour), Inew, 'linewidth', 3)

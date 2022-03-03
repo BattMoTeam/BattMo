@@ -2,9 +2,9 @@ classdef BareBatteryGenerator3D < BareBatteryGenerator
 % setup 1D grid 
     properties
         
-        sepnx  = 10;
-        nenx   = 10;
-        penx   = 10;
+        sepnx  = 20;
+        nenx   = 20;
+        penx   = 20;
         fac = 1;
         
     end
