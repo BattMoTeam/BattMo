@@ -49,11 +49,12 @@ classdef BareBattery < BaseModel
             model.Electrolyte = model.setupElectrolyte(paramobj.Electrolyte);
 
             % defines shortcuts
-            elyte   = 'Electrolyte';
-            ne      = 'NegativeElectrode';
-            pe      = 'PositiveElectrode';
-            am      = 'ActiveMaterial';
-
+            elyte = 'Electrolyte';
+            ne    = 'NegativeElectrode';
+            pe    = 'PositiveElectrode';
+            am    = 'ActiveMaterial';
+            sd    = 'SolidDiffusion';
+            
             % setup Electrolyte model (setup electrolyte volume fractions in the different regions)
             model = model.setupElectrolyteModel();            
             
@@ -124,6 +125,13 @@ classdef BareBattery < BaseModel
         function electrode = setupElectrode(model, paramobj)
         % Setup the electrode models (both :attr:`NegativeElectrode` and :attr:`PositiveElectrode`). Here, :code:`paramobj`
         % is instance of :class:`ElectrodeInputParams <Electrochemistry.Electrodes.ElectrodeInputParams>`
+        %
+        % Parameters:
+        %    paramobj: input parameter structure
+        %
+        % Returns:
+        %    electrode object
+
             electrode = ElectrodeActiveComponent(paramobj);
             
         end
@@ -308,7 +316,7 @@ classdef BareBattery < BaseModel
             
             for ind = 1 : numel(electrodes)
                 elde = electrodes{ind};
-                % potential and concentration between active material and electode active component
+                % dispatch potential and concentration from electode active component to submodels
                 state.(elde) = battery.(elde).updatePhi(state.(elde));
                 state.(elde) = battery.(elde).updateChargeCarrier(state.(elde));
             end
@@ -325,6 +333,7 @@ classdef BareBattery < BaseModel
 
             for ind = 1 : numel(electrodes)
                 elde = electrodes{ind};
+                state.(elde).(am) = battery.(elde).(am).updateSurfaceConcentration(state.(elde).(am));
                 state.(elde).(am) = battery.(elde).(am).updateReactionRateCoefficient(state.(elde).(am));
                 state.(elde).(am) = battery.(elde).(am).updateDiffusionCoefficient(state.(elde).(am));
                 state.(elde).(am) = battery.(elde).(am).updateOCP(state.(elde).(am));
@@ -375,7 +384,7 @@ classdef BareBattery < BaseModel
             %% update solid diffustion equations
             for ind = 1 : numel(electrodes)
                 elde = electrodes{ind};
-                state.(elde).(am) = battery.(elde).(am).assembleSolidDiffusionEquation(state.(elde).(am));
+                state.(elde).(am).(sd) = battery.(elde).(am).(sd).assembleSolidDiffusionEquation(state.(elde).(am).(sd));
             end
             
             %% setup relation between E and I at positive current collectror
@@ -394,11 +403,11 @@ classdef BareBattery < BaseModel
             
             eqs{end + 1} = state.(ne).massCons*massConsScaling;
             eqs{end + 1} = state.(ne).chargeCons;
-            eqs{end + 1} = state.(ne).(am).solidDiffusionEq.*massConsScaling.*battery.(ne).(am).G.cells.volumes/dt;
+            eqs{end + 1} = state.(ne).(am).(sd).solidDiffusionEq.*massConsScaling.*battery.(ne).(am).G.cells.volumes/dt;
             
             eqs{end + 1} = state.(pe).massCons*massConsScaling;
             eqs{end + 1} = state.(pe).chargeCons;
-            eqs{end + 1} = state.(pe).(am).solidDiffusionEq.*massConsScaling.*battery.(ne).(am).G.cells.volumes/dt;
+            eqs{end + 1} = state.(pe).(am).(sd).solidDiffusionEq.*massConsScaling.*battery.(ne).(am).G.cells.volumes/dt;
             
             eqs{end + 1} = state.EIeq;
             
@@ -660,15 +669,17 @@ classdef BareBattery < BaseModel
             ne    = 'NegativeElectrode';
             pe    = 'PositiveElectrode';
             am    = 'ActiveMaterial';
-            p = {{elyte, 'c'}           , ...
-                 {elyte, 'phi'}         , ...   
-                 {ne, 'c'}              , ...    
-                 {ne, 'phi'}            , ...   
-                 {ne, am, 'cElectrode'} , ...
-                 {pe, 'c'}              , ...    
-                 {pe, 'phi'}            , ...   
-                 {pe, am, 'cElectrode'} , ...
-                 {pe, 'E'}              , ...
+            sd    = 'SolidDiffusion';
+            
+            p = {{elyte, 'c'}             , ...
+                 {elyte, 'phi'}           , ...   
+                 {ne, 'c'}                , ...    
+                 {ne, 'phi'}              , ...   
+                 {ne, am, sd, 'cSurface'} , ...
+                 {pe, 'c'}                , ...    
+                 {pe, 'phi'}              , ...   
+                 {pe, am, sd, 'cSurface'} , ...
+                 {pe, 'E'}                , ...
                  {pe, 'I'}};
             
             extra = [];
@@ -738,6 +749,12 @@ classdef BareBattery < BaseModel
                                        'I'   , I   , ...
                                        'time', time);
             end
+        end
+        
+        function [state, report] = updateAfterConvergence(model, state0, state, dt, drivingForces)
+
+            report = [];
+            
         end
         
     end

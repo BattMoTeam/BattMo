@@ -80,13 +80,10 @@ classdef ElectrodeActiveComponent < ElectroChemicalComponent
             model = model.registerPropFunction({'eSource', fn, {{am, 'R'}}});
 
             fn = @ElectrodeActiveComponent.updateChargeCarrier;
-            model = model.registerPropFunction({{am, 'cElectrodeAveraged'}, fn, {'c'}});
+            model = model.registerPropFunction({c, fn, {am, sd, 'c'}});
 
             fn = @ElectrodeActiveComponent.updatePhi;
             model = model.registerPropFunction({{am, 'phiElectrode'}, fn, {'phi'}});
-            
-            fn = @ElectrodeActiveComponent.updateChargeCarrier;
-            model = model.registerPropFunction({{am, 'cElectrodeAveraged'}, fn, {'c'}});
             
             fn = @ElectrodeActiveComponent.updateTemperature;
             model = model.registerPropFunction({{am, 'T'}, fn, {'T'}});
@@ -106,7 +103,8 @@ classdef ElectrodeActiveComponent < ElectroChemicalComponent
         end
         
         function state = updateChargeCarrier(model, state)
-            state.ActiveMaterial.cElectrodeAveraged = state.c; 
+            state.ActiveMaterial.SolidDiffusion.c = state.c; 
+            state.ActiveMaterial.cElectrode = state.c;
         end
         
         function state = updatePhi(model, state)

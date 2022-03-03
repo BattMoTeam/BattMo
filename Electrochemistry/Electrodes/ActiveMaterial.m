@@ -8,9 +8,8 @@ classdef ActiveMaterial < BaseModel
         % Appelation name of the active material
         name
 
-        % Lithium data structure
-        Li
-
+        cmax
+        
         % number of electron transfer
         n
 
@@ -22,10 +21,10 @@ classdef ActiveMaterial < BaseModel
         theta100               % Maximum lithiation, 100% SOC  [-]
         k0                     % Reference rate constant       [m^2.5 mol^-0.5 s^-1]
         Eak                    % Reaction activation energy    [J mol^-1]
-        rp                     % Particle radius               [m]
 
         updateOCPFunc % Function handler to update OCP
-        
+
+        SolidDiffusion
         
     end
 
@@ -44,8 +43,7 @@ classdef ActiveMaterial < BaseModel
                        'rho'                    , ...
                        'theta0'                 , ...
                        'theta100'               , ...
-                       'Li'                     , ...
-                       'cp'                     , ...
+                       'cmax'                     , ...
                        'k0'                     , ...
                        'Eak'                    , ...
                        'rp'                     , ...
@@ -58,9 +56,13 @@ classdef ActiveMaterial < BaseModel
 
             model.updateOCPFunc = str2func(paramobj.updateOCPFunc.functionname);
 
+            model.SolidDiffusion = SolidDiffusion(paramobj.SolidDiffusion);
+            
             %% Declaration of the Dynamical Variables and Function of the model
             % (setup of varnameList and propertyFunctionList)
 
+            model = model.registerSubModels({'SolidDiffusion'});
+            
             varnames = {};
             % Temperature
             varnames{end + 1} = 'T';
@@ -69,9 +71,9 @@ classdef ActiveMaterial < BaseModel
             % potential in electrode
             varnames{end + 1} = 'phiElectrode';
             % charge carrier concentration in electrode - value at surface
-            varnames{end + 1} = 'cElectrode';
+            varnames{end + 1} = 'cElectrodeSurface';
             % charge carrier concentration in electrode - Averaged value
-            varnames{end + 1} = 'cElectrodeAveraged';
+            varnames{end + 1} = 'cElectrode';
             % potential in electrolyte
             varnames{end + 1} = 'phiElectrolyte';
             % charge carrier concentration in electrolyte
@@ -80,28 +82,21 @@ classdef ActiveMaterial < BaseModel
             varnames{end + 1} = 'eta';
             % Reaction rate
             varnames{end + 1} = 'R';
-            % Diffusion coefficient
-            % Note : This is the inner particle diffusion coefficient
-            varnames{end + 1} = 'D';
             % OCP
             varnames{end + 1} = 'OCP';
             % Reaction rate coefficient
             varnames{end + 1} = 'j0';
-            % Solid diffusion equation
-            varnames{end + 1} = 'solidDiffusionEq';
             
             model = model.registerVarNames(varnames);
             
+            sd = 'SolidDiffusion'; % shortname
+            
             fn = @ActiveMaterial.updateReactionRateCoefficient;
-            inputnames = {'T', 'cElectrolyte', 'cElectrode'};
+            inputnames = {'T', 'cElectrolyte', 'cElectrodeSurface'};
             model = model.registerPropFunction({'j0', fn, inputnames});
 
-            fn = @ActiveMaterial.updateDiffusionCoefficient;
-            inputnames = {'T'};
-            model = model.registerPropFunction({'D', fn, inputnames});
-
             fn = @ActiveMaterial.updateOCP;
-            inputnames = {'cElectrode', 'T'};
+            inputnames = {'cElectrodeSurface', 'T'};
             model = model.registerPropFunction({'OCP', fn, inputnames});
 
             fn = @ActiveMaterial.updateReactionRate;
@@ -109,28 +104,35 @@ classdef ActiveMaterial < BaseModel
             model = model.registerPropFunction({'R', fn, inputnames});
             model = model.registerPropFunction({'eta', fn, inputnames});
             
-            fn = @ActiveMaterial.assembleSolidDiffusionEquation;
-            inputnames = {'cElectrode', 'cElectrodeAveraged', 'D', 'R'};
-            model = model.registerPropFunction({'solidDiffusionEq', fn, inputnames});
-
+            fn = @ActiveMaterial.updateSurfaceConcentration()
+            model = model.registerPropFunction{'cElectrodeSurface', fn, {{sd, 'cSurface'}}};
+            
         end
 
+        function state = updateSurfaceConcentration(model, state)
+        % only for simplified model at the moment
+            sd = 'SolidDiffusion';
+            state.cElectrodeSurface = state.(sd).cSurface;
+            
+        end
+        
         function state = updateOCP(model, state)
-            c = state.cElectrode;
+            c = state.cElectrodeSurface;
             T = state.T;
 
-            cmax = model.Li.cmax;
+            cmax = model.cmax;
 
             func = model.updateOCPFunc;
 
             [state.OCP, state.dUdT] = func(c, T, cmax);
+            
         end
 
         function state = updateReactionRateCoefficient(model, state)
 
             Tref = 298.15;  % [K]
 
-            cmax = model.Li.cmax;
+            cmax = model.cmax;
             k0   = model.k0;
             Eak  = model.Eak;
             n    = model.n;
@@ -139,7 +141,7 @@ classdef ActiveMaterial < BaseModel
 
             T      = state.T;
             cElyte = state.cElectrolyte;
-            c      = state.cElectrode;
+            c      = state.cElectrodeSurface;
             
             % Calculate reaction rate constant
             k = k0.*exp(-Eak./R.*(1./T - 1/Tref));
@@ -150,22 +152,6 @@ classdef ActiveMaterial < BaseModel
 
             state.j0 = j0;
 
-        end
-
-        function state = updateDiffusionCoefficient(model, state)
-
-            Tref = 298.15;  % [K]
-
-            T = state.T;
-
-            R   = model.constants.R;
-            D0  = model.Li.D0;
-            EaD = model.Li.EaD;
-
-            % Calculate solid diffusion coefficient, [m^2 s^-1]
-            D = D0.*exp(-EaD./R*(1./T - 1/Tref));
-
-            state.D = D;
         end
 
         function state = updateReactionRate(model, state);
@@ -187,22 +173,8 @@ classdef ActiveMaterial < BaseModel
             state.R = R/(n*F); % reaction rate in mole/meter^3/second
 
         end
+        
 
-        function state = assembleSolidDiffusionEquation(model, state)
-        % We update the surface concentration of the charge carrier in the active material.
-        % The surface concentration value is computed following polynomial method, as described in ref1 (see below)
-
-            csurf = state.cElectrode;
-            cavg = state.cElectrodeAveraged;
-            D = state.D;
-            R = state.R;
-
-            rp = model.rp;
-            a = model.volumetricSurfaceArea;
-            % We divide with volumetricSurfaceArea because it was added in the definition of R 
-            state.solidDiffusionEq = csurf - cavg + (rp.*R)./(5*a*D);
-
-        end
 
     end
 end
