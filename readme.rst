@@ -1,4 +1,4 @@
-The Battery Modelling Toolbox (BatMo) is framework for continuum modelling of electrochemical devices.
+BatMo is framework for continuum modelling of electrochemical devices.
 ================================================================
 
 .. raw:: html
