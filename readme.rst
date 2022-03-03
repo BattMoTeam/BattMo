@@ -9,15 +9,15 @@ Installation
 ------------
 BATMO is based on MRST which provides a general unstructured grid format, generic MATLAB automatic differentiation tools and Newton solvers. The MRST code source can be installed directly using git submodules:
 
-git clone --recurse-submodules  git@github.com:batmoTeam/batmo.git
+``git clone --recurse-submodules  git@github.com:batmoTeam/batmo.git``
 
 Then start MATLAB and in the directory project-batman where you cloned the repo, run:
 
-startup
+``startup``
 
 You can check that that your installation is setup correctly by running one of the example scripts
 
-runBattery1D
+``runBattery1D``
 
 Tutorials
 ---------
