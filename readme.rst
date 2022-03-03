@@ -7,15 +7,17 @@ BatMo is framework for continuum modelling of electrochemical devices.
 
 Installation
 ------------
-BATMO is based on MRST which provides a general unstructured grid format, generic MATLAB automatic differentiation tools and Newton solvers. The MRST code source can be installed directly using git submodules:
+
+BATMO is based on MRST which provides a general unstructured grid format, generic MATLAB automatic differentiation tools
+and Newton solvers. The MRST code source is installed directly using git submodules. Thus, to install batmo clone the repository using the submodule option ``--recurse-submodules`` as follows:
 
 ``git clone --recurse-submodules  git@github.com:batmoTeam/batmo.git``
 
-Then start MATLAB and in the directory project-batman where you cloned the repo, run:
+Then start MATLAB and in the directory where you cloned the repository, run:
 
 ``startup``
 
-You can check that that your installation is setup correctly by running one of the example scripts
+You can check that that your installation is setup correctly by running one of the example scripts :
 
 ``runBattery1D``
 
