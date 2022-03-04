@@ -6,6 +6,7 @@ classdef ActiveMaterial < ElectronicComponent
         % instance of :class:`Interface <Electrochemistry.Electrodes.Interface>`
         %
         Interface 
+        SolidDiffusion
         
         volumeFraction % Volume fraction
         porosity       % Porosity
@@ -40,11 +41,8 @@ classdef ActiveMaterial < ElectronicComponent
             
             model.Interface = Interface(paramobj.Interface);
             
-            % defines shortcuts
-            am = 'ActiveMaterial';
-            cc  = 'CurrentCollector';
-            am  = 'Interface';
-            sd  = 'SolidDiffusion';
+            paramobj.SolidDiffusion.volumetricSurfaceArea = paramobj.Interface.volumetricSurfaceArea;
+            model.SolidDiffusion = SolidDiffusionModel(paramobj.SolidDiffusion);
             
             % setup volumeFraction, porosity, thickness
             nc = model.G.cells.num;
@@ -60,11 +58,21 @@ classdef ActiveMaterial < ElectronicComponent
             model.EffectiveThermalConductivity = model.thermalConductivity.*volumeFraction.^1.5;
             model.EffectiveHeatCapacity = model.heatCapacity.*volumeFraction;
         
+            model = model.setupVarPropNames();
+                        
+        end
+
+        function model = setupVarPropNames(model)
+
+            itf = 'Interface';
+            sd = 'SolidDiffusion';
+            
             %% Declaration of the Dynamical Variables and Function of the model
             % (setup of varnameList and propertyFunctionList)
             
             model = model.registerSubModels({'Interface'});
-
+            model = model.registerSubModels({'SolidDiffusion'});
+            
             varnames =  {'jCoupling'};
             model = model.registerVarNames(varnames);
 
@@ -72,20 +80,44 @@ classdef ActiveMaterial < ElectronicComponent
             model = model.registerPropFunction({'jBcSource', fn, {'jCoupling'}});            
 
             fn = @ActiveMaterial.updateCurrentSource;
-            model = model.registerPropFunction({'eSource', fn, {{am, 'R'}}});
+            model = model.registerPropFunction({'eSource', fn, {{itf, 'R'}}});
 
             fn = @ActiveMaterial.updateChargeCarrier;
-            model = model.registerPropFunction({'c', fn, {am, sd, 'c'}});
+            model = model.registerPropFunction({'c', fn, {sd, 'c'}});
 
             fn = @ActiveMaterial.updatePhi;
-            model = model.registerPropFunction({{am, 'phiElectrode'}, fn, {'phi'}});
+            model = model.registerPropFunction({{itf, 'phiElectrode'}, fn, {'phi'}});
             
-            fn = @ActiveMaterial.updateTemperature;
-            model = model.registerPropFunction({{am, 'T'}, fn, {'T'}});
-            model = model.registerPropFunction({{am, sd, 'T'}, fn, {'T'}});
+            fn = @ActiveMaterial.dispatchTemperature;
+            model = model.registerPropFunction({{itf, 'T'}, fn, {'T'}});
+            model = model.registerPropFunction({{sd, 'T'}, fn, {'T'}});
+
+            fn = @ActiveMaterial.updateSurfaceConcentration;
+            model = model.registerPropFunction({{sd, 'cSurface'}, fn, {{sd, 'c'}}});
+            model = model.registerPropFunction({{itf, 'cElectrodeSurface'}, fn, {{sd, 'cSurface'}}});
+            
+            fn = @ActiveMaterial.dispatchSolidRate;
+            model = model.registerPropFunction({{sd, 'Rsolid'}, fn, {'R'}});
+
             
         end
+        
+        function state = dispatchSolidRate(model, state)
+            
+            state.SolidDiffusion.Rsolid = state.Interface.R;
+            
+        end
+        
+        function state = updateSurfaceConcentration(model, state)
 
+            sd = 'SolidDiffusion';
+            itf = 'Interface';
+            
+            state.(sd) = model.(sd).updateSurfaceConcentration(state.(sd));
+            state.(itf).cElectrodeSurface = state.(sd).cSurface;
+            
+        end
+        
         function state = updateCurrentSource(model, state)
             
             F = model.Interface.constants.F;
@@ -101,9 +133,9 @@ classdef ActiveMaterial < ElectronicComponent
             state.Interface.phiElectrode = state.phi;
         end         
         
-        function state = updateTemperature(model, state)
+        function state = dispatchTemperature(model, state)
             state.Interface.T = state.T;
-            state.Interface.SolidDiffusion.T = state.T;
+            state.SolidDiffusion.T = state.T;
         end
 
         function state = updatejBcSource(model, state)
@@ -113,12 +145,12 @@ classdef ActiveMaterial < ElectronicComponent
 
         function state = addSOC(model, state)
 
-            am = model.Interface; 
+            itf = model.Interface; 
             c = state.c; 
             
-            theta = c/am.Li.cmax; 
-            m = (1 ./ (am.theta100 - am.theta0)); 
-            b = - m.*am.theta0; 
+            theta = c/itf.Li.cmax; 
+            m = (1 ./ (itf.theta100 - itf.theta0)); 
+            b = - m.*itf.theta0; 
             
             state.SOC = theta*m + b;
             state.theta = theta;

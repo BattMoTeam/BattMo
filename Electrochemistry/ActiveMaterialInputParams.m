@@ -1,4 +1,4 @@
-classdef ActiveMaterialInputParams < ElectroChemicalComponentInputParams
+classdef ActiveMaterialInputParams < ElectronicComponentInputParams
 %
 % Input parameter class for :class:`ActiveMaterial <Electrochemistry.ActiveMaterial>`
 % 
@@ -8,6 +8,7 @@ classdef ActiveMaterialInputParams < ElectroChemicalComponentInputParams
         % Input parameter for the active material  :class:`InterfaceInputParams <Electrochemistry.Electrodes.InterfaceInputParams>`
         %
         Interface
+        SolidDiffusion
         
         amName % Given name for the active material
                 
@@ -24,16 +25,16 @@ classdef ActiveMaterialInputParams < ElectroChemicalComponentInputParams
     methods
 
         function paramobj = ActiveMaterialInputParams(jsonstruct)
-            paramobj = paramobj@ElectroChemicalComponentInputParams(jsonstruct);
+            paramobj = paramobj@ElectronicComponentInputParams(jsonstruct);
 
             pick = @(fd) pickField(jsonstruct, fd);
             paramobj.Interface = InterfaceInputParams(pick('Interface'));
+            paramobj.SolidDiffusion = SolidDiffusionModelInputParams(pick('SolidDiffusion'));
         end
         
     end
     
 end
-
 
 
 %{

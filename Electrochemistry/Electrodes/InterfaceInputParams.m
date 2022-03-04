@@ -1,4 +1,4 @@
-classdef ActiveMaterialInputParams < InputParams 
+classdef InterfaceInputParams < InputParams 
 %
 % Input parameter class for :class:`ActiveMaterial <Electrochemistry.Electrodes.ActiveMaterial>`
 %    
@@ -21,15 +21,13 @@ classdef ActiveMaterialInputParams < InputParams
 
         updateOCPFunc % Function to update OCP value (matlab function handler)
         
-        SolidDiffusion
     end
     
     methods
         
-        function paramobj = ActiveMaterialInputParams(jsonstruct);
+        function paramobj = InterfaceInputParams(jsonstruct);
 
             paramobj = paramobj@InputParams(jsonstruct);
-            paramobj.SolidDiffusion = SolidDiffusionModelInputParams(pickField(jsonstruct, 'SolidDiffusion'));
             
         end
         

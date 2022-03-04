@@ -81,39 +81,39 @@ bat = model;
 elyte = 'Electrolyte';
 ne    = 'NegativeElectrode';
 pe    = 'PositiveElectrode';
-am    = 'ActiveMaterial';
+itf    = 'Interface';
 sd    = 'SolidDiffusion';
 
 initstate = model.updateTemperature(initstate);
 
 % we setup negative electrode initial state
-nam = bat.(ne).(am); 
+nitf = bat.(ne).(itf); 
 
 % We bypass the solid diffusion equation to set directly the particle surface concentration (this is a bit hacky)
-nenr = model.(ne).(am).(sd).N;
-nenp = model.(ne).(am).(sd).np;
+nenr = model.(ne).(sd).N;
+nenp = model.(ne).(sd).np;
 c = 29866.0;
-initstate.(ne).(am).(sd).c = c*ones(nenr*nenp, 1);
-initstate.(ne).(am) = nam.updateSurfaceConcentration(initstate.(ne).(am));
-initstate.(ne).(am) = nam.updateOCP(initstate.(ne).(am));
+initstate.(ne).(sd).c = c*ones(nenr*nenp, 1);
+initstate.(ne) = model.(ne).updateSurfaceConcentration(initstate.(ne));
+initstate.(ne).(itf) = nitf.updateOCP(initstate.(ne).(itf));
 
-OCP = initstate.(ne).(am).OCP;
+OCP = initstate.(ne).(itf).OCP;
 ref = OCP(1);
 
 initstate.(ne).phi = OCP - ref;
 
 % we setup positive electrode initial state
 
-pam = bat.(pe).(am); 
+pitf = bat.(pe).(itf); 
 
-penr = model.(pe).(am).(sd).N;
-penp = model.(pe).(am).(sd).np;
+penr = model.(pe).(sd).N;
+penp = model.(pe).(sd).np;
 c = 17038.0;
-initstate.(pe).(am).(sd).c = c*ones(penr*penp, 1);
-initstate.(pe).(am) = pam.updateSurfaceConcentration(initstate.(pe).(am));
-initstate.(pe).(am) = pam.updateOCP(initstate.(pe).(am));
+initstate.(pe).(sd).c = c*ones(penr*penp, 1);
+initstate.(pe) = model.(pe).updateSurfaceConcentration(initstate.(pe));
+initstate.(pe).(itf) = pitf.updateOCP(initstate.(pe).(itf));
 
-OCP = initstate.(pe).(am).OCP;
+OCP = initstate.(pe).(itf).OCP;
 
 initstate.(pe).phi = OCP - ref;
 

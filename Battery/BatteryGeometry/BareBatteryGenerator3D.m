@@ -95,10 +95,10 @@ classdef BareBatteryGenerator3D < BareBatteryGenerator
             
             paramobj = setupElectrodes@BareBatteryGenerator(gen, paramobj, params);
             
-            paramobj.(ne).(am).(sd).N  = gen.nenr;
-            paramobj.(ne).(am).(sd).np = gen.nenx;
-            paramobj.(pe).(am).(sd).N  = gen.penr;
-            paramobj.(pe).(am).(sd).np = gen.penx;
+            paramobj.(ne).(sd).N  = gen.nenr;
+            paramobj.(ne).(sd).np = gen.nenx;
+            paramobj.(pe).(sd).N  = gen.penr;
+            paramobj.(pe).(sd).np = gen.penx;
 
         end            I
                 

@@ -1,10 +1,5 @@
 {
     "cmax": 33133,
-    "SolidDiffusion" : {
-        "EaD": 0,
-        "D0": 3.3e-14,
-        "rp": 5.86e-06
-    },
     "volumeFraction": 0.75,
     "bruggemanCoeffcient": 1.5,
     "volumetricSurfaceArea": 383959,

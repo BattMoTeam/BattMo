@@ -1,4 +1,4 @@
-classdef ActiveMaterial < BaseModel
+classdef Interface < BaseModel
 
     properties
 
@@ -23,14 +23,12 @@ classdef ActiveMaterial < BaseModel
         Eak                    % Reaction activation energy    [J mol^-1]
 
         updateOCPFunc % Function handler to update OCP
-
-        SolidDiffusion
         
     end
 
     methods
 
-        function model = ActiveMaterial(paramobj)
+        function model = Interface(paramobj)
 
             model = model@BaseModel();
 
@@ -56,14 +54,15 @@ classdef ActiveMaterial < BaseModel
 
             model.updateOCPFunc = str2func(paramobj.updateOCPFunc.functionname);
 
-            paramobj.SolidDiffusion.volumetricSurfaceArea = paramobj.volumetricSurfaceArea;
-            model.SolidDiffusion = SolidDiffusionModel(paramobj.SolidDiffusion);
+            model = model.setupVarPropNames();
+        
+        end
+
+        function model = setupVarPropNames(model)
             
             %% Declaration of the Dynamical Variables and Function of the model
             % (setup of varnameList and propertyFunctionList)
 
-            model = model.registerSubModels({'SolidDiffusion'});
-            
             varnames = {};
             % Temperature
             varnames{end + 1} = 'T';
@@ -88,8 +87,6 @@ classdef ActiveMaterial < BaseModel
             
             model = model.registerVarNames(varnames);
             
-            sd = 'SolidDiffusion'; % shortname
-            
             fn = @ActiveMaterial.updateReactionRateCoefficient;
             inputnames = {'T', 'cElectrolyte', 'cElectrodeSurface'};
             model = model.registerPropFunction({'j0', fn, inputnames});
@@ -103,16 +100,7 @@ classdef ActiveMaterial < BaseModel
             model = model.registerPropFunction({'R', fn, inputnames});
             model = model.registerPropFunction({'eta', fn, inputnames});
             
-            fn = @ActiveMaterial.updateSurfaceConcentration;
-            model = model.registerPropFunction({{sd, 'cSurface'}, fn, {{sd, 'c'}}});
-            model = model.registerPropFunction({'cElectrodeSurface', fn, {{sd, 'cSurface'}}});
             
-            fn = @ActiveMaterial.dispatchSolidRate;
-            model = model.registerPropFunction({{sd, 'Rsolid'}, fn, {'R'}});
-            
-            fn = @ActiveMaterial.dispatchTemperature;
-            model = model.registerPropFunction({{sd, 'T'}, fn, {'T'}});
-        
         end
         
         function state = dipatchTemperature(model, state)
@@ -122,19 +110,7 @@ classdef ActiveMaterial < BaseModel
             
         end
         
-        function state = updateSurfaceConcentration(model, state)
 
-            sd = 'SolidDiffusion';
-            state.(sd) = model.(sd).updateSurfaceConcentration(state.(sd));
-            state.cElectrodeSurface = state.(sd).cSurface;
-            
-        end
-        
-        function state = dispatchSolidRate(model, state)
-            
-            state.SolidDiffusion.Rsolid = state.R;
-            
-        end
         
         function state = updateOCP(model, state)
             c = state.cElectrodeSurface;

@@ -52,7 +52,7 @@ classdef BareBattery < BaseModel
             elyte = 'Electrolyte';
             ne    = 'NegativeElectrode';
             pe    = 'PositiveElectrode';
-            am    = 'ActiveMaterial';
+            itf   = 'Interface';
             sd    = 'SolidDiffusion';
             
             % setup Electrolyte model (setup electrolyte volume fractions in the different regions)
@@ -65,9 +65,21 @@ classdef BareBattery < BaseModel
             model = model.setupMappings();
             
             % setup capping
-            cmax_ne = model.(ne).(am).cmax;
-            cmax_pe = model.(pe).(am).cmax;
+            cmax_ne = model.(ne).(itf).cmax;
+            cmax_pe = model.(pe).(itf).cmax;
             model.cmin = 1e-5*max(cmax_ne, cmax_pe);
+
+
+
+        end
+
+        function model = setupVarPropNames(model)
+
+            itf = 'Interface';
+            sd = 'SolidDiffusion';
+            
+            %% Declaration of the Dynamical Variables and Function of the model
+            % (setup of varnameList and propertyFunctionList)
 
             %% Declaration of the Dynamical Variables and Function of the model
             % (setup of varnameList and propertyFunctionList)
@@ -85,11 +97,11 @@ classdef BareBattery < BaseModel
             % function that dispatch the temperatures in the submodels
             fn = @Battery.updateTemperature;
             model = model.registerPropFunction({{ne, 'T'}, fn, {'T'}});
-            model = model.registerPropFunction({{ne, am, 'T'}, fn, {'T'}});
-            model = model.registerPropFunction({{ne, am, sd, 'T'}, fn, {'T'}});
+            model = model.registerPropFunction({{ne, itf, 'T'}, fn, {'T'}});
+            model = model.registerPropFunction({{ne, sd,  'T'}, fn, {'T'}});
             model = model.registerPropFunction({{pe, 'T'}, fn, {'T'}});
-            model = model.registerPropFunction({{pe, am, 'T'}, fn, {'T'}});
-            model = model.registerPropFunction({{pe, am, sd, 'T'}, fn, {'T'}});
+            model = model.registerPropFunction({{pe, itf, 'T'}, fn, {'T'}});
+            model = model.registerPropFunction({{pe, sd,  'T'}, fn, {'T'}});
             model = model.registerPropFunction({{elyte, 'T'}, fn, {'T'}});
            
             % function that setups the couplings
@@ -98,10 +110,10 @@ classdef BareBattery < BaseModel
             
             inputnames = {{elyte, 'c'}, ...
                           {elyte, 'phi'}};
-            model = model.registerPropFunction({{ne, am, 'phiElectrolyte'}, fn, inputnames});
-            model = model.registerPropFunction({{ne, am, 'cElectrolyte'}  , fn, inputnames});
-            model = model.registerPropFunction({{pe, am, 'phiElectrolyte'}, fn, inputnames});
-            model = model.registerPropFunction({{pe, am, 'cElectrolyte'}  , fn, inputnames});
+            model = model.registerPropFunction({{ne, itf, 'phiElectrolyte'}, fn, inputnames});
+            model = model.registerPropFunction({{ne, itf, 'cElectrolyte'}  , fn, inputnames});
+            model = model.registerPropFunction({{pe, itf, 'phiElectrolyte'}, fn, inputnames});
+            model = model.registerPropFunction({{pe, itf, 'cElectrolyte'}  , fn, inputnames});
             
             fn = @Battery.updateElectrolyteCoupling;
             
@@ -122,10 +134,9 @@ classdef BareBattery < BaseModel
                           {pe, 'I'}, ...
                           {pe, 'phi'}};
             model = model.registerPropFunction({'controlEq', fn, inputnames});
-
+            
         end
-
-        
+            
         function electrode = setupElectrode(model, paramobj)
         % Setup the electrode models (both :attr:`NegativeElectrode` and :attr:`PositiveElectrode`). Here, :code:`paramobj`
         % is instance of :class:`ElectrodeInputParams <Electrochemistry.Electrodes.ElectrodeInputParams>`
@@ -308,6 +319,7 @@ classdef BareBattery < BaseModel
             pe      = 'PositiveElectrode';
             elyte   = 'Electrolyte';
             am      = 'ActiveMaterial';
+            itf     = 'Interface';
             sd      = 'SolidDiffusion';
             
             electrodes = {ne, pe};
@@ -337,10 +349,10 @@ classdef BareBattery < BaseModel
 
             for ind = 1 : numel(electrodes)
                 elde = electrodes{ind};
-                state.(elde).(am) = battery.(elde).(am).updateSurfaceConcentration(state.(elde).(am));
-                state.(elde).(am) = battery.(elde).(am).updateReactionRateCoefficient(state.(elde).(am));
-                state.(elde).(am) = battery.(elde).(am).updateOCP(state.(elde).(am));
-                state.(elde).(am) = battery.(elde).(am).updateReactionRate(state.(elde).(am));
+                state.(elde) = battery.(elde).updateSurfaceConcentration(state.(elde));
+                state.(elde).(itf) = battery.(elde).(itf).updateReactionRateCoefficient(state.(elde).(itf));
+                state.(elde).(itf) = battery.(elde).(itf).updateOCP(state.(elde).(itf));
+                state.(elde).(itf) = battery.(elde).(itf).updateReactionRate(state.(elde).(itf));
             end
 
             %% Update Electrodes -> Electrolyte  coupling
@@ -378,12 +390,12 @@ classdef BareBattery < BaseModel
             %% update solid diffustion mass conservation equations
             for ind = 1 : numel(electrodes)
                 elde = electrodes{ind};
-                state.(elde).(am) = battery.(elde).(am).dispatchSolidRate(state.(elde).(am));
-                state.(elde).(am).(sd) = battery.(elde).(am).(sd).updateDiffusionCoefficient(state.(elde).(am).(sd));
-                state.(elde).(am).(sd) = battery.(elde).(am).(sd).updateMassSource(state.(elde).(am).(sd));
-                state.(elde).(am).(sd) = battery.(elde).(am).(sd).updateFlux(state.(elde).(am).(sd));
-                state.(elde).(am).(sd) = battery.(elde).(am).(sd).updateAccumTerm(state.(elde).(am).(sd), state0.(elde).(am).(sd), dt);
-                state.(elde).(am).(sd) = battery.(elde).(am).(sd).updateMassConservation(state.(elde).(am).(sd));
+                state.(elde) = battery.(elde).dispatchSolidRate(state.(elde));
+                state.(elde).(sd) = battery.(elde).(sd).updateDiffusionCoefficient(state.(elde).(sd));
+                state.(elde).(sd) = battery.(elde).(sd).updateMassSource(state.(elde).(sd));
+                state.(elde).(sd) = battery.(elde).(sd).updateFlux(state.(elde).(sd));
+                state.(elde).(sd) = battery.(elde).(sd).updateAccumTerm(state.(elde).(sd), state0.(elde).(sd), dt);
+                state.(elde).(sd) = battery.(elde).(sd).updateMassConservation(state.(elde).(sd));
             end
             
             %% setup relation between E and I at positive current collectror
@@ -400,9 +412,9 @@ classdef BareBattery < BaseModel
             eqs{end + 1} = state.(elyte).massCons*massConsScaling;
             eqs{end + 1} = state.(elyte).chargeCons;
             eqs{end + 1} = state.(ne).chargeCons;
-            eqs{end + 1} = 1e18*state.(ne).(am).(sd).massCons;
+            eqs{end + 1} = 1e18*state.(ne).(sd).massCons;
             eqs{end + 1} = state.(pe).chargeCons;
-            eqs{end + 1} = 1e18*state.(pe).(am).(sd).massCons;
+            eqs{end + 1} = 1e18*state.(pe).(sd).massCons;
             eqs{end + 1} = state.EIeq;
             
             % we add the control equation
@@ -423,9 +435,9 @@ classdef BareBattery < BaseModel
             names = {'elyte_massCons'       , ...
                      'elyte_chargeCons'     , ...
                      'ne_chargeCons'        , ...
-                     'ne_am_sd_soliddiffeq' , ...
+                     'ne_sd_soliddiffeq' , ...
                      'pe_chargeCons'        , ...
-                     'pe_am_sd_soliddiffeq' , ...
+                     'pe_sd_soliddiffeq' , ...
                      'EIeq'                 , ...
                      'controlEq'};
             
@@ -450,8 +462,8 @@ classdef BareBattery < BaseModel
             state.(pe).T = state.T(model.(pe).G.mappings.cellmap);
             
             % Update temperature in the active materials of the electrodes.
-            state.(ne) = model.(ne).updateTemperature(state.(ne));
-            state.(pe) = model.(pe).updateTemperature(state.(pe));
+            state.(ne) = model.(ne).dispatchTemperature(state.(ne));
+            state.(pe) = model.(pe).dispatchTemperature(state.(pe));
             
         end
         
@@ -460,10 +472,10 @@ classdef BareBattery < BaseModel
         % Assemble the electrolyte coupling by adding the ion sources from the electrodes
             
             battery = model;
-            elyte = 'Electrolyte';
-            ne    = 'NegativeElectrode';
-            pe    = 'PositiveElectrode';
-            am    = 'ActiveMaterial';
+            elyte   = 'Electrolyte';
+            ne      = 'NegativeElectrode';
+            pe      = 'PositiveElectrode';
+            itf     = 'Interface';
             
             vols = battery.(elyte).G.cells.volumes;
             F = battery.con.F;
@@ -483,12 +495,12 @@ classdef BareBattery < BaseModel
             
             coupnames = model.couplingNames;
             
-            ne_R = state.(ne).(am).R;
+            ne_R = state.(ne).(itf).R;
             coupterm = getCoupTerm(couplingterms, 'NegativeElectrode-Electrolyte', coupnames);
             elytecells = coupterm.couplingcells(:, 2);
             elyte_c_source(elytecells) = ne_R.*vols(elytecells);
             
-            pe_R = state.(pe).(am).R;
+            pe_R = state.(pe).(itf).R;
             coupterm = getCoupTerm(couplingterms, 'PositiveElectrode-Electrolyte', coupnames);
             elytecells = coupterm.couplingcells(:, 2);
             elyte_c_source(elytecells) = pe_R.*vols(elytecells);
@@ -506,7 +518,6 @@ classdef BareBattery < BaseModel
             elyte = 'Electrolyte';
             ne    = 'NegativeElectrode';
             pe    = 'PositiveElectrode';
-            am    = 'ActiveMaterial';
             
             cdotcc  = (state.(elyte).c - state0.(elyte).c)/dt;
             effectiveVolumes = model.(elyte).volumeFraction.*model.(elyte).G.cells.volumes;
@@ -526,7 +537,7 @@ classdef BareBattery < BaseModel
             elyte = 'Electrolyte';
             ne    = 'NegativeElectrode';
             pe    = 'PositiveElectrode';
-            am    = 'ActiveMaterial';
+            itf    = 'Interface';
             
             eldes = {ne, pe};
             phi_elyte = state.(elyte).phi;
@@ -537,8 +548,8 @@ classdef BareBattery < BaseModel
 
             for ind = 1 : numel(eldes)
                 elde = eldes{ind};
-                state.(elde).(am).phiElectrolyte = phi_elyte(elyte_cells(bat.(elde).G.mappings.cellmap));
-                state.(elde).(am).cElectrolyte = c_elyte(elyte_cells(bat.(elde).G.mappings.cellmap));
+                state.(elde).(itf).phiElectrolyte = phi_elyte(elyte_cells(bat.(elde).G.mappings.cellmap));
+                state.(elde).(itf).cElectrolyte = c_elyte(elyte_cells(bat.(elde).G.mappings.cellmap));
             end
             
         end
@@ -651,15 +662,14 @@ classdef BareBattery < BaseModel
             elyte = 'Electrolyte';
             ne    = 'NegativeElectrode';
             pe    = 'PositiveElectrode';
-            am    = 'ActiveMaterial';
             sd    = 'SolidDiffusion';
             
             p = {{elyte, 'c'}      , ...
                  {elyte, 'phi'}    , ...   
                  {ne, 'phi'}       , ...   
-                 {ne, am, sd, 'c'} , ...
+                 {ne, sd, 'c'} , ...
                  {pe, 'phi'}       , ...   
-                 {pe, am, sd, 'c'} , ...
+                 {pe, sd, 'c'} , ...
                  {pe, 'E'}         , ...
                  {pe, 'I'}};
             
@@ -695,7 +705,7 @@ classdef BareBattery < BaseModel
             elyte = 'Electrolyte';
             ne    = 'NegativeElectrode';
             pe    = 'PositiveElectrode';
-            am    = 'ActiveMaterial';
+            itf   = 'Interface';
             sd    = 'SolidDiffusion';
             
             cmin = model.cmin;
@@ -705,9 +715,9 @@ classdef BareBattery < BaseModel
             eldes = {ne, pe};
             for ind = 1 : numel(eldes)
                 elde = eldes{ind};
-                state.(elde).(am).(sd).c = max(cmin, state.(elde).(am).(sd).c);
-                cmax = model.(elde).(am).cmax;
-                state.(elde).(am).(sd).c = min(cmax, state.(elde).(am).(sd).c);
+                state.(elde).(sd).c = max(cmin, state.(elde).(sd).c);
+                cmax = model.(elde).(itf).cmax;
+                state.(elde).(sd).c = min(cmax, state.(elde).(sd).c);
             end
             
             report = [];
