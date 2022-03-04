@@ -41,7 +41,7 @@ classdef SolidDiffusionModel < BaseModel
             varnames = {};
             % concentration
             varnames{end + 1} = 'c';
-            % concentration
+            % surface concentration
             varnames{end + 1} = 'cSurface';
             % Temperature
             varnames{end + 1} = 'T';
