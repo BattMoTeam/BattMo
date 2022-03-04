@@ -80,8 +80,8 @@ classdef Battery < BaseModel
             model = model.setupMappings();
             
             % setup capping
-            cmax_ne = model.(ne).(eac).(am).Li.cmax;
-            cmax_pe = model.(pe).(eac).(am).Li.cmax;
+            cmax_ne = model.(ne).(am).(itf).Li.cmax;
+            cmax_pe = model.(pe).(am).(itf).Li.cmax;
             model.cmin = 1e-5*max(cmax_ne, cmax_pe);
             model.use_solid_diffusion = opt.use_solid_diffusion;
             model.use_thermal = opt.use_thermal;
@@ -346,17 +346,17 @@ classdef Battery < BaseModel
             %cc    = 'CurrentCollector';
             %thermal = 'ThermalModel';
             
-            negAm = bat.(ne).(eac).(am);
+            negAm = bat.(ne).(am).(itf);
             c =state.NegativeElectrode.ElectrodeActiveComponent.c;%ActiveMaterial.cElectrode
             theta = c/negAm.Li.cmax;
-            negAm = bat.(ne).(eac).(am); 
+            negAm = bat.(ne).(am).(itf); 
             m = (1 ./ (negAm.theta100 - negAm.theta0));
             b = -m .* negAm.theta0;
             SOCN = theta*m+b;
             vol = model.NegativeElectrode.ElectrodeActiveComponent.volumeFraction;
             SOCN = sum(SOCN.*vol)/sum(vol);
             
-            posAm = bat.(pe).(eac).(am);
+            posAm = bat.(pe).(am).(itf);
             c =state.PositiveElectrode.ElectrodeActiveComponent.c;
             theta = c/posAm.Li.cmax;
             m = (1 ./ (posAm.theta100 - posAm.theta0));
@@ -395,7 +395,7 @@ classdef Battery < BaseModel
             % shortcut
             % negAm : ActiveMaterial of the negative electrode
             
-            negAm = bat.(ne).(eac).(am); 
+            negAm = bat.(ne).(am).(itf); 
             
             m = (1 ./ (negAm.theta100 - negAm.theta0));
             b = -m .* negAm.theta0;
@@ -405,10 +405,10 @@ classdef Battery < BaseModel
 
             initstate.(ne).(eac).c = c;
             % We bypass the solid diffusion equation to set directly the particle surface concentration (this is a bit hacky)
-            initstate.(ne).(eac).(am).cElectrode = c;
-            initstate.(ne).(eac).(am) = negAm.updateOCP(initstate.(ne).(eac).(am));
+            initstate.(ne).(am).(itf).cElectrode = c;
+            initstate.(ne).(am).(itf) = negAm.updateOCP(initstate.(ne).(am).(itf));
 
-            OCP = initstate.(ne).(eac).(am).OCP;
+            OCP = initstate.(ne).(am).(itf).OCP;
             ref = OCP(1);
             
             initstate.(ne).(eac).phi = OCP - ref;
@@ -418,7 +418,7 @@ classdef Battery < BaseModel
             % shortcut
             % posAm : ActiveMaterial of the positive electrode
             
-            posAm = bat.(pe).(eac).(am);
+            posAm = bat.(pe).(am).(itf);
             
             m = (1 ./ (posAm.theta100 - posAm.theta0));
             b = -m .* posAm.theta0;
@@ -428,10 +428,10 @@ classdef Battery < BaseModel
 
             initstate.(pe).(eac).c = c;
             % We bypass the solid diffusion equation to set directly the particle surface concentration (this is a bit hacky)
-            initstate.(pe).(eac).(am).cElectrode = c;
-            initstate.(pe).(eac).(am) = posAm.updateOCP(initstate.(pe).(eac).(am));
+            initstate.(pe).(am).(itf).cElectrode = c;
+            initstate.(pe).(am).(itf) = posAm.updateOCP(initstate.(pe).(am).(itf));
             
-            OCP = initstate.(pe).(eac).(am).OCP;
+            OCP = initstate.(pe).(am).(itf).OCP;
             initstate.(pe).(eac).phi = OCP - ref;
 
             %% setup initial Electrolyte state
@@ -441,11 +441,11 @@ classdef Battery < BaseModel
 
             %% setup initial Current collectors state
 
-            OCP = initstate.(ne).(eac).(am).OCP;
+            OCP = initstate.(ne).(am).(itf).OCP;
             OCP = OCP(1) .* ones(bat.(ne).(cc).G.cells.num, 1);
             initstate.(ne).(cc).phi = OCP - ref;
 
-            OCP = initstate.(pe).(eac).(am).OCP;
+            OCP = initstate.(pe).(am).(itf).OCP;
             OCP = OCP(1) .* ones(bat.(pe).(cc).G.cells.num, 1);
             initstate.(pe).(cc).phi = OCP - ref;
             
@@ -495,7 +495,7 @@ classdef Battery < BaseModel
                 if(model.use_solid_diffusion)
                     state.(elde).(eac) = battery.(elde).(eac).updateChargeCarrier(state.(elde).(eac));
                 else
-                    state.(elde).(eac).c = state.(elde).(eac).(am).cElectrode;
+                    state.(elde).(eac).c = state.(elde).(am).(itf).cElectrode;
                     state.(elde).(eac) = battery.(elde).(eac).updateChargeCarrier(state.(elde).(eac));                    
                 end              
             end
@@ -512,10 +512,10 @@ classdef Battery < BaseModel
 
             for ind = 1 : numel(electrodes)
                 elde = electrodes{ind};
-                state.(elde).(eac).(am) = battery.(elde).(eac).(am).updateReactionRateCoefficient(state.(elde).(eac).(am));
-                state.(elde).(eac).(am) = battery.(elde).(eac).(am).updateDiffusionCoefficient(state.(elde).(eac).(am));
-                state.(elde).(eac).(am) = battery.(elde).(eac).(am).updateOCP(state.(elde).(eac).(am));
-                state.(elde).(eac).(am) = battery.(elde).(eac).(am).updateReactionRate(state.(elde).(eac).(am));
+                state.(elde).(am).(itf) = battery.(elde).(am).(itf).updateReactionRateCoefficient(state.(elde).(am).(itf));
+                state.(elde).(am).(itf) = battery.(elde).(am).(itf).updateDiffusionCoefficient(state.(elde).(am).(itf));
+                state.(elde).(am).(itf) = battery.(elde).(am).(itf).updateOCP(state.(elde).(am).(itf));
+                state.(elde).(am).(itf) = battery.(elde).(am).(itf).updateReactionRate(state.(elde).(am).(itf));
             end
 
             %% Update Electrodes -> Electrolyte  coupling
@@ -576,7 +576,7 @@ classdef Battery < BaseModel
             %% update solid diffustion equations
             for ind = 1 : numel(electrodes)
                 elde = electrodes{ind};
-                state.(elde).(eac).(am) = battery.(elde).(eac).(am).assembleSolidDiffusionEquation(state.(elde).(eac).(am));
+                state.(elde).(am).(itf) = battery.(elde).(am).(itf).assembleSolidDiffusionEquation(state.(elde).(am).(itf));
             end
             
             %% update Face fluxes
@@ -620,11 +620,11 @@ classdef Battery < BaseModel
             
             eqs{end + 1} = state.(ne).(eac).massCons*massConsScaling;
             eqs{end + 1} = state.(ne).(eac).chargeCons;
-            eqs{end + 1} = state.(ne).(eac).(am).solidDiffusionEq.*massConsScaling.*battery.(ne).(eac).(am).G.cells.volumes/dt;
+            eqs{end + 1} = state.(ne).(am).(itf).solidDiffusionEq.*massConsScaling.*battery.(ne).(am).(itf).G.cells.volumes/dt;
             
             eqs{end + 1} = state.(pe).(eac).massCons*massConsScaling;
             eqs{end + 1} = state.(pe).(eac).chargeCons;
-            eqs{end + 1} = state.(pe).(eac).(am).solidDiffusionEq.*massConsScaling.*battery.(pe).(eac).(am).G.cells.volumes/dt;
+            eqs{end + 1} = state.(pe).(am).(itf).solidDiffusionEq.*massConsScaling.*battery.(pe).(am).(itf).G.cells.volumes/dt;
             
             eqs{end + 1} = state.(ne).(cc).chargeCons;
             eqs{end + 1} = state.(pe).(cc).chargeCons;
@@ -760,12 +760,12 @@ classdef Battery < BaseModel
             
             coupnames = model.couplingNames;
             
-            ne_R = state.(ne).(eac).(am).R;
+            ne_R = state.(ne).(am).(itf).R;
             coupterm = getCoupTerm(couplingterms, 'NegativeElectrode-Electrolyte', coupnames);
             elytecells = coupterm.couplingcells(:, 2);
             elyte_c_source(elytecells) = ne_R.*vols(elytecells); % we divide with F later
             
-            pe_R = state.(pe).(eac).(am).R;
+            pe_R = state.(pe).(am).(itf).R;
             coupterm = getCoupTerm(couplingterms, 'PositiveElectrode-Electrolyte', coupnames);
             elytecells = coupterm.couplingcells(:, 2);
             elyte_c_source(elytecells) = pe_R.*vols(elytecells);
@@ -968,15 +968,15 @@ classdef Battery < BaseModel
 
                 elde = eldes{ind};
                 
-                am_model = model.(elde).(eac).(am);
+                am_model = model.(elde).(am).(itf);
                 F        = am_model.constants.F;
                 n        = am_model.n;
                 am_map   = am_model.G.mappings.cellmap;
                 vols     = model.(elde).(eac).G.cells.volumes;
 
-                R      = locstate.(elde).(eac).(am).R;
-                dUdT   = locstate.(elde).(eac).(am).dUdT;
-                eta    = locstate.(elde).(eac).(am).eta;
+                R      = locstate.(elde).(am).(itf).R;
+                dUdT   = locstate.(elde).(am).(itf).dUdT;
+                eta    = locstate.(elde).(am).(itf).eta;
                 
                 am_src = n*F*vols.*R.*(eta + T(am_map).*dUdT);
                 
@@ -1014,8 +1014,8 @@ classdef Battery < BaseModel
 
             for ind = 1 : numel(eldes)
                 elde = eldes{ind};
-                state.(elde).(eac).(am).phiElectrolyte = phi_elyte(elyte_cells(bat.(elde).(eac).G.mappings.cellmap));
-                state.(elde).(eac).(am).cElectrolyte = c_elyte(elyte_cells(bat.(elde).(eac).G.mappings.cellmap));
+                state.(elde).(am).(itf).phiElectrolyte = phi_elyte(elyte_cells(bat.(elde).(eac).G.mappings.cellmap));
+                state.(elde).(am).(itf).cElectrolyte = c_elyte(elyte_cells(bat.(elde).(eac).G.mappings.cellmap));
             end
             
         end
@@ -1170,7 +1170,7 @@ classdef Battery < BaseModel
             for ind = 1 : numel(eldes)
                 elde = eldes{ind};
                 state.(elde).(eac).c = max(cmin, state.(elde).(eac).c);
-                cmax = model.(elde).(eac).(am).Li.cmax;
+                cmax = model.(elde).(am).(itf).Li.cmax;
                 state.(elde).(eac).c = min(cmax, state.(elde).(eac).c);
             end
             

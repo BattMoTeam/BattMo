@@ -5,9 +5,9 @@ classdef ElectrodeActiveComponentInputParams < ElectroChemicalComponentInputPara
     properties
         
         %
-        % Input parameter for the active material  :class:`ActiveMaterialInputParams <Electrochemistry.Electrodes.ActiveMaterialInputParams>`
+        % Input parameter for the active material  :class:`InterfaceInputParams <Electrochemistry.Electrodes.InterfaceInputParams>`
         %
-        ActiveMaterial
+        Interface
         
         amName % Given name for the active material
                 
@@ -27,7 +27,7 @@ classdef ElectrodeActiveComponentInputParams < ElectroChemicalComponentInputPara
             paramobj = paramobj@ElectroChemicalComponentInputParams(jsonstruct);
 
             pick = @(fd) pickField(jsonstruct, fd);
-            paramobj.ActiveMaterial = ActiveMaterialInputParams(pick('ActiveMaterial'));
+            paramobj.Interface = InterfaceInputParams(pick('Interface'));
         end
         
     end

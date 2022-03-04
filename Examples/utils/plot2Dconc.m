@@ -53,14 +53,14 @@ for ind = 1 : numel(states)
     
     subplot(3, 2, 5);
     cla
-    d = state.(ne).(eac).(am).cElectrode - state.(ne).(eac).c;
+    d = state.(ne).(am).(itf).cElectrode - state.(ne).(eac).c;
     plotCellData(model.(ne).(eac).G, d);
     colorbar
     title('negative elde : c(surface) - c(average)');
     
     subplot(3, 2, 6);
     cla
-    d = state.(pe).(eac).(am).cElectrode - state.(pe).(eac).c;
+    d = state.(pe).(am).(itf).cElectrode - state.(pe).(eac).c;
     plotCellData(model.(pe).(eac).G, d);
     colorbar
     title('positive elde : c(surface) - c(average)');

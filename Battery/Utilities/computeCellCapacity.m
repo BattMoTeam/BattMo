@@ -78,14 +78,14 @@ function [cap, cap_neg, cap_pos, specificEnergy] = computeCellCapacity(model)
         assert(~iBare, 'not implemented yet for BareBattery model')
         r = cap_neg/cap_pos;
         
-        thetaMinPos = model.(pe).(eac).(am).theta100;
-        thetaMaxPos = model.(pe).(eac).(am).theta0;
-        thetaMinNeg = model.(ne).(eac).(am).theta0;
-        thetaMaxNeg = model.(ne).(eac).(am).theta100;
+        thetaMinPos = model.(pe).(am).(itf).theta100;
+        thetaMaxPos = model.(pe).(am).(itf).theta0;
+        thetaMinNeg = model.(ne).(am).(itf).theta0;
+        thetaMaxNeg = model.(ne).(am).(itf).theta100;
         
         elde = 'PositiveElectrode';
 
-        ammodel = model.(elde).(eac).(am);
+        ammodel = model.(elde).(am).(itf);
         F = ammodel.constants.F;
         G = ammodel.G;
         n = ammodel.n;
@@ -96,7 +96,7 @@ function [cap, cap_neg, cap_pos, specificEnergy] = computeCellCapacity(model)
         volume_electrode = sum(model.(elde).(eac).G.cells.volumes);
         volume = volume_fraction*volume_electrode;
         
-        func = @(theta) model.(elde).(eac).(am).updateOCPFunc(theta, 298, 1);
+        func = @(theta) model.(elde).(am).(itf).updateOCPFunc(theta, 298, 1);
 
         thetaMax = min(thetaMaxPos, thetaMinPos + r*(thetaMaxPos - thetaMinPos));
 
@@ -105,7 +105,7 @@ function [cap, cap_neg, cap_pos, specificEnergy] = computeCellCapacity(model)
         
         elde = 'NegativeElectrode';        
         
-        ammodel = model.(elde).(eac).(am);
+        ammodel = model.(elde).(am).(itf);
         F = ammodel.constants.F;
         G = ammodel.G;
         n = ammodel.n;
@@ -115,7 +115,7 @@ function [cap, cap_neg, cap_pos, specificEnergy] = computeCellCapacity(model)
         volume_electrode = sum(model.(elde).(eac).G.cells.volumes);
         volume = volume_fraction*volume_electrode;
         
-        func = @(theta) model.(elde).(eac).(am).updateOCPFunc(theta, 298, 1);
+        func = @(theta) model.(elde).(am).(itf).updateOCPFunc(theta, 298, 1);
 
         thetaMin = max(thetaMinNeg, thetaMaxNeg - 1/r*(thetaMaxNeg - thetaMinNeg));
 

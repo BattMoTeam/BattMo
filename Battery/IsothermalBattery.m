@@ -69,9 +69,9 @@ classdef IsothermalBattery < BaseModel
             ne    = 'NegativeElectrode';
             pe    = 'PositiveElectrode';
             eac   = 'ElectrodeActiveComponent';
-            am    = 'ActiveMaterial';
-            cmax_ne = model.(ne).(eac).(am).Li.cmax;
-            cmax_pe = model.(pe).(eac).(am).Li.cmax;
+            itf    = 'Interface';
+            cmax_ne = model.(ne).(am).(itf).Li.cmax;
+            cmax_pe = model.(pe).(am).(itf).Li.cmax;
             model.cmin = 1e-5*max(cmax_ne, cmax_pe);
             model.use_solid_diffusion = opt.use_solid_diffusion; 
         end
@@ -169,7 +169,7 @@ classdef IsothermalBattery < BaseModel
             elyte = 'Electrolyte';
             ne    = 'NegativeElectrode';
             pe    = 'PositiveElectrode';
-            am    = 'ActiveMaterial';
+            itf   = 'Interface';
             eac   = 'ElectrodeActiveComponent';
             cc    = 'CurrentCollector';
                         
@@ -181,7 +181,7 @@ classdef IsothermalBattery < BaseModel
             % shortcut
             % negAm : ActiveMaterial of the negative electrode
             
-            negAm = bat.(ne).(eac).(am); 
+            negAm = bat.(ne).(am).(itf); 
             
             m = (1 ./ (negAm.theta100 - negAm.theta0));
             b = -m .* negAm.theta0;
@@ -191,10 +191,10 @@ classdef IsothermalBattery < BaseModel
 
             initstate.(ne).(eac).c = c;
             % We bypass the solid diffusion equation to set directly the particle surface concentration (this is a bit hacky)
-            initstate.(ne).(eac).(am).cElectrode = c;
-            initstate.(ne).(eac).(am) = negAm.updateOCP(initstate.(ne).(eac).(am));
+            initstate.(ne).(am).(itf).cElectrode = c;
+            initstate.(ne).(am).(itf) = negAm.updateOCP(initstate.(ne).(am).(itf);
 
-            OCP = initstate.(ne).(eac).(am).OCP;
+            OCP = initstate.(ne).(am).(itf).OCP;
             ref = OCP(1);
             
             initstate.(ne).(eac).phi = OCP - ref;
@@ -204,7 +204,7 @@ classdef IsothermalBattery < BaseModel
             % shortcut
             % posAm : ActiveMaterial of the positive electrode
             
-            posAm = bat.(pe).(eac).(am);
+            posAm = bat.(pe).(am).(itf);
             
             m = (1 ./ (posAm.theta100 - posAm.theta0));
             b = -m .* posAm.theta0;
@@ -214,10 +214,10 @@ classdef IsothermalBattery < BaseModel
 
             initstate.(pe).(eac).c = c;
             % We bypass the solid diffusion equation to set directly the particle surface concentration (this is a bit hacky)
-            initstate.(pe).(eac).(am).cElectrode = c;
-            initstate.(pe).(eac).(am) = posAm.updateOCP(initstate.(pe).(eac).(am));
+            initstate.(pe).(am).(itf).cElectrode = c;
+            initstate.(pe).(am).(itf) = posAm.updateOCP(initstate.(pe).(am).(itf));
             
-            OCP = initstate.(pe).(eac).(am).OCP;
+            OCP = initstate.(pe).(am).(itf).OCP;
             initstate.(pe).(eac).phi = OCP - ref;
 
             %% setup initial Electrolyte state
@@ -229,11 +229,11 @@ classdef IsothermalBattery < BaseModel
 
             %% setup initial Current collectors state
 
-            OCP = initstate.(ne).(eac).(am).OCP;
+            OCP = initstate.(ne).(am).(itf).OCP;
             OCP = OCP(1) .* ones(bat.(ne).(cc).G.cells.num, 1);
             initstate.(ne).(cc).phi = OCP - ref;
 
-            OCP = initstate.(pe).(eac).(am).OCP;
+            OCP = initstate.(pe).(am).(itf).OCP;
             OCP = OCP(1) .* ones(bat.(pe).(cc).G.cells.num, 1);
             initstate.(pe).(cc).phi = OCP - ref;
             
@@ -282,7 +282,7 @@ classdef IsothermalBattery < BaseModel
                 if(model.use_solid_diffusion)
                     state.(elde).(eac) = battery.(elde).(eac).updateChargeCarrier(state.(elde).(eac));
                 else
-                    state.(elde).(eac).(am).cElectrode = state.(elde).(eac).c;
+                    state.(elde).(am).(itf).cElectrode = state.(elde).(eac).c;
                 end
                 
             end
@@ -299,12 +299,12 @@ classdef IsothermalBattery < BaseModel
 
             for ind = 1 : numel(electrodes)
                 elde = electrodes{ind};
-                state.(elde).(eac).(am) = battery.(elde).(eac).(am).updateReactionRateCoefficient(state.(elde).(eac).(am));
+                state.(elde).(am).(itf) = battery.(elde).(am).(itf).updateReactionRateCoefficient(state.(elde).(am).(itf));
                 %if(model.use_solid_diffusion)
-                    state.(elde).(eac).(am) = battery.(elde).(eac).(am).updateDiffusionCoefficient(state.(elde).(eac).(am));
+                    state.(elde).(am).(itf) = battery.(elde).(am).(itf).updateDiffusionCoefficient(state.(elde).(am).(itf));
                 %end
-                state.(elde).(eac).(am) = battery.(elde).(eac).(am).updateOCP(state.(elde).(eac).(am));
-                state.(elde).(eac).(am) = battery.(elde).(eac).(am).updateReactionRate(state.(elde).(eac).(am));
+                state.(elde).(am).(itf) = battery.(elde).(am).(itf).updateOCP(state.(elde).(am).(itf));
+                state.(elde).(am).(itf) = battery.(elde).(am).(itf).updateReactionRate(state.(elde).(am).(itf));
             end
 
             %% Update Electrodes -> Electrolyte  coupling
@@ -366,7 +366,7 @@ classdef IsothermalBattery < BaseModel
             if(model.use_solid_diffusion)
                 for ind = 1 : numel(electrodes)
                     elde = electrodes{ind};
-                    state.(elde).(eac).(am) = battery.(elde).(eac).(am).assembleSolidDiffusionEquation(state.(elde).(eac).(am));
+                    state.(elde).(am).(itf) = battery.(elde).(am).(itf).assembleSolidDiffusionEquation(state.(elde).(am).(itf));
                 end
             end
             
@@ -390,14 +390,14 @@ classdef IsothermalBattery < BaseModel
             eqs{end + 1} = state.(ne).(eac).massCons*massConsScaling;
             eqs{end + 1} = state.(ne).(eac).chargeCons;
             if(model.use_solid_diffusion)
-                eqs{end + 1} = massConsScaling*state.(ne).(eac).(am).solidDiffusionEq.*battery.(ne).(eac).(am).G.cells.volumes/dt;
+                eqs{end + 1} = massConsScaling*state.(ne).(am).(itf).solidDiffusionEq.*battery.(ne).(am).(itf).G.cells.volumes/dt;
             end
             
             resistance = 1/model.(pe).(eac).EffectiveElectricalConductivity(1);
             eqs{end + 1} = state.(pe).(eac).massCons*massConsScaling;
             eqs{end + 1} = state.(pe).(eac).chargeCons;
             if(model.use_solid_diffusion)
-                eqs{end + 1} = massConsScaling*state.(pe).(eac).(am).solidDiffusionEq.*battery.(pe).(eac).(am).G.cells.volumes/dt;
+                eqs{end + 1} = massConsScaling*state.(pe).(am).(itf).solidDiffusionEq.*battery.(pe).(am).(itf).G.cells.volumes/dt;
             end
             
             resistance = 1/model.(ne).(cc).EffectiveElectricalConductivity(1);
@@ -527,12 +527,12 @@ classdef IsothermalBattery < BaseModel
             
             coupnames = model.couplingNames;
             
-            ne_R = state.(ne).(eac).(am).R;
+            ne_R = state.(ne).(am).(itf).R;
             coupterm = getCoupTerm(couplingterms, 'NegativeElectrode-Electrolyte', coupnames);
             elytecells = coupterm.couplingcells(:, 2);
             elyte_c_source(elytecells) = ne_R.*vols(elytecells); % we divide with F later
             
-            pe_R = state.(pe).(eac).(am).R;
+            pe_R = state.(pe).(am).(itf).R;
             coupterm = getCoupTerm(couplingterms, 'PositiveElectrode-Electrolyte', coupnames);
             elytecells = coupterm.couplingcells(:, 2);
             elyte_c_source(elytecells) = pe_R.*vols(elytecells);
@@ -596,8 +596,8 @@ classdef IsothermalBattery < BaseModel
 
             for ind = 1 : numel(eldes)
                 elde = eldes{ind};
-                state.(elde).(eac).(am).phiElectrolyte = phi_elyte(elyte_cells(bat.(elde).(eac).G.mappings.cellmap));
-                state.(elde).(eac).(am).cElectrolyte = c_elyte(elyte_cells(bat.(elde).(eac).G.mappings.cellmap));
+                state.(elde).(am).(itf).phiElectrolyte = phi_elyte(elyte_cells(bat.(elde).(eac).G.mappings.cellmap));
+                state.(elde).(am).(itf).cElectrolyte = c_elyte(elyte_cells(bat.(elde).(eac).G.mappings.cellmap));
             end
             
         end
@@ -672,10 +672,10 @@ classdef IsothermalBattery < BaseModel
                     state.(elyte).phi    , ...
                     state.(ne).(eac).c   , ...
                     state.(ne).(eac).phi , ...
-                    state.(ne).(eac).(am).cElectrode , ...
+                    state.(ne).(am).(itf).cElectrode , ...
                     state.(pe).(eac).c   , ...
                     state.(pe).(eac).phi , ...
-                    state.(pe).(eac).(am).cElectrode , ...
+                    state.(pe).(am).(itf).cElectrode , ...
                     state.(ne).(cc).phi  , ...
                     state.(pe).(cc).phi  , ...
                     state.(pe).(cc).E, ...
@@ -685,10 +685,10 @@ classdef IsothermalBattery < BaseModel
                     state.(elyte).phi    , ...
                     state.(ne).(eac).c   , ...
                     state.(ne).(eac).phi , ...
-                    state.(ne).(eac).(am).cElectrode , ...
+                    state.(ne).(am).(itf).cElectrode , ...
                     state.(pe).(eac).c   , ...
                     state.(pe).(eac).phi , ...
-                    state.(pe).(eac).(am).cElectrode , ...
+                    state.(pe).(am).(itf).cElectrode , ...
                     state.(ne).(cc).phi  , ...
                     state.(pe).(cc).phi  , ...
                     state.(pe).(cc).E, ...
@@ -855,7 +855,7 @@ classdef IsothermalBattery < BaseModel
             for ind = 1 : numel(eldes)
                 elde = eldes{ind};
                 state.(elde).(eac).c = max(cmin, state.(elde).(eac).c);
-                cmax = model.(elde).(eac).(am).Li.cmax;
+                cmax = model.(elde).(am).(itf).Li.cmax;
                 state.(elde).(eac).c = min(cmax, state.(elde).(eac).c);
             end
             

@@ -18,7 +18,7 @@ function [mass, masses] = computeCellMass(model)
         
         elde = eldes{ind};
         
-        rho  = model.(elde).(eac).(am).density;
+        rho  = model.(elde).(am).(itf).density;
         vols = model.(elde).(eac).G.cells.volumes;
         poro = model.(elde).(eac).volumeFraction;
         

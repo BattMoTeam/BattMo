@@ -3,9 +3,9 @@ classdef ElectrodeActiveComponent < ElectronicComponent
     properties
         
         %
-        % instance of :class:`ActiveMaterial <Electrochemistry.Electrodes.ActiveMaterial>`
+        % instance of :class:`Interface <Electrochemistry.Electrodes.Interface>`
         %
-        ActiveMaterial 
+        Interface 
         
         volumeFraction % Volume fraction
         porosity       % Porosity
@@ -35,20 +35,20 @@ classdef ElectrodeActiveComponent < ElectronicComponent
             
             model = dispatchParams(model, paramobj, fdnames);
             
-            % Setup ActiveMaterial component
-            paramobj.ActiveMaterial.G = model.G;
+            % Setup Interface component
+            paramobj.Interface.G = model.G;
             
-            model.ActiveMaterial = ActiveMaterial(paramobj.ActiveMaterial);
+            model.Interface = Interface(paramobj.Interface);
             
             % defines shortcuts
             eac = 'ElectrodeActiveComponent';
             cc  = 'CurrentCollector';
-            am  = 'ActiveMaterial';
+            am  = 'Interface';
             sd  = 'SolidDiffusion';
             
             % setup volumeFraction, porosity, thickness
             nc = model.G.cells.num;
-            volumeFraction = model.ActiveMaterial.volumeFraction*ones(nc, 1);
+            volumeFraction = model.Interface.volumeFraction*ones(nc, 1);
             model.volumeFraction = volumeFraction;
             model.porosity = 1 - model.volumeFraction;
             model.thickness = 10e-6;
@@ -63,7 +63,7 @@ classdef ElectrodeActiveComponent < ElectronicComponent
             %% Declaration of the Dynamical Variables and Function of the model
             % (setup of varnameList and propertyFunctionList)
             
-            model = model.registerSubModels({'ActiveMaterial'});
+            model = model.registerSubModels({'Interface'});
 
             varnames =  {'jCoupling'};
             model = model.registerVarNames(varnames);
@@ -88,22 +88,22 @@ classdef ElectrodeActiveComponent < ElectronicComponent
 
         function state = updateCurrentSource(model, state)
             
-            F = model.ActiveMaterial.constants.F;
+            F = model.Interface.constants.F;
             vols = model.G.cells.volumes;
-            n = model.ActiveMaterial.n;
-            R = state.ActiveMaterial.R;
+            n = model.Interface.n;
+            R = state.Interface.R;
             
             state.eSource = - vols.*R*n*F; % C/second
             
         end
         
         function state = updatePhi(model, state)
-            state.ActiveMaterial.phiElectrode = state.phi;
+            state.Interface.phiElectrode = state.phi;
         end         
         
         function state = updateTemperature(model, state)
-            state.ActiveMaterial.T = state.T;
-            state.ActiveMaterial.SolidDiffusion.T = state.T;
+            state.Interface.T = state.T;
+            state.Interface.SolidDiffusion.T = state.T;
         end
 
         function state = updatejBcSource(model, state)
@@ -113,7 +113,7 @@ classdef ElectrodeActiveComponent < ElectronicComponent
 
         function state = addSOC(model, state)
 
-            am = model.ActiveMaterial; 
+            am = model.Interface; 
             c = state.c; 
             
             theta = c/am.Li.cmax; 
