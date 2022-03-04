@@ -11,8 +11,6 @@ classdef SimplifiedSolidDiffusionModel < BaseModel
         D0                     % Diffusion coefficient         [m]
         EaD                    % 
         
-        np  % Number of particles
-        N   % Discretization parameters in spherical direction
     end
 
     methods
@@ -27,11 +25,15 @@ classdef SimplifiedSolidDiffusionModel < BaseModel
             fdnames = {'rp'                    , ...
                        'volumetricSurfaceArea' , ...
                        'EaD'                    , ...
-                       'np'                    , ...
                        'D0'};
 
             model = dispatchParams(model, paramobj, fdnames);
-            
+
+            model = model.setupVarPropNames();
+        end
+        
+        function model = setupVarPropNames(model)
+
             %% Declaration of the Dynamical Variables and Function of the model
             % (setup of varnameList and propertyFunctionList)
 
@@ -41,7 +43,7 @@ classdef SimplifiedSolidDiffusionModel < BaseModel
             % concentration at the surface
             varnames{end + 1} = 'cSurface';
             % concentration (over the whole particle)
-            varnames{end + 1} = 'c';
+            varnames{end + 1} = 'cAverage';
             % Diffusion coefficient
             varnames{end + 1} = 'D';
             % Reaction Rate
@@ -56,7 +58,7 @@ classdef SimplifiedSolidDiffusionModel < BaseModel
             model = model.registerPropFunction({'D', fn, inputnames});
 
             fn = @ActiveMaterial.assembleSolidDiffusionEquation;
-            inputnames = {'cSurface', 'c', 'R'};
+            inputnames = {'cSurface', 'cAverage', 'R'};
             model = model.registerPropFunction({'solidDiffusionEq', fn, inputnames});
             
         end
@@ -83,14 +85,14 @@ classdef SimplifiedSolidDiffusionModel < BaseModel
         % The surface concentration value is computed following polynomial method, as described in ref1 (see below)
 
             csurf = state.cSurface;
-            c = state.c;
+            caver = state.cAverage;
             D = state.D;
             R = state.R;
 
             rp = model.rp;
             a = model.volumetricSurfaceArea;
             % We divide with volumetricSurfaceArea because it was added in the definition of R 
-            state.solidDiffusionEq = csurf - c + (rp.*R)./(5*a*D);
+            state.solidDiffusionEq = csurf - caver + (rp.*R)./(5*a*D);
             
         end
     

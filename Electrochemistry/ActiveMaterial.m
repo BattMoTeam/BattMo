@@ -19,7 +19,8 @@ classdef ActiveMaterial < ElectronicComponent
         EffectiveHeatCapacity % Effective Heat Capacity of the active component
         
         electricalConductivity % Electrical conductivity
-        
+
+        useSimplifiedDiffusionModel
     end
     
     methods
@@ -42,7 +43,13 @@ classdef ActiveMaterial < ElectronicComponent
             model.Interface = Interface(paramobj.Interface);
             
             paramobj.SolidDiffusion.volumetricSurfaceArea = paramobj.Interface.volumetricSurfaceArea;
-            model.SolidDiffusion = SolidDiffusionModel(paramobj.SolidDiffusion);
+            if paramobj.SolidDiffusion.useSimplifiedDiffusionModel
+                model.SolidDiffusion = SimplifiedSolidDiffusionModel(paramobj.SolidDiffusion);
+                model.useSimplifiedDiffusionModel = true;
+            else
+                model.SolidDiffusion = SolidDiffusionModel(paramobj.SolidDiffusion);
+                model.useSimplifiedDiffusionModel = false;
+            end
             
             % setup volumeFraction, porosity, thickness
             nc = model.G.cells.num;
@@ -74,6 +81,12 @@ classdef ActiveMaterial < ElectronicComponent
             model = model.registerSubModels({'SolidDiffusion'});
             
             varnames =  {'jCoupling'};
+            if model.useSimplifiedDiffusionModel
+                varnames{end + 1} = {'c'};
+                varnames{end + 1} = {'massCons'};
+                varnames{end + 1} = {'massAccum'};
+                varnames{end + 1} = {'massSource'};
+            end
             model = model.registerVarNames(varnames);
 
             fn = @ActiveMaterial.updatejBcSource;
@@ -82,8 +95,6 @@ classdef ActiveMaterial < ElectronicComponent
             fn = @ActiveMaterial.updateCurrentSource;
             model = model.registerPropFunction({'eSource', fn, {{itf, 'R'}}});
 
-            fn = @ActiveMaterial.updateChargeCarrier;
-            model = model.registerPropFunction({'c', fn, {sd, 'c'}});
 
             fn = @ActiveMaterial.updatePhi;
             model = model.registerPropFunction({{itf, 'phiElectrode'}, fn, {'phi'}});
@@ -92,29 +103,71 @@ classdef ActiveMaterial < ElectronicComponent
             model = model.registerPropFunction({{itf, 'T'}, fn, {'T'}});
             model = model.registerPropFunction({{sd, 'T'}, fn, {'T'}});
 
-            fn = @ActiveMaterial.updateSurfaceConcentration;
-            model = model.registerPropFunction({{sd, 'cSurface'}, fn, {{sd, 'c'}}});
-            model = model.registerPropFunction({{itf, 'cElectrodeSurface'}, fn, {{sd, 'cSurface'}}});
+            fn = @ActiveMaterial.updateSolidConcentrations;
+            if model.useSimplifiedDiffusionModel
+                model = model.registerPropFunction({{sd, 'cAverage'}, fn, {'c'}});
+                model = model.registerPropFunction({{itf, 'cElectrodeSurface'}, fn, {sd, 'cSurface'}});
+            else
+                model = model.registerPropFunction({{sd, 'cSurface'}, fn, {{sd, 'c'}}});
+                model = model.registerPropFunction({{itf, 'cElectrodeSurface'}, fn, {{sd, 'cSurface'}}});
+            end
             
             fn = @ActiveMaterial.dispatchSolidRate;
-            model = model.registerPropFunction({{sd, 'Rsolid'}, fn, {'R'}});
+            model = model.registerPropFunction({{sd, 'R'}, fn, {'R'}});
 
             
         end
         
         function state = dispatchSolidRate(model, state)
             
-            state.SolidDiffusion.Rsolid = state.Interface.R;
+            state.SolidDiffusion.R = state.Interface.R;
             
         end
         
-        function state = updateSurfaceConcentration(model, state)
+        function state = updateSolidConcentrations(model, state)
 
-            sd = 'SolidDiffusion';
+            sd  = 'SolidDiffusion';
             itf = 'Interface';
             
-            state.(sd) = model.(sd).updateSurfaceConcentration(state.(sd));
-            state.(itf).cElectrodeSurface = state.(sd).cSurface;
+            if model.useSimplifiedDiffusionModel
+                state.(sd).cAverage = state.c;
+                state.(itf).cElectrodeSurface = state.(sd).cSurface;
+            else
+                state.(sd) = model.(sd).updateSurfaceConcentration(state.(sd));
+                state.(itf).cElectrodeSurface = state.(sd).cSurface;
+            end
+            
+        end
+        
+        function state = assembleAccumTerm(model, state, state0, dt)
+        % used whe useSimplifiedDiffusionModel is true
+            
+            volumeFraction = model.volumeFraction;
+            vols = model.G.cells.volumes;
+            
+            c  = state.c;
+            c0 = state0.c;
+            
+            state.massAccum = vols.*volumeFraction.*(c - c0)/dt;
+            
+        end
+
+        function state = updateMassSource(model, state)
+        % used whe useSimplifiedDiffusionModel is true
+            
+            vols = model.G.cells.volumes;
+            
+            R = state.Interface.R;
+            
+            state.massSource = - R.*vols;
+            
+        end
+        
+        function state = updateMassConservation(model, state)
+        % used when useSimplifiedDiffusionModel is true
+        % Here, we have no flux (for the moment)
+            
+            state.massCons = state.massAccum - state.massSource;
             
         end
         
@@ -123,6 +176,7 @@ classdef ActiveMaterial < ElectronicComponent
             F = model.Interface.constants.F;
             vols = model.G.cells.volumes;
             n = model.Interface.n;
+
             R = state.Interface.R;
             
             state.eSource = - vols.*R*n*F; % C/second

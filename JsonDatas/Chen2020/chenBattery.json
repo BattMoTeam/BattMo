@@ -11,6 +11,7 @@
             "filename": "JsonDatas/Chen2020/chenNegativeElectrodeInterface.json"
         },
         "SolidDiffusion" : {
+            "useSimplifiedDiffusionModel" : true,
             "EaD": 0,
             "D0": 3.3e-14,
             "rp": 5.86e-06
@@ -28,6 +29,7 @@
             "filename": "JsonDatas/Chen2020/chenPositiveElectrodeInterface.json"
         },
         "SolidDiffusion": {
+            "useSimplifiedDiffusionModel" : true,
             "EaD": 0,
             "D0": 4e-15,
             "rp": 5.22e-6

@@ -13,7 +13,7 @@ classdef SolidDiffusionModel < BaseModel
         
         np  % Number of particles
         N   % Discretization parameters in spherical direction
-        
+
     end
 
     methods
@@ -35,6 +35,12 @@ classdef SolidDiffusionModel < BaseModel
             model = dispatchParams(model, paramobj, fdnames);
             model.operators = model.setupOperators();
             
+            model = model.setupVarPropNames();
+            
+        end
+
+        function model = setupVarPropNames(model)
+
             %% Declaration of the Dynamical Variables and Function of the model
             % (setup of varnameList and propertyFunctionList)
 
@@ -48,7 +54,7 @@ classdef SolidDiffusionModel < BaseModel
             % Diffusion coefficient
             varnames{end + 1} = 'D';
             %
-            varnames{end + 1} = 'Rsolid';
+            varnames{end + 1} = 'R';
             % Mass accumulation term
             varnames{end + 1} = 'massAccum';
             % flux term
@@ -73,14 +79,13 @@ classdef SolidDiffusionModel < BaseModel
             model = model.registerPropFunction({'massCons', fn, inputnames});
 
             fn = @SolidDiffusionModel.updateMassSource;
-            model = model.registerPropFunction({'massSource', fn, {'Rsolid'}});
+            model = model.registerPropFunction({'massSource', fn, {'R'}});
             
             fn = @SolidDiffusionModel.updateSurfaceConcentration;
             model = model.registerPropFunction({'cSurface', fn, {'c'}});
             
         end
-
-      
+        
         function operators = setupOperators(model)
             
             np = model.np;
@@ -235,7 +240,7 @@ classdef SolidDiffusionModel < BaseModel
             rp = model.rp;
             volumetricSurfaceArea = model.volumetricSurfaceArea;
             
-            R = state.Rsolid;
+            R = state.R;
 
             R = op.mapFromBc*R;
             

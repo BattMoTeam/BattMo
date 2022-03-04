@@ -69,8 +69,6 @@ classdef BareBattery < BaseModel
             cmax_pe = model.(pe).(itf).cmax;
             model.cmin = 1e-5*max(cmax_ne, cmax_pe);
 
-
-
         end
 
         function model = setupVarPropNames(model)
@@ -96,13 +94,13 @@ classdef BareBattery < BaseModel
             
             % function that dispatch the temperatures in the submodels
             fn = @Battery.updateTemperature;
-            model = model.registerPropFunction({{ne, 'T'}, fn, {'T'}});
-            model = model.registerPropFunction({{ne, itf, 'T'}, fn, {'T'}});
-            model = model.registerPropFunction({{ne, sd,  'T'}, fn, {'T'}});
-            model = model.registerPropFunction({{pe, 'T'}, fn, {'T'}});
-            model = model.registerPropFunction({{pe, itf, 'T'}, fn, {'T'}});
-            model = model.registerPropFunction({{pe, sd,  'T'}, fn, {'T'}});
-            model = model.registerPropFunction({{elyte, 'T'}, fn, {'T'}});
+            model = model.registerPropFunction({{ne, 'T'}      , fn, {'T'}});
+            model = model.registerPropFunction({{ne, itf, 'T'} , fn, {'T'}});
+            model = model.registerPropFunction({{ne, sd,  'T'} , fn, {'T'}});
+            model = model.registerPropFunction({{pe, 'T'}      , fn, {'T'}});
+            model = model.registerPropFunction({{pe, itf, 'T'} , fn, {'T'}});
+            model = model.registerPropFunction({{pe, sd,  'T'} , fn, {'T'}});
+            model = model.registerPropFunction({{elyte, 'T'}   , fn, {'T'}});
            
             % function that setups the couplings
             
@@ -117,8 +115,8 @@ classdef BareBattery < BaseModel
             
             fn = @Battery.updateElectrolyteCoupling;
             
-            inputnames = {{ne, am, 'R'}, ...
-                          {pe, am, 'R'}};
+            inputnames = {{ne, itf, 'R'}, ...
+                          {pe, itf, 'R'}};
             model = model.registerPropFunction({{elyte, 'massSource'}, fn, inputnames});
             model = model.registerPropFunction({{elyte, 'eSource'}   , fn, inputnames});
             
@@ -349,7 +347,7 @@ classdef BareBattery < BaseModel
 
             for ind = 1 : numel(electrodes)
                 elde = electrodes{ind};
-                state.(elde) = battery.(elde).updateSurfaceConcentration(state.(elde));
+                state.(elde) = battery.(elde).updateSolidConcentrations(state.(elde));
                 state.(elde).(itf) = battery.(elde).(itf).updateReactionRateCoefficient(state.(elde).(itf));
                 state.(elde).(itf) = battery.(elde).(itf).updateOCP(state.(elde).(itf));
                 state.(elde).(itf) = battery.(elde).(itf).updateReactionRate(state.(elde).(itf));
@@ -392,10 +390,17 @@ classdef BareBattery < BaseModel
                 elde = electrodes{ind};
                 state.(elde) = battery.(elde).dispatchSolidRate(state.(elde));
                 state.(elde).(sd) = battery.(elde).(sd).updateDiffusionCoefficient(state.(elde).(sd));
-                state.(elde).(sd) = battery.(elde).(sd).updateMassSource(state.(elde).(sd));
-                state.(elde).(sd) = battery.(elde).(sd).updateFlux(state.(elde).(sd));
-                state.(elde).(sd) = battery.(elde).(sd).updateAccumTerm(state.(elde).(sd), state0.(elde).(sd), dt);
-                state.(elde).(sd) = battery.(elde).(sd).updateMassConservation(state.(elde).(sd));
+                if model.(elde).useSimplifiedDiffusionModel
+                    state.(elde) = battery.(elde).assembleAccumTerm(state.(elde), state0.(elde), dt);
+                    state.(elde) = battery.(elde).updateMassSource(state.(elde));
+                    state.(elde) = battery.(elde).updateMassConservation(state.(elde));
+                    state.(elde).(sd) = battery.(elde).(sd).assembleSolidDiffusionEquation(state.(elde).(sd));
+                else
+                    state.(elde).(sd) = battery.(elde).(sd).updateMassSource(state.(elde).(sd));
+                    state.(elde).(sd) = battery.(elde).(sd).updateFlux(state.(elde).(sd));
+                    state.(elde).(sd) = battery.(elde).(sd).updateAccumTerm(state.(elde).(sd), state0.(elde).(sd), dt);
+                    state.(elde).(sd) = battery.(elde).(sd).updateMassConservation(state.(elde).(sd));
+                end
             end
             
             %% setup relation between E and I at positive current collectror
@@ -412,11 +417,34 @@ classdef BareBattery < BaseModel
             eqs{end + 1} = state.(elyte).massCons*massConsScaling;
             eqs{end + 1} = state.(elyte).chargeCons;
             eqs{end + 1} = state.(ne).chargeCons;
-            eqs{end + 1} = 1e18*state.(ne).(sd).massCons;
             eqs{end + 1} = state.(pe).chargeCons;
-            eqs{end + 1} = 1e18*state.(pe).(sd).massCons;
-            eqs{end + 1} = state.EIeq;
+
+            names = {'elyte_massCons'    , ...
+                     'elyte_chargeCons'  , ...
+                     'ne_chargeCons'     , ...
+                     'pe_chargeCons'};
             
+            if model.(ne).useSimplifiedDiffusionModel
+                eqs{end + 1} = state.(ne).massCons*massConsScaling;
+                eqs{end + 1} = state.(ne).(sd).solidDiffusionEq*massConsScaling.*battery.(ne).(itf).G.cells.volumes/dt;
+                names = horzcat(names, {'ne_masscons', 'ne_sd_soliddiffeq'});
+            else
+                eqs{end + 1} = 1e18*state.(ne).(sd).massCons;
+                names{end + 1} = 'ne_sd_soliddiffeq';
+
+            end
+            
+            if model.(pe).useSimplifiedDiffusionModel
+                eqs{end + 1} = state.(pe).massCons*massConsScaling;
+                eqs{end + 1} = state.(pe).(sd).solidDiffusionEq*massConsScaling.*battery.(pe).(itf).G.cells.volumes/dt;
+                names = horzcat(names, {'pe_masscons', 'pe_sd_soliddiffeq'});
+            else
+                eqs{end + 1} = 1e18*state.(pe).(sd).massCons;
+                names{end + 1} = 'pe_sd_soliddiffeq';
+            end
+
+            
+            eqs{end + 1} = state.EIeq;
             % we add the control equation
             I = state.(pe).I;
             E = state.(pe).E;
@@ -427,20 +455,10 @@ classdef BareBattery < BaseModel
               case 'E'
                 eqs{end + 1} = (E - val)*1e5;
             end
+            names = horzcat(names, {'EIeq' , 'controlEq'});
+            
+            types = repmat({'cells'}, 1, numel(names));
 
-            %% Give type and names to equations and names of the primary variables (for book-keeping)
-            
-            types = {'cell', 'cell', 'cell', 'cell', 'cell', 'cell', 'cell', 'cell'};
-            
-            names = {'elyte_massCons'       , ...
-                     'elyte_chargeCons'     , ...
-                     'ne_chargeCons'        , ...
-                     'ne_sd_soliddiffeq' , ...
-                     'pe_chargeCons'        , ...
-                     'pe_sd_soliddiffeq' , ...
-                     'EIeq'                 , ...
-                     'controlEq'};
-            
             primaryVars = model.getPrimaryVariables();
 
             %% setup LinearizedProblem that can be processed by MRST Newton API
@@ -667,11 +685,23 @@ classdef BareBattery < BaseModel
             p = {{elyte, 'c'}      , ...
                  {elyte, 'phi'}    , ...   
                  {ne, 'phi'}       , ...   
-                 {ne, sd, 'c'} , ...
                  {pe, 'phi'}       , ...   
-                 {pe, sd, 'c'} , ...
                  {pe, 'E'}         , ...
                  {pe, 'I'}};
+            
+            if model.(ne).useSimplifiedDiffusionModel
+                p{end + 1} = {ne, 'c'};
+                p{end + 1} = {ne, sd, 'cSurface'};
+            else
+                p{end + 1} = {ne, sd, 'c'};
+            end
+            
+            if model.(pe).useSimplifiedDiffusionModel
+                p{end + 1} = {pe, 'c'};
+                p{end + 1} = {pe, sd, 'cSurface'};
+            else
+                p{end + 1} = {pe, sd, 'c'};
+            end
             
             extra = [];
             
@@ -715,9 +745,14 @@ classdef BareBattery < BaseModel
             eldes = {ne, pe};
             for ind = 1 : numel(eldes)
                 elde = eldes{ind};
-                state.(elde).(sd).c = max(cmin, state.(elde).(sd).c);
                 cmax = model.(elde).(itf).cmax;
-                state.(elde).(sd).c = min(cmax, state.(elde).(sd).c);
+                if model.(elde).useSimplifiedDiffusionModel
+                    state.(elde).c = max(cmin, state.(elde).c);
+                    state.(elde).c = min(cmax, state.(elde).c);
+                else
+                    state.(elde).(sd).c = max(cmin, state.(elde).(sd).c);
+                    state.(elde).(sd).c = min(cmax, state.(elde).(sd).c);
+                end
             end
             
             report = [];

@@ -19,7 +19,9 @@ classdef ActiveMaterialInputParams < ElectronicComponentInputParams
         heatCapacity       % Intrinsic Heat capacity of the active component
 
         electricalConductivity % Electrical conductivity / [S m^-1]
-
+        
+        useSimplifiedDiffusionModel 
+        
     end
 
     methods
@@ -29,7 +31,11 @@ classdef ActiveMaterialInputParams < ElectronicComponentInputParams
 
             pick = @(fd) pickField(jsonstruct, fd);
             paramobj.Interface = InterfaceInputParams(pick('Interface'));
-            paramobj.SolidDiffusion = SolidDiffusionModelInputParams(pick('SolidDiffusion'));
+            if jsonstruct.SolidDiffusion.useSimplifiedDiffusionModel
+                paramobj.SolidDiffusion = SimplifiedSolidDiffusionModelInputParams(pick('SolidDiffusion'));                
+            else
+                paramobj.SolidDiffusion = SolidDiffusionModelInputParams(pick('SolidDiffusion'));
+            end
         end
         
     end

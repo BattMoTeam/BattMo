@@ -62,7 +62,7 @@ classdef Battery < BaseModel
             elyte   = 'Electrolyte';
             ne      = 'NegativeElectrode';
             pe      = 'PositiveElectrode';
-            am     = 'ActiveMaterial';
+            am      = 'ActiveMaterial';
             cc      = 'CurrentCollector';
             am      = 'ActiveMaterial';
             thermal = 'ThermalModel';

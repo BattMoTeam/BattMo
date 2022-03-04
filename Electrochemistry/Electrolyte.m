@@ -83,7 +83,7 @@ classdef Electrolyte < ElectroChemicalComponent
                          'diffFlux'};
             varnames = model.registerVarNames(varnames);
             
-            fn = @Electrolyte.updateConductivity;
+            fn = @Electrolyte.updateConcentrations;
             model = model.registerPropFunction({'cs', fn, {'c'}});
             
             fn = @Electrolyte.updateConductivity;

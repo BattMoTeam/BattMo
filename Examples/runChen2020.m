@@ -90,11 +90,18 @@ initstate = model.updateTemperature(initstate);
 nitf = bat.(ne).(itf); 
 
 % We bypass the solid diffusion equation to set directly the particle surface concentration (this is a bit hacky)
-nenr = model.(ne).(sd).N;
-nenp = model.(ne).(sd).np;
 c = 29866.0;
-initstate.(ne).(sd).c = c*ones(nenr*nenp, 1);
-initstate.(ne) = model.(ne).updateSurfaceConcentration(initstate.(ne));
+if model.(ne).useSimplifiedDiffusionModel
+    n = model.(ne).G.cells.num;
+    initstate.(ne).(sd).cSurface = c*ones(n, 1);
+    initstate.(ne).c = c*ones(n, 1);
+else
+    nenr = model.(ne).(sd).N;
+    nenp = model.(ne).(sd).np;
+    initstate.(ne).(sd).c = c*ones(nenr*nenp, 1);
+end
+
+initstate.(ne) = model.(ne).updateSolidConcentrations(initstate.(ne));
 initstate.(ne).(itf) = nitf.updateOCP(initstate.(ne).(itf));
 
 OCP = initstate.(ne).(itf).OCP;
@@ -106,11 +113,19 @@ initstate.(ne).phi = OCP - ref;
 
 pitf = bat.(pe).(itf); 
 
-penr = model.(pe).(sd).N;
-penp = model.(pe).(sd).np;
 c = 17038.0;
-initstate.(pe).(sd).c = c*ones(penr*penp, 1);
-initstate.(pe) = model.(pe).updateSurfaceConcentration(initstate.(pe));
+
+if model.(pe).useSimplifiedDiffusionModel
+    n = model.(pe).G.cells.num;
+    initstate.(pe).(sd).cSurface = c*ones(n, 1);
+    initstate.(pe).c = c*ones(n, 1);
+else
+    penr = model.(pe).(sd).N;
+    penp = model.(pe).(sd).np;
+    initstate.(pe).(sd).c = c*ones(penr*penp, 1);
+end
+
+initstate.(pe) = model.(pe).updateSolidConcentrations(initstate.(pe));
 initstate.(pe).(itf) = pitf.updateOCP(initstate.(pe).(itf));
 
 OCP = initstate.(pe).(itf).OCP;
@@ -135,6 +150,8 @@ nls.errorOnFailure = false;
 model.nonlinearTolerance = 1e-5; 
 % Set verbosity
 model.verbose = true;
+
+model.AutoDiffBackend= AutoDiffBackend();
 
 % Run simulation
 [wellSols, states, report] = simulateScheduleAD(initstate, model, schedule, 'OutputMinisteps', true, 'NonLinearSolver', nls); 
