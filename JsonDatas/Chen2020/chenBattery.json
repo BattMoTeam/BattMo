@@ -6,9 +6,9 @@
         "thermalConductivity": 6e-05,
         "InterDiffusionCoefficient": 1e-10,
         "chargeCarrierName": "Li",
-        "ActiveMaterial": {
+        "Interface": {
             "isFile": true,
-            "filename": "JsonDatas/Chen2020/chenNegativeElectrodeActiveMaterial.json"
+            "filename": "JsonDatas/Chen2020/chenNegativeElectrodeInterface.json"
         }
     },
     "PositiveElectrode": {
@@ -17,9 +17,9 @@
         "thermalConductivity": 6e-05,
         "InterDiffusionCoefficient": 1e-10,
         "chargeCarrierName": "Li",
-        "ActiveMaterial": {
+        "Interface": {
             "isFile": true,
-            "filename": "JsonDatas/Chen2020/chenPositiveElectrodeActiveMaterial.json"
+            "filename": "JsonDatas/Chen2020/chenPositiveElectrodeInterface.json"
         }
     },
     "Electrolyte": {

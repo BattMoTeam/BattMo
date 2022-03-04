@@ -4,7 +4,7 @@
     "description": "Electrode",
     "type": "object",
     "properties" : {
-        "ElectrodeActiveComponent" : {"$ref" : "electrodeactivecomponent"},
+        "ActiveMaterial" : {"$ref" : "activematerial"},
         "CurrentCollector" : {"$ref" : "currentcollector"}
     }
 }

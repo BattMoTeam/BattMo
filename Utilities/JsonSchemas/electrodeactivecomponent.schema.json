@@ -11,6 +11,6 @@
         "InterDiffusionCoefficient": {"type" : "number"},
         "chargeCarrierName": {"type" : "string",
                               "description" : "name use in implementation..."},
-        "ActiveMaterial": {"$ref" : "activematerial"}
+        "Interface": {"$ref" : "interface"}
     }
 }
