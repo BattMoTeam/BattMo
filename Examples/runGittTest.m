@@ -27,7 +27,7 @@ paramobj = BatteryInputParams(jsonstruct);
 % We define some shorthand names for simplicity.
 ne      = 'NegativeElectrode';
 pe      = 'PositiveElectrode';
-eac     = 'ElectrodeActiveComponent';
+eac     = 'ActiveMaterial';
 cc      = 'CurrentCollector';
 elyte   = 'Electrolyte';
 thermal = 'ThermalModel';

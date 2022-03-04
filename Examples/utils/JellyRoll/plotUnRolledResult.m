@@ -57,14 +57,14 @@ end
 
 %%
 
-cartInd = UGrids.NegativeElectrode.ElectrodeActiveComponent.mappings.ind;
-cartG =  UGrids.NegativeElectrode.ElectrodeActiveComponent;
+cartInd = UGrids.NegativeElectrode.ActiveMaterial.mappings.ind;
+cartG =  UGrids.NegativeElectrode.ActiveMaterial;
 
 clear newstates
 for ind = 1 : numel(states)
     clear state
-    state.phi = states{ind}.NegativeElectrode.ElectrodeActiveComponent.phi(cartInd);
-    state.c = states{ind}.NegativeElectrode.ElectrodeActiveComponent.c(cartInd);
+    state.phi = states{ind}.NegativeElectrode.ActiveMaterial.phi(cartInd);
+    state.c = states{ind}.NegativeElectrode.ActiveMaterial.c(cartInd);
     newstates{ind} = state;
 end
 

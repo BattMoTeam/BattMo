@@ -29,7 +29,7 @@ parse(p, varargin{:});
 
 ne      = 'NegativeElectrode';
 pe      = 'PositiveElectrode';
-eac     = 'ElectrodeActiveComponent';
+eac     = 'ActiveMaterial';
 cc      = 'CurrentCollector';
 elyte   = 'Electrolyte';
 thermal = 'ThermalModel';
@@ -54,7 +54,7 @@ if step ~= 0
     
     if model.G.griddim == 1
         setFigureStyle('theme', p.Results.theme, 'size', p.Results.size, 'orientation', p.Results.orientation, 'quantity', 'single');
-        subplot(2,4,1), plotCellData(model.NegativeElectrode.ElectrodeActiveComponent.G, states{step}.NegativeElectrode.ElectrodeActiveComponent.ActiveMaterial.cElectrode ./ 1000, 'linewidth', 3);
+        subplot(2,4,1), plotCellData(model.NegativeElectrode.ActiveMaterial.G, states{step}.NegativeElectrode.ActiveMaterial.ActiveMaterial.cElectrode ./ 1000, 'linewidth', 3);
         xlabel(gca, 'Position  /  m')
         title(gca, 'Negative Electrode Concentration  /  mol \cdot L^{-1}')
         set(gca, ...
@@ -76,7 +76,7 @@ if step ~= 0
                 'YColor', style.fontColor, ...
                 'GridColor', style.fontColor)
         
-        subplot(2,4,3), plotCellData(model.PositiveElectrode.ElectrodeActiveComponent.G, states{step}.PositiveElectrode.ElectrodeActiveComponent.ActiveMaterial.cElectrode ./ 1000, 'linewidth', 3);
+        subplot(2,4,3), plotCellData(model.PositiveElectrode.ActiveMaterial.G, states{step}.PositiveElectrode.ActiveMaterial.ActiveMaterial.cElectrode ./ 1000, 'linewidth', 3);
         xlabel(gca, 'Position  /  m')
         title(gca, 'Positive Electrode Concentration  /  mol \cdot L^{-1}')
         set(gca, ...
@@ -103,7 +103,7 @@ if step ~= 0
                 'YColor', style.fontColor, ...
                 'GridColor', style.fontColor)
         
-        subplot(2,4,5), plotCellData(model.NegativeElectrode.ElectrodeActiveComponent.G, states{step}.NegativeElectrode.ElectrodeActiveComponent.phi, 'linewidth', 3);
+        subplot(2,4,5), plotCellData(model.NegativeElectrode.ActiveMaterial.G, states{step}.NegativeElectrode.ActiveMaterial.phi, 'linewidth', 3);
         xlabel(gca, 'Position  /  m')
         title(gca, 'Negative Electrode Potential  /  V')
         set(gca, ...
@@ -125,7 +125,7 @@ if step ~= 0
                 'YColor', style.fontColor, ...
                 'GridColor', style.fontColor)
         
-        subplot(2,4,7), plotCellData(model.PositiveElectrode.ElectrodeActiveComponent.G, states{step}.PositiveElectrode.ElectrodeActiveComponent.phi, 'linewidth', 3);
+        subplot(2,4,7), plotCellData(model.PositiveElectrode.ActiveMaterial.G, states{step}.PositiveElectrode.ActiveMaterial.phi, 'linewidth', 3);
         xlabel(gca, 'Position  /  m')
         title(gca, 'Positive Electrode Potential  /  V')
         set(gca, ...
@@ -309,20 +309,20 @@ else
             cmax_elyte = max(max(states{i}.Electrolyte.c ./ 1000));
             cmin_elyte = min(min(states{i}.Electrolyte.c ./ 1000));
             
-            cmax_ne = max(max(states{i}.NegativeElectrode.ElectrodeActiveComponent.ActiveMaterial.cElectrode ./ 1000));
-            cmin_ne = min(min(states{i}.NegativeElectrode.ElectrodeActiveComponent.ActiveMaterial.cElectrode ./ 1000));
+            cmax_ne = max(max(states{i}.NegativeElectrode.ActiveMaterial.ActiveMaterial.cElectrode ./ 1000));
+            cmin_ne = min(min(states{i}.NegativeElectrode.ActiveMaterial.ActiveMaterial.cElectrode ./ 1000));
             
-            cmax_pe = max(max(states{i}.PositiveElectrode.ElectrodeActiveComponent.ActiveMaterial.cElectrode ./ 1000));
-            cmin_pe = min(min(states{i}.PositiveElectrode.ElectrodeActiveComponent.ActiveMaterial.cElectrode ./ 1000));
+            cmax_pe = max(max(states{i}.PositiveElectrode.ActiveMaterial.ActiveMaterial.cElectrode ./ 1000));
+            cmin_pe = min(min(states{i}.PositiveElectrode.ActiveMaterial.ActiveMaterial.cElectrode ./ 1000));
             
             phimax_elyte = max(max(states{i}.Electrolyte.phi));
             phimin_elyte = min(min(states{i}.Electrolyte.phi));
             
-            phimax_ne = max(max(states{i}.NegativeElectrode.ElectrodeActiveComponent.phi));
-            phimin_ne = min(min(states{i}.NegativeElectrode.ElectrodeActiveComponent.phi));
+            phimax_ne = max(max(states{i}.NegativeElectrode.ActiveMaterial.phi));
+            phimin_ne = min(min(states{i}.NegativeElectrode.ActiveMaterial.phi));
             
-            phimax_pe = max(max(states{i}.PositiveElectrode.ElectrodeActiveComponent.phi));
-            phimin_pe = min(min(states{i}.PositiveElectrode.ElectrodeActiveComponent.phi));
+            phimax_pe = max(max(states{i}.PositiveElectrode.ActiveMaterial.phi));
+            phimin_pe = min(min(states{i}.PositiveElectrode.ActiveMaterial.phi));
             
             xmin = min(model.Electrolyte.G.nodes.coords(:,1));
             xmax = max(model.Electrolyte.G.nodes.coords(:,1));
@@ -339,11 +339,11 @@ else
             cmax_elyte = max(cmax_elyte, max(max(states{i}.Electrolyte.c ./ 1000)));
             cmin_elyte = min(cmin_elyte, min(min(states{i}.Electrolyte.c ./ 1000)));
             
-            cmax_ne = max(cmax_ne, max(max(states{i}.NegativeElectrode.ElectrodeActiveComponent.ActiveMaterial.cElectrode ./ 1000)));
-            cmin_ne = min(cmin_ne, min(min(states{i}.NegativeElectrode.ElectrodeActiveComponent.ActiveMaterial.cElectrode ./ 1000)));
+            cmax_ne = max(cmax_ne, max(max(states{i}.NegativeElectrode.ActiveMaterial.ActiveMaterial.cElectrode ./ 1000)));
+            cmin_ne = min(cmin_ne, min(min(states{i}.NegativeElectrode.ActiveMaterial.ActiveMaterial.cElectrode ./ 1000)));
             
-            cmax_pe = max(cmax_pe, max(max(states{i}.PositiveElectrode.ElectrodeActiveComponent.ActiveMaterial.cElectrode ./ 1000)));
-            cmin_pe = min(cmin_pe, min(min(states{i}.PositiveElectrode.ElectrodeActiveComponent.ActiveMaterial.cElectrode ./ 1000)));
+            cmax_pe = max(cmax_pe, max(max(states{i}.PositiveElectrode.ActiveMaterial.ActiveMaterial.cElectrode ./ 1000)));
+            cmin_pe = min(cmin_pe, min(min(states{i}.PositiveElectrode.ActiveMaterial.ActiveMaterial.cElectrode ./ 1000)));
             
             cmax_global_solid = max(cmax_ne, cmax_pe);
             cmin_global_solid = min(cmin_ne, cmin_pe);
@@ -351,11 +351,11 @@ else
             phimax_elyte = max(phimax_elyte, max(max(states{i}.Electrolyte.phi)));
             phimin_elyte = min(phimin_elyte, min(min(states{i}.Electrolyte.phi)));
             
-            phimax_ne = max(phimax_ne, max(max(states{i}.NegativeElectrode.ElectrodeActiveComponent.phi)));
-            phimin_ne = min(phimin_ne, min(min(states{i}.NegativeElectrode.ElectrodeActiveComponent.phi)));
+            phimax_ne = max(phimax_ne, max(max(states{i}.NegativeElectrode.ActiveMaterial.phi)));
+            phimin_ne = min(phimin_ne, min(min(states{i}.NegativeElectrode.ActiveMaterial.phi)));
             
-            phimax_pe = max(phimax_pe, max(max(states{i}.PositiveElectrode.ElectrodeActiveComponent.phi)));
-            phimin_pe = min(phimin_pe, min(min(states{i}.PositiveElectrode.ElectrodeActiveComponent.phi)));
+            phimax_pe = max(phimax_pe, max(max(states{i}.PositiveElectrode.ActiveMaterial.phi)));
+            phimin_pe = min(phimin_pe, min(min(states{i}.PositiveElectrode.ActiveMaterial.phi)));
             
             phimax_global = max([phimax_ne, phimax_pe, phimax_elyte]);
             phimin_global = min([cmin_ne, cmin_pe, phimin_elyte]);
@@ -372,7 +372,7 @@ else
             style.fontSize = 10;
         end
         if model.G.griddim == 1
-            subplot(2,4,1), plotCellData(model.NegativeElectrode.ElectrodeActiveComponent.G, states{i}.NegativeElectrode.ElectrodeActiveComponent.ActiveMaterial.cElectrode ./ 1000, 'linewidth', 3);
+            subplot(2,4,1), plotCellData(model.NegativeElectrode.ActiveMaterial.G, states{i}.NegativeElectrode.ActiveMaterial.ActiveMaterial.cElectrode ./ 1000, 'linewidth', 3);
             xlabel(gca, 'Position  /  m')
             title(gca, 'Negative Electrode Concentration  /  mol \cdot L^{-1}', 'color', style.fontColor)
             xlim([xmin, xmax])
@@ -398,7 +398,7 @@ else
                 'YColor', style.fontColor, ...
                 'GridColor', style.fontColor)
 
-            subplot(2,4,3), plotCellData(model.PositiveElectrode.ElectrodeActiveComponent.G, states{i}.PositiveElectrode.ElectrodeActiveComponent.ActiveMaterial.cElectrode ./ 1000, 'linewidth', 3);
+            subplot(2,4,3), plotCellData(model.PositiveElectrode.ActiveMaterial.G, states{i}.PositiveElectrode.ActiveMaterial.ActiveMaterial.cElectrode ./ 1000, 'linewidth', 3);
             xlabel(gca, 'Position  /  m')
             title(gca, 'Positive Electrode Concentration  /  mol \cdot L^{-1}', 'color', style.fontColor)
             xlim([xmin, xmax])
@@ -427,7 +427,7 @@ else
                 'YColor', style.fontColor, ...
                 'GridColor', style.fontColor)
 
-            subplot(2,4,5), plotCellData(model.NegativeElectrode.ElectrodeActiveComponent.G, states{i}.NegativeElectrode.ElectrodeActiveComponent.phi, 'linewidth', 3);
+            subplot(2,4,5), plotCellData(model.NegativeElectrode.ActiveMaterial.G, states{i}.NegativeElectrode.ActiveMaterial.phi, 'linewidth', 3);
             xlabel(gca, 'Position  /  m')
             title(gca, 'Negative Electrode Potential  /  V', 'color', style.fontColor)
             xlim([xmin, xmax])
@@ -453,7 +453,7 @@ else
                 'YColor', style.fontColor, ...
                 'GridColor', style.fontColor)
 
-            subplot(2,4,7), plotCellData(model.PositiveElectrode.ElectrodeActiveComponent.G, states{i}.PositiveElectrode.ElectrodeActiveComponent.phi, 'linewidth', 3);
+            subplot(2,4,7), plotCellData(model.PositiveElectrode.ActiveMaterial.G, states{i}.PositiveElectrode.ActiveMaterial.phi, 'linewidth', 3);
             xlabel(gca, 'Position  /  m')
             title(gca, 'Positive Electrode Potential  /  V', 'color', style.fontColor)
             xlim([xmin, xmax])

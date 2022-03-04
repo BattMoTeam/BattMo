@@ -32,8 +32,8 @@ classdef BareBatteryInputParams < InputParams
             
             pick = @(fd) pickField(jsonstruct, fd);
             
-            paramobj.(ne) = ElectrodeActiveComponentInputParams(pick(ne));
-            paramobj.(pe) = ElectrodeActiveComponentInputParams(pick(pe));
+            paramobj.(ne) = ActiveMaterialInputParams(pick(ne));
+            paramobj.(pe) = ActiveMaterialInputParams(pick(pe));
             jsonelytestruct = pick(elyte);
             switch jsonelytestruct.electrolyteType
               case 'binary'

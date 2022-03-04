@@ -136,7 +136,7 @@ classdef BareBattery < BaseModel
         % Returns:
         %    electrode object
 
-            electrode = ElectrodeActiveComponent(paramobj);
+            electrode = ActiveMaterial(paramobj);
             
         end
         

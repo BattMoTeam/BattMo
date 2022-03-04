@@ -5,10 +5,10 @@ classdef ElectrodeInputParams < ComponentInputParams
     properties
         
         %
-        % Input parameter for the electrode active component (:class:`ElectrodeActiveComponentInputParams
-        % <Electrochemistry.ElectrodeActiveComponentInputParams>`)
+        % Input parameter for the electrode active component (:class:`ActiveMaterialInputParams
+        % <Electrochemistry.ActiveMaterialInputParams>`)
         %
-        ElectrodeActiveComponent
+        ActiveMaterial
         
         
         %
@@ -30,11 +30,11 @@ classdef ElectrodeInputParams < ComponentInputParams
 
             paramobj = paramobj@ComponentInputParams(jsonstruct);
 
-            eac = 'ElectrodeActiveComponent';
+            am = 'ActiveMaterial';
             cc  = 'CurrentCollector';
             
             pick = @(fd) pickField(jsonstruct, fd);
-            paramobj.(eac) = ElectrodeActiveComponentInputParams(pick(eac));
+            paramobj.(am) = ActiveMaterialInputParams(pick(am));
             paramobj.(cc) = CurrentCollectorInputParams(pick(cc));
             
         end

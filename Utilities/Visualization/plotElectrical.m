@@ -47,7 +47,7 @@ end
         % Plot Charge Carrier Concentration
         subplot(2,3,4), plotElectricPotential(model,states{i},'domain','NegativeElectrodeCurrentCollector')
             hold on
-            plotElectricPotential(model,states{i},'domain','NegativeElectrodeActiveComponent')
+            plotElectricPotential(model,states{i},'domain','NegativeActiveMaterial')
             hold off
             colormap(gca, fs.colormap_concentration);
             colorbar();
@@ -59,7 +59,7 @@ end
             
         subplot(2,3,6), plotElectricPotential(model,states{i},'domain','PositiveElectrodeCurrentCollector')
             hold on
-            plotElectricPotential(model,states{i},'domain','PositiveElectrodeActiveComponent')
+            plotElectricPotential(model,states{i},'domain','PositiveActiveMaterial')
             hold off
             colormap(gca, fs.colormap_concentration);
             colorbar();
@@ -84,9 +84,9 @@ end
             % Plot Electric Potential in Electrodes
             figure(2), plotElectricPotential(model,states{i},'domain','NegativeElectrodeCurrentCollector')
             hold on
-            plotElectricPotential(model,states{i},'domain','NegativeElectrodeActiveComponent')
+            plotElectricPotential(model,states{i},'domain','NegativeActiveMaterial')
             plotElectricPotential(model,states{i},'domain','PositiveElectrodeCurrentCollector')
-            plotElectricPotential(model,states{i},'domain','PositiveElectrodeActiveComponent')
+            plotElectricPotential(model,states{i},'domain','PositiveActiveMaterial')
             hold off
             colormap(gca, fs.colormap_concentration);
             %caxis([min(states{1}.Electrolyte.cs{1}), max(states{end}.Electrolyte.cs{1})]);

@@ -90,7 +90,7 @@ classdef BatteryGenerator2D < BatteryGenerator
             ne  = 'NegativeElectrode';
             pe  = 'PositiveElectrode';
             cc  = 'CurrentCollector';
-            eac = 'ElectrodeActiveComponent';
+            am = 'ActiveMaterial';
             
             sepnx  = gen.sepnx; 
             nenx   = gen.nenx; 
@@ -116,7 +116,7 @@ classdef BatteryGenerator2D < BatteryGenerator
             % Negative electrode - electode active component
             istart = ccnenx + 1;
             ni = nenx;
-            params.(ne).(eac).cellind = pickTensorCells(istart, ni, nx, ny);
+            params.(ne).(am).cellind = pickTensorCells(istart, ni, nx, ny);
         
             %% Positive electrode
             istart = ccnenx + nenx + sepnx + 1;
@@ -131,7 +131,7 @@ classdef BatteryGenerator2D < BatteryGenerator
             % Positive electrode - electode active component
             istart = ccnenx + nenx + sepnx + 1;
             ni = penx;
-            params.(pe).(eac).cellind = pickTensorCells(istart, ni, nx, ny);
+            params.(pe).(am).cellind = pickTensorCells(istart, ni, nx, ny);
 
             paramobj = setupElectrodes@BatteryGenerator(gen, paramobj, params);
             

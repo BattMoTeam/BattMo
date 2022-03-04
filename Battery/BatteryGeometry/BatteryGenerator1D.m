@@ -73,7 +73,7 @@ classdef BatteryGenerator1D < BatteryGenerator
             ne  = 'NegativeElectrode';
             pe  = 'PositiveElectrode';
             cc  = 'CurrentCollector';
-            eac = 'ElectrodeActiveComponent';
+            am = 'ActiveMaterial';
             
             sepnx = gen.sepnx; 
             nenx = gen.nenx; 
@@ -84,7 +84,7 @@ classdef BatteryGenerator1D < BatteryGenerator
             %% parameters for negative electrode
 
             params.(ne).cellind = (1 : ccnenx + nenx)';
-            params.(ne).(eac).cellind = ccnenx + (1 : nenx)';
+            params.(ne).(am).cellind = ccnenx + (1 : nenx)';
             params.(ne).(cc).cellind = (1 : ccnenx)';
             
             % boundary setup for negative current collector
@@ -95,7 +95,7 @@ classdef BatteryGenerator1D < BatteryGenerator
             
             pe_indstart = ccnenx + nenx + sepnx;
             params.(pe).cellind =  pe_indstart + (1 : ccpenx + penx)';
-            params.(pe).(eac).cellind = pe_indstart + (1 : penx)';
+            params.(pe).(am).cellind = pe_indstart + (1 : penx)';
             params.(pe).(cc).cellind = pe_indstart + penx + (1 : ccpenx)';
             
             % boundary setup for positive current collector

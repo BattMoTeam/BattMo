@@ -1,4 +1,4 @@
-classdef ElectrodeActiveComponent < ElectronicComponent
+classdef ActiveMaterial < ElectronicComponent
     
     properties
         
@@ -23,9 +23,9 @@ classdef ElectrodeActiveComponent < ElectronicComponent
     
     methods
         
-        function model = ElectrodeActiveComponent(paramobj)
+        function model = ActiveMaterial(paramobj)
         %
-        % ``paramobj`` is instance of :class:`ElectrodeActiveComponentInputParams <Electrochemistry.ElectrodeActiveComponentInputParams>`
+        % ``paramobj`` is instance of :class:`ActiveMaterialInputParams <Electrochemistry.ActiveMaterialInputParams>`
         %    
             model = model@ElectronicComponent(paramobj);
 
@@ -41,7 +41,7 @@ classdef ElectrodeActiveComponent < ElectronicComponent
             model.Interface = Interface(paramobj.Interface);
             
             % defines shortcuts
-            eac = 'ElectrodeActiveComponent';
+            am = 'ActiveMaterial';
             cc  = 'CurrentCollector';
             am  = 'Interface';
             sd  = 'SolidDiffusion';
@@ -68,19 +68,19 @@ classdef ElectrodeActiveComponent < ElectronicComponent
             varnames =  {'jCoupling'};
             model = model.registerVarNames(varnames);
 
-            fn = @ElectrodeActiveComponent.updatejBcSource;
+            fn = @ActiveMaterial.updatejBcSource;
             model = model.registerPropFunction({'jBcSource', fn, {'jCoupling'}});            
 
-            fn = @ElectrodeActiveComponent.updateCurrentSource;
+            fn = @ActiveMaterial.updateCurrentSource;
             model = model.registerPropFunction({'eSource', fn, {{am, 'R'}}});
 
-            fn = @ElectrodeActiveComponent.updateChargeCarrier;
+            fn = @ActiveMaterial.updateChargeCarrier;
             model = model.registerPropFunction({'c', fn, {am, sd, 'c'}});
 
-            fn = @ElectrodeActiveComponent.updatePhi;
+            fn = @ActiveMaterial.updatePhi;
             model = model.registerPropFunction({{am, 'phiElectrode'}, fn, {'phi'}});
             
-            fn = @ElectrodeActiveComponent.updateTemperature;
+            fn = @ActiveMaterial.updateTemperature;
             model = model.registerPropFunction({{am, 'T'}, fn, {'T'}});
             model = model.registerPropFunction({{am, sd, 'T'}, fn, {'T'}});
             

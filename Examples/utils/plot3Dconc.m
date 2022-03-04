@@ -2,7 +2,7 @@ G = model.G;
 
 ne    = 'NegativeElectrode';
 pe    = 'PositiveElectrode';
-eac   = 'ElectrodeActiveComponent';
+eac   = 'ActiveMaterial';
 cc    = 'CurrentCollector';
 elyte = 'Electrolyte';
 sep   = 'Separator';
@@ -34,13 +34,13 @@ for ind = 1 : numel(states)
     title('cLi (elyte)');
     
     subplot(2, 2, 2);
-    plotCellData(model.(ne).(eac).G, state.(ne).(eac).c);
+    plotCellData(model.(ne).(am).G, state.(ne).(am).c);
     colorbar
     view([30, 32]);
     title('cLi (negative elde)');
     
     subplot(2, 2, 3);
-    plotCellData(model.(pe).(eac).G, state.(pe).(eac).c);
+    plotCellData(model.(pe).(am).G, state.(pe).(am).c);
     colorbar
     view([30, 32]);
     title('cLi (positive elde)');

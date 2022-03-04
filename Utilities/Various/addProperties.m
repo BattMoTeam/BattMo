@@ -7,14 +7,14 @@ function state = addProperties(model, state)
     battery = model;
     ne      = 'NegativeElectrode';
     pe      = 'PositiveElectrode';
-    eac     = 'ElectrodeActiveComponent';
+    am     = 'ActiveMaterial';
     cc      = 'CurrentCollector';
     elyte   = 'Electrolyte';
     am      = 'ActiveMaterial';
     thermal = 'ThermalModel';
 
     electrodes = {ne, pe};
-    electrodecomponents = {eac, cc};
+    electrodecomponents = {am, cc};
 
     %% Synchronization across components
 
@@ -26,12 +26,12 @@ function state = addProperties(model, state)
     for ind = 1 : numel(electrodes)
         elde = electrodes{ind};
         % potential and concentration between active material and electode active component
-        state.(elde).(eac) = battery.(elde).(eac).updatePhi(state.(elde).(eac));
+        state.(elde).(am) = battery.(elde).(am).updatePhi(state.(elde).(am));
         if(model.use_solid_diffusion)
-            state.(elde).(eac) = battery.(elde).(eac).updateChargeCarrier(state.(elde).(eac));
+            state.(elde).(am) = battery.(elde).(am).updateChargeCarrier(state.(elde).(am));
         else
-            state.(elde).(eac).c = state.(elde).(eac).(am).cElectrode;
-            state.(elde).(eac) = battery.(elde).(eac).updateChargeCarrier(state.(elde).(eac));                    
+            state.(elde).(am).c = state.(elde).(am).(am).cElectrode;
+            state.(elde).(am) = battery.(elde).(am).updateChargeCarrier(state.(elde).(am));                    
         end              
     end
 
@@ -44,10 +44,10 @@ function state = addProperties(model, state)
 
     for ind = 1 : numel(electrodes)
         elde = electrodes{ind};
-        state.(elde).(eac).(am) = battery.(elde).(eac).(am).updateReactionRateCoefficient(state.(elde).(eac).(am));
-        state.(elde).(eac).(am) = battery.(elde).(eac).(am).updateDiffusionCoefficient(state.(elde).(eac).(am));
-        state.(elde).(eac).(am) = battery.(elde).(eac).(am).updateOCP(state.(elde).(eac).(am));
-        state.(elde).(eac).(am) = battery.(elde).(eac).(am).updateReactionRate(state.(elde).(eac).(am));
+        state.(elde).(am).(am) = battery.(elde).(am).(am).updateReactionRateCoefficient(state.(elde).(am).(am));
+        state.(elde).(am).(am) = battery.(elde).(am).(am).updateDiffusionCoefficient(state.(elde).(am).(am));
+        state.(elde).(am).(am) = battery.(elde).(am).(am).updateOCP(state.(elde).(am).(am));
+        state.(elde).(am).(am) = battery.(elde).(am).(am).updateReactionRate(state.(elde).(am).(am));
     end
 
     %% Update Electrodes -> Electrolyte  coupling
@@ -59,8 +59,8 @@ function state = addProperties(model, state)
     state.(ne) = battery.(ne).updateCoupling(state.(ne));
     state.(pe) = battery.(pe).updateCoupling(state.(pe));
 
-    state.(ne).(eac) = battery.(ne).(eac).updatejBcSource(state.(ne).(eac));
-    state.(pe).(eac) = battery.(pe).(eac).updatejBcSource(state.(pe).(eac));
+    state.(ne).(am) = battery.(ne).(am).updatejBcSource(state.(ne).(am));
+    state.(pe).(am) = battery.(pe).(am).updatejBcSource(state.(pe).(am));
 
     state = model.setupExternalCouplingNegativeElectrode(state);
     state = model.setupExternalCouplingPositiveElectrode(state);
@@ -80,9 +80,9 @@ function state = addProperties(model, state)
 
     for ind = 1 : numel(electrodes)
         elde = electrodes{ind};
-        state.(elde).(eac) = battery.(elde).(eac).updateIonAndCurrentSource(state.(elde).(eac));
-        state.(elde).(eac) = battery.(elde).(eac).updateCurrent(state.(elde).(eac));
-        state.(elde).(eac) = battery.(elde).(eac).updateChargeConservation(state.(elde).(eac));
+        state.(elde).(am) = battery.(elde).(am).updateIonAndCurrentSource(state.(elde).(am));
+        state.(elde).(am) = battery.(elde).(am).updateCurrent(state.(elde).(am));
+        state.(elde).(am) = battery.(elde).(am).updateChargeConservation(state.(elde).(am));
     end
 
     %% elyte mass conservation
@@ -95,7 +95,7 @@ function state = addProperties(model, state)
         elde = electrodes{ind};
         
         %% Electrodes mass conservation
-        state.(elde).(eac) = battery.(elde).(eac).updateMassFlux(state.(elde).(eac));
+        state.(elde).(am) = battery.(elde).(am).updateMassFlux(state.(elde).(am));
         
         %% Electrodes charge conservation - current collector part
         state.(elde).(cc) = battery.(elde).(cc).updateCurrent(state.(elde).(cc));
@@ -106,13 +106,13 @@ function state = addProperties(model, state)
     %% update solid diffustion equations
     for ind = 1 : numel(electrodes)
         elde = electrodes{ind};
-        state.(elde).(eac).(am) = battery.(elde).(eac).(am).assembleSolidDiffusionEquation(state.(elde).(eac).(am));
+        state.(elde).(am).(am) = battery.(elde).(am).(am).assembleSolidDiffusionEquation(state.(elde).(am).(am));
     end
 
     %% update Face fluxes
     for ind = 1 : numel(electrodes)
         elde = electrodes{ind};
-        state.(elde).(eac) = battery.(elde).(eac).updateFaceCurrent(state.(elde).(eac));
+        state.(elde).(am) = battery.(elde).(am).updateFaceCurrent(state.(elde).(am));
         state.(elde).(cc) = battery.(elde).(cc).updateFaceCurrent(state.(elde).(cc));
     end
     state.(elyte) = battery.(elyte).updateFaceCurrent(state.(elyte));

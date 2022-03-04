@@ -22,7 +22,7 @@ function [cap, cap_neg, cap_pos, specificEnergy] = computeCellCapacity(model)
     
     ne  = 'NegativeElectrode';
     pe  = 'PositiveElectrode';
-    eac = 'ElectrodeActiveComponent';
+    am = 'ActiveMaterial';
     am  = 'ActiveMaterial';
     
     eldes = {ne, pe};
@@ -39,7 +39,7 @@ function [cap, cap_neg, cap_pos, specificEnergy] = computeCellCapacity(model)
         if isBare
             eacmodel = model.(elde);
         else
-            eacmodel = model.(elde).(eac);
+            eacmodel = model.(elde).(am);
         end
         ammodel = eacmodel.(am);
         
@@ -93,7 +93,7 @@ function [cap, cap_neg, cap_pos, specificEnergy] = computeCellCapacity(model)
         cMax = ammodel.Li.cmax;
         
         volume_fraction = ammodel.volumeFraction;
-        volume_electrode = sum(model.(elde).(eac).G.cells.volumes);
+        volume_electrode = sum(model.(elde).(am).G.cells.volumes);
         volume = volume_fraction*volume_electrode;
         
         func = @(theta) model.(elde).(am).(itf).updateOCPFunc(theta, 298, 1);
@@ -112,7 +112,7 @@ function [cap, cap_neg, cap_pos, specificEnergy] = computeCellCapacity(model)
         assert(n == 1, 'not implemented yet');
         cMax = ammodel.Li.cmax;
         volume_fraction = ammodel.volumeFraction;
-        volume_electrode = sum(model.(elde).(eac).G.cells.volumes);
+        volume_electrode = sum(model.(elde).(am).G.cells.volumes);
         volume = volume_fraction*volume_electrode;
         
         func = @(theta) model.(elde).(am).(itf).updateOCPFunc(theta, 298, 1);

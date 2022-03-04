@@ -5,7 +5,7 @@ function [mass, masses] = computeCellMass(model)
     sep   = 'Separator';
     ne    = 'NegativeElectrode';
     pe    = 'PositiveElectrode';
-    eac   = 'ElectrodeActiveComponent';
+    am   = 'ActiveMaterial';
     am    = 'ActiveMaterial';
     cc    = 'CurrentCollector';
     
@@ -19,13 +19,13 @@ function [mass, masses] = computeCellMass(model)
         elde = eldes{ind};
         
         rho  = model.(elde).(am).(itf).density;
-        vols = model.(elde).(eac).G.cells.volumes;
-        poro = model.(elde).(eac).volumeFraction;
+        vols = model.(elde).(am).G.cells.volumes;
+        poro = model.(elde).(am).volumeFraction;
         
 
-        masses.(elde).(eac).val = sum(rho.*vols.*poro);
+        masses.(elde).(am).val = sum(rho.*vols.*poro);
         
-        mass = mass + masses.(elde).(eac).val;
+        mass = mass + masses.(elde).(am).val;
         
         rho  = model.(elde).(cc).density;
         vols = model.(elde).(cc).G.cells.volumes;

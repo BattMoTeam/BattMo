@@ -14,9 +14,9 @@ gstyle = {'interpreter', 'none', 'LineWidth', 3, 'ArrowSize', 20, 'NodeFontSize'
 %% Choose the model you want to use below by uncommenting it and commenting the others.
 
 % model = ActiveMaterial_('am');
-% model = ElectrodeActiveComponent_('eac');
-% model = ElectronicComponent_('eac');
-% model = ElectroChemicalComponent_('eac');
+% model = ActiveMaterial_('am');
+% model = ElectronicComponent_('am');
+% model = ElectroChemicalComponent_('am');
 % model = CurrentCollector_('cc');
 % model = Electrolyte_('elyte');
 % model = orgLiPF6_('cc');

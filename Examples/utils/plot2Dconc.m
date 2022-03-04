@@ -2,7 +2,7 @@ G = model.G;
 
 ne    = 'NegativeElectrode';
 pe    = 'PositiveElectrode';
-eac   = 'ElectrodeActiveComponent';
+eac   = 'ActiveMaterial';
 am    = 'ActiveMaterial';
 cc    = 'CurrentCollector';
 elyte = 'Electrolyte';
@@ -41,27 +41,27 @@ for ind = 1 : numel(states)
     
     subplot(3, 2, 3);
     cla
-    plotCellData(model.(ne).(eac).G, state.(ne).(eac).c);
+    plotCellData(model.(ne).(am).G, state.(ne).(am).c);
     colorbar
     title('cLi (negative elde)');
     
     subplot(3, 2, 4);
     cla
-    plotCellData(model.(pe).(eac).G, state.(pe).(eac).c);
+    plotCellData(model.(pe).(am).G, state.(pe).(am).c);
     colorbar
     title('cLi (positive elde)');
     
     subplot(3, 2, 5);
     cla
-    d = state.(ne).(am).(itf).cElectrode - state.(ne).(eac).c;
-    plotCellData(model.(ne).(eac).G, d);
+    d = state.(ne).(am).(itf).cElectrode - state.(ne).(am).c;
+    plotCellData(model.(ne).(am).G, d);
     colorbar
     title('negative elde : c(surface) - c(average)');
     
     subplot(3, 2, 6);
     cla
-    d = state.(pe).(am).(itf).cElectrode - state.(pe).(eac).c;
-    plotCellData(model.(pe).(eac).G, d);
+    d = state.(pe).(am).(itf).cElectrode - state.(pe).(am).c;
+    plotCellData(model.(pe).(am).G, d);
     colorbar
     title('positive elde : c(surface) - c(average)');
     

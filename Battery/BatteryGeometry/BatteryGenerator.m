@@ -86,17 +86,17 @@ classdef BatteryGenerator
         % paramobj is instance of ElectrodeInputParams
         
             % shortcuts 
-            eac = 'ElectrodeActiveComponent';
+            am = 'ActiveMaterial';
             cc  = 'CurrentCollector';            
             
             % setup Electrode grid
             paramobj = gen.setupElectrodeGrid(paramobj, params);
-            % setup Electrode active component (eac)
-            paramobj.(eac) = gen.setupElectrodeActiveComponentGrid(paramobj.(eac), params.(eac));
+            % setup Electrode active component (am)
+            paramobj.(am) = gen.setupActiveMaterialGrid(paramobj.(am), params.(am));
             % setup current collector (cc)
             paramobj.(cc) = gen.setupCurrentCollector(paramobj.(cc), params.(cc));
-            % setup coupling term between eac and cc
-            paramobj = gen.setupCurrentCollectorElectrodeActiveComponentCoupTerm(paramobj, params);
+            % setup coupling term between am and cc
+            paramobj = gen.setupCurrentCollectorActiveMaterialCoupTerm(paramobj, params);
             
         end
         
@@ -108,8 +108,8 @@ classdef BatteryGenerator
             paramobj.G = genSubGrid(gen.G, params.cellind);
         end
 
-        function paramobj = setupElectrodeActiveComponentGrid(gen, paramobj, params)
-        % paramobj is instance of ElectrodeActiveComponentInputParams
+        function paramobj = setupActiveMaterialGrid(gen, paramobj, params)
+        % paramobj is instance of ActiveMaterialInputParams
         % setup paramobj.G
             
             % Default setup
@@ -136,11 +136,11 @@ classdef BatteryGenerator
             ne    = 'NegativeElectrode';
             pe    = 'PositiveElectrode';
             elyte = 'Electrolyte';
-            eac   = 'ElectrodeActiveComponent';
+            am   = 'ActiveMaterial';
             
             couplingTerms = {};
             
-            G_ne = paramobj.(ne).(eac).G;
+            G_ne = paramobj.(ne).(am).G;
             G_elyte = paramobj.(elyte).G;
             
             % parent Grid
@@ -161,7 +161,7 @@ classdef BatteryGenerator
             
             couplingTerms{end + 1} = coupTerm;
             
-            G_pe = paramobj.(pe).(eac).G;
+            G_pe = paramobj.(pe).(am).G;
             G_elyte = paramobj.(elyte).G;
             
             % parent Grid
@@ -186,16 +186,16 @@ classdef BatteryGenerator
 
         end
 
-        function paramobj = setupCurrentCollectorElectrodeActiveComponentCoupTerm(gen, paramobj, params)
+        function paramobj = setupCurrentCollectorActiveMaterialCoupTerm(gen, paramobj, params)
         % paramobj is instance of ElectrodeInputParams
         % setup paramobj.couplingTerm
-            eac = 'ElectrodeActiveComponent';
+            am = 'ActiveMaterial';
             cc  = 'CurrentCollector';
             
-            compnames = {'CurrentCollector', 'ElectrodeActiveComponent'};
-            coupTerm = couplingTerm('CurrentCollector-ElectrodeActiveComponent', compnames);
+            compnames = {'CurrentCollector', 'ActiveMaterial'};
+            coupTerm = couplingTerm('CurrentCollector-ActiveMaterial', compnames);
             
-            G_eac = paramobj.(eac).G;
+            G_am = paramobj.(am).G;
             G_cc = paramobj.(cc).G;
             
             cctbl.faces = (1 : G_cc.faces.num)';
@@ -203,8 +203,8 @@ classdef BatteryGenerator
             cctbl = IndexArray(cctbl);
             
             
-            eactbl.faces = (1 : G_eac.faces.num)';
-            eactbl.globfaces = G_eac.mappings.facemap;
+            eactbl.faces = (1 : G_am.faces.num)';
+            eactbl.globfaces = G_am.mappings.facemap;
             eactbl = IndexArray(eactbl);
 
             gen = CrossIndexArrayGenerator();
@@ -216,13 +216,13 @@ classdef BatteryGenerator
             tbl = gen.eval();
             
             cc_coupfaces = tbl.get('faces1');
-            eac_coupfaces = tbl.get('faces2');
+            am_coupfaces = tbl.get('faces2');
             
             cc_coupcells = sum(G_cc.faces.neighbors(cc_coupfaces, :), 2);
-            eac_coupcells = sum(G_eac.faces.neighbors(eac_coupfaces, :), 2);
+            am_coupcells = sum(G_am.faces.neighbors(am_coupfaces, :), 2);
             
-            coupTerm.couplingfaces = [cc_coupfaces, eac_coupfaces];
-            coupTerm.couplingcells = [cc_coupcells, eac_coupcells];
+            coupTerm.couplingfaces = [cc_coupfaces, am_coupfaces];
+            coupTerm.couplingcells = [cc_coupcells, am_coupcells];
             
             paramobj.couplingTerm = coupTerm;
             

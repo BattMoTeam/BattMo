@@ -4,9 +4,9 @@ function [] = plotElectricPotential(model, states, varargin)
 
 %% Parse inputs
 defaultDomain       =   'Electrolyte';
-expectedDomain      = { 'NegativeElectrodeActiveComponent', ...
+expectedDomain      = { 'NegativeActiveMaterial', ...
                         'NegativeElectrodeCurrentCollector', ...
-                        'PositiveElectrodeActiveComponent', ...
+                        'PositiveActiveMaterial', ...
                         'PositiveElectrodeCurrentCollector', ...
                         'Electrolyte' };
 
@@ -20,15 +20,15 @@ parse(p, model, states, varargin{:});
 if strcmpi(p.Results.domain, 'Electrolyte')
     domain = model.Electrolyte;
     state = states.Electrolyte;
-elseif strcmpi(p.Results.domain, 'NegativeElectrodeActiveComponent')
-    domain = model.NegativeElectrode.ElectrodeActiveComponent;
-    state = states.NegativeElectrode.ElectrodeActiveComponent;
+elseif strcmpi(p.Results.domain, 'NegativeActiveMaterial')
+    domain = model.NegativeElectrode.ActiveMaterial;
+    state = states.NegativeElectrode.ActiveMaterial;
 elseif strcmpi(p.Results.domain, 'NegativeElectrodeCurrentCollector')
     domain = model.NegativeElectrode.CurrentCollector;
     state = states.NegativeElectrode.CurrentCollector;
-elseif strcmpi(p.Results.domain, 'PositiveElectrodeActiveComponent')
-    domain = model.PositiveElectrode.ElectrodeActiveComponent;
-    state = states.PositiveElectrode.ElectrodeActiveComponent;
+elseif strcmpi(p.Results.domain, 'PositiveActiveMaterial')
+    domain = model.PositiveElectrode.ActiveMaterial;
+    state = states.PositiveElectrode.ActiveMaterial;
 elseif strcmpi(p.Results.domain, 'PositiveElectrodeCurrentCollector')
     domain = model.PositiveElectrode.CurrentCollector;
     state = states.PositiveElectrode.CurrentCollector;

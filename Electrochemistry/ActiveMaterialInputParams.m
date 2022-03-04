@@ -1,6 +1,6 @@
-classdef ElectrodeActiveComponentInputParams < ElectroChemicalComponentInputParams
+classdef ActiveMaterialInputParams < ElectroChemicalComponentInputParams
 %
-% Input parameter class for :class:`ElectrodeActiveComponent <Electrochemistry.ElectrodeActiveComponent>`
+% Input parameter class for :class:`ActiveMaterial <Electrochemistry.ActiveMaterial>`
 % 
     properties
         
@@ -23,7 +23,7 @@ classdef ElectrodeActiveComponentInputParams < ElectroChemicalComponentInputPara
 
     methods
 
-        function paramobj = ElectrodeActiveComponentInputParams(jsonstruct)
+        function paramobj = ActiveMaterialInputParams(jsonstruct)
             paramobj = paramobj@ElectroChemicalComponentInputParams(jsonstruct);
 
             pick = @(fd) pickField(jsonstruct, fd);

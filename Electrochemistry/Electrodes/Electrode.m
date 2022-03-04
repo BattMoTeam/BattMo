@@ -1,12 +1,12 @@
 classdef Electrode < BaseModel
 %
 % The Electrode model is made of two sub-models : an electrode active component (see
-% :class:`Electrochemistry.ElectrodeActiveComponent`) and a current collector (see
+% :class:`Electrochemistry.ActiveMaterial`) and a current collector (see
 % :class:`Electrochemistry.CurrentCollector`)
 %
     properties
         
-        ElectrodeActiveComponent % instance of :class:`Electrochemistry.ElectrodeActiveComponent`
+        ActiveMaterial % instance of :class:`Electrochemistry.ActiveMaterial`
         CurrentCollector         % instance of :class:`Electrochemistry.CurrentCollector`
         couplingTerm
         
@@ -25,41 +25,41 @@ classdef Electrode < BaseModel
             model = dispatchParams(model, paramobj, fdnames);
             
             % Assign the two components
-            model.ElectrodeActiveComponent = model.setupElectrodeActiveComponent(paramobj.ElectrodeActiveComponent);
+            model.ActiveMaterial = model.setupActiveMaterial(paramobj.ActiveMaterial);
             model.CurrentCollector = model.setupCurrentCollector(paramobj.CurrentCollector);
 
             % defines shortcuts
-            eac     = 'ElectrodeActiveComponent';
+            am     = 'ActiveMaterial';
             cc      = 'CurrentCollector';
             am      = 'ActiveMaterial';
             
             %% Declaration of the Dynamical Variables and Function of the model
             % (setup of varnameList and propertyFunctionList)
             
-            model = model.registerSubModels({'ElectrodeActiveComponent', 'CurrentCollector'});
+            model = model.registerSubModels({'ActiveMaterial', 'CurrentCollector'});
             
             model = model.registerVarName('T');
             
             fn = @Electrode.updateCoupling;
-            inputnames = {{eac, 'phi'}, ...
+            inputnames = {{am, 'phi'}, ...
                           {cc , 'phi'}};
-            model = model.registerPropFunction({{eac, 'jCoupling'}, fn, inputnames});
+            model = model.registerPropFunction({{am, 'jCoupling'}, fn, inputnames});
             model = model.registerPropFunction({{cc , 'jCoupling'}, fn, inputnames});
             model = model.registerPropFunction({{cc , 'eSource'}  , fn, inputnames});
             
             % Temperature coupling between current collector and electrode active component
-            inputnames = {{eac, 'T'}, ...
+            inputnames = {{am, 'T'}, ...
                           {cc , 'T'}};
             fn = @Electrode.updateTemperatureCoupling;
-            model = model.registerPropFunction({{eac, 'jHeatBcSource'}, fn, inputnames});
+            model = model.registerPropFunction({{am, 'jHeatBcSource'}, fn, inputnames});
             model = model.registerPropFunction({{cc , 'jHeatBcSource'}, fn, inputnames});
             
         end
         
-        function eac = setupElectrodeActiveComponent(model, paramobj)
-        % paramobj is instanceo of ElectrodeActiveComponentInputParams
-        % standard instantiation (ActiveMaterial is specified in ElectrodeActiveComponent instantiation)
-            eac = ElectrodeActiveComponent(paramobj);
+        function am = setupActiveMaterial(model, paramobj)
+        % paramobj is instanceo of ActiveMaterialInputParams
+        % standard instantiation (ActiveMaterial is specified in ActiveMaterial instantiation)
+            am = ActiveMaterial(paramobj);
         end
         
         function cc = setupCurrentCollector(model, paramobj)
@@ -71,32 +71,32 @@ classdef Electrode < BaseModel
         % setup coupling terms between the current collector and the electrode active component            
             
             elde  = model;
-            eac   = 'ElectrodeActiveComponent';
+            am   = 'ActiveMaterial';
             cc    = 'CurrentCollector';
 
-            eac_phi = state.(eac).phi;
+            am_phi = state.(am).phi;
             cc_phi = state.(cc).phi;
 
-            eac_sigmaeff = elde.(eac).EffectiveElectricalConductivity;
+            am_sigmaeff = elde.(am).EffectiveElectricalConductivity;
             cc_sigmaeff = elde.(cc).EffectiveElectricalConductivity;
     
-            %% We setup the current transfers between CurrentCollector and ElectrodeActiveComponent
+            %% We setup the current transfers between CurrentCollector and ActiveMaterial
             
-            eac_jCoupling  = eac_phi*0.0; %NB hack to initialize zero ad
+            am_jCoupling  = am_phi*0.0; %NB hack to initialize zero ad
             cc_jCoupling = cc_phi*0.0; %NB hack to initialize zero ad
 
             coupterm = model.couplingTerm;
             face_cc = coupterm.couplingfaces(:, 1);
-            face_eac = coupterm.couplingfaces(:, 2);
-            [teac, bccell_eac] = elde.(eac).operators.harmFaceBC(eac_sigmaeff, face_eac);
+            face_am = coupterm.couplingfaces(:, 2);
+            [teac, bccell_am] = elde.(am).operators.harmFaceBC(am_sigmaeff, face_am);
             [tcc, bccell_cc] = elde.(cc).operators.harmFaceBC(cc_sigmaeff, face_cc);
 
-            bcphi_eac = eac_phi(bccell_eac);
+            bcphi_am = am_phi(bccell_am);
             bcphi_cc = cc_phi(bccell_cc);
 
             trans = 1./(1./teac + 1./tcc);
-            crosscurrent = trans.*(bcphi_cc - bcphi_eac);
-            eac_jCoupling(bccell_eac) = crosscurrent;
+            crosscurrent = trans.*(bcphi_cc - bcphi_am);
+            am_jCoupling(bccell_am) = crosscurrent;
             cc_jCoupling(bccell_cc) = -crosscurrent;
 
             G = model.(cc).G;
@@ -107,22 +107,22 @@ classdef Electrode < BaseModel
             cc_jFaceCoupling(face_cc) = sgn(face_cc).*crosscurrent;
             assert(~any(isnan(sgn(face_cc))));
             
-            G = model.(eac).G;
+            G = model.(am).G;
             nf = G.faces.num;
-            sgn = model.(eac).operators.sgn;
-            zeroFaceAD = model.AutoDiffBackend.convertToAD(zeros(nf, 1), eac_phi);
-            eac_jFaceCoupling = zeroFaceAD;
-            eac_jFaceCoupling(face_eac) = -sgn(face_eac).*crosscurrent;
-            assert(~any(isnan(sgn(face_eac))));
+            sgn = model.(am).operators.sgn;
+            zeroFaceAD = model.AutoDiffBackend.convertToAD(zeros(nf, 1), am_phi);
+            am_jFaceCoupling = zeroFaceAD;
+            am_jFaceCoupling(face_am) = -sgn(face_am).*crosscurrent;
+            assert(~any(isnan(sgn(face_am))));
             
             % We set here volumetric current source to zero for current collector (could have been done at a more logical place but
             % let us do it here, for simplicity)
             state.(cc).eSource = zeros(elde.(cc).G.cells.num, 1);
             
-            state.(eac).jCoupling = eac_jCoupling;
+            state.(am).jCoupling = am_jCoupling;
             state.(cc).jCoupling  = cc_jCoupling;
             
-            state.(eac).jFaceCoupling = eac_jFaceCoupling;
+            state.(am).jFaceCoupling = am_jFaceCoupling;
             state.(cc).jFaceCoupling  = cc_jFaceCoupling;
             
         end
@@ -132,35 +132,35 @@ classdef Electrode < BaseModel
         % setup coupling terms between the current collector and the electrode active component            
             
             elde  = model;
-            eac   = 'ElectrodeActiveComponent';
+            am   = 'ActiveMaterial';
             cc    = 'CurrentCollector';
 
-            eac_T = state.(eac).T;
+            am_T = state.(am).T;
             cc_T = state.(cc).T;
 
-            eac_tC = elde.(eac).thermalConductivity;
+            am_tC = elde.(am).thermalConductivity;
             cc_tC = elde.(cc).thermalConductivity;
     
-            %% We setup the current transfers between CurrentCollector and ElectrodeActiveComponent
+            %% We setup the current transfers between CurrentCollector and ActiveMaterial
             
-            eac_heatCoupling  = eac_T*0.0; %NB hack to initialize zero ad
+            am_heatCoupling  = am_T*0.0; %NB hack to initialize zero ad
             cc_heatCoupling = cc_T*0.0; %NB hack to initialize zero ad
 
             coupterm = model.couplingTerm;
             face_cc = coupterm.couplingfaces(:, 1);
-            face_eac = coupterm.couplingfaces(:, 2);
-            [teac, bccell_eac] = elde.(eac).operators.harmFaceBC(eac_tC, face_eac);
+            face_am = coupterm.couplingfaces(:, 2);
+            [teac, bccell_am] = elde.(am).operators.harmFaceBC(am_tC, face_am);
             [tcc, bccell_cc] = elde.(cc).operators.harmFaceBC(cc_tC, face_cc);
 
-            bcT_eac = eac_T(bccell_eac);
+            bcT_am = am_T(bccell_am);
             bcT_cc = cc_T(bccell_cc);
 
             trans = 1./(1./teac + 1./tcc);
-            crossFluxT = trans.*(bcT_cc - bcT_eac);
-            eac_heatCoupling(bccell_eac) = crossFluxT;
+            crossFluxT = trans.*(bcT_cc - bcT_am);
+            am_heatCoupling(bccell_am) = crossFluxT;
             cc_heatCoupling(bccell_cc) = - crossFluxT;
 
-            state.(eac).jHeatBcSource = eac_heatCoupling;
+            state.(am).jHeatBcSource = am_heatCoupling;
             state.(cc).jHeatBcSource = cc_heatCoupling;
 
         end

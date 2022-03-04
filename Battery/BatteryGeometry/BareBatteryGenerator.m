@@ -78,7 +78,7 @@ classdef BareBatteryGenerator
                 
         
         function paramobj = setupElectrodeGrid(gen, paramobj, params)
-        % paramobj is instance of ElectrodeActiveComponentInputParams
+        % paramobj is instance of ActiveMaterialInputParams
         % setup paramobj.G
             
             % Default setup
