@@ -153,8 +153,6 @@ loadChenPybammSolution
 loadChenPybammSolution2
 [t2, u2] = deal(t, u);
 
-run('/home/xavier/Python/PyBaMM/readme.m')
-
 set(0, 'defaultFigurePosition', [671 510 900 600]);
 
 l = lines(3);
