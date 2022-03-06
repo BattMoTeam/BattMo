@@ -636,7 +636,11 @@ classdef Battery < BaseModel
             
             eqs = {};
             
-            %% We collect mass and charge conservation equations for the electrolyte and the electrodes
+            %% We collect the governing equations
+            % The governing equations are the mass and charge conservation equations for the electrolyte and the
+            % electrodes and the solid diffusion model equations and the control equations. The equations are scaled to
+            % a common value.
+
             massConsScaling = model.con.F;
             
             eqs{end + 1} = state.(elyte).massCons*massConsScaling;
