@@ -1,18 +1,29 @@
-clear all
+%% Example: Galvanostatic Intermittent Charge Titration Technique (GITT) Simulation of a Lithium-Ion Battery Model
+% This example demonstrates how to apply a GITT protocol in a Li-ion
+% battery simulation.
+
+% clear the workspace and close open figures
+clear
 close all
+clc
 
-% setup mrst modules
+%% Import the required modules from MRST
+% load MRST modules
 mrstModule add ad-core multimodel mrst-gui mpfa
-
 mrstVerbose off
 
-p = mfilename('fullpath');
-p = fileparts(p);
-filename = fullfile(p, '../Battery/lithiumbattery.json');
+%% Setup the properties of Li-ion battery materials and cell design
+% The properties and parameters of the battery cell, including the
+% architecture and materials, are set using an instance of
+% :class:`BatteryInputParams <Battery.BatteryInputParams>`. This class is
+% used to initialize the simulation and it propagates all the parameters
+% throughout the submodels. The input parameters can be set manually or
+% provided in json format. All the parameters for the model are stored in
+% the paramobj object.
+jsonstruct = parseBatmoJson('JsonDatas/lithiumbattery.json');
+paramobj = BatteryInputParams(jsonstruct);
 
-paramobj = jsonfileToParams(paramobj, filename);
-
-% some shortcuts
+% We define some shorthand names for simplicity.
 ne      = 'NegativeElectrode';
 pe      = 'PositiveElectrode';
 eac     = 'ElectrodeActiveComponent';
@@ -20,13 +31,16 @@ cc      = 'CurrentCollector';
 elyte   = 'Electrolyte';
 thermal = 'ThermalModel';
 
-% Setup battery
+%% Setup the geometry and computational mesh
+% Here, we setup the geometry and computational mesh that will be used for
+% the simulation. The user can select the dimensionality of the model. The
+% required discretization parameters are already included in the associated
+% battery generator class. 
 modelcase = '2D';
 
+% Generate the battery based on the selected dimensionality in modelcase
 switch modelcase
-
   case '1D'
-
     gen = BatteryGenerator1D();
     paramobj = gen.updateBatteryInputParams(paramobj);
     paramobj.(ne).(cc).EffectiveElectricalConductivity = 100;
@@ -37,7 +51,6 @@ switch modelcase
     paramobj.(thermal).externalTemperature = paramobj.initT;
 
   case '2D'
-
     gen = BatteryGenerator2D();
     paramobj = gen.updateBatteryInputParams(paramobj);
     schedulecase = 1;
@@ -51,7 +64,6 @@ switch modelcase
     tfac = 1; % used in schedule setup
   
   case '3D'
-
     gen = BatteryGenerator3D();
     
     fac = 1; 
@@ -62,74 +74,66 @@ switch modelcase
     paramobj = gen.updateBatteryInputParams(paramobj);
     
     schedulecase = 5;
-    
     paramobj.(thermal).externalTemperature = paramobj.initT;
     
 end
 
+%%  Initialize the battery model. 
+% The battery model is initialized by sending paramobj to the Battery class
+% constructor. see :class:`Battery <Battery.Battery>`.
 model = Battery(paramobj);
 
-initstate = model.setupInitialState(); 
+%% Compute the nominal cell capacity and choose a C-Rate
+% The nominal capacity of the cell is calculated from the active materials.
+% This value is then combined with the user-defined C-Rate to set the cell
+% operational current.
+C       = computeCellCapacity(model);
+CRate   = 2;
+inputI  = (C/hour)*CRate;
+inputE  = 4.2;
 
-pe = 'PositiveElectrode';
-cc = 'CurrentCollector';
-stopFunc = @(model, state, state_prev) (state.(pe).(cc).E < 2.0); 
-
-
-%% Gitt inputs
-
-% C Rate
-CRate = 2;
-
-% pulseFraction
-pulsefraction = 0.01;
-
-% time relaxation
-time_rel = 4*hour;
-
-% Rampup time (to cope with the abrupt change on control)
-time_rampup = 1*second; % rampup time (linear interpolation between the two states)
-
-% number of cycle (default could be 1/pulfraction)
-N = 2;
+%% Setup the parameters of the GITT protocol
+pulseFraction       = 0.01;
+relaxationTime      = 4*hour;
+switchTime          = 1*milli*second; % switching time (linear interpolation between the two states)
+dischargeTime       = pulseFraction*CRate*hour; % time of discharging
 
 % Discretization parameters
-N_per_dis    = 5; % Number of time step in discharge phase
-N_per_rel    = 5; % Number of time step in relaxation phase
-N_per_rampup = 3; % Number of time step in rampup phase
+numberOfIntervals               = 1/pulseFraction;
+intervalsPerGalvanostaticStep   = 5; % Number of time step in galvanostatic phase
+intervalsPerRelaxationStep      = 5; % Number of time step in relaxation phase
+intervalsPerRampupStep          = 3; % Number of time step in rampup phase
 
-%% setup 
+%% Setup the initial state of the model
+% The initial state of the model is dispatched using the
+% model.setupInitialState()method. 
+initstate = model.setupInitialState(); 
 
-% discharge time
-time_dis    = pulsefraction*CRate*hour; % time of discharging
-
-% Cell capacity
-C = computeCellCapacity(model);
-inputI = (C/hour)*CRate;
-inputE = 4.2;
-
-% Activtation phase : activation phase (with rampup) and charging to inputE
-
-tup = 0.1; % rampup time
-time_init = 5*minute;
-srcfunc_init = @(time, I, E) rampupSwitchControl(time, tup, I, E, inputI, inputE);
-
-% Gitt phase : Alternate discharging and relaxation 
-
-% we setup tabulated input for the gitt part
-
-dtpoints = [time_rampup; ...
-            time_dis - time_rampup;
-            time_rampup;
-            time_rel - time_rampup];
+%% Setup the time step schedule 
+% Smaller time steps are used to ramp up the current from zero to its
+% operational value. Larger time steps are then used for the normal
+% operation. 
+time_init   = 5*minute;
+dtpoints = [switchTime; ...
+            dischargeTime - switchTime;
+            switchTime;
+            relaxationTime - switchTime];
 dIpoints = [1; 0; -1; 0];
 
-tpoints = [0; cumsum(repmat(dtpoints, N, 1))];
-Ipoints = [0; cumsum(repmat(dIpoints, N, 1))];
+tpoints = [0; cumsum(repmat(dtpoints, numberOfIntervals, 1))];
+Ipoints = [0; cumsum(repmat(dIpoints, numberOfIntervals, 1))];
 
 tpoints = time_init + tpoints; % starts at end of activation phase
 Ipoints = inputI*Ipoints; % scales with Iinput
 
+%% Setup the operating limits for the cell
+% The maximum and minimum voltage limits for the cell are defined using
+% stopping and source functions. A stopping function is used to set the
+% lower voltage cutoff limit. A source function is used to set the upper
+% voltage cutoff limit. 
+stopFunc        = @(model, state, state_prev) (state.(pe).(cc).E < 2.0); 
+tup             = 1*milli*second; % rampup time
+srcfunc_init    = @(time, I, E) rampupSwitchControl(time, tup, I, E, inputI, inputE);
 srcfunc_gitt = @(time, I, E) tabulatedIControl(time, tpoints, Ipoints);
 
 control(1) = struct('src', srcfunc_init, 'stopFunction', stopFunc); 
@@ -139,12 +143,12 @@ n_init = 5;
 dt_init = rampupTimesteps(time_init, time_init/n_init, 3);
 
 
-dt_cycle = [time_rampup/N_per_rampup*ones(N_per_rampup, 1); ...
-            (time_dis - time_rampup)/N_per_dis*ones(N_per_dis, 1); ...
-            time_rampup/N_per_rampup*ones(N_per_rampup, 1); ...
-            (time_rel - time_rampup)/N_per_rel*ones(N_per_rel, 1)];
+dt_cycle = [switchTime/intervalsPerRampupStep*ones(intervalsPerRampupStep, 1); ...
+            (dischargeTime - switchTime)/intervalsPerGalvanostaticStep*ones(intervalsPerGalvanostaticStep, 1); ...
+            switchTime/intervalsPerRampupStep*ones(intervalsPerRampupStep, 1); ...
+            (relaxationTime - switchTime)/intervalsPerRelaxationStep*ones(intervalsPerRelaxationStep, 1)];
 
-dt_cycle = repmat(dt_cycle, N, 1);
+dt_cycle = repmat(dt_cycle, numberOfIntervals, 1);
 
 step.val = [dt_init; dt_cycle];
 step.control = [ones(numel(dt_init), 1); ...
@@ -152,8 +156,7 @@ step.control = [ones(numel(dt_init), 1); ...
 
 schedule = struct('control', control, 'step', step); 
 
-% Setup nonlinear solver 
-
+%% Setup nonlinear solver 
 nls = NonLinearSolver(); 
 
 % Change default maximum iteration number in nonlinear solver
@@ -183,8 +186,7 @@ end
 model.nonlinearTolerance = 1e-5; 
 model.verbose = false;
 
-% Run simulation
-
+%% Run simulation
 doprofiling = false;
 if doprofiling
     profile off
@@ -208,34 +210,10 @@ Enew = cellfun(@(x) x.(pe).(cc).E, states);
 Inew = cellfun(@(x) x.(pe).(cc).I, states);
 time = cellfun(@(x) x.time, states); 
 
-%%
+%% Plot an animated summary of the results
+plotDashboard(model, states, 'step', 0);
 
-figure
-plot((time/hour), Enew, '*-', 'linewidth', 1)
-title('Potential (E)')
-xlabel('time (hours)')
-
-figure
-plot((time/hour), Inew, '*-', 'linewidth', 1)
-title('Current (I)')
-xlabel('time (hours)')
-
-return
-
-%% more plotting (case dependent)
-
-switch modelcase
-  case '1D'
-    % plot1D;
-  case '2D'
-    plotThermal(model, states);
-    plot2Dconc;
-  case '3D'
-    plot3D;
-    plot3Dconc;
-    plot3Dphi;
-end
-
+%return
 
 %{
 Copyright 2009-2021 SINTEF Industry, Sustainable Energy Technology

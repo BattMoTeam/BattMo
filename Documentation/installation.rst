@@ -1,4 +1,9 @@
 ========================
+Requirements
+========================
+MATLAB
+
+========================
 Installation instruction
 ========================
 
@@ -27,4 +32,4 @@ You can check that that your installation is setup correctly by running one of t
 
 .. _MRST: https://www.sintef.no/Projectweb/MRST/
 
-For large models, iterative solvers are necessary. We are providing here agmg `http://agmg.eu/`_ from 2012 
+For large models, iterative solvers are necessary. We are providing here agmg `http://agmg.eu/`_ from 2012
