@@ -9,7 +9,7 @@ For the latest information including video tutorials and project gallery, please
 
 .. raw:: html
 
-   <img src="Documentation/batmologo_text.png" style="margin-left: 5cm" width="300px">
+   <img src="Documentation/batmologo_text.png" style="center" width="300px">
 
 Installation
 ------------
