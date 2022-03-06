@@ -81,7 +81,7 @@ classdef ActiveMaterial < ElectronicComponent
             model = model.registerSubModels({'SolidDiffusion'});
             
             varnames =  {'jCoupling'};
-            if model.useSimplifiedDiffusionModel
+            if  model.useSimplifiedDiffusionModel
                 varnames{end + 1} = {'c'};
                 varnames{end + 1} = {'massCons'};
                 varnames{end + 1} = {'massAccum'};
@@ -111,6 +111,15 @@ classdef ActiveMaterial < ElectronicComponent
                 model = model.registerPropFunction({{sd, 'cSurface'}, fn, {{sd, 'c'}}});
                 model = model.registerPropFunction({{itf, 'cElectrodeSurface'}, fn, {{sd, 'cSurface'}}});
             end
+
+            if  model.useSimplifiedDiffusionModel
+                fn = @ActiveMaterial.updateMassFlux;
+                model = model.registerPropFunction({'massFlux', fn, {'c'}});
+                fn = @ActiveMaterial.updateMassSource;
+                model = model.registerPropFunction({'massSource', fn, {{itf, 'R'}}});
+                fn = @ActiveMaterial.updateMassConservation;
+                model = model.registerPropFunction({'massCons', fn, {'massAccum', 'massSource'}});
+            end
             
             fn = @ActiveMaterial.dispatchSolidRate;
             model = model.registerPropFunction({{sd, 'R'}, fn, {{itf, 'R'}}});
@@ -138,9 +147,14 @@ classdef ActiveMaterial < ElectronicComponent
             end
             
         end
-        
+
+        function state = updateMassFlux(model, state)
+        % used when useSimplifiedDiffusionModel is true
+            error
+        end
+            
         function state = assembleAccumTerm(model, state, state0, dt)
-        % used whe useSimplifiedDiffusionModel is true
+        % used when useSimplifiedDiffusionModel is true
             
             volumeFraction = model.volumeFraction;
             vols = model.G.cells.volumes;
@@ -153,7 +167,7 @@ classdef ActiveMaterial < ElectronicComponent
         end
 
         function state = updateMassSource(model, state)
-        % used whe useSimplifiedDiffusionModel is true
+        % used when useSimplifiedDiffusionModel is true
             
             vols = model.G.cells.volumes;
             
