@@ -3,7 +3,7 @@ clear all
 close all
 
 %% Add MRST module
-mrstModule add ad-core multimodel
+mrstModule add ad-core
 
 modelcase = 'battery';
 

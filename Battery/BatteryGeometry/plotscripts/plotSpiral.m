@@ -1,7 +1,7 @@
 try
-    require ad-core multimodel mrst-gui battery mpfa
+    require ad-core mrst-gui battery mpfa
 catch
-    mrstModule add ad-core multimodel mrst-gui mpfa
+    mrstModule add ad-core mrst-gui mpfa
 end
 
 mrstDebug(20);
