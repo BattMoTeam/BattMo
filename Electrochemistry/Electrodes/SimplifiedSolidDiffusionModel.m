@@ -58,7 +58,7 @@ classdef SimplifiedSolidDiffusionModel < BaseModel
             model = model.registerPropFunction({'D', fn, inputnames});
 
             fn = @ActiveMaterial.assembleSolidDiffusionEquation;
-            inputnames = {'cSurface', 'cAverage', 'R'};
+            inputnames = {'cSurface', 'cAverage', 'R', 'D'};
             model = model.registerPropFunction({'solidDiffusionEq', fn, inputnames});
             
         end

@@ -72,7 +72,7 @@ classdef ActiveMaterial < ElectronicComponent
         function model = setupVarPropNames(model)
 
             itf = 'Interface';
-            sd = 'SolidDiffusion';
+            sd  = 'SolidDiffusion';
             
             %% Declaration of the Dynamical Variables and Function of the model
             % (setup of varnameList and propertyFunctionList)
@@ -106,14 +106,14 @@ classdef ActiveMaterial < ElectronicComponent
             fn = @ActiveMaterial.updateSolidConcentrations;
             if model.useSimplifiedDiffusionModel
                 model = model.registerPropFunction({{sd, 'cAverage'}, fn, {'c'}});
-                model = model.registerPropFunction({{itf, 'cElectrodeSurface'}, fn, {sd, 'cSurface'}});
+                model = model.registerPropFunction({{itf, 'cElectrodeSurface'}, fn, {{sd, 'cSurface'}}});
             else
                 model = model.registerPropFunction({{sd, 'cSurface'}, fn, {{sd, 'c'}}});
                 model = model.registerPropFunction({{itf, 'cElectrodeSurface'}, fn, {{sd, 'cSurface'}}});
             end
             
             fn = @ActiveMaterial.dispatchSolidRate;
-            model = model.registerPropFunction({{sd, 'R'}, fn, {'R'}});
+            model = model.registerPropFunction({{sd, 'R'}, fn, {{itf, 'R'}}});
 
             
         end
