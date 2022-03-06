@@ -309,11 +309,11 @@ else
             cmax_elyte = max(max(states{i}.Electrolyte.c ./ 1000));
             cmin_elyte = min(min(states{i}.Electrolyte.c ./ 1000));
             
-            cmax_ne = max(max(states{i}.NegativeElectrode.ActiveMaterial.ActiveMaterial.cElectrode ./ 1000));
-            cmin_ne = min(min(states{i}.NegativeElectrode.ActiveMaterial.ActiveMaterial.cElectrode ./ 1000));
+            cmax_ne = max(max(states{i}.NegativeElectrode.ActiveMaterial.c ./ 1000));
+            cmin_ne = min(min(states{i}.NegativeElectrode.ActiveMaterial.c ./ 1000));
             
-            cmax_pe = max(max(states{i}.PositiveElectrode.ActiveMaterial.ActiveMaterial.cElectrode ./ 1000));
-            cmin_pe = min(min(states{i}.PositiveElectrode.ActiveMaterial.ActiveMaterial.cElectrode ./ 1000));
+            cmax_pe = max(max(states{i}.PositiveElectrode.ActiveMaterial.c ./ 1000));
+            cmin_pe = min(min(states{i}.PositiveElectrode.ActiveMaterial.c ./ 1000));
             
             phimax_elyte = max(max(states{i}.Electrolyte.phi));
             phimin_elyte = min(min(states{i}.Electrolyte.phi));
@@ -339,11 +339,11 @@ else
             cmax_elyte = max(cmax_elyte, max(max(states{i}.Electrolyte.c ./ 1000)));
             cmin_elyte = min(cmin_elyte, min(min(states{i}.Electrolyte.c ./ 1000)));
             
-            cmax_ne = max(cmax_ne, max(max(states{i}.NegativeElectrode.ActiveMaterial.ActiveMaterial.cElectrode ./ 1000)));
-            cmin_ne = min(cmin_ne, min(min(states{i}.NegativeElectrode.ActiveMaterial.ActiveMaterial.cElectrode ./ 1000)));
+            cmax_ne = max(cmax_ne, max(max(states{i}.NegativeElectrode.ActiveMaterial.c ./ 1000)));
+            cmin_ne = min(cmin_ne, min(min(states{i}.NegativeElectrode.ActiveMaterial.c ./ 1000)));
             
-            cmax_pe = max(cmax_pe, max(max(states{i}.PositiveElectrode.ActiveMaterial.ActiveMaterial.cElectrode ./ 1000)));
-            cmin_pe = min(cmin_pe, min(min(states{i}.PositiveElectrode.ActiveMaterial.ActiveMaterial.cElectrode ./ 1000)));
+            cmax_pe = max(cmax_pe, max(max(states{i}.PositiveElectrode.ActiveMaterial.c ./ 1000)));
+            cmin_pe = min(cmin_pe, min(min(states{i}.PositiveElectrode.ActiveMaterial.c ./ 1000)));
             
             cmax_global_solid = max(cmax_ne, cmax_pe);
             cmin_global_solid = min(cmin_ne, cmin_pe);
@@ -372,7 +372,7 @@ else
             style.fontSize = 10;
         end
         if model.G.griddim == 1
-            subplot(2,4,1), plotCellData(model.NegativeElectrode.ActiveMaterial.G, states{i}.NegativeElectrode.ActiveMaterial.ActiveMaterial.cElectrode ./ 1000, 'linewidth', 3);
+            subplot(2,4,1), plotCellData(model.NegativeElectrode.ActiveMaterial.G, states{i}.NegativeElectrode.ActiveMaterial.c ./ 1000, 'linewidth', 3);
             xlabel(gca, 'Position  /  m')
             title(gca, 'Negative Electrode Concentration  /  mol \cdot L^{-1}', 'color', style.fontColor)
             xlim([xmin, xmax])
@@ -398,7 +398,7 @@ else
                 'YColor', style.fontColor, ...
                 'GridColor', style.fontColor)
 
-            subplot(2,4,3), plotCellData(model.PositiveElectrode.ActiveMaterial.G, states{i}.PositiveElectrode.ActiveMaterial.ActiveMaterial.cElectrode ./ 1000, 'linewidth', 3);
+            subplot(2,4,3), plotCellData(model.PositiveElectrode.ActiveMaterial.G, states{i}.PositiveElectrode.ActiveMaterial.c ./ 1000, 'linewidth', 3);
             xlabel(gca, 'Position  /  m')
             title(gca, 'Positive Electrode Concentration  /  mol \cdot L^{-1}', 'color', style.fontColor)
             xlim([xmin, xmax])

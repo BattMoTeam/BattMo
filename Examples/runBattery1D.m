@@ -26,10 +26,13 @@ paramobj = BatteryInputParams(jsonstruct);
 % We define some shorthand names for simplicity.
 ne      = 'NegativeElectrode';
 pe      = 'PositiveElectrode';
-eac     = 'ActiveMaterial';
+am      = 'ActiveMaterial';
 cc      = 'CurrentCollector';
 elyte   = 'Electrolyte';
 thermal = 'ThermalModel';
+itf     = 'Interface';
+sd      = 'SolidDiffusion';
+
 
 %% Setup the geometry and computational mesh
 % Here, we setup the 1D computational mesh that will be used for the
@@ -52,7 +55,7 @@ paramobj.(thermal).externalTemperature = paramobj.initT;
 %%  Initialize the battery model. 
 % The battery model is initialized by sending paramobj to the Battery class
 % constructor. see :class:`Battery <Battery.Battery>`.
-model = Battery(paramobj,'use_thermal',true,'use_solid_diffusion',true);
+model = Battery(paramobj, 'use_thermal', true, 'use_solid_diffusion', true);
 model.AutoDiffBackend= AutoDiffBackend();
 
 %% Compute the nominal cell capacity and choose a C-Rate

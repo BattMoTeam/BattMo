@@ -101,7 +101,7 @@ else
     initstate.(ne).(sd).c = c*ones(nenr*nenp, 1);
 end
 
-initstate.(ne) = model.(ne).updateSolidConcentrations(initstate.(ne));
+initstate.(ne) = model.(ne).updateConcentrations(initstate.(ne));
 initstate.(ne).(itf) = nitf.updateOCP(initstate.(ne).(itf));
 
 OCP = initstate.(ne).(itf).OCP;
@@ -125,7 +125,7 @@ else
     initstate.(pe).(sd).c = c*ones(penr*penp, 1);
 end
 
-initstate.(pe) = model.(pe).updateSolidConcentrations(initstate.(pe));
+initstate.(pe) = model.(pe).updateConcentrations(initstate.(pe));
 initstate.(pe).(itf) = pitf.updateOCP(initstate.(pe).(itf));
 
 OCP = initstate.(pe).(itf).OCP;

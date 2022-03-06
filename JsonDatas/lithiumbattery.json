@@ -15,7 +15,14 @@
             "Interface": {
                 "isFile": true,
                 "filename": "JsonDatas/graphite.json"
+            },
+            "SolidDiffusion" : {
+                "useSimplifiedDiffusionModel" : true,
+                "EaD": 5000,
+                "D0": 3.9e-14,
+                "rp": 1e-06
             }
+            
         },
         "CurrentCollector": {
             "isFile": true,
@@ -33,6 +40,12 @@
             "Interface": {
                 "isFile": true,
                 "filename": "JsonDatas/nmc111.json"
+            },
+            "SolidDiffusion": {
+                "useSimplifiedDiffusionModel" : true,
+                "EaD": 5000,
+                "D0": 1e-14,
+                "rp": 1e-06
             }
         },
         "CurrentCollector": {

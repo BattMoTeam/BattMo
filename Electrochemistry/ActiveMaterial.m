@@ -11,7 +11,10 @@ classdef ActiveMaterial < ElectronicComponent
         volumeFraction % Volume fraction
         porosity       % Porosity
         thickness      % Thickness / [m]
-
+        
+        InterDiffusionCoefficient % Inter particle diffusion coefficient parameter (diffusion between the particles)
+        EffectiveDiffusionCoefficient % 
+        
         thermalConductivity % Intrinsic Thermal conductivity of the active component
         heatCapacity        % Intrinsic Heat capacity of the active component
 
@@ -42,13 +45,19 @@ classdef ActiveMaterial < ElectronicComponent
             
             model.Interface = Interface(paramobj.Interface);
             
-            paramobj.SolidDiffusion.volumetricSurfaceArea = paramobj.Interface.volumetricSurfaceArea;
+            paramobj.SolidDiffusion.volumetricSurfaceArea = model.Interface.volumetricSurfaceArea;
+            
             if paramobj.SolidDiffusion.useSimplifiedDiffusionModel
                 model.SolidDiffusion = SimplifiedSolidDiffusionModel(paramobj.SolidDiffusion);
                 model.useSimplifiedDiffusionModel = true;
             else
                 model.SolidDiffusion = SolidDiffusionModel(paramobj.SolidDiffusion);
                 model.useSimplifiedDiffusionModel = false;
+            end
+            
+            if model.useSimplifiedDiffusionModel
+                % only used in SimplifiedSolidDiffusionModel (for now)
+                model.InterDiffusionCoefficient = paramobj.InterDiffusionCoefficient;
             end
             
             % setup volumeFraction, porosity, thickness
@@ -60,6 +69,10 @@ classdef ActiveMaterial < ElectronicComponent
             
             % setup effective electrical conductivity using Bruggeman approximation 
             model.EffectiveElectricalConductivity = model.electricalConductivity.*volumeFraction.^1.5;
+            
+            if model.useSimplifiedDiffusionModel            
+                model.EffectiveDiffusionCoefficient = model.InterDiffusionCoefficient.*volumeFraction.^1.5;
+            end
             
             % setup effective thermal conductivity            
             model.EffectiveThermalConductivity = model.thermalConductivity.*volumeFraction.^1.5;
@@ -103,7 +116,7 @@ classdef ActiveMaterial < ElectronicComponent
             model = model.registerPropFunction({{itf, 'T'}, fn, {'T'}});
             model = model.registerPropFunction({{sd, 'T'}, fn, {'T'}});
 
-            fn = @ActiveMaterial.updateSolidConcentrations;
+            fn = @ActiveMaterial.updateConcentrations;
             if model.useSimplifiedDiffusionModel
                 model = model.registerPropFunction({{sd, 'cAverage'}, fn, {'c'}});
                 model = model.registerPropFunction({{itf, 'cElectrodeSurface'}, fn, {{sd, 'cSurface'}}});
@@ -121,19 +134,19 @@ classdef ActiveMaterial < ElectronicComponent
                 model = model.registerPropFunction({'massCons', fn, {'massAccum', 'massSource'}});
             end
             
-            fn = @ActiveMaterial.dispatchSolidRate;
+            fn = @ActiveMaterial.dispatchRate;
             model = model.registerPropFunction({{sd, 'R'}, fn, {{itf, 'R'}}});
 
             
         end
         
-        function state = dispatchSolidRate(model, state)
+        function state = dispatchRate(model, state)
             
             state.SolidDiffusion.R = state.Interface.R;
             
         end
         
-        function state = updateSolidConcentrations(model, state)
+        function state = updateConcentrations(model, state)
 
             sd  = 'SolidDiffusion';
             itf = 'Interface';
@@ -150,7 +163,15 @@ classdef ActiveMaterial < ElectronicComponent
 
         function state = updateMassFlux(model, state)
         % used when useSimplifiedDiffusionModel is true
-            error
+
+            D = model.EffectiveDiffusionCoefficient;
+            
+            c = state.c;
+
+            massflux = assembleFlux(model, c, D);
+            
+            state.massFlux = massflux;
+
         end
             
         function state = assembleAccumTerm(model, state, state0, dt)

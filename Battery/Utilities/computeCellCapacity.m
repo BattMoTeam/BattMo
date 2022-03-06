@@ -22,8 +22,8 @@ function [cap, cap_neg, cap_pos, specificEnergy] = computeCellCapacity(model)
     
     ne  = 'NegativeElectrode';
     pe  = 'PositiveElectrode';
-    am = 'ActiveMaterial';
     am  = 'ActiveMaterial';
+    itf = 'Interface';
     
     eldes = {ne, pe};
     
@@ -37,30 +37,30 @@ function [cap, cap_neg, cap_pos, specificEnergy] = computeCellCapacity(model)
         elde = eldes{ind};
         
         if isBare
-            eacmodel = model.(elde);
+            ammodel = model.(elde);
         else
-            eacmodel = model.(elde).(am);
+            ammodel = model.(elde).(am);
         end
-        ammodel = eacmodel.(am);
+        itfmodel = ammodel.(itf);
         
-        n    = ammodel.n;
-        F    = ammodel.constants.F;
-        G    = ammodel.G;
-        cMax = ammodel.Li.cmax;
+        n    = itfmodel.n;
+        F    = itfmodel.constants.F;
+        G    = itfmodel.G;
+        cMax = itfmodel.cmax;
 
         switch elde
           case 'NegativeElectrode'
-            thetaMax = ammodel.theta100;
-            thetaMin = ammodel.theta0;
+            thetaMax = itfmodel.theta100;
+            thetaMin = itfmodel.theta0;
           case 'PositiveElectrode'
-            thetaMax = ammodel.theta0;
-            thetaMin = ammodel.theta100;            
+            thetaMax = itfmodel.theta0;
+            thetaMin = itfmodel.theta100;            
           otherwise
             error('Electrode not recognized');
         end
         
-        volume_fraction = ammodel.volumeFraction;
-        volume_electrode = sum(eacmodel.G.cells.volumes);
+        volume_fraction = itfmodel.volumeFraction;
+        volume_electrode = sum(ammodel.G.cells.volumes);
         volume = volume_fraction*volume_electrode;
         
         cap_usable(ind) = (thetaMax - thetaMin)*cMax*volume*n*F;
@@ -85,14 +85,14 @@ function [cap, cap_neg, cap_pos, specificEnergy] = computeCellCapacity(model)
         
         elde = 'PositiveElectrode';
 
-        ammodel = model.(elde).(am).(itf);
-        F = ammodel.constants.F;
-        G = ammodel.G;
-        n = ammodel.n;
+        itfmodel = model.(elde).(am).(itf);
+        F = itfmodel.constants.F;
+        G = itfmodel.G;
+        n = itfmodel.n;
         assert(n == 1, 'not implemented yet');
-        cMax = ammodel.Li.cmax;
+        cMax = itfmodel.Li.cmax;
         
-        volume_fraction = ammodel.volumeFraction;
+        volume_fraction = itfmodel.volumeFraction;
         volume_electrode = sum(model.(elde).(am).G.cells.volumes);
         volume = volume_fraction*volume_electrode;
         
@@ -105,13 +105,13 @@ function [cap, cap_neg, cap_pos, specificEnergy] = computeCellCapacity(model)
         
         elde = 'NegativeElectrode';        
         
-        ammodel = model.(elde).(am).(itf);
-        F = ammodel.constants.F;
-        G = ammodel.G;
-        n = ammodel.n;
+        itfmodel = model.(elde).(am).(itf);
+        F = itfmodel.constants.F;
+        G = itfmodel.G;
+        n = itfmodel.n;
         assert(n == 1, 'not implemented yet');
-        cMax = ammodel.Li.cmax;
-        volume_fraction = ammodel.volumeFraction;
+        cMax = itfmodel.Li.cmax;
+        volume_fraction = itfmodel.volumeFraction;
         volume_electrode = sum(model.(elde).(am).G.cells.volumes);
         volume = volume_fraction*volume_electrode;
         

@@ -1,14 +1,9 @@
 {
-    "Li": {
-        "EaD": 5000,
-        "D0": 3.9e-14,
-        "cmax": 30555
-    },
+    "cmax": 30555,
     "volumeFraction": 0.8,
     "volumetricSurfaceArea": 723600,
     "density": 2240,
     "n" : 1,
-    "rp": 1e-06,
     "Eak": 5000,
     "k0": 5.031e-11,
     "theta100": 0.88551,

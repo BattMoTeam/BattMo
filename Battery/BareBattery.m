@@ -347,7 +347,7 @@ classdef BareBattery < BaseModel
 
             for ind = 1 : numel(electrodes)
                 elde = electrodes{ind};
-                state.(elde) = battery.(elde).updateSolidConcentrations(state.(elde));
+                state.(elde) = battery.(elde).updateConcentrations(state.(elde));
                 state.(elde).(itf) = battery.(elde).(itf).updateReactionRateCoefficient(state.(elde).(itf));
                 state.(elde).(itf) = battery.(elde).(itf).updateOCP(state.(elde).(itf));
                 state.(elde).(itf) = battery.(elde).(itf).updateReactionRate(state.(elde).(itf));
@@ -388,7 +388,7 @@ classdef BareBattery < BaseModel
             %% update solid diffustion mass conservation equations
             for ind = 1 : numel(electrodes)
                 elde = electrodes{ind};
-                state.(elde) = battery.(elde).dispatchSolidRate(state.(elde));
+                state.(elde) = battery.(elde).dispatchRate(state.(elde));
                 state.(elde).(sd) = battery.(elde).(sd).updateDiffusionCoefficient(state.(elde).(sd));
                 if model.(elde).useSimplifiedDiffusionModel
                     state.(elde) = battery.(elde).assembleAccumTerm(state.(elde), state0.(elde), dt);

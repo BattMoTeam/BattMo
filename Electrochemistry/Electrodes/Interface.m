@@ -80,6 +80,8 @@ classdef Interface < BaseModel
             varnames{end + 1} = 'eta';
             % Reaction rate
             varnames{end + 1} = 'R';
+            % Reaction rate
+            varnames{end + 1} = 'dUdT';
             % OCP
             varnames{end + 1} = 'OCP';
             % Reaction rate coefficient
@@ -94,7 +96,8 @@ classdef Interface < BaseModel
             fn = @ActiveMaterial.updateOCP;
             inputnames = {'cElectrodeSurface', 'T'};
             model = model.registerPropFunction({'OCP', fn, inputnames});
-
+            model = model.registerPropFunction({'dUdT', fn, inputnames});
+            
             fn = @ActiveMaterial.updateReactionRate;
             inputnames = {'T', 'phiElectrolyte', 'phiElectrode', 'j0', 'OCP'};
             model = model.registerPropFunction({'R', fn, inputnames});
@@ -110,9 +113,8 @@ classdef Interface < BaseModel
             
         end
         
-
-        
         function state = updateOCP(model, state)
+
             c = state.cElectrodeSurface;
             T = state.T;
 
