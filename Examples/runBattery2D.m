@@ -51,7 +51,6 @@ paramobj.(pe).(cc).EffectiveElectricalConductivity = 1e5;
 % constructor. see :class:`Battery <Battery.Battery>`.
 model = Battery(paramobj);
 
-
 %% Plot the mesh
 % The mesh is plotted using the plotGrid() function from MRST. 
 figure
@@ -61,7 +60,12 @@ plotGrid(model.(elyte).(sep).G, 'facecolor', [239, 204, 97]./255,   'edgealpha',
 plotGrid(model.(pe).(eac).G,    'facecolor', [64, 64, 64]./255,     'edgealpha', 0.5, 'edgecolor', [1, 1, 1]);
 plotGrid(model.(pe).(cc).G,     'facecolor', [191, 191, 191]./255,  'edgealpha', 0.5, 'edgecolor', [1, 1, 1]);
 axis tight;
-legend({'negative electrode current collector', 'negative electrode active material', 'separator', 'positive electrode active material', 'positive electrode current collector'}, 'location', 'south west'),
+legend({'negative electrode current collector' , ...
+        'negative electrode active material'   , ...
+        'separator'                            , ...
+        'positive electrode active material'   , ...
+        'positive electrode current collector'}, ...
+       'location', 'south west'),
 setFigureStyle('quantity', 'single');
 drawnow();
 pause(0.1);
@@ -139,26 +143,6 @@ time = cellfun(@(x) x.time, states);
 
 %% Plot an animated summary of the results
 plotDashboard(model, states, 'step', 0);
-% figure
-% plot((time/hour), Enew, '*-', 'linewidth', 3)
-% title('Cell Voltage  /  V')
-% xlabel('Time  /  h')
-% 
-% figure
-% plot((time/hour), Inew, '*-', 'linewidth', 3)
-% title('Cell Current  /  A')
-% xlabel('Time  /  h')
-% 
-% %% Plot of the lithium concentration
-% figure
-% plotCellData(model.(elyte).G, states{50}.(elyte).c, 'edgealpha', 0.1);
-% xlabel('Position  /  m')
-% ylabel('Position  /  m')
-% title('Lithium concentration in Electrolyte at time step 50')
-% colorbar
-% 
-% %% Set figure styles
-% setFigureStyle();
 
 %{
 Copyright 2009-2021 SINTEF Industry, Sustainable Energy Technology

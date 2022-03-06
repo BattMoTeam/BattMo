@@ -31,9 +31,9 @@ elyte   = 'Electrolyte';
 thermal = 'ThermalModel';
 
 %% Setup the geometry and computational mesh
-% Here, we setup the 2D computational mesh that will be used for the
+% Here, we setup the 3D computational mesh that will be used for the
 % simulation. The required discretization parameters are already included
-% in the class BatteryGenerator2D. 
+% in the class BatteryGenerator3D.
 gen = BatteryGenerator3D();
 
 % Now, we update the paramobj with the properties of the mesh.

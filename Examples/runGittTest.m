@@ -213,8 +213,6 @@ time = cellfun(@(x) x.time, states);
 %% Plot an animated summary of the results
 plotDashboard(model, states, 'step', 0);
 
-%return
-
 %{
 Copyright 2009-2021 SINTEF Industry, Sustainable Energy Technology
 and SINTEF Digital, Mathematics & Cybernetics.
