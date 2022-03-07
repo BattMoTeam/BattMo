@@ -48,7 +48,7 @@ classdef BareBattery < BaseModel
             model.PositiveElectrode = model.setupElectrode(paramobj.PositiveElectrode);
             model.Electrolyte = model.setupElectrolyte(paramobj.Electrolyte);
 
-            % defines shortcuts
+            % define shorthands
             elyte = 'Electrolyte';
             ne    = 'NegativeElectrode';
             pe    = 'PositiveElectrode';
@@ -311,7 +311,7 @@ classdef BareBattery < BaseModel
             %% for now temperature and SOC are kept constant
             nc = model.G.cells.num;
             
-            % Shortcuts used in this function
+            % Shorthands used in this function
             battery = model;
             ne      = 'NegativeElectrode';
             pe      = 'PositiveElectrode';

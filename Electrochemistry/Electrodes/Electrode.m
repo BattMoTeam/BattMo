@@ -28,7 +28,7 @@ classdef Electrode < BaseModel
             model.ActiveMaterial = model.setupActiveMaterial(paramobj.ActiveMaterial);
             model.CurrentCollector = model.setupCurrentCollector(paramobj.CurrentCollector);
 
-            % defines shortcuts
+            % define shorthands
             am     = 'ActiveMaterial';
             cc      = 'CurrentCollector';
             am      = 'ActiveMaterial';

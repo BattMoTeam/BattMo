@@ -285,7 +285,7 @@ classdef SpiralBatteryGenerator < BatteryGenerator
         
         function paramobj = setupElectrodes(gen, paramobj, params)
 
-            % shortcuts 
+            % shorthands 
             ne  = 'NegativeElectrode';
             pe  = 'PositiveElectrode';
             cc  = 'CurrentCollector';

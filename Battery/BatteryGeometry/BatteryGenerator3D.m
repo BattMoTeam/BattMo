@@ -13,7 +13,7 @@ classdef BatteryGenerator3D < BatteryGenerator
         
         I = 1e-4;
 
-        % Shortcuts used below
+        % Shorthands used below
         % ne    : NegativeElectrode
         % pe    : NegativeElectrode
         % am   : ElectrodActiveComponent
@@ -69,7 +69,7 @@ classdef BatteryGenerator3D < BatteryGenerator
         
         function [paramobj, gen] = setupGrid(gen, paramobj, params)
             
-            % shortcuts
+            % shorthands
             ne    = 'NegativeElectrode';
             pe    = 'PositiveElectrode';
             am   = 'ActiveMaterial';
@@ -211,7 +211,7 @@ classdef BatteryGenerator3D < BatteryGenerator
         function paramobj = setupElectrodes(gen, paramobj, params)
 
             
-            % shortcuts 
+            % shorthands 
             ne  = 'NegativeElectrode';
             pe  = 'PositiveElectrode';
             cc  = 'CurrentCollector';
@@ -258,7 +258,7 @@ classdef BatteryGenerator3D < BatteryGenerator
         % 
         % We recover the external coupling terms for the current collectors
 
-            % shortcuts
+            % shorthands
             ne    = 'NegativeElectrode';
             pe    = 'PositiveElectrode';
             cc    = 'CurrentCollector';

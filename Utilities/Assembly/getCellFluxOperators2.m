@@ -66,7 +66,7 @@ function op = getCellFluxOperators2(G)
     cellfacevecttbl   = crossIndexArray(cellfacetbl   , vecttbl  , {}, opts{:});
 
     if doOptimized
-        % some shortcuts
+        % some shorthands
         d_num   = vecttbl.num;
         if_num  = intfacetbl.num;
         icf_num = cellintfacetbl.num;

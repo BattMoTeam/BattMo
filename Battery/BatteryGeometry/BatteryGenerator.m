@@ -85,7 +85,7 @@ classdef BatteryGenerator
         function paramobj = setupElectrode(gen, paramobj, params)
         % paramobj is instance of ElectrodeInputParams
         
-            % shortcuts 
+            % shorthands 
             am = 'ActiveMaterial';
             cc  = 'CurrentCollector';            
             

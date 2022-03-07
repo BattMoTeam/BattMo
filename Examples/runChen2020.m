@@ -17,7 +17,7 @@ jsonstruct = parseBatmoJson('JsonDatas/Chen2020/chenBattery.json');
 
 paramobj = BareBatteryInputParams(jsonstruct);
 
-% Some shortcuts used for the sub-models
+% Some shorthands used for the sub-models
 ne    = 'NegativeElectrode';
 pe    = 'PositiveElectrode';
 elyte = 'Electrolyte';

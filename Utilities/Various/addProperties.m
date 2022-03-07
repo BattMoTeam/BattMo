@@ -3,7 +3,7 @@ function state = addProperties(model, state)
     nc = model.G.cells.num;
     %state.SOC = model.SOC*ones(nc, 1);
 
-    % Shortcuts used in this function
+    % Shorthands used in this function
     battery = model;
     ne      = 'NegativeElectrode';
     pe      = 'PositiveElectrode';

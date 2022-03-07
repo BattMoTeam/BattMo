@@ -58,7 +58,7 @@ classdef Battery < BaseModel
             model.Electrolyte = model.setupElectrolyte(paramobj.Electrolyte);
             model.ThermalModel = ThermalComponent(paramobj.ThermalModel);
             
-            % defines shortcuts
+            % define shorthands
             elyte   = 'Electrolyte';
             ne      = 'NegativeElectrode';
             pe      = 'PositiveElectrode';
@@ -488,7 +488,7 @@ classdef Battery < BaseModel
             nc = model.G.cells.num;
             %state.SOC = model.SOC*ones(nc, 1);
             
-            % Shortcuts used in this function
+            % Shorthands used in this function
             battery = model;
             ne      = 'NegativeElectrode';
             pe      = 'PositiveElectrode';
