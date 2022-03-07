@@ -14,7 +14,7 @@ names = cellfun(@(x) fullfile(ROOTDIR, '..', ['mrst-', x]), names, ...
 
 mrstPath('addroot', names{:});
 
-mrstPath('register', 'multimodel', fullfile(rootdirname, 'MRST/mrst-multimodel/'));
+mrstPath('register', 'agmg', fullfile(rootdirname, 'Externals/agmg/'));
 
 dirnames = {'Battery', 'Electrochemistry', 'Examples', 'Materials', 'Physics', 'Utilities'};
 
