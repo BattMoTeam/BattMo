@@ -75,7 +75,7 @@ function [cap, cap_neg, cap_pos, specificEnergy] = computeCellCapacity(model)
     
     if nargout > 3
         
-        assert(~iBare, 'not implemented yet for BareBattery model')
+        assert(~isBare, 'not implemented yet for BareBattery model')
         r = cap_neg/cap_pos;
         
         thetaMinPos = model.(pe).(am).(itf).theta100;
@@ -90,7 +90,7 @@ function [cap, cap_neg, cap_pos, specificEnergy] = computeCellCapacity(model)
         G = itfmodel.G;
         n = itfmodel.n;
         assert(n == 1, 'not implemented yet');
-        cMax = itfmodel.Li.cmax;
+        cMax = itfmodel.cmax;
         
         volume_fraction = itfmodel.volumeFraction;
         volume_electrode = sum(model.(elde).(am).G.cells.volumes);
@@ -110,7 +110,7 @@ function [cap, cap_neg, cap_pos, specificEnergy] = computeCellCapacity(model)
         G = itfmodel.G;
         n = itfmodel.n;
         assert(n == 1, 'not implemented yet');
-        cMax = itfmodel.Li.cmax;
+        cMax = itfmodel.cmax;
         volume_fraction = itfmodel.volumeFraction;
         volume_electrode = sum(model.(elde).(am).G.cells.volumes);
         volume = volume_fraction*volume_electrode;
