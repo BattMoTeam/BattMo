@@ -1,6 +1,6 @@
 % Setup mrst modules
 
-mrstModule add ad-core multimodel mrst-gui mpfa agmg
+mrstModule add ad-core mrst-gui mpfa agmg
 
 %% We setup the geometrical parameters for a 4680 battery. 
 %% Those will be gathered in structure spiralparams (see below) and used by SpiralBatteryGenerator to generate the spiral layered geometry of the jelly roll
@@ -167,7 +167,7 @@ else
 end
 
 nls.timeStepSelector = StateChangeTimeStepSelector('TargetProps', {{'PositiveElectrode', 'CurrentCollector', 'E'}}, 'targetChangeAbs', 0.03);
-linearsolver = 'direct';
+linearsolver = 'agmg';
 switch linearsolver
   case 'agmg'
     mrstModule add agmg
