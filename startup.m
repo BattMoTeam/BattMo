@@ -1,4 +1,9 @@
-
+% This startup file set up the MATLAB path
+%
+%% We use first `MRST <https://bitbucket.org/mrst/mrst-core/wiki/Home>`_ setup for MRST modules. 
+% The source code for MRST is synchronized to BatMo using git-submodule mechanisms (In the MRST directory in BatMo, you
+% should find the subdirectories given by the ``names`` cell array below)
+% 
 rootdirname = fileparts(mfilename('fullpath'));
 
 run(fullfile(rootdirname, 'MRST/mrst-core/startup'));
@@ -14,7 +19,10 @@ names = cellfun(@(x) fullfile(ROOTDIR, '..', ['mrst-', x]), names, ...
 
 mrstPath('addroot', names{:});
 
+%% The open source code of the 2012 version of AGMG is also available as a submodule in the directory ``Externals/agmg/``
 mrstPath('register', 'agmg', fullfile(rootdirname, 'Externals/agmg/'));
+
+%% The BatMo source code directories are now added directly to path
 
 dirnames = {'Battery', 'Electrochemistry', 'Examples', 'Materials', 'Physics', 'Utilities'};
 
@@ -22,8 +30,6 @@ for ind = 1 : numel(dirnames)
     dirname = fullfile(rootdirname, dirnames{ind});
     addpath(genpath(dirname));
 end
-
-
 
 %{
 Copyright 2009-2021 SINTEF Industry, Sustainable Energy Technology
