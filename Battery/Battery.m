@@ -88,12 +88,12 @@ classdef Battery < BaseModel
             model.use_thermal = opt.use_thermal;
             
 
-            model = model.setupVarPropNames();
+            model = model.registerVarAndPropfuncNames();
             
         end
 
         
-        function model = setupVarPropNames(model)
+        function model = registerVarAndPropfuncNames(model)
             
             %% Declaration of the Dynamical Variables and Function of the model
             % (setup of varnameList and propertyFunctionList)

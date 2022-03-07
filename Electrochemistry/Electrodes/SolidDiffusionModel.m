@@ -35,11 +35,11 @@ classdef SolidDiffusionModel < BaseModel
             model = dispatchParams(model, paramobj, fdnames);
             model.operators = model.setupOperators();
             
-            model = model.setupVarPropNames();
+            model = model.registerVarAndPropfuncNames();
             
         end
 
-        function model = setupVarPropNames(model)
+        function model = registerVarAndPropfuncNames(model)
 
             %% Declaration of the Dynamical Variables and Function of the model
             % (setup of varnameList and propertyFunctionList)

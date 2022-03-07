@@ -71,7 +71,7 @@ classdef BareBattery < BaseModel
 
         end
 
-        function model = setupVarPropNames(model)
+        function model = registerVarAndPropfuncNames(model)
 
             itf = 'Interface';
             sd = 'SolidDiffusion';

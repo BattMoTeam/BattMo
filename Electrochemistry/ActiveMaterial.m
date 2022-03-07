@@ -76,11 +76,11 @@ classdef ActiveMaterial < ElectronicComponent
             model.EffectiveThermalConductivity = model.thermalConductivity.*volumeFraction.^1.5;
             model.EffectiveHeatCapacity = model.heatCapacity.*volumeFraction;
         
-            model = model.setupVarPropNames();
+            model = model.registerVarAndPropfuncNames();
                         
         end
 
-        function model = setupVarPropNames(model)
+        function model = registerVarAndPropfuncNames(model)
 
             itf = 'Interface';
             sd  = 'SolidDiffusion';
