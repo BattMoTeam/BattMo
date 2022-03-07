@@ -4,8 +4,6 @@
     "description": "A standard electrolyte",
     "type": "object",
     "properties" : {
-        "electrolyteType" : {"type" : "string",
-                             "description" : "type of electrolyte (binary or ...)"},
         "heatCapacity": {"type" : "number"},
         "thermalConductivity": {"type" : "number"}, 
         "chargeCarrierName": {"type" : "string"},

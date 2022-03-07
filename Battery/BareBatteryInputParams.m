@@ -35,13 +35,7 @@ classdef BareBatteryInputParams < InputParams
             paramobj.(ne) = ActiveMaterialInputParams(pick(ne));
             paramobj.(pe) = ActiveMaterialInputParams(pick(pe));
             jsonelytestruct = pick(elyte);
-            switch jsonelytestruct.electrolyteType
-              case 'binary'
-                paramobj.(elyte) = ElectrolyteInputParams(pick(elyte));
-              otherwise
-                % binary is default
-                paramobj.(elyte) = ElectrolyteInputParams(pick(elyte));                
-            end
+            paramobj.(elyte) = ElectrolyteInputParams(pick(elyte));
         end
 
     end

@@ -1,5 +1,4 @@
 {
-    "electrolyteType" : "binary",
     "heatCapacity": 4180000.0,
     "thermalConductivity": 6e-05,
     "negativeDomainBruggemanCoefficient" : 1.5,

@@ -151,13 +151,7 @@ classdef BareBattery < BaseModel
         function electrolyte = setupElectrolyte(model, paramobj)
         % Setup the electrolyte model :attr:`Electrolyte`. Here, :code:`paramobj` is instance of
         % :class:`ElectrolyteInputParams <Electrochemistry.ElectrolyteInputParams>`
-            switch paramobj.electrolyteType
-              case 'binary'
-                electrolyte = Electrolyte(paramobj);
-              otherwise
-                % binary is default
-                electrolyte = Electrolyte(paramobj)
-            end
+            electrolyte = Electrolyte(paramobj);
         end
         
         function model = setupMappings(model)

@@ -1,5 +1,4 @@
 {
-    "electrolyteType" : "binary",
     "specificHeatCapacity": 2055.0,
     "heatCapacity": 2055000.0,
     "thermalConductivity": 0.6,
