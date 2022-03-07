@@ -1,5 +1,17 @@
-% In this file, we have saved the output given by `PyBaMM <https://github.com/pybamm-team/PyBaMM>`_ for the Chen test case
-%
+% In this file, we have saved the output given by `PyBaMM <https://github.com/pybamm-team/PyBaMM>`_ for the data taken from Chen et al. paper.
+% 
+%      @article{Chen2020,
+%      author = {Chen, Chang-Hui and Brosa Planella, Ferran and O'Regan, Kieran and Gastol, Dominika and Widanage, W. Dhammika and Kendrick, Emma},
+%      title = {{Development of Experimental Techniques for Parameterization of Multi-scale Lithium-ion Battery Models}},
+%      journal = {Journal of The Electrochemical Society},
+%      volume = {167},
+%      number = {8},
+%      pages = {080534},
+%      year = {2020},
+%      publisher = {The Electrochemical Society},
+%      doi = {10.1149/1945-7111/ab9050},
+%      }
+% 
 % The results are given by the arrays
 %    t : time / h
 %    u : Cell Voltage / V
