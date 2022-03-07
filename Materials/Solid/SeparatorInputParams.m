@@ -4,7 +4,6 @@ classdef SeparatorInputParams < ComponentInputParams
 %    
     properties
         
-        thickness
         porosity
         rp
         Gurley

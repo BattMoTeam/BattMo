@@ -10,7 +10,6 @@ classdef ActiveMaterial < ElectronicComponent
         
         volumeFraction % Volume fraction
         porosity       % Porosity
-        thickness      % Thickness / [m]
         
         InterDiffusionCoefficient % Inter particle diffusion coefficient parameter (diffusion between the particles)
         EffectiveDiffusionCoefficient % 
@@ -60,12 +59,11 @@ classdef ActiveMaterial < ElectronicComponent
                 model.InterDiffusionCoefficient = paramobj.InterDiffusionCoefficient;
             end
             
-            % setup volumeFraction, porosity, thickness
+            % setup volumeFraction, porosity
             nc = model.G.cells.num;
             volumeFraction = model.Interface.volumeFraction*ones(nc, 1);
             model.volumeFraction = volumeFraction;
             model.porosity = 1 - model.volumeFraction;
-            model.thickness = 10e-6;
             
             % setup effective electrical conductivity using Bruggeman approximation 
             model.EffectiveElectricalConductivity = model.electricalConductivity.*volumeFraction.^1.5;
