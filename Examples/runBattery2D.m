@@ -53,12 +53,13 @@ model = Battery(paramobj);
 
 %% Plot the mesh
 % The mesh is plotted using the plotGrid() function from MRST. 
+colors = crameri('vik', 5);
 figure
-plotGrid(model.(ne).(cc).G,     'facecolor', [191, 124, 84]./255,   'edgealpha', 0.5, 'edgecolor', [1, 1, 1]);
-plotGrid(model.(ne).(eac).G,    'facecolor', [13, 13, 13]./255,     'edgealpha', 0.5, 'edgecolor', [1, 1, 1]);
-plotGrid(model.(elyte).(sep).G, 'facecolor', [239, 204, 97]./255,   'edgealpha', 0.5, 'edgecolor', [1, 1, 1]);
-plotGrid(model.(pe).(eac).G,    'facecolor', [64, 64, 64]./255,     'edgealpha', 0.5, 'edgecolor', [1, 1, 1]);
-plotGrid(model.(pe).(cc).G,     'facecolor', [191, 191, 191]./255,  'edgealpha', 0.5, 'edgecolor', [1, 1, 1]);
+plotGrid(model.(ne).(cc).G,     'facecolor', colors(1,:),   'edgealpha', 0.5, 'edgecolor', [1, 1, 1]);
+plotGrid(model.(ne).(eac).G,    'facecolor', colors(2,:),     'edgealpha', 0.5, 'edgecolor', [1, 1, 1]);
+plotGrid(model.(elyte).(sep).G, 'facecolor', colors(3,:),   'edgealpha', 0.5, 'edgecolor', [1, 1, 1]);
+plotGrid(model.(pe).(eac).G,    'facecolor', colors(4,:),     'edgealpha', 0.5, 'edgecolor', [1, 1, 1]);
+plotGrid(model.(pe).(cc).G,     'facecolor', colors(5,:),  'edgealpha', 0.5, 'edgecolor', [1, 1, 1]);
 axis tight;
 legend({'negative electrode current collector' , ...
         'negative electrode active material'   , ...
