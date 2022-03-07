@@ -125,8 +125,8 @@ Tmax = cellfun(@(x) max(x.ThermalModel.T), states);
 [SOCN,SOCP] =  cellfun(@(x) model.calculateSOC(x), states);
 time = cellfun(@(x) x.time, states); 
 
-%% Plot an animated summary of the results
-plotDashboard(model,states,'step', 0)
+%% Plot the the output voltage and current
+plotDashboard(model, states, 'step', 0);
 
 %{
 Copyright 2009-2021 SINTEF Industry, Sustainable Energy Technology
