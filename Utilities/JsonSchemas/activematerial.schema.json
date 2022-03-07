@@ -1,33 +1,15 @@
 {
     "$id": "file://batmo/schemas/activematerial",
     "$schema": "http://json-schema.org/draft-07/schema#",
-    "description": "active material",
+    "description": "Active Material",
     "type": "object",
     "properties" : {
-        "Li": { "type" : "object",
-                "properties" : {
-                    "EaD": {"type" : "number"},
-                    "D0": {"type" : "number"},
-                    "cmax": {"type" : "number"}
-                }
-              },
-        "n" : {"type" : "integer",
-               "description" : "number of electron transfer"},
-        "volumeFraction": {"type" : "number"},
-        "volumetricSurfaceArea": {"type" : "number"},
-        "rp": {"type" : "number",
-               "description" : "particle radius"},
-        "Eak": {"type" : "number",
-                "description" : "reaction activation energy"},
-        "k0": {"type" : "number",
-               "description" : "reference rate constant"},
-        "cp": {"type" : "number"},
-        "theta100": {"type" : "number"},
-        "theta0": {"type" : "number"},
-        "rho": {"type" : "number"},
-        "specificCapacity": {"type" : "number"},
-        "name": {"type" : "string"}
-        "updateOCPFunc" : {"$ref" : "function",
-                           "description" : "Function to update OCP"}
+        "bruggemanCoefficient" : {"type" : "number"},
+        "thermalConductivity": {"type" : "number"},
+        "electricalConductivity": {"type" : "number"},
+        "heatCapacity": {"type" : "number"},
+        "InterDiffusionCoefficient": {"type" : "number"},
+        "Interface": {"$ref" : "interface"}
+        "SolidDiffusion": {"$ref" : "soliddiffusion"}
     }
 }
