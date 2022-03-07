@@ -167,8 +167,7 @@ time = cellfun(@(x) x.time, states);
 
 loadChenPybammSolution
 [t1, u1] = deal(t, u);
-loadChenPybammSolution2
-[t2, u2] = deal(t, u);
+[t2, u2] = deal(t_infdiff, u_infdiff);
 
 set(0, 'defaultFigurePosition', [671 510 900 600]);
 
@@ -180,7 +179,7 @@ plot(t1, u1, 'linewidth', 3, 'color', l(2, :), 'displayname', 'pybamm - solid di
 plot(t2, u2, 'linewidth', 3, 'color', l(3, :), 'displayname', 'pybamm - instantaneous solid diffusion')
 % plot(t_pybamm/hour, u_pybamm, '-', 'linewidth', 3, 'color', l(3, :), 'displayname', 'pybamm hello')
 set(gca, 'fontsize', 18);
-title('Potential (E)')
+title('Cell Voltage / V')
 xlabel('time (hours)')
 legend('fontsize', 18, 'location', 'south west')
 
