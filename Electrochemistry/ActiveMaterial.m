@@ -76,20 +76,19 @@ classdef ActiveMaterial < ElectronicComponent
             model.EffectiveThermalConductivity = model.thermalConductivity.*volumeFraction.^1.5;
             model.EffectiveHeatCapacity = model.heatCapacity.*volumeFraction;
         
-            model = model.registerVarAndPropfuncNames();
-                        
         end
 
         function model = registerVarAndPropfuncNames(model)
 
+            model = registerVarAndPropfuncNames@ElectronicComponent(model);
+            
             itf = 'Interface';
             sd  = 'SolidDiffusion';
             
             %% Declaration of the Dynamical Variables and Function of the model
             % (setup of varnameList and propertyFunctionList)
             
-            model = model.registerSubModels({'Interface'});
-            model = model.registerSubModels({'SolidDiffusion'});
+            model = model.registerSubModels({'Interface', 'SolidDiffusion'});
             
             varnames =  {'jCoupling'};
             if  model.useSimplifiedDiffusionModel

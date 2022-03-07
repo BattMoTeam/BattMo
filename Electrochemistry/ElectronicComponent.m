@@ -29,8 +29,6 @@ classdef ElectronicComponent < BaseModel
             
             model.constants = PhysicalConstants();
 
-            model = model.registerVarAndPropfuncNames();
-            
         end
 
         function model = registerVarAndPropfuncNames(model)

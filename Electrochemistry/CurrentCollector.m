@@ -26,8 +26,6 @@ classdef CurrentCollector < ElectronicComponent
             % The parameter EffectiveElectricalConductivity in CurrentCollectorInputParams is given as scalar
             model.EffectiveElectricalConductivity = model.EffectiveElectricalConductivity*ones(model.G.cells.num, 1);
             
-            model = model.registerVarAndPropfuncNames();
-            
         end
         
         function model = registerVarAndPropfuncNames(model)

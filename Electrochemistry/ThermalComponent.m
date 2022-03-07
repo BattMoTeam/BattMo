@@ -42,8 +42,6 @@ classdef ThermalComponent < BaseModel
             
             model = setupMapping(model);
 
-            model = model.registerVarAndPropfuncNames();
-                    
         end
         
         function model = registerVarAndPropfuncNames(model)

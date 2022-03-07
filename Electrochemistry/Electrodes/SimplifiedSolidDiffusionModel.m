@@ -29,7 +29,6 @@ classdef SimplifiedSolidDiffusionModel < BaseModel
 
             model = dispatchParams(model, paramobj, fdnames);
 
-            model = model.registerVarAndPropfuncNames();
         end
         
         function model = registerVarAndPropfuncNames(model)

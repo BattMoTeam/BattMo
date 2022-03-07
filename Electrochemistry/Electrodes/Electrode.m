@@ -28,8 +28,6 @@ classdef Electrode < BaseModel
             model.ActiveMaterial = model.setupActiveMaterial(paramobj.ActiveMaterial);
             model.CurrentCollector = model.setupCurrentCollector(paramobj.CurrentCollector);
 
-            model = model.registerVarAndPropfuncNames();
-                        
         end
         
         function model = registerVarAndPropfuncNames(model)

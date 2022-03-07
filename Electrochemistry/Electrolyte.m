@@ -70,8 +70,6 @@ classdef Electrolyte < ElectroChemicalComponent
             model.EffectiveThermalConductivity = NaN(G.cells.num, 1);
             model.EffectiveThermalConductivity(elyte_cells_sep) = model.(sep).porosity.*model.thermalConductivity;
             
-            model = model.registerVarAndPropfuncNames();
-             
         end
 
         function model = registerVarAndPropfuncNames(model)

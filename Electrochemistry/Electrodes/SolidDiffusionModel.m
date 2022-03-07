@@ -35,8 +35,6 @@ classdef SolidDiffusionModel < BaseModel
             model = dispatchParams(model, paramobj, fdnames);
             model.operators = model.setupOperators();
             
-            model = model.registerVarAndPropfuncNames();
-            
         end
 
         function model = registerVarAndPropfuncNames(model)

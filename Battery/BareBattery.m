@@ -69,8 +69,6 @@ classdef BareBattery < BaseModel
             cmax_pe = model.(pe).(itf).cmax;
             model.cmin = 1e-5*max(cmax_ne, cmax_pe);
             
-            model = model.registerVarAndPropfuncNames();
-
         end
 
         function model = registerVarAndPropfuncNames(model)

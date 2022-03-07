@@ -54,8 +54,6 @@ classdef Interface < BaseModel
 
             model.updateOCPFunc = str2func(paramobj.updateOCPFunc.functionname);
 
-            model = model.registerVarAndPropfuncNames();
-        
         end
 
         function model = registerVarAndPropfuncNames(model)

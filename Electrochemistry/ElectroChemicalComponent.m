@@ -13,8 +13,6 @@ classdef ElectroChemicalComponent < ElectronicComponent
         
             model = model@ElectronicComponent(paramobj);
 
-            model = model.registerVarAndPropfuncNames();
-            
         end
 
         
