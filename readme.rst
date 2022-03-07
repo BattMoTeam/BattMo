@@ -46,8 +46,8 @@ Tutorials are presented in `documentation <https://batmoteam.github.io/batmo-doc
 Naming Conventions (TBC)
 ------------------------
 Class names are nouns in UpperCamelCase.  
-Instance names are nouns in lowerCamelCase.  
 Function names are verbs or phrases in lowerCamelCase.  
+Instance names are nouns in lower_snake_case.  
 Common variable names are represented by Latin letters (case set according to convention) or spelled-out lowercase Greek letters (e.g. phi).  
 Other variable names may be nouns in lowerCamelCase.  
 
