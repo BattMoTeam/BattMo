@@ -6,8 +6,8 @@ classdef Electrode < BaseModel
 %
     properties
         
-        ActiveMaterial % instance of :class:`Electrochemistry.ActiveMaterial`
-        CurrentCollector         % instance of :class:`Electrochemistry.CurrentCollector`
+        ActiveMaterial   % instance of :class:`Electrochemistry.ActiveMaterial`
+        CurrentCollector % instance of :class:`Electrochemistry.CurrentCollector`
         couplingTerm
         
     end
@@ -28,11 +28,15 @@ classdef Electrode < BaseModel
             model.ActiveMaterial = model.setupActiveMaterial(paramobj.ActiveMaterial);
             model.CurrentCollector = model.setupCurrentCollector(paramobj.CurrentCollector);
 
+            model = model.registerSubModelNames({'ActiveMaterial', 'CurrentCollector'});
+            
         end
         
         function model = registerVarAndPropfuncNames(model)
             %% Declaration of the Dynamical Variables and Function of the model
             % (setup of varnameList and propertyFunctionList)
+            
+            model = registerVarAndPropfuncNames@BaseModel(model);
             
             % define shorthands
             am = 'ActiveMaterial';

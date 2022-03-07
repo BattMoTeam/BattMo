@@ -87,6 +87,11 @@ classdef Battery < BaseModel
             model.use_solid_diffusion = opt.use_solid_diffusion;
             model.use_thermal = opt.use_thermal;
             
+            model = model.registerSubModelNames({'Electrolyte' , ...
+                                                 'NegativeElectrode' , ...
+                                                 'PositiveElectrode' , ...
+                                                 'ThermalModel'});
+            
         end
 
         
@@ -94,6 +99,8 @@ classdef Battery < BaseModel
             
             %% Declaration of the Dynamical Variables and Function of the model
             % (setup of varnameList and propertyFunctionList)
+            
+            model = registerVarAndPropfuncNames@BaseModel(model);
             
             % defines shorthands for the submodels
             elyte   = 'Electrolyte';
@@ -105,11 +112,6 @@ classdef Battery < BaseModel
             itf     = 'Interface';
             sd      = 'SolidDiffusion';
             thermal = 'ThermalModel';
-            
-            model = model.registerSubModels({'Electrolyte'       , ...
-                                             'NegativeElectrode' , ...
-                                             'PositiveElectrode' , ...
-                                             'ThermalModel'});
             
             varnames = {'SOC', ...
                         'controlEq'};

@@ -75,7 +75,9 @@ classdef ActiveMaterial < ElectronicComponent
             % setup effective thermal conductivity            
             model.EffectiveThermalConductivity = model.thermalConductivity.*volumeFraction.^1.5;
             model.EffectiveHeatCapacity = model.heatCapacity.*volumeFraction;
-        
+            
+            model = model.registerSubModelNames({'Interface', 'SolidDiffusion'});
+            
         end
 
         function model = registerVarAndPropfuncNames(model)

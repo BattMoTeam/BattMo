@@ -4,15 +4,27 @@ classdef BaseModel < PhysicalModel
 
         propertyFunctionList
         varNameList
+        subModelNameList
         
     end
         
     methods
 
         function model = BaseModel()
+
             model = model@PhysicalModel([]);
+            
             model.propertyFunctionList = {};
-            model.varNameList = {};
+            model.varNameList          = {};
+            model.subModelNameList     = {};
+            
+        end
+
+        function model = registerVarAndPropfuncNames(model)
+            
+            subModelNameList = model.subModelNameList;
+            model = model.registerSubModels(subModelNameList);
+            
         end
         
         function model = registerVarName(model, varname)
@@ -35,6 +47,18 @@ classdef BaseModel < PhysicalModel
             end
         end
 
+        function model = registerSubModelName(model, submodelname)
+            model.subModelNameList{end + 1} = submodelname;
+        end
+        
+            
+        function model = registerSubModelNames(model, submodelnames)
+            for isubmodelnames = 1 : numel(submodelnames)
+                model = model.registerSubModelName(submodelnames{isubmodelnames});
+            end
+        end
+        
+        
         function model = registerPropFunction(model, propfunc)
             if isa(propfunc, 'PropFunction')
             model.propertyFunctionList = mergeList(model.propertyFunctionList, {propfunc});
@@ -86,6 +110,8 @@ classdef BaseModel < PhysicalModel
 
                 submodelname = submodelnames{isub};
                 submodel = model.(submodelname);
+                
+                submodel = registerVarAndPropfuncNames(submodel);
                 
                 % Register the variable names from the submodel after adding the model name in the name space
 

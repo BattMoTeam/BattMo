@@ -20,6 +20,9 @@ classdef ElectroChemicalComponent < ElectronicComponent
         
             %% Declaration of the Dynamical Variables and Function of the model
             % (setup of varnameList and propertyFunctionList)
+            
+            model = registerVarAndPropfuncNames@ElectronicComponent(model);
+
             varnames = {'c'         , ...
                         'massSource', ...
                         'massFlux'  , ...

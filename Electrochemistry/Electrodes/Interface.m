@@ -61,6 +61,8 @@ classdef Interface < BaseModel
             %% Declaration of the Dynamical Variables and Function of the model
             % (setup of varnameList and propertyFunctionList)
 
+            model = registerVarAndPropfuncNames@BaseModel(model);
+            
             varnames = {};
             % Temperature
             varnames{end + 1} = 'T';

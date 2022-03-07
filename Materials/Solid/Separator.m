@@ -17,6 +17,7 @@ classdef Separator < BaseModel
     end
     
     methods
+
         function model = Separator(paramobj)
             
             model = model@BaseModel();
@@ -38,12 +39,6 @@ classdef Separator < BaseModel
             model.EffectiveThermalConductivity = model.thermalConductivity.*(model.volumeFraction).^1.5;
             model.EffectiveHeatCapacity = model.heatCapacity.*model.volumeFraction;
 
-
-            %% Declaration of the Dynamical Variables and Function of the model
-            % (setup of varnameList and propertyFunctionList)
-            
-            % no dynamical variable in the separator
-            
         end
     end
     

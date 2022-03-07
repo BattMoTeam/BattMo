@@ -2,6 +2,8 @@ classdef Electrolyte < ElectroChemicalComponent
     
     properties
         
+        Separator
+        
         sp
         compnames
         ncomp
@@ -9,7 +11,6 @@ classdef Electrolyte < ElectroChemicalComponent
         indchargecarrier
         chargeCarrierName
         
-        Separator
         
         volumeFraction
         
@@ -70,13 +71,15 @@ classdef Electrolyte < ElectroChemicalComponent
             model.EffectiveThermalConductivity = NaN(G.cells.num, 1);
             model.EffectiveThermalConductivity(elyte_cells_sep) = model.(sep).porosity.*model.thermalConductivity;
             
+            model = model.registerSubModelNames({'Separator'});
+            
         end
 
         function model = registerVarAndPropfuncNames(model)
             %% Declaration of the Dynamical Variables and Function of the model
             % (setup of varnameList and propertyFunctionList)
 
-            model = model.registerSubModels({'Separator'});
+            model = registerVarAndPropfuncNames@ElectroChemicalComponent(model);
             
             varnames = { VarName({}, 'cs', 2)     , ...
                          'D'                      , ...

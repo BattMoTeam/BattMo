@@ -36,6 +36,8 @@ classdef SimplifiedSolidDiffusionModel < BaseModel
             %% Declaration of the Dynamical Variables and Function of the model
             % (setup of varnameList and propertyFunctionList)
 
+            model = registerVarAndPropfuncNames@BaseModel(model);
+
             varnames = {};
             % concentration
             varnames{end + 1} = 'T';
