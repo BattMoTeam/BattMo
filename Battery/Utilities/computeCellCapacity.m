@@ -1,4 +1,4 @@
-function [cap, cap_neg, cap_pos, specificEnergy] = computeCellCapacity(model)
+function [cap, cap_neg, cap_pos, specificEnergy] = computeCellCapacity(model, varargin)
 
 %
 %
@@ -17,9 +17,9 @@ function [cap, cap_neg, cap_pos, specificEnergy] = computeCellCapacity(model)
 %
 % SEE ALSO:
 %
+    opt = struct('packingMass', 0);
+    opt = merge_options(opt, varargin{:});
 
-% We handle the battery and bare battery structure (without current collector)
-    
     ne  = 'NegativeElectrode';
     pe  = 'PositiveElectrode';
     am  = 'ActiveMaterial';
@@ -122,10 +122,9 @@ function [cap, cap_neg, cap_pos, specificEnergy] = computeCellCapacity(model)
         theta = linspace(thetaMin, thetaMaxNeg, 100);
         energy = energy - sum(func(theta(1 : end - 1)).*diff(theta)*volume*F*cMax);
         
-        mass = computeCellMass(model);
+        mass = computeCellMass(model, 'packingMass', opt.packingMass);
         
-        warning('Adding packing mass in computation of optimal energy');
-        specificEnergy = energy/(mass + 10e-3);
+        specificEnergy = energy/mass;
         
     else
         

@@ -1,5 +1,8 @@
-function [mass, masses] = computeCellMass(model)
+function [mass, masses] = computeCellMass(model, varargin)
 
+    opt = struct('packingMass', 0);
+    opt = merge_options(opt, varargin{:});
+    
     
     elyte = 'Electrolyte';
     sep   = 'Separator';
