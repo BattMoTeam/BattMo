@@ -22,6 +22,6 @@
     "name": "Chen Electrolyte model",
     "sp": { "z": [1, -1],
             "t": [0.2594, 0.601]},
-    "Separator": { "filename": "JsonDatas/Chen2020/chenSeparator.json",
+    "Separator": { "filename": "ParameterData/ParameterSets/Chen2020/chen2020_separator.json",
                    "isFile": true }
 }
