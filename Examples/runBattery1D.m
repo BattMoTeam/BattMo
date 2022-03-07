@@ -57,7 +57,7 @@ paramobj.(thermal).externalTemperature = paramobj.initT;
 % constructor. see :class:`Battery <Battery.Battery>`.
 model = Battery(paramobj, 'use_thermal', true, 'use_solid_diffusion', true);
 model.AutoDiffBackend= AutoDiffBackend();
-return
+
 %% Compute the nominal cell capacity and choose a C-Rate
 % The nominal capacity of the cell is calculated from the active materials.
 % This value is then combined with the user-defined C-Rate to set the cell

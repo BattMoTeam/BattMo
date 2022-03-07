@@ -8,7 +8,6 @@
             "specificHeatCapacity": 632.0,
             "heatCapacity": 632000.0,
             "thermalConductivity": 1.04,
-            "chargeCarrierName": "Li",
             "InterDiffusionCoefficient": 1e-14,
             "InterDiffusionCoefficientComment" : "from Ecker 2015",
             "electricalConductivity": 100,
@@ -36,7 +35,6 @@
             "thermalConductivity": 2.1,
             "InterDiffusionCoefficient": 1e-14,
             "electricalConductivity": 100,
-            "chargeCarrierName": "Li",
             "Interface": {
                 "isFile": true,
                 "filename": "JsonDatas/nmc111.json"

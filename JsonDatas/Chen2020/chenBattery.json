@@ -5,7 +5,6 @@
         "heatCapacity": 4180000.0,
         "thermalConductivity": 6e-05,
         "InterDiffusionCoefficient": 1e-10,
-        "chargeCarrierName": "Li",
         "Interface": {
             "isFile": true,
             "filename": "JsonDatas/Chen2020/chenNegativeElectrodeInterface.json"
@@ -23,7 +22,6 @@
         "heatCapacity": 4180000.0,
         "thermalConductivity": 6e-05,
         "InterDiffusionCoefficient": 1e-10,
-        "chargeCarrierName": "Li",
         "Interface": {
             "isFile": true,
             "filename": "JsonDatas/Chen2020/chenPositiveElectrodeInterface.json"

@@ -3,7 +3,6 @@
     "thermalConductivity": 6e-05,
     "negativeDomainBruggemanCoefficient" : 1.5,
     "positiveDomainBruggemanCoefficient" : 1.5,
-    "chargeCarrierName": "Li",
     "updateConductivityFunc" : {"functionname" : "updateElectrolyteConductivityFunc_Nyman2008",
                                 "filepath" : "Materials/Liquid/CarbonateBased/updateElectrolyteConductivityFunc_Nyman2008.m",
                                 "argumentlist" : ["concentration", "temperature"],
@@ -18,6 +17,7 @@
         "Li",
         "PF6"
     ],
+    "chargeCarrierName": "Li",
     "name": "Chen Electrolyte model",
     "sp": { "z": [1, -1],
             "t": [0.2594, 0.601]},
