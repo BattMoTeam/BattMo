@@ -1,5 +1,6 @@
-BatMo is framework for continuum modelling of electrochemical devices.
-================================================================
+========================================================================
+ BatMo is framework for continuum modelling of electrochemical devices.
+========================================================================
 
 The Battery Modelling Toolbox (**BatMo**) is a resource for continuum modelling of electrochemical devices in MATLAB. The initial development features a pseudo X-dimensional (PXD) framework for the Doyle-Fuller-Newman model of lithium-ion battery cells. However, the development plan for BatMo includes extensions to other battery chemistries (e.g. metal-air) and eventually hydrogen systems (i.e. electrolyzers and fuel cells).
 
@@ -28,6 +29,14 @@ Then start MATLAB and in the directory where you cloned the repository, run:
 You can check that that your installation is setup correctly by running one of the example scripts :
 
 ``runBattery1D``
+
+Iterative solvers
+-----------------
+
+Iterative solvers are needed to solve large problems with many degrees of freedom. The **open source** version from 2012
+of the `AGMG <http://agmg.eu/>`_ iterative solver from **2012** is provided as a `submodule
+<https://github.com/batmoTeam/agmg>`_. We plan to integrate newer open source iterative solvers such as `AMGCL
+<https://github.com/ddemidov/amgcl>`_
 
 Tutorials
 ---------

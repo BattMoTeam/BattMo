@@ -167,7 +167,7 @@ else
 end
 
 nls.timeStepSelector = StateChangeTimeStepSelector('TargetProps', {{'PositiveElectrode', 'CurrentCollector', 'E'}}, 'targetChangeAbs', 0.03);
-linearsolver = 'direct';
+linearsolver = 'agmg';
 switch linearsolver
   case 'agmg'
     mrstModule add agmg
