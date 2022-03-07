@@ -42,9 +42,14 @@ classdef ThermalComponent < BaseModel
             
             model = setupMapping(model);
 
+            model = model.registerVarAndPropfuncNames();
+                    
+        end
+        
+        function model = registerVarAndPropfuncNames(model)
             %% Declaration of the Dynamical Variables and Function of the model
             % (setup of varnameList and propertyFunctionList)
-            
+
             varnames = {'T', ...
                         'jHeatBcSource'       , ...
                         'jHeatOhmSource'      , ...
@@ -72,9 +77,9 @@ classdef ThermalComponent < BaseModel
                           'jHeat'        , ...
                           'accumHeat'};
             model = model.registerPropFunction({'energyCons', fn, inputnames});
-                    
+            
         end
-
+        
         function model = setupMapping(model)
         % Aggregate face contribution to cell
             

@@ -12,10 +12,16 @@ classdef ElectroChemicalComponent < ElectronicComponent
         % Here, :code:`paramobj` is instance of :class:`ElectronicChemicalInputParams <Electrochemistry.ElectronicChemicalInputParams>`
         
             model = model@ElectronicComponent(paramobj);
+
+            model = model.registerVarAndPropfuncNames();
             
+        end
+
+        
+        function model = registerVarAndPropfuncNames(model)
+        
             %% Declaration of the Dynamical Variables and Function of the model
             % (setup of varnameList and propertyFunctionList)
-        
             varnames = {'c'         , ...
                         'massSource', ...
                         'massFlux'  , ...
@@ -29,8 +35,9 @@ classdef ElectroChemicalComponent < ElectronicComponent
             fn = @ElectroChemicalComponent.updateMassConservation;
             model = model.registerPropFunction({'massCons', fn, {'massFlux', 'massSource', 'massAccum'}});
             
+            
         end
-
+        
         function state = updateMassFlux(model, state)
         % Assemble diffusion flux which is stored in :code:`state.Flux`
 

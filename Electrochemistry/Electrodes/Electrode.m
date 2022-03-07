@@ -28,13 +28,18 @@ classdef Electrode < BaseModel
             model.ActiveMaterial = model.setupActiveMaterial(paramobj.ActiveMaterial);
             model.CurrentCollector = model.setupCurrentCollector(paramobj.CurrentCollector);
 
-            % define shorthands
-            am     = 'ActiveMaterial';
-            cc      = 'CurrentCollector';
-            am      = 'ActiveMaterial';
-            
+            model = model.registerVarAndPropfuncNames();
+                        
+        end
+        
+        function model = registerVarAndPropfuncNames(model)
             %% Declaration of the Dynamical Variables and Function of the model
             % (setup of varnameList and propertyFunctionList)
+            
+            % define shorthands
+            am = 'ActiveMaterial';
+            cc = 'CurrentCollector';
+            am = 'ActiveMaterial';
             
             model = model.registerSubModels({'ActiveMaterial', 'CurrentCollector'});
             
@@ -57,7 +62,7 @@ classdef Electrode < BaseModel
         end
         
         function am = setupActiveMaterial(model, paramobj)
-        % paramobj is instanceo of ActiveMaterialInputParams
+        % paramobj is instance of ActiveMaterialInputParams
         % standard instantiation (ActiveMaterial is specified in ActiveMaterial instantiation)
             am = ActiveMaterial(paramobj);
         end

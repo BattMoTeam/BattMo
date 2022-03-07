@@ -29,9 +29,14 @@ classdef ElectronicComponent < BaseModel
             
             model.constants = PhysicalConstants();
 
+            model = model.registerVarAndPropfuncNames();
+            
+        end
+
+        function model = registerVarAndPropfuncNames(model)
             %% Declaration of the Dynamical Variables and Function of the model
             % (setup of varnameList and propertyFunctionList)
-        
+            
             varnames = {'T'        , ...
                         'phi'      , ...
                         'jBcSource', ...
@@ -48,10 +53,8 @@ classdef ElectronicComponent < BaseModel
             fn = @ElectronicComponent.updateChargeConservation;
             inputnames = {'j', 'jBcSource', 'eSource'};
             model = model.registerPropFunction({'chargeCons', fn, inputnames});
-            
         end
-
-
+        
         function state = updateFaceCurrent(model, state)
             
             G = model.G;

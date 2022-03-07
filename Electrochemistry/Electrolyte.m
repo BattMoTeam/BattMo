@@ -70,6 +70,11 @@ classdef Electrolyte < ElectroChemicalComponent
             model.EffectiveThermalConductivity = NaN(G.cells.num, 1);
             model.EffectiveThermalConductivity(elyte_cells_sep) = model.(sep).porosity.*model.thermalConductivity;
             
+            model = model.registerVarAndPropfuncNames();
+             
+        end
+
+        function model = registerVarAndPropfuncNames(model)
             %% Declaration of the Dynamical Variables and Function of the model
             % (setup of varnameList and propertyFunctionList)
 
@@ -104,7 +109,7 @@ classdef Electrolyte < ElectroChemicalComponent
             model = model.registerPropFunction({'diffFlux', fn, {'c', 'j', 'D'}});
 
         end
-        
+            
         function state = updateConcentrations(model, state)
             
             cs = cell(2, 1);

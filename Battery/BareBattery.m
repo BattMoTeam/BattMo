@@ -68,19 +68,18 @@ classdef BareBattery < BaseModel
             cmax_ne = model.(ne).(itf).cmax;
             cmax_pe = model.(pe).(itf).cmax;
             model.cmin = 1e-5*max(cmax_ne, cmax_pe);
+            
+            model = model.registerVarAndPropfuncNames();
 
         end
 
         function model = registerVarAndPropfuncNames(model)
 
-            itf = 'Interface';
-            sd = 'SolidDiffusion';
-            
             %% Declaration of the Dynamical Variables and Function of the model
             % (setup of varnameList and propertyFunctionList)
 
-            %% Declaration of the Dynamical Variables and Function of the model
-            % (setup of varnameList and propertyFunctionList)
+            itf = 'Interface';
+            sd  = 'SolidDiffusion';
             
             model = model.registerSubModels({'Electrolyte'       , ...
                                              'NegativeElectrode' , ...
