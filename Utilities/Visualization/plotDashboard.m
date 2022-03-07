@@ -55,7 +55,7 @@ function [fig] = plotDashboard(model, states, varargin)
         
         if model.G.griddim == 1
             setFigureStyle('theme', p.Results.theme, 'size', p.Results.size, 'orientation', p.Results.orientation, 'quantity', 'single');
-            subplot(2,4,1), plotCellData(model.(ne).(am).G, states{step}.(ne).(am).(am).cElectrode ./ 1000, 'linewidth', 3);
+            subplot(2,4,1), plotCellData(model.(ne).(am).G, states{step}.(ne).(am).c ./ 1000, 'linewidth', 3);
             xlabel(gca, 'Position  /  m')
             title(gca, 'Negative Electrode Concentration  /  mol \cdot L^{-1}')
             set(gca, ...
@@ -77,7 +77,7 @@ function [fig] = plotDashboard(model, states, varargin)
                 'YColor'   , style.fontColor      , ...
                 'GridColor', style.fontColor)
             
-            subplot(2,4,3), plotCellData(model.(pe).(am).G, states{step}.(pe).(am).(am).cElectrode ./ 1000, 'linewidth', 3);
+            subplot(2,4,3), plotCellData(model.(pe).(am).G, states{step}.(pe).(am).c ./ 1000, 'linewidth', 3);
             xlabel(gca, 'Position  /  m')
             title(gca, 'Positive Electrode Concentration  /  mol \cdot L^{-1}')
             set(gca, ...
@@ -157,7 +157,7 @@ function [fig] = plotDashboard(model, states, varargin)
             style = setFigureStyle('theme', p.Results.theme, 'size', p.Results.size, 'orientation', p.Results.orientation, 'quantity', 'single');
             style.fontSize = 10;
 
-            subplot(2,4,1), plotCellData(model.(ne).(am).G, states{step}.(ne).(am).(am).cElectrode ./ 1000, 'edgealpha', 0.1);
+            subplot(2,4,1), plotCellData(model.(ne).(am).G, states{step}.(ne).(am).c ./ 1000, 'edgealpha', 0.1);
             xlabel(gca, 'Position  /  m')
             ylabel(gca, 'Position  /  m')
             title(gca, 'Negative Electrode Concentration  /  mol \cdot L^{-1}')
@@ -196,7 +196,7 @@ function [fig] = plotDashboard(model, states, varargin)
                 axis equal
             end
             
-            subplot(2,4,3), plotCellData(model.(pe).(am).G, states{step}.(pe).(am).(am).cElectrode ./ 1000, 'edgealpha', 0.1);
+            subplot(2,4,3), plotCellData(model.(pe).(am).G, states{step}.(pe).(am).c ./ 1000, 'edgealpha', 0.1);
             xlabel(gca, 'Position  /  m')
             title(gca, 'Positive Electrode Concentration  /  mol \cdot L^{-1}')
             colormap(crameri('nuuk'));
@@ -487,7 +487,7 @@ function [fig] = plotDashboard(model, states, varargin)
                 style = setFigureStyle('theme', p.Results.theme, 'size', p.Results.size, 'orientation', p.Results.orientation, 'quantity', 'single');
                 style.fontSize = 10;
 
-                subplot(2,4,1), plotCellData(model.(ne).(am).G, states{i}.(ne).(am).(am).cElectrode ./ 1000, 'edgealpha', 0.1);
+                subplot(2,4,1), plotCellData(model.(ne).(am).G, states{i}.(ne).(am).c ./ 1000, 'edgealpha', 0.1);
                 xlabel(gca, 'Position  /  m')
                 ylabel(gca, 'Position  /  m')
                 title(gca, 'Negative Electrode Concentration  /  mol \cdot L^{-1}')
@@ -527,7 +527,7 @@ function [fig] = plotDashboard(model, states, varargin)
                     axis equal
                 end
 
-                subplot(2,4,3), plotCellData(model.(pe).(am).G, states{i}.(pe).(am).(am).cElectrode ./ 1000, 'edgealpha', 0.1);
+                subplot(2,4,3), plotCellData(model.(pe).(am).G, states{i}.(pe).(am).c ./ 1000, 'edgealpha', 0.1);
                 xlabel(gca, 'Position  /  m')
                 title(gca, 'Positive Electrode Concentration  /  mol \cdot L^{-1}')
                 colormap(crameri('nuuk'));
