@@ -4,7 +4,6 @@ classdef BaseModel < PhysicalModel
 
         propertyFunctionList
         varNameList
-        subModelNameList
         
     end
         
@@ -16,14 +15,12 @@ classdef BaseModel < PhysicalModel
             
             model.propertyFunctionList = {};
             model.varNameList          = {};
-            model.subModelNameList     = {};
             
         end
 
         function model = registerVarAndPropfuncNames(model)
             
-            subModelNameList = model.subModelNameList;
-            model = model.registerSubModels(subModelNameList);
+            model = model.registerSubModels();
             
         end
         
@@ -47,15 +44,18 @@ classdef BaseModel < PhysicalModel
             end
         end
 
-        function model = registerSubModelName(model, submodelname)
-            model.subModelNameList{end + 1} = submodelname;
-        end
-        
+        function submodelnames = getSubModelNames(model)
             
-        function model = registerSubModelNames(model, submodelnames)
-            for isubmodelnames = 1 : numel(submodelnames)
-                model = model.registerSubModelName(submodelnames{isubmodelnames});
+            props = properties(model);
+            submodelnames = {};
+            
+            for iprops = 1 : numel(props)
+                prop = props{iprops};
+                if isa(model.(prop), 'BaseModel')
+                    submodelnames{end + 1} = prop;
+                end
             end
+            
         end
         
         
@@ -99,12 +99,14 @@ classdef BaseModel < PhysicalModel
         end
         
         
-        function model = registerSubModels(model, submodelnames)
+        function model = registerSubModels(model)
         % submodels is a list of submodel given as submodel and name. They should have been already assigned before this
         % function is called
             
             propfuncs = model.propertyFunctionList;
             varnames = model.varNameList;
+            
+            submodelnames = model.getSubModelNames();
             
             for isub = 1 : numel(submodelnames)
 

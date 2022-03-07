@@ -28,8 +28,6 @@ classdef Electrode < BaseModel
             model.ActiveMaterial = model.setupActiveMaterial(paramobj.ActiveMaterial);
             model.CurrentCollector = model.setupCurrentCollector(paramobj.CurrentCollector);
 
-            model = model.registerSubModelNames({'ActiveMaterial', 'CurrentCollector'});
-            
         end
         
         function model = registerVarAndPropfuncNames(model)
@@ -42,8 +40,6 @@ classdef Electrode < BaseModel
             am = 'ActiveMaterial';
             cc = 'CurrentCollector';
             am = 'ActiveMaterial';
-            
-            model = model.registerSubModels({'ActiveMaterial', 'CurrentCollector'});
             
             model = model.registerVarName('T');
             

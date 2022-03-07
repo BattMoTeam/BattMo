@@ -87,11 +87,6 @@ classdef Battery < BaseModel
             model.use_solid_diffusion = opt.use_solid_diffusion;
             model.use_thermal = opt.use_thermal;
             
-            model = model.registerSubModelNames({'Electrolyte' , ...
-                                                 'NegativeElectrode' , ...
-                                                 'PositiveElectrode' , ...
-                                                 'ThermalModel'});
-            
         end
 
         

@@ -76,12 +76,10 @@ classdef BareBattery < BaseModel
             %% Declaration of the Dynamical Variables and Function of the model
             % (setup of varnameList and propertyFunctionList)
 
+            model = registerVarAndPropfuncNames@BaseModel(model);
+            
             itf = 'Interface';
             sd  = 'SolidDiffusion';
-            
-            model = model.registerSubModels({'Electrolyte'       , ...
-                                             'NegativeElectrode' , ...
-                                             'PositiveElectrode'});
                         
             varnames = {'SOC', ...
                         'T', ...
