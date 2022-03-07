@@ -1,10 +1,18 @@
-%% Battery 1D model
-% 
+%% Example: Pseudo-Two-Dimensional (P2D) Lithium-Ion Battery Model
+% This example demonstrates how to setup a P2D model of a Li-ion battery
+% and run a simple simulation.
 
+% clear the workspace and close open figures
+clear
+close all
+clc
+
+
+%% Import the required modules from MRST
 % load MRST modules
 mrstModule add ad-core mrst-gui mpfa
 
-%%
+%% Setup the properties of Li-ion battery materials and cell design
 % The properties and parameters of the battery cell, including the
 % architecture and materials, are set using an instance of
 % :class:`BatteryInputParams <Battery.BatteryInputParams>`. This class is
@@ -23,7 +31,7 @@ cc      = 'CurrentCollector';
 elyte   = 'Electrolyte';
 thermal = 'ThermalModel';
 
-%% Setup the computational mesh
+%% Setup the geometry and computational mesh
 % Here, we setup the 1D computational mesh that will be used for the
 % simulation. The required discretization parameters are already included
 % in the class BatteryGenerator1D. 
@@ -47,7 +55,7 @@ paramobj.(thermal).externalTemperature = paramobj.initT;
 model = Battery(paramobj,'use_thermal',true,'use_solid_diffusion',true);
 model.AutoDiffBackend= AutoDiffBackend();
 
-%% Compute the nominal cell capacity and choose a discharge rate
+%% Compute the nominal cell capacity and choose a C-Rate
 % The nominal capacity of the cell is calculated from the active materials.
 % This value is then combined with the user-defined C-Rate to set the cell
 % operational current. 
@@ -59,21 +67,22 @@ inputI = (C/hour)*CRate; % current
 % Smaller time steps are used to ramp up the current from zero to its
 % operational value. Larger time steps are then used for the normal
 % operation. 
-fac=2;
-total = 1.4*hour/CRate;
-n=10;
-dt0=total*1e-6;
-times = getTimeSteps(dt0,n, total,fac);
-dt= diff(times);
-step = struct('val',diff(times),'control',ones(size(dt)));
+fac     = 2;
+total   = 1.4*hour/CRate;
+n       = 10;
+dt0     = total*1e-6;
+times   = getTimeSteps(dt0,n, total,fac);
+dt      = diff(times);
+step    = struct('val',diff(times),'control',ones(size(dt)));
 
-% A stopping function is used to set the lower voltage cutoff limit.
-pe = 'PositiveElectrode';
-cc = 'CurrentCollector';
+%% Setup the operating limits for the cell
+% The maximum and minimum voltage limits for the cell are defined using
+% stopping and source functions. A stopping function is used to set the
+% lower voltage cutoff limit. A source function is used to set the upper
+% voltage cutoff limit. 
 stopFunc = @(model, state, state_prev) (state.(pe).(cc).E < paramobj.Ucut); 
 
-% A cource function is used to set the upper voltage cutoff limit. !!!
-% Change this to an entry in the JSON with better variable names !!!
+%  !!! Change this to an entry in the JSON with better variable names !!!
 tup = 0.1; % rampup value for the current function, see rampupSwitchControl
 inputE = 3.0; % Value when current control switches to voltage control
 srcfunc = @(time, I, E) rampupSwitchControl(time, tup, I, E, inputI, inputE);
@@ -84,10 +93,12 @@ control = repmat(struct('src', srcfunc, 'stopFunction', stopFunc), 1, 1);
 % This control is used to set up the schedule
 schedule = struct('control', control, 'step', step); 
 
-%% Setup the initial state
+%% Setup the initial state of the model
+% The initial state of the model is dispatched using the
+% model.setupInitialState()method. 
 initstate = model.setupInitialState(); 
 
-% Setup nonlinear solver 
+%% Setup the properties of the nonlinear solver 
 nls = NonLinearSolver(); 
 % Change default maximum iteration number in nonlinear solver
 nls.maxIterations = 10; 
@@ -99,7 +110,7 @@ model.nonlinearTolerance = 1e-3*inputI;
 % Set verbosity
 model.verbose = true;
 
-% Run simulation
+%% Run the simulation
 [wellSols, states, report] = simulateScheduleAD(initstate, model, schedule, 'OutputMinisteps', true, 'NonLinearSolver', nls); 
 
 %% Process output and recover the output voltage and current from the output states.
@@ -111,33 +122,8 @@ Tmax = cellfun(@(x) max(x.ThermalModel.T), states);
 [SOCN,SOCP] =  cellfun(@(x) model.calculateSOC(x), states);
 time = cellfun(@(x) x.time, states); 
 
-%% Plot the the output voltage and current
+%% Plot an animated summary of the results
 plotDashboard(model,states,'step', 0)
-
-% figure
-% plot((time/hour), Enew, '*-', 'linewidth', 3)
-% ylabel('Cell Voltage  /  V')
-% xlabel('Time  /  h')
-% setFigureStyle()
-% 
-% figure
-% plot((time/hour), Inew, '*-', 'linewidth', 3)
-% ylabel('Cell Current  /  A')
-% xlabel('Time  /  h')
-% setFigureStyle()
-% 
-% figure
-% plot((time/hour), Tmax, '*-', 'linewidth', 3)
-% ylabel('Max. Temperature  /  K')
-% xlabel('Time  /  h')
-% setFigureStyle()
-% 
-% figure
-% plot((time/hour), [SOCP,SOCN], '*-', 'linewidth', 3)
-% ylabel('SOC')
-% xlabel('Time  /  h')
-% legend('SOC positive','SOC negative')
-% setFigureStyle()
 
 %{
 Copyright 2009-2021 SINTEF Industry, Sustainable Energy Technology

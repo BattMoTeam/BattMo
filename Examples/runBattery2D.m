@@ -1,19 +1,28 @@
-%% Battery 2D model
-% Include presentation of the test case (use rst format)
+%% Example: Pseudo-Three-Dimensional (P3D) Lithium-Ion Battery Model
+% This example demonstrates how to setup a P3D model of a Li-ion battery
+% and run a simple simulation.
 
 % clear the workspace and close open figures
 clear
 close all
 clc
 
+%% Import the required modules from MRST
 % load MRST modules
 mrstModule add ad-core mrst-gui mpfa
 
-% The input parameters can be given in json format. The json file is read and used to populate the paramobj object.
+%% Setup the properties of Li-ion battery materials and cell design
+% The properties and parameters of the battery cell, including the
+% architecture and materials, are set using an instance of
+% :class:`BatteryInputParams <Battery.BatteryInputParams>`. This class is
+% used to initialize the simulation and it propagates all the parameters
+% throughout the submodels. The input parameters can be set manually or
+% provided in json format. All the parameters for the model are stored in
+% the paramobj object.
 jsonstruct = parseBatmoJson('JsonDatas/lithiumbattery.json');
 paramobj = BatteryInputParams(jsonstruct);
 
-% Some shortcuts used for the sub-models
+% We define some shorthand names for simplicity.
 ne      = 'NegativeElectrode';
 pe      = 'PositiveElectrode';
 eac     = 'ElectrodeActiveComponent';
@@ -22,61 +31,77 @@ elyte   = 'Electrolyte';
 sep     = 'Separator';
 thermal = 'ThermalModel';
 
-%% We setup the battery geometry.
-% Here, we use a 2D model and the class BatteryGenerator2D already contains the discretization parameters
+%% Setup the geometry and computational mesh
+% Here, we setup the 2D computational mesh that will be used for the
+% simulation. The required discretization parameters are already included
+% in the class BatteryGenerator2D. 
 gen = BatteryGenerator2D();
-% We update pamobj with grid data
+
+% Now, we update the paramobj with the properties of the mesh.
 paramobj = gen.updateBatteryInputParams(paramobj);
+
+% !!! REMOVE THIS. SET THE RIGHT VALUES IN THE JSON !!! In this case, we
+% change some of the values of the paramaters that were given in the json
+% file to other values. This is done directly on the object paramobj. 
 paramobj.(ne).(cc).EffectiveElectricalConductivity = 1e5;
 paramobj.(pe).(cc).EffectiveElectricalConductivity = 1e5;
 
-%%  The Battery model is initialized by sending paramobj to the Battery class constructor
-
+%%  Initialize the battery model. 
+% The battery model is initialized by sending paramobj to the Battery class
+% constructor. see :class:`Battery <Battery.Battery>`.
 model = Battery(paramobj);
 
-
-%% plot the model
+%% Plot the mesh
+% The mesh is plotted using the plotGrid() function from MRST. 
+colors = crameri('vik', 5);
 figure
-plotGrid(model.(elyte).(sep).G, 'facecolor', 'green');
-plotGrid(model.(ne).(eac).G, 'facecolor', 'red');
-plotGrid(model.(pe).(eac).G, 'facecolor', 'blue');
-plotGrid(model.(ne).(cc).G, 'facecolor', 'yellow');
-plotGrid(model.(pe).(cc).G, 'facecolor', 'yellow');
+plotGrid(model.(ne).(cc).G,     'facecolor', colors(1,:),   'edgealpha', 0.5, 'edgecolor', [1, 1, 1]);
+plotGrid(model.(ne).(eac).G,    'facecolor', colors(2,:),     'edgealpha', 0.5, 'edgecolor', [1, 1, 1]);
+plotGrid(model.(elyte).(sep).G, 'facecolor', colors(3,:),   'edgealpha', 0.5, 'edgecolor', [1, 1, 1]);
+plotGrid(model.(pe).(eac).G,    'facecolor', colors(4,:),     'edgealpha', 0.5, 'edgecolor', [1, 1, 1]);
+plotGrid(model.(pe).(cc).G,     'facecolor', colors(5,:),  'edgealpha', 0.5, 'edgecolor', [1, 1, 1]);
+axis tight;
+legend({'negative electrode current collector' , ...
+        'negative electrode active material'   , ...
+        'separator'                            , ...
+        'positive electrode active material'   , ...
+        'positive electrode current collector'}, ...
+       'location', 'south west'),
+setFigureStyle('quantity', 'single');
+drawnow();
+pause(0.1);
 
-legend({'separator', 'negative electrode (active material)', 'positive electrode (active material)', ['current ' ...
-                    'collector']}, 'location', 'south west'),
-
-
-%% We compute the cell capacity and chose a discharge rate
+%% Compute the nominal cell capacity and choose a C-Rate
+% The nominal capacity of the cell is calculated from the active materials.
+% This value is then combined with the user-defined C-Rate to set the cell
+% operational current. 
 C      = computeCellCapacity(model);
-CRate = 1;
+CRate  = 1;
 inputI = (C/hour)*CRate; % current 
 
-%% We setup the schedule 
-% We use different time step for the activation phase (small time steps) and the following discharging phase
+%% Setup the time step schedule 
+% Smaller time steps are used to ramp up the current from zero to its
+% operational value. Larger time steps are then used for the normal
+% operation. 
+n           = 25; 
+dt          = []; 
+dt          = [dt; repmat(0.5e-4, n, 1).*1.5.^[1:n]']; 
+totalTime   = 1.4*hour/CRate;
+n           = 40; 
+dt          = [dt; repmat(totalTime/n, n, 1)]; 
+times       = [0; cumsum(dt)]; 
+tt          = times(2 : end); 
+step        = struct('val', diff(times), 'control', ones(numel(tt), 1)); 
 
-% We use exponentially increasing time step for the activation phase
-n = 25; 
-dt = []; 
-dt = [dt; repmat(0.5e-4, n, 1).*1.5.^[1:n]']; 
-% We choose time steps for the rest of the simulation (discharge phase)
-totalTime = 1.4*hour/CRate;
-n = 40; 
-dt    = [dt; repmat(totalTime/n, n, 1)]; 
-times = [0; cumsum(dt)]; 
-tt = times(2 : end); 
-step = struct('val', diff(times), 'control', ones(numel(tt), 1)); 
-
-% We set up a stopping function. Here, the simulation will stop if the output voltage reach a value smaller than 2. This
-% stopping function will not be triggered in this case as we switch to voltage control when E=3.6 (see value of inputE
-% below).
-pe = 'PositiveElectrode';
-cc = 'CurrentCollector';
-stopFunc = @(model, state, state_prev) (state.(pe).(cc).E < 2.0); 
-
-tup = 0.1; % rampup value for the current function, see rampupSwitchControl
-inputE = 3; % Value when current control switches to voltage control
-srcfunc = @(time, I, E) rampupSwitchControl(time, tup, I, E, inputI, inputE);
+%% Setup the operating limits for the cell
+% The maximum and minimum voltage limits for the cell are defined using
+% stopping and source functions. A stopping function is used to set the
+% lower voltage cutoff limit. A source function is used to set the upper
+% voltage cutoff limit. 
+stopFunc    = @(model, state, state_prev) (state.(pe).(cc).E < 2.0); 
+tup         = 0.1; % rampup value for the current function, see rampupSwitchControl
+inputE      = 3; % Value when current control switches to voltage control
+srcfunc     = @(time, I, E) rampupSwitchControl(time, tup, I, E, inputI, inputE);
 
 % we setup the control by assigning a source and stop function.
 control = repmat(struct('src', srcfunc, 'stopFunction', stopFunc), 1, 1); 
@@ -84,10 +109,12 @@ control = repmat(struct('src', srcfunc, 'stopFunction', stopFunc), 1, 1);
 % This control is used to set up the schedule
 schedule = struct('control', control, 'step', step); 
 
-%%  We setup the initial state
+%% Setup the initial state of the model
+% The initial state of the model is dispatched using the
+% model.setupInitialState()method. 
 initstate = model.setupInitialState(); 
 
-% Setup nonlinear solver 
+%% Setup the properties of the nonlinear solver 
 nls = NonLinearSolver(); 
 % Change default maximum iteration number in nonlinear solver
 nls.maxIterations = 10; 
@@ -103,39 +130,20 @@ model.nonlinearTolerance = 1e-5;
 % Set verbosity of the solver (if true, value of the residuals for every equation is given)
 model.verbose = true;
 
-% Run simulation
+%% Run simulation
 [wellSols, states, report] = simulateScheduleAD(initstate, model, schedule, ...
                                                 'OutputMinisteps', true, ...
                                                 'NonLinearSolver', nls); 
 
-%%  We process output and recover the output voltage and current from the output states.
+%%  Process output and recover the output voltage and current from the output states.
 ind = cellfun(@(x) not(isempty(x)), states); 
 states = states(ind);
 Enew = cellfun(@(x) x.(pe).(cc).E, states); 
 Inew = cellfun(@(x) x.(pe).(cc).I, states);
 time = cellfun(@(x) x.time, states); 
 
-%% We plot the the output voltage and current
-figure
-plot((time/hour), Enew, '*-', 'linewidth', 3)
-title('Cell Voltage  /  V')
-xlabel('Time  /  h')
-
-figure
-plot((time/hour), Inew, '*-', 'linewidth', 3)
-title('Cell Current  /  A')
-xlabel('Time  /  h')
-
-%% Plot of the lithium concentration
-figure
-plotCellData(model.(elyte).G, states{50}.(elyte).c, 'edgealpha', 0.1);
-xlabel('Position  /  m')
-ylabel('Position  /  m')
-title('Lithium concentration in Electrolyte at time step 50')
-colorbar
-
-%% Set figure styles
-setFigureStyle();
+%% Plot an animated summary of the results
+plotDashboard(model, states, 'step', 0);
 
 %{
 Copyright 2009-2021 SINTEF Industry, Sustainable Energy Technology

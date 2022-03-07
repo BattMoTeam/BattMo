@@ -1,6 +1,8 @@
 function [fig] = plotDashboard(model, states, varargin)
-%UNTITLED6 Summary of this function goes here
-%   Detailed explanation goes here
+%PLOTDASHBOARD Displays a summary of the results for a given simulation.
+%   fig = plotDashboard(model, states)
+%   
+%   fig = plotDashboard(model, states, 'PropertyName1', PropertyValue1)
 
 %
 close all
@@ -43,7 +45,6 @@ end
 
 Enew = cellfun(@(x) x.(pe).(cc).E, states); 
 Inew = cellfun(@(x) x.(pe).(cc).I, states);
-
 
 
 if step ~= 0
@@ -151,37 +152,154 @@ if step ~= 0
                 'YColor', style.fontColor, ...
                 'GridColor', style.fontColor)
 
-    elseif model.G.griddim == 2
-        plotCellData(model.Electrolyte.G, states{step}.Electrolyte.c ./ 1000, 'edgealpha', 0.1);
-        colormap(cmocean('curl'));
-        xlabel(gca, 'Position  /  m')
-        ylabel(gca, 'Position  /  m')
-        title('Concentration  /  mol \cdot L^{-1}')
-        cmin = min(states{step}.Electrolyte.c ./ 1000);
-        cmax = max(states{step}.Electrolyte.c ./ 1000);
-        cnom = mean(states{1}.Electrolyte.c ./ 1000);
-        deltac = max(abs(cmin-cnom), abs(cmax-cnom));
-        cmin = cnom-deltac;
-        cmax = cnom+deltac;
-        caxis([cmin, cmax]);
-        colorbar;
+    else
+        style = setFigureStyle('theme', p.Results.theme, 'size', p.Results.size, 'orientation', p.Results.orientation, 'quantity', 'single');
+        style.fontSize = 10;
 
-    elseif model.G.griddim == 3
-        plotCellData(model.Electrolyte.G, states{step}.Electrolyte.c ./ 1000, 'edgealpha', 0.1);
-        colormap(cmocean('curl'));
+        subplot(2,4,1), plotCellData(model.NegativeElectrode.ElectrodeActiveComponent.G, states{step}.NegativeElectrode.ElectrodeActiveComponent.ActiveMaterial.cElectrode ./ 1000, 'edgealpha', 0.1);
         xlabel(gca, 'Position  /  m')
         ylabel(gca, 'Position  /  m')
-        zlabel(gca, 'Position  /  m')
-        title('Concentration  /  mol \cdot L^{-1}')
-        cmin = min(states{step}.Electrolyte.c ./ 1000);
-        cmax = max(states{step}.Electrolyte.c ./ 1000);
-        cnom = mean(states{1}.Electrolyte.c ./ 1000);
-        deltac = max(abs(cmin-cnom), abs(cmax-cnom));
-        cmin = cnom-deltac;
-        cmax = cnom+deltac;
-        caxis([cmin, cmax]);
-        colorbar;
-        view(45,45)
+        title(gca, 'Negative Electrode Concentration  /  mol \cdot L^{-1}')
+        colormap(crameri('nuuk'));
+        colorbar
+        axis tight
+        set(gca, ...
+                'FontSize', style.fontSize, ...
+                'FontName', style.fontName, ...
+                'color', style.backgroundColor, ...
+                'XColor', style.fontColor, ...
+                'YColor', style.fontColor, ...
+                'GridColor', style.fontColor)
+        if model.G.griddim == 3
+            view(45,45);
+            axis equal
+        end
+            
+        
+        
+        subplot(2,4,2), plotCellData(model.Electrolyte.G, states{step}.Electrolyte.c ./ 1000, 'edgealpha', 0.1);
+        xlabel(gca, 'Position  /  m')
+        title(gca, 'Electrolyte Concentration  /  mol \cdot L^{-1}')
+        colormap(crameri('nuuk'));
+        colorbar
+        axis tight
+        set(gca, ...
+                'FontSize', style.fontSize, ...
+                'FontName', style.fontName, ...
+                'color', style.backgroundColor, ...
+                'XColor', style.fontColor, ...
+                'YColor', style.fontColor, ...
+                'GridColor', style.fontColor)
+        if model.G.griddim == 3
+            view(45,45);
+            axis equal
+        end
+        
+        subplot(2,4,3), plotCellData(model.PositiveElectrode.ElectrodeActiveComponent.G, states{step}.PositiveElectrode.ElectrodeActiveComponent.ActiveMaterial.cElectrode ./ 1000, 'edgealpha', 0.1);
+        xlabel(gca, 'Position  /  m')
+        title(gca, 'Positive Electrode Concentration  /  mol \cdot L^{-1}')
+        colormap(crameri('nuuk'));
+        colorbar
+        axis tight
+        set(gca, ...
+                'FontSize', style.fontSize, ...
+                'FontName', style.fontName, ...
+                'color', style.backgroundColor, ...
+                'XColor', style.fontColor, ...
+                'YColor', style.fontColor, ...
+                'GridColor', style.fontColor)
+        if model.G.griddim == 3
+            view(45,45);
+            axis equal
+        end
+        
+        subplot(2,4,4), plot((time/hour), Inew, '-', 'linewidth', 3)
+        hold on
+        plot(timeBar(:,1), timeBar(:,2), 'k--', 'linewidth', 1);
+        hold off
+        title('Cell Current  /  A')
+        xlabel('Time  /  h')
+        xlim([min(time/hour), max(time/hour)]);
+        ylim([min(Inew), max(Inew)]);
+        set(gca, ...
+                'FontSize', style.fontSize, ...
+                'FontName', style.fontName, ...
+                'color', style.backgroundColor, ...
+                'XColor', style.fontColor, ...
+                'YColor', style.fontColor, ...
+                'GridColor', style.fontColor)
+        
+        subplot(2,4,5), plotCellData(model.NegativeElectrode.ElectrodeActiveComponent.G, states{step}.NegativeElectrode.ElectrodeActiveComponent.phi, 'edgealpha', 0.1);
+        xlabel(gca, 'Position  /  m')
+        title(gca, 'Negative Electrode Potential  /  V')
+        colormap(gca, crameri('lapaz'))
+        colorbar
+        axis tight
+        set(gca, ...
+                'FontSize', style.fontSize, ...
+                'FontName', style.fontName, ...
+                'color', style.backgroundColor, ...
+                'XColor', style.fontColor, ...
+                'YColor', style.fontColor, ...
+                'GridColor', style.fontColor)
+        if model.G.griddim == 3
+            view(45,45);
+            axis equal
+        end
+        
+        subplot(2,4,6), plotCellData(model.Electrolyte.G, states{step}.Electrolyte.phi, 'edgealpha', 0.1);
+        xlabel(gca, 'Position  /  m')
+        title(gca, 'Electrolyte Potential  /  V')
+        colormap(gca, crameri('lapaz'))
+        colorbar
+        axis tight
+        set(gca, ...
+                'FontSize', style.fontSize, ...
+                'FontName', style.fontName, ...
+                'color', style.backgroundColor, ...
+                'XColor', style.fontColor, ...
+                'YColor', style.fontColor, ...
+                'GridColor', style.fontColor)
+        if model.G.griddim == 3
+            view(45,45);
+            axis equal
+        end
+        
+        subplot(2,4,7), plotCellData(model.PositiveElectrode.ElectrodeActiveComponent.G, states{step}.PositiveElectrode.ElectrodeActiveComponent.phi, 'edgealpha', 0.1);
+        xlabel(gca, 'Position  /  m')
+        title(gca, 'Positive Electrode Potential  /  V')
+        colormap(gca, crameri('lapaz'))
+        colorbar
+        axis tight
+        
+        set(gca, ...
+                'FontSize', style.fontSize, ...
+                'FontName', style.fontName, ...
+                'color', style.backgroundColor, ...
+                'XColor', style.fontColor, ...
+                'YColor', style.fontColor, ...
+                'GridColor', style.fontColor)
+        if model.G.griddim == 3
+            view(45,45);
+            axis equal
+        end
+        
+        subplot(2,4,8), plot((time/hour), Enew, '-', 'linewidth', 3)
+        hold on
+        plot(timeBar(:,1), timeBar(:,2), 'k--', 'linewidth', 1);
+        hold off
+        title('Cell Voltage  /  V')
+        xlabel('Time  /  h')
+        xlim([min(time/hour), max(time/hour)]);
+        ylim([min(Enew), max(Enew)]);
+        set(gca, ...
+                'FontSize', style.fontSize, ...
+                'FontName', style.fontName, ...
+                'color', style.backgroundColor, ...
+                'XColor', style.fontColor, ...
+                'YColor', style.fontColor, ...
+                'GridColor', style.fontColor)
+
     end
 %     setFigureStyle('theme', p.Results.theme, 'size', p.Results.size, 'orientation', p.Results.orientation, 'quantity', 'single');
 else
@@ -227,6 +345,9 @@ else
             cmax_pe = max(cmax_pe, max(max(states{i}.PositiveElectrode.ElectrodeActiveComponent.ActiveMaterial.cElectrode ./ 1000)));
             cmin_pe = min(cmin_pe, min(min(states{i}.PositiveElectrode.ElectrodeActiveComponent.ActiveMaterial.cElectrode ./ 1000)));
             
+            cmax_global_solid = max(cmax_ne, cmax_pe);
+            cmin_global_solid = min(cmin_ne, cmin_pe);
+            
             phimax_elyte = max(phimax_elyte, max(max(states{i}.Electrolyte.phi)));
             phimin_elyte = min(phimin_elyte, min(min(states{i}.Electrolyte.phi)));
             
@@ -235,6 +356,9 @@ else
             
             phimax_pe = max(phimax_pe, max(max(states{i}.PositiveElectrode.ElectrodeActiveComponent.phi)));
             phimin_pe = min(phimin_pe, min(min(states{i}.PositiveElectrode.ElectrodeActiveComponent.phi)));
+            
+            phimax_global = max([phimax_ne, phimax_pe, phimax_elyte]);
+            phimin_global = min([cmin_ne, cmin_pe, phimin_elyte]);
         end
     end
     
@@ -358,41 +482,157 @@ else
                 'YColor', style.fontColor, ...
                 'GridColor', style.fontColor)
 
-        elseif model.G.griddim == 2
-            plotCellData(model.Electrolyte.G, states{i}.Electrolyte.c ./ 1000, 'edgealpha', 0.1);
-            colormap(cmocean('curl'));
-            xlabel(gca, 'Position  /  m')
-            ylabel(gca, 'Position  /  m')
-            title('Concentration  /  mol \cdot L^{-1}')
-            
-            xlim([xmin, xmax]);
-            ylim([ymin, ymax]);
-            cnom = mean(states{1}.Electrolyte.c ./ 1000);
-            deltac = max(abs(cmin-cnom), abs(cmax-cnom));
-            cmin = cnom-deltac;
-            cmax = cnom+deltac;
-            caxis([cmin, cmax]);
-            c = colorbar;
-            c.Color = style.fontColor;
+        else
+            style = setFigureStyle('theme', p.Results.theme, 'size', p.Results.size, 'orientation', p.Results.orientation, 'quantity', 'single');
+            style.fontSize = 10;
 
-        elseif model.G.griddim == 3
-            plotCellData(model.Electrolyte.G, states{i}.Electrolyte.c ./ 1000, 'edgealpha', 0.1);
-            colormap(cmocean('curl'));
+            subplot(2,4,1), plotCellData(model.NegativeElectrode.ElectrodeActiveComponent.G, states{i}.NegativeElectrode.ElectrodeActiveComponent.ActiveMaterial.cElectrode ./ 1000, 'edgealpha', 0.1);
             xlabel(gca, 'Position  /  m')
             ylabel(gca, 'Position  /  m')
-            zlabel(gca, 'Position  /  m')
-            title('Concentration  /  mol \cdot L^{-1}')
-            xlim([xmin, xmax]);
-            ylim([ymin, ymax]);
-            zlim([zmin, zmax]);
-            cnom = mean(states{1}.Electrolyte.c ./ 1000);
-            deltac = max(abs(cmin-cnom), abs(cmax-cnom));
-            cmin = cnom-deltac;
-            cmax = cnom+deltac;
-            caxis([cmin, cmax]);
-            c = colorbar;
-            c.Color = style.fontColor;
-            view(45,45)
+            title(gca, 'Negative Electrode Concentration  /  mol \cdot L^{-1}')
+            colormap(crameri('nuuk'));
+            caxis([cmin_ne, cmax_ne])
+            colorbar
+            axis tight
+            set(gca, ...
+                    'FontSize', style.fontSize, ...
+                    'FontName', style.fontName, ...
+                    'color', style.backgroundColor, ...
+                    'XColor', style.fontColor, ...
+                    'YColor', style.fontColor, ...
+                    'GridColor', style.fontColor)
+            if model.G.griddim == 3
+                view(45,45);
+                axis equal
+            end
+
+
+            subplot(2,4,2), plotCellData(model.Electrolyte.G, states{i}.Electrolyte.c ./ 1000, 'edgealpha', 0.1);
+            xlabel(gca, 'Position  /  m')
+            title(gca, 'Electrolyte Concentration  /  mol \cdot L^{-1}')
+            colormap(crameri('nuuk'));
+            caxis([cmin_elyte, cmax_elyte])
+            colorbar
+            axis tight
+            set(gca, ...
+                    'FontSize', style.fontSize, ...
+                    'FontName', style.fontName, ...
+                    'color', style.backgroundColor, ...
+                    'XColor', style.fontColor, ...
+                    'YColor', style.fontColor, ...
+                    'GridColor', style.fontColor)
+            if model.G.griddim == 3
+                view(45,45);
+                axis equal
+            end
+
+            subplot(2,4,3), plotCellData(model.PositiveElectrode.ElectrodeActiveComponent.G, states{i}.PositiveElectrode.ElectrodeActiveComponent.ActiveMaterial.cElectrode ./ 1000, 'edgealpha', 0.1);
+            xlabel(gca, 'Position  /  m')
+            title(gca, 'Positive Electrode Concentration  /  mol \cdot L^{-1}')
+            colormap(crameri('nuuk'));
+            caxis([cmin_pe, cmax_pe])
+            colorbar
+            axis tight
+            set(gca, ...
+                    'FontSize', style.fontSize, ...
+                    'FontName', style.fontName, ...
+                    'color', style.backgroundColor, ...
+                    'XColor', style.fontColor, ...
+                    'YColor', style.fontColor, ...
+                    'GridColor', style.fontColor)
+            if model.G.griddim == 3
+                view(45,45);
+                axis equal
+            end
+
+            subplot(2,4,4), plot((time/hour), Inew, '-', 'linewidth', 3)
+            hold on
+            plot(timeBar(:,1), timeBar(:,2), 'k--', 'linewidth', 1);
+            hold off
+            title('Cell Current  /  A')
+            xlabel('Time  /  h')
+            xlim([min(time/hour), max(time/hour)]);
+            ylim([min(Inew), max(Inew)]);
+            set(gca, ...
+                    'FontSize', style.fontSize, ...
+                    'FontName', style.fontName, ...
+                    'color', style.backgroundColor, ...
+                    'XColor', style.fontColor, ...
+                    'YColor', style.fontColor, ...
+                    'GridColor', style.fontColor)
+
+            subplot(2,4,5), plotCellData(model.NegativeElectrode.ElectrodeActiveComponent.G, states{i}.NegativeElectrode.ElectrodeActiveComponent.phi, 'edgealpha', 0.1);
+            xlabel(gca, 'Position  /  m')
+            title(gca, 'Negative Electrode Potential  /  V')
+            colormap(gca, crameri('lapaz'))
+            caxis([phimin_ne, phimax_ne])
+            colorbar
+            axis tight
+            set(gca, ...
+                    'FontSize', style.fontSize, ...
+                    'FontName', style.fontName, ...
+                    'color', style.backgroundColor, ...
+                    'XColor', style.fontColor, ...
+                    'YColor', style.fontColor, ...
+                    'GridColor', style.fontColor)
+            if model.G.griddim == 3
+                view(45,45);
+                axis equal
+            end
+
+            subplot(2,4,6), plotCellData(model.Electrolyte.G, states{i}.Electrolyte.phi, 'edgealpha', 0.1);
+            xlabel(gca, 'Position  /  m')
+            title(gca, 'Electrolyte Potential  /  V')
+            colormap(gca, crameri('lapaz'))
+            caxis([phimin_elyte, phimax_elyte])
+            colorbar
+            axis tight
+            set(gca, ...
+                    'FontSize', style.fontSize, ...
+                    'FontName', style.fontName, ...
+                    'color', style.backgroundColor, ...
+                    'XColor', style.fontColor, ...
+                    'YColor', style.fontColor, ...
+                    'GridColor', style.fontColor)
+            if model.G.griddim == 3
+                view(45,45);
+                axis equal
+            end
+
+            subplot(2,4,7), plotCellData(model.PositiveElectrode.ElectrodeActiveComponent.G, states{i}.PositiveElectrode.ElectrodeActiveComponent.phi, 'edgealpha', 0.1);
+            xlabel(gca, 'Position  /  m')
+            title(gca, 'Positive Electrode Potential  /  V')
+            colormap(gca, crameri('lapaz'))
+            caxis([phimin_pe, phimax_pe])
+            colorbar
+            axis tight
+            set(gca, ...
+                    'FontSize', style.fontSize, ...
+                    'FontName', style.fontName, ...
+                    'color', style.backgroundColor, ...
+                    'XColor', style.fontColor, ...
+                    'YColor', style.fontColor, ...
+                    'GridColor', style.fontColor)
+            if model.G.griddim == 3
+                view(45,45);
+                axis equal
+            end
+
+            subplot(2,4,8), plot((time/hour), Enew, '-', 'linewidth', 3)
+            hold on
+            plot(timeBar(:,1), timeBar(:,2), 'k--', 'linewidth', 1);
+            hold off
+            title('Cell Voltage  /  V')
+            xlabel('Time  /  h')
+            xlim([min(time/hour), max(time/hour)]);
+            ylim([min(Enew), max(Enew)]);
+            set(gca, ...
+                    'FontSize', style.fontSize, ...
+                    'FontName', style.fontName, ...
+                    'color', style.backgroundColor, ...
+                    'XColor', style.fontColor, ...
+                    'YColor', style.fontColor, ...
+                    'GridColor', style.fontColor)
         end
         
         drawnow

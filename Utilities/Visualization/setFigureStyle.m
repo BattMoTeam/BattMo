@@ -102,7 +102,9 @@ for i = 1:n
     end
     
     if ~isempty(hColorbar)
-        hColorbar.Color = style.fontColor;
+        for i = 1:length(hColorbar)
+            hColorbar(i).Color = style.fontColor;
+        end
     end
 
     lines = findobj(gcf,'Type','Line');
