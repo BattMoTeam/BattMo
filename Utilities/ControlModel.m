@@ -38,10 +38,10 @@ classdef ControlModel < BaseModel
             varnames{end + 1} = 'I';
             % Control type
             varnames{end + 1} = 'ctrlType';            
-            % CC-discharge
-            % CC-charge
-            % CV-discharge
-            % CV-charge            
+            % CC_discharge
+            % CC_charge
+            % CV_discharge
+            % CV_charge            
             
             % Terminal voltage variation/ [V/s]
             varnames{end + 1} = 'dEdt';
@@ -61,7 +61,7 @@ classdef ControlModel < BaseModel
             I0      = model.I0;
             Emin    = model.lowerCutoffVoltage;
             Emax    = model.upperCutoffVoltage;
-            dVdtMin = model.dEdtLimit;
+            dEdtMin = model.dEdtLimit;
             dIdtMin = model.dIdtLimit;
             
             E = state.E;
@@ -76,42 +76,56 @@ classdef ControlModel < BaseModel
             Ival = value(I);
             
             % Note : dEdt, dIdt should be sent as non AD (so that we do not have to convert those)
-            
+            ctrlEqs.CC_discharge = I + I0;
+            ctrlEqs.CC_charge    = I - I0;
+            ctrlEqs.CV_discharge = I;
+            ctrlEqs.CV_charge    = (E - Emax)*1e5;
+               
             switch ctrlType
-              case 'CC-discharge'
-                if (Ival == -I0) & (E >= Emin) 
+              case 'CC_discharge'
+                if (Eval >= Emin) 
                     newCtrlType = ctrlType;
                     ctrleq = I + I0;
-                elseif (Ival == -I0) & (E < Emin) 
-                    newCtrlType = 'CV-discharge';
+                elseif (Eval < Emin) 
+                    newCtrlType = 'CV_discharge';
                     ctrleq = I;
+                else
+                    error('not detected');
                 end
-              case 'CC-charge'
-                if (Ival == I0) & (E <= Emax) 
+              case 'CC_charge'
+                if (Eval <= Emax) 
                     newCtrlType = ctrlType;
                     ctrleq = I - I0;
-                elseif (Ival == I0) & (E > Emax) 
-                    newCtrlType = 'CV-charge';
+                elseif (Eval > Emax) 
+                    newCtrlType = 'CV_charge';
                     ctrleq = (E - Emax)*1e5;
+                else
+                    error('not detected');
                 end
-              case 'CV-discharge'
-                if (I == 0) & (dVdt >= dVdtMin)
-                    newCtrlType = crtlType;
+              case 'CV_discharge'
+                if (dEdt >= dEdtMin)
+                    newCtrlType = ctrlType;
                     ctrleq = I;
-                else (I == 0) & (dIdt < dVdtMin)
-                    newCtrlType = 'CC-charge';
+                elseif (dEdt < dEdtMin)
+                    newCtrlType = 'CC_charge';
                     ctrleq = I - I0; 
+                else
+                    error('not detected');
                 end    
-              case 'CV-charge'
-                if (Eval == Emax) & (dIdt >= dIdtMin)
-                    newCtrlType = crtlType;
+              case 'CV_charge'
+                if (dIdt <= -dIdtMin)
+                    newCtrlType = ctrlType;
                     ctrleq = (E - Emax)*1e5;
-                else (Eval == Emax) & (dIdt < dIdtMin)
-                    newCtrlType = 'CC-charge';
-                    ctrleq = I - I0; 
-                end                    
+                elseif (dIdt > -dIdtMin)
+                    newCtrlType = 'CC_discharge';
+                    ctrleq = I + I0; 
+                else
+                    error('not detected');
+                end  
+              otherwise
+                error('control type ctrlType not recognized');
             end
-            
+
             state.ctrlType = newCtrlType;
             state.controlEquation = ctrleq;
         end

@@ -6,7 +6,7 @@
     "Control" : {
         "CRate" : 1,
         "lowerCutoffVoltage" : 2,
-        "upperCutoffVoltage" : 4.2,
+        "upperCutoffVoltage" : 4.1,
         "dIdtLimit" : 0.01,
         "dEdtLimit" : 0.01
     },

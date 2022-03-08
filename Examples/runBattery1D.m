@@ -69,10 +69,10 @@ CRate = model.Control.CRate;
 % Smaller time steps are used to ramp up the current from zero to its
 % operational value. Larger time steps are then used for the normal
 % operation. 
-total = 3*hour/CRate;
-n     = 50;
+total = 7*hour/CRate;
+n     = 100;
 dt    = total/n;
-step  = struct('val', dt, 'control', ones(size(dt)));
+step  = struct('val', dt*ones(n, 1), 'control', ones(n, 1));
 
 % we setup the control by assigning a source and stop function.
 control = struct('CCCV', true); 
@@ -91,7 +91,7 @@ nls = NonLinearSolver();
 nls.maxIterations = 10; 
 % Change default behavior of nonlinear solver, in case of error
 nls.errorOnFailure = false; 
-nls.timeStepSelector=StateChangeTimeStepSelector('TargetProps',{{'PositiveElectrode','CurrentCollector','E'}},'targetChangeAbs',0.03);
+nls.timeStepSelector=StateChangeTimeStepSelector('TargetProps', {{'Control','E'}}, 'targetChangeAbs', 0.03);
 % Change default tolerance for nonlinear solver
 model.nonlinearTolerance = 1e-3*model.Control.I0; 
 % Set verbosity
@@ -103,10 +103,10 @@ model.verbose = true;
 %% Process output and recover the output voltage and current from the output states.
 ind = cellfun(@(x) not(isempty(x)), states); 
 states = states(ind);
-Enew = cellfun(@(x) x.(pe).(cc).E, states); 
-Inew = cellfun(@(x) x.(pe).(cc).I, states);
+Enew = cellfun(@(x) x.Control.E, states); 
+Inew = cellfun(@(x) x.Control.I, states);
 Tmax = cellfun(@(x) max(x.ThermalModel.T), states);
-[SOCN,SOCP] =  cellfun(@(x) model.calculateSOC(x), states);
+[SOCN, SOCP] =  cellfun(@(x) model.calculateSOC(x), states);
 time = cellfun(@(x) x.time, states); 
 
 %% Plot the the output voltage and current

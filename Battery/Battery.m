@@ -401,6 +401,7 @@ classdef Battery < BaseModel
             sd      = 'SolidDiffusion';
             cc      = 'CurrentCollector';
             thermal = 'ThermalModel';
+            ctrl    = 'Control';
             
             initstate.(thermal).T = T*ones(nc, 1);
             
@@ -469,8 +470,10 @@ classdef Battery < BaseModel
             OCP = OCP(1) .* ones(bat.(pe).(cc).G.cells.num, 1);
             initstate.(pe).(cc).phi = OCP - ref;
             
-            initstate.(pe).(cc).E = OCP(1) - ref;
-            initstate.(pe).(cc).I = 0;
+            initstate.(ctrl).E = OCP(1) - ref;
+            initstate.(ctrl).I = -model.(ctrl).I0;
+            initstate.(ctrl).ctrlType = 'CC_discharge';
+            
             
         end
         
@@ -500,6 +503,7 @@ classdef Battery < BaseModel
             itf     = 'Interface';
             sd      = "SolidDiffusion";
             thermal = 'ThermalModel';
+            ctrl    = 'Control';
             
             electrodes = {ne, pe};
             electrodecomponents = {am, cc};
@@ -633,7 +637,7 @@ classdef Battery < BaseModel
             
             state = model.setupEIEquation(state);
             state = model.updateDerivativeControlValues(state, state0, dt);
-            state.Control = model.Control.updateControlEquation(state.Control);
+            state.(ctrl) = model.(ctrl).updateControlEquation(state.(ctrl));
             
             %% Set up the governing equations
             
@@ -663,17 +667,7 @@ classdef Battery < BaseModel
             eqs{end + 1} = state.(thermal).energyCons;
             
             eqs{end + 1} = -state.(ctrl).EIequation;
-            
-            % we add the control equation
-            I = state.(pe).(cc).I;
-            E = state.(pe).(cc).E;
-            [val, ctrltype] = drivingForces.src(time, value(I), value(E));
-            switch ctrltype
-              case 'I'
-                eqs{end + 1} = I - val;
-              case 'E'
-                eqs{end + 1} = (E - val)*1e5;
-            end
+            eqs{end + 1} = state.(ctrl).controlEquation;
 
             eqs{1} = eqs{1} - model.Electrolyte.sp.t(1)*eqs{2};
             
@@ -700,25 +694,26 @@ classdef Battery < BaseModel
  
             if(not(all(keep)))
                 ind   = find(keep);
-                eqs   ={eqs{ind}};
+                eqs   = {eqs{ind}};
                 types = {types{ind}};
                 names = {names{ind}};
             end
             
-            switch ctrltype
-                case 'I'
-                   types{end-1} = 'cell';   
-                case 'E'
-                   neqs = numel(types);
-                   order = [1:neqs-2,neqs,neqs-1];
-                   types = { types{order} };
-                   eqs = {eqs{order}};
-                   names = {names{order}};
-                otherwise 
-                  error()
+            isfixed = false;
+            if isfixed
+                switch ctrltype
+                  case 'I'
+                    types{end-1} = 'cell';   
+                  case 'E'
+                    neqs  = numel(types);
+                    order = [1:neqs-2,neqs,neqs-1];
+                    types = { types{order} };
+                    eqs   = {eqs{order}};
+                    names = {names{order}};
+                  otherwise 
+                    error()
+                end
             end
-               
-            
             primaryVars = model.getPrimaryVariables();
 
             %% setup LinearizedProblem that can be processed by MRST Newton API
@@ -1074,11 +1069,12 @@ classdef Battery < BaseModel
         %
         % Setup external electronic coupling of the positive electrode at the current collector
         %            
-            pe = 'PositiveElectrode';
-            cc = 'CurrentCollector';
+            pe   = 'PositiveElectrode';
+            cc   = 'CurrentCollector';
+            ctrl = 'Control';
             
             phi = state.(pe).(cc).phi;
-            E = state.(pe).(cc).E;
+            E   = state.(ctrl).E;
             
             [jExternal, jFaceExternal] = model.(pe).(cc).setupExternalCoupling(phi, E);
             
@@ -1090,9 +1086,12 @@ classdef Battery < BaseModel
         function state = updateDerivativeControlValues(model, state, state0, dt)
 
             ctrl = 'Control';
-           
-            state.(ctrl).dEdt = (state.(ctrl).E - state0.(ctrl).E)/dt;
-            state.(ctrl).dIdt = (state.(ctrl).I - state0.(ctrl).I)/dt;
+            
+            dEdt = (state.(ctrl).E - state0.(ctrl).E)/dt;
+            dIdt = (state.(ctrl).I - state0.(ctrl).I)/dt;
+            
+            state.(ctrl).dEdt = value(dEdt);
+            state.(ctrl).dIdt = value(dIdt);
             
         end
         
@@ -1111,7 +1110,7 @@ classdef Battery < BaseModel
             cond_pcc = model.(pe).(cc).EffectiveElectricalConductivity;
             [trans_pcc, cells] = model.(pe).(cc).operators.harmFaceBC(cond_pcc, faces);
             
-            state.Control.EIequation = sum(trans_pcc.*(state.(pe).(cc).phi(cells) - E)) - I;
+            state.Control.EIequation = sum(trans_pcc.*(state.(pe).(cc).phi(cells) - E)) + I;
 
         end
         
@@ -1130,7 +1129,7 @@ classdef Battery < BaseModel
             
             for i = 1 : numel(extras)
                 var = model.getProp(state,extras{i});
-                assert(isnumeric(var));
+                assert(isnumeric(var) | ischar(var));
                 newstate = model.setNewProp(newstate, extras{i}, var);
             end
             time = state.time;
@@ -1171,11 +1170,12 @@ classdef Battery < BaseModel
             if (not(all(keep)))
                 p = {p{find(keep)}};
             end
-            
+            extra{end + 1} = {'Control', 'ctrlType'};
         end
         
-        function validforces = getValidDrivingForces(model)
-            validforces = struct('src', [], 'stopFunction', []);
+        function forces = getValidDrivingForces(model)
+            forces = getValidDrivingForces@PhysicalModel(model);
+            forces.CCCV = true;
         end
 
         function model = validateModel(model, varargin)
@@ -1227,7 +1227,7 @@ classdef Battery < BaseModel
         function cleanState = addVariable(model, cleanState, state, state0)
             
             cleanState = addVariable@BaseModel(model, cleanState, state, state0);
-            cleanState.Control.ctrlType = state.ctrlType;
+            cleanState.Control.ctrlType = state.Control.ctrlType;
             
         end
         
@@ -1236,8 +1236,8 @@ classdef Battery < BaseModel
             ns = numel(states);
             ws = cell(ns, 1);
             for i = 1 : ns
-                E    = states{i}.PositiveElectrode.CurrentCollector.E;
-                I    = states{i}.PositiveElectrode.CurrentCollector.I;
+                E    = states{i}.Control.E;
+                I    = states{i}.Control.I;
                 T    = states{i}.ThermalModel.T;
                 time = states{i}.time;
                 

@@ -250,7 +250,7 @@ classdef BaseModel < PhysicalModel
             end
             cleanState.time = state.time;
             
-            cleanState = model.addVariable(model, cleanState, state, state0);
+            cleanState = model.addVariable(cleanState, state, state0);
             
             state = cleanState;
             report = [];

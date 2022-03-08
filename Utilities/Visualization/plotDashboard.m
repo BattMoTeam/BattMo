@@ -34,7 +34,8 @@ function [fig] = plotDashboard(model, states, varargin)
     cc      = 'CurrentCollector';
     elyte   = 'Electrolyte';
     thermal = 'ThermalModel';
-
+    ctrl    = 'Control';
+    
     step = p.Results.step;
 
     fig = figure;
@@ -44,8 +45,8 @@ function [fig] = plotDashboard(model, states, varargin)
         time(i) = states{i}.time;
     end
 
-    Enew = cellfun(@(x) x.(pe).(cc).E, states); 
-    Inew = cellfun(@(x) x.(pe).(cc).I, states);
+    Enew = cellfun(@(x) x.(ctrl).E, states); 
+    Inew = cellfun(@(x) x.(ctrl).I, states);
 
 
     if step ~= 0
