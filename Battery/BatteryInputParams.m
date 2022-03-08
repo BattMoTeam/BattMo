@@ -16,7 +16,8 @@ classdef BatteryInputParams < InputParams
         PositiveElectrode % instance of :class:`ElectrodeInputParams`
         Electrolyte       % instance of :class:`ElectrolyteInputParams`
         ThermalModel      % instance of :class:`ThermalModelInputParams`
-                
+        Control           % instance of :class:`ControlModelInputParams`    
+        
         %% Coupling terms (describe the topological structure of the coupling)
         couplingTerms
         
@@ -32,14 +33,16 @@ classdef BatteryInputParams < InputParams
             pe      = 'PositiveElectrode';
             elyte   = 'Electrolyte';
             thermal = 'ThermalModel';
-            
+            ctrl    = 'Control';            
+
             pick = @(fd) pickField(jsonstruct, fd);
             
-            paramobj.(ne) = ElectrodeInputParams(pick(ne));
-            paramobj.(pe) = ElectrodeInputParams(pick(pe));
-            jsonelytestruct = pick(elyte);
-            paramobj.(elyte) = ElectrolyteInputParams(pick(elyte));
+            paramobj.(ne)      = ElectrodeInputParams(pick(ne));
+            paramobj.(pe)      = ElectrodeInputParams(pick(pe));
+            paramobj.(elyte)   = ElectrolyteInputParams(pick(elyte));
             paramobj.(thermal) = ThermalComponentInputParams(pick(thermal));
+            paramobj.(ctrl)    = ControlModelInputParams(pick(ctrl));
+            
             paramobj.couplingTerms = {};
             
         end

@@ -239,7 +239,7 @@ classdef BaseModel < PhysicalModel
            
             report = [];
         end
-        
+
         function [state, report] = updateAfterConvergence(model, state0, state, dt, drivingForces)
 
             [state, report] = updateAfterConvergence@PhysicalModel(model, state0, state, dt, drivingForces);
@@ -250,10 +250,18 @@ classdef BaseModel < PhysicalModel
             end
             cleanState.time = state.time;
             
+            cleanState = model.addVariable(model, cleanState, state, state0);
+            
             state = cleanState;
             report = [];
             
         end
+        
+        function cleanState = addVariable(model, cleanState, state, state0)
+        % function to add variables on the cleanState, see updateAfterConvergence. By default, nothing is done
+            
+        end
+
         
         function state = copyProp(model, state, refState, names)
             
@@ -283,8 +291,8 @@ classdef BaseModel < PhysicalModel
             error();
         end
         
-        function [state, report] = updateStateNew(model, state, problem, ...
-                                                  dx, drivingForces)
+        function [state, report] = updateStateNew(model, state, problem, dx, drivingForces)
+            
             scales = model.getScales();
             for i = 1:numel(problem.primaryVariables)
                 p = problem.primaryVariables{i};

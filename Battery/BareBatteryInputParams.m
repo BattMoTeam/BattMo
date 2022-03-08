@@ -14,7 +14,8 @@ classdef BareBatteryInputParams < InputParams
         NegativeElectrode % instance of :class:`ElectrodeInputParams`
         PositiveElectrode % instance of :class:`ElectrodeInputParams`
         Electrolyte       % instance of :class:`ElectrolyteInputParams`
-                
+        Control           % instance of :class:`ControlModelInputParams`
+        
         %% Coupling terms (describe the topological structure of the coupling)
         couplingTerms
         
@@ -26,16 +27,17 @@ classdef BareBatteryInputParams < InputParams
             
             paramobj = paramobj@InputParams(jsonstruct);
             
-            ne      = 'NegativeElectrode';
-            pe      = 'PositiveElectrode';
-            elyte   = 'Electrolyte';
+            ne    = 'NegativeElectrode';
+            pe    = 'PositiveElectrode';
+            elyte = 'Electrolyte';
+            ctrl  = 'Control';
             
             pick = @(fd) pickField(jsonstruct, fd);
             
-            paramobj.(ne) = ActiveMaterialInputParams(pick(ne));
-            paramobj.(pe) = ActiveMaterialInputParams(pick(pe));
-            jsonelytestruct = pick(elyte);
+            paramobj.(ne)    = ActiveMaterialInputParams(pick(ne));
+            paramobj.(pe)    = ActiveMaterialInputParams(pick(pe));
             paramobj.(elyte) = ElectrolyteInputParams(pick(elyte));
+            paramobj.(ctrl)  = ControlModelInputParams(pick(ctrl));
         end
 
     end

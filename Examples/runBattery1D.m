@@ -62,36 +62,20 @@ model.AutoDiffBackend= AutoDiffBackend();
 % The nominal capacity of the cell is calculated from the active materials.
 % This value is then combined with the user-defined C-Rate to set the cell
 % operational current. 
-C      = computeCellCapacity(model);
-CRate  = 1; 
-inputI = (C/hour)*CRate; % current 
+
+CRate = model.Control.CRate;
 
 %% Setup the time step schedule 
 % Smaller time steps are used to ramp up the current from zero to its
 % operational value. Larger time steps are then used for the normal
 % operation. 
-fac     = 2;
-total   = 1.4*hour/CRate;
-n       = 10;
-dt0     = total*1e-6;
-times   = getTimeSteps(dt0,n, total,fac);
-dt      = diff(times);
-step    = struct('val',diff(times),'control',ones(size(dt)));
-
-%% Setup the operating limits for the cell
-% The maximum and minimum voltage limits for the cell are defined using
-% stopping and source functions. A stopping function is used to set the
-% lower voltage cutoff limit. A source function is used to set the upper
-% voltage cutoff limit. 
-stopFunc = @(model, state, state_prev) (state.(pe).(cc).E < paramobj.Ucut); 
-
-%  !!! Change this to an entry in the JSON with better variable names !!!
-tup = 0.1; % rampup value for the current function, see rampupSwitchControl
-inputE = 3.0; % Value when current control switches to voltage control
-srcfunc = @(time, I, E) rampupSwitchControl(time, tup, I, E, inputI, inputE);
+total = 3*hour/CRate;
+n     = 50;
+dt    = total/n;
+step  = struct('val', dt, 'control', ones(size(dt)));
 
 % we setup the control by assigning a source and stop function.
-control = repmat(struct('src', srcfunc, 'stopFunction', stopFunc), 1, 1); 
+control = struct('CCCV', true); 
 
 % This control is used to set up the schedule
 schedule = struct('control', control, 'step', step); 
@@ -109,7 +93,7 @@ nls.maxIterations = 10;
 nls.errorOnFailure = false; 
 nls.timeStepSelector=StateChangeTimeStepSelector('TargetProps',{{'PositiveElectrode','CurrentCollector','E'}},'targetChangeAbs',0.03);
 % Change default tolerance for nonlinear solver
-model.nonlinearTolerance = 1e-3*inputI; 
+model.nonlinearTolerance = 1e-3*model.Control.I0; 
 % Set verbosity
 model.verbose = true;
 
