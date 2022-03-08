@@ -73,7 +73,7 @@ spiralparams = struct('nwindings'   , nwindings, ...
                       'L'           , L        , ...
                       'nL'          , nL       , ...
                       'tabparams'   , tabparams, ...
-                      'angleuniform', false); 
+                      'angleuniform', true); 
 
 % The input material parameters given in json format are used to populate the paramobj object.
 jsonstruct = parseBatmoJson('ParameterData/BatteryCellParameters/LithiumIonBatteryCell/lithium_ion_battery_nmc_graphite.json');
@@ -170,7 +170,7 @@ linearsolver = 'agmg';
 switch linearsolver
   case 'agmg'
     mrstModule add agmg
-    nls.LinearSolver = AGMGSolverAD('verbose', true, 'reduceToCell', true); 
+    nls.LinearSolver = AGMGSolverAD('verbose', false, 'reduceToCell', true); 
     nls.LinearSolver.tolerance = 1e-3; 
     nls.LinearSolver.maxIterations = 30; 
     nls.maxIterations = 10; 
@@ -189,7 +189,7 @@ dataFolder = 'BatMo';
 problem = packSimulationProblem(initstate, model, schedule, dataFolder, 'Name', 'jellyroll', 'NonLinearSolver', nls);
 problem.SimulatorSetup.OutputMinisteps = true; 
 
-resetSimulation = false;
+resetSimulation = true;
 if resetSimulation
     %% clear previously computed simulation
     clearPackedSimulatorOutput(problem);
