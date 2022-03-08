@@ -42,6 +42,7 @@ classdef ControlModel < BaseModel
             % CC_charge
             % CV_discharge
             % CV_charge            
+            varnames{end + 1} = 'prevCtrlType';
             
             % Terminal voltage variation/ [V/s]
             varnames{end + 1} = 'dEdt';
@@ -68,8 +69,9 @@ classdef ControlModel < BaseModel
             I = state.I;
             dEdt = state.dEdt;
             dIdt = state.dIdt;
-            
+
             ctrlType = state.ctrlType;
+            prevCtrlType = state.prevCtrlType;
             
             % convert to non AD variable
             Eval = value(E);
@@ -80,54 +82,58 @@ classdef ControlModel < BaseModel
             ctrlEqs.CC_charge    = I - I0;
             ctrlEqs.CV_discharge = I;
             ctrlEqs.CV_charge    = (E - Emax)*1e5;
-               
-            switch ctrlType
+
+            switch prevCtrlType
+              
               case 'CC_discharge'
+
+                assert(ismember(ctrlType, {'CC_discharge', 'CV_discharge'}));
+
                 if (Eval >= Emin) 
-                    newCtrlType = ctrlType;
-                    ctrleq = I + I0;
-                elseif (Eval < Emin) 
-                    newCtrlType = 'CV_discharge';
-                    ctrleq = I;
-                else
-                    error('not detected');
-                end
-              case 'CC_charge'
-                if (Eval <= Emax) 
-                    newCtrlType = ctrlType;
-                    ctrleq = I - I0;
-                elseif (Eval > Emax) 
-                    newCtrlType = 'CV_charge';
-                    ctrleq = (E - Emax)*1e5;
-                else
-                    error('not detected');
-                end
-              case 'CV_discharge'
-                if (dEdt >= dEdtMin)
-                    newCtrlType = ctrlType;
-                    ctrleq = I;
-                elseif (dEdt < dEdtMin)
-                    newCtrlType = 'CC_charge';
-                    ctrleq = I - I0; 
-                else
-                    error('not detected');
-                end    
-              case 'CV_charge'
-                if (dIdt <= -dIdtMin)
-                    newCtrlType = ctrlType;
-                    ctrleq = (E - Emax)*1e5;
-                elseif (dIdt > -dIdtMin)
                     newCtrlType = 'CC_discharge';
-                    ctrleq = I + I0; 
+                else 
+                    newCtrlType = 'CV_discharge';
+                end
+            
+              case 'CV_discharge'
+
+                assert(ismember(ctrlType, {'CV_discharge', 'CC_charge'}));
+
+                if (dEdt >= dEdtMin)
+                    newCtrlType = 'CV_discharge';
                 else
-                    error('not detected');
-                end  
-              otherwise
-                error('control type ctrlType not recognized');
+                    newCtrlType = 'CC_charge';
+                end
+
+              case 'CC_charge'
+                
+                assert(ismember(ctrlType, {'CC_charge', 'CV_charge'}));
+
+                if (Eval <= Emax) 
+                    newCtrlType = 'CC_charge';
+                else
+                    newCtrlType = 'CV_charge';
+                end 
+                
+              case 'CV_charge'
+                
+                assert(ismember(ctrlType, {'CV_charge', 'CC_discharge'}));
+                
+                if (dIdt <= - dIdtMin)
+                    newCtrlType = 'CV_charge';
+                else
+                    newCtrlType = 'CC_discharge';
+                end                  
+                
             end
 
+            if ~strcmp(ctrlType, newCtrlType)
+                fprintf('\n\n *** control switch %s -> %s\n\n', ctrlType, newCtrlType);
+            end
+            
             state.ctrlType = newCtrlType;
-            state.controlEquation = ctrleq;
+            state.controlEquation = ctrlEqs.(newCtrlType);
+            
         end
             
         

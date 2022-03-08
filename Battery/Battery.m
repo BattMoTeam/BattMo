@@ -1092,6 +1092,7 @@ classdef Battery < BaseModel
             
             state.(ctrl).dEdt = value(dEdt);
             state.(ctrl).dIdt = value(dIdt);
+            state.(ctrl).prevCtrlType = state0.(ctrl).ctrlType;
             
         end
         
