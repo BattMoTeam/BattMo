@@ -13,7 +13,7 @@
             "electricalConductivity": 100,
             "Interface": {
                 "isFile": true,
-                "filename": "JsonDatas/graphite.json"
+                "filename": "ParameterData/MaterialProperties/Graphite/graphite.json"
             },
             "SolidDiffusion" : {
                 "useSimplifiedDiffusionModel" : true,
@@ -25,7 +25,7 @@
         },
         "CurrentCollector": {
             "isFile": true,
-            "filename": "JsonDatas/copper.json"
+            "filename": "ParameterData/MaterialProperties/Copper/copper.json"
         }
     },
     "PositiveElectrode": {
@@ -37,7 +37,7 @@
             "electricalConductivity": 100,
             "Interface": {
                 "isFile": true,
-                "filename": "JsonDatas/nmc111.json"
+                "filename": "ParameterData/MaterialProperties/NMC/nmc111.json"
             },
             "SolidDiffusion": {
                 "useSimplifiedDiffusionModel" : true,
@@ -48,11 +48,11 @@
         },
         "CurrentCollector": {
             "isFile": true,
-            "filename": "JsonDatas/aluminium.json"
+            "filename": "ParameterData/MaterialProperties/Aluminium/aluminium.json"
         }
     },
     "Electrolyte": {
-        "filename": "JsonDatas/orgLiPF6.json",
+        "filename": "ParameterData/MaterialProperties/OrganicLiPF6Solutions/orgLiPF6.json",
         "isFile": true
     },
     "ThermalModel": {

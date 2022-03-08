@@ -7,7 +7,7 @@
         "InterDiffusionCoefficient": 1e-10,
         "Interface": {
             "isFile": true,
-            "filename": "JsonDatas/Chen2020/chenNegativeElectrodeInterface.json"
+            "filename": "ParameterData/ParameterSets/Chen2020/chen2020_negative_electrode_interface.json"
         },
         "SolidDiffusion" : {
             "useSimplifiedDiffusionModel" : true,
@@ -24,7 +24,7 @@
         "InterDiffusionCoefficient": 1e-10,
         "Interface": {
             "isFile": true,
-            "filename": "JsonDatas/Chen2020/chenPositiveElectrodeInterface.json"
+            "filename": "ParameterData/ParameterSets/Chen2020/chen2020_positive_electrode_interface.json"
         },
         "SolidDiffusion": {
             "useSimplifiedDiffusionModel" : true,
@@ -34,7 +34,7 @@
         }
     },
     "Electrolyte": {
-        "filename": "JsonDatas/Chen2020/chenElectrolyte.json",
+        "filename": "ParameterData/ParameterSets/Chen2020/chen2020_electrolyte.json",
         "isFile": true
     }
 }

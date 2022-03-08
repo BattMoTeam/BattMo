@@ -76,8 +76,7 @@ spiralparams = struct('nwindings'   , nwindings, ...
                       'angleuniform', false); 
 
 % The input material parameters given in json format are used to populate the paramobj object.
-jsonfilename ='JsonDatas/lithiumbattery.json';
-jsonstruct = parseBatmoJson(jsonfilename); 
+jsonstruct = parseBatmoJson('ParameterData/BatteryCellParameters/LithiumIonBatteryCell/lithium_ion_battery_nmc_graphite.json');
 paramobj = BatteryInputParams(jsonstruct); 
 
 th = 'ThermalModel';
