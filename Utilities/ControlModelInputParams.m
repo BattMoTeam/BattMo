@@ -7,6 +7,7 @@ classdef ControlModelInputParams < InputParams
         lowerCutoffVoltage
         upperCutoffVoltage
         dIdtLimit
+        dEdtLimit
         
     end
     
