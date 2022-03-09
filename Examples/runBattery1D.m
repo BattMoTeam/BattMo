@@ -69,7 +69,7 @@ CRate = model.Control.CRate;
 % Smaller time steps are used to ramp up the current from zero to its
 % operational value. Larger time steps are then used for the normal
 % operation. 
-total = 7*hour/CRate;
+total = 2.3*hour/CRate;
 n     = 100;
 dt    = total/n;
 step  = struct('val', dt*ones(n, 1), 'control', ones(n, 1));
@@ -93,7 +93,7 @@ nls.maxIterations = 10;
 nls.errorOnFailure = false; 
 nls.timeStepSelector=StateChangeTimeStepSelector('TargetProps', {{'Control','E'}}, 'targetChangeAbs', 0.03);
 % Change default tolerance for nonlinear solver
-model.nonlinearTolerance = 1e-3*model.Control.I0; 
+model.nonlinearTolerance = 1e-3*model.Control.Imax;
 % Set verbosity
 model.verbose = true;
 

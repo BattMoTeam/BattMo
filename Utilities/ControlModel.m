@@ -2,7 +2,7 @@ classdef ControlModel < BaseModel
 
     properties
         
-        I0
+        Imax
         CRate
         lowerCutoffVoltage
         upperCutoffVoltage
@@ -42,7 +42,6 @@ classdef ControlModel < BaseModel
             % CC_charge
             % CV_discharge
             % CV_charge            
-            varnames{end + 1} = 'prevCtrlType';
             
             % Terminal voltage variation/ [V/s]
             varnames{end + 1} = 'dEdt';
@@ -56,83 +55,89 @@ classdef ControlModel < BaseModel
             varnames{end + 1} = controlEquation;
             
         end
-
         function state = updateControlEquation(model, state)
+            
+            Imax      = model.Imax;
+            Emin    = model.lowerCutoffVoltage;
+            Emax    = model.upperCutoffVoltage;
+            
+            E = state.E;
+            I = state.I;            
+            ctrlType = state.ctrlType;
+            
+            switch ctrlType
+              case 'CC_discharge'
+                ctrleq = I + Imax;
+              case 'CC_charge'
+                ctrleq = I - Imax;
+              case 'CV_discharge'
+                ctrleq = I;
+              case 'CV_charge'
+                ctrleq = (E - Emax)*1e5;
+            end
+            
+            state.controlEquation = ctrleq;
+            
+        end
+        
 
-            I0      = model.I0;
+        function state = updateControlType(model, state, state0, dt)
+            % Note : This function should be called with non-AD variables
+
+            Imax    = model.Imax;
             Emin    = model.lowerCutoffVoltage;
             Emax    = model.upperCutoffVoltage;
             dEdtMin = model.dEdtLimit;
             dIdtMin = model.dIdtLimit;
             
             E = state.E;
-            I = state.I;
-            dEdt = state.dEdt;
-            dIdt = state.dIdt;
+            
+            dEdt = (state.E - state0.E)/dt;
+            dIdt = (state.I - state0.I)/dt;
 
             ctrlType = state.ctrlType;
-            prevCtrlType = state.prevCtrlType;
             
-            % convert to non AD variable
-            Eval = value(E);
-            Ival = value(I);
-            
-            % Note : dEdt, dIdt should be sent as non AD (so that we do not have to convert those)
-            ctrlEqs.CC_discharge = I + I0;
-            ctrlEqs.CC_charge    = I - I0;
-            ctrlEqs.CV_discharge = I;
-            ctrlEqs.CV_charge    = (E - Emax)*1e5;
-
-            switch prevCtrlType
+            switch ctrlType
               
               case 'CC_discharge'
-
-                assert(ismember(ctrlType, {'CC_discharge', 'CV_discharge'}));
-
-                if (Eval >= Emin) 
-                    newCtrlType = 'CC_discharge';
+                
+                if (E >= Emin) 
+                    nextCtrlType = 'CC_discharge';
                 else 
-                    newCtrlType = 'CV_discharge';
+                    nextCtrlType = 'CV_discharge';
                 end
             
               case 'CV_discharge'
 
-                assert(ismember(ctrlType, {'CV_discharge', 'CC_charge'}));
-
                 if (dEdt >= dEdtMin)
-                    newCtrlType = 'CV_discharge';
+                    nextCtrlType = 'CV_discharge';
                 else
-                    newCtrlType = 'CC_charge';
+                    nextCtrlType = 'CC_charge';
                 end
 
               case 'CC_charge'
-                
-                assert(ismember(ctrlType, {'CC_charge', 'CV_charge'}));
 
-                if (Eval <= Emax) 
-                    newCtrlType = 'CC_charge';
+                if (E <= Emax) 
+                    nextCtrlType = 'CC_charge';
                 else
-                    newCtrlType = 'CV_charge';
+                    nextCtrlType = 'CV_charge';
                 end 
                 
               case 'CV_charge'
                 
-                assert(ismember(ctrlType, {'CV_charge', 'CC_discharge'}));
-                
                 if (dIdt <= - dIdtMin)
-                    newCtrlType = 'CV_charge';
+                    nextCtrlType = 'CV_charge';
                 else
-                    newCtrlType = 'CC_discharge';
+                    nextCtrlType = 'CC_discharge';
                 end                  
                 
             end
 
-            if ~strcmp(ctrlType, newCtrlType)
-                fprintf('\n\n *** control switch %s -> %s\n\n', ctrlType, newCtrlType);
-            end
+            % if ~strcmp(ctrlType, nextCtrlType)
+                % fprintf('\n\n *** control switch %s -> %s\n\n', ctrlType, nextCtrlType);
+            % end
             
-            state.ctrlType = newCtrlType;
-            state.controlEquation = ctrlEqs.(newCtrlType);
+            state.nextCtrlType = nextCtrlType;
             
         end
             

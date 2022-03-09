@@ -204,7 +204,7 @@ classdef Battery < BaseModel
             C = computeCellCapacity(model);
             CRate = model.(ctrl).CRate;
             
-            model.(ctrl).I0 = (C/hour)*CRate;
+            model.(ctrl).Imax = (C/hour)*CRate;
             
         end
         
@@ -471,8 +471,9 @@ classdef Battery < BaseModel
             initstate.(pe).(cc).phi = OCP - ref;
             
             initstate.(ctrl).E = OCP(1) - ref;
-            initstate.(ctrl).I = -model.(ctrl).I0;
+            initstate.(ctrl).I = - model.(ctrl).Imax;
             initstate.(ctrl).ctrlType = 'CC_discharge';
+            initstate.(ctrl).nextCtrlType = 'CC_discharge';
             
             
         end
@@ -636,7 +637,7 @@ classdef Battery < BaseModel
             %% setup relation between E and I at positive current collectror
             
             state = model.setupEIEquation(state);
-            state = model.updateDerivativeControlValues(state, state0, dt);
+            state.(ctrl).ctrlType = state0.(ctrl).nextCtrlType;
             state.(ctrl) = model.(ctrl).updateControlEquation(state.(ctrl));
             
             %% Set up the governing equations
@@ -672,8 +673,6 @@ classdef Battery < BaseModel
             eqs{1} = eqs{1} - model.Electrolyte.sp.t(1)*eqs{2};
             
             %% Give type and names to equations and names of the primary variables (for book-keeping)
-            
- 
             
             types = {'cell','cell','cell','cell', 'sdiff','cell','cell','cdiff','cell','cell', 'cell', 'cntrl', 'cntrl'};
             names = {'elyte_massCons'   , ...
@@ -1171,7 +1170,6 @@ classdef Battery < BaseModel
             if (not(all(keep)))
                 p = {p{find(keep)}};
             end
-            extra{end + 1} = {'Control', 'ctrlType'};
         end
         
         function forces = getValidDrivingForces(model)
@@ -1229,6 +1227,16 @@ classdef Battery < BaseModel
             
             cleanState = addVariable@BaseModel(model, cleanState, state, state0);
             cleanState.Control.ctrlType = state.Control.ctrlType;
+            
+        end
+        
+        function [state, report] = updateAfterConvergence(model, state0, state, dt, drivingForces)
+            
+             [state, report] = updateAfterConvergence@BaseModel(model, state0, state, dt, drivingForces);
+             
+             ctrl = 'Control';
+             state.(ctrl) = model.(ctrl).updateControlType(state.(ctrl), state0.(ctrl), dt);
+             
             
         end
         
