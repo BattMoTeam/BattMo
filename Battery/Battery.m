@@ -637,6 +637,7 @@ classdef Battery < BaseModel
             %% setup relation between E and I at positive current collectror
             
             state = model.setupEIEquation(state);
+            state = model.updateControl(state, drivingForces);
             state.(ctrl) = model.(ctrl).updateControlEquation(state.(ctrl));
             
             %% Set up the governing equations
@@ -828,6 +829,21 @@ classdef Battery < BaseModel
             
         end
 
+        function state = updateControl(model, state, drivingForces)
+            
+            ctrl = "Control";
+            
+            if isa(model.(ctrl), 'CcCvControlModel')
+                % nothing to do here
+            else
+                E = state.(ctrl).E;
+                I = state.(ctrl).I;
+                [ctrlval, ctrltype] = drivingForces.src(time, value(I), value(E));
+                state.(ctrl).ctrlval = ctrlval
+                state.(ctrl).ctrltype = ctrltype;
+            end
+            
+        end
         
         function state = updateThermalAccumTerms(model, state, state0, dt)
         % Assemble the accumulation term for the energy equation
@@ -1225,6 +1241,7 @@ classdef Battery < BaseModel
         end
 
         function cleanState = addVariable(model, cleanState, state, state0)
+            
             cleanState = addVariable@BaseModel(model, cleanState, state, state0);
 
             ctrl = 'Control';            
@@ -1233,8 +1250,12 @@ classdef Battery < BaseModel
         end
 
         function [model, state] = prepareTimestep(model, state, state0, dt, drivingForces)
-             ctrl = 'Control';
-             state.(ctrl).ctrlType = state0.(ctrl).nextCtrlType;
+            
+            [model, state] = prepareTimestep@BaseModel(model, state, state0, dt, drivingForces);
+            
+            ctrl = 'Control';
+            state = model.(ctrl).prepareStepControl(state.(ctrl), state0.(ctrl), dt, drivingForces);
+            
         end
         
         function [state, report] = updateAfterConvergence(model, state0, state, dt, drivingForces)
@@ -1242,7 +1263,7 @@ classdef Battery < BaseModel
              [state, report] = updateAfterConvergence@BaseModel(model, state0, state, dt, drivingForces);
              
              ctrl = 'Control';
-             state.(ctrl) = model.(ctrl).updateControlType(state.(ctrl), state0.(ctrl), dt);
+             state.(ctrl) = model.(ctrl).updateControlAfterConvergence(state.(ctrl), state0.(ctrl), dt);
         end
         
         

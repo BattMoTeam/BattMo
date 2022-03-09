@@ -6,8 +6,6 @@ classdef ControlModel < BaseModel
         CRate
         lowerCutoffVoltage
         upperCutoffVoltage
-        dIdtLimit
-        dEdtLimit
         
     end
     
@@ -19,9 +17,7 @@ classdef ControlModel < BaseModel
             
             fdnames = {'CRate'             , ...
                        'lowerCutoffVoltage', ...
-                       'upperCutoffVoltage', ...
-                       'dEdtLimit'         , ...
-                       'dIdtLimit'};
+                       'upperCutoffVoltage'};
             model = dispatchParams(model, paramobj, fdnames);
             
         end
@@ -55,91 +51,39 @@ classdef ControlModel < BaseModel
             varnames{end + 1} = controlEquation;
             
         end
+
+        function state = prepareStepControl(model, state, state0, drivingForces)
+        % Note : Attach to state the values necessary for the control. This is run only once at the beginning of a time step
+        % default is nothing.
+        end
+        
         function state = updateControlEquation(model, state)
             
             Imax = model.Imax;
             Emin = model.lowerCutoffVoltage;
             Emax = model.upperCutoffVoltage;
-            
+
             E = state.E;
             I = state.I;            
-            ctrlType = state.ctrlType;
-            
-            switch ctrlType
-              case 'CC_discharge'
-                ctrleq = I + Imax;
-              case 'CV_discharge'
-                ctrleq = I;
-              case 'CC_charge'
-                if (value(E) <= Emax)
-                    ctrleq = I - Imax;
-                else
-                    ctrleq = (E - Emax)*1e5;
-                    state.ctrlType = 'CV_charge';
-                end
-              case 'CV_charge'
-                ctrleq = (E - Emax)*1e5;
+            ctrlval  = state.ctrlval;
+            ctrltype = state.ctrltype;
+
+            switch ctrltype
+              case 'I'
+                eqs{end + 1} = I - ctrlval;
+              case 'E'
+                eqs{end + 1} = (E - ctrlval)*1e5;
             end
             
             state.controlEquation = ctrleq;
-            
+                        
         end
         
 
-        function state = updateControlType(model, state, state0, dt)
-            % Note : This function should be called with non-AD variables
-
-            Imax    = model.Imax;
-            Emin    = model.lowerCutoffVoltage;
-            Emax    = model.upperCutoffVoltage;
-            dEdtMin = model.dEdtLimit;
-            dIdtMin = model.dIdtLimit;
-            
-            E = state.E;
-            
-            dEdt = (state.E - state0.E)/dt;
-            dIdt = (state.I - state0.I)/dt;
-
-            ctrlType = state.ctrlType;
-            
-            switch ctrlType
-              
-              case 'CC_discharge'
+        function state = updateControlAfterConvergence(model, state, state0, dt)
+        % Note : This function is called in updateAfterConvergence after convergence and gives possibility to detect control switch.
+        % default is nothing.
                 
-                if (E >= Emin) 
-                    nextCtrlType = 'CC_discharge';
-                else 
-                    nextCtrlType = 'CV_discharge';
-                end
-            
-              case 'CV_discharge'
-
-                if (dEdt >= dEdtMin)
-                    nextCtrlType = 'CV_discharge';
-                else
-                    nextCtrlType = 'CC_charge';
-                end
-
-              case 'CC_charge'
-
-                if (E <= Emax) 
-                    nextCtrlType = 'CC_charge';
-                else
-                    nextCtrlType = 'CV_charge';
-                end 
-                
-              case 'CV_charge'
-                
-                if (dIdt <= - dIdtMin)
-                    nextCtrlType = 'CV_charge';
-                else
-                    nextCtrlType = 'CC_discharge';
-                end                  
-                
-            end
-            
-            state.nextCtrlType = nextCtrlType;
-            
         end
             
         
