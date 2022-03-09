@@ -133,6 +133,8 @@ classdef Electrolyte < ElectroChemicalComponent
 
         function state = updateChemicalCurrent(model, state)
             
+            ncomp = model.ncomp; % number of components
+
             cLi          = state.cs{1}; % concentration of Li+
             T            = state.T;     % temperature
             phi          = state.phi;   % potential
@@ -140,8 +142,6 @@ classdef Electrolyte < ElectroChemicalComponent
             
             cs  = state.cs;         
             
-            ncomp = model.ncomp; % number of components
-            sp = model.sp;
 
             % calculate the concentration derivative of the chemical potential for each species in the electrolyte
             R = model.constants.R;
@@ -149,22 +149,8 @@ classdef Electrolyte < ElectroChemicalComponent
             for ind = 1 : ncomp
                 dmudcs{ind} = R .* T ./ cs{ind};
             end
-                        
-            % volume fraction of electrolyte
-            volfrac = model.volumeFraction;
-            % Compute effective ionic conductivity in porous media
-            conductivityeff = conductivity .* volfrac .^1.5;
-            
-            % setup chemical fluxes
-            jchems = cell(1, ncomp);
-            F = model.constants.F;
-            for i = 1 : ncomp
-                coeff = conductivityeff .* sp.t(i) .* dmudcs{i} ./ (sp.z(i).*F);
-                jchems{i} = assembleFlux(model, cs{i}, coeff);
-            end
-            
+
             state.dmudcs = dmudcs;
-            state.jchems = jchems;
             
         end
         
@@ -195,6 +181,7 @@ classdef Electrolyte < ElectroChemicalComponent
             R     = model.constants.R;
             F     = model.constants.F;
             
+            dmudcs       = state.dmudcs;
             phi          = state.phi;
             T            = state.T;
             c            = state.c;
@@ -207,7 +194,8 @@ classdef Electrolyte < ElectroChemicalComponent
             state.conductivityeff = conductivityeff;
             j = assembleFlux(model, phi, conductivityeff);
             
-            coef = 2*R/F.*(1 - sp.t(1))*conductivityeff.*T./c;
+            sum_dmudc = dmudcs{1} + dmudcs{2};
+            coef = (1/F)*(1 - sp.t(1))*conductivityeff.*sum_dmudc;
             jchem = assembleFlux(model, c, coef);
             
             j = j - jchem;
