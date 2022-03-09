@@ -57,9 +57,9 @@ classdef ControlModel < BaseModel
         end
         function state = updateControlEquation(model, state)
             
-            Imax      = model.Imax;
-            Emin    = model.lowerCutoffVoltage;
-            Emax    = model.upperCutoffVoltage;
+            Imax = model.Imax;
+            Emin = model.lowerCutoffVoltage;
+            Emax = model.upperCutoffVoltage;
             
             E = state.E;
             I = state.I;            
@@ -68,10 +68,15 @@ classdef ControlModel < BaseModel
             switch ctrlType
               case 'CC_discharge'
                 ctrleq = I + Imax;
-              case 'CC_charge'
-                ctrleq = I - Imax;
               case 'CV_discharge'
                 ctrleq = I;
+              case 'CC_charge'
+                if (value(E) <= Emax)
+                    ctrleq = I - Imax;
+                else
+                    ctrleq = (E - Emax)*1e5;
+                    state.ctrlType = 'CV_charge';
+                end
               case 'CV_charge'
                 ctrleq = (E - Emax)*1e5;
             end
@@ -132,10 +137,6 @@ classdef ControlModel < BaseModel
                 end                  
                 
             end
-
-            % if ~strcmp(ctrlType, nextCtrlType)
-                % fprintf('\n\n *** control switch %s -> %s\n\n', ctrlType, nextCtrlType);
-            % end
             
             state.nextCtrlType = nextCtrlType;
             

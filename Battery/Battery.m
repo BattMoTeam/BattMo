@@ -637,7 +637,6 @@ classdef Battery < BaseModel
             %% setup relation between E and I at positive current collectror
             
             state = model.setupEIEquation(state);
-            state.(ctrl).ctrlType = state0.(ctrl).nextCtrlType;
             state.(ctrl) = model.(ctrl).updateControlEquation(state.(ctrl));
             
             %% Set up the governing equations
@@ -1170,6 +1169,8 @@ classdef Battery < BaseModel
             if (not(all(keep)))
                 p = {p{find(keep)}};
             end
+            extra{end + 1} = {ctrl, 'ctrlType'};
+            extra{end + 1} = {ctrl, 'nextCtrlType'};
         end
         
         function forces = getValidDrivingForces(model)
@@ -1224,10 +1225,16 @@ classdef Battery < BaseModel
         end
 
         function cleanState = addVariable(model, cleanState, state, state0)
-            
             cleanState = addVariable@BaseModel(model, cleanState, state, state0);
-            cleanState.Control.ctrlType = state.Control.ctrlType;
+
+            ctrl = 'Control';            
+            cleanState.(ctrl).ctrlType = state.(ctrl).ctrlType;
             
+        end
+
+        function [model, state] = prepareTimestep(model, state, state0, dt, drivingForces)
+             ctrl = 'Control';
+             state.(ctrl).ctrlType = state0.(ctrl).nextCtrlType;
         end
         
         function [state, report] = updateAfterConvergence(model, state0, state, dt, drivingForces)
@@ -1236,8 +1243,6 @@ classdef Battery < BaseModel
              
              ctrl = 'Control';
              state.(ctrl) = model.(ctrl).updateControlType(state.(ctrl), state0.(ctrl), dt);
-             
-            
         end
         
         

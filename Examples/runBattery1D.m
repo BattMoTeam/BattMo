@@ -69,7 +69,7 @@ CRate = model.Control.CRate;
 % Smaller time steps are used to ramp up the current from zero to its
 % operational value. Larger time steps are then used for the normal
 % operation. 
-total = 2.3*hour/CRate;
+total = 3.1*hour/CRate;
 n     = 100;
 dt    = total/n;
 step  = struct('val', dt*ones(n, 1), 'control', ones(n, 1));
