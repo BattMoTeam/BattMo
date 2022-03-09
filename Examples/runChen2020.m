@@ -181,7 +181,7 @@ plot(t2, u2, 'linewidth', 3, 'color', l(3, :), 'displayname', 'pybamm - instanta
 set(gca, 'fontsize', 18);
 title('Cell Voltage / V')
 xlabel('time (hours)')
-legend('fontsize', 18, 'location', 'south west')
+legend('fontsize', 18, 'location', 'southwest')
 
 figure
 plot((time/hour), Inew, 'linewidth', 3)
