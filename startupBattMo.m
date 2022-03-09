@@ -31,6 +31,19 @@ for ind = 1 : numel(dirnames)
     addpath(genpath(dirname));
 end
 
+%% Octave requires some extra functionality
+if mrstPlatform('octave')
+    % Install package for json files
+    try
+        pkg load jsonstuff
+    catch
+        pkg install https://github.com/apjanke/octave-jsonstuff/releases/download/v0.3.3/jsonstuff-0.3.3.tar.gz
+        pkg load jsonstuff
+    end
+
+end
+
+
 %{
 Copyright 2009-2021 SINTEF Industry, Sustainable Energy Technology
 and SINTEF Digital, Mathematics & Cybernetics.
