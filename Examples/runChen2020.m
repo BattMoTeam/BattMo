@@ -13,7 +13,7 @@ mrstModule add ad-core mrst-gui mpfa
 % all the parameters through out the submodels.
 
 % The input parameters can be given in json format. The json file is read and used to populate the paramobj object.
-jsonstruct = parseBatmoJson('ParameterData/ParameterSets/Chen2020/chen2020_lithium_ion_battery.json');
+jsonstruct = parseBattmoJson('ParameterData/ParameterSets/Chen2020/chen2020_lithium_ion_battery.json');
 
 paramobj = BareBatteryInputParams(jsonstruct);
 
@@ -173,7 +173,7 @@ set(0, 'defaultFigurePosition', [671 510 900 600]);
 
 l = lines(3);
 figure
-plot((time/hour), Enew,'-', 'linewidth', 3, 'color', l(1, :), 'displayname', 'batmo - solid diffusion')
+plot((time/hour), Enew,'-', 'linewidth', 3, 'color', l(1, :), 'displayname', 'battmo - solid diffusion')
 hold on
 plot(t1, u1, 'linewidth', 3, 'color', l(2, :), 'displayname', 'pybamm - solid diffusion')
 plot(t2, u2, 'linewidth', 3, 'color', l(3, :), 'displayname', 'pybamm - instantaneous solid diffusion')
@@ -193,18 +193,18 @@ xlabel('time (hours)')
 Copyright 2009-2021 SINTEF Industry, Sustainable Energy Technology
 and SINTEF Digital, Mathematics & Cybernetics.
 
-This file is part of The Battery Modeling Toolbox BatMo
+This file is part of The Battery Modeling Toolbox BattMo
 
-BatMo is free software: you can redistribute it and/or modify
+BattMo is free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
 the Free Software Foundation, either version 3 of the License, or
 (at your option) any later version.
 
-BatMo is distributed in the hope that it will be useful,
+BattMo is distributed in the hope that it will be useful,
 but WITHOUT ANY WARRANTY; without even the implied warranty of
 MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 GNU General Public License for more details.
 
 You should have received a copy of the GNU General Public License
-along with BatMo.  If not, see <http://www.gnu.org/licenses/>.
+along with BattMo.  If not, see <http://www.gnu.org/licenses/>.
 %}

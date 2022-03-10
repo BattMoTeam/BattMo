@@ -76,7 +76,7 @@ spiralparams = struct('nwindings'   , nwindings, ...
                       'angleuniform', true); 
 
 % The input material parameters given in json format are used to populate the paramobj object.
-jsonstruct = parseBatmoJson('ParameterData/BatteryCellParameters/LithiumIonBatteryCell/lithium_ion_battery_nmc_graphite.json');
+jsonstruct = parseBattmoJson('ParameterData/BatteryCellParameters/LithiumIonBatteryCell/lithium_ion_battery_nmc_graphite.json');
 paramobj = BatteryInputParams(jsonstruct); 
 
 th = 'ThermalModel';
@@ -185,7 +185,7 @@ model.nonlinearTolerance = 1e-4;
 model.verbose = true; 
 
 % Run simulation
-dataFolder = 'BatMo';
+dataFolder = 'BattMo';
 problem = packSimulationProblem(initstate, model, schedule, dataFolder, 'Name', 'jellyroll', 'NonLinearSolver', nls);
 problem.SimulatorSetup.OutputMinisteps = true; 
 
@@ -206,18 +206,18 @@ simulatePackedProblem(problem);
 Copyright 2009-2021 SINTEF Industry, Sustainable Energy Technology
 and SINTEF Digital, Mathematics & Cybernetics.
 
-This file is part of The Battery Modeling Toolbox BatMo
+This file is part of The Battery Modeling Toolbox BattMo
 
-BatMo is free software: you can redistribute it and/or modify
+BattMo is free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
 the Free Software Foundation, either version 3 of the License, or
 (at your option) any later version.
 
-BatMo is distributed in the hope that it will be useful,
+BattMo is distributed in the hope that it will be useful,
 but WITHOUT ANY WARRANTY; without even the implied warranty of
 MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 GNU General Public License for more details.
 
 You should have received a copy of the GNU General Public License
-along with BatMo.  If not, see <http://www.gnu.org/licenses/>.
+along with BattMo.  If not, see <http://www.gnu.org/licenses/>.
 %}

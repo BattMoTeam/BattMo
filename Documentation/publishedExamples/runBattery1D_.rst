@@ -9,5 +9,5 @@ The domain is split in three regions :
 
 We use orgLiPF6 solvent
 
-.. image:: ../batmologo.png
+.. image:: ../battmologo.png
    :scale: 20%
