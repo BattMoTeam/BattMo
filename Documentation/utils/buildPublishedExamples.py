@@ -98,7 +98,7 @@ def parse_publish_to_xml(exfile):
                             txt = txt[0:crindex]
                             lastalpha = [m.end(0) for m in re.finditer('\w|\)|\;', txt)];
                             if lastalpha:
-                               txt = txt[1:lastalpha[-1]]
+                               txt = txt[0:lastalpha[-1]]
                         output += "\n.. code-block:: matlab\n"
                         txt = addIdent(txt);
                         output += txt
