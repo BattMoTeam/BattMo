@@ -66,12 +66,12 @@ classdef CcCvControlModel < ControlModel
             
             switch ctrlType
               case 'CC_discharge'
-                ctrleq = I + Imax;
+                ctrleq = I - Imax;
               case 'CV_discharge'
                 ctrleq = I;
               case 'CC_charge'
                 if (value(E) <= Emax)
-                    ctrleq = I - Imax;
+                    ctrleq = I + Imax;
                 else
                     ctrleq = (E - Emax)*1e5;
                     state.ctrlType = 'CV_charge';
@@ -128,7 +128,7 @@ classdef CcCvControlModel < ControlModel
                 
               case 'CV_charge'
                 
-                if (dIdt <= - dIdtMin)
+                if (dIdt >= dIdtMin)
                     nextCtrlType = 'CV_charge';
                 else
                     nextCtrlType = 'CC_discharge';

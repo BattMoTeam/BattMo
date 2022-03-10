@@ -81,7 +81,7 @@ step  = struct('val', dt*ones(n, 1), 'control', ones(n, 1));
 tup = 0.1; % rampup value for the current function, see rampupSwitchControl
 srcfunc = @(time, I, E) rampupSwitchControl(time, tup, I, E, ...
                                             model.Control.Imax, ...
-                                            model.Control.upperCutoffVoltage);
+                                            model.Control.lowerCutoffVoltage);
 
 % we setup the control by assigning a source and stop function.
 control = repmat(struct('src', srcfunc, 'IEswitch', true), 1, 1); 

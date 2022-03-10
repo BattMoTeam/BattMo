@@ -1135,11 +1135,12 @@ classdef Battery < BaseModel
             cond_pcc = model.(pe).(cc).EffectiveElectricalConductivity;
             [trans_pcc, cells] = model.(pe).(cc).operators.harmFaceBC(cond_pcc, faces);
             
-            state.Control.EIequation = sum(trans_pcc.*(state.(pe).(cc).phi(cells) - E)) + I;
+            state.Control.EIequation = sum(trans_pcc.*(state.(pe).(cc).phi(cells) - E)) - I;
 
         end
         
         function state = initStateAD(model, state)
+
             [pnames, extras]  = model.getPrimaryVariables();
             vars = cell(numel(pnames),1);
             for i=1:numel(pnames)
@@ -1157,9 +1158,11 @@ classdef Battery < BaseModel
                 assert(isnumeric(var) | ischar(var));
                 newstate = model.setNewProp(newstate, extras{i}, var);
             end
+            
             time = state.time;
             state = newstate;
             state.time = time;
+            
         end 
         
         function [p, extra] = getPrimaryVariables(model)
