@@ -51,7 +51,7 @@ classdef CurrentCollector < ElectronicComponent
             
         end
         
-        function [jExternal, jFaceExternal] = setupExternalCoupling(model, phi, phiExternal
+        function [jExternal, jFaceExternal] = setupExternalCoupling(model, phi, phiExternal)
             
             coupterm = model.couplingTerm;
             
