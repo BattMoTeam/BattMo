@@ -2,12 +2,11 @@ classdef ControlModelInputParams < InputParams
 
     
     properties
-        
+
+        controlPolicy
         CRate
         lowerCutoffVoltage
         upperCutoffVoltage
-        dIdtLimit
-        dEdtLimit
         
     end
     

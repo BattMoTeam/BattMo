@@ -55,7 +55,7 @@ classdef Battery < BaseModel
             model.PositiveElectrode = model.setupElectrode(paramobj.PositiveElectrode);
             model.Electrolyte       = model.setupElectrolyte(paramobj.Electrolyte);
             model.ThermalModel      = ThermalComponent(paramobj.ThermalModel);
-            model.Control           = ControlModel(paramobj.Control);
+            model.Control           = model.setupControl(paramobj.Control);
             
             % define shorthands
             elyte   = 'Electrolyte';
@@ -72,9 +72,6 @@ classdef Battery < BaseModel
             
             % setup Thermal Model by assigning the effective heat capacity and conductivity, which is computed from the sub-models.
             model = model.setupThermalModel();
-            
-            % setup Control Model by computing input current
-            model = model.setupControlModel();
             
             % setup couplingNames
             model.couplingNames = cellfun(@(x) x.name, model.couplingTerms, 'uniformoutput', false);
@@ -197,14 +194,22 @@ classdef Battery < BaseModel
             model = model.registerPropFunction({{pe, cc, 'jExternal'}, fn, {'phi', 'E'}});
         end
 
-        function model = setupControlModel(model)
+        function control = setupControl(model, paramobj)
 
-            ctrl = 'Control';
+
+            switch paramobj.controlPolicy
+              case "IEswitch"
+                control = ControlModel(paramobj); 
+              case "CCCV"
+                control = CcCvControlModel(paramobj);
+              otherwise
+                error('Error controlPolicy not recognized');
+            end
             
             C = computeCellCapacity(model);
-            CRate = model.(ctrl).CRate;
+            CRate = control.CRate;
             
-            model.(ctrl).Imax = (C/hour)*CRate;
+            control.Imax = (C/hour)*CRate;
             
         end
         
@@ -836,11 +841,16 @@ classdef Battery < BaseModel
             if isa(model.(ctrl), 'CcCvControlModel')
                 % nothing to do here
             else
-                E = state.(ctrl).E;
-                I = state.(ctrl).I;
+                
+                E    = state.(ctrl).E;
+                I    = state.(ctrl).I;
+                time = state.time;
+                
                 [ctrlval, ctrltype] = drivingForces.src(time, value(I), value(E));
-                state.(ctrl).ctrlval = ctrlval
+                
+                state.(ctrl).ctrlval  = ctrlval
                 state.(ctrl).ctrltype = ctrltype;
+                
             end
             
         end
@@ -1191,7 +1201,17 @@ classdef Battery < BaseModel
         
         function forces = getValidDrivingForces(model)
             forces = getValidDrivingForces@PhysicalModel(model);
-            forces.CCCV = true;
+            
+            ctrl = 'Control';
+            switch model.(ctrl).controlPolicy
+              case 'CCCV'
+                forces.CCCV = true;
+              case 'IEswitch'
+                forces.IEswitch = true;
+              otherwise
+                error('Error controlPolicy not recognized');
+            end
+            
         end
 
         function model = validateModel(model, varargin)
@@ -1254,7 +1274,7 @@ classdef Battery < BaseModel
             [model, state] = prepareTimestep@BaseModel(model, state, state0, dt, drivingForces);
             
             ctrl = 'Control';
-            state = model.(ctrl).prepareStepControl(state.(ctrl), state0.(ctrl), dt, drivingForces);
+            state.(ctrl) = model.(ctrl).prepareStepControl(state.(ctrl), state0.(ctrl), dt, drivingForces);
             
         end
         

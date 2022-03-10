@@ -6,7 +6,7 @@ classdef ControlModel < BaseModel
         CRate
         lowerCutoffVoltage
         upperCutoffVoltage
-        
+        controlPolicy
     end
     
     
@@ -15,7 +15,8 @@ classdef ControlModel < BaseModel
         function model = ControlModel(paramobj)
             model = model@BaseModel();
             
-            fdnames = {'CRate'             , ...
+            fdnames = {'controlPolicy'     , ...
+                       'CRate'             , ...
                        'lowerCutoffVoltage', ...
                        'upperCutoffVoltage'};
             model = dispatchParams(model, paramobj, fdnames);
@@ -52,7 +53,7 @@ classdef ControlModel < BaseModel
             
         end
 
-        function state = prepareStepControl(model, state, state0, drivingForces)
+        function state = prepareStepControl(model, state, state0, dt, drivingForces)
         % Note : Attach to state the values necessary for the control. This is run only once at the beginning of a time step
         % default is nothing.
         end

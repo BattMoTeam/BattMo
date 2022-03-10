@@ -4,6 +4,7 @@
     "Ucut": 2,
     "initT": 298.15,
     "Control" : {
+        "controlPolicy" : "IEswitch",
         "CRate" : 1,
         "lowerCutoffVoltage" : 2,
         "upperCutoffVoltage" : 4.1,

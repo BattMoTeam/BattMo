@@ -50,7 +50,7 @@ classdef CcCvControlModel < ControlModel
             
         end
 
-        function state = prepareStepControl(model, state, state0, drivingForces)
+        function state = prepareStepControl(model, state, state0, dt, drivingForces)
             state.ctrlType = state0.nextCtrlType;
         end
         

@@ -75,7 +75,8 @@ dt    = total/n;
 step  = struct('val', dt*ones(n, 1), 'control', ones(n, 1));
 
 % we setup the control by assigning a source and stop function.
-control = struct('CCCV', true); 
+% control = struct('CCCV', true); 
+control = struct('IEswitch', true); 
 
 % This control is used to set up the schedule
 schedule = struct('control', control, 'step', step); 
