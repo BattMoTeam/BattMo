@@ -1,4 +1,4 @@
-%% Example: Pseudo-Three-Dimensional (P3D) Lithium-Ion Battery Model
+%% Pseudo-Three-Dimensional (P3D) Lithium-Ion Battery Model
 % This example demonstrates how to setup a P3D model of a Li-ion battery
 % and run a simple simulation.
 

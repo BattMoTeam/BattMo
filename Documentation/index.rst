@@ -23,10 +23,11 @@ BattMo documentation
 =================================
 
 .. toctree::
-
-   installation
-   inputs
+   :maxdepth: 2
+              
+   Installation <installation>
    examples
+   inputs
    batterymodel
    genmodels
    electrodes

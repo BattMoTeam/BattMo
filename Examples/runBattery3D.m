@@ -1,4 +1,4 @@
-%% Example: Pseudo-Four-Dimensional (P4D) Lithium-Ion Battery Model
+%% Pseudo-Four-Dimensional (P4D) Lithium-Ion Battery Model
 % This example demonstrates how to setup a P4D model of a Li-ion battery
 % and run a simple simulation.
 

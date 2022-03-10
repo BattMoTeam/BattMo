@@ -1,4 +1,4 @@
-%% Example: Pseudo-Two-Dimensional (P2D) Lithium-Ion Battery Model
+%% Pseudo-Two-Dimensional (P2D) Lithium-Ion Battery Model
 % This example demonstrates how to setup a P2D model of a Li-ion battery
 % and run a simple simulation.
 
