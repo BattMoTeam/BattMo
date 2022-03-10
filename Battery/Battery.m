@@ -838,9 +838,10 @@ classdef Battery < BaseModel
             
             ctrl = "Control";
             
-            if isa(model.(ctrl), 'CcCvControlModel')
+            switch model.(ctrl).controlPolicy
+              case 'CCCV'
                 % nothing to do here
-            else
+              case 'IEswitch'
                 
                 E    = state.(ctrl).E;
                 I    = state.(ctrl).I;

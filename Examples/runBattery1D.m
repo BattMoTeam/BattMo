@@ -21,6 +21,8 @@ mrstModule add ad-core mrst-gui mpfa
 % provided in json format. All the parameters for the model are stored in
 % the paramobj object.
 jsonstruct = parseBattmoJson('ParameterData/BatteryCellParameters/LithiumIonBatteryCell/lithium_ion_battery_nmc_graphite.json');
+jsonstruct.Control.controlPolicy = 'CCCV';
+
 paramobj = BatteryInputParams(jsonstruct);
 
 % We define some shorthand names for simplicity.
@@ -32,7 +34,7 @@ elyte   = 'Electrolyte';
 thermal = 'ThermalModel';
 itf     = 'Interface';
 sd      = 'SolidDiffusion';
-
+ctrl    = 'Control';
 
 %% Setup the geometry and computational mesh
 % Here, we setup the 1D computational mesh that will be used for the
@@ -78,13 +80,19 @@ step  = struct('val', dt*ones(n, 1), 'control', ones(n, 1));
 % control = struct('CCCV', true); 
 %  !!! Change this to an entry in the JSON with better variable names !!!
 
-tup = 0.1; % rampup value for the current function, see rampupSwitchControl
-srcfunc = @(time, I, E) rampupSwitchControl(time, tup, I, E, ...
-                                            model.Control.Imax, ...
-                                            model.Control.lowerCutoffVoltage);
-
-% we setup the control by assigning a source and stop function.
-control = repmat(struct('src', srcfunc, 'IEswitch', true), 1, 1); 
+switch model.Control.controlPolicy
+  case 'IEswitch'
+    tup = 0.1; % rampup value for the current function, see rampupSwitchControl
+    srcfunc = @(time, I, E) rampupSwitchControl(time, tup, I, E, ...
+                                                model.Control.Imax, ...
+                                                model.Control.lowerCutoffVoltage);
+    % we setup the control by assigning a source and stop function.
+    control = struct('src', srcfunc, 'IEswitch', true);
+  case 'CCCV'
+    control = struct('CCCV', true);
+  otherwise
+    error('control policy not recognized');
+end
 
 % This control is used to set up the schedule
 schedule = struct('control', control, 'step', step); 
@@ -99,7 +107,7 @@ nls = NonLinearSolver();
 % Change default maximum iteration number in nonlinear solver
 nls.maxIterations = 10; 
 % Change default behavior of nonlinear solver, in case of error
-nls.errorOnFailure = false; 
+NLS.errorOnFailure = false; 
 nls.timeStepSelector=StateChangeTimeStepSelector('TargetProps', {{'Control','E'}}, 'targetChangeAbs', 0.03);
 % Change default tolerance for nonlinear solver
 model.nonlinearTolerance = 1e-3*model.Control.Imax;

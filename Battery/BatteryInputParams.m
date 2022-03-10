@@ -41,8 +41,12 @@ classdef BatteryInputParams < InputParams
             paramobj.(pe)      = ElectrodeInputParams(pick(pe));
             paramobj.(elyte)   = ElectrolyteInputParams(pick(elyte));
             paramobj.(thermal) = ThermalComponentInputParams(pick(thermal));
-            paramobj.(ctrl)    = ControlModelInputParams(pick(ctrl));
-            
+            switch jsonstruct.(ctrl).controlPolicy
+              case 'EIswitch'
+                paramobj.(ctrl)    = ControlModelInputParams(pick(ctrl));
+              case 'CCCV'
+                paramobj.(ctrl)    = CcCvControlModelInputParams(pick(ctrl));
+            end
             paramobj.couplingTerms = {};
             
         end
