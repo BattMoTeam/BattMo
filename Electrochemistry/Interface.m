@@ -152,7 +152,7 @@ classdef Interface < BaseModel
 
         end
 
-        function state = updateReactionRate(model, state);
+        function state = updateReactionRate(model, state)
 
             n = model.n;
             F = model.constants.F;

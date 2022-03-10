@@ -27,7 +27,7 @@ classdef ElectrolyteInputParams < ElectroChemicalComponentInputParams
     
     methods
 
-        function paramobj = ElectrolyteInputParams(jsonstruct);
+        function paramobj = ElectrolyteInputParams(jsonstruct)
             
             paramobj = paramobj@ElectroChemicalComponentInputParams(jsonstruct);
             

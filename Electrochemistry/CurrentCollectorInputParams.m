@@ -14,7 +14,7 @@ classdef CurrentCollectorInputParams < ElectronicComponentInputParams
     
     methods
         
-        function paramobj = CurrentCollectorInputParams(jsonstruct);
+        function paramobj = CurrentCollectorInputParams(jsonstruct)
             paramobj = paramobj@ElectronicComponentInputParams(jsonstruct);
             paramobj.couplingTerm = struct();
         end
