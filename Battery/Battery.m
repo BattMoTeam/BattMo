@@ -360,7 +360,8 @@ classdef Battery < BaseModel
 
         end
         
-        function [SOCN,SOCP] = calculateSOC(model,state)
+        function [SOCN, SOCP] = calculateSOC(model, state)
+            
             bat = model;
 
             ne  = 'NegativeElectrode';
@@ -369,22 +370,25 @@ classdef Battery < BaseModel
             itf = 'Interface';
             
             negAm = bat.(ne).(am).(itf);
-            c = state.(ne).(am).c;
+            c     = state.(ne).(am).c;
             theta = c/negAm.cmax;
-            m = (1 ./ (negAm.theta100 - negAm.theta0));
-            b = -m .* negAm.theta0;
-            SOCN = theta*m + b;
-            vol = model.(ne).(am).volumeFraction;
+            m     = (1 ./ (negAm.theta100 - negAm.theta0));
+            b     = -m .* negAm.theta0;
+            SOCN  = theta*m + b;
+            vol   = model.(ne).(am).volumeFraction;
+            
             SOCN = sum(SOCN.*vol)/sum(vol);
             
             posAm = bat.(pe).(am).(itf);
-            c = state.(pe).(am).c;
+            c     = state.(pe).(am).c;
             theta = c/posAm.cmax;
-            m = (1 ./ (posAm.theta100 - posAm.theta0));
-            b = -m .* posAm.theta0;
-            SOCP = theta*m + b;
-            vol = model.(pe).(am).volumeFraction;
+            m     = (1 ./ (posAm.theta100 - posAm.theta0));
+            b     = -m .* posAm.theta0;
+            SOCP  = theta*m + b;
+            vol   = model.(pe).(am).volumeFraction;
+            
             SOCP = sum(SOCP.*vol)/sum(vol);
+            
         end
         
         function initstate = setupInitialState(model)
@@ -477,9 +481,16 @@ classdef Battery < BaseModel
             
             initstate.(ctrl).E = OCP(1) - ref;
             initstate.(ctrl).I = - model.(ctrl).Imax;
-            initstate.(ctrl).ctrlType = 'CC_discharge';
-            initstate.(ctrl).nextCtrlType = 'CC_discharge';
             
+            switch model.(ctrl).controlPolicy
+              case 'CCCV'
+                initstate.(ctrl).ctrlType = 'CC_charge';
+                initstate.(ctrl).nextCtrlType = 'CC_charge';
+              case 'IEswitch'
+                initstate.(ctrl).ctrlType = 'constantCurrent';
+              otherwise
+                error('control policy not recognized');
+            end
             
         end
         
@@ -847,10 +858,10 @@ classdef Battery < BaseModel
                 I    = state.(ctrl).I;
                 time = state.time;
                 
-                [ctrlval, ctrltype] = drivingForces.src(time, value(I), value(E));
+                [ctrlVal, ctrltype] = drivingForces.src(time, value(I), value(E));
                 
-                state.(ctrl).ctrlval  = ctrlval;
-                state.(ctrl).ctrltype = ctrltype;
+                state.(ctrl).ctrlVal  = ctrlVal;
+                state.(ctrl).ctrlType = ctrltype;
                 
             end
             

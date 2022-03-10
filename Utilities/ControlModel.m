@@ -66,14 +66,14 @@ classdef ControlModel < BaseModel
 
             E = state.E;
             I = state.I;            
-            ctrlval  = state.ctrlval;
-            ctrltype = state.ctrltype;
+            ctrlVal  = state.ctrlVal;
+            ctrlType = state.ctrlType;
 
-            switch ctrltype
-              case 'I'
-                ctrleq = I - ctrlval;
-              case 'E'
-                ctrleq = (E - ctrlval)*1e5;
+            switch ctrlType
+              case 'constantCurrent'
+                ctrleq = I - ctrlVal;
+              case 'constantVoltage'
+                ctrleq = (E - ctrlVal)*1e5;
             end
             
             state.controlEquation = ctrleq;

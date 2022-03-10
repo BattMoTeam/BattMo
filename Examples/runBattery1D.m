@@ -20,10 +20,10 @@ mrstModule add ad-core mrst-gui mpfa
 % throughout the submodels. The input parameters can be set manually or
 % provided in json format. All the parameters for the model are stored in
 % the paramobj object.
-jsonstruct = parseBattmoJson('ParameterData/BatteryCellParameters/LithiumIonBatteryCell/lithium_ion_battery_nmc_graphite.json');
-jsonstruct.Control.controlPolicy = 'CCCV';
-
+jsonstruct = parseBatmoJson('ParameterData/BatteryCellParameters/LithiumIonBatteryCell/lithium_ion_battery_nmc_graphite.json');
+% jsonstruct.Control.controlPolicy = 'CCCV';
 paramobj = BatteryInputParams(jsonstruct);
+% paramobj.SOC = 0.02;
 
 % We define some shorthand names for simplicity.
 ne      = 'NegativeElectrode';
@@ -70,8 +70,16 @@ CRate = model.Control.CRate;
 %% Setup the time step schedule 
 % Smaller time steps are used to ramp up the current from zero to its
 % operational value. Larger time steps are then used for the normal
-% operation. 
-total = 3.1*hour/CRate;
+% operation.
+switch model.(ctrl).controlPolicy
+  case 'CCCV'
+    total = 3.5*hour/CRate;
+  case 'IEswitch'
+    total = 1.4*hour/CRate;
+  otherwise
+    error('control policy not recognized');
+end
+
 n     = 100;
 dt    = total/n;
 step  = struct('val', dt*ones(n, 1), 'control', ones(n, 1));
