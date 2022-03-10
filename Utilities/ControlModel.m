@@ -71,9 +71,9 @@ classdef ControlModel < BaseModel
 
             switch ctrltype
               case 'I'
-                eqs{end + 1} = I - ctrlval;
+                ctrleq = I - ctrlval;
               case 'E'
-                eqs{end + 1} = (E - ctrlval)*1e5;
+                ctrleq = (E - ctrlval)*1e5;
             end
             
             state.controlEquation = ctrleq;

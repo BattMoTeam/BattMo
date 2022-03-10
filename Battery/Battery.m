@@ -848,7 +848,7 @@ classdef Battery < BaseModel
                 
                 [ctrlval, ctrltype] = drivingForces.src(time, value(I), value(E));
                 
-                state.(ctrl).ctrlval  = ctrlval
+                state.(ctrl).ctrlval  = ctrlval;
                 state.(ctrl).ctrltype = ctrltype;
                 
             end
@@ -1196,7 +1196,9 @@ classdef Battery < BaseModel
                 p = {p{find(keep)}};
             end
             extra{end + 1} = {ctrl, 'ctrlType'};
-            extra{end + 1} = {ctrl, 'nextCtrlType'};
+            if strcmp(model.(ctrl).controlPolicy, 'CCCV')
+                extra{end + 1} = {ctrl, 'nextCtrlType'};
+            end
         end
         
         function forces = getValidDrivingForces(model)
@@ -1208,6 +1210,7 @@ classdef Battery < BaseModel
                 forces.CCCV = true;
               case 'IEswitch'
                 forces.IEswitch = true;
+                forces.src = [];
               otherwise
                 error('Error controlPolicy not recognized');
             end

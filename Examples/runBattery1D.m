@@ -76,7 +76,15 @@ step  = struct('val', dt*ones(n, 1), 'control', ones(n, 1));
 
 % we setup the control by assigning a source and stop function.
 % control = struct('CCCV', true); 
-control = struct('IEswitch', true);
+%  !!! Change this to an entry in the JSON with better variable names !!!
+
+tup = 0.1; % rampup value for the current function, see rampupSwitchControl
+srcfunc = @(time, I, E) rampupSwitchControl(time, tup, I, E, ...
+                                            model.Control.Imax, ...
+                                            model.Control.upperCutoffVoltage);
+
+% we setup the control by assigning a source and stop function.
+control = repmat(struct('src', srcfunc, 'IEswitch', true), 1, 1); 
 
 % This control is used to set up the schedule
 schedule = struct('control', control, 'step', step); 
@@ -109,6 +117,8 @@ Inew = cellfun(@(x) x.Control.I, states);
 Tmax = cellfun(@(x) max(x.ThermalModel.T), states);
 [SOCN, SOCP] =  cellfun(@(x) model.calculateSOC(x), states);
 time = cellfun(@(x) x.time, states); 
+
+return
 
 %% Plot the the output voltage and current
 plotDashboard(model, states, 'step', 0);
