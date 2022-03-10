@@ -56,8 +56,8 @@ nrDict = containers.Map( ...
 
 
 % Number of discretization cells in the longitudonal
-nL = 20;
-
+nL = 5;
+nas=3
 % structure that describes the tab setups (see SpiralBatteryGenerator)
 tabparams.tabcase   = 'aligned tabs';
 tabparams.width     = 3*milli*meter;
@@ -67,7 +67,7 @@ spiralparams = struct('nwindings'   , nwindings, ...
                       'rInner'      , rInner   , ...
                       'widthDict'   , widthDict, ...
                       'nrDict'      , nrDict   , ...
-                      'nas'         , []      , ...
+                      'nas'         , nas      , ...
                       'L'           , L        , ...
                       'nL'          , nL       , ...
                       'tabparams'   , [], ...
@@ -165,7 +165,7 @@ else
 end
 
 nls.timeStepSelector = StateChangeTimeStepSelector('TargetProps', {{'PositiveElectrode', 'CurrentCollector', 'E'}}, 'targetChangeAbs', 0.03);
-linearsolver = 'agmg';
+linearsolver = 'direct';
 switch linearsolver
   case 'agmg'
     mrstModule add agmg
@@ -208,7 +208,7 @@ Inew = cellfun(@(x) x.(pe).(cc).I, states);
 time = cellfun(@(x) x.time, states); 
 
 %% Plot an animated summary of the results
-plotDashboard(model, states, 'step', 0);
+%plotDashboard(model, states, 'step', 0);
 
 
 
