@@ -36,7 +36,7 @@ def parse_publish_to_xml(exfile):
     # e = xml.etree.ElementTree.parse(exfile).getroot()
     # outfile  = open("D:/jobb/bitbucket/mrst-documentation/flowSolverTutorial1.txt", "w")
     output = ''
-    rstDescriptionFile = tmp[-1].replace('.xml', '_.rst')
+    rstDescriptionFile = tmp[-1].replace('.xml', 'Preamble.rst')
     includeRstDescriptionFile = ".. include:: " + rstDescriptionFile + "\n\n"
 
     def addIdent(txt):
