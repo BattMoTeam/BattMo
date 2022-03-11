@@ -32,6 +32,7 @@ BattMo documentation
    genmodels
    electrodes
    electrolyte
+   mrst
    bibliography
 
 Indices and tables
