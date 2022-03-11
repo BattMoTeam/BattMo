@@ -26,7 +26,7 @@ BattMo documentation
    :maxdepth: 2
               
    Installation <installation>
-   examples
+   tutorials
    inputs
    batterymodel
    genmodels
