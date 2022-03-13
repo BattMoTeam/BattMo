@@ -714,17 +714,21 @@ classdef Battery < BaseModel
                 names = {names{ind}};
             end
             
-            isfixed = false;
+            isfixed = true;
             if isfixed
+                ctrltype = state.Control.ctrlType;
                 switch ctrltype
-                  case 'I'
+                  case {'constantCurrent','CC_charge','CC_discharge'}
                     types{end-1} = 'cell';   
-                  case 'E'
+                  case {'constantVoltage','CV_charge'}
                     neqs  = numel(types);
                     order = [1:neqs-2,neqs,neqs-1];
                     types = { types{order} };
                     eqs   = {eqs{order}};
                     names = {names{order}};
+                  case 'CV_discharge'
+                      % stil I which is variable
+                      types{end-1} = 'cell'; 
                   otherwise 
                     error()
                 end
