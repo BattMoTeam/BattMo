@@ -714,25 +714,25 @@ classdef Battery < BaseModel
                 names = {names{ind}};
             end
             
-            isfixed = true;
-            if isfixed
-                ctrltype = state.Control.ctrlType;
-                switch ctrltype
-                  case {'constantCurrent','CC_charge','CC_discharge'}
-                    types{end-1} = 'cell';   
-                  case {'constantVoltage','CV_charge'}
-                    neqs  = numel(types);
-                    order = [1:neqs-2,neqs,neqs-1];
-                    types = { types{order} };
-                    eqs   = {eqs{order}};
-                    names = {names{order}};
-                  case 'CV_discharge'
-                      % stil I which is variable
-                      types{end-1} = 'cell'; 
-                  otherwise 
-                    error()
-                end
+            %% The equations are reordered in a way that is consitent with the linear iterative solver 
+            % (the order of the equation does not matter if we do not use an iterative solver)
+            ctrltype = state.Control.ctrlType;
+            switch ctrltype
+              case {'constantCurrent', 'CC_charge', 'CC_discharge'}
+                types{end - 1} = 'cell';   
+              case {'constantVoltage','CV_charge'}
+                neqs  = numel(types);
+                order = [ 1: neqs - 2, neqs, neqs - 1];
+                types = { types{order} };
+                eqs   = {eqs{order}};
+                names = {names{order}};
+              case 'CV_discharge'
+                % stil I which is variable
+                types{end-1} = 'cell'; 
+              otherwise 
+                error()
             end
+            
             primaryVars = model.getPrimaryVariables();
 
             %% setup LinearizedProblem that can be processed by MRST Newton API
