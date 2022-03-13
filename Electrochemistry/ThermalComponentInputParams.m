@@ -2,13 +2,13 @@ classdef ThermalComponentInputParams < ComponentInputParams
 
     properties
         
-        EffectiveThermalConductivity
+        EffectiveThermalConductivity             % Effective thermal conductivity
         EffectiveHeatCapacity
         couplingTerm
         externalHeatTransferCoefficient          % scalar value
         externalHeatTransferCoefficientTopFaces  % scalar value
         externalHeatTransferCoefficientSideFaces % scalar value
-        externalTemperature
+        externalTemperature                      % 
         
     end
     

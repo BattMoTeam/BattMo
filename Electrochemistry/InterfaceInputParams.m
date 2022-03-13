@@ -6,10 +6,10 @@ classdef InterfaceInputParams < InputParams
         
         G  % Grid
 
-        name % Given name
+        name % Given name of the interface (for convenience)
         
         theta0   % Lithiation value at 0% SOC [-]
-        theta100 % Lithiation value at 100% SOC[-]
+        theta100 % Lithiation value at 100% SOC [-]
 
         cmax
         k0                      % [m^2.5 mol^-0.5 s^-1]

@@ -5,9 +5,12 @@ classdef ActiveMaterialInputParams < ElectronicComponentInputParams
     properties
         
         %
-        % Input parameter for the active material  :class:`InterfaceInputParams <Electrochemistry.Electrodes.InterfaceInputParams>`
+        % Input parameter for the  interface :class:`InterfaceInputParams <Electrochemistry.InterfaceInputParams>`
         %
         Interface
+        %
+        % Input parameter for the solid diffusion model  :class:`SolidDiffusionModelInputParams <Electrochemistry.SolidDiffusionModelInputParams>`
+        %
         SolidDiffusion
         
         amName % Given name for the active material
@@ -16,11 +19,9 @@ classdef ActiveMaterialInputParams < ElectronicComponentInputParams
         InterDiffusionCoefficient % Interdiffusion coefficient parameter (diffusion between the particles)
         
         thermalConductivity % Intrinsic Thermal conductivity of the active component
-        heatCapacity       % Intrinsic Heat capacity of the active component
+        heatCapacity        % Intrinsic Heat capacity of the active component
 
         electricalConductivity % Electrical conductivity / [S m^-1]
-        
-        useSimplifiedDiffusionModel 
         
     end
 

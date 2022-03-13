@@ -28,10 +28,14 @@ BattMo documentation
    Installation <installation>
    tutorials
    inputs
-   batterymodel
-   genmodels
-   electrodes
-   electrolyte
+   ..
+      batterymodel
+   ..
+      genmodels
+   ..
+      electrodes
+   ..
+      electrolyte
    mrst
    bibliography
 
