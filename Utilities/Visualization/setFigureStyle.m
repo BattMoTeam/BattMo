@@ -25,17 +25,16 @@ addOptional(p, 'quantity', defaultQnty, ...
     @(x) any(validatestring(x,expectedQnty)));
 parse(p, varargin{:});
 
-
 if strcmpi(p.Results.quantity,'all')
-    h =  findobj('type','figure');
+    h = findobj('type','figure');
     n = length(h);
 else
     n = 1;
 end
 
-for i = 1:n
+for fig = 1 : n
 
-    fig = figure(i);
+    set(0, 'CurrentFigure', fig);
     ax = gca;
     hLegend = findobj(gcf, 'Type', 'Legend');
     hColorbar = findobj(gcf, 'Type', 'Colorbar');
