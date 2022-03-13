@@ -21,9 +21,11 @@ mrstModule add ad-core mrst-gui mpfa
 % provided in json format. All the parameters for the model are stored in
 % the paramobj object.
 jsonstruct = parseBattmoJson('ParameterData/BatteryCellParameters/LithiumIonBatteryCell/lithium_ion_battery_nmc_graphite.json');
-% jsonstruct.Control.controlPolicy = 'CCCV';
+jsonstruct.Control.controlPolicy = 'CCCV';
+jsonstruct.Control.lowerCutoffVoltage = 3.0;
 paramobj = BatteryInputParams(jsonstruct);
-% paramobj.SOC = 0.02;
+paramobj.SOC = 0.02;
+
 
 % We define some shorthand names for simplicity.
 ne      = 'NegativeElectrode';
@@ -41,7 +43,7 @@ ctrl    = 'Control';
 % simulation. The required discretization parameters are already included
 % in the class BatteryGenerator1D. 
 gen = BatteryGenerator1D();
-gen.fac = 10;
+gen.fac = 1;
 gen = gen.applyResolutionFactors();
 
 % Now, we update the paramobj with the properties of the mesh. 
@@ -90,6 +92,7 @@ step  = struct('val', dt*ones(n, 1), 'control', ones(n, 1));
 
 switch model.Control.controlPolicy
   case 'IEswitch'
+    
     tup = 0.1; % rampup value for the current function, see rampupSwitchControl
     srcfunc = @(time, I, E) rampupSwitchControl(time, tup, I, E, ...
                                                 model.Control.Imax, ...
@@ -109,14 +112,29 @@ schedule = struct('control', control, 'step', step);
 % The initial state of the model is dispatched using the
 % model.setupInitialState()method. 
 initstate = model.setupInitialState(); 
-
+initstate.Control.I = model.Control.Imax;
 %% Setup the properties of the nonlinear solver 
 nls = NonLinearSolver(); 
 % Change default maximum iteration number in nonlinear solver
 nls.maxIterations = 10; 
 % Change default behavior of nonlinear solver, in case of error
-NLS.errorOnFailure = false; 
+nls.errorOnFailure = false; 
 nls.timeStepSelector=StateChangeTimeStepSelector('TargetProps', {{'Control','E'}}, 'targetChangeAbs', 0.03);
+linearsolver = 'agmg';
+switch linearsolver
+  case 'agmg'
+    mrstModule add agmg
+    nls.LinearSolver = AGMGSolverAD('verbose', true, 'reduceToCell', true); 
+    nls.LinearSolver.tolerance = 1e-3; 
+    nls.LinearSolver.maxIterations = 30; 
+    nls.maxIterations = 10; 
+    nls.verbose = 10;
+  case 'direct'
+      nls.LinearSolver = BackslashSolverAD('verbose', false, 'reduceToCell', true) 
+    disp('standard direct solver')
+  otherwise
+    error()
+end
 % Change default tolerance for nonlinear solver
 model.nonlinearTolerance = 1e-3*model.Control.Imax;
 % Set verbosity
@@ -133,6 +151,9 @@ Inew = cellfun(@(x) x.Control.I, states);
 Tmax = cellfun(@(x) max(x.ThermalModel.T), states);
 [SOCN, SOCP] =  cellfun(@(x) model.calculateSOC(x), states);
 time = cellfun(@(x) x.time, states); 
+plot(time,Enew)
+
+return
 
 %% Plot the the output voltage and current
 plotDashboard(model, states, 'step', 0);
