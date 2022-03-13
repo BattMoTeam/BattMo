@@ -232,7 +232,7 @@ classdef ActiveMaterial < ElectronicComponent
             itf = model.Interface; 
             c = state.c; 
             
-            theta = c/itf.Li.cmax; 
+            theta = c/itf.cmax; 
             m = (1 ./ (itf.theta100 - itf.theta0)); 
             b = - m.*itf.theta0; 
             
