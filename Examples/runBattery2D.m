@@ -101,7 +101,6 @@ step        = struct('val', diff(times), 'control', ones(numel(tt), 1));
 % voltage cutoff limit. 
 stopFunc    = @(model, state, state_prev) (state.(ctrl).E < 2.0); 
 tup         = 0.1; % rampup value for the current function, see rampupSwitchControl
-inputE      = 3; % Value when current control switches to voltage control
 srcfunc = @(time, I, E) rampupSwitchControl(time, tup, I, E, ...
                                             model.Control.Imax, ...
                                             model.Control.lowerCutoffVoltage);
