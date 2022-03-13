@@ -34,11 +34,9 @@ paramobj.PositiveElectrode.InterDiffusionCoefficient = 0;
 
 model = BareBattery(paramobj);
 
-%% We compute the cell capacity and chose a discharge rate
-% C      = computeCellCapacity(model);
-% CRate  = 1/5; 
-% inputI = (C/hour)*CRate; % current 
-inputI = 5;
+%% We fix the input current to 5A
+
+model.Control.Imax = 5;
 
 %% We setup the schedule 
 % We use different time step for the activation phase (small time steps) and the following discharging phase
@@ -58,18 +56,16 @@ step  = struct('val', dt, 'control', ones(size(dt)));
 % below).
 pe = 'PositiveElectrode';
 cc = 'CurrentCollector';
-stopFunc = @(model, state, state_prev) (state.(pe).E < 2.6); 
 
-tup     = 0.1; % rampup value for the current function, see rampupSwitchControl
-inputE  = 2;   % Value when current control switches to voltage control
-srcfunc = @(time, I, E) rampupSwitchControl(time, tup, I, E, inputI, inputE);
-
+tup = 0.1; % rampup value for the current function, see rampupSwitchControl
+srcfunc = @(time, I, E) rampupSwitchControl(time, tup, I, E, ...
+                                            model.Control.Imax, ...
+                                            model.Control.lowerCutoffVoltage);
 % we setup the control by assigning a source and stop function.
-control = repmat(struct('src', srcfunc, 'stopFunction', stopFunc), 1, 1); 
+control = struct('src', srcfunc, 'IEswitch', true);
 
 % This control is used to set up the schedule
 schedule = struct('control', control, 'step', step); 
-
 
 %%  We setup the initial state
 
@@ -81,8 +77,9 @@ bat = model;
 elyte = 'Electrolyte';
 ne    = 'NegativeElectrode';
 pe    = 'PositiveElectrode';
-itf    = 'Interface';
+itf   = 'Interface';
 sd    = 'SolidDiffusion';
+ctrl  = 'Control';
 
 initstate = model.updateTemperature(initstate);
 
@@ -137,8 +134,8 @@ initstate.(elyte).c = 1000*ones(bat.(elyte).G.cells.num, 1);
 
 % setup initial positive electrode external coupling values
 
-initstate.(pe).E = OCP(1) - ref;
-initstate.(pe).I = 0;
+initstate.(ctrl).E = OCP(1) - ref;
+initstate.(ctrl).I = 0;
             
 % Setup nonlinear solver 
 nls = NonLinearSolver(); 
@@ -159,8 +156,8 @@ model.AutoDiffBackend= AutoDiffBackend();
 %%  We process output and recover the output voltage and current from the output states.
 ind = cellfun(@(x) not(isempty(x)), states); 
 states = states(ind);
-Enew = cellfun(@(x) x.(pe).E, states); 
-Inew = cellfun(@(x) x.(pe).I, states);
+Enew = cellfun(@(x) x.(ctrl).E, states); 
+Inew = cellfun(@(x) x.(ctrl).I, states);
 time = cellfun(@(x) x.time, states); 
 
 %% We plot the the output voltage and current
