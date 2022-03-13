@@ -119,7 +119,7 @@ nls.maxIterations = 10;
 % Change default behavior of nonlinear solver, in case of error
 nls.errorOnFailure = false; 
 nls.timeStepSelector=StateChangeTimeStepSelector('TargetProps', {{'Control','E'}}, 'targetChangeAbs', 0.03);
-linearsolver = 'direct';
+linearsolver = 'agmg';
 switch linearsolver
   case 'agmg'
     mrstModule add agmg

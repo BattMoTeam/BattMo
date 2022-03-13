@@ -722,7 +722,7 @@ classdef Battery < BaseModel
                 types{end - 1} = 'cell';   
               case {'constantVoltage','CV_charge'}
                 neqs  = numel(types);
-                order = [ 1: neqs - 2, neqs, neqs - 1];
+                order = [1 : neqs - 2, neqs, neqs - 1];
                 types = { types{order} };
                 eqs   = {eqs{order}};
                 names = {names{order}};
