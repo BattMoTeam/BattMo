@@ -20,7 +20,7 @@ mrstModule add ad-core mrst-gui mpfa
 % throughout the submodels. The input parameters can be set manually or
 % provided in json format. All the parameters for the model are stored in
 % the paramobj object.
-jsonstruct = parseBatmoJson('ParameterData/BatteryCellParameters/LithiumIonBatteryCell/lithium_ion_battery_nmc_graphite.json');
+jsonstruct = parseBattmoJson('ParameterData/BatteryCellParameters/LithiumIonBatteryCell/lithium_ion_battery_nmc_graphite.json');
 % jsonstruct.Control.controlPolicy = 'CCCV';
 paramobj = BatteryInputParams(jsonstruct);
 % paramobj.SOC = 0.02;
@@ -133,8 +133,6 @@ Inew = cellfun(@(x) x.Control.I, states);
 Tmax = cellfun(@(x) max(x.ThermalModel.T), states);
 [SOCN, SOCP] =  cellfun(@(x) model.calculateSOC(x), states);
 time = cellfun(@(x) x.time, states); 
-
-return
 
 %% Plot the the output voltage and current
 plotDashboard(model, states, 'step', 0);
