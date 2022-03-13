@@ -646,7 +646,7 @@ function [fig] = plotDashboard(model, states, varargin)
 end
 
 %{
-  Copyright 2009-2021 SINTEF Industry, Sustainable Energy Technology
+  Copyright 2021-2022 SINTEF Industry, Sustainable Energy Technology
   and SINTEF Digital, Mathematics & Cybernetics.
 
   This file is part of The Battery Modeling Toolbox BattMo
