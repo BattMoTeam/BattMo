@@ -30,6 +30,7 @@ cc      = 'CurrentCollector';
 elyte   = 'Electrolyte';
 sep     = 'Separator';
 thermal = 'ThermalModel';
+ctrl    = 'Control';
 
 %% Setup the geometry and computational mesh
 % Here, we setup the 2D computational mesh that will be used for the
@@ -98,13 +99,14 @@ step        = struct('val', diff(times), 'control', ones(numel(tt), 1));
 % stopping and source functions. A stopping function is used to set the
 % lower voltage cutoff limit. A source function is used to set the upper
 % voltage cutoff limit. 
-stopFunc    = @(model, state, state_prev) (state.(pe).(cc).E < 2.0); 
+stopFunc    = @(model, state, state_prev) (state.(ctrl).E < 2.0); 
 tup         = 0.1; % rampup value for the current function, see rampupSwitchControl
 inputE      = 3; % Value when current control switches to voltage control
-srcfunc     = @(time, I, E) rampupSwitchControl(time, tup, I, E, inputI, inputE);
-
+srcfunc = @(time, I, E) rampupSwitchControl(time, tup, I, E, ...
+                                            model.Control.Imax, ...
+                                            model.Control.lowerCutoffVoltage);
 % we setup the control by assigning a source and stop function.
-control = repmat(struct('src', srcfunc, 'stopFunction', stopFunc), 1, 1); 
+control = struct('src', srcfunc, 'IEswitch', true);
 
 % This control is used to set up the schedule
 schedule = struct('control', control, 'step', step); 
@@ -121,8 +123,7 @@ nls.maxIterations = 10;
 % Change default behavior of nonlinear solver, in case of error
 nls.errorOnFailure = false; 
 % Timestep selector
-nls.timeStepSelector = StateChangeTimeStepSelector('TargetProps', ...
-                                                  {{'PositiveElectrode', 'CurrentCollector', 'E'}}, ...
+nls.timeStepSelector = StateChangeTimeStepSelector('TargetProps', {{ctrl, 'E'}}, ...
                                                   'targetChangeAbs', 0.03);
 
 % Change default tolerance for nonlinear solver
@@ -138,11 +139,12 @@ model.verbose = true;
 %%  Process output and recover the output voltage and current from the output states.
 ind = cellfun(@(x) not(isempty(x)), states); 
 states = states(ind);
-Enew = cellfun(@(x) x.(pe).(cc).E, states); 
-Inew = cellfun(@(x) x.(pe).(cc).I, states);
+Enew = cellfun(@(x) x.(ctrl).E, states); 
+Inew = cellfun(@(x) x.(ctrl).I, states);
 time = cellfun(@(x) x.time, states); 
 
 %% Plot an animated summary of the results
+
 plotDashboard(model, states, 'step', 0);
 
 %{
