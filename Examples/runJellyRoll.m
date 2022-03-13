@@ -110,9 +110,6 @@ tt = times(2 : end);
 
 step = struct('val', diff(times), 'control', ones(numel(tt), 1)); 
 
-pe = 'PositiveElectrode'; 
-cc = 'CurrentCollector'; 
-stopFunc = @(model, state, state_prev) (state.(pe).(cc).I < 1e-3*inputI && state.time> hour/(2*CRate)); 
 tup = 0.1/CRate; 
 
 simcase = 'discharge';
@@ -120,9 +117,11 @@ simcase = 'discharge';
 switch simcase
     
   case 'discharge'
-    stopFunc = @(model, state, state_prev) (state.(pe).(cc).E < inputE+1e-4); 
-    srcfunc   = @(time, I, E) rampupSwitchControl(time, tup, I, E, inputI, inputE); 
-    control   = repmat(struct('src', srcfunc, 'stopFunction', stopFunc), 1, 1); 
+    srcfunc = @(time, I, E) rampupSwitchControl(time, tup, I, E, ...
+                                                model.Control.Imax, ...
+                                                model.Control.lowerCutoffVoltage);
+    % we setup the control by assigning a source and stop function.
+    control = struct('src', srcfunc, 'IEswitch', true);
     schedule  = struct('control', control, 'step', step); 
 
     %% We setup the initial state
@@ -134,9 +133,10 @@ switch simcase
     
     model.SOC = 0.01;
     initstate = model.setupInitialState();
-    stopFunc = @(model, state, state_prev) (state.(pe).(cc).I > - 1e-3*inputI  && state.time> hour/(2*CRate)); 
-    srcfunc  = @(time, I, E) rampupSwitchControl(time, tup, I, E, -inputI, 4.2); 
-    control  = repmat(struct('src', srcfunc, 'stopFunction', stopFunc), 1, 1); 
+    srcfunc  = @(time, I, E) rampupSwitchControl(time, tup, I, E, ...
+                                                 - model.Control.Imax, ...
+                                                 model.Control.lowerCutoffVoltage); 
+    control = struct('src', srcfunc, 'IEswitch', true);
     schedule = struct('control', control, 'step', step); 
     
   otherwise
@@ -165,7 +165,7 @@ else
     model.AutoDiffBackend = AutoDiffBackend(); 
 end
 
-nls.timeStepSelector = StateChangeTimeStepSelector('TargetProps', {{'PositiveElectrode', 'CurrentCollector', 'E'}}, 'targetChangeAbs', 0.03);
+nls.timeStepSelector = StateChangeTimeStepSelector('TargetProps', {{'Control', 'E'}}, 'targetChangeAbs', 0.03);
 linearsolver = 'agmg';
 switch linearsolver
   case 'agmg'
@@ -196,10 +196,6 @@ if resetSimulation
 end
 simulatePackedProblem(problem);
 [globvars, states, report] = getPackedSimulatorOutput(problem);
-
-
-
-
 
 
 %{
