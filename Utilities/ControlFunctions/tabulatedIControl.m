@@ -1,6 +1,6 @@
 function [val, ctrltype] = tabulatedIControl(t, tpoints, Ipoints)
 
-    ctrltype = 'I';
+    ctrltype = 'constantCurrent';
     val = interpTable(tpoints, Ipoints, t);
     
 end

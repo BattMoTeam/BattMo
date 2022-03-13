@@ -92,7 +92,7 @@ model = Battery(paramobj);
 C      = computeCellCapacity(model);
 CRate  = 2;
 inputI = (C/hour)*CRate;
-inputE = 4.2;
+inputE = model.Control.upperCutoffVoltage;
 
 %% Setup the parameters of the GITT protocol
 pulseFraction  = 0.01;
@@ -133,13 +133,12 @@ Ipoints = inputI*Ipoints; % scales with Iinput
 % stopping and source functions. A stopping function is used to set the
 % lower voltage cutoff limit. A source function is used to set the upper
 % voltage cutoff limit. 
-stopFunc     = @(model, state, state_prev) (state.(ctrl).E < 2.0); 
 tup          = 1*milli*second; % rampup time
 srcfunc_init = @(time, I, E) rampupSwitchControl(time, tup, I, E, inputI, inputE);
 srcfunc_gitt = @(time, I, E) tabulatedIControl(time, tpoints, Ipoints);
 
-control(1) = struct('src', srcfunc_init, 'stopFunction', stopFunc); 
-control(2) = struct('src', srcfunc_gitt, 'stopFunction', stopFunc);
+control(1) = struct('src', srcfunc_init, 'IEswitch', true); 
+control(2) = struct('src', srcfunc_gitt, 'IEswitch', true);
 
 n_init = 5;
 dt_init = rampupTimesteps(time_init, time_init/n_init, 3);
@@ -197,11 +196,6 @@ end
 [wellSols, states, report] = simulateScheduleAD(initstate, model, schedule,...
                                                 'OutputMinisteps', true,...
                                                 'NonLinearSolver', nls); 
-if doprofiling
-    profile off
-    profile report
-end 
-
 
 %%  Process output
 
