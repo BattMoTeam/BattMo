@@ -21,7 +21,7 @@ mrstVerbose off
 % throughout the submodels. The input parameters can be set manually or
 % provided in json format. All the parameters for the model are stored in
 % the paramobj object.
-jsonstruct = parseBatmoJson('ParameterData/BatteryCellParameters/LithiumIonBatteryCell/lithium_ion_battery_nmc_graphite.json');
+jsonstruct = parseBattmoJson('ParameterData/BatteryCellParameters/LithiumIonBatteryCell/lithium_ion_battery_nmc_graphite.json');
 paramobj = BatteryInputParams(jsonstruct);
 
 % We define some shorthand names for simplicity.
@@ -42,6 +42,7 @@ modelcase = '2D';
 % Generate the battery based on the selected dimensionality in modelcase
 switch modelcase
   case '1D'
+    
     gen = BatteryGenerator1D();
     paramobj = gen.updateBatteryInputParams(paramobj);
     paramobj.(ne).(cc).EffectiveElectricalConductivity = 100;
@@ -88,22 +89,22 @@ model = Battery(paramobj);
 % The nominal capacity of the cell is calculated from the active materials.
 % This value is then combined with the user-defined C-Rate to set the cell
 % operational current.
-C       = computeCellCapacity(model);
-CRate   = 2;
-inputI  = (C/hour)*CRate;
-inputE  = 4.2;
+C      = computeCellCapacity(model);
+CRate  = 2;
+inputI = (C/hour)*CRate;
+inputE = model.Control.upperCutoffVoltage;
 
 %% Setup the parameters of the GITT protocol
-pulseFraction       = 0.01;
-relaxationTime      = 4*hour;
-switchTime          = 1*milli*second; % switching time (linear interpolation between the two states)
-dischargeTime       = pulseFraction*CRate*hour; % time of discharging
+pulseFraction  = 0.01;
+relaxationTime = 4*hour;
+switchTime     = 1*milli*second; % switching time (linear interpolation between the two states)
+dischargeTime  = pulseFraction*CRate*hour; % time of discharging
 
 % Discretization parameters
-numberOfIntervals               = 1/pulseFraction;
-intervalsPerGalvanostaticStep   = 5; % Number of time step in galvanostatic phase
-intervalsPerRelaxationStep      = 5; % Number of time step in relaxation phase
-intervalsPerRampupStep          = 3; % Number of time step in rampup phase
+numberOfIntervals             = 1/pulseFraction;
+intervalsPerGalvanostaticStep = 5; % Number of time step in galvanostatic phase
+intervalsPerRelaxationStep    = 5; % Number of time step in relaxation phase
+intervalsPerRampupStep        = 3; % Number of time step in rampup phase
 
 %% Setup the initial state of the model
 % The initial state of the model is dispatched using the
@@ -114,7 +115,7 @@ initstate = model.setupInitialState();
 % Smaller time steps are used to ramp up the current from zero to its
 % operational value. Larger time steps are then used for the normal
 % operation. 
-time_init   = 5*minute;
+time_init = 5*minute;
 dtpoints = [switchTime; ...
             dischargeTime - switchTime;
             switchTime;
@@ -132,17 +133,15 @@ Ipoints = inputI*Ipoints; % scales with Iinput
 % stopping and source functions. A stopping function is used to set the
 % lower voltage cutoff limit. A source function is used to set the upper
 % voltage cutoff limit. 
-stopFunc        = @(model, state, state_prev) (state.(pe).(cc).E < 2.0); 
-tup             = 1*milli*second; % rampup time
-srcfunc_init    = @(time, I, E) rampupSwitchControl(time, tup, I, E, inputI, inputE);
+tup          = 1*milli*second; % rampup time
+srcfunc_init = @(time, I, E) rampupSwitchControl(time, tup, I, E, inputI, inputE);
 srcfunc_gitt = @(time, I, E) tabulatedIControl(time, tpoints, Ipoints);
 
-control(1) = struct('src', srcfunc_init, 'stopFunction', stopFunc); 
-control(2) = struct('src', srcfunc_gitt, 'stopFunction', stopFunc);
+control(1) = struct('src', srcfunc_init, 'IEswitch', true); 
+control(2) = struct('src', srcfunc_gitt, 'IEswitch', true);
 
 n_init = 5;
 dt_init = rampupTimesteps(time_init, time_init/n_init, 3);
-
 
 dt_cycle = [switchTime/intervalsPerRampupStep*ones(intervalsPerRampupStep, 1); ...
             (dischargeTime - switchTime)/intervalsPerGalvanostaticStep*ones(intervalsPerGalvanostaticStep, 1); ...
@@ -197,11 +196,6 @@ end
 [wellSols, states, report] = simulateScheduleAD(initstate, model, schedule,...
                                                 'OutputMinisteps', true,...
                                                 'NonLinearSolver', nls); 
-if doprofiling
-    profile off
-    profile report
-end 
-
 
 %%  Process output
 
@@ -215,21 +209,21 @@ time = cellfun(@(x) x.time, states);
 plotDashboard(model, states, 'step', 0);
 
 %{
-Copyright 2009-2021 SINTEF Industry, Sustainable Energy Technology
+Copyright 2021-2022 SINTEF Industry, Sustainable Energy Technology
 and SINTEF Digital, Mathematics & Cybernetics.
 
-This file is part of The Battery Modeling Toolbox BatMo
+This file is part of The Battery Modeling Toolbox BattMo
 
-BatMo is free software: you can redistribute it and/or modify
+BattMo is free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
 the Free Software Foundation, either version 3 of the License, or
 (at your option) any later version.
 
-BatMo is distributed in the hope that it will be useful,
+BattMo is distributed in the hope that it will be useful,
 but WITHOUT ANY WARRANTY; without even the implied warranty of
 MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 GNU General Public License for more details.
 
 You should have received a copy of the GNU General Public License
-along with BatMo.  If not, see <http://www.gnu.org/licenses/>.
+along with BattMo.  If not, see <http://www.gnu.org/licenses/>.
 %}

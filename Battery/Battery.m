@@ -15,12 +15,11 @@ classdef Battery < BaseModel
         NegativeElectrode % Negative Electrode Model, instance of :class:`Electrode <Electrochemistry.Electrodes.Electrode>`
         PositiveElectrode % Positive Electrode Model, instance of :class:`Electrode <Electrochemistry.Electrodes.Electrode>`
         ThermalModel      % Thermal model, instance of :class:`ThermalComponent <Electrochemistry.ThermalComponent>`
+        Control           % Control Model
         
         SOC % State Of Charge
 
         initT % Initial temperature
-        
-        Ucut % Voltage cut
         
         couplingTerms % Coupling terms
         cmin % mininum concentration used in capping
@@ -43,20 +42,20 @@ classdef Battery < BaseModel
             model.AutoDiffBackend = SparseAutoDiffBackend('useBlocks', false);
             
             %% Setup the model using the input parameters
-            fdnames = {'G'             , ...
-                       'couplingTerms' , ...
-                       'initT'         , ...
-                       'SOC'           , ...
-                       'I'             , ...
-                       'Ucut'};
+            fdnames = {'G'            , ...
+                       'couplingTerms', ...
+                       'initT'        , ...
+                       'SOC'          , ...
+                       'I'};
             
             model = dispatchParams(model, paramobj, fdnames);
 
             % Assign the components : Electrolyte, NegativeElectrode, PositiveElectrode
             model.NegativeElectrode = model.setupElectrode(paramobj.NegativeElectrode);
             model.PositiveElectrode = model.setupElectrode(paramobj.PositiveElectrode);
-            model.Electrolyte = model.setupElectrolyte(paramobj.Electrolyte);
-            model.ThermalModel = ThermalComponent(paramobj.ThermalModel);
+            model.Electrolyte       = model.setupElectrolyte(paramobj.Electrolyte);
+            model.ThermalModel      = ThermalComponent(paramobj.ThermalModel);
+            model.Control           = model.setupControl(paramobj.Control);
             
             % define shorthands
             elyte   = 'Electrolyte';
@@ -193,6 +192,25 @@ classdef Battery < BaseModel
             
             fn = @Battery.setupExternalCouplingPositiveElectrode;
             model = model.registerPropFunction({{pe, cc, 'jExternal'}, fn, {'phi', 'E'}});
+        end
+
+        function control = setupControl(model, paramobj)
+
+
+            switch paramobj.controlPolicy
+              case "IEswitch"
+                control = ControlModel(paramobj); 
+              case "CCCV"
+                control = CcCvControlModel(paramobj);
+              otherwise
+                error('Error controlPolicy not recognized');
+            end
+            
+            C = computeCellCapacity(model);
+            CRate = control.CRate;
+            
+            control.Imax = (C/hour)*CRate;
+            
         end
         
         function model = setupThermalModel(model, paramobj)
@@ -342,7 +360,8 @@ classdef Battery < BaseModel
 
         end
         
-        function [SOCN,SOCP] = calculateSOC(model,state)
+        function [SOCN, SOCP] = calculateSOC(model, state)
+            
             bat = model;
 
             ne  = 'NegativeElectrode';
@@ -351,22 +370,25 @@ classdef Battery < BaseModel
             itf = 'Interface';
             
             negAm = bat.(ne).(am).(itf);
-            c = state.(ne).(am).c;
+            c     = state.(ne).(am).c;
             theta = c/negAm.cmax;
-            m = (1 ./ (negAm.theta100 - negAm.theta0));
-            b = -m .* negAm.theta0;
-            SOCN = theta*m + b;
-            vol = model.(ne).(am).volumeFraction;
+            m     = (1 ./ (negAm.theta100 - negAm.theta0));
+            b     = -m .* negAm.theta0;
+            SOCN  = theta*m + b;
+            vol   = model.(ne).(am).volumeFraction;
+            
             SOCN = sum(SOCN.*vol)/sum(vol);
             
             posAm = bat.(pe).(am).(itf);
-            c = state.(pe).(am).c;
+            c     = state.(pe).(am).c;
             theta = c/posAm.cmax;
-            m = (1 ./ (posAm.theta100 - posAm.theta0));
-            b = -m .* posAm.theta0;
-            SOCP = theta*m + b;
-            vol = model.(pe).(am).volumeFraction;
+            m     = (1 ./ (posAm.theta100 - posAm.theta0));
+            b     = -m .* posAm.theta0;
+            SOCP  = theta*m + b;
+            vol   = model.(pe).(am).volumeFraction;
+            
             SOCP = sum(SOCP.*vol)/sum(vol);
+            
         end
         
         function initstate = setupInitialState(model)
@@ -388,6 +410,7 @@ classdef Battery < BaseModel
             sd      = 'SolidDiffusion';
             cc      = 'CurrentCollector';
             thermal = 'ThermalModel';
+            ctrl    = 'Control';
             
             initstate.(thermal).T = T*ones(nc, 1);
             
@@ -456,8 +479,18 @@ classdef Battery < BaseModel
             OCP = OCP(1) .* ones(bat.(pe).(cc).G.cells.num, 1);
             initstate.(pe).(cc).phi = OCP - ref;
             
-            initstate.(pe).(cc).E = OCP(1) - ref;
-            initstate.(pe).(cc).I = 0;
+            initstate.(ctrl).E = OCP(1) - ref;
+            initstate.(ctrl).I = - model.(ctrl).Imax;
+            
+            switch model.(ctrl).controlPolicy
+              case 'CCCV'
+                initstate.(ctrl).ctrlType = 'CC_charge';
+                initstate.(ctrl).nextCtrlType = 'CC_charge';
+              case 'IEswitch'
+                initstate.(ctrl).ctrlType = 'constantCurrent';
+              otherwise
+                error('control policy not recognized');
+            end
             
         end
         
@@ -487,6 +520,7 @@ classdef Battery < BaseModel
             itf     = 'Interface';
             sd      = "SolidDiffusion";
             thermal = 'ThermalModel';
+            ctrl    = 'Control';
             
             electrodes = {ne, pe};
             electrodecomponents = {am, cc};
@@ -619,6 +653,8 @@ classdef Battery < BaseModel
             %% setup relation between E and I at positive current collectror
             
             state = model.setupEIEquation(state);
+            state = model.updateControl(state, drivingForces);
+            state.(ctrl) = model.(ctrl).updateControlEquation(state.(ctrl));
             
             %% Set up the governing equations
             
@@ -647,24 +683,12 @@ classdef Battery < BaseModel
             
             eqs{end + 1} = state.(thermal).energyCons;
             
-            eqs{end + 1} = -state.EIeq;
-            
-            % we add the control equation
-            I = state.(pe).(cc).I;
-            E = state.(pe).(cc).E;
-            [val, ctrltype] = drivingForces.src(time, value(I), value(E));
-            switch ctrltype
-              case 'I'
-                eqs{end + 1} = I - val;
-              case 'E'
-                eqs{end + 1} = (E - val)*1e5;
-            end
+            eqs{end + 1} = -state.(ctrl).EIequation;
+            eqs{end + 1} = state.(ctrl).controlEquation;
 
             eqs{1} = eqs{1} - model.Electrolyte.sp.t(1)*eqs{2};
             
             %% Give type and names to equations and names of the primary variables (for book-keeping)
-            
- 
             
             types = {'cell','cell','cell','cell', 'sdiff','cell','cell','cdiff','cell','cell', 'cell', 'cntrl', 'cntrl'};
             names = {'elyte_massCons'   , ...
@@ -684,24 +708,30 @@ classdef Battery < BaseModel
             keep = model.getEquationsToUses(neq);     
  
             if(not(all(keep)))
-                ind = find(keep);
-                eqs={eqs{ind}};
+                ind   = find(keep);
+                eqs   = {eqs{ind}};
                 types = {types{ind}};
                 names = {names{ind}};
             end
+            
+            %% The equations are reordered in a way that is consitent with the linear iterative solver 
+            % (the order of the equation does not matter if we do not use an iterative solver)
+            ctrltype = state.Control.ctrlType;
             switch ctrltype
-                case 'I'
-                   types{end-1} = 'cell';   
-                case 'E'
-                   neqs = numel(types);
-                   order = [1:neqs-2,neqs,neqs-1];
-                   types = { types{order} };
-                   eqs = {eqs{order}};
-                   names = {names{order}};
-                otherwise 
-                          error()
+              case {'constantCurrent', 'CC_charge', 'CC_discharge'}
+                types{end - 1} = 'cell';   
+              case {'constantVoltage','CV_charge'}
+                neqs  = numel(types);
+                order = [ 1: neqs - 2, neqs, neqs - 1];
+                types = { types{order} };
+                eqs   = {eqs{order}};
+                names = {names{order}};
+              case 'CV_discharge'
+                % stil I which is variable
+                types{end-1} = 'cell'; 
+              otherwise 
+                error()
             end
-               
             
             primaryVars = model.getPrimaryVariables();
 
@@ -709,7 +739,7 @@ classdef Battery < BaseModel
             problem = LinearizedProblem(eqs, types, names, primaryVars, state, dt);
             
         end
-
+        
         function state = updateTemperature(model, state)
         % Dispatch the temperature in all the submodels
 
@@ -819,6 +849,27 @@ classdef Battery < BaseModel
             
         end
 
+        function state = updateControl(model, state, drivingForces)
+            
+            ctrl = "Control";
+            
+            switch model.(ctrl).controlPolicy
+              case 'CCCV'
+                % nothing to do here
+              case 'IEswitch'
+                
+                E    = state.(ctrl).E;
+                I    = state.(ctrl).I;
+                time = state.time;
+                
+                [ctrlVal, ctrltype] = drivingForces.src(time, value(I), value(E));
+                
+                state.(ctrl).ctrlVal  = ctrlVal;
+                state.(ctrl).ctrlType = ctrltype;
+                
+            end
+            
+        end
         
         function state = updateThermalAccumTerms(model, state, state0, dt)
         % Assemble the accumulation term for the energy equation
@@ -1058,11 +1109,12 @@ classdef Battery < BaseModel
         %
         % Setup external electronic coupling of the positive electrode at the current collector
         %            
-            pe = 'PositiveElectrode';
-            cc = 'CurrentCollector';
+            pe   = 'PositiveElectrode';
+            cc   = 'CurrentCollector';
+            ctrl = 'Control';
             
             phi = state.(pe).(cc).phi;
-            E = state.(pe).(cc).E;
+            E   = state.(ctrl).E;
             
             [jExternal, jFaceExternal] = model.(pe).(cc).setupExternalCoupling(phi, E);
             
@@ -1071,24 +1123,40 @@ classdef Battery < BaseModel
             
         end
 
+        function state = updateDerivativeControlValues(model, state, state0, dt)
+
+            ctrl = 'Control';
+            
+            dEdt = (state.(ctrl).E - state0.(ctrl).E)/dt;
+            dIdt = (state.(ctrl).I - state0.(ctrl).I)/dt;
+            
+            state.(ctrl).dEdt = value(dEdt);
+            state.(ctrl).dIdt = value(dIdt);
+            state.(ctrl).prevCtrlType = state0.(ctrl).ctrlType;
+            
+        end
+        
         function state = setupEIEquation(model, state)
             
-            pe = 'PositiveElectrode';
-            cc = 'CurrentCollector';
+            pe   = 'PositiveElectrode';
+            cc   = 'CurrentCollector';
+            ctrl = 'Control';
             
-            I = state.(pe).(cc).I;
-            E = state.(pe).(cc).E;
+            I = state.(ctrl).I;
+            E = state.(ctrl).E;
             phi = state.(pe).(cc).phi;
             
             coupterm = model.(pe).(cc).couplingTerm;
-            faces = coupterm.couplingfaces;
+            faces    = coupterm.couplingfaces;
             cond_pcc = model.(pe).(cc).EffectiveElectricalConductivity;
             [trans_pcc, cells] = model.(pe).(cc).operators.harmFaceBC(cond_pcc, faces);
-            state.EIeq = sum(trans_pcc.*(state.(pe).(cc).phi(cells) - E)) - I;
+            
+            state.Control.EIequation = sum(trans_pcc.*(state.(pe).(cc).phi(cells) - E)) - I;
 
         end
         
         function state = initStateAD(model, state)
+
             [pnames, extras]  = model.getPrimaryVariables();
             vars = cell(numel(pnames),1);
             for i=1:numel(pnames)
@@ -1103,12 +1171,14 @@ classdef Battery < BaseModel
             
             for i = 1 : numel(extras)
                 var = model.getProp(state,extras{i});
-                assert(isnumeric(var));
+                assert(isnumeric(var) | ischar(var));
                 newstate = model.setNewProp(newstate, extras{i}, var);
             end
+            
             time = state.time;
             state = newstate;
             state.time = time;
+            
         end 
         
         function [p, extra] = getPrimaryVariables(model)
@@ -1120,22 +1190,23 @@ classdef Battery < BaseModel
             am      = 'ActiveMaterial';
             sd      = 'SolidDiffusion';
             cc      = 'CurrentCollector';
+            ctrl    = 'Control';
             thermal = 'ThermalModel';
             
             %% chaged order of c cElectrode to get easier reduction
-            p = {{elyte, 'c'}                , ...
-                 {elyte, 'phi'}              , ...   
+            p = {{elyte, 'c'}             , ...
+                 {elyte, 'phi'}           , ...   
                  {ne, am, sd, 'cSurface'} , ...    
-                 {ne, am, 'phi'}            , ...   
-                 {ne, am, 'c'}              , ...
+                 {ne, am, 'phi'}          , ...   
+                 {ne, am, 'c'}            , ...
                  {pe, am, sd, 'cSurface'} , ...    
-                 {pe, am, 'phi'}            , ...   
-                 {pe, am, 'c'}              , ...
-                 {ne, cc, 'phi'}             , ...    
-                 {pe, cc, 'phi'}             , ...
-                 {thermal, 'T'}              , ...
-                 {pe, cc, 'E'}               , ...
-                 {pe, cc, 'I'}};          
+                 {pe, am, 'phi'}          , ...   
+                 {pe, am, 'c'}            , ...
+                 {ne, cc, 'phi'}          , ...    
+                 {pe, cc, 'phi'}          , ...
+                 {thermal, 'T'}           , ...
+                 {ctrl, 'E'}              , ...
+                 {ctrl, 'I'}};          
             
             neq = numel(p);
             keep = model.getVariablesToUses(neq);
@@ -1143,11 +1214,26 @@ classdef Battery < BaseModel
             if (not(all(keep)))
                 p = {p{find(keep)}};
             end
-            
+            extra{end + 1} = {ctrl, 'ctrlType'};
+            if strcmp(model.(ctrl).controlPolicy, 'CCCV')
+                extra{end + 1} = {ctrl, 'nextCtrlType'};
+            end
         end
         
-        function validforces = getValidDrivingForces(model)
-            validforces=struct('src', [], 'stopFunction', []); 
+        function forces = getValidDrivingForces(model)
+            forces = getValidDrivingForces@PhysicalModel(model);
+            
+            ctrl = 'Control';
+            switch model.(ctrl).controlPolicy
+              case 'CCCV'
+                forces.CCCV = true;
+              case 'IEswitch'
+                forces.IEswitch = true;
+                forces.src = [];
+              otherwise
+                error('Error controlPolicy not recognized');
+            end
+            
         end
 
         function model = validateModel(model, varargin)
@@ -1195,13 +1281,40 @@ classdef Battery < BaseModel
             report = [];
             
         end
+
+        function cleanState = addVariable(model, cleanState, state, state0)
+            
+            cleanState = addVariable@BaseModel(model, cleanState, state, state0);
+
+            ctrl = 'Control';            
+            cleanState.(ctrl).ctrlType = state.(ctrl).ctrlType;
+            
+        end
+
+        function [model, state] = prepareTimestep(model, state, state0, dt, drivingForces)
+            
+            [model, state] = prepareTimestep@BaseModel(model, state, state0, dt, drivingForces);
+            
+            ctrl = 'Control';
+            state.(ctrl) = model.(ctrl).prepareStepControl(state.(ctrl), state0.(ctrl), dt, drivingForces);
+            
+        end
+        
+        function [state, report] = updateAfterConvergence(model, state0, state, dt, drivingForces)
+            
+             [state, report] = updateAfterConvergence@BaseModel(model, state0, state, dt, drivingForces);
+             
+             ctrl = 'Control';
+             state.(ctrl) = model.(ctrl).updateControlAfterConvergence(state.(ctrl), state0.(ctrl), dt);
+        end
+        
         
         function outputvars = extractGlobalVariables(model, states)
             ns = numel(states);
             ws = cell(ns, 1);
             for i = 1 : ns
-                E    = states{i}.PositiveElectrode.CurrentCollector.E;
-                I    = states{i}.PositiveElectrode.CurrentCollector.I;
+                E    = states{i}.Control.E;
+                I    = states{i}.Control.I;
                 T    = states{i}.ThermalModel.T;
                 time = states{i}.time;
                 
@@ -1220,21 +1333,21 @@ end
 
 
 %{
-Copyright 2009-2021 SINTEF Industry, Sustainable Energy Technology
+Copyright 2021-2022 SINTEF Industry, Sustainable Energy Technology
 and SINTEF Digital, Mathematics & Cybernetics.
 
-This file is part of The Battery Modeling Toolbox BatMo
+This file is part of The Battery Modeling Toolbox BattMo
 
-BatMo is free software: you can redistribute it and/or modify
+BattMo is free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
 the Free Software Foundation, either version 3 of the License, or
 (at your option) any later version.
 
-BatMo is distributed in the hope that it will be useful,
+BattMo is distributed in the hope that it will be useful,
 but WITHOUT ANY WARRANTY; without even the implied warranty of
 MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 GNU General Public License for more details.
 
 You should have received a copy of the GNU General Public License
-along with BatMo.  If not, see <http://www.gnu.org/licenses/>.
+along with BattMo.  If not, see <http://www.gnu.org/licenses/>.
 %}

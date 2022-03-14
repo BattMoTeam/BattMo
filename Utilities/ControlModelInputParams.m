@@ -1,14 +1,31 @@
-function jsonstruct = parseBatmoJson(filename)
-    filename = fullfile(batmoDir(), filename);
-    jsonsrc = fileread(filename);
-    jsonstruct = jsondecode(jsonsrc);
-    jsonstruct = resolveFileInputJson(jsonstruct);
+classdef ControlModelInputParams < InputParams
+
+    
+    properties
+
+        controlPolicy
+        CRate
+        lowerCutoffVoltage
+        upperCutoffVoltage
+        
+    end
+    
+    methods
+
+        function paramobj = ControlModelInputParams(jsonstruct);
+            
+            paramobj = paramobj@InputParams(jsonstruct);
+            
+        end
+
+    end
+    
 end
 
 
 
 %{
-Copyright 2009-2021 SINTEF Industry, Sustainable Energy Technology
+Copyright 2021-2022 SINTEF Industry, Sustainable Energy Technology
 and SINTEF Digital, Mathematics & Cybernetics.
 
 This file is part of The Battery Modeling Toolbox BatMo
