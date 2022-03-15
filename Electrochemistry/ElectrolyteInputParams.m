@@ -4,24 +4,25 @@ classdef ElectrolyteInputParams < ElectroChemicalComponentInputParams
 %    
     properties
         
-        name
+        name % Given name (for convinience)
         
-        sp
-        compnames
+        compnames % Names of the components in the electrolyte
+        sp % Structure given properties of each component
         
+        %
+        % Input parameter for the separator (:class:`SeparatorInputParams
+        % <Electrochemistry.SeparatorInputParams>`)
+        %
         Separator
         
-        conductivityFactor
+        thermalConductivity % Intrinsic Thermal conductivity of the electrolyte
+        heatCapacity        % Intrinsic Heat capacity of the electrolyte
         
-        thermalConductivity
-        heatCapacity
         
-        electrolyteType
+        updateConductivityFunc              % Function handler to compute conductivity
+        updateDiffusionCoefficientFunc      % Function handler to compute diffusion coefficient
         
-        updateConductivityFunc
-        updateDiffusionCoefficientFunc
-        
-        density % [kg m^-3] (Note : only of the liquid part, the density of the separator is given there)
+        density % Density [kg m^-3] (Note : only of the liquid part, the density of the separator is given there)
         
     end
     

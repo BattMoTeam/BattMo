@@ -2,18 +2,15 @@ classdef Separator < BaseModel
     
     properties
         
-        % Physicochemical properties
-        porosity       % Porosity,         [-]
-        rp             % Pore radius,      [m]
-        Gurley         % Gurley number,    [s]
-        volumeFraction % Volume fraction,  [-]
+        porosity            % Porosity [-]
+        volumeFraction      % Volume fraction [-]
         
         thermalConductivity % intrinsic thermal conductivity value
-        heatCapacity % intrinsic heat capacity value
+        heatCapacity        % intrinsic heat capacity value
 
         EffectiveThermalConductivity
         EffectiveHeatCapacity
-        density % [kg m^-3]        
+        density             % Density [kg m^-3]        
     end
     
     methods
@@ -28,8 +25,6 @@ classdef Separator < BaseModel
             
             fdnames = {'G'                  , ...
                        'porosity'           , ...
-                       'rp'                 , ...
-                       'Gurley'             , ...
                        'thermalConductivity', ...
                        'heatCapacity'       , ...
                        'density'};
