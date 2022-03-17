@@ -16,8 +16,11 @@ classdef BareBatteryInputParams < InputParams
         Electrolyte       % instance of :class:`ElectrolyteInputParams`
         Control           % instance of :class:`ControlModelInputParams`
         
-        %% Coupling terms (describe the topological structure of the coupling)
-        couplingTerms
+        
+        couplingTerms % Coupling terms (describe the topological structure of the coupling)
+
+        use_thermal % flag : true if  coupled thermal simulation should be considered
+        use_solid_diffusion % flag : true if solid diffusion should be included (mainly for debugging)
         
     end
     
