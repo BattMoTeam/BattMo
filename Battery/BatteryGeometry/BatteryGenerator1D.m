@@ -104,7 +104,7 @@ classdef BatteryGenerator1D < BatteryGenerator
             
             paramobj = setupElectrodes@BatteryGenerator(gen, paramobj, params);
 
-        end            I
+        end
                 
         function paramobj = setupThermalModel(gen, paramobj, params)
         % paramobj is instance of BatteryInputParams
