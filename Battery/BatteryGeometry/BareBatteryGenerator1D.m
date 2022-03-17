@@ -91,7 +91,7 @@ classdef BareBatteryGenerator1D < BareBatteryGenerator
             
             paramobj = setupElectrodes@BareBatteryGenerator(gen, paramobj, params);
 
-        end            I
+        end
                 
     end
     
