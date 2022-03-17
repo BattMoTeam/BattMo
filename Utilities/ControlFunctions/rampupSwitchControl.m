@@ -1,20 +1,14 @@
 function [val, ctrltype] = rampupSwitchControl(t, tup, I, E, inputI, inputE)
-% CURRENTSOURCE Summary of this function goes here
-%   Detailed explanation goes here
 
-    if(inputI<0)
-        %notuseVolt = ((E - inputE)<1e-3);
-        %notuseVolt = not(useVolt);
+    if (inputI < 0)
         useCurrent = (E < inputE);
     else
-        %notuseVolt = ((E - inputE)>-1e-3);
         useCurrent = (E > inputE);
-        %useVolt = not(useVolt);
     end
-    %if not(useVolt) || (t < tup)
+
     if  useCurrent | (t < tup)   
         % We control with current
-        ctrltype = 'I';
+        ctrltype = 'constantCurrent';
         
         rampupcase = 'sineup';        
         switch rampupcase
@@ -28,10 +22,8 @@ function [val, ctrltype] = rampupSwitchControl(t, tup, I, E, inputI, inputE)
         end
     
     else
-        
-        % We control with current
-        ctrltype = 'E';
 
+        ctrltype = 'constantVoltage';
         val = inputE;
         
     end
@@ -39,23 +31,22 @@ function [val, ctrltype] = rampupSwitchControl(t, tup, I, E, inputI, inputE)
 end
 
 
-
 %{
-Copyright 2009-2021 SINTEF Industry, Sustainable Energy Technology
+Copyright 2021-2022 SINTEF Industry, Sustainable Energy Technology
 and SINTEF Digital, Mathematics & Cybernetics.
 
-This file is part of The Battery Modeling Toolbox BatMo
+This file is part of The Battery Modeling Toolbox BattMo
 
-BatMo is free software: you can redistribute it and/or modify
+BattMo is free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
 the Free Software Foundation, either version 3 of the License, or
 (at your option) any later version.
 
-BatMo is distributed in the hope that it will be useful,
+BattMo is distributed in the hope that it will be useful,
 but WITHOUT ANY WARRANTY; without even the implied warranty of
 MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 GNU General Public License for more details.
 
 You should have received a copy of the GNU General Public License
-along with BatMo.  If not, see <http://www.gnu.org/licenses/>.
+along with BattMo.  If not, see <http://www.gnu.org/licenses/>.
 %}

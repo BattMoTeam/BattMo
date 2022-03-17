@@ -239,7 +239,7 @@ classdef BaseModel < PhysicalModel
            
             report = [];
         end
-        
+
         function [state, report] = updateAfterConvergence(model, state0, state, dt, drivingForces)
 
             [state, report] = updateAfterConvergence@PhysicalModel(model, state0, state, dt, drivingForces);
@@ -250,10 +250,18 @@ classdef BaseModel < PhysicalModel
             end
             cleanState.time = state.time;
             
+            cleanState = model.addVariable(cleanState, state, state0);
+            
             state = cleanState;
             report = [];
             
         end
+        
+        function cleanState = addVariable(model, cleanState, state, state0)
+        % function to add variables on the cleanState, see updateAfterConvergence. By default, nothing is done
+            
+        end
+
         
         function state = copyProp(model, state, refState, names)
             
@@ -283,8 +291,8 @@ classdef BaseModel < PhysicalModel
             error();
         end
         
-        function [state, report] = updateStateNew(model, state, problem, ...
-                                                  dx, drivingForces)
+        function [state, report] = updateStateNew(model, state, problem, dx, drivingForces)
+            
             scales = model.getScales();
             for i = 1:numel(problem.primaryVariables)
                 p = problem.primaryVariables{i};
@@ -318,21 +326,21 @@ end
 
 
 %{
-Copyright 2009-2021 SINTEF Industry, Sustainable Energy Technology
+Copyright 2021-2022 SINTEF Industry, Sustainable Energy Technology
 and SINTEF Digital, Mathematics & Cybernetics.
 
-This file is part of The Battery Modeling Toolbox BatMo
+This file is part of The Battery Modeling Toolbox BattMo
 
-BatMo is free software: you can redistribute it and/or modify
+BattMo is free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
 the Free Software Foundation, either version 3 of the License, or
 (at your option) any later version.
 
-BatMo is distributed in the hope that it will be useful,
+BattMo is distributed in the hope that it will be useful,
 but WITHOUT ANY WARRANTY; without even the implied warranty of
 MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 GNU General Public License for more details.
 
 You should have received a copy of the GNU General Public License
-along with BatMo.  If not, see <http://www.gnu.org/licenses/>.
+along with BattMo.  If not, see <http://www.gnu.org/licenses/>.
 %}

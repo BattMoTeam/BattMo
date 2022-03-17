@@ -1,4 +1,4 @@
-#+TITLE: Documentation generation for BATMO
+#+TITLE: Documentation generation for BattMo
 * Requirements
 ** sphinx
    installation instruction described [[https://www.sphinx-doc.org/en/master/usage/installation.html][here]]

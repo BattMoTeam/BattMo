@@ -1,27 +1,22 @@
-========================
-Requirements
-========================
-MATLAB
+=========================================
+Installation instruction and requirements
+=========================================
 
-========================
-Installation instruction
-========================
-
-BATMO is based on `MRST`_ which provides a general unstructured grid format, generic MATLAB automatic differentiation
+BattMo is based on `MRST`_ which provides a general unstructured grid format, generic MATLAB automatic differentiation
 tools and Newton solvers.
 
 The MRST code source can be installed directlu using git submodules:
 
 .. code-block:: shell
 
-   git clone --recurse-submodules  git@github.com:batmoTeam/batmo.git
+   git clone --recurse-submodules  git@github.com:battmoTeam/battmo.git
 
 
-Then start Matlab and in the directory :code:`project-batman` where you cloned the repo, run:
+Then start Matlab and in the directory :code:`battmo` where you cloned the repo, run:
 
 .. code-block:: matlab
 
-   startup
+   startupBattMo
 
 
 You can check that that your installation is setup correctly by running one of the example scripts
@@ -30,6 +25,10 @@ You can check that that your installation is setup correctly by running one of t
 
    runBattery1D
 
+   
+For large models, iterative solvers are necessary. The **open source** version from 2012 of the `AGMG
+<http://agmg.eu/>`_ iterative solver from **2012** is provided as a `submodule <https://github.com/batmoTeam/agmg>`_. We
+plan to integrate newer open source iterative solvers such as `AMGCL <https://github.com/ddemidov/amgcl>`_
+
 .. _MRST: https://www.sintef.no/Projectweb/MRST/
 
-For large models, iterative solvers are necessary. We are providing here agmg `http://agmg.eu/`_ from 2012

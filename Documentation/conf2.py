@@ -18,7 +18,7 @@ matlab_src_dir = os.path.abspath('..')
 
 # -- Project information -----------------------------------------------------
 
-project = 'BATMO'
+project = 'BattMo'
 copyright = '2021, Simon Clark'
 author = 'Simon Clark'
 

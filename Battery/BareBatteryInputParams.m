@@ -14,7 +14,8 @@ classdef BareBatteryInputParams < InputParams
         NegativeElectrode % instance of :class:`ElectrodeInputParams`
         PositiveElectrode % instance of :class:`ElectrodeInputParams`
         Electrolyte       % instance of :class:`ElectrolyteInputParams`
-                
+        Control           % instance of :class:`ControlModelInputParams`
+        
         %% Coupling terms (describe the topological structure of the coupling)
         couplingTerms
         
@@ -26,16 +27,17 @@ classdef BareBatteryInputParams < InputParams
             
             paramobj = paramobj@InputParams(jsonstruct);
             
-            ne      = 'NegativeElectrode';
-            pe      = 'PositiveElectrode';
-            elyte   = 'Electrolyte';
+            ne    = 'NegativeElectrode';
+            pe    = 'PositiveElectrode';
+            elyte = 'Electrolyte';
+            ctrl  = 'Control';
             
             pick = @(fd) pickField(jsonstruct, fd);
             
-            paramobj.(ne) = ActiveMaterialInputParams(pick(ne));
-            paramobj.(pe) = ActiveMaterialInputParams(pick(pe));
-            jsonelytestruct = pick(elyte);
+            paramobj.(ne)    = ActiveMaterialInputParams(pick(ne));
+            paramobj.(pe)    = ActiveMaterialInputParams(pick(pe));
             paramobj.(elyte) = ElectrolyteInputParams(pick(elyte));
+            paramobj.(ctrl)  = ControlModelInputParams(pick(ctrl));
         end
 
     end
@@ -45,21 +47,21 @@ end
 
 
 %{
-Copyright 2009-2021 SINTEF Industry, Sustainable Energy Technology
+Copyright 2021-2022 SINTEF Industry, Sustainable Energy Technology
 and SINTEF Digital, Mathematics & Cybernetics.
 
-This file is part of The Battery Modeling Toolbox BatMo
+This file is part of The Battery Modeling Toolbox BattMo
 
-BatMo is free software: you can redistribute it and/or modify
+BattMo is free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
 the Free Software Foundation, either version 3 of the License, or
 (at your option) any later version.
 
-BatMo is distributed in the hope that it will be useful,
+BattMo is distributed in the hope that it will be useful,
 but WITHOUT ANY WARRANTY; without even the implied warranty of
 MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 GNU General Public License for more details.
 
 You should have received a copy of the GNU General Public License
-along with BatMo.  If not, see <http://www.gnu.org/licenses/>.
+along with BattMo.  If not, see <http://www.gnu.org/licenses/>.
 %}

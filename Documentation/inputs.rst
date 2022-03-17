@@ -10,31 +10,45 @@ Input parameters for the electrode components
 =============================================
 
 
-An electrode (:class:`Electrode <Electrochemistry.Electrodes.Electrode>`) consists of an electrode active component
-(:class:`ElectrodeActiveComponent <Electrochemistry.ElectrodeActiveComponent>`), which contains the active meterial
-(:class:`ActiveMaterialInputParams <Electrochemistry.Electrodes.ActiveMaterialInputParams>`), and a current collector
-(:class:`CurrentCollector <Electrochemistry.CurrentCollector>`)
+An electrode (:class:`Electrode <Electrochemistry.Electrode>`) consists of an active material (:class:`ActiveMaterial
+<Electrochemistry.ActiveMaterial>`), which contains an interface model (:class:`Interface <Electrochemistry.Interface>`)
+and a solid diffusion model (:class:`SolidDiffusionModel <Electrochemistry.SolidDiffusionModel>`), and a current
+collector (:class:`CurrentCollector <Electrochemistry.CurrentCollector>`)
 
-Electrode
----------
+.. image:: img/electrodegraph.png
+           :width: 80%
 
-.. autoclass:: Electrochemistry.Electrodes.ElectrodeInputParams
+
+Input parameter for Electrode
+-----------------------------
+
+.. autoclass:: Electrochemistry.ElectrodeInputParams
    :members:
 
-Electrode Active Component
---------------------------
-
-.. autoclass:: Electrochemistry.ElectrodeActiveComponentInputParams
-   :members:
-
-Active Material
----------------
       
-.. autoclass:: Electrochemistry.Electrodes.ActiveMaterialInputParams
+Input parameter for Active Material
+-----------------------------------
+
+.. autoclass:: Electrochemistry.ActiveMaterialInputParams
    :members:
 
-Current Collector
------------------
+            
+Input parameter for Interface
+-----------------------------
+
+.. autoclass:: Electrochemistry.InterfaceInputParams
+   :members:
+
+      
+Input parameter for Solid Diffusion Model
+-----------------------------------------
+
+.. autoclass:: Electrochemistry.SolidDiffusionModelInputParams
+   :members:
+
+      
+Input parameter for Current Collector
+-------------------------------------
       
 .. autoclass:: Electrochemistry.CurrentCollectorInputParams
    :members:
@@ -43,6 +57,10 @@ Current Collector
 Input parameters for the Electrolyte components
 ===============================================
 
+.. image:: img/electrolytegraph.png
+           :width: 30%
+           :align: center
+                   
 .. autoclass:: Electrochemistry.ElectrolyteInputParams
    :members:
 .. autoclass:: Electrochemistry.SeparatorInputParams
@@ -51,14 +69,11 @@ Input parameters for the Electrolyte components
 Input parameters for the Battery
 ================================
 
+.. image:: img/cutbatterygraph.png
+           :width: 100%
+           :align: center
+
 .. autoclass:: Battery.BatteryInputParams
    :members:
 
-Input parameters for the Generic models
-=======================================
 
-.. autoclass:: Electrochemistry.ElectronicComponentInputParams
-   :members:
-.. autoclass:: Electrochemistry.ElectroChemicalComponentInputParams
-   :members:
-      

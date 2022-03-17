@@ -19,11 +19,11 @@ function publishExamplesXML(varargin)
         error('Please, provide list of examples you want to publish from the Examples directory');
     end
         
-    BatMoExampleDir = mfilename('fullpath'); 
-    BatMoExampleDir = fileparts(BatMoExampleDir);
-    BatMoExampleDir = fullfile(BatMoExampleDir, '..', '..', 'Examples');
+    BattMoExampleDir = mfilename('fullpath'); 
+    BattMoExampleDir = fileparts(BattMoExampleDir);
+    BattMoExampleDir = fullfile(BattMoExampleDir, '..', '..', 'Examples');
 
-    outputDir = fullfile(BatMoExampleDir, '..', 'Documentation', 'publishedExamples');
+    outputDir = fullfile(BattMoExampleDir, '..', 'Documentation', 'publishedExamples');
     if ~exist(outputDir, 'dir')
         mkdir(outputDir);
     end 
@@ -35,7 +35,7 @@ function publishExamplesXML(varargin)
     
     for exNo = 1:numel(exampleNames)
         exampleName = exampleNames{exNo};
-        filename = fullfile(BatMoExampleDir, exampleName);
+        filename = fullfile(BattMoExampleDir, exampleName);
         
         isOk = isExamplePublished(filename, opt.extension);
 

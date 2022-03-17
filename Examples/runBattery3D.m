@@ -1,4 +1,4 @@
-%% Example: Pseudo-Four-Dimensional (P4D) Lithium-Ion Battery Model
+%% Pseudo-Four-Dimensional (P4D) Lithium-Ion Battery Model
 % This example demonstrates how to setup a P4D model of a Li-ion battery
 % and run a simple simulation.
 
@@ -19,7 +19,7 @@ mrstModule add ad-core mrst-gui mpfa
 % throughout the submodels. The input parameters can be set manually or
 % provided in json format. All the parameters for the model are stored in
 % the paramobj object.
-jsonstruct = parseBatmoJson('ParameterData/BatteryCellParameters/LithiumIonBatteryCell/lithium_ion_battery_nmc_graphite.json');
+jsonstruct = parseBattmoJson('ParameterData/BatteryCellParameters/LithiumIonBatteryCell/lithium_ion_battery_nmc_graphite.json');
 paramobj = BatteryInputParams(jsonstruct);
 
 % We define some shorthand names for simplicity.
@@ -29,6 +29,7 @@ eac     = 'ActiveMaterial';
 cc      = 'CurrentCollector';
 elyte   = 'Electrolyte';
 thermal = 'ThermalModel';
+ctrl    = 'Control';
 
 %% Setup the geometry and computational mesh
 % Here, we setup the 3D computational mesh that will be used for the
@@ -71,13 +72,12 @@ step        = struct('val', diff(times), 'control', ones(numel(tt), 1));
 % stopping and source functions. A stopping function is used to set the
 % lower voltage cutoff limit. A source function is used to set the upper
 % voltage cutoff limit. 
-stopFunc = @(model, state, state_prev) (state.(pe).(cc).E < 2.0); 
 tup = 0.1; % rampup value for the current function, see rampupSwitchControl
-inputE = 3; % Value when current control switches to voltage control
-srcfunc = @(time, I, E) rampupSwitchControl(time, tup, I, E, inputI, inputE);
-
+srcfunc = @(time, I, E) rampupSwitchControl(time, tup, I, E, ...
+                                            model.Control.Imax, ...
+                                            model.Control.lowerCutoffVoltage);
 % we setup the control by assigning a source and stop function.
-control = repmat(struct('src', srcfunc, 'stopFunction', stopFunc), 1, 1); 
+control = struct('src', srcfunc, 'IEswitch', true);
 
 % This control is used to set up the schedule
 schedule = struct('control', control, 'step', step); 
@@ -95,7 +95,7 @@ nls.maxIterations = 10;
 nls.errorOnFailure = false; 
 % Timestep selector
 nls.timeStepSelector = StateChangeTimeStepSelector('TargetProps', ...
-                                                  {{'PositiveElectrode', 'CurrentCollector', 'E'}}, ...
+                                                  {{ctrl, 'E'}}, ...
                                                   'targetChangeAbs', 0.03);
 
 % Change default tolerance for nonlinear solver
@@ -109,29 +109,29 @@ model.verbose = false;
 %%  Process output and recover the output voltage and current from the output states.
 ind = cellfun(@(x) not(isempty(x)), states); 
 states = states(ind);
-Enew = cellfun(@(x) x.(pe).(cc).E, states); 
-Inew = cellfun(@(x) x.(pe).(cc).I, states);
+Enew = cellfun(@(x) x.(ctrl).E, states); 
+Inew = cellfun(@(x) x.(ctrl).I, states);
 time = cellfun(@(x) x.time, states); 
 
 %% Plot an animated summary of the results
 plotDashboard(model, states, 'step', 0);
 
 %{
-Copyright 2009-2021 SINTEF Industry, Sustainable Energy Technology
+Copyright 2021-2022 SINTEF Industry, Sustainable Energy Technology
 and SINTEF Digital, Mathematics & Cybernetics.
 
-This file is part of The Battery Modeling Toolbox BatMo
+This file is part of The Battery Modeling Toolbox BattMo
 
-BatMo is free software: you can redistribute it and/or modify
+BattMo is free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
 the Free Software Foundation, either version 3 of the License, or
 (at your option) any later version.
 
-BatMo is distributed in the hope that it will be useful,
+BattMo is distributed in the hope that it will be useful,
 but WITHOUT ANY WARRANTY; without even the implied warranty of
 MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 GNU General Public License for more details.
 
 You should have received a copy of the GNU General Public License
-along with BatMo.  If not, see <http://www.gnu.org/licenses/>.
+along with BattMo.  If not, see <http://www.gnu.org/licenses/>.
 %}

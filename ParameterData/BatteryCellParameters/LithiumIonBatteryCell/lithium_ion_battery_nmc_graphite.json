@@ -3,6 +3,14 @@
     "SOC": 0.99,
     "Ucut": 2,
     "initT": 298.15,
+    "Control" : {
+        "controlPolicy" : "IEswitch",
+        "CRate" : 1,
+        "lowerCutoffVoltage" : 2,
+        "upperCutoffVoltage" : 4.1,
+        "dIdtLimit" : 0.01,
+        "dEdtLimit" : 0.01
+    },
     "NegativeElectrode": {
         "ActiveMaterial": {
             "specificHeatCapacity": 632.0,

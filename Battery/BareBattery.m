@@ -14,6 +14,7 @@ classdef BareBattery < BaseModel
         Electrolyte       % Electrolyte model, instance of :class:`Electrolyte <Electrochemistry.Electrodes.Electrolyte>`
         NegativeElectrode % Negative Electrode Model, instance of :class:`Electrode <Electrochemistry.Electrodes.Electrode>`
         PositiveElectrode % Positive Electrode Model, instance of :class:`Electrode <Electrochemistry.Electrodes.Electrode>`
+        Control           % Control Model
         
         initT % Initial temperature
         
@@ -46,8 +47,9 @@ classdef BareBattery < BaseModel
             % Assign the components : Electrolyte, NegativeElectrode, PositiveElectrode
             model.NegativeElectrode = model.setupElectrode(paramobj.NegativeElectrode);
             model.PositiveElectrode = model.setupElectrode(paramobj.PositiveElectrode);
-            model.Electrolyte = model.setupElectrolyte(paramobj.Electrolyte);
-
+            model.Electrolyte       = model.setupElectrolyte(paramobj.Electrolyte);
+            model.Control           = model.setupControl(paramobj.Control);
+            
             % define shorthands
             elyte = 'Electrolyte';
             ne    = 'NegativeElectrode';
@@ -149,6 +151,25 @@ classdef BareBattery < BaseModel
         % :class:`ElectrolyteInputParams <Electrochemistry.ElectrolyteInputParams>`
             electrolyte = Electrolyte(paramobj);
         end
+        
+        function control = setupControl(model, paramobj)
+
+            switch paramobj.controlPolicy
+              case "IEswitch"
+                control = ControlModel(paramobj); 
+              case "CCCV"
+                control = CcCvControlModel(paramobj);
+              otherwise
+                error('Error controlPolicy not recognized');
+            end
+            
+            C = computeCellCapacity(model);
+            CRate = control.CRate;
+            
+            control.Imax = (C/hour)*CRate;
+            
+        end
+        
         
         function model = setupMappings(model)
 
@@ -308,6 +329,7 @@ classdef BareBattery < BaseModel
             am      = 'ActiveMaterial';
             itf     = 'Interface';
             sd      = 'SolidDiffusion';
+            ctrl    = 'Control';
             
             electrodes = {ne, pe};
 
@@ -395,6 +417,8 @@ classdef BareBattery < BaseModel
             %% setup relation between E and I at positive current collectror
             
             state = model.setupEIEquation(state);
+            state = model.updateControl(state, drivingForces);
+            state.(ctrl) = model.(ctrl).updateControlEquation(state.(ctrl));
             
             %% Set up the governing equations
             
@@ -432,18 +456,9 @@ classdef BareBattery < BaseModel
                 names{end + 1} = 'pe_sd_soliddiffeq';
             end
 
+            eqs{end + 1} = state.(ctrl).EIequation;
+            eqs{end + 1} = state.(ctrl).controlEquation;
             
-            eqs{end + 1} = state.EIeq;
-            % we add the control equation
-            I = state.(pe).I;
-            E = state.(pe).E;
-            [val, ctrltype] = drivingForces.src(time, value(I), value(E));
-            switch ctrltype
-              case 'I'
-                eqs{end + 1} = I - val;
-              case 'E'
-                eqs{end + 1} = (E - val)*1e5;
-            end
             names = horzcat(names, {'EIeq' , 'controlEq'});
             
             types = repmat({'cells'}, 1, numel(names));
@@ -532,6 +547,28 @@ classdef BareBattery < BaseModel
             state.(elyte).massAccum = massAccum;
             
         end
+
+        function state = updateControl(model, state, drivingForces)
+            
+            ctrl = "Control";
+            
+            switch model.(ctrl).controlPolicy
+              case 'CCCV'
+                % nothing to do here
+              case 'IEswitch'
+                
+                E    = state.(ctrl).E;
+                I    = state.(ctrl).I;
+                time = state.time;
+                
+                [ctrlVal, ctrltype] = drivingForces.src(time, value(I), value(E));
+                
+                state.(ctrl).ctrlVal  = ctrlVal;
+                state.(ctrl).ctrlType = ctrltype;
+                
+            end
+            
+        end
         
         function state = updateElectrodeCoupling(model, state)
         % Setup the electrode coupling by updating the potential and concentration of the electrolyte in the active
@@ -593,10 +630,11 @@ classdef BareBattery < BaseModel
         %            
          
             battery = model;
-            pe = 'PositiveElectrode';
+            pe   = 'PositiveElectrode';
+            ctrl = 'Control';
             
             phi = state.(pe).phi;
-            E = state.(pe).E;
+            E   = state.(ctrl).E;
             
             couplingterms = battery.couplingTerms;
             coupnames = battery.couplingNames;
@@ -618,19 +656,20 @@ classdef BareBattery < BaseModel
             
             battery = model;
             pe = 'PositiveElectrode';
+            ctrl = 'Control';
             
             couplingterms = battery.couplingTerms;
             coupnames = battery.couplingNames;
             coupterm = getCoupTerm(couplingterms, 'Exterior-PositiveElectrode', coupnames);
             
-            I = state.(pe).I;
-            E = state.(pe).E;
+            I = state.(ctrl).I;
+            E = state.(ctrl).E;
             phi = state.(pe).phi;
             
             faces = coupterm.couplingfaces;
             cond_pcc = model.(pe).EffectiveElectricalConductivity;
             [trans_pcc, cells] = model.(pe).operators.harmFaceBC(cond_pcc, faces);
-            state.EIeq = sum(trans_pcc.*(state.(pe).phi(cells) - E)) - I;
+            state.(ctrl).EIequation = sum(trans_pcc.*(state.(pe).phi(cells) - E)) - I;
 
         end
         
@@ -670,13 +709,14 @@ classdef BareBattery < BaseModel
             ne    = 'NegativeElectrode';
             pe    = 'PositiveElectrode';
             sd    = 'SolidDiffusion';
+            ctrl  = 'Control';
             
-            p = {{elyte, 'c'}      , ...
-                 {elyte, 'phi'}    , ...   
-                 {ne, 'phi'}       , ...   
-                 {pe, 'phi'}       , ...   
-                 {pe, 'E'}         , ...
-                 {pe, 'I'}};
+            p = {{elyte, 'c'}  , ...
+                 {elyte, 'phi'}, ...   
+                 {ne, 'phi'}   , ...   
+                 {pe, 'phi'}   , ...   
+                 {ctrl, 'E'}   , ...
+                 {ctrl, 'I'}};
             
             if model.(ne).useSimplifiedDiffusionModel
                 p{end + 1} = {ne, 'c'};
@@ -696,10 +736,20 @@ classdef BareBattery < BaseModel
             
         end
         
-        
-        function validforces = getValidDrivingForces(model)
-        
-            validforces=struct('src', [], 'stopFunction', []); 
+        function forces = getValidDrivingForces(model)
+
+            forces = getValidDrivingForces@PhysicalModel(model);
+            
+            ctrl = 'Control';
+            switch model.(ctrl).controlPolicy
+              case 'CCCV'
+                forces.CCCV = true;
+              case 'IEswitch'
+                forces.IEswitch = true;
+                forces.src = [];
+              otherwise
+                error('Error controlPolicy not recognized');
+            end
             
         end
         
@@ -751,14 +801,14 @@ classdef BareBattery < BaseModel
         
         function outputvars = extractGlobalVariables(model, states)
 
-            pe = 'PositiveElectrode';
+            ctrl = 'Control';
 
             ns = numel(states);
             ws = cell(ns, 1);
             
             for i = 1 : ns
-                E    = states{i}.(pe).E;
-                I    = states{i}.(pe).I;
+                E    = states{i}.(ctrl).E;
+                I    = states{i}.(ctrl).I;
                 time = states{i}.time;
                 
                 outputvars{i} = struct('E'   , E   , ...
@@ -780,21 +830,21 @@ end
 
 
 %{
-Copyright 2009-2021 SINTEF Industry, Sustainable Energy Technology
+Copyright 2021-2022 SINTEF Industry, Sustainable Energy Technology
 and SINTEF Digital, Mathematics & Cybernetics.
 
-This file is part of The Battery Modeling Toolbox BatMo
+This file is part of The Battery Modeling Toolbox BattMo
 
-BatMo is free software: you can redistribute it and/or modify
+BattMo is free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
 the Free Software Foundation, either version 3 of the License, or
 (at your option) any later version.
 
-BatMo is distributed in the hope that it will be useful,
+BattMo is distributed in the hope that it will be useful,
 but WITHOUT ANY WARRANTY; without even the implied warranty of
 MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 GNU General Public License for more details.
 
 You should have received a copy of the GNU General Public License
-along with BatMo.  If not, see <http://www.gnu.org/licenses/>.
+along with BattMo.  If not, see <http://www.gnu.org/licenses/>.
 %}

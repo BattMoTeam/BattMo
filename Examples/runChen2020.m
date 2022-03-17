@@ -13,7 +13,7 @@ mrstModule add ad-core mrst-gui mpfa
 % all the parameters through out the submodels.
 
 % The input parameters can be given in json format. The json file is read and used to populate the paramobj object.
-jsonstruct = parseBatmoJson('ParameterData/ParameterSets/Chen2020/chen2020_lithium_ion_battery.json');
+jsonstruct = parseBattmoJson('ParameterData/ParameterSets/Chen2020/chen2020_lithium_ion_battery.json');
 
 paramobj = BareBatteryInputParams(jsonstruct);
 
@@ -34,11 +34,9 @@ paramobj.PositiveElectrode.InterDiffusionCoefficient = 0;
 
 model = BareBattery(paramobj);
 
-%% We compute the cell capacity and chose a discharge rate
-% C      = computeCellCapacity(model);
-% CRate  = 1/5; 
-% inputI = (C/hour)*CRate; % current 
-inputI = 5;
+%% We fix the input current to 5A
+
+model.Control.Imax = 5;
 
 %% We setup the schedule 
 % We use different time step for the activation phase (small time steps) and the following discharging phase
@@ -58,18 +56,16 @@ step  = struct('val', dt, 'control', ones(size(dt)));
 % below).
 pe = 'PositiveElectrode';
 cc = 'CurrentCollector';
-stopFunc = @(model, state, state_prev) (state.(pe).E < 2.6); 
 
-tup     = 0.1; % rampup value for the current function, see rampupSwitchControl
-inputE  = 2;   % Value when current control switches to voltage control
-srcfunc = @(time, I, E) rampupSwitchControl(time, tup, I, E, inputI, inputE);
-
+tup = 0.1; % rampup value for the current function, see rampupSwitchControl
+srcfunc = @(time, I, E) rampupSwitchControl(time, tup, I, E, ...
+                                            model.Control.Imax, ...
+                                            model.Control.lowerCutoffVoltage);
 % we setup the control by assigning a source and stop function.
-control = repmat(struct('src', srcfunc, 'stopFunction', stopFunc), 1, 1); 
+control = struct('src', srcfunc, 'IEswitch', true);
 
 % This control is used to set up the schedule
 schedule = struct('control', control, 'step', step); 
-
 
 %%  We setup the initial state
 
@@ -81,8 +77,9 @@ bat = model;
 elyte = 'Electrolyte';
 ne    = 'NegativeElectrode';
 pe    = 'PositiveElectrode';
-itf    = 'Interface';
+itf   = 'Interface';
 sd    = 'SolidDiffusion';
+ctrl  = 'Control';
 
 initstate = model.updateTemperature(initstate);
 
@@ -137,8 +134,8 @@ initstate.(elyte).c = 1000*ones(bat.(elyte).G.cells.num, 1);
 
 % setup initial positive electrode external coupling values
 
-initstate.(pe).E = OCP(1) - ref;
-initstate.(pe).I = 0;
+initstate.(ctrl).E = OCP(1) - ref;
+initstate.(ctrl).I = 0;
             
 % Setup nonlinear solver 
 nls = NonLinearSolver(); 
@@ -159,8 +156,8 @@ model.AutoDiffBackend= AutoDiffBackend();
 %%  We process output and recover the output voltage and current from the output states.
 ind = cellfun(@(x) not(isempty(x)), states); 
 states = states(ind);
-Enew = cellfun(@(x) x.(pe).E, states); 
-Inew = cellfun(@(x) x.(pe).I, states);
+Enew = cellfun(@(x) x.(ctrl).E, states); 
+Inew = cellfun(@(x) x.(ctrl).I, states);
 time = cellfun(@(x) x.time, states); 
 
 %% We plot the the output voltage and current
@@ -173,7 +170,7 @@ set(0, 'defaultFigurePosition', [671 510 900 600]);
 
 l = lines(3);
 figure
-plot((time/hour), Enew,'-', 'linewidth', 3, 'color', l(1, :), 'displayname', 'batmo - solid diffusion')
+plot((time/hour), Enew,'-', 'linewidth', 3, 'color', l(1, :), 'displayname', 'battmo - solid diffusion')
 hold on
 plot(t1, u1, 'linewidth', 3, 'color', l(2, :), 'displayname', 'pybamm - solid diffusion')
 plot(t2, u2, 'linewidth', 3, 'color', l(3, :), 'displayname', 'pybamm - instantaneous solid diffusion')
@@ -190,21 +187,21 @@ xlabel('time (hours)')
 
 
 %{
-Copyright 2009-2021 SINTEF Industry, Sustainable Energy Technology
+Copyright 2021-2022 SINTEF Industry, Sustainable Energy Technology
 and SINTEF Digital, Mathematics & Cybernetics.
 
-This file is part of The Battery Modeling Toolbox BatMo
+This file is part of The Battery Modeling Toolbox BattMo
 
-BatMo is free software: you can redistribute it and/or modify
+BattMo is free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
 the Free Software Foundation, either version 3 of the License, or
 (at your option) any later version.
 
-BatMo is distributed in the hope that it will be useful,
+BattMo is distributed in the hope that it will be useful,
 but WITHOUT ANY WARRANTY; without even the implied warranty of
 MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 GNU General Public License for more details.
 
 You should have received a copy of the GNU General Public License
-along with BatMo.  If not, see <http://www.gnu.org/licenses/>.
+along with BattMo.  If not, see <http://www.gnu.org/licenses/>.
 %}
