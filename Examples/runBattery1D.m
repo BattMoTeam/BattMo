@@ -22,8 +22,11 @@ mrstModule add ad-core mrst-gui mpfa
 % the paramobj object.
 jsonstruct = parseBattmoJson('ParameterData/BatteryCellParameters/LithiumIonBatteryCell/lithium_ion_battery_nmc_graphite.json');
 % jsonstruct.Control.controlPolicy = 'CCCV';
-paramobj = BareBatteryInputParams(jsonstruct);
-% paramobj.SOC = 0.02;
+paramobj = BatteryInputParams(jsonstruct);
+
+% paramobj.include_current_collectors = true;
+% paramobj.use_solid_diffusion = false;
+% paramobj.use_thermal = true;
 
 % We define some shorthand names for simplicity.
 ne      = 'NegativeElectrode';
@@ -38,16 +41,14 @@ ctrl    = 'Control';
 % Here, we setup the 1D computational mesh that will be used for the
 % simulation. The required discretization parameters are already included
 % in the class BatteryGenerator1D. 
-gen = BareBatteryGenerator1D();
+gen = BatteryGenerator1D();
 
 % Now, we update the paramobj with the properties of the mesh. 
 paramobj = gen.updateBatteryInputParams(paramobj);
 
-
 %%  Initialize the battery model. 
 % The battery model is initialized by sending paramobj to the Battery class
 % constructor. see :class:`Battery <Battery.Battery>`.
-paramobj.use_thermal = false;
 model = Battery(paramobj);
 model.AutoDiffBackend= AutoDiffBackend();
 

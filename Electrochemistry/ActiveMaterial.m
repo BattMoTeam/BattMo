@@ -23,6 +23,9 @@ classdef ActiveMaterial < ElectronicComponent
         electricalConductivity % Electrical conductivity
 
         useSimplifiedDiffusionModel
+        
+        externalCouplingTerm % only used in no current collector
+
     end
     
     methods
@@ -35,7 +38,8 @@ classdef ActiveMaterial < ElectronicComponent
 
             fdnames = {'thermalConductivity'   , ...
                        'electricalConductivity', ...
-                       'heatCapacity'};
+                       'heatCapacity', ...
+                       'externalCouplingTerm'};
             
             model = dispatchParams(model, paramobj, fdnames);
             
@@ -224,6 +228,11 @@ classdef ActiveMaterial < ElectronicComponent
             state.jBcSource = state.jCoupling;
             state.jFaceBc = state.jFaceCoupling;
         end
+        
+        function state = updatejBcSourceNoCurrentCollector(model, state)
+            state.jBcSource = state.jExternal;
+            state.jFaceBc   = state.jFaceExternal;
+        end
 
         function state = addSOC(model, state)
 
@@ -239,12 +248,10 @@ classdef ActiveMaterial < ElectronicComponent
             
         end
         
+        
     end
     
 end
-
-
-
 
 
 %{
