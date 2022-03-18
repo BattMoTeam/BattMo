@@ -10,7 +10,7 @@ classdef BatteryGenerator2D < BatteryGenerator
         ccpenx = 10;
 
         ny = 10;
-        
+        ylength = 1e-2;
         % externalHeatTransferCoefficientTab = 1e6;
         externalHeatTransferCoefficientTab = 1e3;
         externalHeatTransferCoefficient = 1e3;
@@ -40,7 +40,7 @@ classdef BatteryGenerator2D < BatteryGenerator
             nx = sum(nxs);
             
             xlength = 1e-6*[10; 100; 50; 80; 10];
-            ylength = 1e-2;
+            ylength = gen.ylength;
 
             x = xlength./nxs;
             x = rldecode(x, nxs);
