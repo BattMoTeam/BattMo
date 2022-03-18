@@ -196,23 +196,28 @@ plotGrid(G)
 ax=axis();
 ax(2) = ax(2)*1.5;
 ax(end) = ax(end)*1.1;
-for i=[1:5:50,50:-5:1]%numel(states)
-    state = states{i}
+for i=[1:5:50]%,50:-5:1]%numel(states)
+    state = states{i};
     T = state.ThermalModel.T-state0.ThermalModel.T;
     cna = zeros(G.cells.num,1);
     cpa = zeros(G.cells.num,1);
     ind = model.NegativeElectrode.ActiveMaterial.G.mappings.cellmap;
     cna(ind) = state.NegativeElectrode.ActiveMaterial.c-state0.NegativeElectrode.ActiveMaterial.c;
-    ind = model.PositiveElectrode.ActiveMaterial.G.mappings.cellmap
+    ind = model.PositiveElectrode.ActiveMaterial.G.mappings.cellmap;
     cpa(ind) = state.PositiveElectrode.ActiveMaterial.c-state0.PositiveElectrode.ActiveMaterial.c;
     dc = (cna+cpa*0.5)/1000;
     %plotCellData(G,dc,'EdgeAlpha',0.04),colorbar
     %plotGrid(G,'EdgeColor','none')
+
     [uVEM, extra] = VEM_linElast(G, C, el_bc, load,'pressure',dc*0.05,'experimental_scaling',false);
-    max(abs(uVEM))
-    clf,plotCellDataDeformed(G, T, uVEM, 'EdgeAlpha',0.04); colorbar();
+
+    vdiv = VEM_div(G);
+    mdiv = vdiv*reshape(uVEM', [], 1)./G.cells.volumes;
+    %[stress,strain]=calculateStressVEM(G,uu, op,varargin)
+    %[sigm,evec]=calStressEigsVEM(G,stress)
+    clf,plotCellDataDeformed(G, mdiv, uVEM, 'EdgeAlpha',0.04); colorbar();
     for k=1:numel(el_bc)
-        plotFaces2D(G,el_bc.disp_bc.faces,'FaceColor','r');
+        plotFaces2D(G,el_bc.disp_bc.faces);
     end
     axis(ax)
     pause(0.1)
