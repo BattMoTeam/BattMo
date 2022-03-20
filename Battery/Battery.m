@@ -497,12 +497,15 @@ classdef Battery < BaseModel
         function [problem, state] = getEquations(model, state0, state,dt, drivingForces, varargin)
         % Assembly of the governing equation
             
-            opts = struct('ResOnly', false, 'iteration', 0); 
+            opts = struct('ResOnly', false, 'iteration', 0,'reverseMode',false); 
             opts = merge_options(opts, varargin{:});
             
             time = state0.time + dt;
-            if(not(opts.ResOnly))
+            if(not(opts.ResOnly) && not(opts.reverseMode))
                 state = model.initStateAD(state);
+            else
+               disp('No AD initatlization in equation old style')
+               state0 = model.initStateAD(state0);
             end
             
             %% for now temperature and SOC are kept constant
@@ -1233,6 +1236,8 @@ classdef Battery < BaseModel
               otherwise
                 error('Error controlPolicy not recognized');
             end
+            %NB hack to get thing go
+            forces.Imax = model.Control.Imax;
             
         end
 
