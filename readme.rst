@@ -27,7 +27,7 @@ generic MATLAB automatic differentiation tools and Newton solvers. The MRST code
 **git submodules**. To install BattMo, you have therefore to clone this repository with the submodule option
 ``--recurse-submodules``, as follows:
 
-``git clone --recurse-submodules  git@github.com:BattMoTeam/BattMo.git``
+``git clone --recurse-submodules https://github.com/BattMoTeam/BattMo.git``
 
 Then start MATLAB and in the directory where you cloned the repository, run:
 

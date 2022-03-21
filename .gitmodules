@@ -20,4 +20,4 @@
         branch = master
 [submodule "agmg"]
 	path = Externals/agmg
-	url = git@github.com:batmoTeam/agmg.git
+	url = https://github.com/BattMoTeam/agmg.git

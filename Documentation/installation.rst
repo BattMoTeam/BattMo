@@ -9,7 +9,7 @@ The MRST code source can be installed directlu using git submodules:
 
 .. code-block:: shell
 
-   git clone --recurse-submodules  git@github.com:battmoTeam/battmo.git
+   git clone --recurse-submodules https://github.com/BattMoTeam/BattMo.git
 
 
 Then start Matlab and in the directory :code:`battmo` where you cloned the repo, run:
