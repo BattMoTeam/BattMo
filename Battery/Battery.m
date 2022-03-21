@@ -503,9 +503,11 @@ classdef Battery < BaseModel
             time = state0.time + dt;
             if(not(opts.ResOnly) && not(opts.reverseMode))
                 state = model.initStateAD(state);
-            else
+            elseif(opts.reverseMode)
                disp('No AD initatlization in equation old style')
                state0 = model.initStateAD(state0);
+            else
+                assert(opts.ResOnly);
             end
             
             %% for now temperature and SOC are kept constant
@@ -1237,7 +1239,7 @@ classdef Battery < BaseModel
                 error('Error controlPolicy not recognized');
             end
             %NB hack to get thing go
-            forces.Imax = model.Control.Imax;
+            forces.Imax = [];%model.Control.Imax;
             
         end
 

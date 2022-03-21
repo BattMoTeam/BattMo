@@ -92,9 +92,9 @@ end
 % inititialize parameters to ADI
 [modelParam, scheduleParam] = initModelParametersADI(setup, param);
 % reset discretization/flow functions to account for AD-parameters
-modelParam.FlowDiscretization = [];
-modelParam.FlowPropertyFunctions = [];
-modelParam = setup.model.validateModel(modelParam);
+%modelParam.FlowDiscretization = [];
+%modelParam.FlowPropertyFunctions = [];
+%modelParam = setup.model.validateModel(modelParam);
 
 nstep    = numel(setup.schedule.step.val);
 lambda   = [];

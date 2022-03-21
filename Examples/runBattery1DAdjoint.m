@@ -145,15 +145,16 @@ time = cellfun(@(x) x.time, states);
 plot(time,Enew,'*-')
 %% Plot the the output voltage and current
 % gradients to control
-obj = @(step,model, states, schedule, varargin) EnergyOutput(model, states, schedule,varargin{:},'step',step);
+obj = @(model, states, schedule, varargin) EnergyOutput(model, states, schedule,varargin{:});%,'step',step);
 vals = obj(model, states, schedule)
 totval = sum([vals{:}]);
 %%
 scaling = struct('boxLims',[],'obj',[]);
 scaling.boxLims = model.Control.Imax*[0.9,1.1];
-scaling.obj = totval;
+scaling.obj = 1;
 %%
 state0 = initstate;
+%obj1 = @(step,state,model, states, schedule, varargin) EnergyOutput(model, states, schedule,varargin{:},'step',step);
 f = @(u)evalObjectiveBattmo(u, obj, state0, model, schedule, scaling);
 %schedule.control(:).Imax = model.Control.Imax;
 u_base = currentSchedule2control(schedule, scaling);
@@ -174,11 +175,11 @@ objsens =@(tstep,model, state) EnergyOutput(model, states, schedule,'tstep',tste
 %    'computePartials', true, 'tstep', tstep, weighting{:},'state',state);
 SimulatorSetup = struct('model', model, 'schedule', schedule, 'state0', state0);
 parameters = [];
-property = 'porevolume'
+property = 'Imax'
 getfun = @(x,location) x.Imax; 
 setfun = @(x,location, v) struct('Imax',v,'src', @(time,I,E) rampupSwitchControl(time, 0.1, I, E, ...
                                                 v, ...
-                                                3.5));
+                                                2.0),'IEswitch',true);
 parameters={};
 parameters{end+1} = ModelParameter(SimulatorSetup,'name','Imax',...
     'belongsTo','schedule',...
@@ -187,10 +188,9 @@ parameters{end+1} = ModelParameter(SimulatorSetup,'name','Imax',...
 
 %%
 %parameters = addParameter(parameters, SimulatorSetup,'belongeTo', 'name', property ,'type','multiplier');
-raw_sens = computeSensitivitiesAdjointADBattmo(SimulatorSetup, states, parameters, objsens);
+raw_sens = computeSensitivitiesAdjointADBattmo(SimulatorSetup, states, parameters, objsens)
+%NB wrong
 
-
-return
 %% Run optimization with default options
 % gradient to 
 %schedule_opt = control2schedule(u_opt, schedule, scaling);
@@ -202,7 +202,7 @@ SimulatorSetup = struct('model', model, 'schedule', schedule, 'state0', state0);
 parameters = [];
 property = 'porevolume'
 getfun = @(x,location) x.(location).volumeFraction; 
-setfun = @(x,location, v) struct(location,v);
+setfun = @(x,location, v) setfunctionWithName(x,location,v,'volumeFraction');
 parameters={};
 parameters{end+1} = ModelParameter(SimulatorSetup,'name','volumeFraction',...
     'belongsTo','model',...
