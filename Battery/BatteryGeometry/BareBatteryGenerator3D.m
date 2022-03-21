@@ -100,7 +100,7 @@ classdef BareBatteryGenerator3D < BareBatteryGenerator
             paramobj.(pe).(sd).N  = gen.penr;
             paramobj.(pe).(sd).np = gen.penx;
 
-        end            I
+        end
                 
     end
     

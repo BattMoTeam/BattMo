@@ -11,8 +11,8 @@ classdef InterfaceInputParams < InputParams
         theta0   % Lithiation value at 0% SOC [-]
         theta100 % Lithiation value at 100% SOC [-]
 
-        cmax
-        k0                      % [m^2.5 mol^-0.5 s^-1]
+        cmax                    % Maximum concentration [mol m^-3]
+        k0                      % Reference rate constant  [m^2.5 mol^-0.5 s^-1]
         Eak                     % Activation energy [J mol^-1]
         volumetricSurfaceArea   % Volumetric surface area [m2 m^-3]
         volumeFraction          % Volume fraction of the active material

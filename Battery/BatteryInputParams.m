@@ -17,7 +17,7 @@ classdef BatteryInputParams < InputParams
         ThermalModel      % instance of :class:`ThermalModelInputParams <Electrochemistry.ThermalModelInputParams>`
         Control           % instance of :class:`ControlModelInputParams <Electrochemistry.ControlModelInputParams>`    
         
-        %% Coupling terms (describe the topological structure of the coupling)
+        %% Coupling terms (describe the topological structure of the coupling between the components)
         couplingTerms
         
     end

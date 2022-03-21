@@ -6,7 +6,7 @@ classdef SolidDiffusionModelInputParams < InputParams
         D0                      % Diffusion reference constant[ m^2 s^-1]
         rp                      % Particle radius [m]
         volumetricSurfaceArea   % Volumetric surface area [m2 m^-3]
-        N                       % Discretization step for the diffusion model [-]
+        N                       % Number of discretization intervals in the diffusion model [-]
         np                      % Number of computational grid cells (typically set by parent model :class:`ActiveMaterial <Electrochemistry.ActiveMaterial>`)
         useSimplifiedDiffusionModel % Flag : true if we use simplified diffusion model
         

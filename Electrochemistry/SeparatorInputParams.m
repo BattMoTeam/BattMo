@@ -4,14 +4,12 @@ classdef SeparatorInputParams < ComponentInputParams
 %    
     properties
         
-        porosity
-        rp
-        Gurley
+        porosity            % Porosity [-]
         
-        thermalConductivity
-        heatCapacity
+        thermalConductivity % Intrinsic Thermal conductivity of the electrolyte
+        heatCapacity        % Intrinsic Heat capacity of the electrolyte
 
-        density % [kg m^-3]
+        density             % Density [kg m^-3]
     end
     
     methods
