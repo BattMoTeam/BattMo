@@ -316,8 +316,7 @@ classdef SolidDiffusionModel < BaseModel
             cSurf = state.cSurface;
             src   = state.massSource;
             
-            % eq = op.Tbc.*(op.mapToBc*c - cSurf) + op.mapToBc*src;
-            eq = (op.mapToBc*c - cSurf);
+            eq = op.Tbc.*(op.mapToBc*c - cSurf) + op.mapToBc*src;
             
             state.solidDiffusionEq = eq;
             
