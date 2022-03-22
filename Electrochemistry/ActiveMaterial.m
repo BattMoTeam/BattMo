@@ -148,11 +148,9 @@ classdef ActiveMaterial < ElectronicComponent
             
             if model.useSimplifiedDiffusionModel
                 state.(sd).cAverage = state.c;
-                state.(itf).cElectrodeSurface = state.(sd).cSurface;
-            else
-                state.(sd) = model.(sd).updateSurfaceConcentration(state.(sd));
-                state.(itf).cElectrodeSurface = state.(sd).cSurface;
             end
+            
+            state.(itf).cElectrodeSurface = state.(sd).cSurface;
             
         end
 

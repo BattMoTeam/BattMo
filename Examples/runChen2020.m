@@ -17,6 +17,7 @@ jsonstruct = parseBattmoJson('ParameterData/ParameterSets/Chen2020/chen2020_lith
 
 paramobj = BareBatteryInputParams(jsonstruct);
 
+
 % Some shorthands used for the sub-models
 ne    = 'NegativeElectrode';
 pe    = 'PositiveElectrode';
@@ -29,6 +30,10 @@ paramobj = gen.updateBatteryInputParams(paramobj);
 
 paramobj.NegativeElectrode.InterDiffusionCoefficient = 0;
 paramobj.PositiveElectrode.InterDiffusionCoefficient = 0;
+
+% paramobj.NegativeElectrode.SolidDiffusion.useSimplifiedDiffusionModel = true;
+% paramobj.PositiveElectrode.SolidDiffusion.useSimplifiedDiffusionModel = true;
+
 
 %%  The Battery model is initialized by sending paramobj to the Battery class constructor 
 
@@ -89,14 +94,14 @@ nitf = bat.(ne).(itf);
 % We bypass the solid diffusion equation to set directly the particle surface concentration (this is a bit hacky)
 c = 29866.0;
 if model.(ne).useSimplifiedDiffusionModel
-    n = model.(ne).G.cells.num;
-    initstate.(ne).(sd).cSurface = c*ones(n, 1);
-    initstate.(ne).c = c*ones(n, 1);
+    nenp = model.(ne).G.cells.num;
+    initstate.(ne).c = c*ones(nenp, 1);
 else
     nenr = model.(ne).(sd).N;
     nenp = model.(ne).(sd).np;
     initstate.(ne).(sd).c = c*ones(nenr*nenp, 1);
 end
+initstate.(ne).(sd).cSurface = c*ones(nenp, 1);
 
 initstate.(ne) = model.(ne).updateConcentrations(initstate.(ne));
 initstate.(ne).(itf) = nitf.updateOCP(initstate.(ne).(itf));
@@ -113,14 +118,14 @@ pitf = bat.(pe).(itf);
 c = 17038.0;
 
 if model.(pe).useSimplifiedDiffusionModel
-    n = model.(pe).G.cells.num;
-    initstate.(pe).(sd).cSurface = c*ones(n, 1);
-    initstate.(pe).c = c*ones(n, 1);
+    penp = model.(pe).G.cells.num;
+    initstate.(pe).c = c*ones(penp, 1);
 else
     penr = model.(pe).(sd).N;
     penp = model.(pe).(sd).np;
     initstate.(pe).(sd).c = c*ones(penr*penp, 1);
 end
+initstate.(pe).(sd).cSurface = c*ones(penp, 1);
 
 initstate.(pe) = model.(pe).updateConcentrations(initstate.(pe));
 initstate.(pe).(itf) = pitf.updateOCP(initstate.(pe).(itf));

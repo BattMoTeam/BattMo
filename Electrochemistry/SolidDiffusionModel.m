@@ -63,6 +63,8 @@ classdef SolidDiffusionModel < BaseModel
             varnames{end + 1} = 'massSource';
             % Mass conservation equation
             varnames{end + 1} = 'massCons';
+            % Mass conservation equation
+            varnames{end + 1} = 'solidDiffusionEq';
             
             model = model.registerVarNames(varnames);
 
@@ -81,8 +83,8 @@ classdef SolidDiffusionModel < BaseModel
             fn = @SolidDiffusionModel.updateMassSource;
             model = model.registerPropFunction({'massSource', fn, {'R'}});
             
-            fn = @SolidDiffusionModel.updateSurfaceConcentration;
-            model = model.registerPropFunction({'cSurface', fn, {'c'}});
+            fn = @SolidDiffusionModel.assembleSolidDiffusionEquation;
+            model = model.registerPropFunction({'cSurface', fn, {'c', 'massSource', 'cSurface'}});
             
         end
         
@@ -121,8 +123,12 @@ classdef SolidDiffusionModel < BaseModel
             op = setupOperatorsTPFA(G, rock);
             C = op.C;
             T = op.T;
+            T_all = op.T_all;
 
             % We use that we know *apriori* the indexing given by cartGrid
+            Tbc = T_all(N); % half-transmissibility for of the boundary face
+            Tbc = repmat(Tbc, np, 1);
+            
             Sfacetbl.Sfaces = (1 : (N - 1))'; % index of the internal faces (correspond to image of C')
             Sfacetbl = IndexArray(Sfacetbl);
             cellSfacetbl = crossIndexArray(celltbl, Sfacetbl, {}, 'optpureproduct', true);
@@ -230,6 +236,7 @@ classdef SolidDiffusionModel < BaseModel
                                'flux'     , flux      , ...
                                'mapFromBc', mapFromBc , ...
                                'mapToBc'  , mapToBc   , ...
+                               'Tbc'      , Tbc       , ...
                                'vols'     , vols);
             
         end
@@ -301,15 +308,21 @@ classdef SolidDiffusionModel < BaseModel
             
         end
     
-        function state = updateSurfaceConcentration(model, state)
+        function state = assembleSolidDiffusionEquation(model, state)
             
             op = model.operators;
+
+            c     = state.c;
+            cSurf = state.cSurface;
+            src   = state.massSource;
             
-            c = state.c;
+            % eq = op.Tbc.*(op.mapToBc*c - cSurf) + op.mapToBc*src;
+            eq = (op.mapToBc*c - cSurf);
             
-            state.cSurface = op.mapToBc*c;
+            state.solidDiffusionEq = eq;
             
         end
+        
         
     end
     
