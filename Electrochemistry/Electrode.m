@@ -10,11 +10,13 @@ classdef Electrode < BaseModel
         CurrentCollector % instance of :class:`Electrochemistry.CurrentCollector`
         couplingTerm
         
+        include_current_collector
+        
     end
 
     methods
         
-        function model = Electrode(paramobj)
+        function model = Electrode(paramobj, params)
         % paramobj is instance of :class:`Electrochemistry.Electrodes.ElectrodeInputParams`
             model = model@BaseModel();
             
@@ -26,8 +28,12 @@ classdef Electrode < BaseModel
             
             % Assign the two components
             model.ActiveMaterial = model.setupActiveMaterial(paramobj.ActiveMaterial);
-            model.CurrentCollector = model.setupCurrentCollector(paramobj.CurrentCollector);
-
+            model.include_current_collector = false;
+            if params.include_current_collector
+                model.CurrentCollector = model.setupCurrentCollector(paramobj.CurrentCollector);
+                model.include_current_collector = true;
+            end
+            
         end
         
         function model = registerVarAndPropfuncNames(model)
@@ -126,7 +132,7 @@ classdef Electrode < BaseModel
             state.(cc).jCoupling  = cc_jCoupling;
             
             state.(am).jFaceCoupling = am_jFaceCoupling;
-            state.(cc).jFaceCoupling  = cc_jFaceCoupling;
+            state.(cc).jFaceCoupling = cc_jFaceCoupling;
             
         end
 
@@ -135,8 +141,8 @@ classdef Electrode < BaseModel
         % setup coupling terms between the current collector and the electrode active component            
             
             elde  = model;
-            am   = 'ActiveMaterial';
-            cc    = 'CurrentCollector';
+            am = 'ActiveMaterial';
+            cc = 'CurrentCollector';
 
             am_T = state.(am).T;
             cc_T = state.(cc).T;

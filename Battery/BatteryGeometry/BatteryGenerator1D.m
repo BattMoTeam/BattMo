@@ -5,9 +5,12 @@ classdef BatteryGenerator1D < BatteryGenerator
         sepnx  = 10;
         nenx   = 10;
         penx   = 10;
+        nenr   = 10; % discretization for solid diffusion
+        penr   = 10; % discretization for solid diffusion
         ccnenx = 10;
         ccpenx = 10;
         fac = 1;
+        include_current_collectors
         
     end
     

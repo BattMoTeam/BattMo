@@ -30,12 +30,14 @@ classdef Battery < BaseModel
         
         use_solid_diffusion
         use_thermal
+        include_current_collectors
+        
     end
     
     methods
         
         function model = Battery(paramobj)
-
+            
             model = model@BaseModel();
             
             % All the submodels should have same backend (this is not assigned automaticallly for the moment)
@@ -470,13 +472,17 @@ classdef Battery < BaseModel
 
             %% setup initial Current collectors state
 
-            OCP = initstate.(ne).(am).(itf).OCP;
-            OCP = OCP(1) .* ones(bat.(ne).(cc).G.cells.num, 1);
-            initstate.(ne).(cc).phi = OCP - ref;
-
-            OCP = initstate.(pe).(am).(itf).OCP;
-            OCP = OCP(1) .* ones(bat.(pe).(cc).G.cells.num, 1);
-            initstate.(pe).(cc).phi = OCP - ref;
+            if model.(ne).include_current_collector
+                OCP = initstate.(ne).(am).(itf).OCP;
+                OCP = OCP(1) .* ones(bat.(ne).(cc).G.cells.num, 1);
+                initstate.(ne).(cc).phi = OCP - ref;
+            end
+            
+            if model.(pe).include_current_collector
+                OCP = initstate.(pe).(am).(itf).OCP;
+                OCP = OCP(1) .* ones(bat.(pe).(cc).G.cells.num, 1);
+                initstate.(pe).(cc).phi = OCP - ref;
+            end
             
             initstate.(ctrl).E = OCP(1) - ref;
             initstate.(ctrl).I = - model.(ctrl).Imax;
@@ -566,9 +572,13 @@ classdef Battery < BaseModel
             
             %% Update coupling within electrodes and external coupling
             
-            state.(ne) = battery.(ne).updateCoupling(state.(ne));
-            state.(pe) = battery.(pe).updateCoupling(state.(pe));
-
+            if model.(ne).include_current_collector
+                state.(ne) = battery.(ne).updateCoupling(state.(ne));
+            end
+            if model.(pe).include_current_collector            
+                state.(pe) = battery.(pe).updateCoupling(state.(pe));
+            end
+            
             state.(ne).(am) = battery.(ne).(am).updatejBcSource(state.(ne).(am));
             state.(pe).(am) = battery.(pe).(am).updatejBcSource(state.(pe).(am));
             
@@ -1094,13 +1104,37 @@ classdef Battery < BaseModel
         %
             ne = 'NegativeElectrode';
             cc = 'CurrentCollector';
+            cc = 'ActiveMaterial';
             
-            phi = state.(ne).(cc).phi;
+            if model.(ne).include_current_collector
 
-            [jExternal, jFaceExternal] = model.(ne).(cc).setupExternalCoupling(phi, 0);
+                phi = state.(ne).(cc).phi;
+
+                [jExternal, jFaceExternal] = model.(ne).(cc).setupExternalCoupling(phi, 0);
+                
+                state.(ne).(cc).jExternal = jExternal;
+                state.(ne).(cc).jFaceExternal = jFaceExternal;
+                
+            else
+                
+                phi = state.(ne).phi;
+                
+                couplingterms = battery.couplingTerms;
+                coupnames = battery.couplingNames;
+                coupterm = getCoupTerm(couplingterms, 'Exterior-NegativeElectrode', coupnames);
+                
+                jBcSource = phi*0.0; %NB hack to initialize zero ad
+                sigmaeff = model.(ne).EffectiveElectricalConductivity;
+                faces = coupterm.couplingfaces;
+                % We impose potential equal to zero at negative electrode
+                bcval = 0;
+                [t, cells] = model.(ne).operators.harmFaceBC(sigmaeff, faces);
+                jBcSource(cells) = jBcSource(cells) + t.*(bcval - phi(cells));
+                
+                state.(ne).jBcSource = jBcSource;
+                
+            end
             
-            state.(ne).(cc).jExternal = jExternal;
-            state.(ne).(cc).jFaceExternal = jFaceExternal;
             
         end
         
@@ -1112,13 +1146,36 @@ classdef Battery < BaseModel
             cc   = 'CurrentCollector';
             ctrl = 'Control';
             
-            phi = state.(pe).(cc).phi;
             E   = state.(ctrl).E;
-            
-            [jExternal, jFaceExternal] = model.(pe).(cc).setupExternalCoupling(phi, E);
-            
-            state.(pe).(cc).jExternal = jExternal;
-            state.(pe).(cc).jFaceExternal = jFaceExternal;
+
+            if model.(pe).include_current_collector
+                
+                phi = state.(pe).(cc).phi;
+                
+                [jExternal, jFaceExternal] = model.(pe).(cc).setupExternalCoupling(phi, E);
+                
+                state.(pe).(cc).jExternal = jExternal;
+                state.(pe).(cc).jFaceExternal = jFaceExternal;
+                
+            else
+                
+                phi = state.(pe).phi;           
+                
+                couplingterms = battery.couplingTerms;
+                coupnames = battery.couplingNames;
+                coupterm = getCoupTerm(couplingterms, 'Exterior-PositiveElectrode', coupnames);
+                
+                jBcSource = phi*0.0; %NB hack to initialize zero ad
+                sigmaeff = model.(pe).EffectiveElectricalConductivity;
+                faces = coupterm.couplingfaces;
+                % We impose potential equal to value given by E at the positive electrode
+                bcval = E;
+                [t, cells] = model.(pe).operators.harmFaceBC(sigmaeff, faces);
+                jBcSource(cells) = jBcSource(cells) + t.*(bcval - phi(cells));
+                
+                state.(pe).jBcSource = jBcSource;
+                
+            end
             
         end
 
