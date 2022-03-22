@@ -21,6 +21,7 @@ paramobj = BatteryInputParams(jsonstruct);
 ne    = 'NegativeElectrode';
 pe    = 'PositiveElectrode';
 am    = 'ActiveMaterial';
+sd    = 'SolidDiffusion';
 elyte = 'Electrolyte';
 
 %% We setup the battery geometry.
@@ -31,8 +32,8 @@ paramobj = gen.updateBatteryInputParams(paramobj);
 paramobj.(ne).(am).InterDiffusionCoefficient = 0;
 paramobj.(pe).(am).InterDiffusionCoefficient = 0;
 
-% paramobj.(ne).(am).(sd).useSimplifiedDiffusionModel = true;
-% paramobj.(pe).(am).(sd).useSimplifiedDiffusionModel = true;
+paramobj.(ne).(am).(sd).useSimplifiedDiffusionModel = false;
+paramobj.(pe).(am).(sd).useSimplifiedDiffusionModel = false;
 
 
 %%  The Battery model is initialized by sending paramobj to the Battery class constructor 
