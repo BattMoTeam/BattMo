@@ -2,24 +2,18 @@
 clear all
 close all
 
-%% Add MRST module
-mrstModule add ad-core
 
-modelcase = 'battery';
+jsonstruct = parseBattmoJson('ParameterData/BatteryCellParameters/LithiumIonBatteryCell/lithium_ion_battery_nmc_graphite.json');
 
-switch modelcase
-  case 'elyte'
-    G = cartGrid([10, 10]);
-    G = computeGeometry(G);
-    model = orgLiPF6('elyte', G, (1 : G.cells.num));
-  case 'battery'
-    model = Battery();
-    model.I = 0.1;
-  otherwise
-    error('modelcase not recognized');
-end
+paramobj = BatteryInputParams(jsonstruct);
+gen = BatteryGenerator1D();
+paramobj = gen.updateBatteryInputParams(paramobj);
+model = Battery(paramobj);
 
-[g, edgelabels] = setupGraph(model);
+submodel = model.NegativeElectrode;
+
+[g, edgelabels] = setupGraph(submodel);
+return
 
 figure
 h = plot(g);
