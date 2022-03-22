@@ -164,7 +164,7 @@ u_base = currentSchedule2control(schedule, scaling);
 %%
 return
 % Get function handle for objective evaluation
-
+%%
 mrstModule add optimization
 %% Run optimization with default options
 % gradient to 
@@ -176,19 +176,24 @@ objsens =@(tstep,model, state) EnergyOutput(model, states, schedule,'tstep',tste
 SimulatorSetup = struct('model', model, 'schedule', schedule, 'state0', state0);
 parameters = [];
 property = 'Imax'
-getfun = @(x,location) x.Imax; 
+%getfun = @(x,location) x.Imax; 
 setfun = @(x,location, v) struct('Imax',v,'src', @(time,I,E) rampupSwitchControl(time, 0.1, I, E, ...
                                                 v, ...
                                                 2.0),'IEswitch',true);
+boxlims = model.Control.Imax*[0.9,1.1];
 parameters={};
+for i = 1:3
 parameters{end+1} = ModelParameter(SimulatorSetup,'name','Imax',...
     'belongsTo','schedule',...
-    'location',{'control','nothing'},...
-    'getfun',getfun,'setfun',setfun)
+    'boxLims',boxlims,...
+    'location',{'control','Imax'},...
+    'getfun',[],'setfun',setfun,'controlSteps',i)
+end
 
 %%
 %parameters = addParameter(parameters, SimulatorSetup,'belongeTo', 'name', property ,'type','multiplier');
 raw_sens = computeSensitivitiesAdjointADBattmo(SimulatorSetup, states, parameters, objsens)
+
 %NB wrong
 
 %% Run optimization with default options
@@ -206,8 +211,8 @@ setfun = @(x,location, v) setfunctionWithName(x,location,v,'volumeFraction');
 parameters={};
 parameters{end+1} = ModelParameter(SimulatorSetup,'name','volumeFraction',...
     'belongsTo','model',...
-    'location',{'Electrolyte'},...
-    'getfun',getfun,'setfun',setfun)
+    'location',{'Electrolyte','volumeFraction'},...
+    'getfun',[],'setfun',[])
 
 %%
 %parameters = addParameter(parameters, SimulatorSetup,'belongeTo', 'name', property ,'type','multiplier');

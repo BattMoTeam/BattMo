@@ -94,7 +94,7 @@ end
 % reset discretization/flow functions to account for AD-parameters
 %modelParam.FlowDiscretization = [];
 %modelParam.FlowPropertyFunctions = [];
-%modelParam = setup.model.validateModel(modelParam);
+modelParam = validateModel(modelParam);
 
 nstep    = numel(setup.schedule.step.val);
 lambda   = [];
