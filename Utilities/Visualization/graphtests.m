@@ -2,18 +2,29 @@
 clear all
 close all
 
-
-jsonstruct = parseBattmoJson('ParameterData/BatteryCellParameters/LithiumIonBatteryCell/lithium_ion_battery_nmc_graphite.json');
+jsonstruct = parseBattmoJson('ParameterData/ParameterSets/Chen2020/chen2020_lithium_ion_battery.json');
 
 paramobj = BatteryInputParams(jsonstruct);
-gen = BatteryGenerator1D();
+
+% Some shorthands used for the sub-models
+ne    = 'NegativeElectrode';
+pe    = 'PositiveElectrode';
+am    = 'ActiveMaterial';
+sd    = 'SolidDiffusion';
+itf   = 'Interface';
+elyte = 'Electrolyte';
+
+paramobj.(ne).(am).(sd).useSimplifiedDiffusionModel = false;
+paramobj.(pe).(am).(sd).useSimplifiedDiffusionModel = false;
+
+
+gen = BareBatteryGenerator3D();
 paramobj = gen.updateBatteryInputParams(paramobj);
 model = Battery(paramobj);
 
-submodel = model.NegativeElectrode;
+submodel = model.(ne).(am).(itf).registerVarAndPropfuncNames();
 
 [g, edgelabels] = setupGraph(submodel);
-return
 
 figure
 h = plot(g);
