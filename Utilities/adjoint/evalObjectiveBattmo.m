@@ -53,6 +53,7 @@ if nargout > 1
         case 'adjoint'
             objh = @(tstep,model, state) obj(model, states, schedule, 'ComputePartials', true, 'tStep', tstep,'state', state);
             g    = computeGradientAdjointADBattmo(state0, states, model, schedule, objh);
+            assert(numel(g) == numel(u))
             % scale gradient:
             der = scaleGradient(g, schedule, boxLims, objScaling);
             der = vertcat(der{:});
@@ -76,6 +77,7 @@ if nargout > 1
             error('Gradient method %s not implemented',opt.Gradient);
     end
 end
+assert(numel(u) == numel(der));
 end
 
 function grd = scaleGradient(grd, schedule, boxLims, objScaling)

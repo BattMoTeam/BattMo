@@ -80,7 +80,7 @@ switch model.(ctrl).controlPolicy
     error('control policy not recognized');
 end
 
-n     = 20;
+n     = 40;
 dt    = total/n;
 step  = struct('val', dt*ones(n, 1), 'control', ones(n, 1));
 
@@ -151,28 +151,22 @@ totval = sum([vals{:}]);
 %%
 scaling = struct('boxLims',[],'obj',[]);
 scaling.boxLims = model.Control.Imax*[0.9,1.1];
-scaling.obj = 1;
+scaling.obj = totval;
 %%
-state0 = initstate;
+%state0 = initstate;
 %obj1 = @(step,state,model, states, schedule, varargin) EnergyOutput(model, states, schedule,varargin{:},'step',step);
 f = @(u)evalObjectiveBattmo(u, obj, state0, model, schedule, scaling);
-%schedule.control(:).Imax = model.Control.Imax;
+schedule.control(:).Imax = model.Control.Imax;
 u_base = battmoSchedule2control(schedule, scaling);
-[val, gad] =evalObjectiveBattmo(u_base, obj, state0, model, schedule, scaling);
-[val,gnum] =evalObjectiveBattmo(u_base, obj, state0, model, schedule, scaling,'Gradient','numerical');
+%[v, u_opt, history] = unitBoxBFGS(u_base, f);
+%schedule_opt = control2schedule(u_opt, schedule, scaling);
+%return
 %%
 
 % Get function handle for objective evaluation
 
 %%
 mrstModule add optimization
-%% Run optimization with default options
-% gradient to 
-%schedule_opt = control2schedule(u_opt, schedule, scaling);
-%model.toleranceCNV = 1e-6;
-objsens =@(tstep,model, state) EnergyOutput(model, states, schedule,'tstep',tstep,'computePartials',true,'state',state);
-%matchObservedOW(model, states, schedule, states_ref,...
-%    'computePartials', true, 'tstep', tstep, weighting{:},'state',state);
 SimulatorSetup = struct('model', model, 'schedule', schedule, 'state0', state0);
 parameters = [];
 property = 'Imax'
@@ -180,7 +174,7 @@ property = 'Imax'
 setfun = @(x,location, v) struct('Imax',v,'src', @(time,I,E) rampupSwitchControl(time, 0.1, I, E, ...
                                                 v, ...
                                                 2.0),'IEswitch',true);
-boxlims = model.Control.Imax*[0.9,1.1];
+boxlims = model.Control.Imax*[0.5,1.5];
 parameters={};
 for i = 1:3
 parameters{end+1} = ModelParameter(SimulatorSetup,'name','Imax',...
@@ -191,42 +185,16 @@ parameters{end+1} = ModelParameter(SimulatorSetup,'name','Imax',...
 end
 
 %%
-%parameters = addParameter(parameters, SimulatorSetup,'belongeTo', 'name', property ,'type','multiplier');
-raw_sens = computeSensitivitiesAdjointADBattmo(SimulatorSetup, states, parameters, objsens)
-%%
-ff =fieldnames(raw_sens)
-gadnew = nan(numel(ff),1)
-for i =1:numel(ff)
-    gadnew(i) = raw_sens.(ff{i})
-end
-%%
-gadnew*diff(boxlims)
-%%
 %objmatch = @(model, states, schedule, states_ref, compDer, tstep, state) ...
 %    EnergyOutput(model, states, schedule,'tstep',tstep,'computePartials',true,'state',state);
 objmatch = @(model, states, schedule, varargin) EnergyOutput(model, states, schedule,varargin{:});%
-pvec = getScaledParameterVector(SimulatorSetup, parameters);
-objh = @(p) evalMatchBattmo(p, objmatch, SimulatorSetup, parameters, []);
+p_base = getScaledParameterVector(SimulatorSetup, parameters);
+obj = @(p) evalMatchBattmo(p, objmatch, SimulatorSetup, parameters, [],'objScaling',-totval);
+%%
+[v, p_opt, history] = unitBoxBFGS(p_base, obj);
 % The calibration can be improved by taking a large number of iterations,
 % but here we set a limit of 30 iterations
 %%
-pert = 0.1;
-[vad,gad] = evalMatchBattmo(pvec+pert, objmatch, SimulatorSetup, parameters, 'Gradient','AdjointAD')
-[vnum,gnum] = evalMatchBattmo(pvec+pert, objmatch, SimulatorSetup, parameters, 'Gradient','PerturbationADNUM','PerturbationSize',1e-4)
-%%
-%[v, p_opt, history] = unitBoxBFGS(pvec, objh, 'objChangeTol', 1e-5, ...
-%    'maxIt', 30, 'lbfgsStrategy', 'dynamic', 'lbfgsNum', 5);
-
-%setup_opt = updateSetupFromScaledParameters(setup_init, parameters, p_opt); 
-%[wellSols_opt, states_opt] = simulateScheduleAD(setup_opt.state0, setup_opt.model, setup_opt.schedule);
-
-%% Run optimization with default options
-% gradient to 
-%schedule_opt = control2schedule(u_opt, schedule, scaling);
-%model.toleranceCNV = 1e-6;
-%objsens =@(tstep,model, state) EnergyOutput(model, states, schedule,'tstep',tstep,'computePartials',true,'state',state);
-%matchObservedOW(model, states, schedule, states_ref,...
-%    'computePartials', true, 'tstep', tstep, weighting{:},'state',state);
 SimulatorSetup = struct('model', model, 'schedule', schedule, 'state0', state0);
 parameters = [];
 property = 'porevolume'
@@ -238,18 +206,10 @@ parameters{end+1} = ModelParameter(SimulatorSetup,'name','volumeFraction',...
     'location',{'Electrolyte','volumeFraction'},...
     'getfun',[],'setfun',[])
 
-%parameters = addParameter(parameters, SimulatorSetup,'belongeTo', 'name', property ,'type','multiplier');
-raw_sens = computeSensitivitiesAdjointADBattmo(SimulatorSetup, states, parameters, objsens);
-%%
 objmatch = @(model, states, schedule, varargin) EnergyOutput(model, states, schedule,varargin{:});%
-pvec = getScaledParameterVector(SimulatorSetup, parameters);
-objh = @(p) evalMatchBattmo(p, objmatch, SimulatorSetup, parameters, []);
-% The calibration can be improved by taking a large number of iterations,
-% but here we set a limit of 30 iterations
-%%
-pert = 0.0;
-[vad,gad] = evalMatchBattmo(pvec+pert, objmatch, SimulatorSetup, parameters, 'Gradient','AdjointAD')
-[vnum,gnum] = evalMatchBattmo(pvec+pert, objmatch, SimulatorSetup, parameters, 'Gradient','PerturbationADNUM','PerturbationSize',1e-4)
+p_base = getScaledParameterVector(SimulatorSetup, parameters);
+obj = @(p) evalMatchBattmo(p, objmatch, SimulatorSetup, parameters, [],'objScaling',-totval);
+[v, p_opt, history] = unitBoxBFGS(p_base, obj);
 
 
 

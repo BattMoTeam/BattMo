@@ -498,7 +498,8 @@ classdef Battery < BaseModel
             model.(elyte).volumeFraction(elyte_cells(model.(ne).(am).G.mappings.cellmap)) = model.(ne).(am).porosity;
             model.(elyte).volumeFraction(elyte_cells(model.(pe).(am).G.mappings.cellmap)) = model.(pe).(am).porosity;
             model.(elyte).volumeFraction(elyte_cells(model.(elyte).(sep).G.mappings.cellmap)) = model.(elyte).(sep).porosity;
-
+            % hopefull include all depenensites
+            model.(elyte).EffectiveThermalConductivity(elyte_cells_sep) = model.(elyte).(sep).porosity.*model.thermalConductivity;
         end
         
         function [SOCN, SOCP] = calculateSOC(model, state)
@@ -862,7 +863,12 @@ classdef Battery < BaseModel
                 else
                     % Equation name : 'pe_am_sd_massCons';
                     % OBS : HANDMADE SCALING (to be fixed)
-                    eqs{end + 1} = 1e18*state.(pe).(am).(sd).massCons;
+                    %vol = model.(pe).(am).v
+                     vol = model.(pe).(am).operators.pv;
+                     rp =  model.(pe).(am).(sd).rp;
+                     pvol = (4*pi*rp^3/3);
+                     Np = vol/pvol;% only scale so mass is equivalent trans speed is very fast (L/rp).^2
+                    eqs{end + 1} = Np*state.(pe).(am).(sd).massCons;
                 end
                 
                 % Equation name : 'pe_am_sd_soliddiffeq';

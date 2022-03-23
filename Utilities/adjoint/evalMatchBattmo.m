@@ -1,4 +1,4 @@
-function [misfitVal,varargout] = evaluateMatch(pvec, obj, setup, parameters, states_ref, varargin)
+function [misfitVal,varargout] = evalMatchBattmo(pvec, obj, setup, parameters, states_ref, varargin)
 % Utility function (for optimization) that simulates a model with parameters obtained 
 % from the vector 'pvec' (scaled parameters) and computes mismatch with respect a 
 % reference output state 'states_ref'
