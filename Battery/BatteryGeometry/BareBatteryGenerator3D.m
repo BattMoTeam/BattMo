@@ -1,23 +1,25 @@
-classdef BareBatteryGenerator3D < BareBatteryGenerator
+classdef BareBatteryGenerator3D < BatteryGenerator
 % setup 1D grid 
     properties
         
-        sepnx  = 10;
-        nenx   = 10;
-        penx   = 10;
+        sepnx = 10;
+        nenx  = 10;
+        penx  = 10;
         nenr  = 40; % discretization for solid diffusion
         penr  = 40; % discretization for solid diffusion
-        fac = 1;
+        fac   = 1;
         
     end
     
     methods
         
         function gen = BareBatteryGenerator3D()
-          gen = gen@BareBatteryGenerator();  
+          gen = gen@BatteryGenerator();  
         end
             
         function paramobj = updateBatteryInputParams(gen, paramobj)
+            gen.include_current_collectors = false;
+            gen.use_thermal = paramobj.use_thermal;
             paramobj = gen.setupBatteryInputParams(paramobj, []);
         end
         
@@ -62,7 +64,8 @@ classdef BareBatteryGenerator3D < BareBatteryGenerator
             params.cellind =  (1 : (gen.nenx + gen.sepnx + gen.penx))';
             params.Separator.cellind = gen.nenx + (1 : gen.sepnx)';
             
-            paramobj = setupElectrolyte@BareBatteryGenerator(gen, paramobj, params);
+            paramobj = setupElectrolyte@BatteryGenerator(gen, paramobj, params);
+            
         end
         
         function paramobj = setupElectrodes(gen, paramobj, params)
@@ -73,32 +76,34 @@ classdef BareBatteryGenerator3D < BareBatteryGenerator
             sd  = 'SolidDiffusion';
             
             sepnx = gen.sepnx; 
-            nenx = gen.nenx; 
-            penx = gen.penx; 
+            nenx  = gen.nenx; 
+            penx  = gen.penx; 
             
             %% parameters for negative electrode
 
             params.(ne).cellind = (1 : nenx)';
+            params.(ne).(am).cellind = params.(ne).cellind;
             
             % boundary setup for negative electrode
-            params.(ne).bcfaces = 1;
-            params.(ne).bccells = 1;
+            params.(ne).(am).bcfaces = 1;
+            params.(ne).(am).bccells = 1;
             
             %% parameters for positive electrode
             
             pe_indstart = nenx + sepnx;
             params.(pe).cellind =  pe_indstart + (1 :  penx)';
+            params.(pe).(am).cellind = params.(pe).cellind;
             
             % boundary setup for positive electode
-            params.(pe).bcfaces = penx + 1;
-            params.(pe).bccells = penx;
+            params.(pe).(am).bcfaces = penx + 1;
+            params.(pe).(am).bccells = penx;
             
-            paramobj = setupElectrodes@BareBatteryGenerator(gen, paramobj, params);
+            paramobj = setupElectrodes@BatteryGenerator(gen, paramobj, params);
             
-            paramobj.(ne).(sd).N  = gen.nenr;
-            paramobj.(ne).(sd).np = gen.nenx;
-            paramobj.(pe).(sd).N  = gen.penr;
-            paramobj.(pe).(sd).np = gen.penx;
+            paramobj.(ne).(am).(sd).N  = gen.nenr;
+            paramobj.(ne).(am).(sd).np = gen.nenx;
+            paramobj.(pe).(am).(sd).N  = gen.penr;
+            paramobj.(pe).(am).(sd).np = gen.penx;
 
         end
                 

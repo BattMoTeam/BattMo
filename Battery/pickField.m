@@ -2,6 +2,8 @@ function jsonfd = pickField(jsonstruct, fdname)
     if ~isempty(jsonstruct) 
         if isfield(jsonstruct, fdname)
             jsonfd = jsonstruct.(fdname);
+        else
+            jsonfd = [];
         end
     else
         jsonfd = [];

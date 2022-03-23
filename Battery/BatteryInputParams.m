@@ -22,6 +22,8 @@ classdef BatteryInputParams < InputParams
         
         use_thermal         % flag : true if  coupled thermal simulation should be considered
         use_solid_diffusion % flag : true if solid diffusion should be included (mainly for debugging)
+        include_current_collectors
+
     end
     
     methods

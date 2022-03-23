@@ -3,7 +3,7 @@ function [cap, cap_neg, cap_pos, specificEnergy] = computeCellCapacity(model, va
 %
 %
 % SYNOPSIS:
-%   function c = computeCellCapacity(model, state)
+%   function c = computeCellCapacity(model, varargin)
 %
 % DESCRIPTION: computes the cell usable capacity in Coulomb
 %
@@ -11,7 +11,7 @@ function [cap, cap_neg, cap_pos, specificEnergy] = computeCellCapacity(model, va
 %   model - battery model
 %
 % RETURNS:
-%   c - capacity
+%   cap - capacity
 %
 % EXAMPLE:
 %
@@ -27,20 +27,11 @@ function [cap, cap_neg, cap_pos, specificEnergy] = computeCellCapacity(model, va
     
     eldes = {ne, pe};
     
-    isBare = false;
-    if strcmp(class(model), 'BareBattery')
-        isBare = true;
-    end
-    
     for ind = 1 : numel(eldes)
         
         elde = eldes{ind};
         
-        if isBare
-            ammodel = model.(elde);
-        else
-            ammodel = model.(elde).(am);
-        end
+        ammodel = model.(elde).(am);
         itfmodel = ammodel.(itf);
         
         n    = itfmodel.n;
@@ -75,7 +66,6 @@ function [cap, cap_neg, cap_pos, specificEnergy] = computeCellCapacity(model, va
     
     if nargout > 3
         
-        assert(~isBare, 'not implemented yet for BareBattery model')
         r = cap_neg/cap_pos;
         
         thetaMinPos = model.(pe).(am).(itf).theta100;
