@@ -66,9 +66,27 @@ classdef ActiveMaterial < ElectronicComponent
             % setup volumeFraction, porosity
             nc = model.G.cells.num;
             volumeFraction = model.Interface.volumeFraction*ones(nc, 1);
-            model.volumeFraction = volumeFraction;
-            model.porosity = 1 - model.volumeFraction;
+            model.porosity = 1-volumeFraction;
+            model = model.setup();
+%             model.volumeFraction = volumeFraction;
+%             model.porosity = 1 - model.volumeFraction;
+%             
+%             % setup effective electrical conductivity using Bruggeman approximation 
+%             model.EffectiveElectricalConductivity = model.electricalConductivity.*volumeFraction.^1.5;
+%             
+%             if model.useSimplifiedDiffusionModel            
+%                 model.EffectiveDiffusionCoefficient = model.InterDiffusionCoefficient.*volumeFraction.^1.5;
+%             end
+%             
+%             % setup effective thermal conductivity            
+%             model.EffectiveThermalConductivity = model.thermalConductivity.*volumeFraction.^1.5;
+%             model.EffectiveHeatCapacity = model.heatCapacity.*volumeFraction;
             
+        end
+        
+        function model = setup(model)           
+            model.volumeFraction = 1- model.porosity;
+            volumeFraction = model.volumeFraction;
             % setup effective electrical conductivity using Bruggeman approximation 
             model.EffectiveElectricalConductivity = model.electricalConductivity.*volumeFraction.^1.5;
             
@@ -79,7 +97,6 @@ classdef ActiveMaterial < ElectronicComponent
             % setup effective thermal conductivity            
             model.EffectiveThermalConductivity = model.thermalConductivity.*volumeFraction.^1.5;
             model.EffectiveHeatCapacity = model.heatCapacity.*volumeFraction;
-            
         end
 
         function model = registerVarAndPropfuncNames(model)

@@ -145,9 +145,11 @@ time = cellfun(@(x) x.time, states);
 plot(time,Enew,'*-')
 %% Plot the the output voltage and current
 % gradients to control
+
 obj = @(model, states, schedule, varargin) EnergyOutput(model, states, schedule,varargin{:});%,'step',step);
 vals = obj(model, states, schedule)
 totval = sum([vals{:}]);
+if(false)
 %%
 scaling = struct('boxLims',[],'obj',[]);
 scaling.boxLims = model.Control.Imax*[0.9,1.1];
@@ -156,8 +158,9 @@ scaling.obj = totval;
 %state0 = initstate;
 %obj1 = @(step,state,model, states, schedule, varargin) EnergyOutput(model, states, schedule,varargin{:},'step',step);
 f = @(u)evalObjectiveBattmo(u, obj, state0, model, schedule, scaling);
-schedule.control(:).Imax = model.Control.Imax;
+%schedule.control(:).Imax = model.Control.Imax;
 u_base = battmoSchedule2control(schedule, scaling);
+end
 %[v, u_opt, history] = unitBoxBFGS(u_base, f);
 %schedule_opt = control2schedule(u_opt, schedule, scaling);
 %return
@@ -166,6 +169,7 @@ u_base = battmoSchedule2control(schedule, scaling);
 % Get function handle for objective evaluation
 
 %%
+if(false)
 mrstModule add optimization
 SimulatorSetup = struct('model', model, 'schedule', schedule, 'state0', state0);
 parameters = [];
@@ -192,18 +196,16 @@ p_base = getScaledParameterVector(SimulatorSetup, parameters);
 obj = @(p) evalMatchBattmo(p, objmatch, SimulatorSetup, parameters, [],'objScaling',-totval);
 %%
 [v, p_opt, history] = unitBoxBFGS(p_base, obj);
+end
 % The calibration can be improved by taking a large number of iterations,
 % but here we set a limit of 30 iterations
 %%
+state0 = initstate;
 SimulatorSetup = struct('model', model, 'schedule', schedule, 'state0', state0);
-parameters = [];
-property = 'porevolume'
-getfun = @(x,location) x.(location).volumeFraction; 
-setfun = @(x,location, v) setfunctionWithName(x,location,v,'volumeFraction');
 parameters={};
-parameters{end+1} = ModelParameter(SimulatorSetup,'name','volumeFraction',...
+parameters{end+1} = ModelParameter(SimulatorSetup,'name','porosity_sep',...
     'belongsTo','model',...
-    'location',{'Electrolyte','volumeFraction'},...
+    'location',{'Electrolyte','Separator','porosity'},...
     'getfun',[],'setfun',[])
 
 objmatch = @(model, states, schedule, varargin) EnergyOutput(model, states, schedule,varargin{:});%
