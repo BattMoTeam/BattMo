@@ -57,7 +57,7 @@ paramobj.(thermal).externalTemperature = paramobj.initT;
 %%  Initialize the battery model. 
 % The battery model is initialized by sending paramobj to the Battery class
 % constructor. see :class:`Battery <Battery.Battery>`.
-model = Battery(paramobj, 'use_thermal', true, 'use_solid_diffusion', true);
+model = Battery(paramobj);
 model.AutoDiffBackend= AutoDiffBackend();
 
 %% Compute the nominal cell capacity and choose a C-Rate
@@ -194,14 +194,38 @@ end
 %%
 %parameters = addParameter(parameters, SimulatorSetup,'belongeTo', 'name', property ,'type','multiplier');
 raw_sens = computeSensitivitiesAdjointADBattmo(SimulatorSetup, states, parameters, objsens)
+%%
+ff =fieldnames(raw_sens)
+gadnew = nan(numel(ff),1)
+for i =1:numel(ff)
+    gadnew(i) = raw_sens.(ff{i})
+end
+%%
+gadnew*diff(boxlims)
+%%
+%objmatch = @(model, states, schedule, states_ref, compDer, tstep, state) ...
+%    EnergyOutput(model, states, schedule,'tstep',tstep,'computePartials',true,'state',state);
+objmatch = @(model, states, schedule, varargin) EnergyOutput(model, states, schedule,varargin{:});%
+pvec = getScaledParameterVector(SimulatorSetup, parameters);
+objh = @(p) evalMatchBattmo(p, objmatch, SimulatorSetup, parameters, []);
+% The calibration can be improved by taking a large number of iterations,
+% but here we set a limit of 30 iterations
+%%
+pert = 0.1;
+[vad,gad] = evalMatchBattmo(pvec+pert, objmatch, SimulatorSetup, parameters, 'Gradient','AdjointAD')
+[vnum,gnum] = evalMatchBattmo(pvec+pert, objmatch, SimulatorSetup, parameters, 'Gradient','PerturbationADNUM','PerturbationSize',1e-4)
+%%
+[v, p_opt, history] = unitBoxBFGS(pvec, objh, 'objChangeTol', 1e-5, ...
+    'maxIt', 30, 'lbfgsStrategy', 'dynamic', 'lbfgsNum', 5);
 
-%NB wrong
+setup_opt = updateSetupFromScaledParameters(setup_init, parameters, p_opt); 
+[wellSols_opt, states_opt] = simulateScheduleAD(setup_opt.state0, setup_opt.model, setup_opt.schedule);
 
 %% Run optimization with default options
 % gradient to 
 %schedule_opt = control2schedule(u_opt, schedule, scaling);
 %model.toleranceCNV = 1e-6;
-objsens =@(tstep,model, state) EnergyOutput(model, states, schedule,'tstep',tstep,'computePartials',true,'state',state);
+%objsens =@(tstep,model, state) EnergyOutput(model, states, schedule,'tstep',tstep,'computePartials',true,'state',state);
 %matchObservedOW(model, states, schedule, states_ref,...
 %    'computePartials', true, 'tstep', tstep, weighting{:},'state',state);
 SimulatorSetup = struct('model', model, 'schedule', schedule, 'state0', state0);
@@ -217,6 +241,18 @@ parameters{end+1} = ModelParameter(SimulatorSetup,'name','volumeFraction',...
 
 %parameters = addParameter(parameters, SimulatorSetup,'belongeTo', 'name', property ,'type','multiplier');
 raw_sens = computeSensitivitiesAdjointADBattmo(SimulatorSetup, states, parameters, objsens);
+%%
+objmatch = @(model, states, schedule, varargin) EnergyOutput(model, states, schedule,varargin{:});%
+pvec = getScaledParameterVector(SimulatorSetup, parameters);
+objh = @(p) evalMatchBattmo(p, objmatch, SimulatorSetup, parameters, []);
+% The calibration can be improved by taking a large number of iterations,
+% but here we set a limit of 30 iterations
+%%
+pert = 0.0;
+[vad,gad] = evalMatchBattmo(pvec+pert, objmatch, SimulatorSetup, parameters, 'Gradient','AdjointAD')
+[vnum,gnum] = evalMatchBattmo(pvec+pert, objmatch, SimulatorSetup, parameters, 'Gradient','PerturbationADNUM','PerturbationSize',1e-4)
+
+
 
 %% 
 
