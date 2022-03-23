@@ -29,11 +29,15 @@ function [mass, masses] = computeCellMass(model, varargin)
         
         mass = mass + masses.(elde).(am).val;
         
-        rho  = model.(elde).(cc).density;
-        vols = model.(elde).(cc).G.cells.volumes;
-        
-        masses.(elde).(cc).val = sum(rho.*vols);
-        mass = mass + masses.(elde).(cc).val;
+        if model.include_current_collectors
+
+            rho  = model.(elde).(cc).density;
+            vols = model.(elde).(cc).G.cells.volumes;
+            
+            masses.(elde).(cc).val = sum(rho.*vols);
+            mass = mass + masses.(elde).(cc).val;
+            
+        end
         
     end
     
