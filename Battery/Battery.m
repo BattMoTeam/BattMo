@@ -1508,8 +1508,9 @@ classdef Battery < BaseModel
         
         
         function outputvars = extractGlobalVariables(model, states)
+            
             ns = numel(states);
-            ws = cell(ns, 1);
+
             for i = 1 : ns
                 E    = states{i}.Control.E;
                 I    = states{i}.Control.I;
