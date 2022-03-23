@@ -907,56 +907,46 @@ classdef Battery < BaseModel
             nc = model.G.cells.num;
             
             src = zeros(nc, 1);
-            
-            T = state.(thermal).T;
-            if isa(T, 'ADI')
-                adsample = getSampleAD(T);
-                adbackend = model.AutoDiffBackend;
-                src = adbackend.convertToAD(src, adsample);
-                locstate = state;
-            else
-                locstate = value(state);
-            end
-            
+                        
             for ind = 1 : numel(eldes)
 
                 elde = eldes{ind};
                 
                 cc_model = model.(elde).(cc);
                 cc_map   = cc_model.G.mappings.cellmap;
-                cc_j     = locstate.(elde).(cc).jFace;
+                cc_j     = state.(elde).(cc).jFace;
                 cc_econd = cc_model.EffectiveElectricalConductivity;
                 cc_vols  = cc_model.G.cells.volumes;
                 cc_jsq   = computeCellFluxNorm(cc_model, cc_j); 
                 state.(elde).(cc).jsq = cc_jsq;  %store square of current density
                 
-                src(cc_map) = src(cc_map) + cc_vols.*cc_jsq./cc_econd;
-
+                %src(cc_map) = src(cc_map) + cc_vols.*cc_jsq./cc_econd;
+                src = subsetPlus(src,cc_vols.*cc_jsq./cc_econd, cc_map);
                 am_model = model.(elde).(am);
                 am_map   = am_model.G.mappings.cellmap;
-                am_j     = locstate.(elde).(am).jFace;
+                am_j     = state.(elde).(am).jFace;
                 am_econd = am_model.EffectiveElectricalConductivity;
                 am_vols  = am_model.G.cells.volumes;
                 am_jsq   = computeCellFluxNorm(am_model, am_j);
                 state.(elde).(am).jsq = am_jsq;
                 
-                src(am_map) = src(am_map) + am_vols.*am_jsq./am_econd;
-                
+                %src(am_map) = src(am_map) + am_vols.*am_jsq./am_econd;
+                src = subsetPlus(src, am_vols.*am_jsq./am_econd, am_map);
             end
 
             % Electrolyte
             elyte_model = model.(elyte);
             elyte_map   = elyte_model.G.mappings.cellmap;
             elyte_vf    = elyte_model.volumeFraction;
-            elyte_j     = locstate.(elyte).jFace;
-            elyte_cond  = locstate.(elyte).conductivity;
+            elyte_j     = state.(elyte).jFace;
+            elyte_cond  = state.(elyte).conductivity;
             elyte_econd = elyte_cond.*elyte_vf.^1.5;
             elyte_vols  = elyte_model.G.cells.volumes;
             elyte_jsq   = computeCellFluxNorm(elyte_model, elyte_j);
             state.(elyte).jsq = elyte_jsq; %store square of current density
             
-            src(elyte_map) = src(elyte_map) + elyte_vols.*elyte_jsq./elyte_econd;
-            
+            %src(elyte_map) = src(elyte_map) + elyte_vols.*elyte_jsq./elyte_econd;
+            src = subsetPlus(src, elyte_vols.*elyte_jsq./elyte_econd, elyte_map);
             state.(thermal).jHeatOhmSource = src;
             
         end
