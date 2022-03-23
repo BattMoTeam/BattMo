@@ -24,7 +24,7 @@ am    = 'ActiveMaterial';
 sd    = 'SolidDiffusion';
 elyte = 'Electrolyte';
 
-%% We setup the battery geometry.
+%% We setup the battery geometry ("bare" battery with no current collector).
 gen = BareBatteryGenerator3D();
 % We update pamobj with grid data
 paramobj = gen.updateBatteryInputParams(paramobj);
