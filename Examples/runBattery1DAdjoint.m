@@ -164,6 +164,7 @@ u_base = currentSchedule2control(schedule, scaling);
 %%
 return
 % Get function handle for objective evaluation
+
 %%
 mrstModule add optimization
 %% Run optimization with default options
@@ -214,7 +215,6 @@ parameters{end+1} = ModelParameter(SimulatorSetup,'name','volumeFraction',...
     'location',{'Electrolyte','volumeFraction'},...
     'getfun',[],'setfun',[])
 
-%%
 %parameters = addParameter(parameters, SimulatorSetup,'belongeTo', 'name', property ,'type','multiplier');
 raw_sens = computeSensitivitiesAdjointADBattmo(SimulatorSetup, states, parameters, objsens);
 
