@@ -339,6 +339,11 @@ classdef BaseModel < PhysicalModel
             state = value(state, false);
         end
         
+        function outputvars = extractGlobalVariables(model, states)
+            ns = numel(states);
+            outputvars = cell(1, ns);
+        end
+        
     end
     
 end
