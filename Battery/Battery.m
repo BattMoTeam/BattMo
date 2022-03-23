@@ -1374,18 +1374,9 @@ classdef Battery < BaseModel
         
         function state = initStateAD(model, state)
         % initialize a new cleaned-up state with AD variables
-            
-            pnames  = model.getPrimaryVariables();
-            vars = cell(numel(pnames),1);
-            for i=1:numel(pnames)
-                vars{i} = model.getProp(state,pnames{i});
-            end
-            % Get the AD state for this model           
-            [vars{:}] = model.AutoDiffBackend.initVariablesAD(vars{:});
-            newstate =struct();
-            for i=1:numel(pnames)
-               newstate = model.setNewProp(newstate, pnames{i}, vars{i});
-            end
+
+            % initStateAD in BaseModel erase all fields
+            newstate = initStateAD@BaseModel(model, state);
 
             % add the variable that we want to add on state
             addedvarnames = model.addedVariableNames;
@@ -1394,10 +1385,10 @@ classdef Battery < BaseModel
                 assert(isnumeric(var) | ischar(var));
                 newstate = model.setNewProp(newstate, addedvarnames{i}, var);
             end
+
+            newstate.time = state.time;
             
-            time       = state.time;
-            state      = newstate;
-            state.time = time;
+            state = newstate;
             
         end 
         
