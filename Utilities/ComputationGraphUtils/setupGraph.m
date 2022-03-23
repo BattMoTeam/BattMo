@@ -32,9 +32,9 @@ function [g, edgelabels] = setupGraph(model, varargin)
     
     propfuncs = model.propertyFunctionList;
 
-    for ind = 1 : numel(propfuncs)
+    for ipropfunc = 1 : numel(propfuncs)
 
-        propfunction = propfuncs{ind};
+        propfunction = propfuncs{ipropfunc};
         varname = propfunction.varname;
         m = propfunction.modelnamespace;
         
@@ -57,10 +57,12 @@ function [g, edgelabels] = setupGraph(model, varargin)
             end
         end
 
+        fullvarnames = {};
+        
         if opt.resolveIndex
             varnames = varname.resolveIndex();
-            for ind = 1 : numel(varnames)
-                fullvarnames{ind} = varnames{ind}.getIndexedFieldname();
+            for ivarname = 1 : numel(varnames)
+                fullvarnames{ivarname} = varnames{ivarname}.getIndexedFieldname();
             end
         else
             fullvarnames = {varname.getfieldname};
@@ -70,7 +72,7 @@ function [g, edgelabels] = setupGraph(model, varargin)
         ni = numel(fullinputvarnames);
         
         indv = rldecode((1 : nv)', ni*ones(nv, 1))';
-        indi = repmat((1 : ni)', 1, nv);
+        indi = repmat((1 : ni), 1, nv);
         
         s = fullinputvarnames(indi);
         t = fullvarnames(indv);
