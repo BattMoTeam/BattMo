@@ -1079,7 +1079,7 @@ classdef Battery < BaseModel
                 if model.include_current_collectors
                     cc_model = model.(elde).(cc);
                     cc_map   = cc_model.G.mappings.cellmap;
-                    cc_j     = locstate.(elde).(cc).jFace;
+                    cc_j     = state.(elde).(cc).jFace;
                     cc_econd = cc_model.EffectiveElectricalConductivity;
                     cc_vols  = cc_model.G.cells.volumes;
                     cc_jsq   = computeCellFluxNorm(cc_model, cc_j); 

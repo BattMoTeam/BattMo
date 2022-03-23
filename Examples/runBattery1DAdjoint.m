@@ -157,7 +157,7 @@ state0 = initstate;
 %obj1 = @(step,state,model, states, schedule, varargin) EnergyOutput(model, states, schedule,varargin{:},'step',step);
 f = @(u)evalObjectiveBattmo(u, obj, state0, model, schedule, scaling);
 %schedule.control(:).Imax = model.Control.Imax;
-u_base = currentSchedule2control(schedule, scaling);
+u_base = battmoSchedule2control(schedule, scaling);
 [val, gad] =evalObjectiveBattmo(u_base, obj, state0, model, schedule, scaling);
 %%
 [val,gnum] =evalObjectiveBattmo(u_base, obj, state0, model, schedule, scaling,'Gradient','numerical');
@@ -215,11 +215,11 @@ pert = 0.1;
 [vad,gad] = evalMatchBattmo(pvec+pert, objmatch, SimulatorSetup, parameters, 'Gradient','AdjointAD')
 [vnum,gnum] = evalMatchBattmo(pvec+pert, objmatch, SimulatorSetup, parameters, 'Gradient','PerturbationADNUM','PerturbationSize',1e-4)
 %%
-[v, p_opt, history] = unitBoxBFGS(pvec, objh, 'objChangeTol', 1e-5, ...
-    'maxIt', 30, 'lbfgsStrategy', 'dynamic', 'lbfgsNum', 5);
+%[v, p_opt, history] = unitBoxBFGS(pvec, objh, 'objChangeTol', 1e-5, ...
+%    'maxIt', 30, 'lbfgsStrategy', 'dynamic', 'lbfgsNum', 5);
 
-setup_opt = updateSetupFromScaledParameters(setup_init, parameters, p_opt); 
-[wellSols_opt, states_opt] = simulateScheduleAD(setup_opt.state0, setup_opt.model, setup_opt.schedule);
+%setup_opt = updateSetupFromScaledParameters(setup_init, parameters, p_opt); 
+%[wellSols_opt, states_opt] = simulateScheduleAD(setup_opt.state0, setup_opt.model, setup_opt.schedule);
 
 %% Run optimization with default options
 % gradient to 
