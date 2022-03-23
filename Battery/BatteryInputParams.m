@@ -11,15 +11,17 @@ classdef BatteryInputParams < InputParams
         initT % Initial temperature [T]
         
         %% parameters for the battery components
+        
         NegativeElectrode % instance of :class:`ElectrodeInputParams <Electrochemistry.ElectrodeInputParams>`
         PositiveElectrode % instance of :class:`ElectrodeInputParams <Electrochemistry.ElectrodeInputParams>`
         Electrolyte       % instance of :class:`ElectrolyteInputParams <Electrochemistry.ElectrolyteInputParams>`
         ThermalModel      % instance of :class:`ThermalModelInputParams <Electrochemistry.ThermalModelInputParams>`
         Control           % instance of :class:`ControlModelInputParams <Electrochemistry.ControlModelInputParams>`    
         
-        %% Coupling terms (describe the topological structure of the coupling between the components)
-        couplingTerms
+        couplingTerms % Coupling terms (describe the topological structure of the coupling between the components)
         
+        use_thermal         % flag : true if  coupled thermal simulation should be considered
+        use_solid_diffusion % flag : true if solid diffusion should be included (mainly for debugging)
     end
     
     methods

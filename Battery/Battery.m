@@ -27,15 +27,15 @@ classdef Battery < BaseModel
         couplingNames 
         
         mappings
+        
         use_solid_diffusion
         use_thermal
     end
     
     methods
         
-        function model = Battery(paramobj,varargin)
-            opt = struct('use_solid_diffusion',true,'use_thermal',true);
-            opt = merge_options(opt,varargin{:});
+        function model = Battery(paramobj)
+
             model = model@BaseModel();
             
             % All the submodels should have same backend (this is not assigned automaticallly for the moment)
@@ -46,7 +46,8 @@ classdef Battery < BaseModel
                        'couplingTerms', ...
                        'initT'        , ...
                        'SOC'          , ...
-                       'I'};
+                       'use_thermal'  , ...
+                       'use_solid_diffusion'};
             
             model = dispatchParams(model, paramobj, fdnames);
 
@@ -83,8 +84,6 @@ classdef Battery < BaseModel
             cmax_ne = model.(ne).(am).(itf).cmax;
             cmax_pe = model.(pe).(am).(itf).cmax;
             model.cmin = 1e-5*max(cmax_ne, cmax_pe);
-            model.use_solid_diffusion = opt.use_solid_diffusion;
-            model.use_thermal = opt.use_thermal;
             
         end
 
@@ -710,7 +709,7 @@ classdef Battery < BaseModel
                      'EIeq', ...
                      'controlEq'};
             neq=numel(eqs);     
-            keep = model.getEquationsToUses(neq);     
+            keep = model.getEquationsToUse(neq);     
  
             if(not(all(keep)))
                 ind   = find(keep);
@@ -768,7 +767,7 @@ classdef Battery < BaseModel
             
         end
         
-        function keep = getEquationsToUses(model,neq)
+        function keep = getEquationsToUse(model,neq)
             keep = true(neq, 1);     
             if(not(model.use_solid_diffusion))
                 keep(5) = false;
@@ -779,9 +778,9 @@ classdef Battery < BaseModel
             end
         end
         
-        function keep = getVariablesToUses(model, neq)
+        function keep = getVariablesToUse(model, neq)
              %% reduction will not work if not this is equal to equations: if need one need to change LinearSolverAD.m
-             keep = model.getEquationsToUses(neq);
+             keep = model.getEquationsToUse(neq);
          end
          
         function state = updateElectrolyteCoupling(model, state)
@@ -1189,6 +1188,7 @@ classdef Battery < BaseModel
         function [p, extra] = getPrimaryVariables(model)
             
             bat = model;
+            
             elyte   = 'Electrolyte';
             ne      = 'NegativeElectrode';
             pe      = 'PositiveElectrode';
@@ -1212,17 +1212,20 @@ classdef Battery < BaseModel
                  {thermal, 'T'}           , ...
                  {ctrl, 'E'}              , ...
                  {ctrl, 'I'}};          
-            
-            neq = numel(p);
-            keep = model.getVariablesToUses(neq);
+            % 
+            neq   = numel(p);
+            keep  = model.getVariablesToUse(neq);
             extra = {p{find(not(keep))}};
+            
             if (not(all(keep)))
                 p = {p{find(keep)}};
             end
+            
             extra{end + 1} = {ctrl, 'ctrlType'};
             if strcmp(model.(ctrl).controlPolicy, 'CCCV')
                 extra{end + 1} = {ctrl, 'nextCtrlType'};
             end
+            
         end
         
         function forces = getValidDrivingForces(model)
@@ -1292,9 +1295,12 @@ classdef Battery < BaseModel
         function cleanState = addVariable(model, cleanState, state, state0)
             
             cleanState = addVariable@BaseModel(model, cleanState, state, state0);
-
-            ctrl = 'Control';            
-            cleanState.(ctrl).ctrlType = state.(ctrl).ctrlType;
+            
+            thermal = 'ThermalModel';
+            ctrl = 'Control';
+            
+            cleanState.(ctrl).ctrlType = state.(ctrl).ctrlType;            
+            cleanState.(thermal).T = state.(thermal).T;
             
         end
 
@@ -1322,14 +1328,17 @@ classdef Battery < BaseModel
             for i = 1 : ns
                 E    = states{i}.Control.E;
                 I    = states{i}.Control.I;
-                T    = states{i}.ThermalModel.T;
                 time = states{i}.time;
                 
-                Tmax = max(T);
                 outputvars{i} = struct('E'   , E   , ...
                                        'I'   , I   , ...
-                                       'Tmax', Tmax, ...
                                        'time', time);
+                if model.use_thermal
+                    T    = states{i}.ThermalModel.T; 
+                    outputvars{i}.Tmax = max(T);
+
+                end
+            
             end
         end
 

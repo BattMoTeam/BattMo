@@ -57,7 +57,8 @@ paramobj.(thermal).externalTemperature = paramobj.initT;
 %%  Initialize the battery model. 
 % The battery model is initialized by sending paramobj to the Battery class
 % constructor. see :class:`Battery <Battery.Battery>`.
-model = Battery(paramobj, 'use_thermal', true, 'use_solid_diffusion', true);
+paramobj.use_thermal = false;
+model = Battery(paramobj);
 model.AutoDiffBackend= AutoDiffBackend();
 
 %% Compute the nominal cell capacity and choose a C-Rate
