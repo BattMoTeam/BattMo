@@ -21,8 +21,19 @@ mrstModule add ad-core mrst-gui mpfa
 % provided in json format. All the parameters for the model are stored in
 % the paramobj object.
 jsonstruct = parseBattmoJson('ParameterData/BatteryCellParameters/LithiumIonBatteryCell/lithium_ion_battery_nmc_graphite.json');
-% jsonstruct.Control.controlPolicy = 'CCCV';
 paramobj = BatteryInputParams(jsonstruct);
+
+use_cccv = false;
+if use_cccv
+    cccvstruct = struct( 'controlPolicy'     , 'IEswitch',  ...
+                         'CRate'             , 1         , ...
+                         'lowerCutoffVoltage', 2         , ...
+                         'upperCutoffVoltage', 4.1       , ...
+                         'dIdtLimit'         , 0.01      , ...
+                         'dEdtLimit'         , 0.01);
+    cccvparamobj = CcCvControlModelInputParams(cccvstruct);
+    paramobj.Control = cccvparamobj;
+end
 
 % paramobj.include_current_collectors = true;
 % paramobj.use_solid_diffusion = false;
