@@ -57,6 +57,10 @@ paramobj.(thermal).externalTemperature = paramobj.initT;
 %%  Initialize the battery model. 
 % The battery model is initialized by sending paramobj to the Battery class
 % constructor. see :class:`Battery <Battery.Battery>`.
+paramobj.use_thermal = false;
+paramobj.include_current_collectors = false;
+paramobj.NegativeElectrode.ActiveMaterial.externalCouplingTerm = paramobj.NegativeElectrode.CurrentCollector.externalCouplingTerm;
+paramobj.PositiveElectrode.ActiveMaterial.externalCouplingTerm = paramobj.PositiveElectrode.CurrentCollector.externalCouplingTerm;
 model = Battery(paramobj);
 model.AutoDiffBackend= AutoDiffBackend();
 
@@ -75,7 +79,7 @@ switch model.(ctrl).controlPolicy
   case 'CCCV'
     total = 3.5*hour/CRate;
   case 'IEswitch'
-    total = 1*hour/CRate;
+    total = 1.2*hour/CRate;
   otherwise
     error('control policy not recognized');
 end
@@ -104,7 +108,7 @@ end
 
 % This control is used to set up the schedule
 %%
-nc = 3;
+nc = 1;
 nst = numel(step.control)
 ind = floor(([0:nst-1]/nst)*nc)+1
 %%
@@ -144,7 +148,7 @@ Tmax = cellfun(@(x) max(x.ThermalModel.T), states);
 time = cellfun(@(x) x.time, states); 
 plot(time,Enew,'*-')
 %% Plot the the output voltage and current
-% gradients to control
+% gradients to controlmodel.use_thermal =false;
 
 obj = @(model, states, schedule, varargin) EnergyOutput(model, states, schedule,varargin{:});%,'step',step);
 vals = obj(model, states, schedule)
@@ -170,6 +174,7 @@ end
 
 %%
 if(false)
+    %%
 mrstModule add optimization
 SimulatorSetup = struct('model', model, 'schedule', schedule, 'state0', state0);
 parameters = [];
@@ -177,25 +182,27 @@ property = 'Imax'
 %getfun = @(x,location) x.Imax; 
 setfun = @(x,location, v) struct('Imax',v,'src', @(time,I,E) rampupSwitchControl(time, 0.1, I, E, ...
                                                 v, ...
-                                                2.0),'IEswitch',true);
+                                                3.0),'IEswitch',true);
 boxlims = model.Control.Imax*[0.5,1.5];
 parameters={};
-for i = 1:3
+for i = 1:max(schedule.step.control)
 parameters{end+1} = ModelParameter(SimulatorSetup,'name','Imax',...
     'belongsTo','schedule',...
     'boxLims',boxlims,...
     'location',{'control','Imax'},...
     'getfun',[],'setfun',setfun,'controlSteps',i)
 end
-
-%%
+fn =@ plotAfterStepIV
+%
 %objmatch = @(model, states, schedule, states_ref, compDer, tstep, state) ...
 %    EnergyOutput(model, states, schedule,'tstep',tstep,'computePartials',true,'state',state);
 objmatch = @(model, states, schedule, varargin) EnergyOutput(model, states, schedule,varargin{:});%
 p_base = getScaledParameterVector(SimulatorSetup, parameters);
-obj = @(p) evalMatchBattmo(p, objmatch, SimulatorSetup, parameters, [],'objScaling',-totval);
+obj = @(p) evalMatchBattmo(p, objmatch, SimulatorSetup, parameters,'objScaling',-totval,'afterStepFn',fn);
 %%
+figure(33),clf
 [v, p_opt, history] = unitBoxBFGS(p_base, obj);
+%%
 end
 % The calibration can be improved by taking a large number of iterations,
 % but here we set a limit of 30 iterations
@@ -205,15 +212,41 @@ SimulatorSetup = struct('model', model, 'schedule', schedule, 'state0', state0);
 parameters={};
 parameters{end+1} = ModelParameter(SimulatorSetup,'name','porosity_sep',...
     'belongsTo','model',...
+    'boxLims',[0.1 0.9],...
     'location',{'Electrolyte','Separator','porosity'},...
     'getfun',[],'setfun',[])
+parameters={};
+parameters{end+1} = ModelParameter(SimulatorSetup,'name','porosity_nam',...
+    'belongsTo','model',...
+    'boxLims',[0.07 0.5],...
+    'location',{'NegativeElectrode','ActiveMaterial','porosity'},...
+    'getfun',[],'setfun',[])
+parameters{end+1} = ModelParameter(SimulatorSetup,'name','porosity_nam',...
+    'belongsTo','model',...
+    'boxLims',[0.07 0.5],...
+    'location',{'PositiveElectrode','ActiveMaterial','porosity'},...
+    'getfun',[],'setfun',[])
 
+setfun = @(x,location, v) struct('Imax',v,'src', @(time,I,E) rampupSwitchControl(time, 0.1, I, E, ...
+                                                v, ...
+                                                3.0),'IEswitch',true);
+boxlims = model.Control.Imax*[0.5,1.5];
+parameters={};
+for i = 1:max(schedule.step.control)
+parameters{end+1} = ModelParameter(SimulatorSetup,'name','Imax',...
+    'belongsTo','schedule',...
+    'boxLims',boxlims,...
+    'location',{'control','Imax'},...
+    'getfun',[],'setfun',setfun,'controlSteps',i)
+end
 objmatch = @(model, states, schedule, varargin) EnergyOutput(model, states, schedule,varargin{:});%
 p_base = getScaledParameterVector(SimulatorSetup, parameters);
-obj = @(p) evalMatchBattmo(p, objmatch, SimulatorSetup, parameters, [],'objScaling',-totval);
-[v, p_opt, history] = unitBoxBFGS(p_base, obj);
+fn =@ plotAfterStepIV
 
-
+obj = @(p) evalMatchBattmo(p, objmatch, SimulatorSetup, parameters,'objScaling',-totval,'afterStepFn',fn);
+figure(33),clf
+%%
+[v, p_opt, history] = unitBoxBFGS(p_base-0.1, obj,'gradTol',1e-7,'objChangeTol',1e-4);
 
 %% 
 

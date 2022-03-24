@@ -495,11 +495,14 @@ classdef Battery < BaseModel
             elyte_cells(model.(elyte).G.mappings.cellmap) = (1 : model.(elyte).G.cells.num)';
 
             model.(elyte).volumeFraction = NaN(model.(elyte).G.cells.num, 1);
-            model.(elyte).volumeFraction(elyte_cells(model.(ne).(am).G.mappings.cellmap)) = model.(ne).(am).porosity;
-            model.(elyte).volumeFraction(elyte_cells(model.(pe).(am).G.mappings.cellmap)) = model.(pe).(am).porosity;
-            model.(elyte).volumeFraction(elyte_cells(model.(elyte).(sep).G.mappings.cellmap)) = model.(elyte).(sep).porosity;
+            model.(elyte).volumeFraction = subsasgnAD(model.(elyte).volumeFraction,elyte_cells(model.(ne).(am).G.mappings.cellmap), model.(ne).(am).porosity);
+            model.(elyte).volumeFraction = subsasgnAD(model.(elyte).volumeFraction,elyte_cells(model.(pe).(am).G.mappings.cellmap), model.(pe).(am).porosity);
+            sep_cells = elyte_cells(model.(elyte).(sep).G.mappings.cellmap); 
+            %model.(elyte).volumeFraction(sep_cells) = model.(elyte).(sep).porosity;
+            model.(elyte).volumeFraction = subsasgnAD(model.(elyte).volumeFraction,sep_cells, model.(elyte).(sep).porosity);
             % hopefull include all depenensites
-            model.(elyte).EffectiveThermalConductivity(elyte_cells_sep) = model.(elyte).(sep).porosity.*model.thermalConductivity;
+            model.(elyte).EffectiveThermalConductivity = model.(elyte).volumeFraction.*model.(elyte).thermalConductivity;
+
         end
         
         function [SOCN, SOCP] = calculateSOC(model, state)
@@ -920,7 +923,7 @@ classdef Battery < BaseModel
               otherwise 
                 error()
             end
-            
+
             primaryVars = model.getPrimaryVariables();
 
             
@@ -1419,14 +1422,18 @@ classdef Battery < BaseModel
         end
 
         function model = validateModel(model, varargin)
-            
-            model.Electrolyte.AutoDiffBackend=model.AutoDiffBackend;
-            model.Electrolyte=model.Electrolyte.validateModel(varargin{:});
+
+            model.PositiveElectrode.ActiveMaterial = model.PositiveElectrode.ActiveMaterial.setup();
+            model.NegativeElectrode.ActiveMaterial = model.NegativeElectrode.ActiveMaterial.setup();
+            model.Electrolyte.Separator = model.Electrolyte.Separator.setup();
+            model = model.setupElectrolyteModel();
+                
             model.PositiveElectrode.ActiveMaterial.AutoDiffBackend= model.AutoDiffBackend;
             model.PositiveElectrode.ActiveMaterial = model.PositiveElectrode.ActiveMaterial.validateModel(varargin{:});
             model.NegativeElectrode.ActiveMaterial.AutoDiffBackend= model.AutoDiffBackend;
             model.NegativeElectrode.ActiveMaterial = model.NegativeElectrode.ActiveMaterial.validateModel(varargin{:});
-
+            model.Electrolyte.AutoDiffBackend=model.AutoDiffBackend;
+            model.Electrolyte=model.Electrolyte.validateModel(varargin{:});
             if model.NegativeElectrode.include_current_collector
                 model.NegativeElectrode.CurrentCollector.AutoDiffBackend= model.AutoDiffBackend;
                 model.NegativeElectrode.CurrentCollector= model.NegativeElectrode.CurrentCollector.validateModel(varargin{:});

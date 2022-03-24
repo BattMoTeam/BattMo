@@ -5,22 +5,21 @@ classdef ActiveMaterial < ElectronicComponent
         %
         % instance of :class:`Interface <Electrochemistry.Electrodes.Interface>`
         %
-        Interface 
-        SolidDiffusion
-        
-        volumeFraction % Volume fraction
-        porosity       % Porosity
-        
+        porosity
+        electricalConductivity % Electrical conductivite
         InterDiffusionCoefficient % Inter particle diffusion coefficient parameter (diffusion between the particles)
-        EffectiveDiffusionCoefficient % 
-        
         thermalConductivity % Intrinsic Thermal conductivity of the active component
         heatCapacity        % Intrinsic Heat capacity of the active component
 
+        Interface
+
+        SolidDiffusion        
+        volumeFraction % Volume fraction
+
+        EffectiveDiffusionCoefficient % 
+
         EffectiveThermalConductivity % Effective Thermal Conductivity of the active component
         EffectiveHeatCapacity % Effective Heat Capacity of the active component
-        
-        electricalConductivity % Electrical conductivity
 
         useSimplifiedDiffusionModel
         
