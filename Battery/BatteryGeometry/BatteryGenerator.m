@@ -14,12 +14,16 @@ classdef BatteryGenerator
         % It is stored here because is shared by many setup functions
         % It is setup by function setupBatteryGrid
         G
+        
+        include_current_collectors
+        use_thermal
     end
 
     methods
         
         function [paramobj, gen] = updateBatteryInputParams(gen, paramobj, params)
-            error('virtual function - should call setupBatteryInputParams with some argument for params');
+        % this function is the main class function as it returns an updated paramobj object with grid structure
+            error('virtual function');
         end
         
         function [paramobj, gen] = setupBatteryInputParams(gen, paramobj, params)
@@ -27,7 +31,9 @@ classdef BatteryGenerator
             [paramobj, gen] = gen.setupGrid(paramobj, params);
             paramobj.Electrolyte = gen.setupElectrolyte(paramobj.Electrolyte, params);
             paramobj = gen.setupElectrodes(paramobj, params);
-            paramobj = gen.setupThermalModel(paramobj, params);
+            if gen.use_thermal
+                paramobj = gen.setupThermalModel(paramobj, params);
+            end
             paramobj = gen.setupElectrodeElectrolyteCoupTerm(paramobj);
         end
 
@@ -75,10 +81,22 @@ classdef BatteryGenerator
         % paramobj is instance of BatteryInputParams
             ne = 'NegativeElectrode';
             pe = 'PositiveElectrode';
-            % setup Negative Electrode 
+            eldes = {ne, pe};
+            for ielde = 1 : numel(eldes)
+                elde = eldes{ielde};
+                if isempty(paramobj.(elde).include_current_collector)
+                    if paramobj.include_current_collectors
+                        paramobj.(elde).include_current_collector = true;
+                    else
+                        paramobj.(elde).include_current_collector = false;
+                    end
+                end
+            end
+            % setup Negative Electrode
             paramobj.(ne) = gen.setupElectrode(paramobj.(ne), params.(ne));
             % setup Positive Electrode
             paramobj.(pe) = gen.setupElectrode(paramobj.(pe), params.(pe));
+
             
         end
                 
@@ -94,9 +112,13 @@ classdef BatteryGenerator
             % setup Electrode active component (am)
             paramobj.(am) = gen.setupActiveMaterialGrid(paramobj.(am), params.(am));
             % setup current collector (cc)
-            paramobj.(cc) = gen.setupCurrentCollector(paramobj.(cc), params.(cc));
-            % setup coupling term between am and cc
-            paramobj = gen.setupCurrentCollectorActiveMaterialCoupTerm(paramobj, params);
+            if paramobj.include_current_collector
+                paramobj.(cc) = gen.setupCurrentCollector(paramobj.(cc), params.(cc));
+                % setup coupling term between am and cc
+                paramobj = gen.setupCurrentCollectorActiveMaterialCoupTerm(paramobj, params);
+            else
+                paramobj.(am) = gen.setupActiveMaterialBcCoupTerm(paramobj.(am), params.(am));
+            end
             
         end
         
@@ -238,11 +260,24 @@ classdef BatteryGenerator
             coupTerm.couplingfaces = params.bcfaces;
             coupTerm.couplingcells = params.bccells;
             
-            paramobj.couplingTerm = coupTerm;
+            paramobj.externalCouplingTerm = coupTerm;
             
         end
 
-        
+        function paramobj = setupActiveMaterialBcCoupTerm(gen, paramobj, params)
+            
+            % default setup
+            compname = 'ActiveMaterial';
+            compnames = {compname};
+            coupname = sprintf('Exterior-%s', compname);
+            coupTerm = couplingTerm(coupname, compnames);
+            coupTerm.couplingfaces = params.bcfaces;
+            coupTerm.couplingcells = params.bccells;
+            
+            paramobj.externalCouplingTerm = coupTerm;
+            
+        end        
+
     end
     
     

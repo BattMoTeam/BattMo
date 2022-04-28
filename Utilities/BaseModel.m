@@ -4,7 +4,7 @@ classdef BaseModel < PhysicalModel
 
         propertyFunctionList
         varNameList
-        
+
     end
         
     methods
@@ -97,6 +97,26 @@ classdef BaseModel < PhysicalModel
                 error('propfunc not recognized');
             end                
         end
+
+                
+        function state = initStateAD(model, state)
+        % initialize a new cleaned-up state with AD variables
+            
+            pnames  = model.getPrimaryVariables();
+            vars = cell(numel(pnames),1);
+            for i=1:numel(pnames)
+                vars{i} = model.getProp(state,pnames{i});
+            end
+            % Get the AD state for this model           
+            [vars{:}] = model.AutoDiffBackend.initVariablesAD(vars{:});
+            newstate =struct();
+            for i=1:numel(pnames)
+               newstate = model.setNewProp(newstate, pnames{i}, vars{i});
+            end
+
+            state = newstate;
+            
+        end 
         
         
         function model = registerSubModels(model)
@@ -226,7 +246,6 @@ classdef BaseModel < PhysicalModel
             end
         end
 
-
         function [state, report] = updateState(model, state, problem, dx, drivingForces)
 
             p = model.getPrimaryVariables();
@@ -238,6 +257,7 @@ classdef BaseModel < PhysicalModel
             end
            
             report = [];
+            
         end
 
         function [state, report] = updateAfterConvergence(model, state0, state, dt, drivingForces)
@@ -316,7 +336,12 @@ classdef BaseModel < PhysicalModel
         end
         
         function state = reduceState(model, state, removeContainers)
-            state = value(state);
+            state = value(state, false);
+        end
+        
+        function outputvars = extractGlobalVariables(model, states)
+            ns = numel(states);
+            outputvars = cell(1, ns);
         end
         
     end

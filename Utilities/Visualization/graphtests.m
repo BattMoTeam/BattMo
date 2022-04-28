@@ -2,24 +2,29 @@
 clear all
 close all
 
-%% Add MRST module
-mrstModule add ad-core
+jsonstruct = parseBattmoJson('ParameterData/ParameterSets/Chen2020/chen2020_lithium_ion_battery.json');
 
-modelcase = 'battery';
+paramobj = BatteryInputParams(jsonstruct);
 
-switch modelcase
-  case 'elyte'
-    G = cartGrid([10, 10]);
-    G = computeGeometry(G);
-    model = orgLiPF6('elyte', G, (1 : G.cells.num));
-  case 'battery'
-    model = Battery();
-    model.I = 0.1;
-  otherwise
-    error('modelcase not recognized');
-end
+% Some shorthands used for the sub-models
+ne    = 'NegativeElectrode';
+pe    = 'PositiveElectrode';
+am    = 'ActiveMaterial';
+sd    = 'SolidDiffusion';
+itf   = 'Interface';
+elyte = 'Electrolyte';
 
-[g, edgelabels] = setupGraph(model);
+paramobj.(ne).(am).(sd).useSimplifiedDiffusionModel = false;
+paramobj.(pe).(am).(sd).useSimplifiedDiffusionModel = false;
+
+
+gen = BareBatteryGenerator3D();
+paramobj = gen.updateBatteryInputParams(paramobj);
+model = Battery(paramobj);
+
+submodel = model.(ne).(am).(itf).registerVarAndPropfuncNames();
+
+[g, edgelabels] = setupGraph(submodel);
 
 figure
 h = plot(g);

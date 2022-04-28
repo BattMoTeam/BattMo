@@ -46,10 +46,10 @@ classdef ControlModel < BaseModel
             varnames{end + 1} = 'dIdt';
             
             % Equation that relates E and I (depends on geometry and discretization)
-            varnames{end + 1} = EIequation;
+            varnames{end + 1} = 'EIequation';
 
             % control equation
-            varnames{end + 1} = controlEquation;
+            varnames{end + 1} = 'controlEquation';
             
         end
 

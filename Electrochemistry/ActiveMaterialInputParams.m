@@ -22,6 +22,8 @@ classdef ActiveMaterialInputParams < ElectronicComponentInputParams
         heatCapacity        % Intrinsic Heat capacity of the active component
 
         electricalConductivity % Electrical conductivity / [S m^-1]
+
+        externalCouplingTerm % structure to describe external coupling (used in absence of current collector)
         
     end
 

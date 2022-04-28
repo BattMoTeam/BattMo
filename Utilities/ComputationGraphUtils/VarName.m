@@ -6,7 +6,7 @@ classdef VarName
         name
         index
         dim
-        
+        strlim = '.' % string delimiter when creating variable name for visualization from namespace and name
         
     end
     
@@ -30,7 +30,7 @@ classdef VarName
         end
         
         function name = getfieldname(varname)
-            name = join({varname.namespace{:}, varname.name}, '_');
+            name = join({varname.namespace{:}, varname.name}, varname.strlim);
             name = name{1};
         end
 
@@ -125,12 +125,6 @@ classdef VarName
         end
         
     end
-    
-    methods (Static)
-        function name = joinvarnames(names)
-            name = join({varname.namespace{:}, varname.name}, '_')
-        end
-    end        
     
 end
 

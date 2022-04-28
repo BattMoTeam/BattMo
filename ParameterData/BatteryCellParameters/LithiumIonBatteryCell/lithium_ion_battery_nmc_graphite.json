@@ -3,6 +3,9 @@
     "SOC": 0.99,
     "Ucut": 2,
     "initT": 298.15,
+    "use_thermal": true,
+    "include_current_collectors": true,
+    "use_solid_diffusion": true,
     "Control" : {
         "controlPolicy" : "IEswitch",
         "CRate" : 1,
