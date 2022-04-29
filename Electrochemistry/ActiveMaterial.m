@@ -138,6 +138,109 @@ classdef ActiveMaterial < ElectronicComponent
             
         end
         
+        
+        function [problem, state] = getEquations(model, state0, state,dt, drivingForces, varargin)
+            
+            sd = 'SolidDiffusion';
+            itf = 'Interface';          
+            
+            time = state0.time + dt;
+            state = model.initStateAD(state);
+            
+            state = model.dispatchTemperature(state);
+            state = model.updateConcentrations(state);
+
+            %% assemble reaction rates
+            state.(itf) = model.(itf).updateOCP(state.(itf));
+            state       = model.updatePhi(state);
+            state.(itf) = model.(itf).updateReactionRateCoefficient(state.(itf));
+            state.(itf) = model.(itf).updateReactionRate(state.(itf));
+
+            %% setup charge conservation equation
+            state = model.updateCurrentSource(state);
+            state = model.updateCurrent(state);
+            state = model.updatejBcSource(state);
+            state = model.updateChargeConservation(state);
+            
+            %% setup mass conservation equation
+            state.(sd) = model.(sd).updateDiffusionCoefficient(state.(sd));
+            state.(sd) = model.(sd).updateFlux(state.(sd));
+            state      = model.dispatchRate(state);
+            state.(sd) = model.(sd).updateMassSource(state.(sd));
+            state.(sd) = model.(sd).updateAccumTerm(state.(sd), state0.(sd), dt);
+            state.(sd) = model.(sd).updateMassConservation(state.(sd));
+
+            state.(sd) = model.(sd).assembleSolidDiffusionEquation(state.(sd));
+            
+            eqs = {};
+            
+            eqs{end + 1} = state.chargeCons;
+            eqs{end + 1} = state.(sd).massCons;
+            eqs{end + 1} = state.(sd).solidDiffusionEq;
+            
+            names = {'chargeCons', ...
+                     'massCons', ...
+                     'solidDiffusionEq'};
+            
+            types = {'cell', 'cell', 'cell'};
+
+            primaryVars = model.getPrimaryVariables();
+            
+            problem = LinearizedProblem(eqs, types, names, primaryVars, state, dt);
+
+        end
+        
+        function primaryvarnames = getPrimaryVariables(model)
+            
+            sd = 'SolidDiffusion';
+            
+            primaryvarnames = {{sd, 'c'}, ...
+                               {sd, 'cSurface'}, ...
+                               {'phi'}};
+            
+        end
+        
+        function forces = getValidDrivingForces(model)
+
+            forces = getValidDrivingForces@PhysicalModel(model);
+            forces.src = [];
+        end
+        
+        
+        function cleanState = addStaticVariables(model, cleanState, state, state0)
+            
+            cleanState = addStaticVariables@BaseModel(model, cleanState, state);
+            
+            itf = 'Interface';
+            
+            cleanState.T = state.T;
+            cleanState.jCoupling = state.jCoupling;
+            cleanState.jFaceCoupling = state.jFaceCoupling;
+            cleanState.(itf).cElectrolyte = state.(itf).cElectrolyte;
+            cleanState.(itf).phiElectrolyte = state.(itf).phiElectrolyte;
+            
+        end
+
+        
+        function [state, report] = updateState(model, state, problem, dx, drivingForces)
+
+            [state, report] = updateState@BaseModel(model, state, problem, dx, drivingForces);
+            
+        end
+        
+        function [model, state] = prepareTimestep(model, state, state0, dt, drivingForces)
+            
+            [model, state] = prepareTimestep@BaseModel(model, state, state0, dt, drivingForces);
+            
+        end
+        
+        function [state, report] = updateAfterConvergence(model, state0, state, dt, drivingForces)
+            
+            [state, report] = updateAfterConvergence@BaseModel(model, state0, state, dt, drivingForces);
+            
+        end
+         
+         
         function state = dispatchRate(model, state)
             
             state.SolidDiffusion.R = state.Interface.R;
