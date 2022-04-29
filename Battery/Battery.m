@@ -120,10 +120,9 @@ classdef Battery < BaseModel
             thermal = 'ThermalModel';
             
             % IMPORTANT : In the iterative solver, we remove parts of the linear systems. There, we assume a certain
-            % order of the equations. The order as indicated in the following cell structure. Note that there a given
-            % match between the variables names (first column) and the equation names (second column). NOTE : this order
-            % MUST be respected in the function getEquations where the equations are collected; nothing is imposed
-            % there. In particular assemble the equations that are not used.
+            % order of the equations. The order is as indicated in the following cell structure: There is a given match
+            % between the variables names (first column) and the equation names (second column). NOTE : this order MUST
+            % be respected in the function getEquations where the equations are collected; nothing is imposed there.
             
             allNames = { ...
                 {elyte, 'c'}            , 'elyte_massCons'      , 'cell',; ... 
@@ -1468,15 +1467,15 @@ classdef Battery < BaseModel
             
         end
 
-        function cleanState = addVariable(model, cleanState, state, state0)
+        function cleanState = addStaticVariables(model, cleanState, state)
+        % Variables that are no AD initiated (but should be "carried over")
             
-            cleanState = addVariable@BaseModel(model, cleanState, state, state0);
+            cleanState = addStaticVariables@BaseModel(model, cleanState, state);
             
             thermal = 'ThermalModel';
             ctrl = 'Control';
             
             cleanState.(ctrl).ctrlType = state.(ctrl).ctrlType;            
-            cleanState.(thermal).T = state.(thermal).T;
             
             if ~model.use_thermal
                 thermal = 'ThermalModel';

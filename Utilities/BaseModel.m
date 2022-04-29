@@ -114,6 +114,7 @@ classdef BaseModel < PhysicalModel
                newstate = model.setNewProp(newstate, pnames{i}, vars{i});
             end
 
+            newstate = model.addStaticVariables(newstate, state);
             state = newstate;
             
         end 
@@ -270,18 +271,18 @@ classdef BaseModel < PhysicalModel
             end
             cleanState.time = state.time;
             
-            cleanState = model.addVariable(cleanState, state, state0);
+            cleanState = model.addStaticVariables(cleanState, state);
             
             state = cleanState;
             report = [];
             
         end
         
-        function cleanState = addVariable(model, cleanState, state, state0)
-        % function to add variables on the cleanState, see updateAfterConvergence. By default, nothing is done
+        function cleanState = addStaticVariables(model, cleanState, state)
+        % function to add static variables (not AD) on the cleanState, see updateAfterConvergence and
+        % initStateAD. By default, nothing is done
             
         end
-
         
         function state = copyProp(model, state, refState, names)
             
