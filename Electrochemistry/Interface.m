@@ -89,19 +89,19 @@ classdef Interface < BaseModel
             
             model = model.registerVarNames(varnames);
             
-            fn = @ActiveMaterial.updateReactionRateCoefficient;
+            fn = @Interface.updateReactionRateCoefficient;
             inputnames = {'T', 'cElectrolyte', 'cElectrodeSurface'};
             model = model.registerPropFunction({'j0', fn, inputnames});
 
-            fn = @ActiveMaterial.updateOCP;
+            fn = @Interface.updateOCP;
             inputnames = {'cElectrodeSurface', 'T'};
             model = model.registerPropFunction({'OCP', fn, inputnames});
-            model = model.registerPropFunction({'dUdT', fn, inputnames});
+            % model = model.registerPropFunction({'dUdT', fn, inputnames});
             
-            fn = @ActiveMaterial.updateReactionRate;
+            fn = @Interface.updateReactionRate;
             inputnames = {'T', 'phiElectrolyte', 'phiElectrode', 'j0', 'OCP'};
             model = model.registerPropFunction({'R', fn, inputnames});
-            model = model.registerPropFunction({'eta', fn, inputnames});
+            % model = model.registerPropFunction({'eta', fn, inputnames});
             
             
         end

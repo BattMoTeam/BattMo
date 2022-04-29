@@ -102,11 +102,10 @@ classdef ActiveMaterial < ElectronicComponent
             model = model.registerVarNames(varnames);
 
             fn = @ActiveMaterial.updatejBcSource;
-            model = model.registerPropFunction({'jBcSource', fn, {'jCoupling'}});            
-
+            model = model.registerPropFunction({'jBcSource', fn, {'jCoupling', 'jFaceCoupling'}});            
+            
             fn = @ActiveMaterial.updateCurrentSource;
             model = model.registerPropFunction({'eSource', fn, {{itf, 'R'}}});
-
 
             fn = @ActiveMaterial.updatePhi;
             model = model.registerPropFunction({{itf, 'phiElectrode'}, fn, {'phi'}});
