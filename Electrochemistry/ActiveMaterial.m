@@ -150,19 +150,19 @@ classdef ActiveMaterial < ElectronicComponent
             state = model.dispatchTemperature(state);
             state = model.updateConcentrations(state);
 
-            %% assemble reaction rates
+            %% Assemble reaction rates
             state.(itf) = model.(itf).updateOCP(state.(itf));
             state       = model.updatePhi(state);
             state.(itf) = model.(itf).updateReactionRateCoefficient(state.(itf));
             state.(itf) = model.(itf).updateReactionRate(state.(itf));
 
-            %% setup charge conservation equation
+            %% Setup charge conservation equation
             state = model.updateCurrentSource(state);
             state = model.updateCurrent(state);
             state = model.updatejBcSource(state);
             state = model.updateChargeConservation(state);
             
-            %% setup mass conservation equation
+            %% Setup mass conservation equation
             state.(sd) = model.(sd).updateDiffusionCoefficient(state.(sd));
             state.(sd) = model.(sd).updateFlux(state.(sd));
             state      = model.dispatchRate(state);
@@ -172,11 +172,12 @@ classdef ActiveMaterial < ElectronicComponent
 
             state.(sd) = model.(sd).assembleSolidDiffusionEquation(state.(sd));
             
+            %% Setup equations and add some scaling
+            massConsScaling = model.(sd).constants.F; % Faraday constant
             eqs = {};
-            
             eqs{end + 1} = state.chargeCons;
-            eqs{end + 1} = state.(sd).massCons;
-            eqs{end + 1} = state.(sd).solidDiffusionEq;
+            eqs{end + 1} = 1e18*state.(sd).massCons;
+            eqs{end + 1} = 1e5*state.(sd).solidDiffusionEq.*massConsScaling.*model.(itf).G.cells.volumes/dt;
             
             names = {'chargeCons', ...
                      'massCons', ...
@@ -189,6 +190,8 @@ classdef ActiveMaterial < ElectronicComponent
             problem = LinearizedProblem(eqs, types, names, primaryVars, state, dt);
 
         end
+
+        %% Functions for Newton API
         
         function primaryvarnames = getPrimaryVariables(model)
             
@@ -236,10 +239,15 @@ classdef ActiveMaterial < ElectronicComponent
         
         function [state, report] = updateAfterConvergence(model, state0, state, dt, drivingForces)
             
-            [state, report] = updateAfterConvergence@BaseModel(model, state0, state, dt, drivingForces);
-            
+            % [state, report] = updateAfterConvergence@BaseModel(model, state0, state, dt, drivingForces);
+            report = [];
         end
          
+        function model = validateModel(model, varargin)
+            
+        end
+
+        %% assembly functions use in this model
          
         function state = dispatchRate(model, state)
             
