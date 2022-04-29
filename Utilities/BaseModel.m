@@ -269,8 +269,7 @@ classdef BaseModel < PhysicalModel
             for ind = 1 : numel(p)
                 cleanState = model.copyProp(cleanState, state, p{ind});
             end
-            cleanState.time = state.time;
-            
+
             cleanState = model.addStaticVariables(cleanState, state);
             
             state = cleanState;
@@ -279,8 +278,9 @@ classdef BaseModel < PhysicalModel
         end
         
         function cleanState = addStaticVariables(model, cleanState, state)
-        % function to add static variables (not AD) on the cleanState, see updateAfterConvergence and
-        % initStateAD. By default, nothing is done
+        % function to add static variables (not AD) on the cleanState, called in updateAfterConvergence and
+        % initStateAD. Time is added by default here
+            cleanState.time = state.time;
             
         end
         
