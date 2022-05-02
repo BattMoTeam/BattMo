@@ -101,12 +101,18 @@ classdef ActiveMaterial < ElectronicComponent
             end
             model = model.registerVarNames(varnames);
 
-            fn = @ActiveMaterial.updatejBcSource;
-            model = model.registerPropFunction({'jBcSource', fn, {'jCoupling', 'jFaceCoupling'}});            
+            isRoot = true;
+            if isRoot
+                fn = @ActiveMaterial.updateStandalonejBcSource;
+                model = model.registerPropFunction({'jBcSource', fn, {'controlCurrentSource'}});            
+            else
+                fn = @ActiveMaterial.updatejBcSource;
+                model = model.registerPropFunction({'jBcSource', fn, {'jCoupling', 'jFaceCoupling'}});            
+            end
             
             fn = @ActiveMaterial.updateCurrentSource;
             model = model.registerPropFunction({'eSource', fn, {{itf, 'R'}}});
-
+            
             fn = @ActiveMaterial.updatePhi;
             model = model.registerPropFunction({{itf, 'phiElectrode'}, fn, {'phi'}});
             
@@ -134,7 +140,7 @@ classdef ActiveMaterial < ElectronicComponent
             
             fn = @ActiveMaterial.dispatchRate;
             model = model.registerPropFunction({{sd, 'R'}, fn, {{itf, 'R'}}});
-
+            
             
         end
         
@@ -157,9 +163,11 @@ classdef ActiveMaterial < ElectronicComponent
             state.(itf) = model.(itf).updateReactionRate(state.(itf));
 
             %% Setup charge conservation equation
-            state = model.updateCurrentSource(state);
+            
+            state = model.updateControl(state, drivingForces, dt);
             state = model.updateCurrent(state);
-            state = model.updatejBcSource(state);
+            state = model.updateCurrentSource(state);
+            state = model.updateStandalonejBcSource(state);
             state = model.updateChargeConservation(state);
             
             %% Setup mass conservation equation
@@ -173,6 +181,7 @@ classdef ActiveMaterial < ElectronicComponent
             state.(sd) = model.(sd).assembleSolidDiffusionEquation(state.(sd));
             
             %% Setup equations and add some scaling
+            %% FIXME: get robust scalings
             massConsScaling = model.(sd).constants.F; % Faraday constant
             eqs = {};
             eqs{end + 1} = state.chargeCons;
@@ -208,6 +217,16 @@ classdef ActiveMaterial < ElectronicComponent
             forces = getValidDrivingForces@PhysicalModel(model);
             forces.src = [];
         end
+
+        function state = updateControl(model, state, drivingForces, dt)
+            
+            G = model.G;
+            coef = G.cells.volumes;
+            coef = coef./(sum(coef));
+            
+            state.controlCurrentSource = drivingForces.src.*coef;
+            
+        end
         
         
         function cleanState = addStaticVariables(model, cleanState, state, state0)
@@ -217,8 +236,6 @@ classdef ActiveMaterial < ElectronicComponent
             itf = 'Interface';
             
             cleanState.T = state.T;
-            cleanState.jCoupling = state.jCoupling;
-            cleanState.jFaceCoupling = state.jFaceCoupling;
             cleanState.(itf).cElectrolyte = state.(itf).cElectrolyte;
             cleanState.(itf).phiElectrolyte = state.(itf).phiElectrolyte;
             
@@ -313,6 +330,12 @@ classdef ActiveMaterial < ElectronicComponent
             
         end
         
+        function state = updateStandalonejBcSource(model, state)
+            
+            state.jBcSource = state.controlCurrentSource;
+
+        end
+
         function state = updateCurrentSource(model, state)
             
             F = model.Interface.constants.F;

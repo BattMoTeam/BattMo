@@ -58,20 +58,18 @@ initState.(sd).c        = cElectrodeInit*ones(N, 1);
 initState.(sd).cSurface = cElectrodeInit;
 
 % set static variable fields
-initState.T              = T;
-initState.jCoupling      = 0;
-initState.jFaceCoupling  = 0;
+initState.T = T;
 initState.(itf).cElectrolyte   = cElectrolyte;
 initState.(itf).phiElectrolyte = phiElectrolyte;
 
 %% setup schedule
 
-total = 1e-1*second;
+total = 1*hour;
 n     = 10;
 dt    = total/n;
 step  = struct('val', dt*ones(n, 1), 'control', ones(n, 1));
 
-control.src = [];
+control.src = 1e-6;
 
 schedule = struct('control', control, 'step', step); 
 
