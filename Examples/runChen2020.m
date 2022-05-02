@@ -92,7 +92,7 @@ initstate = model.updateTemperature(initstate);
 % we setup negative electrode initial state
 nitf = bat.(ne).(am).(itf); 
 
-% We bypass the solid diffusion equation to set directly the particle surface concentration (this is a bit hacky)
+% We bypass the solid diffusion equation to set directly the particle surface concentration
 c = 29866.0;
 if model.(ne).(am).useSimplifiedDiffusionModel
     nenp = model.(ne).(am).G.cells.num;
@@ -153,7 +153,7 @@ nls.errorOnFailure = false;
 % Change default tolerance for nonlinear solver
 model.nonlinearTolerance = 1e-5; 
 % Set verbosity
-model.verbose = true;
+model.verbose = false;
 
 model.AutoDiffBackend= AutoDiffBackend();
 
