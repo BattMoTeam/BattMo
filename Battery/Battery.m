@@ -848,7 +848,7 @@ classdef Battery < BaseModel
                     eqs{end + 1} = state.(ne).(am).massCons*massConsScaling;
                 else
                     % Equation name : 'ne_am_sd_massCons';
-                    % OBS : HANDMADE SCALING (to be fixed)
+                    % FIXME : get robust scaling
                     eqs{end + 1} = 1e18*state.(ne).(am).(sd).massCons;
                 end
                 
