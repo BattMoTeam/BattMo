@@ -15,8 +15,6 @@ classdef BatteryGenerator
         % It is setup by function setupBatteryGrid
         G
         
-        include_current_collectors
-        use_thermal
     end
 
     methods

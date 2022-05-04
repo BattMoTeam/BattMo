@@ -15,6 +15,8 @@ classdef BatteryGenerator2D < BatteryGenerator
         externalHeatTransferCoefficientTab = 1e3;
         externalHeatTransferCoefficient = 1e3;
         
+        use_thermal
+        
     end
     
     methods
@@ -24,10 +26,13 @@ classdef BatteryGenerator2D < BatteryGenerator
         end
         
         function paramobj = updateBatteryInputParams(gen, paramobj)
+            paramobj.include_current_collectors = true;
+            gen.use_thermal = paramobj.use_thermal;
             paramobj = gen.setupBatteryInputParams(paramobj, []);
         end
 
         function [paramobj, gen] = setupGrid(gen, paramobj, params)
+
             sepnx  = gen.sepnx;
             nenx   = gen.nenx;
             penx   = gen.penx;
@@ -158,10 +163,10 @@ classdef BatteryGenerator2D < BatteryGenerator
             pe    = 'PositiveElectrode';
             cc    = 'CurrentCollector';
             
-            coupterm_necc = paramobj.(ne).(cc).couplingTerm;
-            facemap_necc = paramobj.(ne).(cc).G.mappings.facemap;
-            coupterm_pecc = paramobj.(pe).(cc).couplingTerm;
-            facemap_pecc = paramobj.(pe).(cc).G.mappings.facemap;
+            coupterm_necc = paramobj.(ne).(cc).externalCouplingTerm;
+            facemap_necc  = paramobj.(ne).(cc).G.mappings.facemap;
+            coupterm_pecc = paramobj.(pe).(cc).externalCouplingTerm;
+            facemap_pecc  = paramobj.(pe).(cc).G.mappings.facemap;
             
             % the cooling is done on the external faces
             G = gen.G;

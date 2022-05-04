@@ -10,13 +10,16 @@ classdef BatteryGenerator1D < BatteryGenerator
         ccnenx = 10;
         ccpenx = 10;
         fac = 1;
+
+        include_current_collectors
+        use_thermal
         
     end
     
     methods
         
         function gen = BatteryGenerator1D()
-          gen = gen@BatteryGenerator();  
+            gen = gen@BatteryGenerator();  
         end
             
         function paramobj = updateBatteryInputParams(gen, paramobj)
@@ -28,8 +31,6 @@ classdef BatteryGenerator1D < BatteryGenerator
         function [paramobj, gen] = setupGrid(gen, paramobj, ~)
         % paramobj is instance of BatteryInputParams
         % setup paramobj.G
-            
-            gen.include_current_collectors = paramobj.include_current_collectors;
             
             sepnx  = gen.sepnx;
             nenx   = gen.nenx;
