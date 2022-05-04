@@ -1,12 +1,12 @@
 %% Chen model
 % Include presentation of the test case (use rst format)
 
-% clear the workspace and close open figures
-clear
+% Clear the workspace and close open figures
+clear all
 close all
 clc
 
-% load MRST modules
+% Load MRST modules
 mrstModule add ad-core mrst-gui mpfa
 
 % We create an instance of BatteryInputParams. This class is used to initiate the battery simulator and it propagates

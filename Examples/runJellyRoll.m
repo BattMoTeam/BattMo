@@ -1,3 +1,7 @@
+% Clear the workspace and close open figures
+clear all
+close all
+
 % Setup mrst modules
 
 mrstModule add ad-core mrst-gui mpfa agmg
