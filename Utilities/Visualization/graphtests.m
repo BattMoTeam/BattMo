@@ -13,7 +13,10 @@ am    = 'ActiveMaterial';
 sd    = 'SolidDiffusion';
 itf   = 'Interface';
 elyte = 'Electrolyte';
-
+sei = 'SolidElectrodeInterface';
+sr  = 'SideReaction';
+            
+            
 paramobj.(ne).(am).(sd).useSimplifiedDiffusionModel = false;
 paramobj.(pe).(am).(sd).useSimplifiedDiffusionModel = false;
 

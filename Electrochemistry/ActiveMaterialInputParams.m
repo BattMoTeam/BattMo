@@ -34,7 +34,7 @@ classdef ActiveMaterialInputParams < ElectronicComponentInputParams
 
             pick = @(fd) pickField(jsonstruct, fd);
             paramobj.Interface = InterfaceInputParams(pick('Interface'));
-            if jsonstruct.SolidDiffusion.useSimplifiedDiffusionModel
+            if jsonstruct.SolidDiffusion.useSimplifiedDiffusionModel 
                 paramobj.SolidDiffusion = SimplifiedSolidDiffusionModelInputParams(pick('SolidDiffusion'));                
             else
                 paramobj.SolidDiffusion = SolidDiffusionModelInputParams(pick('SolidDiffusion'));
