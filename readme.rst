@@ -9,7 +9,11 @@ The Battery Modelling Toolbox (**BattMo**) is a resource for continuum modelling
 
 **BattMo** offers users a flexible framework for building fully coupled electrochemical-thermal simulations of electrochemical devices using 1D, 2D, or 3D geometries. **BattMo** is implemented in MATLAB and builds on the open-source MATLAB Reservoir Simulation Toolbox (MRST) developed at SINTEF. MRST provides a solid basis for finite volume mesh generation of complex geometries and advanced numerical solvers that enable fast simulations for large systems.
 
-For the latest information including video tutorials and project gallery, please visit the project webpage:  `https://batterymodel.com <https://batterymodel.com/>`_
+For the latest information including video tutorials and project gallery, please visit the project webpage:
+`https://batterymodel.com <https://batterymodel.com/>`_
+
+We are also working on a `documentation webpage <https://battmoteam.github.io/BattMo-doc/>`_. Even if it is now at a
+preliminary stage, you may be interested in having a look at it.
 
 .. raw:: html
 

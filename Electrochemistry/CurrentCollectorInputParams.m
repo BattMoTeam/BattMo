@@ -4,7 +4,7 @@ classdef CurrentCollectorInputParams < ElectronicComponentInputParams
 %
     properties
         
-        couplingTerm % coupling term specification of the current collector (with external stimulation)
+        externalCouplingTerm % coupling term specification of the current collector with external source
 
         thermalConductivity % Thermal conductivity of current collector
         heatCapacity % Heat capacity of current collector
@@ -16,7 +16,7 @@ classdef CurrentCollectorInputParams < ElectronicComponentInputParams
         
         function paramobj = CurrentCollectorInputParams(jsonstruct)
             paramobj = paramobj@ElectronicComponentInputParams(jsonstruct);
-            paramobj.couplingTerm = struct();
+            paramobj.externalCouplingTerm = struct();
         end
         
     end

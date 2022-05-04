@@ -15,11 +15,13 @@ mrstModule add ad-core mrst-gui mpfa
 % The input parameters can be given in json format. The json file is read and used to populate the paramobj object.
 jsonstruct = parseBattmoJson('ParameterData/ParameterSets/Chen2020/chen2020_lithium_ion_battery.json');
 
-paramobj = BareBatteryInputParams(jsonstruct);
+paramobj = BatteryInputParams(jsonstruct);
 
 % Some shorthands used for the sub-models
 ne    = 'NegativeElectrode';
 pe    = 'PositiveElectrode';
+am    = 'ActiveMaterial';
+sd    = 'SolidDiffusion';
 elyte = 'Electrolyte';
 
 %% We setup the battery geometry.
@@ -27,12 +29,16 @@ gen = BareBatteryGenerator3D();
 % We update pamobj with grid data
 paramobj = gen.updateBatteryInputParams(paramobj);
 
-paramobj.NegativeElectrode.InterDiffusionCoefficient = 0;
-paramobj.PositiveElectrode.InterDiffusionCoefficient = 0;
+paramobj.(ne).(am).InterDiffusionCoefficient = 0;
+paramobj.(pe).(am).InterDiffusionCoefficient = 0;
+
+paramobj.(ne).(am).(sd).useSimplifiedDiffusionModel = false;
+paramobj.(pe).(am).(sd).useSimplifiedDiffusionModel = false;
+
 
 %%  The Battery model is initialized by sending paramobj to the Battery class constructor 
 
-model = BareBattery(paramobj);
+model = Battery(paramobj);
 
 %% We fix the input current to 5A
 
@@ -71,7 +77,7 @@ schedule = struct('control', control, 'step', step);
 
 nc = model.G.cells.num;
 T = model.initT;
-initstate.T = T*ones(nc, 1);
+initstate.ThermalModel.T = T*ones(nc, 1);
 
 bat = model;
 elyte = 'Electrolyte';
@@ -84,50 +90,50 @@ ctrl  = 'Control';
 initstate = model.updateTemperature(initstate);
 
 % we setup negative electrode initial state
-nitf = bat.(ne).(itf); 
+nitf = bat.(ne).(am).(itf); 
 
 % We bypass the solid diffusion equation to set directly the particle surface concentration (this is a bit hacky)
 c = 29866.0;
-if model.(ne).useSimplifiedDiffusionModel
-    n = model.(ne).G.cells.num;
-    initstate.(ne).(sd).cSurface = c*ones(n, 1);
-    initstate.(ne).c = c*ones(n, 1);
+if model.(ne).(am).useSimplifiedDiffusionModel
+    nenp = model.(ne).(am).G.cells.num;
+    initstate.(ne).(am).c = c*ones(nenp, 1);
 else
-    nenr = model.(ne).(sd).N;
-    nenp = model.(ne).(sd).np;
-    initstate.(ne).(sd).c = c*ones(nenr*nenp, 1);
+    nenr = model.(ne).(am).(sd).N;
+    nenp = model.(ne).(am).(sd).np;
+    initstate.(ne).(am).(sd).c = c*ones(nenr*nenp, 1);
 end
+initstate.(ne).(am).(sd).cSurface = c*ones(nenp, 1);
 
-initstate.(ne) = model.(ne).updateConcentrations(initstate.(ne));
-initstate.(ne).(itf) = nitf.updateOCP(initstate.(ne).(itf));
+initstate.(ne).(am) = model.(ne).(am).updateConcentrations(initstate.(ne).(am));
+initstate.(ne).(am).(itf) = nitf.updateOCP(initstate.(ne).(am).(itf));
 
-OCP = initstate.(ne).(itf).OCP;
+OCP = initstate.(ne).(am).(itf).OCP;
 ref = OCP(1);
 
-initstate.(ne).phi = OCP - ref;
+initstate.(ne).(am).phi = OCP - ref;
 
 % we setup positive electrode initial state
 
-pitf = bat.(pe).(itf); 
+pitf = bat.(pe).(am).(itf); 
 
 c = 17038.0;
 
-if model.(pe).useSimplifiedDiffusionModel
-    n = model.(pe).G.cells.num;
-    initstate.(pe).(sd).cSurface = c*ones(n, 1);
-    initstate.(pe).c = c*ones(n, 1);
+if model.(pe).(am).useSimplifiedDiffusionModel
+    penp = model.(pe).(am).G.cells.num;
+    initstate.(pe).(am).c = c*ones(penp, 1);
 else
-    penr = model.(pe).(sd).N;
-    penp = model.(pe).(sd).np;
-    initstate.(pe).(sd).c = c*ones(penr*penp, 1);
+    penr = model.(pe).(am).(sd).N;
+    penp = model.(pe).(am).(sd).np;
+    initstate.(pe).(am).(sd).c = c*ones(penr*penp, 1);
 end
+initstate.(pe).(am).(sd).cSurface = c*ones(penp, 1);
 
-initstate.(pe) = model.(pe).updateConcentrations(initstate.(pe));
-initstate.(pe).(itf) = pitf.updateOCP(initstate.(pe).(itf));
+initstate.(pe).(am) = model.(pe).(am).updateConcentrations(initstate.(pe).(am));
+initstate.(pe).(am).(itf) = pitf.updateOCP(initstate.(pe).(am).(itf));
 
-OCP = initstate.(pe).(itf).OCP;
+OCP = initstate.(pe).(am).(itf).OCP;
 
-initstate.(pe).phi = OCP - ref;
+initstate.(pe).(am).phi = OCP - ref;
 
 initstate.(elyte).phi = zeros(bat.(elyte).G.cells.num, 1) - ref;
 initstate.(elyte).c = 1000*ones(bat.(elyte).G.cells.num, 1);
@@ -136,7 +142,8 @@ initstate.(elyte).c = 1000*ones(bat.(elyte).G.cells.num, 1);
 
 initstate.(ctrl).E = OCP(1) - ref;
 initstate.(ctrl).I = 0;
-            
+initstate.(ctrl).ctrlType = 'constantCurrent';
+
 % Setup nonlinear solver 
 nls = NonLinearSolver(); 
 % Change default maximum iteration number in nonlinear solver
