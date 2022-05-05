@@ -1530,15 +1530,13 @@ classdef Battery < BaseModel
         
         function ind = pickVarInd(varnames, givenvarnames)
             for ivarnames = 1 : numel(givenvarnames)
-                givenvarnames{ivarnames} = join(givenvarnames{ivarnames}, '_');
-                givenvarnames{ivarnames} =  givenvarnames{ivarnames}{1};
+                givenvarnames{ivarnames} = strjoin(givenvarnames{ivarnames}, '_');
             end
             if ischar(varnames{1})
                 varnames = {varnames};
             end
             for ivarnames = 1 : numel(varnames)
-                varnames{ivarnames} = join(varnames{ivarnames}, '_');
-                varnames{ivarnames} =  varnames{ivarnames}{1};
+                varnames{ivarnames} = strjoin(varnames{ivarnames}, '_');
             end
             [isok, ind] = ismember(varnames, givenvarnames);
             
