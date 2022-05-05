@@ -93,7 +93,8 @@ for fig = 1 : n
         'ZColor', style.fontColor, ...
         'GridColor', style.fontColor);
 
-    ax.Title.Color = style.fontColor;
+    axTitle = get(ax, 'title');
+    set(axTitle, 'color', style.fontColor);
     
     if ~isempty(hLegend)
         hLegend.Color = style.backgroundColor;
@@ -108,7 +109,7 @@ for fig = 1 : n
 
     lines = findobj(gcf,'Type','Line');
     for i = 1:numel(lines)
-      lines(i).LineWidth = style.lineWidth;
+      set(lines(i), 'LineWidth', style.lineWidth);
     end
 
     dataObjs = findobj(fig,'-property','YData');
@@ -119,8 +120,8 @@ for fig = 1 : n
     xmax = 1;
     
     for i = 1:length(dataObjs)
-        y = dataObjs(i).YData;
-        x = dataObjs(i).XData;
+        y = get(dataObjs(i), 'YData');
+        x = get(dataObjs(i), 'XData');
         
         if i == 1
             ymax = max(max(y));
