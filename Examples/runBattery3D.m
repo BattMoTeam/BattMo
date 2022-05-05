@@ -2,8 +2,8 @@
 % This example demonstrates how to setup a P4D model of a Li-ion battery
 % and run a simple simulation.
 
-% clear the workspace and close open figures
-clear
+% Clear the workspace and close open figures
+clear all
 close all
 clc
 
