@@ -32,16 +32,23 @@ function op = getCellFluxOperatorsAll(G, varargin)
     sN     = bsxfun(@times, N, sign);
     N      = sparse(I, J, reshape(sN', [], 1), dims*nc, nhf)';
     
-    %% 
-    try 
-        opt = struct('invertBlocks', 'mex');
+    %%
+    if mrstPlatform('octave')
+        warning('Octave does not yet use c-accelerated blockInverter');
+        opt = struct('invertBlocks', 'matlab');
         opt = merge_options(opt, varargin{:});
         bi = blockInverter(opt);
-    catch
-        warning('Problem when compilation of invertBlock.');
-        opt = [];
-        opt = merge_options(opt, varargin{:});        
-        bi = blockInverter(opt);
+    else
+        try
+            opt = struct('invertBlocks', 'mex');
+            opt = merge_options(opt, varargin{:});
+            bi = blockInverter(opt);
+        catch
+            warning('Problem when compilation of invertBlock.');
+            opt = [];
+            opt = merge_options(opt, varargin{:});
+            bi = blockInverter(opt);
+        end
     end
     
     NTN = N'*N;
