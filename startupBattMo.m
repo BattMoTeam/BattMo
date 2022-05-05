@@ -31,6 +31,29 @@ for ind = 1 : numel(dirnames)
     addpath(genpath(dirname));
 end
 
+%% Octave requires some extra functionality
+if mrstPlatform('octave')
+
+    % Octave MRST settings
+    run('./MRST/mrst-core/utils/octave_only/startup_octave.m');
+
+    % Disable warnings
+    warning('off', 'Octave:possible-matlab-short-circuit-operator');
+    warning('off', 'Octave:data-file-in-path');
+    
+    % Install package for json files for older octave
+    if compare_versions(version, "6.4", "<=")
+        try
+            pkg load jsonstuff
+        catch
+            pkg install https://github.com/apjanke/octave-jsonstuff/releases/download/v0.3.3/jsonstuff-0.3.3.tar.gz
+            pkg load jsonstuff
+        end
+    end
+
+end
+
+
 %{
 Copyright 2021-2022 SINTEF Industry, Sustainable Energy Technology
 and SINTEF Digital, Mathematics & Cybernetics.
