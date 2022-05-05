@@ -21,7 +21,7 @@ We plan to add more specific tutorials.
 
    .. image:: img/gridviz.png
    
-`Grid Factory Tutorial <https://www.sintef.no/projectweb/mrst/documentation/tutorials/visualization-tutorial/>`_
+`Grid Factory Tutorial <https://www.sintef.no/projectweb/mrst/documentation/tutorials/grid-factory-tutorial/>`_
 ================================================================================================================
 
    .. image:: img/gridfact.png

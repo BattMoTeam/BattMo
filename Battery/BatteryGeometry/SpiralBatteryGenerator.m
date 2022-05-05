@@ -37,6 +37,8 @@ classdef SpiralBatteryGenerator < BatteryGenerator
 
         tabwidths      % computed tab width (due to discretization, we cannot enforce the tab widths)
         windingnumbers % for the tabs (implmented only for aligned tabs now)
+        
+        use_thermal
     end
     
     methods
@@ -55,9 +57,10 @@ classdef SpiralBatteryGenerator < BatteryGenerator
             gen.L         = params.L;
             gen.nL        = params.nL;
             gen.tabparams = params.tabparams;
-            
             gen.angleuniform = params.angleuniform;
-        
+            
+            gen.use_thermal = paramobj.use_thermal;
+            
             [paramobj, gen] = gen.setupBatteryInputParams(paramobj, []);
             
         end

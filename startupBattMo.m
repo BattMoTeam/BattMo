@@ -40,8 +40,6 @@ if mrstPlatform('octave')
     % Disable warnings
     warning('off', 'Octave:possible-matlab-short-circuit-operator');
     warning('off', 'Octave:data-file-in-path');
-
-    
     
     % Install package for json files for older octave
     if compare_versions(version, "6.4", "<=")

@@ -53,7 +53,7 @@ classdef SolidDiffusionModel < BaseModel
             varnames{end + 1} = 'T';
             % Diffusion coefficient
             varnames{end + 1} = 'D';
-            %
+            % Reaction rate
             varnames{end + 1} = 'R';
             % Mass accumulation term
             varnames{end + 1} = 'massAccum';
@@ -84,7 +84,7 @@ classdef SolidDiffusionModel < BaseModel
             model = model.registerPropFunction({'massSource', fn, {'R'}});
             
             fn = @SolidDiffusionModel.assembleSolidDiffusionEquation;
-            model = model.registerPropFunction({'cSurface', fn, {'c', 'massSource', 'cSurface'}});
+            model = model.registerPropFunction({'solidDiffusionEq', fn, {'c', 'cSurface', 'massSource'}});
             
         end
         
@@ -316,8 +316,7 @@ classdef SolidDiffusionModel < BaseModel
             cSurf = state.cSurface;
             src   = state.massSource;
             
-            % eq = op.Tbc.*(op.mapToBc*c - cSurf) + op.mapToBc*src;
-            eq = (op.mapToBc*c - cSurf);
+            eq = op.Tbc.*(op.mapToBc*c - cSurf) + op.mapToBc*src;
             
             state.solidDiffusionEq = eq;
             

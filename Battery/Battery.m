@@ -120,10 +120,9 @@ classdef Battery < BaseModel
             thermal = 'ThermalModel';
             
             % IMPORTANT : In the iterative solver, we remove parts of the linear systems. There, we assume a certain
-            % order of the equations. The order as indicated in the following cell structure. Note that there a given
-            % match between the variables names (first column) and the equation names (second column). NOTE : this order
-            % MUST be respected in the function getEquations where the equations are collected; nothing is imposed
-            % there. In particular assemble the equations that are not used.
+            % order of the equations. The order is as indicated in the following cell structure: There is a given match
+            % between the variables names (first column) and the equation names (second column). NOTE : this order MUST
+            % be respected in the function getEquations where the equations are collected; nothing is imposed there.
             
             allNames = { ...
                 {elyte, 'c'}            , 'elyte_massCons'      , 'cell',; ... 
@@ -641,12 +640,17 @@ classdef Battery < BaseModel
         function [problem, state] = getEquations(model, state0, state,dt, drivingForces, varargin)
         % Assembly of the governing equation
             
-            opts = struct('ResOnly', false, 'iteration', 0); 
+            opts = struct('ResOnly', false, 'iteration', 0,'reverseMode',false); 
             opts = merge_options(opts, varargin{:});
             
             time = state0.time + dt;
-            if(not(opts.ResOnly))
+            if(not(opts.ResOnly) && not(opts.reverseMode))
                 state = model.initStateAD(state);
+            elseif(opts.reverseMode)
+               disp('No AD initatlization in equation old style')
+               state0 = model.initStateAD(state0);
+            else
+                assert(opts.ResOnly);
             end
             
             %% for now temperature and SOC are kept constant
@@ -1066,17 +1070,7 @@ classdef Battery < BaseModel
             nc = model.G.cells.num;
             
             src = zeros(nc, 1);
-            
-            T = state.(thermal).T;
-            if isa(T, 'ADI')
-                adsample = getSampleAD(T);
-                adbackend = model.AutoDiffBackend;
-                src = adbackend.convertToAD(src, adsample);
-                locstate = state;
-            else
-                locstate = value(state);
-            end
-            
+                        
             for ind = 1 : numel(eldes)
 
                 elde = eldes{ind};
@@ -1084,40 +1078,40 @@ classdef Battery < BaseModel
                 if model.include_current_collectors
                     cc_model = model.(elde).(cc);
                     cc_map   = cc_model.G.mappings.cellmap;
-                    cc_j     = locstate.(elde).(cc).jFace;
+                    cc_j     = state.(elde).(cc).jFace;
                     cc_econd = cc_model.EffectiveElectricalConductivity;
                     cc_vols  = cc_model.G.cells.volumes;
                     cc_jsq   = computeCellFluxNorm(cc_model, cc_j); 
                     state.(elde).(cc).jsq = cc_jsq;  %store square of current density
-                
-                    src(cc_map) = src(cc_map) + cc_vols.*cc_jsq./cc_econd;
+                    src = subsetPlus(src,cc_vols.*cc_jsq./cc_econd, cc_map);
+                    %                    src(cc_map) = src(cc_map) + cc_vols.*cc_jsq./cc_econd;
                 end
                 
                 am_model = model.(elde).(am);
                 am_map   = am_model.G.mappings.cellmap;
-                am_j     = locstate.(elde).(am).jFace;
+                am_j     = state.(elde).(am).jFace;
                 am_econd = am_model.EffectiveElectricalConductivity;
                 am_vols  = am_model.G.cells.volumes;
                 am_jsq   = computeCellFluxNorm(am_model, am_j);
                 state.(elde).(am).jsq = am_jsq;
                 
-                src(am_map) = src(am_map) + am_vols.*am_jsq./am_econd;
-                
+                %src(am_map) = src(am_map) + am_vols.*am_jsq./am_econd;
+                src = subsetPlus(src, am_vols.*am_jsq./am_econd, am_map);
             end
 
             % Electrolyte
             elyte_model = model.(elyte);
             elyte_map   = elyte_model.G.mappings.cellmap;
             elyte_vf    = elyte_model.volumeFraction;
-            elyte_j     = locstate.(elyte).jFace;
-            elyte_cond  = locstate.(elyte).conductivity;
+            elyte_j     = state.(elyte).jFace;
+            elyte_cond  = state.(elyte).conductivity;
             elyte_econd = elyte_cond.*elyte_vf.^1.5;
             elyte_vols  = elyte_model.G.cells.volumes;
             elyte_jsq   = computeCellFluxNorm(elyte_model, elyte_j);
             state.(elyte).jsq = elyte_jsq; %store square of current density
             
-            src(elyte_map) = src(elyte_map) + elyte_vols.*elyte_jsq./elyte_econd;
-            
+            %src(elyte_map) = src(elyte_map) + elyte_vols.*elyte_jsq./elyte_econd;
+            src = subsetPlus(src, elyte_vols.*elyte_jsq./elyte_econd, elyte_map);
             state.(thermal).jHeatOhmSource = src;
             
         end
@@ -1374,18 +1368,9 @@ classdef Battery < BaseModel
         
         function state = initStateAD(model, state)
         % initialize a new cleaned-up state with AD variables
-            
-            pnames  = model.getPrimaryVariables();
-            vars = cell(numel(pnames),1);
-            for i=1:numel(pnames)
-                vars{i} = model.getProp(state,pnames{i});
-            end
-            % Get the AD state for this model           
-            [vars{:}] = model.AutoDiffBackend.initVariablesAD(vars{:});
-            newstate =struct();
-            for i=1:numel(pnames)
-               newstate = model.setNewProp(newstate, pnames{i}, vars{i});
-            end
+
+            % initStateAD in BaseModel erase all fields
+            newstate = initStateAD@BaseModel(model, state);
 
             % add the variable that we want to add on state
             addedvarnames = model.addedVariableNames;
@@ -1394,10 +1379,10 @@ classdef Battery < BaseModel
                 assert(isnumeric(var) | ischar(var));
                 newstate = model.setNewProp(newstate, addedvarnames{i}, var);
             end
+
+            newstate.time = state.time;
             
-            time       = state.time;
-            state      = newstate;
-            state.time = time;
+            state = newstate;
             
         end 
         
@@ -1421,6 +1406,8 @@ classdef Battery < BaseModel
               otherwise
                 error('Error controlPolicy not recognized');
             end
+            %NB hack to get thing go
+            forces.Imax = [];%model.Control.Imax;
             
         end
 
@@ -1480,15 +1467,15 @@ classdef Battery < BaseModel
             
         end
 
-        function cleanState = addVariable(model, cleanState, state, state0)
+        function cleanState = addStaticVariables(model, cleanState, state)
+        % Variables that are no AD initiated (but should be "carried over")
             
-            cleanState = addVariable@BaseModel(model, cleanState, state, state0);
+            cleanState = addStaticVariables@BaseModel(model, cleanState, state);
             
             thermal = 'ThermalModel';
             ctrl = 'Control';
             
             cleanState.(ctrl).ctrlType = state.(ctrl).ctrlType;            
-            cleanState.(thermal).T = state.(thermal).T;
             
             if ~model.use_thermal
                 thermal = 'ThermalModel';
@@ -1517,8 +1504,9 @@ classdef Battery < BaseModel
         
         
         function outputvars = extractGlobalVariables(model, states)
+            
             ns = numel(states);
-            ws = cell(ns, 1);
+
             for i = 1 : ns
                 E    = states{i}.Control.E;
                 I    = states{i}.Control.I;

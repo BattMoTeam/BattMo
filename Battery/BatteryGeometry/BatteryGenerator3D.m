@@ -54,7 +54,9 @@ classdef BatteryGenerator3D < BatteryGenerator
         % Heat parameters
         externalHeatTransferCoefficientTab = 1e3;
         externalHeatTransferCoefficient = 1e3;
-        
+
+        use_thermal
+                
     end
     
     methods
@@ -64,7 +66,11 @@ classdef BatteryGenerator3D < BatteryGenerator
         end
         
         function paramobj = updateBatteryInputParams(gen, paramobj)
+            
+            paramobj.include_current_collectors = true;
+            gen.use_thermal = paramobj.use_thermal;
             paramobj = gen.setupBatteryInputParams(paramobj, []);
+            
         end
         
         function [paramobj, gen] = setupGrid(gen, paramobj, params)
@@ -72,11 +78,10 @@ classdef BatteryGenerator3D < BatteryGenerator
             % shorthands
             ne    = 'NegativeElectrode';
             pe    = 'PositiveElectrode';
-            am   = 'ActiveMaterial';
+            am    = 'ActiveMaterial';
             cc    = 'CurrentCollector';
             elyte = 'Electrolyte';
             sep   = 'Separator';
-
             
             gen = gen.applyResolutionFactors();
             
