@@ -1,58 +1,30 @@
-classdef Interface < BaseModel
+classdef SideReaction < BaseModel
 
     properties
 
         % Physical constants
         constants = PhysicalConstants();
 
-        % Appelation name of the active material
-        name
-
-        cmax
-        
-        % number of electron transfer
-        n
-
-        % Physicochemical properties
-        volumeFraction
-        volumetricSurfaceArea  % Surface area to volume,       [m2 m^-3]
-        density                % [kg m^-3]
-        theta0                 % Minimum lithiation, 0% SOC    [-]
-        theta100               % Maximum lithiation, 100% SOC  [-]
-        k0                     % Reference rate constant       [m^2.5 mol^-0.5 s^-1]
-        Eak                    % Reaction activation energy    [J mol^-1]
-
-        updateOCPFunc % Function handler to update OCP
+        beta = 0.5               % side reaction buttler-volmer  coefficient [-]
+        k = 1.36e-12             % side reaction rate constant [m/s]
+        conductivity = 5e-6;     % ionic conductivity [S/m]
         
     end
 
     methods
 
-        function model = Interface(paramobj)
+        function model = SideReaction(paramobj)
 
             model = model@BaseModel();
 
              % OBS : All the submodels should have same backend (this is not assigned automaticallly for the moment)
             model.AutoDiffBackend = SparseAutoDiffBackend('useBlocks', false);
 
-            fdnames = {'G'                      , ...
-                       'name'                   , ...
-                       'specificCapacity'       , ...
-                       'rho'                    , ...
-                       'theta0'                 , ...
-                       'theta100'               , ...
-                       'cmax'                     , ...
-                       'k0'                     , ...
-                       'Eak'                    , ...
-                       'rp'                     , ...
-                       'volumetricSurfaceArea'  , ...
-                       'density'                , ...
-                       'n'                      , ...
-                       'volumeFraction'};
+            fdnames = {'beta', ...
+                       'k'   , ...
+                       'conductivity'};
 
             model = dispatchParams(model, paramobj, fdnames);
-
-            model.updateOCPFunc = str2func(paramobj.updateOCPFunc.functionname);
 
         end
 
@@ -64,69 +36,31 @@ classdef Interface < BaseModel
             model = registerVarAndPropfuncNames@BaseModel(model);
             
             varnames = {};
-            % Temperature
-            varnames{end + 1} = 'T';
-            % Status of Charge
-            varnames{end + 1} = 'SOC';
             % potential in electrode
             varnames{end + 1} = 'phiElectrode';
             % charge carrier concentration in electrode - value at surface
-            varnames{end + 1} = 'cElectrodeSurface';
+            varnames{end + 1} = 'c';
             % potential in electrolyte
             varnames{end + 1} = 'phiElectrolyte';
-            % charge carrier concentration in electrolyte
-            varnames{end + 1} = 'cElectrolyte';
-            % eta
-            varnames{end + 1} = 'eta';
             % Reaction rate
             varnames{end + 1} = 'R';
-            % External potential drop used in Butler-Volmer
-            varnames{end + 1} = 'externalPotentialDrop';
-            % 
-            varnames{end + 1} = 'dUdT';
-            % OCP
-            varnames{end + 1} = 'OCP';
             % Reaction rate coefficient
             varnames{end + 1} = 'j0';
+            % External potential drop used in Butler-Volmer
+            varnames{end + 1} = 'externalPotentialDrop';
             
             model = model.registerVarNames(varnames);
             
             fn = @Interface.updateReactionRateCoefficient;
-            inputnames = {'T', 'cElectrolyte', 'cElectrodeSurface'};
+            inputnames = {'c'};
             model = model.registerPropFunction({'j0', fn, inputnames});
 
-            fn = @Interface.updateOCP;
-            inputnames = {'cElectrodeSurface', 'T'};
-            model = model.registerPropFunction({'OCP', fn, inputnames});
-            % model = model.registerPropFunction({'dUdT', fn, inputnames});
-            
             fn = @Interface.updateReactionRate;
-            inputnames = {'T', 'phiElectrolyte', 'phiElectrode', 'j0', 'OCP', 'externalPotentialDrop'};
+            inputnames = {'phiElectrolyte', 'phiElectrode', 'j0', 'externalPotentialDrop'};
             model = model.registerPropFunction({'R', fn, inputnames});
-            % model = model.registerPropFunction({'eta', fn, inputnames});
-            
             
         end
         
-        function state = dipatchTemperature(model, state)
-
-            sd = 'SolidDiffusion';
-            state.(sd).T = state.T;
-            
-        end
-        
-        function state = updateOCP(model, state)
-
-            c = state.cElectrodeSurface;
-            T = state.T;
-
-            cmax = model.cmax;
-
-            func = model.updateOCPFunc;
-
-            [state.OCP, state.dUdT] = func(c, T, cmax);
-            
-        end
 
         function state = updateReactionRateCoefficient(model, state)
 
