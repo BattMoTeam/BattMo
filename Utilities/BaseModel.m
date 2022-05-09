@@ -61,7 +61,7 @@ classdef BaseModel < PhysicalModel
         
         function model = registerPropFunction(model, propfunc)
             if isa(propfunc, 'PropFunction')
-            model.propertyFunctionList = mergeList(model.propertyFunctionList, {propfunc});
+                model.propertyFunctionList = mergeList(model.propertyFunctionList, {propfunc});
             elseif isa(propfunc, 'cell')
                 assert(numel(propfunc) == 3, 'format of propfunc not recognized');
                 varname = propfunc{1};
