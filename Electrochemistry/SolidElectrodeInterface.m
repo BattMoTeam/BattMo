@@ -10,6 +10,9 @@ classdef SolidElectrodeInterface < BaseModel
         D               % SEI diffusion coefficient [m^2/s]
         cExternal       % SEI concentraton at the outer side
         
+        np % number of particles
+        N  % discretization parameter for SEI model (planar assumption)
+        
     end
 
     methods
@@ -26,6 +29,7 @@ classdef SolidElectrodeInterface < BaseModel
                        'D'};
             model = dispatchParams(model, paramobj, fdnames);
             
+            %% FIXME : fix the operators
             % model.operators = model.setupOperators();
             
         end
@@ -91,7 +95,6 @@ classdef SolidElectrodeInterface < BaseModel
             
             np = model.np;
             N  = model.N;
-            rp = model.rp;
             
             celltbl.cells = (1 : np)';
             celltbl = IndexArray(celltbl);
@@ -105,35 +108,28 @@ classdef SolidElectrodeInterface < BaseModel
             endScelltbl.Scells = N;
             endScelltbl = IndexArray(endScelltbl);
             endcellScelltbl = crossIndexArray(cellScelltbl, endScelltbl, {'Scells'});
-
-            G = cartGrid(N, rp); 
-            r = G.nodes.coords;
-
-            G.cells.volumes   = 4/3*pi*(r(2 : end).^3 - r(1 : (end - 1)).^3);
-            G.cells.centroids = (r(2 : end) + r(1 : (end - 1)))./2;
-
-            G.faces.centroids = r;
-            G.faces.areas     = 4*pi*r.^2;
-            G.faces.normals   = G.faces.areas;
-
-            rock.perm = ones(N, 1);
-            rock.poro = ones(N, 1);
-
-            op = setupOperatorsTPFA(G, rock);
-            C = op.C;
-            T = op.T;
-            T_all = op.T_all;
-
-            % We use that we know *apriori* the indexing given by cartGrid
-            Tbc = T_all(N); % half-transmissibility for of the boundary face
-            Tbc = repmat(Tbc, np, 1);
+            
+            startScelltbl.Scells = 1;
+            startScelltbl = IndexArray(startScelltbl);
+            startcellScelltbl = crossIndexArray(cellScelltbl, startScelltbl, {'Scells'});
             
             Sfacetbl.Sfaces = (1 : (N - 1))'; % index of the internal faces (correspond to image of C')
             Sfacetbl = IndexArray(Sfacetbl);
             cellSfacetbl = crossIndexArray(celltbl, Sfacetbl, {}, 'optpureproduct', true);
             
-            Grad = -diag(T)*C;
+            rock.perm = ones(N, 1);
+            rock.poro = ones(N, 1);
 
+            op = setupOperatorsTPFA(G, rock);
+            C = op.C;
+            T = op.T; % in Sfacetbl
+            T_all = op.T_all;
+            
+            TExtBc = T_all(N); % half-transmissibility for of the external boundary face
+            TIntBc = T_all(1); % half-transmissibility for of the internal boundary face (close to solid particle)
+            
+            Grad = -diag(T)*C;
+            
             [i, j, grad] = find(Grad);
             ScellSfacetbl.Sfaces = i;
             ScellSfacetbl.Scells = j;
@@ -147,7 +143,7 @@ classdef SolidElectrodeInterface < BaseModel
             map.mergefds = {'Scells', 'Sfaces'};
             map = map.setup();
 
-            grad = map.eval(grad);
+            grad = map.eval(grad); % in cellScellSfacetbl
 
             prod = TensorProd();
             prod.tbl1 = cellScellSfacetbl;
@@ -166,7 +162,7 @@ classdef SolidElectrodeInterface < BaseModel
             map.mergefds = {'cells'};
             map = map.setup();
 
-            flux = @(D, c) - map.eval(D).*(Grad*c);
+            flux = @(D, delta, c) - map.eval(D./delta).*(Grad*c);
 
             [i, j, d] = find(C');
 
@@ -215,28 +211,41 @@ classdef SolidElectrodeInterface < BaseModel
             prod.tbl3 = cellScelltbl;
             prod.mergefds = {'cells'};
 
-            mapFromBc = SparseTensor();
-            mapFromBc = mapFromBc.setFromTensorProd(f, prod);
-            mapFromBc = mapFromBc.getMatrix();
+            mapFromExtBc = SparseTensor();
+            mapFromExtBc = mapFromExtBc.setFromTensorProd(f, prod);
+            mapFromExtBc = mapFromExtBc.getMatrix();
 
-            mapToBc = mapFromBc';
+            mapToExtBc = mapFromExtBc';
             
-            vols = G.cells.volumes;
-
+            % same procedure for internal bc
             map = TensorMap();
-            map.fromTbl = Scelltbl;
+            map.fromTbl = startcellScelltbl;
             map.toTbl = cellScelltbl;
-            map.mergefds = {'Scells'};
+            map.mergefds = {'cells', 'Scells'};
             map = map.setup();
 
-            vols = map.eval(vols);
+            f = map.eval(ones(startcellScelltbl.num, 1));
 
-            operators = struct('div'      , div       , ...
-                               'flux'     , flux      , ...
-                               'mapFromBc', mapFromBc , ...
-                               'mapToBc'  , mapToBc   , ...
-                               'Tbc'      , Tbc       , ...
-                               'vols'     , vols);
+            prod = TensorProd();
+            prod.tbl1 = cellScelltbl;
+            prod.tbl2 = celltbl;
+            prod.tbl3 = cellScelltbl;
+            prod.mergefds = {'cells'};
+
+            mapFromIntBc = SparseTensor();
+            mapFromIntBc = mapFromIntBc.setFromTensorProd(f, prod);
+            mapFromIntBc = mapFromIntBc.getMatrix();
+
+            mapToIntBc = mapFromIntBc';
+            
+            operators = struct('div'         , div         , ...
+                               'flux'        , flux        , ...
+                               'mapFromExtBc', mapFromExtBc, ...
+                               'mapToExtBc'  , mapToExtBc  , ...
+                               'mapFromIntBc', mapFromIntBc, ...
+                               'mapToIntBc'  , mapToIntBc  , ...
+                               'Tbc'         , Tbc         , ...
+                               'vols'        , vols);
             
         end
 
@@ -254,6 +263,7 @@ classdef SolidElectrodeInterface < BaseModel
             srcExternal = op.externalTbc.*(c - cExternal) + 0.5*v.*(c + cExternal);
             srcExternal = op.mapFromExternalBc*srcExternal;
             
+            %% FIXME : check expression
             R = op.mapFromInterfaceBc*R;
             srcInterface = -R/(volumetricSurfaceArea)*(4*pi*rp^2);
             
@@ -293,12 +303,14 @@ classdef SolidElectrodeInterface < BaseModel
         end
         
         function state = updateSEIgrowthVelocity(model, state)
+            
             Mw = model.molecularWeight;
             rho = model.density;
             
             R = state.R;
             
             state.v = -0.5*R*(Mw/rho);
+            
         end
         
         
@@ -310,7 +322,8 @@ classdef SolidElectrodeInterface < BaseModel
             c = state.c;
             v = state.v;
             
-            % FIXME : check op.average exits (mapping from cell to internal face)
+            % FIXME : check op.average exists (mapping from cell to internal face)
+            % FIXME : map v from sidereaction "space" to mass cons "space"
             state.flux = op.flux(D, c) - op.average(v.*c);
             
         end
