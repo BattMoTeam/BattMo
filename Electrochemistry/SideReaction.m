@@ -44,6 +44,8 @@ classdef SideReaction < BaseModel
             varnames{end + 1} = 'phiElectrolyte';
             % Reaction rate
             varnames{end + 1} = 'R';
+            % overpotential
+            varnames{end + 1} = 'eta';
             % Reaction rate coefficient
             varnames{end + 1} = 'j0';
             % External potential drop used in Butler-Volmer
@@ -51,60 +53,30 @@ classdef SideReaction < BaseModel
             
             model = model.registerVarNames(varnames);
             
-            fn = @Interface.updateReactionRateCoefficient;
-            inputnames = {'c'};
-            model = model.registerPropFunction({'j0', fn, inputnames});
-
-            fn = @Interface.updateReactionRate;
-            inputnames = {'phiElectrolyte', 'phiElectrode', 'j0', 'externalPotentialDrop'};
+            fn = @SideReaction.updateReactionRate;
+            inputnames = {'phiElectrolyte', 'phiElectrode', 'externalPotentialDrop', 'c'};
             model = model.registerPropFunction({'R', fn, inputnames});
             
         end
-        
 
-        function state = updateReactionRateCoefficient(model, state)
-
-            Tref = 298.15;  % [K]
-
-            cmax = model.cmax;
-            k0   = model.k0;
-            Eak  = model.Eak;
-            n    = model.n;
-            R    = model.constants.R;
-            F    = model.constants.F;
-
-            T      = state.T;
-            cElyte = state.cElectrolyte;
-            c      = state.cElectrodeSurface;
-            
-            % Calculate reaction rate constant
-            k = k0.*exp(-Eak./R.*(1./T - 1/Tref));
-
-            % We use regularizedSqrt to regularize the square root function and avoid the blow-up of derivative at zero.
-            th = 1e-3*cmax;
-            j0 = k.*regularizedSqrt(cElyte.*(cmax - c).*c, th)*n*F;
-
-            state.j0 = j0;
-
-        end
 
         function state = updateReactionRate(model, state)
 
-            n = model.n;
             F = model.constants.F;
+            beta = model.beta;
+            k = model.k;
+            
 
             T        = state.T;
+            c        = state.c;
             phiElyte = state.phiElectrolyte;
             phiElde  = state.phiElectrode;
-            OCP      = state.OCP;
-            j0       = state.j0;
+            dphi     = state.externalPotentialDrop;
+            
+            eta = (phiElde - phiElyte - dphi);
 
-            eta = (phiElde - phiElyte - OCP);
-            state.eta = eta;
-
-            R = model.volumetricSurfaceArea.*ButlerVolmerEquation(j0, 0.5, n, eta, T);
-
-            state.R = R/(n*F); % reaction rate in mole/meter^3/second
+            %% FIXME : check if volumearea factor should be used, check F factor, check sign
+            state.R = -k*c.*exp(-(beta*F)./(R*T).*eta);
 
         end
         

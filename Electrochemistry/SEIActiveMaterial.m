@@ -39,9 +39,19 @@ classdef SEIActiveMaterial < ActiveMaterial
             inputnames = {{'R'}, {'SolidElectrodeInterface', 'seiwidth'}};
             model = model.registerPropFunction({{itf, 'externalPotentialDrop'}, fn, inputnames});
             model = model.registerPropFunction({{sr, 'externalPotentialDrop'}, fn, inputnames});
+            
+            fn = @SEIActiveMaterial.dispatchSEIRate;
+            inputnames = {{sr, 'R'}};
+            model = model.registerPropFunction({{sei, 'R'}, fn, inputnames});
+            
+        end
+        
+        function state = dispatchSEIRate(model, state)
 
+            sei = 'SolidElectrodeInterface';
+            sr  = 'SideReaction';
             
-            
+            state.(sei).R = state.(sr).R;
             
         end
         
@@ -66,7 +76,7 @@ classdef SEIActiveMaterial < ActiveMaterial
             sr  = 'SideReaction';           
             
             kappaSei = model.(sr).conductivity;
-            R = state.R;
+            R     = state.R;
             delta = state.(sei).seiwidth;
             
             %% FIXME : check sign
@@ -85,6 +95,41 @@ classdef SEIActiveMaterial < ActiveMaterial
             
             state.(itf).Rtotal = state.R;
             state.(sr).Rtotal = state.R;
+            
+        end
+
+        function getEquations
+            
+            SolidElectrodeInterface.updateFlux,       SolidElectrodeInterface.flux, 
+            SolidElectrodeInterface.updateSEIgrowthVelocity,       SolidElectrodeInterface.v, 
+            SolidElectrodeInterface.updateMassConservation,       SolidElectrodeInterface.massCons, 
+            SolidElectrodeInterface.updateMassSource,       SolidElectrodeInterface.massSource, 
+            SolidElectrodeInterface.assembleSolidDiffusionEquation,       SolidElectrodeInterface.solidDiffusionEq, 
+            SolidElectrodeInterface.assembleWidthEquation,       SolidElectrodeInterface.widthEq, 
+            SideReaction.updateReactionRate,       SideReaction.R, 
+            Interface.updateReactionRateCoefficient,       Interface.j0, 
+            Interface.updateOCP,       Interface.OCP, 
+            Interface.updateEtaWithEx,       Interface.eta, 
+            Interface.updateReactionRate,       Interface.R, 
+            SolidDiffusionModel.updateDiffusionCoefficient,       SolidDiffusion.D, 
+            SolidDiffusionModel.updateFlux,       SolidDiffusion.flux, 
+            SolidDiffusionModel.updateMassConservation,       SolidDiffusion.massCons, 
+            SolidDiffusionModel.updateMassSource,       SolidDiffusion.massSource, 
+            SolidDiffusionModel.assembleSolidDiffusionEquation,       SolidDiffusion.solidDiffusionEq, 
+            ElectronicComponent.updateCurrent,       j, 
+            ElectronicComponent.updateChargeConservation,       chargeCons, 
+            ActiveMaterial.updateStandalonejBcSource,       jBcSource, 
+            ActiveMaterial.updateCurrentSource,       eSource, 
+            ActiveMaterial.updatePhi,       Interface.phiElectrode, 
+            ActiveMaterial.dispatchTemperature,       Interface.T, 
+            ActiveMaterial.dispatchTemperature,       SolidDiffusion.T, 
+            ActiveMaterial.updateConcentrations,       SolidDiffusion.cSurface, 
+            ActiveMaterial.updateConcentrations,       Interface.cElectrodeSurface, 
+            ActiveMaterial.dispatchRate,       SolidDiffusion.R, 
+            SEIActiveMaterial.assembleInterfaceMassCons,       interfaceMassCons, 
+            SEIActiveMaterial.updatePotentialDrop,       Interface.externalPotentialDrop, 
+            SEIActiveMaterial.updatePotentialDrop,       SideReaction.externalPotentialDrop, 
+            SEIActiveMaterial.dispatchSEIRate,       SolidElectrodeInterface.R, 
             
         end
         
