@@ -244,8 +244,8 @@ classdef SolidElectrodeInterface < BaseModel
                                'mapToExtBc'  , mapToExtBc  , ...
                                'mapFromIntBc', mapFromIntBc, ...
                                'mapToIntBc'  , mapToIntBc  , ...
-                               'Tbc'         , Tbc         , ...
-                               'vols'        , vols);
+                               'TIntBc'      , TIntBc      , ...
+                               'TExtBc'      , TExtBc);
             
         end
 
@@ -259,14 +259,12 @@ classdef SolidElectrodeInterface < BaseModel
             R = state.R;
             c = state.c;
             
-            c = op.mapToExternalBc*c; 
-            srcExternal = op.externalTbc.*(c - cExternal) + 0.5*v.*(c + cExternal);
-            srcExternal = op.mapFromExternalBc*srcExternal;
+            c = op.mapToExtBc*c;
+            srcExternal = op.TExtBc.*(c - cExternal) + 0.5*v.*(c + cExternal);
+            srcExternal = op.mapFromExtBc*srcExternal;
             
             %% FIXME : check expression
-            R = op.mapFromInterfaceBc*R;
-            srcInterface = -R/(volumetricSurfaceArea)*(4*pi*rp^2);
-            
+            srcInterface = -op.mapFromIntBc*R;
             state.massSource = srcExternal + srcInterface;
             
         end
@@ -338,7 +336,7 @@ classdef SolidElectrodeInterface < BaseModel
             v     = state.v;
             
             % FIXME : check sign before v, use average of concentration to compute convection term (?)
-            eq = op.Tbc.*(op.mapToInterfaceBc*c - cSurf) + v.*cSurf + op.mapToInterfaceBc*src;
+            eq = op.TIntBc.*(op.mapToIntBc*c - cSurf) + v.*cSurf + op.mapToIntBc*src;
             
             state.solidDiffusionEq = eq;
             
