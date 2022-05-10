@@ -424,12 +424,9 @@ classdef BaseModel < PhysicalModel
         end
         
         function cleanState = addStaticVariables(model, cleanState, state)
-        % function to add static variables (not AD) on the cleanState, called in updateAfterConvergence and
-        % initStateAD. Time is added by default here (when it exists)
             if isfield(state, 'time')
                 cleanState.time = state.time;
             end
-            
         end
         
         function state = copyProp(model, state, refState, names)
