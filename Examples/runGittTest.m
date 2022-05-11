@@ -3,7 +3,7 @@
 % battery simulation.
 
 % clear the workspace and close open figures
-clear
+clear all
 close all
 clc
 
@@ -31,6 +31,7 @@ eac     = 'ActiveMaterial';
 cc      = 'CurrentCollector';
 elyte   = 'Electrolyte';
 thermal = 'ThermalModel';
+ctrl    = 'Control';
 
 %% Setup the geometry and computational mesh
 % Here, we setup the geometry and computational mesh that will be used for
@@ -201,8 +202,8 @@ end
 
 ind = cellfun(@(x) not(isempty(x)), states); 
 states = states(ind);
-Enew = cellfun(@(x) x.(pe).(cc).E, states); 
-Inew = cellfun(@(x) x.(pe).(cc).I, states);
+Enew = cellfun(@(x) x.(ctrl).E, states);
+Inew = cellfun(@(x) x.(ctrl).I, states);
 time = cellfun(@(x) x.time, states); 
 
 %% Plot an animated summary of the results
