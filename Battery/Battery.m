@@ -1784,11 +1784,17 @@ classdef Battery < BaseModel
             
             cleanState = addStaticVariables@BaseModel(model, cleanState, state);
 
-            addedvarnames = model.addedVariableNames;
-            for i = 1 : numel(addedvarnames)
-                var = model.getProp(state, addedvarnames{i});
-                assert(isnumeric(var) | ischar(var));
-                cleanState = model.setNewProp(cleanState, addedvarnames{i}, var);
+            
+            cleanState.time = state.time;            
+            
+            thermal = 'ThermalModel';
+            ctrl = 'Control';
+            
+            cleanState.(ctrl).ctrlType = state.(ctrl).ctrlType;            
+            
+            if ~model.use_thermal
+                thermal = 'ThermalModel';
+                cleanState.(thermal).T = state.(thermal).T;
             end
             
         end
