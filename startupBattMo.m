@@ -24,7 +24,7 @@ mrstPath('register', 'agmg', fullfile(rootdirname, 'Externals/agmg/'));
 
 %% The BattMo source code directories are now added directly to path
 
-dirnames = {'Battery', 'Electrochemistry', 'Examples', 'ParameterData', 'Physics', 'Utilities'};
+dirnames = {'Battery', 'Electrochemistry', 'Examples', 'ParameterData', 'Physics', 'Utilities', 'Tests'};
 
 for ind = 1 : numel(dirnames)
     dirname = fullfile(rootdirname, dirnames{ind});
