@@ -123,56 +123,52 @@ classdef SEIActiveMaterial < ActiveMaterial
             sei = 'SolidElectrodeInterface';
             sr  = 'SideReaction';
             
-            model.dispatchTemperature;                  % model.(itf).T, 
-            model.dispatchTemperature;                  % SolidDiffusion.T, 
+            state = model.dispatchTemperature(state); % model.(itf).T, SolidDiffusion.T, 
 
-            model.updateConcentrations;                 % SolidDiffusion.cSurface, 
-            model.updateConcentrations;                 % model.(itf).cElectrodeSurface, 
+            state = model.updateConcentrations(state); % SolidDiffusion.cSurface, model.(itf).cElectrodeSurface, 
             
-            model.(itf).updateOCP;                      % model.(itf).OCP, 
-            model.(itf).updateReactionRateCoefficient;  % model.(itf).j0, 
+            state.(itf = state.(itf) = model.(itf).updateOCP(state.(itf)); % model.(itf).OCP, 
+            state.(itf) = model.(itf).updateReactionRateCoefficient(state.(itf)); % model.(itf).j0, 
 
-            model.updatePotentialDrop;                  % model.(itf).externalPotentialDrop, 
-            model.updatePotentialDrop;                  % SideReaction.externalPotentialDrop, 
+            state = model.updatePotentialDrop(state); % model.(itf).externalPotentialDrop, SideReaction.externalPotentialDrop,
             
-            model.updatePhi;                            % model.(itf).phiElectrode, 
+            state = model.updatePhi(state); % model.(itf).phiElectrode, 
 
-            model.(itf).updateEtaWithEx;                % model.(itf).eta, 
-            model.(itf).updateReactionRate;             % model.(itf).R, 
-            model.dispatchRate;                         % SolidDiffusion.R, 
-            model.(sd).updateMassSource;                % SolidDiffusion.massSource, 
-            model.(sd).assembleSolidDiffusionEquation;  % SolidDiffusion.solidDiffusionEq, 
- 
-            model.updateSEISurfaceConcentration;
-            model.(sr).updateReactionRate;              % SideReaction.R, 
+            state.(itf) = model.(itf).updateEtaWithEx(state.(itf)); % model.(itf).eta, 
+            state.(itf) = model.(itf).updateReactionRate(state.(itf)); % model.(itf).R, 
+            state = model.dispatchRate(state); % SolidDiffusion.R, 
+            state.(sd) = model.(sd).updateMassSource(state.(sd)); % SolidDiffusion.massSource, 
+            state.(sd) = model.(sd).assembleSolidDiffusionEquation(state.(sd)); % SolidDiffusion.solidDiffusionEq, 
+            
+            state = model.updateSEISurfaceConcentration(state);
+            state.(sr) = model.(sr).updateReactionRate(state.(sr)); % SideReaction.R, 
 
-            model.assembleInterfaceMassCons;            % interfaceMassCons, 
+            state = model.assembleInterfaceMassCons(state); % interfaceMassCons, 
 
-            model.(sd).updateDiffusionCoefficient;      % SolidDiffusion.D, 
-            model.(sd).updateFlux;                      % SolidDiffusion.flux, 
+            state.(sd) = model.(sd).updateDiffusionCoefficient(state.(sd)); % SolidDiffusion.D, 
+            state.(sd) = model.(sd).updateFlux(state.(sd)); % SolidDiffusion.flux, 
 
             % FIXME : add SolidDiffusion.massAccum 
 
-            model.(sd).updateMassConservation;          % SolidDiffusion.massCons, 
+            state.(sd) = model.(sd).updateMassConservation(state.(sd)); % SolidDiffusion.massCons, 
 
-            model.updateCurrentSource;                  % eSource, 
-            model.updateCurrent;                        % j, 
-            model.updateStandalonejBcSource;            % jBcSource, 
-            model.updateChargeConservation;             % chargeCons, 
+            state = model.updateCurrentSource(state); % eSource, 
+            state = model.updateCurrent(state); % j, 
+            state = model.updateStandalonejBcSource(state); % jBcSource, 
+            state = model.updateChargeConservation(state); % chargeCons, 
             
-            model.dispatchSEIRate;                      % SolidElectrodemodel.(itf).R, 
-            model.(sei).updateSEIgrowthVelocity;        % SolidElectrodeInterface.v, 
-            model.(sei).updateFlux;                     % SolidElectrodeInterface.flux, 
+            state = model.dispatchSEIRate(state); % SolidElectrodemodel.(itf).R, 
+            state.(sei) = model.(sei).updateSEIgrowthVelocity(state.(sei)); % SolidElectrodeInterface.v, 
+            state.(sei) = model.(sei).updateFlux(state.(sei)); % SolidElectrodeInterface.flux, 
 
             % FIXME : add sei.massaccum
 
-            model.(sei).updateMassSource;               % SolidElectrodeInterface.massSource, 
-            model.(sei).updateMassConservation;         % SolidElectrodeInterface.massCons, 
+            state.(sei) = model.(sei).updateMassSource(state.(sei)); % SolidElectrodeInterface.massSource, 
+            state.(sei) = model.(sei).updateMassConservation(state.(sei)); % SolidElectrodeInterface.massCons, 
 
-            % FIXME : special syntax
-            model.(sei).assembleWidthEquation;          % SolidElectrodeInterface.widthEq, 
+            state.(sei) = model.(sei).assembleWidthEquation(state.(sei), state0.(sei), dt); % SolidElectrodeInterface.widthEq, 
             
-            model.(sei).assembleSolidDiffusionEquation; % SolidElectrodeInterface.solidDiffusionEq, 
+            state.(sei) = model.(sei).assembleSolidDiffusionEquation(state.(sei)); % SolidElectrodeInterface.solidDiffusionEq, 
             
         end
         

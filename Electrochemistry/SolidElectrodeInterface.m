@@ -90,7 +90,6 @@ classdef SolidElectrodeInterface < BaseModel
         end
         
         function operators = setupOperators(model)
-            
         % FIXME : fix operators
             
             np = model.np;
@@ -117,9 +116,12 @@ classdef SolidElectrodeInterface < BaseModel
             Sfacetbl = IndexArray(Sfacetbl);
             cellSfacetbl = crossIndexArray(celltbl, Sfacetbl, {}, 'optpureproduct', true);
             
+            % The governing equation is setup in a fixed mesh of length 1            
+            G = cartGrid(N, 1); 
+            G = computeGeometry(G);
+            
             rock.perm = ones(N, 1);
             rock.poro = ones(N, 1);
-
             op = setupOperatorsTPFA(G, rock);
             C = op.C;
             T = op.T; % in Sfacetbl
@@ -156,13 +158,7 @@ classdef SolidElectrodeInterface < BaseModel
             Grad = Grad.setFromTensorProd(grad, prod);
             Grad = Grad.getMatrix();
 
-            map = TensorMap();
-            map.fromTbl = celltbl;
-            map.toTbl = cellSfacetbl;
-            map.mergefds = {'cells'};
-            map = map.setup();
-
-            flux = @(D, delta, c) - map.eval(D./delta).*(Grad*c);
+            diffFlux = @(c) - D.*(Grad*c);
 
             [i, j, d] = find(C');
 
@@ -237,15 +233,67 @@ classdef SolidElectrodeInterface < BaseModel
             mapFromIntBc = mapFromIntBc.getMatrix();
 
             mapToIntBc = mapFromIntBc';
+
+            %% setup Average mapping
             
-            operators = struct('div'         , div         , ...
-                               'flux'        , flux        , ...
-                               'mapFromExtBc', mapFromExtBc, ...
-                               'mapToExtBc'  , mapToExtBc  , ...
-                               'mapFromIntBc', mapFromIntBc, ...
-                               'mapToIntBc'  , mapToIntBc  , ...
-                               'TIntBc'      , TIntBc      , ...
-                               'TExtBc'      , TExtBc);
+            M = op.M; 
+            
+            [i, j, M]  = find(M);
+
+            clear ScellSfacetbl
+            ScellSfacetbl.Scells = j;
+            ScellSfacetbl.Sfaces = i;
+            ScellSfacetbl = IndexArray(ScellSfacetbl);
+
+            cellScellSfacetbl = crossIndexArray(celltbl, ScellSfacetbl, {}, 'optpureproduct', true);
+
+            map = TensorMap();
+            map.fromTbl = ScellSfacetbl;
+            map.toTbl = cellScellSfacetbl;
+            map.mergefds = {'Scells', 'Sfaces'};
+            map = map.setup();
+
+            M = map.eval(M);
+            
+            prod = TensorProd();
+            prod.tbl1 = cellScellSfacetbl;
+            prod.tbl2 = cellScelltbl;
+            prod.tbl3 = cellSfacetbl;
+            prod.reducefds = {'Scells'};
+            prod.mergefds = {'cells'};
+            prod = prod.setup();
+            
+            faceAverage = SparseTensor();
+            faceAverage = faceAverage.setFromTensorProd(M, prod);
+            faceAverage = faceAverage.getMatrix();
+            
+            
+            %% mapToSei (mapping from celltbl to cellScelltbl) and Centroids values
+            
+            map = TensorMap();
+            map.fromTbl = celltbl;
+            map.toTbl = cellScelltbl;
+            map.mergefds = {'cells'};
+            map = map.setup();
+
+            mapToSei = SparseTensor();
+            mapToSei = mapToSei.setFromTensorMap(map);
+            mapToSei = mapToSei.getMatrix();
+            
+            cc = G.cells.centroids;
+            cc = mapToSei*cc;
+            
+            operators = struct('div'          , div          , ...
+                               'diffFlux'     , diffFlux     , ...
+                               'faceAverage'  , faceAverage  , ...
+                               'mapFromExtBc' , mapFromExtBc , ...
+                               'mapToExtBc'   , mapToExtBc   , ...
+                               'mapFromIntBc' , mapFromIntBc , ...
+                               'mapToIntBc'   , mapToIntBc   , ...
+                               'TIntBc'       , TIntBc       , ...
+                               'TExtBc'       , TExtBc       , ...
+                               'cellCentroids', cellCentroids, ...
+                               'mapToSei'     , mapToSei);
             
         end
 
@@ -288,6 +336,10 @@ classdef SolidElectrodeInterface < BaseModel
             
         end
         
+        function state = updateMassAccumTerm(model, state, state0, dt)
+            
+        end
+            
         function state = updateMassConservation(model, state)
            
             op = model.operators;
@@ -302,6 +354,8 @@ classdef SolidElectrodeInterface < BaseModel
         
         function state = updateSEIgrowthVelocity(model, state)
             
+            % FIXME : bound growth (we cannot have delta negative) ? 
+                
             Mw = model.molecularWeight;
             rho = model.density;
             
@@ -314,15 +368,19 @@ classdef SolidElectrodeInterface < BaseModel
         
         function state = updateFlux(model, state)
             
-            op = model.operators;
-            D = model.D;
+            op       = model.operators;
+            xi       = op.cellCentroids
+            mapToSei = op.mapToSei;
+            faceAver = op.faceAverage;
             
-            c = state.c;
-            v = state.v;
+            c     = state.c;
+            v     = state.v;
+            delta = state.delta;
             
-            % FIXME : check op.average exists (mapping from cell to internal face)
-            % FIXME : map v from sidereaction "space" to mass cons "space"
-            state.flux = op.flux(D, c) - op.average(v.*c);
+            % FIXME : include op.average exists (mapping from cell to internal face)
+
+            coef = mapToSei*(delta.*v);
+            state.flux = op.diffFlux(c) - faceAver*(coef.*(1 - xi).*c);
             
         end
 
