@@ -38,7 +38,7 @@ classdef SideReaction < BaseModel
             varnames = {};
             % potential in electrode
             varnames{end + 1} = 'phiElectrode';
-            % charge carrier concentration in electrode - value at surface
+            % solvent concentration in SEI film - value at interface
             varnames{end + 1} = 'c';
             % potential in electrolyte
             varnames{end + 1} = 'phiElectrolyte';
@@ -62,10 +62,9 @@ classdef SideReaction < BaseModel
 
         function state = updateReactionRate(model, state)
 
-            F = model.constants.F;
+            F    = model.constants.F;
             beta = model.beta;
-            k = model.k;
-            
+            k    = model.k;
 
             T        = state.T;
             c        = state.c;
@@ -75,7 +74,9 @@ classdef SideReaction < BaseModel
             
             eta = (phiElde - phiElyte - dphi);
 
-            %% FIXME : check if volumearea factor should be used, check F factor, check sign
+            % Reaction rate in mol/(m^2*s) (not Coulomb and therefore no Faraday number in front). It is always negative
+            % (by construction) and corresponds to disappearance of solvent. It will come as a source term in the mass
+            % conservation equation for the solvent concentration in the SEI film.
             state.R = -k*c.*exp(-(beta*F)./(R*T).*eta);
 
         end

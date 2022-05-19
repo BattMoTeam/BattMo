@@ -8,7 +8,6 @@ classdef SolidElectrodeInterface < BaseModel
         molecularWeight % SEI molecular weight [kg/mol]
         density         % SEI densisity [kg/m^3]
         D               % SEI diffusion coefficient [m^2/s]
-        cExternal       % SEI concentraton at the outer side
         
         np % number of particles
         N  % discretization parameter for SEI model (planar assumption)
@@ -29,8 +28,7 @@ classdef SolidElectrodeInterface < BaseModel
                        'D'};
             model = dispatchParams(model, paramobj, fdnames);
             
-            %% FIXME : fix the operators
-            % model.operators = model.setupOperators();
+            model.operators = model.setupOperators();
             
         end
 
@@ -42,10 +40,12 @@ classdef SolidElectrodeInterface < BaseModel
             model = registerVarAndPropfuncNames@BaseModel(model);
                         
             varnames = {};
-            % concentration
+            % Solvent concentration in the SEI film
             varnames{end + 1} = 'c';
-            % surface concentration
-            varnames{end + 1} = 'cSurface';
+            % solvent concentration at inteface
+            varnames{end + 1} = 'cInterface';
+            % external surface concentration
+            varnames{end + 1} = 'cExternal';
             % surface concentration
             varnames{end + 1} = 'seiwidth';
             % SEI growth velocity
@@ -80,17 +80,16 @@ classdef SolidElectrodeInterface < BaseModel
             model = model.registerPropFunction({'massCons', fn, inputnames});
 
             fn = @SolidElectrodeInterface.updateMassSource;
-            model = model.registerPropFunction({'massSource', fn, {'R', 'c', 'v'}});
+            model = model.registerPropFunction({'massSource', fn, {'R', 'c', 'v', 'cExternal'}});
             
             fn = @SolidElectrodeInterface.assembleSolidDiffusionEquation;
-            model = model.registerPropFunction({'solidDiffusionEq', fn, {'c', 'cSurface', 'massSource'}});
+            model = model.registerPropFunction({'solidDiffusionEq', fn, {'c', 'cInterface', 'massSource'}});
             
             fn = @SolidElectrodeInterface.assembleWidthEquation;
             model = model.registerPropFunction({'widthEq', fn, {'seiwidth', 'v'}});
         end
         
         function operators = setupOperators(model)
-        % FIXME : fix operators
             
             np = model.np;
             N  = model.N;
@@ -280,8 +279,9 @@ classdef SolidElectrodeInterface < BaseModel
             mapToSei = mapToSei.setFromTensorMap(map);
             mapToSei = mapToSei.getMatrix();
             
-            cc = G.cells.centroids;
-            cc = mapToSei*cc;
+            %%  assemble cell centroids and volumes
+            cellCentroids = mapToSei*G.cells.centroids;
+            vols = mapToSei*G.cells.volumes;
             
             operators = struct('div'          , div          , ...
                                'diffFlux'     , diffFlux     , ...
@@ -292,8 +292,9 @@ classdef SolidElectrodeInterface < BaseModel
                                'mapToIntBc'   , mapToIntBc   , ...
                                'TIntBc'       , TIntBc       , ...
                                'TExtBc'       , TExtBc       , ...
+                               'mapToSei'     , mapToSei     , ...
                                'cellCentroids', cellCentroids, ...
-                               'mapToSei'     , mapToSei);
+                               'vols'         , vols);
             
         end
 
@@ -302,17 +303,19 @@ classdef SolidElectrodeInterface < BaseModel
             op = model.operators;
             rp = model.rp;
             volumetricSurfaceArea = model.volumetricSurfaceArea;
-            cExternal = model.cExternal;
             
-            R = state.R;
-            c = state.c;
+            R     = state.R;
+            c     = state.c;
+            cext  = state.cExternal;
+            delta = state.delta;
             
             c = op.mapToExtBc*c;
-            srcExternal = op.TExtBc.*(c - cExternal) + 0.5*v.*(c + cExternal);
+            % The convection term vanishes for xi = 1
+            srcExternal = -op.TExtBc.*(c - cext);
             srcExternal = op.mapFromExtBc*srcExternal;
             
-            %% FIXME : check expression
-            srcInterface = -op.mapFromIntBc*R;
+            %% FIXME : check sign
+            srcInterface = delta.*op.mapFromIntBc*R;
             state.massSource = srcExternal + srcInterface;
             
         end
@@ -325,18 +328,19 @@ classdef SolidElectrodeInterface < BaseModel
         end
         
         
-        function state = updateAccumTerm(model, state, state0, dt)
+        function state = updateMassAccumTerm(model, state, state0, dt)
 
             op = model.operators;
             
-            c = state.c;
-            c0 = state0.c;
+            c      = state.c;
+            c0     = state0.c;
+            delta  = state.delta;
+            delta0 = state0.delta;
             
-            state.accumTerm = 1/dt*op.vols.*(c - c0);
+            delta  = op.mapToSei*delta;
+            delta0 = op.mapToSei*delta0;
             
-        end
-        
-        function state = updateMassAccumTerm(model, state, state0, dt)
+            state.accumTerm = 1/dt*op.vols.*delta.*(delta.*c - delta0.*sc0);
             
         end
             
@@ -365,7 +369,6 @@ classdef SolidElectrodeInterface < BaseModel
             
         end
         
-        
         function state = updateFlux(model, state)
             
             op       = model.operators;
@@ -377,24 +380,25 @@ classdef SolidElectrodeInterface < BaseModel
             v     = state.v;
             delta = state.delta;
             
-            % FIXME : include op.average exists (mapping from cell to internal face)
-
             coef = mapToSei*(delta.*v);
+            
             state.flux = op.diffFlux(c) - faceAver*(coef.*(1 - xi).*c);
             
         end
 
         function state = assembleSolidDiffusionEquation(model, state)
+        % Boundary equation at the interface side, which relates flux with source term.
             
             op = model.operators;
 
             c     = state.c;
-            cSurf = state.cSurface;
+            cInt  = state.cInterface;
             src   = state.massSource;
             v     = state.v;
+            delta = state.delta;
             
-            % FIXME : check sign before v, use average of concentration to compute convection term (?)
-            eq = op.TIntBc.*(op.mapToIntBc*c - cSurf) + v.*cSurf + op.mapToIntBc*src;
+            % here xi = 0
+            eq = -op.TIntBc.*(op.mapToIntBc*c - cInt) + delta.*v.*cInt - (op.mapToIntBc*src);
             
             state.solidDiffusionEq = eq;
             

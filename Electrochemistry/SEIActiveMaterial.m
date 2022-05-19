@@ -78,11 +78,14 @@ classdef SEIActiveMaterial < ActiveMaterial
             itf = 'Interface';
             sr  = 'SideReaction';
             
+            vsa = model.(itf).volumetricSurfaceArea;
+            
             Rint = state.(itf).R;
-            Rsei = state.(sr).R;          
+            Rsei = state.(sr).R;
             R = state.R;
             
-            state.interfaceMassCons = R - Rint - Rsei;
+            % We need to divide Rint with the volumetricSurfaceArea to obtain a rate in mol/(s*m^2) 
+            state.interfaceMassCons = R - 1./vsa.*Rint - Rsei;
             
         end
         
@@ -94,14 +97,15 @@ classdef SEIActiveMaterial < ActiveMaterial
             sr  = 'SideReaction';           
             
             kappaSei = model.(sr).conductivity;
+            F = model.(itf).contants.F;
+            
             R     = state.R;
             delta = state.(sei).seiwidth;
             
-            %% FIXME : check sign
-            dphi = - delta.*R/kappasei;
+            dphi = F*delta.*R/kappasei;
             
             state.(itf).externalPotentialDrop = dphi;
-            state.(sr).externalPotentialDrop = dphi;
+            state.(sr).externalPotentialDrop  = dphi;
             
         end
         
@@ -112,63 +116,111 @@ classdef SEIActiveMaterial < ActiveMaterial
             sr  = 'SideReaction';
             
             state.(itf).Rtotal = state.R;
-            state.(sr).Rtotal = state.R;
+            state.(sr).Rtotal  = state.R;
             
         end
 
-        function getEquations
+        function primaryvarnames = getPrimaryVariables(model)
+            
+            sd  = 'SolidDiffusion';
+            sei = 'SolidElectrodeInterface';
+            
+            primaryvarnames = {{sd, 'c'}           , ...
+                               {sd, 'cSurface'}    , ...
+                               {'phi'}             , ...
+                               {sei, 'c'}          , ...
+                               {sei, 'cInterface'} , ...
+                               {'R'}};
+            
+        end
+        
+        function cleanState = addStaticVariables(model, cleanState, state, state0)
+            
+            cleanState = addStaticVariables@BaseModel(model, cleanState, state);
+            
+            itf = 'Interface';
+            sei = 'SolidElectrodeInterface';
+            
+            cleanState.T = state.T;
+            cleanState.(itf).cElectrolyte   = state.(itf).cElectrolyte;
+            cleanState.(itf).phiElectrolyte = state.(itf).phiElectrolyte;
+            cleanState.(sei).cExternal      = state.(sei).cExternal;
+            
+        end
+
+        function [problem, state] = getEquations(model, state0, state,dt, drivingForces, varargin)
 
             itf = 'Interface';
             sd  = 'SolidDiffusion';
             sei = 'SolidElectrodeInterface';
             sr  = 'SideReaction';
             
-            state = model.dispatchTemperature(state); % model.(itf).T, SolidDiffusion.T, 
+            state = model.dispatchTemperature(state); % model.(itf).T, SolidDiffusion.T
 
-            state = model.updateConcentrations(state); % SolidDiffusion.cSurface, model.(itf).cElectrodeSurface, 
+            state = model.updateConcentrations(state); % SolidDiffusion.cSurface, model.(itf).cElectrodeSurface
             
-            state.(itf = state.(itf) = model.(itf).updateOCP(state.(itf)); % model.(itf).OCP, 
-            state.(itf) = model.(itf).updateReactionRateCoefficient(state.(itf)); % model.(itf).j0, 
+            state.(itf = state.(itf) = model.(itf).updateOCP(state.(itf)); % model.(itf).OCP
+            state.(itf) = model.(itf).updateReactionRateCoefficient(state.(itf)); % model.(itf).j0
 
-            state = model.updatePotentialDrop(state); % model.(itf).externalPotentialDrop, SideReaction.externalPotentialDrop,
+            state = model.updatePotentialDrop(state); % model.(itf).externalPotentialDrop, SideReaction.externalPotentialDrop
             
-            state = model.updatePhi(state); % model.(itf).phiElectrode, 
+            state = model.updatePhi(state); % model.(itf).phiElectrode
 
-            state.(itf) = model.(itf).updateEtaWithEx(state.(itf)); % model.(itf).eta, 
-            state.(itf) = model.(itf).updateReactionRate(state.(itf)); % model.(itf).R, 
-            state = model.dispatchRate(state); % SolidDiffusion.R, 
-            state.(sd) = model.(sd).updateMassSource(state.(sd)); % SolidDiffusion.massSource, 
-            state.(sd) = model.(sd).assembleSolidDiffusionEquation(state.(sd)); % SolidDiffusion.solidDiffusionEq, 
+            state.(itf) = model.(itf).updateEtaWithEx(state.(itf)); % model.(itf).eta
+            state.(itf) = model.(itf).updateReactionRate(state.(itf)); % model.(itf).R
+            state = model.dispatchRate(state); % SolidDiffusion.R
+            state.(sd) = model.(sd).updateMassSource(state.(sd)); % SolidDiffusion.massSource
+            state.(sd) = model.(sd).assembleSolidDiffusionEquation(state.(sd)); % SolidDiffusion.solidDiffusionEq
             
             state = model.updateSEISurfaceConcentration(state);
-            state.(sr) = model.(sr).updateReactionRate(state.(sr)); % SideReaction.R, 
+            state.(sr) = model.(sr).updateReactionRate(state.(sr)); % SideReaction.R
 
-            state = model.assembleInterfaceMassCons(state); % interfaceMassCons, 
+            state = model.assembleInterfaceMassCons(state); % interfaceMassCons
 
-            state.(sd) = model.(sd).updateDiffusionCoefficient(state.(sd)); % SolidDiffusion.D, 
-            state.(sd) = model.(sd).updateFlux(state.(sd)); % SolidDiffusion.flux, 
+            state.(sd) = model.(sd).updateDiffusionCoefficient(state.(sd)); % SolidDiffusion.D
+            state.(sd) = model.(sd).updateFlux(state.(sd)); % SolidDiffusion.flux
 
-            % FIXME : add SolidDiffusion.massAccum 
+            state.(sd) = model.(sd).updateAccumTerm(state.(sd), state0.(sd), dt); % SolidDiffusion.accumTerm
+            state.(sd) = model.(sd).updateMassConservation(state.(sd)); % SolidDiffusion.massCons
 
-            state.(sd) = model.(sd).updateMassConservation(state.(sd)); % SolidDiffusion.massCons, 
-
-            state = model.updateCurrentSource(state); % eSource, 
-            state = model.updateCurrent(state); % j, 
-            state = model.updateStandalonejBcSource(state); % jBcSource, 
-            state = model.updateChargeConservation(state); % chargeCons, 
+            state = model.updateCurrentSource(state); % eSource
+            state = model.updateCurrent(state); % j
+            state = model.updateStandalonejBcSource(state); % jBcSource
+            state = model.updateChargeConservation(state); % chargeCons
             
-            state = model.dispatchSEIRate(state); % SolidElectrodemodel.(itf).R, 
-            state.(sei) = model.(sei).updateSEIgrowthVelocity(state.(sei)); % SolidElectrodeInterface.v, 
-            state.(sei) = model.(sei).updateFlux(state.(sei)); % SolidElectrodeInterface.flux, 
+            state = model.dispatchSEIRate(state); % SolidElectrodemodel.(itf).R
+            state.(sei) = model.(sei).updateSEIgrowthVelocity(state.(sei)); % SolidElectrodeInterface.v
+            state.(sei) = model.(sei).updateFlux(state.(sei)); % SolidElectrodeInterface.flux
 
-            % FIXME : add sei.massaccum
+            state.(sei) = model.(sei).updateMassAccumTerm(state.(sei), state0.(sei), dt); % SolidElectrodeInterface.accumTerm 
+            state.(sei) = model.(sei).updateMassSource(state.(sei)); % SolidElectrodeInterface.massSource
+            state.(sei) = model.(sei).updateMassConservation(state.(sei)); % SolidElectrodeInterface.massCons
 
-            state.(sei) = model.(sei).updateMassSource(state.(sei)); % SolidElectrodeInterface.massSource, 
-            state.(sei) = model.(sei).updateMassConservation(state.(sei)); % SolidElectrodeInterface.massCons, 
-
-            state.(sei) = model.(sei).assembleWidthEquation(state.(sei), state0.(sei), dt); % SolidElectrodeInterface.widthEq, 
+            state.(sei) = model.(sei).assembleWidthEquation(state.(sei), state0.(sei), dt); % SolidElectrodeInterface.widthEq
             
-            state.(sei) = model.(sei).assembleSolidDiffusionEquation(state.(sei)); % SolidElectrodeInterface.solidDiffusionEq, 
+            state.(sei) = model.(sei).assembleSolidDiffusionEquation(state.(sei)); % SolidElectrodeInterface.solidDiffusionEq
+
+            
+            eqs = {};
+            eqs{end + 1} = state.chargeCons;
+            eqs{end + 1} = 1e18*state.(sd).massCons;
+            eqs{end + 1} = 1e5*state.(sd).solidDiffusionEq.*massConsScaling.*model.(itf).G.cells.volumes/dt;
+            eqs{end + 1} = state.(sei).massCons;
+            eqs{end + 1} = state.(sei).widthEq;
+            eqs{end + 1} = state.interfaceMassCons;
+            
+            names = {'chargeCons'         , ...
+                     'sd_massCons'        , ...
+                     'sd_solidDiffusionEq', ...
+                     'sei_massCons'       , ...
+                     'sei_width'          , ...
+                     'massCons'};
+            
+            types = repmat({'cell'}, 1, numel(names));
+            
+            primaryVars = model.getPrimaryVariables();
+            
+            problem = LinearizedProblem(eqs, types, names, primaryVars, state, dt);
             
         end
         
