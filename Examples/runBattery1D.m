@@ -2,8 +2,8 @@
 % This example demonstrates how to setup a P2D model of a Li-ion battery
 % and run a simple simulation.
 
-% clear the workspace and close open figures
-clear
+% Clear the workspace and close open figures
+clear all
 close all
 clc
 
@@ -25,7 +25,7 @@ paramobj = BatteryInputParams(jsonstruct);
 
 use_cccv = false;
 if use_cccv
-    cccvstruct = struct( 'controlPolicy'     , 'IEswitch',  ...
+    cccvstruct = struct( 'controlPolicy'     , 'CCCV',  ...
                          'CRate'             , 1         , ...
                          'lowerCutoffVoltage', 2         , ...
                          'upperCutoffVoltage', 4.1       , ...

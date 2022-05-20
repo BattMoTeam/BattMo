@@ -8,6 +8,8 @@ classdef BareBatteryGenerator3D < BatteryGenerator
         nenr  = 40; % discretization for solid diffusion
         penr  = 40; % discretization for solid diffusion
         fac   = 1;
+
+        use_thermal
         
     end
     
@@ -18,8 +20,7 @@ classdef BareBatteryGenerator3D < BatteryGenerator
         end
             
         function paramobj = updateBatteryInputParams(gen, paramobj)
-            gen.include_current_collectors = false;
-            gen.use_thermal = paramobj.use_thermal;
+            paramobj.include_current_collectors = false;
             paramobj = gen.setupBatteryInputParams(paramobj, []);
         end
         

@@ -2,8 +2,8 @@
 % This example demonstrates how to setup a P3D model of a Li-ion battery
 % and run a simple simulation.
 
-% clear the workspace and close open figures
-clear
+% Clear the workspace and close open figures
+clear all
 close all
 clc
 
@@ -67,7 +67,7 @@ legend({'negative electrode current collector' , ...
         'separator'                            , ...
         'positive electrode active material'   , ...
         'positive electrode current collector'}, ...
-       'location', 'south west'),
+       'location', 'southwest'),
 setFigureStyle('quantity', 'single');
 drawnow();
 pause(0.1);

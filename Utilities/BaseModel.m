@@ -46,7 +46,7 @@ classdef BaseModel < PhysicalModel
 
         function submodelnames = getSubModelNames(model)
             
-            props = properties(model);
+            props = propertynames(model);
             submodelnames = {};
             
             for iprops = 1 : numel(props)

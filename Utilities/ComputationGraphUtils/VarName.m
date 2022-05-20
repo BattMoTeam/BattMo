@@ -30,8 +30,7 @@ classdef VarName
         end
         
         function name = getfieldname(varname)
-            name = join({varname.namespace{:}, varname.name}, varname.strlim);
-            name = name{1};
+            name = strjoin({varname.namespace{:}, varname.name}, '_');
         end
 
         function name = getIndexedFieldname(varname)
