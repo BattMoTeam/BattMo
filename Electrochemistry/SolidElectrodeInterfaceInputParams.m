@@ -2,11 +2,11 @@ classdef SolidElectrodeInterfaceInputParams < InputParams
 
     properties
         
-        molecularWeight = 0.162; % SEI molecular weight [kg/mol]
-        density = 1690;          % SEI densisity [kg/m^3]
-        D = 6.8e-21;             % SEI diffusion coefficient [m^2/s]
-        N                        % Number of discretization intervals in the sei layer model [-]
-        np                       % Number of computational grid cells (typically set by parent model :class:`ActiveMaterial <Electrochemistry.ActiveMaterial>`)        
+        molecularWeight % SEI molecular weight [kg/mol]
+        density         % SEI densisity [kg/m^3]
+        D               % SEI diffusion coefficient [m^2/s]
+        N               % Number of discretization intervals in the sei layer model [-]
+        np              % Number of computational grid cells (typically set by parent model :class:`ActiveMaterial <Electrochemistry.ActiveMaterial>`)
     end
     
     methods

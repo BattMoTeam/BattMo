@@ -9,23 +9,21 @@ close all
 mrstModule add ad-core mrst-gui mpfa
 
 %% Setup the properties of Li-ion battery materials and cell design
-jsonstruct = parseBattmoJson('ParameterData/ParameterSets/Chen2020/chen2020_lithium_ion_battery.json');
+jsonstruct = parseBattmoJson('ParameterData/ParameterSets/Safari2009/Safari2009_SEIactiveMaterial.json');
 
 % Some shorthands used for the sub-models
-ne  = 'NegativeElectrode';
-pe  = 'PositiveElectrode';
-am  = 'ActiveMaterial';
-sd  = 'SolidDiffusion';
-itf = 'Interface';
-sei = 'SolidElectrodeInterface';
-sr  = 'SideReaction';
+ne    = 'NegativeElectrode';
+pe    = 'PositiveElectrode';
+am    = 'ActiveMaterial';
+sd    = 'SolidDiffusion';
+itf   = 'Interface';
+sei   = 'SolidElectrodeInterface';
+sr    = 'SideReaction';
 elyte = 'Electrolyte';
 
 %% We setup the battery geometry ("bare" battery with no current collector). We use that to recover the parameters for the active material of the positive electrode, which is instantiate later
-paramobj = SEIActiveMaterialInputParams(jsonstruct.(pe).(am));
+paramobj = SEIActiveMaterialInputParams(jsonstruct);
 
-paramobj.(sd).useSimplifiedDiffusionModel = false;
-paramobj.InterDiffusionCoefficient = 0;
 paramobj.externalCouplingTerm = [];
 paramobj.(sd).N   = 10;
 paramobj.(sd).np  = 1;
@@ -38,7 +36,6 @@ paramobj.G = G;
 
 model = SEIActiveMaterial(paramobj);
 
-
 %% Setup initial state
 
 Nsd = model.(sd).N;
@@ -48,7 +45,7 @@ cElectrodeInit   = 40*mol/litre;
 phiElectrodeInit = 3.5;
 cElectrolyte     = 5e-1*mol/litre;
 phiElectrolyte   = 0;
-T                = 298;
+T                = 298.15; % reference temperature in Interface.
 cExternal        = 4.541*mol/litre;
 
 % set primary variables
