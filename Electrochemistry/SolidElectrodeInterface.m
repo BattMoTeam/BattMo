@@ -25,7 +25,9 @@ classdef SolidElectrodeInterface < BaseModel
 
             fdnames = {'molecularWeight',
                        'density',
-                       'D'};
+                       'D', 
+                       'np',
+                       'N'};
             model = dispatchParams(model, paramobj, fdnames);
             
             model.operators = model.setupOperators();
@@ -94,6 +96,7 @@ classdef SolidElectrodeInterface < BaseModel
             
             np = model.np;
             N  = model.N;
+            D  = model.D;
             
             celltbl.cells = (1 : np)';
             celltbl = IndexArray(celltbl);
@@ -281,8 +284,15 @@ classdef SolidElectrodeInterface < BaseModel
             mapToSei = mapToSei.getMatrix();
             
             %%  assemble cell centroids and volumes
-            cellCentroids = mapToSei*G.cells.centroids;
-            vols = mapToSei*G.cells.volumes;
+            
+            map = TensorMap();
+            map.fromTbl = Scelltbl;
+            map.toTbl = cellScelltbl;
+            map.mergefds = {'Scells'};
+            map = map.setup();
+            
+            cellCentroids = map.eval(G.cells.centroids);
+            vols = map.eval(G.cells.volumes);
             
             operators = struct('div'          , div          , ...
                                'diffFlux'     , diffFlux     , ...
@@ -302,8 +312,6 @@ classdef SolidElectrodeInterface < BaseModel
         function state = updateMassSource(model, state)
             
             op = model.operators;
-            rp = model.rp;
-            volumetricSurfaceArea = model.volumetricSurfaceArea;
             
             R     = state.R;
             c     = state.c;
@@ -326,7 +334,7 @@ classdef SolidElectrodeInterface < BaseModel
         
         function state = assembleWidthEquation(model, state, state0, dt)
             
-            state.widthEq = 1/dt*(state.delta - state0.delta) - state.v
+            state.widthEq = 1/dt*(state.delta - state0.delta) - state.v;
             
         end
         
@@ -343,7 +351,7 @@ classdef SolidElectrodeInterface < BaseModel
             delta  = op.mapToSei*delta;
             delta0 = op.mapToSei*delta0;
             
-            state.accumTerm = 1/dt*op.vols.*delta.*(delta.*c - delta0.*sc0);
+            state.accumTerm = 1/dt*op.vols.*delta.*(delta.*c - delta0.*c0);
             
         end
             
@@ -374,7 +382,7 @@ classdef SolidElectrodeInterface < BaseModel
         function state = updateFlux(model, state)
             
             op       = model.operators;
-            xi       = op.cellCentroids
+            xi       = op.cellCentroids;
             mapToSei = op.mapToSei;
             faceAver = op.faceAverage;
             

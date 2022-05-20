@@ -11,8 +11,6 @@ mrstModule add ad-core mrst-gui mpfa
 %% Setup the properties of Li-ion battery materials and cell design
 jsonstruct = parseBattmoJson('ParameterData/ParameterSets/Chen2020/chen2020_lithium_ion_battery.json');
 
-paramobj = BatteryInputParams(jsonstruct);
-
 % Some shorthands used for the sub-models
 ne  = 'NegativeElectrode';
 pe  = 'PositiveElectrode';
@@ -24,39 +22,27 @@ sr  = 'SideReaction';
 elyte = 'Electrolyte';
 
 %% We setup the battery geometry ("bare" battery with no current collector). We use that to recover the parameters for the active material of the positive electrode, which is instantiate later
-gen = BareBatteryGenerator3D();
-% We update pamobj with grid data
-paramobj = gen.updateBatteryInputParams(paramobj);
+paramobj = SEIActiveMaterialInputParams(jsonstruct.(pe).(am));
 
-paramobj.(pe).(am).InterDiffusionCoefficient = 0;
-paramobj.(pe).(am).(sd).useSimplifiedDiffusionModel = false;
-
-paramobj = paramobj.(pe).(am);
-
-
+paramobj.(sd).useSimplifiedDiffusionModel = false;
+paramobj.InterDiffusionCoefficient = 0;
 paramobj.externalCouplingTerm = [];
-paramobj.(sd).np = 1;
+paramobj.(sd).N   = 10;
+paramobj.(sd).np  = 1;
+paramobj.(sei).N  = 10;
+paramobj.(sei).np = 1;
 xlength = 57e-6; 
 G = cartGrid(1, xlength);
 G = computeGeometry(G);
 paramobj.G = G;
 
-parentParamobj = paramobj;
+model = SEIActiveMaterial(paramobj);
 
-paramobj = SEIActiveMaterialInputParams(jsonstruct.(pe).(am));
-paramobj.(sd).np = parentParamobj.(sd).np;
-paramobj.G = parentParamobj.G;
-
-
-return
-
-model = ActiveMaterial(paramobj);
 
 %% Setup initial state
 
 Nsd = model.(sd).N;
 Nsei = model.(sei).N;
-
 
 cElectrodeInit   = 40*mol/litre;
 phiElectrodeInit = 3.5;
@@ -71,13 +57,14 @@ initState.(sd).c           = cElectrodeInit*ones(Nsd, 1);
 initState.(sd).cSurface    = cElectrodeInit;
 initState.(sei).c          = cElectrolyte*ones(Nsei, 1);
 initState.(sei).cInterface = cElectrolyte;
-initState.(sei).delta      = 0;
-initState.(sei).R          = 0;
+initState.(sei).delta      = 5e-9;
+initState.R                = 0;
 
 % set static variable fields
 initState.T = T;
 initState.(itf).cElectrolyte   = cElectrolyte;
 initState.(itf).phiElectrolyte = phiElectrolyte;
+initState.(sr).phiElectrolyte  = phiElectrolyte;
 initState.(sei).cExternal      = cExternal;
 
 

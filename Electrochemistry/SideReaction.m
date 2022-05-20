@@ -63,6 +63,7 @@ classdef SideReaction < BaseModel
         function state = updateReactionRate(model, state)
 
             F    = model.constants.F;
+            R    = model.constants.R;
             beta = model.beta;
             k    = model.k;
 
