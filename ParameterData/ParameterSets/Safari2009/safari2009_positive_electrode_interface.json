@@ -1,0 +1,17 @@
+{
+    "cmax": 51555,
+    "bruggemanCoeffcient": 1.5,
+    "volumeFraction": 0.665,
+    "volumetricSurfaceArea": 382183,
+    "n" : 1,
+    "Eak": 17800,
+    "k0": 1.04e-11,
+    "theta100": 0.5,
+    "theta0": 0.99,
+    "name": "cathode(safari)",
+    "updateOCPFunc" : {"functionname" : "updateOCPFunc_nmc111_Chen",
+                       "filepath" : "Materials/Solid/MetalOxides/updateOCPFunc_nmc111_Chen.m",
+                       "argumentlist" : ["concentration", "temperature", "maximum concentration"],
+                       "name" : "nmc111 OCP"
+                      }
+}
