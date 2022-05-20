@@ -160,6 +160,7 @@ classdef ActiveMaterial < ElectronicComponent
             %% Assemble reaction rates
             state.(itf) = model.(itf).updateOCP(state.(itf));
             state       = model.updatePhi(state);
+            state.(itf) = model.(itf).updateEta(state.(itf));
             state.(itf) = model.(itf).updateReactionRateCoefficient(state.(itf));
             state.(itf) = model.(itf).updateReactionRate(state.(itf));
 

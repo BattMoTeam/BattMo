@@ -39,12 +39,6 @@ G = cartGrid(1, xlength);
 G = computeGeometry(G);
 paramobj.G = G;
 
-parentParamobj = paramobj;
-
-paramobj = SEIActiveMaterialInputParams(jsonstruct.(pe).(am));
-paramobj.(sd).np = parentParamobj.(sd).np;
-paramobj.G = parentParamobj.G;
-
 model = ActiveMaterial(paramobj);
 
 %% Setup initial state
