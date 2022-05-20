@@ -14,11 +14,13 @@ jsonstruct = parseBattmoJson('ParameterData/ParameterSets/Chen2020/chen2020_lith
 paramobj = BatteryInputParams(jsonstruct);
 
 % Some shorthands used for the sub-models
-ne    = 'NegativeElectrode';
-pe    = 'PositiveElectrode';
-am    = 'ActiveMaterial';
-sd    = 'SolidDiffusion';
-itf   = 'Interface';
+ne  = 'NegativeElectrode';
+pe  = 'PositiveElectrode';
+am  = 'ActiveMaterial';
+sd  = 'SolidDiffusion';
+itf = 'Interface';
+sei = 'SolidElectrodeInterface';
+sr  = 'SideReaction';
 elyte = 'Electrolyte';
 
 %% We setup the battery geometry ("bare" battery with no current collector). We use that to recover the parameters for the active material of the positive electrode, which is instantiate later
@@ -52,7 +54,8 @@ model = ActiveMaterial(paramobj);
 
 %% Setup initial state
 
-N = model.(sd).N;
+Nsd = model.(sd).N;
+Nsei = model.(sei).N;
 
 
 cElectrodeInit   = 40*mol/litre;
@@ -60,16 +63,23 @@ phiElectrodeInit = 3.5;
 cElectrolyte     = 5e-1*mol/litre;
 phiElectrolyte   = 0;
 T                = 298;
+cExternal        = 4.541*mol/litre;
 
 % set primary variables
-initState.phi           = phiElectrodeInit;
-initState.(sd).c        = cElectrodeInit*ones(N, 1);
-initState.(sd).cSurface = cElectrodeInit;
+initState.phi              = phiElectrodeInit;
+initState.(sd).c           = cElectrodeInit*ones(Nsd, 1);
+initState.(sd).cSurface    = cElectrodeInit;
+initState.(sei).c          = cElectrolyte*ones(Nsei, 1);
+initState.(sei).cInterface = cElectrolyte;
+initState.(sei).delta      = 0;
+initState.(sei).R          = 0;
 
 % set static variable fields
 initState.T = T;
 initState.(itf).cElectrolyte   = cElectrolyte;
 initState.(itf).phiElectrolyte = phiElectrolyte;
+initState.(sei).cExternal      = cExternal;
+
 
 %% setup schedule
 
@@ -83,6 +93,7 @@ control.src = 1e-6;
 schedule = struct('control', control, 'step', step); 
 
 %% Run simulation
+
 model.verbose = true;
 [wellSols, states, report] = simulateScheduleAD(initState, model, schedule, 'OutputMinisteps', true); 
 

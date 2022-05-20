@@ -101,6 +101,7 @@ classdef ActiveMaterial < ElectronicComponent
             end
             model = model.registerVarNames(varnames);
 
+            %% FIXME
             isRoot = true;
             if isRoot
                 fn = @ActiveMaterial.updateStandalonejBcSource;

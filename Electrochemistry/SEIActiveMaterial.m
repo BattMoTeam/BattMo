@@ -31,12 +31,12 @@ classdef SEIActiveMaterial < ActiveMaterial
             varnames{end + 1} = 'R';
             model = model.registerVarNames(varnames);
             
-            fn = @SEIActiveMaterial.assembleInterfaceMassCons;
+            fn = @SEIActiveMaterial.assembleSeiInterfaceChargeCons;
             inputnames = {{itf, 'R'}, {sr, 'R'}, 'R'};
-            model = model.registerPropFunction({'interfaceMassCons', fn, inputnames});
+            model = model.registerPropFunction({'seiInterfaceChargeCons', fn, inputnames});
             
             fn = @SEIActiveMaterial.updatePotentialDrop;
-            inputnames = {{'R'}, {'SolidElectrodeInterface', 'seiwidth'}};
+            inputnames = {{'R'}, {'SolidElectrodeInterface', 'delta'}};
             model = model.registerPropFunction({{itf, 'externalPotentialDrop'}, fn, inputnames});
             model = model.registerPropFunction({{sr, 'externalPotentialDrop'}, fn, inputnames});
             
@@ -73,7 +73,7 @@ classdef SEIActiveMaterial < ActiveMaterial
             
         end
         
-        function state = assembleInterfaceMassCons(model, state)
+        function state = assembleSeiInterfaceChargeCons(model, state)
 
             itf = 'Interface';
             sr  = 'SideReaction';
@@ -85,7 +85,7 @@ classdef SEIActiveMaterial < ActiveMaterial
             R = state.R;
             
             % We need to divide Rint with the volumetricSurfaceArea to obtain a rate in mol/(s*m^2) 
-            state.interfaceMassCons = R - 1./vsa.*Rint - Rsei;
+            state.seiInterfaceChargeCons = R - 1./vsa.*Rint - Rsei;
             
         end
         
@@ -100,7 +100,7 @@ classdef SEIActiveMaterial < ActiveMaterial
             F = model.(itf).contants.F;
             
             R     = state.R;
-            delta = state.(sei).seiwidth;
+            delta = state.(sei).delta;
             
             dphi = F*delta.*R/kappasei;
             
@@ -120,6 +120,25 @@ classdef SEIActiveMaterial < ActiveMaterial
             
         end
 
+        
+        function state = updateControl(model, state, drivingForces, dt)
+            
+            G = model.G;
+            coef = G.cells.volumes;
+            coef = coef./(sum(coef));
+            
+            state.controlCurrentSource = drivingForces.src.*coef;
+            
+        end
+        
+        
+        
+        function state = updateStandalonejBcSource(model, state)
+            
+            state.jBcSource = state.controlCurrentSource;
+
+        end
+
         function primaryvarnames = getPrimaryVariables(model)
             
             sd  = 'SolidDiffusion';
@@ -130,6 +149,7 @@ classdef SEIActiveMaterial < ActiveMaterial
                                {'phi'}             , ...
                                {sei, 'c'}          , ...
                                {sei, 'cInterface'} , ...
+                               {sei, 'delta'}      , ...
                                {'R'}};
             
         end
@@ -175,7 +195,7 @@ classdef SEIActiveMaterial < ActiveMaterial
             state = model.updateSEISurfaceConcentration(state);
             state.(sr) = model.(sr).updateReactionRate(state.(sr)); % SideReaction.R
 
-            state = model.assembleInterfaceMassCons(state); % interfaceMassCons
+            state = model.assembleInterfaceChargeCons(state); % SeiIterfaceChargeCons
 
             state.(sd) = model.(sd).updateDiffusionCoefficient(state.(sd)); % SolidDiffusion.D
             state.(sd) = model.(sd).updateFlux(state.(sd)); % SolidDiffusion.flux
@@ -183,10 +203,11 @@ classdef SEIActiveMaterial < ActiveMaterial
             state.(sd) = model.(sd).updateAccumTerm(state.(sd), state0.(sd), dt); % SolidDiffusion.accumTerm
             state.(sd) = model.(sd).updateMassConservation(state.(sd)); % SolidDiffusion.massCons
 
-            state = model.updateCurrentSource(state); % eSource
-            state = model.updateCurrent(state); % j
+            state = model.updateControl(state, drivingForces, dt);
+            state = model.updateCurrentSource(state);       % eSource
+            state = model.updateCurrent(state);             % j
             state = model.updateStandalonejBcSource(state); % jBcSource
-            state = model.updateChargeConservation(state); % chargeCons
+            state = model.updateChargeConservation(state);  % chargeCons
             
             state = model.dispatchSEIRate(state); % SolidElectrodemodel.(itf).R
             state.(sei) = model.(sei).updateSEIgrowthVelocity(state.(sei)); % SolidElectrodeInterface.v
@@ -207,14 +228,16 @@ classdef SEIActiveMaterial < ActiveMaterial
             eqs{end + 1} = 1e5*state.(sd).solidDiffusionEq.*massConsScaling.*model.(itf).G.cells.volumes/dt;
             eqs{end + 1} = state.(sei).massCons;
             eqs{end + 1} = state.(sei).widthEq;
-            eqs{end + 1} = state.interfaceMassCons;
+            eqs{end + 1} = state.seiInterfaceChargeCons;
+            eqs{end + 1} = state.(sei).solidDiffusionEq;
             
-            names = {'chargeCons'         , ...
-                     'sd_massCons'        , ...
-                     'sd_solidDiffusionEq', ...
-                     'sei_massCons'       , ...
-                     'sei_width'          , ...
-                     'massCons'};
+            names = {'chargeCons'              , ...
+                     'sd_massCons'             , ...
+                     'sd_solidDiffusionEq'     , ...
+                     'sei_massCons'            , ...
+                     'sei_width'               , ...
+                     'sei_interface_chargeCons', ...
+                     'sei_solidDiffusionEq'};
             
             types = repmat({'cell'}, 1, numel(names));
             

@@ -178,7 +178,6 @@ classdef Interface < BaseModel
             OCP      = state.OCP;
             dphi     = state.externalPotentialDrop;
 
-            %% FIXME : check sign
             state.eta = (phiElde - phiElyte - OCP - dphi);
 
         end

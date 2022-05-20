@@ -47,7 +47,8 @@ classdef SolidElectrodeInterface < BaseModel
             % external surface concentration
             varnames{end + 1} = 'cExternal';
             % surface concentration
-            varnames{end + 1} = 'seiwidth';
+            %% FIXME : change name delta to more explicit name (sei width)
+            varnames{end + 1} = 'delta';
             % SEI growth velocity
             varnames{end + 1} = 'v';
             % Reaction rate
@@ -86,7 +87,7 @@ classdef SolidElectrodeInterface < BaseModel
             model = model.registerPropFunction({'solidDiffusionEq', fn, {'c', 'cInterface', 'massSource'}});
             
             fn = @SolidElectrodeInterface.assembleWidthEquation;
-            model = model.registerPropFunction({'widthEq', fn, {'seiwidth', 'v'}});
+            model = model.registerPropFunction({'widthEq', fn, {'delta', 'v'}});
         end
         
         function operators = setupOperators(model)
@@ -310,6 +311,7 @@ classdef SolidElectrodeInterface < BaseModel
             delta = state.delta;
             
             c = op.mapToExtBc*c;
+            %% FIXME : add epsilon term before cext (as in Safari paper)
             % The convection term vanishes for xi = 1
             srcExternal = -op.TExtBc.*(c - cext);
             srcExternal = op.mapFromExtBc*srcExternal;
@@ -324,7 +326,7 @@ classdef SolidElectrodeInterface < BaseModel
         
         function state = assembleWidthEquation(model, state, state0, dt)
             
-            state.widthEq = 1/dt*(state.seiwidth - state0.seiwidth) - state.v
+            state.widthEq = 1/dt*(state.delta - state0.delta) - state.v
             
         end
         
@@ -359,13 +361,12 @@ classdef SolidElectrodeInterface < BaseModel
         
         function state = updateSEIgrowthVelocity(model, state)
             
-            % FIXME : bound growth (we cannot have delta negative) ? 
-                
             Mw = model.molecularWeight;
             rho = model.density;
             
             R = state.R;
             
+            % Note that R is (for the moment) always negative so that we only have sei layer growth.
             state.v = -0.5*R*(Mw/rho);
             
         end
