@@ -126,8 +126,8 @@ classdef SolidElectrodeInterface < BaseModel
             T = op.T; % in Sfacetbl
             T_all = op.T_all;
             
-            TExtBc = T_all(N); % half-transmissibility for of the external boundary face
-            TIntBc = T_all(1); % half-transmissibility for of the internal boundary face (close to solid particle)
+            TExtBc = D*T_all(N); % half-transmissibility for of the external boundary face
+            TIntBc = D*T_all(1); % half-transmissibility for of the internal boundary face (close to solid particle)
             
             Grad = -diag(T)*C;
             
@@ -314,8 +314,9 @@ classdef SolidElectrodeInterface < BaseModel
             srcExternal = -op.TExtBc.*(c - cext);
             srcExternal = op.mapFromExtBc*srcExternal;
             
-            %% FIXME : check sign
-            srcInterface = delta.*op.mapFromIntBc*R;
+            % Here, we use conversion relation between source terms given in moving and fixed mesh : 
+            % xi*v*delta*c_fixed = delta*src_moving - src_fixed (see doc).
+            srcInterface = op.mapFromIntBc*(delta.*R);
             state.massSource = srcExternal + srcInterface;
             
         end
@@ -393,12 +394,12 @@ classdef SolidElectrodeInterface < BaseModel
 
             c     = state.c;
             cInt  = state.cInterface;
-            src   = state.massSource;
+            R     = state.R;
             v     = state.v;
             delta = state.delta;
             
-            % here xi = 0
-            eq = -op.TIntBc.*(op.mapToIntBc*c - cInt) + delta.*v.*cInt - (op.mapToIntBc*src);
+            % Here, xi = 0
+            eq = - op.TIntBc.*(op.mapToIntBc*c - cInt) + delta.*v.*cInt - delta.*R;
             
             state.solidDiffusionEq = eq;
             
