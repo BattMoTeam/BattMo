@@ -242,15 +242,16 @@ classdef SEIActiveMaterial < ActiveMaterial
             
             state.(sei) = model.(sei).assembleSolidDiffusionEquation(state.(sei)); % SolidElectrodeInterface.solidDiffusionEq
 
+            % FIXME : replace the ad-hoc scalings with the correct ones.
             massConsScaling = model.(sd).constants.F; % Faraday constant
             eqs = {};
-            eqs{end + 1} = state.chargeCons;
-            eqs{end + 1} = 1e18*state.(sd).massCons;
+            eqs{end + 1} = 1e-7*state.chargeCons;
+            eqs{end + 1} = 1e9*state.(sd).massCons;
             eqs{end + 1} = 1e5*state.(sd).solidDiffusionEq.*massConsScaling.*model.(itf).G.cells.volumes/dt;
-            eqs{end + 1} = state.(sei).massCons;
+            eqs{end + 1} = 1e10*state.(sei).massCons;
             eqs{end + 1} = state.(sei).widthEq;
             eqs{end + 1} = state.seiInterfaceChargeCons;
-            eqs{end + 1} = state.(sei).solidDiffusionEq;
+            eqs{end + 1} = 1e10*state.(sei).solidDiffusionEq;
             
             names = {'chargeCons'              , ...
                      'sd_massCons'             , ...
