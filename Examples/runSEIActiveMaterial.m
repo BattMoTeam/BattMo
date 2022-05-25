@@ -44,9 +44,15 @@ Nsei = model.(sei).N;
 cElectrodeInit   = 40*mol/litre;
 phiElectrodeInit = 3.5;
 cElectrolyte     = 5e-1*mol/litre;
-phiElectrolyte   = 0;
 T                = 298.15; % reference temperature in Interface.
 cExternal        = 4.541*mol/litre;
+% compute OCP and  phiElectrolyte
+clear state
+state.cElectrodeSurface = cElectrodeInit;
+state.T = T;
+state = model.(itf).updateOCP(state);
+OCP = state.OCP;
+phiElectrolyte = phiElectrodeInit - OCP;
 
 % set primary variables
 initState.phi              = phiElectrodeInit;
