@@ -60,7 +60,7 @@ initState.(sd).c           = cElectrodeInit*ones(Nsd, 1);
 initState.(sd).cSurface    = cElectrodeInit;
 initState.(sei).c          = cElectrolyte*ones(Nsei, 1);
 initState.(sei).cInterface = cElectrolyte;
-initState.(sei).delta      = 5e-9;
+initState.(sei).delta      = 0;
 initState.R                = 0;
 
 % set static variable fields
@@ -74,18 +74,56 @@ initState.(sei).cExternal      = cExternal;
 %% setup schedule
 
 total = 1*hour;
-n     = 10;
+n     = 100;
 dt    = total/n;
 step  = struct('val', dt*ones(n, 1), 'control', ones(n, 1));
 
-control.src = 1e-6;
+control.src = 1;
 
 schedule = struct('control', control, 'step', step); 
 
 %% Run simulation
 
 model.verbose = true;
-[wellSols, states, report] = simulateScheduleAD(initState, model, schedule, 'OutputMinisteps', true); 
+
+dopack = false;
+if dopack
+    dataFolder = 'BattMo';
+    problem = packSimulationProblem(initState, model, schedule, dataFolder, 'Name', 'temp');
+    problem.SimulatorSetup.OutputMinisteps = true; 
+    simulatePackedProblem(problem);
+    [globvars, states, report] = getPackedSimulatorOutput(problem);
+else
+    [wellSols, states, report] = simulateScheduleAD(initState, model, schedule, 'OutputMinisteps', true); 
+end
+
+%% Plotting
+
+% concentration evolution in particle
+
+figure
+xr = (model.(sd).rp/model.(sd).N) * (1 : model.(sd).N)';
+for ind = 1 : numel(states)
+    state = states{ind};
+    cla
+    plot(xr, state.(sd).c)
+    xlabel('r / [m]')
+    ylabel('concentration')
+    title(sprintf('time : %g s', state.time));
+    pause(0.1)
+end
+
+%%
+
+figure
+d = cellfun(@(state) state.(sei).delta, states);
+t = cellfun(@(state) state.time, states);
+plot(t, d);
+xlabel('time / [s]');
+ylabel('sie width / [m]');
+
+
+
 
 
 
