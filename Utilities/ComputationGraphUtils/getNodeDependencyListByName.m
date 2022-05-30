@@ -3,5 +3,6 @@ function nodeDependencyList = getNodeDependencyListByName(regstr, nodenames, A)
     nodeList = cellfun(@(x) ~isempty(x), nodeList);
     nodeList = find(nodeList);
     nodeDependencyList = getNodeDependencyList(nodeList, A);
+    nodeDependencyList = unique(nodeDependencyList);
 end
 
