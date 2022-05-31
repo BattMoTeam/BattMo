@@ -276,16 +276,16 @@ classdef Battery < BaseModel
             % Function that assemble the control equation
             
             fn = @Batter.setupEIEquation;
-            inputnames = {{'pe', 'cc', 'E'}, ...
-                          {'pe', 'cc', 'I'}, ...
-                          {'pe', 'cc', 'phi'}, ...
+            inputnames = {{pe, cc, 'E'}, ...
+                          {pe, cc, 'I'}, ...
+                          {pe, cc, 'phi'}, ...
                          };
             model = model.registerPropFunction({{'controlEq'}, fn, inputnames});
             
             % Function that update Thermal accumulation terms
             
             fn = @Battery.updateThermalAccumTerms;
-            inputnames = {'T'};
+            inputnames = {{thermal, 'T'}};
             model = model.registerPropFunction({{thermal, 'accumHeat'}, fn, inputnames});
             
             % Function that update the Thermal Ohmic Terms
