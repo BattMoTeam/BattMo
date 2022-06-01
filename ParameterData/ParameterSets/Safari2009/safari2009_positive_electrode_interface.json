@@ -9,8 +9,8 @@
     "theta100": 0.5,
     "theta0": 0.99,
     "name": "cathode(safari)",
-    "updateOCPFunc" : {"functionname" : "updateOCPFunc_nmc111_Chen",
-                       "filepath" : "Materials/Solid/MetalOxides/updateOCPFunc_nmc111_Chen.m",
+    "updateOCPFunc" : {"functionname" : "updateOCPFunc_nmc111",
+                       "filepath" : "Materials/Solid/MetalOxides/updateOCPFunc_nmc111.m",
                        "argumentlist" : ["concentration", "temperature", "maximum concentration"],
                        "name" : "nmc111 OCP"
                       }
