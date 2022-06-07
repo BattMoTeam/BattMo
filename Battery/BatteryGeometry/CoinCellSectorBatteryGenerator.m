@@ -35,7 +35,7 @@ classdef CoinCellSectorBatteryGenerator < BatteryGenerator
             gen.thickness = params.thickness;
             gen.diameter  = params.diameter;
             gen.angle     = params.angle;
-            gen.offset    = params.offset;
+            %gen.offset    = params.offset;
             gen.nLayer    = params.nLayer;
             gen.nR        = params.nR;
             
