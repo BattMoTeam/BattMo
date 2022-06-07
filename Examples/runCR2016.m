@@ -6,24 +6,28 @@ close all
 
 mrstModule add ad-core mrst-gui mpfa agmg
 
-%% We setup the geometrical parameters for a CR2016 battery. 
 
-% Thickness of each component ordered as
-% - positive current collector
-% - positive electrode
-% - electrolyte separator 
-% - negative electrode
-% - negative current collector
 
+%% Shorthand
+ne      = 'NegativeElectrode';
+pe      = 'PositiveElectrode';
+am      = 'ActiveMaterial';
+cc      = 'CurrentCollector';
+elyte   = 'Electrolyte';
+sep     = 'Separator';
+thermal = 'ThermalModel';
+ctrl    = 'Control';
+
+%% Setup the geometrical parameters for a CR2016 battery. 
 CR2016_diameter = 20*milli*meter;
 CR2016_thickness = 1.6*milli*meter;
 
 % Thicknesses of each component
 thickness = containers.Map();
 thickness('PositiveCurrentCollector') = 0.1*milli*meter;
-thickness('PositiveActiveMaterial')   = 0.7*milli*meter;
+thickness('PositiveActiveMaterial')   = 0.45*milli*meter;
 thickness('ElectrolyteSeparator')     = 0.25*milli*meter;
-thickness('NegativeActiveMaterial')   = 0.45*milli*meter;
+thickness('NegativeActiveMaterial')   = 0.7*milli*meter;
 thickness('NegativeCurrentCollector') = thickness('PositiveCurrentCollector');
 assert(abs(sum(cell2mat(thickness.values)) - CR2016_thickness) < eps);
 
@@ -72,51 +76,57 @@ paramobj = BatteryInputParams(jsonstruct);
 gen = CoinCellSectorBatteryGenerator();
 paramobj = gen.updateBatteryInputParams(paramobj, params);
 
+% FIXME
+paramobj.(ne).(cc).EffectiveElectricalConductivity = 1e5;
+paramobj.(pe).(cc).EffectiveElectricalConductivity = 1e5;
+
 model = Battery(paramobj); 
 model.AutoDiffBackend = AutoDiffBackend();
 
-
-%% Shorthand
-ne      = 'NegativeElectrode';
-pe      = 'PositiveElectrode';
-elyte   = 'Electrolyte';
-thermal = 'ThermalModel';
-itf     = 'Interface';
-sd      = 'SolidDiffusion';
-ctrl    = 'Control';
+%% Plot the mesh
+% The mesh is plotted using the plotGrid() function from MRST. 
+colors = crameri('vik', 5);
+figure
+plotGrid(model.(ne).(cc).G,     'facecolor', colors(1,:), 'edgealpha', 0.5, 'edgecolor', [1, 1, 1]);
+plotGrid(model.(ne).(am).G,     'facecolor', colors(2,:), 'edgealpha', 0.5, 'edgecolor', [1, 1, 1]);
+plotGrid(model.(elyte).(sep).G, 'facecolor', colors(3,:), 'edgealpha', 0.5, 'edgecolor', [1, 1, 1]);
+plotGrid(model.(pe).(am).G,     'facecolor', colors(4,:), 'edgealpha', 0.5, 'edgecolor', [1, 1, 1]);
+plotGrid(model.(pe).(cc).G,     'facecolor', colors(5,:), 'edgealpha', 0.5, 'edgecolor', [1, 1, 1]);
+axis tight;
+legend({'negative electrode current collector' , ...
+        'negative electrode active material'   , ...
+        'separator'                            , ...
+        'positive electrode active material'   , ...
+        'positive electrode current collector'}, ...
+       'location', 'southwest')
+view(3)
 
 %% C-rate
 CRate = model.(ctrl).CRate;
 
 %% Time step schedule
-switch model.(ctrl).controlPolicy
-  case 'CCCV'
-    total = 3.5*hour/CRate;
-  case 'IEswitch'
-    total = 1.4*hour/CRate;
-  otherwise
-    error('control policy not recognized');
-end
+n         = 25; 
+dt        = []; 
+dt        = [dt; repmat(0.5e-4, n, 1).*1.5.^[1:n]']; 
+totalTime = 1.4*hour/CRate;
+n         = 40; 
+dt        = [dt; repmat(totalTime/n, n, 1)]; 
+times     = [0; cumsum(dt)]; 
+tt        = times(2 : end); 
+step      = struct('val', diff(times), 'control', ones(numel(tt), 1)); 
 
-n     = 100;
-dt    = total/n;
-step  = struct('val', dt*ones(n, 1), 'control', ones(n, 1));
+%% Setup operating limits
+stopFunc    = @(model, state, state_prev) (state.(ctrl).E < 2.0); 
+tup         = 0.1; % rampup value for the current function, see rampupSwitchControl
+srcfunc = @(time, I, E) rampupSwitchControl(time, tup, I, E, ...
+                                            model.Control.Imax, ...
+                                            model.Control.lowerCutoffVoltage);
+% we setup the control by assigning a source and stop function.
+control = struct('src', srcfunc, 'IEswitch', true);
 
-switch model.Control.controlPolicy
-  case 'IEswitch'
-    tup = 0.1; % rampup value for the current function, see rampupSwitchControl
-    srcfunc = @(time, I, E) rampupSwitchControl(time, tup, I, E, ...
-                                                model.Control.Imax, ...
-                                                model.Control.lowerCutoffVoltage);
-    % we setup the control by assigning a source and stop function.
-    control = struct('src', srcfunc, 'IEswitch', true);
-  case 'CCCV'
-    control = struct('CCCV', true);
-  otherwise
-    error('control policy not recognized');
-end
-
+% This control is used to set up the schedule
 schedule = struct('control', control, 'step', step); 
+
 
 %% Initial state
 initstate = model.setupInitialState(); 
@@ -125,16 +135,31 @@ initstate = model.setupInitialState();
 nls = NonLinearSolver(); 
 % Change default maximum iteration number in nonlinear solver
 nls.maxIterations = 10; 
-nls.timeStepSelector = StateChangeTimeStepSelector('TargetProps', {{'Control','E'}}, 'targetChangeAbs', 0.03);
+nls.timeStepSelector = StateChangeTimeStepSelector('TargetProps', {{ctrl,'E'}}, ...
+                                                   'targetChangeAbs', 0.03);
 % Change default tolerance for nonlinear solver
-model.nonlinearTolerance = 1e-3*model.Control.Imax;
+%model.nonlinearTolerance = 1e-3*model.Control.Imax;
+model.nonlinearTolerance = 1e-5; 
+
+nls.errorOnFailure = false; 
+
 % Set verbosity
 model.verbose = true;
 
 %% Run the simulation
 [wellSols, states, report] = simulateScheduleAD(initstate, model, schedule, 'OutputMinisteps', true, 'NonLinearSolver', nls); 
 
+%%  Process output and recover the output voltage and current from the output states.
+ind = cellfun(@(x) not(isempty(x)), states); 
+states = states(ind);
+Enew = cellfun(@(x) x.(ctrl).E, states); 
+Inew = cellfun(@(x) x.(ctrl).I, states);
+time = cellfun(@(x) x.time, states); 
 
+figure
+plot(time, Inew), title('I')
+figure
+plot(time, Enew), title('E')
 
 
 %{
