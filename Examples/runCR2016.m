@@ -36,20 +36,20 @@ diameter('NegativeActiveMaterial')   = diameter('PositiveActiveMaterial');
 diameter('NegativeCurrentCollector') = diameter('PositiveCurrentCollector');
 
 % Angle of the sector
-angle = pi / 10;
+angle = pi / 20;
 
-% Chamfer (not implemented)
-chamfer = CR2016_thickness / 6;
+% % Chamfer (not implemented)
+% chamfer = CR2016_thickness / 6;
 
-% Possible offset (cannot be used for sector grid)
-offset = [0, 0]; 
+% % Possible offset (cannot be used for sector grid)
+% offset = [0, 0]; 
 
 % Discretization cells in each layer
 nLayer = containers.Map();
-% nLayer('PositiveCurrentCollector') = 2;
-% nLayer('PositiveActiveMaterial')   = 7;
-% nLayer('ElectrolyteSeparator')     = 3; 
-% nLayer('NegativeActiveMaterial')   = 5;
+% nLayer('PositiveCurrentCollector') = 1;
+% nLayer('PositiveActiveMaterial')   = 3;
+% nLayer('ElectrolyteSeparator')     = 2; 
+% nLayer('NegativeActiveMaterial')   = 3;
 % nLayer('NegativeCurrentCollector') = nLayer('PositiveCurrentCollector');
 hz = min(cell2mat(thickness.values))/2;
 for k = keys(thickness)
@@ -62,7 +62,6 @@ nR = 10;
 
 params = struct('thickness', thickness, ...
                 'diameter', diameter, ...
-                'offset', offset, ...
                 'angle', angle, ...
                 'nLayer', nLayer, ...
                 'nR', nR);
@@ -74,6 +73,66 @@ gen = CoinCellSectorBatteryGenerator();
 paramobj = gen.updateBatteryInputParams(paramobj, params);
 
 model = Battery(paramobj); 
+model.AutoDiffBackend = AutoDiffBackend();
+
+
+%% Shorthand
+ne      = 'NegativeElectrode';
+pe      = 'PositiveElectrode';
+elyte   = 'Electrolyte';
+thermal = 'ThermalModel';
+itf     = 'Interface';
+sd      = 'SolidDiffusion';
+ctrl    = 'Control';
+
+%% C-rate
+CRate = model.(ctrl).CRate;
+
+%% Time step schedule
+switch model.(ctrl).controlPolicy
+  case 'CCCV'
+    total = 3.5*hour/CRate;
+  case 'IEswitch'
+    total = 1.4*hour/CRate;
+  otherwise
+    error('control policy not recognized');
+end
+
+n     = 100;
+dt    = total/n;
+step  = struct('val', dt*ones(n, 1), 'control', ones(n, 1));
+
+switch model.Control.controlPolicy
+  case 'IEswitch'
+    tup = 0.1; % rampup value for the current function, see rampupSwitchControl
+    srcfunc = @(time, I, E) rampupSwitchControl(time, tup, I, E, ...
+                                                model.Control.Imax, ...
+                                                model.Control.lowerCutoffVoltage);
+    % we setup the control by assigning a source and stop function.
+    control = struct('src', srcfunc, 'IEswitch', true);
+  case 'CCCV'
+    control = struct('CCCV', true);
+  otherwise
+    error('control policy not recognized');
+end
+
+schedule = struct('control', control, 'step', step); 
+
+%% Initial state
+initstate = model.setupInitialState(); 
+
+%% Setup the properties of the nonlinear solver 
+nls = NonLinearSolver(); 
+% Change default maximum iteration number in nonlinear solver
+nls.maxIterations = 10; 
+nls.timeStepSelector = StateChangeTimeStepSelector('TargetProps', {{'Control','E'}}, 'targetChangeAbs', 0.03);
+% Change default tolerance for nonlinear solver
+model.nonlinearTolerance = 1e-3*model.Control.Imax;
+% Set verbosity
+model.verbose = true;
+
+%% Run the simulation
+[wellSols, states, report] = simulateScheduleAD(initstate, model, schedule, 'OutputMinisteps', true, 'NonLinearSolver', nls); 
 
 
 
