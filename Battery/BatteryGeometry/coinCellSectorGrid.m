@@ -88,8 +88,9 @@ function output = coinCellSectorGrid(params)
     assert(numel(positiveExtCurrentFaces) == G.cartDims(1));
 
     % Thermal cooling faces on top and bottom
-    thermalCoolingFaces = find(G.faces.centroids(bf, 3) > max(z) - 100*eps | ...
-                               G.faces.centroids(bf, 3) < 100*eps);
+    top = G.faces.centroids(bf, 3) < 100*eps;
+    bottom = G.faces.centroids(bf, 3) > max(z) - 100*eps;
+    thermalCoolingFaces = [bf(top); bf(bottom)];
     assert(numel(thermalCoolingFaces) == G.cartDims(1)*2);
 
     % Thermal exchange faces on the sides
@@ -121,6 +122,7 @@ function output = coinCellSectorGrid(params)
     output.negativeExtCurrentFaces = negativeExtCurrentFaces;
     output.positiveExtCurrentFaces = positiveExtCurrentFaces;
 
+    output.thermalCoolingFaces  = thermalCoolingFaces;
     output.thermalExchangeFaces = thermalExchangeFaces;
     output.thermalExchangeFacesTag = thermalExchangeFacesTag;
 
