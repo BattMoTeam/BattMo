@@ -47,7 +47,12 @@ function output = coinCellSectorGrid(params)
     n = [-sin(v), cos(v), 0];
     pt = zeros(1, 3);
     [G, gix] = sliceGrid(G, pt, 'normal', n);
-    m = markCutGrids(G, gix.new.faces);
+    if mrstPlatform('octave')
+        legacy = true;
+    else
+        legacy = false;
+    end
+    m = markCutGrids(G, gix.new.faces, 'legacy', legacy);
     G = removeCells(G, m == 1);
 
     % Tag
