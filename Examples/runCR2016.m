@@ -83,26 +83,10 @@ paramobj.(pe).(cc).EffectiveElectricalConductivity = 1e5;
 model = Battery(paramobj); 
 model.AutoDiffBackend = AutoDiffBackend();
 
-%% Plot the mesh
-% The mesh is plotted using the plotGrid() function from MRST. 
-colors = crameri('vik', 5);
-figure
-plotGrid(model.(ne).(cc).G,     'facecolor', colors(1,:), 'edgealpha', 0.5, 'edgecolor', [1, 1, 1]);
-plotGrid(model.(ne).(am).G,     'facecolor', colors(2,:), 'edgealpha', 0.5, 'edgecolor', [1, 1, 1]);
-plotGrid(model.(elyte).(sep).G, 'facecolor', colors(3,:), 'edgealpha', 0.5, 'edgecolor', [1, 1, 1]);
-plotGrid(model.(pe).(am).G,     'facecolor', colors(4,:), 'edgealpha', 0.5, 'edgecolor', [1, 1, 1]);
-plotGrid(model.(pe).(cc).G,     'facecolor', colors(5,:), 'edgealpha', 0.5, 'edgecolor', [1, 1, 1]);
-axis tight;
-legend({'negative electrode current collector' , ...
-        'negative electrode active material'   , ...
-        'separator'                            , ...
-        'positive electrode active material'   , ...
-        'positive electrode current collector'}, ...
-       'location', 'southwest')
-view(3)
 
 %% C-rate
-CRate = model.(ctrl).CRate;
+%CRate = model.(ctrl).CRate;
+CRate = 1;
 
 %% Time step schedule
 n         = 25; 
@@ -156,10 +140,70 @@ Enew = cellfun(@(x) x.(ctrl).E, states);
 Inew = cellfun(@(x) x.(ctrl).I, states);
 time = cellfun(@(x) x.time, states); 
 
+
+
+%% Plot the mesh
+% The mesh is plotted using the plotGrid() function from MRST. 
+colors = crameri('vik', 5);
+figure
+plotGrid(model.(ne).(cc).G,     'facecolor', colors(1,:), 'edgealpha', 0.5, 'edgecolor', [1, 1, 1]);
+plotGrid(model.(ne).(am).G,     'facecolor', colors(2,:), 'edgealpha', 0.5, 'edgecolor', [1, 1, 1]);
+plotGrid(model.(elyte).(sep).G, 'facecolor', colors(3,:), 'edgealpha', 0.5, 'edgecolor', [1, 1, 1]);
+plotGrid(model.(pe).(am).G,     'facecolor', colors(4,:), 'edgealpha', 0.5, 'edgecolor', [1, 1, 1]);
+plotGrid(model.(pe).(cc).G,     'facecolor', colors(5,:), 'edgealpha', 0.5, 'edgecolor', [1, 1, 1]);
+axis tight;
+legend({'negative electrode current collector' , ...
+        'negative electrode active material'   , ...
+        'separator'                            , ...
+        'positive electrode active material'   , ...
+        'positive electrode current collector'}, ...
+       'location', 'southwest')
+view(3)
+
+
 figure
 plot(time, Inew), title('I')
 figure
 plot(time, Enew), title('E')
+
+figure
+for k = 1:numel(states)
+    c{k} = states{k}.PositiveElectrode.ActiveMaterial.c;
+end
+plotToolbar(model.PositiveElectrode.ActiveMaterial.G, c)
+view(3), colorbar
+title('PE AM c')
+
+figure
+for k = 1:numel(states)
+    c{k} = states{k}.PositiveElectrode.ActiveMaterial.phi;
+end
+plotToolbar(model.PositiveElectrode.ActiveMaterial.G, c)
+view(3), colorbar
+title('PE AM phi')
+
+figure
+for k = 1:numel(states)
+    c{k} = states{k}.NegativeElectrode.ActiveMaterial.c;
+end
+plotToolbar(model.NegativeElectrode.ActiveMaterial.G, c)
+view(3), colorbar
+title('NE AM c')
+figure
+for k = 1:numel(states)
+    c{k} = states{k}.NegativeElectrode.ActiveMaterial.phi;
+end
+plotToolbar(model.NegativeElectrode.ActiveMaterial.G, c)
+view(3), colorbar
+title('NE AM phi')
+
+figure
+for k = 1:numel(states)
+    c{k} = states{k}.ThermalModel.T;
+end
+plotToolbar(model.ThermalModel.G, c)
+view(3), colorbar
+title('T')
 
 
 %{
