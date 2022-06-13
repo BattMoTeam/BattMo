@@ -24,29 +24,48 @@ CR2016_thickness = 1.6*milli*meter;
 
 % Thicknesses of each component
 thickness = containers.Map();
-thickness('PositiveCurrentCollector') = 0.1*milli*meter;
-thickness('PositiveActiveMaterial')   = 0.45*milli*meter;
-thickness('ElectrolyteSeparator')     = 0.25*milli*meter;
-thickness('NegativeActiveMaterial')   = 0.7*milli*meter;
+% thickness('PositiveCurrentCollector') = 0.1*milli*meter;
+% thickness('PositiveActiveMaterial')   = 0.45*milli*meter;
+% thickness('ElectrolyteSeparator')     = 0.25*milli*meter;
+% thickness('NegativeActiveMaterial')   = 0.7*milli*meter;
+% thickness('NegativeCurrentCollector') = thickness('PositiveCurrentCollector');
+
+% Proportions from runBattery3D
+zlength = [10; 100; 50; 80; 10];
+zz = CR2016_thickness * zlength / sum(zlength);
+thickness('PositiveCurrentCollector') = zz(1);
+thickness('PositiveActiveMaterial')   = zz(2);
+thickness('ElectrolyteSeparator')     = zz(3);
+thickness('NegativeActiveMaterial')   = zz(4);
 thickness('NegativeCurrentCollector') = thickness('PositiveCurrentCollector');
+
+
+
 assert(abs(sum(cell2mat(thickness.values)) - CR2016_thickness) < eps);
 
 % Diameters of each component
 diameter = containers.Map();
+% diameter('PositiveCurrentCollector') = CR2016_diameter;
+% diameter('PositiveActiveMaterial')   = 16*milli*meter;
+% diameter('ElectrolyteSeparator')     = 18*milli*meter;
+% diameter('NegativeActiveMaterial')   = diameter('PositiveActiveMaterial');
+% diameter('NegativeCurrentCollector') = diameter('PositiveCurrentCollector');
 diameter('PositiveCurrentCollector') = CR2016_diameter;
-diameter('PositiveActiveMaterial')   = 16*milli*meter;
-diameter('ElectrolyteSeparator')     = 18*milli*meter;
-diameter('NegativeActiveMaterial')   = diameter('PositiveActiveMaterial');
+diameter('PositiveActiveMaterial')   = diameter('PositiveCurrentCollector');
+diameter('ElectrolyteSeparator')     = diameter('PositiveCurrentCollector');
+diameter('NegativeActiveMaterial')   = diameter('PositiveCurrentCollector');
 diameter('NegativeCurrentCollector') = diameter('PositiveCurrentCollector');
 
 % Angle of the sector
 angle = pi / 20;
 
-% % Chamfer (not implemented)
-% chamfer = CR2016_thickness / 6;
+% Chamfer (not implemented)
+chamfer = CR2016_thickness / 6;
 
-% % Possible offset (cannot be used for sector grid)
-% offset = [0, 0]; 
+% Possible offset (cannot be used for sector grid)
+offset = [0, 0]; 
+
+nR = 10;
 
 % Discretization cells in each layer
 nLayer = containers.Map();
@@ -62,18 +81,21 @@ for k = keys(thickness)
 end
 
 % Discretization cells radially
-nR = 10;
+%offset = [1, 1]*milli*meter;
+offset = [];
 
 params = struct('thickness', thickness, ...
                 'diameter', diameter, ...
-                'angle', angle, ...
                 'nLayer', nLayer, ...
+                'offset', offset, ...
+                'angle', angle, ...
                 'nR', nR);
 
 jsonstruct = parseBattmoJson('ParameterData/BatteryCellParameters/LithiumIonBatteryCell/lithium_ion_battery_nmc_graphite.json');
 paramobj = BatteryInputParams(jsonstruct); 
 
-gen = CoinCellSectorBatteryGenerator();
+gen = CoinCellBatteryGenerator();
+%gen = CoinCellSectorBatteryGenerator();
 paramobj = gen.updateBatteryInputParams(paramobj, params);
 
 % FIXME
@@ -82,6 +104,31 @@ paramobj.(pe).(cc).EffectiveElectricalConductivity = 1e5;
 
 model = Battery(paramobj); 
 model.AutoDiffBackend = AutoDiffBackend();
+
+
+
+
+%% Plot the mesh
+% The mesh is plotted using the plotGrid() function from MRST. 
+colors = crameri('vik', 5);
+figure
+plotGrid(model.(ne).(cc).G,     'facecolor', colors(1,:), 'edgealpha', 0.5, 'edgecolor', [1, 1, 1]);
+plotGrid(model.(ne).(am).G,     'facecolor', colors(2,:), 'edgealpha', 0.5, 'edgecolor', [1, 1, 1]);
+plotGrid(model.(elyte).(sep).G, 'facecolor', colors(3,:), 'edgealpha', 0.5, 'edgecolor', [1, 1, 1]);
+plotGrid(model.(pe).(am).G,     'facecolor', colors(4,:), 'edgealpha', 0.5, 'edgecolor', [1, 1, 1]);
+plotGrid(model.(pe).(cc).G,     'facecolor', colors(5,:), 'edgealpha', 0.5, 'edgecolor', [1, 1, 1]);
+axis tight;
+legend({'negative electrode current collector' , ...
+        'negative electrode active material'   , ...
+        'separator'                            , ...
+        'positive electrode active material'   , ...
+        'positive electrode current collector'}, ...
+       'location', 'southwest')
+view(3)
+drawnow
+
+
+% return
 
 
 %% C-rate
@@ -100,7 +147,6 @@ tt        = times(2 : end);
 step      = struct('val', diff(times), 'control', ones(numel(tt), 1)); 
 
 %% Setup operating limits
-stopFunc    = @(model, state, state_prev) (state.(ctrl).E < 2.0); 
 tup         = 0.1; % rampup value for the current function, see rampupSwitchControl
 srcfunc = @(time, I, E) rampupSwitchControl(time, tup, I, E, ...
                                             model.Control.Imax, ...
@@ -166,6 +212,7 @@ plot(time, Inew), title('I')
 figure
 plot(time, Enew), title('E')
 
+%%
 figure
 for k = 1:numel(states)
     c{k} = states{k}.PositiveElectrode.ActiveMaterial.c;
