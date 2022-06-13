@@ -21,3 +21,6 @@
 [submodule "agmg"]
 	path = Externals/agmg
 	url = https://github.com/BattMoTeam/agmg.git
+[submodule "MRST/upr"]
+	path = MRST/upr
+	url = https://github.com/rbe051/UPR.git
