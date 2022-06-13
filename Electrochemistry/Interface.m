@@ -96,13 +96,15 @@ classdef Interface < BaseModel
             fn = @Interface.updateOCP;
             inputnames = {'cElectrodeSurface', 'T'};
             model = model.registerPropFunction({'OCP', fn, inputnames});
-            % model = model.registerPropFunction({'dUdT', fn, inputnames});
+            model = model.registerPropFunction({'dUdT', fn, inputnames});
+            
+            fn = @Interface.updateEta;
+            inputnames = {'phiElectrolyte', 'phiElectrode', 'OCP'};            
+            model = model.registerPropFunction({'eta', fn, inputnames});
             
             fn = @Interface.updateReactionRate;
-            inputnames = {'T', 'phiElectrolyte', 'phiElectrode', 'j0', 'OCP'};
+            inputnames = {'T', 'j0', 'eta'};
             model = model.registerPropFunction({'R', fn, inputnames});
-            % model = model.registerPropFunction({'eta', fn, inputnames});
-            
             
         end
         
@@ -152,20 +154,28 @@ classdef Interface < BaseModel
 
         end
 
+        function state = updateEta(model, state)
+
+            phiElyte = state.phiElectrolyte;
+            phiElde  = state.phiElectrode;
+            OCP      = state.OCP;
+
+            eta = (phiElde - phiElyte - OCP);
+
+            state.eta = eta;
+            
+        end
+        
+        
         function state = updateReactionRate(model, state)
 
             n = model.n;
             F = model.constants.F;
 
-            T        = state.T;
-            phiElyte = state.phiElectrolyte;
-            phiElde  = state.phiElectrode;
-            OCP      = state.OCP;
-            j0       = state.j0;
-
-            eta = (phiElde - phiElyte - OCP);
-            state.eta = eta;
-
+            T   = state.T;
+            j0  = state.j0;
+            eta = state.eta;
+            
             R = model.volumetricSurfaceArea.*ButlerVolmerEquation(j0, 0.5, n, eta, T);
 
             state.R = R/(n*F); % reaction rate in mole/meter^3/second

@@ -37,23 +37,35 @@ classdef ElectronicComponent < BaseModel
 
             model = registerVarAndPropfuncNames@BaseModel(model);
             
-            varnames = {'T'        , ...
-                        'phi'      , ...
-                        'jBcSource', ...
-                        'eSource'  , ...
-                        'j'        , ...
+            varnames = {'T'           , ...
+                        'phi'         , ...
+                        'jBcSource'   , ...
+                        'eSource'     , ...
+                        'conductivity', ...
+                        'j'           , ...
                         'chargeCons'};
             model = model.registerVarNames(varnames);
 
-
             fn = @ElectronicComponent.updateCurrent;
-            inputnames = {'phi'};
+            inputnames = {'phi', 'conductivity'};
             model = model.registerPropFunction({'j', fn, inputnames});
             
             fn = @ElectronicComponent.updateChargeConservation;
             inputnames = {'j', 'jBcSource', 'eSource'};
             model = model.registerPropFunction({'chargeCons', fn, inputnames});
+            
+            fn = @ElectronicComponent.updateConductivity;
+            inputnames = {};
+            model = model.registerPropFunction({'conductivity', fn, inputnames});
+            
         end
+
+        function state = updateConductivity(model, state)
+            % default function to update conductivity
+            state.conductivity = model.EffectiveElectricalConductivity;
+            
+        end
+        
         
         function state = updateFaceCurrent(model, state)
             
@@ -75,10 +87,11 @@ classdef ElectronicComponent < BaseModel
         
         function state = updateCurrent(model, state)
         % Assemble electrical current which is stored in :code:`state.j` 
-            sigmaeff = model.EffectiveElectricalConductivity;
-            phi = state.phi;
+
+            sigma = state.conductivity;
+            phi   = state.phi;
             
-            j = assembleFlux(model, phi, sigmaeff); 
+            j = assembleFlux(model, phi, sigma); 
 
             state.j = j;
             

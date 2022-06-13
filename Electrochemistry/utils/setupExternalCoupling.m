@@ -1,13 +1,12 @@
-function [jExternal, jFaceExternal] = setupExternalCoupling(model, phi, phiExternal)
+function [jExternal, jFaceExternal] = setupExternalCoupling(model, phi, phiExternal, conductivity)
     
     coupterm = model.externalCouplingTerm;
     
     jExternal = phi*0.0; %NB hack to initialize zero ad
     
-    sigmaeff = model.EffectiveElectricalConductivity;
     faces = coupterm.couplingfaces;
     bcval = phiExternal;
-    [t, cells] = model.operators.harmFaceBC(sigmaeff, faces);
+    [t, cells] = model.operators.harmFaceBC(conductivity, faces);
     current = t.*(bcval - phi(cells));
     jExternal(cells) = jExternal(cells) + current;
     
@@ -19,4 +18,5 @@ function [jExternal, jFaceExternal] = setupExternalCoupling(model, phi, phiExter
     jFaceExternal(faces) = -sgn(faces).*current;
     
     assert(~any(isnan(sgn(faces))));
+    
 end
