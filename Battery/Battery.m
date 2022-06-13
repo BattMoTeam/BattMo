@@ -493,7 +493,7 @@ classdef Battery < BaseModel
             elyte_cells = zeros(model.G.cells.num, 1);
             elyte_cells(model.(elyte).G.mappings.cellmap) = (1 : model.(elyte).G.cells.num)';
 
-            model.(elyte).volumeFraction = NaN(model.(elyte).G.cells.num, 1);
+            model.(elyte).volumeFraction = ones(model.(elyte).G.cells.num, 1); % region where electolyte fill up volume is default
             model.(elyte).volumeFraction(elyte_cells(model.(ne).(am).G.mappings.cellmap)) = model.(ne).(am).porosity;
             model.(elyte).volumeFraction(elyte_cells(model.(pe).(am).G.mappings.cellmap)) = model.(pe).(am).porosity;
             model.(elyte).volumeFraction(elyte_cells(model.(elyte).(sep).G.mappings.cellmap)) = model.(elyte).(sep).porosity;
