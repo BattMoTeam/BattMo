@@ -274,8 +274,8 @@ classdef Battery < BaseModel
             model = model.registerPropFunction({{elyte, 'eSource'}, fn, inputnames});
             
             % Function that assemble the control equation
-            
-            fn = @Batter.setupEIEquation;
+
+            fn = @Battery.setupEIEquation;
             inputnames = {{pe, cc, 'E'}, ...
                           {pe, cc, 'I'}, ...
                           {pe, cc, 'phi'}, ...
