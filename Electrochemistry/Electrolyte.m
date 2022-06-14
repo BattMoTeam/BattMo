@@ -53,7 +53,7 @@ classdef Electrolyte < ElectroChemicalComponent
             
             sep = 'Separator';
 
-            % We set the electrolyte volumeFraction based on the porisity of the separator
+            % We set the electrolyte volumeFraction based on the porosity of the separator
             G = model.G;
             Gp = G.mappings.parentGrid;
             
@@ -70,7 +70,6 @@ classdef Electrolyte < ElectroChemicalComponent
             
             model.EffectiveThermalConductivity = NaN(G.cells.num, 1);
             model.EffectiveThermalConductivity(elyte_cells_sep) = model.(sep).porosity.*model.thermalConductivity;
-            
             
         end
 
