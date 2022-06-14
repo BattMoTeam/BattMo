@@ -1,8 +1,7 @@
 function [g, edgelabels] = setupGraph(model, varargin)
     
     opt = struct('excludeVarnames', false, ...
-                 'resolveIndex'   , true , ...
-                 'compGraphFilter', []);
+                 'resolveIndex'   , true );
     opt = merge_options(opt, varargin{:});
     
     g = digraph();
@@ -14,14 +13,6 @@ function [g, edgelabels] = setupGraph(model, varargin)
     
     varnames  = model.varNameList;
     propfuncs = model.propertyFunctionList;
-    
-    if ~isempty(opt.compGraphFilter)
-        
-        cgf = opt.compGraphFilter;
-        [varnames, propfuncs] = cgf.applyFilter(varnames, propfuncs);
-        
-    end
-    
     
     if ~opt.excludeVarnames
 
