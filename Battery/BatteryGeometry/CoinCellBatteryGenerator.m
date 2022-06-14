@@ -6,7 +6,8 @@ classdef CoinCellBatteryGenerator < BatteryGenerator
         thickness
         diameter
         offset
-        nLayer
+        numCellLayers
+        meshSize
         
         tag     % cell-valued vector giving component number (indexing is given by tagdict)
         tagdict % dictionary giving the component number
@@ -32,11 +33,12 @@ classdef CoinCellBatteryGenerator < BatteryGenerator
             paramobj.include_current_collectors = true;
             gen.use_thermal = paramobj.use_thermal;
 
-            gen.thickness = params.thickness;
-            gen.diameter  = params.diameter;
-            gen.offset    = params.offset;
-            gen.nLayer    = params.nLayer;
-
+            gen.thickness     = params.thickness;
+            gen.diameter      = params.diameter;
+            gen.offset        = params.offset;
+            gen.numCellLayers = params.numCellLayers;
+            gen.meshSize      = params.meshSize;
+            
             [paramobj, gen] = gen.setupBatteryInputParams(paramobj, []);
 
         end
@@ -71,7 +73,7 @@ classdef CoinCellBatteryGenerator < BatteryGenerator
             % keyboard;
             
             paramobj = setupElectrolyte@BatteryGenerator(gen, paramobj, params);
-
+            
         end
 
         function paramobj = setupElectrodes(gen, paramobj, params)

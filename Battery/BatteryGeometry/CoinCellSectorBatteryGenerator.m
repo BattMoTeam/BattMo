@@ -7,7 +7,7 @@ classdef CoinCellSectorBatteryGenerator < BatteryGenerator
         diameter
         angle
         offset
-        nLayer
+        numCellLayers
         nR
         
         tag     % cell-valued vector giving component number (indexing is given by tagdict)
@@ -36,7 +36,7 @@ classdef CoinCellSectorBatteryGenerator < BatteryGenerator
             gen.diameter  = params.diameter;
             gen.angle     = params.angle;
             %gen.offset    = params.offset;
-            gen.nLayer    = params.nLayer;
+            gen.numCellLayers    = params.numCellLayers;
             gen.nR        = params.nR;
             
             gen.use_thermal = paramobj.use_thermal;

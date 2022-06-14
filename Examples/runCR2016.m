@@ -65,19 +65,20 @@ chamfer = CR2016_thickness / 6;
 % Possible offset (cannot be used for sector grid)
 offset = [0, 0]; 
 
-nR = 10;
+% nR = 10;
+meshSize = max(cell2mat(diameter.values)) / 10;
 
 % Discretization cells in each layer
-nLayer = containers.Map();
-% nLayer('PositiveCurrentCollector') = 1;
-% nLayer('PositiveActiveMaterial')   = 3;
-% nLayer('ElectrolyteSeparator')     = 2; 
-% nLayer('NegativeActiveMaterial')   = 3;
-% nLayer('NegativeCurrentCollector') = nLayer('PositiveCurrentCollector');
-hz = min(cell2mat(thickness.values))/2;
+numCellLayers = containers.Map();
+% numCellLayers('PositiveCurrentCollector') = 1;
+% numCellLayers('PositiveActiveMaterial')   = 3;
+% numCellLayers('ElectrolyteSeparator')     = 2; 
+% numCellLayers('NegativeActiveMaterial')   = 3;
+% numCellLayers('NegativeCurrentCollector') = numCellLayers('PositiveCurrentCollector');
+hz = min(cell2mat(thickness.values));
 for k = keys(thickness)
     key = k{1};
-    nLayer(key) = round(thickness(key)/hz);
+    numCellLayers(key) = max(2, round(thickness(key)/hz));
 end
 
 % Discretization cells radially
@@ -86,10 +87,10 @@ offset = [];
 
 params = struct('thickness', thickness, ...
                 'diameter', diameter, ...
-                'nLayer', nLayer, ...
+                'numCellLayers', numCellLayers, ...
                 'offset', offset, ...
                 'angle', angle, ...
-                'nR', nR);
+                'meshSize', meshSize);
 
 jsonstruct = parseBattmoJson('ParameterData/BatteryCellParameters/LithiumIonBatteryCell/lithium_ion_battery_nmc_graphite.json');
 paramobj = BatteryInputParams(jsonstruct); 

@@ -21,8 +21,8 @@ function output = coinCellGrid(params)
     bbox = [-1.2*R, -1.2*R; 1.2*R, -1.2*R; 1.2*R, 1.2*R; -1.2*R, 1.2*R];
     xc0 = mean(bbox);
     
-    mesh_size = R / 5;
-    N = ceil(2 * pi * R / mesh_size);
+    meshSize = params.meshSize;
+    N = ceil(2 * pi * R / meshSize);
 
     outer_circle = circle(R, xc0, N);
     fc = outer_circle;
@@ -50,13 +50,13 @@ function output = coinCellGrid(params)
         if ismember(key, {'PositiveActiveMaterial', 'ElectrolyteSeparator', 'NegativeActiveMaterial'})
             d = params.diameter(key);
             r = 0.5 * d;
-            n = ceil(2 * pi * r / mesh_size);
+            n = ceil(2 * pi * r / meshSize);
             circ = circle(r, xc(k, :), n);
             fc = [fc, circ];
         end
     end
 
-    G = pebiGrid2D(mesh_size, max(bbox), 'faceConstraints', fc, 'polyBdr', bbox);
+    G = pebiGrid2D(meshSize, max(bbox), 'faceConstraints', fc, 'polyBdr', bbox);
     G.faces = rmfield(G.faces, 'tag');
 
     %% Remove outside
@@ -69,10 +69,10 @@ function output = coinCellGrid(params)
     for k = 1:numel(components)
         key = components{k};
         thickness(k) = params.thickness(key);
-        nLayer(k) = params.nLayer(key);
+        numCellLayers(k) = params.numCellLayers(key);
     end
-    dz = thickness ./ nLayer;
-    dz = rldecode(dz.', nLayer.');
+    dz = thickness ./ numCellLayers;
+    dz = rldecode(dz.', numCellLayers.');
     G = makeLayeredGrid(G, dz);
     G = computeGeometry(G);
 

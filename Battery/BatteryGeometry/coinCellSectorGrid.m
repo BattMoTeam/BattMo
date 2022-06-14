@@ -11,7 +11,7 @@ function output = coinCellSectorGrid(params)
         c = components{k};
         thickness(k) = params.thickness(c);
         diameter(k) = params.diameter(c);
-        nLayer(k) = params.nLayer(c);
+        numCellLayers(k) = params.numCellLayers(c);
     end
 
     % Create tensor grid (extra large first radial element for slicing)
@@ -20,8 +20,8 @@ function output = coinCellSectorGrid(params)
     r = linspace(0, R, nr);
     r(1) = -R;
 
-    dz = thickness ./ nLayer;
-    dz = rldecode(dz.', nLayer.');
+    dz = thickness ./ numCellLayers;
+    dz = rldecode(dz.', numCellLayers.');
     z = [0; cumsum(dz)];
 
     G = tensorGrid(r, [0, 1], z);
