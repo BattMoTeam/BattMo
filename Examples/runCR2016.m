@@ -33,28 +33,26 @@ thickness = containers.Map();
 % Proportions from runBattery3D
 zlength = [10; 100; 50; 80; 10];
 zz = CR2016_thickness * zlength / sum(zlength);
-thickness('PositiveCurrentCollector') = zz(1);
-thickness('PositiveActiveMaterial')   = zz(2);
+thickness('PositiveCurrentCollector') = zz(5);
+thickness('PositiveActiveMaterial')   = zz(4);
 thickness('ElectrolyteSeparator')     = zz(3);
-thickness('NegativeActiveMaterial')   = zz(4);
-thickness('NegativeCurrentCollector') = thickness('PositiveCurrentCollector');
-
-
-
+thickness('NegativeActiveMaterial')   = zz(2);
+thickness('NegativeCurrentCollector') = zz(1);
 assert(abs(sum(cell2mat(thickness.values)) - CR2016_thickness) < eps);
 
 % Diameters of each component
 diameter = containers.Map();
-% diameter('PositiveCurrentCollector') = CR2016_diameter;
-% diameter('PositiveActiveMaterial')   = 16*milli*meter;
-% diameter('ElectrolyteSeparator')     = 18*milli*meter;
-% diameter('NegativeActiveMaterial')   = diameter('PositiveActiveMaterial');
-% diameter('NegativeCurrentCollector') = diameter('PositiveCurrentCollector');
 diameter('PositiveCurrentCollector') = CR2016_diameter;
-diameter('PositiveActiveMaterial')   = diameter('PositiveCurrentCollector');
-diameter('ElectrolyteSeparator')     = diameter('PositiveCurrentCollector');
-diameter('NegativeActiveMaterial')   = diameter('PositiveCurrentCollector');
+diameter('PositiveActiveMaterial')   = 16*milli*meter*0.75;
+diameter('ElectrolyteSeparator')     = 18*milli*meter*0.9;
+diameter('NegativeActiveMaterial')   = diameter('PositiveActiveMaterial');
 diameter('NegativeCurrentCollector') = diameter('PositiveCurrentCollector');
+
+% diameter('PositiveCurrentCollector') = CR2016_diameter;
+% diameter('PositiveActiveMaterial')   = diameter('PositiveCurrentCollector');
+% diameter('ElectrolyteSeparator')     = diameter('PositiveCurrentCollector');
+% diameter('NegativeActiveMaterial')   = diameter('PositiveCurrentCollector');
+% diameter('NegativeCurrentCollector') = diameter('PositiveCurrentCollector');
 
 % Angle of the sector
 angle = pi / 20;
@@ -162,20 +160,44 @@ schedule = struct('control', control, 'step', step);
 %% Initial state
 initstate = model.setupInitialState(); 
 
-%% Setup the properties of the nonlinear solver 
+% %% Setup the properties of the nonlinear solver 
+% nls = NonLinearSolver(); 
+% % Change default maximum iteration number in nonlinear solver
+% nls.maxIterations = 10; 
+% nls.timeStepSelector = StateChangeTimeStepSelector('TargetProps', {{ctrl,'E'}}, ...
+%                                                    'targetChangeAbs', 0.03);
+% % Change default tolerance for nonlinear solver
+% %model.nonlinearTolerance = 1e-3*model.Control.Imax;
+% model.nonlinearTolerance = 1e-5; 
+
+% nls.errorOnFailure = false; 
+
+% % Set verbosity
+% model.verbose = true;
+
+
 nls = NonLinearSolver(); 
-% Change default maximum iteration number in nonlinear solver
-nls.maxIterations = 10; 
-nls.timeStepSelector = StateChangeTimeStepSelector('TargetProps', {{ctrl,'E'}}, ...
-                                                   'targetChangeAbs', 0.03);
-% Change default tolerance for nonlinear solver
-%model.nonlinearTolerance = 1e-3*model.Control.Imax;
-model.nonlinearTolerance = 1e-5; 
-
-nls.errorOnFailure = false; 
-
-% Set verbosity
+nls.maxIterations = 10;
+nls.errorOnFailure = false;
+nls.timeStepSelector = StateChangeTimeStepSelector('TargetProps', {{'Control', 'E'}}, 'targetChangeAbs', 0.03);
+%linearsolver = 'agmg';
+linearsolver = 'direct';
+switch linearsolver
+  case 'agmg'
+    mrstModule add agmg
+    nls.LinearSolver = AGMGSolverAD('verbose', false, 'reduceToCell', true); 
+    nls.LinearSolver.tolerance = 1e-3; 
+    nls.LinearSolver.maxIterations = 30; 
+    nls.maxIterations = 10; 
+    nls.verbose = 10;
+  case 'direct'
+    disp('standard direct solver')
+  otherwise
+    error()
+end
+model.nonlinearTolerance = 1e-4;
 model.verbose = true;
+
 
 %% Run the simulation
 [wellSols, states, report] = simulateScheduleAD(initstate, model, schedule, 'OutputMinisteps', true, 'NonLinearSolver', nls); 
@@ -212,6 +234,9 @@ figure
 plot(time, Inew), title('I')
 figure
 plot(time, Enew), title('E')
+
+return
+
 
 %%
 figure
