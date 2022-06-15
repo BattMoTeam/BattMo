@@ -9,15 +9,7 @@ function output = coinCellGrid(params)
                   'NegativeActiveMaterial', ...
                   'NegativeCurrentCollector'};
 
-    % Find diameter
-    diameter = zeros(numel(components), 1);
-
-    for k = 1:numel(components)
-        key = components{k};
-        diameter(k) = params.diameter(key);
-    end
-
-    R = 0.5 * max(diameter);
+    R = 0.5 * max(cell2mat(params.diameter.values));
     bbox = [-1.2*R, -1.2*R; 1.2*R, -1.2*R; 1.2*R, 1.2*R; -1.2*R, 1.2*R];
     xc0 = mean(bbox);
     
@@ -27,38 +19,10 @@ function output = coinCellGrid(params)
     outer_circle = circle(R, xc0, N);
     fc = outer_circle;
 
-    % Find centers
-    xc = repmat(xc0, numel(components), 1);
-    if ~isempty(params.offset) & norm(params.offset) > 0
-        for k = 1:numel(components)
-            key = components{k};
-            % Offset
-            if (strcmpi(key, 'PositiveActiveMaterial') | strcmpi(key, 'NegativeActiveMaterial')) & ...
-                    (~isempty(params.offset) & norm(params.offset) > 0)
-                sign = 1;
-                if strcmpi(key, 'NegativeActiveMaterial')
-                    sign = -1;
-                end
-                xc(k, :) = xc0 + 0.5 * sign * params.offset;
-            end
-        end
-    end
-
-    % Create circles
-    for k = 1:numel(components)
-        key = components{k};
-        if ismember(key, {'PositiveActiveMaterial', 'ElectrolyteSeparator', 'NegativeActiveMaterial'})
-            d = params.diameter(key);
-            r = 0.5 * d;
-            n = ceil(2 * pi * r / meshSize);
-            circ = circle(r, xc(k, :), n);
-            fc = [fc, circ];
-        end
-    end
-
-    G = pebiGrid2D(meshSize, max(bbox), 'faceConstraints', fc, 'polyBdr', bbox);
+    fcfactor = 0.5;
+    G = pebiGrid2D(meshSize, max(bbox), 'faceConstraints', fc, 'polyBdr', bbox, 'FCFactor', fcfactor);
     G.faces = rmfield(G.faces, 'tag');
-
+        
     %% Remove outside
     G = computeGeometry(G);
     d = vecnorm(G.cells.centroids - xc0, 2, 2);
@@ -75,24 +39,15 @@ function output = coinCellGrid(params)
     dz = rldecode(dz.', numCellLayers.');
     G = makeLayeredGrid(G, dz);
     G = computeGeometry(G);
-
-    % TODO: Chamfer negative cc
-    %{
-
-      |-------------|
-      |             |
-      |           _/
-      |__________/
-
-    %}
-
-    % Tag
+    
+    %% Tag
     comptag = 1 : numel(components);
     tagdict = containers.Map(components, comptag);
 
     thickness_accum = [0, cumsum(thickness)];
     zc = G.cells.centroids(:, 3);
-    tag = -1*ones(G.cells.num, 1);
+    %tag = tagdict('Electrolyte') * ones(G.cells.num, 1);
+    tag = -1 * ones(G.cells.num, 1);
     
     for k = 1:numel(components)
         key = components{k};
@@ -100,34 +55,76 @@ function output = coinCellGrid(params)
         t0 = thickness_accum(k);
         t1 = thickness_accum(k+1);
         zidx = zc > t0 & zc < t1;
-        
+
+        xc(k,:) = xc0;
         rc = vecnorm(G.cells.centroids(:, 1:2) - xc(k), 2, 2);
-        ridx = rc < 0.5 * diameter(k);
+        ridx = rc < 0.5 * params.diameter(key);
         
         idx = zidx & ridx;
         tag(idx) = tagdict(key);
     end
+    assert(all(tag > -1));
     
-    %plotCellData(G, tag, G.cells.centroids(:,1)>0), view(3)    
-    %keyboard;
+    % plotCellData(G, tag, G.cells.centroids(:,1)>0), view(3)    
+    % keyboard;
 
-    % Interfaces
+    % % Interfaces
+    % [bf, bc] = boundaryFaces(G);
+    % internal = (1:G.faces.num)';
+    % internal = setdiff(internal, bf);
+    % c1 = G.faces.neighbors(internal, 1);
+    % c2 = G.faces.neighbors(internal, 2);
+    % t1 = tag(c1);
+    % t2 = tag(c2);
+    
+    % negidx = t1 == tagdict('NegativeActiveMaterial') & t2 == tagdict('NegativeCurrentCollector') | ...
+    %          t2 == tagdict('NegativeActiveMaterial') & t1 == tagdict('NegativeCurrentCollector');
+    % negativeExtCurrentFaces = internal(find(negidx));
+
+    % posidx = t1 == tagdict('PositiveActiveMaterial') & t2 == tagdict('PositiveCurrentCollector') | ...
+    %          t2 == tagdict('PositiveActiveMaterial') & t1 == tagdict('PositiveCurrentCollector');
+    % positiveExtCurrentFaces = internal(find(posidx));
+
     [bf, bc] = boundaryFaces(G);
-    internal = (1:G.faces.num)';
-    internal = setdiff(internal, bf);
-    c1 = G.faces.neighbors(internal, 1);
-    c2 = G.faces.neighbors(internal, 2);
-    t1 = tag(c1);
-    t2 = tag(c2);
-    negidx = t1 == tagdict('NegativeActiveMaterial') & t2 == tagdict('NegativeCurrentCollector') | ...
-             t2 == tagdict('NegativeActiveMaterial') & t1 == tagdict('NegativeCurrentCollector');
-    negativeExtCurrentFaces = internal(find(negidx));
-    posidx = t1 == tagdict('PositiveActiveMaterial') & t2 == tagdict('PositiveCurrentCollector') | ...
-             t2 == tagdict('PositiveActiveMaterial') & t1 == tagdict('PositiveCurrentCollector');
-    positiveExtCurrentFaces = internal(find(posidx));
-    % assert(numel(negativeExtCurrentFaces) == G.cartDims(1));
-    % assert(numel(positiveExtCurrentFaces) == G.cartDims(1));
+    minz = min(G.nodes.coords(:, 3)) + 100*eps;
+    maxz = max(G.nodes.coords(:, 3)) - 100*eps;
+    fmin = G.faces.centroids(:, 3) <= minz;
+    fmax = G.faces.centroids(:, 3) >= maxz;
+    assert(sum(fmin) == sum(fmax));
 
+    cn = find(tag == tagdict('NegativeCurrentCollector'), 1);
+    cp = find(tag == tagdict('PositiveCurrentCollector'), 1);
+
+    if abs(cn - minz) < abs(cp - minz)
+        negativeExtCurrentFaces = fmin;
+        positiveExtCurrentFaces = fmax;
+    else
+        negativeExtCurrentFaces = fmax;
+        positiveExtCurrentFaces = fmin;
+    end
+    
+    % cellneg = find(tag == tagdict('NegativeCurrentCollector'));
+    % cellpos = find(tag == tagdict('PositiveCurrentCollector'));
+    % c1 = G.faces.neighbors(bf, 1);
+    % c1 = c1(c1>0);
+    % c2 = G.faces.neighbors(bf, 2);
+    % c2 = c2(c2>0);
+    
+    % % See if pos or neg is max z
+    % zn = max(G.cells.centroids(cellneg, 3));
+    % zp = max(G.cells.centroids(cellpos, 3));
+    % if zn > zp
+    %     maxz = G.faces.centroids(bf,3) >= zn;
+    %     minz = G.faces.centroids(bf,3) <= min(G.cells.centroids(cellpos, 3));
+    % end
+    
+    % negidx = tag(bc) == tagdict('NegativeCurrentCollector');
+    
+    % cn = G.faces.neighbors(bf, 1);
+    % negidx = tag(cn) == tagdict('NegativeCurrentCollector');
+    
+    % keyboard;
+    
     
     % Thermal cooling faces on all sides
     thermalCoolingFaces = bf;
