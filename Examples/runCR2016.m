@@ -1,152 +1,98 @@
 clear all
-close all
+%close all
+clc
 
+%% Import the required modules from MRST
+% load MRST modules
+mrstModule add ad-core mrst-gui mpfa upr
 
-% Setup mrst modules
+%% Setup the properties of Li-ion battery materials and cell design
+jsonstruct = parseBattmoJson('ParameterData/BatteryCellParameters/LithiumIonBatteryCell/lithium_ion_battery_nmc_graphite.json');
+paramobj = BatteryInputParams(jsonstruct);
 
-mrstModule add ad-core mrst-gui mpfa agmg
-
-
-
-%% Shorthand
+% We define some shorthand names for simplicity.
 ne      = 'NegativeElectrode';
 pe      = 'PositiveElectrode';
-am      = 'ActiveMaterial';
+eac     = 'ActiveMaterial';
 cc      = 'CurrentCollector';
 elyte   = 'Electrolyte';
-sep     = 'Separator';
 thermal = 'ThermalModel';
 ctrl    = 'Control';
+am      = 'ActiveMaterial';
+sep     = 'Separator';
 
-%% Setup the geometrical parameters for a CR2016 battery. 
+%% Setup the geometry and computational mesh
 CR2016_diameter = 20*milli*meter;
 CR2016_thickness = 1.6*milli*meter;
+%CR2016_thickness = 0.25*milli*meter;
 
-% Thicknesses of each component
-thickness = containers.Map();
-% thickness('PositiveCurrentCollector') = 0.1*milli*meter;
-% thickness('PositiveActiveMaterial')   = 0.45*milli*meter;
-% thickness('ElectrolyteSeparator')     = 0.25*milli*meter;
-% thickness('NegativeActiveMaterial')   = 0.7*milli*meter;
-% thickness('NegativeCurrentCollector') = thickness('PositiveCurrentCollector');
-
-% Proportions from runBattery3D
-zlength = [10; 100; 50; 80; 10];
+zlength = [10; 100; 50; 100; 10];
 zz = CR2016_thickness * zlength / sum(zlength);
-thickness('PositiveCurrentCollector') = zz(5);
-thickness('PositiveActiveMaterial')   = zz(4);
-thickness('ElectrolyteSeparator')     = zz(3);
-thickness('NegativeActiveMaterial')   = zz(2);
+thickness = containers.Map();
 thickness('NegativeCurrentCollector') = zz(1);
-assert(abs(sum(cell2mat(thickness.values)) - CR2016_thickness) < eps);
+thickness('NegativeActiveMaterial')   = zz(2);
+thickness('ElectrolyteSeparator')     = zz(3);
+thickness('PositiveActiveMaterial')   = zz(4);
+thickness('PositiveCurrentCollector') = zz(5);
 
-% Diameters of each component
 diameter = containers.Map();
+diameter('NegativeCurrentCollector') = CR2016_diameter;
+diameter('NegativeActiveMaterial')   = CR2016_diameter;
+diameter('ElectrolyteSeparator')     = CR2016_diameter;
+diameter('PositiveActiveMaterial')   = CR2016_diameter;
 diameter('PositiveCurrentCollector') = CR2016_diameter;
-diameter('PositiveActiveMaterial')   = 16*milli*meter*0.75;
-diameter('ElectrolyteSeparator')     = 18*milli*meter*0.9;
-diameter('NegativeActiveMaterial')   = diameter('PositiveActiveMaterial');
-diameter('NegativeCurrentCollector') = diameter('PositiveCurrentCollector');
 
-% diameter('PositiveCurrentCollector') = CR2016_diameter;
-% diameter('PositiveActiveMaterial')   = diameter('PositiveCurrentCollector');
-% diameter('ElectrolyteSeparator')     = diameter('PositiveCurrentCollector');
-% diameter('NegativeActiveMaterial')   = diameter('PositiveCurrentCollector');
-% diameter('NegativeCurrentCollector') = diameter('PositiveCurrentCollector');
+meshSize = max(cell2mat(diameter.values)) / 3;
 
-% Angle of the sector
-angle = pi / 20;
-
-% Chamfer (not implemented)
-chamfer = CR2016_thickness / 6;
-
-% Possible offset (cannot be used for sector grid)
-offset = [0, 0]; 
-
-% nR = 10;
-meshSize = max(cell2mat(diameter.values)) / 10;
-
-% Discretization cells in each layer
 numCellLayers = containers.Map();
-% numCellLayers('PositiveCurrentCollector') = 1;
-% numCellLayers('PositiveActiveMaterial')   = 3;
-% numCellLayers('ElectrolyteSeparator')     = 2; 
-% numCellLayers('NegativeActiveMaterial')   = 3;
-% numCellLayers('NegativeCurrentCollector') = numCellLayers('PositiveCurrentCollector');
 hz = min(cell2mat(thickness.values));
 for k = keys(thickness)
     key = k{1};
     numCellLayers(key) = max(2, round(thickness(key)/hz));
 end
 
-% Discretization cells radially
-%offset = [1, 1]*milli*meter;
-offset = [];
-
 params = struct('thickness', thickness, ...
                 'diameter', diameter, ...
                 'numCellLayers', numCellLayers, ...
-                'offset', offset, ...
-                'angle', angle, ...
                 'meshSize', meshSize);
 
-jsonstruct = parseBattmoJson('ParameterData/BatteryCellParameters/LithiumIonBatteryCell/lithium_ion_battery_nmc_graphite.json');
-paramobj = BatteryInputParams(jsonstruct); 
-
 gen = CoinCellBatteryGenerator();
-%gen = CoinCellSectorBatteryGenerator();
+
+% Now, we update the paramobj with the properties of the mesh.
 paramobj = gen.updateBatteryInputParams(paramobj, params);
 
-% FIXME
-paramobj.(ne).(cc).EffectiveElectricalConductivity = 1e5;
-paramobj.(pe).(cc).EffectiveElectricalConductivity = 1e5;
+%%  Initialize the battery model. 
+% The battery model is initialized by sending paramobj to the Battery class
+% constructor. see :class:`Battery <Battery.Battery>`.
+model = Battery(paramobj);
 
-model = Battery(paramobj); 
-model.AutoDiffBackend = AutoDiffBackend();
+%% Compute the nominal cell capacity and choose a C-Rate
+% The nominal capacity of the cell is calculated from the active materials.
+% This value is then combined with the user-defined C-Rate to set the cell
+% operational current. 
+C       = computeCellCapacity(model);
+CRate   = 20;
 
+%% Setup the time step schedule 
+% Smaller time steps are used to ramp up the current from zero to its
+% operational value. Larger time steps are then used for the normal
+% operation. 
+n           = 25;
+dt          = [];
+dt          = [dt; repmat(0.5e-4, n, 1).*1.5.^[1 : n]'];
+totalTime   = 1.4*hour/CRate;
+n           = 40; 
+dt          = [dt; repmat(totalTime/n, n, 1)]; 
+times       = [0; cumsum(dt)]; 
+tt          = times(2 : end); 
+step        = struct('val', diff(times), 'control', ones(numel(tt), 1)); 
 
-
-
-%% Plot the mesh
-% The mesh is plotted using the plotGrid() function from MRST. 
-colors = crameri('vik', 5);
-figure
-plotGrid(model.(ne).(cc).G,     'facecolor', colors(1,:), 'edgealpha', 0.5, 'edgecolor', [1, 1, 1]);
-plotGrid(model.(ne).(am).G,     'facecolor', colors(2,:), 'edgealpha', 0.5, 'edgecolor', [1, 1, 1]);
-plotGrid(model.(elyte).(sep).G, 'facecolor', colors(3,:), 'edgealpha', 0.5, 'edgecolor', [1, 1, 1]);
-plotGrid(model.(pe).(am).G,     'facecolor', colors(4,:), 'edgealpha', 0.5, 'edgecolor', [1, 1, 1]);
-plotGrid(model.(pe).(cc).G,     'facecolor', colors(5,:), 'edgealpha', 0.5, 'edgecolor', [1, 1, 1]);
-axis tight;
-legend({'negative electrode current collector' , ...
-        'negative electrode active material'   , ...
-        'separator'                            , ...
-        'positive electrode active material'   , ...
-        'positive electrode current collector'}, ...
-       'location', 'southwest')
-view(3)
-drawnow
-
-
-% return
-
-
-%% C-rate
-%CRate = model.(ctrl).CRate;
-CRate = 1;
-
-%% Time step schedule
-n         = 25; 
-dt        = []; 
-dt        = [dt; repmat(0.5e-4, n, 1).*1.5.^[1:n]']; 
-totalTime = 1.4*hour/CRate;
-n         = 40; 
-dt        = [dt; repmat(totalTime/n, n, 1)]; 
-times     = [0; cumsum(dt)]; 
-tt        = times(2 : end); 
-step      = struct('val', diff(times), 'control', ones(numel(tt), 1)); 
-
-%% Setup operating limits
-tup         = 0.1; % rampup value for the current function, see rampupSwitchControl
+%% Setup the operating limits for the cell
+% The maximum and minimum voltage limits for the cell are defined using
+% stopping and source functions. A stopping function is used to set the
+% lower voltage cutoff limit. A source function is used to set the upper
+% voltage cutoff limit. 
+tup = 0.1; % rampup value for the current function, see rampupSwitchControl
 srcfunc = @(time, I, E) rampupSwitchControl(time, tup, I, E, ...
                                             model.Control.Imax, ...
                                             model.Control.lowerCutoffVoltage);
@@ -156,50 +102,52 @@ control = struct('src', srcfunc, 'IEswitch', true);
 % This control is used to set up the schedule
 schedule = struct('control', control, 'step', step); 
 
-
-%% Initial state
+%% Setup the initial state of the model
+% The initial state of the model is dispatched using the
+% model.setupInitialState()method. 
 initstate = model.setupInitialState(); 
 
-% %% Setup the properties of the nonlinear solver 
-% nls = NonLinearSolver(); 
-% % Change default maximum iteration number in nonlinear solver
-% nls.maxIterations = 10; 
-% nls.timeStepSelector = StateChangeTimeStepSelector('TargetProps', {{ctrl,'E'}}, ...
-%                                                    'targetChangeAbs', 0.03);
-% % Change default tolerance for nonlinear solver
-% %model.nonlinearTolerance = 1e-3*model.Control.Imax;
-% model.nonlinearTolerance = 1e-5; 
-
-% nls.errorOnFailure = false; 
-
-% % Set verbosity
-% model.verbose = true;
-
-
+%% Setup the properties of the nonlinear solver 
 nls = NonLinearSolver(); 
-nls.maxIterations = 10;
-nls.errorOnFailure = false;
-nls.timeStepSelector = StateChangeTimeStepSelector('TargetProps', {{'Control', 'E'}}, 'targetChangeAbs', 0.03);
-%linearsolver = 'agmg';
-linearsolver = 'direct';
-switch linearsolver
-  case 'agmg'
-    mrstModule add agmg
-    nls.LinearSolver = AGMGSolverAD('verbose', false, 'reduceToCell', true); 
-    nls.LinearSolver.tolerance = 1e-3; 
-    nls.LinearSolver.maxIterations = 30; 
-    nls.maxIterations = 10; 
-    nls.verbose = 10;
-  case 'direct'
-    disp('standard direct solver')
-  otherwise
-    error()
-end
-model.nonlinearTolerance = 1e-4;
-model.verbose = true;
+% Change default maximum iteration number in nonlinear solver
+nls.maxIterations = 10; 
+% Change default behavior of nonlinear solver, in case of error
+nls.errorOnFailure = false; 
+% Timestep selector
+nls.timeStepSelector = StateChangeTimeStepSelector('TargetProps', ...
+                                                  {{ctrl, 'E'}}, ...
+                                                  'targetChangeAbs', 0.03);
+
+% Change default tolerance for nonlinear solver
+model.nonlinearTolerance = 1e-5; 
+% Set verbosity of the solver (if true, value of the residuals for every equation is given)
+model.verbose = false;
+
+%% Plot
+colors = crameri('vik', 5);
+figure
+plotGrid(model.(ne).(cc).G,     'facecolor', colors(1,:), 'edgealpha', 0.5, 'edgecolor', [1, 1, 1]);
+plotGrid(model.(ne).(am).G,     'facecolor', colors(2,:), 'edgealpha', 0.5, 'edgecolor', [1, 1, 1]);
+plotGrid(model.(elyte).(sep).G, 'facecolor', colors(3,:), 'edgealpha', 0.5, 'edgecolor', [1, 1, 1]);
+plotGrid(model.(pe).(am).G,     'facecolor', colors(4,:), 'edgealpha', 0.5, 'edgecolor', [1, 1, 1]);
+plotGrid(model.(pe).(cc).G,     'facecolor', colors(5,:), 'edgealpha', 0.5, 'edgecolor', [1, 1, 1]);
+%plotGrid(model.(elyte).G,       'facecolor', colors(6,:), 'edgealpha', 0.5, 'edgecolor', [1, 1, 1], 'facealpha', 0.1);
+axis tight;
+legend({'negative electrode current collector' , ...
+        'negative electrode active material'   , ...
+        'separator'                            , ...
+        'positive electrode active material'   , ...
+        'positive electrode current collector' ,...
+        'electrolyte'}, ...
+       'location', 'southwest')
+view(3)
+drawnow
+
+% return
 
 
-%% Run the simulation
+
+%% Run simulation
 [wellSols, states, report] = simulateScheduleAD(initstate, model, schedule, 'OutputMinisteps', true, 'NonLinearSolver', nls); 
 
 %%  Process output and recover the output voltage and current from the output states.
@@ -209,75 +157,14 @@ Enew = cellfun(@(x) x.(ctrl).E, states);
 Inew = cellfun(@(x) x.(ctrl).I, states);
 time = cellfun(@(x) x.time, states); 
 
-
-
-%% Plot the mesh
-% The mesh is plotted using the plotGrid() function from MRST. 
-colors = crameri('vik', 5);
-figure
-plotGrid(model.(ne).(cc).G,     'facecolor', colors(1,:), 'edgealpha', 0.5, 'edgecolor', [1, 1, 1]);
-plotGrid(model.(ne).(am).G,     'facecolor', colors(2,:), 'edgealpha', 0.5, 'edgecolor', [1, 1, 1]);
-plotGrid(model.(elyte).(sep).G, 'facecolor', colors(3,:), 'edgealpha', 0.5, 'edgecolor', [1, 1, 1]);
-plotGrid(model.(pe).(am).G,     'facecolor', colors(4,:), 'edgealpha', 0.5, 'edgecolor', [1, 1, 1]);
-plotGrid(model.(pe).(cc).G,     'facecolor', colors(5,:), 'edgealpha', 0.5, 'edgecolor', [1, 1, 1]);
-axis tight;
-legend({'negative electrode current collector' , ...
-        'negative electrode active material'   , ...
-        'separator'                            , ...
-        'positive electrode active material'   , ...
-        'positive electrode current collector'}, ...
-       'location', 'southwest')
-view(3)
+%% Plot an animated summary of the results
+%plotDashboard(model, states, 'step', 0);
 
 
 figure
-plot(time, Inew), title('I')
+plot(time, Inew), title('I', CR2016_thickness)
 figure
-plot(time, Enew), title('E')
-
-return
-
-
-%%
-figure
-for k = 1:numel(states)
-    c{k} = states{k}.PositiveElectrode.ActiveMaterial.c;
-end
-plotToolbar(model.PositiveElectrode.ActiveMaterial.G, c)
-view(3), colorbar
-title('PE AM c')
-
-figure
-for k = 1:numel(states)
-    c{k} = states{k}.PositiveElectrode.ActiveMaterial.phi;
-end
-plotToolbar(model.PositiveElectrode.ActiveMaterial.G, c)
-view(3), colorbar
-title('PE AM phi')
-
-figure
-for k = 1:numel(states)
-    c{k} = states{k}.NegativeElectrode.ActiveMaterial.c;
-end
-plotToolbar(model.NegativeElectrode.ActiveMaterial.G, c)
-view(3), colorbar
-title('NE AM c')
-figure
-for k = 1:numel(states)
-    c{k} = states{k}.NegativeElectrode.ActiveMaterial.phi;
-end
-plotToolbar(model.NegativeElectrode.ActiveMaterial.G, c)
-view(3), colorbar
-title('NE AM phi')
-
-figure
-for k = 1:numel(states)
-    c{k} = states{k}.ThermalModel.T;
-end
-plotToolbar(model.ThermalModel.G, c)
-view(3), colorbar
-title('T')
-
+plot(time, Enew), title('E', CR2016_thickness)
 
 %{
 Copyright 2021-2022 SINTEF Industry, Sustainable Energy Technology

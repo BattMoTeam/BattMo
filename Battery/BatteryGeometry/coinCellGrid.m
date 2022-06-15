@@ -1,13 +1,13 @@
 function output = coinCellGrid(params)
 
     mrstModule add upr
-    
-    % Components in order cathode on top, anode on bottom
-    components = {'PositiveCurrentCollector', ...
-                  'PositiveActiveMaterial', ...
-                  'ElectrolyteSeparator', ...
+
+    % Components in order from z=0 (top) to z=zmax (bottom)
+    components = {'NegativeCurrentCollector', ...
                   'NegativeActiveMaterial', ...
-                  'NegativeCurrentCollector'};
+                  'ElectrolyteSeparator', ...
+                  'PositiveActiveMaterial', ...
+                  'PositiveCurrentCollector'};
 
     R = 0.5 * max(cell2mat(params.diameter.values));
     bbox = [-1.2*R, -1.2*R; 1.2*R, -1.2*R; 1.2*R, 1.2*R; -1.2*R, 1.2*R];
@@ -21,6 +21,8 @@ function output = coinCellGrid(params)
 
     fcfactor = 0.5;
     G = pebiGrid2D(meshSize, max(bbox), 'faceConstraints', fc, 'polyBdr', bbox, 'FCFactor', fcfactor);
+
+    % Remove markers for faces constituting the outer circle
     G.faces = rmfield(G.faces, 'tag');
         
     %% Remove outside
@@ -56,9 +58,10 @@ function output = coinCellGrid(params)
         t1 = thickness_accum(k+1);
         zidx = zc > t0 & zc < t1;
 
-        xc(k,:) = xc0;
-        rc = vecnorm(G.cells.centroids(:, 1:2) - xc(k), 2, 2);
-        ridx = rc < 0.5 * params.diameter(key);
+        %xc(k,:) = xc0;
+        %rc = vecnorm(G.cells.centroids(:, 1:2) - xc(k), 2, 2);
+        %ridx = rc < 0.5 * params.diameter(key);
+        ridx = true;
         
         idx = zidx & ridx;
         tag(idx) = tagdict(key);
