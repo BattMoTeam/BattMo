@@ -54,7 +54,7 @@ classdef CoinCellBatteryGenerator < BatteryGenerator
             tagdict = gen.tagdict;
             tag = gen.tag;
 
-            inds = [tagdict('PositiveActiveMaterial'); tagdict('ElectrolyteSeparator'); tagdict('NegativeActiveMaterial')];
+            inds = [tagdict('PositiveActiveMaterial'); tagdict('ElectrolyteSeparator'); tagdict('NegativeActiveMaterial'); tagdict('Electrolyte')];
             cellind = ismember(tag, inds);
             params.cellind = find(cellind);
             

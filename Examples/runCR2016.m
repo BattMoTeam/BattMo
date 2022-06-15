@@ -1,5 +1,5 @@
 clear all
-%close all
+close all
 clc
 
 %% Import the required modules from MRST
@@ -37,12 +37,15 @@ thickness('PositiveCurrentCollector') = zz(5);
 
 diameter = containers.Map();
 diameter('NegativeCurrentCollector') = CR2016_diameter;
-diameter('NegativeActiveMaterial')   = CR2016_diameter;
-diameter('ElectrolyteSeparator')     = CR2016_diameter;
-diameter('PositiveActiveMaterial')   = CR2016_diameter;
+% diameter('NegativeActiveMaterial')   = CR2016_diameter;
+% diameter('ElectrolyteSeparator')     = CR2016_diameter;
+% diameter('PositiveActiveMaterial')   = CR2016_diameter;
+diameter('NegativeActiveMaterial')   = 0.6*CR2016_diameter;
+diameter('ElectrolyteSeparator')     = 0.8*CR2016_diameter;
+diameter('PositiveActiveMaterial')   = 0.6*CR2016_diameter;
 diameter('PositiveCurrentCollector') = CR2016_diameter;
 
-meshSize = max(cell2mat(diameter.values)) / 3;
+meshSize = max(cell2mat(diameter.values)) / 10;
 
 numCellLayers = containers.Map();
 hz = min(cell2mat(thickness.values));
@@ -70,22 +73,22 @@ model = Battery(paramobj);
 % The nominal capacity of the cell is calculated from the active materials.
 % This value is then combined with the user-defined C-Rate to set the cell
 % operational current. 
-C       = computeCellCapacity(model);
-CRate   = 20;
+C     = computeCellCapacity(model);
+CRate = 20;
 
 %% Setup the time step schedule 
 % Smaller time steps are used to ramp up the current from zero to its
 % operational value. Larger time steps are then used for the normal
 % operation. 
-n           = 25;
-dt          = [];
-dt          = [dt; repmat(0.5e-4, n, 1).*1.5.^[1 : n]'];
-totalTime   = 1.4*hour/CRate;
-n           = 40; 
-dt          = [dt; repmat(totalTime/n, n, 1)]; 
-times       = [0; cumsum(dt)]; 
-tt          = times(2 : end); 
-step        = struct('val', diff(times), 'control', ones(numel(tt), 1)); 
+n         = 25;
+dt        = [];
+dt        = [dt; repmat(0.5e-4, n, 1).*1.5.^[1 : n]'];
+totalTime = 1.4*hour/CRate;
+n         = 40; 
+dt        = [dt; repmat(totalTime/n, n, 1)]; 
+times     = [0; cumsum(dt)]; 
+tt        = times(2 : end); 
+step      = struct('val', diff(times), 'control', ones(numel(tt), 1)); 
 
 %% Setup the operating limits for the cell
 % The maximum and minimum voltage limits for the cell are defined using
@@ -124,14 +127,14 @@ model.nonlinearTolerance = 1e-5;
 model.verbose = false;
 
 %% Plot
-colors = crameri('vik', 5);
+colors = crameri('vik', 6);
 figure
 plotGrid(model.(ne).(cc).G,     'facecolor', colors(1,:), 'edgealpha', 0.5, 'edgecolor', [1, 1, 1]);
 plotGrid(model.(ne).(am).G,     'facecolor', colors(2,:), 'edgealpha', 0.5, 'edgecolor', [1, 1, 1]);
 plotGrid(model.(elyte).(sep).G, 'facecolor', colors(3,:), 'edgealpha', 0.5, 'edgecolor', [1, 1, 1]);
 plotGrid(model.(pe).(am).G,     'facecolor', colors(4,:), 'edgealpha', 0.5, 'edgecolor', [1, 1, 1]);
 plotGrid(model.(pe).(cc).G,     'facecolor', colors(5,:), 'edgealpha', 0.5, 'edgecolor', [1, 1, 1]);
-%plotGrid(model.(elyte).G,       'facecolor', colors(6,:), 'edgealpha', 0.5, 'edgecolor', [1, 1, 1], 'facealpha', 0.1);
+plotGrid(model.(elyte).G,       'facecolor', colors(6,:), 'edgealpha', 0.5, 'edgecolor', [1, 1, 1], 'facealpha', 0.1);
 axis tight;
 legend({'negative electrode current collector' , ...
         'negative electrode active material'   , ...
@@ -143,7 +146,7 @@ legend({'negative electrode current collector' , ...
 view(3)
 drawnow
 
-% return
+return
 
 
 

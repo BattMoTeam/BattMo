@@ -2,25 +2,30 @@ function output = coinCellGrid(params)
 
     mrstModule add upr
 
-    % Components in order from z=0 (top) to z=zmax (bottom)
+    % Components in order from z=0 (top) to z=zmax (bottom) with the surrounding electrolyte last
     components = {'NegativeCurrentCollector', ...
                   'NegativeActiveMaterial', ...
                   'ElectrolyteSeparator', ...
                   'PositiveActiveMaterial', ...
-                  'PositiveCurrentCollector'};
+                  'PositiveCurrentCollector', ...
+                  'Electrolyte'};
 
     R = 0.5 * max(cell2mat(params.diameter.values));
     bbox = [-1.2*R, -1.2*R; 1.2*R, -1.2*R; 1.2*R, 1.2*R; -1.2*R, 1.2*R];
     xc0 = mean(bbox);
-    
     meshSize = params.meshSize;
-    N = ceil(2 * pi * R / meshSize);
 
-    outer_circle = circle(R, xc0, N);
-    fc = outer_circle;
-
+    % Create constraints for the different diameters
+    diams = unique(cell2mat(params.diameter.values));
+    fc = cell(numel(diams), 1);
+    for k = 1:numel(diams)
+        r = 0.5 * diams(k);
+        n = ceil(2 * pi * r / meshSize);
+        fc{k} = circle(r, xc0, n);
+    end
+    
     fcfactor = 0.5;
-    G = pebiGrid2D(meshSize, max(bbox), 'faceConstraints', fc, 'polyBdr', bbox, 'FCFactor', fcfactor);
+    G = pebiGrid2D(meshSize, max(bbox), 'faceConstraints', [fc{:}], 'polyBdr', bbox, 'FCFactor', fcfactor);
 
     % Remove markers for faces constituting the outer circle
     G.faces = rmfield(G.faces, 'tag');
@@ -32,7 +37,7 @@ function output = coinCellGrid(params)
     G = removeCells(G, is_outside);
 
     %% Extrude
-    for k = 1:numel(components)
+    for k = 1:numel(components) - 1
         key = components{k};
         thickness(k) = params.thickness(key);
         numCellLayers(k) = params.numCellLayers(key);
@@ -48,20 +53,19 @@ function output = coinCellGrid(params)
 
     thickness_accum = [0, cumsum(thickness)];
     zc = G.cells.centroids(:, 3);
-    %tag = tagdict('Electrolyte') * ones(G.cells.num, 1);
-    tag = -1 * ones(G.cells.num, 1);
+    tag = tagdict('Electrolyte') * ones(G.cells.num, 1);
+    %tag = -1 * ones(G.cells.num, 1);
     
-    for k = 1:numel(components)
+    for k = 1:numel(components) - 1
         key = components{k};
 
         t0 = thickness_accum(k);
         t1 = thickness_accum(k+1);
         zidx = zc > t0 & zc < t1;
 
-        %xc(k,:) = xc0;
-        %rc = vecnorm(G.cells.centroids(:, 1:2) - xc(k), 2, 2);
-        %ridx = rc < 0.5 * params.diameter(key);
-        ridx = true;
+        rc = vecnorm(G.cells.centroids(:, 1:2) - xc0, 2, 2);
+        ridx = rc < 0.5 * params.diameter(key);
+        %ridx = true;
         
         idx = zidx & ridx;
         tag(idx) = tagdict(key);
@@ -71,7 +75,6 @@ function output = coinCellGrid(params)
     % plotCellData(G, tag, G.cells.centroids(:,1)>0), view(3)    
     % keyboard;
 
-    % % Interfaces
     % [bf, bc] = boundaryFaces(G);
     % internal = (1:G.faces.num)';
     % internal = setdiff(internal, bf);
