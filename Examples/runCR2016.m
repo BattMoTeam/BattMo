@@ -2,6 +2,8 @@ clear all
 close all
 clc
 
+mrstVerbose off
+
 %% Import the required modules from MRST
 % load MRST modules
 mrstModule add ad-core mrst-gui mpfa upr
@@ -23,27 +25,21 @@ sep     = 'Separator';
 
 %% Setup the geometry and computational mesh
 CR2016_diameter = 20*milli*meter;
-CR2016_thickness = 1.6*milli*meter;
-%CR2016_thickness = 0.25*milli*meter;
+%CR2016_thickness = 1.6*milli*meter;
+CR2016_thickness = 0.25*milli*meter;
 
+components = {'NegativeCurrentCollector', ...
+              'NegativeActiveMaterial', ...
+              'ElectrolyteSeparator', ...
+              'PositiveActiveMaterial', ...
+              'PositiveCurrentCollector'};
 zlength = [10; 100; 50; 100; 10];
 zz = CR2016_thickness * zlength / sum(zlength);
-thickness = containers.Map();
-thickness('NegativeCurrentCollector') = zz(1);
-thickness('NegativeActiveMaterial')   = zz(2);
-thickness('ElectrolyteSeparator')     = zz(3);
-thickness('PositiveActiveMaterial')   = zz(4);
-thickness('PositiveCurrentCollector') = zz(5);
+thickness = containers.Map(components, zz);
 
-diameter = containers.Map();
-diameter('NegativeCurrentCollector') = CR2016_diameter;
-% diameter('NegativeActiveMaterial')   = CR2016_diameter;
-% diameter('ElectrolyteSeparator')     = CR2016_diameter;
-% diameter('PositiveActiveMaterial')   = CR2016_diameter;
-diameter('NegativeActiveMaterial')   = 0.6*CR2016_diameter;
-diameter('ElectrolyteSeparator')     = 0.8*CR2016_diameter;
-diameter('PositiveActiveMaterial')   = 0.6*CR2016_diameter;
-diameter('PositiveCurrentCollector') = CR2016_diameter;
+%dd = [1, 0.6, 0.9, 0.6, 1] * CR2016_diameter;
+dd = ones(1, 5) * CR2016_diameter;
+diameter = containers.Map(components, dd);
 
 meshSize = max(cell2mat(diameter.values)) / 10;
 
@@ -74,17 +70,17 @@ model = Battery(paramobj);
 % This value is then combined with the user-defined C-Rate to set the cell
 % operational current. 
 C     = computeCellCapacity(model);
-CRate = 20;
+CRate = 1 %20;
 
 %% Setup the time step schedule 
 % Smaller time steps are used to ramp up the current from zero to its
 % operational value. Larger time steps are then used for the normal
 % operation. 
-n         = 25;
+n         = 24 / 2;
 dt        = [];
 dt        = [dt; repmat(0.5e-4, n, 1).*1.5.^[1 : n]'];
 totalTime = 1.4*hour/CRate;
-n         = 40; 
+n         = 40 / 2; 
 dt        = [dt; repmat(totalTime/n, n, 1)]; 
 times     = [0; cumsum(dt)]; 
 tt        = times(2 : end); 
@@ -134,23 +130,37 @@ plotGrid(model.(ne).(am).G,     'facecolor', colors(2,:), 'edgealpha', 0.5, 'edg
 plotGrid(model.(elyte).(sep).G, 'facecolor', colors(3,:), 'edgealpha', 0.5, 'edgecolor', [1, 1, 1]);
 plotGrid(model.(pe).(am).G,     'facecolor', colors(4,:), 'edgealpha', 0.5, 'edgecolor', [1, 1, 1]);
 plotGrid(model.(pe).(cc).G,     'facecolor', colors(5,:), 'edgealpha', 0.5, 'edgecolor', [1, 1, 1]);
-plotGrid(model.(elyte).G,       'facecolor', colors(6,:), 'edgealpha', 0.5, 'edgecolor', [1, 1, 1], 'facealpha', 0.1);
+%plotGrid(model.(elyte).G,       'facecolor', colors(6,:), 'edgealpha', 0.5, 'edgecolor', [1, 1, 1], 'facealpha', 0.1);
 axis tight;
 legend({'negative electrode current collector' , ...
         'negative electrode active material'   , ...
         'separator'                            , ...
         'positive electrode active material'   , ...
-        'positive electrode current collector' ,...
-        'electrolyte'}, ...
+        'positive electrode current collector'}, ...
        'location', 'southwest')
 view(3)
 drawnow
 
-return
+%% More plot
+figure
+plotGrid(model.(ne).(cc).G,     'facecolor', colors(1,:), 'edgealpha', 0.5, 'edgecolor', [1, 1, 1]);view(3)
+figure
+plotGrid(model.(ne).(am).G,     'facecolor', colors(2,:), 'edgealpha', 0.5, 'edgecolor', [1, 1, 1]);view(3)
+figure
+plotGrid(model.(elyte).(sep).G, 'facecolor', colors(3,:), 'edgealpha', 0.5, 'edgecolor', [1, 1, 1]);view(3)
+figure
+plotGrid(model.(pe).(am).G,     'facecolor', colors(4,:), 'edgealpha', 0.5, 'edgecolor', [1, 1, 1]);view(3)
+figure
+plotGrid(model.(pe).(cc).G,     'facecolor', colors(5,:), 'edgealpha', 0.5, 'edgecolor', [1, 1, 1]);view(3)
+figure
+plotGrid(model.(elyte).G,       'facecolor', colors(6,:), 'edgealpha', 0.5, 'edgecolor', [1, 1, 1], 'facealpha', 0.1);view(3)
+
+%return
 
 
 
 %% Run simulation
+mrstVerbose off
 [wellSols, states, report] = simulateScheduleAD(initstate, model, schedule, 'OutputMinisteps', true, 'NonLinearSolver', nls); 
 
 %%  Process output and recover the output voltage and current from the output states.
@@ -165,9 +175,9 @@ time = cellfun(@(x) x.time, states);
 
 
 figure
-plot(time, Inew), title('I', CR2016_thickness)
+plot(time, Inew), title('I', dd); grid on
 figure
-plot(time, Enew), title('E', CR2016_thickness)
+plot(time, Enew), title('E', dd); grid on
 
 %{
 Copyright 2021-2022 SINTEF Industry, Sustainable Energy Technology
