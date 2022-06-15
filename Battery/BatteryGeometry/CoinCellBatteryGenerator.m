@@ -67,7 +67,7 @@ classdef CoinCellBatteryGenerator < BatteryGenerator
             % G = gen.G;
             % figure, hold on
             % plotGrid(G, 'facecolor', 'none');
-            % plotGrid(G, params.cellind, 'facecolor', 'b');
+            % plotGrid(G, params.cellind, 'facecolor', 'b', 'facealpha', 0.2);
             % plotGrid(G, params.Separator.cellind, 'facecolor', 'r');
             % view(3)
             % keyboard;
@@ -100,9 +100,14 @@ classdef CoinCellBatteryGenerator < BatteryGenerator
             % plotGrid(G, params.(ne).(am).cellind, 'facecolor', 'b')
             % plotGrid(G, params.(ne).(cc).cellind, 'facecolor', 'r')
             % view(3)
-            % keyboard;
 
-           
+            % G = gen.G;
+            % figure, hold on
+            % plotGrid(G, 'facecolor', 'none')
+            % plotFaces(G, params.(ne).(cc).extfaces)
+            % view(3)
+            % keyboard
+            
             cellind = ismember(tag, tagdict('PositiveActiveMaterial'));
             params.(pe).(am).cellind = find(cellind);
             cellind = ismember(tag, tagdict('PositiveCurrentCollector'));
@@ -116,6 +121,13 @@ classdef CoinCellBatteryGenerator < BatteryGenerator
             % plotGrid(G, params.(pe).(am).cellind, 'facecolor', 'b')
             % plotGrid(G, params.(pe).(cc).cellind, 'facecolor', 'r')
             % view(3)
+            
+            % G = gen.G;
+            % figure, hold on
+            % plotGrid(G, 'facecolor', 'none')
+            % plotFaces(G, params.(pe).(cc).extfaces)
+            % view(3)
+            % keyboard
 
             paramobj = setupElectrodes@BatteryGenerator(gen, paramobj, params);
 
@@ -137,10 +149,13 @@ classdef CoinCellBatteryGenerator < BatteryGenerator
             params.bcfaces = invfacemap(extfaces);
             params.bccells = sum(G.faces.neighbors(params.bcfaces, :), 2);
 
-            % figure, hold on
-            % plotGrid(G, 'facecolor', 'none');
-            % plotFaces(G, params.bcfaces),view(3)
-            % keyboard;
+            figure, hold on
+            plotGrid(G, 'facecolor', 'none');
+            plotFaces(G, params.bcfaces),view(3)
+            figure, hold on
+            plotGrid(G, 'facecolor', 'none');
+            plotGrid(G, params.bccells),view(3)
+            keyboard;
             
             paramobj = setupCurrentCollectorBcCoupTerm@BatteryGenerator(gen, paramobj, params);
 
