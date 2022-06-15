@@ -5,7 +5,6 @@ classdef CoinCellBatteryGenerator < BatteryGenerator
         % Design params
         thickness
         diameter
-        offset
         numCellLayers
         meshSize
         
@@ -19,7 +18,7 @@ classdef CoinCellBatteryGenerator < BatteryGenerator
         externalHeatTransferCoefficientTab = 1e3;
         externalHeatTransferCoefficient = 1e3;
 
-        use_thermal
+        use_thermal = false;
     end
 
     methods
@@ -35,7 +34,6 @@ classdef CoinCellBatteryGenerator < BatteryGenerator
 
             gen.thickness     = params.thickness;
             gen.diameter      = params.diameter;
-            gen.offset        = params.offset;
             gen.numCellLayers = params.numCellLayers;
             gen.meshSize      = params.meshSize;
             
@@ -149,13 +147,13 @@ classdef CoinCellBatteryGenerator < BatteryGenerator
             params.bcfaces = invfacemap(extfaces);
             params.bccells = sum(G.faces.neighbors(params.bcfaces, :), 2);
 
-            figure, hold on
-            plotGrid(G, 'facecolor', 'none');
-            plotFaces(G, params.bcfaces),view(3)
-            figure, hold on
-            plotGrid(G, 'facecolor', 'none');
-            plotGrid(G, params.bccells),view(3)
-            keyboard;
+            % figure, hold on
+            % plotGrid(G, 'facecolor', 'none');
+            % plotFaces(G, params.bcfaces),view(3)
+            % figure, hold on
+            % plotGrid(G, 'facecolor', 'none');
+            % plotGrid(G, params.bccells),view(3)
+            % keyboard;
             
             paramobj = setupCurrentCollectorBcCoupTerm@BatteryGenerator(gen, paramobj, params);
 
