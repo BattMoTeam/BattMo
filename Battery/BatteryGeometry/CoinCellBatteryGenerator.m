@@ -7,6 +7,10 @@ classdef CoinCellBatteryGenerator < BatteryGenerator
         diameter
         numCellLayers
         meshSize
+
+        % Sector model specific design params
+        use_sector = false;
+        angle = pi / 10;
         
         tag     % cell-valued vector giving component number (indexing is given by tagdict)
         tagdict % dictionary giving the component number
@@ -36,6 +40,8 @@ classdef CoinCellBatteryGenerator < BatteryGenerator
             gen.diameter      = params.diameter;
             gen.numCellLayers = params.numCellLayers;
             gen.meshSize      = params.meshSize;
+            gen.use_sector    = params.use_sector;
+            gen.angle         = params.angle;
             
             [paramobj, gen] = gen.setupBatteryInputParams(paramobj, []);
 
@@ -66,6 +72,14 @@ classdef CoinCellBatteryGenerator < BatteryGenerator
             % figure, hold on
             % plotGrid(G, 'facecolor', 'none');
             % plotGrid(G, params.cellind, 'facecolor', 'b', 'facealpha', 0.2);
+            % view(3)
+
+            % figure, hold on
+            % plotToolbar(G, tag);
+            % view(3)
+            
+            % figure, hold on
+            % plotGrid(G, 'facecolor', 'none');
             % plotGrid(G, params.Separator.cellind, 'facecolor', 'r');
             % view(3)
             % keyboard;
