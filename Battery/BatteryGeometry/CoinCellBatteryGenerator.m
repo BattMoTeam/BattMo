@@ -11,7 +11,7 @@ classdef CoinCellBatteryGenerator < BatteryGenerator
         % Sector model specific design params
         use_sector = false;
         angle = pi / 10;
-        
+
         tag     % cell-valued vector giving component number (indexing is given by tagdict)
         tagdict % dictionary giving the component number
 
@@ -40,9 +40,13 @@ classdef CoinCellBatteryGenerator < BatteryGenerator
             gen.diameter      = params.diameter;
             gen.numCellLayers = params.numCellLayers;
             gen.meshSize      = params.meshSize;
-            gen.use_sector    = params.use_sector;
-            gen.angle         = params.angle;
-            
+            if isfield(params, 'use_sector')
+                gen.use_sector = params.use_sector;
+            end
+            if isfield(params, 'angle')
+                gen.angle = params.angle;
+            end
+
             [paramobj, gen] = gen.setupBatteryInputParams(paramobj, []);
 
         end
@@ -63,7 +67,7 @@ classdef CoinCellBatteryGenerator < BatteryGenerator
             inds = [tagdict('PositiveActiveMaterial'); tagdict('ElectrolyteSeparator'); tagdict('NegativeActiveMaterial'); tagdict('Electrolyte')];
             cellind = ismember(tag, inds);
             params.cellind = find(cellind);
-            
+
             inds = tagdict('ElectrolyteSeparator');
             cellind = ismember(tag, inds);
             params.Separator.cellind = find(cellind);
@@ -77,15 +81,15 @@ classdef CoinCellBatteryGenerator < BatteryGenerator
             % figure, hold on
             % plotToolbar(G, tag);
             % view(3)
-            
+
             % figure, hold on
             % plotGrid(G, 'facecolor', 'none');
             % plotGrid(G, params.Separator.cellind, 'facecolor', 'r');
             % view(3)
             % keyboard;
-            
+
             paramobj = setupElectrolyte@BatteryGenerator(gen, paramobj, params);
-            
+
         end
 
         function paramobj = setupElectrodes(gen, paramobj, params)
@@ -119,7 +123,7 @@ classdef CoinCellBatteryGenerator < BatteryGenerator
             % plotFaces(G, params.(ne).(cc).extfaces)
             % view(3)
             % keyboard
-            
+
             cellind = ismember(tag, tagdict('PositiveActiveMaterial'));
             params.(pe).(am).cellind = find(cellind);
             cellind = ismember(tag, tagdict('PositiveCurrentCollector'));
@@ -133,7 +137,7 @@ classdef CoinCellBatteryGenerator < BatteryGenerator
             % plotGrid(G, params.(pe).(am).cellind, 'facecolor', 'b')
             % plotGrid(G, params.(pe).(cc).cellind, 'facecolor', 'r')
             % view(3)
-            
+
             % G = gen.G;
             % figure, hold on
             % plotGrid(G, 'facecolor', 'none')
@@ -151,7 +155,7 @@ classdef CoinCellBatteryGenerator < BatteryGenerator
 
             G = paramobj.G; % grid of the current collector
             extfaces = params.extfaces;
-            
+
             clear params
             globG = G.mappings.parentGrid;
             facemap = G.mappings.facemap;
@@ -168,7 +172,7 @@ classdef CoinCellBatteryGenerator < BatteryGenerator
             % plotGrid(G, 'facecolor', 'none');
             % plotGrid(G, params.bccells),view(3)
             % keyboard;
-            
+
             paramobj = setupCurrentCollectorBcCoupTerm@BatteryGenerator(gen, paramobj, params);
 
         end
@@ -184,7 +188,7 @@ classdef CoinCellBatteryGenerator < BatteryGenerator
             %                 'couplingcells', couplingcells);
             % paramobj = setupThermalModel@BatteryGenerator(gen, paramobj, params);
 
-            
+
             % couplingfaces = gen.thermalExchangeFaces;
             % couplingtags  = gen.thermalExchangeFacesTag;
             % couplingcells = sum(G.faces.neighbors(couplingfaces, :), 2);
@@ -209,7 +213,7 @@ classdef CoinCellBatteryGenerator < BatteryGenerator
         % Cooling on external faces
 
             [couplingfaces, couplingcells] = boundaryFaces(gen.G);
-            
+
             params = struct('couplingfaces', couplingfaces, ...
                             'couplingcells', couplingcells);
             paramobj = setupThermalModel@BatteryGenerator(gen, paramobj, params);
