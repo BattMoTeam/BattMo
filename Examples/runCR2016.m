@@ -25,26 +25,39 @@ sep     = 'Separator';
 
 %% Setup the geometry and computational mesh
 CR2016_diameter = 20*milli*meter;
-%CR2016_thickness = 1.6*milli*meter;
-CR2016_thickness = 0.25*milli*meter;
+CR2016_thickness = 1.6*milli*meter;
+%CR2016_thickness = 0.25*milli*meter;
 
 components = {'NegativeCurrentCollector', ...
               'NegativeActiveMaterial', ...
               'ElectrolyteSeparator', ...
               'PositiveActiveMaterial', ...
               'PositiveCurrentCollector'};
-zlength = [10; 100; 50; 100; 10];
-zz = CR2016_thickness * zlength / sum(zlength);
-thickness = containers.Map(components, zz);
 
-%dd = [1, 0.6, 0.9, 0.6, 1] * CR2016_diameter;
-dd = ones(1, 5) * CR2016_diameter;
+% zlength = [10; 100; 50; 100; 10];
+% zz = CR2016_thickness * zlength / sum(zlength);
+% thickness = containers.Map(components, zz);
+
+thickness = containers.Map();
+thickness('PositiveCurrentCollector') = 0.1*milli*meter;
+thickness('PositiveActiveMaterial')   = 0.45*milli*meter;
+thickness('ElectrolyteSeparator')     = 0.25*milli*meter;
+thickness('NegativeActiveMaterial')   = 0.7*milli*meter;
+thickness('NegativeCurrentCollector') = thickness('PositiveCurrentCollector');
+
+tag = '0.6-0.7-realz'
+ddfactor = [1, 0.6, 0.7, 0.6, 1];
+% tag = 'sep0.9-am0.8';
+% ddfactor = [1, 0.8, 0.9, 0.8, 1];
+dd = ddfactor * CR2016_diameter;
+%dd = ones(1, 5) * CR2016_diameter;
 diameter = containers.Map(components, dd);
+
 
 meshSize = max(cell2mat(diameter.values)) / 10;
 
 numCellLayers = containers.Map();
-hz = min(cell2mat(thickness.values));
+hz = 3*min(cell2mat(thickness.values));
 for k = keys(thickness)
     key = k{1};
     numCellLayers(key) = max(2, round(thickness(key)/hz));
@@ -70,17 +83,19 @@ model = Battery(paramobj);
 % This value is then combined with the user-defined C-Rate to set the cell
 % operational current. 
 C     = computeCellCapacity(model);
-CRate = 1 %20;
+CRate = 1;
+
+fprintf('Capacity %f mAh\n', C*1000/3600)
 
 %% Setup the time step schedule 
 % Smaller time steps are used to ramp up the current from zero to its
 % operational value. Larger time steps are then used for the normal
 % operation. 
-n         = 24 / 2;
+n         = 24 / 4;
 dt        = [];
 dt        = [dt; repmat(0.5e-4, n, 1).*1.5.^[1 : n]'];
-totalTime = 1.4*hour/CRate;
-n         = 40 / 2; 
+totalTime = 60*second /CRate; %1.4*hour/CRate;
+n         = 20 %40; 
 dt        = [dt; repmat(totalTime/n, n, 1)]; 
 times     = [0; cumsum(dt)]; 
 tt        = times(2 : end); 
@@ -108,19 +123,24 @@ initstate = model.setupInitialState();
 
 %% Setup the properties of the nonlinear solver 
 nls = NonLinearSolver(); 
-% Change default maximum iteration number in nonlinear solver
 nls.maxIterations = 10; 
-% Change default behavior of nonlinear solver, in case of error
 nls.errorOnFailure = false; 
-% Timestep selector
 nls.timeStepSelector = StateChangeTimeStepSelector('TargetProps', ...
                                                   {{ctrl, 'E'}}, ...
-                                                  'targetChangeAbs', 0.03);
+                                                   'targetChangeAbs', 0.03);
 
-% Change default tolerance for nonlinear solver
+mrstModule add linearsolvers
+%nls.LinearSolver = AMGCLSolverAD('verbose', true, 'reduceToCell', false);
+%nls.LinearSolver = AGMGSolverAD('verbose', true, 'reduceToCell', true); 
+% nls.LinearSolver.tolerance = 1e-3; 
+% nls.LinearSolver.maxIterations = 30; 
+nls.maxIterations = 10; 
+nls.verbose = 10;
+
+
+
 model.nonlinearTolerance = 1e-5; 
-% Set verbosity of the solver (if true, value of the residuals for every equation is given)
-model.verbose = false;
+model.verbose = true;
 
 %% Plot
 colors = crameri('vik', 6);
@@ -141,27 +161,44 @@ legend({'negative electrode current collector' , ...
 view(3)
 drawnow
 
+%return
+
 %% More plot
 figure
-plotGrid(model.(ne).(cc).G,     'facecolor', colors(1,:), 'edgealpha', 0.5, 'edgecolor', [1, 1, 1]);view(3)
+plotGrid(model.(ne).(cc).G,     'facecolor', colors(1,:), 'edgealpha', 0.5, 'edgecolor', [1, 1, 1]);view(3);title('ne cc')
 figure
-plotGrid(model.(ne).(am).G,     'facecolor', colors(2,:), 'edgealpha', 0.5, 'edgecolor', [1, 1, 1]);view(3)
+plotGrid(model.(ne).(am).G,     'facecolor', colors(2,:), 'edgealpha', 0.5, 'edgecolor', [1, 1, 1]);view(3);title('ne am');
 figure
-plotGrid(model.(elyte).(sep).G, 'facecolor', colors(3,:), 'edgealpha', 0.5, 'edgecolor', [1, 1, 1]);view(3)
+plotGrid(model.(elyte).(sep).G, 'facecolor', colors(3,:), 'edgealpha', 0.5, 'edgecolor', [1, 1, 1]);view(3);title('elyte sep')
 figure
-plotGrid(model.(pe).(am).G,     'facecolor', colors(4,:), 'edgealpha', 0.5, 'edgecolor', [1, 1, 1]);view(3)
+plotGrid(model.(pe).(am).G,     'facecolor', colors(4,:), 'edgealpha', 0.5, 'edgecolor', [1, 1, 1]);view(3);title('pe am')
 figure
-plotGrid(model.(pe).(cc).G,     'facecolor', colors(5,:), 'edgealpha', 0.5, 'edgecolor', [1, 1, 1]);view(3)
+plotGrid(model.(pe).(cc).G,     'facecolor', colors(5,:), 'edgealpha', 0.5, 'edgecolor', [1, 1, 1]);view(3);title('pe cc')
 figure
-plotGrid(model.(elyte).G,       'facecolor', colors(6,:), 'edgealpha', 0.5, 'edgecolor', [1, 1, 1], 'facealpha', 0.1);view(3)
+plotGrid(model.(elyte).G,       'facecolor', colors(6,:), 'edgealpha', 0.5, 'edgecolor', [1, 1, 1], 'facealpha', 0.1);view(3);title('elyte')
 
 %return
 
 
 
-%% Run simulation
-mrstVerbose off
-[wellSols, states, report] = simulateScheduleAD(initstate, model, schedule, 'OutputMinisteps', true, 'NonLinearSolver', nls); 
+% %% Run simulation
+% mrstVerbose off
+% [wellSols, states, report] = simulateScheduleAD(initstate, model, schedule, 'OutputMinisteps', true, 'NonLinearSolver', nls); 
+
+
+name = sprintf('cr2016-%s', tag);
+dataFolder = sprintf('BattMo_%s', date);
+problem = packSimulationProblem(initstate, model, schedule, dataFolder, 'Name', name, 'NonLinearSolver', nls);
+problem.SimulatorSetup.OutputMinisteps = true; 
+
+resetSimulation = true;
+if resetSimulation
+    %% clear previously computed simulation
+    clearPackedSimulatorOutput(problem, 'prompt', false);
+end
+simulatePackedProblem(problem);
+[globvars, states, report] = getPackedSimulatorOutput(problem);
+
 
 %%  Process output and recover the output voltage and current from the output states.
 ind = cellfun(@(x) not(isempty(x)), states); 
@@ -175,9 +212,9 @@ time = cellfun(@(x) x.time, states);
 
 
 figure
-plot(time, Inew), title('I', dd); grid on
+plot(time, Inew, '.-'), title('I', ddfactor); grid on
 figure
-plot(time, Enew), title('E', dd); grid on
+plot(time, Enew, '.-'), title('E', ddfactor); grid on
 
 %{
 Copyright 2021-2022 SINTEF Industry, Sustainable Energy Technology
