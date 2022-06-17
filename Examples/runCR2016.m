@@ -8,11 +8,7 @@ mrstVerbose off
 % load MRST modules
 mrstModule add ad-core mrst-gui mpfa upr
 
-%% Setup the properties of Li-ion battery materials and cell design
-jsonstruct = parseBattmoJson('ParameterData/BatteryCellParameters/LithiumIonBatteryCell/lithium_ion_battery_nmc_graphite.json');
-paramobj = BatteryInputParams(jsonstruct);
-
-% We define some shorthand names for simplicity.
+%% Define some shorthand names for simplicity.
 ne      = 'NegativeElectrode';
 pe      = 'PositiveElectrode';
 eac     = 'ActiveMaterial';
@@ -22,6 +18,25 @@ thermal = 'ThermalModel';
 ctrl    = 'Control';
 am      = 'ActiveMaterial';
 sep     = 'Separator';
+
+%% Setup the properties of Li-ion battery materials and cell design
+jsonstruct = parseBattmoJson('ParameterData/BatteryCellParameters/LithiumIonBatteryCell/lithium_ion_battery_nmc_graphite.json');
+paramobj = BatteryInputParams(jsonstruct);
+
+use_cccv = false
+if use_cccv
+    cccvstruct = struct('controlPolicy'     , 'CCCV',  ...
+                        'CRate'             , 1         , ...
+                        'lowerCutoffVoltage', 2         , ...
+                        'upperCutoffVoltage', 4.1       , ...
+                        'dIdtLimit'         , 0.01      , ...
+                        'dEdtLimit'         , 0.01);
+    cccvparamobj = CcCvControlModelInputParams(cccvstruct);
+    paramobj.Control = cccvparamobj;
+end
+
+
+
 
 %% Setup the geometry and computational mesh
 CR2016_diameter = 20*milli*meter;
@@ -67,11 +82,13 @@ diameter = containers.Map(components, dd);
 meshSize = max(cell2mat(diameter.values)) / 10;
 
 numCellLayers = containers.Map();
-hz = 3*min(cell2mat(thickness.values));
+hz = 0.5*min(cell2mat(thickness.values));
 for k = keys(thickness)
     key = k{1};
     numCellLayers(key) = max(2, round(thickness(key)/hz));
 end
+numCellLayers('PositiveCurrentCollector') = ceil(round(0.25*numCellLayers('PositiveCurrentCollector')));
+numCellLayers('NegativeCurrentCollector') = ceil(round(0.25*numCellLayers('NegativeCurrentCollector')));
 
 %use_sector = true;
 use_sector = false;
@@ -122,17 +139,28 @@ tt        = times(2 : end);
 step      = struct('val', diff(times), 'control', ones(numel(tt), 1));
 
 %% Setup the operating limits for the cell
-% The maximum and minimum voltage limits for the cell are defined using
-% stopping and source functions. A stopping function is used to set the
-% lower voltage cutoff limit. A source function is used to set the upper
-% voltage cutoff limit.
-tup = 0.1; % rampup value for the current function, see rampupSwitchControl
-srcfunc = @(time, I, E) rampupSwitchControl(time, tup, I, E, ...
-                                            model.Control.Imax, ...
-                                            model.Control.lowerCutoffVoltage);
-% we setup the control by assigning a source and stop function.
-control = struct('src', srcfunc, 'IEswitch', true);
 
+switch model.Control.controlPolicy
+  case 'IEswitch'
+    % The maximum and minimum voltage limits for the cell are defined using
+    % stopping and source functions. A stopping function is used to set the
+    % lower voltage cutoff limit. A source function is used to set the upper
+    % voltage cutoff limit.
+    tup = 0.1; % rampup value for the current function, see rampupSwitchControl
+    srcfunc = @(time, I, E) rampupSwitchControl(time, tup, I, E, ...
+                                                model.Control.Imax, ...
+                                                model.Control.lowerCutoffVoltage);
+    % setup the control by assigning a source and stop function.
+    control = struct('src', srcfunc, 'IEswitch', true);
+
+  case 'CCCV'
+    control = struct('CCCV', true);
+
+  otherwise
+    error('control policy not recognized');
+end
+
+    
 % This control is used to set up the schedule
 schedule = struct('control', control, 'step', step);
 
@@ -140,6 +168,11 @@ schedule = struct('control', control, 'step', step);
 % The initial state of the model is dispatched using the
 % model.setupInitialState()method.
 initstate = model.setupInitialState();
+
+initstate.(ctrl).I = 0;
+initstate.(ctrl).ctrlType = 'constantCurrent';
+
+
 
 %% Setup the properties of the nonlinear solver
 nls = NonLinearSolver();
@@ -181,7 +214,7 @@ legend({'negative electrode current collector' , ...
 view(3)
 drawnow
 
-%return
+return
 
 %% More plot
 figure
