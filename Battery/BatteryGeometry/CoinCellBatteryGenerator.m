@@ -7,7 +7,8 @@ classdef CoinCellBatteryGenerator < BatteryGenerator
         diameter
         numCellLayers
         meshSize
-
+        offset = [0, 0]; % Negative and positive electrode offset half this distance from center
+        
         % Sector model specific design params
         use_sector = false;
         angle = pi / 20;
@@ -50,6 +51,9 @@ classdef CoinCellBatteryGenerator < BatteryGenerator
             end
             if isfield(params, 'angle')
                 gen.angle = params.angle;
+            end
+            if isfield(params, 'offset')
+                gen.offset = params.offset;
             end
 
             [paramobj, gen] = gen.setupBatteryInputParams(paramobj, []);

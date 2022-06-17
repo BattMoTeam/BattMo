@@ -2,7 +2,8 @@ function output = coinCellGrid(params)
 
     mrstModule add upr
 
-    % Components in order from z=0 (top) to z=zmax (bottom) with the surrounding electrolyte last
+    % Components in order from z=0 (top) to z=zmax (bottom) with the
+    % surrounding electrolyte last
     components = {'NegativeCurrentCollector', ...
                   'NegativeActiveMaterial', ...
                   'ElectrolyteSeparator', ...
@@ -13,8 +14,9 @@ function output = coinCellGrid(params)
     % Find parameters common for 3d grid and sector grid
     R = 0.5 * max(cell2mat(params.diameter.values));
     bbox = [-1.2*R, -1.2*R; 1.2*R, -1.2*R; 1.2*R, 1.2*R; -1.2*R, 1.2*R];
-    xc0 = mean(bbox);
+    xc0 = [0, 0];
 
+    % Order is important here
     for k = 1:numel(components) - 1
         key = components{k};
         thickness(k) = params.thickness(key);
@@ -39,14 +41,45 @@ function output = coinCell3dGrid(params, components, R, bbox, xc0, thickness, dz
 
 % Create constraints for the different diameters
     meshSize = params.meshSize;
-    diams = unique(cell2mat(params.diameter.values));
-    fc = cell(numel(diams), 1);
-    for k = 1:numel(diams)
-        r = 0.5 * diams(k);
-        n = ceil(2 * pi * r / meshSize);
-        fc{k} = circle(r, xc0, n);
-    end
+    diameter = params.diameter;
+    offset = params.offset;
 
+    num_points = @(r) ceil(2 * pi * r / meshSize);
+    
+    if all(offset == 0)
+        diams = unique(cell2mat(diameter.values));
+        fc = cell(numel(diams), 1);
+        for k = 1:numel(diams)
+            r = 0.5 * diams(k);
+            n = num_points(r);
+            fc{k} = circle(r, xc0, n);
+        end
+    else
+        % Circle data is [center, diameter] for all components
+        circdata = zeros(numel(components)-1, 3);
+        xc = containers.Map();
+        for k = 1:numel(components)-1
+            key = components{k};
+            circdata(k, :) = [xc0, diameter(key)];
+            if strcmp(key, 'PositiveActiveMaterial')
+                circdata(k, 1:2) = circdata(k, 1:2) + 0.5 * offset;
+            elseif strcmp(key, 'NegativeActiveMaterial')
+                circdata(k, 1:2) = circdata(k, 1:2) - 0.5 * offset;
+            end
+        end
+
+        % Create face constraints out of unique circle data
+        cd = unique(circdata, 'rows');
+        fc = cell(size(cd, 1), 1);
+        for k = 1:size(cd, 1)
+            xc = cd(k, 1:2);
+            r = cd(k, 3);
+            n = num_points(r);
+            fc{k} = circle(r, xc, n);
+        end
+        keyboard;
+    end
+    
     fcfactor = 0.5;
     G = pebiGrid2D(meshSize, max(bbox), 'faceConstraints', [fc{:}], 'polyBdr', bbox, 'FCFactor', fcfactor);
 
@@ -76,7 +109,7 @@ function output = coinCell3dGrid(params, components, R, bbox, xc0, thickness, dz
         zidx = zc > t0 & zc < t1;
 
         rc = vecnorm(G.cells.centroids(:, 1:2) - xc0, 2, 2);
-        ridx = rc < 0.5 * params.diameter(key);
+        ridx = rc < 0.5 * diameter(key);
         %ridx = true;
 
         idx = zidx & ridx;
