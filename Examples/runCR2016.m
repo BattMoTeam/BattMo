@@ -88,6 +88,11 @@ CRate = 1;
 
 fprintf('Capacity %f mAh\n', C*1000/3600)
 
+[~, masses] = computeCellMass(model);
+fprintf('Li content %f g\n', masses.(ne).(am).val*1000);
+
+
+
 %% Setup the time step schedule 
 % Smaller time steps are used to ramp up the current from zero to its
 % operational value. Larger time steps are then used for the normal
