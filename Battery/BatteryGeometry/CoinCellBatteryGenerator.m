@@ -10,7 +10,7 @@ classdef CoinCellBatteryGenerator < BatteryGenerator
 
         % Sector model specific design params
         use_sector = false;
-        angle = pi / 10;
+        angle = pi / 20;
 
         tag     % cell-valued vector giving component number (indexing is given by tagdict)
         tagdict % dictionary giving the component number
@@ -26,8 +26,8 @@ classdef CoinCellBatteryGenerator < BatteryGenerator
         thermalCoolingFaces
         thermalExchangeFaces = [];
         thermalExchangeFacesTag = [];
-        
-        use_thermal = false;
+
+        use_thermal = true
     end
 
     methods
