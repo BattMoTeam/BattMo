@@ -63,11 +63,14 @@ for k = keys(thickness)
     numCellLayers(key) = max(2, round(thickness(key)/hz));
 end
 
+use_sector = true;
+%use_sector = false;
+
 params = struct('thickness', thickness, ...
                 'diameter', diameter, ...
                 'numCellLayers', numCellLayers, ...
                 'meshSize', meshSize, ...
-               'use_sector', true);
+                'use_sector', use_sector);
 
 gen = CoinCellBatteryGenerator();
 

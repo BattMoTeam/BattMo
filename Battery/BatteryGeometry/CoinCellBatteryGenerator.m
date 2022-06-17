@@ -22,6 +22,11 @@ classdef CoinCellBatteryGenerator < BatteryGenerator
         externalHeatTransferCoefficientTab = 1e3;
         externalHeatTransferCoefficient = 1e3;
 
+        % For sector model
+        thermalCoolingFaces
+        thermalExchangeFaces = [];
+        thermalExchangeFacesTag = [];
+        
         use_thermal = false;
     end
 
