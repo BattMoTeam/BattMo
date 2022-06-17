@@ -14,7 +14,7 @@ function output = coinCellGrid(params)
     R = 0.5 * max(cell2mat(params.diameter.values));
     bbox = [-1.2*R, -1.2*R; 1.2*R, -1.2*R; 1.2*R, 1.2*R; -1.2*R, 1.2*R];
     xc0 = mean(bbox);
-    
+
     for k = 1:numel(components) - 1
         key = components{k};
         thickness(k) = params.thickness(key);
@@ -46,13 +46,13 @@ function output = coinCell3dGrid(params, components, R, bbox, xc0, thickness, dz
         n = ceil(2 * pi * r / meshSize);
         fc{k} = circle(r, xc0, n);
     end
-    
+
     fcfactor = 0.5;
     G = pebiGrid2D(meshSize, max(bbox), 'faceConstraints', [fc{:}], 'polyBdr', bbox, 'FCFactor', fcfactor);
 
     % Remove markers for faces constituting the outer circle
     G.faces = rmfield(G.faces, 'tag');
-    
+
     %% Remove outside
     G = computeGeometry(G);
     d = vecnorm(G.cells.centroids - xc0, 2, 2);
@@ -62,7 +62,7 @@ function output = coinCell3dGrid(params, components, R, bbox, xc0, thickness, dz
     %% Extrude
     G = makeLayeredGrid(G, dz);
     G = computeGeometry(G);
-    
+
     %% Tag
     thickness_accum = [0, cumsum(thickness)];
     zc = G.cells.centroids(:, 3);
@@ -78,7 +78,7 @@ function output = coinCell3dGrid(params, components, R, bbox, xc0, thickness, dz
         rc = vecnorm(G.cells.centroids(:, 1:2) - xc0, 2, 2);
         ridx = rc < 0.5 * params.diameter(key);
         %ridx = true;
-        
+
         idx = zidx & ridx;
         tag(idx) = tagdict(key);
     end
@@ -107,7 +107,7 @@ function output = coinCell3dGrid(params, components, R, bbox, xc0, thickness, dz
     thermalCoolingFaces = bf;
 
 
-    
+
     output = params;
 
     output.G = G;
@@ -123,9 +123,19 @@ end
 function output = coinCellSectorGrid(params, components, R, bbox, xc0, thickness, dz, tagdict)
 
 % Create tensor grid (extra large first radial element for slicing)
-    meshSize = params.meshSize;
+    meshSize = 2*params.meshSize;
     nr = ceil(round(2*pi*R / meshSize));
-    r = linspace(0, R, nr);
+    r0 = linspace(0, R, nr);
+    diams = unique(cell2mat(params.diameter.values));
+    r0 = unique([r0, 0.5*diams])';
+    dr = diff(r0);
+    r0(dr < 1e-10) = [];
+
+    % smooth r
+    r1 = laplacian_smoothing(r0(2:end-1), [r0(1); r0(end)]);
+    r = r0;
+    r(2:end-1) = r1;
+
     z = [0; cumsum(dz)];
     G = tensorGrid(r, [0, 1], z);
 
@@ -161,7 +171,7 @@ function output = coinCellSectorGrid(params, components, R, bbox, xc0, thickness
     thickness_accum = [-1, cumsum(thickness)];
     zc = G.cells.centroids(:, 3);
     tag = tagdict('Electrolyte') * ones(G.cells.num, 1);
-    
+
     for k = 1:numel(components)-1
         key = components{k};
 
@@ -171,7 +181,7 @@ function output = coinCellSectorGrid(params, components, R, bbox, xc0, thickness
 
         rc = vecnorm(G.cells.centroids(:, 1:2) - xc0, 2, 2);
         ridx = rc < 0.5 * params.diameter(key);
-        
+
         idx = zidx & ridx;
         tag(idx) = tagdict(key);
     end
@@ -248,5 +258,28 @@ function x = circle(r, xc, n)
     for k = 1:n
         x{k} = [xa(k, :); xb(k, :)];
     end
-    
+
+end
+
+function [y, A, rfix] = laplacian_smoothing(x, xfix, A, rfix)
+
+% Return only smoothed y
+
+    xx = [xfix; x];
+
+    if nargin == 2
+        nfix = (1:numel(xfix))';
+        [xx, ii] = sort(xx);
+        n = numel(xx);
+        rfix = ismember(ii, nfix);
+
+        A = diag(ones(n - 1, 1), 1);
+        A = A + diag(ones(n - 1, 1),- 1);
+        A(rfix, :) = 0;
+        A = A + 2*diag(rfix);
+        A = 0.5*A;
+    end
+
+    y = A * xx;
+    y = y(~rfix);
 end
