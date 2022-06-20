@@ -85,7 +85,8 @@ classdef ProtonicMembraneCell < BaseModel
         end
 
         function model = setupOperators(model)
-            %% this function is  hacky at the moment!! We will make it better later
+
+        % this function is  hacky at the moment!! We will make it better later
 
             an    = 'Anode';
             ct    = 'Cathode';
@@ -268,6 +269,32 @@ classdef ProtonicMembraneCell < BaseModel
                 assert(opts.ResOnly);
             end
 
+            state.(elyte) = model.elyte.updateElConductivity(state.(elyte));
+            state.(elyte) = model.elyte.updateElFlux(state.(elyte));
+            state.(elyte) = model.elyte.updateHpFlux(state.(elyte));
+            state         = model.dispatchE(state);
+            state.(an)    = model.an.updateButtlerVolmerRate(state.(an));
+            state         = model.setupHpSources(state);
+            state.(elyte) = model.elyte.updateChargeConsHp(state.(elyte));
+            state         = model.dispatchE(state);
+            state         = model.setupElSources(state);
+            state.(elyte) = model.elyte.updateChargeConsEl(state.(elyte));
+            state.(ct)    = model.ct.updateButtlerVolmerRate(state.(ct));
+            state         = model.updateBoundaryEqs(state);
+            state         = model.updateControlEqs(state);
+            
+            eqs = {};
+            eqs{end + 1} = state.(elyte).chargeConsHp;
+            eqs{end + 1} = state.(elyte).chargeConsEl;
+            eqs{end + 1} = state.boundaryEqs;
+            eqs{end + 1} = state.controlEqs;
+            
+            names = {'Hp_charge_cons', 'El_charge_cons', 'boundary_eqs', 'control_eqs'};
+            types = repmat({'cells'}, 1, numel(names));
+            
+            primaryVars = model.getPrimaryVariables();
+            
+            problem = LinearizedProblem(eqs, types, names, primaryVars, state, dt);
             
         end
         
