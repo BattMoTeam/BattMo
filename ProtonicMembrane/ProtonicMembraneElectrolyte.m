@@ -24,8 +24,11 @@ classdef ProtonicMembraneElectrolyte < BaseModel
         function model = ProtonicMembraneElectrolyte(paramobj)
 
             model = model@BaseModel();
+            
+            fdnames = {'G'};
+            model = dispatchParams(model, paramobj, fdnames);
 
-            % model.operators = localSetupOperators(model.G);
+            model.operators = localSetupOperators(model.G);
 
             model.constants = PhysicalConstants();
             

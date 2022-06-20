@@ -24,7 +24,7 @@ classdef ProtonicMembraneElectrode < BaseModel
             model = model@BaseModel();
 
             fdnames = {'G', ...
-                      'beta', ...
+                       'beta', ...
                        'iBV_0', ...
                        'anodeLimitingCurrentDensity', ...
                        'cathodeLimitingCurrentDensity', ...
@@ -48,7 +48,9 @@ classdef ProtonicMembraneElectrode < BaseModel
             varnames{end + 1} = 'Eocp';
             % Electrolyte electronic potential
             varnames{end + 1} = 'E';
-
+            % Electrolyte electronic potential
+            varnames{end + 1} = 'phiElectrolyte';
+            
             model = model.registerVarNames(varnames);
         
             fn = @ProtonicMembraneElectrode.updateButtlerVolmerRate;

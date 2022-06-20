@@ -69,9 +69,8 @@ classdef Battery < BaseModel
             if model.use_thermal
                 model.ThermalModel = ThermalComponent(paramobj.ThermalModel);
             end
-
             model.Control = model.setupControl(paramobj.Control);
-
+            
             % define shorthands
             elyte   = 'Electrolyte';
             ne      = 'NegativeElectrode';

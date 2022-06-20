@@ -5,7 +5,7 @@ classdef ProtonicMembraneCellInputParams < ComponentInputParams
         Anode
         Cathode
         Electrolyte
-        
+        couplingTerms
     end
     
     methods
@@ -23,6 +23,7 @@ classdef ProtonicMembraneCellInputParams < ComponentInputParams
             paramobj.(ct)    = ProtonicMembraneElectrodeInputParams(pick(ct));
             paramobj.(elyte) = ProtonicMembraneElectrolyteInputParams(pick(elyte));
             
+            paramobj.couplingTerms = {};
         end
         
     end
