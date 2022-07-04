@@ -29,7 +29,7 @@ classdef BatchProcessor
         end
         
         function [bp, simlist] = modifyElement(bp, simlist, ind, paramname, paramvalue)
-            error('not robbust')
+            error('not robust')
             simlist{ind}.paramname = paramvalue;
             bp = bp.addParameterName(paramname);
         end        
