@@ -154,6 +154,9 @@ classdef BatchProcessor
                         filteredsimlist{end + 1} = s;
                     end
                 end
+                if ~isfield(s, paramname) & isempty(filter)
+                    filteredsimlist{end + 1} = s;
+                end
             end
             if ~isempty(rest)
                 filteredsimlist = bp.filterSimList(filteredsimlist, rest{:});
