@@ -17,6 +17,14 @@ classdef BatchProcessor
                 bp = bp.addParameterName(fdname);
             end
         end
+
+        function [bp, simlist] = mergeSimLists(bp, simlist, simlist_to_merge)
+            for ind = 1 : numel(simlist_to_merge)
+                elt = simlist_to_merge{ind};
+                [bp, simlist] = bp.addElement(simlist, elt);
+            end
+        end
+        
         
         function bp = addParameterName(bp, paramname)
             if ~ismember(paramname, bp.paramnames)
@@ -55,7 +63,11 @@ classdef BatchProcessor
                         end
                     elseif isa(val, 'char')
                         type = 'char';
+                    else
+                        error('type not recognized');
                     end
+                else
+                    type = 'undef';
                 end
                 vals{end + 1}  = val;
                 types{end + 1} = type;
@@ -65,32 +77,31 @@ classdef BatchProcessor
 
             ok = false;
 
-            if all(strcmp(types, 'char'))
+            if all(ismember(types, {'char', 'undef'}))
                 ok = true;
                 type = 'char';
                 dim = [];
             end
             
             if isnumeric(vals{1})
-                if all(strcmp(types, 'scalar'))
+                if all(ismember(types, {'scalar', 'undef'}))
                     ok = true;
                     type = 'scalar';
                     dim = 1;
-                elseif all(strcmp(types, 'vector'))
+                elseif all(ismember(types, {'vector', 'undef'}))
                     type = 'vector';
-                    dims = vertcat(dims{:});
+                    isdef = ismember(types, 'vector');
+                    dims = vertcat(dims(isdef));
                     if all(dims(:, 2) == 1)
                         a = unique(dims(:, 1));
                         if numel(a) == 1
                             ok = true;
-                            vals = horzcat(vals{:});
                             dim = [dims(1, 1), 1];
                         end
                     elseif all(dims(:, 1) == 1)
                         a = unique(dims(:, 2));
                         if numel(a) == 1
                             ok = true;
-                            vals = vertcat(vals{:});
                             dim = [1, dims(1, 2)];
                         end
                     end
@@ -117,18 +128,22 @@ classdef BatchProcessor
                 paramname = paramnames{ic};
                 [vals, type, dim] = getParameterValue(bp, simlist, paramname);
                 for ir = 1 : numel(simlist)
-                    if ismember(type, {'char', 'scalar'})  
-                        Tc{ir, ic} = vals{ir};
+                    if ismember(type, {'char', 'scalar'})
+                        if isempty(vals{ir})
+                            Tc{ir, ic} = 'undefined';
+                        else
+                            Tc{ir, ic} = vals{ir};
+                        end
                     elseif strcmp(type, 'vector')
-                        if dim(1) == 1
+                        if isempty(vals{ir})
+                            Tc{ir, ic} = 'undefined';
+                        elseif dim(1) == 1
                             Tc{ir, ic} = sprintf('[%s]', strjoin(cellstr(num2str(vals(ir, :)')), ', '));
                         elseif dim(2) == 1
                             Tc{ir, ic} = sprintf('[%s]', strjoin(cellstr(num2str(vals(:, ir))), '; '));
                         else
-                            error('problem with dimension')
+                            error('problem with dimension.');
                         end
-                    else
-                        error('type not recognized')
                     end
                 end
             end
