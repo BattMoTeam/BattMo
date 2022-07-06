@@ -34,21 +34,73 @@ classdef BatchProcessor
             bp = bp.addParameterName(paramname);
         end        
     
-        function vals = getParameterValue(bp, simlist, paramname)
+        function [vals, type, dim] = getParameterValue(bp, simlist, paramname)
             bp.assertParam(paramname);
             vals = {};
+            types = {};
+            dims = {};
             for ind = 1 : numel(simlist)
                 s = simlist{ind};
+                val  = {};
+                type = {};
+                dim  = [];
                 if isfield(s, paramname)
-                    vals{end + 1} = s.(paramname);
-                else
-                    vals{end + 1} = {};
+                    val = s.(paramname);
+                    if isnumeric(val)
+                        dim = size(val);
+                        if all(dim == [1, 1])
+                            type = 'scalar';
+                        else
+                            type = 'vector';
+                        end
+                    elseif isa(val, 'char')
+                        type = 'char';
+                    end
                 end
+                vals{end + 1}  = val;
+                types{end + 1} = type;
+                dims{end + 1}  = dim;
+                
+            end
+
+            ok = false;
+
+            if all(strcmp(types, 'char'))
+                ok = true;
+                type = 'char';
+                dim = [];
             end
             
             if isnumeric(vals{1})
-                vals = cell2mat(vals);
+                if all(strcmp(types, 'scalar'))
+                    ok = true;
+                    type = 'scalar';
+                    dim = 1;
+                elseif all(strcmp(types, 'vector'))
+                    type = 'vector';
+                    dims = vertcat(dims{:});
+                    if all(dims(:, 2) == 1)
+                        a = unique(dims(:, 1));
+                        if numel(a) == 1
+                            ok = true;
+                            vals = horzcat(vals{:});
+                            dim = [dims(1, 1), 1];
+                        end
+                    elseif all(dims(:, 1) == 1)
+                        a = unique(dims(:, 2));
+                        if numel(a) == 1
+                            ok = true;
+                            vals = vertcat(vals{:});
+                            dim = [1, dims(1, 2)];
+                        end
+                    end
+                end
             end
+
+            if ~ok
+                error('values are not consistents');
+            end
+            
             
         end        
 
@@ -61,12 +113,22 @@ classdef BatchProcessor
 
             Tc = cell(nlist, nparams);
 
-            for ir  = 1 : nlist
-                s = simlist{ir};
-                for ic  = 1 : nparams
-                    paramname = paramnames{ic};
-                    if isfield(s, paramname) && ~isempty(s.(paramname))
-                        Tc{ir, ic} = s.(paramname); 
+            for ic  = 1 : nparams
+                paramname = paramnames{ic};
+                [vals, type, dim] = getParameterValue(bp, simlist, paramname);
+                for ir = 1 : numel(simlist)
+                    if ismember(type, {'char', 'scalar'})  
+                        Tc{ir, ic} = vals{ir};
+                    elseif strcmp(type, 'vector')
+                        if dim(1) == 1
+                            Tc{ir, ic} = sprintf('[%s]', strjoin(cellstr(num2str(vals(ir, :)')), ', '));
+                        elseif dim(2) == 1
+                            Tc{ir, ic} = sprintf('[%s]', strjoin(cellstr(num2str(vals(:, ir))), '; '));
+                        else
+                            error('problem with dimension')
+                        end
+                    else
+                        error('type not recognized')
                     end
                 end
             end
@@ -89,8 +151,19 @@ classdef BatchProcessor
             rangevalues = [];
             for ind = 1 : numel(paramnames)
                 paramname = paramnames{ind};
-                vals = getParameterValue(bp, simlist, paramname);
-                vals = unique(vals);
+                [vals, type, dim] = getParameterValue(bp, simlist, paramname);
+                if strcmp(type, 'vector')
+                    if dim(1) == 1
+                        vals = unique(vals, 'rows');
+                    elseif dim(2) == 1
+                        vals = unique(vals', 'rows');
+                        vals = vals';
+                    else
+                        error('Matrix entry are not coverged');
+                    end
+                else
+                    vals = unique(vals);
+                end
                 rangevalues.(paramname) = vals;
             end
             
