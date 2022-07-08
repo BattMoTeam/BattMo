@@ -63,6 +63,8 @@ classdef BatchProcessor
                         end
                     elseif isa(val, 'char')
                         type = 'char';
+                    elseif isa(val, 'logical') & numel(val) == 1
+                        type = 'boolean';
                     else
                         error('type not recognized');
                     end
@@ -82,8 +84,14 @@ classdef BatchProcessor
                 type = 'char';
                 dim = [];
             end
+
+            if all(ismember(types, {'boolean', 'undef'}))
+                ok = true;
+                type = 'boolean';
+                dim = [];
+            end
             
-            if isnumeric(vals{1})
+            if ~isempty(vals) && (isnumeric(vals{1}) | isempty(vals{1}))
                 if all(ismember(types, {'scalar', 'undef'}))
                     ok = true;
                     type = 'scalar';
@@ -128,7 +136,7 @@ classdef BatchProcessor
                 paramname = paramnames{ic};
                 [vals, type, dim] = getParameterValue(bp, simlist, paramname);
                 for ir = 1 : numel(simlist)
-                    if ismember(type, {'char', 'scalar'})
+                    if ismember(type, {'char', 'scalar', 'boolean'})
                         if isempty(vals{ir})
                             Tc{ir, ic} = 'undefined';
                         else
@@ -223,7 +231,7 @@ classdef BatchProcessor
                 if isfield(s, paramname)
                     paramval = s.(paramname);
                     take = false;
-                    if isa(filter, 'numeric')
+                    if isa(filter, 'numeric') || isa(filter, 'logical')
                         if paramval == filter
                             take = true;
                         end
