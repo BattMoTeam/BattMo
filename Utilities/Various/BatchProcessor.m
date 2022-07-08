@@ -213,8 +213,13 @@ classdef BatchProcessor
             paramname = varargin{1};
             rest = varargin(2 : end);
             vals = getParameterValue(bp, simlist, paramname);
+            eind = cellfun(@(val) isempty(val), vals)
+            simlist = horzcat(simlist(~eind), simlist(eind));
+            vals = vals(~eind);
             [~, ind] = sort(vals);
-            sortedsimlist = simlist(ind);                
+            ne = nnz(~eind);
+            sortedsimlist = simlist;
+            sortedsimlist(1 : ne) = simlist(ind);
             if ~isempty(rest)
                 sortedsimlist = sortSimList(bp, sortedsimlist, rest{:});
             end
