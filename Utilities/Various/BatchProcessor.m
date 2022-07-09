@@ -58,6 +58,8 @@ classdef BatchProcessor
                         dim = size(val);
                         if all(dim == [1, 1])
                             type = 'scalar';
+                        elseif isempty(val)
+                            type = 'undef';
                         else
                             type = 'vector';
                         end
@@ -99,7 +101,7 @@ classdef BatchProcessor
                 elseif all(ismember(types, {'vector', 'undef'}))
                     type = 'vector';
                     isdef = ismember(types, 'vector');
-                    dims = vertcat(dims(isdef));
+                    dims = vertcat(dims{isdef});
                     if all(dims(:, 2) == 1)
                         a = unique(dims(:, 1));
                         if numel(a) == 1
