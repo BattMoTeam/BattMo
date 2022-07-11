@@ -214,10 +214,15 @@ classdef BatchProcessor
         function sortedsimlist = sortSimList(bp, simlist, varargin)
             paramname = varargin{1};
             rest = varargin(2 : end);
-            vals = getParameterValue(bp, simlist, paramname);
-            eind = cellfun(@(val) isempty(val), vals)
+            [vals, type] = getParameterValue(bp, simlist, paramname);
+            eind = cellfun(@(val) isempty(val), vals);
             simlist = horzcat(simlist(~eind), simlist(eind));
             vals = vals(~eind);
+            if ismember(type, {'scalar', 'boolean'})
+                vals = vertcat(vals{:});
+            elseif strcmp(type, 'vector')
+                error('vectors cannot be ordered');
+            end
             [~, ind] = sort(vals);
             ne = nnz(~eind);
             sortedsimlist = simlist;
