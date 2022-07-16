@@ -177,6 +177,8 @@ classdef BatchProcessor
             for ind = 1 : numel(paramnames)
                 paramname = paramnames{ind};
                 [vals, type, dim] = getParameterValue(bp, simlist, paramname);
+                ind = cellfun(@(val) ~isempty(val), vals);
+                vals = vals(ind);
                 if strcmp(type, 'vector')
                     if dim(1) == 1
                         vals = unique(vals, 'rows');
@@ -186,8 +188,11 @@ classdef BatchProcessor
                     else
                         error('Matrix entry are not coverged');
                     end
-                else
+                elseif ismember(type, {'scalar', 'boolean'})
+                    vals = vertcat(vals{:});
                     vals = unique(vals);
+                else
+                    vals = unique(vals);                    
                 end
                 rangevalues.(paramname) = vals;
             end
