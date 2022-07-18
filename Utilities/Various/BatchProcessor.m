@@ -219,23 +219,36 @@ classdef BatchProcessor
         function sortedsimlist = sortSimList(bp, simlist, varargin)
             paramname = varargin{1};
             rest = varargin(2 : end);
-            [vals, type] = getParameterValue(bp, simlist, paramname);
-            eind = cellfun(@(val) isempty(val), vals);
-            simlist = horzcat(simlist(~eind), simlist(eind));
-            vals = vals(~eind);
-            if ismember(type, {'scalar', 'boolean'})
-                vals = vertcat(vals{:});
-            elseif strcmp(type, 'vector')
-                error('vectors cannot be ordered');
+            if strcmp(paramname, 'inverseOrder')
+                sortedsimlist = simlist(end : -1 : 1);
+            else
+                [vals, type] = getParameterValue(bp, simlist, paramname);
+                eind = cellfun(@(val) isempty(val), vals);
+                simlist = horzcat(simlist(~eind), simlist(eind));
+                vals = vals(~eind);
+                if ismember(type, {'scalar', 'boolean'})
+                    vals = vertcat(vals{:});
+                elseif strcmp(type, 'vector')
+                    error('vectors cannot be ordered');
+                end
+                [~, ind] = sort(vals);
+                ne = nnz(~eind);
+                sortedsimlist = simlist;
+                sortedsimlist(1 : ne) = simlist(ind);
             end
-            [~, ind] = sort(vals);
-            ne = nnz(~eind);
-            sortedsimlist = simlist;
-            sortedsimlist(1 : ne) = simlist(ind);
             if ~isempty(rest)
                 sortedsimlist = sortSimList(bp, sortedsimlist, rest{:});
             end
         end
+        
+        function [bp, simlist] = filterMergeSimLists(bp, simlist, simlist_to_merge, varargin)
+            
+            [bp, simlist_to_merge] = bp.mergeSimLists({}, simlist_to_merge);
+            simlist_to_merge = bp.filterSimList(simlist_to_merge, varargin{:});
+            [bp, simlist] = bp.mergeSimLists(simlist, simlist_to_merge);
+            
+        end
+        
         
         function filteredsimlist = filterSimList(bp, simlist, varargin)
             assert(mod(numel(varargin), 2) == 0, 'wrong number of argument')
@@ -267,7 +280,7 @@ classdef BatchProcessor
                         filteredsimlist{end + 1} = s;
                     end
                 end
-                if ~isfield(s, paramname) & isempty(filter)
+                if ~isfield(s, paramname) & (isempty(filter) | strcmp(filter, 'undefined'))
                     filteredsimlist{end + 1} = s;
                 end
             end
