@@ -92,11 +92,11 @@ classdef Electrolyte < ElectroChemicalComponent
             model = model.registerPropFunction({'cs', fn, {'c'}});
             
             fn = @Electrolyte.updateConductivity;
-            model = model.registerPropFunction({'conductivity', fn, {'c', 'T', 'phi'}});
+            model = model.registerPropFunction({'conductivity', fn, {'c', 'T'}});
             
             fn = @Electrolyte.updateChemicalCurrent;
-            model = model.registerPropFunction({'dmudcs', fn, {'c', 'T', 'phi'}});
-            model = model.registerPropFunction({'jchems', fn, {'c', 'T', 'phi'}});
+            model = model.registerPropFunction({'dmudcs', fn, {'c', 'T'}});
+            model = model.registerPropFunction({'jchems', fn, {'c', 'T'}});
             
             fn = @Electrolyte.updateDiffusionCoefficient;
             model = model.registerPropFunction({'D', fn, {'c', 'T'}});

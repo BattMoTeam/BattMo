@@ -98,7 +98,11 @@ classdef Interface < BaseModel
             fn = @Interface.updateOCP;
             inputnames = {'cElectrodeSurface', 'T'};
             model = model.registerPropFunction({'OCP', fn, inputnames});
-            % model = model.registerPropFunction({'dUdT', fn, inputnames});
+            model = model.registerPropFunction({'dUdT', fn, inputnames});
+            
+            fn = @Interface.updateEta;
+            inputnames = {'phiElectrolyte', 'phiElectrode', 'OCP'};            
+            model = model.registerPropFunction({'eta', fn, inputnames});
             
             % fn = @Interface.updateEta;
             % inputnames = {'phiElectrolyte', 'phiElectrode', , 'OCP'};

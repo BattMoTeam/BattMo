@@ -30,7 +30,8 @@
                 "useSimplifiedDiffusionModel" : true,
                 "EaD": 5000,
                 "D0": 3.9e-14,
-                "rp": 1e-06
+                "rp": 1e-06,
+                "N": 10
             }
             
         },
@@ -54,7 +55,8 @@
                 "useSimplifiedDiffusionModel" : true,
                 "EaD": 5000,
                 "D0": 1e-14,
-                "rp": 1e-06
+                "rp": 1e-06,
+                "N": 10
             }
         },
         "CurrentCollector": {

@@ -1,7 +1,7 @@
 function [g, edgelabels] = setupGraph(model, varargin)
     
     opt = struct('excludeVarnames', false, ...
-                 'resolveIndex', true);
+                 'resolveIndex'   , true );
     opt = merge_options(opt, varargin{:});
     
     g = digraph();
@@ -11,8 +11,10 @@ function [g, edgelabels] = setupGraph(model, varargin)
     fs = {}; % edge function name
     ms = {}; % edge model name    
     
+    varnames  = model.varNameList;
+    propfuncs = model.propertyFunctionList;
+    
     if ~opt.excludeVarnames
-        varnames = model.varNameList;
 
         for ind = 1 : numel(varnames)
             varname = varnames{ind};
@@ -30,8 +32,6 @@ function [g, edgelabels] = setupGraph(model, varargin)
         
     end
     
-    propfuncs = model.propertyFunctionList;
-
     for ipropfunc = 1 : numel(propfuncs)
 
         propfunction = propfuncs{ipropfunc};

@@ -226,6 +226,7 @@ classdef SEIActiveMaterial < ActiveMaterial
 
             state = model.updateControl(state, drivingForces, dt);
             state = model.updateCurrentSource(state);       % eSource
+            state = model.updateConductivity(state);        % conductivity
             state = model.updateCurrent(state);             % j
             state = model.updateStandalonejBcSource(state); % jBcSource
             state = model.updateChargeConservation(state);  % chargeCons

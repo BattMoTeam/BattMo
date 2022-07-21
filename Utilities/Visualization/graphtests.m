@@ -2,6 +2,8 @@
 clear all
 close all
 
+mrstModule add ad-core mpfa
+
 jsonstruct = parseBattmoJson('ParameterData/ParameterSets/Chen2020/chen2020_lithium_ion_battery.json');
 
 paramobj = BatteryInputParams(jsonstruct);
@@ -25,12 +27,19 @@ gen = BareBatteryGenerator3D();
 paramobj = gen.updateBatteryInputParams(paramobj);
 model = Battery(paramobj);
 
-submodel = model.(ne).(am).(itf).registerVarAndPropfuncNames();
+submodel = model.NegativeElectrode.ActiveMaterial.Interface.registerVarAndPropfuncNames();
+% submodel = model.NegativeElectrode.ActiveMaterial.registerVarAndPropfuncNames();
+% submodel = model.Electrolyte.registerVarAndPropfuncNames();
 
 [g, edgelabels] = setupGraph(submodel);
 
+cgf = ComputationalGraphFilter(g);
+cgf.includeNodeNames = [];
+
+g = cgf.setupGraph();
+
 figure
-h = plot(g);
+h = plot(g, 'nodefontsize', 18);
 
 doaddlabel = false;
 if doaddlabel

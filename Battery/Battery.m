@@ -125,16 +125,16 @@ classdef Battery < BaseModel
             % be respected in the function getEquations where the equations are collected; nothing is imposed there.
             
             allNames = { ...
-                {elyte, 'c'}            , 'elyte_massCons'      , 'cell',; ... 
+                {elyte, 'c'}            , 'elyte_massCons'      , 'cell' ; ... 
                 {elyte, 'phi'}          , 'elyte_chargeCons'    , 'cell' ; ... 
                 {ne, am, 'phi'}         , 'ne_am_chargeCons'    , 'cell' ; ... 
-                {ne, am, 'c'}           , 'ne_am_massCons'      , 'cell' ; ... 
-                {ne, am, sd, 'c'}       , 'ne_am_sd_massCons'   , 'sdiff'; ... 
-                {ne, am, sd, 'cSurface'}, 'ne_am_sd_soliddiffeq', 'sdiff'; ... 
                 {pe, am, 'phi'}         , 'pe_am_chargeCons'    , 'cell' ; ... 
-                {pe, am, 'c'}           , 'pe_am_massCons'      , 'cell' ; ... 
+                {ne, am, sd, 'cSurface'}, 'ne_am_massCons'      , 'cell' ; ... 
+                {ne, am, sd, 'c'}       , 'ne_am_sd_massCons'   , 'sdiff'; ... 
+                {ne, am, 'c'}           , 'ne_am_sd_soliddiffeq', 'sdiff'; ... 
+                {pe, am, sd, 'cSurface'}, 'pe_am_massCons'      , 'cell' ; ... 
                 {pe, am, sd, 'c'}       , 'pe_am_sd_massCons'   , 'sdiff'; ... 
-                {pe, am, sd, 'cSurface'}, 'pe_am_sd_soliddiffeq', 'sdiff'; ... 
+                {pe, am, 'c'}           , 'pe_am_sd_soliddiffeq', 'sdiff'; ... 
                 {ne, cc, 'phi'}         , 'ne_cc_chargeCons'    , 'cell' ; ... 
                 {pe, cc, 'phi'}         , 'pe_cc_chargeCons'    , 'cell' ; ... 
                 {thermal, 'T'}          , 'energyCons'          , 'cell' ; ...
@@ -276,16 +276,16 @@ classdef Battery < BaseModel
             % Function that assemble the control equation
             
             fn = @Batter.setupEIEquation;
-            inputnames = {{'pe', 'cc', 'E'}, ...
-                          {'pe', 'cc', 'I'}, ...
-                          {'pe', 'cc', 'phi'}, ...
+            inputnames = {{pe, cc, 'E'}, ...
+                          {pe, cc, 'I'}, ...
+                          {pe, cc, 'phi'}, ...
                          };
             model = model.registerPropFunction({{'controlEq'}, fn, inputnames});
             
             % Function that update Thermal accumulation terms
             
             fn = @Battery.updateThermalAccumTerms;
-            inputnames = {'T'};
+            inputnames = {{thermal, 'T'}};
             model = model.registerPropFunction({{thermal, 'accumHeat'}, fn, inputnames});
             
             % Function that update the Thermal Ohmic Terms
@@ -493,7 +493,7 @@ classdef Battery < BaseModel
             elyte_cells = zeros(model.G.cells.num, 1);
             elyte_cells(model.(elyte).G.mappings.cellmap) = (1 : model.(elyte).G.cells.num)';
 
-            model.(elyte).volumeFraction = NaN(model.(elyte).G.cells.num, 1);
+            model.(elyte).volumeFraction = ones(model.(elyte).G.cells.num, 1); % region where electolyte fill up volume is default
             model.(elyte).volumeFraction(elyte_cells(model.(ne).(am).G.mappings.cellmap)) = model.(ne).(am).porosity;
             model.(elyte).volumeFraction(elyte_cells(model.(pe).(am).G.mappings.cellmap)) = model.(pe).(am).porosity;
             model.(elyte).volumeFraction(elyte_cells(model.(elyte).(sep).G.mappings.cellmap)) = model.(elyte).(sep).porosity;
@@ -705,6 +705,7 @@ classdef Battery < BaseModel
                 elde = electrodes{ind};
                 state.(elde).(am).(itf) = battery.(elde).(am).(itf).updateReactionRateCoefficient(state.(elde).(am).(itf));
                 state.(elde).(am).(itf) = battery.(elde).(am).(itf).updateOCP(state.(elde).(am).(itf));
+                state.(elde).(am).(itf) = battery.(elde).(am).(itf).updateEta(state.(elde).(am).(itf));
                 state.(elde).(am).(itf) = battery.(elde).(am).(itf).updateReactionRate(state.(elde).(am).(itf));
             end
 
@@ -714,21 +715,24 @@ classdef Battery < BaseModel
             
             %% Update coupling within electrodes and external coupling
             
-
-            state = model.setupExternalCouplingNegativeElectrode(state);
-            state = model.setupExternalCouplingPositiveElectrode(state);
-            
-            if model.include_current_collectors
-                % update coupling between active material and current collector in negative electrode
-                state.(ne) = battery.(ne).updateCoupling(state.(ne));
-                state.(pe) = battery.(pe).updateCoupling(state.(pe));
-                state.(ne).(cc) = battery.(ne).(cc).updatejBcSource(state.(ne).(cc));
-                state.(pe).(cc) = battery.(pe).(cc).updatejBcSource(state.(pe).(cc));
-                state.(ne).(am) = battery.(ne).(am).updatejBcSource(state.(ne).(am));
-                state.(pe).(am) = battery.(pe).(am).updatejBcSource(state.(pe).(am));
-            else
-                state.(ne).(am) = battery.(ne).(am).updatejBcSourceNoCurrentCollector(state.(ne).(am));
-                state.(pe).(am) = battery.(pe).(am).updatejBcSourceNoCurrentCollector(state.(pe).(am));
+            for ind = 1 : numel(electrodes)
+                elde = electrodes{ind};
+                state.(elde).(am) = model.(elde).(am).updateConductivity(state.(elde).(am));
+                if model.include_current_collectors
+                    state.(elde).(cc) = model.(elde).(cc).updateConductivity(state.(elde).(cc));
+                    state.(elde) = battery.(elde).updateCoupling(state.(elde));
+                    switch elde
+                      case ne
+                        state = model.setupExternalCouplingNegativeElectrode(state);
+                      case pe
+                        state = model.setupExternalCouplingPositiveElectrode(state);
+                    end
+                    state.(elde).(cc) = battery.(elde).(cc).updatejBcSource(state.(elde).(cc));
+                    state.(elde).(am) = battery.(elde).(am).updatejBcSource(state.(elde).(am));
+                else
+                    state.(elde).(am) = battery.(elde).(am).updatejBcSourceNoCurrentCollector(state.(elde).(am));
+                end
+                
             end
             
             %% elyte charge conservation
@@ -875,7 +879,7 @@ classdef Battery < BaseModel
             end
             
             % Equation name : 'pe_cc_chargeCons';
-            if model.(ne).include_current_collector
+            if model.(pe).include_current_collector
                 eqs{end + 1} = state.(pe).(cc).chargeCons;
             end
 
@@ -903,13 +907,13 @@ classdef Battery < BaseModel
                 types{end - 1} = 'cell';   
               case {'constantVoltage', 'CV_charge'}
                 neqs  = numel(types);
-                order = [ 1: neqs - 2, neqs, neqs - 1];
-                types = { types{order} };
+                order = [1 : neqs - 2, neqs, neqs - 1];
+                types = {types{order}};
                 eqs   = {eqs{order}};
                 names = {names{order}};
               case 'CV_discharge'
                 % stil I which is variable
-                types{end-1} = 'cell'; 
+                types{end - 1} = 'cell'; 
               otherwise 
                 error()
             end
@@ -1258,9 +1262,10 @@ classdef Battery < BaseModel
                 
                 cc = 'CurrentCollector';
 
-                phi = state.(ne).(cc).phi;
+                phi   = state.(ne).(cc).phi;
+                sigma = state.(ne).(cc).conductivity;
 
-                [jExternal, jFaceExternal] = setupExternalCoupling(model.(ne).(cc), phi, 0);
+                [jExternal, jFaceExternal] = setupExternalCoupling(model.(ne).(cc), phi, 0, sigma);
                 
                 state.(ne).(cc).jExternal = jExternal;
                 state.(ne).(cc).jFaceExternal = jFaceExternal;
@@ -1269,9 +1274,10 @@ classdef Battery < BaseModel
                 
                 am = 'ActiveMaterial';
                 
-                phi = state.(ne).(am).phi;
+                phi   = state.(ne).(am).phi;
+                sigma = state.(ne).(am).conductivity;
                 
-                [jExternal, jFaceExternal] = setupExternalCoupling(model.(ne).(am), phi, 0);
+                [jExternal, jFaceExternal] = setupExternalCoupling(model.(ne).(am), phi, 0, sigma);
                 
                 state.(ne).(am).jExternal = jExternal;
                 state.(ne).(am).jFaceExternal = jFaceExternal;
@@ -1294,9 +1300,10 @@ classdef Battery < BaseModel
                 
                 cc   = 'CurrentCollector';
                 
-                phi = state.(pe).(cc).phi;
+                phi   = state.(pe).(cc).phi;
+                sigma = state.(pe).(cc).conductivity;
                 
-                [jExternal, jFaceExternal] = setupExternalCoupling(model.(pe).(cc), phi, E);
+                [jExternal, jFaceExternal] = setupExternalCoupling(model.(pe).(cc), phi, E, sigma);
                 
                 state.(pe).(cc).jExternal = jExternal;
                 state.(pe).(cc).jFaceExternal = jFaceExternal;
@@ -1305,9 +1312,10 @@ classdef Battery < BaseModel
                 
                 am = 'ActiveMaterial';
                 
-                phi = state.(pe).(am).phi;
+                phi   = state.(pe).(am).phi;
+                sigma = state.(pe).(am).conductivity;
                 
-                [jExternal, jFaceExternal] = setupExternalCoupling(model.(pe).(am), phi, E);
+                [jExternal, jFaceExternal] = setupExternalCoupling(model.(pe).(am), phi, E, sigma);
                 
                 state.(pe).(am).jExternal = jExternal;
                 state.(pe).(am).jFaceExternal = jFaceExternal;
