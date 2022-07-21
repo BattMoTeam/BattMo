@@ -2,7 +2,7 @@
     "electricalConductivity": 215,
     "heatCapacity": 4180000.0,
     "thermalConductivity": 6e-05,
-    "InterDiffusionCoefficient": 1e-10,
+    "InterDiffusionCoefficient": null,
     "Interface": {
         "cmax": 30555,
         "volumeFraction": 0.75,
