@@ -392,7 +392,7 @@ classdef SolidElectrodeInterface < BaseModel
             
             coef = mapToSei*(delta.*v);
             
-            state.flux = op.diffFlux(c) - faceAver*(coef.*(1 - xi).*c);
+            state.flux = op.diffFlux(c) + faceAver*(coef.*(1 - xi).*c);
             
         end
 
