@@ -1,12 +1,8 @@
 {
     "electricalConductivity": 215,
-    "heatCapacity": 4180000.0,
-    "thermalConductivity": 6e-05,
-    "InterDiffusionCoefficient": null,
     "Interface": {
         "cmax": 30555,
         "volumeFraction": 0.75,
-        "bruggemanCoeffcient": 1.5,
         "volumetricSurfaceArea": 383959,
         "n": 1,
         "Eak": 35000,
