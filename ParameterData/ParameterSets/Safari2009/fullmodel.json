@@ -1,0 +1,7 @@
+{
+    "Anode" : {"isFile" : true,
+               "filename" : "ParameterData/ParameterSets/Safari2009/anode_sei.json"},
+    "Cathode" : {"isFile" : true,
+                 "filename" : "ParameterData/ParameterSets/Safari2009/cathode.json"}
+
+}
