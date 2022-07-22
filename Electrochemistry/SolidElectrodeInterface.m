@@ -355,7 +355,7 @@ classdef SolidElectrodeInterface < BaseModel
             delta  = op.mapToSei*delta;
             delta0 = op.mapToSei*delta0;
             
-            state.accumTerm = 1/dt*op.vols.*delta.*(delta.*c - delta0.*c0);
+            state.massAccum = 1/dt*op.vols.*delta.*(delta.*c - delta0.*c0);
             
         end
             
@@ -365,9 +365,9 @@ classdef SolidElectrodeInterface < BaseModel
             
             flux       = state.flux;
             massSource = state.massSource;
-            accumTerm  = state.accumTerm;
+            massAccum  = state.massAccum;
             
-            state.massCons = accumTerm + op.div(flux) - massSource;
+            state.massCons = massAccum + op.div(flux) - massSource;
 
         end
         
