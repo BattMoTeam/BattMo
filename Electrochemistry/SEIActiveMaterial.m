@@ -117,18 +117,6 @@ classdef SEIActiveMaterial < ActiveMaterial
             
         end
         
-        
-        function state = dispatchRtotal(model, state)
-
-            itf = 'Interface';
-            sr  = 'SideReaction';
-            
-            state.(itf).Rtotal = state.R;
-            state.(sr).Rtotal  = state.R;
-            
-        end
-
-        
         function state = updateControl(model, state, drivingForces, dt)
             
             G = model.G;
