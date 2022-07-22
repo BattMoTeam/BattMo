@@ -44,10 +44,12 @@ dograph = true;
 if dograph
     model = model.registerVarAndPropfuncNames();
     [g, edgelabels] = setupGraph(model);
-    % cgf = ComputationalGraphFilter(g);
-    % cgf.includeNodeNames = 'external';
-    % g = cgf.setupGraph();
-    
+    cgf = ComputationalGraphFilter(g);
+    cgf.includeNodeNames = 'Anode.SolidDiffusion.cSurface';
+    % cgf.includeNodeNames = 'cInterface';
+    % g = cgf.setupGraph('oneParentOnly', true);
+    g = cgf.setupDescendantGraph();
+    % g = cgf.setupGraph('oneParentOnly', true);    
     figure
     h = plot(g); 
 end
