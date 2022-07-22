@@ -5,7 +5,7 @@ classdef SingleParticleSEI < BaseModel
         Anode
         Cathode
         Electrolyte
-        
+        Control
     end
     
     methods
@@ -17,6 +17,7 @@ classdef SingleParticleSEI < BaseModel
             model.Anode       = SEIActiveMaterial(paramobj.Anode);
             model.Cathode     = ActiveMaterial(paramobj.Cathode);
             model.Electrolyte = SingleCellElectrolyte(paramobj.Electrolyte);
+            model.Control     = CcCvControlModel(paramobj.Control);
             
         end
 
@@ -92,7 +93,96 @@ classdef SingleParticleSEI < BaseModel
             end
             
         end
+
+        function state = dispatchT(model, state)
+
+            ct = 'Cathode';
+            an = 'Anode';
+
+            state.(ct).T = state.T;
+            state.(an).T = state.T;
+            
+        end
         
+        function state = dispatchEcathode(model, state)
+
+            ct   = 'Cathode';
+            ctrl = 'Control';
+            
+            E = state.(ctrl).E
+
+            state.(ct).phi = E;
+            
+        end
+
+        function state = setupEIequation(model, state)
+        % Some shorthands used for the sub-models
+            an   = 'Anode';
+            itf  = 'Interface';
+            ctrl = 'Control';
+
+            F = model.(an).constants.F;
+            anArea = model.anodeArea; 
+            
+            R = state.(an).(itf).R;
+            I = state.(ctrl).I;
+
+            staet.(ctrl).EIequation = I - anArea*F*R;
+            
+        end
+
+        function state = setupElectrolyteCoupling(model, state)
+
+
+        % Some shorthands used for the sub-models
+            an    = 'Anode';
+            ct    = 'Cathode';
+            itf   = 'Interface';
+            elyte = 'Electrolyte';
+
+            phi = state.(elyte).phi;
+
+            state.(an).(itf).phiElectrolyte = phi;
+            state.(ct).(itf).phiElectrolyte = phi;
+        end
+
+        function state = setupElectrolyteMassCons(model, state)
+
+        % Some shorthands used for the sub-models
+            an    = 'Anode';
+            ct    = 'Cathode';
+            itf   = 'Interface';
+            elyte = 'Electrolyte';
+
+            anArea = model.anodeArea;
+            ctArea = model.cathodeArea;
+
+            anR = state.(an).R;
+            ctR = state.(ct).(itf).R;
+            
+            state.(elyte).massCons = anR*anArea + ctR*ctArea;
+            
+        end
+        
+
+        function cleanState = addStaticVariables(model, cleanState, state, state0)
+
+            cleanState = addStaticVariables@BaseModel(model, cleanState, state);
+
+            an  = 'Anode';
+            ct  = 'Cathode';
+            sei = 'SolidElectrodeInterface';
+            itf = 'Interface';
+            sr  = 'SideReaction';
+
+            cleanState.T = state.T;
+            % boundary condition
+            cleanState.(an).phi = 0;
+            % no potential drop at the cathode
+            cleanState.(ct).(itf).externalPotentialDrop = 0;
+            % external EC concentration is set to constant
+            cleanState.(an).(sei).cExternal = state.(an).(sei).cExternal;
+        end
     end
     
 end
