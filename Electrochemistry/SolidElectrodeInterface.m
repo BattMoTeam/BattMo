@@ -63,8 +63,8 @@ classdef SolidElectrodeInterface < BaseModel
             varnames{end + 1} = 'massSource';
             % Mass conservation equation
             varnames{end + 1} = 'massCons';
-            % Mass conservation equation
-            varnames{end + 1} = 'solidDiffusionEq';
+            % flux-concentration equation at interface boundary
+            varnames{end + 1} = 'interfaceBoundaryEq';
             % SEI Width equation
             varnames{end + 1} = 'widthEq';
             
@@ -85,8 +85,8 @@ classdef SolidElectrodeInterface < BaseModel
             fn = @SolidElectrodeInterface.updateMassSource;
             model = model.registerPropFunction({'massSource', fn, {'R', 'c', 'v', 'cExternal'}});
             
-            fn = @SolidElectrodeInterface.assembleSolidDiffusionEquation;
-            model = model.registerPropFunction({'solidDiffusionEq', fn, {'c', 'cInterface', 'massSource'}});
+            fn = @SolidElectrodeInterface.assembleInterfaceBoundaryEquation;
+            model = model.registerPropFunction({'interfaceBoundaryEq', fn, {'c', 'cInterface', 'massSource'}});
             
             fn = @SolidElectrodeInterface.assembleWidthEquation;
             model = model.registerPropFunction({'widthEq', fn, {'delta', 'v'}});
@@ -400,7 +400,7 @@ classdef SolidElectrodeInterface < BaseModel
             
         end
 
-        function state = assembleSolidDiffusionEquation(model, state)
+        function state = assembleInterfaceBoundaryEquation(model, state)
         % Boundary equation at the interface side, which relates flux with source term.
             
             op = model.operators;
@@ -414,7 +414,7 @@ classdef SolidElectrodeInterface < BaseModel
             % Here, xi = 0
             eq = - op.TIntBc.*(op.mapToIntBc*c - cInt) + delta.*v.*cInt - delta.*R;
             
-            state.solidDiffusionEq = eq;
+            state.interfaceBoundaryEq = eq;
             
         end
         

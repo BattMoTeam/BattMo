@@ -227,7 +227,7 @@ classdef SEIActiveMaterial < ActiveMaterial
 
             state.(sei) = model.(sei).assembleWidthEquation(state.(sei), state0.(sei), dt); % SolidElectrodeInterface.widthEq
             
-            state.(sei) = model.(sei).assembleSolidDiffusionEquation(state.(sei)); % SolidElectrodeInterface.solidDiffusionEq
+            state.(sei) = model.(sei).assembleInterfaceBoundaryEquation(state.(sei)); % SolidElectrodeInterface.solidDiffusionEq
 
             % FIXME : replace the ad-hoc scalings with the correct ones.
             massConsScaling = model.(sd).constants.F; % Faraday constant
@@ -238,15 +238,15 @@ classdef SEIActiveMaterial < ActiveMaterial
             eqs{end + 1} = 1e10*state.(sei).massCons;
             eqs{end + 1} = state.(sei).widthEq;
             eqs{end + 1} = state.seiInterfaceChargeCons;
-            eqs{end + 1} = 1e10*state.(sei).solidDiffusionEq;
+            eqs{end + 1} = 1e10*state.(sei).interfaceBoundaryEq;
             
             names = {'chargeCons'              , ...
                      'sd_massCons'             , ...
                      'sd_solidDiffusionEq'     , ...
                      'sei_massCons'            , ...
                      'sei_width'               , ...
-                     'sei_interface_chargeCons', ...
-                     'sei_solidDiffusionEq'};
+                     'sei_interfaceChargeCons', ...
+                     'sei_interfaceBoundaryeq'};
             
             types = repmat({'cell'}, 1, numel(names));
             
