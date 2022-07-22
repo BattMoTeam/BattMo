@@ -24,29 +24,8 @@ classdef CcCvControlModel < ControlModel
 
             model = registerVarAndPropfuncNames@BaseModel(model);
             
-            varnames = {};
-            
-            % Terminal voltage / [V]
-            varnames{end + 1} = 'E';
-            % Terminal Current / [A]
-            varnames{end + 1} = 'I';
-            % Control type
-            varnames{end + 1} = 'ctrlType';            
-            % CC_discharge
-            % CC_charge
-            % CV_discharge
-            % CV_charge            
-            
-            % Terminal voltage variation/ [V/s]
-            varnames{end + 1} = 'dEdt';
-            % Terminal Current variation / [A/s]
-            varnames{end + 1} = 'dIdt';
-            
-            % Equation that relates E and I (depends on geometry and discretization)
-            varnames{end + 1} = EIequation;
-
-            % control equation
-            varnames{end + 1} = controlEquation;
+            fn = @CcCvControlModel.updateControlEquation;
+            model = model.registerPropFunction({'controlEquation', fn, {'E', 'I'}});
             
         end
 
