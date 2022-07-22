@@ -83,12 +83,6 @@ classdef SideReaction < BaseModel
     end
 end
 
-%% References
-%   [1] Torchio et al, Journal of The Electrochemical Society, 163 (7)
-%   A1192-A1205 (2016), DOI: 10.1149/2.0291607jes
-
-
-
 %{
 Copyright 2021-2022 SINTEF Industry, Sustainable Energy Technology
 and SINTEF Digital, Mathematics & Cybernetics.
