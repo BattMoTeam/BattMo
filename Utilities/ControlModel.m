@@ -40,16 +40,14 @@ classdef ControlModel < BaseModel
             % CV_discharge
             % CV_charge            
             
-            % Terminal voltage variation/ [V/s]
-            varnames{end + 1} = 'dEdt';
-            % Terminal Current variation / [A/s]
-            varnames{end + 1} = 'dIdt';
-            
             % Equation that relates E and I (depends on geometry and discretization)
             varnames{end + 1} = 'EIequation';
 
             % control equation
             varnames{end + 1} = 'controlEquation';
+            
+            fn = @ControlModel.updateControlEquation;
+            model = model.registerPropFunction({'controlEquation', fn, {'E', 'I'}});
             
         end
 
@@ -73,6 +71,7 @@ classdef ControlModel < BaseModel
               case 'constantCurrent'
                 ctrleq = I - ctrlVal;
               case 'constantVoltage'
+                %% TODO : fix hard-coded scaling
                 ctrleq = (E - ctrlVal)*1e5;
             end
             
