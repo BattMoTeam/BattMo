@@ -3,11 +3,14 @@ classdef SingleParticleSEIInputParams < InputParams
 % Input parameter class 
 %
     properties
-        
+
+        anodeArea   % anode area / [m^2]
+        cathodeArea % cathode area / [m^2]
         Anode
         Cathode
         Electrolyte
-
+        Control
+        
     end
     
     methods
@@ -19,11 +22,13 @@ classdef SingleParticleSEIInputParams < InputParams
             an    = 'Anode';
             ct    = 'Cathode';
             elyte = 'Electrolyte';
-
+            ctrl  = 'Control';
+            
             pick = @(fd) pickField(jsonstruct, fd);
             
-            paramobj.(an)    = SEIActiveMaterialInputParams(pick(an));
-            paramobj.(ct)    = ActiveMaterialInputParams(pick(ct));
+            paramobj.(an)   = SEIActiveMaterialInputParams(pick(an));
+            paramobj.(ct)   = ActiveMaterialInputParams(pick(ct));
+            paramobj.(ctrl) = CcCvControlModelInputParams(pick(ctrl));
             % not input parameter for SingleCellElectrolyte
             paramobj.(elyte) = [];
             
