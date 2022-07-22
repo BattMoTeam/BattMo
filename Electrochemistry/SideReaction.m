@@ -5,9 +5,9 @@ classdef SideReaction < BaseModel
         % Physical constants
         constants = PhysicalConstants();
 
-        beta = 0.5               % side reaction buttler-volmer  coefficient [-]
-        k = 1.36e-12             % side reaction rate constant [m/s]
-        conductivity = 5e-6;     % ionic conductivity [S/m]
+        beta         % side reaction buttler-volmer  coefficient [-]
+        k            % side reaction rate constant [m/s]
+        conductivity % ionic conductivity [S/m]
         
     end
 
