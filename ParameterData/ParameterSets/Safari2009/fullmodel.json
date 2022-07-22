@@ -1,7 +1,16 @@
 {
+    "anodeArea": 4.38,
+    "cathodeArea": 4.76,
     "Anode" : {"isFile" : true,
                "filename" : "ParameterData/ParameterSets/Safari2009/anode_sei.json"},
     "Cathode" : {"isFile" : true,
-                 "filename" : "ParameterData/ParameterSets/Safari2009/cathode.json"}
-
+                 "filename" : "ParameterData/ParameterSets/Safari2009/cathode.json"},
+    "Control" : {"controlPolicy"     : "CCCV",
+                 "CRate"             : 0.5,
+                 "lowerCutoffVoltage": 2,
+                 "upperCutoffVoltage": 4.1,
+                 "dIdtLimit"         : 0.01,
+                 "dEdtLimit"         : 0.01}
 }
+
+
