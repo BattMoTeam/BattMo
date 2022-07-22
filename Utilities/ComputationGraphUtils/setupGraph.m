@@ -10,6 +10,7 @@ function [g, edgelabels] = setupGraph(model, varargin)
     ts = {}; % target nodes
     fs = {}; % edge function name
     ms = {}; % edge model name    
+    ps = {}; % property function index in property list
     
     varnames  = model.varNameList;
     propfuncs = model.propertyFunctionList;
@@ -78,10 +79,12 @@ function [g, edgelabels] = setupGraph(model, varargin)
         t = fullvarnames(indv);
         f = repmat({f}, 1, nv*ni);
         m = repmat({m}, 1, nv*ni);
+        p = repmat({ipropfunc}, 1, nv*ni);
         
         ss = horzcat(ss, s);
         ts = horzcat(ts, t);
         fs = horzcat(fs, f);
+        ps = horzcat(ps, p);
         ms = horzcat(ms, m);
         
     end
@@ -91,6 +94,7 @@ function [g, edgelabels] = setupGraph(model, varargin)
     edgelabels.ss = ss;
     edgelabels.ts = ts;
     edgelabels.fs = fs;
+    edgelabels.ps = ps;
     edgelabels.ms = ms;
     
 end
