@@ -44,10 +44,6 @@ classdef SideReaction < BaseModel
             varnames{end + 1} = 'phiElectrolyte';
             % Reaction rate
             varnames{end + 1} = 'R';
-            % overpotential
-            varnames{end + 1} = 'eta';
-            % Reaction rate coefficient
-            varnames{end + 1} = 'j0';
             % External potential drop used in Butler-Volmer
             varnames{end + 1} = 'externalPotentialDrop';
             

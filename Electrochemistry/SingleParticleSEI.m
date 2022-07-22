@@ -23,6 +23,73 @@ classdef SingleParticleSEI < BaseModel
         function model = registerVarAndPropfuncNames(model)
 
             model = registerVarAndPropfuncNames@BaseModel(model);
+
+
+            varnames = {};
+            % temperature
+            varnames{end + 1} = 'T';
+            model = model.registerVarNames(varnames);
+            
+            
+            % Some shorthands used for the sub-models
+            an    = 'Anode';
+            ct    = 'Cathode';
+            sd    = 'SolidDiffusion';
+            itf   = 'Interface';
+            sei   = 'SolidElectrodeInterface';
+            sr    = 'SideReaction';
+            elyte = 'Electrolyte';
+            ctrl  = 'Control';
+            
+            fn = @SingleParticleSEI.dispatchEcathode;
+            model = model.registerPropFunction({{ct, 'phi'}, fn, {{ctrl, 'E'}}});
+
+            fn = @SingleParticleSEI.dispatchT;
+            model = model.registerPropFunction({{an, 'T'}, fn, {'T'}});
+            model = model.registerPropFunction({{ct, 'T'}, fn, {'T'}});
+            
+            fn = @SingleParticleSEI.setupEIequation;
+            model = model.registerPropFunction({{ctrl, 'I'}, fn, {{an, itf, 'R'}}});
+
+            fn = @SingleParticleSEI.setupElectrolyteCoupling;
+            model = model.registerPropFunction({{an, itf, 'phiElectrolyte'}, fn, {{elyte, 'phi'}}});
+            model = model.registerPropFunction({{an, sr, 'phiElectrolyte'}, fn, {{elyte, 'phi'}}});
+            model = model.registerPropFunction({{ct, itf, 'phiElectrolyte'}, fn, {{elyte, 'phi'}}});
+            
+            fn = @SingleParticleSEI.setupElectrolyteMassCons;
+            model = model.registerPropFunction({{elyte, 'massCons'}, fn, {{an, 'R'}, {ct, itf, 'R'}}});
+
+            eldes = {an, ct};
+            for ielde = 1 : numel(eldes)
+                elde = eldes{ielde};
+                switch elde
+                  case an
+                    fn = @SingleParticleSEI.updateAnodeReactionRateCoefficient;
+                  case ct
+                    fn = @SingleParticleSEI.updateCathodeReactionRateCoefficient;
+                  otherwise
+                    error('elde not recognized');
+                end
+                inputnames = {VarName({elde, itf}, 'cElectrodeSurface'), ...
+                              VarName({elde, itf}, 'T')};
+                modelnamespace = {elde, itf};
+                varname = VarName({elde, itf}, 'j0');
+                propfunction = PropFunction(varname, fn, inputnames, modelnamespace);
+                model = model.registerPropFunction(propfunction);
+            end
+
+
+            varnames = {'chargeCons', 'j', 'jBcSource', 'jCoupling', 'jBcSource', 'conductivity', 'eSource'};
+            for ivar = 1 : numel(varnames)
+                model = model.removeVarName({ct, varnames{ivar}});
+                model = model.removeVarName({an, varnames{ivar}});
+            end
+
+            varnames = {'dUdT', 'cElectrolyte', 'SOC'};
+            for ivar = 1 : numel(varnames)
+                model = model.removeVarName({ct, itf, varnames{ivar}});
+                model = model.removeVarName({an, itf, varnames{ivar}});
+            end
             
         end
         

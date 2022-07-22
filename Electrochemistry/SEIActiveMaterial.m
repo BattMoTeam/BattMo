@@ -29,9 +29,11 @@ classdef SEIActiveMaterial < ActiveMaterial
             varnames = {};
             % Total reaction rate
             varnames{end + 1} = 'R';
+            % SEI charge consservation equation
+            varnames{end + 1} = 'seiInterfaceChargeCons';
             model = model.registerVarNames(varnames);
             
-            fn = @SEIActiveMaterial.assembleSeiInterfaceChargeCons;
+            fn = @SEIActiveMaterial.assembleSEIchargeCons;
             inputnames = {{itf, 'R'}, {sr, 'R'}, 'R'};
             model = model.registerPropFunction({'seiInterfaceChargeCons', fn, inputnames});
             

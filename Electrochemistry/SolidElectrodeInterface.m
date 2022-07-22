@@ -90,6 +90,10 @@ classdef SolidElectrodeInterface < BaseModel
             
             fn = @SolidElectrodeInterface.assembleWidthEquation;
             model = model.registerPropFunction({'widthEq', fn, {'delta', 'v'}});
+
+            fn = @SolidElectrodeInterface.updateMassAccumTerm;
+            model = model.registerPropFunction({'massAccum', fn, {'delta', 'c'}});
+
         end
         
         function operators = setupOperators(model)
