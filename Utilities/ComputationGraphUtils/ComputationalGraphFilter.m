@@ -19,7 +19,8 @@ classdef ComputationalGraphFilter
         
         function g = setupGraph(cgf, varargin)
             
-            opt = struct('type', 'ascendant');
+            opt = struct('type', 'ascendant', ...
+                         'oneParentOnly', false);
             opt = merge_options(opt, varargin{:});
             
             nodenames        = cgf.nodenames;
@@ -37,7 +38,7 @@ classdef ComputationalGraphFilter
                 return
             end
             
-            nodes = getNodeDependencyListByName(includeNodeNames, nodenames, A);
+            nodes = getNodeDependencyListByName(includeNodeNames, nodenames, A, 'oneParentOnly', opt.oneParentOnly);
 
             nodenames = nodenames(nodes);
             A = A(nodes, nodes);
@@ -57,12 +58,12 @@ classdef ComputationalGraphFilter
             
         end
         
-        function g = setupAscendantGraph(cgf)
-            g = cgf.setupGraph('type', 'ascendant');
+        function g = setupAscendantGraph(cgf, varargin)
+            g = cgf.setupGraph('type', 'ascendant', varargin{:});
         end
         
-        function g = setupDescendantGraph(cgf)
-            g = cgf.setupGraph('type', 'descendant');            
+        function g = setupDescendantGraph(cgf, varargin)
+            g = cgf.setupGraph('type', 'descendant', varargin{:});            
         end
         
     end
