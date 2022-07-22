@@ -62,11 +62,7 @@ classdef SEIActiveMaterial < ActiveMaterial
             sei = 'SolidElectrodeInterface';
             sr  = 'SideReaction';
             
-            op = model.(sei).operators;
-            
-            c = state.(sei).c;
-            
-            state.(sr).c = op.mapToIntBc*c;
+            state.(sr).c = state.(sei).cInterface;
             
         end
         
