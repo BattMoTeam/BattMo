@@ -57,6 +57,60 @@ classdef BaseModel < PhysicalModel
             end
             
         end
+
+        function model = removeVarNames(model, varnames)
+            for ivar = 1 : numel(varnames)
+                model = model.removeVarName(varnames{ivar});
+            end
+        end
+        
+        function model = removeVarName(model, varname)
+
+            if isa(varname, 'char')
+                varname = VarName({}, varname);
+                model = model.removeVarName(varname);
+            elseif isa(varname, 'cell')
+                varname = VarName(varname(1 : end - 1), varname{end});
+                model = model.removeVarName(varname);
+            elseif isa(varname, 'VarName')
+                % remove from varNameList
+                varnames = model.varNameList;
+                nvars = numel(varnames);
+                keep = true(nvars, 1);
+                for ivar = 1 : nvars
+                    if varnames{ivar} == varname
+                        keep(ivar) = false;
+                        break
+                    end
+                end
+                model.varNameList = varnames(keep);
+                
+                % remove from propertyFunctionList if varname occurs in output and input variables
+                propfuncs = model.propertyFunctionList;
+                nprops = numel(propfuncs);
+                keep = true(nprops, 1);
+                for iprop = 1 : nprops
+                    propfunc = propfuncs{iprop};
+                    if propfunc.varname == varname
+                        keep(iprop) = false;
+                        break
+                    end
+                    inputvarnames = propfunc.inputvarnames;
+                    for iinput = 1 : numel(inputvarnames)
+                        if inputvarnames{iinput} == varname
+                            keep(iprop) = false;
+                            break
+                        end
+                    end
+                end
+                model.propertyFunctionList = propfuncs(keep);                
+
+            else
+                error('varname not recognized');
+            end
+            
+            
+        end
         
         
         function model = registerPropFunction(model, propfunc)
