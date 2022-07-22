@@ -17,7 +17,8 @@ classdef SingleParticleSEI < BaseModel
             model.Anode       = SEIActiveMaterial(paramobj.Anode);
             model.Cathode     = ActiveMaterial(paramobj.Cathode);
             model.Electrolyte = SingleCellElectrolyte(paramobj.Electrolyte);
-            model.Control     = CcCvControlModel(paramobj.Control);
+            % model.Control    = CcCvControlModel(paramobj.Control);
+            model.Control     = ControlModel(paramobj.Control);
             
         end
 
