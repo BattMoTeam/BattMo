@@ -71,7 +71,7 @@ classdef SolidElectrodeInterface < BaseModel
             model = model.registerVarNames(varnames);
 
             fn = @SolidElectrodeInterface.updateFlux;
-            inputnames = {'c', 'v'};
+            inputnames = {'c', 'v', 'delta'};
             model = model.registerPropFunction({'flux', fn, inputnames});
             
             fn = @SolidElectrodeInterface.updateSEIgrowthVelocity;

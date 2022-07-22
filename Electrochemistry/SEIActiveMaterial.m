@@ -51,7 +51,7 @@ classdef SEIActiveMaterial < ActiveMaterial
             model = model.registerPropFunction({{sei, 'R'}, fn, inputnames});
             
             fn = @SEIActiveMaterial.updateSEISurfaceConcentration;
-            inputnames = {{sei, 'c'}};
+            inputnames = {{sei, 'cInterface'}};
             model = model.registerPropFunction({{sr, 'c'}, fn, inputnames});
         
         
