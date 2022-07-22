@@ -1323,19 +1323,6 @@ classdef Battery < BaseModel
             end
             
         end
-
-        function state = updateDerivativeControlValues(model, state, state0, dt)
-
-            ctrl = 'Control';
-            
-            dEdt = (state.(ctrl).E - state0.(ctrl).E)/dt;
-            dIdt = (state.(ctrl).I - state0.(ctrl).I)/dt;
-            
-            state.(ctrl).dEdt = value(dEdt);
-            state.(ctrl).dIdt = value(dIdt);
-            state.(ctrl).prevCtrlType = state0.(ctrl).ctrlType;
-            
-        end
         
         function state = setupEIEquation(model, state)
             
