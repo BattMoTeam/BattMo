@@ -367,6 +367,10 @@ classdef SingleParticleSEI < BaseModel
             
         end
 
+
+        function model = validateModel(model, varargin)
+            
+        end
         
         function cleanState = addStaticVariables(model, cleanState, state, state0)
 
