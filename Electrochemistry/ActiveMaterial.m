@@ -126,7 +126,6 @@ classdef ActiveMaterial < ElectronicComponent
                 model = model.registerPropFunction({{sd, 'cAverage'}, fn, {'c'}});
                 model = model.registerPropFunction({{itf, 'cElectrodeSurface'}, fn, {{sd, 'cSurface'}}});
             else
-                model = model.registerPropFunction({{sd, 'cSurface'}, fn, {{sd, 'c'}}});
                 model = model.registerPropFunction({{itf, 'cElectrodeSurface'}, fn, {{sd, 'cSurface'}}});
             end
 
