@@ -2,6 +2,7 @@ classdef ComputationalGraphFilter
 
     properties
         graph
+        model
         A
         nodenames
         includeNodeNames
@@ -10,12 +11,29 @@ classdef ComputationalGraphFilter
     
     methods
         
-        function cgf = ComputationalGraphFilter(graph)
-            cgf.graph     = graph;
-            cgf.A         = adjacency(graph);
-            cgf.nodenames = graph.Nodes.Variables;
+        function cgf = ComputationalGraphFilter(model)
+            cgf.model     = model;
+            [g, edgelabels] = setupGraph(model);
+            cgf.graph     = g;
+            cgf.A         = adjacency(g, 'weighted');
+            cgf.nodenames = g.Nodes.Variables;
         end
 
+
+        function propfuncs = findPropFunction(cgf, nodename)
+            
+            nodenames = cgf.nodenames;
+            A         = cgf.A;
+            model     = cgf.model;
+            
+            indSelectedNodenames = regexp(nodenames, nodename, 'once');
+            indSelectedNodenames = cellfun(@(x) ~isempty(x), indSelectedNodenames);
+            indPropfunctions = A(:, indSelectedNodenames);
+            indPropfunctions = unique(indPropfunctions(:));
+
+            propfuncs = model.propertyFunctionList(indPropfunctions(indPropfunctions > 0));
+            
+        end
         
         function g = setupGraph(cgf, varargin)
             
