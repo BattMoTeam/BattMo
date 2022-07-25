@@ -207,7 +207,7 @@ classdef SEIActiveMaterial < ActiveMaterial
             state.(sd) = model.(sd).updateDiffusionCoefficient(state.(sd)); % SolidDiffusion.D
             state.(sd) = model.(sd).updateFlux(state.(sd)); % SolidDiffusion.flux
 
-            state.(sd) = model.(sd).updateAccumTerm(state.(sd), state0.(sd), dt); % SolidDiffusion.accumTerm
+            state.(sd) = model.(sd).updateMassAccum(state.(sd), state0.(sd), dt); % SolidDiffusion.massAccum
             state.(sd) = model.(sd).updateMassConservation(state.(sd)); % SolidDiffusion.massCons
 
             state = model.updateControl(state, drivingForces, dt);

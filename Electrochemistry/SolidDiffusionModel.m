@@ -82,6 +82,9 @@ classdef SolidDiffusionModel < BaseModel
 
             fn = @SolidDiffusionModel.updateMassSource;
             model = model.registerPropFunction({'massSource', fn, {'R'}});
+
+            fn = @SolidDiffusionModel.updateMassAccum;
+            model = model.registerPropFunction({'massAccum', fn, {'c'}});
             
             fn = @SolidDiffusionModel.assembleSolidDiffusionEquation;
             model = model.registerPropFunction({'solidDiffusionEq', fn, {'c', 'cSurface', 'massSource'}});
@@ -254,15 +257,15 @@ classdef SolidDiffusionModel < BaseModel
             state.massSource = -R/(volumetricSurfaceArea)*(4*pi*rp^2);
             
         end
-        
-        function state = updateAccumTerm(model, state, state0, dt)
+
+        function state = updateMassAccum(model, state, state0, dt)
 
             op = model.operators;
             
             c = state.c;
             c0 = state0.c;
             
-            state.accumTerm = 1/dt*op.vols.*(c - c0);
+            state.massAccum = 1/dt*op.vols.*(c - c0);
             
         end
         
@@ -272,9 +275,9 @@ classdef SolidDiffusionModel < BaseModel
             
             flux       = state.flux;
             massSource = state.massSource;
-            accumTerm  = state.accumTerm;
+            massAccum  = state.massAccum;
             
-            state.massCons = accumTerm + op.div(flux) - massSource;
+            state.massCons = massAccum + op.div(flux) - massSource;
 
         end
         
