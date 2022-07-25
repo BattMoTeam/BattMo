@@ -19,12 +19,13 @@ itf   = 'Interface';
 sei   = 'SolidElectrodeInterface';
 sr    = 'SideReaction';
 elyte = 'Electrolyte';
+ctrl  = 'Control';
 
 paramobj = SingleParticleSEIInputParams(jsonstruct);
 
-paramobj.(an).(sd).N   = 10;
+paramobj.(an).(sd).N   = 3;
 paramobj.(an).(sd).np  = 1;
-paramobj.(an).(sei).N  = 10;
+paramobj.(an).(sei).N  = 5;
 paramobj.(an).(sei).np = 1;
 
 xlength = 57e-6; 
@@ -33,62 +34,86 @@ G = computeGeometry(G);
 paramobj.(an).G = G;
 
 
-paramobj.(ct).(sd).N   = 10;
+paramobj.(ct).(sd).N   = 7;
 paramobj.(ct).(sd).np  = 1;
 paramobj.(ct).G = G;
 
 model = SingleParticleSEI(paramobj);
 
-dograph = true;
+model.(ctrl).Imax = 1e-3;
+
+dograph = false;
 
 if dograph
     model = model.registerVarAndPropfuncNames();
     [g, edgelabels] = setupGraph(model);
     cgf = ComputationalGraphFilter(g);
-    cgf.includeNodeNames = 'Anode.SolidDiffusion.cSurface';
+    % cgf.includeNodeNames = 'Anode.SolidDiffusion.cSurface';
     % cgf.includeNodeNames = 'cInterface';
     % g = cgf.setupGraph('oneParentOnly', true);
-    g = cgf.setupDescendantGraph();
+    % gg = cgf.setupDescendantGraph();
     % g = cgf.setupGraph('oneParentOnly', true);    
     figure
-    h = plot(g); 
+    h = plot(gg); 
 end
-
-return
 
 %% Setup initial state
 
-Nsd = model.(sd).N;
-Nsei = model.(sei).N;
+NanodeSd  = model.(an).(sd).N;
+NanodeSEI = model.(an).(sei).N;
+cAnodeMax = model.(an).(itf).cmax;
 
-cElectrodeInit   = 40*mol/litre;
-phiElectrodeInit = 3.5;
-cElectrolyte     = 5e-1*mol/litre;
-T                = 298.15; % reference temperature in Interface.
-cExternal        = 4.541*mol/litre;
-% compute OCP and  phiElectrolyte
-clear state
-state.cElectrodeSurface = cElectrodeInit;
-state.T = T;
-state = model.(itf).updateOCP(state);
-OCP = state.OCP;
-phiElectrolyte = phiElectrodeInit - OCP;
+NcathodeSd  = model.(ct).(sd).N;
+cCathodeMax = model.(ct).(itf).cmax;
+
+x0 = 0.75;                     % Initial stochiometry from Safari
+cAnode = x0*cAnodeMax;
+y0 = 0.5;                     % Initial stochiometry from Safari
+cCathode = y0*cCathodeMax;
+
+phiAnode = 0;
+T = 298.15;                    % NOTE : should match reference temperature in Interface in order to reproduce Safari result.
+epsiSEI = 0.05;                % From Safari
+cECsolution = 4.541*mol/litre; % From Safari
+cECexternal = epsiSEI*cECsolution;
+
+% compute OCP at anode and  phiElectrolyte 
+clear an_itf_state
+an_itf_state.cElectrodeSurface = cAnode;
+an_itf_state.T = T;
+an_itf_state = model.(an).(itf).updateOCP(an_itf_state);
+OCP = an_itf_state.OCP;
+phiElectrolyte = phiAnode - OCP;
+
+% compute OCP at cathode and  phiCathode 
+clear ct_itf_state
+ct_itf_state.cElectrodeSurface = cCathode;
+ct_itf_state.T = T;
+ct_itf_state = model.(ct).(itf).updateOCP(ct_itf_state);
+OCP = ct_itf_state.OCP;
+phiCathode = phiElectrolyte + OCP;
 
 % set primary variables
-initState.phi              = phiElectrodeInit;
-initState.(sd).c           = cElectrodeInit*ones(Nsd, 1);
-initState.(sd).cSurface    = cElectrodeInit;
-initState.(sei).c          = cElectrolyte*ones(Nsei, 1);
-initState.(sei).cInterface = cElectrolyte;
-initState.(sei).delta      = 0;
-initState.R                = 0;
+initState.(an).(sd).c           = cAnode*ones(NanodeSd, 1);
+initState.(an).(sd).cSurface    = cAnode;
+initState.(an).(sei).c          = cECexternal*ones(NanodeSEI, 1);
+initState.(an).(sei).cInterface = cECexternal;
+initState.(an).(sei).delta      = 0;
+initState.(an).R                = 0;
+
+initState.(ct).(sd).c           = cCathode*ones(NcathodeSd, 1);
+initState.(ct).(sd).cSurface    = cCathode;
+
+initState.(elyte).phi = phiElectrolyte;
+
+initState.(ctrl).E = phiCathode;
+initState.(ctrl).I = 0;
 
 % set static variable fields
-initState.T = T;
-initState.(itf).cElectrolyte   = cElectrolyte;
-initState.(itf).phiElectrolyte = phiElectrolyte;
-initState.(sr).phiElectrolyte  = phiElectrolyte;
-initState.(sei).cExternal      = cExternal;
+initState.(an).phi                         = 0;
+initState.T                                = T;
+initState.(an).(sei).cExternal             = cECexternal;
+initState.(ct).(itf).externalPotentialDrop = 0;
 
 
 %% setup schedule
@@ -98,9 +123,23 @@ n     = 100;
 dt    = total/n;
 step  = struct('val', dt*ones(n, 1), 'control', ones(n, 1));
 
-control.src = 1;
+switch model.Control.controlPolicy
+  case 'IEswitch'
+    tup = 0.1; % rampup value for the current function, see rampupSwitchControl
+    srcfunc = @(time, I, E) rampupSwitchControl(time, tup, I, E, ...
+                                                model.Control.Imax, ...
+                                                model.Control.lowerCutoffVoltage);
+    % we setup the control by assigning a source and stop function.
+    control = struct('src', srcfunc, 'IEswitch', true);
+  case 'CCCV'
+    control = struct('CCCV', true);
+  otherwise
+    error('control policy not recognized');
+end
 
-schedule = struct('control', control, 'step', step); 
+% This control is used to set up the schedule
+schedule = struct('control', control, 'step', step);
+
 
 %% Run simulation
 
