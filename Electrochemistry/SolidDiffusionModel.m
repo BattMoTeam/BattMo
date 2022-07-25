@@ -312,7 +312,8 @@ classdef SolidDiffusionModel < BaseModel
         end
     
         function state = assembleSolidDiffusionEquation(model, state)
-            
+
+        %% TODO : change name of this function
             op = model.operators;
 
             c     = state.c;
