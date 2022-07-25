@@ -1,7 +1,7 @@
 %% run stand-alone active material model
 
 % clear the workspace and close open figures
-clear
+clear all
 close all
 
 %% Import the required modules from MRST
@@ -39,6 +39,7 @@ paramobj.(ct).(sd).np  = 1;
 paramobj.(ct).G = G;
 
 model = SingleParticleSEI(paramobj);
+cgf = ComputationalGraphFilter(model);
 
 model.(ctrl).Imax = 1e-3;
 
@@ -118,7 +119,7 @@ initState.(ct).(itf).externalPotentialDrop = 0;
 
 %% setup schedule
 
-total = 1*hour;
+total = 1;
 n     = 100;
 dt    = total/n;
 step  = struct('val', dt*ones(n, 1), 'control', ones(n, 1));
