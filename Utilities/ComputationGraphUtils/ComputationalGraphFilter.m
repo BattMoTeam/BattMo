@@ -12,11 +12,14 @@ classdef ComputationalGraphFilter
     methods
         
         function cgf = ComputationalGraphFilter(model)
-            cgf.model     = model;
+            if isempty(model.propertyFunctionList)
+                model = model.registerVarAndPropfuncNames();
+            end
+            cgf.model       = model;
             [g, edgelabels] = setupGraph(model);
-            cgf.graph     = g;
-            cgf.A         = adjacency(g, 'weighted');
-            cgf.nodenames = g.Nodes.Variables;
+            cgf.graph       = g;
+            cgf.A           = adjacency(g, 'weighted');
+            cgf.nodenames   = g.Nodes.Variables;
         end
 
 
