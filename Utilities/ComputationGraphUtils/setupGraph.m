@@ -89,7 +89,7 @@ function [g, edgelabels] = setupGraph(model, varargin)
         
     end
     
-    g = addedge(g, ss, ts);
+    g = addedge(g, ss, ts, [ps{:}]);
     
     edgelabels.ss = ss;
     edgelabels.ts = ts;
