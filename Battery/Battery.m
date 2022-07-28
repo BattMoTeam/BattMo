@@ -493,10 +493,15 @@ classdef Battery < BaseModel
             elyte_cells = zeros(model.G.cells.num, 1);
             elyte_cells(model.(elyte).G.mappings.cellmap) = (1 : model.(elyte).G.cells.num)';
 
-            model.(elyte).volumeFraction = ones(model.(elyte).G.cells.num, 1); % region where electolyte fill up volume is default
-            model.(elyte).volumeFraction(elyte_cells(model.(ne).(am).G.mappings.cellmap)) = model.(ne).(am).porosity;
-            model.(elyte).volumeFraction(elyte_cells(model.(pe).(am).G.mappings.cellmap)) = model.(pe).(am).porosity;
-            model.(elyte).volumeFraction(elyte_cells(model.(elyte).(sep).G.mappings.cellmap)) = model.(elyte).(sep).porosity;
+            
+            model.(elyte).volumeFraction = NaN(model.(elyte).G.cells.num, 1);
+            model.(elyte).volumeFraction = subsasgnAD(model.(elyte).volumeFraction,elyte_cells(model.(ne).(am).G.mappings.cellmap), model.(ne).(am).porosity);
+            model.(elyte).volumeFraction = subsasgnAD(model.(elyte).volumeFraction,elyte_cells(model.(pe).(am).G.mappings.cellmap), model.(pe).(am).porosity);
+            sep_cells = elyte_cells(model.(elyte).(sep).G.mappings.cellmap); 
+            %model.(elyte).volumeFraction(sep_cells) = model.(elyte).(sep).porosity;
+            model.(elyte).volumeFraction = subsasgnAD(model.(elyte).volumeFraction,sep_cells, model.(elyte).(sep).porosity);
+            % hopefull include all depenensites
+            model.(elyte).EffectiveThermalConductivity = model.(elyte).volumeFraction.*model.(elyte).thermalConductivity;
 
         end
         
@@ -865,7 +870,12 @@ classdef Battery < BaseModel
                 else
                     % Equation name : 'pe_am_sd_massCons';
                     % OBS : HANDMADE SCALING (to be fixed)
-                    eqs{end + 1} = 1e18*state.(pe).(am).(sd).massCons;
+                    %vol = model.(pe).(am).v
+                     vol = model.(pe).(am).operators.pv;
+                     rp =  model.(pe).(am).(sd).rp;
+                     pvol = (4*pi*rp^3/3);
+                     Np = vol/pvol;% only scale so mass is equivalent trans speed is very fast (L/rp).^2
+                    eqs{end + 1} = Np*state.(pe).(am).(sd).massCons;
                 end
                 
                 % Equation name : 'pe_am_sd_soliddiffeq';
@@ -917,7 +927,7 @@ classdef Battery < BaseModel
               otherwise 
                 error()
             end
-            
+
             primaryVars = model.getPrimaryVariables();
 
             
@@ -1420,14 +1430,18 @@ classdef Battery < BaseModel
         end
 
         function model = validateModel(model, varargin)
-            
-            model.Electrolyte.AutoDiffBackend=model.AutoDiffBackend;
-            model.Electrolyte=model.Electrolyte.validateModel(varargin{:});
+
+            model.PositiveElectrode.ActiveMaterial = model.PositiveElectrode.ActiveMaterial.setup();
+            model.NegativeElectrode.ActiveMaterial = model.NegativeElectrode.ActiveMaterial.setup();
+            model.Electrolyte.Separator = model.Electrolyte.Separator.setup();
+            model = model.setupElectrolyteModel();
+                
             model.PositiveElectrode.ActiveMaterial.AutoDiffBackend= model.AutoDiffBackend;
             model.PositiveElectrode.ActiveMaterial = model.PositiveElectrode.ActiveMaterial.validateModel(varargin{:});
             model.NegativeElectrode.ActiveMaterial.AutoDiffBackend= model.AutoDiffBackend;
             model.NegativeElectrode.ActiveMaterial = model.NegativeElectrode.ActiveMaterial.validateModel(varargin{:});
-
+            model.Electrolyte.AutoDiffBackend=model.AutoDiffBackend;
+            model.Electrolyte=model.Electrolyte.validateModel(varargin{:});
             if model.NegativeElectrode.include_current_collector
                 model.NegativeElectrode.CurrentCollector.AutoDiffBackend= model.AutoDiffBackend;
                 model.NegativeElectrode.CurrentCollector= model.NegativeElectrode.CurrentCollector.validateModel(varargin{:});

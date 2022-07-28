@@ -8,14 +8,15 @@ function [jExternal, jFaceExternal] = setupExternalCoupling(model, phi, phiExter
     bcval = phiExternal;
     [t, cells] = model.operators.harmFaceBC(conductivity, faces);
     current = t.*(bcval - phi(cells));
-    jExternal(cells) = jExternal(cells) + current;
-    
+    %jExternal(cells) = jExternal(cells) + current;
+    jExternal = subsetPlus(jExternal,current,cells);
     G = model.G;
     nf = G.faces.num;
     sgn = model.operators.sgn;
     zeroFaceAD = model.AutoDiffBackend.convertToAD(zeros(nf, 1), phi);
     jFaceExternal = zeroFaceAD;
-    jFaceExternal(faces) = -sgn(faces).*current;
+    %jFaceExternal(faces) = -sgn(faces).*current;
+    jFaceExternal = subsasgnAD(jFaceExternal,faces, -sgn(faces).*current);
     
     assert(~any(isnan(sgn(faces))));
     
