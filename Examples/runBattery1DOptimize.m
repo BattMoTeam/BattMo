@@ -85,7 +85,7 @@ switch model.(ctrl).controlPolicy
 end
 
 n     = 40;
-dt    = total/n;
+dt    = total*0.7/n;
 step  = struct('val', dt*ones(n, 1), 'control', ones(n, 1));
 
 % we setup the control by assigning a source and stop function.
@@ -210,20 +210,27 @@ end
 state0 = initstate;
 SimulatorSetup = struct('model', model, 'schedule', schedule, 'state0', state0);
 parameters={};
+
+part = ones(model.Electrolyte.Separator.G.cells.num,1)
 parameters{end+1} = ModelParameter(SimulatorSetup,'name','porosity_sep',...
     'belongsTo','model',...
     'boxLims',[0.1 0.9],...
+    'lumping',part,...
     'location',{'Electrolyte','Separator','porosity'},...
     'getfun',[],'setfun',[])
-parameters={};
+%parameters={};
+part = ones(model.NegativeElectrode.ActiveMaterial.G.cells.num,1);
 parameters{end+1} = ModelParameter(SimulatorSetup,'name','porosity_nam',...
     'belongsTo','model',...
     'boxLims',[0.07 0.5],...
+    'lumping',part,...
     'location',{'NegativeElectrode','ActiveMaterial','porosity'},...
     'getfun',[],'setfun',[])
-parameters{end+1} = ModelParameter(SimulatorSetup,'name','porosity_nam',...
+part = ones(model.NegativeElectrode.ActiveMaterial.G.cells.num,1);
+parameters{end+1} = ModelParameter(SimulatorSetup,'name','porosity_pam',...
     'belongsTo','model',...
     'boxLims',[0.07 0.5],...
+    'lumping',part,...
     'location',{'PositiveElectrode','ActiveMaterial','porosity'},...
     'getfun',[],'setfun',[])
 
@@ -231,7 +238,7 @@ setfun = @(x,location, v) struct('Imax',v,'src', @(time,I,E) rampupSwitchControl
                                                 v, ...
                                                 3.0),'IEswitch',true);
 boxlims = model.Control.Imax*[0.5,1.5];
-parameters={};
+%parameters={};
 for i = 1:max(schedule.step.control)
 parameters{end+1} = ModelParameter(SimulatorSetup,'name','Imax',...
     'belongsTo','schedule',...
@@ -246,10 +253,21 @@ fn =@ plotAfterStepIV
 obj = @(p) evalMatchBattmo(p, objmatch, SimulatorSetup, parameters,'objScaling',-totval,'afterStepFn',fn);
 figure(33),clf
 %%
-[v, p_opt, history] = unitBoxBFGS(p_base-0.1, obj,'gradTol',1e-7,'objChangeTol',1e-4);
+%[v, p_opt, history] = unitBoxBFGS(p_base-0.1, obj,'gradTol',1e-7,'objChangeTol',1e-4);
 
 %% 
-
+% check derivatives
+return 
+%%
+% test adjoint
+parameters_tmp = {parameters{3}}
+parameters_tmp = parameters;%{parameters{3},parameters{2}};
+p_tmp = getScaledParameterVector(SimulatorSetup, parameters_tmp);
+pert = 0.0;
+[vad,gad]   = evalMatchBattmo(p_tmp+pert, objmatch, SimulatorSetup, parameters_tmp, 'Gradient','AdjointAD')
+[vnum,gnum] = evalMatchBattmo(p_tmp+pert, objmatch, SimulatorSetup, parameters_tmp, 'Gradient','PerturbationADNUM','PerturbationSize',1e-5)
+gad
+gnum
 %{
 Copyright 2021-2022 SINTEF Industry, Sustainable Energy Technology
 and SINTEF Digital, Mathematics & Cybernetics.

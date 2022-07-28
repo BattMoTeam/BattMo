@@ -65,8 +65,9 @@ function [val, der, wellSols, states] = evalObjectiveBattmo(u, obj, state0, mode
           otherwise
             error('Gradient method %s not implemented', opt.Gradient);
         end
+        assert(numel(u) == numel(der));
     end
-    assert(numel(u) == numel(der));
+   
 end
 
 function grd = scaleGradient(grd, schedule, boxLims, objScaling)

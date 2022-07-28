@@ -725,13 +725,15 @@ classdef Battery < BaseModel
                 state.(elde).(am) = model.(elde).(am).updateConductivity(state.(elde).(am));
                 if model.include_current_collectors
                     state.(elde).(cc) = model.(elde).(cc).updateConductivity(state.(elde).(cc));
-                    state.(elde) = battery.(elde).updateCoupling(state.(elde));
-                    switch elde
-                      case ne
-                        state = model.setupExternalCouplingNegativeElectrode(state);
-                      case pe
-                        state = model.setupExternalCouplingPositiveElectrode(state);
-                    end
+                end
+                state.(elde) = battery.(elde).updateCoupling(state.(elde));
+                switch elde
+                  case ne
+                    state = model.setupExternalCouplingNegativeElectrode(state);
+                  case pe
+                    state = model.setupExternalCouplingPositiveElectrode(state);
+                end
+                if(model.include_current_collectors)
                     state.(elde).(cc) = battery.(elde).(cc).updatejBcSource(state.(elde).(cc));
                     state.(elde).(am) = battery.(elde).(am).updatejBcSource(state.(elde).(am));
                 else

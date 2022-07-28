@@ -139,12 +139,12 @@ classdef Electrode < BaseModel
                 state.(am).jFaceCoupling = am_jFaceCoupling;
                 state.(cc).jFaceCoupling = cc_jFaceCoupling;
                 
-            else
-                
-                state.(am).jCoupling     = 0;
-                state.(am).jFaceCoupling = 0;
-                
             end
+                
+           %     state.(am).jCoupling     = 0;
+           %     state.(am).jFaceCoupling = 0;
+                
+           % end
             
             
         end
