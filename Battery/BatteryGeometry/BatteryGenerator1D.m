@@ -67,10 +67,10 @@ classdef BatteryGenerator1D < BatteryGenerator
             gen.sepnx  = gen.sepnx*fac;
             gen.nenx   = gen.nenx*fac;
             gen.penx   = gen.penx*fac;
-            if gen.include_current_collectors
-                gen.ccnenx = gen.ccnenx*fac;
-                gen.ccpenx = gen.ccpenx*fac;
-            end
+            %if gen.include_current_collectors
+            gen.ccnenx = gen.ccnenx*fac;
+            gen.ccpenx = gen.ccpenx*fac;
+            %end
             
         end
             
