@@ -302,7 +302,26 @@ classdef SingleParticleSEI < BaseModel
             eqs{end + 1} = state.(elyte).massCons;
             eqs{end + 1} = state.(ctrl).EIequation;
             eqs{end + 1} = state.(ctrl).controlEquation;
-            
+
+            %% TODO : Fix scalings
+            doscaling = true;
+            if doscaling
+                scalings = [2.3588e-15,
+                            3.35103e-05,
+                            5.26809e-11,
+                            100,
+                            1,
+                            5.27945e-11,
+                            1.24205e-15,
+                            0.000129254,
+                            17.3974,
+                            1.72968e+06,
+                            1];
+                
+                for ind = 1 : numel(eqs)
+                    eqs{ind} = 1/scalings(ind)*eqs{ind};
+                end
+            end
             names = {'an_sd_massCons'            , ...
                      'an_sd_solidDiffusionEq'    , ...
                      'an_sei_massCons'           , ...
