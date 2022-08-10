@@ -33,7 +33,6 @@ G = cartGrid(1, xlength);
 G = computeGeometry(G);
 paramobj.(an).G = G;
 
-
 paramobj.(ct).(sd).N   = 7;
 paramobj.(ct).(sd).np  = 1;
 paramobj.(ct).G = G;
@@ -41,21 +40,19 @@ paramobj.(ct).G = G;
 model = SingleParticleSEI(paramobj);
 cgf = ComputationalGraphFilter(model);
 
-model.(ctrl).Imax = 1e-3;
+model.(ctrl).Imax = 1e1;
 
 dograph = false;
 
 if dograph
-    model = model.registerVarAndPropfuncNames();
-    [g, edgelabels] = setupGraph(model);
-    cgf = ComputationalGraphFilter(g);
+    cgf = ComputationalGraphFilter(model);
     % cgf.includeNodeNames = 'Anode.SolidDiffusion.cSurface';
-    % cgf.includeNodeNames = 'cInterface';
+    cgf.includeNodeNames = 'Anode.*DiffusionEq';
     % g = cgf.setupGraph('oneParentOnly', true);
+    g = cgf.setupGraph();
     % gg = cgf.setupDescendantGraph();
-    % g = cgf.setupGraph('oneParentOnly', true);    
     figure
-    h = plot(gg); 
+    h = plot(g, 'nodefontsize', 18);
 end
 
 %% Setup initial state
@@ -67,9 +64,9 @@ cAnodeMax = model.(an).(itf).cmax;
 NcathodeSd  = model.(ct).(sd).N;
 cCathodeMax = model.(ct).(itf).cmax;
 
-x0 = 0.75;                     % Initial stochiometry from Safari
+x0 = 0.75; % Initial stochiometry from Safari
 cAnode = x0*cAnodeMax;
-y0 = 0.5;                     % Initial stochiometry from Safari
+y0 = 0.5; % Initial stochiometry from Safari
 cCathode = y0*cCathodeMax;
 
 phiAnode = 0;
@@ -119,7 +116,7 @@ initState.(ct).(itf).externalPotentialDrop = 0;
 
 %% setup schedule
 
-total = 1;
+total = 1*hour;
 n     = 100;
 dt    = total/n;
 step  = struct('val', dt*ones(n, 1), 'control', ones(n, 1));
@@ -156,6 +153,9 @@ if dopack
 else
     [wellSols, states, report] = simulateScheduleAD(initState, model, schedule, 'OutputMinisteps', true); 
 end
+
+
+return
 
 %% Plotting
 
