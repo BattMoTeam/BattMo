@@ -1,7 +1,7 @@
 %% run stand-alone active material model
 
 % clear the workspace and close open figures
-clear all
+% clear all
 close all
 
 %% Import the required modules from MRST
@@ -40,20 +40,23 @@ paramobj.(ct).G = G;
 model = SingleParticleSEI(paramobj);
 cgf = ComputationalGraphFilter(model);
 
-model.(ctrl).Imax = 1e1;
+model.(ctrl).Imax = 1e6;
 
-dograph = false;
+dograph = true;
 
 if dograph
     cgf = ComputationalGraphFilter(model);
     % cgf.includeNodeNames = 'Anode.SolidDiffusion.cSurface';
-    cgf.includeNodeNames = 'Anode.*DiffusionEq';
-    % g = cgf.setupGraph('oneParentOnly', true);
-    g = cgf.setupGraph();
+    % cgf.includeNodeNames = 'Cathode.*\.R$';
+    cgf.includeNodeNames = 'Cathode';
+    % [g, edgelabels] = cgf.setupGraph('oneParentOnly', true);
+    [g, edgelabels] = cgf.setupGraph();
     % gg = cgf.setupDescendantGraph();
     figure
-    h = plot(g, 'nodefontsize', 18);
+    h = plot(g, 'edgelabel', edgelabels, 'nodefontsize', 18);
 end
+
+return
 
 %% Setup initial state
 
