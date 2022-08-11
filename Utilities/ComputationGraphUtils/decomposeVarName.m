@@ -4,7 +4,7 @@ function res = decomposeVarName(varname, givenvarname)
 % varname and given varname matches but with different indices, return structure res
 %    
 %   res.found                : if there is match (same name but different indices)
-%   res.intersecVarname     : VarName with the common indices
+%   res.intersecVarname      : VarName with the common indices
 %   res.reminderGivenVarname : VarName with the indices that are in givenvarname and not in varname
 %   res.reminderVarname      : VarName with the indices that are in varname but not in givenvarname
 %

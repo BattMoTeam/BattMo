@@ -15,13 +15,12 @@ classdef ComputationalGraphFilter
             if isempty(model.propertyFunctionList)
                 model = model.registerVarAndPropfuncNames();
             end
-            cgf.model       = model;
-            [g, edgelabels] = setupGraph(model);
-            cgf.graph       = g;
-            cgf.A           = adjacency(g, 'weighted');
-            cgf.nodenames   = g.Nodes.Variables;
+            cgf.model     = model;
+            g             = setupGraph(model);
+            cgf.graph     = g;
+            cgf.A         = adjacency(g, 'weighted');
+            cgf.nodenames = g.Nodes.Variables;
         end
-
 
         function propfuncs = findPropFunction(cgf, nodename)
             
@@ -38,12 +37,13 @@ classdef ComputationalGraphFilter
             
         end
         
-        function g = setupGraph(cgf, varargin)
+        function [g, edgelabels] = setupGraph(cgf, varargin)
             
             opt = struct('type', 'ascendant', ...
                          'oneParentOnly', false);
             opt = merge_options(opt, varargin{:});
-            
+
+            propfunctionlist = cgf.model.propertyFunctionList;
             nodenames        = cgf.nodenames;
             includeNodeNames = cgf.includeNodeNames;
             excludeNodeNames = cgf.excludeNodeNames;
@@ -76,15 +76,25 @@ classdef ComputationalGraphFilter
             end
             
             g = digraph(A, nodenames);
+
+            propinds = g.Edges.Weight;
+
+            if nargout > 1
+                edgelabels = {};
+                for iprop = 1 : numel(propinds)
+                    propind = propinds(iprop);
+                    edgelabels{end + 1} = func2str(propfunctionlist{propind}.fn);
+                end
+            end
             
         end
         
-        function g = setupAscendantGraph(cgf, varargin)
-            g = cgf.setupGraph('type', 'ascendant', varargin{:});
+        function [g, edgelabels] = setupAscendantGraph(cgf, varargin)
+            [g, edgelabels] = cgf.setupGraph('type', 'ascendant', varargin{:});
         end
         
-        function g = setupDescendantGraph(cgf, varargin)
-            g = cgf.setupGraph('type', 'descendant', varargin{:});            
+        function [g, edgelabels] = setupDescendantGraph(cgf, varargin)
+            [g, edgelabels] = cgf.setupGraph('type', 'descendant', varargin{:});            
         end
         
     end
