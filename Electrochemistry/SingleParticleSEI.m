@@ -210,8 +210,12 @@ classdef SingleParticleSEI < BaseModel
             
         end
 
-        function [problem, state] = getEquations(model, state0, state,dt, drivingForces, varargin)
+        function [problem, state] = getEquations(model, state0, state, dt, drivingForces, varargin)
 
+
+            opt = struct('resOnly', true);
+            [opt, extra] = merge_options(opt, varargin{:});
+            
             an    = 'Anode';
             ct    = 'Cathode';
             sd    = 'SolidDiffusion';
@@ -222,7 +226,10 @@ classdef SingleParticleSEI < BaseModel
             ctrl  = 'Control';
 
             time = state0.time + dt;
-            state = model.initStateAD(state);
+
+            if ~opt.resOnly
+                state = model.initStateAD(state);
+            end
 
             state                               = model.dispatchEcathode(state);
             state                               = model.dispatchT(state);
