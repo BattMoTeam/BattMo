@@ -53,8 +53,8 @@ classdef SolidDiffusionModel < BaseModel
             varnames{end + 1} = 'T';
             % Diffusion coefficient
             varnames{end + 1} = 'D';
-            % Reaction rate
-            varnames{end + 1} = 'R';
+            % Volumetric reaction rate in mol/(s*m^3)
+            varnames{end + 1} = 'Rvol';
             % Mass accumulation term
             varnames{end + 1} = 'massAccum';
             % flux term
@@ -81,7 +81,7 @@ classdef SolidDiffusionModel < BaseModel
             model = model.registerPropFunction({'massCons', fn, inputnames});
 
             fn = @SolidDiffusionModel.updateMassSource;
-            model = model.registerPropFunction({'massSource', fn, {'R'}});
+            model = model.registerPropFunction({'massSource', fn, {'Rvol'}});
 
             fn = @SolidDiffusionModel.updateMassAccum;
             model = model.registerPropFunction({'massAccum', fn, {'c'}});
@@ -248,13 +248,13 @@ classdef SolidDiffusionModel < BaseModel
             
             op = model.operators;
             rp = model.rp;
-            volumetricSurfaceArea = model.volumetricSurfaceArea;
+            vsa = model.volumetricSurfaceArea;
             
-            R = state.R;
+            Rvol = state.Rvol;
 
-            R = op.mapFromBc*R;
+            Rvol = op.mapFromBc*Rvol;
             
-            state.massSource = -R/(volumetricSurfaceArea)*(4*pi*rp^2);
+            state.massSource = -Rvol*((4*pi*rp^2)/vsa);
             
         end
 

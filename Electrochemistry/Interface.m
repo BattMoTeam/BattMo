@@ -78,7 +78,7 @@ classdef Interface < BaseModel
             varnames{end + 1} = 'cElectrolyte';
             % eta
             varnames{end + 1} = 'eta';
-            % Reaction rate
+            % Reaction rate in mol/(s*m^2)
             varnames{end + 1} = 'R';
             % External potential drop used in Butler-Volmer
             varnames{end + 1} = 'externalPotentialDrop';
@@ -196,9 +196,9 @@ classdef Interface < BaseModel
             j0  = state.j0;
             eta = state.eta;
             
-            R = model.volumetricSurfaceArea.*ButlerVolmerEquation(j0, 0.5, n, eta, T);
+            R = ButlerVolmerEquation(j0, 0.5, n, eta, T);
 
-            state.R = R/(n*F); % reaction rate in mole/meter^3/second
+            state.R = R/(n*F); % reaction rate in mol/(s*m^2)
 
         end
         

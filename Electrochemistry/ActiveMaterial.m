@@ -133,13 +133,13 @@ classdef ActiveMaterial < ElectronicComponent
                 fn = @ActiveMaterial.updateMassFlux;
                 model = model.registerPropFunction({'massFlux', fn, {'c'}});
                 fn = @ActiveMaterial.updateMassSource;
-                model = model.registerPropFunction({'massSource', fn, {{itf, 'R'}}});
+                model = model.registerPropFunction({'massSource', fn, {{sd, 'Rvol'}}});
                 fn = @ActiveMaterial.updateMassConservation;
                 model = model.registerPropFunction({'massCons', fn, {'massAccum', 'massSource'}});
             end
             
-            fn = @ActiveMaterial.dispatchRate;
-            model = model.registerPropFunction({{sd, 'R'}, fn, {{itf, 'R'}}});
+            fn = @ActiveMaterial.updateRvol;
+            model = model.registerPropFunction({{sd, 'Rvol'}, fn, {{itf, 'R'}}});
             
             
         end
@@ -267,9 +267,11 @@ classdef ActiveMaterial < ElectronicComponent
 
         %% assembly functions use in this model
          
-        function state = dispatchRate(model, state)
+        function state = updateRvol(model, state)
+
+            vsa = model.Interface.volumetricSurfaceArea;
             
-            state.SolidDiffusion.R = state.Interface.R;
+            state.SolidDiffusion.Rvol = vsa*state.Interface.R;
             
         end
         
@@ -317,9 +319,9 @@ classdef ActiveMaterial < ElectronicComponent
             
             vols = model.G.cells.volumes;
             
-            R = state.Interface.R;
+            Rvol = state.SolidDiffusion.Rvol;
             
-            state.massSource = - R.*vols;
+            state.massSource = - Rvol.*vols;
             
         end
         
@@ -339,13 +341,13 @@ classdef ActiveMaterial < ElectronicComponent
 
         function state = updateCurrentSource(model, state)
             
-            F = model.Interface.constants.F;
+            F    = model.Interface.constants.F;
             vols = model.G.cells.volumes;
-            n = model.Interface.n;
+            n    = model.Interface.n;
 
-            R = state.Interface.R;
+            Rvol = state.SolidDiffusion.Rvol;
             
-            state.eSource = - vols.*R*n*F; % C/second
+            state.eSource = - vols.*Rvol*n*F; % C/s
             
         end
         

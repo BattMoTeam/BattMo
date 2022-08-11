@@ -47,8 +47,8 @@ classdef SimplifiedSolidDiffusionModel < BaseModel
             varnames{end + 1} = 'cAverage';
             % Diffusion coefficient
             varnames{end + 1} = 'D';
-            % Reaction Rate
-            varnames{end + 1} = 'R';
+            % Volumetric reaction Rate in mol/(s*m^3)
+            varnames{end + 1} = 'Rvol';
             % Solid diffusion equation
             varnames{end + 1} = 'solidDiffusionEq';
             
@@ -59,7 +59,7 @@ classdef SimplifiedSolidDiffusionModel < BaseModel
             model = model.registerPropFunction({'D', fn, inputnames});
 
             fn = @ActiveMaterial.assembleSolidDiffusionEquation;
-            inputnames = {'cSurface', 'cAverage', 'R', 'D'};
+            inputnames = {'cSurface', 'cAverage', 'Rvol', 'D'};
             model = model.registerPropFunction({'solidDiffusionEq', fn, inputnames});
             
         end
@@ -87,13 +87,12 @@ classdef SimplifiedSolidDiffusionModel < BaseModel
 
             csurf = state.cSurface;
             caver = state.cAverage;
-            D = state.D;
-            R = state.R;
+            D     = state.D;
+            Rvol  = state.Rvol;
 
-            rp = model.rp;
-            a = model.volumetricSurfaceArea;
-            % We divide with volumetricSurfaceArea because it was added in the definition of R 
-            state.solidDiffusionEq = csurf - caver + (rp.*R)./(5*a*D);
+            rp  = model.rp;
+            vsa = model.volumetricSurfaceArea;
+            state.solidDiffusionEq = csurf - caver + (rp.*Rvol)./(5*vsa*D);
             
         end
     
