@@ -24,6 +24,16 @@ ctrl  = 'Control';
 
 paramobj = SingleParticleSEIInputParams(jsonstruct);
 
+controlPolicy = 'EIswitch';
+switch controlPolicy 
+  case 'EIswitch'
+    % nothing to do, default case
+  case 'CCCV'
+    paramobj.Control.controlPolicy = 'CCCV';
+  otherwise
+    error('control policy not recognized')
+end
+
 paramobj.(an).(sd).N   = 3;
 paramobj.(an).(sd).np  = 1;
 paramobj.(an).(sei).N  = 5;
@@ -34,8 +44,8 @@ G = cartGrid(1, xlength);
 G = computeGeometry(G);
 paramobj.(an).G = G;
 
-paramobj.(ct).(sd).N   = 7;
-paramobj.(ct).(sd).np  = 1;
+paramobj.(ct).(sd).N  = 7;
+paramobj.(ct).(sd).np = 1;
 paramobj.(ct).G = G;
 
 model = SingleParticleSEI(paramobj);
@@ -111,12 +121,23 @@ initState.(elyte).phi = phiElectrolyte;
 
 initState.(ctrl).E = phiCathode;
 initState.(ctrl).I = 0;
+            
 
 % set static variable fields
 initState.(an).phi                         = 0;
 initState.T                                = T;
 initState.(an).(sei).cExternal             = cECexternal;
 initState.(ct).(itf).externalPotentialDrop = 0;
+
+switch model.(ctrl).controlPolicy
+  case 'IEswitch'
+    initState.(ctrl).ctrlType = 'constantCurrent';
+  case 'CCCV'
+    initState.(ctrl).ctrlType = 'CC_charge';
+    initState.(ctrl).nextCtrlType = 'CC_charge';
+  otherwise
+    error('control policy not recognized');
+end
 
 %% setup schedule
 

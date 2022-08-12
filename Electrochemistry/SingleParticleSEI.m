@@ -21,8 +21,7 @@ classdef SingleParticleSEI < BaseModel
             model.Anode       = SEIActiveMaterial(paramobj.Anode);
             model.Cathode     = ActiveMaterial(paramobj.Cathode);
             model.Electrolyte = SingleCellElectrolyte(paramobj.Electrolyte);
-            % model.Control    = CcCvControlModel(paramobj.Control);
-            model.Control     = ControlModel(paramobj.Control);
+            model.Control     = model.setupControl(paramobj.Control);
             
             fdnames = {'anodeArea', ...
                        'cathodeArea'};
@@ -100,7 +99,24 @@ classdef SingleParticleSEI < BaseModel
             end
             
         end
+        
+        function control = setupControl(model, paramobj)
 
+            switch paramobj.controlPolicy
+              case "IEswitch"
+                control = ControlModel(paramobj); 
+              case "CCCV"
+                control = CcCvControlModel(paramobj);
+                % C = computeCellCapacity(model);
+                % CRate = control.CRate;
+                control.Imax = 1;
+              otherwise
+                error('Error controlPolicy not recognized');
+            end
+            
+        end
+
+        
         function state = dispatchT(model, state)
 
             ct = 'Cathode';
@@ -205,7 +221,8 @@ classdef SingleParticleSEI < BaseModel
                 
                 state.(ctrl).ctrlVal  = ctrlVal;
                 state.(ctrl).ctrlType = ctrltype;
-                
+              otherwise
+                error('control policy not recognized');
             end
             
         end
@@ -402,12 +419,13 @@ classdef SingleParticleSEI < BaseModel
 
             cleanState = addStaticVariables@BaseModel(model, cleanState, state);
 
-            an  = 'Anode';
-            ct  = 'Cathode';
-            sei = 'SolidElectrodeInterface';
-            itf = 'Interface';
-            sr  = 'SideReaction';
-
+            an   = 'Anode';
+            ct   = 'Cathode';
+            sei  = 'SolidElectrodeInterface';
+            itf  = 'Interface';
+            sr   = 'SideReaction';
+            ctrl = 'Control';
+            
             cleanState.T = state.T;
             % zero potential boundary condition at anode
             cleanState.(an).phi = 0;
@@ -415,7 +433,28 @@ classdef SingleParticleSEI < BaseModel
             cleanState.(ct).(itf).externalPotentialDrop = 0;
             % external EC concentration is set to constant
             cleanState.(an).(sei).cExternal = state.(an).(sei).cExternal;
+            % keep control type
+            cleanState.(ctrl).ctrlType = state.(ctrl).ctrlType;
         end
+        
+        
+        function [model, state] = prepareTimestep(model, state, state0, dt, drivingForces)
+            
+            [model, state] = prepareTimestep@BaseModel(model, state, state0, dt, drivingForces);
+            
+            ctrl = 'Control';
+            state.(ctrl) = model.(ctrl).prepareStepControl(state.(ctrl), state0.(ctrl), dt, drivingForces);
+            
+        end
+        
+        function [state, report] = updateAfterConvergence(model, state0, state, dt, drivingForces)
+            
+            [state, report] = updateAfterConvergence@BaseModel(model, state0, state, dt, drivingForces);
+            
+            ctrl = 'Control';
+            state.(ctrl) = model.(ctrl).updateControlAfterConvergence(state.(ctrl), state0.(ctrl), dt);
+        end
+        
     end
 
     methods(Static)
