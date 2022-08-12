@@ -1408,8 +1408,8 @@ classdef Battery < BaseModel
               otherwise
                 error('Error controlPolicy not recognized');
             end
-            %NB hack to get thing go
-            forces.Imax = [];%model.Control.Imax;
+            % TODO hack to get thing go
+            forces.Imax = [];
             
         end
 
