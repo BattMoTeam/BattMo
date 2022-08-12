@@ -6,6 +6,7 @@ close all
 
 %% Import the required modules from MRST
 % load MRST modules
+
 mrstModule add ad-core mrst-gui mpfa
 
 %% Setup the properties of Li-ion battery materials and cell design
@@ -40,23 +41,24 @@ paramobj.(ct).G = G;
 model = SingleParticleSEI(paramobj);
 cgf = ComputationalGraphFilter(model);
 
-model.(ctrl).Imax = 1e6;
+model.(ctrl).Imax = 3;
 
-dograph = true;
+dograph = false;
 
 if dograph
     cgf = ComputationalGraphFilter(model);
     % cgf.includeNodeNames = 'Anode.SolidDiffusion.cSurface';
     % cgf.includeNodeNames = 'Cathode.*\.R$';
-    cgf.includeNodeNames = 'Cathode';
-    % [g, edgelabels] = cgf.setupGraph('oneParentOnly', true);
-    [g, edgelabels] = cgf.setupGraph();
+    cgf.includeNodeNames = 'Anode.*R';
+    % [g, edgelabels] = cgf.setupGraph('oneParentOnly', true, 'type', 'ascendant');
+    [g, edgelabels] = cgf.setupGraph('oneParentOnly', true, 'type', 'descendant');
+    % [g, edgelabels] = cgf.setupGraph();
     % gg = cgf.setupDescendantGraph();
     figure
-    h = plot(g, 'edgelabel', edgelabels, 'nodefontsize', 18);
+    h = plot(g, 'edgelabel', edgelabels,'edgefontsize', 15, 'nodefontsize', 12);
 end
 
-return
+% return
 
 %% Setup initial state
 
@@ -115,7 +117,6 @@ initState.(an).phi                         = 0;
 initState.T                                = T;
 initState.(an).(sei).cExternal             = cECexternal;
 initState.(ct).(itf).externalPotentialDrop = 0;
-
 
 %% setup schedule
 

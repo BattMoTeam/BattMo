@@ -248,7 +248,7 @@ classdef SingleParticleSEI < BaseModel
             state.Cathode.Interface             = model.Cathode.Interface.updateOCP(state.Cathode.Interface);
             state.Cathode.Interface             = model.Cathode.Interface.updateEtaWithEx(state.Cathode.Interface);
             state.Cathode.Interface             = model.Cathode.Interface.updateReactionRate(state.Cathode.Interface);
-            state.Cathode                       = model.Cathode.dispatchRate(state.Cathode);
+            state.Cathode                       = model.Cathode.updateRvol(state.Cathode);
             state.Cathode.SolidDiffusion        = model.Cathode.SolidDiffusion.updateMassSource(state.Cathode.SolidDiffusion);
             state.Cathode.SolidDiffusion        = model.Cathode.SolidDiffusion.assembleSolidDiffusionEquation(state.Cathode.SolidDiffusion);
             state.Cathode.SolidDiffusion        = model.Cathode.SolidDiffusion.updateMassConservation(state.Cathode.SolidDiffusion);
@@ -273,7 +273,7 @@ classdef SingleParticleSEI < BaseModel
             state = model.updateControl(state, drivingForces);
         
             state.Control                       = model.Control.updateControlEquation(state.Control);
-            state.Anode                         = model.Anode.dispatchRate(state.Anode);
+            state.Anode                         = model.Anode.updateRvol(state.Anode);
             state.Anode.SolidDiffusion          = model.Anode.SolidDiffusion.updateMassSource(state.Anode.SolidDiffusion);
             state.Anode.SolidDiffusion          = model.Anode.SolidDiffusion.assembleSolidDiffusionEquation(state.Anode.SolidDiffusion);
             state.Anode.SolidDiffusion          = model.Anode.SolidDiffusion.updateMassConservation(state.Anode.SolidDiffusion);

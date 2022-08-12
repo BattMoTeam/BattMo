@@ -80,7 +80,6 @@ classdef SEIActiveMaterial < ActiveMaterial
             state.SideReaction.phiElectrode = state.phi;
         end         
         
-        
         function state = assembleSEIchargeCons(model, state)
 
             itf = 'Interface';
@@ -92,11 +91,9 @@ classdef SEIActiveMaterial < ActiveMaterial
             Rsei = state.(sr).R;
             R = state.R;
             
-            % We need to divide Rint with the volumetricSurfaceArea to obtain a rate in mol/(s*m^2) 
-            state.seiInterfaceChargeCons = R - 1./vsa.*Rint - Rsei;
+            state.seiInterfaceChargeCons = R - Rint - Rsei;
             
         end
-        
         
         function state = updatePotentialDrop(model, state)
             
@@ -126,8 +123,6 @@ classdef SEIActiveMaterial < ActiveMaterial
             state.controlCurrentSource = drivingForces.src.*coef;
             
         end
-        
-        
         
         function state = updateStandalonejBcSource(model, state)
             
