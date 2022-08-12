@@ -718,6 +718,9 @@ classdef Battery < BaseModel
             for ind = 1 : numel(electrodes)
                 elde = electrodes{ind};
                 state.(elde).(am) = model.(elde).(am).updateConductivity(state.(elde).(am));
+                if model.include_current_collectors
+                    state.(elde).(cc) = model.(elde).(cc).updateConductivity(state.(elde).(cc));
+                end
                 switch elde
                   case ne
                     state = model.setupExternalCouplingNegativeElectrode(state);
@@ -725,7 +728,6 @@ classdef Battery < BaseModel
                     state = model.setupExternalCouplingPositiveElectrode(state);
                 end
                 if model.include_current_collectors
-                    state.(elde).(cc) = model.(elde).(cc).updateConductivity(state.(elde).(cc));
                     state.(elde) = battery.(elde).updateCoupling(state.(elde));
 
                     state.(elde).(cc) = battery.(elde).(cc).updatejBcSource(state.(elde).(cc));
