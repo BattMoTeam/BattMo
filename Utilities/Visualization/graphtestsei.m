@@ -46,18 +46,19 @@ model = model.registerVarAndPropfuncNames();
 [g, edgelabels] = setupGraph(model);
 
 
-doplot = false;
-if doplot
+dograph = true;
+if dograph
     cgf = ComputationalGraphFilter(model);
     % cgf.includeNodeNames = 'cSurface';
     cgf.includeNodeNames = 'phiElectrolyte';
     % gg = cgf.setupDescendantGraph();
     % gg = cgf.setupGraph('oneParentOnly', true);    
-    gg = cgf.setupGraph();
+    [g, edgelabels] = cgf.setupGraph();
     figure
-    h = plot(gg);
-    return
+    h = plot(g, 'edgelabel', edgelabels, 'nodefontsize', 10);
 end
+
+return
 
 nn = g.numnodes;
 nodenames = g.Nodes.Variables;
