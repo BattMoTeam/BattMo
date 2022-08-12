@@ -24,7 +24,7 @@ ctrl  = 'Control';
 
 paramobj = SingleParticleSEIInputParams(jsonstruct);
 
-controlPolicy = 'EIswitch';
+controlPolicy = 'CCCV';
 switch controlPolicy 
   case 'EIswitch'
     % nothing to do, default case
@@ -49,9 +49,6 @@ paramobj.(ct).(sd).np = 1;
 paramobj.(ct).G = G;
 
 model = SingleParticleSEI(paramobj);
-cgf = ComputationalGraphFilter(model);
-
-model.(ctrl).Imax = 3;
 
 dograph = false;
 
@@ -59,16 +56,16 @@ if dograph
     cgf = ComputationalGraphFilter(model);
     % cgf.includeNodeNames = 'Anode.SolidDiffusion.cSurface';
     % cgf.includeNodeNames = 'Cathode.*\.R$';
-    cgf.includeNodeNames = 'Anode.*R';
-    % [g, edgelabels] = cgf.setupGraph('oneParentOnly', true, 'type', 'ascendant');
-    [g, edgelabels] = cgf.setupGraph('oneParentOnly', true, 'type', 'descendant');
+    cgf.includeNodeNames = 'SideReaction.R';
+    [g, edgelabels] = cgf.setupGraph('oneParentOnly', true, 'type', 'ascendant');
+    % [g, edgelabels] = cgf.setupGraph('oneParentOnly', true, 'type', 'descendant');
     % [g, edgelabels] = cgf.setupGraph();
     % gg = cgf.setupDescendantGraph();
     figure
     h = plot(g, 'edgelabel', edgelabels,'edgefontsize', 15, 'nodefontsize', 12);
+    return
 end
 
-% return
 
 %% Setup initial state
 
@@ -133,15 +130,15 @@ switch model.(ctrl).controlPolicy
   case 'IEswitch'
     initState.(ctrl).ctrlType = 'constantCurrent';
   case 'CCCV'
-    initState.(ctrl).ctrlType = 'CC_charge';
-    initState.(ctrl).nextCtrlType = 'CC_charge';
+    initState.(ctrl).ctrlType = 'CC_discharge';
+    initState.(ctrl).nextCtrlType = 'CC_discharge';
   otherwise
     error('control policy not recognized');
 end
 
 %% setup schedule
 
-total = 1*hour;
+total = 6*hour;
 n     = 100;
 dt    = total/n;
 step  = struct('val', dt*ones(n, 1), 'control', ones(n, 1));

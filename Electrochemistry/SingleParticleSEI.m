@@ -106,7 +106,7 @@ classdef SingleParticleSEI < BaseModel
               case "IEswitch"
                 control = ControlModel(paramobj); 
               case "CCCV"
-                control = CcCvControlModel(paramobj);
+                control = simpleCcCvControlModel(paramobj);
                 % C = computeCellCapacity(model);
                 % CRate = control.CRate;
                 control.Imax = 1;
