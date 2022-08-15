@@ -1435,6 +1435,7 @@ classdef Battery < BaseModel
             model.PositiveElectrode.ActiveMaterial = model.PositiveElectrode.ActiveMaterial.setup();
             model.NegativeElectrode.ActiveMaterial = model.NegativeElectrode.ActiveMaterial.setup();
             model.Electrolyte.Separator = model.Electrolyte.Separator.setup();
+            
             model = model.setupElectrolyteModel();
                 
             model.PositiveElectrode.ActiveMaterial.AutoDiffBackend= model.AutoDiffBackend;

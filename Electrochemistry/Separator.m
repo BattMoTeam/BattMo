@@ -31,9 +31,6 @@ classdef Separator < BaseModel
             model = dispatchParams(model, paramobj, fdnames);
             model.porosity = model.porosity*ones(model.G.cells.num,1);
             model  = model.setup()
-            %model.volumeFraction = 1 - model.porosity;
-            %model.EffectiveThermalConductivity = model.thermalConductivity.*(model.volumeFraction).^1.5;
-            %model.EffectiveHeatCapacity = model.heatCapacity.*model.volumeFraction;
 
         end
         

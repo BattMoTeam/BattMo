@@ -5,25 +5,27 @@ classdef ActiveMaterial < ElectronicComponent
         %
         % instance of :class:`Interface <Electrochemistry.Electrodes.Interface>`
         %
-        porosity
-        electricalConductivity % Electrical conductivite
-        InterDiffusionCoefficient % Inter particle diffusion coefficient parameter (diffusion between the particles)
-        thermalConductivity % Intrinsic Thermal conductivity of the active component
-        heatCapacity        % Intrinsic Heat capacity of the active component
+
 
         Interface
 
         SolidDiffusion        
-        volumeFraction % Volume fraction
+
+        porosity                      % porosity
+        volumeFraction                % Volume fraction
+        electricalConductivity        % Electrical conductivite
+        InterDiffusionCoefficient     % Inter particle diffusion coefficient parameter (diffusion between the particles)
+        thermalConductivity           % Intrinsic Thermal conductivity of the active component
+        heatCapacity                  % Intrinsic Heat capacity of the active component
 
         EffectiveDiffusionCoefficient % 
 
-        EffectiveThermalConductivity % Effective Thermal Conductivity of the active component
-        EffectiveHeatCapacity % Effective Heat Capacity of the active component
+        EffectiveThermalConductivity  % Effective Thermal Conductivity of the active component
+        EffectiveHeatCapacity         % Effective Heat Capacity of the active component
 
         useSimplifiedDiffusionModel
         
-        externalCouplingTerm % only used in no current collector
+        externalCouplingTerm          % only used in no current collector
 
     end
     
@@ -62,29 +64,18 @@ classdef ActiveMaterial < ElectronicComponent
                 model.InterDiffusionCoefficient = paramobj.InterDiffusionCoefficient;
             end
             
-            % setup volumeFraction, porosity
             nc = model.G.cells.num;
+
             volumeFraction = model.Interface.volumeFraction*ones(nc, 1);
-            model.porosity = 1-volumeFraction;
+            model.porosity = 1 - volumeFraction;
             model = model.setup();
-%             model.volumeFraction = volumeFraction;
-%             model.porosity = 1 - model.volumeFraction;
-%             
-%             % setup effective electrical conductivity using Bruggeman approximation 
-%             model.EffectiveElectricalConductivity = model.electricalConductivity.*volumeFraction.^1.5;
-%             
-%             if model.useSimplifiedDiffusionModel            
-%                 model.EffectiveDiffusionCoefficient = model.InterDiffusionCoefficient.*volumeFraction.^1.5;
-%             end
-%             
-%             % setup effective thermal conductivity            
-%             model.EffectiveThermalConductivity = model.thermalConductivity.*volumeFraction.^1.5;
-%             model.EffectiveHeatCapacity = model.heatCapacity.*volumeFraction;
             
         end
         
         function model = setup(model)           
-            model.volumeFraction = 1- model.porosity;
+
+            model.volumeFraction = 1 - model.porosity;
+            %% FIXME : clean volume fraction assignment
             volumeFraction = model.volumeFraction;
             % setup effective electrical conductivity using Bruggeman approximation 
             model.EffectiveElectricalConductivity = model.electricalConductivity.*volumeFraction.^1.5;
