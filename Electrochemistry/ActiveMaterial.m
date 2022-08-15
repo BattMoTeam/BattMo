@@ -38,7 +38,8 @@ classdef ActiveMaterial < ElectronicComponent
             fdnames = {'thermalConductivity'   , ...
                        'electricalConductivity', ...
                        'heatCapacity', ...
-                       'externalCouplingTerm'};
+                       'externalCouplingTerm', ...
+                       'useSimplifiedDiffusionModel'};
             
             model = dispatchParams(model, paramobj, fdnames);
             
@@ -49,12 +50,11 @@ classdef ActiveMaterial < ElectronicComponent
             
             paramobj.SolidDiffusion.volumetricSurfaceArea = model.Interface.volumetricSurfaceArea;
             
-            if paramobj.SolidDiffusion.useSimplifiedDiffusionModel
+            if paramobj.useSimplifiedDiffusionModel
                 model.SolidDiffusion = SimplifiedSolidDiffusionModel(paramobj.SolidDiffusion);
-                model.useSimplifiedDiffusionModel = true;
             else
-                model.SolidDiffusion = SolidDiffusionModel(paramobj.SolidDiffusion);
-                model.useSimplifiedDiffusionModel = false;
+                paramobj.SolidDiffusion.np = model.G.cells.num;
+                model.SolidDiffusion = FullSolidDiffusionModel(paramobj.SolidDiffusion);
             end
             
             if model.useSimplifiedDiffusionModel

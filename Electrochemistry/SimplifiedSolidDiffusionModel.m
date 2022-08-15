@@ -1,33 +1,10 @@
-classdef SimplifiedSolidDiffusionModel < BaseModel
-
-    properties
-
-        % Physical constants
-        constants = PhysicalConstants();
-
-        % Physicochemical properties
-        volumetricSurfaceArea  % Surface area to volume,       [m2 m^-3]
-        rp                     % Particle radius               [m]
-        D0                     % Diffusion coefficient         [m]
-        EaD                    % 
-        
-    end
+classdef SimplifiedSolidDiffusionModel < SolidDiffusionModel
 
     methods
 
         function model = SimplifiedSolidDiffusionModel(paramobj)
 
-            model = model@BaseModel();
-
-             % OBS : All the submodels should have same backend (this is not assigned automaticallly for the moment)
-            model.AutoDiffBackend = SparseAutoDiffBackend('useBlocks', false);
-
-            fdnames = {'rp'                    , ...
-                       'volumetricSurfaceArea' , ...
-                       'EaD'                    , ...
-                       'D0'};
-
-            model = dispatchParams(model, paramobj, fdnames);
+            model = model@SolidDiffusionModel(paramobj);
 
         end
         
