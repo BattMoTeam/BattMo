@@ -29,10 +29,14 @@ classdef Electrode < BaseModel
             
             % Assign the two components
             model.ActiveMaterial = model.setupActiveMaterial(paramobj.ActiveMaterial);
-            model.include_current_collector = false;
+            
             if params.include_current_collector
+                assert(~isempty(paramobj.CurrentCollector), 'current collector input data is missing')
                 model.CurrentCollector = model.setupCurrentCollector(paramobj.CurrentCollector);
                 model.include_current_collector = true;
+            else
+                assert(isempty(paramobj.CurrentCollector), 'current collector data (and probably grid) is given. Not using it, as required by input flag, will create problem')
+                model.include_current_collector = false;
             end
             
         end
