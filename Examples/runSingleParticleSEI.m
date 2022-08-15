@@ -1,7 +1,7 @@
 %% run stand-alone active material model
 
 % clear the workspace and close open figures
-% clear all
+clear all
 close all
 
 %% Import the required modules from MRST
@@ -34,9 +34,9 @@ switch controlPolicy
     error('control policy not recognized')
 end
 
-paramobj.(an).(sd).N   = 3;
+paramobj.(an).(sd).N   = 10;
 paramobj.(an).(sd).np  = 1;
-paramobj.(an).(sei).N  = 5;
+paramobj.(an).(sei).N  = 10;
 paramobj.(an).(sei).np = 1;
 
 xlength = 57e-6; 
@@ -44,7 +44,7 @@ G = cartGrid(1, xlength);
 G = computeGeometry(G);
 paramobj.(an).G = G;
 
-paramobj.(ct).(sd).N  = 7;
+paramobj.(ct).(sd).N  = 10;
 paramobj.(ct).(sd).np = 1;
 paramobj.(ct).G = G;
 
