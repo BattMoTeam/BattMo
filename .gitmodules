@@ -5,11 +5,11 @@
 [submodule "mrst-core"]
 	path = MRST/mrst-core
 	url = https://bitbucket.org/mrst/mrst-core.git
-        branch = master
+        branch = battmo
 [submodule "mrst-autodiff"]
 	path = MRST/mrst-autodiff
 	url = https://bitbucket.org/mrst/mrst-autodiff.git
-        branch = hnil/battery
+        branch = battmo
 [submodule "mrst-model-io"]
 	path = MRST/mrst-model-io
 	url = https://bitbucket.org/mrst/mrst-model-io.git
