@@ -733,7 +733,7 @@ classdef Battery < BaseModel
                   case pe
                     state = model.setupExternalCouplingPositiveElectrode(state);
                 end
-                if(model.include_current_collectors)
+                if model.include_current_collectors
                     state.(elde).(cc) = battery.(elde).(cc).updatejBcSource(state.(elde).(cc));
                     state.(elde).(am) = battery.(elde).(am).updatejBcSource(state.(elde).(am));
                 else
@@ -876,7 +876,7 @@ classdef Battery < BaseModel
                      vol = model.(pe).(am).operators.pv;
                      rp =  model.(pe).(am).(sd).rp;
                      pvol = (4*pi*rp^3/3);
-                     Np = vol/pvol;% only scale so mass is equivalent trans speed is very fast (L/rp).^2
+                     Np = vol(1)/pvol;% only scale so mass is equivalent trans speed is very fast (L/rp).^2
                     eqs{end + 1} = Np*state.(pe).(am).(sd).massCons;
                 end
                 
