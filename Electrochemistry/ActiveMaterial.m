@@ -68,14 +68,14 @@ classdef ActiveMaterial < ElectronicComponent
 
             volumeFraction = model.Interface.volumeFraction*ones(nc, 1);
             model.porosity = 1 - volumeFraction;
-            model = model.setup();
+
+            model = model.setupDependentProperties();
             
         end
         
-        function model = setup(model)           
+        function model = setupDependentProperties(model)           
 
             model.volumeFraction = 1 - model.porosity;
-            %% FIXME : clean volume fraction assignment
             volumeFraction = model.volumeFraction;
             % setup effective electrical conductivity using Bruggeman approximation 
             model.EffectiveElectricalConductivity = model.electricalConductivity.*volumeFraction.^1.5;

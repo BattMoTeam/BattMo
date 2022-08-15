@@ -1432,9 +1432,9 @@ classdef Battery < BaseModel
 
         function model = validateModel(model, varargin)
 
-            model.PositiveElectrode.ActiveMaterial = model.PositiveElectrode.ActiveMaterial.setup();
-            model.NegativeElectrode.ActiveMaterial = model.NegativeElectrode.ActiveMaterial.setup();
-            model.Electrolyte.Separator = model.Electrolyte.Separator.setup();
+            model.PositiveElectrode.ActiveMaterial = model.PositiveElectrode.ActiveMaterial.setupDependentProperties();
+            model.NegativeElectrode.ActiveMaterial = model.NegativeElectrode.ActiveMaterial.setupDependentProperties();
+            model.Electrolyte.Separator = model.Electrolyte.Separator.setupDependentProperties();
             
             model = model.setupElectrolyteModel();
                 

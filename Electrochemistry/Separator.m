@@ -7,7 +7,6 @@ classdef Separator < BaseModel
         heatCapacity        % intrinsic heat capacity value
         density             % Density [kg m^-3]        
         
-        %-------
         volumeFraction      % Volume fraction [-]
         EffectiveThermalConductivity
         EffectiveHeatCapacity
@@ -30,11 +29,11 @@ classdef Separator < BaseModel
                        'density'};
             model = dispatchParams(model, paramobj, fdnames);
             model.porosity = model.porosity*ones(model.G.cells.num,1);
-            model  = model.setup()
+            model = model.setupDependentProperties()
 
         end
         
-        function model = setup(model)
+        function model = setupDependentProperties(model)
             model.volumeFraction = 1 - model.porosity;
             model.EffectiveThermalConductivity = model.thermalConductivity.*(model.volumeFraction).^1.5;
             model.EffectiveHeatCapacity = model.heatCapacity.*model.volumeFraction;
