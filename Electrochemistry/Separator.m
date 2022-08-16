@@ -29,7 +29,7 @@ classdef Separator < BaseModel
                        'density'};
             model = dispatchParams(model, paramobj, fdnames);
             model.porosity = model.porosity*ones(model.G.cells.num,1);
-            model = model.setupDependentProperties()
+            model = model.setupDependentProperties();
 
         end
         

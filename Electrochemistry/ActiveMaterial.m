@@ -52,7 +52,7 @@ classdef ActiveMaterial < ElectronicComponent
             
             paramobj.SolidDiffusion.volumetricSurfaceArea = model.Interface.volumetricSurfaceArea;
             
-            if paramobj.useSimplifiedDiffusionModel
+            if model.useSimplifiedDiffusionModel
                 model.SolidDiffusion = SimplifiedSolidDiffusionModel(paramobj.SolidDiffusion);
             else
                 paramobj.SolidDiffusion.np = model.G.cells.num;

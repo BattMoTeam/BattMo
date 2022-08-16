@@ -13,50 +13,24 @@ classdef SimplifiedSolidDiffusionModel < SolidDiffusionModel
             %% Declaration of the Dynamical Variables and Function of the model
             % (setup of varnameList and propertyFunctionList)
 
-            model = registerVarAndPropfuncNames@BaseModel(model);
+            model = registerVarAndPropfuncNames@SolidDiffusionModel(model);
 
             varnames = {};
             % concentration
-            varnames{end + 1} = 'T';
-            % concentration at the surface
             varnames{end + 1} = 'cSurface';
             % concentration (over the whole particle)
             varnames{end + 1} = 'cAverage';
-            % Diffusion coefficient
-            varnames{end + 1} = 'D';
-            % Reaction Rate
-            varnames{end + 1} = 'R';
             % Solid diffusion equation
             varnames{end + 1} = 'solidDiffusionEq';
             
             model = model.registerVarNames(varnames);
 
-            fn = @ActiveMaterial.updateDiffusionCoefficient;
-            inputnames = {'T'};
-            model = model.registerPropFunction({'D', fn, inputnames});
-
-            fn = @ActiveMaterial.assembleSolidDiffusionEquation;
+            fn = @SimplifiedSolidDiffusionModel.assembleSolidDiffusionEquation;
             inputnames = {'cSurface', 'cAverage', 'R', 'D'};
             model = model.registerPropFunction({'solidDiffusionEq', fn, inputnames});
             
         end
 
-        function state = updateDiffusionCoefficient(model, state)
-
-            Tref = 298.15;  % [K]
-
-            T = state.T;
-
-            R   = model.constants.R;
-            D0  = model.D0;
-            EaD = model.EaD;
-
-            % Calculate solid diffusion coefficient, [m^2 s^-1]
-            D = D0.*exp(-EaD./R*(1./T - 1/Tref));
-
-            state.D = D;
-            
-        end
         
         function state = assembleSolidDiffusionEquation(model, state)
         % We update the surface concentration of the charge carrier in the active material.

@@ -21,6 +21,14 @@ mrstModule add ad-core mrst-gui mpfa
 % provided in json format. All the parameters for the model are stored in
 % the paramobj object.
 jsonstruct = parseBattmoJson('ParameterData/BatteryCellParameters/LithiumIonBatteryCell/lithium_ion_battery_nmc_graphite.json');
+
+switchToFullDiffusionModel = false;
+if switchToFullDiffusionModel
+    % model in json file is the simplified diffusion model
+    jsonstruct.NegativeElectrode.ActiveMaterial.useSimplifiedDiffusionModel = false;
+    jsonstruct.PositiveElectrode.ActiveMaterial.useSimplifiedDiffusionModel = false;
+end
+
 paramobj = BatteryInputParams(jsonstruct);
 
 use_cccv = false;
@@ -44,6 +52,7 @@ ne      = 'NegativeElectrode';
 pe      = 'PositiveElectrode';
 elyte   = 'Electrolyte';
 thermal = 'ThermalModel';
+am      = 'ActiveMaterial';
 itf     = 'Interface';
 sd      = 'SolidDiffusion';
 ctrl    = 'Control';
@@ -134,7 +143,7 @@ states = states(ind);
 Enew = cellfun(@(x) x.Control.E, states); 
 Inew = cellfun(@(x) x.Control.I, states);
 Tmax = cellfun(@(x) max(x.ThermalModel.T), states);
-[SOCN, SOCP] =  cellfun(@(x) model.calculateSOC(x), states);
+% [SOCN, SOCP] =  cellfun(@(x) model.calculateSOC(x), states);
 time = cellfun(@(x) x.time, states); 
 
 %% Plot the the output voltage and current

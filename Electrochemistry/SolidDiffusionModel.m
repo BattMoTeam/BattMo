@@ -28,6 +28,46 @@ classdef SolidDiffusionModel < BaseModel
                        'D0'};
 
             model = dispatchParams(model, paramobj, fdnames);
+        
+        end
+        
+        function model = registerVarAndPropfuncNames(model)
+
+            %% Declaration of the Dynamical Variables and Function of the model
+            % (setup of varnameList and propertyFunctionList)
+
+            model = registerVarAndPropfuncNames@BaseModel(model);
+
+            varnames = {};
+            % concentration
+            varnames{end + 1} = 'T';
+            % Diffusion coefficient
+            varnames{end + 1} = 'D';
+            % Reaction rate
+            varnames{end + 1} = 'R';
+            
+            model = model.registerVarNames(varnames);
+
+            fn = @SolidDiffusionModel.updateDiffusionCoefficient;
+            inputnames = {'T'};
+            model = model.registerPropFunction({'D', fn, inputnames});
+            
+        end
+
+        function state = updateDiffusionCoefficient(model, state)
+
+            Tref = 298.15;  % [K]
+
+            T = state.T;
+
+            R   = model.constants.R;
+            D0  = model.D0;
+            EaD = model.EaD;
+
+            % Calculate solid diffusion coefficient, [m^2 s^-1]
+            D = D0.*exp(-EaD./R*(1./T - 1/Tref));
+
+            state.D = D;
             
         end
 

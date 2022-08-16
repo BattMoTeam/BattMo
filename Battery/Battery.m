@@ -71,9 +71,9 @@ classdef Battery < BaseModel
             model.PositiveElectrode = model.setupElectrode(paramobj.PositiveElectrode, params);
             model.Electrolyte       = model.setupElectrolyte(paramobj.Electrolyte);
             if model.use_thermal
-                model.ThermalModel      = ThermalComponent(paramobj.ThermalModel);
+                model.ThermalModel = ThermalComponent(paramobj.ThermalModel);
             end
-            model.Control           = model.setupControl(paramobj.Control);
+            model.Control = model.setupControl(paramobj.Control);
             
             % define shorthands
             elyte   = 'Electrolyte';
@@ -536,14 +536,12 @@ classdef Battery < BaseModel
         end
         
         function initstate = setupInitialState(model)
-        % Setup the initial state
+        % Setup the values of the primary variables at initial state
 
             nc = model.G.cells.num;
 
             SOC = model.SOC;
             T   = model.initT;
-            
-            %initstate.SOC = SOC*ones(nc, 1);
             
             bat = model;
             elyte   = 'Electrolyte';
@@ -558,61 +556,55 @@ classdef Battery < BaseModel
             
             initstate.(thermal).T = T*ones(nc, 1);
             
-            %% synchronize temperatures
+            %% Synchronize temperatures
             
             initstate = model.updateTemperature(initstate);
             
-            %% setup initial NegativeElectrode state
+            %% Setup initial state for NegativeElectrode
             
-            % shortcut
-            % negItf : ActiveMaterial of the negative electrode
+            eldes = {ne, pe};
             
-            negItf = bat.(ne).(am).(itf); 
-            
-            m     = (1 ./ (negItf.theta100 - negItf.theta0));
-            b     = -m .* negItf.theta0;
-            theta = (SOC - b) ./ m;
-            c     = theta .* negItf.cmax;
-            c     = c*ones(negItf.G.cells.num, 1);
+            for ind = 1 : numel(eldes)
+                
+                elde = eldes{ind};
+                
+                elde_itf = bat.(elde).(am).(itf); 
+                
+                m     = (1 ./ (elde_itf.theta100 - elde_itf.theta0));
+                b     = -m .* elde_itf.theta0;
+                theta = (SOC - b) ./ m;
+                c     = theta .* elde_itf.cmax;
+                nc    = elde_itf.G.cells.num;
 
-            initstate.(ne).(am).c = c;
-            initstate.(ne).(am).(sd).cSurface = c;
-            % We bypass the solid diffusion equation to set directly the particle surface concentration (this is a bit hacky)
-            initstate.(ne).(am) = model.(ne).(am).updateConcentrations(initstate.(ne).(am));
-            initstate.(ne).(am).(itf) = negItf.updateOCP(initstate.(ne).(am).(itf));
+                if model.(elde).(am).useSimplifiedDiffusionModel
+                    initstate.(elde).(am).(sd).cSurface = c*ones(nc, 1);
+                    initstate.(elde).(am).c = c*ones(nc, 1);
+                else
+                    initstate.(elde).(am).(sd).cSurface = c*ones(nc, 1);
+                    N = model.(elde).(am).(sd).N;
+                    np = model.(elde).(am).(sd).np; % Note : we have by construction np = nc
+                    initstate.(elde).(am).(sd).c = c*ones(N*np, 1);
+                end
+                
+                initstate.(elde).(am) = model.(elde).(am).updateConcentrations(initstate.(elde).(am));
+                initstate.(elde).(am).(itf) = elde_itf.updateOCP(initstate.(elde).(am).(itf));
 
-            OCP = initstate.(ne).(am).(itf).OCP;
-            ref = OCP(1);
-            
-            initstate.(ne).(am).phi = OCP - ref;
+                OCP = initstate.(elde).(am).(itf).OCP;
+                if ind == 1
+                    % The value in the first cell is used as reference.
+                    ref = OCP(1);
+                end
+                
+                initstate.(elde).(am).phi = OCP - ref;
+                
+            end
 
-            %% setup initial PositiveElectrode state
-
-            % shortcut
-            % posItf : ActiveMaterial of the positive electrode            
-            posItf = bat.(pe).(am).(itf);
-            
-            m     = (1 ./ (posItf.theta100 - posItf.theta0));
-            b     = -m .* posItf.theta0;
-            theta = (SOC - b) ./ m;
-            c     = theta .* posItf.cmax;
-            c     = c*ones(posItf.G.cells.num, 1);
-
-            initstate.(pe).(am).c = c;
-            initstate.(pe).(am).(sd).cSurface = c;
-            % We bypass the solid diffusion equation to set directly the particle surface concentration (this is a bit hacky)
-            initstate.(pe).(am) = model.(pe).(am).updateConcentrations(initstate.(pe).(am));
-            initstate.(pe).(am).(itf) = posItf.updateOCP(initstate.(pe).(am).(itf));
-            
-            OCP = initstate.(pe).(am).(itf).OCP;
-            initstate.(pe).(am).phi = OCP - ref;
-
-            %% setup initial Electrolyte state
+            %% Setup initial Electrolyte state
 
             initstate.(elyte).phi = zeros(bat.(elyte).G.cells.num, 1)-ref;
             initstate.(elyte).c = 1000*ones(bat.(elyte).G.cells.num, 1);
 
-            %% setup initial Current collectors state
+            %% Setup initial Current collectors state
 
             if model.(ne).include_current_collector
                 OCP = initstate.(ne).(am).(itf).OCP;
@@ -822,7 +814,7 @@ classdef Battery < BaseModel
                 
             end
             
-            %% setup relation between E and I at positive current collectror
+            %% Setup relation between E and I at positive current collectror
             
             state = model.setupEIEquation(state);
             state = model.updateControl(state, drivingForces);
@@ -932,7 +924,7 @@ classdef Battery < BaseModel
             primaryVars = model.getPrimaryVariables();
 
             
-            %% setup LinearizedProblem that can be processed by MRST Newton API
+            %% Setup LinearizedProblem that can be processed by MRST Newton API
             problem = LinearizedProblem(eqs, types, names, primaryVars, state, dt);
             
         end

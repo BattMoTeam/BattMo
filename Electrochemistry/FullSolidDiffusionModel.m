@@ -26,19 +26,13 @@ classdef FullSolidDiffusionModel < SolidDiffusionModel
             %% Declaration of the Dynamical Variables and Function of the model
             % (setup of varnameList and propertyFunctionList)
 
-            model = registerVarAndPropfuncNames@BaseModel(model);
+            model = registerVarAndPropfuncNames@SolidDiffusionModel(model);
                         
             varnames = {};
             % concentration
             varnames{end + 1} = 'c';
             % surface concentration
             varnames{end + 1} = 'cSurface';
-            % Temperature
-            varnames{end + 1} = 'T';
-            % Diffusion coefficient
-            varnames{end + 1} = 'D';
-            % Reaction rate
-            varnames{end + 1} = 'R';
             % Mass accumulation term
             varnames{end + 1} = 'massAccum';
             % flux term
@@ -275,22 +269,6 @@ classdef FullSolidDiffusionModel < SolidDiffusionModel
             
         end
 
-        function state = updateDiffusionCoefficient(model, state)
-
-            Tref = 298.15;  % [K]
-
-            T = state.T;
-
-            R   = model.constants.R;
-            D0  = model.D0;
-            EaD = model.EaD;
-
-            % Calculate solid diffusion coefficient, [m^2 s^-1]
-            D = D0.*exp(-EaD./R*(1./T - 1/Tref));
-
-            state.D = D;
-            
-        end
     
         function state = assembleSolidDiffusionEquation(model, state)
             
