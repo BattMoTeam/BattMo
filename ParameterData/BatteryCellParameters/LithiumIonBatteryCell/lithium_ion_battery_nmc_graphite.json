@@ -47,8 +47,8 @@
             "thermalConductivity": 2.1,
             "InterDiffusionCoefficient": 1e-14,
             "electricalConductivity": 100,
+            "useSimplifiedDiffusionModel" : true,
             "Interface": {
-                "useSimplifiedDiffusionModel" : true,
                 "isFile": true,
                 "filename": "ParameterData/MaterialProperties/NMC/nmc111.json"
             },

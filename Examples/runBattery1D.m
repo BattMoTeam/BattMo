@@ -22,7 +22,6 @@ mrstModule add ad-core mrst-gui mpfa
 % the paramobj object.
 jsonstruct = parseBattmoJson('ParameterData/BatteryCellParameters/LithiumIonBatteryCell/lithium_ion_battery_nmc_graphite.json');
 paramobj = BatteryInputParams(jsonstruct);
-paramobj.NegativeElectrode.ActiveMaterial.useSimplifiedDiffusionModel = true;
 
 use_cccv = false;
 if use_cccv
