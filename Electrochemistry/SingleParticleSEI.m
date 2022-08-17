@@ -104,12 +104,11 @@ classdef SingleParticleSEI < BaseModel
 
             switch paramobj.controlPolicy
               case "IEswitch"
-                control = ControlModel(paramobj); 
+                control = IEswitchControlModel(paramobj); 
               case "CCCV"
-                control = simpleCcCvControlModel(paramobj);
-                % C = computeCellCapacity(model);
-                % CRate = control.CRate;
-                control.Imax = 1;
+                control = CcCvControlModel(paramobj);
+              case "CV"
+                control = CvControlModel(paramobj);
               otherwise
                 error('Error controlPolicy not recognized');
             end
@@ -209,7 +208,7 @@ classdef SingleParticleSEI < BaseModel
             ctrl = "Control";
             
             switch model.(ctrl).controlPolicy
-              case 'CCCV'
+              case {'CCCV', 'CV'}
                 % nothing to do here
               case 'IEswitch'
                 
@@ -402,6 +401,9 @@ classdef SingleParticleSEI < BaseModel
               case 'IEswitch'
                 forces.IEswitch = true;
                 forces.src = [];
+              case 'CV'
+                forces.CV = true;
+                forces.src = [];
               otherwise
                 error('Error controlPolicy not recognized');
             end
@@ -434,7 +436,9 @@ classdef SingleParticleSEI < BaseModel
             % external EC concentration is set to constant
             cleanState.(an).(sei).cExternal = state.(an).(sei).cExternal;
             % keep control type
-            cleanState.(ctrl).ctrlType = state.(ctrl).ctrlType;
+            if ismember(model.(ctrl).controlPolicy, {'CCCV', 'IEswitch'})
+                cleanState.(ctrl).ctrlType = state.(ctrl).ctrlType;
+            end
         end
         
         

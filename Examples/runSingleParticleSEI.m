@@ -26,10 +26,13 @@ paramobj = SingleParticleSEIInputParams(jsonstruct);
 
 controlPolicy = 'CCCV';
 switch controlPolicy 
-  case 'EIswitch'
-    % nothing to do, default case
   case 'CCCV'
     paramobj.Control.controlPolicy = 'CCCV';
+  case 'CV'
+    paramobj_control = CvControlModelInputParams([]);
+    paramobj_control.inputVoltage = 4;
+    paramobj_control.CRate = 0.5; % not used in this case
+    paramobj.Control = paramobj_control;
   otherwise
     error('control policy not recognized')
 end
@@ -49,6 +52,11 @@ paramobj.(ct).(sd).np = 1;
 paramobj.(ct).G = G;
 
 model = SingleParticleSEI(paramobj);
+
+% Normally in CCCV control, the current value is computed from CRate but, here, we set it up directly
+if strcmp(model.(ctrl).controlPolicy, 'CCCV')
+    model.(ctrl).Imax = 1.8;
+end
 
 dograph = false;
 
@@ -118,7 +126,6 @@ initState.(elyte).phi = phiElectrolyte;
 
 initState.(ctrl).E = phiCathode;
 initState.(ctrl).I = 0;
-            
 
 % set static variable fields
 initState.(an).phi                         = 0;
@@ -127,32 +134,27 @@ initState.(an).(sei).cExternal             = cECexternal;
 initState.(ct).(itf).externalPotentialDrop = 0;
 
 switch model.(ctrl).controlPolicy
-  case 'IEswitch'
-    initState.(ctrl).ctrlType = 'constantCurrent';
   case 'CCCV'
-    initState.(ctrl).ctrlType = 'CC_discharge';
-    initState.(ctrl).nextCtrlType = 'CC_discharge';
+    initState.(ctrl).ctrlType = 'CV_charge';
+    initState.(ctrl).nextCtrlType = 'CV_charge';
+  case 'CV'
+    % ok. nothing to do
   otherwise
     error('control policy not recognized');
 end
 
 %% setup schedule
 
-total = 6*hour;
+total = 2*hour;
 n     = 100;
 dt    = total/n;
 step  = struct('val', dt*ones(n, 1), 'control', ones(n, 1));
 
 switch model.Control.controlPolicy
-  case 'IEswitch'
-    tup = 0.1; % rampup value for the current function, see rampupSwitchControl
-    srcfunc = @(time, I, E) rampupSwitchControl(time, tup, I, E, ...
-                                                model.Control.Imax, ...
-                                                model.Control.lowerCutoffVoltage);
-    % we setup the control by assigning a source and stop function.
-    control = struct('src', srcfunc, 'IEswitch', true);
   case 'CCCV'
     control = struct('CCCV', true);
+  case 'CV'
+    control = struct('CV', true);
   otherwise
     error('control policy not recognized');
 end
@@ -163,7 +165,14 @@ schedule = struct('control', control, 'step', step);
 
 %% Run simulation
 
-model.verbose = true;
+model.verbose = false;
+
+% Setup nonlinear solver 
+nls = NonLinearSolver(); 
+% Change default maximum iteration number in nonlinear solver
+nls.maxIterations = 40; 
+% Change default behavior of nonlinear solver, in case of error
+nls.errorOnFailure = false; 
 
 dopack = false;
 if dopack
@@ -173,7 +182,7 @@ if dopack
     simulatePackedProblem(problem);
     [globvars, states, report] = getPackedSimulatorOutput(problem);
 else
-    [wellSols, states, report] = simulateScheduleAD(initState, model, schedule, 'OutputMinisteps', true); 
+    [wellSols, states, report] = simulateScheduleAD(initState, model, schedule, 'OutputMinisteps', true, 'NonlinearSolver', nls); 
 end
 
 

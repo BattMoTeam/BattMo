@@ -28,7 +28,15 @@ classdef SingleParticleSEIInputParams < InputParams
             
             paramobj.(an)   = SEIActiveMaterialInputParams(pick(an));
             paramobj.(ct)   = ActiveMaterialInputParams(pick(ct));
-            paramobj.(ctrl) = CcCvControlModelInputParams(pick(ctrl));
+            switch jsonstruct.(ctrl).controlPolicy
+              case 'IEswitch'
+                paramobj.(ctrl) = IEswitchControlModelInputParams(pick(ctrl));
+              case 'CCCV'
+                paramobj.(ctrl) = CcCvControlModelInputParams(pick(ctrl));
+              case 'CV'
+                paramobj.(ctrl) = CvControlModelInputParams(pick(ctrl));
+            end
+            
             % not input parameter for SingleCellElectrolyte
             paramobj.(elyte) = [];
             
