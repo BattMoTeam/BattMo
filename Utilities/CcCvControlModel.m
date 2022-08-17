@@ -2,6 +2,9 @@ classdef CcCvControlModel < ControlModel
 
     properties
         
+        Imax
+        lowerCutoffVoltage
+        upperCutoffVoltage
         dIdtLimit
         dEdtLimit
         
@@ -14,7 +17,9 @@ classdef CcCvControlModel < ControlModel
 
             model = model@ControlModel(paramobj);
             
-            fdnames = {'dEdtLimit'         , ...
+            fdnames = {'lowerCutoffVoltage', ...
+                       'upperCutoffVoltage', ...
+                       'dEdtLimit'         , ...
                        'dIdtLimit'};
             model = dispatchParams(model, paramobj, fdnames);
             
@@ -22,7 +27,18 @@ classdef CcCvControlModel < ControlModel
 
         function model = registerVarAndPropfuncNames(model)
 
-            model = registerVarAndPropfuncNames@BaseModel(model);
+            model = registerVarAndPropfuncNames@ControlModel(model);
+            
+            varnames = {};
+            % Control type : string that can take following value
+            % - CC_discharge
+            % - CV_discharge
+            % - CC_charge
+            % - CV_charge
+            varnames{end + 1} = 'ctrlType';            
+
+            model = model.registerVarNames(varnames);
+            
             
             fn = @CcCvControlModel.updateControlEquation;
             model = model.registerPropFunction({'controlEquation', fn, {'E', 'I'}});
@@ -49,12 +65,7 @@ classdef CcCvControlModel < ControlModel
               case 'CV_discharge'
                 ctrleq = I;
               case 'CC_charge'
-                if (value(E) <= Emax)
                     ctrleq = I + Imax;
-                else
-                    ctrleq = (E - Emax);
-                    state.ctrlType = 'CV_charge';
-                end
               case 'CV_charge'
                 ctrleq = (E - Emax);
             end

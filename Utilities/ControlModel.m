@@ -2,23 +2,24 @@ classdef ControlModel < BaseModel
 
     properties
         
-        Imax
         CRate
-        lowerCutoffVoltage
-        upperCutoffVoltage
+        % Control Policy (string). It can take following values
+        % - 'CCCV'
+        % - 'IEswitch'
+        % - 'CV'
         controlPolicy
+        
     end
     
     
     methods
 
         function model = ControlModel(paramobj)
+
             model = model@BaseModel();
             
             fdnames = {'controlPolicy'     , ...
-                       'CRate'             , ...
-                       'lowerCutoffVoltage', ...
-                       'upperCutoffVoltage'};
+                       'CRate'};
             model = dispatchParams(model, paramobj, fdnames);
             
         end
@@ -33,22 +34,13 @@ classdef ControlModel < BaseModel
             varnames{end + 1} = 'E';
             % Terminal Current / [A]
             varnames{end + 1} = 'I';
-            % Control type
-            varnames{end + 1} = 'ctrlType';            
-            % CC_discharge
-            % CC_charge
-            % CV_discharge
-            % CV_charge            
-            
             % Equation that relates E and I (depends on geometry and discretization)
             varnames{end + 1} = 'EIequation';
-
             % control equation
             varnames{end + 1} = 'controlEquation';
             
-            fn = @ControlModel.updateControlEquation;
-            model = model.registerPropFunction({'controlEquation', fn, {'E', 'I'}});
-            
+            model = model.registerVarNames(varnames);
+
         end
 
         function state = prepareStepControl(model, state, state0, dt, drivingForces)
@@ -57,26 +49,7 @@ classdef ControlModel < BaseModel
         end
         
         function state = updateControlEquation(model, state)
-            
-            Imax = model.Imax;
-            Emin = model.lowerCutoffVoltage;
-            Emax = model.upperCutoffVoltage;
-
-            E = state.E;
-            I = state.I;            
-            ctrlVal  = state.ctrlVal;
-            ctrlType = state.ctrlType;
-
-            switch ctrlType
-              case 'constantCurrent'
-                ctrleq = I - ctrlVal;
-              case 'constantVoltage'
-                %% TODO : fix hard-coded scaling
-                ctrleq = (E - ctrlVal)*1e5;
-            end
-            
-            state.controlEquation = ctrleq;
-                        
+        % Implemented by child model
         end
         
 
