@@ -31,12 +31,11 @@ classdef CcCvControlModel < ControlModel
             
             varnames = {};
             % Control type : string that can take following value
-            % - CC_discharge
-            % - CV_discharge
-            % - CC_charge
-            % - CV_charge
+            % - CC_discharge1
+            % - CC_discharge2
+            % - CC_charge1
+            % - CV_charge2
             varnames{end + 1} = 'ctrlType';            
-
             model = model.registerVarNames(varnames);
             
             
@@ -60,14 +59,16 @@ classdef CcCvControlModel < ControlModel
             ctrlType = state.ctrlType;
             
             switch ctrlType
-              case 'CC_discharge'
+              case 'CC_discharge1'
                 ctrleq = I - Imax;
-              case 'CV_discharge'
+              case 'CC_discharge2'
                 ctrleq = I;
-              case 'CC_charge'
+              case 'CC_charge1'
                     ctrleq = I + Imax;
-              case 'CV_charge'
+              case 'CV_charge2'
                 ctrleq = (E - Emax);
+              otherwise
+                error('ctrlType not recognized');
             end
             
             state.controlEquation = ctrleq;
@@ -92,37 +93,37 @@ classdef CcCvControlModel < ControlModel
             
             switch ctrlType
               
-              case 'CC_discharge'
+              case 'CC_discharge1'
                 
-                if (E >= Emin) 
-                    nextCtrlType = 'CC_discharge';
-                else 
-                    nextCtrlType = 'CV_discharge';
+                nextCtrlType = 'CC_discharge1';
+                if (E <= Emin) 
+                    nextCtrlType = 'CC_discharge2';
                 end
             
-              case 'CV_discharge'
-
-                if (abs(dEdt) >= dEdtMin)
-                    nextCtrlType = 'CV_discharge';
-                else
-                    nextCtrlType = 'CC_charge';
+              case 'CC_discharge2'
+                
+                nextCtrlType = 'CC_discharge2';
+                if (abs(dIdt) <= dIdtMin)
+                    nextCtrlType = 'CC_charge1';
                 end
+            
+              case 'CC_charge1'
 
-              case 'CC_charge'
-
-                if (E <= Emax) 
-                    nextCtrlType = 'CC_charge';
-                else
-                    nextCtrlType = 'CV_charge';
+                nextCtrlType = 'CC_charge1';
+                if (E >= Emax) 
+                    nextCtrlType = 'CV_charge2';
                 end 
                 
-              case 'CV_charge'
-                
-                if (abs(dIdt) >= dIdtMin)
-                    nextCtrlType = 'CV_charge';
-                else
-                    nextCtrlType = 'CC_discharge';
+              case 'CV_charge2'
+
+                nextCtrlType = 'CV_charge2';
+                if (abs(dIdt) < dIdtMin)
+                    nextCtrlType = 'CC_discharge1';
                 end                  
+                
+              otherwise
+                
+                error('controlType not recognized');
                 
             end
             
