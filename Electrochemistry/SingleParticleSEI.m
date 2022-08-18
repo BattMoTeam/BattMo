@@ -209,7 +209,9 @@ classdef SingleParticleSEI < BaseModel
             
             switch model.(ctrl).controlPolicy
               case {'CCCV', 'CV'}
+
                 % nothing to do here
+                
               case 'IEswitch'
                 
                 E    = state.(ctrl).E;
@@ -329,13 +331,14 @@ classdef SingleParticleSEI < BaseModel
             %% TODO : Fix scalings
             doscaling = true;
             if doscaling
-                scalings = [2.3588e-15,
+                dt2 = 1/dt;
+                scalings = [dt2*2.3588e-15,
                             3.35103e-05,
-                            5.26809e-11,
-                            100,
+                            dt2*5.26809e-11,
+                            dt2*100,
                             1,
                             5.27945e-11,
-                            1.24205e-15,
+                            dt2*1.24205e-15,
                             0.000129254,
                             17.3974,
                             1.72968e+06,
