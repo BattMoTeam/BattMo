@@ -145,8 +145,8 @@ classdef SingleParticleSEI < BaseModel
 
             F = model.(an).constants.F;
             anArea = model.anodeArea; 
-            
-            R = state.(an).(itf).R;
+           
+            R = state.(an).R;
             I = state.(ctrl).I;
             
             state.(ctrl).EIequation = I -  anArea*F*R;
