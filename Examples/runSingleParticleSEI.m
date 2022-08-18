@@ -24,13 +24,13 @@ ctrl  = 'Control';
 
 paramobj = SingleParticleSEIInputParams(jsonstruct);
 
-controlPolicy = 'CCCV';
+controlPolicy = 'CV';
 switch controlPolicy 
   case 'CCCV'
     paramobj.Control.controlPolicy = 'CCCV';
   case 'CV'
     paramobj_control = CvControlModelInputParams([]);
-    paramobj_control.inputVoltage = 4;
+    paramobj_control.inputVoltage = 4.5;
     paramobj_control.CRate = 0.5; % not used in this case
     paramobj.Control = paramobj_control;
   otherwise
@@ -63,12 +63,12 @@ dograph = false;
 if dograph
     cgf = ComputationalGraphFilter(model);
     % cgf.includeNodeNames = 'Anode.SolidDiffusion.cSurface';
-    % cgf.includeNodeNames = 'Cathode.*\.R$';
-    cgf.includeNodeNames = 'SideReaction.R';
-    [g, edgelabels] = cgf.setupGraph('oneParentOnly', true, 'type', 'ascendant');
+    cgf.includeNodeNames = 'Control.I$';
+    % cgf.includeNodeNames = 'SideReaction.R';
+    % [g, edgelabels] = cgf.setupGraph('oneParentOnly', true, 'type', 'ascendant');
     % [g, edgelabels] = cgf.setupGraph('oneParentOnly', true, 'type', 'descendant');
     % [g, edgelabels] = cgf.setupGraph();
-    % gg = cgf.setupDescendantGraph();
+    [g, edgelabels] = cgf.setupDescendantGraph();
     figure
     h = plot(g, 'edgelabel', edgelabels,'edgefontsize', 15, 'nodefontsize', 12);
     return
@@ -148,7 +148,13 @@ end
 total = 2*hour;
 n     = 100;
 dt    = total/n;
-step  = struct('val', dt*ones(n, 1), 'control', ones(n, 1));
+dt    = dt*ones(n, 1);
+
+if strcmp(model.Control.controlPolicy, 'CV')
+    dt = rampupTimesteps(800*hour, 1*hour, 4);
+end
+
+step  = struct('val', dt, 'control', ones(size(dt, 1), 1));
 
 switch model.Control.controlPolicy
   case 'CCCV'

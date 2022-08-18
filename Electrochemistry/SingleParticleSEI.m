@@ -266,6 +266,9 @@ classdef SingleParticleSEI < BaseModel
             state.Cathode.Interface             = model.Cathode.Interface.updateReactionRate(state.Cathode.Interface);
             state.Cathode                       = model.Cathode.updateRvol(state.Cathode);
             state.Cathode.SolidDiffusion        = model.Cathode.SolidDiffusion.updateMassSource(state.Cathode.SolidDiffusion);
+            
+            state.Cathode.SolidDiffusion.massSource = 0*state.Cathode.SolidDiffusion.massSource;
+            
             state.Cathode.SolidDiffusion        = model.Cathode.SolidDiffusion.assembleSolidDiffusionEquation(state.Cathode.SolidDiffusion);
             state.Cathode.SolidDiffusion        = model.Cathode.SolidDiffusion.updateMassConservation(state.Cathode.SolidDiffusion);
             state                               = model.setupElectrolyteMassCons(state);
