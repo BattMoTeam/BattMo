@@ -35,7 +35,7 @@ classdef Electrode < BaseModel
                 model.CurrentCollector = model.setupCurrentCollector(paramobj.CurrentCollector);
                 model.include_current_collector = true;
             else
-                assert(isempty(paramobj.CurrentCollector), 'current collector data (and probably grid) is given. Not using it, as required by input flag, will create problem')
+                assert(isempty(paramobj.CurrentCollector.G), 'current collector grid is given, but we are not using it, as required by input flag')
                 model.include_current_collector = false;
             end
             

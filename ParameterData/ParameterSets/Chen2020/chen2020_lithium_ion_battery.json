@@ -15,12 +15,12 @@
             "heatCapacity": 4180000.0,
             "thermalConductivity": 6e-05,
             "InterDiffusionCoefficient": 1e-10,
+            "useSimplifiedDiffusionModel" : true,
             "Interface": {
                 "isFile": true,
                 "filename": "ParameterData/ParameterSets/Chen2020/chen2020_negative_electrode_interface.json"
             },
             "SolidDiffusion" : {
-                "useSimplifiedDiffusionModel" : true,
                 "EaD": 0,
                 "D0": 3.3e-14,
                 "rp": 5.86e-06
@@ -33,12 +33,12 @@
             "heatCapacity": 4180000.0,
             "thermalConductivity": 6e-05,
             "InterDiffusionCoefficient": 1e-10,
+            "useSimplifiedDiffusionModel" : true,
             "Interface": {
                 "isFile": true,
                 "filename": "ParameterData/ParameterSets/Chen2020/chen2020_positive_electrode_interface.json"
             },
             "SolidDiffusion": {
-                "useSimplifiedDiffusionModel" : true,
                 "EaD": 0,
                 "D0": 4e-15,
                 "rp": 5.22e-6

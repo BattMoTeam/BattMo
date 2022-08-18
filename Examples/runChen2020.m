@@ -14,17 +14,17 @@ mrstModule add ad-core mrst-gui mpfa
 
 % The input parameters can be given in json format. The json file is read and used to populate the paramobj object.
 jsonstruct = parseBattmoJson('ParameterData/ParameterSets/Chen2020/chen2020_lithium_ion_battery.json');
-jsonstruct.NegativeElectrode.ActiveMaterial.SolidDiffusion.useSimplifiedDiffusionModel=false;
-jsonstruct.NegativeElectrode.ActiveMaterial.SolidDiffusion.np = 20;
-jsonstruct.NegativeElectrode.ActiveMaterial.InterDiffusionCoefficient = 0;
-jsonstruct.PositiveElectrode.ActiveMaterial.SolidDiffusion.useSimplifiedDiffusionModel = false;
-jsonstruct.PositiveElectrode.ActiveMaterial.InterDiffusionCoefficient = 0;
-jsonstruct.PositiveElectrode.ActiveMaterial.SolidDiffusion.np = 20;
-jsonstruct.Electrolyte.Separator.thermalConductivity = 1.0;
-jsonstruct.Electrolyte.Separator.heatCapacity = 4180000;
-jsonstruct.use_thermal = 0
-jsonstruct.use_solid_diffusion = 1
-jsonstruct.include_current_collectors = 0
+% jsonstruct.NegativeElectrode.ActiveMaterial.SolidDiffusion.useSimplifiedDiffusionModel=false;
+% jsonstruct.NegativeElectrode.ActiveMaterial.SolidDiffusion.np = 20;
+% jsonstruct.NegativeElectrode.ActiveMaterial.InterDiffusionCoefficient = 0;
+% jsonstruct.PositiveElectrode.ActiveMaterial.SolidDiffusion.useSimplifiedDiffusionModel = false;
+% jsonstruct.PositiveElectrode.ActiveMaterial.InterDiffusionCoefficient = 0;
+% jsonstruct.PositiveElectrode.ActiveMaterial.SolidDiffusion.np = 20;
+% jsonstruct.Electrolyte.Separator.thermalConductivity = 1.0;
+% jsonstruct.Electrolyte.Separator.heatCapacity = 4180000;
+% jsonstruct.use_thermal = 0
+% jsonstruct.use_solid_diffusion = 1
+% jsonstruct.include_current_collectors = 0
 
 paramobj = BatteryInputParams(jsonstruct);
 
@@ -34,6 +34,8 @@ pe    = 'PositiveElectrode';
 am    = 'ActiveMaterial';
 sd    = 'SolidDiffusion';
 elyte = 'Electrolyte';
+itf   = 'Interface';
+ctrl  = 'Control';
 
 %% We setup the battery geometry ("bare" battery with no current collector).
 gen = BareBatteryGenerator3D();
@@ -72,8 +74,6 @@ step  = struct('val', dt, 'control', ones(size(dt)));
 % We set up a stopping function. Here, the simulation will stop if the output voltage reach a value smaller than 2. This
 % stopping function will not be triggered in this case as we switch to voltage control when E=3.6 (see value of inputE
 % below).
-pe = 'PositiveElectrode';
-cc = 'CurrentCollector';
 
 tup = 0.1; % rampup value for the current function, see rampupSwitchControl
 srcfunc = @(time, I, E) rampupSwitchControl(time, tup, I, E, ...
@@ -92,12 +92,6 @@ T = model.initT;
 initstate.ThermalModel.T = T*ones(nc, 1);
 
 bat = model;
-elyte = 'Electrolyte';
-ne    = 'NegativeElectrode';
-pe    = 'PositiveElectrode';
-itf   = 'Interface';
-sd    = 'SolidDiffusion';
-ctrl  = 'Control';
 
 initstate = model.updateTemperature(initstate);
 

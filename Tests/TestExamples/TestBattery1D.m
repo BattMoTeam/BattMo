@@ -15,9 +15,24 @@ classdef TestBattery1D < matlab.unittest.TestCase
         end
         
         function states = test1d(test, jsonfile, controlPolicy, varargin)
+            
+        %% Setup the properties of Li-ion battery materials and cell design
+        % The properties and parameters of the battery cell, including the
+        % architecture and materials, are set using an instance of
+        % :class:`BatteryInputParams <Battery.BatteryInputParams>`. This class is
+        % used to initialize the simulation and it propagates all the parameters
+        % throughout the submodels. The input parameters can be set manually or
+        % provided in json format. All the parameters for the model are stored in
+        % the paramobj object.
+            jsonstruct = parseBattmoJson('ParameterData/BatteryCellParameters/LithiumIonBatteryCell/lithium_ion_battery_nmc_graphite.json');
 
-            % Setup properties
-            jsonstruct = parseBattmoJson(jsonfile);
+            switchToFullDiffusionModel = false;
+            if switchToFullDiffusionModel
+                % model in json file is the simplified diffusion model
+                jsonstruct.NegativeElectrode.ActiveMaterial.useSimplifiedDiffusionModel = false;
+                jsonstruct.PositiveElectrode.ActiveMaterial.useSimplifiedDiffusionModel = false;
+            end
+
             paramobj = BatteryInputParams(jsonstruct);
 
             use_cccv = strcmpi(controlPolicy, 'CCCV');
@@ -32,19 +47,47 @@ classdef TestBattery1D < matlab.unittest.TestCase
                 paramobj.Control = cccvparamobj;
             end
 
-            % Setup geometry and mesh
+            % paramobj.include_current_collectors = true;
+            % paramobj.use_solid_diffusion = false;
+            % paramobj.use_thermal = true;
+
+            % We define some shorthand names for simplicity.
+            ne      = 'NegativeElectrode';
+            pe      = 'PositiveElectrode';
+            elyte   = 'Electrolyte';
+            thermal = 'ThermalModel';
+            am      = 'ActiveMaterial';
+            itf     = 'Interface';
+            sd      = 'SolidDiffusion';
+            ctrl    = 'Control';
+
+            %% Setup the geometry and computational mesh
+            % Here, we setup the 1D computational mesh that will be used for the
+            % simulation. The required discretization parameters are already included
+            % in the class BatteryGenerator1D. 
             gen = BatteryGenerator1D();
+
+            % Now, we update the paramobj with the properties of the mesh. 
             paramobj = gen.updateBatteryInputParams(paramobj);
 
-            % Initialize the model
+            %%  Initialize the battery model. 
+            % The battery model is initialized by sending paramobj to the Battery class
+            % constructor. see :class:`Battery <Battery.Battery>`.
             model = Battery(paramobj);
-            model.AutoDiffBackend = AutoDiffBackend();
+            model.AutoDiffBackend= AutoDiffBackend();
 
-            % Choose C-rate
+            %% Compute the nominal cell capacity and choose a C-Rate
+            % The nominal capacity of the cell is calculated from the active materials.
+            % This value is then combined with the user-defined C-Rate to set the cell
+            % operational current. 
+
             CRate = model.Control.CRate;
 
-            % Setup time step schedule
-            switch model.Control.controlPolicy
+            %% Setup the time step schedule 
+            % Smaller time steps are used to ramp up the current from zero to its
+            % operational value. Larger time steps are then used for the normal
+            % operation.
+            switch model.(ctrl).controlPolicy
               case 'CCCV'
                 total = 3.5*hour/CRate;
               case 'IEswitch'
@@ -53,16 +96,21 @@ classdef TestBattery1D < matlab.unittest.TestCase
                 error('control policy not recognized');
             end
 
-            n    = 100;
-            dt   = total/n;
-            step = struct('val', dt*ones(n, 1), 'control', ones(n, 1));
-            
+            n     = 100;
+            dt    = total/n;
+            step  = struct('val', dt*ones(n, 1), 'control', ones(n, 1));
+
+            % we setup the control by assigning a source and stop function.
+            % control = struct('CCCV', true); 
+            %  !!! Change this to an entry in the JSON with better variable names !!!
+
             switch model.Control.controlPolicy
               case 'IEswitch'
-                tup = 0.1;
+                tup = 0.1; % rampup value for the current function, see rampupSwitchControl
                 srcfunc = @(time, I, E) rampupSwitchControl(time, tup, I, E, ...
                                                             model.Control.Imax, ...
                                                             model.Control.lowerCutoffVoltage);
+                % we setup the control by assigning a source and stop function.
                 control = struct('src', srcfunc, 'IEswitch', true);
               case 'CCCV'
                 control = struct('CCCV', true);
@@ -70,20 +118,38 @@ classdef TestBattery1D < matlab.unittest.TestCase
                 error('control policy not recognized');
             end
 
+            % This control is used to set up the schedule
             schedule = struct('control', control, 'step', step); 
 
-            % Setup initial state
-            initstate = model.setupInitialState();
+            %% Setup the initial state of the model
+            % The initial state of the model is dispatched using the
+            % model.setupInitialState()method. 
+            initstate = model.setupInitialState(); 
 
-            % Setup solver properties
+            %% Setup the properties of the nonlinear solver 
             nls = NonLinearSolver(); 
-            nls.errorOnFailure = true;
-            nls.timeStepSelector = StateChangeTimeStepSelector('TargetProps', {{'Control','E'}}, 'targetChangeAbs', 0.03);
+            % Change default maximum iteration number in nonlinear solver
+            nls.maxIterations = 10; 
+            % Change default behavior of nonlinear solver, in case of error
+            NLS.errorOnFailure = false; 
+            nls.timeStepSelector=StateChangeTimeStepSelector('TargetProps', {{'Control','E'}}, 'targetChangeAbs', 0.03);
+            % Change default tolerance for nonlinear solver
             model.nonlinearTolerance = 1e-3*model.Control.Imax;
-            model.verbose = false;
+            % Set verbosity
+            model.verbose = true;
 
-            [~, states] = simulateScheduleAD(initstate, model, schedule, 'OutputMinisteps', false, 'NonLinearSolver', nls); 
+            %% Run the simulation
+            [wellSols, states, report] = simulateScheduleAD(initstate, model, schedule, 'OutputMinisteps', true, 'NonLinearSolver', nls); 
 
+            %% Process output and recover the output voltage and current from the output states.
+            ind = cellfun(@(x) not(isempty(x)), states); 
+            states = states(ind);
+            Enew = cellfun(@(x) x.Control.E, states); 
+            Inew = cellfun(@(x) x.Control.I, states);
+            Tmax = cellfun(@(x) max(x.ThermalModel.T), states);
+            % [SOCN, SOCP] =  cellfun(@(x) model.calculateSOC(x), states);
+            time = cellfun(@(x) x.time, states); 
+            
         end
         
     end
