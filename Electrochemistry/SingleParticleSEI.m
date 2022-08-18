@@ -106,7 +106,7 @@ classdef SingleParticleSEI < BaseModel
               case "IEswitch"
                 control = IEswitchControlModel(paramobj); 
               case "CCCV"
-                control = CcCvControlModel(paramobj);
+                control = seiCcCvControlModel(paramobj);
               case "CV"
                 control = CvControlModel(paramobj);
               otherwise

@@ -135,8 +135,8 @@ initState.(ct).(itf).externalPotentialDrop = 0;
 
 switch model.(ctrl).controlPolicy
   case 'CCCV'
-    initState.(ctrl).ctrlType = 'CV_charge2';
-    initState.(ctrl).nextCtrlType = 'CV_charge2';
+    initState.(ctrl).ctrlType = 'CV_charge3';
+    initState.(ctrl).nextCtrlType = 'CV_charge3';
   case 'CV'
     % ok. nothing to do
   otherwise
@@ -145,8 +145,8 @@ end
 
 %% setup schedule
 
-total = 2*hour;
-n     = 100;
+total = 6*hour;
+n     = 300;
 dt    = total/n;
 dt    = dt*ones(n, 1);
 
@@ -175,8 +175,9 @@ model.verbose = true;
 
 % Setup nonlinear solver 
 nls = NonLinearSolver(); 
+nls.maxTimestepCuts = 10;
 % Change default maximum iteration number in nonlinear solver
-nls.maxIterations = 40; 
+nls.maxIterations = 100; 
 % Change default behavior of nonlinear solver, in case of error
 nls.errorOnFailure = false; 
 
