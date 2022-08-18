@@ -24,7 +24,7 @@ ctrl  = 'Control';
 
 paramobj = SingleParticleSEIInputParams(jsonstruct);
 
-controlPolicy = 'CV';
+controlPolicy = 'CCCV';
 switch controlPolicy 
   case 'CCCV'
     paramobj.Control.controlPolicy = 'CCCV';
@@ -135,8 +135,8 @@ initState.(ct).(itf).externalPotentialDrop = 0;
 
 switch model.(ctrl).controlPolicy
   case 'CCCV'
-    initState.(ctrl).ctrlType = 'CV_charge';
-    initState.(ctrl).nextCtrlType = 'CV_charge';
+    initState.(ctrl).ctrlType = 'CV_charge2';
+    initState.(ctrl).nextCtrlType = 'CV_charge2';
   case 'CV'
     % ok. nothing to do
   otherwise
@@ -171,7 +171,7 @@ schedule = struct('control', control, 'step', step);
 
 %% Run simulation
 
-model.verbose = false;
+model.verbose = true;
 
 % Setup nonlinear solver 
 nls = NonLinearSolver(); 
