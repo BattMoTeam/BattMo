@@ -19,7 +19,7 @@ classdef seiCcCvControlModel < CcCvControlModel
               case 'CV_discharge2'
                 ctrleq = (E - Emin);
               case 'CC_charge1'
-                    ctrleq = I + 1e-2*Imax;
+                    ctrleq = I + 1e-1*Imax;
               case 'CC_charge2'
                     ctrleq = I + Imax;
               case 'CV_charge3'
@@ -53,7 +53,7 @@ classdef seiCcCvControlModel < CcCvControlModel
               case 'CC_discharge1'
                 
                 nextCtrlType = 'CC_discharge1';
-                if (E <= 1.3*Emin) 
+                if (E <= Emin + 0.1*(Emax - Emin)) 
                     nextCtrlType = 'CV_discharge2';
                 end
             
@@ -67,7 +67,7 @@ classdef seiCcCvControlModel < CcCvControlModel
               case 'CC_charge1'
 
                 nextCtrlType = 'CC_charge1';
-                if (E >= 1.3*Emin) 
+                if (E >= Emin + 0.4*(Emax - Emin)) 
                     nextCtrlType = 'CC_charge2';
                 end 
             

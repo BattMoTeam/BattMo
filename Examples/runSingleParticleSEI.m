@@ -174,7 +174,7 @@ schedule = struct('control', control, 'step', step);
 model.verbose = true;
 
 % Setup nonlinear solver 
-nls = NonLinearSolver(); 
+nls = seiNonLinearSolver(); 
 nls.maxTimestepCuts = 10;
 % Change default maximum iteration number in nonlinear solver
 nls.maxIterations = 100; 
