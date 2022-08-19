@@ -116,7 +116,7 @@ initState.(an).(sd).c           = cAnode*ones(NanodeSd, 1);
 initState.(an).(sd).cSurface    = cAnode;
 initState.(an).(sei).c          = cECexternal*ones(NanodeSEI, 1);
 initState.(an).(sei).cInterface = cECexternal;
-initState.(an).(sei).delta      = 0;
+initState.(an).(sei).delta      = 5*nano*meter;
 initState.(an).R                = 0;
 
 initState.(ct).(sd).c           = cCathode*ones(NcathodeSd, 1);
@@ -145,8 +145,8 @@ end
 
 %% setup schedule
 
-total = 6*hour;
-n     = 300;
+total = 800*hour;
+n     = 50*800;
 dt    = total/n;
 dt    = dt*ones(n, 1);
 
@@ -171,7 +171,7 @@ schedule = struct('control', control, 'step', step);
 
 %% Run simulation
 
-model.verbose = true;
+model.verbose = false;
 
 % Setup nonlinear solver 
 nls = seiNonLinearSolver(); 
@@ -181,10 +181,10 @@ nls.maxIterations = 100;
 % Change default behavior of nonlinear solver, in case of error
 nls.errorOnFailure = false; 
 
-dopack = false;
+dopack = true;
 if dopack
     dataFolder = 'BattMo';
-    problem = packSimulationProblem(initState, model, schedule, dataFolder, 'Name', 'temp');
+    problem = packSimulationProblem(initState, model, schedule, dataFolder, 'Name', 'safari2', 'NonlinearSolver', nls);
     problem.SimulatorSetup.OutputMinisteps = true; 
     simulatePackedProblem(problem);
     [globvars, states, report] = getPackedSimulatorOutput(problem);
