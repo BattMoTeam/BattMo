@@ -7,7 +7,7 @@
                  "filename" : "ParameterData/ParameterSets/Safari2009/cathode.json"},
     "Control" : {"controlPolicy"     : "CCCV",
                  "CRate"             : 0.5,
-                 "lowerCutoffVoltage": 2,
+                 "lowerCutoffVoltage": 2.7,
                  "upperCutoffVoltage": 4.2,
                  "dIdtLimit"         : 0.0001,
                  "dEdtLimit"         : 0.0001}
