@@ -135,8 +135,8 @@ initState.(ct).(itf).externalPotentialDrop = 0;
 
 switch model.(ctrl).controlPolicy
   case 'CCCV'
-    initState.(ctrl).ctrlType = 'CV_charge3';
-    initState.(ctrl).nextCtrlType = 'CV_charge3';
+    initState.(ctrl).ctrlType = 'CV_charge2';
+    initState.(ctrl).nextCtrlType = 'CV_charge2';
   case 'CV'
     % ok. nothing to do
   otherwise
@@ -148,7 +148,10 @@ end
 total = 800*hour;
 n     = 50*800;
 dt    = total/n;
+
+n = 400;
 dt    = dt*ones(n, 1);
+
 
 if strcmp(model.Control.controlPolicy, 'CV')
     dt = rampupTimesteps(800*hour, 1*hour, 4);
@@ -171,20 +174,20 @@ schedule = struct('control', control, 'step', step);
 
 %% Run simulation
 
-model.verbose = false;
+model.verbose = true;
 
 % Setup nonlinear solver 
-nls = seiNonLinearSolver(); 
+nls = NonLinearSolver(); 
 nls.maxTimestepCuts = 10;
 % Change default maximum iteration number in nonlinear solver
 nls.maxIterations = 100; 
 % Change default behavior of nonlinear solver, in case of error
 nls.errorOnFailure = false; 
 
-dopack = true;
+dopack = false;
 if dopack
     dataFolder = 'BattMo';
-    problem = packSimulationProblem(initState, model, schedule, dataFolder, 'Name', 'safari2', 'NonlinearSolver', nls);
+    problem = packSimulationProblem(initState, model, schedule, dataFolder, 'Name', 'safari3', 'NonlinearSolver', nls);
     problem.SimulatorSetup.OutputMinisteps = true; 
     simulatePackedProblem(problem);
     [globvars, states, report] = getPackedSimulatorOutput(problem);
