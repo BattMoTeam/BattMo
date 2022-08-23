@@ -416,9 +416,64 @@ classdef SingleParticleSEI < BaseModel
         end
 
 
-        function model = validateModel(model, varargin)
+        function [state, report] = updateState(model, state, problem, dx, forces)
+        
+            [state, report] = updateState@BaseModel(model, state, problem, dx, forces);
+            
+            ctrl = 'Control';            
+            
+            Emin = model.(ctrl).lowerCutoffVoltage;
+            Imax = model.(ctrl).Imax;
+            
+            ctrlType = state.(ctrl).ctrlType;
+            E = state.(ctrl).E;
+            I = state.(ctrl).I;
+            
+            if strcmp(ctrlType, 'CC_discharge1')
+                if E <= Emin
+                    state.(ctrl).ctrlType = 'CV_discharge2';
+                    fprintf('switch control from CC to CV\n');
+                end
+            end
+            
+            if strcmp(ctrlType, 'CV_discharge2')
+                if I > Imax
+                    state.(ctrl).ctrlType = 'CC_discharge1';
+                    fprintf('switch control from CV to CC\n');
+                end
+            end
             
         end
+        
+        
+        function model = validateModel(model, varargin)
+        % we do nothing here
+        end
+        
+        function [convergence, values, names] = checkConvergence(model, problem, varargin)
+            
+            [convergence, values, names] = checkConvergence@BaseModel(model, problem, varargin{:});
+            if all(convergence)
+
+                ctrl = 'Control';            
+                
+                Emin = model.(ctrl).lowerCutoffVoltage;
+                Imax = model.(ctrl).Imax;
+                
+                state = problem.state;
+
+                ctrlType = state.(ctrl).ctrlType;
+                E = value(state.(ctrl).E);
+                I = value(state.(ctrl).I);
+                
+                if (strcmp(ctrlType, 'CC_discharge1') & (E <= Emin)) || (strcmp(ctrlType, 'CV_discharge2') & (I > Imax))
+                    convergence(:) = Inf;
+                end
+            
+            end
+            
+        end
+        
         
         function cleanState = addStaticVariables(model, cleanState, state, state0)
 
@@ -439,9 +494,11 @@ classdef SingleParticleSEI < BaseModel
             % external EC concentration is set to constant
             cleanState.(an).(sei).cExternal = state.(an).(sei).cExternal;
             % keep control type
-            if ismember(model.(ctrl).controlPolicy, {'CCCV', 'IEswitch'})
-                cleanState.(ctrl).ctrlType = state.(ctrl).ctrlType;
-            end
+            if strcmp(model.(ctrl).controlPolicy, 'CCCV')
+                cleanState.(ctrl).time = state.time;
+            end            
+            cleanState.(ctrl) = model.(ctrl).addStaticVariables(cleanState.(ctrl), state.(ctrl));
+                
         end
         
         
