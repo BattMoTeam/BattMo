@@ -58,7 +58,11 @@ classdef ControlModel < BaseModel
         % default is nothing.
                 
         end
-            
+
+        function cleanState = addStaticVariables(model, cleanState, state)
+        %  nothing is done per default
+        end
+        
         
     end
     
