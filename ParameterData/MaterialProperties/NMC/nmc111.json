@@ -9,9 +9,9 @@
     "theta100": 0.4955,
     "theta0": 0.99174,
     "name": "NMC111",
-    "updateOCPFunc" : {"functionname" : "updateOCPFunc_nmc111",
-                       "filepath" : "Materials/Liquid/CarbonateBased/updateDiffusionCoefficientFunc_default.m",
-                       "argumentlist" : ["concentration", "temperature", "maximum concentration"],
-                       "name" : "NMC111 OCP"
-                      }
+  "OCP" : {"functionname" : "updateOCPFunc_nmc111",
+           "filepath" : "Materials/Liquid/CarbonateBased/updateDiffusionCoefficientFunc_default.m",
+           "argumentlist" : ["concentration", "temperature", "maximum concentration"],
+           "name" : "NMC111 OCP"
+          }
 }

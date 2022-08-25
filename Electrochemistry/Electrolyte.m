@@ -43,8 +43,8 @@ classdef Electrolyte < ElectroChemicalComponent
 
             model = dispatchParams(model, paramobj, fdnames);
 
-            model.updateConductivityFunc = str2func(paramobj.updateConductivityFunc.functionname);
-            model.updateDiffusionCoefficientFunc = str2func(paramobj.updateDiffusionCoefficientFunc.functionname);            
+            model.updateConductivityFunc = str2func(paramobj.Conductivity.functionname);
+            model.updateDiffusionCoefficientFunc = str2func(paramobj.DiffusionCoefficient.functionname);
 
             model.ncomp = numel(model.compnames);
             [isok, indchargecarrier] = ismember(model.chargeCarrierName, model.compnames);

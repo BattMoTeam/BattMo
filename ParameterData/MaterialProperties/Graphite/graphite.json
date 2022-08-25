@@ -9,9 +9,9 @@
     "theta100": 0.88551,
     "theta0": 0.1429,
     "name": "Graphite",
-    "updateOCPFunc" : {"functionname" : "updateOCPFunc_graphite",
-                       "filepath" : "Materials/Solid/ReactiveNonMetals/updateOCPFunc_graphite.m",
-                       "argumentlist" : ["concentration", "temperature", "maximum concentration"],
-                       "name" : "graphite OCP"
-                      }
+    "OCP" : {"functionname" : "updateOCPFunc_graphite",
+             "filepath" : "Materials/Solid/ReactiveNonMetals/updateOCPFunc_graphite.m",
+             "argumentlist" : ["concentration", "temperature", "maximum concentration"],
+             "name" : "graphite OCP"
+            }
 }

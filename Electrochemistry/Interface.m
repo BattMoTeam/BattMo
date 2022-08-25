@@ -52,7 +52,7 @@ classdef Interface < BaseModel
 
             model = dispatchParams(model, paramobj, fdnames);
 
-            model.updateOCPFunc = str2func(paramobj.updateOCPFunc.functionname);
+            model.updateOCPFunc = str2func(paramobj.OCP.functionname);
 
         end
 

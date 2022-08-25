@@ -19,7 +19,10 @@ classdef InterfaceInputParams < InputParams
         density                 % Density of the active material [kg m^-3]
         n                       % number of electron transfer
 
-        updateOCPFunc % Function to update OCP value (matlab function handler)
+        OCP % Function to update OCP value given as a struct with fields
+            % OCP.type = "function";
+            % OCP.functonname :  matlab function name (should be available in path)
+            % OCP.filepath : file path to matlab function
         
     end
     
