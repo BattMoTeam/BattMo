@@ -140,26 +140,38 @@ classdef Interface < BaseModel
 
         function state = updateReactionRateCoefficient(model, state)
 
-            Tref = 298.15;  % [K]
+            if model.useJ0Func
 
-            cmax = model.cmax;
-            k0   = model.k0;
-            Eak  = model.Eak;
-            n    = model.n;
-            R    = model.constants.R;
-            F    = model.constants.F;
+                computeJ0 = model.computeJ0Func
 
-            T      = state.T;
-            cElyte = state.cElectrolyte;
-            c      = state.cElectrodeSurface;
+                c = state.cElectrode
+
+                j0 = computeJ0(model, state.c);
+
+            else
+                
+                Tref = 298.15;  % [K]
+
+                cmax = model.cmax;
+                k0   = model.k0;
+                Eak  = model.Eak;
+                n    = model.n;
+                R    = model.constants.R;
+                F    = model.constants.F;
+
+                T      = state.T;
+                cElyte = state.cElectrolyte;
+                c      = state.cElectrodeSurface;
+                
+                % Calculate reaction rate constant
+                k = k0.*exp(-Eak./R.*(1./T - 1/Tref));
+
+                % We use regularizedSqrt to regularize the square root function and avoid the blow-up of derivative at zero.
+                th = 1e-3*cmax;
+                j0 = k.*regularizedSqrt(cElyte.*(cmax - c).*c, th)*n*F;
+                
+            end
             
-            % Calculate reaction rate constant
-            k = k0.*exp(-Eak./R.*(1./T - 1/Tref));
-
-            % We use regularizedSqrt to regularize the square root function and avoid the blow-up of derivative at zero.
-            th = 1e-3*cmax;
-            j0 = k.*regularizedSqrt(cElyte.*(cmax - c).*c, th)*n*F;
-
             state.j0 = j0;
 
         end
