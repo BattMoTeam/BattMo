@@ -24,6 +24,9 @@ classdef Interface < BaseModel
 
         updateOCPFunc % Function handler to update OCP
         
+        useJOFunc
+        updateJ0Func % can be used
+        
     end
 
     methods
@@ -41,7 +44,7 @@ classdef Interface < BaseModel
                        'rho'                    , ...
                        'theta0'                 , ...
                        'theta100'               , ...
-                       'cmax'                     , ...
+                       'cmax'                   , ...
                        'k0'                     , ...
                        'Eak'                    , ...
                        'rp'                     , ...
@@ -53,6 +56,13 @@ classdef Interface < BaseModel
             model = dispatchParams(model, paramobj, fdnames);
 
             model.updateOCPFunc = str2func(paramobj.OCP.functionname);
+
+            if ~isempty(paramobj.j0)
+                model.useJ0Func = true;
+                model.updateOCPFunc = str2func(paramobj.OCP.functionname);
+            else
+                model.useJ0Func = false;
+            end
 
         end
 
