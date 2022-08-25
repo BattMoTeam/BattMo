@@ -1,17 +1,17 @@
-function conductivity = updateElectrolyteConductivityFunc_default(c, T)
+function D = computeDiffusionCoefficient_default(c, T)
     
-    conductivityFactor = 1e-4;
+    % Calculate diffusion coefficients constant for the diffusion coefficient calculation
+    cnst = [ -4.43, -54; 
+             -0.22, 0.0 ];
+
+    Tgi = [ 229; 5.0 ];
     
-    cnst = [-10.5   , 0.074    , -6.96e-5; ...
-            0.668e-3, -1.78e-5 , 2.80e-8; ...
-            0.494e-6, -8.86e-10, 0];            
-            
-    
-    % Ionic conductivity, [S m^-1]
-    conductivity = conductivityFactor.* c .*( polyval(cnst(end:-1:1,1),c) + polyval(cnst(end:-1:1,2),c) .* T + ...
-                                              polyval(cnst(end:-1:1,3),c) .* T.^2).^2;
+    % Diffusion coefficient, [m^2 s^-1]
+    D = 1e-4 .* 10 .^ ( ( cnst(1,1) + cnst(1,2) ./ ( T - Tgi(1) - Tgi(2) .* c .* 1e-3) + cnst(2,1) .* ...
+                          c .* 1e-3) );
     
 end
+
 
 
 %{

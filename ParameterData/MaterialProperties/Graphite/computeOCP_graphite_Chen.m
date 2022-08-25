@@ -1,4 +1,4 @@
-function [OCP, dUdT] = updateOCPFunc_graphite_Chen(c, T, cmax)
+function [OCP, dUdT] = computeOCP_graphite_Chen(c, T, cmax)
     % LG M50 graphite open circuit potential as a function of stochiometry, fit taken
     % from [1].
 

@@ -1,4 +1,4 @@
-function [OCP, dUdT] = updateOCPFunc_nmc111(c, T, cmax)
+function [OCP, dUdT] = computeOCP_nmc111(c, T, cmax)
     
     Tref = 298.15;  % [K]
 

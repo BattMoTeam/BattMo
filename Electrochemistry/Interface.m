@@ -22,10 +22,10 @@ classdef Interface < BaseModel
         k0                     % Reference rate constant       [m^2.5 mol^-0.5 s^-1]
         Eak                    % Reaction activation energy    [J mol^-1]
 
-        updateOCPFunc % Function handler to update OCP
+        computeOCPFunc % Function handler to compute OCP
         
         useJOFunc
-        updateJ0Func % can be used
+        computeJ0Func % can be used
         
     end
 
@@ -55,11 +55,11 @@ classdef Interface < BaseModel
 
             model = dispatchParams(model, paramobj, fdnames);
 
-            model.updateOCPFunc = str2func(paramobj.OCP.functionname);
+            model.computeOCPFunc = str2func(paramobj.OCP.functionname);
 
             if ~isempty(paramobj.j0)
                 model.useJ0Func = true;
-                model.updateOCPFunc = str2func(paramobj.OCP.functionname);
+                model.computeOCPFunc = str2func(paramobj.OCP.functionname);
             else
                 model.useJ0Func = false;
             end
@@ -132,7 +132,7 @@ classdef Interface < BaseModel
 
             cmax = model.cmax;
 
-            func = model.updateOCPFunc;
+            func = model.computeOCPFunc;
 
             [state.OCP, state.dUdT] = func(c, T, cmax);
             

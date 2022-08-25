@@ -1,15 +1,7 @@
-function D = updateDiffusionCoefficientFunc_default(c, T)
+function D = computeDiffusionCoefficient_Nyman2008(c, T)
     
-    % Calculate diffusion coefficients constant for the diffusion coefficient calculation
-    cnst = [ -4.43, -54; 
-             -0.22, 0.0 ];
+    D = 8.794e-11*(c/1000).^2 - 3.972e-10*(c/1000) + 4.862e-10;
 
-    Tgi = [ 229; 5.0 ];
-    
-    % Diffusion coefficient, [m^2 s^-1]
-    D = 1e-4 .* 10 .^ ( ( cnst(1,1) + cnst(1,2) ./ ( T - Tgi(1) - Tgi(2) .* c .* 1e-3) + cnst(2,1) .* ...
-                          c .* 1e-3) );
-    
 end
 
 

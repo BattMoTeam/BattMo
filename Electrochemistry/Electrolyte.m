@@ -21,8 +21,8 @@ classdef Electrolyte < ElectroChemicalComponent
         EffectiveThermalConductivity
         EffectiveHeatCapacity
 
-        updateConductivityFunc
-        updateDiffusionCoefficientFunc
+        computeConductivityFunc
+        computeDiffusionCoefficientFunc
         
     end
 
@@ -43,8 +43,8 @@ classdef Electrolyte < ElectroChemicalComponent
 
             model = dispatchParams(model, paramobj, fdnames);
 
-            model.updateConductivityFunc = str2func(paramobj.Conductivity.functionname);
-            model.updateDiffusionCoefficientFunc = str2func(paramobj.DiffusionCoefficient.functionname);
+            model.computeConductivityFunc = str2func(paramobj.Conductivity.functionname);
+            model.computeDiffusionCoefficientFunc = str2func(paramobj.DiffusionCoefficient.functionname);
 
             model.ncomp = numel(model.compnames);
             [isok, indchargecarrier] = ismember(model.chargeCarrierName, model.compnames);
@@ -126,9 +126,9 @@ classdef Electrolyte < ElectroChemicalComponent
             cLi = state.cs{1};
             T = state.T;
             
-            func = model.updateConductivityFunc;
+            computeConductivity= model.computeConductivityFunc;
             
-            state.conductivity = func(cLi, T);
+            state.conductivity = computeConductivity(cLi, T);
         end
 
         function state = updateChemicalCurrent(model, state)
@@ -159,7 +159,7 @@ classdef Electrolyte < ElectroChemicalComponent
             c = state.c;
             T = state.T;
 
-            func = model.updateDiffusionCoefficientFunc;
+            func = model.computeDiffusionCoefficientFunc;
             
             D = func(c, T);
             

@@ -86,7 +86,7 @@ function [cap, cap_neg, cap_pos, specificEnergy] = computeCellCapacity(model, va
         volume_electrode = sum(model.(elde).(am).G.cells.volumes);
         volume = volume_fraction*volume_electrode;
         
-        func = @(theta) model.(elde).(am).(itf).updateOCPFunc(theta, 298, 1);
+        func = @(theta) model.(elde).(am).(itf).computeOCPFunc(theta, 298, 1);
 
         thetaMax = min(thetaMaxPos, thetaMinPos + r*(thetaMaxPos - thetaMinPos));
 
@@ -105,7 +105,7 @@ function [cap, cap_neg, cap_pos, specificEnergy] = computeCellCapacity(model, va
         volume_electrode = sum(model.(elde).(am).G.cells.volumes);
         volume = volume_fraction*volume_electrode;
         
-        func = @(theta) model.(elde).(am).(itf).updateOCPFunc(theta, 298, 1);
+        func = @(theta) model.(elde).(am).(itf).computeOCPFunc(theta, 298, 1);
 
         thetaMin = max(thetaMinNeg, thetaMaxNeg - 1/r*(thetaMaxNeg - thetaMinNeg));
 
