@@ -1,24 +1,26 @@
 {
-    "heatCapacity": 4180000.0,
-    "thermalConductivity": 6e-05,
-    "negativeDomainBruggemanCoefficient" : 1.5,
-    "positiveDomainBruggemanCoefficient" : 1.5,
-    "updateConductivityFunc" : {"functionname" : "updateElectrolyteConductivityFunc_Nyman2008",
-                                "argumentlist" : ["concentration", "temperature"],
-                                "name" : "conductivity"
-                               },
-    "updateDiffusionCoefficientFunc" : {"functionname" : "updateDiffusionCoefficientFunc_Nyman2008",
-                                        "argumentlist" : ["concentration", "temperature"],
-                                        "name" : "diffusion coefficient"
-                                       },
-    "compnames": [
-        "Li",
-        "PF6"
-    ],
-    "chargeCarrierName": "Li",
-    "name": "Chen Electrolyte model",
-    "sp": { "z": [1, -1],
-            "t": [0.2594, 0.601]},
-    "Separator": { "filename": "ParameterData/ParameterSets/Chen2020/chen2020_separator.json",
-                   "isFile": true }
+  "heatCapacity": 4180000.0,
+  "thermalConductivity": 6e-05,
+  "negativeDomainBruggemanCoefficient" : 1.5,
+  "positiveDomainBruggemanCoefficient" : 1.5,
+  "Conductivity" : {"type" : "function",
+                    "functionname" : "updateElectrolyteConductivityFunc_Nyman2008",
+                    "argumentlist" : ["concentration", "temperature"],
+                    "name" : "conductivity"
+                   },
+  "DiffusionCoefficient" : {"type": "function",
+                            "functionname" : "updateDiffusionCoefficientFunc_Nyman2008",
+                            "argumentlist" : ["concentration", "temperature"],
+                            "name" : "diffusion coefficient"
+                           },
+  "compnames": [
+    "Li",
+    "PF6"
+  ],
+  "chargeCarrierName": "Li",
+  "name": "Chen Electrolyte model",
+  "sp": { "z": [1, -1],
+          "t": [0.2594, 0.601]},
+  "Separator": { "filename": "ParameterData/ParameterSets/Chen2020/chen2020_separator.json",
+                 "isFile": true }
 }

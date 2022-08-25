@@ -1,16 +1,17 @@
 {
-    "cmax": 30555,
-    "volumeFraction": 0.8,
-    "volumetricSurfaceArea": 723600,
-    "density": 2240,
-    "n" : 1,
-    "Eak": 5000,
-    "k0": 5.031e-11,
-    "theta100": 0.88551,
-    "theta0": 0.1429,
-    "name": "Graphite",
-    "OCP" : {"functionname" : "updateOCPFunc_graphite",
-             "argumentlist" : ["concentration", "temperature", "maximum concentration"],
-             "name" : "graphite OCP"
-            }
+  "cmax": 30555,
+  "volumeFraction": 0.8,
+  "volumetricSurfaceArea": 723600,
+  "density": 2240,
+  "n" : 1,
+  "Eak": 5000,
+  "k0": 5.031e-11,
+  "theta100": 0.88551,
+  "theta0": 0.1429,
+  "name": "Graphite",
+  "OCP" : {"type": "function",
+           "functionname" : "updateOCPFunc_graphite",
+           "argumentlist" : ["concentration", "temperature", "maximum concentration"],
+           "name" : "graphite OCP"
+          }
 }
