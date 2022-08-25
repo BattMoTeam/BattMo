@@ -10,7 +10,6 @@
     "theta0": 0.15,
     "name": "graphite(Chen)",
     "updateOCPFunc" : {"functionname" : "updateOCPFunc_graphite_Chen",
-                       "filepath" : "Materials/Solid/ReactiveNonMetals/updateOCPFunc_graphite_Chen.m",
                        "argumentlist" : ["concentration", "temperature", "maximum concentration"],
                        "name" : "graphite OCP"
                       }

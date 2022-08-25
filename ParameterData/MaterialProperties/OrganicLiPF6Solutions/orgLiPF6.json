@@ -6,12 +6,10 @@
   "density": 1200,
   "Conductivity" : {"type" : "function",
                     "functionname" : "updateElectrolyteConductivityFunc_default",
-                    "filepath" : "Materials/Liquid/CarbonateBased/updateElectrolyteConductivityFunc_default.m",
                     "argumentlist" : ["concentration", "temperature"]
                    },
   "DiffusionCoefficient" : {"type": "function",
                             "functionname" : "updateDiffusionCoefficientFunc_default",
-                            "filepath" : "Materials/Liquid/CarbonateBased/updateDiffusionCoefficientFunc_default.m",
                             "argumentlist" : ["concentration", "temperature"]
                            },
   "compnames": [

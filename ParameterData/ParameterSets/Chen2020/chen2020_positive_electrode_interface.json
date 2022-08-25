@@ -10,7 +10,6 @@
     "theta0": 0.99,
     "name": "nmc111(Chen)",
     "updateOCPFunc" : {"functionname" : "updateOCPFunc_nmc111_Chen",
-                       "filepath" : "Materials/Solid/MetalOxides/updateOCPFunc_nmc111_Chen.m",
                        "argumentlist" : ["concentration", "temperature", "maximum concentration"],
                        "name" : "nmc111 OCP"
                       }

@@ -4,12 +4,10 @@
     "negativeDomainBruggemanCoefficient" : 1.5,
     "positiveDomainBruggemanCoefficient" : 1.5,
     "updateConductivityFunc" : {"functionname" : "updateElectrolyteConductivityFunc_Nyman2008",
-                                "filepath" : "Materials/Liquid/CarbonateBased/updateElectrolyteConductivityFunc_Nyman2008.m",
                                 "argumentlist" : ["concentration", "temperature"],
                                 "name" : "conductivity"
                                },
     "updateDiffusionCoefficientFunc" : {"functionname" : "updateDiffusionCoefficientFunc_Nyman2008",
-                                        "filepath" : "Materials/Liquid/CarbonateBased/updateDiffusionCoefficientFunc_Nyman2008.m",
                                         "argumentlist" : ["concentration", "temperature"],
                                         "name" : "diffusion coefficient"
                                        },
