@@ -24,6 +24,7 @@ classdef ActiveMaterial < ElectronicComponent
         EffectiveHeatCapacity         % Effective Heat Capacity of the active component
 
         useSimplifiedDiffusionModel
+        use_thermal
         
         externalCouplingTerm          % only used in no current collector
 
@@ -41,7 +42,8 @@ classdef ActiveMaterial < ElectronicComponent
                        'electricalConductivity', ...
                        'heatCapacity', ...
                        'externalCouplingTerm', ...
-                       'useSimplifiedDiffusionModel'};
+                       'useSimplifiedDiffusionModel', ...
+                       'use_thermal'};
             
             model = dispatchParams(model, paramobj, fdnames);
             
@@ -83,10 +85,12 @@ classdef ActiveMaterial < ElectronicComponent
             if model.useSimplifiedDiffusionModel            
                 model.EffectiveDiffusionCoefficient = model.InterDiffusionCoefficient.*volumeFraction.^1.5;
             end
-            
-            % setup effective thermal conductivity            
-            model.EffectiveThermalConductivity = model.thermalConductivity.*volumeFraction.^1.5;
-            model.EffectiveHeatCapacity = model.heatCapacity.*volumeFraction;
+
+            if model.use_thermal
+                % setup effective thermal conductivity
+                model.EffectiveThermalConductivity = model.thermalConductivity.*volumeFraction.^1.5;
+                model.EffectiveHeatCapacity = model.heatCapacity.*volumeFraction;
+            end
         end
 
         function model = registerVarAndPropfuncNames(model)

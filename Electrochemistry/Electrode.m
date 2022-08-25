@@ -12,6 +12,8 @@ classdef Electrode < BaseModel
         couplingTerm
         
         include_current_collector
+
+        use_thermal
         
     end
 
@@ -24,7 +26,8 @@ classdef Electrode < BaseModel
             model.AutoDiffBackend = SparseAutoDiffBackend('useBlocks', false);
             
             fdnames = {'G', ...
-                       'couplingTerm'};
+                       'couplingTerm', ...
+                       'use_thermal'};
             model = dispatchParams(model, paramobj, fdnames);
             
             % Assign the two components
@@ -60,13 +63,15 @@ classdef Electrode < BaseModel
             model = model.registerPropFunction({{am, 'jCoupling'}, fn, inputnames});
             model = model.registerPropFunction({{cc , 'jCoupling'}, fn, inputnames});
             model = model.registerPropFunction({{cc , 'eSource'}  , fn, inputnames});
-            
-            % Temperature coupling between current collector and electrode active component
-            inputnames = {{am, 'T'}, ...
-                          {cc , 'T'}};
-            fn = @Electrode.updateTemperatureCoupling;
-            model = model.registerPropFunction({{am, 'jHeatBcSource'}, fn, inputnames});
-            model = model.registerPropFunction({{cc , 'jHeatBcSource'}, fn, inputnames});
+
+            if model.use_thermal
+                % Temperature coupling between current collector and electrode active component
+                inputnames = {{am, 'T'}, ...
+                              {cc , 'T'}};
+                fn = @Electrode.updateTemperatureCoupling;
+                model = model.registerPropFunction({{am, 'jHeatBcSource'}, fn, inputnames});
+                model = model.registerPropFunction({{cc , 'jHeatBcSource'}, fn, inputnames});
+            end
             
         end
         

@@ -1,5 +1,9 @@
 * Information about the BattMo tests
 
+** Octave vs MATLAB
+The tests only run in MATLAB.
+
+
 ** Running the tests
 The tests are run using the command `runtests`. To run all the
 tests in path, run `runtests`.
