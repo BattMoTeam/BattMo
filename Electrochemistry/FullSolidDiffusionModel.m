@@ -5,6 +5,11 @@ classdef FullSolidDiffusionModel < SolidDiffusionModel
         np  % Number of particles
         N   % Discretization parameters in spherical direction
 
+        cmax % maximum concentration
+
+        useDFunc
+        computeDFunc % used when useDFunc is true. Function handler to compute D as function of cElectrode, see method updateDiffusionCoefficient
+        
     end
 
     methods
@@ -13,11 +18,19 @@ classdef FullSolidDiffusionModel < SolidDiffusionModel
 
             model = model@SolidDiffusionModel(paramobj);
 
-            fdnames = {'np'                    , ...
-                       'N'};
+            fdnames = {'np', ...
+                       'N' , ...
+                       'cmax'};
 
             model = dispatchParams(model, paramobj, fdnames);
             model.operators = model.setupOperators();
+            
+            if ~isempty(paramobj.D)
+                model.useDFunc = true;
+                model.computeDFunc = str2func(paramobj.D.functionname);
+            else
+                model.useDFunc = false;
+            end
             
         end
 
@@ -47,7 +60,11 @@ classdef FullSolidDiffusionModel < SolidDiffusionModel
             model = model.registerVarNames(varnames);
 
             fn = @FullSolidDiffusionModel.updateDiffusionCoefficient;
-            inputnames = {'T'};
+            if model.useDFunc
+                inputnames = {'c'};
+            else
+                inputnames = {'T'};
+            end
             model = model.registerPropFunction({'D', fn, inputnames});
 
             fn = @FullSolidDiffusionModel.updateFlux;
@@ -232,7 +249,31 @@ classdef FullSolidDiffusionModel < SolidDiffusionModel
             state.massSource = -R/(volumetricSurfaceArea)*(4*pi*rp^2);
             
         end
-        
+
+        function state = updateDiffusionCoefficient(model, state)
+
+
+            if model.useDFunc
+
+                computeD = model.computeDFunc
+                cmax = model.cmax;
+                
+                c = state.c;
+                
+                D = computeD(c, cmax);
+
+                state.D = D;
+                
+            else
+                
+                state = updateDiffusionCoefficient@SolidDiffusionModel(model, state);
+                
+            end
+
+            
+        end
+
+                
         function state = updateAccumTerm(model, state, state0, dt)
 
             op = model.operators;

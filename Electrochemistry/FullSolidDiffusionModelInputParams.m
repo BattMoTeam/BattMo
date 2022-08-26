@@ -3,7 +3,13 @@ classdef FullSolidDiffusionModelInputParams < SolidDiffusionModelInputParams
     properties
 
         N  % Number of discretization intervals in the diffusion model [-]
-        np % Number of computational grid cells (typically set by parent model :class:`ActiveMaterial <Electrochemistry.ActiveMaterial>`)        
+        np % Number of computational grid cells (typically set by parent model :class:`ActiveMaterial <Electrochemistry.ActiveMaterial>`)
+
+        cmax % Maximum concentration
+        D    % Function to update D value given as a struct with fields
+             % D.type = "function";
+             % D.functionname :  matlab function name (should be available in path)
+             % D.argumentlist = ["c", "cmax"]
     end
     
     methods

@@ -44,6 +44,17 @@ classdef ActiveMaterialInputParams < ElectronicComponentInputParams
                 paramobj.SolidDiffusion = SimplifiedSolidDiffusionModelInputParams(pick('SolidDiffusion'));                
             else
                 paramobj.SolidDiffusion = FullSolidDiffusionModelInputParams(pick('SolidDiffusion'));
+                
+                % we impose that cmax in the solid diffusion model and the interface are consistent
+                if isempty(paramobj.SolidDiffusion.cmax) &&  ~isempty(paramobj.Interface.cmax)
+                    paramobj.SolidDiffusion.cmax = paramobj.Interface.cmax;
+                elseif ~isempty(paramobj.SolidDiffusion.cmax) &&  isempty(paramobj.Interface.cmax)
+                    paramobj.Interface.cmax = paramobj.SolidDiffusion.cmax;
+                elseif ~isempty(paramobj.SolidDiffusion.cmax) &&  ~isempty(paramobj.Interface.cmax)
+                    assert(paramobj.SolidDiffusion.cmax == paramobj.Interface.cmax, 'cmax in input is not consistant');
+                end
+                
+                
             end
         end
         
