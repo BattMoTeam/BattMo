@@ -17,12 +17,20 @@ classdef ComputationalGraphFilter
         end
 
         
-        function g = setupGraph(cgf)
+        function g = setupGraph(cgf, varargin)
+            
+            opt = struct('type', 'ascendant');
+            opt = merge_options(opt, varargin{:});
             
             nodenames        = cgf.nodenames;
-            A                = cgf.A;
             includeNodeNames = cgf.includeNodeNames;
             excludeNodeNames = cgf.excludeNodeNames;
+
+            A = (cgf.A);
+            if strcmp(opt.type, 'descendant')
+                A = A';
+            end
+                        
             
             if isempty(includeNodeNames)
                 g = cgf.graph;
@@ -41,8 +49,20 @@ classdef ComputationalGraphFilter
                 A = A(~removenodes, ~removenodes);
             end
             
+            if strcmp(opt.type, 'descendant')
+                A = A';
+            end
+            
             g = digraph(A, nodenames);
             
+        end
+        
+        function g = setupAscendantGraph(cgf)
+            g = cgf.setupGraph('type', 'ascendant');
+        end
+        
+        function g = setupDescendantGraph(cgf)
+            g = cgf.setupGraph('type', 'descendant');            
         end
         
     end

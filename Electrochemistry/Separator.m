@@ -3,14 +3,15 @@ classdef Separator < BaseModel
     properties
         
         porosity            % Porosity [-]
-        volumeFraction      % Volume fraction [-]
-        
         thermalConductivity % intrinsic thermal conductivity value
         heatCapacity        % intrinsic heat capacity value
-
+        density             % Density [kg m^-3]        
+        
+        volumeFraction      % Volume fraction [-]
         EffectiveThermalConductivity
         EffectiveHeatCapacity
-        density             % Density [kg m^-3]        
+
+        use_thermal
     end
     
     methods
@@ -27,13 +28,21 @@ classdef Separator < BaseModel
                        'porosity'           , ...
                        'thermalConductivity', ...
                        'heatCapacity'       , ...
-                       'density'};
+                       'density'            , ...
+                       'use_thermal'};
             model = dispatchParams(model, paramobj, fdnames);
-            
-            model.volumeFraction = 1 - model.porosity;
-            model.EffectiveThermalConductivity = model.thermalConductivity.*(model.volumeFraction).^1.5;
-            model.EffectiveHeatCapacity = model.heatCapacity.*model.volumeFraction;
+            model.porosity = model.porosity*ones(model.G.cells.num,1);
+            model = model.setupDependentProperties();
 
+        end
+        
+        function model = setupDependentProperties(model)
+            model.volumeFraction = 1 - model.porosity;
+
+            if model.use_thermal
+                model.EffectiveThermalConductivity = model.thermalConductivity.*(model.volumeFraction).^1.5;
+                model.EffectiveHeatCapacity = model.heatCapacity.*model.volumeFraction;
+            end
         end
     end
     

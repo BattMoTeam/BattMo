@@ -1,62 +1,52 @@
 function [val, der, wellSols, states] = evalObjectiveBattmo(u, obj, state0, model, schedule_org, scaling, varargin)
-% Objective (and gradient) evaluation function based on input control vector u
-%{
-Copyright 2009-2021 SINTEF Digital, Mathematics & Cybernetics.
 
-This file is part of The MATLAB Reservoir Simulation Toolbox (MRST).
+    opt=struct('Gradient','adjoint','pertub', 1e-3);
+    opt = merge_options(opt,varargin{:});
+    minu = min(u);
+    maxu = max(u);
+    
+    if or(minu < -eps , maxu > 1+eps)
+        warning('Controls are expected to lie in [0 1]')
+    end
 
-MRST is free software: you can redistribute it and/or modify
-it under the terms of the GNU General Public License as published by
-the Free Software Foundation, either version 3 of the License, or
-(at your option) any later version.
+    boxLims = scaling.boxLims;
+    if isfield(scaling, 'obj')
+        objScaling = scaling.obj;
+    else
+        objScaling = 1;
+    end
 
-MRST is distributed in the hope that it will be useful,
-but WITHOUT ANY WARRANTY; without even the implied warranty of
-MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-GNU General Public License for more details.
+    % update schedule:
+    schedule = battmoControl2schedule(u, schedule_org, scaling);
 
-You should have received a copy of the GNU General Public License
-along with MRST.  If not, see <http://www.gnu.org/licenses/>.
-%}
-opt=struct('Gradient','adjoint','pertub',1e-3);
-opt = merge_options(opt,varargin{:});
-minu = min(u);
-maxu = max(u);
-if or(minu < -eps , maxu > 1+eps)
-    warning('Controls are expected to lie in [0 1]')
-end
+    % run simulation:
+    [wellSols, states,report] = simulateScheduleAD(state0, model, schedule);
+    timesteps = getReportMinisteps(report);
+    assert(all(timesteps == schedule.step.val));
+    
+    %% should we fix the time stepping ??
+    % schedule.step = schedule_new.step
 
-boxLims = scaling.boxLims;
-if isfield(scaling, 'obj')
-    objScaling = scaling.obj;
-else
-    objScaling = 1;
-end
+    % compute objective:
+    vals = obj(model, states, schedule);
+    val  = sum(cell2mat(vals))/objScaling;
 
-% update schedule:
-schedule = battmoControl2schedule(u, schedule_org, scaling);
-
-% run simulation:
-[wellSols, states,report] = simulateScheduleAD(state0, model, schedule);
-timesteps = getReportMinisteps(report);
-assert(all(timesteps == schedule.step.val));
-%% should we fix the time stepping ??
-% schedule.step = schedule_new.step
-
-% compute objective:
-vals = obj(model, states, schedule);
-val  = sum(cell2mat(vals))/objScaling;
-
-% run adjoint:
-if nargout > 1
-    switch opt.Gradient
-        case 'adjoint'
+    % run adjoint:
+    if nargout > 1
+        
+        switch opt.Gradient
+          
+          case 'adjoint'
+            
             objh = @(tstep,model, state) obj(model, states, schedule, 'ComputePartials', true, 'tStep', tstep,'state', state);
             g    = computeGradientAdjointADBattmo(state0, states, model, schedule, objh);
+            assert(numel(g) == numel(u))
             % scale gradient:
             der = scaleGradient(g, schedule, boxLims, objScaling);
             der = vertcat(der{:});
-        case 'numerical'
+            
+          case 'numerical'
+            
             u_org=u;
             val_pert = nan(size(u));
             dp=nan(size(u));
@@ -72,15 +62,17 @@ if nargout > 1
                 der = (val_pert-val)./dp;
             end
             
-        otherwise
-            error('Gradient method %s not implemented',opt.Gradient);
+          otherwise
+            error('Gradient method %s not implemented', opt.Gradient);
+        end
+        assert(numel(u) == numel(der));
     end
-end
+   
 end
 
 function grd = scaleGradient(grd, schedule, boxLims, objScaling)
-dBox   = boxLims(:,2) - boxLims(:,1);
-for k = 1:numel(schedule.control)
-    grd{k} = (dBox/objScaling).*grd{k};
-end
+    dBox   = boxLims(:,2) - boxLims(:,1);
+    for k = 1:numel(schedule.control)
+        grd{k} = (dBox/objScaling).*grd{k};
+    end
 end

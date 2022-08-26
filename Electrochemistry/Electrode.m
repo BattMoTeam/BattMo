@@ -12,6 +12,8 @@ classdef Electrode < BaseModel
         couplingTerm
         
         include_current_collector
+
+        use_thermal
         
     end
 
@@ -24,15 +26,20 @@ classdef Electrode < BaseModel
             model.AutoDiffBackend = SparseAutoDiffBackend('useBlocks', false);
             
             fdnames = {'G', ...
-                       'couplingTerm'};
+                       'couplingTerm', ...
+                       'use_thermal'};
             model = dispatchParams(model, paramobj, fdnames);
             
             % Assign the two components
             model.ActiveMaterial = model.setupActiveMaterial(paramobj.ActiveMaterial);
-            model.include_current_collector = false;
+            
             if params.include_current_collector
+                assert(~isempty(paramobj.CurrentCollector), 'current collector input data is missing')
                 model.CurrentCollector = model.setupCurrentCollector(paramobj.CurrentCollector);
                 model.include_current_collector = true;
+            else
+                assert(isempty(paramobj.CurrentCollector.G), 'current collector grid is given, but we are not using it, as required by input flag')
+                model.include_current_collector = false;
             end
             
         end
@@ -56,13 +63,15 @@ classdef Electrode < BaseModel
             model = model.registerPropFunction({{am, 'jCoupling'}, fn, inputnames});
             model = model.registerPropFunction({{cc , 'jCoupling'}, fn, inputnames});
             model = model.registerPropFunction({{cc , 'eSource'}  , fn, inputnames});
-            
-            % Temperature coupling between current collector and electrode active component
-            inputnames = {{am, 'T'}, ...
-                          {cc , 'T'}};
-            fn = @Electrode.updateTemperatureCoupling;
-            model = model.registerPropFunction({{am, 'jHeatBcSource'}, fn, inputnames});
-            model = model.registerPropFunction({{cc , 'jHeatBcSource'}, fn, inputnames});
+
+            if model.use_thermal
+                % Temperature coupling between current collector and electrode active component
+                inputnames = {{am, 'T'}, ...
+                              {cc , 'T'}};
+                fn = @Electrode.updateTemperatureCoupling;
+                model = model.registerPropFunction({{am, 'jHeatBcSource'}, fn, inputnames});
+                model = model.registerPropFunction({{cc , 'jHeatBcSource'}, fn, inputnames});
+            end
             
         end
         
@@ -108,23 +117,23 @@ classdef Electrode < BaseModel
 
                 trans = 1./(1./teac + 1./tcc);
                 crosscurrent = trans.*(bcphi_cc - bcphi_am);
-                am_jCoupling(bccell_am) = crosscurrent;
-                cc_jCoupling(bccell_cc) = -crosscurrent;
+                am_jCoupling = subsasgnAD(am_jCoupling,bccell_am, crosscurrent);
+                cc_jCoupling = subsasgnAD(cc_jCoupling,bccell_cc, -crosscurrent);
 
                 G = model.(cc).G;
                 nf = G.faces.num;
                 sgn = model.(cc).operators.sgn;
                 zeroFaceAD = model.AutoDiffBackend.convertToAD(zeros(nf, 1), cc_phi);
                 cc_jFaceCoupling = zeroFaceAD;
-                cc_jFaceCoupling(face_cc) = sgn(face_cc).*crosscurrent;
+                cc_jFaceCoupling = subsasgnAD(cc_jFaceCoupling,face_cc, sgn(face_cc).*crosscurrent);
                 assert(~any(isnan(sgn(face_cc))));
                 
-                G = model.(am).G;
-                nf = G.faces.num;
-                sgn = model.(am).operators.sgn;
-                zeroFaceAD = model.AutoDiffBackend.convertToAD(zeros(nf, 1), am_phi);
-                am_jFaceCoupling = zeroFaceAD;
-                am_jFaceCoupling(face_am) = -sgn(face_am).*crosscurrent;
+                G = model.(am).G; 
+                nf = G.faces.num; 
+                sgn = model.(am).operators.sgn; 
+                zeroFaceAD = model.AutoDiffBackend.convertToAD(zeros(nf, 1), am_phi); 
+                am_jFaceCoupling = zeroFaceAD; 
+                am_jFaceCoupling = subsasgnAD(am_jFaceCoupling, face_am, -sgn(face_am).*crosscurrent); 
                 assert(~any(isnan(sgn(face_am))));
                 
                 % We set here volumetric current source to zero for current collector (could have been done at a more logical place but
@@ -137,14 +146,8 @@ classdef Electrode < BaseModel
                 state.(am).jFaceCoupling = am_jFaceCoupling;
                 state.(cc).jFaceCoupling = cc_jFaceCoupling;
                 
-            else
-                
-                state.(am).jCoupling     = 0;
-                state.(am).jFaceCoupling = 0;
-                
             end
-            
-            
+                
         end
 
         

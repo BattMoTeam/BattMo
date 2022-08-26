@@ -14,6 +14,17 @@ mrstModule add ad-core mrst-gui mpfa
 
 % The input parameters can be given in json format. The json file is read and used to populate the paramobj object.
 jsonstruct = parseBattmoJson('ParameterData/ParameterSets/Chen2020/chen2020_lithium_ion_battery.json');
+% jsonstruct.NegativeElectrode.ActiveMaterial.SolidDiffusion.useSimplifiedDiffusionModel=false;
+% jsonstruct.NegativeElectrode.ActiveMaterial.SolidDiffusion.np = 20;
+% jsonstruct.NegativeElectrode.ActiveMaterial.InterDiffusionCoefficient = 0;
+% jsonstruct.PositiveElectrode.ActiveMaterial.SolidDiffusion.useSimplifiedDiffusionModel = false;
+% jsonstruct.PositiveElectrode.ActiveMaterial.InterDiffusionCoefficient = 0;
+% jsonstruct.PositiveElectrode.ActiveMaterial.SolidDiffusion.np = 20;
+% jsonstruct.Electrolyte.Separator.thermalConductivity = 1.0;
+% jsonstruct.Electrolyte.Separator.heatCapacity = 4180000;
+% jsonstruct.use_thermal = 0
+% jsonstruct.use_solid_diffusion = 1
+% jsonstruct.include_current_collectors = 0
 
 paramobj = BatteryInputParams(jsonstruct);
 
@@ -23,18 +34,21 @@ pe    = 'PositiveElectrode';
 am    = 'ActiveMaterial';
 sd    = 'SolidDiffusion';
 elyte = 'Electrolyte';
+itf   = 'Interface';
+ctrl  = 'Control';
 
 %% We setup the battery geometry ("bare" battery with no current collector).
 gen = BareBatteryGenerator3D();
 % We update pamobj with grid data
 paramobj = gen.updateBatteryInputParams(paramobj);
 
-paramobj.(ne).(am).InterDiffusionCoefficient = 0;
-paramobj.(pe).(am).InterDiffusionCoefficient = 0;
+%paramobj.(ne).(am).InterDiffusionCoefficient = 0;
+%paramobj.(pe).(am).InterDiffusionCoefficient = 0;
 
-paramobj.(ne).(am).(sd).useSimplifiedDiffusionModel = false;
-paramobj.(pe).(am).(sd).useSimplifiedDiffusionModel = false;
-
+%paramobj.(ne).(am).(sd).useSimplifiedDiffusionModel = false;
+%paramobj.(ne).(am).(sd).useSimplifiedDiffusionModel.np=10;
+%paramobj.(pe).(am).(sd).useSimplifiedDiffusionModel = false;
+%paramobj.(pe).(am).(sd).useSimplifiedDiffusionModel.np=10;
 
 %%  The Battery model is initialized by sending paramobj to the Battery class constructor 
 
@@ -60,8 +74,6 @@ step  = struct('val', dt, 'control', ones(size(dt)));
 % We set up a stopping function. Here, the simulation will stop if the output voltage reach a value smaller than 2. This
 % stopping function will not be triggered in this case as we switch to voltage control when E=3.6 (see value of inputE
 % below).
-pe = 'PositiveElectrode';
-cc = 'CurrentCollector';
 
 tup = 0.1; % rampup value for the current function, see rampupSwitchControl
 srcfunc = @(time, I, E) rampupSwitchControl(time, tup, I, E, ...
@@ -80,12 +92,6 @@ T = model.initT;
 initstate.ThermalModel.T = T*ones(nc, 1);
 
 bat = model;
-elyte = 'Electrolyte';
-ne    = 'NegativeElectrode';
-pe    = 'PositiveElectrode';
-itf   = 'Interface';
-sd    = 'SolidDiffusion';
-ctrl  = 'Control';
 
 initstate = model.updateTemperature(initstate);
 
@@ -149,7 +155,26 @@ nls = NonLinearSolver();
 % Change default maximum iteration number in nonlinear solver
 nls.maxIterations = 10; 
 % Change default behavior of nonlinear solver, in case of error
-nls.errorOnFailure = false; 
+nls.errorOnFailure = false;
+linearsolver = 'battery'
+switch linearsolver
+  case 'agmg'
+    mrstModule add agmg
+    nls.LinearSolver = AGMGSolverAD('verbose', true, 'reduceToCell', true); 
+    nls.LinearSolver.tolerance = 1e-3; 
+    nls.LinearSolver.maxIterations = 30; 
+    nls.maxIterations = 10; 
+    nls.verbose = 10;
+   case 'battery'
+        %nls.LinearSolver = LinearSolverBatteryExtra('verbose', false, 'reduceToCell', true,'verbosity',3,'reuse_setup',false,'method','matlab_p_gs');
+        nls.LinearSolver = LinearSolverBatteryExtra('verbose', false, 'reduceToCell', false,'verbosity',3,'reuse_setup',false,'method','direct');
+        nls.LinearSolver.tolerance=0.5e-4*2;          
+  case 'direct'
+    disp('standard direct solver')
+  otherwise
+    error()
+end
+
 % Change default tolerance for nonlinear solver
 model.nonlinearTolerance = 1e-5; 
 % Set verbosity

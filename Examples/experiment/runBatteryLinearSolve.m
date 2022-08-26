@@ -3,9 +3,9 @@
 % and run a simple simulation.
 
 % clear the workspace and close open figures
-clear
-close all
-clc
+%clear
+%close all
+%clc
 
 
 %% Import the required modules from MRST
@@ -21,6 +21,8 @@ mrstModule add ad-core mrst-gui mpfa
 % provided in json format. All the parameters for the model are stored in
 % the paramobj object.
 jsonstruct = parseBattmoJson('ParameterData/BatteryCellParameters/LithiumIonBatteryCell/lithium_ion_battery_nmc_graphite.json');
+jsonstruct.NegativeElectrode.ActiveMaterial.SolidDiffusion.useSimplifiedDiffusionModel=1
+jsonstruct.PositiveElectrode.ActiveMaterial.SolidDiffusion.useSimplifiedDiffusionModel=1
 % jsonstruct.Control.controlPolicy = 'CCCV';
 paramobj = BatteryInputParams(jsonstruct);
 % paramobj.SOC = 0.02;
@@ -57,6 +59,10 @@ paramobj.(thermal).externalTemperature = paramobj.initT;
 %%  Initialize the battery model. 
 % The battery model is initialized by sending paramobj to the Battery class
 % constructor. see :class:`Battery <Battery.Battery>`.
+paramobj.use_thermal = false;
+paramobj.include_current_collectors = false;
+paramobj.NegativeElectrode.ActiveMaterial.externalCouplingTerm = paramobj.NegativeElectrode.CurrentCollector.externalCouplingTerm;
+paramobj.PositiveElectrode.ActiveMaterial.externalCouplingTerm = paramobj.PositiveElectrode.CurrentCollector.externalCouplingTerm;
 model = Battery(paramobj);
 model.AutoDiffBackend= AutoDiffBackend();
 
@@ -75,13 +81,13 @@ switch model.(ctrl).controlPolicy
   case 'CCCV'
     total = 3.5*hour/CRate;
   case 'IEswitch'
-    total = 1*hour/CRate;
+    total = 1.2*hour/CRate;
   otherwise
     error('control policy not recognized');
 end
 
-n     = 20;
-dt    = total/n;
+n     = 10;
+dt    = total*0.7/n;
 step  = struct('val', dt*ones(n, 1), 'control', ones(n, 1));
 
 % we setup the control by assigning a source and stop function.
@@ -104,7 +110,7 @@ end
 
 % This control is used to set up the schedule
 %%
-nc = 3;
+nc = 1;
 nst = numel(step.control)
 ind = floor(([0:nst-1]/nst)*nc)+1
 %%
@@ -123,16 +129,45 @@ nls = NonLinearSolver();
 % Change default maximum iteration number in nonlinear solver
 nls.maxIterations = 10; 
 % Change default behavior of nonlinear solver, in case of error
-NLS.errorOnFailure = false; 
+nls.errorOnFailure = false; 
 %nls.timeStepSelector=StateChangeTimeStepSelector('TargetProps', {{'Control','E'}}, 'targetChangeAbs', 0.03);
 % Change default tolerance for nonlinear solver
 nls.timeStepSelector = SimpleTimeStepSelector();
+linearsolver = 'battery'
+switch linearsolver
+  case 'battery'
+        nls.LinearSolver = LinearSolverBatteryExtra('verbose', false, 'reduceToCell', true,'verbosity',3,'reuse_setup',false,'method','matlab_p_gs');
+        %nls.LinearSolver = LinearSolverBatteryExtra('verbose', false, 'reduceToCell', true,'verbosity',3,'reuse_setup',false,'method','direct');
+       nls.LinearSolver.tolerance=0.5e-4;
+         
+    case 'agmg'
+    mrstModule add agmg
+    nls.LinearSolver = AGMGSolverAD('verbose', false, 'reduceToCell', true); 
+    nls.LinearSolver.tolerance = 1e-3; 
+    nls.LinearSolver.maxIterations = 30; 
+    nls.maxIterations = 20; 
+    nls.verbose = 10;
+  case 'direct'
+      nls.LinearSolver = BackslashSolverAD('verbose', false, 'reduceToCell', true);
+  otherwise
+    error()
+end
 model.nonlinearTolerance = 1e-3*model.Control.Imax;
+model.nonlinearTolerance =  1e-4;nls.maxIterations = 20; 
 % Set verbosity
 model.verbose = true;
 
 %% Run the simulation
 [wellSols, states, report] = simulateScheduleAD(initstate, model, schedule, 'OutputMinisteps', true, 'NonLinearSolver', nls); 
+%%
+%%  Process output and recover the output voltage and current from the output states.
+ind = cellfun(@(x) not(isempty(x)), states); 
+states = states(ind);
+Enew = cellfun(@(x) x.(ctrl).E, states); 
+Inew = cellfun(@(x) x.(ctrl).I, states);
+time = cellfun(@(x) x.time, states);
+figure(1),clf,plot(time,Enew)
+
 
 %% Process output and recover the output voltage and current from the output states.
 ind = cellfun(@(x) not(isempty(x)), states); 
@@ -143,119 +178,33 @@ Tmax = cellfun(@(x) max(x.ThermalModel.T), states);
 [SOCN, SOCP] =  cellfun(@(x) model.calculateSOC(x), states);
 time = cellfun(@(x) x.time, states); 
 plot(time,Enew,'*-')
-%% Plot the the output voltage and current
-% gradients to control
-obj = @(model, states, schedule, varargin) EnergyOutput(model, states, schedule,varargin{:});%,'step',step);
-vals = obj(model, states, schedule)
-totval = sum([vals{:}]);
 %%
-scaling = struct('boxLims',[],'obj',[]);
-scaling.boxLims = model.Control.Imax*[0.9,1.1];
-scaling.obj = 1;
-%%
-state0 = initstate;
-%obj1 = @(step,state,model, states, schedule, varargin) EnergyOutput(model, states, schedule,varargin{:},'step',step);
-f = @(u)evalObjectiveBattmo(u, obj, state0, model, schedule, scaling);
-%schedule.control(:).Imax = model.Control.Imax;
-u_base = battmoSchedule2control(schedule, scaling);
-[val, gad] =evalObjectiveBattmo(u_base, obj, state0, model, schedule, scaling);
-%%
-[val,gnum] =evalObjectiveBattmo(u_base, obj, state0, model, schedule, scaling,'Gradient','numerical');
-%%
-return
-% Get function handle for objective evaluation
-
-%%
-mrstModule add optimization
-%% Run optimization with default options
-% gradient to 
-%schedule_opt = control2schedule(u_opt, schedule, scaling);
-%model.toleranceCNV = 1e-6;
-objsens =@(tstep,model, state) EnergyOutput(model, states, schedule,'tstep',tstep,'computePartials',true,'state',state);
-%matchObservedOW(model, states, schedule, states_ref,...
-%    'computePartials', true, 'tstep', tstep, weighting{:},'state',state);
-SimulatorSetup = struct('model', model, 'schedule', schedule, 'state0', state0);
-parameters = [];
-property = 'Imax'
-%getfun = @(x,location) x.Imax; 
-setfun = @(x,location, v) struct('Imax',v,'src', @(time,I,E) rampupSwitchControl(time, 0.1, I, E, ...
-                                                v, ...
-                                                2.0),'IEswitch',true);
-boxlims = model.Control.Imax*[0.9,1.1];
-parameters={};
-for i = 1:3
-parameters{end+1} = ModelParameter(SimulatorSetup,'name','Imax',...
-    'belongsTo','schedule',...
-    'boxLims',boxlims,...
-    'location',{'control','Imax'},...
-    'getfun',[],'setfun',setfun,'controlSteps',i)
+its = getReportOutput(report,'type','linearIterations')
+nits= getReportOutput(report,'type','nonlinearIterations')
+figure(33),clf
+plot(its.time, its.total./nits.total)
+figure(44),clf,hold on
+shift = 0;
+for i=1:numel(report.ControlstepReports)
+    creport = report.ControlstepReports{i};
+    for j= 1:numel(creport.StepReports)
+        sreport=creport.StepReports{j};
+        vits = [];
+        for k = 1:numel(sreport.NonlinearReport);
+            nreport = sreport.NonlinearReport{k};
+            try
+                its = nreport.LinearSolver.Iterations;
+                its = nreport.LinearSolver.precondIterations_phi;
+                vits = [vits,its];
+            catch
+            end
+        end
+        plot(shift+[1:numel(vits)],vits,'*-')
+        shift = shift + numel(vits);
+    end
 end
-
-%%
-%parameters = addParameter(parameters, SimulatorSetup,'belongeTo', 'name', property ,'type','multiplier');
-raw_sens = computeSensitivitiesAdjointADBattmo(SimulatorSetup, states, parameters, objsens)
-%%
-ff =fieldnames(raw_sens)
-gadnew = nan(numel(ff),1)
-for i =1:numel(ff)
-    gadnew(i) = raw_sens.(ff{i})
-end
-%%
-gadnew*diff(boxlims)
-%%
-%objmatch = @(model, states, schedule, states_ref, compDer, tstep, state) ...
-%    EnergyOutput(model, states, schedule,'tstep',tstep,'computePartials',true,'state',state);
-objmatch = @(model, states, schedule, varargin) EnergyOutput(model, states, schedule,varargin{:});%
-pvec = getScaledParameterVector(SimulatorSetup, parameters);
-objh = @(p) evalMatchBattmo(p, objmatch, SimulatorSetup, parameters, []);
-% The calibration can be improved by taking a large number of iterations,
-% but here we set a limit of 30 iterations
-%%
-pert = 0.1;
-[vad,gad] = evalMatchBattmo(pvec+pert, objmatch, SimulatorSetup, parameters, 'Gradient','AdjointAD')
-[vnum,gnum] = evalMatchBattmo(pvec+pert, objmatch, SimulatorSetup, parameters, 'Gradient','PerturbationADNUM','PerturbationSize',1e-4)
-%%
-%[v, p_opt, history] = unitBoxBFGS(pvec, objh, 'objChangeTol', 1e-5, ...
-%    'maxIt', 30, 'lbfgsStrategy', 'dynamic', 'lbfgsNum', 5);
-
-%setup_opt = updateSetupFromScaledParameters(setup_init, parameters, p_opt); 
-%[wellSols_opt, states_opt] = simulateScheduleAD(setup_opt.state0, setup_opt.model, setup_opt.schedule);
-
-%% Run optimization with default options
-% gradient to 
-%schedule_opt = control2schedule(u_opt, schedule, scaling);
-%model.toleranceCNV = 1e-6;
-%objsens =@(tstep,model, state) EnergyOutput(model, states, schedule,'tstep',tstep,'computePartials',true,'state',state);
-%matchObservedOW(model, states, schedule, states_ref,...
-%    'computePartials', true, 'tstep', tstep, weighting{:},'state',state);
-SimulatorSetup = struct('model', model, 'schedule', schedule, 'state0', state0);
-parameters = [];
-property = 'porevolume'
-getfun = @(x,location) x.(location).volumeFraction; 
-setfun = @(x,location, v) setfunctionWithName(x,location,v,'volumeFraction');
-parameters={};
-parameters{end+1} = ModelParameter(SimulatorSetup,'name','volumeFraction',...
-    'belongsTo','model',...
-    'location',{'Electrolyte','volumeFraction'},...
-    'getfun',[],'setfun',[])
-
-%parameters = addParameter(parameters, SimulatorSetup,'belongeTo', 'name', property ,'type','multiplier');
-raw_sens = computeSensitivitiesAdjointADBattmo(SimulatorSetup, states, parameters, objsens);
-%%
-objmatch = @(model, states, schedule, varargin) EnergyOutput(model, states, schedule,varargin{:});%
-pvec = getScaledParameterVector(SimulatorSetup, parameters);
-objh = @(p) evalMatchBattmo(p, objmatch, SimulatorSetup, parameters, []);
-% The calibration can be improved by taking a large number of iterations,
-% but here we set a limit of 30 iterations
-%%
-pert = 0.0;
-[vad,gad] = evalMatchBattmo(pvec+pert, objmatch, SimulatorSetup, parameters, 'Gradient','AdjointAD')
-[vnum,gnum] = evalMatchBattmo(pvec+pert, objmatch, SimulatorSetup, parameters, 'Gradient','PerturbationADNUM','PerturbationSize',1e-4)
-
-
-
-%% 
-
+figure(55)
+plot(nits.total)
 %{
 Copyright 2021-2022 SINTEF Industry, Sustainable Energy Technology
 and SINTEF Digital, Mathematics & Cybernetics.

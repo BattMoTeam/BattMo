@@ -24,7 +24,9 @@ classdef ActiveMaterialInputParams < ElectronicComponentInputParams
         electricalConductivity % Electrical conductivity / [S m^-1]
 
         externalCouplingTerm % structure to describe external coupling (used in absence of current collector)
-        
+
+        useSimplifiedDiffusionModel % Flag : true if we use simplified diffusion model
+
     end
 
     methods
@@ -32,12 +34,16 @@ classdef ActiveMaterialInputParams < ElectronicComponentInputParams
         function paramobj = ActiveMaterialInputParams(jsonstruct)
             paramobj = paramobj@ElectronicComponentInputParams(jsonstruct);
 
+            useSimplifiedDiffusionModel = paramobj.useSimplifiedDiffusionModel;
+            
             pick = @(fd) pickField(jsonstruct, fd);
+
             paramobj.Interface = InterfaceInputParams(pick('Interface'));
-            if jsonstruct.SolidDiffusion.useSimplifiedDiffusionModel
+           
+            if useSimplifiedDiffusionModel
                 paramobj.SolidDiffusion = SimplifiedSolidDiffusionModelInputParams(pick('SolidDiffusion'));                
             else
-                paramobj.SolidDiffusion = SolidDiffusionModelInputParams(pick('SolidDiffusion'));
+                paramobj.SolidDiffusion = FullSolidDiffusionModelInputParams(pick('SolidDiffusion'));
             end
         end
         

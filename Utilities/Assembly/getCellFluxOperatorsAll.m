@@ -15,16 +15,16 @@ function op = getCellFluxOperatorsAll(G, varargin)
 %      v = v.^2;
 %      v = S*v;
 %      v = sqrt(v);
-    %G=cartGrid([3,3,3])
-    %G =computeGeometry(G);
-    Neigh = G.faces.neighbors(G.cells.faces(:,1),:);
-    cellNo=rldecode([1:G.cells.num]',diff(G.cells.facePos)');    
-    %% 
+
+
+    Neigh = G.faces.neighbors(G.cells.faces(:, 1), :); 
+    cellNo = rldecode([1:G.cells.num]', diff(G.cells.facePos)');
+
     nc     = G.cells.num;
-    nhf= numel(G.cells.faces(:,1));
-    nf = G.faces.num;
+    nhf    = numel(G.cells.faces(:,1));
+    nf     = G.faces.num;
     dims   = G.griddim;
-    m  = diff(G.cells.facePos);
+    m      = diff(G.cells.facePos);
     n      = G.griddim*ones(nc, 1);
     [I, J] = blockDiagIndex(n, m);
     N      = G.faces.normals(G.cells.faces(:,1), :);

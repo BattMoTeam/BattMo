@@ -62,18 +62,16 @@ classdef Battery < BaseModel
             model = dispatchParams(model, paramobj, fdnames);
 
             % Assign the components : Electrolyte, NegativeElectrode, PositiveElectrode
-            if model.include_current_collectors
-                params.include_current_collector = true;
-            else
-                params.include_current_collector = false;
-            end
+            params.include_current_collector = model.include_current_collectors;
+            params.use_thermal = model.use_thermal;
+
             model.NegativeElectrode = model.setupElectrode(paramobj.NegativeElectrode, params);
             model.PositiveElectrode = model.setupElectrode(paramobj.PositiveElectrode, params);
             model.Electrolyte       = model.setupElectrolyte(paramobj.Electrolyte);
             if model.use_thermal
-                model.ThermalModel      = ThermalComponent(paramobj.ThermalModel);
+                model.ThermalModel = ThermalComponent(paramobj.ThermalModel);
             end
-            model.Control           = model.setupControl(paramobj.Control);
+            model.Control = model.setupControl(paramobj.Control);
             
             % define shorthands
             elyte   = 'Electrolyte';
@@ -87,9 +85,11 @@ classdef Battery < BaseModel
            
             % setup Electrolyte model (setup electrolyte volume fractions in the different regions)
             model = model.setupElectrolyteModel();            
-            
-            % setup Thermal Model by assigning the effective heat capacity and conductivity, which is computed from the sub-models.
-            model = model.setupThermalModel();
+
+            if model.use_thermal
+                % setup Thermal Model by assigning the effective heat capacity and conductivity, which is computed from the sub-models.
+                model = model.setupThermalModel();
+            end
             
             % setup couplingNames
             model.couplingNames = cellfun(@(x) x.name, model.couplingTerms, 'uniformoutput', false);
@@ -129,10 +129,10 @@ classdef Battery < BaseModel
                 {elyte, 'phi'}          , 'elyte_chargeCons'    , 'cell' ; ... 
                 {ne, am, 'phi'}         , 'ne_am_chargeCons'    , 'cell' ; ... 
                 {pe, am, 'phi'}         , 'pe_am_chargeCons'    , 'cell' ; ... 
-                {ne, am, sd, 'cSurface'}, 'ne_am_massCons'      , 'cell' ; ... 
+                {ne, am, sd, 'cSurface'}, 'ne_am_massCons'      , 'scell' ; ... 
                 {ne, am, sd, 'c'}       , 'ne_am_sd_massCons'   , 'sdiff'; ... 
                 {ne, am, 'c'}           , 'ne_am_sd_soliddiffeq', 'sdiff'; ... 
-                {pe, am, sd, 'cSurface'}, 'pe_am_massCons'      , 'cell' ; ... 
+                {pe, am, sd, 'cSurface'}, 'pe_am_massCons'      , 'scell' ; ...
                 {pe, am, sd, 'c'}       , 'pe_am_sd_massCons'   , 'sdiff'; ... 
                 {pe, am, 'c'}           , 'pe_am_sd_soliddiffeq', 'sdiff'; ... 
                 {ne, cc, 'phi'}         , 'ne_cc_chargeCons'    , 'cell' ; ... 
@@ -255,7 +255,7 @@ classdef Battery < BaseModel
                   
             %% Coupling functions
             
-            % dispatch electrolyte concentration and potential in the electrodes
+            % Dispatch electrolyte concentration and potential in the electrodes
             fn = @Battery.updateElectrodeCoupling;
             inputnames = {{elyte, 'c'}, ...
                           {elyte, 'phi'}};
@@ -265,7 +265,6 @@ classdef Battery < BaseModel
             model = model.registerPropFunction({{pe, am, itf, 'cElectrolyte'}  , fn, inputnames});
             
             % Functions that update the source terms in the electolyte
-            
             fn = @Battery.updateElectrolyteCoupling;
             
             inputnames = {{ne, am, itf, 'R'}, ...
@@ -274,22 +273,19 @@ classdef Battery < BaseModel
             model = model.registerPropFunction({{elyte, 'eSource'}, fn, inputnames});
             
             % Function that assemble the control equation
-
-            fn = @Battery.setupEIEquation;
+            fn = @Batter.setupEIEquation;
             inputnames = {{pe, cc, 'E'}, ...
                           {pe, cc, 'I'}, ...
                           {pe, cc, 'phi'}, ...
                          };
             model = model.registerPropFunction({{'controlEq'}, fn, inputnames});
-            
+
             % Function that update Thermal accumulation terms
-            
             fn = @Battery.updateThermalAccumTerms;
             inputnames = {{thermal, 'T'}};
             model = model.registerPropFunction({{thermal, 'accumHeat'}, fn, inputnames});
             
             % Function that update the Thermal Ohmic Terms
-            
             fn = @Battery.updateThermalOhmicSourceTerms;
             inputnames = {{elyte, 'j'}   , ...
                           {ne, cc, 'j'}  , ...
@@ -300,15 +296,13 @@ classdef Battery < BaseModel
             model = model.registerPropFunction({{thermal, 'jHeatBcSource'} , fn, inputnames});
             
             %% Function that updates the Thermal Chemical Terms
-            
             fn = @Battery.updateThermalChemicalSourceTerms;
             inputnames = {{elyte, 'diffFlux'}, ...
                           {elyte, 'D'}       , ...
                           {elyte, 'dmudcs'}};
             model = model.registerPropFunction({{thermal, 'jHeatChemicalSource'}, fn, inputnames});
-                          
-            %% Functio that updates Thermal Reaction Terms
             
+            %% Function that updates Thermal Reaction Terms
             fn = @Battery.updateThermalReactionSourceTerms;
             inputnames = {{ne, am, itf, 'R'}  , ...
                           {ne, am, itf, 'eta'}, ...
@@ -316,7 +310,7 @@ classdef Battery < BaseModel
                           {pe, am, itf, 'eta'}};
             model = model.registerPropFunction({{thermal, 'jHeatReactionSource'}, fn, inputnames});
                                                     
-            %% Function that setup external coupling at positive and negative electrodes
+            %% Functions that setup external coupling at positive and negative electrodes
             
             fn = @Battery.setupExternalCouplingNegativeElectrode;
             model = model.registerPropFunction({{ne, cc, 'jExternal'}, fn, {'phi'}});
@@ -349,84 +343,83 @@ classdef Battery < BaseModel
         % Setup the thermal model :attr:`ThermalModel`. Here, :code:`paramobj` is instance of
         % :class:`ThermalComponentInputParams <Electrochemistry.ThermalComponentInputParams>`
             
-            if model.use_thermal
-                
-                ne    = 'NegativeElectrode';
-                pe    = 'PositiveElectrode';
-                am    = 'ActiveMaterial';
-                cc    = 'CurrentCollector';
-                elyte = 'Electrolyte';
-                sep   = 'Separator';
-                
-                eldes = {ne, pe}; % electrodes
-                
-                G = model.G;
-                nc = G.cells.num;
-                
-                hcap = zeros(nc, 1); % effective heat capacity
-                hcond = zeros(nc, 1); % effective heat conductivity
-                
-                for ind = 1 : numel(eldes)
+            ne    = 'NegativeElectrode';
+            pe    = 'PositiveElectrode';
+            am    = 'ActiveMaterial';
+            cc    = 'CurrentCollector';
+            elyte = 'Electrolyte';
+            sep   = 'Separator';
+            
+            eldes = {ne, pe}; % electrodes
+            
+            G = model.G;
+            nc = G.cells.num;
+            
+            hcap = zeros(nc, 1); % effective heat capacity
+            hcond = zeros(nc, 1); % effective heat conductivity
+            
+            for ind = 1 : numel(eldes)
 
-                    elde = eldes{ind};
+                elde = eldes{ind};
+                
+                if model.include_current_collectors
                     
-                    if model.include_current_collectors
-                        
-                        % The effecive and intrinsic thermal parameters for the current collector are the same.
-                        cc_map = model.(elde).(cc).G.mappings.cellmap;
-                        cc_hcond = model.(elde).(cc).thermalConductivity;
-                        cc_hcap = model.(elde).(cc).heatCapacity;
+                    % The effecive and intrinsic thermal parameters for the current collector are the same.
+                    cc_map = model.(elde).(cc).G.mappings.cellmap;
+                    cc_hcond = model.(elde).(cc).thermalConductivity;
+                    cc_hcap = model.(elde).(cc).heatCapacity;
 
-                        hcap(cc_map) = hcap(cc_map) + cc_hcap;
-                        hcond(cc_map) = hcond(cc_map) + cc_hcond;
-                        
-                    end
-                    
-                    % Effective parameters from the Electrode Active Component region.
-                    am_map = model.(elde).(am).G.mappings.cellmap;
-                    am_hcond = model.(elde).(am).thermalConductivity;
-                    am_hcap = model.(elde).(am).heatCapacity;
-                    am_volfrac = model.(elde).(am).volumeFraction;
-                    
-                    am_hcap = am_hcap.*am_volfrac;
-                    am_hcond = am_hcond.*am_volfrac.^1.5;
-                    
-                    hcap(am_map) = hcap(am_map) + am_hcap;
-                    hcond(am_map) = hcond(am_map) + am_hcond;
+                    hcap(cc_map) = hcap(cc_map) + cc_hcap;
+                    hcond(cc_map) = hcond(cc_map) + cc_hcond;
                     
                 end
-
-                % Electrolyte
                 
-                elyte_map = model.(elyte).G.mappings.cellmap;
-                elyte_hcond = model.(elyte).thermalConductivity;
-                elyte_hcap = model.(elyte).heatCapacity;
-                elyte_volfrac = model.(elyte).volumeFraction;
+                % Effective parameters from the Electrode Active Component region.
+                am_map = model.(elde).(am).G.mappings.cellmap;
+                am_hcond = model.(elde).(am).thermalConductivity;
+                am_hcap = model.(elde).(am).heatCapacity;
+                am_volfrac = model.(elde).(am).volumeFraction;
                 
-                elyte_hcap = elyte_hcap.*elyte_volfrac;
-                elyte_hcond = elyte_hcond.*elyte_volfrac.^1.5;
+                am_hcap = am_hcap.*am_volfrac;
+                am_hcond = am_hcond.*am_volfrac.^1.5;
                 
-                hcap(elyte_map) = hcap(elyte_map) + elyte_hcap;
-                hcond(elyte_map) = hcond(elyte_map) + elyte_hcond;            
-                
-                % Separator
-                
-                sep_map = model.(elyte).(sep).G.mappings.cellmap;
-                
-                sep_hcond = model.(elyte).(sep).thermalConductivity;
-                sep_hcap = model.(elyte).(sep).heatCapacity;
-                sep_volfrac = model.(elyte).(sep).volumeFraction;
-                
-                sep_hcap = sep_hcap.*sep_volfrac;
-                sep_hcond = sep_hcond.*sep_volfrac.^1.5;
-                
-                hcap(sep_map) = hcap(sep_map) + sep_hcap;
-                hcond(sep_map) = hcond(sep_map) + sep_hcond;            
-
-                model.ThermalModel.EffectiveHeatCapacity = hcap;
-                model.ThermalModel.EffectiveThermalConductivity = hcond;
+                hcap(am_map) = hcap(am_map) + am_hcap;
+                hcond(am_map) = hcond(am_map) + am_hcond;
                 
             end
+
+            % Electrolyte
+            
+            elyte_map = model.(elyte).G.mappings.cellmap;
+            elyte_hcond = model.(elyte).thermalConductivity;
+            elyte_hcap = model.(elyte).heatCapacity;
+            elyte_volfrac = model.(elyte).volumeFraction;
+            
+            elyte_hcap = elyte_hcap.*elyte_volfrac;
+            elyte_hcond = elyte_hcond.*elyte_volfrac.^1.5;
+            
+            hcap(elyte_map) = hcap(elyte_map) + elyte_hcap;
+            hcond(elyte_map) = hcond(elyte_map) + elyte_hcond;            
+            
+            % Separator
+            
+            sep_map = model.(elyte).(sep).G.mappings.cellmap;
+            
+            sep_hcond = model.(elyte).(sep).thermalConductivity;
+            sep_hcap = model.(elyte).(sep).heatCapacity;
+            sep_volfrac = model.(elyte).(sep).volumeFraction;
+            
+            sep_hcap = sep_hcap.*sep_volfrac;
+            sep_hcond = sep_hcond.*sep_volfrac.^1.5;
+            
+            hcap(sep_map) = hcap(sep_map) + sep_hcap;
+            hcond(sep_map) = hcond(sep_map) + sep_hcond;            
+
+            if model.use_thermal
+                model.ThermalModel.EffectiveHeatCapacity = hcap;
+                model.ThermalModel.EffectiveThermalConductivity = hcond;
+            end
+            
         end
         
         
@@ -493,10 +486,16 @@ classdef Battery < BaseModel
             elyte_cells = zeros(model.G.cells.num, 1);
             elyte_cells(model.(elyte).G.mappings.cellmap) = (1 : model.(elyte).G.cells.num)';
 
-            model.(elyte).volumeFraction = ones(model.(elyte).G.cells.num, 1); % region where electolyte fill up volume is default
-            model.(elyte).volumeFraction(elyte_cells(model.(ne).(am).G.mappings.cellmap)) = model.(ne).(am).porosity;
-            model.(elyte).volumeFraction(elyte_cells(model.(pe).(am).G.mappings.cellmap)) = model.(pe).(am).porosity;
-            model.(elyte).volumeFraction(elyte_cells(model.(elyte).(sep).G.mappings.cellmap)) = model.(elyte).(sep).porosity;
+            
+            model.(elyte).volumeFraction = NaN(model.(elyte).G.cells.num, 1);
+            model.(elyte).volumeFraction = subsasgnAD(model.(elyte).volumeFraction,elyte_cells(model.(ne).(am).G.mappings.cellmap), model.(ne).(am).porosity);
+            model.(elyte).volumeFraction = subsasgnAD(model.(elyte).volumeFraction,elyte_cells(model.(pe).(am).G.mappings.cellmap), model.(pe).(am).porosity);
+            sep_cells = elyte_cells(model.(elyte).(sep).G.mappings.cellmap); 
+            model.(elyte).volumeFraction = subsasgnAD(model.(elyte).volumeFraction,sep_cells, model.(elyte).(sep).porosity);
+
+            if model.use_thermal
+                model.(elyte).EffectiveThermalConductivity = model.(elyte).volumeFraction.*model.(elyte).thermalConductivity;
+            end
 
         end
         
@@ -532,14 +531,12 @@ classdef Battery < BaseModel
         end
         
         function initstate = setupInitialState(model)
-        % Setup the initial state
+        % Setup the values of the primary variables at initial state
 
             nc = model.G.cells.num;
 
             SOC = model.SOC;
             T   = model.initT;
-            
-            %initstate.SOC = SOC*ones(nc, 1);
             
             bat = model;
             elyte   = 'Electrolyte';
@@ -553,62 +550,56 @@ classdef Battery < BaseModel
             ctrl    = 'Control';
             
             initstate.(thermal).T = T*ones(nc, 1);
-            
-            %% synchronize temperatures
-            
+
+            %% Synchronize temperatures
             initstate = model.updateTemperature(initstate);
-            
-            %% setup initial NegativeElectrode state
-            
-            % shortcut
-            % negItf : ActiveMaterial of the negative electrode
-            
-            negItf = bat.(ne).(am).(itf); 
-            
-            m     = (1 ./ (negItf.theta100 - negItf.theta0));
-            b     = -m .* negItf.theta0;
-            theta = (SOC - b) ./ m;
-            c     = theta .* negItf.cmax;
-            c     = c*ones(negItf.G.cells.num, 1);
 
-            initstate.(ne).(am).c = c;
-            initstate.(ne).(am).(sd).cSurface = c;
-            % We bypass the solid diffusion equation to set directly the particle surface concentration (this is a bit hacky)
-            initstate.(ne).(am) = model.(ne).(am).updateConcentrations(initstate.(ne).(am));
-            initstate.(ne).(am).(itf) = negItf.updateOCP(initstate.(ne).(am).(itf));
-
-            OCP = initstate.(ne).(am).(itf).OCP;
-            ref = OCP(1);
             
-            initstate.(ne).(am).phi = OCP - ref;
-
-            %% setup initial PositiveElectrode state
-
-            % shortcut
-            % posItf : ActiveMaterial of the positive electrode            
-            posItf = bat.(pe).(am).(itf);
+            %% Setup initial state for NegativeElectrode
             
-            m     = (1 ./ (posItf.theta100 - posItf.theta0));
-            b     = -m .* posItf.theta0;
-            theta = (SOC - b) ./ m;
-            c     = theta .* posItf.cmax;
-            c     = c*ones(posItf.G.cells.num, 1);
-
-            initstate.(pe).(am).c = c;
-            initstate.(pe).(am).(sd).cSurface = c;
-            % We bypass the solid diffusion equation to set directly the particle surface concentration (this is a bit hacky)
-            initstate.(pe).(am) = model.(pe).(am).updateConcentrations(initstate.(pe).(am));
-            initstate.(pe).(am).(itf) = posItf.updateOCP(initstate.(pe).(am).(itf));
+            eldes = {ne, pe};
             
-            OCP = initstate.(pe).(am).(itf).OCP;
-            initstate.(pe).(am).phi = OCP - ref;
+            for ind = 1 : numel(eldes)
+                
+                elde = eldes{ind};
+                
+                elde_itf = bat.(elde).(am).(itf); 
+                
+                m     = (1 ./ (elde_itf.theta100 - elde_itf.theta0));
+                b     = -m .* elde_itf.theta0;
+                theta = (SOC - b) ./ m;
+                c     = theta .* elde_itf.cmax;
+                nc    = elde_itf.G.cells.num;
 
-            %% setup initial Electrolyte state
+                if model.(elde).(am).useSimplifiedDiffusionModel
+                    initstate.(elde).(am).(sd).cSurface = c*ones(nc, 1);
+                    initstate.(elde).(am).c = c*ones(nc, 1);
+                else
+                    initstate.(elde).(am).(sd).cSurface = c*ones(nc, 1);
+                    N = model.(elde).(am).(sd).N;
+                    np = model.(elde).(am).(sd).np; % Note : we have by construction np = nc
+                    initstate.(elde).(am).(sd).c = c*ones(N*np, 1);
+                end
+                
+                initstate.(elde).(am) = model.(elde).(am).updateConcentrations(initstate.(elde).(am));
+                initstate.(elde).(am).(itf) = elde_itf.updateOCP(initstate.(elde).(am).(itf));
+
+                OCP = initstate.(elde).(am).(itf).OCP;
+                if ind == 1
+                    % The value in the first cell is used as reference.
+                    ref = OCP(1);
+                end
+                
+                initstate.(elde).(am).phi = OCP - ref;
+                
+            end
+
+            %% Setup initial Electrolyte state
 
             initstate.(elyte).phi = zeros(bat.(elyte).G.cells.num, 1)-ref;
             initstate.(elyte).c = 1000*ones(bat.(elyte).G.cells.num, 1);
 
-            %% setup initial Current collectors state
+            %% Setup initial Current collectors state
 
             if model.(ne).include_current_collector
                 OCP = initstate.(ne).(am).(itf).OCP;
@@ -720,13 +711,15 @@ classdef Battery < BaseModel
                 state.(elde).(am) = model.(elde).(am).updateConductivity(state.(elde).(am));
                 if model.include_current_collectors
                     state.(elde).(cc) = model.(elde).(cc).updateConductivity(state.(elde).(cc));
-                    state.(elde) = battery.(elde).updateCoupling(state.(elde));
-                    switch elde
-                      case ne
-                        state = model.setupExternalCouplingNegativeElectrode(state);
-                      case pe
-                        state = model.setupExternalCouplingPositiveElectrode(state);
-                    end
+                end
+                state.(elde) = battery.(elde).updateCoupling(state.(elde));
+                switch elde
+                  case ne
+                    state = model.setupExternalCouplingNegativeElectrode(state);
+                  case pe
+                    state = model.setupExternalCouplingPositiveElectrode(state);
+                end
+                if model.include_current_collectors
                     state.(elde).(cc) = battery.(elde).(cc).updatejBcSource(state.(elde).(cc));
                     state.(elde).(am) = battery.(elde).(am).updatejBcSource(state.(elde).(am));
                 else
@@ -816,7 +809,7 @@ classdef Battery < BaseModel
                 
             end
             
-            %% setup relation between E and I at positive current collectror
+            %% Setup relation between E and I at positive current collectror
             
             state = model.setupEIEquation(state);
             state = model.updateControl(state, drivingForces);
@@ -865,7 +858,12 @@ classdef Battery < BaseModel
                 else
                     % Equation name : 'pe_am_sd_massCons';
                     % OBS : HANDMADE SCALING (to be fixed)
-                    eqs{end + 1} = 1e18*state.(pe).(am).(sd).massCons;
+                    %vol = model.(pe).(am).v
+                     vol = model.(pe).(am).operators.pv;
+                     rp =  model.(pe).(am).(sd).rp;
+                     pvol = (4*pi*rp^3/3);
+                     Np = vol(1)/pvol;% only scale so mass is equivalent trans speed is very fast (L/rp).^2
+                    eqs{end + 1} = Np*state.(pe).(am).(sd).massCons;
                 end
                 
                 % Equation name : 'pe_am_sd_soliddiffeq';
@@ -917,11 +915,11 @@ classdef Battery < BaseModel
               otherwise 
                 error()
             end
-            
+
             primaryVars = model.getPrimaryVariables();
 
             
-            %% setup LinearizedProblem that can be processed by MRST Newton API
+            %% Setup LinearizedProblem that can be processed by MRST Newton API
             problem = LinearizedProblem(eqs, types, names, primaryVars, state, dt);
             
         end
@@ -1420,14 +1418,19 @@ classdef Battery < BaseModel
         end
 
         function model = validateModel(model, varargin)
+
+            model.PositiveElectrode.ActiveMaterial = model.PositiveElectrode.ActiveMaterial.setupDependentProperties();
+            model.NegativeElectrode.ActiveMaterial = model.NegativeElectrode.ActiveMaterial.setupDependentProperties();
+            model.Electrolyte.Separator = model.Electrolyte.Separator.setupDependentProperties();
             
-            model.Electrolyte.AutoDiffBackend=model.AutoDiffBackend;
-            model.Electrolyte=model.Electrolyte.validateModel(varargin{:});
+            model = model.setupElectrolyteModel();
+                
             model.PositiveElectrode.ActiveMaterial.AutoDiffBackend= model.AutoDiffBackend;
             model.PositiveElectrode.ActiveMaterial = model.PositiveElectrode.ActiveMaterial.validateModel(varargin{:});
             model.NegativeElectrode.ActiveMaterial.AutoDiffBackend= model.AutoDiffBackend;
             model.NegativeElectrode.ActiveMaterial = model.NegativeElectrode.ActiveMaterial.validateModel(varargin{:});
-
+            model.Electrolyte.AutoDiffBackend=model.AutoDiffBackend;
+            model.Electrolyte=model.Electrolyte.validateModel(varargin{:});
             if model.NegativeElectrode.include_current_collector
                 model.NegativeElectrode.CurrentCollector.AutoDiffBackend= model.AutoDiffBackend;
                 model.NegativeElectrode.CurrentCollector= model.NegativeElectrode.CurrentCollector.validateModel(varargin{:});
@@ -1526,7 +1529,6 @@ classdef Battery < BaseModel
                 if model.use_thermal
                     T    = states{i}.ThermalModel.T; 
                     outputvars{i}.Tmax = max(T);
-
                 end
             
             end

@@ -87,11 +87,11 @@ function output = spiralGrid(params)
     if (unifang)
         h = linspace(0, 2*pi*rInner, nas + 1);
     else
-        n1 = 4;
-        n2 = nas - n1;
-        dtheta1 = 2*pi*0.05;
-        dtheta2 = 2*pi - dtheta1;
-        dtheta = [repmat(dtheta1/n1, n1, 1); repmat(dtheta2/n2, n2, 1)];
+        n1 = 15;
+        n2 = nas - 2*n1;
+        dtheta1 = 2*pi*0.02;
+        dtheta2 = 2*pi - 2*dtheta1;
+        dtheta = [repmat(dtheta1/n1, n1, 1); repmat(dtheta2/n2, n2, 1);repmat(dtheta1/n1, n1, 1)];
         theta = [0; cumsum(dtheta)];
         h = theta*rInner;
     end
