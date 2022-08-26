@@ -24,8 +24,8 @@ classdef Interface < BaseModel
 
         computeOCPFunc % Function handler to compute OCP
         
-        useJOFunc
-        computeJ0Func % can be used
+        useJ0Func
+        computeJ0Func % used when useJ0Func is true. Function handler to compute J0 as function of cElectrode, see method updateReactionRateCoefficient
         
     end
 
@@ -127,14 +127,13 @@ classdef Interface < BaseModel
         
         function state = updateOCP(model, state)
 
+            computeOCP = model.computeOCPFunc;
+            cmax = model.cmax;
+
             c = state.cElectrodeSurface;
             T = state.T;
 
-            cmax = model.cmax;
-
-            func = model.computeOCPFunc;
-
-            [state.OCP, state.dUdT] = func(c, T, cmax);
+            [state.OCP, state.dUdT] = computeOCP(c, T, cmax);
             
         end
 
@@ -142,11 +141,12 @@ classdef Interface < BaseModel
 
             if model.useJ0Func
 
-                computeJ0 = model.computeJ0Func
-
+                computeJ0 = model.computeJ0Func;
+                cmax = model.cmax;
+                
                 c = state.cElectrode
 
-                j0 = computeJ0(model, state.c);
+                j0 = computeJ0(c, cmax);
 
             else
                 

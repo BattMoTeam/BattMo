@@ -123,12 +123,13 @@ classdef Electrolyte < ElectroChemicalComponent
 
         function state = updateConductivity(model, state)
             
-            cLi = state.cs{1};
+            computeConductivity= model.computeConductivityFunc;
+
+            c = state.cs{1};
             T = state.T;
             
-            computeConductivity= model.computeConductivityFunc;
+            state.conductivity = computeConductivity(c, T);
             
-            state.conductivity = computeConductivity(cLi, T);
         end
 
         function state = updateChemicalCurrent(model, state)
@@ -156,12 +157,12 @@ classdef Electrolyte < ElectroChemicalComponent
         
         function state = updateDiffusionCoefficient(model, state)
             
+            computeD = model.computeDiffusionCoefficientFunc;
+
             c = state.c;
             T = state.T;
-
-            func = model.computeDiffusionCoefficientFunc;
             
-            D = func(c, T);
+            D = computeD(c, T);
             
             % set effective coefficient
             state.D = D .* model.volumeFraction .^1.5;
