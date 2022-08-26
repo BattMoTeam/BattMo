@@ -100,7 +100,11 @@ classdef Interface < BaseModel
             model = model.registerVarNames(varnames);
             
             fn = @Interface.updateReactionRateCoefficient;
-            inputnames = {'T', 'cElectrolyte', 'cElectrodeSurface'};
+            if model.useJ0Func
+                inputnames = {'cElectrodeSurface'};
+            else
+                inputnames = {'T', 'cElectrolyte', 'cElectrodeSurface'};
+            end
             model = model.registerPropFunction({'j0', fn, inputnames});
 
             fn = @Interface.updateOCP;
