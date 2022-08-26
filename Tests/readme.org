@@ -38,8 +38,9 @@ json file which the `runtests` code uses for comparison and
 verification. The data can be saved to a json file using the following
 code:
 ```
+testname = 'TestBattery1DIEswitch.json';
 s = jsonencode(states{end});
-fid = fopen('TestBattery1DCCCV.json', 'w');
+fid = fopen(testname, 'w');
 fprintf(fid, s);
 fclose(fid);
 ```
