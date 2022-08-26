@@ -10,7 +10,7 @@
     "theta0": 0.99,
     "name": "nmc111(Chen)",
     "OCP" : {"type" : "function",
-             "functionname" : "updateOCPFunc_nmc111_Chen",
+             "functionname" : "computeOCP_nmc111_Chen",
              "argumentlist" : ["cElectrode", "T", "cmax"],
              "name" : "nmc111 OCP"
             }

@@ -4,12 +4,12 @@
   "negativeDomainBruggemanCoefficient" : 1.5,
   "positiveDomainBruggemanCoefficient" : 1.5,
   "Conductivity" : {"type" : "function",
-                    "functionname" : "updateElectrolyteConductivityFunc_Nyman2008",
+                    "functionname" : "computeElectrolyteConductivity_Nyman2008",
                     "argumentlist" : ["c", "T"],
                     "name" : "conductivity"
                    },
   "DiffusionCoefficient" : {"type": "function",
-                            "functionname" : "updateDiffusionCoefficientFunc_Nyman2008",
+                            "functionname" : "computeDiffusionCoefficient_Nyman2008",
                             "argumentlist" : ["c", "T"],
                             "name" : "diffusion coefficient"
                            },

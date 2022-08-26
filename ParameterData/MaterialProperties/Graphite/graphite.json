@@ -10,7 +10,7 @@
   "theta0": 0.1429,
   "name": "Graphite",
   "OCP" : {"type": "function",
-           "functionname" : "updateOCPFunc_graphite",
+           "functionname" : "computeOCP_graphite",
            "argumentlist" : ["cElectrode", "T", "cmax"],
            "name" : "graphite OCP"
           }

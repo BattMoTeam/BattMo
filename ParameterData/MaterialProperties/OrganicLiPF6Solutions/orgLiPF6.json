@@ -5,11 +5,11 @@
   "thermalConductivity": 0.6,
   "density": 1200,
   "Conductivity" : {"type" : "function",
-                    "functionname" : "updateElectrolyteConductivityFunc_default",
+                    "functionname" : "computeElectrolyteConductivity_default",
                     "argumentlist" : ["c", "T"]
                    },
   "DiffusionCoefficient" : {"type": "function",
-                            "functionname" : "updateDiffusionCoefficientFunc_default",
+                            "functionname" : "computeDiffusionCoefficient_default",
                             "argumentlist" : ["c", "T"]
                            },
   "compnames": [
