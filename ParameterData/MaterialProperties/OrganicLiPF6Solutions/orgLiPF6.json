@@ -6,11 +6,11 @@
   "density": 1200,
   "Conductivity" : {"type" : "function",
                     "functionname" : "updateElectrolyteConductivityFunc_default",
-                    "argumentlist" : ["concentration", "temperature"]
+                    "argumentlist" : ["c", "T"]
                    },
   "DiffusionCoefficient" : {"type": "function",
                             "functionname" : "updateDiffusionCoefficientFunc_default",
-                            "argumentlist" : ["concentration", "temperature"]
+                            "argumentlist" : ["c", "T"]
                            },
   "compnames": [
     "Li",

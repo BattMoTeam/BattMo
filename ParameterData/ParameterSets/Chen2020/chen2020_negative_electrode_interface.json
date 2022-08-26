@@ -11,7 +11,7 @@
   "name": "graphite(Chen)",
   "OCP" : { "type": "function",
             "functionname" : "updateOCPFunc_graphite_Chen",
-            "argumentlist" : ["concentration", "temperature", "maximum concentration"],
+            "argumentlist" : ["cElectrode", "T", "cmax"],
             "name" : "graphite OCP"
           }
 }

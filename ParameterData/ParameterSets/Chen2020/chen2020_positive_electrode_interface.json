@@ -11,7 +11,7 @@
     "name": "nmc111(Chen)",
     "OCP" : {"type" : "function",
              "functionname" : "updateOCPFunc_nmc111_Chen",
-             "argumentlist" : ["concentration", "temperature", "maximum concentration"],
+             "argumentlist" : ["cElectrode", "T", "cmax"],
              "name" : "nmc111 OCP"
             }
 }

@@ -11,7 +11,7 @@
   "name": "NMC111",
   "OCP" : {"type" : "function",
            "functionname" : "updateOCPFunc_nmc111",
-           "argumentlist" : ["concentration", "temperature", "maximum concentration"],
+           "argumentlist" : ["cElectrode", "T", "cmax"],
            "name" : "NMC111 OCP"
           }
 }
