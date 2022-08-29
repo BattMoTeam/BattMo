@@ -59,7 +59,7 @@ classdef Interface < BaseModel
 
             if ~isempty(paramobj.j0)
                 model.useJ0Func = true;
-                model.computeOCPFunc = str2func(paramobj.OCP.functionname);
+                model.computeJ0Func = str2func(paramobj.j0.functionname);
             else
                 model.useJ0Func = false;
             end
@@ -143,14 +143,20 @@ classdef Interface < BaseModel
 
         function state = updateReactionRateCoefficient(model, state)
 
+
             if model.useJ0Func
 
                 computeJ0 = model.computeJ0Func;
-                cmax = model.cmax;
+                cmax      = model.cmax;
+                theta0    = model.theta0;
+                theta100  = model.theta100;
                 
-                c = state.cElectrode
+                c = state.cElectrodeSurface;
 
-                j0 = computeJ0(c, cmax);
+                cmin = theta0*cmax;
+                cmax = theta100*cmax;
+                
+                j0 = computeJ0(c, cmin, cmax);
 
             else
                 
@@ -160,8 +166,8 @@ classdef Interface < BaseModel
                 k0   = model.k0;
                 Eak  = model.Eak;
                 n    = model.n;
-                R    = model.constants.R;
                 F    = model.constants.F;
+                R    = model.constants.R;
 
                 T      = state.T;
                 cElyte = state.cElectrolyte;
