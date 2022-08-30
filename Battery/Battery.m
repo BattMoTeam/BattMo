@@ -564,11 +564,9 @@ classdef Battery < BaseModel
                 elde = eldes{ind};
                 
                 elde_itf = bat.(elde).(am).(itf); 
-                
-                m     = (1 ./ (elde_itf.theta100 - elde_itf.theta0));
-                b     = -m .* elde_itf.theta0;
-                theta = (SOC - b) ./ m;
-                c     = theta .* elde_itf.cmax;
+
+                theta = SOC*(elde_itf.theta100 - elde_itf.theta0) + elde_itf.theta0;
+                c     = theta*elde_itf.cmax;
                 nc    = elde_itf.G.cells.num;
 
                 if model.(elde).(am).useSimplifiedDiffusionModel
