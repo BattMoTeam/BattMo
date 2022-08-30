@@ -29,8 +29,8 @@ classdef TestBattery1D < matlab.unittest.TestCase
             switchToFullDiffusionModel = false;
             if switchToFullDiffusionModel
                 % model in json file is the simplified diffusion model
-                jsonstruct.NegativeElectrode.ActiveMaterial.useSimplifiedDiffusionModel = false;
-                jsonstruct.PositiveElectrode.ActiveMaterial.useSimplifiedDiffusionModel = false;
+                jsonstruct.NegativeElectrode.ActiveMaterial.diffusionModel = 'full';
+                jsonstruct.PositiveElectrode.ActiveMaterial.diffusionModel = 'full';
             end
 
             paramobj = BatteryInputParams(jsonstruct);

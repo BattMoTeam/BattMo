@@ -181,20 +181,22 @@ classdef Battery < BaseModel
                 selectedVarInds(pickVarInd({{ne, am, sd, 'cSurface'}, {pe, am, sd, 'cSurface'}})) = true;
                 [isok, inds] = ismember({'ne_am_sd_soliddiffeq', 'pe_am_sd_soliddiffeq'}, allEquationNames);
                 selectedEqnInds(inds) = true;
-                if model.(ne).(am).useSimplifiedDiffusionModel
+                switch model.(ne).(am).diffusionModel
+                  case 'simple'
                     selectedVarInds(pickVarInd({ne, am, 'c'})) = true;
                     [isok, inds] = ismember('ne_am_massCons', allEquationNames);
                     selectedEqnInds(inds) = true;                    
-                else
+                  case 'full'
                     selectedVarInds(pickVarInd({ne, am, sd, 'c'})) = true;
                     [isok, inds] = ismember('ne_am_sd_massCons', allEquationNames);
                     selectedEqnInds(inds) = true;                    
                 end
-                if model.(pe).(am).useSimplifiedDiffusionModel
+                switch model.(pe).(am).diffusionModel
+                  case 'simple'
                     selectedVarInds(pickVarInd({pe, am, 'c'})) = true;
                     [isok, inds] = ismember('pe_am_massCons', allEquationNames);
                     selectedEqnInds(inds) = true;                    
-                else
+                  case 'full'
                     selectedVarInds(pickVarInd({pe, am, sd, 'c'})) = true;
                     [isok, inds] = ismember('pe_am_sd_massCons', allEquationNames);
                     selectedEqnInds(inds) = true;                    
@@ -571,10 +573,11 @@ classdef Battery < BaseModel
                 c     = theta .* elde_itf.cmax;
                 nc    = elde_itf.G.cells.num;
 
-                if model.(elde).(am).useSimplifiedDiffusionModel
+                switch model.(elde).(am).diffusionModel
+                  case 'simple'
                     initstate.(elde).(am).(sd).cSurface = c*ones(nc, 1);
                     initstate.(elde).(am).c = c*ones(nc, 1);
-                else
+                  case 'full'
                     initstate.(elde).(am).(sd).cSurface = c*ones(nc, 1);
                     N = model.(elde).(am).(sd).N;
                     np = model.(elde).(am).(sd).np; % Note : we have by construction np = nc
@@ -764,11 +767,12 @@ classdef Battery < BaseModel
                 state.(elde).(am).(sd) = battery.(elde).(am).(sd).updateDiffusionCoefficient(state.(elde).(am).(sd));
                 state.(elde).(am) = battery.(elde).(am).dispatchRate(state.(elde).(am));
                 if model.use_solid_diffusion
-                    if model.(elde).(am).useSimplifiedDiffusionModel
+                    switch model.(elde).(am).diffusionModel
+                      case 'simple'
                         state.(elde).(am) = battery.(elde).(am).assembleAccumTerm(state.(elde).(am), state0.(elde).(am), dt);
                         state.(elde).(am) = battery.(elde).(am).updateMassSource(state.(elde).(am));
                         state.(elde).(am) = battery.(elde).(am).updateMassConservation(state.(elde).(am));
-                    else
+                      case 'full'
                         state.(elde).(am).(sd) = battery.(elde).(am).(sd).updateMassSource(state.(elde).(am).(sd));
                         state.(elde).(am).(sd) = battery.(elde).(am).(sd).updateFlux(state.(elde).(am).(sd));
                         state.(elde).(am).(sd) = battery.(elde).(am).(sd).updateAccumTerm(state.(elde).(am).(sd), state0.(elde).(am).(sd), dt);
@@ -839,11 +843,12 @@ classdef Battery < BaseModel
             eqs{end + 1} = state.(pe).(am).chargeCons;
             
             if model.use_solid_diffusion
-                
-                if model.(ne).(am).useSimplifiedDiffusionModel
+
+                switch model.(ne).(am).diffusionModel
+                  case 'simple'
                     % Equation name : 'ne_am_massCons';
                     eqs{end + 1} = state.(ne).(am).massCons*massConsScaling;
-                else
+                  case 'full'
                     % Equation name : 'ne_am_sd_massCons';
                     F    = model.con.F;
                     vol  = model.(ne).(am).operators.pv;
@@ -858,10 +863,11 @@ classdef Battery < BaseModel
                 % Equation name : 'ne_am_sd_soliddiffeq';
                 eqs{end + 1} = state.(ne).(am).(sd).solidDiffusionEq.*massConsScaling.*battery.(ne).(am).(itf).G.cells.volumes/dt;
                 
-                if model.(pe).(am).useSimplifiedDiffusionModel
+                switch model.(pe).(am).diffusionModel
+                  case 'simple'
                     % Equation name : 'pe_am_massCons';
                     eqs{end + 1} = state.(pe).(am).massCons*massConsScaling;
-                else
+                  case 'full'
                     % Equation name : 'pe_am_sd_massCons';
                     F    = model.con.F;
                     vol  = model.(pe).(am).operators.pv;
@@ -1018,7 +1024,7 @@ classdef Battery < BaseModel
             electrodes = {ne, pe};
             for i = 1 : numel(electrodes)
                 elde = electrodes{i}; % electrode name
-                if model.(elde).(am).useSimplifiedDiffusionModel | ~model.use_solid_diffusion
+                if strcmp(model.(elde).(am).diffusionModel, 'simple') | ~model.use_solid_diffusion
                     state.(elde).(am) = model.(elde).(am).assembleAccumTerm(state.(elde).(am), state0.(elde).(am), dt);
                 end
             end
@@ -1470,7 +1476,7 @@ classdef Battery < BaseModel
             eldes = {ne, pe};
             for ind = 1 : numel(eldes)
                 elde = eldes{ind};
-                if model.(elde).(am).useSimplifiedDiffusionModel | ~model.use_solid_diffusion
+                if strcmp(model.(elde).(am).diffusion, 'simple') | ~model.use_solid_diffusion
                     state.(elde).(am).c = max(cmin, state.(elde).(am).c);
                     cmax = model.(elde).(am).(itf).cmax;
                     state.(elde).(am).c = min(cmax, state.(elde).(am).c);

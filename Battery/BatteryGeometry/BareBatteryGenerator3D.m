@@ -102,12 +102,12 @@ classdef BareBatteryGenerator3D < BatteryGenerator
             paramobj = setupElectrodes@BatteryGenerator(gen, paramobj, params);
 
             % N and np are parameters for the full diffusion model
-            if ~paramobj.(ne).(am).useSimplifiedDiffusionModel
+            if strcmp(paramobj.(ne).(am).diffusionModel, 'full')
                 paramobj.(ne).(am).(sd).N  = gen.nenr;
                 paramobj.(ne).(am).(sd).np = gen.nenx;
             end
             
-            if ~paramobj.(pe).(am).useSimplifiedDiffusionModel
+            if strcmp(paramobj.(pe).(am).diffusionModel, 'full')
                 paramobj.(pe).(am).(sd).N  = gen.penr;
                 paramobj.(pe).(am).(sd).np = gen.penx;
             end

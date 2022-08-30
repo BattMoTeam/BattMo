@@ -22,12 +22,11 @@ mrstModule add ad-core mrst-gui mpfa
 % the paramobj object.
 jsonstruct = parseBattmoJson('ParameterData/BatteryCellParameters/LithiumIonBatteryCell/lithium_ion_battery_nmc_graphite.json');
 
-switchToFullDiffusionModel = false;
-if switchToFullDiffusionModel
-    % model in json file is the simplified diffusion model
-    jsonstruct.NegativeElectrode.ActiveMaterial.useSimplifiedDiffusionModel = false;
-    jsonstruct.PositiveElectrode.ActiveMaterial.useSimplifiedDiffusionModel = false;
-end
+% Possible override diffusionModel from the json file (diffusionModel
+% may be 'simple' or 'full')
+diffusionModel = 'simple';
+jsonstruct.NegativeElectrode.ActiveMaterial.diffusionModel = diffusionModel;
+jsonstruct.PositiveElectrode.ActiveMaterial.diffusionModel = diffusionModel;
 
 paramobj = BatteryInputParams(jsonstruct);
 

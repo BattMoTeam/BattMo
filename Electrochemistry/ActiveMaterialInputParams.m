@@ -25,7 +25,7 @@ classdef ActiveMaterialInputParams < ElectronicComponentInputParams
 
         externalCouplingTerm % structure to describe external coupling (used in absence of current collector)
 
-        useSimplifiedDiffusionModel % Flag : true if we use simplified diffusion model
+        diffusionModel % Choose between type of diffusion model ('full' or 'simple')
 
     end
 
@@ -34,17 +34,21 @@ classdef ActiveMaterialInputParams < ElectronicComponentInputParams
         function paramobj = ActiveMaterialInputParams(jsonstruct)
             paramobj = paramobj@ElectronicComponentInputParams(jsonstruct);
 
-            useSimplifiedDiffusionModel = paramobj.useSimplifiedDiffusionModel;
+            diffusionModel = paramobj.diffusionModel;
             
             pick = @(fd) pickField(jsonstruct, fd);
 
             paramobj.Interface = InterfaceInputParams(pick('Interface'));
-           
-            if useSimplifiedDiffusionModel
-                paramobj.SolidDiffusion = SimplifiedSolidDiffusionModelInputParams(pick('SolidDiffusion'));                
-            else
+
+            switch diffusionModel
+              case 'simple'
+                paramobj.SolidDiffusion = SimplifiedSolidDiffusionModelInputParams(pick('SolidDiffusion'));
+              case 'full'
                 paramobj.SolidDiffusion = FullSolidDiffusionModelInputParams(pick('SolidDiffusion'));
+              otherwise
+                error('Unknwn diffusionModel %s', diffusionModel);
             end
+            
         end
         
     end

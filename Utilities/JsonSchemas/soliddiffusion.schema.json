@@ -4,8 +4,8 @@
     "description": "solid diffusion",
     "type": "object",
     "properties" : {
-        "useSimplifiedDiffusionModel": { "type" : "boolean",
-                 "description" : "use simplified model for solid diffusion" },
+        "diffusionModel": { "type" : "string",
+                 "description" : "Choice of solid diffusion model" },
         "rp": {"type" : "number",
                "description" : "particle radius"},
         "EaD": {"type" : "number",

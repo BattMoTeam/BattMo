@@ -14,10 +14,10 @@ mrstModule add ad-core mrst-gui mpfa
 
 % The input parameters can be given in json format. The json file is read and used to populate the paramobj object.
 jsonstruct = parseBattmoJson('ParameterData/ParameterSets/Chen2020/chen2020_lithium_ion_battery.json');
-% jsonstruct.NegativeElectrode.ActiveMaterial.SolidDiffusion.useSimplifiedDiffusionModel=false;
+% jsonstruct.NegativeElectrode.ActiveMaterial.SolidDiffusion.diffusionModel='full';
 % jsonstruct.NegativeElectrode.ActiveMaterial.SolidDiffusion.np = 20;
 % jsonstruct.NegativeElectrode.ActiveMaterial.InterDiffusionCoefficient = 0;
-% jsonstruct.PositiveElectrode.ActiveMaterial.SolidDiffusion.useSimplifiedDiffusionModel = false;
+% jsonstruct.PositiveElectrode.ActiveMaterial.SolidDiffusion.diffusionModel = 'full';
 % jsonstruct.PositiveElectrode.ActiveMaterial.InterDiffusionCoefficient = 0;
 % jsonstruct.PositiveElectrode.ActiveMaterial.SolidDiffusion.np = 20;
 % jsonstruct.Electrolyte.Separator.thermalConductivity = 1.0;
@@ -100,7 +100,7 @@ nitf = bat.(ne).(am).(itf);
 
 % We bypass the solid diffusion equation to set directly the particle surface concentration
 c = 29866.0;
-if model.(ne).(am).useSimplifiedDiffusionModel
+if strcmp(model.(ne).(am).diffusionModel, 'simple')
     nenp = model.(ne).(am).G.cells.num;
     initstate.(ne).(am).c = c*ones(nenp, 1);
 else
@@ -124,7 +124,7 @@ pitf = bat.(pe).(am).(itf);
 
 c = 17038.0;
 
-if model.(pe).(am).useSimplifiedDiffusionModel
+if strcmp(model.(pe).(am).diffusionModel, 'simple')
     penp = model.(pe).(am).G.cells.num;
     initstate.(pe).(am).c = c*ones(penp, 1);
 else
