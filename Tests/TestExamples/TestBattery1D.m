@@ -2,8 +2,11 @@ classdef TestBattery1D < matlab.unittest.TestCase
 
     properties (TestParameter)
         
-        jsonfile = {'ParameterData/BatteryCellParameters/LithiumIonBatteryCell/lithium_ion_battery_nmc_graphite.json'};
-        controlPolicy = {'CCCV', 'IEswitch'};
+        jsonfile                   = {'ParameterData/BatteryCellParameters/LithiumIonBatteryCell/lithium_ion_battery_nmc_graphite.json'};
+        controlPolicy              = {'CCCV', 'IEswitch'};
+        use_thermal                = {true, false};
+        include_current_collector  = {true, false};
+        diffusionmodel             = {'simplified'};
         
     end
     
@@ -14,7 +17,7 @@ classdef TestBattery1D < matlab.unittest.TestCase
             mrstModule add ad-core mrst-gui mpfa
         end
         
-        function states = test1d(test, jsonfile, controlPolicy, varargin)
+        function states = test1d(test, jsonfile, controlPolicy, use_thermal, include_current_collector, useSimplifiedDiffusionModel, varargin)
             
         %% Setup the properties of Li-ion battery materials and cell design
         % The properties and parameters of the battery cell, including the
@@ -26,12 +29,11 @@ classdef TestBattery1D < matlab.unittest.TestCase
         % the paramobj object.
             jsonstruct = parseBattmoJson('ParameterData/BatteryCellParameters/LithiumIonBatteryCell/lithium_ion_battery_nmc_graphite.json');
 
-            switchToFullDiffusionModel = false;
-            if switchToFullDiffusionModel
-                % model in json file is the simplified diffusion model
-                jsonstruct.NegativeElectrode.ActiveMaterial.useSimplifiedDiffusionModel = false;
-                jsonstruct.PositiveElectrode.ActiveMaterial.useSimplifiedDiffusionModel = false;
-            end
+            jsonstruct.include_current_collector = include_current_collector;
+            jsonstruct.use_thermal = use_thermal;
+            
+            jsonstruct.NegativeElectrode.ActiveMaterial.useSimplifiedDiffusionModel = useSimplifiedDiffusionModel;
+            jsonstruct.PositiveElectrode.ActiveMaterial.useSimplifiedDiffusionModel = useSimplifiedDiffusionModel;
 
             paramobj = BatteryInputParams(jsonstruct);
 
@@ -47,9 +49,6 @@ classdef TestBattery1D < matlab.unittest.TestCase
                 paramobj.Control = cccvparamobj;
             end
 
-            % paramobj.include_current_collectors = true;
-            % paramobj.use_solid_diffusion = false;
-            % paramobj.use_thermal = true;
 
             % We define some shorthand names for simplicity.
             ne      = 'NegativeElectrode';
@@ -98,6 +97,9 @@ classdef TestBattery1D < matlab.unittest.TestCase
 
             n     = 100;
             dt    = total/n;
+            
+            n = 10;
+            
             step  = struct('val', dt*ones(n, 1), 'control', ones(n, 1));
 
             % we setup the control by assigning a source and stop function.
@@ -156,9 +158,16 @@ classdef TestBattery1D < matlab.unittest.TestCase
 
     methods (Test)
 
-        function testBattery(test, jsonfile, controlPolicy)
+        function testBattery(test, jsonfile, controlPolicy, use_thermal, include_current_collector, diffusionmodel)
 
-            states = test1d(test, jsonfile, controlPolicy);
+            switch diffusionmodel
+              case 'full'
+                useSimplifiedDiffusionModel = false;
+              case 'simplified'
+                useSimplifiedDiffusionModel = true;
+            end
+            
+            states = test1d(test, jsonfile, controlPolicy, use_thermal, include_current_collector, useSimplifiedDiffusionModel);
             verifyStruct(test, states{end}, sprintf('TestBattery1D%s', controlPolicy));
             
         end
