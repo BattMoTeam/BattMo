@@ -14,41 +14,17 @@ mrstModule add ad-core mrst-gui mpfa
 
 % The input parameters can be given in json format. The json file is read and used to populate the paramobj object.
 jsonstruct = parseBattmoJson('ParameterData/ParameterSets/Chen2020/chen2020_lithium_ion_battery.json');
-% jsonstruct.NegativeElectrode.ActiveMaterial.SolidDiffusion.useSimplifiedDiffusionModel=false;
-% jsonstruct.NegativeElectrode.ActiveMaterial.SolidDiffusion.np = 20;
-% jsonstruct.NegativeElectrode.ActiveMaterial.InterDiffusionCoefficient = 0;
-% jsonstruct.PositiveElectrode.ActiveMaterial.SolidDiffusion.useSimplifiedDiffusionModel = false;
-% jsonstruct.PositiveElectrode.ActiveMaterial.InterDiffusionCoefficient = 0;
-% jsonstruct.PositiveElectrode.ActiveMaterial.SolidDiffusion.np = 20;
-% jsonstruct.Electrolyte.Separator.thermalConductivity = 1.0;
-% jsonstruct.Electrolyte.Separator.heatCapacity = 4180000;
-% jsonstruct.use_thermal = 0
-% jsonstruct.use_solid_diffusion = 1
-% jsonstruct.include_current_collectors = 0
 
 paramobj = BatteryInputParams(jsonstruct);
 
-% Some shorthands used for the sub-models
-ne    = 'NegativeElectrode';
-pe    = 'PositiveElectrode';
-am    = 'ActiveMaterial';
-sd    = 'SolidDiffusion';
-elyte = 'Electrolyte';
-itf   = 'Interface';
-ctrl  = 'Control';
 
 %% We setup the battery geometry ("bare" battery with no current collector).
+
 gen = BareBatteryGenerator3D();
-% We update pamobj with grid data
+
+% We update paramobj with grid data
 paramobj = gen.updateBatteryInputParams(paramobj);
 
-%paramobj.(ne).(am).InterDiffusionCoefficient = 0;
-%paramobj.(pe).(am).InterDiffusionCoefficient = 0;
-
-%paramobj.(ne).(am).(sd).useSimplifiedDiffusionModel = false;
-%paramobj.(ne).(am).(sd).useSimplifiedDiffusionModel.np=10;
-%paramobj.(pe).(am).(sd).useSimplifiedDiffusionModel = false;
-%paramobj.(pe).(am).(sd).useSimplifiedDiffusionModel.np=10;
 
 %%  The Battery model is initialized by sending paramobj to the Battery class constructor 
 
@@ -56,9 +32,10 @@ model = Battery(paramobj);
 
 %% We fix the input current to 5A
 
-model.Control.Imax = 5;
+model.Control.Imax = 5*ampere;
 
-%% We setup the schedule 
+%% We setup the schedule
+
 % We use different time step for the activation phase (small time steps) and the following discharging phase
 % We start with rampup time steps to go through the activation phase 
 
@@ -87,76 +64,19 @@ schedule = struct('control', control, 'step', step);
 
 %%  We setup the initial state
 
-nc = model.G.cells.num;
-T = model.initT;
-initstate.ThermalModel.T = T*ones(nc, 1);
+c_ne = 29.866*mol/litre; % initial concentration at negative electrode
+c_pe = 17.038*mol/litre; % initial concentration at positive electrode
+initstate = initStateChen2020(model, c_ne, c_pe);
 
-bat = model;
+%% We setup the solver
+% Default values would typically work.
 
-initstate = model.updateTemperature(initstate);
-
-% we setup negative electrode initial state
-nitf = bat.(ne).(am).(itf); 
-
-% We bypass the solid diffusion equation to set directly the particle surface concentration
-c = 29866.0;
-if model.(ne).(am).useSimplifiedDiffusionModel
-    nenp = model.(ne).(am).G.cells.num;
-    initstate.(ne).(am).c = c*ones(nenp, 1);
-else
-    nenr = model.(ne).(am).(sd).N;
-    nenp = model.(ne).(am).(sd).np;
-    initstate.(ne).(am).(sd).c = c*ones(nenr*nenp, 1);
-end
-initstate.(ne).(am).(sd).cSurface = c*ones(nenp, 1);
-
-initstate.(ne).(am) = model.(ne).(am).updateConcentrations(initstate.(ne).(am));
-initstate.(ne).(am).(itf) = nitf.updateOCP(initstate.(ne).(am).(itf));
-
-OCP = initstate.(ne).(am).(itf).OCP;
-ref = OCP(1);
-
-initstate.(ne).(am).phi = OCP - ref;
-
-% we setup positive electrode initial state
-
-pitf = bat.(pe).(am).(itf); 
-
-c = 17038.0;
-
-if model.(pe).(am).useSimplifiedDiffusionModel
-    penp = model.(pe).(am).G.cells.num;
-    initstate.(pe).(am).c = c*ones(penp, 1);
-else
-    penr = model.(pe).(am).(sd).N;
-    penp = model.(pe).(am).(sd).np;
-    initstate.(pe).(am).(sd).c = c*ones(penr*penp, 1);
-end
-initstate.(pe).(am).(sd).cSurface = c*ones(penp, 1);
-
-initstate.(pe).(am) = model.(pe).(am).updateConcentrations(initstate.(pe).(am));
-initstate.(pe).(am).(itf) = pitf.updateOCP(initstate.(pe).(am).(itf));
-
-OCP = initstate.(pe).(am).(itf).OCP;
-
-initstate.(pe).(am).phi = OCP - ref;
-
-initstate.(elyte).phi = zeros(bat.(elyte).G.cells.num, 1) - ref;
-initstate.(elyte).c = 1000*ones(bat.(elyte).G.cells.num, 1);
-
-% setup initial positive electrode external coupling values
-
-initstate.(ctrl).E = OCP(1) - ref;
-initstate.(ctrl).I = 0;
-initstate.(ctrl).ctrlType = 'constantCurrent';
-
-% Setup nonlinear solver 
 nls = NonLinearSolver(); 
 % Change default maximum iteration number in nonlinear solver
 nls.maxIterations = 10; 
 % Change default behavior of nonlinear solver, in case of error
 nls.errorOnFailure = false;
-linearsolver = 'battery'
+linearsolver = 'direct';
 switch linearsolver
   case 'agmg'
     mrstModule add agmg
@@ -165,14 +85,13 @@ switch linearsolver
     nls.LinearSolver.maxIterations = 30; 
     nls.maxIterations = 10; 
     nls.verbose = 10;
-   case 'battery'
-        %nls.LinearSolver = LinearSolverBatteryExtra('verbose', false, 'reduceToCell', true,'verbosity',3,'reuse_setup',false,'method','matlab_p_gs');
-        nls.LinearSolver = LinearSolverBatteryExtra('verbose', false, 'reduceToCell', false,'verbosity',3,'reuse_setup',false,'method','direct');
-        nls.LinearSolver.tolerance=0.5e-4*2;          
+  case 'battery'
+    nls.LinearSolver = LinearSolverBatteryExtra('verbose', false, 'reduceToCell', false, 'verbosity', 3, 'reuse_setup', false, 'method', 'direct');
+    nls.LinearSolver.tolerance=0.5e-4*2;          
   case 'direct'
-    disp('standard direct solver')
+    % nothing to setup in this case
   otherwise
-    error()
+    error('linear solver not recognized.');
 end
 
 % Change default tolerance for nonlinear solver
@@ -182,40 +101,63 @@ model.verbose = false;
 
 model.AutoDiffBackend= AutoDiffBackend();
 
+%% We run simulation
+
+[~, states, ~] = simulateScheduleAD(initstate, model, schedule, 'OutputMinisteps', true, 'NonLinearSolver', nls); 
+
+% We want to consider the simplified diffusion model and therefore setup a model that can run it.
+
+jsonstruct.NegativeElectrode.ActiveMaterial.diffusionModelType = 'simple';
+jsonstruct.PositiveElectrode.ActiveMaterial.diffusionModelType = 'simple';
+
+paramobj = BatteryInputParams(jsonstruct);
+paramobj = gen.updateBatteryInputParams(paramobj);
+
+model2 = Battery(paramobj);
+
+% setup initial state (the variables are different for the simplified model and therfore the initialization is not the same)
+
+initstate2 = initStateChen2020(model2, c_ne, c_pe);
+
 % Run simulation
-[wellSols, states, report] = simulateScheduleAD(initstate, model, schedule, 'OutputMinisteps', true, 'NonLinearSolver', nls); 
+[~, states2, ~] = simulateScheduleAD(initstate2, model2, schedule, 'OutputMinisteps', true, 'NonLinearSolver', nls);
+
 
 %%  We process output and recover the output voltage and current from the output states.
-ind = cellfun(@(x) not(isempty(x)), states); 
-states = states(ind);
-Enew = cellfun(@(x) x.(ctrl).E, states); 
-Inew = cellfun(@(x) x.(ctrl).I, states);
-time = cellfun(@(x) x.time, states); 
 
-%% We plot the the output voltage and current
+E1    = cellfun(@(state) state.Control.E, states); 
+I1    = cellfun(@(state) state.Control.I, states);
+time1 = cellfun(@(state) state.time, states);
 
+E2    = cellfun(@(state) state.Control.E, states2); 
+I2    = cellfun(@(state) state.Control.I, states2);
+time2 = cellfun(@(state) state.time, states2);
+
+
+%% We plot the the output voltage and current and compare with pybamm results
+
+% We load the pybamm results
 loadChenPybammSolution
 [t1, u1] = deal(t, u);
 [t2, u2] = deal(t_infdiff, u_infdiff);
 
+% We plot the solutions
+
 set(0, 'defaultFigurePosition', [671 510 900 600]);
 
-l = lines(3);
+l = lines(4);
 figure
-plot((time/hour), Enew,'-', 'linewidth', 3, 'color', l(1, :), 'displayname', 'battmo - solid diffusion')
 hold on
-plot(t1, u1, 'linewidth', 3, 'color', l(2, :), 'displayname', 'pybamm - solid diffusion')
-plot(t2, u2, 'linewidth', 3, 'color', l(3, :), 'displayname', 'pybamm - instantaneous solid diffusion')
-% plot(t_pybamm/hour, u_pybamm, '-', 'linewidth', 3, 'color', l(3, :), 'displayname', 'pybamm hello')
+plot(t1, u1, 'linewidth', 3, 'color', l(1, :), 'displayname', 'pybamm - solid diffusion')
+plot(t2, u2, 'linewidth', 3, 'color', l(2, :), 'displayname', 'pybamm - instantaneous solid diffusion')
+plot((time1/hour), E1,'-', 'linewidth', 3, 'color', l(3, :), 'displayname', 'battmo')
+plot((time2/hour), E2,'-', 'linewidth', 3, 'color', l(4, :), 'displayname', 'battmo - simplified diffusion model')
+
+
 set(gca, 'fontsize', 18);
 title('Cell Voltage / V')
 xlabel('time (hours)')
 legend('fontsize', 18, 'location', 'south west')
-
-figure
-plot((time/hour), Inew, 'linewidth', 3)
-title('Current (I)')
-xlabel('time (hours)')
 
 
 %{

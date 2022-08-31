@@ -41,7 +41,6 @@ gen = BatteryGenerator2D();
 % Now, we update the paramobj with the properties of the mesh.
 paramobj = gen.updateBatteryInputParams(paramobj);
 
-% !!! REMOVE THIS. SET THE RIGHT VALUES IN THE JSON !!! In this case, we
 % change some of the values of the paramaters that were given in the json
 % file to other values. This is done directly on the object paramobj. 
 paramobj.(ne).(cc).EffectiveElectricalConductivity = 1e5;

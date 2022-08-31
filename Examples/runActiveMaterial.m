@@ -27,7 +27,7 @@ gen = BareBatteryGenerator3D();
 paramobj = gen.updateBatteryInputParams(paramobj);
 
 paramobj.(pe).(am).InterDiffusionCoefficient = 0;
-paramobj.(pe).(am).(sd).useSimplifiedDiffusionModel = false;
+paramobj.(pe).(am).(sd).diffusionModelType = 'full';
 
 paramobj = paramobj.(pe).(am);
 

@@ -8,6 +8,8 @@ The tests only run in MATLAB.
 The tests are run using the command `runtests`. To run all the
 tests in path, run `runtests`.
 
+To run all the tests in the folder 'Tests', run `runtests('Tests', includeSubfolders, true)`.
+
 To only run the test `TestBattery1D`, run `runtests('TestBattery1D')`.
 
 To stop on first failure, run

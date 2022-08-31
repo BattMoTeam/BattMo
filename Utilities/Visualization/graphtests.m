@@ -16,8 +16,8 @@ sd    = 'SolidDiffusion';
 itf   = 'Interface';
 elyte = 'Electrolyte';
 
-paramobj.(ne).(am).(sd).useSimplifiedDiffusionModel = false;
-paramobj.(pe).(am).(sd).useSimplifiedDiffusionModel = false;
+paramobj.(ne).(am).(sd).diffusionModelType = 'full';
+paramobj.(pe).(am).(sd).diffusionModelType = 'full';
 
 
 gen = BareBatteryGenerator3D();

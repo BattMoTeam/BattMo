@@ -80,7 +80,7 @@ classdef TestChen2020 < matlab.unittest.TestCase
 
             % We bypass the solid diffusion equation to set directly the particle surface concentration
             c = 29866.0;
-            if model.(ne).(am).useSimplifiedDiffusionModel
+            if strcmp(model.(ne).(am).diffusionModelType, 'simple')
                 nenp = model.(ne).(am).G.cells.num;
                 initstate.(ne).(am).c = c*ones(nenp, 1);
             else
@@ -104,7 +104,7 @@ classdef TestChen2020 < matlab.unittest.TestCase
 
             c = 17038.0;
 
-            if model.(pe).(am).useSimplifiedDiffusionModel
+            if strcmp(model.(pe).(am).diffusionModelType, 'simple')
                 penp = model.(pe).(am).G.cells.num;
                 initstate.(pe).(am).c = c*ones(penp, 1);
             else

@@ -27,7 +27,9 @@ classdef TestBattery1D < matlab.unittest.TestCase
         % throughout the submodels. The input parameters can be set manually or
         % provided in json format. All the parameters for the model are stored in
         % the paramobj object.
+
             jsonstruct = parseBattmoJson('ParameterData/BatteryCellParameters/LithiumIonBatteryCell/lithium_ion_battery_nmc_graphite.json');
+
 
             jsonstruct.include_current_collector = include_current_collector;
             jsonstruct.use_thermal = use_thermal;
