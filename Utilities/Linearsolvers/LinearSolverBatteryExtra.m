@@ -1,4 +1,5 @@
 classdef LinearSolverBatteryExtra < LinearSolverADExtra
+
     properties
         method
         verbosity
@@ -7,21 +8,24 @@ classdef LinearSolverBatteryExtra < LinearSolverADExtra
         precondIterations_phi
         precondIterations_c
     end
+    
     methods
-        function solver = LinearSolverBatteryExtra(varargin)            
-            opt=struct(...
-                'method','direct',...
-                'verbosity',0,...
-                'reuse_setup',false)
+        function solver = LinearSolverBatteryExtra(varargin)
+            
+            opt=struct('method'     ,'direct',...
+                       'verbosity'  ,0       ,...
+                       'reuse_setup',false);
             [opt,extra] = merge_options(opt,varargin{:});
             solver = solver@LinearSolverADExtra(extra{:});
             solver.method = opt.method;           
             solver.verbosity=opt.verbosity;
             solver.first=true;
             solver.reuse_setup =  opt.reuse_setup;
+            
         end
     
         function [result, report] = solveLinearSystem(solver, A, b, x0, problem)
+            
             report = solver.getSolveReport();
             switch solver.method
                 case 'direct'                    
