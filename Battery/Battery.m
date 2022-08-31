@@ -1476,7 +1476,7 @@ classdef Battery < BaseModel
             eldes = {ne, pe};
             for ind = 1 : numel(eldes)
                 elde = eldes{ind};
-                if strcmp(model.(elde).(am).diffusion, 'simple') | ~model.use_solid_diffusion
+                if strcmp(model.(elde).(am).diffusionModel, 'simple') | ~model.use_solid_diffusion
                     state.(elde).(am).c = max(cmin, state.(elde).(am).c);
                     cmax = model.(elde).(am).(itf).cmax;
                     state.(elde).(am).c = min(cmax, state.(elde).(am).c);

@@ -54,7 +54,7 @@ classdef ActiveMaterial < ElectronicComponent
             
             paramobj.SolidDiffusion.volumetricSurfaceArea = model.Interface.volumetricSurfaceArea;
 
-            switch diffusionModel
+            switch model.diffusionModel
               case 'simple'
                 model.SolidDiffusion = SimplifiedSolidDiffusionModel(paramobj.SolidDiffusion);
               case 'full'

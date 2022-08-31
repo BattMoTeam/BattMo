@@ -107,8 +107,8 @@ model.AutoDiffBackend= AutoDiffBackend();
 
 % We want to consider the simplified diffusion model and therefore setup a model that can run it.
 
-jsonstruct.NegativeElectrode.ActiveMaterial.useSimplifiedDiffusionModel = true;
-jsonstruct.PositiveElectrode.ActiveMaterial.useSimplifiedDiffusionModel = true;
+jsonstruct.NegativeElectrode.ActiveMaterial.diffusionModel = 'simple';
+jsonstruct.PositiveElectrode.ActiveMaterial.diffusionModel = 'simple';
 
 paramobj = BatteryInputParams(jsonstruct);
 paramobj = gen.updateBatteryInputParams(paramobj);

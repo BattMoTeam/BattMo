@@ -53,10 +53,13 @@ function [fig] = plotDashboard(model, states, varargin)
         
         if model.G.griddim == 1
             setFigureStyle('theme', p.Results.theme, 'size', p.Results.size, 'orientation', p.Results.orientation, 'quantity', 'single');
-            if model.(ne).(am).useSimplifiedDiffusionModel
+            switch model.(ne).(am).diffusionModel
+              case 'simple'
                 subplot(2,4,1), plotCellData(model.(ne).(am).G, states{step}.(ne).(am).c ./ 1000, 'linewidth', 3);
-            else
+              case 'full'
                 subplot(2,4,1), plotCellData(model.(ne).(am).G, states{step}.(ne).(am).(sd).cSurface ./ 1000, 'linewidth', 3);
+              otherwise
+                error('diffusionModel not recognized');
             end
             xlabel(gca, 'Position  /  m')
             title(gca, 'Negative Electrode Concentration  /  mol \cdot L^{-1}')
@@ -79,11 +82,15 @@ function [fig] = plotDashboard(model, states, varargin)
                 'YColor'   , style.fontColor      , ...
                 'GridColor', style.fontColor)
             
-            if model.(ne).(am).useSimplifiedDiffusionModel
+            switch model.(pe).(am).diffusionModel
+              case 'simple'
                 subplot(2,4,3), plotCellData(model.(pe).(am).G, states{step}.(pe).(am).c ./ 1000, 'linewidth', 3);
-            else
+              case 'full'
                 subplot(2,4,3), plotCellData(model.(pe).(am).G, states{step}.(pe).(am).(sd).cSurface ./ 1000, 'linewidth', 3);
+              otherwise
+                error('diffusionModel not recognized');
             end
+            
             xlabel(gca, 'Position  /  m')
             title(gca, 'Positive Electrode Concentration  /  mol \cdot L^{-1}')
             set(gca, ...
@@ -162,11 +169,16 @@ function [fig] = plotDashboard(model, states, varargin)
         else
             style = setFigureStyle('theme', p.Results.theme, 'size', p.Results.size, 'orientation', p.Results.orientation, 'quantity', 'single');
             style.fontSize = 10;
-            if model.(ne).(am).useSimplifiedDiffusionModel
+
+            switch model.(ne).(am).diffusionModel
+              case 'simple'
                 subplot(2,4,1), plotCellData(model.(ne).(am).G, states{step}.(ne).(am).c ./ 1000, 'edgealpha', 0.1);
-            else
+              case 'full'
                 subplot(2,4,1), plotCellData(model.(ne).(am).G, states{step}.(ne).(am).(sd).cSurface ./ 1000, 'edgealpha', 0.1);
+              otherwise
+                error('diffusionModel not recognized');
             end
+            
             xlabel(gca, 'Position  /  m')
             ylabel(gca, 'Position  /  m')
             title(gca, 'Negative Electrode Concentration  /  mol \cdot L^{-1}')
@@ -204,11 +216,14 @@ function [fig] = plotDashboard(model, states, varargin)
                 view(45,45);
                 axis equal
             end
-            
-            if model.(ne).(am).useSimplifiedDiffusionModel
+
+            switch model.(pe).(am).diffusionModel
+              case 'simple'
                 subplot(2,4,3), plotCellData(model.(pe).(am).G, states{step}.(pe).(am).c ./ 1000, 'edgealpha', 0.1);
-            else
+              case 'full'
                 subplot(2,4,3), plotCellData(model.(pe).(am).G, states{step}.(pe).(am).(sd).c ./ 1000, 'edgealpha', 0.1);
+              otherwise
+                error('diffusionModel not recognized');
             end
                 
             xlabel(gca, 'Position  /  m')
@@ -326,17 +341,28 @@ function [fig] = plotDashboard(model, states, varargin)
                 cmax_elyte = max(max(states{i}.(elyte).c ./ 1000));
                 cmin_elyte = min(min(states{i}.(elyte).c ./ 1000));
                 
-                if model.(ne).(am).useSimplifiedDiffusionModel
+                switch model.(ne).(am).diffusionModel
+                  case 'simple'
                     cmax_ne = max(max(states{i}.(ne).(am).c ./ 1000));
                     cmin_ne = min(min(states{i}.(ne).(am).c ./ 1000));
-                    cmax_pe = max(max(states{i}.(pe).(am).c ./ 1000));
-                    cmin_pe = min(min(states{i}.(pe).(am).c ./ 1000));
-                else
+                  case 'full'
                     cmax_ne = max(max(states{i}.(ne).(am).(sd).cSurface ./ 1000));
                     cmin_ne = min(min(states{i}.(ne).(am).(sd).cSurface ./ 1000));
+                  otherwise
+                    error('diffusionModel not recognized');
+                end
+
+                switch model.(pe).(am).diffusionModel
+                  case 'simple'
+                    cmax_pe = max(max(states{i}.(pe).(am).c ./ 1000));
+                    cmin_pe = min(min(states{i}.(pe).(am).c ./ 1000));
+                  case 'full'
                     cmax_pe = max(max(states{i}.(pe).(am).(sd).cSurface ./ 1000));
                     cmin_pe = min(min(states{i}.(pe).(am).(sd).cSurface ./ 1000));
+                  otherwise
+                    error('diffusionModel not recognized');
                 end
+                
                 
                 phimax_elyte = max(max(states{i}.(elyte).phi));
                 phimin_elyte = min(min(states{i}.(elyte).phi));
@@ -363,18 +389,27 @@ function [fig] = plotDashboard(model, states, varargin)
                 cmax_elyte = max(cmax_elyte, max(max(states{i}.(elyte).c ./ 1000)));
                 cmin_elyte = min(cmin_elyte, min(min(states{i}.(elyte).c ./ 1000)));
                 
-                if model.(ne).(am).useSimplifiedDiffusionModel                
+                switch model.(ne).(am).diffusionModel
+                  case 'simple'
                     cmax_ne = max(cmax_ne, max(max(states{i}.(ne).(am).c ./ 1000)));
                     cmin_ne = min(cmin_ne, min(min(states{i}.(ne).(am).c ./ 1000)));
-                    cmax_pe = max(cmax_pe, max(max(states{i}.(pe).(am).c ./ 1000)));
-                    cmin_pe = min(cmin_pe, min(min(states{i}.(pe).(am).c ./ 1000)));
-                else
+                  case 'full'
                     cmax_ne = max(cmax_ne, max(max(states{i}.(ne).(am).(sd).cSurface./ 1000)));
                     cmin_ne = min(cmin_ne, min(min(states{i}.(ne).(am).(sd).cSurface./ 1000)));
+                  otherwise
+                    error('diffusionModel not recognized');
+                end
+                switch model.(pe).(am).diffusionModel
+                  case 'simple'
+                    cmax_pe = max(cmax_pe, max(max(states{i}.(pe).(am).c ./ 1000)));
+                    cmin_pe = min(cmin_pe, min(min(states{i}.(pe).(am).c ./ 1000)));
+                  case 'full'
                     cmax_pe = max(cmax_pe, max(max(states{i}.(pe).(am).(sd).cSurface./ 1000)));
                     cmin_pe = min(cmin_pe, min(min(states{i}.(pe).(am).(sd).cSurface./ 1000)));
+                  otherwise
+                    error('diffusionModel not recognized');
                 end
-                
+
                 cmax_global_solid = max(cmax_ne, cmax_pe);
                 cmin_global_solid = min(cmin_ne, cmin_pe);
                 
@@ -403,10 +438,13 @@ function [fig] = plotDashboard(model, states, varargin)
             end
             if model.G.griddim == 1
 
-                if model.(ne).(am).useSimplifiedDiffusionModel
+                switch model.(ne).(am).diffusionModel
+                  case 'simple'
                     subplot(2,4,1), plotCellData(model.(ne).(am).G, states{i}.(ne).(am).c ./ 1000, 'linewidth', 3);
-                else
+                  case 'full'
                     subplot(2,4,1), plotCellData(model.(ne).(am).G, states{i}.(ne).(am).(sd).cSurface ./ 1000, 'linewidth', 3);
+                  otherwise
+                    error('diffusionModel not recognized');
                 end
                 
                 xlabel(gca, 'Position  /  m')
@@ -436,10 +474,14 @@ function [fig] = plotDashboard(model, states, varargin)
                     'YColor'   , style.fontColor      , ...
                     'GridColor', style.fontColor)
 
-                if model.(ne).(am).useSimplifiedDiffusionModel
+
+                switch model.(pe).(am).diffusionModel
+                  case 'simple'
                     subplot(2,4,3), plotCellData(model.(pe).(am).G, states{i}.(pe).(am).c ./ 1000, 'linewidth', 3);
-                else
+                  case 'full'
                     subplot(2,4,3), plotCellData(model.(pe).(am).G, states{i}.(pe).(am).(sd).cSurface ./ 1000, 'linewidth', 3);
+                  otherwise
+                    error('diffusionModel not recognized');
                 end
                 
                 xlabel(gca, 'Position  /  m')
@@ -528,10 +570,14 @@ function [fig] = plotDashboard(model, states, varargin)
             else
                 style = setFigureStyle('theme', p.Results.theme, 'size', p.Results.size, 'orientation', p.Results.orientation, 'quantity', 'single');
                 style.fontSize = 10;
-                if model.(ne).(am).useSimplifiedDiffusionModel
+
+                switch model.(ne).(am).diffusionModel
+                  case 'simple'
                     subplot(2,4,1), plotCellData(model.(ne).(am).G, states{i}.(ne).(am).c ./ 1000, 'edgealpha', 0.1);
-                else
+                  case 'full'
                     subplot(2,4,1), plotCellData(model.(ne).(am).G, states{i}.(ne).(am).(sd).cSurface ./ 1000, 'edgealpha', 0.1);
+                  otherwise
+                    error('diffusionModel not recognized');
                 end
                 xlabel(gca, 'Position  /  m')
                 ylabel(gca, 'Position  /  m')
@@ -572,11 +618,15 @@ function [fig] = plotDashboard(model, states, varargin)
                     axis equal
                 end
 
-                if model.(ne).(am).useSimplifiedDiffusionModel
+                switch model.(pe).(am).diffusionModel
+                  case 'simple'
                     subplot(2,4,3), plotCellData(model.(pe).(am).G, states{i}.(pe).(am).c ./ 1000, 'edgealpha', 0.1);
-                else
+                  case 'full'
                     subplot(2,4,3), plotCellData(model.(pe).(am).G, states{i}.(pe).(am).(sd).cSurface ./ 1000, 'edgealpha', 0.1);
+                  otherwise
+                    error('diffusionModel not recognized');
                 end
+
                 xlabel(gca, 'Position  /  m')
                 title(gca, 'Positive Electrode Concentration  /  mol \cdot L^{-1}')
                 colormap(crameri('nuuk'));
