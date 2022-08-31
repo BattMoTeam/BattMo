@@ -4,7 +4,7 @@
     "Ucut": 2,
     "initT": 298.15,
     "use_thermal": true,
-    "include_current_collectors": true,
+    "include_current_collectors": false,
     "use_solid_diffusion": true,
     "Control" : {
         "controlPolicy" : "IEswitch",
