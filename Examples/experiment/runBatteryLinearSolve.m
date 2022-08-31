@@ -21,8 +21,8 @@ mrstModule add ad-core mrst-gui mpfa
 % provided in json format. All the parameters for the model are stored in
 % the paramobj object.
 jsonstruct = parseBattmoJson('ParameterData/BatteryCellParameters/LithiumIonBatteryCell/lithium_ion_battery_nmc_graphite.json');
-jsonstruct.NegativeElectrode.ActiveMaterial.SolidDiffusion.diffusionModel = 'simple';
-jsonstruct.PositiveElectrode.ActiveMaterial.SolidDiffusion.diffusionModel = 'simple';
+jsonstruct.NegativeElectrode.ActiveMaterial.SolidDiffusion.diffusionModelType = 'simple';
+jsonstruct.PositiveElectrode.ActiveMaterial.SolidDiffusion.diffusionModelType = 'simple';
 % jsonstruct.Control.controlPolicy = 'CCCV';
 paramobj = BatteryInputParams(jsonstruct);
 % paramobj.SOC = 0.02;

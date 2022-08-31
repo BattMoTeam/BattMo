@@ -53,7 +53,7 @@ function [cap, cap_neg, cap_pos, specificEnergy] = computeCellCapacity(model, va
         
         volume_electrode = sum(ammodel.G.cells.volumes);
 
-        switch ammodel.diffusionModel
+        switch ammodel.diffusionModelType
             
           case 'simple'
             
@@ -71,7 +71,7 @@ function [cap, cap_neg, cap_pos, specificEnergy] = computeCellCapacity(model, va
 
           otherwise
 
-            error('diffusionModel type not recognized');
+            error('diffusionModelType type not recognized');
         end
         
         

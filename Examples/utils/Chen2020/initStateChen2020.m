@@ -22,7 +22,7 @@ function initstate = initStateChen2020(model, c_ne, c_pe)
     nitf = bat.(ne).(am).(itf); 
 
     % We bypass the solid diffusion equation to set directly the particle surface concentration
-    switch model.(ne).(am).diffusionModel
+    switch model.(ne).(am).diffusionModelType
       case 'simple'
         nenp = model.(ne).(am).G.cells.num;
         initstate.(ne).(am).c = c_ne*ones(nenp, 1);
@@ -31,7 +31,7 @@ function initstate = initStateChen2020(model, c_ne, c_pe)
         nenp = model.(ne).(am).(sd).np;
         initstate.(ne).(am).(sd).c = c_ne*ones(nenr*nenp, 1);
       otherwise
-        error('diffusionModel type not recognized');
+        error('diffusionModelType type not recognized');
     end
     initstate.(ne).(am).(sd).cSurface = c_ne*ones(nenp, 1);
 
@@ -47,7 +47,7 @@ function initstate = initStateChen2020(model, c_ne, c_pe)
 
     pitf = bat.(pe).(am).(itf); 
 
-    switch model.(ne).(am).diffusionModel
+    switch model.(ne).(am).diffusionModelType
       case 'simple'
         penp = model.(pe).(am).G.cells.num;
         initstate.(pe).(am).c = c_pe*ones(penp, 1);
@@ -56,7 +56,7 @@ function initstate = initStateChen2020(model, c_ne, c_pe)
         penp = model.(pe).(am).(sd).np;
         initstate.(pe).(am).(sd).c = c_pe*ones(penr*penp, 1);
       otherwise
-        error('diffusionModel type not recognized');
+        error('diffusionModelType type not recognized');
     end
 
     initstate.(pe).(am).(sd).cSurface = c_pe*ones(penp, 1);

@@ -23,7 +23,7 @@ classdef ActiveMaterial < ElectronicComponent
         EffectiveThermalConductivity  % Effective Thermal Conductivity of the active component
         EffectiveHeatCapacity         % Effective Heat Capacity of the active component
 
-        diffusionModel
+        diffusionModelType
         use_thermal
         
         externalCouplingTerm          % only used in no current collector
@@ -42,7 +42,7 @@ classdef ActiveMaterial < ElectronicComponent
                        'electricalConductivity', ...
                        'heatCapacity', ...
                        'externalCouplingTerm', ...
-                       'diffusionModel', ...
+                       'diffusionModelType', ...
                        'use_thermal'};
             
             model = dispatchParams(model, paramobj, fdnames);
@@ -54,17 +54,17 @@ classdef ActiveMaterial < ElectronicComponent
             
             paramobj.SolidDiffusion.volumetricSurfaceArea = model.Interface.volumetricSurfaceArea;
 
-            switch model.diffusionModel
+            switch model.diffusionModelType
               case 'simple'
                 model.SolidDiffusion = SimplifiedSolidDiffusionModel(paramobj.SolidDiffusion);
               case 'full'
                 paramobj.SolidDiffusion.np = model.G.cells.num;
                 model.SolidDiffusion = FullSolidDiffusionModel(paramobj.SolidDiffusion);
               otherwise
-                error('Unknwn diffusionModel %s', diffusionModel);
+                error('Unknown diffusionModelType %s', diffusionModelType);
             end
 
-            if strcmp(model.diffusionModel, 'simple')
+            if strcmp(model.diffusionModelType, 'simple')
                 % only used in SimplifiedSolidDiffusionModel (for now)
                 model.InterDiffusionCoefficient = paramobj.InterDiffusionCoefficient;
             end
@@ -85,7 +85,7 @@ classdef ActiveMaterial < ElectronicComponent
             % setup effective electrical conductivity using Bruggeman approximation 
             model.EffectiveElectricalConductivity = model.electricalConductivity.*volumeFraction.^1.5;
             
-            if strcmp(model.diffusionModel, 'simple')
+            if strcmp(model.diffusionModelType, 'simple')
                 model.EffectiveDiffusionCoefficient = model.InterDiffusionCoefficient.*volumeFraction.^1.5;
             end
 
@@ -107,7 +107,7 @@ classdef ActiveMaterial < ElectronicComponent
             sd  = 'SolidDiffusion';
             
             varnames =  {'jCoupling'};
-            if strcmp(model.diffusionModel, 'simple')
+            if strcmp(model.diffusionModelType, 'simple')
                 varnames{end + 1} = {'c'};
                 varnames{end + 1} = {'massCons'};
                 varnames{end + 1} = {'massAccum'};
@@ -135,7 +135,7 @@ classdef ActiveMaterial < ElectronicComponent
             model = model.registerPropFunction({{sd, 'T'}, fn, {'T'}});
 
             fn = @ActiveMaterial.updateConcentrations;
-            switch model.diffusionModel
+            switch model.diffusionModelType
               case 'simple'
                 model = model.registerPropFunction({{sd, 'cAverage'}, fn, {'c'}});
                 model = model.registerPropFunction({{itf, 'cElectrodeSurface'}, fn, {{sd, 'cSurface'}}});
@@ -144,7 +144,7 @@ classdef ActiveMaterial < ElectronicComponent
                 model = model.registerPropFunction({{itf, 'cElectrodeSurface'}, fn, {{sd, 'cSurface'}}});
             end
 
-            if strcmp(model.diffusionModel, 'simple')
+            if strcmp(model.diffusionModelType, 'simple')
                 fn = @ActiveMaterial.updateMassFlux;
                 model = model.registerPropFunction({'massFlux', fn, {'c'}});
                 fn = @ActiveMaterial.updateMassSource;
@@ -292,7 +292,7 @@ classdef ActiveMaterial < ElectronicComponent
             sd  = 'SolidDiffusion';
             itf = 'Interface';
             
-            if strcmp(model.diffusionModel, 'simple')
+            if strcmp(model.diffusionModelType, 'simple')
                 state.(sd).cAverage = state.c;
             end
             
@@ -301,7 +301,7 @@ classdef ActiveMaterial < ElectronicComponent
         end
 
         function state = updateMassFlux(model, state)
-        % Used when diffusionModel == 'simple'
+        % Used when diffusionModelType == 'simple'
 
             D = model.EffectiveDiffusionCoefficient;
             
@@ -314,7 +314,7 @@ classdef ActiveMaterial < ElectronicComponent
         end
             
         function state = assembleAccumTerm(model, state, state0, dt)
-        % Used when diffusionModel == 'simple'
+        % Used when diffusionModelType == 'simple'
             
             volumeFraction = model.volumeFraction;
             vols = model.G.cells.volumes;
@@ -327,7 +327,7 @@ classdef ActiveMaterial < ElectronicComponent
         end
 
         function state = updateMassSource(model, state)
-        % used when diffusionModel == simple
+        % used when diffusionModelType == simple
             
             vols = model.G.cells.volumes;
             
@@ -338,7 +338,7 @@ classdef ActiveMaterial < ElectronicComponent
         end
         
         function state = updateMassConservation(model, state)
-        % Used when diffusionModel == 'simple'
+        % Used when diffusionModelType == 'simple'
         % Here, we have no flux (for the moment)
             
             state.massCons = state.massAccum - state.massSource;

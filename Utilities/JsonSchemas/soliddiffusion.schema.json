@@ -4,7 +4,7 @@
     "description": "solid diffusion",
     "type": "object",
     "properties" : {
-        "diffusionModel": { "type" : "string",
+        "diffusionModelType": { "type" : "string",
                  "description" : "Choice of solid diffusion model" },
         "rp": {"type" : "number",
                "description" : "particle radius"},

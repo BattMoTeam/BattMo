@@ -181,7 +181,7 @@ classdef Battery < BaseModel
                 selectedVarInds(pickVarInd({{ne, am, sd, 'cSurface'}, {pe, am, sd, 'cSurface'}})) = true;
                 [isok, inds] = ismember({'ne_am_sd_soliddiffeq', 'pe_am_sd_soliddiffeq'}, allEquationNames);
                 selectedEqnInds(inds) = true;
-                switch model.(ne).(am).diffusionModel
+                switch model.(ne).(am).diffusionModelType
                   case 'simple'
                     selectedVarInds(pickVarInd({ne, am, 'c'})) = true;
                     [isok, inds] = ismember('ne_am_massCons', allEquationNames);
@@ -191,7 +191,7 @@ classdef Battery < BaseModel
                     [isok, inds] = ismember('ne_am_sd_massCons', allEquationNames);
                     selectedEqnInds(inds) = true;                    
                 end
-                switch model.(pe).(am).diffusionModel
+                switch model.(pe).(am).diffusionModelType
                   case 'simple'
                     selectedVarInds(pickVarInd({pe, am, 'c'})) = true;
                     [isok, inds] = ismember('pe_am_massCons', allEquationNames);
@@ -571,7 +571,7 @@ classdef Battery < BaseModel
                 c     = theta*elde_itf.cmax;
                 nc    = elde_itf.G.cells.num;
 
-                switch model.(elde).(am).diffusionModel
+                switch model.(elde).(am).diffusionModelType
                   case 'simple'
                     initstate.(elde).(am).(sd).cSurface = c*ones(nc, 1);
                     initstate.(elde).(am).c = c*ones(nc, 1);
@@ -765,7 +765,7 @@ classdef Battery < BaseModel
                 state.(elde).(am).(sd) = battery.(elde).(am).(sd).updateDiffusionCoefficient(state.(elde).(am).(sd));
                 state.(elde).(am) = battery.(elde).(am).dispatchRate(state.(elde).(am));
                 if model.use_solid_diffusion
-                    switch model.(elde).(am).diffusionModel
+                    switch model.(elde).(am).diffusionModelType
                       case 'simple'
                         state.(elde).(am) = battery.(elde).(am).assembleAccumTerm(state.(elde).(am), state0.(elde).(am), dt);
                         state.(elde).(am) = battery.(elde).(am).updateMassSource(state.(elde).(am));
@@ -842,7 +842,7 @@ classdef Battery < BaseModel
             
             if model.use_solid_diffusion
 
-                switch model.(ne).(am).diffusionModel
+                switch model.(ne).(am).diffusionModelType
                   case 'simple'
                     % Equation name : 'ne_am_massCons';
                     eqs{end + 1} = state.(ne).(am).massCons*massConsScaling;
@@ -862,7 +862,7 @@ classdef Battery < BaseModel
                 % Equation name : 'ne_am_sd_soliddiffeq';
                 eqs{end + 1} = state.(ne).(am).(sd).solidDiffusionEq.*massConsScaling.*battery.(ne).(am).(itf).G.cells.volumes/dt;
                 
-                switch model.(pe).(am).diffusionModel
+                switch model.(pe).(am).diffusionModelType
                   case 'simple'
                     % Equation name : 'pe_am_massCons';
                     eqs{end + 1} = state.(pe).(am).massCons*massConsScaling;
@@ -1024,7 +1024,7 @@ classdef Battery < BaseModel
             electrodes = {ne, pe};
             for i = 1 : numel(electrodes)
                 elde = electrodes{i}; % electrode name
-                if strcmp(model.(elde).(am).diffusionModel, 'simple') | ~model.use_solid_diffusion
+                if strcmp(model.(elde).(am).diffusionModelType, 'simple') | ~model.use_solid_diffusion
                     state.(elde).(am) = model.(elde).(am).assembleAccumTerm(state.(elde).(am), state0.(elde).(am), dt);
                 end
             end
@@ -1476,7 +1476,7 @@ classdef Battery < BaseModel
             eldes = {ne, pe};
             for ind = 1 : numel(eldes)
                 elde = eldes{ind};
-                if strcmp(model.(elde).(am).diffusionModel, 'simple') | ~model.use_solid_diffusion
+                if strcmp(model.(elde).(am).diffusionModelType, 'simple') | ~model.use_solid_diffusion
                     state.(elde).(am).c = max(cmin, state.(elde).(am).c);
                     cmax = model.(elde).(am).(itf).cmax;
                     state.(elde).(am).c = min(cmax, state.(elde).(am).c);
