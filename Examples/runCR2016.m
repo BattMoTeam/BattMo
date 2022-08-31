@@ -28,7 +28,7 @@ jsonstruct.use_thermal = false;
 
 paramobj = BatteryInputParams(jsonstruct);
 
-use_cccv = false
+use_cccv = false;
 if use_cccv
     cccvstruct = struct('controlPolicy'     , 'CCCV',  ...
                         'CRate'             , 1         , ...
@@ -52,9 +52,6 @@ compnames = {'NegativeCurrentCollector', ...
 num_components = 5;
 compdims = table('rownames', compnames);
 
-%%
-%compdims = table('size', [numel(compnames), 2], 'variabletypes', {'double', 'double'}, 'rownames', compnames, 'variablenames', {'thickness', 'diameter'});
-
 %% Thickness
 % From Joule paper: this gives only half of the Li content compared to
 % Energizer spread sheet, and 1/20 of the typical capacity. Hence the factor 2.
@@ -67,7 +64,6 @@ compdims{'NegativeActiveMaterial', 'thickness'} = 50*micro*meter * thickness_fac
 
 ccs = {'PositiveCurrentCollector', 'NegativeCurrentCollector'};
 compdims{ccs, 'thickness'} = 0.5*(CR2016_thickness - sum(compdims.thickness));
-%compdims{'NegativeCurrentCollector', 'thickness'} = compdims{'PositiveCurrentCollector', 'thickness'};
 
 %% Diameters
 compdims.diameter = zeros(num_components, 1);
