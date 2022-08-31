@@ -35,18 +35,15 @@ function [fig] = plotDashboard(model, states, varargin)
     elyte   = 'Electrolyte';
     thermal = 'ThermalModel';
     ctrl    = 'Control';
+    sd      = 'SolidDiffusion';
     
     step = p.Results.step;
 
     fig = figure;
 
-    time = zeros(1, length(states));
-    for i = 1:length(states)
-        time(i) = states{i}.time;
-    end
-
-    Enew = cellfun(@(x) x.(ctrl).E, states); 
-    Inew = cellfun(@(x) x.(ctrl).I, states);
+    time = cellfun(@(state) state.time, states); 
+    Enew = cellfun(@(state) state.(ctrl).E, states); 
+    Inew = cellfun(@(state) state.(ctrl).I, states);
 
 
     if step ~= 0
@@ -56,7 +53,11 @@ function [fig] = plotDashboard(model, states, varargin)
         
         if model.G.griddim == 1
             setFigureStyle('theme', p.Results.theme, 'size', p.Results.size, 'orientation', p.Results.orientation, 'quantity', 'single');
-            subplot(2,4,1), plotCellData(model.(ne).(am).G, states{step}.(ne).(am).c ./ 1000, 'linewidth', 3);
+            if model.(ne).(am).useSimplifiedDiffusionModel
+                subplot(2,4,1), plotCellData(model.(ne).(am).G, states{step}.(ne).(am).c ./ 1000, 'linewidth', 3);
+            else
+                subplot(2,4,1), plotCellData(model.(ne).(am).G, states{step}.(ne).(am).(sd).cSurface ./ 1000, 'linewidth', 3);
+            end
             xlabel(gca, 'Position  /  m')
             title(gca, 'Negative Electrode Concentration  /  mol \cdot L^{-1}')
             set(gca, ...
@@ -78,7 +79,11 @@ function [fig] = plotDashboard(model, states, varargin)
                 'YColor'   , style.fontColor      , ...
                 'GridColor', style.fontColor)
             
-            subplot(2,4,3), plotCellData(model.(pe).(am).G, states{step}.(pe).(am).c ./ 1000, 'linewidth', 3);
+            if model.(ne).(am).useSimplifiedDiffusionModel
+                subplot(2,4,3), plotCellData(model.(pe).(am).G, states{step}.(pe).(am).c ./ 1000, 'linewidth', 3);
+            else
+                subplot(2,4,3), plotCellData(model.(pe).(am).G, states{step}.(pe).(am).(sd).cSurface ./ 1000, 'linewidth', 3);
+            end
             xlabel(gca, 'Position  /  m')
             title(gca, 'Positive Electrode Concentration  /  mol \cdot L^{-1}')
             set(gca, ...
@@ -157,8 +162,11 @@ function [fig] = plotDashboard(model, states, varargin)
         else
             style = setFigureStyle('theme', p.Results.theme, 'size', p.Results.size, 'orientation', p.Results.orientation, 'quantity', 'single');
             style.fontSize = 10;
-
-            subplot(2,4,1), plotCellData(model.(ne).(am).G, states{step}.(ne).(am).c ./ 1000, 'edgealpha', 0.1);
+            if model.(ne).(am).useSimplifiedDiffusionModel
+                subplot(2,4,1), plotCellData(model.(ne).(am).G, states{step}.(ne).(am).c ./ 1000, 'edgealpha', 0.1);
+            else
+                subplot(2,4,1), plotCellData(model.(ne).(am).G, states{step}.(ne).(am).(sd).cSurface ./ 1000, 'edgealpha', 0.1);
+            end
             xlabel(gca, 'Position  /  m')
             ylabel(gca, 'Position  /  m')
             title(gca, 'Negative Electrode Concentration  /  mol \cdot L^{-1}')
@@ -197,7 +205,12 @@ function [fig] = plotDashboard(model, states, varargin)
                 axis equal
             end
             
-            subplot(2,4,3), plotCellData(model.(pe).(am).G, states{step}.(pe).(am).c ./ 1000, 'edgealpha', 0.1);
+            if model.(ne).(am).useSimplifiedDiffusionModel
+                subplot(2,4,3), plotCellData(model.(pe).(am).G, states{step}.(pe).(am).c ./ 1000, 'edgealpha', 0.1);
+            else
+                subplot(2,4,3), plotCellData(model.(pe).(am).G, states{step}.(pe).(am).(sd).c ./ 1000, 'edgealpha', 0.1);
+            end
+                
             xlabel(gca, 'Position  /  m')
             title(gca, 'Positive Electrode Concentration  /  mol \cdot L^{-1}')
             colormap(crameri('nuuk'));
@@ -305,17 +318,25 @@ function [fig] = plotDashboard(model, states, varargin)
         end
         %     setFigureStyle('theme', p.Results.theme, 'size', p.Results.size, 'orientation', p.Results.orientation, 'quantity', 'single');
     else
-        for i = 1:length(states)
+        
+        for i = 1 : length(states)
             
             if i == 1
+                
                 cmax_elyte = max(max(states{i}.(elyte).c ./ 1000));
                 cmin_elyte = min(min(states{i}.(elyte).c ./ 1000));
                 
-                cmax_ne = max(max(states{i}.(ne).(am).c ./ 1000));
-                cmin_ne = min(min(states{i}.(ne).(am).c ./ 1000));
-                
-                cmax_pe = max(max(states{i}.(pe).(am).c ./ 1000));
-                cmin_pe = min(min(states{i}.(pe).(am).c ./ 1000));
+                if model.(ne).(am).useSimplifiedDiffusionModel
+                    cmax_ne = max(max(states{i}.(ne).(am).c ./ 1000));
+                    cmin_ne = min(min(states{i}.(ne).(am).c ./ 1000));
+                    cmax_pe = max(max(states{i}.(pe).(am).c ./ 1000));
+                    cmin_pe = min(min(states{i}.(pe).(am).c ./ 1000));
+                else
+                    cmax_ne = max(max(states{i}.(ne).(am).(sd).cSurface ./ 1000));
+                    cmin_ne = min(min(states{i}.(ne).(am).(sd).cSurface ./ 1000));
+                    cmax_pe = max(max(states{i}.(pe).(am).(sd).cSurface ./ 1000));
+                    cmin_pe = min(min(states{i}.(pe).(am).(sd).cSurface ./ 1000));
+                end
                 
                 phimax_elyte = max(max(states{i}.(elyte).phi));
                 phimin_elyte = min(min(states{i}.(elyte).phi));
@@ -338,14 +359,21 @@ function [fig] = plotDashboard(model, states, varargin)
                     zmax = max(model.(elyte).G.nodes.coords(:,3));
                 end
             else
+                
                 cmax_elyte = max(cmax_elyte, max(max(states{i}.(elyte).c ./ 1000)));
                 cmin_elyte = min(cmin_elyte, min(min(states{i}.(elyte).c ./ 1000)));
                 
-                cmax_ne = max(cmax_ne, max(max(states{i}.(ne).(am).c ./ 1000)));
-                cmin_ne = min(cmin_ne, min(min(states{i}.(ne).(am).c ./ 1000)));
-                
-                cmax_pe = max(cmax_pe, max(max(states{i}.(pe).(am).c ./ 1000)));
-                cmin_pe = min(cmin_pe, min(min(states{i}.(pe).(am).c ./ 1000)));
+                if model.(ne).(am).useSimplifiedDiffusionModel                
+                    cmax_ne = max(cmax_ne, max(max(states{i}.(ne).(am).c ./ 1000)));
+                    cmin_ne = min(cmin_ne, min(min(states{i}.(ne).(am).c ./ 1000)));
+                    cmax_pe = max(cmax_pe, max(max(states{i}.(pe).(am).c ./ 1000)));
+                    cmin_pe = min(cmin_pe, min(min(states{i}.(pe).(am).c ./ 1000)));
+                else
+                    cmax_ne = max(cmax_ne, max(max(states{i}.(ne).(am).(sd).cSurface./ 1000)));
+                    cmin_ne = min(cmin_ne, min(min(states{i}.(ne).(am).(sd).cSurface./ 1000)));
+                    cmax_pe = max(cmax_pe, max(max(states{i}.(pe).(am).(sd).cSurface./ 1000)));
+                    cmin_pe = min(cmin_pe, min(min(states{i}.(pe).(am).(sd).cSurface./ 1000)));
+                end
                 
                 cmax_global_solid = max(cmax_ne, cmax_pe);
                 cmin_global_solid = min(cmin_ne, cmin_pe);
@@ -374,7 +402,13 @@ function [fig] = plotDashboard(model, states, varargin)
                 style.fontSize = 10;
             end
             if model.G.griddim == 1
-                subplot(2,4,1), plotCellData(model.(ne).(am).G, states{i}.(ne).(am).c ./ 1000, 'linewidth', 3);
+
+                if model.(ne).(am).useSimplifiedDiffusionModel
+                    subplot(2,4,1), plotCellData(model.(ne).(am).G, states{i}.(ne).(am).c ./ 1000, 'linewidth', 3);
+                else
+                    subplot(2,4,1), plotCellData(model.(ne).(am).G, states{i}.(ne).(am).(sd).cSurface ./ 1000, 'linewidth', 3);
+                end
+                
                 xlabel(gca, 'Position  /  m')
                 title(gca, 'Negative Electrode Concentration  /  mol \cdot L^{-1}', 'color', style.fontColor)
                 xlim([xmin, xmax])
@@ -388,6 +422,8 @@ function [fig] = plotDashboard(model, states, varargin)
                     'GridColor', style.fontColor)
 
                 subplot(2,4,2), plotCellData(model.(elyte).G, states{i}.(elyte).c ./ 1000, 'linewidth', 3);
+
+                    
                 xlabel(gca, 'Position  /  m')
                 title(gca, 'Electrolyte Concentration  /  mol \cdot L^{-1}', 'color', style.fontColor)
                 xlim([xmin, xmax])
@@ -400,7 +436,12 @@ function [fig] = plotDashboard(model, states, varargin)
                     'YColor'   , style.fontColor      , ...
                     'GridColor', style.fontColor)
 
-                subplot(2,4,3), plotCellData(model.(pe).(am).G, states{i}.(pe).(am).c ./ 1000, 'linewidth', 3);
+                if model.(ne).(am).useSimplifiedDiffusionModel
+                    subplot(2,4,3), plotCellData(model.(pe).(am).G, states{i}.(pe).(am).c ./ 1000, 'linewidth', 3);
+                else
+                    subplot(2,4,3), plotCellData(model.(pe).(am).G, states{i}.(pe).(am).(sd).cSurface ./ 1000, 'linewidth', 3);
+                end
+                
                 xlabel(gca, 'Position  /  m')
                 title(gca, 'Positive Electrode Concentration  /  mol \cdot L^{-1}', 'color', style.fontColor)
                 xlim([xmin, xmax])
@@ -487,8 +528,11 @@ function [fig] = plotDashboard(model, states, varargin)
             else
                 style = setFigureStyle('theme', p.Results.theme, 'size', p.Results.size, 'orientation', p.Results.orientation, 'quantity', 'single');
                 style.fontSize = 10;
-
-                subplot(2,4,1), plotCellData(model.(ne).(am).G, states{i}.(ne).(am).c ./ 1000, 'edgealpha', 0.1);
+                if model.(ne).(am).useSimplifiedDiffusionModel
+                    subplot(2,4,1), plotCellData(model.(ne).(am).G, states{i}.(ne).(am).c ./ 1000, 'edgealpha', 0.1);
+                else
+                    subplot(2,4,1), plotCellData(model.(ne).(am).G, states{i}.(ne).(am).(sd).cSurface ./ 1000, 'edgealpha', 0.1);
+                end
                 xlabel(gca, 'Position  /  m')
                 ylabel(gca, 'Position  /  m')
                 title(gca, 'Negative Electrode Concentration  /  mol \cdot L^{-1}')
@@ -528,7 +572,11 @@ function [fig] = plotDashboard(model, states, varargin)
                     axis equal
                 end
 
-                subplot(2,4,3), plotCellData(model.(pe).(am).G, states{i}.(pe).(am).c ./ 1000, 'edgealpha', 0.1);
+                if model.(ne).(am).useSimplifiedDiffusionModel
+                    subplot(2,4,3), plotCellData(model.(pe).(am).G, states{i}.(pe).(am).c ./ 1000, 'edgealpha', 0.1);
+                else
+                    subplot(2,4,3), plotCellData(model.(pe).(am).G, states{i}.(pe).(am).(sd).cSurface ./ 1000, 'edgealpha', 0.1);
+                end
                 xlabel(gca, 'Position  /  m')
                 title(gca, 'Positive Electrode Concentration  /  mol \cdot L^{-1}')
                 colormap(crameri('nuuk'));

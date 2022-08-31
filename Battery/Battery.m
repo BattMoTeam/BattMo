@@ -566,11 +566,9 @@ classdef Battery < BaseModel
                 elde = eldes{ind};
                 
                 elde_itf = bat.(elde).(am).(itf); 
-                
-                m     = (1 ./ (elde_itf.theta100 - elde_itf.theta0));
-                b     = -m .* elde_itf.theta0;
-                theta = (SOC - b) ./ m;
-                c     = theta .* elde_itf.cmax;
+
+                theta = SOC*(elde_itf.theta100 - elde_itf.theta0) + elde_itf.theta0;
+                c     = theta*elde_itf.cmax;
                 nc    = elde_itf.G.cells.num;
 
                 switch model.(elde).(am).diffusionModel
@@ -850,13 +848,14 @@ classdef Battery < BaseModel
                     eqs{end + 1} = state.(ne).(am).massCons*massConsScaling;
                   case 'full'
                     % Equation name : 'ne_am_sd_massCons';
+                    n    = model.(ne).(am).(itf).n; % number of electron transfer (equal to 1 for Lithium)
                     F    = model.con.F;
                     vol  = model.(ne).(am).operators.pv;
                     rp   = model.(ne).(am).(sd).rp;
                     vsf  = model.(ne).(am).(sd).volumetricSurfaceArea;
-                    volp = (4*pi*rp^3/3);
+                    surfp = 4*pi*rp^2;
                     
-                    scalingcoef = vol(1)/volp*F*vsf;
+                    scalingcoef = (vsf*vol(1)*n*F)/surfp;
                     eqs{end + 1} = scalingcoef*state.(ne).(am).(sd).massCons;
                 end
                 
@@ -869,13 +868,14 @@ classdef Battery < BaseModel
                     eqs{end + 1} = state.(pe).(am).massCons*massConsScaling;
                   case 'full'
                     % Equation name : 'pe_am_sd_massCons';
+                    n    = model.(ne).(am).(itf).n; % number of electron transfer (equal to 1 for Lithium)
                     F    = model.con.F;
                     vol  = model.(pe).(am).operators.pv;
                     rp   = model.(pe).(am).(sd).rp;
                     vsf  = model.(pe).(am).(sd).volumetricSurfaceArea;
-                    volp = (4*pi*rp^3/3);
+                    surfp = 4*pi*rp^2;
                     
-                    scalingcoef = vol(1)/volp*F*vsf;
+                    scalingcoef = (vsf*vol(1)*n*F)/surfp;
                     eqs{end + 1} = scalingcoef*state.(pe).(am).(sd).massCons;
                 end
                 
