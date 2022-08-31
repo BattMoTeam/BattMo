@@ -8,8 +8,6 @@ mrstVerbose off
 % load MRST modules
 mrstModule add ad-core mrst-gui mpfa upr
 
-mrstDebug(99)
-
 %% Define some shorthand names for simplicity.
 ne      = 'NegativeElectrode';
 pe      = 'PositiveElectrode';
@@ -23,9 +21,6 @@ sep     = 'Separator';
 
 %% Setup the properties of Li-ion battery materials and cell design
 jsonstruct = parseBattmoJson('ParameterData/BatteryCellParameters/LithiumIonBatteryCell/lithium_ion_battery_nmc_graphite.json');
-
-jsonstruct.use_thermal = false;
-
 paramobj = BatteryInputParams(jsonstruct);
 
 use_cccv = false;
@@ -69,13 +64,13 @@ compdims{ccs, 'thickness'} = 0.5*(CR2016_thickness - sum(compdims.thickness));
 compdims.diameter = zeros(num_components, 1);
 
 compdims{'PositiveCurrentCollector', 'diameter'} = 1;
-compdims{'PositiveActiveMaterial'  , 'diameter'} = 0.9;
-compdims{'ElectrolyteSeparator'    , 'diameter'} = 0.7;
-compdims{'NegativeActiveMaterial'  , 'diameter'} = 0.9;
+compdims{'PositiveActiveMaterial'  , 'diameter'} = 0.8;
+compdims{'ElectrolyteSeparator'    , 'diameter'} = 0.9;
+compdims{'NegativeActiveMaterial'  , 'diameter'} = 0.8;
 compdims{'NegativeCurrentCollector', 'diameter'} = 1;
 compdims.diameter = compdims.diameter * CR2016_diameter;
 
-%% 
+%% Construct mesh
 meshSize = max(compdims.diameter) / 10;
 hz = min(compdims.thickness);
 compdims.numCellLayers = max(2, round(compdims.thickness / hz));
@@ -101,25 +96,18 @@ paramobj = gen.updateBatteryInputParams(paramobj, params);
 % constructor. see :class:`Battery <Battery.Battery>`.
 model = Battery(paramobj);
 
-% % test
-% idx = isnan(model.(elyte).volumeFraction);
-% model.(elyte).volumeFraction(idx) = 0.5;
-
-
 %% Compute the nominal cell capacity and choose a C-Rate
 % The nominal capacity of the cell is calculated from the active materials.
 % This value is then combined with the user-defined C-Rate to set the cell
 % operational current.
-C     = computeCellCapacity(model);
+C = computeCellCapacity(model);
+fprintf('Capacity %f mAh\n', C*1000/3600)
 CRate = 1;
 
-fprintf('Capacity %f mAh\n', C*1000/3600)
-
+% Compute masses
 [mass, masses] = computeCellMass(model);
 fprintf('Li content %f g\n', masses.(ne).(am).val*1000);
 fprintf('Battery mass %f g\n', mass*1000);
-
-
 
 %% Setup the time step schedule
 % Smaller time steps are used to ramp up the current from zero to its
@@ -169,26 +157,13 @@ initstate = model.setupInitialState();
 initstate.(ctrl).I = 0;
 initstate.(ctrl).ctrlType = 'constantCurrent';
 
-
-
 %% Setup the properties of the nonlinear solver
 nls = NonLinearSolver();
 nls.maxIterations = 10;
 nls.errorOnFailure = false;
 nls.timeStepSelector = StateChangeTimeStepSelector('TargetProps', ...
-                                                  {{ctrl, 'E'}}, ...
+                                                   {{ctrl, 'E'}}, ...
                                                    'targetChangeAbs', 0.03);
-
-mrstModule add linearsolvers
-%nls.LinearSolver = AMGCLSolverAD('verbose', true, 'reduceToCell', false);
-%nls.LinearSolver = AGMGSolverAD('verbose', true, 'reduceToCell', true);
-% nls.LinearSolver.tolerance = 1e-3;
-% nls.LinearSolver.maxIterations = 30;
-nls.maxIterations = 10;
-nls.verbose = 10;
-
-
-
 model.nonlinearTolerance = 1e-5;
 model.verbose = true;
 
@@ -200,7 +175,6 @@ plotGrid(model.(ne).(am).G,     'facecolor', colors(2,:), 'edgealpha', 0.5, 'edg
 plotGrid(model.(elyte).(sep).G, 'facecolor', colors(3,:), 'edgealpha', 0.5, 'edgecolor', [1, 1, 1]);
 plotGrid(model.(pe).(am).G,     'facecolor', colors(4,:), 'edgealpha', 0.5, 'edgecolor', [1, 1, 1]);
 plotGrid(model.(pe).(cc).G,     'facecolor', colors(5,:), 'edgealpha', 0.5, 'edgecolor', [1, 1, 1]);
-%plotGrid(model.(elyte).G,       'facecolor', colors(6,:), 'edgealpha', 0.5, 'edgecolor', [1, 1, 1], 'facealpha', 0.1);
 axis tight;
 legend({'negative electrode current collector' , ...
         'negative electrode active material'   , ...
@@ -208,35 +182,29 @@ legend({'negative electrode current collector' , ...
         'positive electrode active material'   , ...
         'positive electrode current collector'}, ...
        'location', 'southwest')
-view(3)
+view(-37, 14)
 drawnow
 
-%return
 
-%% More plot
-figure
-plotGrid(model.(ne).(cc).G,     'facecolor', colors(1,:), 'edgealpha', 0.5, 'edgecolor', [1, 1, 1]);view(3);title('ne cc')
-figure
-plotGrid(model.(ne).(am).G,     'facecolor', colors(2,:), 'edgealpha', 0.5, 'edgecolor', [1, 1, 1]);view(3);title('ne am');
-figure
-plotGrid(model.(elyte).(sep).G, 'facecolor', colors(3,:), 'edgealpha', 0.5, 'edgecolor', [1, 1, 1]);view(3);title('elyte sep')
-figure
-plotGrid(model.(pe).(am).G,     'facecolor', colors(4,:), 'edgealpha', 0.5, 'edgecolor', [1, 1, 1]);view(3);title('pe am')
-figure
-plotGrid(model.(pe).(cc).G,     'facecolor', colors(5,:), 'edgealpha', 0.5, 'edgecolor', [1, 1, 1]);view(3);title('pe cc')
-figure
-plotGrid(model.(elyte).G,model.(elyte).G.cells.centroids(:, 1)>0,       'facecolor', colors(6,:), 'edgealpha', 0.5, 'edgecolor', [1, 1, 1], 'facealpha', 0.1);view(3);title('elyte')
+%% Additional plots for visualizing the different components
+doplot = false;
+if doplot
+    figure
+    plotGrid(model.(ne).(cc).G,     'facecolor', colors(1,:), 'edgealpha', 0.5, 'edgecolor', [1, 1, 1]);view(3);title('ne cc')
+    figure
+    plotGrid(model.(ne).(am).G,     'facecolor', colors(2,:), 'edgealpha', 0.5, 'edgecolor', [1, 1, 1]);view(3);title('ne am');
+    figure
+    plotGrid(model.(elyte).(sep).G, 'facecolor', colors(3,:), 'edgealpha', 0.5, 'edgecolor', [1, 1, 1]);view(3);title('elyte sep')
+    figure
+    plotGrid(model.(pe).(am).G,     'facecolor', colors(4,:), 'edgealpha', 0.5, 'edgecolor', [1, 1, 1]);view(3);title('pe am')
+    figure
+    plotGrid(model.(pe).(cc).G,     'facecolor', colors(5,:), 'edgealpha', 0.5, 'edgecolor', [1, 1, 1]);view(3);title('pe cc')
+    figure
+    plotGrid(model.(elyte).G,model.(elyte).G.cells.centroids(:, 1)>0,       'facecolor', colors(6,:), 'edgealpha', 0.5, 'edgecolor', [1, 1, 1], 'facealpha', 0.1);view(3);title('elyte')
+    drawnow
+end
 
-drawnow
-
-return
-
-
-
-% %% Run simulation
-% mrstVerbose off
-% [wellSols, states, report] = simulateScheduleAD(initstate, model, schedule, 'OutputMinisteps', true, 'NonLinearSolver', nls);
-
+%% Run simulation and save output to folder
 if ~exist('tag')
     tag = datetime;
 end
@@ -247,7 +215,7 @@ problem.SimulatorSetup.OutputMinisteps = true;
 
 resetSimulation = true;
 if resetSimulation
-    %% clear previously computed simulation
+    % Clear previously computed simulation
     clearPackedSimulatorOutput(problem, 'prompt', false);
 end
 simulatePackedProblem(problem);
@@ -261,14 +229,14 @@ Enew = cellfun(@(x) x.(ctrl).E, states);
 Inew = cellfun(@(x) x.(ctrl).I, states);
 time = cellfun(@(x) x.time, states);
 
-%% Plot an animated summary of the results
-%plotDashboard(model, states, 'step', 0);
-
-
+%% Plot results
 figure
-plot(time, Inew, '-'), title('I', num2str(diamfactor)); grid on; xlabel 'time (s)'
+plot(time, Inew, '-'); title('I'); grid on; xlabel 'time (s)'
 figure
-plot(time, Enew, '-'), title('E', num2str(diamfactor)); grid on; xlabel 'time (s)'
+plot(time, Enew, '-'); title('E'); grid on; xlabel 'time (s)'
+figure
+plotCellData(model.(thermal).G, states{end}.(thermal).T, model.(thermal).G.cells.centroids(:, 1) > 0)
+colorbar
 
 %{
 Copyright 2021-2022 SINTEF Industry, Sustainable Energy Technology
