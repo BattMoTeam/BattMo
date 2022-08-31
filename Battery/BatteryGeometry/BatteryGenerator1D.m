@@ -2,16 +2,28 @@ classdef BatteryGenerator1D < BatteryGenerator
 % setup 1D grid 
     properties
         
-        sepnx  = 10;
-        nenx   = 10;
-        penx   = 10;
-        nenr   = 10; % discretization for solid diffusion
-        penr   = 10; % discretization for solid diffusion
-        ccnenx = 10;
-        ccpenx = 10;
+        xlength = 1e-6*[25; 64; 15; 57; 15]; % length of components in x direction - default values
+                                             % x(1) : length of negative current collector
+                                             % x(2) : length of negative activie material
+                                             % x(3) : length of separator
+                                             % x(4) : length of positive current collector
+                                             % x(5) : length of positive activie material
+
+        sepnx  = 10; % discretization number for negative current collector - default value
+        nenx   = 10; % discretization number for negative activie material  - default value
+        penx   = 10; % discretization number for separator                  - default value
+        nenr   = 10; % discretization for solid diffusion                   - default value
+        penr   = 10; % discretization for solid diffusion                   - default value
+        ccnenx = 10; % discretization number for positive current collector - default value
+        ccpenx = 10; % discretization number for positive activie material  - default value
+
+        % refinement factor (can be used to easily increase discretization refinement)
+        % see applyResolutionFactors method
         fac = 1;
 
+        % flag : true if grid for current collectors should be included
         include_current_collectors
+        % flag : true if grid for thermal model should be included
         use_thermal
         
     end
@@ -38,14 +50,14 @@ classdef BatteryGenerator1D < BatteryGenerator
             ccnenx = gen.ccnenx;
             ccpenx = gen.ccpenx;
 
-            
+            xlength = gen.xlength;
+
             if gen.include_current_collectors
                 nxs = [ccnenx; nenx; sepnx; penx; ccpenx];
                 % standard length (could be moved to a paramobj geometrical field)
-                xlength = 1e-6*[25, 64, 15, 57, 15]';
             else
                 nxs = [nenx; sepnx; penx];
-                xlength = 1e-6*[64, 15, 57]';
+                xlength = xlength(2 : 4);
             end
             
             x = xlength./nxs;
