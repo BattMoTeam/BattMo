@@ -8,6 +8,8 @@ mrstVerbose off
 % load MRST modules
 mrstModule add ad-core mrst-gui mpfa upr
 
+mrstDebug(99)
+
 %% Define some shorthand names for simplicity.
 ne      = 'NegativeElectrode';
 pe      = 'PositiveElectrode';
@@ -21,6 +23,9 @@ sep     = 'Separator';
 
 %% Setup the properties of Li-ion battery materials and cell design
 jsonstruct = parseBattmoJson('ParameterData/BatteryCellParameters/LithiumIonBatteryCell/lithium_ion_battery_nmc_graphite.json');
+
+jsonstruct.use_thermal = false;
+
 paramobj = BatteryInputParams(jsonstruct);
 
 use_cccv = false
@@ -70,19 +75,20 @@ thickness('PositiveCurrentCollector') = 0.5*(CR2016_thickness - sum(cell2mat(thi
 thickness('NegativeCurrentCollector') = thickness('PositiveCurrentCollector');
 
 %tag = '0.6-0.7-realz'
-%ddfactor = [1, 0.6, 0.7, 0.6, 1];
-%ddfactor = [1, 0.6, 0.9, 0.6, 1];
+%diamfactor = [1, 0.6, 0.7, 0.6, 1];
+%diamfactor = [1, 0.6, 0.9, 0.6, 1];
 % tag = 'sep0.9-am0.8';
-ddfactor = [1, 0.8, 0.9, 0.8, 1];
-dd = ddfactor * CR2016_diameter;
-%dd = ones(1, 5) * CR2016_diameter;
-diameter = containers.Map(components, dd);
+diamfactor = [1, 0.9, 0.7, 0.9, 1];
+%diamfactor = ones(1, 5);
+diameter = containers.Map(components, diamfactor * CR2016_diameter);
 
 
-meshSize = max(cell2mat(diameter.values)) / 10;
+%meshSize = max(cell2mat(diameter.values)) / 10;
+meshSize = max(cell2mat(diameter.values)) / 8;
 
 numCellLayers = containers.Map();
-hz = 0.5*min(cell2mat(thickness.values));
+%hz = 0.5*min(cell2mat(thickness.values));
+hz = min(cell2mat(thickness.values));
 for k = keys(thickness)
     key = k{1};
     numCellLayers(key) = max(2, round(thickness(key)/hz));
@@ -93,7 +99,7 @@ numCellLayers('NegativeCurrentCollector') = ceil(round(0.25*numCellLayers('Negat
 %use_sector = true;
 use_sector = false;
 
-offset = [0.1, 0.1];
+offset = [0.0, 0.0];
 
 params = struct('thickness', thickness, ...
                 'diameter', diameter, ...
@@ -111,6 +117,11 @@ paramobj = gen.updateBatteryInputParams(paramobj, params);
 % The battery model is initialized by sending paramobj to the Battery class
 % constructor. see :class:`Battery <Battery.Battery>`.
 model = Battery(paramobj);
+
+% % test
+% idx = isnan(model.(elyte).volumeFraction);
+% model.(elyte).volumeFraction(idx) = 0.5;
+
 
 %% Compute the nominal cell capacity and choose a C-Rate
 % The nominal capacity of the cell is calculated from the active materials.
@@ -217,7 +228,7 @@ legend({'negative electrode current collector' , ...
 view(3)
 drawnow
 
-return
+%return
 
 %% More plot
 figure
@@ -231,10 +242,11 @@ plotGrid(model.(pe).(am).G,     'facecolor', colors(4,:), 'edgealpha', 0.5, 'edg
 figure
 plotGrid(model.(pe).(cc).G,     'facecolor', colors(5,:), 'edgealpha', 0.5, 'edgecolor', [1, 1, 1]);view(3);title('pe cc')
 figure
-plotGrid(model.(elyte).G,       'facecolor', colors(6,:), 'edgealpha', 0.5, 'edgecolor', [1, 1, 1], 'facealpha', 0.1);view(3);title('elyte')
+plotGrid(model.(elyte).G,model.(elyte).G.cells.centroids(:, 1)>0,       'facecolor', colors(6,:), 'edgealpha', 0.5, 'edgecolor', [1, 1, 1], 'facealpha', 0.1);view(3);title('elyte')
+
 drawnow
 
-%return
+return
 
 
 
@@ -271,9 +283,9 @@ time = cellfun(@(x) x.time, states);
 
 
 figure
-plot(time, Inew, '-'), title('I', num2str(ddfactor)); grid on; xlabel 'time (s)'
+plot(time, Inew, '-'), title('I', num2str(diamfactor)); grid on; xlabel 'time (s)'
 figure
-plot(time, Enew, '-'), title('E', num2str(ddfactor)); grid on; xlabel 'time (s)'
+plot(time, Enew, '-'), title('E', num2str(diamfactor)); grid on; xlabel 'time (s)'
 
 %{
 Copyright 2021-2022 SINTEF Industry, Sustainable Energy Technology
