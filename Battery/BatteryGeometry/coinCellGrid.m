@@ -4,67 +4,91 @@ function output = coinCellGrid(params)
 
     % Components in order from z=0 (top) to z=zmax (bottom) with the
     % surrounding electrolyte last
-    components = {'NegativeCurrentCollector', ...
+    compnames = {'NegativeCurrentCollector', ...
                   'NegativeActiveMaterial', ...
                   'ElectrolyteSeparator', ...
                   'PositiveActiveMaterial', ...
                   'PositiveCurrentCollector', ...
                   'Electrolyte'};
+    assert(numel(intersect(compnames, params.compdims.Row)) == 5);
+    
+    % % Find parameters common for 3d grid and sector grid
+    
+    
+    % diameter = params.compdims.diameter;
+    
+    % R = 0.5 * max(diameter);
+    % bbox = [-1.2*R, -1.2*R; 1.2*R, -1.2*R; 1.2*R, 1.2*R; -1.2*R, 1.2*R];
+    % xc0 = [0, 0];
 
-    % Find parameters common for 3d grid and sector grid
-    R = 0.5 * max(cell2mat(params.diameter.values));
-    bbox = [-1.2*R, -1.2*R; 1.2*R, -1.2*R; 1.2*R, 1.2*R; -1.2*R, 1.2*R];
-    xc0 = [0, 0];
+    % for k = 1:numel(components) - 1
+    %     key = components{k};
+    %     thickness(k) = params.thickness(key);
+    %     numCellLayers(k) = params.numCellLayers(key);
+    % end
+    % dz = thickness ./ numCellLayers;
+    % dz = rldecode(dz.', numCellLayers.');
 
-    % Order is important here
-    for k = 1:numel(components) - 1
-        key = components{k};
-        thickness(k) = params.thickness(key);
-        numCellLayers(k) = params.numCellLayers(key);
-    end
+    thickness = params.compdims.thickness;
+    numCellLayers = params.compdims.numCellLayers;
     dz = thickness ./ numCellLayers;
-    dz = rldecode(dz.', numCellLayers.');
-
-    comptag = 1 : numel(components);
-    tagdict = containers.Map(components, comptag);
+    dz = rldecode(dz, numCellLayers);
+    
+    comptag = 1 : numel(compnames);
+    tagdict = containers.Map(compnames, comptag);
 
     if params.use_sector
-        output = coinCellSectorGrid(params, components, R, bbox, xc0, thickness, dz, tagdict);
+        output = coinCellSectorGrid(params, compnames, dz, tagdict);
     else
-        output = coinCell3dGrid(params, components, R, bbox, xc0, thickness, dz, tagdict);
+        output = coinCell3dGrid(params, compnames, dz, tagdict);
     end
 
 end
 
 
-function output = coinCell3dGrid(params, components, R, bbox, xc0, thickness, dz, tagdict)
+function [R, bbox, xc0] = extractDims(compdims)
 
-% Create constraints for the different diameters
+    diameter = compdims.diameter;
+    R = 0.5 * max(diameter);
+    bbox = [-1.2*R, -1.2*R; 1.2*R, -1.2*R; 1.2*R, 1.2*R; -1.2*R, 1.2*R];
+    xc0 = [0, 0];
+    
+end
+
+
+function output = coinCell3dGrid(params, compnames, dz, tagdict)
+
+    compdims = params.compdims;
+    [R, bbox, xc0] = extractDims(compdims);
+    
+    % Create constraints for the different diameters
+    diameter = compdims.diameter;
     meshSize = params.meshSize;
-    diameter = params.diameter;
     offset = params.offset;
 
     num_points = @(r) ceil(2 * pi * r / meshSize);
-    
+
+    % Create circles
     if all(offset == 0)
-        diams = unique(cell2mat(diameter.values));
-        fc = cell(numel(diams), 1);
+        diams = unique(diameter);
+        r = 0.5 * diams;
+        n = num_points(r);        
         for k = 1:numel(diams)
-            r = 0.5 * diams(k);
-            n = num_points(r);
-            fc{k} = circle(r, xc0, n);
+            fc{k} = circle(r(k), xc0, n(k));
         end
     else
         % Circle data is [center, diameter] for all components
-        circdata = zeros(numel(components)-1, 3);
+        circdata = zeros(numel(compnames)-1, 3);
         xc = containers.Map();
-        for k = 1:numel(components)-1
-            key = components{k};
-            circdata(k, :) = [xc0, diameter(key)];
-            if strcmp(key, 'PositiveActiveMaterial')
-                circdata(k, 1:2) = circdata(k, 1:2) + 0.5 * offset;
-            elseif strcmp(key, 'NegativeActiveMaterial')
-                circdata(k, 1:2) = circdata(k, 1:2) - 0.5 * offset;
+        for k = 1:numel(compnames)
+            key = compnames{k};
+            if ~strcmp(key, 'Electrolyte')
+                circdata(k, :) = [xc0, diameter(key)];
+                if strcmp(key, 'PositiveActiveMaterial')
+                    circdata(k, 1:2) = circdata(k, 1:2) + 0.5 * offset;
+                elseif strcmp(key, 'NegativeActiveMaterial')
+                    circdata(k, 1:2) = circdata(k, 1:2) - 0.5 * offset;
+                end
             end
         end
 
@@ -79,14 +103,15 @@ function output = coinCell3dGrid(params, components, R, bbox, xc0, thickness, dz
         end
         keyboard;
     end
-    
+
+    % Create 2D grid for extrusion
     fcfactor = 0.5;
     G = pebiGrid2D(meshSize, max(bbox), 'faceConstraints', [fc{:}], 'polyBdr', bbox, 'FCFactor', fcfactor);
 
     % Remove markers for faces constituting the outer circle
     G.faces = rmfield(G.faces, 'tag');
 
-    %% Remove outside
+    %% Remove cells outside
     G = computeGeometry(G);
     d = vecnorm(G.cells.centroids - xc0, 2, 2);
     is_outside = d > R;
@@ -97,27 +122,29 @@ function output = coinCell3dGrid(params, components, R, bbox, xc0, thickness, dz
     G = computeGeometry(G);
 
     %% Tag
-    thickness_accum = [0, cumsum(thickness)];
+    thickness = compdims.thickness;
+    thickness_accum = [0; cumsum(thickness)];
     zc = G.cells.centroids(:, 3);
     tag = tagdict('Electrolyte') * ones(G.cells.num, 1);
 
-    for k = 1:numel(components) - 1
-        key = components{k};
-
-        t0 = thickness_accum(k);
-        t1 = thickness_accum(k+1);
-        zidx = zc > t0 & zc < t1;
-
-        rc = vecnorm(G.cells.centroids(:, 1:2) - xc0, 2, 2);
-        ridx = rc < 0.5 * diameter(key);
-        %ridx = true;
-
-        idx = zidx & ridx;
-        tag(idx) = tagdict(key);
+    for k = 1:numel(compnames) 
+        key = compnames{k};
+        if ~strcmp(key, 'Electrolyte')
+            t0 = thickness_accum(k);
+            t1 = thickness_accum(k+1);
+            zidx = zc > t0 & zc < t1;
+            
+            rc = vecnorm(G.cells.centroids(:, 1:2) - xc0, 2, 2);
+            ridx = rc < 0.5 * compdims{key, 'diameter'};
+            %ridx = true;
+            
+            idx = zidx & ridx;
+            tag(idx) = tagdict(key);
+        end
     end
     assert(all(tag > -1));
-
-    % Electrode faces where current is applied?
+    
+    %% Electrode faces where current is applied?
     [bf, bc] = boundaryFaces(G);
     minz = min(G.nodes.coords(:, 3)) + 100*eps;
     maxz = max(G.nodes.coords(:, 3)) - 100*eps;

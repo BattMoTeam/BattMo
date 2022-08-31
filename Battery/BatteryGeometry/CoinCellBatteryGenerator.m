@@ -3,9 +3,7 @@ classdef CoinCellBatteryGenerator < BatteryGenerator
     properties
 
         % Design params
-        thickness
-        diameter
-        numCellLayers
+        compdims
         meshSize
         offset = [0, 0]; % Negative and positive electrode offset half this distance from center
         
@@ -42,10 +40,10 @@ classdef CoinCellBatteryGenerator < BatteryGenerator
             paramobj.include_current_collectors = true;
             gen.use_thermal = paramobj.use_thermal;
 
-            gen.thickness     = params.thickness;
-            gen.diameter      = params.diameter;
-            gen.numCellLayers = params.numCellLayers;
-            gen.meshSize      = params.meshSize;
+            gen.compdims = params.compdims;
+            gen.meshSize = params.meshSize;
+
+            % FIXME
             if isfield(params, 'use_sector')
                 gen.use_sector = params.use_sector;
             end

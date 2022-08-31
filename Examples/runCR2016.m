@@ -40,70 +40,57 @@ if use_cccv
     paramobj.Control = cccvparamobj;
 end
 
-
-
-
-%% Setup the geometry and computational mesh
+%% Setup the geometry and grid for the components
 CR2016_diameter = 20*milli*meter;
 CR2016_thickness = 1.6*milli*meter;
 
-components = {'NegativeCurrentCollector', ...
-              'NegativeActiveMaterial', ...
-              'ElectrolyteSeparator', ...
-              'PositiveActiveMaterial', ...
-              'PositiveCurrentCollector'};
+compnames = {'NegativeCurrentCollector', ...
+             'NegativeActiveMaterial', ...
+             'ElectrolyteSeparator', ...
+             'PositiveActiveMaterial', ...
+             'PositiveCurrentCollector'};
+num_components = 5;
+compdims = table('rownames', compnames);
 
-% zlength = [10; 100; 50; 100; 10];
-% zz = CR2016_thickness * zlength / sum(zlength);
-% thickness = containers.Map(components, zz);
+%%
+%compdims = table('size', [numel(compnames), 2], 'variabletypes', {'double', 'double'}, 'rownames', compnames, 'variablenames', {'thickness', 'diameter'});
 
-
-thickness = containers.Map();
-% thickness('PositiveCurrentCollector') = 0.1*milli*meter;
-% thickness('PositiveActiveMaterial')   = 0.45*milli*meter;
-% thickness('ElectrolyteSeparator')     = 0.25*milli*meter;
-% thickness('NegativeActiveMaterial')   = 0.7*milli*meter;
-% thickness('NegativeCurrentCollector') = thickness('PositiveCurrentCollector');
-
+%% Thickness
 % From Joule paper: this gives only half of the Li content compared to
 % Energizer spread sheet, and 1/20 of the typical capacity. Hence the factor 2.
 thickness_factor = 2;
-thickness('PositiveActiveMaterial')   = 67*micro*meter * thickness_factor;
-thickness('ElectrolyteSeparator')     = 20*micro*meter * thickness_factor;
-thickness('NegativeActiveMaterial')   = 50*micro*meter * thickness_factor;
-thickness('PositiveCurrentCollector') = 0.5*(CR2016_thickness - sum(cell2mat(thickness.values)));
-thickness('NegativeCurrentCollector') = thickness('PositiveCurrentCollector');
+compdims.thickness = zeros(num_components, 1);
 
-%tag = '0.6-0.7-realz'
-%diamfactor = [1, 0.6, 0.7, 0.6, 1];
-%diamfactor = [1, 0.6, 0.9, 0.6, 1];
-% tag = 'sep0.9-am0.8';
-diamfactor = [1, 0.9, 0.7, 0.9, 1];
-%diamfactor = ones(1, 5);
-diameter = containers.Map(components, diamfactor * CR2016_diameter);
+compdims{'PositiveActiveMaterial', 'thickness'} = 67*micro*meter * thickness_factor;
+compdims{'ElectrolyteSeparator'  , 'thickness'} = 20*micro*meter * thickness_factor;
+compdims{'NegativeActiveMaterial', 'thickness'} = 50*micro*meter * thickness_factor;
 
+ccs = {'PositiveCurrentCollector', 'NegativeCurrentCollector'};
+compdims{ccs, 'thickness'} = 0.5*(CR2016_thickness - sum(compdims.thickness));
+%compdims{'NegativeCurrentCollector', 'thickness'} = compdims{'PositiveCurrentCollector', 'thickness'};
 
-%meshSize = max(cell2mat(diameter.values)) / 10;
-meshSize = max(cell2mat(diameter.values)) / 8;
+%% Diameters
+compdims.diameter = zeros(num_components, 1);
 
-numCellLayers = containers.Map();
-%hz = 0.5*min(cell2mat(thickness.values));
-hz = min(cell2mat(thickness.values));
-for k = keys(thickness)
-    key = k{1};
-    numCellLayers(key) = max(2, round(thickness(key)/hz));
-end
-numCellLayers('PositiveCurrentCollector') = ceil(round(0.25*numCellLayers('PositiveCurrentCollector')));
-numCellLayers('NegativeCurrentCollector') = ceil(round(0.25*numCellLayers('NegativeCurrentCollector')));
+compdims{'PositiveCurrentCollector', 'diameter'} = 1;
+compdims{'PositiveActiveMaterial'  , 'diameter'} = 0.9;
+compdims{'ElectrolyteSeparator'    , 'diameter'} = 0.7;
+compdims{'NegativeActiveMaterial'  , 'diameter'} = 0.9;
+compdims{'NegativeCurrentCollector', 'diameter'} = 1;
+compdims.diameter = compdims.diameter * CR2016_diameter;
+
+%% 
+meshSize = max(compdims.diameter) / 10;
+hz = min(compdims.thickness);
+compdims.numCellLayers = max(2, round(compdims.thickness / hz));
+compdims{ccs, 'numCellLayers'} = ceil(round(0.25 * compdims{ccs, 'numCellLayers'}));
 
 %use_sector = true;
 use_sector = false;
 
 offset = [0.0, 0.0];
 
-params = struct('thickness', thickness, ...
-                'diameter', diameter, ...
-                'numCellLayers', numCellLayers, ...
+params = struct('compdims', compdims, ...
                 'meshSize', meshSize, ...
                 'use_sector', use_sector, ...
                 'offset', offset);
