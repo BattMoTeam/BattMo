@@ -20,14 +20,8 @@ mrstModule add ad-core mrst-gui mpfa
 % throughout the submodels. The input parameters can be set manually or
 % provided in json format. All the parameters for the model are stored in
 % the paramobj object.
-jsonstruct = parseBattmoJson('ParameterData/BatteryCellParameters/LithiumIonBatteryCell/lithium_ion_battery_nmc_graphite.json');
 
-switchToFullDiffusionModel = false;
-if switchToFullDiffusionModel
-    % model in json file is the simplified diffusion model
-    jsonstruct.NegativeElectrode.ActiveMaterial.useSimplifiedDiffusionModel = false;
-    jsonstruct.PositiveElectrode.ActiveMaterial.useSimplifiedDiffusionModel = false;
-end
+jsonstruct = parseBattmoJson('ParameterData/BatteryCellParameters/LithiumIonBatteryCell/lithium_ion_battery_nmc_graphite.json');
 
 paramobj = BatteryInputParams(jsonstruct);
 
@@ -43,10 +37,6 @@ if use_cccv
     paramobj.Control = cccvparamobj;
 end
 
-% paramobj.include_current_collectors = true;
-% paramobj.use_solid_diffusion = false;
-% paramobj.use_thermal = true;
-
 % We define some shorthand names for simplicity.
 ne      = 'NegativeElectrode';
 pe      = 'PositiveElectrode';
@@ -56,6 +46,7 @@ am      = 'ActiveMaterial';
 itf     = 'Interface';
 sd      = 'SolidDiffusion';
 ctrl    = 'Control';
+cc      = 'CurrentCollector';
 
 %% Setup the geometry and computational mesh
 % Here, we setup the 1D computational mesh that will be used for the
@@ -92,9 +83,9 @@ switch model.(ctrl).controlPolicy
     error('control policy not recognized');
 end
 
-n     = 100;
-dt    = total/n;
-step  = struct('val', dt*ones(n, 1), 'control', ones(n, 1));
+n    = 100;
+dt   = total/n;
+step = struct('val', dt*ones(n, 1), 'control', ones(n, 1));
 
 % we setup the control by assigning a source and stop function.
 % control = struct('CCCV', true); 
