@@ -1,3 +1,7 @@
+%% TODO : fix the SEIActiveMaterial standalone model
+
+error('SEIActiveMaterial standalone model not working for the moment');
+
 %% run stand-alone active material model
 
 % clear the workspace and close open figures
