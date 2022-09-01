@@ -1,13 +1,10 @@
 classdef BatteryGenerator
-% Object that add grids and coupling terms to a paramobj instance of BatteryInputParams (through method 
+% Base class that add grids and coupling terms to a paramobj instance of BatteryInputParams (through method 
 % updateBatteryInputParams)
 %
-% This class goes through the whole setup and is meant to be used as a base class.
+% This class goes through the whole grid setup and is meant to be used as a base class.
 %
-% This class (or rather an subclass of it) can also be used to setup values of the paramobj instance that is sent to it
-% (just overload the updateBatteryInputParams method by adding the desired setup)
-%
-% Example : BatteryGenerator1D.m, BatteryGenerator2D.m
+% Example : BatteryGenerator1D.m, BatteryGenerator2D.m, BatteryGenerator3D
 
     properties
         % Global grid 
