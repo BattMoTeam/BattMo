@@ -1,37 +1,45 @@
-classdef ControlModelInputParams < InputParams
-
+classdef CvControlModel < ControlModel
     
     properties
-
-        controlPolicy
-        CRate
-        
+        inputVoltage
     end
     
     methods
 
-        function paramobj = ControlModelInputParams(jsonstruct);
+
+        function model = CvControlModel(paramobj)
             
-            paramobj = paramobj@InputParams(jsonstruct);
+            model = model@ControlModel(paramobj);
+            
+            fdnames = {'inputVoltage'};
+            model = dispatchParams(model, paramobj, fdnames);
             
         end
         
-        function paramobj = set.controlPolicy(paramobj, controlPolicy)
-            switch controlPolicy
-              case 'IEswitch'
-                % ok in any case
-              case 'CCCV'
-                assert(isa(paramobj, 'CcCvControlModelInputParams'), 'The model is not a CcCvControlModelInputParams class')
-              case 'CV'
-                assert(isa(paramobj, 'CvControlModelInputParams'), 'The model is not a CvControlModelInputParams class')
-              otherwise
-                error('controlPolicy not recognized');
-            end
-            paramobj.controlPolicy = controlPolicy;                
+        function model = registerVarAndPropfuncNames(model)
+
+            fn = @CvControlModel.updateControlEquation;
+            model = model.registerPropFunction({'controlEquation', fn, {'E'}});
+            
+        end
+        
+        function state = updateControlEquation(model, state)
+            
+            inputE  = model.inputVoltage;
+
+            E = state.E;
+
+            %% TODO : fix scaling
+            ctrleq = (E - inputE)*1e5;
+            
+            state.controlEquation = ctrleq;
+                        
         end
         
     end
     
+    
+        
 end
 
 

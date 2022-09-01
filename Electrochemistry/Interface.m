@@ -78,9 +78,11 @@ classdef Interface < BaseModel
             varnames{end + 1} = 'cElectrolyte';
             % eta
             varnames{end + 1} = 'eta';
-            % Reaction rate
+            % Reaction rate in mol/(s*m^2)
             varnames{end + 1} = 'R';
-            % Reaction rate
+            % External potential drop used in Butler-Volmer
+            varnames{end + 1} = 'externalPotentialDrop';
+            % 
             varnames{end + 1} = 'dUdT';
             % OCP
             varnames{end + 1} = 'OCP';
@@ -102,9 +104,18 @@ classdef Interface < BaseModel
             inputnames = {'phiElectrolyte', 'phiElectrode', 'OCP'};            
             model = model.registerPropFunction({'eta', fn, inputnames});
             
+            % fn = @Interface.updateEta;
+            % inputnames = {'phiElectrolyte', 'phiElectrode', , 'OCP'};
+            % model = model.registerPropFunction({'eta', fn, inputnames});
+            
+            fn = @Interface.updateEtaWithEx;
+            inputnames = {'phiElectrolyte', 'phiElectrode', 'OCP', 'externalPotentialDrop'};
+            model = model.registerPropFunction({'eta', fn, inputnames});            
+            
             fn = @Interface.updateReactionRate;
-            inputnames = {'T', 'j0', 'eta'};
+            inputnames = {'T', 'eta', 'j0'};
             model = model.registerPropFunction({'R', fn, inputnames});
+            
             
         end
         
@@ -160,13 +171,22 @@ classdef Interface < BaseModel
             phiElde  = state.phiElectrode;
             OCP      = state.OCP;
 
-            eta = (phiElde - phiElyte - OCP);
+            state.eta = (phiElde - phiElyte - OCP);
 
-            state.eta = eta;
-            
         end
         
+        function state = updateEtaWithEx(model, state)
+
+            phiElyte = state.phiElectrolyte;
+            phiElde  = state.phiElectrode;
+            OCP      = state.OCP;
+            dphi     = state.externalPotentialDrop;
+
+            state.eta = (phiElde - phiElyte - OCP - dphi);
+
+        end
         
+            
         function state = updateReactionRate(model, state)
 
             n = model.n;
@@ -176,14 +196,12 @@ classdef Interface < BaseModel
             j0  = state.j0;
             eta = state.eta;
             
-            R = model.volumetricSurfaceArea.*ButlerVolmerEquation(j0, 0.5, n, eta, T);
+            R = ButlerVolmerEquation(j0, 0.5, n, eta, T);
 
-            state.R = R/(n*F); % reaction rate in mole/meter^3/second
+            state.R = R/(n*F); % reaction rate in mol/(s*m^2)
 
         end
         
-
-
     end
 end
 

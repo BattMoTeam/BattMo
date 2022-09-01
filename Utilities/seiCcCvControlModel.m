@@ -1,4 +1,4 @@
-classdef CcCvControlModel < ControlModel
+classdef seiCcCvControlModel < ControlModel
 
     properties
         
@@ -13,7 +13,7 @@ classdef CcCvControlModel < ControlModel
     
     methods
 
-        function model = CcCvControlModel(paramobj)
+        function model = seiCcCvControlModel(paramobj)
 
             model = model@ControlModel(paramobj);
             
@@ -36,6 +36,7 @@ classdef CcCvControlModel < ControlModel
             % - CC_charge1
             % - CV_charge2
             varnames{end + 1} = 'ctrlType';            
+            varnames{end + 1} = 'time';
             model = model.registerVarNames(varnames);
             
             
@@ -61,10 +62,12 @@ classdef CcCvControlModel < ControlModel
             switch ctrlType
               case 'CC_discharge1'
                 ctrleq = I - Imax;
-              case 'CC_discharge2'
-                ctrleq = I;
+              case 'CV_discharge2'
+                ctrleq = (E - Emin);
               case 'CC_charge1'
-                    ctrleq = I + Imax;
+                time = state.time;
+                reftime = state.reftime;
+                ctrleq = I + rampupControl(time - reftime, 1*minute, Imax);
               case 'CV_charge2'
                 ctrleq = (E - Emax);
               otherwise
@@ -74,7 +77,6 @@ classdef CcCvControlModel < ControlModel
             state.controlEquation = ctrleq;
             
         end
-        
 
         function state = updateControlAfterConvergence(model, state, state0, dt)
 
@@ -92,21 +94,22 @@ classdef CcCvControlModel < ControlModel
             ctrlType = state.ctrlType;
             
             switch ctrlType
-              
+                
               case 'CC_discharge1'
                 
                 nextCtrlType = 'CC_discharge1';
                 if (E <= Emin) 
                     nextCtrlType = 'CC_discharge2';
                 end
-            
-              case 'CC_discharge2'
                 
-                nextCtrlType = 'CC_discharge2';
+              case 'CV_discharge2'
+                
+                nextCtrlType = 'CV_discharge2';
                 if (abs(dIdt) <= dIdtMin)
                     nextCtrlType = 'CC_charge1';
+                    state.reftime = state.time;
                 end
-            
+                
               case 'CC_charge1'
 
                 nextCtrlType = 'CC_charge1';
@@ -130,12 +133,20 @@ classdef CcCvControlModel < ControlModel
             state.nextCtrlType = nextCtrlType;
             
         end
+        
+        function cleanState = addStaticVariables(model, cleanState, state)
             
+            cleanState = addStaticVariables@ControlModel(model, cleanState, state);
+            cleanState.ctrlType = state.ctrlType;
+            if isfield(state, 'reftime')
+                cleanState.reftime = state.reftime;
+            end   
+            
+        end
         
     end
     
     
-        
 end
 
 
@@ -156,6 +167,6 @@ but WITHOUT ANY WARRANTY; without even the implied warranty of
 MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 GNU General Public License for more details.
 
-You should have received a copy of the GNU General Public License
-along with BattMo.  If not, see <http://www.gnu.org/licenses/>.
+  You should have received a copy of the GNU General Public License
+  along with BattMo.  If not, see <http://www.gnu.org/licenses/>.
 %}

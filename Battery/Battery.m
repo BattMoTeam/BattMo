@@ -741,6 +741,7 @@ classdef Battery < BaseModel
 
             for ind = 1 : numel(electrodes)
                 elde = electrodes{ind};
+                state.(elde).(am) = battery.(elde).(am).updateRvol(state.(elde).(am));
                 state.(elde).(am) = battery.(elde).(am).updateCurrentSource(state.(elde).(am));
                 state.(elde).(am) = battery.(elde).(am).updateCurrent(state.(elde).(am));
                 state.(elde).(am) = battery.(elde).(am).updateChargeConservation(state.(elde).(am));
@@ -763,7 +764,6 @@ classdef Battery < BaseModel
             for ind = 1 : numel(electrodes)
                 elde = electrodes{ind};
                 state.(elde).(am).(sd) = battery.(elde).(am).(sd).updateDiffusionCoefficient(state.(elde).(am).(sd));
-                state.(elde).(am) = battery.(elde).(am).dispatchRate(state.(elde).(am));
                 if model.use_solid_diffusion
                     switch model.(elde).(am).diffusionModelType
                       case 'simple'
@@ -773,7 +773,7 @@ classdef Battery < BaseModel
                       case 'full'
                         state.(elde).(am).(sd) = battery.(elde).(am).(sd).updateMassSource(state.(elde).(am).(sd));
                         state.(elde).(am).(sd) = battery.(elde).(am).(sd).updateFlux(state.(elde).(am).(sd));
-                        state.(elde).(am).(sd) = battery.(elde).(am).(sd).updateAccumTerm(state.(elde).(am).(sd), state0.(elde).(am).(sd), dt);
+                        state.(elde).(am).(sd) = battery.(elde).(am).(sd).updateMassAccum(state.(elde).(am).(sd), state0.(elde).(am).(sd), dt);
                         state.(elde).(am).(sd) = battery.(elde).(am).(sd).updateMassConservation(state.(elde).(am).(sd));
                     end
                     state.(elde).(am).(sd) = battery.(elde).(am).(sd).assembleSolidDiffusionEquation(state.(elde).(am).(sd));
@@ -975,6 +975,9 @@ classdef Battery < BaseModel
             
             vols = battery.(elyte).G.cells.volumes;
             F = battery.con.F;
+            ne_vsa = battery.(ne).(am).(itf).volumetricSurfaceArea;
+            pe_vsa = battery.(pe).(am).(itf).volumetricSurfaceArea;
+            
             
             couplingterms = battery.couplingTerms;
 
@@ -994,12 +997,12 @@ classdef Battery < BaseModel
             ne_R = state.(ne).(am).(itf).R;
             coupterm = getCoupTerm(couplingterms, 'NegativeElectrode-Electrolyte', coupnames);
             elytecells = coupterm.couplingcells(:, 2);
-            elyte_c_source(elytecells) = ne_R.*vols(elytecells); % we divide with F later
+            elyte_c_source(elytecells) = ne_vsa*ne_R.*vols(elytecells);
             
             pe_R = state.(pe).(am).(itf).R;
             coupterm = getCoupTerm(couplingterms, 'PositiveElectrode-Electrolyte', coupnames);
             elytecells = coupterm.couplingcells(:, 2);
-            elyte_c_source(elytecells) = pe_R.*vols(elytecells);
+            elyte_c_source(elytecells) = pe_vsa*pe_R.*vols(elytecells);
             
             elyte_e_source = elyte_c_source.*battery.(elyte).sp.z(1)*F; 
             
@@ -1215,13 +1218,14 @@ classdef Battery < BaseModel
                 F       = itf_model.constants.F;
                 n       = itf_model.n;
                 itf_map = itf_model.G.mappings.cellmap;
+                vsa     = itf_model.volumetricSurfaceArea;
                 vols    = model.(elde).(am).G.cells.volumes;
 
-                R      = locstate.(elde).(am).(itf).R;
-                dUdT   = locstate.(elde).(am).(itf).dUdT;
-                eta    = locstate.(elde).(am).(itf).eta;
+                R    = locstate.(elde).(am).(itf).R;
+                dUdT = locstate.(elde).(am).(itf).dUdT;
+                eta  = locstate.(elde).(am).(itf).eta;
                 
-                itf_src = n*F*vols.*R.*(eta + T(itf_map).*dUdT);
+                itf_src = n*F*vols.*R.*vsa.*(eta + T(itf_map).*dUdT);
                 
                 src(itf_map) = src(itf_map) + itf_src;
                 
@@ -1334,19 +1338,6 @@ classdef Battery < BaseModel
             end
             
         end
-
-        function state = updateDerivativeControlValues(model, state, state0, dt)
-
-            ctrl = 'Control';
-            
-            dEdt = (state.(ctrl).E - state0.(ctrl).E)/dt;
-            dIdt = (state.(ctrl).I - state0.(ctrl).I)/dt;
-            
-            state.(ctrl).dEdt = value(dEdt);
-            state.(ctrl).dIdt = value(dIdt);
-            state.(ctrl).prevCtrlType = state0.(ctrl).ctrlType;
-            
-        end
         
         function state = setupEIEquation(model, state)
             
@@ -1425,8 +1416,8 @@ classdef Battery < BaseModel
               otherwise
                 error('Error controlPolicy not recognized');
             end
-            %NB hack to get thing go
-            forces.Imax = [];%model.Control.Imax;
+            % TODO hack to get thing go
+            forces.Imax = [];
             
         end
 

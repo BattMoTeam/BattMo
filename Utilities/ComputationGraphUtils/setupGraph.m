@@ -26,7 +26,7 @@ function [g, edgelabels] = setupGraph(model, varargin)
                     g = addnode(g, fullname);
                 end
             else
-                fullname = varname.getfieldname;
+                fullname = varname.getFieldname;
                 g = addnode(g, fullname);
             end
         end
@@ -53,7 +53,7 @@ function [g, edgelabels] = setupGraph(model, varargin)
                     fullinputvarnames = horzcat(fullinputvarnames, {fullinputvarname});
                 end
             else
-                inputvarname = inputvarname.getfieldname;
+                inputvarname = inputvarname.getFieldname;
                 fullinputvarnames = horzcat(fullinputvarnames, {inputvarname});
             end
         end
@@ -66,7 +66,7 @@ function [g, edgelabels] = setupGraph(model, varargin)
                 fullvarnames{ivarname} = varnames{ivarname}.getIndexedFieldname();
             end
         else
-            fullvarnames = {varname.getfieldname};
+            fullvarnames = {varname.getFieldname};
         end
         
         nv = numel(fullvarnames);
@@ -89,7 +89,7 @@ function [g, edgelabels] = setupGraph(model, varargin)
         
     end
     
-    g = addedge(g, ss, ts);
+    g = addedge(g, ss, ts, [ps{:}]);
     
     edgelabels.ss = ss;
     edgelabels.ts = ts;

@@ -2,6 +2,7 @@ classdef ComputationalGraphFilter
 
     properties
         graph
+        model
         A
         nodenames
         includeNodeNames
@@ -10,18 +11,39 @@ classdef ComputationalGraphFilter
     
     methods
         
-        function cgf = ComputationalGraphFilter(graph)
-            cgf.graph     = graph;
-            cgf.A         = adjacency(graph);
-            cgf.nodenames = graph.Nodes.Variables;
+        function cgf = ComputationalGraphFilter(model)
+            if isempty(model.propertyFunctionList)
+                model = model.registerVarAndPropfuncNames();
+            end
+            cgf.model     = model;
+            g             = setupGraph(model);
+            cgf.graph     = g;
+            cgf.A         = adjacency(g, 'weighted');
+            cgf.nodenames = g.Nodes.Variables;
         end
 
+        function propfuncs = findPropFunction(cgf, nodename)
+            
+            nodenames = cgf.nodenames;
+            A         = cgf.A;
+            model     = cgf.model;
+            
+            indSelectedNodenames = regexp(nodenames, nodename, 'once');
+            indSelectedNodenames = cellfun(@(x) ~isempty(x), indSelectedNodenames);
+            indPropfunctions = A(:, indSelectedNodenames);
+            indPropfunctions = unique(indPropfunctions(:));
+
+            propfuncs = model.propertyFunctionList(indPropfunctions(indPropfunctions > 0));
+            
+        end
         
-        function g = setupGraph(cgf, varargin)
+        function [g, edgelabels] = setupGraph(cgf, varargin)
             
-            opt = struct('type', 'ascendant');
+            opt = struct('type', 'ascendant', ...
+                         'oneParentOnly', false);
             opt = merge_options(opt, varargin{:});
-            
+
+            propfunctionlist = cgf.model.propertyFunctionList;
             nodenames        = cgf.nodenames;
             includeNodeNames = cgf.includeNodeNames;
             excludeNodeNames = cgf.excludeNodeNames;
@@ -37,7 +59,7 @@ classdef ComputationalGraphFilter
                 return
             end
             
-            nodes = getNodeDependencyListByName(includeNodeNames, nodenames, A);
+            nodes = getNodeDependencyListByName(includeNodeNames, nodenames, A, 'oneParentOnly', opt.oneParentOnly);
 
             nodenames = nodenames(nodes);
             A = A(nodes, nodes);
@@ -54,15 +76,25 @@ classdef ComputationalGraphFilter
             end
             
             g = digraph(A, nodenames);
+
+            propinds = g.Edges.Weight;
+
+            if nargout > 1
+                edgelabels = {};
+                for iprop = 1 : numel(propinds)
+                    propind = propinds(iprop);
+                    edgelabels{end + 1} = func2str(propfunctionlist{propind}.fn);
+                end
+            end
             
         end
         
-        function g = setupAscendantGraph(cgf)
-            g = cgf.setupGraph('type', 'ascendant');
+        function [g, edgelabels] = setupAscendantGraph(cgf, varargin)
+            [g, edgelabels] = cgf.setupGraph('type', 'ascendant', varargin{:});
         end
         
-        function g = setupDescendantGraph(cgf)
-            g = cgf.setupGraph('type', 'descendant');            
+        function [g, edgelabels] = setupDescendantGraph(cgf, varargin)
+            [g, edgelabels] = cgf.setupGraph('type', 'descendant', varargin{:});            
         end
         
     end
