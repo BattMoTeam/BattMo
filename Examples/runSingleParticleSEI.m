@@ -199,13 +199,13 @@ end
 
 ind = cellfun(@(x) not(isempty(x)), states); 
 states = states(ind);
-Enew = cellfun(@(x) x.Control.E, states); 
-Inew = cellfun(@(x) x.Control.I, states);
+E = cellfun(@(x) x.Control.E, states); 
+I = cellfun(@(x) x.Control.I, states);
 % [SOCN, SOCP] =  cellfun(@(x) model.calculateSOC(x), states);
 time = cellfun(@(x) x.time, states); 
 
 figure
-plot(time/hour, Enew);
+plot(time/hour, E);
 xlabel('time / [h]');
 ylabel('Voltage / [V]');
 

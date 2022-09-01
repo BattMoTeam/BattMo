@@ -202,8 +202,8 @@ end
 
 ind = cellfun(@(x) not(isempty(x)), states); 
 states = states(ind);
-Enew = cellfun(@(x) x.(ctrl).E, states);
-Inew = cellfun(@(x) x.(ctrl).I, states);
+E = cellfun(@(x) x.(ctrl).E, states);
+I = cellfun(@(x) x.(ctrl).I, states);
 time = cellfun(@(x) x.time, states); 
 
 %% Plot an animated summary of the results

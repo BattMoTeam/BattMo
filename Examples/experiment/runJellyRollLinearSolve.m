@@ -213,14 +213,14 @@ profile viewer
 %%  Process output and recover the output voltage and current from the output states.
 ind = cellfun(@(x) not(isempty(x)), states); 
 states = states(ind);
-Enew = cellfun(@(x) x.(ctrl).E, states); 
-Inew = cellfun(@(x) x.(ctrl).I, states);
+E = cellfun(@(x) x.(ctrl).E, states); 
+I = cellfun(@(x) x.(ctrl).I, states);
 time = cellfun(@(x) x.time, states);
 figure(1),clf,
 subplot(2,1,1)
-plot(time,Enew)
+plot(time,E)
 subplot(2,1,2)
-plot(time,Inew)
+plot(time,I)
 %%
 its = getReportOutput(report,'type','linearIterations')
 nits= getReportOutput(report,'type','nonlinearIterations')

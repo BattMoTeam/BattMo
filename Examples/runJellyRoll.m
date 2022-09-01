@@ -209,6 +209,18 @@ end
 simulatePackedProblem(problem);
 [globvars, states, report] = getPackedSimulatorOutput(problem);
 
+%% Process output and recover the output voltage and current from the output states.
+
+ind = cellfun(@(x) not(isempty(x)), states); 
+states = states(ind);
+E = cellfun(@(x) x.Control.E, states); 
+I = cellfun(@(x) x.Control.I, states);
+time = cellfun(@(x) x.time, states); 
+
+plot(time, E, 'linewidth', 3);
+set(gca, 'fontsize', 18);
+title('Cell Voltage / V')
+xlabel('time (hours)')
 
 %{
 Copyright 2021-2022 SINTEF Industry, Sustainable Energy Technology
