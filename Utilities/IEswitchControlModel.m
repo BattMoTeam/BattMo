@@ -63,13 +63,13 @@ classdef IEswitchControlModel < ControlModel
             state.controlEquation = ctrleq;
                         
         end
+    
+        function cleanState = addStaticVariables(model, cleanState, state)
+            cleanState.ctrlType = state.ctrlType;
+        end
         
     end
-    
-    function cleanState = addStaticVariables(model, cleanState, state)
-        cleanState.ctrlType = state.ctrlType;
-    end
-    
+
         
 end
 

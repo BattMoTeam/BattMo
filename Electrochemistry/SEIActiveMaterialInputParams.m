@@ -11,12 +11,12 @@ classdef SEIActiveMaterialInputParams < ActiveMaterialInputParams
     methods
 
         function paramobj = SEIActiveMaterialInputParams(jsonstruct)
-            
+
             paramobj = paramobj@ActiveMaterialInputParams(jsonstruct);
 
             pick = @(fd) pickField(jsonstruct, fd);
-            % For SEI, we never use SimplifiedSolidDiffusionModel
-            paramobj.SolidDiffusion          = SolidDiffusionModelInputParams(pick('SolidDiffusion'));
+            % For SEI, we always use full diffusion model
+            paramobj.SolidDiffusion          = FullSolidDiffusionModelInputParams(pick('SolidDiffusion'));
             paramobj.SideReaction            = SideReactionInputParams(pick('SideReaction'));
             paramobj.SolidElectrodeInterface = SolidElectrodeInterfaceInputParams(pick('SolidElectrodeInterface'));
         end

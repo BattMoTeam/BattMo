@@ -327,7 +327,7 @@ classdef Battery < BaseModel
 
             switch paramobj.controlPolicy
               case "IEswitch"
-                control = ControlModel(paramobj); 
+                control = IEswitchControlModel(paramobj); 
               case "CCCV"
                 control = CcCvControlModel(paramobj);
               otherwise
