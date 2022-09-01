@@ -1,3 +1,6 @@
+clear all
+close all
+
 % Setup mrst modules
 
 mrstModule add ad-core mrst-gui mpfa agmg
@@ -77,6 +80,8 @@ spiralparams = struct('nwindings'   , nwindings, ...
 
 % The input material parameters given in json format are used to populate the paramobj object.
 jsonstruct = parseBattmoJson('ParameterData/BatteryCellParameters/LithiumIonBatteryCell/lithium_ion_battery_nmc_graphite.json');
+jsonstruct.include_current_collectors = true;
+
 paramobj = BatteryInputParams(jsonstruct); 
 
 th = 'ThermalModel';
@@ -166,15 +171,22 @@ else
 end
 
 nls.timeStepSelector = StateChangeTimeStepSelector('TargetProps', {{'Control', 'E'}}, 'targetChangeAbs', 0.03);
-linearsolver = 'agmg';
+linearsolver = 'battery';
 switch linearsolver
   case 'agmg'
     mrstModule add agmg
-    nls.LinearSolver = AGMGSolverAD('verbose', false, 'reduceToCell', true); 
+    nls.LinearSolver = AGMGSolverAD('verbose', true, 'reduceToCell', false); 
     nls.LinearSolver.tolerance = 1e-3; 
     nls.LinearSolver.maxIterations = 30; 
     nls.maxIterations = 10; 
     nls.verbose = 10;
+  case 'battery'
+    nls.LinearSolver = LinearSolverBatteryExtra('verbose'     , false, ...
+                                                'reduceToCell', false, ...
+                                                'verbosity'   , 3    , ...
+                                                'reuse_setup' , false, ...
+                                                'method'      , 'direct');
+    nls.LinearSolver.tolerance = 0.5e-4*2;          
   case 'direct'
     disp('standard direct solver')
   otherwise
