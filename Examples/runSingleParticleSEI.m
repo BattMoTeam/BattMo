@@ -195,36 +195,23 @@ else
     [wellSols, states, report] = simulateScheduleAD(initState, model, schedule, 'OutputMinisteps', true, 'NonlinearSolver', nls); 
 end
 
+%% Process output and recover the output voltage and current from the output states.
 
-return
-
-%% Plotting
-
-% concentration evolution in particle
-
-figure
-xr = (model.(sd).rp/model.(sd).N) * (1 : model.(sd).N)';
-for ind = 1 : numel(states)
-    state = states{ind};
-    cla
-    plot(xr, state.(sd).c)
-    xlabel('r / [m]')
-    ylabel('concentration')
-    title(sprintf('time : %g s', state.time));
-    pause(0.1)
-end
-
-%%
+ind = cellfun(@(x) not(isempty(x)), states); 
+states = states(ind);
+Enew = cellfun(@(x) x.Control.E, states); 
+Inew = cellfun(@(x) x.Control.I, states);
+% [SOCN, SOCP] =  cellfun(@(x) model.calculateSOC(x), states);
+time = cellfun(@(x) x.time, states); 
 
 figure
-d = cellfun(@(state) state.(sei).delta, states);
+plot(time/hour, Enew);
+xlabel('time / [h]');
+ylabel('Voltage / [V]');
+
+figure
+d = cellfun(@(state) state.(an).(sei).delta, states);
 t = cellfun(@(state) state.time, states);
-plot(t, d);
-xlabel('time / [s]');
-ylabel('sie width / [m]');
-
-
-
-
-
-
+plot(t/hour, d/(micro*meter));
+xlabel('time / [h]');
+ylabel('sie width / [\mu m]');
