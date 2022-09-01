@@ -155,14 +155,15 @@ end
 
 function output = coinCellSectorGrid(params, compnames, dz, tagdict)
 
+
     compdims = params.compdims;
     [R, bbox, xc0] = extractDims(compdims);
 
-    % Create tensor grid (extra large first radial element for slicing)
+    % Find radii
     diameter = compdims.diameter;
     meshSize = 2*params.meshSize;
     nr = ceil(round(2*pi*R / meshSize));
-    r0 = linspace(0, R, nr).';
+    r0 = linspace(xc0(1), R, nr).';
     diams = unique(diameter);
     r0 = unique([r0; 0.5*diams]);
     dr = diff(r0);
@@ -177,64 +178,140 @@ function output = coinCellSectorGrid(params, compnames, dz, tagdict)
     end
     r = r0;
     r(2:end-1) = r1;
-
-    z = [0; cumsum(dz)];
-    v = params.angle;
-    %xtop = R*cos(v);
-    ytop = R*sin(v);
-    G = tensorGrid(r, [0, ytop], z);
-
-    % Shear top y nodes (no need to shear the innermost nodes)
-    idx = abs(G.nodes.coords(:,z 2) - ytop) < eps & G.nodes.coords(:, 1) > x0(1);
-    nodes = find(idx);
-    shear = G.nodes.coords(nodes, 1) * sin(2 * v);
- 
-    % Check shear
-    newx = G.nodes.coords(nodes, 1) - shear;
-    plotxyz([newx, G.nodes.coords(nodes,2)], 'r.', 'markersize', 14)
-    keyboard;
-
-
-
     
-    z = [0; cumsum(dz)];
-    ytop = 1;
-    G = tensorGrid(r, [0, ytop], z);
-
-    % Shear top y nodes to mimic circles
-    idx = abs(G.nodes.coords(:, 2) - ytop) < eps & G.nodes.coords(:, 1) > 0;
+    % Tensor grid
     v = params.angle;
-    assert(v < pi/4); % FIXME
-    shear = G.nodes.coords(idx, 1) * sin(2 * v);
-    G.nodes.coords(idx, 1) = G.nodes.coords(idx, 1) - shear;
+    ycirc = R*sin(v);
+    y = [0, ycirc];
+    G = tensorGrid(r, y);
+
+    % Shear top y (sort to be able to replace G.nodes.coords(nodes,1) with r)
+    yidx = abs(G.nodes.coords(:, 2) - ycirc) < eps;
+    nodes = find(yidx);
+
+    xvals = G.nodes.coords(yidx, 1);
+    [x, xidx] = sort(xvals);
+    nodes = nodes(xidx);
+
+    xcirc = R*cos(v);
+    G.nodes.coords(nodes, 1) = r * cos(v);
+
+    % Extrude
+    G = makeLayeredGrid(G, dz);
     G = computeGeometry(G);
+    %figure, plotGrid(G), view(3), title('extruded')
 
-    figure, plotGrid(G), title('after shear')
-    
-    % TODO: Chamfer negative cc
-    %{
-
-      |-------------|
-      |             |
-      |           _/
-      |__________/
-
-    %}
-    
-    % Slice and remove
+    % Slice
     n = [-sin(v), cos(v), 0];
     pt = zeros(1, 3);
     [G, gix] = sliceGrid(G, pt, 'normal', n);
-    %figure, plotGrid(G), title('after slice')
     if mrstPlatform('octave')
         legacy = true;
     else
         legacy = false;
     end
     m = markCutGrids(G, gix.new.faces, 'legacy', legacy);
-        figure, plotCellData(G, m), title('after slice')
+    figure, plotCellData(G, m), title('after slice')
+    G.faces = rmfield(G.faces, 'tag');
     G = removeCells(G, m == 1);
-        figure, plotGrid(G), title('after remove'), axis equal
+    figure, plotGrid(G), title('after remove'), axis equal
+    
+
+    %     keyboard;
+
+
+        
+    
+
+    
+    % compdims = params.compdims;
+    % [R, bbox, xc0] = extractDims(compdims);
+
+    % % Create tensor grid (extra large first radial element for slicing)
+    % diameter = compdims.diameter;
+    % meshSize = 2*params.meshSize;
+    % nr = ceil(round(2*pi*R / meshSize));
+    % r0 = linspace(0, R, nr).';
+    % diams = unique(diameter);
+    % r0 = unique([r0; 0.5*diams]);
+    % dr = diff(r0);
+    % r0(dr < 1e-10) = [];
+
+    % % Smooth r
+    % dosmooth = true;
+    % if dosmooth
+    %     r1 = laplacian_smoothing(r0(2:end-1), [r0(1); r0(end)]);
+    % else
+    %     r1 = r0(2:end-1);
+    % end
+    % r = r0;
+    % r(2:end-1) = r1;
+
+    % % z = [0; cumsum(dz)];
+    % % v = params.angle;
+    % % %xtop = R*cos(v);
+    % % ytop = R*sin(v);
+    % % G = tensorGrid(r, [0, ytop], z);
+
+    % % % Shear top y nodes (no need to shear the innermost nodes)
+    % % idx = abs(G.nodes.coords(:, 2) - ytop) < eps & G.nodes.coords(:, 1) > xc0(1);
+    % % nodes = find(idx);
+    % % shear = G.nodes.coords(nodes, 1) * sin(v);
+ 
+    % % % Check shear
+    % % newx = G.nodes.coords(nodes, 1) - shear;
+    % % plotGrid(G), hold on
+    % % plotxyz(G.nodes.coords(nodes, :),'k.', 'markersize', 14)
+    % % plotxyz([newx, G.nodes.coords(nodes,2)], 'r.', 'markersize', 14)
+    % % keyboard;
+
+
+
+    
+    % z = [0; cumsum(dz)];
+    % ytop = 1;
+    % G = tensorGrid(r, [0, ytop], z);
+
+    % % Shear top y nodes to mimic circles
+    % idx = abs(G.nodes.coords(:, 2) - ytop) < eps & G.nodes.coords(:, 1) > 0;
+    % v = params.angle;
+    % assert(v < pi/4); % FIXME
+    % xmin = min(G.nodes.coords(idx, 1));
+    % xtop = R*cos(v);
+    % G.nodes.coords(idx, 1) = linspace(xmin, xtop, sum(idx));
+    % G = computeGeometry(G);
+    
+    % % shear = G.nodes.coords(idx, 1) * sin(v);
+    % % G.nodes.coords(idx, 1) = G.nodes.coords(idx, 1) - shear;
+    % % G = computeGeometry(G);
+
+    
+    % figure, plotGrid(G), title('after shear')
+    
+    % % TODO: Chamfer negative cc
+    % %{
+
+    %   |-------------|
+    %   |             |
+    %   |           _/
+    %   |__________/
+
+    % %}
+    
+    % % Slice and remove
+    % n = [-sin(v), cos(v), 0];
+    % pt = zeros(1, 3);
+    % [G, gix] = sliceGrid(G, pt, 'normal', n);
+    % %figure, plotGrid(G), title('after slice')
+    % if mrstPlatform('octave')
+    %     legacy = true;
+    % else
+    %     legacy = false;
+    % end
+    % m = markCutGrids(G, gix.new.faces, 'legacy', legacy);
+    %     figure, plotCellData(G, m), title('after slice')
+    % G = removeCells(G, m == 1);
+    %     figure, plotGrid(G), title('after remove'), axis equal
         
     %% Tag
     thickness = compdims.thickness;
@@ -259,7 +336,7 @@ function output = coinCellSectorGrid(params, compnames, dz, tagdict)
             %idx = zidx & ridx;
             idx = zidx;
             tag(idx) = tagdict(key);
-            keyboard;
+
         end
     end
 
@@ -286,13 +363,11 @@ function output = coinCellSectorGrid(params, compnames, dz, tagdict)
 
     % Thermal cooling faces on top and bottom
     top = G.faces.centroids(bf, 3) < 100*eps;
-    bottom = G.faces.centroids(bf, 3) > max(z) - 100*eps;
+    bottom = G.faces.centroids(bf, 3) > max(G.nodes.coords(:, 3)) - 100*eps;
     thermalCoolingFaces = [bf(top); bf(bottom)];
-    assert(numel(thermalCoolingFaces) == G.cartDims(1)*2);
 
     % Thermal exchange faces on the sides
     thermalExchangeFaces = find(G.faces.centroids(bf, 2) < 100*eps);
-    assert(numel(thermalExchangeFaces) == G.cartDims(1)*G.cartDims(3));
     thermalExchangeFacesTag(thermalExchangeFaces) = 1;
 
     % Other side is found using looking at the correctly oriented
