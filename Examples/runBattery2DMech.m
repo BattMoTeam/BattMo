@@ -1,26 +1,17 @@
-%% Pseudo-Three-Dimensional (P3D) Lithium-Ion Battery Model
-% This example demonstrates how to setup a P3D model of a Li-ion battery
-% and run a simple simulation.
+%% Example where we combine a battery discharge simulation with mechanical simulation
+%  We use a a simple relationship between Lithium concentration and load stress in the electrode
 
-% clear the workspace and close open figures
-clear
+clear all
 close all
 clc
 
 %% Import the required modules from MRST
-% load MRST modules
+
 mrstModule add ad-core mrst-gui mpfa
 
 %% Setup the properties of Li-ion battery materials and cell design
-% The properties and parameters of the battery cell, including the
-% architecture and materials, are set using an instance of
-% :class:`BatteryInputParams <Battery.BatteryInputParams>`. This class is
-% used to initialize the simulation and it propagates all the parameters
-% throughout the submodels. The input parameters can be set manually or
-% provided in json format. All the parameters for the model are stored in
-% the paramobj object.
+
 jsonstruct = parseBattmoJson('ParameterData/BatteryCellParameters/LithiumIonBatteryCell/lithium_ion_battery_nmc_graphite.json');
-paramobj = BatteryInputParams(jsonstruct);
 
 % We define some shorthand names for simplicity.
 ne      = 'NegativeElectrode';
@@ -32,29 +23,29 @@ sep     = 'Separator';
 thermal = 'ThermalModel';
 ctrl    = 'Control';
 
-%% Setup the geometry and computational mesh
-% Here, we setup the 2D computational mesh that will be used for the
-% simulation. The required discretization parameters are already included
-% in the class BatteryGenerator2D. 
-gen = BatteryGenerator2D();
-gen.ylength = 1e-3
-gen.ny=100
-% Now, we update the paramobj with the properties of the mesh.
-paramobj = gen.updateBatteryInputParams(paramobj);
+jsonstruct.(ne).(am).diffusionModelType = 'simple';
+jsonstruct.(pe).(am).diffusionModelType = 'simple';
 
-% !!! REMOVE THIS. SET THE RIGHT VALUES IN THE JSON !!! In this case, we
-% change some of the values of the paramaters that were given in the json
-% file to other values. This is done directly on the object paramobj. 
-paramobj.(ne).(cc).EffectiveElectricalConductivity = 1e5;
+paramobj = BatteryInputParams(jsonstruct);
+
+%% Setup the geometry and computational mesh
+
+gen = BatteryGenerator2D(); 
+
+% We change the properties of the mesh and update paramobj with the results mesh
+gen.ylength = 1e-3
+gen.ny      = 100
+paramobj    = gen.updateBatteryInputParams(paramobj); 
+
+paramobj.(ne).(cc).EffectiveElectricalConductivity = 1e5; 
 paramobj.(pe).(cc).EffectiveElectricalConductivity = 1e5;
 
 %%  Initialize the battery model. 
-% The battery model is initialized by sending paramobj to the Battery class
-% constructor. see :class:`Battery <Battery.Battery>`.
+
 model = Battery(paramobj);
 
 %% Plot the mesh
-% The mesh is plotted using the plotGrid() function from MRST. 
+
 colors = crameri('vik', 5);
 figure
 plotGrid(model.(ne).(cc).G,     'facecolor', colors(1,:), 'edgealpha', 0.5, 'edgecolor', [1, 1, 1]);
@@ -71,20 +62,17 @@ legend({'negative electrode current collector' , ...
        'location', 'south west'),
 setFigureStyle('quantity', 'single');
 drawnow();
-pause(0.1);
 
 %% Compute the nominal cell capacity and choose a C-Rate
-% The nominal capacity of the cell is calculated from the active materials.
-% This value is then combined with the user-defined C-Rate to set the cell
-% operational current. 
+
 C      = computeCellCapacity(model);
 CRate  = 1;
 inputI = (C/hour)*CRate; % current 
 
 %% Setup the time step schedule 
-% Smaller time steps are used to ramp up the current from zero to its
-% operational value. Larger time steps are then used for the normal
-% operation. 
+% Smaller time steps are used to ramp up the current from zero to its operational value. Larger time steps are then used
+% for the normal operation.
+
 n           = 25; 
 dt          = []; 
 dt          = [dt; repmat(0.5e-4, n, 1).*1.5.^[1:n]']; 
@@ -96,15 +84,16 @@ tt          = times(2 : end);
 step        = struct('val', diff(times), 'control', ones(numel(tt), 1)); 
 
 %% Setup the operating limits for the cell
-% The maximum and minimum voltage limits for the cell are defined using
-% stopping and source functions. A stopping function is used to set the
-% lower voltage cutoff limit. A source function is used to set the upper
-% voltage cutoff limit. 
-stopFunc    = @(model, state, state_prev) (state.(ctrl).E < 2.0); 
-tup         = 0.1; % rampup value for the current function, see rampupSwitchControl
-srcfunc = @(time, I, E) rampupSwitchControl(time, tup, I, E, ...
-                                            model.Control.Imax, ...
-                                            model.Control.lowerCutoffVoltage);
+% The maximum and minimum voltage limits for the cell are defined using stopping and source functions. A stopping
+% function is used to set the lower voltage cutoff limit. A source function is used to set the upper voltage cutoff
+% limit.
+
+stopFunc = @(model, state, state_prev) (state.(ctrl).E < 2.0); 
+tup      = 0.1; % rampup value for the current function, see rampupSwitchControl
+srcfunc  = @(time, I, E) rampupSwitchControl(time, tup, I, E, ...
+                                             model.Control.Imax, ...
+                                             model.Control.lowerCutoffVoltage);
+
 % we setup the control by assigning a source and stop function.
 control = struct('src', srcfunc, 'IEswitch', true);
 
@@ -112,8 +101,7 @@ control = struct('src', srcfunc, 'IEswitch', true);
 schedule = struct('control', control, 'step', step); 
 
 %% Setup the initial state of the model
-% The initial state of the model is dispatched using the
-% model.setupInitialState()method. 
+
 initstate = model.setupInitialState(); 
 
 %% Setup the properties of the nonlinear solver 
@@ -125,103 +113,130 @@ nls.errorOnFailure = false;
 % Timestep selector
 nls.timeStepSelector = StateChangeTimeStepSelector('TargetProps', {{ctrl, 'E'}}, ...
                                                   'targetChangeAbs', 0.03);
-
 % Change default tolerance for nonlinear solver
 model.nonlinearTolerance = 1e-5; 
 % Set verbosity of the solver (if true, value of the residuals for every equation is given)
 model.verbose = true;
 
 %% Run simulation
+
 [wellSols, states, report] = simulateScheduleAD(initstate, model, schedule, ...
                                                 'OutputMinisteps', true, ...
                                                 'NonLinearSolver', nls); 
 
 %%  Process output and recover the output voltage and current from the output states.
+
 ind = cellfun(@(x) not(isempty(x)), states); 
 states = states(ind);
-E = cellfun(@(x) x.(ctrl).E, states); 
-I = cellfun(@(x) x.(ctrl).I, states);
+
+E    = cellfun(@(x) x.(ctrl).E, states); 
+I    = cellfun(@(x) x.(ctrl).I, states);
 time = cellfun(@(x) x.time, states); 
 
-%% Plot an animated summary of the results
-
-%plotDashboard(model, states, 'step', 0);
+%% Setup of the mechanical problem
 
 mrstModule add vemmech
+
 opt = struct('E',1,'nu',0.3);
 G = createAugmentedGrid(model.G);
 G = computeGeometry(G);
    
-Ev = repmat(opt.E, G.cells.num, 1);
+%% Mechanical properties
+
+Ev  = repmat(opt.E, G.cells.num, 1);
 nuv = repmat(opt.nu, G.cells.num, 1);
-C = Enu2C(Ev, nuv, G);
-bc = cell(2*G.griddim, 1);
+C   = Enu2C(Ev, nuv, G);
+
+%% We setup the boundary conditions for the mechanical problem
+
+bc  = cell(2*G.griddim, 1);
 if(G.griddim == 2)
     oside = {'Left', 'Right', 'Back', 'Front'};
 else
     oside = {'Left', 'Right', 'Back', 'Front', 'Bottom', 'Top'};
 end
+
 for i = 1:numel(oside);
     bc{i} = pside([], G, oside{i}, 0);
     bc{i} = rmfield(bc{i}, 'type');
     bc{i} = rmfield(bc{i}, 'sat');
 end
+
 for i = 1:numel(bc);
     inodes = mcolon(G.faces.nodePos(bc{i}.face), G.faces.nodePos(bc{i}.face+1)-1);
     nodes = unique(G.faces.nodes(inodes));
     bc{i}.el_bc = struct('disp_bc', struct('nodes', nodes, 'uu', 0, 'faces', bc{i}.face, 'uu_face', 0, 'mask', true(numel(nodes), G.griddim)), ...
         'force_bc', []);
 end
-bc={bc{1},bc{3},bc{4}}
-bc{2}.el_bc.disp_bc.mask(:,1) = 0
-bc{3}.el_bc.disp_bc.mask(:,1) = 0
-nodes = [];
-faces = [];
+
+bc = {bc{1}, bc{3}, bc{4}};
+bc{2}.el_bc.disp_bc.mask(:, 1) = 0;
+bc{3}.el_bc.disp_bc.mask(:, 1) = 0;
+nodes = []; 
+faces = []; 
 mask = [];
+
 for i = 1:numel(bc)
-    nodes = [nodes; bc{i}.el_bc.disp_bc.nodes];%#ok
-    faces = [faces; bc{i}.el_bc.disp_bc.faces];%#ok
-    mask = [mask; bc{i}.el_bc.disp_bc.mask];%#ok
+    nodes = [nodes; bc{i}.el_bc.disp_bc.nodes];
+    faces = [faces; bc{i}.el_bc.disp_bc.faces];
+    mask  = [mask; bc{i}.el_bc.disp_bc.mask];
 end
+
 bcdisp =@(x) x*0;
 disp_node = bcdisp(G.nodes.coords(nodes, :));
 disp_faces = bcdisp(G.faces.centroids(faces, :));
-el_bc = struct('disp_bc', struct('nodes', nodes, 'uu', disp_node, 'faces', faces, 'uu_face', disp_faces, 'mask', mask), ...
-    'force_bc', []);
+el_bc = struct('disp_bc', struct('nodes'  , nodes     , ...
+                                 'uu'     , disp_node , ...
+                                 'faces'  , faces     , ...
+                                 'uu_face', disp_faces, ...
+                                 'mask'   , mask), ...
+               'force_bc', []);
 load = @(x) -repmat([0, 0], size(x, 1), 1);
-%%
-state0 = initstate
-figure(1),clf
-plotGrid(G)
-ax=axis();
-ax(2) = ax(2)*1.5;
-ax(end) = ax(end)*1.1;
-for i=[1:5:50]%,50:-5:1]%numel(states)
-    state = states{i};
-    T = state.ThermalModel.T-state0.ThermalModel.T;
-    cna = zeros(G.cells.num,1);
-    cpa = zeros(G.cells.num,1);
-    ind = model.NegativeElectrode.ActiveMaterial.G.mappings.cellmap;
-    cna(ind) = state.NegativeElectrode.ActiveMaterial.c-state0.NegativeElectrode.ActiveMaterial.c;
-    ind = model.PositiveElectrode.ActiveMaterial.G.mappings.cellmap;
-    cpa(ind) = state.PositiveElectrode.ActiveMaterial.c-state0.PositiveElectrode.ActiveMaterial.c;
-    dc = (cna+cpa*0.5)/1000;
-    %plotCellData(G,dc,'EdgeAlpha',0.04),colorbar
-    %plotGrid(G,'EdgeColor','none')
 
-    [uVEM, extra] = VEM_linElast(G, C, el_bc, load,'pressure',dc*0.05,'experimental_scaling',false);
+%% We run the mechanical simulation for each time step
+
+state0 = initstate
+figure(1)
+clf
+plotGrid(G)
+ax      = axis(); 
+ax(2)   = ax(2)*1.5; 
+ax(end) = ax(end)*1.1;
+
+for i = 1 : numel(states)
+    
+    state = states{i};
+    
+    T = state.ThermalModel.T - state0.ThermalModel.T;
+    
+    cna = zeros(G.cells.num, 1); 
+    cpa = zeros(G.cells.num, 1); 
+    
+    ind      = model.NegativeElectrode.ActiveMaterial.G.mappings.cellmap; 
+    cna(ind) = state.NegativeElectrode.ActiveMaterial.c - state0.NegativeElectrode.ActiveMaterial.c; 
+    ind      = model.PositiveElectrode.ActiveMaterial.G.mappings.cellmap; 
+    cpa(ind) = state.PositiveElectrode.ActiveMaterial.c - state0.PositiveElectrode.ActiveMaterial.c; 
+    
+    dc = (cna + cpa*0.5)/1000;
+
+    [uVEM, extra] = VEM_linElast(G, C, el_bc, load, ...
+                                 'pressure', dc*0.05, ...
+                                 'experimental_scaling',false);
 
     vdiv = VEM_div(G);
     mdiv = vdiv*reshape(uVEM', [], 1)./G.cells.volumes;
-    %[stress,strain]=calculateStressVEM(G,uu, op,varargin)
-    %[sigm,evec]=calStressEigsVEM(G,stress)
-    clf,plotCellDataDeformed(G, mdiv, uVEM, 'EdgeAlpha',0.04); colorbar();
-    for k=1:numel(el_bc)
-        plotFaces2D(G,el_bc.disp_bc.faces);
+
+    clf
+    plotCellDataDeformed(G, mdiv, uVEM, 'EdgeAlpha',0.04);
+    colorbar();
+    for k = 1:numel(el_bc)
+        plotFaces2D(G, el_bc.disp_bc.faces); 
     end
     axis(ax)
     pause(0.1)
+    
 end
+
 %{
 Copyright 2021-2022 SINTEF Industry, Sustainable Energy Technology
 and SINTEF Digital, Mathematics & Cybernetics.
