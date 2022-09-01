@@ -421,27 +421,7 @@ classdef SingleParticleSEI < BaseModel
             [state, report] = updateState@BaseModel(model, state, problem, dx, forces);
             
             ctrl = 'Control';            
-            
-            Emin = model.(ctrl).lowerCutoffVoltage;
-            Imax = model.(ctrl).Imax;
-            
-            ctrlType = state.(ctrl).ctrlType;
-            E = state.(ctrl).E;
-            I = state.(ctrl).I;
-            
-            if strcmp(ctrlType, 'CC_discharge1')
-                if E <= Emin
-                    state.(ctrl).ctrlType = 'CV_discharge2';
-                    fprintf('switch control from CC to CV\n');
-                end
-            end
-            
-            if strcmp(ctrlType, 'CV_discharge2')
-                if I > Imax
-                    state.(ctrl).ctrlType = 'CC_discharge1';
-                    fprintf('switch control from CV to CC\n');
-                end
-            end
+            state.(ctrl) = model.(ctrl).updateControlState(state.(ctrl));
             
         end
         

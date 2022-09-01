@@ -74,6 +74,32 @@ classdef CcCvControlModel < ControlModel
             state.controlEquation = ctrleq;
             
         end
+
+        function state = updateControlState(model, state)
+            
+            Emin = model.lowerCutoffVoltage;
+            Emax = model.upperCutoffVoltage;
+            Imax = model.Imax;
+            
+            ctrlType = state.ctrlType;
+            E = state.E;
+            I = state.I;
+            
+            if strcmp(ctrlType, 'CC_discharge1')
+                if E <= Emin
+                    state.ctrlType = 'CC_discharge2';
+                    fprintf('switch control from CC_discharge1 to CC_discharge2\n');
+                end
+            end
+            
+            if strcmp(ctrlType, 'CV_discharge2')
+                if I > Imax
+                    state.ctrlType = 'CC_discharge1';
+                    fprintf('switch control from CV to CC\n');
+                end
+            end    
+            
+        end
         
 
         function state = updateControlAfterConvergence(model, state, state0, dt)

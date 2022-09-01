@@ -52,7 +52,11 @@ classdef ControlModel < BaseModel
         % Implemented by child model
         end
         
-
+        function state = updateControlState(model, state)
+        % Implemented by child model.
+        % Default do nothing (returns state unchanged).
+        end
+        
         function state = updateControlAfterConvergence(model, state, state0, dt)
         % Note : This function is called in updateAfterConvergence after convergence and gives possibility to detect control switch.
         % default is nothing.
