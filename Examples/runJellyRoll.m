@@ -68,6 +68,13 @@ tabparams.tabcase   = 'aligned tabs';
 tabparams.width     = 3*milli*meter;
 tabparams.fractions = linspace(0.01, 0.9, 6);
 
+testing = true;
+if testing
+    fprintf('We setup a smaller case for quicker testing\n');
+    rOuter = 10*milli*meter/2;
+    nL = 2;
+end
+
 spiralparams = struct('nwindings'   , nwindings, ...
                       'rInner'      , rInner   , ...
                       'widthDict'   , widthDict, ...
