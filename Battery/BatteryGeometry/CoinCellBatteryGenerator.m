@@ -37,7 +37,6 @@ classdef CoinCellBatteryGenerator < BatteryGenerator
 
         function [paramobj, gen] = updateBatteryInputParams(gen, paramobj, params)
 
-            paramobj.include_current_collectors = true;
             gen.use_thermal = paramobj.use_thermal;
 
             gen.compdims = params.compdims;

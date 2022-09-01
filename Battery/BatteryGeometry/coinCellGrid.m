@@ -5,30 +5,13 @@ function output = coinCellGrid(params)
     % Components in order from z=0 (top) to z=zmax (bottom) with the
     % surrounding electrolyte last
     compnames = {'NegativeCurrentCollector', ...
-                  'NegativeActiveMaterial', ...
-                  'ElectrolyteSeparator', ...
-                  'PositiveActiveMaterial', ...
-                  'PositiveCurrentCollector', ...
-                  'Electrolyte'};
+                 'NegativeActiveMaterial', ...
+                 'ElectrolyteSeparator', ...
+                 'PositiveActiveMaterial', ...
+                 'PositiveCurrentCollector', ...
+                 'Electrolyte'};
     assert(numel(intersect(compnames, params.compdims.Row)) == 5);
     
-    % % Find parameters common for 3d grid and sector grid
-    
-    
-    % diameter = params.compdims.diameter;
-    
-    % R = 0.5 * max(diameter);
-    % bbox = [-1.2*R, -1.2*R; 1.2*R, -1.2*R; 1.2*R, 1.2*R; -1.2*R, 1.2*R];
-    % xc0 = [0, 0];
-
-    % for k = 1:numel(components) - 1
-    %     key = components{k};
-    %     thickness(k) = params.thickness(key);
-    %     numCellLayers(k) = params.numCellLayers(key);
-    % end
-    % dz = thickness ./ numCellLayers;
-    % dz = rldecode(dz.', numCellLayers.');
-
     thickness = params.compdims.thickness;
     numCellLayers = params.compdims.numCellLayers;
     dz = thickness ./ numCellLayers;
@@ -43,16 +26,6 @@ function output = coinCellGrid(params)
         output = coinCell3dGrid(params, compnames, dz, tagdict);
     end
 
-end
-
-
-function [R, bbox, xc0] = extractDims(compdims)
-
-    diameter = compdims.diameter;
-    R = 0.5 * max(diameter);
-    bbox = [-1.2*R, -1.2*R; 1.2*R, -1.2*R; 1.2*R, 1.2*R; -1.2*R, 1.2*R];
-    xc0 = [0, 0];
-    
 end
 
 
@@ -144,7 +117,7 @@ function output = coinCell3dGrid(params, compnames, dz, tagdict)
     end
     assert(all(tag > -1));
     
-    %% Electrode faces where current is applied?
+    %% Electrode faces where current is applied
     [bf, bc] = boundaryFaces(G);
     minz = min(G.nodes.coords(:, 3)) + 100*eps;
     maxz = max(G.nodes.coords(:, 3)) - 100*eps;
@@ -166,32 +139,33 @@ function output = coinCell3dGrid(params, compnames, dz, tagdict)
     % Thermal cooling faces on all sides
     thermalCoolingFaces = bf;
 
-
-
+    % Output
     output = params;
-
     output.G = G;
     output.tag = tag;
     output.tagdict = tagdict;
-
     output.negativeExtCurrentFaces = negativeExtCurrentFaces;
     output.positiveExtCurrentFaces = positiveExtCurrentFaces;
 
 end
 
 
-function output = coinCellSectorGrid(params, components, R, bbox, xc0, thickness, dz, tagdict)
+function output = coinCellSectorGrid(params, compnames, dz, tagdict)
 
-% Create tensor grid (extra large first radial element for slicing)
+    compdims = params.compdims;
+    [R, bbox, xc0] = extractDims(compdims);
+
+    % Create tensor grid (extra large first radial element for slicing)
+    diameter = compdims.diameter;
     meshSize = 2*params.meshSize;
     nr = ceil(round(2*pi*R / meshSize));
-    r0 = linspace(0, R, nr);
-    diams = unique(cell2mat(params.diameter.values));
-    r0 = unique([r0, 0.5*diams])';
+    r0 = linspace(0, R, nr).';
+    diams = unique(diameter);
+    r0 = unique([r0; 0.5*diams]);
     dr = diff(r0);
     r0(dr < 1e-10) = [];
 
-    % smooth r
+    % Smooth r
     r1 = laplacian_smoothing(r0(2:end-1), [r0(1); r0(end)]);
     r = r0;
     r(2:end-1) = r1;
@@ -202,7 +176,7 @@ function output = coinCellSectorGrid(params, components, R, bbox, xc0, thickness
     % Shear top y nodes to mimic circles
     idx = abs(G.nodes.coords(:, 2) - 1) < eps & G.nodes.coords(:, 1) > 0;
     v = params.angle;
-    shear = G.nodes.coords(idx, 1) * sin(v);
+    shear = G.nodes.coords(idx, 1) * sin(2 * v);
     G.nodes.coords(idx, 1) = G.nodes.coords(idx, 1) - shear;
     G = computeGeometry(G);
 
@@ -215,6 +189,7 @@ function output = coinCellSectorGrid(params, components, R, bbox, xc0, thickness
       |__________/
 
     %}
+    
     % Slice and remove
     n = [-sin(v), cos(v), 0];
     pt = zeros(1, 3);
@@ -228,22 +203,24 @@ function output = coinCellSectorGrid(params, components, R, bbox, xc0, thickness
     G = removeCells(G, m == 1);
 
     %% Tag
-    thickness_accum = [-1, cumsum(thickness)];
+    thickness = compdims.thickness;
+    thickness_accum = [-1; cumsum(thickness)];
     zc = G.cells.centroids(:, 3);
     tag = tagdict('Electrolyte') * ones(G.cells.num, 1);
 
-    for k = 1:numel(components)-1
-        key = components{k};
+    for k = 1:numel(compnames)
+        key = compnames{k};
+        if ~strcmp(key, 'Electrolyte')
+            t0 = thickness_accum(k);
+            t1 = thickness_accum(k+1);
+            zidx = zc > t0 & zc < t1;
 
-        t0 = thickness_accum(k);
-        t1 = thickness_accum(k+1);
-        zidx = zc > t0 & zc < t1;
+            rc = vecnorm(G.cells.centroids(:, 1:2) - xc0, 2, 2);
+            ridx = rc < 0.5 * compdims{key, 'diameter'};
 
-        rc = vecnorm(G.cells.centroids(:, 1:2) - xc0, 2, 2);
-        ridx = rc < 0.5 * params.diameter(key);
-
-        idx = zidx & ridx;
-        tag(idx) = tagdict(key);
+            idx = zidx & ridx;
+            tag(idx) = tagdict(key);
+        end
     end
 
     % Electrode faces where current is applied?
@@ -289,19 +266,16 @@ function output = coinCellSectorGrid(params, components, R, bbox, xc0, thickness
     thermalExchangeFaces = [thermalExchangeFaces; other];
     thermalExchangeFacesTag(other) = 2;
 
-
-
+    % Output
     output = params;
-
     output.G = G;
     output.tag = tag;
     output.tagdict = tagdict;
-
     output.negativeExtCurrentFaces = negativeExtCurrentFaces;
     output.positiveExtCurrentFaces = positiveExtCurrentFaces;
-
-    output.thermalCoolingFaces  = thermalCoolingFaces;
-    output.thermalExchangeFaces = thermalExchangeFaces;
+    
+    output.thermalCoolingFaces     = thermalCoolingFaces;
+    output.thermalExchangeFaces    = thermalExchangeFaces;
     output.thermalExchangeFacesTag = thermalExchangeFacesTag;
 
 end
@@ -342,4 +316,14 @@ function [y, A, rfix] = laplacian_smoothing(x, xfix, A, rfix)
 
     y = A * xx;
     y = y(~rfix);
+end
+
+
+function [R, bbox, xc0] = extractDims(compdims)
+
+    diameter = compdims.diameter;
+    R = 0.5 * max(diameter);
+    bbox = [-1.2*R, -1.2*R; 1.2*R, -1.2*R; 1.2*R, 1.2*R; -1.2*R, 1.2*R];
+    xc0 = [0, 0];
+    
 end

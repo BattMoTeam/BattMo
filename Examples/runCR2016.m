@@ -1,5 +1,5 @@
 clear all
-close all
+%close all
 clc
 
 mrstVerbose off
@@ -21,7 +21,10 @@ sep     = 'Separator';
 
 %% Setup the properties of Li-ion battery materials and cell design
 jsonstruct = parseBattmoJson('ParameterData/BatteryCellParameters/LithiumIonBatteryCell/lithium_ion_battery_nmc_graphite.json');
+jsonstruct.use_thermal = false;
+
 paramobj = BatteryInputParams(jsonstruct);
+paramobj.include_current_collectors = true;
 
 use_cccv = false;
 if use_cccv
@@ -76,18 +79,21 @@ hz = min(compdims.thickness);
 compdims.numCellLayers = max(2, round(compdims.thickness / hz));
 compdims{ccs, 'numCellLayers'} = ceil(round(0.25 * compdims{ccs, 'numCellLayers'}));
 
-%use_sector = true;
-use_sector = false;
+use_sector = true
+%use_sector = false;
+
+angle = pi/4;
 
 offset = [0.0, 0.0];
 
 params = struct('compdims', compdims, ...
                 'meshSize', meshSize, ...
                 'use_sector', use_sector, ...
-                'offset', offset);
+                'offset', offset, ...
+                'angle', angle);
 
 gen = CoinCellBatteryGenerator();
-
+keyboard;
 % Now, we update the paramobj with the properties of the mesh.
 paramobj = gen.updateBatteryInputParams(paramobj, params);
 
@@ -106,8 +112,20 @@ CRate = 1;
 
 % Compute masses
 [mass, masses] = computeCellMass(model);
-fprintf('Li content %f g\n', masses.(ne).(am).val*1000);
-fprintf('Battery mass %f g\n', mass*1000);
+Li_mass = masses.(ne).(am).val;
+
+% Adjust Li mass and cell capacity in case of sector model
+if use_sector
+    factor = @(x) x * 2 * pi / gen.angle;
+    C = factor(C);
+    mass = factor(mass);
+    Li_mass = factor(Li_mass);
+end
+
+fprintf('Li content %f g\n', Li_mass * 1000);
+fprintf('Battery mass %f g\n', mass * 1000);
+
+keyboard;
 
 %% Setup the time step schedule
 % Smaller time steps are used to ramp up the current from zero to its
@@ -213,7 +231,7 @@ dataFolder = sprintf('BattMo_%s', date);
 problem = packSimulationProblem(initstate, model, schedule, dataFolder, 'Name', name, 'NonLinearSolver', nls);
 problem.SimulatorSetup.OutputMinisteps = true;
 
-resetSimulation = true;
+resetSimulation = false
 if resetSimulation
     % Clear previously computed simulation
     clearPackedSimulatorOutput(problem, 'prompt', false);
@@ -230,13 +248,15 @@ Inew = cellfun(@(x) x.(ctrl).I, states);
 time = cellfun(@(x) x.time, states);
 
 %% Plot results
-figure
+figure(2),hold on
 plot(time, Inew, '-'); title('I'); grid on; xlabel 'time (s)'
-figure
+figure(3), hold on
 plot(time, Enew, '-'); title('E'); grid on; xlabel 'time (s)'
-figure
-plotCellData(model.(thermal).G, states{end}.(thermal).T, model.(thermal).G.cells.centroids(:, 1) > 0)
-colorbar
+if model.use_thermal
+    figure
+    plotCellData(model.(thermal).G, states{end}.(thermal).T, model.(thermal).G.cells.centroids(:, 1) > 0)
+    colorbar
+end
 
 %{
 Copyright 2021-2022 SINTEF Industry, Sustainable Energy Technology
