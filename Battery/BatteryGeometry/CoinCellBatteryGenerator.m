@@ -5,11 +5,11 @@ classdef CoinCellBatteryGenerator < BatteryGenerator
         % Design params
         compdims
         meshSize
-        offset = [0, 0]; % Negative and positive electrode offset half this distance from center
+        offset % Negative and positive electrode offset half this distance from center
         
         % Sector model specific design params
-        use_sector = false;
-        angle = pi / 20;
+        use_sector
+        angle
 
         tag     % cell-valued vector giving component number (indexing is given by tagdict)
         tagdict % dictionary giving the component number
@@ -26,7 +26,7 @@ classdef CoinCellBatteryGenerator < BatteryGenerator
         thermalExchangeFaces = [];
         thermalExchangeFacesTag = [];
 
-        use_thermal = true
+        use_thermal
     end
 
     methods
@@ -41,17 +41,9 @@ classdef CoinCellBatteryGenerator < BatteryGenerator
 
             gen.compdims = params.compdims;
             gen.meshSize = params.meshSize;
-
-            % FIXME
-            if isfield(params, 'use_sector')
-                gen.use_sector = params.use_sector;
-            end
-            if isfield(params, 'angle')
-                gen.angle = params.angle;
-            end
-            if isfield(params, 'offset')
-                gen.offset = params.offset;
-            end
+            gen.use_sector = params.use_sector;
+            gen.angle = params.angle;
+            gen.offset = params.offset;
 
             [paramobj, gen] = gen.setupBatteryInputParams(paramobj, []);
 
@@ -60,7 +52,6 @@ classdef CoinCellBatteryGenerator < BatteryGenerator
         function [paramobj, gen] = setupGrid(gen, paramobj, params)
 
             gen = coinCellGrid(gen);
-
             paramobj.G = gen.G;
 
         end
@@ -162,12 +153,12 @@ classdef CoinCellBatteryGenerator < BatteryGenerator
             G = paramobj.G; % grid of the current collector
             extfaces = params.extfaces;
 
-            clear params
             globG = G.mappings.parentGrid;
             facemap = G.mappings.facemap;
             invfacemap = zeros(globG.faces.num, 1);
             invfacemap(facemap) = (1 : G.faces.num)';
 
+            clear params
             params.bcfaces = invfacemap(extfaces);
             params.bccells = sum(G.faces.neighbors(params.bcfaces, :), 2);
 
