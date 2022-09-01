@@ -15,6 +15,7 @@ function output = coinCellGrid(params)
     thickness = params.compdims.thickness;
     numCellLayers = params.compdims.numCellLayers;
     dz = thickness ./ numCellLayers;
+    % Repeat dz for each layer
     dz = rldecode(dz, numCellLayers);
     
     comptag = 1 : numel(compnames);
@@ -58,10 +59,12 @@ function output = coinCell3dGrid(params, compnames, dz, tagdict)
             if ~strcmp(key, 'Electrolyte')
                 circdata(k, :) = [xc0, diameter(key)];
                 if strcmp(key, 'PositiveActiveMaterial')
-                    circdata(k, 1:2) = circdata(k, 1:2) + 0.5 * offset;
+                    sign = 1;
                 elseif strcmp(key, 'NegativeActiveMaterial')
-                    circdata(k, 1:2) = circdata(k, 1:2) - 0.5 * offset;
+                    sign = -1;
                 end
+                circdata(k, 1:2) = circdata(k, 1:2) + sign * 0.5 * offset;
+
             end
         end
 
@@ -166,20 +169,48 @@ function output = coinCellSectorGrid(params, compnames, dz, tagdict)
     r0(dr < 1e-10) = [];
 
     % Smooth r
-    r1 = laplacian_smoothing(r0(2:end-1), [r0(1); r0(end)]);
+    dosmooth = true;
+    if dosmooth
+        r1 = laplacian_smoothing(r0(2:end-1), [r0(1); r0(end)]);
+    else
+        r1 = r0(2:end-1);
+    end
     r = r0;
     r(2:end-1) = r1;
 
     z = [0; cumsum(dz)];
-    G = tensorGrid(r, [0, 1], z);
+    v = params.angle;
+    %xtop = R*cos(v);
+    ytop = R*sin(v);
+    G = tensorGrid(r, [0, ytop], z);
+
+    % Shear top y nodes (no need to shear the innermost nodes)
+    idx = abs(G.nodes.coords(:,z 2) - ytop) < eps & G.nodes.coords(:, 1) > x0(1);
+    nodes = find(idx);
+    shear = G.nodes.coords(nodes, 1) * sin(2 * v);
+ 
+    % Check shear
+    newx = G.nodes.coords(nodes, 1) - shear;
+    plotxyz([newx, G.nodes.coords(nodes,2)], 'r.', 'markersize', 14)
+    keyboard;
+
+
+
+    
+    z = [0; cumsum(dz)];
+    ytop = 1;
+    G = tensorGrid(r, [0, ytop], z);
 
     % Shear top y nodes to mimic circles
-    idx = abs(G.nodes.coords(:, 2) - 1) < eps & G.nodes.coords(:, 1) > 0;
+    idx = abs(G.nodes.coords(:, 2) - ytop) < eps & G.nodes.coords(:, 1) > 0;
     v = params.angle;
+    assert(v < pi/4); % FIXME
     shear = G.nodes.coords(idx, 1) * sin(2 * v);
     G.nodes.coords(idx, 1) = G.nodes.coords(idx, 1) - shear;
     G = computeGeometry(G);
 
+    figure, plotGrid(G), title('after shear')
+    
     % TODO: Chamfer negative cc
     %{
 
@@ -194,20 +225,27 @@ function output = coinCellSectorGrid(params, compnames, dz, tagdict)
     n = [-sin(v), cos(v), 0];
     pt = zeros(1, 3);
     [G, gix] = sliceGrid(G, pt, 'normal', n);
+    %figure, plotGrid(G), title('after slice')
     if mrstPlatform('octave')
         legacy = true;
     else
         legacy = false;
     end
     m = markCutGrids(G, gix.new.faces, 'legacy', legacy);
+        figure, plotCellData(G, m), title('after slice')
     G = removeCells(G, m == 1);
-
+        figure, plotGrid(G), title('after remove'), axis equal
+        
     %% Tag
     thickness = compdims.thickness;
     thickness_accum = [-1; cumsum(thickness)];
     zc = G.cells.centroids(:, 3);
+    rc = vecnorm(G.cells.centroids(:, 1:2) - xc0, 2, 2);
+
+    % Set everything as electrolyte
     tag = tagdict('Electrolyte') * ones(G.cells.num, 1);
 
+    % Set the rest
     for k = 1:numel(compnames)
         key = compnames{k};
         if ~strcmp(key, 'Electrolyte')
@@ -215,11 +253,13 @@ function output = coinCellSectorGrid(params, compnames, dz, tagdict)
             t1 = thickness_accum(k+1);
             zidx = zc > t0 & zc < t1;
 
-            rc = vecnorm(G.cells.centroids(:, 1:2) - xc0, 2, 2);
-            ridx = rc < 0.5 * compdims{key, 'diameter'};
+            rcomp = 0.5 * compdims{key, 'diameter'};
+            ridx = rc < rcomp;
 
-            idx = zidx & ridx;
+            %idx = zidx & ridx;
+            idx = zidx;
             tag(idx) = tagdict(key);
+            keyboard;
         end
     end
 
@@ -227,9 +267,11 @@ function output = coinCellSectorGrid(params, compnames, dz, tagdict)
     [bf, bc] = boundaryFaces(G);
     minz = min(G.nodes.coords(:, 3)) + 100*eps;
     maxz = max(G.nodes.coords(:, 3)) - 100*eps;
-    fmin = G.faces.centroids(:, 3) <= minz;
-    fmax = G.faces.centroids(:, 3) >= maxz;
-    assert(sum(fmin) == sum(fmax));
+    fmin_idx = G.faces.centroids(:, 3) <= minz;
+    fmax_idx = G.faces.centroids(:, 3) >= maxz;
+    assert(sum(fmin_idx) == sum(fmax_idx));
+    fmin = find(fmin_idx);
+    fmax = find(fmax_idx);
 
     cn = find(tag == tagdict('NegativeCurrentCollector'), 1);
     cp = find(tag == tagdict('PositiveCurrentCollector'), 1);
@@ -278,6 +320,25 @@ function output = coinCellSectorGrid(params, compnames, dz, tagdict)
     output.thermalExchangeFaces    = thermalExchangeFaces;
     output.thermalExchangeFacesTag = thermalExchangeFacesTag;
 
+    % check the tags
+    doplot = true;
+    if doplot
+        keys = tagdict.keys;
+        tagvals = unique(tag);
+        for k = 1:numel(tagvals)
+            tagval = tagvals(k);
+            figure(tagval)
+            plotGrid(G, tag == tagval);
+            view(3)
+            title(tagval, keys{k})
+        end
+        figure
+        plotCellData(G, tag)
+        view(3)
+        keyboard;
+    end
+    
+    
 end
 
 
