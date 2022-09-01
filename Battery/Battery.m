@@ -619,8 +619,8 @@ classdef Battery < BaseModel
             
             switch model.(ctrl).controlPolicy
               case 'CCCV'
-                initstate.(ctrl).ctrlType = 'CC_charge';
-                initstate.(ctrl).nextCtrlType = 'CC_charge';
+                initstate.(ctrl).ctrlType = 'CC_charge1';
+                initstate.(ctrl).nextCtrlType = 'CC_charge1';
               case 'IEswitch'
                 initstate.(ctrl).ctrlType = 'constantCurrent';
               otherwise
@@ -914,19 +914,16 @@ classdef Battery < BaseModel
             % (the order of the equation does not matter if we do not use an iterative solver)
             ctrltype = state.Control.ctrlType;
             switch ctrltype
-              case {'constantCurrent', 'CC_charge', 'CC_discharge'}
+              case {'constantCurrent', 'CC_discharge1', 'CC_discharge2', 'CC_charge1'}
                 types{end - 1} = 'cell';   
-              case {'constantVoltage', 'CV_charge'}
+              case {'constantVoltage', 'CV_charge2'}
                 neqs  = numel(types);
                 order = [1 : neqs - 2, neqs, neqs - 1];
                 types = {types{order}};
                 eqs   = {eqs{order}};
                 names = {names{order}};
-              case 'CV_discharge'
-                % stil I which is variable
-                types{end - 1} = 'cell'; 
               otherwise 
-                error()
+                error('control type not recognized')
             end
 
             primaryVars = model.getPrimaryVariables();
