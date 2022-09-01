@@ -13,17 +13,11 @@ clc
 mrstModule add ad-core mrst-gui mpfa
 
 %% Setup the properties of Li-ion battery materials and cell design
-% The properties and parameters of the battery cell, including the
-% architecture and materials, are set using an instance of
-% :class:`BatteryInputParams <Battery.BatteryInputParams>`. This class is
-% used to initialize the simulation and it propagates all the parameters
-% throughout the submodels. The input parameters can be set manually or
-% provided in json format. All the parameters for the model are stored in
-% the paramobj object.
+
 jsonstruct = parseBattmoJson('ParameterData/BatteryCellParameters/LithiumIonBatteryCell/lithium_ion_battery_nmc_graphite.json');
-% jsonstruct.Control.controlPolicy = 'CCCV';
-paramobj = BatteryInputParams(jsonstruct);
-% paramobj.SOC = 0.02;
+jsonstruct.include_current_collectors = false;
+jsonstruct.include_current_collectors = false;
+jsonstruct.use_thermal = false;
 
 % We define some shorthand names for simplicity.
 ne      = 'NegativeElectrode';
@@ -36,38 +30,27 @@ itf     = 'Interface';
 sd      = 'SolidDiffusion';
 ctrl    = 'Control';
 
+jsonstruct.(ne).(am).diffusionModelType = 'simple';
+jsonstruct.(pe).(am).diffusionModelType = 'simple';
+
+paramobj = BatteryInputParams(jsonstruct);
+
 %% Setup the geometry and computational mesh
-% Here, we setup the 1D computational mesh that will be used for the
-% simulation. The required discretization parameters are already included
-% in the class BatteryGenerator1D. 
+
 gen = BatteryGenerator1D();
-gen.fac = 1;
-gen = gen.applyResolutionFactors();
 
 % Now, we update the paramobj with the properties of the mesh. 
 paramobj = gen.updateBatteryInputParams(paramobj);
 
-% !!! REMOVE THIS. SET THE RIGHT VALUES IN THE JSON !!! In this case, we
-% change some of the values of the paramaters that were given in the json
-% file to other values. This is done directly on the object paramobj. 
 paramobj.(ne).(cc).EffectiveElectricalConductivity = 1e5;
 paramobj.(pe).(cc).EffectiveElectricalConductivity = 1e5;
-paramobj.(thermal).externalTemperature = paramobj.initT;
 
 %%  Initialize the battery model. 
-% The battery model is initialized by sending paramobj to the Battery class
-% constructor. see :class:`Battery <Battery.Battery>`.
-paramobj.use_thermal = false;
-paramobj.include_current_collectors = false;
-paramobj.NegativeElectrode.ActiveMaterial.externalCouplingTerm = paramobj.NegativeElectrode.CurrentCollector.externalCouplingTerm;
-paramobj.PositiveElectrode.ActiveMaterial.externalCouplingTerm = paramobj.PositiveElectrode.CurrentCollector.externalCouplingTerm;
+
 model = Battery(paramobj);
 model.AutoDiffBackend= AutoDiffBackend();
 
 %% Compute the nominal cell capacity and choose a C-Rate
-% The nominal capacity of the cell is calculated from the active materials.
-% This value is then combined with the user-defined C-Rate to set the cell
-% operational current. 
 
 CRate = model.Control.CRate;
 
