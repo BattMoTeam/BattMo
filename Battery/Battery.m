@@ -628,8 +628,59 @@ classdef Battery < BaseModel
             end
             
         end
+
+        function state = addVariables(model, state)
+            
+        % Given a state where only the primary variables are defined, this
+        % functions add all the additional variables that are computed in the assembly process and have some physical
+        % interpretation.
+        %
+        % To do so, we use getEquations function and sends dummy variable for state0, dt and drivingForces 
+            
+        % Values that need to be set to get the function getEquations running
+            
+            dt = 1;
+            state0 = state;
+            model.Control = ControlModel([]);
+            model.Control.controlPolicy = 'None';
+            drivingForces = model.getValidDrivingForces();
+
+            % We call getEquations to update state
+            
+            [~, state] = getEquations(model, state0, state, dt, drivingForces, 'ResOnly', true);
+
+            % we set to empty the fields we know that are not meaningfull
+
+            ne      = 'NegativeElectrode';
+            pe      = 'PositiveElectrode';
+            am      = 'ActiveMaterial';
+            cc      = 'CurrentCollector';
+            elyte   = 'Electrolyte';
+            am      = 'ActiveMaterial';
+            itf     = 'Interface';
+            sd      = "SolidDiffusion";
+            thermal = 'ThermalModel';
+            ctrl    = 'Control';
+
+            state.(elyte).massAccum = [];
+            state.(elyte).massCons = [];
+            eldes = {ne, pe}
+            for ielde = 1 : numel(eldes)
+                elde = eldes{ielde};
+                switch model.(elde).(am).diffusionModelType
+                  case 'full'
+                    state.(elde).(am).(sd).massAccum = [];
+                    state.(elde).(am).(sd).massCons = [];
+                  case 'simple'
+                    % nothing to remove here
+                  otherwise
+                    error('diffusion model type not recognized');
+                end
+            end
+            
+        end
         
-        function [problem, state] = getEquations(model, state0, state,dt, drivingForces, varargin)
+        function [problem, state] = getEquations(model, state0, state, dt, drivingForces, varargin)
         % Assembly of the governing equation
             
             opts = struct('ResOnly', false, 'iteration', 0, 'reverseMode', false); 
@@ -1048,8 +1099,13 @@ classdef Battery < BaseModel
                 
                 state.(ctrl).ctrlVal  = ctrlVal;
                 state.(ctrl).ctrlType = ctrltype;
-                
+
+              case 'None'
+                % nothing done here. This case is only used for addVariables function
+              otherwise
+                error('control type not recognized');
             end
+                
             
         end
         
@@ -1401,6 +1457,7 @@ classdef Battery < BaseModel
         end
         
         function forces = getValidDrivingForces(model)
+            
             forces = getValidDrivingForces@PhysicalModel(model);
             
             ctrl = 'Control';
@@ -1410,10 +1467,12 @@ classdef Battery < BaseModel
               case 'IEswitch'
                 forces.IEswitch = true;
                 forces.src = [];
+              case 'None'
+                % used only in addVariables
               otherwise
                 error('Error controlPolicy not recognized');
             end
-            % TODO hack to get thing go
+            % TODO this is a hack to get thing go
             forces.Imax = [];
             
         end

@@ -50,6 +50,8 @@ classdef ControlModel < BaseModel
         
         function state = updateControlEquation(model, state)
         % Implemented by child model
+        % Default do nothing
+            state.controlEquation = [];
         end
         
         function state = updateControlState(model, state)
