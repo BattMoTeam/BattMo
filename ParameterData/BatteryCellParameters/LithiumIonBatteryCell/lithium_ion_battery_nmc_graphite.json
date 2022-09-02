@@ -4,7 +4,7 @@
     "Ucut": 2,
     "initT": 298.15,
     "use_thermal": true,
-    "include_current_collectors": true,
+    "include_current_collectors": false,
     "use_solid_diffusion": true,
     "Control" : {
         "controlPolicy" : "IEswitch",
@@ -22,12 +22,12 @@
             "InterDiffusionCoefficient": 1e-14,
             "InterDiffusionCoefficientComment" : "from Ecker 2015",
             "electricalConductivity": 100,
+            "diffusionModelType" : "full",
             "Interface": {
                 "isFile": true,
                 "filename": "ParameterData/MaterialProperties/Graphite/graphite.json"
             },
             "SolidDiffusion" : {
-                "useSimplifiedDiffusionModel" : true,
                 "EaD": 5000,
                 "D0": 3.9e-14,
                 "rp": 1e-06,
@@ -47,12 +47,12 @@
             "thermalConductivity": 2.1,
             "InterDiffusionCoefficient": 1e-14,
             "electricalConductivity": 100,
+            "diffusionModelType" : "full",
             "Interface": {
                 "isFile": true,
                 "filename": "ParameterData/MaterialProperties/NMC/nmc111.json"
             },
             "SolidDiffusion": {
-                "useSimplifiedDiffusionModel" : true,
                 "EaD": 5000,
                 "D0": 1e-14,
                 "rp": 1e-06,

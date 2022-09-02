@@ -1,8 +1,7 @@
 function [g, edgelabels] = setupGraph(model, varargin)
     
     opt = struct('excludeVarnames', false, ...
-                 'resolveIndex'   , true , ...
-                 'compGraphFilter', []);
+                 'resolveIndex'   , true );
     opt = merge_options(opt, varargin{:});
     
     g = digraph();
@@ -11,17 +10,10 @@ function [g, edgelabels] = setupGraph(model, varargin)
     ts = {}; % target nodes
     fs = {}; % edge function name
     ms = {}; % edge model name    
+    ps = {}; % property function index in property list
     
     varnames  = model.varNameList;
     propfuncs = model.propertyFunctionList;
-    
-    if ~isempty(opt.compGraphFilter)
-        
-        cgf = opt.compGraphFilter;
-        [varnames, propfuncs] = cgf.applyFilter(varnames, propfuncs);
-        
-    end
-    
     
     if ~opt.excludeVarnames
 
@@ -34,7 +26,7 @@ function [g, edgelabels] = setupGraph(model, varargin)
                     g = addnode(g, fullname);
                 end
             else
-                fullname = varname.getfieldname;
+                fullname = varname.getFieldname;
                 g = addnode(g, fullname);
             end
         end
@@ -61,7 +53,7 @@ function [g, edgelabels] = setupGraph(model, varargin)
                     fullinputvarnames = horzcat(fullinputvarnames, {fullinputvarname});
                 end
             else
-                inputvarname = inputvarname.getfieldname;
+                inputvarname = inputvarname.getFieldname;
                 fullinputvarnames = horzcat(fullinputvarnames, {inputvarname});
             end
         end
@@ -74,7 +66,7 @@ function [g, edgelabels] = setupGraph(model, varargin)
                 fullvarnames{ivarname} = varnames{ivarname}.getIndexedFieldname();
             end
         else
-            fullvarnames = {varname.getfieldname};
+            fullvarnames = {varname.getFieldname};
         end
         
         nv = numel(fullvarnames);
@@ -87,19 +79,22 @@ function [g, edgelabels] = setupGraph(model, varargin)
         t = fullvarnames(indv);
         f = repmat({f}, 1, nv*ni);
         m = repmat({m}, 1, nv*ni);
+        p = repmat({ipropfunc}, 1, nv*ni);
         
         ss = horzcat(ss, s);
         ts = horzcat(ts, t);
         fs = horzcat(fs, f);
+        ps = horzcat(ps, p);
         ms = horzcat(ms, m);
         
     end
     
-    g = addedge(g, ss, ts);
+    g = addedge(g, ss, ts, [ps{:}]);
     
     edgelabels.ss = ss;
     edgelabels.ts = ts;
     edgelabels.fs = fs;
+    edgelabels.ps = ps;
     edgelabels.ms = ms;
     
 end

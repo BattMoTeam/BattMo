@@ -26,7 +26,7 @@ classdef ElectrodeInputParams < ComponentInputParams
         %
         % Set to true to include current collector (NOTE : not supported at the moment at this level)
         %
-        include_current_collector
+        include_current_collectors
         
     end
     

@@ -24,7 +24,9 @@ classdef ActiveMaterialInputParams < ElectronicComponentInputParams
         electricalConductivity % Electrical conductivity / [S m^-1]
 
         externalCouplingTerm % structure to describe external coupling (used in absence of current collector)
-        
+
+        diffusionModelType % Choose between type of diffusion model ('full' or 'simple'. The default is set to 'full')
+
     end
 
     methods
@@ -32,13 +34,24 @@ classdef ActiveMaterialInputParams < ElectronicComponentInputParams
         function paramobj = ActiveMaterialInputParams(jsonstruct)
             paramobj = paramobj@ElectronicComponentInputParams(jsonstruct);
 
-            pick = @(fd) pickField(jsonstruct, fd);
-            paramobj.Interface = InterfaceInputParams(pick('Interface'));
-            if jsonstruct.SolidDiffusion.useSimplifiedDiffusionModel
-                paramobj.SolidDiffusion = SimplifiedSolidDiffusionModelInputParams(pick('SolidDiffusion'));                
-            else
-                paramobj.SolidDiffusion = SolidDiffusionModelInputParams(pick('SolidDiffusion'));
+            if isempty(paramobj.diffusionModelType)
+                paramobj.diffusionModelType = 'full';
             end
+            diffusionModelType = paramobj.diffusionModelType;
+            
+            pick = @(fd) pickField(jsonstruct, fd);
+
+            paramobj.Interface = InterfaceInputParams(pick('Interface'));
+
+            switch diffusionModelType
+              case 'simple'
+                paramobj.SolidDiffusion = SimplifiedSolidDiffusionModelInputParams(pick('SolidDiffusion'));
+              case 'full'
+                paramobj.SolidDiffusion = FullSolidDiffusionModelInputParams(pick('SolidDiffusion'));
+              otherwise
+                error('Unknown diffusionModelType %s', diffusionModelType);
+            end
+            
         end
         
     end

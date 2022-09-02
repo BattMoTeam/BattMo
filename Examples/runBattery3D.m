@@ -25,7 +25,7 @@ paramobj = BatteryInputParams(jsonstruct);
 % We define some shorthand names for simplicity.
 ne      = 'NegativeElectrode';
 pe      = 'PositiveElectrode';
-eac     = 'ActiveMaterial';
+am      = 'ActiveMaterial';
 cc      = 'CurrentCollector';
 elyte   = 'Electrolyte';
 thermal = 'ThermalModel';
@@ -109,8 +109,8 @@ model.verbose = false;
 %%  Process output and recover the output voltage and current from the output states.
 ind = cellfun(@(x) not(isempty(x)), states); 
 states = states(ind);
-Enew = cellfun(@(x) x.(ctrl).E, states); 
-Inew = cellfun(@(x) x.(ctrl).I, states);
+E = cellfun(@(x) x.(ctrl).E, states); 
+I = cellfun(@(x) x.(ctrl).I, states);
 time = cellfun(@(x) x.time, states); 
 
 %% Plot an animated summary of the results

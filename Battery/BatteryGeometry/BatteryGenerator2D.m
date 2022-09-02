@@ -3,19 +3,28 @@ classdef BatteryGenerator2D < BatteryGenerator
     
     properties
         
-        sepnx  = 30;
-        nenx   = 30;
-        penx   = 30;
-        ccnenx = 10;
-        ccpenx = 10;
+        xlength = 1e-6*[10; 100; 50; 80; 10]; % length of components in x direction - default values
+                                              % x(1) : length of negative current collector
+                                              % x(2) : length of negative activie material
+                                              % x(3) : length of separator
+                                              % x(4) : length of positive current collector
+                                              % x(5) : length of positive activie material
+        
+        ylength = 1e-2; % length in y direction - default values
 
-        ny = 10;
+        sepnx  = 30; % discretization number for negative current collector - default value
+        nenx   = 30; % discretization number for negative activie material  - default value
+        penx   = 30; % discretization number for separator                  - default value
+        ccnenx = 10; % discretization number for positive current collector - default value
+        ccpenx = 10; % discretization number for positive activie material  - default value
+
+        ny = 10; % discretization number in y direction - default values
+
+        use_thermal % flag, true if grid for thermal model should be setup.
+
+        externalHeatTransferCoefficientTab = 1e3;  % heat transfer coefficient at tab boundary - default value 
+        externalHeatTransferCoefficient = 1e3;     % heat transfer coefficient at boundary - default value 
         
-        % externalHeatTransferCoefficientTab = 1e6;
-        externalHeatTransferCoefficientTab = 1e3;
-        externalHeatTransferCoefficient = 1e3;
-        
-        use_thermal
         
     end
     
@@ -44,8 +53,8 @@ classdef BatteryGenerator2D < BatteryGenerator
             nxs = [ccnenx; nenx; sepnx; penx; ccpenx];
             nx = sum(nxs);
             
-            xlength = 1e-6*[10; 100; 50; 80; 10];
-            ylength = 1e-2;
+            xlength = gen.xlength;
+            ylength = gen.ylength;
 
             x = xlength./nxs;
             x = rldecode(x, nxs);

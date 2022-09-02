@@ -41,7 +41,6 @@ gen = BatteryGenerator2D();
 % Now, we update the paramobj with the properties of the mesh.
 paramobj = gen.updateBatteryInputParams(paramobj);
 
-% !!! REMOVE THIS. SET THE RIGHT VALUES IN THE JSON !!! In this case, we
 % change some of the values of the paramaters that were given in the json
 % file to other values. This is done directly on the object paramobj. 
 paramobj.(ne).(cc).EffectiveElectricalConductivity = 1e5;
@@ -138,8 +137,8 @@ model.verbose = true;
 %%  Process output and recover the output voltage and current from the output states.
 ind = cellfun(@(x) not(isempty(x)), states); 
 states = states(ind);
-Enew = cellfun(@(x) x.(ctrl).E, states); 
-Inew = cellfun(@(x) x.(ctrl).I, states);
+E = cellfun(@(x) x.(ctrl).E, states); 
+I = cellfun(@(x) x.(ctrl).I, states);
 time = cellfun(@(x) x.time, states); 
 
 %% Plot an animated summary of the results

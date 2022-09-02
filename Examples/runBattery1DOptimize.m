@@ -13,17 +13,11 @@ clc
 mrstModule add ad-core mrst-gui mpfa
 
 %% Setup the properties of Li-ion battery materials and cell design
-% The properties and parameters of the battery cell, including the
-% architecture and materials, are set using an instance of
-% :class:`BatteryInputParams <Battery.BatteryInputParams>`. This class is
-% used to initialize the simulation and it propagates all the parameters
-% throughout the submodels. The input parameters can be set manually or
-% provided in json format. All the parameters for the model are stored in
-% the paramobj object.
+
 jsonstruct = parseBattmoJson('ParameterData/BatteryCellParameters/LithiumIonBatteryCell/lithium_ion_battery_nmc_graphite.json');
-% jsonstruct.Control.controlPolicy = 'CCCV';
-paramobj = BatteryInputParams(jsonstruct);
-% paramobj.SOC = 0.02;
+jsonstruct.include_current_collectors = false;
+jsonstruct.include_current_collectors = false;
+jsonstruct.use_thermal = false;
 
 % We define some shorthand names for simplicity.
 ne      = 'NegativeElectrode';
@@ -36,34 +30,27 @@ itf     = 'Interface';
 sd      = 'SolidDiffusion';
 ctrl    = 'Control';
 
+jsonstruct.(ne).(am).diffusionModelType = 'simple';
+jsonstruct.(pe).(am).diffusionModelType = 'simple';
+
+paramobj = BatteryInputParams(jsonstruct);
+
 %% Setup the geometry and computational mesh
-% Here, we setup the 1D computational mesh that will be used for the
-% simulation. The required discretization parameters are already included
-% in the class BatteryGenerator1D. 
+
 gen = BatteryGenerator1D();
-gen.fac = 1;
-gen = gen.applyResolutionFactors();
 
 % Now, we update the paramobj with the properties of the mesh. 
 paramobj = gen.updateBatteryInputParams(paramobj);
 
-% !!! REMOVE THIS. SET THE RIGHT VALUES IN THE JSON !!! In this case, we
-% change some of the values of the paramaters that were given in the json
-% file to other values. This is done directly on the object paramobj. 
 paramobj.(ne).(cc).EffectiveElectricalConductivity = 1e5;
 paramobj.(pe).(cc).EffectiveElectricalConductivity = 1e5;
-paramobj.(thermal).externalTemperature = paramobj.initT;
 
 %%  Initialize the battery model. 
-% The battery model is initialized by sending paramobj to the Battery class
-% constructor. see :class:`Battery <Battery.Battery>`.
+
 model = Battery(paramobj);
 model.AutoDiffBackend= AutoDiffBackend();
 
 %% Compute the nominal cell capacity and choose a C-Rate
-% The nominal capacity of the cell is calculated from the active materials.
-% This value is then combined with the user-defined C-Rate to set the cell
-% operational current. 
 
 CRate = model.Control.CRate;
 
@@ -75,13 +62,13 @@ switch model.(ctrl).controlPolicy
   case 'CCCV'
     total = 3.5*hour/CRate;
   case 'IEswitch'
-    total = 1*hour/CRate;
+    total = 1.2*hour/CRate;
   otherwise
     error('control policy not recognized');
 end
 
-n     = 20;
-dt    = total/n;
+n     = 40;
+dt    = total*0.7/n;
 step  = struct('val', dt*ones(n, 1), 'control', ones(n, 1));
 
 % we setup the control by assigning a source and stop function.
@@ -104,7 +91,7 @@ end
 
 % This control is used to set up the schedule
 %%
-nc = 3;
+nc = 1;
 nst = numel(step.control)
 ind = floor(([0:nst-1]/nst)*nc)+1
 %%
@@ -137,125 +124,133 @@ model.verbose = true;
 %% Process output and recover the output voltage and current from the output states.
 ind = cellfun(@(x) not(isempty(x)), states); 
 states = states(ind);
-Enew = cellfun(@(x) x.Control.E, states); 
-Inew = cellfun(@(x) x.Control.I, states);
+E = cellfun(@(x) x.Control.E, states); 
+I = cellfun(@(x) x.Control.I, states);
 Tmax = cellfun(@(x) max(x.ThermalModel.T), states);
 [SOCN, SOCP] =  cellfun(@(x) model.calculateSOC(x), states);
 time = cellfun(@(x) x.time, states); 
-plot(time,Enew,'*-')
+plot(time,E,'*-')
 %% Plot the the output voltage and current
-% gradients to control
+% gradients to controlmodel.use_thermal =false;
+
 obj = @(model, states, schedule, varargin) EnergyOutput(model, states, schedule,varargin{:});%,'step',step);
 vals = obj(model, states, schedule)
 totval = sum([vals{:}]);
+if(false)
 %%
 scaling = struct('boxLims',[],'obj',[]);
 scaling.boxLims = model.Control.Imax*[0.9,1.1];
-scaling.obj = 1;
+scaling.obj = totval;
 %%
-state0 = initstate;
+%state0 = initstate;
 %obj1 = @(step,state,model, states, schedule, varargin) EnergyOutput(model, states, schedule,varargin{:},'step',step);
 f = @(u)evalObjectiveBattmo(u, obj, state0, model, schedule, scaling);
 %schedule.control(:).Imax = model.Control.Imax;
 u_base = battmoSchedule2control(schedule, scaling);
-[val, gad] =evalObjectiveBattmo(u_base, obj, state0, model, schedule, scaling);
+end
+%[v, u_opt, history] = unitBoxBFGS(u_base, f);
+%schedule_opt = control2schedule(u_opt, schedule, scaling);
+%return
 %%
-[val,gnum] =evalObjectiveBattmo(u_base, obj, state0, model, schedule, scaling,'Gradient','numerical');
-%%
-return
+
 % Get function handle for objective evaluation
 
 %%
+if(false)
+    %%
 mrstModule add optimization
-%% Run optimization with default options
-% gradient to 
-%schedule_opt = control2schedule(u_opt, schedule, scaling);
-%model.toleranceCNV = 1e-6;
-objsens =@(tstep,model, state) EnergyOutput(model, states, schedule,'tstep',tstep,'computePartials',true,'state',state);
-%matchObservedOW(model, states, schedule, states_ref,...
-%    'computePartials', true, 'tstep', tstep, weighting{:},'state',state);
 SimulatorSetup = struct('model', model, 'schedule', schedule, 'state0', state0);
 parameters = [];
 property = 'Imax'
 %getfun = @(x,location) x.Imax; 
 setfun = @(x,location, v) struct('Imax',v,'src', @(time,I,E) rampupSwitchControl(time, 0.1, I, E, ...
                                                 v, ...
-                                                2.0),'IEswitch',true);
-boxlims = model.Control.Imax*[0.9,1.1];
+                                                3.0),'IEswitch',true);
+boxlims = model.Control.Imax*[0.5,1.5];
 parameters={};
-for i = 1:3
+for i = 1:max(schedule.step.control)
 parameters{end+1} = ModelParameter(SimulatorSetup,'name','Imax',...
     'belongsTo','schedule',...
     'boxLims',boxlims,...
     'location',{'control','Imax'},...
     'getfun',[],'setfun',setfun,'controlSteps',i)
 end
-
-%%
-%parameters = addParameter(parameters, SimulatorSetup,'belongeTo', 'name', property ,'type','multiplier');
-raw_sens = computeSensitivitiesAdjointADBattmo(SimulatorSetup, states, parameters, objsens)
-%%
-ff =fieldnames(raw_sens)
-gadnew = nan(numel(ff),1)
-for i =1:numel(ff)
-    gadnew(i) = raw_sens.(ff{i})
-end
-%%
-gadnew*diff(boxlims)
-%%
+fn =@ plotAfterStepIV
+%
 %objmatch = @(model, states, schedule, states_ref, compDer, tstep, state) ...
 %    EnergyOutput(model, states, schedule,'tstep',tstep,'computePartials',true,'state',state);
 objmatch = @(model, states, schedule, varargin) EnergyOutput(model, states, schedule,varargin{:});%
-pvec = getScaledParameterVector(SimulatorSetup, parameters);
-objh = @(p) evalMatchBattmo(p, objmatch, SimulatorSetup, parameters, []);
+p_base = getScaledParameterVector(SimulatorSetup, parameters);
+obj = @(p) evalMatchBattmo(p, objmatch, SimulatorSetup, parameters,'objScaling',-totval,'afterStepFn',fn);
+%%
+figure(33),clf
+[v, p_opt, history] = unitBoxBFGS(p_base, obj);
+%%
+end
 % The calibration can be improved by taking a large number of iterations,
 % but here we set a limit of 30 iterations
 %%
-pert = 0.1;
-[vad,gad] = evalMatchBattmo(pvec+pert, objmatch, SimulatorSetup, parameters, 'Gradient','AdjointAD')
-[vnum,gnum] = evalMatchBattmo(pvec+pert, objmatch, SimulatorSetup, parameters, 'Gradient','PerturbationADNUM','PerturbationSize',1e-4)
-%%
-%[v, p_opt, history] = unitBoxBFGS(pvec, objh, 'objChangeTol', 1e-5, ...
-%    'maxIt', 30, 'lbfgsStrategy', 'dynamic', 'lbfgsNum', 5);
-
-%setup_opt = updateSetupFromScaledParameters(setup_init, parameters, p_opt); 
-%[wellSols_opt, states_opt] = simulateScheduleAD(setup_opt.state0, setup_opt.model, setup_opt.schedule);
-
-%% Run optimization with default options
-% gradient to 
-%schedule_opt = control2schedule(u_opt, schedule, scaling);
-%model.toleranceCNV = 1e-6;
-%objsens =@(tstep,model, state) EnergyOutput(model, states, schedule,'tstep',tstep,'computePartials',true,'state',state);
-%matchObservedOW(model, states, schedule, states_ref,...
-%    'computePartials', true, 'tstep', tstep, weighting{:},'state',state);
+state0 = initstate;
 SimulatorSetup = struct('model', model, 'schedule', schedule, 'state0', state0);
-parameters = [];
-property = 'porevolume'
-getfun = @(x,location) x.(location).volumeFraction; 
-setfun = @(x,location, v) setfunctionWithName(x,location,v,'volumeFraction');
 parameters={};
-parameters{end+1} = ModelParameter(SimulatorSetup,'name','volumeFraction',...
+
+part = ones(model.Electrolyte.Separator.G.cells.num,1)
+parameters{end+1} = ModelParameter(SimulatorSetup,'name','porosity_sep',...
     'belongsTo','model',...
-    'location',{'Electrolyte','volumeFraction'},...
+    'boxLims',[0.1 0.9],...
+    'lumping',part,...
+    'location',{'Electrolyte','Separator','porosity'},...
+    'getfun',[],'setfun',[])
+%parameters={};
+part = ones(model.NegativeElectrode.ActiveMaterial.G.cells.num,1);
+parameters{end+1} = ModelParameter(SimulatorSetup,'name','porosity_nam',...
+    'belongsTo','model',...
+    'boxLims',[0.07 0.5],...
+    'lumping',part,...
+    'location',{'NegativeElectrode','ActiveMaterial','porosity'},...
+    'getfun',[],'setfun',[])
+part = ones(model.NegativeElectrode.ActiveMaterial.G.cells.num,1);
+parameters{end+1} = ModelParameter(SimulatorSetup,'name','porosity_pam',...
+    'belongsTo','model',...
+    'boxLims',[0.07 0.5],...
+    'lumping',part,...
+    'location',{'PositiveElectrode','ActiveMaterial','porosity'},...
     'getfun',[],'setfun',[])
 
-%parameters = addParameter(parameters, SimulatorSetup,'belongeTo', 'name', property ,'type','multiplier');
-raw_sens = computeSensitivitiesAdjointADBattmo(SimulatorSetup, states, parameters, objsens);
-%%
+setfun = @(x,location, v) struct('Imax',v,'src', @(time,I,E) rampupSwitchControl(time, 0.1, I, E, ...
+                                                v, ...
+                                                3.0),'IEswitch',true);
+boxlims = model.Control.Imax*[0.5,1.5];
+%parameters={};
+for i = 1:max(schedule.step.control)
+parameters{end+1} = ModelParameter(SimulatorSetup,'name','Imax',...
+    'belongsTo','schedule',...
+    'boxLims',boxlims,...
+    'location',{'control','Imax'},...
+    'getfun',[],'setfun',setfun,'controlSteps',i)
+end
 objmatch = @(model, states, schedule, varargin) EnergyOutput(model, states, schedule,varargin{:});%
-pvec = getScaledParameterVector(SimulatorSetup, parameters);
-objh = @(p) evalMatchBattmo(p, objmatch, SimulatorSetup, parameters, []);
-% The calibration can be improved by taking a large number of iterations,
-% but here we set a limit of 30 iterations
+p_base = getScaledParameterVector(SimulatorSetup, parameters);
+fn =@ plotAfterStepIV
+
+obj = @(p) evalMatchBattmo(p, objmatch, SimulatorSetup, parameters,'objScaling',-totval,'afterStepFn',fn);
+figure(33),clf
 %%
-pert = 0.0;
-[vad,gad] = evalMatchBattmo(pvec+pert, objmatch, SimulatorSetup, parameters, 'Gradient','AdjointAD')
-[vnum,gnum] = evalMatchBattmo(pvec+pert, objmatch, SimulatorSetup, parameters, 'Gradient','PerturbationADNUM','PerturbationSize',1e-4)
-
-
+%[v, p_opt, history] = unitBoxBFGS(p_base-0.1, obj,'gradTol',1e-7,'objChangeTol',1e-4);
 
 %% 
-
+% check derivatives
+return 
+%%
+% test adjoint
+parameters_tmp = {parameters{3}}
+parameters_tmp = parameters;%{parameters{3},parameters{2}};
+p_tmp = getScaledParameterVector(SimulatorSetup, parameters_tmp);
+pert = 0.0;
+[vad,gad]   = evalMatchBattmo(p_tmp+pert, objmatch, SimulatorSetup, parameters_tmp, 'Gradient','AdjointAD')
+[vnum,gnum] = evalMatchBattmo(p_tmp+pert, objmatch, SimulatorSetup, parameters_tmp, 'Gradient','PerturbationADNUM','PerturbationSize',1e-5)
+gad
+gnum
 %{
 Copyright 2021-2022 SINTEF Industry, Sustainable Energy Technology
 and SINTEF Digital, Mathematics & Cybernetics.

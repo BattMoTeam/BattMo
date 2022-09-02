@@ -2,6 +2,9 @@ classdef CcCvControlModel < ControlModel
 
     properties
         
+        Imax
+        lowerCutoffVoltage
+        upperCutoffVoltage
         dIdtLimit
         dEdtLimit
         
@@ -14,7 +17,9 @@ classdef CcCvControlModel < ControlModel
 
             model = model@ControlModel(paramobj);
             
-            fdnames = {'dEdtLimit'         , ...
+            fdnames = {'lowerCutoffVoltage', ...
+                       'upperCutoffVoltage', ...
+                       'dEdtLimit'         , ...
                        'dIdtLimit'};
             model = dispatchParams(model, paramobj, fdnames);
             
@@ -22,31 +27,20 @@ classdef CcCvControlModel < ControlModel
 
         function model = registerVarAndPropfuncNames(model)
 
-            model = registerVarAndPropfuncNames@BaseModel(model);
+            model = registerVarAndPropfuncNames@ControlModel(model);
             
             varnames = {};
-            
-            % Terminal voltage / [V]
-            varnames{end + 1} = 'E';
-            % Terminal Current / [A]
-            varnames{end + 1} = 'I';
-            % Control type
+            % Control type : string that can take following value
+            % - CC_discharge1
+            % - CC_discharge2
+            % - CC_charge1
+            % - CV_charge2
             varnames{end + 1} = 'ctrlType';            
-            % CC_discharge
-            % CC_charge
-            % CV_discharge
-            % CV_charge            
+            model = model.registerVarNames(varnames);
             
-            % Terminal voltage variation/ [V/s]
-            varnames{end + 1} = 'dEdt';
-            % Terminal Current variation / [A/s]
-            varnames{end + 1} = 'dIdt';
             
-            % Equation that relates E and I (depends on geometry and discretization)
-            varnames{end + 1} = EIequation;
-
-            % control equation
-            varnames{end + 1} = controlEquation;
+            fn = @CcCvControlModel.updateControlEquation;
+            model = model.registerPropFunction({'controlEquation', fn, {'E', 'I'}});
             
         end
 
@@ -65,22 +59,45 @@ classdef CcCvControlModel < ControlModel
             ctrlType = state.ctrlType;
             
             switch ctrlType
-              case 'CC_discharge'
+              case 'CC_discharge1'
                 ctrleq = I - Imax;
-              case 'CV_discharge'
+              case 'CC_discharge2'
                 ctrleq = I;
-              case 'CC_charge'
-                if (value(E) <= Emax)
+              case 'CC_charge1'
                     ctrleq = I + Imax;
-                else
-                    ctrleq = (E - Emax)*1e5;
-                    state.ctrlType = 'CV_charge';
-                end
-              case 'CV_charge'
-                ctrleq = (E - Emax)*1e5;
+              case 'CV_charge2'
+                ctrleq = (E - Emax);
+              otherwise
+                error('ctrlType not recognized');
             end
             
             state.controlEquation = ctrleq;
+            
+        end
+
+        function state = updateControlState(model, state)
+            
+            Emin = model.lowerCutoffVoltage;
+            Emax = model.upperCutoffVoltage;
+            Imax = model.Imax;
+            
+            ctrlType = state.ctrlType;
+            E = state.E;
+            I = state.I;
+            
+            if strcmp(ctrlType, 'CC_discharge1')
+                if E <= Emin
+                    state.ctrlType = 'CC_discharge2';
+                    fprintf('switch control from CC_discharge1 to CC_discharge2\n');
+                end
+            end
+            
+            if strcmp(ctrlType, 'CV_discharge2')
+                if I > Imax
+                    state.ctrlType = 'CC_discharge1';
+                    fprintf('switch control from CV to CC\n');
+                end
+            end    
             
         end
         
@@ -102,37 +119,37 @@ classdef CcCvControlModel < ControlModel
             
             switch ctrlType
               
-              case 'CC_discharge'
+              case 'CC_discharge1'
                 
-                if (E >= Emin) 
-                    nextCtrlType = 'CC_discharge';
-                else 
-                    nextCtrlType = 'CV_discharge';
+                nextCtrlType = 'CC_discharge1';
+                if (E <= Emin) 
+                    nextCtrlType = 'CC_discharge2';
                 end
             
-              case 'CV_discharge'
-
-                if (dEdt >= dEdtMin)
-                    nextCtrlType = 'CV_discharge';
-                else
-                    nextCtrlType = 'CC_charge';
+              case 'CC_discharge2'
+                
+                nextCtrlType = 'CC_discharge2';
+                if (abs(dIdt) <= dIdtMin)
+                    nextCtrlType = 'CC_charge1';
                 end
+            
+              case 'CC_charge1'
 
-              case 'CC_charge'
-
-                if (E <= Emax) 
-                    nextCtrlType = 'CC_charge';
-                else
-                    nextCtrlType = 'CV_charge';
+                nextCtrlType = 'CC_charge1';
+                if (E >= Emax) 
+                    nextCtrlType = 'CV_charge2';
                 end 
                 
-              case 'CV_charge'
-                
-                if (dIdt >= dIdtMin)
-                    nextCtrlType = 'CV_charge';
-                else
-                    nextCtrlType = 'CC_discharge';
+              case 'CV_charge2'
+
+                nextCtrlType = 'CV_charge2';
+                if (abs(dIdt) < dIdtMin)
+                    nextCtrlType = 'CC_discharge1';
                 end                  
+                
+              otherwise
+                
+                error('controlType not recognized');
                 
             end
             

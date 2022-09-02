@@ -1,52 +1,54 @@
 {
-    "initT": 298.15,
-    "use_thermal": false,
-    "include_current_collectors": false,
-    "use_solid_diffusion": true,
-    "Control" : {
-        "controlPolicy" : "IEswitch",
-        "CRate" : 1,
-        "lowerCutoffVoltage" : 2,
-        "upperCutoffVoltage" : 4.1
-    },
-    "NegativeElectrode": { 
-        "ActiveMaterial" : {
-            "electricalConductivity": 215,
-            "heatCapacity": 4180000.0,
-            "thermalConductivity": 6e-05,
-            "InterDiffusionCoefficient": 1e-10,
-            "Interface": {
-                "isFile": true,
-                "filename": "ParameterData/ParameterSets/Chen2020/chen2020_negative_electrode_interface.json"
-            },
-            "SolidDiffusion" : {
-                "useSimplifiedDiffusionModel" : true,
-                "EaD": 0,
-                "D0": 3.3e-14,
-                "rp": 5.86e-06
-            }
-        }
-    },
-    "PositiveElectrode": {
-        "ActiveMaterial" : {
-            "electricalConductivity": 0.18,
-            "heatCapacity": 4180000.0,
-            "thermalConductivity": 6e-05,
-            "InterDiffusionCoefficient": 1e-10,
-            "Interface": {
-                "isFile": true,
-                "filename": "ParameterData/ParameterSets/Chen2020/chen2020_positive_electrode_interface.json"
-            },
-            "SolidDiffusion": {
-                "useSimplifiedDiffusionModel" : true,
-                "EaD": 0,
-                "D0": 4e-15,
-                "rp": 5.22e-6
-            }
-        }
-    },
-    "Electrolyte": {
-        "filename": "ParameterData/ParameterSets/Chen2020/chen2020_electrolyte.json",
-        "isFile": true
+  "initT": 298.15,
+  "use_thermal": false,
+  "include_current_collectors": false,
+  "use_solid_diffusion": true,
+  "Control" : {
+    "controlPolicy" : "IEswitch",
+    "CRate" : 1,
+    "lowerCutoffVoltage" : 2,
+    "upperCutoffVoltage" : 4.1
+  },
+  "NegativeElectrode": { 
+    "ActiveMaterial" : {
+      "electricalConductivity": 215,
+      "heatCapacity": 4180000.0,
+      "thermalConductivity": 6e-05,
+      "InterDiffusionCoefficient": 1e-10,
+      "diffusionModelType" : "full",
+      "Interface": {
+        "isFile": true,
+        "filename": "ParameterData/ParameterSets/Chen2020/chen2020_negative_electrode_interface.json"
+      },
+      "SolidDiffusion" : {
+        "EaD": 0,
+        "D0": 3.3e-14,
+        "rp": 5.86e-06,
+        "N" : 10
+      }
     }
+  },
+  "PositiveElectrode": {
+    "ActiveMaterial" : {
+      "electricalConductivity": 0.18,
+      "heatCapacity": 4180000.0,
+      "thermalConductivity": 6e-05,
+      "InterDiffusionCoefficient": 1e-10,
+      "diffusionModelType" : "full",
+      "Interface": {
+        "isFile": true,
+        "filename": "ParameterData/ParameterSets/Chen2020/chen2020_positive_electrode_interface.json"
+      },
+      "SolidDiffusion": {
+        "EaD": 0,
+        "D0": 4e-15,
+        "rp": 5.22e-6,
+        "N" : 10
+      }
+    }
+  },
+  "Electrolyte": {
+    "filename": "ParameterData/ParameterSets/Chen2020/chen2020_electrolyte.json",
+    "isFile": true
+  }
 }

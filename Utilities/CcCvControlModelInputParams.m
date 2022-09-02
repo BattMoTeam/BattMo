@@ -3,8 +3,10 @@ classdef CcCvControlModelInputParams < ControlModelInputParams
     
     properties
         
+        lowerCutoffVoltage
+        upperCutoffVoltage
+        dEdtLimit         
         dIdtLimit
-        dEdtLimit
         
     end
     
@@ -13,6 +15,7 @@ classdef CcCvControlModelInputParams < ControlModelInputParams
         function paramobj = CcCvControlModelInputParams(jsonstruct);
             
             paramobj = paramobj@ControlModelInputParams(jsonstruct);
+            paramobj.controlPolicy = 'CCCV';
             
         end
 

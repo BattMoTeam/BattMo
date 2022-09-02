@@ -1,0 +1,48 @@
+* Information about the BattMo tests
+
+** Octave vs MATLAB
+The tests only run in MATLAB.
+
+
+** Running the tests
+The tests are run using the command `runtests`. To run all the
+tests in path, run `runtests`.
+
+To run all the tests in the folder 'Tests', run `runtests('Tests', includeSubfolders, true)`.
+
+To only run the test `TestBattery1D`, run `runtests('TestBattery1D')`.
+
+To stop on first failure, run
+
+```
+import matlab.unittest.plugins.StopOnFailuresPlugin
+suite = testsuite('TestBattery1D');
+runner = testrunner('textoutput');
+runner.addPlugin(StopOnFailuresPlugin)
+results = runner.run(suite);
+```
+
+See `help runtests` for information.
+
+
+** Reference data
+Reference data are saved in json files found in
+`TestExamples/ReferenceData`. For the naming convention, see how the
+reference file is loaded in `Utilities/verifyStruct.m`.
+
+See also `Utilities/verifyStruct.m` for how the comparison is made.
+
+For example, the test `TestBattery1D` is essentially the example
+`runBattery1D` without the plotting. This test runs the code twice,
+testing both the CCCV and IEswitch controls. The reference data is
+obtained from `states{end}`. The data in `states{end}` is saved to a
+json file which the `runtests` code uses for comparison and
+verification. The data can be saved to a json file using the following
+code:
+```
+testname = 'TestBattery1DIEswitch.json';
+s = jsonencode(states{end});
+fid = fopen(testname, 'w');
+fprintf(fid, s);
+fclose(fid);
+```
