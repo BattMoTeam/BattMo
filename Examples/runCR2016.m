@@ -1,5 +1,5 @@
 clear all
-%close all
+close all
 clc
 
 mrstVerbose off
@@ -79,21 +79,18 @@ hz = min(compdims.thickness);
 compdims.numCellLayers = max(2, round(compdims.thickness / hz));
 compdims{ccs, 'numCellLayers'} = ceil(round(0.25 * compdims{ccs, 'numCellLayers'}));
 
-use_sector = true
-%use_sector = false;
+use_sector = false;
+%use_sector = true;
 
-angle = pi/4;
-
-offset = [0.0, 0.0];
+angle = pi/40;
 
 params = struct('compdims', compdims, ...
                 'meshSize', meshSize, ...
                 'use_sector', use_sector, ...
-                'offset', offset, ...
                 'angle', angle);
 
 gen = CoinCellBatteryGenerator();
-keyboard;
+
 % Now, we update the paramobj with the properties of the mesh.
 paramobj = gen.updateBatteryInputParams(paramobj, params);
 
@@ -107,7 +104,6 @@ model = Battery(paramobj);
 % This value is then combined with the user-defined C-Rate to set the cell
 % operational current.
 C = computeCellCapacity(model);
-fprintf('Capacity %f mAh\n', C*1000/3600)
 CRate = 1;
 
 % Compute masses
@@ -116,16 +112,18 @@ Li_mass = masses.(ne).(am).val;
 
 % Adjust Li mass and cell capacity in case of sector model
 if use_sector
-    factor = @(x) x * 2 * pi / gen.angle;
+    factor = @(x) x * 2 * pi / angle;
     C = factor(C);
     mass = factor(mass);
     Li_mass = factor(Li_mass);
+    info = '(scaled)';
+else
+    info = '';
 end
 
-fprintf('Li content %f g\n', Li_mass * 1000);
-fprintf('Battery mass %f g\n', mass * 1000);
-
-keyboard;
+fprintf('Capacity %s %f mAh\n', info, C*1000/3600);
+fprintf('Li content %s %f g\n', info, Li_mass * 1000);
+fprintf('Battery mass %s %f g\n', info, mass * 1000);
 
 %% Setup the time step schedule
 % Smaller time steps are used to ramp up the current from zero to its
@@ -203,7 +201,6 @@ legend({'negative electrode current collector' , ...
 view(-37, 14)
 drawnow
 
-
 %% Additional plots for visualizing the different components
 doplot = false;
 if doplot
@@ -247,10 +244,14 @@ Enew = cellfun(@(x) x.(ctrl).E, states);
 Inew = cellfun(@(x) x.(ctrl).I, states);
 time = cellfun(@(x) x.time, states);
 
+if use_sector
+    Inew = Inew * 2 * pi / angle;
+end
+
 %% Plot results
-figure(2),hold on
+figure, hold on
 plot(time, Inew, '-'); title('I'); grid on; xlabel 'time (s)'
-figure(3), hold on
+figure, hold on
 plot(time, Enew, '-'); title('E'); grid on; xlabel 'time (s)'
 if model.use_thermal
     figure
