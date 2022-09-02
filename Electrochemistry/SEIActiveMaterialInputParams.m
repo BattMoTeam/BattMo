@@ -1,28 +1,29 @@
-classdef CcCvControlModelInputParams < ControlModelInputParams
-
-    
+classdef SEIActiveMaterialInputParams < ActiveMaterialInputParams
+%
+% Input parameter class for :class:`ActiveMaterial <Electrochemistry.ActiveMaterial>`
+% 
     properties
-        
-        lowerCutoffVoltage
-        upperCutoffVoltage
-        dEdtLimit         
-        dIdtLimit
-        
+
+        SolidElectrodeInterface
+        SideReaction        
     end
-    
+
     methods
 
-        function paramobj = CcCvControlModelInputParams(jsonstruct);
-            
-            paramobj = paramobj@ControlModelInputParams(jsonstruct);
-            paramobj.controlPolicy = 'CCCV';
-            
-        end
+        function paramobj = SEIActiveMaterialInputParams(jsonstruct)
 
+            paramobj = paramobj@ActiveMaterialInputParams(jsonstruct);
+
+            pick = @(fd) pickField(jsonstruct, fd);
+            % For SEI, we always use full diffusion model
+            paramobj.SolidDiffusion          = FullSolidDiffusionModelInputParams(pick('SolidDiffusion'));
+            paramobj.SideReaction            = SideReactionInputParams(pick('SideReaction'));
+            paramobj.SolidElectrodeInterface = SolidElectrodeInterfaceInputParams(pick('SolidElectrodeInterface'));
+        end
+        
     end
     
 end
-
 
 
 %{

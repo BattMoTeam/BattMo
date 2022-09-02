@@ -1,35 +1,22 @@
-classdef ControlModelInputParams < InputParams
+classdef IEswitchControlModelInputParams < ControlModelInputParams
 
     
     properties
-
-        controlPolicy
-        CRate
+        
+        lowerCutoffVoltage
+        upperCutoffVoltage
         
     end
     
     methods
 
-        function paramobj = ControlModelInputParams(jsonstruct);
+        function paramobj = IEswitchControlModelInputParams(jsonstruct);
             
-            paramobj = paramobj@InputParams(jsonstruct);
+            paramobj = paramobj@ControlModelInputParams(jsonstruct);
+            paramobj.controlPolicy = 'IEswitch';
             
         end
-        
-        function paramobj = set.controlPolicy(paramobj, controlPolicy)
-            switch controlPolicy
-              case 'IEswitch'
-                % ok in any case
-              case 'CCCV'
-                assert(isa(paramobj, 'CcCvControlModelInputParams'), 'The model is not a CcCvControlModelInputParams class')
-              case 'CV'
-                assert(isa(paramobj, 'CvControlModelInputParams'), 'The model is not a CvControlModelInputParams class')
-              otherwise
-                error('controlPolicy not recognized');
-            end
-            paramobj.controlPolicy = controlPolicy;                
-        end
-        
+
     end
     
 end

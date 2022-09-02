@@ -25,7 +25,7 @@ classdef ActiveMaterialInputParams < ElectronicComponentInputParams
 
         externalCouplingTerm % structure to describe external coupling (used in absence of current collector)
 
-        diffusionModelType % Choose between type of diffusion model ('full' or 'simple')
+        diffusionModelType % Choose between type of diffusion model ('full' or 'simple'. The default is set to 'full')
 
     end
 
@@ -34,6 +34,9 @@ classdef ActiveMaterialInputParams < ElectronicComponentInputParams
         function paramobj = ActiveMaterialInputParams(jsonstruct)
             paramobj = paramobj@ElectronicComponentInputParams(jsonstruct);
 
+            if isempty(paramobj.diffusionModelType)
+                paramobj.diffusionModelType = 'full';
+            end
             diffusionModelType = paramobj.diffusionModelType;
             
             pick = @(fd) pickField(jsonstruct, fd);

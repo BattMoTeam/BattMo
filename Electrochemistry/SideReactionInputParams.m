@@ -1,36 +1,24 @@
-classdef ControlModelInputParams < InputParams
-
-    
+classdef SideReactionInputParams < InputParams
+%
+% Input parameter class for :class:`ActiveMaterial <Electrochemistry.Electrodes.ActiveMaterial>`
+%    
     properties
+        beta         % side reaction buttler-volmer  coefficient [-]
+        k            % side reaction rate constant [m/s]
+        conductivity % ionic conductivity [S/m]
 
-        controlPolicy
-        CRate
-        
     end
     
     methods
+        
+        function paramobj = SideReactionInputParams(jsonstruct)
 
-        function paramobj = ControlModelInputParams(jsonstruct);
-            
             paramobj = paramobj@InputParams(jsonstruct);
             
         end
         
-        function paramobj = set.controlPolicy(paramobj, controlPolicy)
-            switch controlPolicy
-              case 'IEswitch'
-                % ok in any case
-              case 'CCCV'
-                assert(isa(paramobj, 'CcCvControlModelInputParams'), 'The model is not a CcCvControlModelInputParams class')
-              case 'CV'
-                assert(isa(paramobj, 'CvControlModelInputParams'), 'The model is not a CvControlModelInputParams class')
-              otherwise
-                error('controlPolicy not recognized');
-            end
-            paramobj.controlPolicy = controlPolicy;                
-        end
-        
     end
+    
     
 end
 

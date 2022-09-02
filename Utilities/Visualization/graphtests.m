@@ -15,9 +15,12 @@ am    = 'ActiveMaterial';
 sd    = 'SolidDiffusion';
 itf   = 'Interface';
 elyte = 'Electrolyte';
-
+sei   = 'SolidElectrodeInterface';
+sr    = 'SideReaction';
+            
 paramobj.(ne).(am).(sd).diffusionModelType = 'full';
 paramobj.(pe).(am).(sd).diffusionModelType = 'full';
+            
 
 
 gen = BareBatteryGenerator3D();

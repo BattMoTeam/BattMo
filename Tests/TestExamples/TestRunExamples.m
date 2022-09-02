@@ -2,11 +2,15 @@ classdef TestRunExamples < matlab.unittest.TestCase
 
     properties (TestParameter)
 
-        filename = {'runBattery1D', ...
-                    'runBattery2D', ...
-                    'runBattery3D', ...
-                    'runChen2020', ...
-                    'runCR2016'};
+        filename = {'runBattery1D',
+                    'runBattery2D',
+                    'runBattery3D',
+                    'runChen2020', 
+                    'runBattery2DMech',
+                    'runGittTest',
+                    'runJellyRoll',
+                    'runSector',
+                    'runSingleParticleSEI'};
 
     end
 

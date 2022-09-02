@@ -1,36 +1,24 @@
-classdef ControlModelInputParams < InputParams
+classdef SolidElectrodeInterfaceInputParams < InputParams 
 
-    
     properties
-
-        controlPolicy
-        CRate
         
+        molecularWeight % SEI molecular weight [kg/mol]
+        density         % SEI densisity [kg/m^3]
+        D               % SEI diffusion coefficient [m^2/s]
+        N               % Number of discretization intervals in the sei layer model [-]
+        np              % Number of computational grid cells (typically set by parent model :class:`ActiveMaterial <Electrochemistry.ActiveMaterial>`)
     end
     
     methods
+        
+        function paramobj = SolidElectrodeInterfaceInputParams(jsonstruct)
 
-        function paramobj = ControlModelInputParams(jsonstruct);
-            
             paramobj = paramobj@InputParams(jsonstruct);
             
         end
         
-        function paramobj = set.controlPolicy(paramobj, controlPolicy)
-            switch controlPolicy
-              case 'IEswitch'
-                % ok in any case
-              case 'CCCV'
-                assert(isa(paramobj, 'CcCvControlModelInputParams'), 'The model is not a CcCvControlModelInputParams class')
-              case 'CV'
-                assert(isa(paramobj, 'CvControlModelInputParams'), 'The model is not a CvControlModelInputParams class')
-              otherwise
-                error('controlPolicy not recognized');
-            end
-            paramobj.controlPolicy = controlPolicy;                
-        end
-        
     end
+    
     
 end
 

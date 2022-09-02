@@ -43,17 +43,17 @@ classdef SolidDiffusionModel < BaseModel
             varnames{end + 1} = 'T';
             % Diffusion coefficient
             varnames{end + 1} = 'D';
-            % Reaction rate
-            varnames{end + 1} = 'R';
+            % Volumetric reaction rate in mol/(s*m^3)
+            varnames{end + 1} = 'Rvol';
             
             model = model.registerVarNames(varnames);
 
             fn = @SolidDiffusionModel.updateDiffusionCoefficient;
             inputnames = {'T'};
             model = model.registerPropFunction({'D', fn, inputnames});
-            
-        end
 
+        end
+        
         function state = updateDiffusionCoefficient(model, state)
 
             Tref = 298.15;  % [K]
@@ -70,7 +70,7 @@ classdef SolidDiffusionModel < BaseModel
             state.D = D;
             
         end
-
+    
     end
     
 end

@@ -29,7 +29,7 @@ use_cccv = false;
 if use_cccv
     cccvstruct = struct( 'controlPolicy'     , 'CCCV',  ...
                          'CRate'             , 1         , ...
-                         'lowerCutoffVoltage', 2         , ...
+                         'lowerCutoffVoltage', 2.4       , ...
                          'upperCutoffVoltage', 4.1       , ...
                          'dIdtLimit'         , 0.01      , ...
                          'dEdtLimit'         , 0.01);
@@ -109,8 +109,8 @@ end
 schedule = struct('control', control, 'step', step); 
 
 %% Setup the initial state of the model
-% The initial state of the model is dispatched using the
-% model.setupInitialState()method. 
+% The initial state of the model is setup using the model.setupInitialState() method.
+
 initstate = model.setupInitialState(); 
 
 %% Setup the properties of the nonlinear solver 
@@ -123,7 +123,7 @@ nls.timeStepSelector=StateChangeTimeStepSelector('TargetProps', {{'Control','E'}
 % Change default tolerance for nonlinear solver
 model.nonlinearTolerance = 1e-3*model.Control.Imax;
 % Set verbosity
-model.verbose = true;
+model.verbose = false;
 
 %% Run the simulation
 [wellSols, states, report] = simulateScheduleAD(initstate, model, schedule, 'OutputMinisteps', true, 'NonLinearSolver', nls); 
@@ -131,8 +131,8 @@ model.verbose = true;
 %% Process output and recover the output voltage and current from the output states.
 ind = cellfun(@(x) not(isempty(x)), states); 
 states = states(ind);
-Enew = cellfun(@(x) x.Control.E, states); 
-Inew = cellfun(@(x) x.Control.I, states);
+E = cellfun(@(x) x.Control.E, states); 
+I = cellfun(@(x) x.Control.I, states);
 Tmax = cellfun(@(x) max(x.ThermalModel.T), states);
 % [SOCN, SOCP] =  cellfun(@(x) model.calculateSOC(x), states);
 time = cellfun(@(x) x.time, states); 
