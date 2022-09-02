@@ -211,7 +211,7 @@ problem.SimulatorSetup.OutputMinisteps = true;
 resetSimulation = true;
 if resetSimulation
     %% clear previously computed simulation
-    clearPackedSimulatorOutput(problem);
+    clearPackedSimulatorOutput(problem, 'prompt', false);
 end
 simulatePackedProblem(problem);
 [globvars, states, report] = getPackedSimulatorOutput(problem);
