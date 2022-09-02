@@ -15,6 +15,7 @@ function output = coinCellGrid(params)
     thickness = params.compdims.thickness;
     numCellLayers = params.compdims.numCellLayers;
     dz = thickness ./ numCellLayers;
+
     % Repeat dz for each layer
     dz = rldecode(dz, numCellLayers);
     
@@ -77,7 +78,6 @@ function output = coinCell3dGrid(params, compnames, dz, tagdict)
             n = num_points(r);
             fc{k} = circle(r, xc, n);
         end
-        keyboard;
     end
 
     % Create 2D grid for extrusion
@@ -199,7 +199,6 @@ function output = coinCellSectorGrid(params, compnames, dz, tagdict)
     % Extrude
     G = makeLayeredGrid(G, dz);
     G = computeGeometry(G);
-    %figure, plotGrid(G), view(3), title('extruded')
 
     % Slice
     n = [-sin(v), cos(v), 0];
@@ -211,107 +210,8 @@ function output = coinCellSectorGrid(params, compnames, dz, tagdict)
         legacy = false;
     end
     m = markCutGrids(G, gix.new.faces, 'legacy', legacy);
-    figure, plotCellData(G, m), title('after slice')
     G.faces = rmfield(G.faces, 'tag');
     G = removeCells(G, m == 1);
-    figure, plotGrid(G), title('after remove'), axis equal
-    
-
-    %     keyboard;
-
-
-        
-    
-
-    
-    % compdims = params.compdims;
-    % [R, bbox, xc0] = extractDims(compdims);
-
-    % % Create tensor grid (extra large first radial element for slicing)
-    % diameter = compdims.diameter;
-    % meshSize = 2*params.meshSize;
-    % nr = ceil(round(2*pi*R / meshSize));
-    % r0 = linspace(0, R, nr).';
-    % diams = unique(diameter);
-    % r0 = unique([r0; 0.5*diams]);
-    % dr = diff(r0);
-    % r0(dr < 1e-10) = [];
-
-    % % Smooth r
-    % dosmooth = true;
-    % if dosmooth
-    %     r1 = laplacian_smoothing(r0(2:end-1), [r0(1); r0(end)]);
-    % else
-    %     r1 = r0(2:end-1);
-    % end
-    % r = r0;
-    % r(2:end-1) = r1;
-
-    % % z = [0; cumsum(dz)];
-    % % v = params.angle;
-    % % %xtop = R*cos(v);
-    % % ytop = R*sin(v);
-    % % G = tensorGrid(r, [0, ytop], z);
-
-    % % % Shear top y nodes (no need to shear the innermost nodes)
-    % % idx = abs(G.nodes.coords(:, 2) - ytop) < eps & G.nodes.coords(:, 1) > xc0(1);
-    % % nodes = find(idx);
-    % % shear = G.nodes.coords(nodes, 1) * sin(v);
- 
-    % % % Check shear
-    % % newx = G.nodes.coords(nodes, 1) - shear;
-    % % plotGrid(G), hold on
-    % % plotxyz(G.nodes.coords(nodes, :),'k.', 'markersize', 14)
-    % % plotxyz([newx, G.nodes.coords(nodes,2)], 'r.', 'markersize', 14)
-    % % keyboard;
-
-
-
-    
-    % z = [0; cumsum(dz)];
-    % ytop = 1;
-    % G = tensorGrid(r, [0, ytop], z);
-
-    % % Shear top y nodes to mimic circles
-    % idx = abs(G.nodes.coords(:, 2) - ytop) < eps & G.nodes.coords(:, 1) > 0;
-    % v = params.angle;
-    % assert(v < pi/4); % FIXME
-    % xmin = min(G.nodes.coords(idx, 1));
-    % xtop = R*cos(v);
-    % G.nodes.coords(idx, 1) = linspace(xmin, xtop, sum(idx));
-    % G = computeGeometry(G);
-    
-    % % shear = G.nodes.coords(idx, 1) * sin(v);
-    % % G.nodes.coords(idx, 1) = G.nodes.coords(idx, 1) - shear;
-    % % G = computeGeometry(G);
-
-    
-    % figure, plotGrid(G), title('after shear')
-    
-    % % TODO: Chamfer negative cc
-    % %{
-
-    %   |-------------|
-    %   |             |
-    %   |           _/
-    %   |__________/
-
-    % %}
-    
-    % % Slice and remove
-    % n = [-sin(v), cos(v), 0];
-    % pt = zeros(1, 3);
-    % [G, gix] = sliceGrid(G, pt, 'normal', n);
-    % %figure, plotGrid(G), title('after slice')
-    % if mrstPlatform('octave')
-    %     legacy = true;
-    % else
-    %     legacy = false;
-    % end
-    % m = markCutGrids(G, gix.new.faces, 'legacy', legacy);
-    %     figure, plotCellData(G, m), title('after slice')
-    % G = removeCells(G, m == 1);
-    %     figure, plotGrid(G), title('after remove'), axis equal
         
     %% Tag
     thickness = compdims.thickness;
@@ -333,14 +233,13 @@ function output = coinCellSectorGrid(params, compnames, dz, tagdict)
             rcomp = 0.5 * compdims{key, 'diameter'};
             ridx = rc < rcomp;
 
-            %idx = zidx & ridx;
-            idx = zidx;
+            idx = zidx & ridx;
             tag(idx) = tagdict(key);
 
         end
     end
 
-    % Electrode faces where current is applied?
+    % Electrode faces where current is applied
     [bf, bc] = boundaryFaces(G);
     minz = min(G.nodes.coords(:, 3)) + 100*eps;
     maxz = max(G.nodes.coords(:, 3)) - 100*eps;
@@ -394,25 +293,6 @@ function output = coinCellSectorGrid(params, compnames, dz, tagdict)
     output.thermalCoolingFaces     = thermalCoolingFaces;
     output.thermalExchangeFaces    = thermalExchangeFaces;
     output.thermalExchangeFacesTag = thermalExchangeFacesTag;
-
-    % check the tags
-    doplot = true;
-    if doplot
-        keys = tagdict.keys;
-        tagvals = unique(tag);
-        for k = 1:numel(tagvals)
-            tagval = tagvals(k);
-            figure(tagval)
-            plotGrid(G, tag == tagval);
-            view(3)
-            title(tagval, keys{k})
-        end
-        figure
-        plotCellData(G, tag)
-        view(3)
-        keyboard;
-    end
-    
     
 end
 
