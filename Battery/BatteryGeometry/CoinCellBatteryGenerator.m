@@ -5,7 +5,7 @@ classdef CoinCellBatteryGenerator < BatteryGenerator
         % Design params
         compdims
         meshSize
-        offset % Negative and positive electrode offset half this distance from center
+        offset = [0, 0] % Negative and positive electrode offset half this distance from center
         
         % Sector model specific design params
         use_sector
@@ -43,8 +43,9 @@ classdef CoinCellBatteryGenerator < BatteryGenerator
             gen.meshSize = params.meshSize;
             gen.use_sector = params.use_sector;
             gen.angle = params.angle;
-            gen.offset = params.offset;
-
+            %gen.offset = params.offset;
+            assert(all(gen.offset == 0), 'Coin cells with non-zero offset is not yet implemented')
+            
             [paramobj, gen] = gen.setupBatteryInputParams(paramobj, []);
 
         end
@@ -69,22 +70,6 @@ classdef CoinCellBatteryGenerator < BatteryGenerator
             cellind = ismember(tag, inds);
             params.Separator.cellind = find(cellind);
 
-            % G = gen.G;
-            % figure, hold on
-            % plotGrid(G, 'facecolor', 'none');
-            % plotGrid(G, params.cellind, 'facecolor', 'b', 'facealpha', 0.2);
-            % view(3)
-
-            % figure, hold on
-            % plotToolbar(G, tag);
-            % view(3)
-
-            % figure, hold on
-            % plotGrid(G, 'facecolor', 'none');
-            % plotGrid(G, params.Separator.cellind, 'facecolor', 'r');
-            % view(3)
-            % keyboard;
-
             paramobj = setupElectrolyte@BatteryGenerator(gen, paramobj, params);
 
         end
@@ -107,40 +92,12 @@ classdef CoinCellBatteryGenerator < BatteryGenerator
             params.(ne).(cc).extfaces = gen.negativeExtCurrentFaces;
             params.(ne).cellind = [params.(ne).(am).cellind; params.(ne).(cc).cellind];
 
-            % G = gen.G;
-            % figure, hold on
-            % plotGrid(G, 'facecolor', 'none')
-            % plotGrid(G, params.(ne).(am).cellind, 'facecolor', 'b')
-            % plotGrid(G, params.(ne).(cc).cellind, 'facecolor', 'r')
-            % view(3)
-
-            % G = gen.G;
-            % figure, hold on
-            % plotGrid(G, 'facecolor', 'none')
-            % plotFaces(G, params.(ne).(cc).extfaces)
-            % view(3)
-            % keyboard
-
             cellind = ismember(tag, tagdict('PositiveActiveMaterial'));
             params.(pe).(am).cellind = find(cellind);
             cellind = ismember(tag, tagdict('PositiveCurrentCollector'));
             params.(pe).(cc).cellind = find(cellind);
             params.(pe).(cc).extfaces = gen.positiveExtCurrentFaces;
             params.(pe).cellind = [params.(pe).(am).cellind; params.(pe).(cc).cellind];
-
-            % G = gen.G;
-            % figure, hold on
-            % plotGrid(G, 'facecolor', 'none')
-            % plotGrid(G, params.(pe).(am).cellind, 'facecolor', 'b')
-            % plotGrid(G, params.(pe).(cc).cellind, 'facecolor', 'r')
-            % view(3)
-
-            % G = gen.G;
-            % figure, hold on
-            % plotGrid(G, 'facecolor', 'none')
-            % plotFaces(G, params.(pe).(cc).extfaces)
-            % view(3)
-            % keyboard
 
             paramobj = setupElectrodes@BatteryGenerator(gen, paramobj, params);
 
@@ -162,50 +119,12 @@ classdef CoinCellBatteryGenerator < BatteryGenerator
             params.bcfaces = invfacemap(extfaces);
             params.bccells = sum(G.faces.neighbors(params.bcfaces, :), 2);
 
-            % figure, hold on
-            % plotGrid(G, 'facecolor', 'none');
-            % plotFaces(G, params.bcfaces),view(3)
-            % figure, hold on
-            % plotGrid(G, 'facecolor', 'none');
-            % plotGrid(G, params.bccells),view(3)
-            % keyboard;
-
             paramobj = setupCurrentCollectorBcCoupTerm@BatteryGenerator(gen, paramobj, params);
 
         end
 
         function paramobj = setupThermalModel(gen, paramobj, params)
         % paramobj is instance of BatteryInputParams
-
-            % G = gen.G;
-
-            % couplingfaces = gen.thermalCoolingFaces;
-            % couplingcells = sum(G.faces.neighbors(couplingfaces, :), 2);
-            % params = struct('couplingfaces', couplingfaces, ...
-            %                 'couplingcells', couplingcells);
-            % paramobj = setupThermalModel@BatteryGenerator(gen, paramobj, params);
-
-
-            % couplingfaces = gen.thermalExchangeFaces;
-            % couplingtags  = gen.thermalExchangeFacesTag;
-            % couplingcells = sum(G.faces.neighbors(couplingfaces, :), 2);
-
-            % params = struct('couplingfaces', couplingfaces, ...
-            %                 'couplingcells', couplingcells);
-            % paramobj = setupThermalModel@BatteryGenerator(gen, paramobj, params);
-
-            % thermal = 'ThermalModel'; % shorcut
-
-            % if isempty(paramobj.(thermal).externalHeatTransferCoefficientTopFaces) | ...
-            %         isempty(paramobj.(thermal).externalHeatTransferCoefficientSideFaces)
-            %     paramobj.(thermal).externalHeatTransferCoefficient = ...
-            %         paramobj.(thermal).externalHeatTransferCoefficient*ones(numel(couplingfaces), 1);
-            % else
-            %     externalHeatTransferCoefficient = nan(numel(couplingfaces), 1);
-            %     externalHeatTransferCoefficient(couplingtags == 1) = paramobj.(thermal).externalHeatTransferCoefficientTopFaces;
-            %     externalHeatTransferCoefficient(couplingtags == 2) = paramobj.(thermal).externalHeatTransferCoefficientSideFaces;
-            %     paramobj.(thermal).externalHeatTransferCoefficient = externalHeatTransferCoefficient;
-        % end
 
         % Cooling on external faces
 
@@ -215,10 +134,7 @@ classdef CoinCellBatteryGenerator < BatteryGenerator
                             'couplingcells', couplingcells);
             paramobj = setupThermalModel@BatteryGenerator(gen, paramobj, params);
 
-
-
-            coef = gen.externalHeatTransferCoefficient;%*ones(bcfacetbl.num, 1);
-            %coef(ind) = gen.externalHeatTransferCoefficientTab;
+            coef = gen.externalHeatTransferCoefficient;
             paramobj.ThermalModel.externalHeatTransferCoefficient = coef;
 
         end
