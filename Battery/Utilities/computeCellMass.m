@@ -23,9 +23,9 @@ function [mass, masses] = computeCellMass(model, varargin)
         
         rho  = model.(elde).(am).(itf).density;
         vols = model.(elde).(am).G.cells.volumes;
-        poro = model.(elde).(am).volumeFraction;
+        frac = model.(elde).(am).volumeFraction;
 
-        masses.(elde).(am).val = sum(rho.*vols.*poro);
+        masses.(elde).(am).val = sum(rho.*vols.*frac);
         
         mass = mass + masses.(elde).(am).val;
         
@@ -43,16 +43,16 @@ function [mass, masses] = computeCellMass(model, varargin)
     
     rho  = model.(elyte).density;
     vols = model.(elyte).G.cells.volumes;
-    poro = model.(elyte).volumeFraction;
+    frac = model.(elyte).volumeFraction;
     
-    masses.(elyte).val = sum(rho.*vols.*poro);
+    masses.(elyte).val = sum(rho.*vols.*frac);
     mass = mass + masses.(elyte).val;
     
     rho  = model.(elyte).(sep).density;
     vols = model.(elyte).(sep).G.cells.volumes;
-    poro = model.(elyte).(sep).volumeFraction;
+    frac = model.(elyte).(sep).volumeFraction;
     
-    masses.(elyte).(sep).val = sum(rho.*vols.*poro);
+    masses.(elyte).(sep).val = sum(rho.*vols.*frac);
     mass = mass + masses.(elyte).(sep).val;
     
 end

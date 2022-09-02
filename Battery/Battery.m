@@ -489,7 +489,7 @@ classdef Battery < BaseModel
             elyte_cells(model.(elyte).G.mappings.cellmap) = (1 : model.(elyte).G.cells.num)';
 
             
-            model.(elyte).volumeFraction = NaN(model.(elyte).G.cells.num, 1);
+            model.(elyte).volumeFraction = ones(model.(elyte).G.cells.num, 1);
             model.(elyte).volumeFraction = subsasgnAD(model.(elyte).volumeFraction,elyte_cells(model.(ne).(am).G.mappings.cellmap), model.(ne).(am).porosity);
             model.(elyte).volumeFraction = subsasgnAD(model.(elyte).volumeFraction,elyte_cells(model.(pe).(am).G.mappings.cellmap), model.(pe).(am).porosity);
             sep_cells = elyte_cells(model.(elyte).(sep).G.mappings.cellmap); 
