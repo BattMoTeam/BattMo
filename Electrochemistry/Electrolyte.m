@@ -56,7 +56,7 @@ classdef Electrolyte < ElectroChemicalComponent
             
             sep = 'Separator';
 
-            % We set the electrolyte volumeFraction based on the porisity of the separator
+            % We set the electrolyte volumeFraction based on the porosity of the separator
             G = model.G;
             Gp = G.mappings.parentGrid;
             
