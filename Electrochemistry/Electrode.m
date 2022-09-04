@@ -12,8 +12,8 @@ classdef Electrode < BaseModel
         couplingTerm
         
         include_current_collectors
-
         use_thermal
+        include_sei
         
     end
 
@@ -25,13 +25,17 @@ classdef Electrode < BaseModel
             
             model.AutoDiffBackend = SparseAutoDiffBackend('useBlocks', false);
             
-            fdnames = {'G', ...
-                       'couplingTerm', ...
-                       'use_thermal'};
+            fdnames = {'G'                         , ...
+                       'couplingTerm'              , ...
+                       'use_thermal'               , ...
+                       'include_sei'};
             model = dispatchParams(model, paramobj, fdnames);
             
-            % Assign the two components
-            model.ActiveMaterial = model.setupActiveMaterial(paramobj.ActiveMaterial);
+            if model.include_sei
+                model.ActiveMaterial = SEIActiveMaterial(paramobj.ActiveMaterial);
+            else
+                model.ActiveMaterial = ActiveMaterial(paramobj.ActiveMaterial);                
+            end
             
             if params.include_current_collectors
                 assert(~isempty(paramobj.CurrentCollector), 'current collector input data is missing')
@@ -73,12 +77,6 @@ classdef Electrode < BaseModel
                 model = model.registerPropFunction({{cc , 'jHeatBcSource'}, fn, inputnames});
             end
             
-        end
-        
-        function am = setupActiveMaterial(model, paramobj)
-        % paramobj is instance of ActiveMaterialInputParams
-        % standard instantiation (ActiveMaterial is specified in ActiveMaterial instantiation)
-            am = ActiveMaterial(paramobj);
         end
         
         function cc = setupCurrentCollector(model, paramobj)

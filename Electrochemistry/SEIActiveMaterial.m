@@ -11,8 +11,14 @@ classdef SEIActiveMaterial < ActiveMaterial
         
         function model = SEIActiveMaterial(paramobj)
 
+            
+            %% TODO : add assert for 'full' here (?)
+            paramobj.diffusionModelType = 'full';
             model = model@ActiveMaterial(paramobj);
+            
             model.SideReaction = SideReaction(paramobj.SideReaction);
+            
+            paramobj.SolidElectrodeInterface.np = model.G.cells.num;
             model.SolidElectrodeInterface = SolidElectrodeInterface(paramobj.SolidElectrodeInterface);
             
         end

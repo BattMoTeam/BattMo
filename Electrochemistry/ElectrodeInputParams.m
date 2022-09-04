@@ -27,6 +27,9 @@ classdef ElectrodeInputParams < ComponentInputParams
         % Set to true to include current collector (NOTE : not supported at the moment at this level)
         %
         include_current_collectors
+
+        % set to true if sei layer is included
+        include_sei
         
     end
     
@@ -40,7 +43,12 @@ classdef ElectrodeInputParams < ComponentInputParams
             cc  = 'CurrentCollector';
             
             pick = @(fd) pickField(jsonstruct, fd);
-            paramobj.(am) = ActiveMaterialInputParams(pick(am));
+            
+            if isfield(jsonstruct, 'include_sei') & jsonstruct.include_sei 
+                paramobj.(am) = SEIActiveMaterialInputParams(pick(am));
+            else
+                paramobj.(am) = ActiveMaterialInputParams(pick(am));
+            end
             paramobj.(cc) = CurrentCollectorInputParams(pick(cc));
             
         end
