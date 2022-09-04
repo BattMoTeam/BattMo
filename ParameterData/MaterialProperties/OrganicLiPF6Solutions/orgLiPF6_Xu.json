@@ -1,0 +1,24 @@
+{
+    "name": "orgLiPF6",
+    "specificHeatCapacity": 1518.0,
+    "heatCapacity": 1836780.0,
+    "thermalConductivity": 0.099,
+    "density": 1210,
+    "updateConductivityFunc" : {"functionname" : "updateElectrolyteConductivityFunc_Xu",
+                                "argumentlist" : ["concentration", "temperature"],
+                                "name" : "conductivity"
+                               },
+    "updateDiffusionCoefficientFunc" : {"functionname" : "updateDiffusionCoefficientFunc_Xu",
+                                        "argumentlist" : ["concentration", "temperature"],
+                                        "name" : "diffusion coefficient"
+                                       },
+    "compnames": [
+        "Li",
+        "PF6"
+    ],
+    "chargeCarrierName": "Li",
+    "sp": { "z": [1,-1],
+            "t": [0.399, 0.601]},
+    "Separator": { "filename": "ParameterData/BatteryComponentParameters/celgard2500_Xu.json",
+                   "isFile": true }
+}
