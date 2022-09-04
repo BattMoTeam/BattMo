@@ -18,8 +18,8 @@ elyte = 'Electrolyte';
 sei   = 'SolidElectrodeInterface';
 sr    = 'SideReaction';
             
-paramobj.(ne).(am).(sd).diffusionModelType = 'full';
-paramobj.(pe).(am).(sd).diffusionModelType = 'full';
+paramobj.(ne).(am).diffusionModelType = 'full';
+paramobj.(pe).(am).diffusionModelType = 'full';
             
 
 
@@ -31,20 +31,12 @@ submodel = model.NegativeElectrode.ActiveMaterial.Interface.registerVarAndPropfu
 % submodel = model.NegativeElectrode.ActiveMaterial.registerVarAndPropfuncNames();
 % submodel = model.Electrolyte.registerVarAndPropfuncNames();
 
-[g, edgelabels] = setupGraph(submodel);
 
-cgf = ComputationalGraphFilter(g);
-cgf.includeNodeNames = [];
-
-g = cgf.setupGraph();
-
+cgf = ComputationalGraphFilter(submodel);
+[g, edgelabels] = cgf.setupDescendantGraph();
 figure
-h = plot(g, 'nodefontsize', 18);
+h = plot(g, 'edgelabel', edgelabels,'edgefontsize', 10, 'nodefontsize', 14);
 
-doaddlabel = false;
-if doaddlabel
-    labeledge(h, (1 : g.numedges), edgelabels);
-end
 
 
 
