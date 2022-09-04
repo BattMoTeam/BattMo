@@ -136,11 +136,12 @@ time = cellfun(@(x) x.time, states);
 %% Plot the the output voltage and current
 %plotDashboard(model, states, 'step', 0);
 
-figure, hold on
+figure
 plot(time, I, '-'); title('I'); grid on; xlabel 'time (s)'
-figure, hold on
+figure
 plot(time, E, '-'); title('E'); grid on; xlabel 'time (s)'
-
+figure
+plot(time, Tmax, '-'); title('Tmax'); grid on; xlabel 'time (s)'
 
 %{
 Copyright 2021-2022 SINTEF Industry, Sustainable Energy Technology
