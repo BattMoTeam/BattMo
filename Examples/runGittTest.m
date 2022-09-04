@@ -21,7 +21,7 @@ mrstVerbose off
 % throughout the submodels. The input parameters can be set manually or
 % provided in json format. All the parameters for the model are stored in
 % the paramobj object.
-jsonstruct = parseBattmoJson('ParameterData/BatteryCellParameters/LithiumIonBatteryCell/lithium_ion_battery_nmc_graphite.json');
+jsonstruct = parseBattmoJson(fullfile('ParameterData','BatteryCellParameters','LithiumIonBatteryCell','lithium_ion_battery_nmc_graphite.json'));
 paramobj = BatteryInputParams(jsonstruct);
 
 % We define some shorthand names for simplicity.

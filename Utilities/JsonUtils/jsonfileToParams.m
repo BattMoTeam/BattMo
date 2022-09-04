@@ -1,6 +1,6 @@
 function paramobj = jsonfileToParams(paramobj, filename)
 
-    fileroot = '../..';
+    fileroot = fullfile('..', '..');
     fullfilename = fullfile(fileroot, filename);
     jsonsrc = fileread(filename);
     data = jsondecode(jsonsrc);
