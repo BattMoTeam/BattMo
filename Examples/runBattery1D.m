@@ -116,9 +116,9 @@ initstate = model.setupInitialState();
 %% Setup the properties of the nonlinear solver 
 nls = NonLinearSolver(); 
 % Change default maximum iteration number in nonlinear solver
-nls.maxIterations = 10; 
+nls.maxIterations = 10;
 % Change default behavior of nonlinear solver, in case of error
-NLS.errorOnFailure = false; 
+nls.errorOnFailure = false;
 nls.timeStepSelector=StateChangeTimeStepSelector('TargetProps', {{'Control','E'}}, 'targetChangeAbs', 0.03);
 % Change default tolerance for nonlinear solver
 model.nonlinearTolerance = 1e-3*model.Control.Imax;
