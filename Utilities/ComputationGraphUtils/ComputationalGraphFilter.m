@@ -52,23 +52,21 @@ classdef ComputationalGraphFilter
             if strcmp(opt.type, 'descendant')
                 A = A';
             end
-                        
             
-            if isempty(includeNodeNames)
-                g = cgf.graph;
-                return
-            end
-            
-            nodes = getNodeDependencyListByName(includeNodeNames, nodenames, A, 'oneParentOnly', opt.oneParentOnly);
+            if ~isempty(includeNodeNames)
+                
+                nodes = getNodeDependencyListByName(includeNodeNames, nodenames, A, 'oneParentOnly', opt.oneParentOnly);
 
-            nodenames = nodenames(nodes);
-            A = A(nodes, nodes);
-            
-            if ~isempty(excludeNodeNames)
-                removenodes = regexp(nodenames, excludeNodeNames, 'once');
-                removenodes = cellfun(@(x) ~isempty(x), removenodes);
-                nodenames = nodenames(~removenodes);
-                A = A(~removenodes, ~removenodes);
+                nodenames = nodenames(nodes);
+                A = A(nodes, nodes);
+                
+                if ~isempty(excludeNodeNames)
+                    removenodes = regexp(nodenames, excludeNodeNames, 'once');
+                    removenodes = cellfun(@(x) ~isempty(x), removenodes);
+                    nodenames = nodenames(~removenodes);
+                    A = A(~removenodes, ~removenodes);
+                end
+
             end
             
             if strcmp(opt.type, 'descendant')
