@@ -20,7 +20,7 @@ am      = 'ActiveMaterial';
 sep     = 'Separator';
 
 %% Setup the properties of Li-ion battery materials and cell design
-jsonstruct = parseBattmoJson('ParameterData/BatteryCellParameters/LithiumIonBatteryCell/lithium_ion_battery_nmc_graphite.json');
+jsonstruct = parseBattmoJson(fullfile('ParameterData','BatteryCellParameters','LithiumIonBatteryCell','lithium_ion_battery_nmc_graphite.json'));
 jsonstruct.use_thermal = false; % The example is not tested with thermal
 
 paramobj = BatteryInputParams(jsonstruct);

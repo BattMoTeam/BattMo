@@ -86,7 +86,7 @@ spiralparams = struct('nwindings'   , nwindings, ...
                       'angleuniform', true); 
 
 % The input material parameters given in json format are used to populate the paramobj object.
-jsonstruct = parseBattmoJson('ParameterData/BatteryCellParameters/LithiumIonBatteryCell/lithium_ion_battery_nmc_graphite.json');
+jsonstruct = parseBattmoJson(fullfile('ParameterData','BatteryCellParameters','LithiumIonBatteryCell','lithium_ion_battery_nmc_graphite.json'));
 jsonstruct.include_current_collectors = true;
 
 paramobj = BatteryInputParams(jsonstruct); 
@@ -211,7 +211,7 @@ problem.SimulatorSetup.OutputMinisteps = true;
 resetSimulation = true;
 if resetSimulation
     %% clear previously computed simulation
-    clearPackedSimulatorOutput(problem);
+    clearPackedSimulatorOutput(problem, 'prompt', false);
 end
 simulatePackedProblem(problem);
 [globvars, states, report] = getPackedSimulatorOutput(problem);

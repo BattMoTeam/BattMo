@@ -21,7 +21,7 @@ mrstModule add ad-core mrst-gui mpfa
 % provided in json format. All the parameters for the model are stored in
 % the paramobj object.
 
-jsonstruct = parseBattmoJson('ParameterData/BatteryCellParameters/LithiumIonBatteryCell/lithium_ion_battery_nmc_graphite.json');
+jsonstruct = parseBattmoJson(fullfile('ParameterData','BatteryCellParameters','LithiumIonBatteryCell','lithium_ion_battery_nmc_graphite.json'));
 
 paramobj = BatteryInputParams(jsonstruct);
 
@@ -116,9 +116,9 @@ initstate = model.setupInitialState();
 %% Setup the properties of the nonlinear solver 
 nls = NonLinearSolver(); 
 % Change default maximum iteration number in nonlinear solver
-nls.maxIterations = 10; 
+nls.maxIterations = 10;
 % Change default behavior of nonlinear solver, in case of error
-NLS.errorOnFailure = false; 
+nls.errorOnFailure = false;
 nls.timeStepSelector=StateChangeTimeStepSelector('TargetProps', {{'Control','E'}}, 'targetChangeAbs', 0.03);
 % Change default tolerance for nonlinear solver
 model.nonlinearTolerance = 1e-3*model.Control.Imax;

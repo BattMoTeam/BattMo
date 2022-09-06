@@ -2,7 +2,7 @@ classdef TestBatteryND < matlab.unittest.TestCase
 
     properties (TestParameter)
 
-        jsonfile = {'ParameterData/BatteryCellParameters/LithiumIonBatteryCell/lithium_ion_battery_nmc_graphite.json'};
+        jsonfile = {fullfile('ParameterData','BatteryCellParameters','LithiumIonBatteryCell','lithium_ion_battery_nmc_graphite.json')};
         dim = {2, 3};
     end
 

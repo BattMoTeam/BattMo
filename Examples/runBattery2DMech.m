@@ -11,7 +11,7 @@ mrstModule add ad-core mrst-gui mpfa
 
 %% Setup the properties of Li-ion battery materials and cell design
 
-jsonstruct = parseBattmoJson('ParameterData/BatteryCellParameters/LithiumIonBatteryCell/lithium_ion_battery_nmc_graphite.json');
+jsonstruct = parseBattmoJson(fullfile('ParameterData','BatteryCellParameters','LithiumIonBatteryCell','lithium_ion_battery_nmc_graphite.json'));
 
 % We define some shorthand names for simplicity.
 ne      = 'NegativeElectrode';
@@ -33,8 +33,8 @@ paramobj = BatteryInputParams(jsonstruct);
 gen = BatteryGenerator2D(); 
 
 % We change the properties of the mesh and update paramobj with the results mesh
-gen.ylength = 1e-3
-gen.ny      = 100
+gen.ylength = 1e-3;
+gen.ny      = 100;
 paramobj    = gen.updateBatteryInputParams(paramobj); 
 
 paramobj.(ne).(cc).EffectiveElectricalConductivity = 1e5; 
@@ -196,8 +196,7 @@ load = @(x) -repmat([0, 0], size(x, 1), 1);
 %% We run the mechanical simulation for each time step
 
 state0 = initstate
-figure(1)
-clf
+figure
 plotGrid(G)
 ax      = axis(); 
 ax(2)   = ax(2)*1.5; 
