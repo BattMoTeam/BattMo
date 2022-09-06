@@ -12,7 +12,7 @@ classdef TestChen2020 < matlab.unittest.TestCase
         end
         
         function states = testchen2020(test)
-            jsonstruct = parseBattmoJson('ParameterData/ParameterSets/Chen2020/chen2020_lithium_ion_battery.json');
+            jsonstruct = parseBattmoJson(fullfile('ParameterData','ParameterSets','Chen2020','chen2020_lithium_ion_battery.json'));
 
             paramobj = BatteryInputParams(jsonstruct);
 
@@ -22,8 +22,6 @@ classdef TestChen2020 < matlab.unittest.TestCase
             am    = 'ActiveMaterial';
             sd    = 'SolidDiffusion';
             elyte = 'Electrolyte';
-            itf   = 'Interface';
-            ctrl  = 'Control';
 
             %% We setup the battery geometry ("bare" battery with no current collector).
             gen = BareBatteryGenerator3D();
@@ -135,7 +133,7 @@ classdef TestChen2020 < matlab.unittest.TestCase
             % Change default maximum iteration number in nonlinear solver
             nls.maxIterations = 10; 
             % Change default behavior of nonlinear solver, in case of error
-            nls.errorOnFailure = false;
+            nls.errorOnFailure = false; 
             linearsolver = 'direct'
             switch linearsolver
               case 'agmg'
