@@ -2,7 +2,7 @@ classdef TestBattery1D < matlab.unittest.TestCase
 
     properties (TestParameter)
         
-        jsonfile                   = {'ParameterData/BatteryCellParameters/LithiumIonBatteryCell/lithium_ion_battery_nmc_graphite.json'};
+        jsonfile                   = {fullfile('ParameterData','BatteryCellParameters','LithiumIonBatteryCell','lithium_ion_battery_nmc_graphite.json')};
         controlPolicy              = {'CCCV', 'IEswitch'};
         use_thermal                = {true, false};
         include_current_collector  = {true, false};
@@ -28,7 +28,7 @@ classdef TestBattery1D < matlab.unittest.TestCase
         % provided in json format. All the parameters for the model are stored in
         % the paramobj object.
 
-            jsonstruct = parseBattmoJson('ParameterData/BatteryCellParameters/LithiumIonBatteryCell/lithium_ion_battery_nmc_graphite.json');
+            jsonstruct = parseBattmoJson(fullfile('ParameterData','BatteryCellParameters','LithiumIonBatteryCell','lithium_ion_battery_nmc_graphite.json'));
 
 
             jsonstruct.include_current_collector = include_current_collector;
