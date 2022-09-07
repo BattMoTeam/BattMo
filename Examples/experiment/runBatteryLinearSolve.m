@@ -21,8 +21,8 @@ mrstModule add ad-core mrst-gui mpfa
 % provided in json format. All the parameters for the model are stored in
 % the paramobj object.
 jsonstruct = parseBattmoJson('ParameterData/BatteryCellParameters/LithiumIonBatteryCell/lithium_ion_battery_nmc_graphite.json');
-jsonstruct.NegativeElectrode.ActiveMaterial.SolidDiffusion.useSimplifiedDiffusionModel=1
-jsonstruct.PositiveElectrode.ActiveMaterial.SolidDiffusion.useSimplifiedDiffusionModel=1
+jsonstruct.NegativeElectrode.ActiveMaterial.SolidDiffusion.diffusionModelType = 'simple';
+jsonstruct.PositiveElectrode.ActiveMaterial.SolidDiffusion.diffusionModelType = 'simple';
 % jsonstruct.Control.controlPolicy = 'CCCV';
 paramobj = BatteryInputParams(jsonstruct);
 % paramobj.SOC = 0.02;
@@ -163,21 +163,21 @@ model.verbose = true;
 %%  Process output and recover the output voltage and current from the output states.
 ind = cellfun(@(x) not(isempty(x)), states); 
 states = states(ind);
-Enew = cellfun(@(x) x.(ctrl).E, states); 
-Inew = cellfun(@(x) x.(ctrl).I, states);
+E = cellfun(@(x) x.(ctrl).E, states); 
+I = cellfun(@(x) x.(ctrl).I, states);
 time = cellfun(@(x) x.time, states);
-figure(1),clf,plot(time,Enew)
+figure(1),clf,plot(time,E)
 
 
 %% Process output and recover the output voltage and current from the output states.
 ind = cellfun(@(x) not(isempty(x)), states); 
 states = states(ind);
-Enew = cellfun(@(x) x.Control.E, states); 
-Inew = cellfun(@(x) x.Control.I, states);
+E = cellfun(@(x) x.Control.E, states); 
+I = cellfun(@(x) x.Control.I, states);
 Tmax = cellfun(@(x) max(x.ThermalModel.T), states);
 [SOCN, SOCP] =  cellfun(@(x) model.calculateSOC(x), states);
 time = cellfun(@(x) x.time, states); 
-plot(time,Enew,'*-')
+plot(time,E,'*-')
 %%
 its = getReportOutput(report,'type','linearIterations')
 nits= getReportOutput(report,'type','nonlinearIterations')

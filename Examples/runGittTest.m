@@ -107,6 +107,13 @@ intervalsPerGalvanostaticStep = 5; % Number of time step in galvanostatic phase
 intervalsPerRelaxationStep    = 5; % Number of time step in relaxation phase
 intervalsPerRampupStep        = 3; % Number of time step in rampup phase
 
+testing = true;
+if testing
+    fprintf('We setup a smaller case for quicker testing\n');
+    numberOfIntervals = 3;
+end
+
+
 %% Setup the initial state of the model
 % The initial state of the model is dispatched using the
 % model.setupInitialState()method. 
@@ -202,8 +209,8 @@ end
 
 ind = cellfun(@(x) not(isempty(x)), states); 
 states = states(ind);
-Enew = cellfun(@(x) x.(ctrl).E, states);
-Inew = cellfun(@(x) x.(ctrl).I, states);
+E = cellfun(@(x) x.(ctrl).E, states);
+I = cellfun(@(x) x.(ctrl).I, states);
 time = cellfun(@(x) x.time, states); 
 
 %% Plot an animated summary of the results

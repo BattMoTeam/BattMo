@@ -46,10 +46,10 @@ for ind = 1 : numel(states)
     title('cLi (positive elde)');
     
     subplot(2, 2, 4);
-    plot((time(1 : ind)/hour), Enew(1 : ind), '*-');
+    plot((time(1 : ind)/hour), E(1 : ind), '*-');
     xlabel('hours');
     ylabel('E');
-    axis([0, max(time)/hour, min(Enew), max(Enew)])
+    axis([0, max(time)/hour, min(E), max(E)])
     
     if dovideo
         frame = getframe(gcf);

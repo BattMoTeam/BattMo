@@ -20,14 +20,8 @@ mrstModule add ad-core mrst-gui mpfa
 % throughout the submodels. The input parameters can be set manually or
 % provided in json format. All the parameters for the model are stored in
 % the paramobj object.
-jsonstruct = parseBattmoJson('ParameterData/BatteryCellParameters/LithiumIonBatteryCell/lithium_ion_battery_nmc_graphite.json');
 
-switchToFullDiffusionModel = false;
-if switchToFullDiffusionModel
-    % model in json file is the simplified diffusion model
-    jsonstruct.NegativeElectrode.ActiveMaterial.useSimplifiedDiffusionModel = false;
-    jsonstruct.PositiveElectrode.ActiveMaterial.useSimplifiedDiffusionModel = false;
-end
+jsonstruct = parseBattmoJson('ParameterData/BatteryCellParameters/LithiumIonBatteryCell/lithium_ion_battery_nmc_graphite.json');
 
 paramobj = BatteryInputParams(jsonstruct);
 
@@ -35,17 +29,13 @@ use_cccv = false;
 if use_cccv
     cccvstruct = struct( 'controlPolicy'     , 'CCCV',  ...
                          'CRate'             , 1         , ...
-                         'lowerCutoffVoltage', 2         , ...
+                         'lowerCutoffVoltage', 2.4       , ...
                          'upperCutoffVoltage', 4.1       , ...
                          'dIdtLimit'         , 0.01      , ...
                          'dEdtLimit'         , 0.01);
     cccvparamobj = CcCvControlModelInputParams(cccvstruct);
     paramobj.Control = cccvparamobj;
 end
-
-% paramobj.include_current_collectors = true;
-% paramobj.use_solid_diffusion = false;
-% paramobj.use_thermal = true;
 
 % We define some shorthand names for simplicity.
 ne      = 'NegativeElectrode';
@@ -56,6 +46,7 @@ am      = 'ActiveMaterial';
 itf     = 'Interface';
 sd      = 'SolidDiffusion';
 ctrl    = 'Control';
+cc      = 'CurrentCollector';
 
 %% Setup the geometry and computational mesh
 % Here, we setup the 1D computational mesh that will be used for the
@@ -92,9 +83,9 @@ switch model.(ctrl).controlPolicy
     error('control policy not recognized');
 end
 
-n     = 100;
-dt    = total/n;
-step  = struct('val', dt*ones(n, 1), 'control', ones(n, 1));
+n    = 100;
+dt   = total/n;
+step = struct('val', dt*ones(n, 1), 'control', ones(n, 1));
 
 % we setup the control by assigning a source and stop function.
 % control = struct('CCCV', true); 
@@ -118,8 +109,8 @@ end
 schedule = struct('control', control, 'step', step); 
 
 %% Setup the initial state of the model
-% The initial state of the model is dispatched using the
-% model.setupInitialState()method. 
+% The initial state of the model is setup using the model.setupInitialState() method.
+
 initstate = model.setupInitialState(); 
 
 %% Setup the properties of the nonlinear solver 
@@ -132,7 +123,7 @@ nls.timeStepSelector=StateChangeTimeStepSelector('TargetProps', {{'Control','E'}
 % Change default tolerance for nonlinear solver
 model.nonlinearTolerance = 1e-3*model.Control.Imax;
 % Set verbosity
-model.verbose = true;
+model.verbose = false;
 
 %% Run the simulation
 [wellSols, states, report] = simulateScheduleAD(initstate, model, schedule, 'OutputMinisteps', true, 'NonLinearSolver', nls); 
@@ -140,8 +131,8 @@ model.verbose = true;
 %% Process output and recover the output voltage and current from the output states.
 ind = cellfun(@(x) not(isempty(x)), states); 
 states = states(ind);
-Enew = cellfun(@(x) x.Control.E, states); 
-Inew = cellfun(@(x) x.Control.I, states);
+E = cellfun(@(x) x.Control.E, states); 
+I = cellfun(@(x) x.Control.I, states);
 Tmax = cellfun(@(x) max(x.ThermalModel.T), states);
 % [SOCN, SOCP] =  cellfun(@(x) model.calculateSOC(x), states);
 time = cellfun(@(x) x.time, states); 

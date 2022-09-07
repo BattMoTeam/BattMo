@@ -2,23 +2,24 @@ classdef ControlModel < BaseModel
 
     properties
         
-        Imax
         CRate
-        lowerCutoffVoltage
-        upperCutoffVoltage
+        % Control Policy (string). It can take following values
+        % - 'CCCV'
+        % - 'IEswitch'
+        % - 'CV'
         controlPolicy
+        
     end
     
     
     methods
 
         function model = ControlModel(paramobj)
+
             model = model@BaseModel();
             
             fdnames = {'controlPolicy'     , ...
-                       'CRate'             , ...
-                       'lowerCutoffVoltage', ...
-                       'upperCutoffVoltage'};
+                       'CRate'};
             model = dispatchParams(model, paramobj, fdnames);
             
         end
@@ -33,24 +34,13 @@ classdef ControlModel < BaseModel
             varnames{end + 1} = 'E';
             % Terminal Current / [A]
             varnames{end + 1} = 'I';
-            % Control type
-            varnames{end + 1} = 'ctrlType';            
-            % CC_discharge
-            % CC_charge
-            % CV_discharge
-            % CV_charge            
-            
-            % Terminal voltage variation/ [V/s]
-            varnames{end + 1} = 'dEdt';
-            % Terminal Current variation / [A/s]
-            varnames{end + 1} = 'dIdt';
-            
             % Equation that relates E and I (depends on geometry and discretization)
             varnames{end + 1} = 'EIequation';
-
             % control equation
             varnames{end + 1} = 'controlEquation';
             
+            model = model.registerVarNames(varnames);
+
         end
 
         function state = prepareStepControl(model, state, state0, dt, drivingForces)
@@ -59,34 +49,26 @@ classdef ControlModel < BaseModel
         end
         
         function state = updateControlEquation(model, state)
-            
-            Imax = model.Imax;
-            Emin = model.lowerCutoffVoltage;
-            Emax = model.upperCutoffVoltage;
-
-            E = state.E;
-            I = state.I;            
-            ctrlVal  = state.ctrlVal;
-            ctrlType = state.ctrlType;
-
-            switch ctrlType
-              case 'constantCurrent'
-                ctrleq = I - ctrlVal;
-              case 'constantVoltage'
-                ctrleq = (E - ctrlVal)*1e5;
-            end
-            
-            state.controlEquation = ctrleq;
-                        
+        % Implemented by child model
+        % Default do nothing
+            state.controlEquation = [];
         end
         
-
+        function state = updateControlState(model, state)
+        % Implemented by child model.
+        % Default do nothing (returns state unchanged).
+        end
+        
         function state = updateControlAfterConvergence(model, state, state0, dt)
         % Note : This function is called in updateAfterConvergence after convergence and gives possibility to detect control switch.
         % default is nothing.
                 
         end
-            
+
+        function cleanState = addStaticVariables(model, cleanState, state)
+        %  nothing is done per default
+        end
+        
         
     end
     

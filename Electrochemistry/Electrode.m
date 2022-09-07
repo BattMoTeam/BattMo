@@ -11,7 +11,9 @@ classdef Electrode < BaseModel
 
         couplingTerm
         
-        include_current_collector
+        include_current_collectors
+
+        use_thermal
         
     end
 
@@ -24,19 +26,20 @@ classdef Electrode < BaseModel
             model.AutoDiffBackend = SparseAutoDiffBackend('useBlocks', false);
             
             fdnames = {'G', ...
-                       'couplingTerm'};
+                       'couplingTerm', ...
+                       'use_thermal'};
             model = dispatchParams(model, paramobj, fdnames);
             
             % Assign the two components
             model.ActiveMaterial = model.setupActiveMaterial(paramobj.ActiveMaterial);
             
-            if params.include_current_collector
+            if params.include_current_collectors
                 assert(~isempty(paramobj.CurrentCollector), 'current collector input data is missing')
                 model.CurrentCollector = model.setupCurrentCollector(paramobj.CurrentCollector);
-                model.include_current_collector = true;
+                model.include_current_collectors = true;
             else
                 assert(isempty(paramobj.CurrentCollector.G), 'current collector grid is given, but we are not using it, as required by input flag')
-                model.include_current_collector = false;
+                model.include_current_collectors = false;
             end
             
         end
@@ -60,13 +63,15 @@ classdef Electrode < BaseModel
             model = model.registerPropFunction({{am, 'jCoupling'}, fn, inputnames});
             model = model.registerPropFunction({{cc , 'jCoupling'}, fn, inputnames});
             model = model.registerPropFunction({{cc , 'eSource'}  , fn, inputnames});
-            
-            % Temperature coupling between current collector and electrode active component
-            inputnames = {{am, 'T'}, ...
-                          {cc , 'T'}};
-            fn = @Electrode.updateTemperatureCoupling;
-            model = model.registerPropFunction({{am, 'jHeatBcSource'}, fn, inputnames});
-            model = model.registerPropFunction({{cc , 'jHeatBcSource'}, fn, inputnames});
+
+            if model.use_thermal
+                % Temperature coupling between current collector and electrode active component
+                inputnames = {{am, 'T'}, ...
+                              {cc , 'T'}};
+                fn = @Electrode.updateTemperatureCoupling;
+                model = model.registerPropFunction({{am, 'jHeatBcSource'}, fn, inputnames});
+                model = model.registerPropFunction({{cc , 'jHeatBcSource'}, fn, inputnames});
+            end
             
         end
         
@@ -84,7 +89,7 @@ classdef Electrode < BaseModel
         function state = updateCoupling(model, state)
         % setup coupling terms between the current collector and the electrode active component            
             
-            if model.include_current_collector
+            if model.include_current_collectors
                 
                 elde  = model;
                 am   = 'ActiveMaterial';

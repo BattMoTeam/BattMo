@@ -78,6 +78,9 @@ classdef FullSolidDiffusionModel < SolidDiffusionModel
             fn = @FullSolidDiffusionModel.updateMassSource;
             model = model.registerPropFunction({'massSource', fn, {'R'}});
             
+            fn = @FullSolidDiffusionModel.updateMassAccum;
+            model = model.registerPropFunction({'massAccum', fn, {'c'}});
+            
             fn = @FullSolidDiffusionModel.assembleSolidDiffusionEquation;
             model = model.registerPropFunction({'solidDiffusionEq', fn, {'c', 'cSurface', 'massSource'}});
             
@@ -240,13 +243,13 @@ classdef FullSolidDiffusionModel < SolidDiffusionModel
             
             op = model.operators;
             rp = model.rp;
-            volumetricSurfaceArea = model.volumetricSurfaceArea;
+            vsa = model.volumetricSurfaceArea;
             
-            R = state.R;
+            Rvol = state.Rvol;
 
-            R = op.mapFromBc*R;
+            Rvol = op.mapFromBc*Rvol;
             
-            state.massSource = -R/(volumetricSurfaceArea)*(4*pi*rp^2);
+            state.massSource = -Rvol*((4*pi*rp^2)/vsa);
             
         end
 
@@ -273,15 +276,14 @@ classdef FullSolidDiffusionModel < SolidDiffusionModel
             
         end
 
-                
-        function state = updateAccumTerm(model, state, state0, dt)
+        function state = updateMassAccum(model, state, state0, dt)
 
             op = model.operators;
             
             c = state.c;
             c0 = state0.c;
             
-            state.accumTerm = 1/dt*op.vols.*(c - c0);
+            state.massAccum = 1/dt*op.vols.*(c - c0);
             
         end
         
@@ -291,13 +293,11 @@ classdef FullSolidDiffusionModel < SolidDiffusionModel
             
             flux       = state.flux;
             massSource = state.massSource;
-            accumTerm  = state.accumTerm;
+            massAccum  = state.massAccum;
             
-            state.massCons = accumTerm + op.div(flux) - massSource;
+            state.massCons = massAccum + op.div(flux) - massSource;
 
         end
-        
-        
         
         function state = updateFlux(model, state)
             
@@ -309,10 +309,10 @@ classdef FullSolidDiffusionModel < SolidDiffusionModel
             state.flux = op.flux(D, c);
             
         end
-
     
         function state = assembleSolidDiffusionEquation(model, state)
             
+        %% TODO : change name of this function
             op = model.operators;
 
             c     = state.c;

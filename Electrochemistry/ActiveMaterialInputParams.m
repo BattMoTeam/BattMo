@@ -25,7 +25,7 @@ classdef ActiveMaterialInputParams < ElectronicComponentInputParams
 
         externalCouplingTerm % structure to describe external coupling (used in absence of current collector)
 
-        useSimplifiedDiffusionModel % Flag : true if we use simplified diffusion model
+        diffusionModelType % Choose between type of diffusion model ('full' or 'simple'. The default is set to 'full')
 
     end
 
@@ -34,15 +34,19 @@ classdef ActiveMaterialInputParams < ElectronicComponentInputParams
         function paramobj = ActiveMaterialInputParams(jsonstruct)
             paramobj = paramobj@ElectronicComponentInputParams(jsonstruct);
 
-            useSimplifiedDiffusionModel = paramobj.useSimplifiedDiffusionModel;
+            if isempty(paramobj.diffusionModelType)
+                paramobj.diffusionModelType = 'full';
+            end
+            diffusionModelType = paramobj.diffusionModelType;
             
             pick = @(fd) pickField(jsonstruct, fd);
 
             paramobj.Interface = InterfaceInputParams(pick('Interface'));
-           
-            if useSimplifiedDiffusionModel
-                paramobj.SolidDiffusion = SimplifiedSolidDiffusionModelInputParams(pick('SolidDiffusion'));                
-            else
+
+            switch diffusionModelType
+              case 'simple'
+                paramobj.SolidDiffusion = SimplifiedSolidDiffusionModelInputParams(pick('SolidDiffusion'));
+              case 'full'
                 paramobj.SolidDiffusion = FullSolidDiffusionModelInputParams(pick('SolidDiffusion'));
                 
                 % we impose that cmax in the solid diffusion model and the interface are consistent
@@ -54,8 +58,10 @@ classdef ActiveMaterialInputParams < ElectronicComponentInputParams
                     assert(paramobj.SolidDiffusion.cmax == paramobj.Interface.cmax, 'cmax in input is not consistant');
                 end
                 
-                
+              otherwise
+                error('Unknown diffusionModelType %s', diffusionModelType);
             end
+            
         end
         
     end

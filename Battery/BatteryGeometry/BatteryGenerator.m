@@ -1,13 +1,10 @@
 classdef BatteryGenerator
-% Object that add grids and coupling terms to a paramobj instance of BatteryInputParams (through method 
+% Base class that add grids and coupling terms to a paramobj instance of BatteryInputParams (through method 
 % updateBatteryInputParams)
 %
-% This class goes through the whole setup and is meant to be used as a base class.
+% This class goes through the whole grid setup and is meant to be used as a base class.
 %
-% This class (or rather an subclass of it) can also be used to setup values of the paramobj instance that is sent to it
-% (just overload the updateBatteryInputParams method by adding the desired setup)
-%
-% Example : BatteryGenerator1D.m, BatteryGenerator2D.m
+% Example : BatteryGenerator1D.m, BatteryGenerator2D.m, BatteryGenerator3D
 
     properties
         % Global grid 
@@ -82,11 +79,11 @@ classdef BatteryGenerator
             eldes = {ne, pe};
             for ielde = 1 : numel(eldes)
                 elde = eldes{ielde};
-                if isempty(paramobj.(elde).include_current_collector)
+                if isempty(paramobj.(elde).include_current_collectors)
                     if paramobj.include_current_collectors
-                        paramobj.(elde).include_current_collector = true;
+                        paramobj.(elde).include_current_collectors = true;
                     else
-                        paramobj.(elde).include_current_collector = false;
+                        paramobj.(elde).include_current_collectors = false;
                     end
                 end
             end
@@ -110,7 +107,7 @@ classdef BatteryGenerator
             % setup Electrode active component (am)
             paramobj.(am) = gen.setupActiveMaterialGrid(paramobj.(am), params.(am));
             % setup current collector (cc)
-            if paramobj.include_current_collector
+            if paramobj.include_current_collectors
                 paramobj.(cc) = gen.setupCurrentCollector(paramobj.(cc), params.(cc));
                 % setup coupling term between am and cc
                 paramobj = gen.setupCurrentCollectorActiveMaterialCoupTerm(paramobj, params);

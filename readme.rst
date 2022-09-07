@@ -31,7 +31,7 @@ generic MATLAB automatic differentiation tools and Newton solvers. The MRST code
 
 Then start MATLAB and in the directory where you cloned the repository, run:
 
-``startup``
+``startupBattMo``
 
 You can check that that your installation is setup correctly by running one of the example scripts :
 

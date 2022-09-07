@@ -75,6 +75,8 @@ spiralparams = struct('nwindings'   , nwindings, ...
 
 % The input material parameters given in json format are used to populate the paramobj object.
 jsonstruct = parseBattmoJson('ParameterData/BatteryCellParameters/LithiumIonBatteryCell/lithium_ion_battery_nmc_graphite.json');
+jsonstruct.include_current_collectors = true;
+
 paramobj = BatteryInputParams(jsonstruct); 
 
 th = 'ThermalModel';
@@ -191,21 +193,29 @@ problem.SimulatorSetup.OutputMinisteps = true;
 resetSimulation = true;
 if resetSimulation
     %% clear previously computed simulation
-    clearPackedSimulatorOutput(problem);
+    clearPackedSimulatorOutput(problem, 'prompt', false);
 end
 simulatePackedProblem(problem);
 [globvars, states, report] = getPackedSimulatorOutput(problem);
 
 
 %% plot thermal
-plotToolbar(model.G,states),view([0,-1,0])
-%%
+
+figure
+plotToolbar(model.G, states);
+view([0,-1,0]);
+
 %%  Process output and recover the output voltage and current from the output states.
+
 ind = cellfun(@(x) not(isempty(x)), states); 
 states = states(ind);
-Enew = cellfun(@(x) x.(pe).(cc).E, states); 
-Inew = cellfun(@(x) x.(pe).(cc).I, states);
+ctrl = 'Control';
+E = cellfun(@(x) x.(ctrl).E, states); 
+I = cellfun(@(x) x.(ctrl).I, states);
 time = cellfun(@(x) x.time, states); 
+
+figure
+plot(time, E);
 
 %% Plot an animated summary of the results
 %plotDashboard(model, states, 'step', 0);

@@ -1,9 +1,6 @@
 classdef TestChen2020 < matlab.unittest.TestCase
 
     properties (TestParameter)
-        
-        useSimplifiedDiffusionPE = {true, false};
-        useSimplifiedDiffusionNE = {true, false};
 
     end
     
@@ -14,65 +11,74 @@ classdef TestChen2020 < matlab.unittest.TestCase
             mrstModule add ad-core mrst-gui mpfa
         end
         
-        function states = testchen2020(test, doSingleTimestep, useSimplifiedDiffusionPE, useSimplifiedDiffusionNE)
-
+        function states = testchen2020(test)
             jsonstruct = parseBattmoJson('ParameterData/ParameterSets/Chen2020/chen2020_lithium_ion_battery.json');
+
             paramobj = BatteryInputParams(jsonstruct);
 
+            % Some shorthands used for the sub-models
             ne    = 'NegativeElectrode';
             pe    = 'PositiveElectrode';
             am    = 'ActiveMaterial';
             sd    = 'SolidDiffusion';
             elyte = 'Electrolyte';
-            itf   = 'Interface';
-            ctrl  = 'Control';
 
-            % Battery modeland params
+            %% We setup the battery geometry ("bare" battery with no current collector).
             gen = BareBatteryGenerator3D();
+            % We update pamobj with grid data
             paramobj = gen.updateBatteryInputParams(paramobj);
-            paramobj.(ne).(am).InterDiffusionCoefficient = 0;
-            paramobj.(pe).(am).InterDiffusionCoefficient = 0;
-            paramobj.(ne).(am).(sd).useSimplifiedDiffusionModel = useSimplifiedDiffusionNE;
-            paramobj.(pe).(am).(sd).useSimplifiedDiffusionModel = useSimplifiedDiffusionPE;
+
+            %%  The Battery model is initialized by sending paramobj to the Battery class constructor 
 
             model = Battery(paramobj);
-            
+
+            %% We fix the input current to 5A
+
             model.Control.Imax = 5;
 
-            % Schedule
+            %% We setup the schedule 
+            % We use different time step for the activation phase (small time steps) and the following discharging phase
+            % We start with rampup time steps to go through the activation phase 
+
             fac   = 2; 
             total = 1.4*hour; 
-            n     = 100;
+            n     = 100; 
             dt0   = total*1e-6; 
             times = getTimeSteps(dt0, n, total, fac); 
             dt    = diff(times);
-            if doSingleTimestep
-                dt = dt(1);
-            else
-                dt = dt(1:end);
-            end
-            step = struct('val', dt, 'control', ones(size(dt)));
+            dt    = dt(1 : end);
+            step  = struct('val', dt, 'control', ones(size(dt)));
 
-            tup = 0.1;
+            % We set up a stopping function. Here, the simulation will stop if the output voltage reach a value smaller than 2. This
+            % stopping function will not be triggered in this case as we switch to voltage control when E=3.6 (see value of inputE
+            % below).
+
+            tup = 0.1; % rampup value for the current function, see rampupSwitchControl
             srcfunc = @(time, I, E) rampupSwitchControl(time, tup, I, E, ...
                                                         model.Control.Imax, ...
                                                         model.Control.lowerCutoffVoltage);
+            % we setup the control by assigning a source and stop function.
             control = struct('src', srcfunc, 'IEswitch', true);
+
+            % This control is used to set up the schedule
             schedule = struct('control', control, 'step', step); 
 
-            % Initial state
+            %%  We setup the initial state
+
             nc = model.G.cells.num;
             T = model.initT;
             initstate.ThermalModel.T = T*ones(nc, 1);
 
             bat = model;
+
             initstate = model.updateTemperature(initstate);
 
-            % setup negative electrode initial state
-            nitf = model.(ne).(am).(itf); 
+            % we setup negative electrode initial state
+            nitf = bat.(ne).(am).(itf); 
 
+            % We bypass the solid diffusion equation to set directly the particle surface concentration
             c = 29866.0;
-            if model.(ne).(am).useSimplifiedDiffusionModel
+            if strcmp(model.(ne).(am).diffusionModelType, 'simple')
                 nenp = model.(ne).(am).G.cells.num;
                 initstate.(ne).(am).c = c*ones(nenp, 1);
             else
@@ -80,7 +86,6 @@ classdef TestChen2020 < matlab.unittest.TestCase
                 nenp = model.(ne).(am).(sd).np;
                 initstate.(ne).(am).(sd).c = c*ones(nenr*nenp, 1);
             end
-
             initstate.(ne).(am).(sd).cSurface = c*ones(nenp, 1);
 
             initstate.(ne).(am) = model.(ne).(am).updateConcentrations(initstate.(ne).(am));
@@ -91,12 +96,13 @@ classdef TestChen2020 < matlab.unittest.TestCase
 
             initstate.(ne).(am).phi = OCP - ref;
 
-            % setup positive electrode initial state
+            % we setup positive electrode initial state
+
             pitf = bat.(pe).(am).(itf); 
 
             c = 17038.0;
 
-            if model.(pe).(am).useSimplifiedDiffusionModel
+            if strcmp(model.(pe).(am).diffusionModelType, 'simple')
                 penp = model.(pe).(am).G.cells.num;
                 initstate.(pe).(am).c = c*ones(penp, 1);
             else
@@ -117,19 +123,45 @@ classdef TestChen2020 < matlab.unittest.TestCase
             initstate.(elyte).c = 1000*ones(bat.(elyte).G.cells.num, 1);
 
             % setup initial positive electrode external coupling values
+
             initstate.(ctrl).E = OCP(1) - ref;
             initstate.(ctrl).I = 0;
             initstate.(ctrl).ctrlType = 'constantCurrent';
 
+            % Setup nonlinear solver 
             nls = NonLinearSolver(); 
+            % Change default maximum iteration number in nonlinear solver
             nls.maxIterations = 10; 
-            nls.errorOnFailure = true;
+            % Change default behavior of nonlinear solver, in case of error
+            nls.errorOnFailure = false; 
+            linearsolver = 'direct'
+            switch linearsolver
+              case 'agmg'
+                mrstModule add agmg
+                nls.LinearSolver = AGMGSolverAD('verbose', true, 'reduceToCell', true); 
+                nls.LinearSolver.tolerance = 1e-3; 
+                nls.LinearSolver.maxIterations = 30; 
+                nls.maxIterations = 10; 
+                nls.verbose = 10;
+              case 'battery'
+                %nls.LinearSolver = LinearSolverBatteryExtra('verbose', false, 'reduceToCell', true,'verbosity',3,'reuse_setup',false,'method','matlab_p_gs');
+                nls.LinearSolver = LinearSolverBatteryExtra('verbose', false, 'reduceToCell', false,'verbosity',3,'reuse_setup',false,'method','direct');
+                nls.LinearSolver.tolerance=0.5e-4*2;          
+              case 'direct'
+                disp('standard direct solver')
+              otherwise
+                error()
+            end
+
+            % Change default tolerance for nonlinear solver
             model.nonlinearTolerance = 1e-5; 
+            % Set verbosity
             model.verbose = false;
 
-            model.AutoDiffBackend = AutoDiffBackend();
+            model.AutoDiffBackend= AutoDiffBackend();
 
-            [~, states] = simulateScheduleAD(initstate, model, schedule, 'OutputMinisteps', false, 'NonLinearSolver', nls); 
+            % Run simulation
+            [wellSols, states, report] = simulateScheduleAD(initstate, model, schedule, 'OutputMinisteps', true, 'NonLinearSolver', nls); 
 
         end
         
@@ -137,19 +169,9 @@ classdef TestChen2020 < matlab.unittest.TestCase
 
     methods (Test)
 
-        function testChen2020(test, useSimplifiedDiffusionPE, useSimplifiedDiffusionNE)
+        function testChen2020(test)
 
-            doSingleTimestep = true;
-            testchen2020(test, doSingleTimestep, useSimplifiedDiffusionPE, useSimplifiedDiffusionNE);
-            
-        end
-
-        function testChen2020Verification(test)
-
-            doSingleTimestep = false;
-            simpleDiffusionForPE = false;
-            simpleDiffusionForNE = false;
-            states = testchen2020(test, doSingleTimestep, simpleDiffusionForPE, simpleDiffusionForNE);
+            states = testchen2020(test);
 
             % Compare with PyBamm
             loadChenPybammSolution;
@@ -161,11 +183,11 @@ classdef TestChen2020 < matlab.unittest.TestCase
             time = time / hour;
             Enew = cellfun(@(x) x.Control.E, states);
 
-            x = linspace(time(1), t1(end), 100);
+            x = linspace(time(1), t1(end), 100000);
             pb = interp1(t1, u1, x);
             battmo = interp1(time, Enew, x);
 
-            assert(norm(pb - battmo) < 0.077);
+            assert(norm(pb - battmo) / norm(pb) < 0.00285);
         end
         
     end

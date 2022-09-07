@@ -24,6 +24,7 @@ function [cap, cap_neg, cap_pos, specificEnergy] = computeCellCapacity(model, va
     pe  = 'PositiveElectrode';
     am  = 'ActiveMaterial';
     itf = 'Interface';
+    sd  = 'SolidDiffusion';
     
     eldes = {ne, pe};
     
@@ -50,11 +51,29 @@ function [cap, cap_neg, cap_pos, specificEnergy] = computeCellCapacity(model, va
             error('Electrode not recognized');
         end
         
-        volume_fraction = itfmodel.volumeFraction;
         volume_electrode = sum(ammodel.G.cells.volumes);
-        volume = volume_fraction*volume_electrode;
+
+        switch ammodel.diffusionModelType
+            
+          case 'simple'
+            
+            volume_fraction = itfmodel.volumeFraction;
+            volume = volume_fraction*volume_electrode;
+            
+            cap_usable(ind) = (thetaMax - thetaMin)*cMax*volume*n*F;
+
+          case 'full'
+
+            rp  = ammodel.(sd).rp;
+            vsa = ammodel.(sd).volumetricSurfaceArea;
+
+            cap_usable(ind) = (thetaMax - thetaMin)*cMax*volume_electrode.*(rp*vsa/3)*n*F;
+
+          otherwise
+
+            error('diffusionModelType type not recognized');
+        end
         
-        cap_usable(ind) = (thetaMax - thetaMin)*cMax*volume*n*F;
         
     end
     

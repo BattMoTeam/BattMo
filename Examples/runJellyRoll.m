@@ -1,3 +1,6 @@
+clear all
+close all
+
 % Setup mrst modules
 
 mrstModule add ad-core mrst-gui mpfa agmg
@@ -65,6 +68,13 @@ tabparams.tabcase   = 'aligned tabs';
 tabparams.width     = 3*milli*meter;
 tabparams.fractions = linspace(0.01, 0.9, 6);
 
+testing = true;
+if testing
+    fprintf('We setup a smaller case for quicker testing\n');
+    rOuter = 10*milli*meter/2;
+    nL = 2;
+end
+
 spiralparams = struct('nwindings'   , nwindings, ...
                       'rInner'      , rInner   , ...
                       'widthDict'   , widthDict, ...
@@ -77,6 +87,8 @@ spiralparams = struct('nwindings'   , nwindings, ...
 
 % The input material parameters given in json format are used to populate the paramobj object.
 jsonstruct = parseBattmoJson('ParameterData/BatteryCellParameters/LithiumIonBatteryCell/lithium_ion_battery_nmc_graphite.json');
+jsonstruct.include_current_collectors = true;
+
 paramobj = BatteryInputParams(jsonstruct); 
 
 th = 'ThermalModel';
@@ -166,15 +178,22 @@ else
 end
 
 nls.timeStepSelector = StateChangeTimeStepSelector('TargetProps', {{'Control', 'E'}}, 'targetChangeAbs', 0.03);
-linearsolver = 'agmg';
+linearsolver = 'battery';
 switch linearsolver
   case 'agmg'
     mrstModule add agmg
-    nls.LinearSolver = AGMGSolverAD('verbose', false, 'reduceToCell', true); 
+    nls.LinearSolver = AGMGSolverAD('verbose', true, 'reduceToCell', false); 
     nls.LinearSolver.tolerance = 1e-3; 
     nls.LinearSolver.maxIterations = 30; 
     nls.maxIterations = 10; 
     nls.verbose = 10;
+  case 'battery'
+    nls.LinearSolver = LinearSolverBatteryExtra('verbose'     , false, ...
+                                                'reduceToCell', false, ...
+                                                'verbosity'   , 3    , ...
+                                                'reuse_setup' , false, ...
+                                                'method'      , 'direct');
+    nls.LinearSolver.tolerance = 0.5e-4*2;          
   case 'direct'
     disp('standard direct solver')
   otherwise
@@ -192,11 +211,23 @@ problem.SimulatorSetup.OutputMinisteps = true;
 resetSimulation = true;
 if resetSimulation
     %% clear previously computed simulation
-    clearPackedSimulatorOutput(problem);
+    clearPackedSimulatorOutput(problem, 'prompt', false);
 end
 simulatePackedProblem(problem);
 [globvars, states, report] = getPackedSimulatorOutput(problem);
 
+%% Process output and recover the output voltage and current from the output states.
+
+ind = cellfun(@(x) not(isempty(x)), states); 
+states = states(ind);
+E = cellfun(@(x) x.Control.E, states); 
+I = cellfun(@(x) x.Control.I, states);
+time = cellfun(@(x) x.time, states); 
+
+plot(time, E, 'linewidth', 3);
+set(gca, 'fontsize', 18);
+title('Cell Voltage / V')
+xlabel('time (hours)')
 
 %{
 Copyright 2021-2022 SINTEF Industry, Sustainable Energy Technology

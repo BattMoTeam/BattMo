@@ -29,13 +29,13 @@ classdef VarName
             
         end
         
-        function name = getfieldname(varname)
+        function name = getFieldname(varname)
             name = strjoin({varname.namespace{:}, varname.name}, varname.strlim);
         end
 
         function name = getIndexedFieldname(varname)
-        % Generate fieldname with the index in bracket (this entry is used in the dictionaries for AdminModel instance)
-            name = varname.getfieldname();
+        % Generate fieldname with the index in bracket
+            name = varname.getFieldname();
             index = varname.index;
             dim = varname.dim;
             if dim > 1
