@@ -127,7 +127,7 @@ classdef Electrolyte < ElectroChemicalComponent
 
         function state = updateConductivity(model, state)
             
-            computeConductivity= model.computeConductivityFunc;
+            computeConductivity = model.computeConductivityFunc;
 
             c = state.cs{1};
             T = state.T;
