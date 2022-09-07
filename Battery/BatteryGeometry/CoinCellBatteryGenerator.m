@@ -18,7 +18,6 @@ classdef CoinCellBatteryGenerator < BatteryGenerator
         positiveExtCurrentFaces
 
         % Heat parameters
-        externalHeatTransferCoefficientTab = 1e3;
         externalHeatTransferCoefficient = 1e3;
 
         % For sector model
@@ -126,17 +125,32 @@ classdef CoinCellBatteryGenerator < BatteryGenerator
         function paramobj = setupThermalModel(gen, paramobj, params)
         % paramobj is instance of BatteryInputParams
 
-        % Cooling on external faces
+            if gen.use_sector
 
-            [couplingfaces, couplingcells] = boundaryFaces(gen.G);
+                couplingfaces = gen.thermalExchangeFaces;
+                couplingtags  = gen.thermalExchangeFacesTag;
+                couplingcells = sum(gen.G.faces.neighbors(couplingfaces, :), 2);
 
-            params = struct('couplingfaces', couplingfaces, ...
-                            'couplingcells', couplingcells);
-            paramobj = setupThermalModel@BatteryGenerator(gen, paramobj, params);
+                params = struct('couplingfaces', couplingfaces, ...
+                                'couplingcells', couplingcells);
+                paramobj = setupThermalModel@BatteryGenerator(gen, paramobj, params);
 
-            coef = gen.externalHeatTransferCoefficient;
-            paramobj.ThermalModel.externalHeatTransferCoefficient = coef;
+                thermal = 'ThermalModel'; % shorcut
+                paramobj.(thermal).externalHeatTransferCoefficient = ...
+                    paramobj.(thermal).externalHeatTransferCoefficient*ones(numel(couplingfaces), 1);
+                
+            else
+                % Cooling on all external faces
+                [couplingfaces, couplingcells] = boundaryFaces(gen.G);
 
+                params = struct('couplingfaces', couplingfaces, ...
+                                'couplingcells', couplingcells);
+                paramobj = setupThermalModel@BatteryGenerator(gen, paramobj, params);
+
+                coef = gen.externalHeatTransferCoefficient;
+                paramobj.ThermalModel.externalHeatTransferCoefficient = coef;
+            end
+            
         end
 
     end

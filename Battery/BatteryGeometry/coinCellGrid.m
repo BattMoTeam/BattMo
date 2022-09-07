@@ -155,7 +155,6 @@ end
 
 function output = coinCellSectorGrid(params, compnames, dz, tagdict)
 
-
     compdims = params.compdims;
     [R, bbox, xc0] = extractDims(compdims);
 
@@ -266,7 +265,8 @@ function output = coinCellSectorGrid(params, compnames, dz, tagdict)
     thermalCoolingFaces = [bf(top); bf(bottom)];
 
     % Thermal exchange faces on the sides
-    thermalExchangeFaces = find(G.faces.centroids(bf, 2) < 100*eps);
+    idx = G.faces.centroids(bf, 2) < 100*eps;
+    thermalExchangeFaces = bf(idx);
     thermalExchangeFacesTag(thermalExchangeFaces) = 1;
 
     % Other side is found using looking at the correctly oriented
