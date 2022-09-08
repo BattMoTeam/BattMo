@@ -47,17 +47,19 @@ classdef ActiveMaterialInputParams < ElectronicComponentInputParams
               case 'simple'
                 paramobj.SolidDiffusion = SimplifiedSolidDiffusionModelInputParams(pick('SolidDiffusion'));
               case 'full'
-                paramobj.SolidDiffusion = FullSolidDiffusionModelInputParams(pick('SolidDiffusion'));
+
+                sd = 'SolidDiffusion';
+                itf = 'Interface';
                 
-                % we impose that cmax in the solid diffusion model and the interface are consistent
-                if isempty(paramobj.SolidDiffusion.cmax) &&  ~isempty(paramobj.Interface.cmax)
-                    paramobj.SolidDiffusion.cmax = paramobj.Interface.cmax;
-                elseif ~isempty(paramobj.SolidDiffusion.cmax) &&  isempty(paramobj.Interface.cmax)
-                    paramobj.Interface.cmax = paramobj.SolidDiffusion.cmax;
-                elseif ~isempty(paramobj.SolidDiffusion.cmax) &&  ~isempty(paramobj.Interface.cmax)
-                    assert(paramobj.SolidDiffusion.cmax == paramobj.Interface.cmax, 'cmax in input is not consistant');
+                paramobj.(sd) = FullSolidDiffusionModelInputParams(pick(sd));
+
+                if ~isempty(paramobj.(sd).D)
+                    % we impose that cmax in the solid diffusion model and the interface are consistent
+                    paramobj = mergeParameters(paramobj, {sd, 'cmax'}, {itf, 'cmax'});
+                    paramobj = mergeParameters(paramobj, {sd, 'theta0'}, {itf, 'theta0'});
+                    paramobj = mergeParameters(paramobj, {sd, 'theta100'}, {itf, 'theta100'});
                 end
-                
+
               otherwise
                 error('Unknown diffusionModelType %s', diffusionModelType);
             end
