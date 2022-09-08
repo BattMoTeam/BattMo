@@ -5,11 +5,15 @@ classdef FullSolidDiffusionModel < SolidDiffusionModel
         np  % Number of particles
         N   % Discretization parameters in spherical direction
 
-        cmax % maximum concentration
 
         useDFunc
         computeDFunc % used when useDFunc is true. Function handler to compute D as function of cElectrode, see method updateDiffusionCoefficient
-        
+
+        % needed if useDFunc is used
+        cmax     % maximum concentration [mol/m^3]
+        theta0   % Minimum lithiation, 0% SOC    [-]
+        theta100 % Maximum lithiation, 100% SOC  [-]
+
     end
 
     methods
@@ -18,9 +22,11 @@ classdef FullSolidDiffusionModel < SolidDiffusionModel
 
             model = model@SolidDiffusionModel(paramobj);
 
-            fdnames = {'np', ...
-                       'N' , ...
-                       'cmax'};
+            fdnames = {'np'      , ...
+                       'N'       , ...
+                       'cmax'    , ...
+                       'theta0'  , ...
+                       'theta100'};
 
             model = dispatchParams(model, paramobj, fdnames);
             model.operators = model.setupOperators();
@@ -258,12 +264,19 @@ classdef FullSolidDiffusionModel < SolidDiffusionModel
 
             if model.useDFunc
 
-                computeD = model.computeDFunc
-                cmax = model.cmax;
+                computeD = model.computeDFunc;
+                cmax     = model.cmax;
+                theta0   = model.theta0;
+                theta100 = model.theta100;
                 
                 c = state.c;
+
+                cmin = theta0*cmax;
+                cmax = theta100*cmax;
+
+                soc = (c - cmin)./(cmax - cmin);
                 
-                D = computeD(c, cmax);
+                D = computeD(soc);
 
                 state.D = D;
                 
