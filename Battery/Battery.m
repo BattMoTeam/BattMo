@@ -667,7 +667,7 @@ classdef Battery < BaseModel
 
             state.(elyte).massAccum = [];
             state.(elyte).massCons = [];
-            eldes = {ne, pe}
+            eldes = {ne, pe};
             for ielde = 1 : numel(eldes)
                 elde = eldes{ielde};
                 switch model.(elde).(am).diffusionModelType
