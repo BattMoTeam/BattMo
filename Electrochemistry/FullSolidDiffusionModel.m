@@ -101,6 +101,7 @@ classdef FullSolidDiffusionModel < SolidDiffusionModel
             celltbl.cells = (1 : np)';
             celltbl = IndexArray(celltbl);
 
+            % Solid particle cells
             Scelltbl.Scells = (1 : N)';
             Scelltbl = IndexArray(Scelltbl);
 
@@ -136,6 +137,13 @@ classdef FullSolidDiffusionModel < SolidDiffusionModel
             Sfacetbl.Sfaces = (1 : (N - 1))'; % index of the internal faces (correspond to image of C')
             Sfacetbl = IndexArray(Sfacetbl);
             cellSfacetbl = crossIndexArray(celltbl, Sfacetbl, {}, 'optpureproduct', true);
+
+            
+            % We define the neighboring structure for Solid particles
+            SfaceScell12tbl.Sfaces = (1 : (N - 1))';
+            SfaceScell12tbl.Scells1 = (1 : (N - 1))';
+            SfaceScell12tbl.Scells2 = (2 : N)';
+            SfaceScell12tbl = IndexArray(SfaceScell12tbl);
             
             Grad = -diag(T)*C;
 
@@ -172,6 +180,41 @@ classdef FullSolidDiffusionModel < SolidDiffusionModel
             map = map.setup();
 
             flux = @(D, c) - map.eval(D).*(Grad*c);
+
+            % We define harmonic averaging operator from cellScelltbl to cellSfacetbl
+            cellSfaceScell12tbl = crossIndexArray(celltbl, SfaceScell12tbl, {}, 'optpureproduct', true);
+            
+            prop = TensorProd();
+            prod.tbl1 = cellSfaceScell12tbl;
+            prod.tbl2 = cellScelltbl;
+            prod.tbl3 = cellSfacetbl;
+            prod.replacefds1 = {{'Scells1', 'Scells'}};
+            prod.mergefds = {'cells'};
+            prod.reducefds = {'Scells'};
+            
+            o = ones(cellSfaceScell12tbl.num, 1);
+
+            faceAver1 = SparseTensor();
+            faceAver1 = faceAver1.setFromTensorProd(o, prod);
+            faceAver1 = faceAver1.getMatrix();
+
+            prop = TensorProd();
+            prod.tbl1 = cellSfaceScell12tbl;
+            prod.tbl2 = cellScelltbl;
+            prod.tbl3 = cellSfacetbl;
+            prod.replacefds1 = {{'Scells2', 'Scells'}};
+            prod.mergefds = {'cells'};
+            prod.reducefds = {'Scells'};
+
+            o = ones(cellSfaceScell12tbl.num, 1);
+
+            faceAver2 = SparseTensor();
+            faceAver2 = faceAver2.setFromTensorProd(o, prod);
+            faceAver2 = faceAver2.getMatrix();
+
+            faceAver = faceAver1 + faceAver2;
+            
+            varDflux = @(D, c) - (1./(faceAver*(1./D))).*(Grad*c);
 
             [i, j, d] = find(C');
 
@@ -236,11 +279,12 @@ classdef FullSolidDiffusionModel < SolidDiffusionModel
 
             vols = map.eval(vols);
 
-            operators = struct('div'      , div       , ...
-                               'flux'     , flux      , ...
-                               'mapFromBc', mapFromBc , ...
-                               'mapToBc'  , mapToBc   , ...
-                               'Tbc'      , Tbc       , ...
+            operators = struct('div'      , div      , ...
+                               'flux'     , flux     , ...
+                               'varDflux' , varDflux , ...
+                               'mapFromBc', mapFromBc, ...
+                               'mapToBc'  , mapToBc  , ...
+                               'Tbc'      , Tbc      , ...
                                'vols'     , vols);
             
         end
@@ -314,12 +358,18 @@ classdef FullSolidDiffusionModel < SolidDiffusionModel
         
         function state = updateFlux(model, state)
             
+            useDFunc = model.useDFunc;
             op = model.operators;
             
             c = state.c;
             D = state.D;
+
+            if useDFunc
+                state.flux = op.varDflux(D, c);
+            else
+                state.flux = op.flux(D, c);
+            end
             
-            state.flux = op.flux(D, c);
             
         end
     

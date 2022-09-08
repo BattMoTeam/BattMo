@@ -167,7 +167,7 @@ classdef Interface < BaseModel
                 cmin = theta0*cmax;
                 cmax = theta100*cmax;
 
-                soc = (c - cmin)./(c - cmax);
+                soc = (c - cmin)./(cmax - cmin);
                 
                 j0 = computeJ0(soc);
 
