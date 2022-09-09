@@ -61,7 +61,7 @@ classdef FullSolidDiffusionModel < SolidDiffusionModel
             model = model.registerPropFunction({'massAccum', fn, {'c'}});
             
             fn = @FullSolidDiffusionModel.assembleSolidDiffusionEquation;
-            model = model.registerPropFunction({'solidDiffusionEq', fn, {'c', 'cSurface', 'massSource'}});
+            model = model.registerPropFunction({'solidDiffusionEq', fn, {'c', 'cSurface', 'massSource', 'D'}});
             
         end
         
@@ -199,6 +199,17 @@ classdef FullSolidDiffusionModel < SolidDiffusionModel
 
             mapToBc = mapFromBc';
             
+            %% map from cell (celltbl) to cell-particle (cellScelltbl)
+            map = TensorMap();
+            map.fromTbl = celltbl;
+            map.toTbl = cellScelltbl;
+            map.mergefds = {'cells'};
+            map = map.setup();
+
+            mapToParticle = SparseTensor();
+            mapToParticle = mapToParticle.setFromTensorMap(map);
+            mapToParticle = mapToParticle.getMatrix();
+            
             vols = G.cells.volumes;
 
             map = TensorMap();
@@ -212,6 +223,7 @@ classdef FullSolidDiffusionModel < SolidDiffusionModel
             operators = struct('div'      , div       , ...
                                'flux'     , flux      , ...
                                'mapFromBc', mapFromBc , ...
+                               'mapToParticle', mapToParticle, ...
                                'mapToBc'  , mapToBc   , ...
                                'Tbc'      , Tbc       , ...
                                'vols'     , vols);
@@ -272,10 +284,15 @@ classdef FullSolidDiffusionModel < SolidDiffusionModel
             op = model.operators;
 
             c     = state.c;
+            D     = state.D;
             cSurf = state.cSurface;
             src   = state.massSource;
+
+            %% TODO fix this operaton. Implement better dispatch
+            D = op.mapToParticle*D;
+            D = op.mapToBc*D;
             
-            eq = op.Tbc.*(op.mapToBc*c - cSurf) + op.mapToBc*src;
+            eq = D.*op.Tbc.*(op.mapToBc*c - cSurf) + op.mapToBc*src;
             
             state.solidDiffusionEq = eq;
             
