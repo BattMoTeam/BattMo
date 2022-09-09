@@ -5,6 +5,7 @@ classdef FullSolidDiffusionModel < SolidDiffusionModel
         np  % Number of particles
         N   % Discretization parameters in spherical direction
 
+        volumeFraction
     end
 
     methods
@@ -13,8 +14,9 @@ classdef FullSolidDiffusionModel < SolidDiffusionModel
 
             model = model@SolidDiffusionModel(paramobj);
 
-            fdnames = {'np'                    , ...
-                       'N'};
+            fdnames = {'np', ...
+                       'N' , ...
+                       'volumeFraction'};
 
             model = dispatchParams(model, paramobj, fdnames);
             model.operators = model.setupOperators();
@@ -232,15 +234,15 @@ classdef FullSolidDiffusionModel < SolidDiffusionModel
 
         function state = updateMassSource(model, state)
             
-            op = model.operators;
-            rp = model.rp;
-            vsa = model.volumetricSurfaceArea;
+            op  = model.operators;
+            rp  = model.rp;
+            vf  = model.volumeFraction;
             
             Rvol = state.Rvol;
 
             Rvol = op.mapFromBc*Rvol;
             
-            state.massSource = -Rvol*((4*pi*rp^2)/vsa);
+            state.massSource = - Rvol*((4*pi*rp^3)/(3*vf));
             
         end
         
