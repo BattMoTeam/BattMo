@@ -897,6 +897,9 @@ classdef Battery < BaseModel
                   case 'simple'
                     % Equation name : 'ne_am_massCons';
                     eqs{end + 1} = state.(ne).(am).massCons*massConsScaling;
+                    % Equation name : 'ne_am_sd_soliddiffeq';
+                    eqs{end + 1} = state.(ne).(am).(sd).solidDiffusionEq.*massConsScaling.*battery.(ne).(am).(itf).G.cells.volumes/dt;
+                    
                   case 'full'
                     % Equation name : 'ne_am_sd_massCons';
                     n    = model.(ne).(am).(itf).n; % number of electron transfer (equal to 1 for Lithium)
@@ -908,15 +911,18 @@ classdef Battery < BaseModel
                     
                     scalingcoef = (vsf*vol(1)*n*F)/surfp;
                     eqs{end + 1} = scalingcoef*state.(ne).(am).(sd).massCons;
+                    % Equation name : 'ne_am_sd_soliddiffeq';
+                    eqs{end + 1} = scalingcoef*state.(ne).(am).(sd).solidDiffusionEq;
                 end
                 
-                % Equation name : 'ne_am_sd_soliddiffeq';
-                eqs{end + 1} = state.(ne).(am).(sd).solidDiffusionEq.*massConsScaling.*battery.(ne).(am).(itf).G.cells.volumes/dt;
                 
                 switch model.(pe).(am).diffusionModelType
                   case 'simple'
                     % Equation name : 'pe_am_massCons';
                     eqs{end + 1} = state.(pe).(am).massCons*massConsScaling;
+                    % Equation name : 'pe_am_sd_soliddiffeq';
+                    eqs{end + 1} = state.(pe).(am).(sd).solidDiffusionEq.*massConsScaling.*battery.(pe).(am).(itf).G.cells.volumes/dt;
+                    
                   case 'full'
                     % Equation name : 'pe_am_sd_massCons';
                     n    = model.(ne).(am).(itf).n; % number of electron transfer (equal to 1 for Lithium)
@@ -928,10 +934,11 @@ classdef Battery < BaseModel
                     
                     scalingcoef = (vsf*vol(1)*n*F)/surfp;
                     eqs{end + 1} = scalingcoef*state.(pe).(am).(sd).massCons;
+                    % Equation name : 'pe_am_sd_soliddiffeq';
+                    eqs{end + 1} = scalingcoef*state.(pe).(am).(sd).solidDiffusionEq;
+                    
                 end
                 
-                % Equation name : 'pe_am_sd_soliddiffeq';
-                eqs{end + 1} = state.(pe).(am).(sd).solidDiffusionEq.*massConsScaling.*battery.(pe).(am).(itf).G.cells.volumes/dt;
                 
             end
             
