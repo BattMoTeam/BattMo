@@ -88,7 +88,7 @@ classdef FullSolidDiffusionModel < SolidDiffusionModel
             model = model.registerPropFunction({'massAccum', fn, {'c'}});
             
             fn = @FullSolidDiffusionModel.assembleSolidDiffusionEquation;
-            model = model.registerPropFunction({'solidDiffusionEq', fn, {'c', 'cSurface', 'massSource'}});
+            model = model.registerPropFunction({'solidDiffusionEq', fn, {'c', 'cSurface', 'massSource', 'D'}});
             
         end
         
@@ -268,6 +268,17 @@ classdef FullSolidDiffusionModel < SolidDiffusionModel
             mapFromBc = mapFromBc.getMatrix();
 
             mapToBc = mapFromBc';
+
+            %% map from cell (celltbl) to cell-particle (cellScelltbl)
+            map = TensorMap();
+            map.fromTbl = celltbl;
+            map.toTbl = cellScelltbl;
+            map.mergefds = {'cells'};
+            map = map.setup();
+
+            mapToParticle = SparseTensor();
+            mapToParticle = mapToParticle.setFromTensorMap(map);
+            mapToParticle = mapToParticle.getMatrix();
             
             vols = G.cells.volumes;
 
@@ -279,13 +290,14 @@ classdef FullSolidDiffusionModel < SolidDiffusionModel
 
             vols = map.eval(vols);
 
-            operators = struct('div'      , div      , ...
-                               'flux'     , flux     , ...
-                               'varDflux' , varDflux , ...
-                               'mapFromBc', mapFromBc, ...
-                               'mapToBc'  , mapToBc  , ...
-                               'Tbc'      , Tbc      , ...
-                               'vols'     , vols);
+            operators = struct('div'          , div          , ...
+                               'flux'         , flux         , ...
+                               'varDflux'     , varDflux     , ...
+                               'mapFromBc'    , mapFromBc    , ...
+                               'mapToParticle', mapToParticle, ...
+                               'mapToBc'      , mapToBc      , ...
+                               'Tbc'          , Tbc          , ...
+                               'vols'         , vols);
             
         end
 
@@ -304,7 +316,6 @@ classdef FullSolidDiffusionModel < SolidDiffusionModel
         end
 
         function state = updateDiffusionCoefficient(model, state)
-
 
             if model.useDFunc
 
@@ -330,7 +341,6 @@ classdef FullSolidDiffusionModel < SolidDiffusionModel
                 
             end
 
-            
         end
 
         function state = updateMassAccum(model, state, state0, dt)
@@ -376,13 +386,24 @@ classdef FullSolidDiffusionModel < SolidDiffusionModel
         function state = assembleSolidDiffusionEquation(model, state)
             
         %% TODO : change name of this function
-            op = model.operators;
-
+            
+            op       = model.operators;
+            useDFunc = model.useDFunc;
+            
             c     = state.c;
             cSurf = state.cSurface;
             src   = state.massSource;
+            D     = state.D;
+
+            if ~useDFunc
+                % TODO : make this implementation better
+                % Here, we first dispatch D on all the particle cells and, then, retain only the value at the boundary.
+                D = op.mapToParticle*D;
+            end
             
-            eq = op.Tbc.*(op.mapToBc*c - cSurf) + op.mapToBc*src;
+            D = op.mapToBc*D;
+            
+            eq = D.*op.Tbc.*(op.mapToBc*c - cSurf) + op.mapToBc*src;
             
             state.solidDiffusionEq = eq;
             
