@@ -10,6 +10,8 @@ classdef SeparatorInputParams < ComponentInputParams
         heatCapacity        % Intrinsic Heat capacity of the electrolyte
 
         density             % Density [kg m^-3]
+
+        BruggemanCoefficient
     end
     
     methods
