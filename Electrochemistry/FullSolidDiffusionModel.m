@@ -127,113 +127,43 @@ classdef FullSolidDiffusionModel < SolidDiffusionModel
             rock.perm = ones(N, 1);
             rock.poro = ones(N, 1);
 
-            op = setupOperatorsTPFA(G, rock);
-            C = op.C;
-            T = op.T;
-            T_all = op.T_all;
+            tbls = setupSimpleTables(G);
+            cellfacetbl = tbls.cellfacetbl;
 
-            % We use that we know *apriori* the indexing given by cartGrid
-            Tbc = T_all(N); % half-transmissibility for of the boundary face
+            hT = computeTrans(G, rock); % hT is in cellfacetbl
+
+            cells = cellfacetbl.get('cells');
+            faces = cellfacetbl.get('faces');
+            sgn = 2*(cells == G.faces.neighbors(faces, 1)) - 1; % sgn is in cellfacetbl
+                
+            % We change name of cellfacetbl
+            ScellSfacetbl = cellfacetbl;
+            ScellSfacetbl = replacefield(ScellSfacetbl, {{'cells', 'Scells'}, {'faces', 'Sfaces'}});
+            
+            % Here, we use that we know *apriori* the indexing in G.cells.faces (the last index corresponds to outermost cell-face)
+            Tbc = hT(end); % half-transmissibility for of the boundary face
             Tbc = repmat(Tbc, np, 1);
             
-            Sfacetbl.Sfaces = (1 : (N - 1))'; % index of the internal faces (correspond to image of C')
+            Sfacetbl.Sfaces = (2 : N)'; % index of the internal faces (correspond to image of C')
             Sfacetbl = IndexArray(Sfacetbl);
             cellSfacetbl = crossIndexArray(celltbl, Sfacetbl, {}, 'optpureproduct', true);
 
-            
-            % We define the neighboring structure for Solid particles
-            SfaceScell12tbl.Sfaces = (1 : (N - 1))';
-            SfaceScell12tbl.Scells1 = (1 : (N - 1))';
-            SfaceScell12tbl.Scells2 = (2 : N)';
-            SfaceScell12tbl = IndexArray(SfaceScell12tbl);
-            
-            Grad = -diag(T)*C;
-
-            [i, j, grad] = find(Grad);
-            ScellSfacetbl.Sfaces = i;
-            ScellSfacetbl.Scells = j;
-            ScellSfacetbl = IndexArray(ScellSfacetbl);
+            % we consider only the internal faces
+            allScellSfacetbl = ScellSfacetbl;
+            ScellSfacetbl = crossIndexArray(allScellSfacetbl, Sfacetbl, {'Sfaces'});
 
             cellScellSfacetbl = crossIndexArray(celltbl, ScellSfacetbl, {}, 'optpureproduct', true);
 
             map = TensorMap();
-            map.fromTbl = ScellSfacetbl;
+            map.fromTbl = allScellSfacetbl;
             map.toTbl = cellScellSfacetbl;
             map.mergefds = {'Scells', 'Sfaces'};
-            map = map.setup();
+            map = map.setup();            
 
-            grad = map.eval(grad);
+            hT = map.eval(hT);
+            sgn = map.eval(sgn);
 
-            prod = TensorProd();
-            prod.tbl1 = cellScellSfacetbl;
-            prod.tbl2 = cellScelltbl;
-            prod.tbl3 = cellSfacetbl;
-            prod.mergefds = {'cells'};
-            prod.reducefds = {'Scells'};
-
-            Grad = SparseTensor();
-            Grad = Grad.setFromTensorProd(grad, prod);
-            Grad = Grad.getMatrix();
-
-            map = TensorMap();
-            map.fromTbl = celltbl;
-            map.toTbl = cellSfacetbl;
-            map.mergefds = {'cells'};
-            map = map.setup();
-
-            flux = @(D, c) - map.eval(D).*(Grad*c);
-
-            % We define harmonic averaging operator from cellScelltbl to cellSfacetbl
-            cellSfaceScell12tbl = crossIndexArray(celltbl, SfaceScell12tbl, {}, 'optpureproduct', true);
-            
-            prop = TensorProd();
-            prod.tbl1 = cellSfaceScell12tbl;
-            prod.tbl2 = cellScelltbl;
-            prod.tbl3 = cellSfacetbl;
-            prod.replacefds1 = {{'Scells1', 'Scells'}};
-            prod.mergefds = {'cells'};
-            prod.reducefds = {'Scells'};
-            
-            o = ones(cellSfaceScell12tbl.num, 1);
-
-            faceAver1 = SparseTensor();
-            faceAver1 = faceAver1.setFromTensorProd(o, prod);
-            faceAver1 = faceAver1.getMatrix();
-
-            prop = TensorProd();
-            prod.tbl1 = cellSfaceScell12tbl;
-            prod.tbl2 = cellScelltbl;
-            prod.tbl3 = cellSfacetbl;
-            prod.replacefds1 = {{'Scells2', 'Scells'}};
-            prod.mergefds = {'cells'};
-            prod.reducefds = {'Scells'};
-
-            o = ones(cellSfaceScell12tbl.num, 1);
-
-            faceAver2 = SparseTensor();
-            faceAver2 = faceAver2.setFromTensorProd(o, prod);
-            faceAver2 = faceAver2.getMatrix();
-
-            faceAver = faceAver1 + faceAver2;
-            
-            varDflux = @(D, c) - (1./(faceAver*(1./D))).*(Grad*c);
-
-            [i, j, d] = find(C');
-
-            clear ScellSfacetbl
-            ScellSfacetbl.Scells = i;
-            ScellSfacetbl.Sfaces = j;
-            ScellSfacetbl = IndexArray(ScellSfacetbl);
-
-            cellScellSfacetbl = crossIndexArray(celltbl, ScellSfacetbl, {}, 'optpureproduct', true);
-
-            map = TensorMap();
-            map.fromTbl = ScellSfacetbl;
-            map.toTbl = cellScellSfacetbl;
-            map.mergefds = {'Scells', 'Sfaces'};
-            map = map.setup();
-
-            d = map.eval(d);
+            %% setup of divergence operator
 
             prod = TensorProd();
             prod.tbl1 = cellScellSfacetbl;
@@ -244,10 +174,26 @@ classdef FullSolidDiffusionModel < SolidDiffusionModel
             prod = prod.setup();
 
             divMat = SparseTensor();
-            divMat = divMat.setFromTensorProd(d, prod);
+            divMat = divMat.setFromTensorProd(sgn, prod);
             divMat = divMat.getMatrix();
 
-            div = @(u) divMat*u;
+            div = @(u) (divMat*u);
+            
+            gradMat = -divMat';
+
+            prod = TensorProd();
+            prod.tbl1 = cellScellSfacetbl;
+            prod.tbl2 = cellScelltbl;
+            prod.tbl3 = cellSfacetbl;
+            prod.mergefds = {'cells'};
+            prod.reducefds = {'Scells'};
+            prod = prod.setup();
+
+            invHtMat = SparseTensor();
+            invHtMat = invHtMat.setFromTensorProd(1./hT, prod);
+            invHtMat = invHtMat.getMatrix();
+
+            flux = @(D, c) -(1./(invHtMat*(1./D))).*(gradMat*c);
 
             %% External flux map (from the boundary conditions)
 
@@ -282,17 +228,6 @@ classdef FullSolidDiffusionModel < SolidDiffusionModel
             mapToParticle = mapToParticle.setFromTensorMap(map);
             mapToParticle = mapToParticle.getMatrix();
             
-            %% map from cell (celltbl) to cell-particle (cellScelltbl)
-            map = TensorMap();
-            map.fromTbl = celltbl;
-            map.toTbl = cellScelltbl;
-            map.mergefds = {'cells'};
-            map = map.setup();
-
-            mapToParticle = SparseTensor();
-            mapToParticle = mapToParticle.setFromTensorMap(map);
-            mapToParticle = mapToParticle.getMatrix();
-            
             vols = G.cells.volumes;
 
             map = TensorMap();
@@ -305,7 +240,6 @@ classdef FullSolidDiffusionModel < SolidDiffusionModel
 
             operators = struct('div'          , div          , ...
                                'flux'         , flux         , ...
-                               'varDflux'     , varDflux     , ...
                                'mapFromBc'    , mapFromBc    , ...
                                'mapToParticle', mapToParticle, ...
                                'mapToBc'      , mapToBc      , ...
@@ -388,8 +322,9 @@ classdef FullSolidDiffusionModel < SolidDiffusionModel
             D = state.D;
 
             if useDFunc
-                state.flux = op.varDflux(D, c);
+                state.flux = op.flux(D, c);
             else
+                D = op.mapToParticle*D;
                 state.flux = op.flux(D, c);
             end
             
