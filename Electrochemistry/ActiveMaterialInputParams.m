@@ -52,6 +52,7 @@ classdef ActiveMaterialInputParams < ElectronicComponentInputParams
                 itf = 'Interface';
                 
                 paramobj.(sd) = FullSolidDiffusionModelInputParams(pick(sd));
+                paramobj = mergeParameters(paramobj, {'SolidDiffusion', 'volumeFraction'}, {'Interface', 'volumeFraction'});
 
                 if ~isempty(paramobj.(sd).D)
                     % we impose that cmax in the solid diffusion model and the interface are consistent
@@ -59,6 +60,7 @@ classdef ActiveMaterialInputParams < ElectronicComponentInputParams
                     paramobj = mergeParameters(paramobj, {sd, 'theta0'}, {itf, 'theta0'});
                     paramobj = mergeParameters(paramobj, {sd, 'theta100'}, {itf, 'theta100'});
                 end
+
 
               otherwise
                 error('Unknown diffusionModelType %s', diffusionModelType);

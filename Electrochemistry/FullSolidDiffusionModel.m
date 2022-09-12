@@ -5,6 +5,7 @@ classdef FullSolidDiffusionModel < SolidDiffusionModel
         np  % Number of particles
         N   % Discretization parameters in spherical direction
 
+        volumeFraction
 
         useDFunc
         computeDFunc % used when useDFunc is true. Function handler to compute D as function of cElectrode, see method updateDiffusionCoefficient
@@ -26,7 +27,8 @@ classdef FullSolidDiffusionModel < SolidDiffusionModel
                        'N'       , ...
                        'cmax'    , ...
                        'theta0'  , ...
-                       'theta100'};
+                       'theta100', ...
+                       'volumeFraction'};
 
             model = dispatchParams(model, paramobj, fdnames);
             model.operators = model.setupOperators();
@@ -280,6 +282,17 @@ classdef FullSolidDiffusionModel < SolidDiffusionModel
             mapToParticle = mapToParticle.setFromTensorMap(map);
             mapToParticle = mapToParticle.getMatrix();
             
+            %% map from cell (celltbl) to cell-particle (cellScelltbl)
+            map = TensorMap();
+            map.fromTbl = celltbl;
+            map.toTbl = cellScelltbl;
+            map.mergefds = {'cells'};
+            map = map.setup();
+
+            mapToParticle = SparseTensor();
+            mapToParticle = mapToParticle.setFromTensorMap(map);
+            mapToParticle = mapToParticle.getMatrix();
+            
             vols = G.cells.volumes;
 
             map = TensorMap();
@@ -303,15 +316,15 @@ classdef FullSolidDiffusionModel < SolidDiffusionModel
 
         function state = updateMassSource(model, state)
             
-            op = model.operators;
-            rp = model.rp;
-            vsa = model.volumetricSurfaceArea;
+            op  = model.operators;
+            rp  = model.rp;
+            vf  = model.volumeFraction;
             
             Rvol = state.Rvol;
 
             Rvol = op.mapFromBc*Rvol;
             
-            state.massSource = -Rvol*((4*pi*rp^2)/vsa);
+            state.massSource = - Rvol*((4*pi*rp^3)/(3*vf));
             
         end
 
@@ -391,9 +404,9 @@ classdef FullSolidDiffusionModel < SolidDiffusionModel
             useDFunc = model.useDFunc;
             
             c     = state.c;
+            D     = state.D;
             cSurf = state.cSurface;
             src   = state.massSource;
-            D     = state.D;
 
             if ~useDFunc
                 % TODO : make this implementation better

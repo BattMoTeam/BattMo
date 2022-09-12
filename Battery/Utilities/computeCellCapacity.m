@@ -53,27 +53,11 @@ function [cap, cap_neg, cap_pos, specificEnergy] = computeCellCapacity(model, va
         
         volume_electrode = sum(ammodel.G.cells.volumes);
 
-        switch ammodel.diffusionModelType
-            
-          case 'simple'
-            
-            volume_fraction = itfmodel.volumeFraction;
-            volume = volume_fraction*volume_electrode;
-            
-            cap_usable(ind) = (thetaMax - thetaMin)*cMax*volume*n*F;
-
-          case 'full'
-
-            rp  = ammodel.(sd).rp;
-            vsa = ammodel.(sd).volumetricSurfaceArea;
-
-            cap_usable(ind) = (thetaMax - thetaMin)*cMax*volume_electrode.*(rp*vsa/3)*n*F;
-
-          otherwise
-
-            error('diffusionModelType type not recognized');
-        end
         
+        volume_fraction = itfmodel.volumeFraction;
+        volume = volume_fraction*volume_electrode;
+        
+        cap_usable(ind) = (thetaMax - thetaMin)*cMax*volume*n*F;
         
     end
     

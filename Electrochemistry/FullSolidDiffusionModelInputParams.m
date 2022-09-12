@@ -14,6 +14,7 @@ classdef FullSolidDiffusionModelInputParams < SolidDiffusionModelInputParams
         cmax     % maximum concentration [mol/m^3]
         theta0   % Minimum lithiation, 0% SOC    [-]
         theta100 % Maximum lithiation, 100% SOC  [-]
+
     end
     
     methods
