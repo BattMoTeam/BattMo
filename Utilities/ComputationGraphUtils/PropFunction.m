@@ -52,7 +52,7 @@ classdef PropFunction
             fnname = join(fnname, '.');
             fnname = fnname{1};
 
-            signature = sprintf('%s = model.%s(%s);', statename, fnname, statename);
+            signature = sprintf('%s = model.%s(%s)', statename, fnname, statename);
             
         end
 
