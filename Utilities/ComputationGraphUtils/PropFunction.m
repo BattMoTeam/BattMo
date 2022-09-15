@@ -32,6 +32,27 @@ classdef PropFunction
                 propfunctions{ind} = propfunction;
                 propfunctions{ind}.varname = varnames{ind};
             end
+        end
+
+        function signature = getFunctionSignature(propfunction)
+            
+            fn = propfunction.fn;
+            mn = propfunction.modelnamespace;
+            mn = join(mn, '.');
+            if ~isempty(mn)
+                mn = mn{1};
+                statename = sprintf('state.%s', mn);
+            else
+                statename = 'state';
+            end
+            fnname = func2str(fn);
+            fnname = regexp(fnname, "\.(.*)", 'tokens');
+            fnname = fnname{1}{1};
+            fnname = horzcat(mn, {fnname});
+            fnname = join(fnname, '.');
+            fnname = fnname{1};
+
+            signature = sprintf('%s = model.%s(%s);', statename, fnname, statename);
             
         end
 
