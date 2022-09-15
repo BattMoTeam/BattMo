@@ -27,7 +27,7 @@ gen = BareBatteryGenerator3D();
 paramobj = gen.updateBatteryInputParams(paramobj);
 
 paramobj.(pe).(am).InterDiffusionCoefficient = 0;
-paramobj.(pe).(am).(sd).diffusionModelType = 'full';
+paramobj.(pe).(am).diffusionModelType = 'full';
 
 paramobj = paramobj.(pe).(am);
 
@@ -40,6 +40,22 @@ G = computeGeometry(G);
 paramobj.G = G;
 
 model = ActiveMaterial(paramobj);
+
+dograph = true;
+if dograph
+    cgf = ComputationalGraphFilter(model);
+    % cgf.includeNodeNames = 'cSurface';
+    % cgf.includeNodeNames = 'phiElectrolyte';
+    % gg = cgf.setupDescendantGraph();
+    % gg = cgf.setupGraph('oneParentOnly', true);    
+    [g, edgelabels] = cgf.setupGraph();
+    figure
+    h = plot(g, 'edgelabel', edgelabels, 'nodefontsize', 10);
+end
+
+
+return
+
 
 %% Setup initial state
 
