@@ -42,25 +42,17 @@ paramobj.G = G;
 model = ActiveMaterial(paramobj);
 
 dograph = true;
+
 if dograph
+    model.isRoot = true;
     cgf = ComputationalGraphFilter(model);
-    % cgf.includeNodeNames = 'cSurface';
-    % cgf.includeNodeNames = 'phiElectrolyte';
-    % gg = cgf.setupDescendantGraph();
-    % gg = cgf.setupGraph('oneParentOnly', true);    
-    [g, edgelabels] = cgf.setupGraph();
-    figure
-    h = plot(g, 'edgelabel', edgelabels, 'nodefontsize', 10);
+    inspectGraphScript(model);
 end
 
-
 return
-
-
 %% Setup initial state
 
 N = model.(sd).N;
-
 
 cElectrodeInit   = 40*mol/litre;
 phiElectrodeInit = 3.5;
@@ -85,7 +77,7 @@ n     = 10;
 dt    = total/n;
 step  = struct('val', dt*ones(n, 1), 'control', ones(n, 1));
 
-control.src = 1e-6;
+control.src = 1e1;
 
 schedule = struct('control', control, 'step', step); 
 
@@ -94,4 +86,9 @@ model.verbose = true;
 [wellSols, states, report] = simulateScheduleAD(initState, model, schedule, 'OutputMinisteps', true); 
 
 
+%% plotting
 
+time = cellfun(@(state) state.time, states);
+cSurface = cellfun(@(state) state.(sd).cSurface, states);
+
+plot(time, cSurface);

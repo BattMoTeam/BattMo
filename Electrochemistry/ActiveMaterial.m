@@ -6,7 +6,6 @@ classdef ActiveMaterial < ElectronicComponent
         % instance of :class:`Interface <Electrochemistry.Electrodes.Interface>`
         %
 
-
         Interface
 
         SolidDiffusion        
@@ -29,6 +28,9 @@ classdef ActiveMaterial < ElectronicComponent
         externalCouplingTerm          % only used in no current collector
 
         BruggemanCoefficient
+
+        isRoot
+        
     end
     
     methods
@@ -77,6 +79,10 @@ classdef ActiveMaterial < ElectronicComponent
             model.porosity = 1 - volumeFraction;
 
             model = model.setupDependentProperties();
+
+            % isRoot=true for standalone simulation of active material. This flag is used only in
+            % registerVarAndPropfuncNames (does not impact simulation). Default is false.
+            model.isRoot = false;
             
         end
         
@@ -117,18 +123,18 @@ classdef ActiveMaterial < ElectronicComponent
             end
             model = model.registerVarNames(varnames);
 
-            %% FIXME
-            isRoot = true;
+            isRoot = model.isRoot;
             if isRoot
                 fn = @ActiveMaterial.updateStandalonejBcSource;
-                model = model.registerPropFunction({'jBcSource', fn, {'controlCurrentSource'}});            
+                model = model.registerPropFunction({'jBcSource', fn, {'controlCurrentSource'}});
+                model = model.removeVarNames({'jCoupling', {itf, 'SOC'}});
             else
                 fn = @ActiveMaterial.updatejBcSource;
                 model = model.registerPropFunction({'jBcSource', fn, {'jCoupling', 'jFaceCoupling'}});            
             end
             
             fn = @ActiveMaterial.updateCurrentSource;
-            model = model.registerPropFunction({'eSource', fn, {{itf, 'R'}}});
+            model = model.registerPropFunction({'eSource', fn, {{sd, 'Rvol'}}});
             
             fn = @ActiveMaterial.updatePhi;
             model = model.registerPropFunction({{itf, 'phiElectrode'}, fn, {'phi'}});
@@ -143,8 +149,9 @@ classdef ActiveMaterial < ElectronicComponent
                 model = model.registerPropFunction({{sd, 'cAverage'}, fn, {'c'}});
                 model = model.registerPropFunction({{itf, 'cElectrodeSurface'}, fn, {{sd, 'cSurface'}}});
               case 'full'
-                model = model.registerPropFunction({{sd, 'cSurface'}, fn, {{sd, 'c'}}});
                 model = model.registerPropFunction({{itf, 'cElectrodeSurface'}, fn, {{sd, 'cSurface'}}});
+              otherwise
+                error('diffusionModelType not recognized.');
             end
 
             if strcmp(model.diffusionModelType, 'simple')
@@ -165,47 +172,47 @@ classdef ActiveMaterial < ElectronicComponent
         
         function [problem, state] = getEquations(model, state0, state,dt, drivingForces, varargin)
             
-            sd = 'SolidDiffusion';
-            itf = 'Interface';          
+            sd  = 'SolidDiffusion';
+            itf = 'Interface';
             
             time = state0.time + dt;
             state = model.initStateAD(state);
-            
-            state = model.dispatchTemperature(state);
-            state = model.updateConcentrations(state);
 
-            %% Assemble reaction rates
-            state.(itf) = model.(itf).updateOCP(state.(itf));
-            state       = model.updatePhi(state);
-            state.(itf) = model.(itf).updateEta(state.(itf));
-            state.(itf) = model.(itf).updateReactionRateCoefficient(state.(itf));
-            state.(itf) = model.(itf).updateReactionRate(state.(itf));
-
-            %% Setup charge conservation equation
+            state = updateControl(model, state, drivingForces, dt);
             
-            state = model.updateControl(state, drivingForces, dt);
-            state = model.updateCurrent(state);
-            state = model.updateCurrentSource(state);
-            state = model.updateStandalonejBcSource(state);
-            state = model.updateChargeConservation(state);
-            
-            %% Setup mass conservation equation
-            state.(sd) = model.(sd).updateDiffusionCoefficient(state.(sd));
-            state.(sd) = model.(sd).updateFlux(state.(sd));
-            state      = model.dispatchRate(state);
-            state.(sd) = model.(sd).updateMassSource(state.(sd));
-            state.(sd) = model.(sd).updateAccumTerm(state.(sd), state0.(sd), dt);
-            state.(sd) = model.(sd).updateMassConservation(state.(sd));
-
-            state.(sd) = model.(sd).assembleSolidDiffusionEquation(state.(sd));
+            state                = model.updateStandalonejBcSource(state);
+            state                = model.updateCurrent(state);
+            state.SolidDiffusion = model.SolidDiffusion.updateMassAccum(state.SolidDiffusion, state0.SolidDiffusion, dt);
+            state                = model.dispatchTemperature(state);
+            state.SolidDiffusion = model.SolidDiffusion.updateDiffusionCoefficient(state.SolidDiffusion);
+            state.SolidDiffusion = model.SolidDiffusion.updateFlux(state.SolidDiffusion);
+            state                = model.updateConcentrations(state);
+            state                = model.updatePhi(state);
+            state.Interface      = model.Interface.updateReactionRateCoefficient(state.Interface);
+            state.Interface      = model.Interface.updateOCP(state.Interface);
+            state.Interface      = model.Interface.updateEtaWithEx(state.Interface);
+            state.Interface      = model.Interface.updateReactionRate(state.Interface);
+            state                = model.updateRvol(state);
+            state                = model.updateCurrentSource(state);
+            state                = model.updateChargeConservation(state);
+            state.SolidDiffusion = model.SolidDiffusion.updateMassSource(state.SolidDiffusion);
+            state.SolidDiffusion = model.SolidDiffusion.assembleSolidDiffusionEquation(state.SolidDiffusion);
+            state.SolidDiffusion = model.SolidDiffusion.updateMassConservation(state.SolidDiffusion);
             
             %% Setup equations and add some scaling
-            %% FIXME: get robust scalings
-            massConsScaling = model.(sd).constants.F; % Faraday constant
+            n     = model.(itf).n; % number of electron transfer (equal to 1 for Lithium)
+            F     = model.(sd).constants.F;
+            vol   = model.operators.pv;
+            rp    = model.(sd).rp;
+            vsf   = model.(sd).volumetricSurfaceArea;
+            surfp = 4*pi*rp^2;
+            
+            scalingcoef = (vsf*vol(1)*n*F)/surfp;
+            
             eqs = {};
             eqs{end + 1} = state.chargeCons;
-            eqs{end + 1} = 1e18*state.(sd).massCons;
-            eqs{end + 1} = 1e5*state.(sd).solidDiffusionEq.*massConsScaling.*model.(itf).G.cells.volumes/dt;
+            eqs{end + 1} = scalingcoef*state.(sd).massCons;
+            eqs{end + 1} = scalingcoef*state.(sd).solidDiffusionEq;
             
             names = {'chargeCons', ...
                      'massCons', ...
@@ -235,6 +242,7 @@ classdef ActiveMaterial < ElectronicComponent
 
             forces = getValidDrivingForces@PhysicalModel(model);
             forces.src = [];
+            
         end
 
         function state = updateControl(model, state, drivingForces, dt)
@@ -255,8 +263,15 @@ classdef ActiveMaterial < ElectronicComponent
             itf = 'Interface';
             
             cleanState.T = state.T;
-            cleanState.(itf).cElectrolyte = state.(itf).cElectrolyte;
+            cleanState.(itf).cElectrolyte   = state.(itf).cElectrolyte;
             cleanState.(itf).phiElectrolyte = state.(itf).phiElectrolyte;
+            cleanState.(itf).externalPotentialDrop = 0;
+            
+            sigma = model.electricalConductivity;
+            vf    = model.volumeFraction;
+            bg    = model.BruggemanCoefficient;
+            
+            cleanState.conductivity = sigma*vf.^bg;
             
         end
 
@@ -274,9 +289,11 @@ classdef ActiveMaterial < ElectronicComponent
         end
         
         function [state, report] = updateAfterConvergence(model, state0, state, dt, drivingForces)
-            
-            % [state, report] = updateAfterConvergence@BaseModel(model, state0, state, dt, drivingForces);
+        % [state, report] = updateAfterConvergence@ElectronicComponent(model, state0, state, dt, drivingForces);
+
+        % by not calling the parent method, we do not clean the state s
             report = [];
+            
         end
          
         function model = validateModel(model, varargin)
