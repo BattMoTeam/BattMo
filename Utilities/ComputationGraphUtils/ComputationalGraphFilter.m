@@ -53,11 +53,7 @@ classdef ComputationalGraphFilter
                 A = A';
             end
                         
-            
-            if isempty(includeNodeNames)
-                g = cgf.graph;
-                return
-            end
+            if ~isempty(includeNodeNames)
             
             nodes = getNodeDependencyListByName(includeNodeNames, nodenames, A, 'oneParentOnly', opt.oneParentOnly);
 
@@ -69,6 +65,8 @@ classdef ComputationalGraphFilter
                 removenodes = cellfun(@(x) ~isempty(x), removenodes);
                 nodenames = nodenames(~removenodes);
                 A = A(~removenodes, ~removenodes);
+                end
+
             end
             
             if strcmp(opt.type, 'descendant')
