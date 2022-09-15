@@ -60,11 +60,18 @@ classdef ComputationalGraphFilter
                 varname_s = varname.resolveIndex();
                 for ind = 1 : numel(varname_s)
                     fullname = varname_s{ind}.getIndexedFieldname();
-                    fprintf('%s : ', fullname);
+                    fprintf('state.%s <- ', fullname);
                 end
-                fprintf('%s\n', propfuncs{iprop}.getFunctionSignature());
+                fprintf(' (%s) <- ', propfuncs{iprop}.getFunctionSignature());
+                inputvarnames = propfunc.inputvarnames;
+                inputvarstrs = {};
+                for ind = 1 : numel(inputvarnames)
+                    varname = inputvarnames{ind};
+                    inputvarstrs{end + 1} = sprintf('state.%s', varname.getFieldname());
+                end
+                inputvarstr = join(inputvarstrs, {', '});
+                fprintf('[%s]\n', inputvarstr{1});
             end
-            
             
         end
         
