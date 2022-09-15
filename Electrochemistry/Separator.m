@@ -12,6 +12,8 @@ classdef Separator < BaseModel
         EffectiveHeatCapacity
 
         use_thermal
+
+        BruggemanCoefficient
     end
     
     methods
@@ -29,7 +31,8 @@ classdef Separator < BaseModel
                        'thermalConductivity', ...
                        'heatCapacity'       , ...
                        'density'            , ...
-                       'use_thermal'};
+                       'use_thermal'        , ...
+                       'BruggemanCoefficient'};
             model = dispatchParams(model, paramobj, fdnames);
             model.porosity = model.porosity*ones(model.G.cells.num,1);
             model = model.setupDependentProperties();
@@ -40,7 +43,7 @@ classdef Separator < BaseModel
             model.volumeFraction = 1 - model.porosity;
 
             if model.use_thermal
-                model.EffectiveThermalConductivity = model.thermalConductivity.*(model.volumeFraction).^1.5;
+                model.EffectiveThermalConductivity = model.thermalConductivity.*(model.volumeFraction).^model.BruggemanCoefficient;
                 model.EffectiveHeatCapacity = model.heatCapacity.*model.volumeFraction;
             end
         end

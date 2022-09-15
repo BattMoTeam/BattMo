@@ -28,6 +28,7 @@ classdef ActiveMaterial < ElectronicComponent
         
         externalCouplingTerm          % only used in no current collector
 
+        BruggemanCoefficient
     end
     
     methods
@@ -35,15 +36,16 @@ classdef ActiveMaterial < ElectronicComponent
         function model = ActiveMaterial(paramobj)
         %
         % ``paramobj`` is instance of :class:`ActiveMaterialInputParams <Electrochemistry.ActiveMaterialInputParams>`
-        %    
+        %
             model = model@ElectronicComponent(paramobj);
-
+            
             fdnames = {'thermalConductivity'   , ...
                        'electricalConductivity', ...
                        'heatCapacity', ...
                        'externalCouplingTerm', ...
                        'diffusionModelType', ...
-                       'use_thermal'};
+                       'use_thermal', ...
+                       'BruggemanCoefficient'};
             
             model = dispatchParams(model, paramobj, fdnames);
             
@@ -82,16 +84,16 @@ classdef ActiveMaterial < ElectronicComponent
 
             model.volumeFraction = 1 - model.porosity;
             volumeFraction = model.volumeFraction;
-            % setup effective electrical conductivity using Bruggeman approximation 
-            model.EffectiveElectricalConductivity = model.electricalConductivity.*volumeFraction.^1.5;
+            % setup effective electrical conductivity using Bruggeman approximation
+            model.EffectiveElectricalConductivity = model.electricalConductivity.*volumeFraction.^model.BruggemanCoefficient;
             
             if strcmp(model.diffusionModelType, 'simple')
-                model.EffectiveDiffusionCoefficient = model.InterDiffusionCoefficient.*volumeFraction.^1.5;
+                model.EffectiveDiffusionCoefficient = model.InterDiffusionCoefficient.*volumeFraction.^model.BruggemanCoefficient;
             end
 
             if model.use_thermal
                 % setup effective thermal conductivity
-                model.EffectiveThermalConductivity = model.thermalConductivity.*volumeFraction.^1.5;
+                model.EffectiveThermalConductivity = model.thermalConductivity.*volumeFraction.^model.BruggemanCoefficientThermal;
                 model.EffectiveHeatCapacity = model.heatCapacity.*volumeFraction;
             end
         end

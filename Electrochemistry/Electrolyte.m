@@ -1,23 +1,23 @@
 classdef Electrolyte < ElectroChemicalComponent
-    
+
     properties
-        
+
         Separator
-        
+
         sp
         compnames
         ncomp
 
         indchargecarrier
         chargeCarrierName
-        
-        
+
+
         volumeFraction
-        
+
         thermalConductivity % intrinsic thermal conductivity value
         heatCapacity % intrinsic heat capacity value
         density % [kg m^-3] (Note : only of the liquid part, the density of the separator is given there)
-        
+
         EffectiveThermalConductivity
         EffectiveHeatCapacity
 
@@ -25,43 +25,46 @@ classdef Electrolyte < ElectroChemicalComponent
         updateDiffusionCoefficientFunc
 
         use_thermal
-        
+
+        BruggemanCoefficient
+
     end
 
     methods
-        
+
         function model = Electrolyte(paramobj)
         % paramobj is instance of ElectrolyteInputParams or a derived class
             model = model@ElectroChemicalComponent(paramobj);
-            
+
             model.Separator = Separator(paramobj.Separator);
-            
+
             fdnames = {'sp'                 , ...
                        'compnames'          , ...
                        'chargeCarrierName'  , ...
                        'thermalConductivity', ...
                        'heatCapacity'       , ...
                        'density'            , ...
-                       'use_thermal'};
+                       'use_thermal'        , ...
+                       'BruggemanCoefficient'};
 
             model = dispatchParams(model, paramobj, fdnames);
 
             model.updateConductivityFunc = str2func(paramobj.updateConductivityFunc.functionname);
-            model.updateDiffusionCoefficientFunc = str2func(paramobj.updateDiffusionCoefficientFunc.functionname);            
+            model.updateDiffusionCoefficientFunc = str2func(paramobj.updateDiffusionCoefficientFunc.functionname);
 
             model.ncomp = numel(model.compnames);
             [isok, indchargecarrier] = ismember(model.chargeCarrierName, model.compnames);
             assert(isok, 'charge carrier not found in the list of components');
             model.indchargecarrier = indchargecarrier;
-            
+
             sep = 'Separator';
 
             % We set the electrolyte volumeFraction based on the porosity of the separator
             G = model.G;
             Gp = G.mappings.parentGrid;
-            
+
             model.volumeFraction = NaN(G.cells.num, 1);
-            
+
             elyte_cells = zeros(Gp.cells.num, 1);
             elyte_cells(G.mappings.cellmap) = (1 : model.G.cells.num)';
             elyte_cells_sep = elyte_cells(model.(sep).G.mappings.cellmap);
@@ -71,11 +74,11 @@ classdef Electrolyte < ElectroChemicalComponent
                 % The effective thermal conductivity in the common region between electrode and electrolyte is setup when the battery is
                 % set up. Here we set up the thermal conductivity of the electrolyte in the separator region (we assume for
                 % the moment constant values for both porosity and thermal conductivity but this can be changed).
-            
+
                 model.EffectiveThermalConductivity = NaN(G.cells.num, 1);
                 model.EffectiveThermalConductivity(elyte_cells_sep) = model.(sep).porosity.*model.thermalConductivity;
             end
-            
+
         end
 
         function model = registerVarAndPropfuncNames(model)
@@ -83,7 +86,7 @@ classdef Electrolyte < ElectroChemicalComponent
             % (setup of varnameList and propertyFunctionList)
 
             model = registerVarAndPropfuncNames@ElectroChemicalComponent(model);
-            
+
             varnames = { VarName({}, 'cs', 2)     , ...
                          'D'                      , ...
                          VarName({}, 'dmudcs', 2) , ...
@@ -91,61 +94,62 @@ classdef Electrolyte < ElectroChemicalComponent
                          VarName({}, 'jchems', 2) , ...
                          'diffFlux'};
             varnames = model.registerVarNames(varnames);
-            
+
             fn = @Electrolyte.updateConcentrations;
             model = model.registerPropFunction({'cs', fn, {'c'}});
-            
+
             fn = @Electrolyte.updateConductivity;
             model = model.registerPropFunction({'conductivity', fn, {'c', 'T'}});
-            
+
             fn = @Electrolyte.updateChemicalCurrent;
             model = model.registerPropFunction({'dmudcs', fn, {'c', 'T'}});
             model = model.registerPropFunction({'jchems', fn, {'c', 'T'}});
-            
+
             fn = @Electrolyte.updateDiffusionCoefficient;
             model = model.registerPropFunction({'D', fn, {'c', 'T'}});
 
             fn = @Electrolyte.updateCurrent;
             model = model.registerPropFunction({'j', fn, {'phi', 'jchems', 'conductivity'}});
-            
+
             fn = @Electrolyte.updateMassFlux;
             model = model.registerPropFunction({'massFlux', fn, {'c', 'j', 'D'}});
             model = model.registerPropFunction({'diffFlux', fn, {'c', 'j', 'D'}});
 
         end
-            
+
         function state = updateConcentrations(model, state)
-            
+
             cs = cell(2, 1);
             cs{1} = state.c;
             cs{2} = state.c;
-            
+
             state.cs = cs;
-            
+
         end
-                
+
 
         function state = updateConductivity(model, state)
-            
+
             cLi = state.cs{1};
             T = state.T;
-            
+
             func = model.updateConductivityFunc;
-            
+
             state.conductivity = func(cLi, T);
+            
         end
 
         function state = updateChemicalCurrent(model, state)
-            
+
             ncomp = model.ncomp; % number of components
 
             cLi          = state.cs{1}; % concentration of Li+
             T            = state.T;     % temperature
             phi          = state.phi;   % potential
             conductivity = state.conductivity;   % potential
-            
-            cs  = state.cs;         
-            
+
+            cs  = state.cs;
+
 
             % calculate the concentration derivative of the chemical potential for each species in the electrolyte
             R = model.constants.R;
@@ -155,21 +159,23 @@ classdef Electrolyte < ElectroChemicalComponent
             end
 
             state.dmudcs = dmudcs;
-            
+
         end
-        
+
         function state = updateDiffusionCoefficient(model, state)
+
+            func   = model.updateDiffusionCoefficientFunc;
+            brcoef = model.BruggemanCoefficient;
             
             c = state.c;
             T = state.T;
+            
 
-            func = model.updateDiffusionCoefficientFunc;
-            
             D = func(c, T);
-            
+
             % set effective coefficient
-            state.D = D .* model.volumeFraction .^1.5;
-        
+            state.D = D .* model.volumeFraction .^ brcoef;
+
         end
 
         function state = updateCurrentBcSource(model, state)
@@ -177,61 +183,62 @@ classdef Electrolyte < ElectroChemicalComponent
             state.jBcSource = 0;
             state.jFaceBc = 0;
         end
-        
-        function state  = updateCurrent(model, state) 
-           
-            ncomp = model.ncomp;
-            sp    = model.sp;
-            R     = model.constants.R;
-            F     = model.constants.F;
+
+        function state  = updateCurrent(model, state)
+
+            ncomp  = model.ncomp;
+            sp     = model.sp;
+            R      = model.constants.R;
+            F      = model.constants.F;
+            brcoef = model.constants.brcoef;
             
             dmudcs       = state.dmudcs;
             phi          = state.phi;
             T            = state.T;
             c            = state.c;
             conductivity = state.conductivity;
-            
+
             % volume fraction of electrolyte
             volfrac = model.volumeFraction;
             % Compute effective ionic conductivity in porous media
-            conductivityeff = conductivity.*volfrac.^1.5;
+            conductivityeff = conductivity.*volfrac.^brcoef;
             state.conductivityeff = conductivityeff;
             j = assembleFlux(model, phi, conductivityeff);
-            
+
             sum_dmudc = dmudcs{1} + dmudcs{2};
             coef = (1/F)*(1 - sp.t(1))*conductivityeff.*sum_dmudc;
             jchem = assembleFlux(model, c, coef);
-            
+
             j = j - jchem;
-                
+
             state.j = j;
-            
+
         end
-        
+
         function state = updateMassFlux(model, state)
-            
+
             ind = model.indchargecarrier;
-            
+
             % We assume that the current and the diffusion coefficient D has been updated when this function is called
             c = state.cs{ind};
             j = state.j;
             D = state.D;
-            
+
             %% 1. Flux from diffusion
             diffFlux = assembleFlux(model, c, D);
             state.diffFlux = diffFlux;
-            
+
             %% 2. Flux from electrical forces
             F = model.constants.F;
             fluxE = model.sp.t(ind) ./ (model.sp.z(ind) .* F) .* j;
-            
+
             %% 3. Sum the two flux contributions
             flux = diffFlux + fluxE;
-            
+
             state.massFlux = flux;
-            
+
         end
-        
+
     end
 end
 

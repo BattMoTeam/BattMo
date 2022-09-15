@@ -27,6 +27,8 @@ classdef ActiveMaterialInputParams < ElectronicComponentInputParams
 
         diffusionModelType % Choose between type of diffusion model ('full' or 'simple'. The default is set to 'full')
 
+        BruggemanCoefficient
+        
     end
 
     methods
