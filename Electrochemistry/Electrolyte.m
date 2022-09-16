@@ -190,7 +190,7 @@ classdef Electrolyte < ElectroChemicalComponent
             sp     = model.sp;
             R      = model.constants.R;
             F      = model.constants.F;
-            brcoef = model.constants.brcoef;
+            brcoef = model.BruggemanCoefficient;
             
             dmudcs       = state.dmudcs;
             phi          = state.phi;
