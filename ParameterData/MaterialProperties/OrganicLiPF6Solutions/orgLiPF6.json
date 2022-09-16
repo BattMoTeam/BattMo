@@ -20,5 +20,6 @@
   "sp": { "z": [1,-1],
           "t": [0.399, 0.601]},
   "Separator": { "filename": "ParameterData/BatteryComponentParameters/celgard2500.json",
-                 "isFile": true }
+                   "isFile": true },
+    "BruggemanCoefficient": 1.5
 }

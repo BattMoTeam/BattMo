@@ -23,6 +23,8 @@ classdef ElectrolyteInputParams < ElectroChemicalComponentInputParams
         DiffusionCoefficient
         
         density % Density [kg m^-3] (Note : only of the liquid part, the density of the separator is given there)
+
+        BruggemanCoefficient
         
     end
     

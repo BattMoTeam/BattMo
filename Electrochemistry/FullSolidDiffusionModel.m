@@ -84,7 +84,7 @@ classdef FullSolidDiffusionModel < SolidDiffusionModel
             model = model.registerPropFunction({'massCons', fn, inputnames});
 
             fn = @FullSolidDiffusionModel.updateMassSource;
-            model = model.registerPropFunction({'massSource', fn, {'R'}});
+            model = model.registerPropFunction({'massSource', fn, {'Rvol'}});
             
             fn = @FullSolidDiffusionModel.updateMassAccum;
             model = model.registerPropFunction({'massAccum', fn, {'c'}});

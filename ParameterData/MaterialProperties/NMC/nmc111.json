@@ -13,6 +13,7 @@
            "functionname" : "computeOCP_nmc111",
            "argumentlist" : ["cElectrode", "T", "cmax"],
            "name" : "NMC111 OCP"
-          }
+          },
+  "BruggemanCoefficient": 1.5
 }
 

@@ -86,7 +86,7 @@ classdef Interface < BaseModel
             varnames{end + 1} = 'phiElectrolyte';
             % charge carrier concentration in electrolyte
             varnames{end + 1} = 'cElectrolyte';
-            % eta
+            % Electrode over potential
             varnames{end + 1} = 'eta';
             % Reaction rate in mol/(s*m^2)
             varnames{end + 1} = 'R';

@@ -15,14 +15,20 @@ classdef ComputationalGraphFilter
             if isempty(model.propertyFunctionList)
                 model = model.registerVarAndPropfuncNames();
             end
-            cgf.model     = model;
-            g             = setupGraph(model);
-            cgf.graph     = g;
+            cgf.model = model;
+            g = setupGraph(model);
+            cgf.graph = g;
+            % In adjacency matrix A, 
+            % - column index      : output variable index (as in model.varNameList)
+            % - row index         : input variable (as in model.varNameList)
+            % - coefficient value : property function index as in model.propertyFunctionList
             cgf.A         = adjacency(g, 'weighted');
             cgf.nodenames = g.Nodes.Variables;
+
+            
         end
 
-        function propfuncs = findPropFunction(cgf, nodename)
+        function [propfuncs, nodenames] = findPropFunction(cgf, nodename)
             
             nodenames = cgf.nodenames;
             A         = cgf.A;
@@ -34,10 +40,42 @@ classdef ComputationalGraphFilter
             indPropfunctions = unique(indPropfunctions(:));
 
             propfuncs = model.propertyFunctionList(indPropfunctions(indPropfunctions > 0));
+
+            if numel(propfuncs) == 1
+                propfuncs = propfuncs{1};
+            end
+            
+        end
+
+        function printPropFunction(cgf, nodename)
+            propfuncs = cgf.findPropFunction(nodename);
+
+            if numel(propfuncs) == 1
+                propfuncs = {propfuncs};
+            end
+
+            for iprop = 1 : numel(propfuncs)
+                propfunc = propfuncs{iprop};
+                varname = propfunc.varname;
+                varname_s = varname.resolveIndex();
+                for ind = 1 : numel(varname_s)
+                    fullname = varname_s{ind}.getIndexedFieldname();
+                    fprintf('state.%s <- ', fullname);
+                end
+                fprintf(' (%s) <- ', propfuncs{iprop}.getFunctionSignature());
+                inputvarnames = propfunc.inputvarnames;
+                inputvarstrs = {};
+                for ind = 1 : numel(inputvarnames)
+                    varname = inputvarnames{ind};
+                    inputvarstrs{end + 1} = sprintf('state.%s', varname.getFieldname());
+                end
+                inputvarstr = join(inputvarstrs, {', '});
+                fprintf('[%s]\n', inputvarstr{1});
+            end
             
         end
         
-        function [g, edgelabels] = setupGraph(cgf, varargin)
+        function [g, edgelabels] = getFilteredGraph(cgf, varargin)
             
             opt = struct('type', 'ascendant', ...
                          'oneParentOnly', false);
@@ -52,23 +90,21 @@ classdef ComputationalGraphFilter
             if strcmp(opt.type, 'descendant')
                 A = A';
             end
-                        
             
-            if isempty(includeNodeNames)
-                g = cgf.graph;
-                return
-            end
-            
-            nodes = getNodeDependencyListByName(includeNodeNames, nodenames, A, 'oneParentOnly', opt.oneParentOnly);
+            if ~isempty(includeNodeNames)
+                
+                nodes = getNodeDependencyListByName(includeNodeNames, nodenames, A, 'oneParentOnly', opt.oneParentOnly);
 
-            nodenames = nodenames(nodes);
-            A = A(nodes, nodes);
-            
-            if ~isempty(excludeNodeNames)
-                removenodes = regexp(nodenames, excludeNodeNames, 'once');
-                removenodes = cellfun(@(x) ~isempty(x), removenodes);
-                nodenames = nodenames(~removenodes);
-                A = A(~removenodes, ~removenodes);
+                nodenames = nodenames(nodes);
+                A = A(nodes, nodes);
+                
+                if ~isempty(excludeNodeNames)
+                    removenodes = regexp(nodenames, excludeNodeNames, 'once');
+                    removenodes = cellfun(@(x) ~isempty(x), removenodes);
+                    nodenames = nodenames(~removenodes);
+                    A = A(~removenodes, ~removenodes);
+                end
+
             end
             
             if strcmp(opt.type, 'descendant')

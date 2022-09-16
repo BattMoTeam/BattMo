@@ -16,7 +16,7 @@ function [g, edgelabels] = setupGraph(model, varargin)
     propfuncs = model.propertyFunctionList;
     
     if ~opt.excludeVarnames
-
+        % in this case, we do not include varnames directly, only those in the property function lists will be added.
         for ind = 1 : numel(varnames)
             varname = varnames{ind};
             if opt.resolveIndex
