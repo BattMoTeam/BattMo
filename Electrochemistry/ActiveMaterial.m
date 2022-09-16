@@ -125,6 +125,11 @@ classdef ActiveMaterial < ElectronicComponent
 
             isRoot = model.isRoot;
             if isRoot
+                varnames{end + 1} = 'controlCurrentSource';
+                model = model.registerVarNames(varnames);
+            end
+            
+            if isRoot
                 fn = @ActiveMaterial.updateStandalonejBcSource;
                 model = model.registerPropFunction({'jBcSource', fn, {'controlCurrentSource'}});
                 model = model.removeVarNames({'jCoupling', {itf, 'SOC'}});
