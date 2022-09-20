@@ -164,7 +164,7 @@ classdef Electrolyte < ElectroChemicalComponent
 
         function state = updateDiffusionCoefficient(model, state)
 
-            func   = model.updateDiffusionCoefficientFunc;
+            func   = model.computeDiffusionCoefficientFunc;
             brcoef = model.BruggemanCoefficient;
             
             computeD = model.computeDiffusionCoefficientFunc;
