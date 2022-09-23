@@ -15,7 +15,7 @@ function paramobj = mergeParameters(paramobj, paramname1, paramname2, varargin)
             % we use value given from the first one.
             paramobj = paramobj.setParam(paramname2, val1);
         else
-            error( 'inputs are not consistent');
+            assert(val1 == val2, 'inputs are not consistent');
         end
     end
     
