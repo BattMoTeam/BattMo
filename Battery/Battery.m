@@ -493,8 +493,8 @@ classdef Battery < BaseModel
 
             
             model.(elyte).volumeFraction = ones(model.(elyte).G.cells.num, 1);
-            model.(elyte).volumeFraction = subsasgnAD(model.(elyte).volumeFraction,elyte_cells(model.(ne).(am).G.mappings.cellmap), model.(ne).(am).porosity);
-            model.(elyte).volumeFraction = subsasgnAD(model.(elyte).volumeFraction,elyte_cells(model.(pe).(am).G.mappings.cellmap), model.(pe).(am).porosity);
+            model.(elyte).volumeFraction = subsasgnAD(model.(elyte).volumeFraction, elyte_cells(model.(ne).(am).G.mappings.cellmap), model.(ne).(am).porosity);
+            model.(elyte).volumeFraction = subsasgnAD(model.(elyte).volumeFraction, elyte_cells(model.(pe).(am).G.mappings.cellmap), model.(pe).(am).porosity);
             sep_cells = elyte_cells(model.(elyte).(sep).G.mappings.cellmap); 
             model.(elyte).volumeFraction = subsasgnAD(model.(elyte).volumeFraction,sep_cells, model.(elyte).(sep).porosity);
 
@@ -512,7 +512,7 @@ classdef Battery < BaseModel
             pe  = 'PositiveElectrode';
             am  = 'ActiveMaterial';
             itf = 'Interface';
-            
+        
             negAm = bat.(ne).(am).(itf);
             c     = state.(ne).(am).c;
             theta = c/negAm.cmax;
@@ -520,9 +520,9 @@ classdef Battery < BaseModel
             b     = -m .* negAm.theta0;
             SOCN  = theta*m + b;
             vol   = model.(ne).(am).volumeFraction;
-            
+        
             SOCN = sum(SOCN.*vol)/sum(vol);
-            
+        
             posAm = bat.(pe).(am).(itf);
             c     = state.(pe).(am).c;
             theta = c/posAm.cmax;
@@ -530,9 +530,9 @@ classdef Battery < BaseModel
             b     = -m .* posAm.theta0;
             SOCP  = theta*m + b;
             vol   = model.(pe).(am).volumeFraction;
-            
+        
             SOCP = sum(SOCP.*vol)/sum(vol);
-            
+        
         end
         
         function initstate = setupInitialState(model)
