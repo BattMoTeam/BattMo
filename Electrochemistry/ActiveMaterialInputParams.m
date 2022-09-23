@@ -28,6 +28,8 @@ classdef ActiveMaterialInputParams < ElectronicComponentInputParams
         diffusionModelType % Choose between type of diffusion model ('full' or 'simple'. The default is set to 'full')
 
         BruggemanCoefficient
+
+        volumeFraction                % Volume fraction of the whole material (binder and so on included)
         
     end
 
@@ -46,16 +48,22 @@ classdef ActiveMaterialInputParams < ElectronicComponentInputParams
             paramobj.Interface = InterfaceInputParams(pick('Interface'));
 
             switch diffusionModelType
+                
               case 'simple'
+                
+                itf = 'Interface';
                 paramobj.SolidDiffusion = SimplifiedSolidDiffusionModelInputParams(pick('SolidDiffusion'));
+                paramobj = mergeParameters(paramobj, {'volumeFraction'}, {itf, 'volumeFraction'});
+                
               case 'full'
 
                 sd = 'SolidDiffusion';
                 itf = 'Interface';
                 
                 paramobj.(sd) = FullSolidDiffusionModelInputParams(pick(sd));
-                paramobj = mergeParameters(paramobj, {'SolidDiffusion', 'volumeFraction'}, {'Interface', 'volumeFraction'});
-
+                paramobj = mergeParameters(paramobj, {'volumeFraction'}, {itf, 'volumeFraction'});
+                paramobj = mergeParameters(paramobj, {'volumeFraction'}, {sd, 'volumeFraction'});
+                
                 if ~isempty(paramobj.(sd).D)
                     % we impose that cmax in the solid diffusion model and the interface are consistent
                     paramobj = mergeParameters(paramobj, {sd, 'cmax'}, {itf, 'cmax'});
