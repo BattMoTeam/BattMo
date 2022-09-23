@@ -38,32 +38,57 @@ classdef ActiveMaterialInputParams < ElectronicComponentInputParams
     methods
 
         function paramobj = ActiveMaterialInputParams(jsonstruct)
+
             paramobj = paramobj@ElectronicComponentInputParams(jsonstruct);
 
             if isempty(paramobj.diffusionModelType)
                 paramobj.diffusionModelType = 'full';
             end
-            diffusionModelType = paramobj.diffusionModelType;
             
             pick = @(fd) pickField(jsonstruct, fd);
 
             paramobj.Interface = InterfaceInputParams(pick('Interface'));
 
+            diffusionModelType = paramobj.diffusionModelType;
+
             switch diffusionModelType
                 
               case 'simple'
                 
-                itf = 'Interface';
                 paramobj.SolidDiffusion = SimplifiedSolidDiffusionModelInputParams(pick('SolidDiffusion'));
+                
+              case 'full'
+
+                paramobj.SolidDiffusion = FullSolidDiffusionModelInputParams(pick('SolidDiffusion'));
+                
+              otherwise
+                
+                error('Unknown diffusionModelType %s', diffusionModelType);
+                
+            end
+
+            paramobj = paramobj.validateInputParams();
+            
+        end
+
+        function paramobj = validateInputParams(paramobj)
+
+            paramobj = validateInputParams@ElectronicComponentInputParams(paramobj);
+
+            diffusionModelType = paramobj.diffusionModelType;
+            
+            sd  = 'SolidDiffusion';
+            itf = 'Interface';
+            
+            switch diffusionModelType
+                
+              case 'simple'
+                
                 paramobj = mergeParameters(paramobj, {'volumeFraction'}, {itf, 'volumeFraction'});
                 paramobj = mergeParameters(paramobj, {'activeMaterialFraction'}, {sd, 'activeMaterialFraction'});
                 
               case 'full'
-
-                sd = 'SolidDiffusion';
-                itf = 'Interface';
                 
-                paramobj.(sd) = FullSolidDiffusionModelInputParams(pick(sd));
                 paramobj = mergeParameters(paramobj, {'volumeFraction'}, {itf, 'volumeFraction'});
                 paramobj = mergeParameters(paramobj, {'volumeFraction'}, {sd, 'volumeFraction'});
                 paramobj = mergeParameters(paramobj, {'activeMaterialFraction'}, {sd, 'activeMaterialFraction'});
@@ -75,11 +100,10 @@ classdef ActiveMaterialInputParams < ElectronicComponentInputParams
                     paramobj = mergeParameters(paramobj, {sd, 'theta100'}, {itf, 'theta100'}, 'force', false);
                 end
 
-
               otherwise
                 error('Unknown diffusionModelType %s', diffusionModelType);
             end
-            
+
         end
         
     end

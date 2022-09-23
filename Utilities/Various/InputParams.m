@@ -41,7 +41,23 @@ classdef InputParams
                 error('format not recognized');
             end
         end
+
+        function paramobj = validateInputParams(paramobj)
+            
+            paramobjFds = properties(paramobj);
+
+            for ind = 1 : numel(paramobjFds)
         
+                fd = paramobjFds{ind};
+        
+                if isa(paramobj.(fd), 'InputParams')
+                    paramobj.(fd) = paramobj.(fd).validateInputParams();
+                end
+                
+            end
+    
+        end
+
     end
     
 end
