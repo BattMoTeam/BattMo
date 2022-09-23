@@ -1,5 +1,8 @@
-function paramobj = mergeParameters(paramobj, paramname1, paramname2)
+function paramobj = mergeParameters(paramobj, paramname1, paramname2, varargin)
 
+    opt = struct('force', true); 
+    opt = merge_options(opt, varargin{:});
+    
     val1 = paramobj.getParam(paramname1);
     val2 = paramobj.getParam(paramname2);
 
@@ -8,8 +11,12 @@ function paramobj = mergeParameters(paramobj, paramname1, paramname2)
     elseif ~isempty(val1) && isempty(val2)
         paramobj = paramobj.setParam(paramname2, val1);
     elseif ~isempty(val1) && ~isempty(val2)
-        %% TODO : add more precise error message that indicates which parameters are not consistent
-        assert(val1 == val2, 'inputs are not consistent')
+        if opt.force
+            % we use value given from the first one.
+            paramobj = paramobj.setParam(paramname2, val1);
+        else
+            error( 'inputs are not consistent');
+        end
     end
     
 end
