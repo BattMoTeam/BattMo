@@ -11,7 +11,8 @@ classdef ActiveMaterial < ElectronicComponent
         SolidDiffusion        
 
         porosity                      % porosity
-        volumeFraction                % Volume fraction
+        volumeFraction                % Volume fraction of the whole material (binder and so on included)
+        activeMaterialFraction        % Volume fraction occupied only by the active material
         electricalConductivity        % Electrical conductivite
         InterDiffusionCoefficient     % Inter particle diffusion coefficient parameter (diffusion between the particles)
         thermalConductivity           % Intrinsic Thermal conductivity of the active component
@@ -41,7 +42,7 @@ classdef ActiveMaterial < ElectronicComponent
         %
             model = model@ElectronicComponent(paramobj);
             
-            fdnames = {'volumeFraction'        , ...
+            fdnames = {'activeMaterialFraction', ...
                        'thermalConductivity'   , ...
                        'electricalConductivity', ...
                        'heatCapacity'          , ...
@@ -76,8 +77,8 @@ classdef ActiveMaterial < ElectronicComponent
             
             nc = model.G.cells.num;
 
-            volumeFraction = model.Interface.volumeFraction*ones(nc, 1);
-            model.porosity = 1 - volumeFraction;
+            model.volumeFraction = paramobj.volumeFraction*ones(nc, 1);
+            model.porosity       = 1 - model.volumeFraction;
 
             model = model.setupDependentProperties();
 
@@ -90,17 +91,24 @@ classdef ActiveMaterial < ElectronicComponent
         function model = setupDependentProperties(model)           
 
             model.volumeFraction = 1 - model.porosity;
-            volumeFraction = model.volumeFraction;
+            vf = model.volumeFraction;
+            brugg = model.BruggemanCoefficient;
+            
             % setup effective electrical conductivity using Bruggeman approximation
-            model.EffectiveElectricalConductivity = model.electricalConductivity.*volumeFraction.^model.BruggemanCoefficient;
+            model.EffectiveElectricalConductivity = model.electricalConductivity.*vf.^brugg;
             
             if strcmp(model.diffusionModelType, 'simple')
-                model.EffectiveDiffusionCoefficient = model.InterDiffusionCoefficient.*volumeFraction.^model.BruggemanCoefficient;
+                
+                interDiff = model.InterDiffusionCoefficient;
+                amFrac    = model.activeMaterialFraction;
+                
+                model.EffectiveDiffusionCoefficient = interDiff.*(vf.*amFrac).^brugg;
+                
             end
 
             if model.use_thermal
                 % setup effective thermal conductivity
-                model.EffectiveThermalConductivity = model.thermalConductivity.*volumeFraction.^model.BruggemanCoefficientThermal;
+                model.EffectiveThermalConductivity = model.thermalConductivity.*vf.^brugg;
                 model.EffectiveHeatCapacity = model.heatCapacity.*volumeFraction;
             end
         end
@@ -281,9 +289,9 @@ classdef ActiveMaterial < ElectronicComponent
             
             sigma = model.electricalConductivity;
             vf    = model.volumeFraction;
-            bg    = model.BruggemanCoefficient;
+            brugg = model.BruggemanCoefficient;
             
-            cleanState.conductivity = sigma*vf.^bg;
+            cleanState.conductivity = sigma*vf.^brugg;
             
         end
 
@@ -351,13 +359,14 @@ classdef ActiveMaterial < ElectronicComponent
         function state = assembleAccumTerm(model, state, state0, dt)
         % Used when diffusionModelType == 'simple'
             
-            volumeFraction = model.volumeFraction;
-            vols = model.G.cells.volumes;
-            
+            vols   = model.G.cells.volumes;
+            vf     = model.volumeFraction;
+            amFrac = model.activeMaterialFraction;
+
             c  = state.c;
             c0 = state0.c;
-            
-            state.massAccum = vols.*volumeFraction.*(c - c0)/dt;
+
+            state.massAccum = vols.*vf.*amFrac.*(c - c0)/dt;
             
         end
 

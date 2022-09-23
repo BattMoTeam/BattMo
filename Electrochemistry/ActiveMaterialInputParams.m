@@ -31,6 +31,8 @@ classdef ActiveMaterialInputParams < ElectronicComponentInputParams
 
         volumeFraction                % Volume fraction of the whole material (binder and so on included)
         
+        activeMaterialFraction        % Volume fraction occupied only by the active material
+        
     end
 
     methods
