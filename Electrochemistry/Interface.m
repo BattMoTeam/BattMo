@@ -21,7 +21,8 @@ classdef Interface < BaseModel
         theta100               % Maximum lithiation, 100% SOC  [-]
         k0                     % Reference rate constant       [m^2.5 mol^-0.5 s^-1]
         Eak                    % Reaction activation energy    [J mol^-1]
-
+        alpha                  % coefficient in Butler-Volmer equation
+        
         computeOCPFunc % Function handler to compute OCP
         
         useJ0Func
@@ -47,6 +48,7 @@ classdef Interface < BaseModel
                        'cmax'                   , ...
                        'k0'                     , ...
                        'Eak'                    , ...
+                       'alpha'                  , ...
                        'rp'                     , ...
                        'volumetricSurfaceArea'  , ...
                        'density'                , ...
@@ -223,14 +225,15 @@ classdef Interface < BaseModel
             
         function state = updateReactionRate(model, state)
 
-            n = model.n;
-            F = model.constants.F;
+            n     = model.n;
+            F     = model.constants.F;
+            alpha = model.alpha;
 
             T   = state.T;
             j0  = state.j0;
             eta = state.eta;
             
-            R = ButlerVolmerEquation(j0, 0.5, n, eta, T);
+            R = ButlerVolmerEquation(j0, alpha, n, eta, T);
 
             state.R = R/(n*F); % reaction rate in mol/(s*m^2)
 

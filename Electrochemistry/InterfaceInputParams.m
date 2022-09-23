@@ -28,7 +28,8 @@ classdef InterfaceInputParams < InputParams
             % j0.type = "function";
             % j0.functionname :  matlab function name (should be available in path)
             % j0.argumentlist = ["cElectrodeSurface", "cmax"]
-        
+
+        alpha = 0.5 % coefficient in Butler-Volmer coefficient
     end
     
     methods
