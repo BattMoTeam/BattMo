@@ -6,6 +6,7 @@ classdef FullSolidDiffusionModel < SolidDiffusionModel
         N   % Discretization parameters in spherical direction
 
         volumeFraction
+        activeMaterialFraction
 
         useDFunc
         computeDFunc % used when useDFunc is true. Function handler to compute D as function of cElectrode, see method updateDiffusionCoefficient
@@ -23,12 +24,13 @@ classdef FullSolidDiffusionModel < SolidDiffusionModel
 
             model = model@SolidDiffusionModel(paramobj);
 
-            fdnames = {'np'      , ...
-                       'N'       , ...
-                       'cmax'    , ...
-                       'theta0'  , ...
-                       'theta100', ...
-                       'volumeFraction'};
+            fdnames = {'np'            , ...
+                       'N'             , ...
+                       'cmax'          , ...
+                       'theta0'        , ...
+                       'theta100'      , ...
+                       'volumeFraction', ...
+                       'activeMaterialFraction'};
 
             model = dispatchParams(model, paramobj, fdnames);
             model.operators = model.setupOperators();
@@ -258,12 +260,13 @@ classdef FullSolidDiffusionModel < SolidDiffusionModel
             op  = model.operators;
             rp  = model.rp;
             vf  = model.volumeFraction;
+            amf = model.activeMaterialFraction;
             
             Rvol = state.Rvol;
 
             Rvol = op.mapFromBc*Rvol;
             
-            state.massSource = - Rvol*((4*pi*rp^3)/(3*vf));
+            state.massSource = - Rvol*((4*pi*rp^3)/(3*amf*vf));
             
         end
 

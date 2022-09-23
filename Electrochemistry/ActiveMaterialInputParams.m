@@ -29,9 +29,9 @@ classdef ActiveMaterialInputParams < ElectronicComponentInputParams
 
         BruggemanCoefficient
 
-        volumeFraction                % Volume fraction of the whole material (binder and so on included)
+        volumeFraction % Volume fraction of the whole material (binder and so on included)
         
-        activeMaterialFraction        % Volume fraction occupied only by the active material
+        activeMaterialFraction = 1 % Volume fraction occupied only by the active material (default value is 1)
         
     end
 
@@ -56,6 +56,7 @@ classdef ActiveMaterialInputParams < ElectronicComponentInputParams
                 itf = 'Interface';
                 paramobj.SolidDiffusion = SimplifiedSolidDiffusionModelInputParams(pick('SolidDiffusion'));
                 paramobj = mergeParameters(paramobj, {'volumeFraction'}, {itf, 'volumeFraction'});
+                paramobj = mergeParameters(paramobj, {'activeMaterialFraction'}, {sd, 'activeMaterialFraction'});
                 
               case 'full'
 
@@ -65,12 +66,13 @@ classdef ActiveMaterialInputParams < ElectronicComponentInputParams
                 paramobj.(sd) = FullSolidDiffusionModelInputParams(pick(sd));
                 paramobj = mergeParameters(paramobj, {'volumeFraction'}, {itf, 'volumeFraction'});
                 paramobj = mergeParameters(paramobj, {'volumeFraction'}, {sd, 'volumeFraction'});
+                paramobj = mergeParameters(paramobj, {'activeMaterialFraction'}, {sd, 'activeMaterialFraction'});
                 
                 if ~isempty(paramobj.(sd).D)
                     % we impose that cmax in the solid diffusion model and the interface are consistent
-                    paramobj = mergeParameters(paramobj, {sd, 'cmax'}, {itf, 'cmax'});
-                    paramobj = mergeParameters(paramobj, {sd, 'theta0'}, {itf, 'theta0'});
-                    paramobj = mergeParameters(paramobj, {sd, 'theta100'}, {itf, 'theta100'});
+                    paramobj = mergeParameters(paramobj, {sd, 'cmax'}, {itf, 'cmax'}, 'force', false);
+                    paramobj = mergeParameters(paramobj, {sd, 'theta0'}, {itf, 'theta0'}, 'force', false);
+                    paramobj = mergeParameters(paramobj, {sd, 'theta100'}, {itf, 'theta100'}, 'force', false);
                 end
 
 
