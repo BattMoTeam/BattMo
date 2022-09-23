@@ -114,7 +114,10 @@ classdef ActiveMaterial < ElectronicComponent
             itf = 'Interface';
             sd  = 'SolidDiffusion';
             
-            varnames =  {'jCoupling'};
+            varnames =  model.varnames;
+            varnames{end + 1} = 'jCoupling';
+            varnames{end + 1} = 'SOC'; % not used in assembly
+           
             if strcmp(model.diffusionModelType, 'simple')
                 varnames{end + 1} = {'c'};
                 varnames{end + 1} = {'massCons'};
@@ -170,7 +173,10 @@ classdef ActiveMaterial < ElectronicComponent
             
             fn = @ActiveMaterial.updateRvol;
             model = model.registerPropFunction({{sd, 'Rvol'}, fn, {{itf, 'R'}}});
-            
+
+            % Not used in assembly
+            fn = @ActiveMaterial.updateSOC;
+            model = model.registerPropFunction({'SOC', fn, {{sd, 'cAverage'}}});
             
         end
         
@@ -410,17 +416,30 @@ classdef ActiveMaterial < ElectronicComponent
             state.jFaceBc   = state.jFaceExternal;
         end
 
-        function state = addSOC(model, state)
+        function state = updateSOC(model, state)
 
-            itf = model.Interface; 
-            c = state.c; 
+            error('include activeMaterialFraction')
+        % shortcut
+            itf = 'Interface';
+            sd  = 'SolidDiffusion';
+
+            vf       = model.volumeFraction;
+            vols     = model.G.cells.volumes;
+            cmax     = model.(itf).cmax;
+            theta100 = model.(itf).theta100;
+            theta0   = model.(itf).theta0;
             
-            theta = c/itf.cmax; 
-            m = (1 ./ (itf.theta100 - itf.theta0)); 
-            b = - m.*itf.theta0; 
+            c = state.(sd).cAverage;
+
+            theta = c/cmax;
+            m     = (1 ./ (theta100 - theta0));
+            b     = -m .* theta0;
+            SOC   = theta*m + b;
+            vol   = vf*vols;
             
-            state.SOC = theta*m + b;
-            state.theta = theta;
+            SOC = sum(SOC.*vol)/sum(vol);
+
+            state.SOC = SOC;
             
         end
         

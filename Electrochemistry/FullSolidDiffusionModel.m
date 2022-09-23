@@ -52,6 +52,8 @@ classdef FullSolidDiffusionModel < SolidDiffusionModel
             varnames = {};
             % concentration
             varnames{end + 1} = 'c';
+            % Average concentration in the particle (not used in assembly)
+            varnames{end + 1} = 'cAverage';
             % surface concentration
             varnames{end + 1} = 'cSurface';
             % Mass accumulation term
@@ -91,6 +93,9 @@ classdef FullSolidDiffusionModel < SolidDiffusionModel
             
             fn = @FullSolidDiffusionModel.assembleSolidDiffusionEquation;
             model = model.registerPropFunction({'solidDiffusionEq', fn, {'c', 'cSurface', 'massSource', 'D'}});
+            
+            fn = @FullSolidDiffusionModel.updateAverageConcentration;
+            model = model.registerPropFunction({'cAverage', fn, {'c'}});
             
         end
         
@@ -356,7 +361,21 @@ classdef FullSolidDiffusionModel < SolidDiffusionModel
             state.solidDiffusionEq = eq;
             
         end
-        
+
+        function state = updateAverageConcentration(model, state)
+
+            op = model.operators;
+            vols = op.vols;
+            map = op.mapToParticle;
+            
+            c = state.c
+
+            m    = map'*(c.*vols); % total amount [mol] in the cell particles
+            vols = map'*(vols);    % volume 
+
+            state.cAverage = m./vols;
+            
+        end
         
     end
     
