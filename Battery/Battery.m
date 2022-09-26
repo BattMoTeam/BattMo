@@ -650,6 +650,13 @@ classdef Battery < BaseModel
                 end
             end
             
+            for ielde = 1 : numel(eldes)
+                elde = eldes{ielde};
+                state.(elde).(am).(sd) = model.(elde).(am).(sd).updateAverageConcentration(state.(elde).(am).(sd));
+                state.(elde).(am) = model.(elde).(am).updateSOC(state.(elde).(am));
+                state.(elde).(am) = model.(elde).(am).updateAverageConcentration(state.(elde).(am));
+            end
+            
         end
         
         function [problem, state] = getEquations(model, state0, state, dt, drivingForces, varargin)
