@@ -426,14 +426,34 @@ classdef ActiveMaterial < ElectronicComponent
             state.jFaceBc   = state.jFaceExternal;
         end
 
+        function state = updateAverageConcentration(model, state)
+
+            % shortcut
+            sd  = 'SolidDiffusion';
+
+            vf       = model.volumeFraction;
+            am_frac  = model.activeMaterialFraction;
+            vols     = model.G.cells.volumes;
+            
+            c = state.(sd).cAverage;
+
+            vols = am_frac*vf.*vols;
+
+            cAverage = sum(c.*vols)/sum(vols);
+
+            state.cAverage = cAverage;
+            
+        end
+        
+        
         function state = updateSOC(model, state)
 
-            error('include activeMaterialFraction')
-        % shortcut
+            % shortcut
             itf = 'Interface';
             sd  = 'SolidDiffusion';
 
             vf       = model.volumeFraction;
+            am_frac  = model.activeMaterialFraction;
             vols     = model.G.cells.volumes;
             cmax     = model.(itf).cmax;
             theta100 = model.(itf).theta100;
@@ -445,7 +465,7 @@ classdef ActiveMaterial < ElectronicComponent
             m     = (1 ./ (theta100 - theta0));
             b     = -m .* theta0;
             SOC   = theta*m + b;
-            vol   = vf*vols;
+            vol   = am_frac*vf.*vols;
             
             SOC = sum(SOC.*vol)/sum(vol);
 

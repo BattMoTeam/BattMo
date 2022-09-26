@@ -371,7 +371,7 @@ classdef FullSolidDiffusionModel < SolidDiffusionModel
             vols = op.vols;
             map = op.mapToParticle;
             
-            c = state.c
+            c = state.c;
 
             m    = map'*(c.*vols); % total amount [mol] in the cell particles
             vols = map'*(vols);    % volume 
