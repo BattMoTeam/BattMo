@@ -92,7 +92,7 @@ end
 % This control is used to set up the schedule
 
 nc = 1;
-nst = numel(step.control),
+nst = numel(step.control);
 ind = floor(([0 : nst - 1]/nst)*nc) + 1;
 
 step.control = ind;

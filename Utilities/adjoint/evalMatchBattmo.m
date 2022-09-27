@@ -95,7 +95,7 @@ function [misfitVal,varargout] = evalMatchBattmo(pvec, obj, setup, parameters, v
     misfitVal  = - sum(vertcat(misfitVals{:}))/opt.objScaling ;
 
     if nargout > 1
-        objh = @(tstep,model, state) obj(setupNew.model, states, setupNew.schedule,
+        objh = @(tstep,model, state) obj(setupNew.model, states, setupNew.schedule, ...
                                          'ComputePartials', true, ...
                                          'tStep', tstep, ...
                                          'state', state);
@@ -112,7 +112,7 @@ function [misfitVal,varargout] = evalMatchBattmo(pvec, obj, setup, parameters, v
             
           case 'AdjointAD'
             gradient = computeSensitivitiesAdjointADBattmo(setupNew, states, parameters, objh, ...
-                                                           'LinearSolver',opt.AdjointLinearSolver);            
+                                                           'LinearSolver', opt.AdjointLinearSolver);            
             % do scaling of gradient
             for k = 1:numel(nms)
                 scaledGradient{k} = parameters{k}.scaleGradient( gradient.(nms{k}), pval{k});
