@@ -198,3 +198,16 @@ end
 objmatch = @(model, states, schedule, varargin) EnergyOutput(model, states, schedule, varargin{:});
 fn       = @plotAfterStepIV;
 obj      = @(p) evalMatchBattmo(p, objmatch, SimulatorSetup, parameters, 'objScaling', -totval, 'afterStepFn', fn);
+
+parameters_tmp = {parameters{3}}
+parameters_tmp = parameters;
+
+p_tmp = getScaledParameterVector(SimulatorSetup, parameters_tmp);
+pert = 0.0;
+[vad, gad]   = evalMatchBattmo(p_tmp + pert, objmatch, SimulatorSetup, parameters_tmp, 'Gradient', 'AdjointAD');
+[vnum, gnum] = evalMatchBattmo(p_tmp + pert, objmatch, SimulatorSetup, parameters_tmp, 'Gradient', 'PerturbationADNUM', 'PerturbationSize', 1e-5);
+
+fprintf('Gradient computed using adjoint:\n');
+display(gad);
+fprintf('Numerical gradient:\n');
+display(gnum);
