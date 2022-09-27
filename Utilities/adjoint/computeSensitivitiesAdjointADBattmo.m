@@ -87,7 +87,7 @@ function sens = computeSensitivitiesAdjointADBattmo(setup, states, param, getObj
             nm = param{kp}.name;
             for nl = 1:numel(lami)
                 if isa(eqdth{nl}, 'ADI')
-                    sens.(nm) = sens.(nm) + eqdth{nl}.jac{kp}'*lami{nl};
+                    sens.(nm) = sens.(nm) - eqdth{nl}.jac{kp}'*lami{nl};
                 end
             end
         end
@@ -111,12 +111,12 @@ function sens = computeSensitivitiesAdjointADBattmo(setup, states, param, getObj
                                                'reverseMode', true);
         nms    = applyFunction(@lower, pNames(isInitParam));
         varNms = applyFunction(@lower, linProblem.primaryVariables);
-        for k = 1:numel(nms)
+        for k = 1 : numel(nms)
             kn = find(strcmp(nms{k}, varNms));
             assert(numel(kn)==1, 'Unable to match initial state parameter name %s\n', nms{k});
-            for nl = 1:numel(lami)
+            for nl = 1 : numel(lami)
                 if isa(linProblem.equations{nl}, 'ADI')
-                    sens.(nms{k}) = sens.(nms{k}) + linProblem.equations{nl}.jac{kn}'*lami{nl};
+                    sens.(nms{k}) = sens.(nms{k}) - linProblem.equations{nl}.jac{kn}'*lami{nl};
                 end
             end
             if strcmp(initparam{k}.type, 'multiplier')
