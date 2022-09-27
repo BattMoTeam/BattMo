@@ -22,6 +22,9 @@ runner.addPlugin(StopOnFailuresPlugin)
 results = runner.run(suite);
 ```
 
+The results of the tests come as TestResult classes. These can be
+converted to a table using the table command.
+
 See `help runtests` for information.
 
 
