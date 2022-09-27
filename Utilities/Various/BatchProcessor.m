@@ -213,7 +213,17 @@ classdef BatchProcessor
                 paramnames = bp.paramnames;
             end
             T = bp.setupTable(simlist);
-            T(:, paramnames)
+            T = T(:, paramnames);
+            n = size(T, 1);
+            take = true(size(T, 2), 1);
+            for itake = 1 : numel(take)
+                val = T(:, itake);
+                if all(strcmp(table2cell(T(:, itake)), repmat('undefined', n ,1)))
+                    take(itake) = false;
+                end
+            end
+            T = T(:, take)
+                
         end        
     
         function sortedsimlist = sortSimList(bp, simlist, varargin)
