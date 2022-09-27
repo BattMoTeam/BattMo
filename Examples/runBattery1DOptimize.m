@@ -199,11 +199,26 @@ objmatch = @(model, states, schedule, varargin) EnergyOutput(model, states, sche
 fn       = @plotAfterStepIV;
 obj      = @(p) evalMatchBattmo(p, objmatch, SimulatorSetup, parameters, 'objScaling', -totval, 'afterStepFn', fn);
 
-p = getScaledParameterVector(SimulatorSetup, parameters);
-[vad, gad]   = evalMatchBattmo(p, objmatch, SimulatorSetup, parameters, 'Gradient', 'AdjointAD');
-[vnum, gnum] = evalMatchBattmo(p, objmatch, SimulatorSetup, parameters, 'Gradient', 'PerturbationADNUM', 'PerturbationSize', 1e-5);
+doOptimization = true;
+if doOptimization
+    
+    p_base = getScaledParameterVector(SimulatorSetup, parameters);
+    p_base = p_base - 0.1;
+    [v, p_opt, history] = unitBoxBFGS(p_base, 'gradTol', 1e-7, 'objChangeTol', 1e-4);
+    
+end
 
-fprintf('Gradient computed using adjoint:\n');
-display(gad);
-fprintf('Numerical gradient:\n');
-display(gnum);
+
+doCompareGradient = false;
+if doCompareGradient
+    
+    p = getScaledParameterVector(SimulatorSetup, parameters);
+    [vad, gad]   = evalMatchBattmo(p, objmatch, SimulatorSetup, parameters, 'Gradient', 'AdjointAD');
+    [vnum, gnum] = evalMatchBattmo(p, objmatch, SimulatorSetup, parameters, 'Gradient', 'PerturbationADNUM', 'PerturbationSize', 1e-5);
+
+    fprintf('Gradient computed using adjoint:\n');
+    display(gad);
+    fprintf('Numerical gradient:\n');
+    display(gnum);
+    
+end
