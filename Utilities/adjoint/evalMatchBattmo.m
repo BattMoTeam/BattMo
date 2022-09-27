@@ -87,12 +87,12 @@ function [misfitVal,varargout] = evalMatchBattmo(pvec, obj, setup, parameters, v
         pval{k}  = parameters{k}.unscale(pvec{k});
         setupNew = parameters{k}.setParameter(setupNew, pval{k});
     end
-    [wellSols,states] = simulateScheduleAD(setupNew.state0, setupNew.model, setupNew.schedule, ...
+    [wellSols, states] = simulateScheduleAD(setupNew.state0, setupNew.model, setupNew.schedule, ...
                                            'NonLinearSolver', opt.NonlinearSolver, ...
                                            'Verbose', opt.Verbose, extra{:});
 
     misfitVals = obj(setupNew.model, states, setupNew.schedule);
-    misfitVal  = - sum(vertcat(misfitVals{:}))/opt.objScaling ;
+    misfitVal  = sum(vertcat(misfitVals{:}))/opt.objScaling ;
 
     if nargout > 1
         objh = @(tstep,model, state) obj(setupNew.model, states, setupNew.schedule, ...
@@ -139,7 +139,7 @@ function [misfitVal,varargout] = evalMatchBattmo(pvec, obj, setup, parameters, v
                                              'objScaling',opt.objScaling, 'enforceBounds',  false);
                 end
             end 
-            gradient= -(val-misfitVal)./eps_pert;
+            gradient= (val - misfitVal)./eps_pert;
             
             scaledGradient = mat2cell(gradient, nparam, 1);            
           otherwise
