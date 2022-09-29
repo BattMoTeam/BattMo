@@ -1,30 +1,35 @@
 classdef BatchProcessor
+
     properties
         paramnames
     end
     
     methods
         
-        function bp = BatchProcessor()
+        function bp = BatchProcessor(varargin)
             bp.paramnames = {};
+            if nargin > 0
+                simlist = varargin{1};
+                for isim = 1 : numel(simlist)
+                    bp = bp.registerElementParamnames(simlist{isim});
+                end
+            end
         end
-        
-        function [bp, simlist] = addElement(bp, simlist, elt)
-            simlist{end + 1} = elt;
+
+        function bp = registerElementParamnames(bp, elt)
             fdnames = fieldnames(elt);
             for ind = 1 : numel(fdnames)
                 fdname = fdnames{ind};
                 bp = bp.addParameterName(fdname);
-            end
+            end            
         end
-
-        function [bp, simlist] = mergeSimLists(bp, simlist, simlist_to_merge)
-            for ind = 1 : numel(simlist_to_merge)
-                elt = simlist_to_merge{ind};
-                [bp, simlist] = bp.addElement(simlist, elt);
-            end
+    
+        function [bp, simlist] = addElement(bp, simlist, elt)
+            simlist{end + 1} = elt;
+            bp = bp.registerElementParamnames(elt);
         end
         
+
         
         function bp = addParameterName(bp, paramname)
             if ~ismember(paramname, bp.paramnames)
@@ -300,6 +305,19 @@ classdef BatchProcessor
         end        
     
     end
+
+    methods(Static)
+        
+        function [bp, simlist] = mergeSimLists(simlist, simlist_to_merge)
+            bp = BatchProcessor(simlist);
+            for isim = 1 : numel(simlist_to_merge)
+                elt = simlist_to_merge{isim};
+                [bp, simlist] = bp.addElement(simlist, elt);
+            end
+        end
+        
+    end
+        
     
 end
 
