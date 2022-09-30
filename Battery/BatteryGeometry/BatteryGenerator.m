@@ -24,10 +24,10 @@ classdef BatteryGenerator
         function [paramobj, gen] = setupBatteryInputParams(gen, paramobj, params)
         % main function : add grid and coupling to paramobj structure
             [paramobj, gen] = gen.setupGrid(paramobj, params);
-            paramobj.Electrolyte = gen.setupElectrolyte(paramobj.Electrolyte, params);
+            paramobj.Electrolyte = gen.setupElectrolyte(paramobj.Electrolyte, params.Electrolyte);
             paramobj = gen.setupElectrodes(paramobj, params);
             if gen.use_thermal
-                paramobj = gen.setupThermalModel(paramobj, params);
+                paramobj = gen.setupThermalModel(paramobj, params.ThermalModel);
             end
             paramobj = gen.setupElectrodeElectrolyteCoupTerm(paramobj);
         end
