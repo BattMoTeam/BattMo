@@ -130,7 +130,7 @@ classdef BatchProcessor
             
         end        
 
-        function T = setupTable(bp, simlist)
+        function [T, singlevalued] = setupTable(bp, simlist)
 
             paramnames = bp.paramnames;
 
@@ -139,6 +139,8 @@ classdef BatchProcessor
 
             Tc = cell(nlist, nparams);
 
+            singlevalued = false(nparams, 1);
+            
             for ic  = 1 : nparams
                 paramname = paramnames{ic};
                 [vals, type, dim] = getParameterValue(bp, simlist, paramname);
@@ -161,8 +163,24 @@ classdef BatchProcessor
                         end
                     end
                 end
+
+                singlevalue = false;
+                if nnz(cellfun(@(val) isempty(val), vals)) == numel(vals)
+                    singlevalue = true;
+                elseif nnz(cellfun(@(val) isempty(val), vals)) > 0
+                    singlevalue = false;
+                else
+                    if ismember(type, {'scalar', 'boolean'}) && numel(unique([vals{:}])) == 1
+                        singlevalue = true;
+                    elseif ismember(type, {'char'}) && (numel(unique(vals)) == 1)
+                        singlevalue = true;
+                    end
+                end
+                singlevalued(ic) = singlevalue;
+
             end
 
+            singlevalued = find(singlevalued);
             T = cell2table(Tc, 'VariableNames', paramnames);
             
         end
@@ -209,26 +227,40 @@ classdef BatchProcessor
         end
         
         function printSimList(bp, simlist, varargin)
-            if nargin > 2
+            [T, singlevalued] = bp.setupTable(simlist);
+            if nargin > 2 && strcmp(varargin{1}, 'all')
+                paramnames = bp.paramnames;
+            elseif (nargin > 2 && ismember('varying', varargin)) | (nargin == 2)
+                vparamnames = bp.paramnames;
+                ind = true(numel(vparamnames), 1);
+                ind(singlevalued) = false;
+                vparamnames = vparamnames(ind);
+                if nargin > 2
+                    [lia, loc] = ismember('varying', varargin);
+                    ind = true(numel(varargin), 1);
+                    ind(loc) = false;
+                    aparamnames = varargin(ind);
+                    for iparam = 1 : numel(aparamnames)
+                        bp.assertParam(aparamnames{iparam});
+                    end
+                    nv = numel(vparamnames);
+                    na = numel(aparamnames);
+                    inda = [(1 : loc - 1)'; ((loc + nv) : (na + nv))'];
+                    indv = (loc : loc + nv - 1)';
+                    paramnames = cell(1, na + nv);
+                    paramnames(inda) = aparamnames;
+                    paramnames(indv) = vparamnames;
+                else
+                    paramnames = vparamnames;
+                end
+            else                
                 paramnames = varargin;
                 for iparam = 1 : numel(paramnames)
                     bp.assertParam(paramnames{iparam});
-                end                    
-            else
-                paramnames = bp.paramnames;
-            end
-            T = bp.setupTable(simlist);
-            T = T(:, paramnames);
-            n = size(T, 1);
-            take = true(size(T, 2), 1);
-            for itake = 1 : numel(take)
-                val = T(:, itake);
-                if all(strcmp(table2cell(T(:, itake)), repmat('undefined', n ,1)))
-                    take(itake) = false;
                 end
             end
-            T = T(:, take)
-                
+
+            T = T(:, paramnames)
         end        
     
         function sortedsimlist = sortSimList(bp, simlist, varargin)
