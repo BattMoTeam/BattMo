@@ -260,7 +260,16 @@ classdef BatchProcessor
                 end
             end
 
-            T = T(:, paramnames)
+            if numel(paramnames) == 0
+                if numel(simlist) > 1
+                    % we print all the parameters instead of empty table
+                    printSimList(bp, simlist, 'all');
+                else
+                    simlist{1}
+                end
+            else
+                T = T(:, paramnames)
+            end
         end        
     
         function sortedsimlist = sortSimList(bp, simlist, varargin)
