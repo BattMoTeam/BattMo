@@ -85,7 +85,6 @@ classdef ActiveMaterialInputParams < ElectronicComponentInputParams
               case 'simple'
                 
                 paramobj = mergeParameters(paramobj, {'volumeFraction'}, {itf, 'volumeFraction'});
-                paramobj = mergeParameters(paramobj, {'activeMaterialFraction'}, {sd, 'activeMaterialFraction'});
                 
               case 'full'
                 
