@@ -132,7 +132,73 @@ classdef ComputationalGraphTool
         function [g, edgelabels] = setupDescendantGraph(cgt, varargin)
             [g, edgelabels] = cgt.setupGraph('type', 'descendant', varargin{:});            
         end
+
+
+        function printSpecialVariables(cgt)
+
+            A = cgt.A;
+            nodenames = cgt.nodenames;
+            
+            fprintf('Root variables \n');
+            nodenames(all(A == 0, 1))
+            fprintf('Tail variables \n');
+            nodenames(all(A' == 0, 1))
+            
+        end
+
+
+        function printOrderedFunctionCallList(cgt)
+
+            A = cgt.A;
+
+            try
+                p = topological_order(A);
+            catch
+                fprintf('You need to install matlab BGL\n');
+                return
+            end
+
+            funcCallList = {};
+            for ind = 1 : numel(p)
+                iprop = full(A(:, p(ind)));
+                iprop = unique(iprop(iprop>0));
+                if ~isempty(iprop)
+                    assert(numel(iprop) == 1, 'There should be only one value for a given row');
+                    propfunction = cgt.model.propertyFunctionList{iprop};
+                    fn = propfunction.fn;
+                    mn = propfunction.modelnamespace;
+                    mn = join(mn, '.');
+                    if ~isempty(mn)
+                        mn = mn{1};
+                        statename = sprintf('state.%s', mn);
+                    else
+                        statename = 'state';
+                    end
+                    fnname = func2str(fn);
+                    fnname = regexp(fnname, "\.(.*)", 'tokens');
+                    fnname = fnname{1}{1};
+                    fnname = horzcat(mn, {fnname});
+                    fnname = join(fnname, '.');
+                    fnname = fnname{1};
+
+                    funcCallList{end + 1} = sprintf('%s = model.%s(%s);', statename, fnname, statename);
+                end
+            end
+
+            % we remove duplicates (the same function can be used for several output variables)
+            [~, ia, ic] = unique(funcCallList, 'first');
+
+            ia = sort(ia); % Not sure if it is necessary, but in this way we make sure the ordering for which  funcCallList was built is respected
+            funcCallList = funcCallList(ia);
+
+            fprintf('Function call list\n');
+            for ind = 1 : numel(funcCallList)
+                fprintf('%s\n', funcCallList{ind});
+            end
+            
+        end
         
+            
     end
     
 end
