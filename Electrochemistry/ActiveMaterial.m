@@ -123,7 +123,7 @@ classdef ActiveMaterial < ElectronicComponent
             itf = 'Interface';
             sd  = 'SolidDiffusion';
             
-            varnames =  model.varnames;
+            varnames = {};
             varnames{end + 1} = 'jCoupling';
             varnames{end + 1} = 'SOC'; % not used in assembly
            
