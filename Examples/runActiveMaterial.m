@@ -46,7 +46,7 @@ model = ActiveMaterial(paramobj);
 inspectgraph = false;
 if inspectgraph
     model.isRoot = true;
-    cgf = ComputationalGraphFilter(model);
+    cgt = ComputationalGraphTool(model);
     inspectGraphScript(model);
 end
 

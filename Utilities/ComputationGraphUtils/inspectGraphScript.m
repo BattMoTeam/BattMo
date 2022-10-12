@@ -1,22 +1,22 @@
 function inspectGraphScript(model)
 
-    cgf = ComputationalGraphFilter(model);
+    cgt = ComputationalGraphTool(model);
     
     plotgraph = true;
     
     if plotgraph
-        % cgf.includeNodeNames = 'cSurface';
-        % cgf.includeNodeNames = 'phiElectrolyte';
-        % gg = cgf.setupDescendantGraph();
-        % gg = cgf.getFilteredGraph('oneParentOnly', true);    
-        [g, edgelabels] = cgf.getFilteredGraph();
+        % cgt.includeNodeNames = 'cSurface';
+        % cgt.includeNodeNames = 'phiElectrolyte';
+        % gg = cgt.setupDescendantGraph();
+        % gg = cgt.getComputationalGraph('oneParentOnly', true);    
+        [g, edgelabels] = cgt.getComputationalGraph();
         figure
         h = plot(g, 'edgelabel', edgelabels, 'nodefontsize', 10);
     end
 
 
-    A = cgf.A;
-    nodenames = cgf.nodenames;
+    A = cgt.A;
+    nodenames = cgt.nodenames;
 
     doprintspecialvariables = true;
 
@@ -37,7 +37,7 @@ function inspectGraphScript(model)
         iprop = unique(iprop(iprop>0));
         if ~isempty(iprop)
             assert(numel(iprop) == 1, 'problem');
-            propfunction = cgf.model.propertyFunctionList{iprop};
+            propfunction = cgt.model.propertyFunctionList{iprop};
             fn = propfunction.fn;
             mn = propfunction.modelnamespace;
             mn = join(mn, '.');

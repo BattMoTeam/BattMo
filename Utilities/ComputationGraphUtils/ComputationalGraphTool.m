@@ -1,4 +1,4 @@
-classdef ComputationalGraphFilter
+classdef ComputationalGraphTool
 
     properties
         graph
@@ -11,28 +11,28 @@ classdef ComputationalGraphFilter
     
     methods
         
-        function cgf = ComputationalGraphFilter(model)
+        function cgt = ComputationalGraphTool(model)
             if isempty(model.propertyFunctionList)
                 model = model.registerVarAndPropfuncNames();
             end
-            cgf.model = model;
+            cgt.model = model;
             g = setupGraph(model);
-            cgf.graph = g;
+            cgt.graph = g;
             % In adjacency matrix A, 
             % - column index      : output variable index (as in model.varNameList)
             % - row index         : input variable (as in model.varNameList)
             % - coefficient value : property function index as in model.propertyFunctionList
-            cgf.A         = adjacency(g, 'weighted');
-            cgf.nodenames = g.Nodes.Variables;
+            cgt.A         = adjacency(g, 'weighted');
+            cgt.nodenames = g.Nodes.Variables;
 
             
         end
 
-        function [propfuncs, nodenames] = findPropFunction(cgf, nodename)
+        function [propfuncs, nodenames] = findPropFunction(cgt, nodename)
             
-            nodenames = cgf.nodenames;
-            A         = cgf.A;
-            model     = cgf.model;
+            nodenames = cgt.nodenames;
+            A         = cgt.A;
+            model     = cgt.model;
             
             indSelectedNodenames = regexp(nodenames, nodename, 'once');
             indSelectedNodenames = cellfun(@(x) ~isempty(x), indSelectedNodenames);
@@ -47,8 +47,8 @@ classdef ComputationalGraphFilter
             
         end
 
-        function printPropFunction(cgf, nodename)
-            propfuncs = cgf.findPropFunction(nodename);
+        function printPropFunction(cgt, nodename)
+            propfuncs = cgt.findPropFunction(nodename);
 
             if numel(propfuncs) == 1
                 propfuncs = {propfuncs};
@@ -75,18 +75,18 @@ classdef ComputationalGraphFilter
             
         end
         
-        function [g, edgelabels] = getFilteredGraph(cgf, varargin)
+        function [g, edgelabels] = getComputationalGraph(cgt, varargin)
             
             opt = struct('type', 'ascendant', ...
                          'oneParentOnly', false);
             opt = merge_options(opt, varargin{:});
 
-            propfunctionlist = cgf.model.propertyFunctionList;
-            nodenames        = cgf.nodenames;
-            includeNodeNames = cgf.includeNodeNames;
-            excludeNodeNames = cgf.excludeNodeNames;
+            propfunctionlist = cgt.model.propertyFunctionList;
+            nodenames        = cgt.nodenames;
+            includeNodeNames = cgt.includeNodeNames;
+            excludeNodeNames = cgt.excludeNodeNames;
 
-            A = (cgf.A);
+            A = (cgt.A);
             if strcmp(opt.type, 'descendant')
                 A = A';
             end
@@ -125,12 +125,12 @@ classdef ComputationalGraphFilter
             
         end
         
-        function [g, edgelabels] = setupAscendantGraph(cgf, varargin)
-            [g, edgelabels] = cgf.setupGraph('type', 'ascendant', varargin{:});
+        function [g, edgelabels] = setupAscendantGraph(cgt, varargin)
+            [g, edgelabels] = cgt.setupGraph('type', 'ascendant', varargin{:});
         end
         
-        function [g, edgelabels] = setupDescendantGraph(cgf, varargin)
-            [g, edgelabels] = cgf.setupGraph('type', 'descendant', varargin{:});            
+        function [g, edgelabels] = setupDescendantGraph(cgt, varargin)
+            [g, edgelabels] = cgt.setupGraph('type', 'descendant', varargin{:});            
         end
         
     end
