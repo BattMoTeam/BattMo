@@ -90,7 +90,7 @@ classdef Interface < BaseModel
             % Reaction rate in mol/(s*m^2)
             varnames{end + 1} = 'R';
             % External potential drop used in Butler-Volmer
-            varnames{end + 1} = 'externalPotentialDrop';
+            % varnames{end + 1} = 'externalPotentialDrop';
             % 
             varnames{end + 1} = 'dUdT';
             % OCP
@@ -117,13 +117,9 @@ classdef Interface < BaseModel
             inputnames = {'phiElectrolyte', 'phiElectrode', 'OCP'};            
             model = model.registerPropFunction({'eta', fn, inputnames});
             
-            % fn = @Interface.updateEta;
-            % inputnames = {'phiElectrolyte', 'phiElectrode', , 'OCP'};
-            % model = model.registerPropFunction({'eta', fn, inputnames});
-            
-            fn = @Interface.updateEtaWithEx;
-            inputnames = {'phiElectrolyte', 'phiElectrode', 'OCP', 'externalPotentialDrop'};
-            model = model.registerPropFunction({'eta', fn, inputnames});            
+            % fn = @Interface.updateEtaWithEx;
+            % inputnames = {'phiElectrolyte', 'phiElectrode', 'OCP', 'externalPotentialDrop'};
+            % model = model.registerPropFunction({'eta', fn, inputnames});            
             
             fn = @Interface.updateReactionRate;
             inputnames = {'T', 'eta', 'j0'};
@@ -221,7 +217,7 @@ classdef Interface < BaseModel
         
             
         function state = updateReactionRate(model, state)
-
+        % From definition of the overpotential eta, we have that reaction rate R is positive for oxydation.
             n     = model.n;
             F     = model.constants.F;
             alpha = model.alpha;
