@@ -6,19 +6,16 @@
   "Conductivity" : {"type" : "function",
                     "functionname" : "computeElectrolyteConductivity_Nyman2008",
                     "argumentlist" : ["c", "T"],
-                    "name" : "conductivity"
                    },
   "DiffusionCoefficient" : {"type": "function",
                             "functionname" : "computeDiffusionCoefficient_Nyman2008",
                             "argumentlist" : ["c", "T"],
-                            "name" : "diffusion coefficient"
                            },
   "compnames": [
     "Li",
     "PF6"
   ],
   "chargeCarrierName": "Li",
-  "name": "Chen Electrolyte model",
   "sp": { "z": [1, -1],
           "t": [0.2594, 0.601]},
   "Separator": { "filename": "ParameterData/ParameterSets/Chen2020/chen2020_separator.json",

@@ -5,8 +5,6 @@ classdef InterfaceInputParams < InputParams
     properties
         
         G  % Grid
-
-        name % Given name of the interface (for convenience)
         
         theta0   % Lithiation value at 0% SOC [-]
         theta100 % Lithiation value at 100% SOC [-]

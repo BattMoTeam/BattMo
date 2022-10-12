@@ -5,9 +5,6 @@ classdef Interface < BaseModel
         % Physical constants
         constants = PhysicalConstants();
 
-        % Appelation name of the active material
-        name
-
         cmax
         
         % number of electron transfer

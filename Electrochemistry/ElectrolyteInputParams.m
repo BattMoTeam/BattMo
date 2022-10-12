@@ -4,8 +4,6 @@ classdef ElectrolyteInputParams < ElectroChemicalComponentInputParams
 %    
     properties
         
-        name % Given name (for convinience)
-        
         compnames % Names of the components in the electrolyte
         sp % Structure given properties of each component
         

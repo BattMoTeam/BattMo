@@ -8,12 +8,9 @@
   "k0": 2.33e-11,
   "theta100": 0.4955,
   "theta0": 0.99174,
-  "name": "NMC111",
   "OCP" : {"type" : "function",
            "functionname" : "computeOCP_nmc111",
-           "argumentlist" : ["cElectrode", "T", "cmax"],
-           "name" : "NMC111 OCP"
-          },
+           "argumentlist" : ["cElectrode", "T", "cmax"]},
   "BruggemanCoefficient": 1.5
 }
 

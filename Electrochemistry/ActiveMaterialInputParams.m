@@ -13,9 +13,6 @@ classdef ActiveMaterialInputParams < ElectronicComponentInputParams
         %
         SolidDiffusion
         
-        amName % Given name for the active material
-                
-        
         InterDiffusionCoefficient % Interdiffusion coefficient parameter (diffusion between the particles)
         
         thermalConductivity % Intrinsic Thermal conductivity of the active component

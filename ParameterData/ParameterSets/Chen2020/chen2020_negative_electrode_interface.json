@@ -7,10 +7,7 @@
   "k0": 6.716e-12,
   "theta100": 0.88,
   "theta0": 0.15,
-  "name": "graphite(Chen)",
   "OCP" : { "type": "function",
             "functionname" : "computeOCP_graphite_Chen",
-            "argumentlist" : ["cElectrode", "T", "cmax"],
-            "name" : "graphite OCP"
-          }
+            "argumentlist" : ["cElectrode", "T", "cmax"]}
 }

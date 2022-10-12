@@ -8,11 +8,9 @@
   "k0": 5.031e-11,
   "theta100": 0.88551,
   "theta0": 0.1429,
-  "name": "Graphite",
   "OCP" : {"type": "function",
            "functionname" : "computeOCP_graphite",
-           "argumentlist" : ["cElectrode", "T", "cmax"],
-           "name" : "graphite OCP"
+           "argumentlist" : ["cElectrode", "T", "cmax"]
           },
   "BruggemanCoefficient": 1.5
 }
