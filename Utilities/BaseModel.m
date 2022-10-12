@@ -153,7 +153,7 @@ classdef BaseModel < PhysicalModel
         end
 
                 
-        function state = initStateAD(model, state)
+        function stateAD = initStateAD(model, state)
         % initialize a new cleaned-up state with AD variables
             
             pnames  = model.getPrimaryVariables();
@@ -163,13 +163,12 @@ classdef BaseModel < PhysicalModel
             end
             % Get the AD state for this model           
             [vars{:}] = model.AutoDiffBackend.initVariablesAD(vars{:});
-            newstate =struct();
+            stateAD =struct();
             for i=1:numel(pnames)
-               newstate = model.setNewProp(newstate, pnames{i}, vars{i});
+               stateAD = model.setNewProp(stateAD, pnames{i}, vars{i});
             end
 
-            newstate = model.addStaticVariables(newstate, state);
-            state = newstate;
+            stateAD = model.addStaticVariables(stateAD, state);
             
         end 
         
