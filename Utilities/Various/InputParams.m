@@ -6,6 +6,42 @@ classdef InputParams
             paramobj = assignJsonParams(paramobj, jsonstruct);
         end
         
+        function paramobj = setParam(paramobj, names, val)
+        % Note : same syntax as setProp in BaseModel
+            if iscell(names) & (numel(names) > 1)
+                name = names{1};
+                names = names(2 : end);
+                paramobj.(name) = setParam(paramobj.(name), names, val);
+            elseif iscell(names) & (numel(names) == 1)
+                name = names{1};
+                if isnumeric(name)
+                    paramobj{name} = val;
+                else
+                    paramobj.(name) = val;
+                end
+            else
+                error('format not recognized');
+            end
+        end
+
+        function var = getParam(paramobj, names)
+        % Note : same syntax as getProp in BaseModel
+            if iscell(names) && (numel(names) > 1)
+                name = names{1};
+                names = names(2 : end);
+                var = getParam(paramobj.(name), names);
+            elseif iscell(names) & (numel(names) == 1)
+                name = names{1};
+                if isnumeric(name)
+                    var = paramobj{name};
+                else
+                    var = paramobj.(name);
+                end
+            else
+                error('format not recognized');
+            end
+        end
+        
     end
     
 end

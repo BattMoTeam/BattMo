@@ -3,7 +3,10 @@ classdef FullSolidDiffusionModelInputParams < SolidDiffusionModelInputParams
     properties
 
         N  % Number of discretization intervals in the diffusion model [-]
-        np % Number of computational grid cells (typically set by parent model :class:`ActiveMaterial <Electrochemistry.ActiveMaterial>`)        
+        np % Number of computational grid cells (typically set by parent model :class:`ActiveMaterial <Electrochemistry.ActiveMaterial>`)
+
+        volumeFraction
+        
     end
     
     methods

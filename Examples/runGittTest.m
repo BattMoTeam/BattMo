@@ -37,51 +37,46 @@ ctrl    = 'Control';
 % Here, we setup the geometry and computational mesh that will be used for
 % the simulation. The user can select the dimensionality of the model. The
 % required discretization parameters are already included in the associated
-% battery generator class. 
+% battery generator class.
 modelcase = '2D';
 
 % Generate the battery based on the selected dimensionality in modelcase
 switch modelcase
   case '1D'
-    
+
     gen = BatteryGenerator1D();
     paramobj = gen.updateBatteryInputParams(paramobj);
     paramobj.(ne).(cc).EffectiveElectricalConductivity = 100;
     paramobj.(pe).(cc).EffectiveElectricalConductivity = 100;
-    schedulecase = 3;
-    
+
     paramobj.(thermal).externalHeatTransferCoefficient = 1000;
     paramobj.(thermal).externalTemperature = paramobj.initT;
 
   case '2D'
     gen = BatteryGenerator2D();
     paramobj = gen.updateBatteryInputParams(paramobj);
-    schedulecase = 1;
 
     paramobj.(ne).(cc).EffectiveElectricalConductivity = 1e5;
     paramobj.(pe).(cc).EffectiveElectricalConductivity = 1e5;
-    
+
     paramobj.(thermal).externalTemperature = paramobj.initT;
     paramobj.SOC = 0.99;
-    
-    tfac = 1; % used in schedule setup
-  
+
   case '3D'
     gen = BatteryGenerator3D();
-    
-    fac = 1; 
-    gen.facx = fac; 
-    gen.facy = fac; 
+
+    fac = 1;
+    gen.facx = fac;
+    gen.facy = fac;
     gen.facz = fac;
     gen = gen.applyResolutionFactors();
     paramobj = gen.updateBatteryInputParams(paramobj);
-    
-    schedulecase = 5;
+
     paramobj.(thermal).externalTemperature = paramobj.initT;
-    
+
 end
 
-%%  Initialize the battery model. 
+%%  Initialize the battery model.
 % The battery model is initialized by sending paramobj to the Battery class
 % constructor. see :class:`Battery <Battery.Battery>`.
 model = Battery(paramobj);
@@ -103,9 +98,10 @@ dischargeTime  = pulseFraction*CRate*hour; % time of discharging
 
 % Discretization parameters
 numberOfIntervals             = 1/pulseFraction;
-intervalsPerGalvanostaticStep = 5; % Number of time step in galvanostatic phase
-intervalsPerRelaxationStep    = 5; % Number of time step in relaxation phase
-intervalsPerRampupStep        = 3; % Number of time step in rampup phase
+tfac                          = 1;
+intervalsPerGalvanostaticStep = 5*tfac; % Number of time step in galvanostatic phase
+intervalsPerRelaxationStep    = 5*tfac; % Number of time step in relaxation phase
+intervalsPerRampupStep        = 3*tfac; % Number of time step in rampup phase
 
 testing = true;
 if testing
@@ -116,13 +112,13 @@ end
 
 %% Setup the initial state of the model
 % The initial state of the model is dispatched using the
-% model.setupInitialState()method. 
-initstate = model.setupInitialState(); 
+% model.setupInitialState() method.
+initstate = model.setupInitialState();
 
-%% Setup the time step schedule 
+%% Setup the time step schedule
 % Smaller time steps are used to ramp up the current from zero to its
 % operational value. Larger time steps are then used for the normal
-% operation. 
+% operation.
 time_init = 5*minute;
 dtpoints = [switchTime; ...
             dischargeTime - switchTime;
@@ -140,12 +136,12 @@ Ipoints = inputI*Ipoints; % scales with Iinput
 % The maximum and minimum voltage limits for the cell are defined using
 % stopping and source functions. A stopping function is used to set the
 % lower voltage cutoff limit. A source function is used to set the upper
-% voltage cutoff limit. 
+% voltage cutoff limit.
 tup          = 1*milli*second; % rampup time
 srcfunc_init = @(time, I, E) rampupSwitchControl(time, tup, I, E, inputI, inputE);
 srcfunc_gitt = @(time, I, E) tabulatedIControl(time, tpoints, Ipoints);
 
-control(1) = struct('src', srcfunc_init, 'IEswitch', true); 
+control(1) = struct('src', srcfunc_init, 'IEswitch', true);
 control(2) = struct('src', srcfunc_gitt, 'IEswitch', true);
 
 n_init = 5;
@@ -162,36 +158,36 @@ step.val = [dt_init; dt_cycle];
 step.control = [ones(numel(dt_init), 1); ...
                 2*ones(numel(dt_cycle), 1)];
 
-schedule = struct('control', control, 'step', step); 
+schedule = struct('control', control, 'step', step);
 
-%% Setup nonlinear solver 
-nls = NonLinearSolver(); 
+%% Setup nonlinear solver
+nls = NonLinearSolver();
 
 % Change default maximum iteration number in nonlinear solver
-nls.maxIterations = 10; 
+nls.maxIterations = 10;
 % Change default behavior of nonlinear solver, in case of error
-nls.errorOnFailure = false; 
+nls.errorOnFailure = false;
 % Change default tolerance for nonlinear solver
 model.nonlinearTolerance = 1e-4;
 use_diagonal_ad = false;
 if(use_diagonal_ad)
-    model.AutoDiffBackend = DiagonalAutoDiffBackend(); 
-    model.AutoDiffBackend.useMex = true; 
-    model.AutoDiffBackend.modifyOperators = true; 
-    model.AutoDiffBackend.rowMajor = true; 
+    model.AutoDiffBackend = DiagonalAutoDiffBackend();
+    model.AutoDiffBackend.useMex = true;
+    model.AutoDiffBackend.modifyOperators = true;
+    model.AutoDiffBackend.rowMajor = true;
     model.AutoDiffBackend.deferredAssembly = false; % error with true for now
 end
 
-use_iterative = false; 
+use_iterative = false;
 if(use_iterative)
-    % nls.LinearSolver = LinearSolverBattery('method', 'iterative'); 
-    % nls.LinearSolver = LinearSolverBattery('method', 'direct'); 
+    % nls.LinearSolver = LinearSolverBattery('method', 'iterative');
+    % nls.LinearSolver = LinearSolverBattery('method', 'direct');
     mrstModule add agmg
     nls.LinearSolver = LinearSolverBattery('method', 'agmg', 'verbosity', 1);
     nls.LinearSolver.tol = 1e-3;
     nls.verbose = 10
 end
-model.nonlinearTolerance = 1e-5; 
+model.nonlinearTolerance = 1e-5;
 model.verbose = false;
 
 %% Run simulation
@@ -203,15 +199,15 @@ end
 
 [wellSols, states, report] = simulateScheduleAD(initstate, model, schedule,...
                                                 'OutputMinisteps', true,...
-                                                'NonLinearSolver', nls); 
+                                                'NonLinearSolver', nls);
 
 %%  Process output
 
-ind = cellfun(@(x) not(isempty(x)), states); 
+ind = cellfun(@(x) not(isempty(x)), states);
 states = states(ind);
 E = cellfun(@(x) x.(ctrl).E, states);
 I = cellfun(@(x) x.(ctrl).I, states);
-time = cellfun(@(x) x.time, states); 
+time = cellfun(@(x) x.time, states);
 
 %% Plot an animated summary of the results
 plotDashboard(model, states, 'step', 0);

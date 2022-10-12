@@ -17,6 +17,14 @@ classdef BatchProcessor
                 bp = bp.addParameterName(fdname);
             end
         end
+
+        function [bp, simlist] = mergeSimLists(bp, simlist, simlist_to_merge)
+            for ind = 1 : numel(simlist_to_merge)
+                elt = simlist_to_merge{ind};
+                [bp, simlist] = bp.addElement(simlist, elt);
+            end
+        end
+        
         
         function bp = addParameterName(bp, paramname)
             if ~ismember(paramname, bp.paramnames)
@@ -29,26 +37,91 @@ classdef BatchProcessor
         end
         
         function [bp, simlist] = modifyElement(bp, simlist, ind, paramname, paramvalue)
-            error('not robbust')
+            error('not robust')
             simlist{ind}.paramname = paramvalue;
             bp = bp.addParameterName(paramname);
         end        
     
-        function vals = getParameterValue(bp, simlist, paramname)
+        function [vals, type, dim] = getParameterValue(bp, simlist, paramname)
             bp.assertParam(paramname);
             vals = {};
+            types = {};
+            dims = {};
             for ind = 1 : numel(simlist)
                 s = simlist{ind};
+                val  = {};
+                type = {};
+                dim  = [];
                 if isfield(s, paramname)
-                    vals{end + 1} = s.(paramname);
+                    val = s.(paramname);
+                    if isnumeric(val)
+                        dim = size(val);
+                        if all(dim == [1, 1])
+                            type = 'scalar';
+                        elseif isempty(val)
+                            type = 'undef';
+                        else
+                            type = 'vector';
+                        end
+                    elseif isa(val, 'char')
+                        type = 'char';
+                    elseif isa(val, 'logical') & numel(val) == 1
+                        type = 'boolean';
+                    else
+                        error('type not recognized');
+                    end
                 else
-                    vals{end + 1} = {};
+                    type = 'undef';
                 end
+                vals{end + 1}  = val;
+                types{end + 1} = type;
+                dims{end + 1}  = dim;
+                
+            end
+
+            ok = false;
+
+            if all(ismember(types, {'char', 'undef'}))
+                ok = true;
+                type = 'char';
+                dim = [];
+            end
+
+            if all(ismember(types, {'boolean', 'undef'}))
+                ok = true;
+                type = 'boolean';
+                dim = [];
             end
             
-            if isnumeric(vals{1})
-                vals = cell2mat(vals);
+            if ~isempty(vals) && (isnumeric(vals{1}) | isempty(vals{1}))
+                if all(ismember(types, {'scalar', 'undef'}))
+                    ok = true;
+                    type = 'scalar';
+                    dim = 1;
+                elseif all(ismember(types, {'vector', 'undef'}))
+                    type = 'vector';
+                    isdef = ismember(types, 'vector');
+                    dims = vertcat(dims{isdef});
+                    if all(dims(:, 2) == 1)
+                        a = unique(dims(:, 1));
+                        if numel(a) == 1
+                            ok = true;
+                            dim = [dims(1, 1), 1];
+                        end
+                    elseif all(dims(:, 1) == 1)
+                        a = unique(dims(:, 2));
+                        if numel(a) == 1
+                            ok = true;
+                            dim = [1, dims(1, 2)];
+                        end
+                    end
+                end
             end
+
+            if ~ok
+                error('values are not consistents');
+            end
+            
             
         end        
 
@@ -61,12 +134,26 @@ classdef BatchProcessor
 
             Tc = cell(nlist, nparams);
 
-            for ir  = 1 : nlist
-                s = simlist{ir};
-                for ic  = 1 : nparams
-                    paramname = paramnames{ic};
-                    if isfield(s, paramname) && ~isempty(s.(paramname))
-                        Tc{ir, ic} = s.(paramname); 
+            for ic  = 1 : nparams
+                paramname = paramnames{ic};
+                [vals, type, dim] = getParameterValue(bp, simlist, paramname);
+                for ir = 1 : numel(simlist)
+                    if ismember(type, {'char', 'scalar', 'boolean'})
+                        if isempty(vals{ir})
+                            Tc{ir, ic} = 'undefined';
+                        else
+                            Tc{ir, ic} = vals{ir};
+                        end
+                    elseif strcmp(type, 'vector')
+                        if isempty(vals{ir})
+                            Tc{ir, ic} = 'undefined';
+                        elseif dim(1) == 1
+                            Tc{ir, ic} = sprintf('[%s]', strjoin(cellstr(num2str(vals(ir, :)')), ', '));
+                        elseif dim(2) == 1
+                            Tc{ir, ic} = sprintf('[%s]', strjoin(cellstr(num2str(vals(:, ir))), '; '));
+                        else
+                            error('problem with dimension.');
+                        end
                     end
                 end
             end
@@ -89,8 +176,24 @@ classdef BatchProcessor
             rangevalues = [];
             for ind = 1 : numel(paramnames)
                 paramname = paramnames{ind};
-                vals = getParameterValue(bp, simlist, paramname);
-                vals = unique(vals);
+                [vals, type, dim] = getParameterValue(bp, simlist, paramname);
+                ind = cellfun(@(val) ~isempty(val), vals);
+                vals = vals(ind);
+                if strcmp(type, 'vector')
+                    if dim(1) == 1
+                        vals = unique(vals, 'rows');
+                    elseif dim(2) == 1
+                        vals = unique(vals', 'rows');
+                        vals = vals';
+                    else
+                        error('Matrix entry are not coverged');
+                    end
+                elseif ismember(type, {'scalar', 'boolean'})
+                    vals = vertcat(vals{:});
+                    vals = unique(vals);
+                else
+                    vals = unique(vals);                    
+                end
                 rangevalues.(paramname) = vals;
             end
             
@@ -116,13 +219,36 @@ classdef BatchProcessor
         function sortedsimlist = sortSimList(bp, simlist, varargin)
             paramname = varargin{1};
             rest = varargin(2 : end);
-            vals = getParameterValue(bp, simlist, paramname);
-            [~, ind] = sort(vals);
-            sortedsimlist = simlist(ind);                
+            if strcmp(paramname, 'inverseOrder')
+                sortedsimlist = simlist(end : -1 : 1);
+            else
+                [vals, type] = getParameterValue(bp, simlist, paramname);
+                eind = cellfun(@(val) isempty(val), vals);
+                simlist = horzcat(simlist(~eind), simlist(eind));
+                vals = vals(~eind);
+                if ismember(type, {'scalar', 'boolean'})
+                    vals = vertcat(vals{:});
+                elseif strcmp(type, 'vector')
+                    error('vectors cannot be ordered');
+                end
+                [~, ind] = sort(vals);
+                ne = nnz(~eind);
+                sortedsimlist = simlist;
+                sortedsimlist(1 : ne) = simlist(ind);
+            end
             if ~isempty(rest)
                 sortedsimlist = sortSimList(bp, sortedsimlist, rest{:});
             end
         end
+        
+        function [bp, simlist] = filterMergeSimLists(bp, simlist, simlist_to_merge, varargin)
+            
+            [bp, simlist_to_merge] = bp.mergeSimLists({}, simlist_to_merge);
+            simlist_to_merge = bp.filterSimList(simlist_to_merge, varargin{:});
+            [bp, simlist] = bp.mergeSimLists(simlist, simlist_to_merge);
+            
+        end
+        
         
         function filteredsimlist = filterSimList(bp, simlist, varargin)
             assert(mod(numel(varargin), 2) == 0, 'wrong number of argument')
@@ -135,7 +261,7 @@ classdef BatchProcessor
                 if isfield(s, paramname)
                     paramval = s.(paramname);
                     take = false;
-                    if isa(filter, 'numeric')
+                    if isa(filter, 'numeric') || isa(filter, 'logical')
                         if paramval == filter
                             take = true;
                         end
@@ -153,6 +279,9 @@ classdef BatchProcessor
                     if take == true
                         filteredsimlist{end + 1} = s;
                     end
+                end
+                if ~isfield(s, paramname) & (isempty(filter) | strcmp(filter, 'undefined'))
+                    filteredsimlist{end + 1} = s;
                 end
             end
             if ~isempty(rest)

@@ -275,7 +275,7 @@ classdef Battery < BaseModel
             model = model.registerPropFunction({{elyte, 'eSource'}, fn, inputnames});
             
             % Function that assemble the control equation
-            fn = @Batter.setupEIEquation;
+            fn = @Battery.setupEIEquation;
             inputnames = {{pe, cc, 'E'}, ...
                           {pe, cc, 'I'}, ...
                           {pe, cc, 'phi'}, ...
@@ -381,9 +381,10 @@ classdef Battery < BaseModel
                 am_hcond = model.(elde).(am).thermalConductivity;
                 am_hcap = model.(elde).(am).heatCapacity;
                 am_volfrac = model.(elde).(am).volumeFraction;
+                am_bruggeman = model.(elde).(am).BruggemanCoefficient;
                 
                 am_hcap = am_hcap.*am_volfrac;
-                am_hcond = am_hcond.*am_volfrac.^1.5;
+                am_hcond = am_hcond.*am_volfrac.^am_bruggeman;
                 
                 hcap(am_map) = hcap(am_map) + am_hcap;
                 hcond(am_map) = hcond(am_map) + am_hcond;
@@ -396,9 +397,10 @@ classdef Battery < BaseModel
             elyte_hcond = model.(elyte).thermalConductivity;
             elyte_hcap = model.(elyte).heatCapacity;
             elyte_volfrac = model.(elyte).volumeFraction;
+            elyte_bruggeman = model.(elyte).BruggemanCoefficient;
             
             elyte_hcap = elyte_hcap.*elyte_volfrac;
-            elyte_hcond = elyte_hcond.*elyte_volfrac.^1.5;
+            elyte_hcond = elyte_hcond.*elyte_volfrac.^am_bruggeman;
             
             hcap(elyte_map) = hcap(elyte_map) + elyte_hcap;
             hcond(elyte_map) = hcond(elyte_map) + elyte_hcond;            
@@ -410,9 +412,10 @@ classdef Battery < BaseModel
             sep_hcond = model.(elyte).(sep).thermalConductivity;
             sep_hcap = model.(elyte).(sep).heatCapacity;
             sep_volfrac = model.(elyte).(sep).volumeFraction;
+            sep_bruggeman = model.(elyte).(sep).BruggemanCoefficient;
             
             sep_hcap = sep_hcap.*sep_volfrac;
-            sep_hcond = sep_hcond.*sep_volfrac.^1.5;
+            sep_hcond = sep_hcond.*sep_volfrac.^sep_bruggeman;
             
             hcap(sep_map) = hcap(sep_map) + sep_hcap;
             hcond(sep_map) = hcond(sep_map) + sep_hcond;            
@@ -664,7 +667,7 @@ classdef Battery < BaseModel
 
             state.(elyte).massAccum = [];
             state.(elyte).massCons = [];
-            eldes = {ne, pe}
+            eldes = {ne, pe};
             for ielde = 1 : numel(eldes)
                 elde = eldes{ielde};
                 switch model.(elde).(am).diffusionModelType
@@ -897,6 +900,9 @@ classdef Battery < BaseModel
                   case 'simple'
                     % Equation name : 'ne_am_massCons';
                     eqs{end + 1} = state.(ne).(am).massCons*massConsScaling;
+                    % Equation name : 'ne_am_sd_soliddiffeq';
+                    eqs{end + 1} = state.(ne).(am).(sd).solidDiffusionEq.*massConsScaling.*battery.(ne).(am).(itf).G.cells.volumes/dt;
+                    
                   case 'full'
                     % Equation name : 'ne_am_sd_massCons';
                     n    = model.(ne).(am).(itf).n; % number of electron transfer (equal to 1 for Lithium)
@@ -908,15 +914,18 @@ classdef Battery < BaseModel
                     
                     scalingcoef = (vsf*vol(1)*n*F)/surfp;
                     eqs{end + 1} = scalingcoef*state.(ne).(am).(sd).massCons;
+                    % Equation name : 'ne_am_sd_soliddiffeq';
+                    eqs{end + 1} = scalingcoef*state.(ne).(am).(sd).solidDiffusionEq;
                 end
                 
-                % Equation name : 'ne_am_sd_soliddiffeq';
-                eqs{end + 1} = state.(ne).(am).(sd).solidDiffusionEq.*massConsScaling.*battery.(ne).(am).(itf).G.cells.volumes/dt;
                 
                 switch model.(pe).(am).diffusionModelType
                   case 'simple'
                     % Equation name : 'pe_am_massCons';
                     eqs{end + 1} = state.(pe).(am).massCons*massConsScaling;
+                    % Equation name : 'pe_am_sd_soliddiffeq';
+                    eqs{end + 1} = state.(pe).(am).(sd).solidDiffusionEq.*massConsScaling.*battery.(pe).(am).(itf).G.cells.volumes/dt;
+                    
                   case 'full'
                     % Equation name : 'pe_am_sd_massCons';
                     n    = model.(ne).(am).(itf).n; % number of electron transfer (equal to 1 for Lithium)
@@ -928,10 +937,11 @@ classdef Battery < BaseModel
                     
                     scalingcoef = (vsf*vol(1)*n*F)/surfp;
                     eqs{end + 1} = scalingcoef*state.(pe).(am).(sd).massCons;
+                    % Equation name : 'pe_am_sd_soliddiffeq';
+                    eqs{end + 1} = scalingcoef*state.(pe).(am).(sd).solidDiffusionEq;
+                    
                 end
                 
-                % Equation name : 'pe_am_sd_soliddiffeq';
-                eqs{end + 1} = state.(pe).(am).(sd).solidDiffusionEq.*massConsScaling.*battery.(pe).(am).(itf).G.cells.volumes/dt;
                 
             end
             
@@ -1171,14 +1181,15 @@ classdef Battery < BaseModel
             end
 
             % Electrolyte
-            elyte_model = model.(elyte);
-            elyte_map   = elyte_model.G.mappings.cellmap;
-            elyte_vf    = elyte_model.volumeFraction;
-            elyte_j     = state.(elyte).jFace;
-            elyte_cond  = state.(elyte).conductivity;
-            elyte_econd = elyte_cond.*elyte_vf.^1.5;
-            elyte_vols  = elyte_model.G.cells.volumes;
-            elyte_jsq   = computeCellFluxNorm(elyte_model, elyte_j);
+            elyte_model    = model.(elyte);
+            elyte_map      = elyte_model.G.mappings.cellmap;
+            elyte_vf       = elyte_model.volumeFraction;
+            elyte_j        = state.(elyte).jFace;
+            elyte_bruggman = elyte_model.BruggemanCoefficient;
+            elyte_cond     = state.(elyte).conductivity;
+            elyte_econd    = elyte_cond.*elyte_vf.^elyte_bruggman;
+            elyte_vols     = elyte_model.G.cells.volumes;
+            elyte_jsq      = computeCellFluxNorm(elyte_model, elyte_j);
             state.(elyte).jsq = elyte_jsq; %store square of current density
             
             %src(elyte_map) = src(elyte_map) + elyte_vols.*elyte_jsq./elyte_econd;

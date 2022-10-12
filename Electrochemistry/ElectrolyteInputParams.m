@@ -23,6 +23,8 @@ classdef ElectrolyteInputParams < ElectroChemicalComponentInputParams
         updateDiffusionCoefficientFunc      % Function handler to compute diffusion coefficient
         
         density % Density [kg m^-3] (Note : only of the liquid part, the density of the separator is given there)
+
+        BruggemanCoefficient
         
     end
     

@@ -5,6 +5,7 @@ classdef FullSolidDiffusionModel < SolidDiffusionModel
         np  % Number of particles
         N   % Discretization parameters in spherical direction
 
+        volumeFraction
     end
 
     methods
@@ -13,8 +14,9 @@ classdef FullSolidDiffusionModel < SolidDiffusionModel
 
             model = model@SolidDiffusionModel(paramobj);
 
-            fdnames = {'np'                    , ...
-                       'N'};
+            fdnames = {'np', ...
+                       'N' , ...
+                       'volumeFraction'};
 
             model = dispatchParams(model, paramobj, fdnames);
             model.operators = model.setupOperators();
@@ -55,13 +57,13 @@ classdef FullSolidDiffusionModel < SolidDiffusionModel
             model = model.registerPropFunction({'massCons', fn, inputnames});
 
             fn = @FullSolidDiffusionModel.updateMassSource;
-            model = model.registerPropFunction({'massSource', fn, {'R'}});
+            model = model.registerPropFunction({'massSource', fn, {'Rvol'}});
             
             fn = @FullSolidDiffusionModel.updateMassAccum;
             model = model.registerPropFunction({'massAccum', fn, {'c'}});
             
             fn = @FullSolidDiffusionModel.assembleSolidDiffusionEquation;
-            model = model.registerPropFunction({'solidDiffusionEq', fn, {'c', 'cSurface', 'massSource'}});
+            model = model.registerPropFunction({'solidDiffusionEq', fn, {'c', 'cSurface', 'massSource', 'D'}});
             
         end
         
@@ -199,6 +201,17 @@ classdef FullSolidDiffusionModel < SolidDiffusionModel
 
             mapToBc = mapFromBc';
             
+            %% map from cell (celltbl) to cell-particle (cellScelltbl)
+            map = TensorMap();
+            map.fromTbl = celltbl;
+            map.toTbl = cellScelltbl;
+            map.mergefds = {'cells'};
+            map = map.setup();
+
+            mapToParticle = SparseTensor();
+            mapToParticle = mapToParticle.setFromTensorMap(map);
+            mapToParticle = mapToParticle.getMatrix();
+            
             vols = G.cells.volumes;
 
             map = TensorMap();
@@ -212,6 +225,7 @@ classdef FullSolidDiffusionModel < SolidDiffusionModel
             operators = struct('div'      , div       , ...
                                'flux'     , flux      , ...
                                'mapFromBc', mapFromBc , ...
+                               'mapToParticle', mapToParticle, ...
                                'mapToBc'  , mapToBc   , ...
                                'Tbc'      , Tbc       , ...
                                'vols'     , vols);
@@ -220,15 +234,15 @@ classdef FullSolidDiffusionModel < SolidDiffusionModel
 
         function state = updateMassSource(model, state)
             
-            op = model.operators;
-            rp = model.rp;
-            vsa = model.volumetricSurfaceArea;
+            op  = model.operators;
+            rp  = model.rp;
+            vf  = model.volumeFraction;
             
             Rvol = state.Rvol;
 
             Rvol = op.mapFromBc*Rvol;
             
-            state.massSource = -Rvol*((4*pi*rp^2)/vsa);
+            state.massSource = - Rvol*((4*pi*rp^3)/(3*vf));
             
         end
         
@@ -272,10 +286,15 @@ classdef FullSolidDiffusionModel < SolidDiffusionModel
             op = model.operators;
 
             c     = state.c;
+            D     = state.D;
             cSurf = state.cSurface;
             src   = state.massSource;
+
+            %% TODO fix this operaton. Implement better dispatch
+            D = op.mapToParticle*D;
+            D = op.mapToBc*D;
             
-            eq = op.Tbc.*(op.mapToBc*c - cSurf) + op.mapToBc*src;
+            eq = D.*op.Tbc.*(op.mapToBc*c - cSurf) + op.mapToBc*src;
             
             state.solidDiffusionEq = eq;
             

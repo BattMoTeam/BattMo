@@ -13,5 +13,6 @@
                        "filepath" : "Materials/Solid/ReactiveNonMetals/updateOCPFunc_graphite.m",
                        "argumentlist" : ["concentration", "temperature", "maximum concentration"],
                        "name" : "graphite OCP"
-                      }
+                      },
+    "BruggemanCoefficient": 1.5
 }

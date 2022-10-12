@@ -27,6 +27,8 @@ classdef ActiveMaterialInputParams < ElectronicComponentInputParams
 
         diffusionModelType % Choose between type of diffusion model ('full' or 'simple'. The default is set to 'full')
 
+        BruggemanCoefficient
+        
     end
 
     methods
@@ -48,6 +50,7 @@ classdef ActiveMaterialInputParams < ElectronicComponentInputParams
                 paramobj.SolidDiffusion = SimplifiedSolidDiffusionModelInputParams(pick('SolidDiffusion'));
               case 'full'
                 paramobj.SolidDiffusion = FullSolidDiffusionModelInputParams(pick('SolidDiffusion'));
+                paramobj = mergeParameters(paramobj, {'SolidDiffusion', 'volumeFraction'}, {'Interface', 'volumeFraction'});
               otherwise
                 error('Unknown diffusionModelType %s', diffusionModelType);
             end

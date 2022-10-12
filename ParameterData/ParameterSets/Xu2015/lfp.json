@@ -22,6 +22,7 @@
             "InterDiffusionCoefficient": 1e-14,
             "InterDiffusionCoefficientComment" : "from Ecker 2015",
             "electricalConductivity": 2,
+            "BruggemanCoefficient": 1.5,
             "Interface": {
                 "isFile": true,
                 "filename": "ParameterData/MaterialProperties/LiC6/LiC6_Xu.json"
@@ -47,6 +48,7 @@
             "thermalConductivity": 1.48,
             "InterDiffusionCoefficient": 1.25e-15,
             "electricalConductivity": 0.01,
+            "BruggemanCoefficient": 1.5,
             "Interface": {
                 "isFile": true,
                 "filename": "ParameterData/MaterialProperties/LiFePO/LiFePO.json"
