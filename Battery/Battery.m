@@ -728,6 +728,7 @@ classdef Battery < BaseModel
                 state.(elde).(am).(itf) = battery.(elde).(am).(itf).updateOCP(state.(elde).(am).(itf));
                 state.(elde).(am).(itf) = battery.(elde).(am).(itf).updateEta(state.(elde).(am).(itf));
                 state.(elde).(am).(itf) = battery.(elde).(am).(itf).updateReactionRate(state.(elde).(am).(itf));
+                state.(elde).(am) = battery.(elde).(am).updateRvol(state.(elde).(am));
             end
 
             %% Update Electrodes -> Electrolyte  coupling
@@ -770,7 +771,6 @@ classdef Battery < BaseModel
 
             for ind = 1 : numel(electrodes)
                 elde = electrodes{ind};
-                state.(elde).(am) = battery.(elde).(am).updateRvol(state.(elde).(am));
                 state.(elde).(am) = battery.(elde).(am).updateCurrentSource(state.(elde).(am));
                 state.(elde).(am) = battery.(elde).(am).updateCurrent(state.(elde).(am));
                 state.(elde).(am) = battery.(elde).(am).updateChargeConservation(state.(elde).(am));
@@ -1004,6 +1004,7 @@ classdef Battery < BaseModel
             ne    = 'NegativeElectrode';
             pe    = 'PositiveElectrode';
             am    = 'ActiveMaterial';
+            sd    = 'SolidDiffusion';
             itf   = 'Interface';
             
             vols = battery.(elyte).G.cells.volumes;
