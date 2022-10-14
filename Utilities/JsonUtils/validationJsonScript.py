@@ -49,4 +49,7 @@ v = jsonschema.Draft7Validator(mainschema, resolver=resolver)
 
 jsoninput = rjson.loadJsonBatmo('Battery/lithiumbattery.json')
 
-v.is_valid(jsoninput)
+if v.is_valid(jsoninput):
+    print('ok')
+else:
+    print('not ok')

@@ -20,9 +20,9 @@
                 }
               },
         "Separator" : {"$ref" : "separator"},
-        "negativeDomainBruggemanCoefficient" : {"type" : "number", ...
+        "negativeDomainBruggemanCoefficient" : {"type" : "number",
                                                 "description": "Bruggeman coefficient for the electrolyte in the negative electrode domain"},
-        "positiveDomainBruggemanCoefficient" : {"type" : "number", ...
+        "positiveDomainBruggemanCoefficient" : {"type" : "number", 
                                                 "description": "Bruggeman coefficient for the electrolyte in the positive electrode domain"}
     }
 }
