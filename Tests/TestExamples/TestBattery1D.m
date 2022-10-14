@@ -2,31 +2,35 @@ classdef TestBattery1D < matlab.unittest.TestCase
 
     properties (TestParameter)
         
-        jsonfile                   = {fullfile('ParameterData','BatteryCellParameters','LithiumIonBatteryCell','lithium_ion_battery_nmc_graphite.json')};
-        controlPolicy              = {'CCCV', 'IEswitch'};
-        use_thermal                = {true, false};
-        include_current_collector  = {true, false};
-        diffusionmodel             = {'simplified'};
-        
+        jsonfile                  = {fullfile('ParameterData','BatteryCellParameters','LithiumIonBatteryCell','lithium_ion_battery_nmc_graphite.json')};
+        controlPolicy             = {'CCCV', 'IEswitch'};
+        use_thermal               = {true, false};
+        include_current_collector = {true, false};
+        diffusionmodel            = {'simplified'};
+        testSize                  = {'short', 'long'};
+        % controlPolicy             = {'CCCV'};
+        % use_thermal               = {true};
+        % include_current_collector = {true};
+        % diffusionmodel            = {'simplified'};
+        % testSize                  = {'short'};
+        createReferenceData       = {false};
     end
     
     methods
 
-        function test = TestBattery1D()
+        function test = TestBattery1D(varargin)
             mrstModule reset
             mrstModule add ad-core mrst-gui mpfa
         end
         
-        function states = test1d(test, jsonfile, controlPolicy, use_thermal, include_current_collector, useSimplifiedDiffusionModel, varargin)
-            
-        %% Setup the properties of Li-ion battery materials and cell design
-        % The properties and parameters of the battery cell, including the
-        % architecture and materials, are set using an instance of
-        % :class:`BatteryInputParams <Battery.BatteryInputParams>`. This class is
-        % used to initialize the simulation and it propagates all the parameters
-        % throughout the submodels. The input parameters can be set manually or
-        % provided in json format. All the parameters for the model are stored in
-        % the paramobj object.
+        function states = test1d(test, jsonfile, controlPolicy, use_thermal, include_current_collector, diffusionmodel, testSize, varargin)
+
+            switch diffusionmodel
+              case 'full'
+                useSimplifiedDiffusionModel = false;
+              case 'simplified'
+                useSimplifiedDiffusionModel = true;
+            end
 
             jsonstruct = parseBattmoJson(fullfile('ParameterData','BatteryCellParameters','LithiumIonBatteryCell','lithium_ion_battery_nmc_graphite.json'));
 
@@ -99,8 +103,16 @@ classdef TestBattery1D < matlab.unittest.TestCase
 
             n     = 100;
             dt    = total/n;
+
+            switch testSize
+              case 'long'
+                % do nothing
+              case 'short'
+                n = 10;
+              otherwise
+                error('testSize not recognized')
+            end
             
-            n = 10;
             
             step  = struct('val', dt*ones(n, 1), 'control', ones(n, 1));
 
@@ -160,22 +172,28 @@ classdef TestBattery1D < matlab.unittest.TestCase
 
     methods (Test)
 
-        function testBattery(test, jsonfile, controlPolicy, use_thermal, include_current_collector, diffusionmodel)
+        function testBattery(test, jsonfile, controlPolicy, use_thermal, include_current_collector, diffusionmodel, testSize, createReferenceData)
 
-            switch diffusionmodel
-              case 'full'
-                useSimplifiedDiffusionModel = false;
-              case 'simplified'
-                useSimplifiedDiffusionModel = true;
+            states = test1d(test, jsonfile, controlPolicy, use_thermal, include_current_collector, diffusionmodel, testSize);
+
+            filename = sprintf('TestBattery1D-%s-%d-%d-%s-%s.json', controlPolicy, use_thermal, include_current_collector, diffusionmodel, testSize);
+            filename = fullfile(battmoDir(), 'Tests', 'TestExamples', 'ReferenceData', filename);
+
+            if createReferenceData
+                s = jsonencode(states{end});
+                fid = fopen(filename, 'w');
+                fprintf(fid, s);
+                fclose(fid);
+            else
+                jsonsrc = fileread(filename);
+                refstate = jsondecode(jsonsrc);
+                verifyStruct(test, states{end}, refstate);
             end
-            
-            states = test1d(test, jsonfile, controlPolicy, use_thermal, include_current_collector, useSimplifiedDiffusionModel);
-            verifyStruct(test, states{end}, sprintf('TestBattery1D%s', controlPolicy));
             
         end
 
     end
-    
+
 end
 
 %{
