@@ -28,4 +28,11 @@ if doRunFilteredSuite
     suite.run();
 end
 
-
+doStopOnFirstFailure = false;
+if doStopOnFirstFailure
+   import matlab.unittest.plugins.StopOnFailuresPlugin
+   suite = testsuite('TestBattery1D');
+   runner = testrunner('textoutput');
+   runner.addPlugin(StopOnFailuresPlugin)
+   results = runner.run(suite);
+end
