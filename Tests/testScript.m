@@ -17,7 +17,7 @@ if doRunTestInParallel
     % We run the test suite in parallel
     suite = TestSuite.fromClass(?TestBattery1D);
     runner = TestRunner.withNoPlugins();
-    out = runner.runInParallel(suite);
+    result = runner.runInParallel(suite);
 end
 
 doRunFilteredSuite = false;

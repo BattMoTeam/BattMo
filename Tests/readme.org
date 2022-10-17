@@ -4,41 +4,56 @@
 
    The tests only run in MATLAB.
 
-** Running the tests
+** Running the tests (simple commands)
 
    The tests are run using the command `runtests`. To run all the
    tests in path, run ~runtests~.
 
    To run all the tests in the folder 'Tests', run ~runtests('Tests', includeSubfolders, true)~.
-
    
    To only run the test ~TestBattery1D~, run ~runtests('TestBattery1D')~.
 
+
+** Running the tests (some more advanced commands)
+
    To stop on first failure, run
+   #+begin_src matlab
+     import matlab.unittest.TestSuite;
+     import matlab.unittest.TestRunner
+     import matlab.unittest.plugins.StopOnFailuresPlugin
+     suite = testsuite('TestBattery1D');
+     runner = testrunner('textoutput');
+     runner.addPlugin(StopOnFailuresPlugin)
+     results = runner.run(suite);
+   #+end_src
+   The results of the tests come as TestResult classes
+
+   To run in parallel
+   #+begin_src matlab
+     suite = TestSuite.fromClass(?TestBattery1D);
+     runner = TestRunner.withNoPlugins();
+     result = runner.runInParallel(suite);
+     result.table()
+   #+end_src
+   In the last line the results are converted to a table for easier visualization.
+
+   We can filter the suite by given the value of a parameter. For example, in the following, we run only the short
+   versions for the tests (only a few timesteps).
+   #+begin_src matlab
+     suite = TestSuite.fromClass(?TestBattery1D);
+     suite = suite.selectIf(HasParameter('Property', 'testSize', 'Value', 'short'));
+     suite.run();
+   #+end_src
    
-#+begin_src
-   import matlab.unittest.plugins.StopOnFailuresPlugin
-   suite = testsuite('TestBattery1D');
-   runner = testrunner('textoutput');
-   runner.addPlugin(StopOnFailuresPlugin)
-   results = runner.run(suite);
-#+end_src
-
-   The results of the tests come as TestResult classes. These can be
-   converted to a table using the table command.
-
-   See ~help runtests~ for information.
-
-** Reference data
-
-   Reference data are saved in mat files found in ~TestExamples/ReferenceData~. 
+** Generate Reference Data
 
    Reference data is created by setting the property ~createReferenceData~ to true as an external parameter,
-   #+begin_src 
-   param = Parameter.fromData("createReferenceData", {true});
-   suite = TestSuite.fromClass(?TestBattery1D, 'ExternalParameters', param);
-   suite.run()
+   #+begin_src matlab
+     param = Parameter.fromData("createReferenceData", {true});
+     suite = TestSuite.fromClass(?TestBattery1D, 'ExternalParameters', param);
+     suite.run()
    #+end_src
 
+   Reference data are then saved in ~mat~ files found in ~TestExamples/ReferenceData~. 
 
 
