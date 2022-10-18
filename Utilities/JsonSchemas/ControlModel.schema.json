@@ -1,0 +1,18 @@
+{
+  "$id": "file://batmo/schemas/controlmodel",
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "properties" : {
+    "controlPolicy": {"type": "string",
+                      "enum": ["IEswitch", "CCCV", "CV"]},
+    "CRate" : {"type": "string"}
+  },
+  "anyOf": [
+    {"properties": {"controlPolicy" : {"const" : "IEswitch"},
+                    "$ref" : "ieswitchcontrolmodel"}},
+    {"properties": {"controlPolicy" : {"const" : "CCCV"},
+                    "$ref" : "cccvcontrolmodel"}},
+    {"properties": {"controlPolicy" : {"const" : "CV"},
+                    "$ref" : "cvcontrolmodel"}}
+  ]
+}

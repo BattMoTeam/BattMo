@@ -12,6 +12,10 @@
     "NegativeElectrode" : {"$ref": "electrode"},
     "PositiveElectrode" : {"$ref": "electrode"},
     "Electrolyte" : {"$ref": "binaryelectrolyte"},
-    "ThermalModel" : {"$ref": "thermalmodel"}
+    "ThermalModel" : {"$ref": "thermalmodel"},
+    "ControlModel" : {"$ref": "controlmodel"},
+    "include_current_collectors": {"type": "boolean"},
+    "use_solid_diffusion" : {"type" : "boolean"},
+    "use_thermal": {"type": "boolean"}
   }
 }
