@@ -1,21 +1,42 @@
 {
-  "$id": "file://batmo/schemas/battery",
+  "$id": "file://batmo/schemas/Battery",
   "$schema": "http://json-schema.org/draft-07/schema#",
   "description": "A standard battery",
   "type": "object",
   "properties" : {
-    "SOC" : {"type" : "number"},
-    "Ucut" : {"type" : "number",
+    "SOC": {"type" : "number"},
+    "Ucut": {"type" : "number",
               "description" : "cut voltage"},
-    "initT" : {"type" : "number",
+    "initT": {"type" : "number",
                "description" : "Initial temperature"},
-    "NegativeElectrode" : {"$ref": "electrode"},
-    "PositiveElectrode" : {"$ref": "electrode"},
-    "Electrolyte" : {"$ref": "binaryelectrolyte"},
-    "ThermalModel" : {"$ref": "thermalmodel"},
-    "ControlModel" : {"$ref": "controlmodel"},
+    "NegativeElectrode": {"$ref": "Electrode"},
+    "PositiveElectrode": {"$ref": "Electrode"},
+    "Electrolyte": {"$ref": "Electrolyte"},
+    "ThermalModel": {"$ref": "ThermalComponent"},
+    "ControlModel": {"$ref": "ControlModel"},
     "include_current_collectors": {"type": "boolean"},
     "use_solid_diffusion" : {"type" : "boolean"},
     "use_thermal": {"type": "boolean"}
-  }
+  },
+  "required" : ["NegativeElectrode", "PositiveElectrode", "Electrolyte"],
+  "anyOf": [
+    {"properties" : {"include_current_collectors": {"const": true},
+                     "NegativeElectrode": {"property": {"include_current_collectors": {"type": "boolean",
+                                                                                       "const": true},
+                                                        "CurrentCollector": {"type" : "object"}},
+                                           "required": ["CurrentCollector"]
+                                          },
+                     "PositiveElectrode": {"property": {"include_current_collectors": {"type": "boolean",
+                                                                                       "const": true},
+                                                        "CurrentCollector": {"type" : "object"}},
+                                           "required": ["CurrentCollector"]
+                                          }
+                    }
+    },
+    {"properties" : {"include_current_collectors": {"type":  "boolean",
+                                                    "const": false}
+                    }
+    }
+  ]
+
 }
