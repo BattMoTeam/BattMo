@@ -8,8 +8,9 @@
                     "volumetricSurfaceArea": 382183,
                     "volumeFraction": 0.665,
                     "n" : 1,
-                    "updateOCPFunc" : {"functionname" : "updateOCPFunc_nmc111",
-                                       "argumentlist" : ["concentration", "temperature", "maximum concentration"]}
+                    "OCP" : {"type" : "function",
+                             "functionname" : "computeOCP_nmc111",
+                             "argumentlist" : ["concentration", "temperature", "maximum concentration"]}
                     
                   },
     "SolidDiffusion" : {
