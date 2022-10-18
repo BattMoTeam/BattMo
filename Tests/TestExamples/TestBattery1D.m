@@ -171,17 +171,14 @@ classdef TestBattery1D < matlab.unittest.TestCase
 
             states = test1d(test, jsonfile, controlPolicy, use_thermal, include_current_collector, diffusionmodel, testSize);
 
-            filename = sprintf('TestBattery1D-%s-%d-%d-%s-%s.json', controlPolicy, use_thermal, include_current_collector, diffusionmodel, testSize);
+            filename = sprintf('TestBattery1D-%s-%d-%d-%s-%s.mat', controlPolicy, use_thermal, include_current_collector, diffusionmodel, testSize);
             filename = fullfile(battmoDir(), 'Tests', 'TestExamples', 'ReferenceData', filename);
 
             if createReferenceData
-                s = jsonencode(states{end});
-                fid = fopen(filename, 'w');
-                fprintf(fid, s);
-                fclose(fid);
+                refstate = states{end};
+                save(filename, 'refstate');
             else
-                jsonsrc = fileread(filename);
-                refstate = jsondecode(jsonsrc);
+                load(filename);
                 verifyStruct(test, states{end}, refstate);
             end
             
