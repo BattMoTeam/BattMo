@@ -6,11 +6,7 @@ from pathlib import Path
 import resolveFileInputJson as rjson
 
 
-def batmoDir():
-    return Path("/home/xavier/Matlab/Projects/battmo/")
-
-
-schema_folder = batmoDir() / Path('Utilities') / Path('JsonSchemas')
+schema_folder = rjson.getBattMoDir() / Path('Utilities') / Path('JsonSchemas')
 
 base_uri = 'file://batmo/schemas/'
 
@@ -29,6 +25,7 @@ def addJsonSchema(jsonschemaName):
 schemaList = ["activematerial",
               "battery",
               "binaryelectrolyte",
+              "interface",
               "currentcollector",
               "soliddiffusion",
               "electrode",
@@ -46,8 +43,7 @@ with open(schema_filename) as schema_file:
 
 v = jsonschema.Draft7Validator(mainschema, resolver=resolver)
 
-
-jsoninput = rjson.loadJsonBatmo('Battery/lithiumbattery.json')
+jsoninput = rjson.loadJsonBatmo('ParameterData/BatteryCellParameters/LithiumIonBatteryCell/lithium_ion_battery_nmc_graphite.json')
 
 if v.is_valid(jsoninput):
     print('ok')
