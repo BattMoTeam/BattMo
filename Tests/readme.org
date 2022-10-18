@@ -37,6 +37,10 @@
    #+end_src
    In the last line the results are converted to a table for easier visualization.
 
+   Note that, when running in parallel, we need to setup the mrst modules before (call to ~mrstModule add
+   modulname~). It appears that calling ~mrstModule~ inside ~TestCase~ constructor does not work.
+   
+
    We can filter the suite by given the value of a parameter. For example, in the following, we run only the short
    versions for the tests (only a few timesteps).
    #+begin_src matlab
