@@ -8,11 +8,6 @@ classdef TestBattery1D < matlab.unittest.TestCase
         include_current_collector = {true, false};
         diffusionmodel            = {'simplified'};
         testSize                  = {'short', 'long'};
-        % controlPolicy             = {'CCCV'};
-        % use_thermal               = {true};
-        % include_current_collector = {true};
-        % diffusionmodel            = {'simplified'};
-        % testSize                  = {'short'};
         createReferenceData       = {false};
     end
     
