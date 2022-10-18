@@ -2,8 +2,11 @@ classdef TestBatteryND < matlab.unittest.TestCase
 
     properties (TestParameter)
 
-        jsonfile = {fullfile('ParameterData','BatteryCellParameters','LithiumIonBatteryCell','lithium_ion_battery_nmc_graphite.json')};
-        dim = {2, 3};
+        jsonfile            = {fullfile('ParameterData','BatteryCellParameters','LithiumIonBatteryCell','lithium_ion_battery_nmc_graphite.json')};
+        dim                 = {2, 3};
+        testSize            = {'short', 'long'};
+        createReferenceData = {false};
+
     end
 
     methods
@@ -13,7 +16,7 @@ classdef TestBatteryND < matlab.unittest.TestCase
             mrstModule add ad-core mrst-gui mpfa
         end
 
-        function states = testnd(test, dim, jsonfile)
+        function states = testnd(test, dim, jsonfile, testSize)
 
             jsonstruct = parseBattmoJson(jsonfile);
             paramobj = BatteryInputParams(jsonstruct);
@@ -54,6 +57,18 @@ classdef TestBatteryND < matlab.unittest.TestCase
                                                         model.Control.Imax, ...
                                                         model.Control.lowerCutoffVoltage);
             control = struct('src', srcfunc, 'IEswitch', true);
+
+            switch testSize
+              case 'long'
+                % do nothing
+              case 'short'
+                n = 10;
+                step.val    = step.val(1:10);
+                step.contol = step.control(1:10);
+              otherwise
+                error('testSize not recognized')
+            end
+            
             schedule = struct('control', control, 'step', step);
 
             initstate = model.setupInitialState();
