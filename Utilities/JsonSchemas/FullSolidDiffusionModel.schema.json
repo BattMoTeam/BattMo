@@ -1,5 +1,5 @@
 {
-    "$id": "file://batmo/schemas/fullsoliddiffusion",
+    "$id": "file://batmo/schemas/FullSolidDiffusionModel",
     "$schema": "http://json-schema.org/draft-07/schema#",
     "description": "solid diffusion",
     "type": "object",

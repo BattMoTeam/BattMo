@@ -1,0 +1,19 @@
+{
+  "$id": "file://batmo/schemas/ThermalComponent",
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "description": "Thermal model",
+  "type" : "object",
+  "properties" : {
+    "externalHeatTransferCoefficient": {"type" : "number"},
+    "externalTemperature": {"type" : "number"},
+    "EffectiveThermalConductivity" : {"type" : "number",
+                                      "description": "this value is usually not given but computed from the other components"},
+    "EffectiveHeatCapacity" : {"type" : "number",
+                               "description": "this value is usually not given but computed from the other components"},
+    "externalHeatTransferCoefficientTopFaces" :  {"type" : "number",
+                                                  "description": "In some model a different heat transfer coefficient for the top faces can be given and used"},
+    "externalHeatTransferCoefficientSideFaces" : {"type" : "number",
+                                                  "description": "In some model a different heat transfer coefficient for the top faces can be given and used"},
+    "externalTemperature" : {"type" : "number"}
+  }
+}

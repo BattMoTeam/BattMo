@@ -1,5 +1,5 @@
 {
-  "$id": "file://batmo/schemas/controlmodel",
+  "$id": "file://batmo/schemas/ControlModel",
   "$schema": "http://json-schema.org/draft-07/schema#",
   "type": "object",
   "properties" : {
@@ -9,10 +9,10 @@
   },
   "anyOf": [
     {"properties": {"controlPolicy" : {"const" : "IEswitch"},
-                    "$ref" : "ieswitchcontrolmodel"}},
+                    "$ref" : "IEswitchControlModel"}},
     {"properties": {"controlPolicy" : {"const" : "CCCV"},
-                    "$ref" : "cccvcontrolmodel"}},
+                    "$ref" : "CcCvControlModel"}},
     {"properties": {"controlPolicy" : {"const" : "CV"},
-                    "$ref" : "cvcontrolmodel"}}
+                    "$ref" : "CvControlModel"}}
   ]
 }

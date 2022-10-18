@@ -1,23 +1,31 @@
 {
-  "$id": "file://batmo/schemas/activematerial",
+  "$id": "file://batmo/schemas/ActiveMaterial",
   "$schema": "http://json-schema.org/draft-07/schema#",
   "description": "Active Material",
   "type": "object",
-  "properties" : {
-    "Interface": {"$ref" : "interface"},
-    "SolidDiffusion": {"$ref" : "soliddiffusion"},
-    "InterDiffusionCoefficient": {"type" : "number"},
-    "thermalConductivity": {"type" : "number"},
-    "heatCapacity": {"type" : "number"},
-    "electricalConductivity": {"type" : "number"},
-    "diffusionModelType" : {"type" : "string",
-                            "enum" : ["full", "simplified"]},
-    "bruggemanCoefficient" : {"type" : "number"},
-    "volumeFraction" : {"type" : "number"},
-    "activeMaterialFraction" : {"type" : "number"}
-  },
+
+  "$ref": "ElectronicComponent",
+  "$ref": "thermalParameters",
+  
+  "properties" : { "Interface": {"$ref" : "Interface"},
+                   "SolidDiffusion": {"$ref" : "SolidDiffusionModel"},
+                   "InterDiffusionCoefficient": {"type" : "number"},
+                   "electricalConductivity": {"type" : "number"},
+                   "diffusionModelType" : {"type" : "string",
+                                           "enum" : ["full", "simplified"]},
+                   "BruggemanCoefficient" : {"type" : "number"},
+                   "volumeFraction" : {"type" : "number"},
+                   "activeMaterialFraction" : {"type" : "number"}
+                 },
+  
+  
+  "required" : ["Interface"],
+  
   "anyOf" : [ {"properties" : {"diffusionModelType" : {"const" : "full"},
-                               "SolidDiffusion" : {"$ref" : "fullsoliddiffusion"}}},
+                               "SolidDiffusion" : {"$ref" : "FullSolidDiffusionModel"}}
+              },
               {"properties" : {"diffusionModelType" : {"const" : "simplified"},
-                               "SolidDiffusion" : {"$ref" : "simplifiedsoliddiffusion"}}}]
+                               "SolidDiffusion" : {"$ref" : "SimplifiedSolidDiffusionModel"}}
+              }
+            ]
 }

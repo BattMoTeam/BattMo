@@ -1,28 +1,26 @@
 {
-    "$id": "file://batmo/schemas/electrolyte",
-    "$schema": "http://json-schema.org/draft-07/schema#",
-    "description": "A standard electrolyte",
-    "type": "object",
-    "properties" : {
-        "heatCapacity": {"type" : "number"},
-        "thermalConductivity": {"type" : "number"}, 
-        "chargeCarrierName": {"type" : "string"},
-        "updateConductivityFunc": {"$ref" : "function",
-                                   "description" : "function to update conductivity"},
-        "updateDiffusionCoefficientFunc" : {"$ref" : "function",
-                                            "description" : "function to update diffusion coefficient"},
-        "compnames": {"type" : "array"},
-        "name": {"type" : "string"},
-        "sp": { "type" : "object",
-                "properties" : {
-                    "z": {"type" : "array"},
-                    "t": {"type" : "array"}
-                }
-              },
-        "Separator" : {"$ref" : "separator"},
-        "negativeDomainBruggemanCoefficient" : {"type" : "number",
-                                                "description": "Bruggeman coefficient for the electrolyte in the negative electrode domain"},
-        "positiveDomainBruggemanCoefficient" : {"type" : "number", 
-                                                "description": "Bruggeman coefficient for the electrolyte in the positive electrode domain"}
-    }
+  "$id": "file://batmo/schemas/Electrolyte",
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "description": "A standard electrolyte",
+  "type": "object",
+
+  "$ref": "thermalParameters",
+  
+  "properties" : { "compnames": {"type" : "array"},
+                   "sp": { "type" : "object",
+                           "properties" : {
+                             "z": {"type" : "array"},
+                             "t": {"type" : "array"}
+                           }
+                         },
+                   "Separator" : {"$ref" : "Separator"},
+                   "density" : {"type" : "number",
+                                "description": "density of the liquid part only. The density of separator is given in the separator input data"},
+                   "Conductivity": {"$ref" : "function",
+                                    "description" : "function to update conductivity"},
+                   "DiffusionCoefficient" : {"$ref" : "function",
+                                             "description" : "function to update diffusion coefficient"},
+                   "BruggemanCoefficient" : {"type" : "number",
+                                             "description": "Bruggeman coefficient for the electrolyte in the whole domain"}
+                 }
 }
