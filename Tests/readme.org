@@ -30,6 +30,8 @@
 
    To run in parallel
    #+begin_src matlab
+     import matlab.unittest.TestSuite;
+     import matlab.unittest.TestRunner
      suite = TestSuite.fromClass(?TestBattery1D);
      runner = TestRunner.withNoPlugins();
      result = runner.runInParallel(suite);
@@ -44,13 +46,27 @@
    We can filter the suite by given the value of a parameter. For example, in the following, we run only the short
    versions for the tests (only a few timesteps).
    #+begin_src matlab
+     import matlab.unittest.TestSuite;
+     import matlab.unittest.selectors.HasParameter;
      suite = TestSuite.fromClass(?TestBattery1D);
      suite = suite.selectIf(HasParameter('Property', 'testSize', 'Value', 'short'));
      suite.run();
    #+end_src
 
+   Another example is
+   #+begin_src matlab
+     import matlab.unittest.TestSuite;
+     import matlab.unittest.selectors.HasParameter;
+     import matlab.unittest.constraints.*
+     suite = TestSuite.fromClass(?TestRunExamples);
+     suite = suite.selectIf(HasParameter('Property', IsSubsetOf({'runBattery1D', 'runBattery2D'})));
+   #+end_src
+   
    Through pluggins, we can add extra output in the tests
    #+begin_src matlab
+     import matlab.unittest.TestSuite;
+     import matlab.unittest.TestRunner
+     import matlab.unittest.plugins.*
      suite = TestSuite.fromClass(?TestBattery1D);
      runner = TestRunner.withNoPlugins();
      outputstream = ToFile('report.txt');
@@ -64,6 +80,8 @@
 
    Reference data is created by setting the property ~createReferenceData~ to true as an external parameter,
    #+begin_src matlab
+     import matlab.unittest.TestSuite;
+     import matlab.unittest.parameters.Parameter;
      param = Parameter.fromData("createReferenceData", {true});
      suite = TestSuite.fromClass(?TestBattery1D, 'ExternalParameters', param);
      suite.run()
