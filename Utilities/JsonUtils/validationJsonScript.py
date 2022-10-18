@@ -16,6 +16,7 @@ resolver = jsonschema.RefResolver(base_uri=base_uri, referrer={})
 def addJsonSchema(jsonschemaName):
     jsonchemaFilename = jsonschemaName + '.schema.json'
     schema_filename = schema_folder / jsonchemaFilename
+    print(schema_filename)
     with open(schema_filename) as schema_file:
         refschema = json.load(schema_file)
     key = "file://batmo/schemas/" + jsonschemaName
@@ -25,6 +26,8 @@ def addJsonSchema(jsonschemaName):
 schemaList = ["activematerial",
               "battery",
               "binaryelectrolyte",
+              "fullsoliddiffusion",
+              "simplifiedsoliddiffusion",
               "interface",
               "currentcollector",
               "soliddiffusion",
