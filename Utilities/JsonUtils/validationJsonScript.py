@@ -4,7 +4,7 @@ import json
 import jsonschema
 from pathlib import Path
 import resolveFileInputJson as rjson
-
+import os
 
 schema_folder = rjson.getBattMoDir() / Path('Utilities') / Path('JsonSchemas')
 
@@ -13,34 +13,27 @@ base_uri = 'file://batmo/schemas/'
 resolver = jsonschema.RefResolver(base_uri=base_uri, referrer={})
 
 
-def addJsonSchema(jsonschemaName):
-    jsonchemaFilename = jsonschemaName + '.schema.json'
-    schema_filename = schema_folder / jsonchemaFilename
-    print(schema_filename)
+def addJsonSchema(jsonSchemaName, verbose=False):
+    """Add the jsonschema in the resolver"""
+    jsonSchemaFilename = jsonSchemaName + '.schema.json'
+    schema_filename = schema_folder / jsonSchemaFilename
+    if verbose:
+        print(schema_filename)
     with open(schema_filename) as schema_file:
         refschema = json.load(schema_file)
-    key = "file://batmo/schemas/" + jsonschemaName
+    key = "file://batmo/schemas/" + jsonSchemaName
     resolver.store[key] = refschema
 
 
-schemaList = ["activematerial",
-              "battery",
-              "binaryelectrolyte",
-              "fullsoliddiffusion",
-              "simplifiedsoliddiffusion",
-              "interface",
-              "currentcollector",
-              "soliddiffusion",
-              "electrode",
-              "electrolyte",
-              "separator",
-              "thermalmodel"]
-
-for schema in schemaList:
-    addJsonSchema(schema)
+# We collect the schema.json files and add them in the resolver
+for (dirpath, dirnames, filenames) in os.walk(schema_folder):
+    for filename in filenames:
+        if filename.endswith('.schema.json'):
+            jsonSchemaName = filename.replace('.schema.json', '')
+            addJsonSchema(jsonSchemaName, verbose=True)
 
 # We validate the battery schema
-schema_filename = schema_folder / 'battery.schema.json'
+schema_filename = schema_folder / 'Battery.schema.json'
 with open(schema_filename) as schema_file:
     mainschema = json.load(schema_file)
 
