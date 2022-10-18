@@ -4,12 +4,20 @@
   "description": "Active Material",
   "type": "object",
   "properties" : {
-    "bruggemanCoefficient" : {"type" : "number"},
-    "thermalConductivity": {"type" : "number"},
-    "electricalConductivity": {"type" : "number"},
-    "heatCapacity": {"type" : "number"},
-    "InterDiffusionCoefficient": {"type" : "number"},
     "Interface": {"$ref" : "interface"},
-    "SolidDiffusion": {"$ref" : "soliddiffusion"}
-  }
+    "SolidDiffusion": {"$ref" : "soliddiffusion"},
+    "InterDiffusionCoefficient": {"type" : "number"},
+    "thermalConductivity": {"type" : "number"},
+    "heatCapacity": {"type" : "number"},
+    "electricalConductivity": {"type" : "number"},
+    "diffusionModelType" : {"type" : "string",
+                            "enum" : ["full", "simplified"]},
+    "bruggemanCoefficient" : {"type" : "number"},
+    "volumeFraction" : {"type" : "number"},
+    "activeMaterialFraction" : {"type" : "number"}
+  },
+  "anyOf" : [ {"properties" : {"diffusionModelType" : {"const" : "full"},
+                               "SolidDiffusion" : {"$ref" : "fullsoliddiffusion"}}},
+              {"properties" : {"diffusionModelType" : {"const" : "simplified"},
+                               "SolidDiffusion" : {"$ref" : "simplifiedsoliddiffusion"}}}]
 }

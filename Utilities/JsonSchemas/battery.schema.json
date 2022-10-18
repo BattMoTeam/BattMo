@@ -1,17 +1,17 @@
 {
-    "$id": "file://batmo/schemas/battery",
-    "$schema": "http://json-schema.org/draft-07/schema#",
-    "description": "A standard battery",
-    "type": "object",
-    "properties" : {
-        "SOC" : {"type" : "number"},
-        "Ucut" : {"type" : "number",
-                  "description" : "cut voltage"},
-        "initT" : {"type" : "number",
-                   "description" : "Initial temperature"},
-        "NegativeElectrode" : {"$ref": "electrode"},
-        "PositiveElectrode" : {"$ref": "electrode"},
-        "Electrolyte" : {"$ref": "binaryelectrolyte"},
-        "ThermalModel" : {"$ref": "thermalmodel"}
-    }
+  "$id": "file://batmo/schemas/battery",
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "description": "A standard battery",
+  "type": "object",
+  "properties" : {
+    "SOC" : {"type" : "number"},
+    "Ucut" : {"type" : "number",
+              "description" : "cut voltage"},
+    "initT" : {"type" : "number",
+               "description" : "Initial temperature"},
+    "NegativeElectrode" : {"$ref": "electrode"},
+    "PositiveElectrode" : {"$ref": "electrode"},
+    "Electrolyte" : {"$ref": "binaryelectrolyte"},
+    "ThermalModel" : {"$ref": "thermalmodel"}
+  }
 }
