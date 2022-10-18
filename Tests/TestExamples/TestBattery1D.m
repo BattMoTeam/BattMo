@@ -6,7 +6,7 @@ classdef TestBattery1D < matlab.unittest.TestCase
         controlPolicy             = {'CCCV', 'IEswitch'};
         use_thermal               = {true, false};
         include_current_collector = {true, false};
-        diffusionmodel            = {'simplified'};
+        diffusionmodel            = {'simplified', 'full'};
         testSize                  = {'short', 'long'};
         createReferenceData       = {false};
     end
