@@ -10,7 +10,7 @@ close all
 mrstModule add ad-core mrst-gui mpfa
 
 %% Setup the properties of Li-ion battery materials and cell design
-jsonstruct = parseBattmoJson(fullfile('ParameterData','ParameterSets','Safari2009','fullmodel.json'));
+jsonstruct = parseBattmoJson(fullfile('ParameterData', 'ParameterSets', 'Safari2009', 'fullmodel.json'));
 
 % Some shorthands used for the sub-models
 an    = 'Anode';
