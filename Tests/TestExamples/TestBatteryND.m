@@ -11,11 +11,6 @@ classdef TestBatteryND < matlab.unittest.TestCase
 
     methods
 
-        function test = TestBatteryND()
-            mrstModule reset
-            mrstModule add ad-core mrst-gui mpfa
-        end
-
         function states = testnd(test, dim, jsonfile, testSize)
 
             jsonstruct = parseBattmoJson(jsonfile);
@@ -63,8 +58,8 @@ classdef TestBatteryND < matlab.unittest.TestCase
                 % do nothing
               case 'short'
                 n = 10;
-                step.val    = step.val(1:10);
-                step.contol = step.control(1:10);
+                step.val    = step.val(1 : n)';
+                step.control = step.control(1 : n)';
               otherwise
                 error('testSize not recognized')
             end
@@ -81,9 +76,7 @@ classdef TestBatteryND < matlab.unittest.TestCase
             model.nonlinearTolerance = 1e-5;
             model.verbose = false;
 
-            [~, states] = simulateScheduleAD(initstate, model, schedule, ...
-                                             'OutputMinisteps', true, ...
-                                             'NonLinearSolver', nls);
+            [~, states] = simulateScheduleAD(initstate, model, schedule, 'NonLinearSolver', nls);
 
         end
 
@@ -91,11 +84,20 @@ classdef TestBatteryND < matlab.unittest.TestCase
 
     methods (Test)
 
-        function testBattery(test, dim, jsonfile)
+        function testBattery(test, dim, jsonfile, testSize, createReferenceData)
 
-            states = testnd(test, dim, jsonfile);
+            states = testnd(test, dim, jsonfile, testSize);
 
-            verifyStruct(test, states{end}, sprintf('TestBattery%dD', dim));
+            filename = sprintf('TestBattery%dD-%s.mat', dim, testSize);
+            filename = fullfile(battmoDir(), 'Tests', 'TestExamples', 'ReferenceData', filename);
+
+            if createReferenceData
+                refstate = states{end};
+                save(filename, 'refstate');
+            else
+                load(filename);
+                verifyStruct(test, states{end}, refstate);
+            end
 
         end
 
