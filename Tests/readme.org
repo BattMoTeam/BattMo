@@ -48,6 +48,17 @@
      suite = suite.selectIf(HasParameter('Property', 'testSize', 'Value', 'short'));
      suite.run();
    #+end_src
+
+   Through pluggins, we can add extra output in the tests
+   #+begin_src matlab
+     suite = TestSuite.fromClass(?TestBattery1D);
+     runner = TestRunner.withNoPlugins();
+     outputstream = ToFile('report.txt');
+     runner.addPlugin(DiagnosticsOutputPlugin(outputstream));
+     runner.addPlugin(DiagnosticsRecordingPlugin('IncludingPassingDiagnostics',true));
+     result = runner.run(suite);
+   #+end_src
+   Then, look at structure ~result(1).Details.DiagnosticRecord~ and the file ~report.txt~
    
 ** Generate Reference Data
 
