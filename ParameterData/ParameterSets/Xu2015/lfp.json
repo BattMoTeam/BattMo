@@ -1,77 +1,78 @@
 {
-    "G": null,
-    "SOC": 0.99,
-    "Ucut": 2,
-    "initT": 293.15,
-    "use_thermal": true,
-    "include_current_collectors": true,
-    "use_solid_diffusion": true,
-    "Control" : {
-        "controlPolicy" : "IEswitch",
-        "CRate" : 1,
-        "lowerCutoffVoltage" : 2,
-        "upperCutoffVoltage" : 4.1,
-        "dIdtLimit" : 0.01,
-        "dEdtLimit" : 0.01
+  "G": null,
+  "SOC": 0.99,
+  "Ucut": 2,
+  "initT": 293.15,
+  "use_thermal": true,
+  "include_current_collectors": true,
+  "use_solid_diffusion": true,
+  "Control" : {
+    "controlPolicy" : "IEswitch",
+    "CRate" : 1,
+    "lowerCutoffVoltage" : 2,
+    "upperCutoffVoltage" : 4.1,
+    "dIdtLimit" : 0.01,
+    "dEdtLimit" : 0.01
+  },
+  "NegativeElectrode": {
+    "ActiveMaterial": {
+      "specificHeatCapacity": 1435.0,
+      "heatCapacity": 2657620, 
+      "thermalConductivity": 1.04,
+      "InterDiffusionCoefficient": 1e-14,
+      "InterDiffusionCoefficientComment" : "from Ecker 2015",
+      "electricalConductivity": 2,
+      "BruggemanCoefficient": 1.5,
+      
+      "Interface": {
+        "isFile": true,
+        "filename": "ParameterData/MaterialProperties/LiC6/LiC6_Xu.json"
+      },
+      "diffusionModelType" : "full",
+      "SolidDiffusion" : {
+        "EaD": 4000,
+        "D0": 3.9e-14,
+        "rp": 14.75e-06,
+        "N": 10
+      }
+      
     },
-    "NegativeElectrode": {
-        "ActiveMaterial": {
-            "specificHeatCapacity": 1435.0,
-            "heatCapacity": 2657620, 
-            "thermalConductivity": 1.04,
-            "InterDiffusionCoefficient": 1e-14,
-            "InterDiffusionCoefficientComment" : "from Ecker 2015",
-            "electricalConductivity": 2,
-            "BruggemanCoefficient": 1.5,
-            "Interface": {
-                "isFile": true,
-                "filename": "ParameterData/MaterialProperties/LiC6/LiC6_Xu.json"
-            },
-            "SolidDiffusion" : {
-                "useSimplifiedDiffusionModel" : false,
-                "EaD": 4000,
-                "D0": 3.9e-14,
-                "rp": 14.75e-06,
-                "N": 10
-            }
-            
-        },
-        "CurrentCollector": {
-            "isFile": true,
-            "filename": "ParameterData/MaterialProperties/Copper/copper_Xu.json"
-        }
-    },
-    "PositiveElectrode": {
-        "ActiveMaterial": {
-            "specificHeatCapacity": 1348.0,
-            "heatCapacity": 1335868,
-            "thermalConductivity": 1.48,
-            "InterDiffusionCoefficient": 1.25e-15,
-            "electricalConductivity": 0.01,
-            "BruggemanCoefficient": 1.5,
-            "Interface": {
-                "isFile": true,
-                "filename": "ParameterData/MaterialProperties/LiFePO/LiFePO.json"
-            },
-            "SolidDiffusion": {
-                "useSimplifiedDiffusionModel" : false,
-                "EaD": 20000,
-                "D0": 1.25e-15,
-                "rp": 1.15e-06,
-                "N": 10
-            }
-        },
-        "CurrentCollector": {
-            "isFile": true,
-            "filename": "ParameterData/MaterialProperties/Aluminium/aluminium_Xu.json"
-        }
-    },
-    "Electrolyte": {
-        "filename": "ParameterData/MaterialProperties/OrganicLiPF6Solutions/orgLiPF6_Xu.json",
-        "isFile": true
-    },
-    "ThermalModel": {
-        "externalHeatTransferCoefficient": 1000.0,
-        "externalTemperature": 298.15
+    "CurrentCollector": {
+      "isFile": true,
+      "filename": "ParameterData/MaterialProperties/Copper/copper_Xu.json"
     }
+  },
+  "PositiveElectrode": {
+    "ActiveMaterial": {
+      "specificHeatCapacity": 1348.0,
+      "heatCapacity": 1335868,
+      "thermalConductivity": 1.48,
+      "InterDiffusionCoefficient": 1.25e-15,
+      "electricalConductivity": 0.01,
+      "BruggemanCoefficient": 1.5,
+      "Interface": {
+        "isFile": true,
+        "filename": "ParameterData/MaterialProperties/LiFePO/LiFePO.json"
+      },
+      "diffusionModelType" : "full",
+      "SolidDiffusion": {
+        "EaD": 20000,
+        "D0": 1.25e-15,
+        "rp": 1.15e-06,
+        "N": 10
+      }
+    },
+    "CurrentCollector": {
+      "isFile": true,
+      "filename": "ParameterData/MaterialProperties/Aluminium/aluminium_Xu.json"
+    }
+  },
+  "Electrolyte": {
+    "filename": "ParameterData/MaterialProperties/OrganicLiPF6Solutions/orgLiPF6_Xu.json",
+    "isFile": true
+  },
+  "ThermalModel": {
+    "externalHeatTransferCoefficient": 1000.0,
+    "externalTemperature": 298.15
+  }
 }
