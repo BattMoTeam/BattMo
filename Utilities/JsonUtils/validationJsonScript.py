@@ -37,11 +37,15 @@ schema_filename = schema_folder / 'Battery.schema.json'
 with open(schema_filename) as schema_file:
     mainschema = json.load(schema_file)
 
-v = jsonschema.Draft7Validator(mainschema, resolver=resolver)
+v = jsonschema.Draft202012Validator(mainschema, resolver=resolver)
 
-jsoninput = rjson.loadJsonBatmo('ParameterData/BatteryCellParameters/LithiumIonBatteryCell/lithium_ion_battery_nmc_graphite.json')
+jsonfiles = ['ParameterData/BatteryCellParameters/LithiumIonBatteryCell/lithium_ion_battery_nmc_graphite.json',
+             'ParameterData/ParameterSets/Xu2015/lfp.json',
+             'ParameterData/ParameterSets/Chen2020/chen2020_lithium_ion_battery.json']
 
-if v.is_valid(jsoninput):
-    print('ok')
-else:
-    print('not ok')
+for jsonfile in jsonfiles:
+    print(jsonfile)
+    jsoninput = rjson.loadJsonBatmo(jsonfile)
+    v.validate(jsoninput)
+    if v.is_valid(jsoninput):
+        print('ok')
