@@ -4,19 +4,19 @@
   "description": "Active Material",
   "type": "object",
 
-  "$ref": "ElectronicComponent",
-  "$ref": "thermalParameters",
-  
-  "properties" : { "Interface": {"$ref" : "Interface"},
-                   "SolidDiffusion": {"$ref" : "SolidDiffusionModel"},
-                   "InterDiffusionCoefficient": {"type" : "number"},
-                   "electricalConductivity": {"type" : "number"},
-                   "diffusionModelType" : {"type" : "string",
-                                           "enum" : ["full", "simplified"]},
-                   "BruggemanCoefficient" : {"type" : "number"},
-                   "volumeFraction" : {"type" : "number"},
-                   "activeMaterialFraction" : {"type" : "number"}
-                 },
+  "allOf": [{"$ref": "ElectronicComponent"},
+            {"$ref": "thermalParameters"},
+            {"properties" : { "Interface": {"$ref" : "Interface"},
+                             "SolidDiffusion": {"$ref" : "SolidDiffusionModel"},
+                             "InterDiffusionCoefficient": {"type" : "number"},
+                             "electricalConductivity": {"type" : "number"},
+                             "diffusionModelType" : {"type" : "string",
+                                                     "enum" : ["full", "simplified"]},
+                             "BruggemanCoefficient" : {"type" : "number"},
+                             "volumeFraction" : {"type" : "number"},
+                             "activeMaterialFraction" : {"type" : "number"}
+                           }}
+           ],
   
   
   "required" : ["Interface"],
