@@ -23,7 +23,7 @@ classdef InterfaceInputParams < InputParams
             % OCP.argumentlist = ["cElectrode", "T", "cmax"]
 
         j0  % Function to update j0 : if empty, the default expression using k0 is used, see method Interface.updateReactionRateCoefficient
-            % j0.type = "function";
+            % j0.type = {"function", "constant"} % if "constant" is selected, the value of k0 is used to compute reaction rate
             % j0.functionname :  matlab function name (should be available in path)
             % j0.argumentlist = ["cElectrodeSurface", "cmax"]
 

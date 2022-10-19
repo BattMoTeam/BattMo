@@ -9,7 +9,7 @@ classdef FullSolidDiffusionModelInputParams < SolidDiffusionModelInputParams
         activeMaterialFraction = 1
         
         D    % Function to update D value given as a struct with fields
-             % D.type = "function";
+             % D.type is in {'function', 'constant'}. If 'constant' is chosen the value of D0 is used as in parent class
              % D.functionname :  matlab function name (should be available in path)
              % D.argumentlist = ["c", "cmin", "cmax"]
 
@@ -24,6 +24,19 @@ classdef FullSolidDiffusionModelInputParams < SolidDiffusionModelInputParams
         
         function paramobj = FullSolidDiffusionModelInputParams(jsonstruct)
             paramobj = paramobj@SolidDiffusionModelInputParams(jsonstruct);
+        end
+
+        function paramobj = validateInputParams(paramobj)
+
+            D0 = paramobj.D0;
+            D  = paramobj.D;
+            
+            assert(~isempty(D0) || ~isempty(D), 'Either D0 or D should be provided');
+
+            if ~isempty(D) & strcmp(D.type, 'constant')
+                assert(~isempty(D0), 'D0 should be provided when D is set to be constant')
+            end
+            
         end
         
     end

@@ -34,10 +34,17 @@ classdef FullSolidDiffusionModel < SolidDiffusionModel
 
             model = dispatchParams(model, paramobj, fdnames);
             model.operators = model.setupOperators();
-            
+
             if ~isempty(paramobj.D)
-                model.useDFunc = true;
-                model.computeDFunc = str2func(paramobj.D.functionname);
+                switch paramobj.D.type
+                  case 'constant'
+                    model.useDFunc = false;
+                  case 'function'
+                    model.useDFunc = true;
+                    model.computeDFunc = str2func(paramobj.D.functionname);
+                  otherwise
+                    errror('type of D not recognized.')
+                end
             else
                 model.useDFunc = false;
             end

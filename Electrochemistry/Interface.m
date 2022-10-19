@@ -53,8 +53,15 @@ classdef Interface < BaseModel
             model.computeOCPFunc = str2func(paramobj.OCP.functionname);
 
             if ~isempty(paramobj.j0)
-                model.useJ0Func = true;
-                model.computeJ0Func = str2func(paramobj.j0.functionname);
+                switch paramobj.j0.type
+                  case 'function'
+                    model.useJ0Func = true;
+                    model.computeJ0Func = str2func(paramobj.j0.functionname);
+                  case 'constant'
+                    model.useJ0Func = false;
+                  otherwise
+                    errror('type of j0 not recognized.')
+                end
             else
                 model.useJ0Func = false;
             end
