@@ -23,12 +23,12 @@
             "InterDiffusionCoefficientComment" : "from Ecker 2015",
             "electricalConductivity": 2,
             "BruggemanCoefficient": 1.5,
+            "diffusionModelType": "full",
             "Interface": {
                 "isFile": true,
                 "filename": "ParameterData/MaterialProperties/LiC6/LiC6_Xu.json"
             },
             "SolidDiffusion" : {
-                "useSimplifiedDiffusionModel" : false,
                 "EaD": 4000,
                 "D0": 3.9e-14,
                 "rp": 14.75e-06,
@@ -49,12 +49,12 @@
             "InterDiffusionCoefficient": 1.25e-15,
             "electricalConductivity": 0.01,
             "BruggemanCoefficient": 1.5,
+            "diffusionModelType": "full",
             "Interface": {
                 "isFile": true,
                 "filename": "ParameterData/MaterialProperties/LiFePO/LiFePO.json"
             },
             "SolidDiffusion": {
-                "useSimplifiedDiffusionModel" : false,
                 "EaD": 20000,
                 "D0": 1.25e-15,
                 "rp": 1.15e-06,
