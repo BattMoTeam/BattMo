@@ -13,8 +13,8 @@
              "functionname" : "computeOCP_graphite",
              "argumentlist" : ["concentration", "temperature", "maximum concentration"]}
   },
+  "diffusionModelType": "full",
   "SolidDiffusion" : {
-    "useSimplifiedDiffusionModel" : false,
     "EaD": 0,
     "D0": 2e-14,
     "rp": 2e-6
