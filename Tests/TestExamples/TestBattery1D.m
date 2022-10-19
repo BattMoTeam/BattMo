@@ -6,7 +6,7 @@ classdef TestBattery1D < matlab.unittest.TestCase
         controlPolicy              = {'CCCV', 'IEswitch'};
         use_thermal                = {true, false};
         include_current_collector  = {true, false};
-        diffusionmodel             = {'simplified'};
+        diffusionModelType         = {'simple', 'full'};
         
     end
     
@@ -17,7 +17,7 @@ classdef TestBattery1D < matlab.unittest.TestCase
             mrstModule add ad-core mrst-gui mpfa
         end
         
-        function states = test1d(test, jsonfile, controlPolicy, use_thermal, include_current_collector, useSimplifiedDiffusionModel, varargin)
+        function states = test1d(test, jsonfile, controlPolicy, use_thermal, include_current_collector, diffusionModelType, varargin)
             
         %% Setup the properties of Li-ion battery materials and cell design
         % The properties and parameters of the battery cell, including the
@@ -33,9 +33,9 @@ classdef TestBattery1D < matlab.unittest.TestCase
 
             jsonstruct.include_current_collector = include_current_collector;
             jsonstruct.use_thermal = use_thermal;
-            
-            jsonstruct.NegativeElectrode.ActiveMaterial.useSimplifiedDiffusionModel = useSimplifiedDiffusionModel;
-            jsonstruct.PositiveElectrode.ActiveMaterial.useSimplifiedDiffusionModel = useSimplifiedDiffusionModel;
+
+            json.NegativeElectrode.ActiveMaterial.diffusionModelType = diffusionModelType;
+            json.PositiveElectrode.ActiveMaterial.diffusionModelType = diffusionModelType;
 
             paramobj = BatteryInputParams(jsonstruct);
 
@@ -160,16 +160,9 @@ classdef TestBattery1D < matlab.unittest.TestCase
 
     methods (Test)
 
-        function testBattery(test, jsonfile, controlPolicy, use_thermal, include_current_collector, diffusionmodel)
-
-            switch diffusionmodel
-              case 'full'
-                useSimplifiedDiffusionModel = false;
-              case 'simplified'
-                useSimplifiedDiffusionModel = true;
-            end
+        function testBattery(test, jsonfile, controlPolicy, use_thermal, include_current_collector, diffusionModelType)
             
-            states = test1d(test, jsonfile, controlPolicy, use_thermal, include_current_collector, useSimplifiedDiffusionModel);
+            states = test1d(test, jsonfile, controlPolicy, use_thermal, include_current_collector, diffusionModelType);
             verifyStruct(test, states{end}, sprintf('TestBattery1D%s', controlPolicy));
             
         end

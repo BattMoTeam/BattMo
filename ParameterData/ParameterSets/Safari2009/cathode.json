@@ -1,5 +1,6 @@
 {
     "electricalConductivity": 215,
+    "diffusionModelType": "full", 
     "Interface" : { "name": "cathode(safari)",
                     "theta0": 0.99,
                     "theta100": 0.5,
@@ -17,7 +18,6 @@
                     
                   },
     "SolidDiffusion" : {
-        "useSimplifiedDiffusionModel" : false,
         "EaD": 0,
         "D0": 1e-14,
         "rp": 2e-6

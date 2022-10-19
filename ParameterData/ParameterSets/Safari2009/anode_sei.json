@@ -1,5 +1,6 @@
 {
     "electricalConductivity": 215,
+    "diffusionModelType": "full",
     "Interface": {
         "cmax": 30555,
         "volumeFraction": 0.75,
@@ -17,7 +18,6 @@
                           }
     },
     "SolidDiffusion" : {
-        "useSimplifiedDiffusionModel" : false,
         "EaD": 0,
         "D0": 2e-14,
         "rp": 2e-6
