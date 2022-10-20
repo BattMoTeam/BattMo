@@ -27,7 +27,8 @@ gen = BareBatteryGenerator3D();
 paramobj = gen.updateBatteryInputParams(paramobj);
 
 paramobj.(ne).(am).InterDiffusionCoefficient = 0;
-paramobj.(ne).(am).diffusionModelType = 'full';
+% paramobj.(ne).(am).diffusionModelType = 'full';
+paramobj.(ne).(am).diffusionModelType = 'simple';
 
 paramobj = paramobj.(ne).(am);
 
@@ -41,7 +42,20 @@ paramobj.G = G;
 D0 = paramobj.(sd).D0; % default value : 3.3e-14
 paramobj.(sd).D0 = 1*D0;
 
+paramobj.use_particle_diffusion = true;
+
 model = ActiveMaterial(paramobj);
+
+cgt = ComputationalGraphTool(model);
+
+% cgt.includeNodeNames = 'Negati.*Int.*R';
+
+[g, edgelabels] = cgt.getComputationalGraph();
+
+figure
+% h = plot(g, 'edgelabel', edgelabels, 'nodefontsize', 10);
+h = plot(g, 'nodefontsize', 10);
+
 
 inspectgraph = false;
 if inspectgraph
@@ -53,7 +67,6 @@ end
 
 %% Setup initial state
 
-N = model.(sd).N;
 
 cElectrolyte     = 5e-1*mol/litre;
 phiElectrolyte   = 0;
@@ -62,6 +75,7 @@ T                = 298;
 cElectrodeInit   = (model.(itf).theta100)*(model.(itf).cmax);
 
 % set primary variables
+N = model.(sd).N;
 initState.(sd).c        = cElectrodeInit*ones(N, 1);
 initState.(sd).cSurface = cElectrodeInit;
 

@@ -29,7 +29,7 @@ classdef Battery < BaseModel
         mappings
         
         % flag that decide the model setup
-        use_solid_diffusion
+        use_particle_diffusion
         use_thermal
         include_current_collectors
         
@@ -56,7 +56,7 @@ classdef Battery < BaseModel
                        'use_thermal'  , ...
                        'include_current_collectors' , ...
                        'use_thermal'               , ...
-                       'use_solid_diffusion'       , ...
+                       'use_particle_diffusion'       , ...
                        'SOC'};
             
             model = dispatchParams(model, paramobj, fdnames);
@@ -161,11 +161,11 @@ classdef Battery < BaseModel
             selectedVarInds(inds) = true;
             
             % default set of equations (enter in all setups)
-            [isok, inds] = ismember({'elyte_massCons'   , ...
-                                     'elyte_chargeCons' , ...
-                                     'ne_am_chargeCons' , ...
-                                     'pe_am_chargeCons' , ...
-                                     'EIeq'             , ...
+            [isok, inds] = ismember({'elyte_massCons'  , ...
+                                     'elyte_chargeCons', ...
+                                     'ne_am_chargeCons', ...
+                                     'pe_am_chargeCons', ...
+                                     'EIeq'            , ...
                                      'controlEq'}, allEquationNames);
             selectedEqnInds(inds) = true;
             
@@ -177,7 +177,7 @@ classdef Battery < BaseModel
                 addedVariableNames{end + 1} = {thermal, 'T'};
             end
 
-            if model.use_solid_diffusion
+            if model.use_particle_diffusion
                 selectedVarInds(pickVarInd({{ne, am, sd, 'cSurface'}, {pe, am, sd, 'cSurface'}})) = true;
                 [isok, inds] = ismember({'ne_am_sd_soliddiffeq', 'pe_am_sd_soliddiffeq'}, allEquationNames);
                 selectedEqnInds(inds) = true;
@@ -201,6 +201,13 @@ classdef Battery < BaseModel
                     [isok, inds] = ismember('pe_am_sd_massCons', allEquationNames);
                     selectedEqnInds(inds) = true;                    
                 end
+            else
+                selectedVarInds(pickVarInd({ne, am, 'c'})) = true;
+                [isok, inds] = ismember('ne_am_massCons', allEquationNames);
+                selectedEqnInds(inds) = true;                    
+                selectedVarInds(pickVarInd({pe, am, 'c'})) = true;
+                [isok, inds] = ismember('pe_am_massCons', allEquationNames);
+                selectedEqnInds(inds) = true;                                    
             end
 
             if model.include_current_collectors
@@ -705,7 +712,7 @@ classdef Battery < BaseModel
                 elde = electrodes{ind};
                 % potential and concentration between interface and active material
                 state.(elde).(am) = battery.(elde).(am).updatePhi(state.(elde).(am));
-                if (model.use_solid_diffusion)
+                if (model.use_particle_diffusion)
                     state.(elde).(am) = battery.(elde).(am).updateConcentrations(state.(elde).(am));
                 else
                     state.(elde).(am).(itf).cElectrodeSurface = state.(elde).(am).c;
@@ -793,7 +800,7 @@ classdef Battery < BaseModel
             for ind = 1 : numel(electrodes)
                 elde = electrodes{ind};
                 state.(elde).(am).(sd) = battery.(elde).(am).(sd).updateDiffusionCoefficient(state.(elde).(am).(sd));
-                if model.use_solid_diffusion
+                if model.use_particle_diffusion
                     switch model.(elde).(am).diffusionModelType
                       case 'simple'
                         state.(elde).(am) = battery.(elde).(am).assembleAccumTerm(state.(elde).(am), state0.(elde).(am), dt);
@@ -869,7 +876,7 @@ classdef Battery < BaseModel
             % Equation name : 'pe_am_chargeCons';
             eqs{end + 1} = state.(pe).(am).chargeCons;
             
-            if model.use_solid_diffusion
+            if model.use_particle_diffusion
 
                 switch model.(ne).(am).diffusionModelType
                   case 'simple'
@@ -1061,7 +1068,7 @@ classdef Battery < BaseModel
             electrodes = {ne, pe};
             for i = 1 : numel(electrodes)
                 elde = electrodes{i}; % electrode name
-                if strcmp(model.(elde).(am).diffusionModelType, 'simple') | ~model.use_solid_diffusion
+                if strcmp(model.(elde).(am).diffusionModelType, 'simple') | ~model.use_particle_diffusion
                     state.(elde).(am) = model.(elde).(am).assembleAccumTerm(state.(elde).(am), state0.(elde).(am), dt);
                 end
             end
@@ -1511,7 +1518,7 @@ classdef Battery < BaseModel
             eldes = {ne, pe};
             for ind = 1 : numel(eldes)
                 elde = eldes{ind};
-                if strcmp(model.(elde).(am).diffusionModelType, 'simple') | ~model.use_solid_diffusion
+                if strcmp(model.(elde).(am).diffusionModelType, 'simple') | ~model.use_particle_diffusion
                     state.(elde).(am).c = max(cmin, state.(elde).(am).c);
                     cmax = model.(elde).(am).(itf).cmax;
                     state.(elde).(am).c = min(cmax, state.(elde).(am).c);

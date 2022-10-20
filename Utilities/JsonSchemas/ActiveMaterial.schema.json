@@ -7,15 +7,17 @@
   "allOf": [{"$ref": "ElectronicComponent"},
             {"$ref": "thermalParameters"},
             {"properties" : { "Interface": {"$ref" : "Interface"},
-                             "SolidDiffusion": {"$ref" : "SolidDiffusionModel"},
-                             "InterDiffusionCoefficient": {"type" : "number"},
-                             "electricalConductivity": {"type" : "number"},
-                             "diffusionModelType" : {"type" : "string",
-                                                     "enum" : ["full", "simplified"]},
-                             "BruggemanCoefficient" : {"type" : "number"},
-                             "volumeFraction" : {"type" : "number"},
-                             "activeMaterialFraction" : {"type" : "number"}
-                           }}
+                              "SolidDiffusion": {"$ref" : "SolidDiffusionModel"},
+                              "InterDiffusionCoefficient": {"type" : "number"},
+                              "electricalConductivity": {"type" : "number"},
+                              "diffusionModelType" : {"type" : "string",
+                                                      "enum" : ["full", "simple"]},
+                              "BruggemanCoefficient" : {"type" : "number"},
+                              "volumeFraction" : {"type" : "number"},
+                              "activeMaterialFraction" : {"type" : "number"},
+                              "use_particle_diffusion": {"type" : "boolean"}
+                            }
+            }
            ],
   
   
@@ -24,8 +26,10 @@
   "anyOf" : [ {"properties" : {"diffusionModelType" : {"const" : "full"},
                                "SolidDiffusion" : {"$ref" : "FullSolidDiffusionModel"}}
               },
-              {"properties" : {"diffusionModelType" : {"const" : "simplified"},
+              {"properties" : {"diffusionModelType" : {"const" : "simple"},
                                "SolidDiffusion" : {"$ref" : "SimplifiedSolidDiffusionModel"}}
+              },
+              {"not" : {"properties" : {"diffusionModelType": {"type" : "string"}}}
               }
             ]
 }

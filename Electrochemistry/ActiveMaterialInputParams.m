@@ -29,6 +29,8 @@ classdef ActiveMaterialInputParams < ElectronicComponentInputParams
         volumeFraction % Volume fraction of the whole material (binder and so on included)
         
         activeMaterialFraction = 1 % Volume fraction occupied only by the active material (default value is 1)
+
+        use_particle_diffusion
         
     end
 
@@ -39,7 +41,7 @@ classdef ActiveMaterialInputParams < ElectronicComponentInputParams
             paramobj = paramobj@ElectronicComponentInputParams(jsonstruct);
 
             if isempty(paramobj.diffusionModelType)
-                paramobj.diffusionModelType = 'full';
+                % we do not use any diffusion model (use_particle_diffusion = false)
             end
             
             pick = @(fd) pickField(jsonstruct, fd);

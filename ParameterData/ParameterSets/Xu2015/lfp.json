@@ -5,7 +5,7 @@
   "initT": 293.15,
   "use_thermal": true,
   "include_current_collectors": true,
-  "use_solid_diffusion": true,
+  "use_particle_diffusion": true,
   "Control" : {
     "controlPolicy" : "IEswitch",
     "CRate" : 1,
