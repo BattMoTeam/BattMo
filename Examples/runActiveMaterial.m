@@ -46,22 +46,16 @@ paramobj.use_particle_diffusion = true;
 
 model = ActiveMaterial(paramobj);
 
-cgt = ComputationalGraphTool(model);
-
-% cgt.includeNodeNames = 'Negati.*Int.*R';
-
-[g, edgelabels] = cgt.getComputationalGraph();
-
-figure
-% h = plot(g, 'edgelabel', edgelabels, 'nodefontsize', 10);
-h = plot(g, 'nodefontsize', 10);
-
-
-inspectgraph = false;
+inspectgraph = true;
 if inspectgraph
     model.isRoot = true;
     cgt = ComputationalGraphTool(model);
-    inspectGraphScript(model);
+    [g, edgelabels] = cgt.getComputationalGraph();
+
+    figure
+    % h = plot(g, 'edgelabel', edgelabels, 'nodefontsize', 10);
+    h = plot(g, 'nodefontsize', 10);
+    return
 end
 
 
