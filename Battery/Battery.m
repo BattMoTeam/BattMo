@@ -61,13 +61,9 @@ classdef Battery < BaseModel
             
             model = dispatchParams(model, paramobj, fdnames);
 
-            % Assign the components : Electrolyte, NegativeElectrode, PositiveElectrode
-            params.include_current_collectors = model.include_current_collectors;
-            params.use_thermal = model.use_thermal;
-
-            model.NegativeElectrode = model.setupElectrode(paramobj.NegativeElectrode, params);
-            model.PositiveElectrode = model.setupElectrode(paramobj.PositiveElectrode, params);
-            model.Electrolyte       = model.setupElectrolyte(paramobj.Electrolyte);
+            model.NegativeElectrode = Electrode(paramobj.NegativeElectrode);
+            model.PositiveElectrode = Electrode(paramobj.PositiveElectrode);
+            model.Electrolyte       = Electrolyte(paramobj.Electrolyte);
             if model.use_thermal
                 model.ThermalModel = ThermalComponent(paramobj.ThermalModel);
             end
@@ -510,19 +506,7 @@ classdef Battery < BaseModel
             end
             
         end
-        
-        
-        function electrode = setupElectrode(model, paramobj, params)
-        % Setup the electrode models (both :attr:`NegativeElectrode` and :attr:`PositiveElectrode`). Here, :code:`paramobj`
-        % is instance of :class:`ElectrodeInputParams <Electrochemistry.Electrodes.ElectrodeInputParams>`
-            electrode = Electrode(paramobj, params);
-        end
-        
-        function electrolyte = setupElectrolyte(model, paramobj)
-        % Setup the electrolyte model :attr:`Electrolyte`. Here, :code:`paramobj` is instance of
-        % :class:`ElectrolyteInputParams <Electrochemistry.ElectrolyteInputParams>`
-            electrolyte = Electrolyte(paramobj);
-        end
+
         
         function model = setupMappings(model)
             
@@ -658,13 +642,13 @@ classdef Battery < BaseModel
 
             %% Setup initial Current collectors state
 
-            if model.(ne).include_current_collectors
+            if model.(ne).include_current_collector
                 OCP = initstate.(ne).(am).(itf).OCP;
                 OCP = OCP(1) .* ones(bat.(ne).(cc).G.cells.num, 1);
                 initstate.(ne).(cc).phi = OCP - ref;
             end
             
-            if model.(pe).include_current_collectors
+            if model.(pe).include_current_collector
                 OCP = initstate.(pe).(am).(itf).OCP;
                 OCP = OCP(1) .* ones(bat.(pe).(cc).G.cells.num, 1);
                 initstate.(pe).(cc).phi = OCP - ref;
@@ -1007,12 +991,12 @@ classdef Battery < BaseModel
             end
             
             % Equation name : 'ne_cc_chargeCons';
-            if model.(ne).include_current_collectors
+            if model.(ne).include_current_collector
                 eqs{end + 1} = state.(ne).(cc).chargeCons;
             end
             
             % Equation name : 'pe_cc_chargeCons';
-            if model.(pe).include_current_collectors
+            if model.(pe).include_current_collector
                 eqs{end + 1} = state.(pe).(cc).chargeCons;
             end
 
@@ -1526,12 +1510,12 @@ classdef Battery < BaseModel
             model.NegativeElectrode.ActiveMaterial = model.NegativeElectrode.ActiveMaterial.validateModel(varargin{:});
             model.Electrolyte.AutoDiffBackend=model.AutoDiffBackend;
             model.Electrolyte=model.Electrolyte.validateModel(varargin{:});
-            if model.NegativeElectrode.include_current_collectors
+            if model.NegativeElectrode.include_current_collector
                 model.NegativeElectrode.CurrentCollector.AutoDiffBackend= model.AutoDiffBackend;
                 model.NegativeElectrode.CurrentCollector= model.NegativeElectrode.CurrentCollector.validateModel(varargin{:});
             end
             
-            if model.PositiveElectrode.include_current_collectors
+            if model.PositiveElectrode.include_current_collector
                 model.PositiveElectrode.CurrentCollector.AutoDiffBackend=model.AutoDiffBackend;
                 model.PositiveElectrode.CurrentCollector= model.PositiveElectrode.CurrentCollector.validateModel(varargin{:});
             end

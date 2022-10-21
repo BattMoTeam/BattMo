@@ -29,10 +29,10 @@ classdef ActiveMaterial < ElectronicComponent
 
         BruggemanCoefficient
 
+        use_particle_diffusion
+
         isRoot
 
-        use_particle_diffusion
-        
     end
     
     methods
@@ -50,7 +50,7 @@ classdef ActiveMaterial < ElectronicComponent
                        'externalCouplingTerm'  , ...
                        'diffusionModelType'    , ...
                        'use_thermal'           , ...
-                       'use_particle_diffusion'   , ...
+                       'use_particle_diffusion', ...
                        'BruggemanCoefficient'};
             
             model = dispatchParams(model, paramobj, fdnames);

@@ -20,7 +20,9 @@ classdef BareBatteryGenerator3D < BatteryGenerator
         end
             
         function paramobj = updateBatteryInputParams(gen, paramobj)
-            paramobj.include_current_collectors = false;
+            if ~paramobj.include_current_collectors
+                warning('This geometry does not include current collectors but input data has been given for those');
+            end
             paramobj = gen.setupBatteryInputParams(paramobj, []);
         end
         

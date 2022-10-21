@@ -11,7 +11,7 @@ classdef Electrode < BaseModel
 
         couplingTerm
         
-        include_current_collectors
+        include_current_collector
 
         use_thermal
         
@@ -19,8 +19,9 @@ classdef Electrode < BaseModel
 
     methods
         
-        function model = Electrode(paramobj, params)
+        function model = Electrode(paramobj)
         % paramobj is instance of :class:`Electrochemistry.Electrodes.ElectrodeInputParams`
+            
             model = model@BaseModel();
             
             model.AutoDiffBackend = SparseAutoDiffBackend('useBlocks', false);
@@ -33,15 +34,17 @@ classdef Electrode < BaseModel
             % Assign the two components
             model.ActiveMaterial = model.setupActiveMaterial(paramobj.ActiveMaterial);
             
-            if params.include_current_collectors
+            if paramobj.include_current_collector
+                model.include_current_collector = true;
                 assert(~isempty(paramobj.CurrentCollector), 'current collector input data is missing')
                 model.CurrentCollector = model.setupCurrentCollector(paramobj.CurrentCollector);
-                model.include_current_collectors = true;
             else
-                assert(isempty(paramobj.CurrentCollector.G), 'current collector grid is given, but we are not using it, as required by input flag')
-                model.include_current_collectors = false;
+                model.include_current_collector = false;
+                if isempty(paramobj.CurrentCollector.G)
+                   % warning('current collector data is given, but we are not using it, as required by input flag');
+                end
             end
-            
+                   
         end
         
         function model = registerVarAndPropfuncNames(model)
@@ -52,18 +55,19 @@ classdef Electrode < BaseModel
             cc = 'CurrentCollector';
             am = 'ActiveMaterial';
 
-            if ~model.include_current_collectors
+            if ~model.include_current_collector
                 model.subModelNameList = {am};
             end
            
             model = registerVarAndPropfuncNames@BaseModel(model);
 
-            if ~model.include_current_collectors
+            if ~model.include_current_collector
                 model = model.registerVarName(VarName({am}, 'jExternal'));
             end
             
             
-            if model.include_current_collectors
+            if model.include_current_collector
+
                 fn = @Electrode.updateCoupling;
                 inputnames = {{am, 'phi'}, ...
                               {cc , 'phi'}};
@@ -102,11 +106,12 @@ classdef Electrode < BaseModel
         function state = updateCoupling(model, state)
         % setup coupling terms between the current collector and the electrode active component            
             
-            if model.include_current_collectors
+            if model.include_current_collector
                 
                 elde  = model;
-                am   = 'ActiveMaterial';
-                cc    = 'CurrentCollector';
+                
+                am = 'ActiveMaterial';
+                cc = 'CurrentCollector';
 
                 am_phi = state.(am).phi;
                 cc_phi = state.(cc).phi;
