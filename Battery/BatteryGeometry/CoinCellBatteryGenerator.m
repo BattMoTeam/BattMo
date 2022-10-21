@@ -8,7 +8,7 @@ classdef CoinCellBatteryGenerator < BatteryGenerator
         offset = [0, 0] % Negative and positive electrode offset half this distance from center
         
         % Sector model specific design params
-        use_sector
+        use_sector = false
         angle
 
         tag     % cell-valued vector giving component number (indexing is given by tagdict)
@@ -40,10 +40,10 @@ classdef CoinCellBatteryGenerator < BatteryGenerator
 
             gen.compdims = params.compdims;
             gen.meshSize = params.meshSize;
-            gen.use_sector = params.use_sector;
-            gen.angle = params.angle;
-            %gen.offset = params.offset;
-            assert(all(gen.offset == 0), 'Coin cells with non-zero offset is not yet implemented')
+            %gen.use_sector = params.use_sector;
+            %gen.angle = params.angle;
+            gen.offset = params.offset;
+            %assert(all(gen.offset == 0), 'Coin cells with non-zero offset is not yet implemented')
             
             [paramobj, gen] = gen.setupBatteryInputParams(paramobj, []);
 

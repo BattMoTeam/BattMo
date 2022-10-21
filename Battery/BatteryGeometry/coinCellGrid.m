@@ -37,7 +37,6 @@ function output = coinCell3dGrid(params, compnames, dz, tagdict)
     [R, bbox, xc0] = extractDims(compdims);
     
     % Create constraints for the different diameters
-    diameter = compdims.diameter;
     meshSize = params.meshSize;
     offset = params.offset;
 
@@ -45,7 +44,7 @@ function output = coinCell3dGrid(params, compnames, dz, tagdict)
 
     % Create circles
     if all(offset == 0)
-        diams = unique(diameter);
+        diams = unique(compnames.diameter);
         r = 0.5 * diams;
         n = num_points(r);        
         for k = 1:numel(diams)
@@ -58,7 +57,8 @@ function output = coinCell3dGrid(params, compnames, dz, tagdict)
         for k = 1:numel(compnames)
             key = compnames{k};
             if ~strcmp(key, 'Electrolyte')
-                circdata(k, :) = [xc0, diameter(key)];
+                circdata(k, :) = [xc0, compdims{key, 'diameter'}];
+                sign = 0;
                 if strcmp(key, 'PositiveActiveMaterial')
                     sign = 1;
                 elseif strcmp(key, 'NegativeActiveMaterial')
@@ -73,8 +73,8 @@ function output = coinCell3dGrid(params, compnames, dz, tagdict)
         cd = unique(circdata, 'rows');
         fc = cell(size(cd, 1), 1);
         for k = 1:size(cd, 1)
-            xc = cd(k, 1:2);
-            r = cd(k, 3);
+            xc = cd(k, 1:2)
+            r = cd(k, 3)
             n = num_points(r);
             fc{k} = circle(r, xc, n);
         end
@@ -84,6 +84,10 @@ function output = coinCell3dGrid(params, compnames, dz, tagdict)
     fcfactor = 0.5;
     G = pebiGrid2D(meshSize, max(bbox), 'faceConstraints', [fc{:}], 'polyBdr', bbox, 'FCFactor', fcfactor);
 
+    plotGrid(G)
+    keyboard;
+
+    
     % Remove markers for faces constituting the outer circle
     G.faces = rmfield(G.faces, 'tag');
 

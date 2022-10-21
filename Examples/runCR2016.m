@@ -74,20 +74,19 @@ compdims{'NegativeCurrentCollector', 'diameter'} = 1;
 compdims.diameter = compdims.diameter * CR2016_diameter;
 
 %% Construct mesh
-meshSize = max(compdims.diameter) / 10;
+meshSize = max(compdims.diameter) / 100; %10;
 hz = min(compdims.thickness);
 compdims.numCellLayers = max(2, round(compdims.thickness / hz));
 compdims{ccs, 'numCellLayers'} = ceil(round(0.25 * compdims{ccs, 'numCellLayers'}));
 
 use_sector = false;
 %use_sector = true;
-
-angle = pi/40;
+%angle = pi/40;
+offset = 4*[1,1]*milli*meter;
 
 params = struct('compdims', compdims, ...
                 'meshSize', meshSize, ...
-                'use_sector', use_sector, ...
-                'angle', angle);
+                'offset', offset);
 
 gen = CoinCellBatteryGenerator();
 
@@ -200,6 +199,8 @@ legend({'negative electrode current collector' , ...
        'location', 'southwest')
 view(-37, 14)
 drawnow
+
+return
 
 %% Additional plots for visualizing the different components
 doplot = false;
