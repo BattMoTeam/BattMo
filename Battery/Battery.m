@@ -329,32 +329,33 @@ classdef Battery < BaseModel
 
             end
             
-            %% Functions that setup external coupling at positive and negative electrodes
+            %% Functions that setup external  coupling for negative electrode
             
-            fn = @Battery.setupExternalCouplingNegativeElectrode;
-            if model.include_current_collectors
-                inputnames = {{ne, cc, 'phi'}, ...
-                              {ne, cc, 'conductivity'}};
-                model = model.registerPropFunction({{ne, cc, 'jExternal'}, fn, inputnames});
-                model = model.registerPropFunction({{ne, cc, 'jFaceExternal'}, fn, inputnames});
-            else
-                inputnames = {{ne, am, 'phi'}, ...
-                              {ne, am, 'conductivity'}};
-                model = model.registerPropFunction({{ne, am, 'jExternal'}, fn, inputnames});
-                model = model.registerPropFunction({{ne, am, 'jFaceExternal'}, fn, inputnames});
-            end
-            
-            fn = @Battery.setupExternalCouplingPositiveElectrode;
-            if model.include_current_collectors
-                inputnames = {{pe, cc, 'phi'}, ...
-                              {pe, cc, 'conductivity'}};
-                model = model.registerPropFunction({{pe, cc, 'jExternal'}, fn, inputnames});
-                % model = model.registerPropFunction({{pe, cc, 'jFaceExternal'}, fn, {'phi', 'E'}});
-            else
-                inputnames = {{pe, am, 'phi'}, ...
-                              {pe, am, 'conductivity'}};
-                model = model.registerPropFunction({{pe, am, 'jExternal'}, fn, inputnames});
-                % model = model.registerPropFunction({{pe, am, 'jFaceExternal'}, fn, {'phi', 'E'}});
+            eldes = {ne, pe};
+
+            fns{1} = @Battery.setupExternalCouplingNegativeElectrode;
+            fns{2} = @Battery.setupExternalCouplingPositiveElectrode;
+
+            for ielde = 1 : numel(eldes)
+
+                elde = eldes{ielde};
+                fn = fns{ielde};
+                
+                inputnames = {{elde, am, 'phi'}, ...
+                              {elde, am, 'conductivity'}};
+                model = model.registerPropFunction({{elde, am, 'jExternal'}, fn, inputnames});
+                if model.use_thermal
+                    model = model.registerPropFunction({{elde, am, 'jFaceExternal'}, fn, inputnames});
+                end
+                if model.include_current_collectors
+                    inputnames = {{elde, cc, 'phi'}, ...
+                                  {elde, cc, 'conductivity'}};
+                    model = model.registerPropFunction({{elde, cc, 'jExternal'}, fn, inputnames});
+                    if model.use_thermal
+                        model = model.registerPropFunction({{elde, cc, 'jFaceExternal'}, fn, inputnames});
+                    end
+                end
+                
             end
 
             %% declare static variables

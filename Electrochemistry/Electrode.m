@@ -48,7 +48,8 @@ classdef Electrode < BaseModel
         end
         
         function model = registerVarAndPropfuncNames(model)
-            %% Declaration of the Dynamical Variables and Function of the model
+
+        %% Declaration of the Dynamical Variables and Function of the model
             % (setup of varnameList and propertyFunctionList)
 
             % define shorthands
@@ -72,14 +73,25 @@ classdef Electrode < BaseModel
                 inputnames = {{am, 'phi'}, ...
                               {cc , 'phi'}};
                 model = model.registerPropFunction({{am, 'jCoupling'}, fn, inputnames});
-                model = model.registerPropFunction({{cc , 'jCoupling'}, fn, inputnames});
-                model = model.registerPropFunction({{cc , 'eSource'}  , fn, inputnames});
+                model = model.registerPropFunction({{cc, 'jCoupling'}, fn, inputnames});
+                model = model.registerPropFunction({{cc, 'eSource'}  , fn, inputnames});
+
+                if model.use_thermal
+                    model = model.registerPropFunction({{am, 'jFaceCoupling'}, fn, inputnames});
+                    model = model.registerPropFunction({{cc, 'jFaceCoupling'}, fn, inputnames});
+                end
+                
             else
+                
                 fn = @Electrode.updatejBcSourceNoCurrentCollector;
                 model = model.registerPropFunction({{am, 'jBcSource'}, fn, {{am, 'jExternal'}}});
-                model = model.removeVarName({am, 'jCoupling'});
-            end
 
+                if model.use_thermal
+                    model = model.registerPropFunction({{am, 'jBcSource'}, fn, {{am, 'jExternal', 'jFaceExternal'}}});
+                    model = model.registerPropFunction({{am, 'jFaceBc'}, fn, {{am, 'jExternal', 'jFaceExternal'}}});
+                end
+                
+            end
 
             if model.use_thermal
                 % Temperature coupling between current collector and electrode active component

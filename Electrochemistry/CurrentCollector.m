@@ -44,8 +44,10 @@ classdef CurrentCollector < ElectronicComponent
             fn = @CurrentCollector.updatejBcSource;
             model = model.registerPropFunction({'jBcSource', fn, {'jCoupling', 'jExternal'}});
 
-            fn = @CurrentCollector.updatejFaceBc;
-            model = model.registerPropFunction({'jFaceBc', fn, {'jFaceCoupling', 'jFaceExternal'}});
+            if model.use_thermal
+                fn = @CurrentCollector.updatejFaceBc;
+                model = model.registerPropFunction({'jFaceBc', fn, {'jFaceCoupling', 'jFaceExternal'}});
+            end
             
         end
         

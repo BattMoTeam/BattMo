@@ -134,15 +134,13 @@ classdef ActiveMaterial < ElectronicComponent
             itf = 'Interface';
             sd  = 'SolidDiffusion';
             
-            varnames = {'jCoupling'    , ...
-                        'jExternal'    ,
-                        'SOC'          , ...
+            varnames = {'jExternal', ...
+                        'SOC'      , ...
                         'Rvol'};
             model = model.registerVarNames(varnames);            
 
             if model.use_thermal
-                varnames = {'jFaceCoupling', ...
-                            'jFaceExternal'};
+                varnames = {'jFaceExternal'};
                 model = model.registerVarNames(varnames);
             end
             
@@ -166,16 +164,16 @@ classdef ActiveMaterial < ElectronicComponent
                 
                 fn = @ActiveMaterial.updateStandalonejBcSource;
                 model = model.registerPropFunction({'jBcSource', fn, {'controlCurrentSource'}});
-                model = model.removeVarNames({'jCoupling', {itf, 'SOC'}});
+                model = model.removeVarName({itf, 'SOC'});
                 
             else
 
                 fn = @ActiveMaterial.updatejBcSource;
-                model = model.registerPropFunction({'jBcSource', fn, {'jCoupling', 'jExternal'}});
+                model = model.registerPropFunction({'jBcSource', fn, {'jExternal'}});
 
                 if model.use_thermal
                     fn = @ActiveMaterial.updatejFaceBc;
-                    model = model.registerPropFunction({'jFaceBc', fn, {'jFaceCoupling', 'jFaceExternal'}});
+                    model = model.registerPropFunction({'jFaceBc', fn, {'jFaceExternal'}});
                 end
                 
             end
@@ -237,6 +235,12 @@ classdef ActiveMaterial < ElectronicComponent
             if model.use_particle_diffusion & strcmp(model.diffusionModelType, 'simple')
                 fn = @ActiveMaterial.assembleAccumTerm;
                 model = model.registerPropFunction({'massAccum', fn, {'c'}});
+            end
+
+            fn = @ActiveMaterial.updatejExternal;
+            model = model.registerPropFunction({'jExternal', fn, {}});
+            if model.use_thermal
+                model = model.registerPropFunction({'jFaceExternal', fn, {}});
             end
             
         end
