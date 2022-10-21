@@ -34,6 +34,7 @@ classdef Electrolyte < ElectroChemicalComponent
 
         function model = Electrolyte(paramobj)
         % paramobj is instance of ElectrolyteInputParams or a derived class
+
             model = model@ElectroChemicalComponent(paramobj);
 
             model.Separator = Separator(paramobj.Separator);
@@ -133,6 +134,15 @@ classdef Electrolyte < ElectroChemicalComponent
 
         end
 
+        function state = updateAccumTerm(model, state, state0, dt)
+
+            cdotcc  = (state.c - state0.c)/dt;
+
+            effectiveVolumes = model.volumeFraction.*model.G.cells.volumes;
+
+            state.massAccum  = effectiveVolumes.*cdotcc;
+            
+        end
 
         function state = updateConductivity(model, state)
             

@@ -115,7 +115,20 @@ classdef ThermalComponent < BaseModel
             
         end
         
+        function state = updateAccumTerm(model, state, state0, dt)
+        % Assemble the accumulation term for the energy equation
+
+            hcap = model.EffectiveHeatCapacity;
             
+            T = state.T;
+            T0 = state0.T;
+
+            % (here we assume that the ThermalModel has the "parent" grid)
+            vols = model.G.cells.volumes;
+            
+            state.accumHeat = hcap.*vols.*(T - T0)/dt;
+            
+        end
             
         function state = updateHeatFlux(model, state)
 

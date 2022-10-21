@@ -797,9 +797,9 @@ classdef Battery < BaseModel
                 end              
             end
             
-            %% Accumulation terms
+            %% Accumulation term in elyte
 
-            state = battery.updateAccumTerms(state, state0, dt);
+            state.(elyte) = battery.(elyte).updateAccumTerm(state.(elyte), state0.(elyte), dt);
 
             %% Update Electrolyte -> Electrodes coupling 
             
@@ -855,6 +855,7 @@ classdef Battery < BaseModel
             %% Electrodes charge conservation - Active material part
 
             for ind = 1 : numel(electrodes)
+                
                 elde = electrodes{ind};
                 state.(elde).(am) = battery.(elde).(am).updateCurrentSource(state.(elde).(am));
                 state.(elde).(am) = battery.(elde).(am).updateCurrent(state.(elde).(am));
@@ -917,7 +918,7 @@ classdef Battery < BaseModel
                 
                 %% update Accumulation terms for the energy equation
                 
-                state = battery.updateThermalAccumTerms(state, state0, dt);
+                state.(thermal) = battery.(thermal).updateAccumTerm(state.(thermal), state0.(thermal), dt);
                 
                 %% Update energy conservation residual term
                 
@@ -1130,28 +1131,6 @@ classdef Battery < BaseModel
             
         end
         
-        function state = updateAccumTerms(model, state, state0, dt)
-        % Assemble the accumulation terms for transport equations (in electrolyte and electrodes)
-            
-            elyte = 'Electrolyte';
-            ne    = 'NegativeElectrode';
-            pe    = 'PositiveElectrode';
-            am    = 'ActiveMaterial';
-            
-            cdotcc  = (state.(elyte).c - state0.(elyte).c)/dt;
-            effectiveVolumes = model.(elyte).volumeFraction.*model.(elyte).G.cells.volumes;
-            massAccum  = effectiveVolumes.*cdotcc;
-            state.(elyte).massAccum = massAccum;
-            
-            electrodes = {ne, pe};
-            for i = 1 : numel(electrodes)
-                elde = electrodes{i}; % electrode name
-                if strcmp(model.(elde).(am).diffusionModelType, 'simple') | ~model.use_particle_diffusion
-                    state.(elde).(am) = model.(elde).(am).assembleAccumTerm(state.(elde).(am), state0.(elde).(am), dt);
-                end
-            end
-            
-        end
 
         function state = updateControl(model, state, drivingForces)
             
@@ -1180,23 +1159,6 @@ classdef Battery < BaseModel
             
         end
         
-        function state = updateThermalAccumTerms(model, state, state0, dt)
-        % Assemble the accumulation term for the energy equation
-            thermal = 'ThermalModel';
-            
-            hcap = model.(thermal).EffectiveHeatCapacity;
-            
-            T = state.(thermal).T;
-            T0 = state0.(thermal).T;
-
-            % (here we assume that the ThermalModel has the "parent" grid)
-            vols = model.G.cells.volumes;
-            
-            state.(thermal).accumHeat = hcap.*vols.*(T - T0)/dt;
-            
-        end
-
-
         function state = updateThermalOhmicSourceTerms(model, state)
         % Assemble the ohmic source term :code:`state.jHeatOhmSource`, see :cite:t:`Latz2016`
 
