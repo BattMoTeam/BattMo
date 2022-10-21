@@ -31,7 +31,7 @@ classdef ActiveMaterialInputParams < ElectronicComponentInputParams
         activeMaterialFraction = 1 % Volume fraction occupied only by the active material (default value is 1)
 
         use_particle_diffusion
-        
+
     end
 
     methods
@@ -72,7 +72,6 @@ classdef ActiveMaterialInputParams < ElectronicComponentInputParams
 
         function paramobj = validateInputParams(paramobj)
 
-            paramobj = validateInputParams@ElectronicComponentInputParams(paramobj);
 
             diffusionModelType = paramobj.diffusionModelType;
             
@@ -102,6 +101,8 @@ classdef ActiveMaterialInputParams < ElectronicComponentInputParams
                 error('Unknown diffusionModelType %s', diffusionModelType);
             end
 
+            paramobj = validateInputParams@ElectronicComponentInputParams(paramobj);
+            
         end
         
     end

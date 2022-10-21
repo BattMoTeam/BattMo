@@ -46,13 +46,45 @@ classdef BatteryInputParams < InputParams
             paramobj.(thermal) = ThermalComponentInputParams(pick(thermal));
             switch jsonstruct.(ctrl).controlPolicy
               case 'IEswitch'
-                paramobj.(ctrl)    = IEswitchControlModelInputParams(pick(ctrl));
+                paramobj.(ctrl) = IEswitchControlModelInputParams(pick(ctrl));
               case 'CCCV'
-                paramobj.(ctrl)    = CcCvControlModelInputParams(pick(ctrl));
+                paramobj.(ctrl) = CcCvControlModelInputParams(pick(ctrl));
               otherwise
                 error('controlPolicy not recognized');
             end
             paramobj.couplingTerms = {};
+
+            paramobj = paramobj.validateInputParams();
+            
+        end
+
+        function paramobj = validateInputParams(paramobj)
+
+            ne      = 'NegativeElectrode';
+            pe      = 'PositiveElectrode';
+            elyte   = 'Electrolyte';
+            thermal = 'ThermalModel';
+            ctrl    = 'Control';            
+
+            comps = {ne, pe, elyte};
+            for icomp = 1 : numel(comps)
+                comp = comps{icomp};
+                paramobj = mergeParameters(paramobj, {'use_thermal'}, {comp, 'use_thermal'});
+            end
+
+            comps = {ne, pe};
+            for icomp = 1 : numel(comps)
+                comp = comps{icomp};
+                paramobj = mergeParameters(paramobj, {'include_current_collectors'}, {comp, 'include_current_collector'});
+            end
+            
+            paramobj.(ne)    = paramobj.(ne).validateInputParams();
+            paramobj.(pe)    = paramobj.(pe).validateInputParams();
+            paramobj.(elyte) = paramobj.(elyte).validateInputParams();
+
+            if paramobj.use_thermal
+                paramobj.(thermal) = paramobj.(thermal).validateInputParams();
+            end
             
         end
 
