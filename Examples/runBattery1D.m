@@ -54,7 +54,6 @@ if use_cccv
 end
 
 
-
 %% Setup the geometry and computational mesh
 % Here, we setup the 1D computational mesh that will be used for the
 % simulation. The required discretization parameters are already included
@@ -70,7 +69,15 @@ paramobj = gen.updateBatteryInputParams(paramobj);
 model = Battery(paramobj);
 model.AutoDiffBackend= AutoDiffBackend();
 
-return
+inspectgraph = false;
+if inspectgraph
+    % plot the computational graph
+    cgt = ComputationalGraphTool(model);
+    figure
+    g = cgt.getComputationalGraph();
+    h = plot(g, 'nodefontsize', 10);
+end
+
 
 %% Compute the nominal cell capacity and choose a C-Rate
 % The nominal capacity of the cell is calculated from the active materials.
@@ -92,9 +99,8 @@ switch model.(ctrl).controlPolicy
     error('control policy not recognized');
 end
 
-n    = 100;
-dt   = total/n;
-n = 20;
+n  = 100;
+dt = total/n;
 step = struct('val', dt*ones(n, 1), 'control', ones(n, 1));
 
 % we setup the control by assigning a source and stop function.
