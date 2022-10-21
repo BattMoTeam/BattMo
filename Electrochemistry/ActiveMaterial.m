@@ -484,15 +484,24 @@ classdef ActiveMaterial < ElectronicComponent
         end
 
         function state = updatejBcSource(model, state)
-            state.jBcSource = state.jCoupling;
-            state.jFaceBc = state.jFaceCoupling;
+            state.jBcSource = state.jCoupling + state.jExternal;
         end
         
-        function state = updatejBcSourceNoCurrentCollector(model, state)
-            state.jBcSource = state.jExternal;
-            state.jFaceBc   = state.jFaceExternal;
+        function state = updatejFaceBc(model, state)
+            state.jFaceBc = state.jFaceCoupling + state.jFaceExternal;
+        end
+        
+        function state = updatejExternal(model, state)
+            state.jExternal = 0;
+            state.jFaceExternal = 0;
         end
 
+        function state = updatejCoupling(model, state)
+            state.jCoupling = 0;
+            state.jFaceCoupling = 0;
+        end
+        
+            
         function state = updateAverageConcentration(model, state)
 
             % shortcut

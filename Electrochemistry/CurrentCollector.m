@@ -54,6 +54,11 @@ classdef CurrentCollector < ElectronicComponent
         function state = updatejBcSource(model, state)
             
             state.jBcSource = state.jCoupling + state.jExternal;
+            
+        end
+        
+        function state = updatejFaceBc(model, state)
+            
             state.jFaceBc = state.jFaceCoupling + state.jFaceExternal;
             
         end

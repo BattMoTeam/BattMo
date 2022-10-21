@@ -822,10 +822,11 @@ classdef Battery < BaseModel
                 end
                 if model.include_current_collectors
                     state.(elde).(cc) = battery.(elde).(cc).updatejBcSource(state.(elde).(cc));
-                    state.(elde).(am) = battery.(elde).(am).updatejBcSource(state.(elde).(am));
+                    state.(elde).(am) = battery.(elde).(am).updatejExternal(state.(elde).(am));
                 else
-                    state.(elde).(am) = battery.(elde).(am).updatejBcSourceNoCurrentCollector(state.(elde).(am));
+                    state.(elde).(am) = battery.(elde).(am).updatejCoupling(state.(elde).(am));
                 end
+                state.(elde).(am) = battery.(elde).(am).updatejBcSource(state.(elde).(am));
                 
             end
             
@@ -885,8 +886,10 @@ classdef Battery < BaseModel
                 %% update Face fluxes
                 for ind = 1 : numel(electrodes)
                     elde = electrodes{ind};
+                    state.(elde).(am) = battery.(elde).(am).updatejFaceBc(state.(elde).(am));
                     state.(elde).(am) = battery.(elde).(am).updateFaceCurrent(state.(elde).(am));
                     if model.include_current_collectors
+                        state.(elde).(cc) = battery.(elde).(cc).updatejFaceBc(state.(elde).(cc));
                         state.(elde).(cc) = battery.(elde).(cc).updateFaceCurrent(state.(elde).(cc));
                     end
                 end
@@ -1345,8 +1348,9 @@ classdef Battery < BaseModel
         % Setup external electronic coupling of the negative electrode at the current collector
         %
             ne = 'NegativeElectrode';
+            am = 'ActiveMaterial';
             
-            if model.(ne).include_current_collectors
+            if model.(ne).include_current_collector
                 
                 cc = 'CurrentCollector';
 
@@ -1355,12 +1359,12 @@ classdef Battery < BaseModel
 
                 [jExternal, jFaceExternal] = setupExternalCoupling(model.(ne).(cc), phi, 0, sigma);
                 
-                state.(ne).(cc).jExternal = jExternal;
+                state.(ne).(cc).jExternal     = jExternal;
                 state.(ne).(cc).jFaceExternal = jFaceExternal;
+                state.(ne).(am).jExternal     = 0;
+                state.(ne).(am).jFaceExternal = 0;
                 
             else
-                
-                am = 'ActiveMaterial';
                 
                 phi   = state.(ne).(am).phi;
                 sigma = state.(ne).(am).conductivity;
@@ -1381,10 +1385,11 @@ classdef Battery < BaseModel
         %            
             pe   = 'PositiveElectrode';
             ctrl = 'Control';
+            am = 'ActiveMaterial';
             
             E   = state.(ctrl).E;
 
-            if model.(pe).include_current_collectors
+            if model.(pe).include_current_collector
                 
                 cc   = 'CurrentCollector';
                 
@@ -1395,10 +1400,9 @@ classdef Battery < BaseModel
                 
                 state.(pe).(cc).jExternal = jExternal;
                 state.(pe).(cc).jFaceExternal = jFaceExternal;
-                
+                state.(pe).(am).jExternal     = 0;
+                state.(pe).(am).jFaceExternal = 0;
             else
-                
-                am = 'ActiveMaterial';
                 
                 phi   = state.(pe).(am).phi;
                 sigma = state.(pe).(am).conductivity;

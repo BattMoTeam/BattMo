@@ -40,9 +40,9 @@ classdef Electrode < BaseModel
                 model.CurrentCollector = model.setupCurrentCollector(paramobj.CurrentCollector);
             else
                 model.include_current_collector = false;
-                if isempty(paramobj.CurrentCollector.G)
-                   % warning('current collector data is given, but we are not using it, as required by input flag');
-                end
+                % if isempty(paramobj.CurrentCollector.G)
+                %    warning('current collector data is given, but we are not using it, as required by input flag');
+                % end
             end
                    
         end
@@ -171,7 +171,7 @@ classdef Electrode < BaseModel
                 state.(cc).eSource = zeros(elde.(cc).G.cells.num, 1);
                 
                 state.(am).jCoupling = am_jCoupling;
-                state.(cc).jCoupling  = cc_jCoupling;
+                state.(cc).jCoupling = cc_jCoupling;
                 
                 state.(am).jFaceCoupling = am_jFaceCoupling;
                 state.(cc).jFaceCoupling = cc_jFaceCoupling;
