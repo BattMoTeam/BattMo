@@ -81,25 +81,6 @@ classdef Electrode < BaseModel
                     model = model.registerPropFunction({{cc, 'jFaceCoupling'}, fn, inputnames});
                 end
                 
-            else
-                
-                fn = @Electrode.updatejBcSourceNoCurrentCollector;
-                model = model.registerPropFunction({{am, 'jBcSource'}, fn, {{am, 'jExternal'}}});
-
-                if model.use_thermal
-                    model = model.registerPropFunction({{am, 'jBcSource'}, fn, {{am, 'jExternal', 'jFaceExternal'}}});
-                    model = model.registerPropFunction({{am, 'jFaceBc'}, fn, {{am, 'jExternal', 'jFaceExternal'}}});
-                end
-                
-            end
-
-            if model.use_thermal
-                % Temperature coupling between current collector and electrode active component
-                inputnames = {{am, 'T'}, ...
-                              {cc , 'T'}};
-                fn = @Electrode.updateTemperatureCoupling;
-                model = model.registerPropFunction({{am, 'jHeatBcSource'}, fn, inputnames});
-                model = model.registerPropFunction({{cc , 'jHeatBcSource'}, fn, inputnames});
             end
             
         end

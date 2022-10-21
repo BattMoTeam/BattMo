@@ -134,13 +134,15 @@ classdef ActiveMaterial < ElectronicComponent
             itf = 'Interface';
             sd  = 'SolidDiffusion';
             
-            varnames = {'jExternal', ...
+            varnames = {'jCoupling', ...
+                        'jExternal', ...
                         'SOC'      , ...
                         'Rvol'};
             model = model.registerVarNames(varnames);            
 
             if model.use_thermal
-                varnames = {'jFaceExternal'};
+                varnames = {'jFaceCoupling', ...
+                            'jFaceExternal'};
                 model = model.registerVarNames(varnames);
             end
             
@@ -169,11 +171,11 @@ classdef ActiveMaterial < ElectronicComponent
             else
 
                 fn = @ActiveMaterial.updatejBcSource;
-                model = model.registerPropFunction({'jBcSource', fn, {'jExternal'}});
+                model = model.registerPropFunction({'jBcSource', fn, {'jCoupling', 'jExternal'}});
 
                 if model.use_thermal
                     fn = @ActiveMaterial.updatejFaceBc;
-                    model = model.registerPropFunction({'jFaceBc', fn, {'jFaceExternal'}});
+                    model = model.registerPropFunction({'jFaceBc', fn, {'jFaceCoupling', 'jFaceExternal'}});
                 end
                 
             end
@@ -230,6 +232,18 @@ classdef ActiveMaterial < ElectronicComponent
                 model = model.registerPropFunction({'massCons', fn, {'massAccum', 'massFlux', 'massSource'}});
                 
             end
+
+            fn = @ActiveMaterial.updatejExternal;
+            model = model.registerPropFunction({'jExternal', fn, {}});
+            if model.use_thermal
+                model = model.registerPropFunction({'jFaceExternal', fn, {}});
+            end
+
+            fn = @ActiveMaterial.updatejCoupling;
+            model = model.registerPropFunction({'jCoupling', fn, {}});
+            if model.use_thermal
+                model = model.registerPropFunction({'jFaceCoupling', fn, {}});
+            end
             
             %% Function called to assemble accumulation terms (functions takes in fact as arguments not only state but also state0 and dt)
             if model.use_particle_diffusion & strcmp(model.diffusionModelType, 'simple')
@@ -237,11 +251,6 @@ classdef ActiveMaterial < ElectronicComponent
                 model = model.registerPropFunction({'massAccum', fn, {'c'}});
             end
 
-            fn = @ActiveMaterial.updatejExternal;
-            model = model.registerPropFunction({'jExternal', fn, {}});
-            if model.use_thermal
-                model = model.registerPropFunction({'jFaceExternal', fn, {}});
-            end
             
         end
         
