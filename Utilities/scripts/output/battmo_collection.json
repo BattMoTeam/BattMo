@@ -1,0 +1,79 @@
+{
+  "61d5a0f3-951c-4974-bec4-5f26a4b4181b":   {
+    "meta": "http://onto-ns.com/meta/0.1/BattMoLiIonBatteryDataModel",
+    "dimensions": {
+      "N": 1
+    },
+    "properties": {
+      "SOC": 0,
+      "Ucut": 0,
+      "initT": 0,
+      "use_thermal": null,
+      "include_current_collectors": null,
+      "use_solid_diffusion": null,
+      "control": [null],
+      "negative_electrode": ["006c31ea-7b5d-42a3-aa77-df3ac7d80734"],
+      "positive_electrode": ["006c31ea-7b5d-42a3-aa77-df3ac7d80734"],
+      "electrolyte": [null]
+    }
+  },
+  "9a027d73-1665-4cf8-9ad2-0b6cc1a778a7":   {
+    "meta": "http://onto-ns.com/meta/0.1/Collection",
+    "dimensions": {
+      "nrelations": 15
+    },
+    "properties": {
+      "relations": [["cell", "_is-a", "Instance"], ["cell", "_has-uuid", "61d5a0f3-951c-4974-bec4-5f26a4b4181b"], ["cell", "_has-meta", "http://onto-ns.com/meta/0.1/BattMoLiIonBatteryDataModel"], ["positive_electrode", "_is-a", "Instance"], ["positive_electrode", "_has-uuid", "006c31ea-7b5d-42a3-aa77-df3ac7d80734"], ["positive_electrode", "_has-meta", "http://onto-ns.com/meta/0.1/BattMoLiIonElectrodeDataModel"], ["positive_electrode_active_material", "_is-a", "Instance"], ["positive_electrode_active_material", "_has-uuid", "f5887df3-59a0-4aaa-a54c-be6c433bd73d"], ["positive_electrode_active_material", "_has-meta", "http://onto-ns.com/meta/0.1/BattMoLiIonActiveMaterialDataModel"], ["negative_electrode", "_is-a", "Instance"], ["negative_electrode", "_has-uuid", "915e4e26-241b-4642-8898-1bcee902cfbf"], ["negative_electrode", "_has-meta", "http://onto-ns.com/meta/0.1/BattMoLiIonElectrodeDataModel"], ["negative_electrode_active_material", "_is-a", "Instance"], ["negative_electrode_active_material", "_has-uuid", "4b171e76-a6ad-4bc7-a557-03e1801bd0b0"], ["negative_electrode_active_material", "_has-meta", "http://onto-ns.com/meta/0.1/BattMoLiIonActiveMaterialDataModel"]]
+    }
+  },
+  "915e4e26-241b-4642-8898-1bcee902cfbf":   {
+    "meta": "http://onto-ns.com/meta/0.1/BattMoLiIonElectrodeDataModel",
+    "dimensions": {
+      "N": 1
+    },
+    "properties": {
+      "active_material": [null],
+      "current_collector": [null]
+    }
+  },
+  "f5887df3-59a0-4aaa-a54c-be6c433bd73d":   {
+    "meta": "http://onto-ns.com/meta/0.1/BattMoLiIonActiveMaterialDataModel",
+    "dimensions": {
+      "N": 1
+    },
+    "properties": {
+      "bruggeman_coefficient": 0,
+      "thermal_conductivity": 0,
+      "electrical_conductivity": 0,
+      "heat_capacity": 0,
+      "inter_diffusion_coefficient": 0,
+      "interface": [null],
+      "solid_diffusion": [null]
+    }
+  },
+  "4b171e76-a6ad-4bc7-a557-03e1801bd0b0":   {
+    "meta": "http://onto-ns.com/meta/0.1/BattMoLiIonActiveMaterialDataModel",
+    "dimensions": {
+      "N": 1
+    },
+    "properties": {
+      "bruggeman_coefficient": 0,
+      "thermal_conductivity": 0,
+      "electrical_conductivity": 0,
+      "heat_capacity": 0,
+      "inter_diffusion_coefficient": 0,
+      "interface": [null],
+      "solid_diffusion": [null]
+    }
+  },
+  "006c31ea-7b5d-42a3-aa77-df3ac7d80734":   {
+    "meta": "http://onto-ns.com/meta/0.1/BattMoLiIonElectrodeDataModel",
+    "dimensions": {
+      "N": 1
+    },
+    "properties": {
+      "active_material": ["4b171e76-a6ad-4bc7-a557-03e1801bd0b0"],
+      "current_collector": [null]
+    }
+  }
+}

@@ -1,0 +1,28 @@
+{
+    "name": "BattMoLiIonElectrodeDataModel",
+    "version": "0.1",
+    "namespace": "http://onto-ns.com/meta",
+    "description": "A description of the parameters needed by BattMo to instantiate a Li-ion battery electrode model.",
+    "dimensions": [
+        {
+            "name": "N",
+            "description": "Number of battery cells"
+        }
+    ],
+    "properties": [
+        {
+            "name": "active_material",
+            "type": "ref",
+            "$ref": "http://onto-ns.com/meta/0.1/BattMoLiIonActiveMaterialDataModel",
+            "dims": ["N"],
+            "description": "contorl parameters for the BattMo simulation"
+        },
+        {
+            "name": "current_collector",
+            "type": "ref",
+            "$ref": "http://onto-ns.com/meta/0.1/BattMoLiIonCurrentCollectorParameters",
+            "dims": ["N"],
+            "description": "model parameters for the negative electrode"
+        }
+    ]
+}

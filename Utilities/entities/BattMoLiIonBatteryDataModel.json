@@ -1,0 +1,74 @@
+{
+    "name": "BattMoLiIonBatteryDataModel",
+    "version": "0.1",
+    "namespace": "http://onto-ns.com/meta",
+    "description": "A description of the parameters needed by BattMo to instantiate a Li-ion battery cell model.",
+    "dimensions": [
+        {
+            "name": "N",
+            "description": "Number of battery cells"
+        }
+    ],
+    "properties": [
+        {
+            "name": "SOC",
+            "type": "float",
+            "description": "Initial state of charge"
+        },
+        {
+            "name": "Ucut",
+            "type": "float",
+            "unit": "V",
+            "description": "Cutoff voltage"
+        },
+        {
+            "name": "initT",
+            "type": "float",
+            "unit": "K",
+            "description": "Initial temperature of the battery cell"
+        },
+        {
+            "name": "use_thermal",
+            "type": "string",
+            "description": "indicates if a thermal model is used."
+        },
+        {
+            "name": "include_current_collectors",
+            "type": "string",
+            "description": "indicates if current collectors are considered in the model"
+        },
+        {
+            "name": "use_solid_diffusion",
+            "type": "string",
+            "description": "indicates if a solid diffusion model is used"
+        },
+        {
+            "name": "control",
+            "type": "ref",
+            "$ref": "http://onto-ns.com/meta/0.1/BattMoControlParameters",
+            "dims": ["N"],
+            "description": "contorl parameters for the BattMo simulation"
+        },
+        {
+            "name": "negative_electrode",
+            "type": "ref",
+            "$ref": "http://onto-ns.com/meta/0.1/BattMoLiIonElectrodeParameters",
+            "dims": ["N"],
+            "description": "model parameters for the negative electrode"
+        },
+        {
+            "name": "positive_electrode",
+            "type": "ref",
+            "$ref": "http://onto-ns.com/meta/0.1/BattMoLiIonElectrodeParameters",
+            "dims": ["N"],
+            "description": "model parameters for the positive electrode"
+        },
+        {
+            "name": "electrolyte",
+            "type": "ref",
+            "$ref": "http://onto-ns.com/meta/0.1/BattMoLiIonElectrolyteParameters",
+            "dims": ["N"],
+            "description": "model parameters for the electrolyte"
+        }
+    ]
+}

@@ -1,0 +1,57 @@
+{
+    "name": "BattMoLiIonActiveMaterialDataModel",
+    "version": "0.1",
+    "namespace": "http://onto-ns.com/meta",
+    "description": "A description of the parameters needed by BattMo to instantiate a Li-ion battery active material model.",
+    "dimensions": [
+        {
+            "name": "N",
+            "description": "Number of battery cells"
+        }
+    ],
+    "properties": [
+        {
+            "name": "bruggeman_coefficient",
+            "type": "float",
+            "description": "bruggeman coefficiet"
+        },
+        {
+            "name": "thermal_conductivity",
+            "type": "float",
+            "unit": "W/(m*K)",
+            "description": "thermal conductivity of the material"
+        },
+        {
+            "name": "electrical_conductivity",
+            "type": "float",
+            "unit": "S/m",
+            "description": "electrical conductivity of the material"
+        },
+        {
+            "name": "heat_capacity",
+            "type": "float",
+            "unit": "J/(kg*K)",
+            "description": "heat capacity of the material"
+        },
+        {
+            "name": "inter_diffusion_coefficient",
+            "type": "float",
+            "unit": "m**2/s",
+            "description": "diffusion coefficient of Li in the material"
+        },
+        {
+            "name": "interface",
+            "type": "ref",
+            "$ref": "http://onto-ns.com/meta/0.1/BattMoControlParameters",
+            "dims": ["N"],
+            "description": "contorl parameters for the BattMo simulation"
+        },
+        {
+            "name": "solid_diffusion",
+            "type": "ref",
+            "$ref": "http://onto-ns.com/meta/0.1/BattMoLiIonElectrodeDataModel",
+            "dims": ["N"],
+            "description": "model parameters for the negative electrode"
+        }
+    ]
+}

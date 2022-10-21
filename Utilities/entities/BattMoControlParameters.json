@@ -1,0 +1,36 @@
+{
+    "name": "BattMoControlParameters",
+    "version": "0.1",
+    "namespace": "http://onto-ns.com/meta",
+    "description": "A description of the parameters needed by BattMo to instantiate a Li-ion battery cell model.",
+    "dimensions": [
+        {
+            "name": "N",
+            "description": "Number of battery cells"
+        }
+    ],
+    "properties": [
+        {
+            "name": "control_policy",
+            "type": "string",
+            "description": "name for the type of control protocol used"
+        },
+        {
+            "name": "CRate",
+            "type": "float",
+            "description": "nominal current rate for the galvanostatic portion of the control"
+        },
+        {
+            "name": "lower_cutoff_voltage",
+            "type": "float",
+            "unit": "V",
+            "description": "sets the enforced lower cutoff voltage for the cell"
+        },
+        {
+            "name": "upper_cutoff_voltage",
+            "type": "float",
+            "unit": "V",
+            "description": "sets the enforced upper cutoff voltage for the cell"
+        }
+    ]
+}
