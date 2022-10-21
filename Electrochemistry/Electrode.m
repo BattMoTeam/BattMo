@@ -95,7 +95,7 @@ classdef Electrode < BaseModel
         % standard instantiation 
             cc = CurrentCollector(paramobj);
         end
-        
+
         function state = updateCoupling(model, state)
         % setup coupling terms between the current collector and the electrode active component            
             
@@ -159,44 +159,6 @@ classdef Electrode < BaseModel
                 
             end
                 
-        end
-
-        
-        function state = updateTemperatureCoupling(model, state)
-        % setup coupling terms between the current collector and the electrode active component            
-            
-            elde  = model;
-            am = 'ActiveMaterial';
-            cc = 'CurrentCollector';
-
-            am_T = state.(am).T;
-            cc_T = state.(cc).T;
-
-            am_tC = elde.(am).thermalConductivity;
-            cc_tC = elde.(cc).thermalConductivity;
-    
-            %% We setup the current transfers between CurrentCollector and ActiveMaterial
-            
-            am_heatCoupling  = am_T*0.0; %NB hack to initialize zero ad
-            cc_heatCoupling = cc_T*0.0; %NB hack to initialize zero ad
-
-            coupterm = model.couplingTerm;
-            face_cc = coupterm.couplingfaces(:, 1);
-            face_am = coupterm.couplingfaces(:, 2);
-            [teac, bccell_am] = elde.(am).operators.harmFaceBC(am_tC, face_am);
-            [tcc, bccell_cc] = elde.(cc).operators.harmFaceBC(cc_tC, face_cc);
-
-            bcT_am = am_T(bccell_am);
-            bcT_cc = cc_T(bccell_cc);
-
-            trans = 1./(1./teac + 1./tcc);
-            crossFluxT = trans.*(bcT_cc - bcT_am);
-            am_heatCoupling(bccell_am) = crossFluxT;
-            cc_heatCoupling(bccell_cc) = - crossFluxT;
-
-            state.(am).jHeatBcSource = am_heatCoupling;
-            state.(cc).jHeatBcSource = cc_heatCoupling;
-
         end
 
     end    
