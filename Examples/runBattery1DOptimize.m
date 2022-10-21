@@ -204,7 +204,7 @@ if doOptimization
     
     p_base = getScaledParameterVector(SimulatorSetup, parameters);
     p_base = p_base - 0.1;
-    [v, p_opt, history] = unitBoxBFGS(p_base, 'gradTol', 1e-7, 'objChangeTol', 1e-4);
+    [v, p_opt, history] = unitBoxBFGS(p_base, obj, 'gradTol', 1e-7, 'objChangeTol', 1e-4);
     
 end
 

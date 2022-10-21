@@ -43,5 +43,6 @@ function  [model, states, reports, solver, ok] = plotAfterStepIV(model, states, 
     
     subplot(2, 1, 2)
     plot(time, cumsum(I.*dt), '*-')
-    
+
+    ok = true;
 end
