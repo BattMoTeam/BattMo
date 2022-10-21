@@ -34,8 +34,8 @@ sd      = 'SolidDiffusion';
 ctrl    = 'Control';
 cc      = 'CurrentCollector';
 
-jsonstruct.use_thermal = false;
-% jsonstruct.use_solid_diffusion = false;
+jsonstruct.use_thermal = true;
+jsonstruct.include_current_collector = false;
 jsonstruct.(pe).(am).diffusionModelType = 'simple';
 jsonstruct.(ne).(am).diffusionModelType = 'simple';
 
@@ -73,9 +73,8 @@ inspectgraph = false;
 if inspectgraph
     % plot the computational graph
     cgt = ComputationalGraphTool(model);
-    figure
-    g = cgt.getComputationalGraph();
-    h = plot(g, 'nodefontsize', 10);
+    cgt.getComputationalGraph('doplot', true);
+    return
 end
 
 
