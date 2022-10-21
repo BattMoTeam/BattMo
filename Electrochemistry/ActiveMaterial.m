@@ -119,7 +119,7 @@ classdef ActiveMaterial < ElectronicComponent
             if model.use_thermal
                 % setup effective thermal conductivity
                 model.EffectiveThermalConductivity = model.thermalConductivity.*vf.^brugg;
-                model.EffectiveHeatCapacity = model.heatCapacity.*volumeFraction;
+                model.EffectiveHeatCapacity = model.heatCapacity.*vf;
             end
             
         end
