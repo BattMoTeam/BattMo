@@ -28,6 +28,25 @@ classdef ComputationalGraphTool
             
         end
 
+        function nodestaticnames = getStaticVarNames(cgt)
+
+            varnames = cgt.model.staticVarNameList;
+            nodestaticnames = cgt.getNodeNames(varnames);
+
+            % add the variables that are updated with no input arguments
+            propfunctions = cgt.model.propertyFunctionList;
+            varnames = {};
+            for iprop = 1 : numel(propfunctions)
+                propfunction = propfunctions{iprop};
+                if isempty(propfunction.inputvarnames)
+                    varnames{end + 1} = propfunction.varname;
+                end
+            end
+            
+            nodestaticnames = horzcat(nodestaticnames, cgt.getNodeNames(varnames));
+            
+        end
+        
         function [propfuncs, nodenames] = findPropFunction(cgt, nodename)
             
             nodenames = cgt.nodenames;
@@ -134,18 +153,51 @@ classdef ComputationalGraphTool
         end
 
 
-        function printSpecialVariables(cgt)
+        function printRootVariables(cgt)
 
             A = cgt.A;
             nodenames = cgt.nodenames;
             
+            %% print root variables after removing the variables that were declared as static in the model
+
+            rootnames = nodenames(all(A == 0, 1));
+            staticnames = cgt.getStaticVarNames();
+
             fprintf('Root variables \n');
-            nodenames(all(A == 0, 1))
+
+            ind = ismember(rootnames, staticnames);
+            rootnames(~ind)
+
+            if nnz(ind)
+                fprintf('static variables \n');
+                rootnames(ind)
+            end
+
+        end
+        
+        function printTailVariables(cgt)
+            
+            A = cgt.A;
+            nodenames = cgt.nodenames;
+
+            %% print tail variables
             fprintf('Tail variables \n');
-            nodenames(all(A' == 0, 1))
+            nodenames(all(A' == 0, 1));
+            
+        end        
+
+
+        function printDetachedVariables(cgt)
+        % for debugging : find out variables that are declared but not attached to any function (as argument or input)
+            A = cgt.A;
+            nodenames = cgt.nodenames;
+            
+            fprintf('Detached variables \n');
+            ind1 = all(A == 0, 1);
+            ind2 = all(A' == 0, 1);
+            nodenames(ind1&ind2)
             
         end
-
 
         function printOrderedFunctionCallList(cgt)
 
@@ -200,6 +252,24 @@ classdef ComputationalGraphTool
         
             
     end
+
+    methods (Static)
+
+        function nodenames = getNodeNames(varnames)
+        % convert variable names to graph node names
+        % TODO : we should enforce that the same function is used in setupGraph (important!)
+            nodenames = {};
+            for ind = 1 : numel(varnames)
+                varname = varnames{ind};
+                varname_s = varname.resolveIndex();
+                for ind = 1 : numel(varname_s)
+                    nodenames{end + 1} = varname_s{ind}.getIndexedFieldname();
+                end
+            end
+        end
+        
+    end
+    
     
 end
     
