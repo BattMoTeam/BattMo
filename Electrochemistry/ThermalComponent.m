@@ -77,6 +77,11 @@ classdef ThermalComponent < BaseModel
                           'jHeat'        , ...
                           'accumHeat'};
             model = model.registerPropFunction({'energyCons', fn, inputnames});
+
+            %% Function called to assemble accumulation terms (functions takes in fact as arguments not only state but also state0 and dt)
+            fn = @ThermalComponent.updateAccumTerm;
+            model = model.registerPropFunction({'accumHeat', fn, {'T'}});
+
             
         end
         

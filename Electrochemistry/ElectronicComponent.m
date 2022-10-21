@@ -46,10 +46,16 @@ classdef ElectronicComponent < BaseModel
                         'chargeCons'};
             model = model.registerVarNames(varnames);
 
+            if model.use_thermal
+                varnames = {'jFace', ...
+                            'jFaceBc'};
+                model = model.registerVarNames(varnames);                
+            end
+            
             fn = @ElectronicComponent.updateCurrent;
             inputnames = {'phi', 'conductivity'};
             model = model.registerPropFunction({'j', fn, inputnames});
-            
+
             fn = @ElectronicComponent.updateChargeConservation;
             inputnames = {'j', 'jBcSource', 'eSource'};
             model = model.registerPropFunction({'chargeCons', fn, inputnames});
@@ -58,6 +64,18 @@ classdef ElectronicComponent < BaseModel
             inputnames = {};
             model = model.registerPropFunction({'conductivity', fn, inputnames});
             
+            if model.use_thermal
+                
+                fn = @ElectronicComponent.updateFaceCurrent;
+                inputnames = {'j', 'jFaceBc'};
+                model = model.registerPropFunction({'jFace', fn, inputnames});
+
+                fn = @ElectronicComponent.updateFaceBcCurrent;
+                inputnames = {};
+                model = model.registerPropFunction({'jFaceBc', fn, inputnames});
+                
+            end
+
         end
 
         function state = updateConductivity(model, state)

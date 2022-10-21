@@ -122,6 +122,7 @@ classdef ActiveMaterial < ElectronicComponent
                 model.EffectiveThermalConductivity = model.thermalConductivity.*vf.^brugg;
                 model.EffectiveHeatCapacity = model.heatCapacity.*volumeFraction;
             end
+            
         end
 
         function model = registerVarAndPropfuncNames(model)
@@ -134,33 +135,50 @@ classdef ActiveMaterial < ElectronicComponent
             itf = 'Interface';
             sd  = 'SolidDiffusion';
             
-            varnames = {};
-            varnames{end + 1} = 'jCoupling';
-            varnames{end + 1} = 'SOC';
-            % Volumetric reaction rate in mol/(s*m^3)
-            varnames{end + 1} = 'Rvol';
+            varnames = {'jCoupling'    , ...
+                        'jExternal'    ,
+                        'SOC'          , ...
+                        'Rvol'};
+            model = model.registerVarNames(varnames);            
+
+            if model.use_thermal
+                varnames = {'jFaceCoupling', ...
+                            'jFaceExternal'};
+                model = model.registerVarNames(varnames);
+            end
+            
             
             if strcmp(model.diffusionModelType, 'simple')
-                varnames{end + 1} = {'c'};
-                varnames{end + 1} = {'massCons'};
-                varnames{end + 1} = {'massAccum'};
-                varnames{end + 1} = {'massSource'};
+                varnames = {'c'        , ...
+                            'massCons' , ...
+                            'massAccum', ...
+                            'massSource'};
+                model = model.registerVarNames(varnames);
             end
-            model = model.registerVarNames(varnames);
 
             isRoot = model.isRoot;
+            
             if isRoot
                 varnames{end + 1} = 'controlCurrentSource';
                 model = model.registerVarNames(varnames);
             end
             
             if isRoot
+                
                 fn = @ActiveMaterial.updateStandalonejBcSource;
                 model = model.registerPropFunction({'jBcSource', fn, {'controlCurrentSource'}});
                 model = model.removeVarNames({'jCoupling', {itf, 'SOC'}});
+                
             else
+
                 fn = @ActiveMaterial.updatejBcSource;
-                model = model.registerPropFunction({'jBcSource', fn, {'jCoupling', 'jFaceCoupling'}});            
+                model = model.registerPropFunction({'jBcSource', fn, {'jCoupling', 'jExternal'}});
+
+                if model.use_thermal
+                    fn = @ActiveMaterial.updatejFaceBc;
+                    model = model.registerPropFunction({'jFaceBc', fn, {'jFaceCoupling', 'jFaceExternal'}});
+                end
+                
             end
             
             fn = @ActiveMaterial.updateCurrentSource;
@@ -216,6 +234,11 @@ classdef ActiveMaterial < ElectronicComponent
                 
             end
             
+            %% Function called to assemble accumulation terms (functions takes in fact as arguments not only state but also state0 and dt)
+            if model.use_particle_diffusion & strcmp(model.diffusionModelType, 'simple')
+                fn = @ActiveMaterial.assembleAccumTerm;
+                model = model.registerPropFunction({'massAccum', fn, {'c'}});
+            end
             
         end
         

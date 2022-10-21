@@ -47,22 +47,35 @@ classdef Electrode < BaseModel
         function model = registerVarAndPropfuncNames(model)
             %% Declaration of the Dynamical Variables and Function of the model
             % (setup of varnameList and propertyFunctionList)
-            
-            model = registerVarAndPropfuncNames@BaseModel(model);
-            
+
             % define shorthands
-            am = 'ActiveMaterial';
             cc = 'CurrentCollector';
             am = 'ActiveMaterial';
+
+            if ~model.include_current_collectors
+                model.subModelNameList = {am};
+            end
+           
+            model = registerVarAndPropfuncNames@BaseModel(model);
+
+            if ~model.include_current_collectors
+                model = model.registerVarName(VarName({am}, 'jExternal'));
+            end
             
-            model = model.registerVarName('T');
             
-            fn = @Electrode.updateCoupling;
-            inputnames = {{am, 'phi'}, ...
-                          {cc , 'phi'}};
-            model = model.registerPropFunction({{am, 'jCoupling'}, fn, inputnames});
-            model = model.registerPropFunction({{cc , 'jCoupling'}, fn, inputnames});
-            model = model.registerPropFunction({{cc , 'eSource'}  , fn, inputnames});
+            if model.include_current_collectors
+                fn = @Electrode.updateCoupling;
+                inputnames = {{am, 'phi'}, ...
+                              {cc , 'phi'}};
+                model = model.registerPropFunction({{am, 'jCoupling'}, fn, inputnames});
+                model = model.registerPropFunction({{cc , 'jCoupling'}, fn, inputnames});
+                model = model.registerPropFunction({{cc , 'eSource'}  , fn, inputnames});
+            else
+                fn = @Electrode.updatejBcSourceNoCurrentCollector;
+                model = model.registerPropFunction({{am, 'jBcSource'}, fn, {{am, 'jExternal'}}});
+                model = model.removeVarName({am, 'jCoupling'});
+            end
+
 
             if model.use_thermal
                 % Temperature coupling between current collector and electrode active component
