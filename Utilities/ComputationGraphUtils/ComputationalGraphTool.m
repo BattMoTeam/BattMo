@@ -5,8 +5,6 @@ classdef ComputationalGraphTool
         model
         A
         nodenames
-        includeNodeNames
-        excludeNodeNames
     end
     
     methods
@@ -77,10 +75,13 @@ classdef ComputationalGraphTool
                 propfunc = propfuncs{iprop};
                 varname = propfunc.varname;
                 varname_s = varname.resolveIndex();
+                outputvarstrs = {};
                 for ind = 1 : numel(varname_s)
                     fullname = varname_s{ind}.getIndexedFieldname();
-                    fprintf('state.%s <- ', fullname);
+                    outputvarstrs{end + 1} = sprintf('state.%s', fullname);
                 end
+                outputvarstr = join(outputvarstrs, {', '});
+                fprintf('%s <-', outputvarstr{1});
                 fprintf(' (%s) <- ', propfuncs{iprop}.getFunctionSignature());
                 inputvarnames = propfunc.inputvarnames;
                 inputvarstrs = {};
@@ -96,14 +97,18 @@ classdef ComputationalGraphTool
         
         function [g, edgelabels] = getComputationalGraph(cgt, varargin)
             
-            opt = struct('type', 'ascendant', ...
-                         'oneParentOnly', false);
+            opt = struct('type'            , 'ascendant', ...
+                         'oneParentOnly'   , false      , ...
+                         'markStaticVars'  , true       , ...
+                         'doplot'          , false      , ...
+                         'includeNodeNames', []         , ...
+                         'excludeNodeNames', []);
             opt = merge_options(opt, varargin{:});
 
             propfunctionlist = cgt.model.propertyFunctionList;
             nodenames        = cgt.nodenames;
-            includeNodeNames = cgt.includeNodeNames;
-            excludeNodeNames = cgt.excludeNodeNames;
+            includeNodeNames = opt.includeNodeNames;
+            excludeNodeNames = opt.excludeNodeNames;
 
             A = (cgt.A);
             if strcmp(opt.type, 'descendant')
@@ -130,7 +135,19 @@ classdef ComputationalGraphTool
                 A = A';
             end
             
+            if opt.markStaticVars
+                
+                staticnames = cgt.getStaticVarNames();
+                ind = ismember(nodenames, staticnames);
+
+                if nnz(ind)
+                    nodenames(ind) = cellfun(@(str) sprintf('%s (static)', str), nodenames(ind), 'un', false);
+                end
+                
+            end
+            
             g = digraph(A, nodenames);
+
 
             propinds = g.Edges.Weight;
 
@@ -141,18 +158,14 @@ classdef ComputationalGraphTool
                     edgelabels{end + 1} = func2str(propfunctionlist{propind}.fn);
                 end
             end
+
+            if opt.doplot
+                figure
+                h = plot(g, 'nodefontsize', 10);
+            end
             
         end
         
-        function [g, edgelabels] = setupAscendantGraph(cgt, varargin)
-            [g, edgelabels] = cgt.setupGraph('type', 'ascendant', varargin{:});
-        end
-        
-        function [g, edgelabels] = setupDescendantGraph(cgt, varargin)
-            [g, edgelabels] = cgt.setupGraph('type', 'descendant', varargin{:});            
-        end
-
-
         function printRootVariables(cgt)
 
             A = cgt.A;
@@ -182,7 +195,7 @@ classdef ComputationalGraphTool
 
             %% print tail variables
             fprintf('Tail variables \n');
-            nodenames(all(A' == 0, 1));
+            nodenames(all(A' == 0, 1))
             
         end        
 
