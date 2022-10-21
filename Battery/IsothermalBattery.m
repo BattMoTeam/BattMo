@@ -28,13 +28,13 @@ classdef IsothermalBattery < BaseModel
         
         mappings
         
-        use_solid_diffusion
+        use_particle_diffusion
     end
     
     methods
         
         function model = IsothermalBattery(paramobj,varargin)
-            opt = struct('use_solid_diffusion',true);
+            opt = struct('use_particle_diffusion',true);
             opt = merge_options(opt,varargin{:});
             model = model@BaseModel();
             
@@ -73,7 +73,7 @@ classdef IsothermalBattery < BaseModel
             cmax_ne = model.(ne).(am).(itf).Li.cmax;
             cmax_pe = model.(pe).(am).(itf).Li.cmax;
             model.cmin = 1e-5*max(cmax_ne, cmax_pe);
-            model.use_solid_diffusion = opt.use_solid_diffusion; 
+            model.use_particle_diffusion = opt.use_particle_diffusion; 
         end
 
         
@@ -273,7 +273,7 @@ classdef IsothermalBattery < BaseModel
                 elde = electrodes{ind};
                 % potential and concentration between active material and electode active component
                 state.(elde).(am) = battery.(elde).(am).updatePhi(state.(elde).(am));
-                if(model.use_solid_diffusion)
+                if(model.use_particle_diffusion)
                     state.(elde).(am) = battery.(elde).(am).updateChargeCarrier(state.(elde).(am));
                 else
                     state.(elde).(am).(itf).cElectrode = state.(elde).(am).c;
@@ -294,7 +294,7 @@ classdef IsothermalBattery < BaseModel
             for ind = 1 : numel(electrodes)
                 elde = electrodes{ind};
                 state.(elde).(am).(itf) = battery.(elde).(am).(itf).updateReactionRateCoefficient(state.(elde).(am).(itf));
-                %if(model.use_solid_diffusion)
+                %if(model.use_particle_diffusion)
                     state.(elde).(am).(itf) = battery.(elde).(am).(itf).updateDiffusionCoefficient(state.(elde).(am).(itf));
                 %end
                 state.(elde).(am).(itf) = battery.(elde).(am).(itf).updateOCP(state.(elde).(am).(itf));
@@ -357,7 +357,7 @@ classdef IsothermalBattery < BaseModel
             end
 
             %% update solid diffustion equations
-            if(model.use_solid_diffusion)
+            if(model.use_particle_diffusion)
                 for ind = 1 : numel(electrodes)
                     elde = electrodes{ind};
                     state.(elde).(am).(itf) = battery.(elde).(am).(itf).assembleSolidDiffusionEquation(state.(elde).(am).(itf));
@@ -383,14 +383,14 @@ classdef IsothermalBattery < BaseModel
             resistance = 1/model.(ne).(am).EffectiveElectricalConductivity(1);
             eqs{end + 1} = state.(ne).(am).massCons*massConsScaling;
             eqs{end + 1} = state.(ne).(am).chargeCons;
-            if(model.use_solid_diffusion)
+            if(model.use_particle_diffusion)
                 eqs{end + 1} = massConsScaling*state.(ne).(am).(itf).solidDiffusionEq.*battery.(ne).(am).(itf).G.cells.volumes/dt;
             end
             
             resistance = 1/model.(pe).(am).EffectiveElectricalConductivity(1);
             eqs{end + 1} = state.(pe).(am).massCons*massConsScaling;
             eqs{end + 1} = state.(pe).(am).chargeCons;
-            if(model.use_solid_diffusion)
+            if(model.use_particle_diffusion)
                 eqs{end + 1} = massConsScaling*state.(pe).(am).(itf).solidDiffusionEq.*battery.(pe).(am).(itf).G.cells.volumes/dt;
             end
             
@@ -414,7 +414,7 @@ classdef IsothermalBattery < BaseModel
             %% Give type and names to equations and names of the primary variables (for book-keeping)
             
             
-            if(model.use_solid_diffusion)                
+            if(model.use_particle_diffusion)                
                 names = {'elyte_massCons'   , ...
                      'elyte_chargeCons' , ...
                      'ne_am_massCons'  , ...
@@ -660,7 +660,7 @@ classdef IsothermalBattery < BaseModel
             if(isprop(adbackend,'useMex'))
                 useMex = adbackend.useMex; 
             end
-            if(model.use_solid_diffusion)
+            if(model.use_particle_diffusion)
                 opts=struct('types',[1,1,2,2,2,3,3,3,4,5,6,7],'useMex',useMex);
                 [state.(elyte).cs{1}  , ...
                     state.(elyte).phi    , ...
@@ -723,7 +723,7 @@ classdef IsothermalBattery < BaseModel
             am    = 'ActiveMaterial';
             am   = 'ActiveMaterial';
             cc    = 'CurrentCollector';
-            if(model.use_solid_diffusion)
+            if(model.use_particle_diffusion)
                 p = {{elyte, 'cs', 1} , ...
                     {elyte, 'phi'}   , ...   
                     {ne, am, 'c'}   , ...    

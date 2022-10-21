@@ -4,7 +4,11 @@ classdef BaseModel < PhysicalModel
 
         propertyFunctionList
         varNameList
+        subModelNameList
 
+        % used only for a root model to cleanup output of some of the functions in ComputationalGraphTool
+        staticVarNameList
+        
     end
         
     methods
@@ -15,6 +19,7 @@ classdef BaseModel < PhysicalModel
             
             model.propertyFunctionList = {};
             model.varNameList          = {};
+            model.subModelNameList     = {};
             
         end
 
@@ -23,6 +28,7 @@ classdef BaseModel < PhysicalModel
             model = model.registerSubModels();
             
         end
+
         
         function model = registerVarName(model, varname)
             if isa(varname, 'VarName')
@@ -44,20 +50,28 @@ classdef BaseModel < PhysicalModel
             end
         end
 
-        function submodelnames = getSubModelNames(model)
-            
-            props = propertynames(model);
-            submodelnames = {};
-            
-            for iprops = 1 : numel(props)
-                prop = props{iprops};
-                if isa(model.(prop), 'BaseModel')
-                    submodelnames{end + 1} = prop;
-                end
+
+        function model = registerStaticVarName(model, varname)
+            if isa(varname, 'VarName')
+                model.staticVarNameList = mergeList(model.staticVarNameList, {varname});
+            elseif isa(varname, 'char')
+                varname = VarName({}, varname);
+                model = model.registerStaticVarName(varname);
+            elseif isa(varname, 'cell')
+                varname = VarName(varname(1 : end - 1), varname{end});
+                model = model.registerStaticVarName(varname);
+            else
+                error('varname not recognized');
             end
-            
+        end
+        
+        function model = registerStaticVarNames(model, varnames)
+            for ivarnames = 1 : numel(varnames)
+                model = model.registerStaticVarName(varnames{ivarnames});
+            end
         end
 
+        
         function model = removeVarNames(model, varnames)
             for ivar = 1 : numel(varnames)
                 model = model.removeVarName(varnames{ivar});
@@ -174,13 +188,28 @@ classdef BaseModel < PhysicalModel
         
         
         function model = registerSubModels(model)
-        % submodels is a list of submodel given as submodel and name. They should have been already assigned before this
-        % function is called
             
             propfuncs = model.propertyFunctionList;
             varnames = model.varNameList;
-            
-            submodelnames = model.getSubModelNames();
+
+            if ~isempty(model.subModelNameList)
+                
+                submodelnames = model.subModelNameList;
+                
+            else
+                
+                props = propertynames(model);
+                submodelnames = {};
+                
+                for iprops = 1 : numel(props)
+                    prop = props{iprops};
+                    if isa(model.(prop), 'BaseModel')
+                        submodelnames{end + 1} = prop;
+                    end
+                end
+                model.subModelNameList = submodelnames;
+                
+            end
             
             for isub = 1 : numel(submodelnames)
 
@@ -188,7 +217,7 @@ classdef BaseModel < PhysicalModel
                 submodel = model.(submodelname);
                 
                 submodel = registerVarAndPropfuncNames(submodel);
-                
+
                 % Register the variable names from the submodel after adding the model name in the name space
 
                 subvarnames = submodel.varNameList;

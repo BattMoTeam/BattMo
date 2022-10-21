@@ -40,7 +40,7 @@ classdef CcCvControlModel < ControlModel
             
             
             fn = @CcCvControlModel.updateControlEquation;
-            model = model.registerPropFunction({'controlEquation', fn, {'E', 'I'}});
+            model = model.registerPropFunction({'controlEquation', fn, {'ctrlType', 'E', 'I'}});
             
         end
 

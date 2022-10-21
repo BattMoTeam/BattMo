@@ -78,8 +78,6 @@ classdef Interface < BaseModel
             varnames = {};
             % Temperature
             varnames{end + 1} = 'T';
-            % Status of Charge
-            varnames{end + 1} = 'SOC';
             % potential in electrode
             varnames{end + 1} = 'phiElectrode';
             % charge carrier concentration in electrode - value at surface

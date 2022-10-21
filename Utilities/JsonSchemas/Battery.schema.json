@@ -23,7 +23,7 @@
     "ControlModel": {"$ref": "ControlModel"},
 
     "include_current_collectors": {"type": "boolean"},
-    "use_solid_diffusion" : {"type" : "boolean"},
+    "use_particle_diffusion" : {"type" : "boolean"},
     "use_thermal": {"type": "boolean"}
   },
 

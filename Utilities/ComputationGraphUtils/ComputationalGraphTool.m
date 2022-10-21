@@ -5,8 +5,6 @@ classdef ComputationalGraphTool
         model
         A
         nodenames
-        includeNodeNames
-        excludeNodeNames
     end
     
     methods
@@ -28,6 +26,25 @@ classdef ComputationalGraphTool
             
         end
 
+        function nodestaticnames = getStaticVarNames(cgt)
+
+            varnames = cgt.model.staticVarNameList;
+            nodestaticnames = cgt.getNodeNames(varnames);
+
+            % add the variables that are updated with no input arguments
+            propfunctions = cgt.model.propertyFunctionList;
+            varnames = {};
+            for iprop = 1 : numel(propfunctions)
+                propfunction = propfunctions{iprop};
+                if isempty(propfunction.inputvarnames)
+                    varnames{end + 1} = propfunction.varname;
+                end
+            end
+            
+            nodestaticnames = horzcat(nodestaticnames, cgt.getNodeNames(varnames));
+            
+        end
+        
         function [propfuncs, nodenames] = findPropFunction(cgt, nodename)
             
             nodenames = cgt.nodenames;
@@ -58,10 +75,13 @@ classdef ComputationalGraphTool
                 propfunc = propfuncs{iprop};
                 varname = propfunc.varname;
                 varname_s = varname.resolveIndex();
+                outputvarstrs = {};
                 for ind = 1 : numel(varname_s)
                     fullname = varname_s{ind}.getIndexedFieldname();
-                    fprintf('state.%s <- ', fullname);
+                    outputvarstrs{end + 1} = sprintf('state.%s', fullname);
                 end
+                outputvarstr = join(outputvarstrs, {', '});
+                fprintf('%s <-', outputvarstr{1});
                 fprintf(' (%s) <- ', propfuncs{iprop}.getFunctionSignature());
                 inputvarnames = propfunc.inputvarnames;
                 inputvarstrs = {};
@@ -77,14 +97,18 @@ classdef ComputationalGraphTool
         
         function [g, edgelabels] = getComputationalGraph(cgt, varargin)
             
-            opt = struct('type', 'ascendant', ...
-                         'oneParentOnly', false);
+            opt = struct('type'            , 'ascendant', ...
+                         'oneParentOnly'   , false      , ...
+                         'markStaticVars'  , true       , ...
+                         'doplot'          , false      , ...
+                         'includeNodeNames', []         , ...
+                         'excludeNodeNames', []);
             opt = merge_options(opt, varargin{:});
 
             propfunctionlist = cgt.model.propertyFunctionList;
             nodenames        = cgt.nodenames;
-            includeNodeNames = cgt.includeNodeNames;
-            excludeNodeNames = cgt.excludeNodeNames;
+            includeNodeNames = opt.includeNodeNames;
+            excludeNodeNames = opt.excludeNodeNames;
 
             A = (cgt.A);
             if strcmp(opt.type, 'descendant')
@@ -111,7 +135,19 @@ classdef ComputationalGraphTool
                 A = A';
             end
             
+            if opt.markStaticVars
+                
+                staticnames = cgt.getStaticVarNames();
+                ind = ismember(nodenames, staticnames);
+
+                if nnz(ind)
+                    nodenames(ind) = cellfun(@(str) sprintf('%s (static)', str), nodenames(ind), 'un', false);
+                end
+                
+            end
+            
             g = digraph(A, nodenames);
+
 
             propinds = g.Edges.Weight;
 
@@ -122,30 +158,59 @@ classdef ComputationalGraphTool
                     edgelabels{end + 1} = func2str(propfunctionlist{propind}.fn);
                 end
             end
+
+            if opt.doplot
+                figure
+                h = plot(g, 'nodefontsize', 10);
+            end
             
         end
         
-        function [g, edgelabels] = setupAscendantGraph(cgt, varargin)
-            [g, edgelabels] = cgt.setupGraph('type', 'ascendant', varargin{:});
-        end
-        
-        function [g, edgelabels] = setupDescendantGraph(cgt, varargin)
-            [g, edgelabels] = cgt.setupGraph('type', 'descendant', varargin{:});            
-        end
-
-
-        function printSpecialVariables(cgt)
+        function printRootVariables(cgt)
 
             A = cgt.A;
             nodenames = cgt.nodenames;
             
+            %% print root variables after removing the variables that were declared as static in the model
+
+            rootnames = nodenames(all(A == 0, 1));
+            staticnames = cgt.getStaticVarNames();
+
             fprintf('Root variables \n');
-            nodenames(all(A == 0, 1))
+
+            ind = ismember(rootnames, staticnames);
+            rootnames(~ind)
+
+            if nnz(ind)
+                fprintf('static variables \n');
+                rootnames(ind)
+            end
+
+        end
+        
+        function printTailVariables(cgt)
+            
+            A = cgt.A;
+            nodenames = cgt.nodenames;
+
+            %% print tail variables
             fprintf('Tail variables \n');
             nodenames(all(A' == 0, 1))
             
-        end
+        end        
 
+
+        function printDetachedVariables(cgt)
+        % for debugging : find out variables that are declared but not attached to any function (as argument or input)
+            A = cgt.A;
+            nodenames = cgt.nodenames;
+            
+            fprintf('Detached variables \n');
+            ind1 = all(A == 0, 1);
+            ind2 = all(A' == 0, 1);
+            nodenames(ind1&ind2)
+            
+        end
 
         function printOrderedFunctionCallList(cgt)
 
@@ -200,6 +265,24 @@ classdef ComputationalGraphTool
         
             
     end
+
+    methods (Static)
+
+        function nodenames = getNodeNames(varnames)
+        % convert variable names to graph node names
+        % TODO : we should enforce that the same function is used in setupGraph (important!)
+            nodenames = {};
+            for ind = 1 : numel(varnames)
+                varname = varnames{ind};
+                varname_s = varname.resolveIndex();
+                for ind = 1 : numel(varname_s)
+                    nodenames{end + 1} = varname_s{ind}.getIndexedFieldname();
+                end
+            end
+        end
+        
+    end
+    
     
 end
     
