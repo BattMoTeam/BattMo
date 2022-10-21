@@ -43,6 +43,9 @@ classdef InputParams
         end
 
         function paramobj = validateInputParams(paramobj)
+
+        % Default automatic behaviour is that all the properties of paramobj that belong to class InputParams get
+        % validated.
             
             paramobjFds = properties(paramobj);
 
