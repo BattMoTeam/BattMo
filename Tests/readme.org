@@ -53,13 +53,18 @@
      suite.run();
    #+end_src
 
-   Another example is
+   We can also use matlab standard way (no selector), as in the following example
    #+begin_src matlab
      import matlab.unittest.TestSuite;
-     import matlab.unittest.selectors.HasParameter;
-     import matlab.unittest.constraints.*
      suite = TestSuite.fromClass(?TestRunExamples);
-     suite = suite.selectIf(HasParameter('Property', IsSubsetOf({'runBattery1D', 'runBattery2D'})));
+     names = arrayfun(@(test) test.Parameterization.Value, suite, 'un', false);
+     ind = ismember(names, {'runBattery1D', ...
+                            'runBattery2D'    , ...
+                            'runBattery3D'    , ...
+                            'runBattery2DMech', ...
+                            'runChen2020'});
+     suite = suite(ind);
+     suite.run()
    #+end_src
    
    Through pluggins, we can add extra output in the tests

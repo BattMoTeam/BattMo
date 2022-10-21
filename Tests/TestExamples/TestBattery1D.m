@@ -13,22 +13,8 @@ classdef TestBattery1D < matlab.unittest.TestCase
     
     methods
 
-        function test = TestBattery1D(varargin)
-            mrstModule reset
-            mrstModule add ad-core mrst-gui mpfa
-        end
-        
-        function states = test1d(test, jsonfile, controlPolicy, use_thermal, include_current_collector, diffusionModelType, varargin)
+        function states = test1d(test, jsonfile, controlPolicy, use_thermal, include_current_collector, diffusionModelType, testSize, varargin)
             
-        %% Setup the properties of Li-ion battery materials and cell design
-        % The properties and parameters of the battery cell, including the
-        % architecture and materials, are set using an instance of
-        % :class:`BatteryInputParams <Battery.BatteryInputParams>`. This class is
-        % used to initialize the simulation and it propagates all the parameters
-        % throughout the submodels. The input parameters can be set manually or
-        % provided in json format. All the parameters for the model are stored in
-        % the paramobj object.
-
             jsonstruct = parseBattmoJson(fullfile('ParameterData','BatteryCellParameters','LithiumIonBatteryCell','lithium_ion_battery_nmc_graphite.json'));
 
 
