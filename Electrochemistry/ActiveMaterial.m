@@ -24,7 +24,6 @@ classdef ActiveMaterial < ElectronicComponent
         EffectiveHeatCapacity         % Effective Heat Capacity of the active component
 
         diffusionModelType
-        use_thermal
         
         externalCouplingTerm          % only used in no current collector
 

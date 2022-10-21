@@ -24,8 +24,6 @@ classdef Electrolyte < ElectroChemicalComponent
         computeConductivityFunc
         computeDiffusionCoefficientFunc
 
-        use_thermal
-
         BruggemanCoefficient
 
     end

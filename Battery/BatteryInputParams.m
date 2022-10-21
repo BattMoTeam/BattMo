@@ -20,7 +20,7 @@ classdef BatteryInputParams < InputParams
         
         couplingTerms % Coupling terms (describe the topological structure of the coupling between the components)
         
-        use_thermal         % flag : true if  coupled thermal simulation should be considered
+        use_thermal            % flag : true if  coupled thermal simulation should be considered
         use_particle_diffusion % flag : true if solid diffusion should be included (mainly for debugging)
         include_current_collectors
 
