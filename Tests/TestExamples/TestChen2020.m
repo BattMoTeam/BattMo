@@ -8,7 +8,9 @@ classdef TestChen2020 < matlab.unittest.TestCase
             jsonstruct = parseBattmoJson(fullfile('ParameterData','ParameterSets','Chen2020','chen2020_lithium_ion_battery.json'));
 
             paramobj = BatteryInputParams(jsonstruct);
-
+            paramobj.include_current_collectors = false;
+            paramobj = paramobj.validateInputParams();
+            
             % Some shorthands used for the sub-models
             ne    = 'NegativeElectrode';
             pe    = 'PositiveElectrode';

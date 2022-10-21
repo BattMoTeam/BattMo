@@ -15,7 +15,9 @@ classdef TestBatteryND < matlab.unittest.TestCase
 
             jsonstruct = parseBattmoJson(jsonfile);
             paramobj = BatteryInputParams(jsonstruct);
-
+            paramobj.include_current_collectors = true;
+            paramobj = paramobj.validateInputParams();
+            
             switch dim
               case 2
                 gen = BatteryGenerator2D();
