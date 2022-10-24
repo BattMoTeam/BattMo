@@ -227,6 +227,7 @@ classdef Battery < BaseModel
             selectedEquationNames = allEquationNames(selectedInds);
             [selectedEquationNames, ind] = Battery.getUniqueList(selectedEquationNames);
             
+            selectedEquationTypes = allEquationTypes(selectedInds);
             selectedEquationTypes = allEquationTypes(ind);
 
             model.primaryVariableNames  = primaryVariableNames;
@@ -873,8 +874,8 @@ classdef Battery < BaseModel
             %% update solid diffustion equations
             for ind = 1 : numel(electrodes)
                 elde = electrodes{ind};
-                state.(elde).(am).(sd) = battery.(elde).(am).(sd).updateDiffusionCoefficient(state.(elde).(am).(sd));
                 if model.use_particle_diffusion
+                    state.(elde).(am).(sd) = battery.(elde).(am).(sd).updateDiffusionCoefficient(state.(elde).(am).(sd));
                     switch model.(elde).(am).diffusionModelType
                       case 'simple'
                         state.(elde).(am) = battery.(elde).(am).assembleAccumTerm(state.(elde).(am), state0.(elde).(am), dt);
@@ -963,10 +964,10 @@ classdef Battery < BaseModel
 
                 switch model.(ne).(am).diffusionModelType
                   case 'simple'
-                    % Equation name : 'ne_am_massCons';
-                    eqs{end + 1} = state.(ne).(am).massCons*massConsScaling;
                     % Equation name : 'ne_am_sd_soliddiffeq';
                     eqs{end + 1} = state.(ne).(am).(sd).solidDiffusionEq.*massConsScaling.*battery.(ne).(am).(itf).G.cells.volumes/dt;
+                    % Equation name : 'ne_am_massCons';
+                    eqs{end + 1} = state.(ne).(am).massCons*massConsScaling;
                     
                   case 'full'
                     % Equation name : 'ne_am_sd_massCons';
@@ -978,18 +979,18 @@ classdef Battery < BaseModel
                     surfp = 4*pi*rp^2;
                     
                     scalingcoef = (vsf*vol(1)*n*F)/surfp;
-                    eqs{end + 1} = scalingcoef*state.(ne).(am).(sd).massCons;
                     % Equation name : 'ne_am_sd_soliddiffeq';
                     eqs{end + 1} = scalingcoef*state.(ne).(am).(sd).solidDiffusionEq;
+                    eqs{end + 1} = scalingcoef*state.(ne).(am).(sd).massCons;
                 end
                 
                 
                 switch model.(pe).(am).diffusionModelType
                   case 'simple'
-                    % Equation name : 'pe_am_massCons';
-                    eqs{end + 1} = state.(pe).(am).massCons*massConsScaling;
                     % Equation name : 'pe_am_sd_soliddiffeq';
                     eqs{end + 1} = state.(pe).(am).(sd).solidDiffusionEq.*massConsScaling.*battery.(pe).(am).(itf).G.cells.volumes/dt;
+                    % Equation name : 'pe_am_massCons';
+                    eqs{end + 1} = state.(pe).(am).massCons*massConsScaling;
                     
                   case 'full'
                     % Equation name : 'pe_am_sd_massCons';
@@ -1001,12 +1002,15 @@ classdef Battery < BaseModel
                     surfp = 4*pi*rp^2;
                     
                     scalingcoef = (vsf*vol(1)*n*F)/surfp;
-                    eqs{end + 1} = scalingcoef*state.(pe).(am).(sd).massCons;
                     % Equation name : 'pe_am_sd_soliddiffeq';
                     eqs{end + 1} = scalingcoef*state.(pe).(am).(sd).solidDiffusionEq;
+                    eqs{end + 1} = scalingcoef*state.(pe).(am).(sd).massCons;
                     
                 end
+            else
                 
+                eqs{end + 1} = state.(ne).(am).massCons*massConsScaling;
+                eqs{end + 1} = state.(pe).(am).massCons*massConsScaling;                
                 
             end
             

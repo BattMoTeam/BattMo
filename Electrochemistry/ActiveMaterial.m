@@ -493,7 +493,7 @@ classdef ActiveMaterial < ElectronicComponent
             vols = model.G.cells.volumes;
             n    = model.Interface.n;
 
-            Rvol = state.SolidDiffusion.Rvol;
+            Rvol = state.Rvol;
             
             state.eSource = - vols.*Rvol*n*F; % C/s
             
