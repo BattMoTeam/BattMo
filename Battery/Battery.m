@@ -273,8 +273,8 @@ classdef Battery < BaseModel
             
             % Functions that update the source terms in the electolyte
             fn = @Battery.updateElectrolyteCoupling;
-            inputnames = {{ne, am, sd, 'Rvol'}, ...
-                          {pe, am, sd, 'Rvol'}};
+            inputnames = {{ne, am, 'Rvol'}, ...
+                          {pe, am, 'Rvol'}};
             model = model.registerPropFunction({{elyte, 'massSource'}, fn, inputnames});
             model = model.registerPropFunction({{elyte, 'eSource'}, fn, inputnames});
             
@@ -321,9 +321,9 @@ classdef Battery < BaseModel
                 
                 %% Function that updates Thermal Reaction Terms
                 fn = @Battery.updateThermalReactionSourceTerms;
-                inputnames = {{ne, am, sd, 'Rvol'}  , ...
+                inputnames = {{ne, am, 'Rvol'}  , ...
                               {ne, am, itf, 'eta'}, ...
-                              {pe, am, sd, 'Rvol'}  , ...
+                              {pe, am, 'Rvol'}  , ...
                               {pe, am, itf, 'eta'}};
                 model = model.registerPropFunction({{thermal, 'jHeatReactionSource'}, fn, inputnames});
 
@@ -358,15 +358,14 @@ classdef Battery < BaseModel
                 
             end
 
-            %% declare static variables
-            varnames = {{ctrl, 'ctrlType'}, ...
-                        {ctrl, 'ctrlVal'}};
+            %% Declare the "static" variables
+            varnames = {};
             if ~model.use_thermal
-                
                 varnames{end + 1} = {thermal, 'T'};
-                
             end
+            model = model.registerStaticVarNames(varnames);
 
+            %% Declare the variables used for thermal model
             eldes = {ne, pe};
 
             if ~model.use_thermal
@@ -398,7 +397,6 @@ classdef Battery < BaseModel
             end
             
             
-            model = model.registerStaticVarNames(varnames);
             
         end
 

@@ -188,7 +188,9 @@ classdef ActiveMaterial < ElectronicComponent
             
             fn = @ActiveMaterial.dispatchTemperature;
             model = model.registerPropFunction({{itf, 'T'}, fn, {'T'}});
-            model = model.registerPropFunction({{sd, 'T'}, fn, {'T'}});
+            if model.use_particle_diffusion
+                model = model.registerPropFunction({{sd, 'T'}, fn, {'T'}});
+            end
 
             if model.use_particle_diffusion
                 
@@ -222,11 +224,17 @@ classdef ActiveMaterial < ElectronicComponent
 
             else
 
+                fn = @ActiveMaterial.updateConcentrations;
+                model = model.registerPropFunction({{itf, 'cElectrodeSurface'}, fn, {'c'}});
+
+                fn = @ActiveMaterial.updateRvol;
+                model = model.registerPropFunction({'Rvol', fn, {{itf, 'R'}}});
+
                 fn = @ActiveMaterial.updateMassFlux;
                 model = model.registerPropFunction({'massFlux', fn, {'c'}});
                 
-                fn = @ActiveMaterial.updateMassSourceNoParticle;
-                model = model.registerPropFunction({'massSource', fn, {{itf, 'R'}}});
+                fn = @ActiveMaterial.updateMassSource;
+                model = model.registerPropFunction({'massSource', fn, {'Rvol'}});
                 
                 fn = @ActiveMaterial.updateMassConservation;
                 model = model.registerPropFunction({'massCons', fn, {'massAccum', 'massFlux', 'massSource'}});
@@ -246,12 +254,12 @@ classdef ActiveMaterial < ElectronicComponent
             end
             
             %% Function called to assemble accumulation terms (functions takes in fact as arguments not only state but also state0 and dt)
-            if model.use_particle_diffusion & strcmp(model.diffusionModelType, 'simple')
+            if model.use_particle_diffusion & strcmp(model.diffusionModelType, 'simple') | ~model.use_particle_diffusion
                 fn = @ActiveMaterial.assembleAccumTerm;
                 model = model.registerPropFunction({'massAccum', fn, {'c'}});
             end
 
-            
+           
         end
         
         
