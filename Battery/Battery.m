@@ -118,23 +118,25 @@ classdef Battery < BaseModel
             % IMPORTANT : In the iterative solver, we remove parts of the linear systems. There, we assume a certain
             % order of the equations. The order is as indicated in the following cell structure: There is a given match
             % between the variables names (first column) and the equation names (second column). NOTE : this order MUST
-            % be respected in the function getEquations where the equations are collected; nothing is imposed there.
+            % be respected in the function getEquations where the equations are collected; nothing is imposed there. If
+            % equation name is repeated, the location of the equation in the assembly is determined by the first
+            % appearance in the list
             
             allNames = { ...
-                {elyte, 'c'}            , 'elyte_massCons'      , 'cell' ; ... 
-                {elyte, 'phi'}          , 'elyte_chargeCons'    , 'cell' ; ... 
-                {ne, am, 'phi'}         , 'ne_am_chargeCons'    , 'cell' ; ... 
-                {pe, am, 'phi'}         , 'pe_am_chargeCons'    , 'cell' ; ... 
-                {ne, am, sd, 'cSurface'}, 'ne_am_massCons'      , 'scell' ; ... 
-                {ne, am, sd, 'c'}       , 'ne_am_sd_massCons'   , 'sdiff'; ... 
-                {ne, am, 'c'}           , 'ne_am_sd_soliddiffeq', 'sdiff'; ... 
-                {pe, am, sd, 'cSurface'}, 'pe_am_massCons'      , 'scell' ; ...
-                {pe, am, sd, 'c'}       , 'pe_am_sd_massCons'   , 'sdiff'; ... 
-                {pe, am, 'c'}           , 'pe_am_sd_soliddiffeq', 'sdiff'; ... 
-                {ne, cc, 'phi'}         , 'ne_cc_chargeCons'    , 'cell' ; ... 
-                {pe, cc, 'phi'}         , 'pe_cc_chargeCons'    , 'cell' ; ... 
-                {thermal, 'T'}          , 'energyCons'          , 'cell' ; ...
-                {ctrl, 'E'}             , 'EIeq'                , 'ctrl' ; ...
+                {elyte, 'c'}            , 'elyte_massCons'      , 'cell'  ; ... 
+                {elyte, 'phi'}          , 'elyte_chargeCons'    , 'cell'  ; ... 
+                {ne, am, 'phi'}         , 'ne_am_chargeCons'    , 'cell'  ; ... 
+                {pe, am, 'phi'}         , 'pe_am_chargeCons'    , 'cell'  ; ... 
+                {ne, am, sd, 'cSurface'}, 'ne_am_sd_soliddiffeq', 'scell' ; ... 
+                {ne, am, 'c'}           , 'ne_am_massCons'      , 'scell' ; ... 
+                {ne, am, sd, 'c'}       , 'ne_am_sd_massCons'   , 'sdiff' ; ... 
+                {pe, am, sd, 'cSurface'}, 'pe_am_sd_soliddiffeq', 'scell' ; ... 
+                {pe, am, 'c'}           , 'pe_am_massCons'      , 'scell' ; ... 
+                {pe, am, sd, 'c'}       , 'pe_am_sd_massCons'   , 'sdiff' ; ... 
+                {ne, cc, 'phi'}         , 'ne_cc_chargeCons'    , 'cell'  ; ... 
+                {pe, cc, 'phi'}         , 'pe_cc_chargeCons'    , 'cell'  ; ... 
+                {thermal, 'T'}          , 'energyCons'          , 'cell'  ; ...
+                {ctrl, 'E'}             , 'EIeq'                , 'ctrl'  ; ...
                 {ctrl, 'I'}             , 'controlEq'           , 'ctrl' };           
                 
             allPrimaryVarNames = allNames(:, 1);
@@ -143,73 +145,74 @@ classdef Battery < BaseModel
                 
             addedVariableNames = {};
             
-            selectedvarinds = false(numel(allPrimaryVarNames), 1);
-            selectedEqnInds = false(numel(allEquationNames), 1);
+            selectedInds = false(size(allNames, 1), 1);
+
+            pickInd = @(names) Battery.pickInd(names, allNames);
             
-            % default set of primary variables (enter in all setups)
-            pickVarInd = @(varnames) Battery.pickVarInd(varnames, allPrimaryVarNames);
-            inds = pickVarInd({{elyte, 'c'}     , ...
-                                {elyte, 'phi'}  , ...   
-                                {ne, am, 'phi'} , ...   
-                                {pe, am, 'phi'} , ...   
-                                {ctrl, 'E'}     , ...
-                                {ctrl, 'I'}});
-            selectedVarInds(inds) = true;
+            names ={{elyte, 'c'}   , 'elyte_massCons'  ; ...  
+                    {elyte, 'phi'} , 'elyte_chargeCons'; ...    
+                    {ne, am, 'phi'}, 'ne_am_chargeCons'; ...    
+                    {pe, am, 'phi'}, 'pe_am_chargeCons'; ...    
+                    {ctrl, 'E'}    , 'EIeq'            ; ...  
+                    {ctrl, 'I'}    , 'controlEq'};            
             
-            % default set of equations (enter in all setups)
-            [isok, inds] = ismember({'elyte_massCons'  , ...
-                                     'elyte_chargeCons', ...
-                                     'ne_am_chargeCons', ...
-                                     'pe_am_chargeCons', ...
-                                     'EIeq'            , ...
-                                     'controlEq'}, allEquationNames);
-            selectedEqnInds(inds) = true;
+            selectedInds(pickInd(names)) = true;
             
             if model.use_thermal
-                selectedVarInds(pickVarInd({thermal, 'T'})) = true;
-                [isok, inds] = ismember('energyCons', allEquationNames);
-                selectedEqnInds(inds) = true;
+                selectedInds(pickInd({{thermal, 'T'}, 'energyCons'})) = true;
             else
                 addedVariableNames{end + 1} = {thermal, 'T'};
             end
 
             if model.use_particle_diffusion
-                selectedVarInds(pickVarInd({{ne, am, sd, 'cSurface'}, {pe, am, sd, 'cSurface'}})) = true;
-                [isok, inds] = ismember({'ne_am_sd_soliddiffeq', 'pe_am_sd_soliddiffeq'}, allEquationNames);
-                selectedEqnInds(inds) = true;
+                names = {{ne, am, sd, 'cSurface'}, 'ne_am_sd_soliddiffeq'; ...
+                         {pe, am, sd, 'cSurface'}, 'pe_am_sd_soliddiffeq'};
+
+                selectedInds(pickInd(names)) = true;
+                
                 switch model.(ne).(am).diffusionModelType
+
                   case 'simple'
-                    selectedVarInds(pickVarInd({ne, am, 'c'})) = true;
-                    [isok, inds] = ismember('ne_am_massCons', allEquationNames);
-                    selectedEqnInds(inds) = true;                    
+                    names = {{ne, am, 'c'}, 'ne_am_massCons'};
                   case 'full'
-                    selectedVarInds(pickVarInd({ne, am, sd, 'c'})) = true;
-                    [isok, inds] = ismember('ne_am_sd_massCons', allEquationNames);
-                    selectedEqnInds(inds) = true;                    
+                    names = {{ne, am, sd, 'c'}, 'ne_am_sd_massCons'};
+                  otherwise
+                    error('diffusionModelType not recognized');
+
                 end
+                
+                selectedInds(pickInd(names)) = true;
+
                 switch model.(pe).(am).diffusionModelType
+                                    
                   case 'simple'
-                    selectedVarInds(pickVarInd({pe, am, 'c'})) = true;
-                    [isok, inds] = ismember('pe_am_massCons', allEquationNames);
-                    selectedEqnInds(inds) = true;                    
+                    names = {{pe, am, 'c'}, 'pe_am_massCons'};
                   case 'full'
-                    selectedVarInds(pickVarInd({pe, am, sd, 'c'})) = true;
-                    [isok, inds] = ismember('pe_am_sd_massCons', allEquationNames);
-                    selectedEqnInds(inds) = true;                    
+                    names = {{pe, am, sd, 'c'}, 'pe_am_sd_massCons'};
+                  otherwise
+                    error('diffusionModelType not recognized');
+
                 end
+                
+                selectedInds(pickInd(names)) = true;
+
             else
-                selectedVarInds(pickVarInd({ne, am, 'c'})) = true;
-                [isok, inds] = ismember('ne_am_massCons', allEquationNames);
-                selectedEqnInds(inds) = true;                    
-                selectedVarInds(pickVarInd({pe, am, 'c'})) = true;
-                [isok, inds] = ismember('pe_am_massCons', allEquationNames);
-                selectedEqnInds(inds) = true;                                    
+
+                names = {{ne, am, 'c'}, 'ne_am_massCons'; ...
+                         {pe, am, 'c'}, 'pe_am_massCons'};
+                
+                selectedInds(pickInd(names)) = true;
+
             end
+            
 
             if model.include_current_collectors
-                selectedVarInds(pickVarInd({{ne, cc, 'phi'}, {pe, cc, 'phi'}})) = true;
-                [isok, inds] = ismember({'ne_cc_chargeCons', 'pe_cc_chargeCons'}, allEquationNames);
-                selectedEqnInds(inds) = true;
+                
+                names = {{ne, cc, 'phi'}, 'ne_cc_chargeCons'; ...
+                         {pe, cc, 'phi'}, 'pe_cc_chargeCons'};
+                         
+                selectedInds(pickInd(names)) = true;
+                
             end
             
             addedVariableNames{end + 1} = {ctrl, 'ctrlType'};
@@ -218,9 +221,17 @@ classdef Battery < BaseModel
                 addedVariableNames{end + 1} = {ctrl, 'nextCtrlType'};
             end
             
-            model.primaryVariableNames  = allPrimaryVarNames(selectedVarInds);
-            model.selectedEquationNames = allEquationNames(selectedEqnInds);
-            model.selectedEquationTypes = allEquationTypes(selectedEqnInds);
+            primaryVariableNames = allPrimaryVarNames(selectedInds);
+            primaryVariableNames = Battery.getUniqueList(primaryVariableNames);
+
+            selectedEquationNames = allEquationNames(selectedInds);
+            [selectedEquationNames, ind] = Battery.getUniqueList(selectedEquationNames);
+            
+            selectedEquationTypes = allEquationTypes(ind);
+
+            model.primaryVariableNames  = primaryVariableNames;
+            model.selectedEquationNames = selectedEquationNames;
+            model.selectedEquationTypes = selectedEquationTypes;
             model.addedVariableNames    = addedVariableNames;
             
         end
@@ -1627,22 +1638,51 @@ classdef Battery < BaseModel
     end
     
     methods(Static)
-        
-        function ind = pickVarInd(varnames, givenvarnames)
-            for ivarnames = 1 : numel(givenvarnames)
-                givenvarnames{ivarnames} = strjoin(givenvarnames{ivarnames}, '_');
+
+        function ind = pickInd(names, allNames)
+
+            allVarNames = allNames(:, 1);
+            allEqNames  = allNames(:, 2);
+            
+            for ivarnames = 1 : numel(allVarNames)
+                allVarNames{ivarnames} = strjoin(allVarNames{ivarnames}, '_');
             end
-            if ischar(varnames{1})
-                varnames = {varnames};
-            end
+            
+            varnames = names(:, 1);
+            eqnames = names(:, 2);
+            
             for ivarnames = 1 : numel(varnames)
                 varnames{ivarnames} = strjoin(varnames{ivarnames}, '_');
             end
-            [isok, ind] = ismember(varnames, givenvarnames);
+
+            [isok1, ind1] = ismember(allVarNames, varnames);
+            [isok2, ind2] = ismember(allEqNames, eqnames);
             
-            assert(all(isok), 'Some variable names are not been found');
+            assert(nnz(isok1) & nnz(isok2), 'Some variable or equation names are not been found');
+            
+            ind = (ind1 == ind2) & isok1 & isok2;
+            
         end
-        
+
+        function [uniquenames, ind] = getUniqueList(names)
+
+            for inames = 1 : numel(names)
+                if iscell(names{inames})
+                    strnames{inames} = strjoin(names{inames}, '_');
+                else
+                    strnames{inames} = names{inames};
+                end
+            end
+
+            [~, ind] = unique(strnames, 'first');
+            % we make sure the order is respected
+            indb = false(numel(strnames), 1);
+            indb(ind) = true;
+            
+            uniquenames = names(indb);
+
+        end
+
     end
     
     
