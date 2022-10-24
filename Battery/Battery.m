@@ -1668,7 +1668,7 @@ classdef Battery < BaseModel
             
         end
 
-        function [uniquenames, ind] = getUniqueList(names)
+        function [uniquenames, indb] = getUniqueList(names)
 
             for inames = 1 : numel(names)
                 if iscell(names{inames})
