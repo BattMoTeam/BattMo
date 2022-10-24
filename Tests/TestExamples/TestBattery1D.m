@@ -6,7 +6,7 @@ classdef TestBattery1D < matlab.unittest.TestCase
         controlPolicy             = {'CCCV', 'IEswitch'};
         use_thermal               = {true, false};
         include_current_collector = {true, false};
-        diffusionmodel            = {'simplified', 'full'};
+        diffusionmodel            = {'none', 'simplified', 'full'};
         testSize                  = {'short', 'long'};
         createReferenceData       = {false};
     end
@@ -21,9 +21,14 @@ classdef TestBattery1D < matlab.unittest.TestCase
             jsonstruct.include_current_collector = include_current_collector;
             jsonstruct.use_thermal = use_thermal;
 
-            json.NegativeElectrode.ActiveMaterial.diffusionModelType = diffusionModelType;
-            json.PositiveElectrode.ActiveMaterial.diffusionModelType = diffusionModelType;
-
+            if strcmp(diffusionModelType, 'none')
+                json.use_particle_diffusion = false;
+            else
+                json.use_particle_diffusion = true;
+                json.NegativeElectrode.ActiveMaterial.diffusionModelType = diffusionModelType;
+                json.PositiveElectrode.ActiveMaterial.diffusionModelType = diffusionModelType;
+            end
+            
             paramobj = BatteryInputParams(jsonstruct);
 
             use_cccv = strcmpi(controlPolicy, 'CCCV');
