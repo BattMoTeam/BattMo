@@ -467,22 +467,17 @@ classdef ActiveMaterial < ElectronicComponent
             
         end
         
-        function state = updateMassSourceNoParticle(model, state)
-            
-            vols = model.G.cells.volumes;
-            vsa = model.Interface.volumetricSurfaceArea;
-            
-            R = state.Interface.R;
-            
-            state.massSource = - vsa*R.*vols;
-            
-        end
-        
+
         function state = updateMassConservation(model, state)
-        % Used when diffusionModelType == 'simple'
-        % Here, we have no flux (for the moment)
+        % Used when diffusionModelType == 'simple' or no particle diffusion
+
+            flux = state.massFlux;
+            source = state.massSource;
+            accum = state.massAccum;
+
+            cons = assembleConservationEquation(model, flux, 0, source, accum);
             
-            state.massCons = state.massAccum - state.massSource;
+            state.massCons = cons;
             
         end
         

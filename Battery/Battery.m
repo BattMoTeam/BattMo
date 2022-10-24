@@ -868,6 +868,7 @@ classdef Battery < BaseModel
                       case 'simple'
                         state.(elde).(am) = battery.(elde).(am).assembleAccumTerm(state.(elde).(am), state0.(elde).(am), dt);
                         state.(elde).(am) = battery.(elde).(am).updateMassSource(state.(elde).(am));
+                        state.(elde).(am) = battery.(elde).(am).updateMassFlux(state.(elde).(am));
                         state.(elde).(am) = battery.(elde).(am).updateMassConservation(state.(elde).(am));
                       case 'full'
                         state.(elde).(am).(sd) = battery.(elde).(am).(sd).updateMassSource(state.(elde).(am).(sd));
@@ -882,6 +883,7 @@ classdef Battery < BaseModel
                     state.(elde).(am) = battery.(elde).(am).updateMassSource(state.(elde).(am));
                     state.(elde).(am) = battery.(elde).(am).updateMassConservation(state.(elde).(am));
                 end
+                
             end
 
             if model.use_thermal
@@ -1081,7 +1083,6 @@ classdef Battery < BaseModel
             ne    = 'NegativeElectrode';
             pe    = 'PositiveElectrode';
             am    = 'ActiveMaterial';
-            sd    = 'SolidDiffusion';
             itf   = 'Interface';
             
             vols = battery.(elyte).G.cells.volumes;
@@ -1105,12 +1106,12 @@ classdef Battery < BaseModel
             
             coupnames = model.couplingNames;
             
-            ne_Rvol = state.(ne).(am).(sd).Rvol;
+            ne_Rvol = state.(ne).(am).Rvol;
             coupterm = getCoupTerm(couplingterms, 'NegativeElectrode-Electrolyte', coupnames);
             elytecells = coupterm.couplingcells(:, 2);
             elyte_c_source(elytecells) = ne_Rvol.*vols(elytecells);
             
-            pe_Rvol = state.(pe).(am).(sd).Rvol;
+            pe_Rvol = state.(pe).(am).Rvol;
             coupterm = getCoupTerm(couplingterms, 'PositiveElectrode-Electrolyte', coupnames);
             elytecells = coupterm.couplingcells(:, 2);
             elyte_c_source(elytecells) = pe_Rvol.*vols(elytecells);
@@ -1268,7 +1269,6 @@ classdef Battery < BaseModel
             pe      = 'PositiveElectrode';
             am      = 'ActiveMaterial';
             itf     = 'Interface';
-            sd      = 'SolidDiffusion';
             thermal = 'ThermalModel';
             
             
@@ -1300,7 +1300,7 @@ classdef Battery < BaseModel
                 vsa     = itf_model.volumetricSurfaceArea;
                 vols    = model.(elde).(am).G.cells.volumes;
 
-                Rvol = locstate.(elde).(am).(sd).Rvol;
+                Rvol = locstate.(elde).(am).Rvol;
                 dUdT = locstate.(elde).(am).(itf).dUdT;
                 eta  = locstate.(elde).(am).(itf).eta;
                 
