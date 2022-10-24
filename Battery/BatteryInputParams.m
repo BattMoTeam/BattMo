@@ -62,6 +62,7 @@ classdef BatteryInputParams < InputParams
 
             ne      = 'NegativeElectrode';
             pe      = 'PositiveElectrode';
+            am      = 'ActiveMaterial';
             elyte   = 'Electrolyte';
             thermal = 'ThermalModel';
             ctrl    = 'Control';            
@@ -72,10 +73,11 @@ classdef BatteryInputParams < InputParams
                 paramobj = mergeParameters(paramobj, {'use_thermal'}, {comp, 'use_thermal'});
             end
 
-            comps = {ne, pe};
-            for icomp = 1 : numel(comps)
-                comp = comps{icomp};
-                paramobj = mergeParameters(paramobj, {'include_current_collectors'}, {comp, 'include_current_collector'});
+            eldes = {ne, pe};
+            for ielde = 1 : numel(eldes)
+                elde = eldes{ielde};
+                paramobj = mergeParameters(paramobj, {'include_current_collectors'}, {elde, 'include_current_collector'});
+                paramobj = mergeParameters(paramobj, {'use_particle_diffusion'}, {elde, am, 'use_particle_diffusion'});
             end
             
             paramobj.(ne)    = paramobj.(ne).validateInputParams();

@@ -876,6 +876,11 @@ classdef Battery < BaseModel
                         state.(elde).(am).(sd) = battery.(elde).(am).(sd).updateMassConservation(state.(elde).(am).(sd));
                     end
                     state.(elde).(am).(sd) = battery.(elde).(am).(sd).assembleSolidDiffusionEquation(state.(elde).(am).(sd));
+                else
+                    state.(elde).(am) = battery.(elde).(am).assembleAccumTerm(state.(elde).(am), state0.(elde).(am), dt);
+                    state.(elde).(am) = battery.(elde).(am).updateMassFlux(state.(elde).(am));
+                    state.(elde).(am) = battery.(elde).(am).updateMassSource(state.(elde).(am));
+                    state.(elde).(am) = battery.(elde).(am).updateMassConservation(state.(elde).(am));
                 end
             end
 

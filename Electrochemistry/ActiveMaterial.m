@@ -84,6 +84,10 @@ classdef ActiveMaterial < ElectronicComponent
                 end
 
             end
+
+            if ~model.use_particle_diffusion
+                model.InterDiffusionCoefficient = paramobj.InterDiffusionCoefficient;
+            end
             
             nc = model.G.cells.num;
 
@@ -398,8 +402,13 @@ classdef ActiveMaterial < ElectronicComponent
         function state = updateRvol(model, state)
 
             vsa = model.Interface.volumetricSurfaceArea;
-            
-            state.SolidDiffusion.Rvol = vsa*state.Interface.R;
+
+            Rvol = vsa*state.Interface.R;
+            state.Rvol = Rvol;
+
+            if model.use_particle_diffusion
+                state.SolidDiffusion.Rvol = Rvol;
+            end
             
         end
         
@@ -407,12 +416,16 @@ classdef ActiveMaterial < ElectronicComponent
 
             sd  = 'SolidDiffusion';
             itf = 'Interface';
+
+            if model.use_particle_diffusion
+                if strcmp(model.diffusionModelType, 'simple')
+                    state.(sd).cAverage = state.c;
+                end
             
-            if strcmp(model.diffusionModelType, 'simple')
-                state.(sd).cAverage = state.c;
+                state.(itf).cElectrodeSurface = state.(sd).cSurface;
+            else
+                state.(itf).cElectrodeSurface = state.c;
             end
-            
-            state.(itf).cElectrodeSurface = state.(sd).cSurface;
             
         end
 
@@ -448,7 +461,7 @@ classdef ActiveMaterial < ElectronicComponent
             
             vols = model.G.cells.volumes;
             
-            Rvol = state.SolidDiffusion.Rvol;
+            Rvol = state.Rvol;
             
             state.massSource = - Rvol.*vols;
             
