@@ -6,8 +6,11 @@ close all
 
 do_plot = true;
 
-json = parseBattmoJson(fullfile('ParameterData', 'BatteryCellParameters', 'LithiumIonBatteryCell', 'lithium_ion_battery_nmc_graphite.json'));
-%json = parseBattmoJson(fullfile('ParameterData', 'ParameterSets', 'Xu2015', 'lfp.json'));
+%% Choose battery type
+
+%json = parseBattmoJson(fullfile('ParameterData', 'BatteryCellParameters', 'LithiumIonBatteryCell', 'lithium_ion_battery_nmc_graphite.json'));
+
+json = parseBattmoJson(fullfile('ParameterData', 'ParameterSets', 'Xu2015', 'lfp.json'));
 
 %% Generate "experimental" data
 jsonExp = json;
@@ -123,10 +126,10 @@ end
 fprintf('Initial guess\n');
 p0'
 fprintf('Optimized values\n');
-pOpt'
+pOpt
 fprintf('Experimental values\n');
-pExp'
+pExp
 fprintf('Relative error between optimized and experimental values\n')
-relErr'
+relErr
 fprintf('Iterations\n')
 numIt
