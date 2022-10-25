@@ -1,25 +1,24 @@
 {
-    "name": "orgLiPF6",
-    "specificHeatCapacity": 2055.0,
-    "heatCapacity": 2055000.0,
-    "thermalConductivity": 0.6,
-    "density": 1200,
-    "updateConductivityFunc" : {"functionname" : "updateElectrolyteConductivityFunc_default",
-                                "argumentlist" : ["concentration", "temperature"],
-                                "name" : "conductivity"
-                               },
-    "updateDiffusionCoefficientFunc" : {"functionname" : "updateDiffusionCoefficientFunc_default",
-                                        "argumentlist" : ["concentration", "temperature"],
-                                        "name" : "diffusion coefficient"
-                                       },
-    "compnames": [
-        "Li",
-        "PF6"
-    ],
-    "chargeCarrierName": "Li",
-    "sp": { "z": [1,-1],
-            "t": [0.399, 0.601]},
-    "Separator": { "filename": "ParameterData/BatteryComponentParameters/celgard2500.json",
+  "specificHeatCapacity": 2055.0,
+  "heatCapacity": 2055000.0,
+  "thermalConductivity": 0.6,
+  "density": 1200,
+  "Conductivity" : {"type" : "function",
+                    "functionname" : "computeElectrolyteConductivity_default",
+                    "argumentlist" : ["c", "T"]
+                   },
+  "DiffusionCoefficient" : {"type": "function",
+                            "functionname" : "computeDiffusionCoefficient_default",
+                            "argumentlist" : ["c", "T"]
+                           },
+  "compnames": [
+    "Li",
+    "PF6"
+  ],
+  "chargeCarrierName": "Li",
+  "sp": { "z": [1,-1],
+          "t": [0.399, 0.601]},
+  "Separator": { "filename": "ParameterData/BatteryComponentParameters/celgard2500.json",
                    "isFile": true },
     "BruggemanCoefficient": 1.5
 }

@@ -1,0 +1,35 @@
+{
+  "$id": "file://batmo/schemas/ActiveMaterial",
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "description": "Active Material",
+  "type": "object",
+
+  "allOf": [{"$ref": "ElectronicComponent"},
+            {"$ref": "thermalParameters"},
+            {"properties" : { "Interface": {"$ref" : "Interface"},
+                              "SolidDiffusion": {"$ref" : "SolidDiffusionModel"},
+                              "InterDiffusionCoefficient": {"type" : "number"},
+                              "electricalConductivity": {"type" : "number"},
+                              "diffusionModelType" : {"type" : "string",
+                                                      "enum" : ["full", "simple"]},
+                              "BruggemanCoefficient" : {"type" : "number"},
+                              "volumeFraction" : {"type" : "number"},
+                              "activeMaterialFraction" : {"type" : "number"},
+                              "use_particle_diffusion": {"type" : "boolean"}
+                            }
+            }
+           ],
+  
+  
+  "required" : ["Interface"],
+  
+  "anyOf" : [ {"properties" : {"diffusionModelType" : {"const" : "full"},
+                               "SolidDiffusion" : {"$ref" : "FullSolidDiffusionModel"}}
+              },
+              {"properties" : {"diffusionModelType" : {"const" : "simple"},
+                               "SolidDiffusion" : {"$ref" : "SimplifiedSolidDiffusionModel"}}
+              },
+              {"not" : {"properties" : {"diffusionModelType": {"type" : "string"}}}
+              }
+            ]
+}

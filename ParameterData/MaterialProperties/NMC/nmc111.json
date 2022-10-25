@@ -1,18 +1,16 @@
 {
-    "cmax": 55554,
-    "volumeFraction": 0.8,
-    "volumetricSurfaceArea": 885000,
-    "density": 4650,
-    "n" : 1,
-    "Eak": 5000,
-    "k0": 2.33e-11,
-    "theta100": 0.4955,
-    "theta0": 0.99174,
-    "name": "NMC111",
-    "updateOCPFunc" : {"functionname" : "updateOCPFunc_nmc111",
-                       "filepath" : "Materials/Liquid/CarbonateBased/updateDiffusionCoefficientFunc_default.m",
-                       "argumentlist" : ["concentration", "temperature", "maximum concentration"],
-                       "name" : "NMC111 OCP"
-                      },
-    "BruggemanCoefficient": 1.5
+  "cmax": 55554,
+  "volumeFraction": 0.8,
+  "volumetricSurfaceArea": 885000,
+  "density": 4650,
+  "n" : 1,
+  "Eak": 5000,
+  "k0": 2.33e-11,
+  "theta100": 0.4955,
+  "theta0": 0.99174,
+  "OCP" : {"type" : "function",
+           "functionname" : "computeOCP_nmc111",
+           "argumentlist" : ["cElectrode", "T", "cmax"]},
+  "BruggemanCoefficient": 1.5
 }
+

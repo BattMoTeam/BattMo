@@ -1,0 +1,10 @@
+{
+  "$id": "file://batmo/schemas/CurrentCollector",
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "description": "A current collector",
+  "type": "object",
+
+  "$ref": "ElectronicComponent",
+  "$ref": "thermalParameters"
+  
+}

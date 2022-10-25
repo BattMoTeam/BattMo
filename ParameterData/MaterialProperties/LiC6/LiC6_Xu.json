@@ -8,8 +8,6 @@
     "k0": 1.76e-11,
     "theta100": 0.51873811,
     "theta0": 0.001,
-    "name": "LiC6",
     "updateOCPFunc": {"functionname": "updateOCPFunc_LiC6_Xu",
-                      "argumentlist" : ["concentration", "temperature", "maximum concentration"],
-                      "name": "LiC6 OCP Xu"}
+                      "argumentlist" : ["concentration", "temperature", "maximum concentration"]}
 }

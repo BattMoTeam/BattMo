@@ -36,7 +36,7 @@ classdef IEswitchControlModel < ControlModel
             model = model.registerVarNames(varnames);
             
             fn = @IEswitchControlModel.updateControlEquation;
-            model = model.registerPropFunction({'controlEquation', fn, {'ctrlVal', 'E', 'I'}});
+            model = model.registerPropFunction({'controlEquation', fn, {'ctrlType', 'ctrlVal', 'E', 'I'}});
             
         end
 

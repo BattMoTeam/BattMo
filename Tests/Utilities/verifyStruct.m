@@ -1,7 +1,5 @@
-function verifyStruct(testCase, state, testname)
+function verifyStruct(testCase, state, refstate)
 
-    filename = sprintf('%s.json', testname);
-    refstate = parseBattmoJson(fullfile('Tests', 'TestExamples', 'ReferenceData', filename));
 
     import matlab.unittest.constraints.IsEqualTo
     import matlab.unittest.constraints.RelativeTolerance

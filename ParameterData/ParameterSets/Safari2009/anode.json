@@ -1,17 +1,14 @@
 {
-    "cmax": 30555,
-    "volumeFraction": 0.75,
-    "bruggemanCoeffcient": 1.5,
-    "volumetricSurfaceArea": 383959,
-    "n": 1,
-    "Eak": 35000,
-    "k0": 2.07e-11,
-    "theta100": 0.88,
-    "theta0": 0.15,
-    "name": "graphite(Safari)",
-    "updateOCPFunc" : {"functionname" : "updateOCPFunc_graphite",
-                       "filepath" : "Materials/Solid/ReactiveNonMetals/updateOCPFunc_graphite.m",
-                       "argumentlist" : ["concentration", "temperature", "maximum concentration"],
-                       "name" : "graphite OCP"
-                      }
+  "cmax": 30555,
+  "volumeFraction": 0.75,
+  "bruggemanCoeffcient": 1.5,
+  "volumetricSurfaceArea": 383959,
+  "n": 1,
+  "Eak": 35000,
+  "k0": 2.07e-11,
+  "theta100": 0.88,
+  "theta0": 0.15,
+  "OCP" : {"type" : "function",
+           "functionname" : "updateOCPFunc_graphite",
+           "argumentlist" : ["concentration", "temperature", "maximum concentration"]}
 }

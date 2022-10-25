@@ -1,0 +1,21 @@
+{
+  "$id": "file://batmo/schemas/Electrode",
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "description": "Electrode",
+  "type": "object",
+  
+  "properties" : { "ActiveMaterial" : {"$ref" : "ActiveMaterial"},
+                   "CurrentCollector" : {"$ref" : "CurrentCollector"},
+                   "include_current_collectors" : {"type" : "boolean"}
+                 },
+
+
+  "anyOf" : [ {"properties" : {"include_current_collectors": {"const": true},
+                               "required": ["CurrentCollector"]
+                              }
+              },
+              {"properties" : {"include_current_collectors": {"const": false}
+                              }
+              }
+            ]
+}

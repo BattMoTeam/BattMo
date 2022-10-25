@@ -1,0 +1,36 @@
+{
+  "$id": "file://batmo/schemas/Interface",
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "description": "interface",
+  "type": "object",
+  "properties" : {
+    "cmax": { "type" : "number",
+              "description" : "maximum concentration" },
+    "n" : {"type" : "integer",
+           "description" : "number of electron transfer"},
+    "volumeFraction": {"type" : "number"},
+    "volumetricSurfaceArea": {"type" : "number"},
+    "Eak": {"type" : "number",
+            "description" : "reaction activation energy"},
+    "k0": {"type" : "number",
+           "description" : "reference rate constant"},
+    "j0": {"$ref": "function"},
+    "theta100": {"type" : "number"},
+    "theta0": {"type" : "number"},
+    "density": {"type" : "number"},
+    "name": {"type" : "string"},
+    "updateOCPFunc" : {"$ref" : "function",
+                       "description" : "Function to update OCP"}
+  },
+  
+  "anyOf" : [{"required" : ["j0"]},
+             {"required" : ["k0"]}],
+  
+  "dependentSchemas": {"j0" : {"anyOf" : [{"properties": {"j0" : {"properties": {"type" : {"const" : "constant"}}}},
+                                           "required" : ["k0"]
+                                          },
+                                          {"properties": {"j0" : {"properties": {"type" : {"const" : "function"}}}}}
+                                         ]
+                              }
+                      }
+}
