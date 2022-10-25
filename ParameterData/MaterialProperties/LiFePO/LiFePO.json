@@ -8,6 +8,8 @@
     "k0": 3.626e-11,
     "theta100": 0.14778,
     "theta0": 0.999,
-    "updateOCPFunc": {"functionname": "updateOCPFunc_LFP_Xu",
-                      "argumentlist" : ["concentration", "temperature", "maximum concentration"]}
+    "OCP": {"type": "function",
+            "functionname": "updateOCPFunc_LFP_Xu",
+            "argumentlist" : ["concentration", "temperature", "maximum concentration"]
+           }
 }
