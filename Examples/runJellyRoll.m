@@ -87,13 +87,39 @@ spiralparams = struct('nwindings'   , nwindings, ...
 
 % The input material parameters given in json format are used to populate the paramobj object.
 jsonstruct = parseBattmoJson(fullfile('ParameterData','BatteryCellParameters','LithiumIonBatteryCell','lithium_ion_battery_nmc_graphite.json'));
+
+% We define some shorthand names for simplicity.
+ne      = 'NegativeElectrode';
+pe      = 'PositiveElectrode';
+elyte   = 'Electrolyte';
+thermal = 'ThermalModel';
+am      = 'ActiveMaterial';
+itf     = 'Interface';
+sd      = 'SolidDiffusion';
+ctrl    = 'Control';
+cc      = 'CurrentCollector';
+
 jsonstruct.include_current_collectors = true;
+jsonstruct.use_thermal = true;
+jsonstruct.(pe).(am).diffusionModelType = 'simple';
+jsonstruct.(ne).(am).diffusionModelType = 'simple';
+
+jsonstruct.use_particle_diffusion = true;
 
 paramobj = BatteryInputParams(jsonstruct); 
 
-th = 'ThermalModel';
-paramobj.(th).externalHeatTransferCoefficientSideFaces = 100*watt/meter^2;
-paramobj.(th).externalHeatTransferCoefficientTopFaces = 10*watt/meter^2;
+paramobj.(ne).(am).InterDiffusionCoefficient = 0;
+paramobj.(pe).(am).InterDiffusionCoefficient = 0;
+
+% paramobj.(ne).(am).(sd).N = 5;
+% paramobj.(pe).(am).(sd).N = 5;
+
+paramobj = paramobj.validateInputParams();
+
+
+% th = 'ThermalModel';
+% paramobj.(th).externalHeatTransferCoefficientSideFaces = 100*watt/meter^2;
+% paramobj.(th).externalHeatTransferCoefficientTopFaces = 10*watt/meter^2;
 
 gen = SpiralBatteryGenerator(); 
 
@@ -189,10 +215,10 @@ switch linearsolver
     nls.verbose = 10;
   case 'battery'
     nls.LinearSolver = LinearSolverBatteryExtra('verbose'     , false, ...
-                                                'reduceToCell', false, ...
+                                                'reduceToCell', true, ...
                                                 'verbosity'   , 3    , ...
                                                 'reuse_setup' , false, ...
-                                                'method'      , 'direct');
+                                                'method'      , 'agmg');
     nls.LinearSolver.tolerance = 0.5e-4*2;          
   case 'direct'
     disp('standard direct solver')
@@ -213,7 +239,11 @@ if resetSimulation
     %% clear previously computed simulation
     clearPackedSimulatorOutput(problem, 'prompt', false);
 end
+profile off
+profile on
 simulatePackedProblem(problem);
+profile off
+profile viewer
 [globvars, states, report] = getPackedSimulatorOutput(problem);
 
 %% Process output and recover the output voltage and current from the output states.
