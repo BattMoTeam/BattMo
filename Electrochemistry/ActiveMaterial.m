@@ -66,23 +66,23 @@ classdef ActiveMaterial < ElectronicComponent
             
             if model.use_particle_diffusion
                 
-            paramobj.SolidDiffusion.volumetricSurfaceArea = model.Interface.volumetricSurfaceArea;
+                paramobj.SolidDiffusion.volumetricSurfaceArea = model.Interface.volumetricSurfaceArea;
 
-            switch model.diffusionModelType
-              case 'simple'
-                model.SolidDiffusion = SimplifiedSolidDiffusionModel(paramobj.SolidDiffusion);
-              case 'full'
-                paramobj.SolidDiffusion.np = model.G.cells.num;
-                model.SolidDiffusion = FullSolidDiffusionModel(paramobj.SolidDiffusion);
-              otherwise
-                error('Unknown diffusionModelType %s', diffusionModelType);
-            end
+                switch model.diffusionModelType
+                  case 'simple'
+                    model.SolidDiffusion = SimplifiedSolidDiffusionModel(paramobj.SolidDiffusion);
+                  case 'full'
+                    paramobj.SolidDiffusion.np = model.G.cells.num;
+                    model.SolidDiffusion = FullSolidDiffusionModel(paramobj.SolidDiffusion);
+                  otherwise
+                    error('Unknown diffusionModelType %s', diffusionModelType);
+                end
 
-            if strcmp(model.diffusionModelType, 'simple')
-                % only used in SimplifiedSolidDiffusionModel (for now)
-                model.InterDiffusionCoefficient = paramobj.InterDiffusionCoefficient;
-            end
-            
+                if strcmp(model.diffusionModelType, 'simple')
+                    % only used in SimplifiedSolidDiffusionModel (for now)
+                    model.InterDiffusionCoefficient = paramobj.InterDiffusionCoefficient;
+                end
+                
             end
 
             if ~model.use_particle_diffusion
