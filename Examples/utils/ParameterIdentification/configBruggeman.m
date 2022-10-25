@@ -22,7 +22,7 @@ function config = configBruggeman(jsonExp)
                       };
 
     % Assume Bruggeman coefficients in range
-    config.boxLims = repmat([1, 2], numVars, 1);
+    config.boxLims = repmat([1, 3], numVars, 1);
 
     % Linear scaling
     config.scaling = repmat({'linear'}, numVars, 1);
