@@ -127,12 +127,15 @@ classdef Battery < BaseModel
                 {elyte, 'phi'}          , 'elyte_chargeCons'    , 'cell'  ; ... 
                 {ne, am, 'phi'}         , 'ne_am_chargeCons'    , 'cell'  ; ... 
                 {pe, am, 'phi'}         , 'pe_am_chargeCons'    , 'cell'  ; ... 
-                {ne, am, sd, 'c'}       , 'ne_am_sd_massCons'   , 'sdiff' ; ...
-                {ne, am, sd, 'cSurface'}, 'ne_am_sd_soliddiffeq', 'scell' ; ... 
-                {ne, am, 'c'}           , 'ne_am_massCons'      , 'scell' ; ... 
+
+                {ne, am, sd, 'c'}       , 'ne_am_sd_massCons'   , 'sdiff' ; ... % for full model (not used for simple or no particle diffusion)
+                {ne, am, 'c'}           , 'ne_am_massCons'      , 'scell' ; ... % for simple model or no particle diffusion
+                {ne, am, sd, 'cSurface'}, 'ne_am_sd_soliddiffeq', 'scell' ; ... % for both full and simple model not used for no particle diffusion
+
                 {pe, am, sd, 'c'}       , 'pe_am_sd_massCons'   , 'sdiff' ; ... 
-                {pe, am, sd, 'cSurface'}, 'pe_am_sd_soliddiffeq', 'scell' ; ... 
                 {pe, am, 'c'}           , 'pe_am_massCons'      , 'scell' ; ... 
+                {pe, am, sd, 'cSurface'}, 'pe_am_sd_soliddiffeq', 'scell' ; ... 
+
                 {ne, cc, 'phi'}         , 'ne_cc_chargeCons'    , 'cell'  ; ... 
                 {pe, cc, 'phi'}         , 'pe_cc_chargeCons'    , 'cell'  ; ... 
                 {thermal, 'T'}          , 'energyCons'          , 'cell'  ; ...
@@ -228,7 +231,7 @@ classdef Battery < BaseModel
             [selectedEquationNames, ind] = Battery.getUniqueList(selectedEquationNames);
             
             selectedEquationTypes = allEquationTypes(selectedInds);
-            selectedEquationTypes = allEquationTypes(ind);
+            selectedEquationTypes = selectedEquationTypes(ind);
 
             model.primaryVariableNames  = primaryVariableNames;
             model.selectedEquationNames = selectedEquationNames;
@@ -964,10 +967,10 @@ classdef Battery < BaseModel
 
                 switch model.(ne).(am).diffusionModelType
                   case 'simple'
-                    % Equation name : 'ne_am_sd_soliddiffeq';
-                    eqs{end + 1} = state.(ne).(am).(sd).solidDiffusionEq.*massConsScaling.*battery.(ne).(am).(itf).G.cells.volumes/dt;
                     % Equation name : 'ne_am_massCons';
                     eqs{end + 1} = state.(ne).(am).massCons*massConsScaling;
+                    % Equation name : 'ne_am_sd_soliddiffeq';
+                    eqs{end + 1} = state.(ne).(am).(sd).solidDiffusionEq.*massConsScaling.*battery.(ne).(am).(itf).G.cells.volumes/dt;
                     
                   case 'full'
                     % Equation name : 'ne_am_sd_massCons';
@@ -979,6 +982,7 @@ classdef Battery < BaseModel
                     surfp = 4*pi*rp^2;
                     
                     scalingcoef = (vsf*vol(1)*n*F)/surfp;
+                    % Equation name : 'ne_am_massCons'
                     eqs{end + 1} = scalingcoef*state.(ne).(am).(sd).massCons;
                     % Equation name : 'ne_am_sd_soliddiffeq';
                     eqs{end + 1} = scalingcoef*state.(ne).(am).(sd).solidDiffusionEq;
@@ -987,10 +991,10 @@ classdef Battery < BaseModel
                 
                 switch model.(pe).(am).diffusionModelType
                   case 'simple'
-                    % Equation name : 'pe_am_sd_soliddiffeq';
-                    eqs{end + 1} = state.(pe).(am).(sd).solidDiffusionEq.*massConsScaling.*battery.(pe).(am).(itf).G.cells.volumes/dt;
                     % Equation name : 'pe_am_massCons';
                     eqs{end + 1} = state.(pe).(am).massCons*massConsScaling;
+                    % Equation name : 'pe_am_sd_soliddiffeq';
+                    eqs{end + 1} = state.(pe).(am).(sd).solidDiffusionEq.*massConsScaling.*battery.(pe).(am).(itf).G.cells.volumes/dt;
                     
                   case 'full'
                     % Equation name : 'pe_am_sd_massCons';
@@ -1002,6 +1006,7 @@ classdef Battery < BaseModel
                     surfp = 4*pi*rp^2;
                     
                     scalingcoef = (vsf*vol(1)*n*F)/surfp;
+                    % Equation name : 'pe_am_massCons'
                     eqs{end + 1} = scalingcoef*state.(pe).(am).(sd).massCons;
                     % Equation name : 'pe_am_sd_soliddiffeq';
                     eqs{end + 1} = scalingcoef*state.(pe).(am).(sd).solidDiffusionEq;
