@@ -32,7 +32,7 @@ classdef ActiveMaterial < ElectronicComponent
         use_particle_diffusion
 
         isRoot
-
+        
     end
     
     methods
@@ -57,7 +57,7 @@ classdef ActiveMaterial < ElectronicComponent
             
             % Setup Interface component
             paramobj.Interface.G = model.G;
-
+            
             if isempty(paramobj.use_particle_diffusion)
                 model.use_particle_diffusion = true;
             end
@@ -66,23 +66,23 @@ classdef ActiveMaterial < ElectronicComponent
             
             if model.use_particle_diffusion
                 
-                paramobj.SolidDiffusion.volumetricSurfaceArea = model.Interface.volumetricSurfaceArea;
+            paramobj.SolidDiffusion.volumetricSurfaceArea = model.Interface.volumetricSurfaceArea;
 
-                switch model.diffusionModelType
-                  case 'simple'
-                    model.SolidDiffusion = SimplifiedSolidDiffusionModel(paramobj.SolidDiffusion);
-                  case 'full'
-                    paramobj.SolidDiffusion.np = model.G.cells.num;
-                    model.SolidDiffusion = FullSolidDiffusionModel(paramobj.SolidDiffusion);
-                  otherwise
-                    error('Unknown diffusionModelType %s', diffusionModelType);
-                end
+            switch model.diffusionModelType
+              case 'simple'
+                model.SolidDiffusion = SimplifiedSolidDiffusionModel(paramobj.SolidDiffusion);
+              case 'full'
+                paramobj.SolidDiffusion.np = model.G.cells.num;
+                model.SolidDiffusion = FullSolidDiffusionModel(paramobj.SolidDiffusion);
+              otherwise
+                error('Unknown diffusionModelType %s', diffusionModelType);
+            end
 
-                if strcmp(model.diffusionModelType, 'simple')
-                    % only used in SimplifiedSolidDiffusionModel (for now)
-                    model.InterDiffusionCoefficient = paramobj.InterDiffusionCoefficient;
-                end
-
+            if strcmp(model.diffusionModelType, 'simple')
+                % only used in SimplifiedSolidDiffusionModel (for now)
+                model.InterDiffusionCoefficient = paramobj.InterDiffusionCoefficient;
+            end
+            
             end
 
             if ~model.use_particle_diffusion
@@ -150,7 +150,7 @@ classdef ActiveMaterial < ElectronicComponent
                 model = model.registerVarNames(varnames);
             end
             
-            
+           
             if strcmp(model.diffusionModelType, 'simple')
                 varnames = {'c'        , ...
                             'massCons' , ...
@@ -193,39 +193,39 @@ classdef ActiveMaterial < ElectronicComponent
             fn = @ActiveMaterial.dispatchTemperature;
             model = model.registerPropFunction({{itf, 'T'}, fn, {'T'}});
             if model.use_particle_diffusion
-                model = model.registerPropFunction({{sd, 'T'}, fn, {'T'}});
+            model = model.registerPropFunction({{sd, 'T'}, fn, {'T'}});
             end
 
             if model.use_particle_diffusion
-                
-                fn = @ActiveMaterial.updateConcentrations;
-                switch model.diffusionModelType
-                  case 'simple'
-                    model = model.registerPropFunction({{sd, 'cAverage'}, fn, {'c'}});
-                    model = model.registerPropFunction({{itf, 'cElectrodeSurface'}, fn, {{sd, 'cSurface'}}});
-                  case 'full'
-                    model = model.registerPropFunction({{itf, 'cElectrodeSurface'}, fn, {{sd, 'cSurface'}}});
-                  otherwise
-                    error('diffusionModelType not recognized.');
-                end
 
-                if strcmp(model.diffusionModelType, 'simple')
-                    fn = @ActiveMaterial.updateMassFlux;
-                    model = model.registerPropFunction({'massFlux', fn, {'c'}});
-                    fn = @ActiveMaterial.updateMassSource;
+            fn = @ActiveMaterial.updateConcentrations;
+            switch model.diffusionModelType
+              case 'simple'
+                model = model.registerPropFunction({{sd, 'cAverage'}, fn, {'c'}});
+                model = model.registerPropFunction({{itf, 'cElectrodeSurface'}, fn, {{sd, 'cSurface'}}});
+              case 'full'
+                model = model.registerPropFunction({{itf, 'cElectrodeSurface'}, fn, {{sd, 'cSurface'}}});
+              otherwise
+                error('diffusionModelType not recognized.');
+            end
+
+            if strcmp(model.diffusionModelType, 'simple')
+                fn = @ActiveMaterial.updateMassFlux;
+                model = model.registerPropFunction({'massFlux', fn, {'c'}});
+                fn = @ActiveMaterial.updateMassSource;
                     model = model.registerPropFunction({'massSource', fn, {'Rvol'}});
-                    fn = @ActiveMaterial.updateMassConservation;
+                fn = @ActiveMaterial.updateMassConservation;
                     model = model.registerPropFunction({'massCons', fn, {'massAccum', 'massFlux', 'massSource'}});
-                end
-                
-                fn = @ActiveMaterial.updateRvol;
+            end
+            
+            fn = @ActiveMaterial.updateRvol;
                 model = model.registerPropFunction({'Rvol', fn, {{itf, 'R'}}});
-                model = model.registerPropFunction({{sd, 'Rvol'}, fn, {{itf, 'R'}}});
-                
-                % Not used in assembly
-                fn = @ActiveMaterial.updateSOC;
-                model = model.registerPropFunction({'SOC', fn, {{sd, 'cAverage'}}});
+            model = model.registerPropFunction({{sd, 'Rvol'}, fn, {{itf, 'R'}}});
 
+            % Not used in assembly
+            fn = @ActiveMaterial.updateSOC;
+            model = model.registerPropFunction({'SOC', fn, {{sd, 'cAverage'}}});
+            
             else
 
                 fn = @ActiveMaterial.updateConcentrations;
@@ -402,8 +402,8 @@ classdef ActiveMaterial < ElectronicComponent
         function state = updateRvol(model, state)
 
             vsa = model.Interface.volumetricSurfaceArea;
-
-            Rvol = vsa*state.Interface.R;
+            
+            Rvol = vsa.*state.Interface.R;
             state.Rvol = Rvol;
 
             if model.use_particle_diffusion
@@ -416,13 +416,13 @@ classdef ActiveMaterial < ElectronicComponent
 
             sd  = 'SolidDiffusion';
             itf = 'Interface';
-
-            if model.use_particle_diffusion
-                if strcmp(model.diffusionModelType, 'simple')
-                    state.(sd).cAverage = state.c;
-                end
             
-                state.(itf).cElectrodeSurface = state.(sd).cSurface;
+            if model.use_particle_diffusion
+            if strcmp(model.diffusionModelType, 'simple')
+                state.(sd).cAverage = state.c;
+            end
+            
+            state.(itf).cElectrodeSurface = state.(sd).cSurface;
             else
                 state.(itf).cElectrodeSurface = state.c;
             end
@@ -467,10 +467,10 @@ classdef ActiveMaterial < ElectronicComponent
             
         end
         
-
+        
         function state = updateMassConservation(model, state)
         % Used when diffusionModelType == 'simple' or no particle diffusion
-
+            
             flux = state.massFlux;
             source = state.massSource;
             accum = state.massAccum;
@@ -526,7 +526,7 @@ classdef ActiveMaterial < ElectronicComponent
             state.jFaceCoupling = 0;
         end
         
-            
+
         function state = updateAverageConcentration(model, state)
 
             % shortcut

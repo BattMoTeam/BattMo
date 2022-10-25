@@ -123,20 +123,20 @@ classdef Battery < BaseModel
             % appearance in the list
             
             allNames = { ...
-                {elyte, 'c'}            , 'elyte_massCons'      , 'cell'  ; ... 
-                {elyte, 'phi'}          , 'elyte_chargeCons'    , 'cell'  ; ... 
-                {ne, am, 'phi'}         , 'ne_am_chargeCons'    , 'cell'  ; ... 
-                {pe, am, 'phi'}         , 'pe_am_chargeCons'    , 'cell'  ; ... 
-                {ne, am, sd, 'c'}       , 'ne_am_sd_massCons'   , 'sdiff' ; ...
+                {elyte, 'c'}            , 'elyte_massCons'      , 'cell' ; ... 
+                {elyte, 'phi'}          , 'elyte_chargeCons'    , 'cell' ; ... 
+                {ne, am, 'phi'}         , 'ne_am_chargeCons'    , 'cell' ; ... 
+                {pe, am, 'phi'}         , 'pe_am_chargeCons'    , 'cell' ; ... 
+                {ne, am, sd, 'c'}       , 'ne_am_sd_massCons'   , 'sdiff'; ... 
                 {ne, am, sd, 'cSurface'}, 'ne_am_sd_soliddiffeq', 'scell' ; ... 
                 {ne, am, 'c'}           , 'ne_am_massCons'      , 'scell' ; ... 
-                {pe, am, sd, 'c'}       , 'pe_am_sd_massCons'   , 'sdiff' ; ... 
+                {pe, am, sd, 'c'}       , 'pe_am_sd_massCons'   , 'sdiff'; ... 
                 {pe, am, sd, 'cSurface'}, 'pe_am_sd_soliddiffeq', 'scell' ; ... 
                 {pe, am, 'c'}           , 'pe_am_massCons'      , 'scell' ; ... 
-                {ne, cc, 'phi'}         , 'ne_cc_chargeCons'    , 'cell'  ; ... 
-                {pe, cc, 'phi'}         , 'pe_cc_chargeCons'    , 'cell'  ; ... 
-                {thermal, 'T'}          , 'energyCons'          , 'cell'  ; ...
-                {ctrl, 'E'}             , 'EIeq'                , 'ctrl'  ; ...
+                {ne, cc, 'phi'}         , 'ne_cc_chargeCons'    , 'cell' ; ... 
+                {pe, cc, 'phi'}         , 'pe_cc_chargeCons'    , 'cell' ; ... 
+                {thermal, 'T'}          , 'energyCons'          , 'cell' ; ...
+                {ctrl, 'E'}             , 'EIeq'                , 'ctrl' ; ...
                 {ctrl, 'I'}             , 'controlEq'           , 'ctrl' };           
                 
             allPrimaryVarNames = allNames(:, 1);
@@ -146,7 +146,7 @@ classdef Battery < BaseModel
             addedVariableNames = {};
             
             selectedInds = false(size(allNames, 1), 1);
-
+            
             pickInd = @(names) Battery.pickInd(names, allNames);
             
             names ={{elyte, 'c'}   , 'elyte_massCons'  ; ...  
@@ -204,7 +204,7 @@ classdef Battery < BaseModel
                 selectedInds(pickInd(names)) = true;
 
             end
-            
+
 
             if model.include_current_collectors
                 
@@ -268,7 +268,7 @@ classdef Battery < BaseModel
             model = model.registerPropFunction({{pe, am, 'T'} , fn, inputnames});
             model = model.registerPropFunction({{elyte, 'T'}  , fn, inputnames});
             if model.include_current_collectors
-                model = model.registerPropFunction({{pe, cc , 'T'}, fn, inputnames});  
+            model = model.registerPropFunction({{pe, cc , 'T'}, fn, inputnames});  
                 model = model.registerPropFunction({{ne, cc , 'T'}, fn, inputnames});
             end
                   
@@ -302,10 +302,10 @@ classdef Battery < BaseModel
             model = model.registerPropFunction({{ctrl, 'EIequation'}, fn, inputnames});
 
             %% Function that update the Thermal Ohmic Terms
-
+            
             if model.use_thermal
                 
-                fn = @Battery.updateThermalOhmicSourceTerms;
+            fn = @Battery.updateThermalOhmicSourceTerms;
                 inputnames = {{elyte, 'jFace'}        , ...
                               {ne, am, 'jFace'}       , ...
                               {pe, am, 'jFace'}       , ...
@@ -321,24 +321,24 @@ classdef Battery < BaseModel
                     inputnames = horzcat(inputnames, varnames);
                 end
                 
-                model = model.registerPropFunction({{thermal, 'jHeatOhmSource'}, fn, inputnames});
-                model = model.registerPropFunction({{thermal, 'jHeatBcSource'} , fn, inputnames});
-                
-                %% Function that updates the Thermal Chemical Terms
-                fn = @Battery.updateThermalChemicalSourceTerms;
-                inputnames = {{elyte, 'diffFlux'}, ...
-                              {elyte, 'D'}       , ...
+            model = model.registerPropFunction({{thermal, 'jHeatOhmSource'}, fn, inputnames});
+            model = model.registerPropFunction({{thermal, 'jHeatBcSource'} , fn, inputnames});
+            
+            %% Function that updates the Thermal Chemical Terms
+            fn = @Battery.updateThermalChemicalSourceTerms;
+            inputnames = {{elyte, 'diffFlux'}, ...
+                          {elyte, 'D'}       , ...
                               VarName({elyte}, 'dmudcs', 2)};
-                model = model.registerPropFunction({{thermal, 'jHeatChemicalSource'}, fn, inputnames});
-                
-                %% Function that updates Thermal Reaction Terms
-                fn = @Battery.updateThermalReactionSourceTerms;
+            model = model.registerPropFunction({{thermal, 'jHeatChemicalSource'}, fn, inputnames});
+            
+            %% Function that updates Thermal Reaction Terms
+            fn = @Battery.updateThermalReactionSourceTerms;
                 inputnames = {{ne, am, 'Rvol'}  , ...
-                              {ne, am, itf, 'eta'}, ...
+                          {ne, am, itf, 'eta'}, ...
                               {pe, am, 'Rvol'}  , ...
-                              {pe, am, itf, 'eta'}};
-                model = model.registerPropFunction({{thermal, 'jHeatReactionSource'}, fn, inputnames});
-
+                          {pe, am, itf, 'eta'}};
+            model = model.registerPropFunction({{thermal, 'jHeatReactionSource'}, fn, inputnames});
+                                                    
             end
             
             %% Functions that setup external  coupling for negative electrode
@@ -517,7 +517,7 @@ classdef Battery < BaseModel
             end
             
         end
-
+        
         
         function model = setupMappings(model)
             
@@ -875,7 +875,7 @@ classdef Battery < BaseModel
             for ind = 1 : numel(electrodes)
                 elde = electrodes{ind};
                 if model.use_particle_diffusion
-                    state.(elde).(am).(sd) = battery.(elde).(am).(sd).updateDiffusionCoefficient(state.(elde).(am).(sd));
+                state.(elde).(am).(sd) = battery.(elde).(am).(sd).updateDiffusionCoefficient(state.(elde).(am).(sd));
                     switch model.(elde).(am).diffusionModelType
                       case 'simple'
                         state.(elde).(am) = battery.(elde).(am).assembleAccumTerm(state.(elde).(am), state0.(elde).(am), dt);
@@ -1122,11 +1122,23 @@ classdef Battery < BaseModel
             coupnames = model.couplingNames;
             
             ne_Rvol = state.(ne).(am).Rvol;
+            if isa(ne_Rvol, 'ADI') & ~isa(elyte_c_source, 'ADI')
+                adsample = getSampleAD(ne_Rvol);
+                adbackend = model.AutoDiffBackend;
+                elyte_c_source = adbackend.convertToAD(elyte_c_source, adsample);
+            end
+            
             coupterm = getCoupTerm(couplingterms, 'NegativeElectrode-Electrolyte', coupnames);
             elytecells = coupterm.couplingcells(:, 2);
             elyte_c_source(elytecells) = ne_Rvol.*vols(elytecells);
             
             pe_Rvol = state.(pe).(am).Rvol;
+            if isa(pe_Rvol, 'ADI') & ~isa(elyte_c_source, 'ADI')
+                adsample = getSampleAD(pe_Rvol);
+                adbackend = model.AutoDiffBackend;
+                elyte_c_source = adbackend.convertToAD(elyte_c_source, adsample);
+            end
+            
             coupterm = getCoupTerm(couplingterms, 'PositiveElectrode-Electrolyte', coupnames);
             elytecells = coupterm.couplingcells(:, 2);
             elyte_c_source(elytecells) = pe_Rvol.*vols(elytecells);
@@ -1377,7 +1389,7 @@ classdef Battery < BaseModel
 
                 [jExternal, jFaceExternal] = setupExternalCoupling(model.(ne).(cc), phi, 0, sigma);
                 
-                state.(ne).(cc).jExternal     = jExternal;
+                state.(ne).(cc).jExternal = jExternal;
                 state.(ne).(cc).jFaceExternal = jFaceExternal;
                 state.(ne).(am).jExternal     = 0;
                 state.(ne).(am).jFaceExternal = 0;
@@ -1642,7 +1654,7 @@ classdef Battery < BaseModel
     end
     
     methods(Static)
-
+        
         function ind = pickInd(names, allNames)
 
             allVarNames = allNames(:, 1);
@@ -1658,7 +1670,7 @@ classdef Battery < BaseModel
             for ivarnames = 1 : numel(varnames)
                 varnames{ivarnames} = strjoin(varnames{ivarnames}, '_');
             end
-
+            
             [isok1, ind1] = ismember(allVarNames, varnames);
             [isok2, ind2] = ismember(allEqNames, eqnames);
             
@@ -1686,7 +1698,7 @@ classdef Battery < BaseModel
             uniquenames = names(indb);
 
         end
-
+        
     end
     
     

@@ -178,7 +178,6 @@ classdef Electrolyte < ElectroChemicalComponent
 
         function state = updateDiffusionCoefficient(model, state)
 
-            func   = model.computeDiffusionCoefficientFunc;
             brcoef = model.BruggemanCoefficient;
             
             computeD = model.computeDiffusionCoefficientFunc;
@@ -217,6 +216,7 @@ classdef Electrolyte < ElectroChemicalComponent
             volfrac = model.volumeFraction;
             % Compute effective ionic conductivity in porous media
             conductivityeff = conductivity.*volfrac.^brcoef;
+
             state.conductivityeff = conductivityeff;
             j = assembleFlux(model, phi, conductivityeff);
 
