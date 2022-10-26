@@ -127,9 +127,13 @@ classdef BatteryLinearSolver < handle
                             nv =  s.getNumVars();
                             solver.keepNumber = sum(nv(keep));
                         end
+                        
                     else
+                        
                         [problem, eliminated] = solver.reduceToVariable(problem, keep);
+                        
                     end
+                    
                     if ~isempty(initialGuess{1})
                         initialGuess = initialGuess(keep);
                     end
@@ -285,7 +289,7 @@ classdef BatteryLinearSolver < handle
                 
               case 'matlab_cpr_agmg'
 
-                % QUESTION : do we keep that one?
+                % QUESTION : do we keep that case?
                 
                 indb = solver.getPotentialIndex(problem);
                 % QUESTION : is agmg reset needed here?
@@ -308,7 +312,7 @@ classdef BatteryLinearSolver < handle
                 
               case 'amgcl'
 
-                % QUESTION : do we keep that one ?
+                % QUESTION : do we keep that case ?
                 
                 precondcase = 'ILU0';
                 
@@ -495,82 +499,100 @@ classdef BatteryLinearSolver < handle
             report = merge_options_relaxed(report, varargin);
         end
         
-        function r = p_gs_precond(solver,x,A,indphi,indc,indT,phi_solver,c_solver,T_solver, opt) % ok
-            r=x*0;
-            %xp agmg(A(ind,ind),x(ind),20,1e-4,20,1,[],2);
-            %lverb = false
-            %xs = zeros(sum(not(indphi)),1);
-            ldisp =@(tt) disp(tt);
-            %ldisp =@(tt) disp('');
-            %ldisp('voltage start')
+        function r = p_gs_precond(solver, x, A, indphi, indc, indT, phi_solver, c_solver, T_solver, opt)% ok
+            
+            r = x*0; 
+            % xp agmg(A(ind, ind), x(ind), 20, 1e-4, 20, 1, [], 2); 
+            % lverb = false
+            % xs = zeros(sum(not(indphi)), 1); 
+            ldisp = @(tt) disp(tt); 
+            % ldisp = @(tt) disp(''); 
+            
             nr = 1; % number of GS iterations
-            for kk=1:nr
-                xp = x(indphi) - 0.0*A(indphi,not(indphi))*r(not(indphi));
+            
+            for kk = 1 : nr
+                
+                ldisp('voltage start')
+                xp = x(indphi) - 0.0*A(indphi, not(indphi))*r(not(indphi));
                 if(true)
-                    [rp,flag, res, iter]  = phi_solver(A(indphi,indphi),xp);
-                    solver.precondIterations_phi = solver.precondIterations_phi +iter; 
+                    [rp, flag, res, iter] = phi_solver(A(indphi, indphi), xp); 
+                    solver.precondIterations_phi = solver.precondIterations_phi + iter; 
                 else
-                    ii = ind;
-                    %agmg(A(ii,ii),xp,20,solver.tolerance,solver.maxIterations,0,[],1);
-                    rp = agmg(A(ii,ii),xp,20,solver.tolerance,solver.maxIterations,solver.verbosity,[],0);
+                    ii = ind; 
+                    rp = agmg(A(ii, ii), xp, 20, solver.tolerance, solver.maxIterations, solver.verbosity, [], 0); 
                 end
-                r(indphi) = rp;
+                r(indphi) = rp; 
                 ldisp('voltage end')
-                xs = x(indc) - 0.0*A(indc,not(indc))*r(not(indc));
+
+                xs = x(indc) - 0.0*A(indc, not(indc))*r(not(indc)); 
+
                 ldisp('c start')
                 if(true)
-                    [rs,flag, res, iter] = c_solver(A(indc,indc),xs);
-                    solver.precondIterations_c = solver.precondIterations_c +iter; 
+                    [rs, flag, res, iter] = c_solver(A(indc, indc), xs); 
+                    solver.precondIterations_c = solver.precondIterations_c + iter; 
                 else
-                    ii= indc;
-                    %agmg(A(ii),x(ii),20,solver.tolerance,solver.maxIterations,0,[],-1);
-                    %agmg(A(ii,ii),x(ii),20,solver.tolerance,solver.maxIterations,0,[],1);
-                    %rs = agmg(A(ii,ii),x(ii),20,solver.tolerance,solver.maxIterations,0,[],3);
-                    %lmax = 20;
-                    %rs = agmg(A(ii,ii),x(ii),lmax*20,0.01,lmax,0,[],0);
-                    rs = A(ii,ii)\xs;
+                    ii = indc; 
+                    % agmg(A(ii), x(ii), 20, solver.tolerance, solver.maxIterations, 0, [],- 1); 
+                    % agmg(A(ii, ii), x(ii), 20, solver.tolerance, solver.maxIterations, 0, [], 1); 
+                    % rs = agmg(A(ii, ii), x(ii), 20, solver.tolerance, solver.maxIterations, 0, [], 3); 
+                    % lmax = 20; 
+                    % rs = agmg(A(ii, ii), x(ii), lmax*20, 0.01, lmax, 0, [], 0); 
+                    rs = A(ii, ii)\xs; 
                 end
+                ldisp('c end')
+
             end
-            ldisp('c end')
+            % QUESTION : why is T not included in Gauss-Seidel
+            
             ldisp('T start')
-            xs = x(indT) - 0.0*A(indT,not(indT))*r(not(indT));
-            [rT, flag, res, iter] = T_solver(A(indT,indT),xs);
-            solver.precondIterations_T = solver.precondIterations_T +iter; 
+            xs = x(indT) - 0.0*A(indT, not(indT))*r(not(indT)); 
+            [rT, flag, res, iter] = T_solver(A(indT, indT), xs); 
+            solver.precondIterations_T = solver.precondIterations_T + iter; 
             ldisp('T End')
-            r(indT) = rT;
-            r(indphi) = rp;
-            r(indc) = rs;         
+            
+            r(indT)   = rT; 
+            r(indphi) = rp; 
+            r(indc)   = rs;
+            
         end
 
         function voltage_solver = getElipticSolver(solver,solver_type, opt) % ok
             
             switch solver_type
+                
               case 'agmgsolver'
-                %agmg(A(indb,indb),b(indb),20,solver.tolerance,solver.maxIterations,solver.verbosity,[],-1);
-                %agmg(A(indb,indb),b(indb),20,solver.tolerance,solver.maxIterations,solver.verbosity,[],1);
-                nmax=20;
-                voltage_solver =@(A,b)  agmg(A,b,nmax,1e-5,nmax,1,[],0);
+
+                nmax = 20;
+                voltage_solver = @(A, b)  agmg(A, b, nmax, 1e-5, nmax, 1, [], 0);
+                
               case 'agmgsolver_prec'
-                %agmg(A,b,20,solver.tolerance,solver.maxIterations,solver.verbosity,[],-1);
-                %agmg(A,b,20,solver.tolerance,solver.maxIterations,solver.verbosity,[],1);
+                
                 voltage_solver =@(A,b)  solver.agmgprecond(A,b);
+                
               case 'direct'
+                
                 voltage_solver =@(A,b) deal(mldivide(A,b),1,0,1);
+                
               case 'amgclsolver'
-                isolver = struct('type','bicgstab','M',50);
-                isolver = struct('type','gmres','M',50);
+                
+                % isolver = struct('type','bicgstab','M',50);
+
+                isolver = struct('type','gmres', ...
+                                 'M'   ,50);
+                
                 relaxation=struct('type','ilu0');
                 %relaxation=struct('type','spai0')
                 %relaxation=struct('type',lower(smoother))
                 %maxNumCompThreads(np)
                 alpha=0.01;
-                aggr = struct('eps_strong',alpha);
+                
+                aggr = struct('eps_strong', alpha);
 
                 coarsening = struct('type'       , 'aggregation', ...
                                     'over_interp', 1.0          , ..
                                     'aggr'       , aggr)
 
-                coarsetarget=1200;
+                coarsetarget = 1200;
 
                 coarsening = struct('type'         , 'ruge_stuben', ...
                                     'rs_eps_strong', alpha        , ...
@@ -597,25 +619,41 @@ classdef BatteryLinearSolver < handle
                               'verbosity'   , 10);
                 
                 voltage_solver =@(A,b) solver.amgcl(A,b,opts);
+                
               otherwise
+                
                 error('Wrong solver type for cpr voltage preconditioner')
+                
             end
+            
         end
         
-        function  [X,FLAG,RELRES,ITER] = amgcl(solver,A,b,opt) % ok
-            tol = 1e-5
-            [X,extra] =  amgcl(A,b,'amgcloptions', opt,'blocksize', 1,'tol', tol,'maxiter', 20);
-            FLAG = extra.err < tol;
-            RELRES = extra.err;
-            ITER = extra.nIter;
-            disp(['err', num2str(extra.err),' iter ',num2str(extra.nIter)])
+        function  [x, flag, relres, iter] = amgcl(solver, A, b, opt) % ok
+
+            tol = 1e-5;
+            
+            [x, extra] =  amgcl(A, b, 'amgcloptions', opt, ...
+                                      'blocksize'   , 1  , ...
+                                      'tol'         , tol, ...
+                                      'maxiter'     , 20);
+
+            flag   = extra.err < tol;
+            relres = extra.err;
+            iter   = extra.nIter;
+            
+            disp(['err', num2str(extra.err),' iter ',num2str(extra.nIter)]);
+            
         end
 
-        function  [X,FLAG,RELRES,ITER] = agmgprecond(solver,A,b) % ok
-            agmg(A,b,20,solver.tolerance,solver.maxIterations,solver.verbosity,[],-1);
-            agmg(A,b,20,solver.tolerance,solver.maxIterations,solver.verbosity,[],1);
-            [X,FLAG,RELRES,ITER]  = agmg(A,b,20,1e-10,20,0,[],3);
-            ITER = 1;
+        function  [x, flag, relres, iter] = agmgprecond(solver, A, b)% ok
+            
+            agmg(A, b, 20, solver.tolerance, solver.maxIterations, solver.verbosity, [], -1); 
+            agmg(A, b, 20, solver.tolerance, solver.maxIterations, solver.verbosity, [], 1);
+            
+            [x, flag, relres, iter] = agmg(A, b, 20, 1e-10, 20, 0, [], 3);
+            
+            iter = 1;
+            
         end
 
         function smoother = getSmoother(smoother_type) % ok
@@ -624,31 +662,36 @@ classdef BatteryLinearSolver < handle
 
               case 'ilu0'
                 
-                iluopt =struct('type','nofill');%,'droptol',0.1);
-                [L,U]=ilu(A(inds,inds),iluopt);
-                opt=struct('L',L,'U',U,'smoother','ilu0');
-                dd=abs(diag(U));
-                if(max(dd)/min(dd)>1e14)
-                    error();
+                iluopt = struct('type', 'nofill'); % , 'droptol', 0.1); 
+                [L, U] = ilu(A(inds, inds), iluopt); 
+                opt = struct('L'       , L, ...
+                             'U'       , U, ...
+                             'smoother', 'ilu0'); 
+                dd = abs(diag(U)); 
+
+                if (max(dd)/min(dd) > 1e14)
+                    error(); 
                 end
-                smoother =@(A,x) opt.U\(opt.L\x);
-                %gs structure
+                
+                smoother = @(A, x) opt.U\(opt.L\x); 
 
               case 'gs'
                
-                Atmp = A(inds,inds);
-                U = triu(Atmp);%- diag(diag(Atmp));
-                L = Atmp-U;
-                dd=abs(diag(U));
-                if(max(dd)/min(dd)>1e14)
-                    error();
+                Atmp = A(inds, inds); 
+                U    = triu(Atmp);
+                L    = Atmp - U; 
+                dd   = abs(diag(U));
+                
+                if(max(dd)/min(dd) > 1e14)
+                    error(); 
                 end
-                %invLower = inv(Lower);
-                opt = struct('L',L,'U',U,'ind',inds,'smoother','gs','n');
-                rhs = opt.U\x(opt.ind);
-                %drtmp = 0*rhs;
-                %for i=1:opt.n
-                smoother = @(A,x) -opt.U\(opt.L*(opt.U\x)) + opt.U\x;
+                
+                opt = struct('L'       , L   , ...
+                             'U'       , U   , ...
+                             'ind'     , inds, ...
+                             'smoother', 'gs'); 
+                rhs = opt.U\x(opt.ind); 
+                smoother = @(A, x) - opt.U\(opt.L*(opt.U\x)) + opt.U\x; 
                 
               otherwise
                 error('smoother_type not recognized');
