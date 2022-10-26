@@ -147,6 +147,7 @@ classdef BatteryLinearSolver < handle
 
             % Reduce system (if not already done)
             if isempty(lsys)
+                % QUESTION : why?
                 [A, b, lsys, x0] = solver.reduceLinearSystem(A, b, false, x0);
             end
             % Reorder linear system
@@ -166,21 +167,27 @@ classdef BatteryLinearSolver < handle
             result = solver.recoverLinearSystem(result, lsys);
             
             [result, report] = problem.processResultAfterSolve(result, report);
-            report.SolverTime = toc(timer);
+            report.SolverTime         = toc(timer);
             report.LinearSolutionTime = t_solve;
-            report.PreparationTime = t_prepare;
-            report.PostProcessTime = report.SolverTime - t_solve - t_prepare;
+            report.PreparationTime    = t_prepare;
+            report.PostProcessTime    = report.SolverTime - t_solve - t_prepare;
+            
             if solver.replaceNaN
                 result(isnan(result)) = solver.replacementNaN;
             end
+
             if solver.replaceInf
                 result(isinf(result)) = solver.replacementInf;
             end
+
             dx = solver.storeIncrements(problem, result);
+
             if ~isempty(eliminated)
                 dx = solver.recoverResult(dx, eliminated, keep);
             end
+            
             solver.keepNumber = keepNumber0;
+            
         end
 
         function [result, report] = solveLinearSystem(solver, A, b, x0, problem) % ok
@@ -188,94 +195,103 @@ classdef BatteryLinearSolver < handle
             report = solver.getSolveReport();
             
             switch solver.method
+                
               case 'direct'                    
-                %indb = getPotentialIndex(solver,problem);
-                if(condest(A)>1e10)
-                    %error()
-                    result=A\b;
-                else
-                    result=A\b;
-                end
-              case 'agmg'
+
+                result=A\b;
+
+              case 'direct_agmg'
+                
                 a=tic();
-                if(solver.reuse_setup)                        
+                
+                if (solver.reuse_setup)
+
                     if(solver.first)
                         solver.first = false;
-                        agmg(A,b,20,solver.tolerance,solver.maxIterations,solver.verbosity,[],-1);
-                        agmg(A,b,20,solver.tolerance,solver.maxIterations,solver.verbosity,[],1);
+                        agmg(A, b, 20, solver.tolerance, solver.maxIterations, solver.verbosity, [], -1); 
+                        agmg(A, b, 20, solver.tolerance, solver.maxIterations, solver.verbosity, [], 1);
                     end
-                    [result,flag,relres,iter]=agmg(A,b,20,solver.tolerance,solver.maxIterations,solver.verbosity,[],2);
+                    [result, flag, relres, iter] = agmg(A, b, 20, solver.tolerance, solver.maxIterations, solver.verbosity, [], 2);
+                    
                     if(flag == 1)
-                        agmg(A,b,20,solver.tolerance,solver.maxIterations,solver.verbosity,[],-1);
-                        agmg(A,b,20,solver.tolerance,solver.maxIterations,solver.verbosity,[],1);
-                        [result,flag,relres,iter_new]=agmg(A,b,20,solver.tolerance,solver.maxIterations,solver.verbosity,result,2);
-                        iter = iter+iter_new;
-                        solver.first=true;
+                        agmg(A, b, 20, solver.tolerance, solver.maxIterations, solver.verbosity, [], -1); 
+                        agmg(A, b, 20, solver.tolerance, solver.maxIterations, solver.verbosity, [], 1); 
+                        [result, flag, relres, iter_new] = agmg(A, b, 20, solver.tolerance, solver.maxIterations, solver.verbosity, result, 2); 
+                        iter = iter + iter_new; 
+                        solver.first = true;
                     end
+                    
                 else
-                    tic;
-                    [result,flag,relres,iter]=agmg(A,b,20,solver.tolerance,solver.maxIterations,solver.verbosity);
-                    toc;
+                    
+                    [result, flag, relres, iter] = agmg(A, b, 20, solver.tolerance, solver.maxIterations, solver.verbosity);
+                    
                 end
-                report.Iterations = iter;
-                report.Residual = relres;
+                
+                report.Iterations         = iter;
+                report.Residual           = relres;
                 report.LinearSolutionTime = toc(a);
-                report.Converged = flag; %% should we set always true?                    
-                                         %if(reset)
-                                         %    result=agmg(A,b,20,solver.tolerance,solver.maxIterations,solver.verbosity,-1);
-                                         %end
-              case 'matlab_agmg'
-                agmg(A,b,20,solver.tolerance,solver.maxIterations,solver.verbosity,[],-1);
-                agmg(A,b,20,solver.tolerance,solver.maxIterations,solver.verbosity,[],1);
+                report.Converged          = flag;
+                
+              case 'matlab_gmres_agmg'
+                
+                % QUESTION : why reset here?
+                agmg(A, b, 20, solver.tolerance, solver.maxIterations, solver.verbosity, [], -1); 
+                agmg(A, b, 20, solver.tolerance, solver.maxIterations, solver.verbosity, [], 1);
+                
                 f=@(b) solver.agmgprecond(b,A)
+
                 a=tic;
-                [result,flags, relres, iter] = gmres(A,b,solver.maxIterations,solver.tolerance,solver.maxIterations,f);
-                report.Iterations = (iter(1)-1)*solver.maxIterations + iter(2);
-                report.Residual = relres;
-                report.Converged = flags;
+
+                [result, flags, relres, iter] = gmres(A, b, solver.maxIterations, solver.tolerance, solver.maxIterations, f);
+
+                report.Iterations         = (iter(1) - 1)*solver.maxIterations + iter(2);
+                report.Residual           = relres;
+                report.Converged          = flags;
                 report.LinearSolutionTime = toc(a);
-                %toc;
-              case 'matlab_p_gs'
+                
+              case 'matlab_gmres'
+                
                 solver.precondIterations_phi = 0;
-                solver.precondIterations_c = 0;
-                solver.precondIterations_T = 0;
+                solver.precondIterations_c   = 0;
+                solver.precondIterations_T   = 0;
                 indphi = solver.getPotentialIndex(problem);
-                indc = solver.getCIndex(problem);
-                indT = solver.getTIndex(problem);
-                %agmg(A(indb,indb),b(indb),20,solver.tolerance,solver.maxIterations,solver.verbosity,[],-1);
-                %agmg(A(indb,indb),b(indb),20,solver.tolerance,solver.maxIterations,solver.verbosity,[],1);
-                %e_solver =@(A,b) mldivide(A,b);
+                indc   = solver.getCIndex(problem);
+                indT   = solver.getTIndex(problem);
+                
                 lverbosity = 0;
                 ltol = 1e-3;
                 lmax = 40;
-                %phi_solver = solver.getElipticSolver('direct');
-                %phi_solver = solver.getElipticSolver('agmgsolver');
+                
                 phi_solver = solver.getElipticSolver('amgclsolver');
-                %c_solver = solver.getElipticSolver('agmgsolver');
-                c_solver = solver.getElipticSolver('amgclsolver');
-                T_solver = solver.getElipticSolver('amgclsolver');
-                %e_solver =@(A,b) agmg(A,b,lmax,ltol,lmax,lverbosity,[],0);
-                %e_solver =@(A,b) mldivide(A,b);
-                opt = [];
-                assert(all(indphi+indc+indT == 1))
-                f=@(b) solver.p_gs_precond(b,A,indphi,indc,indT,phi_solver, c_solver,T_solver, opt);
+                c_solver   = solver.getElipticSolver('amgclsolver');
+                T_solver   = solver.getElipticSolver('amgclsolver');
+                
+                assert(all(indphi + indc + indT == 1)) % QUESTION : add message
+                f = @(b) solver.p_gs_precond(b, A, indphi, indc, indT, phi_solver, c_solver, T_solver, []);
+
                 a=tic;
                 restart = solver.maxIterations;
                 %[result, flags, relres, iter]= gmres(A,b,restart,solver.tolerance,solver.maxIterations,f);
                 %[result, flags, relres, iter]= bicgstab(A,b,solver.tolerance,5,f)
-                [result, flags, relres, iter]= gmres(A,b,restart,solver.tolerance,solver.maxIterations,f);
-                report.Iterations = (iter(1)-1)*solver.maxIterations + iter(2);
-                report.Residual = relres;
-                report.Converged = flags;
+                [result, flags, relres, iter] = gmres(A, b, restart, solver.tolerance, solver.maxIterations, f);
+                
+                report.Iterations            = (iter(1) - 1)*solver.maxIterations + iter(2);
+                report.Residual              = relres;
+                report.Converged             = flags;
                 report.precondIterations_phi = solver.precondIterations_phi; 
-                report.precondIterations_c = solver.precondIterations_c;
-                report.precondIterations_T = solver.precondIterations_T;
-                report.LinearSolutionTime = toc(a);
+                report.precondIterations_c   = solver.precondIterations_c;
+                report.precondIterations_T   = solver.precondIterations_T;
+                report.LinearSolutionTime    = toc(a);
                 
               case 'matlab_cpr_agmg'
+
+                % QUESTION : do we keep that one?
+                
                 indb = solver.getPotentialIndex(problem);
-                agmg(A(indb,indb),b(indb),20,solver.tolerance,solver.maxIterations,solver.verbosity,[],-1);
-                agmg(A(indb,indb),b(indb),20,solver.tolerance,solver.maxIterations,solver.verbosity,[],1);
+                % QUESTION : is agmg reset needed here?
+                agmg(A(indb, indb), b(indb), 20, solver.tolerance, solver.maxIterations, solver.verbosity, [], -1); 
+                agmg(A(indb, indb), b(indb), 20, solver.tolerance, solver.maxIterations, solver.verbosity, [], 1);
+
                 %rphi=  agmg(A(indb,indb),b(indb),20,1e-4,20,1,,-1);
                 %rphi=  agmg(A(indb,indb),b(indb),20,1e-4,20,1,[],1);
                 solver_type = 'agmgsolver';
@@ -289,9 +305,15 @@ classdef BatteryLinearSolver < handle
                 tic;
                 result = gmres(A,b,25,solver.tolerance,solver.maxIterations,f);
                 toc;
+                
               case 'amgcl'
-                mycase = 'ILU0';
-                switch mycase
+
+                % QUESTION : do we keep that one ?
+                
+                precondcase = 'ILU0';
+                
+                switch precondcase
+                    
                   case 'ILU0'
                     
                     isolver = struct('type'     ,'gmres', ...
@@ -313,46 +335,47 @@ classdef BatteryLinearSolver < handle
                   case 'amg'
                     
                     %isolver = struct('type','gmres','M',20,'verbosity',3);
-                    isolver = struct('type','bicgstab', ...
-                                     'M'   ,50);
-                    relaxation=struct('type','ilu0');
+                    isolver = struct('type', 'bicgstab', ...
+                                     'M'   , 50);
+                    relaxation=struct('type', 'ilu0');
                     %relaxation=struct('type','spai0')
                     %relaxation=struct('type',lower(smoother))
                     %maxNumCompThreads(np)
                     alpha=0.001;
-                    aggr=struct('eps_strong',alpha);
+                    aggr=struct('eps_strong', alpha);
                     % coarsening=struct('type','aggregation','over_interp',1.0,'aggr',aggr)
                     %coarsening=struct('type','smoothed_aggregation','relax',2/3,'aggr',aggr,'estimate_spectral_radius',false,'power_iters',10,'over_interp',1.0)
                     coarsetarget=1200;
 
-                    coarsening=struct('type'         ,'ruge_stuben', ...
-                                      'rs_eps_strong',alpha        , ...
-                                      'rs_trunc'     ,true         , ...
-                                      'rs_eps_trunc' ,alpha);
+                    coarsening=struct('type'         , 'ruge_stuben', ...
+                                      'rs_eps_strong', alpha        , ...
+                                      'rs_trunc'     , true         , ...
+                                      'rs_eps_trunc' , alpha);
 
-                    precond = struct('class'        ,'amg'       , ...
-                                     'coarsening'   ,coarsening  , ...
-                                     'relax'        ,relaxation  , ...
-                                     'coarse_enough',coarsetarget, ...
-                                     'max_levels'   ,20          , ...
-                                     'ncycle'       ,1           , ...
-                                     'npre'         ,1           , ...
-                                     'npost'        ,1           , ...
-                                     'pre_cycle'    ,0           , ...
-                                     'direct_coarse',true);
+                    precond = struct('class'        , 'amg'       , ...
+                                     'coarsening'   , coarsening  , ...
+                                     'relax'        , relaxation  , ...
+                                     'coarse_enough', coarsetarget, ...
+                                     'max_levels'   , 20          , ...
+                                     'ncycle'       , 1           , ...
+                                     'npre'         , 1           , ...
+                                     'npost'        , 1           , ...
+                                     'pre_cycle'    , 0           , ...
+                                     'direct_coarse', true);
                     
-                    options = struct('solver'      ,isolver  , ...
-                                     'precond'     ,precond  , ...
-                                     'reuse_mode'  ,1        , ...
-                                     'solver_type' ,'regular', ...
-                                     'write_params',false    , ...
-                                     'block_size'  ,1        , ...
-                                     'verbosity'   ,10);
+                    options = struct('solver'      , isolver  , ...
+                                     'precond'     , precond  , ...
+                                     'reuse_mode'  , 1        , ...
+                                     'solver_type' , 'regular', ...
+                                     'write_params', false    , ...
+                                     'block_size'  , 1        , ...
+                                     'verbosity'   , 10);
                     
                   case 'amg_cpr'
+                    
                     %isolver = struct('type','gmres','M',20,'verbosity',3);
-                    isolver = struct('type','bicgstab', ...
-                                     'M'   ,50);
+                    isolver = struct('type', 'bicgstab', ...
+                                     'M'   , 50);
                     relaxation=struct('type','ilu0')
                     %relaxation=struct('type','spai0')
                     %relaxation=struct('type',lower(smoother))
@@ -363,123 +386,104 @@ classdef BatteryLinearSolver < handle
                     %coarsening=struct('type','smoothed_aggregation','relax',2/3,'aggr',aggr,'estimate_spectral_radius',false,'power_iters',10,'over_interp',1.0)
                     coarsetarget=1200;
 
-                    coarsening=struct('type','ruge_stuben', ...
-                                      'rs_eps_strong',alpha, ...
-                                      'rs_trunc',true, ...
-                                      'rs_eps_trunc',alpha);
+                    coarsening=struct('type'         , 'ruge_stuben', ...
+                                      'rs_eps_strong', alpha        , ...
+                                      'rs_trunc'     , true         , ...
+                                      'rs_eps_trunc' , alpha);
                     
-                    precond = struct('class'        ,'amg'       , ...
-                                     'coarsening'   ,coarsening  , ...
-                                     'relax'        ,relaxation  , ...
-                                     'coarse_enough',coarsetarget, ...
-                                     'max_levels'   ,20          , ...
-                                     'ncycle'       ,1           , ...
-                                     'npre'         ,1           , ...
-                                     'npost'        ,1           , ...
-                                     'pre_cycle'    ,0           , ...
-                                     'direct_coarse',true);
+                    precond = struct('class'        , 'amg'       , ...
+                                     'coarsening'   , coarsening  , ...
+                                     'relax'        , relaxation  , ...
+                                     'coarse_enough', coarsetarget, ...
+                                     'max_levels'   , 20          , ...
+                                     'ncycle'       , 1           , ...
+                                     'npre'         , 1           , ...
+                                     'npost'        , 1           , ...
+                                     'pre_cycle'    , 0           , ...
+                                     'direct_coarse', true);
                     
-                    options = struct('solver'      ,isolver  , ...
-                                     'precond'     ,precond  , ...
-                                     'reuse_mode'  ,1        , ...
-                                     'solver_type' ,'regular', ...
-                                     'write_params',false    , ...
-                                     'block_size'  ,1        , ...
-                                     'verbosity'   ,10);
+                    options = struct('solver'      , isolver  , ...
+                                     'precond'     , precond  , ...
+                                     'reuse_mode'  , 1        , ...
+                                     'solver_type' , 'regular', ...
+                                     'write_params', false    , ...
+                                     'block_size'  , 1        , ...
+                                     'verbosity'   , 10);
                     
                   otherwise
-                    error()
+
+                    error('precondcase not recognized');
+                    
                 end
                 
-                tic;
-                [result,extra]=amgcl(A, b, 'amgcloptions', options         , ...
-                                           'blocksize'   , 1               , ...
-                                           'tol'         , solver.tolerance, ...
-                                           'maxiter'     , solver.maxIterations);
-                a = struct('iterations', num2str(extra.nIter), 'reduction', extra.err)
-                toc;
+                [result, extra] = amgcl(A, b, 'amgcloptions', options         , ...
+                                              'blocksize'   , 1               , ...
+                                              'tol'         , solver.tolerance, ...
+                                              'maxiter'     , solver.maxIterations);
+                
               otherwise
                 error('Method not implemented');
             end
             
         end
-
         
-        function indb = getPotentialIndex(solver,problem) % ok
-            numVars = problem.equations{1}.getNumVars();
-            vars=[];
-            for i = 1:numel(problem.primaryVariables)
-                pp = problem.primaryVariables{i};
-                if strcmp(pp{end},'E') || strcmp(pp{end},'phi')
-                    vars =[vars,i];
+        function indb = getPotentialIndex(solver, problem) % ok
+        % QUESTION : here we see that diag structure is needed
+            
+            vars = []; 
+            for i = 1 : numel(problem.primaryVariables)
+                pp = problem.primaryVariables{i}; 
+                if strcmp(pp{end}, 'E') || strcmp(pp{end}, 'phi')
+                    % QUESTION : 'E' is used for the BC coupling ?
+                    vars = [vars, i]; 
                 end 
             end
-            %if(numel(problem.equations)>8)
-            %    vars=[2,4,6,7,8,9];
-            %else
-            %    vars=[2,4,6,7,8];
-            %end
-            % equation 4,6 seems ok.
-            pos=cumsum(numVars);
-            pos=[[1;pos(1:end-1)+1],pos];
-            posvar=pos(vars,:);
-            %eind = mcolon(posvar(1,1),posvar(1,2));
-            %neind = mcolon(posvar(2:end,1),posvar(2:end,2));
-            ind=mcolon(posvar(:,1),posvar(:,2));
-            indb=false(pos(end),1);      
-            indb(ind) = true;
+            
+            indb = solver.getIndex(problem, vars);
+            
         end
 
-        function indb = getCIndex(solver,problem) % ok
-            numVars = problem.equations{1}.getNumVars();
-            vars=[];
+        function indb = getCIndex(solver, problem) % ok
+
+            vars = []; 
             for i = 1:numel(problem.primaryVariables)
-                pp = problem.primaryVariables{i};
-                if strcmp(pp{end},'c') %%|| strcmp(pp{end},'phi')
-                    vars =[vars,i];
+                pp = problem.primaryVariables{i}; 
+                if strcmp(pp{end}, 'c')
+                    vars = [vars, i]; 
                 end 
             end
-            %if(numel(problem.equations)>8)
-            %    vars=[2,4,6,7,8,9];
-            %else
-            %    vars=[2,4,6,7,8];
-            %end
-            % equation 4,6 seems ok.
-            pos=cumsum(numVars);
-            pos=[[1;pos(1:end-1)+1],pos];
-            posvar=pos(vars,:);
-            %eind = mcolon(posvar(1,1),posvar(1,2));
-            %neind = mcolon(posvar(2:end,1),posvar(2:end,2));
-            ind=mcolon(posvar(:,1),posvar(:,2));
-            indb=false(pos(end),1);      
-            indb(ind) = true;
+
+            indb = solver.getIndex(problem, vars);
+            
         end
 
-        function indb = getTIndex(solver,problem) % ok
-            numVars = problem.equations{1}.getNumVars();
-            vars=[];
+        function indb = getTIndex(solver, problem) % ok
+
+            vars = []; 
             for i = 1:numel(problem.primaryVariables)
-                pp = problem.primaryVariables{i};
-                if strcmp(pp{end},'T') %%|| strcmp(pp{end},'phi')
-                    vars =[vars,i];
+                pp = problem.primaryVariables{i}; 
+                if strcmp(pp{end}, 'T') 
+                    vars = [vars, i]; 
                 end 
             end
-            %if(numel(problem.equations)>8)
-            %    vars=[2,4,6,7,8,9];
-            %else
-            %    vars=[2,4,6,7,8];
-            %end
-            % equation 4,6 seems ok.
-            pos=cumsum(numVars);
-            pos=[[1;pos(1:end-1)+1],pos];
-            posvar=pos(vars,:);
-            %eind = mcolon(posvar(1,1),posvar(1,2));
-            %neind = mcolon(posvar(2:end,1),posvar(2:end,2));
-            ind=mcolon(posvar(:,1),posvar(:,2));
-            indb=false(pos(end),1);      
-            indb(ind) = true;
+
+            indb = solver.getIndex(problem, vars);
+            
         end 
 
+        function indb = getIndex(solver, problem, vars)
+            
+            numVars = problem.equations{1}.getNumVars(); 
+            % QUESTION : why call getNumVars for equations{1}?
+            pos = cumsum(numVars); 
+            pos = [[1; pos(1:end - 1) + 1], pos]; 
+            posvar = pos(vars, :); 
+            ind = mcolon(posvar(:, 1), posvar(:, 2)); 
+            indb = false(pos(end), 1); 
+            indb(ind) = true;
+            
+        end
+        
         function report = getSolveReport(solver, varargin) % ok
             report = struct('Iterations'        , 0, ... % Number of iterations (if iterative)
                             'Residual'          , 0, ... % Final residual
@@ -692,6 +696,7 @@ classdef BatteryLinearSolver < handle
                 method = 'subset';
             end
             sys = splitMatrixForReduction(A, b, solver.keepNumber, method, true);
+            % QUESTION : shall we use Splitmatrixforreduction ?
             if ~isempty(sys.B)
                 A = sys.B - sys.C*(sys.E_U\(sys.E_L\sys.D));
                 if isAdjoint
