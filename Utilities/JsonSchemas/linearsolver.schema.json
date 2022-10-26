@@ -1,0 +1,93 @@
+{
+  "$id": "file://batmo/schemas/linearsolver",
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "description": "linear solver",
+  "type": "object",
+  "properties" : {"choice" : {"type" : "string",
+                              "enum" : ["direct", "agmg", "gmres"]}
+                 },
+
+  "anyOf" : [
+
+    {"properties" : {"choice" : {"const" : "direct"},
+                     "description" : "no iterative solver, we use matlab inversion"
+                    }
+    },
+
+    {"properties" : {"choice" : {"const" : "agmg",
+                                 "description": " We use agmg iterative solver for the whole system without preconditioning"},
+                     "options" : {"type" : "object",
+                                  "description" : "options for the agmg solver"},
+                     "solver" : {"type" : "string",
+                                 "enum" : ["agmg", "amgcl"]}
+                    }
+    },
+
+
+    {"properties" : {"choice" : {"const" : "gmres",
+                                 "description" : "We use matlab gmres solver with preconditioning"},
+                     
+                     "solvers" : {"type" : "object",
+                                  "description" : "preconditioners sent to the gmres matlab routine to solve the potential, concentration and temperature",
+                                  "properties" : {"choice" : {"type" : "string",
+                                                              "enum" : ["direct", "grouped_agmg", "separate_agmg"]}
+                                                 },
+                                  
+                                  "anyOf" : [
+
+                                    {"properties" : {"choice" : {"const" : "direct",
+                                                                 "description" : "The matlab backslash direct inversion is used for all preconditioner"}}},
+
+                                    {"properties" : {"choice" : {"const" : "grouped_agmg",
+                                                                 "description" : "agmg is used for all variables at the same time"},
+                                                     "options" : {"type" : "object",
+                                                                  "description" : "options structure sent to the agmg solver"},
+                                                     "solver" : {"type" : "string",
+                                                                 "enum" : ["agmg", "amgcl"]}}},
+
+                                    {"properties" : {"choice" : {"const" : "separate_agmg",
+                                                                 "description" : "agmg is used for all variables separatlys"},
+                                                     "solvers" : {"type" : "array",
+                                                                  "prefixItems" : [
+                                                                    {"type" : "object",
+                                                                     "description" : "solver for the potential phi",
+                                                                     "properties" : {"choice" : {"type" : "string",
+                                                                                                 "const" : "phi"},
+                                                                                     "solver" : {"type" : "string",
+                                                                                                  "enum" : ["agmg", "amgcl"]},
+                                                                                     "options" : {"type" : "object",
+                                                                                                  "description" : "options for agmg solver"}}},
+                                                                    {"type" : "object",
+                                                                     "description" : "solver for the concentration c",
+                                                                     "properties" : {"choice" : {"type" : "string",
+                                                                                                 "const" : "c"},
+                                                                                     "solver" : {"type" : "string",
+                                                                                                 "enum" : ["agmg", "amgcl"]},
+                                                                                     "options" : {"type" : "object",
+                                                                                                  "description" : "options for agmg solver"}}},
+
+                                                                    {"type" : "object",
+                                                                     "description" : "solver for the temperature T",
+                                                                     "properties" : {"choice" : {"type" : "string",
+                                                                                                 "const" : "T"},
+                                                                                     "solver" : {"type" : "string",
+                                                                                                  "enum" : ["agmg", "amgcl"]},
+                                                                                     "options" : {"type" : "object",
+                                                                                                  "description" : "options for agmg solver"}}}
+
+                                                                  ]
+                                                                 }
+                                                    }
+                                    }
+                                  ]
+                                 }
+                    }
+     
+     
+    }
+  ]
+}
+
+
+
+

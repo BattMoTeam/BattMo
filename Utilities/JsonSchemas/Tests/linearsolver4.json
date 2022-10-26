@@ -1,0 +1,3 @@
+{"choice" : "gmres",
+ "solvers" : {"choice" : "grouped_agmg",
+              "solver" : "amgcl"}}

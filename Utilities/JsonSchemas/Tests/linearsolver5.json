@@ -1,0 +1,15 @@
+{"choice" : "gmres",
+ "solvers" : {"choice" : "separate_agmg",
+              "solvers" : [
+                {"choice" : "phi",
+                 "solver" : "agmg"
+                },
+                {"choice" : "c",
+                 "solver" : "agmg"
+                },
+                {"choice" : "T",
+                 "solver" : "agmg"
+                }
+              ]
+             }
+}
