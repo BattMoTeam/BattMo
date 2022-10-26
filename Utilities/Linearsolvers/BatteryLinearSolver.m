@@ -1,5 +1,5 @@
 classdef BatteryLinearSolver < handle
-% Basic functions are essentially taken from MRST
+% Most of the basic methods are essentially taken from MRST LinearSolver class
     
     properties
 
@@ -53,6 +53,7 @@ classdef BatteryLinearSolver < handle
             solver.verbosity                 = 0;
             solver.method                    = 'direct';
             solver.reuse_setup               = false;
+            solver.first                     = true;
             
             solver = merge_options(solver, varargin{:});
             
@@ -206,23 +207,29 @@ classdef BatteryLinearSolver < handle
 
               case 'direct_agmg'
                 
-                a=tic();
+                a = tic();
                 
                 if (solver.reuse_setup)
 
-                    if(solver.first)
+                    if (solver.first)
+                        % QUESTION : what does solver.first mean?
+                        
                         solver.first = false;
                         agmg(A, b, 20, solver.tolerance, solver.maxIterations, solver.verbosity, [], -1); 
                         agmg(A, b, 20, solver.tolerance, solver.maxIterations, solver.verbosity, [], 1);
+                        
                     end
+                    
                     [result, flag, relres, iter] = agmg(A, b, 20, solver.tolerance, solver.maxIterations, solver.verbosity, [], 2);
                     
-                    if(flag == 1)
+                    if (flag == 1)
+                        
                         agmg(A, b, 20, solver.tolerance, solver.maxIterations, solver.verbosity, [], -1); 
                         agmg(A, b, 20, solver.tolerance, solver.maxIterations, solver.verbosity, [], 1); 
                         [result, flag, relres, iter_new] = agmg(A, b, 20, solver.tolerance, solver.maxIterations, solver.verbosity, result, 2); 
                         iter = iter + iter_new; 
                         solver.first = true;
+                        
                     end
                     
                 else
@@ -233,16 +240,17 @@ classdef BatteryLinearSolver < handle
                 
                 report.Iterations         = iter;
                 report.Residual           = relres;
-                report.LinearSolutionTime = toc(a);
                 report.Converged          = flag;
+                report.LinearSolutionTime = toc(a);
                 
-              case 'matlab_gmres_agmg'
+              case 'matlab_gmres'
                 
                 % QUESTION : why reset here?
                 agmg(A, b, 20, solver.tolerance, solver.maxIterations, solver.verbosity, [], -1); 
                 agmg(A, b, 20, solver.tolerance, solver.maxIterations, solver.verbosity, [], 1);
                 
-                f=@(b) solver.agmgprecond(b,A)
+                % QUESTION : error in argument?
+                f = @(b) solver.agmgprecond(b, A)
 
                 a=tic;
 
@@ -253,11 +261,12 @@ classdef BatteryLinearSolver < handle
                 report.Converged          = flags;
                 report.LinearSolutionTime = toc(a);
                 
-              case 'matlab_gmres'
+              case 'matlab_gmres_agmg'
                 
                 solver.precondIterations_phi = 0;
                 solver.precondIterations_c   = 0;
                 solver.precondIterations_T   = 0;
+                
                 indphi = solver.getPotentialIndex(problem);
                 indc   = solver.getCIndex(problem);
                 indT   = solver.getTIndex(problem);
@@ -271,14 +280,16 @@ classdef BatteryLinearSolver < handle
                 T_solver   = solver.getElipticSolver('amgclsolver');
                 
                 assert(all(indphi + indc + indT == 1)) % QUESTION : add message
-                f = @(b) solver.p_gs_precond(b, A, indphi, indc, indT, phi_solver, c_solver, T_solver, []);
+                precond = @(b) solver.p_gs_precond(b, A, indphi, indc, indT, phi_solver, c_solver, T_solver, []);
 
                 a=tic;
                 restart = solver.maxIterations;
-                %[result, flags, relres, iter]= gmres(A,b,restart,solver.tolerance,solver.maxIterations,f);
-                %[result, flags, relres, iter]= bicgstab(A,b,solver.tolerance,5,f)
-                [result, flags, relres, iter] = gmres(A, b, restart, solver.tolerance, solver.maxIterations, f);
+                % [result, flags, relres, iter] = gmres(A, b, restart, solver.tolerance, solver.maxIterations, precond); 
+                % [result, flags, relres, iter] = bicgstab(A, b, solver.tolerance, 5, precond)
+
+                [result, flags, relres, iter] = gmres(A, b, restart, solver.tolerance, solver.maxIterations, precond);
                 
+                % add diagnostic fields in report
                 report.Iterations            = (iter(1) - 1)*solver.maxIterations + iter(2);
                 report.Residual              = relres;
                 report.Converged             = flags;
@@ -426,7 +437,9 @@ classdef BatteryLinearSolver < handle
                                               'maxiter'     , solver.maxIterations);
                 
               otherwise
+                
                 error('Method not implemented');
+                
             end
             
         end
@@ -500,6 +513,8 @@ classdef BatteryLinearSolver < handle
         end
         
         function r = p_gs_precond(solver, x, A, indphi, indc, indT, phi_solver, c_solver, T_solver, opt)% ok
+        % QUESTION : find better name?
+        % QUESTION : support for without temperature?
             
             r = x*0; 
             % xp agmg(A(ind, ind), x(ind), 20, 1e-4, 20, 1, [], 2); 
@@ -556,35 +571,36 @@ classdef BatteryLinearSolver < handle
             
         end
 
-        function voltage_solver = getElipticSolver(solver,solver_type, opt) % ok
+        function elliptic_solver = getElipticSolver(solver, solver_type, opt) % ok
             
             switch solver_type
                 
               case 'agmgsolver'
 
                 nmax = 20;
-                voltage_solver = @(A, b)  agmg(A, b, nmax, 1e-5, nmax, 1, [], 0);
+                elliptic_solver = @(A, b)  agmg(A, b, nmax, 1e-5, nmax, 1, [], 0);
                 
               case 'agmgsolver_prec'
+                % QUESTION : any fundamental difference with 'agmgsolver' above ?
                 
-                voltage_solver =@(A,b)  solver.agmgprecond(A,b);
+                elliptic_solver = @(A,b)  solver.agmgprecond(A, b);
                 
               case 'direct'
                 
-                voltage_solver =@(A,b) deal(mldivide(A,b),1,0,1);
+                elliptic_solver = @(A,b) deal(mldivide(A,b), 1, 0, 1);
                 
               case 'amgclsolver'
                 
                 % isolver = struct('type','bicgstab','M',50);
 
-                isolver = struct('type','gmres', ...
-                                 'M'   ,50);
+                isolver = struct('type', 'gmres', ...
+                                 'M'   , 50);
                 
-                relaxation=struct('type','ilu0');
+                relaxation=struct('type', 'ilu0');
                 %relaxation=struct('type','spai0')
                 %relaxation=struct('type',lower(smoother))
                 %maxNumCompThreads(np)
-                alpha=0.01;
+                alpha = 0.01;
                 
                 aggr = struct('eps_strong', alpha);
 
@@ -618,7 +634,7 @@ classdef BatteryLinearSolver < handle
                               'block_size'  , 1        , ...
                               'verbosity'   , 10);
                 
-                voltage_solver =@(A,b) solver.amgcl(A,b,opts);
+                elliptic_solve = @(A,b) solver.amgcl(A, b, opts);
                 
               otherwise
                 
