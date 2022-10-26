@@ -71,11 +71,13 @@ classdef BatteryLinearSolver < handle
             initialGuess = solver.getInitialGuess(problem);
             
             if solver.reduceToCell && isempty(solver.keepNumber)
-                % Eliminate non-cell variables (well equations etc)
+                % Eliminate non-cell variables
                 
                 s = getSampleAD(problem.equations{:});
                 keep = problem.indexOfType('cell');
+                
                 if ~all(keep)
+                    
                     if isa(s, 'GenericAD')
                         % If we are working with block AD, we use the built-in
                         % keepNumber property of the linear solver to perform a
@@ -181,9 +183,10 @@ classdef BatteryLinearSolver < handle
             solver.keepNumber = keepNumber0;
         end
 
-        function [result, report] = solveLinearSystem(solver, A, b, x0, problem)
+        function [result, report] = solveLinearSystem(solver, A, b, x0, problem) % ok
             
             report = solver.getSolveReport();
+            
             switch solver.method
               case 'direct'                    
                 %indb = getPotentialIndex(solver,problem);
@@ -290,14 +293,29 @@ classdef BatteryLinearSolver < handle
                 mycase = 'ILU0';
                 switch mycase
                   case 'ILU0'
-                    isolver = struct('type','gmres','M',200,'verbosity',10);
-                    precond = struct('class','relaxation','type','ilu0','damping',1,'verbosity',10);
-                    options = struct('solver',isolver,'precond',precond,'solver_type','regular',...
-                                     'write_params',true,'block_size',1,'verbosity',0,'reuse_mode',1);
+                    
+                    isolver = struct('type'     ,'gmres', ...
+                                     'M'        ,200    , ...
+                                     'verbosity',10);
+
+                    precond = struct('class'    ,'relaxation', ...
+                                     'type'     ,'ilu0'      , ...
+                                     'damping'  ,1           , ...
+                                     'verbosity',10);
+
+                    options = struct('solver'      ,isolver  , ...
+                                     'precond'     ,precond  , ...
+                                     'solver_type' ,'regular', ...
+                                     'write_params',true     , ...
+                                     'block_size'  ,1        , ...
+                                     'verbosity'   ,0        , ...
+                                     'reuse_mode'  ,1);
                   case 'amg'
+                    
                     %isolver = struct('type','gmres','M',20,'verbosity',3);
-                    isolver = struct('type','bicgstab','M',50);
-                    relaxation=struct('type','ilu0')
+                    isolver = struct('type','bicgstab', ...
+                                     'M'   ,50);
+                    relaxation=struct('type','ilu0');
                     %relaxation=struct('type','spai0')
                     %relaxation=struct('type',lower(smoother))
                     %maxNumCompThreads(np)
@@ -306,35 +324,79 @@ classdef BatteryLinearSolver < handle
                     % coarsening=struct('type','aggregation','over_interp',1.0,'aggr',aggr)
                     %coarsening=struct('type','smoothed_aggregation','relax',2/3,'aggr',aggr,'estimate_spectral_radius',false,'power_iters',10,'over_interp',1.0)
                     coarsetarget=1200;
-                    coarsening=struct('type','ruge_stuben','rs_eps_strong',alpha,'rs_trunc',true,'rs_eps_trunc',alpha);
-                    precond = struct('class','amg','coarsening',coarsening,'relax',relaxation,...
-                                     'coarse_enough',coarsetarget,'max_levels',20,'ncycle',1,'npre',1,'npost',1,'pre_cycle',0,'direct_coarse',true);
-                    options = struct('solver',isolver,'precond',precond,...
-                                     'reuse_mode',1,'solver_type','regular','write_params',false,'block_size',1,'verbosity',10);
+
+                    coarsening=struct('type'         ,'ruge_stuben', ...
+                                      'rs_eps_strong',alpha        , ...
+                                      'rs_trunc'     ,true         , ...
+                                      'rs_eps_trunc' ,alpha);
+
+                    precond = struct('class'        ,'amg'       , ...
+                                     'coarsening'   ,coarsening  , ...
+                                     'relax'        ,relaxation  , ...
+                                     'coarse_enough',coarsetarget, ...
+                                     'max_levels'   ,20          , ...
+                                     'ncycle'       ,1           , ...
+                                     'npre'         ,1           , ...
+                                     'npost'        ,1           , ...
+                                     'pre_cycle'    ,0           , ...
+                                     'direct_coarse',true);
+                    
+                    options = struct('solver'      ,isolver  , ...
+                                     'precond'     ,precond  , ...
+                                     'reuse_mode'  ,1        , ...
+                                     'solver_type' ,'regular', ...
+                                     'write_params',false    , ...
+                                     'block_size'  ,1        , ...
+                                     'verbosity'   ,10);
+                    
                   case 'amg_cpr'
                     %isolver = struct('type','gmres','M',20,'verbosity',3);
-                    isolver = struct('type','bicgstab','M',50);
+                    isolver = struct('type','bicgstab', ...
+                                     'M'   ,50);
                     relaxation=struct('type','ilu0')
                     %relaxation=struct('type','spai0')
                     %relaxation=struct('type',lower(smoother))
                     %maxNumCompThreads(np)
                     alpha=0.001;
-                    aggr=struct('eps_strong',alpha);
+                    aggr=struct('eps_strong', alpha);
                     % coarsening=struct('type','aggregation','over_interp',1.0,'aggr',aggr)
                     %coarsening=struct('type','smoothed_aggregation','relax',2/3,'aggr',aggr,'estimate_spectral_radius',false,'power_iters',10,'over_interp',1.0)
                     coarsetarget=1200;
-                    coarsening=struct('type','ruge_stuben','rs_eps_strong',alpha,'rs_trunc',true,'rs_eps_trunc',alpha);
-                    precond = struct('class','amg','coarsening',coarsening,'relax',relaxation,...
-                                     'coarse_enough',coarsetarget,'max_levels',20,'ncycle',1,'npre',1,'npost',1,'pre_cycle',0,'direct_coarse',true);
-                    options = struct('solver',isolver,'precond',precond,...
-                                     'reuse_mode',1,'solver_type','regular','write_params',false,'block_size',1,'verbosity',10);
+
+                    coarsening=struct('type','ruge_stuben', ...
+                                      'rs_eps_strong',alpha, ...
+                                      'rs_trunc',true, ...
+                                      'rs_eps_trunc',alpha);
+                    
+                    precond = struct('class'        ,'amg'       , ...
+                                     'coarsening'   ,coarsening  , ...
+                                     'relax'        ,relaxation  , ...
+                                     'coarse_enough',coarsetarget, ...
+                                     'max_levels'   ,20          , ...
+                                     'ncycle'       ,1           , ...
+                                     'npre'         ,1           , ...
+                                     'npost'        ,1           , ...
+                                     'pre_cycle'    ,0           , ...
+                                     'direct_coarse',true);
+                    
+                    options = struct('solver'      ,isolver  , ...
+                                     'precond'     ,precond  , ...
+                                     'reuse_mode'  ,1        , ...
+                                     'solver_type' ,'regular', ...
+                                     'write_params',false    , ...
+                                     'block_size'  ,1        , ...
+                                     'verbosity'   ,10);
                     
                   otherwise
                     error()
                 end
+                
                 tic;
-                [result,extra]=amgcl(A,b,'amgcloptions',options,'blocksize',1,'tol', solver.tolerance,'maxiter',solver.maxIterations);
-                a=struct('iterations',num2str(extra.nIter),'reduction',extra.err)
+                [result,extra]=amgcl(A, b, 'amgcloptions', options         , ...
+                                           'blocksize'   , 1               , ...
+                                           'tol'         , solver.tolerance, ...
+                                           'maxiter'     , solver.maxIterations);
+                a = struct('iterations', num2str(extra.nIter), 'reduction', extra.err)
                 toc;
               otherwise
                 error('Method not implemented');
@@ -343,7 +405,7 @@ classdef BatteryLinearSolver < handle
         end
 
         
-        function indb = getPotentialIndex(solver,problem)
+        function indb = getPotentialIndex(solver,problem) % ok
             numVars = problem.equations{1}.getNumVars();
             vars=[];
             for i = 1:numel(problem.primaryVariables)
@@ -368,7 +430,7 @@ classdef BatteryLinearSolver < handle
             indb(ind) = true;
         end
 
-        function indb = getCIndex(solver,problem)
+        function indb = getCIndex(solver,problem) % ok
             numVars = problem.equations{1}.getNumVars();
             vars=[];
             for i = 1:numel(problem.primaryVariables)
@@ -393,7 +455,7 @@ classdef BatteryLinearSolver < handle
             indb(ind) = true;
         end
 
-        function indb = getTIndex(solver,problem)
+        function indb = getTIndex(solver,problem) % ok
             numVars = problem.equations{1}.getNumVars();
             vars=[];
             for i = 1:numel(problem.primaryVariables)
@@ -418,18 +480,18 @@ classdef BatteryLinearSolver < handle
             indb(ind) = true;
         end 
 
-        function report = getSolveReport(solver, varargin) %#ok
-            report = struct('Iterations', 0, ... % Number of iterations (if iterative)
-                            'Residual',   0, ... % Final residual
-                            'SolverTime', 0, ... % Total time in solver
+        function report = getSolveReport(solver, varargin) % ok
+            report = struct('Iterations'        , 0, ... % Number of iterations (if iterative)
+                            'Residual'          , 0, ... % Final residual
+                            'SolverTime'        , 0, ... % Total time in solver
                             'LinearSolutionTime', 0, ... % Time spent solving system
-                            'PreparationTime', 0, ... % Schur complement, scaling, ...
-                            'PostProcessTime', 0, ... % Recovery, undo scaling, ...
-                            'Converged', true); % Bool indicating convergence
+                            'PreparationTime'   , 0, ... % Schur complement, scaling     , ...
+                            'PostProcessTime'   , 0, ... % Recovery , undo scaling, ...
+                            'Converged'         , true); % Bool indicating convergence
             report = merge_options_relaxed(report, varargin);
         end
         
-        function r = p_gs_precond(solver,x,A,indphi,indc,indT,phi_solver,c_solver,T_solver, opt)%,AA)
+        function r = p_gs_precond(solver,x,A,indphi,indc,indT,phi_solver,c_solver,T_solver, opt) % ok
             r=x*0;
             %xp agmg(A(ind,ind),x(ind),20,1e-4,20,1,[],2);
             %lverb = false
@@ -476,7 +538,7 @@ classdef BatteryLinearSolver < handle
             r(indc) = rs;         
         end
 
-        function voltage_solver = getElipticSolver(solver,solver_type, opt)
+        function voltage_solver = getElipticSolver(solver,solver_type, opt) % ok
             
             switch solver_type
               case 'agmgsolver'
@@ -498,23 +560,45 @@ classdef BatteryLinearSolver < handle
                 %relaxation=struct('type',lower(smoother))
                 %maxNumCompThreads(np)
                 alpha=0.01;
-                aggr=struct('eps_strong',alpha);
-                coarsening=struct('type','aggregation','over_interp',1.0,'aggr',aggr)
-                %coarsening=struct('type','smoothed_aggregation','relax',2/3,'aggr',aggr,'estimate_spectral_radius',false,'power_iters',10,'over_interp',1.0)
+                aggr = struct('eps_strong',alpha);
+
+                coarsening = struct('type'       , 'aggregation', ...
+                                    'over_interp', 1.0          , ..
+                                    'aggr'       , aggr)
+
                 coarsetarget=1200;
-                coarsening=struct('type','ruge_stuben','rs_eps_strong',alpha,'rs_trunc',true,'rs_eps_trunc',alpha);
-                precond = struct('class','amg','coarsening',coarsening,'relax',relaxation,...
-                                 'coarse_enough',coarsetarget,'max_levels',20,'ncycle',1,'npre',1,'npost',1,'pre_cycle',0,'direct_coarse',true);
-                opts = struct('solver',isolver,'precond',precond,...
-                              'reuse_mode',1,'solver_type','regular','write_params',false,'block_size',1,'verbosity',10);
+
+                coarsening = struct('type'         , 'ruge_stuben', ...
+                                    'rs_eps_strong', alpha        , ...
+                                    'rs_trunc'     , true         , ...
+                                    'rs_eps_trunc' , alpha);
+                
+                precond = struct('class'        , 'amg'       , ...
+                                 'coarsening'   , coarsening  , ...
+                                 'relax'        , relaxation  , ...
+                                 'coarse_enough', coarsetarget, ...
+                                 'max_levels'   , 20          , ...
+                                 'ncycle'       , 1           , ...
+                                 'npre'         , 1           , ...
+                                 'npost'        , 1           , ...
+                                 'pre_cycle'    , 0           , ...
+                                 'direct_coarse', true);
+                
+                opts = struct('solver'      , isolver  , ...
+                              'precond'     , precond  ,...
+                              'reuse_mode'  , 1        , ...
+                              'solver_type' , 'regular', ...
+                              'write_params', false    , ...
+                              'block_size'  , 1        , ...
+                              'verbosity'   , 10);
+                
                 voltage_solver =@(A,b) solver.amgcl(A,b,opts);
-                %extra
               otherwise
                 error('Wrong solver type for cpr voltage preconditioner')
             end
         end
         
-        function  [X,FLAG,RELRES,ITER] = amgcl(solver,A,b,opt)
+        function  [X,FLAG,RELRES,ITER] = amgcl(solver,A,b,opt) % ok
             tol = 1e-5
             [X,extra] =  amgcl(A,b,'amgcloptions', opt,'blocksize', 1,'tol', tol,'maxiter', 20);
             FLAG = extra.err < tol;
@@ -523,14 +607,14 @@ classdef BatteryLinearSolver < handle
             disp(['err', num2str(extra.err),' iter ',num2str(extra.nIter)])
         end
 
-        function  [X,FLAG,RELRES,ITER] = agmgprecond(solver,A,b)
+        function  [X,FLAG,RELRES,ITER] = agmgprecond(solver,A,b) % ok
             agmg(A,b,20,solver.tolerance,solver.maxIterations,solver.verbosity,[],-1);
             agmg(A,b,20,solver.tolerance,solver.maxIterations,solver.verbosity,[],1);
             [X,FLAG,RELRES,ITER]  = agmg(A,b,20,1e-10,20,0,[],3);
             ITER = 1;
         end
 
-        function smoother = getSmoother(smoother_type)
+        function smoother = getSmoother(smoother_type) % ok
             
             switch smoother_type
 
@@ -569,7 +653,7 @@ classdef BatteryLinearSolver < handle
         end
                 
         
-        function dx = storeIncrements(solver, problem, result) %#ok
+        function dx = storeIncrements(solver, problem, result) % ok
             % Extract the results from a vector into a cell array with one
             % entry per primary variable in the linearized problem.
             
@@ -594,7 +678,7 @@ classdef BatteryLinearSolver < handle
             end
         end
         
-        function [A, b, sys, x0] = reduceLinearSystem(solver, A, b, isAdjoint, x0)
+        function [A, b, sys, x0] = reduceLinearSystem(solver, A, b, isAdjoint, x0) %ok
             % Perform Schur complement reduction of linear system
             if nargin < 4
                 isAdjoint = false;
@@ -623,7 +707,7 @@ classdef BatteryLinearSolver < handle
             end
         end
 
-        function x = recoverLinearSystem(solver, x, sys)
+        function x = recoverLinearSystem(solver, x, sys) % ok
             % Recover eliminated variables
             if ~isempty(sys.E_U)
                 s = sys.E_U\(sys.E_L\(sys.h - sys.D*x));
@@ -631,7 +715,7 @@ classdef BatteryLinearSolver < handle
             end
         end
         
-        function x = recoverLinearSystemAdjoint(solver, x, sys)
+        function x = recoverLinearSystemAdjoint(solver, x, sys) %ok
             % Recover eliminated variables
             if ~isempty(sys.E)
                 s = (sys.E')\(sys.h - sys.C'*x);
@@ -639,7 +723,7 @@ classdef BatteryLinearSolver < handle
             end
         end
 
-        function [A, b, scaling, x0] = applyScaling(solver, A, b, x0)
+        function [A, b, scaling, x0] = applyScaling(solver, A, b, x0) %ok
             % Apply left or right diagonal scaling
             if nargin == 4
                 x0 = [];
@@ -664,14 +748,14 @@ classdef BatteryLinearSolver < handle
             scaling.M = M;
         end
         
-        function x = undoScaling(solver, x, scaling)
+        function x = undoScaling(solver, x, scaling) %ok
             % Undo effects of scaling applied to linear system
             if solver.applyRightDiagonalScaling
                 x = scaling.M*x;
             end
         end
         
-        function x = undoScalingAdjoint(solver, x, scaling)
+        function x = undoScalingAdjoint(solver, x, scaling) % ok
             % Undo effects of scaling applied to linear system (adjoint
             % version)
             if solver.applyLeftDiagonalScaling
@@ -679,7 +763,7 @@ classdef BatteryLinearSolver < handle
             end
         end
 
-        function x = preconditionerInverse(solver, M, x)
+        function x = preconditionerInverse(solver, M, x) % keep ?
             % Apply a preconditioner. Either a handle or a matrix.
             if isempty(M)
                 return
@@ -694,7 +778,8 @@ classdef BatteryLinearSolver < handle
             end
         end
         
-        function [A, b, order, x0] = reorderLinearSystem(solver, A, b, order, x0)
+        function [A, b, order, x0] = reorderLinearSystem(solver, A, b, order, x0) %ok
+        
             if nargin < 5
                 x0 = [];
             end
@@ -742,7 +827,7 @@ classdef BatteryLinearSolver < handle
             order = struct('variableOrdering', vo, 'equationOrdering', eo);
         end
         
-        function x = deorderLinearSystem(solver, x, order)
+        function x = deorderLinearSystem(solver, x, order) % ok
             if nargin < 3
                 tmp = solver;
             else
@@ -753,7 +838,7 @@ classdef BatteryLinearSolver < handle
             end
         end
 
-        function x = deorderLinearSystemAdjoint(solver, x, order)
+        function x = deorderLinearSystemAdjoint(solver, x, order) % ok
             if nargin < 3
                 tmp = solver;
             else
@@ -764,46 +849,7 @@ classdef BatteryLinearSolver < handle
             end
         end
 
-        function solver = setupSolver(solver, A, b, varargin) %#ok
-            % Run setup on a solver for a given system
-            
-            % Dummy function run before a set of linear problems with
-            % different right hand sides
-        end
-        
-        function  solver = cleanupSolver(solver, A, b, varargin) %#ok
-            % Clean up solver after use (if needed)
-            
-            % Dummy function run after a set of linear problems with
-            % different right hand sides
-            
-            % For overloading when for example calling multigrid solvers as
-            % a preconditioner
-        end
-        
-        function [dx, result, report] = solveCellReducedLinearProblem(solver, problem, model)
-            % Reduce a problem to cell-variables, solve and then recover
-            % the eliminated variables afterwards.
-            
-            % Eliminate non-cell variables (well equations etc)
-            keep = problem.indexOfType('cell');
-            
-            [problem, eliminated] = solver.reduceToVariable(problem, keep);
-            
-            % Solve a linearized problem
-            problem = problem.assembleSystem();
-            
-            timer = tic();
-            [result, report] = solver.solveLinearSystem(problem.A, problem.b);
-            report.SolverTime = toc(timer);
-            
-            dxCell = solver.storeIncrements(problem, result);
-            
-            dx = solver.recoverResult(dxCell, eliminated, keep);
-            
-        end
-        
-        function [problem, eliminated] = reduceToVariable(solver, problem, keep)
+        function [problem, eliminated] = reduceToVariable(solver, problem, keep) % ok
             
             remove = find(~keep);
             
@@ -817,37 +863,7 @@ classdef BatteryLinearSolver < handle
             
         end
         
-        function dx = recoverResult(solver, dxElim, eliminatedEqs, keep)
-
-            kept = find(keep);
-            left = find(~keep);
-            nokept = find(~keep);
-            keptEqNo = NaN(size(nokept));
-            for i=1:numel(nokept)
-                keptEqNo(i) = sum(kept<nokept(i));
-            end
-            nP = numel(keep);
-            
-            % Set up storage for all variables, including those we eliminated previously
-            dx = cell(nP, 1);
-            
-            % Recover non-cell variables
-            recovered = false(nP, 1);
-            recovered(kept) = true;
-            
-            % Put the recovered variables into place
-            dx(recovered) = dxElim;
-            
-            for i = numel(eliminatedEqs):-1:1
-                pos = left(i);
-                dVal = recoverVars(eliminatedEqs{i}, keptEqNo(i) + 1, dx(recovered));
-                dx{pos} = dVal;
-                recovered(pos) = true;
-            end
-            
-        end
-        
-        function M = getDiagonalInverse(solver, A)
+        function M = getDiagonalInverse(solver, A) % ok
             % Reciprocal of diagonal matrix
             sz = size(A);
             assert(sz(1) == sz(2), 'Matrix must be square!');
@@ -858,14 +874,13 @@ classdef BatteryLinearSolver < handle
             M = sparse(I, I, d, n, n);
         end
         
-        function initialGuess = getInitialGuess(solver, problem)
+        function initialGuess = getInitialGuess(solver, problem) % ok
             if isempty(solver.initialGuessFun)
                 initialGuess = {[]};
                 return
             end
             initialGuess = solver.initialGuessFun(problem);
         end
-        
         
         function disp(solver)
             [d, sn] = solver.getDescription();
