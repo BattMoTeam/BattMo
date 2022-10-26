@@ -35,8 +35,9 @@ classdef Battery < BaseModel
         
         primaryVariableNames
         addedVariableNames
-        selectedEquationNames
-        selectedEquationTypes
+        equationNames
+        equationTypes
+        equationIndices
         
     end
     
@@ -115,106 +116,69 @@ classdef Battery < BaseModel
             ctrl    = 'Control';
             thermal = 'ThermalModel';
             
-            % IMPORTANT : In the iterative solver, we remove parts of the linear systems. There, we assume a certain
-            % order of the equations. The order is as indicated in the following cell structure: There is a given match
-            % between the variables names (first column) and the equation names (second column). NOTE : this order MUST
-            % be respected in the function getEquations where the equations are collected; nothing is imposed there. If
-            % equation name is repeated, the location of the equation in the assembly is determined by the first
-            % appearance in the list
-            
-            allNames = { ...
-                {elyte, 'c'}            , 'elyte_massCons'      , 'cell'  ; ... 
-                {elyte, 'phi'}          , 'elyte_chargeCons'    , 'cell'  ; ... 
-                {ne, am, 'phi'}         , 'ne_am_chargeCons'    , 'cell'  ; ... 
-                {pe, am, 'phi'}         , 'pe_am_chargeCons'    , 'cell'  ; ... 
-
-                {ne, am, sd, 'c'}       , 'ne_am_sd_massCons'   , 'sdiff' ; ... % for full model (not used for simple or no particle diffusion)
-                {ne, am, 'c'}           , 'ne_am_massCons'      , 'scell' ; ... % for simple model or no particle diffusion
-                {ne, am, sd, 'cSurface'}, 'ne_am_sd_soliddiffeq', 'scell' ; ... % for both full and simple model not used for no particle diffusion
-
-                {pe, am, sd, 'c'}       , 'pe_am_sd_massCons'   , 'sdiff' ; ... 
-                {pe, am, 'c'}           , 'pe_am_massCons'      , 'scell' ; ... 
-                {pe, am, sd, 'cSurface'}, 'pe_am_sd_soliddiffeq', 'scell' ; ... 
-
-                {ne, cc, 'phi'}         , 'ne_cc_chargeCons'    , 'cell'  ; ... 
-                {pe, cc, 'phi'}         , 'pe_cc_chargeCons'    , 'cell'  ; ... 
-                {thermal, 'T'}          , 'energyCons'          , 'cell'  ; ...
-                {ctrl, 'E'}             , 'EIeq'                , 'ctrl'  ; ...
-                {ctrl, 'I'}             , 'controlEq'           , 'ctrl' };           
-                
-            allPrimaryVarNames = allNames(:, 1);
-            allEquationNames   = allNames(:, 2);
-            allEquationTypes   = allNames(:, 3);
-                
             addedVariableNames = {};
             
-            selectedInds = false(size(allNames, 1), 1);
-
-            pickInd = @(names) Battery.pickInd(names, allNames);
+            varEqTypes ={{elyte, 'c'}   , 'elyte_massCons'  , 'cell'; ...  
+                         {elyte, 'phi'} , 'elyte_chargeCons', 'cell'; ...    
+                         {ne, am, 'phi'}, 'ne_am_chargeCons', 'cell'; ...    
+                         {pe, am, 'phi'}, 'pe_am_chargeCons', 'cell'; ...    
+                         {ctrl, 'E'}    , 'EIeq'            , 'ctrl'; ...  
+                         {ctrl, 'I'}    , 'controlEq'       , 'ctrl'};            
             
-            names ={{elyte, 'c'}   , 'elyte_massCons'  ; ...  
-                    {elyte, 'phi'} , 'elyte_chargeCons'; ...    
-                    {ne, am, 'phi'}, 'ne_am_chargeCons'; ...    
-                    {pe, am, 'phi'}, 'pe_am_chargeCons'; ...    
-                    {ctrl, 'E'}    , 'EIeq'            ; ...  
-                    {ctrl, 'I'}    , 'controlEq'};            
-            
-            selectedInds(pickInd(names)) = true;
             
             if model.use_thermal
-                selectedInds(pickInd({{thermal, 'T'}, 'energyCons'})) = true;
+                newentries = {{thermal, 'T'}, 'energyCons', 'cell'};
+                varEqTypes = vertcat(varEqTypes, newentries);
             else
                 addedVariableNames{end + 1} = {thermal, 'T'};
             end
 
             if model.use_particle_diffusion
-                names = {{ne, am, sd, 'cSurface'}, 'ne_am_sd_soliddiffeq'; ...
-                         {pe, am, sd, 'cSurface'}, 'pe_am_sd_soliddiffeq'};
-
-                selectedInds(pickInd(names)) = true;
+                newentries = {{ne, am, sd, 'cSurface'}, 'ne_am_sd_soliddiffeq', 'scell'; ...
+                              {pe, am, sd, 'cSurface'}, 'pe_am_sd_soliddiffeq', 'scell'};
+                varEqTypes = vertcat(varEqTypes, newentries);
                 
                 switch model.(ne).(am).diffusionModelType
 
                   case 'simple'
-                    names = {{ne, am, 'c'}, 'ne_am_massCons'};
+                    newentries = {{ne, am, 'c'}, 'ne_am_massCons', 'scell'};
                   case 'full'
-                    names = {{ne, am, sd, 'c'}, 'ne_am_sd_massCons'};
+                    newentries = {{ne, am, sd, 'c'}, 'ne_am_sd_massCons', 'sdiff'};
                   otherwise
                     error('diffusionModelType not recognized');
 
                 end
                 
-                selectedInds(pickInd(names)) = true;
+                varEqTypes = vertcat(varEqTypes, newentries);
 
                 switch model.(pe).(am).diffusionModelType
                                     
                   case 'simple'
-                    names = {{pe, am, 'c'}, 'pe_am_massCons'};
+                    newentries = {{pe, am, 'c'}, 'pe_am_massCons', 'scell'};
                   case 'full'
-                    names = {{pe, am, sd, 'c'}, 'pe_am_sd_massCons'};
+                    newentries = {{pe, am, sd, 'c'}, 'pe_am_sd_massCons', 'sdiff'};
                   otherwise
                     error('diffusionModelType not recognized');
 
                 end
                 
-                selectedInds(pickInd(names)) = true;
+                varEqTypes = vertcat(varEqTypes, newentries);
 
             else
 
-                names = {{ne, am, 'c'}, 'ne_am_massCons'; ...
-                         {pe, am, 'c'}, 'pe_am_massCons'};
-                
-                selectedInds(pickInd(names)) = true;
+                newentries = {{ne, am, 'c'}, 'ne_am_massCons', 'scell'; ...
+                           {pe, am, 'c'}, 'pe_am_massCons', 'scell'};
 
+                varEqTypes = vertcat(varEqTypes, newentries);
             end
             
 
             if model.include_current_collectors
                 
-                names = {{ne, cc, 'phi'}, 'ne_cc_chargeCons'; ...
-                         {pe, cc, 'phi'}, 'pe_cc_chargeCons'};
+                newentries = {{ne, cc, 'phi'}, 'ne_cc_chargeCons', 'cell'; ...
+                           {pe, cc, 'phi'}, 'pe_cc_chargeCons', 'cell'};
                          
-                selectedInds(pickInd(names)) = true;
+                varEqTypes = vertcat(varEqTypes, newentries);
                 
             end
             
@@ -224,19 +188,19 @@ classdef Battery < BaseModel
                 addedVariableNames{end + 1} = {ctrl, 'nextCtrlType'};
             end
             
-            primaryVariableNames = allPrimaryVarNames(selectedInds);
-            primaryVariableNames = Battery.getUniqueList(primaryVariableNames);
-
-            selectedEquationNames = allEquationNames(selectedInds);
-            [selectedEquationNames, ind] = Battery.getUniqueList(selectedEquationNames);
+            primaryVariableNames = varEqTypes(:, 1);
+            equationNames = varEqTypes(:, 2);
+            equationTypes = varEqTypes(:, 3);
             
-            selectedEquationTypes = allEquationTypes(selectedInds);
-            selectedEquationTypes = selectedEquationTypes(ind);
-
-            model.primaryVariableNames  = primaryVariableNames;
-            model.selectedEquationNames = selectedEquationNames;
-            model.selectedEquationTypes = selectedEquationTypes;
-            model.addedVariableNames    = addedVariableNames;
+            equationIndices = struct();
+            for ieq = 1 : numel(equationNames)
+                equationIndices.(equationNames{ieq}) = ieq;
+            end
+            
+            model.primaryVariableNames = primaryVariableNames; 
+            model.equationNames        = equationNames; 
+            model.equationTypes        = equationTypes;
+            model.equationIndices      = equationIndices;
             
         end
         
@@ -941,38 +905,41 @@ classdef Battery < BaseModel
             state.(ctrl) = model.(ctrl).updateControlEquation(state.(ctrl));
             
             %% Set up the governing equations
-            
-            eqs = {};
+
+            eqs = cell(1, numel(model.equationNames));
             
             %% We collect the governing equations
             % The governing equations are the mass and charge conservation equations for the electrolyte and the
             % electrodes and the solid diffusion model equations and the control equations. The equations are scaled to
             % a common value.
 
+            ei = model.equationIndices;
+
             massConsScaling = model.con.F;
             
             % Equation name : 'elyte_massCons';
-            eqs{end + 1} = state.(elyte).massCons*massConsScaling;
+            eqs{ei.elyte_massCons} = state.(elyte).massCons*massConsScaling;
 
             % Equation name : 'elyte_chargeCons';
-            eqs{end + 1} = state.(elyte).chargeCons;
+            eqs{ei.elyte_chargeCons} = state.(elyte).chargeCons;
             
             % Equation name : 'ne_am_chargeCons';
-            eqs{end + 1} = state.(ne).(am).chargeCons;
+            eqs{ei.ne_am_chargeCons} = state.(ne).(am).chargeCons;
 
             % Equation name : 'pe_am_chargeCons';
-            eqs{end + 1} = state.(pe).(am).chargeCons;
+            eqs{ei.pe_am_chargeCons} = state.(pe).(am).chargeCons;
             
             if model.use_particle_diffusion
 
                 switch model.(ne).(am).diffusionModelType
+                    
                   case 'simple'
-                    % Equation name : 'ne_am_massCons';
-                    eqs{end + 1} = state.(ne).(am).massCons*massConsScaling;
-                    % Equation name : 'ne_am_sd_soliddiffeq';
-                    eqs{end + 1} = state.(ne).(am).(sd).solidDiffusionEq.*massConsScaling.*battery.(ne).(am).(itf).G.cells.volumes/dt;
+                    
+                    eqs{ei.ne_am_massCons}       = state.(ne).(am).massCons*massConsScaling;
+                    eqs{ei.ne_am_sd_soliddiffeq} = state.(ne).(am).(sd).solidDiffusionEq.*massConsScaling.*battery.(ne).(am).(itf).G.cells.volumes/dt;
                     
                   case 'full'
+                    
                     % Equation name : 'ne_am_sd_massCons';
                     n    = model.(ne).(am).(itf).n; % number of electron transfer (equal to 1 for Lithium)
                     F    = model.con.F;
@@ -982,19 +949,19 @@ classdef Battery < BaseModel
                     surfp = 4*pi*rp^2;
                     
                     scalingcoef = (vsf*vol(1)*n*F)/surfp;
-                    % Equation name : 'ne_am_massCons'
-                    eqs{end + 1} = scalingcoef*state.(ne).(am).(sd).massCons;
-                    % Equation name : 'ne_am_sd_soliddiffeq';
-                    eqs{end + 1} = scalingcoef*state.(ne).(am).(sd).solidDiffusionEq;
+                    
+                    eqs{ei.ne_am_sd_massCons} = scalingcoef*state.(ne).(am).(sd).massCons;
+                    eqs{ei.ne_am_sd_soliddiffeq} = scalingcoef*state.(ne).(am).(sd).solidDiffusionEq;
+                    
                 end
                 
                 
                 switch model.(pe).(am).diffusionModelType
+                    
                   case 'simple'
-                    % Equation name : 'pe_am_massCons';
-                    eqs{end + 1} = state.(pe).(am).massCons*massConsScaling;
-                    % Equation name : 'pe_am_sd_soliddiffeq';
-                    eqs{end + 1} = state.(pe).(am).(sd).solidDiffusionEq.*massConsScaling.*battery.(pe).(am).(itf).G.cells.volumes/dt;
+                    
+                    eqs{ei.pe_am_massCons}    = state.(pe).(am).massCons*massConsScaling;
+                    eqs{ei.pe_am_sd_soliddiffeq} = state.(pe).(am).(sd).solidDiffusionEq.*massConsScaling.*battery.(pe).(am).(itf).G.cells.volumes/dt;
                     
                   case 'full'
                     % Equation name : 'pe_am_sd_massCons';
@@ -1006,44 +973,44 @@ classdef Battery < BaseModel
                     surfp = 4*pi*rp^2;
                     
                     scalingcoef = (vsf*vol(1)*n*F)/surfp;
-                    % Equation name : 'pe_am_massCons'
-                    eqs{end + 1} = scalingcoef*state.(pe).(am).(sd).massCons;
-                    % Equation name : 'pe_am_sd_soliddiffeq';
-                    eqs{end + 1} = scalingcoef*state.(pe).(am).(sd).solidDiffusionEq;
+
+                    eqs{ei.pe_am_sd_massCons} = scalingcoef*state.(pe).(am).(sd).massCons;
+                    eqs{ei.pe_am_sd_soliddiffeq} = scalingcoef*state.(pe).(am).(sd).solidDiffusionEq;
                     
                 end
+                
             else
                 
-                eqs{end + 1} = state.(ne).(am).massCons*massConsScaling;
-                eqs{end + 1} = state.(pe).(am).massCons*massConsScaling;                
+                eqs{ei.ne_am_massCons} = state.(ne).(am).massCons*massConsScaling;
+                eqs{ei.pe_am_massCons} = state.(pe).(am).massCons*massConsScaling;                
                 
             end
             
             % Equation name : 'ne_cc_chargeCons';
             if model.(ne).include_current_collector
-                eqs{end + 1} = state.(ne).(cc).chargeCons;
+                eqs{ei.ne_cc_chargeCons} = state.(ne).(cc).chargeCons;
             end
             
             % Equation name : 'pe_cc_chargeCons';
             if model.(pe).include_current_collector
-                eqs{end + 1} = state.(pe).(cc).chargeCons;
+                eqs{ei.ne_cc_chargeCons} = state.(pe).(cc).chargeCons;
             end
 
             % Equation name : 'energyCons';
             if model.use_thermal
-                eqs{end + 1} = state.(thermal).energyCons;
+                eqs{ei.energyCons} = state.(thermal).energyCons;
             end
             
             % Equation name : 'EIeq';
-            eqs{end + 1} = - state.(ctrl).EIequation;
+            eqs{ei.EIeq} = - state.(ctrl).EIequation;
             
             % Equation name : 'controlEq'                                    
-            eqs{end + 1} = state.(ctrl).controlEquation;
+            eqs{ei.controlEq} = state.(ctrl).controlEquation;
             
-            eqs{1} = eqs{1} - model.Electrolyte.sp.t(1)*eqs{2};
+            eqs{ei.elyte_massCons} = eqs{ei.elyte_massCons} - model.Electrolyte.sp.t(1)*eqs{ei.elyte_chargeCons};
             
-            names = model.selectedEquationNames;
-            types = model.selectedEquationTypes;
+            names = model.equationNames;
+            types = model.equationTypes;
             
             %% The equations are reordered in a way that is consitent with the linear iterative solver 
             % (the order of the equation does not matter if we do not use an iterative solver)
@@ -1645,55 +1612,6 @@ classdef Battery < BaseModel
         end
 
     end
-    
-    methods(Static)
-
-        function ind = pickInd(names, allNames)
-
-            allVarNames = allNames(:, 1);
-            allEqNames  = allNames(:, 2);
-            
-            for ivarnames = 1 : numel(allVarNames)
-                allVarNames{ivarnames} = strjoin(allVarNames{ivarnames}, '_');
-            end
-            
-            varnames = names(:, 1);
-            eqnames = names(:, 2);
-            
-            for ivarnames = 1 : numel(varnames)
-                varnames{ivarnames} = strjoin(varnames{ivarnames}, '_');
-            end
-
-            [isok1, ind1] = ismember(allVarNames, varnames);
-            [isok2, ind2] = ismember(allEqNames, eqnames);
-            
-            assert(nnz(isok1) & nnz(isok2), 'Some variable or equation names are not been found');
-            
-            ind = (ind1 == ind2) & isok1 & isok2;
-            
-        end
-
-        function [uniquenames, indb] = getUniqueList(names)
-
-            for inames = 1 : numel(names)
-                if iscell(names{inames})
-                    strnames{inames} = strjoin(names{inames}, '_');
-                else
-                    strnames{inames} = names{inames};
-                end
-            end
-
-            [~, ind] = unique(strnames, 'first');
-            % we make sure the order is respected
-            indb = false(numel(strnames), 1);
-            indb(ind) = true;
-            
-            uniquenames = names(indb);
-
-        end
-
-    end
-    
     
 end
 
