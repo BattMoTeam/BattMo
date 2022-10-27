@@ -1,2 +1,3 @@
-{"choice" : "gmres",
- "solvers" : {"choice" : "direct"}}
+{"method" : "gmres",
+ "solvers" : {"method" : "grouped",
+              "solver": {"name" : "agmg"}}}

@@ -1,3 +1,8 @@
-{"choice" : "gmres",
- "solvers" : {"choice" : "grouped_agmg",
-              "solver" : "amgcl"}}
+{"method" : "gmres",
+ "options" : {"method" : "separate",
+              "solvers" : [{"variable" : "phi", "solver" : {"name" : "agmg"}},
+                           {"variable" : "c", "solver" : {"name" : "direct"}},
+                           {"variable" : "T", "solver" : {"name" : "amgcl"}}
+                          ]
+             }
+}

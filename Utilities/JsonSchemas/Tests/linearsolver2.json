@@ -1,2 +1,3 @@
-{"choice" : "agmg",
- "solver" : "amgcl"}
+{"method" : "iterative",
+ "solver" : {"name" : "direct"}
+}
