@@ -44,7 +44,7 @@ function output = coinCell3dGrid(params, compnames, dz, tagdict)
 
     % Create circles
     if all(offset == 0)
-        diams = unique(compnames.diameter);
+        diams = unique(compdims.diameter);
         r = 0.5 * diams;
         n = num_points(r);        
         for k = 1:numel(diams)
@@ -81,9 +81,24 @@ function output = coinCell3dGrid(params, compnames, dz, tagdict)
     end
 
     % Create 2D grid for extrusion
-    fcfactor = 0.5;
-    G = pebiGrid2D(meshSize, max(bbox), 'faceConstraints', [fc{:}], 'polyBdr', bbox, 'FCFactor', fcfactor);
+    % Scale to [0,1]^2
 
+    fc2 = vertcat([fc{:}]);
+    fcu = unique([fc2{:}]', 'rows');
+    fcu2 = uniquetol(fcu, 'ByRows', true);
+    fcfactor = 0.5;
+
+    G = pebiGrid2D(meshSize, max(bbox), 'faceConstraints', fcu2, 'polyBdr', bbox, 'FCFactor', fcfactor);
+
+    % scale = @(x) (x-min(bbox)) ./ (max(bbox) - min(bbox));
+    % polyBdr = scale(bbox);
+    % pdims = max(polyBdr);
+    % resGridSize = max(scale(meshSize));
+    % fcu3 = scale(fcu2);
+    % G = pebiGrid2D(resGridSize, pdims, 'faceConstraints', fcu3, 'polyBdr', polyBdr, 'FCFactor', fcfactor);
+
+    % Scale back to bbox
+    
     plotGrid(G)
     keyboard;
 
