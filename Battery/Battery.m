@@ -134,16 +134,15 @@ classdef Battery < BaseModel
             end
 
             if model.use_particle_diffusion
-                newentries = {{ne, am, sd, 'cSurface'}, 'ne_am_sd_soliddiffeq', 'scell'; ...
-                              {pe, am, sd, 'cSurface'}, 'pe_am_sd_soliddiffeq', 'scell'};
-                varEqTypes = vertcat(varEqTypes, newentries);
                 
                 switch model.(ne).(am).diffusionModelType
 
                   case 'simple'
-                    newentries = {{ne, am, 'c'}, 'ne_am_massCons', 'scell'};
+                    newentries = {{ne, am, 'c'}, 'ne_am_massCons', 'scell';
+                                  {ne, am, sd, 'cSurface'}, 'ne_am_sd_soliddiffeq', 'scell'};
                   case 'full'
-                    newentries = {{ne, am, sd, 'c'}, 'ne_am_sd_massCons', 'sdiff'};
+                    newentries = {{ne, am, sd, 'c'}, 'ne_am_sd_massCons', 'cell';
+                                  {ne, am, sd, 'cSurface'}, 'ne_am_sd_soliddiffeq', 'cell'};
                   otherwise
                     error('diffusionModelType not recognized');
 
@@ -154,9 +153,11 @@ classdef Battery < BaseModel
                 switch model.(pe).(am).diffusionModelType
                                     
                   case 'simple'
-                    newentries = {{pe, am, 'c'}, 'pe_am_massCons', 'scell'};
+                    newentries = {{pe, am, 'c'}, 'pe_am_massCons', 'scell';
+                                  {pe, am, sd, 'cSurface'}, 'pe_am_sd_soliddiffeq', 'scell'};
                   case 'full'
-                    newentries = {{pe, am, sd, 'c'}, 'pe_am_sd_massCons', 'sdiff'};
+                    newentries = {{pe, am, sd, 'c'}, 'pe_am_sd_massCons', 'cell';
+                                  {pe, am, sd, 'cSurface'}, 'pe_am_sd_soliddiffeq', 'cell'};
                   otherwise
                     error('diffusionModelType not recognized');
 
