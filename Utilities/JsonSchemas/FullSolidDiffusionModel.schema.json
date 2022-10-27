@@ -1,0 +1,26 @@
+{
+  "$id": "file://batmo/schemas/FullSolidDiffusionModel",
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "description": "solid diffusion",
+  "type": "object",
+  "allOf" : [{"$ref": "SolidDiffusionModel"},
+             {"properties" : { "N": {"type" : "number"},
+                               "n": {"type" : "number"},
+                               "volumeFraction": {"type" : "number"},
+                               "cmax": {"type" : "number"},     
+                               "theta0": {"type" : "number"},   
+                               "theta100": {"type" : "number"},
+                               "D" : {"$ref" : "function"}
+                             }
+             }],
+  "anyOf" : [{"required" : ["D0"]},
+             {"required" : ["D"]}],
+  
+  "dependentSchemas" : {"D": { "anyOf" : [{"properties" : {"D" : {"properties" : {"type": {"const" : "constant"}}}},
+                                           "required" : ["D0"]},
+                                          {"properties" : {"D" : {"properties" : {"type": {"const" : "function"}}}}}
+                                         ]
+                             }
+                       }
+}
+

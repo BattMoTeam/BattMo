@@ -5,9 +5,6 @@ classdef Interface < BaseModel
         % Physical constants
         constants = PhysicalConstants();
 
-        % Appelation name of the active material
-        name
-
         cmax
         
         % number of electron transfer
@@ -21,8 +18,12 @@ classdef Interface < BaseModel
         theta100               % Maximum lithiation, 100% SOC  [-]
         k0                     % Reference rate constant       [m^2.5 mol^-0.5 s^-1]
         Eak                    % Reaction activation energy    [J mol^-1]
-
-        updateOCPFunc % Function handler to update OCP
+        alpha                  % coefficient in Butler-Volmer equation
+        
+        computeOCPFunc % Function handler to compute OCP
+        
+        useJ0Func
+        computeJ0Func % used when useJ0Func is true. Function handler to compute J0 as function of cElectrode, see method updateReactionRateCoefficient
         
     end
 
@@ -35,24 +36,35 @@ classdef Interface < BaseModel
              % OBS : All the submodels should have same backend (this is not assigned automaticallly for the moment)
             model.AutoDiffBackend = SparseAutoDiffBackend('useBlocks', false);
 
-            fdnames = {'G'                      , ...
-                       'name'                   , ...
-                       'specificCapacity'       , ...
-                       'rho'                    , ...
-                       'theta0'                 , ...
-                       'theta100'               , ...
-                       'cmax'                   , ...
-                       'k0'                     , ...
-                       'Eak'                    , ...
-                       'rp'                     , ...
-                       'volumetricSurfaceArea'  , ...
-                       'density'                , ...
-                       'n'                      , ...
-                       'volumeFraction'};
+            fdnames = {'G'                    , ...
+                       'cmax'                 , ...
+                       'n'                    , ...
+                       'volumeFraction'       , ...
+                       'volumetricSurfaceArea', ...  
+                       'density'              , ...                
+                       'theta0'               , ...                 
+                       'theta100'             , ...               
+                       'k0'                   , ...                     
+                       'Eak'                  , ...                    
+                       'alpha'};
 
             model = dispatchParams(model, paramobj, fdnames);
 
-            model.updateOCPFunc = str2func(paramobj.updateOCPFunc.functionname);
+            model.computeOCPFunc = str2func(paramobj.OCP.functionname);
+
+            if ~isempty(paramobj.j0)
+                switch paramobj.j0.type
+                  case 'function'
+                    model.useJ0Func = true;
+                    model.computeJ0Func = str2func(paramobj.j0.functionname);
+                  case 'constant'
+                    model.useJ0Func = false;
+                  otherwise
+                    errror('type of j0 not recognized.')
+                end
+            else
+                model.useJ0Func = false;
+            end
 
         end
 
@@ -66,8 +78,6 @@ classdef Interface < BaseModel
             varnames = {};
             % Temperature
             varnames{end + 1} = 'T';
-            % Status of Charge
-            varnames{end + 1} = 'SOC';
             % potential in electrode
             varnames{end + 1} = 'phiElectrode';
             % charge carrier concentration in electrode - value at surface
@@ -81,7 +91,7 @@ classdef Interface < BaseModel
             % Reaction rate in mol/(s*m^2)
             varnames{end + 1} = 'R';
             % External potential drop used in Butler-Volmer
-            varnames{end + 1} = 'externalPotentialDrop';
+            % varnames{end + 1} = 'externalPotentialDrop';
             % 
             varnames{end + 1} = 'dUdT';
             % OCP
@@ -92,7 +102,11 @@ classdef Interface < BaseModel
             model = model.registerVarNames(varnames);
             
             fn = @Interface.updateReactionRateCoefficient;
-            inputnames = {'T', 'cElectrolyte', 'cElectrodeSurface'};
+            if model.useJ0Func
+                inputnames = {'cElectrodeSurface'};
+            else
+                inputnames = {'T', 'cElectrolyte', 'cElectrodeSurface'};
+            end
             model = model.registerPropFunction({'j0', fn, inputnames});
 
             fn = @Interface.updateOCP;
@@ -104,13 +118,9 @@ classdef Interface < BaseModel
             inputnames = {'phiElectrolyte', 'phiElectrode', 'OCP'};            
             model = model.registerPropFunction({'eta', fn, inputnames});
             
-            % fn = @Interface.updateEta;
-            % inputnames = {'phiElectrolyte', 'phiElectrode', , 'OCP'};
-            % model = model.registerPropFunction({'eta', fn, inputnames});
-            
-            fn = @Interface.updateEtaWithEx;
-            inputnames = {'phiElectrolyte', 'phiElectrode', 'OCP', 'externalPotentialDrop'};
-            model = model.registerPropFunction({'eta', fn, inputnames});            
+            % fn = @Interface.updateEtaWithEx;
+            % inputnames = {'phiElectrolyte', 'phiElectrode', 'OCP', 'externalPotentialDrop'};
+            % model = model.registerPropFunction({'eta', fn, inputnames});            
             
             fn = @Interface.updateReactionRate;
             inputnames = {'T', 'eta', 'j0'};
@@ -128,39 +138,59 @@ classdef Interface < BaseModel
         
         function state = updateOCP(model, state)
 
+            computeOCP = model.computeOCPFunc;
+            cmax = model.cmax;
+
             c = state.cElectrodeSurface;
             T = state.T;
 
-            cmax = model.cmax;
-
-            func = model.updateOCPFunc;
-
-            [state.OCP, state.dUdT] = func(c, T, cmax);
+            [state.OCP, state.dUdT] = computeOCP(c, T, cmax);
             
         end
 
         function state = updateReactionRateCoefficient(model, state)
 
-            Tref = 298.15;  % [K]
 
-            cmax = model.cmax;
-            k0   = model.k0;
-            Eak  = model.Eak;
-            n    = model.n;
-            R    = model.constants.R;
-            F    = model.constants.F;
+            if model.useJ0Func
 
-            T      = state.T;
-            cElyte = state.cElectrolyte;
-            c      = state.cElectrodeSurface;
+                computeJ0 = model.computeJ0Func;
+                cmax      = model.cmax;
+                theta0    = model.theta0;
+                theta100  = model.theta100;
+                
+                c = state.cElectrodeSurface;
+
+                cmin = theta0*cmax;
+                cmax = theta100*cmax;
+
+                soc = (c - cmin)./(cmax - cmin);
+                
+                j0 = computeJ0(soc);
+
+            else
+                
+                Tref = 298.15;  % [K]
+
+                cmax = model.cmax;
+                k0   = model.k0;
+                Eak  = model.Eak;
+                n    = model.n;
+                F    = model.constants.F;
+                R    = model.constants.R;
+
+                T      = state.T;
+                cElyte = state.cElectrolyte;
+                c      = state.cElectrodeSurface;
+                
+                % Calculate reaction rate constant
+                k = k0.*exp(-Eak./R.*(1./T - 1/Tref));
+
+                % We use regularizedSqrt to regularize the square root function and avoid the blow-up of derivative at zero.
+                th = 1e-3*cmax;
+                j0 = k.*regularizedSqrt(cElyte.*(cmax - c).*c, th)*n*F;
+                
+            end
             
-            % Calculate reaction rate constant
-            k = k0.*exp(-Eak./R.*(1./T - 1/Tref));
-
-            % We use regularizedSqrt to regularize the square root function and avoid the blow-up of derivative at zero.
-            th = 1e-3*cmax;
-            j0 = k.*regularizedSqrt(cElyte.*(cmax - c).*c, th)*n*F;
-
             state.j0 = j0;
 
         end
@@ -188,15 +218,16 @@ classdef Interface < BaseModel
         
             
         function state = updateReactionRate(model, state)
-
-            n = model.n;
-            F = model.constants.F;
+        % From definition of the overpotential eta, we have that reaction rate R is positive for oxydation.
+            n     = model.n;
+            F     = model.constants.F;
+            alpha = model.alpha;
 
             T   = state.T;
             j0  = state.j0;
             eta = state.eta;
             
-            R = ButlerVolmerEquation(j0, 0.5, n, eta, T);
+            R = ButlerVolmerEquation(j0, alpha, n, eta, T);
 
             state.R = R/(n*F); % reaction rate in mol/(s*m^2)
 

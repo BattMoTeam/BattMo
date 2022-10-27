@@ -6,6 +6,8 @@ classdef ElectronicComponent < BaseModel
         
         EffectiveElectricalConductivity % Effective electrical conductivity
         constants
+
+        use_thermal
         
     end
 
@@ -19,13 +21,19 @@ classdef ElectronicComponent < BaseModel
             % OBS : All the models should have same backend (this is not assigned automaticallly for the moment)
             model.AutoDiffBackend = SparseAutoDiffBackend('useBlocks', false);
             
-            fdnames = {'G', ...
-                       'EffectiveElectricalConductivity'};
+            fdnames = {'G'                              , ...
+                       'EffectiveElectricalConductivity', ...
+                       'use_thermal'};
             
             model = dispatchParams(model, paramobj, fdnames);
             
             % setup discrete differential operators
-            model.operators = localSetupOperators(model.G, 'assembleCellFluxOperator', true);
+            docellflux = false;
+            if model.use_thermal
+                docellflux = true;
+            end
+            
+            model.operators = localSetupOperators(model.G, 'assembleCellFluxOperator', docellflux);
             
             model.constants = PhysicalConstants();
 
@@ -46,10 +54,16 @@ classdef ElectronicComponent < BaseModel
                         'chargeCons'};
             model = model.registerVarNames(varnames);
 
+            if model.use_thermal
+                varnames = {'jFace', ...
+                            'jFaceBc'};
+                model = model.registerVarNames(varnames);                
+            end
+            
             fn = @ElectronicComponent.updateCurrent;
             inputnames = {'phi', 'conductivity'};
             model = model.registerPropFunction({'j', fn, inputnames});
-            
+
             fn = @ElectronicComponent.updateChargeConservation;
             inputnames = {'j', 'jBcSource', 'eSource'};
             model = model.registerPropFunction({'chargeCons', fn, inputnames});
@@ -58,6 +72,18 @@ classdef ElectronicComponent < BaseModel
             inputnames = {};
             model = model.registerPropFunction({'conductivity', fn, inputnames});
             
+            if model.use_thermal
+                
+                fn = @ElectronicComponent.updateFaceCurrent;
+                inputnames = {'j', 'jFaceBc'};
+                model = model.registerPropFunction({'jFace', fn, inputnames});
+
+                fn = @ElectronicComponent.updateFaceBcCurrent;
+                inputnames = {};
+                model = model.registerPropFunction({'jFaceBc', fn, inputnames});
+                
+            end
+
         end
 
         function state = updateConductivity(model, state)
@@ -83,7 +109,12 @@ classdef ElectronicComponent < BaseModel
             state.jFace = jFace;
             
         end
-        
+
+        function state = updateFaceBcCurrent(model, state)
+            
+            state.jFaceBc = 0;
+            
+        end
         
         function state = updateCurrent(model, state)
         % Assemble electrical current which is stored in :code:`state.j` 

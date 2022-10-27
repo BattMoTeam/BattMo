@@ -13,9 +13,6 @@ classdef ActiveMaterialInputParams < ElectronicComponentInputParams
         %
         SolidDiffusion
         
-        amName % Given name for the active material
-                
-        
         InterDiffusionCoefficient % Interdiffusion coefficient parameter (diffusion between the particles)
         
         thermalConductivity % Intrinsic Thermal conductivity of the active component
@@ -28,32 +25,83 @@ classdef ActiveMaterialInputParams < ElectronicComponentInputParams
         diffusionModelType % Choose between type of diffusion model ('full' or 'simple'. The default is set to 'full')
 
         BruggemanCoefficient
+
+        volumeFraction % Volume fraction of the whole material (binder and so on included)
         
+        activeMaterialFraction = 1 % Volume fraction occupied only by the active material (default value is 1)
+
+        use_particle_diffusion
+
     end
 
     methods
 
         function paramobj = ActiveMaterialInputParams(jsonstruct)
+
             paramobj = paramobj@ElectronicComponentInputParams(jsonstruct);
 
             if isempty(paramobj.diffusionModelType)
-                paramobj.diffusionModelType = 'full';
+                % we do not use any diffusion model (use_particle_diffusion = false)
             end
-            diffusionModelType = paramobj.diffusionModelType;
             
             pick = @(fd) pickField(jsonstruct, fd);
 
             paramobj.Interface = InterfaceInputParams(pick('Interface'));
 
+            diffusionModelType = paramobj.diffusionModelType;
+
             switch diffusionModelType
+                
               case 'simple'
+                
                 paramobj.SolidDiffusion = SimplifiedSolidDiffusionModelInputParams(pick('SolidDiffusion'));
+                
               case 'full'
+
                 paramobj.SolidDiffusion = FullSolidDiffusionModelInputParams(pick('SolidDiffusion'));
-                paramobj = mergeParameters(paramobj, {'SolidDiffusion', 'volumeFraction'}, {'Interface', 'volumeFraction'});
+                
+              otherwise
+                
+                error('Unknown diffusionModelType %s', diffusionModelType);
+                
+            end
+
+            paramobj = paramobj.validateInputParams();
+            
+        end
+
+        function paramobj = validateInputParams(paramobj)
+
+
+            diffusionModelType = paramobj.diffusionModelType;
+            
+            sd  = 'SolidDiffusion';
+            itf = 'Interface';
+            
+            switch diffusionModelType
+                
+              case 'simple'
+                
+                paramobj = mergeParameters(paramobj, {'volumeFraction'}, {itf, 'volumeFraction'});
+                
+              case 'full'
+                
+                paramobj = mergeParameters(paramobj, {'volumeFraction'}, {itf, 'volumeFraction'});
+                paramobj = mergeParameters(paramobj, {'volumeFraction'}, {sd, 'volumeFraction'});
+                paramobj = mergeParameters(paramobj, {'activeMaterialFraction'}, {sd, 'activeMaterialFraction'});
+                
+                if ~isempty(paramobj.(sd).D)
+                    % we impose that cmax in the solid diffusion model and the interface are consistent
+                    paramobj = mergeParameters(paramobj, {sd, 'cmax'}, {itf, 'cmax'}, 'force', false);
+                    paramobj = mergeParameters(paramobj, {sd, 'theta0'}, {itf, 'theta0'}, 'force', false);
+                    paramobj = mergeParameters(paramobj, {sd, 'theta100'}, {itf, 'theta100'}, 'force', false);
+                end
+
               otherwise
                 error('Unknown diffusionModelType %s', diffusionModelType);
             end
+
+            paramobj = validateInputParams@ElectronicComponentInputParams(paramobj);
             
         end
         

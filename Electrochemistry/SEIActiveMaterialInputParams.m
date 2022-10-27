@@ -19,6 +19,9 @@ classdef SEIActiveMaterialInputParams < ActiveMaterialInputParams
             paramobj.SolidDiffusion          = FullSolidDiffusionModelInputParams(pick('SolidDiffusion'));
             paramobj.SideReaction            = SideReactionInputParams(pick('SideReaction'));
             paramobj.SolidElectrodeInterface = SolidElectrodeInterfaceInputParams(pick('SolidElectrodeInterface'));
+
+            paramobj = paramobj.validateInputParams();
+            
         end
         
     end

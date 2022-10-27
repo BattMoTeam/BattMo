@@ -1,36 +1,32 @@
 {
-    "electricalConductivity": 215,
-    "Interface": {
-        "cmax": 30555,
-        "volumeFraction": 0.75,
-        "volumetricSurfaceArea": 383959,
-        "n": 1,
-        "Eak": 35000,
-        "k0": 2.07e-11,
-        "theta100": 0.88,
-        "theta0": 0.15,
-        "name": "graphite(Safari)",
-        "updateOCPFunc" : {"functionname" : "updateOCPFunc_graphite",
-                           "filepath" : "Materials/Solid/ReactiveNonMetals/updateOCPFunc_graphite.m",
-                           "argumentlist" : ["concentration", "temperature", "maximum concentration"],
-                           "name" : "graphite OCP"
-                          }
-    },
-    "SolidDiffusion" : {
-        "useSimplifiedDiffusionModel" : false,
-        "EaD": 0,
-        "D0": 2e-14,
-        "rp": 2e-6
-    },
-    "SolidElectrodeInterface" : {
-        "molecularWeight": 0.162,
-        "density": 1690,
-        "D": 6.8e-21
-    },
-    "SideReaction" : {
-        "beta" : 0.5,
-        "k" : 1.36e-12,
-        "conductivity" : 5e-6
-    }
-
+  "electricalConductivity": 215,
+  "Interface": {
+    "cmax": 30555,
+    "volumeFraction": 0.75,
+    "volumetricSurfaceArea": 383959,
+    "n": 1,
+    "Eak": 35000,
+    "k0": 2.07e-11,
+    "theta100": 0.88,
+    "theta0": 0.15,
+    "OCP" : {"type" : "function",
+             "functionname" : "computeOCP_graphite",
+             "argumentlist" : ["concentration", "temperature", "maximum concentration"]}
+  },
+  "diffusionModelType": "full",
+  "SolidDiffusion" : {
+    "EaD": 0,
+    "D0": 2e-14,
+    "rp": 2e-6
+  },
+  "SolidElectrodeInterface" : {
+    "molecularWeight": 0.162,
+    "density": 1690,
+    "D": 6.8e-21
+  },
+  "SideReaction" : {
+    "beta" : 0.5,
+    "k" : 1.36e-12,
+    "conductivity" : 5e-6
+  }
 }

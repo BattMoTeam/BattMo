@@ -2,22 +2,22 @@ classdef TestBatteryND < matlab.unittest.TestCase
 
     properties (TestParameter)
 
-        jsonfile = {fullfile('ParameterData','BatteryCellParameters','LithiumIonBatteryCell','lithium_ion_battery_nmc_graphite.json')};
-        dim = {2, 3};
+        jsonfile            = {fullfile('ParameterData','BatteryCellParameters','LithiumIonBatteryCell','lithium_ion_battery_nmc_graphite.json')};
+        dim                 = {2, 3};
+        testSize            = {'short', 'long'};
+        createReferenceData = {false};
+
     end
 
     methods
 
-        function test = TestBatteryND()
-            mrstModule reset
-            mrstModule add ad-core mrst-gui mpfa
-        end
-
-        function states = testnd(test, dim, jsonfile)
+        function states = testnd(test, dim, jsonfile, testSize)
 
             jsonstruct = parseBattmoJson(jsonfile);
             paramobj = BatteryInputParams(jsonstruct);
-
+            paramobj.include_current_collectors = true;
+            paramobj = paramobj.validateInputParams();
+            
             switch dim
               case 2
                 gen = BatteryGenerator2D();
@@ -54,6 +54,18 @@ classdef TestBatteryND < matlab.unittest.TestCase
                                                         model.Control.Imax, ...
                                                         model.Control.lowerCutoffVoltage);
             control = struct('src', srcfunc, 'IEswitch', true);
+
+            switch testSize
+              case 'long'
+                % do nothing
+              case 'short'
+                n = 10;
+                step.val    = step.val(1 : n)';
+                step.control = step.control(1 : n)';
+              otherwise
+                error('testSize not recognized')
+            end
+            
             schedule = struct('control', control, 'step', step);
 
             initstate = model.setupInitialState();
@@ -66,9 +78,7 @@ classdef TestBatteryND < matlab.unittest.TestCase
             model.nonlinearTolerance = 1e-5;
             model.verbose = false;
 
-            [~, states] = simulateScheduleAD(initstate, model, schedule, ...
-                                             'OutputMinisteps', true, ...
-                                             'NonLinearSolver', nls);
+            [~, states] = simulateScheduleAD(initstate, model, schedule, 'NonLinearSolver', nls);
 
         end
 
@@ -76,11 +86,20 @@ classdef TestBatteryND < matlab.unittest.TestCase
 
     methods (Test)
 
-        function testBattery(test, dim, jsonfile)
+        function testBattery(test, dim, jsonfile, testSize, createReferenceData)
 
-            states = testnd(test, dim, jsonfile);
+            states = testnd(test, dim, jsonfile, testSize);
 
-            verifyStruct(test, states{end}, sprintf('TestBattery%dD', dim));
+            filename = sprintf('TestBattery%dD-%s.mat', dim, testSize);
+            filename = fullfile(battmoDir(), 'Tests', 'TestExamples', 'ReferenceData', filename);
+
+            if createReferenceData
+                refstate = states{end};
+                save(filename, 'refstate');
+            else
+                load(filename);
+                verifyStruct(test, states{end}, refstate);
+            end
 
         end
 

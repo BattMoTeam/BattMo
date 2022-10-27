@@ -1,0 +1,15 @@
+{
+    "$id": "file://batmo/schemas/SolidDiffusionModel",
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "description": "solid diffusion",
+    "type": "object",
+    "properties" : {
+        "rp": {"type" : "number",
+               "description" : "particle radius"},
+        "EaD": {"type" : "number",
+                "description" : "Arrhenius coefficient for diffusivity coefficient"},
+        "D0": {"type" : "number",
+               "description" : "reference diffusivity coefficient"},
+        "volumetricSurfaceArea": {"type" : "number"}
+    }
+}

@@ -1,5 +1,6 @@
 {
     "electricalConductivity": 215,
+    "diffusionModelType": "full", 
     "Interface" : { "name": "cathode(safari)",
                     "theta0": 0.99,
                     "theta100": 0.5,
@@ -9,15 +10,12 @@
                     "volumetricSurfaceArea": 382183,
                     "volumeFraction": 0.665,
                     "n" : 1,
-                    "updateOCPFunc" : {"functionname" : "updateOCPFunc_nmc111",
-                                       "filepath" : "Materials/Solid/MetalOxides/updateOCPFunc_nmc111.m",
-                                       "argumentlist" : ["concentration", "temperature", "maximum concentration"],
-                                       "name" : "nmc111 OCP"
-                                      }
+                    "OCP" : {"type" : "function",
+                             "functionname" : "computeOCP_nmc111",
+                             "argumentlist" : ["concentration", "temperature", "maximum concentration"]}
                     
                   },
     "SolidDiffusion" : {
-        "useSimplifiedDiffusionModel" : false,
         "EaD": 0,
         "D0": 1e-14,
         "rp": 2e-6

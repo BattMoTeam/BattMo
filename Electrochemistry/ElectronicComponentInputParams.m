@@ -5,6 +5,8 @@ classdef ElectronicComponentInputParams < ComponentInputParams
     properties
         
         EffectiveElectricalConductivity % conductivity
+
+        use_thermal
         
     end
     

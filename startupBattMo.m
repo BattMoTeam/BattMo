@@ -40,7 +40,7 @@ end
 if mrstPlatform('octave')
 
     % Octave MRST settings
-    run(fullfile('MRST','mrst-core','utils','octave_only','startup_octave.m'));
+    run(fullfile('MRST', 'mrst-core', 'utils', 'octave_only', 'startup_octave.m'));
 
     % Disable warnings
     warning('off', 'Octave:possible-matlab-short-circuit-operator');

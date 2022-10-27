@@ -1,0 +1,11 @@
+{
+  "$id": "file://batmo/schemas/CcCvControlModel",
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "properties" : {
+    "lowerCutoffVoltage" : {"type" : "number"},
+    "upperCutoffVoltage" : {"type" : "number"},
+    "dEdtLimit" : {"type" : "number"},
+    "dIdtLimit" : {"type" : "number"}
+  }
+}

@@ -1,30 +1,55 @@
 classdef BatchProcessor
+
+%{
+  Copyright 2021-2022 SINTEF Industry, Sustainable Energy Technology
+  and SINTEF Digital, Mathematics & Cybernetics.
+
+  This file is part of The Battery Modeling Toolbox BattMo
+
+  BattMo is free software: you can redistribute it and/or modify
+  it under the terms of the GNU General Public License as published by
+  the Free Software Foundation, either version 3 of the License, or
+  (at your option) any later version.
+
+  BattMo is distributed in the hope that it will be useful,
+  but WITHOUT ANY WARRANTY; without even the implied warranty of
+  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+  GNU General Public License for more details.
+
+  You should have received a copy of the GNU General Public License
+  along with BattMo.  If not, see <http://www.gnu.org/licenses/>.
+%}
+
     properties
         paramnames
     end
     
     methods
         
-        function bp = BatchProcessor()
+        function bp = BatchProcessor(varargin)
             bp.paramnames = {};
+            if nargin > 0
+                simlist = varargin{1};
+                for isim = 1 : numel(simlist)
+                    bp = bp.registerElementParamnames(simlist{isim});
+                end
+            end
         end
-        
-        function [bp, simlist] = addElement(bp, simlist, elt)
-            simlist{end + 1} = elt;
+
+        function bp = registerElementParamnames(bp, elt)
             fdnames = fieldnames(elt);
             for ind = 1 : numel(fdnames)
                 fdname = fdnames{ind};
                 bp = bp.addParameterName(fdname);
-            end
+            end            
         end
-
-        function [bp, simlist] = mergeSimLists(bp, simlist, simlist_to_merge)
-            for ind = 1 : numel(simlist_to_merge)
-                elt = simlist_to_merge{ind};
-                [bp, simlist] = bp.addElement(simlist, elt);
-            end
+    
+        function [bp, simlist] = addElement(bp, simlist, elt)
+            simlist{end + 1} = elt;
+            bp = bp.registerElementParamnames(elt);
         end
         
+
         
         function bp = addParameterName(bp, paramname)
             if ~ismember(paramname, bp.paramnames)
@@ -125,7 +150,7 @@ classdef BatchProcessor
             
         end        
 
-        function T = setupTable(bp, simlist)
+        function [T, singlevalued] = setupTable(bp, simlist)
 
             paramnames = bp.paramnames;
 
@@ -134,6 +159,8 @@ classdef BatchProcessor
 
             Tc = cell(nlist, nparams);
 
+            singlevalued = false(nparams, 1);
+            
             for ic  = 1 : nparams
                 paramname = paramnames{ic};
                 [vals, type, dim] = getParameterValue(bp, simlist, paramname);
@@ -156,8 +183,24 @@ classdef BatchProcessor
                         end
                     end
                 end
+
+                singlevalue = false;
+                if nnz(cellfun(@(val) isempty(val), vals)) == numel(vals)
+                    singlevalue = true;
+                elseif nnz(cellfun(@(val) isempty(val), vals)) > 0
+                    singlevalue = false;
+                else
+                    if ismember(type, {'scalar', 'boolean'}) && numel(unique([vals{:}])) == 1
+                        singlevalue = true;
+                    elseif ismember(type, {'char'}) && (numel(unique(vals)) == 1)
+                        singlevalue = true;
+                    end
+                end
+                singlevalued(ic) = singlevalue;
+
             end
 
+            singlevalued = find(singlevalued);
             T = cell2table(Tc, 'VariableNames', paramnames);
             
         end
@@ -204,16 +247,49 @@ classdef BatchProcessor
         end
         
         function printSimList(bp, simlist, varargin)
-            if nargin > 2
+            [T, singlevalued] = bp.setupTable(simlist);
+            if nargin > 2 && strcmp(varargin{1}, 'all')
+                paramnames = bp.paramnames;
+            elseif (nargin > 2 && ismember('varying', varargin)) | (nargin == 2)
+                vparamnames = bp.paramnames;
+                ind = true(numel(vparamnames), 1);
+                ind(singlevalued) = false;
+                vparamnames = vparamnames(ind);
+                if nargin > 2
+                    [lia, loc] = ismember('varying', varargin);
+                    ind = true(numel(varargin), 1);
+                    ind(loc) = false;
+                    aparamnames = varargin(ind);
+                    for iparam = 1 : numel(aparamnames)
+                        bp.assertParam(aparamnames{iparam});
+                    end
+                    nv = numel(vparamnames);
+                    na = numel(aparamnames);
+                    inda = [(1 : loc - 1)'; ((loc + nv) : (na + nv))'];
+                    indv = (loc : loc + nv - 1)';
+                    paramnames = cell(1, na + nv);
+                    paramnames(inda) = aparamnames;
+                    paramnames(indv) = vparamnames;
+                else
+                    paramnames = vparamnames;
+                end
+            else                
                 paramnames = varargin;
                 for iparam = 1 : numel(paramnames)
                     bp.assertParam(paramnames{iparam});
-                end                    
-            else
-                paramnames = bp.paramnames;
+                end
             end
-            T = bp.setupTable(simlist);
-            T(:, paramnames)
+
+            if numel(paramnames) == 0
+                if numel(simlist) > 1
+                    % we print all the parameters instead of empty table
+                    printSimList(bp, simlist, 'all');
+                else
+                    simlist{1}
+                end
+            else
+                T = T(:, paramnames)
+            end
         end        
     
         function sortedsimlist = sortSimList(bp, simlist, varargin)
@@ -290,6 +366,19 @@ classdef BatchProcessor
         end        
     
     end
+
+    methods(Static)
+        
+        function [bp, simlist] = mergeSimLists(simlist, simlist_to_merge)
+            bp = BatchProcessor(simlist);
+            for isim = 1 : numel(simlist_to_merge)
+                elt = simlist_to_merge{isim};
+                [bp, simlist] = bp.addElement(simlist, elt);
+            end
+        end
+        
+    end
+        
     
 end
 

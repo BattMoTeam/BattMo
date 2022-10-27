@@ -4,8 +4,6 @@ classdef ElectrolyteInputParams < ElectroChemicalComponentInputParams
 %    
     properties
         
-        name % Given name (for convinience)
-        
         compnames % Names of the components in the electrolyte
         sp % Structure given properties of each component
         
@@ -19,8 +17,8 @@ classdef ElectrolyteInputParams < ElectroChemicalComponentInputParams
         heatCapacity        % Intrinsic Heat capacity of the electrolyte
         
         
-        updateConductivityFunc              % Function handler to compute conductivity
-        updateDiffusionCoefficientFunc      % Function handler to compute diffusion coefficient
+        Conductivity
+        DiffusionCoefficient
         
         density % Density [kg m^-3] (Note : only of the liquid part, the density of the separator is given there)
 
@@ -36,8 +34,6 @@ classdef ElectrolyteInputParams < ElectroChemicalComponentInputParams
             
             pick = @(fd) pickField(jsonstruct, fd);
             paramobj.Separator = SeparatorInputParams(pick('Separator'));
-            paramobj.updateConductivityFunc = FunctionInputParams(pick('updateConductivityFunc'));
-            paramobj.updateDiffusionCoefficientFunc = FunctionInputParams(pick('updateDiffusionCoefficientFunc'));
             
             paramobj.EffectiveElectricalConductivity = 'not used';
         end

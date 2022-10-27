@@ -51,13 +51,12 @@ function [cap, cap_neg, cap_pos, specificEnergy] = computeCellCapacity(model, va
             error('Electrode not recognized');
         end
         
-        volume_electrode = sum(ammodel.G.cells.volumes);
-
+        vol_fraction = ammodel.volumeFraction;
+        am_fraction  = ammodel.activeMaterialFraction;
         
-        volume_fraction = itfmodel.volumeFraction;
-        volume = volume_fraction*volume_electrode;
+        vol = sum(am_fraction*vol_fraction.*ammodel.G.cells.volumes);
         
-        cap_usable(ind) = (thetaMax - thetaMin)*cMax*volume*n*F;
+        cap_usable(ind) = (thetaMax - thetaMin)*cMax*vol*n*F;
         
     end
     
@@ -78,23 +77,25 @@ function [cap, cap_neg, cap_pos, specificEnergy] = computeCellCapacity(model, va
         
         elde = 'PositiveElectrode';
 
+        ammodel = model.(elde).(am);
         itfmodel = model.(elde).(am).(itf);
+        
         F = itfmodel.constants.F;
         G = itfmodel.G;
         n = itfmodel.n;
         assert(n == 1, 'not implemented yet');
         cMax = itfmodel.cmax;
         
-        volume_fraction = itfmodel.volumeFraction;
-        volume_electrode = sum(model.(elde).(am).G.cells.volumes);
-        volume = volume_fraction*volume_electrode;
+        vol_fraction = ammodel.volumeFraction;
+        am_fraction  = ammodel.activeMaterialFraction;
+        vol = sum(am_fraction*vol_fraction.*ammodel.G.cells.volumes);
         
-        func = @(theta) model.(elde).(am).(itf).updateOCPFunc(theta, 298, 1);
+        func = @(theta) model.(elde).(am).(itf).computeOCPFunc(theta, 298, 1);
 
         thetaMax = min(thetaMaxPos, thetaMinPos + r*(thetaMaxPos - thetaMinPos));
 
         theta = linspace(thetaMinPos, thetaMax, 100);
-        energy = sum(func(theta(1 : end - 1)).*diff(theta)*volume*F*cMax);
+        energy = sum(func(theta(1 : end - 1)).*diff(theta)*vol*F*cMax);
         
         elde = 'NegativeElectrode';        
         
@@ -104,16 +105,17 @@ function [cap, cap_neg, cap_pos, specificEnergy] = computeCellCapacity(model, va
         n = itfmodel.n;
         assert(n == 1, 'not implemented yet');
         cMax = itfmodel.cmax;
-        volume_fraction = itfmodel.volumeFraction;
-        volume_electrode = sum(model.(elde).(am).G.cells.volumes);
-        volume = volume_fraction*volume_electrode;
         
-        func = @(theta) model.(elde).(am).(itf).updateOCPFunc(theta, 298, 1);
+        vol_fraction = ammodel.volumeFraction;
+        am_fraction  = ammodel.activeMaterialFraction;
+        vol = sum(am_fraction*vol_fraction.*ammodel.G.cells.volumes);
+        
+        func = @(theta) model.(elde).(am).(itf).computeOCPFunc(theta, 298, 1);
 
         thetaMin = max(thetaMinNeg, thetaMaxNeg - 1/r*(thetaMaxNeg - thetaMinNeg));
 
         theta = linspace(thetaMin, thetaMaxNeg, 100);
-        energy = energy - sum(func(theta(1 : end - 1)).*diff(theta)*volume*F*cMax);
+        energy = energy - sum(func(theta(1 : end - 1)).*diff(theta)*vol*F*cMax);
         
         mass = computeCellMass(model, 'packingMass', opt.packingMass);
         

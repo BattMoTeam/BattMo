@@ -24,10 +24,20 @@ classdef BatteryGenerator
         function [paramobj, gen] = setupBatteryInputParams(gen, paramobj, params)
         % main function : add grid and coupling to paramobj structure
             [paramobj, gen] = gen.setupGrid(paramobj, params);
-            paramobj.Electrolyte = gen.setupElectrolyte(paramobj.Electrolyte, params);
+            % We check if params contains some Electrolyte field 
+            if isfield(params, 'Electrolyte')
+                params_electrolyte = params.Electrolyte;
+            else
+                params_electrolyte = [];
+            end
+            paramobj.Electrolyte = gen.setupElectrolyte(paramobj.Electrolyte, params_electrolyte);
             paramobj = gen.setupElectrodes(paramobj, params);
             if gen.use_thermal
-                paramobj = gen.setupThermalModel(paramobj, params);
+                params_thermal = [];
+                if isfield(params, 'ThermalModel')
+                    params_thermal = params.ThermalModel;
+                end
+                paramobj = gen.setupThermalModel(paramobj, params_thermal);
             end
             paramobj = gen.setupElectrodeElectrolyteCoupTerm(paramobj);
         end
@@ -77,16 +87,12 @@ classdef BatteryGenerator
             ne = 'NegativeElectrode';
             pe = 'PositiveElectrode';
             eldes = {ne, pe};
-            for ielde = 1 : numel(eldes)
-                elde = eldes{ielde};
-                if isempty(paramobj.(elde).include_current_collectors)
-                    if paramobj.include_current_collectors
-                        paramobj.(elde).include_current_collectors = true;
-                    else
-                        paramobj.(elde).include_current_collectors = false;
-                    end
-                end
-            end
+
+            % We add the electrode type to the params structure (This information can be used by derived classes and may
+            % then simplify setup)
+            params.(ne).electrodeType = ne;
+            params.(pe).electrodeType = pe;
+            
             % setup Negative Electrode
             paramobj.(ne) = gen.setupElectrode(paramobj.(ne), params.(ne));
             % setup Positive Electrode
@@ -100,14 +106,17 @@ classdef BatteryGenerator
         
             % shorthands 
             am = 'ActiveMaterial';
-            cc  = 'CurrentCollector';            
+            cc = 'CurrentCollector';
             
             % setup Electrode grid
             paramobj = gen.setupElectrodeGrid(paramobj, params);
             % setup Electrode active component (am)
             paramobj.(am) = gen.setupActiveMaterialGrid(paramobj.(am), params.(am));
             % setup current collector (cc)
-            if paramobj.include_current_collectors
+            if paramobj.include_current_collector
+                % We add the electrode type to the params structure. (This information can be used by derived classes
+                % and may then simplify setup)
+                params.(cc).electrodeType = params.electrodeType;
                 paramobj.(cc) = gen.setupCurrentCollector(paramobj.(cc), params.(cc));
                 % setup coupling term between am and cc
                 paramobj = gen.setupCurrentCollectorActiveMaterialCoupTerm(paramobj, params);

@@ -8,8 +8,8 @@
     "k0": 3.626e-11,
     "theta100": 0.14778,
     "theta0": 0.999,
-    "name": "LiFePO",
-    "updateOCPFunc": {"functionname": "updateOCPFunc_LFP_Xu",
-                      "argumentlist" : ["concentration", "temperature", "maximum concentration"],
-                      "name": "LFP OCP Xu"}
+    "OCP": {"type": "function",
+            "functionname": "updateOCPFunc_LFP_Xu",
+            "argumentlist" : ["concentration", "temperature", "maximum concentration"]
+           }
 }

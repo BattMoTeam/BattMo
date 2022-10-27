@@ -1,28 +1,25 @@
 classdef TestChen2020 < matlab.unittest.TestCase
 
-    properties (TestParameter)
-
-    end
-    
     methods
 
-        function test = TestChen2020()
-            mrstModule reset
-            mrstModule add ad-core mrst-gui mpfa
-        end
         
         function states = testchen2020(test)
+            
             jsonstruct = parseBattmoJson(fullfile('ParameterData','ParameterSets','Chen2020','chen2020_lithium_ion_battery.json'));
 
             paramobj = BatteryInputParams(jsonstruct);
-
+            paramobj.include_current_collectors = false;
+            paramobj = paramobj.validateInputParams();
+            
             % Some shorthands used for the sub-models
             ne    = 'NegativeElectrode';
             pe    = 'PositiveElectrode';
             am    = 'ActiveMaterial';
+            itf   = 'Interface';
             sd    = 'SolidDiffusion';
             elyte = 'Electrolyte';
-
+            ctrl  = 'Control';
+            
             %% We setup the battery geometry ("bare" battery with no current collector).
             gen = BareBatteryGenerator3D();
             % We update pamobj with grid data
@@ -134,7 +131,7 @@ classdef TestChen2020 < matlab.unittest.TestCase
             nls.maxIterations = 10; 
             % Change default behavior of nonlinear solver, in case of error
             nls.errorOnFailure = false; 
-            linearsolver = 'direct'
+            linearsolver = 'direct';
             switch linearsolver
               case 'agmg'
                 mrstModule add agmg

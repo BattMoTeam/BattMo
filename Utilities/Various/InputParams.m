@@ -41,7 +41,26 @@ classdef InputParams
                 error('format not recognized');
             end
         end
+
+        function paramobj = validateInputParams(paramobj)
+
+        % Default automatic behaviour is that all the properties of paramobj that belong to class InputParams get
+        % validated.
+            
+            paramobjFds = properties(paramobj);
+
+            for ind = 1 : numel(paramobjFds)
         
+                fd = paramobjFds{ind};
+        
+                if isa(paramobj.(fd), 'InputParams')
+                    paramobj.(fd) = paramobj.(fd).validateInputParams();
+                end
+                
+            end
+    
+        end
+
     end
     
 end

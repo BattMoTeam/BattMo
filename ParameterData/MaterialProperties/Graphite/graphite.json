@@ -1,18 +1,16 @@
 {
-    "cmax": 30555,
-    "volumeFraction": 0.8,
-    "volumetricSurfaceArea": 723600,
-    "density": 2240,
-    "n" : 1,
-    "Eak": 5000,
-    "k0": 5.031e-11,
-    "theta100": 0.88551,
-    "theta0": 0.1429,
-    "name": "Graphite",
-    "updateOCPFunc" : {"functionname" : "updateOCPFunc_graphite",
-                       "filepath" : "Materials/Solid/ReactiveNonMetals/updateOCPFunc_graphite.m",
-                       "argumentlist" : ["concentration", "temperature", "maximum concentration"],
-                       "name" : "graphite OCP"
-                      },
-    "BruggemanCoefficient": 1.5
+  "cmax": 30555,
+  "volumeFraction": 0.8,
+  "volumetricSurfaceArea": 723600,
+  "density": 2240,
+  "n" : 1,
+  "Eak": 5000,
+  "k0": 5.031e-11,
+  "theta100": 0.88551,
+  "theta0": 0.1429,
+  "OCP" : {"type": "function",
+           "functionname" : "computeOCP_graphite",
+           "argumentlist" : ["cElectrode", "T", "cmax"]
+          },
+  "BruggemanCoefficient": 1.5
 }

@@ -2,41 +2,33 @@ classdef TestBattery1D < matlab.unittest.TestCase
 
     properties (TestParameter)
         
-        jsonfile                   = {fullfile('ParameterData','BatteryCellParameters','LithiumIonBatteryCell','lithium_ion_battery_nmc_graphite.json')};
-        controlPolicy              = {'CCCV', 'IEswitch'};
-        use_thermal                = {true, false};
-        include_current_collector  = {true, false};
-        diffusionmodel             = {'simplified'};
-        
+        jsonfile                  = {fullfile('ParameterData','BatteryCellParameters','LithiumIonBatteryCell','lithium_ion_battery_nmc_graphite.json')};
+        controlPolicy             = {'CCCV', 'IEswitch'};
+        use_thermal               = {true, false};
+        include_current_collector = {true, false};
+        diffusionmodel            = {'none', 'simplified', 'full'};
+        testSize                  = {'short', 'long'};
+        createReferenceData       = {false};
     end
     
     methods
 
-        function test = TestBattery1D()
-            mrstModule reset
-            mrstModule add ad-core mrst-gui mpfa
-        end
-        
-        function states = test1d(test, jsonfile, controlPolicy, use_thermal, include_current_collector, useSimplifiedDiffusionModel, varargin)
+        function states = test1d(test, jsonfile, controlPolicy, use_thermal, include_current_collector, diffusionModelType, testSize, varargin)
             
-        %% Setup the properties of Li-ion battery materials and cell design
-        % The properties and parameters of the battery cell, including the
-        % architecture and materials, are set using an instance of
-        % :class:`BatteryInputParams <Battery.BatteryInputParams>`. This class is
-        % used to initialize the simulation and it propagates all the parameters
-        % throughout the submodels. The input parameters can be set manually or
-        % provided in json format. All the parameters for the model are stored in
-        % the paramobj object.
-
             jsonstruct = parseBattmoJson(fullfile('ParameterData','BatteryCellParameters','LithiumIonBatteryCell','lithium_ion_battery_nmc_graphite.json'));
 
 
             jsonstruct.include_current_collector = include_current_collector;
             jsonstruct.use_thermal = use_thermal;
-            
-            jsonstruct.NegativeElectrode.ActiveMaterial.useSimplifiedDiffusionModel = useSimplifiedDiffusionModel;
-            jsonstruct.PositiveElectrode.ActiveMaterial.useSimplifiedDiffusionModel = useSimplifiedDiffusionModel;
 
+            if strcmp(diffusionModelType, 'none')
+                json.use_particle_diffusion = false;
+            else
+                json.use_particle_diffusion = true;
+                json.NegativeElectrode.ActiveMaterial.diffusionModelType = diffusionModelType;
+                json.PositiveElectrode.ActiveMaterial.diffusionModelType = diffusionModelType;
+            end
+            
             paramobj = BatteryInputParams(jsonstruct);
 
             use_cccv = strcmpi(controlPolicy, 'CCCV');
@@ -99,8 +91,16 @@ classdef TestBattery1D < matlab.unittest.TestCase
 
             n     = 100;
             dt    = total/n;
+
+            switch testSize
+              case 'long'
+                % do nothing
+              case 'short'
+                n = 10;
+              otherwise
+                error('testSize not recognized')
+            end
             
-            n = 10;
             
             step  = struct('val', dt*ones(n, 1), 'control', ones(n, 1));
 
@@ -143,39 +143,33 @@ classdef TestBattery1D < matlab.unittest.TestCase
             model.verbose = true;
 
             %% Run the simulation
-            [wellSols, states, report] = simulateScheduleAD(initstate, model, schedule, 'OutputMinisteps', true, 'NonLinearSolver', nls); 
+            [~, states, report] = simulateScheduleAD(initstate, model, schedule, 'OutputMinisteps', true, 'NonLinearSolver', nls); 
 
-            %% Process output and recover the output voltage and current from the output states.
-            ind = cellfun(@(x) not(isempty(x)), states); 
-            states = states(ind);
-            Enew = cellfun(@(x) x.Control.E, states); 
-            Inew = cellfun(@(x) x.Control.I, states);
-            Tmax = cellfun(@(x) max(x.ThermalModel.T), states);
-            % [SOCN, SOCP] =  cellfun(@(x) model.calculateSOC(x), states);
-            time = cellfun(@(x) x.time, states); 
-            
         end
         
     end
 
     methods (Test)
 
-        function testBattery(test, jsonfile, controlPolicy, use_thermal, include_current_collector, diffusionmodel)
+        function testBattery(test, jsonfile, controlPolicy, use_thermal, include_current_collector, diffusionmodel, testSize, createReferenceData)
 
-            switch diffusionmodel
-              case 'full'
-                useSimplifiedDiffusionModel = false;
-              case 'simplified'
-                useSimplifiedDiffusionModel = true;
+            states = test1d(test, jsonfile, controlPolicy, use_thermal, include_current_collector, diffusionmodel, testSize);
+
+            filename = sprintf('TestBattery1D-%s-%d-%d-%s-%s.mat', controlPolicy, use_thermal, include_current_collector, diffusionmodel, testSize);
+            filename = fullfile(battmoDir(), 'Tests', 'TestExamples', 'ReferenceData', filename);
+
+            if createReferenceData
+                refstate = states{end};
+                save(filename, 'refstate');
+            else
+                load(filename);
+                verifyStruct(test, states{end}, refstate);
             end
-            
-            states = test1d(test, jsonfile, controlPolicy, use_thermal, include_current_collector, useSimplifiedDiffusionModel);
-            verifyStruct(test, states{end}, sprintf('TestBattery1D%s', controlPolicy));
             
         end
 
     end
-    
+
 end
 
 %{

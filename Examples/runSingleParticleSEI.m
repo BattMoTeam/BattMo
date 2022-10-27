@@ -10,7 +10,7 @@ close all
 mrstModule add ad-core mrst-gui mpfa
 
 %% Setup the properties of Li-ion battery materials and cell design
-jsonstruct = parseBattmoJson(fullfile('ParameterData','ParameterSets','Safari2009','fullmodel.json'));
+jsonstruct = parseBattmoJson(fullfile('ParameterData', 'ParameterSets', 'Safari2009', 'fullmodel.json'));
 
 % Some shorthands used for the sub-models
 an    = 'Anode';
@@ -61,14 +61,14 @@ end
 dograph = false;
 
 if dograph
-    cgf = ComputationalGraphFilter(model);
-    % cgf.includeNodeNames = 'Anode.SolidDiffusion.cSurface';
-    cgf.includeNodeNames = 'Control.I$';
-    % cgf.includeNodeNames = 'SideReaction.R';
-    % [g, edgelabels] = cgf.setupGraph('oneParentOnly', true, 'type', 'ascendant');
-    % [g, edgelabels] = cgf.setupGraph('oneParentOnly', true, 'type', 'descendant');
-    % [g, edgelabels] = cgf.setupGraph();
-    [g, edgelabels] = cgf.setupDescendantGraph();
+    cgt = ComputationalGraphTool(model);
+    % cgt.includeNodeNames = 'Anode.SolidDiffusion.cSurface';
+    cgt.includeNodeNames = 'Control.I$';
+    % cgt.includeNodeNames = 'SideReaction.R';
+    % [g, edgelabels] = cgt.setupGraph('oneParentOnly', true, 'type', 'ascendant');
+    % [g, edgelabels] = cgt.setupGraph('oneParentOnly', true, 'type', 'descendant');
+    % [g, edgelabels] = cgt.setupGraph();
+    [g, edgelabels] = cgt.setupDescendantGraph();
     figure
     h = plot(g, 'edgelabel', edgelabels,'edgefontsize', 15, 'nodefontsize', 12);
     return

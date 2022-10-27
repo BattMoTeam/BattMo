@@ -35,7 +35,7 @@ classdef BatteryGenerator2D < BatteryGenerator
         end
         
         function paramobj = updateBatteryInputParams(gen, paramobj)
-            paramobj.include_current_collectors = true;
+            assert(paramobj.include_current_collectors, 'This geometry includes current collectors and input data appears to be missing for those');
             gen.use_thermal = paramobj.use_thermal;
             paramobj = gen.setupBatteryInputParams(paramobj, []);
         end

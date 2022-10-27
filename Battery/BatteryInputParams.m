@@ -20,8 +20,8 @@ classdef BatteryInputParams < InputParams
         
         couplingTerms % Coupling terms (describe the topological structure of the coupling between the components)
         
-        use_thermal         % flag : true if  coupled thermal simulation should be considered
-        use_solid_diffusion % flag : true if solid diffusion should be included (mainly for debugging)
+        use_thermal            % flag : true if  coupled thermal simulation should be considered
+        use_particle_diffusion % flag : true if solid diffusion should be included (mainly for debugging)
         include_current_collectors
 
     end
@@ -45,12 +45,48 @@ classdef BatteryInputParams < InputParams
             paramobj.(elyte)   = ElectrolyteInputParams(pick(elyte));
             paramobj.(thermal) = ThermalComponentInputParams(pick(thermal));
             switch jsonstruct.(ctrl).controlPolicy
-              case 'EIswitch'
-                paramobj.(ctrl)    = ControlModelInputParams(pick(ctrl));
+              case 'IEswitch'
+                paramobj.(ctrl) = IEswitchControlModelInputParams(pick(ctrl));
               case 'CCCV'
-                paramobj.(ctrl)    = CcCvControlModelInputParams(pick(ctrl));
+                paramobj.(ctrl) = CcCvControlModelInputParams(pick(ctrl));
+              otherwise
+                error('controlPolicy not recognized');
             end
             paramobj.couplingTerms = {};
+
+            paramobj = paramobj.validateInputParams();
+            
+        end
+
+        function paramobj = validateInputParams(paramobj)
+
+            ne      = 'NegativeElectrode';
+            pe      = 'PositiveElectrode';
+            am      = 'ActiveMaterial';
+            elyte   = 'Electrolyte';
+            thermal = 'ThermalModel';
+            ctrl    = 'Control';            
+
+            comps = {ne, pe, elyte};
+            for icomp = 1 : numel(comps)
+                comp = comps{icomp};
+                paramobj = mergeParameters(paramobj, {'use_thermal'}, {comp, 'use_thermal'});
+            end
+
+            eldes = {ne, pe};
+            for ielde = 1 : numel(eldes)
+                elde = eldes{ielde};
+                paramobj = mergeParameters(paramobj, {'include_current_collectors'}, {elde, 'include_current_collector'});
+                paramobj = mergeParameters(paramobj, {'use_particle_diffusion'}, {elde, am, 'use_particle_diffusion'});
+            end
+            
+            paramobj.(ne)    = paramobj.(ne).validateInputParams();
+            paramobj.(pe)    = paramobj.(pe).validateInputParams();
+            paramobj.(elyte) = paramobj.(elyte).validateInputParams();
+
+            if paramobj.use_thermal
+                paramobj.(thermal) = paramobj.(thermal).validateInputParams();
+            end
             
         end
 

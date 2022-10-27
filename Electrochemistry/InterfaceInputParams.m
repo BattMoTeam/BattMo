@@ -5,8 +5,6 @@ classdef InterfaceInputParams < InputParams
     properties
         
         G  % Grid
-
-        name % Given name of the interface (for convenience)
         
         theta0   % Lithiation value at 0% SOC [-]
         theta100 % Lithiation value at 100% SOC [-]
@@ -19,8 +17,17 @@ classdef InterfaceInputParams < InputParams
         density                 % Density of the active material [kg m^-3]
         n                       % number of electron transfer
 
-        updateOCPFunc % Function to update OCP value (matlab function handler)
-        
+        OCP % Function to update OCP value given as a struct with fields
+            % OCP.type = "function";
+            % OCP.functionname :  matlab function name (should be available in path)
+            % OCP.argumentlist = ["cElectrode", "T", "cmax"]
+
+        j0  % Function to update j0 : if empty, the default expression using k0 is used, see method Interface.updateReactionRateCoefficient
+            % j0.type = {"function", "constant"} % if "constant" is selected, the value of k0 is used to compute reaction rate
+            % j0.functionname :  matlab function name (should be available in path)
+            % j0.argumentlist = ["cElectrodeSurface", "cmax"]
+
+        alpha = 0.5 % coefficient in Butler-Volmer coefficient (default is 0.5)
     end
     
     methods
