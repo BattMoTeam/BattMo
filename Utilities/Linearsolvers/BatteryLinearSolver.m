@@ -22,7 +22,14 @@ classdef BatteryLinearSolver < handle
         id = '';                   % Short text string identifying the specific solver. Appended to the short name (see getDescription)
         initialGuessFun = [];
 
-        method
+        method % structure described in schema battmodDir()/Utilities/JsonSchemas/linearsolver.schema.json
+               % the fields are
+               % - choice : string which can be any of
+               %            - 'direct' : no iterative solver, we use matlab inversion)
+               %            - 'agmg'   : We use agmg iterative solver for the whole system without preconditioning
+               %            - 'gmres'  : We use matlab gmres solver with preconditioning
+               % - options : options for the agmg solver (if choice == 'agmag')
+               % - solver/solvers : describe the solver and options for the preconditioner (see battmodDir()/Utilities/JsonSchemas/linearsolver.schema.json)
         verbosity
         first
         reuse_setup
@@ -64,7 +71,8 @@ classdef BatteryLinearSolver < handle
 
         function [dx, result, report] = solveLinearProblem(solver, problem, model)
         % Solve a linearized problem
-
+        % QUESTION : Do we want to simplify solveLinearProblem ?
+            
             timer = tic();
             lsys = [];
             eliminated = {};
@@ -84,7 +92,7 @@ classdef BatteryLinearSolver < handle
                         % keepNumber property of the linear solver to perform a
                         % full block Schur complement
                         nk = sum(keep);
-                        assert(all(keep(1:nk)) & ~any(keep(nk+1:end)), ...
+                        assert(all(keep(1 : nk)) & ~any(keep(nk + 1 : end)), ...
                                'Cell variables must all combine first in the ordering for this AutodiffBackend.');
                         if 1
                             % In-place Schur complement
@@ -199,13 +207,20 @@ classdef BatteryLinearSolver < handle
             
             report = solver.getSolveReport();
             
-            switch solver.method
+            switch solver.method.choice
                 
               case 'direct'                    
 
                 result=A\b;
 
-              case 'direct_agmg'
+              case 'agmg'
+
+                % QUESTION : We could add the solver option in method.options
+                % QUESTION : We could add "amgcl"
+
+                % QUESTION : Agree on assert?
+                assert(solver.reduceToCell, 'agmg makes only sense if cell reduction has been done');
+                assert(strcmp(method.solver, 'agmg'), 'amgcl not supported here');
                 
                 a = tic();
                 
@@ -243,60 +258,80 @@ classdef BatteryLinearSolver < handle
                 report.Converged          = flag;
                 report.LinearSolutionTime = toc(a);
                 
-              case 'matlab_gmres'
-                
-                % QUESTION : why reset here?
-                agmg(A, b, 20, solver.tolerance, solver.maxIterations, solver.verbosity, [], -1); 
-                agmg(A, b, 20, solver.tolerance, solver.maxIterations, solver.verbosity, [], 1);
-                
-                % QUESTION : error in argument?
-                f = @(b) solver.agmgprecond(b, A)
+              case 'gmres'
 
-                a=tic;
+                assert(solver.reduceToCell, 'agmg makes only sense if cell reduction has been done');
 
-                [result, flags, relres, iter] = gmres(A, b, solver.maxIterations, solver.tolerance, solver.maxIterations, f);
+                gmres_solvers = method.solvers;
 
-                report.Iterations         = (iter(1) - 1)*solver.maxIterations + iter(2);
-                report.Residual           = relres;
-                report.Converged          = flags;
-                report.LinearSolutionTime = toc(a);
-                
-              case 'matlab_gmres_agmg'
-                
-                solver.precondIterations_phi = 0;
-                solver.precondIterations_c   = 0;
-                solver.precondIterations_T   = 0;
-                
-                indphi = solver.getPotentialIndex(problem);
-                indc   = solver.getCIndex(problem);
-                indT   = solver.getTIndex(problem);
-                
-                lverbosity = 0;
-                ltol = 1e-3;
-                lmax = 40;
-                
-                phi_solver = solver.getElipticSolver('amgclsolver');
-                c_solver   = solver.getElipticSolver('amgclsolver');
-                T_solver   = solver.getElipticSolver('amgclsolver');
-                
-                assert(all(indphi + indc + indT == 1)) % QUESTION : add message
-                precond = @(b) solver.p_gs_precond(b, A, indphi, indc, indT, phi_solver, c_solver, T_solver, []);
+                switch gmres_solvers
 
-                a=tic;
-                restart = solver.maxIterations;
-                % [result, flags, relres, iter] = gmres(A, b, restart, solver.tolerance, solver.maxIterations, precond); 
-                % [result, flags, relres, iter] = bicgstab(A, b, solver.tolerance, 5, precond)
+                  case 'direct'
 
-                [result, flags, relres, iter] = gmres(A, b, restart, solver.tolerance, solver.maxIterations, precond);
-                
-                % add diagnostic fields in report
-                report.Iterations            = (iter(1) - 1)*solver.maxIterations + iter(2);
-                report.Residual              = relres;
-                report.Converged             = flags;
-                report.precondIterations_phi = solver.precondIterations_phi; 
-                report.precondIterations_c   = solver.precondIterations_c;
-                report.precondIterations_T   = solver.precondIterations_T;
-                report.LinearSolutionTime    = toc(a);
+                    error('not implemented');
+                    
+                  case 'grouped_agmg'
+
+                    % QUESTION : reset works in this case ?
+                    agmg(A, b, 20, solver.tolerance, solver.maxIterations, solver.verbosity, [], -1); 
+                    agmg(A, b, 20, solver.tolerance, solver.maxIterations, solver.verbosity, [], 1);
+                    
+                    % QUESTION : error in argument?
+                    % QUESTION : again we can send option there
+                    f = @(b) solver.agmgprecond(b, A)
+
+                    a=tic;
+
+                    [result, flags, relres, iter] = gmres(A, b, solver.maxIterations, solver.tolerance, solver.maxIterations, f);
+
+                    report.Iterations         = (iter(1) - 1)*solver.maxIterations + iter(2);
+                    report.Residual           = relres;
+                    report.Converged          = flags;
+                    report.LinearSolutionTime = toc(a);
+                    
+                  case 'separate_agmg'
+                    
+                    solver.precondIterations_phi = 0;
+                    solver.precondIterations_c   = 0;
+                    solver.precondIterations_T   = 0;
+                    
+                    indphi = solver.getPotentialIndex(problem);
+                    indc   = solver.getCIndex(problem);
+                    indT   = solver.getTIndex(problem);
+                    
+                    lverbosity = 0;
+                    ltol = 1e-3;
+                    lmax = 40;
+
+                    % QUESTION : We could send separate options for the solver
+                    phi_solver = solver.getElipticSolver('amgclsolver');
+                    c_solver   = solver.getElipticSolver('amgclsolver');
+                    T_solver   = solver.getElipticSolver('amgclsolver');
+                    
+                    assert(all(indphi + indc + indT == 1)) % QUESTION : add message
+                    precond = @(b) solver.p_gs_precond(b, A, indphi, indc, indT, phi_solver, c_solver, T_solver, []);
+
+                    a=tic;
+                    restart = solver.maxIterations;
+                    % [result, flags, relres, iter] = gmres(A, b, restart, solver.tolerance, solver.maxIterations, precond); 
+                    % [result, flags, relres, iter] = bicgstab(A, b, solver.tolerance, 5, precond)
+
+                    [result, flags, relres, iter] = gmres(A, b, restart, solver.tolerance, solver.maxIterations, precond);
+                    
+                    % add diagnostic fields in report
+                    report.Iterations            = (iter(1) - 1)*solver.maxIterations + iter(2);
+                    report.Residual              = relres;
+                    report.Converged             = flags;
+                    report.precondIterations_phi = solver.precondIterations_phi; 
+                    report.precondIterations_c   = solver.precondIterations_c;
+                    report.precondIterations_T   = solver.precondIterations_T;
+                    report.LinearSolutionTime    = toc(a);
+
+                  otherwise
+
+                    error('choice not recognized')
+                end
+
                 
               case 'matlab_cpr_agmg'
 
@@ -451,7 +486,7 @@ classdef BatteryLinearSolver < handle
             for i = 1 : numel(problem.primaryVariables)
                 pp = problem.primaryVariables{i}; 
                 if strcmp(pp{end}, 'E') || strcmp(pp{end}, 'phi')
-                    % QUESTION : 'E' is used for the BC coupling ?
+                    % QUESTION : 'E' is used for the BC coupling, right?
                     vars = [vars, i]; 
                 end 
             end
