@@ -3,79 +3,69 @@
   "$schema": "http://json-schema.org/draft-07/schema#",
   "description": "linear solver",
   "type": "object",
-  "properties" : {"choice" : {"type" : "string",
-                              "enum" : ["direct", "agmg", "gmres"]}
+  "properties" : {"method" : {"type" : "string",
+                              "enum" : ["direct", "iterative", "gmres"]},
+                  "required" : ["method"]
                  },
-
+  
   "anyOf" : [
 
-    {"properties" : {"choice" : {"const" : "direct"},
-                     "description" : "no iterative solver, we use matlab inversion"
+    {"properties" : {"method" : {"const" : "direct"},
+                     "description" : "no iterative solver, we use matlab direct inversion"
                     }
     },
 
-    {"properties" : {"choice" : {"const" : "agmg",
-                                 "description": " We use agmg iterative solver for the whole system without preconditioning"},
-                     "options" : {"type" : "object",
-                                  "description" : "options for the agmg solver"},
-                     "solver" : {"type" : "string",
-                                 "enum" : ["agmg", "amgcl"]}
+    {"properties" : {"method" : {"const" : "iterative",
+                                 "description": " We use an iterative solver for the whole system without preconditioning"},
+                     "solverspec" : {"$ref" : "#/$defs/solverspec"}
                     }
     },
 
-
-    {"properties" : {"choice" : {"const" : "gmres",
+    {"properties" : {"method" : {"const" : "gmres",
                                  "description" : "We use matlab gmres solver with preconditioning"},
                      
-                     "solvers" : {"type" : "object",
+                     "options" : {"type" : "object",
                                   "description" : "preconditioners sent to the gmres matlab routine to solve the potential, concentration and temperature",
-                                  "properties" : {"choice" : {"type" : "string",
-                                                              "enum" : ["direct", "grouped_agmg", "separate_agmg"]}
+
+                                  "properties" : {"method" : {"type" : "string",
+                                                              "enum" : ["grouped", "separate"]}
                                                  },
                                   
                                   "anyOf" : [
 
-                                    {"properties" : {"choice" : {"const" : "direct",
-                                                                 "description" : "The matlab backslash direct inversion is used for all preconditioner"}}},
 
-                                    {"properties" : {"choice" : {"const" : "grouped_agmg",
-                                                                 "description" : "agmg is used for all variables at the same time"},
-                                                     "options" : {"type" : "object",
-                                                                  "description" : "options structure sent to the agmg solver"},
-                                                     "solver" : {"type" : "string",
-                                                                 "enum" : ["agmg", "amgcl"]}}},
+                                    {"properties" : {"method" : {"const" : "grouped",
+                                                                 "description" : "A single preconditioner is used and solve for all variables at the same time"},
+                                                     "solverspec" : {"$ref" : "#/$defs/solverspec"}
+                                                    }
+                                    },
 
-                                    {"properties" : {"choice" : {"const" : "separate_agmg",
-                                                                 "description" : "agmg is used for all variables separatlys"},
+                                    {"properties" : {"method" : {"const" : "separate",
+                                                                 "description" : "Separate preconditioners are used for each variable"},
+                                                     
                                                      "solvers" : {"type" : "array",
-                                                                  "prefixItems" : [
-                                                                    {"type" : "object",
-                                                                     "description" : "solver for the potential phi",
-                                                                     "properties" : {"choice" : {"type" : "string",
-                                                                                                 "const" : "phi"},
-                                                                                     "solver" : {"type" : "string",
-                                                                                                  "enum" : ["agmg", "amgcl"]},
-                                                                                     "options" : {"type" : "object",
-                                                                                                  "description" : "options for agmg solver"}}},
-                                                                    {"type" : "object",
-                                                                     "description" : "solver for the concentration c",
-                                                                     "properties" : {"choice" : {"type" : "string",
-                                                                                                 "const" : "c"},
-                                                                                     "solver" : {"type" : "string",
-                                                                                                 "enum" : ["agmg", "amgcl"]},
-                                                                                     "options" : {"type" : "object",
-                                                                                                  "description" : "options for agmg solver"}}},
-
-                                                                    {"type" : "object",
-                                                                     "description" : "solver for the temperature T",
-                                                                     "properties" : {"choice" : {"type" : "string",
-                                                                                                 "const" : "T"},
-                                                                                     "solver" : {"type" : "string",
-                                                                                                  "enum" : ["agmg", "amgcl"]},
-                                                                                     "options" : {"type" : "object",
-                                                                                                  "description" : "options for agmg solver"}}}
-
+                                                                  "description" : "array of solver specifications for the various variables",
+                                                                  "anyOf" : [
+                                                                    {"items" : {"type" : "object",
+                                                                                "description" : "case where simple diffusion model are  used",
+                                                                                "properties" : {"variable" : {"type" : "string",
+                                                                                                              "enum" : ["phi", "c", "T"]
+                                                                                                             },
+                                                                                                "solverspec" : {"$ref" : "#/$defs/solverspec"}
+                                                                                               }
+                                                                               }
+                                                                    },
+                                                                    {"items" : {"type" : "object",
+                                                                                "description" : "case where full diffusion model is used",
+                                                                                "properties" : {"variable" : {"type" : "string",
+                                                                                                              "enum" : ["phi", "c_elyte", "c_ne", "c_pe", "T"]
+                                                                                                             },
+                                                                                                "solverspec" : {"$ref" : "#/$defs/solverspec"}
+                                                                                               }
+                                                                               }
+                                                                    }
                                                                   ]
+
                                                                  }
                                                     }
                                     }
@@ -85,7 +75,16 @@
      
      
     }
-  ]
+  ],
+
+  "$defs" : {"solverspec" : {"type" : "object",
+                             "properties" : { "name" : {"type" : "string",
+                                                        "enum": ["direct", "agmg", "amgcl"]},
+                                              "options" : {"type" : "object"}},
+                             "required" : ["name"]
+                            }
+            }
+
 }
 
 

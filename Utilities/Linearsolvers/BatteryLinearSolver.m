@@ -22,14 +22,16 @@ classdef BatteryLinearSolver < handle
         id = '';                   % Short text string identifying the specific solver. Appended to the short name (see getDescription)
         initialGuessFun = [];
 
-        method % structure described in schema battmodDir()/Utilities/JsonSchemas/linearsolver.schema.json
-               % the fields are
-               % - choice : string which can be any of
-               %            - 'direct' : no iterative solver, we use matlab inversion)
-               %            - 'agmg'   : We use agmg iterative solver for the whole system without preconditioning
-               %            - 'gmres'  : We use matlab gmres solver with preconditioning
-               % - options : options for the agmg solver (if choice == 'agmag')
-               % - solver/solvers : describe the solver and options for the preconditioner (see battmodDir()/Utilities/JsonSchemas/linearsolver.schema.json)
+        setup  % Structure described in schema battmodDir()/Utilities/JsonSchemas/linearsolver.schema.json (recommended reference)
+               %
+               % the first fields are
+               % - method : string which can be any of
+               %            - 'direct'    : no iterative solver, we use matlab direct inversion
+               %            - 'iterative' : We use iterative solver for the whole system without preconditioning.
+               %                            The solver description is sent into structure solver (see examples below)
+               %            - 'gmres'     : We use matlab gmres solver with preconditioning. Further setup is sent into options structure (see example below)
+               % QUESTION : add more here
+        
         verbosity
         first
         reuse_setup
@@ -58,7 +60,7 @@ classdef BatteryLinearSolver < handle
             solver.variableOrdering          = [];
             solver.equationOrdering          = [];
             solver.verbosity                 = 0;
-            solver.method                    = 'direct';
+            solver.setup                     = struct('method', 'direct');
             solver.reuse_setup               = false;
             solver.first                     = true;
             
@@ -206,21 +208,24 @@ classdef BatteryLinearSolver < handle
         function [result, report] = solveLinearSystem(solver, A, b, x0, problem) % ok
             
             report = solver.getSolveReport();
+
+            method = solver.setup.method;
+            setup  = solver.setup;
             
-            switch solver.method.choice
+            switch method
                 
               case 'direct'                    
 
-                result=A\b;
+                result = A\b;
 
-              case 'agmg'
+              case 'iterative'
 
                 % QUESTION : We could add the solver option in method.options
                 % QUESTION : We could add "amgcl"
 
                 % QUESTION : Agree on assert?
                 assert(solver.reduceToCell, 'agmg makes only sense if cell reduction has been done');
-                assert(strcmp(method.solver, 'agmg'), 'amgcl not supported here');
+                assert(strcmp(setup.solverspec.name, 'agmg'), 'amgcl not supported here');
                 
                 a = tic();
                 
@@ -262,15 +267,11 @@ classdef BatteryLinearSolver < handle
 
                 assert(solver.reduceToCell, 'agmg makes only sense if cell reduction has been done');
 
-                gmres_solvers = method.solvers;
+                options = setup.options;
 
-                switch gmres_solvers
-
-                  case 'direct'
-
-                    error('not implemented');
+                switch options.method
                     
-                  case 'grouped_agmg'
+                  case 'grouped'
 
                     % QUESTION : reset works in this case ?
                     agmg(A, b, 20, solver.tolerance, solver.maxIterations, solver.verbosity, [], -1); 
@@ -279,7 +280,8 @@ classdef BatteryLinearSolver < handle
                     % QUESTION : error in argument?
                     % QUESTION : again we can send option there
                     f = @(b) solver.agmgprecond(b, A)
-
+                    % f = @(b) solver.agmgprecond(A, b)
+                    
                     a=tic;
 
                     [result, flags, relres, iter] = gmres(A, b, solver.maxIterations, solver.tolerance, solver.maxIterations, f);
@@ -289,7 +291,9 @@ classdef BatteryLinearSolver < handle
                     report.Converged          = flags;
                     report.LinearSolutionTime = toc(a);
                     
-                  case 'separate_agmg'
+                  case 'separate'
+
+                    solvers = options.solvers;
                     
                     solver.precondIterations_phi = 0;
                     solver.precondIterations_c   = 0;
@@ -304,17 +308,29 @@ classdef BatteryLinearSolver < handle
                     lmax = 40;
 
                     % QUESTION : We could send separate options for the solver
-                    phi_solver = solver.getElipticSolver('amgclsolver');
-                    c_solver   = solver.getElipticSolver('amgclsolver');
-                    T_solver   = solver.getElipticSolver('amgclsolver');
+                    for isolver = 1 : numel(solvers)
+                        varsolver = solvers{isolver};
+                        switch varsolver.variable
+                          case 'phi'
+                            phi_solver = solver.getElipticSolver(varsolver.solverspec);
+                          case 'c'
+                            c_solver   = solver.getElipticSolver(varsolver.solverspec);
+                          case 'T'
+                            T_solver   = solver.getElipticSolver(varsolver.solverspec);
+                        end
+                    end
                     
-                    assert(all(indphi + indc + indT == 1)) % QUESTION : add message
-                    precond = @(b) solver.p_gs_precond(b, A, indphi, indc, indT, phi_solver, c_solver, T_solver, []);
+                    assert(all(indphi + indc + indT == 1), 'We have some unknown in the system that are not expected') 
 
+                    if ~any(indT)
+                        % handle the case with no temperature
+                        T_solver = [];
+                    end
+                    
+                    precond = @(b) solver.p_gs_precond(b, A, indphi, indc, indT, phi_solver, c_solver, T_solver, []);
+                    
                     a=tic;
                     restart = solver.maxIterations;
-                    % [result, flags, relres, iter] = gmres(A, b, restart, solver.tolerance, solver.maxIterations, precond); 
-                    % [result, flags, relres, iter] = bicgstab(A, b, solver.tolerance, 5, precond)
 
                     [result, flags, relres, iter] = gmres(A, b, restart, solver.tolerance, solver.maxIterations, precond);
                     
@@ -335,7 +351,7 @@ classdef BatteryLinearSolver < handle
                 
               case 'matlab_cpr_agmg'
 
-                % QUESTION : do we keep that case?
+                % QUESTION : do we keep that case? If yes, fix below
                 
                 indb = solver.getPotentialIndex(problem);
                 % QUESTION : is agmg reset needed here?
@@ -345,6 +361,7 @@ classdef BatteryLinearSolver < handle
                 %rphi=  agmg(A(indb,indb),b(indb),20,1e-4,20,1,,-1);
                 %rphi=  agmg(A(indb,indb),b(indb),20,1e-4,20,1,[],1);
                 solver_type = 'agmgsolver';
+                error('next call is now not supported')
                 voltage_solver = solver.getElipticSolver(solver_type, A, indb)
                 
                 inds=true(size(indb));%not(indb);
@@ -433,7 +450,7 @@ classdef BatteryLinearSolver < handle
                     alpha=0.001;
                     aggr=struct('eps_strong', alpha);
                     % coarsening=struct('type','aggregation','over_interp',1.0,'aggr',aggr)
-                    %coarsening=struct('type','smoothed_aggregation','relax',2/3,'aggr',aggr,'estimate_spectral_radius',false,'power_iters',10,'over_interp',1.0)
+                    % coarsening=struct('type','smoothed_aggregation','relax',2/3,'aggr',aggr,'estimate_spectral_radius',false,'power_iters',10,'over_interp',1.0)
                     coarsetarget=1200;
 
                     coarsening=struct('type'         , 'ruge_stuben', ...
@@ -481,55 +498,69 @@ classdef BatteryLinearSolver < handle
         
         function indb = getPotentialIndex(solver, problem) % ok
         % QUESTION : here we see that diag structure is needed
-            
-            vars = []; 
-            for i = 1 : numel(problem.primaryVariables)
-                pp = problem.primaryVariables{i}; 
-                if strcmp(pp{end}, 'E') || strcmp(pp{end}, 'phi')
-                    % QUESTION : 'E' is used for the BC coupling, right?
-                    vars = [vars, i]; 
-                end 
-            end
-            
-            indb = solver.getIndex(problem, vars);
+        %QUESTION  : why include 'E' ?
+
+            varinds1 = solver.getVarIndex(problem, {'*', 'phi'});
+            varinds2 = solver.getVarIndex(problem, {'Control', 'E'});
+            varinds = [varinds1, varinds2];
+            indb = solver.getIndex(problem, varinds);
             
         end
 
         function indb = getCIndex(solver, problem) % ok
 
-            vars = []; 
-            for i = 1:numel(problem.primaryVariables)
-                pp = problem.primaryVariables{i}; 
-                if strcmp(pp{end}, 'c')
-                    vars = [vars, i]; 
-                end 
-            end
-
-            indb = solver.getIndex(problem, vars);
+            varinds = solver.getVarIndex(problem, {'Electrolyte', 'c'});
+            indb = solver.getIndex(problem, varinds);
             
         end
 
         function indb = getTIndex(solver, problem) % ok
 
-            vars = []; 
-            for i = 1:numel(problem.primaryVariables)
-                pp = problem.primaryVariables{i}; 
-                if strcmp(pp{end}, 'T') 
-                    vars = [vars, i]; 
-                end 
-            end
-
-            indb = solver.getIndex(problem, vars);
+            varinds = solver.getVarIndex(problem, {'ThermalModel', 'T'});
+            indb = solver.getIndex(problem, varinds);
             
         end 
 
-        function indb = getIndex(solver, problem, vars)
+        function varinds = getVarIndex(solver, problem, varname)
+
+            varinds = [];
+            anymodel = strcmp('*', varname{1});
+            
+            for ivar = 1 : numel(problem.primaryVariables)
+                pvarname = problem.primaryVariables{ivar};
+                takeivar = true;
+
+                if anymodel
+                    if ~strcmp(varname{end}, pvarname{end})
+                        takeivar = false;
+                    end
+                else
+                    if numel(pvarname) == numel(varname)
+                        iname = 1;
+                        while takeivar & iname <= numel(varname)
+                            if ~strcmp(pvarname{iname}, varname{iname})
+                                takeivar = false;
+                            end
+                            iname = iname + 1;
+                        end
+                    else
+                        takeivar = false;
+                    end
+                end
+                if takeivar
+                    varinds = [varinds, ivar];
+                end
+
+            end
+        end
+        
+        function indb = getIndex(solver, problem, varinds)
             
             numVars = problem.equations{1}.getNumVars(); 
             % QUESTION : why call getNumVars for equations{1}?
             pos = cumsum(numVars); 
             pos = [[1; pos(1:end - 1) + 1], pos]; 
-            posvar = pos(vars, :); 
+            posvar = pos(varinds, :); 
             ind = mcolon(posvar(:, 1), posvar(:, 2)); 
             indb = false(pos(end), 1); 
             indb(ind) = true;
@@ -549,6 +580,7 @@ classdef BatteryLinearSolver < handle
         
         function r = p_gs_precond(solver, x, A, indphi, indc, indT, phi_solver, c_solver, T_solver, opt)% ok
         % QUESTION : find better name?
+        % QUESTION : switch argument input x and A
         % QUESTION : support for without temperature?
             
             r = x*0; 
@@ -593,38 +625,43 @@ classdef BatteryLinearSolver < handle
 
             end
             % QUESTION : why is T not included in Gauss-Seidel
+
+            if any(indT)
+
+                ldisp('T start')
+                xs = x(indT) - 0.0*A(indT, not(indT))*r(not(indT)); 
+                [rT, flag, res, iter] = T_solver(A(indT, indT), xs); 
+                solver.precondIterations_T = solver.precondIterations_T + iter; 
+                ldisp('T End')
+                
+                r(indT)   = rT;
+            end
             
-            ldisp('T start')
-            xs = x(indT) - 0.0*A(indT, not(indT))*r(not(indT)); 
-            [rT, flag, res, iter] = T_solver(A(indT, indT), xs); 
-            solver.precondIterations_T = solver.precondIterations_T + iter; 
-            ldisp('T End')
-            
-            r(indT)   = rT; 
             r(indphi) = rp; 
             r(indc)   = rs;
             
         end
 
-        function elliptic_solver = getElipticSolver(solver, solver_type, opt) % ok
-            
-            switch solver_type
+
+        function elliptic_solver = getElipticSolver(solver, solverspec) % ok
+
+            switch solverspec.name
                 
-              case 'agmgsolver'
+              case 'agmg'
 
                 nmax = 20;
-                elliptic_solver = @(A, b)  agmg(A, b, nmax, 1e-5, nmax, 1, [], 0);
+                elliptic_solver = @(A, b) agmg(A, b, nmax, 1e-5, nmax, 1, [], 0);
                 
               case 'agmgsolver_prec'
                 % QUESTION : any fundamental difference with 'agmgsolver' above ?
                 
-                elliptic_solver = @(A,b)  solver.agmgprecond(A, b);
+                elliptic_solver = @(A, b) solver.agmgprecond(A, b);
                 
               case 'direct'
                 
-                elliptic_solver = @(A,b) deal(mldivide(A,b), 1, 0, 1);
+                elliptic_solver = @(A, b) deal(mldivide(A,b), 1, 0, 1);
                 
-              case 'amgclsolver'
+              case 'amgcl'
                 
                 % isolver = struct('type','bicgstab','M',50);
 
@@ -640,7 +677,7 @@ classdef BatteryLinearSolver < handle
                 aggr = struct('eps_strong', alpha);
 
                 coarsening = struct('type'       , 'aggregation', ...
-                                    'over_interp', 1.0          , ..
+                                    'over_interp', 1.0          , ...
                                     'aggr'       , aggr)
 
                 coarsetarget = 1200;
@@ -669,7 +706,7 @@ classdef BatteryLinearSolver < handle
                               'block_size'  , 1        , ...
                               'verbosity'   , 10);
                 
-                elliptic_solve = @(A,b) solver.amgcl(A, b, opts);
+                elliptic_solver = @(A, b) solver.amgcl(A, b, opts);
                 
               otherwise
                 
@@ -938,6 +975,7 @@ classdef BatteryLinearSolver < handle
         end
 
         function x = deorderLinearSystemAdjoint(solver, x, order) % ok
+            
             if nargin < 3
                 tmp = solver;
             else
@@ -946,6 +984,7 @@ classdef BatteryLinearSolver < handle
             if ~isempty(solver.equationOrdering)
                 x(tmp.equationOrdering) = x(1:numel(tmp.equationOrdering));
             end
+            
         end
 
         function [problem, eliminated] = reduceToVariable(solver, problem, keep) % ok
@@ -960,6 +999,37 @@ classdef BatteryLinearSolver < handle
                 [problem, eliminated{i}] = problem.eliminateVariable(elimNames{i});
             end
             
+        end
+        
+        function dx = recoverResult(solver, dxElim, eliminatedEqs, keep)
+
+            kept = find(keep);
+            left = find(~keep);
+            nokept = find(~keep);
+            keptEqNo = NaN(size(nokept));
+            for i=1:numel(nokept)
+                keptEqNo(i) = sum(kept<nokept(i));
+            end
+            
+            % Find number of variables
+            nP = numel(keep);
+            
+            % Set up storage for all variables, including those we eliminated previously
+            dx = cell(nP, 1);
+            
+            % Recover non-cell variables
+            recovered = false(nP, 1);
+            recovered(kept) = true;
+            
+            % Put the recovered variables into place
+            dx(recovered) = dxElim;
+            
+            for i = numel(eliminatedEqs) : -1 : 1
+                pos = left(i);
+                dVal = recoverVars(eliminatedEqs{i}, keptEqNo(i) + 1, dx(recovered));
+                dx{pos} = dVal;
+                recovered(pos) = true;
+            end
         end
         
         function M = getDiagonalInverse(solver, A) % ok
