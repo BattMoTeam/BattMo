@@ -167,7 +167,7 @@ classdef Battery < BaseModel
             else
 
                 newentries = {{ne, am, 'c'}, 'ne_am_massCons', 'scell'; ...
-                           {pe, am, 'c'}, 'pe_am_massCons', 'scell'};
+                              {pe, am, 'c'}, 'pe_am_massCons', 'scell'};
 
                 varEqTypes = vertcat(varEqTypes, newentries);
             end
@@ -176,7 +176,7 @@ classdef Battery < BaseModel
             if model.include_current_collectors
                 
                 newentries = {{ne, cc, 'phi'}, 'ne_cc_chargeCons', 'cell'; ...
-                           {pe, cc, 'phi'}, 'pe_cc_chargeCons', 'cell'};
+                              {pe, cc, 'phi'}, 'pe_cc_chargeCons', 'cell'};
                          
                 varEqTypes = vertcat(varEqTypes, newentries);
                 
@@ -1017,13 +1017,14 @@ classdef Battery < BaseModel
             ctrltype = state.Control.ctrlType;
             switch ctrltype
               case {'constantCurrent', 'CC_discharge1', 'CC_discharge2', 'CC_charge1'}
-                types{end - 1} = 'cell';   
+                types{ei.EIeq} = 'cell';   
               case {'constantVoltage', 'CV_charge2'}
-                neqs  = numel(types);
-                order = [1 : neqs - 2, neqs, neqs - 1];
-                types = {types{order}};
-                eqs   = {eqs{order}};
-                names = {names{order}};
+                % TODO : fix that
+                % neqs  = numel(types);
+                % order = [1 : neqs - 2, neqs, neqs - 1];
+                % types = {types{order}};
+                % eqs   = {eqs{order}};
+                % names = {names{order}};
               otherwise 
                 error('control type not recognized')
             end
