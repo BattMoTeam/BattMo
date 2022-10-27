@@ -29,7 +29,7 @@ v = jsonschema.Draft202012Validator(mainschema)
                  # 'linearsolver2.json',
                  # 'linearsolver3.json']
 
-jsonfilenames = ['linearsolver4.json']
+jsonfilenames = ['linearsolver5.json']
 
 for jsonfilename in jsonfilenames:
     jsonfilename = schema_folder / 'Tests' / jsonfilename

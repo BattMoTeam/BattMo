@@ -290,7 +290,7 @@ classdef BatteryLinearSolver < handle
                     report.Residual           = relres;
                     report.Converged          = flags;
                     report.LinearSolutionTime = toc(a);
-                    
+
                   case 'separate'
 
                     solvers = options.solvers;
@@ -343,9 +343,48 @@ classdef BatteryLinearSolver < handle
                     report.precondIterations_T   = solver.precondIterations_T;
                     report.LinearSolutionTime    = toc(a);
 
+                  case 'separate-generic'
+
+                    solvers = options.solvers;
+
+                    precondsolvers = {};
+                    
+                    for isolver = 1 : numel(solvers)
+
+                        solverdesc = solvers(isolver);
+                        variables = solverdesc.variables;
+
+                        % setup indices 
+                        varinds = [];
+                        for ivar = 1 : numel(variables)
+                            varinds = [varinds, solver.getVarIndex(problem, variables{ivar})];
+                        end
+                        ind = solver.getIndex(problem, varinds);
+                        precondsolver.ind = ind;
+
+                        % setup the solver function that will be run
+                        precondsolver.func = solver.getElipticSolver(solverdesc.solverspec);
+
+                        precondsolvers{end + 1} = precondsolver;
+
+                    end
+
+                    precond = @(b) solver.genericPrecond(b, A, precondsolvers);
+                    
+                    a=tic;
+                    restart = solver.maxIterations;
+
+                    [result, flags, relres, iter] = gmres(A, b, restart, solver.tolerance, solver.maxIterations, precond);
+                    
+                    % add diagnostic fields in report
+                    report.Iterations            = (iter(1) - 1)*solver.maxIterations + iter(2);
+                    report.Residual              = relres;
+                    report.Converged             = flags;
+                    report.LinearSolutionTime    = toc(a);
+
                   otherwise
 
-                    error('choice not recognized')
+                    error('gmres method not recognized')
                 end
 
                 
@@ -577,68 +616,55 @@ classdef BatteryLinearSolver < handle
                             'Converged'         , true); % Bool indicating convergence
             report = merge_options_relaxed(report, varargin);
         end
+
+        function r = genericPrecond(solver, x, A, precondsolvers)
+
+            r = x*0;
+
+            for isolver = 1 : numel(precondsolvers)
+
+                precondsolver = precondsolvers{isolver};
+                ind = precondsolver.ind;
+
+                if any(ind)
+                    func = precondsolver.func;
+                    [pr, flag, res, iter] = func(A(ind, ind), x(ind));
+                    r(ind) = pr;
+                end
+                
+            end
+            
+        end
         
         function r = p_gs_precond(solver, x, A, indphi, indc, indT, phi_solver, c_solver, T_solver, opt)% ok
         % QUESTION : find better name?
         % QUESTION : switch argument input x and A
         % QUESTION : support for without temperature?
             
-            r = x*0; 
-            % xp agmg(A(ind, ind), x(ind), 20, 1e-4, 20, 1, [], 2); 
-            % lverb = false
-            % xs = zeros(sum(not(indphi)), 1); 
+            r = x*0;
             ldisp = @(tt) disp(tt); 
-            % ldisp = @(tt) disp(''); 
             
-            nr = 1; % number of GS iterations
-            
-            for kk = 1 : nr
-                
-                ldisp('voltage start')
-                xp = x(indphi) - 0.0*A(indphi, not(indphi))*r(not(indphi));
-                if(true)
-                    [rp, flag, res, iter] = phi_solver(A(indphi, indphi), xp); 
-                    solver.precondIterations_phi = solver.precondIterations_phi + iter; 
-                else
-                    ii = ind; 
-                    rp = agmg(A(ii, ii), xp, 20, solver.tolerance, solver.maxIterations, solver.verbosity, [], 0); 
-                end
-                r(indphi) = rp; 
-                ldisp('voltage end')
+            ldisp('voltage start')
+            [rp, flag, res, iter] = phi_solver(A(indphi, indphi), x(indphi)); 
+            solver.precondIterations_phi = solver.precondIterations_phi + iter; 
+            r(indphi) = rp; 
+            ldisp('voltage end')
 
-                xs = x(indc) - 0.0*A(indc, not(indc))*r(not(indc)); 
-
-                ldisp('c start')
-                if(true)
-                    [rs, flag, res, iter] = c_solver(A(indc, indc), xs); 
-                    solver.precondIterations_c = solver.precondIterations_c + iter; 
-                else
-                    ii = indc; 
-                    % agmg(A(ii), x(ii), 20, solver.tolerance, solver.maxIterations, 0, [],- 1); 
-                    % agmg(A(ii, ii), x(ii), 20, solver.tolerance, solver.maxIterations, 0, [], 1); 
-                    % rs = agmg(A(ii, ii), x(ii), 20, solver.tolerance, solver.maxIterations, 0, [], 3); 
-                    % lmax = 20; 
-                    % rs = agmg(A(ii, ii), x(ii), lmax*20, 0.01, lmax, 0, [], 0); 
-                    rs = A(ii, ii)\xs; 
-                end
-                ldisp('c end')
-
-            end
-            % QUESTION : why is T not included in Gauss-Seidel
+            ldisp('c start')
+            [rs, flag, res, iter] = c_solver(A(indc, indc), x(indc)); 
+            solver.precondIterations_c = solver.precondIterations_c + iter; 
+            r(indc)   = rs;
+            ldisp('c end')
 
             if any(indT)
-
                 ldisp('T start')
-                xs = x(indT) - 0.0*A(indT, not(indT))*r(not(indT)); 
-                [rT, flag, res, iter] = T_solver(A(indT, indT), xs); 
+                [rT, flag, res, iter] = T_solver(A(indT, indT), x(indT)); 
                 solver.precondIterations_T = solver.precondIterations_T + iter; 
                 ldisp('T End')
-                
+            
                 r(indT)   = rT;
             end
-            
-            r(indphi) = rp; 
-            r(indc)   = rs;
+                
             
         end
 

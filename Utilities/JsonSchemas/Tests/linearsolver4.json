@@ -1,8 +1,11 @@
 {"method" : "gmres",
  "options" : {"method" : "separate",
-              "solvers" : [{"variable" : "phi", "solver" : {"name" : "agmg"}},
-                           {"variable" : "c", "solver" : {"name" : "direct"}},
-                           {"variable" : "T", "solver" : {"name" : "amgcl"}}
+              "solvers" : [{"variable" : "phi",
+                            "solverspec" : {"name" : "agmg"}},
+                           {"variable" : "c",
+                            "solverspec" : {"name" : "direct"}},
+                           {"variable" : "T",
+                            "solverspec" : {"name" : "amgcl"}}
                           ]
              }
 }

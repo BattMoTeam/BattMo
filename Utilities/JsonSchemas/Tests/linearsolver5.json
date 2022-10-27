@@ -1,15 +1,15 @@
-{"choice" : "gmres",
- "solvers" : {"choice" : "separate_agmg",
-              "solvers" : [
-                {"choice" : "phi",
-                 "solver" : "agmg"
-                },
-                {"choice" : "c",
-                 "solver" : "agmg"
-                },
-                {"choice" : "T",
-                 "solver" : "agmg"
-                }
-              ]
+{"method" : "gmres",
+ "options" : {"method" : "separate-generic",
+              "solvers" : [{"variables" : [["Electrolyte", "phi"],
+                                           ["NegativeElectrode", "ActiveMaterial", "phi"],
+                                           ["PositiveElectrode", "ActiveMaterial", "phi"],
+                                           ["Control", "E"]
+                                          ],
+                            "solverspec" : {"name" : "direct"}},
+                           {"variables" : [["Electrolyte", "c"]],
+                            "solverspec" : {"name" : "direct"}},
+                           {"variables" : [["ThermalModel", "T"]],
+                            "solverspec" : {"name" : "direct"}}
+                          ]
              }
 }

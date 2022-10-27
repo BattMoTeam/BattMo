@@ -28,7 +28,7 @@
                                   "description" : "preconditioners sent to the gmres matlab routine to solve the potential, concentration and temperature",
 
                                   "properties" : {"method" : {"type" : "string",
-                                                              "enum" : ["grouped", "separate"]}
+                                                              "enum" : ["grouped", "separate", "separate-generic"]}
                                                  },
                                   
                                   "anyOf" : [
@@ -45,27 +45,29 @@
                                                      
                                                      "solvers" : {"type" : "array",
                                                                   "description" : "array of solver specifications for the various variables",
-                                                                  "anyOf" : [
-                                                                    {"items" : {"type" : "object",
-                                                                                "description" : "case where simple diffusion model are  used",
+                                                                    "items" : {"type" : "object",
                                                                                 "properties" : {"variable" : {"type" : "string",
                                                                                                               "enum" : ["phi", "c", "T"]
                                                                                                              },
                                                                                                 "solverspec" : {"$ref" : "#/$defs/solverspec"}
                                                                                                }
-                                                                               }
-                                                                    },
-                                                                    {"items" : {"type" : "object",
-                                                                                "description" : "case where full diffusion model is used",
-                                                                                "properties" : {"variable" : {"type" : "string",
-                                                                                                              "enum" : ["phi", "c_elyte", "c_ne", "c_pe", "T"]
-                                                                                                             },
-                                                                                                "solverspec" : {"$ref" : "#/$defs/solverspec"}
-                                                                                               }
-                                                                               }
-                                                                    }
-                                                                  ]
-
+                                                                              }
+                                                                 }
+                                                    }
+                                    },
+                                    {"properties" : {"method" : {"const" : "separate-generic",
+                                                                 "description" : "separate preconditioner - generic form"},
+                                                     "solvers" : {"type" : "array",
+                                                                  "description" : "array of solver specifications for the various variables",
+                                                                  "items" : {"type" : "object",
+                                                                             "properties" : {"variables" : {"type" : "array",
+                                                                                                            "items" : {"type" : "array",
+                                                                                                                       "items" : {"type" : "string"}
+                                                                                                                      }
+                                                                                                           },
+                                                                                             "solverspec" : {"$ref" : "#/$defs/solverspec"}
+                                                                                            }
+                                                                            }
                                                                  }
                                                     }
                                     }
