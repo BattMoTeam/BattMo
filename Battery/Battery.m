@@ -38,7 +38,7 @@ classdef Battery < BaseModel
         equationNames
         equationTypes
         equationIndices
-        
+
     end
     
     methods
@@ -104,9 +104,13 @@ classdef Battery < BaseModel
             
         end
 
-        
-        function model = setupSelectedModel(model)
+        function model = setupSelectedModel(model, varargin)
 
+            opt = struct('reduction', []);
+            opt = merge_options(opt, varargin{:});
+            % for the reduction structrure format see battmodDir()/Utilities/JsonSchemas/linearsolver.schema.json and /reduction property
+
+            
             elyte   = 'Electrolyte';
             ne      = 'NegativeElectrode';
             pe      = 'PositiveElectrode';
@@ -188,11 +192,39 @@ classdef Battery < BaseModel
             if strcmp(model.(ctrl).controlPolicy, 'CCCV')
                 addedVariableNames{end + 1} = {ctrl, 'nextCtrlType'};
             end
-            
+
             primaryVariableNames = varEqTypes(:, 1);
-            equationNames = varEqTypes(:, 2);
             equationTypes = varEqTypes(:, 3);
             
+            if ~isempty(opt.reduction)
+                reduc = opt.reduction;
+                if ~isempty(reduc) && reduc.doReduction
+                    variables = reduc.variables;
+                    n = numel(equationTypes);
+                    equationTypes = cell(n, 1);
+                    for ieqtype = 1 : n
+                        equationTypes{ieqtype} = 'cell';
+                    end
+                    for ivar = 1 : numel(variables)
+                        [found, ind] = Battery.getVarIndex(variables{ivar}, primaryVariableNames);
+                        if ~found
+                            warning('variable to reduce has not been found');
+                        end
+                        equationTypes{ind} = 'other';
+                    end
+                end
+                
+            end
+            
+
+            % We reorder to get first the 'cells' type (required for reduction in iterative solver)
+            iscell = ismember(equationTypes, {'cell'});
+            ind = [find(iscell); find(~iscell)];
+            
+            primaryVariableNames = varEqTypes(ind, 1);
+            equationNames = varEqTypes(ind, 2);
+            equationTypes = varEqTypes(ind, 3);
+
             equationIndices = struct();
             for ieq = 1 : numel(equationNames)
                 equationIndices.(equationNames{ieq}) = ieq;
@@ -1611,6 +1643,20 @@ classdef Battery < BaseModel
                 end
             
             end
+        end
+
+    end
+
+    methods(Static)
+
+        
+        function [found, varind] = getVarIndex(varname, pvarnames)
+
+            varname = strjoin(varname, '_');
+            pvarnames = cellfun(@(name) strjoin(name, '_'), pvarnames, 'uniformoutput', false);
+
+            [found, varind] = ismember(varname, pvarnames);
+
         end
 
     end

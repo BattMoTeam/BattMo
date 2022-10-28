@@ -1,11 +1,20 @@
 {"method" : "gmres",
+ "reduction" : {"doReduction" : true,
+                "variables" : [["Control", "E"],
+                               ["Control", "I"],
+                               ["NegativeElectrode", "ActiveMaterial", "c"],
+                               ["NegativeElectrode", "ActiveMaterial", "SolidDiffusion", "cSurface"],
+                               ["PositiveElectrode", "ActiveMaterial", "c"],
+                               ["PositiveElectrode", "ActiveMaterial", "SolidDiffusion", "cSurface"]
+                              ]},
  "options" : {"method" : "separate-generic",
+
               "solvers" : [{"variables" : [["Electrolyte", "phi"],
                                            ["NegativeElectrode", "ActiveMaterial", "phi"],
                                            ["PositiveElectrode", "ActiveMaterial", "phi"],
                                            ["Control", "E"]
                                           ],
-                            "solverspec" : {"name" : "direct"}},
+                            "solverspec" : {"name" : "agmg"}},
                            {"variables" : [["Electrolyte", "c"]],
                             "solverspec" : {"name" : "direct"}},
                            {"variables" : [["ThermalModel", "T"]],

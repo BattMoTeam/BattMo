@@ -22,7 +22,7 @@ classdef BatteryLinearSolver < handle
         id = '';                   % Short text string identifying the specific solver. Appended to the short name (see getDescription)
         initialGuessFun = [];
 
-        setup  % Structure described in schema battmodDir()/Utilities/JsonSchemas/linearsolver.schema.json (recommended reference)
+        linearSolverSetup  % Structure described in schema battmodDir()/Utilities/JsonSchemas/linearsolver.schema.json (recommended reference)
                %
                % the first fields are
                % - method : string which can be any of
@@ -60,7 +60,7 @@ classdef BatteryLinearSolver < handle
             solver.variableOrdering          = [];
             solver.equationOrdering          = [];
             solver.verbosity                 = 0;
-            solver.setup                     = struct('method', 'direct');
+            solver.linearSolverSetup         = struct('method', 'direct');
             solver.reuse_setup               = false;
             solver.first                     = true;
             
@@ -209,8 +209,8 @@ classdef BatteryLinearSolver < handle
             
             report = solver.getSolveReport();
 
-            method = solver.setup.method;
-            setup  = solver.setup;
+            setup  = solver.linearSolverSetup;
+            method = setup.method;
             
             switch method
                 
