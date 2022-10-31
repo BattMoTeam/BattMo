@@ -1,1 +1,2 @@
-{"method" : "direct"}
+{"library" : "matlab",
+ "method" : "direct"}

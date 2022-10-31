@@ -1,3 +1,27 @@
-{"method" : "gmres",
- "solvers" : {"method" : "grouped",
-              "solver": {"name" : "agmg"}}}
+{"library" : "matlab",
+ "method" : "separate-variable-gmres",
+ "reduction" : {"doReduction" : true,
+                "variables" : [["Control", "E"],
+                               ["Control", "I"],
+                               ["NegativeElectrode", "ActiveMaterial", "c"],
+                               ["NegativeElectrode", "ActiveMaterial", "SolidDiffusion", "cSurface"],
+                               ["PositiveElectrode", "ActiveMaterial", "c"],
+                               ["PositiveElectrode", "ActiveMaterial", "SolidDiffusion", "cSurface"]
+                              ]},
+ "preconditioners" : [{"variables" : [["Electrolyte", "phi"],
+                                      ["NegativeElectrode", "ActiveMaterial", "phi"],
+                                      ["PositiveElectrode", "ActiveMaterial", "phi"],
+                                      ["Control", "E"]
+                                     ],
+                       "solver" : {"library" : "agmg",
+                                   "method" : "standard"}},
+                      
+                      {"variables" : [["Electrolyte", "c"]],
+                       "solver" : {"library" : "matlab",
+                                   "method" : "direct"}},
+
+                      {"variables" : [["ThermalModel", "T"]],
+                       "solver" : {"library" : "matlab",
+                                   "method" : "direct"}}
+                     ]
+}

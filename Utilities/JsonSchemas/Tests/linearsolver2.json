@@ -1,3 +1,4 @@
-{"method" : "iterative",
- "solver" : {"name" : "direct"}
-}
+{"library" : "matlab",
+ "method" : "grouped-gmres",
+ "preconditioner" : {"library" : "agmg",
+                     "method" : "standard"}}
