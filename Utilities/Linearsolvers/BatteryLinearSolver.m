@@ -91,66 +91,13 @@ classdef BatteryLinearSolver < handle
                 
                 if ~all(keep)
                     
-                    if isa(s, 'GenericAD')
-                        % If we are working with block AD, we use the built-in
-                        % keepNumber property of the linear solver to perform a
-                        % full block Schur complement
-                        nk = sum(keep);
-                        assert(all(keep(1 : nk)) & ~any(keep(nk + 1 : end)), ...
-                               'Cell variables must all combine first in the ordering for this AutodiffBackend.');
-                        if 1
-                            % In-place Schur complement
-                            ngroups = numel(s.offsets)-1;
-                            varno = rldecode((1:ngroups)', diff(s.offsets));
-
-                            keepEq = problem.equations(keep);
-                            elimEq = problem.equations(~keep);
-                            keepVar = rldecode((keep)', diff(s.offsets));
-                            keepVar = unique(varno(keepVar));
-                            elimVar = setdiff(varno, keepVar);
-
-                            B_eq = keepEq;
-                            C_eq = B_eq;
-                            for i = 1:numel(B_eq)
-                                B_eq{i}.jac = B_eq{i}.jac(keepVar);
-                                C_eq{i}.jac = C_eq{i}.jac(elimVar);
-                            end
-                            D_eq = elimEq;
-                            E_eq = D_eq;
-                            for i = 1:numel(D_eq)
-                                D_eq{i}.jac = D_eq{i}.jac(keepVar);
-                                E_eq{i}.jac = E_eq{i}.jac(elimVar);
-                            end
-                            B_eq = combineEquations(B_eq{:});
-                            C_eq = combineEquations(C_eq{:});
-                            D_eq = combineEquations(D_eq{:});
-                            E_eq = combineEquations(E_eq{:});
-                            lsys = struct('B', B_eq.jac{1}, ...
-                                          'C', C_eq.jac{1}, ...
-                                          'D', D_eq.jac{1}, ...
-                                          'E', E_eq.jac{1},...
-                                          'f', -B_eq.val, ...
-                                          'h', -D_eq.val, ...
-                                          'E_L', [], ...
-                                          'E_U', []);
-                            [lsys.E_L, lsys.E_U] = lu(lsys.E);
-                            problem.A = lsys.B - lsys.C*(lsys.E_U\(lsys.E_L\lsys.D));
-                            problem.b = lsys.f - lsys.C*(lsys.E_U\(lsys.E_L\lsys.h));
-                        else
-                            nv =  s.getNumVars();
-                            solver.keepNumber = sum(nv(keep));
-                        end
-                        
-                    else
-                        
-                        [problem, eliminated] = solver.reduceToVariable(problem, keep);
-                        
-                    end
+                    [problem, eliminated] = solver.reduceToVariable(problem, keep);
                     
                     if ~isempty(initialGuess{1})
                         initialGuess = initialGuess(keep);
                     end
                 end
+                
             end
             
             problem = problem.assembleSystem();
@@ -164,7 +111,7 @@ classdef BatteryLinearSolver < handle
 
             % Reduce system (if not already done)
             if isempty(lsys)
-                % QUESTION : why?
+                % QUESTION : why? we do not use reduceLinearSystem
                 [A, b, lsys, x0] = solver.reduceLinearSystem(A, b, false, x0);
             end
             % Reorder linear system
@@ -329,7 +276,7 @@ classdef BatteryLinearSolver < handle
                         T_solver = [];
                     end
                     
-                    precond = @(b) solver.p_gs_precond(b, A, indphi, indc, indT, phi_solver, c_solver, T_solver, []);
+                    precond = @(b) solver.blockFieldSchwarz(b, A, indphi, indc, indT, phi_solver, c_solver, T_solver, []);
                     
                     a=tic;
                     restart = solver.maxIterations;
@@ -400,7 +347,10 @@ classdef BatteryLinearSolver < handle
                 
               case 'matlab_cpr_agmg'
 
-                % QUESTION : do we keep that case? If yes, fix below
+                % Combining local solver of full system (for example ILU0) with global solvers for some sub-systems
+                % (for example elliptic solver for phi)
+                
+                error('not maintained')
                 
                 indb = solver.getPotentialIndex(problem);
                 % QUESTION : is agmg reset needed here?
@@ -546,11 +496,10 @@ classdef BatteryLinearSolver < handle
         end
         
         function indb = getPotentialIndex(solver, problem) % ok
-        % QUESTION : here we see that diag structure is needed
-        %QUESTION  : why include 'E' ?
 
             varinds1 = solver.getVarIndex(problem, {'*', 'phi'});
             varinds2 = solver.getVarIndex(problem, {'Control', 'E'});
+            % We need to include E to avoid fill-in.
             varinds = [varinds1, varinds2];
             indb = solver.getIndex(problem, varinds);
             
@@ -647,7 +596,7 @@ classdef BatteryLinearSolver < handle
             
         end
         
-        function r = p_gs_precond(solver, x, A, indphi, indc, indT, phi_solver, c_solver, T_solver, opt)% ok
+        function r = blockFieldSchwarz(solver, x, A, indphi, indc, indT, phi_solver, c_solver, T_solver, opt)% ok
         % QUESTION : find better name?
         % QUESTION : switch argument input x and A
         % QUESTION : support for without temperature?
@@ -685,12 +634,15 @@ classdef BatteryLinearSolver < handle
             switch solverspec.name
                 
               case 'agmg'
-
+                
+                % Full agmg solver (gmres +  amg preconditioner) agmg.eu
+                
                 nmax = 20;
                 elliptic_solver = @(A, b) agmg(A, b, nmax, 1e-5, nmax, 1, [], 0);
                 
               case 'agmgsolver_prec'
-                % QUESTION : any fundamental difference with 'agmgsolver' above ?
+                
+                % Do one apply of AGMG preconditionner
                 
                 elliptic_solver = @(A, b) solver.agmgprecond(A, b);
                 
