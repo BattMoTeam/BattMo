@@ -1,0 +1,54 @@
+{
+  "$id": "file://battmo/schemas/linearsolverreport",
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "description": "linear solver report",
+  "type" : "object",
+
+  "properties": {"linearsolver": {"$ref" : "linearsolver"},
+                 "stepReports": {"type" : "array",
+                                 "items" : {"$ref" : "#/$defs/stepReport"}}},
+
+  "anyOf" : [{"description" : "for gmres with separate-generic option, we add entries for each variable that are preconditioned",
+              "properties" : {"linearsolver" : { "property" : {"method" : {"const" : "gmres"},
+                                                               "options" : {"properties" : {"const" : "separate-generic"}}}},
+                              "stepReports" : {"type" : "array",
+                                               "items" : {"type" : "object",
+                                                          "properties" : {"precondReport" : {"type" : "array",
+                                                                                             "items" : {"$ref" : "#/$defs/precondReport",
+                                                                                                        "description" : "report from preconditioners used for each variable"
+                                                                                                       }
+                                                                                            }
+                                                                         }
+                                                         }
+                                              }
+                             }},
+              {"not" : {"properties" : {"linearsolver" : { "properties" : {"method" : {"const" : "gmres"},
+                                                                         "options" : {"properties" : {"const" : "separate-generic"}}}}}}}
+            ],
+  
+  "$defs" : {"stepReport" : {"type" : "object",
+                             "properties" : { "Iterations" : {"type" : "integer"},
+                                              "Residual": {"type" : "number"}, 
+                                              "SolverTime": {"type" : "number"}, 
+                                              "LinearSolutionTime": {"type" : "number"}, 
+                                              "PreparationTime": {"type" : "number"}, 
+                                              "PostProcessTime": {"type" : "number"}, 
+                                              "Converged": {"type" : "boolean"}
+                                            }
+                            },
+
+             "precondReport" : {"type": "object",
+                                "description" : "report for a preconditioner",
+                                "properties" : {"Iterations" : {"type" : "integer"},
+                                                "choice" : {"type" : "string",
+                                                            "enum" : ["direct", "agmg", "amgcl"]}}
+                               }
+            }
+
+  
+
+}
+
+
+
+
