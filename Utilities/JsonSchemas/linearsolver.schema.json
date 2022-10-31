@@ -1,5 +1,5 @@
 {
-  "$id": "file://batmo/schemas/linearsolver",
+  "$id": "file://battmo/schemas/linearsolver",
   "$schema": "http://json-schema.org/draft-07/schema#",
   "description": "linear solver",
   "type": "object",

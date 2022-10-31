@@ -8,7 +8,7 @@ import os
 
 schema_folder = rjson.getBattMoDir() / Path('Utilities') / Path('JsonSchemas')
 
-base_uri = 'file://batmo/schemas/'
+base_uri = 'file://battmo/schemas/'
 
 resolver = jsonschema.RefResolver(base_uri=base_uri, referrer={})
 
@@ -21,7 +21,7 @@ def addJsonSchema(jsonSchemaName, verbose=False):
         print(schema_filename)
     with open(schema_filename) as schema_file:
         refschema = json.load(schema_file)
-    key = "file://batmo/schemas/" + jsonSchemaName
+    key = "file://battmo/schemas/" + jsonSchemaName
     resolver.store[key] = refschema
 
 
@@ -45,7 +45,7 @@ jsonfiles = ['ParameterData/BatteryCellParameters/LithiumIonBatteryCell/lithium_
 
 for jsonfile in jsonfiles:
     print(jsonfile)
-    jsoninput = rjson.loadJsonBatmo(jsonfile)
+    jsoninput = rjson.loadJsonBattmo(jsonfile)
     v.validate(jsoninput)
     if v.is_valid(jsoninput):
         print('ok')

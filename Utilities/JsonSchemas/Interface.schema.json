@@ -1,5 +1,5 @@
 {
-  "$id": "file://batmo/schemas/Interface",
+  "$id": "file://battmo/schemas/Interface",
   "$schema": "http://json-schema.org/draft-07/schema#",
   "description": "interface",
   "type": "object",
