@@ -35,10 +35,12 @@ classdef BatteryLinearSolver < handle
         verbosity
         first
         reuse_setup
+        
+        precondReports % handler value to store report for each preconditioner
         precondIterations_phi
         precondIterations_c
         precondIterations_T
-        
+
     end
 
     methods
@@ -369,6 +371,13 @@ classdef BatteryLinearSolver < handle
 
                     end
 
+                    % prepare report struct
+                    precondReports = cell(numel(solvers), 1);
+                    for isolver = 1 : numel(solvers)
+                        precondReports{isolver}.Iterations = 0;
+                    end
+                    solver.precondReports = precondReports;
+                    
                     precond = @(b) solver.genericPrecond(b, A, precondsolvers);
                     
                     a=tic;
@@ -377,10 +386,11 @@ classdef BatteryLinearSolver < handle
                     [result, flags, relres, iter] = gmres(A, b, restart, solver.tolerance, solver.maxIterations, precond);
                     
                     % add diagnostic fields in report
-                    report.Iterations            = (iter(1) - 1)*solver.maxIterations + iter(2);
-                    report.Residual              = relres;
-                    report.Converged             = flags;
-                    report.LinearSolutionTime    = toc(a);
+                    report.Iterations         = (iter(1) - 1)*solver.maxIterations + iter(2);
+                    report.Residual           = relres;
+                    report.Converged          = flags;
+                    report.LinearSolutionTime = toc(a);
+                    report.precondReports     = solver.precondReports;
 
                   otherwise
 
@@ -630,6 +640,7 @@ classdef BatteryLinearSolver < handle
                     func = precondsolver.func;
                     [pr, flag, res, iter] = func(A(ind, ind), x(ind));
                     r(ind) = pr;
+                    solver.precondReports{isolver}.Iterations = solver.precondReports{isolver}.Iterations + iter;
                 end
                 
             end
@@ -1077,13 +1088,6 @@ classdef BatteryLinearSolver < handle
             initialGuess = solver.initialGuessFun(problem);
         end
         
-        function disp(solver)
-            [d, sn] = solver.getDescription();
-            s1 = sprintf('  %s linear solver of class %s', sn, class(solver));
-            fprintf('%s\n  %s\n  %s\n  ->', s1, repmat('-', 1, numel(s1)-2), d);
-            builtin('disp', solver);
-        end
-
         
     end
 end
