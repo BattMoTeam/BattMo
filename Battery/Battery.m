@@ -1484,6 +1484,7 @@ classdef Battery < BaseModel
             newstate = initStateAD@BaseModel(model, state);
 
             % add the variable that we want to add on state
+            % TODO : pass those using addStaticVariables method
             addedvarnames = model.addedVariableNames;
             for i = 1 : numel(addedvarnames)
                 var = model.getProp(state, addedvarnames{i});
