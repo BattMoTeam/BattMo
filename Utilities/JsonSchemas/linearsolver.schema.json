@@ -3,98 +3,91 @@
   "$schema": "http://json-schema.org/draft-07/schema#",
   "description": "linear solver",
   "type": "object",
-  "properties" : {"method" : {"type" : "string",
-                              "enum" : ["direct", "iterative", "gmres"]},
+  "properties" : {"library" : {"type" : "string",
+                               "description" : "name of the solver library",
+                               "$ref": "#/$defs/solver_library"
+                              },
+                  
+                  "method" : {"type" : "string",
+                              "description" : "name of the method used by the solver - depends on the chosen library)"
+                             },
+                  
+                  "options" : {"type" : "object",
+                               "description" : "options required - depends on the chosen library and mehod"},
+
                   "reduction" : {"type" : "object",
                                  "properties" : {"doReduction": {"type" : "boolean"},
                                                  "variables" : {"type" : "array",
                                                                 "description" : "list of the variables that will be eliminated before inverting the linear system",
                                                                 "items" : {"$ref" : "#/$defs/variable"}}}
-                                },
-                  "required" : ["method"]
+                                }
                  },
+
+
+  "oneOf" : [{"properties" : {"library" : {"const" : "matlab"}},
+
+              "description" : "here, we have the following methods for the matlab solver",
+
+              "oneOf": [
+
+                {"properties" : {"method" : {"const": "direct"}}},
+
+
+                {"properties" : {"method" : {"const" : "grouped-gmres"},
+                                 "description" : "we run gmres on the whole system with one preconditioner",
+                                 "preconditioner" : {"$ref" : "#"}}},
+
+                 
+                {"properties" : {"method" : {"const" : "separate-variable-gmres"},
+                                 "description" : "We use separate preconditioner for chosen variables",
+                                 "preconditioners" : {"$ref" : "#/$defs/separate_variable_preconditioners"}}}
+                
+              ]
+             },
+
+             {"properties" : {"library" : {"const" : "agmg"}},
+
+              "description" : "We can use either standard method (gmres) or separate with variable",
+              
+              "oneOf": [
+                
+                {"properties" : {"method" : {"const": "standard"}}},
+                
+                {"properties" : {"method" : {"const" : "separate-variable-gmres"},
+                                 "description" : "We use separate preconditioner for chosen variables",
+                                 "preconditioners" : {"$ref": "#/$defs/separate_variable_preconditioners"}}}
+              ]
+              
+             },
+
+
+             {"properties" : {"library" : {"const" : "amgcl"}},
+              "description" : "not supported yet"
+             }
+             
+            ],
   
-  "anyOf" : [
-
-    {"properties" : {"method" : {"const" : "direct"},
-                     "description" : "no iterative solver, we use matlab direct inversion"
-                    }
-    },
-
-    {"properties" : {"method" : {"const" : "iterative",
-                                 "description": " We use an iterative solver for the whole system without preconditioning"},
-                     "solverspec" : {"$ref" : "#/$defs/solverspec"}
-                    }
-    },
-
-    {"properties" : {"method" : {"const" : "gmres",
-                                 "description" : "We use matlab gmres solver with preconditioning"},
-                     
-                     "options" : {"type" : "object",
-                                  "description" : "preconditioners sent to the gmres matlab routine to solve the potential, concentration and temperature",
-
-                                  "properties" : {"method" : {"type" : "string",
-                                                              "enum" : ["grouped", "separate", "separate-generic"]}
-                                                 },
-                                  
-                                  "anyOf" : [
+  "$defs" : { "solver_library" : {"type" : "string",
+                                  "description" : "list of (partially) supported linear solver library",
+                                  "enum" : ["matlab", "agmg", "amgcl"]},
+              
+              "variable" : {"type" : "array",
+                            "items" : {"type" : "string"}},
 
 
-                                    {"properties" : {"method" : {"const" : "grouped",
-                                                                 "description" : "A single preconditioner is used and solve for all variables at the same time"},
-                                                     "solverspec" : {"$ref" : "#/$defs/solverspec"}
+              "separate_variable_preconditioners" : {"type" : "array",
+                                                     "description" : "array of solvers for the variables",
+                                                     "items" : {"type" : "object",
+                                                                "properties" : {"variables" : {"type" : "array",
+                                                                                               "items" : {"$ref" : "#/$defs/variable"}
+                                                                                              },
+                                                                                "solver" : {"$ref" : "#"}
+                                                                               }
+                                                               }
                                                     }
-                                    },
-
-                                    {"properties" : {"method" : {"const" : "separate",
-                                                                 "description" : "Separate preconditioners are used for each variable"},
-                                                     
-                                                     "solvers" : {"type" : "array",
-                                                                  "description" : "array of solver specifications for the various variables",
-                                                                    "items" : {"type" : "object",
-                                                                                "properties" : {"variable" : {"type" : "string",
-                                                                                                              "enum" : ["phi", "c", "T"]
-                                                                                                             },
-                                                                                                "solverspec" : {"$ref" : "#/$defs/solverspec"}
-                                                                                               }
-                                                                              }
-                                                                 }
-                                                    }
-                                    },
-                                    {"properties" : {"method" : {"const" : "separate-generic",
-                                                                 "description" : "separate preconditioner - generic form"},
-                                                     "solvers" : {"type" : "array",
-                                                                  "description" : "array of solver specifications for the various variables",
-                                                                  "items" : {"type" : "object",
-                                                                             "properties" : {"variables" : {"type" : "array",
-                                                                                                            "items" : {"$ref" : "#/$defs/variable"}
-                                                                                                           },
-                                                                                             "solverspec" : {"$ref" : "#/$defs/solverspec"}
-                                                                                            }
-                                                                            }
-                                                                 }
-                                                    }
-                                    }
-                                  ]
-                                 }
-                    }
-     
-     
-    }
-  ],
-
-  "$defs" : {"solverspec" : {"type" : "object",
-                             "properties" : { "name" : {"type" : "string",
-                                                        "enum": ["direct", "agmg", "amgcl"]},
-                                              "options" : {"type" : "object"}},
-                             "required" : ["name"]
-                            },
-             "variable" : {"type" : "array",
-                           "items" : {"type" : "string"}}
             }
-
 }
-
+  
 
 
 
