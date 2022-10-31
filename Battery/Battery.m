@@ -223,7 +223,7 @@ classdef Battery < BaseModel
             
             primaryVariableNames = varEqTypes(ind, 1);
             equationNames = varEqTypes(ind, 2);
-            equationTypes = varEqTypes(ind, 3);
+            equationTypes = equationTypes(ind);
 
             equationIndices = struct();
             for ieq = 1 : numel(equationNames)
