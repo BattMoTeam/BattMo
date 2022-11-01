@@ -216,7 +216,7 @@ classdef BatteryLinearSolver < handle
                     end
                     solver.precondReports = precondReports;
                     
-                    precond = @(b) solver.genericPrecond(b, A, precondsolvers);
+                    precond = @(b) solver.blockFieldSchwarz(b, A, precondsolvers);
                     
                     a=tic;
                     restart = solver.maxIterations;
