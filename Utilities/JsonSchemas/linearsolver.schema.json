@@ -51,8 +51,9 @@
               
               "oneOf": [
                 
-                {"properties" : {"method" : {"const": "standard"}}},
-                
+                {"properties" : {"method" : {"const": "standard"},
+                                 "descrtion": "solve until convergence"}},
+
                 {"properties" : {"method" : {"const" : "separate-variable-gmres"},
                                  "description" : "We use separate preconditioner for chosen variables",
                                  "preconditioners" : {"$ref": "#/$defs/separate_variable_preconditioners"}}}
@@ -81,16 +82,16 @@
                                                                 "properties" : {"variables" : {"type" : "array",
                                                                                                "items" : {"$ref" : "#/$defs/variable"}
                                                                                               },
-                                                                                "solver" : {"$ref" : "#"}
-                                                                               },
-                                                                "anyOf" : [{"properties" : {"solver" : {"properties" : {"library" : {"const" : "agmg"},
-                                                                                                                        "description" : "we have two altenative when using agmg as a preconditioner",
-                                                                                                                        "options" : {"type" : "string",
-                                                                                                                                     "enum" : ["full", "only-prec"]}
-                                                                                                                       }}}},
-                                                                           {"not" : {"properties" : {"solver" : {"properties" : {"library" : {"const" : "agmg"}}}}}}
-                                                                          ]
-                                                                
+                                                                                "solver" : {"allOf": [{"$ref" : "#"},
+                                                                                                      {"anyOf" : [{"properties" : {"library" : {"const" : "agmg"},
+                                                                                                                                   "description" : "When standard agmg is used as preconditioner we can use it either full or with one iteration",
+                                                                                                                                   "option" : {"enum" : ["full", "only-prec"]}}},
+                                                                                                                  {"not" : {"properties" : {"library" : {"const" : "agmg"}}}}
+                                                                                                                 ] }
+                                                                                                      ]
+                                                                                           }
+
+                                                                               }
                                                                }
                                                     }
             }
