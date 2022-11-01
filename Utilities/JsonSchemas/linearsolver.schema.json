@@ -9,7 +9,7 @@
                               },
                   
                   "method" : {"type" : "string",
-                              "description" : "name of the method used by the solver - depends on the chosen library)"
+                              "description" : "name of the method used by the solver - depends on the chosen library. if not given a default solver for the library is given"
                              },
                   
                   "options" : {"type" : "object",
@@ -26,7 +26,7 @@
 
   "oneOf" : [{"properties" : {"library" : {"const" : "matlab"}},
 
-              "description" : "here, we have the following methods for the matlab solver",
+              "description" : "We have the following methods for the matlab solver. If no method is given, a direct solver is used",
 
               "oneOf": [
 
@@ -44,9 +44,9 @@
                 
               ]
              },
-
+             
              {"properties" : {"library" : {"const" : "agmg"}},
-
+              
               "description" : "We can use either standard method (gmres) or separate with variable",
               
               "oneOf": [
@@ -59,8 +59,8 @@
               ]
               
              },
-
-
+             
+             
              {"properties" : {"library" : {"const" : "amgcl"}},
               "description" : "not supported yet"
              }
@@ -82,12 +82,20 @@
                                                                                                "items" : {"$ref" : "#/$defs/variable"}
                                                                                               },
                                                                                 "solver" : {"$ref" : "#"}
-                                                                               }
+                                                                               },
+                                                                "anyOf" : [{"properties" : {"solver" : {"properties" : {"library" : {"const" : "agmg"},
+                                                                                                                        "description" : "we have two altenative when using agmg as a preconditioner",
+                                                                                                                        "options" : {"type" : "string",
+                                                                                                                                     "enum" : ["full", "only-prec"]}
+                                                                                                                       }}}},
+                                                                           {"not" : {"properties" : {"solver" : {"properties" : {"library" : {"const" : "agmg"}}}}}}
+                                                                          ]
+                                                                
                                                                }
                                                     }
             }
-}
   
+}  
 
 
 
