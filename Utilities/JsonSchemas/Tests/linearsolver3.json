@@ -13,12 +13,12 @@
                                       ["PositiveElectrode", "ActiveMaterial", "phi"],
                                       ["Control", "E"]
                                      ],
-                       "solver" : {"library" : "agmg",
-                                   "method" : "standard"}},
-                      
-                      {"variables" : [["Electrolyte", "c"]],
                        "solver" : {"library" : "matlab",
                                    "method" : "direct"}},
+                      
+                      {"variables" : [["Electrolyte", "c"]],
+                       "solver" : {"library" : "agmg",
+                                   "method" : "amg"}},
 
                       {"variables" : [["ThermalModel", "T"]],
                        "solver" : {"library" : "matlab",

@@ -54,6 +54,9 @@
                 {"properties" : {"method" : {"const": "standard"},
                                  "descrtion": "solve until convergence"}},
 
+                {"properties" : {"method" : {"const": "amg"},
+                                 "description" : "only one iteration"}},
+                
                 {"properties" : {"method" : {"const" : "separate-variable-gmres"},
                                  "description" : "We use separate preconditioner for chosen variables",
                                  "preconditioners" : {"$ref": "#/$defs/separate_variable_preconditioners"}}}
@@ -82,15 +85,7 @@
                                                                 "properties" : {"variables" : {"type" : "array",
                                                                                                "items" : {"$ref" : "#/$defs/variable"}
                                                                                               },
-                                                                                "solver" : {"allOf": [{"$ref" : "#"},
-                                                                                                      {"anyOf" : [{"properties" : {"library" : {"const" : "agmg"},
-                                                                                                                                   "description" : "When standard agmg is used as preconditioner we can use it either full or with one iteration",
-                                                                                                                                   "option" : {"enum" : ["full", "only-prec"]}}},
-                                                                                                                  {"not" : {"properties" : {"library" : {"const" : "agmg"}}}}
-                                                                                                                 ] }
-                                                                                                      ]
-                                                                                           }
-
+                                                                                "solver" : {"$ref" : "#"}
                                                                                }
                                                                }
                                                     }
