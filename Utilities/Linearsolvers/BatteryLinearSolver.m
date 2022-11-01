@@ -23,23 +23,12 @@ classdef BatteryLinearSolver < handle
         initialGuessFun = [];
 
         linearSolverSetup  % Structure described in schema battmodDir()/Utilities/JsonSchemas/linearsolver.schema.json (recommended reference)
-               %
-               % the first fields are
-               % - method : string which can be any of
-               %            - 'direct'    : no iterative solver, we use matlab direct inversion
-               %            - 'iterative' : We use iterative solver for the whole system without preconditioning.
-               %                            The solver description is sent into structure solver (see examples below)
-               %            - 'gmres'     : We use matlab gmres solver with preconditioning. Further setup is sent into options structure (see example below)
-               % QUESTION : add more here
         
         verbosity
         first
         reuse_setup
         
         precondReports % handler value to store report for each preconditioner
-        precondIterations_phi
-        precondIterations_c
-        precondIterations_T
 
     end
 
@@ -159,68 +148,21 @@ classdef BatteryLinearSolver < handle
             report = solver.getSolveReport();
 
             setup  = solver.linearSolverSetup;
-            method = setup.method;
+            library = setup.library;
             
-            switch method
+            switch library
                 
-              case 'direct'                    
+              case 'matlab'
 
-                result = A\b;
+                method = setup.method;
 
-              case 'iterative'
+                switch method
 
-                % QUESTION : We could add the solver option in method.options
-                % QUESTION : We could add "amgcl"
-
-                % QUESTION : Agree on assert?
-                assert(solver.reduceToCell, 'agmg makes only sense if cell reduction has been done');
-                assert(strcmp(setup.solverspec.name, 'agmg'), 'amgcl not supported here');
-                
-                a = tic();
-                
-                if (solver.reuse_setup)
-
-                    if (solver.first)
-                        % QUESTION : what does solver.first mean?
-                        
-                        solver.first = false;
-                        agmg(A, b, 20, solver.tolerance, solver.maxIterations, solver.verbosity, [], -1); 
-                        agmg(A, b, 20, solver.tolerance, solver.maxIterations, solver.verbosity, [], 1);
-                        
-                    end
+                  case 'direct'
                     
-                    [result, flag, relres, iter] = agmg(A, b, 20, solver.tolerance, solver.maxIterations, solver.verbosity, [], 2);
+                    result = A\b;
                     
-                    if (flag == 1)
-                        
-                        agmg(A, b, 20, solver.tolerance, solver.maxIterations, solver.verbosity, [], -1); 
-                        agmg(A, b, 20, solver.tolerance, solver.maxIterations, solver.verbosity, [], 1); 
-                        [result, flag, relres, iter_new] = agmg(A, b, 20, solver.tolerance, solver.maxIterations, solver.verbosity, result, 2); 
-                        iter = iter + iter_new; 
-                        solver.first = true;
-                        
-                    end
-                    
-                else
-                    
-                    [result, flag, relres, iter] = agmg(A, b, 20, solver.tolerance, solver.maxIterations, solver.verbosity);
-                    
-                end
-                
-                report.Iterations         = iter;
-                report.Residual           = relres;
-                report.Converged          = flag;
-                report.LinearSolutionTime = toc(a);
-                
-              case 'gmres'
-
-                assert(solver.reduceToCell, 'agmg makes only sense if cell reduction has been done');
-
-                options = setup.options;
-
-                switch options.method
-                    
-                  case 'grouped'
+                  case 'grouped-gmres'
 
                     % QUESTION : reset works in this case ?
                     agmg(A, b, 20, solver.tolerance, solver.maxIterations, solver.verbosity, [], -1); 
@@ -239,69 +181,17 @@ classdef BatteryLinearSolver < handle
                     report.Residual           = relres;
                     report.Converged          = flags;
                     report.LinearSolutionTime = toc(a);
-
-                  case 'separate'
-
-                    solvers = options.solvers;
                     
-                    solver.precondIterations_phi = 0;
-                    solver.precondIterations_c   = 0;
-                    solver.precondIterations_T   = 0;
-                    
-                    indphi = solver.getPotentialIndex(problem);
-                    indc   = solver.getCIndex(problem);
-                    indT   = solver.getTIndex(problem);
-                    
-                    lverbosity = 0;
-                    ltol = 1e-3;
-                    lmax = 40;
+                  case 'separate-variable-gmres' 
 
-                    % QUESTION : We could send separate options for the solver
-                    for isolver = 1 : numel(solvers)
-                        varsolver = solvers{isolver};
-                        switch varsolver.variable
-                          case 'phi'
-                            phi_solver = solver.getElipticSolver(varsolver.solverspec);
-                          case 'c'
-                            c_solver   = solver.getElipticSolver(varsolver.solverspec);
-                          case 'T'
-                            T_solver   = solver.getElipticSolver(varsolver.solverspec);
-                        end
-                    end
-                    
-                    assert(all(indphi + indc + indT == 1), 'We have some unknown in the system that are not expected') 
-
-                    if ~any(indT)
-                        % handle the case with no temperature
-                        T_solver = [];
-                    end
-                    
-                    precond = @(b) solver.blockFieldSchwarz(b, A, indphi, indc, indT, phi_solver, c_solver, T_solver, []);
-                    
-                    a=tic;
-                    restart = solver.maxIterations;
-
-                    [result, flags, relres, iter] = gmres(A, b, restart, solver.tolerance, solver.maxIterations, precond);
-                    
-                    % add diagnostic fields in report
-                    report.Iterations            = (iter(1) - 1)*solver.maxIterations + iter(2);
-                    report.Residual              = relres;
-                    report.Converged             = flags;
-                    report.precondIterations_phi = solver.precondIterations_phi; 
-                    report.precondIterations_c   = solver.precondIterations_c;
-                    report.precondIterations_T   = solver.precondIterations_T;
-                    report.LinearSolutionTime    = toc(a);
-
-                  case 'separate-generic'
-
-                    solvers = options.solvers;
+                    preconditioners = setup.preconditioners;
 
                     precondsolvers = {};
                     
-                    for isolver = 1 : numel(solvers)
+                    for isolver = 1 : numel(preconditioners)
 
-                        solverdesc = solvers(isolver);
-                        variables = solverdesc.variables;
+                        precondSolverStruct = preconditioners(isolver);
+                        variables = precondSolverStruct.variables;
 
                         % setup indices 
                         varinds = [];
@@ -309,18 +199,19 @@ classdef BatteryLinearSolver < handle
                             varinds = [varinds, solver.getVarIndex(problem, variables{ivar})];
                         end
                         ind = solver.getIndex(problem, varinds);
+                        
                         precondsolver.ind = ind;
 
                         % setup the solver function that will be run
-                        precondsolver.func = solver.getElipticSolver(solverdesc.solverspec);
+                        precondsolver.func = solver.getElipticSolver(precondSolverStruct.solver);
 
                         precondsolvers{end + 1} = precondsolver;
 
                     end
 
                     % prepare report struct
-                    precondReports = cell(numel(solvers), 1);
-                    for isolver = 1 : numel(solvers)
+                    precondReports = cell(numel(preconditioners), 1);
+                    for isolver = 1 : numel(preconditioners)
                         precondReports{isolver}.Iterations = 0;
                     end
                     solver.precondReports = precondReports;
@@ -339,185 +230,40 @@ classdef BatteryLinearSolver < handle
                     report.LinearSolutionTime = toc(a);
                     report.precondReports     = solver.precondReports;
 
+
                   otherwise
-
-                    error('gmres method not recognized')
+                    error('method not recognized');
                 end
+                
 
-                
-              case 'matlab_cpr_agmg'
+              case 'agmg'
 
-                % Combining local solver of full system (for example ILU0) with global solvers for some sub-systems
-                % (for example elliptic solver for phi)
-                
-                error('not maintained')
-                
-                indb = solver.getPotentialIndex(problem);
-                % QUESTION : is agmg reset needed here?
-                agmg(A(indb, indb), b(indb), 20, solver.tolerance, solver.maxIterations, solver.verbosity, [], -1); 
-                agmg(A(indb, indb), b(indb), 20, solver.tolerance, solver.maxIterations, solver.verbosity, [], 1);
+                method = setup.method
 
-                %rphi=  agmg(A(indb,indb),b(indb),20,1e-4,20,1,,-1);
-                %rphi=  agmg(A(indb,indb),b(indb),20,1e-4,20,1,[],1);
-                solver_type = 'agmgsolver';
-                error('next call is now not supported')
-                voltage_solver = solver.getElipticSolver(solver_type, A, indb)
-                
-                inds=true(size(indb));%not(indb);
-                                      %inds = not(indb);
-                smoother_type = 'gs'                      
-                smoother = getSmoother(smoother_type);                     
-                f=@(b) solver.precondcpr(b,A,indb,voltage_solver,smoother)
-                tic;
-                result = gmres(A,b,25,solver.tolerance,solver.maxIterations,f);
-                toc;
+                switch method
+
+                  case 'standard'
+
+                  case 'separate-variable-gmres'
+
+                  otherwise('method not recognized')
+
+                end
                 
               case 'amgcl'
 
-                % QUESTION : do we keep that case ?
-                
-                precondcase = 'ILU0';
-                
-                switch precondcase
-                    
-                  case 'ILU0'
-                    
-                    isolver = struct('type'     ,'gmres', ...
-                                     'M'        ,200    , ...
-                                     'verbosity',10);
+                error('library not yet supported at top solver')
 
-                    precond = struct('class'    ,'relaxation', ...
-                                     'type'     ,'ilu0'      , ...
-                                     'damping'  ,1           , ...
-                                     'verbosity',10);
 
-                    options = struct('solver'      ,isolver  , ...
-                                     'precond'     ,precond  , ...
-                                     'solver_type' ,'regular', ...
-                                     'write_params',true     , ...
-                                     'block_size'  ,1        , ...
-                                     'verbosity'   ,0        , ...
-                                     'reuse_mode'  ,1);
-                  case 'amg'
-                    
-                    %isolver = struct('type','gmres','M',20,'verbosity',3);
-                    isolver = struct('type', 'bicgstab', ...
-                                     'M'   , 50);
-                    relaxation=struct('type', 'ilu0');
-                    %relaxation=struct('type','spai0')
-                    %relaxation=struct('type',lower(smoother))
-                    %maxNumCompThreads(np)
-                    alpha=0.001;
-                    aggr=struct('eps_strong', alpha);
-                    % coarsening=struct('type','aggregation','over_interp',1.0,'aggr',aggr)
-                    %coarsening=struct('type','smoothed_aggregation','relax',2/3,'aggr',aggr,'estimate_spectral_radius',false,'power_iters',10,'over_interp',1.0)
-                    coarsetarget=1200;
-
-                    coarsening=struct('type'         , 'ruge_stuben', ...
-                                      'rs_eps_strong', alpha        , ...
-                                      'rs_trunc'     , true         , ...
-                                      'rs_eps_trunc' , alpha);
-
-                    precond = struct('class'        , 'amg'       , ...
-                                     'coarsening'   , coarsening  , ...
-                                     'relax'        , relaxation  , ...
-                                     'coarse_enough', coarsetarget, ...
-                                     'max_levels'   , 20          , ...
-                                     'ncycle'       , 1           , ...
-                                     'npre'         , 1           , ...
-                                     'npost'        , 1           , ...
-                                     'pre_cycle'    , 0           , ...
-                                     'direct_coarse', true);
-                    
-                    options = struct('solver'      , isolver  , ...
-                                     'precond'     , precond  , ...
-                                     'reuse_mode'  , 1        , ...
-                                     'solver_type' , 'regular', ...
-                                     'write_params', false    , ...
-                                     'block_size'  , 1        , ...
-                                     'verbosity'   , 10);
-                    
-                  case 'amg_cpr'
-                    
-                    %isolver = struct('type','gmres','M',20,'verbosity',3);
-                    isolver = struct('type', 'bicgstab', ...
-                                     'M'   , 50);
-                    relaxation=struct('type','ilu0')
-                    %relaxation=struct('type','spai0')
-                    %relaxation=struct('type',lower(smoother))
-                    %maxNumCompThreads(np)
-                    alpha=0.001;
-                    aggr=struct('eps_strong', alpha);
-                    % coarsening=struct('type','aggregation','over_interp',1.0,'aggr',aggr)
-                    % coarsening=struct('type','smoothed_aggregation','relax',2/3,'aggr',aggr,'estimate_spectral_radius',false,'power_iters',10,'over_interp',1.0)
-                    coarsetarget=1200;
-
-                    coarsening=struct('type'         , 'ruge_stuben', ...
-                                      'rs_eps_strong', alpha        , ...
-                                      'rs_trunc'     , true         , ...
-                                      'rs_eps_trunc' , alpha);
-                    
-                    precond = struct('class'        , 'amg'       , ...
-                                     'coarsening'   , coarsening  , ...
-                                     'relax'        , relaxation  , ...
-                                     'coarse_enough', coarsetarget, ...
-                                     'max_levels'   , 20          , ...
-                                     'ncycle'       , 1           , ...
-                                     'npre'         , 1           , ...
-                                     'npost'        , 1           , ...
-                                     'pre_cycle'    , 0           , ...
-                                     'direct_coarse', true);
-                    
-                    options = struct('solver'      , isolver  , ...
-                                     'precond'     , precond  , ...
-                                     'reuse_mode'  , 1        , ...
-                                     'solver_type' , 'regular', ...
-                                     'write_params', false    , ...
-                                     'block_size'  , 1        , ...
-                                     'verbosity'   , 10);
-                    
-                  otherwise
-
-                    error('precondcase not recognized');
-                    
-                end
-                
-                [result, extra] = amgcl(A, b, 'amgcloptions', options         , ...
-                                              'blocksize'   , 1               , ...
-                                              'tol'         , solver.tolerance, ...
-                                              'maxiter'     , solver.maxIterations);
-                
               otherwise
                 
-                error('Method not implemented');
-                
-            end
-            
-        end
+                error('linear solver library not recognized');
+                 
+            end                
+                    
+
+       end
         
-        function indb = getPotentialIndex(solver, problem) % ok
-
-            varinds1 = solver.getVarIndex(problem, {'*', 'phi'});
-            varinds2 = solver.getVarIndex(problem, {'Control', 'E'});
-            % We need to include E to avoid fill-in.
-            varinds = [varinds1, varinds2];
-            indb = solver.getIndex(problem, varinds);
-            
-        end
-
-        function indb = getCIndex(solver, problem) % ok
-
-            varinds = solver.getVarIndex(problem, {'Electrolyte', 'c'});
-            indb = solver.getIndex(problem, varinds);
-            
-        end
-
-        function indb = getTIndex(solver, problem) % ok
-
-            varinds = solver.getVarIndex(problem, {'ThermalModel', 'T'});
-            indb = solver.getIndex(problem, varinds);
-            
-        end 
 
         function varinds = getVarIndex(solver, problem, varname)
 
@@ -576,7 +322,7 @@ classdef BatteryLinearSolver < handle
             report = merge_options_relaxed(report, varargin);
         end
 
-        function r = genericPrecond(solver, x, A, precondsolvers)
+        function r = blockFieldSchwarz(solver, x, A, precondsolvers)
 
             r = x*0;
 
@@ -595,60 +341,38 @@ classdef BatteryLinearSolver < handle
             end
             
         end
-        
-        function r = blockFieldSchwarz(solver, x, A, indphi, indc, indT, phi_solver, c_solver, T_solver, opt)% ok
-        % QUESTION : find better name?
-        % QUESTION : switch argument input x and A
-        % QUESTION : support for without temperature?
-            
-            r = x*0;
-            ldisp = @(tt) disp(tt); 
-            
-            ldisp('voltage start')
-            [rp, flag, res, iter] = phi_solver(A(indphi, indphi), x(indphi)); 
-            solver.precondIterations_phi = solver.precondIterations_phi + iter; 
-            r(indphi) = rp; 
-            ldisp('voltage end')
-
-            ldisp('c start')
-            [rs, flag, res, iter] = c_solver(A(indc, indc), x(indc)); 
-            solver.precondIterations_c = solver.precondIterations_c + iter; 
-            r(indc)   = rs;
-            ldisp('c end')
-
-            if any(indT)
-                ldisp('T start')
-                [rT, flag, res, iter] = T_solver(A(indT, indT), x(indT)); 
-                solver.precondIterations_T = solver.precondIterations_T + iter; 
-                ldisp('T End')
-            
-                r(indT)   = rT;
-            end
-                
-            
-        end
 
 
-        function elliptic_solver = getElipticSolver(solver, solverspec) % ok
+        function elliptic_solver = getElipticSolver(solver, ellipticSolver) % ok
 
-            switch solverspec.name
+            switch ellipticSolver.library
                 
-              case 'agmg'
+              case 'matlab'
                 
-                % Full agmg solver (gmres +  amg preconditioner) agmg.eu
-                
-                nmax = 20;
-                elliptic_solver = @(A, b) agmg(A, b, nmax, 1e-5, nmax, 1, [], 0);
-                
-              case 'agmgsolver_prec'
-                
-                % Do one apply of AGMG preconditionner
-                
-                elliptic_solver = @(A, b) solver.agmgprecond(A, b);
-                
-              case 'direct'
-                
+                % We use direct solver when matlab library is chosen
                 elliptic_solver = @(A, b) deal(mldivide(A,b), 1, 0, 1);
+
+              case 'agmg'
+
+                switch ellipticSolver.method
+
+                  case 'standard'
+
+                    % Full agmg solver (gmres +  amg preconditioner) agmg.eu
+                    
+                    nmax = 20;
+                    elliptic_solver = @(A, b) agmg(A, b, nmax, 1e-5, nmax, 1, [], 0);
+                    
+                  case 'amg'
+                
+                    % Do one apply of AGMG preconditionner
+                
+                    elliptic_solver = @(A, b) solver.agmgprecond(A, b);
+
+                  otherwise
+
+                    error('options for agmg not recognized')
+                end
                 
               case 'amgcl'
                 
