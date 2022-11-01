@@ -195,36 +195,53 @@ classdef Battery < BaseModel
 
             primaryVariableNames = varEqTypes(:, 1);
             equationTypes = varEqTypes(:, 3);
+
+            % The variable and equation lists are not a priori ordered (in the sense that we have 'cell' types first and
+            % the other types after). It is a requirement in some setup of the linear solver.
+            % Note : if you use a direct solver, this is not used.
+            
+            variableReordered = false; 
             
             if ~isempty(opt.reduction)
                 reduc = opt.reduction;
+                % We set the type of the variable to be reduced as 'other' and we move them at the end of list
+                % respecting the order they have been given.
                 if ~isempty(reduc) && reduc.doReduction
                     variables = reduc.variables;
-                    n = numel(equationTypes);
-                    equationTypes = cell(n, 1);
-                    for ieqtype = 1 : n
+                    neq = numel(equationTypes);
+                    equationTypes = cell(neq, 1);
+                    for ieqtype = 1 : neq
                         equationTypes{ieqtype} = 'cell';
                     end
+                    einds = nan(numel(variables),1);
                     for ivar = 1 : numel(variables)
                         [found, ind] = Battery.getVarIndex(variables{ivar}, primaryVariableNames);
                         if ~found
-                            warning('variable to reduce has not been found');
+                            error('variable to be reduce has not been found');
                         end
                         equationTypes{ind} = 'other';
+                        einds(ivar) = ind;
                     end
+
+                    inds = (1 : neq)';
+                    inds(einds) = [];
+                    inds = [inds; einds];
+                    variableReordered = true;
+                    
                 end
-                
             end
-            
 
-            % We reorder to get first the 'cells' type (required for reduction in iterative solver)
-            iscell = ismember(equationTypes, {'cell'});
-            ind = [find(iscell); find(~iscell)];
-            
-            primaryVariableNames = varEqTypes(ind, 1);
-            equationNames = varEqTypes(ind, 2);
-            equationTypes = equationTypes(ind);
+            if ~variableReordered
+                % We reorder to get first the 'cells' type (required for reduction in iterative solver)
+                iscell = ismember(equationTypes, {'cell'});
+                inds = [find(iscell); find(~iscell)];
+            end                
 
+
+            primaryVariableNames = varEqTypes(inds, 1);
+            equationNames = varEqTypes(inds, 2);
+            equationTypes = equationTypes(inds);
+            
             equationIndices = struct();
             for ieq = 1 : numel(equationNames)
                 equationIndices.(equationNames{ieq}) = ieq;
