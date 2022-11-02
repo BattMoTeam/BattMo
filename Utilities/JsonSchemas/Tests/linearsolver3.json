@@ -1,8 +1,7 @@
 {"library" : "matlab",
  "method" : "separate-variable-gmres",
  "reduction" : {"doReduction" : true,
-                "variables" : [["Control", "E"],
-                               ["Control", "I"],
+                "variables" : [["Control", "I"],
                                ["NegativeElectrode", "ActiveMaterial", "c"],
                                ["NegativeElectrode", "ActiveMaterial", "SolidDiffusion", "cSurface"],
                                ["PositiveElectrode", "ActiveMaterial", "c"],
@@ -13,15 +12,15 @@
                                       ["PositiveElectrode", "ActiveMaterial", "phi"],
                                       ["Control", "E"]
                                      ],
-                       "solver" : {"library" : "matlab",
-                                   "method" : "direct"}},
+                       "solver" : {"library" : "agmg",
+                                   "method" : "standard"}},
                       
                       {"variables" : [["Electrolyte", "c"]],
                        "solver" : {"library" : "agmg",
-                                   "method" : "amg"}},
+                                   "method" : "standard"}},
 
                       {"variables" : [["ThermalModel", "T"]],
-                       "solver" : {"library" : "matlab",
-                                   "method" : "direct"}}
+                       "solver" : {"library" : "agmg",
+                                   "method" : "standard"}}
                      ]
 }
