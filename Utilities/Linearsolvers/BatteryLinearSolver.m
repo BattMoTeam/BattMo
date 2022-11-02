@@ -164,23 +164,58 @@ classdef BatteryLinearSolver < handle
                     
                   case 'grouped-gmres'
 
-                    % QUESTION : reset works in this case ?
-                    agmg(A, b, 20, solver.tolerance, solver.maxIterations, solver.verbosity, [], -1); 
-                    agmg(A, b, 20, solver.tolerance, solver.maxIterations, solver.verbosity, [], 1);
-                    
-                    % QUESTION : error in argument?
-                    % QUESTION : again we can send option there
-                    f = @(b) solver.agmgprecond(b, A)
-                    % f = @(b) solver.agmgprecond(A, b)
-                    
-                    a=tic;
+                    preconditioner = setup.preconditioner;
 
-                    [result, flags, relres, iter] = gmres(A, b, solver.maxIterations, solver.tolerance, solver.maxIterations, f);
+                    switch preconditioner.library
 
-                    report.Iterations         = (iter(1) - 1)*solver.maxIterations + iter(2);
-                    report.Residual           = relres;
-                    report.Converged          = flags;
-                    report.LinearSolutionTime = toc(a);
+                      case 'agmg'
+
+                        switch preconditioner.method
+
+                          case 'standard'
+
+                            solver.precondReports.Iterations = 0;
+                            
+                            f = @(b) solver.standardAGMGwithReport(b, A)
+                           
+                            
+                          case 'amg'
+                            
+                            agmg(A, b, 20, solver.tolerance, solver.maxIterations, solver.verbosity, [], -1); 
+                            agmg(A, b, 20, solver.tolerance, solver.maxIterations, solver.verbosity, [], 1);
+
+                            
+                            f = @(b) solver.agmgprecond(A, b)
+
+                          otherwise
+                            
+                            error('method not recognized');
+                            
+                        end
+                        
+                        a=tic;
+
+                        [result, flags, relres, iter] = gmres(A, b, solver.maxIterations, solver.tolerance, solver.maxIterations, f);
+
+                        report.Iterations         = (iter(1) - 1)*solver.maxIterations + iter(2);
+                        report.Residual           = relres;
+                        report.Converged          = flags;
+                        report.LinearSolutionTime = toc(a);
+
+                        switch preconditioner.method
+                          case 'standard'
+                            report.precondReports = solver.precondReports;
+                          case 'amg'
+                            % do nothing
+                          otherwise
+                            error('method not recognized or supported');
+
+                        end
+
+                      otherwise
+                        error('library not recognized or not supported yet');
+
+                    end
                     
                   case 'separate-variable-gmres' 
 
@@ -342,6 +377,15 @@ classdef BatteryLinearSolver < handle
             
         end
 
+        function r = standardAGMGwithReport(solver, b, A)
+            
+            nmax = 20;
+            [r, flag, res, iter] = agmg(A, b, nmax, 1e-5, nmax, 1, [], 0);
+            
+            solver.precondReports.Iterations = solver.precondReports.Iterations + iter;
+            
+        end
+        
 
         function elliptic_solver = getElipticSolver(solver, ellipticSolver) % ok
 
