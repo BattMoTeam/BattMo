@@ -511,7 +511,12 @@ classdef BatteryLinearSolver < handle
             relres = extra.err;
             iter   = extra.nIter;
             
-            disp(['err', num2str(extra.err),' iter ',num2str(extra.nIter)]);
+            if solver.verbosity > 0
+                fprintf('**** AMGCL final report\n"');
+                fprintf('error : %g\n', extra.err);
+                fprintf('number iterations : %g\n', extra.nIter);
+                fprintf('****\n"');
+            end
             
         end
 
