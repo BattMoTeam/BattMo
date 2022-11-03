@@ -1,0 +1,32 @@
+{ "solver_type" : "regular",
+
+  "solver" : {"type" : "gmres",
+              "M" : 30,
+              "pside" : "left",
+              "maxiter" : 100,
+              "tol" : 1e-8,
+              "ns_search" : false,
+              "verbose" : true
+             },
+
+  "precond" : {"class" : "amg",
+               "coarsening" : {"type" : "ruge_stuben",
+                               "eps_strong" : 0.25,
+                               "do_trunc" : true,
+                               "eps_trunc"  : 0.2
+                              },
+               "relax" : {"type" : "ilu0",
+                          "damping" : 1, 
+                          "solve" : { "iters" : 2,
+                                      "damping" : 0.72 
+                                    }
+                         },
+               "coarse_enough" : 1200,
+               "direct_coarse"  : true,
+               "max_levels"     : 20,
+               "npre"           : 1,
+               "npost"          : 1,
+               "ncycle"         : 1,
+               "pre_cycles"     : 0
+              }
+}
