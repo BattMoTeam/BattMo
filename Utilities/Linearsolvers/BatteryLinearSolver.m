@@ -429,12 +429,13 @@ classdef BatteryLinearSolver < handle
                 itersolver = struct('type'   , 'gmres', ...
                                     'M'      , 50     , ...
                                     'tol'    , 1e-5   , ...
-                                    'verbose', true);
+                                    'verbose', true   , ...
+                                    "maxiter", 20);
                 
                 relaxation = struct('type', 'ilu0');
 
-                coarsening_type = 'ruge_stuben'
-                coarsetarget = 1200;
+
+                coarsening_type = 'ruge_stuben';
 
                 switch coarsening_type
                     
@@ -448,6 +449,7 @@ classdef BatteryLinearSolver < handle
 
                   case 'ruge_stuben'
                     
+                    alpha = 0.01;
                     coarsening = struct('type'      , 'ruge_stuben', ...
                                         'eps_strong', alpha        , ...
                                         'do_trunc'  , true         , ...
@@ -458,6 +460,8 @@ classdef BatteryLinearSolver < handle
                     error('coarsening_case not recognized');
                     
                 end
+
+                coarsetarget = 1200;
                 
                 precond = struct('class'        , 'amg'       , ...
                                  'coarsening'   , coarsening  , ...
@@ -493,16 +497,15 @@ classdef BatteryLinearSolver < handle
             maxiter = opt.solver.maxiter;
 
             if strcmp(opt.precond.coarsening.type, 'aggregation')
-                block_size = opt.precond.coarsening.aggr.block_size;
+                opt.block_size = opt.precond.coarsening.aggr.block_size;
             else
-                block_size = 1;
+                opt.block_size = 1;
             end
                 
             [x, extra] =  amgcl(A, b, ...
                                 'amgcloptions', opt    , ...
                                 'tol'         , tol    , ...
-                                'maxiter'     , maxiter, ...
-                                'block_size'  , block_size);
+                                'maxiter'     , maxiter);
 
             flag   = extra.err < tol;
             relres = extra.err;

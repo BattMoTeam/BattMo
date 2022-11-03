@@ -17,7 +17,8 @@
 
     "QUESTION" : "Shall we keep the following properties or clean-up the mrst interface amgcl_matlab_simple?",
     "verbose"      : {"type" : "integer"},
-    "block_size"   : {"type" : "integer"},
+    "block_size"   : {"type" : "integer",
+                      "QUESTION" : "this one is needed by amgcl interface"},
     "nthreads"     : {"type" : "integer"},
     "write_params" : {"type" : "boolean"},
     "reuse_mode"   : {"type" : "integer",
