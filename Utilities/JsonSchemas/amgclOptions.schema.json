@@ -39,13 +39,13 @@
                                       "richardson", 
                                       "preonly"
                                      ]
-                           },
+                           }
+                },
                   
-                  "anyOf" : [
-                    {"$ref": "#/$def/gmres"},
-                    {"$ref": "#/$def/lgmres"}
-                  ]
-                }
+                "anyOf" : [
+                  {"$ref": "#/$defs/gmres"},
+                  {"$ref": "#/$defs/lgmres"}
+                ]
                },
 
     "precond" : {"type" : "object",
@@ -54,15 +54,15 @@
                    "class" : {"type" : "string",
                               "description" : "The class is processed in runtime::precontioner see AMGCLDIR/amgcl/preconditioner/runtime.hpp",
                               "description2" : "Wwe only describe amg here",
-                              "enum" : ["amg", "relaxation", "dummy", "nested"]},
+                              "enum" : ["amg", "relaxation", "dummy", "nested"]}
 
-                   "anyOf" : [
-                     {"$ref": "#/$def/amg"}
-                   ]
+                 },
+
+                 "anyOf" : [
+                     {"$ref": "#/$defs/amg"}
+                 ]
                    
-                 }
                 }
-    
   },
   
   "$defs" : {
@@ -138,11 +138,11 @@
 
       "properties" : {
 
-        "class" : {"const" : "agmg"},
+        "class" : {"const" : "amg"},
 
-        "coarsening" : {"$ref" : "#/$def/coarsening"},
+        "coarsening" : {"$ref" : "#/$defs/coarsening"},
         
-        "relax" : {"$ref" : "#/$def/relax"},
+        "relax" : {"$ref" : "#/$defs/relax"},
 
         "coarse_enough"  : {"type" : "integer",
                             "description" : "specifies when level is coarse enough to be solved directly"},
@@ -176,9 +176,7 @@
                                 "enum" : ["ruge_stuben",
                                           "aggregation",
                                           "smoothed_aggregation",
-                                          "smoothed_aggr_emin"],
-                                
-                                "anyOf" : [{"enum" : ["ruge_stuben", "aggregation", "smoothed_aggregation"]}]
+                                          "smoothed_aggr_emin"]
                                }
                      },
       "anyOf" : [{"$ref" : "#/$defs/ruge_stuben"},
