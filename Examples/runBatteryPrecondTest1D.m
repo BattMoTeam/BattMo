@@ -7,6 +7,7 @@ clear all
 close all
 clc
 
+mrstDebug(20);
 
 %% Import the required modules from MRST
 % load MRST modules
@@ -34,7 +35,7 @@ sd      = 'SolidDiffusion';
 ctrl    = 'Control';
 cc      = 'CurrentCollector';
 
-jsonstruct.use_thermal = false;
+jsonstruct.use_thermal = true;
 jsonstruct.include_current_collectors = false;
 
 jsonstruct.(pe).(am).diffusionModelType = 'simple';
@@ -70,7 +71,7 @@ end
 % simulation. The required discretization parameters are already included
 % in the class BatteryGenerator1D. 
 gen = BatteryGenerator1D();
-gen.fac = 1000;
+gen.fac = 10;
 gen = gen.applyResolutionFactors();
 
 % Now, we update the paramobj with the properties of the mesh. 
@@ -137,7 +138,7 @@ switch model.Control.controlPolicy
 end
 
 % This control is used to set up the schedule
-schedule = struct('control', control, 'step', step); 
+schedule = struct('control', control, 'step', step);
 
 %% Setup the initial state of the model
 % The initial state of the model is setup using the model.setupInitialState() method.
@@ -182,7 +183,8 @@ switch casenumber
 
   case 4
 
-    jsonfilename = fullfile(battmoDir, 'Utilities/JsonSchemas/Tests/linearsolver5.json');
+    % jsonfilename = fullfile(battmoDir, 'Utilities/JsonSchemas/Tests/linearsolver2.json');
+    jsonfilename = fullfile(battmoDir, 'Utilities/JsonSchemas/Tests/linearsolver3.json');
     jsonsrc = fileread(jsonfilename);
     setup = jsondecode(jsonsrc);
     
@@ -191,6 +193,7 @@ switch casenumber
     error('case number not recognized');
 
 end
+
 
 if isfield(setup, 'reduction')
     model = model.setupSelectedModel('reduction', setup.reduction);
@@ -229,39 +232,107 @@ Tmax = cellfun(@(x) max(x.ThermalModel.T), states);
 % [SOCN, SOCP] =  cellfun(@(x) model.calculateSOC(x), states);
 time = cellfun(@(x) x.time, states); 
 
+figure
 plot(time, E);
 
-return
 
 %%
 
 its = getReportOutput(report,'type','linearIterations')
 nits= getReportOutput(report,'type','nonlinearIterations')
-figure(33),clf
+
+figure
 plot(its.time, its.total./nits.total)
-figure(44),clf,hold on
-shift = 0;
-for i=1:numel(report.ControlstepReports)
-    creport = report.ControlstepReports{i};
-    for j= 1:numel(creport.StepReports)
-        sreport=creport.StepReports{j};
-        vits = [];
-        for k = 1:numel(sreport.NonlinearReport);
-            nreport = sreport.NonlinearReport{k};
-            try
-                its = nreport.LinearSolver.Iterations;
-                its = nreport.LinearSolver.precondIterations_phi;
-                % its = nreport.LinearSolver.precondIterations_c;
-                vits = [vits,its];
-            catch
+xlabel('time');
+title('linear iterations/newton iterations')
+
+
+switch setup.method
+
+  case "grouped-gmres"
+
+    pits = zeros(numel(its.time), 1);
+    
+    counter = 1;
+    
+    for icontrol = 1 : numel(report.ControlstepReports)
+        
+        creport = report.ControlstepReports{icontrol};
+
+        for istep = 1 : numel(creport.StepReports)
+
+            sreport = creport.StepReports{istep};
+            
+            for k = 1 : numel(sreport.NonlinearReport);
+                
+                nreport = sreport.NonlinearReport{k};
+                try
+                    it = nreport.LinearSolver.precondReports.Iterations;
+                    pits(counter) = pits(counter) + it;
+                end
+                
             end
         end
-        plot(shift+[1:numel(vits)],vits,'*-')
-        shift = shift + numel(vits);
     end
+
+    figure
+    plot(its.time, pits./its.total);
+    xlabel('time');
+    title('preconditioner iteration/linear iteration');
+    
+  case "separate-variable-gmres"
+
+    npreconds = numel(setup.preconditioners);
+    pits = zeros(numel(its.time), npreconds);
+
+    counter = 1;
+    
+    for icontrol = 1 : numel(report.ControlstepReports)
+        
+        creport = report.ControlstepReports{icontrol};
+
+        for istep = 1 : numel(creport.StepReports)
+
+            sreport = creport.StepReports{istep};
+            
+            for k = 1:numel(sreport.NonlinearReport);
+                
+                nreport = sreport.NonlinearReport{k};
+                
+                for iprecond = 1 : npreconds
+
+                    try
+                        it = nreport.LinearSolver.precondReports{iprecond}.Iterations;
+                        pits(counter, iprecond) = pits(counter, iprecond) + it;
+                    end
+                    
+                end
+            end
+
+            counter = counter + 1;
+        end
+    end
+
+    for iprecond = 1 : npreconds
+
+        figure
+        plot(its.time, pits(:, iprecond)./its.total);
+        xlabel('time');
+        switch iprecond
+          case 1
+            titlestr = 'phi';
+          case 2
+            titlestr = 'c';
+          case 3
+            titlestr = 'T';
+        end
+        titlestr = sprintf('preconditioner iteration/linear iteration - %s', titlestr);
+        title(titlestr);
+        
+    end
+
 end
-figure(55)
-plot(nits.total)
+
 
 
 %% Plot the the output voltage and current
