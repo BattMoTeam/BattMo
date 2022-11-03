@@ -1,0 +1,89 @@
+{
+  "$id": "file://battmo/schemas/amgclOptions",
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "description": "options for amgcl linear solver",
+  "type": "object",
+  "properties": {
+
+    "solver_type"        : {"type" : "string",
+                            "enum" : ["regular"]},    
+    "verbose"            : {"type" : "integer"},
+    "block_size"         : {"type" : "integer"}
+    "nthreads"           : {"type" : "integer"},
+    "write_params"       : {"type" : "boolean"},
+    "reuse_mode"         : {"type" : "integer"},
+    "solver_strategy_id" : {"type" : "integer"},
+
+    "tolerance"          : {"type" : "number",
+                            "QUESTION" : "appear not to be in amgcloption?"},
+    "max_iter"           : {"type" : "integer",
+                            "QUESTION" : "appear not to be in amgcloption?"},
+    "blocksize"         : {"type" : "integer",
+                           "QUESTION" : "appear in options to call amgcl call but already in amgcloptions. Overwritten?"},
+    
+    "solver" : {"type" : "object",
+                "properties" : { "type" : {"type" : "string",
+                                           "enum" : ["bigcstab", "gmres"]},
+                                 "M" : {"type" : "integer"},
+                                 "tol": {"type" : "number"},
+                                 "maxiter": {"type" : "integer"}
+                               }
+               }
+
+    "precond" : {"type" : "object",
+                 "properties" : {
+                   "class"          : {"type" : "string",
+                                       "enum" : ["amg"]
+                                       "QUESTION" : "unsure about existence of relaxation class"},
+
+                   "damping" : {"type" : "number",
+                                "QUESTION" : "is it option for relaxation class only?"},
+                   "coarse_enough"  : {"type" : "number"},
+                   "direct_coarse"  : {"type" : "boolean"},
+                   "max_levels"     : {"type" : "integer"},
+                   "npre"           : {"type" : "integer"},
+                   "npost"          : {"type" : "integer"},
+                   "ncycle"         : {"type" : "integer"},
+                   "pre_cycles"     : {"type" : "integer"},
+                   
+                   "relax": {"type" : "object",
+                             "properties" : {"type" : {"type" : "string",
+                                                       "enum" : ["ilu0", "spai0"]}}},
+                   "coarsening" : {"type" : "object",
+                                   "properties" : {"type"                 : {"type" : "string",
+                                                                             "enum" : ["ruge_stuben", "smoothed_aggregation", "aggregation"]},
+                                                   "over_interp"          : {"type" : "number"},
+                                                                            }
+                                   "anyOf" : [{"properties" : {"type" : {"const" : "smoothed_aggregation"}.
+                                                               "relax" : {"type" : "number"},
+                                                               "estimate_spectral_radius" : {"type" : "boolean"},
+                                                               "power_iters" : {"type" : "integer"},
+                                                               "aggr" : {"type" : "object",
+                                                                         "properties" : {"eps_strong" : {"type" : "number"}}
+                                                                        }
+                                                              }
+                                              },
+
+                                              {"properties" : {"type" : {"const" : "ruge_stuben"},
+                                                               "rs_eps_strong" : {"type" : "number"},
+                                                               "rs_trunc"      : {"type" : "boolean"},
+                                                               "rs_eps_trunc"  : {"type" : "number"},
+                                                               "rs_string"     : {"type" : "boolean"}
+                                                              }
+                                              },
+                                              
+                                              {"properties" : {"type" : {"const" : "aggregation"},
+                                                               "aggr" : {"type" : "object",
+                                                                         "properties" : {"eps_strong" : {"type" : "number"}}}}
+                                              }
+                                              
+                                             ]
+                                   
+                                  }
+                 }
+                }
+  }
+}
+
+
+  
