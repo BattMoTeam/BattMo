@@ -64,9 +64,11 @@
               
              },
              
+
              
-             {"properties" : {"library" : {"const" : "amgcl"}},
-              "description" : "not supported yet"
+             {"allOf" : [{"properties" : {"library" : {"const" : "amgcl"}}},
+                         {"$ref" : "amgclOptions"}
+                         ]
              }
              
             ],

@@ -6,23 +6,22 @@
 
   "properties": {
 
-    "solver_type"        : {"type" : "string",
-                            "description" : "solver type supported in amgcl_matlab_simple",
-                            "description2" : "Here, we describe only regular",
-                            "enum" : ["regular", "cpr", "reset"],
+    "solver_type" : {"type" : "string",
+                     "description" : "solver type supported in amgcl_matlab_simple",
+                     "description2" : "Here, we describe only regular",
+                     "enum" : ["regular", "cpr", "reset"],
 
-                            "anyOf" : [{"const" : "regular"}]
-                            
-                           },
+                     "anyOf" : [{"const" : "regular"}]
+                     
+                    },
 
     "QUESTION" : "Shall we keep the following properties or clean-up the mrst interface amgcl_matlab_simple?",
-    "verbose"            : {"type" : "integer"},
-    "block_size"         : {"type" : "integer"},
-    "nthreads"           : {"type" : "integer"},
-    "write_params"       : {"type" : "boolean"},
-    "reuse_mode"         : {"type" : "integer",
-                            "description" : "1 : no reuse, 2 : reuse"},
-    "block_size"         : {"type" : "integer"},
+    "verbose"      : {"type" : "integer"},
+    "block_size"   : {"type" : "integer"},
+    "nthreads"     : {"type" : "integer"},
+    "write_params" : {"type" : "boolean"},
+    "reuse_mode"   : {"type" : "integer",
+                      "description" : "1 : no reuse, 2 : reuse"},
     
     "solver" : {"type" : "object",
                 "properties" : {

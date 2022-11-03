@@ -8,11 +8,22 @@ import os
 
 schema_folder = rjson.getBattMoDir() / Path('Utilities') / Path('JsonSchemas')
 
+base_uri = 'file://battmo/schemas/'
+resolver = jsonschema.RefResolver(base_uri=base_uri, referrer={})
+jsonSchemaFilename = Path('amgclOptions.schema.json')
+schema_filename = schema_folder / jsonSchemaFilename
+with open(schema_filename) as schema_file:
+    refschema = json.load(schema_file)
+
+resolver.store["file://battmo/schemas/amgclOptions"] = refschema
+
 schema_filename = schema_folder / 'linearsolver.schema.json'
 with open(schema_filename) as schema_file:
     mainschema = json.load(schema_file)
 
-v = jsonschema.Draft202012Validator(mainschema)
+resolver.store["file://battmo/schemas/linearsolver"] = mainschema
+
+v = jsonschema.Draft202012Validator(mainschema, resolver=resolver)
 
 # jsonfilenames = ['linearsolver1.json',
                  # 'linearsolver2.json',
