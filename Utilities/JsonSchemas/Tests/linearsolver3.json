@@ -10,16 +10,16 @@
  "preconditioners" : [{"variables" : [["Electrolyte", "phi"],
                                       ["NegativeElectrode", "ActiveMaterial", "phi"],
                                       ["PositiveElectrode", "ActiveMaterial", "phi"],
+                                      ["NegativeElectrode", "CurrentCollector", "phi"],
+                                      ["PositiveElectrode", "CurrentCollector", "phi"],
                                       ["Control", "E"]
                                      ],
-                       "solver" : {"library" : "matlab",
-                                   "method" : "direct"}},
+                       "solver" : {"library" : "amgcl"}},
                       
                       {"variables" : [["Electrolyte", "c"]],
-                       "solver" : {"library" : "amgcl"}},
-
+                       "solver" : {"library" : "amgcl"}
+                                  },
                       {"variables" : [["ThermalModel", "T"]],
-                       "solver" : {"library" : "matlab",
-                                   "method" : "direct"}}
+                       "solver" : {"library" : "amgcl"}}
                      ]
 }
