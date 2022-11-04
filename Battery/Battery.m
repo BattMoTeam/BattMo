@@ -1043,7 +1043,7 @@ classdef Battery < BaseModel
             
             % Equation name : 'pe_cc_chargeCons';
             if model.(pe).include_current_collector
-                eqs{ei.ne_cc_chargeCons} = state.(pe).(cc).chargeCons;
+                eqs{ei.pe_cc_chargeCons} = state.(pe).(cc).chargeCons;
             end
 
             % Equation name : 'energyCons';
