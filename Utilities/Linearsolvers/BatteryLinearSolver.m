@@ -24,7 +24,6 @@ classdef BatteryLinearSolver < handle
 
         linearSolverSetup  % Structure described in schema battmodDir()/Utilities/JsonSchemas/linearsolver.schema.json (recommended reference)
         
-        verbosity
         first
         reuse_setup
         
@@ -50,7 +49,6 @@ classdef BatteryLinearSolver < handle
             solver.applyRightDiagonalScaling = false;
             solver.variableOrdering          = [];
             solver.equationOrdering          = [];
-            solver.verbosity                 = 0;
             solver.linearSolverSetup         = struct('method', 'direct');
             solver.reuse_setup               = false;
             solver.first                     = true;
@@ -181,8 +179,8 @@ classdef BatteryLinearSolver < handle
                             
                           case 'amg'
                             
-                            agmg(A, b, 20, solver.tolerance, solver.maxIterations, solver.verbosity, [], -1); 
-                            agmg(A, b, 20, solver.tolerance, solver.maxIterations, solver.verbosity, [], 1);
+                            agmg(A, b, 20, solver.tolerance, solver.maxIterations, solver.verbose, [], -1); 
+                            agmg(A, b, 20, solver.tolerance, solver.maxIterations, solver.verbose, [], 1);
 
                             
                             f = @(b) solver.agmgprecond(A, b)
@@ -426,10 +424,15 @@ classdef BatteryLinearSolver < handle
                 
                 solver_type = 'regular';
 
+                if solver.verbose > 0
+                    amgclverbose = true;
+                else
+                    amgclverbose = false;
+                end
                 itersolver = struct('type'   , 'gmres', ...
                                     'M'      , 50     , ...
                                     'tol'    , 1e-5   , ...
-                                    'verbose', true   , ...
+                                    'verbose', amgclverbose, ...
                                     "maxiter", 20);
                 
                 relaxation = struct('type', 'ilu0');
@@ -472,14 +475,20 @@ classdef BatteryLinearSolver < handle
                                  'ncycle'       , 1           , ...
                                  'npre'         , 1           , ...
                                  'npost'        , 1           , ...
-                                 'pre_cycles'   , 0);
+                                 'pre_cycles'   , 1);
+
+                if  islogical(solver.verbose) & solver.verbose 
+                    amgclverbose = 1;
+                else
+                    amgclverbose = 0;
+                end
                 
                 opts = struct('solver'      , itersolver, ...
                               'precond'     , precond   , ...
                               'reuse_mode'  , 1         , ...
                               'solver_type' , 'regular' , ...
                               'write_params', false     , ...
-                              'verbosity'   , 10);
+                              'verbose'     , amgclverbose);
                 
                 elliptic_solver = @(A, b) solver.amgcl(A, b, opts);
                 
@@ -511,19 +520,19 @@ classdef BatteryLinearSolver < handle
             relres = extra.err;
             iter   = extra.nIter;
             
-            if solver.verbosity > 0
-                fprintf('**** AMGCL final report\n"');
+            if solver.verbose > 0
+                fprintf('**** AMGCL final report\n');
                 fprintf('error : %g\n', extra.err);
                 fprintf('number iterations : %g\n', extra.nIter);
-                fprintf('****\n"');
+                fprintf('****\n\n\n');
             end
             
         end
 
         function  [x, flag, relres, iter] = agmgprecond(solver, A, b)% ok
             
-            agmg(A, b, 20, solver.tolerance, solver.maxIterations, solver.verbosity, [], -1); 
-            agmg(A, b, 20, solver.tolerance, solver.maxIterations, solver.verbosity, [], 1);
+            agmg(A, b, 20, solver.tolerance, solver.maxIterations, solver.verbose, [], -1); 
+            agmg(A, b, 20, solver.tolerance, solver.maxIterations, solver.verbose, [], 1);
             
             [x, flag, relres, iter] = agmg(A, b, 20, 1e-10, 20, 0, [], 3);
             
