@@ -1,0 +1,28 @@
+{
+  "$id": "file://battmo/schemas/BatteryFormat",
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "description": "A standard battery",
+  "type": "object",
+
+  "properties" : {
+    "format" : {
+      "type" : "string",
+      "enum" : ["1d", "pouch", "coin", "prismatic", "cylindrical"]
+    },
+    
+    "anyOf" : [
+      {"properties" :
+       {"format" : {"const" : "1d"},
+        
+        "NegativeElectrode" : {"properties" : {"ActiveMaterial" : {"properties" : {"thickness" : {"type" : "number"}}},
+                                               "CurrentCollector" : {"properties" : {"thickness" : {"type" : "number"}}},
+                                              }},
+        "PositiveElectrode" : {"properties" : {"ActiveMaterial" : {"properties" : {"thickness" : {"type" : "number"}}},
+                                               "CurrentCollector" : {"properties" : {"thickness" : {"type" : "number"}}},
+                                              }},
+        "Electrolyte" : {"properties" : {"Separator" : {"properties" : {"thickness" : {"type" : "number"}}}}}
+       }
+      }
+    ]
+  }
+}
