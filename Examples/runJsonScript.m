@@ -17,7 +17,23 @@ jsonstruct2 = parseBattmoJson(jsonfilename);
 % merge the two json structs 
 jsonstruct = mergeJsonStructs({jsonstruct1, jsonstruct2});
 
-runBatteryJson(jsonstruct);
+% Run battery simulation with function that takes json input
+output = runBatteryJson(jsonstruct);
 
+%%
+
+E             = output.E;
+energyDensity = output.energyDensity;
+energy        = output.energy;
+
+figure
+plot(energyDensity, E)
+xlabel('Energy Density [Wh/L]');
+ylabel('Voltage [V]');
+
+figure
+plot(energy, E)
+xlabel('Energy [Wh]');
+ylabel('Voltage [V]');
 
 

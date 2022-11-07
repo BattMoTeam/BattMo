@@ -56,12 +56,14 @@ function  output = runBatteryJson(jsonInput)
     switch jsonstruct.format
       case '1D'
         gen = BatteryGenerator1D();
+        
         xlength = gen.xlength;
         xlength(2) = jsonstruct.NegativeElectrode.ActiveMaterial.thickness;
         xlength(3) = jsonstruct.Electrolyte.Separator.thickness;
         xlength(4) = jsonstruct.PositiveElectrode.ActiveMaterial.thickness;
-
         gen.xlength = xlength;
+
+        gen.faceArea = jsonstruct.faceArea;
         
         % Now, we update the paramobj with the properties of the mesh. 
         paramobj = gen.updateBatteryInputParams(paramobj);
@@ -147,11 +149,23 @@ function  output = runBatteryJson(jsonInput)
     %% Process output and recover the output voltage and current from the output states.
     ind = cellfun(@(x) not(isempty(x)), states); 
     states = states(ind);
-    E = cellfun(@(x) x.Control.E, states); 
-    I = cellfun(@(x) x.Control.I, states);
-    Tmax = cellfun(@(x) max(x.ThermalModel.T), states);
-    % [SOCN, SOCP] =  cellfun(@(x) model.calculateSOC(x), states);
-    time = cellfun(@(x) x.time, states); 
+    
+    E    = cellfun(@(state) state.Control.E, states); 
+    I    = cellfun(@(state) state.Control.I, states);
+    time = cellfun(@(state) state.time, states); 
 
+    mass = computeCellMass(model);
+    vol = sum(model.G.cells.volumes);
+    
+    [E, I, energyDensity, specificEnergy, energy] = computeEnergyDensity(E, I, time, vol, mass);
+
+    output = struct('model'         , model         , ...
+                    'E'             , E             , ... % Unit : V
+                    'I'             , I             , ... % Unit : A
+                    'energy'        , energy        , ... % Unit : Wh
+                    'energyDensity' , energyDensity , ... % Unit : Wh/L
+                    'specificEnergy', specificEnergy  ... % Unit : Wh/kg
+                   );
+    output.states = states;
 
 end
