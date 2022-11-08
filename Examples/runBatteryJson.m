@@ -20,18 +20,24 @@ function  output = runBatteryJson(jsonInput)
     ctrl    = 'Control';
     cc      = 'CurrentCollector';
 
-    jsonstruct.(pe).(am).diffusionModelType = 'full';
-    jsonstruct.(ne).(am).diffusionModelType = 'full';
+    diffusionModelType = 'simple';
+    jsonstruct.(pe).(am).diffusionModelType = diffusionModelType;
+    jsonstruct.(ne).(am).diffusionModelType = diffusionModelType;
 
     jsonstruct.use_particle_diffusion = true;
-
+    
+    jsonstruct.use_thermal = false;
+    
     paramobj = BatteryInputParams(jsonstruct);
 
     paramobj.(ne).(am).InterDiffusionCoefficient = 0;
     paramobj.(pe).(am).InterDiffusionCoefficient = 0;
 
-    paramobj.(ne).(am).(sd).N = 5;
-    paramobj.(pe).(am).(sd).N = 5;
+    
+    if strcmp(diffusionModelType, 'full')
+        paramobj.(ne).(am).(sd).N = 5;
+        paramobj.(pe).(am).(sd).N = 5;
+    end
 
     paramobj = paramobj.validateInputParams();
 
@@ -76,6 +82,9 @@ function  output = runBatteryJson(jsonInput)
     %%  Initialize the battery model. 
     % The battery model is initialized by sending paramobj to the Battery class
     % constructor. see :class:`Battery <Battery.Battery>`.
+
+    paramobj.Control.lowerCutoffVoltage = 3;
+
     model = Battery(paramobj);
     model.AutoDiffBackend= AutoDiffBackend();
 
@@ -100,7 +109,7 @@ function  output = runBatteryJson(jsonInput)
         error('control policy not recognized');
     end
 
-    n  = 100;
+    n  = 50;
     dt = total/n;
     step = struct('val', dt*ones(n, 1), 'control', ones(n, 1));
 
