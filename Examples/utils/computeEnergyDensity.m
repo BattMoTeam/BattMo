@@ -1,12 +1,12 @@
-function [Emid, Tmid, energyDensity, specificEnergy, Energy] = computeEnergyDensity(E, I, T, t, vol, mass)
+function [Emid, Imid, energyDensity, specificEnergy, energy] = computeEnergyDensity(E, I, t, vol, mass)
     dt = diff(t);
     Emid = (E(2:end) + E(1:end - 1))/2.0; 
-    Tmid = (T(2:end) + T(1:end - 1))/2.0;
     Imid = (I(2:end) + I(1:end - 1))/2.0; 
-    Energy = cumsum((Emid.*Imid).*dt);
-    Energy = Energy/hour; % W h
-    energyDensity = Energy/vol/1000; %  W h/L
-    specificEnergy = Energy/mass; %  W h/kg
+    energy = cumsum((Emid.*Imid).*dt);
+    
+    energy = energy/hour; % Wh
+    energyDensity = energy/vol/1000; %  Wh/L
+    specificEnergy = energy/mass; %  Wh/kg
 end
 
 

@@ -39,7 +39,7 @@ classdef ElectrodeInputParams < ComponentInputParams
             paramobj = paramobj@ComponentInputParams(jsonstruct);
 
             am = 'ActiveMaterial';
-            cc  = 'CurrentCollector';
+            cc = 'CurrentCollector';
             
             pick = @(fd) pickField(jsonstruct, fd);
             paramobj.(am) = ActiveMaterialInputParams(pick(am));

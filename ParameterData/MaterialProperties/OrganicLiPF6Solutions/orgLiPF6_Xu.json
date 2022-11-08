@@ -3,10 +3,14 @@
     "heatCapacity": 1836780.0,
     "thermalConductivity": 0.099,
     "density": 1210,
-    "updateConductivityFunc" : {"functionname" : "updateElectrolyteConductivityFunc_Xu",
-                                "argumentlist" : ["concentration", "temperature"]},
-    "updateDiffusionCoefficientFunc" : {"functionname" : "updateDiffusionCoefficientFunc_Xu",
-                                        "argumentlist" : ["concentration", "temperature"]},
+    "Conductivity" : {"type": "function",
+                      "functionname" : "updateElectrolyteConductivityFunc_Xu",
+                      "argumentlist" : ["concentration", "temperature"]
+                     },
+    "DiffusionCoefficient" : {"type": "function",
+                              "functionname" : "updateDiffusionCoefficientFunc_Xu",
+                              "argumentlist" : ["concentration", "temperature"]
+                             },
     "compnames": [
         "Li",
         "PF6"

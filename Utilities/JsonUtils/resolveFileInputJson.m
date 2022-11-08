@@ -4,18 +4,33 @@ function jsonstruct = resolveFileInputJson(jsonstruct)
     fileroot = battmoDir();
     
     if isstruct(jsonstruct) & numel(jsonstruct) == 1
-        fds = fieldnames(jsonstruct);
-        if ismember('isFile', fds)
+
+        if ismember('isFile', fieldnames(jsonstruct))
+            %% TODO : check if it isFile is true
             filename = jsonstruct.filename;
             fullfilename = fullfile(fileroot, filename);
             jsonsrc = fileread(fullfilename);
-            parsedjson = jsondecode(jsonsrc);
-            jsonstruct = parsedjson;
+            fileJsonstruct = jsondecode(jsonsrc);
+            
+            % remove the "isFile" and "filename" fields from the jsonstruct
+            jsonstruct = rmfield(jsonstruct, 'isFile');
+            jsonstruct = rmfield(jsonstruct, 'filename');
+            
+            fds = fieldnames(fileJsonstruct);
+            for ind = 1 : numel(fds)
+                fileJsonstruct.(fds{ind}) = resolveFileInputJson(fileJsonstruct.(fds{ind}));
+            end
+
+            jsonstruct = mergeJsonStructs({fileJsonstruct, jsonstruct});
+
+            
         end
+        
         fds = fieldnames(jsonstruct);
         for ind = 1 : numel(fds)
             jsonstruct.(fds{ind}) = resolveFileInputJson(jsonstruct.(fds{ind}));
         end
+        
     end
     
 end

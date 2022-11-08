@@ -1,0 +1,6 @@
+{ "format" : "1D",
+  "faceArea" : 1e-4,
+  "NegativeElectrode": { "ActiveMaterial": { "thickness" : 64e-6 }},
+  "PositiveElectrode": { "ActiveMaterial": {"thickness" : 57e-6}},
+  "Electrolyte": { "Separator" : {"thickness" : 15e-6} }
+}
