@@ -60,7 +60,9 @@ function  output = runBatteryJson(jsonInput)
     % in the class BatteryGenerator1D.
 
     switch jsonstruct.format
+
       case '1D'
+
         gen = BatteryGenerator1D();
         
         xlength = gen.xlength;
@@ -69,6 +71,10 @@ function  output = runBatteryJson(jsonInput)
         xlength(4) = jsonstruct.PositiveElectrode.ActiveMaterial.thickness;
         gen.xlength = xlength;
 
+        gen.sepnx  = 4;
+        gen.nenx   = 4;
+        gen.penx   = 4;
+        
         gen.faceArea = jsonstruct.faceArea;
         
         % Now, we update the paramobj with the properties of the mesh. 
