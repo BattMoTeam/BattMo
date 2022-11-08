@@ -28,7 +28,7 @@
 
               "description" : "We have the following methods for the matlab solver. If no method is given, a direct solver is used",
 
-              "oneOf": [
+              "anyOf": [
 
                 {"properties" : {"method" : {"const": "direct"}}},
 
@@ -40,7 +40,10 @@
                  
                 {"properties" : {"method" : {"const" : "separate-variable-gmres"},
                                  "description" : "We use separate preconditioner for chosen variables",
-                                 "preconditioners" : {"$ref" : "#/$defs/separate_variable_preconditioners"}}}
+                                 "preconditioners" : {"$ref" : "#/$defs/separate_variable_preconditioners"}}},
+
+                {"not" : {"properties" : {"method" : {"enum" : ["direct", "grouped-gmres", "separate-variable-gmres"]}}},
+                 "description" : "if no method is given, the direct solver is used"}
                 
               ]
              },

@@ -152,7 +152,11 @@ classdef BatteryLinearSolver < handle
                 
               case 'matlab'
 
-                method = setup.method;
+                if ~isfield(setup, 'method')
+                    method = 'direct';
+                else
+                    method = setup.method;
+                end
 
                 switch method
 
