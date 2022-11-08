@@ -1,10 +1,8 @@
 {"library" : "matlab",
  "method" : "separate-variable-gmres",
  "reduction" : {"doReduction" : true,
-                "variables" : [["Control", "I"],
-                               ["NegativeElectrode", "ActiveMaterial", "SolidDiffusion", "cSurface"],
-                               ["PositiveElectrode", "ActiveMaterial", "SolidDiffusion", "cSurface"]
-                              ]},
+                "variables" : [{"name" : ["Control", "I"], "order" : 1, "special" : true}]
+               },
  
  "preconditioners" : [{"variables" : [["Electrolyte", "phi"],
                                       ["NegativeElectrode", "ActiveMaterial", "phi"],

@@ -17,9 +17,18 @@
 
                   "reduction" : {"type" : "object",
                                  "properties" : {"doReduction": {"type" : "boolean"},
+                                                 "description" : "The reduction of Control.I and Control.E is done conditionally",
                                                  "variables" : {"type" : "array",
                                                                 "description" : "list of the variables that will be eliminated before inverting the linear system",
-                                                                "items" : {"$ref" : "#/$defs/variable"}}}
+                                                                "items" : {"type" : "object",
+                                                                           "properties" : {"name" : {"$ref" : "#/$defs/variable"},
+                                                                                           "order" : {"type" : "integer",
+                                                                                                      "description" : "gives order in which reduction should be done"},
+                                                                                           "special" : {"type" : "boolean"},
+                                                                                           "description" : "If special is true, it reminds  us that some variables such as Control.I and Control.E can  be  reduced or not depending on the type of control that is active"}
+                                                                          }
+                                                               }
+                                                }
                                 }
                  },
 

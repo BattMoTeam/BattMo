@@ -206,21 +206,30 @@ classdef Battery < BaseModel
                 % We set the type of the variable to be reduced as 'other' and we move them at the end of list
                 % respecting the order they have been given.
                 if ~isempty(reduc) && reduc.doReduction
-                    variables = reduc.variables;
                     neq = numel(equationTypes);
                     equationTypes = cell(neq, 1);
                     for ieqtype = 1 : neq
                         equationTypes{ieqtype} = 'cell';
                     end
+
+                    variables = reduc.variables;
                     einds = nan(numel(variables),1);
                     for ivar = 1 : numel(variables)
-                        [found, ind] = Battery.getVarIndex(variables{ivar}, primaryVariableNames);
+                        var = variables{ivar};
+                        [found, ind] = Battery.getVarIndex(var.name, primaryVariableNames);
                         if ~found
                             error('variable to be reduce has not been found');
                         end
-                        equationTypes{ind} = 'other';
+                        equationTypes{ind} = 'reduced';
+                        if isfield(var, "special") && var.special
+                            equationTypes{ind} = 'specialReduced';
+                        end
                         einds(ivar) = ind;
+                        order(ivar) = var.order;
                     end
+
+                    [~, ind] = sort(order);
+                    einds = einds(ind);
 
                     inds = (1 : neq)';
                     inds(einds) = [];
@@ -1068,12 +1077,7 @@ classdef Battery < BaseModel
               case {'constantCurrent', 'CC_discharge1', 'CC_discharge2', 'CC_charge1'}
                 types{ei.EIeq} = 'cell';   
               case {'constantVoltage', 'CV_charge2'}
-                % TODO : fix that
-                % neqs  = numel(types);
-                % order = [1 : neqs - 2, neqs, neqs - 1];
-                % types = {types{order}};
-                % eqs   = {eqs{order}};
-                % names = {names{order}};
+                types{ei.controlEq} = 'cell';
               otherwise 
                 error('control type not recognized')
             end
