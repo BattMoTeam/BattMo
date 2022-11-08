@@ -47,7 +47,7 @@ classdef InputParams
         % Default automatic behaviour is that all the properties of paramobj that belong to class InputParams get
         % validated.
             
-            paramobjFds = properties(paramobj);
+            paramobjFds = propertynames(paramobj);
 
             for ind = 1 : numel(paramobjFds)
         
