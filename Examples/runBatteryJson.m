@@ -24,7 +24,7 @@ function  output = runBatteryJson(jsonInput)
     jsonstruct.(pe).(am).diffusionModelType = diffusionModelType;
     jsonstruct.(ne).(am).diffusionModelType = diffusionModelType;
 
-    jsonstruct.use_particle_diffusion = true;
+    jsonstruct.use_particle_diffusion = false;
     
     jsonstruct.use_thermal = false;
     
