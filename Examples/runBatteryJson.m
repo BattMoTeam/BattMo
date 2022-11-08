@@ -141,7 +141,7 @@ function  output = runBatteryJson(jsonInput)
     % Change default tolerance for nonlinear solver
     model.nonlinearTolerance = 1e-3*model.Control.Imax;
     % Set verbosity
-    model.verbose = true;
+    model.verbose = false;
 
     %% Run the simulation
     [~, states, report] = simulateScheduleAD(initstate, model, schedule, 'OutputMinisteps', true, 'NonLinearSolver', nls); 
