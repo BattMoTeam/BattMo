@@ -38,8 +38,10 @@ cc      = 'CurrentCollector';
 jsonstruct.use_thermal = true;
 jsonstruct.include_current_collectors = false;
 
-jsonstruct.(pe).(am).diffusionModelType = 'simple';
-jsonstruct.(ne).(am).diffusionModelType = 'simple';
+diffusionModelType = 'full';
+
+jsonstruct.(pe).(am).diffusionModelType = diffusionModelType;
+jsonstruct.(ne).(am).diffusionModelType = diffusionModelType;
 
 jsonstruct.use_particle_diffusion = true;
 
@@ -183,8 +185,14 @@ switch casenumber
 
   case 4
 
-    % jsonfilename = fullfile(battmoDir, 'Utilities/JsonSchemas/Tests/linearsolver2.json');
-    jsonfilename = fullfile(battmoDir, 'Utilities/JsonSchemas/Tests/linearsolver3.json');
+    switch diffusionModelType
+      case 'simple'
+        jsonfilename = fullfile(battmoDir, 'Utilities/JsonSchemas/Tests/linearsolver3.json');
+      case 'full'
+        jsonfilename = fullfile(battmoDir, 'Utilities/JsonSchemas/Tests/linearsolver4.json');
+      otherwise
+        error('diffusionModelType not covered')
+    end
     jsonsrc = fileread(jsonfilename);
     setup = jsondecode(jsonsrc);
     

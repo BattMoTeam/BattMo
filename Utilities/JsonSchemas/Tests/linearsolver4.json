@@ -1,0 +1,34 @@
+{"library" : "matlab",
+ "method" : "separate-variable-gmres",
+ "reduction" : {"doReduction" : true,
+                "variables" : [["Control", "I"],
+                               ["NegativeElectrode", "ActiveMaterial", "SolidDiffusion", "cSurface"],
+                               ["PositiveElectrode", "ActiveMaterial", "SolidDiffusion", "cSurface"]
+                              ]},
+ 
+ "preconditioners" : [{"variables" : [["Electrolyte", "phi"],
+                                      ["NegativeElectrode", "ActiveMaterial", "phi"],
+                                      ["PositiveElectrode", "ActiveMaterial", "phi"],
+                                      ["NegativeElectrode", "CurrentCollector", "phi"],
+                                      ["PositiveElectrode", "CurrentCollector", "phi"],
+                                      ["Control", "E"]
+                                     ],
+                       "solver" : {"library" : "matlab",
+                                   "method" : "hello"}},
+
+                      {"variables" : [["NegativeElectrode", "ActiveMaterial", "SolidDiffusion", "c"]],
+                       "solver" : {"library" : "matlab"}
+                      },
+                      
+                      {"variables" : [["PositiveElectrode", "ActiveMaterial", "SolidDiffusion", "c"]],
+                       "solver" : {"library" : "matlab"}
+                      },
+
+                      {"variables" : [["Electrolyte", "c"]],
+                       "solver" : {"library" : "matlab"}
+                                  },
+
+                      {"variables" : [["ThermalModel", "T"]],
+                       "solver" : {"library" : "matlab"}}
+                     ]
+}
