@@ -35,8 +35,6 @@ classdef BatteryLinearSolver < handle
         
         function solver = BatteryLinearSolver(varargin)
             
-            solver.tolerance                 = 1e-8;
-            solver.maxIterations             = 25;
             solver.extraReport               = false;
             solver.verbose                   = mrstVerbose();
             solver.replaceNaN                = false;
@@ -49,17 +47,42 @@ classdef BatteryLinearSolver < handle
             solver.applyRightDiagonalScaling = false;
             solver.variableOrdering          = [];
             solver.equationOrdering          = [];
-            solver.linearSolverSetup         = struct('method', 'direct');
+            solver.linearSolverSetup         = [];
             solver.reuse_setup               = false;
             solver.first                     = true;
             
             solver = merge_options(solver, varargin{:});
-            
-            assert(solver.maxIterations >= 0);
-            assert(solver.tolerance >= 0);
-            
+
+            if ~isempty(solver.linearSolverSetup)
+                solver = processSolverSetup(solver);
+            else
+                solver.linearSolverSetup = struct('library', 'matlab', 'method', 'direct');
+            end
         end
 
+        function solver = processSolverSetup(solver)
+
+        % for the moment we only process gmres options for matlab
+            lss = solver.linearSolverSetup;
+            if strcmp(lss.library, 'matlab') & isfield(lss, 'method') & contains(lss.method, 'gmres')
+                if isfield(lss, 'gmres_options')
+                    opt = lss.gmres_options;
+                    fds = {'restart', 'maxit', 'tol'};
+                    for ifd = 1 : numel(fds)
+                        fd = fds{ifd};
+                        if ~isnumeric(opt.(fd))
+                            opt.(fd) = [];
+                        end
+                    end
+                    lss.gmres_options = opt;
+                end
+            else
+                lss.gmres_options = struct('restart', [], 'maxit', solver.maxIterations, 'tol', solver.tolerance);
+            end
+            solver.linearSolverSetup = lss;
+            
+        end
+        
         function [dx, result, report] = solveLinearProblem(solver, problem, model)
         % Solve a linearized problem
         % QUESTION : Do we want to simplify solveLinearProblem ?
@@ -256,9 +279,14 @@ classdef BatteryLinearSolver < handle
                     precond = @(b) solver.blockFieldSchwarz(b, A, precondsolvers);
                     
                     a=tic;
-                    restart = solver.maxIterations;
 
-                    [result, flags, relres, iter] = gmres(A, b, restart, solver.tolerance, solver.maxIterations, precond);
+                    gopts = setup.gmres_options;
+
+                    [result, flags, relres, iter] = gmres(A, b, ...
+                                                          gopts.restart, ...
+                                                          gopts.tol, ...
+                                                          gopts.maxit, ...
+                                                          precond);
                     
                     % add diagnostic fields in report
                     report.Iterations         = (iter(1) - 1)*solver.maxIterations + iter(2);
@@ -433,9 +461,9 @@ classdef BatteryLinearSolver < handle
                 else
                     amgclverbose = false;
                 end
-                itersolver = struct('type'   , 'gmres', ...
-                                    'M'      , 50     , ...
-                                    'tol'    , 1e-5   , ...
+                itersolver = struct('type'   , 'gmres'     , ...
+                                    'M'      , 50          , ...
+                                    'tol'    , 1e-5        , ...
                                     'verbose', amgclverbose, ...
                                     "maxiter", 20);
                 
@@ -506,21 +534,15 @@ classdef BatteryLinearSolver < handle
         
         function  [x, flag, relres, iter] = amgcl(solver, A, b, opt) 
 
-            tol = opt.solver.tol;
-            maxiter = opt.solver.maxiter;
-
             if strcmp(opt.precond.coarsening.type, 'aggregation')
                 opt.block_size = opt.precond.coarsening.aggr.block_size;
             else
                 opt.block_size = 1;
             end
                 
-            [x, extra] =  amgcl(A, b, ...
-                                'amgcloptions', opt    , ...
-                                'tol'         , tol    , ...
-                                'maxiter'     , maxiter);
+            [x, extra] =  amgcl(A, b, 'amgcloptions', opt);
 
-            flag   = extra.err < tol;
+            flag   = extra.err < opt.solver.tol;
             relres = extra.err;
             iter   = extra.nIter;
             

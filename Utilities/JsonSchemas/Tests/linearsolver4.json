@@ -11,8 +11,16 @@
                                       ["PositiveElectrode", "CurrentCollector", "phi"],
                                       ["Control", "E"]
                                      ],
-                       "solver" : {"library" : "matlab",
-                                   "method" : "hello"}},
+                       "solver" : {"library" : "matlab"}
+                      },
+
+                      {"variables" : [["NegativeElectrode", "ActiveMaterial", "SolidDiffusion", "cSurface"]],
+                       "solver" : {"library" : "matlab"}
+                      },
+                      
+                      {"variables" : [["PositiveElectrode", "ActiveMaterial", "SolidDiffusion", "cSurface"]],
+                       "solver" : {"library" : "matlab"}
+                      },
 
                       {"variables" : [["NegativeElectrode", "ActiveMaterial", "SolidDiffusion", "c"]],
                        "solver" : {"library" : "matlab"}

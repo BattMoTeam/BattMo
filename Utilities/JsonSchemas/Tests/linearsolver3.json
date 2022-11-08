@@ -1,5 +1,8 @@
 {"library" : "matlab",
  "method" : "separate-variable-gmres",
+ "gmres_options" : {"restart" : "default",
+                    "tol" : 1e-6,
+                    "maxit" : 30},
  "reduction" : {"doReduction" : true,
                 "variables" : [{"name" : ["Control", "I"], "order" : 1, "special" : true},
                                {"name" : ["Control", "E"], "order" : 1, "special" : true},
@@ -16,12 +19,12 @@
                                       ["PositiveElectrode", "CurrentCollector", "phi"],
                                       ["Control", "E"]
                                      ],
-                       "solver" : {"library" : "amgcl"}},
+                       "solver" : {"library" : "matlab"}},
                       
                       {"variables" : [["Electrolyte", "c"]],
                        "solver" : {"library" : "amgcl"}
                                   },
                       {"variables" : [["ThermalModel", "T"]],
-                       "solver" : {"library" : "amgcl"}}
+                       "solver" : {"library" : "matlab"}}
                      ]
 }

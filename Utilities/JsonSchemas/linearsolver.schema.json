@@ -31,7 +31,7 @@
                                                 }
                                 }
                  },
-
+                 
 
   "oneOf" : [{"properties" : {"library" : {"const" : "matlab"}},
 
@@ -44,11 +44,13 @@
 
                 {"properties" : {"method" : {"const" : "grouped-gmres"},
                                  "description" : "we run gmres on the whole system with one preconditioner",
+                                 "gmres_options" : {"$ref" : "#/$defs/matlab_gmres_options"},
                                  "preconditioner" : {"$ref" : "#"}}},
 
                  
                 {"properties" : {"method" : {"const" : "separate-variable-gmres"},
                                  "description" : "We use separate preconditioner for chosen variables",
+                                 "gmres_options" : {"$ref" : "#/$defs/matlab_gmres_options"},
                                  "preconditioners" : {"$ref" : "#/$defs/separate_variable_preconditioners"}}},
 
                 {"not" : {"properties" : {"method" : {"enum" : ["direct", "grouped-gmres", "separate-variable-gmres"]}}},
@@ -64,7 +66,7 @@
               "oneOf": [
                 
                 {"properties" : {"method" : {"const": "standard"},
-                                 "descrtion": "solve until convergence"}},
+                                 "description": "solve until convergence"}},
 
                 {"properties" : {"method" : {"const": "amg"},
                                  "description" : "only one iteration"}},
@@ -102,10 +104,24 @@
                                                                                 "solver" : {"$ref" : "#"}
                                                                                }
                                                                }
-                                                    }
+                                                    },
+              "matlab_gmres_options" : {"type" : "object",
+                                        "description" : "see matlab documentation for full details. The preconditioners and start vectors are not included here",
+                                        "properties" : {"restart" : {"anyOf" : [{"type" : "integer"},
+                                                                                {"const" : "default"}],
+                                                                     "description" : "restart the method every restart iterations"},
+                                                        "tol" : {"anyOf" : [{"type" : "number"},
+                                                                            {"const" : "default"}],
+                                                                 "description" : "tolerance",
+                                                                 "default" : 1e-6},
+                                                        "maxit" : {"anyOf" : [{"type" : "integer"},
+                                                                              {"const" : "default"}],
+                                                                   "description" : "maximum number of outer iterations",
+                                                                   "default" : "MIN(N/RESTART,10) where N is matrix size"}}
+                                       }
             }
   
-}  
+}
 
 
 
