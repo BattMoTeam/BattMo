@@ -1,7 +1,11 @@
 {"library" : "matlab",
  "method" : "separate-variable-gmres",
+  "gmres_options" : {"restart" : "default",
+                     "tol" : "default",
+                     "maxit" : "default"},
  "reduction" : {"doReduction" : true,
-                "variables" : [{"name" : ["Control", "I"], "order" : 1, "special" : true}]
+                "variables" : [{"name" : ["Control", "I"], "order" : 1, "special" : true},
+                               {"name" : ["Control", "E"], "order" : 1, "special" : true}]
                },
  
  "preconditioners" : [{"variables" : [["Electrolyte", "phi"],
@@ -9,24 +13,23 @@
                                       ["PositiveElectrode", "ActiveMaterial", "phi"],
                                       ["NegativeElectrode", "CurrentCollector", "phi"],
                                       ["PositiveElectrode", "CurrentCollector", "phi"],
-                                      ["Control", "E"]
+                                      ["Control", "E"],
+                                      ["Control", "I"],
+                                      ["NegativeElectrode", "ActiveMaterial", "SolidDiffusion", "cSurface"],
+                                      ["PositiveElectrode", "ActiveMaterial", "SolidDiffusion", "cSurface"]
                                      ],
                        "solver" : {"library" : "matlab"}
                       },
 
-                      {"variables" : [["NegativeElectrode", "ActiveMaterial", "SolidDiffusion", "cSurface"]],
+                      {"variables" : [["NegativeElectrode", "ActiveMaterial", "SolidDiffusion", "c"],
+                                      ["NegativeElectrode", "ActiveMaterial", "SolidDiffusion", "cSurface"]
+                                     ],
                        "solver" : {"library" : "matlab"}
                       },
                       
-                      {"variables" : [["PositiveElectrode", "ActiveMaterial", "SolidDiffusion", "cSurface"]],
-                       "solver" : {"library" : "matlab"}
-                      },
-
-                      {"variables" : [["NegativeElectrode", "ActiveMaterial", "SolidDiffusion", "c"]],
-                       "solver" : {"library" : "matlab"}
-                      },
-                      
-                      {"variables" : [["PositiveElectrode", "ActiveMaterial", "SolidDiffusion", "c"]],
+                      {"variables" : [["PositiveElectrode", "ActiveMaterial", "SolidDiffusion", "c"],
+                                      ["NegativeElectrode", "ActiveMaterial", "SolidDiffusion", "cSurface"]
+                                     ],
                        "solver" : {"library" : "matlab"}
                       },
 
