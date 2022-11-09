@@ -111,8 +111,12 @@ classdef BatteryLinearSolver < handle
             end
             
             problem = problem.assembleSystem();
-            if(not(all(isfinite(problem.b))))
-                assert(all(isfinite(problem.b)), 'Linear system rhs must have finite entries.');
+            if (not(all(isfinite(problem.b))))
+                dx = [];
+                result = [];
+                report.Failed = true;
+                report.failureMsg = 'Linear system rhs have infinite entries';
+                return
             end
             
             % Get linearized system
@@ -401,12 +405,14 @@ classdef BatteryLinearSolver < handle
         end
         
         function report = getSolveReport(solver, varargin) % ok
-            report = struct('Iterations'        , 0, ... % Number of iterations (if iterative)
-                            'Residual'          , 0, ... % Final residual
-                            'SolverTime'        , 0, ... % Total time in solver
-                            'LinearSolutionTime', 0, ... % Time spent solving system
-                            'PreparationTime'   , 0, ... % Schur complement, scaling     , ...
-                            'PostProcessTime'   , 0, ... % Recovery , undo scaling, ...
+            report = struct('Iterations'        , 0 , ... % Number of iterations (if iterative)
+                            'Residual'          , 0 , ... % Final residual
+                            'SolverTime'        , 0 , ... % Total time in solver
+                            'Failed'            , 0 , ... % True if linear solver failed (for example infinite entry)
+                            'failureMsg'        , [], ... % Failure message in case Failed
+                            'LinearSolutionTime', 0 , ... % Time spent solving system
+                            'PreparationTime'   , 0 , ... % Schur complement, scaling, ...
+                            'PostProcessTime'   , 0 , ... % Recovery , undo scaling  , ...
                             'Converged'         , true); % Bool indicating convergence
             report = merge_options_relaxed(report, varargin);
         end
