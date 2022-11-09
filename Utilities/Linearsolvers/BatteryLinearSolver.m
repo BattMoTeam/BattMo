@@ -275,6 +275,9 @@ classdef BatteryLinearSolver < handle
 
                         % setup the solver function that will be run
                         precondsolver.func = solver.getElipticSolver(precondSolverStruct.solver);
+                        if isfield(precondSolverStruct, 'name')
+                            precondsolver.name = precondSolverStruct.name;
+                        end
 
                         precondsolvers{end + 1} = precondsolver;
 
@@ -425,9 +428,18 @@ classdef BatteryLinearSolver < handle
 
                 precondsolver = precondsolvers{isolver};
                 ind = precondsolver.ind;
-
+                
                 if any(ind)
                     func = precondsolver.func;
+                    if solver.verbose
+                        if isfield(precondsolver, 'name')
+                            name = sprintf("(%s)", precondsolver.name);
+                        else
+                            name = ""
+                        end
+                        fprintf('*** block preconditioner %d %s\n\n', isolver, name);
+                    end                        
+
                     [pr, flag, res, iter] = func(A(ind, ind), x(ind));
                     r(ind) = pr;
                     solver.precondReports{isolver}.Iterations = solver.precondReports{isolver}.Iterations + iter;
@@ -535,18 +547,12 @@ classdef BatteryLinearSolver < handle
                                  'npost'        , 1           , ...
                                  'pre_cycles'   , 1);
 
-                if  islogical(solver.verbose) & solver.verbose 
-                    amgclverbose = 1;
-                else
-                    amgclverbose = 0;
-                end
-                
                 opts = struct('solver'      , itersolver, ...
                               'precond'     , precond   , ...
                               'reuse_mode'  , 1         , ...
                               'solver_type' , 'regular' , ...
                               'write_params', false     , ...
-                              'verbose'     , amgclverbose);
+                              'verbose'     , solver.verbose);
                 
                 elliptic_solver = @(A, b) solver.amgcl(A, b, opts);
                 
@@ -565,7 +571,7 @@ classdef BatteryLinearSolver < handle
             else
                 opt.block_size = 1;
             end
-                
+
             [x, extra] =  amgcl(A, b, 'amgcloptions', opt);
 
             flag   = extra.err < opt.solver.tol;

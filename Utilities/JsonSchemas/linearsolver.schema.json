@@ -98,7 +98,9 @@
               "separate_variable_preconditioners" : {"type" : "array",
                                                      "description" : "array of solvers for the variables",
                                                      "items" : {"type" : "object",
-                                                                "properties" : {"variables" : {"type" : "array",
+                                                                "properties" : {"name" : {"type" : "string",
+                                                                                          "description" : "A name can be given to the preconditioner. It will be used in verbose mode to identify the preconditioner."},
+                                                                                "variables" : {"type" : "array",
                                                                                                "items" : {"$ref" : "#/$defs/variable"}
                                                                                               },
                                                                                 "solver" : {"$ref" : "#"}
