@@ -213,6 +213,9 @@ classdef Battery < BaseModel
                     end
 
                     variables = reduc.variables;
+                    if isstruct(variables)
+                        variables = num2cell(variables);
+                    end
                     einds = nan(numel(variables),1);
                     for ivar = 1 : numel(variables)
                         var = variables{ivar};

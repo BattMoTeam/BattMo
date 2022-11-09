@@ -3,8 +3,6 @@ classdef BatteryLinearSolver < handle
     
     properties
 
-        tolerance                  % Linear solver tolerance
-        maxIterations              % Max number of iterations used
         extraReport                % Enable this to produce additional report output
                                    % May use a lot of memory for large problems
         verbose                    % Verbose output enabler
@@ -36,7 +34,7 @@ classdef BatteryLinearSolver < handle
         function solver = BatteryLinearSolver(varargin)
             
             solver.extraReport               = false;
-            solver.verbose                   = mrstVerbose();
+            solver.verbose                   = 0;
             solver.replaceNaN                = false;
             solver.replaceInf                = false;
             solver.replacementNaN            = 0;
@@ -64,20 +62,22 @@ classdef BatteryLinearSolver < handle
 
         % for the moment we only process gmres options for matlab
             lss = solver.linearSolverSetup;
+            % default values
+            default_gmres_options = struct('restart', [], 'maxit', 20, 'tol', 1e-5);
             if strcmp(lss.library, 'matlab') & isfield(lss, 'method') & contains(lss.method, 'gmres')
                 if isfield(lss, 'gmres_options')
-                    opt = lss.gmres_options;
+                    gmres_options = lss.gmres_options;
                     fds = {'restart', 'maxit', 'tol'};
                     for ifd = 1 : numel(fds)
                         fd = fds{ifd};
-                        if ~isnumeric(opt.(fd))
-                            opt.(fd) = [];
+                        if ischar(gmres_options.(fd)) && strcmp(gmres_options.(fd), 'default')
+                            gmres_options.(fd) = default_gmres_options.(fd);
                         end
                     end
-                    lss.gmres_options = opt;
+                    lss.gmres_options = gmres_options;
                 end
             else
-                lss.gmres_options = struct('restart', [], 'maxit', solver.maxIterations, 'tol', solver.tolerance);
+                lss.gmres_options = default_gmres_options;
             end
             solver.linearSolverSetup = lss;
             
@@ -220,11 +220,18 @@ classdef BatteryLinearSolver < handle
                         
                         a=tic;
 
-                        [result, flags, relres, iter] = gmres(A, b, solver.maxIterations, solver.tolerance, solver.maxIterations, f);
+                        gopts = setup.gmres_options;
 
-                        report.Iterations         = (iter(1) - 1)*solver.maxIterations + iter(2);
+                        [result, flag, relres, iter] = gmres(A, b, ...
+                                                             gopts.restart, ...
+                                                             gopts.tol, ...
+                                                             gopts.maxit, ...
+                                                             precond);
+                        
+                        % add diagnostic fields in report
+                        report.Iterations         = (iter(1) - 1)*gopts.maxit + iter(2);
                         report.Residual           = relres;
-                        report.Converged          = flags;
+                        report.Converged          = flag;
                         report.LinearSolutionTime = toc(a);
 
                         switch preconditioner.method
@@ -282,19 +289,32 @@ classdef BatteryLinearSolver < handle
 
                     gopts = setup.gmres_options;
 
-                    [result, flags, relres, iter] = gmres(A, b, ...
-                                                          gopts.restart, ...
-                                                          gopts.tol, ...
-                                                          gopts.maxit, ...
-                                                          precond);
+                    [result, flag, relres, iter] = gmres(A, b, ...
+                                                         gopts.restart, ...
+                                                         gopts.tol, ...
+                                                         gopts.maxit, ...
+                                                         precond);
                     
                     % add diagnostic fields in report
-                    report.Iterations         = (iter(1) - 1)*solver.maxIterations + iter(2);
+                    report.Iterations         = (iter(1) - 1)*gopts.maxit + iter(2);
                     report.Residual           = relres;
-                    report.Converged          = flags;
+                    report.Converged          = flag;
                     report.LinearSolutionTime = toc(a);
                     report.precondReports     = solver.precondReports;
 
+                    if solver.verbose
+
+                        if solver.verbose > 1
+                            fprintf('\n***  GMRES Report \n');
+                            fprintf('flag (0:converged, 1:maxiter, 2:ill-posed precond, 3:stagnated) : %d \n', flag);
+                            fprintf('iterations : %d \n', report.Iterations);
+                            fprintf('***\n\n', report.Iterations);
+                        else
+                            if flag == 1
+                                warning('GMRES did not converge');
+                            end
+                        end
+                    end
 
                   otherwise
                     error('method not recognized');
