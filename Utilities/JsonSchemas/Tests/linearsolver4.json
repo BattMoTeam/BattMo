@@ -8,7 +8,8 @@
                                {"name" : ["Control", "E"], "order" : 1, "special" : true}]
                },
  
- "preconditioners" : [{"variables" : [["Electrolyte", "phi"],
+ "preconditioners" : [{"name" : "potential",
+                       "variables" : [["Electrolyte", "phi"],
                                       ["NegativeElectrode", "ActiveMaterial", "phi"],
                                       ["PositiveElectrode", "ActiveMaterial", "phi"],
                                       ["NegativeElectrode", "CurrentCollector", "phi"],
@@ -18,26 +19,29 @@
                                       ["NegativeElectrode", "ActiveMaterial", "SolidDiffusion", "cSurface"],
                                       ["PositiveElectrode", "ActiveMaterial", "SolidDiffusion", "cSurface"]
                                      ],
-                       "solver" : {"library" : "matlab"}
+                       "solver" : {"library" : "amgcl"}
                       },
 
-                      {"variables" : [["NegativeElectrode", "ActiveMaterial", "SolidDiffusion", "c"],
-                                      ["NegativeElectrode", "ActiveMaterial", "SolidDiffusion", "cSurface"]
-                                     ],
-                       "solver" : {"library" : "matlab"}
+                      {"name" : "concentration in negative electrode particles",
+                       "variables" : [["NegativeElectrode", "ActiveMaterial", "SolidDiffusion", "c"]],
+                       "solver" : {"library" : "amgcl"}
                       },
                       
-                      {"variables" : [["PositiveElectrode", "ActiveMaterial", "SolidDiffusion", "c"],
-                                      ["NegativeElectrode", "ActiveMaterial", "SolidDiffusion", "cSurface"]
-                                     ],
-                       "solver" : {"library" : "matlab"}
+                      {"name" : "concentration in positive electrode particles",
+                       "variables" : [["PositiveElectrode", "ActiveMaterial", "SolidDiffusion", "c"]],
+                       "solver" : {"library" : "amgcl"}
                       },
 
-                      {"variables" : [["Electrolyte", "c"]],
-                       "solver" : {"library" : "matlab"}
+                      {"name" : "concentration in electrolyte",
+                       "variables" : [["Electrolyte", "c"]],
+                       "solver" : {"library" : "amgcl"}
                                   },
 
-                      {"variables" : [["ThermalModel", "T"]],
-                       "solver" : {"library" : "matlab"}}
+                      {"name" : "temperature",
+                       "variables" : [["ThermalModel", "T"],
+                                      ["NegativeElectrode", "ActiveMaterial", "SolidDiffusion", "cSurface"],
+                                      ["PositiveElectrode", "ActiveMaterial", "SolidDiffusion", "cSurface"]
+                                     ],
+                       "solver" : {"library" : "amgcl"}}
                      ]
 }

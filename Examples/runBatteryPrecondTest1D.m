@@ -50,8 +50,6 @@ paramobj = BatteryInputParams(jsonstruct);
 paramobj.(ne).(am).InterDiffusionCoefficient = 0;
 paramobj.(pe).(am).InterDiffusionCoefficient = 0;
 
-paramobj.Control.lowerCutoffVoltage = 3;
-
 % paramobj.(ne).(am).(sd).N = 5;
 % paramobj.(pe).(am).(sd).N = 5;
 
@@ -75,7 +73,7 @@ end
 % simulation. The required discretization parameters are already included
 % in the class BatteryGenerator1D. 
 gen = BatteryGenerator1D();
-gen.fac = 10;
+gen.fac = 1000;
 gen = gen.applyResolutionFactors();
 
 % Now, we update the paramobj with the properties of the mesh. 
@@ -212,7 +210,7 @@ nls.LinearSolver = BatteryLinearSolver('verbose'          , 1, ...
                                        'reuse_setup'      , false, ...
                                        'linearSolverSetup', setup);
 
-nls.LinearSolver.linearSolverSetup.gmres_options.tolerance = 1e-6*model.Control.Imax;
+nls.LinearSolver.linearSolverSetup.gmres_options.tolerance = 1e-3*model.Control.Imax;
 
 % Change default maximum iteration number in nonlinear solver
 nls.maxIterations = 20;
@@ -220,7 +218,7 @@ nls.maxIterations = 20;
 nls.errorOnFailure = false;
 % nls.timeStepSelector=StateChangeTimeStepSelector('TargetProps', {{'Control','E'}}, 'targetChangeAbs', 0.03);
 % Change default tolerance for nonlinear solver
-model.nonlinearTolerance = 1e-6*model.Control.Imax;
+model.nonlinearTolerance = 1e-3*model.Control.Imax;
 % Set verbosity
 model.verbose = true;
 
