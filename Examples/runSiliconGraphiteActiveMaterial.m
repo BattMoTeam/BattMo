@@ -25,10 +25,11 @@ paramobj.(si).G = G;
 paramobj.(gr).G = G;
 
 model = SiliconGraphiteActiveMaterial(paramobj);
+model.AutoDiffBackend= AutoDiffBackend();
 
 model.use_thermal = false;
 
-inspectgraph = true;
+inspectgraph = false;
 if inspectgraph
     model.isRoot = true;
     cgt = ComputationalGraphTool(model);
@@ -40,14 +41,11 @@ if inspectgraph
     return
 end
 
-
 %% Setup initial state
-
 
 cElectrolyte     = 5e-1*mol/litre;
 phiElectrolyte   = 0;
 T                = 298;
-
 
 initState.cElectrolyte = cElectrolyte;
 initState.phiElectrolyte = phiElectrolyte;
@@ -103,9 +101,9 @@ for imat = 1 : numel(mats)
     computeCaverage{imat} = @(c) (sum(vols.*c)/sum(vols));
 end
 
-control.stopFunction = @(model, state, state0_inner) (computeCaverage{1}(state.(mats{1})(sd).c) <= cmin{1} & ...
-                                                      computeCaverage{2}(state.(mats{2})(sd).c) <= cmin{2});
-                                                 
+% control.stopFunction = @(model, state, state0_inner) (feval(computeCaverage{1}, state.(mats{1}).(itf).cElectrodeSurface ) <= cmin{1} & ...
+                                                      % feval(computeCaverage{2}, state.(mats{2}).(itf).cElectrodeSurface ) <= cmin{2});
+
 schedule = struct('control', control, 'step', step); 
 
 %% Run simulation

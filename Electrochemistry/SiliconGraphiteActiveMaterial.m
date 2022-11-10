@@ -22,8 +22,6 @@ classdef SiliconGraphiteActiveMaterial < ElectronicComponent
         
         externalCouplingTerm          % only used in no current collector
 
-        BruggemanCoefficient
-
         isRoot
         
     end
@@ -36,17 +34,14 @@ classdef SiliconGraphiteActiveMaterial < ElectronicComponent
         %
             model = model@ElectronicComponent(paramobj);
             
-            % fdnames = {'activeMaterialFraction', ...
-                       % 'thermalConductivity'   , ...
-                       % 'electricalConductivity', ...
-                       % 'heatCapacity'          , ...
-                       % 'externalCouplingTerm'  , ...
-                       % 'diffusionModelType'    , ...
-                       % 'use_thermal'           , ...
-                       % 'use_particle_diffusion', ...
-                       % 'BruggemanCoefficient'};
+            fdnames = {'volumeFraction'        , ...
+                       'thermalConductivity'   , ...
+                       'electricalConductivity', ...
+                       'heatCapacity'          , ...
+                       'externalCouplingTerm'  , ...
+                       'use_thermal'};
             
-            % model = dispatchParams(model, paramobj, fdnames);
+            model = dispatchParams(model, paramobj, fdnames);
             
 
             model.Graphite = ActiveMaterial(paramobj.Graphite);
@@ -119,8 +114,10 @@ classdef SiliconGraphiteActiveMaterial < ElectronicComponent
                 fn = @SiliconGraphiteActiveMaterial.updatejFaceBc;
                 model = model.registerPropFunction({'jFaceBc', fn, {'jFaceCoupling', 'jFaceExternal'}});
             end
-            
 
+            fn = @SiliconGraphiteActiveMaterial.updateConductivity;
+            model = model.registerPropFunction({'conductivity', fn, {}});
+            
             fn = @SiliconGraphiteActiveMaterial.updateCurrentSource;
             inputnames = {{si, 'Rvol'}, {gr, 'Rvol'}};
             model = model.registerPropFunction({'eSource', fn, inputnames});
@@ -177,10 +174,11 @@ classdef SiliconGraphiteActiveMaterial < ElectronicComponent
 
             state = updateControl(model, state, drivingForces, dt);
             
+            state = model.updateConductivity(state);
             state = model.updateStandalonejBcSource(state);
             state = model.updateCurrent(state);
             state = model.dispatchTemperature(state);
-            state.(si).(sd) = model.(si).(sd).updateMassAccum(state.(si).(sd));
+            state.(si).(sd) = model.(si).(sd).updateMassAccum(state.(si).(sd), state0.(si).(sd), dt);
             state.(si).(sd) = model.(si).(sd).updateAverageConcentration(state.(si).(sd));
             state.(si) = model.(si).updateSOC(state.(si));
             state.(si) = model.(si).dispatchTemperature(state.(si));
@@ -197,7 +195,7 @@ classdef SiliconGraphiteActiveMaterial < ElectronicComponent
             state.(si).(sd) = model.(si).(sd).updateMassSource(state.(si).(sd));
             state.(si).(sd) = model.(si).(sd).assembleSolidDiffusionEquation(state.(si).(sd));
             state.(si).(sd) = model.(si).(sd).updateMassConservation(state.(si).(sd));
-            state.(gr).(sd) = model.(gr).(sd).updateMassAccum(state.(gr).(sd));
+            state.(gr).(sd) = model.(gr).(sd).updateMassAccum(state.(gr).(sd), state0.(gr).(sd), dt);
             state.(gr).(sd) = model.(gr).(sd).updateAverageConcentration(state.(gr).(sd));
             state.(gr) = model.(gr).updateSOC(state.(gr));
             state.(gr) = model.(gr).dispatchTemperature(state.(gr));
@@ -326,6 +324,32 @@ classdef SiliconGraphiteActiveMaterial < ElectronicComponent
         function model = validateModel(model, varargin)
             
         end
+
+        function state = updateConductivity(model, state)
+
+            G  = model.G;
+            vf = model.volumeFraction;
+            
+            gr  = 'Graphite';
+            si  = 'Silicon';
+
+            nc = G.cells.num;
+
+            mats = {gr, si};
+
+            sigma = zeros(nc, 1);
+            for imat = 1 : numel(mats)
+                mat = mats{imat};
+                amvf     = model.(mat).activeMaterialFraction;
+                bg       = model.(mat).BruggemanCoefficient;
+                sigmamat = model.(mat).electricalConductivity;
+                sigma = ((vf.*amvf).^bg).*sigmamat;
+            end
+
+            state.conductivity = sigma;
+            
+        end
+        
         
         function state = updateStandalonejBcSource(model, state)
             
@@ -333,6 +357,22 @@ classdef SiliconGraphiteActiveMaterial < ElectronicComponent
 
         end
 
+        function state = updateCurrentSource(model, state)
+
+            gr  = 'Graphite';
+            si  = 'Silicon';
+            itf = 'Interface';
+            
+            %% TODO : check whether constants n should always be the same for graphite and silicon (and impose them from parent)
+            vols = model.G.cells.volumes;
+            F    = model.(gr).(itf).constants.F;
+            nGr  = model.(gr).(itf).n;
+            nSi  = model.(si).(itf).n;
+            
+            state.eSource = - (nGr*state.(gr).Rvol + nSi*state.(si).Rvol).*vols.*F;
+            
+        end
+        
         
         function state = updatePhi(model, state)
             
@@ -365,9 +405,9 @@ classdef SiliconGraphiteActiveMaterial < ElectronicComponent
             itf = 'Interface';
 
             state.(gr).(itf).cElectrolyte   = state.cElectrolyte;
-            state.(gr).(itf).phiElectrolyte = state.cElectrolyte;
+            state.(gr).(itf).phiElectrolyte = state.phiElectrolyte;
             state.(si).(itf).cElectrolyte   = state.cElectrolyte;
-            state.(si).(itf).phiElectrolyte = state.cElectrolyte;
+            state.(si).(itf).phiElectrolyte = state.phiElectrolyte;
 
         end
             
