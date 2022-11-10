@@ -13,7 +13,7 @@ classdef ActiveMaterial < ElectronicComponent
         porosity                      % porosity
         volumeFraction                % Volume fraction of the whole material (binder and so on included)
         activeMaterialFraction        % Volume fraction occupied only by the active material
-        electricalConductivity        % Electrical conductivite
+        electricalConductivity        % Electrical conductivity
         InterDiffusionCoefficient     % Inter particle diffusion coefficient parameter (diffusion between the particles)
         thermalConductivity           % Intrinsic Thermal conductivity of the active component
         heatCapacity                  % Intrinsic Heat capacity of the active component
