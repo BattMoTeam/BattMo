@@ -7,7 +7,7 @@
               "relax" : {"type" : "ilu0",
                          "damping" : 1,
                          "solve" : {"iters" : 2,
-                                    "damping" : 2}
+                                    "damping" : 1}
                         },
               "coarsening" : {"type" : "ruge_stuben",
                               "eps_strong" : 0.01,
