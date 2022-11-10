@@ -348,9 +348,16 @@ classdef BatteryLinearSolver < handle
                 
               case 'amgcl'
 
-                error('library not yet supported at top solver')
-
-
+                opts = solver.getAmgclOptions(setup);
+                
+                a = tic;
+                [result, flag, relres, iter] = solver.amgcl(A, b, opts);
+                
+                report.Iterations         = iter;
+                report.Residual           = relres;
+                report.Converged          = flag;
+                report.LinearSolutionTime = toc(a);
+                
               otherwise
                 
                 error('linear solver library not recognized');
@@ -492,68 +499,7 @@ classdef BatteryLinearSolver < handle
                 
               case 'amgcl'
                 
-                solver_type = 'regular';
-
-                if solver.verbose > 0
-                    amgclverbose = true;
-                else
-                    amgclverbose = false;
-                end
-                itersolver = struct('type'   , 'gmres'     , ...
-                                    'M'      , 50          , ...
-                                    'tol'    , 1e-5        , ...
-                                    'verbose', amgclverbose, ...
-                                    "maxiter", 20);
-                
-                relaxation = struct('type', 'ilu0');
-
-
-                coarsening_type = 'ruge_stuben';
-
-                switch coarsening_type
-                    
-                  case 'aggregation'
-                    
-                    alpha = 0.01;
-                    aggr = struct('eps_strong', alpha);
-                    
-                    coarsening = struct('type', 'aggregation', ...
-                                        'aggr', aggr)
-
-                  case 'ruge_stuben'
-                    
-                    alpha = 0.01;
-                    coarsening = struct('type'      , 'ruge_stuben', ...
-                                        'eps_strong', alpha        , ...
-                                        'do_trunc'  , true         , ...
-                                        'eps_trunc' , alpha);
-
-                  otherwise
-
-                    error('coarsening_case not recognized');
-                    
-                end
-
-                coarsetarget = 1200;
-                
-                precond = struct('class'        , 'amg'       , ...
-                                 'coarsening'   , coarsening  , ...
-                                 'relax'        , relaxation  , ...
-                                 'coarse_enough', coarsetarget, ...
-                                 'direct_coarse', true        , ...
-                                 'max_levels'   , 20          , ...
-                                 'ncycle'       , 1           , ...
-                                 'npre'         , 1           , ...
-                                 'npost'        , 1           , ...
-                                 'pre_cycles'   , 1);
-
-                opts = struct('solver'      , itersolver, ...
-                              'precond'     , precond   , ...
-                              'reuse_mode'  , 1         , ...
-                              'solver_type' , 'regular' , ...
-                              'write_params', false     , ...
-                              'verbose'     , solver.verbose);
-                
+                opts = solver.getAmgclOptions(ellipticSolver);
                 elliptic_solver = @(A, b) solver.amgcl(A, b, opts);
                 
               otherwise
@@ -904,7 +850,79 @@ classdef BatteryLinearSolver < handle
             end
             initialGuess = solver.initialGuessFun(problem);
         end
-        
+
+        function opts = getAmgclOptions(solver, amgclsolverspec)
+        % setup default options and merge with given options if any
+            solver_type = 'regular';
+
+            if solver.verbose > 0
+                amgclverbose = true;
+            else
+                amgclverbose = false;
+            end
+            
+            itersolver = struct('type'   , 'gmres'     , ...
+                                'M'      , 50          , ...
+                                'tol'    , 1e-5        , ...
+                                'verbose', amgclverbose, ...
+                                "maxiter", 20);
+            
+            relaxation = struct('type', 'ilu0');
+
+            coarsening_type = 'ruge_stuben';
+
+            switch coarsening_type
+                
+              case 'aggregation'
+                
+                alpha = 0.01;
+                aggr = struct('eps_strong', alpha);
+                
+                coarsening = struct('type', 'aggregation', ...
+                                    'aggr', aggr)
+
+              case 'ruge_stuben'
+                
+                alpha = 0.01;
+                coarsening = struct('type'      , 'ruge_stuben', ...
+                                    'eps_strong', alpha        , ...
+                                    'do_trunc'  , true         , ...
+                                    'eps_trunc' , alpha);
+
+              otherwise
+
+                error('coarsening_case not recognized');
+                
+            end
+
+            coarsetarget = 1200;
+            
+            precond = struct('class'        , 'amg'       , ...
+                             'coarsening'   , coarsening  , ...
+                             'relax'        , relaxation  , ...
+                             'coarse_enough', coarsetarget, ...
+                             'direct_coarse', true        , ...
+                             'max_levels'   , 20          , ...
+                             'ncycle'       , 1           , ...
+                             'npre'         , 1           , ...
+                             'npost'        , 1           , ...
+                             'pre_cycles'   , 1);
+            defaultOpts = struct('solver'      , itersolver, ...
+                          'precond'     , precond   , ...
+                          'reuse_mode'  , 1         , ...
+                          'solver_type' , 'regular' , ...
+                          'write_params', false     , ...
+                          'verbose'     , solver.verbose);
+
+
+            if isfield(amgclsolverspec, 'options')
+                opts = amgclsolverspec.options;
+                opts = mergeJsonStructs({defaultOpts, opts}, 'force', true);
+            else
+                opts = defaultOpts;
+            end
+                
+        end
         
     end
 end
