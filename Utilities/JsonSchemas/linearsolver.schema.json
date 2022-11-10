@@ -4,8 +4,8 @@
   "description": "linear solver",
   "type": "object",
   "properties" : {"library" : {"type" : "string",
-                               "description" : "name of the solver library",
-                               "$ref": "#/$defs/solver_library"
+                               "description" : "list of (partially) supported linear solver library",
+                               "enum" : ["matlab", "agmg", "amgcl"]
                               },
                   
                   "method" : {"type" : "string",
@@ -87,13 +87,8 @@
              
             ],
   
-  "$defs" : { "solver_library" : {"type" : "string",
-                                  "description" : "list of (partially) supported linear solver library",
-                                  "enum" : ["matlab", "agmg", "amgcl"]},
-              
-              "variable" : {"type" : "array",
+  "$defs" : { "variable" : {"type" : "array",
                             "items" : {"type" : "string"}},
-
 
               "separate_variable_preconditioners" : {"type" : "array",
                                                      "description" : "array of solvers for the variables",
