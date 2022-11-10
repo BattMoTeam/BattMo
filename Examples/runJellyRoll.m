@@ -1,6 +1,7 @@
 clear all
 close all
 
+mrstDebug(20);
 % Setup mrst modules
 
 mrstModule add ad-core mrst-gui mpfa agmg linearsolvers
@@ -204,28 +205,45 @@ else
 end
 
 nls.timeStepSelector = StateChangeTimeStepSelector('TargetProps', {{'Control', 'E'}}, 'targetChangeAbs', 0.03);
-linearsolver = 'battery';
-switch linearsolver
-  case 'agmg'
-    mrstModule add agmg
-    nls.LinearSolver = AGMGSolverAD('verbose', true, 'reduceToCell', false); 
-    nls.LinearSolver.tolerance = 1e-3; 
-    nls.LinearSolver.maxIterations = 30; 
-    nls.maxIterations = 10; 
-    nls.verbose = 10;
-  case 'battery'
-    nls.LinearSolver = LinearSolverBatteryExtra('verbose'     , false, ...
-                                                'reduceToCell', true, ...
-                                                'verbosity'   , 3    , ...
-                                                'reuse_setup' , false, ...
-                                                'method'      , 'agmg');
-    nls.LinearSolver.tolerance = 0.5e-4*2;          
-  case 'direct'
-    disp('standard direct solver')
-  otherwise
-    error()
+
+
+% linearsolver = 'battery';
+% switch linearsolver
+%   case 'agmg'
+%     mrstModule add agmg
+%     nls.LinearSolver = AGMGSolverAD('verbose', true, 'reduceToCell', false); 
+%     nls.LinearSolver.tolerance = 1e-3; 
+%     nls.LinearSolver.maxIterations = 30; 
+%     nls.maxIterations = 10; 
+%     nls.verbose = 10;
+%   case 'battery'
+%     nls.LinearSolver = LinearSolverBatteryExtra('verbose'     , false, ...
+%                                                 'reduceToCell', true, ...
+%                                                 'verbosity'   , 3    , ...
+%                                                 'reuse_setup' , false, ...
+%                                                 'method'      , 'agmg');
+%     nls.LinearSolver.tolerance = 0.5e-4*2;          
+%   case 'direct'
+%     disp('standard direct solver')
+%   otherwise
+%     error()
+% end
+
+
+jsonfilename = fullfile(battmoDir, 'Utilities/JsonSchemas/Tests/linearsolver3.json');
+jsonsrc = fileread(jsonfilename);
+setup = jsondecode(jsonsrc);
+
+if isfield(setup, 'reduction')
+    model = model.setupSelectedModel('reduction', setup.reduction);
 end
 
+nls.LinearSolver = BatteryLinearSolver('verbose'          , false, ...
+                                       'reduceToCell'     , true , ...
+                                       'reuse_setup'      , false, ...
+                                       'linearSolverSetup', setup);
+
+    
 model.nonlinearTolerance = 1e-4; 
 model.verbose = true; 
 
