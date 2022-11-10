@@ -1080,7 +1080,7 @@ classdef Battery < BaseModel
               case {'constantCurrent', 'CC_discharge1', 'CC_discharge2', 'CC_charge1'}
                 types{ei.EIeq} = 'cell';   
               case {'constantVoltage', 'CV_charge2'}
-                types{ei.controlEq} = 'cell';
+                % no changes
               otherwise 
                 error('control type not recognized')
             end
