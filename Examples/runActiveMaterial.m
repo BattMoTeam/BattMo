@@ -27,8 +27,8 @@ gen = BareBatteryGenerator3D();
 paramobj = gen.updateBatteryInputParams(paramobj);
 
 paramobj.(ne).(am).InterDiffusionCoefficient = 0;
-% paramobj.(ne).(am).diffusionModelType = 'full';
-paramobj.(ne).(am).diffusionModelType = 'simple';
+paramobj.(ne).(am).diffusionModelType = 'full';
+% paramobj.(ne).(am).diffusionModelType = 'simple';
 
 paramobj = paramobj.(ne).(am);
 
@@ -43,6 +43,8 @@ D0 = paramobj.(sd).D0; % default value : 3.3e-14
 paramobj.(sd).D0 = 1*D0;
 
 paramobj.use_particle_diffusion = true;
+
+paramobj = paramobj.validateInputParams();
 
 model = ActiveMaterial(paramobj);
 
