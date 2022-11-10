@@ -93,16 +93,7 @@ step  = struct('val', dt*ones(n, 1), 'control', ones(n, 1));
 
 control.src = controlsrc;
 
-for imat = 1 : numel(mats)
-    mat = mats{imat};
-    cmin = (model.(mat).(itf).theta0)*(model.(mat).(itf).cmax);
-    vols = model.(mat).(sd).operators.vols;
-    % In following function, we assume that we have only one particle
-    computeCaverage{imat} = @(c) (sum(vols.*c)/sum(vols));
-end
-
-% control.stopFunction = @(model, state, state0_inner) (feval(computeCaverage{1}, state.(mats{1}).(itf).cElectrodeSurface ) <= cmin{1} & ...
-                                                      % feval(computeCaverage{2}, state.(mats{2}).(itf).cElectrodeSurface ) <= cmin{2});
+control.stopFunction = @(model, state, state0_inner) model.stopfunction(state, state0_inner);
 
 schedule = struct('control', control, 'step', step); 
 

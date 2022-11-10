@@ -430,6 +430,37 @@ classdef SiliconGraphiteActiveMaterial < ElectronicComponent
         end
         
 
+        function stop = stopfunction(model, state, state0_inner)
+            
+            gr = 'Graphite';
+            si = 'Silicon';
+
+            sd  = 'SolidDiffusion';
+            itf = 'Interface';
+            
+            mats = {gr, si};
+            
+            stop = false;
+            
+            for imat = 1 : numel(mats)
+                mat = mats{imat};
+                cmin = (model.(mat).(itf).theta0)*(model.(mat).(itf).cmax);
+                vols = model.(mat).(sd).operators.vols;
+
+                % In following function, we assume that we have only one particle
+                c = state.(mat).(sd).c;
+                cAverage = (sum(vols.*c)/sum(vols));
+
+                if cAverage <= cmin
+                    stop = true;
+                    return
+                end
+
+            end
+
+        end
+
+
     end
     
 end
