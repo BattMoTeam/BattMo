@@ -5,6 +5,7 @@ classdef ComputationalGraphTool
         model
         A
         nodenames
+        staticprops
     end
     
     methods
@@ -14,8 +15,9 @@ classdef ComputationalGraphTool
                 model = model.registerVarAndPropfuncNames();
             end
             cgt.model = model;
-            g = setupGraph(model);
+            [g, staticprops] = setupGraph(model);
             cgt.graph = g;
+            cgt.staticprops = staticprops;
             % In adjacency matrix A, 
             % - column index      : output variable index (as in model.varNameList)
             % - row index         : input variable (as in model.varNameList)
@@ -45,7 +47,7 @@ classdef ComputationalGraphTool
             
         end
         
-        function [propfuncs, nodenames] = findPropFunction(cgt, nodename)
+        function propfuncs = findPropFunction(cgt, nodename)
             
             nodenames = cgt.nodenames;
             A         = cgt.A;
@@ -55,8 +57,18 @@ classdef ComputationalGraphTool
             indSelectedNodenames = cellfun(@(x) ~isempty(x), indSelectedNodenames);
             indPropfunctions = A(:, indSelectedNodenames);
             indPropfunctions = unique(indPropfunctions(:));
+            indPropfunctions = indPropfunctions(indPropfunctions > 0); % remove the zero elements
 
-            propfuncs = model.propertyFunctionList(indPropfunctions(indPropfunctions > 0));
+            staticprops = cgt.staticprops;
+            staticnodenames = cellfun(@(staticprop) staticprop.nodename, staticprops, 'uniformoutput', false);
+            indSelectedNodenames = regexp(staticnodenames, nodename, 'once');
+            indSelectedNodenames = cellfun(@(x) ~isempty(x), indSelectedNodenames);
+            staticprops = staticprops(indSelectedNodenames);
+            staticIndPropfunctions = cellfun(@(staticprop) staticprop.propind, staticprops);
+
+            indPropfunctions = [indPropfunctions; staticIndPropfunctions'];
+            
+            propfuncs = model.propertyFunctionList(indPropfunctions);
 
             if numel(propfuncs) == 1
                 propfuncs = propfuncs{1};
@@ -82,15 +94,20 @@ classdef ComputationalGraphTool
                 end
                 outputvarstr = join(outputvarstrs, {', '});
                 fprintf('%s <-', outputvarstr{1});
-                fprintf(' (%s) <- ', propfuncs{iprop}.getFunctionSignature());
+                fprintf(' (%s) ', propfuncs{iprop}.getFunctionSignature());
                 inputvarnames = propfunc.inputvarnames;
-                inputvarstrs = {};
-                for ind = 1 : numel(inputvarnames)
-                    varname = inputvarnames{ind};
-                    inputvarstrs{end + 1} = sprintf('state.%s', varname.getFieldname());
+                if isempty(inputvarnames)
+                    fprintf('[no state field is used]\n');
+                else
+                    fprintf(' <- ', propfuncs{iprop}.getFunctionSignature());
+                    inputvarstrs = {};
+                    for ind = 1 : numel(inputvarnames)
+                        varname = inputvarnames{ind};
+                        inputvarstrs{end + 1} = sprintf('state.%s', varname.getFieldname());
+                    end
+                    inputvarstr = join(inputvarstrs, {', '});
+                    fprintf('[%s]\n', inputvarstr{1});
                 end
-                inputvarstr = join(inputvarstrs, {', '});
-                fprintf('[%s]\n', inputvarstr{1});
             end
             
         end
@@ -212,10 +229,34 @@ classdef ComputationalGraphTool
             
         end
 
+        function str = setupFunctionCallString(cgt, iprop)
+            
+            propfunction = cgt.model.propertyFunctionList{iprop};
+            fn = propfunction.fn;
+            mn = propfunction.modelnamespace;
+            mn = join(mn, '.');
+            if ~isempty(mn)
+                mn = mn{1};
+                statename = sprintf('state.%s', mn);
+            else
+                statename = 'state';
+            end
+            fnname = func2str(fn);
+            fnname = regexp(fnname, "\.(.*)", 'tokens');
+            fnname = fnname{1}{1};
+            fnname = horzcat(mn, {fnname});
+            fnname = join(fnname, '.');
+            fnname = fnname{1};
+
+            str = sprintf('%s = model.%s(%s);', statename, fnname, statename);
+            
+        end
+        
         function printOrderedFunctionCallList(cgt)
 
             A = cgt.A;
-
+            staticprops = cgt.staticprops;
+            
             try
                 p = topological_order(A);
             catch
@@ -224,29 +265,24 @@ classdef ComputationalGraphTool
             end
 
             funcCallList = {};
+
+            if ~isempty(staticprops)
+                
+                for istatic = 1 : numel(staticprops)
+
+                    iprop = staticprops{istatic}.propind;
+                    funcCallList{end + 1} = cgt.setupFunctionCallString(iprop);
+                    
+                end
+                
+            end
+            
             for ind = 1 : numel(p)
                 iprop = full(A(:, p(ind)));
                 iprop = unique(iprop(iprop>0));
                 if ~isempty(iprop)
                     assert(numel(iprop) == 1, 'There should be only one value for a given row');
-                    propfunction = cgt.model.propertyFunctionList{iprop};
-                    fn = propfunction.fn;
-                    mn = propfunction.modelnamespace;
-                    mn = join(mn, '.');
-                    if ~isempty(mn)
-                        mn = mn{1};
-                        statename = sprintf('state.%s', mn);
-                    else
-                        statename = 'state';
-                    end
-                    fnname = func2str(fn);
-                    fnname = regexp(fnname, "\.(.*)", 'tokens');
-                    fnname = fnname{1}{1};
-                    fnname = horzcat(mn, {fnname});
-                    fnname = join(fnname, '.');
-                    fnname = fnname{1};
-
-                    funcCallList{end + 1} = sprintf('%s = model.%s(%s);', statename, fnname, statename);
+                    funcCallList{end + 1} = cgt.setupFunctionCallString(iprop);
                 end
             end
 
