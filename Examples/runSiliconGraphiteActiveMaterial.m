@@ -13,15 +13,17 @@ mrstModule add ad-core mrst-gui mpfa
 gr = 'Graphite';
 si = 'Silicon';
 
+sd  = 'SolidDiffusion';
+itf = 'Interface';
 
 %% Setup the properties of Li-ion battery materials and cell design
 jsonstruct = parseBattmoJson(fullfile('Examples', 'jsoninputs', 'silicongraphite.json'));
 
 paramobj = SiliconGraphiteActiveMaterialInputParams(jsonstruct);
 
-% paramobj.(gr).diffusionModelType = 'full';
-% paramobj.(si).diffusionModelType = 'full';
-
+% paramobj.(si).(sd).D0 = 1e-17;
+% paramobj.(si).(itf).k0 = 1e-12;
+% paramobj.(gr).(sd).D0 = 1e-16;
 % paramobj = paramobj.validateInputParams();
 
 xlength = 57e-6; 
@@ -124,11 +126,43 @@ figure
 hold on
 plot(time/hour, cSiSurface, 'displayname', 'silicon');
 plot(time/hour, cGrSurface, 'displayname', 'graphite');
+xlabel('time [h]')
+ylabel('concentration [mol/m^3]')
 legend show
-title('cSurface');
+title('surface concentration for the particle');
 
 figure
 plot(time/hour, phi);
+xlabel('time [h]')
+ylabel('voltage [V]')
 title('phi')
 
+
+%%
+
+clear c
+for imat = 1 : numel(mats)
+    mat = mats{imat};
+    c.(mat).min = cellfun(@(state) min(state.(mat).(sd).c), states);
+    c.(mat).max = cellfun(@(state) max(state.(mat).(sd).c), states);
+end
+
+matnames = {'Graphite', 'Silicon'};
+
+for imat = 1 : numel(mats)
+
+    mat = mats{imat};
+    figure
+
+    p1 = [time/hour, c.(mat).min];
+    p2 = [time/hour, c.(mat).max];
+    p2 = flip(p2, 1);
+    p = [p1; p2];
+    
+    fill(p(:, 1), p(:, 2), 'red')
+    xlabel('time [h]')
+    ylabel('concentration [mol/m^3]')
+    titlestr = sprintf('min and max concentration for %s', matnames{imat});
+    title(titlestr)
+end
 
