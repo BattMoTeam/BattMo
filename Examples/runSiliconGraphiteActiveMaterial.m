@@ -8,17 +8,25 @@ close all
 % load MRST modules
 mrstModule add ad-core mrst-gui mpfa
 
+%% shortcuts
+
+gr = 'Graphite';
+si = 'Silicon';
+
+
 %% Setup the properties of Li-ion battery materials and cell design
 jsonstruct = parseBattmoJson(fullfile('Examples', 'jsoninputs', 'silicongraphite.json'));
 
 paramobj = SiliconGraphiteActiveMaterialInputParams(jsonstruct);
 
+% paramobj.(gr).diffusionModelType = 'full';
+% paramobj.(si).diffusionModelType = 'full';
+
+% paramobj = paramobj.validateInputParams();
+
 xlength = 57e-6; 
 G = cartGrid(1, xlength);
 G = computeGeometry(G);
-
-gr = 'Graphite';
-si = 'Silicon';
 
 paramobj.G = G;
 paramobj.(si).G = G;
@@ -107,22 +115,20 @@ model.verbose = true;
 ind = cellfun(@(state) ~isempty(state), states);
 states = states(ind);
 
-time = cellfun(@(state) state.time, states);
-cSurface = cellfun(@(state) state.(sd).cSurface, states);
-phi = cellfun(@(state) state.phi, states);
-
-figure
-plot(time/hour, cSurface);
-
-figure
-plot(time/hour, phi);
-
-
-cmin = cellfun(@(state) min(state.(sd).c), states);
-cmax = cellfun(@(state) max(state.(sd).c), states);
+time       = cellfun(@(state) state.time, states);
+cSiSurface = cellfun(@(state) state.(si).(sd).cSurface, states);
+cGrSurface = cellfun(@(state) state.(gr).(sd).cSurface, states);
+phi        = cellfun(@(state) state.phi, states);
 
 figure
 hold on
-plot(time/hour, cmin, 'displayname', 'cmin');
-plot(time/hour, cmax, 'displayname', 'cmax');
+plot(time/hour, cSiSurface, 'displayname', 'silicon');
+plot(time/hour, cGrSurface, 'displayname', 'graphite');
 legend show
+title('cSurface');
+
+figure
+plot(time/hour, phi);
+title('phi')
+
+
