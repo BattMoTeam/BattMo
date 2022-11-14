@@ -22,7 +22,7 @@ classdef ElectrodeInputParams < ComponentInputParams
         %
         couplingTerm
         
-        
+        electrode_case % can be set to 'default' or 'siliconGraphite'
         %
         % Set to true to include current collector (NOTE : not supported at the moment at this level)
         %
@@ -42,8 +42,20 @@ classdef ElectrodeInputParams < ComponentInputParams
             cc = 'CurrentCollector';
             
             pick = @(fd) pickField(jsonstruct, fd);
-            paramobj.(am) = ActiveMaterialInputParams(pick(am));
             paramobj.(cc) = CurrentCollectorInputParams(pick(cc));
+
+            if isempty(paramobj.electrode_case)            
+                paramobj.electrode_case = 'default';
+            end
+
+            switch paramobj.electrode_case
+              case 'siliconGraphite'
+                paramobj.(am) = SiliconGraphiteActiveMaterialInputParams(paramobj.(am));                
+              case 'default'
+                paramobj.(am) = ActiveMaterialInputParams(paramobj.(am));
+              otherwise
+                error('electrode_case not recognized');
+            end
             
             paramobj = paramobj.validateInputParams();
 
@@ -60,7 +72,7 @@ classdef ElectrodeInputParams < ComponentInputParams
             if isempty(paramobj.include_current_collector)
                 paramobj.include_current_collector = false;
             end
-            
+
             if paramobj.include_current_collector
                 paramobj = mergeParameters(paramobj, {'use_thermal'}, {cc, 'use_thermal'});
                 paramobj.(cc) = paramobj.(cc).validateInputParams();

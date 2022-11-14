@@ -41,7 +41,9 @@ v = jsonschema.Draft202012Validator(mainschema, resolver=resolver)
 
 jsonfiles = ['ParameterData/BatteryCellParameters/LithiumIonBatteryCell/lithium_ion_battery_nmc_graphite.json',
              'ParameterData/ParameterSets/Xu2015/lfp.json',
-             'ParameterData/ParameterSets/Chen2020/chen2020_lithium_ion_battery.json']
+             'ParameterData/ParameterSets/Chen2020/chen2020_lithium_ion_battery.json',
+             'ParameterData/BatteryCellParameters/LithiumIonBatteryCell/lithium_ion_battery_nmc_silicon_graphite.json']
+
 
 for jsonfile in jsonfiles:
     print(jsonfile)

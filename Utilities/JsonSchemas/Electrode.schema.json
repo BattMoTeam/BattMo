@@ -4,12 +4,22 @@
   "description": "Electrode",
   "type": "object",
   
-  "properties" : { "ActiveMaterial" : {"$ref" : "ActiveMaterial"},
+  "properties" : { "electrode_case" : {"type" : "string",
+                                       "enum" : ["standard", "siliconGraphite"]},
                    "CurrentCollector" : {"$ref" : "CurrentCollector"},
                    "include_current_collectors" : {"type" : "boolean"}
                  },
 
 
+  "anyOf" : [{"properties" : {"electrode_case" : {"const" : "siliconGraphite"},
+                              "ActiveMaterial" : {"$ref" : "SiliconGraphiteActiveMaterial"}
+                             }
+             },
+             {"not" : {"properties" : {"electode_case" : {"const" : "siliconGraphite"}}},
+              "ActiveMaterial" : {"$ref" : "ActiveMaterial"}
+             }
+            ],
+  
   "anyOf" : [ {"properties" : {"include_current_collectors": {"const": true},
                                "required": ["CurrentCollector"]
                               }
