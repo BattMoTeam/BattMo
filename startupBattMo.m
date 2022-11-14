@@ -36,6 +36,16 @@ for ind = 1 : numel(dirnames)
     addpath(genpath(dirname));
 end
 
+%% Add json utilities directory to the python path
+if mrstPlatform('matlab')
+    pe = pyenv;
+    if pe.Version == ""
+        disp('Python not installed')
+    else
+        insert(py.sys.path, int32(0), fullfile(rootdirname, 'Utilities', 'JsonUtils'));
+    end
+end
+
 %% Octave requires some extra functionality
 if mrstPlatform('octave')
 
