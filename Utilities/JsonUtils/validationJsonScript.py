@@ -12,8 +12,9 @@ base_uri = 'file://batmo/schemas/'
 
 resolver = jsonschema.RefResolver(base_uri=base_uri, referrer={})
 
+verbose = False
 
-def addJsonSchema(jsonSchemaName, verbose=False):
+def addJsonSchema(jsonSchemaName):
     """Add the jsonschema in the resolver"""
     jsonSchemaFilename = jsonSchemaName + '.schema.json'
     schema_filename = schema_folder / jsonSchemaFilename
@@ -30,7 +31,7 @@ for (dirpath, dirnames, filenames) in os.walk(schema_folder):
     for filename in filenames:
         if filename.endswith('.schema.json'):
             jsonSchemaName = filename.replace('.schema.json', '')
-            addJsonSchema(jsonSchemaName, verbose=True)
+            addJsonSchema(jsonSchemaName)
 
 # We validate the battery schema
 schema_filename = schema_folder / 'Battery.schema.json'
@@ -39,13 +40,10 @@ with open(schema_filename) as schema_file:
 
 v = jsonschema.Draft202012Validator(mainschema, resolver=resolver)
 
-jsonfiles = ['ParameterData/BatteryCellParameters/LithiumIonBatteryCell/lithium_ion_battery_nmc_graphite.json',
-             'ParameterData/ParameterSets/Xu2015/lfp.json',
-             'ParameterData/ParameterSets/Chen2020/chen2020_lithium_ion_battery.json']
-
-for jsonfile in jsonfiles:
-    print(jsonfile)
+def validate(jsonfile):
     jsoninput = rjson.loadJsonBatmo(jsonfile)
     v.validate(jsoninput)
-    if v.is_valid(jsoninput):
-        print('ok')
+    is_valid = v.is_valid(jsoninput)
+    if verbose:
+        print(jsonfile, "is valid?", is_valid)
+    return is_valid
