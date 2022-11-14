@@ -59,13 +59,8 @@ T                = 298;
 
 initState.cElectrolyte = cElectrolyte;
 initState.phiElectrolyte = phiElectrolyte;
-
-mat = gr;
-
 sd  = 'SolidDiffusion';
 itf = 'Interface';
-
-cElectrodeInit   = (model.(mat).(itf).theta100)*(model.(mat).(itf).cmax);
 
 mats = {gr, si};
 
@@ -73,6 +68,7 @@ for imat = 1 : numel(mats)
     mat = mats{imat};
     % set primary variables
     N = model.(mat).(sd).N;
+    cElectrodeInit = (model.(mat).(itf).theta100)*(model.(mat).(itf).cmax);
     initState.(mat).(sd).c        = cElectrodeInit*ones(N, 1);
     initState.(mat).(sd).cSurface = cElectrodeInit;
 end
@@ -103,7 +99,7 @@ step  = struct('val', dt*ones(n, 1), 'control', ones(n, 1));
 
 control.src = controlsrc;
 
-control.stopFunction = @(model, state, state0_inner) model.stopfunction(state, state0_inner);
+% control.stopFunction = @(model, state, state0_inner) model.stopfunction(state, state0_inner);
 
 schedule = struct('control', control, 'step', step); 
 
