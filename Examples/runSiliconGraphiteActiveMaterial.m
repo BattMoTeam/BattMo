@@ -21,10 +21,28 @@ jsonstruct = parseBattmoJson(fullfile('Examples', 'jsoninputs', 'silicongraphite
 
 paramobj = SiliconGraphiteActiveMaterialInputParams(jsonstruct);
 
+rhoGr = paramobj.(gr).(itf).density;
+rhoSi = paramobj.(si).(itf).density;
+
+wfGr = 0.92; % weight fraction graphite
+wfSi = 0.08; % weight fraction silicon
+
+vfGr = wfGr/rhoGr;
+vfSi = wfSi/rhoSi;
+totV = (vfGr + vfSi);
+vfGr = vfGr/totV;
+vfSi = vfSi/totV;
+
+paramobj.(gr).activeMaterialFraction = vfGr;
+paramobj.(si).activeMaterialFraction = vfSi;
+
+paramobj.(gr).(itf).theta0 = 0.01;
+paramobj.(si).(itf).theta0 = 0.01;
 % paramobj.(si).(sd).D0 = 1e-17;
 % paramobj.(si).(itf).k0 = 1e-12;
 % paramobj.(gr).(sd).D0 = 1e-16;
-% paramobj = paramobj.validateInputParams();
+
+paramobj = paramobj.validateInputParams();
 
 xlength = 57e-6; 
 G = cartGrid(1, xlength);
@@ -68,7 +86,7 @@ for imat = 1 : numel(mats)
     mat = mats{imat};
     % set primary variables
     N = model.(mat).(sd).N;
-    cElectrodeInit = (model.(mat).(itf).theta100)*(model.(mat).(itf).cmax);
+    cElectrodeInit = (model.(mat).(itf).theta0)*(model.(mat).(itf).cmax);
     initState.(mat).(sd).c        = cElectrodeInit*ones(N, 1);
     initState.(mat).(sd).cSurface = cElectrodeInit;
 end
@@ -90,9 +108,9 @@ initState.phi = OCP + phiElectrolyte;
 
 %% setup schedule
 
-controlsrc = 1;
+controlsrc = -1e1;
 
-total = (30*hour)/controlsrc;
+total = (80*hour)/abs(controlsrc);
 n     = 100;
 dt    = total/n;
 step  = struct('val', dt*ones(n, 1), 'control', ones(n, 1));
@@ -106,9 +124,15 @@ schedule = struct('control', control, 'step', step);
 %% Run simulation
 
 model.verbose = true;
-[wellSols, states, report] = simulateScheduleAD(initState, model, schedule, 'OutputMinisteps', true); 
+
+nls = NonLinearSolver;
+nls.errorOnFailure = false;
+
+[wellSols, states, report] = simulateScheduleAD(initState, model, schedule, 'OutputMinisteps', true, 'NonLinearSolver', nls); 
 
 %% plotting
+
+set(0, 'defaultlinelinewidth', 3);
 
 ind = cellfun(@(state) ~isempty(state), states);
 states = states(ind);
@@ -126,6 +150,15 @@ xlabel('time [h]')
 ylabel('concentration [mol/m^3]')
 legend show
 title('surface concentration for the particle');
+
+figure
+hold on
+plot(time/hour, cSiSurface/model.(si).(itf).cmax, 'displayname', 'silicon');
+plot(time/hour, cGrSurface/model.(gr).(itf).cmax, 'displayname', 'graphite');
+xlabel('time [h]')
+ylabel('theta [-]')
+legend show
+title('surface theta for the particle');
 
 figure
 plot(time/hour, phi);

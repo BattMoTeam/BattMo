@@ -11,7 +11,8 @@ classdef SiliconGraphiteActiveMaterialInputParams < ElectronicComponentInputPara
         externalCouplingTerm % structure to describe external coupling (used in absence of current collector)
         
         volumeFraction % Volume fraction of the whole material (binder and so on included)
-        
+
+        use_particle_diffusion
 
     end
 
@@ -25,7 +26,7 @@ classdef SiliconGraphiteActiveMaterialInputParams < ElectronicComponentInputPara
 
             paramobj.Graphite = ActiveMaterialInputParams(pick('Graphite'));
             paramobj.Silicon = ActiveMaterialInputParams(pick('Silicon'));
-            
+
             paramobj = paramobj.validateInputParams();
             
         end

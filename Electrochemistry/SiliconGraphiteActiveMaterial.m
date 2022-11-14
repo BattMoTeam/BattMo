@@ -47,6 +47,11 @@ classdef SiliconGraphiteActiveMaterial < ElectronicComponent
             model.Graphite = ActiveMaterial(paramobj.Graphite);
             model.Silicon = ActiveMaterial(paramobj.Silicon);
             
+            nc = model.G.cells.num;
+
+            model.volumeFraction = paramobj.volumeFraction*ones(nc, 1);
+            model.porosity       = 1 - model.volumeFraction;
+            
             model.isRoot = false;
             
         end
