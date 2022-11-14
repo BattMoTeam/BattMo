@@ -65,9 +65,11 @@ classdef Battery < BaseModel
             model.NegativeElectrode = Electrode(paramobj.NegativeElectrode);
             model.PositiveElectrode = Electrode(paramobj.PositiveElectrode);
             model.Electrolyte       = Electrolyte(paramobj.Electrolyte);
+
             if model.use_thermal
                 model.ThermalModel = ThermalComponent(paramobj.ThermalModel);
             end
+            
             model.Control = model.setupControl(paramobj.Control);
             
             % define shorthands
@@ -98,9 +100,7 @@ classdef Battery < BaseModel
             model = model.setupMappings();
             
             % setup capping
-            cmax_ne = model.(ne).(am).(itf).cmax;
-            cmax_pe = model.(pe).(am).(itf).cmax;
-            model.cmin = 1e-5*max(cmax_ne, cmax_pe);
+            model = model.setupCapping();
             
         end
 
@@ -258,7 +258,8 @@ classdef Battery < BaseModel
                 equationIndices.(equationNames{ieq}) = ieq;
             end
             
-            model.primaryVariableNames = primaryVariableNames; 
+            model.addedVariableNames   = addedVariableNames; 
+            model.primaryVariableNames = primaryVariableNames;
             model.equationNames        = equationNames; 
             model.equationTypes        = equationTypes;
             model.equationIndices      = equationIndices;
@@ -635,8 +636,7 @@ classdef Battery < BaseModel
             %% Synchronize temperatures
             initstate = model.updateTemperature(initstate);
 
-            
-            %% Setup initial state for NegativeElectrode
+            %% Setup initial state for electrodes
             
             eldes = {ne, pe};
             
@@ -1026,7 +1026,7 @@ classdef Battery < BaseModel
                     
                   case 'full'
                     % Equation name : 'pe_am_sd_massCons';
-                    n    = model.(ne).(am).(itf).n; % number of electron transfer (equal to 1 for Lithium)
+                    n    = model.(pe).(am).(itf).n; % number of electron transfer (equal to 1 for Lithium)
                     F    = model.con.F;
                     vol  = model.(pe).(am).operators.pv;
                     rp   = model.(pe).(am).(sd).rp;
@@ -1131,8 +1131,7 @@ classdef Battery < BaseModel
             
             vols = battery.(elyte).G.cells.volumes;
             F = battery.con.F;
-            ne_vsa = battery.(ne).(am).(itf).volumetricSurfaceArea;
-            pe_vsa = battery.(pe).(am).(itf).volumetricSurfaceArea;
+            
             
             
             couplingterms = battery.couplingTerms;
@@ -1376,8 +1375,6 @@ classdef Battery < BaseModel
         % component of the electrodes. There, those quantities are considered as input and used to compute the reaction
         % rate.
         %
-        % WARNING : at the moment, we do not pass the concentrations
-
             
             bat = model;
             elyte = 'Electrolyte';
@@ -1649,6 +1646,19 @@ classdef Battery < BaseModel
             
             ctrl = 'Control';
             state.(ctrl) = model.(ctrl).prepareStepControl(state.(ctrl), state0.(ctrl), dt, drivingForces);
+            
+        end
+
+        function model = setupCapping(model)
+            
+            ne      = 'NegativeElectrode';
+            pe      = 'PositiveElectrode';
+            am      = 'ActiveMaterial';
+            itf     = 'Interface';
+
+            cmax_ne = model.(ne).(am).(itf).cmax;
+            cmax_pe = model.(pe).(am).(itf).cmax;
+            model.cmin = 1e-5*max(cmax_ne, cmax_pe);
             
         end
         
