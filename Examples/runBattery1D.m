@@ -70,8 +70,6 @@ end
 % simulation. The required discretization parameters are already included
 % in the class BatteryGenerator1D. 
 gen = BatteryGenerator1D();
-gen.fac = 100;
-gen = gen.applyResolutionFactors();
 
 % Now, we update the paramobj with the properties of the mesh. 
 paramobj = gen.updateBatteryInputParams(paramobj);
@@ -114,7 +112,6 @@ end
 
 n  = 100;
 dt = total/n;
-n = 20;
 step = struct('val', dt*ones(n, 1), 'control', ones(n, 1));
 
 % we setup the control by assigning a source and stop function.
@@ -146,7 +143,7 @@ initstate = model.setupInitialState();
 %% Setup the properties of the nonlinear solver 
 nls = NonLinearSolver();
 
-linearsolver = 'battery';
+linearsolver = 'direct';
 switch linearsolver
   case 'agmg'
     mrstModule add agmg
@@ -179,11 +176,7 @@ model.nonlinearTolerance = 1e-3*model.Control.Imax;
 model.verbose = true;
 
 %% Run the simulation
-profile off
-profile on
 [wellSols, states, report] = simulateScheduleAD(initstate, model, schedule, 'OutputMinisteps', true, 'NonLinearSolver', nls); 
-profile off
-profile viewer
 
 %% Process output and recover the output voltage and current from the output states.
 ind = cellfun(@(x) not(isempty(x)), states); 
@@ -196,35 +189,6 @@ time = cellfun(@(x) x.time, states);
 
 plot(time, E);
 
-%%
-
-its = getReportOutput(report,'type','linearIterations')
-nits= getReportOutput(report,'type','nonlinearIterations')
-figure(33),clf
-plot(its.time, its.total./nits.total)
-figure(44),clf,hold on
-shift = 0;
-for i=1:numel(report.ControlstepReports)
-    creport = report.ControlstepReports{i};
-    for j= 1:numel(creport.StepReports)
-        sreport=creport.StepReports{j};
-        vits = [];
-        for k = 1:numel(sreport.NonlinearReport);
-            nreport = sreport.NonlinearReport{k};
-            try
-                its = nreport.LinearSolver.Iterations;
-                its = nreport.LinearSolver.precondIterations_phi;
-                % its = nreport.LinearSolver.precondIterations_c;
-                vits = [vits,its];
-            catch
-            end
-        end
-        plot(shift+[1:numel(vits)],vits,'*-')
-        shift = shift + numel(vits);
-    end
-end
-figure(55)
-plot(nits.total)
 
 
 %% Plot the the output voltage and current
