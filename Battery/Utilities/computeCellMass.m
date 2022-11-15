@@ -20,12 +20,43 @@ function [mass, masses] = computeCellMass(model, varargin)
     for ind = 1 : numel(eldes)
         
         elde = eldes{ind};
-        
-        rho  = model.(elde).(am).(itf).density;
-        vols = model.(elde).(am).G.cells.volumes;
-        frac = model.(elde).(am).volumeFraction;
 
-        masses.(elde).(am).val = sum(rho.*vols.*frac);
+        switch model.(elde).electrode_case
+            
+          case 'default'
+            
+            rho  = model.(elde).(am).(itf).density;
+            vols = model.(elde).(am).G.cells.volumes;
+            frac = model.(elde).(am).volumeFraction;
+            
+            masses.(elde).(am).val = sum(rho.*vols.*frac);
+
+          case 'siliconGraphite'
+            
+            gr = 'Graphite';
+            si = 'Silicon';
+
+            mats = {gr, si};
+            
+            masses.(elde).(am).val = 0;
+            
+            for imat = 1 : numel(mats)
+
+                mat = mats{imat};
+                rho  = model.(elde).(am).(mat).(itf).density;
+                vols = model.(elde).(am).(mat).G.cells.volumes;
+                vf = model.(elde).(am).volumeFraction;
+                amvf = model.(elde).(am).(mat).activeMaterialFraction;
+                
+                masses.(elde).(am).(mat).val = sum(rho.*vols.*vf.*amvf);
+                masses.(elde).(am).val = masses.(elde).(am).val + masses.(elde).(am).(mat).val;
+            end
+            
+          otherwise
+            
+            error('electrode_case not recognized');
+            
+        end
         
         mass = mass + masses.(elde).(am).val;
         
