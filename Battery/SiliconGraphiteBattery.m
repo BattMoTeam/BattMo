@@ -1,10 +1,19 @@
 classdef SiliconGraphiteBattery < Battery
 
+    properties
+        
+        scenario
+        
+    end
+    
     methods
         
         function model = SiliconGraphiteBattery(paramobj)
             
             model = model@Battery(paramobj);
+
+            fdnames = {'scenario'};
+            model = dispatchParams(model, paramobj, fdnames);
 
             assert(model.use_thermal == false, 'thermal model not covered yet');
             assert(model.include_current_collectors == false, 'current collectors  not included yet');
@@ -13,7 +22,8 @@ classdef SiliconGraphiteBattery < Battery
 
 
         function model = setupSelectedModel(model);
-            % defines shorthands for the submodels
+
+        % defines shorthands for the submodels
             elyte   = 'Electrolyte';
             ne      = 'NegativeElectrode';
             pe      = 'PositiveElectrode';
@@ -119,11 +129,10 @@ classdef SiliconGraphiteBattery < Battery
         function initstate = setupInitialState(model)
         % Setup the values of the primary variables at initial state
 
-            nc = model.G.cells.num;
-
-            T   = model.initT;
+            nc       = model.G.cells.num;
+            T        = model.initT;
+            scenario = model.scenario;
             
-            bat = model;
             elyte   = 'Electrolyte';
             ne      = 'NegativeElectrode';
             pe      = 'PositiveElectrode';
@@ -151,7 +160,15 @@ classdef SiliconGraphiteBattery < Battery
                 % set primary variables
                 N = model.(ne).(am).(mat).(sd).N;
                 np = model.(pe).(am).(sd).np; % Note : we have by construction np = nc
-                cElectrodeInit                          = (model.(ne).(am).(mat).(itf).theta0)*(model.(ne).(am).(mat).(itf).cmax);
+                switch scenario
+                  case 'discharge'
+                    cElectrodeInit = (model.(ne).(am).(mat).(itf).theta100)*(model.(ne).(am).(mat).(itf).cmax);
+                  case {'charge', 'first-charge'}
+                    cElectrodeInit = (model.(ne).(am).(mat).(itf).theta0)*(model.(ne).(am).(mat).(itf).cmax);
+                  otherwise
+                    error('initCase not recognized')
+                end
+                
                 initstate.(ne).(am).(mat).(sd).c        = cElectrodeInit*ones(N*np, 1);
                 initstate.(ne).(am).(mat).(sd).cSurface = cElectrodeInit*ones(np, 1);
             end
@@ -161,22 +178,28 @@ classdef SiliconGraphiteBattery < Battery
             
             ref = initstate.(ne).(am).(gr).(itf).OCP(1);
 
-            nc = bat.(ne).(am).G.cells.num;
+            nc = model.(ne).(am).G.cells.num;
             
             initstate.(ne).(am).phi = zeros(nc, 1);
             
 
             %% setup initial state for positive electrode
             
-            pe_itf = bat.(pe).(am).(itf); 
-
-            cElectrodeInit = pe_itf.cmax;
-            nc             = pe_itf.G.cells.num;
-
-            initstate.(pe).(am).(sd).cSurface = cElectrodeInit*ones(nc, 1);
+            pe_itf = model.(pe).(am).(itf); 
             N = model.(pe).(am).(sd).N;
             np = model.(pe).(am).(sd).np; % Note : we have by construction np = nc
-            initstate.(pe).(am).(sd).c = c*ones(N*np, 1);
+
+            switch scenario
+              case 'discharge'
+                cElectrodeInit = (model.(pe).(am).(itf).theta100)*(model.(pe).(am).(itf).cmax);
+              case {'charge', 'first-charge'}
+                cElectrodeInit = (model.(pe).(am).(itf).theta0)*(model.(pe).(am).(itf).cmax);
+              otherwise
+                error('initCase not recognized')
+            end
+            initstate.(pe).(am).(sd).cSurface = cElectrodeInit*ones(np, 1);
+            np = model.(pe).(am).(sd).np; % Note : we have by construction np = nc
+            initstate.(pe).(am).(sd).c = cElectrodeInit*ones(N*np, 1);
 
             initstate.(pe).(am) = model.(pe).(am).updateConcentrations(initstate.(pe).(am));
             initstate.(pe).(am).(itf) = pe_itf.updateOCP(initstate.(pe).(am).(itf));
@@ -185,11 +208,18 @@ classdef SiliconGraphiteBattery < Battery
             
             %% Setup initial Electrolyte state
 
-            initstate.(elyte).phi = zeros(bat.(elyte).G.cells.num, 1) - ref;
-            initstate.(elyte).c   = 1000*ones(bat.(elyte).G.cells.num, 1);
+            initstate.(elyte).phi = zeros(model.(elyte).G.cells.num, 1) - ref;
+            initstate.(elyte).c   = 1000*ones(model.(elyte).G.cells.num, 1);
 
             initstate.(ctrl).E = initstate.(pe).(am).phi(1) - initstate.(ne).(am).phi(1);
-            initstate.(ctrl).I = - model.(ctrl).Imax;
+            switch scenario
+              case 'discharge'
+                initstate.(ctrl).I = - model.(ctrl).Imax;
+              case {'charge', 'first-charge'}
+                initstate.(ctrl).I = model.(ctrl).Imax;
+              otherwise
+                error('scenario not recognized')
+            end 
             
             switch model.(ctrl).controlPolicy
               case 'CCCV'
@@ -219,7 +249,19 @@ classdef SiliconGraphiteBattery < Battery
                 assert(opts.ResOnly);
             end
 
+            elyte = 'Electrolyte';
+            ne    = 'NegativeElectrode';
+            pe    = 'PositiveElectrode';
+            am    = 'ActiveMaterial';
+            sd    = 'SolidDiffusion';
+            itf   = 'Interface';
+            ctrl  = 'Control';
+            gr    = 'Graphite';
+            si    = 'Silicon';
+
             %% start replace
+
+            state = model.updateControl(state, drivingForces);
             
             state.(elyte)              = model.(elyte).updateCurrentBcSource(state.(elyte));
             state.(ne).(am)            = model.(ne).(am).updateConductivity(state.(ne).(am));
@@ -263,7 +305,7 @@ classdef SiliconGraphiteBattery < Battery
             state.(ne).(am).(gr)       = model.(ne).(am).(gr).updateConcentrations(state.(ne).(am).(gr));
             state.(ne).(am).(gr).(itf) = model.(ne).(am).(gr).(itf).updateOCP(state.(ne).(am).(gr).(itf));
             state.(elyte)              = model.(elyte).updateConcentrations(state.(elyte));
-            state.(elyte)              = model.(elyte).assembleAccumTerm(state.(elyte), state0.(elyte), dt);
+            state.(elyte)              = model.(elyte).updateAccumTerm(state.(elyte), state0.(elyte), dt);
             state                      = model.updateElectrodeCoupling(state);
             state.(pe).(am).(itf)      = model.(pe).(am).(itf).updateReactionRateCoefficient(state.(pe).(am).(itf));
             state.(pe).(am).(itf)      = model.(pe).(am).(itf).updateEta(state.(pe).(am).(itf));
@@ -310,7 +352,7 @@ classdef SiliconGraphiteBattery < Battery
             eqs{ei.elyte_chargeCons}        = state.(elyte).chargeCons;
             eqs{ei.ne_am_chargeCons}        = state.(ne).(am).chargeCons;
             eqs{ei.pe_am_chargeCons}        = state.(pe).(am).chargeCons;
-            eqs{ei.EIeq}                    = state.(ctrl).EIeq;
+            eqs{ei.EIeq}                    = state.(ctrl).EIequation;
             eqs{ei.controlEq}               = state.(ctrl).controlEquation;
 
             n    = model.(ne).(am).(gr).(itf).n; % number of electron transfer (equal to 1 for Lithium)
@@ -322,8 +364,8 @@ classdef SiliconGraphiteBattery < Battery
             
             scalingcoef = (vsf*vol(1)*n*F)/surfp;
             
-            eqs{ei.ne_am_gr_sd_massCons}    = state.(ne).(am).(gr).(sd).massCons;
-            eqs{ei.ne_am_gr_sd_soliddiffeq} = state.(ne).(am).(gr).(sd).solidDiffusionEq;
+            eqs{ei.ne_am_gr_sd_massCons}    = scalingcoef*state.(ne).(am).(gr).(sd).massCons;
+            eqs{ei.ne_am_gr_sd_soliddiffeq} = scalingcoef*state.(ne).(am).(gr).(sd).solidDiffusionEq;
 
             n    = model.(ne).(am).(si).(itf).n; % number of electron transfer (equal to 1 for Lithium)
             F    = model.con.F;
@@ -334,20 +376,20 @@ classdef SiliconGraphiteBattery < Battery
             
             scalingcoef = (vsf*vol(1)*n*F)/surfp;
                         
-            eqs{ei.ne_am_si_sd_massCons}    = state.(ne).(am).(si).(sd).massCons;        
-            eqs{ei.ne_am_si_sd_soliddiffeq} = state.(ne).(am).(si).(sd).solidDiffusionEq;
+            eqs{ei.ne_am_si_sd_massCons}    = scalingcoef*state.(ne).(am).(si).(sd).massCons;        
+            eqs{ei.ne_am_si_sd_soliddiffeq} = scalingcoef*state.(ne).(am).(si).(sd).solidDiffusionEq;
 
-            n    = model.(ne).(am).(itf).n; % number of electron transfer (equal to 1 for Lithium)
+            n    = model.(pe).(am).(itf).n; % number of electron transfer (equal to 1 for Lithium)
             F    = model.con.F;
-            vol  = model.(ne).(am).operators.pv;
-            rp   = model.(ne).(am).(sd).rp;
-            vsf  = model.(ne).(am).(sd).volumetricSurfaceArea;
+            vol  = model.(pe).(am).operators.pv;
+            rp   = model.(pe).(am).(sd).rp;
+            vsf  = model.(pe).(am).(sd).volumetricSurfaceArea;
             surfp = 4*pi*rp^2;
             
             scalingcoef = (vsf*vol(1)*n*F)/surfp;
 
-            eqs{ei.pe_am_sd_massCons}       = state.(ne).(am).(sd).massCons;        
-            eqs{ei.pe_am_sd_soliddiffeq}    = state.(ne).(am).(sd).solidDiffusionEq;
+            eqs{ei.pe_am_sd_massCons}    = scalingcoef*state.(pe).(am).(sd).massCons;        
+            eqs{ei.pe_am_sd_soliddiffeq} = scalingcoef*state.(pe).(am).(sd).solidDiffusionEq;
 
             names = model.equationNames;
             types = model.equationTypes;
@@ -358,7 +400,19 @@ classdef SiliconGraphiteBattery < Battery
             problem = LinearizedProblem(eqs, types, names, primaryVars, state, dt);
             
         end
-        
+
+        function model = validateModel(model, varargin)
+                
+            model.PositiveElectrode.ActiveMaterial.AutoDiffBackend= model.AutoDiffBackend;
+            model.PositiveElectrode.ActiveMaterial = model.PositiveElectrode.ActiveMaterial.validateModel(varargin{:});
+            model.NegativeElectrode.ActiveMaterial.AutoDiffBackend= model.AutoDiffBackend;
+            model.NegativeElectrode.ActiveMaterial = model.NegativeElectrode.ActiveMaterial.validateModel(varargin{:});
+            model.Electrolyte.AutoDiffBackend=model.AutoDiffBackend;
+            model.Electrolyte=model.Electrolyte.validateModel(varargin{:});
+            
+        end
+
+
         function state = updateTemperature(model, state)
         % Dispatch the temperature in all the submodels
 
@@ -396,11 +450,11 @@ classdef SiliconGraphiteBattery < Battery
             am    = 'ActiveMaterial';
             itf   = 'Interface';
             
+            gr = 'Graphite';
+            si = 'Silicon';
+
             vols = battery.(elyte).G.cells.volumes;
             F = battery.con.F;
-            ne_vsa = battery.(ne).(am).(itf).volumetricSurfaceArea;
-            pe_vsa = battery.(pe).(am).(itf).volumetricSurfaceArea;
-            
             
             couplingterms = battery.couplingTerms;
 
@@ -419,7 +473,7 @@ classdef SiliconGraphiteBattery < Battery
             
             ne_si_Rvol = state.(ne).(am).(si).Rvol;
             ne_gr_Rvol = state.(ne).(am).(gr).Rvol;
-            if isa(ne_Rvol, 'ADI') & ~isa(elyte_c_source, 'ADI')
+            if (isa(ne_si_Rvol, 'ADI') | isa(ne_gr_Rvol, 'ADI')) & ~isa(elyte_c_source, 'ADI')
                 adsample = getSampleAD(ne_Rvol);
                 adbackend = model.AutoDiffBackend;
                 elyte_c_source = adbackend.convertToAD(elyte_c_source, adsample);
@@ -499,7 +553,7 @@ classdef SiliconGraphiteBattery < Battery
             state.(ne).(am).(si).(itf).phiElectrolyte = phi_elyte(elyte_cells(bat.(ne).(am).(si).G.mappings.cellmap));
             state.(ne).(am).(si).(itf).cElectrolyte   = c_elyte(elyte_cells(bat.(ne).(am).(si).G.mappings.cellmap));
             state.(ne).(am).(gr).(itf).phiElectrolyte = phi_elyte(elyte_cells(bat.(ne).(am).(gr).G.mappings.cellmap));
-            state.(ne).(am).(gr).(itf).cElectrolyte   = c_elyte(elyte_cells(bat.(ne).(am).(gr).G.mappings.cellmap));s
+            state.(ne).(am).(gr).(itf).cElectrolyte   = c_elyte(elyte_cells(bat.(ne).(am).(gr).G.mappings.cellmap));
             
             state.(pe).(am).(itf).phiElectrolyte = phi_elyte(elyte_cells(bat.(pe).(am).G.mappings.cellmap));
             state.(pe).(am).(itf).cElectrolyte = c_elyte(elyte_cells(bat.(pe).(am).G.mappings.cellmap));
@@ -521,20 +575,6 @@ classdef SiliconGraphiteBattery < Battery
             cmin = model.cmin;
             
             state.(elyte).c = max(cmin, state.(elyte).c);
-            
-            eldes = {ne, pe};
-            for ind = 1 : numel(eldes)
-                elde = eldes{ind};
-                if strcmp(model.(elde).(am).diffusionModelType, 'simple') | ~model.use_particle_diffusion
-                    state.(elde).(am).c = max(cmin, state.(elde).(am).c);
-                    cmax = model.(elde).(am).(itf).cmax;
-                    state.(elde).(am).c = min(cmax, state.(elde).(am).c);
-                else
-                    state.(elde).(am).(sd).c = max(cmin, state.(elde).(am).(sd).c);
-                    cmax = model.(elde).(am).(itf).cmax;
-                    state.(elde).(am).(sd).c = min(cmax, state.(elde).(am).(sd).c);
-                end
-            end
             
             ctrl = 'Control';            
             state.(ctrl) = model.(ctrl).updateControlState(state.(ctrl));
