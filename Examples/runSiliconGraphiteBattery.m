@@ -51,7 +51,7 @@ paramobj = paramobj.validateInputParams();
 
 gen = BatteryGenerator1D();
 
-gen.xlength(4) = 1.8831*gen.xlength(4);
+gen.xlength(4) = 1.8619*gen.xlength(4);
 
 % gen.fac = 100;
 % gen = gen.applyResolutionFactors();
