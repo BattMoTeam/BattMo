@@ -1,46 +1,57 @@
 {"library" : "matlab",
  "method" : "separate-variable-gmres",
-  "gmres_options" : {"restart" : "default",
-                     "tol" : "default",
-                     "maxit" : "default"},
+ "options" : {"type" : "gauss-seidel",
+              "iteration" : 3},
+ "gmres_options" : {"restart" : "default",
+                    "tol" : "default",
+                    "maxit" : "default"},
  "reduction" : {"doReduction" : true,
                 "variables" : [{"name" : ["Control", "I"], "order" : 1},
                                {"name" : ["Control", "E"], "order" : 2, "special" : true}]
                },
  
- "preconditioners" : [{"name" : "potential",
+ "preconditioners" : [{"name" : "concentration in negative electrode particles",
+                       "variables" : [["NegativeElectrode", "ActiveMaterial", "SolidDiffusion", "c"],
+                                      ["NegativeElectrode", "ActiveMaterial", "SolidDiffusion", "cSurface"]],
+                       "solver" : {"library" : "amgcl"}
+                      },
+                      
+                      {"name" : "concentration in positive electrode particles",
+                       "variables" : [["PositiveElectrode", "ActiveMaterial", "SolidDiffusion", "c"],
+                                      ["PositiveElectrode", "ActiveMaterial", "SolidDiffusion", "cSurface"]],
+                       "solver" : {"library" : "amgcl"}
+                      },
+
+                      {"name" : "potential",
                        "variables" : [["Electrolyte", "phi"],
                                       ["NegativeElectrode", "ActiveMaterial", "phi"],
                                       ["PositiveElectrode", "ActiveMaterial", "phi"],
                                       ["NegativeElectrode", "CurrentCollector", "phi"],
                                       ["PositiveElectrode", "CurrentCollector", "phi"],
-                                      ["Control", "E"],
-                                      ["NegativeElectrode", "ActiveMaterial", "SolidDiffusion", "cSurface"],
-                                      ["PositiveElectrode", "ActiveMaterial", "SolidDiffusion", "cSurface"]
+                                      ["Control", "E"]
                                      ],
                        "solver" : {"library" : "amgcl"}
                       },
 
                       {"name" : "concentration in negative electrode particles",
-                       "variables" : [["NegativeElectrode", "ActiveMaterial", "SolidDiffusion", "c"]],
+                       "variables" : [["NegativeElectrode", "ActiveMaterial", "SolidDiffusion", "c"],
+                                      ["NegativeElectrode", "ActiveMaterial", "SolidDiffusion", "cSurface"]],
                        "solver" : {"library" : "amgcl"}
                       },
                       
                       {"name" : "concentration in positive electrode particles",
-                       "variables" : [["PositiveElectrode", "ActiveMaterial", "SolidDiffusion", "c"]],
+                       "variables" : [["PositiveElectrode", "ActiveMaterial", "SolidDiffusion", "c"],
+                                      ["PositiveElectrode", "ActiveMaterial", "SolidDiffusion", "cSurface"]],
                        "solver" : {"library" : "amgcl"}
                       },
 
                       {"name" : "concentration in electrolyte",
                        "variables" : [["Electrolyte", "c"]],
                        "solver" : {"library" : "amgcl"}
-                                  },
+                      },
 
                       {"name" : "temperature",
-                       "variables" : [["ThermalModel", "T"],
-                                      ["NegativeElectrode", "ActiveMaterial", "SolidDiffusion", "cSurface"],
-                                      ["PositiveElectrode", "ActiveMaterial", "SolidDiffusion", "cSurface"]
-                                     ],
+                       "variables" : [["ThermalModel", "T"]],
                        "solver" : {"library" : "amgcl"}}
                      ]
 }

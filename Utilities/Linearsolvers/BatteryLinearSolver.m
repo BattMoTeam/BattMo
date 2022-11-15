@@ -289,7 +289,7 @@ classdef BatteryLinearSolver < handle
                         precondReports{isolver}.Iterations = 0;
                     end
                     solver.precondReports = precondReports;
-                    
+
                     precond = @(b) solver.blockFieldSchwarz(b, A, precondsolvers);
                     
                     a=tic;
@@ -427,31 +427,53 @@ classdef BatteryLinearSolver < handle
             report = merge_options_relaxed(report, varargin);
         end
 
-        function r = blockFieldSchwarz(solver, x, A, precondsolvers)
+        function x = blockFieldSchwarz(solver, b, A, precondsolvers)
 
-            r = x*0;
-
-            for isolver = 1 : numel(precondsolvers)
-
-                precondsolver = precondsolvers{isolver};
-                ind = precondsolver.ind;
-                
-                if any(ind)
-                    func = precondsolver.func;
-                    if solver.verbose
-                        if isfield(precondsolver, 'name')
-                            name = sprintf("(%s)", precondsolver.name);
-                        else
-                            name = ""
-                        end
-                        fprintf('*** block preconditioner %d %s\n\n', isolver, name);
-                    end                        
-
-                    [pr, flag, res, iter] = func(A(ind, ind), x(ind));
-                    r(ind) = pr;
-                    solver.precondReports{isolver}.Iterations = solver.precondReports{isolver}.Iterations + iter;
+            if isfield(solver.linearSolverSetup, 'options')
+                type = solver.linearSolverSetup.options.type;
+                if strcmp(type, 'gauss-seidel') & isfield(solver.linearSolverSetup.options, 'iteration')
+                    iteration = solver.linearSolverSetup.options.iteration;
+                else
+                    iteration = 1;
                 end
+            else
+                type = 'gauss-seidel';
+                iteration =  1;
+            end
+
+            x = b*0;
+
+            for iter = 1 : iteration
                 
+                for isolver = 1 : numel(precondsolvers)
+
+                    precondsolver = precondsolvers{isolver};
+                    ind = precondsolver.ind;
+                    
+                    if any(ind)
+                        func = precondsolver.func;
+                        if solver.verbose
+                            if isfield(precondsolver, 'name')
+                                name = sprintf("(%s)", precondsolver.name);
+                            else
+                                name = ""
+                            end
+                            fprintf('*** block preconditioner %d %s\n\n', isolver, name);
+                        end                        
+
+                        [r, flag, res, iter] = func(A(ind, ind), b(ind));
+                        switch type
+                          case 'gauss-seidel'
+                            b = b - A(:, ind)*r;
+                          case 'jacobi'
+                            % do nothing
+                          otherwise
+                            error('type not recognized');
+                        end
+                        x(ind) = x(ind) + r;
+                        solver.precondReports{isolver}.Iterations = solver.precondReports{isolver}.Iterations + iter;
+                    end
+                end
             end
             
         end
