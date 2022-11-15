@@ -10,19 +10,7 @@
                                {"name" : ["Control", "E"], "order" : 2, "special" : true}]
                },
  
- "preconditioners" : [{"name" : "concentration in negative electrode particles",
-                       "variables" : [["NegativeElectrode", "ActiveMaterial", "SolidDiffusion", "c"],
-                                      ["NegativeElectrode", "ActiveMaterial", "SolidDiffusion", "cSurface"]],
-                       "solver" : {"library" : "amgcl"}
-                      },
-                      
-                      {"name" : "concentration in positive electrode particles",
-                       "variables" : [["PositiveElectrode", "ActiveMaterial", "SolidDiffusion", "c"],
-                                      ["PositiveElectrode", "ActiveMaterial", "SolidDiffusion", "cSurface"]],
-                       "solver" : {"library" : "amgcl"}
-                      },
-
-                      {"name" : "potential",
+ "preconditioners" : [{"name" : "potential",
                        "variables" : [["Electrolyte", "phi"],
                                       ["NegativeElectrode", "ActiveMaterial", "phi"],
                                       ["PositiveElectrode", "ActiveMaterial", "phi"],
@@ -30,7 +18,8 @@
                                       ["PositiveElectrode", "CurrentCollector", "phi"],
                                       ["Control", "E"]
                                      ],
-                       "solver" : {"library" : "amgcl"}
+                       "solver" : {"library" : "amgcl",
+                                   "solver" : {"tol" : 1e-5}}
                       },
 
                       {"name" : "concentration in negative electrode particles",

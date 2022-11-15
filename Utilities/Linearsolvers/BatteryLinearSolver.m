@@ -937,9 +937,9 @@ classdef BatteryLinearSolver < handle
                           'verbose'     , solver.verbose);
 
 
-            if isfield(amgclsolverspec, 'options')
-                opts = amgclsolverspec.options;
-                opts = mergeJsonStructs({defaultOpts, opts}, 'force', true);
+            if nargin > 1
+                opts = mergeJsonStructs({defaultOpts, amgclsolverspec}, 'force', true);
+                opts = rmfield(opts, 'library');
             else
                 opts = defaultOpts;
             end
