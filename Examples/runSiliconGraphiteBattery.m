@@ -146,8 +146,75 @@ nls.errorOnFailure = false;
 
 [wellSols, states, report] = simulateScheduleAD(initstate, model, schedule, 'OutputMinisteps', true, 'NonLinearSolver', nls); 
 
+chargeStates = states;
+
+paramobj.scenario = 'discharge';
+paramobj = paramobj.validateInputParams();
+
+model = SiliconGraphiteBattery(paramobj);
+
+initstate = chargeStates{end};
+
+CRate = model.Control.CRate;
+
+ctrl = 'Control';
+
+switch model.(ctrl).controlPolicy
+  case 'CCCV'
+    total = 3.5*hour/CRate;
+  case 'IEswitch'
+    total = 1.4*hour/CRate;
+  otherwise
+    error('control policy not recognized');
+end
+
+n  = 100;
+dt = total/n;
+step = struct('val', dt*ones(n, 1), 'control', ones(n, 1));
+
+% we setup the control by assigning a source and stop function.
+% control = struct('CCCV', true); 
+%  !!! Change this to an entry in the JSON with better variable names !!!
+
+switch model.Control.controlPolicy
+  case 'IEswitch'
+    tup = 0.1; % rampup value for the current function, see rampupSwitchControl
+    switch model.scenario
+      case 'discharge'
+        inputI = model.Control.Imax;
+        inputE = model.Control.lowerCutoffVoltage;
+      case {'charge', 'first-charge'}
+        inputI = -model.Control.Imax;
+        inputE = model.Control.upperCutoffVoltage;
+      otherwise
+        error('initCase not recognized')
+    end
+    srcfunc = @(time, I, E) rampupSwitchControl(time, tup, I, E, inputI, inputE);
+    % we setup the control by assigning a source and stop function.
+    control = struct('src', srcfunc, 'IEswitch', true);
+  case 'CCCV'
+    control = struct('CCCV', true);
+  otherwise
+    error('control policy not recognized');
+end
+
+% This control is used to set up the schedule
+schedule = struct('control', control, 'step', step); 
+
+%% Run simulation
+
+model.verbose = true;
+
+nls = NonLinearSolver;
+nls.errorOnFailure = false;
+
+[wellSols, states, report] = simulateScheduleAD(initstate, model, schedule, 'OutputMinisteps', true, 'NonLinearSolver', nls); 
+
+dischargeStates = states;
 
 %% plotting
+
+states = vertcat(chargeStates, dischargeStates);
 
 set(0, 'defaultlinelinewidth', 3);
 
@@ -160,3 +227,22 @@ Tmax = cellfun(@(x) max(x.ThermalModel.T), states);
 time = cellfun(@(x) x.time, states); 
 
 plot(time, E);
+
+%%  energy density for discharge phase
+
+E = cellfun(@(x) x.Control.E, dischargeStates); 
+I = cellfun(@(x) x.Control.I, dischargeStates);
+t = cellfun(@(x) x.time, dischargeStates);
+mass = computeCellMass(model);
+vol = sum(model.G.cells.volumes);
+[Emid, Imid, energyDensity, specificEnergy, energy] = computeEnergyDensity(E, I, t, vol, mass);
+
+figure
+plot(energyDensity, Emid);
+xlabel('Energy Density [Wh/L]');
+ylabel('Voltage [V]');
+
+figure
+plot(specificEnergy, Emid);
+xlabel('Specific Energy [Wh/kg]');
+ylabel('Voltage [V]');
