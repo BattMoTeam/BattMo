@@ -107,6 +107,11 @@ jsonstruct.(ne).(am).diffusionModelType = 'simple';
 
 jsonstruct.use_particle_diffusion = true;
 
+diffusionModelType = 'full';
+
+jsonstruct.(pe).(am).diffusionModelType = diffusionModelType;
+jsonstruct.(ne).(am).diffusionModelType = diffusionModelType;
+
 paramobj = BatteryInputParams(jsonstruct); 
 
 paramobj.(ne).(am).InterDiffusionCoefficient = 0;
@@ -127,6 +132,7 @@ gen = SpiralBatteryGenerator();
 paramobj = gen.updateBatteryInputParams(paramobj, spiralparams);
 
 model = Battery(paramobj); 
+model.AutoDiffBackend= AutoDiffBackend();
 
 [cap, cap_neg, cap_pos, specificEnergy] = computeCellCapacity(model);
 fprintf('ratio : %g, energy : %g\n', cap_neg/cap_pos, specificEnergy/hour);
@@ -145,9 +151,9 @@ C = computeCellCapacity(model);
 inputI = (C/hour)*CRate; 
 inputE = 3; 
 
-tt = times(2 : end); 
+times = times(2 : 3);
 
-step = struct('val', diff(times), 'control', ones(numel(tt), 1)); 
+step = struct('val', diff(times), 'control', ones(numel(times) - 1, 1)); 
 
 tup = 0.1/CRate; 
 
@@ -183,69 +189,79 @@ switch simcase
 
 end
 
-% Setup nonlinear solver 
-nls = NonLinearSolver(); 
+%% Setup the properties of the nonlinear solver 
+nls = NonLinearSolver();
 
-% Change default maximum iteration number in nonlinear solver
-nls.maxIterations = 10; 
-% Change default behavior of nonlinear solver, in case of error
-nls.errorOnFailure = false; 
-% Change default tolerance for nonlinear solver
-model.nonlinearTolerance = 1e-4; 
+clear setup
 
-use_diagonal_ad = false;
-if(use_diagonal_ad)
-    model.AutoDiffBackend = DiagonalAutoDiffBackend(); 
-    model.AutoDiffBackend.useMex = true; 
-    model.AutoDiffBackend.modifyOperators = true; 
-    model.AutoDiffBackend.rowMajor = true; 
-    model.AutoDiffBackend.deferredAssembly = false; % error with true for now
-else
-    model.AutoDiffBackend = AutoDiffBackend(); 
+casenumber = 4;
+
+switch casenumber
+    
+  case 1
+    
+    setup.library = 'matlab';
+
+  case 2
+    
+    setup.method = 'gmres';
+    setup.options.method = 'grouped';
+    setup.options.solverspec.name = 'agmg'; % not used for now
+
+  case 3
+    
+    setup.method = 'gmres';
+    setup.options.method = 'separate';
+    solvers = {};
+    solverspec.variable = 'phi';
+    solverspec.solverspec.name = 'direct';
+    solvers{end + 1} = solverspec;
+    solverspec.variable = 'c';
+    solverspec.solverspec.name = 'direct';
+    solvers{end + 1} = solverspec;
+    solverspec.variable = 'T';
+    solverspec.solverspec.name = 'direct';
+    solvers{end + 1} = solverspec;
+    setup.options.solvers = solvers;
+
+  case 4
+
+    switch diffusionModelType
+      case 'simple'
+        jsonfilename = fullfile(battmoDir, 'Utilities/JsonSchemas/Tests/linearsolver3.json');
+      case 'full'
+        jsonfilename = fullfile(battmoDir, 'Utilities/JsonSchemas/Tests/linearsolver4.json');
+      otherwise
+        error('diffusionModelType not covered')
+    end
+    jsonsrc = fileread(jsonfilename);
+    setup = jsondecode(jsonsrc);
+    
+  otherwise
+    
+    error('case number not recognized');
+
 end
-
-nls.timeStepSelector = StateChangeTimeStepSelector('TargetProps', {{'Control', 'E'}}, 'targetChangeAbs', 0.03);
-
-
-% linearsolver = 'battery';
-% switch linearsolver
-%   case 'agmg'
-%     mrstModule add agmg
-%     nls.LinearSolver = AGMGSolverAD('verbose', true, 'reduceToCell', false); 
-%     nls.LinearSolver.tolerance = 1e-3; 
-%     nls.LinearSolver.maxIterations = 30; 
-%     nls.maxIterations = 10; 
-%     nls.verbose = 10;
-%   case 'battery'
-%     nls.LinearSolver = LinearSolverBatteryExtra('verbose'     , false, ...
-%                                                 'reduceToCell', true, ...
-%                                                 'verbosity'   , 3    , ...
-%                                                 'reuse_setup' , false, ...
-%                                                 'method'      , 'agmg');
-%     nls.LinearSolver.tolerance = 0.5e-4*2;          
-%   case 'direct'
-%     disp('standard direct solver')
-%   otherwise
-%     error()
-% end
-
-
-jsonfilename = fullfile(battmoDir, 'Utilities/JsonSchemas/Tests/linearsolver3.json');
-jsonsrc = fileread(jsonfilename);
-setup = jsondecode(jsonsrc);
 
 if isfield(setup, 'reduction')
     model = model.setupSelectedModel('reduction', setup.reduction);
 end
 
-nls.LinearSolver = BatteryLinearSolver('verbose'          , false, ...
-                                       'reduceToCell'     , true , ...
+nls.LinearSolver = BatteryLinearSolver('verbose'          , 1, ...
                                        'reuse_setup'      , false, ...
                                        'linearSolverSetup', setup);
 
-    
-model.nonlinearTolerance = 1e-4; 
-model.verbose = true; 
+% nls.LinearSolver.linearSolverSetup.gmres_options.tolerance = 1e-3*model.Control.Imax;
+
+% Change default maximum iteration number in nonlinear solver
+nls.maxIterations = 20;
+% Change default behavior of nonlinear solver, in case of error
+nls.errorOnFailure = true;
+% nls.timeStepSelector=StateChangeTimeStepSelector('TargetProps', {{'Control','E'}}, 'targetChangeAbs', 0.03);
+% Change default tolerance for nonlinear solver
+model.nonlinearTolerance = 1e-3*model.Control.Imax;
+% Set verbosity
+model.verbose = true;
 
 % Run simulation
 dataFolder = 'BattMo';
@@ -257,11 +273,7 @@ if resetSimulation
     %% clear previously computed simulation
     clearPackedSimulatorOutput(problem, 'prompt', false);
 end
-profile off
-profile on
 simulatePackedProblem(problem);
-profile off
-profile viewer
 [globvars, states, report] = getPackedSimulatorOutput(problem);
 
 %% Process output and recover the output voltage and current from the output states.
@@ -276,6 +288,108 @@ plot(time, E, 'linewidth', 3);
 set(gca, 'fontsize', 18);
 title('Cell Voltage / V')
 xlabel('time (hours)')
+
+%%
+
+its = getReportOutput(report,'type','linearIterations')
+nits= getReportOutput(report,'type','nonlinearIterations')
+
+figure
+plot(its.time, its.total./nits.total)
+xlabel('time');
+title('linear iterations/newton iterations')
+
+
+switch setup.method
+
+  case "grouped-gmres"
+
+    pits = zeros(numel(its.time), 1);
+    
+    counter = 1;
+    
+    for icontrol = 1 : numel(report.ControlstepReports)
+        
+        creport = report.ControlstepReports{icontrol};
+
+        for istep = 1 : numel(creport.StepReports)
+
+            sreport = creport.StepReports{istep};
+            
+            for k = 1 : numel(sreport.NonlinearReport);
+                
+                nreport = sreport.NonlinearReport{k};
+                try
+                    it = nreport.LinearSolver.precondReports.Iterations;
+                    pits(counter) = pits(counter) + it;
+                end
+                
+            end
+        end
+    end
+
+    figure
+    plot(its.time, pits./its.total);
+    xlabel('time');
+    title('preconditioner iteration/linear iteration');
+    
+  case "separate-variable-gmres"
+
+    npreconds = numel(setup.preconditioners);
+    pits = zeros(numel(its.time), npreconds);
+
+    counter = 1;
+    
+    for icontrol = 1 : numel(report.ControlstepReports)
+        
+        creport = report.ControlstepReports{icontrol};
+
+        for istep = 1 : numel(creport.StepReports)
+
+            sreport = creport.StepReports{istep};
+            
+            for k = 1:numel(sreport.NonlinearReport);
+                
+                nreport = sreport.NonlinearReport{k};
+                
+                for iprecond = 1 : npreconds
+
+                    try
+                        it = nreport.LinearSolver.precondReports{iprecond}.Iterations;
+                        pits(counter, iprecond) = pits(counter, iprecond) + it;
+                    end
+                    
+                end
+            end
+
+            counter = counter + 1;
+        end
+    end
+
+    for iprecond = 1 : npreconds
+
+        figure
+        plot(its.time, pits(:, iprecond)./its.total);
+        xlabel('time');
+        switch iprecond
+          case 1
+            titlestr = 'phi';
+          case 2
+            titlestr = 'c';
+          case 3
+            titlestr = 'T';
+        end
+        titlestr = sprintf('preconditioner iteration/linear iteration - %s', titlestr);
+        title(titlestr);
+        
+    end
+
+end
+
+
+
+%% Plot the the output voltage and current
+% plotDashboard(model, states, 'step', 0);
 
 %{
 Copyright 2021-2022 SINTEF Industry, Sustainable Energy Technology
