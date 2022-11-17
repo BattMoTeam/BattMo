@@ -452,7 +452,7 @@ classdef BatteryLinearSolver < handle
                 iteration =  1;
             end
 
-            x = b;
+            x = b*0;
 
             for iter = 1 : iteration
                 
@@ -472,15 +472,15 @@ classdef BatteryLinearSolver < handle
                             fprintf('*** block preconditioner %d %s\n\n', isolver, name);
                         end                        
 
-                        [r, flag, res, iter] = func(A(ind, ind), b(ind));
                         switch type
                           case 'gauss-seidel'
-                            b = b - A(:, ind)*r;
+                            b2 = b(ind) - A(ind, ~ind)*x(~ind);
                           case 'jacobi'
-                            % do nothing
+                            b2 = b(ind);
                           otherwise
                             error('type not recognized');
                         end
+                        [r, flag, res, iter] = func(A(ind, ind), b2);
                         x(ind) = r;
                         solver.precondReports{isolver}.Iterations = solver.precondReports{isolver}.Iterations + iter;
                     end
