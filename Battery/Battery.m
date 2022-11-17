@@ -334,7 +334,7 @@ classdef Battery < BaseModel
             
             if model.use_thermal
                 
-            fn = @Battery.updateThermalOhmicSourceTerms;
+                fn = @Battery.updateThermalOhmicSourceTerms;
                 inputnames = {{elyte, 'jFace'}        , ...
                               {ne, am, 'jFace'}       , ...
                               {pe, am, 'jFace'}       , ...
@@ -350,24 +350,24 @@ classdef Battery < BaseModel
                     inputnames = horzcat(inputnames, varnames);
                 end
                 
-            model = model.registerPropFunction({{thermal, 'jHeatOhmSource'}, fn, inputnames});
-            model = model.registerPropFunction({{thermal, 'jHeatBcSource'} , fn, inputnames});
-            
-            %% Function that updates the Thermal Chemical Terms
-            fn = @Battery.updateThermalChemicalSourceTerms;
-            inputnames = {{elyte, 'diffFlux'}, ...
-                          {elyte, 'D'}       , ...
+                model = model.registerPropFunction({{thermal, 'jHeatOhmSource'}, fn, inputnames});
+                model = model.registerPropFunction({{thermal, 'jHeatBcSource'} , fn, inputnames});
+                
+                %% Function that updates the Thermal Chemical Terms
+                fn = @Battery.updateThermalChemicalSourceTerms;
+                inputnames = {{elyte, 'diffFlux'}, ...
+                              {elyte, 'D'}       , ...
                               VarName({elyte}, 'dmudcs', 2)};
-            model = model.registerPropFunction({{thermal, 'jHeatChemicalSource'}, fn, inputnames});
-            
-            %% Function that updates Thermal Reaction Terms
-            fn = @Battery.updateThermalReactionSourceTerms;
+                model = model.registerPropFunction({{thermal, 'jHeatChemicalSource'}, fn, inputnames});
+                
+                %% Function that updates Thermal Reaction Terms
+                fn = @Battery.updateThermalReactionSourceTerms;
                 inputnames = {{ne, am, 'Rvol'}  , ...
-                          {ne, am, itf, 'eta'}, ...
+                              {ne, am, itf, 'eta'}, ...
                               {pe, am, 'Rvol'}  , ...
-                          {pe, am, itf, 'eta'}};
-            model = model.registerPropFunction({{thermal, 'jHeatReactionSource'}, fn, inputnames});
-                                                    
+                              {pe, am, itf, 'eta'}};
+                model = model.registerPropFunction({{thermal, 'jHeatReactionSource'}, fn, inputnames});
+                
             end
             
             %% Functions that setup external  coupling for negative electrode
