@@ -56,6 +56,16 @@ classdef BatteryLinearSolver < handle
             else
                 solver.linearSolverSetup = struct('library', 'matlab', 'method', 'direct');
             end
+
+            setup = solver.linearSolverSetup;
+
+            if isfield(setup, 'reduction') && setup.reduction.doReduction
+                solver.reduceToCell = true;
+            else
+                solver.reduceToCell = false;
+            end
+
+            
         end
 
         function solver = processSolverSetup(solver)
@@ -302,6 +312,7 @@ classdef BatteryLinearSolver < handle
                                                          gopts.maxit, ...
                                                          precond);
                     
+
                     % add diagnostic fields in report
                     report.Iterations         = (iter(1) - 1)*gopts.maxit + iter(2);
                     report.Residual           = relres;
@@ -315,7 +326,7 @@ classdef BatteryLinearSolver < handle
                             fprintf('\n***  GMRES Report \n');
                             fprintf('flag (0:converged, 1:maxiter, 2:ill-posed precond, 3:stagnated) : %d \n', flag);
                             fprintf('iterations : %d \n', report.Iterations);
-                            fprintf('***\n\n', report.Iterations);
+                            fprintf('***\n\n');
                         else
                             if flag == 1
                                 warning('GMRES did not converge');
