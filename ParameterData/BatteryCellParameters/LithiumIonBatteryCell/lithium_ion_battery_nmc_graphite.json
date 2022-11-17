@@ -9,7 +9,7 @@
   "Control" : {
     "controlPolicy" : "IEswitch",
     "CRate" : 1,
-    "lowerCutoffVoltage" : 2,
+    "lowerCutoffVoltage" : 2.4,
     "upperCutoffVoltage" : 4.1,
     "dIdtLimit" : 0.01,
     "dEdtLimit" : 0.01
