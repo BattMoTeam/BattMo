@@ -1,7 +1,7 @@
 {"library" : "matlab",
  "method" : "separate-variable-gmres",
  "options" : {"type" : "gauss-seidel",
-              "iteration" : 3},
+              "iteration" : 1},
  "gmres_options" : {"restart" : "default",
                     "tol" : "default",
                     "maxit" : "default"},
@@ -18,29 +18,29 @@
                                       ["PositiveElectrode", "CurrentCollector", "phi"],
                                       ["Control", "E"]
                                      ],
-                       "solver" : {"library" : "amgcl",
+                       "solver" : {"library" : "matlab",
                                    "solver" : {"tol" : 1e-5}}
                       },
 
                       {"name" : "concentration in negative electrode particles",
                        "variables" : [["NegativeElectrode", "ActiveMaterial", "SolidDiffusion", "c"],
                                       ["NegativeElectrode", "ActiveMaterial", "SolidDiffusion", "cSurface"]],
-                       "solver" : {"library" : "amgcl"}
+                       "solver" : {"library" : "matlab"}
                       },
                       
                       {"name" : "concentration in positive electrode particles",
                        "variables" : [["PositiveElectrode", "ActiveMaterial", "SolidDiffusion", "c"],
                                       ["PositiveElectrode", "ActiveMaterial", "SolidDiffusion", "cSurface"]],
-                       "solver" : {"library" : "amgcl"}
+                       "solver" : {"library" : "matlab"}
                       },
 
                       {"name" : "concentration in electrolyte",
                        "variables" : [["Electrolyte", "c"]],
-                       "solver" : {"library" : "amgcl"}
+                       "solver" : {"library" : "matlab"}
                       },
 
                       {"name" : "temperature",
                        "variables" : [["ThermalModel", "T"]],
-                       "solver" : {"library" : "amgcl"}}
+                       "solver" : {"library" : "matlab"}}
                      ]
 }

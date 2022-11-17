@@ -206,13 +206,13 @@ if isfield(setup, 'reduction')
     model = model.setupSelectedModel('reduction', setup.reduction);
 end
 
-nls.LinearSolver = BatteryLinearSolver('verbose'          , 2, ...
+nls.LinearSolver = BatteryLinearSolver('verbose'          , 0, ...
                                        'reuse_setup'      , false, ...
                                        'linearSolverSetup', setup);
 
 if isfield(nls.LinearSolver.linearSolverSetup, 'gmres_options')
-    nls.LinearSolver.linearSolverSetup.gmres_options.tol = 1e-10*model.Control.Imax;
-    nls.LinearSolver.linearSolverSetup.gmres_options.maxit = 500;
+    nls.LinearSolver.linearSolverSetup.gmres_options.tol = 1e-3*model.Control.Imax;
+    nls.LinearSolver.linearSolverSetup.gmres_options.maxit = 10;
 end
 
 % Change default maximum iteration number in nonlinear solver
