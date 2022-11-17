@@ -1078,9 +1078,9 @@ classdef Battery < BaseModel
             ctrltype = state.Control.ctrlType;
             switch ctrltype
               case {'constantCurrent', 'CC_discharge1', 'CC_discharge2', 'CC_charge1'}
-                types{ei.EIeq} = 'cell';   
+                types{ei.EIeq} = 'cell';
               case {'constantVoltage', 'CV_charge2'}
-                % no changes
+                eqs([ei.EIeq, ei.controlEq]) = eqs([ei.controlEq, ei.EIeq]);
               otherwise 
                 error('control type not recognized')
             end
