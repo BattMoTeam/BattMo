@@ -441,7 +441,7 @@ classdef BatteryLinearSolver < handle
                 iteration =  1;
             end
 
-            x = b*0;
+            x = b;
 
             for iter = 1 : iteration
                 
