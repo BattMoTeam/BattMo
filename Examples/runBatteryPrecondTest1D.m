@@ -73,7 +73,7 @@ end
 % simulation. The required discretization parameters are already included
 % in the class BatteryGenerator1D. 
 gen = BatteryGenerator1D();
-gen.fac = 1;
+gen.fac = 100;
 gen = gen.applyResolutionFactors();
 
 % Now, we update the paramobj with the properties of the mesh. 
@@ -117,7 +117,6 @@ end
 
 n  = 100;
 dt = total/n;
-% n = 20;
 
 step = struct('val', dt*ones(n, 1), 'control', ones(n, 1));
 
@@ -206,7 +205,7 @@ if isfield(setup, 'reduction')
     model = model.setupSelectedModel('reduction', setup.reduction);
 end
 
-nls.LinearSolver = BatteryLinearSolver('verbose'          , 0, ...
+nls.LinearSolver = BatteryLinearSolver('verbose'          , 2    , ...
                                        'reuse_setup'      , false, ...
                                        'linearSolverSetup', setup);
 

@@ -18,29 +18,27 @@
                                       ["PositiveElectrode", "CurrentCollector", "phi"],
                                       ["Control", "E"]
                                      ],
-                       "solver" : {"library" : "matlab",
+                       "solver" : {"library" : "amgcl",
                                    "solver" : {"tol" : 1e-5}}
                       },
-
                       {"name" : "concentration in negative electrode particles",
                        "variables" : [["NegativeElectrode", "ActiveMaterial", "SolidDiffusion", "c"],
                                       ["NegativeElectrode", "ActiveMaterial", "SolidDiffusion", "cSurface"]],
-                       "solver" : {"library" : "matlab"}
+                       "solver" : {"library" : "amgcl"}
                       },
                       
                       {"name" : "concentration in positive electrode particles",
                        "variables" : [["PositiveElectrode", "ActiveMaterial", "SolidDiffusion", "c"],
                                       ["PositiveElectrode", "ActiveMaterial", "SolidDiffusion", "cSurface"]],
-                       "solver" : {"library" : "matlab"}
+                       "solver" : {"library" : "amgcl"}
                       },
-
                       {"name" : "concentration in electrolyte",
                        "variables" : [["Electrolyte", "c"]],
-                       "solver" : {"library" : "matlab"}
+                       "solver" : {"library" : "amgcl"}
                       },
 
                       {"name" : "temperature",
                        "variables" : [["ThermalModel", "T"]],
-                       "solver" : {"library" : "matlab"}}
+                       "solver" : {"library" : "amgcl"}}
                      ]
 }
