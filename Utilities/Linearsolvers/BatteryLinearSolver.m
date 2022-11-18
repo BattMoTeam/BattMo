@@ -507,6 +507,10 @@ classdef BatteryLinearSolver < handle
 
               case 'agmg'
 
+                if ~isfield(ellipticSolver, 'method')
+                    ellipticSolver.method = 'standard';
+                end
+                
                 switch ellipticSolver.method
 
                   case 'standard'
