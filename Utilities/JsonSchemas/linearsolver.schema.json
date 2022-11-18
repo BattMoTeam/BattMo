@@ -86,7 +86,7 @@
        
        {"properties" : {
          "method" : {"const": "standard"},
-         "description": "solve until convergence"}
+         "description": "solve until convergence. This is the default method"}
        },
 
        {"properties" : {
