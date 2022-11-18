@@ -1,5 +1,7 @@
 function  output = runBatteryJson(jsonInput)
 
+    mrstModule add ad-core mrst-gui mpfa
+
     if ischar(jsonInput)
         % load file
         jsonstruct = parseBattmoJson(jsonInput);
@@ -177,9 +179,9 @@ function  output = runBatteryJson(jsonInput)
     output = struct('model'         , model         , ...
                     'E'             , E             , ... % Unit : V
                     'I'             , I             , ... % Unit : A
-                    'energy'        , energy        , ... % Unit : Wh
-                    'energyDensity' , energyDensity , ... % Unit : Wh/L
-                    'specificEnergy', specificEnergy  ... % Unit : Wh/kg
+                    'energy'        , energy        , ... % Unit : J
+                    'energyDensity' , energyDensity , ... % Unit : J/L
+                    'specificEnergy', specificEnergy  ... % Unit : J/kg
                    );
     output.states = states;
 

@@ -1,12 +1,21 @@
-function [Emid, Imid, energyDensity, specificEnergy, energy] = computeEnergyDensity(E, I, t, vol, mass)
+function [Emid, Imid, energyDensity, specificEnergy, energy] = computeEnergyDensity(E, I, t, vol, mass, varargin)
+
+    opt = struct('SIoutput', true);
+    opt = merge_options(opt, varargin{:});
+    
     dt = diff(t);
     Emid = (E(2:end) + E(1:end - 1))/2.0; 
     Imid = (I(2:end) + I(1:end - 1))/2.0; 
-    energy = cumsum((Emid.*Imid).*dt);
+    energy = cumsum((Emid.*Imid).*dt); % J
+
+    if opt.SIoutput
+        energyDensity = energy/vol; % J/m^3
+    else
+        energy = energy/hour; % Wh
+        energyDensity = energy/vol/1000; %  Wh/L
+    end
     
-    energy = energy/hour; % Wh
-    energyDensity = energy/vol/1000; %  Wh/L
-    specificEnergy = energy/mass; %  Wh/kg
+    specificEnergy = energy/mass; % J/kg or Wh/kg
 end
 
 
