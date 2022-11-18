@@ -227,7 +227,8 @@ switch casenumber
 
     switch diffusionModelType
       case 'simple'
-        jsonfilename = fullfile(battmoDir, 'Utilities/JsonSchemas/Tests/linearsolver3.json');
+        % jsonfilename = fullfile(battmoDir, 'Utilities/JsonSchemas/Tests/linearsolver3.json');
+        jsonfilename = fullfile(battmoDir, 'Utilities/JsonSchemas/Tests/linearsolver5.json');
       case 'full'
         jsonfilename = fullfile(battmoDir, 'Utilities/JsonSchemas/Tests/linearsolver4.json');
       otherwise
@@ -291,6 +292,9 @@ else
     [~, states, reports] = simulateScheduleAD(initstate, model, schedule, ... 
                                               'NonLinearSolver', nls, ...
                                               'afterStepFn'    , fn);
+
+    reports = reports.ControlstepReports;
+    
 end
 
 %% Process output and recover the output voltage and current from the output states.
@@ -301,6 +305,7 @@ E = cellfun(@(x) x.Control.E, states);
 I = cellfun(@(x) x.Control.I, states);
 time = cellfun(@(x) x.time, states); 
 
+figure
 plot(time, E, 'linewidth', 3);
 set(gca, 'fontsize', 18);
 title('Cell Voltage / V')
