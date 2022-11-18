@@ -1,30 +1,34 @@
 {"library" : "matlab",
  "method" : "separate-variable-gmres",
  "gmres_options" : {"restart" : "default",
-                    "tol" : 1e-6,
-                    "maxit" : 30},
+                    "tol" : 1e-5,
+                    "maxit" : 10},
  "reduction" : {"doReduction" : true,
                 "variables" : [{"name" : ["Control", "I"], "order" : 1, "special" : true},
-                               {"name" : ["Control", "E"], "order" : 1, "special" : true},
-                               {"name" : ["NegativeElectrode", "ActiveMaterial", "c"], "order" :  2},
-                               {"name" : ["NegativeElectrode", "ActiveMaterial", "SolidDiffusion", "cSurface"], "order" :  3},
+                               {"name" : ["Control", "E"], "order" : 2, "special" : true},
+                               {"name" : ["NegativeElectrode", "ActiveMaterial", "c"], "order" :  3},
                                {"name" : ["PositiveElectrode", "ActiveMaterial", "c"], "order" :  4},
-                               {"name" : ["PositiveElectrode", "ActiveMaterial", "SolidDiffusion", "cSurface"], "order" :  5}
+                               {"name" : ["NegativeElectrode", "ActiveMaterial", "SolidDiffusion", "cSurface"], "order": 5}, 
+                               {"name" : ["PositiveElectrode", "ActiveMaterial", "SolidDiffusion", "cSurface"], "order": 6}
                               ]
                },
- "preconditioners" : [{"variables" : [["Electrolyte", "phi"],
+ "preconditioners" : [{"name" : "potential",
+                       "variables" : [["Electrolyte", "phi"],
                                       ["NegativeElectrode", "ActiveMaterial", "phi"],
                                       ["PositiveElectrode", "ActiveMaterial", "phi"],
                                       ["NegativeElectrode", "CurrentCollector", "phi"],
                                       ["PositiveElectrode", "CurrentCollector", "phi"],
                                       ["Control", "E"]
                                      ],
-                       "solver" : {"library" : "matlab"}},
+                       "solver" : {"library" : "amgcl",
+                                   "solver" : {"maxiter" : 10}}},
                       
-                      {"variables" : [["Electrolyte", "c"]],
+                      {"name" : "electrolyte concentration",
+                       "variables" : [["Electrolyte", "c"]],
                        "solver" : {"library" : "amgcl"}
                                   },
-                      {"variables" : [["ThermalModel", "T"]],
-                       "solver" : {"library" : "matlab"}}
+                      {"name": "Temperature",
+                       "variables" : [["ThermalModel", "T"]],
+                       "solver" : {"library" : "amgcl"}}
                      ]
 }

@@ -102,12 +102,10 @@ cc      = 'CurrentCollector';
 
 jsonstruct.include_current_collectors = true;
 jsonstruct.use_thermal = true;
-jsonstruct.(pe).(am).diffusionModelType = 'simple';
-jsonstruct.(ne).(am).diffusionModelType = 'simple';
 
 jsonstruct.use_particle_diffusion = true;
 
-diffusionModelType = 'full';
+diffusionModelType = 'simple';
 
 jsonstruct.(pe).(am).diffusionModelType = diffusionModelType;
 jsonstruct.(ne).(am).diffusionModelType = diffusionModelType;
@@ -146,12 +144,13 @@ n     = 10;
 dt0   = total*1e-6; 
 times = getTimeSteps(dt0, n, total, fac); 
 
+
+times = times(times < 3800);
+
 %% We compute the cell capacity, which used to compute schedule from CRate
 C = computeCellCapacity(model); 
 inputI = (C/hour)*CRate; 
 inputE = 3; 
-
-times = times(2 : 3);
 
 step = struct('val', diff(times), 'control', ones(numel(times) - 1, 1)); 
 
@@ -247,14 +246,16 @@ if isfield(setup, 'reduction')
     model = model.setupSelectedModel('reduction', setup.reduction);
 end
 
-nls.LinearSolver = BatteryLinearSolver('verbose'          , 1, ...
+nls.LinearSolver = BatteryLinearSolver('verbose'          , 2    , ...
                                        'reuse_setup'      , false, ...
                                        'linearSolverSetup', setup);
 
-% nls.LinearSolver.linearSolverSetup.gmres_options.tolerance = 1e-3*model.Control.Imax;
+if isfield(nls.LinearSolver.linearSolverSetup, 'gmres_options')
+    nls.LinearSolver.linearSolverSetup.gmres_options.tol = 1e-3*model.Control.Imax;
+end
 
 % Change default maximum iteration number in nonlinear solver
-nls.maxIterations = 20;
+nls.maxIterations = 10;
 % Change default behavior of nonlinear solver, in case of error
 nls.errorOnFailure = true;
 % nls.timeStepSelector=StateChangeTimeStepSelector('TargetProps', {{'Control','E'}}, 'targetChangeAbs', 0.03);
@@ -263,18 +264,34 @@ model.nonlinearTolerance = 1e-3*model.Control.Imax;
 % Set verbosity
 model.verbose = true;
 
-% Run simulation
-dataFolder = 'BattMo';
-problem = packSimulationProblem(initstate, model, schedule, dataFolder, 'Name', 'jellyroll', 'NonLinearSolver', nls);
-problem.SimulatorSetup.OutputMinisteps = true; 
 
-resetSimulation = true;
-if resetSimulation
-    %% clear previously computed simulation
-    clearPackedSimulatorOutput(problem, 'prompt', false);
+fn = getPlotAfterStepBattMo(nls);
+
+dopacked = false;
+
+if dopacked
+    % Run simulation
+    dataFolder = 'BattMo';
+    problem = packSimulationProblem(initstate, model, schedule, dataFolder, ...
+                                    'Name'           , 'jellyroll', ...
+                                    'NonLinearSolver', nls        , ...
+                                    'afterStepFn'    , fn);
+    problem.SimulatorSetup.OutputMinisteps = true; 
+
+    resetSimulation = true;
+    if resetSimulation
+        %% clear previously computed simulation
+        clearPackedSimulatorOutput(problem, 'prompt', false);
+    end
+    simulatePackedProblem(problem);
+    [globvars, states, reports] = getPackedSimulatorOutput(problem);
+
+else
+    
+    [~, states, reports] = simulateScheduleAD(initstate, model, schedule, ... 
+                                              'NonLinearSolver', nls, ...
+                                              'afterStepFn'    , fn);
 end
-simulatePackedProblem(problem);
-[globvars, states, report] = getPackedSimulatorOutput(problem);
 
 %% Process output and recover the output voltage and current from the output states.
 
@@ -287,12 +304,12 @@ time = cellfun(@(x) x.time, states);
 plot(time, E, 'linewidth', 3);
 set(gca, 'fontsize', 18);
 title('Cell Voltage / V')
-xlabel('time (hours)')
+xlabel('time')
 
 %%
 
-its = getReportOutput(report,'type','linearIterations')
-nits= getReportOutput(report,'type','nonlinearIterations')
+its = getReportOutput(reports,'type','linearIterations');
+nits= getReportOutput(reports,'type','nonlinearIterations');
 
 figure
 plot(its.time, its.total./nits.total)
@@ -308,7 +325,7 @@ switch setup.method
     
     counter = 1;
     
-    for icontrol = 1 : numel(report.ControlstepReports)
+    for icontrol = 1 : numel(reports.ControlstepReports)
         
         creport = report.ControlstepReports{icontrol};
 
@@ -340,15 +357,15 @@ switch setup.method
 
     counter = 1;
     
-    for icontrol = 1 : numel(report.ControlstepReports)
+    for icontrol = 1 : numel(reports)
         
-        creport = report.ControlstepReports{icontrol};
+        creport = reports{icontrol};
 
         for istep = 1 : numel(creport.StepReports)
 
             sreport = creport.StepReports{istep};
             
-            for k = 1:numel(sreport.NonlinearReport);
+            for k = 1 : numel(sreport.NonlinearReport);
                 
                 nreport = sreport.NonlinearReport{k};
                 
@@ -383,7 +400,11 @@ switch setup.method
         title(titlestr);
         
     end
+    
 
+  otherwise
+    
+    error('setup.method not recognized');
 end
 
 
