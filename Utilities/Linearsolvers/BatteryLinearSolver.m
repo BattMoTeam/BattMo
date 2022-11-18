@@ -3,8 +3,6 @@ classdef BatteryLinearSolver < handle
     
     properties
 
-        extraReport                % Enable this to produce additional report output
-                                   % May use a lot of memory for large problems
         verbose                    % Verbose output enabler
         replaceNaN                 % Boolean indicating if the solver should replace NaN in the results
         replaceInf                 % Boolean indicating if the solver should replace Inf in the results
@@ -33,7 +31,6 @@ classdef BatteryLinearSolver < handle
         
         function solver = BatteryLinearSolver(varargin)
             
-            solver.extraReport               = false;
             solver.verbose                   = 0;
             solver.replaceNaN                = false;
             solver.replaceInf                = false;
@@ -467,7 +464,7 @@ classdef BatteryLinearSolver < handle
                             if isfield(precondsolver, 'name')
                                 name = sprintf("(%s)", precondsolver.name);
                             else
-                                name = ""
+                                name = "";
                             end
                             fprintf('*** block preconditioner %d %s\n\n', isolver, name);
                         end                        
