@@ -36,7 +36,7 @@ for ind = 1 : numel(dirnames)
     addpath(genpath(dirname));
 end
 
-%% Add json utilities directory to the python path
+%% Add Python paths
 if mrstPlatform('matlab')
     pe = pyenv;
     if pe.Version == ""
