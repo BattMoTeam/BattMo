@@ -76,7 +76,7 @@ classdef BatteryInputParams < InputParams
             eldes = {ne, pe};
             for ielde = 1 : numel(eldes)
                 elde = eldes{ielde};
-                paramobj = mergeParameters(paramobj, {'include_current_collectors'}, {elde, 'include_current_collector'});
+                paramobj = mergeParameters(paramobj, {'include_current_collectors'}, {elde, 'include_current_collectors'});
                 paramobj = mergeParameters(paramobj, {'use_particle_diffusion'}, {elde, am, 'use_particle_diffusion'});
             end
             

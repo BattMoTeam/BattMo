@@ -5,7 +5,7 @@ classdef TestBattery1D < matlab.unittest.TestCase
         jsonfile                  = {fullfile('ParameterData','BatteryCellParameters','LithiumIonBatteryCell','lithium_ion_battery_nmc_graphite.json')};
         controlPolicy             = {'CCCV', 'IEswitch'};
         use_thermal               = {true, false};
-        include_current_collector = {true, false};
+        include_current_collectors = {true, false};
         diffusionmodel            = {'none', 'simplified', 'full'};
         testSize                  = {'short', 'long'};
         createReferenceData       = {false};
@@ -13,12 +13,12 @@ classdef TestBattery1D < matlab.unittest.TestCase
     
     methods
 
-        function states = test1d(test, jsonfile, controlPolicy, use_thermal, include_current_collector, diffusionModelType, testSize, varargin)
+        function states = test1d(test, jsonfile, controlPolicy, use_thermal, include_current_collectors, diffusionModelType, testSize, varargin)
             
             jsonstruct = parseBattmoJson(fullfile('ParameterData','BatteryCellParameters','LithiumIonBatteryCell','lithium_ion_battery_nmc_graphite.json'));
 
 
-            jsonstruct.include_current_collector = include_current_collector;
+            jsonstruct.include_current_collectors = include_current_collectors;
             jsonstruct.use_thermal = use_thermal;
 
             if strcmp(diffusionModelType, 'none')
@@ -151,11 +151,11 @@ classdef TestBattery1D < matlab.unittest.TestCase
 
     methods (Test)
 
-        function testBattery(test, jsonfile, controlPolicy, use_thermal, include_current_collector, diffusionmodel, testSize, createReferenceData)
+        function testBattery(test, jsonfile, controlPolicy, use_thermal, include_current_collectors, diffusionmodel, testSize, createReferenceData)
 
-            states = test1d(test, jsonfile, controlPolicy, use_thermal, include_current_collector, diffusionmodel, testSize);
+            states = test1d(test, jsonfile, controlPolicy, use_thermal, include_current_collectors, diffusionmodel, testSize);
 
-            filename = sprintf('TestBattery1D-%s-%d-%d-%s-%s.mat', controlPolicy, use_thermal, include_current_collector, diffusionmodel, testSize);
+            filename = sprintf('TestBattery1D-%s-%d-%d-%s-%s.mat', controlPolicy, use_thermal, include_current_collectors, diffusionmodel, testSize);
             filename = fullfile(battmoDir(), 'Tests', 'TestExamples', 'ReferenceData', filename);
 
             if createReferenceData
