@@ -1,22 +1,16 @@
-function report = cleanupReport(report, varargin)
+function stepreports = cleanupReport(report, varargin)
 
     opt = struct('saveToJson', false, ...
                  'jsonFileName', []);
 
     opt = merge_options(opt, varargin{:});
-    
-    stepreports = {};
-    
-    for i1 = 1 : numel(report.ControlstepReports)
-        for i2 = 1 : numel(report.ControlstepReports{i1}.StepReports);
-            stepreports{end + 1} = report.ControlstepReports{i1}.StepReports{i2};
-        end
+
+    if isfield(report, 'ControlstepReports')
+        report = report.ControlstepReports;
     end
 
-    report = stepreports;
-
     for ireport = 1 : numel(report)
-        report{ireport} = cleanupStepReport(report{ireport});
+         report{ireport} = cleanupControlTimeReport(report{ireport});
     end
 
     if opt.saveToJson
@@ -32,8 +26,27 @@ function report = cleanupReport(report, varargin)
 
 end
 
+function ctreport = cleanupControlTimeReport(ctreport)
+
+    fds = {'Iterations', ...
+           'EarlyStop' , ...
+           'WallTime'  , ...
+           'MinistepCuttingCount'};
+    for ifd = 1 : numel(fds)
+        ctreport = rmfield(ctreport, fds{ifd});
+    end
+
+    for istepreport = 1 : numel(ctreport.StepReports)
+        ctreport.StepReports{istepreport} = cleanupStepReport(ctreport.StepReports{istepreport});
+        ctreport.StepReports{istepreport}.index = istepreport;
+    end
+    
+end
+
 
 function stepreport = cleanupStepReport(stepreport)
+
+    
     stepreport = rmfield(stepreport, 'Timestep');
     stepreport = rmfield(stepreport, 'LocalTime');
 
@@ -54,6 +67,7 @@ function nonlinearReport = cleanupNonlinearReport(nonlinearReport)
         nonlinearReport{inr} = rmfield(nonlinearReport{inr}, 'StabilizeReport');
         nonlinearReport{inr} = rmfield(nonlinearReport{inr}, 'ResidualsConverged');
 
+        nonlinearReport{inr}.index = inr;
         nonlinearReport{inr}.LinearSolver = cleanupLinearSolverReport(nonlinearReport{inr}.LinearSolver);
     end
     
