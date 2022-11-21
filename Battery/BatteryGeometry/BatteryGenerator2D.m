@@ -12,11 +12,11 @@ classdef BatteryGenerator2D < BatteryGenerator
 
         ylength = 1e-2; % length in y direction - default values
 
-        sepnx  = 30; % discretization number for negative current collector - default value
+        ccnenx = 10; % discretization number for negative current collector - default value
         nenx   = 30; % discretization number for negative active material   - default value
-        penx   = 30; % discretization number for separator                  - default value
-        ccnenx = 10; % discretization number for positive current collector - default value
-        ccpenx = 10; % discretization number for positive active material   - default value
+        sepnx  = 30; % discretization number for separator                  - default value
+        penx   = 30; % discretization number for positive active material   - default value
+        ccpenx = 10; % discretization number for positive current collector - default value
 
         ny = 10; % discretization number in y direction - default value
 
@@ -26,7 +26,6 @@ classdef BatteryGenerator2D < BatteryGenerator
 
         externalHeatTransferCoefficientTab = 1e3;  % heat transfer coefficient at tab boundary - default value
         externalHeatTransferCoefficient = 1e3;     % heat transfer coefficient at boundary - default value
-
 
     end
 
@@ -78,8 +77,6 @@ classdef BatteryGenerator2D < BatteryGenerator
             paramobj.G = G;
             gen.G = G;
 
-
-            keyboard;
         end
 
         function paramobj = setupElectrolyte(gen, paramobj, params)
