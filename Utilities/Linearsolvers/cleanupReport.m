@@ -10,10 +10,11 @@ function stepreports = cleanupReport(report, varargin)
     end
 
     for ireport = 1 : numel(report)
-         report{ireport} = cleanupControlTimeReport(report{ireport});
+        report{ireport}.index = ireport;
+        report{ireport} = cleanupControlTimeReport(report{ireport});
     end
 
-    if opt.saveToJson
+    if opt.saveToJson | ~isempty(opt.jsonFileName)
         jsonFileName = opt.jsonFileName;
         if isempty(jsonFileName)
             jsonFileName = 'temp.json';
@@ -36,11 +37,13 @@ function ctreport = cleanupControlTimeReport(ctreport)
         ctreport = rmfield(ctreport, fds{ifd});
     end
 
-    for istepreport = 1 : numel(ctreport.StepReports)
-        ctreport.StepReports{istepreport} = cleanupStepReport(ctreport.StepReports{istepreport});
-        ctreport.StepReports{istepreport}.index = istepreport;
-    end
+    ctreport = setfieldfirst(ctreport, 'index');
     
+    for istepreport = 1 : numel(ctreport.StepReports)
+        ctreport.StepReports{istepreport}.index = istepreport;
+        ctreport.StepReports{istepreport} = cleanupStepReport(ctreport.StepReports{istepreport});
+    end
+
 end
 
 
@@ -50,6 +53,11 @@ function stepreport = cleanupStepReport(stepreport)
     stepreport = rmfield(stepreport, 'Timestep');
     stepreport = rmfield(stepreport, 'LocalTime');
 
+    stepreport.nonlinearIterations = numel(stepreport.NonlinearReport);
+    
+    stepreport = setfieldfirst(stepreport, 'nonlinearIterations');
+    stepreport = setfieldfirst(stepreport, 'index');
+    
     stepreport.NonlinearReport = cleanupNonlinearReport(stepreport.NonlinearReport);
     
 end
@@ -57,21 +65,33 @@ end
 function nonlinearReport = cleanupNonlinearReport(nonlinearReport)
 
     for inr = 1 : numel(nonlinearReport)
-
-        nonlinearReport{inr} = rmfield(nonlinearReport{inr}, 'UpdateState');
-        nonlinearReport{inr} = rmfield(nonlinearReport{inr}, 'Failure');
-        nonlinearReport{inr} = rmfield(nonlinearReport{inr}, 'FailureMsg');
-        nonlinearReport{inr} = rmfield(nonlinearReport{inr}, 'FinalUpdate');
-        nonlinearReport{inr} = rmfield(nonlinearReport{inr}, 'Residuals');
-        nonlinearReport{inr} = rmfield(nonlinearReport{inr}, 'AssemblyTime');
-        nonlinearReport{inr} = rmfield(nonlinearReport{inr}, 'StabilizeReport');
-        nonlinearReport{inr} = rmfield(nonlinearReport{inr}, 'ResidualsConverged');
-
         nonlinearReport{inr}.index = inr;
-        nonlinearReport{inr}.LinearSolver = cleanupLinearSolverReport(nonlinearReport{inr}.LinearSolver);
+        nonlinearReport{inr} = cleanupNonlinearReportItem(nonlinearReport{inr});
     end
     
 end
+
+function nonlinearReportItem = cleanupNonlinearReportItem(nonlinearReportItem)
+
+    fds = {'UpdateState'    , ...
+           'Failure'        , ...
+           'FailureMsg'     , ...
+           'FinalUpdate'    , ...
+           'Residuals'      , ...
+           'AssemblyTime'   , ...
+           'StabilizeReport', ...
+           'ResidualsConverged'};
+
+    for ifd = 1 : numel(fds)
+        nonlinearReportItem = rmfield(nonlinearReportItem, fds{ifd});
+    end
+
+    nonlinearReportItem = setfieldfirst(nonlinearReportItem, 'index');
+    
+    nonlinearReportItem.LinearSolver = cleanupLinearSolverReport(nonlinearReportItem.LinearSolver);
+    
+end
+    
 
 function lreport = cleanupLinearSolverReport(lreport)
     fdnames = {'Residual',
@@ -87,7 +107,15 @@ function lreport = cleanupLinearSolverReport(lreport)
             lreport = rmfield(lreport, fdnames{ifd});
         end
     end
+
+    lreport = setfieldfirst(lreport, 'index');
     
 end
 
     
+function s = setfieldfirst(s, fd)
+    fds = fieldnames(s);
+    ind = ismember(fds, fd);
+    ind = [find(ind); find(~ind)];
+    s = orderfields(s, ind);
+end
