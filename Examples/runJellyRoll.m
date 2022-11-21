@@ -105,7 +105,7 @@ jsonstruct.use_thermal = true;
 
 jsonstruct.use_particle_diffusion = true;
 
-diffusionModelType = 'simple';
+diffusionModelType = 'full';
 
 jsonstruct.(pe).(am).diffusionModelType = diffusionModelType;
 jsonstruct.(ne).(am).diffusionModelType = diffusionModelType;
