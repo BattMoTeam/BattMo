@@ -35,7 +35,7 @@ ctrl    = 'Control';
 cc      = 'CurrentCollector';
 
 jsonstruct.use_thermal = true;
-jsonstruct.include_current_collector = false;
+jsonstruct.include_current_collectors = false;
 jsonstruct.(pe).(am).diffusionModelType = 'simple';
 jsonstruct.(ne).(am).diffusionModelType = 'simple';
 

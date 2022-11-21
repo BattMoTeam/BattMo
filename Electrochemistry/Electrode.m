@@ -11,7 +11,7 @@ classdef Electrode < BaseModel
 
         couplingTerm
         
-        include_current_collector
+        include_current_collectors
 
         use_thermal
         
@@ -34,12 +34,12 @@ classdef Electrode < BaseModel
             % Assign the two components
             model.ActiveMaterial = model.setupActiveMaterial(paramobj.ActiveMaterial);
             
-            if paramobj.include_current_collector
-                model.include_current_collector = true;
+            if paramobj.include_current_collectors
+                model.include_current_collectors = true;
                 assert(~isempty(paramobj.CurrentCollector), 'current collector input data is missing')
                 model.CurrentCollector = model.setupCurrentCollector(paramobj.CurrentCollector);
             else
-                model.include_current_collector = false;
+                model.include_current_collectors = false;
                 % if isempty(paramobj.CurrentCollector.G)
                 %    warning('current collector data is given, but we are not using it, as required by input flag');
                 % end
@@ -56,18 +56,18 @@ classdef Electrode < BaseModel
             cc = 'CurrentCollector';
             am = 'ActiveMaterial';
 
-            if ~model.include_current_collector
+            if ~model.include_current_collectors
                 model.subModelNameList = {am};
             end
            
             model = registerVarAndPropfuncNames@BaseModel(model);
 
-            if ~model.include_current_collector
+            if ~model.include_current_collectors
                 model = model.registerVarName(VarName({am}, 'jExternal'));
             end
             
             
-            if model.include_current_collector
+            if model.include_current_collectors
 
                 fn = @Electrode.updateCoupling;
                 inputnames = {{am, 'phi'}, ...
@@ -99,7 +99,7 @@ classdef Electrode < BaseModel
         function state = updateCoupling(model, state)
         % setup coupling terms between the current collector and the electrode active component            
             
-            if model.include_current_collector
+            if model.include_current_collectors
                 
                 elde  = model;
                 

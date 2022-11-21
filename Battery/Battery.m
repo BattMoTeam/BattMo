@@ -653,13 +653,13 @@ classdef Battery < BaseModel
 
             %% Setup initial Current collectors state
 
-            if model.(ne).include_current_collector
+            if model.(ne).include_current_collectors
                 OCP = initstate.(ne).(am).(itf).OCP;
                 OCP = OCP(1) .* ones(bat.(ne).(cc).G.cells.num, 1);
                 initstate.(ne).(cc).phi = OCP - ref;
             end
             
-            if model.(pe).include_current_collector
+            if model.(pe).include_current_collectors
                 OCP = initstate.(pe).(am).(itf).OCP;
                 OCP = OCP(1) .* ones(bat.(pe).(cc).G.cells.num, 1);
                 initstate.(pe).(cc).phi = OCP - ref;
@@ -1545,12 +1545,12 @@ classdef Battery < BaseModel
             model.NegativeElectrode.ActiveMaterial = model.NegativeElectrode.ActiveMaterial.validateModel(varargin{:});
             model.Electrolyte.AutoDiffBackend=model.AutoDiffBackend;
             model.Electrolyte=model.Electrolyte.validateModel(varargin{:});
-            if model.NegativeElectrode.include_current_collector
+            if model.NegativeElectrode.include_current_collectors
                 model.NegativeElectrode.CurrentCollector.AutoDiffBackend= model.AutoDiffBackend;
                 model.NegativeElectrode.CurrentCollector= model.NegativeElectrode.CurrentCollector.validateModel(varargin{:});
             end
             
-            if model.PositiveElectrode.include_current_collector
+            if model.PositiveElectrode.include_current_collectors
                 model.PositiveElectrode.CurrentCollector.AutoDiffBackend=model.AutoDiffBackend;
                 model.PositiveElectrode.CurrentCollector= model.PositiveElectrode.CurrentCollector.validateModel(varargin{:});
             end
