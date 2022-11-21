@@ -20,6 +20,7 @@ mrstModule add ad-core mrst-gui mpfa
 % provided in json format. All the parameters for the model are stored in
 % the paramobj object.
 jsonstruct = parseBattmoJson(fullfile('ParameterData','BatteryCellParameters','LithiumIonBatteryCell','lithium_ion_battery_nmc_graphite.json'));
+jsonstruct.include_current_collectors = false;
 paramobj = BatteryInputParams(jsonstruct);
 
 % We define some shorthand names for simplicity.

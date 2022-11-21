@@ -1,5 +1,4 @@
-
-fclassdef BatteryGenerator1D < BatteryGenerator
+classdef BatteryGenerator1D < BatteryGenerator
 % setup 1D grid 
     properties
         
