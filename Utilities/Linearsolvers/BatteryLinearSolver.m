@@ -294,6 +294,9 @@ classdef BatteryLinearSolver < handle
                     precondReports = cell(numel(preconditioners), 1);
                     for isolver = 1 : numel(preconditioners)
                         precondReports{isolver}.Iterations = 0;
+                        if isfield(preconditioners(isolver), 'name')
+                            precondReports{isolver}.name = preconditioners(isolver).name;
+                        end
                     end
                     solver.precondReports = precondReports;
 
