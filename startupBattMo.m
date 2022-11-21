@@ -1,9 +1,9 @@
 % This startup file set up the MATLAB path
 %
-%% We use first `MRST <https://bitbucket.org/mrst/mrst-core/wiki/Home>`_ setup for MRST modules. 
+%% We use first `MRST <https://bitbucket.org/mrst/mrst-core/wiki/Home>`_ setup for MRST modules.
 % The source code for MRST is synchronized to BattMo using git-submodule mechanisms (In the MRST directory in BattMo, you
 % should find the subdirectories given by the ``names`` cell array below)
-% 
+%
 rootdirname = fileparts(mfilename('fullpath'));
 
 run(fullfile(rootdirname, 'MRST', 'mrst-core',  'startup'));
@@ -42,7 +42,11 @@ if mrstPlatform('matlab')
     if pe.Version == ""
         disp('Python not installed')
     else
-        insert(py.sys.path, int32(0), fullfile(rootdirname, 'Utilities', 'JsonUtils'));
+        try
+            insert(py.sys.path, int32(0), fullfile(rootdirname, 'Utilities', 'JsonUtils'));
+        catch
+            warning('Could not add directory to Python path. This is probably due to an incompability between the MATLAB and Python versions. Please see https://se.mathworks.com/support/requirements/python-compatibility.html.');
+        end
     end
 end
 
@@ -55,7 +59,7 @@ if mrstPlatform('octave')
     % Disable warnings
     warning('off', 'Octave:possible-matlab-short-circuit-operator');
     warning('off', 'Octave:data-file-in-path');
-    
+
     % Install package for json files for older octave
     if compare_versions(version, "6.4", "<=")
         try
