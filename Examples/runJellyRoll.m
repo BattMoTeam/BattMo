@@ -69,7 +69,7 @@ tabparams.tabcase   = 'aligned tabs';
 tabparams.width     = 3*milli*meter;
 tabparams.fractions = linspace(0.01, 0.9, 6);
 
-testing = true;
+testing = false;
 if testing
     fprintf('We setup a smaller case for quicker testing\n');
     rOuter = 10*milli*meter/2;
@@ -144,8 +144,7 @@ n     = 10;
 dt0   = total*1e-6; 
 times = getTimeSteps(dt0, n, total, fac); 
 
-
-times = times(times < 3800);
+% times = times(times < 4200);
 
 %% We compute the cell capacity, which used to compute schedule from CRate
 C = computeCellCapacity(model); 
