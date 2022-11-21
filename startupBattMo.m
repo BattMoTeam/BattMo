@@ -42,7 +42,11 @@ if mrstPlatform('matlab')
     if pe.Version == ""
         disp('Python not installed')
     else
-        insert(py.sys.path, int32(0), fullfile(rootdirname, 'Utilities', 'JsonUtils'));
+        try
+            insert(py.sys.path, int32(0), fullfile(rootdirname, 'Utilities', 'JsonUtils'));
+        catch
+            warning('Could not add directory to Python path. This is probably due to an incompability between the MATLAB and Python versions. Please see https://se.mathworks.com/support/requirements/python-compatibility.html.');
+        end
     end
 end
 
