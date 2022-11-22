@@ -1,4 +1,4 @@
-function D = updateDiffusionCoefficientFunc_Xu(c, T)
+function D = computeDiffusionCoefficientFunc_Xu(c, T)
     
     % Calculate diffusion coefficients constant for the diffusion coefficient calculation
     cnst = [ -4.43, -54; 

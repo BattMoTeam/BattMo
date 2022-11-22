@@ -1,4 +1,4 @@
-function [OCP, dUdT] = updateOCPFunc_LiC6_Xu(c, T, cmax)
+function [OCP, dUdT] = computeOCPFunc_LiC6_Xu(c, T, cmax)
 %% TODO : implement function model to avoid reading
     
     data = [0.00, 1.28683

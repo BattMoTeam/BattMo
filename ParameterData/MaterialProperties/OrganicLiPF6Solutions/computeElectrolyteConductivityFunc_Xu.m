@@ -1,4 +1,4 @@
-function conductivity = updateElectrolyteConductivityFunc_Xu(c, T)
+function conductivity = computeElectrolyteConductivityFunc_Xu(c, T)
     
     conductivityFactor = 1e-4;
     

@@ -4,11 +4,11 @@
     "thermalConductivity": 0.099,
     "density": 1210,
     "Conductivity" : {"type": "function",
-                      "functionname" : "updateElectrolyteConductivityFunc_Xu",
+                      "functionname" : "computeElectrolyteConductivityFunc_Xu",
                       "argumentlist" : ["concentration", "temperature"]
                      },
     "DiffusionCoefficient" : {"type": "function",
-                              "functionname" : "updateDiffusionCoefficientFunc_Xu",
+                              "functionname" : "computeDiffusionCoefficientFunc_Xu",
                               "argumentlist" : ["concentration", "temperature"]
                              },
     "compnames": [

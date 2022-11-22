@@ -1,4 +1,4 @@
-function [OCP, dUdT] = updateOCPFunc_LFP_Xu(c, T, cmax)
+function [OCP, dUdT] = computeOCPFunc_LFP_Xu(c, T, cmax)
 %% TODO : implement function model to avoid reading
     
     stoc = c./cmax;
