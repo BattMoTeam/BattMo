@@ -265,7 +265,7 @@ model.nonlinearTolerance = 1e-3*model.Control.Imax;
 model.verbose = true;
 
 
-fn = getPlotAfterStepBattMo(nls);
+fn = afterStepConvergencePlots(nls);
 
 dopacked = false;
 

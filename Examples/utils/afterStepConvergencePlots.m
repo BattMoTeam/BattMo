@@ -1,4 +1,4 @@
-function fn = getPlotAfterStepBattMo(solver)
+function fn = afterStepConvergencePlots(solver)
 % Get a function that allows for dynamic plotting in `simulateScheduleAD`.
 %
 % SYNOPSIS:
