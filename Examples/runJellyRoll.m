@@ -246,7 +246,7 @@ if isfield(setup, 'reduction')
     model = model.setupSelectedModel('reduction', setup.reduction);
 end
 
-nls.LinearSolver = BatteryLinearSolver('verbose'          , 2    , ...
+nls.LinearSolver = BatteryLinearSolver('verbose'          , 0    , ...
                                        'reuse_setup'      , false, ...
                                        'linearSolverSetup', setup);
 
@@ -265,17 +265,15 @@ model.nonlinearTolerance = 1e-3*model.Control.Imax;
 model.verbose = true;
 
 
-fn = afterStepConvergencePlots(nls);
 
-dopacked = false;
+dopacked = true;
 
 if dopacked
     % Run simulation
     dataFolder = 'BattMo';
     problem = packSimulationProblem(initstate, model, schedule, dataFolder, ...
                                     'Name'           , 'jellyroll', ...
-                                    'NonLinearSolver', nls        , ...
-                                    'afterStepFn'    , fn);
+                                    'NonLinearSolver', nls);
     problem.SimulatorSetup.OutputMinisteps = true; 
 
     resetSimulation = true;
@@ -288,6 +286,8 @@ if dopacked
 
 else
     
+    fn = afterStepConvergencePlots(nls);
+
     [~, states, reports] = simulateScheduleAD(initstate, model, schedule, ... 
                                               'NonLinearSolver', nls, ...
                                               'afterStepFn'    , fn);
@@ -310,128 +310,3 @@ set(gca, 'fontsize', 18);
 title('Cell Voltage / V')
 xlabel('time')
 
-%%
-
-its = getReportOutput(reports,'type','linearIterations');
-nits= getReportOutput(reports,'type','nonlinearIterations');
-
-figure
-plot(its.time, its.total./nits.total)
-xlabel('time');
-title('linear iterations/newton iterations')
-
-
-switch setup.method
-
-  case "grouped-gmres"
-
-    pits = zeros(numel(its.time), 1);
-    
-    counter = 1;
-    
-    for icontrol = 1 : numel(reports.ControlstepReports)
-        
-        creport = report.ControlstepReports{icontrol};
-
-        for istep = 1 : numel(creport.StepReports)
-
-            sreport = creport.StepReports{istep};
-            
-            for k = 1 : numel(sreport.NonlinearReport);
-                
-                nreport = sreport.NonlinearReport{k};
-                try
-                    it = nreport.LinearSolver.precondReports.Iterations;
-                    pits(counter) = pits(counter) + it;
-                end
-                
-            end
-        end
-    end
-
-    figure
-    plot(its.time, pits./its.total);
-    xlabel('time');
-    title('preconditioner iteration/linear iteration');
-    
-  case "separate-variable-gmres"
-
-    npreconds = numel(setup.preconditioners);
-    pits = zeros(numel(its.time), npreconds);
-
-    counter = 1;
-    
-    for icontrol = 1 : numel(reports)
-        
-        creport = reports{icontrol};
-
-        for istep = 1 : numel(creport.StepReports)
-
-            sreport = creport.StepReports{istep};
-            
-            for k = 1 : numel(sreport.NonlinearReport);
-                
-                nreport = sreport.NonlinearReport{k};
-                
-                for iprecond = 1 : npreconds
-
-                    try
-                        it = nreport.LinearSolver.precondReports{iprecond}.Iterations;
-                        pits(counter, iprecond) = pits(counter, iprecond) + it;
-                    end
-                    
-                end
-            end
-
-            counter = counter + 1;
-        end
-    end
-
-    for iprecond = 1 : npreconds
-
-        figure
-        plot(its.time, pits(:, iprecond)./its.total);
-        xlabel('time');
-        switch iprecond
-          case 1
-            titlestr = 'phi';
-          case 2
-            titlestr = 'c';
-          case 3
-            titlestr = 'T';
-        end
-        titlestr = sprintf('preconditioner iteration/linear iteration - %s', titlestr);
-        title(titlestr);
-        
-    end
-    
-
-  otherwise
-    
-    error('setup.method not recognized');
-end
-
-
-
-%% Plot the the output voltage and current
-% plotDashboard(model, states, 'step', 0);
-
-%{
-Copyright 2021-2022 SINTEF Industry, Sustainable Energy Technology
-and SINTEF Digital, Mathematics & Cybernetics.
-
-This file is part of The Battery Modeling Toolbox BattMo
-
-BattMo is free software: you can redistribute it and/or modify
-it under the terms of the GNU General Public License as published by
-the Free Software Foundation, either version 3 of the License, or
-(at your option) any later version.
-
-BattMo is distributed in the hope that it will be useful,
-but WITHOUT ANY WARRANTY; without even the implied warranty of
-MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-GNU General Public License for more details.
-
-You should have received a copy of the GNU General Public License
-along with BattMo.  If not, see <http://www.gnu.org/licenses/>.
-%}
