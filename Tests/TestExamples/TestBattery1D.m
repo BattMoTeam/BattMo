@@ -1,48 +1,56 @@
 classdef TestBattery1D < matlab.unittest.TestCase
 
     properties (TestParameter)
-        
-        jsonfile                  = {fullfile('ParameterData','BatteryCellParameters','LithiumIonBatteryCell','lithium_ion_battery_nmc_graphite.json')};
-        controlPolicy             = {'CCCV', 'IEswitch'};
-        use_thermal               = {true, false};
+
+        controlPolicy              = {'CCCV', 'IEswitch'};
+        use_thermal                = {true, false};
         include_current_collectors = {true, false};
-        diffusionmodel            = {'none', 'simplified', 'full'};
-        testSize                  = {'short', 'long'};
-        createReferenceData       = {false};
+        diffusionModelType         = {'simple', 'full'};
+        testSize                   = {'short', 'long'};
+        createReferenceData        = {false};
+
     end
-    
+
     methods
 
-        function states = test1d(test, jsonfile, controlPolicy, use_thermal, include_current_collectors, diffusionModelType, testSize, varargin)
-            
-            jsonstruct = parseBattmoJson(fullfile('ParameterData','BatteryCellParameters','LithiumIonBatteryCell','lithium_ion_battery_nmc_graphite.json'));
+        function states = test1d(test, controlPolicy, use_thermal, include_current_collectors, diffusionModelType, testSize, varargin)
 
+            jsonfile = fullfile('ParameterData','BatteryCellParameters','LithiumIonBatteryCell','lithium_ion_battery_nmc_graphite.json');
+            json = parseBattmoJson(jsonfile);
 
-            jsonstruct.include_current_collectors = include_current_collectors;
-            jsonstruct.use_thermal = use_thermal;
+            % Change json params
+            params = {'include_current_collectors', include_current_collectors, ...
+                      'use_thermal', use_thermal};
 
             if strcmp(diffusionModelType, 'none')
-                json.use_particle_diffusion = false;
+                params = [params, {'use_particle_diffusion', false}];
             else
-                json.use_particle_diffusion = true;
-                json.NegativeElectrode.ActiveMaterial.diffusionModelType = diffusionModelType;
-                json.PositiveElectrode.ActiveMaterial.diffusionModelType = diffusionModelType;
+                params = [params, {'use_particle_diffusion', true}];
+                params = [params, {'NegativeElectrode.ActiveMaterial.diffusionModelType', diffusionModelType}];
+                params = [params, {'PositiveElectrode.ActiveMaterial.diffusionModelType', diffusionModelType}];
             end
-            
-            paramobj = BatteryInputParams(jsonstruct);
+
+            % Validation doesn't run in parallel (probably due to writing to file)
+            if isempty(getCurrentTask())
+                % Validate for serial runs
+                json = updateJson(json, params);
+            else
+                json = updateJson(json, params, 'validate', false);
+            end
+
+            paramobj = BatteryInputParams(json);
 
             use_cccv = strcmpi(controlPolicy, 'CCCV');
             if use_cccv
                 cccvstruct = struct( 'controlPolicy'     , 'CCCV',  ...
                                      'CRate'             , 1         , ...
-                                     'lowerCutoffVoltage', 2         , ...
+                                     'lowerCutoffVoltage', 2.4       , ...
                                      'upperCutoffVoltage', 4.1       , ...
                                      'dIdtLimit'         , 0.01      , ...
                                      'dEdtLimit'         , 0.01);
                 cccvparamobj = CcCvControlModelInputParams(cccvstruct);
                 paramobj.Control = cccvparamobj;
             end
-
 
             % We define some shorthand names for simplicity.
             ne      = 'NegativeElectrode';
@@ -57,26 +65,26 @@ classdef TestBattery1D < matlab.unittest.TestCase
             %% Setup the geometry and computational mesh
             % Here, we setup the 1D computational mesh that will be used for the
             % simulation. The required discretization parameters are already included
-            % in the class BatteryGenerator1D. 
+            % in the class BatteryGenerator1D.
             gen = BatteryGenerator1D();
 
-            % Now, we update the paramobj with the properties of the mesh. 
+            % Now, we update the paramobj with the properties of the mesh.
             paramobj = gen.updateBatteryInputParams(paramobj);
 
-            %%  Initialize the battery model. 
+            %%  Initialize the battery model.
             % The battery model is initialized by sending paramobj to the Battery class
             % constructor. see :class:`Battery <Battery.Battery>`.
             model = Battery(paramobj);
-            model.AutoDiffBackend= AutoDiffBackend();
+            model.AutoDiffBackend = AutoDiffBackend();
 
             %% Compute the nominal cell capacity and choose a C-Rate
             % The nominal capacity of the cell is calculated from the active materials.
             % This value is then combined with the user-defined C-Rate to set the cell
-            % operational current. 
+            % operational current.
 
             CRate = model.Control.CRate;
 
-            %% Setup the time step schedule 
+            %% Setup the time step schedule
             % Smaller time steps are used to ramp up the current from zero to its
             % operational value. Larger time steps are then used for the normal
             % operation.
@@ -100,12 +108,11 @@ classdef TestBattery1D < matlab.unittest.TestCase
               otherwise
                 error('testSize not recognized')
             end
-            
-            
+
             step  = struct('val', dt*ones(n, 1), 'control', ones(n, 1));
 
             % we setup the control by assigning a source and stop function.
-            % control = struct('CCCV', true); 
+            % control = struct('CCCV', true);
             %  !!! Change this to an entry in the JSON with better variable names !!!
 
             switch model.Control.controlPolicy
@@ -123,19 +130,19 @@ classdef TestBattery1D < matlab.unittest.TestCase
             end
 
             % This control is used to set up the schedule
-            schedule = struct('control', control, 'step', step); 
+            schedule = struct('control', control, 'step', step);
 
             %% Setup the initial state of the model
             % The initial state of the model is dispatched using the
-            % model.setupInitialState()method. 
-            initstate = model.setupInitialState(); 
+            % model.setupInitialState()method.
+            initstate = model.setupInitialState();
 
-            %% Setup the properties of the nonlinear solver 
-            nls = NonLinearSolver(); 
+            %% Setup the properties of the nonlinear solver
+            nls = NonLinearSolver();
             % Change default maximum iteration number in nonlinear solver
-            nls.maxIterations = 10; 
+            nls.maxIterations = 10;
             % Change default behavior of nonlinear solver, in case of error
-            NLS.errorOnFailure = false; 
+            NLS.errorOnFailure = false;
             nls.timeStepSelector=StateChangeTimeStepSelector('TargetProps', {{'Control','E'}}, 'targetChangeAbs', 0.03);
             % Change default tolerance for nonlinear solver
             model.nonlinearTolerance = 1e-3*model.Control.Imax;
@@ -143,19 +150,19 @@ classdef TestBattery1D < matlab.unittest.TestCase
             model.verbose = true;
 
             %% Run the simulation
-            [~, states, report] = simulateScheduleAD(initstate, model, schedule, 'OutputMinisteps', true, 'NonLinearSolver', nls); 
+            [~, states, report] = simulateScheduleAD(initstate, model, schedule, 'OutputMinisteps', true, 'NonLinearSolver', nls);
 
         end
-        
+
     end
 
     methods (Test)
 
-        function testBattery(test, jsonfile, controlPolicy, use_thermal, include_current_collectors, diffusionmodel, testSize, createReferenceData)
+        function testBattery(test, controlPolicy, use_thermal, include_current_collectors, diffusionModelType, testSize, createReferenceData)
 
-            states = test1d(test, jsonfile, controlPolicy, use_thermal, include_current_collectors, diffusionmodel, testSize);
+            states = test1d(test, controlPolicy, use_thermal, include_current_collectors, diffusionModelType, testSize);
 
-            filename = sprintf('TestBattery1D-%s-%d-%d-%s-%s.mat', controlPolicy, use_thermal, include_current_collectors, diffusionmodel, testSize);
+            filename = sprintf('TestBattery1D-%s-%d-%d-%s-%s.mat', controlPolicy, use_thermal, include_current_collectors, diffusionModelType, testSize);
             filename = fullfile(battmoDir(), 'Tests', 'TestExamples', 'ReferenceData', filename);
 
             if createReferenceData
@@ -165,7 +172,7 @@ classdef TestBattery1D < matlab.unittest.TestCase
                 load(filename);
                 verifyStruct(test, states{end}, refstate);
             end
-            
+
         end
 
     end
