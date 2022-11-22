@@ -14,7 +14,8 @@ jsonfiles = {'ParameterData/BatteryCellParameters/LithiumIonBatteryCell/lithium_
              'ParameterData/ParameterSets/Xu2015/lfp.json',
              'ParameterData/ParameterSets/Chen2020/chen2020_lithium_ion_battery.json'};
 
-for jsonfile = jsonfiles'
-    is_valid = py.validationJsonScript.validate(jsonfile{1});
+for k = 1:numel(jsonfiles)
+    jsonfile = jsonfiles{k};
+    is_valid = py.validationJsonScript.validate(jsonfile);
     assert(is_valid)
 end

@@ -41,9 +41,11 @@ with open(schema_filename) as schema_file:
 v = jsonschema.Draft202012Validator(mainschema, resolver=resolver)
 
 def validate(jsonfile):
-    jsoninput = rjson.loadJsonBatmo(jsonfile)
-    v.validate(jsoninput)
-    is_valid = v.is_valid(jsoninput)
+    # We cannot export json structs from matlab, hence we only allow
+    # file name inputs here
+    jsonstruct = rjson.loadJsonBatmo(jsonfile)
+    v.validate(jsonstruct)
+    is_valid = v.is_valid(jsonstruct)
     if verbose:
         print(jsonfile, "is valid?", is_valid)
     return is_valid

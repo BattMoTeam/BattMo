@@ -60,13 +60,13 @@ edgeparams = {'edgealpha', 0.5, 'edgecolor', [1, 1, 1]};
 plotGrid(model.(ne).(am).G,     'facecolor', colors(2,:), edgeparams{:});
 plotGrid(model.(elyte).(sep).G, 'facecolor', colors(3,:), edgeparams{:});
 plotGrid(model.(pe).(am).G,     'facecolor', colors(4,:), edgeparams{:});
+legtext = [legtext, {'negative electrode active material', 'separator', 'positive electrode current collector'}];
 if model.include_current_collectors
     plotGrid(model.(ne).(cc).G, 'facecolor', colors(1,:), edgeparams{:});
     plotGrid(model.(pe).(cc).G, 'facecolor', colors(5,:), edgeparams{:});
     legtext{end+1} = 'negative electrode current collector';
     legtext{end+1} = 'positive electrode current collector';
 end
-legtext = [legtext, {'negative electrode active material', 'separator', 'positive electrode current collector'}];
 legend(legtext, 'location', 'southwest');
 axis tight;
 setFigureStyle('quantity', 'single');
