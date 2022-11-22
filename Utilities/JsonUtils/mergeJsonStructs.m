@@ -4,6 +4,11 @@ function jsonstruct = mergeJsonStructs(jsonstructs)
 % - The command mergeJsonStructs merges recursively all the jsonstruct contained in the list jsonstructs
 % - If two jsonstruct assign the same field, then an error is sent
 
+    if numel(jsonstructs) == 1
+        jsonstruct = jsonstructs{1};
+        return;
+    end
+    
     jsonstruct1 = jsonstructs{1};
     jsonstruct2 = jsonstructs{2};
     if numel(jsonstructs) >= 2
@@ -35,7 +40,7 @@ function jsonstruct = mergeJsonStructs(jsonstructs)
     end
 
     if ~isempty(jsonstructrests)
-        jsonstruct = mergeJsonStructs({jsonsctruct, jsonstructrest{:}});
+        jsonstruct = mergeJsonStructs({jsonstruct, jsonstructrests{:}});
     end
     
 end
