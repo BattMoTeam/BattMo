@@ -1015,12 +1015,12 @@ classdef Battery < BaseModel
             end
             
             % Equation name : 'ne_cc_chargeCons';
-            if model.(ne).include_current_collector
+            if model.(ne).include_current_collectors
                 eqs{end + 1} = state.(ne).(cc).chargeCons;
             end
             
             % Equation name : 'pe_cc_chargeCons';
-            if model.(pe).include_current_collector
+            if model.(pe).include_current_collectors
                 eqs{end + 1} = state.(pe).(cc).chargeCons;
             end
 
@@ -1380,7 +1380,7 @@ classdef Battery < BaseModel
             ne = 'NegativeElectrode';
             am = 'ActiveMaterial';
             
-            if model.(ne).include_current_collector
+            if model.(ne).include_current_collectors
                 
                 cc = 'CurrentCollector';
 
@@ -1419,7 +1419,7 @@ classdef Battery < BaseModel
             
             E   = state.(ctrl).E;
 
-            if model.(pe).include_current_collector
+            if model.(pe).include_current_collectors
                 
                 cc   = 'CurrentCollector';
                 
