@@ -4,7 +4,7 @@
 
 % Clear the workspace and close open figures
 clear all
-%close all
+close all
 clc
 
 %% Import the required modules from MRST
