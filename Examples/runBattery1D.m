@@ -146,7 +146,7 @@ switch linearsolver
                                                 'verbosity'   , 3    , ...
                                                 'reuse_setup' , false, ...
                                                 'method'      , 'direct');
-    nls.LinearSolver.tolerance = 0.5e-4*2;          
+    nls.LinearSolver.tolerance = 1e-4;
   case 'direct'
     disp('standard direct solver')
   otherwise
