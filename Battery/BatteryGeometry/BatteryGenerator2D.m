@@ -36,9 +36,12 @@ classdef BatteryGenerator2D < BatteryGenerator
         end
 
         function paramobj = updateBatteryInputParams(gen, paramobj)
-        %assert(paramobj.include_current_collectors, 'This geometry includes current collectors and input data appears to be missing for those');
-            gen.include_current_collectors = paramobj.include_current_collectors;
-            gen.use_thermal = paramobj.use_thermal;
+
+            fdnames = {'include_current_collectors', ...
+                       'use_thermal'};
+
+            gen = dispatchParams(gen, paramobj, fdnames);
+
             paramobj = gen.setupBatteryInputParams(paramobj, []);
         end
 
@@ -47,21 +50,21 @@ classdef BatteryGenerator2D < BatteryGenerator
             sepnx  = gen.sepnx;
             nenx   = gen.nenx;
             penx   = gen.penx;
-            ccnenx = gen.ccnenx;
-            ccpenx = gen.ccpenx;
 
-            if ~gen.include_current_collectors
-                ccnenx = 0;
-                ccpenx = 0;
+            ylength = gen.ylength;
+
+            if gen.include_current_collectors
+                ccnenx = gen.ccnenx;
+                ccpenx = gen.ccpenx;
+                nxs = [ccnenx; nenx; sepnx; penx; ccpenx];
+                xlength = gen.xlength;
+            else
+                nxs = [nenx; sepnx; penx];
+                xlength = gen.xlength(2:4);
             end
 
-            ny = gen.ny;
-
-            nxs = [ccnenx; nenx; sepnx; penx; ccpenx];
             nx = sum(nxs);
-
-            xlength = gen.xlength;
-            ylength = gen.ylength;
+            ny = gen.ny;
 
             x = xlength./nxs;
             x = rldecode(x, nxs);
@@ -84,17 +87,18 @@ classdef BatteryGenerator2D < BatteryGenerator
             sepnx  = gen.sepnx;
             nenx   = gen.nenx;
             penx   = gen.penx;
-            ccnenx = gen.ccnenx;
-            ccpenx = gen.ccpenx;
 
-            if ~gen.include_current_collectors
+            if gen.include_current_collectors
+                ccnenx = gen.ccnenx;
+                ccpenx = gen.ccpenx;
+                nxs = [ccnenx; nenx; sepnx; penx; ccpenx];
+            else
                 ccnenx = 0;
                 ccpenx = 0;
+                nxs = [nenx; sepnx; penx];
             end
 
             ny = gen.ny;
-
-            nxs = [ccnenx; nenx; sepnx; penx; ccpenx];
             nx = sum(nxs);
 
             istart = ccnenx + 1;
@@ -121,18 +125,19 @@ classdef BatteryGenerator2D < BatteryGenerator
             sepnx  = gen.sepnx;
             nenx   = gen.nenx;
             penx   = gen.penx;
-            ccnenx = gen.ccnenx;
-            ccpenx = gen.ccpenx;
 
-            if ~gen.include_current_collectors
+            if gen.include_current_collectors
+                ccnenx = gen.ccnenx;
+                ccpenx = gen.ccpenx;
+                nxs = [ccnenx; nenx; sepnx; penx; ccpenx];
+            else
                 ccnenx = 0;
                 ccpenx = 0;
-            end
+                nxs = [nenx; sepnx; penx];
+           end
 
-            ny = gen.ny;
-
-            nxs = [ccnenx; nenx; sepnx; penx; ccpenx];
             nx = sum(nxs);
+            ny = gen.ny;
 
             %% Negative electrode
             istart = 1;
@@ -168,22 +173,31 @@ classdef BatteryGenerator2D < BatteryGenerator
             ni = penx;
             params.(pe).(am).cellind = pickTensorCells(istart, ni, nx, ny);
 
+            if ~gen.include_current_collectors
+                % Save electrode type for convenience
+                params.(ne).(am).electrodeType = ne;
+                params.(pe).(am).electrodeType = pe;
+            end
+
             paramobj = setupElectrodes@BatteryGenerator(gen, paramobj, params);
 
         end
 
-        function paramobj = setupCurrentCollectorBcCoupTerm(gen, paramobj, ~)
+        function paramobj = setupCurrentCollectorBcCoupTerm(gen, paramobj, params)
 
-            G = paramobj.G;
-
-            yf = G.faces.centroids(:, 2);
-            myf = max(yf);
-            params.bcfaces = find(abs(yf - myf) < eps*1000);
-            params.bccells = sum(G.faces.neighbors(params.bcfaces, :), 2);
-
+            params = gen.findBoundary(paramobj.G, params);
             paramobj = setupCurrentCollectorBcCoupTerm@BatteryGenerator(gen, paramobj, params);
 
         end
+
+
+        function paramobj = setupActiveMaterialBcCoupTerm(gen, paramobj, params)
+
+            params = gen.findBoundary(paramobj.G, params);
+            paramobj = setupActiveMaterialBcCoupTerm@BatteryGenerator(gen, paramobj, params);
+
+        end
+
 
         function paramobj = setupThermalModel(gen, paramobj, params)
         % paramobj is instance of BatteryInputParams
@@ -238,6 +252,28 @@ classdef BatteryGenerator2D < BatteryGenerator
 
     end
 
+
+    methods (Access = private)
+
+        function params = findBoundary(gen, G, params)
+
+            ne = 'NegativeElectrode';
+            pe = 'PositiveElectrode';
+            xf = G.faces.centroids(:, 1);
+
+            switch params.electrodeType
+              case ne
+                x0 = min(xf);
+              case pe
+                x0 = max(xf);
+            end
+
+            params.bcfaces = find(abs(xf - x0) < eps*1000);
+            params.bccells = sum(G.faces.neighbors(params.bcfaces, :), 2);
+
+        end
+
+    end
 
 end
 
