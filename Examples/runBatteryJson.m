@@ -1,15 +1,6 @@
-function  output = runBatteryJson(jsonInput)
+function  output = runBatteryJson(jsonstruct)
 
     mrstModule add ad-core mrst-gui mpfa
-
-    if ischar(jsonInput)
-        % load file
-        jsonstruct = parseBattmoJson(jsonInput);
-    elseif isstruct(jsonInput)
-        jsonstruct = jsonInput;
-    else
-        error('jsonInput should be either a filename or a jsonstruct (formatted as output of MATLAB jsondecode)');
-    end
     
     % We define some shorthand names for simplicity.
     ne      = 'NegativeElectrode';
@@ -22,46 +13,11 @@ function  output = runBatteryJson(jsonInput)
     ctrl    = 'Control';
     cc      = 'CurrentCollector';
 
-    diffusionModelType = 'simple';
-    jsonstruct.(pe).(am).diffusionModelType = diffusionModelType;
-    jsonstruct.(ne).(am).diffusionModelType = diffusionModelType;
-
-    jsonstruct.use_particle_diffusion = false;
-    
-    jsonstruct.use_thermal = false;
-    
     paramobj = BatteryInputParams(jsonstruct);
-
-    paramobj.(ne).(am).InterDiffusionCoefficient = 0;
-    paramobj.(pe).(am).InterDiffusionCoefficient = 0;
-
-    
-    if strcmp(diffusionModelType, 'full')
-        paramobj.(ne).(am).(sd).N = 5;
-        paramobj.(pe).(am).(sd).N = 5;
-    end
 
     paramobj = paramobj.validateInputParams();
 
-    use_cccv = false;
-    if use_cccv
-        cccvstruct = struct( 'controlPolicy'     , 'CCCV',  ...
-                             'CRate'             , 1         , ...
-                             'lowerCutoffVoltage', 2.4       , ...
-                             'upperCutoffVoltage', 4.1       , ...
-                             'dIdtLimit'         , 0.01      , ...
-                             'dEdtLimit'         , 0.01);
-        cccvparamobj = CcCvControlModelInputParams(cccvstruct);
-        paramobj.Control = cccvparamobj;
-    end
-
-
-    %% Setup the geometry and computational mesh
-    % Here, we setup the 1D computational mesh that will be used for the
-    % simulation. The required discretization parameters are already included
-    % in the class BatteryGenerator1D.
-
-    switch jsonstruct.format
+    switch jsonstruct.Geometry.case
 
       case '1D'
 
@@ -73,17 +29,23 @@ function  output = runBatteryJson(jsonInput)
         xlength(4) = jsonstruct.PositiveElectrode.ActiveMaterial.thickness;
         gen.xlength = xlength;
 
-        gen.sepnx  = 4;
-        gen.nenx   = 4;
-        gen.penx   = 4;
+        gen.sepnx  = jsonstruct.NegativeElectrode.ActiveMaterial.N;
+        gen.nenx   = jsonstruct.Electrolyte.Separator.N;
+        gen.penx   = jsonstruct.PositiveElectrode.ActiveMaterial.N;
         
-        gen.faceArea = jsonstruct.faceArea;
+        gen.faceArea = jsonstruct.Geometry.faceArea;
         
         % Now, we update the paramobj with the properties of the mesh. 
         paramobj = gen.updateBatteryInputParams(paramobj);
 
+      case {'2D-demo', '3d-demo'}
+
+        error('not yet implemented');
+        
       otherwise
-        error('format name not recognized')
+        
+        error('Geometry case not recognized')
+        
     end
     
 
@@ -104,21 +66,14 @@ function  output = runBatteryJson(jsonInput)
 
     CRate = model.Control.CRate;
 
-    %% Setup the time step schedule 
-    % Smaller time steps are used to ramp up the current from zero to its
-    % operational value. Larger time steps are then used for the normal
-    % operation.
-    switch model.(ctrl).controlPolicy
-      case 'CCCV'
-        total = 3.5*hour/CRate;
-      case 'IEswitch'
-        total = 1.4*hour/CRate;
-      otherwise
-        error('control policy not recognized');
-    end
+    %% Setup the time step schedule
 
-    n  = 50;
+
+    total = jsonstruct.TimeStepping.totalTime;
+    n = jsonstruct.TimeStepping.N;
+
     dt = total/n;
+    
     step = struct('val', dt*ones(n, 1), 'control', ones(n, 1));
 
     % we setup the control by assigning a source and stop function.
