@@ -1,0 +1,37 @@
+{
+  "$id": "file://battmo/schemas/Geometry",
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "description": "Specification of the geometry including the discretization parameters",
+  "type": "object",
+
+  "properties" : {"Geometry" : {"type" : "object",
+                                "properties" : {"case" : {"type" : "string",
+                                                          "enum" : ["1D", "pouch", "2D-demo", "3D-demo"]}}}},
+
+  "anyOf" : [{"properties" : {"Geometry" : {"properties" : {"case" : {"const" : "1D"}}}},
+              "$ref" : "#/$defs/1D"},
+             {"properties" : {"Geometry" : {"properties" : {"case" : {"const" : "2D-demo"}}}},
+              "$ref" : "#/$defs/2D-demo" },
+             {"properties" : {"Geometry" : {"properties" : {"case" : {"const" : "3D-demo"}}}},
+              "$ref" : "#/$defs/3D-demo" }
+            ],
+
+  "$defs" : { "1D" : {"properties" : {"NegativeElectrode" : {"properties" : {"ActiveMaterial" : {"$ref" : "#/$defs/1D-geogrid-param"},
+                                                                             "CurrentCollector" : {"$ref" : "#/$defs/1D-geogrid-param"}}},
+                                      "PositiveElectrode" : {"properties" : {"ActiveMaterial" : {"$ref" : "#/$defs/1D-geogrid-param"},
+                                                                             "CurrentCollector" : {"$ref" : "#/$defs/1D-geogrid-param"}}},
+                                      "Electrolyte" : {"properties" : {"Separator" : {"$ref" : "#/$defs/1D-geogrid-param"}}}
+                                     }},
+              "1D-geogrid-param" : {"properties" : {"length" : {"type" : "number",
+                                                                "description" : "length of the active material in negative electrode"},
+                                                    "N" : {"type" : "integer",
+                                                           "description" : "discretization parameter"}}},
+
+              "2D-demo" : {},
+              "3D-demo" : {}              
+            }
+  
+}
+
+
+
