@@ -17,18 +17,29 @@
 
   "allOf" : [ {"properties": {"NegativeElectrode":{"$ref" : "#/defs/checkCurrentCollector"}}},
               {"properties": {"PostiveElectrode": {"$ref" : "#/defs/checkCurrentCollector"}}},
-              {"anyOf" : [ {"properties" : {"use_thermal": {"const": true}, "required": ["ThermalModel"]}},
+              
+              {"anyOf" : [ {"properties" : {"use_thermal": {"const": true}}, "required": ["ThermalModel"]},
                            {"not" : {"properties" : {"use_thermal": {"const": true}}}}
-                         ]}
+                         ],
+               "description" : "if use_thermal is true, then a thermal model is required"},
+
+              {"dependentSchemas": {"include_current_collectors": {"anyOf" : [{"properties" : {"include_current_collectors" : {"const" : true},
+                                                                                               "NegativeElectrode": {"required": ["CurrentCollector"]},
+                                                                                               "PositiveElectrode": {"required": ["CurrentCollector"]}}},
+                                                                              {"properties" : {"include_current_collectors" : {"const" : false}}}]}},
+               "description" : "if include_current_collectors is given, check that both electrodes have current collector"}
             ],
   
   "required" : ["use_thermal", "NegativeElectrode", "PositiveElectrode", "Electrolyte"],
 
-  "defs" : {"checkCurrentCollector" : {"dependentSchemas" :
-                                       { "include_current_collectors" :
-                                         {"anyOf" : [{"properties" : {"include_current_collectors": {"const": true}},
-                                                      "required" : ["CurrentCollector"]},
-                                                     {"not" : {"properties" : {"include_current_collectors": {"const": true}}}}]}}}} 
+  "defs" : {"checkCurrentCollector" :
+            {"dependentSchemas" :
+             {"include_current_collectors" :
+              {"anyOf" : [{"properties" : {"include_current_collectors": {"const": true}},
+                           "required" : ["CurrentCollector"]},
+                          {"properties" : {"include_current_collectors": {"const": false}}}]}},
+             "description" : "check that a current collector model is included if include_current_collectors is true"}
+           }
 
 
 }
