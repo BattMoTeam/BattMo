@@ -24,7 +24,7 @@ def resolveFileInputJson(jsoninput):
     return jsoninput
 
 
-def loadJsonBatmo(filename):
+def loadJsonBattmo(filename):
     filename = getBattMoDir() / filename
     with open(filename) as file:
         jsoninput = json.load(file)

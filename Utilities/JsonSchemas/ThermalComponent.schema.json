@@ -1,5 +1,5 @@
 {
-  "$id": "file://batmo/schemas/ThermalComponent",
+  "$id": "file://battmo/schemas/ThermalComponent",
   "$schema": "http://json-schema.org/draft-07/schema#",
   "description": "Thermal model",
   "type" : "object",

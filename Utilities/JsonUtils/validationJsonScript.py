@@ -8,7 +8,7 @@ import os
 
 schema_folder = rjson.getBattMoDir() / Path('Utilities') / Path('JsonSchemas')
 
-base_uri = 'file://batmo/schemas/'
+base_uri = 'file://battmo/schemas/'
 
 resolver = jsonschema.RefResolver(base_uri=base_uri, referrer={})
 
@@ -22,7 +22,7 @@ def addJsonSchema(jsonSchemaName):
         print(schema_filename)
     with open(schema_filename) as schema_file:
         refschema = json.load(schema_file)
-    key = "file://batmo/schemas/" + jsonSchemaName
+    key = "file://battmo/schemas/" + jsonSchemaName
     resolver.store[key] = refschema
 
 
@@ -43,7 +43,7 @@ v = jsonschema.Draft202012Validator(mainschema, resolver=resolver)
 def validate(jsonfile):
     # We cannot export json structs from matlab, hence we only allow
     # file name inputs here
-    jsonstruct = rjson.loadJsonBatmo(jsonfile)
+    jsonstruct = rjson.loadJsonBaltmo(jsonfile)
     v.validate(jsonstruct)
     is_valid = v.is_valid(jsonstruct)
     if verbose:

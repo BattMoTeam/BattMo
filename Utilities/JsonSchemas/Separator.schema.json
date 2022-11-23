@@ -1,5 +1,5 @@
 {
-  "$id": "file://batmo/schemas/Separator",
+  "$id": "file://battmo/schemas/Separator",
   "$schema": "http://json-schema.org/draft-07/schema#",
   "description": "A separator",
   "type": "object",
