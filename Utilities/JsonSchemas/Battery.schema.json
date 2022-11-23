@@ -1,5 +1,5 @@
 {
-  "$id": "file://batmo/schemas/Battery",
+  "$id": "file://battmo/schemas/Battery",
   "$schema": "http://json-schema.org/draft-07/schema#",
   "description": "A standard battery",
   "type": "object",
@@ -18,40 +18,8 @@
 
     "Electrolyte": {"$ref": "Electrolyte"},
 
-    "ThermalModel": {"$ref": "ThermalComponent"},
+    "ThermalModel": {"$ref": "ThermalComponent"}
+    
+  }
 
-    "ControlModel": {"$ref": "ControlModel"},
-
-    "include_current_collectors": {"type": "boolean"},
-    "use_particle_diffusion" : {"type" : "boolean"},
-    "use_thermal": {"type": "boolean"}
-  },
-
-
-  "required" : ["NegativeElectrode", "PositiveElectrode", "Electrolyte"],
-
-
-  "anyOf": [ {"properties" : {"include_current_collectors": {"const": true},
-                              "NegativeElectrode": {"property": {"include_current_collectors": {"const": true}},
-                                                    "required": ["CurrentCollector"]
-                                                   },
-                              "PositiveElectrode": {"property": {"include_current_collectors": {"const": true},
-                                                                 "required": ["CurrentCollector"]
-                                                                }
-                                                   }
-                             }
-             },
-             {"properties" : {"include_current_collectors": {"const": false}
-                             }
-             }
-           ],
-
-
-  "anyOf" : [ {"properties" : {"use_thermal": {"const": true},
-                               "required": ["ThermalModel"]
-                              }
-              },
-              {"properties" : {"use_thermal": {"const": false}}
-              }
-            ]
 }
