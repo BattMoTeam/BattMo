@@ -15,8 +15,8 @@
                                          }
                  },
 
-  "allOf" : [ {"properties": {"NegativeElectrode":{"$ref" : "#/defs/checkCurrentCollector"}}},
-              {"properties": {"PostiveElectrode": {"$ref" : "#/defs/checkCurrentCollector"}}},
+  "allOf" : [ {"properties": {"NegativeElectrode":{"$ref" : "#/$defs/checkCurrentCollector"}}},
+              {"properties": {"PostiveElectrode": {"$ref" : "#/$defs/checkCurrentCollector"}}},
               
               {"anyOf" : [ {"properties" : {"use_thermal": {"const": true}}, "required": ["ThermalModel"]},
                            {"not" : {"properties" : {"use_thermal": {"const": true}}}}
@@ -32,14 +32,14 @@
   
   "required" : ["use_thermal", "NegativeElectrode", "PositiveElectrode", "Electrolyte"],
 
-  "defs" : {"checkCurrentCollector" :
-            {"dependentSchemas" :
-             {"include_current_collectors" :
-              {"anyOf" : [{"properties" : {"include_current_collectors": {"const": true}},
-                           "required" : ["CurrentCollector"]},
-                          {"properties" : {"include_current_collectors": {"const": false}}}]}},
-             "description" : "check that a current collector model is included if include_current_collectors is true"}
-           }
+  "$defs" : {"checkCurrentCollector" :
+             {"dependentSchemas" :
+              {"include_current_collectors" :
+               {"anyOf" : [{"properties" : {"include_current_collectors": {"const": true}},
+                            "required" : ["CurrentCollector"]},
+                           {"properties" : {"include_current_collectors": {"const": false}}}]}},
+              "description" : "check that a current collector model is included if include_current_collectors is true"}
+            }
 
 
 }
