@@ -12,7 +12,8 @@ base_uri = 'file://battmo/schemas/'
 
 resolver = jsonschema.RefResolver(base_uri=base_uri, referrer={})
 
-verbose = False
+verbose = True
+
 
 def addJsonSchema(jsonSchemaName):
     """Add the jsonschema in the resolver"""
@@ -34,11 +35,12 @@ for (dirpath, dirnames, filenames) in os.walk(schema_folder):
             addJsonSchema(jsonSchemaName)
 
 # We validate the battery schema
-schema_filename = schema_folder / 'Battery.schema.json'
+schema_filename = schema_folder / 'Simulation.schema.json'
 with open(schema_filename) as schema_file:
     mainschema = json.load(schema_file)
 
 v = jsonschema.Draft202012Validator(mainschema, resolver=resolver)
+
 
 def validate(jsonfile):
     # We cannot export json structs from matlab, hence we only allow
@@ -49,3 +51,4 @@ def validate(jsonfile):
     if verbose:
         print(jsonfile, "is valid?", is_valid)
     return is_valid
+
