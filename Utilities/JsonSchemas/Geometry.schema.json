@@ -16,16 +16,16 @@
               "$ref" : "#/$defs/3D-demo" }
             ],
 
-  "$defs" : { "1D" : {"properties" : {"NegativeElectrode" : {"properties" : {"ActiveMaterial" : {"$ref" : "#/$defs/1D-geogrid-param"},
-                                                                             "CurrentCollector" : {"$ref" : "#/$defs/1D-geogrid-param"}}},
-                                      "PositiveElectrode" : {"properties" : {"ActiveMaterial" : {"$ref" : "#/$defs/1D-geogrid-param"},
-                                                                             "CurrentCollector" : {"$ref" : "#/$defs/1D-geogrid-param"}}},
-                                      "Electrolyte" : {"properties" : {"Separator" : {"$ref" : "#/$defs/1D-geogrid-param"}}}
+  "$defs" : { "1D" : {"properties" : {"NegativeElectrode" : {"properties" : {"ActiveMaterial" : {"$ref" : "#/$defs/1D-param"},
+                                                                             "CurrentCollector" : {"$ref" : "#/$defs/1D-param"}}},
+                                      "PositiveElectrode" : {"properties" : {"ActiveMaterial" : {"$ref" : "#/$defs/1D-param"},
+                                                                             "CurrentCollector" : {"$ref" : "#/$defs/1D-param"}}},
+                                      "Electrolyte" : {"properties" : {"Separator" : {"$ref" : "#/$defs/1D-param"}}}
                                      }},
-              "1D-geogrid-param" : {"properties" : {"length" : {"type" : "number",
-                                                                "description" : "length of the active material in negative electrode"},
-                                                    "N" : {"type" : "integer",
-                                                           "description" : "discretization parameter"}}},
+              "1D-param" : {"properties" : {"thickness" : {"type" : "number",
+                                                           "description" : "length of the active material in negative electrode"},
+                                            "N" : {"type" : "integer",
+                                                   "description" : "discretization parameter"}}},
 
               "2D-demo" : {},
               "3D-demo" : {}              

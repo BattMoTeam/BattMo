@@ -7,14 +7,11 @@
   "properties" : {"TimeStepping" : {"type" : "object",
                                     "properties" : {"totalTime" : {"type" : "number"},
                                                     "dt" : {"type" : "number"},
-                                                    "N" : {"type" : "integer"}},
-                                    "anyOf" : [{"allOf" : [{"properties" : {"dt" : {"type" : "number"}},
-                                                            "required" : ["dt"]},
-                                                           {"not" : {"properties" : {"N" : {"type" : "integer"}}}}]},
-                                               
-                                               {"allOf" : [{"properties" : {"N" : {"type" : "integer"}},
-                                                            "required" : ["N", "totalTime"]},
-                                                           {"not" : {"properties" : {"dt" : {"type" : "number"}}}}]}]
+                                                    "N" : {"type" : "integer"},
+                                                    "useRampup" : {"type" : "boolean"},
+                                                    "rampupTime" : {"type" : "number"}},
+                                    "oneOf" : [{"required" : ["N", "totalTime"]},
+                                               {"required" : ["dt"]}]
                                    }
                  },
   "required" : ["TimeStepping"]
