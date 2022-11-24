@@ -67,18 +67,18 @@ classdef BatteryInputParams < InputParams
             thermal = 'ThermalModel';
             ctrl    = 'Control';            
 
-            comps = {ne, pe, elyte};
-            for icomp = 1 : numel(comps)
-                comp = comps{icomp};
-                paramobj = mergeParameters(paramobj, {'use_thermal'}, {comp, 'use_thermal'});
-            end
-
-            eldes = {ne, pe};
-            for ielde = 1 : numel(eldes)
-                elde = eldes{ielde};
-                paramobj = mergeParameters(paramobj, {'include_current_collectors'}, {elde, 'include_current_collectors'});
-                paramobj = mergeParameters(paramobj, {'use_particle_diffusion'}, {elde, am, 'use_particle_diffusion'});
-            end
+            paramobj = mergeParameters(paramobj, {{'use_thermal'}    , ...
+                                                  {ne, 'use_thermal'}, ...
+                                                  {pe, 'use_thermal'}, ...
+                                                  {elyte, 'use_thermal'}});
+                            
+            paramobj = mergeParameters(paramobj, {{'include_current_collectors'}    , ...
+                                                  {ne, 'include_current_collectors'}, ...
+                                                  {pe, 'include_current_collectors'}});
+                            
+            paramobj = mergeParameters(paramobj, {{'use_particle_diffusion'}        , ...
+                                                  {ne, am, 'use_particle_diffusion'}, ...
+                                                  {pe, am, 'use_particle_diffusion'}});
             
             paramobj.(ne)    = paramobj.(ne).validateInputParams();
             paramobj.(pe)    = paramobj.(pe).validateInputParams();

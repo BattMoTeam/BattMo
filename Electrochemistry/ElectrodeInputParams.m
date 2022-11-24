@@ -24,7 +24,7 @@ classdef ElectrodeInputParams < ComponentInputParams
         
         
         %
-        % Set to true to include current collector (NOTE : not supported at the moment at this level)
+        % Set to true to include current collector
         %
         include_current_collectors
 
@@ -54,7 +54,7 @@ classdef ElectrodeInputParams < ComponentInputParams
             am = 'ActiveMaterial';
             cc  = 'CurrentCollector';
             
-            paramobj = mergeParameters(paramobj, {'use_thermal'}, {am, 'use_thermal'});
+            paramobj = mergeParameters(paramobj, {{'use_thermal'}, {am, 'use_thermal'}});
             paramobj.(am) = paramobj.(am).validateInputParams();
 
             if isempty(paramobj.include_current_collectors)
@@ -62,7 +62,7 @@ classdef ElectrodeInputParams < ComponentInputParams
             end
             
             if paramobj.include_current_collectors
-                paramobj = mergeParameters(paramobj, {'use_thermal'}, {cc, 'use_thermal'});
+                paramobj = mergeParameters(paramobj, {{'use_thermal'}, {cc, 'use_thermal'}});
                 paramobj.(cc) = paramobj.(cc).validateInputParams();
             end
             
