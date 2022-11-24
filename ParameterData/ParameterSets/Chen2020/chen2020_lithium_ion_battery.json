@@ -11,6 +11,7 @@
   },
   "NegativeElectrode": { 
     "ActiveMaterial" : {
+      "volumeFraction": 0.75,
       "electricalConductivity": 215,
       "heatCapacity": 4180000.0,
       "thermalConductivity": 6e-05,
