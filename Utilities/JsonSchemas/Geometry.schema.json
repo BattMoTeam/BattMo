@@ -23,10 +23,9 @@
                                       "Electrolyte" : {"properties" : {"Separator" : {"$ref" : "#/$defs/1D-param"}}}
                                      }},
               "1D-param" : {"properties" : {"thickness" : {"type" : "number",
-                                                           "description" : "length of the active material in negative electrode"},
+                                                           "description" : "length of the component"},
                                             "N" : {"type" : "integer",
                                                    "description" : "discretization parameter"}}},
-
               "2D-demo" : {},
               "3D-demo" : {}              
             }
