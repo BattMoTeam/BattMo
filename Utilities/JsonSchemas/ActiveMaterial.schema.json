@@ -14,7 +14,8 @@
                                                       "enum" : ["full", "simple"]},
                               "BruggemanCoefficient" : {"type" : "number"},
                               "volumeFraction" : {"type" : "number"},
-                              "activeMaterialFraction" : {"type" : "number"},
+                              "activeMaterialFraction" : {"type" : "number",
+                                                          "description" : "volume fraction effectively occupied by the active material (the rest could be binder material)"},
                               "use_particle_diffusion": {"type" : "boolean"}
                             }
             }
