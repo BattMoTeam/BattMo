@@ -1,4 +1,5 @@
 {
+  "SOC" : 1,
   "initT": 298.15,
   "use_thermal": false,
   "include_current_collectors": false,
@@ -25,8 +26,7 @@
       "SolidDiffusion" : {
         "EaD": 0,
         "D0": 3.3e-14,
-        "rp": 5.86e-06,
-        "N" : 10
+        "rp": 5.86e-06
       }
     }
   },
@@ -45,8 +45,7 @@
       "SolidDiffusion": {
         "EaD": 0,
         "D0": 4e-15,
-        "rp": 5.22e-6,
-        "N" : 10
+        "rp": 5.22e-6
       }
     }
   },
