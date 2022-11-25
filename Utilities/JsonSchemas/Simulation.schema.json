@@ -16,7 +16,9 @@
     {"$ref" : "StateInitialization",
      "description" : "Input to setup the initial state of the battery"},
     {"$ref" : "TimeStepping",
-     "description" : "Input for the time stepping"}
+     "description" : "Input for the time stepping"},
+    {"$ref" : "Output",
+     "description" : "Input for the choice of outputs the will be returned"}
   ]
                             
 }
