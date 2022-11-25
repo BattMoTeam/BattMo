@@ -6,7 +6,10 @@
 
   "properties" : {"Geometry" : {"type" : "object",
                                 "properties" : {"case" : {"type" : "string",
-                                                          "enum" : ["1D", "pouch", "2D-demo", "3D-demo"]}}}},
+                                                          "enum" : ["1D", "pouch", "2D-demo", "3D-demo"]}}},
+                  "NegativeElectrode" : { "$ref" : "#/$defs/particlediscretization"},
+                  "PositiveElectrode" : { "$ref" : "#/$defs/particlediscretization"}
+                 },
 
   "anyOf" : [{"properties" : {"Geometry" : {"properties" : {"case" : {"const" : "1D"}}}},
               "$ref" : "#/$defs/1D"},
@@ -27,7 +30,19 @@
                                             "N" : {"type" : "integer",
                                                    "description" : "discretization parameter"}}},
               "2D-demo" : {},
-              "3D-demo" : {}              
+              "3D-demo" : {},
+
+              "particlediscretization" : {"properties" :
+                                          {"ActiveMaterial" :
+                                           { "anyOf" [ {"properties" : {"diffusionModelType" : {"const" : "full"}},
+                                                        "dependentSchemas" : {"SolidDiffusion" : 
+                                                                              {"properties" : {"soliddiffusion" : {"properties" : {"N"  : {"type" : "integer",
+                                                                                                                                           "discretization parameter for the particle"}}}}}}},
+                                                       {"not" : {"properties" : {"diffusionModelType" : {"const" : "full"}}}}]
+                                           }
+                                          }
+                                          
+                                         }
             }
   
 }
