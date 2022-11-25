@@ -1,9 +1,12 @@
-function jsonstruct = mergeJsonStructs(jsonstructs)
+function jsonstruct = mergeJsonStructs(jsonstructs, varargin)
 % - We call a json structure (abbreviated jsonstruct) a MATLAB structure of the form that are produced by the jsondecode command
 % - The input jsonstructs is list jsonstruct
 % - The command mergeJsonStructs merges recursively all the jsonstruct contained in the list jsonstructs
-% - If two jsonstruct assign the same field, then an error is sent
+% - If two jsonstruct assign the same field, then an error is sent, except if opt.force option is set to true, then the first one is taking precedence.
 
+    opt = struct('force', false); 
+    opt = merge_options(opt, varargin{:});
+    
     if numel(jsonstructs) == 1
         jsonstruct = jsonstructs{1};
         return;
@@ -23,6 +26,7 @@ function jsonstruct = mergeJsonStructs(jsonstructs)
     jsonstruct = jsonstruct1;
 
     for ifd2 = 1 : numel(fds2)
+        
         fd2 = fds2{ifd2};
         
         if ~ismember(fd2, fds1)
@@ -31,8 +35,10 @@ function jsonstruct = mergeJsonStructs(jsonstructs)
         else
             if isstruct(jsonstruct.(fd2)) && isstruct(jsonstruct2.(fd2))
                 % we have to check the substructure
-                subjsonstruct = mergeJsonStructs({jsonstruct.(fd2), jsonstruct2.(fd2)});
+                subjsonstruct = mergeJsonStructs({jsonstruct.(fd2), jsonstruct2.(fd2)}, varargin{:});
                 jsonstruct.(fd2) = subjsonstruct;
+            elseif opt.force
+                % we keep first value
             else
                 error('parameters are assigned twice');
             end
