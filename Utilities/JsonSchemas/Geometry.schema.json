@@ -122,8 +122,7 @@
                       }}
                     ] 
                   }}}}}}},
-          "AllOf" : [{"$ref" : "#/defs/layerSpecs"}]
-    }}}
+      "allOf" : [{"$ref" : "#/$defs/layerSpecs"}]}}}
 
 
 
