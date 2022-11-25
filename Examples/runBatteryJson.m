@@ -1,5 +1,5 @@
-function  output = runBatteryJson(jsonstruct)
-
+function  output = runBatteryJson(jsonstruct, varargin)
+    
     mrstModule add ad-core mrst-gui mpfa
     
     % We define some shorthand names for simplicity.
@@ -53,8 +53,6 @@ function  output = runBatteryJson(jsonstruct)
     % The battery model is initialized by sending paramobj to the Battery class
     % constructor. see :class:`Battery <Battery.Battery>`.
 
-    paramobj.Control.lowerCutoffVoltage = 3;
-
     model = Battery(paramobj);
     model.AutoDiffBackend= AutoDiffBackend();
 
@@ -102,6 +100,7 @@ function  output = runBatteryJson(jsonstruct)
 
     initstate = model.setupInitialState(); 
 
+    
     %% Setup the properties of the nonlinear solver 
     nls = NonLinearSolver();
 
@@ -126,18 +125,27 @@ function  output = runBatteryJson(jsonstruct)
     I    = cellfun(@(state) state.Control.I, states);
     time = cellfun(@(state) state.time, states); 
 
-    mass = computeCellMass(model);
-    vol = sum(model.G.cells.volumes);
-    
-    [E, I, energyDensity, specificEnergy, energy] = computeEnergyDensity(E, I, time, vol, mass);
+    output = struct('model', model, ...
+                    'time' , time , ... % Unit : s
+                    'E'    , E    , ... % Unit : V
+                    'I'    , I); ... % Unit : A
 
-    output = struct('model'         , model         , ...
-                    'E'             , E             , ... % Unit : V
-                    'I'             , I             , ... % Unit : A
-                    'energy'        , energy        , ... % Unit : J
-                    'energyDensity' , energyDensity , ... % Unit : J/L
-                    'specificEnergy', specificEnergy  ... % Unit : J/kg
-                   );
     output.states = states;
+    
+    if isfield(jsonstruct, 'Output') && any(strcmp({"energyDensity", "specificEnergy"}, jsonstruct.Output))
+        
+        % We could fine tuned output
+        mass = computeCellMass(model);
+        vol = sum(model.G.cells.volumes);
+        
+        [E, I, energyDensity, specificEnergy, energy] = computeEnergyDensity(E, I, time, vol, mass);
+
+        output.E              = E;
+        output.I              = I;
+        output.energy         = energy;          % Unit : J
+        output.energyDensity  = energyDensity;   % Unit : J/L
+        output.specificEnergy = specificEnergy;  % Unit : J/kg
+        
+    end
 
 end
