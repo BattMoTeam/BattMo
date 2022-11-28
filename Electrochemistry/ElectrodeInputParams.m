@@ -57,11 +57,7 @@ classdef ElectrodeInputParams < ComponentInputParams
             paramobj = mergeParameters(paramobj, {{'use_thermal'}, {am, 'use_thermal'}});
             paramobj.(am) = paramobj.(am).validateInputParams();
 
-            if isempty(paramobj.include_current_collectors)
-                paramobj.include_current_collectors = false;
-            end
-            
-            if paramobj.include_current_collectors
+            if ~isempty(paramobj.include_current_collectors)
                 paramobj = mergeParameters(paramobj, {{'use_thermal'}, {cc, 'use_thermal'}});
                 paramobj.(cc) = paramobj.(cc).validateInputParams();
             end
