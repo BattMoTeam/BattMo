@@ -46,8 +46,8 @@ function  output = runBatteryJson(jsonstruct, varargin)
 
         % Prepare input for SpiralBatteryGenerator.updateBatteryInputParams using json input
         
-        widthDict = containers.Map()
-        widthDict('ElectrolyteSeparator')     = jsonstuct.Electrolyte.Separator.thickness;
+        widthDict = containers.Map();
+        widthDict('ElectrolyteSeparator')     = jsonstruct.Electrolyte.Separator.thickness;
         widthDict('NegativeActiveMaterial')   = jsonstruct.NegativeElectrode.ActiveMaterial.thickness;
         widthDict('NegativeCurrentCollector') = jsonstruct.NegativeElectrode.CurrentCollector.thickness;
         widthDict('PositiveActiveMaterial')   = jsonstruct.PositiveElectrode.ActiveMaterial.thickness;
@@ -71,8 +71,8 @@ function  output = runBatteryJson(jsonstruct, varargin)
 
         tabparams = jsonstruct.Geometry.tabparams;
 
-        nrDict = containers.Map()
-        nrDict('ElectrolyteSeparator')     = jsonstuct.Electrolyte.Separator.N;
+        nrDict = containers.Map();
+        nrDict('ElectrolyteSeparator')     = jsonstruct.Electrolyte.Separator.N;
         nrDict('NegativeActiveMaterial')   = jsonstruct.NegativeElectrode.ActiveMaterial.N;
         nrDict('NegativeCurrentCollector') = jsonstruct.NegativeElectrode.CurrentCollector.N;
         nrDict('PositiveActiveMaterial')   = jsonstruct.PositiveElectrode.ActiveMaterial.N;
@@ -110,14 +110,12 @@ function  output = runBatteryJson(jsonstruct, varargin)
         
     end
     
-
     %%  Initialize the battery model. 
     % The battery model is initialized by sending paramobj to the Battery class
     % constructor. see :class:`Battery <Battery.Battery>`.
 
     model = Battery(paramobj);
     model.AutoDiffBackend= AutoDiffBackend();
-
 
     %% Compute the nominal cell capacity and choose a C-Rate
     % The nominal capacity of the cell is calculated from the active materials.
@@ -127,7 +125,6 @@ function  output = runBatteryJson(jsonstruct, varargin)
     CRate = model.Control.CRate;
 
     %% Setup the time step schedule
-
 
     total = jsonstruct.TimeStepping.totalTime;
     n = jsonstruct.TimeStepping.N;
@@ -180,18 +177,64 @@ function  output = runBatteryJson(jsonstruct, varargin)
     %% Setup the properties of the nonlinear solver 
     nls = NonLinearSolver();
 
+    % load from json file or use default value. 
+    if ~isfield(jsonstruct, 'NonLinearSolver')
+        
+        % setup default values
+        jsonstruct.NonLinearSolver.maxIterations = 10;
+        jsonstruct.NonLinearSolver.verbose = false;
+        
+        linearSolverSetup.library = "matlab";
+        linearSolverSetup.method = "direct";
+
+    else
+
+        linearSolverSetup = jsonstruct.NonLinearSolver.LinearSolver.linearSolverSetup;
+        
+    end
+    
     % Change default maximum iteration number in nonlinear solver
-    nls.maxIterations = 10;
+    nls.maxIterations = jsonstruct.NonLinearSolver.maxIterations;
     % Change default behavior of nonlinear solver, in case of error
     nls.errorOnFailure = false;
-    nls.timeStepSelector=StateChangeTimeStepSelector('TargetProps', {{'Control','E'}}, 'targetChangeAbs', 0.03);
+    nls.timeStepSelector = StateChangeTimeStepSelector('TargetProps', {{'Control','E'}}, 'targetChangeAbs', 0.03);
+
+    nls.LinearSolver = BatteryLinearSolver('linearSolverSetup', linearSolverSetup);
+    
     % Change default tolerance for nonlinear solver
+    % For the moment, this is hard-coded here
     model.nonlinearTolerance = 1e-3*model.Control.Imax;
+    
     % Set verbosity
     model.verbose = false;
 
+    if isfield(linearSolverSetup, 'reduction') && linearSolverSetup.reduction.doReduction
+        model = model.setupSelectedModel('reduction', linearSolverSetup.reduction);
+    end
+    
+        
     %% Run the simulation
-    [~, states, report] = simulateScheduleAD(initstate, model, schedule, 'OutputMinisteps', true, 'NonLinearSolver', nls); 
+    if isfield(jsonstruct, 'Output') && isfield(jsonstruct.Output, 'saveOutput') && jsonstruct.Output.saveOuput
+        saveOptions = jsonstruct.Output.saveOptions;
+        dataFolder      = saveOptions.dataFolder;
+        name            = saveOptions.name;
+        resetSimulation = saveOptions.resetSimulation;
+        
+        problem = packSimulationProblem(initstate, model, schedule, dataFolder, ...
+                                        'Name'           , name, ...
+                                        'NonLinearSolver', nls);
+        problem.SimulatorSetup.OutputMinisteps = true; 
+
+        if resetSimulation
+            %% clear previously computed simulation
+            clearPackedSimulatorOutput(problem, 'prompt', false);
+        end
+        simulatePackedProblem(problem);
+        [globvars, states, reports] = getPackedSimulatorOutput(problem);
+        
+    else
+        [~, states, report] = simulateScheduleAD(initstate, model, schedule, 'OutputMinisteps', true, 'NonLinearSolver', nls);
+    end
 
     %% Process output and recover the output voltage and current from the output states.
     ind = cellfun(@(x) not(isempty(x)), states); 
