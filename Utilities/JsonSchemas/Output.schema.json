@@ -4,8 +4,37 @@
   "description": "Input for the choice of outputs the will be returned",
   "type": "object",
 
-  "properties" : {"Output" : {"type" : "array",
-                              "items" : {"type" : "string",
-                                         "enum" : ["energyDensity", "specificEnergy"]}}}
+  "properties" : {
+    
+    "Output" : {
+      "type" : "object",
+      "properties" : {
 
-}
+        "variables" : {
+          "type" : "array",
+          "description" : "list of extra variables that we want to get in output structure",
+          "items" : {
+            "type" : "string",
+            "enum" : ["energyDensity", "specificEnergy"]}},
+
+        "saveOutput" : {
+          "type" : "boolean",
+          "description" : "True if simulation data will be saved to disk (default is false)"}},
+
+      "dependentSchemas" : {
+        "saveOutput" : {
+          "anyOf" : [
+            {"properties" : {
+              "saveOutput" : {"const" : true},
+              "saveOptions" : {
+                "type" : "object",
+                "description" : "part of the input for battmoDir()/MRST/mrst-autodiff/ad-core/simulators/sim_runner/packSimulationProblem which deals with the place where the data is saved",
+                "properties" : {"dataFolder" : {"type" : "string",
+                                                "name of main Datafolder"},
+                                "name" : {"type" : "string",
+                                          "simulation name used as subfolder in dataFolder"},
+                                "resetSimulation" : {"type" : "boolean",
+                                                     "description" : "true if the data that has been saved in a previous run at the same location should be erased. False if it just should be loaded and used as the output of the simulation."}
+                               }}}},
+            {"properties" : {
+              "saveOutput" : {"const" : false}}}]}}}}}
