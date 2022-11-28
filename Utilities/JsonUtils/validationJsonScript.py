@@ -51,3 +51,4 @@ def validate(jsonfile):
     if verbose:
         print(jsonfile, "is valid?", is_valid)
     return is_valid
+

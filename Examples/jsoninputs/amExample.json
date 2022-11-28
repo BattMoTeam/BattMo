@@ -1,0 +1,19 @@
+{"volumeFraction" : 0.8,
+ "specificHeatCapacity": 632.0,
+ "heatCapacity": 632000.0,
+ "thermalConductivity": 1.04,
+ "electricalConductivity": 100,
+ "activeMaterialFraction" : 0.3,
+ "BruggemanCoefficient": 1.5,
+ "Interface": {
+   "isFile": true,
+   "filename": "ParameterData/MaterialProperties/Graphite/graphite.json"
+ },
+ "diffusionModelType" : "full",
+ "SolidDiffusion" : {
+   "EaD": 5000,
+   "D0": 3.9e-14,
+   "rp": 1e-06,
+   "N": 10
+ }
+}

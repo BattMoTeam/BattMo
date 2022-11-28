@@ -1,5 +1,4 @@
 classdef LinearSolverBatteryExtra < LinearSolverADExtra
-
     properties
         method
         verbosity
@@ -7,30 +6,33 @@ classdef LinearSolverBatteryExtra < LinearSolverADExtra
         reuse_setup
         precondIterations_phi
         precondIterations_c
+        precondIterations_T
     end
-    
     methods
-        function solver = LinearSolverBatteryExtra(varargin)
-            
-            opt=struct('method'     ,'direct',...
-                       'verbosity'  ,0       ,...
-                       'reuse_setup',false);
+        function solver = LinearSolverBatteryExtra(varargin)            
+            opt=struct(...
+                'method','direct',...
+                'verbosity',0,...
+                'reuse_setup',false)
             [opt,extra] = merge_options(opt,varargin{:});
             solver = solver@LinearSolverADExtra(extra{:});
             solver.method = opt.method;           
             solver.verbosity=opt.verbosity;
             solver.first=true;
             solver.reuse_setup =  opt.reuse_setup;
-            
         end
     
         function [result, report] = solveLinearSystem(solver, A, b, x0, problem)
-            
             report = solver.getSolveReport();
             switch solver.method
                 case 'direct'                    
                     %indb = getPotentialIndex(solver,problem);
-                    result=A\b;
+                    if(condest(A)>1e10)
+                        %error()
+                        result=A\b;
+                    else
+                        result=A\b;
+                    end
                 case 'agmg'
                     a=tic();
                     if(solver.reuse_setup)                        
@@ -73,7 +75,10 @@ classdef LinearSolverBatteryExtra < LinearSolverADExtra
                 case 'matlab_p_gs'
                     solver.precondIterations_phi = 0;
                     solver.precondIterations_c = 0;
-                    indb = solver.getPotentialIndex(problem);
+                    solver.precondIterations_T = 0;
+                    indphi = solver.getPotentialIndex(problem);
+                    indc = solver.getCIndex(problem);
+                    indT = solver.getTIndex(problem);
                     %agmg(A(indb,indb),b(indb),20,solver.tolerance,solver.maxIterations,solver.verbosity,[],-1);
                     %agmg(A(indb,indb),b(indb),20,solver.tolerance,solver.maxIterations,solver.verbosity,[],1);
                     %e_solver =@(A,b) mldivide(A,b);
@@ -81,14 +86,16 @@ classdef LinearSolverBatteryExtra < LinearSolverADExtra
                     ltol = 1e-3;
                     lmax = 40;
                     %phi_solver = solver.getElipticSolver('direct');
-                    phi_solver = solver.getElipticSolver('agmgsolver');
-                    %phi_solver = solver.getElipticSolver('amgclsolver');
+                    %phi_solver = solver.getElipticSolver('agmgsolver');
+                    phi_solver = solver.getElipticSolver('amgclsolver');
                     %c_solver = solver.getElipticSolver('agmgsolver');
                     c_solver = solver.getElipticSolver('amgclsolver');
+                    T_solver = solver.getElipticSolver('amgclsolver');
                     %e_solver =@(A,b) agmg(A,b,lmax,ltol,lmax,lverbosity,[],0);
                     %e_solver =@(A,b) mldivide(A,b);
                     opt = [];
-                    f=@(b) solver.p_gs_precond(b,A,indb,phi_solver, c_solver, opt);
+                    assert(all(indphi+indc+indT == 1))
+                    f=@(b) solver.p_gs_precond(b,A,indphi,indc,indT,phi_solver, c_solver,T_solver, opt);
                     a=tic;
                     restart = solver.maxIterations;
                     %[result, flags, relres, iter]= gmres(A,b,restart,solver.tolerance,solver.maxIterations,f);
@@ -99,6 +106,7 @@ classdef LinearSolverBatteryExtra < LinearSolverADExtra
                     report.Converged = flags;
                     report.precondIterations_phi = solver.precondIterations_phi; 
                     report.precondIterations_c = solver.precondIterations_c;
+                    report.precondIterations_T = solver.precondIterations_T;
                     report.LinearSolutionTime = toc(a);
  
                 case 'matlab_cpr_agmg'
@@ -198,7 +206,55 @@ classdef LinearSolverBatteryExtra < LinearSolverADExtra
             ind=mcolon(posvar(:,1),posvar(:,2));
             indb=false(pos(end),1);      
             indb(ind) = true;
-        end            
+        end
+        function indb = getCIndex(solver,problem)
+            numVars = problem.equations{1}.getNumVars();
+            vars=[];
+            for i = 1:numel(problem.primaryVariables)
+                pp = problem.primaryVariables{i};
+                if strcmp(pp{end},'c') %%|| strcmp(pp{end},'phi')
+                    vars =[vars,i];
+                end 
+            end
+            %if(numel(problem.equations)>8)
+            %    vars=[2,4,6,7,8,9];
+            %else
+            %    vars=[2,4,6,7,8];
+            %end
+            % equation 4,6 seems ok.
+            pos=cumsum(numVars);
+            pos=[[1;pos(1:end-1)+1],pos];
+            posvar=pos(vars,:);
+            %eind = mcolon(posvar(1,1),posvar(1,2));
+            %neind = mcolon(posvar(2:end,1),posvar(2:end,2));
+            ind=mcolon(posvar(:,1),posvar(:,2));
+            indb=false(pos(end),1);      
+            indb(ind) = true;
+        end
+        function indb = getTIndex(solver,problem)
+            numVars = problem.equations{1}.getNumVars();
+            vars=[];
+            for i = 1:numel(problem.primaryVariables)
+                pp = problem.primaryVariables{i};
+                if strcmp(pp{end},'T') %%|| strcmp(pp{end},'phi')
+                    vars =[vars,i];
+                end 
+            end
+            %if(numel(problem.equations)>8)
+            %    vars=[2,4,6,7,8,9];
+            %else
+            %    vars=[2,4,6,7,8];
+            %end
+            % equation 4,6 seems ok.
+            pos=cumsum(numVars);
+            pos=[[1;pos(1:end-1)+1],pos];
+            posvar=pos(vars,:);
+            %eind = mcolon(posvar(1,1),posvar(1,2));
+            %neind = mcolon(posvar(2:end,1),posvar(2:end,2));
+            ind=mcolon(posvar(:,1),posvar(:,2));
+            indb=false(pos(end),1);      
+            indb(ind) = true;
+        end 
         function r = precondcpr(solver,x,A,ind,voltage_solver,smoother)%,AA)
             r=x*0;          
             dr = smoother(A,x);
@@ -217,32 +273,34 @@ classdef LinearSolverBatteryExtra < LinearSolverADExtra
             %x=x-A*dr;
         end
      
-         function r = p_gs_precond(solver,x,A,ind,phi_solver,c_solver, opt)%,AA)
+        function r = p_gs_precond(solver,x,A,indphi,indc,indT,phi_solver,c_solver,T_solver, opt)%,AA)
             r=x*0;
             %xp agmg(A(ind,ind),x(ind),20,1e-4,20,1,[],2);
             %lverb = false
-            xs = zeros(sum(not(ind)),1);
+            %xs = zeros(sum(not(indphi)),1);
             ldisp =@(tt) disp(tt);
             %ldisp =@(tt) disp('');
             %ldisp('voltage start')
-            for kk=1:1
-            xp = x(ind) - A(ind,not(ind))*xs;
+            nr = 1; % number of GS iterations
+            for kk=1:nr
+            xp = x(indphi) - 0.0*A(indphi,not(indphi))*r(not(indphi));
             if(true)
-               [rp,flag, res, iter]  = phi_solver(A(ind,ind),xp);
+               [rp,flag, res, iter]  = phi_solver(A(indphi,indphi),xp);
                solver.precondIterations_phi = solver.precondIterations_phi +iter; 
             else
                 ii = ind;
                 %agmg(A(ii,ii),xp,20,solver.tolerance,solver.maxIterations,0,[],1);
                 rp = agmg(A(ii,ii),xp,20,solver.tolerance,solver.maxIterations,solver.verbosity,[],0);
             end
+            r(indphi) = rp;
             ldisp('voltage end')
-            xs = x(not(ind)) - 0.0*A(not(ind),ind)*rp;
+            xs = x(indc) - 0.0*A(indc,not(indc))*r(not(indc));
             ldisp('c start')
             if(true)
-                [rs,flag, res, iter] = c_solver(A(not(ind),not(ind)),xs);
+                [rs,flag, res, iter] = c_solver(A(indc,indc),xs);
                 solver.precondIterations_c = solver.precondIterations_c +iter; 
             else
-                ii= not(ind);
+                ii= indc;
                 %agmg(A(ii),x(ii),20,solver.tolerance,solver.maxIterations,0,[],-1);
                 %agmg(A(ii,ii),x(ii),20,solver.tolerance,solver.maxIterations,0,[],1);
                 %rs = agmg(A(ii,ii),x(ii),20,solver.tolerance,solver.maxIterations,0,[],3);
@@ -252,12 +310,19 @@ classdef LinearSolverBatteryExtra < LinearSolverADExtra
             end
             end
             ldisp('c end')
-            r(ind) = rp;
-            r(not(ind)) = rs;         
+            ldisp('T start')
+            xs = x(indT) - 0.0*A(indT,not(indT))*r(not(indT));
+            [rT, flag, res, iter] = T_solver(A(indT,indT),xs);
+            solver.precondIterations_T = solver.precondIterations_T +iter; 
+            ldisp('T End')
+            r(indT) = rT;
+            r(indphi) = rp;
+            r(indc) = rs;         
         end
         %function r = agmgprecond(solver,x,A)            
         %        r= agmg(A,x,0,1e-4,20,0,[],3);                
         %end
+        %function opts = getAmg
 
         function voltage_solver = getElipticSolver(solver,solver_type, opt)
             
@@ -266,7 +331,7 @@ classdef LinearSolverBatteryExtra < LinearSolverADExtra
                     %agmg(A(indb,indb),b(indb),20,solver.tolerance,solver.maxIterations,solver.verbosity,[],-1);
                     %agmg(A(indb,indb),b(indb),20,solver.tolerance,solver.maxIterations,solver.verbosity,[],1);
                     nmax=20;
-                    voltage_solver =@(A,b)  agmg(A,b,nmax,1e-5,nmax,0,[],0);
+                    voltage_solver =@(A,b)  agmg(A,b,nmax,1e-5,nmax,1,[],0);
                 case 'agmgsolver_prec'
                     %agmg(A,b,20,solver.tolerance,solver.maxIterations,solver.verbosity,[],-1);
                     %agmg(A,b,20,solver.tolerance,solver.maxIterations,solver.verbosity,[],1);
@@ -303,6 +368,7 @@ classdef LinearSolverBatteryExtra < LinearSolverADExtra
                    FLAG = extra.err < tol;
                    RELRES = extra.err;
                    ITER = extra.nIter;
+                   disp(['err', num2str(extra.err),' iter ',num2str(extra.nIter)])
         end
 
         function  [X,FLAG,RELRES,ITER] = agmgprecond(solver,A,b)

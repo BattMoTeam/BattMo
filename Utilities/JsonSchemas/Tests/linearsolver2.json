@@ -1,0 +1,4 @@
+{"library" : "matlab",
+ "method" : "grouped-gmres",
+ "preconditioner" : {"library" : "agmg",
+                     "method" : "standard"}}

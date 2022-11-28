@@ -7,6 +7,7 @@ clear all
 close all
 clc
 
+mrstDebug(20);
 
 %% Import the required modules from MRST
 % load MRST modules
@@ -34,11 +35,13 @@ sd      = 'SolidDiffusion';
 ctrl    = 'Control';
 cc      = 'CurrentCollector';
 
-jsonstruct.use_thermal = false;
+jsonstruct.use_thermal = true;
 jsonstruct.include_current_collectors = false;
 
-jsonstruct.(pe).(am).diffusionModelType = 'full';
-jsonstruct.(ne).(am).diffusionModelType = 'full';
+diffusionModelType = 'full';
+
+jsonstruct.(pe).(am).diffusionModelType = diffusionModelType;
+jsonstruct.(ne).(am).diffusionModelType = diffusionModelType;
 
 jsonstruct.use_particle_diffusion = true;
 
@@ -47,8 +50,8 @@ paramobj = BatteryInputParams(jsonstruct);
 paramobj.(ne).(am).InterDiffusionCoefficient = 0;
 paramobj.(pe).(am).InterDiffusionCoefficient = 0;
 
-paramobj.(ne).(am).(sd).N = 5;
-paramobj.(pe).(am).(sd).N = 5;
+% paramobj.(ne).(am).(sd).N = 5;
+% paramobj.(pe).(am).(sd).N = 5;
 
 paramobj = paramobj.validateInputParams();
 
@@ -70,6 +73,8 @@ end
 % simulation. The required discretization parameters are already included
 % in the class BatteryGenerator1D. 
 gen = BatteryGenerator1D();
+gen.fac = 100;
+gen = gen.applyResolutionFactors();
 
 % Now, we update the paramobj with the properties of the mesh. 
 paramobj = gen.updateBatteryInputParams(paramobj);
@@ -112,6 +117,7 @@ end
 
 n  = 100;
 dt = total/n;
+
 step = struct('val', dt*ones(n, 1), 'control', ones(n, 1));
 
 % we setup the control by assigning a source and stop function.
@@ -133,7 +139,7 @@ switch model.Control.controlPolicy
 end
 
 % This control is used to set up the schedule
-schedule = struct('control', control, 'step', step); 
+schedule = struct('control', control, 'step', step);
 
 %% Setup the initial state of the model
 % The initial state of the model is setup using the model.setupInitialState() method.
@@ -143,40 +149,87 @@ initstate = model.setupInitialState();
 %% Setup the properties of the nonlinear solver 
 nls = NonLinearSolver();
 
-linearsolver = 'direct';
-switch linearsolver
-  case 'agmg'
-    mrstModule add agmg
-    nls.LinearSolver = AGMGSolverAD('verbose', true, 'reduceToCell', false); 
-    nls.LinearSolver.tolerance = 1e-3; 
-    nls.LinearSolver.maxIterations = 30; 
-    nls.maxIterations = 10; 
-    nls.verbose = 10;
-  case 'battery'
-    nls.LinearSolver = LinearSolverBatteryExtra('verbose'     , false, ...
-                                                'reduceToCell', true, ...
-                                                'verbosity'   , 3    , ...
-                                                'reuse_setup' , false, ...
-                                                'method'      , 'direct');
-    nls.LinearSolver.tolerance = 1e-4;
-  case 'direct'
-    disp('standard direct solver')
+clear setup
+
+casenumber = 4;
+
+switch casenumber
+    
+  case 1
+    
+    setup.library = 'matlab';
+    setup.method = 'direct';
+
+  case 2
+    
+    setup.method = 'gmres';
+    setup.options.method = 'grouped';
+    setup.options.solverspec.name = 'agmg'; % not used for now
+
+  case 3
+    
+    setup.method = 'gmres';
+    setup.options.method = 'separate';
+    solvers = {};
+    solverspec.variable = 'phi';
+    solverspec.solverspec.name = 'direct';
+    solvers{end + 1} = solverspec;
+    solverspec.variable = 'c';
+    solverspec.solverspec.name = 'direct';
+    solvers{end + 1} = solverspec;
+    solverspec.variable = 'T';
+    solverspec.solverspec.name = 'direct';
+    solvers{end + 1} = solverspec;
+    setup.options.solvers = solvers;
+
+  case 4
+
+    switch diffusionModelType
+      case 'simple'
+        jsonfilename = fullfile(battmoDir, 'Utilities/JsonSchemas/Tests/linearsolver3.json');
+      case 'full'
+        jsonfilename = fullfile(battmoDir, 'Utilities/JsonSchemas/Tests/linearsolver4.json');
+      otherwise
+        error('diffusionModelType not covered')
+    end
+    jsonsrc = fileread(jsonfilename);
+    setup = jsondecode(jsonsrc);
+    
   otherwise
-    error()
+    
+    error('case number not recognized');
+
+end
+
+if isfield(setup, 'reduction')
+    model = model.setupSelectedModel('reduction', setup.reduction);
+end
+
+nls.LinearSolver = BatteryLinearSolver('verbose'          , 2    , ...
+                                       'reuse_setup'      , false, ...
+                                       'linearSolverSetup', setup);
+
+if isfield(nls.LinearSolver.linearSolverSetup, 'gmres_options')
+    nls.LinearSolver.linearSolverSetup.gmres_options.tol = 1e-3*model.Control.Imax;
+    nls.LinearSolver.linearSolverSetup.gmres_options.maxit = 10;
 end
 
 % Change default maximum iteration number in nonlinear solver
-nls.maxIterations = 10;
+nls.maxIterations = 20;
 % Change default behavior of nonlinear solver, in case of error
 nls.errorOnFailure = false;
-nls.timeStepSelector=StateChangeTimeStepSelector('TargetProps', {{'Control','E'}}, 'targetChangeAbs', 0.03);
+% nls.timeStepSelector=StateChangeTimeStepSelector('TargetProps', {{'Control','E'}}, 'targetChangeAbs', 0.03);
 % Change default tolerance for nonlinear solver
 model.nonlinearTolerance = 1e-3*model.Control.Imax;
 % Set verbosity
 model.verbose = true;
 
 %% Run the simulation
+% profile off
+% profile on
 [wellSols, states, report] = simulateScheduleAD(initstate, model, schedule, 'OutputMinisteps', true, 'NonLinearSolver', nls); 
+% profile off
+% profile viewer
 
 %% Process output and recover the output voltage and current from the output states.
 ind = cellfun(@(x) not(isempty(x)), states); 
@@ -187,7 +240,106 @@ Tmax = cellfun(@(x) max(x.ThermalModel.T), states);
 % [SOCN, SOCP] =  cellfun(@(x) model.calculateSOC(x), states);
 time = cellfun(@(x) x.time, states); 
 
+figure
 plot(time, E);
+
+
+%%
+
+its = getReportOutput(report,'type','linearIterations')
+nits= getReportOutput(report,'type','nonlinearIterations')
+
+figure
+plot(its.time, its.total./nits.total)
+xlabel('time');
+title('linear iterations/newton iterations')
+
+
+switch setup.method
+
+  case "grouped-gmres"
+
+    pits = zeros(numel(its.time), 1);
+    
+    counter = 1;
+    
+    for icontrol = 1 : numel(report.ControlstepReports)
+        
+        creport = report.ControlstepReports{icontrol};
+
+        for istep = 1 : numel(creport.StepReports)
+
+            sreport = creport.StepReports{istep};
+            
+            for k = 1 : numel(sreport.NonlinearReport);
+                
+                nreport = sreport.NonlinearReport{k};
+                try
+                    it = nreport.LinearSolver.precondReports.Iterations;
+                    pits(counter) = pits(counter) + it;
+                end
+                
+            end
+        end
+    end
+
+    figure
+    plot(its.time, pits./its.total);
+    xlabel('time');
+    title('preconditioner iteration/linear iteration');
+    
+  case "separate-variable-gmres"
+
+    npreconds = numel(setup.preconditioners);
+    pits = zeros(numel(its.time), npreconds);
+
+    counter = 1;
+    
+    for icontrol = 1 : numel(report.ControlstepReports)
+        
+        creport = report.ControlstepReports{icontrol};
+
+        for istep = 1 : numel(creport.StepReports)
+
+            sreport = creport.StepReports{istep};
+            
+            for k = 1:numel(sreport.NonlinearReport);
+                
+                nreport = sreport.NonlinearReport{k};
+                
+                for iprecond = 1 : npreconds
+
+                    try
+                        it = nreport.LinearSolver.precondReports{iprecond}.Iterations;
+                        pits(counter, iprecond) = pits(counter, iprecond) + it;
+                    end
+                    
+                end
+            end
+
+            counter = counter + 1;
+        end
+    end
+
+    for iprecond = 1 : npreconds
+
+        figure
+        plot(its.time, pits(:, iprecond)./its.total);
+        xlabel('time');
+        switch iprecond
+          case 1
+            titlestr = 'phi';
+          case 2
+            titlestr = 'c';
+          case 3
+            titlestr = 'T';
+        end
+        titlestr = sprintf('preconditioner iteration/linear iteration - %s', titlestr);
+        title(titlestr);
+        
+    end
+
+end
 
 
 

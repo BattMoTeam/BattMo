@@ -48,8 +48,12 @@ classdef ActiveMaterialInputParams < ElectronicComponentInputParams
 
             paramobj.Interface = InterfaceInputParams(pick('Interface'));
 
-            diffusionModelType = paramobj.diffusionModelType;
+            if isempty(paramobj.diffusionModelType)
+                paramobj.diffusionModelType = 'full';
+            end
 
+            diffusionModelType = paramobj.diffusionModelType;
+            
             switch diffusionModelType
                 
               case 'simple'

@@ -1,0 +1,46 @@
+{"library" : "matlab",
+ "method" : "separate-variable-gmres",
+ "options" : {"type" : "jacobi"},
+ "gmres_options" : {"restart" : "default",
+                    "tol" : "default",
+                    "maxit" : 40},
+ "reduction" : {"doReduction" : true,
+                "variables" : [{"name" : ["Control", "I"], "order" : 1, "special" : true},
+                               {"name" : ["Control", "E"], "order" : 2, "special" : true}]
+               },
+ 
+ "preconditioners" : [{"name" : "concentration in negative electrode particles",
+                       "variables" : [["NegativeElectrode", "ActiveMaterial", "SolidDiffusion", "c"],
+                                      ["NegativeElectrode", "ActiveMaterial", "SolidDiffusion", "cSurface"]],
+                       "solver" : {"library" : "amgcl",
+                                  "solver" : {"tol" : 1e-8}}
+                      },
+                      
+                      {"name" : "concentration in positive electrode particles",
+                       "variables" : [["PositiveElectrode", "ActiveMaterial", "SolidDiffusion", "c"],
+                                      ["PositiveElectrode", "ActiveMaterial", "SolidDiffusion", "cSurface"]],
+                       "solver" : {"library" : "amgcl",
+                                   "solver" : {"tol" : 1e-8}}
+                      },
+                      {"name" : "concentration in electrolyte",
+                       "variables" : [["Electrolyte", "c"]],
+                       "solver" : {"library" : "amgcl",
+                                   "solver" : {"tol" : 1e-8}}
+                      },
+                      {"name" : "potential",
+                       "variables" : [["Electrolyte", "phi"],
+                                      ["NegativeElectrode", "ActiveMaterial", "phi"],
+                                      ["PositiveElectrode", "ActiveMaterial", "phi"],
+                                      ["NegativeElectrode", "CurrentCollector", "phi"],
+                                      ["PositiveElectrode", "CurrentCollector", "phi"],
+                                      ["Control", "E"]
+                                     ],
+                       "solver" : {"library" : "amgcl",
+                                   "solver" : {"tol" : 1e-5}}
+                      },
+
+                      {"name" : "temperature",
+                       "variables" : [["ThermalModel", "T"]],
+                       "solver" : {"library" : "amgcl"}}
+                     ]
+}

@@ -1,0 +1,105 @@
+{
+  "$id": "file://battmo/schemas/linearsolverreport",
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "description": "linear solver report",
+  "type" : "object",
+
+  "properties": {
+    "linearsolver": {"$ref" : "linearsolver",
+                     "description" : "this is not given explicitly in report structure, but necessary here to describe the report structure"},
+    "stepReport": {"type" : "array",
+                    "items" : {"$ref" : "#/$defs/stepReportItem"}}},
+
+  "anyOf" : [
+
+    {"description" : "for gmres with separate-generic option, we add entries for each variable that are preconditioned",
+     "properties" : {
+       "linearsolver" : {
+         "properties" : {
+           "library" : {"const" : "matlab"},
+           "method" : {"const" : "separate-variable-gmres"},
+           "stepReport" : {
+             "items" : {
+               "properties" : {
+                 "NonLinearReport" : {
+                   "items" : {
+                     "properties" : {
+                       "LinearSolver": {
+                         "items" : {
+                           "properties" : {
+                             "precondReports" : {"type" : "array",
+                                                 "items" : {"type" : "object",
+                                                            "$ref" : "#/defs/precondReport"}
+                                                }
+                           }}}}}}}}}}}}},
+    {"not" :
+     {"properties" :
+      {"linearsolver" :
+       { "properties" :
+         {"library" : {"const" : "matlab"},
+          "method" : {"const" : "separate-variable-gmres"}
+         }}}}}
+  ],
+  
+  "$defs" : {
+
+    "StepReportItem" : {"type" : "object",
+                        "description" : "report for a time step"
+                        "properties" : {
+                          "NonlinearReport" : {"type" : "object",
+                                               "$ref" : "#/$defs/NonlinearReport"},
+                          "Converged" : {"type" : "boolean"},
+                          "Iterations" : {"type" : "integer"}
+                    }
+                   },
+
+    "NonlinearReport" : {"type" : "array",
+                         "description": "report for the Newton iterations",
+                         "items" : {"type" : "object",
+                                    "$ref" : "#/$defs/NonlinearReportItem"
+                                   }
+                        },
+
+    "NonlinearReportItem" : {"type" : "object",
+                             "description" : "report for a Newton step",
+                             "properties" : {
+                               "LinearSolver"      : {"type" : "object",
+                                                      "$ref" : "#/$defs/LinearSolverItem"},
+                               "Failure"           : {"type" : "boolean"},
+                               "Converged"         : {"type" : "boolean"},
+                               "Solved"            : {"type" : "boolean"},
+                               "Residuals "        : {"type" : "array",
+                                                      "items" : {"type" : "number"}},
+                               "AssemblyTime"      : {"type" : "number"},
+                               "StabilizeReport"   : {"type" : "array"},
+                               "ResidualsConverged": {"type" : "array",
+                                                      "items" : {"type" : "boolean"}}
+
+                             }
+                            },
+    
+    "LinearSolver" : {"type" : "object",
+                      "properties" : {
+                        "Iterations"         : {"type" : "integer"},
+                        "Residual"           : {"type" : "number"}, 
+                        "SolverTime"         : {"type" : "number"}, 
+                        "LinearSolutionTime" : {"type" : "number"}, 
+                        "PreparationTime"    : {"type" : "number"}, 
+                        "PostProcessTime"    : {"type" : "number"}, 
+                        "Converged"          : {"type" : "boolean"}
+                      }
+                     },
+
+    "precondReport" : {"type": "object",
+                       "description" : "report for a preconditioner",
+                       "properties" : {
+                         "Iterations" : {"type" : "integer"},
+                         "choice" : {"type" : "string",
+                                     "enum" : ["direct", "agmg", "amgcl"]}}
+                      }
+            }
+}
+
+
+
+

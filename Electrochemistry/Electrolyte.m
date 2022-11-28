@@ -114,7 +114,7 @@ classdef Electrolyte < ElectroChemicalComponent
             model = model.registerPropFunction({'massFlux', fn, {'c', 'j', 'D'}});
             model = model.registerPropFunction({'diffFlux', fn, {'c', 'j', 'D'}});
 
-            fn = @Electrolyte.assembleAccumTerm;
+            fn = @Electrolyte.updateAccumTerm;
             model = model.registerPropFunction({'massAccum', fn, {'c'}});
 
             fn = @Electrolyte.updateCurrentBcSource;
@@ -160,7 +160,6 @@ classdef Electrolyte < ElectroChemicalComponent
             cLi          = state.cs{1}; % concentration of Li+
             T            = state.T;     % temperature
             phi          = state.phi;   % potential
-            conductivity = state.conductivity;   % potential
 
             cs  = state.cs;
 
