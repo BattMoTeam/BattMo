@@ -41,7 +41,69 @@ function  output = runBatteryJson(jsonstruct, varargin)
       case {'2D-demo', '3d-demo'}
 
         error('not yet implemented');
+
+      case 'jellyRoll'
+
+        % Prepare input for SpiralBatteryGenerator.updateBatteryInputParams using json input
         
+        widthDict = containers.Map()
+        widthDict('ElectrolyteSeparator')     = jsonstuct.Electrolyte.Separator.thickness;
+        widthDict('NegativeActiveMaterial')   = jsonstruct.NegativeElectrode.ActiveMaterial.thickness;
+        widthDict('NegativeCurrentCollector') = jsonstruct.NegativeElectrode.CurrentCollector.thickness;
+        widthDict('PositiveActiveMaterial')   = jsonstruct.PositiveElectrode.ActiveMaterial.thickness;
+        widthDict('PositiveCurrentCollector') = jsonstruct.PositiveElectrode.CurrentCollector.thickness;
+        
+        nwidths = [widthDict('PositiveActiveMaterial');...
+                   widthDict('PositiveCurrentCollector');...
+                   widthDict('PositiveActiveMaterial');...
+                   widthDict('ElectrolyteSeparator');...
+                   widthDict('NegativeActiveMaterial');...
+                   widthDict('NegativeCurrentCollector');...
+                   widthDict('NegativeActiveMaterial');...
+                   widthDict('ElectrolyteSeparator')]; 
+        dr = sum(nwidths);
+        
+        rOuter = jsonstruct.Geometry.rOuter;
+        rInner = jsonstruct.Geometry.rInner;
+        L      = jsonstruct.Geometry.L;
+        nL     = jsonstruct.Geometry.nL;
+        nas    = jsonstruct.Geometry.nas;
+
+        tabparams = jsonstruct.Geometry.tabparams;
+
+        nrDict = containers.Map()
+        nrDict('ElectrolyteSeparator')     = jsonstuct.Electrolyte.Separator.N;
+        nrDict('NegativeActiveMaterial')   = jsonstruct.NegativeElectrode.ActiveMaterial.N;
+        nrDict('NegativeCurrentCollector') = jsonstruct.NegativeElectrode.CurrentCollector.N;
+        nrDict('PositiveActiveMaterial')   = jsonstruct.PositiveElectrode.ActiveMaterial.N;
+        nrDict('PositiveCurrentCollector') = jsonstruct.PositiveElectrode.CurrentCollector.N;
+
+        % compute numbers of winding (this is input for spiralGrid) from outer and inner radius
+        nwidths = [widthDict('PositiveActiveMaterial');...
+                   widthDict('PositiveCurrentCollector');...
+                   widthDict('PositiveActiveMaterial');...
+                   widthDict('ElectrolyteSeparator');...
+                   widthDict('NegativeActiveMaterial');...
+                   widthDict('NegativeCurrentCollector');...
+                   widthDict('NegativeActiveMaterial');...
+                   widthDict('ElectrolyteSeparator')]; 
+        dr = sum(nwidths);dR = rOuter - rInner; 
+        % Computed number of windings
+        nwindings = ceil(dR/dr);
+        
+        spiralparams = struct('nwindings'   , nwindings, ...
+                              'rInner'      , rInner   , ...
+                              'widthDict'   , widthDict, ...
+                              'nrDict'      , nrDict   , ...
+                              'nas'         , nas      , ...
+                              'L'           , L        , ...
+                              'nL'          , nL       , ...
+                              'tabparams'   , tabparams, ...
+                              'angleuniform', true); 
+        
+        gen = SpiralBatteryGenerator(); 
+        paramobj = gen.updateBatteryInputParams(paramobj, spiralparams);
+
       otherwise
         
         error('Geometry case not recognized')
@@ -98,8 +160,22 @@ function  output = runBatteryJson(jsonstruct, varargin)
     %% Setup the initial state of the model
     % The initial state of the model is setup using the model.setupInitialState() method.
 
-    initstate = model.setupInitialState(); 
-
+    if isfield(jsonstruct, 'initializationSetup')
+        initializationSetup = jsonstruct.initializationSetup;
+    else
+        % default is given SOC
+        initializationSetup = "given SOC";
+    end
+    
+    switch initializationSetup
+      case "given SOC"
+        initstate = model.setupInitialState();
+      case "given input"
+        error('interface not yet implemented');
+      otherwise
+        error('initializationSetup not recognized');
+    end
+    
     
     %% Setup the properties of the nonlinear solver 
     nls = NonLinearSolver();
