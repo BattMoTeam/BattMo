@@ -13,14 +13,18 @@
  "NegativeElectrode": {
    "ActiveMaterial": {
      "thickness" : 64e-6,
-     "N" : 3},
+     "N" : 3,
+     "SolidDiffusion" : {"N" : 5}
+   },
    "CurrentCollector": {
      "thickness" : 25e-6,
      "N" : 3}},
  "PositiveElectrode": {
    "ActiveMaterial": {
      "thickness" : 57e-6,
-     "N" : 3},
+     "N" : 3,
+     "SolidDiffusion" : {"N" : 5}
+   },
    "CurrentCollector": {
      "thickness" : 15e-6,
      "N" : 3}},
