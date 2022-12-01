@@ -79,6 +79,14 @@ classdef BatteryInputParams < InputParams
             paramobj = mergeParameters(paramobj, {{'use_particle_diffusion'}        , ...
                                                   {ne, am, 'use_particle_diffusion'}, ...
                                                   {pe, am, 'use_particle_diffusion'}});
+
+            if isempty(paramobj.use_particle_diffusion)
+                % set default to true
+                paramobj.use_particle_diffusion = true;
+                paramobj = mergeParameters(paramobj, {{'use_particle_diffusion'}        , ...
+                                                      {ne, am, 'use_particle_diffusion'}, ...
+                                                      {pe, am, 'use_particle_diffusion'}});
+            end
             
             paramobj.(ne)    = paramobj.(ne).validateInputParams();
             paramobj.(pe)    = paramobj.(pe).validateInputParams();
