@@ -96,9 +96,9 @@ classdef ActiveMaterialInputParams < ElectronicComponentInputParams
                 
                 if ~isempty(paramobj.(sd).D)
                     % we impose that cmax in the solid diffusion model and the interface are consistent
-                    paramobj = mergeParameters(paramobj, {{sd, 'cmax'}, {itf, 'cmax'}, 'force', false});
-                    paramobj = mergeParameters(paramobj, {{sd, 'theta0'}, {itf, 'theta0'}, 'force', false});
-                    paramobj = mergeParameters(paramobj, {{sd, 'theta100'}, {itf, 'theta100'}, 'force', false});
+                    paramobj = mergeParameters(paramobj, {{sd, 'cmax'}, {itf, 'cmax'}}, 'force', false);
+                    paramobj = mergeParameters(paramobj, {{sd, 'theta0'}, {itf, 'theta0'}}, 'force', false);
+                    paramobj = mergeParameters(paramobj, {{sd, 'theta100'}, {itf, 'theta100'}}, 'force', false);
                 end
 
               otherwise
