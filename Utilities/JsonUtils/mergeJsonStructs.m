@@ -46,7 +46,7 @@ function jsonstruct = mergeJsonStructs(jsonstructs, varargin)
     end
 
     if ~isempty(jsonstructrests)
-        jsonstruct = mergeJsonStructs({jsonstruct, jsonstructrests{:}});
+        jsonstruct = mergeJsonStructs({jsonstruct, jsonstructrests{:}}, varargin{:});
     end
     
 end
