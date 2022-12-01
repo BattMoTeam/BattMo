@@ -64,11 +64,9 @@
              "dependentSchemas" : {
                "SolidDiffusion" : {
                  "properties" : {
-                   "soliddiffusion" : {
-                     "properties" : {
-                       "N"  : {
-                         "type" : "integer",
-                         "description" : "discretization parameter for the particle"}}}}}}},
+                   "N"  : {
+                     "type" : "integer",
+                     "description" : "discretization parameter for the particle"}}}}},
             {"not" : {
               "properties" : {
                 "diffusionModelType" : {
