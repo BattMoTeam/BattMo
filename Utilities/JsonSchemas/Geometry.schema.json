@@ -127,7 +127,9 @@
                       }},
                       {"properties" : {
                         "tabcase" : {
-                          "const" : "1 tab"}
+                          "const" : "1 tab"},
+                        "width" : {
+                          "type" : "number"}
                       }}
                     ] 
                   }}}}}}},
