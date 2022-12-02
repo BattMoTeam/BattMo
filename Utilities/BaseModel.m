@@ -92,9 +92,9 @@ classdef BaseModel < PhysicalModel
                 nvars = numel(varnames);
                 keep = true(nvars, 1);
                 for ivar = 1 : nvars
-                    if varnames{ivar} == varname
-                        keep(ivar) = false;
-                        break
+                    [found, keep(ivar), varnames{ivar}] = BaseModel.getCleanedUpVarName(varname, varnames{ivar});
+                    if found
+                        break;
                     end
                 end
                 model.varNameList = varnames(keep);
@@ -104,19 +104,15 @@ classdef BaseModel < PhysicalModel
                 nprops = numel(propfuncs);
                 keep = true(nprops, 1);
                 for iprop = 1 : nprops
-                    propfunc = propfuncs{iprop};
-                    if propfunc.varname == varname
-                        keep(iprop) = false;
-                        break
-                    end
-                    inputvarnames = propfunc.inputvarnames;
+                    [~, keep(iprop),  propfuncs{iprop}.varname] = BaseModel.getCleanedUpVarName(varname, propfuncs{iprop}.varname);
+                    inputvarnames = propfuncs{iprop}.inputvarnames;
                     for iinput = 1 : numel(inputvarnames)
-                        if inputvarnames{iinput} == varname
-                            keep(iprop) = false;
-                            break
-                        end
+                        [~, keepprop,  inputvarnames{iinput}] = BaseModel.getCleanedUpVarName(varname, inputvarnames{iinput});
+                        keep(iprop) = keepprop | keep(iprop);
                     end
+                    propfunctions{iprop}.inputvarnames = inputvarnames;
                 end
+                
                 model.propertyFunctionList = propfuncs(keep);                
 
             else
@@ -125,8 +121,7 @@ classdef BaseModel < PhysicalModel
             
             
         end
-        
-        
+
         function model = registerPropFunction(model, propfunc)
             if isa(propfunc, 'PropFunction')
                 model.propertyFunctionList = mergeList(model.propertyFunctionList, {propfunc});
@@ -427,6 +422,32 @@ classdef BaseModel < PhysicalModel
             outputvars = cell(1, ns);
         end
         
+    end
+
+    methods(Static)
+
+        function [found, keep, varname] = getCleanedUpVarName(rvarname, varname)
+            [isequal, compIndices] = compareVarName(rvarname, varname);
+            if isequal
+                keep = false;
+                found = true;
+            elseif isempty(compIndices)
+                keep = true;
+                found = false;
+            elseif ~isempty(compIndices.InterInd)
+                found = true;
+                if isempty(compIndices.OuterInd2)
+                    keep = false;
+                else
+                    keep = true;
+                    varname.index = compIndices.OuterInd2;
+                end
+            else
+                found = false;
+                keep = true;
+            end
+        end
+
     end
     
 end
