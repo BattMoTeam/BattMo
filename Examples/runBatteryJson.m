@@ -238,7 +238,7 @@ function  output = runBatteryJson(jsonstruct, varargin)
     
         
     %% Run the simulation
-    if isfield(jsonstruct, 'Output') && isfield(jsonstruct.Output, 'saveOutput') && jsonstruct.Output.saveOuput
+    if isfield(jsonstruct, 'Output') && isfield(jsonstruct.Output, 'saveOutput') && jsonstruct.Output.saveOutput
         saveOptions = jsonstruct.Output.saveOptions;
         dataFolder      = saveOptions.dataFolder;
         name            = saveOptions.name;
