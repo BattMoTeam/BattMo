@@ -444,20 +444,24 @@ classdef Battery < BaseModel
         
         function control = setupControl(model, paramobj)
 
+            C = computeCellCapacity(model);
 
             switch paramobj.controlPolicy
               case "IEswitch"
                 control = IEswitchControlModel(paramobj); 
+                CRate = control.CRate;
+                control.Imax = (C/hour)*CRate;
               case "CCCV"
                 control = CcCvControlModel(paramobj);
+                CRate = control.CRate;
+                control.Imax = (C/hour)*CRate;
+              case "powerControl"
+                control = PowerControlModel(paramobj);
               otherwise
                 error('Error controlPolicy not recognized');
             end
             
-            C = computeCellCapacity(model);
-            CRate = control.CRate;
             
-            control.Imax = (C/hour)*CRate;
             
         end
         
@@ -694,17 +698,26 @@ classdef Battery < BaseModel
             end
             
             initstate.(ctrl).E = OCP(1) - ref;
-            initstate.(ctrl).I = - model.(ctrl).Imax;
             
             switch model.(ctrl).controlPolicy
               case 'CCCV'
                 initstate.(ctrl).ctrlType = 'CC_charge1';
                 initstate.(ctrl).nextCtrlType = 'CC_charge1';
+                initstate.(ctrl).I = - model.(ctrl).Imax;
               case 'IEswitch'
                 initstate.(ctrl).ctrlType = 'constantCurrent';
+                initstate.(ctrl).I = - model.(ctrl).Imax;
+              case 'powerControl'
+                % this is correct but anyway overwritten 
+                initstate.(ctrl).ctrlType = 'charge';
+                E = initstate.(ctrl).E;
+                P = model.(ctrl).chargingPower;
+                initstate.(ctrl).I = P/E;
               otherwise
                 error('control policy not recognized');
             end
+
+            initstate.time = 0;
             
         end
 
@@ -1077,7 +1090,7 @@ classdef Battery < BaseModel
             % (the order of the equation does not matter if we do not use an iterative solver)
             ctrltype = state.Control.ctrlType;
             switch ctrltype
-              case {'constantCurrent', 'CC_discharge1', 'CC_discharge2', 'CC_charge1'}
+              case {'constantCurrent', 'CC_discharge1', 'CC_discharge2', 'CC_charge1', 'charge', 'discharge'}
                 types{ei.EIeq} = 'cell';
               case {'constantVoltage', 'CV_charge2'}
                 eqs([ei.EIeq, ei.controlEq]) = eqs([ei.controlEq, ei.EIeq]);
@@ -1184,8 +1197,10 @@ classdef Battery < BaseModel
             ctrl = "Control";
             
             switch model.(ctrl).controlPolicy
-              case 'CCCV'
+
+              case {'CCCV', 'powerControl'}
                 % nothing to do here
+
               case 'IEswitch'
                 
                 E    = state.(ctrl).E;
@@ -1198,7 +1213,7 @@ classdef Battery < BaseModel
                 state.(ctrl).ctrlType = ctrltype;
 
               case 'None'
-                % nothing done here. This case is only used for addVariables function
+                % nothing done here. This case is only used for the addVariables method
               otherwise
                 error('control type not recognized');
             end
@@ -1548,6 +1563,9 @@ classdef Battery < BaseModel
               case 'IEswitch'
                 forces.IEswitch = true;
                 forces.src = [];
+              case 'powerControl'
+                forces.powerControl = true;
+                forces.src = [];
               case 'None'
                 % used only in addVariables
               otherwise
@@ -1637,7 +1655,6 @@ classdef Battery < BaseModel
                 cleanState.(thermal).T = state.(thermal).T;
             end
             
-            
         end
 
         function [model, state] = prepareTimestep(model, state, state0, dt, drivingForces)
@@ -1645,6 +1662,11 @@ classdef Battery < BaseModel
             [model, state] = prepareTimestep@BaseModel(model, state, state0, dt, drivingForces);
             
             ctrl = 'Control';
+
+            if strcmp(model.(ctrl).controlPolicy, 'powerControl')
+                state.(ctrl).time = state.time;
+            end
+            
             state.(ctrl) = model.(ctrl).prepareStepControl(state.(ctrl), state0.(ctrl), dt, drivingForces);
             
         end

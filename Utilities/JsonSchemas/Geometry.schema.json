@@ -12,7 +12,7 @@
                  },
 
   "anyOf" : [{"properties" : {"Geometry" : {"properties" : {"case" : {"const" : "1D"}}}},
-              "$ref" : "#/$defs/layerSpecs"},
+              "$ref" : "#/$defs/1D"},
              {"properties" : {"Geometry" : {"properties" : {"case" : {"const" : "2D-demo"}}}},
               "$ref" : "#/$defs/2D-demo" },
              {"properties" : {"Geometry" : {"properties" : {"case" : {"const" : "3D-demo"}}}},
@@ -22,6 +22,7 @@
             ],
 
   "$defs" : {
+    
     "layerSpecs" : {
       "properties" : {
         "NegativeElectrode" : {
@@ -49,6 +50,16 @@
         "N" : {
           "type" : "number",
           "description" : "discretization parameter"}}},
+
+    "1D" : {
+      "allOf" : [
+        {"$ref" : "#/$defs/layerSpecs"},
+        {"properties" : {
+          "Geometry" : {
+            "properties" : {
+              "faceArea" : {
+                "type" : "number",
+                "description" : "area of the cross-section"}}}}}]},
     
     "2D-demo" : {},
 

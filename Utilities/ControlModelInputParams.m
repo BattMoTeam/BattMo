@@ -24,6 +24,8 @@ classdef ControlModelInputParams < InputParams
                 assert(isa(paramobj, 'CcCvControlModelInputParams'), 'The model is not a CcCvControlModelInputParams class')
               case 'CV'
                 assert(isa(paramobj, 'CvControlModelInputParams'), 'The model is not a CvControlModelInputParams class')
+              case 'powerControl'
+                assert(isa(paramobj, 'PowerControlModelInputParams'), 'The model is not a PowerControlInputParams class')
               otherwise
                 error('controlPolicy not recognized');
             end

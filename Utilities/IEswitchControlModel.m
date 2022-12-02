@@ -3,8 +3,6 @@ classdef IEswitchControlModel < ControlModel
     properties
         
         Imax
-        lowerCutoffVoltage
-        upperCutoffVoltage
         
     end
     
@@ -14,10 +12,6 @@ classdef IEswitchControlModel < ControlModel
         function model = IEswitchControlModel(paramobj)
             
             model = model@ControlModel(paramobj);
-            
-            fdnames = {'lowerCutoffVoltage', ...
-                       'upperCutoffVoltage'};
-            model = dispatchParams(model, paramobj, fdnames);
             
         end
         

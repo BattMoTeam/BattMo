@@ -27,13 +27,19 @@ function  output = runBatteryJson(jsonstruct, varargin)
         xlength(2) = jsonstruct.NegativeElectrode.ActiveMaterial.thickness;
         xlength(3) = jsonstruct.Electrolyte.Separator.thickness;
         xlength(4) = jsonstruct.PositiveElectrode.ActiveMaterial.thickness;
-        gen.xlength = xlength;
+        if paramobj.NegativeElectrode.include_current_collectors
+            xlength(1) = jsonstruct.NegativeElectrode.ActiveMaterial.thickness;
+        end
+        if paramobj.PositiveElectrode.include_current_collectors
+            xlength(5) = jsonstruct.PositiveElectrode.ActiveMaterial.thickness;
+        end
+        if isfield(jsonstruct.Geometry, 'faceArea')
+            gen.faceArea = jsonstruct.Geometry.faceArea;
+        end
 
         gen.sepnx  = jsonstruct.NegativeElectrode.ActiveMaterial.N;
         gen.nenx   = jsonstruct.Electrolyte.Separator.N;
         gen.penx   = jsonstruct.PositiveElectrode.ActiveMaterial.N;
-        
-        gen.faceArea = jsonstruct.Geometry.faceArea;
         
         % Now, we update the paramobj with the properties of the mesh. 
         paramobj = gen.updateBatteryInputParams(paramobj);
@@ -109,6 +115,26 @@ function  output = runBatteryJson(jsonstruct, varargin)
         error('Geometry case not recognized')
         
     end
+
+    %% model parameter required for initialization if initializationSetup = "given SOC";
+    % The initial state of the model is setup using the model.setupInitialState() method.
+
+    if isfield(jsonstruct, 'initializationSetup')
+        initializationSetup = jsonstruct.initializationSetup;
+    else
+        % default is given SOC
+        initializationSetup = "given SOC";
+    end
+
+    switch initializationSetup
+      case "given SOC"
+        paramobj.initT = jsonstruct.initT;
+        paramobj.SOC = jsonstruct.SOC;
+      case "given input"
+        error('interface not yet implemented');
+      otherwise
+        error('initializationSetup not recognized');
+    end
     
     %%  Initialize the battery model. 
     % The battery model is initialized by sending paramobj to the Battery class
@@ -147,6 +173,8 @@ function  output = runBatteryJson(jsonstruct, varargin)
         control = struct('src', srcfunc, 'IEswitch', true);
       case 'CCCV'
         control = struct('CCCV', true);
+      case 'powerControl'
+        control = struct('powerControl', true);
       otherwise
         error('control policy not recognized');
     end
@@ -154,16 +182,7 @@ function  output = runBatteryJson(jsonstruct, varargin)
     % This control is used to set up the schedule
     schedule = struct('control', control, 'step', step); 
 
-    %% Setup the initial state of the model
-    % The initial state of the model is setup using the model.setupInitialState() method.
 
-    if isfield(jsonstruct, 'initializationSetup')
-        initializationSetup = jsonstruct.initializationSetup;
-    else
-        % default is given SOC
-        initializationSetup = "given SOC";
-    end
-    
     switch initializationSetup
       case "given SOC"
         initstate = model.setupInitialState();
@@ -182,6 +201,7 @@ function  output = runBatteryJson(jsonstruct, varargin)
         
         % setup default values
         jsonstruct.NonLinearSolver.maxIterations = 10;
+        jsonstruct.NonLinearSolver.nonlinearTolerance = 1e-5;
         jsonstruct.NonLinearSolver.verbose = false;
         
         linearSolverSetup.library = "matlab";
@@ -203,7 +223,11 @@ function  output = runBatteryJson(jsonstruct, varargin)
     
     % Change default tolerance for nonlinear solver
     % For the moment, this is hard-coded here
-    model.nonlinearTolerance = 1e-3*model.Control.Imax;
+    if isfield(model.Control, 'Imax')
+        model.nonlinearTolerance = 1e-3*model.Control.Imax;
+    else
+        model.nonlinearTolerance = jsonstruct.NonLinearSolver.nonlinearTolerance;
+    end
     
     % Set verbosity
     model.verbose = false;
