@@ -44,8 +44,10 @@ classdef ElectrodeInputParams < ComponentInputParams
             pick = @(fd) pickField(jsonstruct, fd);
             paramobj.(am) = ActiveMaterialInputParams(pick(am));
             paramobj.(cc) = CurrentCollectorInputParams(pick(cc));
-            
-            paramobj = paramobj.validateInputParams();
+
+            if ~isempty(jsonstruct)
+                paramobj = paramobj.validateInputParams();
+            end
 
         end
 

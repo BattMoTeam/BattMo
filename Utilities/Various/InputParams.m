@@ -3,6 +3,11 @@ classdef InputParams
     methods
 
         function paramobj = InputParams(jsonstruct)
+
+        % It is convenient to instantiate an empty object (all fields are empty). This could be obtained if we set
+        % jsonstruct = [] as argument. It is then important that the constructors for every derived class handle
+        % properly this case.
+            
             paramobj = assignJsonParams(paramobj, jsonstruct);
         end
         

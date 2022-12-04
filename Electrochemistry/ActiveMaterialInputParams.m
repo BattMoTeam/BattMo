@@ -70,7 +70,9 @@ classdef ActiveMaterialInputParams < ElectronicComponentInputParams
                 
             end
 
-            paramobj = paramobj.validateInputParams();
+            if ~isempty(jsonstruct)
+                paramobj = paramobj.validateInputParams();
+            end
             
         end
 

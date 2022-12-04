@@ -44,19 +44,25 @@ classdef BatteryInputParams < InputParams
             paramobj.(pe)      = ElectrodeInputParams(pick(pe));
             paramobj.(elyte)   = ElectrolyteInputParams(pick(elyte));
             paramobj.(thermal) = ThermalComponentInputParams(pick(thermal));
-            switch jsonstruct.(ctrl).controlPolicy
-              case 'IEswitch'
-                paramobj.(ctrl) = IEswitchControlModelInputParams(pick(ctrl));
-              case 'CCCV'
-                paramobj.(ctrl) = CcCvControlModelInputParams(pick(ctrl));
-              case 'powerControl'
-                paramobj.(ctrl) = PowerControlModelInputParams(pick(ctrl));
-              otherwise
-                error('controlPolicy not recognized');
+
+            if ~isempty(jsonstruct)
+                switch jsonstruct.(ctrl).controlPolicy
+                  case 'IEswitch'
+                    paramobj.(ctrl) = IEswitchControlModelInputParams(pick(ctrl));
+                  case 'CCCV'
+                    paramobj.(ctrl) = CcCvControlModelInputParams(pick(ctrl));
+                  case 'powerControl'
+                    paramobj.(ctrl) = PowerControlModelInputParams(pick(ctrl));
+                  otherwise
+                    error('controlPolicy not recognized');
+                end
             end
+            
             paramobj.couplingTerms = {};
 
-            paramobj = paramobj.validateInputParams();
+            if ~isempty(jsonstruct)
+                paramobj = paramobj.validateInputParams();
+            end
             
         end
 
