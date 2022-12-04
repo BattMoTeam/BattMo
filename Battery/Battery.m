@@ -712,7 +712,7 @@ classdef Battery < BaseModel
                 initstate.(ctrl).ctrlType = 'charge';
                 E = initstate.(ctrl).E;
                 P = model.(ctrl).chargingPower;
-                initstate.(ctrl).I = P/E;
+                initstate.(ctrl).I = -P/E;
               otherwise
                 error('control policy not recognized');
             end
