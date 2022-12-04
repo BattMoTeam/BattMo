@@ -20,9 +20,7 @@ classdef SEIActiveMaterialInputParams < ActiveMaterialInputParams
             paramobj.SideReaction            = SideReactionInputParams(pick('SideReaction'));
             paramobj.SolidElectrodeInterface = SolidElectrodeInterfaceInputParams(pick('SolidElectrodeInterface'));
 
-            if ~isempty(jsonstruct)
-                paramobj = paramobj.validateInputParams();
-            end
+            paramobj = paramobj.validateInputParams();
             
         end
         
