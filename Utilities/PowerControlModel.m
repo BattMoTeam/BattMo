@@ -54,9 +54,9 @@ classdef PowerControlModel < ControlModel
             
             switch ctrlType
               case 'discharge'
-                ctrleq = E*I + Pdischarge;
+                ctrleq = E*I - Pdischarge;
               case 'charge'
-                ctrleq = E*I - Pcharge;
+                ctrleq = E*I + Pcharge;
               otherwise
                 error('ctrlType not recognized');
             end
