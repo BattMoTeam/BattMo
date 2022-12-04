@@ -1,6 +1,4 @@
-function paramobj = setupBatteryGridFromJson(jsonstruct)
-
-    paramobj = BatteryInputParams([]);
+function paramobj = setupBatteryGridFromJson(paramobj, jsonstruct)
 
     switch jsonstruct.Geometry.case
 
