@@ -15,13 +15,14 @@ classdef ActiveMaterial < ElectronicComponent
         activeMaterialFraction        % Volume fraction occupied only by the active material
         electricalConductivity        % Electrical conductivity
         InterDiffusionCoefficient     % Inter particle diffusion coefficient parameter (diffusion between the particles)
+        density                       %
         thermalConductivity           % Intrinsic Thermal conductivity of the active component
-        heatCapacity                  % Intrinsic Heat capacity of the active component
+        specificHeatCapacity          % Specific Heat capacity of the active component
 
         EffectiveDiffusionCoefficient % 
 
         EffectiveThermalConductivity  % Effective Thermal Conductivity of the active component
-        EffectiveHeatCapacity         % Effective Heat Capacity of the active component
+        EffectiveVolumetricHeatCapacity % Effective Heat Capacity of the active component
 
         diffusionModelType
         
@@ -46,7 +47,8 @@ classdef ActiveMaterial < ElectronicComponent
             fdnames = {'activeMaterialFraction', ...
                        'thermalConductivity'   , ...
                        'electricalConductivity', ...
-                       'heatCapacity'          , ...
+                       'density'               , ...
+                       'specificHeatCapacity'  , ...
                        'externalCouplingTerm'  , ...
                        'diffusionModelType'    , ...
                        'use_thermal'           , ...
@@ -123,7 +125,7 @@ classdef ActiveMaterial < ElectronicComponent
             if model.use_thermal
                 % setup effective thermal conductivity
                 model.EffectiveThermalConductivity = model.thermalConductivity.*vf.^brugg;
-                model.EffectiveHeatCapacity = model.heatCapacity.*vf;
+                model.EffectiveVolumetricHeatCapacity = model.specificHeatCapacity.*vf.*model.density;
             end
             
         end

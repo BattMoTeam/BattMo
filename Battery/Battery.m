@@ -481,7 +481,7 @@ classdef Battery < BaseModel
             G = model.G;
             nc = G.cells.num;
             
-            hcap = zeros(nc, 1); % effective heat capacity
+            vhcap = zeros(nc, 1); % effective heat capacity
             hcond = zeros(nc, 1); % effective heat conductivity
             
             for ind = 1 : numel(eldes)
@@ -493,9 +493,9 @@ classdef Battery < BaseModel
                     % The effecive and intrinsic thermal parameters for the current collector are the same.
                     cc_map = model.(elde).(cc).G.mappings.cellmap;
                     cc_hcond = model.(elde).(cc).thermalConductivity;
-                    cc_hcap = model.(elde).(cc).heatCapacity;
+                    cc_vhcap = model.(elde).(cc).specificHeatCapacity*model.(elde).(cc).density;
 
-                    hcap(cc_map) = hcap(cc_map) + cc_hcap;
+                    vhcap(cc_map) = vhcap(cc_map) + cc_vhcap;
                     hcond(cc_map) = hcond(cc_map) + cc_hcond;
                     
                 end
@@ -503,14 +503,14 @@ classdef Battery < BaseModel
                 % Effective parameters from the Electrode Active Component region.
                 am_map = model.(elde).(am).G.mappings.cellmap;
                 am_hcond = model.(elde).(am).thermalConductivity;
-                am_hcap = model.(elde).(am).heatCapacity;
+                am_vhcap = model.(elde).(am).specificHeatCapacity*model.(elde).(am).density;
                 am_volfrac = model.(elde).(am).volumeFraction;
                 am_bruggeman = model.(elde).(am).BruggemanCoefficient;
                 
-                am_hcap = am_hcap.*am_volfrac;
+                am_vhcap = am_vhcap.*am_volfrac;
                 am_hcond = am_hcond.*am_volfrac.^am_bruggeman;
                 
-                hcap(am_map) = hcap(am_map) + am_hcap;
+                vhcap(am_map) = vhcap(am_map) + am_vhcap;
                 hcond(am_map) = hcond(am_map) + am_hcond;
                 
             end
@@ -519,14 +519,14 @@ classdef Battery < BaseModel
             
             elyte_map = model.(elyte).G.mappings.cellmap;
             elyte_hcond = model.(elyte).thermalConductivity;
-            elyte_hcap = model.(elyte).heatCapacity;
+            elyte_vhcap = model.(elyte).specificHeatCapacity*model.(elyte).density;
             elyte_volfrac = model.(elyte).volumeFraction;
             elyte_bruggeman = model.(elyte).BruggemanCoefficient;
             
-            elyte_hcap = elyte_hcap.*elyte_volfrac;
+            elyte_vhcap = elyte_vhcap.*elyte_volfrac;
             elyte_hcond = elyte_hcond.*elyte_volfrac.^am_bruggeman;
             
-            hcap(elyte_map) = hcap(elyte_map) + elyte_hcap;
+            vhcap(elyte_map) = vhcap(elyte_map) + elyte_vhcap;
             hcond(elyte_map) = hcond(elyte_map) + elyte_hcond;            
             
             % Separator
@@ -534,18 +534,18 @@ classdef Battery < BaseModel
             sep_map = model.(elyte).(sep).G.mappings.cellmap;
             
             sep_hcond = model.(elyte).(sep).thermalConductivity;
-            sep_hcap = model.(elyte).(sep).heatCapacity;
+            sep_vhcap = model.(elyte).(sep).specificHeatCapacity*model.(elyte).(sep).density;
             sep_volfrac = model.(elyte).(sep).volumeFraction;
             sep_bruggeman = model.(elyte).(sep).BruggemanCoefficient;
             
-            sep_hcap = sep_hcap.*sep_volfrac;
+            sep_vhcap = sep_vhcap.*sep_volfrac;
             sep_hcond = sep_hcond.*sep_volfrac.^sep_bruggeman;
             
-            hcap(sep_map) = hcap(sep_map) + sep_hcap;
+            vhcap(sep_map) = vhcap(sep_map) + sep_vhcap;
             hcond(sep_map) = hcond(sep_map) + sep_hcond;            
 
             if model.use_thermal
-                model.ThermalModel.EffectiveHeatCapacity = hcap;
+                model.ThermalModel.EffectiveVolumetricHeatCapacity = vhcap;
                 model.ThermalModel.EffectiveThermalConductivity = hcond;
             end
             

@@ -5,7 +5,7 @@
   "type": "object",
 
   "properties" : { "thermalConductivity": {"type" : "number"},
-                   "heatCapacity": {"type" : "number"}
+                   "specificHeatCapacity": {"type" : "number"}
                  }
 
 }

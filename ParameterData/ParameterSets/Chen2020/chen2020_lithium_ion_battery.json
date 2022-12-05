@@ -14,7 +14,7 @@
     "ActiveMaterial" : {
       "volumeFraction": 0.75,
       "electricalConductivity": 215,
-      "heatCapacity": 4180000.0,
+      "specifiHeatCapacity": 632,
       "thermalConductivity": 6e-05,
       "InterDiffusionCoefficient": 1e-10,
       "diffusionModelType" : "full",
@@ -33,7 +33,7 @@
   "PositiveElectrode": {
     "ActiveMaterial" : {
       "electricalConductivity": 0.18,
-      "heatCapacity": 4180000.0,
+      "specificHeatCapacity": 700,
       "thermalConductivity": 6e-05,
       "InterDiffusionCoefficient": 1e-10,
       "diffusionModelType" : "full",

@@ -1,5 +1,6 @@
 {
-  "heatCapacity": 4180000.0,
+  "specificHeatCapacity": 2055,
+  "comment" : "check value of specificHeatCapacity",
   "thermalConductivity": 6e-05,
   "negativeDomainBruggemanCoefficient" : 1.5,
   "positiveDomainBruggemanCoefficient" : 1.5,
@@ -20,5 +21,5 @@
           "t": [0.2594, 0.601]},
   "Separator": { "filename": "ParameterData/ParameterSets/Chen2020/chen2020_separator.json",
                    "isFile": true },
-    "BruggemanCoefficient": 1.5
+  "BruggemanCoefficient": 1.5
 }
