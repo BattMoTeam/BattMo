@@ -84,6 +84,8 @@ classdef ActiveMaterialInputParams < ElectronicComponentInputParams
             sd  = 'SolidDiffusion';
             itf = 'Interface';
             
+            paramobj = mergeParameters(paramobj, {{'density'}, {itf, 'density'}});
+            
             switch diffusionModelType
                 
               case 'simple'
