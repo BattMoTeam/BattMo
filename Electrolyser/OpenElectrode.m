@@ -152,12 +152,9 @@ classdef OpenElectrode < ElectronicComponent
 
             end
             
-            %% Phase transfer variables
-            
             % Vapor pressure
             varnames{end + 1} = 'vaporPressure';
-            % Evaporation sources for the water (H2Oliquid <-> H2Ogas)
-            varnames{end + 1} = 'evapH2OSource';
+            
             
             %% Coupling variables
             
@@ -169,6 +166,8 @@ classdef OpenElectrode < ElectronicComponent
             varnames{end + 1} = compGasBcSources;
             % Source of OH (in mole)
             varnames{end + 1} = 'OHSource';
+            % Liquid-Vapor exchange rate for H2O (H2Oliquid <-> H2Ogas)
+            varnames{end + 1} = 'H2OliquidVaporExchangeRate';
             % Source of H2Oliquid (in mole)
             varnames{end + 1} = 'H2OliquidSource';
             % Accumulation terms (for all components)
@@ -246,7 +245,7 @@ classdef OpenElectrode < ElectronicComponent
                           'vaporPressure', ...
                           VarName({}, 'compGasMasses', ngas, gasInd.H2Ogas), ...
                           volumeFractions};
-            model = model.registerPropFunction({'evapH2OSource', fn, inputnames});
+            model = model.registerPropFunction({'H2OliquidVaporExchangeRate', fn, inputnames});
 
             %% Assemble Liquid viscosity
             % We move this to specific electrode
@@ -321,7 +320,7 @@ classdef OpenElectrode < ElectronicComponent
             if model.useZeroDmodel
                 % Assemble mass conservation equations for components in gas phase
                 fn = @() OpenElectrode.updateGasMassCons0;
-                inputnames = {'evapH2OSource' , ...
+                inputnames = {'H2OliquidVaporExchangeRate' , ...
                               VarName({}, 'compGasSources', ngas, gasInd.H2Ogas), ...
                               VarName({}, 'accumTerms', ncomp, compInd.H2Ogas)};
                 model = model.registerPropFunction({VarName({}, 'gasMassCons', nph, gasInd.H2Ogas), fn, inputnames});
@@ -331,7 +330,7 @@ classdef OpenElectrode < ElectronicComponent
                 inputnames = {'liquidAccumTerm', ...
                               'OHSource'       , ...
                               'H2OliquidSource', ...
-                              'evapH2OSource'};
+                              'H2OliquidVaporExchangeRate'};
                 model = model.registerPropFunction({'liquidMassCons', fn, inputnames});
                 
                 % Assemble mass conservation equation for OH
@@ -345,7 +344,7 @@ classdef OpenElectrode < ElectronicComponent
                 warning('update from useZeroDmodel above')
                 % Assemble mass conservation equations for components in gas phase
                 fn = @() OpenElectrode.updateGasMassCons;
-                inputnames = {'evapH2OSource' , ...
+                inputnames = {'H2OliquidVaporExchangeRate' , ...
                               compGasSources  , ...
                               compGasFluxes   , ...
                               compGasBcSources, ...
@@ -358,7 +357,7 @@ classdef OpenElectrode < ElectronicComponent
                               'liquidAccumTerm', ...
                               'OHSource'       , ...
                               'H2OliquidSource', ...
-                              'evapH2OSource'};
+                              'H2OliquidVaporExchangeRate'};
                 model = model.registerPropFunction({'liquidMassCons', fn, inputnames});
                 
                 % Assemble mass conservation equation for OH
@@ -538,7 +537,7 @@ classdef OpenElectrode < ElectronicComponent
                 evapSrc(~ind) = sLiq(~ind) .* (pH2Ovap(~ind) - pH2Ogas(~ind)) .* kLV ./ MW;
             end
             
-            state.evapH2OSources = evapSrc;
+            state.H2OliquidVaporExchangeRate = evapSrc;
         end
         
         function state = updateViscosities(model, state)
