@@ -5,21 +5,65 @@ classdef OxygenElectrode < OpenElectrode
         sp.O2.MW
     end
     
-    
-    
     methods
         
         function model = OxygenElectrode(paramobj)
 
-        % paramobj is instance of ElectronicComponentInputParams
             model = model@OpenElectrode(paramobj);
             
-            model.compInd.O2 = 5;
-            model.gasInd.O2 = 2;
+            % add the  O2 component in the indexing structures            
+            model.compInd.O2  = 5;
+            model.phaseInd.O2 = 2;
+            model.gasInd.O2   = 2;            
+        end
+
+        
+        function model = registerVarAndPropfuncNames(model)
+            
+        %% Declaration of the Dynamical Variables and Function of the model
+        % (setup of varnameList and propertyFunctionList)
+
+            model = registerVarAndPropfuncNames@OpenElectrode(model);
+
+            phaseInd  = model.phaseInd;
+            liquidInd = model.liquidInd;
+            gasInd    = model.gasInd;
+            compInd   = model.compInd;
+
+            ncomp   = compInd.ncomp;
+            ngas    = gasInd.ncomp;
+            nph     = phaseInd.nphase;
+            nliquid = liquidInd.ncomp;
+            nmobph  = numel(phaseInd.mobile);
+
+            model = model.registerVarName('O2rhoeps');
+
+            % assemble gas pressure using ideal gas law
+            fn = @() HydrogenElectrode.updateGasPressure;
+            inputnames = {'O2rhoeps', 'O2Ogasrhoeps', 'T'};
+            model = model.registerPropFunction({VarName({}, 'pressures', nph, phaseInd.gas), fn, inputnames});
+            
+            if model.useZeroDmodel
+                % assemble mass of O2
+                fn = @() HydrogenElectrode.updatemassO20;
+                inputnames = {VarName({}, 'compGasSources', ngas, gasInd.O2), ...
+                              VarName({}, 'accumTerms', ncomp, compInd.O2)};
+                model = model.registerPropFunction({VarName({}, 'gasMassCons', nph, gasInd.O2), fn, inputnames});
+
+                fn = @() OpenElectrode.updateO2Accum;
+                inputnames = {'O2rhoeps'};
+                model = model.registerPropFunction({VarName({}, 'accumTerms', ncomp, compInd.O2), fn, inputnames});
+                
+            else
+
+                error('not yet implemented');
+                
+            end
             
         end
 
         function state = updateGasPressure(model, state)
+            
             MWH2O = model.sp.H2O.MW;
             MWO2 = model.sp.O2.MW;
             
