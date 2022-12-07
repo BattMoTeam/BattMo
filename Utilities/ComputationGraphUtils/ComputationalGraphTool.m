@@ -94,12 +94,12 @@ classdef ComputationalGraphTool
                 end
                 outputvarstr = join(outputvarstrs, {', '});
                 fprintf('%s <-', outputvarstr{1});
-                fprintf(' (%s) ', propfuncs{iprop}.getFunctionSignature());
+                fprintf(' (%s) ', propfuncs{iprop}.getFunctionCallString());
                 inputvarnames = propfunc.inputvarnames;
                 if isempty(inputvarnames)
                     fprintf('[no state field is used]\n');
                 else
-                    fprintf(' <- ', propfuncs{iprop}.getFunctionSignature());
+                    fprintf(' <- ', propfuncs{iprop}.getFunctionCallString());
                     inputvarstrs = {};
                     for ind = 1 : numel(inputvarnames)
                         varname = inputvarnames{ind};
@@ -229,29 +229,7 @@ classdef ComputationalGraphTool
             
         end
 
-        function str = setupFunctionCallString(cgt, iprop)
-            
-            propfunction = cgt.model.propertyFunctionList{iprop};
-            fn = propfunction.fn;
-            mn = propfunction.modelnamespace;
-            mn = join(mn, '.');
-            if ~isempty(mn)
-                mn = mn{1};
-                statename = sprintf('state.%s', mn);
-            else
-                statename = 'state';
-            end
-            fnname = func2str(fn);
-            fnname = regexp(fnname, "\.(.*)", 'tokens');
-            fnname = fnname{1}{1};
-            fnname = horzcat(mn, {fnname});
-            fnname = join(fnname, '.');
-            fnname = fnname{1};
 
-            str = sprintf('%s = model.%s(%s);', statename, fnname, statename);
-            
-        end
-        
         function printOrderedFunctionCallList(cgt)
 
             A = cgt.A;
@@ -271,7 +249,8 @@ classdef ComputationalGraphTool
                 for istatic = 1 : numel(staticprops)
 
                     iprop = staticprops{istatic}.propind;
-                    funcCallList{end + 1} = cgt.setupFunctionCallString(iprop);
+                    propfunction = cgt.model.propertyFunctionList{iprop};
+                    funcCallList{end + 1} = propfunction.getFunctionCallString();
                     
                 end
                 
@@ -282,7 +261,8 @@ classdef ComputationalGraphTool
                 iprop = unique(iprop(iprop>0));
                 if ~isempty(iprop)
                     assert(numel(iprop) == 1, 'There should be only one value for a given row');
-                    funcCallList{end + 1} = cgt.setupFunctionCallString(iprop);
+                    propfunction = cgt.model.propertyFunctionList{iprop};
+                    funcCallList{end + 1} = propfunction.getFunctionCallString();
                 end
             end
 

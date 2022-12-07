@@ -9,16 +9,23 @@ classdef PropFunction
         
         fn % function handler
 
+        functionCallSetupFn %  function handler to setup the function call
     end
     
     methods
         
-        function propfunction = PropFunction(varname, fn, inputvarnames, modelnamespace)
+        function propfunction = PropFunction(varname, fn, inputvarnames, modelnamespace, functionCallSetupFn)
             
             propfunction.varname = varname;
             propfunction.fn = fn;
             propfunction.inputvarnames = inputvarnames;
             propfunction.modelnamespace = modelnamespace;
+
+            if nargin > 4 && ~isempty(functionCallSetupFn)
+                propfunction.functionCallSetupFn = functionCallSetupFn;
+            else
+                propfunction.functionCallSetupFn = @(pfunc) PropFunction.stdFuncCallSetupFn(pfunc);
+            end
             
         end
         
@@ -34,8 +41,20 @@ classdef PropFunction
             end
         end
 
-        function signature = getFunctionSignature(propfunction)
+        function str = getFunctionCallString(propfunction)
+        % We store this function in a function handler that can be changed more dynamically compared to setup a child class
+
+            fn = propfunction.functionCallSetupFn;
+            str = fn(propfunction);
             
+        end
+
+    end
+    
+    methods(Static)
+
+        function str = stdFuncCallSetupFn(propfunction)
+
             fn = propfunction.fn;
             mn = propfunction.modelnamespace;
             mn = join(mn, '.');
@@ -52,12 +71,37 @@ classdef PropFunction
             fnname = join(fnname, '.');
             fnname = fnname{1};
 
-            signature = sprintf('%s = model.%s(%s)', statename, fnname, statename);
-            
+            str = sprintf('%s = model.%s(%s);', statename, fnname, statename);
+
         end
+        
+
+        function str = accumFuncCallSetupFn(propfunction)
+
+            fn = propfunction.fn;
+            mn = propfunction.modelnamespace;
+            mn = join(mn, '.');
+            if ~isempty(mn)
+                mn = mn{1};
+                statename = sprintf('state.%s', mn);
+                statename0 = sprintf('state0.%s', mn);
+            else
+                statename = 'state';
+                statename0 = 'state0';
+            end
+            fnname = func2str(fn);
+            fnname = regexp(fnname, "\.(.*)", 'tokens');
+            fnname = fnname{1}{1};
+            fnname = horzcat(mn, {fnname});
+            fnname = join(fnname, '.');
+            fnname = fnname{1};
+
+            str = sprintf('%s = model.%s(%s, %s, dt);', statename, fnname, statename, statename0);
+
+        end
+        
 
     end
-    
     
 end
 
