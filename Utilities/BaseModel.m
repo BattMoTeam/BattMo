@@ -126,6 +126,7 @@ classdef BaseModel < PhysicalModel
             if isa(propfunc, 'PropFunction')
                 model.propertyFunctionList = mergeList(model.propertyFunctionList, {propfunc});
             elseif isa(propfunc, 'cell')
+                assert(numel(propfunc) == 3, 'format of propfunc not recognized');
                 varname = propfunc{1};
                 if isa(varname, 'VarName')
                     % ok
@@ -137,6 +138,12 @@ classdef BaseModel < PhysicalModel
                     error('format of propfunc not recognized');
                 end
                 fn = propfunc{2};
+                if iscell(fn)
+                    functionCallSetupFn = fn{2};
+                    fn = fn{1};
+                else
+                    functionCallSetupFn = [];
+                end
                 assert(isa(propfunc{3}, 'cell'), 'format of propfunc not recognized');
                 inputvarnames = cell(1, numel(propfunc{3}));
                 for iinputvarnames = 1 : numel(propfunc{3})
@@ -153,12 +160,7 @@ classdef BaseModel < PhysicalModel
                     inputvarnames{iinputvarnames} = inputvarname;
                 end
                 modelnamespace = {};
-                if numel(propfunc) == 4
-                    functionCallSetupFn = propfunc{4};
-                else
-                    functionCallSetupFn = [];
-                end
-                
+
                 propfunc = PropFunction(varname, fn, inputvarnames, modelnamespace, functionCallSetupFn);
 
                 model = model.registerPropFunction(propfunc);
