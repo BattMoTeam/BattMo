@@ -2,7 +2,7 @@ classdef OxygenElectrode < OpenElectrode
     
 
     properties
-        sp.O2.MW
+        
     end
     
     methods
@@ -40,19 +40,21 @@ classdef OxygenElectrode < OpenElectrode
 
             % assemble gas pressure using ideal gas law
             fn = @() HydrogenElectrode.updateGasPressure;
-            inputnames = {'O2rhoeps', 'O2Ogasrhoeps', 'T'};
+            inputnames = {'O2rhoeps', 'H2Ogasrhoeps', 'T'};
             model = model.registerPropFunction({VarName({}, 'pressures', nph, phaseInd.gas), fn, inputnames});
             
             if model.useZeroDmodel
                 % assemble mass of O2
                 fn = @() HydrogenElectrode.updatemassO20;
-                inputnames = {VarName({}, 'compGasSources', ngas, gasInd.O2), ...
+                inputnames = {VarName({}, 'compGasBcSources', ngas, gasInd.O2), ...
+                              VarName({}, 'compGasSources', ngas, gasInd.O2), ...
                               VarName({}, 'accumTerms', ncomp, compInd.O2)};
                 model = model.registerPropFunction({VarName({}, 'gasMassCons', nph, gasInd.O2), fn, inputnames});
 
                 fn = @() OpenElectrode.updateO2Accum;
                 inputnames = {'O2rhoeps'};
-                model = model.registerPropFunction({VarName({}, 'accumTerms', ncomp, compInd.O2), fn, inputnames});
+                functionCallSetupFn = @(propfunction) PropFunction.accumFuncCallSetupFn(propfunction);
+                model = model.registerPropFunction({VarName({}, 'accumTerms', ncomp, compInd.O2), fn, inputnames, functionCallSetupFn});
                 
             else
 

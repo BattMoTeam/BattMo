@@ -34,7 +34,8 @@ classdef OpenElectrode < ElectronicComponent
         
         function model = OpenElectrode(paramobj)
 
-        % paramobj is instance of ElectronicComponentInputParams
+            % paramobj is instance of ElectronicComponentInputParams
+            paramobj.use_thermal = false;
             model = model@ElectronicComponent(paramobj);
             
             compInd.H2Oliquid = 1;
@@ -321,6 +322,7 @@ classdef OpenElectrode < ElectronicComponent
                 % Assemble mass conservation equations for components in gas phase
                 fn = @() OpenElectrode.updateGasMassCons0;
                 inputnames = {'H2OliquidVaporExchangeRate' , ...
+                              VarName({}, 'compGasBcSources', ngas, gasInd.H2Ogas), ...
                               VarName({}, 'compGasSources', ngas, gasInd.H2Ogas), ...
                               VarName({}, 'accumTerms', ncomp, compInd.H2Ogas)};
                 model = model.registerPropFunction({VarName({}, 'gasMassCons', nph, gasInd.H2Ogas), fn, inputnames});
@@ -395,8 +397,6 @@ classdef OpenElectrode < ElectronicComponent
             inputnames = {'OHceps'};
             model = model.registerPropFunction({VarName({}, 'accumTerms', ncomp, compInd.OH), fn, inputnames});
 
-            model = model.registerStaticVarName('T');
-            
             model = model.removeVarName(VarName({}, 'pressures', nph, phaseInd.solid));
             model = model.removeVarName(VarName({}, 'accumTerms', ncomp, [compInd.H2Oliquid, compInd.K]));
             

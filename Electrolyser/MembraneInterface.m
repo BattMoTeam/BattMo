@@ -44,7 +44,7 @@ classdef MembraneInterface < BaseModel
 
             % Assemble ionomer ion exchange rate
             fn = @() MembraneInterface.updateOHexchange;
-            inputnames = {'phiElyte', 'phiInmr', 'cOHelyte', 'COHinmr'};
+            inputnames = {'phiElyte', 'phiInmr', 'cOHelyte', 'cOHinmr'};
             model = model.registerPropFunction({'OHexchangeRate', fn, inputnames});
 
             % Assemble sorption rate
@@ -65,8 +65,9 @@ classdef MembraneInterface < BaseModel
             state.Rsorption = ionomerSorption(kML, H2OaElyte, H2OaInmr);
         end
 
-        function state = updateIonomerExchange(model, state)
+        function state = updateOHexchange(model, state)
 
+        %% TODO : fix this function
             eta      = state.eta;
             T        = state.T;
             cOHElyte = state.cOHElyte;

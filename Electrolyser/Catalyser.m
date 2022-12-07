@@ -9,14 +9,20 @@ classdef Catalyser < BaseModel
         liquidInd % mapping structure for component indices
         gasInd    % mapping structure for component indices
 
-        E0 % Standard equilibrium potential,   [V]
         j0 % Exchange current density
-        inmr %
-        % inmr.cT   % Total concentration of charged groups
-        % inmr.kxch % Rate constant for exchange between ionomer and electrolyte. [s^-1]
-        % inmr.OH.z
+        inmrParams 
+        % inmrParams.cT   % Total concentration of charged groups
+        % inmrParams.kxch % Rate constant for exchange between ionomer and electrolyte. [s^-1]
+        % inmrParams.OH.z
+        % inmrParams.OH.c0 % reference OH concentration
+        % inmrParams.E0 % standard equilibrium potential
+        elyteParams
+        % elyteParams.OH.c0 % reference OH concentration
+        % elyteParams.E0 % standard equilibrium potential
+        
         PF1 % should be initialized using zero
 
+        
     end
 
     methods
@@ -96,80 +102,86 @@ classdef Catalyser < BaseModel
 
         end
 
-        function state = updateEr(model, state)
+        function state = updateEelyte(model, state)
 
-            T = state.T;
-            cHElyte = state.CHElyte;
+            T        = state.T;
+            cOHelyte = state.cOHelyte;
 
-            E0  = model.E0;
-            con = model.constants;
-            F   = con.F;
-            c0  = con.c0;
-            R   = con.R;
+            params = model.elyteParams;
+            con    = model.constants;
 
-            state.Er = E0 - R.*T./(2.*F) .* log(c0.^2 .* cHElyte.^-2);
+            F  = con.F;
+            R  = con.R;
+            c0 = params.c0;
+            E0 = params.E0;
+
+            %% TODO chack sign and expression
+            state.Er = E0 - R.*T./(2.*F) .* log(c0.^2 .* cOHelyte.^-2);
+            
         end
 
-        function state = updateSorption(model, state)
+        function state = updateEinmr(model, state)
 
-            H2OaElyte = state.H2OaElyte;
-            H2OaInmr = state.H2OaInmr;
+            T        = state.T;
+            cOHinmr = state.cOHinmr;
 
-            kML = model.inmr.kML;
+            params = model.inmrParams;
+            con    = model.constants;
 
-            state.Rsorption = ionomerSorption(kML, H2OaElyte, H2OaInmr);
+            F  = con.F;
+            R  = con.R;
+            c0 = params.c0;
+            E0 = params.E0;
+
+            %% TODO chack sign and expression
+            state.Er = E0 - R.*T./(2.*F) .* log(c0.^2 .* cOHinmr.^-2);
+            
         end
 
         function state = updateEtas(model, state)
 
             phiElyte = state.phiElyte;
             phiInmr  = state.phiInmr;
-            E        = state.E;
-            Er       = state.Er;
+            Einmr    = state.Einmr;
+            Eelyte   = state.Eelyte;
 
-            state.eta      = phiInmr - phiElyte;
-            state.etaElyte = E - phiElyte - Er;
-            state.etaInmr  = E - phiInmr - Er;
+            state.etaElyte = E - phiElyte - Eelyte;
+            state.etaInmr  = E - phiInmr - Einmr;
+            
         end
 
-        function state = updateIonomerExchange(model, state)
+        function state = updateReactionRateConstants(model, state)
+            
+        end
+            
+        function state = updateReactionRates(model, state)
 
-            eta      = state.eta;
+        %% TODO : fix that (does not match with paper)
+            etaElyte = state.etaElyte;
+            etaInmr  = state.etaInmr;
+            H2OaInmr = state.H2OaInmr;
             T        = state.T;
-            cOHElyte = state.cOHElyte;
+            gasp1    = state.gasPressuresElyte{1};
+            gasp2    = state.gasPressuresElyte{2};
 
-            ir = model.inmr;
+            ir    = model.inmr;
+            Asp   = model.Asp;
+            PF1   = model.PF1;
+            j0    = model.j0;
+            alpha = model.alpha;
+            n     = model.n;
 
-            state.Rxch = ionomerExchange(ir.kxch, ir.cT, ir.OH.z, eta, T, cOHElyte);
-        end
+            X_inmr = 0.99;
 
-        function state = updateFluxes(model, state)
+            PF = (ir.cT/1000).*(gasp1./1e5).*(gasp2./1e5);
+            jElyte = (1 - X_inmr).*Asp'.*butlerVolmer(j0, alpha, n, etaElyte, T);
 
-         etaElyte = state.etaElyte;
-         etaInmr  = state.etaInmr;
-         H2OaInmr = state.H2OaInmr;
-         T        = state.T;
-         gasp1    = state.gasPressuresElyte{1};
-         gasp2    = state.gasPressuresElyte{2};
+            PF2 = H2OaInmr;
+            jInmr = X_inmr.*Asp'*butlerVolmer_split(j0, PF1, PF2, alpha, n, etaInmr, T);
 
-         ir    = model.inmr;
-         Asp   = model.Asp;
-         PF1   = model.PF1;
-         j0    = model.j0;
-         alpha = model.alpha;
-         n     = model.n;
-
-         X_inmr = 0.99;
-
-         PF = (ir.cT/1000).*(gasp1./1e5).*(gasp2./1e5);
-         jElyte = (1 - X_inmr).*Asp'.*butlerVolmer(j0, alpha, n, etaElyte, T);
-
-         PF2 = H2OaInmr;
-         jInmr = X_inmr.*Asp'*butlerVolmer_split(j0, PF1, PF2, alpha, n, etaInmr, T);
-
-         state.jElyte = jElyte;
-         state.jInmr  = jInmr;
-         state.j      = jElyte + jInmr;
+            state.elyteReactionRate = elyteReactionRate;
+            state.inmrReactionRate  = inmrReactionRate;
+            
         end
 
 

@@ -1,15 +1,19 @@
-classdef Electrolyser < PhysicalModel
+classdef Electrolyser < BaseModel
     
     properties
         
         con = PhysicalConstants();
 
         % Components
-        IonomereMembrane
+        IonomerMembrane
+        
         HydrogenElectrode
         HydrogenCatalyser
+        HydrogenInterface
+        
         OxygenElectrode
         OxygenCatalyser
+        OxygenInterface
         
         couplingTerms
         couplingNames
@@ -20,30 +24,44 @@ classdef Electrolyser < PhysicalModel
         
         function model = Electrolyser(paramobj)
 
-            
-            model = model@PhysicalModel([]);
-            
-            % OBS : All the submodels should have same backend (this is not assigned automaticallly for the moment)
-            model.AutoDiffBackend = SparseAutoDiffBackend('useBlocks', false);
-            
-            %% Setup the model using the input parameters
-            fdnames = {'G'            , ...
-                       'couplingTerms', ...
-                       'initT'};
-            
-            model = dispatchParams(model, paramobj, fdnames);
-            
+            model = model@BaseModel();
+
             % Assign the components : Electrolyte, NegativeElectrode, PositiveElectrode
             model.HydrogenElectrode = OpenElectrode(paramobj.HydrogenElectrode);
             model.OxygenElectrode   = OpenElectrode(paramobj.OxygenElectrode);
             model.HydrogenCatalyser = Catalyser(paramobj.HydrogenCatalyser);
             model.OxygenCatalyser   = Catalyser(paramobj.OxygenCatalyser);
+            model.HydrogenInterface = MembraneInterface(paramobj.HydrogenInterface);
+            model.OxygenInterface   = MembraneInterface(paramobj.OxygenInterface);
             model.IonomerMembrane   = IonomerMembrane(paramobj.IonomerMembrane);
             
-            % setup couplingNames
-            model.couplingNames = cellfun(@(x) x.name, model.couplingTerms, 'uniformoutput', false);
+        end
+
+        function model = registerVarAndPropfuncNames(model)
+
+            varnames = {'T'};
+            model = registerVarAndPropfuncNames@BaseModel(model);
+
+            % shortcuts
+            inm  = 'IonomerMembrane';
+            her  = 'HydrogenElectrode';
+            hcat = 'HydrogenCatalyser';
+            hitf = 'HydrogenInterface';
+            oer  = 'OxygenElectrode';
+            ocat = 'OxygenCatalyser';
+            oitf = 'OxygenInterface';
+        
+            fn = @() Electrolyse.dispatchTemperature();
+            model = model.registerPropFunction({{inm, 'T'}, fn, {'T'}});
+            model = model.registerPropFunction({{her, 'T'}, fn, {'T'}});
+            model = model.registerPropFunction({{hcat, 'T'}, fn, {'T'}});
+            model = model.registerPropFunction({{hitf, 'T'}, fn, {'T'}});
+            model = model.registerPropFunction({{oer, 'T'}, fn, {'T'}});
+            model = model.registerPropFunction({{ocat, 'T'}, fn, {'T'}});
+            model = model.registerPropFunction({{oitf, 'T'}, fn, {'T'}});
             
         end
+
         
         function initstate = setupInitialState(model)
         % Setup initial state
@@ -1024,5 +1042,4 @@ classdef Electrolyser < PhysicalModel
     
 end
 
-end
 

@@ -46,7 +46,8 @@ classdef HydrogenElectrode < OpenElectrode
             if model.useZeroDmodel
                 % assemble mass of H2
                 fn = @() HydrogenElectrode.updatemassH20;
-                inputnames = {VarName({}, 'compGasSources', ngas, gasInd.H2), ...
+                inputnames = {VarName({}, 'compGasBcSources', ngas, gasInd.H2), ...
+                              VarName({}, 'compGasSources', ngas, gasInd.H2), ...
                               VarName({}, 'accumTerms', ncomp, compInd.H2)};
                 model = model.registerPropFunction({VarName({}, 'gasMassCons', nph, gasInd.H2), fn, inputnames});
 
