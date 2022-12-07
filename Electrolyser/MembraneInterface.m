@@ -18,8 +18,6 @@ classdef MembraneInterface < BaseModel
             model = registerVarAndPropfuncNames@BaseModel(model);
 
             varnames = {};
-            % Temperature
-            varnames{end + 1} = {'T'};
             % Electric Potential from electrolyte
             varnames{end + 1} = 'phiElyte';
             % Electric Potential from ionomer

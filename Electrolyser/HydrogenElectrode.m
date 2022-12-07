@@ -53,7 +53,8 @@ classdef HydrogenElectrode < OpenElectrode
 
                 fn = @() OpenElectrode.updateH2Accum;
                 inputnames = {'H2rhoeps'};
-                model = model.registerPropFunction({VarName({}, 'accumTerms', ncomp, compInd.H2), fn, inputnames});
+                functionCallSetupFn = @(propfunction) PropFunction.accumFuncCallSetupFn(propfunction);
+                model = model.registerPropFunction({VarName({}, 'accumTerms', ncomp, compInd.H2), fn, inputnames, functionCallSetupFn});
             
             else
                 

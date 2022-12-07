@@ -42,7 +42,7 @@ classdef IonomerMembrane < ElectronicComponent
             %% Component properties
             
             % H2O activity
-            varnames{end + 1} = 'H2Oactivity'; 
+            varnames{end + 1} = 'H2Oa'; 
             % Chemical potential derivative
             varnames{end + 1} = 'H2Odmudc';
             
@@ -80,13 +80,13 @@ classdef IonomerMembrane < ElectronicComponent
             model = model.registerPropFunction({'H2Oc', fn, inputnames});
             
             % update water activity
-            fn = @() IonomerMembrane.updateH2Oactivity;
+            fn = @() IonomerMembrane.updateH2Oa;
             inputnames = {'H2Oc'};
-            model = model.registerPropFunction({'H2Oactivity', fn, inputnames});
+            model = model.registerPropFunction({'H2Oa', fn, inputnames});
             
             % update effective conductivity
             fn = @() IonomerMembrane.updateConductivity;
-            inputnames = {'T', 'H2Oactivity'};
+            inputnames = {'T', 'H2Oa'};
             model = model.registerPropFunction({'conductivity', fn, inputnames});
 
             % update chemical potential derivative
@@ -121,8 +121,9 @@ classdef IonomerMembrane < ElectronicComponent
 
             % update electronic source
             fn = @() IonomerMembrane.assembleH2Oaccum;
+            functionCallSetupFn = @(propfunction) PropFunction.accumFuncCallSetupFn(propfunction);
             inputnames = {'H2Oceps'};
-            model = model.registerPropFunction({'H2Oaccum', fn, inputnames});
+            model = model.registerPropFunction({'H2Oaccum', fn, inputnames, functionCallSetupFn});
                         
             % assemble H2O mass conservation equation
             fn = @() IonomerMembrane.assembleH2OmassCons;
@@ -150,7 +151,7 @@ classdef IonomerMembrane < ElectronicComponent
 
             H2Oc0 = model.H2O.c0;
             
-            state.H2Oactivity = H2Oc./H2Oc0;
+            state.H2Oa = H2Oc./H2Oc0;
             
         end
         
@@ -158,7 +159,7 @@ classdef IonomerMembrane < ElectronicComponent
         function state = updateConductivity(model, state)
             
             T = state.T;
-            aw = state.H2Oactivity;
+            aw = state.H2Oa;
             
             vf = model.liquidVolumeFraction;
             

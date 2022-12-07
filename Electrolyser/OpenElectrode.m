@@ -100,6 +100,8 @@ classdef OpenElectrode < ElectronicComponent
             varnames{end + 1} = 'H2Ogasrhoeps';
             % Liquid volume fraction
             varnames{end + 1} = 'liqeps';
+            % total liquid density (mass of liquid per total volume)
+            varnames{end + 1} = 'liqrhoeps';
             % Phase pressures
             pressures = VarName({}, 'pressures', nph);
             varnames{end + 1} = pressures;
@@ -119,7 +121,7 @@ classdef OpenElectrode < ElectronicComponent
             % Concentrations in the OH molality
             % varnames{end + 1} = 'OHmolality';
             % H2O activity (we could assemble all activities there but it seems that only H2O activity is needed)
-            varnames{end + 1} = 'H2Oactivity';
+            varnames{end + 1} = 'H2Oa';
             % OH molar volume
             % partialMolarVolumes = VarName({}, 'partialMolarVolumes', nliquid);
             % varnames{end + 1} = partialMolarVolumes;
@@ -218,7 +220,7 @@ classdef OpenElectrode < ElectronicComponent
             
             % update liquid density
             fn = @() OpenElectrode.updateLiquidDensity;
-            inputnames = {'rholiqeps', ...
+            inputnames = {'liqrhoeps', ...
                           VarName({}, 'volumeFractions', nph, phaseInd.liquid)};
             model = model.registerPropFunction({'liquidDensity', fn, inputnames});            
             
@@ -228,7 +230,7 @@ classdef OpenElectrode < ElectronicComponent
                           VarName({}, 'concentrations', nliquid, liquidInd.OH)};
             ind = setdiff([1 : nliquid]', liquidInd.OH);
             model = model.registerPropFunction({VarName({}, 'concentrations', nliquid, ind), fn, inputnames});            
-            model = model.registerPropFunction({'H2Oactivity', fn, inputnames});
+            model = model.registerPropFunction({'H2Oa', fn, inputnames});
 
             % compute OH molalities
             fn = @() OpenElectrode.updateMolality;
@@ -390,12 +392,11 @@ classdef OpenElectrode < ElectronicComponent
             model = model.registerPropFunction({'liquidStateEquation', fn, inputnames});
 
             fn = @() OpenElectrode.updateAccumTerms;
+            functionCallSetupFn = @(propfunction) PropFunction.accumFuncCallSetupFn(propfunction);
             inputnames = {'H2Ogasrhoeps'};
-            model = model.registerPropFunction({VarName({}, 'accumTerms', ncomp, compInd.H2Ogas), fn, inputnames});
+            model = model.registerPropFunction({VarName({}, 'accumTerms', ncomp, compInd.H2Ogas), fn, inputnames, functionCallSetupFn});
             inputnames = {'OHceps'};
-            model = model.registerPropFunction({VarName({}, 'accumTerms', ncomp, compInd.OH), fn, inputnames});
-            inputnames = {'OHceps'};
-            model = model.registerPropFunction({VarName({}, 'accumTerms', ncomp, compInd.OH), fn, inputnames});
+            model = model.registerPropFunction({VarName({}, 'accumTerms', ncomp, compInd.OH), fn, inputnames, functionCallSetupFn});
 
             model = model.removeVarName(VarName({}, 'pressures', nph, phaseInd.solid));
             model = model.removeVarName(VarName({}, 'accumTerms', ncomp, [compInd.H2Oliquid, compInd.K]));
@@ -414,7 +415,7 @@ classdef OpenElectrode < ElectronicComponent
 
         function state = updateLiquidDensity(model, state)
 
-            state.liquidDensity = state.rholiqeps./state.volumeFractions{model.phaseInd.liquid};
+            state.liquidDensity = state.liqrhoeps./state.volumeFractions{model.phaseInd.liquid};
         end
         
         
