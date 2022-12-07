@@ -27,8 +27,8 @@ classdef Electrolyser < BaseModel
             model = model@BaseModel();
 
             % Assign the components : Electrolyte, NegativeElectrode, PositiveElectrode
-            model.HydrogenElectrode = OpenElectrode(paramobj.HydrogenElectrode);
-            model.OxygenElectrode   = OpenElectrode(paramobj.OxygenElectrode);
+            model.HydrogenElectrode = HydrogenElectrode(paramobj.HydrogenElectrode);
+            model.OxygenElectrode   = OxygenElectrode(paramobj.OxygenElectrode);
             model.HydrogenCatalyser = Catalyser(paramobj.HydrogenCatalyser);
             model.OxygenCatalyser   = Catalyser(paramobj.OxygenCatalyser);
             model.HydrogenInterface = MembraneInterface(paramobj.HydrogenInterface);
@@ -51,27 +51,133 @@ classdef Electrolyser < BaseModel
             ocat = 'OxygenCatalyser';
             oitf = 'OxygenInterface';
         
-            fn = @() Electrolyse.dispatchTemperature();
+            fn = @() Electrolyser.dispatchTemperature;
             model = model.registerPropFunction({{inm, 'T'}, fn, {'T'}});
             model = model.registerPropFunction({{her, 'T'}, fn, {'T'}});
             model = model.registerPropFunction({{hcat, 'T'}, fn, {'T'}});
-            model = model.registerPropFunction({{hitf, 'T'}, fn, {'T'}});
             model = model.registerPropFunction({{oer, 'T'}, fn, {'T'}});
             model = model.registerPropFunction({{ocat, 'T'}, fn, {'T'}});
-            model = model.registerPropFunction({{oitf, 'T'}, fn, {'T'}});
+
+            %% Update coupling (electrode, ionomer) -> Catalyser
+
+            fn = @() Electrolyser.updateCatalysers;
+            
+            phaseInd  = model.(her).phaseInd;
+            liquidInd = model.(her).liquidInd;
+            inputvarnames = {{her, 'phi'} , ...
+                             VarName({her}, 'concentrations', liquidInd.ncomp, liquidInd.OH), ...
+                             {her, 'H2Oa'}, ...
+                             {inm, 'phi'} , ...
+                             {inm, 'cOH'} , ...
+                             {inm, 'H2Oa'}, ...
+                             VarName({her}, 'pressures', phaseInd.nphase, phaseInd.gas)
+                            };
+            outputvarnames = {'phiElyte', 'phiInmr' , 'cOHelyte', 'cOHinmr' , 'pressureActiveGas', 'H2OaElyte', 'H2OaInmr'};
+            for iovar = 1 : numel(outputvarnames)
+                outputvarname = {hcat, outputvarnames{iovar}};
+                model = model.registerPropFunction({outputvarname, fn, inputvarnames});
+            end
+            
+            phaseInd  = model.(oer).phaseInd;
+            liquidInd = model.(oer).liquidInd;
+            inputvarnames = {{oer, 'phi'} , ...
+                             VarName({oer}, 'concentrations', liquidInd.ncomp, liquidInd.OH), ...
+                             {oer, 'H2Oa'}, ...
+                             {inm, 'phi'} , ...
+                             {inm, 'cOH'} , ...
+                             {inm, 'H2Oa'}, ...
+                             VarName({her}, 'pressures', phaseInd.nphase, phaseInd.gas)
+                            };
+            for iovar = 1 : numel(outputvarnames)
+                outputvarname = {ocat, outputvarnames{iovar}};
+                model = model.registerPropFunction({outputvarname, fn, inputvarnames});
+            end
+
+
+            %% Update coupling (electrode, ionomer) -> Interface
+
+            fn = @() Electrolyser.updateInterfaces;
+            
+            phaseInd = model.(her).phaseInd;
+            liquidInd = model.(her).liquidInd;
+            inputvarnames = {{her, 'phi'} , ...
+                             VarName({her}, 'concentrations', liquidInd.ncomp, liquidInd.OH), ...
+                             {her, 'H2Oa'}, ...
+                             {inm, 'phi'} , ...
+                             {inm, 'cOH'} , ...
+                             {inm, 'H2Oa'}};
+            outputvarnames = {'phiElyte', 'phiInmr' , 'cOHelyte', 'cOHinmr', 'H2OaElyte', 'H2OaInmr'};
+            for iovar = 1 : numel(outputvarnames)
+                outputvarname = {hitf, outputvarnames{iovar}};
+                model = model.registerPropFunction({outputvarname, fn, inputvarnames});
+            end
+
+            phaseInd = model.(oer).phaseInd;
+            liquidInd = model.(oer).liquidInd;
+            inputvarnames = {{oer, 'phi'} , ...
+                             VarName({oer}, 'concentrations', liquidInd.ncomp, liquidInd.OH), ...
+                             {oer, 'H2Oa'}, ...
+                             {inm, 'phi'} , ...
+                             {inm, 'cOH'} , ...
+                             {inm, 'H2Oa'}};
+            outputvarnames = {'phiElyte', 'phiInmr' , 'cOHelyte', 'cOHinmr', 'H2OaElyte', 'H2OaInmr'};
+            for iovar = 1 : numel(outputvarnames)
+                outputvarname = {oitf, outputvarnames{iovar}};
+                model = model.registerPropFunction({outputvarname, fn, inputvarnames});
+            end
+            
+
+
+            %% Update coupling catalyser -> (electrode, ionomer)
+            %  
+            fn = @() Electrolyser.updateSourceTerms;
+
+            inputvarnames = {{hcat, 'elyteReactionRate'}, ...
+                             {hcat, 'inmrReactionRate'} , ...
+                             {hitf, 'OHexchangeRate'}   , ...
+                             {hitf, 'H2OexchangeRate'}};
+            gasInd = model.(her).gasInd;
+            outputvarnames = {VarName({her}, 'compGasSources', gasInd.ncomp), ...
+                              {her, 'OHSource'}                              , ...
+                              {her, 'H2OliquidSource'}                       , ...
+                             };
+            for iovar = 1 : numel(outputvarnames)
+                model = model.registerPropFunction({outputvarnames{iovar}, fn, inputvarnames});
+            end
+
+            inputvarnames = {{ocat, 'elyteReactionRate'}, ...
+                             {ocat, 'inmrReactionRate'} , ...
+                             {oitf, 'OHexchangeRate'}   , ...
+                             {oitf, 'H2OexchangeRate'}};
+            gasInd = model.(oer).gasInd;
+            outputvarnames = {VarName({oer}, 'compGasSources', gasInd.ncomp), ...
+                              {oer, 'OHSource'}                              , ...
+                              {oer, 'H2OliquidSource'}                       , ...
+                             };
+            for iovar = 1 : numel(outputvarnames)
+                model = model.registerPropFunction({outputvarnames{iovar}, fn, inputvarnames});
+            end
+
+            inputvarnames = {{hcat, 'elyteReactionRate'}, ...
+                             {hcat, 'inmrReactionRate'} , ...
+                             {hitf, 'OHexchangeRate'}   , ...
+                             {hitf, 'H2OexchangeRate'}  , ...
+                             {ocat, 'elyteReactionRate'}, ...
+                             {ocat, 'inmrReactionRate'} , ...
+                             {oitf, 'OHexchangeRate'}   , ...
+                             {oitf, 'H2OexchangeRate'}};
+            
+            model = model.registerPropFunction({{inm, 'H2OSource'}, fn, inputvarnames});
+            model = model.registerPropFunction({{inm, 'OHSource'}, fn, inputvarnames});
+
+            model = model.registerStaticVarName('T');
+            
             
         end
 
         
         function initstate = setupInitialState(model)
-        % Setup initial state
-        %
-        % Abbreviations used in this function 
-        % elyte : Electrolyte
-        % ne    : NegativeElectrode
-        % pe    : PositiveElectrode
-        % eac   : ElectrodeActiveComponent
-        % cc    : CurrentCollector
+
         end
 
         function state = dispatchTemperature(model, state)
