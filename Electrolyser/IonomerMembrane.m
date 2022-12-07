@@ -122,8 +122,9 @@ classdef IonomerMembrane < ElectronicComponent
             % update electronic source
             fn = @() IonomerMembrane.assembleH2Oaccum;
             functionCallSetupFn = @(propfunction) PropFunction.accumFuncCallSetupFn(propfunction);
+            fn = {fn, functionCallSetupFn};
             inputnames = {'H2Oceps'};
-            model = model.registerPropFunction({'H2Oaccum', fn, inputnames, functionCallSetupFn});
+            model = model.registerPropFunction({'H2Oaccum', fn, inputnames});
                         
             % assemble H2O mass conservation equation
             fn = @() IonomerMembrane.assembleH2OmassCons;

@@ -52,9 +52,10 @@ classdef OxygenElectrode < OpenElectrode
                 model = model.registerPropFunction({VarName({}, 'gasMassCons', nph, gasInd.O2), fn, inputnames});
 
                 fn = @() OpenElectrode.updateO2Accum;
-                inputnames = {'O2rhoeps'};
                 functionCallSetupFn = @(propfunction) PropFunction.accumFuncCallSetupFn(propfunction);
-                model = model.registerPropFunction({VarName({}, 'accumTerms', ncomp, compInd.O2), fn, inputnames, functionCallSetupFn});
+                fn = {fn, functionCallSetupFn};
+                inputnames = {'O2rhoeps'};
+                model = model.registerPropFunction({VarName({}, 'accumTerms', ncomp, compInd.O2), fn, inputnames});
                 
             else
 

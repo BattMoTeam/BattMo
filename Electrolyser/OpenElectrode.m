@@ -393,10 +393,11 @@ classdef OpenElectrode < ElectronicComponent
 
             fn = @() OpenElectrode.updateAccumTerms;
             functionCallSetupFn = @(propfunction) PropFunction.accumFuncCallSetupFn(propfunction);
+            fn = {fn, functionCallSetupFn};
             inputnames = {'H2Ogasrhoeps'};
-            model = model.registerPropFunction({VarName({}, 'accumTerms', ncomp, compInd.H2Ogas), fn, inputnames, functionCallSetupFn});
+            model = model.registerPropFunction({VarName({}, 'accumTerms', ncomp, compInd.H2Ogas), fn, inputnames});
             inputnames = {'OHceps'};
-            model = model.registerPropFunction({VarName({}, 'accumTerms', ncomp, compInd.OH), fn, inputnames, functionCallSetupFn});
+            model = model.registerPropFunction({VarName({}, 'accumTerms', ncomp, compInd.OH), fn, inputnames});
 
             model = model.removeVarName(VarName({}, 'pressures', nph, phaseInd.solid));
             model = model.removeVarName(VarName({}, 'accumTerms', ncomp, [compInd.H2Oliquid, compInd.K]));

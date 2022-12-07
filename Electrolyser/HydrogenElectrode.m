@@ -14,7 +14,6 @@ classdef HydrogenElectrode < OpenElectrode
             model.compInd.H2  = 5;
             model.phaseInd.H2 = 2;
             model.gasInd.H2   = 2;
-
             
         end
         
@@ -52,9 +51,10 @@ classdef HydrogenElectrode < OpenElectrode
                 model = model.registerPropFunction({VarName({}, 'gasMassCons', nph, gasInd.H2), fn, inputnames});
 
                 fn = @() OpenElectrode.updateH2Accum;
-                inputnames = {'H2rhoeps'};
                 functionCallSetupFn = @(propfunction) PropFunction.accumFuncCallSetupFn(propfunction);
-                model = model.registerPropFunction({VarName({}, 'accumTerms', ncomp, compInd.H2), fn, inputnames, functionCallSetupFn});
+                fn = {fn, functionCallSetupFn};
+                inputnames = {'H2rhoeps'};
+                model = model.registerPropFunction({VarName({}, 'accumTerms', ncomp, compInd.H2), fn, inputnames});
             
             else
                 
