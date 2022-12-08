@@ -229,8 +229,7 @@ classdef ComputationalGraphTool
             
         end
 
-
-        function printOrderedFunctionCallList(cgt)
+        function funcCallList = setOrderedFunctionCallList(cgt)
 
             A = cgt.A;
             staticprops = cgt.staticprops;
@@ -242,6 +241,10 @@ classdef ComputationalGraphTool
                 return
             end
 
+            if isempty(p)
+                fprintf('The graph contains cycles. It implies that some variables cannot be evaluated.\n')
+            end
+            
             funcCallList = {};
 
             if ~isempty(staticprops)
@@ -272,11 +275,18 @@ classdef ComputationalGraphTool
             ia = sort(ia); % Not sure if it is necessary, but in this way we make sure the ordering for which  funcCallList was built is respected
             funcCallList = funcCallList(ia);
 
+
+        end
+
+        function printOrderedFunctionCallList(cgt)
+
+            funcCallList = cgt.setOrderedFunctionCallList();
+            
             fprintf('Function call list\n');
             for ind = 1 : numel(funcCallList)
                 fprintf('%s\n', funcCallList{ind});
             end
-            
+
         end
         
             
