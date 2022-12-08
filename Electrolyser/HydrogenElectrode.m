@@ -1,4 +1,4 @@
-classdef HydrogenElectrode < OpenElectrode
+classdef HydrogenElectrode < TwoPhaseElectrode
 
     properties
         
@@ -8,7 +8,7 @@ classdef HydrogenElectrode < OpenElectrode
         
         function model = HydrogenElectrode(paramobj)
 
-            model = model@OpenElectrode(paramobj);
+            model = model@TwoPhaseElectrode(paramobj);
 
             % add the H2 component in the indexing structures
             model.compInd.H2  = 5;
@@ -22,7 +22,7 @@ classdef HydrogenElectrode < OpenElectrode
         %% Declaration of the Dynamical Variables and Function of the model
         % (setup of varnameList and propertyFunctionList)
 
-            model = registerVarAndPropfuncNames@OpenElectrode(model);
+            model = registerVarAndPropfuncNames@TwoPhaseElectrode(model);
 
             phaseInd  = model.phaseInd;
             liquidInd = model.liquidInd;
