@@ -60,102 +60,63 @@ classdef Electrolyser < BaseModel
 
             %% Update coupling (electrode, ionomer) -> Catalyser
 
-            fn = @() Electrolyser.updateCatalysers;
+            fn = @() Electrolyser.dispatchToCatalysersAndInterfaces;
+
+            eldes = {her, oer};
+            cats  = {hcat, ocat};
+            itfs  = {hitf, oitf};
             
-            phaseInd  = model.(her).phaseInd;
-            liquidInd = model.(her).liquidInd;
-            inputvarnames = {{her, 'phi'} , ...
-                             VarName({her}, 'concentrations', liquidInd.ncomp, liquidInd.OH), ...
-                             {her, 'H2Oa'}, ...
-                             {inm, 'phi'} , ...
-                             {inm, 'cOH'} , ...
-                             {inm, 'H2Oa'}, ...
-                             VarName({her}, 'pressures', phaseInd.nphase, phaseInd.gas)
-                            };
-            outputvarnames = {'phiElyte', 'phiInmr' , 'cOHelyte', 'cOHinmr' , 'pressureActiveGas', 'H2OaElyte', 'H2OaInmr'};
-            for iovar = 1 : numel(outputvarnames)
-                outputvarname = {hcat, outputvarnames{iovar}};
-                model = model.registerPropFunction({outputvarname, fn, inputvarnames});
+            for ielde = 1 : numel(eldes)
+                
+                elde = eldes{ielde};
+                cat  = cats{ielde};
+                itf  = itfs{ielde};
+
+                phaseInd  = model.(elde).phaseInd;
+                liquidInd = model.(elde).liquidInd;
+                inputvarnames = {{elde, 'phi'} , ...
+                                 VarName({elde}, 'concentrations', liquidInd.ncomp, liquidInd.OH), ...
+                                 {elde, 'H2Oa'}, ...
+                                 {inm, 'phi'} , ...
+                                 {inm, 'cOH'} , ...
+                                 {inm, 'H2Oa'}};
+                outputvarnames = {'phiElyte', 'phiInmr' , 'cOHelyte', 'cOHinmr' , 'H2OaElyte', 'H2OaInmr'};
+                for iovar = 1 : numel(outputvarnames)
+                    outputvarname = {cat, outputvarnames{iovar}};
+                    model = model.registerPropFunction({outputvarname, fn, inputvarnames});
+                    outputvarname = {itf, outputvarnames{iovar}};
+                    model = model.registerPropFunction({outputvarname, fn, inputvarnames});
+                end
+
+                inputvarnames = {VarName({elde}, 'pressures', phaseInd.nphase, phaseInd.gas)};
+                model = model.registerPropFunction({{cat, 'pressureActiveGas'}, fn, inputvarnames});
+                
             end
             
-            phaseInd  = model.(oer).phaseInd;
-            liquidInd = model.(oer).liquidInd;
-            inputvarnames = {{oer, 'phi'} , ...
-                             VarName({oer}, 'concentrations', liquidInd.ncomp, liquidInd.OH), ...
-                             {oer, 'H2Oa'}, ...
-                             {inm, 'phi'} , ...
-                             {inm, 'cOH'} , ...
-                             {inm, 'H2Oa'}, ...
-                             VarName({her}, 'pressures', phaseInd.nphase, phaseInd.gas)
-                            };
-            for iovar = 1 : numel(outputvarnames)
-                outputvarname = {ocat, outputvarnames{iovar}};
-                model = model.registerPropFunction({outputvarname, fn, inputvarnames});
-            end
-
-
-            %% Update coupling (electrode, ionomer) -> Interface
-
-            fn = @() Electrolyser.updateInterfaces;
-            
-            phaseInd = model.(her).phaseInd;
-            liquidInd = model.(her).liquidInd;
-            inputvarnames = {{her, 'phi'} , ...
-                             VarName({her}, 'concentrations', liquidInd.ncomp, liquidInd.OH), ...
-                             {her, 'H2Oa'}, ...
-                             {inm, 'phi'} , ...
-                             {inm, 'cOH'} , ...
-                             {inm, 'H2Oa'}};
-            outputvarnames = {'phiElyte', 'phiInmr' , 'cOHelyte', 'cOHinmr', 'H2OaElyte', 'H2OaInmr'};
-            for iovar = 1 : numel(outputvarnames)
-                outputvarname = {hitf, outputvarnames{iovar}};
-                model = model.registerPropFunction({outputvarname, fn, inputvarnames});
-            end
-
-            phaseInd = model.(oer).phaseInd;
-            liquidInd = model.(oer).liquidInd;
-            inputvarnames = {{oer, 'phi'} , ...
-                             VarName({oer}, 'concentrations', liquidInd.ncomp, liquidInd.OH), ...
-                             {oer, 'H2Oa'}, ...
-                             {inm, 'phi'} , ...
-                             {inm, 'cOH'} , ...
-                             {inm, 'H2Oa'}};
-            outputvarnames = {'phiElyte', 'phiInmr' , 'cOHelyte', 'cOHinmr', 'H2OaElyte', 'H2OaInmr'};
-            for iovar = 1 : numel(outputvarnames)
-                outputvarname = {oitf, outputvarnames{iovar}};
-                model = model.registerPropFunction({outputvarname, fn, inputvarnames});
-            end
-            
-
 
             %% Update coupling catalyser -> (electrode, ionomer)
             %  
             fn = @() Electrolyser.updateSourceTerms;
 
-            inputvarnames = {{hcat, 'elyteReactionRate'}, ...
-                             {hcat, 'inmrReactionRate'} , ...
-                             {hitf, 'OHexchangeRate'}   , ...
-                             {hitf, 'H2OexchangeRate'}};
-            gasInd = model.(her).gasInd;
-            outputvarnames = {VarName({her}, 'compGasSources', gasInd.ncomp), ...
-                              {her, 'OHSource'}                              , ...
-                              {her, 'H2OliquidSource'}                       , ...
-                             };
-            for iovar = 1 : numel(outputvarnames)
-                model = model.registerPropFunction({outputvarnames{iovar}, fn, inputvarnames});
-            end
+            for ielde = 1 : numel(eldes)
+                
+                elde = eldes{ielde};
+                cat  = cats{ielde};
+                itf  = itfs{ielde};
 
-            inputvarnames = {{ocat, 'elyteReactionRate'}, ...
-                             {ocat, 'inmrReactionRate'} , ...
-                             {oitf, 'OHexchangeRate'}   , ...
-                             {oitf, 'H2OexchangeRate'}};
-            gasInd = model.(oer).gasInd;
-            outputvarnames = {VarName({oer}, 'compGasSources', gasInd.ncomp), ...
-                              {oer, 'OHSource'}                              , ...
-                              {oer, 'H2OliquidSource'}                       , ...
-                             };
-            for iovar = 1 : numel(outputvarnames)
-                model = model.registerPropFunction({outputvarnames{iovar}, fn, inputvarnames});
+                inputvarnames = {{cat, 'elyteReactionRate'}, ...
+                                 {cat, 'inmrReactionRate'} , ...
+                                 {itf, 'OHexchangeRate'}   , ...
+                                 {itf, 'H2OexchangeRate'}};
+                gasInd = model.(elde).gasInd;
+                outputvarnames = {VarName({elde}, 'compGasSources', gasInd.ncomp), ...
+                                  {elde, 'OHSource'}                              , ...
+                                  {elde, 'H2OliquidSource'}                       , ...
+                                 };
+                for iovar = 1 : numel(outputvarnames)
+                    model = model.registerPropFunction({outputvarnames{iovar}, fn, inputvarnames});
+                end
+
             end
 
             inputvarnames = {{hcat, 'elyteReactionRate'}, ...
@@ -172,7 +133,6 @@ classdef Electrolyser < BaseModel
 
             model = model.registerStaticVarName('T');
             
-            
         end
 
         
@@ -183,21 +143,21 @@ classdef Electrolyser < BaseModel
         function state = dispatchTemperature(model, state)
             mea   = 'IonomereMembrane';
             her   = 'HydrogenElectrode';
-            hcatl = 'HydrogenCatalyser';
+            hcat = 'HydrogenCatalyser';
             oer   = 'OxygenElectrode';
-            ocatl = 'OxygenCatalyser';
+            ocat = 'OxygenCatalyser';
             
-            submodelnames = {mea, her, hcatl, oer, ocatl};
+            submodelnames = {mea, her, hcat, oer, ocat};
             for ind = 1 : numel(submodelnames)
                 mname = submodelnames{ind};
                 state.(mname).T = state.T(model.(mname).G.cellmap);
             end
         end
         
-        function state = dispatchToCatalyser(model, state)
+        function state = dispatchToCatalysersAndInterfaces(model, state)
             
-            state = model.updateHydrogenPotentialDiffs(state); 
-            state = model.updateOxygenPotentialDiffs(state);
+            state = model.updateHydrogenPotentials(state); 
+            state = model.updateOxygenPotentials(state);
             state = model.dispatchGasPartialPressureHydrogenCatalyser(state);
             state = model.dispatchGasPartialPressureOxygenCatalyser(state);
             state = model.dispatchConcentrationsHydrogenCatalyser(state);
@@ -216,44 +176,49 @@ classdef Electrolyser < BaseModel
         end
         
 
-        function state = updateHydrogenPotentialDiffs(model, state)
-            mea   = 'IonomereMembrane';
-            her   = 'HydrogenElectrode';
-            hcatl = 'HydrogenCatalyser';
+        function state = updateHydrogenPotentials(model, state)
+            
+            inm  = 'IonomerMembrane';
+            her  = 'HydrogenElectrode';
+            hcat = 'HydrogenCatalyser';
             
             coupterms = model.couplingTerms;
             coupnames = model.couplingNames;
             
-            coupterm = getCoupTerm(coupterms, {her, hcatl}, coupnames);
+            coupterm = getCoupTerm(coupterms, {her, hcat}, coupnames);
             coupcells = coupterm.couplingcells;
-            state.(hcatl).phiElyte(coupcells(:, 2)) = state.(her).phi(coupcells(:, 1));
+            state.(hcat).phiElyte(coupcells(:, 2)) = state.(her).phi(coupcells(:, 1));
             
-            coupterm = getCoupTerm(coupterms, {mea, hcatl}, coupnames);
+            coupterm = getCoupTerm(coupterms, {inm, hcat}, coupnames);
             coupcells = coupterm.couplingcells;
-            state.(hcatl).phiInmr(coupcells(:, 2)) = state.(mea).phi(coupcells(:, 1));
+            state.(hcat).phiInmr(coupcells(:, 2)) = state.(inm).phi(coupcells(:, 1));
+            
         end
         
         
-        function state = updateOxygenPotentialDiffs(model, state)
-            mea   = 'IonomereMembrane';
-            oer   = 'OxygenElectrode';
-            ocatl = 'OxygenCatalyser';
+        function state = updateOxygenPotentials(model, state)
+            
+            inm  = 'IonomerMembrane';
+            oer  = 'OxygenElectrode';
+            ocat = 'OxygenCatalyser';
             
             coupterms = model.couplingTerms;
             coupnames = model.couplingNames;
             
-            coupterm = getCoupTerm(coupterms, {oer, ocatl}, coupnames);
+            coupterm = getCoupTerm(coupterms, {oer, ocat}, coupnames);
             coupcells = coupterm.couplingcells;
-            state.(ocatl).phiElyte(coupcelsl(:, 2)) = state.(oer).phi(coupcells(:, 1));
+            state.(ocat).phiElyte(coupcelsl(:, 2)) = state.(oer).phi(coupcells(:, 1));
             
-            coupterm = getCoupTerm(coupterms, {mea, ocatl}, coupnames);
+            coupterm = getCoupTerm(coupterms, {inm, ocat}, coupnames);
             coupcells = coupterm.couplingcells;
-            state.(ocatl).phiInmr(coupcells(:, 2)) = state.(mea).phi(coupcells(:, 1));
+            state.(ocat).phiInmr(coupcells(:, 2)) = state.(inm).phi(coupcells(:, 1));
+            
         end
 
         function state = dispatchGasPartialPressureHydrogenCatalyser(model, state)
-            her   = 'HydrogenElectrode';
-            hcatl = 'HydrogenCatalyser';
+            
+            her  = 'HydrogenElectrode';
+            hcat = 'HydrogenCatalyser';
             
             gind = model.(her).phaseInd.gas;
             m  = state.(her).compGasMasses;
@@ -263,7 +228,7 @@ classdef Electrolyser < BaseModel
             gInd = model.(her).gasInd;
             
             % compute mol amount for each gas component
-            coupterm = getCoupTerm(coupterms, {oer, ocatl}, coupnames);
+            coupterm = getCoupTerm(coupterms, {oer, ocat}, coupnames);
             coupcells = coupterm.couplingcells;
             
             mH2O = m{gInd.H2Ogas};
@@ -277,12 +242,12 @@ classdef Electrolyser < BaseModel
             p{gInd.H2Ogas} = mH2O./(model.(her).H2O.MW).*R.*T./vg;
             p{gInd.H2} = mH2./(model.(her).H2.MW).*R.*T./vg;
             
-            state.(hcatl).gasPressuresElyte(coupcells(:, 2)) = p;
+            state.(hcat).gasPressuresElyte(coupcells(:, 2)) = p;
         end
         
         function state = dispatchGasPartialPressureOxygenCatalyser(model, state)
             oer   = 'OxygenElectrode';
-            ocatl = 'OxygenCatalyser';
+            ocat = 'OxygenCatalyser';
             
             gind = model.(oer).phaseInd.gas;
             m  = state.(oer).compGasMasses;
@@ -292,7 +257,7 @@ classdef Electrolyser < BaseModel
             gInd = model.(oer).gasInd;
             
             % compute mol amount for each gas component
-            coupterm = getCoupTerm(coupterms, {oer, ocatl}, coupnames);
+            coupterm = getCoupTerm(coupterms, {oer, ocat}, coupnames);
             coupcells = coupterm.couplingcells;
             
             mH2O = m{gInd.H2Ogas};
@@ -306,12 +271,13 @@ classdef Electrolyser < BaseModel
             p{gInd.H2Ogas} = mH2O./(model.(oer).H2O.MW).*R.*T./vg;
             p{gInd.O2} = mO2./(model.(oer).O2.MW).*R.*T./vg;
             
-            state.(ocatl).gasPressuresElyte(coupcells(:, 2)) = p;
+            state.(ocat).gasPressuresElyte(coupcells(:, 2)) = p;
         end
         
         function state = dispatchConcentrationsHydrogenCatalyser(model, state)
+            
             her   = 'HydrogenElectrode';
-            hcatl = 'HydrogenCatalyser';
+            hcat = 'HydrogenCatalyser';
             
             lind = model.(her).liquidInd;
             
@@ -321,18 +287,20 @@ classdef Electrolyser < BaseModel
             coupterms = model.couplingTerms;
             coupnames = model.couplingNames;
             
-            coupterm = getCoupTerm(coupterms, {her, hcatl}, coupnames);
+            coupterm = getCoupTerm(coupterms, {her, hcat}, coupnames);
             coupcells = coupterm.couplingcells;
             cOH = cOH(coupcells(:, 1));
             cH = cH(coupcells(:, 1));
 
-            state.(hcatl).cOHElyte(coupcells(:, 2)) = cOH;
-            state.(hcatl).cHElyte(coupcells(:, 2)) = cH;
+            state.(hcat).cOHElyte(coupcells(:, 2)) = cOH;
+            state.(hcat).cHElyte(coupcells(:, 2)) = cH;
+            
         end
         
         function state = dispatchConcentrationsOxygenCatalyser(model, state)
+            
             oer   = 'OxygenElectrode';
-            ocatl = 'OxygenCatalyser';
+            ocat = 'OxygenCatalyser';
             
             lind = model.(oer).liquidInd;
             
@@ -342,70 +310,71 @@ classdef Electrolyser < BaseModel
             coupterms = model.couplingTerms;
             coupnames = model.couplingNames;
             
-            coupterm = getCoupTerm(coupterms, {oer, ocatl}, coupnames);
+            coupterm = getCoupTerm(coupterms, {oer, ocat}, coupnames);
             coupcells = coupterm.couplingcells;
             cOH = cOH(coupcells(:, 1));
             cH = cH(coupcells(:, 1));
 
-            state.(ocatl).cOHElyte(coupcells(:, 2)) = cOH;
-            state.(ocatl).cHElyte(coupcells(:, 2)) = cH;
+            state.(ocat).cOHElyte(coupcells(:, 2)) = cOH;
+            state.(ocat).cHElyte(coupcells(:, 2)) = cH;
         end
         
         function state = dispatchH2OactivityHydrogenCatalyser(model, state)
+            
             her   = 'HydrogenElectrode';
-            hcatl = 'HydrogenCatalyser';
-            mea   = 'IonomerMembrane';
+            hcat = 'HydrogenCatalyser';
+            inm   = 'IonomerMembrane';
             
             coupterms = model.couplingTerms;
             coupnames = model.couplingNames;
             
-            coupterm = getCoupTerm(coupterms, {her, hcatl}, coupnames);
+            coupterm = getCoupTerm(coupterms, {her, hcat}, coupnames);
             coupcells = coupterm.couplingcells;
-            state.(hcatl).H2OaElyte(coupcells(:, 2)) = state.(her).H2Oactivity(coupcells(:, 1));
+            state.(hcat).H2OaElyte(coupcells(:, 2)) = state.(her).H2Oactivity(coupcells(:, 1));
             
-            coupterm = getCoupTerm(coupterms, {mea, hcatl}, coupnames);
+            coupterm = getCoupTerm(coupterms, {inm, hcat}, coupnames);
             coupcells = coupterm.couplingcells;
-            state.(hcatl).H2OaInmr(coupcells(:, 2)) = state.(mea).H2Oactivity(coupcells(:, 1));
+            state.(hcat).H2OaInmr(coupcells(:, 2)) = state.(inm).H2Oactivity(coupcells(:, 1));
         end
                     
         
         function state = dispatchH2OactivityOxygenCatalyser(model, state)
             oer   = 'OxygenElectrode';
-            ocatl = 'OxygenCatalyser';
-            mea   = 'IonomerMembrane';
+            ocat = 'OxygenCatalyser';
+            inm   = 'IonomerMembrane';
             
             coupterms = model.couplingTerms;
             coupnames = model.couplingNames;
             
-            coupterm = getCoupTerm(coupterms, {oer, ocatl}, coupnames);
+            coupterm = getCoupTerm(coupterms, {oer, ocat}, coupnames);
             coupcells = coupterm.couplingcells;
-            state.(ocatl).H2OaElyte(coupcells(:, 2)) = state.(oer).H2Oactivity(coupcells(:, 1));
+            state.(ocat).H2OaElyte(coupcells(:, 2)) = state.(oer).H2Oactivity(coupcells(:, 1));
             
-            coupterm = getCoupTerm(coupterms, {mea, ocatl}, coupnames);
+            coupterm = getCoupTerm(coupterms, {inm, ocat}, coupnames);
             coupcells = coupterm.couplingcells;
-            state.(ocatl).H2OaInmr(coupcells(:, 2)) = state.(mea).H2Oactivity(coupcells(:, 1));
+            state.(ocat).H2OaInmr(coupcells(:, 2)) = state.(inm).H2Oactivity(coupcells(:, 1));
         end
         
         
         function state = dispatchCatalyserToHydrogenElectrode(model, state)
             
             her   = 'HydrogenElectrode';
-            hcatl = 'HydrogenCatalyser';
-            mea   = 'IonomerMembrane';
+            hcat = 'HydrogenCatalyser';
+            inm   = 'IonomerMembrane';
             
-            leps = model.(mea).liquidVolumeFraction;
+            leps = model.(inm).liquidVolumeFraction;
             gInd = model.(her).gasInd;
             
             coupterms = model.couplingTerms;
             coupnames = model.couplingNames;
             
-            coupterm = getCoupTerm(coupterms, {her, hcatl}, coupnames);
+            coupterm = getCoupTerm(coupterms, {her, hcat}, coupnames);
             coupcells = coupterm.couplingcells;
             
-            jElyte    = state.(hcatl).jElyte(coupcells(:, 2));
-            j         = state.(hcatl).j(coupcells(:, 2));
-            Rxch      = state.(hcatl).Rxch(coupcells(:, 2));
-            Rsorption = state.(hcatl).Rsorption(coupcells(:, 2));
+            jElyte    = state.(hcat).jElyte(coupcells(:, 2));
+            j         = state.(hcat).j(coupcells(:, 2));
+            Rxch      = state.(hcat).Rxch(coupcells(:, 2));
+            Rsorption = state.(hcat).Rsorption(coupcells(:, 2));
             
             OHSource        = 2*jElyte./(n*F) + Rxch.*leps;
             H2OliquidSource = -Rsorption;
@@ -419,22 +388,22 @@ classdef Electrolyser < BaseModel
         function state = dispatchCatalyserToOxygenElectrode(model, state)
             
             oer   = 'OxygenElectrode';
-            ocatl = 'OxygenCatalyser';
-            mea   = 'IonomerMembrane';
+            ocat = 'OxygenCatalyser';
+            inm   = 'IonomerMembrane';
             
-            leps = model.(mea).liquidVolumeFraction;
+            leps = model.(inm).liquidVolumeFraction;
             gInd = model.(oer).gasInd;
             sp   = model.(oer).sp;
             
             coupterms = model.couplingTerms;
             coupnames = model.couplingNames;
-            coupterm = getCoupTerm(coupterms, {oer, ocatl}, coupnames);
+            coupterm = getCoupTerm(coupterms, {oer, ocat}, coupnames);
             coupcells = coupterm.couplingcells;
             
-            jElyte    = state.(ocatl).jElyte(coupcells(:, 2));
-            j         = state.(ocatl).j(coupcells(:, 2));
-            Rxch      = state.(ocatl).Rxch(coupcells(:, 2));
-            Rsorption = state.(ocatl).Rsorption(coupcells(:, 2));
+            jElyte    = state.(ocat).jElyte(coupcells(:, 2));
+            j         = state.(ocat).j(coupcells(:, 2));
+            Rxch      = state.(ocat).Rxch(coupcells(:, 2));
+            Rsorption = state.(ocat).Rsorption(coupcells(:, 2));
             
             OHSource        = 2*jElyte./(n*F) + Rxch.*leps;
             H2OliquidSource = -Rsorption;
@@ -448,18 +417,18 @@ classdef Electrolyser < BaseModel
         function state = dipatchCatalysersToIonomer(model, state)
             
             % initialize sources
-            OHSource = 0*state.(mea).phi;
-            H2OSource = 0*state.(mea).phi;
+            OHSource = 0*state.(inm).phi;
+            H2OSource = 0*state.(inm).phi;
 
             
             % Dispatch values from Hydrogen Catalyser
             coupterms = model.couplingTerms;
             coupnames = model.couplingNames;
-            coupterm = getCoupTerm(coupterms, {mea, hcatl}, coupnames);
+            coupterm = getCoupTerm(coupterms, {inm, hcat}, coupnames);
             coupcells = coupterm.couplingcells;
-            jInmr = state.(hcatl).jInmr(coupcells(:, 2));
-            Rxch  = state.(hcatl).Rxch(coupcells(:, 2));
-            leps  = model.(mea).liquidVolumeFraction(coupcells(:, 2));
+            jInmr = state.(hcat).jInmr(coupcells(:, 2));
+            Rxch  = state.(hcat).Rxch(coupcells(:, 2));
+            leps  = model.(inm).liquidVolumeFraction(coupcells(:, 2));
             
             OHSource(coupcells(:, 1))  = -2.*jInmr./(n.*F) - Rxch.*leps;
             H2OSource(coupcells(:, 1)) = -jInmr./(n.*F) - Rsorption;
@@ -467,17 +436,18 @@ classdef Electrolyser < BaseModel
             % Dispatch values from Oxygen Catalyser
             coupterms = model.couplingTerms;
             coupnames = model.couplingNames;
-            coupterm = getCoupTerm(coupterms, {mea, ocatl}, coupnames);
+            coupterm = getCoupTerm(coupterms, {inm, ocat}, coupnames);
             coupcells = coupterm.couplingcells;
-            jInmr = state.(ocatl).jInmr(coupcells(:, 2));
-            Rxch  = state.(ocatl).Rxch(coupcells(:, 2));
-            leps  = model.(mea).liquidVolumeFraction(coupcells(:, 2));
+            jInmr = state.(ocat).jInmr(coupcells(:, 2));
+            Rxch  = state.(ocat).Rxch(coupcells(:, 2));
+            leps  = model.(inm).liquidVolumeFraction(coupcells(:, 2));
 
             OHSource(coupcells(:, 1))  = -2.*jInmr./(n.*F) - Rxch.*leps;
             H2OSource(coupcells(:, 1)) = -jInmr./(n.*F) - Rsorption;
             
-            state.(mea).OHSource  = OHSource;
-            state.(mea).H2OSource = H2OSource;
+            state.(inm).OHSource  = OHSource;
+            state.(inm).H2OSource = H2OSource;
+            
         end
         
         
