@@ -14,8 +14,6 @@ classdef AlkalineElectrode < ElectronicComponent
 
         tau % 
 
-        useZeroDmodel
-        
         sp % species struct 
         % sp.OH.MW
         % sp.OH.V0
@@ -130,34 +128,29 @@ classdef AlkalineElectrode < ElectronicComponent
             % partialMolarVolumes = VarName({}, 'partialMolarVolumes', nliquid);
             % varnames{end + 1} = partialMolarVolumes;
 
+            %% Flow variables
 
-            if ~model.useZeroDmodel
-                
-                %% Flow variables
+            viscosities = VarName({}, 'viscosities', nmobph);
+            varnames{end + 1} = viscosities;            
+            
+            %% Phase velocities
 
-                viscosities = VarName({}, 'viscosities', nmobph);
-                varnames{end + 1} = viscosities;            
-                
-                %% Phase velocities
+            phaseVelocities = VarName({}, 'phaseVelocities', nmobph);
+            varnames{end + 1} = phaseVelocities;
+            
+            %% Fluxes
 
-                phaseVelocities = VarName({}, 'phaseVelocities', nmobph);
-                varnames{end + 1} = phaseVelocities;
-                
-                %% Fluxes
-
-                % Mass fluxes for the gass components
-                compGasFluxes = VarName({}, 'compGasFluxes', ngas);
-                varnames{end + 1} = compGasFluxes;
-                % Convective fluxes for OH  
-                varnames{end + 1} = 'convOHFlux';
-                % Diffusion flux for OH
-                varnames{end + 1} = 'diffOHFlux';
-                % Migration flux for OH
-                varnames{end + 1} = 'migOHFlux';
-                % Mass flux for total of liquid components
-                varnames{end + 1} = 'liquidFlux';            
-
-            end
+            % Mass fluxes for the gass components
+            compGasFluxes = VarName({}, 'compGasFluxes', ngas);
+            varnames{end + 1} = compGasFluxes;
+            % Convective fluxes for OH  
+            varnames{end + 1} = 'convOHFlux';
+            % Diffusion flux for OH
+            varnames{end + 1} = 'diffOHFlux';
+            % Migration flux for OH
+            varnames{end + 1} = 'migOHFlux';
+            % Mass flux for total of liquid components
+            varnames{end + 1} = 'liquidFlux';            
             
             % Vapor pressure in [Pa]
             varnames{end + 1} = 'vaporPressure';
@@ -267,56 +260,54 @@ classdef AlkalineElectrode < ElectronicComponent
                           % VarName({}, 'concentrations', nliquid, liquidInd.OH)};
             % model = model.registerPropFunction({VarName({}, 'viscosities', nph, phaseInd.liquid ), fn, inputnames});
             
-            if ~model.useZeroDmodel
-                
-                %% Assemble phase velocities
-                fn = @() AlkalineElectrode.updatePhaseVelocities;
+            
+            %% Assemble phase velocities
+            fn = @() AlkalineElectrode.updatePhaseVelocities;
 
-                for imobile = 1 : numel(phaseInd.mobile)
-                    iphase = phaseInd.mobile(imobile);
-                    inputnames = {VarName({}, 'phasePressures', nph, iphase), ...
-                                  VarName({}, 'viscosities', nph, iphase)};
-                    model = model.registerPropFunction({VarName({}, 'phaseVelocities', nph, iphase), fn, inputnames});
-                end
-                
-                
-                %% Assemble OH specific fluxes
-                
-                % assemble OH convection flux
-                fn = @() AlkalineElectrode.updateOHConvectionFlux;
-                inputnames = {VarName({}, 'concentrations', nliquid, liquidInd.OH), ...
-                              VarName({}, 'phaseVelocities', nph, phaseInd.liquid), ...
-                              VarName({}, 'volumeFractions', nph, phaseInd.liquid)};
-                model = model.registerPropFunction({'convOHFlux', fn, inputnames}); 
-                
-                % assemble OH diffusion flux
-                fn = @() AlkalineElectrode.updateOHDiffusionFlux;
-                inputnames = {VarName({}, 'concentrations', nliquid, liquidInd.OH), ...
-                              VarName({}, 'volumeFractions', nph, phaseInd.liquid)};
-                model = model.registerPropFunction({'diffOHFlux', fn, inputnames}); 
-                
-                % assemble OH migration flux
-                fn = @() AlkalineElectrode.updateOHMigrationFlux;
-                inputnames = {'j'};
-                model = model.registerPropFunction({'migOHFlux', fn, inputnames}); 
-                
-                %% Assemble  fluxes
-                
-                % assemble fluxes of gas components
-                fn = @() AlkalineElectrode.updateGasFluxes;
-                inputnames = {compGasMasses, ...
-                              VarName({}, 'volumeFractions', nph, phaseInd.gas), ...
-                              VarName({}, 'phaseVelocities', nph, phaseInd.gas)};
-                model = model.registerPropFunction({VarName({}, 'compGasFluxes', ngas), fn, inputnames});
-                
-                % Assemble flux of the overall liquid component
-                fn = @() AlkalineElectrode.updateLiquidFlux;
-                inputnames = {VarName({}, 'phaseVelocities', nph, phaseInd.liquid), ...
-                              'liqrho', ...
-                              VarName({}, 'volumeFractions', nph, phaseInd.liquid)};
-                model = model.registerPropFunction({'liquidFlux', fn, inputnames});
-                
+            for imobile = 1 : numel(phaseInd.mobile)
+                iphase = phaseInd.mobile(imobile);
+                inputnames = {VarName({}, 'phasePressures', nph, iphase), ...
+                              VarName({}, 'viscosities', nph, iphase)};
+                model = model.registerPropFunction({VarName({}, 'phaseVelocities', nph, iphase), fn, inputnames});
             end
+            
+            
+            %% Assemble OH specific fluxes
+            
+            % assemble OH convection flux
+            fn = @() AlkalineElectrode.updateOHConvectionFlux;
+            inputnames = {VarName({}, 'concentrations', nliquid, liquidInd.OH), ...
+                          VarName({}, 'phaseVelocities', nph, phaseInd.liquid), ...
+                          VarName({}, 'volumeFractions', nph, phaseInd.liquid)};
+            model = model.registerPropFunction({'convOHFlux', fn, inputnames}); 
+            
+            % assemble OH diffusion flux
+            fn = @() AlkalineElectrode.updateOHDiffusionFlux;
+            inputnames = {VarName({}, 'concentrations', nliquid, liquidInd.OH), ...
+                          VarName({}, 'volumeFractions', nph, phaseInd.liquid)};
+            model = model.registerPropFunction({'diffOHFlux', fn, inputnames}); 
+            
+            % assemble OH migration flux
+            fn = @() AlkalineElectrode.updateOHMigrationFlux;
+            inputnames = {'j'};
+            model = model.registerPropFunction({'migOHFlux', fn, inputnames}); 
+            
+            %% Assemble  fluxes
+            
+            % assemble fluxes of gas components
+            fn = @() AlkalineElectrode.updateGasFluxes;
+            inputnames = {compGasMasses, ...
+                          VarName({}, 'volumeFractions', nph, phaseInd.gas), ...
+                          VarName({}, 'phaseVelocities', nph, phaseInd.gas)};
+            model = model.registerPropFunction({VarName({}, 'compGasFluxes', ngas), fn, inputnames});
+            
+            % Assemble flux of the overall liquid component
+            fn = @() AlkalineElectrode.updateLiquidFlux;
+            inputnames = {VarName({}, 'phaseVelocities', nph, phaseInd.liquid), ...
+                          'liqrho', ...
+                          VarName({}, 'volumeFractions', nph, phaseInd.liquid)};
+            model = model.registerPropFunction({'liquidFlux', fn, inputnames});
+                
             
             %% Assemble charge source
 
@@ -333,69 +324,37 @@ classdef AlkalineElectrode < ElectronicComponent
             
             %% Assemble the residual equations
 
-
-            if model.useZeroDmodel
-                % Assemble mass conservation equations for components in gas phase
-                fn = @() AlkalineElectrode.updateGasMassCons0;
-
-                for igas = 1 : ngas
-                    inputnames = {VarName({}, 'compGasBcSources', ngas, igas), ...
-                                  VarName({}, 'compGasSources'  , ngas, igas), ...
-                                  VarName({}, 'compGasAccums'   , ngas, igas)};
-                    if igas == gasInd.H2Ogas
-                        inputnames{end + 1} = 'H2OliquidVaporExchangeRate';
-                    end
-                    model = model.registerPropFunction({VarName({}, 'compGasMassCons', nph, igas), fn, inputnames});
-                end
-
-
-                % Assemble mass conservation for the overall liquid component
-                fn = @() AlkalineElectrode.updateLiquidMassCons0;
-                inputnames = {'liquidAccumTerm', ...
-                              'liquidSource'};
-                model = model.registerPropFunction({'liquidMassCons', fn, inputnames});
-                
-                % Assemble mass conservation equation for OH
-                fn = @() AlkalineElectrode.updateOHMassCons0;
-                inputnames = {'OHSource', ...
-                              'OHaccum'};                          
-                model = model.registerPropFunction({'OHMassCons', fn, inputnames});
-
-            else
-
-                fn = @() AlkalineElectrode.updateLiquidViscosity;
-                inputnames = {'T', ....
-                              VarName({}, 'concentrations', nliquid, liquidInd.OH)};
-                model = model.registerPropFunction({VarName({}, 'viscosities', nph, phaseInd.liquid), fn, inputnames});
-                
-                % Assemble mass conservation equations for components in gas phase
-                fn = @() AlkalineElectrode.updateGasMassCons;
-                for igas = 1 : ngas
-                    inputnames = {VarName({}, 'compGasBcSources', ngas, igas), ...
-                                  VarName({}, 'compGasFluxes'   , ngas, igas), ...
-                                  VarName({}, 'compGasSources'  , ngas, igas), ...
-                                  VarName({}, 'compGasAccums'   , ngas, igas)};
-                    model = model.registerPropFunction({VarName({}, 'compGasMassCons', nph, igas), fn, inputnames});
-                end
-
-                % Assemble mass conservation for the overall liquid component
-                fn = @() AlkalineElectrode.updateLiquidMassCons;
-                inputnames = {'liquidFlux'     , ...
-                              'liquidAccumTerm', ...
-                              'liquidSource'};
-                model = model.registerPropFunction({'liquidMassCons', fn, inputnames});
-                
-                % Assemble mass conservation equation for OH
-                fn = @() AlkalineElectrode.updateOHMassCons;
-                inputnames = {'convOHFlux', ...
-                              'diffOHFlux', ...
-                              'migOHFlux' , ...
-                              'OHSource'  , ...
-                              'OHaccum'};
-                model = model.registerPropFunction({'OHMassCons', fn, inputnames});
-
-            end
+            fn = @() AlkalineElectrode.updateLiquidViscosity;
+            inputnames = {'T', ....
+                          VarName({}, 'concentrations', nliquid, liquidInd.OH)};
+            model = model.registerPropFunction({VarName({}, 'viscosities', nph, phaseInd.liquid), fn, inputnames});
             
+            % Assemble mass conservation equations for components in gas phase
+            fn = @() AlkalineElectrode.updateGasMassCons;
+            for igas = 1 : ngas
+                inputnames = {VarName({}, 'compGasBcSources', ngas, igas), ...
+                              VarName({}, 'compGasFluxes'   , ngas, igas), ...
+                              VarName({}, 'compGasSources'  , ngas, igas), ...
+                              VarName({}, 'compGasAccums'   , ngas, igas)};
+                model = model.registerPropFunction({VarName({}, 'compGasMassCons', nph, igas), fn, inputnames});
+            end
+
+            % Assemble mass conservation for the overall liquid component
+            fn = @() AlkalineElectrode.updateLiquidMassCons;
+            inputnames = {'liquidFlux'     , ...
+                          'liquidAccumTerm', ...
+                          'liquidSource'};
+            model = model.registerPropFunction({'liquidMassCons', fn, inputnames});
+            
+            % Assemble mass conservation equation for OH
+            fn = @() AlkalineElectrode.updateOHMassCons;
+            inputnames = {'convOHFlux', ...
+                          'diffOHFlux', ...
+                          'migOHFlux' , ...
+                          'OHSource'  , ...
+                          'OHaccum'};
+            model = model.registerPropFunction({'OHMassCons', fn, inputnames});
+
             % Assemble partial Molar Volumes (not used in first implementation)
             % fn = @() AlkalineElectrode.updatePartialMolarVolumes;
             % inputnames = {'OHmolality', 'T', 'liqrho'};
