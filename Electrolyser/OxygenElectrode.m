@@ -43,6 +43,11 @@ classdef OxygenElectrode < OpenElectrode
             inputnames = {'O2rhoeps', 'H2Ogasrhoeps', 'T'};
             model = model.registerPropFunction({VarName({}, 'pressures', nph, phaseInd.gas), fn, inputnames});
             
+            fn = @() OxygenElectrode.updateGasViscosity;
+            inputnames = {'T'};
+            model = model.registerPropFunction({VarName({}, 'viscosities', nph, phaseInd.gas), fn, inputnames});
+
+
             fn = @() OxygenElectrode.updateO2Accum;
             functionCallSetupFn = @(propfunction) PropFunction.accumFuncCallSetupFn(propfunction);
             fn = {fn, functionCallSetupFn};

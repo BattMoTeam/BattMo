@@ -110,8 +110,8 @@ classdef OpenElectrode < ElectronicComponent
             varnames{end + 1} = volumeFractions;
             
             % Masses for each component of gas (per total volume, as used in mass of conservation law)
-            % compGasMasses = VarName({}, 'compGassMasses', ngas);
-            % varnames{end + 1} = compGasMasses;
+            compGasMasses = VarName({}, 'compGasMasses', ngas);
+            varnames{end + 1} = compGasMasses;
 
             % Liquid density (Mass of liquid per volume of liquid)
             varnames{end + 1} = 'liquidDensity';
@@ -292,12 +292,10 @@ classdef OpenElectrode < ElectronicComponent
                 
                 % assemble fluxes of gas components
                 fn = @() OpenElectrode.updateGasFluxes;
-                inputnames = {'compGasMasses', ...
+                inputnames = {compGasMasses, ...
                               VarName({}, 'volumeFractions', nph, phaseInd.gas), ...
                               VarName({}, 'phaseVelocities', nph, phaseInd.gas)};
-                getGasInd = @(ind) VarName({}, 'compGasFluxes', ncomp, ind);
-                model = model.registerPropFunction({getGasInd(1), fn, inputnames});
-                model = model.registerPropFunction({getGasInd(2), fn, inputnames});
+                model = model.registerPropFunction({VarName({}, 'compGasFluxes', ngas), fn, inputnames});
                 
                 % Assemble flux of the overall liquid component
                 fn = @() OpenElectrode.updateLiquidFlux;
@@ -347,15 +345,24 @@ classdef OpenElectrode < ElectronicComponent
                 model = model.registerPropFunction({'OHMassCons', fn, inputnames});
 
             else
+
+                fn = @() OpenElectrode.updateLiquidViscosity;
+                inputnames = {'T', ....
+                              VarName({}, 'concentrations', nliquid, liquidInd.OH)};
+                model = model.registerPropFunction({VarName({}, 'viscosities', nph, phaseInd.liquid), fn, inputnames});
                 
                 % Assemble mass conservation equations for components in gas phase
                 fn = @() OpenElectrode.updateGasMassCons;
-                inputnames = {'H2OliquidVaporExchangeRate' , ...
-                              VarName({}, 'compGasBcSources', ngas, gasInd.H2Ogas), ...
-                              VarName({}, 'compGasFluxes'   , ngas, gasInd.H2Ogas), ...
-                              VarName({}, 'compGasSources'  , ngas, gasInd.H2Ogas), ...
-                              VarName({}, 'compGasAccums'   , ngas, gasInd.H2Ogas)};
-                model = model.registerPropFunction({VarName({}, 'compGasMassCons', nph, gasInd.H2Ogas), fn, inputnames});
+                for igas = 1 : ngas
+                    inputnames = {VarName({}, 'compGasBcSources', ngas, igas), ...
+                                  VarName({}, 'compGasFluxes'   , ngas, igas), ...
+                                  VarName({}, 'compGasSources'  , ngas, igas), ...
+                                  VarName({}, 'compGasAccums'   , ngas, igas)};
+                    if igas == gasInd.H2Ogas
+                        inputnames{end + 1} = 'H2OliquidVaporExchangeRate';
+                    end
+                    model = model.registerPropFunction({VarName({}, 'compGasMassCons', nph, igas), fn, inputnames});
+                end
 
                 % Assemble mass conservation for the overall liquid component
                 fn = @() OpenElectrode.updateLiquidMassCons;
@@ -605,7 +612,7 @@ classdef OpenElectrode < ElectronicComponent
                 indcomp = model.gasInd.compMap(ind);
                 % Note the power 0.5. We use Bruggeman coefficient 1.5 but the component mass is given per *total* volume
                 % (meaning that it already is multipled by the volume fraction vf{ph}).
-                state.convFluxes{indcomp} =  state.compMasses{indcomp}.*(vfg.^0.5).*vg;
+                state.convFluxes{indcomp} =  state.compGasMass{indcomp}.*(vfg.^0.5).*vg;
             end
             
         end
@@ -658,6 +665,7 @@ classdef OpenElectrode < ElectronicComponent
             state.compGasMassCons = compGasMassCons;
         end
 
+        
         function state = updateGasMassCons0(model, state)
         % zero flux version
             for ind = 1 : model.gasInd.ncomp
