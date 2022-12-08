@@ -104,9 +104,10 @@ classdef Catalyser < BaseModel
 
         function state = updateEelyte(model, state)
 
-            T        = state.T;
-            cOHelyte = state.cOHelyte;
-
+            T    = state.T;
+            cOH  = state.cOHelyte;
+            H2Oa = state.H2OaElyte;
+            
             params = model.elyteParams;
             con    = model.constants;
 
@@ -115,16 +116,16 @@ classdef Catalyser < BaseModel
             c0 = params.c0;
             E0 = params.E0;
 
-            %% TODO chack sign and expression
-            state.Er = E0 - R.*T./(2.*F) .* log(c0.^2 .* cOHelyte.^-2);
+            state.Eelyte = E0 + R*T/(2*F)*log((H2Oa.^2).*(c0.^2).*(cOH.^-2));
             
         end
 
         function state = updateEinmr(model, state)
 
-            T        = state.T;
-            cOHinmr = state.cOHinmr;
-
+            T    = state.T;
+            cOH  = state.cOHinmr;
+            H2Oa = state.H2Oainmr;
+            
             params = model.inmrParams;
             con    = model.constants;
 
@@ -133,8 +134,7 @@ classdef Catalyser < BaseModel
             c0 = params.c0;
             E0 = params.E0;
 
-            %% TODO chack sign and expression
-            state.Er = E0 - R.*T./(2.*F) .* log(c0.^2 .* cOHinmr.^-2);
+            state.Einmr = E0 + R*T/(2*F)*log((H2Oa.^2).*(c0.^2).*(cOH.^-2));
             
         end
 

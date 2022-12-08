@@ -149,7 +149,6 @@ classdef IonomerMembrane < ElectronicComponent
         function state = updateH2Oactivity(model, state)
 
             H2Oc = state.H2Oc;
-
             H2Oc0 = model.H2O.c0;
             
             state.H2Oa = H2Oc./H2Oc0;
