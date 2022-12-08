@@ -260,7 +260,10 @@ classdef IonomerMembrane < ElectronicComponent
         
         function state = updateEsource(model, state)
 
-            state.eSource = - state.OHSource;
+            F = model.constants.F;
+            z = model.OH.z;
+            
+            state.eSource = z*F*state.OHSource;
             
         end
 
