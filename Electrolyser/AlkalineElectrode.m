@@ -498,13 +498,11 @@ classdef AlkalineElectrode < ElectronicComponent
 
         function state = updateWaterActivity(model, state)
 
-            R = model.constants.R;
-            mu0 = model.sp.mu0;
-            
-            p = state.compGasPressures(model.gasInd.H2O);
             T = state.T;
-            
-            state.H2Oa = mu0 + R*T*log(p ./ 1e5);
+            m = state.OHmolality;
+
+            % From Balej 1985 (ref 8), equation 28
+            state.H2Oa = 10.^(-0.02255 .* m + 0.001434 .* m.^2 + (1.38.*m - 0.9254.*m.^2)./T);
             
         end
         
