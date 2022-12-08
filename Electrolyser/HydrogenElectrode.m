@@ -42,24 +42,11 @@ classdef HydrogenElectrode < OpenElectrode
             inputnames = {'H2rhoeps', 'H2Ogasrhoeps', 'T'};
             model = model.registerPropFunction({VarName({}, 'pressures', nph, phaseInd.gas), fn, inputnames});
             
-            if model.useZeroDmodel
-                % assemble mass of H2
-                fn = @() HydrogenElectrode.updatemassH20;
-                inputnames = {VarName({}, 'compGasBcSources', ngas, gasInd.H2), ...
-                              VarName({}, 'compGasSources', ngas, gasInd.H2), ...
-                              VarName({}, 'accumTerms', ncomp, compInd.H2)};
-                model = model.registerPropFunction({VarName({}, 'gasMassCons', nph, gasInd.H2), fn, inputnames});
-
-                fn = @() OpenElectrode.updateH2Accum;
-                functionCallSetupFn = @(propfunction) PropFunction.accumFuncCallSetupFn(propfunction);
-                fn = {fn, functionCallSetupFn};
-                inputnames = {'H2rhoeps'};
-                model = model.registerPropFunction({VarName({}, 'accumTerms', ncomp, compInd.H2), fn, inputnames});
-            
-            else
-                
-            end
-            
+            fn = @() HydrogenElectrode.updateH2Accum;
+            functionCallSetupFn = @(propfunction) PropFunction.accumFuncCallSetupFn(propfunction);
+            fn = {fn, functionCallSetupFn};
+            inputnames = {'H2rhoeps'};
+            model = model.registerPropFunction({VarName({}, 'compGasAccums', ngas, gasInd.H2), fn, inputnames});
             
         end
         

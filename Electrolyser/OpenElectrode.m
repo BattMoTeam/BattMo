@@ -162,28 +162,25 @@ classdef OpenElectrode < ElectronicComponent
             %% Coupling variables
             
             % Mass sources for the gas Components
-            compGasSources = VarName({}, 'compGasSources', ngas);
-            varnames{end + 1} = compGasSources;
+            varnames{end + 1}  = VarName({}, 'compGasSources', ngas);
             % Mass sources at the boundaries for the gas components
-            compGasBcSources = VarName({}, 'compGasBcSources', ngas);
-            varnames{end + 1} = compGasBcSources;
+            varnames{end + 1}  = VarName({}, 'compGasBcSources', ngas);
+            % Accumulation term for the gass components in [kg/s]
+            varnames{end + 1}  = VarName({}, 'compGasAccums', ngas);
             % Source of OH (in mole)
             varnames{end + 1} = 'OHSource';
             % Liquid-Vapor exchange rate for H2O (H2Oliquid <-> H2Ogas)
             varnames{end + 1} = 'H2OliquidVaporExchangeRate';
             % Source of H2Oliquid (in mole)
             varnames{end + 1} = 'H2OliquidSource';
-            % Accumulation terms (for all components)
-            % beware of the units (typically in kg but in mol for OH)
-            accumTerms = VarName({}, 'accumTerms', ncomp);
-            varnames{end + 1} = accumTerms;
-            % Accumulation term for the overall liquid components (mass)
+            % Accumulation terms for OH in [mol/s]
+            varnames{end + 1} = 'OHaccum';
+            % Accumulation term for the overall liquid components in [kg/s]
             varnames{end + 1} = 'liquidAccumTerm';
             
             %% Residual variables            
             % Residual for the mass conservation equations of the components in the gas
-            gasMassCons = VarName({}, 'gasMassCons', ngas);
-            varnames{end + 1} = gasMassCons;
+            varnames{end + 1}  = VarName({}, 'compGasMassCons', ngas);
             % Residual for the mass conservation equation of the aggregated components in the liquid phase
             varnames{end + 1} = 'liquidMassCons';
             % Residual for the conservation equation for OH in the liquid phase (unit is Mol)
@@ -323,11 +320,17 @@ classdef OpenElectrode < ElectronicComponent
             if model.useZeroDmodel
                 % Assemble mass conservation equations for components in gas phase
                 fn = @() OpenElectrode.updateGasMassCons0;
-                inputnames = {'H2OliquidVaporExchangeRate' , ...
-                              VarName({}, 'compGasBcSources', ngas, gasInd.H2Ogas), ...
-                              VarName({}, 'compGasSources', ngas, gasInd.H2Ogas), ...
-                              VarName({}, 'accumTerms', ncomp, compInd.H2Ogas)};
-                model = model.registerPropFunction({VarName({}, 'gasMassCons', nph, gasInd.H2Ogas), fn, inputnames});
+
+                for igas = 1 : ngas
+                    inputnames = {VarName({}, 'compGasBcSources', ngas, igas), ...
+                                  VarName({}, 'compGasSources'  , ngas, igas), ...
+                                  VarName({}, 'compGasAccums'   , ngas, igas)};
+                    if igas == gasInd.H2Ogas
+                        inputnames{end + 1} = 'H2OliquidVaporExchangeRate';
+                    end
+                    model = model.registerPropFunction({VarName({}, 'compGasMassCons', nph, igas), fn, inputnames});
+                end
+
 
                 % Assemble mass conservation for the overall liquid component
                 fn = @() OpenElectrode.updateLiquidMassCons0;
@@ -339,21 +342,20 @@ classdef OpenElectrode < ElectronicComponent
                 
                 % Assemble mass conservation equation for OH
                 fn = @() OpenElectrode.updateOHMassCons0;
-                inputnames = {'OHSource'  , ...
-                              VarName({}, 'accumTerms', ncomp, compInd.OH)};                          
+                inputnames = {'OHSource', ...
+                              'OHaccum'};                          
                 model = model.registerPropFunction({'OHMassCons', fn, inputnames});
 
             else
                 
-                warning('update from useZeroDmodel above')
                 % Assemble mass conservation equations for components in gas phase
                 fn = @() OpenElectrode.updateGasMassCons;
                 inputnames = {'H2OliquidVaporExchangeRate' , ...
-                              compGasSources  , ...
-                              compGasFluxes   , ...
-                              compGasBcSources, ...
-                              VarName({}, 'accumTerms', ncomp, compInd.gas)};
-                model = model.registerPropFunction({'gasMassCons', fn, inputnames});
+                              VarName({}, 'compGasBcSources', ngas, gasInd.H2Ogas), ...
+                              VarName({}, 'compGasFluxes'   , ngas, gasInd.H2Ogas), ...
+                              VarName({}, 'compGasSources'  , ngas, gasInd.H2Ogas), ...
+                              VarName({}, 'compGasAccums'   , ngas, gasInd.H2Ogas)};
+                model = model.registerPropFunction({VarName({}, 'compGasMassCons', nph, gasInd.H2Ogas), fn, inputnames});
 
                 % Assemble mass conservation for the overall liquid component
                 fn = @() OpenElectrode.updateLiquidMassCons;
@@ -370,7 +372,7 @@ classdef OpenElectrode < ElectronicComponent
                               'diffOHFlux', ...
                               'migOHFlux' , ...
                               'OHSource'  , ...
-                              VarName({}, 'accumTerms', ncomp, compInd.OH)};                          
+                              'OHaccum'};
                 model = model.registerPropFunction({'OHMassCons', fn, inputnames});
 
             end
@@ -395,12 +397,11 @@ classdef OpenElectrode < ElectronicComponent
             functionCallSetupFn = @(propfunction) PropFunction.accumFuncCallSetupFn(propfunction);
             fn = {fn, functionCallSetupFn};
             inputnames = {'H2Ogasrhoeps'};
-            model = model.registerPropFunction({VarName({}, 'accumTerms', ncomp, compInd.H2Ogas), fn, inputnames});
+            model = model.registerPropFunction({VarName({}, 'compGasAccums', ngas, gasInd.H2Ogas), fn, inputnames});
             inputnames = {'OHceps'};
-            model = model.registerPropFunction({VarName({}, 'accumTerms', ncomp, compInd.OH), fn, inputnames});
+            model = model.registerPropFunction({'OHaccum', fn, inputnames});
 
             model = model.removeVarName(VarName({}, 'pressures', nph, phaseInd.solid));
-            model = model.removeVarName(VarName({}, 'accumTerms', ncomp, [compInd.H2Oliquid, compInd.K]));
             
         end
         
@@ -563,11 +564,13 @@ classdef OpenElectrode < ElectronicComponent
         end
         
         function state = updateOHConvectionFlux(model, state)
+            
             cOH = state.concentrations{model.liquidInd.OH};
-            vl  = state.phaseVelocities{model.phaseInd.liquid};
-            vfl = state.volumeFractions{model.phaseInd.liquid};
+            v  = state.phaseVelocities{model.phaseInd.liquid};
+            vf = state.volumeFractions{model.phaseInd.liquid};
 
-            state.convOHFlux = cOH.*vfl.^(1.5).*vfl;
+            state.convOHFlux = cOH.*vf.^(1.5).*v;
+            
         end
         
         
@@ -645,15 +648,14 @@ classdef OpenElectrode < ElectronicComponent
             state.compGasSources{indH2Ogas} = state.compGasSources{indH2Ogas} + state.evapH2Osources;
             
             for ind = 1 : model.gasInd.ncomp
-                indcomp = model.gasInd.compMap(ind);
-                gasMassCons{ind} = assembleConservationEquation(model, ...
+                compGasMassCons{ind} = assembleConservationEquation(model, ...
                                                                 state.compGasFluxes{ind}   , ...
                                                                 state.compGasBcSources{ind}, ...
                                                                 state.compGasSources{ind}  , ...
-                                                                state.accumTerms{indcomp});
+                                                                state.compGasAccums{ind});
             end
             
-            state.gasMassCons = gasMassCons;
+            state.compGasMassCons = compGasMassCons;
         end
 
         function state = updateGasMassCons0(model, state)
@@ -694,7 +696,7 @@ classdef OpenElectrode < ElectronicComponent
             state.OHMassCons = assembleConservationEquation(model         , ...
                                                             OHFlux        , ...
                                                             state.OHsource, ...
-                                                            state.accumTerms{model.compInd.OH});
+                                                            state.OHaccum);
         end
 
         function state = updateOHMassCons0(model, state)
