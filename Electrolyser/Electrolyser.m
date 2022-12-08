@@ -88,7 +88,7 @@ classdef Electrolyser < BaseModel
                     model = model.registerPropFunction({outputvarname, fn, inputvarnames});
                 end
 
-                inputvarnames = {VarName({elde}, 'pressures', phaseInd.nphase, phaseInd.gas)};
+                inputvarnames = {VarName({elde}, 'phasePressures', phaseInd.nphase, phaseInd.gas)};
                 model = model.registerPropFunction({{cat, 'pressureActiveGas'}, fn, inputvarnames});
                 
             end

@@ -26,6 +26,9 @@ classdef AlkalineElectrode < ElectronicComponent
         % sp.K.V0
         % sp.H2O.MW
         % sp.H2O.beta % interpolation coefficient for water equilibrium
+        % sp.H2O.mu0 % Standard chemical potential
+
+        
         % sp.V0 % indexed values for partial molar volumes
         
     end
@@ -103,18 +106,18 @@ classdef AlkalineElectrode < ElectronicComponent
             % total liquid density (mass of liquid per total volume)
             varnames{end + 1} = 'liqrhoeps';
             % Phase pressures
-            pressures = VarName({}, 'pressures', nph);
-            varnames{end + 1} = pressures;
+            phasePressures = VarName({}, 'phasePressures', nph);
+            varnames{end + 1} = phasePressures;
             % Phase volume fractions
             volumeFractions = VarName({}, 'volumeFractions', nph);
             varnames{end + 1} = volumeFractions;
-            
+            % Masses for each component of gas (per total volume, as used in mass of conservation law)
+            varnames{end + 1}  = VarName({}, 'compGasPressures', ngas);
             % Masses for each component of gas (per total volume, as used in mass of conservation law)
             compGasMasses = VarName({}, 'compGasMasses', ngas);
             varnames{end + 1} = compGasMasses;
-
             % Liquid density (Mass of liquid per volume of liquid)
-            varnames{end + 1} = 'liquidDensity';
+            varnames{end + 1} = 'liqrho';
             % Concentrations in the liquid
             concentrations = VarName({}, 'concentrations', nliquid);
             varnames{end + 1} = concentrations;
@@ -197,8 +200,8 @@ classdef AlkalineElectrode < ElectronicComponent
 
             % assemble liquid pressure using capillary pressure function
             fn = @() AlkalineElectrode.updateLiquidPressure;
-            inputnames = {VarName({}, 'pressures', nph, phaseInd.gas), volumeFractions};
-            model = model.registerPropFunction({VarName({}, 'pressures', nph, phaseInd.liquid), fn, inputnames});
+            inputnames = {VarName({}, 'phasePressures', nph, phaseInd.gas), volumeFractions};
+            model = model.registerPropFunction({VarName({}, 'phasePressures', nph, phaseInd.liquid), fn, inputnames});
             
             %% assemble masses 
             
@@ -219,19 +222,22 @@ classdef AlkalineElectrode < ElectronicComponent
             fn = @() AlkalineElectrode.updateLiquidDensity;
             inputnames = {'liqrhoeps', ...
                           VarName({}, 'volumeFractions', nph, phaseInd.liquid)};
-            model = model.registerPropFunction({'liquidDensity', fn, inputnames});            
+            model = model.registerPropFunction({'liqrho', fn, inputnames});            
             
             % assemble concentrations
             fn = @() AlkalineElectrode.updateConcentrations;
-            inputnames = {'liquidDensity', ...
+            inputnames = {'liqrho', ...
                           VarName({}, 'concentrations', nliquid, liquidInd.OH)};
             ind = setdiff([1 : nliquid]', liquidInd.OH);
             model = model.registerPropFunction({VarName({}, 'concentrations', nliquid, ind), fn, inputnames});            
+            
+            fn = @() AlkalineElectrode.updateWaterActivity;
+            inputnames = {VarName({}, 'compGasPressures', ngas, gasInd.H2Ogas)};
             model = model.registerPropFunction({'H2Oa', fn, inputnames});
 
             % compute OH molalities
             fn = @() AlkalineElectrode.updateMolality;
-            inputnames = {VarName({}, 'concentrations', nph, model.liquidInd.OH), 'liquidDensity'};
+            inputnames = {VarName({}, 'concentrations', nph, model.liquidInd.OH), 'liqrho'};
             model = model.registerPropFunction({'OHmolality', fn, inputnames});            
             
             %% assemble vapor pressure
@@ -263,7 +269,7 @@ classdef AlkalineElectrode < ElectronicComponent
                 %% Assemble phase velocities
                 fn = @() AlkalineElectrode.updatePhaseVelocities;
                 
-                inputnames = {VarName({}, 'pressures', nph, phaseInd.mobile), ...
+                inputnames = {VarName({}, 'phasePressures', nph, phaseInd.mobile), ...
                               VarName({}, 'viscosities', nph, phaseInd.mobile)};
                 model = model.registerPropFunction({VarName({}, 'phaseVelocities', nph, phaseInd.mobile), fn, inputnames});
                 
@@ -300,7 +306,7 @@ classdef AlkalineElectrode < ElectronicComponent
                 % Assemble flux of the overall liquid component
                 fn = @() AlkalineElectrode.updateLiquidFlux;
                 inputnames = {VarName({}, 'phaseVelocities', nph, phaseInd.liquid), ...
-                              'liquidDensity', ...
+                              'liqrho', ...
                               VarName({}, 'volumeFractions', nph, phaseInd.liquid)};
                 model = model.registerPropFunction({'liquidFlux', fn, inputnames});
                 
@@ -386,7 +392,7 @@ classdef AlkalineElectrode < ElectronicComponent
             
             % Assemble partial Molar Volumes (not used in first implementation)
             % fn = @() AlkalineElectrode.updatePartialMolarVolumes;
-            % inputnames = {'OHmolality', 'T', 'liquidDensity'};
+            % inputnames = {'OHmolality', 'T', 'liqrho'};
             % ind = [model.liquidInd.OH; model.liquidInd.K];
             % model = model.registerPropFunction({VarName({}, 'partialMolarVolumes', nliquid, ind), fn, inputnames});
 
@@ -408,23 +414,28 @@ classdef AlkalineElectrode < ElectronicComponent
             inputnames = {'OHceps'};
             model = model.registerPropFunction({'OHaccum', fn, inputnames});
 
-            model = model.removeVarName(VarName({}, 'pressures', nph, phaseInd.solid));
+            model = model.removeVarName(VarName({}, 'phasePressures', nph, phaseInd.solid));
             
         end
         
 
         function state = updateVolumeFractions(model, state)
+
             liqeps = state.liqeps;
 
             state.volumeFractions{model.phaseInd.liquid} = liqeps;
-            state.volumeFractions{model.phaseInd.solid} = model.solidVolumefraction;
-            state.volumeFractions{model.phaseInd.gas} = 1 - (liqeps + model.solidVolumefraction);
+            state.volumeFractions{model.phaseInd.solid}  = model.solidVolumefraction;
+            state.volumeFractions{model.phaseInd.gas}    = 1 - (liqeps + model.solidVolumefraction);
+            
         end
 
 
         function state = updateLiquidDensity(model, state)
 
-            state.liquidDensity = state.liqrhoeps./state.volumeFractions{model.phaseInd.liquid};
+            vf = state.volumeFractions{model.phaseInd.liquid};
+
+            state.liqrho = state.liqrhoeps./vf;
+            
         end
         
         
@@ -435,7 +446,7 @@ classdef AlkalineElectrode < ElectronicComponent
             levcoef = model.leverettCoefficient;
             theta   = model.theta;
             
-            pgas = state.pressures{model.phaseInd.gas};
+            pgas = state.phasePressures{model.phaseInd.gas};
 
             vl = state.volumeFractions{model.phaseInd.liquid};
             vg = state.volumeFractions{model.phaseInd.gas};
@@ -448,7 +459,7 @@ classdef AlkalineElectrode < ElectronicComponent
                         
             pliq = pgas - pc;
 
-            state.pressures{model.phaseInd.liquid} = pliq;
+            state.phasePressures{model.phaseInd.liquid} = pliq;
         end
         
 
@@ -472,7 +483,7 @@ classdef AlkalineElectrode < ElectronicComponent
             sp = model.sp;
 
             cOH = state.concentrations{model.liquidInd.OH};
-            massliquid = state.liquidDensity;
+            massliquid = state.liqrho;
 
             cK   = cOH;
             cH2O = (massliquid - cOH.*sp.OH.MW - cK.*sp.K.MW)./sp.H2O.MW;
@@ -483,14 +494,23 @@ classdef AlkalineElectrode < ElectronicComponent
             state.concentrations{lInd.H2O} = cH2O;
             state.concentrations{lInd.H}   = cH;
             
-            warning('should update water activity');
-            
         end
 
+        function state = updateWaterActivity(model, state)
+
+            R = model.constants.R;
+            mu0 = model.sp.mu0;
+            
+            p = state.compGasPressures(model.gasInd.H2O);
+            T = state.T;
+            
+            state.H2Oa = mu0 + R*T*log(p ./ 1e5);
+            
+        end
+        
         function state = updateLiquidViscosity(model, state)
 
-            warning('move this function to specific electrode as updateGasViscosity')
-            c = state.concentrations(model.liquidInd.OH);
+            cOH = state.concentrations{model.liquidInd.OH};
             T = state.T;
             
             mu_par = [4.3e-1  ;
@@ -562,7 +582,7 @@ classdef AlkalineElectrode < ElectronicComponent
             phaseinds = [model.phaseInd.liquid; model.phaseInd.gas];
             for ind = 1 : numel(phaseinds)
                 phind = phaseinds{ind};
-                p = state.pressures{phind};
+                p = state.phasePressures{phind};
                 mu = state.viscosities{phind};
                 v{ind} = assembleFlux(model, p, K./mu);
             end
@@ -609,8 +629,9 @@ classdef AlkalineElectrode < ElectronicComponent
             v  = state.phaseVelocities{model.phaseInd.gas};
 
             for igas = 1 : model.gasInd.ncomp
-                % Note the power 0.5. We use Bruggeman coefficient 1.5 but the component mass is given per *total* volume
-                % (meaning that it already is multipled by the volume fraction vf{ph}).
+                % NOTE: We take the power to 0.5 of the volume fraction but it corresponds to a Bruggeman coefficient
+                % 1.5, because the component mass is given per *total* volume
+                % (meaning that it already is multipled by the volume fraction vf).
                 state.compGasFluxes{igas} =  state.compGasMasses{igas}.*(vf.^0.5).*v;
             end
             
@@ -618,19 +639,20 @@ classdef AlkalineElectrode < ElectronicComponent
         
         function state = updateLiquidFlux(model, state)
              
-            liqrho = state.liquidDensity;
+            liqrho = state.liqrho;
             liqvf  = state.volumeFractions{model.phaseInd.liquid};
             liqv   = state.phaseVelocities{model.phaseInd.liquid};
 
             % We use Bruggeman coefficient 1.5 
             state.liquidFlux = liqrho.*liqvf.^1.5.*liqv;
+            
         end
 
         function state = updateMolality(model, state)
             
             MW = model.sp.OH.MW;
             
-            rho = state.liquidDensity;
+            rho = state.liqrho;
             c   = state.concentrations{model.liquidInd.OH};
             
             state.OHmolality = c./(rho - c.*MW);
@@ -721,6 +743,7 @@ classdef AlkalineElectrode < ElectronicComponent
         end
 
         function state = updatePartialMolarVolumes(model, state)
+
             error('not used in first implementation');
             OH = model.sp.OH;
             K = model.sp.K;
@@ -749,6 +772,7 @@ classdef AlkalineElectrode < ElectronicComponent
             
             state.partialMolarVolumes{model.liquidInd.OH} = pmv.*abs(OH.V0)./(abs(OH.V0) + abs(K.V0));
             state.partialMolarVolumes{model.liquidInd.K} = pmv.*abs(K.V0)./(abs(OH.V0) + abs(K.V0));
+            
         end
         
         

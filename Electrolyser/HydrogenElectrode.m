@@ -40,7 +40,8 @@ classdef HydrogenElectrode < AlkalineElectrode
             % assemble gas pressure using ideal gas law
             fn = @() HydrogenElectrode.updateGasPressure;
             inputnames = {'H2rhoeps', 'H2Ogasrhoeps', 'T'};
-            model = model.registerPropFunction({VarName({}, 'pressures', nph, phaseInd.gas), fn, inputnames});
+            model = model.registerPropFunction({VarName({}, 'phasePressures', nph, phaseInd.gas), fn, inputnames});
+            model = model.registerPropFunction({VarName({}, 'compGasPressures', ngas), fn, inputnames});
 
             fn = @() HydrogenElectrode.updateGasViscosity;
             inputnames = {'T'};
@@ -52,6 +53,33 @@ classdef HydrogenElectrode < AlkalineElectrode
             inputnames = {'H2rhoeps'};
             model = model.registerPropFunction({VarName({}, 'compGasAccums', ngas, gasInd.H2), fn, inputnames});
             
+        end
+        
+        function state = updateGasPressure(model, state)
+
+            gasInd   = model.gasInd;
+            phaseInd = model.phaseInd;
+            MWH2O    = model.sp.H2O.MW;
+            MWH2     = model.sp.H2.MW;
+            
+            mH2  = state.H2rhoeps;
+            mH2O = state.H2Ogasrhoeps;
+            vf   = state.volumeFractions{model.phaseInd.gas};
+
+            pH2  = R*T*(mH2./MWH2)./vf
+            pH2O = R*T*(mH20./MWH2)./vf
+            
+            state.compGasPressure{gasInd.H2}   = pH2;
+            state.compGasPressure{gasInd.H2O}  = pH2O
+            state.phasePressures{phaseInd.gas} = pH2 + pH2O;
+            
+        end
+        
+        
+        function state = updateGasViscosity(model, state)
+            T = state.T;
+            warning('check that one! this was taken directly from OxygenElectrode');
+            state.viscosities(model.phaseInd.gas) = (0.1971 + T * (0.0803 - 3.99e-5 * T)) * 1e-6;
         end
         
         
