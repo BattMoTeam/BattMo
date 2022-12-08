@@ -605,22 +605,22 @@ classdef TwoPhaseElectrode < ElectronicComponent
         function state = updateGasFluxes(model, state)
         % assemble convection fluxes
 
-            vfg = state.volumeFractions{model.phaseInd.gas};
-            vg  = state.phaseVelocities{model.phaseInd.gas};
+            vf = state.volumeFractions{model.phaseInd.gas};
+            v  = state.phaseVelocities{model.phaseInd.gas};
 
-            for ind = 1 : model.gasInd.ncomp
-                indcomp = model.gasInd.compMap(ind);
+            for igas = 1 : model.gasInd.ncomp
                 % Note the power 0.5. We use Bruggeman coefficient 1.5 but the component mass is given per *total* volume
                 % (meaning that it already is multipled by the volume fraction vf{ph}).
-                state.convFluxes{indcomp} =  state.compGasMass{indcomp}.*(vfg.^0.5).*vg;
+                state.compGasFluxes{igas} =  state.compGasMasses{igas}.*(vf.^0.5).*v;
             end
             
         end
         
         function state = updateLiquidFlux(model, state)
+             
             liqrho = state.liquidDensity;
-            liqvf   = state.volumeFractions{model.phaseInd.liquid};
-            liqv    = state.phaseVelocities{model.phaseInd.liquid};
+            liqvf  = state.volumeFractions{model.phaseInd.liquid};
+            liqv   = state.phaseVelocities{model.phaseInd.liquid};
 
             % We use Bruggeman coefficient 1.5 
             state.liquidFlux = liqrho.*liqvf.^1.5.*liqv;
@@ -634,17 +634,20 @@ classdef TwoPhaseElectrode < ElectronicComponent
             c   = state.concentrations{model.liquidInd.OH};
             
             state.OHmolality = c./(rho - c.*MW);
+            
         end
         
         
         function state = updateESource(model, state)
         % Assemble charge source
+
             F = model.constants.F;
             z = model.sp.OH.z
             
-            OHsrc = state.compOHSources;
+            OHsrc = state.OHSource;
             
             state.eSource = OHsrc.*F.*z;
+            
         end
         
 
