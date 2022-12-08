@@ -105,17 +105,19 @@ classdef Electrolyser < BaseModel
                 itf  = itfs{ielde};
 
                 inputvarnames = {{cat, 'elyteReactionRate'}, ...
-                                 {cat, 'inmrReactionRate'} , ...
-                                 {itf, 'OHexchangeRate'}   , ...
-                                 {itf, 'H2OexchangeRate'}};
-                gasInd = model.(elde).gasInd;
-                outputvarnames = {VarName({elde}, 'compGasSources', gasInd.ncomp), ...
-                                  {elde, 'OHSource'}                              , ...
-                                  {elde, 'H2OliquidSource'}                       , ...
-                                 };
-                for iovar = 1 : numel(outputvarnames)
-                    model = model.registerPropFunction({outputvarnames{iovar}, fn, inputvarnames});
-                end
+                                 {itf, 'OHexchangeRate'}}
+                model = model.registerPropFunction({{elde, 'OHSource'}, fn, inputvarnames});
+
+                inputvarnames = {{cat, 'elyteReactionRate'}, ...
+                                 {itf, 'H2OexchangeRate'}  , ...
+                                 {elde, 'H2OliquidVaporExchangeRate'}};
+                model = model.registerPropFunction({{elde, 'H2OliquidSource'}, fn, inputvarnames});
+
+                inputvarnames = {{cat, 'elyteReactionRate'}, ...
+                                 {cat, 'inmrReactionRate'}};
+                igas = model.gasInd.activeGas;
+                model = model.registerPropFunction({VarName({elde}, 'compGasSources', ngas, igas), fn, inputvarnames});
+
 
             end
 
