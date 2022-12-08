@@ -197,7 +197,7 @@ classdef IonomerMembrane < ElectronicComponent
             z  = model.OH.z;
             F  = model.constants.F;
             
-            %% TODO : check expression
+            %% TODO : check expression (z^2F^2 in paper)
             fluxcoef = dmudc.*conductivity.*xi./(z.*F);
             
             state.jchem = assembleFlux(model, c, fluxcoef);
@@ -210,9 +210,9 @@ classdef IonomerMembrane < ElectronicComponent
             phi          = state.phi;
             jchem        = state.jchem;
             
-            j = assembleFlux(model, phi, conductivity);
+            jelec = assembleFlux(model, phi, conductivity);
             
-            state.j = j + jchem;
+            state.j = jelec + jchem;
             
         end
 
@@ -260,7 +260,7 @@ classdef IonomerMembrane < ElectronicComponent
         
         function state = updateEsource(model, state)
 
-            state.eSource = -state.OHSource;
+            state.eSource = - state.OHSource;
             
         end
 
