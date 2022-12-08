@@ -26,6 +26,7 @@ classdef AlkalineElectrode < ElectronicComponent
         % sp.K.V0
         % sp.H2O.MW
         % sp.H2O.beta % interpolation coefficient for water equilibrium
+        % sp.H2O.kLV % liquid-vapor exchange rate
         % sp.H2O.mu0 % Standard chemical potential
 
         
@@ -97,28 +98,28 @@ classdef AlkalineElectrode < ElectronicComponent
             nmobph  = numel(phaseInd.mobile);
 
             varnames = {};
-            % Total concentration of OH- (mol per total volume, that is not only liquid volume)
+            % Total concentration of OH- (mol per total volume, that is not only liquid volume) [mol/m^3]
             varnames{end + 1} = 'OHceps';
-            % Total density of gas H2O  (mass per total volume, that is not only gas volume)
+            % Total density of gas H2O  (mass per total volume, that is not only gas volume) in [kg/m^3]
             varnames{end + 1} = 'H2Ogasrhoeps';
-            % Liquid volume fraction
+            % Liquid volume fraction, without unit [-]
             varnames{end + 1} = 'liqeps';
-            % total liquid density (mass of liquid per total volume)
+            % total liquid density (mass of liquid per total volume) in [kg/m^3]
             varnames{end + 1} = 'liqrhoeps';
-            % Phase pressures
+            % Phase pressures in [Pa]
             phasePressures = VarName({}, 'phasePressures', nph);
             varnames{end + 1} = phasePressures;
-            % Phase volume fractions
+            % Phase volume fractions, without unit [-]
             volumeFractions = VarName({}, 'volumeFractions', nph);
             varnames{end + 1} = volumeFractions;
-            % Masses for each component of gas (per total volume, as used in mass of conservation law)
+            % Partial pressure for each component of gas in [Pa]
             varnames{end + 1}  = VarName({}, 'compGasPressures', ngas);
-            % Masses for each component of gas (per total volume, as used in mass of conservation law)
+            % Masses for each component of gas (per total volume, as used in mass of conservation law) in [kg/m^3]
             compGasMasses = VarName({}, 'compGasMasses', ngas);
             varnames{end + 1} = compGasMasses;
-            % Liquid density (Mass of liquid per volume of liquid)
+            % Liquid density (Mass of liquid per volume of liquid) in [kg/m^3]
             varnames{end + 1} = 'liqrho';
-            % Concentrations in the liquid
+            % Concentrations in the liquid in [mol/m^3]
             concentrations = VarName({}, 'concentrations', nliquid);
             varnames{end + 1} = concentrations;
             % Concentrations in the OH molality
@@ -158,23 +159,25 @@ classdef AlkalineElectrode < ElectronicComponent
 
             end
             
-            % Vapor pressure
+            % Vapor pressure in [Pa]
             varnames{end + 1} = 'vaporPressure';
             
             
             %% Coupling variables
             
-            % Mass sources for the gas Components
+            % Mass sources for the gas Components in [kg/s] (source term for each grid cell)
             varnames{end + 1}  = VarName({}, 'compGasSources', ngas);
-            % Mass sources at the boundaries for the gas components
+            % Mass sources at the boundaries for the gas components in [kg/s] (source term for each grid cell)
             varnames{end + 1}  = VarName({}, 'compGasBcSources', ngas);
             % Accumulation term for the gass components in [kg/s]
             varnames{end + 1}  = VarName({}, 'compGasAccums', ngas);
-            % Source of OH (in mole)
+            % Source of OH in [mol/s]  (source term for each grid cell)
             varnames{end + 1} = 'OHSource';
-            % Liquid-Vapor exchange rate for H2O (H2Oliquid <-> H2Ogas)
+            % Mass Source of liquid in [kg/s] (source term for each grid cell)
+            varnames{end + 1} = 'liquidSource';
+            % Liquid-Vapor exchange rate for H2O (H2Oliquid <-> H2Ogas) in [kg/(m^3*s)]
             varnames{end + 1} = 'H2OliquidVaporExchangeRate';
-            % Source of H2Oliquid (in mole)
+            % Source of H2Oliquid (in [mol/(m^3*s)])
             varnames{end + 1} = 'H2OliquidSource';
             % Accumulation terms for OH in [mol/s]
             varnames{end + 1} = 'OHaccum';
@@ -232,7 +235,7 @@ classdef AlkalineElectrode < ElectronicComponent
             model = model.registerPropFunction({VarName({}, 'concentrations', nliquid, ind), fn, inputnames});            
             
             fn = @() AlkalineElectrode.updateWaterActivity;
-            inputnames = {VarName({}, 'compGasPressures', ngas, gasInd.H2Ogas)};
+            inputnames = {'T', 'OHmolality'};
             model = model.registerPropFunction({'H2Oa', fn, inputnames});
 
             % compute OH molalities
@@ -249,7 +252,7 @@ classdef AlkalineElectrode < ElectronicComponent
             fn = @() AlkalineElectrode.updateEvaporationTerm;
             inputnames = {'T', ...
                           'vaporPressure', ...
-                          VarName({}, 'compGasMasses', ngas, gasInd.H2Ogas), ...
+                          VarName({}, 'compGasPressures', ngas, gasInd.H2Ogas), ...
                           volumeFractions};
             model = model.registerPropFunction({'H2OliquidVaporExchangeRate', fn, inputnames});
 
@@ -268,10 +271,13 @@ classdef AlkalineElectrode < ElectronicComponent
                 
                 %% Assemble phase velocities
                 fn = @() AlkalineElectrode.updatePhaseVelocities;
-                
-                inputnames = {VarName({}, 'phasePressures', nph, phaseInd.mobile), ...
-                              VarName({}, 'viscosities', nph, phaseInd.mobile)};
-                model = model.registerPropFunction({VarName({}, 'phaseVelocities', nph, phaseInd.mobile), fn, inputnames});
+
+                for imobile = 1 : numel(phaseInd.mobile)
+                    iphase = phaseInd.mobile(imobile);
+                    inputnames = {VarName({}, 'phasePressures', nph, iphase), ...
+                                  VarName({}, 'viscosities', nph, iphase)};
+                    model = model.registerPropFunction({VarName({}, 'phaseVelocities', nph, iphase), fn, inputnames});
+                end
                 
                 
                 %% Assemble OH specific fluxes
@@ -317,6 +323,13 @@ classdef AlkalineElectrode < ElectronicComponent
             fn = @() AlkalineElectrode.updateESource;
             inputnames = {'OHSource'};
             model = model.registerPropFunction({'eSource', fn, inputnames});
+
+            fn = @() AlkalineElectrode.updateLiquidSource;
+            inputnames = {'OHSource'       , ...
+                          'H2OliquidSource', ...
+                          'H2OliquidVaporExchangeRate'};
+            model = model.registerPropFunction({'liquidSource', fn, inputnames});
+
             
             %% Assemble the residual equations
 
@@ -339,9 +352,7 @@ classdef AlkalineElectrode < ElectronicComponent
                 % Assemble mass conservation for the overall liquid component
                 fn = @() AlkalineElectrode.updateLiquidMassCons0;
                 inputnames = {'liquidAccumTerm', ...
-                              'OHSource'       , ...
-                              'H2OliquidSource', ...
-                              'H2OliquidVaporExchangeRate'};
+                              'liquidSource'};
                 model = model.registerPropFunction({'liquidMassCons', fn, inputnames});
                 
                 % Assemble mass conservation equation for OH
@@ -364,9 +375,6 @@ classdef AlkalineElectrode < ElectronicComponent
                                   VarName({}, 'compGasFluxes'   , ngas, igas), ...
                                   VarName({}, 'compGasSources'  , ngas, igas), ...
                                   VarName({}, 'compGasAccums'   , ngas, igas)};
-                    if igas == gasInd.H2Ogas
-                        inputnames{end + 1} = 'H2OliquidVaporExchangeRate';
-                    end
                     model = model.registerPropFunction({VarName({}, 'compGasMassCons', nph, igas), fn, inputnames});
                 end
 
@@ -374,9 +382,7 @@ classdef AlkalineElectrode < ElectronicComponent
                 fn = @() AlkalineElectrode.updateLiquidMassCons;
                 inputnames = {'liquidFlux'     , ...
                               'liquidAccumTerm', ...
-                              'OHSource'       , ...
-                              'H2OliquidSource', ...
-                              'H2OliquidVaporExchangeRate'};
+                              'liquidSource'};
                 model = model.registerPropFunction({'liquidMassCons', fn, inputnames});
                 
                 % Assemble mass conservation equation for OH
@@ -429,7 +435,7 @@ classdef AlkalineElectrode < ElectronicComponent
             
         end
 
-
+        
         function state = updateLiquidDensity(model, state)
 
             vf = state.volumeFractions{model.phaseInd.liquid};
@@ -437,7 +443,7 @@ classdef AlkalineElectrode < ElectronicComponent
             state.liqrho = state.liqrhoeps./vf;
             
         end
-        
+
         
         function state = updateLiquidPressure(model, state)
         % assemble liquid pressure using capillary pressure function
@@ -461,21 +467,21 @@ classdef AlkalineElectrode < ElectronicComponent
 
             state.phasePressures{model.phaseInd.liquid} = pliq;
         end
-        
 
+        
         function state = updateOHConcentration(model, state)
-            
-            vfliquid = state.volumeFractions{model.phaseInd.liquid};
+
+            vf = state.volumeFractions{model.phaseInd.liquid};
             OHceps = state.OHceps;
             
-            state.concentrations{model.liquidInd.OH} = OHceps./vfliquid
+            state.concentrations{model.liquidInd.OH} = OHceps./vf;
         end
         
         
         function state = updateMassH2Ogas(model, state)
-        % assemble mass of H2O in gas phase
-
+        % simple copy
             state.compGasMasses{compind.H2Ogas} = state.H2Ogasrhoeps;
+            
         end
 
         function state = updateConcentrations(model, state)
@@ -483,16 +489,17 @@ classdef AlkalineElectrode < ElectronicComponent
             sp = model.sp;
 
             cOH = state.concentrations{model.liquidInd.OH};
-            massliquid = state.liqrho;
+            liqrho = state.liqrho;
 
             cK   = cOH;
-            cH2O = (massliquid - cOH.*sp.OH.MW - cK.*sp.K.MW)./sp.H2O.MW;
+            cH2O = (liqrho - cOH.*sp.OH.MW - cK.*sp.K.MW)./sp.H2O.MW;
             cH   = 1e3.*(10.^-sp.H2O.beta .* (1e-3.*cOH).^-1);            
             
             lInd = model.liquidInd;
             state.concentrations{lInd.K}   = cK;
             state.concentrations{lInd.H2O} = cH2O;
-            state.concentrations{lInd.H}   = cH;
+            % TODO  : check if we need H+ concentration later, if yes, we should uncomment the line below and adjust the indexings.
+            % state.concentrations{lInd.H}   = cH;
             
         end
 
@@ -516,7 +523,10 @@ classdef AlkalineElectrode < ElectronicComponent
                       10^-4   ; 
                       1.3e-1];
 
-            state.viscosities{model.phaseInd.liquid} = exp(mu_par(1) + mu_par(2).*(T - 273.15) + mu_par(3).*(T - 273.15).^2 + mu_par(4).*(1e-3.*c));
+            %% TODO check unit in front of cOH
+            mu = exp(mu_par(1) + mu_par(2).*(T - 273.15) + mu_par(3).*(T - 273.15).^2 + mu_par(4).*(1e-3.*cOH));
+
+            state.viscosities{model.phaseInd.liquid} = mu;
             
         end
         
@@ -544,16 +554,15 @@ classdef AlkalineElectrode < ElectronicComponent
             %% assemble evaporation term
             psat  = model.sp.H2O;
             MWH2O = model.sp.H2O.MW
-            kLV   = 1;
+            kLV   = model.sp.H2O.kLV;
             R     = model.constants.R;
-            
+
             pH2Ovap = state.vaporPressure;
             T       = state.T;
-            mH2Ogas = state.compGasMasses{model.gasInd.H2Ogas};
+            pH2Ogas = state.compGasPressures{model.gasInd.H2Ogas};
             vl      = state.volumeFractions{model.phaseInd.liquid};
             vg      = state.volumeFractions{model.phaseInd.gas};
             
-            pH2Ogas = (mH2Ogas./MWH2O).*R.*T./vg;
             sLiq = vl./(vl + vg);
 
             evapSrc = 0*p; % initialize r (useful when AD)
@@ -567,11 +576,6 @@ classdef AlkalineElectrode < ElectronicComponent
             
             state.H2OliquidVaporExchangeRate = evapSrc;
         end
-        
-        function state = updateViscosities(model, state)
-            error('Virtual function. Viscosities are dependent of the particular electrode');
-        end
-        
         
         function state = updatePhaseVelocities(model, state)
             %% Assemble phase velocities
@@ -637,12 +641,12 @@ classdef AlkalineElectrode < ElectronicComponent
         
         function state = updateLiquidFlux(model, state)
              
-            liqrho = state.liqrho;
-            liqvf  = state.volumeFractions{model.phaseInd.liquid};
-            liqv   = state.phaseVelocities{model.phaseInd.liquid};
+            rho = state.liqrho;
+            vf  = state.volumeFractions{model.phaseInd.liquid};
+            v   = state.phaseVelocities{model.phaseInd.liquid};
 
             % We use Bruggeman coefficient 1.5 
-            state.liquidFlux = liqrho.*liqvf.^1.5.*liqv;
+            state.liquidFlux = rho.*(vf.^1.5).*v;
             
         end
 
@@ -651,9 +655,9 @@ classdef AlkalineElectrode < ElectronicComponent
             MW = model.sp.OH.MW;
             
             rho = state.liqrho;
-            c   = state.concentrations{model.liquidInd.OH};
+            cOH = state.concentrations{model.liquidInd.OH};
             
-            state.OHmolality = c./(rho - c.*MW);
+            state.OHmolality = cOH./(rho - cOH.*MW);
             
         end
         
@@ -666,23 +670,21 @@ classdef AlkalineElectrode < ElectronicComponent
             
             OHsrc = state.OHSource;
             
-            state.eSource = OHsrc.*F.*z;
+            state.eSource = F*z*OHsrc;
             
         end
         
 
         function state = updateGasMassCons(model, state)
         % Assemble mass conservation equations for components in gas phase
-
-            for igas = 1 : model.gasInd.ncomp
-                compGasMassCons{igas} = assembleConservationEquation(model, ...
-                                                                state.compGasFluxes{igas}   , ...
-                                                                state.compGasBcSources{igas}, ...
-                                                                state.compGasSources{igas}  , ...
-                                                                state.compGasAccums{igas});
-            end
             
-            state.compGasMassCons = compGasMassCons;
+            for igas = 1 : model.gasInd.ncomp
+                state.compGasMassCons{igas} = assembleConservationEquation(model, ...
+                                                                           state.compGasFluxes{igas}   , ...
+                                                                           state.compGasBcSources{igas}, ...
+                                                                           state.compGasSources{igas}  , ...
+                                                                           state.compGasAccums{igas});
+            end
             
         end
 
@@ -697,18 +699,21 @@ classdef AlkalineElectrode < ElectronicComponent
             
         end
 
+        function state = updateLiquidSource(model, state)
+            
+            state.liquidSource = state.OHsource.*(model.sp.OH.MW + model.sp.K.MW) + state.H2OliquidSource.*model.sp.H2O.MW - state.H2OliquidVaporExchangeRate;
+
+        end
+        
         function state = updateLiquidMassCons(model, state)
         % Assemble mass conservation for the overall liquid component
             
-            liquidSource = state.OHsource.*(model.sp.OH.MW + model.sp.K.MW) ... 
-                           + state.H2OliquidSource.*model.sp.H2O.MW ...
-                           - state.evapH2Osource;
-
-            state.liquiMassCons = assembleConservationEquation(model          , ...
-                                                              state.liquidFlux, ...
-                                                              liquidSource    , ...
-                                                              0               , ...
-                                                              state.liquidAccumTerm);
+            state.liquiMassCons = assembleConservationEquation(model             , ...
+                                                               state.liquidFlux  , ...
+                                                               state.liquidSource, ...
+                                                               0                 , ...
+                                                               state.liquidAccumTerm);
+            
         end
 
         function state = updateLiquidMassCons0(model, state)
