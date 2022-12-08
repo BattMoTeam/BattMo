@@ -12,9 +12,8 @@ classdef OxygenElectrode < AlkalineElectrode
             model = model@AlkalineElectrode(paramobj);
             
             % add the  O2 component in the indexing structures            
-            model.compInd.O2  = 5;
-            model.phaseInd.O2 = 2;
-            model.gasInd.O2   = 2;            
+            model.compInd.O2 = model.compInd.activeGas;
+            model.gasInd.O2  = model.gasInd.activeGas;
         end
 
         

@@ -11,9 +11,8 @@ classdef HydrogenElectrode < AlkalineElectrode
             model = model@AlkalineElectrode(paramobj);
 
             % add the H2 component in the indexing structures
-            model.compInd.H2  = 5;
-            model.phaseInd.H2 = 2;
-            model.gasInd.H2   = 2;
+            model.compInd.H2 = model.compInd.activeGas;
+            model.gasInd.H2  = model.gasInd.activeGas;
             
         end
         

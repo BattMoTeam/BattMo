@@ -26,7 +26,6 @@ classdef AlkalineElectrode < ElectronicComponent
         % sp.H2O.beta % interpolation coefficient for water equilibrium
         % sp.H2O.kLV % liquid-vapor exchange rate
         % sp.H2O.mu0 % Standard chemical potential
-
         
         % sp.V0 % indexed values for partial molar volumes
         
@@ -44,6 +43,7 @@ classdef AlkalineElectrode < ElectronicComponent
             compInd.H2Ogas    = 2;
             compInd.OH        = 3;
             compInd.K         = 4;
+            compInd.activeGas = 5;
             % compInd.(H2 or O2) = 5 % should be instantiated by derived class see HydrogenElectrode.m and OxygenElectrode.m
             compInd.ncomp     = 5;
             compInd.liquid    = [1; 3; 4];
@@ -68,9 +68,10 @@ classdef AlkalineElectrode < ElectronicComponent
             
             model.liquidInd = liquidInd;            
             
-            gasInd.H2Ogas  = 1;
-            gasInd.ncomp   = 2;
-            gasInd.compMap = [2; 5];
+            gasInd.H2Ogas    = 1;
+            gasInd.activeGas = 2;
+            gasInd.ncomp     = 2;
+            gasInd.compMap   = [2; 5];
             
             model.gasInd = gasInd;
             
@@ -121,10 +122,9 @@ classdef AlkalineElectrode < ElectronicComponent
             concentrations = VarName({}, 'concentrations', nliquid);
             varnames{end + 1} = concentrations;
             % Concentrations in the OH molality
-            % varnames{end + 1} = 'OHmolality';
+            varnames{end + 1} = 'OHmolality';
             % H2O activity (we could assemble all activities there but it seems that only H2O activity is needed)
             varnames{end + 1} = 'H2Oa';
-            % OH molar volume
             % partialMolarVolumes = VarName({}, 'partialMolarVolumes', nliquid);
             % varnames{end + 1} = partialMolarVolumes;
 
@@ -135,21 +135,22 @@ classdef AlkalineElectrode < ElectronicComponent
             
             %% Phase velocities
 
-            phaseVelocities = VarName({}, 'phaseVelocities', nmobph);
+            % phase velocity in [m/s] integrated over each cell face of the grid. Hence, unit is [m^3/s]
+            phaseVelocities = VarName({}, 'phaseVelocities', nph);
             varnames{end + 1} = phaseVelocities;
             
             %% Fluxes
 
-            % Mass fluxes for the gass components
+            % Mass fluxes for the gass components in [kg/s] (integrated for each cell face in the grid)
             compGasFluxes = VarName({}, 'compGasFluxes', ngas);
             varnames{end + 1} = compGasFluxes;
-            % Convective fluxes for OH  
+            % Convective flux for OH in [mol/s] (unit is such because the flux is integrated for each cell face in the grid)
             varnames{end + 1} = 'convOHFlux';
-            % Diffusion flux for OH
+            % Diffusion flux for OH in [mol/s] (unit is such integrated for each cell face in the grid)
             varnames{end + 1} = 'diffOHFlux';
-            % Migration flux for OH
+            % Migration flux for OH in [mol/s] (unit is such integrated for each cell face in the grid)
             varnames{end + 1} = 'migOHFlux';
-            % Mass flux for total of liquid components
+            % Mass flux for total of liquid components in [kg/s] (unit is such integrated for each cell face in the grid)
             varnames{end + 1} = 'liquidFlux';            
             
             % Vapor pressure in [Pa]
@@ -170,26 +171,27 @@ classdef AlkalineElectrode < ElectronicComponent
             varnames{end + 1} = 'liquidSource';
             % Liquid-Vapor exchange rate for H2O (H2Oliquid <-> H2Ogas) in [kg/(m^3*s)]
             varnames{end + 1} = 'H2OliquidVaporExchangeRate';
-            % Source of H2Oliquid (in [mol/(m^3*s)])
+            % Source of H2Oliquid in [mol/s] (source term for each grid cell)
             varnames{end + 1} = 'H2OliquidSource';
-            % Accumulation terms for OH in [mol/s]
+            % Accumulation terms for OH in [mol/s] (accumulation term for each grid cell)
             varnames{end + 1} = 'OHaccum';
-            % Accumulation term for the overall liquid components in [kg/s]
+            % Accumulation term for the overall liquid components in [kg/s] (accumulation term for each grid cell)
             varnames{end + 1} = 'liquidAccumTerm';
             
-            %% Residual variables            
+            %% Residual variables
+            
             % Residual for the mass conservation equations of the components in the gas
             varnames{end + 1}  = VarName({}, 'compGasMassCons', ngas);
             % Residual for the mass conservation equation of the aggregated components in the liquid phase
             varnames{end + 1} = 'liquidMassCons';
-            % Residual for the conservation equation for OH in the liquid phase (unit is Mol)
+            % Residual for the conservation equation for OH in the liquid phase
             varnames{end + 1} = 'OHMassCons';
             % Residual for the equation of state of the liquid
             varnames{end + 1} = 'liquidStateEquation';
 
             model = model.registerVarNames(varnames);
 
-
+            
             fn = @() AlkalineElectrode.updateVolumeFractions;
             inputnames = {'liqeps'};
             model = model.registerPropFunction({volumeFractions, fn, inputnames});            
@@ -231,17 +233,17 @@ classdef AlkalineElectrode < ElectronicComponent
             inputnames = {'T', 'OHmolality'};
             model = model.registerPropFunction({'H2Oa', fn, inputnames});
 
-            % compute OH molalities
+            % compute OH molality
             fn = @() AlkalineElectrode.updateMolality;
             inputnames = {VarName({}, 'concentrations', nph, model.liquidInd.OH), 'liqrho'};
             model = model.registerPropFunction({'OHmolality', fn, inputnames});            
             
-            %% assemble vapor pressure
+            % compute vapor pressure
             fn = @() AlkalineElectrode.updateVaporPressure;
             inputnames = {'T', 'OHmolality'};
             model = model.registerPropFunction({'vaporPressure', fn, inputnames});
             
-            %% assemble evaporation term
+            % update evaporation term
             fn = @() AlkalineElectrode.updateEvaporationTerm;
             inputnames = {'T', ...
                           'vaporPressure', ...
@@ -249,30 +251,15 @@ classdef AlkalineElectrode < ElectronicComponent
                           volumeFractions};
             model = model.registerPropFunction({'H2OliquidVaporExchangeRate', fn, inputnames});
 
-            %% Assemble Liquid viscosity
-            % We move this to specific electrode
-            % see [[file:~/Matlab/Projects/AlkalineElectrolyzerContinuumModel/Model/Materials/O2mix.m::function viscosity(obj)][for the gas]] 
-            % see [[file:~/Matlab/Projects/AlkalineElectrolyzerContinuumModel/Model/Materials/H2mix.m::function viscosity(obj)][for the gas]]
-            % see [[file:~/Matlab/Projects/AlkalineElectrolyzerContinuumModel/Model/Materials/KOH.m::function viscosity(obj)][for the liquid]]
             
-            % fn = @() AlkalineElectrode.updateLiquidViscosity;
-            % inputnames = {'T', ...
-                          % VarName({}, 'concentrations', nliquid, liquidInd.OH)};
-            % model = model.registerPropFunction({VarName({}, 'viscosities', nph, phaseInd.liquid ), fn, inputnames});
-            
-            
-            %% Assemble phase velocities
+            % Assemble phase velocities
             fn = @() AlkalineElectrode.updatePhaseVelocities;
-
             for imobile = 1 : numel(phaseInd.mobile)
                 iphase = phaseInd.mobile(imobile);
                 inputnames = {VarName({}, 'phasePressures', nph, iphase), ...
                               VarName({}, 'viscosities', nph, iphase)};
                 model = model.registerPropFunction({VarName({}, 'phaseVelocities', nph, iphase), fn, inputnames});
             end
-            
-            
-            %% Assemble OH specific fluxes
             
             % assemble OH convection flux
             fn = @() AlkalineElectrode.updateOHConvectionFlux;
@@ -292,14 +279,14 @@ classdef AlkalineElectrode < ElectronicComponent
             inputnames = {'j'};
             model = model.registerPropFunction({'migOHFlux', fn, inputnames}); 
             
-            %% Assemble  fluxes
-            
             % assemble fluxes of gas components
             fn = @() AlkalineElectrode.updateGasFluxes;
-            inputnames = {compGasMasses, ...
-                          VarName({}, 'volumeFractions', nph, phaseInd.gas), ...
-                          VarName({}, 'phaseVelocities', nph, phaseInd.gas)};
-            model = model.registerPropFunction({VarName({}, 'compGasFluxes', ngas), fn, inputnames});
+            for igas = 1 : ngas
+                inputnames = {VarName({}, 'compGasMasses', ngas, igas)         , ...
+                              VarName({}, 'volumeFractions', nph, phaseInd.gas), ...
+                              VarName({}, 'phaseVelocities', nph, phaseInd.gas)};
+                model = model.registerPropFunction({VarName({}, 'compGasFluxes', ngas, igas), fn, inputnames});
+            end
             
             % Assemble flux of the overall liquid component
             fn = @() AlkalineElectrode.updateLiquidFlux;
@@ -309,26 +296,28 @@ classdef AlkalineElectrode < ElectronicComponent
             model = model.registerPropFunction({'liquidFlux', fn, inputnames});
                 
             
-            %% Assemble charge source
-
+            % Assemble charge source
             fn = @() AlkalineElectrode.updateESource;
             inputnames = {'OHSource'};
             model = model.registerPropFunction({'eSource', fn, inputnames});
 
             fn = @() AlkalineElectrode.updateLiquidSource;
-            inputnames = {'OHSource'       , ...
-                          'H2OliquidSource', ...
-                          'H2OliquidVaporExchangeRate'};
+            inputnames = {'OHSource', ...
+                          'H2OliquidSource'};
             model = model.registerPropFunction({'liquidSource', fn, inputnames});
 
             
-            %% Assemble the residual equations
+            % Assemble the residual equations
 
             fn = @() AlkalineElectrode.updateLiquidViscosity;
             inputnames = {'T', ....
                           VarName({}, 'concentrations', nliquid, liquidInd.OH)};
             model = model.registerPropFunction({VarName({}, 'viscosities', nph, phaseInd.liquid), fn, inputnames});
             
+            fn = @() AlkalineElectrode.updateH2OgasSource;
+            inputnames = {'H2OliquidVaporExchangeRate'};
+            model = model.registerPropFunction({VarName({}, 'compGasSources', ngas, gasInd.H2O), fn, inputnames});
+
             % Assemble mass conservation equations for components in gas phase
             fn = @() AlkalineElectrode.updateGasMassCons;
             for igas = 1 : ngas
@@ -339,6 +328,7 @@ classdef AlkalineElectrode < ElectronicComponent
                 model = model.registerPropFunction({VarName({}, 'compGasMassCons', nph, igas), fn, inputnames});
             end
 
+            
             % Assemble mass conservation for the overall liquid component
             fn = @() AlkalineElectrode.updateLiquidMassCons;
             inputnames = {'liquidFlux'     , ...
@@ -380,6 +370,7 @@ classdef AlkalineElectrode < ElectronicComponent
             model = model.registerPropFunction({'OHaccum', fn, inputnames});
 
             model = model.removeVarName(VarName({}, 'phasePressures', nph, phaseInd.solid));
+            model = model.removeVarName(VarName({}, 'phaseVelocities', nph, phaseInd.solid));
             
         end
         
@@ -659,8 +650,20 @@ classdef AlkalineElectrode < ElectronicComponent
         end
 
         function state = updateLiquidSource(model, state)
+
+            % Note that the units are
+            % OHsource                   : [mol/s]
+            % H2OliquidSource            : [mol/s]
             
-            state.liquidSource = state.OHsource.*(model.sp.OH.MW + model.sp.K.MW) + state.H2OliquidSource.*model.sp.H2O.MW - state.H2OliquidVaporExchangeRate;
+            state.liquidSource = state.OHsource.*(model.sp.OH.MW + model.sp.K.MW) + state.H2OliquidSource.*model.sp.H2O.MW;
+
+        end
+
+        function state = updateH2OgasSource(model, state)
+
+            vols = model.G.cells.volumes;
+            
+            state.compGasSources{model.gasInd.H2O} = vols.*state.H2OliquidVaporExchangeRate;
 
         end
         
