@@ -1,4 +1,4 @@
-classdef OxygenElectrode < TwoPhaseElectrode
+classdef OxygenElectrode < AlkalineElectrode
     
 
     properties
@@ -9,7 +9,7 @@ classdef OxygenElectrode < TwoPhaseElectrode
         
         function model = OxygenElectrode(paramobj)
 
-            model = model@TwoPhaseElectrode(paramobj);
+            model = model@AlkalineElectrode(paramobj);
             
             % add the  O2 component in the indexing structures            
             model.compInd.O2  = 5;
@@ -23,7 +23,7 @@ classdef OxygenElectrode < TwoPhaseElectrode
         %% Declaration of the Dynamical Variables and Function of the model
         % (setup of varnameList and propertyFunctionList)
 
-            model = registerVarAndPropfuncNames@TwoPhaseElectrode(model);
+            model = registerVarAndPropfuncNames@AlkalineElectrode(model);
 
             phaseInd  = model.phaseInd;
             liquidInd = model.liquidInd;

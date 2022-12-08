@@ -1,4 +1,4 @@
-classdef TwoPhaseElectrode < ElectronicComponent
+classdef AlkalineElectrode < ElectronicComponent
     
     properties
         
@@ -32,7 +32,7 @@ classdef TwoPhaseElectrode < ElectronicComponent
     
     methods
         
-        function model = TwoPhaseElectrode(paramobj)
+        function model = AlkalineElectrode(paramobj)
 
             % paramobj is instance of ElectronicComponentInputParams
             paramobj.use_thermal = false;
@@ -191,38 +191,38 @@ classdef TwoPhaseElectrode < ElectronicComponent
             model = model.registerVarNames(varnames);
 
 
-            fn = @() TwoPhaseElectrode.updateVolumeFractions;
+            fn = @() AlkalineElectrode.updateVolumeFractions;
             inputnames = {'liqeps'};
             model = model.registerPropFunction({volumeFractions, fn, inputnames});            
 
             % assemble liquid pressure using capillary pressure function
-            fn = @() TwoPhaseElectrode.updateLiquidPressure;
+            fn = @() AlkalineElectrode.updateLiquidPressure;
             inputnames = {VarName({}, 'pressures', nph, phaseInd.gas), volumeFractions};
             model = model.registerPropFunction({VarName({}, 'pressures', nph, phaseInd.liquid), fn, inputnames});
             
             %% assemble masses 
             
             % assemble mass of OH
-            fn = @() TwoPhaseElectrode.updateOHconcentration;
+            fn = @() AlkalineElectrode.updateOHconcentration;
             inputnames = {'OHceps', ...
                           VarName({}, 'volumeFractions', nph, phaseInd.liquid)};
             var = VarName({}, 'concentrations', nliquid, liquidInd.OH);
             model = model.registerPropFunction({var, fn, inputnames});            
             
             % assemble mass of H2O in gas phase
-            fn = @() TwoPhaseElectrode.updateMassH2Ogas;
+            fn = @() AlkalineElectrode.updateMassH2Ogas;
             inputnames = {'H2Ogasrhoeps'};
             var = VarName({}, 'compGasMasses', ngas, gasInd.H2Ogas);
             model = model.registerPropFunction({var, fn, inputnames});            
             
             % update liquid density
-            fn = @() TwoPhaseElectrode.updateLiquidDensity;
+            fn = @() AlkalineElectrode.updateLiquidDensity;
             inputnames = {'liqrhoeps', ...
                           VarName({}, 'volumeFractions', nph, phaseInd.liquid)};
             model = model.registerPropFunction({'liquidDensity', fn, inputnames});            
             
             % assemble concentrations
-            fn = @() TwoPhaseElectrode.updateConcentrations;
+            fn = @() AlkalineElectrode.updateConcentrations;
             inputnames = {'liquidDensity', ...
                           VarName({}, 'concentrations', nliquid, liquidInd.OH)};
             ind = setdiff([1 : nliquid]', liquidInd.OH);
@@ -230,17 +230,17 @@ classdef TwoPhaseElectrode < ElectronicComponent
             model = model.registerPropFunction({'H2Oa', fn, inputnames});
 
             % compute OH molalities
-            fn = @() TwoPhaseElectrode.updateMolality;
+            fn = @() AlkalineElectrode.updateMolality;
             inputnames = {VarName({}, 'concentrations', nph, model.liquidInd.OH), 'liquidDensity'};
             model = model.registerPropFunction({'OHmolality', fn, inputnames});            
             
             %% assemble vapor pressure
-            fn = @() TwoPhaseElectrode.updateVaporPressure;
+            fn = @() AlkalineElectrode.updateVaporPressure;
             inputnames = {'T', 'OHmolality'};
             model = model.registerPropFunction({'vaporPressure', fn, inputnames});
             
             %% assemble evaporation term
-            fn = @() TwoPhaseElectrode.updateEvaporationTerm;
+            fn = @() AlkalineElectrode.updateEvaporationTerm;
             inputnames = {'T', ...
                           'vaporPressure', ...
                           VarName({}, 'compGasMasses', ngas, gasInd.H2Ogas), ...
@@ -253,7 +253,7 @@ classdef TwoPhaseElectrode < ElectronicComponent
             % see [[file:~/Matlab/Projects/AlkalineElectrolyzerContinuumModel/Model/Materials/H2mix.m::function viscosity(obj)][for the gas]]
             % see [[file:~/Matlab/Projects/AlkalineElectrolyzerContinuumModel/Model/Materials/KOH.m::function viscosity(obj)][for the liquid]]
             
-            % fn = @() TwoPhaseElectrode.updateLiquidViscosity;
+            % fn = @() AlkalineElectrode.updateLiquidViscosity;
             % inputnames = {'T', ...
                           % VarName({}, 'concentrations', nliquid, liquidInd.OH)};
             % model = model.registerPropFunction({VarName({}, 'viscosities', nph, phaseInd.liquid ), fn, inputnames});
@@ -261,7 +261,7 @@ classdef TwoPhaseElectrode < ElectronicComponent
             if ~model.useZeroDmodel
                 
                 %% Assemble phase velocities
-                fn = @() TwoPhaseElectrode.updatePhaseVelocities;
+                fn = @() AlkalineElectrode.updatePhaseVelocities;
                 
                 inputnames = {VarName({}, 'pressures', nph, phaseInd.mobile), ...
                               VarName({}, 'viscosities', nph, phaseInd.mobile)};
@@ -271,34 +271,34 @@ classdef TwoPhaseElectrode < ElectronicComponent
                 %% Assemble OH specific fluxes
                 
                 % assemble OH convection flux
-                fn = @() TwoPhaseElectrode.updateOHConvectionFlux;
+                fn = @() AlkalineElectrode.updateOHConvectionFlux;
                 inputnames = {VarName({}, 'concentrations', nliquid, liquidInd.OH), ...
                               VarName({}, 'phaseVelocities', nph, phaseInd.liquid), ...
                               VarName({}, 'volumeFractions', nph, phaseInd.liquid)};
                 model = model.registerPropFunction({'convOHFlux', fn, inputnames}); 
                 
                 % assemble OH diffusion flux
-                fn = @() TwoPhaseElectrode.updateOHDiffusionFlux;
+                fn = @() AlkalineElectrode.updateOHDiffusionFlux;
                 inputnames = {VarName({}, 'concentrations', nliquid, liquidInd.OH), ...
                               VarName({}, 'volumeFractions', nph, phaseInd.liquid)};
                 model = model.registerPropFunction({'diffOHFlux', fn, inputnames}); 
                 
                 % assemble OH migration flux
-                fn = @() TwoPhaseElectrode.updateOHMigrationFlux;
+                fn = @() AlkalineElectrode.updateOHMigrationFlux;
                 inputnames = {'j'};
                 model = model.registerPropFunction({'migOHFlux', fn, inputnames}); 
                 
                 %% Assemble  fluxes
                 
                 % assemble fluxes of gas components
-                fn = @() TwoPhaseElectrode.updateGasFluxes;
+                fn = @() AlkalineElectrode.updateGasFluxes;
                 inputnames = {compGasMasses, ...
                               VarName({}, 'volumeFractions', nph, phaseInd.gas), ...
                               VarName({}, 'phaseVelocities', nph, phaseInd.gas)};
                 model = model.registerPropFunction({VarName({}, 'compGasFluxes', ngas), fn, inputnames});
                 
                 % Assemble flux of the overall liquid component
-                fn = @() TwoPhaseElectrode.updateLiquidFlux;
+                fn = @() AlkalineElectrode.updateLiquidFlux;
                 inputnames = {VarName({}, 'phaseVelocities', nph, phaseInd.liquid), ...
                               'liquidDensity', ...
                               VarName({}, 'volumeFractions', nph, phaseInd.liquid)};
@@ -308,7 +308,7 @@ classdef TwoPhaseElectrode < ElectronicComponent
             
             %% Assemble charge source
 
-            fn = @() TwoPhaseElectrode.updateESource;
+            fn = @() AlkalineElectrode.updateESource;
             inputnames = {'OHSource'};
             model = model.registerPropFunction({'eSource', fn, inputnames});
             
@@ -317,7 +317,7 @@ classdef TwoPhaseElectrode < ElectronicComponent
 
             if model.useZeroDmodel
                 % Assemble mass conservation equations for components in gas phase
-                fn = @() TwoPhaseElectrode.updateGasMassCons0;
+                fn = @() AlkalineElectrode.updateGasMassCons0;
 
                 for igas = 1 : ngas
                     inputnames = {VarName({}, 'compGasBcSources', ngas, igas), ...
@@ -331,7 +331,7 @@ classdef TwoPhaseElectrode < ElectronicComponent
 
 
                 % Assemble mass conservation for the overall liquid component
-                fn = @() TwoPhaseElectrode.updateLiquidMassCons0;
+                fn = @() AlkalineElectrode.updateLiquidMassCons0;
                 inputnames = {'liquidAccumTerm', ...
                               'OHSource'       , ...
                               'H2OliquidSource', ...
@@ -339,20 +339,20 @@ classdef TwoPhaseElectrode < ElectronicComponent
                 model = model.registerPropFunction({'liquidMassCons', fn, inputnames});
                 
                 % Assemble mass conservation equation for OH
-                fn = @() TwoPhaseElectrode.updateOHMassCons0;
+                fn = @() AlkalineElectrode.updateOHMassCons0;
                 inputnames = {'OHSource', ...
                               'OHaccum'};                          
                 model = model.registerPropFunction({'OHMassCons', fn, inputnames});
 
             else
 
-                fn = @() TwoPhaseElectrode.updateLiquidViscosity;
+                fn = @() AlkalineElectrode.updateLiquidViscosity;
                 inputnames = {'T', ....
                               VarName({}, 'concentrations', nliquid, liquidInd.OH)};
                 model = model.registerPropFunction({VarName({}, 'viscosities', nph, phaseInd.liquid), fn, inputnames});
                 
                 % Assemble mass conservation equations for components in gas phase
-                fn = @() TwoPhaseElectrode.updateGasMassCons;
+                fn = @() AlkalineElectrode.updateGasMassCons;
                 for igas = 1 : ngas
                     inputnames = {VarName({}, 'compGasBcSources', ngas, igas), ...
                                   VarName({}, 'compGasFluxes'   , ngas, igas), ...
@@ -365,7 +365,7 @@ classdef TwoPhaseElectrode < ElectronicComponent
                 end
 
                 % Assemble mass conservation for the overall liquid component
-                fn = @() TwoPhaseElectrode.updateLiquidMassCons;
+                fn = @() AlkalineElectrode.updateLiquidMassCons;
                 inputnames = {'liquidFlux'     , ...
                               'liquidAccumTerm', ...
                               'OHSource'       , ...
@@ -374,7 +374,7 @@ classdef TwoPhaseElectrode < ElectronicComponent
                 model = model.registerPropFunction({'liquidMassCons', fn, inputnames});
                 
                 % Assemble mass conservation equation for OH
-                fn = @() TwoPhaseElectrode.updateOHMassCons;
+                fn = @() AlkalineElectrode.updateOHMassCons;
                 inputnames = {'convOHFlux', ...
                               'diffOHFlux', ...
                               'migOHFlux' , ...
@@ -385,22 +385,22 @@ classdef TwoPhaseElectrode < ElectronicComponent
             end
             
             % Assemble partial Molar Volumes (not used in first implementation)
-            % fn = @() TwoPhaseElectrode.updatePartialMolarVolumes;
+            % fn = @() AlkalineElectrode.updatePartialMolarVolumes;
             % inputnames = {'OHmolality', 'T', 'liquidDensity'};
             % ind = [model.liquidInd.OH; model.liquidInd.K];
             % model = model.registerPropFunction({VarName({}, 'partialMolarVolumes', nliquid, ind), fn, inputnames});
 
             % we use liquid incompressibility for the moment
-            fn = @() TwoPhaseElectrode.updateLiquidAccum;
+            fn = @() AlkalineElectrode.updateLiquidAccum;
             inputnames = {};
             model = model.registerPropFunction({'liquidAccumTerm', fn, inputnames});
             
             % Assemble residual of equation of state for the liquid phase
-            fn = @() TwoPhaseElectrode.liquidStateEquation;
+            fn = @() AlkalineElectrode.liquidStateEquation;
             inputnames = {concentrations};
             model = model.registerPropFunction({'liquidStateEquation', fn, inputnames});
 
-            fn = @() TwoPhaseElectrode.updateAccumTerms;
+            fn = @() AlkalineElectrode.updateAccumTerms;
             functionCallSetupFn = @(propfunction) PropFunction.accumFuncCallSetupFn(propfunction);
             fn = {fn, functionCallSetupFn};
             inputnames = {'H2Ogasrhoeps'};
