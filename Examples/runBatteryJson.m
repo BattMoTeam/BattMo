@@ -213,8 +213,13 @@ function  output = runBatteryJson(jsonstruct, varargin)
         
     end
     
-    % Change default maximum iteration number in nonlinear solver
     nls.maxIterations = jsonstruct.NonLinearSolver.maxIterations;
+    if isfield(jsonstruct.NonLinearSolver, 'verbose')
+        nls.verbose = jsonstruct.NonLinearSolver.verbose;
+    else
+        nls.verbose = false;
+    end
+    
     % Change default behavior of nonlinear solver, in case of error
     nls.errorOnFailure = false;
     nls.timeStepSelector = StateChangeTimeStepSelector('TargetProps', {{'Control','E'}}, 'targetChangeAbs', 0.03);
