@@ -1,9 +1,8 @@
 {"include_current_collectors" : true,
  "Geometry" : {
    "case" : "jellyRoll",
-   "nwinding" : 66,
    "rInner" : 2e-3,
-   "rOuter" : 4e-3,
+   "rOuter" : 23e-3,
    "L" : 80e-3,
    "nas" : 3,
    "nL" : 2,
