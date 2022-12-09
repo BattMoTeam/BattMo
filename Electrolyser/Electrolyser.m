@@ -45,25 +45,25 @@ classdef Electrolyser < BaseModel
             % shortcuts
             inm  = 'IonomerMembrane';
             her  = 'HydrogenElectrode';
-            hcat = 'HydrogenCatalystLayer';
+            hctl = 'HydrogenCatalystLayer';
             hitf = 'HydrogenInterface';
             oer  = 'OxygenElectrode';
-            ocat = 'OxygenCatalystLayer';
+            octl = 'OxygenCatalystLayer';
             oitf = 'OxygenInterface';
         
             fn = @() Electrolyser.dispatchTemperature;
             model = model.registerPropFunction({{inm, 'T'}, fn, {'T'}});
             model = model.registerPropFunction({{her, 'T'}, fn, {'T'}});
-            model = model.registerPropFunction({{hcat, 'T'}, fn, {'T'}});
+            model = model.registerPropFunction({{hctl, 'T'}, fn, {'T'}});
             model = model.registerPropFunction({{oer, 'T'}, fn, {'T'}});
-            model = model.registerPropFunction({{ocat, 'T'}, fn, {'T'}});
+            model = model.registerPropFunction({{octl, 'T'}, fn, {'T'}});
 
             %% Update coupling (electrode, ionomer) -> CatalystLayer
 
             fn = @() Electrolyser.dispatchToCatalystLayersAndInterfaces;
 
             eldes = {her, oer};
-            cats  = {hcat, ocat};
+            cats  = {hctl, octl};
             itfs  = {hitf, oitf};
             
             for ielde = 1 : numel(eldes)
@@ -123,12 +123,12 @@ classdef Electrolyser < BaseModel
 
             end
 
-            inputvarnames = {{hcat, 'elyteReactionRate'}, ...
-                             {hcat, 'inmrReactionRate'} , ...
+            inputvarnames = {{hctl, 'elyteReactionRate'}, ...
+                             {hctl, 'inmrReactionRate'} , ...
                              {hitf, 'OHexchangeRate'}   , ...
                              {hitf, 'H2OexchangeRate'}  , ...
-                             {ocat, 'elyteReactionRate'}, ...
-                             {ocat, 'inmrReactionRate'} , ...
+                             {octl, 'elyteReactionRate'}, ...
+                             {octl, 'inmrReactionRate'} , ...
                              {oitf, 'OHexchangeRate'}   , ...
                              {oitf, 'H2OexchangeRate'}};
             
@@ -147,11 +147,11 @@ classdef Electrolyser < BaseModel
         function state = dispatchTemperature(model, state)
             mea   = 'IonomereMembrane';
             her   = 'HydrogenElectrode';
-            hcat = 'HydrogenCatalystLayer';
+            hctl = 'HydrogenCatalystLayer';
             oer   = 'OxygenElectrode';
-            ocat = 'OxygenCatalystLayer';
+            octl = 'OxygenCatalystLayer';
             
-            submodelnames = {mea, her, hcat, oer, ocat};
+            submodelnames = {mea, her, hctl, oer, octl};
             for ind = 1 : numel(submodelnames)
                 mname = submodelnames{ind};
                 state.(mname).T = state.T(model.(mname).G.cellmap);
@@ -184,18 +184,18 @@ classdef Electrolyser < BaseModel
             
             inm  = 'IonomerMembrane';
             her  = 'HydrogenElectrode';
-            hcat = 'HydrogenCatalystLayer';
+            hctl = 'HydrogenCatalystLayer';
             
             coupterms = model.couplingTerms;
             coupnames = model.couplingNames;
             
-            coupterm = getCoupTerm(coupterms, {her, hcat}, coupnames);
+            coupterm = getCoupTerm(coupterms, {her, hctl}, coupnames);
             coupcells = coupterm.couplingcells;
-            state.(hcat).phiElyte(coupcells(:, 2)) = state.(her).phi(coupcells(:, 1));
+            state.(hctl).phiElyte(coupcells(:, 2)) = state.(her).phi(coupcells(:, 1));
             
-            coupterm = getCoupTerm(coupterms, {inm, hcat}, coupnames);
+            coupterm = getCoupTerm(coupterms, {inm, hctl}, coupnames);
             coupcells = coupterm.couplingcells;
-            state.(hcat).phiInmr(coupcells(:, 2)) = state.(inm).phi(coupcells(:, 1));
+            state.(hctl).phiInmr(coupcells(:, 2)) = state.(inm).phi(coupcells(:, 1));
             
         end
         
@@ -204,25 +204,25 @@ classdef Electrolyser < BaseModel
             
             inm  = 'IonomerMembrane';
             oer  = 'OxygenElectrode';
-            ocat = 'OxygenCatalystLayer';
+            octl = 'OxygenCatalystLayer';
             
             coupterms = model.couplingTerms;
             coupnames = model.couplingNames;
             
-            coupterm = getCoupTerm(coupterms, {oer, ocat}, coupnames);
+            coupterm = getCoupTerm(coupterms, {oer, octl}, coupnames);
             coupcells = coupterm.couplingcells;
-            state.(ocat).phiElyte(coupcelsl(:, 2)) = state.(oer).phi(coupcells(:, 1));
+            state.(octl).phiElyte(coupcelsl(:, 2)) = state.(oer).phi(coupcells(:, 1));
             
-            coupterm = getCoupTerm(coupterms, {inm, ocat}, coupnames);
+            coupterm = getCoupTerm(coupterms, {inm, octl}, coupnames);
             coupcells = coupterm.couplingcells;
-            state.(ocat).phiInmr(coupcells(:, 2)) = state.(inm).phi(coupcells(:, 1));
+            state.(octl).phiInmr(coupcells(:, 2)) = state.(inm).phi(coupcells(:, 1));
             
         end
 
         function state = dispatchGasPartialPressureHydrogenCatalystLayer(model, state)
             
             her  = 'HydrogenElectrode';
-            hcat = 'HydrogenCatalystLayer';
+            hctl = 'HydrogenCatalystLayer';
             
             gind = model.(her).phaseInd.gas;
             m  = state.(her).compGasMasses;
@@ -232,7 +232,7 @@ classdef Electrolyser < BaseModel
             gInd = model.(her).gasInd;
             
             % compute mol amount for each gas component
-            coupterm = getCoupTerm(coupterms, {oer, ocat}, coupnames);
+            coupterm = getCoupTerm(coupterms, {oer, octl}, coupnames);
             coupcells = coupterm.couplingcells;
             
             mH2O = m{gInd.H2Ogas};
@@ -246,12 +246,12 @@ classdef Electrolyser < BaseModel
             p{gInd.H2Ogas} = mH2O./(model.(her).H2O.MW).*R.*T./vg;
             p{gInd.H2} = mH2./(model.(her).H2.MW).*R.*T./vg;
             
-            state.(hcat).gasPressuresElyte(coupcells(:, 2)) = p;
+            state.(hctl).gasPressuresElyte(coupcells(:, 2)) = p;
         end
         
         function state = dispatchGasPartialPressureOxygenCatalystLayer(model, state)
             oer   = 'OxygenElectrode';
-            ocat = 'OxygenCatalystLayer';
+            octl = 'OxygenCatalystLayer';
             
             gind = model.(oer).phaseInd.gas;
             m  = state.(oer).compGasMasses;
@@ -261,7 +261,7 @@ classdef Electrolyser < BaseModel
             gInd = model.(oer).gasInd;
             
             % compute mol amount for each gas component
-            coupterm = getCoupTerm(coupterms, {oer, ocat}, coupnames);
+            coupterm = getCoupTerm(coupterms, {oer, octl}, coupnames);
             coupcells = coupterm.couplingcells;
             
             mH2O = m{gInd.H2Ogas};
@@ -275,13 +275,13 @@ classdef Electrolyser < BaseModel
             p{gInd.H2Ogas} = mH2O./(model.(oer).H2O.MW).*R.*T./vg;
             p{gInd.O2} = mO2./(model.(oer).O2.MW).*R.*T./vg;
             
-            state.(ocat).gasPressuresElyte(coupcells(:, 2)) = p;
+            state.(octl).gasPressuresElyte(coupcells(:, 2)) = p;
         end
         
         function state = dispatchConcentrationsHydrogenCatalystLayer(model, state)
             
             her   = 'HydrogenElectrode';
-            hcat = 'HydrogenCatalystLayer';
+            hctl = 'HydrogenCatalystLayer';
             
             lind = model.(her).liquidInd;
             
@@ -291,20 +291,20 @@ classdef Electrolyser < BaseModel
             coupterms = model.couplingTerms;
             coupnames = model.couplingNames;
             
-            coupterm = getCoupTerm(coupterms, {her, hcat}, coupnames);
+            coupterm = getCoupTerm(coupterms, {her, hctl}, coupnames);
             coupcells = coupterm.couplingcells;
             cOH = cOH(coupcells(:, 1));
             cH = cH(coupcells(:, 1));
 
-            state.(hcat).cOHElyte(coupcells(:, 2)) = cOH;
-            state.(hcat).cHElyte(coupcells(:, 2)) = cH;
+            state.(hctl).cOHElyte(coupcells(:, 2)) = cOH;
+            state.(hctl).cHElyte(coupcells(:, 2)) = cH;
             
         end
         
         function state = dispatchConcentrationsOxygenCatalystLayer(model, state)
             
             oer   = 'OxygenElectrode';
-            ocat = 'OxygenCatalystLayer';
+            octl = 'OxygenCatalystLayer';
             
             lind = model.(oer).liquidInd;
             
@@ -314,56 +314,56 @@ classdef Electrolyser < BaseModel
             coupterms = model.couplingTerms;
             coupnames = model.couplingNames;
             
-            coupterm = getCoupTerm(coupterms, {oer, ocat}, coupnames);
+            coupterm = getCoupTerm(coupterms, {oer, octl}, coupnames);
             coupcells = coupterm.couplingcells;
             cOH = cOH(coupcells(:, 1));
             cH = cH(coupcells(:, 1));
 
-            state.(ocat).cOHElyte(coupcells(:, 2)) = cOH;
-            state.(ocat).cHElyte(coupcells(:, 2)) = cH;
+            state.(octl).cOHElyte(coupcells(:, 2)) = cOH;
+            state.(octl).cHElyte(coupcells(:, 2)) = cH;
         end
         
         function state = dispatchH2OactivityHydrogenCatalystLayer(model, state)
             
             her   = 'HydrogenElectrode';
-            hcat = 'HydrogenCatalystLayer';
+            hctl = 'HydrogenCatalystLayer';
             inm   = 'IonomerMembrane';
             
             coupterms = model.couplingTerms;
             coupnames = model.couplingNames;
             
-            coupterm = getCoupTerm(coupterms, {her, hcat}, coupnames);
+            coupterm = getCoupTerm(coupterms, {her, hctl}, coupnames);
             coupcells = coupterm.couplingcells;
-            state.(hcat).H2OaElyte(coupcells(:, 2)) = state.(her).H2Oactivity(coupcells(:, 1));
+            state.(hctl).H2OaElyte(coupcells(:, 2)) = state.(her).H2Oactivity(coupcells(:, 1));
             
-            coupterm = getCoupTerm(coupterms, {inm, hcat}, coupnames);
+            coupterm = getCoupTerm(coupterms, {inm, hctl}, coupnames);
             coupcells = coupterm.couplingcells;
-            state.(hcat).H2OaInmr(coupcells(:, 2)) = state.(inm).H2Oactivity(coupcells(:, 1));
+            state.(hctl).H2OaInmr(coupcells(:, 2)) = state.(inm).H2Oactivity(coupcells(:, 1));
         end
                     
         
         function state = dispatchH2OactivityOxygenCatalystLayer(model, state)
             oer   = 'OxygenElectrode';
-            ocat = 'OxygenCatalystLayer';
+            octl = 'OxygenCatalystLayer';
             inm   = 'IonomerMembrane';
             
             coupterms = model.couplingTerms;
             coupnames = model.couplingNames;
             
-            coupterm = getCoupTerm(coupterms, {oer, ocat}, coupnames);
+            coupterm = getCoupTerm(coupterms, {oer, octl}, coupnames);
             coupcells = coupterm.couplingcells;
-            state.(ocat).H2OaElyte(coupcells(:, 2)) = state.(oer).H2Oactivity(coupcells(:, 1));
+            state.(octl).H2OaElyte(coupcells(:, 2)) = state.(oer).H2Oactivity(coupcells(:, 1));
             
-            coupterm = getCoupTerm(coupterms, {inm, ocat}, coupnames);
+            coupterm = getCoupTerm(coupterms, {inm, octl}, coupnames);
             coupcells = coupterm.couplingcells;
-            state.(ocat).H2OaInmr(coupcells(:, 2)) = state.(inm).H2Oactivity(coupcells(:, 1));
+            state.(octl).H2OaInmr(coupcells(:, 2)) = state.(inm).H2Oactivity(coupcells(:, 1));
         end
         
         
         function state = dispatchCatalystLayerToHydrogenElectrode(model, state)
             
             her   = 'HydrogenElectrode';
-            hcat = 'HydrogenCatalystLayer';
+            hctl = 'HydrogenCatalystLayer';
             inm   = 'IonomerMembrane';
             
             leps = model.(inm).liquidVolumeFraction;
@@ -372,13 +372,13 @@ classdef Electrolyser < BaseModel
             coupterms = model.couplingTerms;
             coupnames = model.couplingNames;
             
-            coupterm = getCoupTerm(coupterms, {her, hcat}, coupnames);
+            coupterm = getCoupTerm(coupterms, {her, hctl}, coupnames);
             coupcells = coupterm.couplingcells;
             
-            jElyte    = state.(hcat).jElyte(coupcells(:, 2));
-            j         = state.(hcat).j(coupcells(:, 2));
-            Rxch      = state.(hcat).Rxch(coupcells(:, 2));
-            Rsorption = state.(hcat).Rsorption(coupcells(:, 2));
+            jElyte    = state.(hctl).jElyte(coupcells(:, 2));
+            j         = state.(hctl).j(coupcells(:, 2));
+            Rxch      = state.(hctl).Rxch(coupcells(:, 2));
+            Rsorption = state.(hctl).Rsorption(coupcells(:, 2));
             
             OHSource        = 2*jElyte./(n*F) + Rxch.*leps;
             H2OliquidSource = -Rsorption;
@@ -392,7 +392,7 @@ classdef Electrolyser < BaseModel
         function state = dispatchCatalystLayerToOxygenElectrode(model, state)
             
             oer   = 'OxygenElectrode';
-            ocat = 'OxygenCatalystLayer';
+            octl = 'OxygenCatalystLayer';
             inm   = 'IonomerMembrane';
             
             leps = model.(inm).liquidVolumeFraction;
@@ -401,13 +401,13 @@ classdef Electrolyser < BaseModel
             
             coupterms = model.couplingTerms;
             coupnames = model.couplingNames;
-            coupterm = getCoupTerm(coupterms, {oer, ocat}, coupnames);
+            coupterm = getCoupTerm(coupterms, {oer, octl}, coupnames);
             coupcells = coupterm.couplingcells;
             
-            jElyte    = state.(ocat).jElyte(coupcells(:, 2));
-            j         = state.(ocat).j(coupcells(:, 2));
-            Rxch      = state.(ocat).Rxch(coupcells(:, 2));
-            Rsorption = state.(ocat).Rsorption(coupcells(:, 2));
+            jElyte    = state.(octl).jElyte(coupcells(:, 2));
+            j         = state.(octl).j(coupcells(:, 2));
+            Rxch      = state.(octl).Rxch(coupcells(:, 2));
+            Rsorption = state.(octl).Rsorption(coupcells(:, 2));
             
             OHSource        = 2*jElyte./(n*F) + Rxch.*leps;
             H2OliquidSource = -Rsorption;
@@ -428,10 +428,10 @@ classdef Electrolyser < BaseModel
             % Dispatch values from Hydrogen CatalystLayer
             coupterms = model.couplingTerms;
             coupnames = model.couplingNames;
-            coupterm = getCoupTerm(coupterms, {inm, hcat}, coupnames);
+            coupterm = getCoupTerm(coupterms, {inm, hctl}, coupnames);
             coupcells = coupterm.couplingcells;
-            jInmr = state.(hcat).jInmr(coupcells(:, 2));
-            Rxch  = state.(hcat).Rxch(coupcells(:, 2));
+            jInmr = state.(hctl).jInmr(coupcells(:, 2));
+            Rxch  = state.(hctl).Rxch(coupcells(:, 2));
             leps  = model.(inm).liquidVolumeFraction(coupcells(:, 2));
             
             OHSource(coupcells(:, 1))  = -2.*jInmr./(n.*F) - Rxch.*leps;
@@ -440,10 +440,10 @@ classdef Electrolyser < BaseModel
             % Dispatch values from Oxygen CatalystLayer
             coupterms = model.couplingTerms;
             coupnames = model.couplingNames;
-            coupterm = getCoupTerm(coupterms, {inm, ocat}, coupnames);
+            coupterm = getCoupTerm(coupterms, {inm, octl}, coupnames);
             coupcells = coupterm.couplingcells;
-            jInmr = state.(ocat).jInmr(coupcells(:, 2));
-            Rxch  = state.(ocat).Rxch(coupcells(:, 2));
+            jInmr = state.(octl).jInmr(coupcells(:, 2));
+            Rxch  = state.(octl).Rxch(coupcells(:, 2));
             leps  = model.(inm).liquidVolumeFraction(coupcells(:, 2));
 
             OHSource(coupcells(:, 1))  = -2.*jInmr./(n.*F) - Rxch.*leps;
