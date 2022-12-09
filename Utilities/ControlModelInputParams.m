@@ -5,6 +5,8 @@ classdef ControlModelInputParams < InputParams
 
         controlPolicy
         CRate
+        lowerCutoffVoltage
+        upperCutoffVoltage
         
     end
     
