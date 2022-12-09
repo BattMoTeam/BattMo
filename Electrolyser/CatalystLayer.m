@@ -1,4 +1,4 @@
-classdef Catalyser < BaseModel
+classdef CatalystLayer < BaseModel
 
     properties
 
@@ -28,7 +28,7 @@ classdef Catalyser < BaseModel
 
     methods
 
-        function model = Catalyser(paramobj)
+        function model = CatalystLayer(paramobj)
 
         end
 
@@ -42,7 +42,7 @@ classdef Catalyser < BaseModel
             names = {};
             % Temperature
             varnames = {'T'};
-            % Catalyser electrical potential
+            % CatalystLayer electrical potential
             varnames{end + 1} = {'phi'};
             % Electric Potential in electrolyte and ionomer
             varnames{end + 1} = 'phiElyte';
@@ -71,31 +71,31 @@ classdef Catalyser < BaseModel
             model = model.registerVarNames(varnames);
 
             % Assemble equilibrium Potential for electrolyte
-            fn = @() Catalyser.updateEelyte;
+            fn = @() CatalystLayer.updateEelyte;
             inputnames = {'T', 'cOHelyte', 'pressureActiveGas', 'H2OaElyte'};
             model = model.registerPropFunction({'Eelyte', fn, inputnames});
 
             % Assemble equilibrium Potential for inmr
-            fn = @() Catalyser.updateEinmr;
+            fn = @() CatalystLayer.updateEinmr;
             inputnames = {'T', 'cOHinmr', 'pressureActiveGas', 'H2OaInmr'};
             model = model.registerPropFunction({'Einmr', fn, inputnames});
 
             % Assemble reactive potential
-            fn = @() Catalyser.updateEtas;
+            fn = @() CatalystLayer.updateEtas;
             inputnames = {'phiElyte', 'phi' 'Eelyte'};
             model = model.registerPropFunction({'etaElyte', fn, inputnames});
             inputnames = {'phiInmr', 'phi' 'Einmr'};
             model = model.registerPropFunction({'etaInmr', fn, inputnames});            
 
             % Assemble the reaction rate constants
-            fn = @() Catalyser.updateReactionRateConstants;
+            fn = @() CatalystLayer.updateReactionRateConstants;
             inputnames = {'cOHelyte'};
             model = model.registerPropFunction({'elyteReactionRateConstant', fn, inputnames});
             inputnames = {'cOHinmr'};
             model = model.registerPropFunction({'inmrReactionRateConstant', fn, inputnames});
             
             % Assemble the reaction rates
-            fn = @() Catalyser.updateReactionRates;
+            fn = @() CatalystLayer.updateReactionRates;
             inputnames = {'elyteReactionRateConstant', 'etaElyte'};
             model = model.registerPropFunction({'elyteReactionRate', fn, inputnames});
             inputnames = {'inmrReactionRateConstant', 'etaInmr'};
