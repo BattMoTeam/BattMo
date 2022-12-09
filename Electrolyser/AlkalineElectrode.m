@@ -15,17 +15,17 @@ classdef AlkalineElectrode < ElectronicComponent
         tau % 
 
         sp % species struct 
-        % sp.OH.MW
+        % sp.OH.MW    : Molecular weight [kg mol^-1]
         % sp.OH.V0
-        % sp.OH.D % diffustion coefficient
+        % sp.OH.D     : diffustion coefficient
         % sp.OH.t 
         % sp.OH.z 
         % sp.K.MW
         % sp.K.V0
-        % sp.H2O.MW
-        % sp.H2O.beta % interpolation coefficient for water equilibrium
-        % sp.H2O.kLV % liquid-vapor exchange rate
-        % sp.H2O.mu0 % Standard chemical potential
+        % sp.H2O.MW   : Molecular weight [kg mol^-1]
+        % sp.H2O.beta : interpolation coefficient for water equilibrium
+        % sp.H2O.kLV  : liquid-vapor exchange rate
+        % sp.H2O.mu0  : Standard chemical potential
         
         % sp.V0 % indexed values for partial molar volumes
         
@@ -99,13 +99,13 @@ classdef AlkalineElectrode < ElectronicComponent
             nmobph  = numel(phaseInd.mobile);
 
             varnames = {};
-            % Total concentration of OH- (mol per total volume, that is not only liquid volume) [mol/m^3]
+            % Total concentration of OH- (mol per total volume, that is not only liquid volume) [mol m^-3]
             varnames{end + 1} = 'OHceps';
-            % Total density of gas H2O  (mass per total volume, that is not only gas volume) in [kg/m^3]
+            % Total density of gas H2O  (mass per total volume, that is not only gas volume) in [kg m^-3]
             varnames{end + 1} = 'H2Ogasrhoeps';
             % Liquid volume fraction, without unit [-]
             varnames{end + 1} = 'liqeps';
-            % total liquid density (mass of liquid per total volume) in [kg/m^3]
+            % total liquid density (mass of liquid per total volume) in [kg m^-3]
             varnames{end + 1} = 'liqrhoeps';
             % Phase pressures in [Pa]
             phasePressures = VarName({}, 'phasePressures', nph);
@@ -115,12 +115,12 @@ classdef AlkalineElectrode < ElectronicComponent
             varnames{end + 1} = volumeFractions;
             % Partial pressure for each component of gas in [Pa]
             varnames{end + 1}  = VarName({}, 'compGasPressures', ngas);
-            % Masses for each component of gas (per total volume, as used in mass of conservation law) in [kg/m^3]
+            % Masses for each component of gas (per total volume, as used in mass of conservation law) in [kg m^-3]
             compGasMasses = VarName({}, 'compGasMasses', ngas);
             varnames{end + 1} = compGasMasses;
-            % Liquid density (Mass of liquid per volume of liquid) in [kg/m^3]
+            % Liquid density (Mass of liquid per volume of liquid) in [kg m^-3]
             varnames{end + 1} = 'liqrho';
-            % Concentrations in the liquid in [mol/m^3]
+            % Concentrations in the liquid in [mol m^-3]
             concentrations = VarName({}, 'concentrations', nliquid);
             varnames{end + 1} = concentrations;
             % Concentrations in the OH molality
@@ -137,22 +137,22 @@ classdef AlkalineElectrode < ElectronicComponent
             
             %% Phase velocities
 
-            % phase velocity in [m/s] integrated over each cell face of the grid. Hence, unit is [m^3/s]
+            % phase velocity in [m s^-1] integrated over each cell face of the grid. Hence, unit is [m^3 s^-1]
             phaseVelocities = VarName({}, 'phaseVelocities', nph);
             varnames{end + 1} = phaseVelocities;
             
             %% Fluxes
 
-            % Mass fluxes for the gass components in [kg/s] (integrated for each cell face in the grid)
+            % Mass fluxes for the gass components in [kg s^-1] (integrated for each cell face in the grid)
             compGasFluxes = VarName({}, 'compGasFluxes', ngas);
             varnames{end + 1} = compGasFluxes;
-            % Convective flux for OH in [mol/s] (unit is such because the flux is integrated for each cell face in the grid)
+            % Convective flux for OH in [mol s^-1] (unit is such because the flux is integrated for each cell face in the grid)
             varnames{end + 1} = 'convOHFlux';
-            % Diffusion flux for OH in [mol/s] (unit is such integrated for each cell face in the grid)
+            % Diffusion flux for OH in [mol s^-1] (unit is such integrated for each cell face in the grid)
             varnames{end + 1} = 'diffOHFlux';
-            % Migration flux for OH in [mol/s] (unit is such integrated for each cell face in the grid)
+            % Migration flux for OH in [mol s^-1] (unit is such integrated for each cell face in the grid)
             varnames{end + 1} = 'migOHFlux';
-            % Mass flux for total of liquid components in [kg/s] (unit is such integrated for each cell face in the grid)
+            % Mass flux for total of liquid components in [kg s^-1] (unit is such integrated for each cell face in the grid)
             varnames{end + 1} = 'liquidFlux';            
             
             % Vapor pressure in [Pa]
@@ -161,23 +161,23 @@ classdef AlkalineElectrode < ElectronicComponent
             
             %% Coupling variables
             
-            % Mass sources for the gas Components in [kg/s] (source term for each grid cell)
+            % Mass sources for the gas Components in [kg s^-1] (source term for each grid cell)
             varnames{end + 1}  = VarName({}, 'compGasSources', ngas);
-            % Mass sources at the boundaries for the gas components in [kg/s] (source term for each grid cell)
+            % Mass sources at the boundaries for the gas components in [kg s^-1] (source term for each grid cell)
             varnames{end + 1}  = VarName({}, 'compGasBcSources', ngas);
-            % Accumulation term for the gass components in [kg/s]
+            % Accumulation term for the gass components in [kg s^-1]
             varnames{end + 1}  = VarName({}, 'compGasAccums', ngas);
-            % Source of OH in [mol/s]  (source term for each grid cell)
+            % Source of OH in [mol s^-1]  (source term for each grid cell)
             varnames{end + 1} = 'OHSource';
-            % Mass Source of liquid in [kg/s] (source term for each grid cell)
+            % Mass Source of liquid in [kg s^-1] (source term for each grid cell)
             varnames{end + 1} = 'liquidSource';
-            % Liquid-Vapor exchange rate for H2O (H2Oliquid <-> H2Ogas) in [kg/(m^3*s)]
+            % Liquid-Vapor exchange rate for H2O (H2Oliquid <-> H2Ogas) in [mol m^-3 s^-1)]
             varnames{end + 1} = 'H2OliquidVaporExchangeRate';
-            % Source of H2Oliquid in [mol/s] (source term for each grid cell)
+            % Source of H2Oliquid in [mol s^-1] (source term for each grid cell)
             varnames{end + 1} = 'H2OliquidSource';
-            % Accumulation terms for OH in [mol/s] (accumulation term for each grid cell)
+            % Accumulation terms for OH in [mol s^-1] (accumulation term for each grid cell)
             varnames{end + 1} = 'OHaccum';
-            % Accumulation term for the overall liquid components in [kg/s] (accumulation term for each grid cell)
+            % Accumulation term for the overall liquid components in [kg s^-1] (accumulation term for each grid cell)
             varnames{end + 1} = 'liquidAccumTerm';
             
             %% Residual variables

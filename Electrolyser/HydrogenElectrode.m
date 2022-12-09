@@ -18,9 +18,6 @@ classdef HydrogenElectrode < AlkalineElectrode
         
         function model = registerVarAndPropfuncNames(model)
             
-        %% Declaration of the Dynamical Variables and Function of the model
-        % (setup of varnameList and propertyFunctionList)
-
             model = registerVarAndPropfuncNames@AlkalineElectrode(model);
 
             phaseInd  = model.phaseInd;

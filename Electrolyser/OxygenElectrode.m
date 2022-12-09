@@ -18,9 +18,6 @@ classdef OxygenElectrode < AlkalineElectrode
 
         
         function model = registerVarAndPropfuncNames(model)
-            
-        %% Declaration of the Dynamical Variables and Function of the model
-        % (setup of varnameList and propertyFunctionList)
 
             model = registerVarAndPropfuncNames@AlkalineElectrode(model);
 
@@ -46,7 +43,6 @@ classdef OxygenElectrode < AlkalineElectrode
             fn = @() OxygenElectrode.updateGasViscosity;
             inputnames = {'T'};
             model = model.registerPropFunction({VarName({}, 'viscosities', nph, phaseInd.gas), fn, inputnames});
-
 
             fn = @() OxygenElectrode.updateO2Accum;
             functionCallSetupFn = @(propfunction) PropFunction.accumFuncCallSetupFn(propfunction);

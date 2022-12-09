@@ -11,17 +11,18 @@ classdef Catalyser < BaseModel
 
         j0 % Exchange current density
         inmrParams 
-        % inmrParams.cT   % Total concentration of charged groups
-        % inmrParams.kxch % Rate constant for exchange between ionomer and electrolyte. [s^-1]
-        % inmrParams.OH.z
-        % inmrParams.OH.c0 % reference OH concentration
-        % inmrParams.E0 % standard equilibrium potential
+        % inmrParams.cT    : Total concentration of charged groups
+        % inmrParams.kxch  : Rate constant for exchange between ionomer and electrolyte [s^-1]
+        % inmrParams.OH.z  : Charge
+        % inmrParams.OH.c0 : OH reference concentration
+        % inmrParams.E0    : standard equilibrium potential
         elyteParams
-        % elyteParams.OH.c0 % reference OH concentration
-        % elyteParams.E0 % standard equilibrium potential
+        % elyteParams.OH.c0 : reference OH concentration
+        % elyteParams.E0    : standard equilibrium potential
         
         PF1 % should be initialized using zero
-
+        Xinmr % Fraction of specific area that is covered with ionomer [-]
+        volumetricSurfaceArea
         
     end
 
@@ -151,12 +152,15 @@ classdef Catalyser < BaseModel
         end
 
         function state = updateReactionRateConstants(model, state)
+
+            error('implemented in derived class')
             
         end
             
         function state = updateReactionRates(model, state)
 
         %% TODO : fix that (does not match with paper)
+
             etaElyte = state.etaElyte;
             etaInmr  = state.etaInmr;
             H2OaInmr = state.H2OaInmr;
@@ -165,7 +169,8 @@ classdef Catalyser < BaseModel
             gasp2    = state.gasPressuresElyte{2};
 
             ir    = model.inmr;
-            Asp   = model.Asp;
+            vsa   = model.volumetricSurfaceArea;
+            
             PF1   = model.PF1;
             j0    = model.j0;
             alpha = model.alpha;
@@ -174,10 +179,10 @@ classdef Catalyser < BaseModel
             X_inmr = 0.99;
 
             PF = (ir.cT/1000).*(gasp1./1e5).*(gasp2./1e5);
-            jElyte = (1 - X_inmr).*Asp'.*butlerVolmer(j0, alpha, n, etaElyte, T);
+            jElyte = (1 - X_inmr)*vsa*butlerVolmer(j0, alpha, n, etaElyte, T);
 
             PF2 = H2OaInmr;
-            jInmr = X_inmr.*Asp'*butlerVolmer_split(j0, PF1, PF2, alpha, n, etaInmr, T);
+            jInmr = X_inmr*vsa*butlerVolmer_split(j0, PF1, PF2, alpha, n, etaInmr, T);
 
             state.elyteReactionRate = elyteReactionRate;
             state.inmrReactionRate  = inmrReactionRate;
