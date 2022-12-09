@@ -701,9 +701,9 @@ classdef Battery < BaseModel
             
             switch model.(ctrl).controlPolicy
               case 'CCCV'
-                initstate.(ctrl).ctrlType = 'CC_charge1';
+                initstate.(ctrl).ctrlType     = 'CC_charge1';
                 initstate.(ctrl).nextCtrlType = 'CC_charge1';
-                initstate.(ctrl).I = - model.(ctrl).Imax;
+                initstate.(ctrl).I            = - model.(ctrl).Imax;
               case 'IEswitch'
                 initstate.(ctrl).ctrlType = 'constantCurrent';
                 initstate.(ctrl).I        = model.(ctrl).Imax;
@@ -1523,28 +1523,6 @@ classdef Battery < BaseModel
             end
             
         end
-        
-        function state = initStateAD(model, state)
-        % initialize a new cleaned-up state with AD variables
-
-            % initStateAD in BaseModel erase all fields
-            newstate = initStateAD@BaseModel(model, state);
-
-            % add the variable that we want to add on state
-            % TODO : pass those using addStaticVariables method
-            addedvarnames = model.addedVariableNames;
-            for i = 1 : numel(addedvarnames)
-                var = model.getProp(state, addedvarnames{i});
-                assert(isnumeric(var) | ischar(var));
-                newstate = model.setNewProp(newstate, addedvarnames{i}, var);
-            end
-
-            newstate.time = state.time;
-            
-            state = newstate;
-            
-        end 
-        
 
         function primaryvarnames = getPrimaryVariables(model)
 
@@ -1644,6 +1622,13 @@ classdef Battery < BaseModel
         % Variables that are no AD initiated (but should be "carried over")
             
             cleanState = addStaticVariables@BaseModel(model, cleanState, state);
+
+            addedvarnames = model.addedVariableNames;
+            for i = 1 : numel(addedvarnames)
+                var = model.getProp(state, addedvarnames{i});
+                assert(isnumeric(var) | ischar(var));
+                cleanState = model.setNewProp(cleanState, addedvarnames{i}, var);
+            end
             
             thermal = 'ThermalModel';
             ctrl = 'Control';
