@@ -223,7 +223,7 @@ function  output = runBatteryJson(jsonstruct, varargin)
     
     % Change default tolerance for nonlinear solver
     % For the moment, this is hard-coded here
-    if isfield(model.Control, 'Imax')
+    if ~isempty(model.Control.Imax)
         model.nonlinearTolerance = 1e-3*model.Control.Imax;
     else
         model.nonlinearTolerance = jsonstruct.NonLinearSolver.nonlinearTolerance;
