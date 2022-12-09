@@ -30,6 +30,8 @@ classdef CatalystLayer < BaseModel
 
         function model = CatalystLayer(paramobj)
 
+            model = model@BaseModel();
+            
         end
 
         function model = registerVarAndPropfuncNames(model)
@@ -87,13 +89,7 @@ classdef CatalystLayer < BaseModel
             inputnames = {'phiInmr', 'phi' 'Einmr'};
             model = model.registerPropFunction({'etaInmr', fn, inputnames});            
 
-            % Assemble the reaction rate constants
-            fn = @() CatalystLayer.updateReactionRateConstants;
-            inputnames = {'cOHelyte'};
-            model = model.registerPropFunction({'elyteReactionRateConstant', fn, inputnames});
-            inputnames = {'cOHinmr'};
-            model = model.registerPropFunction({'inmrReactionRateConstant', fn, inputnames});
-            
+
             % Assemble the reaction rates
             fn = @() CatalystLayer.updateReactionRates;
             inputnames = {'elyteReactionRateConstant', 'etaElyte'};
@@ -159,30 +155,19 @@ classdef CatalystLayer < BaseModel
             
         function state = updateReactionRates(model, state)
 
-        %% TODO : fix that (does not match with paper)
-
             etaElyte = state.etaElyte;
             etaInmr  = state.etaInmr;
-            H2OaInmr = state.H2OaInmr;
             T        = state.T;
-            gasp1    = state.gasPressuresElyte{1};
-            gasp2    = state.gasPressuresElyte{2};
 
             ir    = model.inmr;
             vsa   = model.volumetricSurfaceArea;
-            
-            PF1   = model.PF1;
-            j0    = model.j0;
+            Xinmr = model.Xinmr;
             alpha = model.alpha;
             n     = model.n;
 
-            X_inmr = 0.99;
 
-            PF = (ir.cT/1000).*(gasp1./1e5).*(gasp2./1e5);
             jElyte = (1 - X_inmr)*vsa*butlerVolmer(j0, alpha, n, etaElyte, T);
-
-            PF2 = H2OaInmr;
-            jInmr = X_inmr*vsa*butlerVolmer_split(j0, PF1, PF2, alpha, n, etaInmr, T);
+            jInmr = X_inmr*vsa*butlerVolmer(j0, alpha, n, etaInmr, T);
 
             state.elyteReactionRate = elyteReactionRate;
             state.inmrReactionRate  = inmrReactionRate;

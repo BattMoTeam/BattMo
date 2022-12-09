@@ -27,13 +27,13 @@ classdef Electrolyser < BaseModel
             model = model@BaseModel();
 
             % Assign the components : Electrolyte, NegativeElectrode, PositiveElectrode
-            model.HydrogenElectrode = HydrogenElectrode(paramobj.HydrogenElectrode);
-            model.OxygenElectrode   = OxygenElectrode(paramobj.OxygenElectrode);
-            model.HydrogenCatalystLayer = CatalystLayer(paramobj.HydrogenCatalystLayer);
-            model.OxygenCatalystLayer   = CatalystLayer(paramobj.OxygenCatalystLayer);
-            model.HydrogenInterface = MembraneInterface(paramobj.HydrogenInterface);
-            model.OxygenInterface   = MembraneInterface(paramobj.OxygenInterface);
-            model.IonomerMembrane   = IonomerMembrane(paramobj.IonomerMembrane);
+            model.HydrogenElectrode     = HydrogenElectrode(paramobj.HydrogenElectrode);
+            model.OxygenElectrode       = OxygenElectrode(paramobj.OxygenElectrode);
+            model.HydrogenCatalystLayer = PlatiniumCatalystLayer(paramobj.HydrogenCatalystLayer);
+            model.OxygenCatalystLayer   = IridiumCatalystLayer(paramobj.OxygenCatalystLayer);
+            model.HydrogenInterface     = MembraneInterface(paramobj.HydrogenInterface);
+            model.OxygenInterface       = MembraneInterface(paramobj.OxygenInterface);
+            model.IonomerMembrane       = IonomerMembrane(paramobj.IonomerMembrane);
             
         end
 
