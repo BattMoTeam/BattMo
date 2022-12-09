@@ -46,11 +46,9 @@ classdef AlkalineElectrode < ElectronicComponent
             compInd.activeGas = 5;
             % compInd.(H2 or O2) = 5 % should be instantiated by derived class see HydrogenElectrode.m and OxygenElectrode.m
             compInd.ncomp     = 5;
-            compInd.liquid    = [1; 3; 4];
-            compInd.gas       = [2; 5];
-            compInd.phaseMap  = [1; 2; 1; 1; 2]; % first component (H2Oliquid) is in phase indexed by 1 (liquid phase), and so on
+            compInd.liquid    = [compInd.H2Oliquid; compInd.OH; compInd.K];
+            compInd.gas       = [compInd.H2Ogas; compInd.activeGas];
             
-            model.compInd = compInd;
             
             phaseInd.liquid = 1;
             phaseInd.gas    = 2;
@@ -58,7 +56,8 @@ classdef AlkalineElectrode < ElectronicComponent
             phaseInd.mobile = [1; 2];
             phaseInd.nphase = 3;
             
-            model.phaseInd = phaseInd;
+            % compInd.phaseMap(compInd.H2Oliquid)  = phaseInd.liquid;
+            compInd.phaseMap  = [1; 2; 1; 1; 2]; % first component (H2Oliquid) is in phase indexed by 1 (liquid phase), and so on
             
             liquidInd.H2Oliquid = 1;
             liquidInd.OH = 2;
@@ -66,13 +65,16 @@ classdef AlkalineElectrode < ElectronicComponent
             liquidInd.ncomp  = 3;
             liqudInd.compMap = [1; 3; 4];
             
-            model.liquidInd = liquidInd;            
             
             gasInd.H2Ogas    = 1;
             gasInd.activeGas = 2;
             gasInd.ncomp     = 2;
             gasInd.compMap   = [2; 5];
             
+
+            model.compInd = compInd;
+            model.phaseInd = phaseInd;
+            model.liquidInd = liquidInd;            
             model.gasInd = gasInd;
             
             
@@ -316,7 +318,7 @@ classdef AlkalineElectrode < ElectronicComponent
             
             fn = @() AlkalineElectrode.updateH2OgasSource;
             inputnames = {'H2OliquidVaporExchangeRate'};
-            model = model.registerPropFunction({VarName({}, 'compGasSources', ngas, gasInd.H2O), fn, inputnames});
+            model = model.registerPropFunction({VarName({}, 'compGasSources', ngas, gasInd.H2Ogas), fn, inputnames});
 
             % Assemble mass conservation equations for components in gas phase
             fn = @() AlkalineElectrode.updateGasMassCons;
