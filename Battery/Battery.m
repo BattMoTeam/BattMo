@@ -706,7 +706,7 @@ classdef Battery < BaseModel
                 initstate.(ctrl).I = - model.(ctrl).Imax;
               case 'IEswitch'
                 initstate.(ctrl).ctrlType = 'constantCurrent';
-                initstate.(ctrl).I = - model.(ctrl).Imax;
+                initstate.(ctrl).I        = model.(ctrl).Imax;
               case 'powerControl'
                 % this is correct but anyway overwritten 
                 initstate.(ctrl).ctrlType = 'charge';
