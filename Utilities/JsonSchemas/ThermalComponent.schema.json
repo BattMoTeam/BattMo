@@ -48,3 +48,4 @@
           "thermalConductivity": {"type" : "number"},
           "density" : {"type" : "number"},
           "specificHeatCapacity": {"type" : "number"}}}}}}
+

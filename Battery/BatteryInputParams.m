@@ -49,6 +49,8 @@ classdef BatteryInputParams < InputParams
                 paramobj.(ctrl) = IEswitchControlModelInputParams(pick(ctrl));
               case 'CCCV'
                 paramobj.(ctrl) = CcCvControlModelInputParams(pick(ctrl));
+              case 'powerControl'
+                paramobj.(ctrl) = PowerControlModelInputParams(pick(ctrl));
               otherwise
                 error('controlPolicy not recognized');
             end

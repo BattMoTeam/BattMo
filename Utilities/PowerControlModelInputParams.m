@@ -1,26 +1,28 @@
-classdef CurrentCollectorInputParams < ElectronicComponentInputParams
-%
-% Input parameter class for :class:`CurrentCollector <Electrochemistry.CurrentCollector>`
-%
+classdef PowerControlModelInputParams < ControlModelInputParams
+
+    
     properties
         
-        externalCouplingTerm % coupling term specification of the current collector with external source
+        dischargingPower
+        chargingPower
+        dischargingTime
+        chargingTime
 
-        thermalConductivity % Thermal conductivity of current collector
-        specificHeatCapacity % Heat capacity of current collector
-
-        density % Density of current collector [kg m^-3]
+        powerControlCase
+        
     end
     
     methods
-        
-        function paramobj = CurrentCollectorInputParams(jsonstruct)
-            paramobj = paramobj@ElectronicComponentInputParams(jsonstruct);
-            paramobj.externalCouplingTerm = struct();
-        end
-        
-    end
 
+        function paramobj = PowerControlModelInputParams(jsonstruct);
+            
+            paramobj = paramobj@ControlModelInputParams(jsonstruct);
+            paramobj.controlPolicy = 'powerControl';
+            
+        end
+
+    end
+    
 end
 
 

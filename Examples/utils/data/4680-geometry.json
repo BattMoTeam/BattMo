@@ -4,7 +4,7 @@
    "rInner" : 2e-3,
    "rOuter" : 23e-3,
    "L" : 80e-3,
-   "nas" : 3,
+   "nas" : 20,
    "nL" : 2,
    "tabparams" : {"tabcase" : "aligned tabs",
                   "width" : 3e-3,
