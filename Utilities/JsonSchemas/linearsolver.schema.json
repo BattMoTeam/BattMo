@@ -9,6 +9,8 @@
       "description" : "list of (partially) supported linear solver library",
       "enum" : ["matlab", "agmg", "amgcl"]
     },
+
+    "verbose" : {"type" : "integer"},
     
     "method" : {
       "type" : "string",

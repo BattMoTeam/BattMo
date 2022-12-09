@@ -62,6 +62,9 @@ classdef BatteryLinearSolver < handle
                 solver.reduceToCell = false;
             end
 
+            if isfield(setup, 'verbose') && setup.verbose > 0
+                solver.verbose = setup.verbose;
+            end
             
         end
 
