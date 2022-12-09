@@ -4,8 +4,6 @@
   "description": "A separator",
   "type": "object",
 
-  "$ref": "thermalParameters",
-  
   "properties" : { "porosity": {"type" : "number"},
                    "density" : {"type" : "number"},
                    "BruggemanCoefficient" : {"type" : "number"}

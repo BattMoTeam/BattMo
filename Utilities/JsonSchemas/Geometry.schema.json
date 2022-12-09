@@ -6,7 +6,7 @@
 
   "properties" : {"Geometry" : {"type" : "object",
                                 "properties" : {"case" : {"type" : "string",
-                                                          "enum" : ["1D", "pouch", "2D-demo", "3D-demo", "jellyRoll"]}}},
+                                                          "enum" : ["1D", "pouch", "2D-demo", "3D-demo", "jellyRoll", "coinCell"]}}},
                   "NegativeElectrode" : { "$ref" : "#/$defs/particlediscretization"},
                   "PositiveElectrode" : { "$ref" : "#/$defs/particlediscretization"}
                  },
@@ -18,7 +18,9 @@
              {"properties" : {"Geometry" : {"properties" : {"case" : {"const" : "3D-demo"}}}},
               "$ref" : "#/$defs/3D-demo" },
              {"properties" : {"Geometry" : {"properties" : {"case" : {"const" : "jellyRoll"}}}},
-              "$ref" : "#/$defs/jellyRoll" }
+              "$ref" : "#/$defs/jellyRoll" },
+             {"properties" : {"Geometry" : {"properties" : {"case" : {"const" : "coinCell"}}}},
+              "$ref" : "#/$defs/coinCell" }
             ],
 
   "$defs" : {

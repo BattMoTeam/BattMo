@@ -5,7 +5,6 @@
   "type": "object",
 
   "allOf": [{"$ref": "ElectronicComponent"},
-            {"$ref": "thermalParameters"},
             {"properties" : { "Interface": {"$ref" : "Interface"},
                               "SolidDiffusion": {"$ref" : "SolidDiffusionModel"},
                               "InterDiffusionCoefficient": {"type" : "number"},
