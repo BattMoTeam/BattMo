@@ -7,11 +7,11 @@ classdef Electrolyser < BaseModel
         % Components
         IonomerMembrane
         
-        HydrogenElectrode
+        HydrogenPorousTransportLayer
         HydrogenCatalystLayer
         HydrogenInterface
         
-        OxygenElectrode
+        OxygenPorousTransportLayer
         OxygenCatalystLayer
         OxygenInterface
         
@@ -26,9 +26,9 @@ classdef Electrolyser < BaseModel
 
             model = model@BaseModel();
 
-            % Assign the components : Electrolyte, NegativeElectrode, PositiveElectrode
-            model.HydrogenElectrode     = HydrogenElectrode(paramobj.HydrogenElectrode);
-            model.OxygenElectrode       = OxygenElectrode(paramobj.OxygenElectrode);
+            % Assign the components : Electrolyte, NegativePorousTransportLayer, PositivePorousTransportLayer
+            model.HydrogenPorousTransportLayer     = HydrogenPorousTransportLayer(paramobj.HydrogenPorousTransportLayer);
+            model.OxygenPorousTransportLayer       = OxygenPorousTransportLayer(paramobj.OxygenPorousTransportLayer);
             model.HydrogenCatalystLayer = PlatiniumCatalystLayer(paramobj.HydrogenCatalystLayer);
             model.OxygenCatalystLayer   = IridiumCatalystLayer(paramobj.OxygenCatalystLayer);
             model.HydrogenInterface     = MembraneInterface(paramobj.HydrogenInterface);
@@ -44,10 +44,10 @@ classdef Electrolyser < BaseModel
 
             % shortcuts
             inm  = 'IonomerMembrane';
-            her  = 'HydrogenElectrode';
+            her  = 'HydrogenPorousTransportLayer';
             hctl = 'HydrogenCatalystLayer';
             hitf = 'HydrogenInterface';
-            oer  = 'OxygenElectrode';
+            oer  = 'OxygenPorousTransportLayer';
             octl = 'OxygenCatalystLayer';
             oitf = 'OxygenInterface';
         
@@ -146,9 +146,9 @@ classdef Electrolyser < BaseModel
 
         function state = dispatchTemperature(model, state)
             mea   = 'IonomereMembrane';
-            her   = 'HydrogenElectrode';
+            her   = 'HydrogenPorousTransportLayer';
             hctl = 'HydrogenCatalystLayer';
-            oer   = 'OxygenElectrode';
+            oer   = 'OxygenPorousTransportLayer';
             octl = 'OxygenCatalystLayer';
             
             submodelnames = {mea, her, hctl, oer, octl};
@@ -173,8 +173,8 @@ classdef Electrolyser < BaseModel
         
         function state = dispatchFromCatalystLayer(model, state)
             
-            state = model.dispatchCatalystLayerToHydrogenElectrode(state);
-            state = model.dispatchCatalystLayerToOxygenElectrode(state);
+            state = model.dispatchCatalystLayerToHydrogenPorousTransportLayer(state);
+            state = model.dispatchCatalystLayerToOxygenPorousTransportLayer(state);
             state = model.dipatchCatalystLayersToIonomer(state)
             
         end
@@ -183,7 +183,7 @@ classdef Electrolyser < BaseModel
         function state = updateHydrogenPotentials(model, state)
             
             inm  = 'IonomerMembrane';
-            her  = 'HydrogenElectrode';
+            her  = 'HydrogenPorousTransportLayer';
             hctl = 'HydrogenCatalystLayer';
             
             coupterms = model.couplingTerms;
@@ -203,7 +203,7 @@ classdef Electrolyser < BaseModel
         function state = updateOxygenPotentials(model, state)
             
             inm  = 'IonomerMembrane';
-            oer  = 'OxygenElectrode';
+            oer  = 'OxygenPorousTransportLayer';
             octl = 'OxygenCatalystLayer';
             
             coupterms = model.couplingTerms;
@@ -221,7 +221,7 @@ classdef Electrolyser < BaseModel
 
         function state = dispatchGasPartialPressureHydrogenCatalystLayer(model, state)
             
-            her  = 'HydrogenElectrode';
+            her  = 'HydrogenPorousTransportLayer';
             hctl = 'HydrogenCatalystLayer';
             
             gind = model.(her).phaseInd.gas;
@@ -250,7 +250,7 @@ classdef Electrolyser < BaseModel
         end
         
         function state = dispatchGasPartialPressureOxygenCatalystLayer(model, state)
-            oer   = 'OxygenElectrode';
+            oer   = 'OxygenPorousTransportLayer';
             octl = 'OxygenCatalystLayer';
             
             gind = model.(oer).phaseInd.gas;
@@ -280,7 +280,7 @@ classdef Electrolyser < BaseModel
         
         function state = dispatchConcentrationsHydrogenCatalystLayer(model, state)
             
-            her   = 'HydrogenElectrode';
+            her   = 'HydrogenPorousTransportLayer';
             hctl = 'HydrogenCatalystLayer';
             
             lind = model.(her).liquidInd;
@@ -303,7 +303,7 @@ classdef Electrolyser < BaseModel
         
         function state = dispatchConcentrationsOxygenCatalystLayer(model, state)
             
-            oer   = 'OxygenElectrode';
+            oer   = 'OxygenPorousTransportLayer';
             octl = 'OxygenCatalystLayer';
             
             lind = model.(oer).liquidInd;
@@ -325,7 +325,7 @@ classdef Electrolyser < BaseModel
         
         function state = dispatchH2OactivityHydrogenCatalystLayer(model, state)
             
-            her   = 'HydrogenElectrode';
+            her   = 'HydrogenPorousTransportLayer';
             hctl = 'HydrogenCatalystLayer';
             inm   = 'IonomerMembrane';
             
@@ -343,7 +343,7 @@ classdef Electrolyser < BaseModel
                     
         
         function state = dispatchH2OactivityOxygenCatalystLayer(model, state)
-            oer   = 'OxygenElectrode';
+            oer   = 'OxygenPorousTransportLayer';
             octl = 'OxygenCatalystLayer';
             inm   = 'IonomerMembrane';
             
@@ -360,9 +360,9 @@ classdef Electrolyser < BaseModel
         end
         
         
-        function state = dispatchCatalystLayerToHydrogenElectrode(model, state)
+        function state = dispatchCatalystLayerToHydrogenPorousTransportLayer(model, state)
             
-            her   = 'HydrogenElectrode';
+            her   = 'HydrogenPorousTransportLayer';
             hctl = 'HydrogenCatalystLayer';
             inm   = 'IonomerMembrane';
             
@@ -389,9 +389,9 @@ classdef Electrolyser < BaseModel
             state.(her).compGasSources{gInd.H2}(coupcells(:, 1)) = compH2GasSource;
         end
         
-        function state = dispatchCatalystLayerToOxygenElectrode(model, state)
+        function state = dispatchCatalystLayerToOxygenPorousTransportLayer(model, state)
             
-            oer   = 'OxygenElectrode';
+            oer   = 'OxygenPorousTransportLayer';
             octl = 'OxygenCatalystLayer';
             inm   = 'IonomerMembrane';
             
@@ -471,9 +471,9 @@ classdef Electrolyser < BaseModel
             
             % Shortcuts used in this function
             battery = model;
-            ne      = 'NegativeElectrode';
-            pe      = 'PositiveElectrode';
-            eac     = 'ElectrodeActiveComponent';
+            ne      = 'NegativePorousTransportLayer';
+            pe      = 'PositivePorousTransportLayer';
+            eac     = 'PorousTransportLayerActiveComponent';
             cc      = 'CurrentCollector';
             elyte   = 'Electrolyte';
             am      = 'ActiveMaterial';
@@ -499,9 +499,9 @@ classdef Electrolyser < BaseModel
 
             state = battery.updateAccumTerms(state, state0, dt);
 
-            %% Update Electrolyte -> Electrodes coupling 
+            %% Update Electrolyte -> PorousTransportLayers coupling 
             
-            state = battery.updateElectrodeCoupling(state); 
+            state = battery.updatePorousTransportLayerCoupling(state); 
 
             %% Update reaction rates in both electrodes
 
@@ -512,7 +512,7 @@ classdef Electrolyser < BaseModel
                 state.(elde).(eac).(am) = battery.(elde).(eac).(am).updateReactionRate(state.(elde).(eac).(am));
             end
 
-            %% Update Electrodes -> Electrolyte  coupling
+            %% Update PorousTransportLayers -> Electrolyte  coupling
 
             state = battery.updateElectrolyteCoupling(state);
             
@@ -524,8 +524,8 @@ classdef Electrolyser < BaseModel
             state.(ne).(eac) = battery.(ne).(eac).updatejBcSource(state.(ne).(eac));
             state.(pe).(eac) = battery.(pe).(eac).updatejBcSource(state.(pe).(eac));
             
-            state = model.setupExternalCouplingNegativeElectrode(state);
-            state = model.setupExternalCouplingPositiveElectrode(state);
+            state = model.setupExternalCouplingNegativePorousTransportLayer(state);
+            state = model.setupExternalCouplingPositivePorousTransportLayer(state);
             
             state.(ne).(cc) = battery.(ne).(cc).updatejBcSource(state.(ne).(cc));
             state.(pe).(cc) = battery.(pe).(cc).updatejBcSource(state.(pe).(cc));
@@ -537,7 +537,7 @@ classdef Electrolyser < BaseModel
             state.(elyte) = battery.(elyte).updateCurrent(state.(elyte));
             state.(elyte) = battery.(elyte).updateChargeConservation(state.(elyte));
 
-            %% Electrodes charge conservation - Active material part
+            %% PorousTransportLayers charge conservation - Active material part
 
             for ind = 1 : numel(electrodes)
                 elde = electrodes{ind};
@@ -556,12 +556,12 @@ classdef Electrolyser < BaseModel
             for ind = 1 : numel(electrodes)
                 elde = electrodes{ind};
                 
-                %% Electrodes mass conservation
+                %% PorousTransportLayers mass conservation
                 state.(elde).(eac) = battery.(elde).(eac).updateDiffusionCoefficient(state.(elde).(eac));
                 state.(elde).(eac) = battery.(elde).(eac).updateChargeCarrierFlux(state.(elde).(eac));
                 state.(elde).(eac) = battery.(elde).(eac).updateMassConservation(state.(elde).(eac));
                 
-                %% Electrodes charge conservation - current collector part
+                %% PorousTransportLayers charge conservation - current collector part
                 state.(elde).(cc) = battery.(elde).(cc).updateCurrent(state.(elde).(cc));
                 state.(elde).(cc) = battery.(elde).(cc).updateChargeConservation(state.(elde).(cc));
 
@@ -643,9 +643,9 @@ classdef Electrolyser < BaseModel
         function state = updateTemperature(model, state)
             
             elyte = 'Electrolyte';
-            ne    = 'NegativeElectrode';
-            pe    = 'PositiveElectrode';
-            eac   = 'ElectrodeActiveComponent';
+            ne    = 'NegativePorousTransportLayer';
+            pe    = 'PositivePorousTransportLayer';
+            eac   = 'PorousTransportLayerActiveComponent';
             cc    = 'CurrentCollector';
             thermal = 'ThermalModel';
             
@@ -670,10 +670,10 @@ classdef Electrolyser < BaseModel
                         
             battery = model;
             elyte = 'Electrolyte';
-            ne    = 'NegativeElectrode';
-            pe    = 'PositiveElectrode';
+            ne    = 'NegativePorousTransportLayer';
+            pe    = 'PositivePorousTransportLayer';
             am    = 'ActiveMaterial';
-            eac   = 'ElectrodeActiveComponent';
+            eac   = 'PorousTransportLayerActiveComponent';
             
             vols = battery.(elyte).G.cells.volumes;
             F = battery.con.F;
@@ -695,12 +695,12 @@ classdef Electrolyser < BaseModel
             coupnames = model.couplingNames;
             
             ne_R = state.(ne).(eac).(am).R;
-            coupterm = getCoupTerm(couplingterms, 'NegativeElectrode-Electrolyte', coupnames);
+            coupterm = getCoupTerm(couplingterms, 'NegativePorousTransportLayer-Electrolyte', coupnames);
             elytecells = coupterm.couplingcells(:, 2);
             elyte_c_source(elytecells) = ne_R.*vols(elytecells); % we divide with F later
             
             pe_R = state.(pe).(eac).(am).R;
-            coupterm = getCoupTerm(couplingterms, 'PositiveElectrode-Electrolyte', coupnames);
+            coupterm = getCoupTerm(couplingterms, 'PositivePorousTransportLayer-Electrolyte', coupnames);
             elytecells = coupterm.couplingcells(:, 2);
             elyte_c_source(elytecells) = pe_R.*vols(elytecells);
             
@@ -714,10 +714,10 @@ classdef Electrolyser < BaseModel
         function state = updateAccumTerms(model, state, state0, dt)
                     
             elyte = 'Electrolyte';
-            ne    = 'NegativeElectrode';
-            pe    = 'PositiveElectrode';
+            ne    = 'NegativePorousTransportLayer';
+            pe    = 'PositivePorousTransportLayer';
             am    = 'ActiveMaterial';
-            eac   = 'ElectrodeActiveComponent';
+            eac   = 'PorousTransportLayerActiveComponent';
             
             ccAccumName = model.(elyte).chargeCarrierAccumName;
             
@@ -758,9 +758,9 @@ classdef Electrolyser < BaseModel
         function state = updateThermalOhmicSourceTerms(model, state)
         % reference Latz et al (ref1 in reference list)
 
-            ne      = 'NegativeElectrode';
-            pe      = 'PositiveElectrode';
-            eac     = 'ElectrodeActiveComponent';
+            ne      = 'NegativePorousTransportLayer';
+            pe      = 'PositivePorousTransportLayer';
+            eac     = 'PorousTransportLayerActiveComponent';
             cc      = 'CurrentCollector';
             elyte   = 'Electrolyte';
             thermal = 'ThermalModel';
@@ -857,9 +857,9 @@ classdef Electrolyser < BaseModel
         function state = updateThermalReactionSourceTerms(model, state)
         % reference Latz et al (ref1 in reference list)            
             
-            ne      = 'NegativeElectrode';
-            pe      = 'PositiveElectrode';
-            eac     = 'ElectrodeActiveComponent';
+            ne      = 'NegativePorousTransportLayer';
+            pe      = 'PositivePorousTransportLayer';
+            eac     = 'PorousTransportLayerActiveComponent';
             am      = 'ActiveMaterial';
             thermal = 'ThermalModel';
             
@@ -898,7 +898,7 @@ classdef Electrolyser < BaseModel
         end
         
         
-        function state = updateElectrodeCoupling(model, state)
+        function state = updatePorousTransportLayerCoupling(model, state)
         % Setup electrode coupling by updating the potential and concentration of the electrolyte in the active component of the
         % electrode. There, those quantities are considered as input and used to compute the reaction rate.
         %
@@ -907,15 +907,15 @@ classdef Electrolyser < BaseModel
         %
         % shortcuts:
         % elyte : Electrolyte
-        % neac  : NegativeElectrode.ElectrodeActiveComponent 
-        % peac  : PositiveElectrode.ElectrodeActiveComponent
+        % neac  : NegativePorousTransportLayer.PorousTransportLayerActiveComponent 
+        % peac  : PositivePorousTransportLayer.PorousTransportLayerActiveComponent
             
             bat = model;
             elyte = 'Electrolyte';
-            ne    = 'NegativeElectrode';
-            pe    = 'PositiveElectrode';
+            ne    = 'NegativePorousTransportLayer';
+            pe    = 'PositivePorousTransportLayer';
             am    = 'ActiveMaterial';
-            eac   = 'ElectrodeActiveComponent';
+            eac   = 'PorousTransportLayerActiveComponent';
             cc    = 'CurrentCollector';
             
             eldes = {ne, pe};
@@ -933,9 +933,9 @@ classdef Electrolyser < BaseModel
             
         end
 
-        function state = setupExternalCouplingNegativeElectrode(model, state)
+        function state = setupExternalCouplingNegativePorousTransportLayer(model, state)
             
-            ne = 'NegativeElectrode';
+            ne = 'NegativePorousTransportLayer';
             cc = 'CurrentCollector';
            
             phi = state.(ne).(cc).phi;
@@ -946,9 +946,9 @@ classdef Electrolyser < BaseModel
             
         end
         
-        function state = setupExternalCouplingPositiveElectrode(model, state)
+        function state = setupExternalCouplingPositivePorousTransportLayer(model, state)
             
-            pe = 'PositiveElectrode';
+            pe = 'PositivePorousTransportLayer';
             cc = 'CurrentCollector';
            
             phi = state.(pe).(cc).phi;
@@ -965,10 +965,10 @@ classdef Electrolyser < BaseModel
             
             bat = model;
             elyte = 'Electrolyte';
-            ne    = 'NegativeElectrode';
-            pe    = 'PositiveElectrode';
+            ne    = 'NegativePorousTransportLayer';
+            pe    = 'PositivePorousTransportLayer';
             am    = 'ActiveMaterial';
-            eac   = 'ElectrodeActiveComponent';
+            eac   = 'PorousTransportLayerActiveComponent';
             cc    = 'CurrentCollector';
             thermal = 'ThermalModel';
             
@@ -1007,10 +1007,10 @@ classdef Electrolyser < BaseModel
             
             bat = model;
             elyte = 'Electrolyte';
-            ne    = 'NegativeElectrode';
-            pe    = 'PositiveElectrode';
+            ne    = 'NegativePorousTransportLayer';
+            pe    = 'PositivePorousTransportLayer';
             am    = 'ActiveMaterial';
-            eac   = 'ElectrodeActiveComponent';
+            eac   = 'PorousTransportLayerActiveComponent';
             cc    = 'CurrentCollector';
             thermal = 'ThermalModel';
             
@@ -1076,20 +1076,20 @@ classdef Electrolyser < BaseModel
         end
        function model = validateModel(model, varargin)
             mnames = {{'Electrolyte'}, ...
-              {'PositiveElectrode','ElectrodeActiveComponent'}, ...
-              {'NegativeElectrode','ElectrodeActiveComponent'}, ...
-              {'NegativeElectrode','CurrentCollector'}, ...
-              {'PositiveElectrode','CurrentCollector'}};
+              {'PositivePorousTransportLayer','PorousTransportLayerActiveComponent'}, ...
+              {'NegativePorousTransportLayer','PorousTransportLayerActiveComponent'}, ...
+              {'NegativePorousTransportLayer','CurrentCollector'}, ...
+              {'PositivePorousTransportLayer','CurrentCollector'}};
             model.Electrolyte.AutoDiffBackend=model.AutoDiffBackend;
             model.Electrolyte=model.Electrolyte.validateModel(varargin{:});
-            model.PositiveElectrode.ElectrodeActiveComponent.AutoDiffBackend= model.AutoDiffBackend;
-            model.PositiveElectrode.ElectrodeActiveComponent = model.PositiveElectrode.ElectrodeActiveComponent.validateModel(varargin{:});
-            model.NegativeElectrode.ElectrodeActiveComponent.AutoDiffBackend= model.AutoDiffBackend;
-            model.NegativeElectrode.ElectrodeActiveComponent = model.NegativeElectrode.ElectrodeActiveComponent.validateModel(varargin{:});
-            model.NegativeElectrode.CurrentCollector.AutoDiffBackend= model.AutoDiffBackend;
-            model.NegativeElectrode.CurrentCollector=model.NegativeElectrode.CurrentCollector.validateModel(varargin{:});
-            model.PositiveElectrode.CurrentCollector.AutoDiffBackend=model.AutoDiffBackend;
-            model.PositiveElectrode.CurrentCollector= model.PositiveElectrode.CurrentCollector.validateModel(varargin{:});
+            model.PositivePorousTransportLayer.PorousTransportLayerActiveComponent.AutoDiffBackend= model.AutoDiffBackend;
+            model.PositivePorousTransportLayer.PorousTransportLayerActiveComponent = model.PositivePorousTransportLayer.PorousTransportLayerActiveComponent.validateModel(varargin{:});
+            model.NegativePorousTransportLayer.PorousTransportLayerActiveComponent.AutoDiffBackend= model.AutoDiffBackend;
+            model.NegativePorousTransportLayer.PorousTransportLayerActiveComponent = model.NegativePorousTransportLayer.PorousTransportLayerActiveComponent.validateModel(varargin{:});
+            model.NegativePorousTransportLayer.CurrentCollector.AutoDiffBackend= model.AutoDiffBackend;
+            model.NegativePorousTransportLayer.CurrentCollector=model.NegativePorousTransportLayer.CurrentCollector.validateModel(varargin{:});
+            model.PositivePorousTransportLayer.CurrentCollector.AutoDiffBackend=model.AutoDiffBackend;
+            model.PositivePorousTransportLayer.CurrentCollector= model.PositiveElectrode.CurrentCollector.validateModel(varargin{:});
           %for i=1:numel(mnames)
           %    mname=mnames{i}
           %    submodel=model.getSubmodel(mname);

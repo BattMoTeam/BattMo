@@ -1,4 +1,4 @@
-classdef HydrogenElectrode < AlkalineElectrode
+classdef HydrogenPorousTransportLayer < PorousTransportLayer
 
     properties
         
@@ -6,9 +6,9 @@ classdef HydrogenElectrode < AlkalineElectrode
     
     methods
         
-        function model = HydrogenElectrode(paramobj)
+        function model = HydrogenPorousTransportLayer(paramobj)
 
-            model = model@AlkalineElectrode(paramobj);
+            model = model@PorousTransportLayer(paramobj);
 
             % add the H2 component in the indexing structures
             model.compInd.H2 = model.compInd.activeGas;
@@ -18,7 +18,7 @@ classdef HydrogenElectrode < AlkalineElectrode
         
         function model = registerVarAndPropfuncNames(model)
             
-            model = registerVarAndPropfuncNames@AlkalineElectrode(model);
+            model = registerVarAndPropfuncNames@PorousTransportLayer(model);
 
             phaseInd  = model.phaseInd;
             liquidInd = model.liquidInd;
@@ -34,16 +34,16 @@ classdef HydrogenElectrode < AlkalineElectrode
             model = model.registerVarName('H2rhoeps');
 
             % assemble gas pressure using ideal gas law
-            fn = @() HydrogenElectrode.updateGasPressure;
+            fn = @() HydrogenPorousTransportLayer.updateGasPressure;
             inputnames = {'H2rhoeps', 'H2Ogasrhoeps', 'T'};
             model = model.registerPropFunction({VarName({}, 'phasePressures', nph, phaseInd.gas), fn, inputnames});
             model = model.registerPropFunction({VarName({}, 'compGasPressures', ngas), fn, inputnames});
 
-            fn = @() HydrogenElectrode.updateGasViscosity;
+            fn = @() HydrogenPorousTransportLayer.updateGasViscosity;
             inputnames = {'T'};
             model = model.registerPropFunction({VarName({}, 'viscosities', nph, phaseInd.gas), fn, inputnames});
             
-            fn = @() HydrogenElectrode.updateH2Accum;
+            fn = @() HydrogenPorousTransportLayer.updateH2Accum;
             functionCallSetupFn = @(propfunction) PropFunction.accumFuncCallSetupFn(propfunction);
             fn = {fn, functionCallSetupFn};
             inputnames = {'H2rhoeps'};
@@ -74,7 +74,7 @@ classdef HydrogenElectrode < AlkalineElectrode
         
         function state = updateGasViscosity(model, state)
             T = state.T;
-            warning('check that one! this was taken directly from OxygenElectrode');
+            warning('check that one! this was taken directly from OxygenPorousTransportLayer');
             state.viscosities(model.phaseInd.gas) = (0.1971 + T * (0.0803 - 3.99e-5 * T)) * 1e-6;
         end
         

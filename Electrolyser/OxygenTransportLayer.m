@@ -1,4 +1,4 @@
-classdef OxygenElectrode < AlkalineElectrode
+classdef OxygenPorousTransportLayer < PorousTransportLayer
     
 
     properties
@@ -7,9 +7,9 @@ classdef OxygenElectrode < AlkalineElectrode
     
     methods
         
-        function model = OxygenElectrode(paramobj)
+        function model = OxygenPorousTransportLayer(paramobj)
 
-            model = model@AlkalineElectrode(paramobj);
+            model = model@PorousTransportLayer(paramobj);
             
             % add the  O2 component in the indexing structures            
             model.compInd.O2 = model.compInd.activeGas;
@@ -19,7 +19,7 @@ classdef OxygenElectrode < AlkalineElectrode
         
         function model = registerVarAndPropfuncNames(model)
 
-            model = registerVarAndPropfuncNames@AlkalineElectrode(model);
+            model = registerVarAndPropfuncNames@PorousTransportLayer(model);
 
             phaseInd  = model.phaseInd;
             liquidInd = model.liquidInd;
@@ -35,16 +35,16 @@ classdef OxygenElectrode < AlkalineElectrode
             model = model.registerVarName('O2rhoeps');
 
             % assemble gas pressure using ideal gas law
-            fn = @() OxygenElectrode.updateGasPressure;
+            fn = @() OxygenPorousTransportLayer.updateGasPressure;
             inputnames = {'O2rhoeps', 'H2Ogasrhoeps', 'T'};
             model = model.registerPropFunction({VarName({}, 'phasePressures', nph, phaseInd.gas), fn, inputnames});
             model = model.registerPropFunction({VarName({}, 'compGasPressures', ngas), fn, inputnames});
             
-            fn = @() OxygenElectrode.updateGasViscosity;
+            fn = @() OxygenPorousTransportLayer.updateGasViscosity;
             inputnames = {'T'};
             model = model.registerPropFunction({VarName({}, 'viscosities', nph, phaseInd.gas), fn, inputnames});
 
-            fn = @() OxygenElectrode.updateO2Accum;
+            fn = @() OxygenPorousTransportLayer.updateO2Accum;
             functionCallSetupFn = @(propfunction) PropFunction.accumFuncCallSetupFn(propfunction);
             fn = {fn, functionCallSetupFn};
             inputnames = {'O2rhoeps'};

@@ -1,4 +1,4 @@
-classdef AlkalineElectrodeInputParams < ElectronicComponentInputParams
+classdef PorousTransportLayerInputParams < ElectronicComponentInputParams
     
     properties
         
@@ -25,7 +25,7 @@ classdef AlkalineElectrodeInputParams < ElectronicComponentInputParams
     
     methods
         
-        function paramobj = HydrogenElectrodeInputParams();
+        function paramobj = HydrogenPorousTransportLayerInputParams();
             paramobj = paramobj@ElectronicComponentInputParams();
             
         end

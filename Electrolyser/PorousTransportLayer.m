@@ -1,4 +1,4 @@
-classdef AlkalineElectrode < ElectronicComponent
+classdef PorousTransportLayer < ElectronicComponent
     
     properties
         
@@ -32,7 +32,7 @@ classdef AlkalineElectrode < ElectronicComponent
     
     methods
         
-        function model = AlkalineElectrode(paramobj)
+        function model = PorousTransportLayer(paramobj)
 
             % paramobj is instance of ElectronicComponentInputParams
             paramobj.use_thermal = false;
@@ -43,7 +43,7 @@ classdef AlkalineElectrode < ElectronicComponent
             compInd.OH        = 3;
             compInd.K         = 4;
             compInd.activeGas = 5;
-            % compInd.(H2 or O2) = 5 % should be instantiated by derived class see HydrogenElectrode.m and OxygenElectrode.m
+            % compInd.(H2 or O2) = 5 % should be instantiated by derived class see HydrogenPorousTransportLayer.m and OxygenPorousTransportLayer.m
             compInd.ncomp     = 5;
             compInd.liquid    = [compInd.H2Oliquid; compInd.OH; compInd.K];
             compInd.gas       = [compInd.H2Ogas; compInd.activeGas];
@@ -193,59 +193,59 @@ classdef AlkalineElectrode < ElectronicComponent
             model = model.registerVarNames(varnames);
 
             
-            fn = @() AlkalineElectrode.updateVolumeFractions;
+            fn = @() PorousTransportLayer.updateVolumeFractions;
             inputnames = {'liqeps'};
             model = model.registerPropFunction({volumeFractions, fn, inputnames});            
 
             % assemble liquid pressure using capillary pressure function
-            fn = @() AlkalineElectrode.updateLiquidPressure;
+            fn = @() PorousTransportLayer.updateLiquidPressure;
             inputnames = {VarName({}, 'phasePressures', nph, phaseInd.gas), volumeFractions};
             model = model.registerPropFunction({VarName({}, 'phasePressures', nph, phaseInd.liquid), fn, inputnames});
             
             %% assemble masses 
             
             % assemble mass of OH
-            fn = @() AlkalineElectrode.updateOHconcentration;
+            fn = @() PorousTransportLayer.updateOHconcentration;
             inputnames = {'OHceps', ...
                           VarName({}, 'volumeFractions', nph, phaseInd.liquid)};
             var = VarName({}, 'concentrations', nliquid, liquidInd.OH);
             model = model.registerPropFunction({var, fn, inputnames});            
             
             % assemble mass of H2O in gas phase
-            fn = @() AlkalineElectrode.updateMassH2Ogas;
+            fn = @() PorousTransportLayer.updateMassH2Ogas;
             inputnames = {'H2Ogasrhoeps'};
             var = VarName({}, 'compGasMasses', ngas, gasInd.H2Ogas);
             model = model.registerPropFunction({var, fn, inputnames});            
             
             % update liquid density
-            fn = @() AlkalineElectrode.updateLiquidDensity;
+            fn = @() PorousTransportLayer.updateLiquidDensity;
             inputnames = {'liqrhoeps', ...
                           VarName({}, 'volumeFractions', nph, phaseInd.liquid)};
             model = model.registerPropFunction({'liqrho', fn, inputnames});            
             
             % assemble concentrations
-            fn = @() AlkalineElectrode.updateConcentrations;
+            fn = @() PorousTransportLayer.updateConcentrations;
             inputnames = {'liqrho', ...
                           VarName({}, 'concentrations', nliquid, liquidInd.OH)};
             ind = setdiff([1 : nliquid]', liquidInd.OH);
             model = model.registerPropFunction({VarName({}, 'concentrations', nliquid, ind), fn, inputnames});            
             
-            fn = @() AlkalineElectrode.updateWaterActivity;
+            fn = @() PorousTransportLayer.updateWaterActivity;
             inputnames = {'T', 'OHmolality'};
             model = model.registerPropFunction({'H2Oa', fn, inputnames});
 
             % compute OH molality
-            fn = @() AlkalineElectrode.updateMolality;
+            fn = @() PorousTransportLayer.updateMolality;
             inputnames = {VarName({}, 'concentrations', nph, model.liquidInd.OH), 'liqrho'};
             model = model.registerPropFunction({'OHmolality', fn, inputnames});            
             
             % compute vapor pressure
-            fn = @() AlkalineElectrode.updateVaporPressure;
+            fn = @() PorousTransportLayer.updateVaporPressure;
             inputnames = {'T', 'OHmolality'};
             model = model.registerPropFunction({'vaporPressure', fn, inputnames});
             
             % update evaporation term
-            fn = @() AlkalineElectrode.updateEvaporationTerm;
+            fn = @() PorousTransportLayer.updateEvaporationTerm;
             inputnames = {'T', ...
                           'vaporPressure', ...
                           VarName({}, 'compGasPressures', ngas, gasInd.H2Ogas), ...
@@ -254,7 +254,7 @@ classdef AlkalineElectrode < ElectronicComponent
 
             
             % Assemble phase velocities
-            fn = @() AlkalineElectrode.updatePhaseVelocities;
+            fn = @() PorousTransportLayer.updatePhaseVelocities;
             for imobile = 1 : numel(phaseInd.mobile)
                 iphase = phaseInd.mobile(imobile);
                 inputnames = {VarName({}, 'phasePressures', nph, iphase), ...
@@ -263,25 +263,25 @@ classdef AlkalineElectrode < ElectronicComponent
             end
             
             % assemble OH convection flux
-            fn = @() AlkalineElectrode.updateOHConvectionFlux;
+            fn = @() PorousTransportLayer.updateOHConvectionFlux;
             inputnames = {VarName({}, 'concentrations', nliquid, liquidInd.OH), ...
                           VarName({}, 'phaseVelocities', nph, phaseInd.liquid), ...
                           VarName({}, 'volumeFractions', nph, phaseInd.liquid)};
             model = model.registerPropFunction({'convOHFlux', fn, inputnames}); 
             
             % assemble OH diffusion flux
-            fn = @() AlkalineElectrode.updateOHDiffusionFlux;
+            fn = @() PorousTransportLayer.updateOHDiffusionFlux;
             inputnames = {VarName({}, 'concentrations', nliquid, liquidInd.OH), ...
                           VarName({}, 'volumeFractions', nph, phaseInd.liquid)};
             model = model.registerPropFunction({'diffOHFlux', fn, inputnames}); 
             
             % assemble OH migration flux
-            fn = @() AlkalineElectrode.updateOHMigrationFlux;
+            fn = @() PorousTransportLayer.updateOHMigrationFlux;
             inputnames = {'j'};
             model = model.registerPropFunction({'migOHFlux', fn, inputnames}); 
             
             % assemble fluxes of gas components
-            fn = @() AlkalineElectrode.updateGasFluxes;
+            fn = @() PorousTransportLayer.updateGasFluxes;
             for igas = 1 : ngas
                 inputnames = {VarName({}, 'compGasMasses', ngas, igas)         , ...
                               VarName({}, 'volumeFractions', nph, phaseInd.gas), ...
@@ -290,7 +290,7 @@ classdef AlkalineElectrode < ElectronicComponent
             end
             
             % Assemble flux of the overall liquid component
-            fn = @() AlkalineElectrode.updateLiquidFlux;
+            fn = @() PorousTransportLayer.updateLiquidFlux;
             inputnames = {VarName({}, 'phaseVelocities', nph, phaseInd.liquid), ...
                           'liqrho', ...
                           VarName({}, 'volumeFractions', nph, phaseInd.liquid)};
@@ -298,11 +298,11 @@ classdef AlkalineElectrode < ElectronicComponent
                 
             
             % Assemble charge source
-            fn = @() AlkalineElectrode.updateESource;
+            fn = @() PorousTransportLayer.updateESource;
             inputnames = {'OHSource'};
             model = model.registerPropFunction({'eSource', fn, inputnames});
 
-            fn = @() AlkalineElectrode.updateLiquidSource;
+            fn = @() PorousTransportLayer.updateLiquidSource;
             inputnames = {'OHSource', ...
                           'H2OliquidSource'};
             model = model.registerPropFunction({'liquidSource', fn, inputnames});
@@ -310,17 +310,17 @@ classdef AlkalineElectrode < ElectronicComponent
             
             % Assemble the residual equations
 
-            fn = @() AlkalineElectrode.updateLiquidViscosity;
+            fn = @() PorousTransportLayer.updateLiquidViscosity;
             inputnames = {'T', ....
                           VarName({}, 'concentrations', nliquid, liquidInd.OH)};
             model = model.registerPropFunction({VarName({}, 'viscosities', nph, phaseInd.liquid), fn, inputnames});
             
-            fn = @() AlkalineElectrode.updateH2OgasSource;
+            fn = @() PorousTransportLayer.updateH2OgasSource;
             inputnames = {'H2OliquidVaporExchangeRate'};
             model = model.registerPropFunction({VarName({}, 'compGasSources', ngas, gasInd.H2Ogas), fn, inputnames});
 
             % Assemble mass conservation equations for components in gas phase
-            fn = @() AlkalineElectrode.updateGasMassCons;
+            fn = @() PorousTransportLayer.updateGasMassCons;
             for igas = 1 : ngas
                 inputnames = {VarName({}, 'compGasBcSources', ngas, igas), ...
                               VarName({}, 'compGasFluxes'   , ngas, igas), ...
@@ -331,14 +331,14 @@ classdef AlkalineElectrode < ElectronicComponent
 
             
             % Assemble mass conservation for the overall liquid component
-            fn = @() AlkalineElectrode.updateLiquidMassCons;
+            fn = @() PorousTransportLayer.updateLiquidMassCons;
             inputnames = {'liquidFlux'     , ...
                           'liquidAccumTerm', ...
                           'liquidSource'};
             model = model.registerPropFunction({'liquidMassCons', fn, inputnames});
             
             % Assemble mass conservation equation for OH
-            fn = @() AlkalineElectrode.updateOHMassCons;
+            fn = @() PorousTransportLayer.updateOHMassCons;
             inputnames = {'convOHFlux', ...
                           'diffOHFlux', ...
                           'migOHFlux' , ...
@@ -347,22 +347,22 @@ classdef AlkalineElectrode < ElectronicComponent
             model = model.registerPropFunction({'OHMassCons', fn, inputnames});
 
             % Assemble partial Molar Volumes (not used in first implementation)
-            % fn = @() AlkalineElectrode.updatePartialMolarVolumes;
+            % fn = @() PorousTransportLayer.updatePartialMolarVolumes;
             % inputnames = {'OHmolality', 'T', 'liqrho'};
             % ind = [model.liquidInd.OH; model.liquidInd.K];
             % model = model.registerPropFunction({VarName({}, 'partialMolarVolumes', nliquid, ind), fn, inputnames});
 
             % we use liquid incompressibility for the moment
-            fn = @() AlkalineElectrode.updateLiquidAccum;
+            fn = @() PorousTransportLayer.updateLiquidAccum;
             inputnames = {};
             model = model.registerPropFunction({'liquidAccumTerm', fn, inputnames});
             
             % Assemble residual of equation of state for the liquid phase
-            fn = @() AlkalineElectrode.liquidStateEquation;
+            fn = @() PorousTransportLayer.liquidStateEquation;
             inputnames = {concentrations};
             model = model.registerPropFunction({'liquidStateEquation', fn, inputnames});
 
-            fn = @() AlkalineElectrode.updateAccumTerms;
+            fn = @() PorousTransportLayer.updateAccumTerms;
             functionCallSetupFn = @(propfunction) PropFunction.accumFuncCallSetupFn(propfunction);
             fn = {fn, functionCallSetupFn};
             inputnames = {'H2Ogasrhoeps'};
