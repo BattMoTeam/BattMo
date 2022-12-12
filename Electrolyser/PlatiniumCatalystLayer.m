@@ -1,6 +1,7 @@
 classdef PlatiniumCatalystLayer < CatalystLayer
 
     properties
+
     end
     
     methods

@@ -8,12 +8,11 @@ classdef AlkalineElectrode < ElectronicComponent
         gasInd    % mapping structure for component indices
 
         solidVolumefraction
-        leverettCoefficient
+        leverettCoefs
         theta % water contact angle
         Permeability
-
-        tau % 
-
+        BruggemanCoefficient
+        
         sp % species struct 
         % sp.OH.MW    : Molecular weight [kg mol^-1]
         % sp.OH.V0
@@ -400,9 +399,9 @@ classdef AlkalineElectrode < ElectronicComponent
         function state = updateLiquidPressure(model, state)
         % assemble liquid pressure using capillary pressure function
 
-            K       = model.Permeability;
-            levcoef = model.leverettCoefficient;
-            theta   = model.theta;
+            K        = model.Permeability;
+            levcoefs = model.leverettCoefs;
+            theta    = model.theta;
             
             pgas = state.phasePressures{model.phaseInd.gas};
 
@@ -413,7 +412,7 @@ classdef AlkalineElectrode < ElectronicComponent
             % Liquid saturation
             s = vl./(vl + vg);
             
-            pc = 0.0694 .* cosd(theta) ./ sqrt(K./vs) .* leverett(levcoef, s);
+            pc = 0.0694 .* cosd(theta) ./ sqrt(K./vs) .* leverett(levcoefs, s);
                         
             pliq = pgas - pc;
 

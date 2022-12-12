@@ -11,8 +11,6 @@ classdef CatalystLayer < BaseModel
 
         j0 % Exchange current density
         inmrParams 
-        % inmrParams.cT    : Total concentration of charged groups
-        % inmrParams.kxch  : Rate constant for exchange between ionomer and electrolyte [s^-1]
         % inmrParams.OH.z  : Charge
         % inmrParams.OH.c0 : OH reference concentration
         % inmrParams.E0    : standard equilibrium potential
@@ -20,9 +18,8 @@ classdef CatalystLayer < BaseModel
         % elyteParams.OH.c0 : reference OH concentration
         % elyteParams.E0    : standard equilibrium potential
         
-        PF1 % should be initialized using zero
-        Xinmr % Fraction of specific area that is covered with ionomer [-]
-        volumetricSurfaceArea
+        Xinmr % Fraction of specific area that is coversed with ionomer [-]
+        volumetricSurfaceArea % Volumetric surface area [m^ -1]
         
     end
 
