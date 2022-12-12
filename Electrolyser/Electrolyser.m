@@ -6,14 +6,8 @@ classdef Electrolyser < BaseModel
 
         % Components
         IonomerMembrane
-        
-        HydrogenPorousTransportLayer
-        HydrogenCatalystLayer
-        HydrogenInterface
-        
-        OxygenPorousTransportLayer
-        OxygenCatalystLayer
-        OxygenInterface
+        HydrogenEvolutionElectrode
+        OxygenEvolutionElectrode
         
         couplingTerms
         couplingNames
@@ -26,111 +20,32 @@ classdef Electrolyser < BaseModel
 
             model = model@BaseModel();
 
-            % Assign the components : Electrolyte, NegativePorousTransportLayer, PositivePorousTransportLayer
-            model.HydrogenPorousTransportLayer     = HydrogenPorousTransportLayer(paramobj.HydrogenPorousTransportLayer);
-            model.OxygenPorousTransportLayer       = OxygenPorousTransportLayer(paramobj.OxygenPorousTransportLayer);
-            model.HydrogenCatalystLayer = PlatiniumCatalystLayer(paramobj.HydrogenCatalystLayer);
-            model.OxygenCatalystLayer   = IridiumCatalystLayer(paramobj.OxygenCatalystLayer);
-            model.HydrogenInterface     = ExchangeLayer(paramobj.HydrogenInterface);
-            model.OxygenInterface       = ExchangeLayer(paramobj.OxygenInterface);
-            model.IonomerMembrane       = IonomerMembrane(paramobj.IonomerMembrane);
+            model.HydrogenEvolutionElectrode = HydrogenEvolutionElectrode(paramobj.HydrogenEvolutionElectrode);
+            model.OxygenEvolutionElectrode   = OxygenEvolutionElectrode(paramobj.OxygenEvolutionElectrode);
             
         end
 
         function model = registerVarAndPropfuncNames(model)
 
             varnames = {'T'};
+            
             model = registerVarAndPropfuncNames@BaseModel(model);
 
-            % shortcuts
-            inm  = 'IonomerMembrane';
-            her  = 'HydrogenPorousTransportLayer';
-            hctl = 'HydrogenCatalystLayer';
-            hitf = 'HydrogenInterface';
-            oer  = 'OxygenPorousTransportLayer';
-            octl = 'OxygenCatalystLayer';
-            oitf = 'OxygenInterface';
-        
-            fn = @() Electrolyser.dispatchTemperature;
-            model = model.registerPropFunction({{inm, 'T'}, fn, {'T'}});
-            model = model.registerPropFunction({{her, 'T'}, fn, {'T'}});
-            model = model.registerPropFunction({{hctl, 'T'}, fn, {'T'}});
-            model = model.registerPropFunction({{oer, 'T'}, fn, {'T'}});
-            model = model.registerPropFunction({{octl, 'T'}, fn, {'T'}});
+            inm = 'IonomerMembrane';
+            her = 'HydrogenEvolutionElectrode';
+            oer = 'OxygenEvolutionElectrode';
 
-            %% Update coupling (electrode, ionomer) -> CatalystLayer
-
-            fn = @() Electrolyser.dispatchToCatalystLayersAndInterfaces;
-
-            eldes = {her, oer};
-            cats  = {hctl, octl};
-            itfs  = {hitf, oitf};
+            ctl = 'CatalystLayer';
+            exl = 'ExchangeLayer';
             
-            for ielde = 1 : numel(eldes)
-                
-                elde = eldes{ielde};
-                cat  = cats{ielde};
-                itf  = itfs{ielde};
-
-                phaseInd  = model.(elde).phaseInd;
-                liquidInd = model.(elde).liquidInd;
-                inputvarnames = {{elde, 'phi'} , ...
-                                 VarName({elde}, 'concentrations', liquidInd.ncomp, liquidInd.OH), ...
-                                 {elde, 'H2Oa'}, ...
-                                 {inm, 'phi'} , ...
-                                 {inm, 'cOH'} , ...
-                                 {inm, 'H2Oa'}};
-                outputvarnames = {'phiElyte', 'phiInmr' , 'cOHelyte', 'cOHinmr' , 'H2OaElyte', 'H2OaInmr'};
-                for iovar = 1 : numel(outputvarnames)
-                    outputvarname = {cat, outputvarnames{iovar}};
-                    model = model.registerPropFunction({outputvarname, fn, inputvarnames});
-                    outputvarname = {itf, outputvarnames{iovar}};
-                    model = model.registerPropFunction({outputvarname, fn, inputvarnames});
-                end
-
-                inputvarnames = {VarName({elde}, 'phasePressures', phaseInd.nphase, phaseInd.gas)};
-                model = model.registerPropFunction({{cat, 'pressureActiveGas'}, fn, inputvarnames});
-                
-            end
-            
-
-            %% Update coupling catalyser -> (electrode, ionomer)
-            %  
-            fn = @() Electrolyser.updateSourceTerms;
-
-            for ielde = 1 : numel(eldes)
-                
-                elde = eldes{ielde};
-                cat  = cats{ielde};
-                itf  = itfs{ielde};
-
-                inputvarnames = {{cat, 'elyteReactionRate'}, ...
-                                 {itf, 'OHexchangeRate'}};
-                model = model.registerPropFunction({{elde, 'OHSource'}, fn, inputvarnames});
-
-                inputvarnames = {{cat, 'elyteReactionRate'}, ...
-                                 {itf, 'H2OexchangeRate'}  , ...
-                                 {elde, 'H2OliquidVaporExchangeRate'}};
-                model = model.registerPropFunction({{elde, 'H2OliquidSource'}, fn, inputvarnames});
-
-                inputvarnames = {{cat, 'elyteReactionRate'}, ...
-                                 {cat, 'inmrReactionRate'}};
-                gasInd = model.(elde).gasInd;
-                igas = gasInd.activeGas;
-                ngas = gasInd.ncomp;
-                model = model.registerPropFunction({VarName({elde}, 'compGasSources', ngas, igas), fn, inputvarnames});
-
-
-            end
-
-            inputvarnames = {{hctl, 'elyteReactionRate'}, ...
-                             {hctl, 'inmrReactionRate'} , ...
-                             {hitf, 'OHexchangeRate'}   , ...
-                             {hitf, 'H2OexchangeRate'}  , ...
-                             {octl, 'elyteReactionRate'}, ...
-                             {octl, 'inmrReactionRate'} , ...
-                             {oitf, 'OHexchangeRate'}   , ...
-                             {oitf, 'H2OexchangeRate'}};
+            inputvarnames = {{her, ctl, 'elyteReactionRate'}, ...
+                             {her, ctl, 'inmrReactionRate'} , ...
+                             {her, exl, 'OHexchangeRate'}   , ...
+                             {her, exl, 'H2OexchangeRate'}  , ...
+                             {oer, ctl, 'elyteReactionRate'}, ...
+                             {oer, ctl, 'inmrReactionRate'} , ...
+                             {oer, exl, 'OHexchangeRate'}   , ...
+                             {oer, exl, 'H2OexchangeRate'}};
             
             model = model.registerPropFunction({{inm, 'H2OSource'}, fn, inputvarnames});
             model = model.registerPropFunction({{inm, 'OHSource'}, fn, inputvarnames});
@@ -145,38 +60,16 @@ classdef Electrolyser < BaseModel
         end
 
         function state = dispatchTemperature(model, state)
-            mea   = 'IonomereMembrane';
-            her   = 'HydrogenPorousTransportLayer';
-            hctl = 'HydrogenCatalystLayer';
-            oer   = 'OxygenPorousTransportLayer';
-            octl = 'OxygenCatalystLayer';
             
-            submodelnames = {mea, her, hctl, oer, octl};
+            inm = 'IonomerMembrane';
+            her = 'HydrogenEvolutionElectrode';
+            oer = 'OxygenEvolutionElectrode';
+            
+            submodelnames = {inm, her, oer};
             for ind = 1 : numel(submodelnames)
                 mname = submodelnames{ind};
                 state.(mname).T = state.T(model.(mname).G.cellmap);
             end
-        end
-        
-        function state = dispatchToCatalystLayersAndInterfaces(model, state)
-            
-            state = model.updateHydrogenPotentials(state); 
-            state = model.updateOxygenPotentials(state);
-            state = model.dispatchGasPartialPressureHydrogenCatalystLayer(state);
-            state = model.dispatchGasPartialPressureOxygenCatalystLayer(state);
-            state = model.dispatchConcentrationsHydrogenCatalystLayer(state);
-            state = model.dispatchConcentrationsOxygenCatalystLayer(state);
-            state = model.dispatchH2OactivityHydrogenCatalystLayer(state);
-            state = model.dispatchH2OactivityOxygenCatalystLayer(state);
-            
-        end
-        
-        function state = dispatchFromCatalystLayer(model, state)
-            
-            state = model.dispatchCatalystLayerToHydrogenPorousTransportLayer(state);
-            state = model.dispatchCatalystLayerToOxygenPorousTransportLayer(state);
-            state = model.dipatchCatalystLayersToIonomer(state)
-            
         end
         
 
