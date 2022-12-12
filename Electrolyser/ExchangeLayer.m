@@ -1,4 +1,4 @@
-classdef MembraneInterface < BaseModel
+classdef ExchangeLayer < BaseModel
 
     properties
 
@@ -6,7 +6,7 @@ classdef MembraneInterface < BaseModel
 
     methods
 
-        function model = MembraneInterface(paramobj)
+        function model = ExchangeLayer(paramobj)
 
         end
 
@@ -41,12 +41,12 @@ classdef MembraneInterface < BaseModel
             model = model.registerVarNames(varnames);
 
             % Assemble ionomer ion exchange rate
-            fn = @() MembraneInterface.updateOHexchange;
+            fn = @() ExchangeLayer.updateOHexchange;
             inputnames = {'phiElyte', 'phiInmr', 'cOHelyte', 'cOHinmr'};
             model = model.registerPropFunction({'OHexchangeRate', fn, inputnames});
 
             % Assemble sorption rate
-            fn = @() MembraneInterface.updateSorption;
+            fn = @() ExchangeLayer.updateSorption;
             inputnames = {'H2OaElyte', 'H2OaInmr'};
             model = model.registerPropFunction({'H2OexchangeRate', fn, inputnames});
 

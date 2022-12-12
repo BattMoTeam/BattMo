@@ -31,8 +31,8 @@ classdef Electrolyser < BaseModel
             model.OxygenPorousTransportLayer       = OxygenPorousTransportLayer(paramobj.OxygenPorousTransportLayer);
             model.HydrogenCatalystLayer = PlatiniumCatalystLayer(paramobj.HydrogenCatalystLayer);
             model.OxygenCatalystLayer   = IridiumCatalystLayer(paramobj.OxygenCatalystLayer);
-            model.HydrogenInterface     = MembraneInterface(paramobj.HydrogenInterface);
-            model.OxygenInterface       = MembraneInterface(paramobj.OxygenInterface);
+            model.HydrogenInterface     = ExchangeLayer(paramobj.HydrogenInterface);
+            model.OxygenInterface       = ExchangeLayer(paramobj.OxygenInterface);
             model.IonomerMembrane       = IonomerMembrane(paramobj.IonomerMembrane);
             
         end
