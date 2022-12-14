@@ -22,6 +22,7 @@ classdef Electrolyser < BaseModel
 
             model.HydrogenEvolutionElectrode = HydrogenEvolutionElectrode(paramobj.HydrogenEvolutionElectrode);
             model.OxygenEvolutionElectrode   = OxygenEvolutionElectrode(paramobj.OxygenEvolutionElectrode);
+            model.IonomerMembrane            = IonomerMembrane(paramobj.IonomerMembrane);
             
         end
 
@@ -75,17 +76,15 @@ classdef Electrolyser < BaseModel
 
         function state = updateHydrogenPotentials(model, state)
             
-            inm  = 'IonomerMembrane';
-            her  = 'HydrogenPorousTransportLayer';
-            hctl = 'HydrogenCatalystLayer';
+            inm = 'IonomerMembrane';
+            her = 'HydrogenEvolutionElectrode';
+            oer = 'OxygenEvolutionElectrode';
+            ctl = 'CatalystLayer';
+            exl = 'ExchangeLayer';
             
             coupterms = model.couplingTerms;
             coupnames = model.couplingNames;
-            
-            coupterm = getCoupTerm(coupterms, {her, hctl}, coupnames);
-            coupcells = coupterm.couplingcells;
-            state.(hctl).phiElyte(coupcells(:, 2)) = state.(her).phi(coupcells(:, 1));
-            
+
             coupterm = getCoupTerm(coupterms, {inm, hctl}, coupnames);
             coupcells = coupterm.couplingcells;
             state.(hctl).phiInmr(coupcells(:, 2)) = state.(inm).phi(coupcells(:, 1));
@@ -93,159 +92,18 @@ classdef Electrolyser < BaseModel
         end
         
         
-        function state = updateOxygenPotentials(model, state)
-            
-            inm  = 'IonomerMembrane';
-            oer  = 'OxygenPorousTransportLayer';
-            octl = 'OxygenCatalystLayer';
-            
-            coupterms = model.couplingTerms;
-            coupnames = model.couplingNames;
-            
-            coupterm = getCoupTerm(coupterms, {oer, octl}, coupnames);
-            coupcells = coupterm.couplingcells;
-            state.(octl).phiElyte(coupcelsl(:, 2)) = state.(oer).phi(coupcells(:, 1));
-            
-            coupterm = getCoupTerm(coupterms, {inm, octl}, coupnames);
-            coupcells = coupterm.couplingcells;
-            state.(octl).phiInmr(coupcells(:, 2)) = state.(inm).phi(coupcells(:, 1));
-            
-        end
 
-        function state = dispatchGasPartialPressureHydrogenCatalystLayer(model, state)
-            
-            her  = 'HydrogenPorousTransportLayer';
-            hctl = 'HydrogenCatalystLayer';
-            
-            gind = model.(her).phaseInd.gas;
-            m  = state.(her).compGasMasses;
-            T  = state.(her).T;
-            vg = state.(her).volumeFraction{gind};
-            
-            gInd = model.(her).gasInd;
-            
-            % compute mol amount for each gas component
-            coupterm = getCoupTerm(coupterms, {oer, octl}, coupnames);
-            coupcells = coupterm.couplingcells;
-            
-            mH2O = m{gInd.H2Ogas};
-            mH2 = m{gInd.H2}
-            
-            mH2O = mH2O(coupcells(:, 1));
-            mH2  = mH2(coupcells(:, 1));
-            vg   = vg(coupcells(:, 1));
-            T    = T(coupcells(:, 1));
-            
-            p{gInd.H2Ogas} = mH2O./(model.(her).H2O.MW).*R.*T./vg;
-            p{gInd.H2} = mH2./(model.(her).H2.MW).*R.*T./vg;
-            
-            state.(hctl).gasPressuresElyte(coupcells(:, 2)) = p;
-        end
-        
-        function state = dispatchGasPartialPressureOxygenCatalystLayer(model, state)
-            oer   = 'OxygenPorousTransportLayer';
-            octl = 'OxygenCatalystLayer';
-            
-            gind = model.(oer).phaseInd.gas;
-            m  = state.(oer).compGasMasses;
-            T  = state.(oer).T;
-            vg = state.(oer).volumeFraction{gind};
-            
-            gInd = model.(oer).gasInd;
-            
-            % compute mol amount for each gas component
-            coupterm = getCoupTerm(coupterms, {oer, octl}, coupnames);
-            coupcells = coupterm.couplingcells;
-            
-            mH2O = m{gInd.H2Ogas};
-            mO2 = m{gInd.O2}
-            
-            mH2O = mH2O(coupcells(:, 1));
-            mO2  = mO2(coupcells(:, 1));
-            vg   = vg(coupcells(:, 1));
-            T    = T(coupcells(:, 1));
-            
-            p{gInd.H2Ogas} = mH2O./(model.(oer).H2O.MW).*R.*T./vg;
-            p{gInd.O2} = mO2./(model.(oer).O2.MW).*R.*T./vg;
-            
-            state.(octl).gasPressuresElyte(coupcells(:, 2)) = p;
-        end
-        
-        function state = dispatchConcentrationsHydrogenCatalystLayer(model, state)
-            
-            her   = 'HydrogenPorousTransportLayer';
-            hctl = 'HydrogenCatalystLayer';
-            
-            lind = model.(her).liquidInd;
-            
-            cH2O = state.(her).concentrations{lind.H2Oliquid};
-            cOH = state.(her).concentrations{lind.OH};
-            
-            coupterms = model.couplingTerms;
-            coupnames = model.couplingNames;
-            
-            coupterm = getCoupTerm(coupterms, {her, hctl}, coupnames);
-            coupcells = coupterm.couplingcells;
-            cOH = cOH(coupcells(:, 1));
-            cH = cH(coupcells(:, 1));
 
-            state.(hctl).cOHElyte(coupcells(:, 2)) = cOH;
-            state.(hctl).cHElyte(coupcells(:, 2)) = cH;
-            
-        end
-        
-        function state = dispatchConcentrationsOxygenCatalystLayer(model, state)
-            
-            oer   = 'OxygenPorousTransportLayer';
-            octl = 'OxygenCatalystLayer';
-            
-            lind = model.(oer).liquidInd;
-            
-            cH2O = state.(oer).concentrations{lind.H2Oliquid};
-            cOH = state.(oer).concentrations{lind.OH};
-            
-            coupterms = model.couplingTerms;
-            coupnames = model.couplingNames;
-            
-            coupterm = getCoupTerm(coupterms, {oer, octl}, coupnames);
-            coupcells = coupterm.couplingcells;
-            cOH = cOH(coupcells(:, 1));
-            cH = cH(coupcells(:, 1));
 
-            state.(octl).cOHElyte(coupcells(:, 2)) = cOH;
-            state.(octl).cHElyte(coupcells(:, 2)) = cH;
-        end
         
         function state = dispatchH2OactivityHydrogenCatalystLayer(model, state)
             
-            her   = 'HydrogenPorousTransportLayer';
-            hctl = 'HydrogenCatalystLayer';
             inm   = 'IonomerMembrane';
-            
-            coupterms = model.couplingTerms;
-            coupnames = model.couplingNames;
-            
-            coupterm = getCoupTerm(coupterms, {her, hctl}, coupnames);
-            coupcells = coupterm.couplingcells;
-            state.(hctl).H2OaElyte(coupcells(:, 2)) = state.(her).H2Oactivity(coupcells(:, 1));
             
             coupterm = getCoupTerm(coupterms, {inm, hctl}, coupnames);
             coupcells = coupterm.couplingcells;
             state.(hctl).H2OaInmr(coupcells(:, 2)) = state.(inm).H2Oactivity(coupcells(:, 1));
-        end
-                    
-        
-        function state = dispatchH2OactivityOxygenCatalystLayer(model, state)
-            oer   = 'OxygenPorousTransportLayer';
-            octl = 'OxygenCatalystLayer';
-            inm   = 'IonomerMembrane';
-            
-            coupterms = model.couplingTerms;
-            coupnames = model.couplingNames;
-            
-            coupterm = getCoupTerm(coupterms, {oer, octl}, coupnames);
-            coupcells = coupterm.couplingcells;
-            state.(octl).H2OaElyte(coupcells(:, 2)) = state.(oer).H2Oactivity(coupcells(:, 1));
+
             
             coupterm = getCoupTerm(coupterms, {inm, octl}, coupnames);
             coupcells = coupterm.couplingcells;
@@ -255,9 +113,9 @@ classdef Electrolyser < BaseModel
         
         function state = dispatchCatalystLayerToHydrogenPorousTransportLayer(model, state)
             
-            her   = 'HydrogenPorousTransportLayer';
+            her  = 'HydrogenPorousTransportLayer';
             hctl = 'HydrogenCatalystLayer';
-            inm   = 'IonomerMembrane';
+            inm  = 'IonomerMembrane';
             
             leps = model.(inm).liquidVolumeFraction;
             gInd = model.(her).gasInd;

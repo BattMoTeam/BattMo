@@ -2,12 +2,22 @@ classdef ExchangeLayer < BaseModel
 
     properties
 
+        inmrParams % struct with fields
+        % kxch
+        % cT
+        % OH.z
+        % kML
     end
 
     methods
 
         function model = ExchangeLayer(paramobj)
 
+            model = model@BaseModel();
+            
+            fdnames = {'inmrParams'};
+            model = dispatchParams(model, paramobj, fdnames);
+            
         end
 
         function model = registerVarAndPropfuncNames(model)

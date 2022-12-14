@@ -39,15 +39,15 @@ classdef HydrogenPorousTransportLayer < PorousTransportLayer
             model = model.registerPropFunction({VarName({}, 'phasePressures', nph, phaseInd.gas), fn, inputnames});
             model = model.registerPropFunction({VarName({}, 'compGasPressures', ngas), fn, inputnames});
 
+            % assemble H2mass
+            fn = @() HydrogenPorousTransportLayer.updateH2GasMass;
+            inputnames = {'H2rhoeps'};
+            model = model.registerPropFunction({VarName({}, 'compGasMasses', ngas, gasInd.H2), fn, inputnames});
+            
             fn = @() HydrogenPorousTransportLayer.updateGasViscosity;
             inputnames = {'T'};
             model = model.registerPropFunction({VarName({}, 'viscosities', nph, phaseInd.gas), fn, inputnames});
             
-            fn = @() HydrogenPorousTransportLayer.updateH2Accum;
-            functionCallSetupFn = @(propfunction) PropFunction.accumFuncCallSetupFn(propfunction);
-            fn = {fn, functionCallSetupFn};
-            inputnames = {'H2rhoeps'};
-            model = model.registerPropFunction({VarName({}, 'compGasAccums', ngas, gasInd.H2), fn, inputnames});
             
         end
         

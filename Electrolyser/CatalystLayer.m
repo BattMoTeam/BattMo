@@ -26,9 +26,17 @@ classdef CatalystLayer < BaseModel
     methods
 
         function model = CatalystLayer(paramobj)
-
+            
             model = model@BaseModel();
             
+            fdnames = { 'j0'         , ...
+                        'inmrParams' , ...
+                        'elyteParams', ...
+                        'Xinmr'      , ...
+                        'volumetricSurfaceArea'};
+
+            model = dispatchParams(model, paramobj, fdnames);
+
         end
 
         function model = registerVarAndPropfuncNames(model)
@@ -52,7 +60,7 @@ classdef CatalystLayer < BaseModel
             % Equilibrium Potential for electrolyte and ionomer
             varnames{end + 1} = 'Eelyte';
             varnames{end + 1} = 'Einmr';
-            % Partial pressure of the active gas (H2 or O2 for exampler) in the electrolyte
+            % Partial pressure of the active gas (H2 or O2 for exampler) in the porous transport layer
             varnames{end + 1} = 'pressureActiveGas';
             % Potential difference with respect to the electrolyte and ionomer
             varnames{end + 1} = {'etaElyte'};

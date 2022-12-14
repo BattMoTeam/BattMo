@@ -365,8 +365,10 @@ classdef PorousTransportLayer < ElectronicComponent
             fn = @() PorousTransportLayer.updateAccumTerms;
             functionCallSetupFn = @(propfunction) PropFunction.accumFuncCallSetupFn(propfunction);
             fn = {fn, functionCallSetupFn};
-            inputnames = {'H2Ogasrhoeps'};
-            model = model.registerPropFunction({VarName({}, 'compGasAccums', ngas, gasInd.H2Ogas), fn, inputnames});
+            for igas = 1 : ngas
+                inputnames = {VarName({}, 'compGasMasses', ngas, igas)};
+                model = model.registerPropFunction({VarName({}, 'compGasAccums', ngas, igas), fn, inputnames});
+            end
             inputnames = {'OHceps'};
             model = model.registerPropFunction({'OHaccum', fn, inputnames});
 
