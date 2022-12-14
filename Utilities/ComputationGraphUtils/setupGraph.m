@@ -32,7 +32,9 @@ function [g, staticprops] = setupGraph(model, varargin)
         end
         
     end
-
+    
+    nodenames = g.Nodes.Variables;
+    
     staticprops = {};
     
     for ipropfunc = 1 : numel(propfuncs)
@@ -74,6 +76,17 @@ function [g, staticprops] = setupGraph(model, varargin)
         nv = numel(fullvarnames);
         ni = numel(fullinputvarnames);
 
+        % check that variables have been declared
+        allfullvarnames = horzcat(fullvarnames, fullinputvarnames);
+        ind = ismember(allfullvarnames, nodenames);
+        if any(~ind)
+            undefinedvarnames = allfullvarnames(~ind);
+            fprintf('The following variables are used in function declaration but have not be declared for themselves before\n');
+            for ivar = 1 : numel(undefinedvarnames)
+                fprintf('%s\n', undefinedvarnames{ivar});
+            end
+        end
+        
         if ni == 0
             staticprop.propind = ipropfunc;
             for inv = 1 : nv
