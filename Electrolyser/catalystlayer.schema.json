@@ -1,0 +1,25 @@
+{
+  "$id": "file://battmo/schemas/catalystlayer",
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "description": "Specification of the CatalystLayer input parameters",
+  "type": "object",
+
+  "properties" : {"j0" : {"type" : "number"},
+                  "inmrParams" : {"type" : "object",
+                                  "properties" : {"OH" : {"type" : "object",
+                                                          "properties" : {"z" : {"type" : "integer",
+                                                                                 "description" : "charge number"},
+                                                                          "c0" : {"type" : "number",
+                                                                                  "description" : "reference concentration"}}}
+                                                  "E0" : {"type" : "number",
+                                                          "description" : "standard equilibrium potential"}}},
+                  "elyteParams" : {"type" : "object",
+                                   "properties" : {"OH" : {"type" : "object",
+                                                           "properties" : {"c0" : {"type" : "number",
+                                                                                   "description" : "reference concentration"}}},
+                                                   "E0" : {"type" : "number",
+                                                           "description" : "standard equilibrium potential"}}},
+                  "Xinmr" : {"type" : "number",
+                             "description" : "Fraction of specific area that is coversed with ionomer"},
+                  "volumetricSurfaceArea" : {"type" : "number",
+                                             "description" : "volumetric surface area"}}}
