@@ -9,10 +9,11 @@
                   "PorousTransportLayer" : {"type" : "object",
                                             "$ref" : "poroustransportlayer",
                                             "description" : " input parameters for the porous transport layer"},
+                  "catalystLayerType" : {"type" : "string",
+                                         "enum"  : ["Iridium", "Platinium"]},
                   "CatalystLayer" : {"type" : "object",
                                      "$ref" : "catalystlayer",
                                      "description" : " input parameters for the catalyst layer"},
                   "ExchangeLayer" : {"type" : "object",
                                      "$ref" : "exchangelayer",
-                                     "description" : " input parameters for the exchange layer"}
-                 }}
+                                     "description" : " input parameters for the exchange layer"}}}

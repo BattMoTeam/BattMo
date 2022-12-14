@@ -31,7 +31,6 @@ classdef IonomerMembrane < ElectronicComponent
 
             model = registerVarAndPropfuncNames@ElectronicComponent(model);
 
-
             varnames = {};
             
             % Water concentration (per total volume)
@@ -133,8 +132,6 @@ classdef IonomerMembrane < ElectronicComponent
            
         end
 
-
-        
         function state = updateH2Oc(model, state)
 
             H2Oceps = state.H2Oceps;
@@ -243,7 +240,6 @@ classdef IonomerMembrane < ElectronicComponent
             
         end
     
-        
         function state = assembleH2OmassCons(model, state)
             
             diffFlux = state.H2OdiffFlux;

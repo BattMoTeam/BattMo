@@ -10,7 +10,7 @@ classdef PorousTransportLayer < ElectronicComponent
         solidVolumefraction
         leverettCoefs
         theta % water contact angle
-        Permeability
+        Permeability % Permeability
         BruggemanCoefficient
         
         sp % species struct 
@@ -209,7 +209,7 @@ classdef PorousTransportLayer < ElectronicComponent
             inputnames = {'OHceps', ...
                           VarName({}, 'volumeFractions', nph, phaseInd.liquid)};
             var = VarName({}, 'concentrations', nliquid, liquidInd.OH);
-            model = model.registerPropFunction({var, fn, inputnames});            
+            model = model.registerPropFunction({var, fn, inputnames});
             
             % assemble mass of H2O in gas phase
             fn = @() PorousTransportLayer.updateMassH2Ogas;
@@ -422,7 +422,7 @@ classdef PorousTransportLayer < ElectronicComponent
         end
 
         
-        function state = updateOHConcentration(model, state)
+        function state = updateOHconcentration(model, state)
 
             vf = state.volumeFractions{model.phaseInd.liquid};
             OHceps = state.OHceps;

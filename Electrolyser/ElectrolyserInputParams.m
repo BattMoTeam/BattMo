@@ -10,7 +10,7 @@ classdef ElectrolyserInputParams < InputParams
     
     methods
         
-        function paramobj = EvolutionElectrodeInputParams(jsonstruct)
+        function paramobj = ElectrolyserInputParams(jsonstruct)
 
             paramobj = paramobj@InputParams(jsonstruct);
             
@@ -20,6 +20,7 @@ classdef ElectrolyserInputParams < InputParams
             paramobj.HydrogenEvolutionElectrode = EvolutionElectrodeInputParams(pick('HydrogenEvolutionElectrode'));
             paramobj.OxygenEvolutionElectrode = EvolutionElectrodeInputParams(pick('OxygenEvolutionElectrode'));
 
+            paramobj = paramobj.validateInputParams();
         end
 
         function paramobj = validateInputParams(paramobj)

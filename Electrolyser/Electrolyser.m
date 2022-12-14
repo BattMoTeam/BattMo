@@ -29,7 +29,7 @@ classdef Electrolyser < BaseModel
         function model = registerVarAndPropfuncNames(model)
 
             varnames = {'T'};
-            
+
             model = registerVarAndPropfuncNames@BaseModel(model);
 
             inm = 'IonomerMembrane';
@@ -38,7 +38,16 @@ classdef Electrolyser < BaseModel
 
             ctl = 'CatalystLayer';
             exl = 'ExchangeLayer';
+            ptl = 'PorousTransportLayer';
             
+            fn = Electrolyser.dispatchTemperature;
+            inputvarnames = {'T'};
+            model = model.registerPropFunction({{her, 'T'}, fn, inputvarnames});            
+            model = model.registerPropFunction({{oer, 'T'}, fn, inputvarnames});
+
+            fn = Electrolyser.updateC
+            
+            fn =  Electrolyser.updateSource
             inputvarnames = {{her, ctl, 'elyteReactionRate'}, ...
                              {her, ctl, 'inmrReactionRate'} , ...
                              {her, exl, 'OHexchangeRate'}   , ...
@@ -62,15 +71,12 @@ classdef Electrolyser < BaseModel
 
         function state = dispatchTemperature(model, state)
             
-            inm = 'IonomerMembrane';
-            her = 'HydrogenEvolutionElectrode';
             oer = 'OxygenEvolutionElectrode';
+            her = 'HydrogenEvolutionElectrode';
             
-            submodelnames = {inm, her, oer};
-            for ind = 1 : numel(submodelnames)
-                mname = submodelnames{ind};
-                state.(mname).T = state.T(model.(mname).G.cellmap);
-            end
+            state.(oer).T = state.T(model.(oer).G.cellmap);
+            state.(her).T = state.T(model.(her).G.cellmap);
+
         end
         
 
@@ -91,23 +97,19 @@ classdef Electrolyser < BaseModel
             
         end
         
-        
 
-
-
-        
         function state = dispatchH2OactivityHydrogenCatalystLayer(model, state)
             
             inm   = 'IonomerMembrane';
             
             coupterm = getCoupTerm(coupterms, {inm, hctl}, coupnames);
             coupcells = coupterm.couplingcells;
-            state.(hctl).H2OaInmr(coupcells(:, 2)) = state.(inm).H2Oactivity(coupcells(:, 1));
+            state.(hctl).H2OaInmr(coupcells(:, 2)) = state.(inm).H2Oa(coupcells(:, 1));
 
             
             coupterm = getCoupTerm(coupterms, {inm, octl}, coupnames);
             coupcells = coupterm.couplingcells;
-            state.(octl).H2OaInmr(coupcells(:, 2)) = state.(inm).H2Oactivity(coupcells(:, 1));
+            state.OxygenEvolutionElectrode.CatalystLayer.H2OaInmr(coupcells(:, 2)) = state.(inm).H2Oa(coupcells(:, 1));
         end
         
         

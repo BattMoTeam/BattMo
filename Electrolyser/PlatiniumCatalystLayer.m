@@ -14,7 +14,7 @@ classdef PlatiniumCatalystLayer < CatalystLayer
         
         function model = registerVarAndPropfuncNames(model)
 
-            model = registerVarAndPropfuncNames@BaseModel(model);
+            model = registerVarAndPropfuncNames@CatalystLayer(model);
 
             % Assemble the reaction rate constants
             fn = @() CatalystLayer.updateReactionRateConstants;

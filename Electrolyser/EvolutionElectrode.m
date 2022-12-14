@@ -20,9 +20,17 @@ classdef EvolutionElectrode < BaseModel
               otherwise
                 error('porousTransportLayerType not recognized')
             end
+
+            switch paramobj.catalystLayerType
+              case 'Iridium'
+                model.CatalystLayer = IridiumCatalystLayer(paramobj.CatalystLayer);
+              case 'Platinium'
+                model.CatalystLayer = PlatiniumCatalystLayer(paramobj.CatalystLayer);
+              otherwise
+                error('catalystLayerType not recognized')
+            end
             
-            model.CatalystLayer        = CatalystLayer(paramobj.CatalystLayer);
-            model.ExchangeLayer        = ExchangeLayer(paramobj.ExchangeLayer);
+            model.ExchangeLayer = ExchangeLayer(paramobj.ExchangeLayer);
             
         end
 
