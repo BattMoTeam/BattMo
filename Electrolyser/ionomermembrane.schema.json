@@ -1,0 +1,27 @@
+{
+  "$id": "file://battmo/schemas/ionomermembrane",
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "description": "Specification of the IonomerMembrane input parameters",
+  "type": "object",
+
+  "properties" : {
+    "liquidVolumeFraction" : {"type" : "number",
+                              "description" : "liquid volume fraction"},
+        
+    "H2O" : {"type" : "object",
+             "properties" : {
+               "c0" : {"type"  : "number",
+                       "description" : "Reference concentration"},
+               "D" : {"type"  : "number",
+                      "description" : "diffusion coefficient for water"}
+             }},
+    "OH" :  {"type" : "object",
+             "properties" : {
+        
+               "xi" : {"type" : "number",
+                       "description" : "OH occupation"},
+               "z" : {"type" : "number",
+                      "description" : "charge number"}, 
+               "t" : {"type" : "number",
+                      "description" : "transference number"}
+             }}}}

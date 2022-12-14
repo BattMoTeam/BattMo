@@ -1,0 +1,17 @@
+{
+  "$id": "file://battmo/schemas/electrolyser",
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "description": "Specification of the Electrolyser input parameters",
+  "type": "object",
+
+  "properties" : { "IonomerMembrane" : {"type" : "object",
+                                        "$ref" : "ionomermembrane"},
+                   "HydrogenEvolutionElectrode" : {"type" : "object",
+                                                   "$ref" : "evolutionelectrode"},
+                   "OxygenEvolutionElectrode" : {"type" : "object",
+                                                 "$ref" : "evolutionelectrode"}},
+
+  "allOf" : [{"properties" : {"HydrogenEvolutionElectrode" : {"properties" : {"porousTransportLayerType" : {"const" : "Hydrogen"}}}}},
+             {"properties" : {"OxygenEvolutionElectrode" : {"properties" : {"porousTransportLayerType" : {"const" : "Oxygen"}}}}},
+            ]
+}
