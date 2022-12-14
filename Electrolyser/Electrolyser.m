@@ -20,8 +20,8 @@ classdef Electrolyser < BaseModel
 
             model = model@BaseModel();
 
-            model.HydrogenEvolutionElectrode = HydrogenEvolutionElectrode(paramobj.HydrogenEvolutionElectrode);
-            model.OxygenEvolutionElectrode   = OxygenEvolutionElectrode(paramobj.OxygenEvolutionElectrode);
+            model.HydrogenEvolutionElectrode = EvolutionElectrode(paramobj.HydrogenEvolutionElectrode);
+            model.OxygenEvolutionElectrode   = EvolutionElectrode(paramobj.OxygenEvolutionElectrode);
             model.IonomerMembrane            = IonomerMembrane(paramobj.IonomerMembrane);
             
         end
