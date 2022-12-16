@@ -23,12 +23,13 @@ function output = radialGrid(params)
     % - tagdict : dictionary giving the component number
     
     nwindings = params.nwindings;
-    rInner        = params.rInner;
+    rInner    = params.rInner;
     widthDict = params.widthDict ;
     nrDict    = params.nrDict;
     nas       = params.nas;
     L         = params.L;
     nL        = params.nL;
+    tabparams = params.tabparams;
 
 
     %% component names
@@ -63,7 +64,6 @@ function output = radialGrid(params)
            nrDict('NegativeCurrentCollector'); ...
            nrDict('NegativeActiveMaterial'); ...
            nrDict('ElectrolyteSeparator')];
-
 
 
     %% Grid setup
@@ -184,7 +184,7 @@ function output = radialGrid(params)
     newnodetbl.newnodes = newnodes;
     newnodetbl.nodes = nodes;
     newnodetbl = IndexArray(newnodetbl);
-
+    
     %% We setup the new indexing for the faces
 
     facetoremove = face2tbl.get('faces2');
@@ -263,21 +263,19 @@ function output = radialGrid(params)
 
     celltbl.cells = (1 : cartG.cells.num)';
     celltbl.indi = repmat((1 : nas)', [sum(nrs)*nwindings, 1]);
+    celltbl.indl = rldecode((1 : nwindings)', nas*sum(nrs)*ones(nwindings, 1));
     celltbl.indj = rldecode((1 : sum(nrs)*nwindings)', nas*ones(sum(nrs)*nwindings, 1));
     celltbl = IndexArray(celltbl);
 
     celltagtbl = crossIndexArray(celltbl, comptagtbl, {'indj'});
-    celltagtbl = sortIndexArray(celltagtbl, {'cells', 'tag'});
-
-    tag = celltagtbl.get('tag');
+    celltagtbl = sortIndexArray(celltagtbl, {'cells', 'tag', 'indi', 'indj', 'indl'});
+    celltagtbl = celltagtbl.removeInd({'cells'});
 
     % Extrude battery in z-direction
     zwidths = (L/nL)*ones(nL, 1);
     G = makeLayeredGrid(G, zwidths);
     G = computeGeometry(G);
     
-    tag = repmat(tag, [nL, 1]);
-
     % setup the standard tables
     tbls = setupSimpleTables(G);
     cellfacetbl = tbls.cellfacetbl;
@@ -299,6 +297,14 @@ function output = radialGrid(params)
     celltbl.indj = indj;
     celltbl.indk = indk;
     celltbl = IndexArray(celltbl);
+
+    gen = CrossIndexArrayGenerator();
+    gen.tbl1 = celltbl;
+    gen.tbl2 = celltagtbl;
+    gen.mergefds = {'indi', 'indj'};
+
+    celltbl = gen.eval();
+    celltbl = sortIndexArray(celltbl, {'cells', 'indi', 'indj', 'indk', 'indl', 'tag'});
 
     % We add vertical (1) and horizontal (2) direction index for the faces (see makeLayeredGrid for the setup)
     
@@ -342,14 +348,74 @@ function output = radialGrid(params)
     %% recover faces on top and bottom for the current collector
     % we could do that using cartesian indices (easier)
 
+    if isfield(tabparams, 'PositiveElectrode') && tabparams.PositiveElectrode.usetab
+        petab = tabparams.PositiveElectrode;
+    else
+        petab = [];
+    end
+
+    if isfield(tabparams, 'NegativeElectrode') && tabparams.NegativeElectrode.usetab
+        netab = tabparams.NegativeElectrode;
+    else
+        netab = [];
+    end
+    
     ccnames = {'PositiveCurrentCollector', 'NegativeCurrentCollector'};
 
-    for ind = 1 : numel(ccnames)
+    for iccname = 1 : numel(ccnames)
 
         clear cccelltbl
-        cccelltbl.cells = find(tag == tagdict(ccnames{ind}));
+        cccelltbl.tag = tagdict(ccnames{iccname});
         cccelltbl = IndexArray(cccelltbl);
+        cccelltbl = crossIndexArray(cccelltbl, celltbl, {'tag'});
+        cccelltbl = projIndexArray(cccelltbl, {'cells'});
+        
+        if strcmp(ccnames{iccname}, 'PositiveCurrentCollector') && ~isempty(petab)
+            tab = petab;
+        elseif strcmp(ccnames{iccname}, 'NegativeCurrentCollector') && ~isempty(netab)
+            tab = netab;
+        else
+            tab = [];
+        end
+            
+        
+        if ~isempty(tab)
+            
+            cccelltbl = crossIndexArray(celltbl, cccelltbl, {'cells'});
 
+            indl = cccelltbl.get('indl');
+            
+            r = G.cells.centroids(cccelltbl.get('cells'), 1 : 2);
+            r = sqrt(sum(r.^2, 2));
+
+            rmax = max(r);
+            rmin = min(r);
+
+            tabcelltbls = {};
+            
+            for itab = 1 : numel(tab.fractions)
+
+                fraction = tab.fractions(itab);
+                rtarget = fraction*(rmax - rmin) + rmin;
+                
+                [~, ind] = min((r - rtarget).^2);
+
+                clear layertbl
+                layertbl.indl = indl(ind);
+                layertbl = IndexArray(layertbl);
+
+                tabcelltbls{itab} = crossIndexArray(cccelltbl, layertbl, {'indl'});
+
+            end
+            
+            clear cccelltbl
+            cccelltbl = tabcelltbls{1};
+            for ind = 2 : numel(tabcelltbls)
+                cccelltbl = concatIndexArray(cccelltbl, tabcelltbls{ind}, {'cells'}, 'checkUnique', true);
+            end
+
+        end
+        
         extcccellfacetbl = crossIndexArray(extcellfacetbl, cccelltbl, {'cells'});
         extccfacetbl = projIndexArray(extcccellfacetbl, {'faces'});
 
@@ -364,11 +430,11 @@ function output = radialGrid(params)
         scalprod = bsxfun(@times, [0, 0, 1], nnormals);
         scalprod = sum(scalprod, 2);
 
-        switch ccnames{ind}
+        switch ccnames{iccname}
           case 'PositiveCurrentCollector'
-            ccfaces{ind} = ccextfaces(scalprod > 0.9);
+            ccfaces{iccname} = ccextfaces(scalprod > 0.9);
           case 'NegativeCurrentCollector'
-            ccfaces{ind} = ccextfaces(scalprod < -0.9);
+            ccfaces{iccname} = ccextfaces(scalprod < -0.9);
           otherwise
             error('name not recognized');
         end
@@ -378,7 +444,7 @@ function output = radialGrid(params)
     negativeExtCurrentFaces = ccfaces{2};
    
     %% 
-    detailedtag = tag;
+    detailedtag = celltbl.get('tag');
     detailedtagdict = tagdict;
 
     tag = nan(G.cells.num, 1);
