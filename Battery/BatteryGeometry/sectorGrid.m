@@ -16,6 +16,13 @@ function output = sectorGrid(params)
     % - nas       : number of cells in the angular direction
     % - nL        : number of discretization cells in the longitudonal
     %
+    % - tabparams : structure with two fields
+    %     - NegativeElectrode : for the negative current collector
+    %     - PositiveElectrode : for the positive current collector
+    %               Each of this structure contains the fields (see json schema battmoDir()/Utilities/JsonSchemas/Geometry.schema.json)
+    %        - usetab    : boolean
+    %        - fractions : length fraction where the tabs are located (one value per tab), only used if usetab is true
+    %       
     % RETURNS
     %
     % - G       : grid

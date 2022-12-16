@@ -31,7 +31,7 @@ function paramobj = setupBatteryGridFromJson(paramobj, jsonstruct)
 
         error('not yet implemented');
 
-      case 'jellyRoll'
+      case {'jellyRoll', 'sectorModel'}
 
         % Prepare input for SpiralBatteryGenerator.updateBatteryInputParams using json input
         
@@ -58,8 +58,6 @@ function paramobj = setupBatteryGridFromJson(paramobj, jsonstruct)
         nL     = jsonstruct.Geometry.nL;
         nas    = jsonstruct.Geometry.nas;
 
-        tabparams = jsonstruct.Geometry.tabparams;
-
         nrDict = containers.Map();
         nrDict('ElectrolyteSeparator')     = jsonstruct.Electrolyte.Separator.N;
         nrDict('NegativeActiveMaterial')   = jsonstruct.NegativeElectrode.ActiveMaterial.N;
@@ -79,7 +77,14 @@ function paramobj = setupBatteryGridFromJson(paramobj, jsonstruct)
         dr = sum(nwidths);dR = rOuter - rInner; 
         % Computed number of windings
         nwindings = ceil(dR/dr);
+
+        ne = 'NegativeElectrode';
+        pe = 'PositiveElectrode';
+        cc = 'CurrentCollector';
         
+        tabparams.NegativeElectrode = jsonstruct.(ne).(cc).tabparams;
+        tabparams.PositiveElectrode = jsonstruct.(pe).(cc).tabparams;
+
         spiralparams = struct('nwindings'   , nwindings, ...
                               'rInner'      , rInner   , ...
                               'widthDict'   , widthDict, ...
@@ -89,10 +94,22 @@ function paramobj = setupBatteryGridFromJson(paramobj, jsonstruct)
                               'nL'          , nL       , ...
                               'tabparams'   , tabparams, ...
                               'angleuniform', true); 
+
+        switch jsonstruct.Geometry.case
+
+          case 'jellyRoll'
+
+            gen = SpiralBatteryGenerator();
+            
+          case 'sectorModel'
+
+            gen = SectorBatteryGenerator();
+            
+        end
         
-        gen = SpiralBatteryGenerator(); 
         paramobj = gen.updateBatteryInputParams(paramobj, spiralparams);
 
+        
       otherwise
         
         error('Geometry case not recognized')
