@@ -52,7 +52,7 @@ classdef BatteryInputParams < InputParams
               case 'powerControl'
                 paramobj.(ctrl) = PowerControlModelInputParams(pick(ctrl));
               otherwise
-                error('controlPolicy not recognized');
+                error('controlPolicy %s not recognized', jsonstruct.(ctrl).controlPolicy);
             end
             paramobj.couplingTerms = {};
 
