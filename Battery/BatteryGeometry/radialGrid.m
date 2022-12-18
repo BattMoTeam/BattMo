@@ -29,8 +29,6 @@ function output = radialGrid(params)
     nas       = params.nas;
     L         = params.L;
     nL        = params.nL;
-    tabparams = params.tabparams;
-
 
     %% component names
     
@@ -371,18 +369,6 @@ function output = radialGrid(params)
     
     %% recover faces on top and bottom for the current collector
     % we could do that using cartesian indices (easier)
-
-    if isfield(tabparams, 'PositiveElectrode') && tabparams.PositiveElectrode.usetab
-        petab = tabparams.PositiveElectrode;
-    else
-        petab = [];
-    end
-
-    if isfield(tabparams, 'NegativeElectrode') && tabparams.NegativeElectrode.usetab
-        netab = tabparams.NegativeElectrode;
-    else
-        netab = [];
-    end
     
     ccnames = {'PositiveCurrentCollector', 'NegativeCurrentCollector'};
 
@@ -393,52 +379,6 @@ function output = radialGrid(params)
         cccelltbl = IndexArray(cccelltbl);
         cccelltbl = crossIndexArray(cccelltbl, celltbl, {'tag'});
         cccelltbl = projIndexArray(cccelltbl, {'cells'});
-        
-        if strcmp(ccnames{iccname}, 'PositiveCurrentCollector') && ~isempty(petab)
-            tab = petab;
-        elseif strcmp(ccnames{iccname}, 'NegativeCurrentCollector') && ~isempty(netab)
-            tab = netab;
-        else
-            tab = [];
-        end
-            
-        
-        if ~isempty(tab)
-            
-            cccelltbl = crossIndexArray(celltbl, cccelltbl, {'cells'});
-
-            indl = cccelltbl.get('indl');
-            
-            r = G.cells.centroids(cccelltbl.get('cells'), 1 : 2);
-            r = sqrt(sum(r.^2, 2));
-
-            rmax = max(r);
-            rmin = min(r);
-
-            tabcelltbls = {};
-            
-            for itab = 1 : numel(tab.fractions)
-
-                fraction = tab.fractions(itab);
-                rtarget = fraction*(rmax - rmin) + rmin;
-                
-                [~, ind] = min((r - rtarget).^2);
-
-                clear layertbl
-                layertbl.indl = indl(ind);
-                layertbl = IndexArray(layertbl);
-
-                tabcelltbls{itab} = crossIndexArray(cccelltbl, layertbl, {'indl'});
-
-            end
-            
-            clear cccelltbl
-            cccelltbl = tabcelltbls{1};
-            for ind = 2 : numel(tabcelltbls)
-                cccelltbl = concatIndexArray(cccelltbl, tabcelltbls{ind}, {'cells'}, 'checkUnique', true);
-            end
-
-        end
         
         extcccellfacetbl = crossIndexArray(extcellfacetbl, cccelltbl, {'cells'});
         extccfacetbl = projIndexArray(extcccellfacetbl, {'faces'});

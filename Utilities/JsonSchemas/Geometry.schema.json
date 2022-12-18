@@ -140,20 +140,7 @@
               "description" : "discretization parameter giving the number of grid cells in the vertical direction"},
             "nas" : {
               "type" : "integer",
-              "description" : "the angle of the sector is computed as 2*pi/nas"},
-            "NegativeElectrode" : {
-              "properties" : {
-                "CurrentCollector" : {
-                  "properties": {
-                    "tabparams" : {"$ref" : "#/$defs/sectortabparams"}
-                  }}}}
-            "PositiveElectrode" : {
-              "properties" : {
-                "CurrentCollector" : {
-                  "properties": {
-                    "tabparams" : {"$ref" : "#/$defs/sectortabparams"}
-                  }}}}
-          }}},
+              "description" : "the angle of the sector is computed as 2*pi/nas"}}}},
       "allOf" : [{"$ref" : "#/$defs/layerSpecs"}]},
     
     "tabparams" : {
