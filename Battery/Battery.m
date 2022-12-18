@@ -701,18 +701,48 @@ classdef Battery < BaseModel
             
             switch model.(ctrl).controlPolicy
               case 'CCCV'
-                initstate.(ctrl).ctrlType     = 'CC_charge1';
-                initstate.(ctrl).nextCtrlType = 'CC_charge1';
-                initstate.(ctrl).I            = - model.(ctrl).Imax;
+                switch model.(ctrl).initialControl
+                  case 'discharging'
+                    error('to implement (should be easy...)')
+                  case 'charging'
+                    initstate.(ctrl).ctrlType     = 'CC_charge1';
+                    initstate.(ctrl).nextCtrlType = 'CC_charge1';
+                    initstate.(ctrl).I = - model.(ctrl).Imax;
+                  otherwise
+                    error('initialControl not recognized');
+                end
               case 'IEswitch'
                 initstate.(ctrl).ctrlType = 'constantCurrent';
-                initstate.(ctrl).I        = model.(ctrl).Imax;
+                switch model.(ctrl).initialControl
+                  case 'discharging'
+                    initstate.(ctrl).I = model.(ctrl).Imax;
+                  case 'charging'
+                    error('to implement (should be easy...)')
+                  otherwise
+                    error('initialControl not recognized');
+                end
               case 'powerControl'
-                % this is correct but anyway overwritten 
-                initstate.(ctrl).ctrlType = 'charge';
-                E = initstate.(ctrl).E;
-                P = model.(ctrl).chargingPower;
-                initstate.(ctrl).I = -P/E;
+                switch model.(ctrl).initialControl
+                  case 'discharging'
+                    error('to implement (should be easy...)')
+                  case 'charging'
+                    initstate.(ctrl).ctrlType = 'charge';
+                    E = initstate.(ctrl).E;
+                    P = model.(ctrl).chargingPower;
+                    initstate.(ctrl).I = -P/E;
+                  otherwise
+                    error('initialControl not recognized');
+                end
+              case 'CC'
+                switch model.(ctrl).initialControl
+                  case 'discharging'
+                    initstate.(ctrl).ctrlVal = model.(ctrl).Imax;
+                  case 'charging'
+                    initstate.(ctrl).ctrlVal = -model.(ctrl).Imax;
+                  otherwise
+                    error('initialControl not recognized');
+                end
+                initstate.(ctrl).I = initstate.(ctrl).ctrlVal
               otherwise
                 error('control policy not recognized');
             end
@@ -1199,6 +1229,7 @@ classdef Battery < BaseModel
             switch model.(ctrl).controlPolicy
 
               case {'CCCV', 'powerControl'}
+
                 % nothing to do here
 
               case 'IEswitch'
@@ -1212,10 +1243,20 @@ classdef Battery < BaseModel
                 state.(ctrl).ctrlVal  = ctrlVal;
                 state.(ctrl).ctrlType = ctrltype;
 
+              case 'CC'
+                
+                time = state.time;
+                ctrlVal = drivingForces.src(time, model.(ctrl));
+                state.(ctrl).ctrlVal  = ctrlVal;
+                
               case 'None'
+                
                 % nothing done here. This case is only used for the addVariables method
+                
               otherwise
+                
                 error('control type not recognized');
+                
             end
                 
             
@@ -1543,6 +1584,9 @@ classdef Battery < BaseModel
                 forces.src = [];
               case 'powerControl'
                 forces.powerControl = true;
+                forces.src = [];
+              case 'CC'
+                forces.CC = true;
                 forces.src = [];
               case 'None'
                 % used only in addVariables

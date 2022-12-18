@@ -3,8 +3,21 @@ classdef ControlModelInputParams < InputParams
     
     properties
 
-        controlPolicy
+        
         CRate
+
+        controlPolicy
+        % Control Policy (string). It can take following values
+        % - 'CCCV'
+        % - 'IEswitch'
+        % - 'CV'
+        % - 'CC'
+        
+        initialControl
+        % Initial control at start. It is a string that can be equal to
+        % - 'charging'
+        % - 'discharging'
+
         lowerCutoffVoltage
         upperCutoffVoltage
         
@@ -20,7 +33,7 @@ classdef ControlModelInputParams < InputParams
         
         function paramobj = set.controlPolicy(paramobj, controlPolicy)
             switch controlPolicy
-              case 'IEswitch'
+              case {'IEswitch', 'CC'}
                 % ok in any case
               case 'CCCV'
                 assert(isa(paramobj, 'CcCvControlModelInputParams'), 'The model is not a CcCvControlModelInputParams class')
