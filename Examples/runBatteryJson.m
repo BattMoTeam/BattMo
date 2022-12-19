@@ -75,8 +75,6 @@ function  output = runBatteryJson(jsonstruct, varargin)
         nL     = jsonstruct.Geometry.nL;
         nas    = jsonstruct.Geometry.nas;
 
-        tabparams = jsonstruct.Geometry.tabparams;
-
         nrDict = containers.Map();
         nrDict('ElectrolyteSeparator')     = jsonstruct.Electrolyte.Separator.N;
         nrDict('NegativeActiveMaterial')   = jsonstruct.NegativeElectrode.ActiveMaterial.N;
@@ -96,6 +94,9 @@ function  output = runBatteryJson(jsonstruct, varargin)
         dr = sum(nwidths);dR = rOuter - rInner; 
         % Computed number of windings
         nwindings = ceil(dR/dr);
+
+        tabparams.NegativeElectrode = jsonstruct.NegativeElectrode.CurrentCollector.tabparams;
+        tabparams.PositiveElectrode = jsonstruct.PositiveElectrode.CurrentCollector.tabparams;
         
         spiralparams = struct('nwindings'   , nwindings, ...
                               'rInner'      , rInner   , ...

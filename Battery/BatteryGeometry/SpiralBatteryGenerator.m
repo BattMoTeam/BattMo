@@ -22,7 +22,6 @@ classdef SpiralBatteryGenerator < BatteryGenerator
         tagdict % dictionary giving the component number
     
         tabparams % parameters for the tab on the positive current collector
-                  % if no tab, set as empty.
         
         positiveExtCurrentFaces
         negativeExtCurrentFaces
@@ -36,7 +35,7 @@ classdef SpiralBatteryGenerator < BatteryGenerator
         nHeightLayer
 
         tabwidths      % computed tab width (due to discretization, we cannot enforce the tab widths)
-        windingnumbers % for the tabs (implmented only for aligned tabs now)
+        windingnumbers % for the tabs (implemented only for aligned tabs now)
         
         use_thermal
     end

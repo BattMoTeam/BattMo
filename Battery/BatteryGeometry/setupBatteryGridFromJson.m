@@ -96,7 +96,7 @@ function paramobj = setupBatteryGridFromJson(paramobj, jsonstruct)
 
             tabparams.NegativeElectrode = jsonstruct.(ne).(cc).tabparams;
             tabparams.PositiveElectrode = jsonstruct.(pe).(cc).tabparams;
-            params = params.tabparams;
+            params.tabparams = tabparams;
             params.angleuniform = true;
 
             gen = SpiralBatteryGenerator();
@@ -104,6 +104,10 @@ function paramobj = setupBatteryGridFromJson(paramobj, jsonstruct)
           case 'sectorModel'
 
             gen = SectorBatteryGenerator();
+
+          otherwise
+
+            error('Geometry.case not recognized');
             
         end
         
