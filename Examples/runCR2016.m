@@ -228,8 +228,8 @@ dataFolder = sprintf('BattMo_%s', date);
 problem = packSimulationProblem(initstate, model, schedule, dataFolder, 'Name', name, 'NonLinearSolver', nls);
 problem.SimulatorSetup.OutputMinisteps = true;
 
-resetSimulation = false
-if resetSimulation
+clearSimulation = false
+if clearSimulation
     % Clear previously computed simulation
     clearPackedSimulatorOutput(problem, 'prompt', false);
 end

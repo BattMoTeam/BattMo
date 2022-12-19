@@ -276,8 +276,8 @@ if dopacked
                                     'NonLinearSolver', nls);
     problem.SimulatorSetup.OutputMinisteps = true; 
 
-    resetSimulation = true;
-    if resetSimulation
+    clearSimulation = true;
+    if clearSimulation
         %% clear previously computed simulation
         clearPackedSimulatorOutput(problem, 'prompt', false);
     end

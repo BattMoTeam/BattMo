@@ -250,7 +250,7 @@ function  output = runBatteryJson(jsonstruct, varargin)
     end
     
     % Set verbosity
-    model.verbose = false;
+    model.verbose = jsonstruct.NonLinearSolver.verbose;
 
     if isfield(linearSolverSetup, 'reduction') && linearSolverSetup.reduction.doReduction
         model = model.setupSelectedModel('reduction', linearSolverSetup.reduction);
@@ -260,16 +260,18 @@ function  output = runBatteryJson(jsonstruct, varargin)
     %% Run the simulation
     if isfield(jsonstruct, 'Output') && isfield(jsonstruct.Output, 'saveOutput') && jsonstruct.Output.saveOutput
         saveOptions = jsonstruct.Output.saveOptions;
-        dataFolder      = saveOptions.dataFolder;
-        name            = saveOptions.name;
-        resetSimulation = saveOptions.resetSimulation;
         
-        problem = packSimulationProblem(initstate, model, schedule, dataFolder, ...
-                                        'Name'           , name, ...
+        outputDirectory = saveOptions.outputDirectory;
+        name            = saveOptions.name;
+        clearSimulation = saveOptions.clearSimulation;
+        
+        problem = packSimulationProblem(initstate, model, schedule, [], ...
+                                        'Directory'      , outputDirectory, ...
+                                        'Name'           , name      , ...
                                         'NonLinearSolver', nls);
         problem.SimulatorSetup.OutputMinisteps = true; 
 
-        if resetSimulation
+        if clearSimulation
             %% clear previously computed simulation
             clearPackedSimulatorOutput(problem, 'prompt', false);
         end
