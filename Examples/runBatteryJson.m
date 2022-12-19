@@ -176,10 +176,9 @@ function  output = runBatteryJson(jsonstruct, varargin)
       case 'powerControl'
         control = struct('powerControl', true);
       case 'CC'
-        control = struct('CC', true);
+        tup = 0.1;
+        srcfunc = @(time) model.(ctrl).rampupControl(time, tup);
         switch model.(ctrl).initialControl
-        tup = 0.1; % rampup value for the current function, see rampupSwitchControl
-        srcfunc = @(time, ctrlmodel) rampupControl(time, tup, );
           case 'discharging'
             stopFunc = @(model, state, state_prev) (state.(ctrl).E < model.(ctrl).lowerCutoffVoltage);
           case 'charging'
@@ -187,6 +186,8 @@ function  output = runBatteryJson(jsonstruct, varargin)
           otherwise
             error('initial control not recognized');
         end
+        control = struct('CC', true);
+        control.src = srcfunc;
         control.stopFunction = stopFunc;
       otherwise
         error('control policy not recognized');

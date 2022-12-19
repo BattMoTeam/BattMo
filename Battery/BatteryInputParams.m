@@ -51,6 +51,10 @@ classdef BatteryInputParams < InputParams
                 paramobj.(ctrl) = CcCvControlModelInputParams(pick(ctrl));
               case 'powerControl'
                 paramobj.(ctrl) = PowerControlModelInputParams(pick(ctrl));
+              case 'powerControl'
+                paramobj.(ctrl) = PowerControlModelInputParams(pick(ctrl));
+              case 'CC'
+                paramobj.(ctrl) = CcControlModelInputParams(pick(ctrl));
               otherwise
                 error('controlPolicy not recognized');
             end

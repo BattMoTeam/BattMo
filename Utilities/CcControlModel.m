@@ -9,7 +9,7 @@ classdef CcControlModel < ControlModel
     
     methods
 
-        function model = IEswitchControlModel(paramobj)
+        function model = CcControlModel(paramobj)
             
             model = model@ControlModel(paramobj);
             
@@ -21,11 +21,14 @@ classdef CcControlModel < ControlModel
             
             varnames = {};
             % control value that can be either a voltage or a current
-            varnames{end + 1} = 'ctrlVal';            
-
+            varnames{end + 1} = 'ctrlVal';
+            % Control type (string). This value is redundant in this model with the initialControl property (see parent class ControlModel)
+            % - 'charge'
+            % - 'discharge'
+            varnames{end + 1} = 'ctrlType';            
             model = model.registerVarNames(varnames);
             
-            fn = @IEswitchControlModel.updateControlEquation;
+            fn = @CcControlModel.updateControlEquation;
             model = model.registerPropFunction({'controlEquation', fn, {'ctrlVal', 'I'}});
             
         end
@@ -40,6 +43,31 @@ classdef CcControlModel < ControlModel
             
             state.controlEquation = ctrleq;
                         
+        end
+
+        function val = rampupControl(model, t, tup)
+
+            switch model.initialControl
+              case 'discharging'
+                inputI = model.Imax;
+              case 'charging'
+                inputI = -model.Imax;
+              otherwise
+                error('initControl not recognized');
+            end
+
+            % hardcoded for now
+            rampupcase = 'sineup';        
+            switch rampupcase
+                
+              case 'sineup'
+                val = (t <= tup) .* sineup(0, inputI, 0, tup, t) + (t > tup) .* inputI;
+                
+              case 'linear'
+                val = (t <= tup).*t./tup .* inputI +  (t > tup) .* inputI;
+                
+            end
+            
         end
         
     end

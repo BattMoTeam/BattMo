@@ -34,7 +34,12 @@ classdef Battery < BaseModel
         include_current_collectors
         
         primaryVariableNames
+
         addedVariableNames
+        % Some variables in some model are "static" meaning that they are not computed, they are set at the beginning of
+        % the computation and stay constants. Their names are given in this addedVariableNames list. An example of such
+        % variable is the temperature when use_thermal is set to false.
+
         equationNames
         equationTypes
         equationIndices
@@ -71,7 +76,7 @@ classdef Battery < BaseModel
             end
             
             model.Control = model.setupControl(paramobj.Control);
-            
+           
             % define shorthands
             elyte   = 'Electrolyte';
             ne      = 'NegativeElectrode';
@@ -185,13 +190,19 @@ classdef Battery < BaseModel
                 varEqTypes = vertcat(varEqTypes, newentries);
                 
             end
-            
-            addedVariableNames{end + 1} = {ctrl, 'ctrlType'};
-            
-            if strcmp(model.(ctrl).controlPolicy, 'CCCV')
-                addedVariableNames{end + 1} = {ctrl, 'nextCtrlType'};
-            end
 
+            switch model.(ctrl).controlPolicy
+              case 'IEswitch'
+                addedVariableNames{end + 1} = {ctrl, 'ctrlType'};
+              case 'CCCV'
+                addedVariableNames{end + 1} = {ctrl, 'ctrlType'};
+                addedVariableNames{end + 1} = {ctrl, 'nextCtrlType'};
+              case 'CC'
+                addedVariableNames{end + 1} = {ctrl, 'ctrlType'};
+              otherwise
+                error('controlPolicy not recognized');
+            end
+            
             primaryVariableNames = varEqTypes(:, 1);
             equationTypes = varEqTypes(:, 3);
 
@@ -457,6 +468,10 @@ classdef Battery < BaseModel
                 control.Imax = (C/hour)*CRate;
               case "powerControl"
                 control = PowerControlModel(paramobj);
+              case "CC"
+                control = CcControlModel(paramobj);
+                CRate = control.CRate;
+                control.Imax = (C/hour)*CRate;
               otherwise
                 error('Error controlPolicy not recognized');
             end
@@ -734,15 +749,16 @@ classdef Battery < BaseModel
                     error('initialControl not recognized');
                 end
               case 'CC'
+                % this value will be overwritten after first iteration 
+                initstate.(ctrl).I = 0;
                 switch model.(ctrl).initialControl
                   case 'discharging'
-                    initstate.(ctrl).ctrlVal = model.(ctrl).Imax;
-                  case 'charging'
-                    initstate.(ctrl).ctrlVal = -model.(ctrl).Imax;
+                    initstate.(ctrl).ctrlType = 'discharge';
+                  case 'discharging'
+                    initstate.(ctrl).ctrlType = 'charge';
                   otherwise
                     error('initialControl not recognized');
                 end
-                initstate.(ctrl).I = initstate.(ctrl).ctrlVal
               otherwise
                 error('control policy not recognized');
             end
@@ -1246,7 +1262,7 @@ classdef Battery < BaseModel
               case 'CC'
                 
                 time = state.time;
-                ctrlVal = drivingForces.src(time, model.(ctrl));
+                ctrlVal = drivingForces.src(time);
                 state.(ctrl).ctrlVal  = ctrlVal;
                 
               case 'None'
@@ -1672,16 +1688,6 @@ classdef Battery < BaseModel
                 var = model.getProp(state, addedvarnames{i});
                 assert(isnumeric(var) | ischar(var));
                 cleanState = model.setNewProp(cleanState, addedvarnames{i}, var);
-            end
-            
-            thermal = 'ThermalModel';
-            ctrl = 'Control';
-            
-            cleanState.(ctrl).ctrlType = state.(ctrl).ctrlType;            
-            
-            if ~model.use_thermal
-                thermal = 'ThermalModel';
-                cleanState.(thermal).T = state.(thermal).T;
             end
             
         end
