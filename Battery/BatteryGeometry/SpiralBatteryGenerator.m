@@ -348,7 +348,7 @@ classdef SpiralBatteryGenerator < BatteryGenerator
                             'couplingcells', couplingcells);
             paramobj = setupThermalModel@BatteryGenerator(gen, paramobj, params);
            
-            thermal = 'ThermalModel'; % shorcut
+            thermal = 'ThermalModel'; % shortcut
             
             if isempty(paramobj.(thermal).externalHeatTransferCoefficientTopFaces) | ...
                     isempty(paramobj.(thermal).externalHeatTransferCoefficientSideFaces) 
