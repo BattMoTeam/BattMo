@@ -157,8 +157,9 @@ function  output = runBatteryJson(jsonstruct, varargin)
     n = jsonstruct.TimeStepping.N;
 
     dt = total/n;
+    dts = rampupTimesteps(total, dt, 5);
     
-    step = struct('val', dt*ones(n, 1), 'control', ones(n, 1));
+    step = struct('val', dts, 'control', ones(numel(dts), 1));
 
     % we setup the control by assigning a source and stop function.
     % control = struct('CCCV', true); 
@@ -177,7 +178,7 @@ function  output = runBatteryJson(jsonstruct, varargin)
       case 'powerControl'
         control = struct('powerControl', true);
       case 'CC'
-        tup = 0.1;
+        tup = dt;
         srcfunc = @(time) model.(ctrl).rampupControl(time, tup);
         switch model.(ctrl).initialControl
           case 'discharging'
