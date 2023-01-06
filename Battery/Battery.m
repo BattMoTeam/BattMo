@@ -373,10 +373,13 @@ classdef Battery < BaseModel
                 
                 %% Function that updates Thermal Reaction Terms
                 fn = @Battery.updateThermalReactionSourceTerms;
-                inputnames = {{ne, am, 'Rvol'}  , ...
-                              {ne, am, itf, 'eta'}, ...
-                              {pe, am, 'Rvol'}  , ...
-                              {pe, am, itf, 'eta'}};
+                inputnames = {{thermal, 'T'}       , ...
+                              {ne, am, 'Rvol'}     , ...
+                              {ne, am, itf, 'eta'} , ...
+                              {ne, am, itf, 'dUdT'}, ...
+                              {pe, am, 'Rvol'}     , ...
+                              {pe, am, itf, 'eta'} , ...
+                              {pe, am, itf, 'dUdT'}};
                 model = model.registerPropFunction({{thermal, 'jHeatReactionSource'}, fn, inputnames});
                 
             end
@@ -448,11 +451,8 @@ classdef Battery < BaseModel
 
             end
             
-            
-            
         end
 
-        
         function control = setupControl(model, paramobj)
 
             C = computeCellCapacity(model);
