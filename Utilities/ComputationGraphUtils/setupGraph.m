@@ -1,4 +1,4 @@
-function [g, edgelabels] = setupGraph(model, varargin)
+function [g, staticprops] = setupGraph(model, varargin)
     
     opt = struct('excludeVarnames', false, ...
                  'resolveIndex'   , true );
@@ -32,13 +32,15 @@ function [g, edgelabels] = setupGraph(model, varargin)
         end
         
     end
+
+    staticprops = {};
     
     for ipropfunc = 1 : numel(propfuncs)
 
         propfunction = propfuncs{ipropfunc};
         varname = propfunction.varname;
         m = propfunction.modelnamespace;
-        
+
         f = func2str(propfunction.fn);
         inputvarnames = propfunction.inputvarnames;
         
@@ -71,31 +73,34 @@ function [g, edgelabels] = setupGraph(model, varargin)
         
         nv = numel(fullvarnames);
         ni = numel(fullinputvarnames);
-        
-        indv = rldecode((1 : nv)', ni*ones(nv, 1))';
-        indi = repmat((1 : ni), 1, nv);
-        
-        s = fullinputvarnames(indi);
-        t = fullvarnames(indv);
-        f = repmat({f}, 1, nv*ni);
-        m = repmat({m}, 1, nv*ni);
-        p = repmat({ipropfunc}, 1, nv*ni);
-        
-        ss = horzcat(ss, s);
-        ts = horzcat(ts, t);
-        fs = horzcat(fs, f);
-        ps = horzcat(ps, p);
-        ms = horzcat(ms, m);
+
+        if ni == 0
+            staticprop.propind = ipropfunc;
+            for inv = 1 : nv
+                nodename = fullvarnames{inv};
+                staticprop.nodename = nodename;
+                staticprops{end + 1} = staticprop;
+            end
+        else
+            indv = rldecode((1 : nv)', ni*ones(nv, 1))';
+            indi = repmat((1 : ni), 1, nv);
+            
+            s = fullinputvarnames(indi);
+            t = fullvarnames(indv);
+            f = repmat({f}, 1, nv*ni);
+            m = repmat({m}, 1, nv*ni);
+            p = repmat({ipropfunc}, 1, nv*ni);
+            
+            ss = horzcat(ss, s);
+            ts = horzcat(ts, t);
+            fs = horzcat(fs, f);
+            ps = horzcat(ps, p);
+            ms = horzcat(ms, m);
+        end
         
     end
     
     g = addedge(g, ss, ts, [ps{:}]);
-    
-    edgelabels.ss = ss;
-    edgelabels.ts = ts;
-    edgelabels.fs = fs;
-    edgelabels.ps = ps;
-    edgelabels.ms = ms;
     
 end
 
@@ -106,18 +111,18 @@ end
 Copyright 2021-2022 SINTEF Industry, Sustainable Energy Technology
 and SINTEF Digital, Mathematics & Cybernetics.
 
-This file is part of The Battery Modeling Toolbox BatMo
+This file is part of The Battery Modeling Toolbox BattMo
 
-BatMo is free software: you can redistribute it and/or modify
+BattMo is free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
 the Free Software Foundation, either version 3 of the License, or
 (at your option) any later version.
 
-BatMo is distributed in the hope that it will be useful,
+BattMo is distributed in the hope that it will be useful,
 but WITHOUT ANY WARRANTY; without even the implied warranty of
 MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 GNU General Public License for more details.
 
 You should have received a copy of the GNU General Public License
-along with BatMo.  If not, see <http://www.gnu.org/licenses/>.
+along with BattMo.  If not, see <http://www.gnu.org/licenses/>.
 %}

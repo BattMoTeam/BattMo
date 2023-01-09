@@ -49,8 +49,10 @@ classdef BatteryInputParams < InputParams
                 paramobj.(ctrl) = IEswitchControlModelInputParams(pick(ctrl));
               case 'CCCV'
                 paramobj.(ctrl) = CcCvControlModelInputParams(pick(ctrl));
+              case 'powerControl'
+                paramobj.(ctrl) = PowerControlModelInputParams(pick(ctrl));
               otherwise
-                error('controlPolicy not recognized');
+                error('controlPolicy %s not recognized', jsonstruct.(ctrl).controlPolicy);
             end
             paramobj.couplingTerms = {};
 
@@ -67,17 +69,25 @@ classdef BatteryInputParams < InputParams
             thermal = 'ThermalModel';
             ctrl    = 'Control';            
 
-            comps = {ne, pe, elyte};
-            for icomp = 1 : numel(comps)
-                comp = comps{icomp};
-                paramobj = mergeParameters(paramobj, {'use_thermal'}, {comp, 'use_thermal'});
-            end
+            paramobj = mergeParameters(paramobj, {{'use_thermal'}    , ...
+                                                  {ne, 'use_thermal'}, ...
+                                                  {pe, 'use_thermal'}, ...
+                                                  {elyte, 'use_thermal'}});
+                            
+            paramobj = mergeParameters(paramobj, {{'include_current_collectors'}    , ...
+                                                  {ne, 'include_current_collectors'}, ...
+                                                  {pe, 'include_current_collectors'}});
+                            
+            paramobj = mergeParameters(paramobj, {{'use_particle_diffusion'}        , ...
+                                                  {ne, am, 'use_particle_diffusion'}, ...
+                                                  {pe, am, 'use_particle_diffusion'}});
 
-            eldes = {ne, pe};
-            for ielde = 1 : numel(eldes)
-                elde = eldes{ielde};
-                paramobj = mergeParameters(paramobj, {'include_current_collectors'}, {elde, 'include_current_collector'});
-                paramobj = mergeParameters(paramobj, {'use_particle_diffusion'}, {elde, am, 'use_particle_diffusion'});
+            if isempty(paramobj.use_particle_diffusion)
+                % set default to true
+                paramobj.use_particle_diffusion = true;
+                paramobj = mergeParameters(paramobj, {{'use_particle_diffusion'}        , ...
+                                                      {ne, am, 'use_particle_diffusion'}, ...
+                                                      {pe, am, 'use_particle_diffusion'}});
             end
             
             paramobj.(ne)    = paramobj.(ne).validateInputParams();

@@ -7,7 +7,7 @@ classdef CurrentCollectorInputParams < ElectronicComponentInputParams
         externalCouplingTerm % coupling term specification of the current collector with external source
 
         thermalConductivity % Thermal conductivity of current collector
-        heatCapacity % Heat capacity of current collector
+        specificHeatCapacity % Heat capacity of current collector
 
         density % Density of current collector [kg m^-3]
     end

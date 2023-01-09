@@ -187,7 +187,9 @@ classdef Interface < BaseModel
 
                 % We use regularizedSqrt to regularize the square root function and avoid the blow-up of derivative at zero.
                 th = 1e-3*cmax;
-                j0 = k.*regularizedSqrt(cElyte.*(cmax - c).*c, th)*n*F;
+                coef = cElyte.*(cmax - c).*c;
+                coef(coef < 0) = 0;
+                j0 = k.*regularizedSqrt(coef, th)*n*F;
                 
             end
             

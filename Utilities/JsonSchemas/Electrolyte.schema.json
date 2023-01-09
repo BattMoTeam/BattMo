@@ -1,11 +1,9 @@
 {
-  "$id": "file://batmo/schemas/Electrolyte",
+  "$id": "file://battmo/schemas/Electrolyte",
   "$schema": "http://json-schema.org/draft-07/schema#",
   "description": "A standard electrolyte",
   "type": "object",
 
-  "$ref": "thermalParameters",
-  
   "properties" : { "compnames": {"type" : "array"},
                    "sp": { "type" : "object",
                            "properties" : {

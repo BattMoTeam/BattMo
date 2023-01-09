@@ -15,11 +15,11 @@ classdef Electrolyte < ElectroChemicalComponent
         volumeFraction
 
         thermalConductivity % intrinsic thermal conductivity value
-        heatCapacity % intrinsic heat capacity value
+        specificHeatCapacity % specific heat capacity value
         density % [kg m^-3] (Note : only of the liquid part, the density of the separator is given there)
 
         EffectiveThermalConductivity
-        EffectiveHeatCapacity
+        EffectiveVolumetricHeatCapacity
 
         computeConductivityFunc
         computeDiffusionCoefficientFunc
@@ -41,7 +41,7 @@ classdef Electrolyte < ElectroChemicalComponent
                        'compnames'          , ...
                        'chargeCarrierName'  , ...
                        'thermalConductivity', ...
-                       'heatCapacity'       , ...
+                       'specificHeatCapacity'       , ...
                        'density'            , ...
                        'use_thermal'        , ...
                        'BruggemanCoefficient'};
@@ -114,7 +114,7 @@ classdef Electrolyte < ElectroChemicalComponent
             model = model.registerPropFunction({'massFlux', fn, {'c', 'j', 'D'}});
             model = model.registerPropFunction({'diffFlux', fn, {'c', 'j', 'D'}});
 
-            fn = @Electrolyte.assembleAccumTerm;
+            fn = @Electrolyte.updateAccumTerm;
             model = model.registerPropFunction({'massAccum', fn, {'c'}});
 
             fn = @Electrolyte.updateCurrentBcSource;
@@ -160,7 +160,6 @@ classdef Electrolyte < ElectroChemicalComponent
             cLi          = state.cs{1}; % concentration of Li+
             T            = state.T;     % temperature
             phi          = state.phi;   % potential
-            conductivity = state.conductivity;   % potential
 
             cs  = state.cs;
 

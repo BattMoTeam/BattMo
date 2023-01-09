@@ -1,0 +1,41 @@
+{"library" : "matlab",
+ "method" : "separate-variable-gmres",
+ "gmres_options" : {"restart" : "default",
+                    "tol" : "default",
+                    "maxit" : 10},
+ "reduction" : {"doReduction" : true,
+                "variables" : [{"name" : ["Control", "I"], "order" : 1, "special" : true},
+                               {"name" : ["Control", "E"], "order" : 2, "special" : true},
+                               {"name" : ["NegativeElectrode", "ActiveMaterial", "c"], "order" :  3},
+                               {"name" : ["PositiveElectrode", "ActiveMaterial", "c"], "order" :  4}
+                              ]
+               },
+ "preconditioners" : [ { "name" : "csurface",
+                         "variables" : [["NegativeElectrode", "ActiveMaterial", "SolidDiffusion", "cSurface"], 
+                                        ["PositiveElectrode", "ActiveMaterial", "SolidDiffusion", "cSurface"]],
+                         "solver" : {"library" : "matlab"}
+                       },
+
+                       {"name" : "potential",
+                        "variables" : [["Electrolyte", "phi"],
+                                       ["NegativeElectrode", "ActiveMaterial", "phi"],
+                                       ["PositiveElectrode", "ActiveMaterial", "phi"],
+                                       ["NegativeElectrode", "CurrentCollector", "phi"],
+                                       ["PositiveElectrode", "CurrentCollector", "phi"],
+                                       ["Control", "E"]
+                                      ],
+                        "solver" : {"library" : "amgcl"}
+                       },
+                       
+                       {
+                         "name" : "electrolyte concentration",
+                         "variables" : [["Electrolyte", "c"]],
+                         "solver" : {"library" : "amgcl"}
+                       },
+                       {
+                         "name": "Temperature",
+                         "variables" : [["ThermalModel", "T"]],
+                         "solver" : {"library" : "amgcl"}
+                       }
+                     ]
+}

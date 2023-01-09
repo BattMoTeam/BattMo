@@ -14,7 +14,7 @@ classdef ElectrolyteInputParams < ElectroChemicalComponentInputParams
         Separator
         
         thermalConductivity % Intrinsic Thermal conductivity of the electrolyte
-        heatCapacity        % Intrinsic Heat capacity of the electrolyte
+        specificHeatCapacity        % Specific Heat capacity of the electrolyte
         
         
         Conductivity

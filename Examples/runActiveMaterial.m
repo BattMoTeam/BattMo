@@ -9,44 +9,21 @@ close all
 mrstModule add ad-core mrst-gui mpfa
 
 %% Setup the properties of Li-ion battery materials and cell design
-jsonstruct = parseBattmoJson(fullfile('ParameterData','ParameterSets','Chen2020','chen2020_lithium_ion_battery.json'));
+jsonstruct = parseBattmoJson(fullfile('Examples', 'jsoninputs', 'amExample.json'));
 
-paramobj = BatteryInputParams(jsonstruct);
+paramobj = ActiveMaterialInputParams(jsonstruct);
 
-% Some shorthands used for the sub-models
-ne    = 'NegativeElectrode';
-pe    = 'PositiveElectrode';
-am    = 'ActiveMaterial';
-sd    = 'SolidDiffusion';
-itf   = 'Interface';
-elyte = 'Electrolyte';
-
-%% We setup the battery geometry ("bare" battery with no current collector). We use that to recover the parameters for the active material of the positive electrode, which is instantiate later
-gen = BareBatteryGenerator3D();
-% We update pamobj with grid data
-paramobj = gen.updateBatteryInputParams(paramobj);
-
-paramobj.(ne).(am).InterDiffusionCoefficient = 0;
-% paramobj.(ne).(am).diffusionModelType = 'full';
-paramobj.(ne).(am).diffusionModelType = 'simple';
-
-paramobj = paramobj.(ne).(am);
-
-paramobj.externalCouplingTerm = [];
-paramobj.(sd).np = 1;
 xlength = 57e-6; 
 G = cartGrid(1, xlength);
 G = computeGeometry(G);
+
 paramobj.G = G;
 
-D0 = paramobj.(sd).D0; % default value : 3.3e-14
-paramobj.(sd).D0 = 1*D0;
-
-paramobj.use_particle_diffusion = true;
+paramobj = paramobj.validateInputParams();
 
 model = ActiveMaterial(paramobj);
 
-inspectgraph = true;
+inspectgraph = false;
 if inspectgraph
     model.isRoot = true;
     cgt = ComputationalGraphTool(model);
@@ -61,6 +38,10 @@ end
 
 %% Setup initial state
 
+% shortcuts
+
+sd  = 'SolidDiffusion';
+itf = 'Interface';
 
 cElectrolyte     = 5e-1*mol/litre;
 phiElectrolyte   = 0;

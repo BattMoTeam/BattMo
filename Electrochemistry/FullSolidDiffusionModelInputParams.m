@@ -6,7 +6,7 @@ classdef FullSolidDiffusionModelInputParams < SolidDiffusionModelInputParams
         np % Number of computational grid cells (typically set by parent model :class:`ActiveMaterial <Electrochemistry.ActiveMaterial>`)
 
         volumeFraction
-        activeMaterialFraction = 1
+        activeMaterialFraction
         
         D    % Function to update D value given as a struct with fields
              % D.type is in {'function', 'constant'}. If 'constant' is chosen the value of D0 is used as in parent class

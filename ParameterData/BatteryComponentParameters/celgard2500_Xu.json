@@ -1,7 +1,6 @@
 {
     "porosity": 0.4,
     "specificHeatCapacity": 1692,
-    "heatCapacity": 1318068,
     "thermalConductivity": 0.334,
     "density": 779,
     "BruggemanCoefficient": 1.5

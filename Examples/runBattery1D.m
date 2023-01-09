@@ -10,7 +10,7 @@ clc
 
 %% Import the required modules from MRST
 % load MRST modules
-mrstModule add ad-core mrst-gui mpfa
+mrstModule add ad-core mrst-gui mpfa agmg linearsolvers
 
 %% Setup the properties of Li-ion battery materials and cell design
 % The properties and parameters of the battery cell, including the
@@ -34,12 +34,23 @@ sd      = 'SolidDiffusion';
 ctrl    = 'Control';
 cc      = 'CurrentCollector';
 
-jsonstruct.use_thermal = true;
-jsonstruct.include_current_collector = false;
-jsonstruct.(pe).(am).diffusionModelType = 'simple';
-jsonstruct.(ne).(am).diffusionModelType = 'simple';
+jsonstruct.use_thermal = false;
+jsonstruct.include_current_collectors = false;
+
+jsonstruct.(pe).(am).diffusionModelType = 'full';
+jsonstruct.(ne).(am).diffusionModelType = 'full';
+
+jsonstruct.use_particle_diffusion = true;
 
 paramobj = BatteryInputParams(jsonstruct);
+
+paramobj.(ne).(am).InterDiffusionCoefficient = 0;
+paramobj.(pe).(am).InterDiffusionCoefficient = 0;
+
+paramobj.(ne).(am).(sd).N = 5;
+paramobj.(pe).(am).(sd).N = 5;
+
+paramobj = paramobj.validateInputParams();
 
 use_cccv = false;
 if use_cccv
@@ -62,6 +73,7 @@ gen = BatteryGenerator1D();
 
 % Now, we update the paramobj with the properties of the mesh. 
 paramobj = gen.updateBatteryInputParams(paramobj);
+
 
 %%  Initialize the battery model. 
 % The battery model is initialized by sending paramobj to the Battery class
@@ -131,7 +143,7 @@ initstate = model.setupInitialState();
 %% Setup the properties of the nonlinear solver 
 nls = NonLinearSolver();
 
-linearsolver = 'battery';
+linearsolver = 'direct';
 switch linearsolver
   case 'agmg'
     mrstModule add agmg
@@ -142,11 +154,11 @@ switch linearsolver
     nls.verbose = 10;
   case 'battery'
     nls.LinearSolver = LinearSolverBatteryExtra('verbose'     , false, ...
-                                                'reduceToCell', false, ...
+                                                'reduceToCell', true, ...
                                                 'verbosity'   , 3    , ...
                                                 'reuse_setup' , false, ...
                                                 'method'      , 'direct');
-    nls.LinearSolver.tolerance = 0.5e-4*2;          
+    nls.LinearSolver.tolerance = 1e-4;
   case 'direct'
     disp('standard direct solver')
   otherwise
@@ -174,6 +186,10 @@ I = cellfun(@(x) x.Control.I, states);
 Tmax = cellfun(@(x) max(x.ThermalModel.T), states);
 % [SOCN, SOCP] =  cellfun(@(x) model.calculateSOC(x), states);
 time = cellfun(@(x) x.time, states); 
+
+plot(time, E);
+
+
 
 %% Plot the the output voltage and current
 % plotDashboard(model, states, 'step', 0);

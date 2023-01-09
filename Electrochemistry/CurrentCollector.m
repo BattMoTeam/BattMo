@@ -5,7 +5,7 @@ classdef CurrentCollector < ElectronicComponent
         externalCouplingTerm
 
         thermalConductivity
-        heatCapacity
+        specificHeatCapacity
         density
         
     end
@@ -18,7 +18,7 @@ classdef CurrentCollector < ElectronicComponent
 
             fdnames = {'externalCouplingTerm', ...
                        'thermalConductivity' , ...
-                       'heatCapacity'        , ...
+                       'specificHeatCapacity'        , ...
                        'density'};
             
             model = dispatchParams(model, paramobj, fdnames);
