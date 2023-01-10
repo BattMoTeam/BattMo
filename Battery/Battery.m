@@ -822,6 +822,11 @@ classdef Battery < BaseModel
                 state.(elde).(am) = model.(elde).(am).updateSOC(state.(elde).(am));
                 state.(elde).(am) = model.(elde).(am).updateAverageConcentration(state.(elde).(am));
             end
+
+            if model.use_thermal
+                state = model.updateThermalIrreversibleReactionSourceTerms(state);
+                state = model.updateThermalReversibleReactionSourceTerms(state);
+            end
             
         end
         
@@ -1388,10 +1393,109 @@ classdef Battery < BaseModel
             state.(thermal).jHeatChemicalSource = src;
             
         end
-        
+
+        function state = updateThermalIrreversibleReactionSourceTerms(model, state)
+        % not used in assembly, just as added variable (in addVariables method). Method updateThermalReactionSourceTerms is used in assembly
+            
+            ne      = 'NegativeElectrode';
+            pe      = 'PositiveElectrode';
+            am      = 'ActiveMaterial';
+            itf     = 'Interface';
+            thermal = 'ThermalModel';
+            
+            eldes = {ne, pe}; % electrodes
+            
+            nc = model.G.cells.num;
+            
+            src = zeros(nc, 1);
+            
+            T = state.(thermal).T;           
+            if isa(T, 'ADI')
+                adsample = getSampleAD(T);
+                adbackend = model.AutoDiffBackend;
+                src = adbackend.convertToAD(src, adsample);
+                locstate = state;
+            else
+               locstate = value(state); 
+            end
+            
+            for ind = 1 : numel(eldes)
+
+                elde = eldes{ind};
+                
+                itf_model = model.(elde).(am).(itf);
+                
+                F       = itf_model.constants.F;
+                n       = itf_model.n;
+                itf_map = itf_model.G.mappings.cellmap;
+                vsa     = itf_model.volumetricSurfaceArea;
+                vols    = model.(elde).(am).G.cells.volumes;
+
+                Rvol = locstate.(elde).(am).Rvol;
+                eta  = locstate.(elde).(am).(itf).eta;
+                
+                itf_src = n*F*vols.*Rvol.*eta;
+                
+                src(itf_map) = src(itf_map) + itf_src;
+                
+            end
+
+            state.(thermal).jHeatIrrevReactionSource = src;
+            
+        end
+
+        function state = updateThermalReversibleReactionSourceTerms(model, state)
+        % not used in assembly, just as added variable (in addVariables method). Method updateThermalReactionSourceTerms is used in assembly
+            ne      = 'NegativeElectrode';
+            pe      = 'PositiveElectrode';
+            am      = 'ActiveMaterial';
+            itf     = 'Interface';
+            thermal = 'ThermalModel';
+            
+            eldes = {ne, pe}; % electrodes
+            
+            nc = model.G.cells.num;
+            
+            src = zeros(nc, 1);
+           
+            T = state.(thermal).T;
+            if isa(T, 'ADI')
+                adsample = getSampleAD(T);
+                adbackend = model.AutoDiffBackend;
+                src = adbackend.convertToAD(src, adsample);
+                locstate = state;
+            else
+               locstate = value(state); 
+            end
+            
+            for ind = 1 : numel(eldes)
+
+                elde = eldes{ind};
+                
+                itf_model = model.(elde).(am).(itf);
+                
+                F       = itf_model.constants.F;
+                n       = itf_model.n;
+                itf_map = itf_model.G.mappings.cellmap;
+                vsa     = itf_model.volumetricSurfaceArea;
+                vols    = model.(elde).(am).G.cells.volumes;
+
+                Rvol = locstate.(elde).(am).Rvol;
+                dUdT = locstate.(elde).(am).(itf).dUdT;
+
+                itf_src = n*F*vols.*Rvol.*T(itf_map).*dUdT;
+                
+                src(itf_map) = src(itf_map) + itf_src;
+                
+            end
+
+            state.(thermal).jHeatRevReactionSource = src;
+            
+        end
         
         function state = updateThermalReactionSourceTerms(model, state)
-        % Assemble the source term from chemical reaction :code:`state.jHeatReactionSource`, see :cite:t:`Latz2016`            
+        % Assemble the source term from chemical reaction :code:`state.jHeatReactionSource`, see :cite:t:`Latz2016`
+            
             ne      = 'NegativeElectrode';
             pe      = 'PositiveElectrode';
             am      = 'ActiveMaterial';
