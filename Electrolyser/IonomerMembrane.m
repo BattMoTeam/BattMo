@@ -37,6 +37,8 @@ classdef IonomerMembrane < ElectronicComponent
             varnames{end + 1} = 'H2Oceps';
             % Water concentration
             varnames{end + 1} = 'H2Oc';
+            % OH concentration
+            varnames{end + 1} = 'cOH';
             
             %% Component properties
             
@@ -129,7 +131,10 @@ classdef IonomerMembrane < ElectronicComponent
             fn = @() IonomerMembrane.assembleH2OmassCons;
             inputnames = {'H2OdiffFlux', 'H2OmigFlux', 'H2Oaccum', 'H2OSource'};
             model = model.registerPropFunction({'H2OmassCons', fn, inputnames});
-           
+
+            % the OH concentration is constant
+            model = model.registerStaticVarName('cOH');
+            
         end
 
         function state = updateH2Oc(model, state)
