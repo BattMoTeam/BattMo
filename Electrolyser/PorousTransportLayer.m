@@ -1,6 +1,9 @@
 classdef PorousTransportLayer < ElectronicComponent
     
     properties
+
+
+        Boundary
         
         compInd     % mapping structure for component indices
         phaseInd    % mapping structure for phase indices
@@ -36,10 +39,12 @@ classdef PorousTransportLayer < ElectronicComponent
     methods
         
         function model = PorousTransportLayer(paramobj)
-
+            
             % paramobj is instance of ElectronicComponentInputParams
             paramobj.use_thermal = false;
             model = model@ElectronicComponent(paramobj);
+
+            model.Boundary = PorousTransportLayerBoundary();
             
             compInd.H2Oliquid = 1;
             compInd.H2Ogas    = 2;
@@ -174,8 +179,12 @@ classdef PorousTransportLayer < ElectronicComponent
             varnames{end + 1}  = VarName({}, 'compGasAccums', ngas);
             % Source of OH in [mol s^-1]  (source term for each grid cell)
             varnames{end + 1} = 'OHSource';
+            % Source of OH in [mol s^-1] at boundary  (yet one value for each grid cell)
+            varnames{end + 1} = 'OHbcSource';
             % Mass Source of liquid in [kg s^-1] (source term for each grid cell)
             varnames{end + 1} = 'liquidSource';
+            % Mass Source of liquid in [kg s^-1] at boundary (yet one value per for each grid cell))
+            varnames{end + 1} = 'liquidBcSource';
             % Liquid-Vapor exchange rate for H2O (H2Oliquid <-> H2Ogas) in [mol m^-3 s^-1)]
             varnames{end + 1} = 'H2OliquidVaporExchangeRate';
             % Source of H2Oliquid in [mol s^-1] (source term for each grid cell)
@@ -377,8 +386,50 @@ classdef PorousTransportLayer < ElectronicComponent
             inputnames = {'OHceps'};
             model = model.registerPropFunction({'OHaccum', fn, inputnames});
 
+            % update BC terms
+            bd = 'Boundary';
+            
+            fn = @() PorousTransportLayer.updateBcTerms;
+            inputnames = {VarName({}, 'concentrations', nliquid, liquidInd.OH)                , ...
+                          {bd, 'cOH'}                                                         , ...
+                          VarName({bd}, 'gasDensities', ngas)                                 , ...
+                          {bd, 'liqrho'}                                                      , ...
+                          'liqrho'                                                            , ...
+                          VarName({}, 'viscosities', nmobph)                                  , ...
+                          VarName({}, 'phasePressures', nph, [phaseInd.gas, phaseInd.liquid]) , ...
+                          VarName({}, 'volumeFractions', nph, [phaseInd.gas, phaseInd.liquid]), ...
+                          VarName({bd}, 'phasePressures', nph, [phaseInd.gas, phaseInd.liquid])
+                         };
+            model = model.registerPropFunction({VarName({}, 'compGasBcSources', ngas), fn, inputnames});
+            model = model.registerPropFunction({'jBcSource', fn, inputnames});
+            model = model.registerPropFunction({'OHbcSource', fn, inputnames});
+            model = model.registerPropFunction({'liquidBcSource', fn, inputnames});
+            
             model = model.removeVarName(VarName({}, 'phasePressures', nph, phaseInd.solid));
-            model = model.removeVarName(VarName({}, 'phaseVelocities', nph, phaseInd.solid));
+            model = model.removeVarName(VarName({}, 'phaseFluxes', nph, phaseInd.solid));
+            
+        end
+
+        function state = updateBcTerms(model, state)
+        % we compute liquid flux at boundary (liquidBcFlux)
+            
+            coupterm   = model.externalCouplingTerm;
+            harmFaceBc = model.operators.harmFaceBC;
+            perm       = model.Permeability;
+            
+            faces = coupterm.couplingfaces;
+
+            p    = state.phasePressures{phaseInd.liquid};
+            pBc  = state.(bd).phasePressures{phaseInd.liquid};
+            visc = state.viscosities{model.mobPhaseInd.liquid};
+            vf   = state.volumeFractions{model.phaseInd.liquid};
+
+            % see updateLiquidMassFlux method
+            [t, cells] = harmFaceBC((vf.^1.5).*perm./visc, faces);
+            liquidBcFlux = t.*(pBc - p(cells));
+
+            rho = state.
+            
             
         end
 
