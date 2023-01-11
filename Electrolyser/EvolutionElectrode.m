@@ -5,6 +5,9 @@ classdef EvolutionElectrode < BaseModel
         PorousTransportLayer
         CatalystLayer
         ExchangeLayer
+
+        couplingTerms % Coupling terms
+        couplingNames
         
     end
 

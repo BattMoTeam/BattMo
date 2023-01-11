@@ -12,6 +12,8 @@ classdef PorousTransportLayer < ElectronicComponent
         theta % water contact angle
         Permeability % Permeability
         BruggemanCoefficient
+
+        externalCouplingTerm
         
         sp % species struct 
         % sp.OH.MW    : Molecular weight [kg mol^-1]
