@@ -2,10 +2,11 @@ classdef PorousTransportLayer < ElectronicComponent
     
     properties
         
-        compInd   % mapping structure for component indices
-        phaseInd  % mapping structure for phase indices
-        liquidInd % mapping structure for component indices
-        gasInd    % mapping structure for component indices
+        compInd     % mapping structure for component indices
+        phaseInd    % mapping structure for phase indices
+        mobPhaseInd % mapping structure for mobile phase indices
+        liquidInd   % mapping structure for component indices
+        gasInd      % mapping structure for component indices
 
         solidVolumefraction
         leverettCoefs
@@ -50,12 +51,16 @@ classdef PorousTransportLayer < ElectronicComponent
             compInd.liquid    = [compInd.H2Oliquid; compInd.OH; compInd.K];
             compInd.gas       = [compInd.H2Ogas; compInd.activeGas];
             
-            
             phaseInd.liquid = 1;
             phaseInd.gas    = 2;
             phaseInd.solid  = 3;
             phaseInd.mobile = [1; 2];
             phaseInd.nphase = 3;
+
+            mobPhaseInd.liquid    = 1;
+            mobPhaseInd.gas       = 2;
+            mobPhaseInd.nmobphase = 2;
+            mobPhaseInd.phaseMap  = [1; 2];
             
             % compInd.phaseMap(compInd.H2Oliquid)  = phaseInd.liquid;
             compInd.phaseMap  = [1; 2; 1; 1; 2]; % first component (H2Oliquid) is in phase indexed by 1 (liquid phase), and so on
@@ -66,18 +71,16 @@ classdef PorousTransportLayer < ElectronicComponent
             liquidInd.ncomp  = 3;
             liqudInd.compMap = [1; 3; 4];
             
-            
             gasInd.H2Ogas    = 1;
             gasInd.activeGas = 2;
             gasInd.ncomp     = 2;
             gasInd.compMap   = [2; 5];
-            
 
-            model.compInd = compInd;
-            model.phaseInd = phaseInd;
-            model.liquidInd = liquidInd;            
-            model.gasInd = gasInd;
-            
+            model.compInd     = compInd;
+            model.phaseInd    = phaseInd;
+            model.mobPhaseInd = mobPhaseInd;
+            model.liquidInd   = liquidInd;
+            model.gasInd      = gasInd;
             
         end
 
@@ -88,16 +91,17 @@ classdef PorousTransportLayer < ElectronicComponent
 
             model = registerVarAndPropfuncNames@ElectronicComponent(model);
 
-            phaseInd  = model.phaseInd;
-            liquidInd = model.liquidInd;
-            gasInd    = model.gasInd;
-            compInd   = model.compInd;
-
+            phaseInd    = model.phaseInd;
+            liquidInd   = model.liquidInd;
+            gasInd      = model.gasInd;
+            compInd     = model.compInd;
+            mobphaseInd = model.mobphaseInd;
+            
             ncomp   = compInd.ncomp;
             ngas    = gasInd.ncomp;
             nph     = phaseInd.nphase;
             nliquid = liquidInd.ncomp;
-            nmobph  = numel(phaseInd.mobile);
+            nmobph  = mobphaseInd.nmobphase;
 
             varnames = {};
             % Total concentration of OH- (mol per total volume, that is not only liquid volume) [mol m^-3]
@@ -377,7 +381,6 @@ classdef PorousTransportLayer < ElectronicComponent
             model = model.removeVarName(VarName({}, 'phaseVelocities', nph, phaseInd.solid));
             
         end
-        
 
         function state = updateVolumeFractions(model, state)
 
@@ -493,7 +496,6 @@ classdef PorousTransportLayer < ElectronicComponent
                 -1.6788e-3   .* m.^2 ...
                 + 2.25887e-5 .* m.^3;
             
-            
             b = 1 ...
                 - 1.2062e-3 .* m ...
                 + 5.6024e-4 .* m.^2;
@@ -560,7 +562,6 @@ classdef PorousTransportLayer < ElectronicComponent
             
         end
         
-        
         function state = updateOHDiffusionFlux(model, state)
         % assemble OH diffusion flux
             D = model.sp.OH.D;
@@ -569,6 +570,7 @@ classdef PorousTransportLayer < ElectronicComponent
             vf = state.volumeFractions{model.phaseInd.liquid};
             
             state.diffOHFlux = assembleFlux(model, cOH, vf.^1.5.*D);
+
         end
         
         function state = updateOHMigrationFlux(model, state)
