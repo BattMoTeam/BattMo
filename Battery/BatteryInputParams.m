@@ -56,7 +56,7 @@ classdef BatteryInputParams < InputParams
               case 'CC'
                 paramobj.(ctrl) = CcControlModelInputParams(pick(ctrl));
               otherwise
-                error('controlPolicy not recognized');
+                error('controlPolicy %s not recognized', jsonstruct.(ctrl).controlPolicy);
             end
             paramobj.couplingTerms = {};
 
