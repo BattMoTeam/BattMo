@@ -139,8 +139,8 @@ classdef PorousTransportLayer < ElectronicComponent
             %% Phase velocities
 
             % phase velocity in [m s^-1] integrated over each cell face of the grid. Hence, unit is [m^3 s^-1]
-            phaseVelocities = VarName({}, 'phaseVelocities', nph);
-            varnames{end + 1} = phaseVelocities;
+            phaseFluxes = VarName({}, 'phaseFluxes', nph);
+            varnames{end + 1} = phaseFluxes;
             
             %% Fluxes
 
@@ -154,7 +154,7 @@ classdef PorousTransportLayer < ElectronicComponent
             % Migration flux for OH in [mol s^-1] (unit is such integrated for each cell face in the grid)
             varnames{end + 1} = 'migOHFlux';
             % Mass flux for total of liquid components in [kg s^-1] (unit is such integrated for each cell face in the grid)
-            varnames{end + 1} = 'liquidFlux';            
+            varnames{end + 1} = 'liquidMassFlux';
             
             % Vapor pressure in [Pa]
             varnames{end + 1} = 'vaporPressure';
@@ -268,8 +268,7 @@ classdef PorousTransportLayer < ElectronicComponent
             % assemble OH convection flux
             fn = @() PorousTransportLayer.updateOHConvectionFlux;
             inputnames = {VarName({}, 'concentrations', nliquid, liquidInd.OH), ...
-                          VarName({}, 'phaseVelocities', nph, phaseInd.liquid), ...
-                          VarName({}, 'volumeFractions', nph, phaseInd.liquid)};
+                          VarName({}, 'phaseFluxes', nph, phaseInd.liquid)};
             model = model.registerPropFunction({'convOHFlux', fn, inputnames}); 
             
             % assemble OH diffusion flux
@@ -288,16 +287,15 @@ classdef PorousTransportLayer < ElectronicComponent
             for igas = 1 : ngas
                 inputnames = {VarName({}, 'compGasMasses', ngas, igas)         , ...
                               VarName({}, 'volumeFractions', nph, phaseInd.gas), ...
-                              VarName({}, 'phaseVelocities', nph, phaseInd.gas)};
+                              VarName({}, 'phaseFluxes', nph, phaseInd.gas)};
                 model = model.registerPropFunction({VarName({}, 'compGasFluxes', ngas, igas), fn, inputnames});
             end
             
             % Assemble flux of the overall liquid component
-            fn = @() PorousTransportLayer.updateLiquidFlux;
-            inputnames = {VarName({}, 'phaseVelocities', nph, phaseInd.liquid), ...
-                          'liqrho', ...
-                          VarName({}, 'volumeFractions', nph, phaseInd.liquid)};
-            model = model.registerPropFunction({'liquidFlux', fn, inputnames});
+            fn = @() PorousTransportLayer.updateLiquidMassFlux;
+            inputnames = {VarName({}, 'phaseFluxes', nph, phaseInd.liquid), ...
+                          'liqrho'};
+            model = model.registerPropFunction({'liquidMassFlux', fn, inputnames});
                 
             
             % Assemble charge source
@@ -329,13 +327,13 @@ classdef PorousTransportLayer < ElectronicComponent
                               VarName({}, 'compGasFluxes'   , ngas, igas), ...
                               VarName({}, 'compGasSources'  , ngas, igas), ...
                               VarName({}, 'compGasAccums'   , ngas, igas)};
-                model = model.registerPropFunction({VarName({}, 'compGasMassCons', nph, igas), fn, inputnames});
+                model = model.registerPropFunction({VarName({}, 'compGasMassCons', ngas, igas), fn, inputnames});
             end
 
             
             % Assemble mass conservation for the overall liquid component
             fn = @() PorousTransportLayer.updateLiquidMassCons;
-            inputnames = {'liquidFlux'     , ...
+            inputnames = {'liquidMassFlux'     , ...
                           'liquidAccumTerm', ...
                           'liquidSource'};
             model = model.registerPropFunction({'liquidMassCons', fn, inputnames});
@@ -534,27 +532,31 @@ classdef PorousTransportLayer < ElectronicComponent
         end
         
         function state = updatePhaseVelocities(model, state)
-            %% Assemble phase velocities
-            K = model.Permeability;
+        %% Assemble phase velocities
+
+            K    = model.Permeability;
+            pmap = model.mobPhaseInd.phaseMap;
             
             phaseinds = [model.phaseInd.liquid; model.phaseInd.gas];
+            
             for ind = 1 : numel(phaseinds)
                 phind = phaseinds{ind};
                 p = state.phasePressures{phind};
-                mu = state.viscosities{phind};
-                v{ind} = assembleFlux(model, p, K./mu);
+                mu = state.viscosities{pmap(phind)};
+                vf = state.volumeFractions{phins};
+                v{ind} = assembleFlux(model, p, (vf.^1.5).*K./mu);
             end
             
-            state.phaseVelocities = v;
+            state.phaseFluxes = v;
+            
         end
         
         function state = updateOHConvectionFlux(model, state)
-            
-            cOH = state.concentrations{model.liquidInd.OH};
-            v  = state.phaseVelocities{model.phaseInd.liquid};
-            vf = state.volumeFractions{model.phaseInd.liquid};
 
-            state.convOHFlux = cOH.*vf.^(1.5).*v;
+            cOH = state.concentrations{model.liquidInd.OH};
+            v   = state.phaseFluxes{model.phaseInd.liquid};
+
+            state.convOHFlux = assembleUpwindFlux(model, v, cOH);
             
         end
         
@@ -584,25 +586,20 @@ classdef PorousTransportLayer < ElectronicComponent
         % assemble convection fluxes
 
             vf = state.volumeFractions{model.phaseInd.gas};
-            v  = state.phaseVelocities{model.phaseInd.gas};
+            v  = state.phaseFluxes{model.phaseInd.gas};
 
             for igas = 1 : model.gasInd.ncomp
-                % NOTE: We take the power to 0.5 of the volume fraction but it corresponds to a Bruggeman coefficient
-                % 1.5, because the component mass is given per *total* volume
-                % (meaning that it already is multipled by the volume fraction vf).
-                state.compGasFluxes{igas} =  state.compGasMasses{igas}.*(vf.^0.5).*v;
+                state.compGasFluxes{igas} =  assembleUpwindFlux(model, v, state.compGasMasses{igas}./vf);
             end
             
         end
         
-        function state = updateLiquidFlux(model, state)
+        function state = updateLiquidMassFlux(model, state)
              
             rho = state.liqrho;
-            vf  = state.volumeFractions{model.phaseInd.liquid};
-            v   = state.phaseVelocities{model.phaseInd.liquid};
+            v   = state.phaseFluxes{model.phaseInd.liquid};
 
-            % We use Bruggeman coefficient 1.5 
-            state.liquidFlux = rho.*(vf.^1.5).*v;
+            state.liquidMassFlux = assembleUpwindFlux(model, v, rho);
             
         end
 
@@ -677,20 +674,13 @@ classdef PorousTransportLayer < ElectronicComponent
         % Assemble mass conservation for the overall liquid component
             
             state.liquiMassCons = assembleConservationEquation(model             , ...
-                                                               state.liquidFlux  , ...
+                                                               state.liquidMassFlux  , ...
                                                                state.liquidSource, ...
-                                                               0                 , ...
+                                                               state.liquidBcSource, ...
                                                                state.liquidAccumTerm);
             
         end
 
-        function state = updateLiquidMassCons0(model, state)
-        % zero flux version
-            state.liquidFlux = 0;
-            state = model.updateLiquidMassCons(state)
-        end
-
-        
         function state = updateOHMassCons(model, state)
         % Assemble mass conservation equation for OH
 
