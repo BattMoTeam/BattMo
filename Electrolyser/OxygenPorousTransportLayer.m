@@ -39,16 +39,24 @@ classdef OxygenPorousTransportLayer < PorousTransportLayer
             inputnames = {'O2rhoeps', 'H2Ogasrhoeps', 'T'};
             model = model.registerPropFunction({VarName({}, 'phasePressures', nph, phaseInd.gas), fn, inputnames});
             model = model.registerPropFunction({VarName({}, 'compGasPressures', ngas), fn, inputnames});
-            
+
             % assemble O2mass
             fn = @() HydrogenPorousTransportLayer.updateO2GasMass;
             inputnames = {'O2rhoeps'};
-            model = model.registerPropFunction({VarName({}, 'compGasMasses', ngas, gasInd.H2), fn, inputnames});
-
+            model = model.registerPropFunction({VarName({}, 'compGasMasses', ngas, gasInd.O2), fn, inputnames});
+            
             fn = @() OxygenPorousTransportLayer.updateGasViscosity;
             inputnames = {'T'};
             model = model.registerPropFunction({VarName({}, 'viscosities', nph, phaseInd.gas), fn, inputnames});
             
+        end
+
+        function state = updateO2GasMass(model, state)
+
+            gasInd = model.gasInd;
+
+            state.compGassMasses{gasInd.O2} = state.O2rhoeps;
+
         end
 
         function state = updateGasPressure(model, state)

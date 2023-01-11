@@ -50,6 +50,14 @@ classdef HydrogenPorousTransportLayer < PorousTransportLayer
             
             
         end
+
+        function state = updateH2GasMass(model, state)
+
+            gasInd = model.gasInd;
+
+            state.compGassMasses{gasInd.H2} = state.H2rhoeps;
+
+        end
         
         function state = updateGasPressure(model, state)
 
