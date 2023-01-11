@@ -80,9 +80,10 @@ classdef OxygenPorousTransportLayer < PorousTransportLayer
         
         
         function state = updateGasViscosity(model, state)
-            T = state.T;
 
-            state.viscosities(model.phaseInd.gas) = (0.1971 + T * (0.0803 - 3.99e-5 * T)) * 1e-6;
+            T = state.T;
+            state.viscosities(model.mobPhaseInd.gas) = (0.1971 + T * (0.0803 - 3.99e-5 * T)) * 1e-6;
+            
         end
         
         

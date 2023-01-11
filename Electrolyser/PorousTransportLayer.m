@@ -257,11 +257,12 @@ classdef PorousTransportLayer < ElectronicComponent
             
             % Assemble phase velocities
             fn = @() PorousTransportLayer.updatePhaseVelocities;
-            for imobile = 1 : numel(phaseInd.mobile)
-                iphase = phaseInd.mobile(imobile);
+            for imobph = 1 : nmobph
+                iphase = phaseInd.mobile(imobph);
                 inputnames = {VarName({}, 'phasePressures', nph, iphase), ...
-                              VarName({}, 'viscosities', nph, iphase)};
-                model = model.registerPropFunction({VarName({}, 'phaseVelocities', nph, iphase), fn, inputnames});
+                              VarName({}, 'volumeFractions', nph, iphase), ...
+                              VarName({}, 'viscosities', nmobph, imobph)};
+                model = model.registerPropFunction({VarName({}, 'phaseFluxes', nph, iphase), fn, inputnames});
             end
             
             % assemble OH convection flux
@@ -481,7 +482,7 @@ classdef PorousTransportLayer < ElectronicComponent
             %% TODO check unit in front of cOH
             mu = exp(mu_par(1) + mu_par(2).*(T - 273.15) + mu_par(3).*(T - 273.15).^2 + mu_par(4).*(1e-3.*cOH));
 
-            state.viscosities{model.phaseInd.liquid} = mu;
+            state.viscosities{model.mobPhaseInd.liquid} = mu;
             
         end
         

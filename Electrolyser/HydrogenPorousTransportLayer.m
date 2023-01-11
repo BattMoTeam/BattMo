@@ -81,9 +81,11 @@ classdef HydrogenPorousTransportLayer < PorousTransportLayer
         
         
         function state = updateGasViscosity(model, state)
+            
             T = state.T;
             warning('check that one! this was taken directly from OxygenPorousTransportLayer');
-            state.viscosities(model.phaseInd.gas) = (0.1971 + T * (0.0803 - 3.99e-5 * T)) * 1e-6;
+            state.viscosities(model.mobPhaseInd.gas) = (0.1971 + T * (0.0803 - 3.99e-5 * T)) * 1e-6;
+            
         end
         
         
