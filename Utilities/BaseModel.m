@@ -6,7 +6,8 @@ classdef BaseModel < PhysicalModel
         varNameList
         subModelNameList
 
-        % used only for a root model to cleanup output of some of the functions in ComputationalGraphTool
+        % some variables are declared as static (they are not depending on the primarty variables and are updated
+        % separatly)
         staticVarNameList
         
     end
@@ -192,9 +193,10 @@ classdef BaseModel < PhysicalModel
         
         function model = registerSubModels(model)
             
-            propfuncs = model.propertyFunctionList;
-            varnames = model.varNameList;
-
+            propfuncs  = model.propertyFunctionList;
+            varnames   = model.varNameList;
+            scvarnames = model.staticVarNameList;
+            
             if ~isempty(model.subModelNameList)
                 
                 submodelnames = model.subModelNameList;
@@ -256,12 +258,25 @@ classdef BaseModel < PhysicalModel
                 end               
                 
                 propfuncs = mergeList(propfuncs, subpropfuncs);
+
+                % Register the static variables
+                subscvarnames = submodel.staticVarNameList;
+                
+                for isubvar = 1 : numel(subscvarnames)
+                    subscvarname = subscvarnames{isubvar};
+                    subscvarname.namespace = {submodelname, subscvarname.namespace{:}};
+                    subscvarnames{isubvar} = subscvarname;
+                end
+                
+                scvarnames = mergeList(scvarnames, subscvarnames);
+                
                 
             end
             
-             model.varNameList = varnames;
+             model.varNameList          = varnames;
              model.propertyFunctionList = propfuncs;
-            
+             model.staticVarNameList    = scvarnames;
+             
         end
         
         
