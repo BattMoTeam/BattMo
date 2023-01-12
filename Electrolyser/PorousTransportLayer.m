@@ -11,8 +11,8 @@ classdef PorousTransportLayer < ElectronicComponent
         liquidInd   % mapping structure for component indices
         gasInd      % mapping structure for component indices
 
-        solidVolumefraction  % Solid volume fraction
-        leverettCoefs        % coefficients for the Leverett function definition, see method updateLiquidPressure and function leverett.m
+        solidVolumeFraction  % Solid volume fraction
+        leverettCoefficients % coefficients for the Leverett function definition, see method updateLiquidPressure and function leverett.m
         theta                % water contact angle
         permeability         % Permeability [Darcy]
         BruggemanCoefficient % Bruggeman coefficient (not used yet)
@@ -47,7 +47,7 @@ classdef PorousTransportLayer < ElectronicComponent
             %% Setup the model using the input parameters
             fdnames = {'G'                   , ...
                        'solidVolumeFraction' , ... 
-                       'leverettCoefficient' , ... 
+                       'leverettCoefficients', ... 
                        'theta'               , ... 
                        'BruggemanCoefficient', ... 
                        'permeability'        , ...
@@ -97,11 +97,6 @@ classdef PorousTransportLayer < ElectronicComponent
             model.mobPhaseInd = mobPhaseInd;
             model.liquidInd   = liquidInd;
             model.gasInd      = gasInd;
-
-            permeabilities(mobPhaseInd.liquid) = permeability.liquid;
-            permeabilities(mobPhaseInd.gas) = permeability.gas;
-
-            model.permeabilities = permeabilities;
             
         end
 
@@ -442,7 +437,7 @@ classdef PorousTransportLayer < ElectronicComponent
             mphInd     = model.mobPhaseInd;
             phInd      = model.phaseInd;
             liqInd     = model.liquidInd;
-            perms      = model.permeabilities;
+            perm       = model.permeability;
             
             bcfaces = coupterm.couplingfaces;
 
@@ -456,7 +451,6 @@ classdef PorousTransportLayer < ElectronicComponent
                 pBc  = state.(bd).phasePressures{iph};
                 visc = state.viscosities{imph};
                 vf   = state.volumeFractions{iph};
-                perm = perms(imph)
                 [tc, bccells] = harmFaceBC((vf.^1.5).*perm./visc, bcfaces);
                 phaseBcFlux{ph} = tc.*(pBc - p(bccells));
             end
@@ -545,8 +539,8 @@ classdef PorousTransportLayer < ElectronicComponent
             liqeps = state.liqeps;
 
             state.volumeFractions{model.phaseInd.liquid} = liqeps;
-            state.volumeFractions{model.phaseInd.solid}  = model.solidVolumefraction;
-            state.volumeFractions{model.phaseInd.gas}    = 1 - (liqeps + model.solidVolumefraction);
+            state.volumeFractions{model.phaseInd.solid}  = model.solidVolumeFraction;
+            state.volumeFractions{model.phaseInd.gas}    = 1 - (liqeps + model.solidVolumeFraction);
             
         end
 
@@ -587,7 +581,7 @@ classdef PorousTransportLayer < ElectronicComponent
         % assemble liquid pressure using capillary pressure function
 
             K        = model.Permeability;
-            levcoefs = model.leverettCoefs;
+            levcoefs = model.leverettCoefficients;
             theta    = model.theta;
             
             pgas = state.phasePressures{model.phaseInd.gas};
@@ -631,7 +625,7 @@ classdef PorousTransportLayer < ElectronicComponent
 
             cK   = cOH;
             cH2O = (liqrho - cOH.*sp.OH.MW - cK.*sp.K.MW)./sp.H2O.MW;
-            cH   = 1e3.*(10.^-sp.H2O.beta .* (1e-3.*cOH).^-1);            
+            % cH   = 1e3.*(10.^-sp.H2O.beta .* (1e-3.*cOH).^-1);
             
             lInd = model.liquidInd;
             state.concentrations{lInd.K}   = cK;
