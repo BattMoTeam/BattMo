@@ -1,5 +1,5 @@
 {
-  "$id": "file://battmo/schemas/evolutionelectrode",
+  "$id": "file://battmo/schemas/EvolutionElectrode",
   "$schema": "http://json-schema.org/draft-07/schema#",
   "description": "Specification of the EvolutionElectrode input parameters",
   "type": "object",
@@ -7,13 +7,13 @@
   "properties" : {"porousTransportLayerType" : {"type" : "string",
                                                 "enum"  : ["Hydrogen", "Oxygen"]},
                   "PorousTransportLayer" : {"type" : "object",
-                                            "$ref" : "poroustransportlayer",
+                                            "$ref" : "PorousTransportLayer",
                                             "description" : " input parameters for the porous transport layer"},
                   "catalystLayerType" : {"type" : "string",
                                          "enum"  : ["Iridium", "Platinium"]},
                   "CatalystLayer" : {"type" : "object",
-                                     "$ref" : "catalystlayer",
+                                     "$ref" : "CatalystLayer",
                                      "description" : " input parameters for the catalyst layer"},
                   "ExchangeLayer" : {"type" : "object",
-                                     "$ref" : "exchangelayer",
+                                     "$ref" : "ExchangeLayer",
                                      "description" : " input parameters for the exchange layer"}}}

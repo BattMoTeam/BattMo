@@ -1,5 +1,5 @@
 {
-  "$id": "file://battmo/schemas/catalystlayer",
+  "$id": "file://battmo/schemas/CatalystLayer",
   "$schema": "http://json-schema.org/draft-07/schema#",
   "description": "Specification of the CatalystLayer input parameters",
   "type": "object",

@@ -1,5 +1,5 @@
 {
-  "$id": "file://battmo/schemas/exchangelayer",
+  "$id": "file://battmo/schemas/ExchangeLayer",
   "$schema": "http://json-schema.org/draft-07/schema#",
   "description": "Specification of the ExchangeLayer input parameters",
   "type": "object",
@@ -12,5 +12,8 @@
                                                                                   "description" : "reference concentration"}}}
                                                   "kxch" : {"type" : "number",
                                                             "description" : "Exchange rate"},
-                                                  "cT" : {"type" : "number"},
-                                                  "kML" : {"type" : "number"}}}}}
+                                                  "cT" : {"type" : "number",
+                                                          "description" : "Concentration of the relevant ion in the ionomer, mol/m^3. For a perfect membrane with only one counter-ion, this should be equal to the membrane fixed charge."
+                                                         },
+                                                  "kML" : {"type" : "number",
+                                                           "description" : "ionomer sorption coefficient"}}}}}
