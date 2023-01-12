@@ -87,6 +87,9 @@ classdef PorousTransportLayerBoundary < BaseModel
             % concentration of OH in [mol m^-3]
             varnames{end + 1} = 'cOH';
 
+            % electric potential
+            varnames{end + 1} = 'phi';
+
             model = model.registerVarNames(varnames);
             
             model = model.removeVarName(VarName({}, 'phasePressures', nph, phaseInd.solid));

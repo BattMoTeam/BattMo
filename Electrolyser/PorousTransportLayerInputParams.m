@@ -5,7 +5,9 @@ classdef PorousTransportLayerInputParams < ElectronicComponentInputParams
         solidVolumeFraction % Solid volume fraction
         leverettCoefficient % Leverett coefficient that enters in the computation of the capillary pressure
         theta % Water contact angle, enters in the computation of the capillary pressure
-        permeability % Permeability [Darcy]
+        permeabilities % Permeability [Darcy], struct with field
+                       % - gas 
+                       % - liquid
         BruggemanCoefficient % Bruggeman coefficient
         sp % species struct 
         % sp.OH.MW    : Molecular weight [kg mol^-1]
@@ -19,7 +21,8 @@ classdef PorousTransportLayerInputParams < ElectronicComponentInputParams
         % sp.H2O.beta : Water equilibrium constant
         % sp.H2O.kLV  : liquid-vapor exchange rate
         % sp.H2O.mu0  : Standard chemical potential
-        
+
+        externalCouplingTerm
         
     end
     
