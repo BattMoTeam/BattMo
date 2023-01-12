@@ -11,30 +11,28 @@ classdef PorousTransportLayer < ElectronicComponent
         liquidInd   % mapping structure for component indices
         gasInd      % mapping structure for component indices
 
-        solidVolumefraction
-        leverettCoefs
-        theta % water contact angle
-        permeability % Permeability
-        BruggemanCoefficient
+        solidVolumefraction  % Solid volume fraction
+        leverettCoefs        % coefficients for the Leverett function definition, see method updateLiquidPressure and function leverett.m
+        theta                % water contact angle
+        permeability         % Permeability [Darcy]
+        BruggemanCoefficient % Bruggeman coefficient (not used yet)
         
-        sp % species struct 
-        % sp.OH.MW    : Molecular weight [kg mol^-1]
-        % sp.OH.V0
-        % sp.OH.D     : diffustion coefficient
-        % sp.OH.t 
-        % sp.OH.z 
-        % sp.K.MW
-        % sp.K.V0
-        % sp.H2O.MW   : Molecular weight [kg mol^-1]
-        % sp.H2O.beta : interpolation coefficient for water equilibrium
-        % sp.H2O.kLV  : liquid-vapor exchange rate
+        sp % species struct
+        % sp.OH.MW    : Molecular weight of OH [kg mol^-1]
+        % sp.OH.V0    : Partial molar volume of OH [m^3 mol^-1]
+        % sp.OH.D     : Diffusion coefficient [m^2 s^-1]
+        % sp.OH.t     : Transference coefficient [-]
+        % sp.OH.z     : Charge number [-]
+        % sp.K.MW     : Molecular weight of K [kg mol^-1]
+        % sp.K.V0     : Partial molar volume of K [m^3 mol^-1]
+        % sp.H2O.MW   : Molecular weight of H2O [kg mol^-1]
+        % sp.H2O.kLV  : Liquid-vapor exchange rate
         % sp.H2O.mu0  : Standard chemical potential
+        % sp.H2O.V0   : Partial molar volume of H2O [m^3 mol^-1]        
         
-        % sp.V0 % indexed values for partial molar volumes
+        % sp.V0 % indexed values for partial molar volumes (helper that is setup at initialization)
 
         externalCouplingTerm
-
-        permeabilities % helper structure using index setup from permeability
         
     end
     

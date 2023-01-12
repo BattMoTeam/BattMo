@@ -17,7 +17,6 @@
              }},
     "OH" :  {"type" : "object",
              "properties" : {
-        
                "xi" : {"type" : "number",
                        "description" : "OH occupation"},
                "z" : {"type" : "number",

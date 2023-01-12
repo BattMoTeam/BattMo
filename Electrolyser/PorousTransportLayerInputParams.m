@@ -2,26 +2,23 @@ classdef PorousTransportLayerInputParams < ElectronicComponentInputParams
     
     properties
         
-        solidVolumeFraction % Solid volume fraction
-        leverettCoefficient % Leverett coefficient that enters in the computation of the capillary pressure
-        theta % Water contact angle, enters in the computation of the capillary pressure
-        permeabilities % Permeability [Darcy], struct with field
-                       % - gas 
-                       % - liquid
-        BruggemanCoefficient % Bruggeman coefficient
+        solidVolumeFraction  % Solid volume fraction [-]
+        leverettCoefficient  % Leverett coefficient that enters in the computation of the capillary pressure
+        theta                % Water contact angle, enters in the computation of the capillary pressure [-]
+        permeability         % Permeability [Darcy]
+        BruggemanCoefficient % Bruggeman coefficient [-]
         sp % species struct 
-        % sp.OH.MW    : Molecular weight [kg mol^-1]
-        % sp.OH.V0    : Partial molar volume
-        % sp.OH.D     : Diffustion coefficient
-        % sp.OH.t     : Transference coefficient 
-        % sp.OH.z     : Charge number
-        % sp.K.MW
-        % sp.K.V0
-        % sp.H2O.MW   : 
-        % sp.H2O.beta : Water equilibrium constant
-        % sp.H2O.kLV  : liquid-vapor exchange rate
+        % sp.OH.MW    : Molecular weight of OH [kg mol^-1]
+        % sp.OH.V0    : Partial molar volume of OH [m^3 mol^-1]
+        % sp.OH.D     : Diffusion coefficient [m^2 s^-1]
+        % sp.OH.t     : Transference coefficient [-]
+        % sp.OH.z     : Charge number [-]
+        % sp.K.MW     : Molecular weight of K [kg mol^-1]
+        % sp.K.V0     : Partial molar volume of K [m^3 mol^-1]
+        % sp.H2O.MW   : Molecular weight of H2O [kg mol^-1]
+        % sp.H2O.kLV  : Liquid-vapor exchange rate
         % sp.H2O.mu0  : Standard chemical potential
-
+        % sp.H2O.V0   : Partial molar volume of H2O [m^3 mol^-1]
         externalCouplingTerm
         
     end

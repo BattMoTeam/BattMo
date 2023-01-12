@@ -160,7 +160,7 @@ classdef IonomerMembrane < ElectronicComponent
         
         function state = updateConductivity(model, state)
             
-            T = state.T;
+            T  = state.T;
             aw = state.H2Oa;
             
             vf = model.liquidVolumeFraction;
