@@ -142,13 +142,14 @@ classdef CatalystLayer < BaseModel
 
         function state = updateEtas(model, state)
 
+            phi      = state.phi;
             phiElyte = state.phiElyte;
             phiInmr  = state.phiInmr;
             Einmr    = state.Einmr;
             Eelyte   = state.Eelyte;
 
-            state.etaElyte = E - phiElyte - Eelyte;
-            state.etaInmr  = E - phiInmr - Einmr;
+            state.etaElyte = phi - phiElyte - Eelyte;
+            state.etaInmr  = phi - phiInmr - Einmr;
             
         end
 
