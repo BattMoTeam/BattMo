@@ -248,6 +248,12 @@ classdef PorousTransportLayer < ElectronicComponent
             inputnames = {'liqrhoeps', ...
                           VarName({}, 'volumeFractions', nph, phaseInd.liquid)};
             model = model.registerPropFunction({'liqrho', fn, inputnames});            
+
+            % update conductivity
+            fn = @() PorousTransportLayer.updateConductivity;
+            inputnames = {'T', ...
+                          VarName({}, 'concentrations', nliquid, liquidInd.OH)};
+            model = model.registerPropFunction({'conductivity', fn, inputnames});            
             
             % assemble concentrations
             fn = @() PorousTransportLayer.updateConcentrations;
@@ -321,8 +327,6 @@ classdef PorousTransportLayer < ElectronicComponent
                           'liqrho'};
             model = model.registerPropFunction({'liquidMassFlux', fn, inputnames});
                 
-            
-            % Assemble charge source
             fn = @() PorousTransportLayer.updateESource;
             inputnames = {'OHSource'};
             model = model.registerPropFunction({'eSource', fn, inputnames});
@@ -331,9 +335,6 @@ classdef PorousTransportLayer < ElectronicComponent
             inputnames = {'OHSource', ...
                           'H2OliquidSource'};
             model = model.registerPropFunction({'liquidSource', fn, inputnames});
-
-            
-            % Assemble the residual equations
 
             fn = @() PorousTransportLayer.updateCurrent;
             inputnames = {'T'           , ....
@@ -544,6 +545,57 @@ classdef PorousTransportLayer < ElectronicComponent
             
         end
 
+        function state = updateLiquidViscosity(model, state)
+        %   Data from Guo et al. Ref [2] Fitting parameters from Le
+        %   Bideau, et al., Ref [3]. Valid from 20 to 60 degC and 2 to
+        %   40 wt%. Units are kg m^-1 s^-1 (TBC), also known as Pa s.
+
+            T   = state.T;
+            cOH = state.concentrations{model.liquidInd.OH};
+            
+            coefs = [4.3e-1   ;
+                     -2.51e-2 ;
+                     10^-4    ;
+                     1.3e-1 ];
+
+            T   = T - 273.15; % convert to celcius
+            cOH = 1e-3*cOH;   % convert to mol/litre
+            
+            mu = exp(coefs(1)       + ...
+                     coefs(2).*T    + ...
+                     coefs(3).*T.^2 + ...
+                     coefs(4).*cOH);
+
+            state.viscosities{model.mobPhaseInd.liquid} = mu;
+            
+        end
+        
+        function state = updateConductivity(model, state)
+        %   Conductivity calculated according to the empirical model
+        %   published by Gilliam, et al. Valid from 0 -
+        %   12 M and 0 - 100 degC. Units are S m^-1.
+            
+            T   = state.T;
+            cOH = state.concentrations{model.liquidInd.OH};
+            
+            coefs = [-2.041   ;
+                     -0.0028  ;
+                     0.005332 ;
+                     207.2    ;
+                     0.001043 ;
+                     -0.0000003];
+
+            cOH = 1e-3*cOH; % we convert to mol/litre s
+            state.conductivity = (coefs(1).*cOH    + ...
+                                  coefs(2).*cOH.^2 + ...
+                                  coefs(3).*cOH.*T + ...
+                                  coefs(4).*cOH./T + ...
+                                  coefs(5).*cOH.^3 + ...
+                                  coefs(6).*cOH.^2.*T.^2) .* 100;
+            
+
+        end
+        
         function state = updateCurrent(model, state)
 
             R = model.constants.R;
@@ -642,23 +694,6 @@ classdef PorousTransportLayer < ElectronicComponent
 
             % From Balej 1985 (ref 8), equation 28
             state.H2Oa = 10.^(-0.02255 .* m + 0.001434 .* m.^2 + (1.38.*m - 0.9254.*m.^2)./T);
-            
-        end
-        
-        function state = updateLiquidViscosity(model, state)
-
-            cOH = state.concentrations{model.liquidInd.OH};
-            T = state.T;
-            
-            mu_par = [4.3e-1  ;
-                      -2.51e-2;
-                      10^-4   ; 
-                      1.3e-1];
-
-            %% TODO check unit in front of cOH
-            mu = exp(mu_par(1) + mu_par(2).*(T - 273.15) + mu_par(3).*(T - 273.15).^2 + mu_par(4).*(1e-3.*cOH));
-
-            state.viscosities{model.mobPhaseInd.liquid} = mu;
             
         end
         
