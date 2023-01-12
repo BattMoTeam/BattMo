@@ -1,0 +1,108 @@
+{
+  "IonomerMembrane": {
+    "liquidVolumeFraction" : ,
+    "H2O" : {"c0" : 1000,
+             "D" : 8.84e-10},
+    "OH" : {"xi" : 1,
+            "z" : -1,
+            "t" : 1}
+  },
+  "HydrogenEvolutionElectrode": {
+    "porousTransportLayerType" : "Hydrogen",
+    "PorousTransportLayer" : {
+      "solidVolumefraction": 0.33,
+      "leverettCoefs": [1.34e-3,
+                        4.98e-3,
+                        3.97e-3,
+                        9.404,
+                        11.19],
+      "theta": 100,
+      "Permeability": 1e-12,
+      "BruggemanCoefficient": 1.5,
+      "sp": {
+        "OH": {
+          "MW": 0.0170068,
+          "V0": -3.98e-6,
+          "D": 3.5e-9,
+          "t": 0.73,
+          "z": -1
+        },
+        "K": {
+          "MW": 0.0390983,
+          "V0": 9.02e-6,
+          "t" : 0.27
+        },
+        "H2O": {
+          "MW": 0.0180147,
+          "V0": 18e-6
+          "kLV": 1,
+          "mu0": -237140
+        }
+      }
+    },
+    "catalystLayerType" : "Platinium",
+    "CatalystLayer" : { "j0":
+                        "E0" : -1.6554
+                        "OH" : {"z" : -1,
+                                "c0" : 1000}
+                      },
+    "ExchangeLayer" : {
+      "OH" : {"z" : -1,
+              "c0" : 1000},
+      "kxch" : 100000,
+      "cT" : 2805,
+      "kML" : 10000
+    }
+  },
+  
+  "OxygenEvolutionElectrode": {
+    "porousTransportLayerType" : "Oxygen",
+    "PorousTransportLayer" : {
+      "solidVolumefraction": 0.33,
+      "leverettCoefs": [1.34e-3,
+                        4.98e-3,
+                        3.97e-3,
+                        9.404,
+                        11.19],
+      "theta": 100,
+      "Permeability": 1e-12,
+      "BruggemanCoefficient": 1.5,
+      "sp": {
+        "OH": {
+          "MW": 0.0170068,
+          "V0": -3.98e-6,
+          "D": 3.5e-9,
+          "t": 0.73,
+          "z": -1
+        },
+        "K": {
+          "MW": 0.0390983,
+          "V0": 9.02e-6,
+          "t" : 0.27
+        },
+        "H2O": {
+          "MW": 0.0180147,
+          "V0": 18e-6
+          "kLV": 1,
+          "mu0": -237140
+        }
+      }
+    },
+    "catalystLayerType" : "Iridium",
+    "CatalystLayer" : { "j0": 1e-3,
+                        "E0" : 1.2287
+                        "OH" : {"z" : -1,
+                                "c0" : 1000}
+                      },
+    "ExchangeLayer" : {
+      "OH" : {"z" : -1,
+              "c0" : 1000},
+      "kxch" : 100000,
+      "cT" : 2805,
+      "kML" : 10000
+    }
+  }
+  
+}
+
+
