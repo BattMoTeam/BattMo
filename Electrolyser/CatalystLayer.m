@@ -10,13 +10,10 @@ classdef CatalystLayer < BaseModel
         gasInd    % mapping structure for component indices
 
         j0 % Exchange current density
-        inmrParams 
-        % inmrParams.OH.z  : Charge
-        % inmrParams.OH.c0 : OH reference concentration
-        % inmrParams.E0    : standard equilibrium potential
-        elyteParams
-        % elyteParams.OH.c0 : reference OH concentration
-        % elyteParams.E0    : standard equilibrium potential
+        E0
+        sp % species struct with field
+        % - OH.z  : Charge
+        % - OH.c0 : OH reference concentration
         
         Xinmr % Fraction of specific area that is coversed with ionomer [-]
         volumetricSurfaceArea % Volumetric surface area [m^ -1]
@@ -110,13 +107,12 @@ classdef CatalystLayer < BaseModel
             cOH  = state.cOHelyte;
             H2Oa = state.H2OaElyte;
             
-            params = model.elyteParams;
-            con    = model.constants;
+            E0  = model.E0;
+            c0  = model.c0;
+            con = model.constants;
 
             F  = con.F;
             R  = con.R;
-            c0 = params.c0;
-            E0 = params.E0;
 
             state.Eelyte = E0 + R*T/(2*F)*log((H2Oa.^2).*(c0.^2).*(cOH.^-2));
             
@@ -128,13 +124,12 @@ classdef CatalystLayer < BaseModel
             cOH  = state.cOHinmr;
             H2Oa = state.H2Oainmr;
             
-            params = model.inmrParams;
-            con    = model.constants;
+            E0  = model.E0;
+            c0  = model.c0;
+            con = model.constants;
 
             F  = con.F;
             R  = con.R;
-            c0 = params.c0;
-            E0 = params.E0;
 
             state.Einmr = E0 + R*T/(2*F)*log((H2Oa.^2).*(c0.^2).*(cOH.^-2));
             
