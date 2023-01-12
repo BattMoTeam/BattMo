@@ -14,10 +14,8 @@ classdef PorousTransportLayer < ElectronicComponent
         solidVolumefraction
         leverettCoefs
         theta % water contact angle
-        Permeabilities % Permeability
+        permeability % Permeability
         BruggemanCoefficient
-
-        externalCouplingTerm
         
         sp % species struct 
         % sp.OH.MW    : Molecular weight [kg mol^-1]
@@ -33,6 +31,10 @@ classdef PorousTransportLayer < ElectronicComponent
         % sp.H2O.mu0  : Standard chemical potential
         
         % sp.V0 % indexed values for partial molar volumes
+
+        externalCouplingTerm
+
+        permeabilities % helper structure using index setup from permeability
         
     end
     
@@ -49,11 +51,10 @@ classdef PorousTransportLayer < ElectronicComponent
                        'solidVolumeFraction' , ... 
                        'leverettCoefficient' , ... 
                        'theta'               , ... 
-                       'permeabilities'      , ... 
                        'BruggemanCoefficient', ... 
+                       'permeability'        , ...
                        'sp'                  , ...
                        'externalCouplingTerm'};
-            
             model = dispatchParams(model, paramobj, fdnames);
             
             model.Boundary = PorousTransportLayerBoundary();
@@ -98,6 +99,11 @@ classdef PorousTransportLayer < ElectronicComponent
             model.mobPhaseInd = mobPhaseInd;
             model.liquidInd   = liquidInd;
             model.gasInd      = gasInd;
+
+            permeabilities(mobPhaseInd.liquid) = permeability.liquid;
+            permeabilities(mobPhaseInd.gas) = permeability.gas;
+
+            model.permeabilities = permeabilities;
             
         end
 
@@ -438,7 +444,7 @@ classdef PorousTransportLayer < ElectronicComponent
             mphInd     = model.mobPhaseInd;
             phInd      = model.phaseInd;
             liqInd     = model.liquidInd;
-            perms      = model.Permeabilities;
+            perms      = model.permeabilities;
             
             bcfaces = coupterm.couplingfaces;
 
