@@ -44,7 +44,18 @@ classdef VarName
                 name = sprintf('%s[%d]', name, index);
             end
         end
-        
+
+        function cellname = getPropName(varname)
+        % Generate name that is compatible with getProp function in class BaseModel
+            cellname = varname.namespace;
+            cellname{end + 1} = varname.name;
+            index = varname.index;
+            dim = varname.dim;
+            isok = (isnumeric(index) && numel(index) == 1);
+            isok = isok | (ischar(index) && dim == 1);
+            assert(isok, 'The variable has multiple index and cannot be processed by getProp');
+            cellname{end + 1} = index;
+        end
         
         function varnames = resolveIndex(varname)
         % If varname.dim > 1, produce a cell array of VarName, one entry by element in varname.index

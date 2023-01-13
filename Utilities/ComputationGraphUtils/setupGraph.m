@@ -1,7 +1,6 @@
-function [g, staticprops] = setupGraph(model, varargin)
+function [g, staticprops, resVarNameList] = setupGraph(model, varargin)
     
-    opt = struct('excludeVarnames', false, ...
-                 'resolveIndex'   , true );
+    opt = struct('resolveIndex', true);
     opt = merge_options(opt, varargin{:});
     
     g = digraph();
@@ -14,23 +13,21 @@ function [g, staticprops] = setupGraph(model, varargin)
     
     varnames  = model.varNameList;
     propfuncs = model.propertyFunctionList;
-    
-    if ~opt.excludeVarnames
-        % in this case, we do not include varnames directly, only those in the property function lists will be added.
-        for ind = 1 : numel(varnames)
-            varname = varnames{ind};
-            if opt.resolveIndex
-                varname_s = varname.resolveIndex();
-                for ind = 1 : numel(varname_s)
-                    fullname = varname_s{ind}.getIndexedFieldname();
-                    g = addnode(g, fullname);
-                end
-            else
-                fullname = varname.getFieldname;
+
+    resVarNameList = {};
+    for ind = 1 : numel(varnames)
+        varname = varnames{ind};
+        if opt.resolveIndex
+            varname_s = varname.resolveIndex();
+            for ind = 1 : numel(varname_s)
+                fullname = varname_s{ind}.getIndexedFieldname();
                 g = addnode(g, fullname);
             end
+            resVarNameList = horzcat(resVarNameList, varname_s);
+        else
+            fullname = varname.getFieldname;
+            g = addnode(g, fullname);
         end
-        
     end
     
     nodenames = g.Nodes.Variables;

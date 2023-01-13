@@ -4,6 +4,7 @@ classdef ComputationalGraphTool
         graph
         model
         A
+        varNameList
         nodenames
         staticprops
     end
@@ -15,9 +16,10 @@ classdef ComputationalGraphTool
                 model = model.registerVarAndPropfuncNames();
             end
             cgt.model = model;
-            [g, staticprops] = setupGraph(model);
-            cgt.graph = g;
+            [g, staticprops, varNameList] = setupGraph(model);
+            cgt.graph       = g;
             cgt.staticprops = staticprops;
+            cgt.varNameList = varNameList;
             % In adjacency matrix A, 
             % - column index      : output variable index (as in model.varNameList)
             % - row index         : input variable (as in model.varNameList)
@@ -202,6 +204,24 @@ classdef ComputationalGraphTool
                 fprintf('static variables \n');
                 rootnames(ind)
             end
+
+        end
+
+
+        function primvarnames = getPrimaryVariables(cgt)
+
+            A = cgt.A;
+            nodenames = cgt.nodenames;
+
+            ind = find(all(A == 0, 1));
+            
+            rootnames = nodenames(ind);
+            staticnames = cgt.getStaticVarNames();
+            indstatic = ismember(rootnames, staticnames);
+            ind = ind(~indstatic);
+            primVarNameList = cgt.varNameList(ind);
+            
+            primvarnames = cellfun(@(varname) varname.getPropName(), primVarNameList, 'uniformoutput', false);
 
         end
         
