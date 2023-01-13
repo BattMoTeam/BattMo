@@ -11,6 +11,13 @@ classdef PorousTransportLayerBoundary < BaseModel
         phaseInd  % mapping structure for phase indices
         liquidInd % mapping structure for component indices
         gasInd    % mapping structure for component indices
+
+        control % Structure with following fields
+                % - cOH
+                % - liqrho
+                % - phasePressures
+                % - gasDensities
+                % - phi
         
     end
     
@@ -128,6 +135,14 @@ classdef PorousTransportLayerBoundary < BaseModel
             ind = setdiff([1 : nliquid]', liquidInd.OH);
             model = model.registerPropFunction({VarName({}, 'concentrations', nliquid, ind), fn, inputnames});
 
+            fn = @() PorousTransportLayerBoundary.setupBcValue;
+            inputnames = {};
+            model = model.registerPropFunction({VarName({}, 'concentrations', nliquid, liquidInd.OH), fn, inputnames});
+            model = model.registerPropFunction({'liqrho', fn, inputnames});
+            model = model.registerPropFunction({VarName({}, 'phasePressures', nph, phaseInd.mobile), fn, inputnames});
+            model = model.registerPropFunction({VarName({}, 'gasDensities', ngas), fn, inputnames});
+            model = model.registerPropFunction({'phi', fn, inputnames});
+            
         end
 
         function updateGasStateEquation(model, state)
@@ -152,6 +167,16 @@ classdef PorousTransportLayerBoundary < BaseModel
         function state = updateConcentrations(model, state)
 
             state = PorousTransportLayer.updateConcentrations(model, state);
+            
+        end
+
+        function state = setupBcValue(model, state)
+            
+            state.concentrations{model.liquidInd.OH} = model.cOH;
+            state.liqrho                             = model.liqrho;
+            state.phasePressures                     = model.phasePressures;
+            state.gasDensities                       = model.gasDensities;
+            state.phi                                = model.phi;
             
         end
         
