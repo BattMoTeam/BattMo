@@ -12,6 +12,8 @@ classdef IonomerMembraneInputParams < ElectronicComponentInputParams
         % OH.xi : OH occupation
         % OH.z : Charge number
         % OH.t : Transference number
+
+        cT % Total concentration of charged group
         
     end
     

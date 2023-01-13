@@ -5,13 +5,15 @@ classdef IonomerMembrane < ElectronicComponent
         liquidVolumeFraction
         
         H2O % with fields
-        % H2O.c0 :  Reference concentration
-        % H2O.D :  diffusion coefficient for water
+        % H2O.c0 : Reference concentration
+        % H2O.D  : diffusion coefficient for water
         
         OH % with fields
         % OH.xi : OH occupation
-        % OH.z :  
-        % OH.t :
+        % OH.z  : charge number 
+        % OH.t  : transference number
+
+        cT % Total concentration of charged groups
         
     end
     
@@ -21,6 +23,12 @@ classdef IonomerMembrane < ElectronicComponent
 
             paramobj.use_thermal = false;
             model = model@ElectronicComponent(paramobj);
+
+            fdnames = {'liquidVolumeFraction', ...
+                       'H2O'                 , ...
+                       'OH'                  , ...
+                       'cT'};
+            model = dispatchParams(model, paramobj, fdnames);
 
             model.constants = PhysicalConstants();
             
@@ -133,7 +141,9 @@ classdef IonomerMembrane < ElectronicComponent
             model = model.registerPropFunction({'H2OmassCons', fn, inputnames});
 
             % the OH concentration is constant
-            model = model.registerStaticVarName('cOH');
+            fn = @() IonomerMembrane.setupOHconcentration;
+            inputnames = {};
+            model = model.registerPropFunction({'cOH', fn, inputnames});
             
         end
 
@@ -147,6 +157,13 @@ classdef IonomerMembrane < ElectronicComponent
             
         end
 
+
+        function state = setupOHconcentration(model, state)
+
+            state.cOH = model.cT;
+            
+        end
+        
         
         function state = updateH2Oactivity(model, state)
 
@@ -161,15 +178,18 @@ classdef IonomerMembrane < ElectronicComponent
         function state = updateConductivity(model, state)
             
             T  = state.T;
-            aw = state.H2Oa;
+            a = state.H2Oa;
             
             vf = model.liquidVolumeFraction;
             
-            aw(aw > 1) = 1;
+            a(a > 1) = 1;
             
-            kappa = (0.1334 - 3.882e-4.*T + (0.01148.*T - 3.909).*aw ...
-                     - (0.06690.*T - 23.01).*aw.^2 + (0.1227.*T - 42.61).*aw.^3 ...
-                     - (0.06021.*T - 21.80).*aw.^4) .* 20;
+            kappa = (0.1334                       ...
+                     - 3.882e-4.*T                ...
+                     + (0.01148.*T - 3.909).*a    ...
+                     - (0.06690.*T - 23.01).*a.^2 ...
+                     + (0.1227.*T - 42.61).*a.^3  ...
+                     - (0.06021.*T - 21.80).*a.^4) .* 20;
             
             state.conductivity = kappa.*vf.^1;
             
@@ -269,7 +289,7 @@ classdef IonomerMembrane < ElectronicComponent
 
         function state = assembleH2Oaccum(model, state, state0, dt)
 
-            c = state.H2Oceps;
+            c  = state.H2Oceps;
             c0 = state0.H2Oceps;
             
             vols = model.G.cells.volumes;

@@ -39,4 +39,15 @@
                                                                              "description" : "Liquid-vapor exchange rate"},
                                                                    "mu0"  : {"type" : "number",
                                                                              "description" : "Standard chemical potential"}
-                                                                  }}}}}}
+                                                                  }},
+                                          "H2": {"type" : "object",
+                                                 "description" : "only needed for Hydrogen electrode",
+                                                 "properties" : {"MW" : {"type" : "number",
+                                                                         "description" : "Molecular Weight"}},
+                                                },
+                                          "O2": {"type" : "object",
+                                                 "description" : "only needed for Oxygen electrode",
+                                                 "properties" : {"MW" : {"type" : "number",
+                                                                         "description" : "Molecular Weight"}},
+                                                }
+                                         }}}}

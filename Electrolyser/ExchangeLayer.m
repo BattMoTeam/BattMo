@@ -2,11 +2,11 @@ classdef ExchangeLayer < BaseModel
 
     properties
 
-        inmrParams % struct with fields
-        % kxch
-        % cT
-        % OH.z
-        % kML
+        kxch %
+        OH % structure with field
+           % - z : number of charge
+        kML % 
+        
     end
 
     methods
@@ -15,7 +15,9 @@ classdef ExchangeLayer < BaseModel
 
             model = model@BaseModel();
             
-            fdnames = {'inmrParams'};
+            fdnames = {'kxch', ...
+                       'IH'  , ...
+                       'KML' };
             model = dispatchParams(model, paramobj, fdnames);
             
         end
@@ -40,7 +42,9 @@ classdef ExchangeLayer < BaseModel
             varnames{end + 1} = 'H2OaElyte';
             % Water activity from ionomer
             varnames{end + 1} = 'H2OaInmr';
-
+            % Water activity from ionomer
+            varnames{end + 1} = 'T';
+            
             %% Fluxes
 
             % flux in electrolyte
@@ -52,7 +56,7 @@ classdef ExchangeLayer < BaseModel
 
             % Assemble ionomer ion exchange rate
             fn = @() ExchangeLayer.updateOHexchange;
-            inputnames = {'phiElyte', 'phiInmr', 'cOHelyte', 'cOHinmr'};
+            inputnames = {'phiElyte', 'phiInmr', 'cOHelyte', 'cOHinmr', 'T'};
             model = model.registerPropFunction({'OHexchangeRate', fn, inputnames});
 
             % Assemble sorption rate
@@ -75,14 +79,15 @@ classdef ExchangeLayer < BaseModel
 
         function state = updateOHexchange(model, state)
 
-        %% TODO : fix this function
+            kxch = model.kxch;
+            
             eta      = state.eta;
             T        = state.T;
             cOHElyte = state.cOHElyte;
-
-            ir = model.inmr;
-
-            state.Rxch = ionomerExchange(ir.kxch, ir.cT, ir.OH.z, eta, T, cOHElyte);
+            cOHInmr  = state.cOHInmr;
+            
+            state.Rxch = ionomerExchange(kxch, cOHinmr, OH.z, eta, T, cOHElyte);
+            
         end
 
     end

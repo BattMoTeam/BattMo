@@ -4,16 +4,10 @@
   "description": "Specification of the ExchangeLayer input parameters",
   "type": "object",
 
-  "properties" : {"inmrParams" : {"type" : "object",
-                                  "properties" : {"OH" : {"type" : "object",
-                                                          "properties" : {"z" : {"type" : "integer",
-                                                                                 "description" : "charge number"},
-                                                                          "c0" : {"type" : "number",
-                                                                                  "description" : "reference concentration"}}}
-                                                  "kxch" : {"type" : "number",
-                                                            "description" : "Exchange rate"},
-                                                  "cT" : {"type" : "number",
-                                                          "description" : "Concentration of the relevant ion in the ionomer, mol/m^3. For a perfect membrane with only one counter-ion, this should be equal to the membrane fixed charge."
-                                                         },
-                                                  "kML" : {"type" : "number",
-                                                           "description" : "ionomer sorption coefficient"}}}}}
+  "properties" : {"OH" : {"type" : "object",
+                          "properties" : {"z" : {"type" : "integer",
+                                                 "description" : "charge number"}}},
+                  "kxch" : {"type" : "number",
+                            "description" : "Exchange rate"},
+                  "kML" : {"type" : "number",
+                           "description" : "ionomer sorption coefficient"}}}

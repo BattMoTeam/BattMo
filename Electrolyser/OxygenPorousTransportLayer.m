@@ -3,6 +3,9 @@ classdef OxygenPorousTransportLayer < PorousTransportLayer
 
     properties
         
+        % The sp structure should now include
+        % sp.O2.MW : Molecular weight of H2 [kg/mol]
+        
     end
     
     methods

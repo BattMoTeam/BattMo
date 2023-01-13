@@ -1,6 +1,9 @@
 classdef HydrogenPorousTransportLayer < PorousTransportLayer
 
     properties
+
+        % The sp structure should now include
+        % sp.H2.MW : Molecular weight of H2 [kg/mol]
         
     end
     

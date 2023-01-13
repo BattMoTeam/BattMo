@@ -23,4 +23,7 @@
                       "description" : "charge number"}, 
                "t" : {"type" : "number",
                       "description" : "transference number"}
-             }}}}
+             }},
+    "cT" : {"type" : "number",
+            "description" : "Total concentration of charged group"}
+  }}

@@ -1,6 +1,6 @@
 {
   "IonomerMembrane": {
-    "liquidVolumeFraction" : ,
+    "liquidVolumeFraction" : 0.9,
     "H2O" : {"c0" : 1000,
              "D" : 8.84e-10},
     "OH" : {"xi" : 1,
@@ -34,15 +34,18 @@
         },
         "H2O": {
           "MW": 0.0180147,
-          "V0": 18e-6
+          "V0": 18e-6,
           "kLV": 1,
           "mu0": -237140
+        },
+        "H2" : {
+          "MW" : 0.00202
         }
       }
     },
     "catalystLayerType" : "Platinium",
-    "CatalystLayer" : { "j0":
-                        "E0" : -1.6554
+    "CatalystLayer" : { "j0": 7,
+                        "E0" : -1.6554,
                         "OH" : {"z" : -1,
                                 "c0" : 1000}
                       },
@@ -82,15 +85,18 @@
         },
         "H2O": {
           "MW": 0.0180147,
-          "V0": 18e-6
+          "V0": 18e-6,
           "kLV": 1,
           "mu0": -237140
+        },
+        "O2" : {
+          "MW" : 0.031998
         }
       }
     },
     "catalystLayerType" : "Iridium",
     "CatalystLayer" : { "j0": 1e-3,
-                        "E0" : 1.2287
+                        "E0" : 1.2287,
                         "OH" : {"z" : -1,
                                 "c0" : 1000}
                       },

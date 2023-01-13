@@ -30,7 +30,7 @@ classdef PorousTransportLayer < ElectronicComponent
         % sp.H2O.mu0  : Standard chemical potential
         % sp.H2O.V0   : Partial molar volume of H2O [m^3 mol^-1]        
         
-        % sp.V0 % indexed values for partial molar volumes (helper that is setup at initialization)
+        V0s % indexed values for partial molar volumes (helper that is setup at initialization)
 
         externalCouplingTerm
         
@@ -54,8 +54,8 @@ classdef PorousTransportLayer < ElectronicComponent
                        'sp'                  , ...
                        'externalCouplingTerm'};
             model = dispatchParams(model, paramobj, fdnames);
-            
-            model.Boundary = PorousTransportLayerBoundary();
+
+            model.Boundary = PorousTransportLayerBoundary(paramobj.Boundary);
             
             compInd.H2Oliquid = 1;
             compInd.H2Ogas    = 2;
@@ -260,7 +260,7 @@ classdef PorousTransportLayer < ElectronicComponent
             inputnames = {'liqrho', ...
                           VarName({}, 'concentrations', nliquid, liquidInd.OH)};
             ind = setdiff([1 : nliquid]', liquidInd.OH);
-            model = model.registerPropFunction({VarName({}, 'concentrations', nliquid, ind), fn, inputnames});            
+            model = model.registerPropFunction({VarName({}, 'concentrations', nliquid, ind), fn, inputnames});
             
             fn = @() PorousTransportLayer.updateWaterActivity;
             inputnames = {'T', 'OHmolality'};
@@ -407,15 +407,18 @@ classdef PorousTransportLayer < ElectronicComponent
 
             % update BC terms
             bd = 'Boundary';
+
+            fn = @() PorousTransportLayer.dispatchTemperature;
+            model = model.registerPropFunction({{bd, 'T'}, fn, {'T'}});
             
             fn = @() PorousTransportLayer.updateBcTerms;
             inputnames = {VarName({}, 'concentrations', nliquid, liquidInd.OH)                , ...
-                          {bd, 'cOH'}                                                         , ...
+                          VarName({bd}, 'concentrations', nliquid, liquidInd.OH)              , ...
                           VarName({bd}, 'gasDensities', ngas)                                 , ...
-                          {bd, 'liqrho'}                                                      , ...
                           'liqrho'                                                            , ...
-                          {bd, 'phi'}                                                         , ...
+                          {bd, 'liqrho'}                                                      , ...
                           'phi'                                                               , ...
+                          {bd, 'phi'}                                                         , ...
                           VarName({}, 'viscosities', nmobph)                                  , ...
                           VarName({}, 'phasePressures', nph, [phaseInd.gas, phaseInd.liquid]) , ...
                           VarName({}, 'volumeFractions', nph, [phaseInd.gas, phaseInd.liquid]), ...
@@ -545,6 +548,13 @@ classdef PorousTransportLayer < ElectronicComponent
             
         end
 
+        function state = updateLiquidAccum(model, state)
+
+        % We assume incompressibility for the moment
+            state.liquidAccumTerm = 0;
+            
+        end
+        
         function state = updateLiquidViscosity(model, state)
         %   Data from Guo et al. Ref [2] Fitting parameters from Le
         %   Bideau, et al., Ref [3]. Valid from 20 to 60 degC and 2 to
@@ -665,25 +675,6 @@ classdef PorousTransportLayer < ElectronicComponent
         function state = updateMassH2Ogas(model, state)
         % simple copy
             state.compGasMasses{compind.H2Ogas} = state.H2Ogasrhoeps;
-            
-        end
-
-        function state = updateConcentrations(model, state)
-            
-            sp = model.sp;
-
-            cOH = state.concentrations{model.liquidInd.OH};
-            liqrho = state.liqrho;
-
-            cK   = cOH;
-            cH2O = (liqrho - cOH.*sp.OH.MW - cK.*sp.K.MW)./sp.H2O.MW;
-            % cH   = 1e3.*(10.^-sp.H2O.beta .* (1e-3.*cOH).^-1);
-            
-            lInd = model.liquidInd;
-            state.concentrations{lInd.K}   = cK;
-            state.concentrations{lInd.H2O} = cH2O;
-            % TODO  : check if we need H+ concentration later, if yes, we should uncomment the line below and adjust the indexings.
-            % state.concentrations{lInd.H}   = cH;
             
         end
 
@@ -945,16 +936,39 @@ classdef PorousTransportLayer < ElectronicComponent
             state.partialMolarVolumes{model.liquidInd.K} = pmv.*abs(K.V0)./(abs(OH.V0) + abs(K.V0));
             
         end
-        
-        
+
+    end
+
+    methods (Static)
+
+        function state = updateConcentrations(model, state)
+            
+            sp = model.sp;
+
+            cOH = state.concentrations{model.liquidInd.OH};
+            liqrho = state.liqrho;
+
+            cK   = cOH;
+            cH2O = (liqrho - cOH.*sp.OH.MW - cK.*sp.K.MW)./sp.H2O.MW;
+            % cH   = 1e3.*(10.^-sp.H2O.beta .* (1e-3.*cOH).^-1);
+            
+            lInd = model.liquidInd;
+            state.concentrations{lInd.K}   = cK;
+            state.concentrations{lInd.H2O} = cH2O;
+            % TODO  : check if we need H+ concentration later, if yes, we should uncomment the line below and adjust the indexings.
+            % state.concentrations{lInd.H}   = cH;
+            
+        end
+
         function state = liquidStateEquation(model, state)
             
             liqStateEq = -1;
             for ind = 1 : model.liquidInd.ncomp
-                liqStateEq = liqStateEq + state.concentrations{ind}.*model.sp.V0(ind);
+                liqStateEq = liqStateEq + state.concentrations{ind}.*model.V0s(ind);
             end
             
             state.liquidStateEquation = liqStateEq;
+            
         end
         
     end

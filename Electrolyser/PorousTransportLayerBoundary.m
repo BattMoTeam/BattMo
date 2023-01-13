@@ -1,6 +1,11 @@
 classdef PorousTransportLayerBoundary < BaseModel
     
     properties
+
+        constants
+
+        MWs % molecular weight for each of the gas components
+        V0s % partial molar volumes
         
         compInd   % mapping structure for component indices
         phaseInd  % mapping structure for phase indices
@@ -11,9 +16,11 @@ classdef PorousTransportLayerBoundary < BaseModel
     
     methods
         
-        function model = PorousTransportLayerBoundary()
-
+        function model = PorousTransportLayerBoundary(paramobj)
+            
             model = model@BaseModel();
+
+            model.MWs = paramobj.MWs;
             
             compInd.H2Oliquid = 1;
             compInd.H2Ogas    = 2;
@@ -50,6 +57,7 @@ classdef PorousTransportLayerBoundary < BaseModel
             model.liquidInd = liquidInd;            
             model.gasInd = gasInd;
             
+            model.constants = PhysicalConstants();
             
         end
 
@@ -77,23 +85,76 @@ classdef PorousTransportLayerBoundary < BaseModel
             phasePressures = VarName({}, 'phasePressures', nph);
             varnames{end + 1} = phasePressures;
 
-            % Masses for each component of gas (per total volume, as used in mass of conservation law) in [kg m^-3]
-            densities = VarName({}, 'gasDensities', ngas);
-            varnames{end + 1} = densities;
-
+            % Gas densities in mass per gas volume (one value for each gas component)
+            gasDensities = VarName({}, 'gasDensities', ngas);
+            varnames{end + 1} = gasDensities;
+            
             % Liquid density (Mass of liquid per volume of liquid) in [kg m^-3]
             varnames{end + 1} = 'liqrho';
 
-            % concentration of OH in [mol m^-3]
-            varnames{end + 1} = 'cOH';
+            % Concentrations in the liquid in [mol m^-3]
+            concentrations = VarName({}, 'concentrations', nliquid);
+            varnames{end + 1} = concentrations;
 
             % electric potential
             varnames{end + 1} = 'phi';
 
-            model = model.registerVarNames(varnames);
+            % Temperature
+            varnames{end + 1} = 'T';
             
+            % Based on ideal gas
+            varnames{end + 1} = 'gasStateEquation';
+
+            % State equation for the liquid (for the moment, we assume incompressibility)
+            varnames{end + 1} = 'liquidStateEquation';
+
+            model = model.registerVarNames(varnames);
+
+            fn = @PorousTransportLayerBoundary.updateGasStateEquation;
+            inputnames = {'T'         , ...
+                          gasDensities, ...
+                          VarName({}, 'phasePressures', nph, phaseInd.gas)};
+            model = model.registerPropFunction({'gasStateEquation', fn, inputnames});
+
             model = model.removeVarName(VarName({}, 'phasePressures', nph, phaseInd.solid));
+            
+            fn = @() PorousTransportLayerBoundary.liquidStateEquation;
+            inputnames = {concentrations};
+            model = model.registerPropFunction({'liquidStateEquation', fn, inputnames});
+
+            fn = @() PorousTransportLayerBoundary.updateConcentrations;
+            inputnames = {'liqrho', ...
+                          VarName({}, 'concentrations', nliquid, liquidInd.OH)};
+            ind = setdiff([1 : nliquid]', liquidInd.OH);
+            model = model.registerPropFunction({VarName({}, 'concentrations', nliquid, ind), fn, inputnames});
+
         end
+
+        function updateGasStateEquation(model, state)
+        % We use ideal gas law
+
+            R = model.constants.R;
+
+            T = state.T;
+            eq = state.phasePressures{model.phaseInd.gas};
+            for igas = 1 : model.gasInd.ngas
+                eq = eq - R*T.*state.gasDensities{igas}./MWs{igas};
+            end
+            
+        end
+
+        function state = liquidStateEquation(model, state)
+
+            state = PorousTransportLayer.liquidStateEquation(model, state);
+            
+        end
+
+        function state = updateConcentrations(model, state)
+
+            state = PorousTransportLayer.updateConcentrations(model, state);
+            
+        end
+        
         
     end
 

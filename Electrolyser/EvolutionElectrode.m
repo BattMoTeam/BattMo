@@ -17,8 +17,14 @@ classdef EvolutionElectrode < BaseModel
 
             switch paramobj.porousTransportLayerType
               case 'Hydrogen'
+                MWs(1) = paramobj.PorousTransportLayer.sp.H2O.MW;
+                MWs(2) = paramobj.PorousTransportLayer.sp.H2.MW;
+                paramobj.PorousTransportLayer.Boundary.MWs = MWs;
                 model.PorousTransportLayer = HydrogenPorousTransportLayer(paramobj.PorousTransportLayer);
               case 'Oxygen'
+                MWs(1) = paramobj.PorousTransportLayer.sp.H2O.MW;
+                MWs(2) = paramobj.PorousTransportLayer.sp.O2.MW;
+                paramobj.PorousTransportLayer.Boundary.MWs = MWs;
                 model.PorousTransportLayer = OxygenPorousTransportLayer(paramobj.PorousTransportLayer);
               otherwise
                 error('porousTransportLayerType not recognized')
@@ -53,7 +59,8 @@ classdef EvolutionElectrode < BaseModel
             fn = @() EvolutionElectrode.dispatchTemperature;
             model = model.registerPropFunction({{ptl, 'T'}, fn, {'T'}});
             model = model.registerPropFunction({{ctl, 'T'}, fn, {'T'}});
-
+            model = model.registerPropFunction({{exl, 'T'}, fn, {'T'}});
+            
             %% Update coupling (electrode, ionomer) -> CatalystLayer
 
             fn = @() EvolutionElectrode.dispatchToCatalystAndExchangeLayers;
@@ -109,9 +116,11 @@ classdef EvolutionElectrode < BaseModel
 
             ptl = 'PorousTransportLayer';
             ctl = 'CatalystLayer';
+            exl = 'ExchangeLayer';
             
             state.(ptl).T = T;
             state.(ctl).T = T;
+            state.(exl).T = T;
             
         end
         
