@@ -21,10 +21,10 @@ sep     = 'Separator';
 
 %% Setup the properties of Li-ion battery materials and cell design
 jsonstruct = parseBattmoJson(fullfile('ParameterData','BatteryCellParameters','LithiumIonBatteryCell','lithium_ion_battery_nmc_graphite.json'));
-jsonstruct.use_thermal = false; % The example is not tested with thermal
+jsonstruct.use_thermal = false;
+jsonstruct.include_current_collectors = true;
 
 paramobj = BatteryInputParams(jsonstruct);
-paramobj.include_current_collectors = true;
 
 use_cccv = false;
 if use_cccv
@@ -39,54 +39,47 @@ if use_cccv
 end
 
 %% Setup the geometry and grid for the components
-CR2016_diameter = 20*milli*meter;
-CR2016_thickness = 1.6*milli*meter;
+CRdiameter = 20*milli*meter;
+CRthickness = 1.6*milli*meter;
 
-compnames = {'NegativeCurrentCollector', ...
+compNames = {'NegativeCurrentCollector', ...
              'NegativeActiveMaterial', ...
              'ElectrolyteSeparator', ...
              'PositiveActiveMaterial', ...
              'PositiveCurrentCollector'};
-num_components = numel(compnames);
-compdims = table('rownames', compnames);
+numComponents = numel(compNames);
+compDims = table('rownames', compNames);
 
 %% Thickness
-% From Joule paper: this gives only half of the Li content compared to
-% Energizer spread sheet, and 1/20 of the typical capacity. Hence the factor 2.
-thickness_factor = 2;
-compdims.thickness = zeros(num_components, 1);
+compDims.thickness = zeros(numComponents, 1);
 
-compdims{'PositiveActiveMaterial', 'thickness'} = 67*micro*meter * thickness_factor;
-compdims{'ElectrolyteSeparator'  , 'thickness'} = 20*micro*meter * thickness_factor;
-compdims{'NegativeActiveMaterial', 'thickness'} = 50*micro*meter * thickness_factor;
+compDims{'PositiveActiveMaterial', 'thickness'} = 67*micro*meter;
+compDims{'ElectrolyteSeparator'  , 'thickness'} = 20*micro*meter;
+compDims{'NegativeActiveMaterial', 'thickness'} = 50*micro*meter;
 
-ccs = {'PositiveCurrentCollector', 'NegativeCurrentCollector'};
-compdims{ccs, 'thickness'} = 0.5*(CR2016_thickness - sum(compdims.thickness));
+currentcollectors = {'PositiveCurrentCollector', 'NegativeCurrentCollector'};
+compDims{currentcollectors, 'thickness'} = 0.5*(CRthickness - sum(compDims.thickness));
 
 %% Diameters
-compdims.diameter = zeros(num_components, 1);
+compDims.diameter = zeros(numComponents, 1);
 
-compdims{'PositiveCurrentCollector', 'diameter'} = 1;
-compdims{'PositiveActiveMaterial'  , 'diameter'} = 0.8;
-compdims{'ElectrolyteSeparator'    , 'diameter'} = 0.9;
-compdims{'NegativeActiveMaterial'  , 'diameter'} = 0.8;
-compdims{'NegativeCurrentCollector', 'diameter'} = 1;
-compdims.diameter = compdims.diameter * CR2016_diameter;
+compDims{'PositiveCurrentCollector', 'diameter'} = 1;
+compDims{'PositiveActiveMaterial'  , 'diameter'} = 0.8;
+compDims{'ElectrolyteSeparator'    , 'diameter'} = 0.9;
+compDims{'NegativeActiveMaterial'  , 'diameter'} = 0.8;
+compDims{'NegativeCurrentCollector', 'diameter'} = 1;
+compDims.diameter = compDims.diameter * CRdiameter;
 
 %% Construct mesh
-meshSize = max(compdims.diameter) / 100; %10;
-hz = min(compdims.thickness);
-compdims.numCellLayers = max(2, round(compdims.thickness / hz));
-compdims{ccs, 'numCellLayers'} = ceil(round(0.25 * compdims{ccs, 'numCellLayers'}));
+numRadial = 10;
+numAngular = 50;
+hz = min(compDims.thickness);
+compDims.numCellLayers = max(2, round(compDims.thickness / hz));
+compDims{currentcollectors, 'numCellLayers'} = ceil(round(0.25 * compDims{currentcollectors, 'numCellLayers'}));
 
-use_sector = false;
-%use_sector = true;
-%angle = pi/40;
-offset = 4*[1,1]*milli*meter;
-
-params = struct('compdims', compdims, ...
-                'meshSize', meshSize, ...
-                'offset', offset);
+params = struct('compDims', compDims, ...
+                'numRadial', numRadial, ...
+                'numAngular', numAngular);
 
 gen = CoinCellBatteryGenerator();
 
@@ -109,20 +102,9 @@ CRate = 1;
 [mass, masses] = computeCellMass(model);
 Li_mass = masses.(ne).(am).val;
 
-% Adjust Li mass and cell capacity in case of sector model
-if use_sector
-    factor = @(x) x * 2 * pi / angle;
-    C = factor(C);
-    mass = factor(mass);
-    Li_mass = factor(Li_mass);
-    info = '(scaled)';
-else
-    info = '';
-end
-
-fprintf('Capacity %s %f mAh\n', info, C*1000/3600);
-fprintf('Li content %s %f g\n', info, Li_mass * 1000);
-fprintf('Battery mass %s %f g\n', info, mass * 1000);
+fprintf('Capacity %f mAh\n', C*1000/3600);
+fprintf('Li content %f g\n', Li_mass * 1000);
+fprintf('Battery mass %f g\n', mass * 1000);
 
 %% Setup the time step schedule
 % Smaller time steps are used to ramp up the current from zero to its
@@ -132,7 +114,7 @@ n         = 24 / 4;
 dt        = [];
 dt        = [dt; repmat(0.5e-4, n, 1).*1.5.^[1 : n]'];
 totalTime = 2.0*hour/CRate;
-n         = 20; %40;
+n         = 20;
 dt        = [dt; repmat(totalTime/n, n, 1)];
 times     = [0; cumsum(dt)];
 tt        = times(2 : end);
@@ -200,7 +182,6 @@ legend({'negative electrode current collector' , ...
 view(-37, 14)
 drawnow
 
-return
 
 %% Additional plots for visualizing the different components
 doplot = false;
@@ -244,10 +225,6 @@ states = states(ind);
 Enew = cellfun(@(x) x.(ctrl).E, states);
 Inew = cellfun(@(x) x.(ctrl).I, states);
 time = cellfun(@(x) x.time, states);
-
-if use_sector
-    Inew = Inew * 2 * pi / angle;
-end
 
 %% Plot results
 figure, hold on
