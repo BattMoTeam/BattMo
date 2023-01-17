@@ -4,6 +4,8 @@ classdef Electrolyser < BaseModel
         
         con = PhysicalConstants();
 
+        G % parent grid (the component grids are subgrid of that one)
+        
         % Components
         IonomerMembrane
         HydrogenEvolutionElectrode
@@ -11,6 +13,9 @@ classdef Electrolyser < BaseModel
         
         couplingTerms
         couplingNames
+
+        primaryVarNames
+        funcCallList
         
     end
     
@@ -26,6 +31,16 @@ classdef Electrolyser < BaseModel
             
         end
 
+        function model = validateModel(model, varargin)
+
+            model = validateModel@BaseModel(model, varargin{:});
+            cgt = ComputationalGraphTool(model);
+
+            model.primaryVarNames = cgt.getPrimaryVariables();
+            model.funcCallList = cgt.setOrderedFunctionCallList();
+            
+        end
+        
         function model = registerVarAndPropfuncNames(model)
 
             model = registerVarAndPropfuncNames@BaseModel(model);
@@ -80,7 +95,8 @@ classdef Electrolyser < BaseModel
                 end
             end
             
-            model = model.registerStaticVarName('T');
+            model = model.registerStaticVarNames({{inm, 'jBcSource'}, ...
+                                                  'T'});
             
         end
 
@@ -172,39 +188,7 @@ classdef Electrolyser < BaseModel
         end
 
         function primaryvarnames = getPrimaryVariables(model)
-
-            primaryvarnames = {{'IonomerMembrane', 'phi'},
-                               {'IonomerMembrane', 'jBcSource'},
-                               {'IonomerMembrane', 'H2Oceps'},
-                               {'HydrogenEvolutionElectrode', 'PorousTransportLayer', 'Boundary', 'phasePressures', 1},
-                               {'HydrogenEvolutionElectrode', 'PorousTransportLayer', 'Boundary', 'phasePressures', 2},
-                               {'HydrogenEvolutionElectrode', 'PorousTransportLayer', 'Boundary', 'gasDensities', 1},
-                               {'HydrogenEvolutionElectrode', 'PorousTransportLayer', 'Boundary', 'gasDensities', 2},
-                               {'HydrogenEvolutionElectrode', 'PorousTransportLayer', 'Boundary', 'liqrho'},
-                               {'HydrogenEvolutionElectrode', 'PorousTransportLayer', 'Boundary', 'concentrations', 2},
-                               {'HydrogenEvolutionElectrode', 'PorousTransportLayer', 'Boundary', 'phi'},
-                               {'HydrogenEvolutionElectrode', 'PorousTransportLayer', 'phi'},
-                               {'HydrogenEvolutionElectrode', 'PorousTransportLayer', 'OHceps'},
-                               {'HydrogenEvolutionElectrode', 'PorousTransportLayer', 'H2Ogasrhoeps'},
-                               {'HydrogenEvolutionElectrode', 'PorousTransportLayer', 'liqeps'},
-                               {'HydrogenEvolutionElectrode', 'PorousTransportLayer', 'liqrhoeps'},
-                               {'HydrogenEvolutionElectrode', 'PorousTransportLayer', 'H2rhoeps'},
-                               {'HydrogenEvolutionElectrode', 'CatalystLayer', 'phi'},
-                               {'OxygenEvolutionElectrode', 'PorousTransportLayer', 'Boundary', 'phasePressures', 1},
-                               {'OxygenEvolutionElectrode', 'PorousTransportLayer', 'Boundary', 'phasePressures', 2},
-                               {'OxygenEvolutionElectrode', 'PorousTransportLayer', 'Boundary', 'gasDensities', 1},
-                               {'OxygenEvolutionElectrode', 'PorousTransportLayer', 'Boundary', 'gasDensities', 2},
-                               {'OxygenEvolutionElectrode', 'PorousTransportLayer', 'Boundary', 'liqrho'},
-                               {'OxygenEvolutionElectrode', 'PorousTransportLayer', 'Boundary', 'concentrations', 2},
-                               {'OxygenEvolutionElectrode', 'PorousTransportLayer', 'Boundary', 'phi'},
-                               {'OxygenEvolutionElectrode', 'PorousTransportLayer', 'phi'},
-                               {'OxygenEvolutionElectrode', 'PorousTransportLayer', 'OHceps'},
-                               {'OxygenEvolutionElectrode', 'PorousTransportLayer', 'H2Ogasrhoeps'},
-                               {'OxygenEvolutionElectrode', 'PorousTransportLayer', 'liqeps'},
-                               {'OxygenEvolutionElectrode', 'PorousTransportLayer', 'liqrhoeps'},
-                               {'OxygenEvolutionElectrode', 'PorousTransportLayer', 'O2rhoeps'},
-                               {'OxygenEvolutionElectrode', 'CatalystLayer', 'phi'}};
-            
+            primaryvarnames = model.primaryVarNames;
         end
 
 
@@ -230,6 +214,12 @@ classdef Electrolyser < BaseModel
             time = state0.time + dt;
             if(not(opts.ResOnly))
                 state = model.initStateAD(state);
+            end
+
+            funcCallList = model.funcCallList;
+
+            for ifunc = 1 : numel(funcCallList)
+                eval(funcCallList{ifunc});
             end
             
             %% Set up the governing equations
