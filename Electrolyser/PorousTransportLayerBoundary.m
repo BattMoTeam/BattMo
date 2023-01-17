@@ -2,22 +2,18 @@ classdef PorousTransportLayerBoundary < BaseModel
     
     properties
 
-        constants
-
-        MWs % molecular weight for each of the gas components
-        V0s % partial molar volumes
-        
         compInd   % mapping structure for component indices
         phaseInd  % mapping structure for phase indices
+        mobPhaseInd % mapping structure for mobile phase indices
         liquidInd % mapping structure for component indices
         gasInd    % mapping structure for component indices
 
-        control % Structure with following fields
-                % - cOH
-                % - liqrho
-                % - phasePressures
-                % - gasDensities
-                % - phi
+        controlValues % Structure with following fields
+                      % - cOH
+                      % - liqrho
+                      % - phasePressures
+                      % - gasDensities
+                      % - phi
         
     end
     
@@ -27,44 +23,13 @@ classdef PorousTransportLayerBoundary < BaseModel
             
             model = model@BaseModel();
 
-            model.MWs = paramobj.MWs;
-            
-            compInd.H2Oliquid = 1;
-            compInd.H2Ogas    = 2;
-            compInd.OH        = 3;
-            compInd.K         = 4;
-            compInd.activeGas = 5;
-            % compInd.(H2 or O2) = 5 % should be instantiated by derived class see HydrogenPorousTransportLayer.m and OxygenPorousTransportLayer.m
-            compInd.ncomp     = 5;
-            compInd.liquid    = [compInd.H2Oliquid; compInd.OH; compInd.K];
-            compInd.gas       = [compInd.H2Ogas; compInd.activeGas];
-            
-            phaseInd.liquid = 1;
-            phaseInd.gas    = 2;
-            phaseInd.solid  = 3;
-            phaseInd.mobile = [1; 2];
-            phaseInd.nphase = 3;
-            
-            % compInd.phaseMap(compInd.H2Oliquid)  = phaseInd.liquid;
-            compInd.phaseMap  = [1; 2; 1; 1; 2]; % first component (H2Oliquid) is in phase indexed by 1 (liquid phase), and so on
-            
-            liquidInd.H2Oliquid = 1;
-            liquidInd.OH = 2;
-            liquidInd.K  = 3;
-            liquidInd.ncomp  = 3;
-            liqudInd.compMap = [1; 3; 4];
-            
-            gasInd.H2Ogas    = 1;
-            gasInd.activeGas = 2;
-            gasInd.ncomp     = 2;
-            gasInd.compMap   = [2; 5];
+            fdnames = {'compInd'    , ...
+                       'phaseInd'   , ...
+                       'liquidInd'  , ...
+                       'mobPhaseInd', ...
+                       'gasInd'};
+            model = dispatchParams(model, paramobj, fdnames);
 
-            model.compInd = compInd;
-            model.phaseInd = phaseInd;
-            model.liquidInd = liquidInd;            
-            model.gasInd = gasInd;
-            
-            model.constants = PhysicalConstants();
             
         end
 
@@ -95,7 +60,7 @@ classdef PorousTransportLayerBoundary < BaseModel
             % Gas densities in mass per gas volume (one value for each gas component)
             gasDensities = VarName({}, 'gasDensities', ngas);
             varnames{end + 1} = gasDensities;
-            
+
             % Liquid density (Mass of liquid per volume of liquid) in [kg m^-3]
             varnames{end + 1} = 'liqrho';
 
@@ -106,61 +71,29 @@ classdef PorousTransportLayerBoundary < BaseModel
             % electric potential
             varnames{end + 1} = 'phi';
 
-            % Temperature
-            varnames{end + 1} = 'T';
+            % Boundary equations
+            bcEquations = VarName({}, 'bcEquations', 2 + ngas);
+            varnames{end + 1} = bcEquations;
             
-            % Based on ideal gas
-            varnames{end + 1} = 'gasStateEquation';
-
-            % State equation for the liquid (for the moment, we assume incompressibility)
-            varnames{end + 1} = 'liquidStateEquation';
+            % Boundary control equations
+            bcControlEquations = VarName({}, 'bcControlEquations', nmobph + 1);
+            varnames{end + 1} = bcControlEquations;
 
             model = model.registerVarNames(varnames);
 
-            fn = @PorousTransportLayerBoundary.updateGasStateEquation;
-            inputnames = {'T'         , ...
-                          gasDensities, ...
-                          VarName({}, 'phasePressures', nph, phaseInd.gas)};
-            model = model.registerPropFunction({'gasStateEquation', fn, inputnames});
-
             model = model.removeVarName(VarName({}, 'phasePressures', nph, phaseInd.solid));
-            
-            fn = @() PorousTransportLayerBoundary.liquidStateEquation;
-            inputnames = {concentrations};
-            model = model.registerPropFunction({'liquidStateEquation', fn, inputnames});
 
+            cOH = VarName({}, 'concentrations', nliquid, liquidInd.OH);
             fn = @() PorousTransportLayerBoundary.updateConcentrations;
             inputnames = {'liqrho', ...
-                          VarName({}, 'concentrations', nliquid, liquidInd.OH)};
+                          cOH};
             ind = setdiff([1 : nliquid]', liquidInd.OH);
             model = model.registerPropFunction({VarName({}, 'concentrations', nliquid, ind), fn, inputnames});
-
-            fn = @() PorousTransportLayerBoundary.setupBcValue;
-            inputnames = {};
-            model = model.registerPropFunction({VarName({}, 'concentrations', nliquid, liquidInd.OH), fn, inputnames});
-            model = model.registerPropFunction({'liqrho', fn, inputnames});
-            model = model.registerPropFunction({VarName({}, 'phasePressures', nph, phaseInd.mobile), fn, inputnames});
-            model = model.registerPropFunction({VarName({}, 'gasDensities', ngas), fn, inputnames});
-            model = model.registerPropFunction({'phi', fn, inputnames});
             
-        end
-
-        function updateGasStateEquation(model, state)
-        % We use ideal gas law
-
-            R = model.constants.R;
-
-            T = state.T;
-            eq = state.phasePressures{model.phaseInd.gas};
-            for igas = 1 : model.gasInd.ngas
-                eq = eq - R*T.*state.gasDensities{igas}./MWs{igas};
-            end
-            
-        end
-
-        function state = liquidStateEquation(model, state)
-
-            state = PorousTransportLayer.liquidStateEquation(model, state);
+            fn = @() PorousTransportLayerBoundary.setupBcControlEquations;
+            inputnames = {VarName({}, 'phasePressures', nph, model.mobPhaseInd.phaseMap), ...
+                          'phi'};
+            model = model.registerPropFunction({bcControlEquations, fn, inputnames});
             
         end
 
@@ -170,13 +103,18 @@ classdef PorousTransportLayerBoundary < BaseModel
             
         end
 
-        function state = setupBcValue(model, state)
+        function state = setupBcControlEquations(model, state)
+
+            nmobph = model.mobPhaseInd.nmobphase;
             
-            state.concentrations{model.liquidInd.OH} = model.cOH;
-            state.liqrho                             = model.liqrho;
-            state.phasePressures                     = model.phasePressures;
-            state.gasDensities                       = model.gasDensities;
-            state.phi                                = model.phi;
+            for imobph = 1 : nmobph
+                iph = model.mobPhaseInd.phaseMap(imobph);
+                eqs{imobph} = state.phasePressures{iph} - model.controlValues.phasePressure{imobph};
+            end
+
+            eqs{nmobph + 1} = state.phi - model.controlValues.phi;
+
+            state.bcControlEquations = eqs;
             
         end
         

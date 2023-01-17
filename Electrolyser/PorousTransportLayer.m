@@ -55,7 +55,6 @@ classdef PorousTransportLayer < ElectronicComponent
                        'externalCouplingTerm'};
             model = dispatchParams(model, paramobj, fdnames);
 
-            model.Boundary = PorousTransportLayerBoundary(paramobj.Boundary);
             
             compInd.H2Oliquid = 1;
             compInd.H2Ogas    = 2;
@@ -97,7 +96,14 @@ classdef PorousTransportLayer < ElectronicComponent
             model.mobPhaseInd = mobPhaseInd;
             model.liquidInd   = liquidInd;
             model.gasInd      = gasInd;
+
+            paramobj.Boundary.compInd     = compInd;
+            paramobj.Boundary.phaseInd    = phaseInd;
+            paramobj.Boundary.mobPhaseInd = mobPhaseInd;
+            paramobj.Boundary.liquidInd   = liquidInd;
+            paramobj.Boundary.gasInd      = gasInd;
             
+            model.Boundary = PorousTransportLayerBoundary(paramobj.Boundary);
         end
 
         function model = registerVarAndPropfuncNames(model)
@@ -392,7 +398,7 @@ classdef PorousTransportLayer < ElectronicComponent
             model = model.registerPropFunction({'liquidAccumTerm', fn, inputnames});
             
             % Assemble residual of equation of state for the liquid phase
-            fn = @() PorousTransportLayer.liquidStateEquation;
+            fn = @() PorousTransportLayer.setupLiquidStateEquation;
             inputnames = {concentrations};
             model = model.registerPropFunction({'liquidStateEquation', fn, inputnames});
 
@@ -409,9 +415,6 @@ classdef PorousTransportLayer < ElectronicComponent
             % update BC terms
             bd = 'Boundary';
 
-            fn = @() PorousTransportLayer.dispatchTemperature;
-            model = model.registerPropFunction({{bd, 'T'}, fn, {'T'}});
-            
             fn = @() PorousTransportLayer.updateBcTerms;
             inputnames = {VarName({}, 'concentrations', nliquid, liquidInd.OH)                , ...
                           VarName({bd}, 'concentrations', nliquid, liquidInd.OH)              , ...
@@ -429,6 +432,7 @@ classdef PorousTransportLayer < ElectronicComponent
             model = model.registerPropFunction({'jBcSource', fn, inputnames});
             model = model.registerPropFunction({'OHbcSource', fn, inputnames});
             model = model.registerPropFunction({'liquidBcSource', fn, inputnames});
+            model = model.registerPropFunction({VarName({bd}, 'bcEquations', 2 + ngas), fn, inputnames});
             
             model = model.removeVarName(VarName({}, 'phasePressures', nph, phaseInd.solid));
             model = model.removeVarName(VarName({}, 'phaseFluxes', nph, phaseInd.solid));
@@ -525,6 +529,20 @@ classdef PorousTransportLayer < ElectronicComponent
                 upwindrhoBc(gasBcFlux > 0) = rhoBc(gasBcFlux > 0);
                 compGasBcSources{igas} = rhoBc.*gasBcFlux;
             end
+
+
+            % we update control
+            for igas = 1 : ngas
+                bceqs{igas}                = state.(bd).gasDensities{igas} - model.(bd).controlValues.gasDensities{igas};
+                bceqs{igas}(gasBcFlux < 0) = state.(bd).gasDensities{igas} - state.gasDensities{igas}(bccells);
+            end
+
+            bceqs{igas + 1}                   = state.(bd).concentrations{liquidInd.OH} - model.(bd).controlValues.cOH;
+            bceqs{igas + 1}(liquidBcFlux < 0) = state.(bd).concentrations{liquidInd.OH} - state.concentrations{liquidInd}(bccells);
+
+            bceqs{igas + 2}                   = state.(bd).liqrho - model.(bd).liqrho;
+            bceqs{igas + 2}(liquidBcFlux < 0) = state.(bd).liqrho - state.liqrho(bccells);
+            
 
             % Each variable is first initialized (in a way we get AD )
             for igas = 1 : gasInd.ngas
@@ -939,9 +957,6 @@ classdef PorousTransportLayer < ElectronicComponent
             
         end
 
-    end
-
-    methods (Static)
 
         function state = updateConcentrations(model, state)
             
@@ -962,7 +977,7 @@ classdef PorousTransportLayer < ElectronicComponent
             
         end
 
-        function state = liquidStateEquation(model, state)
+        function state = setupLiquidStateEquation(model, state)
             
             liqStateEq = -1;
             for ind = 1 : model.liquidInd.ncomp
