@@ -6,8 +6,8 @@ classdef Electrolyser < BaseModel
 
         % Components
         IonomerMembrane
-        HydrogenEvolutionElectrode
         OxygenEvolutionElectrode
+        HydrogenEvolutionElectrode
         
         couplingTerms
         couplingNames
@@ -25,8 +25,8 @@ classdef Electrolyser < BaseModel
 
             model.G = paramobj.G;
             
-            model.HydrogenEvolutionElectrode = EvolutionElectrode(paramobj.HydrogenEvolutionElectrode);
             model.OxygenEvolutionElectrode   = EvolutionElectrode(paramobj.OxygenEvolutionElectrode);
+            model.HydrogenEvolutionElectrode = EvolutionElectrode(paramobj.HydrogenEvolutionElectrode);
             model.IonomerMembrane            = IonomerMembrane(paramobj.IonomerMembrane);
             
         end
@@ -119,9 +119,9 @@ classdef Electrolyser < BaseModel
         
         function state = dispatchIonomerToReactionLayers(model, state)
 
-            inm = 'IonomerMembrane';
-            her = 'HydrogenEvolutionElectrode';
             oer = 'OxygenEvolutionElectrode';
+            her = 'HydrogenEvolutionElectrode';
+            inm = 'IonomerMembrane';
 
             ctl = 'CatalystLayer';
             exl = 'ExchangeLayer';
@@ -225,6 +225,14 @@ classdef Electrolyser < BaseModel
             %% Set up the governing equations
             
             eqs = {};
+            eqs{end + 1} = state.OxygenEvolutionElectrode.PorousTransportLayer.Boundary.gasStateEquation;
+            eqs{end + 1} = state.OxygenEvolutionElectrode.PorousTransportLayer.Boundary.liquidStateEquation;
+            eqs{end + 1} = state.OxygenEvolutionElectrode.PorousTransportLayer.chargeCons;
+            eqs{end + 1} = state.OxygenEvolutionElectrode.PorousTransportLayer.compGasMassCons{1};
+            eqs{end + 1} = state.OxygenEvolutionElectrode.PorousTransportLayer.compGasMassCons{2};
+            eqs{end + 1} = state.OxygenEvolutionElectrode.PorousTransportLayer.liquidMassCons;
+            eqs{end + 1} = state.OxygenEvolutionElectrode.PorousTransportLayer.OHMassCons;
+            eqs{end + 1} = state.OxygenEvolutionElectrode.PorousTransportLayer.liquidStateEquation;
             eqs{end + 1} = state.IonomerMembrane.chargeCons;
             eqs{end + 1} = state.IonomerMembrane.H2OmassCons;
             eqs{end + 1} = state.HydrogenEvolutionElectrode.PorousTransportLayer.Boundary.gasStateEquation;
@@ -235,14 +243,7 @@ classdef Electrolyser < BaseModel
             eqs{end + 1} = state.HydrogenEvolutionElectrode.PorousTransportLayer.liquidMassCons;
             eqs{end + 1} = state.HydrogenEvolutionElectrode.PorousTransportLayer.OHMassCons;
             eqs{end + 1} = state.HydrogenEvolutionElectrode.PorousTransportLayer.liquidStateEquation;
-            eqs{end + 1} = state.OxygenEvolutionElectrode.PorousTransportLayer.Boundary.gasStateEquation;
-            eqs{end + 1} = state.OxygenEvolutionElectrode.PorousTransportLayer.Boundary.liquidStateEquation;
-            eqs{end + 1} = state.OxygenEvolutionElectrode.PorousTransportLayer.chargeCons;
-            eqs{end + 1} = state.OxygenEvolutionElectrode.PorousTransportLayer.compGasMassCons{1};
-            eqs{end + 1} = state.OxygenEvolutionElectrode.PorousTransportLayer.compGasMassCons{2};
-            eqs{end + 1} = state.OxygenEvolutionElectrode.PorousTransportLayer.liquidMassCons;
-            eqs{end + 1} = state.OxygenEvolutionElectrode.PorousTransportLayer.OHMassCons;
-            eqs{end + 1} = state.OxygenEvolutionElectrode.PorousTransportLayer.liquidStateEquation;
+
 
             neq = numel(eqs);
             

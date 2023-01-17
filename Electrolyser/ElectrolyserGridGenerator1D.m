@@ -4,11 +4,11 @@ classdef ElectrolyserGridGenerator1D < ElectrolyserGridGenerator
     properties
 
         xs % length of components in x direction
-           % x(1) : length of hydrogen porous transport layer
-           % x(2) : length of hydrogen catalyst layer
+           % x(1) : length of oxygen porous transport layer
+           % x(2) : length of oxygen catalyst layer
            % x(3) : length of pure ionomer (excluding the catalyst layer)
-           % x(4) : length of oxygen catalyst layer
-           % x(5) : length of oxygen porous transport layer
+           % x(4) : length of hydrogen catalyst layer
+           % x(5) : length of hydrogen porous transport layer
 
         nxs % vector of same length as xs with the corresponding discretization numbers
 
@@ -30,21 +30,21 @@ classdef ElectrolyserGridGenerator1D < ElectrolyserGridGenerator
             xs = gen.xs;
             nxs = gen.nxs;
 
-            her = 'HydrogenEvolutionElectrode';
             oer = 'OxygenEvolutionElectrode';
+            her = 'HydrogenEvolutionElectrode';
             ptl = 'PorousTransportLayer';
             inm = 'IonomerMembrane';
 
             params.(inm).cellind = nxs(1) + (1 : sum(nxs(2 : 4)))';
-            params.(her).cellind = (1 : sum(nxs(1 : 2)))';
-            params.(her).coupcellind = nxs(1) + (1 : nxs(2))'; % coupling with ionomer
-            params.(her).bcfaces = 1;
-            params.(her).bccells = 1;
+            params.(oer).cellind = (1 : sum(nxs(1 : 2)))';
+            params.(oer).coupcellind = nxs(1) + (1 : nxs(2))'; % coupling with ionomer
+            params.(oer).bcfaces = 1;
+            params.(oer).bccells = 1;
 
-            params.(oer).cellind = sum(nxs(1 : 3)) + (1 : sum(nxs(4 : 5)))';
-            params.(oer).coupcellind = (1 : nxs(4))';  % coupling with ionomer, note that the indices are given in own grid
-            params.(oer).bcfaces = sum(nxs(4 : 5)) + 1; % index in own grid
-            params.(oer).bccells = sum(nxs(4 : 5)); % index in own grid
+            params.(her).cellind = sum(nxs(1 : 3)) + (1 : sum(nxs(4 : 5)))';
+            params.(her).coupcellind = (1 : nxs(4))';  % coupling with ionomer, note that the indices are given in own grid
+            params.(her).bcfaces = sum(nxs(4 : 5)) + 1; % index in own grid
+            params.(her).bccells = sum(nxs(4 : 5)); % index in own grid
 
             [paramobj, gen] = gen.setupElectrolyserInputParams(paramobj, params);
         end

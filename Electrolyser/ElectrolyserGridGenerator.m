@@ -39,16 +39,16 @@ classdef ElectrolyserGridGenerator
 
         function paramobj = setupEvolutionElectrodes(gen, paramobj, params)
 
-            her = 'HydrogenEvolutionElectrode';
             oer = 'OxygenEvolutionElectrode';
+            her = 'HydrogenEvolutionElectrode';
 
             % We add the electrode type to the params structure (This information can be used by derived classes and may
             % then simplify setup)
-            params.(her).electrodeType = 'Hydrogen';
             params.(oer).electrodeType = 'Oxygen';
+            params.(her).electrodeType = 'Hydrogen';
 
-            paramobj.(her) = gen.setupEvolutionElectrode(paramobj.(her), params.(her));
             paramobj.(oer) = gen.setupEvolutionElectrode(paramobj.(oer), params.(oer));
+            paramobj.(her) = gen.setupEvolutionElectrode(paramobj.(her), params.(her));
 
         end
 
@@ -72,8 +72,8 @@ classdef ElectrolyserGridGenerator
 
         function paramobj = setupElectrodeIonomerCoupTerm(gen, paramobj, params)
 
-            her = 'HydrogenEvolutionElectrode';
             oer = 'OxygenEvolutionElectrode';
+            her = 'HydrogenEvolutionElectrode';
             ptl = 'PorousTransportLayer';
             inm = 'IonomerMembrane';
 
