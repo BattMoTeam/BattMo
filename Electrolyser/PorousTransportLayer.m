@@ -573,6 +573,20 @@ classdef PorousTransportLayer < ElectronicComponent
             state.liquidAccumTerm = 0;
             
         end
+
+        function state = updateAccumTerms(model, state, state0, dt)
+
+            vols   = model.G.cells.volumes;
+            gasInd = model.gasInd;
+            
+            for igas = 1 : gasInd.ngas
+
+                state.compGasAccums{igas} = vols.*(state.compGasMasses{igas} - state0.compGasMasses{igas})/dt;
+                
+            end
+            
+        end
+        
         
         function state = updateLiquidViscosity(model, state)
         %   Data from Guo et al. Ref [2] Fitting parameters from Le

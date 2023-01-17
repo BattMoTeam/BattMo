@@ -4,8 +4,6 @@ classdef Electrolyser < BaseModel
         
         con = PhysicalConstants();
 
-        G % parent grid (the component grids are subgrid of that one)
-        
         % Components
         IonomerMembrane
         HydrogenEvolutionElectrode
@@ -25,19 +23,11 @@ classdef Electrolyser < BaseModel
 
             model = model@BaseModel();
 
+            model.G = paramobj.G;
+            
             model.HydrogenEvolutionElectrode = EvolutionElectrode(paramobj.HydrogenEvolutionElectrode);
             model.OxygenEvolutionElectrode   = EvolutionElectrode(paramobj.OxygenEvolutionElectrode);
             model.IonomerMembrane            = IonomerMembrane(paramobj.IonomerMembrane);
-            
-        end
-
-        function model = validateModel(model, varargin)
-
-            model = validateModel@BaseModel(model, varargin{:});
-            cgt = ComputationalGraphTool(model);
-
-            model.primaryVarNames = cgt.getPrimaryVariables();
-            model.funcCallList = cgt.setOrderedFunctionCallList();
             
         end
         
@@ -100,9 +90,19 @@ classdef Electrolyser < BaseModel
             
         end
 
+
+        function model = validateModel(model, varargin)
+
+            model = validateModel@BaseModel(model, varargin{:});
+            cgt = ComputationalGraphTool(model);
+
+            model.primaryVarNames = cgt.getPrimaryVariables();
+            model.funcCallList = cgt.setOrderedFunctionCallList();
+            
+        end
         
         function initstate = setupInitialState(model)
-
+            
         end
 
         function state = dispatchTemperature(model, state)
