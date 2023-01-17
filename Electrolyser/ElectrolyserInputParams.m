@@ -2,10 +2,15 @@ classdef ElectrolyserInputParams < InputParams
     
     properties
 
+        G % parent grid (the component grids are subgrid of that one)
+
         IonomerMembrane
         HydrogenEvolutionElectrode
         OxygenEvolutionElectrode        
-        
+                
+        couplingTerms
+        couplingNames
+
     end
     
     methods
