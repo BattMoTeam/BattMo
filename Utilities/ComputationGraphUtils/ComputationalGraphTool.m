@@ -78,6 +78,44 @@ classdef ComputationalGraphTool
             
         end
 
+        function openPropFunction(cgt, nodename)
+            propfunc = cgt.findPropFunction(nodename);
+
+            if numel(propfunc) > 1
+                fprintf('Several property functions are matching\n\n');
+                cgt.printPropFunction(nodename);
+                return
+            end
+
+            fn = propfunc.fn;
+            mn = propfunc.modelnamespace;
+            mn = join(mn, '.');
+            fnname = func2str(fn);
+            fnname = regexp(fnname, "\.(.*)", 'tokens');
+            fnname = fnname{1}{1};
+            fnname = horzcat(mn, {fnname});
+            fnname = join(fnname, '.');
+            fnname = fnname{1};
+            fnname = sprintf('cgt.model.%s', fnname);
+
+            try
+                eval(fnname)
+            catch ME
+                fprintf('%s\n', fnname);
+                stack = ME.stack;
+                file = stack.file;
+                lineNum = stack.line;
+                editor = settings().matlab.editor.OtherEditor.ActiveValue;
+                if contains(editor, 'emacs')
+                    cmd = sprintf('%s +%d %s &', editor, lineNum, file);
+                    system(cmd);
+                else
+                    matlab.desktop.editor.openAndGoToLine(file, lineNum);
+                end
+            end
+
+        end
+
         function printPropFunction(cgt, nodename)
             propfuncs = cgt.findPropFunction(nodename);
 
