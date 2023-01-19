@@ -5,8 +5,8 @@
   "type": "object",
 
   "properties" : {
-    "liquidVolumeFraction" : {"type" : "number",
-                              "description" : "liquid volume fraction"},
+    "volumeFraction" : {"type" : "number",
+                        "description" : "volume fraction occupied by membrane"},
         
     "H2O" : {"type" : "object",
              "properties" : {

@@ -22,7 +22,7 @@ ctl = 'CatalystLayer';
 
 model = Electrolyser(paramobj);
 
-doplotgraph = false;
+doplotgraph = true;
 if doplotgraph
     cgt = ComputationalGraphTool(model);
     g = cgt.getComputationalGraph();

@@ -17,6 +17,9 @@ classdef OxygenPorousTransportLayer < PorousTransportLayer
             % add the  O2 component in the indexing structures            
             model.compInd.O2 = model.compInd.activeGas;
             model.gasInd.O2  = model.gasInd.activeGas;
+
+            model.gasMW = model.sp.O2.MW;
+            
         end
 
         

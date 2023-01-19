@@ -17,6 +17,8 @@ classdef HydrogenPorousTransportLayer < PorousTransportLayer
             model.compInd.H2 = model.compInd.activeGas;
             model.gasInd.H2  = model.gasInd.activeGas;
             
+            model.gasMW = model.sp.H2.MW;
+            
         end
         
         function model = registerVarAndPropfuncNames(model)

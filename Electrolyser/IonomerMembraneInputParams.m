@@ -2,7 +2,7 @@ classdef IonomerMembraneInputParams < ElectronicComponentInputParams
     
     properties
         
-        liquidVolumeFraction
+        volumeFraction
         
         H2O % with fields
         % H2O.c0 : Reference concentration

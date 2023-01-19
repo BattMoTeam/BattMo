@@ -76,7 +76,8 @@ classdef ExchangeLayer < BaseModel
 
             kML = model.inmr.kML;
 
-            state.Rsorption = ionomerSorption(kML, H2OaElyte, H2OaInmr);
+            state.H2OexchangeRate = ionomerSorption(kML, H2OaElyte, H2OaInmr);
+            
         end
 
         function state = updateOHexchange(model, state)
@@ -88,7 +89,7 @@ classdef ExchangeLayer < BaseModel
             cOHElyte = state.cOHElyte;
             cOHInmr  = state.cOHInmr;
             
-            state.Rxch = ionomerExchange(kxch, cOHinmr, OH.z, eta, T, cOHElyte);
+            state.OHexchangeRate = ionomerExchange(kxch, cOHinmr, OH.z, eta, T, cOHElyte);
             
         end
 

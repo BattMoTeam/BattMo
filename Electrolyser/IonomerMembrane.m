@@ -2,7 +2,7 @@ classdef IonomerMembrane < ElectronicComponent
     
     properties
         
-        liquidVolumeFraction
+        volumeFraction
         
         H2O % with fields
         % H2O.c0 : Reference concentration
@@ -151,13 +151,13 @@ classdef IonomerMembrane < ElectronicComponent
 
             H2Oceps = state.H2Oceps;
             
-            vf = model.liquidVolumeFraction;
+            vf = model.volumeFraction;
             
             state.H2Oc = H2Oceps./vf;
             
         end
 
-
+        
         function state = setupOHconcentration(model, state)
 
             state.cOH = model.cT;
@@ -177,10 +177,10 @@ classdef IonomerMembrane < ElectronicComponent
         
         function state = updateConductivity(model, state)
             
-            T  = state.T;
+            T = state.T;
             a = state.H2Oa;
             
-            vf = model.liquidVolumeFraction;
+            vf = model.volumeFraction;
             
             a(a > 1) = 1;
             
@@ -225,7 +225,7 @@ classdef IonomerMembrane < ElectronicComponent
         end
         
         
-        function state = updatej(model, state)
+        function state = updateCurrent(model, state)
             
             conductivity = state.conductivity;
             phi          = state.phi;
@@ -239,10 +239,10 @@ classdef IonomerMembrane < ElectronicComponent
 
         function state = updateH2OdiffFlux(model, state)
 
+            D  = model.H2O.D;
+            vf = model.volumeFraction;
+
             c = state.H2Oc;
-            
-            D = model.H2O.D;
-            vf = model.liquidVolumeFraction;
             
             Deff = D.*vf.^1;
             
