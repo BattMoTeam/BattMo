@@ -8,6 +8,8 @@ classdef EvolutionElectrodeInputParams < InputParams
 
         porousTransportLayerType
         catalystLayerType
+
+        coupTerms
         
     end
     

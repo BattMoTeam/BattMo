@@ -9,7 +9,6 @@ classdef ElectrolyserInputParams < InputParams
         OxygenEvolutionElectrode        
                 
         couplingTerms
-        couplingNames
 
     end
     

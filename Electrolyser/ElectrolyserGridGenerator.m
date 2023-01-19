@@ -55,8 +55,29 @@ classdef ElectrolyserGridGenerator
         function paramobj = setupEvolutionElectrode(gen, paramobj, params)
 
             ptl = 'PorousTransportLayer';
-            paramobj.(ptl).G = genSubGrid(gen.G, params.cellind);
+            ctl = 'CatalystLayer';
 
+            paramobj.(ptl).G = genSubGrid(gen.G, params.(ptl).cellind);
+            paramobj.(ctl).G = genSubGrid(gen.G, params.(ctl).cellind);
+
+            %  setup coupling between catalyst layer and porous transport layer;
+            G_ptl = paramobj.(ptl).G;
+            G_ctl = paramobj.(ctl).G;
+            G     = G_ctl.mappings.parentGrid;
+            cells2 = (1 : G_ctl.cells.num)'; % all the cells of the catalyst layer are coupled to the porous transport layer
+            
+            mapping = zeros(G.cells.num, 1);
+            mapping(G_ptl.mappings.cellmap) = (1 : G_ptl.cells.num)'; % mapping from parent grid to ptl grid;
+
+            pcells = G_ctl.mappings.cellmap(cells2); % ctl cells indexed in parent grid
+            cells1 = mapping(pcells); % ptl cells that are coupled.
+
+            compnames = {ptl, ctl};
+            coupTerm = couplingTerm(sprintf('%s-%s', ptl, ctl), compnames);
+            coupTerm.couplingcells = [cells1, cells2];
+
+            paramobj.coupTerms = coupTerm;
+            
             % setup external coupling
 
             compnames = {ptl};
@@ -74,7 +95,7 @@ classdef ElectrolyserGridGenerator
 
             oer = 'OxygenEvolutionElectrode';
             her = 'HydrogenEvolutionElectrode';
-            ptl = 'PorousTransportLayer';
+            ctl = 'CatalystLayer';
             inm = 'IonomerMembrane';
 
             couplingTerms = {};
@@ -85,18 +106,18 @@ classdef ElectrolyserGridGenerator
             mapping = zeros(G.cells.num, 1);
             mapping(G_inm.mappings.cellmap) = (1 : G_inm.cells.num)';
 
-            eldes = {her, oer};
+            eldes = {oer, her};
 
             for ielde = 1 : numel(eldes)
 
                 elde = eldes{ielde};
 
-                G_elde = paramobj.(elde).(ptl).G;
+                G_ctl = paramobj.(elde).(ctl).G;
 
-                G = G_elde.mappings.parentGrid;
+                G = G_ctl.mappings.parentGrid;
 
-                cells1 = params.(elde).coupcellind;
-                pcells = G_elde.mappings.cellmap(cells1);
+                cells1 = (1 : G_ctl.cells.num)';
+                pcells = G_ctl.mappings.cellmap(cells1);
 
                 cells2 = mapping(pcells);
 

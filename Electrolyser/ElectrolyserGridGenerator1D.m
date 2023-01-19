@@ -33,16 +33,18 @@ classdef ElectrolyserGridGenerator1D < ElectrolyserGridGenerator
             oer = 'OxygenEvolutionElectrode';
             her = 'HydrogenEvolutionElectrode';
             ptl = 'PorousTransportLayer';
+            ctl = 'CatalystLayer';
             inm = 'IonomerMembrane';
 
             params.(inm).cellind = nxs(1) + (1 : sum(nxs(2 : 4)))';
-            params.(oer).cellind = (1 : sum(nxs(1 : 2)))';
-            params.(oer).coupcellind = nxs(1) + (1 : nxs(2))'; % coupling with ionomer
+
+            params.(oer).(ptl).cellind = (1 : sum(nxs(1 : 2)))';
+            params.(oer).(ctl).cellind = nxs(1) + (1 : nxs(2))';
             params.(oer).bcfaces = 1;
             params.(oer).bccells = 1;
 
-            params.(her).cellind = sum(nxs(1 : 3)) + (1 : sum(nxs(4 : 5)))';
-            params.(her).coupcellind = (1 : nxs(4))';  % coupling with ionomer, note that the indices are given in own grid
+            params.(her).(ptl).cellind = sum(nxs(1 : 3)) + (1 : sum(nxs(4 : 5)))';
+            params.(her).(ctl).cellind = sum(nxs(1 : 3)) + (1 : nxs(4))';
             params.(her).bcfaces = sum(nxs(4 : 5)) + 1; % index in own grid
             params.(her).bccells = sum(nxs(4 : 5)); % index in own grid
 
