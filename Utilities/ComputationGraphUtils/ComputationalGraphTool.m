@@ -81,6 +81,11 @@ classdef ComputationalGraphTool
         function openPropFunction(cgt, nodename)
             propfunc = cgt.findPropFunction(nodename);
 
+            if isempty(propfunc)
+                fprintf('No property matching regexp has been found\n');
+                return
+            end
+            
             if numel(propfunc) > 1
                 fprintf('Several property functions are matching\n\n');
                 cgt.printPropFunction(nodename);
