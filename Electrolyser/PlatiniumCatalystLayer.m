@@ -40,6 +40,28 @@ classdef PlatiniumCatalystLayer < CatalystLayer
             
         end
         
+        function state =  updateSources(model, state)
+
+        % Reaction in Electrolyte : 2*H2O + 2*e- <-> + H2 + 2(OH-)_elyte 
+        % Reaction in Membrane :    2*H2O + 2*e- <-> + H2 + 2(OH-)_inmr
+
+            F = model.constants.F;
+            vols = model.G.cells.volumes;
+            
+            elyteR = state.elyteReactionRate;
+            inmrR  = state.inmrReactionRate;
+
+            R = elyteR + inmrR;
+            
+            state.activeGasSource = R/F;
+            state.elyteH2Osource  = -2*R/F;
+            state.elyteOHSource   = 2*elyteR/F;
+            state.inmrOHSource    = 2*inmrR/F;
+            state.eSource         = -2*R.*vols;
+           
+        end
+
+
     end
     
 end

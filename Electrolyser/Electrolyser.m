@@ -159,29 +159,31 @@ classdef Electrolyser < BaseModel
             ctl = 'CatalystLayer';
             exl = 'ExchangeLayer';
 
-            % initialize sources (done in a way that takes care of AD, meaning that OHSource and H2OSource are AD
-            % variables is state.(inm).phi is)
-            OHSource = 0*state.(inm).phi;
-            H2OSource = 0*state.(inm).phi;
+            % initialize sources (done in a way that takes care of AD, meaning that OHSource and H2OSource inherits AD
+            % structure from state.(inm).H2Oceps)
+            OHSource  = 0*state.(inm).H2Oceps;
+            H2OSource = 0*state.(inm).H2Oceps;
 
             eldes = {her, oer};
 
             for ielde = 1 : numel(eldes)
                 
                 elde = eldes{ielde};
+
                 coupterms = model.couplingTerms;
                 coupnames = model.couplingNames;
+                vols      = model.G.cells.volumes;
+
                 coupterm  = getCoupTerm(coupterms, {inm, elde}, coupnames);
                 coupcells = coupterm.couplingcells;
-
-                reacR    = state.(elde).(ctl).inmrReactionRate(coupcells(:, 2));
-                OHexchR  = state.(elde).(exl).OHexchangeRate(coupcells(:, 2));
-                H2OexchR = state.(elde).(exl).H2OexchangeRate(coupcells(:, 2));
+                vols      = vols(coupcells(:, 2));
                 
-                leps  = model.(inm).liquidVolumeFraction(coupcells(:, 2));
+                inmrOHsource = state.(elde).(ctl).inmrReactionRate(coupcells(:, 2));
+                OHexchR      = state.(elde).(exl).OHexchangeRate(coupcells(:, 2));
+                H2OexchR     = state.(elde).(exl).H2OexchangeRate(coupcells(:, 2));
                 
-                OHSource(coupcells(:, 1))  = -2.*reacR./(n.*F) - OHexchR.*leps;
-                H2OSource(coupcells(:, 1)) = -reacR./(n.*F) - H2OexchR;
+                OHSource(coupcells(:, 1))  = vols.*(inmrOHsource - OHexchR);
+                H2OSource(coupcells(:, 1)) = - vols.*H2OexchR;
                 
             end
             
