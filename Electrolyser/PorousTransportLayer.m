@@ -202,8 +202,8 @@ classdef PorousTransportLayer < ElectronicComponent
             varnames{end + 1} = 'liquidSource';
             % Mass Source of liquid in [kg s^-1] at boundary (yet one value per for each grid cell))
             varnames{end + 1} = 'liquidBcSource';
-            % Liquid-Vapor exchange rate for H2O (H2Oliquid <-> H2Ogas) in [mol m^-3 s^-1)]
-            varnames{end + 1} = 'H2OliquidVaporExchangeRate';
+            % Liquid-Vapor exchange rate for H2O (H2Ogas <-> H2Oliquid) in [mol m^-3 s^-1)]
+            varnames{end + 1} = 'H2OvaporLiquidExchangeRate';
             % Source of H2Oliquid in [mol s^-1] (source term for each grid cell)
             varnames{end + 1} = 'H2OliquidSource';
             % Accumulation terms for OH in [mol s^-1] (accumulation term for each grid cell)
@@ -288,7 +288,7 @@ classdef PorousTransportLayer < ElectronicComponent
                           'vaporPressure', ...
                           VarName({}, 'compGasPressures', ngas, gasInd.H2Ogas), ...
                           volumeFractions};
-            model = model.registerPropFunction({'H2OliquidVaporExchangeRate', fn, inputnames});
+            model = model.registerPropFunction({'H2OvaporLiquidExchangeRate', fn, inputnames});
 
             
             % Assemble phase velocities
@@ -355,7 +355,7 @@ classdef PorousTransportLayer < ElectronicComponent
             model = model.registerPropFunction({VarName({}, 'viscosities', nph, phaseInd.liquid), fn, inputnames});
             
             fn = @() PorousTransportLayer.updateH2OgasSource;
-            inputnames = {'H2OliquidVaporExchangeRate'};
+            inputnames = {'H2OvaporLiquidExchangeRate'};
             model = model.registerPropFunction({VarName({}, 'compGasSources', ngas, gasInd.H2Ogas), fn, inputnames});
 
             % Assemble mass conservation equations for components in gas phase

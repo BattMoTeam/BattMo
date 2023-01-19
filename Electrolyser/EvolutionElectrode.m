@@ -85,28 +85,20 @@ classdef EvolutionElectrode < BaseModel
             
             fn = @() EvolutionElectrode.updateSourceTerms;
 
-            inputvarnames = {{ctl, 'elyteReactionRate'}, ...
+            inputvarnames = {{ctl, 'elyteOHsource'}, ...
                              {exl, 'OHexchangeRate'}};
             model = model.registerPropFunction({{ptl, 'OHSource'}, fn, inputvarnames});
 
-            inputvarnames = {{ctl, 'elyteReactionRate'}, ...
+            inputvarnames = {{ctl, 'elyteH2Osource'}, ...
                              {exl, 'H2OexchangeRate'}  , ...
-                             {ptl, 'H2OliquidVaporExchangeRate'}};
+                             {ptl, 'H2OvaporLiquidExchangeRate'}};
             model = model.registerPropFunction({{ptl, 'H2OliquidSource'}, fn, inputvarnames});
 
-            inputvarnames = {{ctl, 'elyteReactionRate'}, ...
-                             {ctl, 'inmrReactionRate'}};
+            inputvarnames = {{ctl, 'activeGasSource'}};
             gasInd = model.(ptl).gasInd;
             igas = gasInd.activeGas;
             ngas = gasInd.ncomp;
             model = model.registerPropFunction({VarName({ptl}, 'compGasSources', ngas, igas), fn, inputvarnames});
-
-
-            fn = @() EvolutionElectrode.updateSourceTerms;
-
-            inputvarnames = {{ctl, 'elyteReactionRate'}, ...
-                             {exl, 'OHexchangeRate'}};
-            model = model.registerPropFunction({{ptl, 'OHSource'}, fn, inputvarnames});
             
         end
 

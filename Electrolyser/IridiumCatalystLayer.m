@@ -1,7 +1,5 @@
 classdef IridiumCatalystLayer < CatalystLayer
 
-    properties
-    end
     
     methods
         
@@ -16,11 +14,12 @@ classdef IridiumCatalystLayer < CatalystLayer
             model = registerVarAndPropfuncNames@CatalystLayer(model);
 
             % Assemble the reaction rate constants
-            fn = @() CatalystLayer.updateReactionRateConstants;
+            fn = @() IridiumCatalystLayer.updateReactionRateConstants;
             inputnames = {'cOHelyte', 'H2OaElyte'};
             model = model.registerPropFunction({'elyteReactionRateConstant', fn, inputnames});
             inputnames = {'cOHinmr'};
             model = model.registerPropFunction({'inmrReactionRateConstant', fn, inputnames});
+
             
         end
 

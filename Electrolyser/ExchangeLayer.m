@@ -47,19 +47,21 @@ classdef ExchangeLayer < BaseModel
             
             %% Fluxes
 
-            % flux in electrolyte
+            % H2O exchange rate [mol*s^-1 m^-3]
             varnames{end + 1} = 'H2OexchangeRate';
-            % flux in ionomer
+            % OH exchange rate [mol*s^-1 m^-3]
             varnames{end + 1} = 'OHexchangeRate';
 
             model = model.registerVarNames(varnames);
 
-            % Assemble ionomer ion exchange rate
+            % Assemble ionomer ion exchange rate [mol*s^-1 m^-3]
+            % (OH-)_inmr <-> (OH-)_elyte
             fn = @() ExchangeLayer.updateOHexchange;
             inputnames = {'phiElyte', 'phiInmr', 'cOHelyte', 'cOHinmr', 'T'};
             model = model.registerPropFunction({'OHexchangeRate', fn, inputnames});
 
-            % Assemble sorption rate
+            % Assemble sorption rate [mol*s^-1 m^-3]
+            % (H2O)_inmr <-> (H2O)_elyte  
             fn = @() ExchangeLayer.updateSorption;
             inputnames = {'H2OaElyte', 'H2OaInmr'};
             model = model.registerPropFunction({'H2OexchangeRate', fn, inputnames});

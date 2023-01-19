@@ -24,9 +24,9 @@ classdef IonomerMembrane < ElectronicComponent
             paramobj.use_thermal = false;
             model = model@ElectronicComponent(paramobj);
 
-            fdnames = {'liquidVolumeFraction', ...
-                       'H2O'                 , ...
-                       'OH'                  , ...
+            fdnames = {'volumeFraction', ...
+                       'H2O'           , ...
+                       'OH'            , ...
                        'cT'};
             model = dispatchParams(model, paramobj, fdnames);
 
@@ -66,9 +66,9 @@ classdef IonomerMembrane < ElectronicComponent
             
             %% Source terms
             
-            % H2O source
+            % H2O source [mol/s] (one value per cell)
             varnames{end + 1} = 'H2OSource';
-            % OH source
+            % OH source [mol/s] (one value per cell)
             varnames{end + 1} = 'OHSource';
         
             %% Accumulation term

@@ -31,7 +31,7 @@ classdef CatalystLayer < BaseModel
                         'sp'   , ...
                         'Xinmr', ...
                         'volumetricSurfaceArea'};
-
+            
             model = dispatchParams(model, paramobj, fdnames);
 
         end
@@ -46,8 +46,10 @@ classdef CatalystLayer < BaseModel
             names = {};
             % Temperature
             varnames = {'T'};
-            % CatalystLayer electrical potential
-            varnames{end + 1} = {'phi'};
+            % CatalystLayer electrical potential (single value)
+            varnames{end + 1} = {'E'};
+            % CatalystLayer total current (scalar value)
+            varnames{end + 1} = {'I'};
             % Electric Potential in electrolyte and ionomer
             varnames{end + 1} = 'phiElyte';
             varnames{end + 1} = 'phiInmr';
@@ -71,7 +73,15 @@ classdef CatalystLayer < BaseModel
             % Reaction rate for electrolyte and ionomer
             varnames{end + 1} = 'elyteReactionRate';
             varnames{end + 1} = 'inmrReactionRate';
-
+            
+            % current source [A]
+            varnames{end + 1} = 'eSource'; 
+            % The following source terms are per volume. The units are [mol s^-1 m^-3]
+            varnames{end + 1} = 'activeGasSource';
+            varnames{end + 1} = 'elyteH2Osource';
+            varnames{end + 1} = 'elyteOHsource';
+            varnames{end + 1} = 'inmrOHsource';
+            
             model = model.registerVarNames(varnames);
 
             % Assemble equilibrium Potential for electrolyte
@@ -86,18 +96,32 @@ classdef CatalystLayer < BaseModel
 
             % Assemble reactive potential
             fn = @() CatalystLayer.updateEtas;
-            inputnames = {'phiElyte', 'phi' 'Eelyte'};
+            inputnames = {'phiElyte', 'E' 'Eelyte'};
             model = model.registerPropFunction({'etaElyte', fn, inputnames});
-            inputnames = {'phiInmr', 'phi' 'Einmr'};
+            inputnames = {'phiInmr', 'E' 'Einmr'};
             model = model.registerPropFunction({'etaInmr', fn, inputnames});            
 
-
+            % update source terms
+            fn = @() CatalystLayer.updateSources;
+            inputnames = {'inmrReactionRate'};
+            model = model.registerPropFunction({'inmrOHsource', fn, inputnames});
+            inputnames = {'elyteReactionRate'};
+            model = model.registerPropFunction({'elyteOHsource', fn, inputnames});
+            inputnames = {'elyteReactionRate', 'inmrReactionRate'};
+            model = model.registerPropFunction({'elyteH2Osource', fn, inputnames});
+            model = model.registerPropFunction({'activeGasSource', fn, inputnames});
+            model = model.registerPropFunction({'eSource', fn, inputnames});
+            
             % Assemble the reaction rates
             fn = @() CatalystLayer.updateReactionRates;
             inputnames = {'elyteReactionRateConstant', 'etaElyte'};
             model = model.registerPropFunction({'elyteReactionRate', fn, inputnames});
             inputnames = {'inmrReactionRateConstant', 'etaInmr'};
             model = model.registerPropFunction({'inmrReactionRate', fn, inputnames});            
+
+            fn = @() CatalystLayer.updateI;
+            inputnames = {'elyteReactionRate', 'inmrReactionRate'};
+            model = model.registerPropFunction({'I', fn, inputnames});
 
         end
 

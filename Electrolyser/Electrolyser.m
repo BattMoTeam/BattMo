@@ -62,12 +62,15 @@ classdef Electrolyser < BaseModel
             inputvarnames = {};
             for ielde = 1 : numel(eldes)
                 elde = eldes{ielde};
-                inputvarnames{end + 1} = {elde, ctl, 'elyteReactionRate'};
-                inputvarnames{end + 1} = {elde, ctl, 'inmrReactionRate'};
-                inputvarnames{end + 1} = {elde, exl, 'OHexchangeRate'};
                 inputvarnames{end + 1} = {elde, exl, 'H2OexchangeRate'};
             end
             model = model.registerPropFunction({{inm, 'H2OSource'}, fn, inputvarnames});
+            inputvarnames = {};
+            for ielde = 1 : numel(eldes)
+                elde = eldes{ielde};
+                inputvarnames{end + 1} = {elde, ctl, 'inmrOHsource'};
+                inputvarnames{end + 1} = {elde, exl, 'OHexchangeRate'};
+            end
             model = model.registerPropFunction({{inm, 'OHSource'}, fn, inputvarnames});
 
 
