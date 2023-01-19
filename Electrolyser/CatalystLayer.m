@@ -120,11 +120,15 @@ classdef CatalystLayer < BaseModel
             model = model.registerPropFunction({'inmrReactionRate', fn, inputnames});            
 
             fn = @() CatalystLayer.updateI;
-            inputnames = {'elyteReactionRate', 'inmrReactionRate'};
+            inputnames = {'eSource'};
             model = model.registerPropFunction({'I', fn, inputnames});
 
         end
 
+        function state = updateSources(model, state)
+            error('virtual function. Should be overloaded by specific catalystlayer');
+        end
+        
         function state = updateEelyte(model, state)
 
             T    = state.T;
@@ -161,14 +165,14 @@ classdef CatalystLayer < BaseModel
 
         function state = updateEtas(model, state)
 
-            phi      = state.phi;
+            E        = state.E;
             phiElyte = state.phiElyte;
             phiInmr  = state.phiInmr;
             Einmr    = state.Einmr;
             Eelyte   = state.Eelyte;
 
-            state.etaElyte = phi - phiElyte - Eelyte;
-            state.etaInmr  = phi - phiInmr - Einmr;
+            state.etaElyte = E - phiElyte - Eelyte;
+            state.etaInmr  = E - phiInmr - Einmr;
             
         end
 
@@ -199,6 +203,12 @@ classdef CatalystLayer < BaseModel
             
         end
 
+        function state = updateI(model, state)
+
+            state.I = sum(state.eSource);
+            
+        end
+        
 
     end
 
