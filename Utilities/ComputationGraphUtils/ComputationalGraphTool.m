@@ -116,6 +116,19 @@ classdef ComputationalGraphTool
 
         end
 
+        function printVarNames(cgt, nodename)
+
+            nodenames = cgt.nodenames;
+            indSelectedNodenames = regexp(nodenames, nodename, 'once');
+            indSelectedNodenames = cellfun(@(x) ~isempty(x), indSelectedNodenames);
+            nodenames = nodenames(indSelectedNodenames);
+            for ind = 1 : numel(nodenames)
+                fprintf('%s\n', nodenames{ind});
+            end
+            
+        end
+        
+        
         function printPropFunction(cgt, nodename)
             propfuncs = cgt.findPropFunction(nodename);
 
