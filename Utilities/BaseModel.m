@@ -109,7 +109,7 @@ classdef BaseModel < PhysicalModel
                     inputvarnames = propfuncs{iprop}.inputvarnames;
                     for iinput = 1 : numel(inputvarnames)
                         [~, keepprop,  inputvarnames{iinput}] = BaseModel.getCleanedUpVarName(varname, inputvarnames{iinput});
-                        keep(iprop) = keepprop | keep(iprop);
+                        keep(iprop) = keepprop & keep(iprop);
                     end
                     propfunctions{iprop}.inputvarnames = inputvarnames;
                 end
@@ -450,6 +450,9 @@ classdef BaseModel < PhysicalModel
     methods(Static)
 
         function [found, keep, varname] = getCleanedUpVarName(rvarname, varname)
+
+        % This function supports index, meaning, it handles the case where the rvarname and varname has same name but
+        % different indices where the indices of rvarname make a subset of those of varname.
             [isequal, compIndices] = compareVarName(rvarname, varname);
             if isequal
                 keep = false;
