@@ -76,7 +76,7 @@ classdef ElectrolyserGridGenerator
             coupTerm = couplingTerm(sprintf('%s-%s', ptl, ctl), compnames);
             coupTerm.couplingcells = [cells1, cells2];
 
-            paramobj.coupTerms = coupTerm;
+            paramobj.couplingTerm = coupTerm;
             
             % setup external coupling
 

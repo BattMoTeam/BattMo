@@ -11,7 +11,7 @@ classdef PorousTransportLayer < ElectronicComponent
         liquidInd   % mapping structure for component indices
         gasInd      % mapping structure for component indices
 
-        solidVolumeFraction  % Solid volume fraction
+        solidVolumeFraction  % Solid volume fraction (should correspond to total ionomer + inactive part)
         leverettCoefficients % coefficients for the Leverett function definition, see method updateLiquidPressure and function leverett.m
         theta                % water contact angle
         permeability         % Permeability [Darcy]
@@ -419,12 +419,10 @@ classdef PorousTransportLayer < ElectronicComponent
 
             fn = @() PorousTransportLayer.updateBcTerms;
             inputnames = {VarName({}, 'concentrations', nliquid, liquidInd.OH)                , ...
-                          VarName({bd}, 'concentrations', nliquid, liquidInd.OH)              , ...
+                          {bd, 'cOH'}                                                               , ...
                           VarName({bd}, 'gasDensities', ngas)                                 , ...
                           'liqrho'                                                            , ...
                           {bd, 'liqrho'}                                                      , ...
-                          'phi'                                                               , ...
-                          {bd, 'phi'}                                                         , ...
                           VarName({}, 'viscosities', nmobph)                                  , ...
                           VarName({}, 'phasePressures', nph, [phaseInd.gas, phaseInd.liquid]) , ...
                           VarName({}, 'volumeFractions', nph, [phaseInd.gas, phaseInd.liquid]), ...
@@ -477,33 +475,37 @@ classdef PorousTransportLayer < ElectronicComponent
 
             state.liquidBcSource = upwindLiqrho*liquidBcFlux;
 
-            % We compute electrical flux (should be consistent with what is implemented in method updateCurrent)
-
-            phi   = state.phi;
-            phiBc = state.(bd).phi;
-            kappa = state.conductivity;
-            tc = harmFaceBC(kappa, bcfaces);
-
-            jBcFlux = tc.*(phiBc - phi(bccells));
-
-            cOH = state.concentrations{liqInd.OH};
-            cOHbc = state.cOH;
+            % expressions for electrical flux at boundary (should be consistent with what is implemented in method updateCurrent)
+            % We do not use them because we assume zero electrical flux at boundary.
             
-            dmudc = R.*T./cOH;
-            R     = model.constants.R;
-            F     = model.constants.F;
-            t     = model.sp.OH.t;
-            z     = model.sp.OH.z;             
-            coef  = (conductivity./F).*(t/z).*dmudc;
+            % phi   = state.phi;
+            % phiBc = state.(bd).phi;
+            % kappa = state.conductivity;
+            % tc = harmFaceBC(kappa, bcfaces);
 
-            tc = harmFaceBC(coef, bcfaces);
+            % jBcFlux = tc.*(phiBc - phi(bccells));
 
-            jBcFlux = jBcFlux + tc.*(cOHbc - cOH);
+            % cOH = state.concentrations{liqInd.OH};
+            % cOHbc = state.cOH;
+            
+            % dmudc = R.*T./cOH;
+            % R     = model.constants.R;
+            % F     = model.constants.F;
+            % t     = model.sp.OH.t;
+            % z     = model.sp.OH.z;             
+            % coef  = (conductivity./F).*(t/z).*dmudc;
+
+            % tc = harmFaceBC(coef, bcfaces);
+
+            % jBcFlux = jBcFlux + tc.*(cOHbc - cOH);
             
             % We compute the OH boundary fluxes
             
             % We compute OH boundary diffusion flux (should be consistent with what is implemented in method
             % updateOHDiffusionFlux)
+            cOH = state.concentrations{liqInd.OH};
+            cOHbc = state.cOH;
+
             vf = state.volumeFractions{phInd.liquid};
             tc = harmFaceBC((vf.^1.5).*D, bcfaces);
             diffOHbcFlux = tc.*(cOHbc - cOH(bccells));
@@ -514,9 +516,11 @@ classdef PorousTransportLayer < ElectronicComponent
             upwindcOHbc(liquidBcFlux > 0) = cOHbc(liquidBcFlux > 0);
             convOHbcFlux = upwindcOH.*liquiBcFlux;
             
-            % We compute OH boundary migration flux (should be consistent with what is implemented in method
-            % updateOHMigrationFlux)
-            migOHbcFlux = t./(z.*F).*jBcFlux;
+            % The OH boundary migration flux (should be consistent with what is implemented in method
+            % updateOHMigrationFlux) is given by: migOHbcFlux = t./(z.*F).*jBcFlux
+            % Since we assume no current at boundary it is equal to zero.
+            migOHbcFlux = 0;
+            
 
             OHbcSource = diffOHbcFlux + convOHbcFlux + migOHbcFlux;
             
@@ -548,15 +552,16 @@ classdef PorousTransportLayer < ElectronicComponent
 
             % Each variable is first initialized (in a way we get AD )
             for igas = 1 : gasInd.ngas
-                state.compGasBcSources{igas} = 0*phi;
+                state.compGasBcSources{igas}          = 0*phi;
                 state.compGasBcSources{igas}(bccells) = compGasBcSources{igas};
             end
-            state.OHbcSource = 0*phi;
-            state.OHbcSource(bccells) = OHbcSource;
-            state.jBcSource = 0*phi;
-            state.jBcSource(bccells) = jBcSource;
-            state.liquidBcSource = 0*phi;
+            state.OHbcSource              = 0*phi;
+            state.OHbcSource(bccells)     = OHbcSource;
+            state.jBcSource               = 0*phi;
+            state.jBcSource(bccells)      = jBcSource;
+            state.liquidBcSource          = 0*phi;
             state.liquidBcSource(bccells) = liquidBcSource;
+            
         end
 
         function state = updateVolumeFractions(model, state)
@@ -673,7 +678,6 @@ classdef PorousTransportLayer < ElectronicComponent
             
         end
 
-        
         function state = updateLiquidPressure(model, state)
         % assemble liquid pressure using capillary pressure function
 
@@ -1003,9 +1007,92 @@ classdef PorousTransportLayer < ElectronicComponent
             state.liquidStateEquation = liqStateEq;
             
         end
+    end
+    
+    methods (Static)
+
+        % Those methods are only used for initialization at the moment (can change)
+        
+        function rho = density(c, T)
+        %DENSITY Calculates the density of aqueous KOH solution as a
+        %function of concentration (c) in mol/m3 and temperature (T) in
+        %K. 
+        %   Density data is compiled from Zatysev et al., Ref [1], and
+        %   fit using the MATLAB curve fitting toolbox. Units are kg/m3
+        %   or g/L. Valid from 0 - 50 wt% and 0 - 100 degC.
+
+            
+            coefs = [ 794.7015;
+                      0.0456546;  
+                      1.6355;
+                      -8.392e-7; 
+                      1.659e-5;
+                      -0.003205;
+                      1.73e-11;
+                      -9.7647e-12;
+                      -3.3927e-08 ];
+            
+            % Empirical model for mass density, rho = f(c,T)
+            rho = coefs(1)                                         + ...
+                  coefs(2).*c + coefs(3).*T                        + ...
+                  coefs(4).*c.^2 + coefs(5).*c.*T + coefs(6).*T.^2 + ...
+                  coefs(7).*c.^3                                   + ...
+                  coefs(8).*c.^2.*T + coefs(9).*c.*T.^2;
+
+        end
+
+        function [Vs, cH2O] partialMolarVolume(c, rho, T)
+        % rho : liquid density [kg m^-3]
+        % c : concentration [mol m^-3] 
+            
+            MW = 0.0561056;  % Molecular Weight of KOH [kg mol^-1] 
+            
+            sp = model.sp;
+            lind = model.liquidInd;
+            
+            % Calculate molal concentration
+            m =  c./(rho - c*MW);
+
+            % introduced alias just for clarity in the expressions below
+            cOH = c;
+            cK  = c;
+            mOH = m;
+            mK  = m;
+
+            coefs = [778.6106;
+                     42.8554;  
+                     1.7400;
+                     -1.4428;
+                     0.04585;
+                     -0.0034;
+                     0.0197;
+                     4.1087e-4;
+                     -1.1139e-4];
+            
+            % Empirical model for first derivative of mass density with
+            % respect to KOH molality
+            
+            drhodm = coefs(2)                     + ...
+                     2.*coefs(4).*m + coefs(5).*T + ...
+                     3.*coefs(7).*m.^2            + ...
+                     2.*coefs(8).*m.*T + coefs(9).*T.^2;
+            
+            pmv = -1./(rho.^2).*drhodm.*(1 + m.*MW) + (1./rho).*MW; 
+            
+            Vs(lind.OH)  = pmv.*abs(sp.OH.V0)./(abs(sp.OH.V0) + abs(sp.K.V0)); 
+            Vs(lind.K)   = pmv.*abs(sp.K.V0)./(abs(sp.OH.V0) + abs(sp.K.V0)); 
+            Vs(lind.H2O) = sp.H2O.MW.* (1./rho +...
+                                        mOH.*(sp.OH.MW./rho - Vs(lind.OH)) +...
+                                        mK.*(sp.K.MW ./rho - Vs(lind.OH))); 
+            
+            cH2O = (1 - cOH.*Vs(lind.OH) - cK.*Vs(lind.K))./V(lind.H2O);
+            
+        end
+        
+        
         
     end
-
-
 end
+
+
 

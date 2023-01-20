@@ -6,8 +6,7 @@ classdef EvolutionElectrode < BaseModel
         CatalystLayer
         ExchangeLayer
 
-        couplingTerms % Coupling terms
-        couplingNames
+        couplingTerm % Coupling term between ptl and ctl
         
     end
 
@@ -15,6 +14,9 @@ classdef EvolutionElectrode < BaseModel
 
         function model = EvolutionElectrode(paramobj)
 
+            fdnames = {'couplingTerm'};
+            model = dispatchParams(model, paramobj, fdnames);            
+            
             switch paramobj.porousTransportLayerType
               case 'Hydrogen'
                 MWs(1) = paramobj.PorousTransportLayer.sp.H2O.MW;

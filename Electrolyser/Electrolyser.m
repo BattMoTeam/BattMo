@@ -14,6 +14,8 @@ classdef Electrolyser < BaseModel
 
         primaryVarNames
         funcCallList
+
+        controlI % given value for galvanistic control
         
     end
     
@@ -23,11 +25,16 @@ classdef Electrolyser < BaseModel
 
             model = model@BaseModel();
 
-            model.G = paramobj.G;
-            
+            fdnames = {'G' , ...
+                       'couplingTerms'};
+            model = dispatchParams(model, paramobj, fdnames);
+
             model.OxygenEvolutionElectrode   = EvolutionElectrode(paramobj.OxygenEvolutionElectrode);
             model.HydrogenEvolutionElectrode = EvolutionElectrode(paramobj.HydrogenEvolutionElectrode);
             model.IonomerMembrane            = IonomerMembrane(paramobj.IonomerMembrane);
+
+            % setup couplingNames
+            model.couplingNames = cellfun(@(x) x.name, model.couplingTerms, 'uniformoutput', false);
             
         end
         
@@ -35,7 +42,8 @@ classdef Electrolyser < BaseModel
 
             model = registerVarAndPropfuncNames@BaseModel(model);
 
-            varnames = {'T'};
+            varnames = {'T',
+                        VarName({}, 'controlEqs', 2)};
 
             model = model.registerVarNames(varnames);
 
@@ -87,10 +95,19 @@ classdef Electrolyser < BaseModel
                     model = model.registerPropFunction({{elde, layer, 'H2OaInmr'}, fn, inputvarnames});
                 end
             end
+
+            fn = @Electrolyser.setupControl;
+            inputvarnames = {{oer, ctl, 'I'}, ...
+                             {her, ctl, 'E'}
+                            };
+            model = model.registerPropFunction({VarName({}, 'controlEqs', 2), fn, inputvarnames});
+
             
             model = model.registerStaticVarNames({{inm, 'jBcSource'}, ...
                                                   'T'});
-            
+
+            model = model.removeVarNames({{her, ctl, 'I'}, ...
+                                          {her, ctl, 'eSource'}});
         end
 
 
@@ -104,10 +121,51 @@ classdef Electrolyser < BaseModel
             
         end
         
-        function initstate = setupInitialState(model)
+        function state = setupInitialState(model)
+            
+            oer = 'OxygenEvolutionElectrode';
+            her = 'HydrogenEvolutionElectrode';
+            ptl = 'PorousTransportLayer';
+            
+            %  
+            pGas = 101325; % pressure of active gas (O2 or H2)
+            cOH = 1000*mol/(meter^3); 
+            T = 333.15;
+            liqrho = PorousTransportLayer.density(cOH, T);
+
+            
+            eldes = {oer, her};
+
+            for ielde = 1 : numel(eldes)
+
+                elde = eldes{ielde};
+                fun = @(s) leverett(model.(elde).(ptl).levCoef, s); % Define Leverett function handle
+                sLiquid = fzero(fun, 0.7); % Solve equilibrium liquid saturation
+
+                svf = model.(elde).(ptl).solidVolumeFraction;
+                state.(elde).(ptl).liqeps = sLiquid.*(1 - svf);
+
+                state.(elde).(ptl).liqrhoeps = liqrho*state.(elde).(ptl).liqeps;
+
+                
+            end
+
             
         end
 
+        function state = setupControl(model, state)
+            
+            oer = 'OxygenEvolutionElectrode';
+            her = 'HydrogenEvolutionElectrode';
+            ctl = 'CatalystLayer';
+
+            controlEqs{1} = state.(oer).(ctl).I - model.controlI;
+            controlEqs{2} = state.(her).E; % we impose zero potential at cathode
+
+            state.controlEqs = controlEqs;
+            
+        end
+        
         function state = dispatchTemperature(model, state)
             
             oer = 'OxygenEvolutionElectrode';

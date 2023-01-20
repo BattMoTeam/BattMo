@@ -13,7 +13,6 @@ classdef PorousTransportLayerBoundary < BaseModel
                       % - liqrho
                       % - phasePressures
                       % - gasDensities
-                      % - phi
         
     end
     
@@ -64,42 +63,27 @@ classdef PorousTransportLayerBoundary < BaseModel
             % Liquid density (Mass of liquid per volume of liquid) in [kg m^-3]
             varnames{end + 1} = 'liqrho';
 
-            % Concentrations in the liquid in [mol m^-3]
-            concentrations = VarName({}, 'concentrations', nliquid);
-            varnames{end + 1} = concentrations;
+            varnames{end + 1} = 'cOH';
 
             % electric potential
-            varnames{end + 1} = 'phi';
+            % not needed because (for the moment) we impose a no current condition at the boundary
+            % varnames{end + 1} = 'phi';
 
             % Boundary equations
             bcEquations = VarName({}, 'bcEquations', 2 + ngas);
             varnames{end + 1} = bcEquations;
             
             % Boundary control equations
-            bcControlEquations = VarName({}, 'bcControlEquations', nmobph + 1);
+            bcControlEquations = VarName({}, 'bcControlEquations', nmobph);
             varnames{end + 1} = bcControlEquations;
 
             model = model.registerVarNames(varnames);
 
             model = model.removeVarName(VarName({}, 'phasePressures', nph, phaseInd.solid));
-
-            cOH = VarName({}, 'concentrations', nliquid, liquidInd.OH);
-            fn = @() PorousTransportLayerBoundary.updateConcentrations;
-            inputnames = {'liqrho', ...
-                          cOH};
-            ind = setdiff([1 : nliquid]', liquidInd.OH);
-            model = model.registerPropFunction({VarName({}, 'concentrations', nliquid, ind), fn, inputnames});
             
             fn = @() PorousTransportLayerBoundary.setupBcControlEquations;
-            inputnames = {VarName({}, 'phasePressures', nph, model.mobPhaseInd.phaseMap), ...
-                          'phi'};
+            inputnames = {VarName({}, 'phasePressures', nph, model.mobPhaseInd.phaseMap)};
             model = model.registerPropFunction({bcControlEquations, fn, inputnames});
-            
-        end
-
-        function state = updateConcentrations(model, state)
-
-            state = PorousTransportLayer.updateConcentrations(model, state);
             
         end
 
@@ -111,8 +95,6 @@ classdef PorousTransportLayerBoundary < BaseModel
                 iph = model.mobPhaseInd.phaseMap(imobph);
                 eqs{imobph} = state.phasePressures{iph} - model.controlValues.phasePressure{imobph};
             end
-
-            eqs{nmobph + 1} = state.phi - model.controlValues.phi;
 
             state.bcControlEquations = eqs;
             

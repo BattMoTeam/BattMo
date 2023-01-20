@@ -9,7 +9,8 @@ classdef ElectrolyserInputParams < InputParams
         OxygenEvolutionElectrode        
                 
         couplingTerms
-
+        
+        controlI % given value for galvanistic control
     end
     
     methods
