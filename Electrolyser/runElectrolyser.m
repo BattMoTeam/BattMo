@@ -1,17 +1,13 @@
 mrstModule add ad-core mpfa
 
-
 jsonstring = fileread('/home/xavier/Matlab/Projects/battmo/Electrolyser/Parameters/alkalineElectrolyser.json');
 jsonstruct = jsondecode(jsonstring);
 paramobj = ElectrolyserInputParams(jsonstruct);
 
+jsonstring = fileread('/home/xavier/Matlab/Projects/battmo/Electrolyser/Parameters/electrolysergeometry1d.json');
+jsonstruct = jsondecode(jsonstring);
 
-xs = ones(5, 1);
-nxs = 5 + (1 : 5)';
-
-gen = ElectrolyserGridGenerator1D(xs, nxs);
-
-paramobj = gen.updateElectrolyserInputParams(paramobj);
+paramobj = setupElectrolyserGridFromJson(paramobj, jsonstruct);
 
 inm = 'IonomerMembrane';
 her = 'HydrogenEvolutionElectrode';
