@@ -1,0 +1,53 @@
+{
+  "$id": "file://battmo/schemas/ElectrolyserGeometry",
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "description": "Specification of the geometry for the electrolyser including the discretization parameters and volume fractions",
+  "type": "object",
+  
+  "properties" : {
+    "Geometry" : {
+      "type" : "object",
+      "properties" : {
+        "case" : {
+          "type" : "string",
+          "enum" : ["1D"],
+          "comment" : "only 1D is implemented now"}}},
+
+    "IonomerMembrane" :  {
+      "allOf" : [
+        {"$ref" : "#/$defs/dim"},
+        {"properties" : {
+          "widths" : {
+            "type" : "object",
+            "properties" : {
+              "oxygenCatalystSide" : {
+                "type" : "number",
+                "description" : "volume fraction occipied by ionomer on the oxygen electrode side"},
+              "hydrogenCatalystSide" : {
+                "type" : "number",
+                "description" : "volume fraction occipied by ionomer on the hydrogen electrode side"}}}}}]},
+
+    "OxygenEvolutionElectrode" : {"$ref" : "#/$defs/EvolutionElectrode"},
+
+    "HydrogenEvolutionElectrode" : {"$ref" : "#/$defs/EvolutionElectrode"}},
+  
+
+  "$defs" : {
+
+
+    "dim" : {
+      "type" : "object",
+      "properties" : {
+        "length" : {
+          "type" : "number"},
+        "N" : {
+          "type" : "number",
+          "description" : "discretization parameter"}}},
+
+
+    "EvolutionElectrode" : {
+      "type" : "object",
+      "properties" : {
+        "PorousTransportLayer" : {"$ref" : "#/$defs/dim"},
+        "CatalystLayer" : {"$ref" : "#/$defs/dim"}
+      }}}
