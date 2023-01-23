@@ -165,22 +165,62 @@ classdef Electrolyser < BaseModel
                 state.(elde).(ptl).H2Ogasrhoeps = H2Ogrho*gvf;
 
                 switch elde
+                    
                   case oer
+
                     O2p = pGas;
                     O2rho = O2p.*model.(oer).(ptl).O2.MW / (con.R * T);
                     state.(elde).(ptl).O2rhoeps = O2rho*gvf;
-                    state.(elde).(ctl).E = 0
+
+                    state.(oer).(ptl) = model.(oer).(ptl).updateVolumeFractions(state.(oer).(ptl));
+                    state.(oer).(ptl) = model.(oer).(ptl).updateOHconcentration(state.(oer).(ptl));
+                    state.(oer).(ptl) = model.(oer).(ptl).updateLiquidDensity(state.(oer).(ptl));
+                    state.(oer).(ptl) = model.(oer).(ptl).updateMolality(state.(oer).(ptl));
+                    state             = model.dispatchTemperature(state);
+                    state.(oer)       = model.(oer).dispatchTemperature(state.(oer));
+                    state.(oer).(ptl) = model.(oer).(ptl).updateWaterActivity(state.(oer).(ptl));
+                    state.(oer)       = model.(oer).dispatchToCatalystAndExchangeLayers(state.(oer));
+                    state.(oer).(ptl) = model.(oer).(ptl).updateGasPressure(state.(oer).(ptl));
+                    state.(oer).(ctl) = model.(oer).(ctl).updateEelyte(state.(oer).(ctl));
+
+                    Eelyte = state.(oer).(ctl).Eelyte;
+                    
+                    state.(elde).(ctl).E = Eelyte(1);
+                    
                   case her
+                    
                     H2p = pGas;
                     H2rho = H2p.*model.(oer).(ptl).O2.MW / (con.R * T);                    
                     state.(elde).(ptl).H2rhoeps = H2rho*gvf;
                     state.(elde).(ctl).E = 0
+                    
                   otherwise
+                    
                     error('electrode not recognized');
+                    
                 end
 
             end
 
+            state.(inm)       = model.(inm).updateH2Oc(state.(inm));
+            state.(inm)       = model.(inm).updateH2Oa(state.(inm));
+            state             = model.dispatchIonomerToReactionLayers(state);
+            state             = model.dispatchTemperature(state);
+            state.(oer)       = model.(oer).dispatchTemperature(state.(oer));
+            state.(oer).(ptl) = model.(oer).(ptl).updateGasPressure(state.(oer).(ptl));
+            state.(oer)       = model.(oer).dispatchToCatalystAndExchangeLayers(state.(oer));
+            state.(oer).(ctl) = model.(oer).(ctl).updateEinmr(state.(oer).(ctl));
+
+            Einmr = state.(oer).(ctl).Einmr;
+            nc = model.(inm).G.cells.num;
+
+            state.(inm).phi = Einmr(1)*ones(nc, 1);
+
+            % We use water activity in oer. It has been already computed above.
+            aw = state.(oer).(ptl).H2Oa(1)
+            cH2O = model.(inm).groupHydration(aw, T);
+
+            state.(inm).H2Oceps = cH2O.*model.(inm).volumeFraction;
             
         end
 

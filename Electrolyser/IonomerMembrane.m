@@ -7,6 +7,7 @@ classdef IonomerMembrane < ElectronicComponent
         H2O % with fields
         % H2O.c0 : Reference concentration
         % H2O.D  : diffusion coefficient for water
+        % H2O.V0 : Molar mass (needed for function groupHydration which is only needed in setup of initial condition and not for assembly)
         
         OH % with fields
         % OH.xi : OH occupation
@@ -14,6 +15,8 @@ classdef IonomerMembrane < ElectronicComponent
         % OH.t  : transference number
 
         cT % Total concentration of charged groups
+
+        V % molar volume (needed for function groupHydration which is only needed in setup of initial condition and not for assembly)
         
     end
     
@@ -27,7 +30,8 @@ classdef IonomerMembrane < ElectronicComponent
             fdnames = {'volumeFraction', ...
                        'H2O'           , ...
                        'OH'            , ...
-                       'cT'};
+                       'cT'            , ...
+                       'V'};
             model = dispatchParams(model, paramobj, fdnames);
 
             model.constants = PhysicalConstants();
@@ -89,7 +93,7 @@ classdef IonomerMembrane < ElectronicComponent
             model = model.registerPropFunction({'H2Oc', fn, inputnames});
             
             % update water activity
-            fn = @() IonomerMembrane.updateH2Oa;
+            fn = @() IonomerMembrane.updateH2Oactivity;
             inputnames = {'H2Oc'};
             model = model.registerPropFunction({'H2Oa', fn, inputnames});
             
@@ -297,6 +301,31 @@ classdef IonomerMembrane < ElectronicComponent
             state.H2Oaccum = 1/dt*vols.*(c - c0);
             
         end
+
+
+        
+    end
+
+    methods(Static)
+
+        function cH2O = groupHydration(model, aw, T)
+
+            V = model.V;
+            V0 = model.H2O.V0;
+            
+            aw(aw > 1) = 1;
+            %   lambda corresponds to the number of water molecules per charged
+            %   group, in the membrane and ionomer phase, given the membrane water
+            %   activity and the temperature. The default polynomial relationship is based on
+            %   Jiao et al., Int J Hydrogen Energy 2014, doi:10.1016/j.ijhydene.2014.01.180
+            %   using only the water activity < 1 portion of their equation.
+            lambda = ((-0.6.*aw.^3 + 0.85.*aw.^2 - 0.2.*aw + 0.153) .* (T - 313) ...
+                      + 39.*aw.^3 - 47.7.*aw.^2 + 23.4.*aw + 0.117).*29./18.877;
+
+            cH2O = lambda./(V0.*lambda + V);
+            
+        end
+        
     end
     
 end

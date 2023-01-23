@@ -2,10 +2,12 @@
   "IonomerMembrane": {
     "liquidVolumeFraction" : 0.9,
     "H2O" : {"c0" : 1000,
-             "D" : 8.84e-10},
+             "D" : 8.84e-10,
+             "V0": 18e-6},
     "OH" : {"xi" : 1,
             "z" : -1,
-            "t" : 1}
+            "t" : 1},
+    "V" : 7.6e-4
   },
   "HydrogenEvolutionElectrode": {
     "porousTransportLayerType" : "Hydrogen",
