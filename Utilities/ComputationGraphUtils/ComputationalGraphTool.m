@@ -57,9 +57,9 @@ classdef ComputationalGraphTool
             
             indSelectedNodenames = regexp(nodenames, nodename, 'once');
             indSelectedNodenames = cellfun(@(x) ~isempty(x), indSelectedNodenames);
-            indPropfunctions = A(:, indSelectedNodenames);
-            indPropfunctions = unique(indPropfunctions(:));
-            indPropfunctions = indPropfunctions(indPropfunctions > 0); % remove the zero elements
+            propfuncinds = A(:, indSelectedNodenames);
+            propfuncinds = unique(propfuncinds(:));
+            propfuncinds = propfuncinds(propfuncinds > 0); % remove the zero elements
 
             staticprops = cgt.staticprops;
             staticnodenames = cellfun(@(staticprop) staticprop.nodename, staticprops, 'uniformoutput', false);
@@ -68,9 +68,9 @@ classdef ComputationalGraphTool
             staticprops = staticprops(indSelectedNodenames);
             staticIndPropfunctions = cellfun(@(staticprop) staticprop.propind, staticprops);
 
-            indPropfunctions = [indPropfunctions; staticIndPropfunctions'];
+            propfuncinds = [propfuncinds; staticIndPropfunctions'];
             
-            propfuncs = model.propertyFunctionList(indPropfunctions);
+            propfuncs = model.propertyFunctionList(propfuncinds);
 
             if numel(propfuncs) == 1
                 propfuncs = propfuncs{1};
@@ -78,6 +78,70 @@ classdef ComputationalGraphTool
             
         end
 
+        function propfuncs = getPropFunctionCallList(cgt, nodename)
+
+            propfunc = cgt.findPropFunction(nodename);
+
+            if isempty(propfunc)
+                fprintf('No property matching regexp has been found\n');
+                return
+            end
+            
+            if numel(propfunc) > 1
+                fprintf('Several property functions are matching\n\n');
+                cgt.printPropFunction(nodename);
+                return
+            end
+
+            A = cgt.A;
+            
+            varnameind = cgt.getVarNameIndex(propfunc.varname);
+
+            nodeindlist = getDependencyVarNameInds(varnameind, cgt.A);
+
+            propfuncinds = [];
+            
+            for inode = 1 : numel(nodeindlist)
+
+                nodeind = nodeindlist(inode);
+                propfuncind = unique(A(:, nodeind));
+                propfuncind = propfuncind(propfuncind > 0);
+                if ~isempty(propfuncind)
+                    propfuncinds(end + 1) = propfuncind;
+                end
+            end
+
+            propfuncinds = propfuncinds(end : -1 : 1); 
+            
+            propfuncs = cgt.model.propertyFunctionList(propfuncinds);
+            
+        end
+
+        function printPropFunctionCallList(cgt, nodename)
+
+            propfuncs = cgt.getPropFunctionCallList(nodename);
+
+            strs = {};
+            for iprop = 1 : numel(propfuncs)
+
+                propfunc = propfuncs{iprop};
+                str = propfunc.functionCallSetupFn(propfunc);
+                strs{end + 1} =  sprintf('%s\n', str);
+                
+            end
+
+            [~, ia, ic] = unique(strs, 'first');
+            ia = sort(ia);
+            strs = strs(ia);
+
+            for istr = 1 : numel(strs)
+                fprintf(strs{istr});
+            end
+            
+        end
+        
+        
+        
         function openPropFunction(cgt, nodename)
             propfunc = cgt.findPropFunction(nodename);
 
@@ -169,7 +233,21 @@ classdef ComputationalGraphTool
             end
             
         end
-        
+
+        function varnameind = getVarNameIndex(cgt, varname)
+
+            for varnameind = 1 : numel(cgt.varNameList)
+                if varname.compareVarName(cgt.varNameList{varnameind})
+                    return
+                end
+            end
+
+            fprintf('Variable not found\n');
+            varnameind = [];
+
+            
+        end
+            
         function [g, edgelabels] = getComputationalGraph(cgt, varargin)
             
             opt = struct('type'            , 'ascendant', ...
