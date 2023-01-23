@@ -1041,7 +1041,7 @@ classdef PorousTransportLayer < ElectronicComponent
 
         end
 
-        function [Vs, cH2O] partialMolarVolume(c, rho, T)
+        function [Vs, cH2O] = partialMolarVolume(c, rho, T)
         % rho : liquid density [kg m^-3]
         % c : concentration [mol m^-3] 
             

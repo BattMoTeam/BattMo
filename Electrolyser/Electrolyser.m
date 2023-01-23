@@ -126,28 +126,59 @@ classdef Electrolyser < BaseModel
             oer = 'OxygenEvolutionElectrode';
             her = 'HydrogenEvolutionElectrode';
             ptl = 'PorousTransportLayer';
+
+            con = model.con;
             
             %  
-            pGas = 101325; % pressure of active gas (O2 or H2)
-            cOH = 1000*mol/(meter^3); 
-            T = 333.15;
-            liqrho = PorousTransportLayer.density(cOH, T);
+            pGas = 101325*Pascal; % pressure of active gas (O2 or H2)
+            cOH  = 1000*mol/(meter^3); 
+            T    = 333.15*Kelvin;
 
+            state = model.dispatchTemperature(state);
+            
+            liqrho = PorousTransportLayer.density(cOH, T);
             
             eldes = {oer, her};
 
             for ielde = 1 : numel(eldes)
 
                 elde = eldes{ielde};
+                nc = model.(elde).(ptl).G.cells.num;
+
                 fun = @(s) leverett(model.(elde).(ptl).levCoef, s); % Define Leverett function handle
                 sLiquid = fzero(fun, 0.7); % Solve equilibrium liquid saturation
 
                 svf = model.(elde).(ptl).solidVolumeFraction;
-                state.(elde).(ptl).liqeps = sLiquid.*(1 - svf);
 
+                state.(elde).(ptl).liqeps    = sLiquid.*(1 - svf);
+                state.(elde).(ptl).OHceps    = cOH.*scvf;
                 state.(elde).(ptl).liqrhoeps = liqrho*state.(elde).(ptl).liqeps;
-
                 
+                % [Vs, cH2O] = PorousTransportLayer.partialMolarVolume(c, rho, T);
+
+                state.(elde).(ptl) = model.(elde).(ptl).udpateMolality(state.(elde).(ptl));
+                state.(elde).(ptl) = model.(elde).(ptl).udpateVaporPressure(state.(elde).(ptl));
+                H2Ovp = state.(elde).(ptl).vaporPressure;
+                H2Ogrho = H2Ovp*model.H2O.MW./(con.R*T);
+                gvf = (1 - svf - model.(elde).(ptl).solidVolumeFraction); % Gas volume fraction
+                
+                state.(elde).(ptl).H2Ogasrhoeps = H2Ogrho*gvf;
+
+                switch elde
+                  case oer
+                    O2p = pGas;
+                    O2rho = O2p.*model.(oer).(ptl).O2.MW / (con.R * T);
+                    state.(elde).(ptl).O2rhoeps = O2rho*gvf;
+                    state.(elde).(ctl).E = 0
+                  case her
+                    H2p = pGas;
+                    H2rho = H2p.*model.(oer).(ptl).O2.MW / (con.R * T);                    
+                    state.(elde).(ptl).H2rhoeps = H2rho*gvf;
+                    state.(elde).(ctl).E = 0
+                  otherwise
+                    error('electrode not recognized');
+                end
+
             end
 
             
