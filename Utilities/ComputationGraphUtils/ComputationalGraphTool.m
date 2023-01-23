@@ -192,7 +192,7 @@ classdef ComputationalGraphTool
             
             if ~isempty(includeNodeNames)
                 
-                nodes = getNodeDependencyListByName(includeNodeNames, nodenames, A, 'oneParentOnly', opt.oneParentOnly);
+                nodes = getDependencyVarNameIndsByName(includeNodeNames, nodenames, A, 'oneParentOnly', opt.oneParentOnly);
 
                 nodenames = nodenames(nodes);
                 A = A(nodes, nodes);
