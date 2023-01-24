@@ -1,29 +1,28 @@
 {"Geometry" : {
-  "case" : "1D"},
+  "case" : "1D",
+  "thickness" : 450e-6},
  "IonomerMembrane" : {
-   "length" : 2.5e-6,
-   "N" : 5,
+   "length" : 70e-6,
+   "cellsize" : 2.5e-6,
    "widthFractions" : {
      "oxygenCatalystSide" : 0.2,
      "hydrogenCatalystSide" : 0.1}},
  "OxygenEvolutionElectrode" : {
    "PorousTransportLayer" : {
-     "length" : 5.1e-6,
-     "N" : 6,
-     "widthFractions" : {
-       "main" : 0.33,
-       "ionomerside" : 0.14}},
+     "length" : 650e-6,
+     "cellsize" : 5e-6,
+     "widthFraction" : 0.33},
    "CatalystLayer" : {
-     "length" : 1e-6,
-     "N" : 3}},
+     "length" : 10e-6,
+     "cellsize" : 0.1e-6,
+     "widthFraction" : 0.14}},
  "HydrogenEvolutionElectrode" : {
    "PorousTransportLayer" : {
-     "length" : 5.1e-6,
-     "N" : 7,
-     "widthFractions" : {
-       "main" : 0.33,
-       "ionomerside" : 0.12}},
+     "length" : 400e-6,
+     "cellsize" : 5e-6,
+     "widthFraction" :  0.33},
    "CatalystLayer" : {
-     "length" : 1e-6,
-     "N" : 6}}
+     "length" : 10e-6,
+     "cellsize" : 0.1e-6,
+     "widthFraction" : 0.12}}
 }

@@ -10,25 +10,29 @@ classdef ElectrolyserGridGenerator1D < ElectrolyserGridGenerator
            % x(4) : length of hydrogen catalyst layer
            % x(5) : length of hydrogen porous transport layer
 
+        cxs % length of the finite volume cells for each component (same dimension as )
         nxs % vector of same length as xs with the corresponding discretization numbers
 
     end
 
     methods
 
-        function gen = ElectrolyserGridGenerator1D(xs, nxs)
+        function gen = ElectrolyserGridGenerator1D(xs, cxs)
             gen = gen@ElectrolyserGridGenerator();
             if nargin > 0
                 gen.xs = xs;
-                gen.nxs = nxs;
+                gen.cxs = cxs;
             end
 
         end
 
         function [paramobj, gen] = updateElectrolyserInputParams(gen, paramobj)
 
-            xs = gen.xs;
-            nxs = gen.nxs;
+            xs  = gen.xs;
+            cxs = gen.cxs;
+
+            nxs = round(xs./cxs);
+            gen.nxs = nxs;
 
             oer = 'OxygenEvolutionElectrode';
             her = 'HydrogenEvolutionElectrode';

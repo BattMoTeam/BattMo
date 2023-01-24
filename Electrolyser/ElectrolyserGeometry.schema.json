@@ -11,7 +11,8 @@
         "case" : {
           "type" : "string",
           "enum" : ["1D"],
-          "comment" : "only 1D is implemented now"}}},
+          "comment" : "only 1D is implemented now"}
+      }},
 
     "IonomerMembrane" :  {
       "allOf" : [
@@ -40,14 +41,35 @@
       "properties" : {
         "length" : {
           "type" : "number"},
-        "N" : {
+        "cellsize" : {
           "type" : "number",
-          "description" : "discretization parameter"}}},
+          "description" : "size of the finite volume cell"}}},
 
 
     "EvolutionElectrode" : {
       "type" : "object",
       "properties" : {
-        "PorousTransportLayer" : {"$ref" : "#/$defs/dim"},
-        "CatalystLayer" : {"$ref" : "#/$defs/dim"}
-      }}}
+        "PorousTransportLayer" : {
+          "allOf" : [
+            {
+            "$ref" : "#/$defs/dim"},
+            {
+              "properties" : {
+                "widthFraction" : {
+                  "type" : "number",
+                  "description" : "volume fraction occupied by porous transport layer"}}}],
+          "description" : "the dimension of the porous transport layer apply only for the part not including the catalyst layer"
+          },
+        "CatalystLayer" : {
+          "allOf" : [
+            {
+            "$ref" : "#/$defs/dim"},
+            {
+              "properties" : {
+                "widthFraction" : {
+                  "type" : "number",
+                  "description" : "volume fraction occupied by catalyst layer transport layer"}}}]
+        }
+      }
+    }
+  }

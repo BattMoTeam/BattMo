@@ -18,16 +18,13 @@ function paramobj = setupElectrolyserGridFromJson(paramobj, jsonstruct)
         xs(4) = jsonstruct.(her).(ctl).length;        
         xs(5) = jsonstruct.(her).(ptl).length;
 
-        xs(1) = xs(1) - xs(2);
-        xs(5) = xs(5) - xs(4);
+        cxs = [jsonstruct.(oer).(ptl).cellsize;
+               jsonstruct.(oer).(ctl).cellsize;
+               jsonstruct.(inm).cellsize;
+               jsonstruct.(her).(ctl).cellsize;        
+               jsonstruct.(her).(ptl).cellsize];
 
-        nxs = [jsonstruct.(oer).(ptl).N;
-               jsonstruct.(oer).(ctl).N;
-               jsonstruct.(inm).N;
-               jsonstruct.(her).(ctl).N;        
-               jsonstruct.(her).(ptl).N];
-
-       gen = ElectrolyserGridGenerator1D(xs, nxs);
+       gen = ElectrolyserGridGenerator1D(xs, cxs);
        paramobj = gen.updateElectrolyserInputParams(paramobj);
 
        % We add the solid volume fraction 
@@ -39,11 +36,11 @@ function paramobj = setupElectrolyserGridFromJson(paramobj, jsonstruct)
        for ielde = 1 : numel(eldes)
            
            elde = eldes{ielde};
-           svf_elde = jsonstruct.(elde).(ptl).widthFractions.main;
+           svf_elde = jsonstruct.(elde).(ptl).widthFraction;
            svf_elde = svf_elde*ones(paramobj.(elde).(ptl).G.cells.num, 1);
            
            coupterm = paramobj.(elde).couplingTerm;
-           w_elde = jsonstruct.(elde).(ptl).widthFractions.ionomerside;
+           w_elde = jsonstruct.(elde).(ctl).widthFraction;
            switch elde
              case oer
                side = 'oxygenCatalystSide';
