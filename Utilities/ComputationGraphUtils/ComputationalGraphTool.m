@@ -84,18 +84,28 @@ classdef ComputationalGraphTool
 
             if isempty(propfunc)
                 fprintf('No property matching regexp has been found\n');
+                propfuncs = {};
                 return
             end
             
             if numel(propfunc) > 1
                 fprintf('Several property functions are matching\n\n');
                 cgt.printPropFunction(nodename);
+                propfuncs = {};
                 return
             end
 
             A = cgt.A;
+
+            varname = propfunc.varname;
+            % for cell-valued variable pick-up a valid index
+            if (varname.dim > 1) && (ischar(varname.index))
+                varname.index = 1;
+            elseif isnumeric(varname.index) && (numel(varname.index) > 1)
+                varname.index = varname.index(1);
+            end
             
-            varnameind = cgt.getVarNameIndex(propfunc.varname);
+            varnameind = cgt.getVarNameIndex(varname);
 
             nodeindlist = getDependencyVarNameInds(varnameind, cgt.A);
 
@@ -121,6 +131,10 @@ classdef ComputationalGraphTool
 
             propfuncs = cgt.getPropFunctionCallList(nodename);
 
+            if isempty(propfuncs)
+                return
+            end
+            
             strs = {};
             for iprop = 1 : numel(propfuncs)
 
