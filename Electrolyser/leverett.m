@@ -13,6 +13,6 @@ function J = leverett(par, s)
 
     J   =   J0 + ...
             A1 .* exp(B1 .* (s-0.5)) - ...
-            A2 .* exp(-B2 .* (s-0.5));
+            A2 .* exp(B2 .* (s-0.5));
                       
 end
