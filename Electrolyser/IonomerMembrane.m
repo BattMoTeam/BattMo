@@ -14,7 +14,7 @@ classdef IonomerMembrane < ElectronicComponent
         % OH.z  : charge number 
         % OH.t  : transference number
 
-        cT % Total concentration of charged groups
+        cT % Total concentration of charged groups (one value per cell)
 
         V % molar volume (needed for function groupHydration which is only needed in setup of initial condition and not for assembly)
         
@@ -30,10 +30,13 @@ classdef IonomerMembrane < ElectronicComponent
             fdnames = {'volumeFraction', ...
                        'H2O'           , ...
                        'OH'            , ...
-                       'cT'            , ...
                        'V'};
             model = dispatchParams(model, paramobj, fdnames);
 
+            cT = paramobj.cT;
+            nc = model.G.cells.num;
+            model.cT = cT*ones(nc, 1);
+            
             model.constants = PhysicalConstants();
             
         end

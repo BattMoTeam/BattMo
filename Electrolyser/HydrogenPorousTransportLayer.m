@@ -70,16 +70,17 @@ classdef HydrogenPorousTransportLayer < PorousTransportLayer
             phaseInd = model.phaseInd;
             MWH2O    = model.sp.H2O.MW;
             MWH2     = model.sp.H2.MW;
+            R        = model.constants.R;
             
             mH2  = state.H2rhoeps;
             mH2O = state.H2Ogasrhoeps;
             vf   = state.volumeFractions{model.phaseInd.gas};
-
+            T    = state.T;
             pH2  = R*T*(mH2./MWH2)./vf
             pH2O = R*T*(mH20./MWH2)./vf
             
-            state.compGasPressure{gasInd.H2}   = pH2;
-            state.compGasPressure{gasInd.H2O}  = pH2O
+            state.compGasPressures{gasInd.H2}   = pH2;
+            state.compGasPressures{gasInd.H2O}  = pH2O
             state.phasePressures{phaseInd.gas} = pH2 + pH2O;
             
         end

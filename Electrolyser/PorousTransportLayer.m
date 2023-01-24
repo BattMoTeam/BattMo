@@ -59,14 +59,14 @@ classdef PorousTransportLayer < ElectronicComponent
 
             
             compInd.H2Oliquid = 1;
-            compInd.H2Ogas    = 2;
+            compInd.H2O    = 2;
             compInd.OH        = 3;
             compInd.K         = 4;
             compInd.activeGas = 5;
             % compInd.(H2 or O2) = 5 % should be instantiated by derived class see HydrogenPorousTransportLayer.m and OxygenPorousTransportLayer.m
             compInd.ncomp     = 5;
             compInd.liquid    = [compInd.H2Oliquid; compInd.OH; compInd.K];
-            compInd.gas       = [compInd.H2Ogas; compInd.activeGas];
+            compInd.gas       = [compInd.H2O; compInd.activeGas];
             
             phaseInd.liquid = 1;
             phaseInd.gas    = 2;
@@ -88,7 +88,7 @@ classdef PorousTransportLayer < ElectronicComponent
             liquidInd.ncomp  = 3;
             liqudInd.compMap = [1; 3; 4];
             
-            gasInd.H2Ogas    = 1;
+            gasInd.H2O    = 1;
             gasInd.activeGas = 2;
             gasInd.ncomp     = 2;
             gasInd.compMap   = [2; 5];
@@ -248,7 +248,7 @@ classdef PorousTransportLayer < ElectronicComponent
             % assemble mass of H2O in gas phase
             fn = @() PorousTransportLayer.updateMassH2Ogas;
             inputnames = {'H2Ogasrhoeps'};
-            var = VarName({}, 'compGasMasses', ngas, gasInd.H2Ogas);
+            var = VarName({}, 'compGasMasses', ngas, gasInd.H2O);
             model = model.registerPropFunction({var, fn, inputnames});            
             
             % update liquid density
@@ -288,7 +288,7 @@ classdef PorousTransportLayer < ElectronicComponent
             fn = @() PorousTransportLayer.updateEvaporationTerm;
             inputnames = {'T', ...
                           'vaporPressure', ...
-                          VarName({}, 'compGasPressures', ngas, gasInd.H2Ogas), ...
+                          VarName({}, 'compGasPressures', ngas, gasInd.H2O), ...
                           volumeFractions};
             model = model.registerPropFunction({'H2OvaporLiquidExchangeRate', fn, inputnames});
 
@@ -358,7 +358,7 @@ classdef PorousTransportLayer < ElectronicComponent
             
             fn = @() PorousTransportLayer.updateH2OgasSource;
             inputnames = {'H2OvaporLiquidExchangeRate'};
-            model = model.registerPropFunction({VarName({}, 'compGasSources', ngas, gasInd.H2Ogas), fn, inputnames});
+            model = model.registerPropFunction({VarName({}, 'compGasSources', ngas, gasInd.H2O), fn, inputnames});
 
             % Assemble mass conservation equations for components in gas phase
             fn = @() PorousTransportLayer.updateGasMassCons;
@@ -713,7 +713,7 @@ classdef PorousTransportLayer < ElectronicComponent
         
         function state = updateMassH2Ogas(model, state)
         % simple copy
-            state.compGasMasses{compind.H2Ogas} = state.H2Ogasrhoeps;
+            state.compGasMasses{compind.H2O} = state.H2Ogasrhoeps;
             
         end
 
@@ -755,7 +755,7 @@ classdef PorousTransportLayer < ElectronicComponent
 
             pH2Ovap = state.vaporPressure;
             T       = state.T;
-            pH2Ogas = state.compGasPressures{model.gasInd.H2Ogas};
+            pH2Ogas = state.compGasPressures{model.gasInd.H2O};
             vl      = state.volumeFractions{model.phaseInd.liquid};
             vg      = state.volumeFractions{model.phaseInd.gas};
             

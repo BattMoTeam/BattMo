@@ -3,7 +3,7 @@ classdef PorousTransportLayerInputParams < ElectronicComponentInputParams
     properties
         
         solidVolumeFraction  % Solid volume fraction [-]
-        leverettCoefficients  % Leverett coefficient that enters in the computation of the capillary pressure
+        leverettCoefficients  % Leverett coefficient that enters in the computation of the capillary pressure, see leverett.m 
         theta                % Water contact angle, enters in the computation of the capillary pressure [-]
         permeability         % Permeability [Darcy]
         BruggemanCoefficient % Bruggeman coefficient [-]

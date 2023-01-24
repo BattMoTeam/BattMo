@@ -14,7 +14,8 @@ classdef EvolutionElectrode < BaseModel
 
         function model = EvolutionElectrode(paramobj)
 
-            fdnames = {'couplingTerm'};
+            fdnames = {'G',
+                       'couplingTerm'};
             model = dispatchParams(model, paramobj, fdnames);            
             
             switch paramobj.porousTransportLayerType
@@ -71,8 +72,9 @@ classdef EvolutionElectrode < BaseModel
             liquidInd = model.(ptl).liquidInd;
             gasInd    = model.(ptl).gasInd;
             
-            inputvarnames = {{ptl, 'phi'} , ...
-                             VarName({ptl}, 'concentrations', liquidInd.ncomp, liquidInd.OH), ...
+            inputvarnames = {{ptl, 'phi'}                                                      , ...
+                             VarName({ptl}, 'concentrations', liquidInd.ncomp, liquidInd.OH)   , ...
+                             VarName({ptl}, 'compGasPressures', gasInd.ncomp, gasInd.activeGas), ...
                              {ptl, 'H2Oa'}};
             outputvarnames = {'phiElyte', 'cOHelyte', 'H2OaElyte'};
             for iovar = 1 : numel(outputvarnames)
@@ -81,8 +83,6 @@ classdef EvolutionElectrode < BaseModel
                 outputvarname = {exl, outputvarnames{iovar}};
                 model = model.registerPropFunction({outputvarname, fn, inputvarnames});
             end
-
-            inputvarnames = {VarName({ptl}, 'compGasPressures', gasInd.ncomp, gasInd.activeGas)};
             model = model.registerPropFunction({{ctl, 'pressureActiveGas'}, fn, inputvarnames});
             
             fn = @() EvolutionElectrode.updateSourceTerms;
@@ -127,30 +127,25 @@ classdef EvolutionElectrode < BaseModel
             lind = model.(ptl).liquidInd;
             gInd = model.(ptl).gasInd;
 
-            coupterms = model.couplingTerms;
-            coupnames = model.couplingNames;
-            
-            coupterm = getCoupTerm(coupterms, {ptl, ctl}, coupnames);
+            coupterm = model.couplingTerm;
             coupcells = coupterm.couplingcells;
             
             phi  = state.(ptl).phi;
             cH2O = state.(ptl).concentrations{lind.H2Oliquid};
             cOH  = state.(ptl).concentrations{lind.OH};
-            H2Oa = state.(ptl).H2Oactivity,
+            H2Oa = state.(ptl).H2Oa;
             pag  = state.(ptl).compGasPressures{gInd.activeGas};
             
             state.(ctl).phiElyte(coupcells(:, 2))          = phi(coupcells(:, 1));
             state.(ctl).cOHElyte(coupcells(:, 2))          = cOH(coupcells(:, 1));
-            state.(ctl).cHElyte(coupcells(:, 2))           = cH(coupcells(:, 1));
+            % state.(ctl).cHElyte(coupcells(:, 2))           = cH(coupcells(:, 1));
             state.(ctl).H2OaElyte(coupcells(:, 2))         = H2Oa(coupcells(:, 1));
             state.(ctl).pressureActiveGas(coupcells(:, 2)) = pag(coupcells(:, 1));
 
             % coupling to ExchangeLayer
-            coupterm = getCoupTerm(coupterms, {ptl, exl}, coupnames);
-            coupcells = coupterm.couplingcells;
-            state.(exl).phiElyte(coupcells(:, 2)) = phi(coupcells(:, 1));
-            state.(exl).cOHElyte(coupcells(:, 2)) = cOH(coupcells(:, 1));
-            state.(exl).H2aElyte(coupcells(:, 2)) = H2a(coupcells(:, 1));
+            state.(exl).phiElyte(coupcells(:, 2))  = phi(coupcells(:, 1));
+            state.(exl).cOHElyte(coupcells(:, 2))  = cOH(coupcells(:, 1));
+            state.(exl).H2OaElyte(coupcells(:, 2)) = H2Oa(coupcells(:, 1));
             
         end
 

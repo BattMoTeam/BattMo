@@ -1,4 +1,4 @@
-classdef EvolutionElectrodeInputParams < InputParams
+classdef EvolutionElectrodeInputParams < ComponentInputParams
     
     properties
         
@@ -17,7 +17,7 @@ classdef EvolutionElectrodeInputParams < InputParams
         
         function paramobj = EvolutionElectrodeInputParams(jsonstruct)
 
-            paramobj = paramobj@InputParams(jsonstruct);
+            paramobj = paramobj@ComponentInputParams(jsonstruct);
             
             ptl = 'PorousTransportLayer';
             ctl = 'CatalystLayer';

@@ -34,6 +34,8 @@ classdef CatalystLayer < BaseModel
             
             model = dispatchParams(model, paramobj, fdnames);
 
+            model.constants = PhysicalConstants();
+            
         end
 
         function model = registerVarAndPropfuncNames(model)
@@ -132,11 +134,11 @@ classdef CatalystLayer < BaseModel
         function state = updateEelyte(model, state)
 
             T    = state.T;
-            cOH  = state.cOHelyte;
+            cOH  = state.cOHElyte;
             H2Oa = state.H2OaElyte;
             
             E0  = model.E0;
-            c0  = model.c0;
+            c0  = model.sp.OH.c0;
             con = model.constants;
 
             F  = con.F;
@@ -150,10 +152,10 @@ classdef CatalystLayer < BaseModel
 
             T    = state.T;
             cOH  = state.cOHinmr;
-            H2Oa = state.H2Oainmr;
+            H2Oa = state.H2OaInmr;
             
             E0  = model.E0;
-            c0  = model.c0;
+            c0  = model.sp.OH.c0;
             con = model.constants;
 
             F  = con.F;

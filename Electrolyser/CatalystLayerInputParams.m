@@ -3,13 +3,10 @@ classdef CatalystLayerInputParams < ComponentInputParams
     properties
 
         j0 % Exchange current density
-        inmrParams 
-        % inmrParams.OH.z  : Charge
-        % inmrParams.OH.c0 : OH reference concentration
-        % inmrParams.E0    : standard equilibrium potential
-        elyteParams
-        % elyteParams.OH.c0 : reference OH concentration
-        % elyteParams.E0    : standard equilibrium potential
+        E0 
+        sp % species struct with field
+        % - OH.z  : Charge
+        % - OH.c0 : OH reference concentration
         
         Xinmr % Fraction of specific area that is coversed with ionomer [-]
         volumetricSurfaceArea % Volumetric surface area [m^ -1]

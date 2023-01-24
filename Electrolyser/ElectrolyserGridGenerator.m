@@ -57,6 +57,7 @@ classdef ElectrolyserGridGenerator
             ptl = 'PorousTransportLayer';
             ctl = 'CatalystLayer';
 
+            paramobj.G       = genSubGrid(gen.G, params.cellind);
             paramobj.(ptl).G = genSubGrid(gen.G, params.(ptl).cellind);
             paramobj.(ctl).G = genSubGrid(gen.G, params.(ctl).cellind);
 

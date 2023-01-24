@@ -42,7 +42,8 @@ classdef OxygenPorousTransportLayer < PorousTransportLayer
 
             % assemble gas pressure using ideal gas law
             fn = @() OxygenPorousTransportLayer.updateGasPressure;
-            inputnames = {'O2rhoeps', 'H2Ogasrhoeps', 'T'};
+            inputnames = {'O2rhoeps', 'H2Ogasrhoeps', 'T', ...
+                          VarName({}, 'volumeFractions', nph, phaseInd.gas)};
             model = model.registerPropFunction({VarName({}, 'phasePressures', nph, phaseInd.gas), fn, inputnames});
             model = model.registerPropFunction({VarName({}, 'compGasPressures', ngas), fn, inputnames});
 
@@ -71,16 +72,18 @@ classdef OxygenPorousTransportLayer < PorousTransportLayer
             phaseInd = model.phaseInd;
             MWH2O    = model.sp.H2O.MW;
             MWO2     = model.sp.O2.MW;
+            R        = model.constants.R;
             
             mO2  = state.O2rhoeps;
             mH2O = state.H2Ogasrhoeps;
             vf   = state.volumeFractions{model.phaseInd.gas};
-
-            pO2  = R*T*(mO2./MWO2)./vf
-            pH2O = R*T*(mH20./MWH2)./vf
+            T    = state.T;
             
-            state.compGasPressure{gasInd.O2}   = pO2;
-            state.compGasPressure{gasInd.H2O}  = pH2O
+            pO2  = R*T.*(mO2./MWO2)./vf;
+            pH2O = R*T.*(mH2O./MWH2O)./vf;
+            
+            state.compGasPressures{gasInd.O2}  = pO2;
+            state.compGasPressures{gasInd.H2O} = pH2O;
             state.phasePressures{phaseInd.gas} = pO2 + pH2O;
         end
         
