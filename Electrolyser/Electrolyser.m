@@ -126,7 +126,9 @@ classdef Electrolyser < BaseModel
             oer = 'OxygenEvolutionElectrode';
             her = 'HydrogenEvolutionElectrode';
             ptl = 'PorousTransportLayer';
-
+            ctl = 'CatalystLayer';
+            inm = 'IonomerMembrane';
+            
             con = model.con;
             
             %  
@@ -134,6 +136,11 @@ classdef Electrolyser < BaseModel
             cOH  = 1000*mol/(meter^3); 
             T    = 333.15*Kelvin;
 
+            state.(inm) = model.(inm).setupOHconcentration();
+            
+            nc = model.G.cells.num;
+            state.T = T*ones(nc, 1);
+            
             state = model.dispatchTemperature(state);
             
             liqrho = PorousTransportLayer.density(cOH, T);
@@ -145,54 +152,60 @@ classdef Electrolyser < BaseModel
                 elde = eldes{ielde};
                 nc = model.(elde).(ptl).G.cells.num;
 
-                fun = @(s) leverett(model.(elde).(ptl).levCoef, s); % Define Leverett function handle
+                fun = @(s) leverett(model.(elde).(ptl).leverettCoefficients, s); % Define Leverett function handle
                 sLiquid = fzero(fun, 0.7); % Solve equilibrium liquid saturation
 
                 svf = model.(elde).(ptl).solidVolumeFraction;
 
                 state.(elde).(ptl).liqeps    = sLiquid.*(1 - svf);
-                state.(elde).(ptl).OHceps    = cOH.*scvf;
+                state.(elde).(ptl).OHceps    = cOH.*svf;
                 state.(elde).(ptl).liqrhoeps = liqrho*state.(elde).(ptl).liqeps;
-                
-                % [Vs, cH2O] = PorousTransportLayer.partialMolarVolume(c, rho, T);
 
-                state.(elde).(ptl) = model.(elde).(ptl).udpateMolality(state.(elde).(ptl));
-                state.(elde).(ptl) = model.(elde).(ptl).udpateVaporPressure(state.(elde).(ptl));
+                state.(elde).(ptl).phi = zeros(nc, 1);
+                
+                state.(elde).(ptl).liqrho = liqrho;
+                state.(elde).(ptl) = model.(elde).(ptl).updateVolumeFractions(state.(elde).(ptl));
+                state.(elde).(ptl) = model.(elde).(ptl).updateOHconcentration(state.(elde).(ptl));
+                state.(elde).(ptl) = model.(elde).(ptl).updateMolality(state.(elde).(ptl));
+                state = model.dispatchTemperature(state);
+                state.(elde) = model.(elde).dispatchTemperature(state.(elde));
+                state.(elde).(ptl) = model.(elde).(ptl).updateVaporPressure(state.(elde).(ptl));
+
                 H2Ovp = state.(elde).(ptl).vaporPressure;
-                H2Ogrho = H2Ovp*model.H2O.MW./(con.R*T);
+                H2Ogrho = H2Ovp*model.(elde).(ptl).sp.H2O.MW./(con.R*T);
                 gvf = (1 - svf - model.(elde).(ptl).solidVolumeFraction); % Gas volume fraction
                 
-                state.(elde).(ptl).H2Ogasrhoeps = H2Ogrho*gvf;
+                state.(elde).(ptl).H2Ogasrhoeps = H2Ogrho.*gvf;
 
                 switch elde
                     
                   case oer
 
                     O2p = pGas;
-                    O2rho = O2p.*model.(oer).(ptl).O2.MW / (con.R * T);
+                    O2rho = O2p.*model.(elde).(ptl).sp.O2.MW / (con.R * T);
                     state.(elde).(ptl).O2rhoeps = O2rho*gvf;
 
-                    state.(oer).(ptl) = model.(oer).(ptl).updateVolumeFractions(state.(oer).(ptl));
-                    state.(oer).(ptl) = model.(oer).(ptl).updateOHconcentration(state.(oer).(ptl));
-                    state.(oer).(ptl) = model.(oer).(ptl).updateLiquidDensity(state.(oer).(ptl));
-                    state.(oer).(ptl) = model.(oer).(ptl).updateMolality(state.(oer).(ptl));
-                    state             = model.dispatchTemperature(state);
-                    state.(oer)       = model.(oer).dispatchTemperature(state.(oer));
-                    state.(oer).(ptl) = model.(oer).(ptl).updateWaterActivity(state.(oer).(ptl));
-                    state.(oer)       = model.(oer).dispatchToCatalystAndExchangeLayers(state.(oer));
-                    state.(oer).(ptl) = model.(oer).(ptl).updateGasPressure(state.(oer).(ptl));
-                    state.(oer).(ctl) = model.(oer).(ctl).updateEelyte(state.(oer).(ctl));
-
-                    Eelyte = state.(oer).(ctl).Eelyte;
+                    state.(elde).(ptl) = model.(elde).(ptl).updateVolumeFractions(state.(elde).(ptl));
+                    state.(elde).(ptl) = model.(elde).(ptl).updateOHconcentration(state.(elde).(ptl));
+                    state.(elde).(ptl) = model.(elde).(ptl).updateLiquidDensity(state.(elde).(ptl));
+                    state.(elde).(ptl) = model.(elde).(ptl).updateMolality(state.(elde).(ptl));
+                    state              = model.dispatchTemperature(state);
+                    state.(elde)       = model.(elde).dispatchTemperature(state.(elde));
+                    state.(elde).(ptl) = model.(elde).(ptl).updateWaterActivity(state.(elde).(ptl));
+                    state.(elde).(ptl) = model.(elde).(ptl).updateGasPressure(state.(elde).(ptl));
+                    state.(elde)       = model.(elde).dispatchToCatalystAndExchangeLayers(state.(elde));
+                    state.(elde).(ctl) = model.(elde).(ctl).updateEelyte(state.(elde).(ctl));
+                    
+                    Eelyte = state.(elde).(ctl).Eelyte;
                     
                     state.(elde).(ctl).E = Eelyte(1);
                     
                   case her
                     
                     H2p = pGas;
-                    H2rho = H2p.*model.(oer).(ptl).O2.MW / (con.R * T);                    
+                    H2rho = H2p.*model.(elde).(ptl).sp.H2.MW / (con.R * T);
                     state.(elde).(ptl).H2rhoeps = H2rho*gvf;
-                    state.(elde).(ctl).E = 0
+                    state.(elde).(ctl).E = 0;
                     
                   otherwise
                     
@@ -202,25 +215,27 @@ classdef Electrolyser < BaseModel
 
             end
 
+            nc = model.(inm).G.cells.num;
+
+            % We use water activity in oer. It has been already computed above.
+
+            aw = state.(oer).(ptl).H2Oa(1);
+            cH2O = IonomerMembrane.groupHydration(model.(inm), aw, T);
+
+            state.(inm).H2Oceps = cH2O.*model.(inm).volumeFraction;
+
+            
             state.(inm)       = model.(inm).updateH2Oc(state.(inm));
-            state.(inm)       = model.(inm).updateH2Oa(state.(inm));
+            state.(inm)       = model.(inm).updateH2Oactivity(state.(inm));
+            state.(inm).phi   = zeros(nc, 1); % needed now by dispatchIonomerToReactionLayers function below but we will be overwritten later
             state             = model.dispatchIonomerToReactionLayers(state);
-            state             = model.dispatchTemperature(state);
-            state.(oer)       = model.(oer).dispatchTemperature(state.(oer));
             state.(oer).(ptl) = model.(oer).(ptl).updateGasPressure(state.(oer).(ptl));
             state.(oer)       = model.(oer).dispatchToCatalystAndExchangeLayers(state.(oer));
             state.(oer).(ctl) = model.(oer).(ctl).updateEinmr(state.(oer).(ctl));
 
             Einmr = state.(oer).(ctl).Einmr;
-            nc = model.(inm).G.cells.num;
 
             state.(inm).phi = Einmr(1)*ones(nc, 1);
-
-            % We use water activity in oer. It has been already computed above.
-            aw = state.(oer).(ptl).H2Oa(1)
-            cH2O = model.(inm).groupHydration(aw, T);
-
-            state.(inm).H2Oceps = cH2O.*model.(inm).volumeFraction;
             
         end
 
@@ -243,9 +258,9 @@ classdef Electrolyser < BaseModel
             her = 'HydrogenEvolutionElectrode';
             inm = 'IonomerMembrane';
             
-            state.(oer).T = state.T(model.(oer).G.cellmap);
-            state.(her).T = state.T(model.(her).G.cellmap);
-            state.(inm).T = state.T(model.(inm).G.cellmap);
+            state.(oer).T = state.T(model.(oer).G.mappings.cellmap);
+            state.(her).T = state.T(model.(her).G.mappings.cellmap);
+            state.(inm).T = state.T(model.(inm).G.mappings.cellmap);
             
         end
         
@@ -258,21 +273,23 @@ classdef Electrolyser < BaseModel
             ctl = 'CatalystLayer';
             exl = 'ExchangeLayer';
 
-            eldes = {her, oer};
+            eldes  = {her, oer};
+            layers = {ctl, exl};
 
             for ielde = 1 : numel(eldes)
                 
                 elde = eldes{ielde};
                 coupterms = model.couplingTerms;
                 coupnames = model.couplingNames;
-                coupterm  = getCoupTerm(coupterms, {inm, elde}, coupnames);
+                coupname  = sprintf('%s-%s', elde, inm);
+                coupterm  = getCoupTerm(coupterms, coupname, coupnames);
                 coupcells = coupterm.couplingcells;
 
                 for ilayer = 1 : numel(layers)
                     layer = layers{ilayer};
-                    state.(elde).(layer).H2OaInmr(coupcells(:, 2)) = state.(inm).H2Oa(coupcells(:, 1));
-                    state.(elde).(layer).cOHinmr(coupcells(:, 2))  = state.(inm).cOH(coupcells(:, 1));
-                    state.(elde).(layer).phiInmr(coupcells(:, 2))  = state.(inm).phi(coupcells(:, 1));
+                    state.(elde).(layer).H2OaInmr(coupcells(:, 1)) = state.(inm).H2Oa(coupcells(:, 2));
+                    state.(elde).(layer).cOHinmr(coupcells(:, 1))  = state.(inm).cOH(coupcells(:, 2));
+                    state.(elde).(layer).phiInmr(coupcells(:, 1))  = state.(inm).phi(coupcells(:, 2));
                 end
                 
             end
