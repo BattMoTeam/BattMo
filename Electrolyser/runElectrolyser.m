@@ -18,11 +18,13 @@ ctl = 'CatalystLayer';
 
 model = Electrolyser(paramobj);
 
-doplotgraph = true;
+doplotgraph = false;
 if doplotgraph
     cgt = ComputationalGraphTool(model);
     g = cgt.getComputationalGraph();
     close all
     plot(g);
+    return
 end
 
+state = model.setupInitialState();
