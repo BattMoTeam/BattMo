@@ -156,10 +156,11 @@ classdef Electrolyser < BaseModel
                 sLiquid = fzero(fun, 0.7); % Solve equilibrium liquid saturation
 
                 svf = model.(elde).(ptl).solidVolumeFraction;
-
+                lvf = sLiquid.*(1 - svf);
+                
                 state.(elde).(ptl).liqeps    = sLiquid.*(1 - svf);
-                state.(elde).(ptl).OHceps    = cOH.*svf;
-                state.(elde).(ptl).liqrhoeps = liqrho*state.(elde).(ptl).liqeps;
+                state.(elde).(ptl).OHceps    = cOH.*lvf;
+                state.(elde).(ptl).liqrhoeps = liqrho*lvf;
 
                 state.(elde).(ptl).phi = zeros(nc, 1);
                 
