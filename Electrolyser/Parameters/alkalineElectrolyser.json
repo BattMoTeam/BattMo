@@ -44,7 +44,8 @@
         "H2" : {
           "MW" : 0.00202
         }
-      }
+      },
+      "MW" : 0.0561056
     },
     "catalystLayerType" : "Platinium",
     "CatalystLayer" : { "j0": 7,
@@ -94,7 +95,8 @@
         "O2" : {
           "MW" : 0.031998
         }
-      }
+      },
+      "MW" : 0.0561056
     },
     "catalystLayerType" : "Iridium",
     "CatalystLayer" : { "j0": 1e-3,

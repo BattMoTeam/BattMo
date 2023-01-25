@@ -50,4 +50,6 @@
                                                  "properties" : {"MW" : {"type" : "number",
                                                                          "description" : "Molecular Weight"}},
                                                 }
-                                         }}}}
+                                         }},
+                  "MW" : {"type" : "number",
+                          "description" : "molecular weight of the KOH solution"}}}

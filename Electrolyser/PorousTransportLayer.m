@@ -30,6 +30,8 @@ classdef PorousTransportLayer < ElectronicComponent
         % sp.H2O.mu0  : Standard chemical potential
         % sp.H2O.V0   : Partial molar volume of H2O [m^3 mol^-1]        
 
+        MW % molecular weight of KOH solution
+        
         V0s % indexed values for partial molar volumes (helper that is setup at initialization)
 
         gasMW % Molecular weight of the active gas (H2 og O2)
@@ -847,8 +849,8 @@ classdef PorousTransportLayer < ElectronicComponent
 
         function state = updateMolality(model, state)
             
-            MW = model.sp.OH.MW;
-            
+            MW = model.MW;
+
             rho = state.liqrho;
             cOH = state.concentrations{model.liquidInd.OH};
             
