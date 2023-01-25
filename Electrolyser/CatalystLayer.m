@@ -132,37 +132,11 @@ classdef CatalystLayer < BaseModel
         end
         
         function state = updateEelyte(model, state)
-
-            T    = state.T;
-            cOH  = state.cOHElyte;
-            H2Oa = state.H2OaElyte;
-            
-            E0  = model.E0;
-            c0  = model.sp.OH.c0;
-            con = model.constants;
-
-            F  = con.F;
-            R  = con.R;
-
-            state.Eelyte = E0 + R*T/(2*F)*log((H2Oa.^2).*(c0.^2).*(cOH.^-2));
-            
+            error('virtual function. Should be overloaded by specific catalystlayer');
         end
 
         function state = updateEinmr(model, state)
-
-            T    = state.T;
-            cOH  = state.cOHinmr;
-            H2Oa = state.H2OaInmr;
-            
-            E0  = model.E0;
-            c0  = model.sp.OH.c0;
-            con = model.constants;
-
-            F  = con.F;
-            R  = con.R;
-
-            state.Einmr = E0 + R*T/(2*F)*log((H2Oa.^2).*(c0.^2).*(cOH.^-2));
-            
+            error('virtual function. Should be overloaded by specific catalystlayer');            
         end
 
         function state = updateEtas(model, state)
