@@ -34,7 +34,7 @@ classdef PorousTransportLayer < ElectronicComponent
         
         V0s % indexed values for partial molar volumes (helper that is setup at initialization)
 
-        gasMW % Molecular weight of the active gas (H2 og O2)
+        gasMW % Molecular weight of the active gas (H2 og O2). It will be initialized by the child class (HydrogenPorousTransportLayer or OxygenPorousTransportLayer).
 
         externalCouplingTerm
         
@@ -56,19 +56,20 @@ classdef PorousTransportLayer < ElectronicComponent
                        'BruggemanCoefficient', ... 
                        'permeability'        , ...
                        'sp'                  , ...
+                       'MW'                  , ...
                        'externalCouplingTerm'};
             model = dispatchParams(model, paramobj, fdnames);
 
             
             compInd.H2Oliquid = 1;
-            compInd.H2O    = 2;
+            compInd.H2Ogas    = 2;
             compInd.OH        = 3;
             compInd.K         = 4;
             compInd.activeGas = 5;
             % compInd.(H2 or O2) = 5 % should be instantiated by derived class see HydrogenPorousTransportLayer.m and OxygenPorousTransportLayer.m
             compInd.ncomp     = 5;
             compInd.liquid    = [compInd.H2Oliquid; compInd.OH; compInd.K];
-            compInd.gas       = [compInd.H2O; compInd.activeGas];
+            compInd.gas       = [compInd.H2Ogas; compInd.activeGas];
             
             phaseInd.liquid = 1;
             phaseInd.gas    = 2;
@@ -81,12 +82,12 @@ classdef PorousTransportLayer < ElectronicComponent
             mobPhaseInd.nmobphase = 2;
             mobPhaseInd.phaseMap  = [1; 2];
             
-            % compInd.phaseMap(compInd.H2Oliquid)  = phaseInd.liquid;
-            compInd.phaseMap  = [1; 2; 1; 1; 2]; % first component (H2Oliquid) is in phase indexed by 1 (liquid phase), and so on
+            % compInd.phaseMap(compInd.H2O)  = phaseInd.liquid;
+            compInd.phaseMap  = [1; 2; 1; 1; 2]; % first component (H2O) is in phase indexed by 1 (liquid phase), and so on
             
-            liquidInd.H2Oliquid = 1;
-            liquidInd.OH = 2;
-            liquidInd.K  = 3;
+            liquidInd.H2O    = 1;
+            liquidInd.OH     = 2;
+            liquidInd.K      = 3;
             liquidInd.ncomp  = 3;
             liqudInd.compMap = [1; 3; 4];
             
@@ -683,7 +684,7 @@ classdef PorousTransportLayer < ElectronicComponent
         function state = updateLiquidPressure(model, state)
         % assemble liquid pressure using capillary pressure function
 
-            K        = model.Permeability;
+            K        = model.permeability;
             levcoefs = model.leverettCoefficients;
             theta    = model.theta;
             

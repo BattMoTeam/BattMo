@@ -274,12 +274,22 @@ classdef Electrolyser < BaseModel
             ctl = 'CatalystLayer';
             exl = 'ExchangeLayer';
 
-            eldes  = {her, oer};
-            layers = {ctl, exl};
+            eldes    = {her, oer};
+            layers   = {ctl, exl};
+            varnames = {'H2OaInmr', 'cOHinmr', 'phiInmr'};
 
             for ielde = 1 : numel(eldes)
                 
                 elde = eldes{ielde};
+
+                % setup initial value for the variable that also takes care of AD.
+                nc = model.(elde).(ctl).G.cells.num;
+                initval = nan(nc, 1);
+                [adsample, isAD] = getSampleAD(state.(inm).phi);
+                if isAD
+                    initval = adsample.convertDouble(initval);
+                end
+
                 coupterms = model.couplingTerms;
                 coupnames = model.couplingNames;
                 coupname  = sprintf('%s-%s', elde, inm);
@@ -288,6 +298,10 @@ classdef Electrolyser < BaseModel
 
                 for ilayer = 1 : numel(layers)
                     layer = layers{ilayer};
+                    for ivar = 1 : numel(varnames)
+                        varname = varnames{ivar};
+                        state.(elde).(layer).(varname) = initval;
+                    end
                     state.(elde).(layer).H2OaInmr(coupcells(:, 1)) = state.(inm).H2Oa(coupcells(:, 2));
                     state.(elde).(layer).cOHinmr(coupcells(:, 1))  = state.(inm).cOH(coupcells(:, 2));
                     state.(elde).(layer).phiInmr(coupcells(:, 1))  = state.(inm).phi(coupcells(:, 2));

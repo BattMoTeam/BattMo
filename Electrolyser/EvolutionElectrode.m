@@ -112,9 +112,12 @@ classdef EvolutionElectrode < BaseModel
             ctl = 'CatalystLayer';
             exl = 'ExchangeLayer';
             
+            coupterm = model.couplingTerm;
+            coupcells = coupterm.couplingcells;
+            
             state.(ptl).T = T;
-            state.(ctl).T = T;
-            state.(exl).T = T;
+            state.(ctl).T(coupcells(:, 2), 1) = T(coupcells(:, 1));
+            state.(exl).T(coupcells(:, 2), 1) = T(coupcells(:, 1));
             
         end
         
@@ -131,10 +134,29 @@ classdef EvolutionElectrode < BaseModel
             coupcells = coupterm.couplingcells;
             
             phi  = state.(ptl).phi;
-            cH2O = state.(ptl).concentrations{lind.H2Oliquid};
+            cH2O = state.(ptl).concentrations{lind.H2O};
             cOH  = state.(ptl).concentrations{lind.OH};
             H2Oa = state.(ptl).H2Oa;
             pag  = state.(ptl).compGasPressures{gInd.activeGas};
+
+            % initialization of the variables (takes care of AD)
+            nc = model.(ctl).G.cells.num;
+            initval = nan(nc, 1);
+            [adsample, isAD] = getSampleAD(phi);
+            if isAD
+                initval = adsample.convertDouble(initval);
+            end
+                
+            varnames = {'phiElyte', 'cOHElyte', 'H2OaElyte'};
+            layers = {ctl, exl};
+            for ivar = 1 : numel(varnames)
+                varname = varnames{ivar};
+                for ilayer = 1 : numel(layers)
+                    layer = layers{ilayer};
+                    state.(layer).(varname) = initval;
+                end
+            end
+            state.(ctl).pressureActiveGas = initval;
             
             state.(ctl).phiElyte(coupcells(:, 2))          = phi(coupcells(:, 1));
             state.(ctl).cOHElyte(coupcells(:, 2))          = cOH(coupcells(:, 1));

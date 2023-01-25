@@ -20,7 +20,7 @@
                                 12.80,
                                 -7.614],
       "theta": 100,
-      "Permeability": 1e-12,
+      "permeability": 1e-12,
       "BruggemanCoefficient": 1.5,
       "sp": {
         "OH": {
@@ -71,7 +71,7 @@
                                 12.80,
                                 -7.614],
       "theta": 100,
-      "Permeability": 1e-12,
+      "permeability": 1e-12,
       "BruggemanCoefficient": 1.5,
       "sp": {
         "OH": {

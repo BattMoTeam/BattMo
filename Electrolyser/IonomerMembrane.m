@@ -5,7 +5,7 @@ classdef IonomerMembrane < ElectronicComponent
         volumeFraction
         
         H2O % with fields
-        % H2O.c0 : Reference concentration
+        % H2O.c0 : Reference concentration (value is overwritten at initialization in current implementation)
         % H2O.D  : diffusion coefficient for water
         % H2O.V0 : Molar mass (needed for function groupHydration which is only needed in setup of initial condition and not for assembly)
         
