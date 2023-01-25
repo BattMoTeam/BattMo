@@ -121,7 +121,7 @@ classdef Electrolyser < BaseModel
             
         end
         
-        function state = setupInitialState(model)
+        function [state, model] = setupInitialState(model)
             
             oer = 'OxygenEvolutionElectrode';
             her = 'HydrogenEvolutionElectrode';
@@ -135,7 +135,9 @@ classdef Electrolyser < BaseModel
             pGas = 101325*Pascal; % pressure of active gas (O2 or H2)
             cOH  = 1000*mol/(meter^3); 
             T    = 333.15*Kelvin;
-
+            R    = con.R;
+            F    = con.F;
+            
             state.(inm) = model.(inm).setupOHconcentration();
             
             nc = model.G.cells.num;
@@ -174,7 +176,7 @@ classdef Electrolyser < BaseModel
 
                 H2Ovp = state.(elde).(ptl).vaporPressure;
                 H2Ogrho = H2Ovp*model.(elde).(ptl).sp.H2O.MW./(con.R*T);
-                gvf = (1 - svf - model.(elde).(ptl).solidVolumeFraction); % Gas volume fraction
+                gvf = (1 - lvf - model.(elde).(ptl).solidVolumeFraction); % Gas volume fraction
                 
                 state.(elde).(ptl).H2Ogasrhoeps = H2Ogrho.*gvf;
 
@@ -222,21 +224,14 @@ classdef Electrolyser < BaseModel
 
             aw = state.(oer).(ptl).H2Oa(1);
             cH2O = IonomerMembrane.groupHydration(model.(inm), aw, T);
-
+            model.(inm).H2O.c0 = cH2O/aw;
             state.(inm).H2Oceps = cH2O.*model.(inm).volumeFraction;
 
-            
-            state.(inm)       = model.(inm).updateH2Oc(state.(inm));
-            state.(inm)       = model.(inm).updateH2Oactivity(state.(inm));
-            state.(inm).phi   = zeros(nc, 1); % needed now by dispatchIonomerToReactionLayers function below but we will be overwritten later
-            state             = model.dispatchIonomerToReactionLayers(state);
-            state.(oer).(ptl) = model.(oer).(ptl).updateGasPressure(state.(oer).(ptl));
-            state.(oer)       = model.(oer).dispatchToCatalystAndExchangeLayers(state.(oer));
-            state.(oer).(ctl) = model.(oer).(ctl).updateEinmr(state.(oer).(ctl));
+            state.(inm) = model.(inm).setupOHconcentration(state.(inm));
+            cT  = state.(inm).cOH(1);
+            phi = - R*T/F*log(cOH/cT);
 
-            Einmr = state.(oer).(ctl).Einmr;
-
-            state.(inm).phi = Einmr(1)*ones(nc, 1);
+            state.(inm).phi = phi*ones(nc, 1);
             
         end
 
