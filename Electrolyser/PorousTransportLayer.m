@@ -741,7 +741,8 @@ classdef PorousTransportLayer < ElectronicComponent
             
             b = 1 ...
                 - 1.2062e-3 .* m ...
-                + 5.6024e-4 .* m.^2;
+                + 5.6024e-4 .* m.^2 ...
+                - 7.8228e-6 .* m.^3;
             
             pw0 = 10.^(35.4462 - (3343.93./T) - 10.9.*log10(T) + 4.1645e-3.*T);
                     
