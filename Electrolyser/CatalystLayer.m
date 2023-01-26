@@ -14,8 +14,11 @@ classdef CatalystLayer < BaseModel
         sp % species struct with field
         % - OH.z  : Charge
         % - OH.c0 : OH reference concentration
+
+        n % Number of electron transfer
         
-        Xinmr % Fraction of specific area that is coversed with ionomer [-]
+        alpha                 % coefficient in the exponent in Butler-Volmer equation [-]
+        Xinmr                 % Fraction of specific area that is coversed with ionomer [-]
         volumetricSurfaceArea % Volumetric surface area [m^ -1]
         
     end
@@ -30,6 +33,8 @@ classdef CatalystLayer < BaseModel
                         'j0'   , ...
                         'E0'   , ...
                         'sp'   , ...
+                        'n'    , ...
+                        'alpha', ...
                         'Xinmr', ...
                         'volumetricSurfaceArea'};
             
@@ -99,27 +104,14 @@ classdef CatalystLayer < BaseModel
 
             % Assemble reactive potential
             fn = @() CatalystLayer.updateEtas;
-            inputnames = {'phiElyte', 'E' 'Eelyte'};
-            model = model.registerPropFunction({'etaElyte', fn, inputnames});
-            inputnames = {'phiInmr', 'E' 'Einmr'};
-            model = model.registerPropFunction({'etaInmr', fn, inputnames});            
+            inputnames = {'phiElyte', 'phiInmr', 'Eelyte','Einmr', 'E'};
+            model = model.registerPropFunction({'etaElyte', fn, inputnames});            
+            model = model.registerPropFunction({'etaInmr', fn, inputnames});
 
-            % update source terms
-            fn = @() CatalystLayer.updateSources;
-            inputnames = {'inmrReactionRate'};
-            model = model.registerPropFunction({'inmrOHsource', fn, inputnames});
-            inputnames = {'elyteReactionRate'};
-            model = model.registerPropFunction({'elyteOHsource', fn, inputnames});
-            inputnames = {'elyteReactionRate', 'inmrReactionRate'};
-            model = model.registerPropFunction({'elyteH2Osource', fn, inputnames});
-            model = model.registerPropFunction({'activeGasSource', fn, inputnames});
-            model = model.registerPropFunction({'eSource', fn, inputnames});
-            
             % Assemble the reaction rates
             fn = @() CatalystLayer.updateReactionRates;
-            inputnames = {'elyteReactionRateConstant', 'etaElyte'};
+            inputnames = {'elyteReactionRateConstant', 'etaElyte', 'inmrReactionRateConstant', 'etaInmr'};
             model = model.registerPropFunction({'elyteReactionRate', fn, inputnames});
-            inputnames = {'inmrReactionRateConstant', 'etaInmr'};
             model = model.registerPropFunction({'inmrReactionRate', fn, inputnames});            
 
             fn = @() CatalystLayer.updateI;
@@ -161,22 +153,22 @@ classdef CatalystLayer < BaseModel
             
         function state = updateReactionRates(model, state)
 
-            etaElyte = state.etaElyte;
-            etaInmr  = state.etaInmr;
-            T        = state.T;
-
-            ir    = model.inmr;
             vsa   = model.volumetricSurfaceArea;
             Xinmr = model.Xinmr;
             alpha = model.alpha;
             n     = model.n;
 
+            etaElyte = state.etaElyte;
+            etaInmr  = state.etaInmr;
+            j0elyte  = state.elyteReactionRateConstant;
+            j0inmr   = state.inmrReactionRateConstant;
+            T        = state.T;
+            
+            jElyte = (1 - Xinmr)*vsa*ButlerVolmerEquation(j0elyte, alpha, n, etaElyte, T);
+            jInmr  = Xinmr*vsa*ButlerVolmerEquation(j0inmr, alpha, n, etaInmr, T);
 
-            jElyte = (1 - X_inmr)*vsa*butlerVolmer(j0, alpha, n, etaElyte, T);
-            jInmr = X_inmr*vsa*butlerVolmer(j0, alpha, n, etaInmr, T);
-
-            state.elyteReactionRate = elyteReactionRate;
-            state.inmrReactionRate  = inmrReactionRate;
+            state.elyteReactionRate = jElyte;
+            state.inmrReactionRate  = jInmr;
             
         end
 

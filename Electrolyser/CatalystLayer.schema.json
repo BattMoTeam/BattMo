@@ -15,6 +15,10 @@
                                                            "description" : "Charge number"},
                                                     "c0" : {"type" : "number",
                                                             "description" : "reference concentration"}}}}},
+                  "n" : {"type" : "number",
+                         "description" : "Number of electron transfer"},
+                  "alpha" : {"type" : "number",
+                             "description" : "Coefficient in the exponent in Butler-Volmer equation"}
                   "Xinmr" : {"type" : "number",
                              "description" : "Fraction of specific area that is coversed with ionomer"},
                   "volumetricSurfaceArea" : {"type" : "number",
