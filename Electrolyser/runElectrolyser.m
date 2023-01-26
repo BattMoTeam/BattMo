@@ -1,4 +1,4 @@
-mrstModule add ad-core mpfa
+mrstModule add ad-core mpfa matlab_bgl
 
 jsonstring = fileread('/home/xavier/Matlab/Projects/battmo/Electrolyser/Parameters/alkalineElectrolyser.json');
 jsonstruct = jsondecode(jsonstring);
@@ -27,4 +27,19 @@ if doplotgraph
     return
 end
 
-state = model.setupInitialState();
+model = model.validateModel();
+[model, initstate] = model.setupBcAndInitialState();
+
+cgt = model.computationalGraph;
+
+model.controlI = -1;
+
+total = 1*hour;
+n  = 100;
+dt = total/n;
+
+step = struct('val', dt*ones(n, 1), 'control', ones(n, 1));
+control.name = 'notNeeded';
+schedule = struct('control', control, 'step', step);
+
+[wellSols, states, report] = simulateScheduleAD(initstate, model, schedule); 
