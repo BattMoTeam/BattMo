@@ -76,7 +76,7 @@ classdef IonomerMembrane < ElectronicComponent
             % H2O source [mol/s] (one value per cell)
             varnames{end + 1} = 'H2OSource';
             % OH source [mol/s] (one value per cell)
-            varnames{end + 1} = 'OHSource';
+            varnames{end + 1} = 'OHsource';
         
             %% Accumulation term
             
@@ -132,7 +132,7 @@ classdef IonomerMembrane < ElectronicComponent
             
             % update electronic source
             fn = @() IonomerMembrane.updateEsource;
-            inputnames = {'OHSource'};
+            inputnames = {'OHsource'};
             model = model.registerPropFunction({'eSource', fn, inputnames});
 
             % update electronic source
@@ -279,10 +279,11 @@ classdef IonomerMembrane < ElectronicComponent
             accum    = state.H2Oaccum;
             source   = state.H2OSource;
             
-            flux = difflux + migFlux;
+            flux = diffFlux + migFlux;
             bcsource  = 0;
             
-            state.H2OmassCons = assembleConservationEquation(model, flux, bcsource, source, accum)
+            state.H2OmassCons = assembleConservationEquation(model, flux, bcsource, source, accum);
+            
         end
         
         function state = updateEsource(model, state)
@@ -290,7 +291,7 @@ classdef IonomerMembrane < ElectronicComponent
             F = model.constants.F;
             z = model.OH.z;
             
-            state.eSource = z*F*state.OHSource;
+            state.eSource = z*F*state.OHsource;
             
         end
 
