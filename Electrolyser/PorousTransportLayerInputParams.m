@@ -20,12 +20,9 @@ classdef PorousTransportLayerInputParams < ElectronicComponentInputParams
         % sp.H2O.mu0  : Standard chemical potential
         % sp.H2O.V0   : Partial molar volume of H2O [m^3 mol^-1]
 
-        MW % Molecular weight of the KOH solution
-        
         externalCouplingTerm
 
-        Boundary % structure with field
-                 % sp : the structure contains the molecular weight of the gas components.
+        Boundary
         
     end
     

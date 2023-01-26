@@ -30,13 +30,12 @@ classdef PorousTransportLayer < ElectronicComponent
         % sp.H2O.mu0  : Standard chemical potential
         % sp.H2O.V0   : Partial molar volume of H2O [m^3 mol^-1]        
 
-        MW % molecular weight of KOH solution
-        
-        V0s % indexed values for partial molar volumes (helper that is setup at initialization)
-
-        gasMW % Molecular weight of the active gas (H2 og O2). It will be initialized by the child class (HydrogenPorousTransportLayer or OxygenPorousTransportLayer).
-
         externalCouplingTerm
+
+        % helper structures (those are not given as input but initialized with the model)
+        MW    % molecular weight of KOH solution
+        V0s   % indexed values for partial molar volumes of the liquid components
+        gasMW % Molecular weight of the active gas (H2 og O2). It will be initialized by the child class (HydrogenPorousTransportLayer or OxygenPorousTransportLayer).
         
     end
     
@@ -85,15 +84,15 @@ classdef PorousTransportLayer < ElectronicComponent
             % compInd.phaseMap(compInd.H2O)  = phaseInd.liquid;
             compInd.phaseMap  = [1; 2; 1; 1; 2]; % first component (H2O) is in phase indexed by 1 (liquid phase), and so on
             
-            liquidInd.H2O    = 1;
-            liquidInd.OH     = 2;
-            liquidInd.K      = 3;
-            liquidInd.ncomp  = 3;
-            liqudInd.compMap = [1; 3; 4];
+            liquidInd.H2O     = 1;
+            liquidInd.OH      = 2;
+            liquidInd.K       = 3;
+            liquidInd.nliquid = 3;
+            liqudInd.compMap  = [1; 3; 4];
             
-            gasInd.H2O    = 1;
+            gasInd.H2O       = 1;
             gasInd.activeGas = 2;
-            gasInd.ncomp     = 2;
+            gasInd.ngas      = 2;
             gasInd.compMap   = [2; 5];
 
             model.compInd     = compInd;
@@ -109,6 +108,17 @@ classdef PorousTransportLayer < ElectronicComponent
             paramobj.Boundary.gasInd      = gasInd;
             
             model.Boundary = PorousTransportLayerBoundary(paramobj.Boundary);
+
+            % initialize helping structures
+            sp = model.sp;
+            model.MW = sp.OH.MW + sp.K.MW;
+
+            V0s(liquidInd.OH)  = sp.OH.V0;
+            V0s(liquidInd.K)   = sp.K.V0;
+            V0s(liquidInd.H2O) = sp.H2O.V0;
+
+            model.V0s = V0s;
+            
         end
 
         function model = registerVarAndPropfuncNames(model)
@@ -122,13 +132,13 @@ classdef PorousTransportLayer < ElectronicComponent
             liquidInd   = model.liquidInd;
             gasInd      = model.gasInd;
             compInd     = model.compInd;
-            mobphaseInd = model.mobPhaseInd;
+            mobPhaseInd = model.mobPhaseInd;
             
             ncomp   = compInd.ncomp;
-            ngas    = gasInd.ncomp;
+            ngas    = gasInd.ngas;
             nph     = phaseInd.nphase;
-            nliquid = liquidInd.ncomp;
-            nmobph  = mobphaseInd.nmobphase;
+            nliquid = liquidInd.nliquid;
+            nmobph  = mobPhaseInd.nmobphase;
 
             varnames = {};
             % Total concentration of OH- (mol per total volume, that is not only liquid volume) [mol m^-3]
@@ -200,7 +210,7 @@ classdef PorousTransportLayer < ElectronicComponent
             % Accumulation term for the gass components in [kg s^-1]
             varnames{end + 1}  = VarName({}, 'compGasAccums', ngas);
             % Source of OH in [mol s^-1]  (source term for each grid cell)
-            varnames{end + 1} = 'OHSource';
+            varnames{end + 1} = 'OHsource';
             % Source of OH in [mol s^-1] at boundary  (yet one value for each grid cell)
             varnames{end + 1} = 'OHbcSource';
             % Mass Source of liquid in [kg s^-1] (source term for each grid cell)
@@ -298,13 +308,11 @@ classdef PorousTransportLayer < ElectronicComponent
             
             % Assemble phase velocities
             fn = @() PorousTransportLayer.updatePhaseVelocities;
-            for imobph = 1 : nmobph
-                iphase = phaseInd.mobile(imobph);
-                inputnames = {VarName({}, 'phasePressures', nph, iphase), ...
-                              VarName({}, 'volumeFractions', nph, iphase), ...
-                              VarName({}, 'viscosities', nmobph, imobph)};
-                model = model.registerPropFunction({VarName({}, 'phaseFluxes', nph, iphase), fn, inputnames});
-            end
+            phaseinds = [model.phaseInd.liquid; model.phaseInd.gas];
+            inputnames = {VarName({}, 'phasePressures', nph, phaseinds), ...
+                          VarName({}, 'volumeFractions', nph, phaseinds), ...
+                          VarName({}, 'viscosities', nmobph)};
+            model = model.registerPropFunction({VarName({}, 'phaseFluxes', nph, phaseinds), fn, inputnames});
             
             % assemble OH convection flux
             fn = @() PorousTransportLayer.updateOHConvectionFlux;
@@ -325,12 +333,10 @@ classdef PorousTransportLayer < ElectronicComponent
             
             % assemble fluxes of gas components
             fn = @() PorousTransportLayer.updateGasFluxes;
-            for igas = 1 : ngas
-                inputnames = {VarName({}, 'compGasMasses', ngas, igas)         , ...
-                              VarName({}, 'volumeFractions', nph, phaseInd.gas), ...
-                              VarName({}, 'phaseFluxes', nph, phaseInd.gas)};
-                model = model.registerPropFunction({VarName({}, 'compGasFluxes', ngas, igas), fn, inputnames});
-            end
+            inputnames = {VarName({}, 'compGasMasses', ngas)         , ...
+                          VarName({}, 'volumeFractions', nph, phaseInd.gas), ...
+                          VarName({}, 'phaseFluxes', nph, phaseInd.gas)};
+            model = model.registerPropFunction({VarName({}, 'compGasFluxes', ngas), fn, inputnames});
             
             % Assemble flux of the overall liquid component
             fn = @() PorousTransportLayer.updateLiquidMassFlux;
@@ -339,11 +345,11 @@ classdef PorousTransportLayer < ElectronicComponent
             model = model.registerPropFunction({'liquidMassFlux', fn, inputnames});
                 
             fn = @() PorousTransportLayer.updateESource;
-            inputnames = {'OHSource'};
+            inputnames = {'OHsource'};
             model = model.registerPropFunction({'eSource', fn, inputnames});
 
             fn = @() PorousTransportLayer.updateLiquidSource;
-            inputnames = {'OHSource', ...
+            inputnames = {'OHsource', ...
                           'H2OliquidSource'};
             model = model.registerPropFunction({'liquidSource', fn, inputnames});
 
@@ -365,13 +371,11 @@ classdef PorousTransportLayer < ElectronicComponent
 
             % Assemble mass conservation equations for components in gas phase
             fn = @() PorousTransportLayer.updateGasMassCons;
-            for igas = 1 : ngas
-                inputnames = {VarName({}, 'compGasBcSources', ngas, igas), ...
-                              VarName({}, 'compGasFluxes'   , ngas, igas), ...
-                              VarName({}, 'compGasSources'  , ngas, igas), ...
-                              VarName({}, 'compGasAccums'   , ngas, igas)};
-                model = model.registerPropFunction({VarName({}, 'compGasMassCons', ngas, igas), fn, inputnames});
-            end
+            inputnames = {VarName({}, 'compGasBcSources', ngas), ...
+                          VarName({}, 'compGasFluxes'   , ngas), ...
+                          VarName({}, 'compGasSources'  , ngas), ...
+                          VarName({}, 'compGasAccums'   , ngas)};
+            model = model.registerPropFunction({VarName({}, 'compGasMassCons', ngas), fn, inputnames});
 
             % Assemble mass conservation for the overall liquid component
             fn = @() PorousTransportLayer.updateLiquidMassCons;
@@ -387,7 +391,7 @@ classdef PorousTransportLayer < ElectronicComponent
                           'diffOHFlux', ...
                           'migOHFlux' , ...
                           'OHbcSource', ...
-                          'OHSource'  , ...
+                          'OHsource'  , ...
                           'OHaccum'};
             model = model.registerPropFunction({'OHMassCons', fn, inputnames});
 
@@ -410,11 +414,8 @@ classdef PorousTransportLayer < ElectronicComponent
             fn = @() PorousTransportLayer.updateAccumTerms;
             functionCallSetupFn = @(propfunction) PropFunction.accumFuncCallSetupFn(propfunction);
             fn = {fn, functionCallSetupFn};
-            for igas = 1 : ngas
-                inputnames = {VarName({}, 'compGasMasses', ngas, igas)};
-                model = model.registerPropFunction({VarName({}, 'compGasAccums', ngas, igas), fn, inputnames});
-            end
-            inputnames = {'OHceps'};
+            inputnames = {VarName({}, 'compGasMasses', ngas), 'OHceps'};
+            model = model.registerPropFunction({VarName({}, 'compGasAccums', ngas), fn, inputnames});
             model = model.registerPropFunction({'OHaccum', fn, inputnames});
 
             % update BC terms
@@ -432,24 +433,27 @@ classdef PorousTransportLayer < ElectronicComponent
                           VarName({bd}, 'phasePressures', nph, [phaseInd.gas, phaseInd.liquid])
                          };
             model = model.registerPropFunction({VarName({}, 'compGasBcSources', ngas), fn, inputnames});
-            model = model.registerPropFunction({'jBcSource', fn, inputnames});
             model = model.registerPropFunction({'OHbcSource', fn, inputnames});
             model = model.registerPropFunction({'liquidBcSource', fn, inputnames});
             model = model.registerPropFunction({VarName({bd}, 'bcEquations', 2 + ngas), fn, inputnames});
             
             model = model.removeVarName(VarName({}, 'phasePressures', nph, phaseInd.solid));
             model = model.removeVarName(VarName({}, 'phaseFluxes', nph, phaseInd.solid));
-            
+
         end
 
         function state = updateBcTerms(model, state)
+
+            bd = 'Boundary';
             
             coupterm   = model.externalCouplingTerm;
             harmFaceBc = model.operators.harmFaceBC;
             mphInd     = model.mobPhaseInd;
             phInd      = model.phaseInd;
-            liqInd     = model.liquidInd;
+            liquidInd  = model.liquidInd;
+            gasInd     = model.gasInd;
             perm       = model.permeability;
+            op         = model.operators;
             
             bcfaces = coupterm.couplingfaces;
 
@@ -463,8 +467,8 @@ classdef PorousTransportLayer < ElectronicComponent
                 pBc  = state.(bd).phasePressures{iph};
                 visc = state.viscosities{imph};
                 vf   = state.volumeFractions{iph};
-                [tc, bccells] = harmFaceBC((vf.^1.5).*perm./visc, bcfaces);
-                phaseBcFlux{ph} = tc.*(pBc - p(bccells));
+                [tc, bccells] = op.harmFaceBC((vf.^1.5).*perm./visc, bcfaces);
+                phaseBcFlux{iph} = tc.*(pBc - p(bccells));
             end
 
             % We compute liquidBcSource (we use upwinding)
@@ -472,23 +476,23 @@ classdef PorousTransportLayer < ElectronicComponent
             liqrho   = state.liqrho;
             liqrhoBc = state.(bd).liqrho;
             
-            liquibBcFlux = phaseBcFlux{phInd.liquid};
-            upwindLiqrho = liqrho(bccells);
-            upwindLiqrho(liquidBcFlux > 0) = liqrhoBc(liquidBcFlux > 0);
-
-            state.liquidBcSource = upwindLiqrho*liquidBcFlux;
-
-            % expressions for electrical flux at boundary (should be consistent with what is implemented in method updateCurrent)
-            % We do not use them because we assume zero electrical flux at boundary.
+            liquidBcFlux = phaseBcFlux{phInd.liquid};
+            upwindFlag = liquidBcFlux > 0;
+            upwindLiqrho             = liqrho(bccells);
+            upwindLiqrho(upwindFlag) = liqrhoBc(upwindFlag);
             
+            liquidBcSource = upwindLiqrho*liquidBcFlux;
+
+            % Expressions for electrical flux at boundary (should be consistent with what is implemented in method updateCurrent)
+            % We do not use them because we assume zero electrical flux at boundary.
             % phi   = state.phi;
             % phiBc = state.(bd).phi;
             % kappa = state.conductivity;
-            % tc = harmFaceBC(kappa, bcfaces);
+            % tc = op.harmFaceBC(kappa, bcfaces);
 
             % jBcFlux = tc.*(phiBc - phi(bccells));
 
-            % cOH = state.concentrations{liqInd.OH};
+            % cOH = state.concentrations{liquidInd.OH};
             % cOHbc = state.cOH;
             
             % dmudc = R.*T./cOH;
@@ -498,7 +502,7 @@ classdef PorousTransportLayer < ElectronicComponent
             % z     = model.sp.OH.z;             
             % coef  = (conductivity./F).*(t/z).*dmudc;
 
-            % tc = harmFaceBC(coef, bcfaces);
+            % tc = op.harmFaceBC(coef, bcfaces);
 
             % jBcFlux = jBcFlux + tc.*(cOHbc - cOH);
             
@@ -506,24 +510,26 @@ classdef PorousTransportLayer < ElectronicComponent
             
             % We compute OH boundary diffusion flux (should be consistent with what is implemented in method
             % updateOHDiffusionFlux)
-            cOH = state.concentrations{liqInd.OH};
-            cOHbc = state.cOH;
+            cOH = state.concentrations{liquidInd.OH};
+            cOHbc = state.(bd).cOH;
 
             vf = state.volumeFractions{phInd.liquid};
-            tc = harmFaceBC((vf.^1.5).*D, bcfaces);
+            D  = model.sp.OH.D;
+            tc = op.harmFaceBC((vf.^1.5).*D, bcfaces);
             diffOHbcFlux = tc.*(cOHbc - cOH(bccells));
             
             % We compute OH boundary convection flux (should be consistent with what is implemented in method
             % updateOHConvectionFlux)
-            upwindcOH = cOH;
-            upwindcOHbc(liquidBcFlux > 0) = cOHbc(liquidBcFlux > 0);
-            convOHbcFlux = upwindcOH.*liquiBcFlux;
+            upwindFlag = liquidBcFlux > 0;
+            upwindcOH             = cOH(bccells);
+            upwindcOH(upwindFlag) = cOHbc(upwindFlag);
+
+            convOHbcFlux = upwindcOH.*liquidBcFlux;
             
             % The OH boundary migration flux (should be consistent with what is implemented in method
             % updateOHMigrationFlux) is given by: migOHbcFlux = t./(z.*F).*jBcFlux
             % Since we assume no current at boundary it is equal to zero.
             migOHbcFlux = 0;
-            
 
             OHbcSource = diffOHbcFlux + convOHbcFlux + migOHbcFlux;
             
@@ -531,39 +537,48 @@ classdef PorousTransportLayer < ElectronicComponent
             % updateGasFluxes)
             gasBcFlux = phaseBcFlux{phInd.gas};
             vf = state.volumeFractions{phInd.gas};
-            for igas = 1 : numel(gasInd.ngas)
-                rho = state.compGasMasses{igas}(bccells)./vf(bccells);
-                rhoBc =  state.gasDensities{igas};
-                upwindrhoBc = rho;
-                upwindrhoBc(gasBcFlux > 0) = rhoBc(gasBcFlux > 0);
-                compGasBcSources{igas} = rhoBc.*gasBcFlux;
-            end
+            for igas = 1 : gasInd.ngas
 
+                rho   = state.compGasMasses{igas}./vf;
+                rhoBc = state.(bd).gasDensities{igas};
+
+                upwindFlag = gasBcFlux > 0;
+                upwindrho             = rho(bccells);
+                upwindrho(upwindFlag) = rhoBc(upwindFlag);
+                
+                compGasBcSources{igas} = upwindrho.*gasBcFlux;
+                
+                gasDensities{igas} = rho(bccells); % needed bellow
+            end
 
             % we update control
-            for igas = 1 : ngas
-                bceqs{igas}                = state.(bd).gasDensities{igas} - model.(bd).controlValues.gasDensities{igas};
-                bceqs{igas}(gasBcFlux < 0) = state.(bd).gasDensities{igas} - state.gasDensities{igas}(bccells);
+            for igas = 1 : gasInd.ngas
+                bcDirFlag = gasBcFlux > 0;
+                bcEquations{igas}            = state.(bd).gasDensities{igas} - gasDensities{igas};
+                bcEquations{igas}(bcDirFlag) = state.(bd).gasDensities{igas}(bcDirFlag) - model.(bd).controlValues.gasDensities{igas}(bcDirFlag);
             end
 
-            bceqs{igas + 1}                   = state.(bd).concentrations{liquidInd.OH} - model.(bd).controlValues.cOH;
-            bceqs{igas + 1}(liquidBcFlux < 0) = state.(bd).concentrations{liquidInd.OH} - state.concentrations{liquidInd}(bccells);
+            bcDirFlag = liquidBcFlux > 0;
+            
+            bcEquations{igas + 1}            = state.(bd).cOH - state.concentrations{liquidInd.OH}(bccells);
+            bcEquations{igas + 1}(bcDirFlag) = state.(bd).cOH(bcDirFlag) - model.(bd).controlValues.cOH(bcDirFlag);
 
-            bceqs{igas + 2}                   = state.(bd).liqrho - model.(bd).liqrho;
-            bceqs{igas + 2}(liquidBcFlux < 0) = state.(bd).liqrho - state.liqrho(bccells);
+            bcEquations{igas + 2}            = state.(bd).liqrho - state.liqrho(bccells);
+            bcEquations{igas + 2}(bcDirFlag) = state.(bd).liqrho(bcDirFlag) - model.(bd).controlValues.liqrho(bcDirFlag);
             
 
             % Each variable is first initialized (in a way we get AD )
+            phi = state.phi;
             for igas = 1 : gasInd.ngas
                 state.compGasBcSources{igas}          = 0*phi;
                 state.compGasBcSources{igas}(bccells) = compGasBcSources{igas};
             end
             state.OHbcSource              = 0*phi;
             state.OHbcSource(bccells)     = OHbcSource;
-            state.jBcSource               = 0*phi;
-            state.jBcSource(bccells)      = jBcSource;
             state.liquidBcSource          = 0*phi;
             state.liquidBcSource(bccells) = liquidBcSource;
+
+            state.(bd).bcEquations = bcEquations;
             
         end
 
@@ -594,6 +609,8 @@ classdef PorousTransportLayer < ElectronicComponent
                 state.compGasAccums{igas} = vols.*(state.compGasMasses{igas} - state0.compGasMasses{igas})/dt;
                 
             end
+
+            state.OHaccum = vols.*(state.OHceps - state0.OHceps)/dt;
             
         end
         
@@ -661,12 +678,12 @@ classdef PorousTransportLayer < ElectronicComponent
             T     = state.T;
             phi   = state.phi;
 
-            j = assembleFlux(phi, kappa);
+            j = assembleFlux(model, phi, kappa);
 
             dmudc = R.*T./cOH;
-            coef = (conductivity./F).*(t/z).*dmudc;
+            coef = (kappa./F).*(t/z).*dmudc;
 
-            j = j + assembleFlux(cOH, coef);
+            j = j + assembleFlux(model, cOH, coef);
 
             state.j = j;
             
@@ -716,7 +733,7 @@ classdef PorousTransportLayer < ElectronicComponent
         
         function state = updateMassH2Ogas(model, state)
         % simple copy
-            state.compGasMasses{compind.H2O} = state.H2Ogasrhoeps;
+            state.compGasMasses{model.gasInd.H2O} = state.H2Ogasrhoeps;
             
         end
 
@@ -752,10 +769,10 @@ classdef PorousTransportLayer < ElectronicComponent
         function state = updateEvaporationTerm(model, state)
             
             %% assemble evaporation term
-            psat  = model.sp.H2O;
-            MWH2O = model.sp.H2O.MW
-            kLV   = model.sp.H2O.kLV;
-            R     = model.constants.R;
+            psat = model.sp.H2O;
+            MW   = model.sp.H2O.MW;
+            kLV  = model.sp.H2O.kLV;
+            R    = model.constants.R;
 
             pH2Ovap = state.vaporPressure;
             T       = state.T;
@@ -780,16 +797,16 @@ classdef PorousTransportLayer < ElectronicComponent
         function state = updatePhaseVelocities(model, state)
         %% Assemble phase velocities
 
-            K    = model.Permeability;
+            K    = model.permeability;
             pmap = model.mobPhaseInd.phaseMap;
             
-            phaseinds = [model.phaseInd.liquid; model.phaseInd.gas];
+            phaseInds = [model.phaseInd.liquid; model.phaseInd.gas];
             
-            for ind = 1 : numel(phaseinds)
-                phind = phaseinds{ind};
+            for ind = 1 : numel(phaseInds)
+                phind = phaseInds(ind);
                 p = state.phasePressures{phind};
                 mu = state.viscosities{pmap(phind)};
-                vf = state.volumeFractions{phins};
+                vf = state.volumeFractions{phind};
                 v{ind} = assembleFlux(model, p, (vf.^1.5).*K./mu);
             end
             
@@ -810,7 +827,7 @@ classdef PorousTransportLayer < ElectronicComponent
         % assemble OH diffusion flux
             D = model.sp.OH.D;
 
-            cOH = state.concentrations{model.liqInd.OH};
+            cOH = state.concentrations{model.liquidInd.OH};
             vf = state.volumeFractions{model.phaseInd.liquid};
             
             state.diffOHFlux = assembleFlux(model, cOH, vf.^1.5.*D);
@@ -819,7 +836,7 @@ classdef PorousTransportLayer < ElectronicComponent
         
         function state = updateOHMigrationFlux(model, state)
         % assemble OH migration flux
-            F = model.constants.F
+            F = model.constants.F;
             t = model.sp.OH.t;
             z = model.sp.OH.z;
             
@@ -834,7 +851,7 @@ classdef PorousTransportLayer < ElectronicComponent
             vf = state.volumeFractions{model.phaseInd.gas};
             v  = state.phaseFluxes{model.phaseInd.gas};
 
-            for igas = 1 : model.gasInd.ncomp
+            for igas = 1 : model.gasInd.ngas
                 state.compGasFluxes{igas} =  assembleUpwindFlux(model, v, state.compGasMasses{igas}./vf);
             end
             
@@ -865,9 +882,9 @@ classdef PorousTransportLayer < ElectronicComponent
         % Assemble charge source
 
             F = model.constants.F;
-            z = model.sp.OH.z
+            z = model.sp.OH.z;
             
-            OHsrc = state.OHSource;
+            OHsrc = state.OHsource;
             
             state.eSource = F*z*OHsrc;
             
@@ -877,7 +894,7 @@ classdef PorousTransportLayer < ElectronicComponent
         function state = updateGasMassCons(model, state)
         % Assemble mass conservation equations for components in gas phase
             
-            for igas = 1 : model.gasInd.ncomp
+            for igas = 1 : model.gasInd.ngas
                 state.compGasMassCons{igas} = assembleConservationEquation(model, ...
                                                                            state.compGasFluxes{igas}   , ...
                                                                            state.compGasBcSources{igas}, ...
@@ -890,7 +907,7 @@ classdef PorousTransportLayer < ElectronicComponent
         
         function state = updateGasMassCons0(model, state)
         % zero flux version
-            for ind = 1 : model.gasInd.ncomp
+            for ind = 1 : model.gasInd.ngas
                 state.compGasFluxes{ind} = 0;
             end
             
@@ -919,11 +936,11 @@ classdef PorousTransportLayer < ElectronicComponent
         function state = updateLiquidMassCons(model, state)
         % Assemble mass conservation for the overall liquid component
             
-            state.liquiMassCons = assembleConservationEquation(model             , ...
-                                                               state.liquidMassFlux  , ...
-                                                               state.liquidSource, ...
-                                                               state.liquidBcSource, ...
-                                                               state.liquidAccumTerm);
+            state.liquidMassCons = assembleConservationEquation(model             , ...
+                                                                state.liquidMassFlux  , ...
+                                                                state.liquidSource, ...
+                                                                state.liquidBcSource, ...
+                                                                state.liquidAccumTerm);
             
         end
 
@@ -932,7 +949,7 @@ classdef PorousTransportLayer < ElectronicComponent
 
             OHflux = state.convOHFlux + state.diffOHFlux + state.migOHFlux;
             state.OHMassCons = assembleConservationEquation(model           , ...
-                                                            OHFlux          , ...
+                                                            OHflux          , ...
                                                             state.OHbcSource, ...
                                                             state.OHsource  , ...
                                                             state.OHaccum);
@@ -1004,7 +1021,7 @@ classdef PorousTransportLayer < ElectronicComponent
         function state = setupLiquidStateEquation(model, state)
             
             liqStateEq = -1;
-            for ind = 1 : model.liquidInd.ncomp
+            for ind = 1 : model.liquidInd.nliquid
                 liqStateEq = liqStateEq + state.concentrations{ind}.*model.V0s(ind);
             end
             

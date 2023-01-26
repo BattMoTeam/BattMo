@@ -2,16 +2,16 @@ classdef PorousTransportLayerBoundary < BaseModel
     
     properties
 
-        compInd   % mapping structure for component indices
-        phaseInd  % mapping structure for phase indices
+        compInd     % mapping structure for component indices
+        phaseInd    % mapping structure for phase indices
         mobPhaseInd % mapping structure for mobile phase indices
-        liquidInd % mapping structure for component indices
-        gasInd    % mapping structure for component indices
+        liquidInd   % mapping structure for component indices
+        gasInd      % mapping structure for component indices
 
         controlValues % Structure with following fields
                       % - cOH
                       % - liqrho
-                      % - phasePressures
+                      % - mobilePhasePressures (only for mobile phases)
                       % - gasDensities
         
     end
@@ -45,9 +45,9 @@ classdef PorousTransportLayerBoundary < BaseModel
             compInd   = model.compInd;
 
             ncomp   = compInd.ncomp;
-            ngas    = gasInd.ncomp;
+            ngas    = gasInd.ngas;
             nph     = phaseInd.nphase;
-            nliquid = liquidInd.ncomp;
+            nliquid = liquidInd.nliquid;
             nmobph  = numel(phaseInd.mobile);
 
             varnames = {};
@@ -93,7 +93,7 @@ classdef PorousTransportLayerBoundary < BaseModel
             
             for imobph = 1 : nmobph
                 iph = model.mobPhaseInd.phaseMap(imobph);
-                eqs{imobph} = state.phasePressures{iph} - model.controlValues.phasePressure{imobph};
+                eqs{imobph} = state.phasePressures{iph} - model.controlValues.mobilePhasePressures{imobph};
             end
 
             state.bcControlEquations = eqs;

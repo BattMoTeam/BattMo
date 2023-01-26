@@ -31,9 +31,9 @@ classdef HydrogenPorousTransportLayer < PorousTransportLayer
             compInd   = model.compInd;
 
             ncomp   = compInd.ncomp;
-            ngas    = gasInd.ncomp;
+            ngas    = gasInd.ngas;
             nph     = phaseInd.nphase;
-            nliquid = liquidInd.ncomp;
+            nliquid = liquidInd.nliquid;
             nmobph  = numel(phaseInd.mobile);
 
             model = model.registerVarName('H2rhoeps');
@@ -60,7 +60,7 @@ classdef HydrogenPorousTransportLayer < PorousTransportLayer
 
             gasInd = model.gasInd;
 
-            state.compGassMasses{gasInd.H2} = state.H2rhoeps;
+            state.compGasMasses{gasInd.H2} = state.H2rhoeps;
 
         end
         
@@ -76,11 +76,11 @@ classdef HydrogenPorousTransportLayer < PorousTransportLayer
             mH2O = state.H2Ogasrhoeps;
             vf   = state.volumeFractions{model.phaseInd.gas};
             T    = state.T;
-            pH2  = R*T*(mH2./MWH2)./vf
-            pH2O = R*T*(mH20./MWH2)./vf
+            pH2  = R*T.*(mH2./MWH2)./vf;
+            pH2O = R*T.*(mH2O./MWH2)./vf;
             
-            state.compGasPressures{gasInd.H2}   = pH2;
-            state.compGasPressures{gasInd.H2O}  = pH2O
+            state.compGasPressures{gasInd.H2}  = pH2;
+            state.compGasPressures{gasInd.H2O} = pH2O;
             state.phasePressures{phaseInd.gas} = pH2 + pH2O;
             
         end
@@ -89,8 +89,8 @@ classdef HydrogenPorousTransportLayer < PorousTransportLayer
         function state = updateGasViscosity(model, state)
             
             T = state.T;
-            warning('check that one! this was taken directly from OxygenPorousTransportLayer');
-            state.viscosities(model.mobPhaseInd.gas) = (0.1971 + T * (0.0803 - 3.99e-5 * T)) * 1e-6;
+            % warning('check that one! this was taken directly from OxygenPorousTransportLayer');
+            state.viscosities{model.mobPhaseInd.gas} = (0.1971 + T.*(0.0803 - 3.99e-5.*T))*1e-6;
             
         end
         
