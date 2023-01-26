@@ -71,15 +71,11 @@ classdef Electrolyser < BaseModel
             for ielde = 1 : numel(eldes)
                 elde = eldes{ielde};
                 inputvarnames{end + 1} = {elde, exl, 'H2OexchangeRate'};
-            end
-            model = model.registerPropFunction({{inm, 'H2OSource'}, fn, inputvarnames});
-            inputvarnames = {};
-            for ielde = 1 : numel(eldes)
-                elde = eldes{ielde};
                 inputvarnames{end + 1} = {elde, ctl, 'inmrOHsource'};
                 inputvarnames{end + 1} = {elde, exl, 'OHexchangeRate'};
             end
-            model = model.registerPropFunction({{inm, 'OHSource'}, fn, inputvarnames});
+            model = model.registerPropFunction({{inm, 'H2OSource'}, fn, inputvarnames});
+            model = model.registerPropFunction({{inm, 'OHsource'}, fn, inputvarnames});
 
 
             fn = @Electrolyser.dispatchIonomerToReactionLayers;
@@ -103,7 +99,9 @@ classdef Electrolyser < BaseModel
             model = model.registerPropFunction({VarName({}, 'controlEqs', 2), fn, inputvarnames});
 
             
-            model = model.registerStaticVarNames({{inm, 'jBcSource'}, ...
+            model = model.registerStaticVarNames({{inm, 'jBcSource'}     , ...
+                                                  {oer, ptl, 'jBcSource'}, ...
+                                                  {her, ptl, 'jBcSource'}, ...
                                                   'T'});
 
             model = model.removeVarNames({{her, ctl, 'I'}, ...
@@ -114,14 +112,15 @@ classdef Electrolyser < BaseModel
         function model = validateModel(model, varargin)
 
             model = validateModel@BaseModel(model, varargin{:});
-            cgt = ComputationalGraphTool(model);
-
+            model = model.setupComputationalGraph();
+            
+            cgt = model.computationalGraph;
             model.primaryVarNames = cgt.getPrimaryVariables();
             model.funcCallList = cgt.setOrderedFunctionCallList();
             
         end
         
-        function [state, model] = setupInitialState(model)
+        function [model, state] = setupBcAndInitialState(model)
             
             oer = 'OxygenEvolutionElectrode';
             her = 'HydrogenEvolutionElectrode';
@@ -130,8 +129,7 @@ classdef Electrolyser < BaseModel
             inm = 'IonomerMembrane';
             
             con = model.con;
-            
-            %  
+
             pGas = 101325*Pascal; % pressure of active gas (O2 or H2)
             cOH  = 1000*mol/(meter^3); 
             T    = 333.15*Kelvin;
@@ -232,6 +230,51 @@ classdef Electrolyser < BaseModel
             phi = - R*T/F*log(cOH/cT);
 
             state.(inm).phi = phi*ones(nc, 1);
+
+            bd = 'Boundary';
+            
+            state = model.evalVarNames(state, '.*compGasMasses');
+            state = model.evalVarNames(state, 'Por.*phasePressures');
+            state = model.evalVarNames(state, 'Layer.(?!Boundary).*liqrho$');
+            
+            for ielde = 1 : numel(eldes)
+                elde = eldes{ielde};
+                coupterm = model.(elde).(ptl).externalCouplingTerm;
+                coupcells = coupterm.couplingcells;
+                nc = numel(coupcells);
+
+                gasInd = model.(elde).(ptl).gasInd;
+                gvf = state.(elde).(ptl).volumeFractions{model.(elde).(ptl).phaseInd.gas};
+                for igas = 1 :  gasInd.ngas
+                    compgasdensity = state.(elde).(ptl).compGasMasses{igas}./gvf;
+                    compgasdensity = compgasdensity(coupcells);
+                    state.(elde).(ptl).(bd).gasDensities{igas} = compgasdensity;
+                    controlValues.gasDensities{igas} = compgasdensity;
+                end
+
+                mobPhaseInd = model.(elde).(ptl).mobPhaseInd;
+                for imobphase = 1 : mobPhaseInd.nmobphase
+                    iphase = mobPhaseInd.phaseMap(imobphase);
+                    p = state.(elde).(ptl).phasePressures{iphase};
+                    p = p(coupcells);
+                    state.(elde).(ptl).(bd).phasePressures{iphase} = p;
+                    controlValues.mobilePhasePressures{imobphase} = p;
+                end
+
+                liqrho = state.(elde).(ptl).liqrho;
+                liqrho = liqrho(coupcells);
+                state.(elde).(ptl).(bd).liqrho = liqrho;
+                controlValues.liqrho = liqrho;
+
+                liquidInd = model.(elde).(ptl).liquidInd;
+                cOH = state.(elde).(ptl).concentrations{liquidInd.OH};
+                cOH = cOH(coupcells);
+                state.(elde).(ptl).(bd).cOH = cOH;
+                controlValues.cOH = cOH;
+
+                model.(elde).(ptl).(bd).controlValues = controlValues;
+                
+            end
             
         end
 
@@ -242,7 +285,7 @@ classdef Electrolyser < BaseModel
             ctl = 'CatalystLayer';
 
             controlEqs{1} = state.(oer).(ctl).I - model.controlI;
-            controlEqs{2} = state.(her).E; % we impose zero potential at cathode
+            controlEqs{2} = state.(her).(ctl).E; % we impose zero potential at cathode
 
             state.controlEqs = controlEqs;
             
@@ -315,9 +358,9 @@ classdef Electrolyser < BaseModel
             ctl = 'CatalystLayer';
             exl = 'ExchangeLayer';
 
-            % initialize sources (done in a way that takes care of AD, meaning that OHSource and H2OSource inherits AD
+            % initialize sources (done in a way that takes care of AD, meaning that OHsource and H2OSource inherits AD
             % structure from state.(inm).H2Oceps)
-            OHSource  = 0*state.(inm).H2Oceps;
+            OHsource  = 0*state.(inm).H2Oceps;
             H2OSource = 0*state.(inm).H2Oceps;
 
             eldes = {her, oer};
@@ -330,33 +373,44 @@ classdef Electrolyser < BaseModel
                 coupnames = model.couplingNames;
                 vols      = model.G.cells.volumes;
 
-                coupterm  = getCoupTerm(coupterms, {inm, elde}, coupnames);
+                coupname  = sprintf('%s-%s', elde, inm);
+                coupterm  = getCoupTerm(coupterms, coupname, coupnames);
                 coupcells = coupterm.couplingcells;
                 vols      = vols(coupcells(:, 2));
                 
-                inmrOHsource = state.(elde).(ctl).inmrReactionRate(coupcells(:, 2));
-                OHexchR      = state.(elde).(exl).OHexchangeRate(coupcells(:, 2));
-                H2OexchR     = state.(elde).(exl).H2OexchangeRate(coupcells(:, 2));
+                inmrOHsource = state.(elde).(ctl).inmrReactionRate(coupcells(:, 1));
+                OHexchR      = state.(elde).(exl).OHexchangeRate(coupcells(:, 1));
+                H2OexchR     = state.(elde).(exl).H2OexchangeRate(coupcells(:, 1));
                 
-                OHSource(coupcells(:, 1))  = vols.*(inmrOHsource - OHexchR);
-                H2OSource(coupcells(:, 1)) = - vols.*H2OexchR;
+                OHsource(coupcells(:, 2))  = vols.*(inmrOHsource - OHexchR);
+                H2OSource(coupcells(:, 2)) = - vols.*H2OexchR;
                 
             end
             
-            state.(inm).OHSource  = OHSource;
+            state.(inm).OHsource  = OHsource;
             state.(inm).H2OSource = H2OSource;
             
         end
 
         function primaryvarnames = getPrimaryVariables(model)
+            
             primaryvarnames = model.primaryVarNames;
+            
         end
 
 
         function cleanState = addStaticVariables(model, cleanState, state)
 
+            oer = 'OxygenEvolutionElectrode';
+            her = 'HydrogenEvolutionElectrode';
+            ptl = 'PorousTransportLayer';
+            inm = 'IonomerMembrane';
+            
             cleanState = addStaticVariables@BaseModel(model, cleanState, state);
             cleanState.T = state.T;            
+            cleanState.(inm).jBcSource = 0;
+            cleanState.(oer).(ptl).jBcSource = 0;
+            cleanState.(her).(ptl).jBcSource = 0;
             
         end
 
@@ -364,6 +418,7 @@ classdef Electrolyser < BaseModel
         function forces = getValidDrivingForces(model)
             
             forces = getValidDrivingForces@PhysicalModel(model);
+            forces.name = [];
             
         end
 
@@ -386,30 +441,41 @@ classdef Electrolyser < BaseModel
             %% Set up the governing equations
             
             eqs = {};
-            eqs{end + 1} = state.OxygenEvolutionElectrode.PorousTransportLayer.Boundary.gasStateEquation;
-            eqs{end + 1} = state.OxygenEvolutionElectrode.PorousTransportLayer.Boundary.liquidStateEquation;
+
+            eqs{end + 1} = state.IonomerMembrane.chargeCons;
+            eqs{end + 1} = state.IonomerMembrane.H2OmassCons;
+            eqs{end + 1} = state.OxygenEvolutionElectrode.PorousTransportLayer.Boundary.bcEquations{1};
+            eqs{end + 1} = state.OxygenEvolutionElectrode.PorousTransportLayer.Boundary.bcEquations{2};
+            eqs{end + 1} = state.OxygenEvolutionElectrode.PorousTransportLayer.Boundary.bcEquations{3};
+            eqs{end + 1} = state.OxygenEvolutionElectrode.PorousTransportLayer.Boundary.bcEquations{4};
+            eqs{end + 1} = state.OxygenEvolutionElectrode.PorousTransportLayer.Boundary.bcControlEquations{1};
+            eqs{end + 1} = state.OxygenEvolutionElectrode.PorousTransportLayer.Boundary.bcControlEquations{2};
             eqs{end + 1} = state.OxygenEvolutionElectrode.PorousTransportLayer.chargeCons;
             eqs{end + 1} = state.OxygenEvolutionElectrode.PorousTransportLayer.compGasMassCons{1};
             eqs{end + 1} = state.OxygenEvolutionElectrode.PorousTransportLayer.compGasMassCons{2};
             eqs{end + 1} = state.OxygenEvolutionElectrode.PorousTransportLayer.liquidMassCons;
             eqs{end + 1} = state.OxygenEvolutionElectrode.PorousTransportLayer.OHMassCons;
             eqs{end + 1} = state.OxygenEvolutionElectrode.PorousTransportLayer.liquidStateEquation;
-            eqs{end + 1} = state.IonomerMembrane.chargeCons;
-            eqs{end + 1} = state.IonomerMembrane.H2OmassCons;
-            eqs{end + 1} = state.HydrogenEvolutionElectrode.PorousTransportLayer.Boundary.gasStateEquation;
-            eqs{end + 1} = state.HydrogenEvolutionElectrode.PorousTransportLayer.Boundary.liquidStateEquation;
+            eqs{end + 1} = state.HydrogenEvolutionElectrode.PorousTransportLayer.Boundary.bcEquations{1};
+            eqs{end + 1} = state.HydrogenEvolutionElectrode.PorousTransportLayer.Boundary.bcEquations{2};
+            eqs{end + 1} = state.HydrogenEvolutionElectrode.PorousTransportLayer.Boundary.bcEquations{3};
+            eqs{end + 1} = state.HydrogenEvolutionElectrode.PorousTransportLayer.Boundary.bcEquations{4};
+            eqs{end + 1} = state.HydrogenEvolutionElectrode.PorousTransportLayer.Boundary.bcControlEquations{1};
+            eqs{end + 1} = state.HydrogenEvolutionElectrode.PorousTransportLayer.Boundary.bcControlEquations{2};
             eqs{end + 1} = state.HydrogenEvolutionElectrode.PorousTransportLayer.chargeCons;
             eqs{end + 1} = state.HydrogenEvolutionElectrode.PorousTransportLayer.compGasMassCons{1};
             eqs{end + 1} = state.HydrogenEvolutionElectrode.PorousTransportLayer.compGasMassCons{2};
             eqs{end + 1} = state.HydrogenEvolutionElectrode.PorousTransportLayer.liquidMassCons;
             eqs{end + 1} = state.HydrogenEvolutionElectrode.PorousTransportLayer.OHMassCons;
             eqs{end + 1} = state.HydrogenEvolutionElectrode.PorousTransportLayer.liquidStateEquation;
+            eqs{end + 1} = state.controlEqs{1};
+            eqs{end + 1} = state.controlEqs{2};
 
 
             neq = numel(eqs);
             
             types = repmat({'cell'}, 1, neq);
-            names = arrayfun(@(ind) sprintf('eqs_%d', ind), (1 : neq)', 'uniformoutput', false);
+            names = arrayfun(@(ind) sprintf('eqs_%d', ind), (1 : neq), 'uniformoutput', false);
             
             primaryVars = model.getPrimaryVariables();
 
