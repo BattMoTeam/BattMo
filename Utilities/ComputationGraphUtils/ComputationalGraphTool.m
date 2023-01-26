@@ -78,22 +78,7 @@ classdef ComputationalGraphTool
             
         end
 
-        function propfuncs = getPropFunctionCallList(cgt, nodename)
-
-            propfunc = cgt.findPropFunction(nodename);
-
-            if isempty(propfunc)
-                fprintf('No property matching regexp has been found\n');
-                propfuncs = {};
-                return
-            end
-            
-            if numel(propfunc) > 1
-                fprintf('Several property functions are matching\n\n');
-                cgt.printPropFunction(nodename);
-                propfuncs = {};
-                return
-            end
+        function propfuncs = getPropFunctionList(cgt, propfunc)
 
             A = cgt.A;
 
@@ -127,33 +112,56 @@ classdef ComputationalGraphTool
             
         end
 
-        function printPropFunctionCallList(cgt, nodename)
+        function funcCallList = setPropFunctionCallList(cgt, nodename)
 
-            propfuncs = cgt.getPropFunctionCallList(nodename);
+            foundpropfuncs = cgt.findPropFunction(nodename);
 
-            if isempty(propfuncs)
+            funcCallList = {};
+
+            if isempty(foundpropfuncs)
+                fprintf('No property matching regexp has been found\n');
                 return
+            end            
+
+            if isa(foundpropfuncs, 'PropFunction')
+                foundpropfuncs = {foundpropfuncs};
             end
             
-            strs = {};
-            for iprop = 1 : numel(propfuncs)
+            
+            for ifound = 1 : numel(foundpropfuncs)
 
-                propfunc = propfuncs{iprop};
-                str = propfunc.functionCallSetupFn(propfunc);
-                strs{end + 1} =  sprintf('%s\n', str);
+                foundpropfunc = foundpropfuncs{ifound};
+                propfuncs = cgt.getPropFunctionList(foundpropfunc);
                 
+                propstrs = {};
+                
+                for iprop = 1 : numel(propfuncs)
+
+                    propfunc = propfuncs{iprop};
+                    str = propfunc.functionCallSetupFn(propfunc);
+                    propstrs{end + 1} =  str;
+                    
+                end
+
+                [~, ia, ic] = unique(propstrs, 'first');
+                ia = sort(ia);
+                propstrs = propstrs(ia);
+
+                funcCallList = horzcat(funcCallList, propstrs);
             end
 
-            [~, ia, ic] = unique(strs, 'first');
-            ia = sort(ia);
-            strs = strs(ia);
+        end
 
-            for istr = 1 : numel(strs)
-                fprintf(strs{istr});
+        function printPropFunctionCallList(cgt, nodename)
+
+            funcCallList = cgt.setPropFunctionCallList(nodename);
+            for ifunc = 1 : numel(funcCallList)
+                funcCall = funcCallList{ifunc};
+                fprintf('%s\n', funcCall);
             end
             
         end
-        
+
         
         
         function openPropFunction(cgt, nodename)
@@ -201,6 +209,9 @@ classdef ComputationalGraphTool
 
         function printVarNames(cgt, nodename)
 
+            if nargin < 2
+                nodename = '.'; % will match every thing
+            end
             nodenames = cgt.nodenames;
             indSelectedNodenames = regexp(nodenames, nodename, 'once');
             indSelectedNodenames = cellfun(@(x) ~isempty(x), indSelectedNodenames);
@@ -397,6 +408,7 @@ classdef ComputationalGraphTool
             
         end
 
+        
         function funcCallList = setOrderedFunctionCallList(cgt)
 
             A = cgt.A;

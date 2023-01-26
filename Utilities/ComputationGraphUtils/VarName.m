@@ -41,7 +41,7 @@ classdef VarName
             dim = varname.dim;
             if dim > 1
                 assert(isnumeric(index) && numel(index) == 1)
-                name = sprintf('%s[%d]', name, index);
+                name = sprintf('%s{%d}', name, index);
             end
         end
 
@@ -54,7 +54,9 @@ classdef VarName
             isok = (isnumeric(index) && numel(index) == 1);
             isok = isok | (ischar(index) && dim == 1);
             assert(isok, 'The variable has multiple index and cannot be processed by getProp');
-            cellname{end + 1} = index;
+            if dim > 1
+                cellname{end + 1} = index;
+            end
         end
         
         function varnames = resolveIndex(varname)
