@@ -1,4 +1,4 @@
-function R = ionomerExchange(kxch, cInmr, z, eta, T, cElyte)
+function exchR = ionomerExchange(kxch, z, cInmr, cElyte, phiInmr, phiElyte, T)
 %IONOMEREXCHANGE Calculates the ionomer to liquid ion-exchange rate
 %assuming a first-order process
 
@@ -10,19 +10,21 @@ function R = ionomerExchange(kxch, cInmr, z, eta, T, cElyte)
 
 %   kxch        Ionomer to liquid ion-exchange rate constant, 1/s. Best thing to do is
 %               increase it until the converged solution no longer changes.
-%   cInmr          Concentration of the relevant ion in the ionomer, mol/m^3. For a perfect
+%   z           Ion charge
+%   cInmr       Concentration of the relevant ion in the ionomer, mol/m^3. For a perfect
 %               membrane with only one counter-ion, this should be equal to the
 %               membrane fixed charge.
-%   z           Ion charge
-%   eta         Difference between Ionic potential in the ionomer and in the electrolyte, V
-%   T           Temperature, K
 %   cElyte      Concentration of the relevant ion in the electrolyte,
 %               mol/m^3.
+%   Phiinmr     Ionic potential in the ionomer, V
+%   Phielyte    Ionic potential in the electrolyte, V
+%   T           Temperature, K
 
-    con = physicalConstants();
-
-    warning('check this formula');
-    R   =   kxch .* ( cInmr .*  ( exp( z.*con.F.*eta ./ (con.R .* T) ) ) - cElyte );
+    con = PhysicalConstants();
+    R = con.R;
+    F = con.F;
+    
+    exchR = kxch.*(cInmr.*(exp(z*F*(phiInmr - phiElyte)./(R*T))) - cElyte);
     
 end
 
