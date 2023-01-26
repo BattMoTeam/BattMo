@@ -1,11 +1,11 @@
 classdef ExchangeLayerInputParams < ComponentInputParams
     
     properties
-
-        kxch %
-        OH % structure with field
-           % - z : number of charge
-        kML %
+        
+        kxch % Exchange rate
+        OH   % structure with field
+             % - z : number of charge
+        kML  % Ionomer sorption coefficient
         
     end
     

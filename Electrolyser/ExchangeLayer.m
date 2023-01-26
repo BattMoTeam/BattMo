@@ -2,11 +2,13 @@ classdef ExchangeLayer < BaseModel
 
     properties
 
-        kxch %
-        OH % structure with field
-           % - z : number of charge
-        kML % 
-        
+        constants % physical constants
+
+        kxch % Exchange rate
+        OH   % structure with field
+             % - z : number of charge
+        kML  % Ionomer sorption coefficient
+
     end
 
     methods
@@ -16,9 +18,11 @@ classdef ExchangeLayer < BaseModel
             model = model@BaseModel();
             
             fdnames = {'kxch', ...
-                       'IH'  , ...
-                       'KML' };
+                       'OH'  , ...
+                       'kML' };
             model = dispatchParams(model, paramobj, fdnames);
+
+            model.constants = PhysicalConstants;
             
         end
 
@@ -71,25 +75,36 @@ classdef ExchangeLayer < BaseModel
 
         function state = updateSorption(model, state)
 
+            kML = model.kML;
+
             H2OaElyte = state.H2OaElyte;
-            H2OaInmr = state.H2OaInmr;
+            H2OaInmr  = state.H2OaInmr;
 
-            kML = model.inmr.kML;
-
-            state.H2OexchangeRate = ionomerSorption(kML, H2OaElyte, H2OaInmr);
+            % R = (kML./MW).*(con.R.*T.*(log(aH2OI) - log(aH2OL)));
+            state.H2OexchangeRate = kML.*(H2OaInmr - H2OaElyte);;
             
         end
 
         function state = updateOHexchange(model, state)
+        %   Follows an approach from Stanislaw, Gerhardt, and Weber ECS Trans 2019,
+        %   as well as Jiangjin Liu et al JES 2021.
+        %   The equation for R approaches the equation for Donnan equilibrium if
+        %   kxch is large or R approaches zero. So using a large kxch value should
+        %   enforce Donnan equilibrium.
 
+            
             kxch = model.kxch;
+            z = model.OH.z;
+            F = model.constants.F;
+            R = model.constants.R;
             
-            eta      = state.eta;
             T        = state.T;
-            cOHElyte = state.cOHElyte;
-            cOHInmr  = state.cOHInmr;
+            cElyte   = state.cOHelyte;
+            cInmr    = state.cOHinmr;
+            phiElyte = state.phiElyte;
+            phiInmr  = state.phiInmr;
             
-            state.OHexchangeRate = ionomerExchange(kxch, cOHinmr, OH.z, eta, T, cOHElyte);
+            state.OHexchangeRate = kxch.*(cInmr.*(exp(z*F*(phiInmr - phiElyte)./(R*T))) - cElyte);
             
         end
 
