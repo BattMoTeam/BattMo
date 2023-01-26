@@ -20,19 +20,13 @@ classdef EvolutionElectrode < BaseModel
             
             switch paramobj.porousTransportLayerType
               case 'Hydrogen'
-                MWs(1) = paramobj.PorousTransportLayer.sp.H2O.MW;
-                MWs(2) = paramobj.PorousTransportLayer.sp.H2.MW;
-                paramobj.PorousTransportLayer.Boundary.MWs = MWs;
                 model.PorousTransportLayer = HydrogenPorousTransportLayer(paramobj.PorousTransportLayer);
               case 'Oxygen'
-                MWs(1) = paramobj.PorousTransportLayer.sp.H2O.MW;
-                MWs(2) = paramobj.PorousTransportLayer.sp.O2.MW;
-                paramobj.PorousTransportLayer.Boundary.MWs = MWs;
                 model.PorousTransportLayer = OxygenPorousTransportLayer(paramobj.PorousTransportLayer);
               otherwise
                 error('porousTransportLayerType not recognized')
             end
-
+            
             switch paramobj.catalystLayerType
               case 'Iridium'
                 model.CatalystLayer = IridiumCatalystLayer(paramobj.CatalystLayer);
@@ -73,8 +67,8 @@ classdef EvolutionElectrode < BaseModel
             gasInd    = model.(ptl).gasInd;
             
             inputvarnames = {{ptl, 'phi'}                                                      , ...
-                             VarName({ptl}, 'concentrations', liquidInd.ncomp, liquidInd.OH)   , ...
-                             VarName({ptl}, 'compGasPressures', gasInd.ncomp, gasInd.activeGas), ...
+                             VarName({ptl}, 'concentrations', liquidInd.nliquid, liquidInd.OH)   , ...
+                             VarName({ptl}, 'compGasPressures', gasInd.ngas, gasInd.activeGas), ...
                              {ptl, 'H2Oa'}};
             outputvarnames = {'phiElyte', 'cOHelyte', 'H2OaElyte'};
             for iovar = 1 : numel(outputvarnames)
@@ -87,19 +81,17 @@ classdef EvolutionElectrode < BaseModel
             
             fn = @() EvolutionElectrode.updateSourceTerms;
 
-            inputvarnames = {{ctl, 'elyteOHsource'}, ...
-                             {exl, 'OHexchangeRate'}};
-            model = model.registerPropFunction({{ptl, 'OHSource'}, fn, inputvarnames});
-
-            inputvarnames = {{ctl, 'elyteH2Osource'}, ...
-                             {exl, 'H2OexchangeRate'}  , ...
-                             {ptl, 'H2OvaporLiquidExchangeRate'}};
+            inputvarnames = {{ctl, 'elyteOHsource'}             , ...
+                             {exl, 'OHexchangeRate'}            , ...
+                             {ctl, 'elyteH2Osource'}            , ...
+                             {exl, 'H2OexchangeRate'}           , ...
+                             {ptl, 'H2OvaporLiquidExchangeRate'}, ...
+                             {ctl, 'activeGasSource'}};
+            model = model.registerPropFunction({{ptl, 'OHsource'}, fn, inputvarnames});
             model = model.registerPropFunction({{ptl, 'H2OliquidSource'}, fn, inputvarnames});
-
-            inputvarnames = {{ctl, 'activeGasSource'}};
             gasInd = model.(ptl).gasInd;
             igas = gasInd.activeGas;
-            ngas = gasInd.ncomp;
+            ngas = gasInd.ngas;
             model = model.registerPropFunction({VarName({ptl}, 'compGasSources', ngas, igas), fn, inputvarnames});
             
         end
@@ -147,7 +139,7 @@ classdef EvolutionElectrode < BaseModel
                 initval = adsample.convertDouble(initval);
             end
                 
-            varnames = {'phiElyte', 'cOHElyte', 'H2OaElyte'};
+            varnames = {'phiElyte', 'cOHelyte', 'H2OaElyte'};
             layers = {ctl, exl};
             for ivar = 1 : numel(varnames)
                 varname = varnames{ivar};
@@ -159,14 +151,14 @@ classdef EvolutionElectrode < BaseModel
             state.(ctl).pressureActiveGas = initval;
             
             state.(ctl).phiElyte(coupcells(:, 2))          = phi(coupcells(:, 1));
-            state.(ctl).cOHElyte(coupcells(:, 2))          = cOH(coupcells(:, 1));
+            state.(ctl).cOHelyte(coupcells(:, 2))          = cOH(coupcells(:, 1));
             % state.(ctl).cHElyte(coupcells(:, 2))           = cH(coupcells(:, 1));
             state.(ctl).H2OaElyte(coupcells(:, 2))         = H2Oa(coupcells(:, 1));
             state.(ctl).pressureActiveGas(coupcells(:, 2)) = pag(coupcells(:, 1));
 
             % coupling to ExchangeLayer
             state.(exl).phiElyte(coupcells(:, 2))  = phi(coupcells(:, 1));
-            state.(exl).cOHElyte(coupcells(:, 2))  = cOH(coupcells(:, 1));
+            state.(exl).cOHelyte(coupcells(:, 2))  = cOH(coupcells(:, 1));
             state.(exl).H2OaElyte(coupcells(:, 2)) = H2Oa(coupcells(:, 1));
             
         end
@@ -177,14 +169,11 @@ classdef EvolutionElectrode < BaseModel
             ctl = 'CatalystLayer';
             exl = 'ExchangeLayer';
             
-            lvf       = model.(inm).liquidVolumeFraction;
-            gInd      = model.(ptl).gasInd;
-            coupterms = model.couplingTerms;
-            coupnames = model.couplingNames;
-            gasMW     = model.(ptl).gasMW;
-            vols      = model.(ptl).G.cells.volumes;
+            gInd     = model.(ptl).gasInd;
+            coupterm = model.couplingTerm;
+            gasMW    = model.(ptl).gasMW;
+            vols     = model.(ptl).G.cells.volumes;
             
-            coupterm = getCoupTerm(coupterms, {ptl, ctl}, coupnames);
             coupcells = coupterm.couplingcells;
 
             H2OvlR = state.(ptl).H2OvaporLiquidExchangeRate;
@@ -201,7 +190,7 @@ classdef EvolutionElectrode < BaseModel
             elyteH2Osource                   = 0*H2OvlR; % initialization so that get we get right AD and dimension
             elyteH2Osource(coupcells(:, 1))  = state.(ctl).elyteH2Osource(coupcells(:, 2));
             
-            state.(ptl).OHSource                       = vols.*(elyteOHsource + OHexchR);
+            state.(ptl).OHsource                       = vols.*(elyteOHsource + OHexchR);
             state.(ptl).H2OliquidSource                = vols.*(elyteH2Osource + H2OexchR + H2OvlR);
             state.(ptl).compGasSources{gInd.activeGas} = gasMW.*vols.*activeGasSource;
 
