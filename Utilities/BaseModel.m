@@ -9,7 +9,8 @@ classdef BaseModel < PhysicalModel
         % some variables are declared as static (they are not depending on the primarty variables and are updated
         % separatly)
         staticVarNameList
-        
+
+        computationalGraph
     end
         
     methods
@@ -30,6 +31,12 @@ classdef BaseModel < PhysicalModel
             
         end
 
+        function model = setupComputationalGraph(model)
+
+            model.computationalGraph = ComputationalGraphTool(model);
+            
+        end
+        
         
         function model = registerVarName(model, varname)
             if isa(varname, 'VarName')
@@ -175,9 +182,9 @@ classdef BaseModel < PhysicalModel
         % initialize a new cleaned-up state with AD variables
             
             pnames  = model.getPrimaryVariables();
-            vars = cell(numel(pnames),1);
-            for i=1:numel(pnames)
-                vars{i} = model.getProp(state,pnames{i});
+            vars = cell(numel(pnames), 1);
+            for i = 1:numel(pnames)
+                vars{i} = model.getProp(state, pnames{i});
             end
             % Get the AD state for this model           
             [vars{:}] = model.AutoDiffBackend.initVariablesAD(vars{:});
@@ -443,6 +450,23 @@ classdef BaseModel < PhysicalModel
         function outputvars = extractGlobalVariables(model, states)
             ns = numel(states);
             outputvars = cell(1, ns);
+        end
+        
+        function state = evalVarNames(model, state, nodename)
+
+            cgt = model.computationalGraph;
+
+            if isempty(cgt)
+                fprintf('The computational graph has not been set up in model so that we compute set it up now, but it is a time coslty operation\n')
+                cgt = ComputationalGraphTool(model);
+            end
+
+            funcCallList = cgt.setPropFunctionCallList(nodename);
+
+            funcCall = join(funcCallList, '');
+            funcCall = funcCall{1};
+            eval(funcCall);
+            
         end
         
     end
