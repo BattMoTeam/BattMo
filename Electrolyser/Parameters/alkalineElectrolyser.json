@@ -51,7 +51,11 @@
     "CatalystLayer" : { "j0": 7,
                         "E0" : -1.6554,
                         "sp" : {"OH" : {"z" : -1,
-                                        "c0" : 1000}}
+                                        "c0" : 1000}},
+                        "n" : 2,
+                        "alpha" : 0.5,
+                        "Xinmr" : 0.5,
+                        "volumetricSurfaceArea" : 2e6
                       },
     "ExchangeLayer" : {
       "OH" : {"z" : -1,
@@ -102,7 +106,11 @@
     "CatalystLayer" : { "j0": 1e-3,
                         "E0" : 1.2287,
                         "sp" : {"OH" : {"z" : -1,
-                                        "c0" : 1000}}
+                                        "c0" : 1000}},
+                        "n" : 2,
+                        "alpha" : 0.5,
+                        "Xinmr" : 0.5,
+                        "volumetricSurfaceArea" : 2e6
                       },
     "ExchangeLayer" : {
       "OH" : {"z" : -1,
