@@ -15,8 +15,6 @@ classdef Electrolyser < BaseModel
         primaryVarNames
         funcCallList
 
-        controlI % given value for galvanistic control
-        
     end
     
     methods
@@ -42,7 +40,7 @@ classdef Electrolyser < BaseModel
 
             model = registerVarAndPropfuncNames@BaseModel(model);
 
-            varnames = {'T',
+            varnames = {'T', ...
                         VarName({}, 'controlEqs', 2)};
 
             model = model.registerVarNames(varnames);
@@ -93,12 +91,12 @@ classdef Electrolyser < BaseModel
             end
 
             fn = @Electrolyser.setupControl;
+            fn = {fn, @PropFunction.drivingForceFuncCallSetupFn};
             inputvarnames = {{oer, ctl, 'I'}, ...
                              {her, ctl, 'E'}
                             };
             model = model.registerPropFunction({VarName({}, 'controlEqs', 2), fn, inputvarnames});
 
-            
             model = model.registerStaticVarNames({{inm, 'jBcSource'}     , ...
                                                   {oer, ptl, 'jBcSource'}, ...
                                                   {her, ptl, 'jBcSource'}, ...
@@ -278,13 +276,17 @@ classdef Electrolyser < BaseModel
             
         end
 
-        function state = setupControl(model, state)
+        function state = setupControl(model, state, drivingForces)
             
             oer = 'OxygenEvolutionElectrode';
             her = 'HydrogenEvolutionElectrode';
             ctl = 'CatalystLayer';
 
-            controlEqs{1} = state.(oer).(ctl).I - model.controlI;
+            time = state.time;
+            
+            controlI = drivingForces.src(time);
+
+            controlEqs{1} = state.(oer).(ctl).I - controlI;
             controlEqs{2} = state.(her).(ctl).E; % we impose zero potential at cathode
 
             state.controlEqs = controlEqs;
@@ -418,7 +420,7 @@ classdef Electrolyser < BaseModel
         function forces = getValidDrivingForces(model)
             
             forces = getValidDrivingForces@PhysicalModel(model);
-            forces.name = [];
+            forces.src = [];
             
         end
 

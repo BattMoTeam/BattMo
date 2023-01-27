@@ -32,14 +32,16 @@ model = model.validateModel();
 
 cgt = model.computationalGraph;
 
-model.controlI = -1;
+controlI = -1;
+tup = 0.1; % rampup value for the current function, see rampupSwitchControl
+srcfunc = @(time) rampupControl(time, tup, controlI);
+control = struct('src', srcfunc);
 
-total = 1*hour;
+total = 1*minute;
 n  = 100;
 dt = total/n;
 
 step = struct('val', dt*ones(n, 1), 'control', ones(n, 1));
-control.name = 'notNeeded';
 schedule = struct('control', control, 'step', step);
 
 [wellSols, states, report] = simulateScheduleAD(initstate, model, schedule); 
