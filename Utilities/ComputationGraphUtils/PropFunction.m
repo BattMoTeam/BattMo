@@ -49,57 +49,56 @@ classdef PropFunction
             
         end
 
+        function [funcstr, statestr, nmstr] = setupCallStringElements(propfunction)
+            
+            fn = propfunction.fn;
+            nmstr = propfunction.modelnamespace;
+            nmstr = join(nmstr, '.');
+            if ~isempty(nmstr)
+                nmstr = nmstr{1};
+                statestr = sprintf('state.%s', nmstr);
+            else
+                statestr = 'state';
+            end
+            funcstr = func2str(fn);
+            funcstr = regexp(funcstr, "\.(.*)", 'tokens');
+            funcstr = funcstr{1}{1};
+            funcstr = horzcat(nmstr, {funcstr});
+            funcstr = join(funcstr, '.');
+            funcstr = funcstr{1};
+            funcstr = sprintf('model.%s', funcstr);
+            
+        end
+
     end
     
     methods(Static)
 
-        function str = stdFuncCallSetupFn(propfunction)
+        function callstr = stdFuncCallSetupFn(propfunction)
 
-            fn = propfunction.fn;
-            mn = propfunction.modelnamespace;
-            mn = join(mn, '.');
-            if ~isempty(mn)
-                mn = mn{1};
-                statename = sprintf('state.%s', mn);
-            else
-                statename = 'state';
-            end
-            fnname = func2str(fn);
-            fnname = regexp(fnname, "\.(.*)", 'tokens');
-            fnname = fnname{1}{1};
-            fnname = horzcat(mn, {fnname});
-            fnname = join(fnname, '.');
-            fnname = fnname{1};
-
-            str = sprintf('%s = model.%s(%s);', statename, fnname, statename);
+            [funcstr, statestr, nmstr] = propfunction.setupCallStringElements();
+            
+            callstr = sprintf('%s = %s(%s);', statestr, funcstr, statestr);
 
         end
-        
 
-        function str = accumFuncCallSetupFn(propfunction)
+        function callstr = accumFuncCallSetupFn(propfunction)
 
-            fn = propfunction.fn;
-            mn = propfunction.modelnamespace;
-            mn = join(mn, '.');
-            if ~isempty(mn)
-                mn = mn{1};
-                statename = sprintf('state.%s', mn);
-                statename0 = sprintf('state0.%s', mn);
-            else
-                statename = 'state';
-                statename0 = 'state0';
-            end
-            fnname = func2str(fn);
-            fnname = regexp(fnname, "\.(.*)", 'tokens');
-            fnname = fnname{1}{1};
-            fnname = horzcat(mn, {fnname});
-            fnname = join(fnname, '.');
-            fnname = fnname{1};
+            [funcstr, statestr, nmstr] = propfunction.setupCallStringElements();
 
-            str = sprintf('%s = model.%s(%s, %s, dt);', statename, fnname, statename, statename0);
+            state0str = sprintf('state0.%s', nmstr);
 
+            callstr = sprintf('%s = %s(%s, %s, dt);', statestr, funcstr, statestr, state0str);
+            
         end
-        
+
+        function callstr = drivingForceFuncCallSetupFn(propfunction)
+
+            [funcstr, statestr, nmstr] = propfunction.setupCallStringElements();
+            
+            callstr = sprintf('%s = %s(%s, drivingForces);', statestr, funcstr, statestr);
+            
+        end
 
     end
     
