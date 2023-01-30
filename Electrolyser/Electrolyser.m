@@ -176,43 +176,45 @@ classdef Electrolyser < BaseModel
                 
                 state.(elde).(ptl).H2Ogasrhoeps = H2Ogrho.*gvf;
 
-                switch elde
-                    
-                  case oer
-
-                    O2p = pGas;
-                    O2rho = O2p.*model.(elde).(ptl).sp.O2.MW / (con.R * T);
-                    state.(elde).(ptl).O2rhoeps = O2rho*gvf;
-
-                    state.(elde).(ptl) = model.(elde).(ptl).updateVolumeFractions(state.(elde).(ptl));
-                    state.(elde).(ptl) = model.(elde).(ptl).updateOHconcentration(state.(elde).(ptl));
-                    state.(elde).(ptl) = model.(elde).(ptl).updateLiquidDensity(state.(elde).(ptl));
-                    state.(elde).(ptl) = model.(elde).(ptl).updateMolality(state.(elde).(ptl));
-                    state              = model.dispatchTemperature(state);
-                    state.(elde)       = model.(elde).dispatchTemperature(state.(elde));
-                    state.(elde).(ptl) = model.(elde).(ptl).updateWaterActivity(state.(elde).(ptl));
-                    state.(elde).(ptl) = model.(elde).(ptl).updateGasPressure(state.(elde).(ptl));
-                    state.(elde)       = model.(elde).dispatchToCatalystAndExchangeLayers(state.(elde));
-                    state.(elde).(ctl) = model.(elde).(ctl).updateEelyte(state.(elde).(ctl));
-                    
-                    Eelyte = state.(elde).(ctl).Eelyte;
-                    
-                    state.(elde).(ctl).E = Eelyte(1);
-                    
-                  case her
-                    
-                    H2p = pGas;
-                    H2rho = H2p.*model.(elde).(ptl).sp.H2.MW / (con.R * T);
-                    state.(elde).(ptl).H2rhoeps = H2rho*gvf;
-                    state.(elde).(ctl).E = 0;
-                    
-                  otherwise
-                    
-                    error('electrode not recognized');
-                    
-                end
-
             end
+
+            switch elde
+                
+              case her
+                
+                H2p = pGas;
+                H2rho = H2p.*model.(elde).(ptl).sp.H2.MW / (con.R * T);
+                state.(elde).(ptl).H2rhoeps = H2rho*gvf;
+                state.(elde).(ctl).E = 0;
+
+              case oer
+
+                O2p = pGas;
+                O2rho = O2p.*model.(elde).(ptl).sp.O2.MW / (con.R * T);
+                state.(elde).(ptl).O2rhoeps = O2rho*gvf;
+
+                state.(elde).(ptl) = model.(elde).(ptl).updateVolumeFractions(state.(elde).(ptl));
+                state.(elde).(ptl) = model.(elde).(ptl).updateOHconcentration(state.(elde).(ptl));
+                state.(elde).(ptl) = model.(elde).(ptl).updateLiquidDensity(state.(elde).(ptl));
+                state.(elde).(ptl) = model.(elde).(ptl).updateMolality(state.(elde).(ptl));
+                state              = model.dispatchTemperature(state);
+                state.(elde)       = model.(elde).dispatchTemperature(state.(elde));
+                state.(elde).(ptl) = model.(elde).(ptl).updateWaterActivity(state.(elde).(ptl));
+                state.(elde).(ptl) = model.(elde).(ptl).updateGasPressure(state.(elde).(ptl));
+                state.(elde)       = model.(elde).dispatchToCatalystAndExchangeLayers(state.(elde));
+                state.(elde).(ctl) = model.(elde).(ctl).updateEelyte(state.(elde).(ctl));
+                
+                Eelyte = state.(elde).(ctl).Eelyte;
+                
+                state.(elde).(ctl).E = Eelyte(1);
+                
+              otherwise
+                
+                error('electrode not recognized');
+                
+            end
+
+
 
             nc = model.(inm).G.cells.num;
 
@@ -429,6 +431,14 @@ classdef Electrolyser < BaseModel
             opts = struct('ResOnly', false, 'iteration', 0); 
             opts = merge_options(opts, varargin{:});
             
+            inm = 'IonomerMembrane';
+            her = 'HydrogenEvolutionElectrode';
+            oer = 'OxygenEvolutionElectrode';
+            ctl = 'CatalystLayer';
+            exl = 'ExchangeLayer';
+            ptl = 'PorousTransportLayer';
+            bd  = 'Boundary';
+
             time = state0.time + dt;
             if(not(opts.ResOnly))
                 state = model.initStateAD(state);
@@ -443,41 +453,68 @@ classdef Electrolyser < BaseModel
             %% Set up the governing equations
             
             eqs = {};
-
-            eqs{end + 1} = state.IonomerMembrane.chargeCons;
-            eqs{end + 1} = state.IonomerMembrane.H2OmassCons;
-            eqs{end + 1} = state.OxygenEvolutionElectrode.PorousTransportLayer.Boundary.bcEquations{1};
-            eqs{end + 1} = state.OxygenEvolutionElectrode.PorousTransportLayer.Boundary.bcEquations{2};
-            eqs{end + 1} = state.OxygenEvolutionElectrode.PorousTransportLayer.Boundary.bcEquations{3};
-            eqs{end + 1} = state.OxygenEvolutionElectrode.PorousTransportLayer.Boundary.bcEquations{4};
-            eqs{end + 1} = state.OxygenEvolutionElectrode.PorousTransportLayer.Boundary.bcControlEquations{1};
-            eqs{end + 1} = state.OxygenEvolutionElectrode.PorousTransportLayer.Boundary.bcControlEquations{2};
-            eqs{end + 1} = state.OxygenEvolutionElectrode.PorousTransportLayer.chargeCons;
-            eqs{end + 1} = state.OxygenEvolutionElectrode.PorousTransportLayer.compGasMassCons{1};
-            eqs{end + 1} = state.OxygenEvolutionElectrode.PorousTransportLayer.compGasMassCons{2};
-            eqs{end + 1} = state.OxygenEvolutionElectrode.PorousTransportLayer.liquidMassCons;
-            eqs{end + 1} = state.OxygenEvolutionElectrode.PorousTransportLayer.OHMassCons;
-            eqs{end + 1} = state.OxygenEvolutionElectrode.PorousTransportLayer.liquidStateEquation;
-            eqs{end + 1} = state.HydrogenEvolutionElectrode.PorousTransportLayer.Boundary.bcEquations{1};
-            eqs{end + 1} = state.HydrogenEvolutionElectrode.PorousTransportLayer.Boundary.bcEquations{2};
-            eqs{end + 1} = state.HydrogenEvolutionElectrode.PorousTransportLayer.Boundary.bcEquations{3};
-            eqs{end + 1} = state.HydrogenEvolutionElectrode.PorousTransportLayer.Boundary.bcEquations{4};
-            eqs{end + 1} = state.HydrogenEvolutionElectrode.PorousTransportLayer.Boundary.bcControlEquations{1};
-            eqs{end + 1} = state.HydrogenEvolutionElectrode.PorousTransportLayer.Boundary.bcControlEquations{2};
-            eqs{end + 1} = state.HydrogenEvolutionElectrode.PorousTransportLayer.chargeCons;
-            eqs{end + 1} = state.HydrogenEvolutionElectrode.PorousTransportLayer.compGasMassCons{1};
-            eqs{end + 1} = state.HydrogenEvolutionElectrode.PorousTransportLayer.compGasMassCons{2};
-            eqs{end + 1} = state.HydrogenEvolutionElectrode.PorousTransportLayer.liquidMassCons;
-            eqs{end + 1} = state.HydrogenEvolutionElectrode.PorousTransportLayer.OHMassCons;
-            eqs{end + 1} = state.HydrogenEvolutionElectrode.PorousTransportLayer.liquidStateEquation;
-            eqs{end + 1} = state.controlEqs{1};
-            eqs{end + 1} = state.controlEqs{2};
-
+            names = {};
+            
+            eqs{end + 1}   = state.(inm).chargeCons;
+            names{end + 1} = 'inm_chargeCons';
+            eqs{end + 1}   = state.(inm).H2OmassCons;
+            names{end + 1} = 'inm_H2OmassCons';
+            eqs{end + 1}   = state.(oer).(ptl).(bd).bcEquations{1};
+            names{end + 1} = 'oer_ptl_bd_bcEquations_1';
+            eqs{end + 1}   = state.(oer).(ptl).(bd).bcEquations{2};
+            names{end + 1} = 'oer_ptl_bd_bcEquations_2';
+            eqs{end + 1}   = state.(oer).(ptl).(bd).bcEquations{3};
+            names{end + 1} = 'oer_ptl_bd_bcEquations_3';
+            eqs{end + 1}   = state.(oer).(ptl).(bd).bcEquations{4};
+            names{end + 1} = 'oer_ptl_bd_bcEquations_4';
+            eqs{end + 1}   = state.(oer).(ptl).(bd).bcControlEquations{1};
+            names{end + 1} = 'oer_ptl_bd_bcControlEquations_1';
+            eqs{end + 1}   = state.(oer).(ptl).(bd).bcControlEquations{2};
+            names{end + 1} = 'oer_ptl_bd_bcControlEquations_2';
+            eqs{end + 1}   = state.(oer).(ptl).chargeCons;
+            names{end + 1} = 'oer_ptl_chargeCons';
+            eqs{end + 1}   = state.(oer).(ptl).compGasMassCons{1};
+            names{end + 1} = 'oer_ptl_compGasMassCons_1';
+            eqs{end + 1}   = state.(oer).(ptl).compGasMassCons{2};
+            names{end + 1} = 'oer_ptl_compGasMassCons_2';
+            eqs{end + 1}   = state.(oer).(ptl).liquidMassCons;
+            names{end + 1} = 'oer_ptl_liquidMassCons';
+            eqs{end + 1}   = state.(oer).(ptl).OHMassCons;
+            names{end + 1} = 'oer_ptl_OHMassCons';
+            eqs{end + 1}   = state.(oer).(ptl).liquidStateEquation;
+            names{end + 1} = 'oer_ptl_liquidStateEquation';
+            eqs{end + 1}   = state.(her).(ptl).(bd).bcEquations{1};
+            names{end + 1} = 'her_ptl_bd_bcEquations_1';
+            eqs{end + 1}   = state.(her).(ptl).(bd).bcEquations{2};
+            names{end + 1} = 'her_ptl_bd_bcEquations_2';
+            eqs{end + 1}   = state.(her).(ptl).(bd).bcEquations{3};
+            names{end + 1} = 'her_ptl_bd_bcEquations_3';
+            eqs{end + 1}   = state.(her).(ptl).(bd).bcEquations{4};
+            names{end + 1} = 'her_ptl_bd_bcEquations_4';
+            eqs{end + 1}   = state.(her).(ptl).(bd).bcControlEquations{1};
+            names{end + 1} = 'her_ptl_bd_bcControlEquations_1';
+            eqs{end + 1}   = state.(her).(ptl).(bd).bcControlEquations{2};
+            names{end + 1} = 'her_ptl_bd_bcControlEquations_2';
+            eqs{end + 1}   = state.(her).(ptl).chargeCons;
+            names{end + 1} = 'her_ptl_chargeCons';
+            eqs{end + 1}   = state.(her).(ptl).compGasMassCons{1};
+            names{end + 1} = 'her_ptl_compGasMassCons_1';
+            eqs{end + 1}   = state.(her).(ptl).compGasMassCons{2};
+            names{end + 1} = 'her_ptl_compGasMassCons_2';
+            eqs{end + 1}   = state.(her).(ptl).liquidMassCons;
+            names{end + 1} = 'her_ptl_liquidMassCons';
+            eqs{end + 1}   = state.(her).(ptl).OHMassCons;
+            names{end + 1} = 'her_ptl_OHMassCons';
+            eqs{end + 1}   = state.(her).(ptl).liquidStateEquation;
+            names{end + 1} = 'her_ptl_liquidStateEquation';
+            eqs{end + 1}   = state.controlEqs{1};
+            names{end + 1} = 'controlEqs_1';
+            eqs{end + 1}   = state.controlEqs{2};
+            names{end + 1} = 'controlEqs_2';
 
             neq = numel(eqs);
             
             types = repmat({'cell'}, 1, neq);
-            names = arrayfun(@(ind) sprintf('eqs_%d', ind), (1 : neq), 'uniformoutput', false);
             
             primaryVars = model.getPrimaryVariables();
 
