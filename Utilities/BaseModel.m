@@ -461,7 +461,7 @@ classdef BaseModel < PhysicalModel
                 cgt = ComputationalGraphTool(model);
             end
 
-            funcCallList = cgt.setPropFunctionCallList(nodename);
+            funcCallList = cgt.getPropFunctionCallList(nodename);
 
             funcCall = join(funcCallList, '');
             funcCall = funcCall{1};

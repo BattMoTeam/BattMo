@@ -1,7 +1,6 @@
 classdef ComputationalGraphTool
 
     properties
-        graph
         model
         A
         varNameList
@@ -17,17 +16,171 @@ classdef ComputationalGraphTool
             end
             cgt.model = model;
             [g, staticprops, varNameList] = setupGraph(model);
-            cgt.graph       = g;
-            cgt.staticprops = staticprops;
-            cgt.varNameList = varNameList;
             % In adjacency matrix A, 
-            % - column index      : output variable index (as in model.varNameList)
-            % - row index         : input variable (as in model.varNameList)
+            % - column index      : output variable index (as in cgt.varNameList)
+            % - row index         : input variable (as in cgt.varNameList)
             % - coefficient value : property function index as in model.propertyFunctionList
-            cgt.A         = adjacency(g, 'weighted');
-            cgt.nodenames = g.Nodes.Variables;
+            A         = adjacency(g, 'weighted');
 
+            cgt.A           = A;
+            cgt.varNameList = varNameList;
+            cgt.nodenames   = g.Nodes.Variables;
+            cgt.staticprops = staticprops;
+
+            cgt = cgt.setupOrderedComputationalGraph();
+
+        end
+
+        function cgt = setupOrderedComputationalGraph(cgt)
+
+            A            = cgt.A;
+            varNameList  = cgt.varNameList;
+            nodenames    = cgt.nodenames;
+            staticprops  = cgt.staticprops;
             
+            try
+                p = topological_order(A);
+            catch
+                fprintf('You need to install matlab BGL\n');
+                return
+            end
+
+            if isempty(p)
+                fprintf('The graph contains cycles. It implies that some variables cannot be evaluated.\n')
+            end
+
+            varNameList = varNameList(p); 
+            A           = A(p, p);
+            nodenames   = nodenames(p);
+
+            for istat = 1 : numel(staticprops)
+                nodename = staticprops{istat}.nodename;
+                [isok, varnameind] = ismember(nodename, nodenames);
+                assert(isok, 'it should be found here');
+                staticprops{istat}.varnameind = varnameind;
+            end
+
+            cgt.A           = A;
+            cgt.varNameList = varNameList;
+            cgt.nodenames   = nodenames;
+            cgt.staticprops = staticprops;
+
+        end
+
+        function [propfuncs, propfuncinds, varnameinds] = getPropFunctionList(cgt, propfunc)
+
+        % Get the list of property functions and the corresponding indices (with respecto to
+        % cgt.model.propertyFunctionList) that should be call so that the variable of propfunc get updated.
+            
+            A           = cgt.A;
+            staticprops = cgt.staticprops;
+            
+            varname = propfunc.varname;
+
+            % for cell-valued variable pick-up a valid index
+            if (varname.dim > 1) && (ischar(varname.index))
+                varname.index = 1;
+            elseif isnumeric(varname.index) && (numel(varname.index) > 1)
+                varname.index = varname.index(1);
+            end
+            
+            varnameind = cgt.getVarNameIndex(varname);
+
+            varnameinds = dfs(A', varnameind);
+            varnameinds = find(varnameinds >= 0);
+            varnameinds = sort(varnameinds);
+
+            propfuncinds = max(A(:, varnameinds), [], 1);
+            staticinds = find(propfuncinds == 0);
+            staticinds = varnameinds(staticinds);
+            [~, ia, ic] = unique(propfuncinds, 'first');
+            ia = sort(ia);
+            propfuncinds = propfuncinds(ia);
+            varnameinds = varnameinds(ia);
+            varnameinds = varnameinds(propfuncinds > 0);
+            propfuncinds = propfuncinds(propfuncinds > 0);
+            
+            allstaticinds = cellfun(@(staticprop) staticprop.varnameind, staticprops);
+            allstaticpropinds = cellfun(@(staticprop) staticprop.propind, staticprops);
+
+            [isok, ia] = ismember(staticinds, allstaticinds);
+            if any(isok)
+                staticpropinds = allstaticpropinds(ia(isok))';
+                staticinds = staticinds(isok);
+                propfuncinds = [staticpropinds, propfuncinds];
+                varnameinds  = [staticinds, varnameinds'];
+            end
+
+            propfuncs = cgt.model.propertyFunctionList(propfuncinds);
+            
+        end
+
+        function funcCallList = getPropFunctionCallList(cgt, propfunc)
+        % Return the list of function call (as string) that will update the property function propfunc.
+
+            nodenames = cgt.nodenames;
+            
+            [propfuncs, ~, varnameinds] = cgt.getPropFunctionList(propfunc);
+            
+            funcCallList = {};
+            
+            for iprop = 1 : numel(propfuncs)
+
+                propfunc = propfuncs{iprop};
+                varnameind = varnameinds(iprop);
+                
+                fncallstr = propfunc.functionCallSetupFn(propfunc);
+
+                funcCallList{end + 1} = fncallstr;
+                
+            end
+
+        end
+
+        function printPropFunctionCallList(cgt, propfunc)
+        % Print the list of function call (as string) that will update the property function propfunc.
+
+
+            if ~isa(propfunc, 'PropFunction')
+                assert(ischar(propfunc), 'input type not accepted');
+                nodename = propfunc;
+
+                propfunc = cgt.findPropFunction(nodename);
+                
+                if isempty(propfunc)
+                    fprintf('No property matching regexp has been found\n');
+                    return
+                end            
+                
+                if numel(propfunc) > 1
+                    fprintf('Several property functions are matching\n\n');
+                    cgt.printPropFunction(nodename);
+                    return
+                end
+                
+            end
+            
+            nodenames = cgt.nodenames;
+            
+            [propfuncs, ~, varnameinds] = cgt.getPropFunctionList(propfunc);
+            
+            funcCallList = {};
+
+            strls = arrayfun(@(varnameind) strlength(nodenames{varnameind}), varnameinds);
+            strl = max(strls);
+            
+            for iprop = 1 : numel(propfuncs)
+
+                propfunc = propfuncs{iprop};
+                varnameind = varnameinds(iprop);
+                
+                fncallstr = propfunc.functionCallSetupFn(propfunc);
+                varstr = sprintf('state.%s', nodenames{varnameind});
+                varstr = sprintf('%-*s', strl + 6, varstr);
+                fprintf('%s <- %s\n', varstr, fncallstr);
+                
+            end
+
         end
 
         function nodestaticnames = getStaticVarNames(cgt)
@@ -77,94 +230,12 @@ classdef ComputationalGraphTool
             end
             
         end
-
-        function propfuncs = getPropFunctionList(cgt, propfunc)
-
-            A = cgt.A;
-
-            varname = propfunc.varname;
-            % for cell-valued variable pick-up a valid index
-            if (varname.dim > 1) && (ischar(varname.index))
-                varname.index = 1;
-            elseif isnumeric(varname.index) && (numel(varname.index) > 1)
-                varname.index = varname.index(1);
-            end
-            
-            varnameind = cgt.getVarNameIndex(varname);
-
-            nodeindlist = getDependencyVarNameInds(varnameind, cgt.A);
-
-            propfuncinds = [];
-            
-            for inode = 1 : numel(nodeindlist)
-
-                nodeind = nodeindlist(inode);
-                propfuncind = unique(A(:, nodeind));
-                propfuncind = propfuncind(propfuncind > 0);
-                if ~isempty(propfuncind)
-                    propfuncinds(end + 1) = propfuncind;
-                end
-            end
-
-            propfuncinds = propfuncinds(end : -1 : 1); 
-            
-            propfuncs = cgt.model.propertyFunctionList(propfuncinds);
-            
-        end
-
-        function funcCallList = setPropFunctionCallList(cgt, nodename)
-
-            foundpropfuncs = cgt.findPropFunction(nodename);
-
-            funcCallList = {};
-
-            if isempty(foundpropfuncs)
-                fprintf('No property matching regexp has been found\n');
-                return
-            end            
-
-            if isa(foundpropfuncs, 'PropFunction')
-                foundpropfuncs = {foundpropfuncs};
-            end
-            
-            
-            for ifound = 1 : numel(foundpropfuncs)
-
-                foundpropfunc = foundpropfuncs{ifound};
-                propfuncs = cgt.getPropFunctionList(foundpropfunc);
-                
-                propstrs = {};
-                
-                for iprop = 1 : numel(propfuncs)
-
-                    propfunc = propfuncs{iprop};
-                    str = propfunc.functionCallSetupFn(propfunc);
-                    propstrs{end + 1} =  str;
-                    
-                end
-
-                [~, ia, ic] = unique(propstrs, 'first');
-                ia = sort(ia);
-                propstrs = propstrs(ia);
-
-                funcCallList = horzcat(funcCallList, propstrs);
-            end
-
-        end
-
-        function printPropFunctionCallList(cgt, nodename)
-
-            funcCallList = cgt.setPropFunctionCallList(nodename);
-            for ifunc = 1 : numel(funcCallList)
-                funcCall = funcCallList{ifunc};
-                fprintf('%s\n', funcCall);
-            end
-            
-        end
-
         
-        
+
         function openPropFunction(cgt, nodename)
+        % Open in editor the place where the variable that matches the regexp nodename is updated. The regexp nodename
+        % should return a unique match
+
             propfunc = cgt.findPropFunction(nodename);
 
             if isempty(propfunc)
@@ -208,7 +279,8 @@ classdef ComputationalGraphTool
         end
 
         function printVarNames(cgt, nodename)
-
+        % Print the variable(s) that match the regexp nodename
+            
             if nargin < 2
                 nodename = '.'; % will match every thing
             end
@@ -222,8 +294,10 @@ classdef ComputationalGraphTool
             
         end
         
-        
         function printPropFunction(cgt, nodename)
+        % Print property function including output variable name, function name and input variable names for the variable(s)
+        % that match the regexp nodename
+            
             propfuncs = cgt.findPropFunction(nodename);
 
             if numel(propfuncs) == 1
@@ -260,7 +334,7 @@ classdef ComputationalGraphTool
         end
 
         function varnameind = getVarNameIndex(cgt, varname)
-
+        % Given a varname, find its index in cgt.varNameList
             for varnameind = 1 : numel(cgt.varNameList)
                 if varname.compareVarName(cgt.varNameList{varnameind})
                     return
@@ -345,6 +419,7 @@ classdef ComputationalGraphTool
         end
         
         function printRootVariables(cgt)
+        % Print the root variables in computational graph 
 
             A = cgt.A;
             nodenames = cgt.nodenames;
@@ -366,9 +441,34 @@ classdef ComputationalGraphTool
 
         end
 
+        function printTailVariables(cgt)
+        % Print the tail variables of the computational graph
+            A = cgt.A;
+            nodenames = cgt.nodenames;
+
+            %% print tail variables
+            fprintf('Tail variables \n');
+            nodenames(all(A' == 0, 1))
+            
+        end        
+
+        function printDetachedVariables(cgt)
+        % Print the "detached" variables, which are the variables that are not connected to the graph. This is specially useful
+        % in debugging because such variables should be eliminated from the final graph.
+            
+            A = cgt.A;
+            nodenames = cgt.nodenames;
+            
+            fprintf('Detached variables \n');
+            ind1 = all(A == 0, 1);
+            ind2 = all(A' == 0, 1);
+            nodenames(ind1&ind2)
+            
+        end
 
         function primvarnames = getPrimaryVariables(cgt)
-
+        % Return the primary variables, which are defined as the root variables and not declared or recognized as static.
+            
             A = cgt.A;
             nodenames = cgt.nodenames;
 
@@ -384,46 +484,10 @@ classdef ComputationalGraphTool
 
         end
         
-        function printTailVariables(cgt)
-            
-            A = cgt.A;
-            nodenames = cgt.nodenames;
-
-            %% print tail variables
-            fprintf('Tail variables \n');
-            nodenames(all(A' == 0, 1))
-            
-        end        
-
-
-        function printDetachedVariables(cgt)
-        % for debugging : find out variables that are declared but not attached to any function (as argument or input)
-            A = cgt.A;
-            nodenames = cgt.nodenames;
-            
-            fprintf('Detached variables \n');
-            ind1 = all(A == 0, 1);
-            ind2 = all(A' == 0, 1);
-            nodenames(ind1&ind2)
-            
-        end
-
-        
         function funcCallList = setOrderedFunctionCallList(cgt)
-
-            A = cgt.A;
+        % Return a list of strings that corresponds to all the function calls ordered in the right order.
+            A           = cgt.A;
             staticprops = cgt.staticprops;
-            
-            try
-                p = topological_order(A);
-            catch
-                fprintf('You need to install matlab BGL\n');
-                return
-            end
-
-            if isempty(p)
-                fprintf('The graph contains cycles. It implies that some variables cannot be evaluated.\n')
-            end
             
             funcCallList = {};
 
@@ -439,8 +503,8 @@ classdef ComputationalGraphTool
                 
             end
             
-            for ind = 1 : numel(p)
-                iprop = full(A(:, p(ind)));
+            for ind = 1 : size(A, 2)
+                iprop = full(A(:, ind));
                 iprop = unique(iprop(iprop>0));
                 if ~isempty(iprop)
                     assert(numel(iprop) == 1, 'There should be only one value for a given row');
@@ -459,7 +523,8 @@ classdef ComputationalGraphTool
         end
 
         function printOrderedFunctionCallList(cgt)
-
+        % Print the function calls ordered in the right order.
+            
             funcCallList = cgt.setOrderedFunctionCallList();
             
             fprintf('Function call list\n');
