@@ -452,8 +452,9 @@ classdef BaseModel < PhysicalModel
             outputvars = cell(1, ns);
         end
         
-        function state = evalVarNames(model, state, nodename)
-
+        function state = evalVarName(model, state, varname)
+        % varname is valid input to method ComputationalGraphTool.getPropFunctionCallList
+            
             cgt = model.computationalGraph;
 
             if isempty(cgt)
@@ -461,7 +462,7 @@ classdef BaseModel < PhysicalModel
                 cgt = ComputationalGraphTool(model);
             end
 
-            funcCallList = cgt.getPropFunctionCallList(nodename);
+            funcCallList = cgt.getPropFunctionCallList(varname);
 
             funcCall = join(funcCallList, '');
             funcCall = funcCall{1};

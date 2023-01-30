@@ -100,13 +100,9 @@ classdef ComputationalGraphTool
             varnameinds = varnameinds(propfuncinds > 0);
             propfuncinds = propfuncinds(propfuncinds > 0);
             
-            allstaticinds = cellfun(@(staticprop) staticprop.varnameind, staticprops);
-            allstaticpropinds = cellfun(@(staticprop) staticprop.propind, staticprops);
+            [staticinds, staticpropinds] = cgt.findStaticVarNameInds(staticinds);
 
-            [isok, ia] = ismember(staticinds, allstaticinds);
-            if any(isok)
-                staticpropinds = allstaticpropinds(ia(isok))';
-                staticinds = staticinds(isok);
+            if ~isempty(staticinds)
                 propfuncinds = [staticpropinds, propfuncinds];
                 varnameinds  = [staticinds, varnameinds'];
             end
@@ -115,12 +111,55 @@ classdef ComputationalGraphTool
             
         end
 
-        function funcCallList = getPropFunctionCallList(cgt, propfunc)
-        % Return the list of function call (as string) that will update the property function propfunc.
+        function [staticinds, staticpropinds] = findStaticVarNameInds(cgt, varnameinds)
 
-            nodenames = cgt.nodenames;
+        % Given a set list of index of varnameinds (index with respect to cgt.varNameList), extract and return the indices that
+        % correspond to static variables.
+
+            staticprops = cgt.staticprops;
+           
+            allstaticinds     = cellfun(@(staticprop) staticprop.varnameind, staticprops);
+            allstaticpropinds = cellfun(@(staticprop) staticprop.propind, staticprops);
             
-            [propfuncs, ~, varnameinds] = cgt.getPropFunctionList(propfunc);
+            [isok, ia] = ismember(varnameinds, allstaticinds);
+            
+            if any(isok)
+                staticpropinds = allstaticpropinds(ia(isok))';
+                staticinds = allstaticinds(ia(isok))'; %
+            else
+                staticpropinds = {};
+                staticinds = {};
+            end
+            
+        end
+        
+        function funcCallList = getPropFunctionCallList(cgt, propfunc)
+        % input propfunc is either
+        % - an instance of PropFunction
+        % - a valid input for findPropFunction, that is either
+        %     - a VarName instance
+        %     - a cell which then uses shortcuts for VarName (see implementation below)
+        %     - a string giving a regexp. It will be used to select varnames by the string name
+        %   In this case, findPropFunction is first run to obtain a list of propfunctions
+        % Print the list of function call (as string) that will update the property function propfunc.
+
+
+            if isa(propfunc, 'PropFunction')
+                [propfuncs, ~, varnameinds] = cgt.getPropFunctionList(propfunc);
+            else
+                varname = propfunc;
+                selectedpropfuncs = cgt.findPropFunction(propfunc);
+                if isa(selectedpropfuncs, 'PropFunction')
+                    selectedpropfuncs = {selectedpropfuncs};
+                end
+                propfuncs   = {};
+                varnameinds = [];
+                for isel = 1 : numel(selectedpropfuncs)
+                    [deppropfuncs, ~, depvarnameinds] = cgt.getPropFunctionList(selectedpropfuncs{isel});
+                    propfuncs   = horzcat(propfuncs, deppropfuncs);
+                    varnameinds = vertcat(varnameinds, depvarnameinds);
+                end
+            end
             
             funcCallList = {};
             
@@ -138,14 +177,13 @@ classdef ComputationalGraphTool
         end
 
         function printPropFunctionCallList(cgt, propfunc)
-        % Print the list of function call (as string) that will update the property function propfunc.
-
+        % Same input as getPropFunctionList
 
             if ~isa(propfunc, 'PropFunction')
-                assert(ischar(propfunc), 'input type not accepted');
-                nodename = propfunc;
 
-                propfunc = cgt.findPropFunction(nodename);
+                varname = propfunc;
+
+                propfunc = cgt.findPropFunction(varname);
                 
                 if isempty(propfunc)
                     fprintf('No property matching regexp has been found\n');
@@ -154,7 +192,7 @@ classdef ComputationalGraphTool
                 
                 if numel(propfunc) > 1
                     fprintf('Several property functions are matching\n\n');
-                    cgt.printPropFunction(nodename);
+                    cgt.printPropFunction(varname);
                     return
                 end
                 
@@ -202,27 +240,43 @@ classdef ComputationalGraphTool
             
         end
         
-        function propfuncs = findPropFunction(cgt, nodename)
+        function [propfuncs, propfuncinds] = findPropFunction(cgt, varname)
+        % The input varnames can be either:
+        % - a VarName instance
+        % - a cell which then uses shortcuts for VarName (see implementation below)
+        % - a string giving a regexp. It will be used to select varnames by the string name
+        %
+        % The function returns a list of PropFunction that updates the input.
             
             nodenames = cgt.nodenames;
             A         = cgt.A;
             model     = cgt.model;
+
+            if isa(varname, 'VarName')
+                varnameinds = cgt.getVarNameIndex(varname);
+            elseif isa(varname, 'cell')
+                varname = VarName(varname(1 : end - 1), varname{end});
+                propfuncs = cgt.findPropFunction(varname);
+                return
+            elseif isa(varname, 'char')
+                selectednodenames = varname;
+                varnameinds = regexp(nodenames, selectednodenames, 'once');
+                varnameinds = cellfun(@(x) ~isempty(x), varnameinds);
+                varnameinds = find(varnameinds);
+            else
+                error('input type not recognized');
+            end
             
-            indSelectedNodenames = regexp(nodenames, nodename, 'once');
-            indSelectedNodenames = cellfun(@(x) ~isempty(x), indSelectedNodenames);
-            propfuncinds = A(:, indSelectedNodenames);
-            propfuncinds = unique(propfuncinds(:));
+            propfuncinds = max(A(:, varnameinds), [], 1);
+            staticinds = find(propfuncinds == 0);
             propfuncinds = propfuncinds(propfuncinds > 0); % remove the zero elements
 
-            staticprops = cgt.staticprops;
-            staticnodenames = cellfun(@(staticprop) staticprop.nodename, staticprops, 'uniformoutput', false);
-            indSelectedNodenames = regexp(staticnodenames, nodename, 'once');
-            indSelectedNodenames = cellfun(@(x) ~isempty(x), indSelectedNodenames);
-            staticprops = staticprops(indSelectedNodenames);
-            staticIndPropfunctions = cellfun(@(staticprop) staticprop.propind, staticprops);
+            [staticinds, staticpropinds] = cgt.findStaticVarNameInds(staticinds);
 
-            propfuncinds = [propfuncinds; staticIndPropfunctions'];
-            
+            if ~isempty(staticinds)
+                propfuncinds = [staticpropinds, propfuncinds];
+            end
+
             propfuncs = model.propertyFunctionList(propfuncinds);
 
             if numel(propfuncs) == 1
@@ -539,19 +593,29 @@ classdef ComputationalGraphTool
 
     methods (Static)
 
+        function nodenames = getNodeName(varname)
+        % convert variable names to graph node names
+        % TODO : we should enforce that the same function is used in setupGraph (important!)
+            nodenames = {};
+            varname_s = varname.resolveIndex();
+            for ind = 1 : numel(varname_s)
+                nodenames{end + 1} = varname_s{ind}.getIndexedFieldname();
+            end
+
+        end
+
         function nodenames = getNodeNames(varnames)
         % convert variable names to graph node names
         % TODO : we should enforce that the same function is used in setupGraph (important!)
             nodenames = {};
             for ind = 1 : numel(varnames)
                 varname = varnames{ind};
-                varname_s = varname.resolveIndex();
-                for ind = 1 : numel(varname_s)
-                    nodenames{end + 1} = varname_s{ind}.getIndexedFieldname();
-                end
+                nodenames = horzcat(nodenames, ...
+                                    ComputationalGraphTool.getNodeName(varname));
             end
-        end
         
+        end
+
     end
     
     
