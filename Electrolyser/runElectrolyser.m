@@ -18,7 +18,7 @@ ctl = 'CatalystLayer';
 
 model = Electrolyser(paramobj);
 
-doplotgraph = false;
+doplotgraph = true;
 if doplotgraph
     cgt = ComputationalGraphTool(model);
     g = cgt.getComputationalGraph();
@@ -32,7 +32,7 @@ model = model.validateModel();
 
 cgt = model.computationalGraph;
 
-controlI = -1;
+controlI = 0;
 tup = 0.1; % rampup value for the current function, see rampupSwitchControl
 srcfunc = @(time) rampupControl(time, tup, controlI);
 control = struct('src', srcfunc);
@@ -43,5 +43,7 @@ dt = total/n;
 
 step = struct('val', dt*ones(n, 1), 'control', ones(n, 1));
 schedule = struct('control', control, 'step', step);
+
+model.verbose = true;
 
 [wellSols, states, report] = simulateScheduleAD(initstate, model, schedule); 
