@@ -104,7 +104,7 @@ classdef ComputationalGraphTool
 
             if ~isempty(staticinds)
                 propfuncinds = [staticpropinds, propfuncinds];
-                varnameinds  = [staticinds, varnameinds'];
+                varnameinds  = [staticinds'; varnameinds];
             end
 
             propfuncs = cgt.model.propertyFunctionList(propfuncinds);
@@ -136,13 +136,12 @@ classdef ComputationalGraphTool
         function funcCallList = getPropFunctionCallList(cgt, propfunc)
         % input propfunc is either
         % - an instance of PropFunction
-        % - a valid input for findPropFunction, that is either
+        % - a valid input for findPropFunction, that is, either
         %     - a VarName instance
         %     - a cell which then uses shortcuts for VarName (see implementation below)
         %     - a string giving a regexp. It will be used to select varnames by the string name
         %   In this case, findPropFunction is first run to obtain a list of propfunctions
-        % Print the list of function call (as string) that will update the property function propfunc.
-
+        % setup the list of function call (as list of cell of strings) that will be run to update the property function propfunc.
 
             if isa(propfunc, 'PropFunction')
                 [propfuncs, ~, varnameinds] = cgt.getPropFunctionList(propfunc);
@@ -177,7 +176,16 @@ classdef ComputationalGraphTool
         end
 
         function printPropFunctionCallList(cgt, propfunc)
-        % Same input as getPropFunctionList
+        % input propfunc is either
+        % - an instance of PropFunction
+        % - a valid input for findPropFunction, that is, either
+        %     - a VarName instance
+        %     - a cell which then uses shortcuts for VarName (see implementation below)
+        %     - a string giving a regexp. It will be used to select varnames by the string name
+        %   In this case, findPropFunction is first run to obtain the property function. It should return a unique element, otherwise we get a warning with a list of returned elements
+        % Print the list of function call (as string) that will update the property function propfunc.
+
+
 
             if ~isa(propfunc, 'PropFunction')
 
