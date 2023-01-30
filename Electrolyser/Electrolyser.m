@@ -110,11 +110,13 @@ classdef Electrolyser < BaseModel
         function model = validateModel(model, varargin)
 
             model = validateModel@BaseModel(model, varargin{:});
-            model = model.setupComputationalGraph();
-            
-            cgt = model.computationalGraph;
-            model.primaryVarNames = cgt.getPrimaryVariables();
-            model.funcCallList = cgt.setOrderedFunctionCallList();
+
+            if isempty(model.computationalGraph)
+                model = model.setupComputationalGraph();
+                cgt = model.computationalGraph;
+                model.primaryVarNames = cgt.getPrimaryVariables();
+                model.funcCallList = cgt.setOrderedFunctionCallList();
+            end
             
         end
         
@@ -143,7 +145,7 @@ classdef Electrolyser < BaseModel
             
             liqrho = PorousTransportLayer.density(cOH, T);
             
-            eldes = {oer, her};
+            eldes = {her, oer};
 
             for ielde = 1 : numel(eldes)
 
@@ -159,83 +161,73 @@ classdef Electrolyser < BaseModel
                 state.(elde).(ptl).liqeps    = sLiquid.*(1 - svf);
                 state.(elde).(ptl).OHceps    = cOH.*lvf;
                 state.(elde).(ptl).liqrhoeps = liqrho*lvf;
-
-                state.(elde).(ptl).phi = zeros(nc, 1);
+                state.(elde).(ptl).phi       = zeros(nc, 1); % OBS : this is not the value that is finally assigned (only sent here so that dispatch functions can be used)
                 
-                state.(elde).(ptl).liqrho = liqrho;
-                state.(elde).(ptl) = model.(elde).(ptl).updateVolumeFractions(state.(elde).(ptl));
-                state.(elde).(ptl) = model.(elde).(ptl).updateOHconcentration(state.(elde).(ptl));
-                state.(elde).(ptl) = model.(elde).(ptl).updateMolality(state.(elde).(ptl));
-                state = model.dispatchTemperature(state);
-                state.(elde) = model.(elde).dispatchTemperature(state.(elde));
-                state.(elde).(ptl) = model.(elde).(ptl).updateVaporPressure(state.(elde).(ptl));
-
+                state = model.evalVarName(state, {elde, ptl, 'vaporPressure'});
+                
                 H2Ovp = state.(elde).(ptl).vaporPressure;
                 H2Ogrho = H2Ovp*model.(elde).(ptl).sp.H2O.MW./(con.R*T);
                 gvf = (1 - lvf - model.(elde).(ptl).solidVolumeFraction); % Gas volume fraction
                 
                 state.(elde).(ptl).H2Ogasrhoeps = H2Ogrho.*gvf;
 
+                switch elde
+                    
+                  case her
+                    
+                    H2p = pGas;
+                    H2rho = H2p.*model.(elde).(ptl).sp.H2.MW / (con.R * T);
+                    state.(elde).(ptl).H2rhoeps = H2rho*gvf;
+                    
+                  case oer
+
+                    O2p = pGas;
+                    O2rho = O2p.*model.(elde).(ptl).sp.O2.MW / (con.R * T);
+                    state.(elde).(ptl).O2rhoeps = O2rho*gvf;
+
+                  otherwise
+                    
+                    error('electrode not recognized');
+                    
+                end
+                
+                state = model.evalVarName(state, {elde, ctl, 'Eelyte'});
             end
-
-            switch elde
-                
-              case her
-                
-                H2p = pGas;
-                H2rho = H2p.*model.(elde).(ptl).sp.H2.MW / (con.R * T);
-                state.(elde).(ptl).H2rhoeps = H2rho*gvf;
-                state.(elde).(ctl).E = 0;
-
-              case oer
-
-                O2p = pGas;
-                O2rho = O2p.*model.(elde).(ptl).sp.O2.MW / (con.R * T);
-                state.(elde).(ptl).O2rhoeps = O2rho*gvf;
-
-                state.(elde).(ptl) = model.(elde).(ptl).updateVolumeFractions(state.(elde).(ptl));
-                state.(elde).(ptl) = model.(elde).(ptl).updateOHconcentration(state.(elde).(ptl));
-                state.(elde).(ptl) = model.(elde).(ptl).updateLiquidDensity(state.(elde).(ptl));
-                state.(elde).(ptl) = model.(elde).(ptl).updateMolality(state.(elde).(ptl));
-                state              = model.dispatchTemperature(state);
-                state.(elde)       = model.(elde).dispatchTemperature(state.(elde));
-                state.(elde).(ptl) = model.(elde).(ptl).updateWaterActivity(state.(elde).(ptl));
-                state.(elde).(ptl) = model.(elde).(ptl).updateGasPressure(state.(elde).(ptl));
-                state.(elde)       = model.(elde).dispatchToCatalystAndExchangeLayers(state.(elde));
-                state.(elde).(ctl) = model.(elde).(ctl).updateEelyte(state.(elde).(ctl));
-                
-                Eelyte = state.(elde).(ctl).Eelyte;
-                
-                state.(elde).(ctl).E = Eelyte(1);
-                
-              otherwise
-                
-                error('electrode not recognized');
-                
-            end
-
-
 
             nc = model.(inm).G.cells.num;
 
-            % We use water activity in oer. It has been already computed above.
+            % We use water activity in oer to setup activity
+            nc_inm = model.(inm).G.cells.num;
 
             aw = state.(oer).(ptl).H2Oa(1);
             cH2O = IonomerMembrane.groupHydration(model.(inm), aw, T);
             model.(inm).H2O.c0 = cH2O/aw;
+
             state.(inm).H2Oceps = cH2O.*model.(inm).volumeFraction;
 
-            state.(inm) = model.(inm).setupOHconcentration(state.(inm));
-            cT  = state.(inm).cOH(1);
-            phi = - R*T/F*log(cOH/cT);
+            state.(inm).phi = zeros(nc_inm, 1); % OBS : this is not the value that is finally assigned (only sent here so that dispatchIonomerToReactionLayers can be used).
+            state = model.evalVarName(state, {her, ctl, 'Einmr'});
+            state = model.evalVarName(state, {oer, ctl, 'Einmr'});
+            
+            Eelyte_oer = state.(oer).(ctl).Eelyte(1);
+            Eelyte_her = state.(her).(ctl).Eelyte(1);
+            Einmr_oer  = state.(oer).(ctl).Einmr(1);
+            Einmr_her  = state.(her).(ctl).Einmr(1);
 
-            state.(inm).phi = phi*ones(nc, 1);
+            nc_her = model.(her).(ptl).G.cells.num;
+            nc_oer = model.(oer).(ptl).G.cells.num;
+            
+            state.(her).(ctl).E   = 0;
+            state.(her).(ptl).phi = - Eelyte_her*ones(nc_her, 1);
+            state.(inm).phi       = - Einmr_her*ones(nc_inm, 1);
+            state.(oer).(ctl).E   = Einmr_oer - Einmr_her; 
+            state.(oer).(ptl).phi = (Einmr_oer - Einmr_her - Eelyte_oer)*ones(nc_oer, 1);
 
             bd = 'Boundary';
             
-            state = model.evalVarNames(state, '.*compGasMasses');
-            state = model.evalVarNames(state, 'Por.*phasePressures');
-            state = model.evalVarNames(state, 'Layer.(?!Boundary).*liqrho$');
+            state = model.evalVarName(state, '.*compGasMasses');
+            state = model.evalVarName(state, 'Por.*phasePressures');
+            state = model.evalVarName(state, 'Layer.(?!Boundary).*liqrho$');
             
             for ielde = 1 : numel(eldes)
                 elde = eldes{ielde};
@@ -426,6 +418,29 @@ classdef Electrolyser < BaseModel
             
         end
 
+        function state = addVariables(model, state)
+        % Given a state where only the primary variables are defined, this
+        % functions add all the additional variables that are computed in the assembly process and have some physical
+        % interpretation.
+        %
+        % To do so, we use getEquations function and sends dummy variable for state0, dt and drivingForces 
+            
+        % Values that need to be set to get the function getEquations running
+            
+            dt = 1;
+            state0 = state;
+            drivingForces = model.getValidDrivingForces();
+            drivingForces.src = @(time) 0;
+
+            % We call getEquations to update state
+            
+            [~, state] = getEquations(model, state0, state, dt, drivingForces, 'ResOnly', true);
+
+            
+        end
+
+        
+        
         function [problem, state] = getEquations(model, state0, state,dt, drivingForces, varargin)
             
             opts = struct('ResOnly', false, 'iteration', 0); 
@@ -523,7 +538,17 @@ classdef Electrolyser < BaseModel
         
         end
         
+
+        function [state, report] = updateAfterConvergence(model, state0, state, dt, drivingForces)
+
+            [state, report] = updateAfterConvergence@BaseModel(model, state0, state, dt, drivingForces);
+
+            state = model.evalVarName(state, 'compGasMasses');
+            
+        end
+
     end
+
     
 end
 
