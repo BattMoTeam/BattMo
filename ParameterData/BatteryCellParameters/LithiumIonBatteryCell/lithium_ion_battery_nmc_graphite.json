@@ -17,7 +17,6 @@
   "NegativeElectrode": {
     "ActiveMaterial": {
       "specificHeatCapacity": 632.0,
-      "heatCapacity": 632000.0,
       "thermalConductivity": 1.04,
       "InterDiffusionCoefficient": 1e-14,
       "InterDiffusionCoefficientComment" : "from Ecker 2015",
@@ -44,7 +43,6 @@
   "PositiveElectrode": {
     "ActiveMaterial": {
       "specificHeatCapacity": 700.0,
-      "heatCapacity": 700000.0,
       "thermalConductivity": 2.1,
       "InterDiffusionCoefficient": 1e-14,
       "electricalConductivity": 100,

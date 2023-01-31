@@ -5,11 +5,11 @@
   "type": "object",
 
   "allOf": [{"$ref": "ElectronicComponent"},
-            {"$ref": "thermalParameters"},
             {"properties" : { "Interface": {"$ref" : "Interface"},
                               "SolidDiffusion": {"$ref" : "SolidDiffusionModel"},
                               "InterDiffusionCoefficient": {"type" : "number"},
                               "electricalConductivity": {"type" : "number"},
+                              "density" : {"type" : "number"};
                               "diffusionModelType" : {"type" : "string",
                                                       "enum" : ["full", "simple"]},
                               "BruggemanCoefficient" : {"type" : "number"},

@@ -1,5 +1,6 @@
 {"library" : "matlab",
  "method" : "separate-variable-gmres",
+ "verbose" : 2,
  "options" : {"type" : "jacobi"},
  "gmres_options" : {"restart" : "default",
                     "tol" : "default",
@@ -13,19 +14,25 @@
                        "variables" : [["NegativeElectrode", "ActiveMaterial", "SolidDiffusion", "c"],
                                       ["NegativeElectrode", "ActiveMaterial", "SolidDiffusion", "cSurface"]],
                        "solver" : {"library" : "amgcl",
-                                  "solver" : {"tol" : 1e-8}}
+                                   "verbose" : 2,
+                                   "solver" : {"tol" : 1e-6,
+                                               "verbose" : true}}
                       },
                       
                       {"name" : "concentration in positive electrode particles",
                        "variables" : [["PositiveElectrode", "ActiveMaterial", "SolidDiffusion", "c"],
                                       ["PositiveElectrode", "ActiveMaterial", "SolidDiffusion", "cSurface"]],
                        "solver" : {"library" : "amgcl",
-                                   "solver" : {"tol" : 1e-8}}
+                                   "verbose" : 2,
+                                   "solver" : {"tol" : 1e-6,
+                                               "verbose" : true}}
                       },
                       {"name" : "concentration in electrolyte",
                        "variables" : [["Electrolyte", "c"]],
                        "solver" : {"library" : "amgcl",
-                                   "solver" : {"tol" : 1e-8}}
+                                   "verbose" : 2,
+                                   "solver" : {"tol" : 1e-6,
+                                               "verbose" : true}}
                       },
                       {"name" : "potential",
                        "variables" : [["Electrolyte", "phi"],
@@ -36,11 +43,16 @@
                                       ["Control", "E"]
                                      ],
                        "solver" : {"library" : "amgcl",
-                                   "solver" : {"tol" : 1e-5}}
+                                   "verbose" : 2,
+                                   "solver" : {"tol" : 1e-6,
+                                               "verbose" : true}}
                       },
 
                       {"name" : "temperature",
                        "variables" : [["ThermalModel", "T"]],
-                       "solver" : {"library" : "amgcl"}}
+                       "solver" : {"library" : "amgcl",
+                                   "verbose" : 2,
+                                   "solver" : {"tol" : 1e-6,
+                                               "verbose" : true}}}
                      ]
 }

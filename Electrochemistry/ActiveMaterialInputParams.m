@@ -15,9 +15,11 @@ classdef ActiveMaterialInputParams < ElectronicComponentInputParams
         
         InterDiffusionCoefficient % Interdiffusion coefficient parameter (diffusion between the particles)
         
-        thermalConductivity % Intrinsic Thermal conductivity of the active component
-        heatCapacity        % Intrinsic Heat capacity of the active component
+        density % Density
 
+        thermalConductivity  % Intrinsic Thermal conductivity of the active component
+        specificHeatCapacity % Specific Heat capacity of the active component
+        
         electricalConductivity % Electrical conductivity / [S m^-1]
 
         externalCouplingTerm % structure to describe external coupling (used in absence of current collector)
@@ -81,6 +83,8 @@ classdef ActiveMaterialInputParams < ElectronicComponentInputParams
             
             sd  = 'SolidDiffusion';
             itf = 'Interface';
+            
+            paramobj = mergeParameters(paramobj, {{'density'}, {itf, 'density'}});
             
             switch diffusionModelType
                 

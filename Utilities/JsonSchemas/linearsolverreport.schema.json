@@ -44,7 +44,7 @@
   "$defs" : {
 
     "StepReportItem" : {"type" : "object",
-                        "description" : "report for a time step"
+                        "description" : "report for a time step",
                         "properties" : {
                           "NonlinearReport" : {"type" : "object",
                                                "$ref" : "#/$defs/NonlinearReport"},

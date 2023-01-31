@@ -62,6 +62,9 @@ classdef BatteryLinearSolver < handle
                 solver.reduceToCell = false;
             end
 
+            if isfield(setup, 'verbose') && setup.verbose > 0
+                solver.verbose = setup.verbose;
+            end
             
         end
 
@@ -953,7 +956,7 @@ classdef BatteryLinearSolver < handle
 
 
             if nargin > 1
-                opts = mergeJsonStructs({defaultOpts, amgclsolverspec}, 'force', true);
+                opts = mergeJsonStructs({amgclsolverspec, defaultOpts}, 'warn', false);
                 opts = rmfield(opts, 'library');
             else
                 opts = defaultOpts;

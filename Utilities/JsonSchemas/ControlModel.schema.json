@@ -5,8 +5,10 @@
   "properties" : {"Control" : {"type" : "object",
                                "properties" : {
                                  "controlPolicy": {"type": "string",
-                                                   "enum": ["IEswitch", "CCCV", "CV"]},
-                                 "CRate" : {"type": "number"}
+                                                   "enum": ["IEswitch", "CCCV", "CV", "powerControl"]},
+                                 "CRate" : {"type": "number"},
+                                 "lowerCutoffVoltage" : {"type" : "number"},
+                                 "upperCutoffVoltage" : {"type" : "number"}
                                },
                                "anyOf": [
                                  {"properties": {"controlPolicy" : {"const" : "IEswitch"},
@@ -14,7 +16,9 @@
                                  {"properties": {"controlPolicy" : {"const" : "CCCV"},
                                                  "$ref" : "CcCvControlModel"}},
                                  {"properties": {"controlPolicy" : {"const" : "CV"},
-                                                 "$ref" : "CvControlModel"}}
+                                                 "$ref" : "CvControlModel"}},
+                                 {"properties": {"controlPolicy" : {"const" : "powerControl"},
+                                                 "$ref" : "powerControlModel"}}
                                ]
                               }
                  }

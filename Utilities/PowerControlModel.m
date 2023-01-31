@@ -1,71 +1,93 @@
-classdef IEswitchControlModel < ControlModel
+classdef PowerControlModel < ControlModel
 
     properties
-        
-        Imax
+
+        dischargingPower
+        chargingPower
+        dischargingTime
+        chargingTime
         
     end
     
     
     methods
 
-        function model = IEswitchControlModel(paramobj)
-            
+        function model = PowerControlModel(paramobj)
+
             model = model@ControlModel(paramobj);
             
+            fdnames = {'dischargingPower', ...
+                       'chargingPower'   , ...
+                       'dischargingTime' , ...
+                       'chargingTime'};
+            
+            model = dispatchParams(model, paramobj, fdnames);
+            
         end
-        
+
         function model = registerVarAndPropfuncNames(model)
 
             model = registerVarAndPropfuncNames@ControlModel(model);
             
             varnames = {};
-            % Control type (string)
-            % - 'constantCurrent'
-            % - 'constantVoltage'
-            varnames{end + 1} = 'ctrlType';            
-            % control value that can be either a voltage or a current
-            varnames{end + 1} = 'ctrlVal';            
-
+            % Control type : string that can take following value
+            % - discharge
+            % - charge
+            varnames{end + 1} = 'ctrlType';
+            varnames{end + 1} = 'time';
             model = model.registerVarNames(varnames);
             
-            fn = @IEswitchControlModel.updateControlEquation;
-            model = model.registerPropFunction({'controlEquation', fn, {'ctrlType', 'ctrlVal', 'E', 'I'}});
+            fn = @CcCvControlModel.updateControlEquation;
+            model = model.registerPropFunction({'controlEquation', fn, {'ctrlType', 'E', 'I'}});
             
         end
 
-        
+
         function state = updateControlEquation(model, state)
             
-            Imax = model.Imax;
-            Emin = model.lowerCutoffVoltage;
-            Emax = model.upperCutoffVoltage;
-
-            E        = state.E;
-            I        = state.I;            
-            ctrlVal  = state.ctrlVal;
+            Pcharge    = model.chargingPower;
+            Pdischarge = model.dischargingPower;
+            
+            E = state.E;
+            I = state.I;            
             ctrlType = state.ctrlType;
-
+            
             switch ctrlType
-              case 'constantCurrent'
-                ctrleq = I - ctrlVal;
-              case 'constantVoltage'
-                %% TODO : fix hard-coded scaling
-                ctrleq = (E - ctrlVal)*1e5;
+              case 'discharge'
+                ctrleq = E*I - Pdischarge;
+              case 'charge'
+                ctrleq = E*I + Pcharge;
               otherwise
                 error('ctrlType not recognized');
             end
-            
             state.controlEquation = ctrleq;
-                        
+            
         end
-    
+
+        function state = prepareStepControl(model, state, state0, dt, drivingForces)
+
+            cT = model.chargingTime;
+            dT = model.dischargingTime;
+            
+            time = state.time;
+
+            r = time - floor(time/(dT + cT))*(dT + cT);
+            
+            if r < cT
+                state.ctrlType = 'charge';
+            else
+                state.ctrlType = 'discharge';
+            end
+            
+        end
+
         function cleanState = addStaticVariables(model, cleanState, state)
             cleanState.ctrlType = state.ctrlType;
         end
         
     end
-
+    
+    
         
 end
 

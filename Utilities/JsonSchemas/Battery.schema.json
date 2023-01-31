@@ -13,7 +13,7 @@
 
     "Electrolyte": {"$ref": "Electrolyte"},
 
-    "ThermalModel": {"$ref": "ThermalComponent"},
+    "ThermalModel": {"$ref": "ThermalComponent"}
     
   }
 

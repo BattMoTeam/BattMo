@@ -2,14 +2,14 @@ classdef Separator < BaseModel
     
     properties
         
-        porosity            % Porosity [-]
-        thermalConductivity % intrinsic thermal conductivity value
-        heatCapacity        % intrinsic heat capacity value
-        density             % Density [kg m^-3]        
+        porosity             % Porosity [-]
+        thermalConductivity  % intrinsic thermal conductivity value
+        specificHeatCapacity % specific heat capacity
+        density              % Density [kg m^-3]
         
-        volumeFraction      % Volume fraction [-]
+        volumeFraction       % Volume fraction [-]
         EffectiveThermalConductivity
-        EffectiveHeatCapacity
+        EffectiveVolumetricHeatCapacity
 
         use_thermal
 
@@ -29,7 +29,7 @@ classdef Separator < BaseModel
             fdnames = {'G'                  , ...
                        'porosity'           , ...
                        'thermalConductivity', ...
-                       'heatCapacity'       , ...
+                       'specificHeatCapacity'       , ...
                        'density'            , ...
                        'use_thermal'        , ...
                        'BruggemanCoefficient'};
@@ -44,7 +44,7 @@ classdef Separator < BaseModel
 
             if model.use_thermal
                 model.EffectiveThermalConductivity = model.thermalConductivity.*(model.volumeFraction).^model.BruggemanCoefficient;
-                model.EffectiveHeatCapacity = model.heatCapacity.*model.volumeFraction;
+                model.EffectiveVolumetricHeatCapacity = model.specificHeatCapacity.*model.volumeFraction*model.density;
             end
         end
     end
