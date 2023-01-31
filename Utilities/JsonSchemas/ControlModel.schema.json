@@ -8,7 +8,7 @@
                                                    "enum": ["IEswitch", "CCCV", "CV", "powerControl", "CC"]},
                                  "CRate" : {"type": "number"},
                                  "initialControl" : {"type" : "string",
-                                                     "enum" : ["charging", "discharging"]}
+                                                     "enum" : ["charging", "discharging"]},
                                  "lowerCutoffVoltage" : {"type" : "number"},
                                  "upperCutoffVoltage" : {"type" : "number"}
                                },

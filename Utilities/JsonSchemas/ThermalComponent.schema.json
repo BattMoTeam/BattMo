@@ -4,21 +4,24 @@
   "description": "Thermal model",
   "type" : "object",
   "properties" : {
-    "externalHeatTransferCoefficient": {"type" : "number"},
-    "externalTemperature": {
-      "type" : "number"},
-    "EffectiveThermalConductivity" : {
-      "type" : "number",
-      "description": "this value is usually not given but computed from the other components"},
-    "EffectiveHeatCapacity" : {
-      "type" : "number",
-      "description": "this value is usually not given but computed from the other components"},
-    "externalHeatTransferCoefficientTopFaces" :  {
-      "type" : "number",
-      "description": "In some model a different heat transfer coefficient for the top faces can be given and used"},
-    "externalHeatTransferCoefficientSideFaces" : {
-      "type" : "number",
-      "description": "In some model a different heat transfer coefficient for the top faces can be given and used"},
+    "ThermalModel" : {
+      "externalHeatTransferCoefficient": {"type" : "number"},
+      "useWetProperties" : {"type" : "boolean",
+                            "description" : "If set to true, we use wet properties, which means that the thermal properties are measured with the electrolyte. In this case, it corresponds to the effective thermal properties"},
+      "externalTemperature": {
+        "type" : "number"},
+      "EffectiveThermalConductivity" : {
+        "type" : "number",
+        "description": "this value is usually not given but computed from the other components"},
+      "EffectiveHeatCapacity" : {
+        "type" : "number",
+        "description": "this value is usually not given but computed from the other components"},
+      "externalHeatTransferCoefficientTopFaces" :  {
+        "type" : "number",
+        "description": "In some model a different heat transfer coefficient for the top faces can be given and used"},
+      "externalHeatTransferCoefficientSideFaces" : {
+        "type" : "number",
+        "description": "In some model a different heat transfer coefficient for the top faces can be given and used"}},
 
     "NegativeElectrode" : {
       "type" : "object",
@@ -36,16 +39,29 @@
 
     "Electrolyte" : {
       "type" : "object",
-      "allOf" : [
-        {"$ref": "#/$defs/thermalParameters"},
-        { "properties" : { "Separator" : {"type" : "object",
-                                          "$ref" : "#/$defs/thermalParameters"}}}]},
-
-    "$defs" : {
-      "thermalParameters" : {
-        "type": "object",
+      "properties" : { "Separator" : {"type" : "object",
+                                      "$ref" : "#/$defs/thermalParameters"}}}},
+  "anyOf" : [
+    {"properties" : {
+      "ThermalModel" : {
         "properties" : {
-          "thermalConductivity": {"type" : "number"},
-          "density" : {"type" : "number"},
-          "specificHeatCapacity": {"type" : "number"}}}}}}
+          "useWetProperties" : {"const" : false}}},
+      "Electrolyte" : {
+        "type" : "object",
+        "$ref" : "#/$defs/thermalParameters"}}},
+    {"properties" : {
+      "ThermalModel" : {
+        "properties" : {
+          "useWetProperties" : {"const" : true}}}}}
+  ],
+
+  "$defs" : {
+    "thermalParameters" : {
+      "type": "object",
+      "properties" : {
+        "thermalConductivity": {"type" : "number"},
+        "density" : {"type" : "number"},
+        "specificHeatCapacity": {"type" : "number"}}}}
+
+}
 

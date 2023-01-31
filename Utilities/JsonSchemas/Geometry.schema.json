@@ -6,7 +6,7 @@
 
   "properties" : {"Geometry" : {"type" : "object",
                                 "properties" : {"case" : {"type" : "string",
-                                                          "enum" : ["1D", "pouch", "2D-demo", "3D-demo", "jellyRoll", "sectorModel" "coinCell"]}}},
+                                                          "enum" : ["1D", "pouch", "2D-demo", "3D-demo", "jellyRoll", "sectorModel", "coinCell"]}}},
                   "NegativeElectrode" : { "$ref" : "#/$defs/particlediscretization"},
                   "PositiveElectrode" : { "$ref" : "#/$defs/particlediscretization"}
                  },
@@ -20,9 +20,7 @@
              {"properties" : {"Geometry" : {"properties" : {"case" : {"const" : "jellyRoll"}}}},
               "$ref" : "#/$defs/jellyRoll" },
              {"properties" : {"Geometry" : {"properties" : {"case" : {"const" : "sectorModel"}}}},
-              "$ref" : "#/$defs/sectorModel" },
-             {"properties" : {"Geometry" : {"properties" : {"case" : {"const" : "coinCell"}}}},
-              "$ref" : "#/$defs/coinCell" }
+              "$ref" : "#/$defs/sectorModel" }
             ],
 
   "$defs" : {
@@ -105,21 +103,20 @@
               "description" : "discretization parameter giving the number of grid cells in the vertical direction"},
             "nas" : {
               "type" : "integer",
-              "description" : "discretisation parameter giving the number of angular sectors of the grid in the horizontal plane"},
-
-            "NegativeElectrode" : {
-              "properties" : {
-                "CurrentCollector" : {
-                  "properties": {
-                    "tabparams" : {"$ref" : "#/$defs/tabparams"}
-                  }}}},
-            "PositiveElectrode" : {
-              "properties" : {
-                "CurrentCollector" : {
-                  "properties": {
-                    "tabparams" : {"$ref" : "#/$defs/tabparams"}
-                  }}}}
-          }}},
+              "description" : "discretisation parameter giving the number of angular sectors of the grid in the horizontal plane"}}},
+        "NegativeElectrode" : {
+          "properties" : {
+            "CurrentCollector" : {
+              "properties": {
+                "tabparams" : {"$ref" : "#/$defs/tabparams"}
+              }}}},
+        "PositiveElectrode" : {
+          "properties" : {
+            "CurrentCollector" : {
+              "properties": {
+                "tabparams" : {"$ref" : "#/$defs/tabparams"}
+              }}}}
+      },
       "allOf" : [{"$ref" : "#/$defs/layerSpecs"}]},
 
     "sectorModel" : {
@@ -149,22 +146,21 @@
       "properties" : {
         "usetab" : {
           "type" : "boolean",
-          "default" : true
-        }
-        "dependentSchemas" : {
-          "usetab" : {
-            "anyOf" : [
-              {"properties" : {
-                "usetab" : {
-                  "const" : true},
-                "fractions" : {
-                  "type" : "array",
-                  "items" : {"type" : "number"}},
-                "width" : {
-                  "type" : "number"}}},
-              {"properties" : {
-                "usetab" : {
-                  "const" : false}}}]}}}},
+          "default" : true}},
+      "dependentSchemas" : {
+        "usetab" : {
+          "anyOf" : [
+            {"properties" : {
+              "usetab" : {
+                "const" : true},
+              "fractions" : {
+                "type" : "array",
+                "items" : {"type" : "number"}},
+              "width" : {
+                "type" : "number"}}},
+            {"properties" : {
+              "usetab" : {
+                "const" : false}}}]}}},
 
     "sectortabparams" : {
       "type" : "object",
@@ -173,21 +169,19 @@
         "usetab" : {
           "type" : "boolean",
           "default" : true
-        }
-        "dependentSchemas" : {
-          "usetab" : {
-            "anyOf" : [
-              {"properties" : {
-                "usetab" : {
-                  "const" : true},
-                "fractions" : {
-                  "type" : "array",
-                  "items" : {"type" : "number"}}},
-              {"properties" : {
-                "usetab" : {
-                  "const" : false}}}]}}}}
-    
-    }}}
+        }},
+      "dependentSchemas" : {
+        "usetab" : {
+          "anyOf" : [
+            {"properties" : {
+              "usetab" : {
+                "const" : true},
+              "fractions" : {
+                "type" : "array",
+                "items" : {"type" : "number"}}}},
+            {"properties" : {
+              "usetab" : {
+                "const" : false}}}]}}}}}
 
 
 
