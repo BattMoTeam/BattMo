@@ -152,7 +152,7 @@ classdef VarName
             compIndices.index1    = find(index1);
             compIndices.index2    = find(index2);
             
-            if all(lindex1 & lindex2)
+            if all(lindex1 == lindex2)
                 isequal = true;
             else
                 isequal = false;
