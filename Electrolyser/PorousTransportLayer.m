@@ -791,7 +791,8 @@ classdef PorousTransportLayer < ElectronicComponent
                 evapSrc(~ind) = sLiq(~ind) .* (pH2Ovap(~ind) - pH2Ogas(~ind)) .* kLV ./ MW;
             end
             
-            state.H2OvaporLiquidExchangeRate = evapSrc;
+            state.H2OvaporLiquidExchangeRate = 0*evapSrc;
+
         end
         
         function state = updatePhaseVelocities(model, state)
