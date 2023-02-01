@@ -106,7 +106,7 @@ classdef IridiumCatalystLayer < CatalystLayer
             state.elyteH2Osource  = -R/F;
             state.elyteOHsource   = 2*elyteR/F;
             state.inmrOHsource    = 2*inmrR/F;
-            state.eSource         = -2*R.*vols;
+            state.eSource         = 2*R.*vols;
            
         end
         

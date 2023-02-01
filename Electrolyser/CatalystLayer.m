@@ -82,7 +82,7 @@ classdef CatalystLayer < BaseModel
             varnames{end + 1} = 'elyteReactionRate';
             varnames{end + 1} = 'inmrReactionRate';
             
-            % current source [A]
+            % current source [A] (it is positive if there is a positive current source for the electrode)
             varnames{end + 1} = 'eSource'; 
             % The following source terms are per volume. The units are [mol s^-1 m^-3]
             varnames{end + 1} = 'activeGasSource';

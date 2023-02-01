@@ -75,7 +75,7 @@ classdef PlatiniumCatalystLayer < CatalystLayer
             state.elyteH2Osource  = -2*R/F;
             state.elyteOHsource   = 2*elyteR/F;
             state.inmrOHsource    = 2*inmrR/F;
-            state.eSource         = -2*R.*vols;
+            state.eSource         = 2*R.*vols;
            
         end
 
