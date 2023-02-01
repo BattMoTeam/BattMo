@@ -469,8 +469,10 @@ classdef Electrolyser < BaseModel
             
             eqs = {};
             names = {};
+
+            F = model.con.F;
             
-            eqs{end + 1}   = state.(inm).chargeCons;
+            eqs{end + 1}   = 1/F*state.(inm).chargeCons;
             names{end + 1} = 'inm_chargeCons';
             eqs{end + 1}   = state.(inm).H2OmassCons;
             names{end + 1} = 'inm_H2OmassCons';
@@ -486,7 +488,7 @@ classdef Electrolyser < BaseModel
             names{end + 1} = 'oer_ptl_bd_bcControlEquations_1';
             eqs{end + 1}   = state.(oer).(ptl).(bd).bcControlEquations{2};
             names{end + 1} = 'oer_ptl_bd_bcControlEquations_2';
-            eqs{end + 1}   = state.(oer).(ptl).chargeCons;
+            eqs{end + 1}   = 1/F*state.(oer).(ptl).chargeCons;
             names{end + 1} = 'oer_ptl_chargeCons';
             eqs{end + 1}   = state.(oer).(ptl).compGasMassCons{1};
             names{end + 1} = 'oer_ptl_compGasMassCons_1';
@@ -510,7 +512,7 @@ classdef Electrolyser < BaseModel
             names{end + 1} = 'her_ptl_bd_bcControlEquations_1';
             eqs{end + 1}   = state.(her).(ptl).(bd).bcControlEquations{2};
             names{end + 1} = 'her_ptl_bd_bcControlEquations_2';
-            eqs{end + 1}   = state.(her).(ptl).chargeCons;
+            eqs{end + 1}   = 1/F*state.(her).(ptl).chargeCons;
             names{end + 1} = 'her_ptl_chargeCons';
             eqs{end + 1}   = state.(her).(ptl).compGasMassCons{1};
             names{end + 1} = 'her_ptl_compGasMassCons_1';
