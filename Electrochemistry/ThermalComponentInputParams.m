@@ -9,9 +9,7 @@ classdef ThermalComponentInputParams < ComponentInputParams
         externalHeatTransferCoefficientTopFaces  % scalar value
         externalHeatTransferCoefficientSideFaces % scalar value
         externalTemperature                      % 
-        
-        useWetProperties % boolean. If set to true, we use wet properties, which means that the thermal properties of the
-                         % electrodes and separator are measured with the electrolyte. In this case, the thermal properties of the electrolyte are not needed
+
     end
     
     methods

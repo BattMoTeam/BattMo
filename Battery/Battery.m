@@ -492,9 +492,6 @@ classdef Battery < BaseModel
             sep     = 'Separator';
             thermal = 'ThermalModel';
 
-            useWetProperties = paramobj.(thermal).useWetProperties;
-            useSpecificProperties = ~useWetProperties;
-            
             eldes = {ne, pe}; % electrodes
             
             G = model.G;
@@ -520,58 +517,46 @@ classdef Battery < BaseModel
                 end
                 
                 % Effective parameters from the Electrode Active Component region.
-                am_map = model.(elde).(am).G.mappings.cellmap;
-                am_hcond = model.(elde).(am).thermalConductivity;
-                am_vhcap = model.(elde).(am).specificHeatCapacity
+                am_map       = model.(elde).(am).G.mappings.cellmap;
+                am_hcond     = model.(elde).(am).thermalConductivity;
+                am_vhcap     = model.(elde).(am).specificHeatCapacity;
+                am_vhcap     = am_vhcap*model.(elde).(am).density;
 
-                if useSpecificProperties
-                    %  if we use specific properties (i.e not the wet ones), we have to use volume fractions
-                    am_vhcap  = am_vhcap*model.(elde).(am).density;
-                    am_volfrac = model.(elde).(am).volumeFraction;
-                    am_bruggeman = model.(elde).(am).BruggemanCoefficient;
-                    
-                    am_vhcap = am_vhcap.*am_volfrac;
-                    am_hcond = am_hcond.*am_volfrac.^am_bruggeman;
-                else
-                    am_vhcap  = am_vhcap*(model.(elde).(am).density + model.(elyte).density);
-                end
+                am_volfrac   = model.(elde).(am).volumeFraction;
+                am_bruggeman = model.(elde).(am).BruggemanCoefficient;
+                am_vhcap     = am_vhcap.*am_volfrac;
+                am_hcond     = am_hcond.*am_volfrac.^am_bruggeman;
                     
                 vhcap(am_map) = vhcap(am_map) + am_vhcap;
                 hcond(am_map) = hcond(am_map) + am_hcond;
                 
             end
 
-            if useSpecificProperties
-                % Electrolyte
+            % Electrolyte
             
-                elyte_map = model.(elyte).G.mappings.cellmap;
-                elyte_hcond = model.(elyte).thermalConductivity;
-                elyte_vhcap = model.(elyte).specificHeatCapacity*model.(elyte).density;
-                elyte_volfrac = model.(elyte).volumeFraction;
-                elyte_bruggeman = model.(elyte).BruggemanCoefficient;
-                
-                elyte_vhcap = elyte_vhcap.*elyte_volfrac;
-                elyte_hcond = elyte_hcond.*elyte_volfrac.^am_bruggeman;
-                
-                vhcap(elyte_map) = vhcap(elyte_map) + elyte_vhcap;
-                hcond(elyte_map) = hcond(elyte_map) + elyte_hcond;            
+            elyte_map = model.(elyte).G.mappings.cellmap;
+            elyte_hcond = model.(elyte).thermalConductivity;
+            elyte_vhcap = model.(elyte).specificHeatCapacity*model.(elyte).density;
+            elyte_volfrac = model.(elyte).volumeFraction;
+            elyte_bruggeman = model.(elyte).BruggemanCoefficient;
+            
+            elyte_vhcap = elyte_vhcap.*elyte_volfrac;
+            elyte_hcond = elyte_hcond.*elyte_volfrac.^am_bruggeman;
+            
+            vhcap(elyte_map) = vhcap(elyte_map) + elyte_vhcap;
+            hcond(elyte_map) = hcond(elyte_map) + elyte_hcond;            
 
-            end
-            
             % Separator
-            
             sep_map = model.(elyte).(sep).G.mappings.cellmap;
             
             sep_hcond = model.(elyte).(sep).thermalConductivity;
             sep_vhcap = model.(elyte).(sep).specificHeatCapacity*model.(elyte).(sep).density;
 
-            if useSpecificProperties
-                sep_volfrac = model.(elyte).(sep).volumeFraction;
-                sep_bruggeman = model.(elyte).(sep).BruggemanCoefficient;
-                sep_vhcap = sep_vhcap.*sep_volfrac;
-                sep_hcond = sep_hcond.*sep_volfrac.^sep_bruggeman;
-            end
-            
+            sep_volfrac = model.(elyte).(sep).volumeFraction;
+            sep_bruggeman = model.(elyte).(sep).BruggemanCoefficient;
+            sep_vhcap = sep_vhcap.*sep_volfrac;
+            sep_hcond = sep_hcond.*sep_volfrac.^sep_bruggeman;
+                
             vhcap(sep_map) = vhcap(sep_map) + sep_vhcap;
             hcond(sep_map) = hcond(sep_map) + sep_hcond;            
 
