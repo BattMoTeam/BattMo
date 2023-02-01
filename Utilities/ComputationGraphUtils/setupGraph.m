@@ -1,7 +1,6 @@
-function [g, staticprops] = setupGraph(model, varargin)
+function [g, staticprops, resVarNameList] = setupGraph(model, varargin)
     
-    opt = struct('excludeVarnames', false, ...
-                 'resolveIndex'   , true );
+    opt = struct('resolveIndex', true);
     opt = merge_options(opt, varargin{:});
     
     g = digraph();
@@ -14,25 +13,25 @@ function [g, staticprops] = setupGraph(model, varargin)
     
     varnames  = model.varNameList;
     propfuncs = model.propertyFunctionList;
-    
-    if ~opt.excludeVarnames
-        % in this case, we do not include varnames directly, only those in the property function lists will be added.
-        for ind = 1 : numel(varnames)
-            varname = varnames{ind};
-            if opt.resolveIndex
-                varname_s = varname.resolveIndex();
-                for ind = 1 : numel(varname_s)
-                    fullname = varname_s{ind}.getIndexedFieldname();
-                    g = addnode(g, fullname);
-                end
-            else
-                fullname = varname.getFieldname;
+
+    resVarNameList = {};
+    for ind = 1 : numel(varnames)
+        varname = varnames{ind};
+        if opt.resolveIndex
+            varname_s = varname.resolveIndex();
+            for ind = 1 : numel(varname_s)
+                fullname = varname_s{ind}.getIndexedFieldname();
                 g = addnode(g, fullname);
             end
+            resVarNameList = horzcat(resVarNameList, varname_s);
+        else
+            fullname = varname.getFieldname;
+            g = addnode(g, fullname);
         end
-        
     end
-
+    
+    nodenames = g.Nodes.Variables;
+    
     staticprops = {};
     
     for ipropfunc = 1 : numel(propfuncs)
@@ -74,6 +73,17 @@ function [g, staticprops] = setupGraph(model, varargin)
         nv = numel(fullvarnames);
         ni = numel(fullinputvarnames);
 
+        % check that variables have been declared
+        allfullvarnames = horzcat(fullvarnames, fullinputvarnames);
+        ind = ismember(allfullvarnames, nodenames);
+        if any(~ind)
+            undefinedvarnames = allfullvarnames(~ind);
+            fprintf('The following variables are used in function declaration but have not be declared for themselves before\n');
+            for ivar = 1 : numel(undefinedvarnames)
+                fprintf('%s\n', undefinedvarnames{ivar});
+            end
+        end
+        
         if ni == 0
             staticprop.propind = ipropfunc;
             for inv = 1 : nv
