@@ -32,15 +32,13 @@ model = model.validateModel();
 
 cgt = model.computationalGraph;
 
-
+return
 total = 1*minute;
-n  = 100;
+n  = 10;
 dt = total/n;
 
-% n = 10;
-
-controlI = -1e-2;
-tup = total; % rampup value for the current function, see rampupSwitchControl
+controlI = -1e-2; % if negative, H2  is produced
+tup = total/2; % rampup value for the current function, see rampupSwitchControl
 srcfunc = @(time) rampupControl(time, tup, controlI);
 control = struct('src', srcfunc);
 
