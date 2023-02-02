@@ -32,9 +32,8 @@ model = model.validateModel();
 
 cgt = model.computationalGraph;
 
-return
 total = 1*minute;
-n  = 10;
+n  = 100;
 dt = total/n;
 
 controlI = -1e-2; % if negative, H2  is produced
