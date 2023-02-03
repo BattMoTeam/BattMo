@@ -827,8 +827,6 @@ classdef Battery < BaseModel
             % temperature
             state = battery.updateTemperature(state);
 
-            state.(elyte) = battery.(elyte).updateConcentrations(state.(elyte));
-            
             for ind = 1 : numel(electrodes)
                 elde = electrodes{ind};
                 % potential and concentration between interface and active material

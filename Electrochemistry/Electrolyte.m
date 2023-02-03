@@ -145,18 +145,16 @@ classdef Electrolyte < ElectroChemicalComponent
 
             ncomp = model.ncomp; % number of components
 
-            cLi          = state.c;   % concentration of Li+
+            c          = state.c;   % concentration of Li+
             T            = state.T;   % temperature
             phi          = state.phi; % potential
 
-            cs  = state.cs;
-
-
             % calculate the concentration derivative of the chemical potential for each species in the electrolyte
+            % In the case of a binary electrolyte, we could have simplified those expressions.
             R = model.constants.R;
             dmudcs = cell(2, 1);
             for ind = 1 : ncomp
-                dmudcs{ind} = R .* T ./ cs{ind};
+                dmudcs{ind} = R .* T ./ c;
             end
 
             state.dmudcs = dmudcs;
@@ -222,7 +220,7 @@ classdef Electrolyte < ElectroChemicalComponent
             ind = model.indchargecarrier;
 
             % We assume that the current and the diffusion coefficient D has been updated when this function is called
-            c = state.cs{ind};
+            c = state.c;
             j = state.j;
             D = state.D;
 
