@@ -288,17 +288,21 @@ classdef Battery < BaseModel
             varnames = {{ne, am, 'E'}, ...
                         {ne, am, 'I'}};
             model = model.removeVarNames(varnames);
+
+            eldes = {ne, pe};
+
             
             %% Temperature dispatch functions
             fn = @Battery.updateTemperature;
             
             inputnames = {{thermal, 'T'}};
-            model = model.registerPropFunction({{ne, am, 'T'} , fn, inputnames});
-            model = model.registerPropFunction({{pe, am, 'T'} , fn, inputnames});
             model = model.registerPropFunction({{elyte, 'T'}  , fn, inputnames});
-            if model.include_current_collectors
-            model = model.registerPropFunction({{pe, cc , 'T'}, fn, inputnames});  
-                model = model.registerPropFunction({{ne, cc , 'T'}, fn, inputnames});
+            for ielde = 1 : numel(eldes)
+                elde = eldes{ieldes};
+                model = model.registerPropFunction({{elde, am, 'T'} , fn, inputnames});
+                if model.include_current_collectors
+                    model = model.registerPropFunction({{elde, cc , 'T'}, fn, inputnames});  
+                end
             end
                   
             %% Coupling functions
@@ -372,7 +376,6 @@ classdef Battery < BaseModel
             
             %% Functions that setup external  coupling for negative electrode
             
-            eldes = {ne, pe};
 
             fns{1} = @Battery.setupExternalCouplingNegativeElectrode;
             fns{2} = @Battery.setupExternalCouplingPositiveElectrode;
