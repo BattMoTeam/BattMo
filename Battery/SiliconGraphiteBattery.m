@@ -312,7 +312,6 @@ classdef SiliconGraphiteBattery < Battery
             state.(ne).(am).(gr).(sd)  = model.(ne).(am).(gr).(sd).updateFlux(state.(ne).(am).(gr).(sd));
             state.(ne).(am).(gr)       = model.(ne).(am).(gr).updateConcentrations(state.(ne).(am).(gr));
             state.(ne).(am).(gr).(itf) = model.(ne).(am).(gr).(itf).updateOCP(state.(ne).(am).(gr).(itf));
-            state.(elyte)              = model.(elyte).updateConcentrations(state.(elyte));
             state.(elyte)              = model.(elyte).updateAccumTerm(state.(elyte), state0.(elyte), dt);
             state                      = model.updateElectrodeCoupling(state);
             state.(pe).(am).(itf)      = model.(pe).(am).(itf).updateReactionRateCoefficient(state.(pe).(am).(itf));
@@ -553,7 +552,7 @@ classdef SiliconGraphiteBattery < Battery
             si = 'Silicon';
             
             phi_elyte = state.(elyte).phi;
-            c_elyte = state.(elyte).cs{1};
+            c_elyte = state.(elyte).c;
             
             elyte_cells = zeros(model.G.cells.num, 1);
             elyte_cells(bat.(elyte).G.mappings.cellmap) = (1 : bat.(elyte).G.cells.num)';
