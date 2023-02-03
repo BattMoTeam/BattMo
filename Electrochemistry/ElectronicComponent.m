@@ -131,11 +131,10 @@ classdef ElectronicComponent < BaseModel
         function state = updateChargeConservation(model, state)
         % Assemble residual of the charge conservation equation which is stored in :code:`state.chargeCons`
            
-            state = model.updateCurrent(state);
-
-            flux   = state.j;
+            flux     = state.j;
             bcsource = state.jBcSource;
-            source = state.eSource;
+            source   = state.eSource;
+            
             accum  = zeros(model.G.cells.num,1);
             
             chargeCons = assembleConservationEquation(model, flux, bcsource, source, accum);
