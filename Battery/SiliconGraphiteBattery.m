@@ -3,6 +3,9 @@ classdef SiliconGraphiteBattery < Battery
     properties
         
         scenario
+
+        primaryVarNames
+        funcCallList
         
     end
     
@@ -133,6 +136,20 @@ classdef SiliconGraphiteBattery < Battery
             model = model.registerPropFunction({{elyte, 'eSource'}, fn, inputnames});
             
         end
+
+        function model = validateModel(model, varargin)
+
+            model = validateModel@BaseModel(model, varargin{:});
+
+            if isempty(model.computationalGraph)
+                model = model.setupComputationalGraph();
+                cgt = model.computationalGraph;
+                model.primaryVarNames = cgt.getPrimaryVariables();
+                model.funcCallList = cgt.setOrderedFunctionCallList();
+            end
+            
+        end
+
         
         function initstate = setupInitialState(model)
         % Setup the values of the primary variables at initial state
@@ -267,88 +284,11 @@ classdef SiliconGraphiteBattery < Battery
             gr    = 'Graphite';
             si    = 'Silicon';
 
-            %% start replace
-
-            state = model.updateControl(state, drivingForces);
+            funcCallList = model.funcCallList;
             
-            state.(elyte)              = model.(elyte).updateCurrentBcSource(state.(elyte));
-            state.(ne).(am)            = model.(ne).(am).updateConductivity(state.(ne).(am));
-            state.(ne).(am)            = model.(ne).(am).updatejCoupling(state.(ne).(am));
-            state.(pe).(am)            = model.(pe).(am).updateConductivity(state.(pe).(am));
-            state.(pe).(am)            = model.(pe).(am).updatejCoupling(state.(pe).(am));
-            state.(ctrl)               = model.(ctrl).updateControlEquation(state.(ctrl));
-            state                      = model.setupEIEquation(state);
-            state                      = model.setupExternalCouplingPositiveElectrode(state);
-            state.(pe).(am)            = model.(pe).(am).updatejBcSource(state.(pe).(am));
-            state.(pe).(am)            = model.(pe).(am).updateCurrent(state.(pe).(am));
-            state                      = model.updateTemperature(state);
-            state.(pe).(am).(sd)       = model.(pe).(am).(sd).updateMassAccum(state.(pe).(am).(sd), state0.(pe).(am).(sd), dt);
-            state.(pe).(am).(sd)       = model.(pe).(am).(sd).updateAverageConcentration(state.(pe).(am).(sd));
-            state.(pe).(am)            = model.(pe).(am).updateSOC(state.(pe).(am));
-            state.(pe).(am)            = model.(pe).(am).dispatchTemperature(state.(pe).(am));
-            state.(pe).(am).(sd)       = model.(pe).(am).(sd).updateDiffusionCoefficient(state.(pe).(am).(sd));
-            state.(pe).(am).(sd)       = model.(pe).(am).(sd).updateFlux(state.(pe).(am).(sd));
-            state.(pe).(am)            = model.(pe).(am).updateConcentrations(state.(pe).(am));
-            state.(pe).(am)            = model.(pe).(am).updatePhi(state.(pe).(am));
-            state.(pe).(am).(itf)      = model.(pe).(am).(itf).updateOCP(state.(pe).(am).(itf));
-            state                      = model.setupExternalCouplingNegativeElectrode(state);
-            state.(ne).(am)            = model.(ne).(am).updatejBcSource(state.(ne).(am));
-            state.(ne).(am)            = model.(ne).(am).updateCurrent(state.(ne).(am));
-            state.(ne).(am)            = model.(ne).(am).dispatchTemperature(state.(ne).(am));
-            state.(ne).(am).(si).(sd)  = model.(ne).(am).(si).(sd).updateMassAccum(state.(ne).(am).(si).(sd), state0.(ne).(am).(si).(sd), dt);
-            state.(ne).(am).(si).(sd)  = model.(ne).(am).(si).(sd).updateAverageConcentration(state.(ne).(am).(si).(sd));
-            state.(ne).(am).(si)       = model.(ne).(am).(si).updateSOC(state.(ne).(am).(si));
-            state.(ne).(am).(si)       = model.(ne).(am).(si).dispatchTemperature(state.(ne).(am).(si));
-            state.(ne).(am).(si).(sd)  = model.(ne).(am).(si).(sd).updateDiffusionCoefficient(state.(ne).(am).(si).(sd));
-            state.(ne).(am).(si).(sd)  = model.(ne).(am).(si).(sd).updateFlux(state.(ne).(am).(si).(sd));
-            state.(ne).(am).(si)       = model.(ne).(am).(si).updateConcentrations(state.(ne).(am).(si));
-            state.(ne).(am)            = model.(ne).(am).updatePhi(state.(ne).(am));
-            state.(ne).(am).(si).(itf) = model.(ne).(am).(si).(itf).updateOCP(state.(ne).(am).(si).(itf));
-            state.(ne).(am).(gr).(sd)  = model.(ne).(am).(gr).(sd).updateMassAccum(state.(ne).(am).(gr).(sd), state0.(ne).(am).(gr).(sd), dt);
-            state.(ne).(am).(gr).(sd)  = model.(ne).(am).(gr).(sd).updateAverageConcentration(state.(ne).(am).(gr).(sd));
-            state.(ne).(am).(gr)       = model.(ne).(am).(gr).updateSOC(state.(ne).(am).(gr));
-            state.(ne).(am).(gr)       = model.(ne).(am).(gr).dispatchTemperature(state.(ne).(am).(gr));
-            state.(ne).(am).(gr).(sd)  = model.(ne).(am).(gr).(sd).updateDiffusionCoefficient(state.(ne).(am).(gr).(sd));
-            state.(ne).(am).(gr).(sd)  = model.(ne).(am).(gr).(sd).updateFlux(state.(ne).(am).(gr).(sd));
-            state.(ne).(am).(gr)       = model.(ne).(am).(gr).updateConcentrations(state.(ne).(am).(gr));
-            state.(ne).(am).(gr).(itf) = model.(ne).(am).(gr).(itf).updateOCP(state.(ne).(am).(gr).(itf));
-            state.(elyte)              = model.(elyte).updateAccumTerm(state.(elyte), state0.(elyte), dt);
-            state                      = model.updateElectrodeCoupling(state);
-            state.(pe).(am).(itf)      = model.(pe).(am).(itf).updateReactionRateCoefficient(state.(pe).(am).(itf));
-            state.(pe).(am).(itf)      = model.(pe).(am).(itf).updateEta(state.(pe).(am).(itf));
-            state.(pe).(am).(itf)      = model.(pe).(am).(itf).updateReactionRate(state.(pe).(am).(itf));
-            state.(pe).(am)            = model.(pe).(am).updateRvol(state.(pe).(am));
-            state.(pe).(am)            = model.(pe).(am).updateCurrentSource(state.(pe).(am));
-            state.(pe).(am)            = model.(pe).(am).updateChargeConservation(state.(pe).(am));
-            state.(pe).(am).(sd)       = model.(pe).(am).(sd).updateMassSource(state.(pe).(am).(sd));
-            state.(pe).(am).(sd)       = model.(pe).(am).(sd).assembleSolidDiffusionEquation(state.(pe).(am).(sd));
-            state.(pe).(am).(sd)       = model.(pe).(am).(sd).updateMassConservation(state.(pe).(am).(sd));
-            state.(ne).(am).(si).(itf) = model.(ne).(am).(si).(itf).updateReactionRateCoefficient(state.(ne).(am).(si).(itf));
-            state.(ne).(am).(si).(itf) = model.(ne).(am).(si).(itf).updateEta(state.(ne).(am).(si).(itf));
-            state.(ne).(am).(si).(itf) = model.(ne).(am).(si).(itf).updateReactionRate(state.(ne).(am).(si).(itf));
-            state.(ne).(am).(si)       = model.(ne).(am).(si).updateRvol(state.(ne).(am).(si));
-            state.(ne).(am).(si).(sd)  = model.(ne).(am).(si).(sd).updateMassSource(state.(ne).(am).(si).(sd));
-            state.(ne).(am).(si).(sd)  = model.(ne).(am).(si).(sd).assembleSolidDiffusionEquation(state.(ne).(am).(si).(sd));
-            state.(ne).(am).(si).(sd)  = model.(ne).(am).(si).(sd).updateMassConservation(state.(ne).(am).(si).(sd));
-            state.(ne).(am).(gr).(itf) = model.(ne).(am).(gr).(itf).updateReactionRateCoefficient(state.(ne).(am).(gr).(itf));
-            state.(ne).(am).(gr).(itf) = model.(ne).(am).(gr).(itf).updateEta(state.(ne).(am).(gr).(itf));
-            state.(ne).(am).(gr).(itf) = model.(ne).(am).(gr).(itf).updateReactionRate(state.(ne).(am).(gr).(itf));
-            state.(ne).(am).(gr)       = model.(ne).(am).(gr).updateRvol(state.(ne).(am).(gr));
-            state.(ne).(am)            = model.(ne).(am).updateCurrentSource(state.(ne).(am));
-            state.(ne).(am)            = model.(ne).(am).updateChargeConservation(state.(ne).(am));
-            state                      = model.updateElectrolyteCoupling(state);
-            state.(ne).(am).(gr).(sd)  = model.(ne).(am).(gr).(sd).updateMassSource(state.(ne).(am).(gr).(sd));
-            state.(ne).(am).(gr).(sd)  = model.(ne).(am).(gr).(sd).assembleSolidDiffusionEquation(state.(ne).(am).(gr).(sd));
-            state.(ne).(am).(gr).(sd)  = model.(ne).(am).(gr).(sd).updateMassConservation(state.(ne).(am).(gr).(sd));
-            state.(elyte)              = model.(elyte).updateDmuDcs(state.(elyte));
-            state.(elyte)              = model.(elyte).updateDiffusionCoefficient(state.(elyte));
-            state.(elyte)              = model.(elyte).updateConductivity(state.(elyte));
-            state.(elyte)              = model.(elyte).updateCurrent(state.(elyte));
-            state.(elyte)              = model.(elyte).updateMassFlux(state.(elyte));
-            state.(elyte)              = model.(elyte).updateMassConservation(state.(elyte));
-            state.(elyte)              = model.(elyte).updateChargeConservation(state.(elyte));
-
-            %% end replace
+            for ifunc = 1 : numel(funcCallList)
+                eval(funcCallList{ifunc});
+            end
 
             eqs = cell(1, numel(model.equationNames));
             ei = model.equationIndices;
@@ -407,18 +347,6 @@ classdef SiliconGraphiteBattery < Battery
             problem = LinearizedProblem(eqs, types, names, primaryVars, state, dt);
             
         end
-
-        function model = validateModel(model, varargin)
-                
-            model.PositiveElectrode.ActiveMaterial.AutoDiffBackend= model.AutoDiffBackend;
-            model.PositiveElectrode.ActiveMaterial = model.PositiveElectrode.ActiveMaterial.validateModel(varargin{:});
-            model.NegativeElectrode.ActiveMaterial.AutoDiffBackend= model.AutoDiffBackend;
-            model.NegativeElectrode.ActiveMaterial = model.NegativeElectrode.ActiveMaterial.validateModel(varargin{:});
-            model.Electrolyte.AutoDiffBackend=model.AutoDiffBackend;
-            model.Electrolyte=model.Electrolyte.validateModel(varargin{:});
-            
-        end
-
 
         function state = updateTemperature(model, state)
         % Dispatch the temperature in all the submodels
