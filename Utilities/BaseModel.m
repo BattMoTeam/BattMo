@@ -197,19 +197,14 @@ classdef BaseModel < PhysicalModel
             
         end 
         
-        
-        function model = registerSubModels(model)
-            
-            propfuncs  = model.propertyFunctionList;
-            varnames   = model.varNameList;
-            scvarnames = model.staticVarNameList;
-            
+        function submodelnames = getSubModelNames(model)
+
             if ~isempty(model.subModelNameList)
-                
+
                 submodelnames = model.subModelNameList;
                 
             else
-                
+
                 props = propertynames(model);
                 submodelnames = {};
                 
@@ -219,9 +214,18 @@ classdef BaseModel < PhysicalModel
                         submodelnames{end + 1} = prop;
                     end
                 end
-                model.subModelNameList = submodelnames;
-                
+
             end
+
+        end
+        
+        function model = registerSubModels(model)
+
+            propfuncs  = model.propertyFunctionList;
+            varnames   = model.varNameList;
+            scvarnames = model.staticVarNameList;
+
+            submodelnames = model.getSubModelNames();
             
             for isub = 1 : numel(submodelnames)
 
