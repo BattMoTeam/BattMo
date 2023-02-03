@@ -1404,7 +1404,7 @@ classdef Battery < BaseModel
             
             eldes = {ne, pe};
             phi_elyte = state.(elyte).phi;
-            c_elyte = state.(elyte).cs{1};
+            c_elyte = state.(elyte).c;
             
             elyte_cells = zeros(model.G.cells.num, 1);
             elyte_cells(bat.(elyte).G.mappings.cellmap) = (1 : bat.(elyte).G.cells.num)';

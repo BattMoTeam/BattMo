@@ -28,7 +28,7 @@ for ind = 1 : numel(states)
     figure(h);
     
     subplot(2, 2, 1);
-    plotCellData(model.(elyte).G, state.(elyte).cs{1});
+    plotCellData(model.(elyte).G, state.(elyte).c);
     colorbar
     view([30, 32]);
     title('cLi (elyte)');
