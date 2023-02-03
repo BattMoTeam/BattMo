@@ -284,6 +284,11 @@ classdef Battery < BaseModel
             sd      = 'SolidDiffusion';
             thermal = 'ThermalModel';
             ctrl    = 'Control';
+
+            if ~model.use_thermal
+                % we register the temperature variable, as it is not done by the ThermalModel which is empty in this case
+                model = model.registerVarName({thermal, 'T'});
+            end
             
             varnames = {{ne, am, 'E'}, ...
                         {ne, am, 'I'}};
@@ -298,11 +303,8 @@ classdef Battery < BaseModel
             inputnames = {{thermal, 'T'}};
             model = model.registerPropFunction({{elyte, 'T'}  , fn, inputnames});
             for ielde = 1 : numel(eldes)
-                elde = eldes{ieldes};
+                elde = eldes{ielde};
                 model = model.registerPropFunction({{elde, am, 'T'} , fn, inputnames});
-                if model.include_current_collectors
-                    model = model.registerPropFunction({{elde, cc , 'T'}, fn, inputnames});  
-                end
             end
                   
             %% Coupling functions
@@ -334,6 +336,13 @@ classdef Battery < BaseModel
             end
             model = model.registerPropFunction({{ctrl, 'EIequation'}, fn, inputnames});
 
+
+            inputnames = {};
+            fn = @Battery.updateControl;
+            model = model.registerPropFunction({{ctrl, 'ctrlVal'}, fn, inputnames});            
+            model = model.registerPropFunction({{ctrl, 'ctrlType'}, fn, inputnames});
+            
+            
             %% Function that update the Thermal Ohmic Terms
             
             if model.use_thermal
@@ -366,12 +375,18 @@ classdef Battery < BaseModel
                 
                 %% Function that updates Thermal Reaction Terms
                 fn = @Battery.updateThermalReactionSourceTerms;
-                inputnames = {{ne, am, 'Rvol'}  , ...
-                              {ne, am, itf, 'eta'}, ...
-                              {pe, am, 'Rvol'}  , ...
-                              {pe, am, itf, 'eta'}};
+                inputnames = {{ne, am, 'Rvol'}     , ...
+                              {ne, am, itf, 'eta'} , ...
+                              {ne, am, itf, 'dUdT'}, ...
+                              {pe, am, 'Rvol'}     , ...
+                              {pe, am, itf, 'eta'} , ...
+                              {pe, am, itf, 'dUdT'}};
                 model = model.registerPropFunction({{thermal, 'jHeatReactionSource'}, fn, inputnames});
-                
+
+            else
+                model = model.removeVarName({elyte, 'diffFlux'});
+                model = model.removeVarName({ne, am, itf, 'dUdT'});
+                model = model.removeVarName({pe, am, itf, 'dUdT'});
             end
             
             %% Functions that setup external  coupling for negative electrode
@@ -430,17 +445,6 @@ classdef Battery < BaseModel
                 end
 
             end
-
-            if model.include_current_collectors
-                
-                varnames = {{ne, am, 'jExternal'}, ...
-                            {pe, am, 'jExternal'}};
-                
-                model = model.removeVarNames(varnames);
-
-            end
-            
-            
             
         end
 

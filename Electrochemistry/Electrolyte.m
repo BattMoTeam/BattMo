@@ -86,16 +86,12 @@ classdef Electrolyte < ElectroChemicalComponent
 
             model = registerVarAndPropfuncNames@ElectroChemicalComponent(model);
 
-            varnames = { VarName({}, 'cs', 2)     , ...
-                         'D'                      , ...
+            varnames = { 'D'                      , ...
                          VarName({}, 'dmudcs', 2) , ...
                          'conductivity'           , ...
                          VarName({}, 'jchems', 2) , ...
                          'diffFlux'};
             model = model.registerVarNames(varnames);
-
-            fn = @Electrolyte.updateConcentrations;
-            model = model.registerPropFunction({VarName({}, 'cs', 2), fn, {'c'}});
 
             fn = @Electrolyte.updateConductivity;
             model = model.registerPropFunction({'conductivity', fn, {'c', 'T'}});
@@ -108,7 +104,11 @@ classdef Electrolyte < ElectroChemicalComponent
             model = model.registerPropFunction({'D', fn, {'c', 'T'}});
 
             fn = @Electrolyte.updateCurrent;
-            model = model.registerPropFunction({'j', fn, {'phi', VarName({}, 'jchems', 2), 'conductivity'}});
+            inputnames = {'phi'                   , ...
+                          VarName({}, 'jchems', 2), ...
+                          VarName({}, 'dmudcs', 2), ...
+                          'conductivity'};
+            model = model.registerPropFunction({'j', fn, inputnames});
 
             fn = @Electrolyte.updateMassFlux;
             model = model.registerPropFunction({'massFlux', fn, {'c', 'j', 'D'}});
