@@ -112,6 +112,7 @@ classdef Electrolyte < ElectroChemicalComponent
             model = model.registerPropFunction({'diffFlux', fn, {'c', 'j', 'D'}});
 
             fn = @Electrolyte.updateAccumTerm;
+            fn = {fn, @(propfunction) PropFunction.accumFuncCallSetupFn(propfunction)};
             model = model.registerPropFunction({'massAccum', fn, {'c'}});
 
             fn = @Electrolyte.updateCurrentBcSource;
