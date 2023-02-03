@@ -79,6 +79,14 @@ classdef SiliconGraphiteBattery < Battery
             
         %% Declaration of the Dynamical Variables and Function of the model
             % (setup of varnameList and propertyFunctionList)
+
+            submodelnames = model.getSubModelNames();
+
+            isthermal = ismember(submodelnames, 'ThermalModel');
+            if any(isthermal)
+                submodelnames = submodelnames(isthermal);
+                model.subModelNameList = submodelnames;
+            end
             
             model = registerVarAndPropfuncNames@Battery(model);
             
