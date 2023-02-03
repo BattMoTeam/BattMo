@@ -36,8 +36,8 @@ classdef SiliconGraphiteActiveMaterialInputParams < ElectronicComponentInputPara
             gr = 'Graphite';
             si = 'Silicon';
 
-            paramobj = mergeParameters(paramobj,  {gr, 'volumeFraction'}, {'volumeFraction'});
-            paramobj = mergeParameters(paramobj,  {si, 'volumeFraction'}, {'volumeFraction'});
+            paramobj = mergeParameters(paramobj,  {{gr, 'volumeFraction'}, {'volumeFraction'}});
+            paramobj = mergeParameters(paramobj,  {{si, 'volumeFraction'}, {'volumeFraction'}});
 
             paramobj = validateInputParams@ElectronicComponentInputParams(paramobj);
             
