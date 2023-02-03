@@ -340,7 +340,7 @@ classdef SiliconGraphiteBattery < Battery
             state.(ne).(am).(gr).(sd)  = model.(ne).(am).(gr).(sd).updateMassSource(state.(ne).(am).(gr).(sd));
             state.(ne).(am).(gr).(sd)  = model.(ne).(am).(gr).(sd).assembleSolidDiffusionEquation(state.(ne).(am).(gr).(sd));
             state.(ne).(am).(gr).(sd)  = model.(ne).(am).(gr).(sd).updateMassConservation(state.(ne).(am).(gr).(sd));
-            state.(elyte)              = model.(elyte).updateChemicalCurrent(state.(elyte));
+            state.(elyte)              = model.(elyte).updateDmuDcs(state.(elyte));
             state.(elyte)              = model.(elyte).updateDiffusionCoefficient(state.(elyte));
             state.(elyte)              = model.(elyte).updateConductivity(state.(elyte));
             state.(elyte)              = model.(elyte).updateCurrent(state.(elyte));
