@@ -339,6 +339,7 @@ classdef Battery < BaseModel
 
             inputnames = {};
             fn = @Battery.updateControl;
+            fn = {fn, @(propfunction) PropFunction.drivingForceFuncCallSetupFn(propfunction)};
             model = model.registerPropFunction({{ctrl, 'ctrlVal'}, fn, inputnames});            
             model = model.registerPropFunction({{ctrl, 'ctrlType'}, fn, inputnames});
             
