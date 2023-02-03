@@ -1,3 +1,4 @@
 {
-    "porosity": 0.47
+  "porosity": 0.47,
+  "BruggemanCoefficient": 1.5
 }

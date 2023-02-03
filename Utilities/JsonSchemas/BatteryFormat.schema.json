@@ -16,8 +16,7 @@
         
         "NegativeElectrode" : {"properties" : {"ActiveMaterial" : {"properties" : {"thickness" : {"type" : "number"}}},
                                                "CurrentCollector" : {"properties" : {"thickness" : {"type" : "number"}}}
-                                              }
-                              },
+                                              }},
         "PositiveElectrode" : {"properties" : {"ActiveMaterial" : {"properties" : {"thickness" : {"type" : "number"}}},
                                                "CurrentCollector" : {"properties" : {"thickness" : {"type" : "number"}}}
                                               }},

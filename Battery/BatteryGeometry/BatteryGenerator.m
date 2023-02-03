@@ -114,7 +114,7 @@ classdef BatteryGenerator
             params.(am).electrode_case = paramobj.electrode_case;
             paramobj.(am) = gen.setupActiveMaterialGrid(paramobj.(am), params.(am));
             % setup current collector (cc)
-            if paramobj.include_current_collector
+            if paramobj.include_current_collectors
                 % We add the electrode type to the params structure. (This information can be used by derived classes
                 % and may then simplify setup)
                 params.(cc).electrodeType = params.electrodeType;

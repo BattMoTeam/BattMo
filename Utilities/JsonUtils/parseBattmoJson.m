@@ -1,5 +1,5 @@
 function jsonstruct = parseBattmoJson(filename)
-    filename = fullfile(battmoDir(), filename);
+    filename = resolveFileName(filename);
     jsonsrc = fileread(filename);
     jsonstruct = jsondecode(jsonsrc);
     jsonstruct = resolveFileInputJson(jsonstruct);

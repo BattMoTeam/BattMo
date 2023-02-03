@@ -1,0 +1,26 @@
+{
+  "$id": "file://battmo/schemas/Solver",
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "description": "Options for the solver",
+  "type": "object",
+  "description" : "Setting that can be given to the solver (only parts of those are avaible through json interface)",
+
+  "properties" : {
+    "NonLinearSolver" : {
+      "type" : "object",
+      "description" : "Some of the settings for the Newton non-linear solver. There are many more options available, see battmoDir()/MRST/mrst-autodiff/ad-core/solvers/NonLinearSolver",
+      "properties" : {
+        "maxIterations" : {
+          "type" : "number",
+          "description" : "maximum number of Newton iterations"},
+        "nonlinearTolerance" : {
+          "type" : "number",
+          "description" : "tolerance value for the nonlinear iteration"},
+        "verbose" : {
+          "type" : "boolean"},
+        "LinearSolver" : {
+          "type" : "object",
+          "properties" : {
+            "linearSolverSetup" : {
+              "type" : "object",
+              "$ref" : "linearsolver"}}}}}}}

@@ -73,7 +73,7 @@ end
 % simulation. The required discretization parameters are already included
 % in the class BatteryGenerator1D. 
 gen = BatteryGenerator1D();
-gen.fac = 1000;
+gen.fac = 100;
 gen = gen.applyResolutionFactors();
 
 % Now, we update the paramobj with the properties of the mesh. 
@@ -117,7 +117,6 @@ end
 
 n  = 100;
 dt = total/n;
-% n = 20;
 
 step = struct('val', dt*ones(n, 1), 'control', ones(n, 1));
 
@@ -159,6 +158,7 @@ switch casenumber
   case 1
     
     setup.library = 'matlab';
+    setup.method = 'direct';
 
   case 2
     
@@ -205,12 +205,14 @@ if isfield(setup, 'reduction')
     model = model.setupSelectedModel('reduction', setup.reduction);
 end
 
-nls.LinearSolver = BatteryLinearSolver('verbose'          , 1, ...
-                                       'reduceToCell'     , true , ...
+nls.LinearSolver = BatteryLinearSolver('verbose'          , 2    , ...
                                        'reuse_setup'      , false, ...
                                        'linearSolverSetup', setup);
 
-nls.LinearSolver.linearSolverSetup.gmres_options.tolerance = 1e-3*model.Control.Imax;
+if isfield(nls.LinearSolver.linearSolverSetup, 'gmres_options')
+    nls.LinearSolver.linearSolverSetup.gmres_options.tol = 1e-3*model.Control.Imax;
+    nls.LinearSolver.linearSolverSetup.gmres_options.maxit = 10;
+end
 
 % Change default maximum iteration number in nonlinear solver
 nls.maxIterations = 20;

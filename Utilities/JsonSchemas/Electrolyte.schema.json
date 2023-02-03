@@ -4,8 +4,6 @@
   "description": "A standard electrolyte",
   "type": "object",
 
-  "$ref": "thermalParameters",
-  
   "properties" : { "compnames": {"type" : "array"},
                    "sp": { "type" : "object",
                            "properties" : {

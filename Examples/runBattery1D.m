@@ -157,8 +157,8 @@ switch linearsolver
                                                 'reduceToCell', true, ...
                                                 'verbosity'   , 3    , ...
                                                 'reuse_setup' , false, ...
-                                                'method'      , 'matlab_p_gs');
-    nls.LinearSolver.tolerance = 0.5e-4*2;          
+                                                'method'      , 'direct');
+    nls.LinearSolver.tolerance = 1e-4;
   case 'direct'
     disp('standard direct solver')
   otherwise

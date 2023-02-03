@@ -1,13 +1,5 @@
 classdef IEswitchControlModelInputParams < ControlModelInputParams
 
-    
-    properties
-        
-        lowerCutoffVoltage
-        upperCutoffVoltage
-        
-    end
-    
     methods
 
         function paramobj = IEswitchControlModelInputParams(jsonstruct);

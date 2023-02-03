@@ -334,7 +334,7 @@ classdef Battery < BaseModel
             
             if model.use_thermal
                 
-            fn = @Battery.updateThermalOhmicSourceTerms;
+                fn = @Battery.updateThermalOhmicSourceTerms;
                 inputnames = {{elyte, 'jFace'}        , ...
                               {ne, am, 'jFace'}       , ...
                               {pe, am, 'jFace'}       , ...
@@ -350,24 +350,24 @@ classdef Battery < BaseModel
                     inputnames = horzcat(inputnames, varnames);
                 end
                 
-            model = model.registerPropFunction({{thermal, 'jHeatOhmSource'}, fn, inputnames});
-            model = model.registerPropFunction({{thermal, 'jHeatBcSource'} , fn, inputnames});
-            
-            %% Function that updates the Thermal Chemical Terms
-            fn = @Battery.updateThermalChemicalSourceTerms;
-            inputnames = {{elyte, 'diffFlux'}, ...
-                          {elyte, 'D'}       , ...
+                model = model.registerPropFunction({{thermal, 'jHeatOhmSource'}, fn, inputnames});
+                model = model.registerPropFunction({{thermal, 'jHeatBcSource'} , fn, inputnames});
+                
+                %% Function that updates the Thermal Chemical Terms
+                fn = @Battery.updateThermalChemicalSourceTerms;
+                inputnames = {{elyte, 'diffFlux'}, ...
+                              {elyte, 'D'}       , ...
                               VarName({elyte}, 'dmudcs', 2)};
-            model = model.registerPropFunction({{thermal, 'jHeatChemicalSource'}, fn, inputnames});
-            
-            %% Function that updates Thermal Reaction Terms
-            fn = @Battery.updateThermalReactionSourceTerms;
+                model = model.registerPropFunction({{thermal, 'jHeatChemicalSource'}, fn, inputnames});
+                
+                %% Function that updates Thermal Reaction Terms
+                fn = @Battery.updateThermalReactionSourceTerms;
                 inputnames = {{ne, am, 'Rvol'}  , ...
-                          {ne, am, itf, 'eta'}, ...
+                              {ne, am, itf, 'eta'}, ...
                               {pe, am, 'Rvol'}  , ...
-                          {pe, am, itf, 'eta'}};
-            model = model.registerPropFunction({{thermal, 'jHeatReactionSource'}, fn, inputnames});
-                                                    
+                              {pe, am, itf, 'eta'}};
+                model = model.registerPropFunction({{thermal, 'jHeatReactionSource'}, fn, inputnames});
+                
             end
             
             %% Functions that setup external  coupling for negative electrode
@@ -444,20 +444,24 @@ classdef Battery < BaseModel
         
         function control = setupControl(model, paramobj)
 
+            C = computeCellCapacity(model);
 
             switch paramobj.controlPolicy
               case "IEswitch"
                 control = IEswitchControlModel(paramobj); 
+                CRate = control.CRate;
+                control.Imax = (C/hour)*CRate;
               case "CCCV"
                 control = CcCvControlModel(paramobj);
+                CRate = control.CRate;
+                control.Imax = (C/hour)*CRate;
+              case "powerControl"
+                control = PowerControlModel(paramobj);
               otherwise
                 error('Error controlPolicy not recognized');
             end
             
-            C = computeCellCapacity(model);
-            CRate = control.CRate;
             
-            control.Imax = (C/hour)*CRate;
             
         end
         
@@ -477,7 +481,7 @@ classdef Battery < BaseModel
             G = model.G;
             nc = G.cells.num;
             
-            hcap = zeros(nc, 1); % effective heat capacity
+            vhcap = zeros(nc, 1); % effective heat capacity
             hcond = zeros(nc, 1); % effective heat conductivity
             
             for ind = 1 : numel(eldes)
@@ -489,9 +493,9 @@ classdef Battery < BaseModel
                     % The effecive and intrinsic thermal parameters for the current collector are the same.
                     cc_map = model.(elde).(cc).G.mappings.cellmap;
                     cc_hcond = model.(elde).(cc).thermalConductivity;
-                    cc_hcap = model.(elde).(cc).heatCapacity;
+                    cc_vhcap = model.(elde).(cc).specificHeatCapacity*model.(elde).(cc).density;
 
-                    hcap(cc_map) = hcap(cc_map) + cc_hcap;
+                    vhcap(cc_map) = vhcap(cc_map) + cc_vhcap;
                     hcond(cc_map) = hcond(cc_map) + cc_hcond;
                     
                 end
@@ -499,14 +503,14 @@ classdef Battery < BaseModel
                 % Effective parameters from the Electrode Active Component region.
                 am_map = model.(elde).(am).G.mappings.cellmap;
                 am_hcond = model.(elde).(am).thermalConductivity;
-                am_hcap = model.(elde).(am).heatCapacity;
+                am_vhcap = model.(elde).(am).specificHeatCapacity*model.(elde).(am).density;
                 am_volfrac = model.(elde).(am).volumeFraction;
                 am_bruggeman = model.(elde).(am).BruggemanCoefficient;
                 
-                am_hcap = am_hcap.*am_volfrac;
+                am_vhcap = am_vhcap.*am_volfrac;
                 am_hcond = am_hcond.*am_volfrac.^am_bruggeman;
                 
-                hcap(am_map) = hcap(am_map) + am_hcap;
+                vhcap(am_map) = vhcap(am_map) + am_vhcap;
                 hcond(am_map) = hcond(am_map) + am_hcond;
                 
             end
@@ -515,14 +519,14 @@ classdef Battery < BaseModel
             
             elyte_map = model.(elyte).G.mappings.cellmap;
             elyte_hcond = model.(elyte).thermalConductivity;
-            elyte_hcap = model.(elyte).heatCapacity;
+            elyte_vhcap = model.(elyte).specificHeatCapacity*model.(elyte).density;
             elyte_volfrac = model.(elyte).volumeFraction;
             elyte_bruggeman = model.(elyte).BruggemanCoefficient;
             
-            elyte_hcap = elyte_hcap.*elyte_volfrac;
+            elyte_vhcap = elyte_vhcap.*elyte_volfrac;
             elyte_hcond = elyte_hcond.*elyte_volfrac.^am_bruggeman;
             
-            hcap(elyte_map) = hcap(elyte_map) + elyte_hcap;
+            vhcap(elyte_map) = vhcap(elyte_map) + elyte_vhcap;
             hcond(elyte_map) = hcond(elyte_map) + elyte_hcond;            
             
             % Separator
@@ -530,18 +534,18 @@ classdef Battery < BaseModel
             sep_map = model.(elyte).(sep).G.mappings.cellmap;
             
             sep_hcond = model.(elyte).(sep).thermalConductivity;
-            sep_hcap = model.(elyte).(sep).heatCapacity;
+            sep_vhcap = model.(elyte).(sep).specificHeatCapacity*model.(elyte).(sep).density;
             sep_volfrac = model.(elyte).(sep).volumeFraction;
             sep_bruggeman = model.(elyte).(sep).BruggemanCoefficient;
             
-            sep_hcap = sep_hcap.*sep_volfrac;
+            sep_vhcap = sep_vhcap.*sep_volfrac;
             sep_hcond = sep_hcond.*sep_volfrac.^sep_bruggeman;
             
-            hcap(sep_map) = hcap(sep_map) + sep_hcap;
+            vhcap(sep_map) = vhcap(sep_map) + sep_vhcap;
             hcond(sep_map) = hcond(sep_map) + sep_hcond;            
 
             if model.use_thermal
-                model.ThermalModel.EffectiveHeatCapacity = hcap;
+                model.ThermalModel.EffectiveVolumetricHeatCapacity = vhcap;
                 model.ThermalModel.EffectiveThermalConductivity = hcond;
             end
             
@@ -681,30 +685,39 @@ classdef Battery < BaseModel
 
             %% Setup initial Current collectors state
 
-            if model.(ne).include_current_collector
+            if model.(ne).include_current_collectors
                 OCP = initstate.(ne).(am).(itf).OCP;
                 OCP = OCP(1) .* ones(bat.(ne).(cc).G.cells.num, 1);
                 initstate.(ne).(cc).phi = OCP - ref;
             end
             
-            if model.(pe).include_current_collector
+            if model.(pe).include_current_collectors
                 OCP = initstate.(pe).(am).(itf).OCP;
                 OCP = OCP(1) .* ones(bat.(pe).(cc).G.cells.num, 1);
                 initstate.(pe).(cc).phi = OCP - ref;
             end
             
             initstate.(ctrl).E = OCP(1) - ref;
-            initstate.(ctrl).I = - model.(ctrl).Imax;
             
             switch model.(ctrl).controlPolicy
               case 'CCCV'
-                initstate.(ctrl).ctrlType = 'CC_charge1';
+                initstate.(ctrl).ctrlType     = 'CC_charge1';
                 initstate.(ctrl).nextCtrlType = 'CC_charge1';
+                initstate.(ctrl).I            = - model.(ctrl).Imax;
               case 'IEswitch'
                 initstate.(ctrl).ctrlType = 'constantCurrent';
+                initstate.(ctrl).I        = model.(ctrl).Imax;
+              case 'powerControl'
+                % this is correct but anyway overwritten 
+                initstate.(ctrl).ctrlType = 'charge';
+                E = initstate.(ctrl).E;
+                P = model.(ctrl).chargingPower;
+                initstate.(ctrl).I = -P/E;
               otherwise
                 error('control policy not recognized');
             end
+
+            initstate.time = 0;
             
         end
 
@@ -1048,12 +1061,12 @@ classdef Battery < BaseModel
             end
             
             % Equation name : 'ne_cc_chargeCons';
-            if model.(ne).include_current_collector
+            if model.(ne).include_current_collectors
                 eqs{ei.ne_cc_chargeCons} = state.(ne).(cc).chargeCons;
             end
             
             % Equation name : 'pe_cc_chargeCons';
-            if model.(pe).include_current_collector
+            if model.(pe).include_current_collectors
                 eqs{ei.pe_cc_chargeCons} = state.(pe).(cc).chargeCons;
             end
 
@@ -1077,10 +1090,10 @@ classdef Battery < BaseModel
             % (the order of the equation does not matter if we do not use an iterative solver)
             ctrltype = state.Control.ctrlType;
             switch ctrltype
-              case {'constantCurrent', 'CC_discharge1', 'CC_discharge2', 'CC_charge1'}
-                types{ei.EIeq} = 'cell';   
+              case {'constantCurrent', 'CC_discharge1', 'CC_discharge2', 'CC_charge1', 'charge', 'discharge'}
+                types{ei.EIeq} = 'cell';
               case {'constantVoltage', 'CV_charge2'}
-                % no changes
+                eqs([ei.EIeq, ei.controlEq]) = eqs([ei.controlEq, ei.EIeq]);
               otherwise 
                 error('control type not recognized')
             end
@@ -1184,8 +1197,10 @@ classdef Battery < BaseModel
             ctrl = "Control";
             
             switch model.(ctrl).controlPolicy
-              case 'CCCV'
+
+              case {'CCCV', 'powerControl'}
                 % nothing to do here
+
               case 'IEswitch'
                 
                 E    = state.(ctrl).E;
@@ -1198,7 +1213,7 @@ classdef Battery < BaseModel
                 state.(ctrl).ctrlType = ctrltype;
 
               case 'None'
-                % nothing done here. This case is only used for addVariables function
+                % nothing done here. This case is only used for the addVariables method
               otherwise
                 error('control type not recognized');
             end
@@ -1406,7 +1421,7 @@ classdef Battery < BaseModel
             ne = 'NegativeElectrode';
             am = 'ActiveMaterial';
             
-            if model.(ne).include_current_collector
+            if model.(ne).include_current_collectors
                 
                 cc = 'CurrentCollector';
 
@@ -1445,7 +1460,7 @@ classdef Battery < BaseModel
             
             E   = state.(ctrl).E;
 
-            if model.(pe).include_current_collector
+            if model.(pe).include_current_collectors
                 
                 cc   = 'CurrentCollector';
                 
@@ -1508,28 +1523,6 @@ classdef Battery < BaseModel
             end
             
         end
-        
-        function state = initStateAD(model, state)
-        % initialize a new cleaned-up state with AD variables
-
-            % initStateAD in BaseModel erase all fields
-            newstate = initStateAD@BaseModel(model, state);
-
-            % add the variable that we want to add on state
-            % TODO : pass those using addStaticVariables method
-            addedvarnames = model.addedVariableNames;
-            for i = 1 : numel(addedvarnames)
-                var = model.getProp(state, addedvarnames{i});
-                assert(isnumeric(var) | ischar(var));
-                newstate = model.setNewProp(newstate, addedvarnames{i}, var);
-            end
-
-            newstate.time = state.time;
-            
-            state = newstate;
-            
-        end 
-        
 
         function primaryvarnames = getPrimaryVariables(model)
 
@@ -1547,6 +1540,9 @@ classdef Battery < BaseModel
                 forces.CCCV = true;
               case 'IEswitch'
                 forces.IEswitch = true;
+                forces.src = [];
+              case 'powerControl'
+                forces.powerControl = true;
                 forces.src = [];
               case 'None'
                 % used only in addVariables
@@ -1572,12 +1568,12 @@ classdef Battery < BaseModel
             model.NegativeElectrode.ActiveMaterial = model.NegativeElectrode.ActiveMaterial.validateModel(varargin{:});
             model.Electrolyte.AutoDiffBackend=model.AutoDiffBackend;
             model.Electrolyte=model.Electrolyte.validateModel(varargin{:});
-            if model.NegativeElectrode.include_current_collector
+            if model.NegativeElectrode.include_current_collectors
                 model.NegativeElectrode.CurrentCollector.AutoDiffBackend= model.AutoDiffBackend;
                 model.NegativeElectrode.CurrentCollector= model.NegativeElectrode.CurrentCollector.validateModel(varargin{:});
             end
             
-            if model.PositiveElectrode.include_current_collector
+            if model.PositiveElectrode.include_current_collectors
                 model.PositiveElectrode.CurrentCollector.AutoDiffBackend=model.AutoDiffBackend;
                 model.PositiveElectrode.CurrentCollector= model.PositiveElectrode.CurrentCollector.validateModel(varargin{:});
             end
@@ -1626,6 +1622,13 @@ classdef Battery < BaseModel
         % Variables that are no AD initiated (but should be "carried over")
             
             cleanState = addStaticVariables@BaseModel(model, cleanState, state);
+
+            addedvarnames = model.addedVariableNames;
+            for i = 1 : numel(addedvarnames)
+                var = model.getProp(state, addedvarnames{i});
+                assert(isnumeric(var) | ischar(var));
+                cleanState = model.setNewProp(cleanState, addedvarnames{i}, var);
+            end
             
             thermal = 'ThermalModel';
             ctrl = 'Control';
@@ -1637,7 +1640,6 @@ classdef Battery < BaseModel
                 cleanState.(thermal).T = state.(thermal).T;
             end
             
-            
         end
 
         function [model, state] = prepareTimestep(model, state, state0, dt, drivingForces)
@@ -1645,6 +1647,11 @@ classdef Battery < BaseModel
             [model, state] = prepareTimestep@BaseModel(model, state, state0, dt, drivingForces);
             
             ctrl = 'Control';
+
+            if strcmp(model.(ctrl).controlPolicy, 'powerControl')
+                state.(ctrl).time = state.time;
+            end
+            
             state.(ctrl) = model.(ctrl).prepareStepControl(state.(ctrl), state0.(ctrl), dt, drivingForces);
             
         end

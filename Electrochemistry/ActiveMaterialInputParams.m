@@ -15,9 +15,11 @@ classdef ActiveMaterialInputParams < ElectronicComponentInputParams
         
         InterDiffusionCoefficient % Interdiffusion coefficient parameter (diffusion between the particles)
         
-        thermalConductivity % Intrinsic Thermal conductivity of the active component
-        heatCapacity        % Intrinsic Heat capacity of the active component
+        density % Density
 
+        thermalConductivity  % Intrinsic Thermal conductivity of the active component
+        specificHeatCapacity % Specific Heat capacity of the active component
+        
         electricalConductivity % Electrical conductivity / [S m^-1]
 
         externalCouplingTerm % structure to describe external coupling (used in absence of current collector)
@@ -82,23 +84,25 @@ classdef ActiveMaterialInputParams < ElectronicComponentInputParams
             sd  = 'SolidDiffusion';
             itf = 'Interface';
             
+            paramobj = mergeParameters(paramobj, {{'density'}, {itf, 'density'}});
+            
             switch diffusionModelType
                 
               case 'simple'
                 
-                paramobj = mergeParameters(paramobj, {'volumeFraction'}, {itf, 'volumeFraction'});
+                paramobj = mergeParameters(paramobj, {{'volumeFraction'}, {itf, 'volumeFraction'}});
                 
               case 'full'
                 
-                paramobj = mergeParameters(paramobj, {'volumeFraction'}, {itf, 'volumeFraction'});
-                paramobj = mergeParameters(paramobj, {'volumeFraction'}, {sd, 'volumeFraction'});
-                paramobj = mergeParameters(paramobj, {'activeMaterialFraction'}, {sd, 'activeMaterialFraction'});
+                paramobj = mergeParameters(paramobj, {{'volumeFraction'}, {itf, 'volumeFraction'}});
+                paramobj = mergeParameters(paramobj, {{'volumeFraction'}, {sd, 'volumeFraction'}});
+                paramobj = mergeParameters(paramobj, {{'activeMaterialFraction'}, {sd, 'activeMaterialFraction'}});
                 
                 if ~isempty(paramobj.(sd).D)
                     % we impose that cmax in the solid diffusion model and the interface are consistent
-                    paramobj = mergeParameters(paramobj, {sd, 'cmax'}, {itf, 'cmax'}, 'force', false);
-                    paramobj = mergeParameters(paramobj, {sd, 'theta0'}, {itf, 'theta0'}, 'force', false);
-                    paramobj = mergeParameters(paramobj, {sd, 'theta100'}, {itf, 'theta100'}, 'force', false);
+                    paramobj = mergeParameters(paramobj, {{sd, 'cmax'}, {itf, 'cmax'}}, 'force', false);
+                    paramobj = mergeParameters(paramobj, {{sd, 'theta0'}, {itf, 'theta0'}}, 'force', false);
+                    paramobj = mergeParameters(paramobj, {{sd, 'theta100'}, {itf, 'theta100'}}, 'force', false);
                 end
 
               otherwise

@@ -24,9 +24,9 @@ classdef ElectrodeInputParams < ComponentInputParams
         
         electrode_case % can be set to 'default' or 'siliconGraphite'
         %
-        % Set to true to include current collector (NOTE : not supported at the moment at this level)
+        % Set to true to include current collector
         %
-        include_current_collector
+        include_current_collectors
 
         use_thermal
         
@@ -66,15 +66,11 @@ classdef ElectrodeInputParams < ComponentInputParams
             am = 'ActiveMaterial';
             cc  = 'CurrentCollector';
             
-            paramobj = mergeParameters(paramobj, {'use_thermal'}, {am, 'use_thermal'});
+            paramobj = mergeParameters(paramobj, {{'use_thermal'}, {am, 'use_thermal'}});
             paramobj.(am) = paramobj.(am).validateInputParams();
 
-            if isempty(paramobj.include_current_collector)
-                paramobj.include_current_collector = false;
-            end
-
-            if paramobj.include_current_collector
-                paramobj = mergeParameters(paramobj, {'use_thermal'}, {cc, 'use_thermal'});
+            if ~isempty(paramobj.include_current_collectors)
+                paramobj = mergeParameters(paramobj, {{'use_thermal'}, {cc, 'use_thermal'}});
                 paramobj.(cc) = paramobj.(cc).validateInputParams();
             end
             

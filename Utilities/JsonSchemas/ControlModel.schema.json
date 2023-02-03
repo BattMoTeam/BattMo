@@ -2,17 +2,24 @@
   "$id": "file://battmo/schemas/ControlModel",
   "$schema": "http://json-schema.org/draft-07/schema#",
   "type": "object",
-  "properties" : {
-    "controlPolicy": {"type": "string",
-                      "enum": ["IEswitch", "CCCV", "CV"]},
-    "CRate" : {"type": "string"}
-  },
-  "anyOf": [
-    {"properties": {"controlPolicy" : {"const" : "IEswitch"},
-                    "$ref" : "IEswitchControlModel"}},
-    {"properties": {"controlPolicy" : {"const" : "CCCV"},
-                    "$ref" : "CcCvControlModel"}},
-    {"properties": {"controlPolicy" : {"const" : "CV"},
-                    "$ref" : "CvControlModel"}}
-  ]
+  "properties" : {"Control" : {"type" : "object",
+                               "properties" : {
+                                 "controlPolicy": {"type": "string",
+                                                   "enum": ["IEswitch", "CCCV", "CV", "powerControl"]},
+                                 "CRate" : {"type": "number"},
+                                 "lowerCutoffVoltage" : {"type" : "number"},
+                                 "upperCutoffVoltage" : {"type" : "number"}
+                               },
+                               "anyOf": [
+                                 {"properties": {"controlPolicy" : {"const" : "IEswitch"},
+                                                 "$ref" : "IEswitchControlModel"}},
+                                 {"properties": {"controlPolicy" : {"const" : "CCCV"},
+                                                 "$ref" : "CcCvControlModel"}},
+                                 {"properties": {"controlPolicy" : {"const" : "CV"},
+                                                 "$ref" : "CvControlModel"}},
+                                 {"properties": {"controlPolicy" : {"const" : "powerControl"},
+                                                 "$ref" : "powerControlModel"}}
+                               ]
+                              }
+                 }
 }

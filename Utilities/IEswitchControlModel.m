@@ -3,8 +3,6 @@ classdef IEswitchControlModel < ControlModel
     properties
         
         Imax
-        lowerCutoffVoltage
-        upperCutoffVoltage
         
     end
     
@@ -14,10 +12,6 @@ classdef IEswitchControlModel < ControlModel
         function model = IEswitchControlModel(paramobj)
             
             model = model@ControlModel(paramobj);
-            
-            fdnames = {'lowerCutoffVoltage', ...
-                       'upperCutoffVoltage'};
-            model = dispatchParams(model, paramobj, fdnames);
             
         end
         
@@ -58,6 +52,8 @@ classdef IEswitchControlModel < ControlModel
               case 'constantVoltage'
                 %% TODO : fix hard-coded scaling
                 ctrleq = (E - ctrlVal)*1e5;
+              otherwise
+                error('ctrlType not recognized');
             end
             
             state.controlEquation = ctrleq;

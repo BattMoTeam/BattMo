@@ -9,16 +9,23 @@ classdef PropFunction
         
         fn % function handler
 
+        functionCallSetupFn %  function handler to setup the function call
     end
     
     methods
         
-        function propfunction = PropFunction(varname, fn, inputvarnames, modelnamespace)
+        function propfunction = PropFunction(varname, fn, inputvarnames, modelnamespace, functionCallSetupFn)
             
             propfunction.varname = varname;
             propfunction.fn = fn;
             propfunction.inputvarnames = inputvarnames;
             propfunction.modelnamespace = modelnamespace;
+
+            if nargin > 4 && ~isempty(functionCallSetupFn)
+                propfunction.functionCallSetupFn = functionCallSetupFn;
+            else
+                propfunction.functionCallSetupFn = @(pfunc) PropFunction.stdFuncCallSetupFn(pfunc);
+            end
             
         end
         
@@ -34,30 +41,66 @@ classdef PropFunction
             end
         end
 
-        function signature = getFunctionSignature(propfunction)
+        function str = getFunctionCallString(propfunction)
+        % We store this function in a function handler that can be changed more dynamically compared to setup a child class
+
+            fn = propfunction.functionCallSetupFn;
+            str = fn(propfunction);
+            
+        end
+
+        function [funcstr, statestr, nmstr] = setupCallStringElements(propfunction)
             
             fn = propfunction.fn;
-            mn = propfunction.modelnamespace;
-            mn = join(mn, '.');
-            if ~isempty(mn)
-                mn = mn{1};
-                statename = sprintf('state.%s', mn);
+            nmstr = propfunction.modelnamespace;
+            nmstr = join(nmstr, '.');
+            if ~isempty(nmstr)
+                nmstr = nmstr{1};
+                statestr = sprintf('state.%s', nmstr);
             else
-                statename = 'state';
+                statestr = 'state';
             end
-            fnname = func2str(fn);
-            fnname = regexp(fnname, "\.(.*)", 'tokens');
-            fnname = fnname{1}{1};
-            fnname = horzcat(mn, {fnname});
-            fnname = join(fnname, '.');
-            fnname = fnname{1};
-
-            signature = sprintf('%s = model.%s(%s)', statename, fnname, statename);
+            funcstr = func2str(fn);
+            funcstr = regexp(funcstr, "\.(.*)", 'tokens');
+            funcstr = funcstr{1}{1};
+            funcstr = horzcat(nmstr, {funcstr});
+            funcstr = join(funcstr, '.');
+            funcstr = funcstr{1};
+            funcstr = sprintf('model.%s', funcstr);
             
         end
 
     end
     
+    methods(Static)
+
+        function callstr = stdFuncCallSetupFn(propfunction)
+
+            [funcstr, statestr, nmstr] = propfunction.setupCallStringElements();
+            
+            callstr = sprintf('%s = %s(%s);', statestr, funcstr, statestr);
+
+        end
+
+        function callstr = accumFuncCallSetupFn(propfunction)
+
+            [funcstr, statestr, nmstr] = propfunction.setupCallStringElements();
+
+            state0str = sprintf('state0.%s', nmstr);
+
+            callstr = sprintf('%s = %s(%s, %s, dt);', statestr, funcstr, statestr, state0str);
+            
+        end
+
+        function callstr = drivingForceFuncCallSetupFn(propfunction)
+
+            [funcstr, statestr, nmstr] = propfunction.setupCallStringElements();
+            
+            callstr = sprintf('%s = %s(%s, drivingForces);', statestr, funcstr, statestr);
+            
+        end
+
+    end
     
 end
 

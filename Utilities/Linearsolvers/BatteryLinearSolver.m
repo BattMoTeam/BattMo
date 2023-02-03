@@ -3,8 +3,6 @@ classdef BatteryLinearSolver < handle
     
     properties
 
-        extraReport                % Enable this to produce additional report output
-                                   % May use a lot of memory for large problems
         verbose                    % Verbose output enabler
         replaceNaN                 % Boolean indicating if the solver should replace NaN in the results
         replaceInf                 % Boolean indicating if the solver should replace Inf in the results
@@ -33,7 +31,6 @@ classdef BatteryLinearSolver < handle
         
         function solver = BatteryLinearSolver(varargin)
             
-            solver.extraReport               = false;
             solver.verbose                   = 0;
             solver.replaceNaN                = false;
             solver.replaceInf                = false;
@@ -56,6 +53,19 @@ classdef BatteryLinearSolver < handle
             else
                 solver.linearSolverSetup = struct('library', 'matlab', 'method', 'direct');
             end
+
+            setup = solver.linearSolverSetup;
+
+            if isfield(setup, 'reduction') && setup.reduction.doReduction
+                solver.reduceToCell = true;
+            else
+                solver.reduceToCell = false;
+            end
+
+            if isfield(setup, 'verbose') && setup.verbose > 0
+                solver.verbose = setup.verbose;
+            end
+            
         end
 
         function solver = processSolverSetup(solver)
@@ -287,21 +297,25 @@ classdef BatteryLinearSolver < handle
                     precondReports = cell(numel(preconditioners), 1);
                     for isolver = 1 : numel(preconditioners)
                         precondReports{isolver}.Iterations = 0;
+                        if isfield(preconditioners(isolver), 'name')
+                            precondReports{isolver}.name = preconditioners(isolver).name;
+                        end
                     end
                     solver.precondReports = precondReports;
-                    
+
                     precond = @(b) solver.blockFieldSchwarz(b, A, precondsolvers);
                     
                     a=tic;
 
                     gopts = setup.gmres_options;
 
-                    [result, flag, relres, iter] = gmres(A, b, ...
-                                                         gopts.restart, ...
-                                                         gopts.tol, ...
-                                                         gopts.maxit, ...
-                                                         precond);
+                    [result, flag, relres, iter, resvec] = gmres(A, b         , ...
+                                                                 gopts.restart, ...
+                                                                 gopts.tol    , ...
+                                                                 gopts.maxit  , ...
+                                                                 precond);
                     
+
                     % add diagnostic fields in report
                     report.Iterations         = (iter(1) - 1)*gopts.maxit + iter(2);
                     report.Residual           = relres;
@@ -315,7 +329,7 @@ classdef BatteryLinearSolver < handle
                             fprintf('\n***  GMRES Report \n');
                             fprintf('flag (0:converged, 1:maxiter, 2:ill-posed precond, 3:stagnated) : %d \n', flag);
                             fprintf('iterations : %d \n', report.Iterations);
-                            fprintf('***\n\n', report.Iterations);
+                            fprintf('***\n\n');
                         else
                             if flag == 1
                                 warning('GMRES did not converge');
@@ -427,31 +441,53 @@ classdef BatteryLinearSolver < handle
             report = merge_options_relaxed(report, varargin);
         end
 
-        function r = blockFieldSchwarz(solver, x, A, precondsolvers)
+        function x = blockFieldSchwarz(solver, b, A, precondsolvers)
 
-            r = x*0;
-
-            for isolver = 1 : numel(precondsolvers)
-
-                precondsolver = precondsolvers{isolver};
-                ind = precondsolver.ind;
-                
-                if any(ind)
-                    func = precondsolver.func;
-                    if solver.verbose
-                        if isfield(precondsolver, 'name')
-                            name = sprintf("(%s)", precondsolver.name);
-                        else
-                            name = ""
-                        end
-                        fprintf('*** block preconditioner %d %s\n\n', isolver, name);
-                    end                        
-
-                    [pr, flag, res, iter] = func(A(ind, ind), x(ind));
-                    r(ind) = pr;
-                    solver.precondReports{isolver}.Iterations = solver.precondReports{isolver}.Iterations + iter;
+            if isfield(solver.linearSolverSetup, 'options')
+                type = solver.linearSolverSetup.options.type;
+                if strcmp(type, 'gauss-seidel') & isfield(solver.linearSolverSetup.options, 'iteration')
+                    iteration = solver.linearSolverSetup.options.iteration;
+                else
+                    iteration = 1;
                 end
+            else
+                type = 'gauss-seidel';
+                iteration =  1;
+            end
+
+            x = b*0;
+
+            for iter = 1 : iteration
                 
+                for isolver = 1 : numel(precondsolvers)
+
+                    precondsolver = precondsolvers{isolver};
+                    ind = precondsolver.ind;
+                    
+                    if any(ind)
+                        func = precondsolver.func;
+                        if solver.verbose
+                            if isfield(precondsolver, 'name')
+                                name = sprintf("(%s)", precondsolver.name);
+                            else
+                                name = "";
+                            end
+                            fprintf('*** block preconditioner %d %s\n\n', isolver, name);
+                        end                        
+
+                        switch type
+                          case 'gauss-seidel'
+                            b2 = b(ind) - A(ind, ~ind)*x(~ind);
+                          case 'jacobi'
+                            b2 = b(ind);
+                          otherwise
+                            error('type not recognized');
+                        end
+                        [r, flag, res, iter] = func(A(ind, ind), b2);
+                        x(ind) = r;
+                        solver.precondReports{isolver}.Iterations = solver.precondReports{isolver}.Iterations + iter;
+                    end
+                end
             end
             
         end
@@ -477,6 +513,10 @@ classdef BatteryLinearSolver < handle
 
               case 'agmg'
 
+                if ~isfield(ellipticSolver, 'method')
+                    ellipticSolver.method = 'standard';
+                end
+                
                 switch ellipticSolver.method
 
                   case 'standard'
@@ -915,9 +955,9 @@ classdef BatteryLinearSolver < handle
                           'verbose'     , solver.verbose);
 
 
-            if isfield(amgclsolverspec, 'options')
-                opts = amgclsolverspec.options;
-                opts = mergeJsonStructs({defaultOpts, opts}, 'force', true);
+            if nargin > 1
+                opts = mergeJsonStructs({amgclsolverspec, defaultOpts}, 'warn', false);
+                opts = rmfield(opts, 'library');
             else
                 opts = defaultOpts;
             end

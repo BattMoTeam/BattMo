@@ -69,7 +69,7 @@ tabparams.tabcase   = 'aligned tabs';
 tabparams.width     = 3*milli*meter;
 tabparams.fractions = linspace(0.01, 0.9, 6);
 
-testing = true;
+testing = false;
 if testing
     fprintf('We setup a smaller case for quicker testing\n');
     rOuter = 10*milli*meter/2;
@@ -102,10 +102,13 @@ cc      = 'CurrentCollector';
 
 jsonstruct.include_current_collectors = true;
 jsonstruct.use_thermal = true;
-jsonstruct.(pe).(am).diffusionModelType = 'simple';
-jsonstruct.(ne).(am).diffusionModelType = 'simple';
 
 jsonstruct.use_particle_diffusion = true;
+
+diffusionModelType = 'full';
+
+jsonstruct.(pe).(am).diffusionModelType = diffusionModelType;
+jsonstruct.(ne).(am).diffusionModelType = diffusionModelType;
 
 paramobj = BatteryInputParams(jsonstruct); 
 
@@ -127,6 +130,7 @@ gen = SpiralBatteryGenerator();
 paramobj = gen.updateBatteryInputParams(paramobj, spiralparams);
 
 model = Battery(paramobj); 
+model.AutoDiffBackend= AutoDiffBackend();
 
 [cap, cap_neg, cap_pos, specificEnergy] = computeCellCapacity(model);
 fprintf('ratio : %g, energy : %g\n', cap_neg/cap_pos, specificEnergy/hour);
@@ -140,14 +144,14 @@ n     = 10;
 dt0   = total*1e-6; 
 times = getTimeSteps(dt0, n, total, fac); 
 
+% times = times(times < 4200);
+
 %% We compute the cell capacity, which used to compute schedule from CRate
 C = computeCellCapacity(model); 
 inputI = (C/hour)*CRate; 
 inputE = 3; 
 
-tt = times(2 : end); 
-
-step = struct('val', diff(times), 'control', ones(numel(tt), 1)); 
+step = struct('val', diff(times), 'control', ones(numel(times) - 1, 1)); 
 
 tup = 0.1/CRate; 
 
@@ -183,86 +187,114 @@ switch simcase
 
 end
 
-% Setup nonlinear solver 
-nls = NonLinearSolver(); 
+%% Setup the properties of the nonlinear solver 
+nls = NonLinearSolver();
 
-% Change default maximum iteration number in nonlinear solver
-nls.maxIterations = 10; 
-% Change default behavior of nonlinear solver, in case of error
-nls.errorOnFailure = false; 
-% Change default tolerance for nonlinear solver
-model.nonlinearTolerance = 1e-4; 
+clear setup
 
-use_diagonal_ad = false;
-if(use_diagonal_ad)
-    model.AutoDiffBackend = DiagonalAutoDiffBackend(); 
-    model.AutoDiffBackend.useMex = true; 
-    model.AutoDiffBackend.modifyOperators = true; 
-    model.AutoDiffBackend.rowMajor = true; 
-    model.AutoDiffBackend.deferredAssembly = false; % error with true for now
-else
-    model.AutoDiffBackend = AutoDiffBackend(); 
+casenumber = 4;
+
+switch casenumber
+    
+  case 1
+    
+    setup.library = 'matlab';
+
+  case 2
+    
+    setup.method = 'gmres';
+    setup.options.method = 'grouped';
+    setup.options.solverspec.name = 'agmg'; % not used for now
+
+  case 3
+    
+    setup.method = 'gmres';
+    setup.options.method = 'separate';
+    solvers = {};
+    solverspec.variable = 'phi';
+    solverspec.solverspec.name = 'direct';
+    solvers{end + 1} = solverspec;
+    solverspec.variable = 'c';
+    solverspec.solverspec.name = 'direct';
+    solvers{end + 1} = solverspec;
+    solverspec.variable = 'T';
+    solverspec.solverspec.name = 'direct';
+    solvers{end + 1} = solverspec;
+    setup.options.solvers = solvers;
+
+  case 4
+
+    switch diffusionModelType
+      case 'simple'
+        % jsonfilename = fullfile(battmoDir, 'Utilities/JsonSchemas/Tests/linearsolver3.json');
+        jsonfilename = fullfile(battmoDir, 'Utilities/JsonSchemas/Tests/linearsolver5.json');
+      case 'full'
+        jsonfilename = fullfile(battmoDir, 'Utilities/JsonSchemas/Tests/linearsolver4.json');
+      otherwise
+        error('diffusionModelType not covered')
+    end
+    jsonsrc = fileread(jsonfilename);
+    setup = jsondecode(jsonsrc);
+    
+  otherwise
+    
+    error('case number not recognized');
+
 end
-
-nls.timeStepSelector = StateChangeTimeStepSelector('TargetProps', {{'Control', 'E'}}, 'targetChangeAbs', 0.03);
-
-
-% linearsolver = 'battery';
-% switch linearsolver
-%   case 'agmg'
-%     mrstModule add agmg
-%     nls.LinearSolver = AGMGSolverAD('verbose', true, 'reduceToCell', false); 
-%     nls.LinearSolver.tolerance = 1e-3; 
-%     nls.LinearSolver.maxIterations = 30; 
-%     nls.maxIterations = 10; 
-%     nls.verbose = 10;
-%   case 'battery'
-%     nls.LinearSolver = LinearSolverBatteryExtra('verbose'     , false, ...
-%                                                 'reduceToCell', true, ...
-%                                                 'verbosity'   , 3    , ...
-%                                                 'reuse_setup' , false, ...
-%                                                 'method'      , 'agmg');
-%     nls.LinearSolver.tolerance = 0.5e-4*2;          
-%   case 'direct'
-%     disp('standard direct solver')
-%   otherwise
-%     error()
-% end
-
-
-jsonfilename = fullfile(battmoDir, 'Utilities/JsonSchemas/Tests/linearsolver3.json');
-jsonsrc = fileread(jsonfilename);
-setup = jsondecode(jsonsrc);
 
 if isfield(setup, 'reduction')
     model = model.setupSelectedModel('reduction', setup.reduction);
 end
 
-nls.LinearSolver = BatteryLinearSolver('verbose'          , false, ...
-                                       'reduceToCell'     , true , ...
+nls.LinearSolver = BatteryLinearSolver('verbose'          , 0    , ...
                                        'reuse_setup'      , false, ...
                                        'linearSolverSetup', setup);
 
-    
-model.nonlinearTolerance = 1e-4; 
-model.verbose = true; 
-
-% Run simulation
-dataFolder = 'BattMo';
-problem = packSimulationProblem(initstate, model, schedule, dataFolder, 'Name', 'jellyroll', 'NonLinearSolver', nls);
-problem.SimulatorSetup.OutputMinisteps = true; 
-
-resetSimulation = true;
-if resetSimulation
-    %% clear previously computed simulation
-    clearPackedSimulatorOutput(problem, 'prompt', false);
+if isfield(nls.LinearSolver.linearSolverSetup, 'gmres_options')
+    nls.LinearSolver.linearSolverSetup.gmres_options.tol = 1e-3*model.Control.Imax;
 end
-profile off
-profile on
-simulatePackedProblem(problem);
-profile off
-profile viewer
-[globvars, states, report] = getPackedSimulatorOutput(problem);
+
+% Change default maximum iteration number in nonlinear solver
+nls.maxIterations = 10;
+% Change default behavior of nonlinear solver, in case of error
+nls.errorOnFailure = true;
+% nls.timeStepSelector=StateChangeTimeStepSelector('TargetProps', {{'Control','E'}}, 'targetChangeAbs', 0.03);
+% Change default tolerance for nonlinear solver
+model.nonlinearTolerance = 1e-3*model.Control.Imax;
+% Set verbosity
+model.verbose = true;
+
+
+
+dopacked = true;
+
+if dopacked
+    % Run simulation
+    dataFolder = 'BattMo';
+    problem = packSimulationProblem(initstate, model, schedule, dataFolder, ...
+                                    'Name'           , 'jellyroll', ...
+                                    'NonLinearSolver', nls);
+    problem.SimulatorSetup.OutputMinisteps = true; 
+
+    resetSimulation = true;
+    if resetSimulation
+        %% clear previously computed simulation
+        clearPackedSimulatorOutput(problem, 'prompt', false);
+    end
+    simulatePackedProblem(problem);
+    [globvars, states, reports] = getPackedSimulatorOutput(problem);
+
+else
+    
+    fn = afterStepConvergencePlots(nls);
+
+    [~, states, reports] = simulateScheduleAD(initstate, model, schedule, ... 
+                                              'NonLinearSolver', nls, ...
+                                              'afterStepFn'    , fn);
+
+    reports = reports.ControlstepReports;
+    
+end
 
 %% Process output and recover the output voltage and current from the output states.
 
@@ -272,27 +304,9 @@ E = cellfun(@(x) x.Control.E, states);
 I = cellfun(@(x) x.Control.I, states);
 time = cellfun(@(x) x.time, states); 
 
+figure
 plot(time, E, 'linewidth', 3);
 set(gca, 'fontsize', 18);
 title('Cell Voltage / V')
-xlabel('time (hours)')
+xlabel('time')
 
-%{
-Copyright 2021-2022 SINTEF Industry, Sustainable Energy Technology
-and SINTEF Digital, Mathematics & Cybernetics.
-
-This file is part of The Battery Modeling Toolbox BattMo
-
-BattMo is free software: you can redistribute it and/or modify
-it under the terms of the GNU General Public License as published by
-the Free Software Foundation, either version 3 of the License, or
-(at your option) any later version.
-
-BattMo is distributed in the hope that it will be useful,
-but WITHOUT ANY WARRANTY; without even the implied warranty of
-MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-GNU General Public License for more details.
-
-You should have received a copy of the GNU General Public License
-along with BattMo.  If not, see <http://www.gnu.org/licenses/>.
-%}

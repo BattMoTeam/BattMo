@@ -8,6 +8,8 @@ classdef ControlModel < BaseModel
         % - 'IEswitch'
         % - 'CV'
         controlPolicy
+        lowerCutoffVoltage
+        upperCutoffVoltage
         
     end
     
@@ -19,6 +21,8 @@ classdef ControlModel < BaseModel
             model = model@BaseModel();
             
             fdnames = {'controlPolicy'     , ...
+                       'lowerCutoffVoltage', ...
+                       'upperCutoffVoltage', ... 
                        'CRate'};
             model = dispatchParams(model, paramobj, fdnames);
             
