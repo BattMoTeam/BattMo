@@ -1,4 +1,4 @@
-function paramobj = setupBatteryGridFromJson(paramobj, jsonstruct)
+function [paramobj, gridGenerator] = setupBatteryGridFromJson(paramobj, jsonstruct)
 
     switch jsonstruct.Geometry.case
 
@@ -25,7 +25,7 @@ function paramobj = setupBatteryGridFromJson(paramobj, jsonstruct)
         gen.penx   = jsonstruct.PositiveElectrode.ActiveMaterial.N;
         
         % Now, we update the paramobj with the properties of the mesh. 
-        paramobj = gen.updateBatteryInputParams(paramobj);
+        [paramobj, gen] = gen.updateBatteryInputParams(paramobj);
 
       case {'2D-demo', '3d-demo'}
 
@@ -111,12 +111,14 @@ function paramobj = setupBatteryGridFromJson(paramobj, jsonstruct)
             
         end
         
-        paramobj = gen.updateBatteryInputParams(paramobj, params);
+        [paramobj, gen] = gen.updateBatteryInputParams(paramobj, params);
         
       otherwise
         
         error('Geometry case not recognized')
         
     end
+
+    gridGenerator = gen;
 
 end
