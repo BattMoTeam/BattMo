@@ -20,7 +20,7 @@ classdef ComputationalGraphTool
             % - column index      : output variable index (as in cgt.varNameList)
             % - row index         : input variable (as in cgt.varNameList)
             % - coefficient value : property function index as in model.propertyFunctionList
-            A         = adjacency(g, 'weighted');
+            A = adjacency(g, 'weighted');
 
             cgt.A           = A;
             cgt.varNameList = varNameList;

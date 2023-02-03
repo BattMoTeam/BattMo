@@ -86,16 +86,12 @@ classdef Electrolyte < ElectroChemicalComponent
 
             model = registerVarAndPropfuncNames@ElectroChemicalComponent(model);
 
-            varnames = { VarName({}, 'cs', 2)     , ...
-                         'D'                      , ...
+            varnames = { 'D'                      , ...
                          VarName({}, 'dmudcs', 2) , ...
                          'conductivity'           , ...
                          VarName({}, 'jchems', 2) , ...
                          'diffFlux'};
             model = model.registerVarNames(varnames);
-
-            fn = @Electrolyte.updateConcentrations;
-            model = model.registerPropFunction({VarName({}, 'cs', 2), fn, {'c'}});
 
             fn = @Electrolyte.updateConductivity;
             model = model.registerPropFunction({'conductivity', fn, {'c', 'T'}});
@@ -108,7 +104,11 @@ classdef Electrolyte < ElectroChemicalComponent
             model = model.registerPropFunction({'D', fn, {'c', 'T'}});
 
             fn = @Electrolyte.updateCurrent;
-            model = model.registerPropFunction({'j', fn, {'phi', VarName({}, 'jchems', 2), 'conductivity'}});
+            inputnames = {'phi'                   , ...
+                          VarName({}, 'jchems', 2), ...
+                          VarName({}, 'dmudcs', 2), ...
+                          'conductivity'};
+            model = model.registerPropFunction({'j', fn, inputnames});
 
             fn = @Electrolyte.updateMassFlux;
             model = model.registerPropFunction({'massFlux', fn, {'c', 'j', 'D'}});
@@ -122,15 +122,6 @@ classdef Electrolyte < ElectroChemicalComponent
             
         end
 
-        function state = updateConcentrations(model, state)
-
-            cs = cell(2, 1);
-            cs{1} = state.c;
-            cs{2} = state.c;
-
-            state.cs = cs;
-
-        end
 
         function state = updateAccumTerm(model, state, state0, dt)
 
@@ -146,7 +137,7 @@ classdef Electrolyte < ElectroChemicalComponent
             
             computeConductivity = model.computeConductivityFunc;
 
-            c = state.cs{1};
+            c = state.c;
             T = state.T;
             
             state.conductivity = computeConductivity(c, T);
@@ -157,9 +148,9 @@ classdef Electrolyte < ElectroChemicalComponent
 
             ncomp = model.ncomp; % number of components
 
-            cLi          = state.cs{1}; % concentration of Li+
-            T            = state.T;     % temperature
-            phi          = state.phi;   % potential
+            cLi          = state.c;   % concentration of Li+
+            T            = state.T;   % temperature
+            phi          = state.phi; % potential
 
             cs  = state.cs;
 
