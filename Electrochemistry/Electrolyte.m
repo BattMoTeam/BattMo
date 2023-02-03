@@ -89,23 +89,20 @@ classdef Electrolyte < ElectroChemicalComponent
             varnames = { 'D'                      , ...
                          VarName({}, 'dmudcs', 2) , ...
                          'conductivity'           , ...
-                         VarName({}, 'jchems', 2) , ...
                          'diffFlux'};
             model = model.registerVarNames(varnames);
 
             fn = @Electrolyte.updateConductivity;
             model = model.registerPropFunction({'conductivity', fn, {'c', 'T'}});
 
-            fn = @Electrolyte.updateChemicalCurrent;
+            fn = @Electrolyte.updateDmuDcs;
             model = model.registerPropFunction({VarName({}, 'dmudcs', 2), fn, {'c', 'T'}});
-            model = model.registerPropFunction({VarName({}, 'jchems', 2), fn, {'c', 'T'}});
 
             fn = @Electrolyte.updateDiffusionCoefficient;
             model = model.registerPropFunction({'D', fn, {'c', 'T'}});
 
             fn = @Electrolyte.updateCurrent;
             inputnames = {'phi'                   , ...
-                          VarName({}, 'jchems', 2), ...
                           VarName({}, 'dmudcs', 2), ...
                           'conductivity'};
             model = model.registerPropFunction({'j', fn, inputnames});
@@ -144,7 +141,7 @@ classdef Electrolyte < ElectroChemicalComponent
             
         end
 
-        function state = updateChemicalCurrent(model, state)
+        function state = updateDmuDcs(model, state)
 
             ncomp = model.ncomp; % number of components
 

@@ -892,7 +892,7 @@ classdef Battery < BaseModel
 
             state.(elyte) = battery.(elyte).updateCurrentBcSource(state.(elyte));
             state.(elyte) = battery.(elyte).updateConductivity(state.(elyte));
-            state.(elyte) = battery.(elyte).updateChemicalCurrent(state.(elyte));
+            state.(elyte) = battery.(elyte).updateDmuDcs(state.(elyte));
             state.(elyte) = battery.(elyte).updateCurrent(state.(elyte));
             state.(elyte) = battery.(elyte).updateChargeConservation(state.(elyte));
 
