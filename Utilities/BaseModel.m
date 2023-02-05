@@ -10,6 +10,8 @@ classdef BaseModel < PhysicalModel
         % separatly)
         staticVarNameList
 
+        extraVarNameList % properties that are not used in assembly of the residuals, those has been typically introduced for post-processing.
+       
         computationalGraph
     end
         
@@ -22,6 +24,7 @@ classdef BaseModel < PhysicalModel
             model.propertyFunctionList = {};
             model.varNameList          = {};
             model.subModelNameList     = {};
+            model.extraVarNameList     = {};
             
         end
 
@@ -79,6 +82,26 @@ classdef BaseModel < PhysicalModel
             end
         end
 
+        
+        function model = setAsExtraVarNames(model, varnames)
+            for ivar = 1 : numel(varnames)
+                model = model.setAsExtraVarName(varnames{ivar});
+            end
+        end
+        
+        function model = setAsExtraVarName(model, varname)
+
+            if isa(varname, 'char')
+                varname = VarName({}, varname);
+                model = model.setAsExtraVarName(varname);
+            elseif isa(varname, 'cell')
+                varname = VarName(varname(1 : end - 1), varname{end});
+                model = model.setAsExtraVarName(varname);
+            elseif isa(varname, 'VarName')
+                model.extraVarNameList{end + 1} = varname;
+            end
+        end
+        
         
         function model = removeVarNames(model, varnames)
             for ivar = 1 : numel(varnames)
@@ -221,10 +244,11 @@ classdef BaseModel < PhysicalModel
         
         function model = registerSubModels(model)
 
-            propfuncs  = model.propertyFunctionList;
-            varnames   = model.varNameList;
-            scvarnames = model.staticVarNameList;
-
+            propfuncs   = model.propertyFunctionList;
+            varnames    = model.varNameList;
+            scvarnames  = model.staticVarNameList;
+            addvarnames = model.extraVarNameList;
+            
             submodelnames = model.getSubModelNames();
             
             for isub = 1 : numel(submodelnames)
@@ -280,13 +304,24 @@ classdef BaseModel < PhysicalModel
                 end
                 
                 scvarnames = mergeList(scvarnames, subscvarnames);
+
+                % Register the static variables
+                subaddvarnames = submodel.extraVarNameList;
                 
+                for isubvar = 1 : numel(subaddvarnames)
+                    subaddvarname = subaddvarnames{isubvar};
+                    subaddvarname.namespace = {submodelname, subaddvarname.namespace{:}};
+                    subaddvarnames{isubvar} = subaddvarname;
+                end
+                
+                addvarnames = mergeList(addvarnames, subaddvarnames);
                 
             end
             
-             model.varNameList          = varnames;
-             model.propertyFunctionList = propfuncs;
-             model.staticVarNameList    = scvarnames;
+             model.varNameList           = varnames;
+             model.propertyFunctionList  = propfuncs;
+             model.staticVarNameList     = scvarnames;
+             model.extraVarNameList = addvarnames;
              
         end
         
