@@ -89,7 +89,7 @@ end
             plotElectricPotential(model,states{i},'domain','PositiveActiveMaterial')
             hold off
             colormap(gca, fs.colormap_concentration);
-            %caxis([min(states{1}.Electrolyte.cs{1}), max(states{end}.Electrolyte.cs{1})]);
+            %caxis([min(states{1}.Electrolyte.c), max(states{end}.Electrolyte.c)]);
             colorbar();
             cbar = get(gca, 'Colorbar');
             cbar.Color = fs.fontColor;

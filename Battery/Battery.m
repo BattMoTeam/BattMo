@@ -295,21 +295,27 @@ classdef Battery < BaseModel
             sd      = 'SolidDiffusion';
             thermal = 'ThermalModel';
             ctrl    = 'Control';
+
+            if ~model.use_thermal
+                % we register the temperature variable, as it is not done by the ThermalModel which is empty in this case
+                model = model.registerVarName({thermal, 'T'});
+            end
             
             varnames = {{ne, am, 'E'}, ...
                         {ne, am, 'I'}};
             model = model.removeVarNames(varnames);
+
+            eldes = {ne, pe};
+
             
             %% Temperature dispatch functions
             fn = @Battery.updateTemperature;
             
             inputnames = {{thermal, 'T'}};
-            model = model.registerPropFunction({{ne, am, 'T'} , fn, inputnames});
-            model = model.registerPropFunction({{pe, am, 'T'} , fn, inputnames});
             model = model.registerPropFunction({{elyte, 'T'}  , fn, inputnames});
-            if model.include_current_collectors
-            model = model.registerPropFunction({{pe, cc , 'T'}, fn, inputnames});  
-                model = model.registerPropFunction({{ne, cc , 'T'}, fn, inputnames});
+            for ielde = 1 : numel(eldes)
+                elde = eldes{ielde};
+                model = model.registerPropFunction({{elde, am, 'T'} , fn, inputnames});
             end
                   
             %% Coupling functions
@@ -341,6 +347,14 @@ classdef Battery < BaseModel
             end
             model = model.registerPropFunction({{ctrl, 'EIequation'}, fn, inputnames});
 
+
+            inputnames = {};
+            fn = @Battery.updateControl;
+            fn = {fn, @(propfunction) PropFunction.drivingForceFuncCallSetupFn(propfunction)};
+            model = model.registerPropFunction({{ctrl, 'ctrlVal'}, fn, inputnames});            
+            model = model.registerPropFunction({{ctrl, 'ctrlType'}, fn, inputnames});
+            
+            
             %% Function that update the Thermal Ohmic Terms
             
             if model.use_thermal
@@ -381,12 +395,15 @@ classdef Battery < BaseModel
                               {pe, am, itf, 'eta'} , ...
                               {pe, am, itf, 'dUdT'}};
                 model = model.registerPropFunction({{thermal, 'jHeatReactionSource'}, fn, inputnames});
-                
+
+            else
+                model = model.removeVarName({elyte, 'diffFlux'});
+                model = model.removeVarName({ne, am, itf, 'dUdT'});
+                model = model.removeVarName({pe, am, itf, 'dUdT'});
             end
             
             %% Functions that setup external  coupling for negative electrode
             
-            eldes = {ne, pe};
 
             fns{1} = @Battery.setupExternalCouplingNegativeElectrode;
             fns{2} = @Battery.setupExternalCouplingPositiveElectrode;
@@ -439,15 +456,6 @@ classdef Battery < BaseModel
                     end
                         
                 end
-
-            end
-
-            if model.include_current_collectors
-                
-                varnames = {{ne, am, 'jExternal'}, ...
-                            {pe, am, 'jExternal'}};
-                
-                model = model.removeVarNames(varnames);
 
             end
             
@@ -870,8 +878,6 @@ classdef Battery < BaseModel
             % temperature
             state = battery.updateTemperature(state);
 
-            state.(elyte) = battery.(elyte).updateConcentrations(state.(elyte));
-            
             for ind = 1 : numel(electrodes)
                 elde = electrodes{ind};
                 % potential and concentration between interface and active material
@@ -935,7 +941,7 @@ classdef Battery < BaseModel
 
             state.(elyte) = battery.(elyte).updateCurrentBcSource(state.(elyte));
             state.(elyte) = battery.(elyte).updateConductivity(state.(elyte));
-            state.(elyte) = battery.(elyte).updateChemicalCurrent(state.(elyte));
+            state.(elyte) = battery.(elyte).updateDmuDcs(state.(elyte));
             state.(elyte) = battery.(elyte).updateCurrent(state.(elyte));
             state.(elyte) = battery.(elyte).updateChargeConservation(state.(elyte));
 
@@ -1561,7 +1567,7 @@ classdef Battery < BaseModel
             
             eldes = {ne, pe};
             phi_elyte = state.(elyte).phi;
-            c_elyte = state.(elyte).cs{1};
+            c_elyte = state.(elyte).c;
             
             elyte_cells = zeros(model.G.cells.num, 1);
             elyte_cells(bat.(elyte).G.mappings.cellmap) = (1 : bat.(elyte).G.cells.num)';

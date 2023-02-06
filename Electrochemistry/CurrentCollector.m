@@ -48,6 +48,8 @@ classdef CurrentCollector < ElectronicComponent
                 fn = @CurrentCollector.updatejFaceBc;
                 model = model.registerPropFunction({'jFaceBc', fn, {'jFaceCoupling', 'jFaceExternal'}});
             end
+
+            model = model.removeVarName('T');
             
         end
         

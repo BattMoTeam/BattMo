@@ -270,6 +270,8 @@ classdef ActiveMaterial < ElectronicComponent
                 model = model.registerPropFunction({'massAccum', fn, {'c'}});
             end
 
+            % we remove this declaration as it is not used in assembly (otherwise it may be computed but not used)
+            model = model.removeVarName('SOC');
            
         end
         
