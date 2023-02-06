@@ -5,7 +5,7 @@ close all
 
 %% Import the required modules from MRST
 % load MRST modules
-mrstModule add ad-core mrst-gui mpfa
+mrstModule add ad-core mrst-gui mpfa matlab_bgl
 
 %% shortcuts
 
