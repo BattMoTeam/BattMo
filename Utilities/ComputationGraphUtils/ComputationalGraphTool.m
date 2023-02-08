@@ -75,7 +75,7 @@ classdef ComputationalGraphTool
 
         end
 
-        function [varnames, varnameinds, propfuncinds, distance] = getDependencyFunctionList(cgt, varname)
+        function [varnames, varnameinds, propfuncinds, distance] = getDependencyList(cgt, varname)
 
             A = cgt.A;
             
@@ -101,7 +101,7 @@ classdef ComputationalGraphTool
             
         end
         
-        function printDependencyFunctionCallList(cgt, varname)
+        function printDependencyList(cgt, varname)
         % input varname is either
         %     - a VarName instance
         %     - a cell which then uses shortcuts for VarName (see implementation below)
@@ -118,7 +118,7 @@ classdef ComputationalGraphTool
                 indSelectedNodenames = cellfun(@(x) ~isempty(x), indSelectedNodenames);
                 varnameind = find(indSelectedNodenames);
                 if numel(varnameind) > 1
-                    fprintf('Several variables found:\n')
+                    fprintf('Several variables found:\n\n')
                     for ivar = 1 : numel(varnameind)
                         fprintf('%s\n', nodenames{varnameind(ivar)});
                     end
@@ -130,11 +130,11 @@ classdef ComputationalGraphTool
                 error('input varname not recognized');
             end
 
-            [varnames, varnameinds, propfuncinds, distance] = cgt.getDependencyFunctionList(varname);
+            [varnames, varnameinds, propfuncinds, distance] = cgt.getDependencyList(varname);
 
             for ivar = 1 : numel(varnameinds)
                 varnameind = varnameinds(ivar);
-                fprintf('%s (distance : %d)\n', nodenames{varnameind}, distance(ivar));
+                fprintf('%s (%d)\n', nodenames{varnameind}, distance(ivar));
             end
 
         end
@@ -237,10 +237,7 @@ classdef ComputationalGraphTool
             for iprop = 1 : numel(propfuncs)
 
                 propfunc = propfuncs{iprop};
-                varnameind = varnameinds(iprop);
-                
                 fncallstr = propfunc.functionCallSetupFn(propfunc);
-
                 funcCallList{end + 1} = fncallstr;
                 
             end
