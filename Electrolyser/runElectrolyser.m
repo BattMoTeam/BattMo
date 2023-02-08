@@ -28,12 +28,12 @@ if doplotgraph
 end
 
 model = model.validateModel();
-[model, initstate] = model.setupBcAndInitialState();
-
 cgt = model.computationalGraph;
 
-total = 1*minute;
-n  = 100;
+[model, initstate] = model.setupBcAndInitialState();
+
+total = 0.1*minute;
+n  = 10;
 dt = total/n;
 
 controlI = -1e-2; % if negative, H2  is produced
