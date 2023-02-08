@@ -75,6 +75,70 @@ classdef ComputationalGraphTool
 
         end
 
+        function [varnames, varnameinds, propfuncinds, distance] = getDependencyFunctionList(cgt, varname)
+
+            A = cgt.A;
+            
+            % for cell-valued variable pick-up a valid index
+            if (varname.dim > 1) && (ischar(varname.index))
+                varname.index = 1;
+            elseif isnumeric(varname.index) && (numel(varname.index) > 1)
+                varname.index = varname.index(1);
+            end
+            
+            varnameind = cgt.getVarNameIndex(varname);
+
+            distance = dfs(A, varnameind);
+            
+            varnameinds = find(distance >= 0);
+            distance    = distance(distance >= 0);
+            [distance, ia] = sort(distance);
+            varnameinds = varnameinds(ia);
+
+            propfuncinds = max(A(:, varnameinds), [], 1);
+
+            varnames = cgt.varNameList(varnameinds);
+            
+        end
+        
+        function printDependencyFunctionCallList(cgt, varname)
+        % input varname is either
+        %     - a VarName instance
+        %     - a cell which then uses shortcuts for VarName (see implementation below)
+        %     - a string giving a regexp. It will be used to select varnames by the string name
+
+            nodenames = cgt.nodenames;
+
+            if isa(varname, 'VarName')
+                % ok
+            elseif isa(varname, 'cell')
+                varname = VarName(varname(1 : end - 1), varname{end});
+            elseif isa(varname, 'char')
+                indSelectedNodenames = regexp(nodenames, varname, 'once');
+                indSelectedNodenames = cellfun(@(x) ~isempty(x), indSelectedNodenames);
+                varnameind = find(indSelectedNodenames);
+                if numel(varnameind) > 1
+                    fprintf('Several variables found:\n')
+                    for ivar = 1 : numel(varnameind)
+                        fprintf('%s\n', nodenames{varnameind(ivar)});
+                    end
+                    fprintf('\npick a single one\n')
+                    return
+                end
+                varname = cgt.varNameList{varnameind};
+            else
+                error('input varname not recognized');
+            end
+
+            [varnames, varnameinds, propfuncinds, distance] = cgt.getDependencyFunctionList(varname);
+
+            for ivar = 1 : numel(varnameinds)
+                varnameind = varnameinds(ivar);
+                fprintf('%s (distance : %d)\n', nodenames{varnameind}, distance(ivar));
+            end
+
+        end
+
         function [propfuncs, propfuncinds, varnameinds] = getPropFunctionList(cgt, propfunc)
 
         % Get the list of property functions and the corresponding indices (with respecto to
@@ -146,7 +210,7 @@ classdef ComputationalGraphTool
         % - an instance of PropFunction
         % - a valid input for findPropFunction, that is, either
         %     - a VarName instance
-        %     - a cell which then uses shortcuts for VarName (see implementation below)
+        %     - a cell which then uses shortcuts for VarName (see implementation in findPropFunction)
         %     - a string giving a regexp. It will be used to select varnames by the string name
         %   In this case, findPropFunction is first run to obtain a list of propfunctions
         % setup the list of function call (as list of cell of strings) that will be run to update the property function propfunc.
