@@ -48,7 +48,7 @@
       "MW" : 0.0561056
     },
     "catalystLayerType" : "Platinium",
-    "CatalystLayer" : { "j0": 7,
+    "CatalystLayer" : { "j0": 8.885,
                         "E0" : -1.6554,
                         "sp" : {"OH" : {"z" : -1,
                                         "c0" : 1000}},
@@ -103,7 +103,7 @@
       "MW" : 0.0561056
     },
     "catalystLayerType" : "Iridium",
-    "CatalystLayer" : { "j0": 1e-3,
+    "CatalystLayer" : { "j0": 0.256,
                         "E0" : 1.2287,
                         "sp" : {"OH" : {"z" : -1,
                                         "c0" : 1000}},
