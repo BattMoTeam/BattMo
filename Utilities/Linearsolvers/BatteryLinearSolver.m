@@ -146,6 +146,12 @@ classdef BatteryLinearSolver < handle
             t_prepare = toc(timer);
             % Solve the system
             [result, report] = solver.solveLinearSystem(A, b, x0, problem);
+
+            if report.Failed
+                dx = [];
+                return
+            end
+            
             t_solve = toc(timer) - t_prepare;
             % Undo scaling
             result = solver.undoScaling(result, scaling);
@@ -309,19 +315,28 @@ classdef BatteryLinearSolver < handle
 
                     gopts = setup.gmres_options;
 
-                    [result, flag, relres, iter, resvec] = gmres(A, b         , ...
-                                                                 gopts.restart, ...
-                                                                 gopts.tol    , ...
-                                                                 gopts.maxit  , ...
-                                                                 precond);
-                    
-
-                    % add diagnostic fields in report
-                    report.Iterations         = (iter(1) - 1)*gopts.maxit + iter(2);
-                    report.Residual           = relres;
-                    report.Converged          = flag;
-                    report.LinearSolutionTime = toc(a);
-                    report.precondReports     = solver.precondReports;
+                    try
+                        [result, flag, relres, iter, resvec] = gmres(A, b         , ...
+                                                                     gopts.restart, ...
+                                                                     gopts.tol    , ...
+                                                                     gopts.maxit  , ...
+                                                                     precond);
+                        % add diagnostic fields in report
+                        report.Iterations         = (iter(1) - 1)*gopts.maxit + iter(2);
+                        report.Residual           = relres;
+                        report.Converged          = false;
+                        if flag == 0
+                            report.Converged = true;
+                        end
+                        report.LinearSolutionTime = toc(a);
+                        report.precondReports     = solver.precondReports;
+                        report.Failed             = false;
+                    catch
+                        report.Converged = false;
+                        report.Failed    = true;
+                        result = [];
+                        return
+                    end
 
                     if solver.verbose
 

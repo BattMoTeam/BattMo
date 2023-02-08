@@ -41,7 +41,7 @@ nwidths = [widthDict('PositiveActiveMaterial');...
 dr = sum(nwidths);
 
 % Outer radius of the jelly roll
-rOuter = 46*milli*meter/2;
+rOuter = 22.36*milli*meter;
 % Height of the jelly roll
 L = 80*milli*meter; 
 
@@ -50,13 +50,12 @@ dR = rOuter - rInner;
 nwindings = ceil(dR/dr);
 
 % number of discretization cells in radial direction for each component.
-nrDict = containers.Map( ...
-    {'ElectrolyteSeparator',... 
-     'NegativeActiveMaterial',...
-     'NegativeCurrentCollector',...
-     'PositiveActiveMaterial',...
-     'PositiveCurrentCollector'},...
-    [3, 3, 3, 3, 3]); 
+nrDict = containers.Map({'ElectrolyteSeparator'    , ... 
+                         'NegativeActiveMaterial'  , ...
+                         'NegativeCurrentCollector', ...
+                         'PositiveActiveMaterial'  , ...
+                         'PositiveCurrentCollector'}, ...
+                        [3, 3, 3, 3, 3]); 
 
 % Number of discretization cells in the angular direction
 nas = 10; 
@@ -69,7 +68,7 @@ tabparams.tabcase   = 'aligned tabs';
 tabparams.width     = 3*milli*meter;
 tabparams.fractions = linspace(0.01, 0.9, 6);
 
-testing = false;
+testing = true;
 if testing
     fprintf('We setup a smaller case for quicker testing\n');
     rOuter = 10*milli*meter/2;
@@ -119,7 +118,6 @@ paramobj.(pe).(am).InterDiffusionCoefficient = 0;
 % paramobj.(pe).(am).(sd).N = 5;
 
 paramobj = paramobj.validateInputParams();
-
 
 % th = 'ThermalModel';
 % paramobj.(th).externalHeatTransferCoefficientSideFaces = 100*watt/meter^2;
@@ -263,8 +261,6 @@ nls.errorOnFailure = true;
 model.nonlinearTolerance = 1e-3*model.Control.Imax;
 % Set verbosity
 model.verbose = true;
-
-
 
 dopacked = true;
 
