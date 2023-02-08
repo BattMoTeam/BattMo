@@ -132,7 +132,7 @@ function  output = runBatteryJson(jsonstruct, varargin)
         paramobj.initT = jsonstruct.initT;
         paramobj.SOC = jsonstruct.SOC;
       case "given input"
-        error('interface not yet implemented');
+        eval(jsonstruct.loadStateCmd);
       otherwise
         error('initializationSetup not recognized');
     end
@@ -203,7 +203,7 @@ function  output = runBatteryJson(jsonstruct, varargin)
       case "given SOC"
         initstate = model.setupInitialState();
       case "given input"
-        error('interface not yet implemented');
+        % allready handled
       otherwise
         error('initializationSetup not recognized');
     end
