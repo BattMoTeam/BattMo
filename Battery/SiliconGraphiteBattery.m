@@ -141,11 +141,11 @@ classdef SiliconGraphiteBattery < Battery
 
             model = validateModel@BaseModel(model, varargin{:});
 
-            if isempty(model.computationalGraph)
+            if isempty(model.funcCallList)
                 model = model.setupComputationalGraph();
                 cgt = model.computationalGraph;
                 model.primaryVarNames = cgt.getPrimaryVariables();
-                model.funcCallList = cgt.setOrderedFunctionCallList();
+                model.funcCallList = cgt.getOrderedFunctionCallList();
             end
             
         end

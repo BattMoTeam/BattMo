@@ -152,6 +152,7 @@ paramobj.scenario = 'discharge';
 paramobj = paramobj.validateInputParams();
 
 model = SiliconGraphiteBattery(paramobj);
+model = model.setupComputationalGraph();
 
 initstate = chargeStates{end};
 
