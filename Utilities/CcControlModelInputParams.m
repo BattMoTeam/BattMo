@@ -1,21 +1,18 @@
-classdef SectorBatteryGenerator < SpiralBatteryGenerator
+classdef CcControlModelInputParams < ControlModelInputParams
 
     methods
-        
-        function gen = SectorBatteryGenerator()
-            gen = gen@SpiralBatteryGenerator();  
-        end
-        
-        function [paramobj, gen] = setupGrid(gen, paramobj, params)
-    
-            gen = sectorGrid(gen);
-            paramobj.G = gen.G;
+
+        function paramobj = CcControlModelInputParams(jsonstruct);
+            
+            paramobj = paramobj@ControlModelInputParams(jsonstruct);
+            paramobj.controlPolicy = 'CC';
             
         end
 
     end
     
 end
+
 
 
 %{

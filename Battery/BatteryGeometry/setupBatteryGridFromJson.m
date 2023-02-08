@@ -1,4 +1,4 @@
-function paramobj = setupBatteryGridFromJson(paramobj, jsonstruct)
+function [paramobj, gridGenerator] = setupBatteryGridFromJson(paramobj, jsonstruct)
 
     switch jsonstruct.Geometry.case
 
@@ -25,13 +25,13 @@ function paramobj = setupBatteryGridFromJson(paramobj, jsonstruct)
         gen.penx   = jsonstruct.PositiveElectrode.ActiveMaterial.N;
         
         % Now, we update the paramobj with the properties of the mesh. 
-        paramobj = gen.updateBatteryInputParams(paramobj);
+        [paramobj, gen] = gen.updateBatteryInputParams(paramobj);
 
       case {'2D-demo', '3d-demo'}
 
         error('not yet implemented');
 
-      case 'jellyRoll'
+      case {'jellyRoll', 'sectorModel'}
 
         % Prepare input for SpiralBatteryGenerator.updateBatteryInputParams using json input
         
@@ -58,8 +58,6 @@ function paramobj = setupBatteryGridFromJson(paramobj, jsonstruct)
         nL     = jsonstruct.Geometry.nL;
         nas    = jsonstruct.Geometry.nas;
 
-        tabparams = jsonstruct.Geometry.tabparams;
-
         nrDict = containers.Map();
         nrDict('ElectrolyteSeparator')     = jsonstruct.Electrolyte.Separator.N;
         nrDict('NegativeActiveMaterial')   = jsonstruct.NegativeElectrode.ActiveMaterial.N;
@@ -79,24 +77,48 @@ function paramobj = setupBatteryGridFromJson(paramobj, jsonstruct)
         dr = sum(nwidths);dR = rOuter - rInner; 
         % Computed number of windings
         nwindings = ceil(dR/dr);
-        
-        spiralparams = struct('nwindings'   , nwindings, ...
-                              'rInner'      , rInner   , ...
-                              'widthDict'   , widthDict, ...
-                              'nrDict'      , nrDict   , ...
-                              'nas'         , nas      , ...
-                              'L'           , L        , ...
-                              'nL'          , nL       , ...
-                              'tabparams'   , tabparams, ...
-                              'angleuniform', true); 
-        
-        gen = SpiralBatteryGenerator(); 
-        paramobj = gen.updateBatteryInputParams(paramobj, spiralparams);
 
+        ne = 'NegativeElectrode';
+        pe = 'PositiveElectrode';
+        cc = 'CurrentCollector';
+        
+        params = struct('nwindings', nwindings, ...
+                        'rInner'   , rInner   , ...
+                        'widthDict', widthDict, ...
+                        'nrDict'   , nrDict   , ...
+                        'nas'      , nas      , ...
+                        'L'        , L        , ...
+                        'nL'       , nL       ); 
+
+        switch jsonstruct.Geometry.case
+
+          case 'jellyRoll'
+
+            tabparams.NegativeElectrode = jsonstruct.(ne).(cc).tabparams;
+            tabparams.PositiveElectrode = jsonstruct.(pe).(cc).tabparams;
+            params.tabparams = tabparams;
+            params.angleuniform = true;
+
+            gen = SpiralBatteryGenerator();
+            
+          case 'sectorModel'
+
+            gen = SectorBatteryGenerator();
+
+          otherwise
+
+            error('Geometry.case not recognized');
+            
+        end
+        
+        [paramobj, gen] = gen.updateBatteryInputParams(paramobj, params);
+        
       otherwise
         
         error('Geometry case not recognized')
         
     end
+
+    gridGenerator = gen;
 
 end

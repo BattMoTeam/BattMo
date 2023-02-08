@@ -6,6 +6,7 @@ classdef ComputationalGraphTool
         varNameList
         nodenames
         staticprops
+        extraVarNameInds % index relative with respect to varNameList
     end
     
     methods
@@ -20,18 +21,18 @@ classdef ComputationalGraphTool
             % - column index      : output variable index (as in cgt.varNameList)
             % - row index         : input variable (as in cgt.varNameList)
             % - coefficient value : property function index as in model.propertyFunctionList
-            A         = adjacency(g, 'weighted');
+            A = adjacency(g, 'weighted');
 
             cgt.A           = A;
             cgt.varNameList = varNameList;
             cgt.nodenames   = g.Nodes.Variables;
             cgt.staticprops = staticprops;
 
-            cgt = cgt.setupOrderedComputationalGraph();
+            cgt = cgt.setupComputationalGraph();
 
         end
 
-        function cgt = setupOrderedComputationalGraph(cgt)
+        function cgt = setupComputationalGraph(cgt)
 
             A            = cgt.A;
             varNameList  = cgt.varNameList;
@@ -60,10 +61,17 @@ classdef ComputationalGraphTool
                 staticprops{istat}.varnameind = varnameind;
             end
 
-            cgt.A           = A;
             cgt.varNameList = varNameList;
+            cgt.A           = A;
             cgt.nodenames   = nodenames;
             cgt.staticprops = staticprops;
+
+            extraVarNames = cgt.model.extraVarNameList;
+            extraVarNameInds = [];
+            for ivar = 1 : numel(extraVarNames);
+                extraVarNameInds(end + 1) = cgt.getVarNameIndex(extraVarNames{ivar});
+            end
+            cgt.extraVarNameInds = extraVarNameInds;
 
         end
 
@@ -505,12 +513,20 @@ classdef ComputationalGraphTool
 
         function printTailVariables(cgt)
         % Print the tail variables of the computational graph
-            A = cgt.A;
-            nodenames = cgt.nodenames;
-
-            %% print tail variables
+            
+            A              = cgt.A;
+            nodenames      = cgt.nodenames;
+            extravarnameinds = cgt.extraVarNameInds;
+            
+            tailinds = find(all(A' == 0, 1));
+            isadded = ismember(tailinds, extravarnameinds);
+            tailinds = tailinds(~isadded);
+            
             fprintf('Tail variables \n');
-            nodenames(all(A' == 0, 1))
+            nodenames(tailinds)
+
+            fprintf('Extra Variables (do not enter in residual evaluation)\n')
+            nodenames(extravarnameinds)
             
         end        
 
@@ -548,8 +564,9 @@ classdef ComputationalGraphTool
         
         function funcCallList = setOrderedFunctionCallList(cgt)
         % Return a list of strings that corresponds to all the function calls ordered in the right order.
-            A           = cgt.A;
-            staticprops = cgt.staticprops;
+            A              = cgt.A;
+            staticprops    = cgt.staticprops;
+            extraVarNameInds = cgt.extraVarNameInds;
             
             funcCallList = {};
 
@@ -560,10 +577,15 @@ classdef ComputationalGraphTool
                     iprop = staticprops{istatic}.propind;
                     propfunction = cgt.model.propertyFunctionList{iprop};
                     funcCallList{end + 1} = propfunction.getFunctionCallString();
-                    
+
                 end
                 
             end
+
+            nA = size(A, 2);
+            ind = true(nA, 1);
+            ind(extraVarNameInds) = false;
+            A = A(ind, ind);
             
             for ind = 1 : size(A, 2)
                 iprop = full(A(:, ind));
@@ -580,7 +602,6 @@ classdef ComputationalGraphTool
 
             ia = sort(ia); % Not sure if it is necessary, but in this way we make sure the ordering for which  funcCallList was built is respected
             funcCallList = funcCallList(ia);
-
 
         end
 

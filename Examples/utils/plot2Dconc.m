@@ -29,7 +29,7 @@ for ind = 1 : numel(states)
     
     subplot(3, 2, 1);
     cla
-    plotCellData(model.(elyte).G, state.(elyte).cs{1});
+    plotCellData(model.(elyte).G, state.(elyte).c);
     colorbar
     title('cLi (elyte)');
     

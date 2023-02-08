@@ -49,7 +49,7 @@ end
         % Plot Charge Carrier Concentration
         subplot(1,2,2), plotChargeCarrierConcentration(model,states{i})
             colormap(gca, fs.colormap_concentration);
-            %caxis([min(states{1}.Electrolyte.cs{1}), max(states{end}.Electrolyte.cs{1})]);
+            %caxis([min(states{1}.Electrolyte.c), max(states{end}.Electrolyte.c)]);
             colorbar();
             cbar = get(gca, 'Colorbar');
             cbar.Color = fs.fontColor;
@@ -72,7 +72,7 @@ end
             % Plot Charge Carrier Concentration
             figure(2), plotChargeCarrierConcentration(model,states{i})
             colormap(gca, fs.colormap_concentration);
-            caxis([min(states{1}.Electrolyte.cs{1}), max(states{end}.Electrolyte.cs{1})]);
+            caxis([min(states{1}.Electrolyte.c), max(states{end}.Electrolyte.c)]);
             colorbar();
             cbar = get(gca, 'Colorbar');
             cbar.Color = fs.fontColor;

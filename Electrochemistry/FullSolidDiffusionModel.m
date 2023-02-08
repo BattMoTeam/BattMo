@@ -98,6 +98,7 @@ classdef FullSolidDiffusionModel < SolidDiffusionModel
             model = model.registerPropFunction({'massSource', fn, {'Rvol'}});
             
             fn = @FullSolidDiffusionModel.updateMassAccum;
+            fn = {fn, @(propfunction) PropFunction.accumFuncCallSetupFn(propfunction)};
             model = model.registerPropFunction({'massAccum', fn, {'c'}});
             
             fn = @FullSolidDiffusionModel.assembleSolidDiffusionEquation;
@@ -105,6 +106,9 @@ classdef FullSolidDiffusionModel < SolidDiffusionModel
             
             fn = @FullSolidDiffusionModel.updateAverageConcentration;
             model = model.registerPropFunction({'cAverage', fn, {'c'}});
+
+            % we remove this declaration as it is not used in assembly (otherwise it may be computed but not used)
+            model = model.removeVarName('cAverage');
             
         end
         

@@ -9,7 +9,7 @@ classdef ThermalComponentInputParams < ComponentInputParams
         externalHeatTransferCoefficientTopFaces  % scalar value
         externalHeatTransferCoefficientSideFaces % scalar value
         externalTemperature                      % 
-        
+
     end
     
     methods

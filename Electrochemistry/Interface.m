@@ -88,15 +88,15 @@ classdef Interface < BaseModel
             varnames{end + 1} = 'cElectrolyte';
             % Electrode over potential
             varnames{end + 1} = 'eta';
-            % Reaction rate in mol/(s*m^2)
+            % Reaction rate [mol s^-1 m^-2]
             varnames{end + 1} = 'R';
             % External potential drop used in Butler-Volmer
             % varnames{end + 1} = 'externalPotentialDrop';
             % 
             varnames{end + 1} = 'dUdT';
-            % OCP
+            % OCP [V]
             varnames{end + 1} = 'OCP';
-            % Reaction rate coefficient
+            % Reaction rate coefficient [A m^-2]
             varnames{end + 1} = 'j0';
             
             model = model.registerVarNames(varnames);

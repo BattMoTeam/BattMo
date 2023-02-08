@@ -29,8 +29,6 @@ function output = radialGrid(params)
     nas       = params.nas;
     L         = params.L;
     nL        = params.nL;
-    tabparams = params.tabparams;
-
 
     %% component names
     
@@ -104,7 +102,7 @@ function output = radialGrid(params)
     nodetbl.indj = rldecode((1 : (m + 1))', (n + 1)*ones(m + 1, 1));
     nodetbl = IndexArray(nodetbl);
 
-    % We add cartesian indexing for the vertical faces (in original cartesian block)
+    % We add cartesian indexing for the faces that are aligned in the radial direction
     vertfacetbl.faces = (1 : (n + 1)*m)';
     vertfacetbl.indi = repmat((1 : (n + 1))', m, 1);
     vertfacetbl.indj = rldecode((1 : m)', (n + 1)*ones(m, 1));
@@ -285,10 +283,8 @@ function output = radialGrid(params)
     extfacetbl = IndexArray(extfacetbl);
     extcellfacetbl = crossIndexArray(extfacetbl, cellfacetbl, {'faces'});
     
+    %% add cartesian indexing, tag and layer index to the grid
     
-    %%  recover the external faces that are inside the spiral
-    % we get them using the Cartesian indexing
-
     [indi, indj, indk] = ind2sub([n, m, nL], (1 : G.cells.num)');
     
     clear celltbl
@@ -306,17 +302,43 @@ function output = radialGrid(params)
     celltbl = gen.eval();
     celltbl = sortIndexArray(celltbl, {'cells', 'indi', 'indj', 'indk', 'indl', 'tag'});
 
-    % We add vertical (1) and horizontal (2) direction index for the faces (see makeLayeredGrid for the setup)
+    % We add directional index for the faces. dir index indicate direction of the normal
+    % 1 : vertical
+    % 2 : horizontal radial
+    % 3 : horizontal angular
     
     nf = G.faces.num;
+    faces = (1 : nf)';
+    dir = nan(nf, 1);
+
+    % We know from the way makeLayeredGrid works, that the first faces are the vertical ones
+    dir(1 : (nL + 1)*n*m) = 1;
+    
+    hfaces = faces(isnan(dir));
+
+    rpos = G.faces.centroids(hfaces, 1 : 2);
+    rpos = rpos./sqrt(sum(rpos.^2, 2));
+    normals = G.faces.normals(hfaces, 1 : 2);
+    normals = normals./sqrt(sum(normals.^2, 2));
+
+    hdir = nan(numel(hfaces), 1);
+    coef = sum(rpos.*normals, 2);
+    hdir(abs(coef) < 0.01) = 3; % angular faces
+    hdir(abs(coef) > 0.99) = 2; % radial faces
+    assert(all(~isnan(hdir)), 'the direction of some faces has not been detected');
+
+    dir(isnan(dir)) = hdir;
+    
     clear facetbl
     facetbl.faces = (1 : nf)';
-    dir = 2*ones(nf, 1);
-    dir(1 : (nL + 1)*n*m) = 1;
     facetbl.dir = dir;
     facetbl = IndexArray(facetbl);
+
     
-    scelltbl.indi = (1: n)';
+    %%  recover the external faces that are inside the spiral
+    % we get them using the Cartesian indexing
+
+    scelltbl.indi = (1 : n)';
     scelltbl.indj = 1*ones(n, 1);
     scelltbl = IndexArray(scelltbl);
     
@@ -347,18 +369,6 @@ function output = radialGrid(params)
     
     %% recover faces on top and bottom for the current collector
     % we could do that using cartesian indices (easier)
-
-    if isfield(tabparams, 'PositiveElectrode') && tabparams.PositiveElectrode.usetab
-        petab = tabparams.PositiveElectrode;
-    else
-        petab = [];
-    end
-
-    if isfield(tabparams, 'NegativeElectrode') && tabparams.NegativeElectrode.usetab
-        netab = tabparams.NegativeElectrode;
-    else
-        netab = [];
-    end
     
     ccnames = {'PositiveCurrentCollector', 'NegativeCurrentCollector'};
 
@@ -369,52 +379,6 @@ function output = radialGrid(params)
         cccelltbl = IndexArray(cccelltbl);
         cccelltbl = crossIndexArray(cccelltbl, celltbl, {'tag'});
         cccelltbl = projIndexArray(cccelltbl, {'cells'});
-        
-        if strcmp(ccnames{iccname}, 'PositiveCurrentCollector') && ~isempty(petab)
-            tab = petab;
-        elseif strcmp(ccnames{iccname}, 'NegativeCurrentCollector') && ~isempty(netab)
-            tab = netab;
-        else
-            tab = [];
-        end
-            
-        
-        if ~isempty(tab)
-            
-            cccelltbl = crossIndexArray(celltbl, cccelltbl, {'cells'});
-
-            indl = cccelltbl.get('indl');
-            
-            r = G.cells.centroids(cccelltbl.get('cells'), 1 : 2);
-            r = sqrt(sum(r.^2, 2));
-
-            rmax = max(r);
-            rmin = min(r);
-
-            tabcelltbls = {};
-            
-            for itab = 1 : numel(tab.fractions)
-
-                fraction = tab.fractions(itab);
-                rtarget = fraction*(rmax - rmin) + rmin;
-                
-                [~, ind] = min((r - rtarget).^2);
-
-                clear layertbl
-                layertbl.indl = indl(ind);
-                layertbl = IndexArray(layertbl);
-
-                tabcelltbls{itab} = crossIndexArray(cccelltbl, layertbl, {'indl'});
-
-            end
-            
-            clear cccelltbl
-            cccelltbl = tabcelltbls{1};
-            for ind = 2 : numel(tabcelltbls)
-                cccelltbl = concatIndexArray(cccelltbl, tabcelltbls{ind}, {'cells'}, 'checkUnique', true);
-            end
-
-        end
         
         extcccellfacetbl = crossIndexArray(extcellfacetbl, cccelltbl, {'cells'});
         extccfacetbl = projIndexArray(extcccellfacetbl, {'faces'});
@@ -438,6 +402,45 @@ function output = radialGrid(params)
           otherwise
             error('name not recognized');
         end
+
+        clear cccelltbl
+        cccelltbl.tag = tagdict(ccnames{iccname});
+        cccelltbl = IndexArray(cccelltbl);
+        cccelltbl = crossIndexArray(cccelltbl, celltbl, {'tag'});
+        cccelltbl = projIndexArray(cccelltbl, {'cells'});
+
+        ccfacetbl = crossIndexArray(cccelltbl, cellfacetbl, {'cells'});
+        % we add indl
+        ccfacetbl = crossIndexArray(ccfacetbl, celltbl, {'cells'});
+        ccfacetbl = projIndexArray(ccfacetbl, {'faces', 'indl'});
+        % we add dir
+        ccfacetbl = crossIndexArray(ccfacetbl, facetbl, {'faces'});
+        
+        clear dirtbl
+        dirtbl.dir = 3;
+        dirtbl = IndexArray(dirtbl);
+
+        ccfacetbl = crossIndexArray(ccfacetbl, dirtbl, {'dir'});
+        ccfacetbl1 = projIndexArray(ccfacetbl, {'faces', 'indl'});
+
+        ccfacetbl = projIndexArray(ccfacetbl1, {'faces'});
+        cccellfacetbl = crossIndexArray(ccfacetbl, cellfacetbl, {'faces'});
+        cccellfacetbl = crossIndexArray(cccellfacetbl, celltbl, {'cells'});
+        cccellfacetbl = sortIndexArray(cccellfacetbl, {'faces', 'cells', 'indi'});
+        indi = cccellfacetbl.get('indi');
+        indi = reshape(indi, 2, []);
+        indi = indi';
+        indi = max(indi, [], 2);
+        faces = cccellfacetbl.get('faces');
+        faces = reshape(faces, 2, []);
+        faces = faces(1, :)';
+        clear ccfacetbl2
+        ccfacetbl2.faces = faces;
+        ccfacetbl2.indi = indi;
+        ccfacetbl2 = IndexArray(ccfacetbl2);
+
+        ccfacetbl = crossIndexArray(ccfacetbl1, ccfacetbl2, {'faces'});
+    
     end
 
     positiveExtCurrentFaces = ccfaces{1};

@@ -11,10 +11,9 @@
 
     "PositiveElectrode": {"$ref": "Electrode"},
 
-    "Electrolyte": {"$ref": "Electrolyte"},
+    "Electrolyte": {"$ref": "Electrolyte"}
 
-    "ThermalModel": {"$ref": "ThermalComponent"}
-    
-  }
+  },
 
+  "anyOf" : [{"$ref": "ThermalComponent"}]
 }

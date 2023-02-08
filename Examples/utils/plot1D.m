@@ -56,7 +56,7 @@ for i = 1 : numel(states)
             substate = model.getProp(state, mname); 
             
             if strcmp(ffield, 'c') && (ind == 1)
-                var = substate.cs{1}; 
+                var = substate.c;
             else
                 var = substate.(ffield); 
             end
