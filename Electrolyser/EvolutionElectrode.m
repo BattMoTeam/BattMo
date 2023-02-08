@@ -66,10 +66,11 @@ classdef EvolutionElectrode < BaseModel
             liquidInd = model.(ptl).liquidInd;
             gasInd    = model.(ptl).gasInd;
             
-            inputvarnames = {{ptl, 'phi'}                                                      , ...
-                             VarName({ptl}, 'concentrations', liquidInd.nliquid, liquidInd.OH)   , ...
+            inputvarnames = {{ptl, 'phi'}                                                     , ...
+                             VarName({ptl}, 'concentrations', liquidInd.nliquid, liquidInd.OH), ...
                              VarName({ptl}, 'compGasPressures', gasInd.ngas, gasInd.activeGas), ...
-                             {ptl, 'H2Oa'}};
+                             {ptl, 'H2Oa'}                                                    , ...
+                             {ptl, 'E'}};
             outputvarnames = {'phiElyte', 'cOHelyte', 'H2OaElyte'};
             for iovar = 1 : numel(outputvarnames)
                 outputvarname = {ctl, outputvarnames{iovar}};
@@ -77,6 +78,7 @@ classdef EvolutionElectrode < BaseModel
                 outputvarname = {exl, outputvarnames{iovar}};
                 model = model.registerPropFunction({outputvarname, fn, inputvarnames});
             end
+            model = model.registerPropFunction({{ctl, 'E'}, fn, inputvarnames});
             model = model.registerPropFunction({{ctl, 'pressureActiveGas'}, fn, inputvarnames});
             
             fn = @() EvolutionElectrode.updateSourceTerms;
@@ -130,6 +132,7 @@ classdef EvolutionElectrode < BaseModel
             cOH  = state.(ptl).concentrations{lind.OH};
             H2Oa = state.(ptl).H2Oa;
             pag  = state.(ptl).compGasPressures{gInd.activeGas};
+            E    = state.(ptl).E;
 
             % initialization of the variables (takes care of AD)
             nc = model.(ctl).G.cells.num;
@@ -152,10 +155,12 @@ classdef EvolutionElectrode < BaseModel
             
             state.(ctl).phiElyte(coupcells(:, 2))          = phi(coupcells(:, 1));
             state.(ctl).cOHelyte(coupcells(:, 2))          = cOH(coupcells(:, 1));
-            % state.(ctl).cHElyte(coupcells(:, 2))           = cH(coupcells(:, 1));
+            % state.(ctl).cHElyte(coupcells(:, 2))         = cH(coupcells(:, 1));
             state.(ctl).H2OaElyte(coupcells(:, 2))         = H2Oa(coupcells(:, 1));
             state.(ctl).pressureActiveGas(coupcells(:, 2)) = pag(coupcells(:, 1));
-
+            
+            state.(ctl).E = E;
+            
             % coupling to ExchangeLayer
             state.(exl).phiElyte(coupcells(:, 2))  = phi(coupcells(:, 1));
             state.(exl).cOHelyte(coupcells(:, 2))  = cOH(coupcells(:, 1));

@@ -171,7 +171,11 @@ classdef PorousTransportLayer < ElectronicComponent
             varnames{end + 1} = 'H2Oa';
             % partialMolarVolumes = VarName({}, 'partialMolarVolumes', nliquid);
             % varnames{end + 1} = partialMolarVolumes;
-
+            % potential in the porous transport layer (for the moment a constant, we assume infinite conductivity in PTL)
+            varnames{end + 1} = 'E';
+            % partialMolarVolumes = VarName({}, 'partialMolarVolumes', nliquid);
+            % varnames{end + 1} = partialMolarVolumes;
+            
             %% Flow variables
 
             viscosities = VarName({}, 'viscosities', nmobph);

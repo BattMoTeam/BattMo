@@ -161,8 +161,11 @@ classdef Electrolyser < BaseModel
                 state.(elde).(ptl).liqeps    = sLiquid.*(1 - svf);
                 state.(elde).(ptl).OHceps    = cOH.*lvf;
                 state.(elde).(ptl).liqrhoeps = liqrho*lvf;
-                state.(elde).(ptl).phi       = zeros(nc, 1); % OBS : this is not the value that is finally assigned (only sent here so that dispatch functions can be used)
-                
+
+                % OBS : the following two values are not the ones that are finally assigned (only sent here so that dispatch functions can be used)
+                state.(elde).(ptl).phi = NaN*zeros(nc, 1);
+                state.(elde).(ptl).E   = NaN;
+
                 state = model.evalVarName(state, {elde, ptl, 'vaporPressure'});
                 
                 H2Ovp = state.(elde).(ptl).vaporPressure;
@@ -217,10 +220,10 @@ classdef Electrolyser < BaseModel
             nc_her = model.(her).(ptl).G.cells.num;
             nc_oer = model.(oer).(ptl).G.cells.num;
             
-            state.(her).(ctl).E   = 0;
+            state.(her).(ptl).E   = 0;
             state.(her).(ptl).phi = - Eelyte_her*ones(nc_her, 1);
             state.(inm).phi       = - Einmr_her*ones(nc_inm, 1);
-            state.(oer).(ctl).E   = Einmr_oer - Einmr_her; 
+            state.(oer).(ptl).E   = Einmr_oer - Einmr_her;
             state.(oer).(ptl).phi = (Einmr_oer - Einmr_her - Eelyte_oer)*ones(nc_oer, 1);
 
             bd = 'Boundary';
