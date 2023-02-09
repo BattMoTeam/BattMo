@@ -117,8 +117,9 @@ classdef PorousTransportLayer < ElectronicComponent
             V0s(liquidInd.K)   = sp.K.V0;
             V0s(liquidInd.H2O) = sp.H2O.V0;
 
+            % TODO : in some implementation, the value of V0(H2O) is reset
             model.V0s = V0s;
-            
+
         end
 
         function model = registerVarAndPropfuncNames(model)
