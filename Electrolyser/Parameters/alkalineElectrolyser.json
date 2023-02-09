@@ -1,4 +1,5 @@
 {
+  "Eref" : -0.8227,
   "IonomerMembrane": {
     "liquidVolumeFraction" : 0.9,
     "H2O" : {"c0" : 1000,

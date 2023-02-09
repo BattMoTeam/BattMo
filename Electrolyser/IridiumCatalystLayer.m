@@ -60,7 +60,7 @@ classdef IridiumCatalystLayer < CatalystLayer
             cOH  = state.cOHelyte;
             H2Oa = state.H2OaElyte;
             
-            E0  = model.E0;
+            E0  = model.E0eff;
             c0  = model.sp.OH.c0;
             con = model.constants;
 
@@ -77,7 +77,7 @@ classdef IridiumCatalystLayer < CatalystLayer
             cOH  = state.cOHinmr;
             H2Oa = state.H2OaInmr;
             
-            E0  = model.E0;
+            E0  = model.E0eff;
             c0  = model.sp.OH.c0;
             con = model.constants;
 

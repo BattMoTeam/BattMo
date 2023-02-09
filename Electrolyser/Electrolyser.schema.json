@@ -7,6 +7,8 @@
 
   "properties" : {
 
+    "Eref" : {"type" : "number",
+              "description" : "Reference potential"},
     "IonomerMembrane": {"$ref": "IonomerMembrane"},
 
     "HydrogenEvolutionElectrode": {"$ref": "EvolutionElectrode"},

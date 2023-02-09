@@ -11,6 +11,8 @@ classdef CatalystLayer < BaseModel
 
         j0 % Exchange current density
         E0
+        Eref
+        E0eff
         sp % species struct with field
         % - OH.z  : Charge
         % - OH.c0 : OH reference concentration
@@ -32,6 +34,7 @@ classdef CatalystLayer < BaseModel
             fdnames = { 'G'    , ...
                         'j0'   , ...
                         'E0'   , ...
+                        'Eref', ...
                         'sp'   , ...
                         'n'    , ...
                         'alpha', ...
@@ -40,6 +43,7 @@ classdef CatalystLayer < BaseModel
             
             model = dispatchParams(model, paramobj, fdnames);
 
+            model.E0eff = model.E0 - model.Eref;
             model.constants = PhysicalConstants();
             
         end

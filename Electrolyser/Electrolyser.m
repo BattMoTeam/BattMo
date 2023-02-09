@@ -233,8 +233,8 @@ classdef Electrolyser < BaseModel
             state = model.evalVarName(state, {oer, ctl, 'Einmr'});
 
             Eelyte_oer = state.(oer).(ctl).Eelyte(1);
-            Eelyte_her = state.(her).(ctl).Eelyte(1);
             Einmr_oer  = state.(oer).(ctl).Einmr(1);
+            Eelyte_her = state.(her).(ctl).Eelyte(1);
             Einmr_her  = state.(her).(ctl).Einmr(1);
 
             nc_her = model.(her).(ptl).G.cells.num;

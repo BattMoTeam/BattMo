@@ -4,6 +4,8 @@ classdef ElectrolyserInputParams < InputParams
 
         G % parent grid (the component grids are subgrid of that one)
 
+        Eref % Reference potential
+
         IonomerMembrane
         HydrogenEvolutionElectrode
         OxygenEvolutionElectrode        
@@ -33,6 +35,10 @@ classdef ElectrolyserInputParams < InputParams
             assert(strcmp(paramobj.HydrogenEvolutionElectrode.porousTransportLayerType, 'Hydrogen'), 'Expected porous transport layer is hydrogen');
             assert(strcmp(paramobj.OxygenEvolutionElectrode.porousTransportLayerType, 'Oxygen'), 'Expected porous transport layer is oxygen');
 
+            paramobj = mergeParameters(paramobj, {{'Eref'}                                               , ...
+                                                  {'HydrogenEvolutionElectrode', 'CatalystLayer', 'Eref'}, ...
+                                                  {'OxygenEvolutionElectrode', 'CatalystLayer', 'Eref'}});
+            
             paramobj = validateInputParams@InputParams(paramobj);
             
         end

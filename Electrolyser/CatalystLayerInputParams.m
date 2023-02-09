@@ -2,8 +2,10 @@ classdef CatalystLayerInputParams < ComponentInputParams
     
     properties
 
-        j0 % Exchange current density
-        E0 
+        j0    % Exchange current density
+        E0    % Standard equilibrium potential
+        Eref  % Reference potential
+
         sp % species struct with field
         % - OH.z  : Charge
         % - OH.c0 : OH reference concentration
