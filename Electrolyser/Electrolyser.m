@@ -397,7 +397,7 @@ classdef Electrolyser < BaseModel
                 coupcells = coupterm.couplingcells;
                 vols      = vols(coupcells(:, 2));
 
-                inmrOHsource = state.(elde).(ctl).inmrReactionRate(coupcells(:, 1));
+                inmrOHsource = state.(elde).(ctl).inmrOHsource(coupcells(:, 1));
                 OHexchR      = state.(elde).(exl).OHexchangeRate(coupcells(:, 1));
                 H2OexchR     = state.(elde).(exl).H2OexchangeRate(coupcells(:, 1));
 
