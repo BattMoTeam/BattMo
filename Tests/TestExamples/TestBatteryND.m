@@ -14,9 +14,8 @@ classdef TestBatteryND < matlab.unittest.TestCase
         function states = testnd(test, dim, jsonfile, testSize)
 
             jsonstruct = parseBattmoJson(jsonfile);
+            jsonstruct.include_current_collectors = true;
             paramobj = BatteryInputParams(jsonstruct);
-            paramobj.include_current_collectors = true;
-            paramobj = paramobj.validateInputParams();
             
             switch dim
               case 2
