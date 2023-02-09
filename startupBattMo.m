@@ -1,3 +1,5 @@
+function startupBattMo
+
 % This startup file set up the MATLAB path
 %
 %% We use first `MRST <https://bitbucket.org/mrst/mrst-core/wiki/Home>`_ setup for MRST modules.
@@ -40,7 +42,7 @@ end
 if mrstPlatform('matlab')
     pe = pyenv;
     if pe.Version == ""
-        disp('Python not installed')
+        disp('Python installation not found. Try setting it manually, for example as pyenv(''Version'', ''/usr/bin/python3.10'');. You may have to install the libpython3.10 package separately.')
     else
         try
             insert(py.sys.path, int32(0), fullfile(rootdirname, 'Utilities', 'JsonUtils'));
@@ -72,6 +74,7 @@ if mrstPlatform('octave')
 
 end
 
+end
 
 %{
 Copyright 2021-2022 SINTEF Industry, Sustainable Energy Technology
