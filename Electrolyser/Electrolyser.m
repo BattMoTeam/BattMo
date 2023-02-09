@@ -381,16 +381,17 @@ classdef Electrolyser < BaseModel
             % structure from state.(inm).H2Oceps)
             OHsource  = 0*state.(inm).H2Oceps;
             H2OSource = 0*state.(inm).H2Oceps;
+            
+            vols = model.(inm).G.cells.volumes;
 
             eldes = {her, oer};
-
+            
             for ielde = 1 : numel(eldes)
 
                 elde = eldes{ielde};
 
                 coupterms = model.couplingTerms;
                 coupnames = model.couplingNames;
-                vols      = model.G.cells.volumes;
 
                 coupname  = sprintf('%s-%s', elde, inm);
                 coupterm  = getCoupTerm(coupterms, coupname, coupnames);
