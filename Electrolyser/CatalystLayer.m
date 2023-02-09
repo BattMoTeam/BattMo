@@ -82,11 +82,12 @@ classdef CatalystLayer < BaseModel
             % Reaction rate constant (j0) for electrolyte and ionomer
             varnames{end + 1} = 'elyteReactionRateConstant';
             varnames{end + 1} = 'inmrReactionRateConstant';
-            % Reaction rate for electrolyte and ionomer
+            % Reaction rate for electrolyte and ionomer [A m^-3]
             varnames{end + 1} = 'elyteReactionRate';
             varnames{end + 1} = 'inmrReactionRate';
             
-            % current source [A] (it is positive if there is a positive current source for the electrode)
+            % current source [A]. It is positive if there is a positive current source for the electrode: electrons are
+            % removed in the catalyst layers (see redox equations). It is used to compute the control.
             varnames{end + 1} = 'eSource'; 
             % The following source terms are per volume. The units are [mol s^-1 m^-3]
             varnames{end + 1} = 'activeGasSource';
