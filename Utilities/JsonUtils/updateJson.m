@@ -19,19 +19,7 @@ function json = updateJson(json, params, varargin)
     end
 
     if opt.validate
-        % Write the json struct to file
-        if isempty(opt.tempfilename)
-            tempfilename = [tempname, '.json'];
-        else
-            tempfilename = opt.tempfilename;
-        end
-        fid = fopen(tempfilename, 'w');
-        fprintf(fid, '%s', jsonencode(json));
-        fclose(fid);
-
-        % Validate
-        is_valid = py.validationJsonScript.validate(tempfilename);
-        assert(is_valid, 'json is not valid');
+        validateJsonStruct(json);
     end
 
 end
