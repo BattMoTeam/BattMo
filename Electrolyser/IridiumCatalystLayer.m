@@ -91,9 +91,9 @@ classdef IridiumCatalystLayer < CatalystLayer
         
         function state =  updateSources(model, state)
 
-        % Reaction in Electrolyte : H2O + 2*e- + 0.5*O2 <-> 2(OH-)_elyte 
-        % Reaction in Membrane :    H2O + 2*e- + 0.5*O2 <-> 2(OH-)_inmr
-
+        % Reaction in Electrolyte : H2O + 2*e- + 0.5*O2 <<-> 2(OH-)_elyte
+        % Reaction in Membrane :    H2O + 2*e- + 0.5*O2 <<-> 2(OH-)_inmr
+        % (Here, the sign of the reaction that iis indicated by the repeated arrow sign corresponds to positive R)
             F    = model.constants.F;
             vols = model.G.cells.volumes;
             
@@ -102,11 +102,11 @@ classdef IridiumCatalystLayer < CatalystLayer
 
             R = elyteR + inmrR;
             
-            state.activeGasSource = -0.5*R/F;
-            state.elyteH2Osource  = -R/F;
-            state.elyteOHsource   = 2*elyteR/F;
-            state.inmrOHsource    = 2*inmrR/F;
-            state.eSource         = 2*R.*vols;
+            state.activeGasSource = 0.5*R/F;
+            state.elyteH2Osource  = R/F;
+            state.elyteOHsource   = -2*elyteR/F;
+            state.inmrOHsource    = -2*inmrR/F;
+            state.eSource         = -2*R.*vols;
            
         end
         
