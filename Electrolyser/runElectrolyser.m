@@ -32,16 +32,17 @@ cgt = model.computationalGraph;
 
 [model, initstate] = model.setupBcAndInitialState();
 
-total = 0.1*minute;
-n  = 10;
+total = 5*minute;
+n  = 30;
 dt = total/n;
 
-controlI = -1e-2; % if negative, H2  is produced
-tup = total/2; % rampup value for the current function, see rampupSwitchControl
+controlI = -30000*30/100; % if negative, O2 and H2  are produced
+
+tup = total; % rampup value for the current function, see rampupSwitchControl
 srcfunc = @(time) rampupControl(time, tup, controlI);
 control = struct('src', srcfunc);
 
-
+n = 27;
 step = struct('val', dt*ones(n, 1), 'control', ones(n, 1));
 schedule = struct('control', control, 'step', step);
 
