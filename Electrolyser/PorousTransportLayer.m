@@ -741,7 +741,8 @@ classdef PorousTransportLayer < ElectronicComponent
             m = state.OHmolality;
 
             % From Balej 1985 (ref 8), equation 28
-            state.H2Oa = 10.^(-0.02255 .* m + 0.001434 .* m.^2 + (1.38.*m - 0.9254.*m.^2)./T);
+            % state.H2Oa = 10.^(-0.02255 .* m + 0.001434 .* m.^2 + (1.38.*m - 0.9254.*m.^2)./T);
+            state.H2Oa = 1 + 0*m;
             
         end
         
