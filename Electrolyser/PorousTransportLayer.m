@@ -653,7 +653,8 @@ classdef PorousTransportLayer < ElectronicComponent
                      0.001043 ;
                      -0.0000003];
 
-            cOH = 1e-3*cOH; % we convert to mol/litre s
+            % cOH = 1e-3*cOH; % we convert to mol/litre 
+            cOH = 1;
             state.conductivity = (coefs(1).*cOH    + ...
                                   coefs(2).*cOH.^2 + ...
                                   coefs(3).*cOH.*T + ...
@@ -661,6 +662,7 @@ classdef PorousTransportLayer < ElectronicComponent
                                   coefs(5).*cOH.^3 + ...
                                   coefs(6).*cOH.^2.*T.^2) .* 100;
             
+
 
         end
         
@@ -681,7 +683,7 @@ classdef PorousTransportLayer < ElectronicComponent
             dmudc = R.*T./cOH;
             coef = (kappa./F).*(t/z).*dmudc;
 
-            j = j + assembleFlux(model, cOH, coef);
+            % j = j + assembleFlux(model, cOH, coef);
 
             state.j = j;
             

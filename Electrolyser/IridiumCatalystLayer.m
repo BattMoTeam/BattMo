@@ -47,10 +47,12 @@ classdef IridiumCatalystLayer < CatalystLayer
             cOH = state.cOHelyte;
             aw  = state.H2OaElyte;
             
-            state.elyteReactionRateConstant = j0.*((cOH/cOH0.*aw).^0.5);
+            % state.elyteReactionRateConstant = j0.*((cOH/cOH0.*aw).^0.5);
+            state.elyteReactionRateConstant = j0;
             
             aw = state.H2OaInmr;
-            state.inmrReactionRateConstant = j0.*(aw.^0.5);
+            % state.inmrReactionRateConstant = j0.*(aw.^0.5);
+            state.inmrReactionRateConstant = j0;
             
         end
 
@@ -67,8 +69,8 @@ classdef IridiumCatalystLayer < CatalystLayer
             F  = con.F;
             R  = con.R;
 
-            state.Eelyte = E0 + R*T/(2*F).*log(H2Oa.*(c0.^2).*(cOH.^-2));
-            
+            % state.Eelyte = E0 + R*T/(2*F).*log(H2Oa.*(c0.^2).*(cOH.^-2));
+            state.Eelyte = E0 + 0*T;
         end
 
         function state = updateEinmr(model, state)
@@ -84,8 +86,8 @@ classdef IridiumCatalystLayer < CatalystLayer
             F  = con.F;
             R  = con.R;
 
-            state.Einmr = E0 + R*T./(2*F).*log(H2Oa.*(c0.^2).*(cOH.^-2));
-            
+            % state.Einmr = E0 + R*T./(2*F).*log(H2Oa.*(c0.^2).*(cOH.^-2));
+            state.Einmr = E0 + 0.*T;
         end
 
         

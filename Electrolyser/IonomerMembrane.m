@@ -199,8 +199,9 @@ classdef IonomerMembrane < ElectronicComponent
                      + (0.1227.*T - 42.61).*a.^3  ...
                      - (0.06021.*T - 21.80).*a.^4) .* 20;
             
-            state.conductivity = kappa.*vf.^1;
-            
+            % state.conductivity = kappa.*vf.^1;
+            state.conductivity = 1e1 + 0*a;
+
         end
         
         
@@ -230,6 +231,7 @@ classdef IonomerMembrane < ElectronicComponent
             fluxcoef = dmudc.*conductivity.*xi./(z.*F);
             
             state.jchem = assembleFlux(model, c, fluxcoef);
+
         end
         
         
@@ -241,8 +243,9 @@ classdef IonomerMembrane < ElectronicComponent
             
             jelec = assembleFlux(model, phi, conductivity);
             
-            state.j = jelec + jchem;
-            
+            % state.j = jelec + jchem;
+            state.j = jelec;
+
         end
 
         function state = updateH2OdiffFlux(model, state)
