@@ -42,13 +42,15 @@ tup = total; % rampup value for the current function, see rampupSwitchControl
 srcfunc = @(time) rampupControl(time, tup, controlI);
 control = struct('src', srcfunc);
 
-n = 27;
+n = 26;
 step = struct('val', dt*ones(n, 1), 'control', ones(n, 1));
 schedule = struct('control', control, 'step', step);
 
 nls = NonLinearSolver();
 nls.verbose = true;
+nls.errorOnFailure = false;
+
 model.verbose = true;
 
-[wellSols, states, report] = simulateScheduleAD(initstate, model, schedule, 'NonLinearSolver', nls); 
+[wellSols, states, report] = simulateScheduleAD(initstate, model, schedule, 'NonLinearSolver', nls, 'OutputMiniSteps', true);
 
