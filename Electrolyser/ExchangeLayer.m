@@ -59,13 +59,15 @@ classdef ExchangeLayer < BaseModel
             model = model.registerVarNames(varnames);
 
             % Assemble ionomer ion exchange rate [mol*s^-1 m^-3]
-            % (OH-)_inmr <-> (OH-)_elyte
+            % (OH-)_inmr <->> (OH-)_elyte
+            % Here, the sign of the reaction that is indicated by the repeated arrow sign corresponds to positive sign of exchange rate
             fn = @() ExchangeLayer.updateOHexchange;
             inputnames = {'phiElyte', 'phiInmr', 'cOHelyte', 'cOHinmr', 'T'};
             model = model.registerPropFunction({'OHexchangeRate', fn, inputnames});
 
             % Assemble sorption rate [mol*s^-1 m^-3]
-            % (H2O)_inmr <-> (H2O)_elyte  
+            % (H2O)_inmr <->> (H2O)_elyte
+            % Here, the sign of the reaction that is indicated by the repeated arrow sign corresponds to positive sign of exchange rate
             fn = @() ExchangeLayer.updateSorption;
             inputnames = {'H2OaElyte', 'H2OaInmr'};
             model = model.registerPropFunction({'H2OexchangeRate', fn, inputnames});
@@ -82,6 +84,8 @@ classdef ExchangeLayer < BaseModel
 
             % R = (kML./MW).*(con.R.*T.*(log(aH2OI) - log(aH2OL)));
 
+            % (H2O)_inmr <->> (H2O)_elyte
+            % Here, the sign of the reaction that is indicated by the repeated arrow sign corresponds to positive sign of exchange rate
             state.H2OexchangeRate = kML.*(H2OaInmr - H2OaElyte);
             
         end
@@ -105,6 +109,8 @@ classdef ExchangeLayer < BaseModel
             phiElyte = state.phiElyte;
             phiInmr  = state.phiInmr;
             
+            % (OH-)_inmr <->> (OH-)_elyte
+            % Here, the sign of the reaction that is indicated by the repeated arrow sign corresponds to positive sign of exchange rate
             state.OHexchangeRate = kxch.*(cInmr.*(exp(z*F*(phiInmr - phiElyte)./(R*T))) - cElyte);
             
         end
