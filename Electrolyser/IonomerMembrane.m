@@ -177,8 +177,8 @@ classdef IonomerMembrane < ElectronicComponent
             H2Oc = state.H2Oc;
             H2Oc0 = model.H2O.c0;
             
-            % state.H2Oa = H2Oc./H2Oc0;
-            state.H2Oa = 1 + 0*H2Oc;
+            state.H2Oa = H2Oc./H2Oc0;
+            % state.H2Oa = 1 + 0*H2Oc;
             
         end
         
