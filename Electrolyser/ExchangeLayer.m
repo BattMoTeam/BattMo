@@ -82,7 +82,7 @@ classdef ExchangeLayer < BaseModel
 
             % R = (kML./MW).*(con.R.*T.*(log(aH2OI) - log(aH2OL)));
 
-            state.H2OexchangeRate = 0*kML.*(H2OaInmr - H2OaElyte);
+            state.H2OexchangeRate = kML.*(H2OaInmr - H2OaElyte);
             
         end
 
@@ -105,7 +105,7 @@ classdef ExchangeLayer < BaseModel
             phiElyte = state.phiElyte;
             phiInmr  = state.phiInmr;
             
-            state.OHexchangeRate = 0*kxch.*(cInmr.*(exp(z*F*(phiInmr - phiElyte)./(R*T))) - cElyte);
+            state.OHexchangeRate = kxch.*(cInmr.*(exp(z*F*(phiInmr - phiElyte)./(R*T))) - cElyte);
             
         end
 
