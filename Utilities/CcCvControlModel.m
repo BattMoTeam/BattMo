@@ -3,8 +3,6 @@ classdef CcCvControlModel < ControlModel
     properties
         
         Imax
-        lowerCutoffVoltage
-        upperCutoffVoltage
         dIdtLimit
         dEdtLimit
         
