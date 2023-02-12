@@ -33,7 +33,11 @@ classdef TestBattery1D < matlab.unittest.TestCase
             % Validation doesn't run in parallel (probably due to
             % writing to file). It doesn't run if python is not
             % available.
-            serial = isempty(getCurrentTask());
+            try
+                serial = isempty(getCurrentTask());
+            catch
+                serial = true;
+            end
             has_python = pyenv().Version ~= "";
             validate = serial & has_python;
             json = updateJson(json, params, 'validate', validate);
