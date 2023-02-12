@@ -42,12 +42,12 @@ end
 if mrstPlatform('matlab')
     pe = pyenv;
     if pe.Version == ""
-        disp('Python installation not found. Try setting it manually, for example as pyenv(''Version'', ''/usr/bin/python3.10'');. You may have to install the libpython3.10 package separately.')
+        disp('Python installation not found. Try setting it manually, for example as pyenv(''Version'', ''/usr/bin/python3.10'');. You may have to install the correct libpython package (eg. libpython3.10) separately.')
     else
         try
             insert(py.sys.path, int32(0), fullfile(rootdirname, 'Utilities', 'JsonUtils'));
         catch
-            warning('Could not add directory to Python path. This is probably due to an incompability between the MATLAB and Python versions. Please see https://se.mathworks.com/support/requirements/python-compatibility.html.');
+            warning('Could not add directory to Python path. This may be due to an incompability between the MATLAB and Python versions, or that the correct libpython package is installed. See also https://se.mathworks.com/support/requirements/python-compatibility.html.');
         end
     end
 end
