@@ -636,11 +636,8 @@ classdef PorousTransportLayer < ElectronicComponent
             T   = T - 273.15; % convert to celcius
             cOH = 1e-3*cOH;   % convert to mol/litre
             
-            mu = exp(coefs(1)       + ...
-                     coefs(2).*T    + ...
-                     coefs(3).*T.^2 + ...
-                     coefs(4).*cOH);
-
+            mu = 1e-3*exp(coefs(1) + coefs(2)*T + coefs(3)*T.^2 + coefs(4)*cOH);
+            
             state.viscosities{model.mobPhaseInd.liquid} = mu;
             
         end
