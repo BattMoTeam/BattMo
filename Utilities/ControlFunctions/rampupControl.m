@@ -1,6 +1,10 @@
-function val = rampupControl(t, tup, inputI)
+function val = rampupControl(t, tup, inputI, varargin)
 
-    rampupcase = 'sineup';        
+    opt = struct('rampupcase', 'sineup');
+    opt = merge_options(opt, varargin{:});
+   
+    rampupcase = opt.rampupcase;
+    
     switch rampupcase
         
       case 'sineup'
