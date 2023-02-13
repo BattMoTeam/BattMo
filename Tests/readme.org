@@ -88,7 +88,7 @@
      import matlab.unittest.TestSuite;
      import matlab.unittest.parameters.Parameter;
      param = Parameter.fromData("createReferenceData", {true});
-     suite = TestSuite.fromClass(?TestBattery1D, 'ExternalParameters', param);
+     suite = TestSuite.fromFolder('TestExamples', 'ExternalParameters', param);
      result = suite.run()
    #+end_src
 
