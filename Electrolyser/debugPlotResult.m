@@ -7,6 +7,9 @@ if setupoutput
     end
 end
 
+% set(0, 'defaultlinelinewidth', 1);
+% set(0, 'defaultaxesfontsize', 15);
+
 
 close all
 figure
@@ -24,6 +27,7 @@ for istate = 1 : numel(states)
     % val = states{istate}.(her).(ptl).liquidMassFlux;
     % val = states{istate}.(her).(ptl).liqrho;
     % val = states{istate}.(her).(ptl).phasePressures{1};
+    % val = states{istate}.(her).(ptl).viscosities{1};
     % val = states{istate}.(her).(ptl).phaseFluxes{1};
     % val = states{istate}.(her).(ctl).etaInmr;
     % val = states{istate}.(her).(ctl).inmrReactionRate;
