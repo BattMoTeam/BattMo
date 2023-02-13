@@ -32,25 +32,25 @@ cgt = model.computationalGraph;
 
 [model, initstate] = model.setupBcAndInitialState();
 
+% total = 10*hour;
 total = 5*minute;
-n  = 30;
+n  = 100;
 dt = total/n;
 
-controlI = -30000*30/100; % if negative, O2 and H2  are produced
+controlI = -30000; % if negative, O2 and H2  are produced
 
 tup = total; % rampup value for the current function, see rampupSwitchControl
-srcfunc = @(time) rampupControl(time, tup, controlI);
+srcfunc = @(time) rampupControl(time, tup, controlI, 'rampupcase', 'linear');
 control = struct('src', srcfunc);
 
-n = 26;
 step = struct('val', dt*ones(n, 1), 'control', ones(n, 1));
 schedule = struct('control', control, 'step', step);
 
 nls = NonLinearSolver();
-nls.verbose = true;
+nls.verbose = false;
 nls.errorOnFailure = false;
 
-model.verbose = true;
+model.verbose = false;
 
 [wellSols, states, report] = simulateScheduleAD(initstate, model, schedule, 'NonLinearSolver', nls, 'OutputMiniSteps', true);
 
