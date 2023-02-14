@@ -1,3 +1,12 @@
+setupoutput = false;
+if setupoutput
+    ind = cellfun(@(state) ~isempty(state), states);
+    states = states(ind);
+    for istate = 1 : numel(states)
+        states{istate} = model.addVariables(states{istate});
+    end
+end
+
 time = cellfun(@(state) state.time, states);
 E = cellfun(@(state) state.(oer).(ptl).E, states);
 I = cellfun(@(state) state.(oer).(ctl).I, states);
