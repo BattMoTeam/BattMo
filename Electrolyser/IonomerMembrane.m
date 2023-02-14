@@ -233,32 +233,30 @@ classdef IonomerMembrane < ElectronicComponent
         
         function state = updatejchem(model, state)
             
-            conductivity = state.conductivity;
-            dmudc        = state.H2Odmudc;
-            c            = state.H2Oc;
+            xi  = model.OH.xi;
+            z   = model.OH.z;
+            F   = model.constants.F;
+
+            kappaeff = state.conductivity;
+            dmudc    = state.H2Odmudc;
+            cH2O     = state.H2Oc;
+
+            fluxcoef = dmudc.*kappaeff.*xi./(z.*F);
             
-            xi = model.OH.xi;
-            z  = model.OH.z;
-            F  = model.constants.F;
-            
-            %% TODO : check expression (z^2F^2 in paper)
-            fluxcoef = dmudc.*conductivity.*xi./(z.*F);
-            
-            state.jchem = assembleFlux(model, c, fluxcoef);
+            state.jchem = assembleFlux(model, cH2O, fluxcoef);
 
         end
         
         
         function state = updateCurrent(model, state)
+
+            kappaeff = state.conductivity;
+            phi      = state.phi;
+            jchem    = state.jchem;
+
+            jelec = assembleFlux(model, phi, kappaeff);
             
-            conductivity = state.conductivity;
-            phi          = state.phi;
-            jchem        = state.jchem;
-            
-            jelec = assembleFlux(model, phi, conductivity);
-            
-            % state.j = jelec + jchem;
-            state.j = jelec;
+            state.j = jelec + jchem;
 
         end
 
