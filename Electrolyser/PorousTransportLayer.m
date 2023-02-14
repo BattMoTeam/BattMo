@@ -304,6 +304,8 @@ classdef PorousTransportLayer < ElectronicComponent
                           'vaporPressure', ...
                           VarName({}, 'compGasPressures', ngas, gasInd.H2O), ...
                           volumeFractions};
+            % evaporation rate H2O(l) <->> H2O(g)
+            % Here, the sign indicated by the repeated arrow sign corresponds to positive sign of rate
             model = model.registerPropFunction({'H2OvaporLiquidExchangeRate', fn, inputnames});
 
             
