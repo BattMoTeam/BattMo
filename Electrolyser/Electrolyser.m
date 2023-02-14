@@ -143,13 +143,18 @@ classdef Electrolyser < BaseModel
 
             state = model.dispatchTemperature(state);
 
-            liqrho = PorousTransportLayer.density(cOH, T);
-
             eldes = {her, oer};
 
             for ielde = 1 : numel(eldes)
 
                 elde = eldes{ielde};
+
+                % Compute density and partial molar volume using dedicated functions
+                % which are only used at initialisation. The partial molar volumes are kept constant for the remaining of
+                % the simulation (at least in current implementation!).
+                liqrho = model.(elde).(ptl).density(cOH, T);
+                Vs     = model.(elde).(ptl).partialMolarVolume(cOH, liqrho, T);
+
                 nc = model.(elde).(ptl).G.cells.num;
 
                 fun = @(s) leverett(model.(elde).(ptl).leverettCoefficients, s); % Define Leverett function handle
@@ -196,24 +201,7 @@ classdef Electrolyser < BaseModel
 
                 state = model.evalVarName(state, {elde, ctl, 'Eelyte'});
 
-                % update value of V0(H2O)
-
-                liqInd = model.(elde).(ptl).liquidInd;
-                varname = VarName({elde, ptl}, 'concentrations', liqInd.nliquid, liqInd.H2O);
-                state = model.evalVarName(state, varname);
-
-                clear cs
-                cs.OH  = state.(elde).(ptl).concentrations{liqInd.OH};
-                cs.K   = state.(elde).(ptl).concentrations{liqInd.K};
-                cs.H2O = state.(elde).(ptl).concentrations{liqInd.H2O};
-
-                sp = model.(elde).(ptl).sp;
-
-                V0H2O = (1 - (cs.OH*sp.OH.V0 + cs.K*sp.K.V0))./cs.H2O;
-                V0H2O = unique(V0H2O);
-                assert(numel(V0H2O) == 1, 'We do not expect several values here');
-
-                model.(elde).(ptl).V0s(liqInd.H2O) = V0H2O;
+                model.(elde).(ptl).Vs = Vs;
 
             end
 

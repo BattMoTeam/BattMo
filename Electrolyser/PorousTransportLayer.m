@@ -31,10 +31,13 @@ classdef PorousTransportLayer < ElectronicComponent
         % sp.H2O.V0   : Partial molar volume of H2O [m^3 mol^-1]        
 
         externalCouplingTerm
+        
+        % Valuer for partial molar volumes of the liquid components
+        % In the current implementation, the values are computed and set using the initial data.
+        Vs   
 
         % helper structures (those are not given as input but initialized with the model)
         MW    % molecular weight of KOH solution
-        V0s   % indexed values for partial molar volumes of the liquid components
         gasMW % Molecular weight of the active gas (H2 og O2). It will be initialized by the child class (HydrogenPorousTransportLayer or OxygenPorousTransportLayer).
         
     end
@@ -112,13 +115,6 @@ classdef PorousTransportLayer < ElectronicComponent
             % initialize helping structures
             sp = model.sp;
             model.MW = sp.OH.MW + sp.K.MW;
-
-            V0s(liquidInd.OH)  = sp.OH.V0;
-            V0s(liquidInd.K)   = sp.K.V0;
-            V0s(liquidInd.H2O) = sp.H2O.V0;
-
-            % TODO : in some implementation, the value of V0(H2O) is reset
-            model.V0s = V0s;
 
         end
 
@@ -1025,19 +1021,16 @@ classdef PorousTransportLayer < ElectronicComponent
             
             liqStateEq = -1;
             for ind = 1 : model.liquidInd.nliquid
-                liqStateEq = liqStateEq + state.concentrations{ind}.*model.V0s(ind);
+                liqStateEq = liqStateEq + state.concentrations{ind}.*model.Vs(ind);
             end
             
             state.liquidStateEquation = liqStateEq;
             
         end
-    end
-    
-    methods (Static)
 
-        % Those methods are only used for initialization at the moment (can change)
-        
-        function rho = density(c, T)
+        function rho = density(model, c, T)
+        % This method is only used for initialization at the moment (can change)
+
         %DENSITY Calculates the density of aqueous KOH solution as a
         %function of concentration (c) in mol/m3 and temperature (T) in
         %K. 
@@ -1065,7 +1058,9 @@ classdef PorousTransportLayer < ElectronicComponent
 
         end
 
-        function [Vs, cH2O] = partialMolarVolume(c, rho, T)
+        function [Vs, cH2O] = partialMolarVolume(model, c, rho, T)
+        % This method is only used for initialization at the moment (can change)
+        %
         % rho : liquid density [kg m^-3]
         % c : concentration [mol m^-3] 
             
@@ -1109,13 +1104,12 @@ classdef PorousTransportLayer < ElectronicComponent
                                         mOH.*(sp.OH.MW./rho - Vs(lind.OH)) +...
                                         mK.*(sp.K.MW ./rho - Vs(lind.K))); 
             
-            cH2O = (1 - cOH.*Vs(lind.OH) - cK.*Vs(lind.K))./V(lind.H2O);
+            cH2O = (1 - cOH.*Vs(lind.OH) - cK.*Vs(lind.K))./Vs(lind.H2O);
             
         end
         
-        
-        
     end
+    
 end
 
 
