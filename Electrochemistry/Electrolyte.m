@@ -4,14 +4,10 @@ classdef Electrolyte < ElectroChemicalComponent
 
         Separator
 
-        sp
-        compnames
-        ncomp
-
-        indchargecarrier
-        chargeCarrierName
-
-
+        sp % Structure with following fields
+           % - z : charge number
+           % - t : transference number
+        
         volumeFraction
 
         thermalConductivity % intrinsic thermal conductivity value
@@ -25,6 +21,10 @@ classdef Electrolyte < ElectroChemicalComponent
         computeDiffusionCoefficientFunc
 
         BruggemanCoefficient
+
+        % helper properties
+        compnames
+        ncomp
 
     end
 
@@ -52,9 +52,6 @@ classdef Electrolyte < ElectroChemicalComponent
             model.computeDiffusionCoefficientFunc = str2func(paramobj.DiffusionCoefficient.functionname);
 
             model.ncomp = numel(model.compnames);
-            [isok, indchargecarrier] = ismember(model.chargeCarrierName, model.compnames);
-            assert(isok, 'charge carrier not found in the list of components');
-            model.indchargecarrier = indchargecarrier;
 
             sep = 'Separator';
 
@@ -218,8 +215,9 @@ classdef Electrolyte < ElectroChemicalComponent
 
         function state = updateMassFlux(model, state)
 
-            ind = model.indchargecarrier;
 
+            sp = model.sp;
+            
             % We assume that the current and the diffusion coefficient D has been updated when this function is called
             c = state.c;
             j = state.j;
@@ -231,7 +229,7 @@ classdef Electrolyte < ElectroChemicalComponent
 
             %% 2. Flux from electrical forces
             F = model.constants.F;
-            fluxE = model.sp.t(ind) ./ (model.sp.z(ind) .* F) .* j;
+            fluxE = sp.t ./ (sp.z .* F) .* j;
 
             %% 3. Sum the two flux contributions
             flux = diffFlux + fluxE;
