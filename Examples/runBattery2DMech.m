@@ -12,6 +12,7 @@ mrstModule add ad-core mrst-gui mpfa
 %% Setup the properties of Li-ion battery materials and cell design
 
 jsonstruct = parseBattmoJson(fullfile('ParameterData','BatteryCellParameters','LithiumIonBatteryCell','lithium_ion_battery_nmc_graphite.json'));
+jsonstruct.include_current_collectors = true;
 
 % We define some shorthand names for simplicity.
 ne      = 'NegativeElectrode';
