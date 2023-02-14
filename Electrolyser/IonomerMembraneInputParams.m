@@ -18,6 +18,8 @@ classdef IonomerMembraneInputParams < ElectronicComponentInputParams
         cT % Total concentration of charged group (one scalar value)
         
         V % molar volume (needed for function groupHydration which is only needed in setup of initial condition and not for assembly)
+
+        tortuosity % cell-valued coefficient
         
     end
     

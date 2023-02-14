@@ -17,6 +17,8 @@ classdef IonomerMembrane < ElectronicComponent
         cT % Total concentration of charged groups (one value per cell)
 
         V % molar volume (needed for function groupHydration which is only needed in setup of initial condition and not for assembly)
+
+        tortuosity
         
     end
     
@@ -30,7 +32,8 @@ classdef IonomerMembrane < ElectronicComponent
             fdnames = {'volumeFraction', ...
                        'H2O'           , ...
                        'OH'            , ...
-                       'V'};
+                       'V'             , ...
+                       'tortuosity'};
             model = dispatchParams(model, paramobj, fdnames);
 
             cT = paramobj.cT;
@@ -63,8 +66,9 @@ classdef IonomerMembrane < ElectronicComponent
             varnames{end + 1} = 'H2Odmudc';
             
             %% Flux variables
-            
+
             % Chemical flux
+            % TODO : find better name
             varnames{end + 1} = 'jchem';
             % H2O diffusion flux
             varnames{end + 1} = 'H2OdiffFlux';
@@ -182,28 +186,38 @@ classdef IonomerMembrane < ElectronicComponent
             
         end
         
-        
+
         function state = updateConductivity(model, state)
-            
+
+            vf  = model.volumeFraction;
+            tau = model.tortuosity;
+
             T = state.T;
             a = state.H2Oa;
-            
-            vf = model.volumeFraction;
-            
-            a(a > 1) = 1;
-            
-            kappa = (0.1334                       ...
-                     - 3.882e-4.*T                ...
-                     + (0.01148.*T - 3.909).*a    ...
-                     - (0.06690.*T - 23.01).*a.^2 ...
-                     + (0.1227.*T - 42.61).*a.^3  ...
-                     - (0.06021.*T - 21.80).*a.^4) .* 20;
-            
-            % state.conductivity = kappa.*vf.^1;
-            state.conductivity = 1e1 + 0*a;
+
+            dosimplified = true;
+
+            if ~dosimplified
+
+                a(a > 1) = 1;
+
+                kappa = (0.1334                       ...
+                         - 3.882e-4.*T                ...
+                         + (0.01148.*T - 3.909).*a    ...
+                         - (0.06690.*T - 23.01).*a.^2 ...
+                         + (0.1227.*T - 42.61).*a.^3  ...
+                         - (0.06021.*T - 21.80).*a.^4) .* 20;
+
+            else
+
+                kappa = 10 + 0*a;
+
+            end
+
+            state.conductivity = kappa.*vf.^tau;
 
         end
-        
+
         
         function state = updatedmudc(model, state)
             
@@ -250,12 +264,13 @@ classdef IonomerMembrane < ElectronicComponent
 
         function state = updateH2OdiffFlux(model, state)
 
-            D  = model.H2O.D;
-            vf = model.volumeFraction;
-
+            D   = model.H2O.D;
+            vf  = model.volumeFraction;
+            tau = model.tortuosity;
+            
             c = state.H2Oc;
             
-            Deff = D.*vf.^1;
+            Deff = D.*vf.^tau;
             
             state.H2OdiffFlux = assembleFlux(model, c, Deff);
             
