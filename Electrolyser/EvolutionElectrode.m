@@ -188,15 +188,15 @@ classdef EvolutionElectrode < BaseModel
             OHexchR                   = 0*H2OvlR; % initialization so that get we get right AD and dimension
             OHexchR(coupcells(:, 1))  = state.(exl).OHexchangeRate(coupcells(:, 2));
             
+            elyteH2Osource                   = 0*H2OvlR; % initialization so that get we get right AD and dimension
+            elyteH2Osource(coupcells(:, 1))  = state.(ctl).elyteH2Osource(coupcells(:, 2));
             elyteOHsource                    = 0*H2OvlR; % initialization so that get we get right AD and dimension
             elyteOHsource(coupcells(:, 1))   = state.(ctl).elyteOHsource(coupcells(:, 2));
             activeGasSource                  = 0*H2OvlR; % initialization so that get we get right AD and dimension
             activeGasSource(coupcells(:, 1)) = state.(ctl).activeGasSource(coupcells(:, 2));
-            elyteH2Osource                   = 0*H2OvlR; % initialization so that get we get right AD and dimension
-            elyteH2Osource(coupcells(:, 1))  = state.(ctl).elyteH2Osource(coupcells(:, 2));
             
             state.(ptl).OHsource                       = vols.*(elyteOHsource + OHexchR);
-            state.(ptl).H2OliquidSource                = vols.*(elyteH2Osource + H2OexchR + H2OvlR);
+            state.(ptl).H2OliquidSource                = vols.*(elyteH2Osource + H2OexchR - H2OvlR);
             state.(ptl).compGasSources{gInd.activeGas} = gasMW.*vols.*activeGasSource;
 
         end

@@ -931,7 +931,7 @@ classdef PorousTransportLayer < ElectronicComponent
 
             vols = model.G.cells.volumes;
             
-            state.compGasSources{model.gasInd.H2O} = -model.sp.H2O.MW*vols.*state.H2OvaporLiquidExchangeRate;
+            state.compGasSources{model.gasInd.H2O} = model.sp.H2O.MW*vols.*state.H2OvaporLiquidExchangeRate;
 
         end
         
