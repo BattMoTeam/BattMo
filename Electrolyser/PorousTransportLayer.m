@@ -1107,7 +1107,7 @@ classdef PorousTransportLayer < ElectronicComponent
             Vs(lind.K)   = pmv.*abs(sp.K.V0)./(abs(sp.OH.V0) + abs(sp.K.V0)); 
             Vs(lind.H2O) = sp.H2O.MW.* (1./rho +...
                                         mOH.*(sp.OH.MW./rho - Vs(lind.OH)) +...
-                                        mK.*(sp.K.MW ./rho - Vs(lind.OH))); 
+                                        mK.*(sp.K.MW ./rho - Vs(lind.K))); 
             
             cH2O = (1 - cOH.*Vs(lind.OH) - cK.*Vs(lind.K))./V(lind.H2O);
             
