@@ -45,13 +45,23 @@ classdef ElectronicComponent < BaseModel
 
             model = registerVarAndPropfuncNames@BaseModel(model);
             
-            varnames = {'T'           , ...
-                        'phi'         , ...
-                        'jBcSource'   , ...
-                        'eSource'     , ...
-                        'conductivity', ...
-                        'j'           , ...
-                        'chargeCons'};
+            varnames = {};
+
+            % Temperature [K]
+            varnames{end + 1} = 'T';
+            % Electrical potential [V]
+            varnames{end + 1} = 'phi';
+            % Current Source [A] - one value per cell
+            varnames{end + 1} = 'eSource';
+            % Current Source at boundary [A] - one value per cell (will be typically set to zero for non-boundary cells)
+            varnames{end + 1} = 'jBcSource';
+            % Conductivity [S m^-1]
+            varnames{end + 1} = 'conductivity';
+            % Current density flux [A] - one value per face
+            varnames{end + 1} = 'j';
+            % Residual for the charge conservation equation
+            varnames{end + 1} = 'chargeCons';
+            
             model = model.registerVarNames(varnames);
 
             if model.use_thermal
