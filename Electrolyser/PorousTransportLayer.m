@@ -809,7 +809,7 @@ classdef PorousTransportLayer < ElectronicComponent
                 p = state.phasePressures{phind};
                 mu = state.viscosities{pmap(phind)};
                 vf = state.volumeFractions{phind};
-                v{ind} = assembleFlux(model, p, (vf.^1.5).*K./mu);
+                v{phind} = assembleFlux(model, p, (vf.^1.5).*K./mu);
             end
             
             state.phaseFluxes = v;
