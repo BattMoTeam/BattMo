@@ -684,7 +684,7 @@ classdef PorousTransportLayer < ElectronicComponent
             dmudc = R.*T./cOH;
             coef = (kappa./F).*(t/z).*dmudc;
 
-            % j = j + assembleFlux(model, cOH, coef);
+            j = j + assembleFlux(model, cOH, coef);
 
             state.j = j;
             
