@@ -48,12 +48,11 @@ classdef IridiumCatalystLayer < CatalystLayer
             cOH = state.cOHelyte;
             aw  = state.H2OaElyte;
             
-            % state.elyteReactionRateConstant = j0.*((cOH/cOH0.*aw).^0.5);
-            state.elyteReactionRateConstant = j0;
+            state.elyteReactionRateConstant = j0.*((cOH/cOH0.*aw).^0.5);
             
             aw = state.H2OaInmr;
-            % state.inmrReactionRateConstant = j0.*(aw.^0.5);
-            state.inmrReactionRateConstant = j0;
+
+            state.inmrReactionRateConstant = j0.*(aw.^0.5);
             
         end
 
