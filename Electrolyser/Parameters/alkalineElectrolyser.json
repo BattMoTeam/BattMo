@@ -3,7 +3,7 @@
   "IonomerMembrane": {
     "liquidVolumeFraction" : 0.9,
     "H2O" : {"c0" : 1000,
-             "D" : 8.84e-10,
+             "D" : 1.0751e-9,
              "V0": 18e-6},
     "OH" : {"xi" : 1,
             "z" : -1,
