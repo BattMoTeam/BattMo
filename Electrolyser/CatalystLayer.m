@@ -92,6 +92,7 @@ classdef CatalystLayer < BaseModel
             % The following source terms are per volume. The units are [mol s^-1 m^-3]
             varnames{end + 1} = 'activeGasSource';
             varnames{end + 1} = 'elyteH2Osource';
+            varnames{end + 1} = 'inmrH2Osource';
             varnames{end + 1} = 'elyteOHsource';
             varnames{end + 1} = 'inmrOHsource';
             

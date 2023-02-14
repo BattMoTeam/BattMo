@@ -35,9 +35,10 @@ classdef PlatiniumCatalystLayer < CatalystLayer
             % update source terms
             fn = @() PlatiniumCatalystLayer.updateSources;
             inputnames = {'elyteReactionRate', 'inmrReactionRate'};
-            model = model.registerPropFunction({'inmrOHsource', fn, inputnames});
-            model = model.registerPropFunction({'elyteOHsource', fn, inputnames});
             model = model.registerPropFunction({'elyteH2Osource', fn, inputnames});
+            model = model.registerPropFunction({'elyteOHsource', fn, inputnames});
+            model = model.registerPropFunction({'inmrH2Osource', fn, inputnames});
+            model = model.registerPropFunction({'inmrOHsource', fn, inputnames});
             model = model.registerPropFunction({'activeGasSource', fn, inputnames});
             model = model.registerPropFunction({'eSource', fn, inputnames});
 
@@ -75,7 +76,8 @@ classdef PlatiniumCatalystLayer < CatalystLayer
             R = elyteR + inmrR;
             
             state.activeGasSource = -R/F;
-            state.elyteH2Osource  = 2*R/F;
+            state.elyteH2Osource  = 2*elyteR/F;
+            state.inmrH2Osource   = 2*inmrR/F;
             state.elyteOHsource   = -2*elyteR/F;
             state.inmrOHsource    = -2*inmrR/F;
             state.eSource         = -2*R.*vols;

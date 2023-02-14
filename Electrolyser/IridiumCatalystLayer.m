@@ -32,9 +32,10 @@ classdef IridiumCatalystLayer < CatalystLayer
             % update source terms
             fn = @() IridiumCatalystLayer.updateSources;
             inputnames = {'elyteReactionRate', 'inmrReactionRate'};
-            model = model.registerPropFunction({'inmrOHsource', fn, inputnames});
-            model = model.registerPropFunction({'elyteOHsource', fn, inputnames});
             model = model.registerPropFunction({'elyteH2Osource', fn, inputnames});
+            model = model.registerPropFunction({'inmrH2Osource', fn, inputnames});
+            model = model.registerPropFunction({'elyteOHsource', fn, inputnames});
+            model = model.registerPropFunction({'inmrOHsource', fn, inputnames});
             model = model.registerPropFunction({'activeGasSource', fn, inputnames});
             model = model.registerPropFunction({'eSource', fn, inputnames});            
         end
@@ -105,7 +106,8 @@ classdef IridiumCatalystLayer < CatalystLayer
             R = elyteR + inmrR;
             
             state.activeGasSource = 0.5*R/F;
-            state.elyteH2Osource  = R/F;
+            state.elyteH2Osource  = elyteR/F;
+            state.inmrH2Osource   = inmrR/F;
             state.elyteOHsource   = -2*elyteR/F;
             state.inmrOHsource    = -2*inmrR/F;
             state.eSource         = -2*R.*vols;

@@ -69,6 +69,7 @@ classdef Electrolyser < BaseModel
             for ielde = 1 : numel(eldes)
                 elde = eldes{ielde};
                 inputvarnames{end + 1} = {elde, exl, 'H2OexchangeRate'};
+                inputvarnames{end + 1} = {elde, ctl, 'inmrH2Osource'};
                 inputvarnames{end + 1} = {elde, ctl, 'inmrOHsource'};
                 inputvarnames{end + 1} = {elde, exl, 'OHexchangeRate'};
             end
@@ -386,12 +387,13 @@ classdef Electrolyser < BaseModel
                 coupcells = coupterm.couplingcells;
                 vols      = vols(coupcells(:, 2));
 
-                inmrOHsource = state.(elde).(ctl).inmrOHsource(coupcells(:, 1));
-                OHexchR      = state.(elde).(exl).OHexchangeRate(coupcells(:, 1));
-                H2OexchR     = state.(elde).(exl).H2OexchangeRate(coupcells(:, 1));
+                inmrOHsource  = state.(elde).(ctl).inmrOHsource(coupcells(:, 1));
+                inmrH2Osource = state.(elde).(ctl).inmrH2Osource(coupcells(:, 1));
+                OHexchR       = state.(elde).(exl).OHexchangeRate(coupcells(:, 1));
+                H2OexchR      = state.(elde).(exl).H2OexchangeRate(coupcells(:, 1));
 
                 OHsource(coupcells(:, 2))  = vols.*(inmrOHsource - OHexchR);
-                H2OSource(coupcells(:, 2)) = - vols.*H2OexchR;
+                H2OSource(coupcells(:, 2)) = vols.*(inmrH2Osource - H2OexchR);
 
             end
 
