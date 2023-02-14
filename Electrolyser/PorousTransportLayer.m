@@ -655,8 +655,7 @@ classdef PorousTransportLayer < ElectronicComponent
                      0.001043 ;
                      -0.0000003];
 
-            % cOH = 1e-3*cOH; % we convert to mol/litre 
-            cOH = 1;
+            cOH = 1e-3*cOH; % we convert to mol/litre
             state.conductivity = (coefs(1).*cOH    + ...
                                   coefs(2).*cOH.^2 + ...
                                   coefs(3).*cOH.*T + ...
