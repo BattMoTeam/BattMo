@@ -3,7 +3,7 @@ classdef ElectrolyserGridGenerator
 
     properties
         % Global grid
-        % It is stored here because is shared by many setup functions
+        % It is stored here because it is shared by many setup functions
         G
 
     end
@@ -109,6 +109,9 @@ classdef ElectrolyserGridGenerator
 
             eldes = {oer, her};
 
+            % We setup also ionomer tortuosity
+            tortuosity = ones(G_inm.cells.num, 1);
+            
             for ielde = 1 : numel(eldes)
 
                 elde = eldes{ielde};
@@ -129,9 +132,13 @@ classdef ElectrolyserGridGenerator
 
                 couplingTerms{end + 1} = coupTerm;
 
+                tortuosity(cells2) = paramobj.(elde).(ctl).tortuosity;
+                
             end
 
             paramobj.couplingTerms = couplingTerms;
+            paramobj.(inm).tortuosity = tortuosity;
+            
 
         end
 

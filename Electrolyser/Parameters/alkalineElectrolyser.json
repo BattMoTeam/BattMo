@@ -22,7 +22,7 @@
                                 -7.614],
       "theta": 100,
       "permeability": 1e-12,
-      "BruggemanCoefficient": 1.5,
+      "tortuosity": 1.5,
       "sp": {
         "OH": {
           "MW": 0.0170068,
@@ -56,7 +56,8 @@
                         "n" : 2,
                         "alpha" : 0.5,
                         "Xinmr" : 0.5,
-                        "volumetricSurfaceArea" : 2e6
+                        "volumetricSurfaceArea" : 2e6,
+                        "tortuosity" : 1.5
                       },
     "ExchangeLayer" : {
       "OH" : {"z" : -1,
@@ -77,7 +78,7 @@
                                 -7.614],
       "theta": 100,
       "permeability": 1e-12,
-      "BruggemanCoefficient": 1.5,
+      "tortuosity": 1.5,
       "sp": {
         "OH": {
           "MW": 0.0170068,
@@ -111,7 +112,8 @@
                         "n" : 2,
                         "alpha" : 0.5,
                         "Xinmr" : 0.5,
-                        "volumetricSurfaceArea" : 2e6
+                        "volumetricSurfaceArea" : 2e6,
+                        "tortuosity" : 1.5
                       },
     "ExchangeLayer" : {
       "OH" : {"z" : -1,

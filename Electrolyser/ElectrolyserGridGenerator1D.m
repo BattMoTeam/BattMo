@@ -55,6 +55,7 @@ classdef ElectrolyserGridGenerator1D < ElectrolyserGridGenerator
             params.(her).bccells = sum(nxs(4 : 5)); % index in own grid
 
             [paramobj, gen] = gen.setupElectrolyserInputParams(paramobj, params);
+            
         end
 
 

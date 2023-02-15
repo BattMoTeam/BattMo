@@ -15,7 +15,8 @@ classdef CatalystLayerInputParams < ComponentInputParams
         alpha                 % coefficient in the exponent in Butler-Volmer equation [-]
         Xinmr                 % Fraction of specific area that is coversed with ionomer [-]
         volumetricSurfaceArea % Volumetric surface area [m^ -1]
-        
+
+        tortuosity % Tortuosity [-]
     end
     
     methods

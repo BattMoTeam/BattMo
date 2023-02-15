@@ -6,7 +6,7 @@ classdef PorousTransportLayerInputParams < ElectronicComponentInputParams
         leverettCoefficients  % Leverett coefficient that enters in the computation of the capillary pressure, see leverett.m 
         theta                % Water contact angle, enters in the computation of the capillary pressure [-]
         permeability         % Permeability [Darcy]
-        BruggemanCoefficient % Bruggeman coefficient [-]
+        tortuosity % Tortuosity
         sp % species struct 
         % sp.OH.MW    : Molecular weight of OH [kg mol^-1]
         % sp.OH.V0    : Partial molar volume of OH [m^3 mol^-1]

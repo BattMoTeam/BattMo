@@ -15,7 +15,7 @@ classdef PorousTransportLayer < ElectronicComponent
         leverettCoefficients % coefficients for the Leverett function definition, see method updateLiquidPressure and function leverett.m
         theta                % water contact angle
         permeability         % Permeability [Darcy]
-        BruggemanCoefficient % Bruggeman coefficient (not used yet)
+        tortuosity           % Tortuosity
         
         sp % species struct
         % sp.OH.MW    : Molecular weight of OH [kg mol^-1]
@@ -55,7 +55,7 @@ classdef PorousTransportLayer < ElectronicComponent
                        'solidVolumeFraction' , ... 
                        'leverettCoefficients', ... 
                        'theta'               , ... 
-                       'BruggemanCoefficient', ... 
+                       'tortuosity'          , ... 
                        'permeability'        , ...
                        'sp'                  , ...
                        'MW'                  , ...
@@ -457,6 +457,7 @@ classdef PorousTransportLayer < ElectronicComponent
             gasInd     = model.gasInd;
             perm       = model.permeability;
             op         = model.operators;
+            tau        = model.tortuosity;
             
             bcfaces = coupterm.couplingfaces;
 
@@ -470,7 +471,7 @@ classdef PorousTransportLayer < ElectronicComponent
                 pBc  = state.(bd).phasePressures{iph};
                 visc = state.viscosities{imph};
                 vf   = state.volumeFractions{iph};
-                [tc, bccells] = op.harmFaceBC((vf.^1.5).*perm./visc, bcfaces);
+                [tc, bccells] = op.harmFaceBC((vf.^tau).*perm./visc, bcfaces);
                 phaseBcFlux{iph} = tc.*(pBc - p(bccells));
             end
 
@@ -518,7 +519,7 @@ classdef PorousTransportLayer < ElectronicComponent
 
             vf = state.volumeFractions{phInd.liquid};
             D  = model.sp.OH.D;
-            tc = op.harmFaceBC((vf.^1.5).*D, bcfaces);
+            tc = op.harmFaceBC((vf.^tau).*D, bcfaces);
             diffOHbcFlux = tc.*(cOHbc - cOH(bccells));
             
             % We compute OH boundary convection flux (should be consistent with what is implemented in method
@@ -802,6 +803,7 @@ classdef PorousTransportLayer < ElectronicComponent
 
             K    = model.permeability;
             pmap = model.mobPhaseInd.phaseMap;
+            tau  = model.tortuosity;
             
             phaseInds = [model.phaseInd.liquid; model.phaseInd.gas];
             
@@ -810,7 +812,7 @@ classdef PorousTransportLayer < ElectronicComponent
                 p = state.phasePressures{phind};
                 mu = state.viscosities{pmap(phind)};
                 vf = state.volumeFractions{phind};
-                v{phind} = assembleFlux(model, p, (vf.^1.5).*K./mu);
+                v{phind} = assembleFlux(model, p, (vf.^tau.*K./mu));
             end
             
             state.phaseFluxes = v;
@@ -828,12 +830,14 @@ classdef PorousTransportLayer < ElectronicComponent
         
         function state = updateOHDiffusionFlux(model, state)
         % assemble OH diffusion flux
-            D = model.sp.OH.D;
+
+            D   = model.sp.OH.D;
+            tau = model.tortuosity;
 
             cOH = state.concentrations{model.liquidInd.OH};
             vf = state.volumeFractions{model.phaseInd.liquid};
             
-            state.diffOHFlux = assembleFlux(model, cOH, vf.^1.5.*D);
+            state.diffOHFlux = assembleFlux(model, cOH, vf.^tau.*D);
 
         end
         
