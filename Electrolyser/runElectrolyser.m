@@ -33,7 +33,7 @@ cgt = model.computationalGraph;
 [model, initstate] = model.setupBcAndInitialState();
 
 % total = 10*hour;
-total = 5*minute;
+total = 1*hour;
 n  = 100;
 dt = total/n;
 
