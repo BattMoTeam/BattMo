@@ -5,9 +5,7 @@ function is_valid = validateJsonFiles(jsonfiles, reload)
     end
 
     if nargin == 2 & reload
-        clear classes
-        mod = py.importlib.import_module('validationJsonScript');
-        py.importlib.reload(mod);
+        reloadModule('validationJsonScript');
     end
 
     % Validate using python script

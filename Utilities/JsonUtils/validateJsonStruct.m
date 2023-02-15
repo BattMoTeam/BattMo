@@ -1,9 +1,7 @@
 function is_valid = validateJsonStruct(jsonstruct, reload)
 
     if nargin == 2 & reload
-        clear classes
-        mod = py.importlib.import_module('validationJsonScript');
-        py.importlib.reload(mod);
+        reloadModule('validateJsonStruct');
     end
 
     % Write the json struct to temporary file
