@@ -1,7 +1,5 @@
 function reloadModule(modulename)
 
-    clear classes;
-
     if nargin == 0
         modulename = 'validationJsonScript';
     end

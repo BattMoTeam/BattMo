@@ -1,6 +1,6 @@
 # Call from MATLAB as py.validationJsonScript(filename). Remember to
 # restart the pyenv for changes to be seen by MATLAB. This is done by
-# calling `terminate(pyenv)`.
+# calling `terminate(pyenv)` or using the reloadModule script.
 
 import json
 import jsonschema
@@ -39,7 +39,6 @@ def validate(jsonfile):
     schema_filename = schema_folder / "Simulation.schema.json"
     with open(schema_filename) as schema_file:
         mainschema = json.load(schema_file)
-
     if verbose:
         print("Validate main schema", mainschema)
     v = jsonschema.Draft202012Validator(mainschema, resolver=resolver)
@@ -48,5 +47,6 @@ def validate(jsonfile):
     if verbose:
         print("Validate input file", jsonfile)
     jsonstruct = rjson.loadJsonBattmo(jsonfile)
+    v.validate(jsonstruct)
 
-    return v.is_valid(jsonstruct)
+    return True
