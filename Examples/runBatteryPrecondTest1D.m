@@ -2,6 +2,10 @@
 % This example demonstrates how to setup a P2D model of a Li-ion battery
 % and run a simple simulation.
 
+if mrstPlatform('octave')
+    error('This demo cannot be run from Octave since it does not support the linear solvers');
+end
+
 % Clear the workspace and close open figures
 clear all
 close all

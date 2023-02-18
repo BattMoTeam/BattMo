@@ -1,9 +1,13 @@
+if mrstPlatform('octave')
+    error('This demo cannot be run from Octave since it does not support the linear solvers');
+end
+
 clear all
 close all
 
 mrstDebug(20);
-% Setup mrst modules
 
+% Setup mrst modules
 mrstModule add ad-core mrst-gui mpfa agmg linearsolvers
 
 %% We setup the geometrical parameters for a 4680 battery. 

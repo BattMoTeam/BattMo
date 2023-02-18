@@ -1,3 +1,7 @@
+if mrstPlatform('octave')
+    error('This demo cannot be run from Octave since it does not yet support the use of tables');
+end
+
 %% Setup
 mrstModule add ad-core optimization mpfa
 
