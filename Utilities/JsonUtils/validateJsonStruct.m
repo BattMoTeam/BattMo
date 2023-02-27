@@ -1,10 +1,6 @@
-function is_valid = validateJsonStruct(jsonstruct, reload)
+function is_valid = validateJsonStruct(jsonstruct)
 
-    if nargin == 2 & reload
-        reloadModule('validateJsonStruct');
-    end
-
-    % Write the json struct to temporary file
+    % Write the json struct to a temporary file
     tempfilename = [tempname, '.json'];
     fid = fopen(tempfilename, 'w');
     fprintf(fid, '%s', jsonencode(jsonstruct));

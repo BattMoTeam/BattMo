@@ -1,12 +1,12 @@
-function is_valid = validateJsonFiles(jsonfiles, reload)
+function is_valid = validateJsonFiles(jsonfiles)
 
     if ~iscell(jsonfiles)
         jsonfiles = {jsonfiles};
     end
 
-    if nargin == 2 & reload
-        reloadModule('validationJsonScript');
-    end
+    % Load module
+    % FIXME Don't load the module every time
+    loadModule('validationJsonScript');
 
     % Validate using python script
     for k = 1:numel(jsonfiles)
