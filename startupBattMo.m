@@ -6,6 +6,10 @@ function startupBattMo
 % The source code for MRST is synchronized to BattMo using git-submodule mechanisms (In the MRST directory in BattMo, you
 % should find the subdirectories given by the ``names`` cell array below)
 %
+
+fprintf(' /-\\\n| + |\n \\-/\n');
+fprintf('Welcome to the Battery Modeling Toolbox (BattMo)! BattMo is based on MRST, which will now be initialized.\n');
+
 rootdirname = fileparts(mfilename('fullpath'));
 
 run(fullfile(rootdirname, 'MRST', 'mrst-core',  'startup'));
