@@ -20,6 +20,7 @@ mrstModule add ad-core mrst-gui mpfa
 % provided in json format. All the parameters for the model are stored in
 % the paramobj object.
 jsonstruct = parseBattmoJson(fullfile('ParameterData','BatteryCellParameters','LithiumIonBatteryCell','lithium_ion_battery_nmc_graphite.json'));
+jsonstruct.include_current_collectors = true;
 paramobj = BatteryInputParams(jsonstruct);
 
 % We define some shorthand names for simplicity.
@@ -55,18 +56,20 @@ model = Battery(paramobj);
 % The mesh is plotted using the plotGrid() function from MRST. 
 colors = crameri('vik', 5);
 figure
-plotGrid(model.(ne).(cc).G,     'facecolor', colors(1,:), 'edgealpha', 0.5, 'edgecolor', [1, 1, 1]);
-plotGrid(model.(ne).(am).G,     'facecolor', colors(2,:), 'edgealpha', 0.5, 'edgecolor', [1, 1, 1]);
-plotGrid(model.(elyte).(sep).G, 'facecolor', colors(3,:), 'edgealpha', 0.5, 'edgecolor', [1, 1, 1]);
-plotGrid(model.(pe).(am).G,     'facecolor', colors(4,:), 'edgealpha', 0.5, 'edgecolor', [1, 1, 1]);
-plotGrid(model.(pe).(cc).G,     'facecolor', colors(5,:), 'edgealpha', 0.5, 'edgecolor', [1, 1, 1]);
+legtext = {};
+edgeparams = {'edgealpha', 0.5, 'edgecolor', [1, 1, 1]};
+plotGrid(model.(ne).(am).G,     'facecolor', colors(2,:), edgeparams{:});
+plotGrid(model.(elyte).(sep).G, 'facecolor', colors(3,:), edgeparams{:});
+plotGrid(model.(pe).(am).G,     'facecolor', colors(4,:), edgeparams{:});
+legtext = [legtext, {'negative electrode active material', 'separator', 'positive electrode current collector'}];
+if model.include_current_collectors
+    plotGrid(model.(ne).(cc).G, 'facecolor', colors(1,:), edgeparams{:});
+    plotGrid(model.(pe).(cc).G, 'facecolor', colors(5,:), edgeparams{:});
+    legtext{end+1} = 'negative electrode current collector';
+    legtext{end+1} = 'positive electrode current collector';
+end
+legend(legtext, 'location', 'southwest');
 axis tight;
-legend({'negative electrode current collector' , ...
-        'negative electrode active material'   , ...
-        'separator'                            , ...
-        'positive electrode active material'   , ...
-        'positive electrode current collector'}, ...
-       'location', 'southwest'),
 setFigureStyle('quantity', 'single');
 drawnow();
 pause(0.1);
