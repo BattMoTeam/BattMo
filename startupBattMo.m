@@ -8,7 +8,8 @@ function startupBattMo
 %
 
 fprintf(' /-\\\n| + |\n \\-/\n');
-fprintf('Welcome to the Battery Modeling Toolbox (BattMo)! BattMo is based on MRST, which will now be initialized.\n');
+fprintf('Welcome to the Battery Modeling Toolbox (BattMo)!\n');
+fprintf('BattMo is based on MRST, which will now be initialized.\n\n');
 
 rootdirname = fileparts(mfilename('fullpath'));
 
