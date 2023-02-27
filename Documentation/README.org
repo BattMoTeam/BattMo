@@ -2,12 +2,24 @@
 * Requirements
 ** sphinx
    installation instruction described [[https://www.sphinx-doc.org/en/master/usage/installation.html][here]]
+   #+begin_src
+     sudo apt install python3-sphinx     
+   #+end_src
 ** matlab extension
    https://pypi.org/project/sphinxcontrib-matlabdomain/
+   #+begin_src 
+     pip3 install -U sphinxcontrib-matlabdomain
+   #+end_src
 ** install sphinx rtd theme
    https://pypi.org/project/sphinx-rtd-theme/
+   #+begin_src
+     pip3 install sphinx-rtd-theme
+   #+end_src
 ** bibtex extension
    https://sphinxcontrib-bibtex.readthedocs.io/en/latest/quickstart.html#installation
+   #+begin_src
+     pip3 install sphinxcontrib-bibtex
+   #+end_src
 * Command
   #+BEGIN_SRC sh
   make html
