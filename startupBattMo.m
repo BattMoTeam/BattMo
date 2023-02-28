@@ -7,7 +7,7 @@ function startupBattMo
 % should find the subdirectories given by the ``names`` cell array below)
 %
 
-fprintf(' /-\\\n| + |\n \\-/\n');
+fprintf('\n  /-\\\n | + | BattMo\n  \\-/\n\n');
 fprintf('Welcome to the Battery Modeling Toolbox (BattMo)!\n');
 fprintf('BattMo is based on MRST, which will now be initialized.\n\n');
 
