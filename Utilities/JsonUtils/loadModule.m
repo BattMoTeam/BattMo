@@ -8,7 +8,7 @@ function loadModule(modulename)
     if mrstPlatform('matlab')
         pe = pyenv;
         if pe.Version == ""
-            fprintf('Cannot load module %s because no python installation is found. Try setting it manually, for example as pyenv(''Version'', ''/usr/bin/python3.10'');. You may have to install the correct libpython package (eg. libpython3.10) separately. To find the path to the executable you may use ''which python3''.\n', modulename);
+            warning('Cannot load module %s because no python installation is found. Try setting it manually, for example as pyenv(''Version'', ''/usr/bin/python3.10'');. You may have to install the correct libpython package (eg. libpython3.10) separately. To find the path to the executable you may use ''which python3''.\n', modulename);
         else
             try
                 rootdirname = fileparts(mfilename('fullpath'));

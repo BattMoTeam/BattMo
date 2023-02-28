@@ -196,7 +196,7 @@ load = @(x) -repmat([0, 0], size(x, 1), 1);
 
 %% We run the mechanical simulation for each time step
 
-state0 = initstate
+state0 = initstate;
 figure
 plotGrid(G)
 ax      = axis(); 
