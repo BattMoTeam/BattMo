@@ -9,7 +9,7 @@ Tutorials
    publishedExamples/runBattery2D.rst
    publishedExamples/runBattery3D.rst
 
-
+   publishedExamples/battMoTutorial.rst
 
 #. `Pseudo-Two-Dimensional (P2D) Lithium-Ion Battery Model <publishedExamples/runBattery1D.html>`_
 
