@@ -12,7 +12,7 @@ function loadModule(modulename)
         else
             try
                 rootdirname = fileparts(mfilename('fullpath'));
-                dirname = fullfile(rootdirname, '..', '..', 'Utilities', 'JsonUtils');
+                dirname = fullfile(rootdirname);
                 pypath = cell(py.sys.path);
                 found = false;
                 for k = 1:numel(pypath)
