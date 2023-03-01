@@ -2,7 +2,7 @@
 % This tutorial explains how to setup and run a simulation in BattMo
 
 %%% Setting up the environment
-% *BattMo* uses functionality from `MRST <MRSTBattMo>`. This functionality 
+% BattMo uses functionality from :mod:`MRST <MRSTBattMo>`. This functionality 
 % is collected into modules where each module contains code for doing 
 % specific things. To use this functionality we must add these modules to 
 % the matlab path by running:
@@ -67,7 +67,7 @@ jsonstruct.(ne).(am).diffusionModelType = 'full';
 
 %%%
 % To see which other types of diffusion model are available one can view 
-% <Electrochemistry.ActiveMaterialInputParams>.
+% :class:`ActiveMaterialInputParams <Electrochemistry.ActiveMaterialInputParams>.
 
 %%%
 % When running a simulation, *BattMo* requires that all model parameters
@@ -119,22 +119,13 @@ model = Battery(paramobj);
 % Electrolyte, Negative Electrode, Positive Electrode, Thermal Model and Control
 % Model. The battery class contains all of these submodels and various other 
 % parameters necessary to run the simulation.
-% To see what properties the battery model object has we can print out the model 
-% variable:
-
-model
-
-%%%
-% We can also plot the computational graph using the ComputationalGraphTool in 
-% BattMo. TODO: Make this do something more interesting!!!!
-
-cgt = ComputationalGraphTool(model);
-cgt.getComputationalGraph('doplot', true);
+% To see what properties the battery model object has we can inspec the
+% model by typing model at the Matlab command prompt.
 
 %%% Controlling the simulation
 % The control model specifies how the simulation is controlled. This can
 % also be thought of as the boundary conditions of the simulation.
-% In the first instance we use IEswitch control policy. (NOTE WHAT IS IESWITCH?)
+% In the first instance we use IEswitch control policy. 
 % We set the total time scaled by the CRate in the model.
 % The CRate has been set by the json file. We can access it here:
 
