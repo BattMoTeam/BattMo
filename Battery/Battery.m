@@ -763,7 +763,7 @@ classdef Battery < BaseModel
                 switch model.(ctrl).initialControl
                   case 'discharging'
                     initstate.(ctrl).ctrlType = 'discharge';
-                  case 'discharging'
+                  case 'charging'
                     initstate.(ctrl).ctrlType = 'charge';
                   otherwise
                     error('initialControl not recognized');
