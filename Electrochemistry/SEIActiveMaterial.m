@@ -4,6 +4,9 @@ classdef SEIActiveMaterial < ActiveMaterial
         
         SolidElectrodeInterface
         SideReaction
+
+        primaryVarNames
+        funcCallList
         
     end
     
@@ -33,17 +36,27 @@ classdef SEIActiveMaterial < ActiveMaterial
             varnames{end + 1} = 'seiInterfaceChargeCons';
             % SEI charge consservation equation
             varnames{end + 1} = {itf, 'externalPotentialDrop'};
+
             model = model.registerVarNames(varnames);
 
             if model.standAlone
-                model = model.registerStaticVarName({sei, 'cExternal'});
-                model = model.removeVarName({itf, 'dUdT'});
+                model = model.registerStaticVarNames({{sei, 'cExternal'}, ...
+                                                      {sr, 'phiElectrolyte'}});
+                varnames = {{itf, 'dUdT'}   , ...
+                            {'chargeCons'}  , ...
+                            {'jBcSource'}   , ...
+                            {'j'}           , ...
+                            {'conductivity'}, ...
+                            {'Rvol'}        , ...
+                            {'eSource'}};
+                model = model.removeVarNames(varnames);
+                model = model.registerVarName('E');
             end
-
+            
             fn = @SEIActiveMaterial.assembleSEIchargeCons;
             inputnames = {{itf, 'R'}, {sr, 'R'}, 'R'};
             model = model.registerPropFunction({'seiInterfaceChargeCons', fn, inputnames});
-            
+
             fn = @SEIActiveMaterial.updatePhi;
             model = model.registerPropFunction({{itf, 'phiElectrode'}, fn, {'phi'}});
             model = model.registerPropFunction({{sr, 'phiElectrode'}, fn, {'phi'}});
@@ -54,11 +67,14 @@ classdef SEIActiveMaterial < ActiveMaterial
             model = model.registerPropFunction({{sr, 'externalPotentialDrop'}, fn, inputnames});
 
             fn = @SEIActiveMaterial.Interface.updateEtaWithEx;
-            inputnames = {{itf, 'phiElectrolyte'}, ...
-                          {itf, 'phiElectrode'}  , ...
-                          {itf, 'OCP'}           , ...
-                          {itf, 'externalPotentialDrop'}};
-            model = model.registerPropFunction({{itf, 'eta'}, fn, inputnames});
+            varname = VarName({itf}, 'eta');
+            inputvarnames = {VarName({itf}, 'phiElectrolyte'), ...
+                             VarName({itf}, 'phiElectrode')  , ...
+                             VarName({itf}, 'OCP')           , ...
+                             VarName({itf}, 'externalPotentialDrop')};
+            modelnamespace = {itf};
+            propfunction = PropFunction(varname, fn, inputvarnames, modelnamespace);
+            model = model.registerPropFunction(propfunction);
             
             fn = @SEIActiveMaterial.dispatchSEIRate;
             inputnames = {{sr, 'R'}};
@@ -67,9 +83,45 @@ classdef SEIActiveMaterial < ActiveMaterial
             fn = @SEIActiveMaterial.updateSEISurfaceConcentration;
             inputnames = {{sei, 'cInterface'}};
             model = model.registerPropFunction({{sr, 'c'}, fn, inputnames});
+
+            if model.standAlone
+                fn = @SEIActiveMaterial.dispatchE;
+                inputnames = {'E'};
+                model = model.registerPropFunction({'phi', fn, inputnames});
+
+                fn = @SEIActiveMaterial.setupControl;
+                inputnames = {'controlCurrentSource'};
+                model = model.registerPropFunction({'R', fn, inputnames});
+
+            end
+
+        end
+
+        function model = validateModel(model, varargin)
+
+            model = validateModel@BaseModel(model, varargin{:});
+
+            if isempty(model.computationalGraph)
+                model = model.setupComputationalGraph();
+                cgt = model.computationalGraph;
+                model.primaryVarNames = cgt.getPrimaryVariables();
+                model.funcCallList = cgt.setOrderedFunctionCallList();
+            end
+
+        end
+
+        function state = dispatchE(model, state)
+
+            state.phi = state.E;
             
         end
-        
+
+        function state = setupControl(model, state)
+
+            state.R = state.controlCurrentSource;
+            
+        end
+
         function state = updateSEISurfaceConcentration(model, state)
 
             sei = 'SolidElectrodeInterface';
@@ -89,8 +141,10 @@ classdef SEIActiveMaterial < ActiveMaterial
         end
 
         function state = updatePhi(model, state)
+
             state = updatePhi@ActiveMaterial(model, state);
             state.SideReaction.phiElectrode = state.phi;
+            
         end         
         
         function state = assembleSEIchargeCons(model, state)
@@ -137,24 +191,26 @@ classdef SEIActiveMaterial < ActiveMaterial
             
         end
         
-        function state = updateStandalonejBcSource(model, state)
+        % function state = updateStandalonejBcSource(model, state)
             
-            state.jBcSource = state.controlCurrentSource;
+        %     state.jBcSource = state.controlCurrentSource;
 
-        end
+        % end
 
         function primaryvarnames = getPrimaryVariables(model)
+
+            primaryvarnames = model.primaryVarNames;
             
-            sd  = 'SolidDiffusion';
-            sei = 'SolidElectrodeInterface';
+            % sd  = 'SolidDiffusion';
+            % sei = 'SolidElectrodeInterface';
             
-            primaryvarnames = {{sd, 'c'}           , ...
-                               {sd, 'cSurface'}    , ...
-                               {'phi'}             , ...
-                               {sei, 'c'}          , ...
-                               {sei, 'cInterface'} , ...
-                               {sei, 'delta'}      , ...
-                               {'R'}};
+            % primaryvarnames = {{sd, 'c'}           , ...
+            %                    {sd, 'cSurface'}    , ...
+            %                    {'phi'}             , ...
+            %                    {sei, 'c'}          , ...
+            %                    {sei, 'cInterface'} , ...
+            %                    {sei, 'delta'}      , ...
+            %                    {'R'}};
             
         end
         
@@ -189,72 +245,79 @@ classdef SEIActiveMaterial < ActiveMaterial
             
             time = state0.time + dt;
             state = model.initStateAD(state);
+
+            funcCallList = model.funcCallList;
+
+            for ifunc = 1 : numel(funcCallList)
+                eval(funcCallList{ifunc});
+            end
+
+            % state = model.dispatchTemperature(state); % model.(itf).T, SolidDiffusion.T
+
+            % state = model.updateConcentrations(state); % SolidDiffusion.cSurface, model.(itf).cElectrodeSurface
             
-            state = model.dispatchTemperature(state); % model.(itf).T, SolidDiffusion.T
+            % state.(itf) = model.(itf).updateOCP(state.(itf)); % model.(itf).OCP
+            % state.(itf) = model.(itf).updateReactionRateCoefficient(state.(itf)); % model.(itf).j0
 
-            state = model.updateConcentrations(state); % SolidDiffusion.cSurface, model.(itf).cElectrodeSurface
+            % state = model.updatePotentialDrop(state); % model.(itf).externalPotentialDrop, SideReaction.externalPotentialDrop
             
-            state.(itf) = model.(itf).updateOCP(state.(itf)); % model.(itf).OCP
-            state.(itf) = model.(itf).updateReactionRateCoefficient(state.(itf)); % model.(itf).j0
+            % state = model.updatePhi(state); % model.(itf).phiElectrode
 
-            state = model.updatePotentialDrop(state); % model.(itf).externalPotentialDrop, SideReaction.externalPotentialDrop
+            % state.(itf) = model.(itf).updateEtaWithEx(state.(itf)); % model.(itf).eta
+            % state.(itf) = model.(itf).updateReactionRate(state.(itf)); % model.(itf).R
+            % state = model.dispatchRate(state); % SolidDiffusion.R
+            % state.(sd) = model.(sd).updateMassSource(state.(sd)); % SolidDiffusion.massSource
+            % state.(sd) = model.(sd).assembleSolidDiffusionEquation(state.(sd)); % SolidDiffusion.solidDiffusionEq
             
-            state = model.updatePhi(state); % model.(itf).phiElectrode
+            % state = model.updateSEISurfaceConcentration(state);
+            % state.(sr) = model.(sr).updateReactionRate(state.(sr)); % SideReaction.R
 
-            state.(itf) = model.(itf).updateEtaWithEx(state.(itf)); % model.(itf).eta
-            state.(itf) = model.(itf).updateReactionRate(state.(itf)); % model.(itf).R
-            state = model.dispatchRate(state); % SolidDiffusion.R
-            state.(sd) = model.(sd).updateMassSource(state.(sd)); % SolidDiffusion.massSource
-            state.(sd) = model.(sd).assembleSolidDiffusionEquation(state.(sd)); % SolidDiffusion.solidDiffusionEq
+            % state = model.assembleSEIchargeCons(state); % SeiIterfaceChargeCons
+
+            % state.(sd) = model.(sd).updateDiffusionCoefficient(state.(sd)); % SolidDiffusion.D
+            % state.(sd) = model.(sd).updateFlux(state.(sd)); % SolidDiffusion.flux
+
+            % state.(sd) = model.(sd).updateMassAccum(state.(sd), state0.(sd), dt); % SolidDiffusion.massAccum
+            % state.(sd) = model.(sd).updateMassConservation(state.(sd)); % SolidDiffusion.massCons
+
+            % state = model.updateControl(state, drivingForces, dt);
+            % state = model.updateCurrentSource(state);       % eSource
+            % state = model.updateConductivity(state);        % conductivity
+            % state = model.updateCurrent(state);             % j
+            % state = model.updateStandalonejBcSource(state); % jBcSource
+            % state = model.updateChargeConservation(state);  % chargeCons
             
-            state = model.updateSEISurfaceConcentration(state);
-            state.(sr) = model.(sr).updateReactionRate(state.(sr)); % SideReaction.R
+            % state = model.dispatchSEIRate(state); % SolidElectrodemodel.(itf).R
+            % state.(sei) = model.(sei).updateSEIgrowthVelocity(state.(sei)); % SolidElectrodeInterface.v
+            % state.(sei) = model.(sei).updateFlux(state.(sei)); % SolidElectrodeInterface.flux
 
-            state = model.assembleSEIchargeCons(state); % SeiIterfaceChargeCons
+            % state.(sei) = model.(sei).updateMassAccumTerm(state.(sei), state0.(sei), dt); % SolidElectrodeInterface.accumTerm 
+            % state.(sei) = model.(sei).updateMassSource(state.(sei)); % SolidElectrodeInterface.massSource
+            % state.(sei) = model.(sei).updateMassConservation(state.(sei)); % SolidElectrodeInterface.massCons
 
-            state.(sd) = model.(sd).updateDiffusionCoefficient(state.(sd)); % SolidDiffusion.D
-            state.(sd) = model.(sd).updateFlux(state.(sd)); % SolidDiffusion.flux
-
-            state.(sd) = model.(sd).updateMassAccum(state.(sd), state0.(sd), dt); % SolidDiffusion.massAccum
-            state.(sd) = model.(sd).updateMassConservation(state.(sd)); % SolidDiffusion.massCons
-
-            state = model.updateControl(state, drivingForces, dt);
-            state = model.updateCurrentSource(state);       % eSource
-            state = model.updateConductivity(state);        % conductivity
-            state = model.updateCurrent(state);             % j
-            state = model.updateStandalonejBcSource(state); % jBcSource
-            state = model.updateChargeConservation(state);  % chargeCons
+            % state.(sei) = model.(sei).assembleWidthEquation(state.(sei), state0.(sei), dt); % SolidElectrodeInterface.widthEq
             
-            state = model.dispatchSEIRate(state); % SolidElectrodemodel.(itf).R
-            state.(sei) = model.(sei).updateSEIgrowthVelocity(state.(sei)); % SolidElectrodeInterface.v
-            state.(sei) = model.(sei).updateFlux(state.(sei)); % SolidElectrodeInterface.flux
-
-            state.(sei) = model.(sei).updateMassAccumTerm(state.(sei), state0.(sei), dt); % SolidElectrodeInterface.accumTerm 
-            state.(sei) = model.(sei).updateMassSource(state.(sei)); % SolidElectrodeInterface.massSource
-            state.(sei) = model.(sei).updateMassConservation(state.(sei)); % SolidElectrodeInterface.massCons
-
-            state.(sei) = model.(sei).assembleWidthEquation(state.(sei), state0.(sei), dt); % SolidElectrodeInterface.widthEq
-            
-            state.(sei) = model.(sei).assembleInterfaceBoundaryEquation(state.(sei)); % SolidElectrodeInterface.solidDiffusionEq
+            % state.(sei) = model.(sei).assembleInterfaceBoundaryEquation(state.(sei)); % SolidElectrodeInterface.solidDiffusionEq
 
             % FIXME : replace the ad-hoc scalings with the correct ones.
+
             massConsScaling = model.(sd).constants.F; % Faraday constant
+
             eqs = {};
-            eqs{end + 1} = 1e-7*state.chargeCons;
-            eqs{end + 1} = 1e9*state.(sd).massCons;
-            eqs{end + 1} = 1e5*state.(sd).solidDiffusionEq.*massConsScaling.*model.(itf).G.cells.volumes/dt;
-            eqs{end + 1} = 1e10*state.(sei).massCons;
-            eqs{end + 1} = state.(sei).widthEq;
-            eqs{end + 1} = state.seiInterfaceChargeCons;
-            eqs{end + 1} = 1e10*state.(sei).interfaceBoundaryEq;
+            names = {};
             
-            names = {'chargeCons'              , ...
-                     'sd_massCons'             , ...
-                     'sd_solidDiffusionEq'     , ...
-                     'sei_massCons'            , ...
-                     'sei_width'               , ...
-                     'sei_interfaceChargeCons', ...
-                     'sei_interfaceBoundaryeq'};
+            names{end + 1} = 'sd_massCons';
+            eqs{end + 1}   = 1e9*state.(sd).massCons;
+            names{end + 1} = 'sd_solidDiffusionEq';
+            eqs{end + 1}   = 1e5*state.(sd).solidDiffusionEq.*massConsScaling.*model.(itf).G.cells.volumes/dt;
+            names{end + 1} = 'sei_massCons';
+            eqs{end + 1}   = 1e10*state.(sei).massCons;
+            names{end + 1} = 'sei_width';
+            eqs{end + 1}   = state.(sei).widthEq;
+            names{end + 1} = 'sei_interfaceChargeCons';
+            eqs{end + 1}   = state.seiInterfaceChargeCons;
+            names{end + 1} = 'sei_interfaceBoundaryeq';
+            eqs{end + 1}   = 1e10*state.(sei).interfaceBoundaryEq;
             
             types = repmat({'cell'}, 1, numel(names));
             

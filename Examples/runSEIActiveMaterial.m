@@ -38,7 +38,8 @@ model = SEIActiveMaterial(paramobj);
 model.standAlone = true;
 
 cgt = ComputationalGraphTool(model);
-return
+% cgt.printTailVariables
+% return
 
 %% Setup initial state
 
@@ -60,7 +61,7 @@ OCP = state.OCP;
 phiElectrolyte = phiElectrodeInit - OCP;
 
 % set primary variables
-initState.phi              = phiElectrodeInit;
+initState.E                = phiElectrodeInit;
 initState.(sd).c           = cElectrodeInit*ones(Nsd, 1);
 initState.(sd).cSurface    = cElectrodeInit;
 initState.(sei).c          = cElectrolyte*ones(Nsei, 1);

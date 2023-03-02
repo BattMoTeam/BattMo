@@ -53,6 +53,8 @@ paramobj.(ct).G = G;
 
 model = SingleParticleSEI(paramobj);
 
+return
+
 % Normally in CCCV control, the current value is computed from CRate but, here, we set it up directly
 if strcmp(model.(ctrl).controlPolicy, 'CCCV')
     model.(ctrl).Imax = 1.8;

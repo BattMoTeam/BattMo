@@ -373,7 +373,6 @@ classdef ActiveMaterial < ElectronicComponent
             cleanState.T = state.T;
             cleanState.(itf).cElectrolyte   = state.(itf).cElectrolyte;
             cleanState.(itf).phiElectrolyte = state.(itf).phiElectrolyte;
-            cleanState.(itf).externalPotentialDrop = 0;
             
             sigma = model.electricalConductivity;
             vf    = model.volumeFraction;
