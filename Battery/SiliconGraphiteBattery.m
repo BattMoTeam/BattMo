@@ -295,12 +295,12 @@ classdef SiliconGraphiteBattery < Battery
 
             massConsScaling = model.con.F;
             
-            eqs{ei.elyte_massCons}          = state.(elyte).massCons*massConsScaling;
-            eqs{ei.elyte_chargeCons}        = state.(elyte).chargeCons;
-            eqs{ei.ne_am_chargeCons}        = state.(ne).(am).chargeCons;
-            eqs{ei.pe_am_chargeCons}        = state.(pe).(am).chargeCons;
-            eqs{ei.EIeq}                    = state.(ctrl).EIequation;
-            eqs{ei.controlEq}               = state.(ctrl).controlEquation;
+            eqs{ei.elyte_massCons}   = state.(elyte).massCons*massConsScaling;
+            eqs{ei.elyte_chargeCons} = state.(elyte).chargeCons;
+            eqs{ei.ne_am_chargeCons} = state.(ne).(am).chargeCons;
+            eqs{ei.pe_am_chargeCons} = state.(pe).(am).chargeCons;
+            eqs{ei.EIeq}             = state.(ctrl).EIequation;
+            eqs{ei.controlEq}        = state.(ctrl).controlEquation;
 
             n    = model.(ne).(am).(gr).(itf).n; % number of electron transfer (equal to 1 for Lithium)
             F    = model.con.F;
@@ -367,10 +367,10 @@ classdef SiliconGraphiteBattery < Battery
             state.(pe).(am).T = state.(thermal).T(model.(pe).(am).G.mappings.cellmap);
             
             % Update temperature in the active materials of the electrodes.
-            state.(ne).(am) = model.(ne).(am).dispatchTemperature(state.(ne).(am));
+            state.(ne).(am)      = model.(ne).(am).dispatchTemperature(state.(ne).(am));
             state.(ne).(am).(si) = model.(ne).(am).(si).dispatchTemperature(state.(ne).(am).(si));
             state.(ne).(am).(gr) = model.(ne).(am).(gr).dispatchTemperature(state.(ne).(am).(gr));
-            state.(pe).(am) = model.(pe).(am).dispatchTemperature(state.(pe).(am));
+            state.(pe).(am)      = model.(pe).(am).dispatchTemperature(state.(pe).(am));
             
         end
         
