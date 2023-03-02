@@ -30,23 +30,29 @@ classdef TestBattery1D < matlab.unittest.TestCase
                 params = [params, {'PositiveElectrode.ActiveMaterial.diffusionModelType', diffusionModelType}];
             end
 
-            % Validation doesn't run in parallel (probably due to writing to file)
-            if isempty(getCurrentTask())
-                % Validate for serial runs
-                json = updateJson(json, params);
-            else
-                json = updateJson(json, params, 'validate', false);
+            % Validation doesn't run in parallel (probably due to
+            % writing to file). It doesn't run if python is not
+            % available.
+            try
+                serial = isempty(getCurrentTask());
+            catch
+                serial = true;
             end
+            has_python = pyenv().Version ~= "";
+            validate = serial & has_python;
+            json = updateJson(json, params, 'validate', validate);
 
             paramobj = BatteryInputParams(json);
+            paramobj = paramobj.validateInputParams();
 
             use_cccv = strcmpi(controlPolicy, 'CCCV');
             if use_cccv
-                cccvstruct = struct( 'controlPolicy'     , 'CCCV',  ...
-                                     'CRate'             , 1         , ...
-                                     'lowerCutoffVoltage', 2.4       , ...
-                                     'upperCutoffVoltage', 4.1       , ...
-                                     'dIdtLimit'         , 0.01      , ...
+                cccvstruct = struct( 'controlPolicy'     , 'CCCV'       ,  ...
+                                     'initialControl'    , 'discharging', ...
+                                     'CRate'             , 1            , ...
+                                     'lowerCutoffVoltage', 2.4          , ...
+                                     'upperCutoffVoltage', 4.1          , ...
+                                     'dIdtLimit'         , 0.01         , ...
                                      'dEdtLimit'         , 0.01);
                 cccvparamobj = CcCvControlModelInputParams(cccvstruct);
                 paramobj.Control = cccvparamobj;
@@ -142,7 +148,7 @@ classdef TestBattery1D < matlab.unittest.TestCase
             % Change default maximum iteration number in nonlinear solver
             nls.maxIterations = 10;
             % Change default behavior of nonlinear solver, in case of error
-            NLS.errorOnFailure = false;
+            nls.errorOnFailure = false;
             nls.timeStepSelector=StateChangeTimeStepSelector('TargetProps', {{'Control','E'}}, 'targetChangeAbs', 0.03);
             % Change default tolerance for nonlinear solver
             model.nonlinearTolerance = 1e-3*model.Control.Imax;

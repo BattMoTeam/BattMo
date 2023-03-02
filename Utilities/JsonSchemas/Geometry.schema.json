@@ -6,7 +6,7 @@
 
   "properties" : {"Geometry" : {"type" : "object",
                                 "properties" : {"case" : {"type" : "string",
-                                                          "enum" : ["1D", "pouch", "2D-demo", "3D-demo", "jellyRoll", "coinCell"]}}},
+                                                          "enum" : ["1D", "pouch", "2D-demo", "3D-demo", "jellyRoll", "sectorModel", "coinCell"]}}},
                   "NegativeElectrode" : { "$ref" : "#/$defs/particlediscretization"},
                   "PositiveElectrode" : { "$ref" : "#/$defs/particlediscretization"}
                  },
@@ -19,8 +19,8 @@
               "$ref" : "#/$defs/3D-demo" },
              {"properties" : {"Geometry" : {"properties" : {"case" : {"const" : "jellyRoll"}}}},
               "$ref" : "#/$defs/jellyRoll" },
-             {"properties" : {"Geometry" : {"properties" : {"case" : {"const" : "coinCell"}}}},
-              "$ref" : "#/$defs/coinCell" }
+             {"properties" : {"Geometry" : {"properties" : {"case" : {"const" : "sectorModel"}}}},
+              "$ref" : "#/$defs/sectorModel" }
             ],
 
   "$defs" : {
@@ -84,6 +84,7 @@
               "properties" : {
                 "diffusionModelType" : {
                   "const" : "full"}}}}]}}},
+    
     "jellyRoll" : {
       "properties" : {
         "Geometry" : {
@@ -102,40 +103,85 @@
               "description" : "discretization parameter giving the number of grid cells in the vertical direction"},
             "nas" : {
               "type" : "integer",
-              "description" : "discretisation parameter giving the number of angular sectors of the grid in the horizontal plane"},
-            "tabparams" : {
-              "type" : "object",
-              "description" : "Parameters for the tabs",
-              "properties" : {
-                "tabcase" : {
-                  "type" : "string",
-                  "enum" : ["no tab", "aligned tabs", "1 tab", "3 tabs"]},
-                "dependentSchemas" : {
-                  "tabcase" : {
-                    "anyOf" : [
-                      {"properties" : {
-                        "tabcase" : {
-                          "const" : "aligned tabs"},
-                        "fractions" : {
-                          "type" : "number"},
-                        "width" : {
-                          "type" : "number"}
-                      }},
-                      {"properties" : {
-                        "tabcase" : {
-                          "const" : "3 tabs"},
-                        "widths" : {
-                          "type" : "number"}
-                      }},
-                      {"properties" : {
-                        "tabcase" : {
-                          "const" : "1 tab"},
-                        "width" : {
-                          "type" : "number"}
-                      }}
-                    ] 
-                  }}}}}}},
-      "allOf" : [{"$ref" : "#/$defs/layerSpecs"}]}}}
+              "description" : "discretisation parameter giving the number of angular sectors of the grid in the horizontal plane"}}},
+        "NegativeElectrode" : {
+          "properties" : {
+            "CurrentCollector" : {
+              "properties": {
+                "tabparams" : {"$ref" : "#/$defs/tabparams"}
+              }}}},
+        "PositiveElectrode" : {
+          "properties" : {
+            "CurrentCollector" : {
+              "properties": {
+                "tabparams" : {"$ref" : "#/$defs/tabparams"}
+              }}}}
+      },
+      "allOf" : [{"$ref" : "#/$defs/layerSpecs"}]},
+
+    "sectorModel" : {
+      "properties" : {
+        "Geometry" : {
+          "properties" : {
+            "rOuter" : {
+              "type" : "number",
+              "description" : "outer radius"},
+            "rInner"  : {
+              "type" : "number",
+              "description" : "inner radius"},
+            "L" : {
+              "type" : "number",
+              "description" : "height of the battery"},
+            "nL" : {
+              "type" : "integer",
+              "description" : "discretization parameter giving the number of grid cells in the vertical direction"},
+            "nas" : {
+              "type" : "integer",
+              "description" : "the angle of the sector is computed as 2*pi/nas"}}}},
+      "allOf" : [{"$ref" : "#/$defs/layerSpecs"}]},
+    
+    "tabparams" : {
+      "type" : "object",
+      "description" : "Parameters for the tabs",
+      "properties" : {
+        "usetab" : {
+          "type" : "boolean",
+          "default" : true}},
+      "dependentSchemas" : {
+        "usetab" : {
+          "anyOf" : [
+            {"properties" : {
+              "usetab" : {
+                "const" : true},
+              "fractions" : {
+                "type" : "array",
+                "items" : {"type" : "number"}},
+              "width" : {
+                "type" : "number"}}},
+            {"properties" : {
+              "usetab" : {
+                "const" : false}}}]}}},
+
+    "sectortabparams" : {
+      "type" : "object",
+      "description" : "Parameters for the tabs for the sector model",
+      "properties" : {
+        "usetab" : {
+          "type" : "boolean",
+          "default" : true
+        }},
+      "dependentSchemas" : {
+        "usetab" : {
+          "anyOf" : [
+            {"properties" : {
+              "usetab" : {
+                "const" : true},
+              "fractions" : {
+                "type" : "array",
+                "items" : {"type" : "number"}}}},
+            {"properties" : {
+              "usetab" : {
+                "const" : false}}}]}}}}}
 
 
 

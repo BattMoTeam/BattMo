@@ -4,7 +4,7 @@ function json = updateJson(json, params, varargin)
                  'tempfilename', []);
     opt = merge_options(opt, varargin{:});
 
-    assert(size(params,1)==1 || size(params,2)==1, 'params should be a cell array with one column or one row');
+    assert(size(params,1) == 1 || size(params,2) == 1, 'params should be a cell array with one column or one row');
     assert(rem(numel(params), 2) == 0, 'params should be contain key and value pairs');
 
     % Extract
@@ -19,19 +19,7 @@ function json = updateJson(json, params, varargin)
     end
 
     if opt.validate
-        % Write the json struct to file
-        if isempty(opt.tempfilename)
-            tempfilename = [tempname, '.json'];
-        else
-            tempfilename = opt.tempfilename;
-        end
-        fid = fopen(tempfilename, 'w');
-        fprintf(fid, '%s', jsonencode(json));
-        fclose(fid);
-
-        % Validate
-        is_valid = py.validationJsonScript.validate(tempfilename);
-        assert(is_valid);
+        validateJsonStruct(json);
     end
 
 end

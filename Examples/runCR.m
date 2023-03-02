@@ -1,3 +1,7 @@
+if mrstPlatform('octave')
+    error('This demo cannot be run from Octave since it does not yet support the use of tables');
+end
+
 clear all
 close all
 clc
@@ -210,8 +214,8 @@ dataFolder = sprintf('BattMo_%s', date);
 problem = packSimulationProblem(initstate, model, schedule, dataFolder, 'Name', name, 'NonLinearSolver', nls);
 problem.SimulatorSetup.OutputMinisteps = true;
 
-resetSimulation = false
-if resetSimulation
+clearSimulation = false
+if clearSimulation
     % Clear previously computed simulation
     clearPackedSimulatorOutput(problem, 'prompt', false);
 end

@@ -3,8 +3,6 @@ classdef CcCvControlModel < ControlModel
     properties
         
         Imax
-        lowerCutoffVoltage
-        upperCutoffVoltage
         dIdtLimit
         dEdtLimit
         
@@ -17,9 +15,7 @@ classdef CcCvControlModel < ControlModel
 
             model = model@ControlModel(paramobj);
             
-            fdnames = {'lowerCutoffVoltage', ...
-                       'upperCutoffVoltage', ...
-                       'dEdtLimit'         , ...
+            fdnames = {'dEdtLimit', ...
                        'dIdtLimit'};
             model = dispatchParams(model, paramobj, fdnames);
             

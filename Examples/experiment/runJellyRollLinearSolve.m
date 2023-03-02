@@ -198,8 +198,8 @@ dataFolder = 'BattMo';
 problem = packSimulationProblem(initstate, model, schedule, dataFolder, 'Name', 'jellyroll_large', 'NonLinearSolver', nls);
 problem.SimulatorSetup.OutputMinisteps = true; 
 
-resetSimulation = true;
-if resetSimulation
+clearSimulation = true;
+if clearSimulation
     %% clear previously computed simulation
     clearPackedSimulatorOutput(problem,'Prompt', false);
 end

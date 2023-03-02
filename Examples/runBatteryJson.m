@@ -1,4 +1,7 @@
 function  output = runBatteryJson(jsonstruct, varargin)
+
+    opt = struct('setupModelOnly', false);
+    opt = merge_options(opt, varargin{:});
     
     mrstModule add ad-core mrst-gui mpfa
     
@@ -75,8 +78,6 @@ function  output = runBatteryJson(jsonstruct, varargin)
         nL     = jsonstruct.Geometry.nL;
         nas    = jsonstruct.Geometry.nas;
 
-        tabparams = jsonstruct.Geometry.tabparams;
-
         nrDict = containers.Map();
         nrDict('ElectrolyteSeparator')     = jsonstruct.Electrolyte.Separator.N;
         nrDict('NegativeActiveMaterial')   = jsonstruct.NegativeElectrode.ActiveMaterial.N;
@@ -96,6 +97,9 @@ function  output = runBatteryJson(jsonstruct, varargin)
         dr = sum(nwidths);dR = rOuter - rInner; 
         % Computed number of windings
         nwindings = ceil(dR/dr);
+
+        tabparams.NegativeElectrode = jsonstruct.NegativeElectrode.CurrentCollector.tabparams;
+        tabparams.PositiveElectrode = jsonstruct.PositiveElectrode.CurrentCollector.tabparams;
         
         spiralparams = struct('nwindings'   , nwindings, ...
                               'rInner'      , rInner   , ...
@@ -131,7 +135,7 @@ function  output = runBatteryJson(jsonstruct, varargin)
         paramobj.initT = jsonstruct.initT;
         paramobj.SOC = jsonstruct.SOC;
       case "given input"
-        error('interface not yet implemented');
+        eval(jsonstruct.loadStateCmd);
       otherwise
         error('initializationSetup not recognized');
     end
@@ -156,8 +160,9 @@ function  output = runBatteryJson(jsonstruct, varargin)
     n = jsonstruct.TimeStepping.N;
 
     dt = total/n;
+    dts = rampupTimesteps(total, dt, 5);
     
-    step = struct('val', dt*ones(n, 1), 'control', ones(n, 1));
+    step = struct('val', dts, 'control', ones(numel(dts), 1));
 
     % we setup the control by assigning a source and stop function.
     % control = struct('CCCV', true); 
@@ -175,6 +180,20 @@ function  output = runBatteryJson(jsonstruct, varargin)
         control = struct('CCCV', true);
       case 'powerControl'
         control = struct('powerControl', true);
+      case 'CC'
+        tup = dt;
+        srcfunc = @(time) model.(ctrl).rampupControl(time, tup);
+        switch model.(ctrl).initialControl
+          case 'discharging'
+            stopFunc = @(model, state, state_prev) (state.(ctrl).E < model.(ctrl).lowerCutoffVoltage);
+          case 'charging'
+            stopFunc = @(model, state, state_prev) (state.(ctrl).E > model.(ctrl).upperCutoffVoltage);
+          otherwise
+            error('initial control not recognized');
+        end
+        control = struct('CC', true);
+        control.src = srcfunc;
+        control.stopFunction = stopFunc;
       otherwise
         error('control policy not recognized');
     end
@@ -187,7 +206,7 @@ function  output = runBatteryJson(jsonstruct, varargin)
       case "given SOC"
         initstate = model.setupInitialState();
       case "given input"
-        error('interface not yet implemented');
+        % allready handled
       otherwise
         error('initializationSetup not recognized');
     end
@@ -235,26 +254,33 @@ function  output = runBatteryJson(jsonstruct, varargin)
     end
     
     % Set verbosity
-    model.verbose = false;
+    model.verbose = jsonstruct.NonLinearSolver.verbose;
 
     if isfield(linearSolverSetup, 'reduction') && linearSolverSetup.reduction.doReduction
         model = model.setupSelectedModel('reduction', linearSolverSetup.reduction);
     end
     
-        
+    if opt.setupModelOnly
+        output.paramobj = paramobj;
+        output.model = model;
+        return
+    end
+    
     %% Run the simulation
     if isfield(jsonstruct, 'Output') && isfield(jsonstruct.Output, 'saveOutput') && jsonstruct.Output.saveOutput
         saveOptions = jsonstruct.Output.saveOptions;
-        dataFolder      = saveOptions.dataFolder;
-        name            = saveOptions.name;
-        resetSimulation = saveOptions.resetSimulation;
         
-        problem = packSimulationProblem(initstate, model, schedule, dataFolder, ...
-                                        'Name'           , name, ...
+        outputDirectory = saveOptions.outputDirectory;
+        name            = saveOptions.name;
+        clearSimulation = saveOptions.clearSimulation;
+        
+        problem = packSimulationProblem(initstate, model, schedule, [], ...
+                                        'Directory'      , outputDirectory, ...
+                                        'Name'           , name      , ...
                                         'NonLinearSolver', nls);
         problem.SimulatorSetup.OutputMinisteps = true; 
 
-        if resetSimulation
+        if clearSimulation
             %% clear previously computed simulation
             clearPackedSimulatorOutput(problem, 'prompt', false);
         end

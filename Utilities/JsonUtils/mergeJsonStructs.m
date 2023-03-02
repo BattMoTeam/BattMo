@@ -43,9 +43,11 @@ function jsonstruct = mergeJsonStructs(jsonstructs, varargin)
                 subtree{end + 1} = fd2;
                 subjsonstruct = mergeJsonStructs({jsonstruct.(fd2), jsonstruct2.(fd2)}, 'warn', opt.warn, 'tree', subtree);
                 jsonstruct.(fd2) = subjsonstruct;
+            elseif ~isstruct(jsonstruct.(fd2)) && ~isstruct(jsonstruct2.(fd2)) && isequal(jsonstruct.(fd2), jsonstruct2.(fd2))
+                % ok. Both are given but same values
             elseif opt.warn
                 varname = horzcat(tree, fd2);
-                fprintf('parameter %s is assigned twice. we use the value from first jsonstruct.\n', strjoin(varname, '.'));
+                fprintf('parameter %s is assigned twice with different values. we use the value from first jsonstruct.\n', strjoin(varname, '.'));
             end
         end
     end

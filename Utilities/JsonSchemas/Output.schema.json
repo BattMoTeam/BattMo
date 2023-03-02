@@ -29,11 +29,11 @@
               "saveOptions" : {
                 "type" : "object",
                 "description" : "part of the input for battmoDir()/MRST/mrst-autodiff/ad-core/simulators/sim_runner/packSimulationProblem which deals with the place where the data is saved",
-                "properties" : {"dataFolder" : {"type" : "string",
-                                                "description" : "name of main Datafolder"},
+                "properties" : {"outputDirectory" : {"type" : "string",
+                                                     "description" : "name of the directory output where the output simulations will be saved"},
                                 "name" : {"type" : "string",
-                                          "description" : "simulation name used as subfolder in dataFolder"},
-                                "resetSimulation" : {"type" : "boolean",
+                                          "description" : "name of the simulation. The output of the simulation will be saved in outputDirectory/name"},
+                                "clearSimulation" : {"type" : "boolean",
                                                      "description" : "true if the data that has been saved in a previous run at the same location should be erased. False if it just should be loaded and used as the output of the simulation."}
                                }}}},
             {"properties" : {

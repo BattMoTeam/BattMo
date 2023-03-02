@@ -85,6 +85,8 @@ function [mass, masses] = computeCellMass(model, varargin)
     
     masses.(elyte).(sep).val = sum(rho.*vols.*frac);
     mass = mass + masses.(elyte).(sep).val;
+
+    mass = mass + opt.packingMass;
     
 end
 

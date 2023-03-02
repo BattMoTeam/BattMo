@@ -1,17 +1,14 @@
-classdef ElectroChemicalComponentInputParams < ElectronicComponentInputParams
-%
-% Input parameter class for :class:`ElectronicComponent <Electrochemistry.ElectronicComponent>`
-%
-    properties
+classdef CcControlModelInputParams < ControlModelInputParams
 
-    end
-    
     methods
 
-        function paramobj = ElectroChemicalComponentInputParams(jsonstruct)
-            paramobj = paramobj@ElectronicComponentInputParams(jsonstruct);
+        function paramobj = CcControlModelInputParams(jsonstruct);
+            
+            paramobj = paramobj@ControlModelInputParams(jsonstruct);
+            paramobj.controlPolicy = 'CC';
+            
         end
-        
+
     end
     
 end

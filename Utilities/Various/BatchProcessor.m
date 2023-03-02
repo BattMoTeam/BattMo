@@ -295,9 +295,17 @@ classdef BatchProcessor
         function sortedsimlist = sortSimList(bp, simlist, varargin)
             paramname = varargin{1};
             rest = varargin(2 : end);
-            if strcmp(paramname, 'inverseOrder')
+            if ischar(paramname) && strcmp(paramname, 'inverseOrder')
                 sortedsimlist = simlist(end : -1 : 1);
             else
+                usefunc = false;
+                if iscell(paramname)
+                    usefunc = true;
+                    func = paramname{2};
+                    paramname = paramname{1};
+                else
+
+                end
                 [vals, type] = getParameterValue(bp, simlist, paramname);
                 eind = cellfun(@(val) isempty(val), vals);
                 simlist = horzcat(simlist(~eind), simlist(eind));
@@ -306,6 +314,9 @@ classdef BatchProcessor
                     vals = vertcat(vals{:});
                 elseif strcmp(type, 'vector')
                     error('vectors cannot be ordered');
+                end
+                if usefunc
+                    vals = func(vals);
                 end
                 [~, ind] = sort(vals);
                 ne = nnz(~eind);

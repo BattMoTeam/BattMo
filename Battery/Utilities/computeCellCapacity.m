@@ -136,12 +136,14 @@ function [cap, cap_neg, cap_pos, specificEnergy] = computeCellCapacity(model, va
 
         thetaMax = min(thetaMaxPos, thetaMinPos + r*(thetaMaxPos - thetaMinPos));
 
-        theta = linspace(thetaMinPos, thetaMax, 100);
+        theta = linspace(thetaMinPos, thetaMax, 1000);
         energy = sum(func(theta(1 : end - 1)).*diff(theta)*vol*F*cMax);
         
         elde = 'NegativeElectrode';        
-        
+
+        ammodel  = model.(elde).(am);
         itfmodel = model.(elde).(am).(itf);
+        
         F = itfmodel.constants.F;
         G = itfmodel.G;
         n = itfmodel.n;
@@ -156,7 +158,8 @@ function [cap, cap_neg, cap_pos, specificEnergy] = computeCellCapacity(model, va
 
         thetaMin = max(thetaMinNeg, thetaMaxNeg - 1/r*(thetaMaxNeg - thetaMinNeg));
 
-        theta = linspace(thetaMin, thetaMaxNeg, 100);
+        theta = linspace(thetaMin, thetaMaxNeg, 1000);
+
         energy = energy - sum(func(theta(1 : end - 1)).*diff(theta)*vol*F*cMax);
         
         mass = computeCellMass(model, 'packingMass', opt.packingMass);

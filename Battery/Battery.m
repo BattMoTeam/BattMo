@@ -34,7 +34,12 @@ classdef Battery < BaseModel
         include_current_collectors
         
         primaryVariableNames
+
         addedVariableNames
+        % Some variables in some model are "static" meaning that they are not computed, they are set at the beginning of
+        % the computation and stay constants. Their names are given in this addedVariableNames list. An example of such
+        % variable is the temperature when use_thermal is set to false.
+
         equationNames
         equationTypes
         equationIndices
@@ -71,7 +76,7 @@ classdef Battery < BaseModel
             end
             
             model.Control = model.setupControl(paramobj.Control);
-            
+           
             % define shorthands
             elyte   = 'Electrolyte';
             ne      = 'NegativeElectrode';
@@ -185,13 +190,19 @@ classdef Battery < BaseModel
                 varEqTypes = vertcat(varEqTypes, newentries);
                 
             end
-            
-            addedVariableNames{end + 1} = {ctrl, 'ctrlType'};
-            
-            if strcmp(model.(ctrl).controlPolicy, 'CCCV')
-                addedVariableNames{end + 1} = {ctrl, 'nextCtrlType'};
-            end
 
+            switch model.(ctrl).controlPolicy
+              case 'IEswitch'
+                addedVariableNames{end + 1} = {ctrl, 'ctrlType'};
+              case 'CCCV'
+                addedVariableNames{end + 1} = {ctrl, 'ctrlType'};
+                addedVariableNames{end + 1} = {ctrl, 'nextCtrlType'};
+              case 'CC'
+                addedVariableNames{end + 1} = {ctrl, 'ctrlType'};
+              otherwise
+                error('controlPolicy not recognized');
+            end
+            
             primaryVariableNames = varEqTypes(:, 1);
             equationTypes = varEqTypes(:, 3);
 
@@ -376,7 +387,8 @@ classdef Battery < BaseModel
                 
                 %% Function that updates Thermal Reaction Terms
                 fn = @Battery.updateThermalReactionSourceTerms;
-                inputnames = {{ne, am, 'Rvol'}     , ...
+                inputnames = {{thermal, 'T'}       , ...
+                              {ne, am, 'Rvol'}     , ...
                               {ne, am, itf, 'eta'} , ...
                               {ne, am, itf, 'dUdT'}, ...
                               {pe, am, 'Rvol'}     , ...
@@ -449,7 +461,6 @@ classdef Battery < BaseModel
             
         end
 
-        
         function control = setupControl(model, paramobj)
 
             C = computeCellCapacity(model);
@@ -465,6 +476,10 @@ classdef Battery < BaseModel
                 control.Imax = (C/hour)*CRate;
               case "powerControl"
                 control = PowerControlModel(paramobj);
+              case "CC"
+                control = CcControlModel(paramobj);
+                CRate = control.CRate;
+                control.Imax = (C/hour)*CRate;
               otherwise
                 error('Error controlPolicy not recognized');
             end
@@ -477,13 +492,14 @@ classdef Battery < BaseModel
         % Setup the thermal model :attr:`ThermalModel`. Here, :code:`paramobj` is instance of
         % :class:`ThermalComponentInputParams <Electrochemistry.ThermalComponentInputParams>`
             
-            ne    = 'NegativeElectrode';
-            pe    = 'PositiveElectrode';
-            am    = 'ActiveMaterial';
-            cc    = 'CurrentCollector';
-            elyte = 'Electrolyte';
-            sep   = 'Separator';
-            
+            ne      = 'NegativeElectrode';
+            pe      = 'PositiveElectrode';
+            am      = 'ActiveMaterial';
+            cc      = 'CurrentCollector';
+            elyte   = 'Electrolyte';
+            sep     = 'Separator';
+            thermal = 'ThermalModel';
+
             eldes = {ne, pe}; % electrodes
             
             G = model.G;
@@ -509,15 +525,16 @@ classdef Battery < BaseModel
                 end
                 
                 % Effective parameters from the Electrode Active Component region.
-                am_map = model.(elde).(am).G.mappings.cellmap;
-                am_hcond = model.(elde).(am).thermalConductivity;
-                am_vhcap = model.(elde).(am).specificHeatCapacity*model.(elde).(am).density;
-                am_volfrac = model.(elde).(am).volumeFraction;
+                am_map       = model.(elde).(am).G.mappings.cellmap;
+                am_hcond     = model.(elde).(am).thermalConductivity;
+                am_vhcap     = model.(elde).(am).specificHeatCapacity;
+                am_vhcap     = am_vhcap*model.(elde).(am).density;
+
+                am_volfrac   = model.(elde).(am).volumeFraction;
                 am_bruggeman = model.(elde).(am).BruggemanCoefficient;
-                
-                am_vhcap = am_vhcap.*am_volfrac;
-                am_hcond = am_hcond.*am_volfrac.^am_bruggeman;
-                
+                am_vhcap     = am_vhcap.*am_volfrac;
+                am_hcond     = am_hcond.*am_volfrac.^am_bruggeman;
+                    
                 vhcap(am_map) = vhcap(am_map) + am_vhcap;
                 hcond(am_map) = hcond(am_map) + am_hcond;
                 
@@ -536,26 +553,23 @@ classdef Battery < BaseModel
             
             vhcap(elyte_map) = vhcap(elyte_map) + elyte_vhcap;
             hcond(elyte_map) = hcond(elyte_map) + elyte_hcond;            
-            
+
             % Separator
-            
             sep_map = model.(elyte).(sep).G.mappings.cellmap;
             
             sep_hcond = model.(elyte).(sep).thermalConductivity;
             sep_vhcap = model.(elyte).(sep).specificHeatCapacity*model.(elyte).(sep).density;
+
             sep_volfrac = model.(elyte).(sep).volumeFraction;
             sep_bruggeman = model.(elyte).(sep).BruggemanCoefficient;
-            
             sep_vhcap = sep_vhcap.*sep_volfrac;
             sep_hcond = sep_hcond.*sep_volfrac.^sep_bruggeman;
-            
+                
             vhcap(sep_map) = vhcap(sep_map) + sep_vhcap;
             hcond(sep_map) = hcond(sep_map) + sep_hcond;            
 
-            if model.use_thermal
-                model.ThermalModel.EffectiveVolumetricHeatCapacity = vhcap;
-                model.ThermalModel.EffectiveThermalConductivity = hcond;
-            end
+            model.ThermalModel.EffectiveVolumetricHeatCapacity = vhcap;
+            model.ThermalModel.EffectiveThermalConductivity = hcond;
             
         end
         
@@ -709,18 +723,51 @@ classdef Battery < BaseModel
             
             switch model.(ctrl).controlPolicy
               case 'CCCV'
-                initstate.(ctrl).ctrlType     = 'CC_charge1';
-                initstate.(ctrl).nextCtrlType = 'CC_charge1';
-                initstate.(ctrl).I            = - model.(ctrl).Imax;
+                switch model.(ctrl).initialControl
+                  case 'discharging'
+                    initstate.(ctrl).ctrlType = 'CC_discharge1';
+                    initstate.(ctrl).nextCtrlType = 'CC_discharge1';
+                    initstate.(ctrl).I = model.(ctrl).Imax;
+                  case 'charging'
+                    initstate.(ctrl).ctrlType     = 'CC_charge1';
+                    initstate.(ctrl).nextCtrlType = 'CC_charge1';
+                    initstate.(ctrl).I = - model.(ctrl).Imax;
+                  otherwise
+                    error('initialControl not recognized');
+                end
               case 'IEswitch'
                 initstate.(ctrl).ctrlType = 'constantCurrent';
-                initstate.(ctrl).I        = model.(ctrl).Imax;
+                switch model.(ctrl).initialControl
+                  case 'discharging'
+                    initstate.(ctrl).I = model.(ctrl).Imax;
+                  case 'charging'
+                    error('to implement (should be easy...)')
+                  otherwise
+                    error('initialControl not recognized');
+                end
               case 'powerControl'
-                % this is correct but anyway overwritten 
-                initstate.(ctrl).ctrlType = 'charge';
-                E = initstate.(ctrl).E;
-                P = model.(ctrl).chargingPower;
-                initstate.(ctrl).I = -P/E;
+                switch model.(ctrl).initialControl
+                  case 'discharging'
+                    error('to implement (should be easy...)')
+                  case 'charging'
+                    initstate.(ctrl).ctrlType = 'charge';
+                    E = initstate.(ctrl).E;
+                    P = model.(ctrl).chargingPower;
+                    initstate.(ctrl).I = -P/E;
+                  otherwise
+                    error('initialControl not recognized');
+                end
+              case 'CC'
+                % this value will be overwritten after first iteration 
+                initstate.(ctrl).I = 0;
+                switch model.(ctrl).initialControl
+                  case 'discharging'
+                    initstate.(ctrl).ctrlType = 'discharge';
+                  case 'charging'
+                    initstate.(ctrl).ctrlType = 'charge';
+                  otherwise
+                    error('initialControl not recognized');
+                end
               otherwise
                 error('control policy not recognized');
             end
@@ -783,6 +830,11 @@ classdef Battery < BaseModel
                 state.(elde).(am).(sd) = model.(elde).(am).(sd).updateAverageConcentration(state.(elde).(am).(sd));
                 state.(elde).(am) = model.(elde).(am).updateSOC(state.(elde).(am));
                 state.(elde).(am) = model.(elde).(am).updateAverageConcentration(state.(elde).(am));
+            end
+
+            if model.use_thermal
+                state = model.updateThermalIrreversibleReactionSourceTerms(state);
+                state = model.updateThermalReversibleReactionSourceTerms(state);
             end
             
         end
@@ -1205,6 +1257,7 @@ classdef Battery < BaseModel
             switch model.(ctrl).controlPolicy
 
               case {'CCCV', 'powerControl'}
+
                 % nothing to do here
 
               case 'IEswitch'
@@ -1218,10 +1271,20 @@ classdef Battery < BaseModel
                 state.(ctrl).ctrlVal  = ctrlVal;
                 state.(ctrl).ctrlType = ctrltype;
 
+              case 'CC'
+                
+                time = state.time;
+                ctrlVal = drivingForces.src(time);
+                state.(ctrl).ctrlVal  = ctrlVal;
+                
               case 'None'
+                
                 % nothing done here. This case is only used for the addVariables method
+                
               otherwise
+                
                 error('control type not recognized');
+                
             end
                 
             
@@ -1337,10 +1400,109 @@ classdef Battery < BaseModel
             state.(thermal).jHeatChemicalSource = src;
             
         end
-        
+
+        function state = updateThermalIrreversibleReactionSourceTerms(model, state)
+        % not used in assembly, just as added variable (in addVariables method). Method updateThermalReactionSourceTerms is used in assembly
+            
+            ne      = 'NegativeElectrode';
+            pe      = 'PositiveElectrode';
+            am      = 'ActiveMaterial';
+            itf     = 'Interface';
+            thermal = 'ThermalModel';
+            
+            eldes = {ne, pe}; % electrodes
+            
+            nc = model.G.cells.num;
+            
+            src = zeros(nc, 1);
+            
+            T = state.(thermal).T;           
+            if isa(T, 'ADI')
+                adsample = getSampleAD(T);
+                adbackend = model.AutoDiffBackend;
+                src = adbackend.convertToAD(src, adsample);
+                locstate = state;
+            else
+               locstate = value(state); 
+            end
+            
+            for ind = 1 : numel(eldes)
+
+                elde = eldes{ind};
+                
+                itf_model = model.(elde).(am).(itf);
+                
+                F       = itf_model.constants.F;
+                n       = itf_model.n;
+                itf_map = itf_model.G.mappings.cellmap;
+                vsa     = itf_model.volumetricSurfaceArea;
+                vols    = model.(elde).(am).G.cells.volumes;
+
+                Rvol = locstate.(elde).(am).Rvol;
+                eta  = locstate.(elde).(am).(itf).eta;
+                
+                itf_src = n*F*vols.*Rvol.*eta;
+                
+                src(itf_map) = src(itf_map) + itf_src;
+                
+            end
+
+            state.(thermal).jHeatIrrevReactionSource = src;
+            
+        end
+
+        function state = updateThermalReversibleReactionSourceTerms(model, state)
+        % not used in assembly, just as added variable (in addVariables method). Method updateThermalReactionSourceTerms is used in assembly
+            ne      = 'NegativeElectrode';
+            pe      = 'PositiveElectrode';
+            am      = 'ActiveMaterial';
+            itf     = 'Interface';
+            thermal = 'ThermalModel';
+            
+            eldes = {ne, pe}; % electrodes
+            
+            nc = model.G.cells.num;
+            
+            src = zeros(nc, 1);
+           
+            T = state.(thermal).T;
+            if isa(T, 'ADI')
+                adsample = getSampleAD(T);
+                adbackend = model.AutoDiffBackend;
+                src = adbackend.convertToAD(src, adsample);
+                locstate = state;
+            else
+               locstate = value(state); 
+            end
+            
+            for ind = 1 : numel(eldes)
+
+                elde = eldes{ind};
+                
+                itf_model = model.(elde).(am).(itf);
+                
+                F       = itf_model.constants.F;
+                n       = itf_model.n;
+                itf_map = itf_model.G.mappings.cellmap;
+                vsa     = itf_model.volumetricSurfaceArea;
+                vols    = model.(elde).(am).G.cells.volumes;
+
+                Rvol = locstate.(elde).(am).Rvol;
+                dUdT = locstate.(elde).(am).(itf).dUdT;
+
+                itf_src = n*F*vols.*Rvol.*T(itf_map).*dUdT;
+                
+                src(itf_map) = src(itf_map) + itf_src;
+                
+            end
+
+            state.(thermal).jHeatRevReactionSource = src;
+            
+        end
         
         function state = updateThermalReactionSourceTerms(model, state)
-        % Assemble the source term from chemical reaction :code:`state.jHeatReactionSource`, see :cite:t:`Latz2016`            
+        % Assemble the source term from chemical reaction :code:`state.jHeatReactionSource`, see :cite:t:`Latz2016`
+            
             ne      = 'NegativeElectrode';
             pe      = 'PositiveElectrode';
             am      = 'ActiveMaterial';
@@ -1550,6 +1712,9 @@ classdef Battery < BaseModel
               case 'powerControl'
                 forces.powerControl = true;
                 forces.src = [];
+              case 'CC'
+                forces.CC = true;
+                forces.src = [];
               case 'None'
                 % used only in addVariables
               otherwise
@@ -1634,16 +1799,6 @@ classdef Battery < BaseModel
                 var = model.getProp(state, addedvarnames{i});
                 assert(isnumeric(var) | ischar(var));
                 cleanState = model.setNewProp(cleanState, addedvarnames{i}, var);
-            end
-            
-            thermal = 'ThermalModel';
-            ctrl = 'Control';
-            
-            cleanState.(ctrl).ctrlType = state.(ctrl).ctrlType;            
-            
-            if ~model.use_thermal
-                thermal = 'ThermalModel';
-                cleanState.(thermal).T = state.(thermal).T;
             end
             
         end

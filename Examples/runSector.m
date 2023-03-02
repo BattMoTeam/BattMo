@@ -1,3 +1,9 @@
+if mrstPlatform('octave')
+    if compare_versions(version, "8.1", "<=")
+        error('This demo cannot be run in Octave versions less than 8.1, since the ind2sub behaves differently from MATLAB');
+    end
+end
+
 % Setup mrst modules
 
 mrstModule add ad-core mrst-gui mpfa agmg
@@ -190,8 +196,8 @@ dataFolder = 'BattMo';
 problem = packSimulationProblem(initstate, model, schedule, dataFolder, 'Name', 'jellyroll', 'NonLinearSolver', nls);
 problem.SimulatorSetup.OutputMinisteps = true; 
 
-resetSimulation = true;
-if resetSimulation
+clearSimulation = true;
+if clearSimulation
     %% clear previously computed simulation
     clearPackedSimulatorOutput(problem, 'prompt', false);
 end

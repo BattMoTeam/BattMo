@@ -13,6 +13,5 @@
                                     "oneOf" : [{"required" : ["N", "totalTime"]},
                                                {"required" : ["dt"]}]
                                    }
-                 },
-  "required" : ["TimeStepping"]
+                 }
 }

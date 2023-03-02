@@ -4,23 +4,25 @@
   "description": "Input to setup the initial state of the battery",
   "type": "object",
 
-  "properties" : {"SOC": {"type" : "number"},
-  
+  "properties" : {"initializationSetup" : {"type" : "string",
+                                           "enum": ["given SOC", "given input"]},
+
                   "initT": {"type" : "number",
                             "description" : "Initial temperature"},
 
-                  "initializationSetup" : {"type" : "string",
-                                           "enum": ["given SOC", "given input"]}
+                  "SOC": {"type" : "number"},
+
+                  "loadStateCmd" : {"type" : "string",
+                                    "description" : "string that when run by matlab eval function return the initial state in the structure initstate"}
+
                  },
 
   "dependentSchemas" : {"initializationSetup" : {"anyOf" : [{"properties" : {"initializationSetup" : {"const" : "given SOC"}},
                                                              "required" : ["SOC"]},
-                                                            {"not" : {"properties" : {"initializationSetup" : {"const" : "given SOC"}}}}
+                                                            {"properties" : {"initializationSetup" : {"const" : "given input"}},
+                                                             "required" : ["loadStateCmd"]}
                                                            ]}},
 
   "required" : ["initT"]
-  
+
 }
-
-
-  

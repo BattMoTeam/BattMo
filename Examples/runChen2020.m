@@ -157,7 +157,7 @@ plot((time2/hour), E2,'-', 'linewidth', 3, 'color', l(4, :), 'displayname', 'bat
 set(gca, 'fontsize', 18);
 title('Cell Voltage / V')
 xlabel('time (hours)')
-legend('fontsize', 18, 'location', 'south west')
+legend('fontsize', 18, 'location', 'southwest')
 
 
 %{

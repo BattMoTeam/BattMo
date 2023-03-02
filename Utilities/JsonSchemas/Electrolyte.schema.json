@@ -7,8 +7,10 @@
   "properties" : { "compnames": {"type" : "array"},
                    "sp": { "type" : "object",
                            "properties" : {
-                             "z": {"type" : "array"},
-                             "t": {"type" : "array"}
+                             "z": {"type" : "number",
+                                   "description" : "charge number"},
+                             "t": {"type" : "number",
+                                   "description" : "transference number"}
                            }
                          },
                    "Separator" : {"$ref" : "Separator"},
