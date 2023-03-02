@@ -90,7 +90,7 @@ classdef Interface < BaseModel
             varnames{end + 1} = 'eta';
             % Reaction rate [mol s^-1 m^-2]
             varnames{end + 1} = 'R';
-            % External potential drop used in Butler-Volmer
+            % External potential drop used in Butler-Volmer in case of SEI see :class:`Electrochemistry.SEIActiveMaterial`
             % varnames{end + 1} = 'externalPotentialDrop';
             % 
             varnames{end + 1} = 'dUdT';
@@ -118,6 +118,7 @@ classdef Interface < BaseModel
             inputnames = {'phiElectrolyte', 'phiElectrode', 'OCP'};            
             model = model.registerPropFunction({'eta', fn, inputnames});
             
+            % This function is used when SEI layer
             % fn = @Interface.updateEtaWithEx;
             % inputnames = {'phiElectrolyte', 'phiElectrode', 'OCP', 'externalPotentialDrop'};
             % model = model.registerPropFunction({'eta', fn, inputnames});            

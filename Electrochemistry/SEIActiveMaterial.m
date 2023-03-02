@@ -31,8 +31,15 @@ classdef SEIActiveMaterial < ActiveMaterial
             varnames{end + 1} = 'R';
             % SEI charge consservation equation
             varnames{end + 1} = 'seiInterfaceChargeCons';
+            % SEI charge consservation equation
+            varnames{end + 1} = {itf, 'externalPotentialDrop'};
             model = model.registerVarNames(varnames);
-            
+
+            if model.standAlone
+                model = model.registerStaticVarName({sei, 'cExternal'});
+                model = model.removeVarName({itf, 'dUdT'});
+            end
+
             fn = @SEIActiveMaterial.assembleSEIchargeCons;
             inputnames = {{itf, 'R'}, {sr, 'R'}, 'R'};
             model = model.registerPropFunction({'seiInterfaceChargeCons', fn, inputnames});
@@ -45,6 +52,13 @@ classdef SEIActiveMaterial < ActiveMaterial
             inputnames = {{'R'}, {'SolidElectrodeInterface', 'delta'}};
             model = model.registerPropFunction({{itf, 'externalPotentialDrop'}, fn, inputnames});
             model = model.registerPropFunction({{sr, 'externalPotentialDrop'}, fn, inputnames});
+
+            fn = @SEIActiveMaterial.Interface.updateEtaWithEx;
+            inputnames = {{itf, 'phiElectrolyte'}, ...
+                          {itf, 'phiElectrode'}  , ...
+                          {itf, 'OCP'}           , ...
+                          {itf, 'externalPotentialDrop'}};
+            model = model.registerPropFunction({{itf, 'eta'}, fn, inputnames});
             
             fn = @SEIActiveMaterial.dispatchSEIRate;
             inputnames = {{sr, 'R'}};
@@ -53,8 +67,7 @@ classdef SEIActiveMaterial < ActiveMaterial
             fn = @SEIActiveMaterial.updateSEISurfaceConcentration;
             inputnames = {{sei, 'cInterface'}};
             model = model.registerPropFunction({{sr, 'c'}, fn, inputnames});
-        
-        
+            
         end
         
         function state = updateSEISurfaceConcentration(model, state)

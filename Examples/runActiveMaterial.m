@@ -25,7 +25,7 @@ model = ActiveMaterial(paramobj);
 
 inspectgraph = false;
 if inspectgraph
-    model.isRoot = true;
+    model.standAlone = true;
     cgt = ComputationalGraphTool(model);
     [g, edgelabels] = cgt.getComputationalGraph();
 

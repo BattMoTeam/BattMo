@@ -1,7 +1,3 @@
-%% TODO : fix the SEIActiveMaterial standalone model
-
-error('SEIActiveMaterial standalone model not working for the moment');
-
 %% run stand-alone active material model
 
 % clear the workspace and close open figures
@@ -39,6 +35,10 @@ G = computeGeometry(G);
 paramobj.G = G;
 
 model = SEIActiveMaterial(paramobj);
+model.standAlone = true;
+
+cgt = ComputationalGraphTool(model);
+return
 
 %% Setup initial state
 
@@ -50,6 +50,7 @@ phiElectrodeInit = 3.5;
 cElectrolyte     = 5e-1*mol/litre;
 T                = 298.15; % reference temperature in Interface.
 cExternal        = 4.541*mol/litre;
+
 % compute OCP and  phiElectrolyte
 clear state
 state.cElectrodeSurface = cElectrodeInit;
