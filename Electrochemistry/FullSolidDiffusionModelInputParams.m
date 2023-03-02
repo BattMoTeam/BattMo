@@ -34,7 +34,7 @@ classdef FullSolidDiffusionModelInputParams < SolidDiffusionModelInputParams
             assert(~isempty(D0) || ~isempty(D), 'Either D0 or D should be provided');
 
             if ~isempty(D) & strcmp(D.type, 'constant')
-                assert(~isempty(D0), 'D0 should be provided when D is set to be constant')
+                paramobj.D0 = paramobj.D.value;
             end
             
         end
