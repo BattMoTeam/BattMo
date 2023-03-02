@@ -1,4 +1,7 @@
 function  output = runBatteryJson(jsonstruct, varargin)
+
+    opt = struct('setupModelOnly', false);
+    opt = merge_options(opt, varargin{:});
     
     mrstModule add ad-core mrst-gui mpfa
     
@@ -257,7 +260,12 @@ function  output = runBatteryJson(jsonstruct, varargin)
         model = model.setupSelectedModel('reduction', linearSolverSetup.reduction);
     end
     
-        
+    if opt.setupModelOnly
+        output.paramobj = paramobj;
+        output.model = model;
+        return
+    end
+    
     %% Run the simulation
     if isfield(jsonstruct, 'Output') && isfield(jsonstruct.Output, 'saveOutput') && jsonstruct.Output.saveOutput
         saveOptions = jsonstruct.Output.saveOptions;
