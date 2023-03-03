@@ -1,2 +1,16 @@
 #+TITLE: Model initialisation
 #+AUTHOR:
+#+OPTIONS: num:nil toc:nil
+
+
+* How to initialise the model
+
+Initial concentration and potential in the model can be calculated based on equilibrium values for the given input paramaters.
+
+
+
+
+Alternatively a state structure contatining concentration and potential for all the relevant submodels can be given.
+
+
+

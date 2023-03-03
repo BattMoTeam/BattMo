@@ -1,6 +1,0 @@
-===============
-Reference lists
-===============
-
-.. bibliography::
-   :all:
