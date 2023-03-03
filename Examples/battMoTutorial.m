@@ -122,8 +122,8 @@ model = Battery(paramobj);
 % positive and negative electrodes can be found in the interface structure
 % of each electrode.
 %%
-T = 298.15
 
+T = 298.15;
 elde = {ne,pe};
 
 figure
@@ -135,13 +135,16 @@ for i = 1:numel(elde)
     theta0   = el_itf.theta0;
     cmax     = el_itf.cmax;
 
-    c   = linspace(theta100, theta0).*cmax;
-    OCP = el_itf.computeOCPFunc(c,T,cmax);
+    soc   = linspace(0, 1);
+    theta = soc*theta100 + (1 - soc)*theta0;
+    c     = theta.*cmax;
+    OCP   = el_itf.computeOCPFunc(c, T, cmax);
 
-    plot(c, OCP)
-    hold on
+    plot(s, OCP)
 end
-
+xlabel('SOC [-]')
+ylabel('OCV [V]')
+title('OCV for both electrodes');
 legend(elde)
 
 %%% Controlling the simulation
