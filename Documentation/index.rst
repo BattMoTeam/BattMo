@@ -26,21 +26,13 @@ BattMo documentation
    :maxdepth: 2
               
    Installation <installation>
-   tutorials
-   inputs
-   batterymodel
-   genmodels
-   electrodes
-   electrolyte
-   mrst
-   bibliography
+   Getting started <tutorials>
 
-Indices and tables
-==================
+   Advanced topics <advancedtopics>
 
-* :ref:`genindex`
-* :ref:`modindex`
-* :ref:`search`
+
+   BattMo API <inputs>
+
 
 Acknowledgements
 =================================

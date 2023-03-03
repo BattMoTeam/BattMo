@@ -119,13 +119,13 @@ model = Battery(paramobj);
 % Electrolyte, Negative Electrode, Positive Electrode, Thermal Model and Control
 % Model. The battery class contains all of these submodels and various other 
 % parameters necessary to run the simulation.
-% To see what properties the battery model object has we can inspec the
+% To see what properties the battery model object has we can inspect the
 % model by typing model at the Matlab command prompt.
 
 %%% Controlling the simulation
 % The control model specifies how the simulation is controlled. This can
 % also be thought of as the boundary conditions of the simulation.
-% In the first instance we use IEswitch control policy. 
+% In the first instance we use IEswitch control policy.
 % We set the total time scaled by the CRate in the model.
 % The CRate has been set by the json file. We can access it here:
 
@@ -190,7 +190,7 @@ schedule = struct('control', control, 'step', step);
 % from, in terms of the value of the primary variables being modelled at
 % the start of the simulation. 
 % The initial state of the model is setup using the model.setupInitialState()
-% method. WHAT IS HAPPENING HERE? WHAT ARE THE INITIAL VALUES SET TO?
+% Here we take the state of charge (SOC) given in the input and calculate 
 
 initstate = model.setupInitialState(); 
 

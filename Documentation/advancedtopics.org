@@ -1,0 +1,21 @@
+#+TITLE: Advanced topics
+#+AUTHOR: 
+#+OPTIONS: num:nil
+
+* Model initialisation
+
+<modelinitialisation>
+
+* Control models
+
+* Diffusion models
+
+* Geometry models
+
+* Thermal model
+
+* JSON input
+
+* Optimisation
+
+* Parameter sets
