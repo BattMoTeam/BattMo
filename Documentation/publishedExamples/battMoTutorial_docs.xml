@@ -2,7 +2,7 @@
 <mscript xmlns:mwsh="http://www.mathworks.com/namespace/mcode/v1/syntaxhighlight.dtd">
    <version>9.12</version>
    <release>2022a</release>
-   <date>2023-03-01</date>
+   <date>2023-03-03</date>
    <cell style="overview">
       <count>1</count>
       <steptitle style="document">BattMo Tutorial</steptitle>
@@ -14,7 +14,7 @@
       <count>2</count>
       <steptitle>Setting up the environment</steptitle>
       <text>
-         <p>BattMo uses functionality from `MRST <a href="MRSTBattMo">MRSTBattMo</a>`. This functionality is collected into modules where each module contains code for doing specific things. To use this functionality we must add these modules to the matlab path by running:</p>
+         <p>BattMo uses functionality from :mod:`MRST <a href="MRSTBattMo">MRSTBattMo</a>`. This functionality is collected into modules where each module contains code for doing specific things. To use this functionality we must add these modules to the matlab path by running:</p>
       </text>
       <mcode>mrstModule add ad-core mrst-gui mpfa agmg linearsolvers</mcode>
       <mcode-xmlized>
@@ -120,7 +120,7 @@ jsonstruct.(ne).(am).diffusionModelType = <mwsh:strings xml:space="preserve">'fu
    <cell>
       <count>10</count>
       <text>
-         <p>To see which other types of diffusion model are available one can view <a href="Electrochemistry.ActiveMaterialInputParams">Electrochemistry.ActiveMaterialInputParams</a>.</p>
+         <p>To see which other types of diffusion model are available one can view :class:`ActiveMaterialInputParams <a href="Electrochemistry.ActiveMaterialInputParams">Electrochemistry.ActiveMaterialInputParams</a>.</p>
       </text>
    </cell>
    <cell>
@@ -139,18 +139,12 @@ paramobj = paramobj.validateInputParams();</mwsh:code>
    <cell>
       <count>12</count>
       <text>
-         <p>It is also possible to update the properties of this paramobj in a similar way to updating the jsonstruct. Here we set some more parameters for the diffusion model. The definitions for these are found in the corresponding classes: :class:`ActiveMaterialInputParams <a href="Electrochemistry.ActiveMaterialInputParams">Electrochemistry.ActiveMaterialInputParams</a>` and :class:`FullSolidDiffusionModelInputParams <a href="Electrochemistry.FullSolidDiffusionModelInputParams">Electrochemistry.FullSolidDiffusionModelInputParams</a>`.</p>
+         <p>It is also possible to update the properties of this paramobj in a similar way to updating the jsonstruct. Here we set the discretisation level for the diffusion model. Other input parameters for the full diffusion model can be found here: :class:`FullSolidDiffusionModelInputParams <a href="Electrochemistry.FullSolidDiffusionModelInputParams">Electrochemistry.FullSolidDiffusionModelInputParams</a>`.</p>
       </text>
-      <mcode>paramobj.(ne).(am).InterDiffusionCoefficient = 0;
-paramobj.(pe).(am).InterDiffusionCoefficient = 0;
-
-paramobj.(ne).(am).(sd).N = 5;
+      <mcode>paramobj.(ne).(am).(sd).N = 5;
 paramobj.(pe).(am).(sd).N = 5;</mcode>
       <mcode-xmlized>
-         <mwsh:code xml:space="preserve">paramobj.(ne).(am).InterDiffusionCoefficient = 0;
-paramobj.(pe).(am).InterDiffusionCoefficient = 0;
-
-paramobj.(ne).(am).(sd).N = 5;
+         <mwsh:code xml:space="preserve">paramobj.(ne).(am).(sd).N = 5;
 paramobj.(pe).(am).(sd).N = 5;</mwsh:code>
       </mcode-xmlized>
       <mcode-count>9</mcode-count>
@@ -193,19 +187,76 @@ paramobj.(pe).(am).(sd).N = 5;</mwsh:code>
    <cell>
       <count>16</count>
       <text>
-         <p>In BattMo a battery model is actually a collection of submodels: Electrolyte, Negative Electrode, Positive Electrode, Thermal Model and Control Model. The battery class contains all of these submodels and various other parameters necessary to run the simulation. To see what properties the battery model object has we can print out the model variable:</p>
+         <p>In BattMo a battery model is actually a collection of submodels: Electrolyte, Negative Electrode, Positive Electrode, Thermal Model and Control Model. The battery class contains all of these submodels and various other parameters necessary to run the simulation.</p>
       </text>
-      <mcode>model</mcode>
+   </cell>
+   <cell>
+      <count>17</count>
+      <steptitle>Plotting the OCP curves</steptitle>
+      <text>
+         <p>We can inspect the model object to find out which parameters are being used. For instance the information we need to plot the OCP curves for the positive and negative electrodes can be found in the interface structure of each electrode.</p>
+      </text>
+      <mcode>T = 298.15;
+elde = {ne,pe};
+
+figure
+hold on
+for i = 1:numel(elde)
+    el_itf = model.(elde{i}).(am).(itf);
+
+    theta100 = el_itf.theta100;
+    theta0   = el_itf.theta0;
+    cmax     = el_itf.cmax;
+
+    soc   = linspace(0, 1);
+    theta = soc*theta100 + (1 - soc)*theta0;
+    c     = theta.*cmax;
+    OCP   = el_itf.computeOCPFunc(c, T, cmax);
+
+    plot(soc, OCP)
+end
+xlabel('SOC [-]')
+ylabel('OCV [V]')
+title('OCV for both electrodes');
+legend(elde)</mcode>
       <mcode-xmlized>
-         <mwsh:code xml:space="preserve">model</mwsh:code>
+         <mwsh:code xml:space="preserve">T = 298.15;
+elde = {ne,pe};
+
+figure
+hold <mwsh:strings xml:space="preserve">on</mwsh:strings>
+<mwsh:keywords xml:space="preserve">for</mwsh:keywords> i = 1:numel(elde)
+    el_itf = model.(elde{i}).(am).(itf);
+
+    theta100 = el_itf.theta100;
+    theta0   = el_itf.theta0;
+    cmax     = el_itf.cmax;
+
+    soc   = linspace(0, 1);
+    theta = soc*theta100 + (1 - soc)*theta0;
+    c     = theta.*cmax;
+    OCP   = el_itf.computeOCPFunc(c, T, cmax);
+
+    plot(soc, OCP)
+<mwsh:keywords xml:space="preserve">end</mwsh:keywords>
+xlabel(<mwsh:strings xml:space="preserve">'SOC [-]'</mwsh:strings>)
+ylabel(<mwsh:strings xml:space="preserve">'OCV [V]'</mwsh:strings>)
+title(<mwsh:strings xml:space="preserve">'OCV for both electrodes'</mwsh:strings>);
+legend(elde)</mwsh:code>
       </mcode-xmlized>
       <mcode-count>13</mcode-count>
    </cell>
    <cell>
-      <count>17</count>
+      <count>18</count>
       <steptitle>Controlling the simulation</steptitle>
       <text>
-         <p>The control model specifies how the simulation is controlled. This can also be thought of as the boundary conditions of the simulation. In the first instance we use IEswitch control policy. (NOTE WHAT IS IESWITCH?) We set the total time scaled by the CRate in the model. The CRate has been set by the json file. We can access it here:</p>
+         <p>The control model specifies how the simulation is controlled. This can also be thought of as the boundary conditions of the simulation.</p>
+      </text>
+   </cell>
+   <cell>
+      <count>19</count>
+      <text>
+         <p>In the first instance we use IEswitch control policy. We set the total time scaled by the CRate in the model. The CRate has been set by the json file. We can access it here:</p>
       </text>
       <mcode>CRate = model.Control.CRate;
 total = 1.4*hour/CRate;</mcode>
@@ -216,19 +267,19 @@ total = 1.4*hour/CRate;</mwsh:code>
       <mcode-count>14</mcode-count>
    </cell>
    <cell>
-      <count>18</count>
+      <count>20</count>
       <text>
          <p>We want to break this total time into 100 timesteps. To begin with we will use equal values for each timestep.</p>
       </text>
    </cell>
    <cell>
-      <count>19</count>
+      <count>21</count>
       <text>
          <p>We create a structure containing the length of each step in seconds ('val') and also which control to use for each step ('control').</p>
       </text>
    </cell>
    <cell>
-      <count>20</count>
+      <count>22</count>
       <text>
          <p>In this case we use control 1 for all steps. This means that the functions used to setup the control values are the same at each step.</p>
       </text>
@@ -243,25 +294,25 @@ step = struct(<mwsh:strings xml:space="preserve">'val'</mwsh:strings>, dt*ones(n
       <mcode-count>15</mcode-count>
    </cell>
    <cell>
-      <count>21</count>
+      <count>23</count>
       <text>
          <p>For the IESwitch control we will switch between controlling the current or the voltage based on some max and min values. We do this using the rampupSwitchControl function.</p>
       </text>
    </cell>
    <cell>
-      <count>22</count>
+      <count>24</count>
       <text>
          <p>Smaller time steps are used to ramp up the current from zero to its operational value. Larger time steps are then used for the normal operation.</p>
       </text>
    </cell>
    <cell>
-      <count>23</count>
+      <count>25</count>
       <text>
          <p>This function also contains the logic about when to switch using constant current to constant voltage.</p>
       </text>
    </cell>
    <cell>
-      <count>24</count>
+      <count>26</count>
       <text>
          <p>First we set a parameter to control how the current values increase between zero and the desired value. Then we assign the rampupSwitchControl function to a variable as an anonymous function.</p>
       </text>
@@ -278,7 +329,7 @@ srcfunc = @(time, I, E) rampupSwitchControl(time, tup, I, E, <mwsh:keywords xml:
       <mcode-count>16</mcode-count>
    </cell>
    <cell>
-      <count>25</count>
+      <count>27</count>
       <text>
          <p>We create a control structure containing the source function and specifying that we want to use IESwitch control:</p>
       </text>
@@ -289,7 +340,7 @@ srcfunc = @(time, I, E) rampupSwitchControl(time, tup, I, E, <mwsh:keywords xml:
       <mcode-count>17</mcode-count>
    </cell>
    <cell>
-      <count>26</count>
+      <count>28</count>
       <text>
          <p>Finally we collect the control and step structures together in a schedule struct which is the schedule which the simulation will follow:</p>
       </text>
@@ -300,10 +351,10 @@ srcfunc = @(time, I, E) rampupSwitchControl(time, tup, I, E, <mwsh:keywords xml:
       <mcode-count>18</mcode-count>
    </cell>
    <cell>
-      <count>27</count>
+      <count>29</count>
       <steptitle>Setting the initial state of the battery</steptitle>
       <text>
-         <p>To run simulation we need to know the starting point which we will run it from, in terms of the value of the primary variables being modelled at the start of the simulation. The initial state of the model is setup using the model.setupInitialState() method. WHAT IS HAPPENING HERE? WHAT ARE THE INITIAL VALUES SET TO?</p>
+         <p>To run simulation we need to know the starting point which we will run it from, in terms of the value of the primary variables being modelled at the start of the simulation. The initial state of the model is setup using model.setupInitialState() Here we use the state of charge (SOC) and various other input parameters to calculate the intial state of the model assuming it is at equilibrium.</p>
       </text>
       <mcode>initstate = model.setupInitialState();</mcode>
       <mcode-xmlized>
@@ -312,7 +363,7 @@ srcfunc = @(time, I, E) rampupSwitchControl(time, tup, I, E, <mwsh:keywords xml:
       <mcode-count>19</mcode-count>
    </cell>
    <cell>
-      <count>28</count>
+      <count>30</count>
       <steptitle>Running the simulation</steptitle>
       <text>
          <p>Once we have the initial state, the model and the schedule, we can call the simulateScheduleAD function which will actually run the simulation:</p>
@@ -324,13 +375,13 @@ srcfunc = @(time, I, E) rampupSwitchControl(time, tup, I, E, <mwsh:keywords xml:
       <mcode-count>20</mcode-count>
    </cell>
    <cell>
-      <count>29</count>
+      <count>31</count>
       <text>
          <p>The outputs from the simulation are: - wellSols: which provides the current and voltage of the battery at each timestep. (This naming convention is a hangover from MRST where we model reservoir injection via injection wells). - states: which contains the values of the primary variables in the model at each timestep. - reports: which contains technical information about the steps used in the numerical solvers.</p>
       </text>
    </cell>
    <cell>
-      <count>30</count>
+      <count>32</count>
       <steptitle>Plotting the results</steptitle>
       <text>
          <p>To get the results we use the matlab cellfun function to extract the values Control.E, Control.I and time from each timestep (cell in the cell array) in states. We can then plot the vectors.</p>
@@ -409,22 +460,23 @@ ylabel(<mwsh:strings xml:space="preserve">'Cell Current [A]'</mwsh:strings>)
       </mcode-xmlized>
       <mcode-count>21</mcode-count>
       <cellOutputTarget>1</cellOutputTarget>
-      <mcodeoutput class="codeoutput">
-model = 
-
-  Battery with properties:
-
-                           con: [1×1 PhysicalConstants]
-                   Electrolyte: [1×1 Electrolyte]
-             NegativeElectrode: [1×1 Electrode]
+      <mcodeoutput class="codeoutput">Solving timestep 001/100:                                            -&gt; 50 Seconds, 399 Milliseconds
+Solving timestep 002/100: 50 Seconds, 399 Milliseconds               -&gt; 100 Seconds, 799 Milliseconds
+Solving timestep 003/100: 100 Seconds, 799 Milliseconds              -&gt; 151 Seconds, 199 Milliseconds
+Solving timestep 004/100: 151 Seconds, 199 Milliseconds              -&gt; 201 Seconds, 599 Milliseconds
+Solving timestep 005/100: 201 Seconds, 599 Milliseconds              -&gt; 252 Seconds
+Solving timestep 006/100: 252 Seconds                                -&gt; 302 Seconds, 399 Milliseconds
+Solving timestep 007/100: 302 Seconds, 399 Milliseconds              -&gt; 352 Seconds, 799 Milliseconds
+Solving timestep 008/100: 352 Seconds, 799 Milliseconds              -&gt; 403 Seconds, 199 Milliseconds
 ...</mcodeoutput>
-      <img src="battMoTutorial_01.png"/>
+      <img src="battMoTutorial_docs_01.png"/>
+      <img src="battMoTutorial_docs_02.png"/>
    </cell>
    <originalCode>%% BattMo Tutorial
 % This tutorial explains how to setup and run a simulation in BattMo
 
 %%% Setting up the environment
-% BattMo uses functionality from `MRST &lt;MRSTBattMo&gt;`. This functionality 
+% BattMo uses functionality from :mod:`MRST &lt;MRSTBattMo&gt;`. This functionality 
 % is collected into modules where each module contains code for doing 
 % specific things. To use this functionality we must add these modules to 
 % the matlab path by running:
@@ -489,7 +541,7 @@ jsonstruct.(ne).(am).diffusionModelType = 'full';
 
 %%%
 % To see which other types of diffusion model are available one can view 
-% &lt;Electrochemistry.ActiveMaterialInputParams&gt;.
+% :class:`ActiveMaterialInputParams &lt;Electrochemistry.ActiveMaterialInputParams&gt;.
 
 %%%
 % When running a simulation, *BattMo* requires that all model parameters
@@ -503,14 +555,10 @@ paramobj = paramobj.validateInputParams();
 
 %%%
 % It is also possible to update the properties of this paramobj in a
-% similar way to updating the jsonstruct. Here we set some more parameters
-% for the diffusion model. The definitions for these are found in the 
-% corresponding classes:
-% :class:`ActiveMaterialInputParams &lt;Electrochemistry.ActiveMaterialInputParams&gt;`
-% and :class:`FullSolidDiffusionModelInputParams &lt;Electrochemistry.FullSolidDiffusionModelInputParams&gt;`.
-
-paramobj.(ne).(am).InterDiffusionCoefficient = 0;
-paramobj.(pe).(am).InterDiffusionCoefficient = 0;
+% similar way to updating the jsonstruct. Here we set the discretisation
+% level for the diffusion model. Other input parameters for the full diffusion
+% model can be found here:
+% :class:`FullSolidDiffusionModelInputParams &lt;Electrochemistry.FullSolidDiffusionModelInputParams&gt;`.
 
 paramobj.(ne).(am).(sd).N = 5;
 paramobj.(pe).(am).(sd).N = 5;
@@ -541,15 +589,43 @@ model = Battery(paramobj);
 % Electrolyte, Negative Electrode, Positive Electrode, Thermal Model and Control
 % Model. The battery class contains all of these submodels and various other 
 % parameters necessary to run the simulation.
-% To see what properties the battery model object has we can print out the model 
-% variable:
 
-model
+%%% Plotting the OCP curves
+% We can inspect the model object to find out which parameters are being
+% used. For instance the information we need to plot the OCP curves for the
+% positive and negative electrodes can be found in the interface structure
+% of each electrode.
+
+T = 298.15;
+elde = {ne,pe};
+
+figure
+hold on
+for i = 1:numel(elde)
+    el_itf = model.(elde{i}).(am).(itf);
+
+    theta100 = el_itf.theta100;
+    theta0   = el_itf.theta0;
+    cmax     = el_itf.cmax;
+
+    soc   = linspace(0, 1);
+    theta = soc*theta100 + (1 - soc)*theta0;
+    c     = theta.*cmax;
+    OCP   = el_itf.computeOCPFunc(c, T, cmax);
+
+    plot(soc, OCP)
+end
+xlabel('SOC [-]')
+ylabel('OCV [V]')
+title('OCV for both electrodes');
+legend(elde)
 
 %%% Controlling the simulation
 % The control model specifies how the simulation is controlled. This can
 % also be thought of as the boundary conditions of the simulation.
-% In the first instance we use IEswitch control policy. (NOTE WHAT IS IESWITCH?)
+
+%%%
+% In the first instance we use IEswitch control policy.
 % We set the total time scaled by the CRate in the model.
 % The CRate has been set by the json file. We can access it here:
 
@@ -613,8 +689,9 @@ schedule = struct('control', control, 'step', step);
 % To run simulation we need to know the starting point which we will run it
 % from, in terms of the value of the primary variables being modelled at
 % the start of the simulation. 
-% The initial state of the model is setup using the model.setupInitialState()
-% method. WHAT IS HAPPENING HERE? WHAT ARE THE INITIAL VALUES SET TO?
+% The initial state of the model is setup using model.setupInitialState()
+% Here we use the state of charge (SOC) and various other input parameters
+% to calculate the intial state of the model assuming it is at equilibrium.
 
 initstate = model.setupInitialState(); 
 
@@ -688,7 +765,7 @@ along with BattMo.  If not, see &lt;http://www.gnu.org/licenses/&gt;.
 
 
 </originalCode>
-   <m-file>battMoTutorial</m-file>
-   <filename>/home/francesca/battmo-github/BattMo-dev/Examples/battMoTutorial.m</filename>
+   <m-file>battMoTutorial_docs</m-file>
+   <filename>/home/francesca/battmo-github/BattMo-dev/Examples/battMoTutorial_docs.m</filename>
    <outputdir>/home/francesca/battmo-github/BattMo-dev/Documentation/utils/../../Examples/../Documentation/publishedExamples</outputdir>
 </mscript>

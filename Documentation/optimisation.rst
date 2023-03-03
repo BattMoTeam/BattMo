@@ -3,6 +3,4 @@ Optimisation
 ============
 
 
-.. contents::
-
 

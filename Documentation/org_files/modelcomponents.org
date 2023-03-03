@@ -1,9 +1,7 @@
-#+TITLE: Geometry model
+#+TITLE: Model components
 #+AUTHOR:
-#+OPTIONS: num:nil
+#+OPTIONS: num:nil toc:nil
+#+EXPORT_FILE_NAME: ../modelcomponents
 
-* Battery1D
-
-* Battery2D
-
-* Battery3D
+A very basic battery model will contain a positive electrode, a negative electrode and an electrolyte.
+We can also add current collectors to our models by setting include_current_collectors = true.

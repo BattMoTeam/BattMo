@@ -1,17 +1,33 @@
-==============
-Geometry model
-==============
-
-
-.. contents::
+===============
+Geometry models
+===============
 
 
 
-Battery1D
----------
 
-Battery2D
----------
+BatteryGenerator1D
+------------------
 
-Battery3D
----------
+BatteryGenerator2D
+------------------
+
+BatteryGenerator3D
+------------------
+
+BlockBatteryGenerator
+---------------------
+
+CoinCellBatteryGenerator
+------------------------
+
+CoinCellSectorBatteryGenerator
+------------------------------
+
+FlatBatteryGenerator
+--------------------
+
+SectorBatteryGenerator
+----------------------
+
+SpiralBatteryGenerator
+----------------------

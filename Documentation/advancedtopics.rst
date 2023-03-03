@@ -9,7 +9,7 @@ Advanced topics
     Model initialisation <modelinitialisation>
     Geometry models <geometries>
     Control models <controls>
-    Diffusion models <diffustion>
+    Diffusion models <diffusion>
     Thermal model <thermal>
     JSON inputs <json>
     Optimisation <optimisation>

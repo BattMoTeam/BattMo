@@ -1,15 +1,15 @@
 
 BattMo Tutorial
 ---------------
-*Generated from battMoTutorial.m*
+*Generated from battMoTutorial_docs.m*
 
-.. include:: battMoTutorialPreamble.rst
+.. include:: battMoTutorial_docsPreamble.rst
 
 This tutorial explains how to setup and run a simulation in BattMo
 
 Setting up the environment
 ^^^^^^^^^^^^^^^^^^^^^^^^^^
-BattMo uses functionality from `MRST <MRSTBattMo>`. This functionality is collected into modules where each module contains code for doing specific things. To use this functionality we must add these modules to the matlab path by running:
+BattMo uses functionality from :mod:`MRST <MRSTBattMo>`. This functionality is collected into modules where each module contains code for doing specific things. To use this functionality we must add these modules to the matlab path by running:
 
 .. code-block:: matlab
 
@@ -66,7 +66,7 @@ Now we can set the diffusion model type for the active material (am) in the posi
   jsonstruct.(pe).(am).diffusionModelType = 'full';
   jsonstruct.(ne).(am).diffusionModelType = 'full';
 
-To see which other types of diffusion model are available one can view <Electrochemistry.ActiveMaterialInputParams>.
+To see which other types of diffusion model are available one can view :class:`ActiveMaterialInputParams <Electrochemistry.ActiveMaterialInputParams>.
 When running a simulation, BattMo requires that all model parameters are stored in an instance of :class:`BatteryInputParams <Battery.BatteryInputParams>`. This class is used to initialize the simulation and is accessed by various parts of the simulator during the simulation. This class is instantiated using the jsonstruct we just created:
 
 .. code-block:: matlab
@@ -74,13 +74,10 @@ When running a simulation, BattMo requires that all model parameters are stored 
   paramobj = BatteryInputParams(jsonstruct);
   paramobj = paramobj.validateInputParams();
 
-It is also possible to update the properties of this paramobj in a similar way to updating the jsonstruct. Here we set some more parameters for the diffusion model. The definitions for these are found in the corresponding classes: :class:`ActiveMaterialInputParams <Electrochemistry.ActiveMaterialInputParams>` and :class:`FullSolidDiffusionModelInputParams <Electrochemistry.FullSolidDiffusionModelInputParams>`.
+It is also possible to update the properties of this paramobj in a similar way to updating the jsonstruct. Here we set the discretisation level for the diffusion model. Other input parameters for the full diffusion model can be found here: :class:`FullSolidDiffusionModelInputParams <Electrochemistry.FullSolidDiffusionModelInputParams>`.
 
 .. code-block:: matlab
 
-  paramobj.(ne).(am).InterDiffusionCoefficient = 0;
-  paramobj.(pe).(am).InterDiffusionCoefficient = 0;
-  
   paramobj.(ne).(am).(sd).N = 5;
   paramobj.(pe).(am).(sd).N = 5;
 
@@ -108,16 +105,43 @@ The battery model is initialized by sending paramobj to the Battery class constr
 
   model = Battery(paramobj);
 
-In BattMo a battery model is actually a collection of submodels: Electrolyte, Negative Electrode, Positive Electrode, Thermal Model and Control Model. The battery class contains all of these submodels and various other parameters necessary to run the simulation. To see what properties the battery model object has we can print out the model variable:
+In BattMo a battery model is actually a collection of submodels: Electrolyte, Negative Electrode, Positive Electrode, Thermal Model and Control Model. The battery class contains all of these submodels and various other parameters necessary to run the simulation.
+
+Plotting the OCP curves
+^^^^^^^^^^^^^^^^^^^^^^^
+We can inspect the model object to find out which parameters are being used. For instance the information we need to plot the OCP curves for the positive and negative electrodes can be found in the interface structure of each electrode.
 
 .. code-block:: matlab
 
-  model
+  T = 298.15;
+  elde = {ne,pe};
+  
+  figure
+  hold on
+  for i = 1:numel(elde)
+      el_itf = model.(elde{i}).(am).(itf);
+  
+      theta100 = el_itf.theta100;
+      theta0   = el_itf.theta0;
+      cmax     = el_itf.cmax;
+  
+      soc   = linspace(0, 1);
+      theta = soc*theta100 + (1 - soc)*theta0;
+      c     = theta.*cmax;
+      OCP   = el_itf.computeOCPFunc(c, T, cmax);
+  
+      plot(soc, OCP)
+  end
+  xlabel('SOC [-]')
+  ylabel('OCV [V]')
+  title('OCV for both electrodes');
+  legend(elde)
 
 
 Controlling the simulation
 ^^^^^^^^^^^^^^^^^^^^^^^^^^
-The control model specifies how the simulation is controlled. This can also be thought of as the boundary conditions of the simulation. In the first instance we use IEswitch control policy. (NOTE WHAT IS IESWITCH?) We set the total time scaled by the CRate in the model. The CRate has been set by the json file. We can access it here:
+The control model specifies how the simulation is controlled. This can also be thought of as the boundary conditions of the simulation.
+In the first instance we use IEswitch control policy. We set the total time scaled by the CRate in the model. The CRate has been set by the json file. We can access it here:
 
 .. code-block:: matlab
 
@@ -161,7 +185,7 @@ Finally we collect the control and step structures together in a schedule struct
 
 Setting the initial state of the battery
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-To run simulation we need to know the starting point which we will run it from, in terms of the value of the primary variables being modelled at the start of the simulation. The initial state of the model is setup using the model.setupInitialState() method. WHAT IS HAPPENING HERE? WHAT ARE THE INITIAL VALUES SET TO?
+To run simulation we need to know the starting point which we will run it from, in terms of the value of the primary variables being modelled at the start of the simulation. The initial state of the model is setup using model.setupInitialState() Here we use the state of charge (SOC) and various other input parameters to calculate the intial state of the model assuming it is at equilibrium.
 
 .. code-block:: matlab
 
@@ -202,15 +226,19 @@ To get the results we use the matlab cellfun function to extract the values Cont
 
 .. code-block:: none
 
-  model = 
-  
-    Battery with properties:
-  
-                             con: [1×1 PhysicalConstants]
-                     Electrolyte: [1×1 Electrolyte]
-               NegativeElectrode: [1×1 Electrode]
+  Solving timestep 001/100:                                            -> 50 Seconds, 399 Milliseconds
+  Solving timestep 002/100: 50 Seconds, 399 Milliseconds               -> 100 Seconds, 799 Milliseconds
+  Solving timestep 003/100: 100 Seconds, 799 Milliseconds              -> 151 Seconds, 199 Milliseconds
+  Solving timestep 004/100: 151 Seconds, 199 Milliseconds              -> 201 Seconds, 599 Milliseconds
+  Solving timestep 005/100: 201 Seconds, 599 Milliseconds              -> 252 Seconds
+  Solving timestep 006/100: 252 Seconds                                -> 302 Seconds, 399 Milliseconds
+  Solving timestep 007/100: 302 Seconds, 399 Milliseconds              -> 352 Seconds, 799 Milliseconds
+  Solving timestep 008/100: 352 Seconds, 799 Milliseconds              -> 403 Seconds, 199 Milliseconds
   ...
 
-.. figure:: battMoTutorial_01.png
+.. figure:: battMoTutorial_docs_01.png
+  :figwidth: 100%
+
+.. figure:: battMoTutorial_docs_02.png
   :figwidth: 100%
 

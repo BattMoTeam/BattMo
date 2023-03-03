@@ -3,6 +3,4 @@ Json input
 ==========
 
 
-.. contents::
-
 

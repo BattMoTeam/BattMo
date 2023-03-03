@@ -2,4 +2,24 @@
 Model initialisation
 ====================
 
-To initialise a model we need to set the concentration and potential in each of the model components (positive electrode, negative electrode, electrolyte, current collectors).
+
+
+
+How to initialise the model
+---------------------------
+
+Initial concentration and potential in the model can be calculated based on equilibrium values for the given input paramaters. This can be done by calling initialiseState on a BatteryModel object:
+
+.. code:: matlab
+
+    model.initialiseState()
+
+Alternatively a state structure contatining concentration and potential for all the relevant submodels can be given.
+
+Calculating intial concentration
+--------------------------------
+
+Concentration is calculated using the intial SOC of the battery.
+
+Calculating initial potential
+-----------------------------

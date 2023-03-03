@@ -1,9 +1,22 @@
-#+TITLE: Geometry model
+#+TITLE: Geometry models
 #+AUTHOR:
-#+OPTIONS: num:nil
+#+OPTIONS: num:nil toc:nil
+#+EXPORT_FILE_NAME: ../geometries
 
-* Battery1D
+* BatteryGenerator1D
 
-* Battery2D
+* BatteryGenerator2D
 
-* Battery3D
+* BatteryGenerator3D
+
+* BlockBatteryGenerator 
+
+* CoinCellBatteryGenerator
+
+* CoinCellSectorBatteryGenerator
+
+* FlatBatteryGenerator
+
+* SectorBatteryGenerator
+
+* SpiralBatteryGenerator

@@ -3,6 +3,4 @@ Thermal model
 =============
 
 
-.. contents::
-
 

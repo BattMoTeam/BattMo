@@ -5,11 +5,11 @@ Tutorials
 .. toctree::
    :hidden:
       
-   publishedExamples/battMoTutorial.rst
+   publishedExamples/battMoTutorial_docs.rst
 
 
-#. `A first BattMo simulation <publishedExamples/battMoTutorial.html>`_
+#. `A first BattMo simulation <publishedExamples/battMoTutorial_docs.html>`_
 
-   .. image:: img/runbattery1d.png
+   .. image:: publishedExamples/battMoTutorial_docs_02.png
               :width: 80%
 
