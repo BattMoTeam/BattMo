@@ -81,14 +81,10 @@ paramobj = paramobj.validateInputParams();
 
 %%%
 % It is also possible to update the properties of this paramobj in a
-% similar way to updating the jsonstruct. Here we set some more parameters
-% for the diffusion model. The definitions for these are found in the 
-% corresponding classes:
-% :class:`ActiveMaterialInputParams <Electrochemistry.ActiveMaterialInputParams>`
-% and :class:`FullSolidDiffusionModelInputParams <Electrochemistry.FullSolidDiffusionModelInputParams>`.
-
-paramobj.(ne).(am).InterDiffusionCoefficient = 0;
-paramobj.(pe).(am).InterDiffusionCoefficient = 0;
+% similar way to updating the jsonstruct. Here we set the discretisation
+% level for the diffusion model. Other input parameters for the full diffusion
+% model can be found here:
+% :class:`FullSolidDiffusionModelInputParams <Electrochemistry.FullSolidDiffusionModelInputParams>`.
 
 paramobj.(ne).(am).(sd).N = 5;
 paramobj.(pe).(am).(sd).N = 5;
@@ -119,12 +115,40 @@ model = Battery(paramobj);
 % Electrolyte, Negative Electrode, Positive Electrode, Thermal Model and Control
 % Model. The battery class contains all of these submodels and various other 
 % parameters necessary to run the simulation.
-% To see what properties the battery model object has we can inspect the
-% model by typing model at the Matlab command prompt.
+
+%%%
+% We can inspect the model object to find out which parameters are being
+% used. For instance the information we need to plot the OCP curves for the
+% positive and negative electrodes can be found in the interface structure
+% of each electrode.
+%%
+T = 298.15
+
+elde = {ne,pe};
+
+figure
+hold on
+for i = 1:numel(elde)
+    el_itf = model.(elde{i}).(am).(itf);
+
+    theta100 = el_itf.theta100;
+    theta0   = el_itf.theta0;
+    cmax     = el_itf.cmax;
+
+    c   = linspace(theta100, theta0).*cmax;
+    OCP = el_itf.computeOCPFunc(c,T,cmax);
+
+    plot(c, OCP)
+    hold on
+end
+
+legend(elde)
 
 %%% Controlling the simulation
 % The control model specifies how the simulation is controlled. This can
 % also be thought of as the boundary conditions of the simulation.
+
+%%%
 % In the first instance we use IEswitch control policy.
 % We set the total time scaled by the CRate in the model.
 % The CRate has been set by the json file. We can access it here:
@@ -189,8 +213,10 @@ schedule = struct('control', control, 'step', step);
 % To run simulation we need to know the starting point which we will run it
 % from, in terms of the value of the primary variables being modelled at
 % the start of the simulation. 
-% The initial state of the model is setup using the model.setupInitialState()
-% Here we take the state of charge (SOC) given in the input and calculate 
+% The initial state of the model is setup using model.setupInitialState()
+% Here we take the state of charge (SOC) given in the input and calculate
+% equilibrium concentration based on theta0, theta100 and cmax.
+% Equilibrium potential is calculated using the Butler
 
 initstate = model.setupInitialState(); 
 
