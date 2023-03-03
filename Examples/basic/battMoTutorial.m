@@ -121,7 +121,6 @@ model = Battery(paramobj);
 % used. For instance the information we need to plot the OCP curves for the
 % positive and negative electrodes can be found in the interface structure
 % of each electrode.
-%%
 
 T = 298.15;
 elde = {ne,pe};
@@ -140,7 +139,7 @@ for i = 1:numel(elde)
     c     = theta.*cmax;
     OCP   = el_itf.computeOCPFunc(c, T, cmax);
 
-    plot(s, OCP)
+    plot(soc, OCP)
 end
 xlabel('SOC [-]')
 ylabel('OCV [V]')

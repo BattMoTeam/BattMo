@@ -9,7 +9,7 @@ close all
 mrstModule add ad-core mrst-gui mpfa
 
 %% Setup the properties of Li-ion battery materials and cell design
-jsonstruct = parseBattmoJson(fullfile('Examples', 'jsoninputs', 'amExample.json'));
+jsonstruct = parseBattmoJson(fullfile('Examples', 'am_standalone', 'jsoninputs', 'amExample.json'));
 
 paramobj = ActiveMaterialInputParams(jsonstruct);
 
@@ -25,7 +25,7 @@ model = ActiveMaterial(paramobj);
 
 inspectgraph = false;
 if inspectgraph
-    model.standAlone = true;
+    model.isRoot = true;
     cgt = ComputationalGraphTool(model);
     [g, edgelabels] = cgt.getComputationalGraph();
 

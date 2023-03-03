@@ -1,3 +1,7 @@
+%% TODO : fix the SEIActiveMaterial standalone model
+
+error('SEIActiveMaterial standalone model not working for the moment');
+
 %% run stand-alone active material model
 
 % clear the workspace and close open figures
@@ -35,26 +39,17 @@ G = computeGeometry(G);
 paramobj.G = G;
 
 model = SEIActiveMaterial(paramobj);
-model.standAlone = true;
-
-cgt = ComputationalGraphTool(model);
-% cgt.printTailVariables
-% return
 
 %% Setup initial state
 
 Nsd = model.(sd).N;
 Nsei = model.(sei).N;
 
-cElectrodeInit   = 0.75*model.(itf).cmax;
-phiElectrodeInit = 0;
+cElectrodeInit   = 40*mol/litre;
+phiElectrodeInit = 3.5;
 cElectrolyte     = 5e-1*mol/litre;
 T                = 298.15; % reference temperature in Interface.
-
-epsiSEI     = 0.05;                % From Safari
-cECsolution = 4.541*mol/litre; % From Safari
-cECexternal = epsiSEI*cECsolution;
-
+cExternal        = 4.541*mol/litre;
 % compute OCP and  phiElectrolyte
 clear state
 state.cElectrodeSurface = cElectrodeInit;
@@ -64,12 +59,12 @@ OCP = state.OCP;
 phiElectrolyte = phiElectrodeInit - OCP;
 
 % set primary variables
-initState.E                = phiElectrodeInit;
+initState.phi              = phiElectrodeInit;
 initState.(sd).c           = cElectrodeInit*ones(Nsd, 1);
 initState.(sd).cSurface    = cElectrodeInit;
-initState.(sei).c          = cECexternal*ones(Nsei, 1);
-initState.(sei).cInterface = cECexternal;
-initState.(sei).delta      = 5*nano*meter;
+initState.(sei).c          = cElectrolyte*ones(Nsei, 1);
+initState.(sei).cInterface = cElectrolyte;
+initState.(sei).delta      = 0;
 initState.R                = 0;
 
 % set static variable fields
@@ -77,7 +72,7 @@ initState.T = T;
 initState.(itf).cElectrolyte   = cElectrolyte;
 initState.(itf).phiElectrolyte = phiElectrolyte;
 initState.(sr).phiElectrolyte  = phiElectrolyte;
-initState.(sei).cExternal      = cECexternal;
+initState.(sei).cExternal      = cExternal;
 
 
 %% setup schedule
@@ -87,16 +82,13 @@ n     = 100;
 dt    = total/n;
 step  = struct('val', dt*ones(n, 1), 'control', ones(n, 1));
 
-control.src = 2e-5;
+control.src = 1;
 
 schedule = struct('control', control, 'step', step); 
 
 %% Run simulation
 
 model.verbose = true;
-
-nls = NonLinearSolver;
-nls.errorOnFailure = false;
 
 dopack = false;
 if dopack
@@ -106,31 +98,23 @@ if dopack
     simulatePackedProblem(problem);
     [globvars, states, report] = getPackedSimulatorOutput(problem);
 else
-    [wellSols, states, report] = simulateScheduleAD(initState, model, schedule, ...
-                                                    'OutputMinisteps', true, ...
-                                                    'NonLinearSolver', nls); 
+    [wellSols, states, report] = simulateScheduleAD(initState, model, schedule, 'OutputMinisteps', true); 
 end
 
 %% Plotting
 
-
-ind = cellfun(@(state) ~isempty(state), states);
-states = states(ind);
-
-doplotconcs = false;
 % concentration evolution in particle
-if doplotconcs
-    figure
-    xr = (model.(sd).rp/model.(sd).N) * (1 : model.(sd).N)';
-    for ind = 1 : numel(states)
-        state = states{ind};
-        cla
-        plot(xr, state.(sd).c)
-        xlabel('r / [m]')
-        ylabel('concentration')
-        title(sprintf('time : %g s', state.time));
-        pause(0.1)
-    end
+
+figure
+xr = (model.(sd).rp/model.(sd).N) * (1 : model.(sd).N)';
+for ind = 1 : numel(states)
+    state = states{ind};
+    cla
+    plot(xr, state.(sd).c)
+    xlabel('r / [m]')
+    ylabel('concentration')
+    title(sprintf('time : %g s', state.time));
+    pause(0.1)
 end
 
 %%
@@ -142,12 +126,6 @@ plot(t, d);
 xlabel('time / [s]');
 ylabel('sie width / [m]');
 
-
-figure
-E = cellfun(@(state) state.E, states);
-plot(t, E);
-xlabel('time / [s]');
-ylabel('voltage / [V]');
 
 
 
