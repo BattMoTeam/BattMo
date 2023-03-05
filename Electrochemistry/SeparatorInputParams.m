@@ -7,7 +7,7 @@ classdef SeparatorInputParams < ComponentInputParams
         porosity            % Porosity [-]
         
         thermalConductivity % Intrinsic Thermal conductivity of the electrolyte
-        heatCapacity        % Intrinsic Heat capacity of the electrolyte
+        specificHeatCapacity        % Specific Heat capacity of the electrolyte
 
         density             % Density [kg m^-3]
 

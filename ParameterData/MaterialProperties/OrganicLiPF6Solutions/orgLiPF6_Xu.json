@@ -1,23 +1,21 @@
 {
     "specificHeatCapacity": 1518.0,
-    "heatCapacity": 1836780.0,
     "thermalConductivity": 0.099,
     "density": 1210,
     "Conductivity" : {"type": "function",
-                      "functionname" : "updateElectrolyteConductivityFunc_Xu",
+                      "functionname" : "computeElectrolyteConductivityFunc_Xu",
                       "argumentlist" : ["concentration", "temperature"]
                      },
     "DiffusionCoefficient" : {"type": "function",
-                              "functionname" : "updateDiffusionCoefficientFunc_Xu",
+                              "functionname" : "computeDiffusionCoefficientFunc_Xu",
                               "argumentlist" : ["concentration", "temperature"]
                              },
     "compnames": [
         "Li",
         "PF6"
     ],
-    "chargeCarrierName": "Li",
-    "sp": { "z": [1,-1],
-            "t": [0.399, 0.601]},
+    "sp": { "z": 1,
+            "t": 0.601},
     "Separator": { "filename": "ParameterData/BatteryComponentParameters/celgard2500_Xu.json",
                    "isFile": true },
     "BruggemanCoefficient": 1.5

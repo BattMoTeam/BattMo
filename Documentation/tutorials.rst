@@ -5,26 +5,11 @@ Tutorials
 .. toctree::
    :hidden:
       
-   publishedExamples/runBattery1D.rst
-   publishedExamples/runBattery2D.rst
-   publishedExamples/runBattery3D.rst
+   publishedExamples/battMoTutorial_docs.rst
 
 
+#. `A first BattMo simulation <publishedExamples/battMoTutorial_docs.html>`_
 
-#. `Pseudo-Two-Dimensional (P2D) Lithium-Ion Battery Model <publishedExamples/runBattery1D.html>`_
-
-   .. image:: img/runbattery1d.png
+   .. image:: publishedExamples/battMoTutorial_docs_02.png
               :width: 80%
-
-
-#. `Pseudo-Two-Dimensional (P2D) Lithium-Ion Battery Model <publishedExamples/runBattery2D.html>`_
-
-   .. image:: img/runbattery2d.png
-              :width: 80%
-   
-#. `Pseudo-Two-Dimensional (P2D) Lithium-Ion Battery Model <publishedExamples/runBattery3D.html>`_
-
-   .. image:: img/runbattery3d.png
-              :width: 80%
-   
 

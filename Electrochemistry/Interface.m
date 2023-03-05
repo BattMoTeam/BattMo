@@ -88,15 +88,15 @@ classdef Interface < BaseModel
             varnames{end + 1} = 'cElectrolyte';
             % Electrode over potential
             varnames{end + 1} = 'eta';
-            % Reaction rate in mol/(s*m^2)
+            % Reaction rate [mol s^-1 m^-2]
             varnames{end + 1} = 'R';
-            % External potential drop used in Butler-Volmer
+            % External potential drop used in Butler-Volmer in case of SEI see :class:`Electrochemistry.SEIActiveMaterial`
             % varnames{end + 1} = 'externalPotentialDrop';
             % 
             varnames{end + 1} = 'dUdT';
-            % OCP
+            % OCP [V]
             varnames{end + 1} = 'OCP';
-            % Reaction rate coefficient
+            % Reaction rate coefficient [A m^-2]
             varnames{end + 1} = 'j0';
             
             model = model.registerVarNames(varnames);
@@ -118,6 +118,7 @@ classdef Interface < BaseModel
             inputnames = {'phiElectrolyte', 'phiElectrode', 'OCP'};            
             model = model.registerPropFunction({'eta', fn, inputnames});
             
+            % This function is used when SEI layer
             % fn = @Interface.updateEtaWithEx;
             % inputnames = {'phiElectrolyte', 'phiElectrode', 'OCP', 'externalPotentialDrop'};
             % model = model.registerPropFunction({'eta', fn, inputnames});            
@@ -187,7 +188,9 @@ classdef Interface < BaseModel
 
                 % We use regularizedSqrt to regularize the square root function and avoid the blow-up of derivative at zero.
                 th = 1e-3*cmax;
-                j0 = k.*regularizedSqrt(cElyte.*(cmax - c).*c, th)*n*F;
+                coef = cElyte.*(cmax - c).*c;
+                coef(coef < 0) = 0;
+                j0 = k.*regularizedSqrt(coef, th)*n*F;
                 
             end
             

@@ -9,6 +9,6 @@
   "theta100": 0.88,
   "theta0": 0.15,
   "OCP" : {"type" : "function",
-           "functionname" : "updateOCPFunc_graphite",
+           "functionname" : "computeOCPFunc_graphite",
            "argumentlist" : ["concentration", "temperature", "maximum concentration"]}
 }

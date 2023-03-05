@@ -3,8 +3,6 @@ classdef ElectroChemicalComponentInputParams < ElectronicComponentInputParams
 % Input parameter class for :class:`ElectronicComponent <Electrochemistry.ElectronicComponent>`
 %
     properties
-       
-        chargeCarrierName
 
     end
     

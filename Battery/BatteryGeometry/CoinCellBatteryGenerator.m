@@ -2,14 +2,10 @@ classdef CoinCellBatteryGenerator < BatteryGenerator
 
     properties
 
-        % Design params
-        compdims
-        meshSize
-        offset = [0, 0] % Negative and positive electrode offset half this distance from center
-        
-        % Sector model specific design params
-        use_sector
-        angle
+        % Design params for the components (electrodes, current collectors etc)
+        compDims
+        numRadial
+        numAngular
 
         tag     % cell-valued vector giving component number (indexing is given by tagdict)
         tagdict % dictionary giving the component number
@@ -18,14 +14,9 @@ classdef CoinCellBatteryGenerator < BatteryGenerator
         positiveExtCurrentFaces
 
         % Heat parameters
-        externalHeatTransferCoefficientTab = 1e3;
         externalHeatTransferCoefficient = 1e3;
 
-        % For sector model
-        thermalCoolingFaces
-        thermalExchangeFaces = [];
-        thermalExchangeFacesTag = [];
-
+        include_current_collectors
         use_thermal
     end
 
@@ -35,19 +26,18 @@ classdef CoinCellBatteryGenerator < BatteryGenerator
             gen = gen@BatteryGenerator();
         end
 
-        function [paramobj, gen] = updateBatteryInputParams(gen, paramobj, params)
+        function paramobj = updateBatteryInputParams(gen, paramobj, params)
 
+            gen.include_current_collectors = paramobj.include_current_collectors;
             gen.use_thermal = paramobj.use_thermal;
-
-            gen.compdims = params.compdims;
-            gen.meshSize = params.meshSize;
-            gen.use_sector = params.use_sector;
-            gen.angle = params.angle;
-            %gen.offset = params.offset;
-            assert(all(gen.offset == 0), 'Coin cells with non-zero offset is not yet implemented')
             
-            [paramobj, gen] = gen.setupBatteryInputParams(paramobj, []);
-
+            fdnames = {'compDims', ...
+                       'numRadial', ...
+                       'numAngular'};
+            gen = dispatchParams(gen, params, fdnames);
+            
+            paramobj = gen.setupBatteryInputParams(paramobj, []);
+            
         end
 
         function [paramobj, gen] = setupGrid(gen, paramobj, params)
@@ -92,6 +82,8 @@ classdef CoinCellBatteryGenerator < BatteryGenerator
             params.(ne).(cc).extfaces = gen.negativeExtCurrentFaces;
             params.(ne).cellind = [params.(ne).(am).cellind; params.(ne).(cc).cellind];
 
+            params.(ne).bcfaces = pi;
+            
             cellind = ismember(tag, tagdict('PositiveActiveMaterial'));
             params.(pe).(am).cellind = find(cellind);
             cellind = ismember(tag, tagdict('PositiveCurrentCollector'));
@@ -99,6 +91,8 @@ classdef CoinCellBatteryGenerator < BatteryGenerator
             params.(pe).(cc).extfaces = gen.positiveExtCurrentFaces;
             params.(pe).cellind = [params.(pe).(am).cellind; params.(pe).(cc).cellind];
 
+            params.(ne).bcfaces = exp(1);
+            
             paramobj = setupElectrodes@BatteryGenerator(gen, paramobj, params);
 
         end
@@ -126,8 +120,7 @@ classdef CoinCellBatteryGenerator < BatteryGenerator
         function paramobj = setupThermalModel(gen, paramobj, params)
         % paramobj is instance of BatteryInputParams
 
-        % Cooling on external faces
-
+        % Cooling on all external faces
             [couplingfaces, couplingcells] = boundaryFaces(gen.G);
 
             params = struct('couplingfaces', couplingfaces, ...
@@ -136,7 +129,7 @@ classdef CoinCellBatteryGenerator < BatteryGenerator
 
             coef = gen.externalHeatTransferCoefficient;
             paramobj.ThermalModel.externalHeatTransferCoefficient = coef;
-
+            
         end
 
     end

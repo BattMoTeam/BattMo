@@ -8,6 +8,7 @@
   "use_particle_diffusion": true,
   "Control" : {
     "controlPolicy" : "IEswitch",
+    "initialControl" : "discharging",
     "CRate" : 1,
     "lowerCutoffVoltage" : 2,
     "upperCutoffVoltage" : 4.1,
@@ -17,7 +18,6 @@
   "NegativeElectrode": {
     "ActiveMaterial": {
       "specificHeatCapacity": 1435.0,
-      "heatCapacity": 2657620, 
       "thermalConductivity": 1.04,
       "InterDiffusionCoefficient": 1e-14,
       "InterDiffusionCoefficientComment" : "from Ecker 2015",
@@ -45,7 +45,6 @@
   "PositiveElectrode": {
     "ActiveMaterial": {
       "specificHeatCapacity": 1348.0,
-      "heatCapacity": 1335868,
       "thermalConductivity": 1.48,
       "InterDiffusionCoefficient": 1.25e-15,
       "electricalConductivity": 0.01,

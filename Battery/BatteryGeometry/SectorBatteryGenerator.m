@@ -1,6 +1,5 @@
 classdef SectorBatteryGenerator < SpiralBatteryGenerator
 
-    
     methods
         
         function gen = SectorBatteryGenerator()

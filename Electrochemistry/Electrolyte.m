@@ -4,27 +4,27 @@ classdef Electrolyte < ElectroChemicalComponent
 
         Separator
 
-        sp
-        compnames
-        ncomp
-
-        indchargecarrier
-        chargeCarrierName
-
-
+        sp % Structure with following fields
+           % - z : charge number
+           % - t : transference number
+        
         volumeFraction
 
         thermalConductivity % intrinsic thermal conductivity value
-        heatCapacity % intrinsic heat capacity value
+        specificHeatCapacity % specific heat capacity value
         density % [kg m^-3] (Note : only of the liquid part, the density of the separator is given there)
 
         EffectiveThermalConductivity
-        EffectiveHeatCapacity
+        EffectiveVolumetricHeatCapacity
 
         computeConductivityFunc
         computeDiffusionCoefficientFunc
 
         BruggemanCoefficient
+
+        % helper properties
+        compnames
+        ncomp
 
     end
 
@@ -41,7 +41,7 @@ classdef Electrolyte < ElectroChemicalComponent
                        'compnames'          , ...
                        'chargeCarrierName'  , ...
                        'thermalConductivity', ...
-                       'heatCapacity'       , ...
+                       'specificHeatCapacity'       , ...
                        'density'            , ...
                        'use_thermal'        , ...
                        'BruggemanCoefficient'};
@@ -52,9 +52,6 @@ classdef Electrolyte < ElectroChemicalComponent
             model.computeDiffusionCoefficientFunc = str2func(paramobj.DiffusionCoefficient.functionname);
 
             model.ncomp = numel(model.compnames);
-            [isok, indchargecarrier] = ismember(model.chargeCarrierName, model.compnames);
-            assert(isok, 'charge carrier not found in the list of components');
-            model.indchargecarrier = indchargecarrier;
 
             sep = 'Separator';
 
@@ -86,35 +83,33 @@ classdef Electrolyte < ElectroChemicalComponent
 
             model = registerVarAndPropfuncNames@ElectroChemicalComponent(model);
 
-            varnames = { VarName({}, 'cs', 2)     , ...
-                         'D'                      , ...
+            varnames = { 'D'                      , ...
                          VarName({}, 'dmudcs', 2) , ...
                          'conductivity'           , ...
-                         VarName({}, 'jchems', 2) , ...
                          'diffFlux'};
             model = model.registerVarNames(varnames);
-
-            fn = @Electrolyte.updateConcentrations;
-            model = model.registerPropFunction({VarName({}, 'cs', 2), fn, {'c'}});
 
             fn = @Electrolyte.updateConductivity;
             model = model.registerPropFunction({'conductivity', fn, {'c', 'T'}});
 
-            fn = @Electrolyte.updateChemicalCurrent;
+            fn = @Electrolyte.updateDmuDcs;
             model = model.registerPropFunction({VarName({}, 'dmudcs', 2), fn, {'c', 'T'}});
-            model = model.registerPropFunction({VarName({}, 'jchems', 2), fn, {'c', 'T'}});
 
             fn = @Electrolyte.updateDiffusionCoefficient;
             model = model.registerPropFunction({'D', fn, {'c', 'T'}});
 
             fn = @Electrolyte.updateCurrent;
-            model = model.registerPropFunction({'j', fn, {'phi', VarName({}, 'jchems', 2), 'conductivity'}});
+            inputnames = {'phi'                   , ...
+                          VarName({}, 'dmudcs', 2), ...
+                          'conductivity'};
+            model = model.registerPropFunction({'j', fn, inputnames});
 
             fn = @Electrolyte.updateMassFlux;
             model = model.registerPropFunction({'massFlux', fn, {'c', 'j', 'D'}});
             model = model.registerPropFunction({'diffFlux', fn, {'c', 'j', 'D'}});
 
-            fn = @Electrolyte.assembleAccumTerm;
+            fn = @Electrolyte.updateAccumTerm;
+            fn = {fn, @(propfunction) PropFunction.accumFuncCallSetupFn(propfunction)};
             model = model.registerPropFunction({'massAccum', fn, {'c'}});
 
             fn = @Electrolyte.updateCurrentBcSource;
@@ -122,15 +117,6 @@ classdef Electrolyte < ElectroChemicalComponent
             
         end
 
-        function state = updateConcentrations(model, state)
-
-            cs = cell(2, 1);
-            cs{1} = state.c;
-            cs{2} = state.c;
-
-            state.cs = cs;
-
-        end
 
         function state = updateAccumTerm(model, state, state0, dt)
 
@@ -146,30 +132,27 @@ classdef Electrolyte < ElectroChemicalComponent
             
             computeConductivity = model.computeConductivityFunc;
 
-            c = state.cs{1};
+            c = state.c;
             T = state.T;
             
             state.conductivity = computeConductivity(c, T);
             
         end
 
-        function state = updateChemicalCurrent(model, state)
+        function state = updateDmuDcs(model, state)
 
             ncomp = model.ncomp; % number of components
 
-            cLi          = state.cs{1}; % concentration of Li+
-            T            = state.T;     % temperature
-            phi          = state.phi;   % potential
-            conductivity = state.conductivity;   % potential
-
-            cs  = state.cs;
-
+            c          = state.c;   % concentration of Li+
+            T            = state.T;   % temperature
+            phi          = state.phi; % potential
 
             % calculate the concentration derivative of the chemical potential for each species in the electrolyte
+            % In the case of a binary electrolyte, we could have simplified those expressions.
             R = model.constants.R;
             dmudcs = cell(2, 1);
             for ind = 1 : ncomp
-                dmudcs{ind} = R .* T ./ cs{ind};
+                dmudcs{ind} = R .* T ./ c;
             end
 
             state.dmudcs = dmudcs;
@@ -232,10 +215,11 @@ classdef Electrolyte < ElectroChemicalComponent
 
         function state = updateMassFlux(model, state)
 
-            ind = model.indchargecarrier;
 
+            sp = model.sp;
+            
             % We assume that the current and the diffusion coefficient D has been updated when this function is called
-            c = state.cs{ind};
+            c = state.c;
             j = state.j;
             D = state.D;
 
@@ -245,7 +229,7 @@ classdef Electrolyte < ElectroChemicalComponent
 
             %% 2. Flux from electrical forces
             F = model.constants.F;
-            fluxE = model.sp.t(ind) ./ (model.sp.z(ind) .* F) .* j;
+            fluxE = sp.t ./ (sp.z .* F) .* j;
 
             %% 3. Sum the two flux contributions
             flux = diffFlux + fluxE;

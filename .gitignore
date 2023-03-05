@@ -59,3 +59,8 @@ Thumbs.db
 # Other MATLAB files
 *.asv
 
+# Documentation build directory
+Documentation/_build/
+
+# pyvenv
+*.venv/

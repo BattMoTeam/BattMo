@@ -4,18 +4,18 @@ classdef BatteryGenerator1D < BatteryGenerator
         
         xlength = 1e-6*[25; 64; 15; 57; 15]; % length of components in x direction - default values
                                              % x(1) : length of negative current collector
-                                             % x(2) : length of negative activie material
+                                             % x(2) : length of negative active material
                                              % x(3) : length of separator
-                                             % x(4) : length of positive current collector
-                                             % x(5) : length of positive activie material
+                                             % x(4) : length of positive active material
+                                             % x(5) : length of positive current collector
 
         sepnx  = 10; % discretization number for negative current collector - default value
-        nenx   = 10; % discretization number for negative activie material  - default value
+        nenx   = 10; % discretization number for negative active material   - default value
         penx   = 10; % discretization number for separator                  - default value
         nenr   = 10; % discretization for solid diffusion                   - default value
         penr   = 10; % discretization for solid diffusion                   - default value
         ccnenx = 10; % discretization number for positive current collector - default value
-        ccpenx = 10; % discretization number for positive activie material  - default value
+        ccpenx = 10; % discretization number for positive active material   - default value
 
         % refinement factor (can be used to easily increase discretization refinement)
         % see applyResolutionFactors method
@@ -85,7 +85,6 @@ classdef BatteryGenerator1D < BatteryGenerator
 
             if gen.include_current_collectors
                 nxs = [ccnenx; nenx; sepnx; penx; ccpenx];
-                % standard length (could be moved to a paramobj geometrical field)
             else
                 nxs = [nenx; sepnx; penx];
                 xlength = xlength(2 : 4);
@@ -110,10 +109,8 @@ classdef BatteryGenerator1D < BatteryGenerator
             gen.sepnx  = gen.sepnx*fac;
             gen.nenx   = gen.nenx*fac;
             gen.penx   = gen.penx*fac;
-            %if gen.include_current_collectors
             gen.ccnenx = gen.ccnenx*fac;
             gen.ccpenx = gen.ccpenx*fac;
-            %end
             
         end
             

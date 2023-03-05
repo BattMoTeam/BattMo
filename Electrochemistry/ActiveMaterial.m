@@ -13,15 +13,16 @@ classdef ActiveMaterial < ElectronicComponent
         porosity                      % porosity
         volumeFraction                % Volume fraction of the whole material (binder and so on included)
         activeMaterialFraction        % Volume fraction occupied only by the active material
-        electricalConductivity        % Electrical conductivite
+        electricalConductivity        % Electrical conductivity
         InterDiffusionCoefficient     % Inter particle diffusion coefficient parameter (diffusion between the particles)
+        density                       %
         thermalConductivity           % Intrinsic Thermal conductivity of the active component
-        heatCapacity                  % Intrinsic Heat capacity of the active component
+        specificHeatCapacity          % Specific Heat capacity of the active component
 
         EffectiveDiffusionCoefficient % 
 
         EffectiveThermalConductivity  % Effective Thermal Conductivity of the active component
-        EffectiveHeatCapacity         % Effective Heat Capacity of the active component
+        EffectiveVolumetricHeatCapacity % Effective Heat Capacity of the active component
 
         diffusionModelType
         
@@ -31,7 +32,7 @@ classdef ActiveMaterial < ElectronicComponent
 
         use_particle_diffusion
 
-        isRoot
+        standAlone
         
     end
     
@@ -46,7 +47,8 @@ classdef ActiveMaterial < ElectronicComponent
             fdnames = {'activeMaterialFraction', ...
                        'thermalConductivity'   , ...
                        'electricalConductivity', ...
-                       'heatCapacity'          , ...
+                       'density'               , ...
+                       'specificHeatCapacity'  , ...
                        'externalCouplingTerm'  , ...
                        'diffusionModelType'    , ...
                        'use_thermal'           , ...
@@ -96,9 +98,9 @@ classdef ActiveMaterial < ElectronicComponent
 
             model = model.setupDependentProperties();
 
-            % isRoot=true for standalone simulation of active material. This flag is used only in
+            % standAlone=true for standalone simulation of active material. This flag is used only in
             % registerVarAndPropfuncNames (does not impact simulation). Default is false.
-            model.isRoot = false;
+            model.standAlone = false;
             
         end
         
@@ -123,7 +125,7 @@ classdef ActiveMaterial < ElectronicComponent
             if model.use_thermal
                 % setup effective thermal conductivity
                 model.EffectiveThermalConductivity = model.thermalConductivity.*vf.^brugg;
-                model.EffectiveHeatCapacity = model.heatCapacity.*vf;
+                model.EffectiveVolumetricHeatCapacity = model.specificHeatCapacity.*vf.*model.density;
             end
             
         end
@@ -158,29 +160,18 @@ classdef ActiveMaterial < ElectronicComponent
                             'massSource'};
                 model = model.registerVarNames(varnames);
             end
-
-            isRoot = model.isRoot;
             
-            if isRoot
-                varnames{end + 1} = 'controlCurrentSource';
+            if model.standAlone
+                varnames = {'controlCurrentSource'};
                 model = model.registerVarNames(varnames);
-            end
-            
-            if isRoot
-                
-                fn = @ActiveMaterial.updateStandalonejBcSource;
-                model = model.registerPropFunction({'jBcSource', fn, {'controlCurrentSource'}});
-                model = model.removeVarName({itf, 'SOC'});
-                
-            else
-
-                fn = @ActiveMaterial.updatejBcSource;
-                model = model.registerPropFunction({'jBcSource', fn, {'jCoupling', 'jExternal'}});
-
-                if model.use_thermal
-                    fn = @ActiveMaterial.updatejFaceBc;
-                    model = model.registerPropFunction({'jFaceBc', fn, {'jFaceCoupling', 'jFaceExternal'}});
-                end
+                varnames = {{itf, 'SOC'}, ...
+                            'jCoupling', ...
+                            'jExternal'};
+                model = model.removeVarNames(varnames);
+                varnames = {'T', ...
+                            {itf, 'cElectrolyte'},... 
+                            {itf, 'phiElectrolyte'}};
+                model = model.registerStaticVarNames(varnames);
                 
             end
             
@@ -193,39 +184,39 @@ classdef ActiveMaterial < ElectronicComponent
             fn = @ActiveMaterial.dispatchTemperature;
             model = model.registerPropFunction({{itf, 'T'}, fn, {'T'}});
             if model.use_particle_diffusion
-            model = model.registerPropFunction({{sd, 'T'}, fn, {'T'}});
+                model = model.registerPropFunction({{sd, 'T'}, fn, {'T'}});
             end
 
             if model.use_particle_diffusion
 
-            fn = @ActiveMaterial.updateConcentrations;
-            switch model.diffusionModelType
-              case 'simple'
-                model = model.registerPropFunction({{sd, 'cAverage'}, fn, {'c'}});
-                model = model.registerPropFunction({{itf, 'cElectrodeSurface'}, fn, {{sd, 'cSurface'}}});
-              case 'full'
-                model = model.registerPropFunction({{itf, 'cElectrodeSurface'}, fn, {{sd, 'cSurface'}}});
-              otherwise
-                error('diffusionModelType not recognized.');
-            end
+                fn = @ActiveMaterial.updateConcentrations;
+                switch model.diffusionModelType
+                  case 'simple'
+                    model = model.registerPropFunction({{sd, 'cAverage'}, fn, {'c'}});
+                    model = model.registerPropFunction({{itf, 'cElectrodeSurface'}, fn, {{sd, 'cSurface'}}});
+                  case 'full'
+                    model = model.registerPropFunction({{itf, 'cElectrodeSurface'}, fn, {{sd, 'cSurface'}}});
+                  otherwise
+                    error('diffusionModelType not recognized.');
+                end
 
-            if strcmp(model.diffusionModelType, 'simple')
-                fn = @ActiveMaterial.updateMassFlux;
-                model = model.registerPropFunction({'massFlux', fn, {'c'}});
-                fn = @ActiveMaterial.updateMassSource;
+                if strcmp(model.diffusionModelType, 'simple')
+                    fn = @ActiveMaterial.updateMassFlux;
+                    model = model.registerPropFunction({'massFlux', fn, {'c'}});
+                    fn = @ActiveMaterial.updateMassSource;
                     model = model.registerPropFunction({'massSource', fn, {'Rvol'}});
-                fn = @ActiveMaterial.updateMassConservation;
+                    fn = @ActiveMaterial.updateMassConservation;
                     model = model.registerPropFunction({'massCons', fn, {'massAccum', 'massFlux', 'massSource'}});
-            end
-            
-            fn = @ActiveMaterial.updateRvol;
+                end
+                
+                fn = @ActiveMaterial.updateRvol;
                 model = model.registerPropFunction({'Rvol', fn, {{itf, 'R'}}});
-            model = model.registerPropFunction({{sd, 'Rvol'}, fn, {{itf, 'R'}}});
+                model = model.registerPropFunction({{sd, 'Rvol'}, fn, {{itf, 'R'}}});
 
-            % Not used in assembly
-            fn = @ActiveMaterial.updateSOC;
-            model = model.registerPropFunction({'SOC', fn, {{sd, 'cAverage'}}});
-            
+                % Not used in assembly
+                fn = @ActiveMaterial.updateSOC;
+                model = model.registerPropFunction({'SOC', fn, {{sd, 'cAverage'}}});
+                
             else
 
                 fn = @ActiveMaterial.updateConcentrations;
@@ -245,16 +236,36 @@ classdef ActiveMaterial < ElectronicComponent
                 
             end
 
-            fn = @ActiveMaterial.updatejExternal;
-            model = model.registerPropFunction({'jExternal', fn, {}});
-            if model.use_thermal
-                model = model.registerPropFunction({'jFaceExternal', fn, {}});
-            end
+            if model.standAlone
+                
+                fn = @ActiveMaterial.updateStandalonejBcSource;
+                model = model.registerPropFunction({'jBcSource', fn, {'controlCurrentSource'}});
 
-            fn = @ActiveMaterial.updatejCoupling;
-            model = model.registerPropFunction({'jCoupling', fn, {}});
-            if model.use_thermal
-                model = model.registerPropFunction({'jFaceCoupling', fn, {}});
+                fn = @ActiveMaterial.updateControl;
+                fn = {fn, @(propfunction) PropFunction.drivingForceFuncCallSetupFn(propfunction)};
+                model = model.registerPropFunction({'controlCurrentSource', fn, {}});
+                
+            else
+
+                fn = @ActiveMaterial.updatejBcSource;
+                model = model.registerPropFunction({'jBcSource', fn, {'jCoupling', 'jExternal'}});
+
+                if model.use_thermal
+                    fn = @ActiveMaterial.updatejFaceBc;
+                    model = model.registerPropFunction({'jFaceBc', fn, {'jFaceCoupling', 'jFaceExternal'}});
+                end
+                
+                fn = @ActiveMaterial.updatejExternal;
+                model = model.registerPropFunction({'jExternal', fn, {}});
+                if model.use_thermal
+                    model = model.registerPropFunction({'jFaceExternal', fn, {}});
+                end
+                
+                fn = @ActiveMaterial.updatejCoupling;
+                model = model.registerPropFunction({'jCoupling', fn, {}});
+                if model.use_thermal
+                    model = model.registerPropFunction({'jFaceCoupling', fn, {}});
+                end
             end
             
             %% Function called to assemble accumulation terms (functions takes in fact as arguments not only state but also state0 and dt)
@@ -263,6 +274,8 @@ classdef ActiveMaterial < ElectronicComponent
                 model = model.registerPropFunction({'massAccum', fn, {'c'}});
             end
 
+            % we remove this declaration as it is not used in assembly (otherwise it may be computed but not used)
+            model = model.removeVarName('SOC');
            
         end
         
@@ -275,7 +288,7 @@ classdef ActiveMaterial < ElectronicComponent
             time = state0.time + dt;
             state = model.initStateAD(state);
 
-            state = updateControl(model, state, drivingForces, dt);
+            state = updateControl(model, state, drivingForces);
             
             state                = model.updateStandalonejBcSource(state);
             state                = model.updateCurrent(state);
@@ -323,8 +336,6 @@ classdef ActiveMaterial < ElectronicComponent
 
         end
 
-        %% Functions for Newton API
-        
         function primaryvarnames = getPrimaryVariables(model)
             
             sd = 'SolidDiffusion';
@@ -342,7 +353,7 @@ classdef ActiveMaterial < ElectronicComponent
             
         end
 
-        function state = updateControl(model, state, drivingForces, dt)
+        function state = updateControl(model, state, drivingForces)
             
             G = model.G;
             coef = G.cells.volumes;
@@ -362,7 +373,6 @@ classdef ActiveMaterial < ElectronicComponent
             cleanState.T = state.T;
             cleanState.(itf).cElectrolyte   = state.(itf).cElectrolyte;
             cleanState.(itf).phiElectrolyte = state.(itf).phiElectrolyte;
-            cleanState.(itf).externalPotentialDrop = 0;
             
             sigma = model.electricalConductivity;
             vf    = model.volumeFraction;

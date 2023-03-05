@@ -67,7 +67,7 @@
      suite.run()
    #+end_src
    
-   Through pluggins, we can add extra output in the tests
+   Through plugins, we can add extra output in the tests
    #+begin_src matlab
      import matlab.unittest.TestSuite;
      import matlab.unittest.TestRunner
@@ -88,8 +88,8 @@
      import matlab.unittest.TestSuite;
      import matlab.unittest.parameters.Parameter;
      param = Parameter.fromData("createReferenceData", {true});
-     suite = TestSuite.fromClass(?TestBattery1D, 'ExternalParameters', param);
-     suite.run()
+     suite = TestSuite.fromFolder('TestExamples', 'ExternalParameters', param);
+     result = suite.run()
    #+end_src
 
    Reference data are then saved in ~mat~ files found in ~TestExamples/ReferenceData~. 

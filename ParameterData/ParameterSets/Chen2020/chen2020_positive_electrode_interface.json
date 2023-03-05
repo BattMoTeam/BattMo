@@ -5,8 +5,8 @@
     "n" : 1,
     "Eak": 17800,
     "k0": 3.544e-11,
-    "theta100": 0.5,
-    "theta0": 0.99,
+    "theta100": 0.26,
+    "theta0": 0.90,
     "OCP" : {"type" : "function",
              "functionname" : "computeOCP_nmc111_Chen",
              "argumentlist" : ["cElectrode", "T", "cmax"]}

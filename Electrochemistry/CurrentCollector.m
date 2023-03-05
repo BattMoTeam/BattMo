@@ -5,7 +5,7 @@ classdef CurrentCollector < ElectronicComponent
         externalCouplingTerm
 
         thermalConductivity
-        heatCapacity
+        specificHeatCapacity
         density
         
     end
@@ -18,7 +18,7 @@ classdef CurrentCollector < ElectronicComponent
 
             fdnames = {'externalCouplingTerm', ...
                        'thermalConductivity' , ...
-                       'heatCapacity'        , ...
+                       'specificHeatCapacity'        , ...
                        'density'};
             
             model = dispatchParams(model, paramobj, fdnames);
@@ -48,6 +48,8 @@ classdef CurrentCollector < ElectronicComponent
                 fn = @CurrentCollector.updatejFaceBc;
                 model = model.registerPropFunction({'jFaceBc', fn, {'jFaceCoupling', 'jFaceExternal'}});
             end
+
+            model = model.removeVarName('T');
             
         end
         

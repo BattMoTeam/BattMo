@@ -22,7 +22,6 @@ classdef SpiralBatteryGenerator < BatteryGenerator
         tagdict % dictionary giving the component number
     
         tabparams % parameters for the tab on the positive current collector
-                  % if no tab, set as empty.
         
         positiveExtCurrentFaces
         negativeExtCurrentFaces
@@ -36,7 +35,7 @@ classdef SpiralBatteryGenerator < BatteryGenerator
         nHeightLayer
 
         tabwidths      % computed tab width (due to discretization, we cannot enforce the tab widths)
-        windingnumbers % for the tabs (implmented only for aligned tabs now)
+        windingnumbers % for the tabs (implemented only for aligned tabs now)
         
         use_thermal
     end
@@ -49,14 +48,14 @@ classdef SpiralBatteryGenerator < BatteryGenerator
         
         function [paramobj, gen] = updateBatteryInputParams(gen, paramobj, params)
             
-            gen.nwindings = params.nwindings;
-            gen.rInner    = params.rInner;
-            gen.widthDict = params.widthDict;
-            gen.nrDict    = params.nrDict;
-            gen.nas       = params.nas;
-            gen.L         = params.L;
-            gen.nL        = params.nL;
-            gen.tabparams = params.tabparams;
+            gen.nwindings    = params.nwindings;
+            gen.rInner       = params.rInner;
+            gen.widthDict    = params.widthDict;
+            gen.nrDict       = params.nrDict;
+            gen.nas          = params.nas;
+            gen.L            = params.L;
+            gen.nL           = params.nL;
+            gen.tabparams    = params.tabparams;
             gen.angleuniform = params.angleuniform;
             
             gen.use_thermal = paramobj.use_thermal;
@@ -349,7 +348,7 @@ classdef SpiralBatteryGenerator < BatteryGenerator
                             'couplingcells', couplingcells);
             paramobj = setupThermalModel@BatteryGenerator(gen, paramobj, params);
            
-            thermal = 'ThermalModel'; % shorcut
+            thermal = 'ThermalModel'; % shortcut
             
             if isempty(paramobj.(thermal).externalHeatTransferCoefficientTopFaces) | ...
                     isempty(paramobj.(thermal).externalHeatTransferCoefficientSideFaces) 
