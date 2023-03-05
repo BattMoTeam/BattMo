@@ -37,7 +37,10 @@ def parse_publish_to_xml(exfile):
     # outfile  = open("D:/jobb/bitbucket/mrst-documentation/flowSolverTutorial1.txt", "w")
     output = ''
     rstDescriptionFile = tmp[-1].replace('.xml', 'Preamble.rst')
-    includeRstDescriptionFile = ".. include:: " + rstDescriptionFile + "\n\n"
+    if exists(rstDescriptionFile):
+        includeRstDescriptionFile = ".. include:: " + rstDescriptionFile + "\n\n"
+    else:
+        includeRstDescriptionFile = "\n"
 
     def addIdent(txt):
         return "  ".join(("\n"+txt.lstrip()).splitlines(True)) + "\n"
