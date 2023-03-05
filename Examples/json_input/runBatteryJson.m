@@ -298,9 +298,11 @@ function  output = runBatteryJson(jsonstruct, varargin)
 
     output.states = states;
     
-    if isfield(jsonstruct, 'Output') && any(strcmp({"energyDensity", "specificEnergy"}, jsonstruct.Output))
+    if isfield(jsonstruct, 'Output') ...
+        && isfield(jsonstruct.Output, 'variables') ...
+        && any(ismember({'energy', 'energyDensity', 'specificEnergy'}, jsonstruct.Output.variables))
         
-        % We could fine tuned output
+        % TODO : We could fine tuned output (at the moment we output all the possible extrav variables)
         mass = computeCellMass(model);
         vol = sum(model.G.cells.volumes);
         
