@@ -1,26 +1,45 @@
+%% BattMo example Json input
+% This script shows an example where we setup a simulation using exclusively json input files.
+
+%% Setting up the environment
+% BattMo uses functionality from :mod:`MRST <MRSTBattMo>`. This functionality 
+% is collected into modules where each module contains code for doing 
+% specific things. To use this functionality we must add these modules to 
+% the matlab path by running:
+
 mrstModule add ad-core mrst-gui mpfa agmg linearsolvers
 
-% load json struct for the material properties
+%% We load the json files
+% When loading a json file using :code:`parseBattmoJson`, the output is the standard matlab structure that is
+% obtained by the native matlab command :code:`jsondecode`, see `here <https://se.mathworks.com/help/matlab/ref/jsondecode.html>`_
+
+%% Material properties
+% We load the json structure for the material properties
 jsonfilename = fullfile('ParameterData', 'BatteryCellParameters', 'LithiumIonBatteryCell', ...
                         'lithium_ion_battery_nmc_graphite.json');
 jsonstruct_material = parseBattmoJson(jsonfilename);
 
-% load json struct for the geometrical properties
+%% Geometry
+% We load the json structure for the geometrical properties
 jsonfilename = fullfile('Examples','utils', 'data', 'geometry1d.json');
 jsonstruct_geometry = parseBattmoJson(jsonfilename);
 
-% load json struct for the geometrical properties
+%% Control
+% We load the json structure for the geometrical properties
 jsonfilename = fullfile('Examples','utils', 'data', 'ie_control.json');
 jsonstruct_control = parseBattmoJson(jsonfilename);
 
-% load json struct for the geometrical properties
+%% Simulation parameters
+% We load the json structure for the simulation parameters
 jsonfilename = fullfile('Examples','utils', 'data', 'simulation_parameters.json');
 jsonstruct_simparams = parseBattmoJson(jsonfilename);
 
-% load json struct for output extra specifications
+%% Ouput specificiations
+% We load the json structure for output extra specifications.
 jsonfilename = fullfile('Examples','utils', 'data', 'extra_output.json');
 jsonstruct_output = parseBattmoJson(jsonfilename);
 
+%%
 % We merge the json structures. The function issues a warning if a parameter is set with different values in the given
 % structures. The rule is that the first value takes precedence.
 jsonstruct = mergeJsonStructs({jsonstruct_geometry , ...
@@ -31,13 +50,15 @@ jsonstruct = mergeJsonStructs({jsonstruct_geometry , ...
                               });
 
 
-%% We adjust the total time with respect to the given CRate.
+%%
+% We adjust the total time with respect to the given CRate.
 
 CRate = jsonstruct.Control.CRate;
 jsonstruct.TimeStepping.totalTime = 1.4*hour/CRate;
 jsonstruct.TimeStepping.N = 40;
 
-%% Run battery simulation with function that takes json input
+%% We start the simulation
+% We use the function :code:`runBatteryJson` to run the simulation with json input structure
 
 output = runBatteryJson(jsonstruct);
 
