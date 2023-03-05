@@ -1,14 +1,13 @@
 function jsonstruct = resolveFileInputJson(jsonstruct)
 % Note that (for the moment), we do not resolve file name if they are included in json arrays (only those included in objects)
     
-    fileroot = battmoDir();
     
     if isstruct(jsonstruct) & numel(jsonstruct) == 1
 
         if ismember('isFile', fieldnames(jsonstruct))
             %% TODO : check if it isFile is true
             filename = jsonstruct.filename;
-            fullfilename = fullfile(fileroot, filename);
+            fullfilename = resolveFileName(filename);
             jsonsrc = fileread(fullfilename);
             fileJsonstruct = jsondecode(jsonsrc);
             

@@ -1,18 +1,21 @@
 {
+  "SOC" : 1,
   "initT": 298.15,
   "use_thermal": false,
   "include_current_collectors": false,
   "use_particle_diffusion": true,
   "Control" : {
     "controlPolicy" : "IEswitch",
+    "initialControl" : "discharging",
     "CRate" : 1,
     "lowerCutoffVoltage" : 2,
     "upperCutoffVoltage" : 4.1
   },
   "NegativeElectrode": { 
     "ActiveMaterial" : {
+      "volumeFraction": 0.75,
       "electricalConductivity": 215,
-      "heatCapacity": 4180000.0,
+      "specifiHeatCapacity": 632,
       "thermalConductivity": 6e-05,
       "InterDiffusionCoefficient": 1e-10,
       "diffusionModelType" : "full",
@@ -24,15 +27,14 @@
       "SolidDiffusion" : {
         "EaD": 0,
         "D0": 3.3e-14,
-        "rp": 5.86e-06,
-        "N" : 10
+        "rp": 5.86e-06
       }
     }
   },
   "PositiveElectrode": {
     "ActiveMaterial" : {
       "electricalConductivity": 0.18,
-      "heatCapacity": 4180000.0,
+      "specificHeatCapacity": 700,
       "thermalConductivity": 6e-05,
       "InterDiffusionCoefficient": 1e-10,
       "diffusionModelType" : "full",
@@ -44,8 +46,7 @@
       "SolidDiffusion": {
         "EaD": 0,
         "D0": 4e-15,
-        "rp": 5.22e-6,
-        "N" : 10
+        "rp": 5.22e-6
       }
     }
   },

@@ -3,8 +3,6 @@ classdef CcCvControlModelInputParams < ControlModelInputParams
     
     properties
         
-        lowerCutoffVoltage
-        upperCutoffVoltage
         dEdtLimit         
         dIdtLimit
         

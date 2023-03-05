@@ -1,0 +1,190 @@
+{
+  "$id": "file://battmo/schemas/Geometry",
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "description": "Specification of the geometry including the discretization parameters",
+  "type": "object",
+
+  "properties" : {"Geometry" : {"type" : "object",
+                                "properties" : {"case" : {"type" : "string",
+                                                          "enum" : ["1D", "pouch", "2D-demo", "3D-demo", "jellyRoll", "sectorModel", "coinCell"]}}},
+                  "NegativeElectrode" : { "$ref" : "#/$defs/particlediscretization"},
+                  "PositiveElectrode" : { "$ref" : "#/$defs/particlediscretization"}
+                 },
+
+  "anyOf" : [{"properties" : {"Geometry" : {"properties" : {"case" : {"const" : "1D"}}}},
+              "$ref" : "#/$defs/1D"},
+             {"properties" : {"Geometry" : {"properties" : {"case" : {"const" : "2D-demo"}}}},
+              "$ref" : "#/$defs/2D-demo" },
+             {"properties" : {"Geometry" : {"properties" : {"case" : {"const" : "3D-demo"}}}},
+              "$ref" : "#/$defs/3D-demo" },
+             {"properties" : {"Geometry" : {"properties" : {"case" : {"const" : "jellyRoll"}}}},
+              "$ref" : "#/$defs/jellyRoll" },
+             {"properties" : {"Geometry" : {"properties" : {"case" : {"const" : "sectorModel"}}}},
+              "$ref" : "#/$defs/sectorModel" }
+            ],
+
+  "$defs" : {
+    
+    "layerSpecs" : {
+      "properties" : {
+        "NegativeElectrode" : {
+          "properties" : {
+            "ActiveMaterial" : {
+              "$ref" : "#/$defs/layerSpec"},
+            "CurrentCollector" : {
+              "$ref" : "#/$defs/layerSpec"}}},
+        "PositiveElectrode" : {
+          "properties" : {
+            "ActiveMaterial" : {
+              "$ref" : "#/$defs/layerSpec"},
+            "CurrentCollector" : {
+              "$ref" : "#/$defs/layerSpec"}}},
+        "Electrolyte" : {
+          "properties" : {
+            "Separator" : {
+              "$ref" : "#/$defs/layerSpec"}}}}},
+
+    "layerSpec" : {
+      "properties" : {
+        "thickness" : {
+          "type" : "number",
+          "description" : "thickness of the component"},
+        "N" : {
+          "type" : "number",
+          "description" : "discretization parameter"}}},
+
+    "1D" : {
+      "allOf" : [
+        {"$ref" : "#/$defs/layerSpecs"},
+        {"properties" : {
+          "Geometry" : {
+            "properties" : {
+              "faceArea" : {
+                "type" : "number",
+                "description" : "area of the cross-section"}}}}}]},
+    
+    "2D-demo" : {"$ref" : "#/$defs/layerSpecs",
+                 "description" : "In this demo case the dimensions are fixed. Further parametrization should be done using  the grid generator BatteryGenerator2D"},
+
+    "3D-demo" : {"$ref" : "#/$defs/layerSpecs",
+                 "description" : "In this demo case the dimensions are fixed. Further parametrization should be done using  the grid generator BatteryGenerator3D"},
+
+    "particlediscretization" : {
+      "properties" : {
+        "ActiveMaterial" : {
+          "anyOf" : [
+            {"properties" : {
+              "diffusionModelType" : {
+                "const" : "full"}},
+             "dependentSchemas" : {
+               "SolidDiffusion" : {
+                 "properties" : {
+                   "N"  : {
+                     "type" : "integer",
+                     "description" : "discretization parameter for the particle"}}}}},
+            {"not" : {
+              "properties" : {
+                "diffusionModelType" : {
+                  "const" : "full"}}}}]}}},
+    
+    "jellyRoll" : {
+      "properties" : {
+        "Geometry" : {
+          "properties" : {
+            "rOuter" : {
+              "type" : "number",
+              "description" : "outer radius"},
+            "rInner"  : {
+              "type" : "number",
+              "description" : "inner radius"},
+            "L" : {
+              "type" : "number",
+              "description" : "height of the battery"},
+            "nL" : {
+              "type" : "integer",
+              "description" : "discretization parameter giving the number of grid cells in the vertical direction"},
+            "nas" : {
+              "type" : "integer",
+              "description" : "discretisation parameter giving the number of angular sectors of the grid in the horizontal plane"}}},
+        "NegativeElectrode" : {
+          "properties" : {
+            "CurrentCollector" : {
+              "properties": {
+                "tabparams" : {"$ref" : "#/$defs/tabparams"}
+              }}}},
+        "PositiveElectrode" : {
+          "properties" : {
+            "CurrentCollector" : {
+              "properties": {
+                "tabparams" : {"$ref" : "#/$defs/tabparams"}
+              }}}}
+      },
+      "allOf" : [{"$ref" : "#/$defs/layerSpecs"}]},
+
+    "sectorModel" : {
+      "properties" : {
+        "Geometry" : {
+          "properties" : {
+            "rOuter" : {
+              "type" : "number",
+              "description" : "outer radius"},
+            "rInner"  : {
+              "type" : "number",
+              "description" : "inner radius"},
+            "L" : {
+              "type" : "number",
+              "description" : "height of the battery"},
+            "nL" : {
+              "type" : "integer",
+              "description" : "discretization parameter giving the number of grid cells in the vertical direction"},
+            "nas" : {
+              "type" : "integer",
+              "description" : "the angle of the sector is computed as 2*pi/nas"}}}},
+      "allOf" : [{"$ref" : "#/$defs/layerSpecs"}]},
+    
+    "tabparams" : {
+      "type" : "object",
+      "description" : "Parameters for the tabs",
+      "properties" : {
+        "usetab" : {
+          "type" : "boolean",
+          "default" : true}},
+      "dependentSchemas" : {
+        "usetab" : {
+          "anyOf" : [
+            {"properties" : {
+              "usetab" : {
+                "const" : true},
+              "fractions" : {
+                "type" : "array",
+                "items" : {"type" : "number"}},
+              "width" : {
+                "type" : "number"}}},
+            {"properties" : {
+              "usetab" : {
+                "const" : false}}}]}}},
+
+    "sectortabparams" : {
+      "type" : "object",
+      "description" : "Parameters for the tabs for the sector model",
+      "properties" : {
+        "usetab" : {
+          "type" : "boolean",
+          "default" : true
+        }},
+      "dependentSchemas" : {
+        "usetab" : {
+          "anyOf" : [
+            {"properties" : {
+              "usetab" : {
+                "const" : true},
+              "fractions" : {
+                "type" : "array",
+                "items" : {"type" : "number"}}}},
+            {"properties" : {
+              "usetab" : {
+                "const" : false}}}]}}}}}
+
+
+
+

@@ -1,18 +1,63 @@
 {
-  "$id": "file://batmo/schemas/ControlModel",
+  "$id": "file://battmo/schemas/ControlModel",
   "$schema": "http://json-schema.org/draft-07/schema#",
   "type": "object",
-  "properties" : {
-    "controlPolicy": {"type": "string",
-                      "enum": ["IEswitch", "CCCV", "CV"]},
-    "CRate" : {"type": "string"}
-  },
-  "anyOf": [
-    {"properties": {"controlPolicy" : {"const" : "IEswitch"},
-                    "$ref" : "IEswitchControlModel"}},
-    {"properties": {"controlPolicy" : {"const" : "CCCV"},
-                    "$ref" : "CcCvControlModel"}},
-    {"properties": {"controlPolicy" : {"const" : "CV"},
-                    "$ref" : "CvControlModel"}}
-  ]
+  "properties" : {"Control" : {"type" : "object",
+                               "properties" : {
+                                 "controlPolicy": {"type": "string",
+                                                   "enum": ["IEswitch", "CCCV", "CV", "powerControl", "CC"]},
+                                 "CRate" : {"type": "number"},
+                                 "initialControl" : {"type" : "string",
+                                                     "enum" : ["charging", "discharging"]},
+                                 "lowerCutoffVoltage" : {"type" : "number"},
+                                 "upperCutoffVoltage" : {"type" : "number"}
+                               },
+                               "anyOf": [
+                                 {"properties": {"controlPolicy" : {"const" : "IEswitch"},
+                                                 "$ref" : "#/$defs/IEswitchControlModel"}},
+                                 {"properties": {"controlPolicy" : {"const" : "CCCV"},
+                                                 "$ref" : "#/$defs/CcCvControlModel"}},
+                                 {"properties": {"controlPolicy" : {"const" : "CV"},
+                                                 "$ref" : "#/$defs/CvControlModel"}},
+                                 {"properties": {"controlPolicy" : {"const" : "CC"},
+                                                 "$ref" : "#/$defs/CcControlModel"}},
+                                 {"properties": {"controlPolicy" : {"const" : "powerControl"},
+                                                 "$ref" : "#/$defs/powerControlModel"}}
+                               ]
+                              }
+                 },
+
+  "defs" : {
+    "IEswitchControlModel" : {"description" : "no more data than default is needed"},
+    "CcCvControlModel": {
+      "properties" : {
+        "dEdtLimit" : {"type" : "number"},
+        "dIdtLimit" : {"type" : "number"}
+      }},
+    "CvControlModel": {  "properties" : {
+      "inputVoltage" : {"type" : "number"}
+    }},
+    "CcControlModel": {},
+    "powerControlModel": {
+      "properties" : {
+        "case" : {"type" : "string",
+                  "enum" : ["time limited", "voltage limited", "CPCV"]},
+        "dischargingPower" : {"type" : "number"},
+        "chargingPower" : {"type" : "number"}},
+      
+      "anyOf" : [{ "properties" : {"powerControlCase" : {"const" : "time limited"},
+                                   "dischargingTime" : {"type" : "number"},
+                                   "chargingTime" : {"type" : "number"}
+                                  }},
+                 
+                 { "properties" : {"powerControlCase" : {"const" : "voltage limited"}
+                                  }},
+                 
+                 { "properties" : {"powerControlCase" : {"const" : "CPCV"},
+                                   "lowerCutoffPower" : {"type" : "number"},
+                                   "upperCutoffPower" : {"type" : "number"}
+                                  }
+                 }
+                ]}
+  }
 }

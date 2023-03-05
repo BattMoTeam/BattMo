@@ -1,0 +1,28 @@
+{
+  "$id": "file://battmo/schemas/StateInitialization",
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "description": "Input to setup the initial state of the battery",
+  "type": "object",
+
+  "properties" : {"initializationSetup" : {"type" : "string",
+                                           "enum": ["given SOC", "given input"]},
+
+                  "initT": {"type" : "number",
+                            "description" : "Initial temperature"},
+
+                  "SOC": {"type" : "number"},
+
+                  "loadStateCmd" : {"type" : "string",
+                                    "description" : "string that when run by matlab eval function return the initial state in the structure initstate"}
+
+                 },
+
+  "dependentSchemas" : {"initializationSetup" : {"anyOf" : [{"properties" : {"initializationSetup" : {"const" : "given SOC"}},
+                                                             "required" : ["SOC"]},
+                                                            {"properties" : {"initializationSetup" : {"const" : "given input"}},
+                                                             "required" : ["loadStateCmd"]}
+                                                           ]}},
+
+  "required" : ["initT"]
+
+}

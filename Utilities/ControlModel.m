@@ -3,11 +3,21 @@ classdef ControlModel < BaseModel
     properties
         
         CRate
+
+        controlPolicy
         % Control Policy (string). It can take following values
         % - 'CCCV'
         % - 'IEswitch'
         % - 'CV'
-        controlPolicy
+        % - 'CC'
+        
+        initialControl
+        % Initial control at start. It is a string that can be equal to
+        % - 'charging'
+        % - 'discharging'
+
+        lowerCutoffVoltage
+        upperCutoffVoltage
         
     end
     
@@ -19,6 +29,9 @@ classdef ControlModel < BaseModel
             model = model@BaseModel();
             
             fdnames = {'controlPolicy'     , ...
+                       'initialControl'    , ...
+                       'lowerCutoffVoltage', ...
+                       'upperCutoffVoltage', ... 
                        'CRate'};
             model = dispatchParams(model, paramobj, fdnames);
             

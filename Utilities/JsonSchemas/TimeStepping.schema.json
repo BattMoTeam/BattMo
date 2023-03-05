@@ -1,0 +1,17 @@
+{
+  "$id": "file://battmo/schemas/TimeStepping",
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "description": "Input for the time stepping",
+  "type": "object",
+
+  "properties" : {"TimeStepping" : {"type" : "object",
+                                    "properties" : {"totalTime" : {"type" : "number"},
+                                                    "dt" : {"type" : "number"},
+                                                    "N" : {"type" : "integer"},
+                                                    "useRampup" : {"type" : "boolean"},
+                                                    "rampupTime" : {"type" : "number"}},
+                                    "oneOf" : [{"required" : ["N", "totalTime"]},
+                                               {"required" : ["dt"]}]
+                                   }
+                 }
+}

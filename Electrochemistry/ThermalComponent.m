@@ -3,7 +3,7 @@ classdef ThermalComponent < BaseModel
     properties
         
        EffectiveThermalConductivity
-       EffectiveHeatCapacity % in [J][K]^-1[m]^-3
+       EffectiveVolumetricHeatCapacity % in [J][K]^-1[m]^-3
 
        couplingTerm
        externalHeatTransferCoefficient
@@ -25,7 +25,7 @@ classdef ThermalComponent < BaseModel
             
             fdnames = {'G', ...
                        'EffectiveThermalConductivity', ...
-                       'EffectiveHeatCapacity', ...
+                       'EffectiveVolumetricHeatCapacity', ...
                        'couplingTerm', ...
                        'externalHeatTransferCoefficient', ...
                        'externalTemperature'};
@@ -37,7 +37,7 @@ classdef ThermalComponent < BaseModel
             if ~isempty(model.EffectiveThermalConductivity)
                 nc = model.G.cells.num;
                 model.EffectiveThermalConductivity = model.EffectiveThermalConductivity*ones(nc, 1);
-                model.EffectiveHeatCapacity = model.EffectiveHeatCapacity*ones(nc, 1);
+                model.EffectiveVolumetricHeatCapacity = model.EffectiveVolumetricHeatCapacity*ones(nc, 1);
             end
             
             model = setupMapping(model);
@@ -118,7 +118,7 @@ classdef ThermalComponent < BaseModel
         function state = updateAccumTerm(model, state, state0, dt)
         % Assemble the accumulation term for the energy equation
 
-            hcap = model.EffectiveHeatCapacity;
+            vhcap = model.EffectiveVolumetricHeatCapacity;
             
             T = state.T;
             T0 = state0.T;
@@ -126,7 +126,7 @@ classdef ThermalComponent < BaseModel
             % (here we assume that the ThermalModel has the "parent" grid)
             vols = model.G.cells.volumes;
             
-            state.accumHeat = hcap.*vols.*(T - T0)/dt;
+            state.accumHeat = vhcap.*vols.*(T - T0)/dt;
             
         end
             

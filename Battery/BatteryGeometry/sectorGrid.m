@@ -15,7 +15,7 @@ function output = sectorGrid(params)
     % - L         : length of the battery
     % - nas       : number of cells in the angular direction
     % - nL        : number of discretization cells in the longitudonal
-    %
+    %       
     % RETURNS
     %
     % - G       : grid

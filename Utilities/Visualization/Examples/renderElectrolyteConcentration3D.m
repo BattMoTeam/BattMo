@@ -25,11 +25,11 @@ colormap(cmap);
 d0 = max(maxDims);
 pbaspect([maxDims ./ d0]);
 numStates = length(find(~cellfun('isempty', states)));
-caxis([min(states{numStates}.elyte.cs{1}), max(states{numStates}.elyte.cs{1})]);
+caxis([min(states{numStates}.elyte.c), max(states{numStates}.elyte.c)]);
 
 for ii = 1:numStates
 
-p = plotCellData(model.elyte.G, states{ii}.elyte.cs{1});
+p = plotCellData(model.elyte.G, states{ii}.elyte.c);
 p.LineStyle = 'none';
 
 %light               % add a light

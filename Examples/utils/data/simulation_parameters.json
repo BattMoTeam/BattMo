@@ -1,0 +1,6 @@
+{"TimeStepping" : {
+  "totalTime" : 4000,
+  "N" : 40,
+  "useRampup" : true,
+  "rampupTime" : 10}
+}

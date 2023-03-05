@@ -1,8 +1,6 @@
 function publishExamplesXML(varargin)
 %
-% Example: publishExamplesXML('exampleNames', {'runBattery1D'})
-% 
-% The scripts ('runBattery1D' in example above) should be in path
+% Example: publishExamplesXML
 %
 % To convert the examples from xml to rst format (as needed by documentation), it should be enough to run 
 %    python buildPublishedExamples
@@ -12,18 +10,21 @@ function publishExamplesXML(varargin)
                  'catchError'  , false, ...
                  'exampleNames', []);
     opt = merge_options(opt, varargin{:});
-    
-    exampleNames = opt.exampleNames;
+
+    if isempty(opt.exampleNames)
+        exampleNames = {{'basic', 'battMoTutorial'}, ...
+                        {'json_input', 'runJsonScript'}};
+    else
+        exampleNames = opt.exampleNames;
+    end
 
     if isempty(exampleNames)
         error('Please, provide list of examples you want to publish from the Examples directory');
     end
         
-    BattMoExampleDir = mfilename('fullpath'); 
-    BattMoExampleDir = fileparts(BattMoExampleDir);
-    BattMoExampleDir = fullfile(BattMoExampleDir, '..', '..', 'Examples');
+    BattMoExampleDir = fullfile(battmoDir(), 'Examples');
 
-    outputDir = fullfile(BattMoExampleDir, '..', 'Documentation', 'publishedExamples');
+    outputDir = fullfile(battmoDir(), 'Documentation', 'publishedExamples');
     if ~exist(outputDir, 'dir')
         mkdir(outputDir);
     end 
@@ -35,16 +36,19 @@ function publishExamplesXML(varargin)
     
     for exNo = 1:numel(exampleNames)
         exampleName = exampleNames{exNo};
-        filename = fullfile(BattMoExampleDir, exampleName);
+        if ischar(exampleName)
+            exampleName = {exampleName};
+        end
+        filename = fullfile(BattMoExampleDir, exampleName{:});
         
         isOk = isExamplePublished(filename, opt.extension);
 
         if ~isOk || opt.replace
-            fprintf('Publishing example %s...', exampleName);
+            fprintf('Publishing example %s...', filename);
             close all;
             pstatus = pause('query');
             pause('off')
-            try
+            try                                                        
                 publish_opt = struct('format'        , opt.extension , ...
                                      'maxOutputLines', 8             , ...
                                      'catchError'    , opt.catchError, ....
@@ -52,13 +56,13 @@ function publishExamplesXML(varargin)
                 run_publish(filename, publish_opt)
                 fprintf(' Done.\n');
                 count = count + 1;
-            catch e
+            catch 
                 fprintf('\n *** Error in publish example: %s\n', e.message);
             end
             pause(pstatus);
             close all; 
         else
-            fprintf('Example %s already published, skipping...\n', exampleName);
+            fprintf('Example %s already published, skipping...\n', filename);
         end
         
         total = total + 1;
