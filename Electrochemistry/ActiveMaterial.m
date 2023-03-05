@@ -300,7 +300,7 @@ classdef ActiveMaterial < ElectronicComponent
             state                = model.updatePhi(state);
             state.Interface      = model.Interface.updateReactionRateCoefficient(state.Interface);
             state.Interface      = model.Interface.updateOCP(state.Interface);
-            state.Interface      = model.Interface.updateEtaWithEx(state.Interface);
+            state.Interface      = model.Interface.updateEta(state.Interface);
             state.Interface      = model.Interface.updateReactionRate(state.Interface);
             state                = model.updateRvol(state);
             state                = model.updateCurrentSource(state);
