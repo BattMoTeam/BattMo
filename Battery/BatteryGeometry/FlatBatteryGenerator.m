@@ -17,7 +17,7 @@ classdef FlatBatteryGenerator < SpiralBatteryGenerator
             
         end
 
-        function paramobj = updateBatteryInputParams(gen, paramobj, params)
+        function [paramobj, gen] = updateBatteryInputParams(gen, paramobj, params)
                     
             gen.nwindings = params.nwindings;
             gen.depth     = params.depth;

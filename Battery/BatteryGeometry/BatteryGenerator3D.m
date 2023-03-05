@@ -9,10 +9,6 @@ classdef BatteryGenerator3D < BatteryGenerator
         ylength = 1e-2*[0.1; 2; 0.1];
         zlength = 1e-6*[10; 100; 50; 80; 10];
 
-        % Input current
-
-        I = 1e-4;
-
         % Shorthands used below
         % ne    : Negative electrode
         % pe    : Positive electrode
@@ -65,7 +61,7 @@ classdef BatteryGenerator3D < BatteryGenerator
             gen = gen@BatteryGenerator();
         end
 
-        function paramobj = updateBatteryInputParams(gen, paramobj)
+        function [paramobj, gen] = updateBatteryInputParams(gen, paramobj)
 
             assert(paramobj.include_current_collectors, 'This geometry must include current collectors');
             gen.use_thermal = paramobj.use_thermal;
