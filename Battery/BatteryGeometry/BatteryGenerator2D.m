@@ -35,7 +35,7 @@ classdef BatteryGenerator2D < BatteryGenerator
             gen = gen@BatteryGenerator();
         end
 
-        function paramobj = updateBatteryInputParams(gen, paramobj)
+        function [paramobj, gen] = updateBatteryInputParams(gen, paramobj)
 
             fdnames = {'include_current_collectors', ...
                        'use_thermal'};

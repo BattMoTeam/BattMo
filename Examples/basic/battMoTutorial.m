@@ -116,7 +116,7 @@ model = Battery(paramobj);
 % Model. The battery class contains all of these submodels and various other 
 % parameters necessary to run the simulation.
 
-%%%
+%%% Plotting the OCP curves
 % We can inspect the model object to find out which parameters are being
 % used. For instance the information we need to plot the OCP curves for the
 % positive and negative electrodes can be found in the interface structure
@@ -218,7 +218,6 @@ schedule = struct('control', control, 'step', step);
 % The initial state of the model is setup using model.setupInitialState()
 % Here we take the state of charge (SOC) given in the input and calculate
 % equilibrium concentration based on theta0, theta100 and cmax.
-% Equilibrium potential is calculated using the Butler
 
 initstate = model.setupInitialState(); 
 

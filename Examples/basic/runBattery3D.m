@@ -45,20 +45,16 @@ paramobj = gen.updateBatteryInputParams(paramobj);
 %%  Initialize the battery model. 
 % The battery model is initialized by sending paramobj to the Battery class
 % constructor. see :class:`Battery <Battery.Battery>`.
-model = Battery(paramobj);
 
-%% Compute the nominal cell capacity and choose a C-Rate
-% The nominal capacity of the cell is calculated from the active materials.
-% This value is then combined with the user-defined C-Rate to set the cell
-% operational current. 
-C       = computeCellCapacity(model);
-CRate   = 1;
-inputI  = (C/hour)*CRate; % current 
+model = Battery(paramobj);
 
 %% Setup the time step schedule 
 % Smaller time steps are used to ramp up the current from zero to its
 % operational value. Larger time steps are then used for the normal
 % operation. 
+
+CRate = model.Control.CRate;
+
 n           = 25;
 dt          = [];
 dt          = [dt; repmat(0.5e-4, n, 1).*1.5.^[1 : n]'];

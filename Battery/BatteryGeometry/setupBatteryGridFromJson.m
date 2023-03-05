@@ -20,17 +20,35 @@ function [paramobj, gridGenerator] = setupBatteryGridFromJson(paramobj, jsonstru
             gen.faceArea = jsonstruct.Geometry.faceArea;
         end
 
-        gen.sepnx  = jsonstruct.NegativeElectrode.ActiveMaterial.N;
-        gen.nenx   = jsonstruct.Electrolyte.Separator.N;
+        gen.sepnx  = jsonstruct.Electrolyte.Separator.N;
+        gen.nenx   = jsonstruct.NegativeElectrode.ActiveMaterial.N;
         gen.penx   = jsonstruct.PositiveElectrode.ActiveMaterial.N;
         
         % Now, we update the paramobj with the properties of the mesh. 
         [paramobj, gen] = gen.updateBatteryInputParams(paramobj);
 
-      case {'2D-demo', '3d-demo'}
+      case '2D-demo'
+        
+      case '3D-demo'
+        
+        gen = BatteryGenerator3D();
+        
+        % zlength = gen.zlength;
+        % zlength(1) = jsonstruct.NegativeElectrode.ActiveMaterial.thickness;
+        % zlength(2) = jsonstruct.NegativeElectrode.ActiveMaterial.thickness;
+        % zlength(3) = jsonstruct.Electrolyte.Separator.thickness;
+        % zlength(4) = jsonstruct.PositiveElectrode.ActiveMaterial.thickness;
+        % zlength(5) = jsonstruct.PositiveElectrode.ActiveMaterial.thickness;
 
-        error('not yet implemented');
-
+        % gen.sep_nz   = jsonstruct.Electrolyte.Separator.N;
+        % gen.ne_am_nz = jsonstruct.NegativeElectrode.ActiveMaterial.N;
+        % gen.pe_am_nz = jsonstruct.PositiveElectrode.ActiveMaterial.N;
+        % gen.ne_cc_nz = jsonstruct.NegativeElectrode.CurrentCollector.N;
+        % gen.pe_cc_nz = jsonstruct.PositiveElectrode.CurrentCollector.N;
+        
+        % Now, we update the paramobj with the properties of the mesh. 
+        [paramobj, gen] = gen.updateBatteryInputParams(paramobj);
+        
       case {'jellyRoll', 'sectorModel'}
 
         % Prepare input for SpiralBatteryGenerator.updateBatteryInputParams using json input

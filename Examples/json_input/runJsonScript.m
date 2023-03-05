@@ -1,74 +1,83 @@
-mrstDebug(20);
+%% BattMo example Json input
+% This script shows an example where we setup a simulation using exclusively json input files.
+
+%% Setting up the environment
+% BattMo uses functionality from :mod:`MRST <MRSTBattMo>`. This functionality 
+% is collected into modules where each module contains code for doing 
+% specific things. To use this functionality we must add these modules to 
+% the matlab path by running:
 
 mrstModule add ad-core mrst-gui mpfa agmg linearsolvers
 
+%% We load the json files
+% When loading a json file using :code:`parseBattmoJson`, the output is the standard matlab structure that is
+% obtained by the native matlab command :code:`jsondecode`, see `here <https://se.mathworks.com/help/matlab/ref/jsondecode.html>`_
 
-% load json struct for the material properties
+%% Material properties
+% We load the json structure for the material properties
 jsonfilename = fullfile('ParameterData', 'BatteryCellParameters', 'LithiumIonBatteryCell', ...
                         'lithium_ion_battery_nmc_graphite.json');
-
 jsonstruct_material = parseBattmoJson(jsonfilename);
 
-% load json struct for the geometrical properties
-% jsonfilename = fullfile('Examples','utils', 'data', 'geometry1d.json');
-jsonfilename = './utils/data/4680-geometry.json';
+%% Geometry
+% We load the json structure for the geometrical properties
+jsonfilename = fullfile('Examples','utils', 'data', 'geometry1d.json');
 jsonstruct_geometry = parseBattmoJson(jsonfilename);
 
+%% Control
+% We load the json structure for the geometrical properties
+jsonfilename = fullfile('Examples','utils', 'data', 'ie_control.json');
+jsonstruct_control = parseBattmoJson(jsonfilename);
 
-% merge the two json structs 
-jsonstruct = mergeJsonStructs({jsonstruct_geometry,
-                               jsonstruct_material}, 'force', true);
+%% Simulation parameters
+% We load the json structure for the simulation parameters
+jsonfilename = fullfile('Examples','utils', 'data', 'simulation_parameters.json');
+jsonstruct_simparams = parseBattmoJson(jsonfilename);
 
-% For jellyroll case, we use a iterative linear solver
-if strcmp(jsonstruct.Geometry.case, 'jellyRoll')
-    
-    jsonstruct.NonLinearSolver.maxIterations = 10;
-    jsonstruct.NonLinearSolver.verbose = false;
-
-    ne = 'NegativeElectrode';
-    pe = 'PositiveElectrode';
-    am = 'ActiveMaterial';
-    
-    diffusionModelType = jsonstruct.(pe).(am).diffusionModelType;
-    assert(strcmp(jsonstruct.(pe).(am).diffusionModelType, ...
-                  jsonstruct.(ne).(am).diffusionModelType), ...
-           'case where two different diffusion models are used in negative and positive electrode has not been implemented.');
-    
-    switch diffusionModelType
-      case 'simple'
-        jsonfilename = fullfile(battmoDir, 'Utilities/JsonSchemas/Tests/linearsolver5.json');
-      case 'full'
-        jsonfilename = fullfile(battmoDir, 'Utilities/JsonSchemas/Tests/linearsolver4.json');
-      otherwise
-        error('diffusionModelType not covered')
-    end
-
-    jsonstruct.NonLinearSolver.LinearSolver.linearSolverSetup = parseBattmoJson(jsonfilename);
-    
-end
-
-CRate = jsonstruct.Control.CRate;
-
-jsonstruct.TimeStepping.totalTime = 1.4*hour/CRate;
-jsonstruct.TimeStepping.N = 100;
-
-% Run battery simulation with function that takes json input
-output = runBatteryJson(jsonstruct);
+%% Ouput specificiations
+% We load the json structure for output extra specifications.
+jsonfilename = fullfile('Examples','utils', 'data', 'extra_output.json');
+jsonstruct_output = parseBattmoJson(jsonfilename);
 
 %%
+% We merge the json structures. The function issues a warning if a parameter is set with different values in the given
+% structures. The rule is that the first value takes precedence.
+jsonstruct = mergeJsonStructs({jsonstruct_geometry , ...
+                               jsonstruct_material , ...
+                               jsonstruct_control  , ...
+                               jsonstruct_simparams, ...
+                               jsonstruct_output   , ...                               
+                              });
 
-E             = output.E;
-energyDensity = output.energyDensity;
-energy        = output.energy;
 
-figure
-plot(energyDensity, E)
-xlabel('Energy Density [Wh/L]');
-ylabel('Voltage [V]');
+%%
+% We adjust the total time with respect to the given CRate.
 
-figure
-plot(energy, E)
-xlabel('Energy [Wh]');
-ylabel('Voltage [V]');
+CRate = jsonstruct.Control.CRate;
+jsonstruct.TimeStepping.totalTime = 1.4*hour/CRate;
+jsonstruct.TimeStepping.N = 40;
 
+%% We start the simulation
+% We use the function :code:`runBatteryJson` to run the simulation with json input structure
+
+output = runBatteryJson(jsonstruct);
+
+%% Plotting
+
+states = output.states;
+
+E = cellfun(@(x) x.Control.E, states); 
+I = cellfun(@(x) x.Control.I, states);
+time = cellfun(@(x) x.time, states); 
+
+figure()
+subplot(1,2,1)
+plot(time/hour, E)
+xlabel('time [hours]')
+ylabel('Cell Voltage [V]')
+
+subplot(1,2,2)
+plot(time/hour, I)
+xlabel('time [hours]')
+ylabel('Cell Current [A]')
 
