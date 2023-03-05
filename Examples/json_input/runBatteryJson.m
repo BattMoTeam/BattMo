@@ -193,10 +193,12 @@ function  output = runBatteryJson(jsonstruct, varargin)
     I    = cellfun(@(state) state.Control.I, states);
     time = cellfun(@(state) state.time, states); 
 
-    output = struct('model', model, ...
-                    'time' , time , ... % Unit : s
-                    'E'    , E    , ... % Unit : V
-                    'I'    , I); ... % Unit : A
+    output = struct('model'    , model    , ...
+                    'schedule' , schedule , ... 
+                    'initstate', initstate, ...
+                    'time'     , time     , ... % Unit : s
+                    'E'        , E        , ... % Unit : V
+                    'I'        , I); ... % Unit : A
 
     output.states = states;
     
