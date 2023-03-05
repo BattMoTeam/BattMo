@@ -19,22 +19,12 @@ G = computeGeometry(G);
 
 paramobj.G = G;
 
+% In order to observe more diffusion effect we use a lower diffusion coefficient
+% paramobj.SolidDiffusion.D0 = 1e-16;
+
 paramobj = paramobj.validateInputParams();
 
 model = ActiveMaterial(paramobj);
-
-inspectgraph = false;
-if inspectgraph
-    model.isRoot = true;
-    cgt = ComputationalGraphTool(model);
-    [g, edgelabels] = cgt.getComputationalGraph();
-
-    figure
-    % h = plot(g, 'edgelabel', edgelabels, 'nodefontsize', 10);
-    h = plot(g, 'nodefontsize', 10);
-    return
-end
-
 
 %% Setup initial state
 
@@ -68,9 +58,9 @@ initState.phi = OCP + phiElectrolyte;
 
 %% setup schedule
 
-controlsrc = 1;
+controlsrc = 1e3;
 
-total = (30*hour)/controlsrc;
+total = (10*hour)/controlsrc;
 n     = 100;
 dt    = total/n;
 step  = struct('val', dt*ones(n, 1), 'control', ones(n, 1));
@@ -100,11 +90,14 @@ cSurface = cellfun(@(state) state.(sd).cSurface, states);
 phi = cellfun(@(state) state.phi, states);
 
 figure
-plot(time/hour, cSurface);
+plot(time/hour, cSurface/(1/litre));
+xlabel('time [hour]');
+ylabel('Surface concentration [mol/L]');
 
 figure
 plot(time/hour, phi);
-
+xlabel('time [hour]');
+ylabel('Potential [mol/L]');
 
 cmin = cellfun(@(state) min(state.(sd).c), states);
 cmax = cellfun(@(state) max(state.(sd).c), states);
