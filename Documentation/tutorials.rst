@@ -5,11 +5,13 @@ Tutorials
 .. toctree::
    :hidden:
       
-   publishedExamples/battMoTutorial_docs.rst
+   publishedExamples/battMoTutorial.rst
+   publishedExamples/runJsonScript.rst
+   
 
+#. `A first BattMo simulation <publishedExamples/battMoTutorial.html>`_
 
-#. `A first BattMo simulation <publishedExamples/battMoTutorial_docs.html>`_
-
-   .. image:: publishedExamples/battMoTutorial_docs_02.png
+   .. image:: img/battMoTutorial.png
               :width: 80%
 
+#. `A first BattMo simulation based exclusively on json input <publishedExamples/runJsonScript.html>`_
