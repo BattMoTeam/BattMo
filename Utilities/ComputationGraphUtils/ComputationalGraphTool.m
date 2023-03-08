@@ -395,6 +395,7 @@ classdef ComputationalGraphTool
             fnname = func2str(fn);
             fnname = regexp(fnname, "\.(.*)", 'tokens');
             fnname = fnname{1}{1};
+            fnname = sprintf('%s([])', fnname);
             fnname = horzcat(mn, {fnname});
             fnname = join(fnname, '.');
             fnname = fnname{1};
