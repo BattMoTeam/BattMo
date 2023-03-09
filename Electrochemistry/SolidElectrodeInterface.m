@@ -89,9 +89,11 @@ classdef SolidElectrodeInterface < BaseModel
             model = model.registerPropFunction({'interfaceBoundaryEq', fn, {'c', 'cInterface', 'massSource'}});
             
             fn = @SolidElectrodeInterface.assembleWidthEquation;
+            fn = {fn, @(propfunction) PropFunction.accumFuncCallSetupFn(propfunction)};
             model = model.registerPropFunction({'widthEq', fn, {'delta', 'v'}});
 
             fn = @SolidElectrodeInterface.updateMassAccumTerm;
+            fn = {fn, @(propfunction) PropFunction.accumFuncCallSetupFn(propfunction)};
             model = model.registerPropFunction({'massAccum', fn, {'delta', 'c'}});
 
         end

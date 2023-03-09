@@ -74,7 +74,7 @@ classdef BatteryLinearSolver < handle
             lss = solver.linearSolverSetup;
             % default values
             default_gmres_options = struct('restart', [], 'maxit', 20, 'tol', 1e-5);
-            if strcmp(lss.library, 'matlab') & isfield(lss, 'method') & contains(lss.method, 'gmres')
+            if strcmp(lss.library, 'matlab') & isfield(lss, 'method') & ~isempty(strfind(lss.method, 'gmres'))
                 if isfield(lss, 'gmres_options')
                     gmres_options = lss.gmres_options;
                     fds = {'restart', 'maxit', 'tol'};

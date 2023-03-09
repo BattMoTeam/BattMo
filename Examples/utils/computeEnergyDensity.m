@@ -1,5 +1,7 @@
 function [Emid, Imid, energyDensity, specificEnergy, energy] = computeEnergyDensity(E, I, t, vol, mass, varargin)
-
+% Given time, voltage (E) and current (I), compute the energy that has been produced as a function of time.
+% In addition, returns the energyDensity and specificEnergy that are computed using the volume and mass of the cell.
+    
     opt = struct('SIoutput', true);
     opt = merge_options(opt, varargin{:});
     

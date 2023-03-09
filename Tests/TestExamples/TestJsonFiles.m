@@ -11,6 +11,7 @@ classdef TestJsonFiles < matlab.unittest.TestCase
 
         function testJson(test, jsonfile)
 
+            loadModule('validationJsonScript')
             is_valid = py.validationJsonScript.validate(jsonfile);
             assert(is_valid);
             

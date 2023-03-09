@@ -32,7 +32,7 @@ classdef ActiveMaterial < ElectronicComponent
 
         use_particle_diffusion
 
-        isRoot
+        standAlone
         
     end
     
@@ -98,9 +98,9 @@ classdef ActiveMaterial < ElectronicComponent
 
             model = model.setupDependentProperties();
 
-            % isRoot=true for standalone simulation of active material. This flag is used only in
+            % standAlone=true for standalone simulation of active material. This flag is used only in
             % registerVarAndPropfuncNames (does not impact simulation). Default is false.
-            model.isRoot = false;
+            model.standAlone = false;
             
         end
         
@@ -161,7 +161,7 @@ classdef ActiveMaterial < ElectronicComponent
                 model = model.registerVarNames(varnames);
             end
             
-            if model.isRoot
+            if model.standAlone
                 varnames = {'controlCurrentSource'};
                 model = model.registerVarNames(varnames);
                 varnames = {{itf, 'SOC'}, ...
@@ -236,11 +236,15 @@ classdef ActiveMaterial < ElectronicComponent
                 
             end
 
-            if model.isRoot
+            if model.standAlone
                 
                 fn = @ActiveMaterial.updateStandalonejBcSource;
                 model = model.registerPropFunction({'jBcSource', fn, {'controlCurrentSource'}});
 
+                fn = @ActiveMaterial.updateControl;
+                fn = {fn, @(propfunction) PropFunction.drivingForceFuncCallSetupFn(propfunction)};
+                model = model.registerPropFunction({'controlCurrentSource', fn, {}});
+                
             else
 
                 fn = @ActiveMaterial.updatejBcSource;
@@ -284,7 +288,7 @@ classdef ActiveMaterial < ElectronicComponent
             time = state0.time + dt;
             state = model.initStateAD(state);
 
-            state = updateControl(model, state, drivingForces, dt);
+            state = updateControl(model, state, drivingForces);
             
             state                = model.updateStandalonejBcSource(state);
             state                = model.updateCurrent(state);
@@ -296,7 +300,7 @@ classdef ActiveMaterial < ElectronicComponent
             state                = model.updatePhi(state);
             state.Interface      = model.Interface.updateReactionRateCoefficient(state.Interface);
             state.Interface      = model.Interface.updateOCP(state.Interface);
-            state.Interface      = model.Interface.updateEtaWithEx(state.Interface);
+            state.Interface      = model.Interface.updateEta(state.Interface);
             state.Interface      = model.Interface.updateReactionRate(state.Interface);
             state                = model.updateRvol(state);
             state                = model.updateCurrentSource(state);
@@ -349,7 +353,7 @@ classdef ActiveMaterial < ElectronicComponent
             
         end
 
-        function state = updateControl(model, state, drivingForces, dt)
+        function state = updateControl(model, state, drivingForces)
             
             G = model.G;
             coef = G.cells.volumes;
@@ -369,7 +373,6 @@ classdef ActiveMaterial < ElectronicComponent
             cleanState.T = state.T;
             cleanState.(itf).cElectrolyte   = state.(itf).cElectrolyte;
             cleanState.(itf).phiElectrolyte = state.(itf).phiElectrolyte;
-            cleanState.(itf).externalPotentialDrop = 0;
             
             sigma = model.electricalConductivity;
             vf    = model.volumeFraction;

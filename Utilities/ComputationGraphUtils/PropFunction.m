@@ -61,7 +61,7 @@ classdef PropFunction
                 statestr = 'state';
             end
             funcstr = func2str(fn);
-            funcstr = regexp(funcstr, "\.(.*)", 'tokens');
+            funcstr = regexp(funcstr, "\.([^.]*)$", 'tokens');
             funcstr = funcstr{1}{1};
             funcstr = horzcat(nmstr, {funcstr});
             funcstr = join(funcstr, '.');

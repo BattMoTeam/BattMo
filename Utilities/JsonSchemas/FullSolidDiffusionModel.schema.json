@@ -10,15 +10,6 @@
                                "theta100": {"type" : "number"},
                                "D" : {"$ref" : "function"}
                              }
-             }],
-  "anyOf" : [{"required" : ["D0"]},
-             {"required" : ["D"]}],
-  
-  "dependentSchemas" : {"D": { "anyOf" : [{"properties" : {"D" : {"properties" : {"type": {"const" : "constant"}}}},
-                                           "required" : ["D0"]},
-                                          {"properties" : {"D" : {"properties" : {"type": {"const" : "function"}}}}}
-                                         ]
-                             }
-                       }
+             }]
 }
 

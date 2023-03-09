@@ -14,9 +14,8 @@
     "Li",
     "PF6"
   ],
-  "chargeCarrierName": "Li",
-  "sp": { "z": [1,-1],
-          "t": [0.399, 0.601]},
+  "sp": { "z": 1,
+          "t": 0.601},
   "Separator": { "filename": "ParameterData/BatteryComponentParameters/celgard2500.json",
                    "isFile": true },
   "BruggemanCoefficient": 1.5

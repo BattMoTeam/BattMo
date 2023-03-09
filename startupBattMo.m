@@ -1,9 +1,16 @@
+function startupBattMo
+
 % This startup file set up the MATLAB path
 %
 %% We use first `MRST <https://bitbucket.org/mrst/mrst-core/wiki/Home>`_ setup for MRST modules.
 % The source code for MRST is synchronized to BattMo using git-submodule mechanisms (In the MRST directory in BattMo, you
 % should find the subdirectories given by the ``names`` cell array below)
 %
+
+fprintf('\n  /-\\\n | + | BattMo\n  \\-/\n\n');
+fprintf('Welcome to the Battery Modeling Toolbox (BattMo)!\n');
+fprintf('BattMo is based on MRST, which will now be initialized.\n\n');
+
 rootdirname = fileparts(mfilename('fullpath'));
 
 run(fullfile(rootdirname, 'MRST', 'mrst-core',  'startup'));
@@ -36,20 +43,6 @@ for ind = 1 : numel(dirnames)
     addpath(genpath(dirname));
 end
 
-%% Add Python paths
-if mrstPlatform('matlab')
-    pe = pyenv;
-    if pe.Version == ""
-        disp('Python not installed')
-    else
-        try
-            insert(py.sys.path, int32(0), fullfile(rootdirname, 'Utilities', 'JsonUtils'));
-        catch
-            warning('Could not add directory to Python path. This is probably due to an incompability between the MATLAB and Python versions. Please see https://se.mathworks.com/support/requirements/python-compatibility.html.');
-        end
-    end
-end
-
 %% Octave requires some extra functionality
 if mrstPlatform('octave')
 
@@ -72,6 +65,7 @@ if mrstPlatform('octave')
 
 end
 
+end
 
 %{
 Copyright 2021-2022 SINTEF Industry, Sustainable Energy Technology

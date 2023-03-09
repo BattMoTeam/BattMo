@@ -63,9 +63,11 @@
                 "type" : "number",
                 "description" : "area of the cross-section"}}}}}]},
     
-    "2D-demo" : {},
+    "2D-demo" : {"$ref" : "#/$defs/layerSpecs",
+                 "description" : "In this demo case the dimensions are fixed. Further parametrization should be done using  the grid generator BatteryGenerator2D"},
 
-    "3D-demo" : {},
+    "3D-demo" : {"$ref" : "#/$defs/layerSpecs",
+                 "description" : "In this demo case the dimensions are fixed. Further parametrization should be done using  the grid generator BatteryGenerator3D"},
 
     "particlediscretization" : {
       "properties" : {

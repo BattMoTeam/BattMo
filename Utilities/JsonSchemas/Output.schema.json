@@ -15,7 +15,7 @@
           "description" : "list of extra variables that we want to get in output structure",
           "items" : {
             "type" : "string",
-            "enum" : ["energyDensity", "specificEnergy"]}},
+            "enum" : ["energy", "energyDensity", "specificEnergy"]}},
 
         "saveOutput" : {
           "type" : "boolean",

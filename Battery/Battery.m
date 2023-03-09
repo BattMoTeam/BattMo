@@ -725,7 +725,9 @@ classdef Battery < BaseModel
               case 'CCCV'
                 switch model.(ctrl).initialControl
                   case 'discharging'
-                    error('to implement (should be easy...)')
+                    initstate.(ctrl).ctrlType = 'CC_discharge1';
+                    initstate.(ctrl).nextCtrlType = 'CC_discharge1';
+                    initstate.(ctrl).I = model.(ctrl).Imax;
                   case 'charging'
                     initstate.(ctrl).ctrlType     = 'CC_charge1';
                     initstate.(ctrl).nextCtrlType = 'CC_charge1';
@@ -761,7 +763,7 @@ classdef Battery < BaseModel
                 switch model.(ctrl).initialControl
                   case 'discharging'
                     initstate.(ctrl).ctrlType = 'discharge';
-                  case 'discharging'
+                  case 'charging'
                     initstate.(ctrl).ctrlType = 'charge';
                   otherwise
                     error('initialControl not recognized');
