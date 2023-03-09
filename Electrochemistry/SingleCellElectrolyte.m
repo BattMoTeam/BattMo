@@ -15,6 +15,8 @@ classdef SingleCellElectrolyte < BaseModel
             varnames{end + 1} = 'phi';
             % Mass conservation equation (sum of ion flux  from cathode and anode vanishes)
             varnames{end + 1} = 'massCons';
+
+            model = model.registerVarNames(varnames);
             
         end
         
