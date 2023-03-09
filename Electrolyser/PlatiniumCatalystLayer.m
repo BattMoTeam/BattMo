@@ -48,15 +48,16 @@ classdef PlatiniumCatalystLayer < CatalystLayer
             
             j0   = model.j0;
             cOH0 = model.sp.OH.c0;
+            th   = 1e-2; % regularization parameter for the square root
             
             cOH = state.cOHelyte;
             aw  = state.H2OaElyte;
             
-            state.elyteReactionRateConstant = j0.*((cOH/cOH0.*aw).^0.5);
+            state.elyteReactionRateConstant = j0.*regularizedSqrt(cOH/cOH0.*aw, th);
             
             aw = state.H2OaInmr;
 
-            state.inmrReactionRateConstant = j0.*(aw.^0.5);
+            state.inmrReactionRateConstant = j0.*regularizedSqrt(aw, th);
             
         end
         
