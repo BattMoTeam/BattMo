@@ -564,8 +564,9 @@ classdef PorousTransportLayer < ElectronicComponent
 
             bcDirFlag = liquidBcFlux > 0;
             
-            bcEquations{igas + 1}            = state.(bd).cOH - state.concentrations{liquidInd.OH}(bccells);
-            bcEquations{igas + 1}(bcDirFlag) = state.(bd).cOH(bcDirFlag) - model.(bd).controlValues.cOH(bcDirFlag);
+            % bcEquations{igas + 1}            = state.(bd).cOH - state.concentrations{liquidInd.OH}(bccells);
+            % bcEquations{igas + 1}(bcDirFlag) = state.(bd).cOH(bcDirFlag) - model.(bd).controlValues.cOH(bcDirFlag);
+            bcEquations{igas + 1} = state.(bd).cOH - model.(bd).controlValues.cOH;
 
             bcEquations{igas + 2}            = state.(bd).liqrho - state.liqrho(bccells);
             bcEquations{igas + 2}(bcDirFlag) = state.(bd).liqrho(bcDirFlag) - model.(bd).controlValues.liqrho(bcDirFlag);
