@@ -36,8 +36,8 @@ classdef PlatiniumCatalystLayer < CatalystLayer
             fn = @() PlatiniumCatalystLayer.updateSources;
             inputnames = {'elyteReactionRate', 'inmrReactionRate'};
             model = model.registerPropFunction({'elyteH2Osource', fn, inputnames});
-            model = model.registerPropFunction({'elyteOHsource', fn, inputnames});
             model = model.registerPropFunction({'inmrH2Osource', fn, inputnames});
+            model = model.registerPropFunction({'elyteOHsource', fn, inputnames});
             model = model.registerPropFunction({'inmrOHsource', fn, inputnames});
             model = model.registerPropFunction({'activeGasSource', fn, inputnames});
             model = model.registerPropFunction({'eSource', fn, inputnames});
@@ -61,10 +61,45 @@ classdef PlatiniumCatalystLayer < CatalystLayer
             
         end
         
+        function state = updateEelyte(model, state)
+
+            T    = state.T;
+            cOH  = state.cOHelyte;
+            H2Oa = state.H2OaElyte;
+            
+            E0  = model.E0eff;
+            c0  = model.sp.OH.c0;
+            con = model.constants;
+
+            F  = con.F;
+            R  = con.R;
+
+            state.Eelyte = E0 + R*T./(2*F).*log((H2Oa.^2).*(c0.^2).*(cOH.^-2));
+
+        end
+        
+        function state = updateEinmr(model, state)
+
+            T    = state.T;
+            cOH  = state.cOHinmr;
+            H2Oa = state.H2OaInmr;
+            
+            E0  = model.E0eff;
+            c0  = model.sp.OH.c0;
+            con = model.constants;
+
+            F  = con.F;
+            R  = con.R;
+
+            state.Einmr = E0 + R*T./(2*F).*log((H2Oa.^2).*(c0.^2).*(cOH.^-2));
+            
+        end
+
+        
         function state =  updateSources(model, state)
 
-        % Reaction in Electrolyte : 2*H2O + 2*e- <<-> + H2 + 2(OH-)_elyte
-        % Reaction in Membrane :    2*H2O + 2*e- <<-> + H2 + 2(OH-)_inmr
+        % Reaction in Electrolyte : 2*H2O + 2*e- <<-> H2 + 2(OH-)_elyte
+        % Reaction in Membrane :    2*H2O + 2*e- <<-> H2 + 2(OH-)_inmr
         % (Here, the sign of the reaction that iis indicated by the repeated arrow sign corresponds to positive R)
 
             F = model.constants.F;
@@ -81,42 +116,8 @@ classdef PlatiniumCatalystLayer < CatalystLayer
             state.elyteOHsource   = -2*elyteR/F;
             state.inmrOHsource    = -2*inmrR/F;
             state.eSource         = -2*R.*vols;
-           
+            
         end
-
-         function state = updateEelyte(model, state)
-
-            T    = state.T;
-            cOH  = state.cOHelyte;
-            H2Oa = state.H2OaElyte;
-            
-            E0  = model.E0eff;
-            c0  = model.sp.OH.c0;
-            con = model.constants;
-
-            F  = con.F;
-            R  = con.R;
-
-            state.Eelyte = E0 + R*T./(2*F).*log((H2Oa.^2).*(c0.^2).*(cOH.^-2));
-
-         end
- 
-         function state = updateEinmr(model, state)
-
-            T    = state.T;
-            cOH  = state.cOHinmr;
-            H2Oa = state.H2OaInmr;
-            
-            E0  = model.E0eff;
-            c0  = model.sp.OH.c0;
-            con = model.constants;
-
-            F  = con.F;
-            R  = con.R;
-
-            state.Einmr = E0 + R*T./(2*F).*log((H2Oa.^2).*(c0.^2).*(cOH.^-2));
-            
-         end
         
     end
     

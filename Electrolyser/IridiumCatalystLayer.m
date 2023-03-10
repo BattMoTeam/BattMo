@@ -38,6 +38,7 @@ classdef IridiumCatalystLayer < CatalystLayer
             model = model.registerPropFunction({'inmrOHsource', fn, inputnames});
             model = model.registerPropFunction({'activeGasSource', fn, inputnames});
             model = model.registerPropFunction({'eSource', fn, inputnames});            
+
         end
 
         function state = updateReactionRateConstants(model, state)
