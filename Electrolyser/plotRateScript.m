@@ -74,7 +74,7 @@ fds = {'IonomerMembrane.j$'                                                     
 
 fdsdivs = {'IonomerMembrane.H2OdiffFlux'                                    , ...
            'IonomerMembrane.H2OmigFlux'                                     , ...
-           'OxygenEvolutionElectrode.PorousTransportLayer.migOHFlux'      , ...
+           'OxygenEvolutionElectrode.PorousTransportLayer.migOHFlux'        , ...
            'OxygenEvolutionElectrode.PorousTransportLayer.compGasFluxes 2'  , ...
            'OxygenEvolutionElectrode.PorousTransportLayer.compGasFluxes 1'  , ...
            'OxygenEvolutionElectrode.PorousTransportLayer.liquidMassFlux'   , ...
@@ -105,28 +105,35 @@ nt = numel(time);
 
 for ivar = 1 : numel(fds)
     fd = fds{ivar};
+    doaddbcterm = false;
     if iscell(fd)
-        y = cell(nt, 1);
-        for int = 1 : nt
-            y{int} = 0;
-        end
-        for ifd = 1 : numel(fd)
-            fdd = fd{ifd};
-            varind = cgt.regexpVarNameSelect(fdd);
-            assert(numel(varind) == 1, ['too many field selected for ' fdd]);
-            varname = cgt.varNameList{varind};
-            nodenames = cgt.getNodeName(varname);
-            % should be unique here
-            nnodename = nodenames{1};
-            if ifd == 1
-                nodename = nnodename; % used later 
-            end
-            [ymin, ymax, yy] = getvals(nnodename, states);
+        if doaddbcterm
+            y = cell(nt, 1);
             for int = 1 : nt
-                y{int} = y{int} + yy{int};
+                y{int} = 0;
             end
+            for ifd = 1 : numel(fd)
+                fdd = fd{ifd};
+                varind = cgt.regexpVarNameSelect(fdd);
+                assert(numel(varind) == 1, ['too many field selected for ' fdd]);
+                varname = cgt.varNameList{varind};
+                nodenames = cgt.getNodeName(varname);
+                % should be unique here
+                nnodename = nodenames{1};
+                if ifd == 1
+                    nodename = nnodename; % used later 
+                end
+                [ymin, ymax, yy] = getvals(nnodename, states);
+                for int = 1 : nt
+                    y{int} = y{int} + yy{int};
+                end
+            end
+        else
+            fd = fd{1};
         end
-    else
+    end
+
+    if ~doaddbcterm
         varind = cgt.regexpVarNameSelect(fd);
         assert(numel(varind) == 1, ['too many field selected for ' fd]);
         varname = cgt.varNameList{varind};
@@ -135,6 +142,7 @@ for ivar = 1 : numel(fds)
         nodename = nodenames{1};
         [ymin, ymax, y] = getvals(nodename, states);
     end
+    
     if ismember(fd, fdsdivs)
         dodiv = true;
     else
