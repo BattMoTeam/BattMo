@@ -3,26 +3,26 @@
   "thickness" : 450e-6},
  "IonomerMembrane" : {
    "length" : 70e-6,
-   "cellsize" : 2.5e-6,
+   "cellsize" : 2.5e-7,
    "widthFractions" : {
      "oxygenCatalystSide" : 0.2,
      "hydrogenCatalystSide" : 0.1}},
  "OxygenEvolutionElectrode" : {
    "PorousTransportLayer" : {
      "length" : 650e-6,
-     "cellsize" : 5e-6,
+     "cellsize" : 5e-7,
      "widthFraction" : 0.33},
    "CatalystLayer" : {
      "length" : 10e-6,
-     "cellsize" : 0.1e-6,
+     "cellsize" : 0.1e-7,
      "widthFraction" : 0.14}},
  "HydrogenEvolutionElectrode" : {
    "PorousTransportLayer" : {
      "length" : 400e-6,
-     "cellsize" : 5e-6,
+     "cellsize" : 5e-7,
      "widthFraction" :  0.33},
    "CatalystLayer" : {
      "length" : 10e-6,
-     "cellsize" : 0.1e-6,
+     "cellsize" : 0.1e-7,
      "widthFraction" : 0.12}}
 }
