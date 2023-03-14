@@ -859,7 +859,7 @@ classdef PorousTransportLayer < ElectronicComponent
             % state.convOHFlux = assembleUpwindFlux(model, v, cOH);
             
             % non-upwind version
-            state.convOHFlux = op.harmFace(cOH).*v;
+            state.convOHFlux = (1./op.T).*op.harmFace(cOH).*v;
             
         end
         
@@ -898,7 +898,7 @@ classdef PorousTransportLayer < ElectronicComponent
                 % state.compGasFluxes{igas} =  assembleUpwindFlux(model, v, state.compGasMasses{igas}./vf);
                 % non-upwind version : 
                 op = model.operators;
-                state.compGasFluxes{igas} = op.harmFace(state.compGasMasses{igas}./vf).*v;
+                state.compGasFluxes{igas} = (1./op.T).*op.harmFace(state.compGasMasses{igas}./vf).*v;
             end
             
         end
@@ -912,7 +912,7 @@ classdef PorousTransportLayer < ElectronicComponent
             % state.liquidMassFlux = assembleUpwindFlux(model, v, rho);
             % non upwind version: 
             op = model.operators;
-            state.liquidMassFlux = op.harmFace(rho).*v;
+            state.liquidMassFlux = (1./op.T).*op.harmFace(rho).*v;
             
         end
 
