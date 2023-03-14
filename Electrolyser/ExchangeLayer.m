@@ -78,15 +78,15 @@ classdef ExchangeLayer < BaseModel
         function state = updateSorption(model, state)
 
             kML = model.kML;
+            con = model.constants;
 
             H2OaElyte = state.H2OaElyte;
             H2OaInmr  = state.H2OaInmr;
-
-            % R = (kML./MW).*(con.R.*T.*(log(aH2OI) - log(aH2OL)));
-
+            T         = state.T;
+            
             % (H2O)_inmr <->> (H2O)_elyte
             % Here, the sign of the reaction that is indicated by the repeated arrow sign corresponds to positive sign of exchange rate
-            state.H2OexchangeRate = kML.*(H2OaInmr - H2OaElyte);
+            state.H2OexchangeRate = kML*(con.R).*T.*(log(H2OaInmr) - log(H2OaElyte));
             
         end
 
