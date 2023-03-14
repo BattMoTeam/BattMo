@@ -10,6 +10,11 @@ function tbls = setupSimpleTables(G)
     facetbl.faces = (1 : nf)';
     facetbl = IndexArray(facetbl);
 
+    N = G.faces.neighbors;
+    intInx = all(N ~= 0, 2);
+    intfacetbl.faces = find(intInx);
+    intfacetbl = IndexArray(intfacetbl);
+
     nodetbl.nodes = (1 : nn)';
     nodetbl = IndexArray(nodetbl);
     
@@ -23,6 +28,7 @@ function tbls = setupSimpleTables(G)
     
     tbls = struct('celltbl'    , celltbl    , ...
                   'facetbl'    , facetbl    , ...
+                  'intfacetbl' , intfacetbl , ...
                   'nodetbl'    , nodetbl    , ...
                   'cellfacetbl', cellfacetbl, ...
                   'facenodetbl', facenodetbl);
