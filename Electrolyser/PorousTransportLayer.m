@@ -404,9 +404,10 @@ classdef PorousTransportLayer < ElectronicComponent
             % ind = [model.liquidInd.OH; model.liquidInd.K];
             % model = model.registerPropFunction({VarName({}, 'partialMolarVolumes', nliquid, ind), fn, inputnames});
 
-            % we use liquid incompressibility for the moment
             fn = @() PorousTransportLayer.updateLiquidAccum;
-            inputnames = {};
+            functionCallSetupFn = @(propfunction) PropFunction.accumFuncCallSetupFn(propfunction);
+            fn = {fn, functionCallSetupFn};            
+            inputnames = {'liqrhoeps'};
             model = model.registerPropFunction({'liquidAccumTerm', fn, inputnames});
             
             % Assemble residual of equation of state for the liquid phase
@@ -597,10 +598,11 @@ classdef PorousTransportLayer < ElectronicComponent
             
         end
 
-        function state = updateLiquidAccum(model, state)
-
-        % We assume incompressibility for the moment
-            state.liquidAccumTerm = 0;
+        function state = updateLiquidAccum(model, state, state0, dt)
+            
+            vols   = model.G.cells.volumes;
+            
+            state.liquidAccumTerm = vols.*(state.liqrhoeps - state0.liqrhoeps)/dt;
             
         end
 
@@ -746,7 +748,7 @@ classdef PorousTransportLayer < ElectronicComponent
             m = state.OHmolality;
 
             % From Balej 1985 (ref 8), equation 28
-            state.H2Oa = 10.^(-0.02255 .* m + 0.001434 .* m.^2 + (1.38.*m - 0.9254.*m.^2)./T);
+            state.H2Oa = 10.^(-0.02255.*m + 0.001434.*m.^2 + (1.38.*m - 0.9254.*m.^2)./T);
             % state.H2Oa = 1 + 0*m;
             
         end
