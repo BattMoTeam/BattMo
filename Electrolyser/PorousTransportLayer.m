@@ -482,12 +482,19 @@ classdef PorousTransportLayer < ElectronicComponent
             liqrhoBc = state.(bd).liqrho;
             
             liquidBcFlux = phaseBcFlux{phInd.liquid};
-            upwindFlag = liquidBcFlux > 0;
-            upwindLiqrho             = liqrho(bccells);
-            upwindLiqrho(upwindFlag) = liqrhoBc(upwindFlag);
-            
-            liquidBcSource = upwindLiqrho*liquidBcFlux;
 
+            % upwind version:
+            % upwindFlag = liquidBcFlux > 0;
+            % upwindLiqrho             = liqrho(bccells);
+            % upwindLiqrho(upwindFlag) = liqrhoBc(upwindFlag);
+            % liquidBcSource = upwindLiqrho*liquidBcFlux;
+
+            % non-upwind version: 
+            liqrho = liqrho(bccells);
+            liquidBcSource = liqrho*liquidBcFlux;
+
+            %%%%%%%%%%%%%
+            %
             % Expressions for electrical flux at boundary (should be consistent with what is implemented in method updateCurrent)
             % We do not use them because we assume zero electrical flux at boundary.
             % phi   = state.phi;
@@ -510,6 +517,8 @@ classdef PorousTransportLayer < ElectronicComponent
             % tc = op.harmFaceBC(coef, bcfaces);
 
             % jBcFlux = jBcFlux + tc.*(cOHbc - cOH);
+            %
+            %%%%%%%%%%%%%%
             
             % We compute the OH boundary fluxes
             
@@ -525,11 +534,14 @@ classdef PorousTransportLayer < ElectronicComponent
             
             % We compute OH boundary convection flux (should be consistent with what is implemented in method
             % updateOHConvectionFlux)
-            upwindFlag = liquidBcFlux > 0;
-            upwindcOH             = cOH(bccells);
-            upwindcOH(upwindFlag) = cOHbc(upwindFlag);
-
-            convOHbcFlux = upwindcOH.*liquidBcFlux;
+            
+            % upwind version
+            % upwindFlag = liquidBcFlux > 0;
+            % upwindcOH             = cOH(bccells);
+            % upwindcOH(upwindFlag) = cOHbc(upwindFlag);
+            % convOHbcFlux = upwindcOH.*liquidBcFlux;
+            % non-upwind version
+            convOHbcFlux = cOH(bccells).*liquidBcFlux;
             
             % The OH boundary migration flux (should be consistent with what is implemented in method
             % updateOHMigrationFlux) is given by: migOHbcFlux = t./(z.*F).*jBcFlux
@@ -547,31 +559,42 @@ classdef PorousTransportLayer < ElectronicComponent
                 rho   = state.compGasMasses{igas}./vf;
                 rhoBc = state.(bd).gasDensities{igas};
 
-                upwindFlag = gasBcFlux > 0;
-                upwindrho             = rho(bccells);
-                upwindrho(upwindFlag) = rhoBc(upwindFlag);
+                % upwind version
+                % upwindFlag = gasBcFlux > 0;
+                % upwindrho             = rho(bccells);
+                % upwindrho(upwindFlag) = rhoBc(upwindFlag);
+                % compGasBcSources{igas} = upwindrho.*gasBcFlux;
                 
-                compGasBcSources{igas} = upwindrho.*gasBcFlux;
+                % non-upwind version
+                compGasBcSources{igas} = rho(bccells).*gasBcFlux;
                 
-                gasDensities{igas} = rho(bccells); % needed bellow
+                gasDensities{igas} = rho(bccells); % needed below
+                
             end
 
             % we update control
             for igas = 1 : gasInd.ngas
-                bcDirFlag = gasBcFlux > 0;
-                bcEquations{igas}            = state.(bd).gasDensities{igas} - gasDensities{igas};
-                bcEquations{igas}(bcDirFlag) = state.(bd).gasDensities{igas}(bcDirFlag) - model.(bd).controlValues.gasDensities{igas}(bcDirFlag);
+
+                % upwind version
+                % bcDirFlag = gasBcFlux > 0;
+                % bcEquations{igas}            = state.(bd).gasDensities{igas} - gasDensities{igas};
+                % bcEquations{igas}(bcDirFlag) = state.(bd).gasDensities{igas}(bcDirFlag) - model.(bd).controlValues.gasDensities{igas}(bcDirFlag);
+
+                % non-upwind version
+                bcEquations{igas} = state.(bd).gasDensities{igas} - gasDensities{igas};
+                
             end
 
-            bcDirFlag = liquidBcFlux > 0;
-            
-            % bcEquations{igas + 1}            = state.(bd).cOH - state.concentrations{liquidInd.OH}(bccells);
-            % bcEquations{igas + 1}(bcDirFlag) = state.(bd).cOH(bcDirFlag) - model.(bd).controlValues.cOH(bcDirFlag);
             bcEquations{igas + 1} = state.(bd).cOH - model.(bd).controlValues.cOH;
 
-            bcEquations{igas + 2}            = state.(bd).liqrho - state.liqrho(bccells);
-            bcEquations{igas + 2}(bcDirFlag) = state.(bd).liqrho(bcDirFlag) - model.(bd).controlValues.liqrho(bcDirFlag);
-            
+
+            % upwind version
+            % bcDirFlag = liquidBcFlux > 0;
+            % bcEquations{igas + 2}            = state.(bd).liqrho - state.liqrho(bccells);
+            % bcEquations{igas + 2}(bcDirFlag) = state.(bd).liqrho(bcDirFlag) - model.(bd).controlValues.liqrho(bcDirFlag);
+
+            % non-upwind version
+            bcEquations{igas + 2} = state.(bd).liqrho - state.liqrho(bccells);
 
             % Each variable is first initialized (in a way we get AD )
             phi = state.phi;
@@ -827,10 +850,16 @@ classdef PorousTransportLayer < ElectronicComponent
         
         function state = updateOHConvectionFlux(model, state)
 
+            op = model.operators;
+
             cOH = state.concentrations{model.liquidInd.OH};
             v   = state.phaseFluxes{model.phaseInd.liquid};
 
-            state.convOHFlux = assembleUpwindFlux(model, v, cOH);
+            % upwind version
+            % state.convOHFlux = assembleUpwindFlux(model, v, cOH);
+            
+            % non-upwind version
+            state.convOHFlux = op.harmFace(cOH).*v;
             
         end
         
@@ -865,7 +894,11 @@ classdef PorousTransportLayer < ElectronicComponent
             v  = state.phaseFluxes{model.phaseInd.gas};
 
             for igas = 1 : model.gasInd.ngas
-                state.compGasFluxes{igas} =  assembleUpwindFlux(model, v, state.compGasMasses{igas}./vf);
+                % upwind version
+                % state.compGasFluxes{igas} =  assembleUpwindFlux(model, v, state.compGasMasses{igas}./vf);
+                % non-upwind version : 
+                op = model.operators;
+                state.compGasFluxes{igas} = op.harmFace(state.compGasMasses{igas}./vf).*v;
             end
             
         end
@@ -875,7 +908,11 @@ classdef PorousTransportLayer < ElectronicComponent
             rho = state.liqrho;
             v   = state.phaseFluxes{model.phaseInd.liquid};
 
-            state.liquidMassFlux = assembleUpwindFlux(model, v, rho);
+            % upwind version
+            % state.liquidMassFlux = assembleUpwindFlux(model, v, rho);
+            % non upwind version: 
+            op = model.operators;
+            state.liquidMassFlux = op.harmFace(rho).*v;
             
         end
 
