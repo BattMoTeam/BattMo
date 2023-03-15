@@ -740,14 +740,14 @@ classdef PorousTransportLayer < ElectronicComponent
             
             pgas = state.phasePressures{model.phaseInd.gas};
 
-            vl = state.volumeFractions{model.phaseInd.liquid};
-            vg = state.volumeFractions{model.phaseInd.gas};
-            vs = state.volumeFractions{model.phaseInd.solid};
+            vfl = state.volumeFractions{model.phaseInd.liquid};
+            vfg = state.volumeFractions{model.phaseInd.gas};
+            vfs = state.volumeFractions{model.phaseInd.solid};
             
             % Liquid saturation
-            sLiq = vl./(vl + vg);
+            sLiq = vfl./(vfl + vfg);
             
-            pc = 0.0694 .* cos(theta) ./ sqrt(K./vs) .* leverett(levcoefs, sLiq);
+            pc = 0.0694 .* cosd(theta) ./ sqrt(K./(1 - vfs)) .* leverett(levcoefs, sLiq);
                         
             pliq = pgas - pc;
 
