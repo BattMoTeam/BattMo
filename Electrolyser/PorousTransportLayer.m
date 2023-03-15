@@ -960,17 +960,6 @@ classdef PorousTransportLayer < ElectronicComponent
             
         end
 
-        
-        function state = updateGasMassCons0(model, state)
-        % zero flux version
-            for ind = 1 : model.gasInd.ngas
-                state.compGasFluxes{ind} = 0;
-            end
-            
-            state = model.updateGasMassCons(state);
-            
-        end
-
         function state = updateLiquidSource(model, state)
 
             % Note that the units are
@@ -1011,16 +1000,7 @@ classdef PorousTransportLayer < ElectronicComponent
                                                             state.OHaccum);
         end
 
-        function state = updateOHMassCons0(model, state)
-        % zero flux version
-
-            state.convOHFlux = 0;
-            state.diffOHFlux = 0;
-            state.migOHFlux  = 0;
-            state = model.updateOHMassCons(state);
-
-        end
-
+        
         function state = updatePartialMolarVolumes(model, state)
 
             error('not used in first implementation');
