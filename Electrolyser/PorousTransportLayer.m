@@ -761,6 +761,7 @@ classdef PorousTransportLayer < ElectronicComponent
             OHceps = state.OHceps;
             
             state.concentrations{model.liquidInd.OH} = OHceps./vf;
+            
         end
         
         
@@ -811,13 +812,13 @@ classdef PorousTransportLayer < ElectronicComponent
             pH2Ovap = state.vaporPressure;
             T       = state.T;
             pH2Ogas = state.compGasPressures{model.gasInd.H2O};
-            vl      = state.volumeFractions{model.phaseInd.liquid};
-            vg      = state.volumeFractions{model.phaseInd.gas};
+            vfl      = state.volumeFractions{model.phaseInd.liquid};
+            vfg      = state.volumeFractions{model.phaseInd.gas};
             
             % (H2O)_liquid <->> (H2O)_vapor
             % Here, the sign of the reaction that is indicated by the repeated arrow sign corresponds to positive sign of exchange rate
             
-            sLiq = vl./(vl + vg);
+            sLiq = vfl./(vfl + vfg);
 
             evapSrc = 0*pH2Ogas; % initialize evapSrc (useful when AD)
             ind = (pH2Ogas > pH2Ovap); 
