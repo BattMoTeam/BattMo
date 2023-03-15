@@ -42,7 +42,7 @@ dts = rampupTimesteps(total, dt, 5);
 
 controlI = -30000; % if negative, O2 and H2  are produced
 
-tup = total/10; % rampup value for the current function, see rampupSwitchControl
+tup = total; % rampup value for the current function, see rampupSwitchControl
 srcfunc = @(time) rampupControl(time, tup, controlI, 'rampupcase', 'linear');
 control = struct('src', srcfunc);
 
