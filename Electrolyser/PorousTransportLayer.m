@@ -745,9 +745,9 @@ classdef PorousTransportLayer < ElectronicComponent
             vs = state.volumeFractions{model.phaseInd.solid};
             
             % Liquid saturation
-            s = vl./(vl + vg);
+            sLiq = vl./(vl + vg);
             
-            pc = 0.0694 .* cosd(theta) ./ sqrt(K./vs) .* leverett(levcoefs, s);
+            pc = 0.0694 .* cos(theta) ./ sqrt(K./vs) .* leverett(levcoefs, sLiq);
                         
             pliq = pgas - pc;
 
@@ -1065,9 +1065,9 @@ classdef PorousTransportLayer < ElectronicComponent
             cH2O = (liqrho - cOH.*sp.OH.MW - cK.*sp.K.MW)./sp.H2O.MW;
             % cH   = 1e3.*(10.^-sp.H2O.beta .* (1e-3.*cOH).^-1);
             
-            lInd = model.liquidInd;
-            state.concentrations{lInd.K}   = cK;
-            state.concentrations{lInd.H2O} = cH2O;
+            liquidInd = model.liquidInd;
+            state.concentrations{liquidInd.K}   = cK;
+            state.concentrations{liquidInd.H2O} = cH2O;
             % TODO  : check if we need H+ concentration later, if yes, we should uncomment the line below and adjust the indexings.
             % state.concentrations{lInd.H}   = cH;
             

@@ -314,12 +314,12 @@ classdef IonomerMembrane < ElectronicComponent
 
         function state = assembleH2Oaccum(model, state, state0, dt)
 
-            c  = state.H2Oceps;
-            c0 = state0.H2Oceps;
+            ceps  = state.H2Oceps;
+            ceps0 = state0.H2Oceps;
             
             vols = model.G.cells.volumes;
             
-            state.H2Oaccum = 1/dt*vols.*(c - c0);
+            state.H2Oaccum = 1/dt*vols.*(ceps - ceps0);
             
         end
 
