@@ -274,7 +274,8 @@ classdef PorousTransportLayer < ElectronicComponent
             % update conductivity
             fn = @() PorousTransportLayer.updateConductivity;
             inputnames = {'T', ...
-                          VarName({}, 'concentrations', nliquid, liquidInd.OH)};
+                          VarName({}, 'concentrations', nliquid, liquidInd.OH), ...
+                          VarName({}, 'volumeFractions', nph, phaseInd.liquid)};
             model = model.registerPropFunction({'conductivity', fn, inputnames});            
             
             % assemble concentrations
@@ -671,9 +672,12 @@ classdef PorousTransportLayer < ElectronicComponent
         %   Conductivity calculated according to the empirical model
         %   published by Gilliam, et al. Valid from 0 -
         %   12 M and 0 - 100 degC. Units are S m^-1.
+
+            tau = model.tortuosity;
             
             T   = state.T;
             cOH = state.concentrations{model.liquidInd.OH};
+            vf  = state.volumeFractions{model.phaseInd.liquid};
             
             coefs = [-2.041   ;
                      -0.0028  ;
@@ -683,15 +687,16 @@ classdef PorousTransportLayer < ElectronicComponent
                      -0.0000003];
 
             cOH = 1e-3*cOH; % we convert to mol/litre
-            state.conductivity = (coefs(1).*cOH    + ...
-                                  coefs(2).*cOH.^2 + ...
-                                  coefs(3).*cOH.*T + ...
-                                  coefs(4).*cOH./T + ...
-                                  coefs(5).*cOH.^3 + ...
-                                  coefs(6).*cOH.^2.*T.^2) .* 100;
+
+            kappa = (coefs(1).*cOH    + ...
+                     coefs(2).*cOH.^2 + ...
+                     coefs(3).*cOH.*T + ...
+                     coefs(4).*cOH./T + ...
+                     coefs(5).*cOH.^3 + ...
+                     coefs(6).*cOH.^2.*T.^2) .* 100;
             
-
-
+            state.conductivity = kappa.*(vf.^tau);
+            
         end
         
         function state = updateCurrent(model, state)
