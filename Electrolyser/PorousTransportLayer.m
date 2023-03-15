@@ -1003,7 +1003,8 @@ classdef PorousTransportLayer < ElectronicComponent
         
         function state = updatePartialMolarVolumes(model, state)
 
-            error('not used in first implementation');
+            error('Not used in the current implementation');
+            
             OH = model.sp.OH;
             K = model.sp.K;
             
@@ -1066,14 +1067,16 @@ classdef PorousTransportLayer < ElectronicComponent
         end
 
         function rho = density(model, c, T)
-        % This method is only used for initialization at the moment (can change)
+        % NOTE : 
+        % In the current implementatiom this method is only used for initialization
 
-        %DENSITY Calculates the density of aqueous KOH solution as a
-        %function of concentration (c) in mol/m3 and temperature (T) in
-        %K. 
-        %   Density data is compiled from Zatysev et al., Ref [1], and
-        %   fit using the MATLAB curve fitting toolbox. Units are kg/m3
-        %   or g/L. Valid from 0 - 50 wt% and 0 - 100 degC.
+        % Calculates the density of aqueous KOH solution as a
+        % function of concentration (c) in mol/m3 and temperature (T) in
+        % K.
+        %
+        % Density data is compiled from Zatysev et al., Ref [1], and
+        % fit using the MATLAB curve fitting toolbox. Units are kg/m3
+        % or g/L. Valid from 0 - 50 wt% and 0 - 100 degC.
 
             
             coefs = [ 794.7015;
@@ -1096,7 +1099,8 @@ classdef PorousTransportLayer < ElectronicComponent
         end
 
         function [Vs, cH2O] = partialMolarVolume(model, c, rho, T)
-        % This method is only used for initialization at the moment (can change)
+        % NOTE : 
+        % In the current implementatiom this method is only used for initialization
         %
         % rho : liquid density [kg m^-3]
         % c : concentration [mol m^-3] 
