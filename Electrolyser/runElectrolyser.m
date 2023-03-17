@@ -75,6 +75,6 @@ xlabel('time [hour]');
 ylabel('voltage');
 
 figure
-plot(time/hour, -I)
+plot(time/hour, -I/(1/(centi*meter)^2));
 xlabel('time [hour]');
-ylabel('Current [A]');
+ylabel('Current [A/cm^2]');
