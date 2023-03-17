@@ -60,14 +60,14 @@ classdef ExchangeLayer < BaseModel
 
             % Assemble ionomer ion exchange rate [mol*s^-1 m^-3]
             % (OH-)_inmr <->> (OH-)_elyte
-            % Here, the sign of the reaction that is indicated by the repeated arrow sign corresponds to positive sign of exchange rate
+            % Here, the direction of the reaction that is indicated by the repeated arrow symbol corresponds to a positive computed reaction rate
             fn = @() ExchangeLayer.updateOHexchange;
             inputnames = {'phiElyte', 'phiInmr', 'cOHelyte', 'cOHinmr', 'T'};
             model = model.registerPropFunction({'OHexchangeRate', fn, inputnames});
 
             % Assemble sorption rate [mol*s^-1 m^-3]
             % (H2O)_inmr <->> (H2O)_elyte
-            % Here, the sign of the reaction that is indicated by the repeated arrow sign corresponds to positive sign of exchange rate
+            % Here, the direction of the reaction that is indicated by the repeated arrow symbol corresponds to a positive computed reaction rate
             fn = @() ExchangeLayer.updateSorption;
             inputnames = {'H2OaElyte', 'H2OaInmr'};
             model = model.registerPropFunction({'H2OexchangeRate', fn, inputnames});
@@ -85,7 +85,7 @@ classdef ExchangeLayer < BaseModel
             T         = state.T;
             
             % (H2O)_inmr <->> (H2O)_elyte
-            % Here, the sign of the reaction that is indicated by the repeated arrow sign corresponds to positive sign of exchange rate
+            % Here, the direction of the reaction that is indicated by the repeated arrow symbol corresponds to a positive computed reaction rate
             state.H2OexchangeRate = kML*(con.R).*T.*(log(H2OaInmr) - log(H2OaElyte));
             
         end
@@ -110,7 +110,7 @@ classdef ExchangeLayer < BaseModel
             phiInmr  = state.phiInmr;
             
             % (OH-)_inmr <->> (OH-)_elyte
-            % Here, the sign of the reaction that is indicated by the repeated arrow sign corresponds to positive sign of exchange rate
+            % Here, the direction of the reaction that is indicated by the repeated arrow symbol corresponds to a positive computed reaction rate
             state.OHexchangeRate = kxch.*(cInmr.*(exp(z*F*(phiInmr - phiElyte)./(R*T))) - cElyte);
             
         end

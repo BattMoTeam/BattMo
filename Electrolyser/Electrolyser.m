@@ -285,7 +285,9 @@ classdef Electrolyser < BaseModel
             if model.(oer).(ctl).include_dissolution
                 
                 dm = 'DissolutionModel';
-                state.(oer).(ctl).(dm).volumeFraction = model.(oer).(ctl).(dm).volumeFraction0;
+                nc = model.(oer).(ctl).(dm).G.cells.num;
+                
+                state.(oer).(ctl).(dm).volumeFraction = model.(oer).(ctl).(dm).volumeFraction0*ones(nc, 1);
                 
             end
             
@@ -475,6 +477,7 @@ classdef Electrolyser < BaseModel
             exl = 'ExchangeLayer';
             ptl = 'PorousTransportLayer';
             bd  = 'Boundary';
+            dm  = 'DissolutionModel';
 
             time = state0.time + dt;
             if(not(opts.ResOnly))
@@ -552,7 +555,7 @@ classdef Electrolyser < BaseModel
             names{end + 1} = 'controlEqs_2';
 
             if model.(oer).(ctl).include_dissolution
-                eqs{end + 1}   = state.(oer).(ctl).(dm).massCons;
+                eqs{end + 1}   = 1e5*state.(oer).(ctl).(dm).massCons;
                 names{end + 1} = 'oer_ctl_dm_massCons';
             end
             
@@ -571,7 +574,7 @@ classdef Electrolyser < BaseModel
             
             [state, report] = updateState@BaseModel(model, state, problem, dx, drivingForces);
 
-            docapping = false;
+            docapping = true;
 
             if docapping
                 
@@ -581,6 +584,7 @@ classdef Electrolyser < BaseModel
                 ctl = 'CatalystLayer';
                 exl = 'ExchangeLayer';
                 ptl = 'PorousTransportLayer';
+                dm  = 'DissolutionModel';
                 bd  = 'Boundary';
 
                 varnames = {{her, ptl, 'H2rhoeps'}                   , ...
@@ -602,6 +606,13 @@ classdef Electrolyser < BaseModel
                             {oer, ptl, 'Boundary', 'gasDensities', 2}, ...
                             {oer, ptl, 'Boundary', 'gasDensities', 1}};
 
+                if model.(oer).(ctl).include_dissolution
+                    varname = {oer, ctl, dm, 'volumeFraction'};
+                    val = model.getProp(state, varname);
+                    val = max(0, val);
+                    state = model.setProp(state, varname, val);
+                end
+                
                 for ivar = 1 : numel(varnames)
 
                     varname = varnames{ivar};

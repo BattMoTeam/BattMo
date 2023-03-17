@@ -816,7 +816,7 @@ classdef PorousTransportLayer < ElectronicComponent
             vfg      = state.volumeFractions{model.phaseInd.gas};
             
             % (H2O)_liquid <->> (H2O)_vapor
-            % Here, the sign of the reaction that is indicated by the repeated arrow sign corresponds to positive sign of exchange rate
+            % Here, the direction of the reaction that is indicated by the repeated arrow symbol corresponds to a positive computed reaction rate
             
             sLiq = vfl./(vfl + vfg);
 

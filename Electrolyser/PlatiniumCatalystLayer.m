@@ -100,7 +100,7 @@ classdef PlatiniumCatalystLayer < CatalystLayer
 
         % Reaction in Electrolyte : 2*H2O + 2*e- <<-> H2 + 2(OH-)_elyte
         % Reaction in Membrane :    2*H2O + 2*e- <<-> H2 + 2(OH-)_inmr
-        % (Here, the sign of the reaction that iis indicated by the repeated arrow sign corresponds to positive R)
+        % Here, the direction of the reaction that is indicated by the repeated arrow symbol corresponds to a positive computed reaction rate
 
             F = model.constants.F;
             vols = model.G.cells.volumes;

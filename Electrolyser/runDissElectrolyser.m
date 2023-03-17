@@ -1,6 +1,6 @@
 mrstModule add ad-core mpfa matlab_bgl
 
-mrstDebug(0);
+mrstDebug(20);
 
 jsonfilename = '/home/xavier/Matlab/Projects/battmo/Electrolyser/Parameters/alkalineElectrolyser.json';
 jsonstruct_base = parseBattmoJson(jsonfilename);
@@ -24,6 +24,7 @@ oer = 'OxygenEvolutionElectrode';
 ptl = 'PorousTransportLayer';
 exl = 'ExchangeLayer';
 ctl = 'CatalystLayer';
+dm  = 'DissolutionModel';
 
 model = Electrolyser(paramobj);
 

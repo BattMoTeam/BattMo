@@ -137,13 +137,16 @@ classdef DissolutionModel < BaseModel
 
             function state = updateReactionRate(model, state)
 
+            % Reaction : IrO2 + 2 H2O <->> IrO4^2- + 4H+ + 2e-
+            % (Here, the direction of the reaction that is indicated by the repeated arrow symbol corresponds to a positive computed reaction rate)
+                
                 j0 = model.j0;
 
                 vsa = state.volumetricSurfaceArea;
                 eta = state.eta;
                 T   = state.T;
-                
-                state.reactionRate = vsa.*ButlerVolmerEquation(j0, 0.5, 1, eta, T);
+
+                state.reactionRate = vsa.*ButlerVolmerEquation(j0, 0.5, 2, eta, T);
                 
             end
 
@@ -181,9 +184,9 @@ classdef DissolutionModel < BaseModel
                 F    = model.constants.F;
                 vols = model.G.cells.volumes;
                 
-                R = state.reactionRate;
+                rRate = state.reactionRate;
 
-                state.massSource = V/(2*F)*R.*vols;
+                state.massSource = -V/(2*F)*rRate.*vols;
                 
             end
 

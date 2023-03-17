@@ -235,8 +235,8 @@ classdef CatalystLayer < BaseModel
             j0inmr   = state.inmrReactionRateConstant;
             T        = state.T;
             
-            jElyte = (1 - Xinmr)*vsa*ButlerVolmerEquation(j0elyte, alpha, n, etaElyte, T);
-            jInmr  = Xinmr*vsa*ButlerVolmerEquation(j0inmr, alpha, n, etaInmr, T);
+            jElyte = (1 - Xinmr)*vsa.*ButlerVolmerEquation(j0elyte, alpha, n, etaElyte, T);
+            jInmr  = Xinmr*vsa.*ButlerVolmerEquation(j0inmr, alpha, n, etaInmr, T);
 
             state.elyteReactionRate = jElyte;
             state.inmrReactionRate  = jInmr;
