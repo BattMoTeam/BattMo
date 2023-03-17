@@ -105,6 +105,8 @@ classdef Electrolyser < BaseModel
 
             model = model.removeVarNames({{her, ctl, 'I'}, ...
                                           {her, ctl, 'eSource'}});
+
+            
         end
 
 
@@ -280,6 +282,14 @@ classdef Electrolyser < BaseModel
 
             end
 
+            if model.(oer).(ctl).include_dissolution
+                
+                dm = 'DissolutionModel';
+                state.(oer).(ctl).(dm).volumeFraction = model.(oer).(ctl).(dm).volumeFraction0;
+                
+            end
+            
+
         end
 
         function state = setupControl(model, state, drivingForces)
@@ -408,7 +418,6 @@ classdef Electrolyser < BaseModel
 
         end
 
-
         function cleanState = addStaticVariables(model, cleanState, state)
 
             oer = 'OxygenEvolutionElectrode';
@@ -423,7 +432,6 @@ classdef Electrolyser < BaseModel
             cleanState.(her).(ptl).jBcSource = 0;
 
         end
-
 
         function forces = getValidDrivingForces(model)
 
@@ -543,6 +551,11 @@ classdef Electrolyser < BaseModel
             eqs{end + 1}   = state.controlEqs{2};
             names{end + 1} = 'controlEqs_2';
 
+            if model.(oer).(ctl).include_dissolution
+                eqs{end + 1}   = state.(oer).(ctl).(dm).massCons;
+                names{end + 1} = 'oer_ctl_dm_massCons';
+            end
+            
             neq = numel(eqs);
 
             types = repmat({'cell'}, 1, neq);

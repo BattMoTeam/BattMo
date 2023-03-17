@@ -1,0 +1,202 @@
+classdef DissolutionModel < BaseModel
+
+    properties
+
+        E0                     % Standard electrical potential for the dissolution reaction [V]
+        c0                     % Reference concentration [mol/m^3]
+        j0                     % Reference exchange current density for the dissolution reaction [A/m^2]
+        MW                     % Molar mass
+        rho                    % Density
+        volumeFraction0        % Initial volume fraction
+        volumetricSurfaceArea0 % Initial volumetric surface area
+        
+        V         % Molar volume [m^3/mol]
+        Np        % Number of particles [-]
+        constants % physical constants
+        
+    end
+
+    methods
+
+        function model = DissolutionModel(paramobj)
+            
+            model = model@BaseModel();
+            
+            fdnames = {'G'              , ...
+                       'E0'             , ...
+                       'c0'             , ...
+                       'j0'             , ...
+                       'MW'             , ...
+                       'rho'            , ...
+                       'volumeFraction0', ...
+                       'volumetricSurfaceArea0'};
+
+            model = dispatchParams(model, paramobj, fdnames);
+
+            model.constants = PhysicalConstants();
+
+            % setup particule number
+            vsa = model.volumetricSurfaceArea0;
+            vf  = model.volumeFraction0;
+            model.Np = 1/(4*pi)*(vsa^3)/(3^2*vf^2);
+
+            % setup molar volume
+            model.V  = model.MW/model.rho;
+            
+        end
+
+        function model = registerVarAndPropfuncNames(model)
+
+        %% Declaration of the Dynamical Variables and Function of the model
+        % (setup of varnameList and propertyFunctionList)
+
+            model = registerVarAndPropfuncNames@BaseModel(model);
+
+            varnames = {};
+            % Temperature [K]
+            varnames{end + 1} = 'T';
+            % Volume Fraction [-]
+            varnames{end + 1} = 'volumeFraction';
+            % Reaction rate [A/m^3]
+            varnames{end + 1} = 'reactionRate';
+            % Electrical potential in electrolyte
+            varnames{end + 1} = 'phiElyte';            
+            % Electrical potential in solid
+            varnames{end + 1} = 'phiSolid';
+            % Equilibrium Electrical potential
+            varnames{end + 1} = 'E';
+            % Overpotential
+            varnames{end + 1} = 'eta';
+            % H+ concentration
+            varnames{end + 1} = 'cH';
+            % Volumetric surface area [m^2/m^3]
+            varnames{end + 1} = 'volumetricSurfaceArea';
+            % mass accumulation term (expressed in equivalent volume) [m^3/s]
+            varnames{end + 1} = 'massAccum';
+            % mass source term (expressed in equivalent volume) [m^3/s]
+            varnames{end + 1} = 'massSource';
+            % mass conservation equation (expressed in equivalent volume) [m^3/s]
+            varnames{end + 1} = 'massCons';
+
+            model = model.registerVarNames(varnames);
+
+            fn = @() CatalystLayer.updateVolumetricSurfaceArea;
+            inputnames = {'volumeFraction'};
+            model = model.registerPropFunction({'volumetricSurfaceArea', fn, inputnames});
+
+            fn = @() CatalystLayer.updateEta;
+            inputnames = {'phiElyte', 'phiSolid', 'E'};
+            model = model.registerPropFunction({'eta', fn, inputnames});
+            
+            fn = @() CatalystLayer.updateReactionRate;
+            inputnames = {'volumetricSurfaceArea', 'eta', 'T'};
+            model = model.registerPropFunction({'reactionRate', fn, inputnames});
+
+            fn = @() CatalystLayer.updateE;
+            inputnames = {'cH'};
+            model = model.registerPropFunction({'E', fn, inputnames});
+            
+            fn = @() CatalystLayer.updateMassAccum;
+            functionCallSetupFn = @(propfunction) PropFunction.accumFuncCallSetupFn(propfunction);
+            fn = {fn, functionCallSetupFn};
+            inputnames = {'volumeFraction'};
+            model = model.registerPropFunction({'massAccum', fn, inputnames});
+
+            fn = @() CatalystLayer.updateMassSource;
+            inputnames = {'reactionRate'};
+            model = model.registerPropFunction({'massSource', fn, inputnames});
+            
+            fn = @() CatalystLayer.updateMassCons;
+            inputnames = {'massSource', 'massAccum'};
+            model = model.registerPropFunction({'massCons', fn, inputnames});
+
+        end
+
+
+            function state = updateVolumetricSurfaceArea(model, state)
+
+                Np = model.Np;
+
+                vf = state.volumeFraction;
+
+                a = (4*pi*Np)^(1/3)*(3^(2/3))*vf.^(2/3);
+
+                state.volumetricSurfaceArea = a;
+            end
+
+            function state = updateEta(model, state)
+
+                E        = state.E;
+                phiElyte = state.phiElyte;                
+                phiSolid = state.phiSolid;
+
+                state.eta = phiSolid - phiElyte - E;
+                
+            end
+
+
+            function state = updateReactionRate(model, state)
+
+                j0 = model.j0;
+
+                vsa = state.volumetricSurfaceArea;
+                eta = state.eta;
+                T   = state.T;
+                
+                state.reactionRate = vsa.*ButlerVolmerEquation(j0, 0.5, 1, eta, T);
+                
+            end
+
+
+            function state = updateE(model, state)
+
+                E0 = model.E0;
+                c0 = model.c0;
+                R  = model.constants.R;
+                F  = model.constants.F;
+                
+                cH = state.cH;
+                T  = state.T;
+                
+                state.E = E0 - R*T./(2*F).*log(((c0)./cH).^4);
+                
+            end
+
+
+            function state = updateMassAccum(model, state, state0, dt)
+
+                vols = model.G.cells.volumes;
+                
+                vf  = state.volumeFraction;
+                vf0 = state0.volumeFraction;
+
+                state.massAccum = 1/dt*vols.*(vf - vf0);
+                
+            end
+
+
+            function state = updateMassSource(model, state)
+
+                V    = model.V;
+                F    = model.constants.F;
+                vols = model.G.cells.volumes;
+                
+                R = state.reactionRate;
+
+                state.massSource = V/(2*F)*R.*vols;
+                
+            end
+
+            function state = updateMassCons(model, state)
+
+                source = state.massSource;
+                accum  = state.massAccum;
+
+                state.massCons = accum - source;
+                
+            end
+
+    end
+                
+
+end

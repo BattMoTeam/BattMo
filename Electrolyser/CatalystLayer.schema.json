@@ -23,8 +23,11 @@
                              "description" : "Coefficient in the exponent in Butler-Volmer equation"}
                   "Xinmr" : {"type" : "number",
                              "description" : "Fraction of specific area that is coversed with ionomer"},
-                  "volumetricSurfaceArea" : {"type" : "number",
-                                             "description" : "volumetric surface area"},
+                  "volumetricSurfaceArea0" : {"type" : "number",
+                                             "description" : "volumetric surface area (or initial if it is changing)"},
                   "tortuosity" : {"type" : "number",
                                   "description" : "tortuosity"}
-                 }}
+                  "includeDissolution" : {"type" : "boolean",
+                                          "description" : "true if dissolution model is included"}
+                 }
+}

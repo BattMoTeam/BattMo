@@ -61,6 +61,11 @@ classdef ElectrolyserGridGenerator
             paramobj.(ptl).G = genSubGrid(gen.G, params.(ptl).cellind);
             paramobj.(ctl).G = genSubGrid(gen.G, params.(ctl).cellind);
 
+            if paramobj.(ctl).include_dissolution
+                dm = 'DissolutionModel';
+                paramobj.(ctl).(dm).G = paramobj.(ctl).G;
+            end
+
             %  setup coupling between catalyst layer and porous transport layer;
             G_ptl = paramobj.(ptl).G;
             G_ctl = paramobj.(ctl).G;

@@ -95,9 +95,26 @@ classdef EvolutionElectrode < BaseModel
             igas = gasInd.activeGas;
             ngas = gasInd.ngas;
             model = model.registerPropFunction({VarName({ptl}, 'compGasSources', ngas, igas), fn, inputvarnames});
+
+
+            if ~model.(ctl).include_dissolution
+                fn = @() EvolutionElectrode.updateVolumetricSurfaceArea;
+                inputnames = {};
+                model = model.registerPropFunction({{ctl, 'volumetricSurfaceArea'}, fn, inputnames});
+            end
+            
             
         end
 
+        function state = updateVolumetricSurfaceArea(model, state);
+
+            ctl = 'CatalystLayer';
+            
+            state.(ctl).volumetricSurfaceArea = model.(ctl).volumetricSurfaceArea0;
+            
+        end
+
+        
         function state = dispatchTemperature(model, state)
 
             T = state.T;

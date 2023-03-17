@@ -21,9 +21,13 @@ classdef CatalystLayer < BaseModel
         
         alpha                 % coefficient in the exponent in Butler-Volmer equation [-]
         Xinmr                 % Fraction of specific area that is coversed with ionomer [-]
-        volumetricSurfaceArea % Volumetric surface area [m^ -1]
+        volumetricSurfaceArea0 % Volumetric surface area [m^ -1]
 
         tortuosity % Tortuosity [-]
+
+        include_dissolution
+        DissolutionModel
+        
     end
 
     methods
@@ -32,19 +36,26 @@ classdef CatalystLayer < BaseModel
             
             model = model@BaseModel();
             
-            fdnames = { 'G'                    , ...
-                        'j0'                   , ...
-                        'E0'                   , ...
-                        'Eref'                 , ...
-                        'sp'                   , ...
-                        'n'                    , ...
-                        'alpha'                , ...
-                        'Xinmr'                , ...
-                        'volumetricSurfaceArea', ...
+            fdnames = { 'G'                     , ...
+                        'j0'                    , ...
+                        'E0'                    , ...
+                        'Eref'                  , ...
+                        'sp'                    , ...
+                        'n'                     , ...
+                        'alpha'                 , ...
+                        'Xinmr'                 , ...
+                        'volumetricSurfaceArea0', ...
+                        'include_dissolution'   , ...
                         'tortuosity'};
             
             model = dispatchParams(model, paramobj, fdnames);
 
+            if paramobj.include_dissolution
+                model.DissolutionModel = DissolutionModel(paramobj.DissolutionModel);
+            else
+                model.subModelNameList = {};
+            end
+            
             model.E0eff = model.E0 - model.Eref;
             model.constants = PhysicalConstants();
             
@@ -57,13 +68,13 @@ classdef CatalystLayer < BaseModel
 
             model = registerVarAndPropfuncNames@BaseModel(model);
 
-            names = {};
+            varnames = {};
             % Temperature
-            varnames = {'T'};
+            varnames{end + 1} = 'T';
             % CatalystLayer electrical potential (single value)
-            varnames{end + 1} = {'E'};
+            varnames{end + 1} = 'E';
             % CatalystLayer total current (scalar value)
-            varnames{end + 1} = {'I'};
+            varnames{end + 1} = 'I';
             % Electric Potential in electrolyte and ionomer
             varnames{end + 1} = 'phiElyte';
             varnames{end + 1} = 'phiInmr';
@@ -81,6 +92,10 @@ classdef CatalystLayer < BaseModel
             % Water activity in electrolyte and ionomer
             varnames{end + 1} = 'H2OaElyte';
             varnames{end + 1} = 'H2OaInmr';
+
+            % Volumetric surface area [m^2/m^3]
+            varnames{end + 1} = 'volumetricSurfaceArea';
+
             % Reaction rate constant (j0) for electrolyte and ionomer
             varnames{end + 1} = 'elyteReactionRateConstant';
             varnames{end + 1} = 'inmrReactionRateConstant';
@@ -118,7 +133,11 @@ classdef CatalystLayer < BaseModel
 
             % Assemble the reaction rates
             fn = @() CatalystLayer.updateReactionRates;
-            inputnames = {'elyteReactionRateConstant', 'etaElyte', 'inmrReactionRateConstant', 'etaInmr'};
+            inputnames = {'volumetricSurfaceArea'    , ...
+                          'elyteReactionRateConstant', ...
+                          'etaElyte'                 , ...
+                          'inmrReactionRateConstant' , ...
+                          'etaInmr'};
             model = model.registerPropFunction({'elyteReactionRate', fn, inputnames});
             model = model.registerPropFunction({'inmrReactionRate', fn, inputnames});            
 
@@ -126,8 +145,52 @@ classdef CatalystLayer < BaseModel
             inputnames = {'eSource'};
             model = model.registerPropFunction({'I', fn, inputnames});
 
+            if model.include_dissolution
+
+                dm = 'DissolutionModel';
+                
+                fn = @() Catalyser.dispatchToDissolutionModel;
+                inputnames = {'cOHelyte', 'phiElyte', 'E', 'T'};
+                dissolutionVarnames = {'T', 'phiElyte', 'phiSolid', 'cH'};
+                for idvar = 1 : numel(dissolutionVarnames)
+                    varname = {dm, dissolutionVarnames{idvar}};
+                    model = model.registerPropFunction({varname, fn, inputnames});
+                end
+
+                fn = @() Catalyser.updateVolumetricSurfaceAreaDissolution;
+                inputnames = {{dm, 'volumetricSurfaceArea'}};
+                model = model.registerPropFunction({'volumetricSurfaceArea', fn, inputnames});
+                
+            end
+
         end
 
+        function state = updateVolumetricSurfaceAreaDissolution(model, state)
+
+            dm = 'DissolutionModel';
+            
+            state.volumetricSurfaceArea = state.(dm).volumetricSurfaceArea;
+            
+        end
+        
+        
+        function state = dispatchToDissolutionModel(model, state)
+
+            dm = 'DissolutionModel';
+
+            cOH      = state.cOHelyte;
+            phiElyte = state.phiElyte;
+            E        = state.E;
+            T        = state.T;
+
+            state.(dm).T = T;
+            state.(dm).phiSolid = E;
+            state.(dm).phiElyte = phiElyte;
+            state.(dm).cH = 10^(-14)*((mol/litre)^2)./cOH;
+
+        end
+
+        
         function state = updateSources(model, state)
             error('virtual function. Should be overloaded by specific catalystlayer');
         end
@@ -161,11 +224,11 @@ classdef CatalystLayer < BaseModel
             
         function state = updateReactionRates(model, state)
 
-            vsa   = model.volumetricSurfaceArea;
             Xinmr = model.Xinmr;
             alpha = model.alpha;
             n     = model.n;
 
+            vsa      = state.volumetricSurfaceArea;
             etaElyte = state.etaElyte;
             etaInmr  = state.etaInmr;
             j0elyte  = state.elyteReactionRateConstant;
