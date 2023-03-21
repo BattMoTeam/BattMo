@@ -4,7 +4,7 @@ classdef EvolutionElectrode < BaseModel
         
         PorousTransportLayer
         CatalystLayer
-        ExchangeLayer
+        ExchangeReaction
 
         couplingTerm % Coupling term between ptl and ctl
         
@@ -36,7 +36,7 @@ classdef EvolutionElectrode < BaseModel
                 error('catalystLayerType not recognized')
             end
             
-            model.ExchangeLayer = ExchangeLayer(paramobj.ExchangeLayer);
+            model.ExchangeReaction = ExchangeReaction(paramobj.ExchangeReaction);
             
         end
 
@@ -51,16 +51,16 @@ classdef EvolutionElectrode < BaseModel
             % shortcuts
             ptl = 'PorousTransportLayer';
             ctl = 'CatalystLayer';
-            exl = 'ExchangeLayer';
+            exr = 'ExchangeReaction';
         
             fn = @() EvolutionElectrode.dispatchTemperature;
             model = model.registerPropFunction({{ptl, 'T'}, fn, {'T'}});
             model = model.registerPropFunction({{ctl, 'T'}, fn, {'T'}});
-            model = model.registerPropFunction({{exl, 'T'}, fn, {'T'}});
+            model = model.registerPropFunction({{exr, 'T'}, fn, {'T'}});
             
             %% Update coupling (electrode, ionomer) -> CatalystLayer
 
-            fn = @() EvolutionElectrode.dispatchToCatalystAndExchangeLayers;
+            fn = @() EvolutionElectrode.dispatchToCatalystAndExchangeReactions;
 
             phaseInd  = model.(ptl).phaseInd;
             liquidInd = model.(ptl).liquidInd;
@@ -75,7 +75,7 @@ classdef EvolutionElectrode < BaseModel
             for iovar = 1 : numel(outputvarnames)
                 outputvarname = {ctl, outputvarnames{iovar}};
                 model = model.registerPropFunction({outputvarname, fn, inputvarnames});
-                outputvarname = {exl, outputvarnames{iovar}};
+                outputvarname = {exr, outputvarnames{iovar}};
                 model = model.registerPropFunction({outputvarname, fn, inputvarnames});
             end
             model = model.registerPropFunction({{ctl, 'E'}, fn, inputvarnames});
@@ -84,9 +84,9 @@ classdef EvolutionElectrode < BaseModel
             fn = @() EvolutionElectrode.updateSourceTerms;
 
             inputvarnames = {{ctl, 'elyteOHsource'}             , ...
-                             {exl, 'OHexchangeRate'}            , ...
+                             {exr, 'OHexchangeRate'}            , ...
                              {ctl, 'elyteH2Osource'}            , ...
-                             {exl, 'H2OexchangeRate'}           , ...
+                             {exr, 'H2OexchangeRate'}           , ...
                              {ptl, 'H2OvaporLiquidExchangeRate'}, ...
                              {ctl, 'activeGasSource'}};
             model = model.registerPropFunction({{ptl, 'OHsource'}, fn, inputvarnames});
@@ -121,22 +121,22 @@ classdef EvolutionElectrode < BaseModel
 
             ptl = 'PorousTransportLayer';
             ctl = 'CatalystLayer';
-            exl = 'ExchangeLayer';
+            exr = 'ExchangeReaction';
             
             coupterm = model.couplingTerm;
             coupcells = coupterm.couplingcells;
             
             state.(ptl).T = T;
             state.(ctl).T(coupcells(:, 2), 1) = T(coupcells(:, 1));
-            state.(exl).T(coupcells(:, 2), 1) = T(coupcells(:, 1));
+            state.(exr).T(coupcells(:, 2), 1) = T(coupcells(:, 1));
             
         end
         
-        function state = dispatchToCatalystAndExchangeLayers(model, state)
+        function state = dispatchToCatalystAndExchangeReactions(model, state)
 
             ptl = 'PorousTransportLayer';
             ctl = 'CatalystLayer';
-            exl = 'ExchangeLayer';
+            exr = 'ExchangeReaction';
             
             lind = model.(ptl).liquidInd;
             gInd = model.(ptl).gasInd;
@@ -160,7 +160,7 @@ classdef EvolutionElectrode < BaseModel
             end
                 
             varnames = {'phiElyte', 'cOHelyte', 'H2OaElyte'};
-            layers = {ctl, exl};
+            layers = {ctl, exr};
             for ivar = 1 : numel(varnames)
                 varname = varnames{ivar};
                 for ilayer = 1 : numel(layers)
@@ -178,10 +178,10 @@ classdef EvolutionElectrode < BaseModel
             
             state.(ctl).E = E;
             
-            % coupling to ExchangeLayer
-            state.(exl).phiElyte(coupcells(:, 2))  = phi(coupcells(:, 1));
-            state.(exl).cOHelyte(coupcells(:, 2))  = cOH(coupcells(:, 1));
-            state.(exl).H2OaElyte(coupcells(:, 2)) = H2Oa(coupcells(:, 1));
+            % coupling to ExchangeReaction
+            state.(exr).phiElyte(coupcells(:, 2))  = phi(coupcells(:, 1));
+            state.(exr).cOHelyte(coupcells(:, 2))  = cOH(coupcells(:, 1));
+            state.(exr).H2OaElyte(coupcells(:, 2)) = H2Oa(coupcells(:, 1));
             
         end
 
@@ -189,7 +189,7 @@ classdef EvolutionElectrode < BaseModel
             
             ptl = 'PorousTransportLayer';
             ctl = 'CatalystLayer';
-            exl = 'ExchangeLayer';
+            exr = 'ExchangeReaction';
             
             gInd     = model.(ptl).gasInd;
             coupterm = model.couplingTerm;
@@ -201,9 +201,9 @@ classdef EvolutionElectrode < BaseModel
             H2OvlR = state.(ptl).H2OvaporLiquidExchangeRate;
 
             H2OexchR                  = 0*H2OvlR; % initialization so that get we get right AD and dimension
-            H2OexchR(coupcells(:, 1)) = state.(exl).H2OexchangeRate(coupcells(:, 2));
+            H2OexchR(coupcells(:, 1)) = state.(exr).H2OexchangeRate(coupcells(:, 2));
             OHexchR                   = 0*H2OvlR; % initialization so that get we get right AD and dimension
-            OHexchR(coupcells(:, 1))  = state.(exl).OHexchangeRate(coupcells(:, 2));
+            OHexchR(coupcells(:, 1))  = state.(exr).OHexchangeRate(coupcells(:, 2));
             
             elyteH2Osource                   = 0*H2OvlR; % initialization so that get we get right AD and dimension
             elyteH2Osource(coupcells(:, 1))  = state.(ctl).elyteH2Osource(coupcells(:, 2));

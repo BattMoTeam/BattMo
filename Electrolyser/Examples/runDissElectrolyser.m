@@ -22,7 +22,7 @@ inm = 'IonomerMembrane';
 her = 'HydrogenEvolutionElectrode';
 oer = 'OxygenEvolutionElectrode';
 ptl = 'PorousTransportLayer';
-exl = 'ExchangeLayer';
+exr = 'ExchangeReaction';
 ctl = 'CatalystLayer';
 dm  = 'DissolutionModel';
 

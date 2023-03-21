@@ -14,6 +14,6 @@
                   "CatalystLayer" : {"type" : "object",
                                      "$ref" : "CatalystLayer",
                                      "description" : " input parameters for the catalyst layer"},
-                  "ExchangeLayer" : {"type" : "object",
-                                     "$ref" : "ExchangeLayer",
-                                     "description" : " input parameters for the exchange layer"}}}
+                  "ExchangeReaction" : {"type" : "object",
+                                     "$ref" : "ExchangeReaction",
+                                     "description" : " input parameters for the exchange reaction"}}}

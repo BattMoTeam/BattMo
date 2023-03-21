@@ -1,7 +1,7 @@
 {
-  "$id": "file://battmo/schemas/ExchangeLayer",
+  "$id": "file://battmo/schemas/ExchangeReaction",
   "$schema": "http://json-schema.org/draft-07/schema#",
-  "description": "Specification of the ExchangeLayer input parameters",
+  "description": "Specification of the ExchangeReaction input parameters",
   "type": "object",
 
   "properties" : {"OH" : {"type" : "object",

@@ -59,7 +59,7 @@
                         "volumetricSurfaceArea0" : 2e6,
                         "tortuosity" : 1.5
                       },
-    "ExchangeLayer" : {
+    "ExchangeReaction" : {
       "OH" : {"z" : -1,
               "c0" : 1000},
       "kxch" : 100000,
@@ -115,7 +115,7 @@
                         "volumetricSurfaceArea0" : 2e6,
                         "tortuosity" : 1.5
                       },
-    "ExchangeLayer" : {
+    "ExchangeReaction" : {
       "OH" : {"z" : -1,
               "c0" : 1000},
       "kxch" : 100000,

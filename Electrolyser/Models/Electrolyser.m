@@ -50,7 +50,7 @@ classdef Electrolyser < BaseModel
             oer = 'OxygenEvolutionElectrode';
 
             ctl = 'CatalystLayer';
-            exl = 'ExchangeLayer';
+            exr = 'ExchangeReaction';
             ptl = 'PorousTransportLayer';
 
             fn = @Electrolyser.dispatchTemperature;
@@ -62,16 +62,16 @@ classdef Electrolyser < BaseModel
             fn = @Electrolyser.updateC;
 
             eldes = {her, oer};
-            layers = {ctl, exl};
+            layers = {ctl, exr};
 
             fn = @Electrolyser.updateIonomerSources;
             inputvarnames = {};
             for ielde = 1 : numel(eldes)
                 elde = eldes{ielde};
-                inputvarnames{end + 1} = {elde, exl, 'H2OexchangeRate'};
+                inputvarnames{end + 1} = {elde, exr, 'H2OexchangeRate'};
                 inputvarnames{end + 1} = {elde, ctl, 'inmrH2Osource'};
                 inputvarnames{end + 1} = {elde, ctl, 'inmrOHsource'};
-                inputvarnames{end + 1} = {elde, exl, 'OHexchangeRate'};
+                inputvarnames{end + 1} = {elde, exr, 'OHexchangeRate'};
             end
             model = model.registerPropFunction({{inm, 'H2OSource'}, fn, inputvarnames});
             model = model.registerPropFunction({{inm, 'OHsource'}, fn, inputvarnames});
@@ -331,10 +331,10 @@ classdef Electrolyser < BaseModel
             inm = 'IonomerMembrane';
 
             ctl = 'CatalystLayer';
-            exl = 'ExchangeLayer';
+            exr = 'ExchangeReaction';
 
             eldes    = {her, oer};
-            layers   = {ctl, exl};
+            layers   = {ctl, exr};
             varnames = {'H2OaInmr', 'cOHinmr', 'phiInmr'};
 
             for ielde = 1 : numel(eldes)
@@ -377,7 +377,7 @@ classdef Electrolyser < BaseModel
             oer = 'OxygenEvolutionElectrode';
 
             ctl = 'CatalystLayer';
-            exl = 'ExchangeLayer';
+            exr = 'ExchangeReaction';
 
             % initialize sources (done in a way that takes care of AD, meaning that OHsource and H2OSource inherits AD
             % structure from state.(inm).H2Oceps)
@@ -402,8 +402,8 @@ classdef Electrolyser < BaseModel
 
                 inmrOHsource  = state.(elde).(ctl).inmrOHsource(coupcells(:, 1));
                 inmrH2Osource = state.(elde).(ctl).inmrH2Osource(coupcells(:, 1));
-                OHexchR       = state.(elde).(exl).OHexchangeRate(coupcells(:, 1));
-                H2OexchR      = state.(elde).(exl).H2OexchangeRate(coupcells(:, 1));
+                OHexchR       = state.(elde).(exr).OHexchangeRate(coupcells(:, 1));
+                H2OexchR      = state.(elde).(exr).H2OexchangeRate(coupcells(:, 1));
 
                 OHsource(coupcells(:, 2))  = vols.*(inmrOHsource - OHexchR);
                 H2OSource(coupcells(:, 2)) = vols.*(inmrH2Osource - H2OexchR);
@@ -475,7 +475,7 @@ classdef Electrolyser < BaseModel
             her = 'HydrogenEvolutionElectrode';
             oer = 'OxygenEvolutionElectrode';
             ctl = 'CatalystLayer';
-            exl = 'ExchangeLayer';
+            exr = 'ExchangeReaction';
             ptl = 'PorousTransportLayer';
             bd  = 'Boundary';
             dm  = 'DissolutionModel';
@@ -585,7 +585,7 @@ classdef Electrolyser < BaseModel
                 her = 'HydrogenEvolutionElectrode';
                 oer = 'OxygenEvolutionElectrode';
                 ctl = 'CatalystLayer';
-                exl = 'ExchangeLayer';
+                exr = 'ExchangeReaction';
                 ptl = 'PorousTransportLayer';
                 dm  = 'DissolutionModel';
                 bd  = 'Boundary';

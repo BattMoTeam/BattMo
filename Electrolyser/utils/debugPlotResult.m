@@ -32,9 +32,9 @@ for istate = 1 : numel(states)
     % val = states{istate}.(her).(ctl).etaInmr;
     % val = states{istate}.(her).(ctl).inmrReactionRate;
     % val = states{istate}.(her).(ctl).inmrOHsource;
-    % val = states{istate}.(her).(exl).OHexchangeRate;
-    % val = states{istate}.(her).(exl).H2OexchangeRate;
-    % val = states{istate}.(her).(exl).H2OaElyte;
+    % val = states{istate}.(her).(exr).OHexchangeRate;
+    % val = states{istate}.(her).(exr).H2OexchangeRate;
+    % val = states{istate}.(her).(exr).H2OaElyte;
     val = states{istate}.(her).(ptl).liqeps;
     % val = states{istate}.(her).(ptl).conductivity;
     % val = states{istate}.(inm).conductivity;
@@ -50,7 +50,7 @@ for istate = 1 : numel(states)
     if istate == numel(states)
         set(h, 'linewidth', 3);
     end
-    % val = states{istate}.(her).(exl).H2OaInmr;
+    % val = states{istate}.(her).(exr).H2OaInmr;
     % val = states{istate}.(her).(ptl).OHsource;
     % h = plot(val);
     % if istate == numel(states)

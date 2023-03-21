@@ -4,7 +4,7 @@ classdef EvolutionElectrodeInputParams < ComponentInputParams
         
         PorousTransportLayer
         CatalystLayer
-        ExchangeLayer
+        ExchangeReaction
 
         porousTransportLayerType
         catalystLayerType
@@ -21,7 +21,7 @@ classdef EvolutionElectrodeInputParams < ComponentInputParams
             
             ptl = 'PorousTransportLayer';
             ctl = 'CatalystLayer';
-            exl = 'ExchangeLayer';
+            exr = 'ExchangeReaction';
             
             pick = @(fd) pickField(jsonstruct, fd);
 
@@ -41,7 +41,7 @@ classdef EvolutionElectrodeInputParams < ComponentInputParams
                 error('catalystLayerType not recognized')
             end
             
-            paramobj.(exl) = ExchangeLayerInputParams(pick(exl));
+            paramobj.(exr) = ExchangeReactionInputParams(pick(exr));
             
         end
         

@@ -1,4 +1,4 @@
-classdef ExchangeLayer < BaseModel
+classdef ExchangeReaction < BaseModel
 
     properties
 
@@ -13,7 +13,7 @@ classdef ExchangeLayer < BaseModel
 
     methods
 
-        function model = ExchangeLayer(paramobj)
+        function model = ExchangeReaction(paramobj)
 
             model = model@BaseModel();
             
@@ -61,14 +61,16 @@ classdef ExchangeLayer < BaseModel
             % Assemble ionomer ion exchange rate [mol*s^-1 m^-3]
             % (OH-)_inmr <->> (OH-)_elyte
             % Here, the direction of the reaction that is indicated by the repeated arrow symbol corresponds to a positive computed reaction rate
-            fn = @() ExchangeLayer.updateOHexchange;
+            fn = @() ExchangeReaction.updateOHexchange;
+
             inputnames = {'phiElyte', 'phiInmr', 'cOHelyte', 'cOHinmr', 'T'};
             model = model.registerPropFunction({'OHexchangeRate', fn, inputnames});
 
             % Assemble sorption rate [mol*s^-1 m^-3]
             % (H2O)_inmr <->> (H2O)_elyte
             % Here, the direction of the reaction that is indicated by the repeated arrow symbol corresponds to a positive computed reaction rate
-            fn = @() ExchangeLayer.updateSorption;
+            fn = @() ExchangeReaction.updateSorption;
+
             inputnames = {'H2OaElyte', 'H2OaInmr'};
             model = model.registerPropFunction({'H2OexchangeRate', fn, inputnames});
 

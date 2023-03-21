@@ -1,4 +1,4 @@
-classdef ExchangeLayerInputParams < ComponentInputParams
+classdef ExchangeReactionInputParams < ComponentInputParams
     
     properties
         
@@ -11,7 +11,7 @@ classdef ExchangeLayerInputParams < ComponentInputParams
     
     methods
         
-        function paramobj = ExchangeLayerInputParams(jsonstruct)
+        function paramobj = ExchangeReactionInputParams(jsonstruct)
 
             paramobj = paramobj@ComponentInputParams(jsonstruct);
             
