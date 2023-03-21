@@ -16,7 +16,8 @@ classdef IonomerMembrane < ElectronicComponent
 
         cT % Total concentration of charged groups (one value per cell)
 
-        V % molar volume (needed for function groupHydration which is only needed in setup of initial condition and not for assembly)
+        V % molar volume (needed for function groupHydration which is only needed in setup of initial condition and not
+          % for assembly, and also for activity computation)
 
         tortuosity
         
@@ -92,6 +93,9 @@ classdef IonomerMembrane < ElectronicComponent
             % H2O mass conservation equation
             varnames{end + 1} = 'H2OmassCons';
 
+            %% Activity equation
+            varnames{end + 1} = 'activityEquation';
+
             model = model.registerVarNames(varnames);
 
             % update water concentration
@@ -99,10 +103,10 @@ classdef IonomerMembrane < ElectronicComponent
             inputnames = {'H2Oceps'};
             model = model.registerPropFunction({'H2Oc', fn, inputnames});
             
-            % update water activity
-            fn = @() IonomerMembrane.updateH2Oactivity;
-            inputnames = {'H2Oc'};
-            model = model.registerPropFunction({'H2Oa', fn, inputnames});
+            % update water activity equation
+            fn = @() IonomerMembrane.updateActivityEquation;
+            inputnames = {'H2Oc', 'H2Oa', 'T'};
+            model = model.registerPropFunction({'activityEquation', fn, inputnames});
             
             % update effective conductivity
             fn = @() IonomerMembrane.updateConductivity;
@@ -175,14 +179,19 @@ classdef IonomerMembrane < ElectronicComponent
             
         end
         
-        
-        function state = updateH2Oactivity(model, state)
+        function state = updateActivityEquation(model, state)
 
-            H2Oc = state.H2Oc;
-            H2Oc0 = model.H2O.c0;
+            V  = model.V;
+            V0 = model.H2O.V0;
+
+            c  = state.H2Oc;            
+            aw = state.H2Oa;
+            T  = state.T;
             
-            state.H2Oa = H2Oc./H2Oc0;
-            % state.H2Oa = 1 + 0*H2Oc;
+            eq = c*V./(1 - c*V0) - ((-0.6.*aw.^3 + 0.85.*aw.^2 - 0.2.*aw + 0.153) .* (T - 313) ...
+                                    + 39.*aw.^3 - 47.7.*aw.^2 + 23.4.*aw + 0.117).*29./18.877;
+
+            state.activityEquation = eq;
             
         end
         

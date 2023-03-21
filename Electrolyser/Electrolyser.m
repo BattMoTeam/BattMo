@@ -214,6 +214,7 @@ classdef Electrolyser < BaseModel
             nc_inm = model.(inm).G.cells.num;
 
             aw = state.(oer).(ptl).H2Oa(1);
+            state.(inm).H2Oa = aw*ones(nc_inm, 1);
             cH2O = IonomerMembrane.groupHydration(model.(inm), aw, T);
             model.(inm).H2O.c0 = cH2O/aw;
 
@@ -501,6 +502,8 @@ classdef Electrolyser < BaseModel
             names{end + 1} = 'inm_chargeCons';
             eqs{end + 1}   = state.(inm).H2OmassCons;
             names{end + 1} = 'inm_H2OmassCons';
+            eqs{end + 1}   = state.(inm).activityEquation;
+            names{end + 1} = 'inm_activityEquation';
             eqs{end + 1}   = state.(oer).(ptl).(bd).bcEquations{1};
             names{end + 1} = 'oer_ptl_bd_bcEquations_1';
             eqs{end + 1}   = state.(oer).(ptl).(bd).bcEquations{2};
@@ -604,7 +607,8 @@ classdef Electrolyser < BaseModel
                             {oer, ptl, 'Boundary', 'cOH'}            , ...
                             {oer, ptl, 'Boundary', 'liqrho'}         , ...
                             {oer, ptl, 'Boundary', 'gasDensities', 2}, ...
-                            {oer, ptl, 'Boundary', 'gasDensities', 1}};
+                            {oer, ptl, 'Boundary', 'gasDensities', 1}, ...
+                            {inm, 'H2Oceps'}};
 
                 if model.(oer).(ctl).include_dissolution
                     varname = {oer, ctl, dm, 'volumeFraction'};
