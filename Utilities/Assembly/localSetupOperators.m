@@ -6,9 +6,39 @@ function operators = localSetupOperators(G, varargin)
     cst = ones(nc, 1);
     rock = struct('perm', cst, 'poro', cst);
     operators = setupOperatorsTPFA(G, rock);
+
+    hT = computeTrans(G, rock);
+
+    tbls = setupSimpleTables(G);
+    cellfacetbl = tbls.cellfacetbl;
+    celltbl     = tbls.celltbl;
+    facetbl     = tbls.facetbl;
+    intfacetbl  = tbls.intfacetbl;
+
+    map = TensorMap();
+    map.fromTbl = celltbl;
+    map.toTbl = cellfacetbl;
+    map.mergefds = {'cells'};
+    map = map.setup();
+
+    M = SparseTensor();
+    M = M.setFromTensorMap(map);
+    M = M.getMatrix;
+
+    map = TensorMap();
+    map.fromTbl = cellfacetbl;
+    map.toTbl = intfacetbl;
+    map.mergefds = {'faces'};
+    map = map.setup();
+
+    P = SparseTensor();
+    P = P.setFromTensorMap(map);
+    P = P.getMatrix;
+
+    operators.harmFace =@(cellvalue) 1./(P*(1./(hT.*(M*cellvalue))));
+
     operators.allDiv = getAllDiv(G);
-    %operators.harmFace = getFaceHarmMean(G);
-    operators.harmFace =@(cellvalue) getTrans(G).*(1./operators.faceAvg(1./cellvalue));
+
     operators.harmFaceBC = @(cvalue, faces) getFaceHarmBC(G, cvalue, faces);
     
     %% setup the sign for *external* faces

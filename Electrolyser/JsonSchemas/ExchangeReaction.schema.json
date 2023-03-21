@@ -1,0 +1,13 @@
+{
+  "$id": "file://battmo/schemas/ExchangeReaction",
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "description": "Specification of the ExchangeReaction input parameters",
+  "type": "object",
+
+  "properties" : {"OH" : {"type" : "object",
+                          "properties" : {"z" : {"type" : "integer",
+                                                 "description" : "charge number"}}},
+                  "kxch" : {"type" : "number",
+                            "description" : "Exchange rate"},
+                  "kML" : {"type" : "number",
+                           "description" : "ionomer sorption coefficient"}}}

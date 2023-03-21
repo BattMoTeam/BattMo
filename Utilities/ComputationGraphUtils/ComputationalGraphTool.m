@@ -123,9 +123,7 @@ classdef ComputationalGraphTool
             elseif isa(varname, 'cell')
                 varname = VarName(varname(1 : end - 1), varname{end});
             elseif isa(varname, 'char')
-                indSelectedNodenames = regexp(nodenames, varname, 'once');
-                indSelectedNodenames = cellfun(@(x) ~isempty(x), indSelectedNodenames);
-                varnameind = find(indSelectedNodenames);
+                varnameind = cgt.regexpVarNameSelect(varname);
                 if numel(varnameind) > 1
                     fprintf('Several variables found:\n\n')
                     for ivar = 1 : numel(varnameind)
@@ -185,7 +183,7 @@ classdef ComputationalGraphTool
 
             if ~isempty(staticinds)
                 propfuncinds = [staticpropinds, propfuncinds];
-                varnameinds  = [staticinds'; varnameinds];
+                varnameinds  = [staticinds; varnameinds];
             end
 
             propfuncs = cgt.model.propertyFunctionList(propfuncinds);
@@ -205,7 +203,7 @@ classdef ComputationalGraphTool
             [isok, ia] = ismember(varnameinds, allstaticinds);
             
             if any(isok)
-                staticpropinds = allstaticpropinds(ia(isok))';
+                staticpropinds = allstaticpropinds(ia(isok));
                 staticinds = allstaticinds(ia(isok))'; %
             else
                 staticpropinds = {};
@@ -253,7 +251,7 @@ classdef ComputationalGraphTool
 
         end
 
-        function printPropFunctionCallList(cgt, propfunc)
+        function printPropFunctionCallList(cgt, propfunc, varargin)
         % input propfunc is either
         % - an instance of PropFunction
         % - a valid input for findPropFunction, that is, either
@@ -264,6 +262,8 @@ classdef ComputationalGraphTool
         % Print the list of function call (as string) that will update the property function propfunc.
 
 
+            opt = struct('fullSignature', false);
+            opt = merge_options(opt, varargin{:});
 
             if ~isa(propfunc, 'PropFunction')
 
@@ -297,11 +297,23 @@ classdef ComputationalGraphTool
 
                 propfunc = propfuncs{iprop};
                 varnameind = varnameinds(iprop);
-                
-                fncallstr = propfunc.functionCallSetupFn(propfunc);
-                varstr = sprintf('state.%s', nodenames{varnameind});
-                varstr = sprintf('%-*s', strl + 6, varstr);
-                fprintf('%s <- %s\n', varstr, fncallstr);
+
+                if opt.fullSignature
+                    fncallstr = propfunc.functionCallSetupFn(propfunc);
+                    varstr = sprintf('state.%s', nodenames{varnameind});
+                    varstr = sprintf('%-*s', strl + 6, varstr);
+                    fprintf('%s <- %s\n', varstr, fncallstr);
+                else
+                    inputvarnames = propfunc.inputvarnames;
+                    strs = {};
+                    for ivar = 1 : numel(inputvarnames)
+                        inputvarname = inputvarnames{ivar};
+                        strs = horzcat(strs, cgt.getNodeName(inputvarname));
+                    end
+                    strs = strjoin(strs, ', ');
+                    varstr = sprintf('%-*s', strl + 6, nodenames{varnameind});
+                    fprintf('%s [%s]\n', varstr, strs);
+                end
                 
             end
 
@@ -346,9 +358,7 @@ classdef ComputationalGraphTool
                 return
             elseif isa(varname, 'char')
                 selectednodenames = varname;
-                varnameinds = regexp(nodenames, selectednodenames, 'once');
-                varnameinds = cellfun(@(x) ~isempty(x), varnameinds);
-                varnameinds = find(varnameinds);
+                varnameinds = cgt.regexpVarNameSelect(varname);
             else
                 error('input type not recognized');
             end
@@ -421,18 +431,30 @@ classdef ComputationalGraphTool
 
         function printVarNames(cgt, nodename)
         % Print the variable(s) that match the regexp nodename
-            
-            if nargin < 2
-                nodename = '.'; % will match every thing
-            end
+
             nodenames = cgt.nodenames;
-            indSelectedNodenames = regexp(nodenames, nodename, 'once');
-            indSelectedNodenames = cellfun(@(x) ~isempty(x), indSelectedNodenames);
-            nodenames = nodenames(indSelectedNodenames);
+
+            if nargin < 2
+                nodename = '.';
+            end
+            inds = cgt.regexpVarNameSelect(nodename);
+            nodenames = nodenames(inds);
             for ind = 1 : numel(nodenames)
                 fprintf('%s\n', nodenames{ind});
             end
             
+        end
+
+        function inds = regexpVarNameSelect(cgt, nodename)
+
+            if nargin < 2
+                nodename = '.'; % will match every thing
+            end
+            nodename = regexprep(nodename, ' +', '.*');
+            nodenames = cgt.nodenames;
+            inds = regexp(nodenames, nodename, 'once');
+            inds = cellfun(@(x) ~isempty(x), inds);
+            inds = find(inds);
         end
         
         function printPropFunction(cgt, nodename)
@@ -687,11 +709,32 @@ classdef ComputationalGraphTool
             end
 
         end
-        
+
+        function printSubModelNames(cgt, model, parents)
+
+            if nargin < 2
+                model = cgt.model;
+                parents = {};
+            end
+
+            modelnames = model.getSubModelNames();
+            for imodelname = 1 : numel(modelnames)
+                modelname = modelnames{imodelname};
+
+                subparents = horzcat(parents, {modelname});
+                fprintf('%s\n', strjoin(subparents, '.'))
+                submodel = model.(modelname);
+
+                cgt.printSubModelNames(submodel, subparents);
+
+            end
+            
+        end
             
     end
 
     methods (Static)
+
 
         function nodenames = getNodeName(varname)
         % convert variable names to graph node names

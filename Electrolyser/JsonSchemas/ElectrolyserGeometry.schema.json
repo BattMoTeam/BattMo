@@ -1,0 +1,75 @@
+{
+  "$id": "file://battmo/schemas/ElectrolyserGeometry",
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "description": "Specification of the geometry for the electrolyser including the discretization parameters and volume fractions",
+  "type": "object",
+  
+  "properties" : {
+    "Geometry" : {
+      "type" : "object",
+      "properties" : {
+        "case" : {
+          "type" : "string",
+          "enum" : ["1D"],
+          "comment" : "only 1D is implemented now"}
+      }},
+
+    "IonomerMembrane" :  {
+      "allOf" : [
+        {"$ref" : "#/$defs/dim"},
+        {"properties" : {
+          "widths" : {
+            "type" : "object",
+            "properties" : {
+              "oxygenCatalystSide" : {
+                "type" : "number",
+                "description" : "volume fraction occipied by ionomer on the oxygen electrode side"},
+              "hydrogenCatalystSide" : {
+                "type" : "number",
+                "description" : "volume fraction occipied by ionomer on the hydrogen electrode side"}}}}}]},
+
+    "OxygenEvolutionElectrode" : {"$ref" : "#/$defs/EvolutionElectrode"},
+
+    "HydrogenEvolutionElectrode" : {"$ref" : "#/$defs/EvolutionElectrode"}},
+  
+
+  "$defs" : {
+
+
+    "dim" : {
+      "type" : "object",
+      "properties" : {
+        "length" : {
+          "type" : "number"},
+        "cellsize" : {
+          "type" : "number",
+          "description" : "size of the finite volume cell"}}},
+
+
+    "EvolutionElectrode" : {
+      "type" : "object",
+      "properties" : {
+        "PorousTransportLayer" : {
+          "allOf" : [
+            {
+            "$ref" : "#/$defs/dim"},
+            {
+              "properties" : {
+                "widthFraction" : {
+                  "type" : "number",
+                  "description" : "volume fraction occupied by porous transport layer"}}}],
+          "description" : "the dimension of the porous transport layer apply only for the part not including the catalyst layer"
+          },
+        "CatalystLayer" : {
+          "allOf" : [
+            {
+            "$ref" : "#/$defs/dim"},
+            {
+              "properties" : {
+                "widthFraction" : {
+                  "type" : "number",
+                  "description" : "volume fraction occupied by catalyst layer transport layer"}}}]
+        }
+      }
+    }
+  }

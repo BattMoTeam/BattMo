@@ -1,0 +1,13 @@
+{"OxygenEvolutionElectrode": {
+  "CatalystLayer" : {
+    "include_dissolution": true,
+    "DissolutionModel" : {
+      "E0" : 2.057,
+      "c0" : 1000,
+      "j0" : 1e-20,
+      "MW" : 0.22422,
+      "rho" : 11660,
+      "volumeFraction0" : 0.14
+    }}}}
+
+

@@ -1,0 +1,22 @@
+{
+  "$id": "file://battmo/schemas/Electrolyser",
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "description": "A standard electrolyser",
+  "type": "object",
+  
+
+  "properties" : {
+
+    "Eref" : {"type" : "number",
+              "description" : "Reference potential"},
+    "IonomerMembrane": {"$ref": "IonomerMembrane"},
+
+    "HydrogenEvolutionElectrode": {"$ref": "EvolutionElectrode"},
+    
+    "OxygenEvolutionElectrode": {"$ref": "EvolutionElectrode"},
+
+    "controlI" : {"type" : "number",
+                  "description" : "control current"}
+  }
+
+}

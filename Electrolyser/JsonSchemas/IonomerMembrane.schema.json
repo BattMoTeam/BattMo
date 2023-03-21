@@ -1,0 +1,35 @@
+{
+  "$id": "file://battmo/schemas/IonomerMembrane",
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "description": "Specification of the IonomerMembrane input parameters",
+  "type": "object",
+
+  "properties" : {
+    "volumeFraction" : {"type" : "number",
+                        "description" : "volume fraction occupied by membrane"},
+        
+    "H2O" : {"type" : "object",
+             "properties" : {
+               "c0" : {"type"  : "number",
+                       "description" : "Reference concentration"},
+               "D" : {"type"  : "number",
+                      "description" : "diffusion coefficient for water"}
+               "V0" : {"type"  : "number",
+                      "description" : "partial molar volume (needed for function groupHydration which is only needed in setup of initial condition and not for assembly)"}
+             }},
+    "OH" :  {"type" : "object",
+             "properties" : {
+               "xi" : {"type" : "number",
+                       "description" : "OH occupation"},
+               "z" : {"type" : "number",
+                      "description" : "charge number"}, 
+               "t" : {"type" : "number",
+                      "description" : "transference number"}
+             }},
+    "cT" : {"type" : "number",
+            "description" : "Total concentration of charged group"}
+
+    "V" : {"type" : "number",
+           "description" : "molar volume (needed for function groupHydration which is only needed in setup of initial condition and not for assembly)"}
+
+  }}
