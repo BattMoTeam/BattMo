@@ -82,7 +82,7 @@ classdef BatteryGeneratorMultilayerPouch < BatteryGenerator
 
         end
 
-        function [paramobj, gen] = setupGrid(gen, paramobj, params)
+        function [paramobj, gen] = setupGrid(gen, paramobj, ~)
 
             % shorthands
             ne    = 'NegativeElectrode';
@@ -96,13 +96,19 @@ classdef BatteryGeneratorMultilayerPouch < BatteryGenerator
 
             nxs = [gen.ne_cc_nx; gen.int_elyte_nx; gen.pe_cc_nx];
             nys = [gen.ne_cc_ny; gen.elyte_ny; gen.pe_cc_ny];
-            unit_cell_nzs = [gen.ne_cc_nz; gen.ne_am_nz; gen.sep_nz; gen.ne_am_nz; gen.pe_cc_nz];
+
+            unit_cell_nzs     = [gen.ne_cc_nz; gen.ne_am_nz; gen.sep_nz;  gen.pe_am_nz; gen.pe_cc_nz];
+            unit_cell_nzs_tag = {{ne,cc};      {ne,am};      {elyte,sep}; {pe,am};      {pe,cc}};
             nzs = unit_cell_nzs;
+            nzs_tag = unit_cell_nzs_tag;
+
             for ind = 2:gen.n_layers
                 if rem(ind,2) == 0
                     nzs = [nzs; flipud(unit_cell_nzs(1:end-1))];
+                    nzs_tag = [nzs_tag; flipud(unit_cell_nzs_tag(1:end-1))];
                 else
-                    nzs = [nzs; (unit_cell_nzs(2:end))];
+                    nzs = [nzs; unit_cell_nzs(2:end)];
+                    nzs_tag = [nzs_tag; unit_cell_nzs_tag(2:end)];
                 end
             end
 
@@ -120,106 +126,55 @@ classdef BatteryGeneratorMultilayerPouch < BatteryGenerator
 
             G = tensorGrid(x, y, z);
 
-            nx = sum(nxs);
-            ny = sum(nys);
-            nz = sum(nzs);
+            NZ = [0; cumsum(nzs)] + 1;
 
-            dimGrid = [nx; ny; nz];
+            % Initialize
+            gen.allparams.(elyte).cellind = [];
+            for k = 1:numel(nzs)
+                gen.allparams = setfield(gen.allparams, nzs_tag{k}{:}, 'cellind', []);
+            end
 
-            gen.elyte_nz = (gen.sep_nz + gen.ne_am_nz + gen.pe_am_nz) .* gen.n_layers;
+            for k = 1:numel(nzs)
+                % TODO don't compute I, J
+                [I, J, K] = ndgrid(1:G.cartDims(1), 1:G.cartDims(2), NZ(k):NZ(k+1)-1);
+                c0 = getfield(gen.allparams, nzs_tag{k}{:}, 'cellind');
+                c1 = sub2ind(G.cartDims, I(:), J(:), K(:));
+                cellind = [c0; c1];
+                gen.allparams = setfield(gen.allparams, nzs_tag{k}{:}, 'cellind', cellind);
 
-            startSubGrid = [1; gen.ne_cc_ny + 1; gen.ne_cc_nz + 1];
-            dimSubGrid   = [nx; gen.elyte_ny; gen.elyte_nz];
-            allparams.(elyte).cellind = pickTensorCells3D(startSubGrid, dimSubGrid, dimGrid);
+                if any(contains(nzs_tag{k}, am)) || any(contains(nzs_tag{k}, sep))
+                    gen.allparams.(elyte).cellind = [gen.allparams.(elyte).cellind; cellind];
+                end
+            end
 
-            startSubGrid = [1; gen.ne_cc_ny + 1; gen.ne_cc_nz + gen.ne_am_nz + 1];
-            dimSubGrid   = [nx; gen.elyte_ny; gen.sep_nz];
-            allparams.(elyte).(sep).cellind = pickTensorCells3D(startSubGrid, dimSubGrid, dimGrid);
-
-            %% setup gen.ne_eac
-
-            startSubGrid = [1; gen.ne_cc_ny + 1; gen.ne_cc_nz + 1];
-            dimSubGrid   = [nx; gen.elyte_ny; gen.ne_am_nz];
-            allparams.(ne).(am).cellind = pickTensorCells3D(startSubGrid, dimSubGrid, dimGrid);
-
-            %% setup gen.pe_eac
-
-            startSubGrid = [1; gen.ne_cc_ny + 1; gen.ne_cc_nz + gen.ne_am_nz + gen.sep_nz + 1];
-            dimSubGrid   = [nx; gen.elyte_ny; gen.pe_am_nz];
-            allparams.(pe).(am).cellind = pickTensorCells3D(startSubGrid, dimSubGrid, dimGrid);
-
-            %% setup gen.ne_cc
-
-            startSubGrid = [1; gen.ne_cc_ny + 1; 1];
-            dimSubGrid   = [nx; gen.elyte_ny; gen.ne_cc_nz];
-            allparams.(ne).(cc).cellind1 = pickTensorCells3D(startSubGrid, dimSubGrid, dimGrid);
-
-            % We add the tab
-
-            startSubGrid = [1; 1; 1];
-            dimSubGrid   = [gen.ne_cc_nx; gen.ne_cc_ny; gen.ne_cc_nz];
-            allparams.(ne).(cc).cellindtab = pickTensorCells3D(startSubGrid, dimSubGrid, dimGrid);
-
-            allparams.(ne).(cc).cellind = [allparams.(ne).(cc).cellind1; allparams.(ne).(cc).cellindtab];
-
-            %% setup gen.pe_cc
-
-            startSubGrid = [1; gen.ne_cc_ny + 1; gen.ne_cc_nz + gen.elyte_nz + 1];
-            dimSubGrid   = [nx; gen.elyte_ny; gen.pe_cc_nz];
-            allparams.(pe).(cc).cellind1 = pickTensorCells3D(startSubGrid, dimSubGrid, dimGrid);
-
-            % We add the tab
-
-            startSubGrid = [gen.ne_cc_nx + gen.int_elyte_nx + 1; gen.ne_cc_ny + gen.elyte_ny + 1; gen.ne_cc_nz + gen.elyte_nz + 1];
-            dimSubGrid   = [gen.pe_cc_nx; gen.pe_cc_ny; gen.pe_cc_nz];
-            allparams.(pe).(cc).cellindtab = pickTensorCells3D(startSubGrid, dimSubGrid, dimGrid);
-
-            allparams.(pe).(cc).cellind = [allparams.(pe).(cc).cellind1; allparams.(pe).(cc).cellindtab];
-
-            cellind = [allparams.(elyte).cellind; allparams.(ne).(am).cellind; allparams.(pe).(am).cellind; allparams.(ne).(cc).cellind; allparams.(pe).(cc).cellind];
-
-            rcellind = setdiff((1 : G.cells.num)', cellind);
-
-            nGlob = G.cells.num;
-            [G, cellmap, facemap, nodemap] = removeCells(G, rcellind);
-            invcellmap = zeros(nGlob, 1);
-            invcellmap(cellmap) = (1 : G.cells.num)';
+            % TODO: Tabs
 
             G = computeGeometry(G);
-
             paramobj.G = G;
-
-            gen.invcellmap = invcellmap;
-            gen.allparams = allparams;
+            gen.invcellmap = (1:G.cells.num)'; % TODO check if this is correct
             gen.G = G;
 
         end
 
         function gen = applyResolutionFactors(gen)
 
-            facz = gen.facz;
+            gen.sep_nz   = gen.facz*gen.sep_nz;
+            gen.ne_am_nz = gen.facz*gen.ne_am_nz;
+            gen.pe_am_nz = gen.facz*gen.pe_am_nz;
+            gen.ne_cc_nz = gen.facz*gen.ne_cc_nz;
+            gen.pe_cc_nz = gen.facz*gen.pe_cc_nz;
 
-            gen.sep_nz    = facz*gen.sep_nz;
-            gen.ne_am_nz = facz*gen.ne_am_nz;
-            gen.pe_am_nz = facz*gen.pe_am_nz;
-            gen.ne_cc_nz  = facz*gen.ne_cc_nz;
-            gen.pe_cc_nz  = facz*gen.pe_cc_nz;
+            gen.int_elyte_nx = gen.facx*gen.int_elyte_nx;
+            gen.ne_cc_nx     = gen.facx*gen.ne_cc_nx;
+            gen.pe_cc_nx     = gen.facx*gen.pe_cc_nx;
 
-            facx = gen.facx;
-
-            gen.int_elyte_nx = facx*gen.int_elyte_nx;
-            gen.ne_cc_nx= facx*gen.ne_cc_nx;
-            gen.pe_cc_nx= facx*gen.pe_cc_nx;
-
-            facy = gen.facy;
-
-            gen.ne_cc_ny= facy*gen.ne_cc_ny;
-            gen.pe_cc_ny= facy*gen.pe_cc_ny;
-            gen.elyte_ny= facy*gen.elyte_ny;
+            gen.ne_cc_ny = gen.facy*gen.ne_cc_ny;
+            gen.pe_cc_ny = gen.facy*gen.pe_cc_ny;
+            gen.elyte_ny = gen.facy*gen.elyte_ny;
 
         end
 
-        function paramobj = setupElectrolyte(gen, paramobj, params)
+        function paramobj = setupElectrolyte(gen, paramobj, ~)
 
             params = gen.allparams.Electrolyte;
             imap = gen.invcellmap;
@@ -230,7 +185,7 @@ classdef BatteryGeneratorMultilayerPouch < BatteryGenerator
 
         end
 
-        function paramobj = setupElectrodes(gen, paramobj, params)
+        function paramobj = setupElectrodes(gen, paramobj, ~)
 
 
             % shorthands
@@ -275,7 +230,7 @@ classdef BatteryGeneratorMultilayerPouch < BatteryGenerator
 
         end
 
-        function paramobj = setupThermalModel(gen, paramobj, params)
+        function paramobj = setupThermalModel(gen, paramobj, ~)
         % paramobj is instance of BatteryInputParams
         %
         % We recover the external coupling terms for the current collectors
