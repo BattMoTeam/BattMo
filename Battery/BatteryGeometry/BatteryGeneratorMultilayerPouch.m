@@ -134,30 +134,33 @@ classdef BatteryGeneratorMultilayerPouch < BatteryGenerator
                 gen.allparams = setfield(gen.allparams, nzs_tag{k}{:}, 'cellind', []);
             end
 
-            for k = 2:numel(nzs)-1
+            for k = 1:numel(nzs)
                 % TODO don't compute I, J
-                % if k == 1
-                %     % Account for tab
-                %     [I, J, K] = ndgrid(1:G.cartDims(1)-1, 1:G.cartDims(2), NZ(k):NZ(k+1)-1);
-                % elseif k == numel(nzs)
-                %     % Account for tab
-                %     [I, J, K] = ndgrid(2:G.cartDims(1), 1:G.cartDims(2), NZ(k):NZ(k+1)-1);
-                % else
-                %     [I, J, K] = ndgrid(2:G.cartDims(1)-1, 1:G.cartDims(2), NZ(k):NZ(k+1)-1);
-                % end
+                if k == 1
+                    % Bottom layer
+                    [I, J, K] = ndgrid(1:G.cartDims(1)-1, 1:G.cartDims(2), NZ(k):NZ(k+1)-1);
+                elseif k == numel(nzs)
+                    % Top layer
+                    [I, J, K] = ndgrid(2:G.cartDims(1), 1:G.cartDims(2), NZ(k):NZ(k+1)-1);
+                else
+                    % "Interior" cells
+                    [I, J, K] = ndgrid(2:G.cartDims(1)-1, 1:G.cartDims(2), NZ(k):NZ(k+1)-1);
+                end
 
-                [I, J, K] = ndgrid(2:G.cartDims(1)-1, 1:G.cartDims(2), NZ(k):NZ(k+1)-1);
-                c0 = getfield(gen.allparams, nzs_tag{k}{:}, 'cellind');
-                c1 = sub2ind(G.cartDims, I(:), J(:), K(:));
-                cellind = [c0; c1];
+                % Cells in this IJK box
+                cbox = sub2ind(G.cartDims, I(:), J(:), K(:));
 
-                % if k == 1
-                %     cellind_bottom = c1;
-                % elseif k == numel(nzs)
-                %     cellind_top = c1;
-                % end
+                % Cells previously marked with this tag
+                cprev = getfield(gen.allparams, nzs_tag{k}{:}, 'cellind');
+
+                % All cells, new and old
+                cellind = [cbox; cprev];
 
                 fprintf('%s %s\n', nzs_tag{k}{:})
+                if numel(cbox) ~= numel(unique(cbox)), keyboard, end
+                if numel(cprev) ~= numel(unique(cprev)), keyboard, end
+                if numel(cellind) ~= numel(unique(cellind)), keyboard, end
+
                 gen.allparams = setfield(gen.allparams, nzs_tag{k}{:}, 'cellind', cellind);
 
                 if any(contains(nzs_tag{k}, am)) || any(contains(nzs_tag{k}, sep))
@@ -167,65 +170,102 @@ classdef BatteryGeneratorMultilayerPouch < BatteryGenerator
             end
             gen.allparams.(elyte).cellind = unique(gen.allparams.(elyte).cellind);
 
-            % Bottom tab
-            assert(strcmp(nzs_tag{1}{2}, cc));
-            [I, J, K] = ndgrid(1:G.cartDims(1)-1, 1:G.cartDims(2), NZ(1):NZ(2)-1);
-            c0 = getfield(gen.allparams, nzs_tag{1}{:}, 'cellind');
-            cellind_bottom = sub2ind(G.cartDims, I(:), J(:), K(:));
-            gen.allparams = setfield(gen.allparams, nzs_tag{1}{:}, 'cellind', [c0; cellind_bottom]);
+            % assert(strcmp(nzs_tag{1}{2}, cc));
+            % [I, J, K] = ndgrid(1:G.cartDims(1)-1, 1:G.cartDims(2), NZ(1):NZ(2)-1);
+            % c0 = getfield(gen.allparams, nzs_tag{1}{:}, 'cellind');
+            % cellind_bottom = sub2ind(G.cartDims, I(:), J(:), K(:));
+            % gen.allparams = setfield(gen.allparams, nzs_tag{1}{:}, 'cellind', [c0; cellind_bottom]);
 
-            [I, J, K] = ndgrid(1, 1:G.cartDims(2), NZ(1):NZ(2)-1);
+            % Bottom tab
+            [I, J, K] = ndgrid(1, 3:G.cartDims(2)-2, NZ(1):NZ(2)-1);
             cellindtab_bottom = sub2ind(G.cartDims, I(:), J(:), K(:));
             gen.allparams = setfield(gen.allparams, nzs_tag{1}{:}, 'cellindtab', cellindtab_bottom);
 
-            % Top tab
-            assert(strcmp(nzs_tag{end}{2}, cc));
-            [I, J, K] = ndgrid(2:G.cartDims(1), 1:G.cartDims(2), NZ(end-1):NZ(end)-1);
-            c0 = getfield(gen.allparams, nzs_tag{end}{:}, 'cellind');
-            cellind_top = sub2ind(G.cartDims, I(:), J(:), K(:));
-            gen.allparams = setfield(gen.allparams, nzs_tag{end}{:}, 'cellind', [c0; cellind_top]);
+            % Cells to remove for the construction of the bottom tab
+            [I, J, K] = ndgrid(1, 1:G.cartDims(2), NZ(1):NZ(2)-1);
+            ctmp = sub2ind(G.cartDims, I(:), J(:), K(:));
+            rcellindtab_bottom = setdiff(ctmp, cellindtab_bottom);
 
-            [I, J, K] = ndgrid(G.cartDims(1), 1:G.cartDims(2), NZ(end-1):NZ(end)-1);
+            % figure,plotGrid(G,'facecolor', 'none','facealpha',0),hold on
+            % plotGrid(G,c0,'facecolor','b'),title('c0')
+            % view(3)
+            % figure,plotGrid(G,'facecolor', 'none','facealpha',0),hold on
+            % plotGrid(G,cellind_bottom,'facecolor','b'),title('cellind_bottom')
+            % view(3)
+
+            % figure,plotGrid(G,'facecolor', 'none','facealpha',0),hold on
+            % plotGrid(G,cellindtab_bottom,'facecolor','b'),title('cellindtab_bottom')
+            % view(3)
+            % figure,plotGrid(G,'facecolor', 'none','facealpha',0),hold on
+            % plotGrid(G,rcellindtab_bottom,'facecolor','b'),title('rcellindtab_bottom')
+            % view(3)
+            % keyboard;
+
+            % Top tab
+            % assert(strcmp(nzs_tag{end}{2}, cc));
+            % [I, J, K] = ndgrid(2:G.cartDims(1), 1:G.cartDims(2), NZ(end-1):NZ(end)-1);
+            % c0 = getfield(gen.allparams, nzs_tag{end}{:}, 'cellind');
+            % cellind_top = sub2ind(G.cartDims, I(:), J(:), K(:));
+            % gen.allparams = setfield(gen.allparams, nzs_tag{end}{:}, 'cellind', [c0; cellind_top]);
+
+            % Top tab
+            [I, J, K] = ndgrid(G.cartDims(1), 4:G.cartDims(2)-3, NZ(end-1):NZ(end)-1);
             cellindtab_top = sub2ind(G.cartDims, I(:), J(:), K(:));
             gen.allparams = setfield(gen.allparams, nzs_tag{end}{:}, 'cellindtab', cellindtab_top);
 
+            % Cells to remove for the construction of the top tab
+            [I, J, K] = ndgrid(G.cartDims(1), 1:G.cartDims(2), NZ(end-1):NZ(end)-1);
+            ctmp = sub2ind(G.cartDims, I(:), J(:), K(:));
+            rcellindtab_top = setdiff(ctmp, cellindtab_top);
+
+
             % figure,plotGrid(G),hold on
-            plotGrid(G,gen.allparams.(elyte).cellind,'facecolor','b'),title(elyte)
-            view(3)
+            % plotGrid(G,gen.allparams.(elyte).cellind,'facecolor','b'),title(elyte)
+            % view(3)
 
-            figure,plotGrid(G),hold on
-            plotGrid(G,gen.allparams.(elyte).(sep).cellind,'facecolor','b'),title(sep)
-            view(3)
+            % figure,plotGrid(G),hold on
+            % plotGrid(G,gen.allparams.(elyte).(sep).cellind,'facecolor','b'),title(sep)
+            % view(3)
 
-            figure,plotGrid(G),hold on
-            plotGrid(G,gen.allparams.(ne).(cc).cellind,'facecolor','b'),title(ne,cc)
-            view(3)
+            % figure,plotGrid(G),hold on
+            % plotGrid(G,gen.allparams.(ne).(cc).cellind,'facecolor','b'),title(ne,cc)
+            % view(-26,-23)
 
-            figure,plotGrid(G),hold on
-            plotGrid(G,gen.allparams.(ne).(am).cellind,'facecolor','b'),title(ne,am)
-            view(3)
+            % figure,plotGrid(G),hold on
+            % plotGrid(G,gen.allparams.(ne).(am).cellind,'facecolor','b'),title(ne,am)
+            % view(3)
 
-            figure,plotGrid(G),hold on
-            plotGrid(G,gen.allparams.(ne).(cc).cellindtab,'facecolor','b'),title(ne,'tab')
-            view(3)
+            % figure,plotGrid(G),hold on
+            % plotGrid(G,gen.allparams.(ne).(cc).cellindtab,'facecolor','b'),title(ne,'tab')
+            % view(-26,-23)
 
-            figure,plotGrid(G),hold on
-            plotGrid(G,gen.allparams.(pe).(cc).cellind,'facecolor','b'),title(pe,cc)
-            view(3)
+            % figure,plotGrid(G),hold on
+            % plotGrid(G,rcellindtab_bottom,'facecolor','b'),title('rcellindtab_bottom')
+            % view(-26,-23)
 
-            figure,plotGrid(G),hold on
-            plotGrid(G,gen.allparams.(pe).(am).cellind,'facecolor','b'),title(pe,am)
-            view(3)
+            % figure,plotGrid(G),hold on
+            % plotGrid(G,gen.allparams.(pe).(cc).cellind,'facecolor','b'),title(pe,cc)
+            % view(3)
 
-            figure,plotGrid(G),hold on
-            plotGrid(G,gen.allparams.(pe).(cc).cellindtab,'facecolor','b'),title(pe,'tab')
-            view(3)
+            % figure,plotGrid(G),hold on
+            % plotGrid(G,gen.allparams.(pe).(am).cellind,'facecolor','b'),title(pe,am)
+            % view(3)
 
-            keyboard;
+            % figure,plotGrid(G),hold on
+            % plotGrid(G,gen.allparams.(pe).(cc).cellindtab,'facecolor','b'),title(pe,'tab')
+            % view(3)
+
+            % figure,plotGrid(G),hold on
+            % plotGrid(G,rcellindtab_top,'facecolor','b'),title('rcellindtab_top')
+            % view(3)
+
+            % keyboard;
 
 
             cellind = [gen.allparams.(elyte).cellind; gen.allparams.(ne).(am).cellind; gen.allparams.(pe).(am).cellind; gen.allparams.(ne).(cc).cellind; gen.allparams.(pe).(cc).cellind];
-            rcellind = setdiff((1 : G.cells.num)', cellind);
+            rcellind0 = setdiff((1 : G.cells.num)', cellind);
+            rcellind = [rcellind0; rcellindtab_top; rcellindtab_bottom];
+
 
             figure,plotGrid(G),hold on, plotGrid(G,rcellind,'facecolor','r'),view(3)%,plotGrid(G,cellind_top,'facecolor', 'b'),view(3),plotGrid(G,cellind_bottom, 'facecolor', 'm'),view(3)
             keyboard;
@@ -237,8 +277,10 @@ classdef BatteryGeneratorMultilayerPouch < BatteryGenerator
 
             G = computeGeometry(G);
             paramobj.G = G;
-            gen.invcellmap = (1:G.cells.num)'; % TODO check if this is correct
             gen.G = G;
+
+            figure,plotGrid(G),view(3)
+            keyboard
 
         end
 
