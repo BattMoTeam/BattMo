@@ -128,49 +128,25 @@ classdef BatteryGeneratorMultilayerPouch < BatteryGenerator
 
             NZ = [0; cumsum(nzs)] + 1;
 
+            % Tabs (cells to remove)
+            ne_cc_tab = 2;
+            pe_cc_tab = 3;
+
             % Initialize
             for k = 1:numel(nzs)
                 gen.allparams = setfield(gen.allparams, nzs_tag{k}{:}, 'cellind', []);
             end
-
-            % Find the cells to remove for trimming the tabs
-            nne_tab = 3;
-            [I, J, K] = ndgrid(1, 1:nne_tab, 1:NZ(end)-1);
-            rtab_ne_1 = sub2ind(G.cartDims, I(:), J(:), K(:));
-            [I, J, K] = ndgrid(1, (G.cartDims(2)-nne_tab+1):G.cartDims(2), 1:NZ(end)-1);
-            rtab_ne_2 = sub2ind(G.cartDims, I(:), J(:), K(:));
-
-            npe_tab = 2;
-            [I, J, K] = ndgrid(G.cartDims(1), 1:npe_tab, 1:NZ(end)-1);
-            rtab_pe_1 = sub2ind(G.cartDims, I(:), J(:), K(:));
-            [I, J, K] = ndgrid(G.cartDims(1), (G.cartDims(2)-npe_tab+1):G.cartDims(2), 1:NZ(end)-1);
-            rtab_pe_2 = sub2ind(G.cartDims, I(:), J(:), K(:));
-
-            rtab = [rtab_ne_1; rtab_ne_2; rtab_pe_1; rtab_pe_2];
+            gen.allparams.(ne).(cc).cellindtab = [];
+            gen.allparams.(pe).(cc).cellindtab = [];
 
             for k = 1:numel(nzs)
-                % Loop over all layers
 
                 % TODO don't compute I, J
-                if strcmp(nzs_tag{k}{1}, ne) && strcmp(nzs_tag{k}{2}, cc)
-                    % Add tab by adding a full slab. Afterwards we trim the tab
-                    [I, J, K] = ndgrid(1:G.cartDims(1)-1, 1:G.cartDims(2), NZ(k):NZ(k+1)-1);
-                    trim = true;
-                elseif strcmp(nzs_tag{k}{1}, pe) && strcmp(nzs_tag{k}{2}, cc)
-                    % Tab
-                    [I, J, K] = ndgrid(2:G.cartDims(1), 1:G.cartDims(2), NZ(k):NZ(k+1)-1);
-                    trim = true;
-                else
-                    [I, J, K] = ndgrid(2:G.cartDims(1)-1, 1:G.cartDims(2), NZ(k):NZ(k+1)-1);
-                    trim = false;
-                end
+                % Create interior slabs
+                [I, J, K] = ndgrid(2:G.cartDims(1)-1, 1:G.cartDims(2), NZ(k):NZ(k+1)-1);
 
                 % Cells in this IJK box
                 cbox = sub2ind(G.cartDims, I(:), J(:), K(:));
-
-                if trim
-                    cbox = setdiff(cbox, rtab);
-                end
 
                 % Cells previously marked with this tag
                 cprev = getfield(gen.allparams, nzs_tag{k}{:}, 'cellind');
@@ -188,6 +164,24 @@ classdef BatteryGeneratorMultilayerPouch < BatteryGenerator
                 % Overwrite
                 gen.allparams = setfield(gen.allparams, nzs_tag{k}{:}, 'cellind', cellind);
 
+                % Create tabs
+                tab = false;
+                if strcmp(nzs_tag{k}{1}, ne) && strcmp(nzs_tag{k}{2}, cc)
+
+                    [I, J, K] = ndgrid(1, (ne_cc_tab+1):(G.cartDims(2)-ne_cc_tab), NZ(k):NZ(k+1)-1);
+                    tab = true;
+                elseif strcmp(nzs_tag{k}{1}, pe) && strcmp(nzs_tag{k}{2}, cc)
+
+                    [I, J, K] = ndgrid(G.cartDims(1), (pe_cc_tab+1):(G.cartDims(2)-pe_cc_tab), NZ(k):NZ(k+1)-1);
+                    tab = true;
+                end
+
+                if tab
+                    cbox = sub2ind(G.cartDims, I(:), J(:), K(:));
+                    cprev = getfield(gen.allparams, nzs_tag{k}{:}, 'cellindtab');
+                    cellindtab = [cbox; cprev];
+                    gen.allparams = setfield(gen.allparams, nzs_tag{k}{:}, 'cellindtab', cellindtab);
+                end
             end
 
             % Electrolyte is pe and ne active materials, as well as separator
@@ -195,8 +189,57 @@ classdef BatteryGeneratorMultilayerPouch < BatteryGenerator
                                              gen.allparams.(elyte).(sep).cellind;
                                              gen.allparams.(pe).(am).cellind];
 
+            % CC are including the tabs
+            elde = {ne, pe};
+            for k = 1:2
+                el = elde{k};
+                gen.allparams.(el).(cc).cellind = [gen.allparams.(el).(cc).cellind;
+                                                   gen.allparams.(el).(cc).cellindtab];
+            end
 
-            % % assert(strcmp(nzs_tag{1}{2}, cc));
+
+
+
+
+            %     % TODO don't compute I, J
+            %     if strcmp(nzs_tag{k}{1}, ne) && strcmp(nzs_tag{k}{2}, cc)
+            %         % Add tab by adding a full slab. Afterwards we trim the tab
+            %         [I, J, K] = ndgrid(1:G.cartDims(1)-1, 1:G.cartDims(2), NZ(k):NZ(k+1)-1);
+            %         trim_tab = true;
+            %     elseif strcmp(nzs_tag{k}{1}, pe) && strcmp(nzs_tag{k}{2}, cc)
+            %         % Tab
+            %         [I, J, K] = ndgrid(2:G.cartDims(1), 1:G.cartDims(2), NZ(k):NZ(k+1)-1);
+            %         trim_tab = true;
+            %     else
+            %         [I, J, K] = ndgrid(2:G.cartDims(1)-1, 1:G.cartDims(2), NZ(k):NZ(k+1)-1);
+            %         trim_tab = false;
+            %     end
+
+            %     % Cells in this IJK box
+            %     cbox = sub2ind(G.cartDims, I(:), J(:), K(:));
+
+            %     if trim_tab
+            %         % Trim the tab
+            %         cbox = setdiff(cbox, rtab);
+            %     end
+
+            %     % Cells previously marked with this tag
+            %     cprev = getfield(gen.allparams, nzs_tag{k}{:}, 'cellind');
+
+            %     % All cells, new and old
+            %     cellind = [cbox; cprev];
+
+            %     % Debug
+            %     fprintf('%s %s\n', nzs_tag{k}{:})
+            %     if numel(cbox) ~= numel(unique(cbox)), keyboard, end
+            %     if numel(cprev) ~= numel(unique(cprev)), keyboard, end
+            %     if numel(cellind) ~= numel(unique(cellind)), keyboard, end
+            %     assert(all(cellind > 0));
+
+            %     % Overwrite
+            %     gen.allparams = setfield(gen.allparams, nzs_tag{k}{:}, 'cellind', cellind);
+
+            % end            % % assert(strcmp(nzs_tag{1}{2}, cc));
             % % [I, J, K] = ndgrid(1:G.cartDims(1)-1, 1:G.cartDims(2), NZ(1):NZ(2)-1);
             % % c0 = getfield(gen.allparams, nzs_tag{1}{:}, 'cellind');
             % % cellind_bottom = sub2ind(G.cartDims, I(:), J(:), K(:));
@@ -306,10 +349,6 @@ classdef BatteryGeneratorMultilayerPouch < BatteryGenerator
             % keyboard;
 
             nGlob = G.cells.num;
-
-            nGlob
-            [min(rcellind), max(rcellind)]
-
             [G, cellmap] = removeCells(G, rcellind);
             gen.invcellmap = zeros(nGlob, 1);
             gen.invcellmap(cellmap) = (1 : G.cells.num)';
@@ -318,13 +357,8 @@ classdef BatteryGeneratorMultilayerPouch < BatteryGenerator
             paramobj.G = G;
             gen.G = G;
 
-            necc = gen.allparams.(ne).(cc).cellind;
-            zz = gen.invcellmap(necc);
-            min(zz)
-
-
             figure,plotGrid(G),view(3)
-            keyboard
+            keyboard;
 
         end
 
