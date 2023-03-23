@@ -124,7 +124,7 @@ output.tabwidths
 
 
 %{
-Copyright 2021-2022 SINTEF Industry, Sustainable Energy Technology
+Copyright 2021-2023 SINTEF Industry, Sustainable Energy Technology
 and SINTEF Digital, Mathematics & Cybernetics.
 
 This file is part of The Battery Modeling Toolbox BattMo
