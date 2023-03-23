@@ -51,25 +51,27 @@ paramobj = gen.updateBatteryInputParams(paramobj);
 
 model = Battery(paramobj);
 
-% Plot
-colors = crameri('vik', 5);
-figure
-legtext = {};
-edgeparams = {'edgealpha', 0.5, 'edgecolor', [1, 1, 1]};
-plotGrid(model.(ne).(am).G,     'facecolor', colors(2,:), edgeparams{:});
-plotGrid(model.(elyte).(sep).G, 'facecolor', colors(3,:), edgeparams{:});
-plotGrid(model.(pe).(am).G,     'facecolor', colors(4,:), edgeparams{:});
-legtext = [legtext, {'negative electrode active material', 'separator', 'positive electrode current collector'}];
-if model.include_current_collectors
-    plotGrid(model.(ne).(cc).G, 'facecolor', colors(1,:), edgeparams{:});
-    plotGrid(model.(pe).(cc).G, 'facecolor', colors(5,:), edgeparams{:});
-    legtext{end+1} = 'negative electrode current collector';
-    legtext{end+1} = 'positive electrode current collector';
+%% Plot
+do_plot = false;
+if do_plot
+    colors = crameri('vik', 5);
+    figure
+    legtext = {};
+    edgeparams = {'edgealpha', 0.5, 'edgecolor', [1, 1, 1]};
+    plotGrid(model.(ne).(am).G,     'facecolor', colors(2,:), edgeparams{:});
+    plotGrid(model.(elyte).(sep).G, 'facecolor', colors(3,:), edgeparams{:});
+    plotGrid(model.(pe).(am).G,     'facecolor', colors(4,:), edgeparams{:});
+    legtext = [legtext, {'negative electrode active material', 'separator', 'positive electrode current collector'}];
+    if model.include_current_collectors
+        plotGrid(model.(ne).(cc).G, 'facecolor', colors(1,:), edgeparams{:});
+        plotGrid(model.(pe).(cc).G, 'facecolor', colors(5,:), edgeparams{:});
+        legtext{end+1} = 'negative electrode current collector';
+        legtext{end+1} = 'positive electrode current collector';
+    end
+    legend(legtext, 'location', 'southwest');
+    axis tight;
+    view(3)
 end
-legend(legtext, 'location', 'southwest');
-axis tight;
-view(3)
-
 %% Setup the time step schedule 
 % Smaller time steps are used to ramp up the current from zero to its
 % operational value. Larger time steps are then used for the normal
