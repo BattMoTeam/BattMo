@@ -1,6 +1,6 @@
 classdef ElectrodeInputParams < ComponentInputParams
 %
-% Input parameter class for :class:`Electrode <Electrochemistry.Electrodes.Electrode>`
+% Input parameter class for :code:`Electrode` model
 %        
     properties
         

@@ -1,6 +1,6 @@
 classdef SEIActiveMaterialInputParams < ActiveMaterialInputParams
 %
-% Input parameter class for :class:`ActiveMaterial <Electrochemistry.ActiveMaterial>`
+% Input parameter class for :code:`SEIActiveMaterial` model
 % 
     properties
 

@@ -1,6 +1,6 @@
-===============
-Geometry models
-===============
+==================
+Battery Geometries
+==================
 
 .. automodule:: Battery.BatteryGeometry
 

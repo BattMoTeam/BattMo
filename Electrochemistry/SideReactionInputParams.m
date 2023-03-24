@@ -1,6 +1,6 @@
 classdef SideReactionInputParams < InputParams
 %
-% Input parameter class for :class:`ActiveMaterial <Electrochemistry.Electrodes.ActiveMaterial>`
+% Input parameter class for the :code:`ActiveMaterial` model
 %    
     properties
         beta         % side reaction buttler-volmer  coefficient [-]

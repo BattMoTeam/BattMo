@@ -11,17 +11,17 @@ classdef FullSolidDiffusionModelInputParams < SolidDiffusionModelInputParams
         N
 
         %
-        %  Number of computational grid cells (typically set by parent model :class:`ActiveMaterial <Electrochemistry.ActiveMaterial>`)
+        %  Number of computational grid cells (typically set by parent model :class:`ActiveMaterial <Electrochemistry.ActiveMaterialInputParams>`)
         %
         np 
 
         %
-        % Volume Fraction (typically set by parent model :class:`ActiveMaterial <Electrochemistry.ActiveMaterial>`)
+        % Volume Fraction (typically set by parent model :class:`ActiveMaterial <Electrochemistry.ActiveMaterialInputParams>`)
         %
         volumeFraction
 
         %
-        %  Active Material Fraction (typically set by parent model :class:`ActiveMaterial <Electrochemistry.ActiveMaterial>`)
+        %  Active Material Fraction (typically set by parent model :class:`ActiveMaterial <Electrochemistry.ActiveMaterialInputParams>`)
         %
         activeMaterialFraction
 

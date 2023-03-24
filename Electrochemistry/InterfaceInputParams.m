@@ -1,6 +1,6 @@
 classdef InterfaceInputParams < InputParams 
 %
-% Input parameter class for :class:`ActiveMaterial <Electrochemistry.Electrodes.ActiveMaterial>`
+% Input parameter class for the interface model
 %    
     properties
         
@@ -17,15 +17,20 @@ classdef InterfaceInputParams < InputParams
         density                 % Density of the active material [kg m^-3]
         n                       % number of electron transfer
 
-        OCP % Function to update OCP value given as a struct with fields
-            % OCP.type = "function";
-            % OCP.functionname :  matlab function name (should be available in path)
-            % OCP.argumentlist = ["cElectrode", "T", "cmax"]
+        % Function to update OCP value, which is given as a struct with fields
+        %
+        % - type : "function";
+        % - functionname :  matlab function name (should be available in path)
+        % - argumentlist : ["cElectrode", "T", "cmax"]
+        OCP 
 
-        j0  % Function to update j0 : if empty, the default expression using k0 is used, see method Interface.updateReactionRateCoefficient
-            % j0.type = {"function", "constant"} % if "constant" is selected, the value of k0 is used to compute reaction rate
-            % j0.functionname :  matlab function name (should be available in path)
-            % j0.argumentlist = ["cElectrodeSurface", "cmax"]
+        % Function to update j0 : if empty, the default expression using k0 is used, see method
+        % Interface.updateReactionRateCoefficient. The function is given as a struct with the fields:
+        %
+        % - type = {"function", "constant"} % if "constant" is selected, the value of k0 is used to compute reaction rate
+        % - functionname :  matlab function name (should be available in path)
+        % - argumentlist = ["cElectrodeSurface", "cmax"]
+        j0  
 
         alpha = 0.5 % coefficient in Butler-Volmer coefficient (default is 0.5)
     end

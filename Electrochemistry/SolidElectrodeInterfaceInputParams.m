@@ -6,7 +6,7 @@ classdef SolidElectrodeInterfaceInputParams < InputParams
         density         % SEI densisity [kg/m^3]
         D               % SEI diffusion coefficient [m^2/s]
         N               % Number of discretization intervals in the sei layer model [-]
-        np              % Number of computational grid cells (typically set by parent model :class:`ActiveMaterial <Electrochemistry.ActiveMaterial>`)
+        np              % Number of computational grid cells (typically set by parent model)
     end
     
     methods

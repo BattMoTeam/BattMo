@@ -1,10 +1,15 @@
 classdef ElectronicComponentInputParams < ComponentInputParams
 %
-% Input parameter class for :class:`ElectronicComponent <Electrochemistry.ElectronicComponent>`
+% Input parameter class for :code:`ElectronicComponent` model
 %    
     properties
-        
-        EffectiveElectricalConductivity % conductivity
+
+        %
+        % conductivity (effective value)
+        %
+        % In many models, this value is not used as the conductivity depends on other parameters
+        %
+        EffectiveElectricalConductivity
 
         use_thermal
         

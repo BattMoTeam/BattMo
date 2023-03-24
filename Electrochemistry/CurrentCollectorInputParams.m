@@ -1,6 +1,6 @@
 classdef CurrentCollectorInputParams < ElectronicComponentInputParams
 %
-% Input parameter class for :class:`CurrentCollector <Electrochemistry.CurrentCollector>`
+% Input parameter class for the :code:`CurrentCollector` model
 %
     properties
         

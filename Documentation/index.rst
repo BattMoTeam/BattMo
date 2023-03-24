@@ -27,7 +27,7 @@ BattMo documentation
    Installation <installation>
    Getting started <tutorials>
    BattMo Li-ion battery <inputs>
-   Geometries <geometryinput>
+   Battery Geometries <geometryinput>
    References <bibliography>
    
 Acknowledgements

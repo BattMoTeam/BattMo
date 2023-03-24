@@ -1,6 +1,6 @@
 classdef ElectroChemicalComponentInputParams < ElectronicComponentInputParams
 %
-% Input parameter class for :class:`ElectronicComponent <Electrochemistry.ElectronicComponent>`
+% Input parameter class for the :code:`ElectronicComponent` model
 %
     properties
 

@@ -1,6 +1,6 @@
 classdef BatteryInputParams < InputParams
 %
-% Input parameter class for :class:`Battery <Battery.Battery>`
+% Input parameter class for the :code:`Battery` model.
 %
 
     properties
@@ -15,8 +15,8 @@ classdef BatteryInputParams < InputParams
         NegativeElectrode % instance of :class:`ElectrodeInputParams <Electrochemistry.ElectrodeInputParams>`
         PositiveElectrode % instance of :class:`ElectrodeInputParams <Electrochemistry.ElectrodeInputParams>`
         Electrolyte       % instance of :class:`ElectrolyteInputParams <Electrochemistry.ElectrolyteInputParams>`
-        ThermalModel      % instance of :class:`ThermalModelInputParams <Electrochemistry.ThermalModelInputParams>`
-        Control           % instance of :class:`ControlModelInputParams <Electrochemistry.ControlModelInputParams>`    
+        ThermalModel      % instance of :class:`ThermalComponentInputParams <Electrochemistry.ThermalComponentInputParams>`
+        Control           % instance of :class:`ControlModelInputParams <Utilities.ControlModelInputParams>`
         
         couplingTerms % Coupling terms (describe the topological structure of the coupling between the components)
         

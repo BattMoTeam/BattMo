@@ -1,6 +1,6 @@
 classdef ActiveMaterialInputParams < ElectronicComponentInputParams
 %
-% Input parameter class for :class:`ActiveMaterial <Electrochemistry.ActiveMaterial>`
+% Input parameter class for :code:`ActiveMaterial` model
 % 
     properties
         
