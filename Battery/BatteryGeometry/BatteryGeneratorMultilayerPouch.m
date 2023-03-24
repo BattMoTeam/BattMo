@@ -3,13 +3,20 @@ classdef BatteryGeneratorMultilayerPouch < BatteryGenerator
 
     properties
 
-        % Physical dimension
+        % Physical dimensions (without tabs)
+        pouch_width = 100*milli*meter;
+        pouch_height = 300*milli*meter;
 
-        xlength = 1e-2*[0.4; 0.2; 0.4];
-        ylength = 1e-2*[0.1; 2; 0.1];
+        % For now: Tabs are placed in the center and have the same width
+        tab_width  = 50*milli*meter;
+        ne_tab_height = 40*milli*meter;
+        pe_tab_height = 20*milli*meter;
+
+        % Layer thickness
         unit_cell_thickness = 1e-6*[10; 100; 50; 80; 10];
+
+        % Number of layers
         n_layers = 5;
-        zlength = [];%1e-6*[10; 100; 50; 80; 10];
 
         % Shorthands used below
         % ne    : Negative electrode
@@ -25,27 +32,25 @@ classdef BatteryGeneratorMultilayerPouch < BatteryGenerator
         sep_nz   = 3;
         ne_am_nz = 3;
         pe_am_nz = 3;
-        ne_cc_nz = 2;
-        pe_cc_nz = 2;
+        ne_cc_nz = 3;
+        pe_cc_nz = 3;
 
         % Discretization resolution in x-direction
 
         facx = 1;
 
-        int_elyte_nx = 3;
-        ne_cc_nx     = 3;
-        pe_cc_nx     = 3;
+        elyte_nx = 2;
+        tab_nx = 3;
 
         % Discretization resolution in y-direction
 
         facy = 1;
 
-        ne_cc_ny = 2;
-        pe_cc_ny = 2;
+        ne_tab_ny = 2;
+        pe_tab_ny = 2;
         elyte_ny = 4;
 
         % Utility variables computed once and then shared by methods (should not be set)
-        elyte_nz;
         allparams;
         invcellmap;
 
@@ -62,15 +67,6 @@ classdef BatteryGeneratorMultilayerPouch < BatteryGenerator
         function gen = BatteryGeneratorMultilayerPouch()
 
             gen = gen@BatteryGenerator();
-
-            gen.zlength = gen.unit_cell_thickness;
-            for ind = 2:gen.n_layers
-                if rem(ind,2) == 0
-                    gen.zlength = [gen.zlength; flipud(gen.unit_cell_thickness(1:end-1))];
-                else
-                    gen.zlength = [gen.zlength; gen.unit_cell_thickness(2:end)];
-                end
-            end
 
         end
 
@@ -94,8 +90,15 @@ classdef BatteryGeneratorMultilayerPouch < BatteryGenerator
 
             gen = gen.applyResolutionFactors();
 
-            nxs = [gen.ne_cc_nx; gen.int_elyte_nx; gen.pe_cc_nx];
-            nys = [gen.ne_cc_ny; gen.elyte_ny; gen.pe_cc_ny];
+            % Setup z
+            zlength = gen.unit_cell_thickness;
+            for ind = 2:gen.n_layers
+                if rem(ind,2) == 0
+                    zlength = [zlength; flipud(gen.unit_cell_thickness(1:end-1))];
+                else
+                    zlength = [zlength; gen.unit_cell_thickness(2:end)];
+                end
+            end
 
             unit_cell_nzs     = [gen.ne_cc_nz; gen.ne_am_nz; gen.sep_nz;  gen.pe_am_nz; gen.pe_cc_nz];
             unit_cell_nzs_tag = {{ne,cc};      {ne,am};      {elyte,sep}; {pe,am};      {pe,cc}};
@@ -112,25 +115,42 @@ classdef BatteryGeneratorMultilayerPouch < BatteryGenerator
                 end
             end
 
-            x = gen.xlength./nxs;
-            x = rldecode(x, nxs);
-            x = [0; cumsum(x)];
-
-            y = gen.ylength./nys;
-            y = rldecode(y, nys);
-            y = [0; cumsum(y)];
-
-            z = gen.zlength./nzs;
+            z = zlength./nzs;
             z = rldecode(z, nzs);
             z = [0; cumsum(z)];
 
+            % Setup widths
+            x0 = 0.5*(gen.pouch_width - gen.tab_width);
+            %x1 = gen.pouch_width - x0;
+            %xlength = [0; min(xn0,xp0); max(xn0,xp0); min(xn1,xp1); max(xn1,xp1); gen.pouch_width];
+            %dxlength = diff(xlength);
+            dxlength = [x0; gen.pouch_width-gen.tab_width; x0];
+            % In case of equal width tabs:
+            idx = dxlength ~= 0;
+            dxlength = dxlength(idx);
+
+            %nxs = [gen.elyte_nx; gen.ne_cc_nx + gen.tab_nx; gen.ne_cc_nx + gen.tab_nx; gen.ne_cc_nx + gen.tab_nx; gen.elyte_nx];
+            %nxs = [gen.elyte_nx; max(abs(gen.ne_cc_nx-gen.tab_nx), 1); min(gen.ne_cc_nx, gen.tab_nx); max(abs(gen.ne_cc_nx-gen.tab_nx), 1); gen.elyte_nx];
+            %nxs = nxs(idx);
+            nxs = [gen.elyte_nx; gen.tab_nx; gen.elyte_nx];
+
+            x = dxlength./nxs;
+            x = rldecode(x, nxs);
+            x = [0; cumsum(x)];
+
+            % Setup heights
+            dylength = [gen.ne_tab_height; gen.pouch_height; gen.pe_tab_height];
+            nys = [gen.ne_tab_ny; gen.elyte_ny; gen.pe_tab_ny];
+            y = dylength./nys;
+            y = rldecode(y, nys);
+            y = [0; cumsum(y)];
+
+            % Setup grid
             G = tensorGrid(x, y, z);
+            %figure,plotGrid(G),view(2),keyboard;
 
+            % Integer layers
             NZ = [0; cumsum(nzs)] + 1;
-
-            % Tabs (cells to remove)
-            ne_cc_tab = 2;
-            pe_cc_tab = 3;
 
             % Initialize
             for k = 1:numel(nzs)
@@ -143,7 +163,7 @@ classdef BatteryGeneratorMultilayerPouch < BatteryGenerator
 
                 % TODO don't compute I, J
                 % Create interior slabs
-                [I, J, K] = ndgrid(1:G.cartDims(1), 2:G.cartDims(2)-1, NZ(k):NZ(k+1)-1);
+                [I, J, K] = ndgrid(1:G.cartDims(1), (gen.ne_tab_ny+1):(G.cartDims(2)-gen.pe_tab_ny), NZ(k):NZ(k+1)-1);
 
                 % Cells in this IJK box
                 cbox = sub2ind(G.cartDims, I(:), J(:), K(:));
@@ -158,24 +178,27 @@ classdef BatteryGeneratorMultilayerPouch < BatteryGenerator
                 gen.allparams = setfield(gen.allparams, nzs_tag{k}{:}, 'cellind', cellind);
 
                 % Create tabs for the CCs
-                tab = false;
+                create_tab = false;
                 if strcmp(nzs_tag{k}{1}, ne) && strcmp(nzs_tag{k}{2}, cc)
-                    [I, J, K] = ndgrid((ne_cc_tab+1):(G.cartDims(1)-ne_cc_tab), 1, NZ(k):NZ(k+1)-1);
-                    tab = true;
+                    % NE tab
+                    [I, J, K] = ndgrid((gen.elyte_nx+1):(G.cartDims(1)-gen.elyte_nx), 1:(gen.ne_tab_ny+1), NZ(k):NZ(k+1)-1);
+                    create_tab = true;
                 elseif strcmp(nzs_tag{k}{1}, pe) && strcmp(nzs_tag{k}{2}, cc)
-                    [I, J, K] = ndgrid((pe_cc_tab+1):(G.cartDims(1)-pe_cc_tab), G.cartDims(2), NZ(k):NZ(k+1)-1);
-                    tab = true;
+                    % PE tab
+                    [I, J, K] = ndgrid((gen.elyte_nx+1):(G.cartDims(1)-gen.elyte_nx), (G.cartDims(2)-gen.pe_tab_ny-1):G.cartDims(2), NZ(k):NZ(k+1)-1);
+                    create_tab = true;
                 end
 
-                if tab
+                if create_tab
                     cbox = sub2ind(G.cartDims, I(:), J(:), K(:));
                     cprev = getfield(gen.allparams, nzs_tag{k}{:}, 'cellindtab');
                     cellindtab = [cbox; cprev];
                     gen.allparams = setfield(gen.allparams, nzs_tag{k}{:}, 'cellindtab', cellindtab);
+                    %keyboard;
                 end
             end
 
-            % Electrolyte is pe and ne active materials, as well as separator
+            % Electrolyte is the am's of pe and ne, as well as separator
             gen.allparams.(elyte).cellind = [gen.allparams.(ne).(am).cellind;
                                              gen.allparams.(elyte).(sep).cellind;
                                              gen.allparams.(pe).(am).cellind];
@@ -217,13 +240,12 @@ classdef BatteryGeneratorMultilayerPouch < BatteryGenerator
             gen.ne_cc_nz = gen.facz*gen.ne_cc_nz;
             gen.pe_cc_nz = gen.facz*gen.pe_cc_nz;
 
-            gen.int_elyte_nx = gen.facx*gen.int_elyte_nx;
-            gen.ne_cc_nx     = gen.facx*gen.ne_cc_nx;
-            gen.pe_cc_nx     = gen.facx*gen.pe_cc_nx;
+            gen.elyte_nx = gen.facx*gen.elyte_nx;
+            gen.tab_nx = gen.facx*gen.tab_nx;
 
-            gen.ne_cc_ny = gen.facy*gen.ne_cc_ny;
-            gen.pe_cc_ny = gen.facy*gen.pe_cc_ny;
-            gen.elyte_ny = gen.facy*gen.elyte_ny;
+            gen.ne_tab_ny = gen.facy*gen.ne_tab_ny;
+            gen.pe_tab_ny = gen.facy*gen.pe_tab_ny;
+            gen.elyte_ny  = gen.facy*gen.elyte_ny;
 
         end
 
