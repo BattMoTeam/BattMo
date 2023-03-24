@@ -1,5 +1,7 @@
 classdef IEswitchControlModelInputParams < ControlModelInputParams
-
+%
+% IE switch control model. First start with current control and switch to voltage control when lower or upper limit is reached.
+%
     methods
 
         function paramobj = IEswitchControlModelInputParams(jsonstruct);

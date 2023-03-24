@@ -1,8 +1,13 @@
 classdef PowerControlModelInputParams < ControlModelInputParams
-
+%
+% Control power control
+%
     
     properties
-        
+
+        %
+        %
+        %
         dischargingPower
         chargingPower
         dischargingTime

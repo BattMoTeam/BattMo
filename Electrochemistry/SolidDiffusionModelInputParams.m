@@ -1,5 +1,7 @@
 classdef SolidDiffusionModelInputParams < InputParams 
-
+%
+% Base class for the solid diffusion models, see :class:`FullSolidDiffusionModelInputParams <Electrochemistry.FullSolidDiffusionModelInputParams>` and :class:`SimplifiedSolidDiffusionModelInputParams <Electrochemistry.SimplifiedSolidDiffusionModelInputParams>`
+%
     properties
 
         EaD                         % Activation energy [J mol^-1]

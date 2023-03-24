@@ -1,22 +1,50 @@
 classdef FullSolidDiffusionModelInputParams < SolidDiffusionModelInputParams
+%
+% Full diffusion model (standard PXD)
+%
 
+    
     properties
+        %
+        % Number of discretization intervals in the diffusion model [-]
+        %
+        N
 
-        N  % Number of discretization intervals in the diffusion model [-]
-        np % Number of computational grid cells (typically set by parent model :class:`ActiveMaterial <Electrochemistry.ActiveMaterial>`)
+        %
+        %  Number of computational grid cells (typically set by parent model :class:`ActiveMaterial <Electrochemistry.ActiveMaterial>`)
+        %
+        np 
 
+        %
+        % Volume Fraction (typically set by parent model :class:`ActiveMaterial <Electrochemistry.ActiveMaterial>`)
+        %
         volumeFraction
-        activeMaterialFraction
-        
-        D    % Function to update D value given as a struct with fields
-             % D.type is in {'function', 'constant'}. If 'constant' is chosen the value of D0 is used as in parent class
-             % D.functionname :  matlab function name (should be available in path)
-             % D.argumentlist = ["c", "cmin", "cmax"]
 
-        % needed if function is used
-        cmax     % maximum concentration [mol/m^3]
-        theta0   % Minimum lithiation, 0% SOC    [-]
-        theta100 % Maximum lithiation, 100% SOC  [-]
+        %
+        %  Active Material Fraction (typically set by parent model :class:`ActiveMaterial <Electrochemistry.ActiveMaterial>`)
+        %
+        activeMaterialFraction
+
+        %
+        % Function to update D value given as a struct with fields
+        % - D.type is in {'function', 'constant'}. If 'constant' is chosen the value of D0 defined in parent class
+        % - D.functionname :  matlab function name (should be available in path)
+        % - D.argumentlist = ["c", "cmin", "cmax"]
+        % 
+        D    
+
+        %
+        % maximum concentration [mol/m^3] (only needed if D is a function)
+        %
+        cmax
+        %
+        % Minimum lithiation, 0% SOC [-] (only needed if D is a function)
+        %
+        theta0
+        %
+        % Maximum lithiation, 100% SOC [-] (only needed if D is a function)
+        %
+        theta100 
 
     end
     

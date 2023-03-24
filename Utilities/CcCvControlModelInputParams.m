@@ -1,10 +1,19 @@
 classdef CcCvControlModelInputParams < ControlModelInputParams
-
+%
+% Constant-Current-Constant-Voltage Control. We switch between charge and discharge scenarii. The switch occurs when the
+% derivative of the non-controlled variable gets below a given threshold
+%
     
     properties
-        
-        dEdtLimit         
+        %
+        % When voltage control, we wait for the derivative of the current to be below the value of dIdtLimit between we switch to the following constant current control.
+        %
         dIdtLimit
+        
+        %
+        % Not used for the moment
+        %
+        dEdtLimit         
         
     end
     

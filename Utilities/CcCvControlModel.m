@@ -1,5 +1,9 @@
 classdef CcCvControlModel < ControlModel
+%
+% Constant-Current-Constant-Voltage Control
+%
 
+    
     properties
         
         Imax

@@ -27,12 +27,9 @@ BattMo documentation
               
    Installation <installation>
    Getting started <tutorials>
-
-   Advanced topics <advancedtopics>
-
-
    BattMo API <inputs>
-
+   Advanced topics <advancedtopics>
+   References <bibliography>
 
 Acknowledgements
 =================================

@@ -1,7 +1,7 @@
 classdef IEswitchControlModel < ControlModel
 
     properties
-        
+
         Imax
         
     end

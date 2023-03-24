@@ -1,15 +1,24 @@
 classdef ControlModel < BaseModel
-
+%
+% Base class for a control model
+%
+%
     properties
-        
+
+        %
+        % C Rate
+        %
         CRate
 
-        controlPolicy
-        % Control Policy (string). It can take following values
+        %
+        % Control policy (sring). It can take following values
+        %
         % - 'CCCV'
         % - 'IEswitch'
         % - 'CV'
         % - 'CC'
+        %
+        controlPolicy
         
         initialControl
         % Initial control at start. It is a string that can be equal to
@@ -57,31 +66,31 @@ classdef ControlModel < BaseModel
         end
 
         function state = prepareStepControl(model, state, state0, dt, drivingForces)
-        % Note : Attach to state the values necessary for the control. This is run only once at the beginning of a time step
-        % default is nothing.
+        % Attach to state the values necessary for the control. This is run only once at the beginning of a time step
+        % Base class behaviour is do nothing.
         end
         
         function state = updateControlEquation(model, state)
         % Implemented by child model
-        % Default do nothing
+        % Base class behaviour is do nothing.
             state.controlEquation = [];
         end
         
         function state = updateControlState(model, state)
         % Implemented by child model.
-        % Default do nothing (returns state unchanged).
+        % Base class behaviour is do nothing.
         end
         
         function state = updateControlAfterConvergence(model, state, state0, dt)
-        % Note : This function is called in updateAfterConvergence after convergence and gives possibility to detect control switch.
-        % default is nothing.
+        % This function is called in updateAfterConvergence after convergence and gives possibility to detect control switch.
+        % Base class behaviour is do nothing.
                 
         end
 
         function cleanState = addStaticVariables(model, cleanState, state)
-        %  nothing is done per default
+        % If the control model includes some static variable (that should be initialized at each Newton step), they can be added here.
+        % Base class behaviour is do nothing.
         end
-        
         
     end
     

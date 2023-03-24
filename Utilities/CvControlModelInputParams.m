@@ -1,8 +1,13 @@
 classdef CvControlModelInputParams < ControlModelInputParams
-
+%
+% Constant Voltage control
+%
     
     properties
-        
+
+        %
+        % Constant voltage control value
+        %
         inputVoltage
         
     end

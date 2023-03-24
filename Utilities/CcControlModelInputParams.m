@@ -1,5 +1,7 @@
 classdef CcControlModelInputParams < ControlModelInputParams
-
+%
+% Constant Current control
+%
     methods
 
         function paramobj = CcControlModelInputParams(jsonstruct);

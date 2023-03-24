@@ -1,24 +1,43 @@
 classdef ControlModelInputParams < InputParams
-
+%
+% Base class for input parameters for control model
+%
+    
     
     properties
 
         
+
+        %
+        % C Rate
+        %
         CRate
 
-        controlPolicy
-        % Control Policy (string). It can take following values
+        %
+        % Control policy (sring). It can take following values
+        %
         % - 'CCCV'
         % - 'IEswitch'
         % - 'CV'
         % - 'CC'
-        
-        initialControl
+        %
+        controlPolicy
+
+        %
         % Initial control at start. It is a string that can be equal to
         % - 'charging'
         % - 'discharging'
+        %
+        initialControl
 
+        %
+        % Lower cut-off voltage limit
+        %
         lowerCutoffVoltage
+
+        %
+        % Lower cut-off voltage limit
+        %
         upperCutoffVoltage
         
     end
