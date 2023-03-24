@@ -1,134 +1,19 @@
-================
-Input Parameters
-================
+=======================
+Input Parameter Classes
+=======================
 
 We need to propagate inputs in each of submodels. To do that we use a hierarchy of input classes that is sent
 recursively to the models. The input class is named accordingly to the model it corresponds to and its source is located
 in the same folder.
 
+.. toctree::
 
-Battery cell
-============
-
-.. image:: img/cutbatterygraph.png
-           :width: 100%
-           :align: center
-
-.. autoclass:: Battery.BatteryInputParams
-   :members:
-      
-
-Electrode components
-====================
-
-An electrode (:class:`Electrode <Electrochemistry.Electrode>`) consists of an active material (:class:`ActiveMaterial
-<Electrochemistry.ActiveMaterial>`), which contains an interface model (:class:`Interface <Electrochemistry.Interface>`)
-and a solid diffusion model (:class:`SolidDiffusionModel <Electrochemistry.SolidDiffusionModel>`), and a current
-collector (:class:`CurrentCollector <Electrochemistry.CurrentCollector>`)
-
-.. image:: img/electrodegraph.png
-           :width: 80%
+   Battery <batteryinput>
+   Control <controlinput>
 
 
-Electrode
----------
-
-.. autoclass:: Electrochemistry.ElectrodeInputParams
-   :members:
-
-      
-Active Material
----------------
-
-.. autoclass:: Electrochemistry.ActiveMaterialInputParams
-   :members:
-
-            
-Interface
----------
-
-.. autoclass:: Electrochemistry.InterfaceInputParams
-   :members:
-
-      
-Solid Diffusion Models
----------------------
-
-.. autoclass:: Electrochemistry.SolidDiffusionModelInputParams
-   :members:
-
-.. autoclass:: Electrochemistry.FullSolidDiffusionModelInputParams
-   :members:
-
-.. autoclass:: Electrochemistry.SimplifiedSolidDiffusionModelInputParams
-   :members:
-
-      
-Current Collector
------------------
-      
-.. autoclass:: Electrochemistry.CurrentCollectorInputParams
-   :members:
 
 
-Electrolyte components
-======================
-
-.. image:: img/electrolytegraph.png
-           :width: 30%
-           :align: center
-                   
-.. autoclass:: Electrochemistry.ElectrolyteInputParams
-   :members:
-
-.. autoclass:: Electrochemistry.SeparatorInputParams
-   :members:
-   
-Control models
-==============
-
-
-Base Control Model
-------------------
-
-.. automodule:: Utilities
-
-   .. autoclass:: ControlModelInputParams
-      :members:
-
-
-IESwitch
---------
-
-.. automodule:: Utilities
-
-   .. autoclass:: ControlModelInputParams
-      :members:
-
-
-CCCV
-----
-
-.. automodule:: Utilities
-
-   .. autoclass:: CcCvControlModelInputParams
-      :members:
-
-CC
---
-
-.. automodule:: Utilities
-
-   .. autoclass:: CcCvControlModelInputParams
-      :members:
-
-CV
---
-
-.. automodule:: Utilities
-
-   .. autoclass:: CvControlModelInputParams
-      :members:
 
 
 

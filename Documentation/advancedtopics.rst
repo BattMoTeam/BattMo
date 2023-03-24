@@ -7,7 +7,6 @@ Advanced topics
 
 
     Model initialisation <modelinitialisation>
-    Geometry models <geometries>
     Control models <controls>
     Diffusion models <diffusion>
     Thermal model <thermal>

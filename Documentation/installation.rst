@@ -2,6 +2,8 @@
 Installation instruction and requirements
 =========================================
 
+.. _installation:
+
 BattMo is based on `MRST`_ which provides a general unstructured grid format, generic MATLAB automatic differentiation
 tools and Newton solvers.
 

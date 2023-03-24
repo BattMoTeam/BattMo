@@ -3,36 +3,42 @@ classdef BatteryGenerator2D < BatteryGenerator
 
     properties
 
-        xlength = 1e-6*[10; 100; 50; 80; 10]; % length of components in x direction - default values
-                                              % x(1) : length of negative current collector
-                                              % x(2) : length of negative active material
-                                              % x(3) : length of separator
-                                              % x(4) : length of positive active material
-                                              % x(5) : length of positive current collector
 
-        ylength = 1e-2; % length in y direction - default values
+        % Vector of components lengths in x direction
+        %
+        % - x(1) : length of negative current collector (default: 10 micrometer)
+        % - x(2) : length of negative active material (default: 100 micrometer)
+        % - x(3) : length of separator (default: 50 micrometer)
+        % - x(4) : length of positive active material (default: 80 micrometer)
+        % - x(5) : length of positive current collector (default: 10 micrometer)
+        %                                  
+        xlength = 1e-6*[10; 100; 50; 80; 10]; 
+                                              
+        ylength = 1e-2; % length in y direction (default: 1 cm)
 
-        ccnenx = 10; % discretization number for negative current collector - default value
-        nenx   = 30; % discretization number for negative active material   - default value
-        sepnx  = 30; % discretization number for separator                  - default value
-        penx   = 30; % discretization number for positive active material   - default value
-        ccpenx = 10; % discretization number for positive current collector - default value
+        ccnenx = 10; % discretization number for negative current collector (default: 10)
+        nenx   = 30; % discretization number for negative active material  (default: 30)
+        sepnx  = 30; % discretization number for separator (default: 30)
+        penx   = 30; % discretization number for positive active material  (default: 30)
+        ccpenx = 10; % discretization number for positive current collector (default: 10)
 
-        ny = 10; % discretization number in y direction - default value
+        ny = 10; % discretization number in y direction (default: 10)
 
-        include_current_collectors % flag: true if grid for current collectors should be included
+        include_current_collectors % boolean: true if grid for current collectors should be included
 
-        use_thermal % flag, true if grid for thermal model should be setup.
+        use_thermal % boolean true if grid for thermal model should be setup.
 
-        externalHeatTransferCoefficientTab = 1e3;  % heat transfer coefficient at tab boundary - default value
-        externalHeatTransferCoefficient = 1e3;     % heat transfer coefficient at boundary - default value
+        externalHeatTransferCoefficientTab = 1e3;  % heat transfer coefficient at tab boundary (default: 1e3)
+        externalHeatTransferCoefficient = 1e3;     % heat transfer coefficient at boundary (default: 1e3)
 
     end
 
     methods
 
         function gen = BatteryGenerator2D()
+            
             gen = gen@BatteryGenerator();
+            
         end
 
         function [paramobj, gen] = updateBatteryInputParams(gen, paramobj)
@@ -115,7 +121,6 @@ classdef BatteryGenerator2D < BatteryGenerator
 
 
         function paramobj = setupElectrodes(gen, paramobj, params)
-        % setup grid and coupling term
 
             ne  = 'NegativeElectrode';
             pe  = 'PositiveElectrode';
@@ -200,9 +205,7 @@ classdef BatteryGenerator2D < BatteryGenerator
 
 
         function paramobj = setupThermalModel(gen, paramobj, params)
-        % paramobj is instance of BatteryInputParams
-        %
-        % We recover the external coupling terms
+
             ne    = 'NegativeElectrode';
             pe    = 'PositiveElectrode';
 

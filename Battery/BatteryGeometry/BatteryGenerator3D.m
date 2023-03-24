@@ -3,11 +3,34 @@ classdef BatteryGenerator3D < BatteryGenerator
 
     properties
 
-        % Physical dimension
-
+        %
+        % vector of x-lengths
+        %
+        % - x(1) : x-length of first tab (default: 4cm)
+        % - x(2) : x-length between the tabs (default: 2cm)
+        % - x(3) : x-length of last tab (default: 4cm)
+        %
         xlength = 1e-2*[0.4; 0.2; 0.4];
+        
+        %
+        % vector of y-lengths
+        %
+        % - x(1) : y-length of first tab (default : 1mm)
+        % - x(2) : y-length between the tabs (default : 2cm)
+        % - x(3) : y-length of last tab (default : 1mm)
+        %        
         ylength = 1e-2*[0.1; 2; 0.1];
-        zlength = 1e-6*[10; 100; 50; 80; 10];
+
+        %
+        % Vector of components lengths in z direction
+        %
+        % - z(1) : length of negative current collector (default: 10 micrometer)
+        % - z(2) : length of negative active material (default: 100 micrometer)
+        % - z(3) : length of separator (default: 50 micrometer)
+        % - z(4) : length of positive active material (default: 80 micrometer)
+        % - z(5) : length of positive current collector (default: 10 micrometer)
+        %                                  
+        zlength = 1e-6*[10; 100; 50; 80; 10]; 
 
         % Shorthands used below
         % ne    : Negative electrode
@@ -16,40 +39,39 @@ classdef BatteryGenerator3D < BatteryGenerator
         % cc    : Current collector
         % elyte : Electrolyte
 
-        % Discretization resolution in z-direction
 
         facz = 1;
 
-        sep_nz   = 3;
-        ne_am_nz = 3;
-        pe_am_nz = 3;
-        ne_cc_nz = 2;
-        pe_cc_nz = 2;
+        sep_nz   = 3; % discretization number in z-direction for separator (default: 3)
+        ne_am_nz = 3; % discretization number in z-direction for positive active material (default: 3)
+        pe_am_nz = 3; % discretization number in z-direction for negative active material (default: 3)
+        ne_cc_nz = 2; % discretization number in z-direction for negative current collector (default: 3)
+        pe_cc_nz = 2; % discretization number in z-direction for positive current collector (default: 3)
 
         % Discretization resolution in x-direction
 
         facx = 1;
 
-        int_elyte_nx = 3;
-        ne_cc_nx     = 3;
-        pe_cc_nx     = 3;
+        int_elyte_nx = 3; % discretization number in x-direction interior region (default: 3)
+        ne_cc_nx     = 3; % discretization number in x-direction negative tab region (default: 3)
+        pe_cc_nx     = 3; % discretization number in x-direction positive tab region (default: 3)
 
         % Discretization resolution in y-direction
 
         facy = 1;
 
-        ne_cc_ny = 2;
-        pe_cc_ny = 2;
-        elyte_ny = 4;
+        elyte_ny = 4; % discretization number in y-direction interior region (default: 3)
+        ne_cc_ny = 2; % discretization number in y-direction negative tab region (default: 3)
+        pe_cc_ny = 2; % discretization number in y-direction positive tab region (default: 3)
 
         % Utility variables computed once and then shared by methods (should not be set)
+        
         elyte_nz;
         allparams;
         invcellmap;
 
-        % Heat parameters
-        externalHeatTransferCoefficientTab = 1e3;
-        externalHeatTransferCoefficient = 1e3;
+        externalHeatTransferCoefficientTab = 1e3; % Heat transfer coefficient at the tab
+        externalHeatTransferCoefficient = 1e3; % Heat transfer coefficient for the non-tab regions
 
         use_thermal
 
@@ -211,8 +233,6 @@ classdef BatteryGenerator3D < BatteryGenerator
 
         function paramobj = setupElectrodes(gen, paramobj, params)
 
-
-            % shorthands
             ne  = 'NegativeElectrode';
             pe  = 'PositiveElectrode';
             cc  = 'CurrentCollector';
@@ -255,11 +275,7 @@ classdef BatteryGenerator3D < BatteryGenerator
         end
 
         function paramobj = setupThermalModel(gen, paramobj, params)
-        % paramobj is instance of BatteryInputParams
-        %
-        % We recover the external coupling terms for the current collectors
 
-            % shorthands
             ne    = 'NegativeElectrode';
             pe    = 'PositiveElectrode';
             cc    = 'CurrentCollector';

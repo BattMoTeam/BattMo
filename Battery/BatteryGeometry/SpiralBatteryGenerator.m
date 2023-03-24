@@ -1,22 +1,29 @@
 classdef SpiralBatteryGenerator < BatteryGenerator
-% Setup 3D grid with tab
+% Setup a grid Jelly Roll model
     
     properties
             
         nwindings % number of windings in the spiral
-        rInner    % Inner Radius (for the empty space in the middle)
-        widthDict % dictionary of widths for each component. The required key names for the dictionary are
-                  %                 - 'Separator'
-                  %                 - 'NegativeActiveMaterial'
-                  %                 - 'NegativeCurrentCollector'
-                  %                 - 'PositiveActiveMaterial'
-                  %                 - 'PositiveCurrentCollector'
-        nrDict    % dicionary with number of cell in radial direction for each component (same keys as in widthDict).
+        
+        rInner    % Inner Radius correspoding to the empty space in the middle
+
+        %
+        % Dictionary of widths for each component. The required key names for the dictionary are
+        %
+        % - 'Separator'
+        % - 'NegativeActiveMaterial'
+        % - 'NegativeCurrentCollector'
+        % - 'PositiveActiveMaterial'
+        % - 'PositiveCurrentCollector'
+        widthDict
+        
+        % dicionary with number of cell in radial direction for each component (same keys as in widthDict).
+        nrDict    
 
         L            % length of the battery
         nas          % number of cells in the angular direction
         nL           % number of discretization cells in the longitudonal
-        angleuniform % 
+        angleuniform 
 
         tag     % cell-valued vector giving component number (indexing is given by tagdict)
         tagdict % dictionary giving the component number
@@ -34,8 +41,13 @@ classdef SpiralBatteryGenerator < BatteryGenerator
         heightLayer
         nHeightLayer
 
-        tabwidths      % computed tab width (due to discretization, we cannot enforce the tab widths)
-        windingnumbers % for the tabs (implemented only for aligned tabs now)
+        % computed tab width (due to discretization, we cannot enforce the tab widths)
+        
+        tabwidths
+
+        % for the tabs (implemented only for aligned tabs now)
+        
+        windingnumbers 
         
         use_thermal
     end
@@ -43,7 +55,9 @@ classdef SpiralBatteryGenerator < BatteryGenerator
     methods
         
         function gen = SpiralBatteryGenerator()
-            gen = gen@BatteryGenerator();  
+
+            gen = gen@BatteryGenerator();
+            
         end
         
         function [paramobj, gen] = updateBatteryInputParams(gen, paramobj, params)
@@ -287,7 +301,6 @@ classdef SpiralBatteryGenerator < BatteryGenerator
         
         function paramobj = setupElectrodes(gen, paramobj, params)
 
-            % shorthands 
             ne  = 'NegativeElectrode';
             pe  = 'PositiveElectrode';
             cc  = 'CurrentCollector';
@@ -315,7 +328,6 @@ classdef SpiralBatteryGenerator < BatteryGenerator
         end
 
         function paramobj = setupCurrentCollectorBcCoupTerm(gen, paramobj, params)
-        % paramobj is instance of CurrentCollectorInputParams
             
             G = paramobj.G; % grid of the current collector
             extfaces = params.extfaces;

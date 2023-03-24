@@ -2,22 +2,40 @@ classdef CoinCellBatteryGenerator < BatteryGenerator
 
     properties
 
-        % Design params for the components (electrodes, current collectors etc)
+        %
+        % Design params for the components
+        %
+        % The format is a `matlab table structure <https://se.mathworks.com/help/matlab/tables.html>`_ where the rows are labeled with
+        %
+        % - NegativeCurrentCollector
+        % - NegativeActiveMaterial
+        % - ElectrolyteSeparator
+        % - PositiveActiveMaterial
+        % - PositiveCurrentCollector
+        %
+        % and the corresponding columns
+        %
+        % - thickness
+        % - diameter
+        % - numCellLayers : Discretization number in the layer
+        %
+        % see example :code:`runCR`
         compDims
-        numRadial
-        numAngular
-
-        tag     % cell-valued vector giving component number (indexing is given by tagdict)
-        tagdict % dictionary giving the component number
+        
+        numRadial % Discretization number in the radial direction
+        numAngular % Discretization number if the angular direction
+        
+        tag
+        tagdict 
 
         negativeExtCurrentFaces
         positiveExtCurrentFaces
-
-        % Heat parameters
+        
         externalHeatTransferCoefficient = 1e3;
 
         include_current_collectors
         use_thermal
+        
     end
 
     methods
@@ -66,7 +84,6 @@ classdef CoinCellBatteryGenerator < BatteryGenerator
 
         function paramobj = setupElectrodes(gen, paramobj, params)
 
-            % shorthands
             ne  = 'NegativeElectrode';
             pe  = 'PositiveElectrode';
             cc  = 'CurrentCollector';
@@ -99,7 +116,6 @@ classdef CoinCellBatteryGenerator < BatteryGenerator
 
 
         function paramobj = setupCurrentCollectorBcCoupTerm(gen, paramobj, params)
-        % paramobj is instance of CurrentCollectorInputParams
 
             G = paramobj.G; % grid of the current collector
             extfaces = params.extfaces;
@@ -118,9 +134,7 @@ classdef CoinCellBatteryGenerator < BatteryGenerator
         end
 
         function paramobj = setupThermalModel(gen, paramobj, params)
-        % paramobj is instance of BatteryInputParams
 
-        % Cooling on all external faces
             [couplingfaces, couplingcells] = boundaryFaces(gen.G);
 
             params = struct('couplingfaces', couplingfaces, ...

@@ -1,31 +1,38 @@
 classdef BatteryGenerator1D < BatteryGenerator
 % setup 1D grid 
     properties
-        
-        xlength = 1e-6*[25; 64; 15; 57; 15]; % length of components in x direction - default values
-                                             % x(1) : length of negative current collector
-                                             % x(2) : length of negative active material
-                                             % x(3) : length of separator
-                                             % x(4) : length of positive active material
-                                             % x(5) : length of positive current collector
 
-        sepnx  = 10; % discretization number for negative current collector - default value
-        nenx   = 10; % discretization number for negative active material   - default value
-        penx   = 10; % discretization number for separator                  - default value
-        nenr   = 10; % discretization for solid diffusion                   - default value
-        penr   = 10; % discretization for solid diffusion                   - default value
-        ccnenx = 10; % discretization number for positive current collector - default value
-        ccpenx = 10; % discretization number for positive active material   - default value
+        %
+        % vector of component lengths
+        %
+        % - x(1) : length of negative current collector (default = 25 micro meter)
+        % - x(2) : length of negative active material (default = 64 micro meter)
+        % - x(3) : length of separator (default = 15 micro meter)
+        % - x(4) : length of positive active material (default = 57 micro meter)
+        % - x(5) : length of positive current collector (default = 15 micro meter)
+        % 
+        xlength = 1e-6*[25; 64; 15; 57; 15];
 
+        sepnx  = 10; % discretization number for negative current collector (default = 10)
+        nenx   = 10; % discretization number for negative active material (default = 10)
+        penx   = 10; % discretization number for separator (default = 10)
+        nenr   = 10; % discretization for solid diffusion (default = 10)
+        penr   = 10; % discretization for solid diffusion (default = 10)
+        ccnenx = 10; % discretization number for positive current collector (default = 10)
+        ccpenx = 10; % discretization number for positive active material (default = 10)
+
+        %
         % refinement factor (can be used to easily increase discretization refinement)
         % see applyResolutionFactors method
+        %
         fac = 1;
 
-        % flag : true if grid for current collectors should be included
+        % boolean : true if grid for current collectors should be included
         include_current_collectors
-        % flag : true if grid for thermal model should be included
+        % boolean : true if grid for thermal model should be included
         use_thermal
 
+        % Face area in the transversal direction (default = 1)
         faceArea = 1; 
         
     end
@@ -72,8 +79,6 @@ classdef BatteryGenerator1D < BatteryGenerator
         end
 
         function [paramobj, gen] = setupGrid(gen, paramobj, ~)
-        % paramobj is instance of BatteryInputParams
-        % setup paramobj.G
             
             sepnx  = gen.sepnx;
             nenx   = gen.nenx;
@@ -191,10 +196,11 @@ classdef BatteryGenerator1D < BatteryGenerator
         end
                 
         function paramobj = setupThermalModel(gen, paramobj, params)
-        % paramobj is instance of BatteryInputParams
+
             params.couplingfaces = [];
             params.couplingcells = (1 : gen.G.cells.num)';
             paramobj = setupThermalModel@BatteryGenerator(gen, paramobj, params);
+            
         end
 
         function G = adjustGridToFaceArea(gen, G);

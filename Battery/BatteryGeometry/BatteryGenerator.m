@@ -4,12 +4,12 @@ classdef BatteryGenerator
 %
 % This class goes through the whole grid setup and is meant to be used as a base class.
 %
-% Example : BatteryGenerator1D.m, BatteryGenerator2D.m, BatteryGenerator3D
+% Example : :class:`BatteryGenerator1D <BatteryGeometry.BatteryGenerator1D>`, :class:`BatteryGenerator2D <BatteryGeometry.BatteryGenerator2D>`, :class:`BatteryGenerator3D <BatteryGeometry.BatteryGenerator3D>`
 
     properties
         % Global grid 
-        % It is stored here because is shared by many setup functions
-        % It is setup by function setupBatteryGrid
+        % It is stored here because is shared by many setup functions. 
+        % It is constructed by the methode  :meth:`setupGrid`
         G
         
     end
@@ -17,12 +17,20 @@ classdef BatteryGenerator
     methods
         
         function [paramobj, gen] = updateBatteryInputParams(gen, paramobj, params)
-        % this function is the main class function as it returns an updated paramobj object with grid structure
+        %
+        % This function is the main class function as it returns an updated :code:`paramobj` object with grid structure
+        %
+            
             error('virtual function');
+            
         end
         
         function [paramobj, gen] = setupBatteryInputParams(gen, paramobj, params)
-        % main function : add grid and coupling to paramobj structure
+        % This is the main function which should be called by the derived class at the end of the :meth:`updateBatteryInputParams` method
+        % The function set up the grid and the coupling terms and add those in the :code:`paramobj` structure which is
+        % an instance of :class:`BatteryInputParams <Battery.BatteryInputParams>`
+        % 
+            
             [paramobj, gen] = gen.setupGrid(paramobj, params);
             % We check if params contains some Electrolyte field 
             if isfield(params, 'Electrolyte')
@@ -43,13 +51,16 @@ classdef BatteryGenerator
         end
 
         function [paramobj, gen] = setupGrid(gen, paramobj, params)
-        % paramobj is instance of BatteryInputParams
-        % setup paramobj.G and update gen.G 
+        % setup :code:`paramobj.G` and update  :attr:`G`
+        % Here, :code:`paramobj` is an instance of :class:`BatteryInputParams <Battery.BatteryInputParams>`
+            
             error('virtual function');
+            
         end
         
         function paramobj = setupThermalModel(gen, paramobj, params)
-        % paramobj is instance of BatteryInputParams
+        % Method that setups the grid and the coupling for the thermal model
+            
             paramobj.ThermalModel.G = gen.G;
             coupTerm = couplingTerm('ThermalConvectiveCooling', {'ThermalModel'});
             coupTerm.couplingcells = params.couplingcells;
@@ -58,24 +69,26 @@ classdef BatteryGenerator
         end
         
         function paramobj = setupElectrolyte(gen, paramobj, params)
-        % paramobj is instance of ElectrolyteInputParams
+        % Method that setups the grid and the coupling for the electrolyte model
+        % Here, :code:`paramobj` is instance of :class:`ElectrolyteInputParams <Electrochemistry.ElectrolyteInputParams>`
+            
             paramobj = gen.setupElectrolyteGrid(paramobj, params);
             paramobj.Separator = gen.setupSeparatorGrid(paramobj.Separator, params.Separator);
         end
 
         
         function paramobj = setupElectrolyteGrid(gen, paramobj, params)
-        % paramobj is instance of ElectrolyteInputParams
-        % setup paramobj.G
-
+        % Setup the grid for the electrolyte
+        % Here, :code:`paramobj` is instance of :class:`ElectrolyteInputParams <Electrochemistry.ElectrolyteInputParams>`
+            
             % Default setup
             paramobj.G = genSubGrid(gen.G, params.cellind);
             
         end
         
         function paramobj = setupSeparatorGrid(gen, paramobj, params)
-        % paramobj is instance of SeparatorInputParams
-        % setup paramobj.G
+        % Setup the grid for the separator
+        % Here, :code:`paramobj` is instance of :class:`BatteryInputParams <Battery.BatteryInputParams>`
             
            % Default setup
             paramobj.G = genSubGrid(gen.G, params.cellind);
@@ -83,7 +96,8 @@ classdef BatteryGenerator
         end
 
         function paramobj = setupElectrodes(gen, paramobj, params)
-        % paramobj is instance of BatteryInputParams
+        % Method that setups the grid and the coupling terms for both electrodes
+
             ne = 'NegativeElectrode';
             pe = 'PositiveElectrode';
             eldes = {ne, pe};
@@ -102,8 +116,9 @@ classdef BatteryGenerator
         end
                 
         function paramobj = setupElectrode(gen, paramobj, params)
-        % paramobj is instance of ElectrodeInputParams
-        
+        % Method that setups the grid and the coupling terms for an electrode
+        % Here, :code:`paramobj` is instance of :class:`ElectrodeInputParams <Electrochemistry.ElectrodeInputParams>`
+            
             % shorthands 
             am = 'ActiveMaterial';
             cc = 'CurrentCollector';
@@ -127,38 +142,41 @@ classdef BatteryGenerator
         end
         
         function paramobj = setupElectrodeGrid(gen, paramobj, params)
-        % paramobj is instance of ElectrodeInputParams
-        % setup paramobj.G
+        % Setup the grid for an electrode
+        % Here, :code:`paramobj` is instance of :class:`ElectrodeInputParams <Electrochemistry.ElectrodeInputParams>`
             
-            % Default setup
             paramobj.G = genSubGrid(gen.G, params.cellind);
         end
 
         function paramobj = setupActiveMaterialGrid(gen, paramobj, params)
-        % paramobj is instance of ActiveMaterialInputParams
-        % setup paramobj.G
+        % Setup the grid for the active material
+        % Here, :code:`paramobj` is instance of :class:`ActiveMaterialInputParams <Electrochemistry.ActiveMaterialInputParams>`
             
-            % Default setup
             paramobj.G = genSubGrid(gen.G, params.cellind);
+            
         end
         
         function paramobj = setupCurrentCollector(gen, paramobj, params)
-        % paramobj is instance of CurrentCollectorInputParams
+        % Method that setups the grid and coupling terms for the current collectors
+        % Here, :code:`paramobj` is instance of :class:`CurrentCollectorInputParams <Electrochemistry.CurrentCollectorInputParams>`
+
             paramobj = gen.setupCurrentCollectorGrid(paramobj, params);
             paramobj = gen.setupCurrentCollectorBcCoupTerm(paramobj, params);
+            
         end
 
         function paramobj = setupCurrentCollectorGrid(gen, paramobj, params)
-        % paramobj is instance of CurrentCollectorInputParams
-        % setup paramobj.G
+        % Setup a grid for a current collector
+        % Here, :code:`paramobj` is instance of :class:`CurrentCollectorInputParams <Electrochemistry.CurrentCollectorInputParams>`
 
-           % Default setup
             paramobj.G = genSubGrid(gen.G, params.cellind);
+            
         end       
 
         function paramobj = setupElectrodeElectrolyteCoupTerm(gen, paramobj, params)
-        % paramobj is instance of BatteryInputParams
-        % setup paramobj.couplingTerms
+        % Setup the coupling terms between the electrode and electrolyte
+        % Here, :code:`paramobj` is instance of :class:`BatteryInputParams <Battery.BatteryInputParams>`
+            
             ne    = 'NegativeElectrode';
             pe    = 'PositiveElectrode';
             elyte = 'Electrolyte';
@@ -213,8 +231,9 @@ classdef BatteryGenerator
         end
 
         function paramobj = setupCurrentCollectorActiveMaterialCoupTerm(gen, paramobj, params)
-        % paramobj is instance of ElectrodeInputParams
-        % setup paramobj.couplingTerm
+        % Setup the coupling term between the current collector and the active material
+        % Here, :code:`paramobj` is instance of :class:`ElectrodeInputParams <Electrochemistry.ElectrodeInputParams>`
+
             am = 'ActiveMaterial';
             cc  = 'CurrentCollector';
             
@@ -255,8 +274,7 @@ classdef BatteryGenerator
         end
 
         function paramobj = setupCurrentCollectorBcCoupTerm(gen, paramobj, params)
-        % paramobj is instance of CurrentCollectorInputParams
-        % setup paramobj.couplingTerm
+        % Setup the boundary locations for the current collector
             
             % default setup
             compnames = {'CurrentCollector'};
@@ -269,6 +287,7 @@ classdef BatteryGenerator
         end
 
         function paramobj = setupActiveMaterialBcCoupTerm(gen, paramobj, params)
+        % Setup the boundary locations for the active material (used in the absence of current collectors)
             
             % default setup
             compname = 'ActiveMaterial';
