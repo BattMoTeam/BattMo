@@ -143,7 +143,7 @@ classdef BatteryGeneratorMultilayerPouch < BatteryGenerator
 
                 % TODO don't compute I, J
                 % Create interior slabs
-                [I, J, K] = ndgrid(2:G.cartDims(1)-1, 1:G.cartDims(2), NZ(k):NZ(k+1)-1);
+                [I, J, K] = ndgrid(1:G.cartDims(1), 2:G.cartDims(2)-1, NZ(k):NZ(k+1)-1);
 
                 % Cells in this IJK box
                 cbox = sub2ind(G.cartDims, I(:), J(:), K(:));
@@ -160,10 +160,10 @@ classdef BatteryGeneratorMultilayerPouch < BatteryGenerator
                 % Create tabs for the CCs
                 tab = false;
                 if strcmp(nzs_tag{k}{1}, ne) && strcmp(nzs_tag{k}{2}, cc)
-                    [I, J, K] = ndgrid(1, (ne_cc_tab+1):(G.cartDims(2)-ne_cc_tab), NZ(k):NZ(k+1)-1);
+                    [I, J, K] = ndgrid((ne_cc_tab+1):(G.cartDims(1)-ne_cc_tab), 1, NZ(k):NZ(k+1)-1);
                     tab = true;
                 elseif strcmp(nzs_tag{k}{1}, pe) && strcmp(nzs_tag{k}{2}, cc)
-                    [I, J, K] = ndgrid(G.cartDims(1), (pe_cc_tab+1):(G.cartDims(2)-pe_cc_tab), NZ(k):NZ(k+1)-1);
+                    [I, J, K] = ndgrid((pe_cc_tab+1):(G.cartDims(1)-pe_cc_tab), G.cartDims(2), NZ(k):NZ(k+1)-1);
                     tab = true;
                 end
 
