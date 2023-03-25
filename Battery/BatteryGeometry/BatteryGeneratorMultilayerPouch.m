@@ -5,7 +5,7 @@ classdef BatteryGeneratorMultilayerPouch < BatteryGenerator
 
         % Physical dimensions (without tabs)
         pouch_width = 100*milli*meter;
-        pouch_height = 300*milli*meter;
+        pouch_height = 100*milli*meter;
 
         % For now: Tabs are placed in the center and have the same width
         tab_width  = 50*milli*meter;
@@ -16,7 +16,7 @@ classdef BatteryGeneratorMultilayerPouch < BatteryGenerator
         unit_cell_thickness = 1e-6*[10; 100; 50; 80; 10];
 
         % Number of layers
-        n_layers = 5;
+        n_layers = 1;
 
         % Shorthands used below
         % ne    : Negative electrode
@@ -121,19 +121,8 @@ classdef BatteryGeneratorMultilayerPouch < BatteryGenerator
 
             % Setup widths
             x0 = 0.5*(gen.pouch_width - gen.tab_width);
-            %x1 = gen.pouch_width - x0;
-            %xlength = [0; min(xn0,xp0); max(xn0,xp0); min(xn1,xp1); max(xn1,xp1); gen.pouch_width];
-            %dxlength = diff(xlength);
             dxlength = [x0; gen.pouch_width-gen.tab_width; x0];
-            % In case of equal width tabs:
-            idx = dxlength ~= 0;
-            dxlength = dxlength(idx);
-
-            %nxs = [gen.elyte_nx; gen.ne_cc_nx + gen.tab_nx; gen.ne_cc_nx + gen.tab_nx; gen.ne_cc_nx + gen.tab_nx; gen.elyte_nx];
-            %nxs = [gen.elyte_nx; max(abs(gen.ne_cc_nx-gen.tab_nx), 1); min(gen.ne_cc_nx, gen.tab_nx); max(abs(gen.ne_cc_nx-gen.tab_nx), 1); gen.elyte_nx];
-            %nxs = nxs(idx);
             nxs = [gen.elyte_nx; gen.tab_nx; gen.elyte_nx];
-
             x = dxlength./nxs;
             x = rldecode(x, nxs);
             x = [0; cumsum(x)];
@@ -147,7 +136,6 @@ classdef BatteryGeneratorMultilayerPouch < BatteryGenerator
 
             % Setup grid
             G = tensorGrid(x, y, z);
-            %figure,plotGrid(G),view(2),keyboard;
 
             % Integer layers
             NZ = [0; cumsum(nzs)] + 1;
@@ -194,7 +182,6 @@ classdef BatteryGeneratorMultilayerPouch < BatteryGenerator
                     cprev = getfield(gen.allparams, nzs_tag{k}{:}, 'cellindtab');
                     cellindtab = [cbox; cprev];
                     gen.allparams = setfield(gen.allparams, nzs_tag{k}{:}, 'cellindtab', cellindtab);
-                    %keyboard;
                 end
             end
 
@@ -241,7 +228,7 @@ classdef BatteryGeneratorMultilayerPouch < BatteryGenerator
             gen.pe_cc_nz = gen.facz*gen.pe_cc_nz;
 
             gen.elyte_nx = gen.facx*gen.elyte_nx;
-            gen.tab_nx = gen.facx*gen.tab_nx;
+            gen.tab_nx   = gen.facx*gen.tab_nx;
 
             gen.ne_tab_ny = gen.facy*gen.ne_tab_ny;
             gen.pe_tab_ny = gen.facy*gen.pe_tab_ny;
@@ -261,7 +248,6 @@ classdef BatteryGeneratorMultilayerPouch < BatteryGenerator
         end
 
         function paramobj = setupElectrodes(gen, paramobj, ~)
-
 
             % shorthands
             ne = 'NegativeElectrode';
