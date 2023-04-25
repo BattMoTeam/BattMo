@@ -31,7 +31,7 @@ classdef ActiveMaterial < ElectronicComponent
         BruggemanCoefficient
 
         use_particle_diffusion
-
+        use_interparticle_diffusion
         standAlone
         
     end
@@ -61,20 +61,23 @@ classdef ActiveMaterial < ElectronicComponent
             
             model.Interface = Interface(paramobj.Interface);
 
-            diffusionModelType = model.diffusionModelType
+            diffusionModelType = model.diffusionModelType;
 
             switch model.diffusionModelType
               case 'simple'
                 model.SolidDiffusion = SimplifiedSolidDiffusionModel(paramobj.SolidDiffusion);
                 model.InterDiffusionCoefficient = paramobj.InterDiffusionCoefficient;
                 model.use_particle_diffusion = true;
+                model.use_interparticle_diffusion = true;
               case 'full'
                 paramobj.SolidDiffusion.np = model.G.cells.num;
                 model.SolidDiffusion = FullSolidDiffusionModel(paramobj.SolidDiffusion);
                 model.use_particle_diffusion = true;
+                model.use_interparticle_diffusion = false;
               case 'interParticleOnly'
                 model.InterDiffusionCoefficient = paramobj.InterDiffusionCoefficient;
                 model.use_particle_diffusion = false;
+                model.use_interparticle_diffusion = true;
               otherwise
                 error('Unknown diffusionModelType %s', diffusionModelType);
             end
@@ -100,8 +103,9 @@ classdef ActiveMaterial < ElectronicComponent
             
             % setup effective electrical conductivity using Bruggeman approximation
             model.EffectiveElectricalConductivity = model.electricalConductivity.*vf.^brugg;
+
             
-            if strcmp(model.diffusionModelType, 'simple')
+            if model.use_interparticle_diffusion
                 
                 interDiff = model.InterDiffusionCoefficient;
                 amFrac    = model.activeMaterialFraction;
@@ -176,28 +180,32 @@ classdef ActiveMaterial < ElectronicComponent
                 model = model.registerPropFunction({{sd, 'T'}, fn, {'T'}});
             end
 
-            if model.use_particle_diffusion
+            switch model.diffusionModelType
+
+              case 'simple'
 
                 fn = @ActiveMaterial.updateConcentrations;
-                switch model.diffusionModelType
-                  case 'simple'
-                    model = model.registerPropFunction({{sd, 'cAverage'}, fn, {'c'}});
-                    model = model.registerPropFunction({{itf, 'cElectrodeSurface'}, fn, {{sd, 'cSurface'}}});
-                  case 'full'
-                    model = model.registerPropFunction({{itf, 'cElectrodeSurface'}, fn, {{sd, 'cSurface'}}});
-                  otherwise
-                    error('diffusionModelType not recognized.');
-                end
-
-                if strcmp(model.diffusionModelType, 'simple')
-                    fn = @ActiveMaterial.updateMassFlux;
-                    model = model.registerPropFunction({'massFlux', fn, {'c'}});
-                    fn = @ActiveMaterial.updateMassSource;
-                    model = model.registerPropFunction({'massSource', fn, {'Rvol'}});
-                    fn = @ActiveMaterial.updateMassConservation;
-                    model = model.registerPropFunction({'massCons', fn, {'massAccum', 'massFlux', 'massSource'}});
-                end
+                model = model.registerPropFunction({{sd, 'cAverage'}, fn, {'c'}});
+                model = model.registerPropFunction({{itf, 'cElectrodeSurface'}, fn, {{sd, 'cSurface'}}});
                 
+                fn = @ActiveMaterial.updateMassFlux;
+                model = model.registerPropFunction({'massFlux', fn, {'c'}});
+
+                fn = @ActiveMaterial.updateMassSource;
+                model = model.registerPropFunction({'massSource', fn, {'Rvol'}});
+
+                fn = @ActiveMaterial.updateMassConservation;
+                model = model.registerPropFunction({'massCons', fn, {'massAccum', 'massFlux', 'massSource'}});
+
+                fn = @ActiveMaterial.updateRvol;
+                model = model.registerPropFunction({'Rvol', fn, {{itf, 'R'}}});
+                model = model.registerPropFunction({{sd, 'Rvol'}, fn, {{itf, 'R'}}});
+
+              case 'full'
+
+                fn = @ActiveMaterial.updateConcentrations;
+                model = model.registerPropFunction({{itf, 'cElectrodeSurface'}, fn, {{sd, 'cSurface'}}});
+
                 fn = @ActiveMaterial.updateRvol;
                 model = model.registerPropFunction({'Rvol', fn, {{itf, 'R'}}});
                 model = model.registerPropFunction({{sd, 'Rvol'}, fn, {{itf, 'R'}}});
@@ -206,11 +214,11 @@ classdef ActiveMaterial < ElectronicComponent
                 fn = @ActiveMaterial.updateSOC;
                 model = model.registerPropFunction({'SOC', fn, {{sd, 'cAverage'}}});
                 
-            else
+              case 'interParticleOnly'
 
                 fn = @ActiveMaterial.updateConcentrations;
                 model = model.registerPropFunction({{itf, 'cElectrodeSurface'}, fn, {'c'}});
-
+                
                 fn = @ActiveMaterial.updateRvol;
                 model = model.registerPropFunction({'Rvol', fn, {{itf, 'R'}}});
 
@@ -222,6 +230,10 @@ classdef ActiveMaterial < ElectronicComponent
                 
                 fn = @ActiveMaterial.updateMassConservation;
                 model = model.registerPropFunction({'massCons', fn, {'massAccum', 'massFlux', 'massSource'}});
+
+              otherwise
+                
+                error('diffusionModelType not recognized.');
                 
             end
 
@@ -417,13 +429,16 @@ classdef ActiveMaterial < ElectronicComponent
             itf = 'Interface';
             
             if model.use_particle_diffusion
-            if strcmp(model.diffusionModelType, 'simple')
-                state.(sd).cAverage = state.c;
-            end
-            
-            state.(itf).cElectrodeSurface = state.(sd).cSurface;
+
+                if strcmp(model.diffusionModelType, 'simple')
+                    state.(sd).cAverage = state.c;
+                end
+                
+                state.(itf).cElectrodeSurface = state.(sd).cSurface;
             else
+                
                 state.(itf).cElectrodeSurface = state.c;
+                
             end
             
         end
