@@ -52,7 +52,6 @@ classdef ActiveMaterial < ElectronicComponent
                        'externalCouplingTerm'  , ...
                        'diffusionModelType'    , ...
                        'use_thermal'           , ...
-                       'use_particle_diffusion', ...
                        'BruggemanCoefficient'};
             
             model = dispatchParams(model, paramobj, fdnames);
@@ -60,35 +59,24 @@ classdef ActiveMaterial < ElectronicComponent
             % Setup Interface component
             paramobj.Interface.G = model.G;
             
-            if isempty(paramobj.use_particle_diffusion)
-                model.use_particle_diffusion = true;
-            end
-            
             model.Interface = Interface(paramobj.Interface);
-            
-            if model.use_particle_diffusion
-                
-                paramobj.SolidDiffusion.volumetricSurfaceArea = model.Interface.volumetricSurfaceArea;
 
-                switch model.diffusionModelType
-                  case 'simple'
-                    model.SolidDiffusion = SimplifiedSolidDiffusionModel(paramobj.SolidDiffusion);
-                  case 'full'
-                    paramobj.SolidDiffusion.np = model.G.cells.num;
-                    model.SolidDiffusion = FullSolidDiffusionModel(paramobj.SolidDiffusion);
-                  otherwise
-                    error('Unknown diffusionModelType %s', diffusionModelType);
-                end
+            diffusionModelType = model.diffusionModelType
 
-                if strcmp(model.diffusionModelType, 'simple')
-                    % only used in SimplifiedSolidDiffusionModel (for now)
-                    model.InterDiffusionCoefficient = paramobj.InterDiffusionCoefficient;
-                end
-                
-            end
-
-            if ~model.use_particle_diffusion
+            switch model.diffusionModelType
+              case 'simple'
+                model.SolidDiffusion = SimplifiedSolidDiffusionModel(paramobj.SolidDiffusion);
                 model.InterDiffusionCoefficient = paramobj.InterDiffusionCoefficient;
+                model.use_particle_diffusion = true;
+              case 'full'
+                paramobj.SolidDiffusion.np = model.G.cells.num;
+                model.SolidDiffusion = FullSolidDiffusionModel(paramobj.SolidDiffusion);
+                model.use_particle_diffusion = true;
+              case 'interParticleOnly'
+                model.InterDiffusionCoefficient = paramobj.InterDiffusionCoefficient;
+                model.use_particle_diffusion = false;
+              otherwise
+                error('Unknown diffusionModelType %s', diffusionModelType);
             end
             
             nc = model.G.cells.num;
@@ -157,6 +145,7 @@ classdef ActiveMaterial < ElectronicComponent
                 varnames = {'c'        , ...
                             'massCons' , ...
                             'massAccum', ...
+                            'massFlux', ...
                             'massSource'};
                 model = model.registerVarNames(varnames);
             end

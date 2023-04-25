@@ -11,12 +11,11 @@
                               "electricalConductivity": {"type" : "number"},
                               "density" : {"type" : "number"},
                               "diffusionModelType" : {"type" : "string",
-                                                      "enum" : ["full", "simple"]},
+                                                      "enum" : ["full", "simple", "interParticleOnly"]},
                               "BruggemanCoefficient" : {"type" : "number"},
                               "volumeFraction" : {"type" : "number"},
                               "activeMaterialFraction" : {"type" : "number",
-                                                          "description" : "volume fraction effectively occupied by the active material (the rest could be binder material)"},
-                              "use_particle_diffusion": {"type" : "boolean"}
+                                                          "description" : "volume fraction effectively occupied by the active material (the rest could be binder material)"}
                             }
             }
            ],
@@ -30,7 +29,7 @@
               {"properties" : {"diffusionModelType" : {"const" : "simple"},
                                "SolidDiffusion" : {"$ref" : "SimplifiedSolidDiffusionModel"}}
               },
-              {"not" : {"properties" : {"diffusionModelType": {"type" : "string"}}}
+              {"properties" : {"diffusionModelType" : {"const": "interParticleOnly"}}
               }
             ]
 }

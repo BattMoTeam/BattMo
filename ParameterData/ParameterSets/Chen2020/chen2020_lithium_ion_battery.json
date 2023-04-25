@@ -3,7 +3,6 @@
   "initT": 298.15,
   "use_thermal": false,
   "include_current_collectors": false,
-  "use_particle_diffusion": true,
   "Control" : {
     "controlPolicy" : "IEswitch",
     "initialControl" : "discharging",

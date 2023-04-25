@@ -21,7 +21,6 @@ classdef BatteryInputParams < InputParams
         couplingTerms % Coupling terms (describe the topological structure of the coupling between the components)
         
         use_thermal            % flag : true if  coupled thermal simulation should be considered
-        use_particle_diffusion % flag : true if solid diffusion should be included (mainly for debugging)
         include_current_collectors
 
     end
@@ -81,18 +80,7 @@ classdef BatteryInputParams < InputParams
             paramobj = mergeParameters(paramobj, {{'include_current_collectors'}    , ...
                                                   {ne, 'include_current_collectors'}, ...
                                                   {pe, 'include_current_collectors'}});
-                            
-            paramobj = mergeParameters(paramobj, {{'use_particle_diffusion'}        , ...
-                                                  {ne, am, 'use_particle_diffusion'}, ...
-                                                  {pe, am, 'use_particle_diffusion'}});
 
-            if isempty(paramobj.use_particle_diffusion)
-                % set default to true
-                paramobj.use_particle_diffusion = true;
-                paramobj = mergeParameters(paramobj, {{'use_particle_diffusion'}        , ...
-                                                      {ne, am, 'use_particle_diffusion'}, ...
-                                                      {pe, am, 'use_particle_diffusion'}});
-            end
             
             paramobj.(ne)    = paramobj.(ne).validateInputParams();
             paramobj.(pe)    = paramobj.(pe).validateInputParams();

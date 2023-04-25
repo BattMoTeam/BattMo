@@ -47,8 +47,6 @@ diffusionModelType = 'full';
 jsonstruct.(pe).(am).diffusionModelType = diffusionModelType;
 jsonstruct.(ne).(am).diffusionModelType = diffusionModelType;
 
-jsonstruct.use_particle_diffusion = true;
-
 paramobj = BatteryInputParams(jsonstruct);
 
 paramobj.(ne).(am).InterDiffusionCoefficient = 0;

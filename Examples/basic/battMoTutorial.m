@@ -36,11 +36,6 @@ jsonstruct.use_thermal = false;
 
 jsonstruct.include_current_collectors = false;
 
-%%%
-% Our model will simulate diffusion so we set use_particle_diffusion to
-% true:
-
-jsonstruct.use_particle_diffusion = true;
 
 %%%
 % The structure created in the jsonstruct follows the same hierarchy as the

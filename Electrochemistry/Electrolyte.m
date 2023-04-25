@@ -143,9 +143,9 @@ classdef Electrolyte < ElectroChemicalComponent
 
             ncomp = model.ncomp; % number of components
 
-            c          = state.c;   % concentration of Li+
-            T            = state.T;   % temperature
-            phi          = state.phi; % potential
+            c   = state.c;   % concentration of Li+
+            T   = state.T;   % temperature
+            phi = state.phi; % potential
 
             % calculate the concentration derivative of the chemical potential for each species in the electrolyte
             % In the case of a binary electrolyte, we could have simplified those expressions.
