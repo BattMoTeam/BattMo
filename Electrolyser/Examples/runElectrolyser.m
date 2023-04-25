@@ -32,7 +32,6 @@ end
 model = model.validateModel();
 cgt = model.computationalGraph;
 
-return
 [model, initstate] = model.setupBcAndInitialState();
 
 % total = 10*hour;

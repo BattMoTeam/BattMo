@@ -4,7 +4,7 @@ classdef ElectronicComponent < BaseModel
 % 
     properties
         
-        EffectiveElectricalConductivity %_Effective_electrical_conductivity
+        EffectiveElectricalConductivity % Effective electrical conductivity
         constants % Physical constants
 
         use_thermal
