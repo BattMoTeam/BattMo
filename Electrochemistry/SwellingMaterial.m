@@ -12,7 +12,7 @@ classdef SwellingMaterial < ActiveMaterial
         %
             model = model@ActiveMaterial(paramobj);
             
-            
+            % hello
         end
 
         function model = registerVarAndPropfuncNames(model)
