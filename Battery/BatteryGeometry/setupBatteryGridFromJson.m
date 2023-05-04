@@ -10,20 +10,29 @@ function [paramobj, gridGenerator] = setupBatteryGridFromJson(paramobj, jsonstru
         xlength(2) = jsonstruct.NegativeElectrode.ActiveMaterial.thickness;
         xlength(3) = jsonstruct.Electrolyte.Separator.thickness;
         xlength(4) = jsonstruct.PositiveElectrode.ActiveMaterial.thickness;
+
         if paramobj.NegativeElectrode.include_current_collectors
             xlength(1) = jsonstruct.NegativeElectrode.ActiveMaterial.thickness;
         end
         if paramobj.PositiveElectrode.include_current_collectors
             xlength(5) = jsonstruct.PositiveElectrode.ActiveMaterial.thickness;
         end
-        if isfield(jsonstruct.Geometry, 'faceArea')
-            gen.faceArea = jsonstruct.Geometry.faceArea;
-        end
 
         gen.sepnx  = jsonstruct.Electrolyte.Separator.N;
         gen.nenx   = jsonstruct.NegativeElectrode.ActiveMaterial.N;
         gen.penx   = jsonstruct.PositiveElectrode.ActiveMaterial.N;
+
+        if paramobj.NegativeElectrode.include_current_collectors
+            gen.ccnenx = jsonstruct.NegativeElectrode.CurrentCollector.N;
+        end
+        if paramobj.PositiveElectrode.include_current_collectors
+            gen.ccpenx = jsonstruct.PositiveElectrode.CurrentCollector.N;
+        end
         
+        if isfield(jsonstruct.Geometry, 'faceArea')
+            gen.faceArea = jsonstruct.Geometry.faceArea;
+        end
+
         % Now, we update the paramobj with the properties of the mesh. 
         [paramobj, gen] = gen.updateBatteryInputParams(paramobj);
 

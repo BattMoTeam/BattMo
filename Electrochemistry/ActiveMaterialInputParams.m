@@ -32,7 +32,6 @@ classdef ActiveMaterialInputParams < ElectronicComponentInputParams
         
         activeMaterialFraction = 1 % Volume fraction occupied only by the active material (default value is 1)
 
-        use_particle_diffusion
 
     end
 
@@ -42,10 +41,6 @@ classdef ActiveMaterialInputParams < ElectronicComponentInputParams
 
             paramobj = paramobj@ElectronicComponentInputParams(jsonstruct);
 
-            if isempty(paramobj.diffusionModelType)
-                % we do not use any diffusion model (use_particle_diffusion = false)
-            end
-            
             pick = @(fd) pickField(jsonstruct, fd);
 
             paramobj.Interface = InterfaceInputParams(pick('Interface'));
@@ -65,6 +60,10 @@ classdef ActiveMaterialInputParams < ElectronicComponentInputParams
               case 'full'
 
                 paramobj.SolidDiffusion = FullSolidDiffusionModelInputParams(pick('SolidDiffusion'));
+
+              case 'interParticleOnly'
+                
+                paramobj.SolidDiffusion = [];
                 
               otherwise
                 
@@ -91,12 +90,14 @@ classdef ActiveMaterialInputParams < ElectronicComponentInputParams
               case 'simple'
                 
                 paramobj = mergeParameters(paramobj, {{'volumeFraction'}, {itf, 'volumeFraction'}});
+                paramobj = mergeParameters(paramobj, {{itf, 'volumetricSurfaceArea'}, {sd, 'volumetricSurfaceArea'}});
                 
               case 'full'
                 
                 paramobj = mergeParameters(paramobj, {{'volumeFraction'}, {itf, 'volumeFraction'}});
                 paramobj = mergeParameters(paramobj, {{'volumeFraction'}, {sd, 'volumeFraction'}});
                 paramobj = mergeParameters(paramobj, {{'activeMaterialFraction'}, {sd, 'activeMaterialFraction'}});
+                paramobj = mergeParameters(paramobj, {{itf, 'volumetricSurfaceArea'}, {sd, 'volumetricSurfaceArea'}});
                 
                 if ~isempty(paramobj.(sd).D)
                     % we impose that cmax in the solid diffusion model and the interface are consistent
@@ -105,8 +106,15 @@ classdef ActiveMaterialInputParams < ElectronicComponentInputParams
                     paramobj = mergeParameters(paramobj, {{sd, 'theta100'}, {itf, 'theta100'}}, 'force', false);
                 end
 
+              case 'interParticleOnly'
+
+                paramobj = mergeParameters(paramobj, {{'volumeFraction'}, {itf, 'volumeFraction'}});
+                paramobj.SolidDiffusion = [];
+                
               otherwise
+                
                 error('Unknown diffusionModelType %s', diffusionModelType);
+                
             end
 
             paramobj = validateInputParams@ElectronicComponentInputParams(paramobj);

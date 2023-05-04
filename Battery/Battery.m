@@ -29,7 +29,6 @@ classdef Battery < BaseModel
         mappings
         
         % flag that decide the model setup
-        use_particle_diffusion
         use_thermal
         include_current_collectors
         
@@ -56,13 +55,12 @@ classdef Battery < BaseModel
             model.AutoDiffBackend = SparseAutoDiffBackend('useBlocks', false);
             
             %% Setup the model using the input parameters
-            fdnames = {'G'            , ...
-                       'couplingTerms', ...
-                       'initT'        , ...
-                       'use_thermal'  , ...
-                       'include_current_collectors' , ...
+            fdnames = {'G'                         , ...
+                       'couplingTerms'             , ...
+                       'initT'                     , ...
                        'use_thermal'               , ...
-                       'use_particle_diffusion'       , ...
+                       'include_current_collectors', ...
+                       'use_thermal'               , ...
                        'SOC'};
             
             model = dispatchParams(model, paramobj, fdnames);
@@ -114,7 +112,6 @@ classdef Battery < BaseModel
             opt = struct('reduction', []);
             opt = merge_options(opt, varargin{:});
             % for the reduction structrure format see battmodDir()/Utilities/JsonSchemas/linearsolver.schema.json and /reduction property
-
             
             elyte   = 'Electrolyte';
             ne      = 'NegativeElectrode';
@@ -141,47 +138,36 @@ classdef Battery < BaseModel
                 addedVariableNames{end + 1} = {thermal, 'T'};
             end
 
-            if model.use_particle_diffusion
-                
-                switch model.(ne).(am).diffusionModelType
-
-                  case 'simple'
-                    newentries = {{ne, am, 'c'}, 'ne_am_massCons', 'scell';
-                                  {ne, am, sd, 'cSurface'}, 'ne_am_sd_soliddiffeq', 'scell'};
-                  case 'full'
-                    newentries = {{ne, am, sd, 'c'}, 'ne_am_sd_massCons', 'cell';
-                                  {ne, am, sd, 'cSurface'}, 'ne_am_sd_soliddiffeq', 'cell'};
-                  otherwise
-                    error('diffusionModelType not recognized');
-
-                end
-                
-                varEqTypes = vertcat(varEqTypes, newentries);
-
-                switch model.(pe).(am).diffusionModelType
-                                    
-                  case 'simple'
-                    newentries = {{pe, am, 'c'}, 'pe_am_massCons', 'scell';
-                                  {pe, am, sd, 'cSurface'}, 'pe_am_sd_soliddiffeq', 'scell'};
-                  case 'full'
-                    newentries = {{pe, am, sd, 'c'}, 'pe_am_sd_massCons', 'cell';
-                                  {pe, am, sd, 'cSurface'}, 'pe_am_sd_soliddiffeq', 'cell'};
-                  otherwise
-                    error('diffusionModelType not recognized');
-
-                end
-                
-                varEqTypes = vertcat(varEqTypes, newentries);
-
-            else
-
-                newentries = {{ne, am, 'c'}, 'ne_am_massCons', 'scell'; ...
-                              {pe, am, 'c'}, 'pe_am_massCons', 'scell'};
-
-                varEqTypes = vertcat(varEqTypes, newentries);
+            switch model.(ne).(am).diffusionModelType
+              case 'simple'
+                newentries = {{ne, am, 'c'}, 'ne_am_massCons', 'scell';
+                              {ne, am, sd, 'cSurface'}, 'ne_am_sd_soliddiffeq', 'scell'};
+              case 'full'
+                newentries = {{ne, am, sd, 'c'}, 'ne_am_sd_massCons', 'cell';
+                              {ne, am, sd, 'cSurface'}, 'ne_am_sd_soliddiffeq', 'cell'};
+              case 'interParticleOnly'
+                newentries = {{ne, am, 'c'}, 'ne_am_massCons', 'cell'};
+              otherwise
+                error('diffusionModelType not recognized');
             end
+            varEqTypes = vertcat(varEqTypes, newentries);
 
+            
+            switch model.(pe).(am).diffusionModelType
+              case 'simple'
+                newentries = {{pe, am, 'c'}, 'pe_am_massCons', 'scell';
+                              {pe, am, sd, 'cSurface'}, 'pe_am_sd_soliddiffeq', 'scell'};
+              case 'full'
+                newentries = {{pe, am, sd, 'c'}, 'pe_am_sd_massCons', 'cell';
+                              {pe, am, sd, 'cSurface'}, 'pe_am_sd_soliddiffeq', 'cell'};
+              case 'interParticleOnly'
+                newentries = {{pe, am, 'c'}, 'pe_am_massCons', 'cell'};
+              otherwise
+                error('diffusionModelType not recognized');
+            end
+            varEqTypes = vertcat(varEqTypes, newentries);
 
+            
             if model.include_current_collectors
                 
                 newentries = {{ne, cc, 'phi'}, 'ne_cc_chargeCons', 'cell'; ...
@@ -685,6 +671,10 @@ classdef Battery < BaseModel
                     N = model.(elde).(am).(sd).N;
                     np = model.(elde).(am).(sd).np; % Note : we have by construction np = nc
                     initstate.(elde).(am).(sd).c = c*ones(N*np, 1);
+                  case 'interParticleOnly'
+                    initstate.(elde).(am).c = c*ones(nc, 1);                    
+                  otherwise
+                    error('diffusionModelType not recognized')
                 end
                 
                 initstate.(elde).(am) = model.(elde).(am).updateConcentrations(initstate.(elde).(am));
@@ -818,8 +808,9 @@ classdef Battery < BaseModel
                   case 'full'
                     state.(elde).(am).(sd).massAccum = [];
                     state.(elde).(am).(sd).massCons = [];
-                  case 'simple'
-                    % nothing to remove here
+                  case {'simple', 'interParticleOnly'}
+                    state.(elde).(am).massAccum = [];
+                    state.(elde).(am).massCons = [];                    
                   otherwise
                     error('diffusion model type not recognized');
                 end
@@ -827,9 +818,16 @@ classdef Battery < BaseModel
             
             for ielde = 1 : numel(eldes)
                 elde = eldes{ielde};
-                state.(elde).(am).(sd) = model.(elde).(am).(sd).updateAverageConcentration(state.(elde).(am).(sd));
-                state.(elde).(am) = model.(elde).(am).updateSOC(state.(elde).(am));
-                state.(elde).(am) = model.(elde).(am).updateAverageConcentration(state.(elde).(am));
+                switch model.(elde).(am).diffusionModelType
+                  case 'full'
+                    state.(elde).(am).(sd) = model.(elde).(am).(sd).updateAverageConcentration(state.(elde).(am).(sd));
+                    state.(elde).(am) = model.(elde).(am).updateSOC(state.(elde).(am));
+                    state.(elde).(am) = model.(elde).(am).updateAverageConcentration(state.(elde).(am));
+                  case {'simple', 'interParticleOnly'}
+                    % do nothing
+                  otherwise
+                    error('diffusion model type not recognized');
+                end
             end
 
             if model.use_thermal
@@ -884,7 +882,7 @@ classdef Battery < BaseModel
                 elde = electrodes{ind};
                 % potential and concentration between interface and active material
                 state.(elde).(am) = battery.(elde).(am).updatePhi(state.(elde).(am));
-                if (model.use_particle_diffusion)
+                if (model.(elde).(am).use_particle_diffusion)
                     state.(elde).(am) = battery.(elde).(am).updateConcentrations(state.(elde).(am));
                 else
                     state.(elde).(am).(itf).cElectrodeSurface = state.(elde).(am).c;
@@ -973,27 +971,29 @@ classdef Battery < BaseModel
             %% update solid diffustion equations
             for ind = 1 : numel(electrodes)
                 elde = electrodes{ind};
-                if model.use_particle_diffusion
-                state.(elde).(am).(sd) = battery.(elde).(am).(sd).updateDiffusionCoefficient(state.(elde).(am).(sd));
                     switch model.(elde).(am).diffusionModelType
                       case 'simple'
-                        state.(elde).(am) = battery.(elde).(am).assembleAccumTerm(state.(elde).(am), state0.(elde).(am), dt);
-                        state.(elde).(am) = battery.(elde).(am).updateMassSource(state.(elde).(am));
-                        state.(elde).(am) = battery.(elde).(am).updateMassFlux(state.(elde).(am));
-                        state.(elde).(am) = battery.(elde).(am).updateMassConservation(state.(elde).(am));
+                        state.(elde).(am).(sd) = battery.(elde).(am).(sd).updateDiffusionCoefficient(state.(elde).(am).(sd));
+                        state.(elde).(am)      = battery.(elde).(am).assembleAccumTerm(state.(elde).(am), state0.(elde).(am), dt);
+                        state.(elde).(am)      = battery.(elde).(am).updateMassSource(state.(elde).(am));
+                        state.(elde).(am)      = battery.(elde).(am).updateMassFlux(state.(elde).(am));
+                        state.(elde).(am)      = battery.(elde).(am).updateMassConservation(state.(elde).(am));
+                        state.(elde).(am).(sd) = battery.(elde).(am).(sd).assembleSolidDiffusionEquation(state.(elde).(am).(sd));
                       case 'full'
+                        state.(elde).(am).(sd) = battery.(elde).(am).(sd).updateDiffusionCoefficient(state.(elde).(am).(sd));
                         state.(elde).(am).(sd) = battery.(elde).(am).(sd).updateMassSource(state.(elde).(am).(sd));
                         state.(elde).(am).(sd) = battery.(elde).(am).(sd).updateFlux(state.(elde).(am).(sd));
                         state.(elde).(am).(sd) = battery.(elde).(am).(sd).updateMassAccum(state.(elde).(am).(sd), state0.(elde).(am).(sd), dt);
                         state.(elde).(am).(sd) = battery.(elde).(am).(sd).updateMassConservation(state.(elde).(am).(sd));
+                        state.(elde).(am).(sd) = battery.(elde).(am).(sd).assembleSolidDiffusionEquation(state.(elde).(am).(sd));
+                      case 'interParticleOnly'
+                        state.(elde).(am) = battery.(elde).(am).assembleAccumTerm(state.(elde).(am), state0.(elde).(am), dt);
+                        state.(elde).(am) = battery.(elde).(am).updateMassFlux(state.(elde).(am));
+                        state.(elde).(am) = battery.(elde).(am).updateMassSource(state.(elde).(am));
+                        state.(elde).(am) = battery.(elde).(am).updateMassConservation(state.(elde).(am));
+                      otherwise
+                        error('diffusionModelType not recognized')
                     end
-                    state.(elde).(am).(sd) = battery.(elde).(am).(sd).assembleSolidDiffusionEquation(state.(elde).(am).(sd));
-                else
-                    state.(elde).(am) = battery.(elde).(am).assembleAccumTerm(state.(elde).(am), state0.(elde).(am), dt);
-                    state.(elde).(am) = battery.(elde).(am).updateMassFlux(state.(elde).(am));
-                    state.(elde).(am) = battery.(elde).(am).updateMassSource(state.(elde).(am));
-                    state.(elde).(am) = battery.(elde).(am).updateMassConservation(state.(elde).(am));
-                end
                 
             end
 
@@ -1061,61 +1061,51 @@ classdef Battery < BaseModel
             % Equation name : 'pe_am_chargeCons';
             eqs{ei.pe_am_chargeCons} = state.(pe).(am).chargeCons;
             
-            if model.use_particle_diffusion
-
-                switch model.(ne).(am).diffusionModelType
-                    
-                  case 'simple'
-                    
-                    eqs{ei.ne_am_massCons}       = state.(ne).(am).massCons*massConsScaling;
-                    eqs{ei.ne_am_sd_soliddiffeq} = state.(ne).(am).(sd).solidDiffusionEq.*massConsScaling.*battery.(ne).(am).(itf).G.cells.volumes/dt;
-                    
-                  case 'full'
-                    
-                    % Equation name : 'ne_am_sd_massCons';
-                    n    = model.(ne).(am).(itf).n; % number of electron transfer (equal to 1 for Lithium)
-                    F    = model.con.F;
-                    vol  = model.(ne).(am).operators.pv;
-                    rp   = model.(ne).(am).(sd).rp;
-                    vsf  = model.(ne).(am).(sd).volumetricSurfaceArea;
-                    surfp = 4*pi*rp^2;
-                    
-                    scalingcoef = (vsf*vol(1)*n*F)/surfp;
-                    
-                    eqs{ei.ne_am_sd_massCons} = scalingcoef*state.(ne).(am).(sd).massCons;
-                    eqs{ei.ne_am_sd_soliddiffeq} = scalingcoef*state.(ne).(am).(sd).solidDiffusionEq;
-                    
-                end
+            switch model.(ne).(am).diffusionModelType
+              case 'simple'
+                eqs{ei.ne_am_massCons}       = state.(ne).(am).massCons*massConsScaling;
+                eqs{ei.ne_am_sd_soliddiffeq} = state.(ne).(am).(sd).solidDiffusionEq.*massConsScaling.*battery.(ne).(am).(itf).G.cells.volumes/dt;
+              case 'full'
+                % Equation name : 'ne_am_sd_massCons';
+                n    = model.(ne).(am).(itf).n; % number of electron transfer (equal to 1 for Lithium)
+                F    = model.con.F;
+                vol  = model.(ne).(am).operators.pv;
+                rp   = model.(ne).(am).(sd).rp;
+                vsf  = model.(ne).(am).(sd).volumetricSurfaceArea;
+                surfp = 4*pi*rp^2;
                 
+                scalingcoef = (vsf*vol(1)*n*F)/surfp;
                 
-                switch model.(pe).(am).diffusionModelType
-                    
-                  case 'simple'
-                    
-                    eqs{ei.pe_am_massCons}    = state.(pe).(am).massCons*massConsScaling;
-                    eqs{ei.pe_am_sd_soliddiffeq} = state.(pe).(am).(sd).solidDiffusionEq.*massConsScaling.*battery.(pe).(am).(itf).G.cells.volumes/dt;
-                    
-                  case 'full'
-                    % Equation name : 'pe_am_sd_massCons';
-                    n    = model.(pe).(am).(itf).n; % number of electron transfer (equal to 1 for Lithium)
-                    F    = model.con.F;
-                    vol  = model.(pe).(am).operators.pv;
-                    rp   = model.(pe).(am).(sd).rp;
-                    vsf  = model.(pe).(am).(sd).volumetricSurfaceArea;
-                    surfp = 4*pi*rp^2;
-                    
-                    scalingcoef = (vsf*vol(1)*n*F)/surfp;
-
-                    eqs{ei.pe_am_sd_massCons} = scalingcoef*state.(pe).(am).(sd).massCons;
-                    eqs{ei.pe_am_sd_soliddiffeq} = scalingcoef*state.(pe).(am).(sd).solidDiffusionEq;
-                    
-                end
-                
-            else
-                
+                eqs{ei.ne_am_sd_massCons}    = scalingcoef*state.(ne).(am).(sd).massCons;
+                eqs{ei.ne_am_sd_soliddiffeq} = scalingcoef*state.(ne).(am).(sd).solidDiffusionEq;
+              case 'interParticleOnly'
                 eqs{ei.ne_am_massCons} = state.(ne).(am).massCons*massConsScaling;
-                eqs{ei.pe_am_massCons} = state.(pe).(am).massCons*massConsScaling;                
+              otherwise
+                error('diffusionModelType not recognized')                    
+            end
+            
+            
+            switch model.(pe).(am).diffusionModelType
+              case 'simple'
+                eqs{ei.pe_am_massCons}       = state.(pe).(am).massCons*massConsScaling;
+                eqs{ei.pe_am_sd_soliddiffeq} = state.(pe).(am).(sd).solidDiffusionEq.*massConsScaling.*battery.(pe).(am).(itf).G.cells.volumes/dt;
+              case 'full'
+                % Equation name : 'pe_am_sd_massCons';
+                n    = model.(pe).(am).(itf).n; % number of electron transfer (equal to 1 for Lithium)
+                F    = model.con.F;
+                vol  = model.(pe).(am).operators.pv;
+                rp   = model.(pe).(am).(sd).rp;
+                vsf  = model.(pe).(am).(sd).volumetricSurfaceArea;
+                surfp = 4*pi*rp^2;
                 
+                scalingcoef = (vsf*vol(1)*n*F)/surfp;
+
+                eqs{ei.pe_am_sd_massCons} = scalingcoef*state.(pe).(am).(sd).massCons;
+                eqs{ei.pe_am_sd_soliddiffeq} = scalingcoef*state.(pe).(am).(sd).solidDiffusionEq;
+              case 'interParticleOnly'
+                eqs{ei.pe_am_massCons} = state.(pe).(am).massCons*massConsScaling;                
+              otherwise
+                error('diffusionModelType not recognized')
             end
             
             % Equation name : 'ne_cc_chargeCons';
@@ -1771,7 +1761,7 @@ classdef Battery < BaseModel
             eldes = {ne, pe};
             for ind = 1 : numel(eldes)
                 elde = eldes{ind};
-                if strcmp(model.(elde).(am).diffusionModelType, 'simple') | ~model.use_particle_diffusion
+                if model.(elde).(am).use_interparticle_diffusion
                     state.(elde).(am).c = max(cmin, state.(elde).(am).c);
                     cmax = model.(elde).(am).(itf).cmax;
                     state.(elde).(am).c = min(cmax, state.(elde).(am).c);
