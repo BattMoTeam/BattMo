@@ -211,8 +211,8 @@ classdef BaseModel < PhysicalModel
             end
             % Get the AD state for this model           
             [vars{:}] = model.AutoDiffBackend.initVariablesAD(vars{:});
-            stateAD =struct();
-            for i=1:numel(pnames)
+            stateAD = struct();
+            for i = 1:numel(pnames)
                stateAD = model.setNewProp(stateAD, pnames{i}, vars{i});
             end
 
@@ -348,15 +348,15 @@ classdef BaseModel < PhysicalModel
             if iscell(names) & (numel(names) > 1)
                 name = names{1};
                 names = names(2 : end);
-                if(not(isfield(state,name)))
-                    state.(name)=struct();
+                if not(isfield(state,name))
+                    state.(name) = struct();
                 end
                 state.(name) = model.setNewProp(state.(name), names, ...
                                                                val);
             elseif iscell(names) & (numel(names) == 1)
                 name = names{1};
                 if isnumeric(name)
-                    if(not(iscell(state)))
+                    if not(iscell(state))
                         state = {};
                     end
                     state{name} = val;

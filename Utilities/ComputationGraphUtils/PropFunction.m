@@ -86,7 +86,11 @@ classdef PropFunction
 
             [funcstr, statestr, nmstr] = propfunction.setupCallStringElements();
 
-            state0str = sprintf('state0.%s', nmstr);
+            if isempty(nmstr)
+                state0str = 'state0';
+            else
+                state0str = sprintf('state0.%s', nmstr);
+            end
 
             callstr = sprintf('%s = %s(%s, %s, dt);', statestr, funcstr, statestr, state0str);
             
