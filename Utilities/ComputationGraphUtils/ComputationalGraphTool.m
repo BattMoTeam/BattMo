@@ -7,6 +7,7 @@ classdef ComputationalGraphTool
         nodenames
         staticprops
         extraVarNameInds % index relative with respect to varNameList
+        isok % The graph is a proper directed acyclic graph that can be used for computation
     end
     
     methods
@@ -27,7 +28,7 @@ classdef ComputationalGraphTool
             cgt.varNameList = varNameList;
             cgt.nodenames   = g.Nodes.Variables;
             cgt.staticprops = staticprops;
-
+            cgt.isok        = false;
             if size(A, 1) == numel(varNameList)
                 try
                     require('matlab_bgl');
@@ -52,11 +53,14 @@ classdef ComputationalGraphTool
                 p = topological_order(A);
             catch
                 fprintf('You need to install matlab BGL\n');
+                cgt.isok = false
                 return
             end
 
             if isempty(p)
                 fprintf('The graph contains cycles. It implies that some variables cannot be evaluated.\n')
+                cgt.isok = false;
+                return
             end
 
             varNameList = varNameList(p); 
@@ -66,7 +70,12 @@ classdef ComputationalGraphTool
             for istat = 1 : numel(staticprops)
                 nodename = staticprops{istat}.nodename;
                 [isok, varnameind] = ismember(nodename, nodenames);
-                assert(isok, 'it should be found here');
+                if ~isok
+                    fprintf('The static variable has not been found in list')
+                    cgt.isok = false;
+                    return
+                end
+                
                 staticprops{istat}.varnameind = varnameind;
             end
 
@@ -82,6 +91,7 @@ classdef ComputationalGraphTool
             end
             cgt.extraVarNameInds = extraVarNameInds;
 
+            cgt.isok = true;
         end
 
         function [varnames, varnameinds, propfuncinds, distance] = getDependencyList(cgt, varname)
