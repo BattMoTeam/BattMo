@@ -503,6 +503,10 @@ classdef BaseModel < PhysicalModel
                 cgt = ComputationalGraphTool(model);
             end
 
+            if iscell(varname)
+                varname = VarName(varname(1 : end - 1), varname{end});
+            end
+            
             funcCallList = cgt.getPropFunctionCallList(varname);
 
             funcCall = join(funcCallList, '');

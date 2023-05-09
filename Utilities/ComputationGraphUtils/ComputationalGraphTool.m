@@ -234,7 +234,12 @@ classdef ComputationalGraphTool
 
             if isa(propfunc, 'PropFunction')
                 [propfuncs, ~, varnameinds] = cgt.getPropFunctionList(propfunc);
+            elseif isa(propfunc, 'VarName')
+                % We set up a propfunction with onlyt the varname
+                propfunc = PropFunction(propfunc, [], [], []);
+                [propfuncs, ~, varnameinds] = cgt.getPropFunctionList(propfunc);                
             else
+                
                 varname = propfunc;
                 selectedpropfuncs = cgt.findPropFunction(propfunc);
                 if isa(selectedpropfuncs, 'PropFunction')
