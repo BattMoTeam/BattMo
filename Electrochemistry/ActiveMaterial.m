@@ -143,8 +143,23 @@ classdef ActiveMaterial < ElectronicComponent
             varnames = {'jCoupling', ...
                         'jExternal', ...
                         'SOC'      , ...
-                        'Rvol'};
-            model = model.registerVarNames(varnames);            
+                        'Rvol'     , ...
+                        'radius'   , ...
+                        'porosity'  , ...
+                        'volumeFraction'};
+            model = model.registerVarNames(varnames); 
+
+
+            fn = @SwellingMaterial.updateRadius;
+            model = model.registerPropFunction({'radius', fn, {}});
+            
+            fn = @SwellingMaterial.updatePorosity;
+            model = model.registerPropFunction({'porosity', fn, {}});
+
+            fn = @SwellingMaterial.updateVolumeFraction;
+            model = model.registerPropFunction({'volumeFraction', fn, {}});
+
+
 
             if model.use_thermal
                 varnames = {'jFaceCoupling', ...
@@ -188,7 +203,6 @@ classdef ActiveMaterial < ElectronicComponent
             end
 
             if model.use_particle_diffusion
-
                 fn = @ActiveMaterial.updateConcentrations;
                 switch model.diffusionModelType
                   case 'simple'
@@ -210,8 +224,8 @@ classdef ActiveMaterial < ElectronicComponent
                 end
                 
                 fn = @ActiveMaterial.updateRvol;
-                model = model.registerPropFunction({'Rvol', fn, {{itf, 'R'}}});
-                model = model.registerPropFunction({{sd, 'Rvol'}, fn, {{itf, 'R'}}});
+                model = model.registerPropFunction({'Rvol', fn, {{itf, 'R'},{itf, 'volumetricSurfaceArea'}}});
+                model = model.registerPropFunction({{sd, 'Rvol'}, fn, {{itf, 'R'},{itf, 'volumetricSurfaceArea'}}});
 
                 % Not used in assembly
                 fn = @ActiveMaterial.updateSOC;
@@ -313,8 +327,8 @@ classdef ActiveMaterial < ElectronicComponent
             n     = model.(itf).n; % number of electron transfer (equal to 1 for Lithium)
             F     = model.(sd).constants.F;
             vol   = model.operators.pv;
-            rp    = model.(sd).rp;
-            vsf   = model.(sd).volumetricSurfaceArea;
+            rp    = state.radius;
+            vsf   = state.Interface.volumetricSurfaceArea;
             surfp = 4*pi*rp^2;
             
             scalingcoef = (vsf*vol(1)*n*F)/surfp;
@@ -326,7 +340,8 @@ classdef ActiveMaterial < ElectronicComponent
             
             names = {'chargeCons', ...
                      'massCons', ...
-                     'solidDiffusionEq'};
+                     'solidDiffusionEq'
+                     };
             
             types = {'cell', 'cell', 'cell'};
 
@@ -375,7 +390,7 @@ classdef ActiveMaterial < ElectronicComponent
             cleanState.(itf).phiElectrolyte = state.(itf).phiElectrolyte;
             
             sigma = model.electricalConductivity;
-            vf    = model.volumeFraction;
+            vf    = state.volumeFraction;
             brugg = model.BruggemanCoefficient;
             
             cleanState.conductivity = sigma*vf.^brugg;
@@ -411,9 +426,9 @@ classdef ActiveMaterial < ElectronicComponent
          
         function state = updateRvol(model, state)
 
-            vsa = model.Interface.volumetricSurfaceArea;
+            vsa = state.Interface.volumetricSurfaceArea;
             
-            Rvol = vsa.*state.Interface.R;
+            Rvol = vsa*state.Interface.R;
             state.Rvol = Rvol;
 
             if model.use_particle_diffusion
@@ -456,7 +471,7 @@ classdef ActiveMaterial < ElectronicComponent
         % Used when diffusionModelType == 'simple'
             
             vols   = model.G.cells.volumes;
-            vf     = model.volumeFraction;
+            vf     = state.volumeFraction;
             amFrac = model.activeMaterialFraction;
 
             c  = state.c;
@@ -542,7 +557,7 @@ classdef ActiveMaterial < ElectronicComponent
             % shortcut
             sd  = 'SolidDiffusion';
 
-            vf       = model.volumeFraction;
+            vf       = state.volumeFraction;
             am_frac  = model.activeMaterialFraction;
             vols     = model.G.cells.volumes;
             
@@ -563,7 +578,7 @@ classdef ActiveMaterial < ElectronicComponent
             itf = 'Interface';
             sd  = 'SolidDiffusion';
 
-            vf       = model.volumeFraction;
+            vf       = state.volumeFraction;
             am_frac  = model.activeMaterialFraction;
             vols     = model.G.cells.volumes;
             cmax     = model.(itf).cmax;
@@ -584,7 +599,17 @@ classdef ActiveMaterial < ElectronicComponent
             
         end
         
+        function state = updateRadius(model, state)
+            state.radius = model.rp;
+        end
         
+        function state = updateVolumeFraction(model, state)
+            state.volumeFraction = model.volumeFraction;
+        end
+
+        function state = updatePorosity(model, state)
+            state.porosity = model.porosity;
+        end
     end
     
 end
