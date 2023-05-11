@@ -145,20 +145,10 @@ classdef ActiveMaterial < ElectronicComponent
                         'SOC'      , ...
                         'Rvol'     , ...
                         'radius'   , ...
-                        'porosity'  , ...
+                        'porosity' ,...
                         'volumeFraction'};
+
             model = model.registerVarNames(varnames); 
-
-
-            fn = @SwellingMaterial.updateRadius;
-            model = model.registerPropFunction({'radius', fn, {}});
-            
-            fn = @SwellingMaterial.updatePorosity;
-            model = model.registerPropFunction({'porosity', fn, {}});
-
-            fn = @SwellingMaterial.updateVolumeFraction;
-            model = model.registerPropFunction({'volumeFraction', fn, {}});
-
 
 
             if model.use_thermal
@@ -167,8 +157,7 @@ classdef ActiveMaterial < ElectronicComponent
                 model = model.registerVarNames(varnames);
             end
             
-           
-            if strcmp(model.diffusionModelType, 'simple')
+           if strcmp(model.diffusionModelType, 'simple')
                 varnames = {'c'        , ...
                             'massCons' , ...
                             'massAccum', ...
@@ -187,9 +176,13 @@ classdef ActiveMaterial < ElectronicComponent
                             {itf, 'cElectrolyte'},... 
                             {itf, 'phiElectrolyte'}};
                 model = model.registerStaticVarNames(varnames);
-                
             end
+                        
             
+
+
+
+          
             fn = @ActiveMaterial.updateCurrentSource;
             model = model.registerPropFunction({'eSource', fn, {'Rvol'}});
             
@@ -198,6 +191,7 @@ classdef ActiveMaterial < ElectronicComponent
             
             fn = @ActiveMaterial.dispatchTemperature;
             model = model.registerPropFunction({{itf, 'T'}, fn, {'T'}});
+
             if model.use_particle_diffusion
                 model = model.registerPropFunction({{sd, 'T'}, fn, {'T'}});
             end
@@ -227,6 +221,20 @@ classdef ActiveMaterial < ElectronicComponent
                 model = model.registerPropFunction({'Rvol', fn, {{itf, 'R'},{itf, 'volumetricSurfaceArea'}}});
                 model = model.registerPropFunction({{sd, 'Rvol'}, fn, {{itf, 'R'},{itf, 'volumetricSurfaceArea'}}});
 
+                fn = @ActiveMaterial.updateRadius;
+                model = model.registerPropFunction({'radius', fn, {} });
+                model = model.registerPropFunction({{sd, 'radius'}, fn, {} });
+
+                fn = @ActiveMaterial.updateVolumeFraction;
+                model = model.registerPropFunction({{'volumeFraction'}, fn, {}});
+                model = model.registerPropFunction({{sd, 'volumeFraction'}, fn, {}});
+                model = model.registerPropFunction({{itf, 'volumeFraction'}, fn, {}});
+
+
+                fn = @ActiveMaterial.updateVolumetricSurfaceArea;
+                model = model.registerPropFunction({{itf, 'volumetricSurfaceArea'}, fn, {{sd,'radius'}, {itf, 'volumeFraction'}}});
+                model = model.registerPropFunction({{sd, 'volumetricSurfaceArea'}, fn, {{sd, 'radius'},{sd, 'volumeFraction'}}});
+
                 % Not used in assembly
                 fn = @ActiveMaterial.updateSOC;
                 model = model.registerPropFunction({'SOC', fn, {{sd, 'cAverage'}}});
@@ -237,7 +245,17 @@ classdef ActiveMaterial < ElectronicComponent
                 model = model.registerPropFunction({{itf, 'cElectrodeSurface'}, fn, {'c'}});
 
                 fn = @ActiveMaterial.updateRvol;
-                model = model.registerPropFunction({'Rvol', fn, {{itf, 'R'}}});
+                model = model.registerPropFunction({'Rvol', fn, {{itf, 'R'},{itf, 'volumetricSurfaceArea'}}});
+
+                fn = @ActiveMaterial.updateRadius;
+                model = model.registerPropFunction({'radius', fn, {} });
+
+                fn = @ActiveMaterial.updateVolumeFraction;
+                model = model.registerPropFunction({'volumeFraction', fn, {}});
+                model = model.registerPropFunction({{itf, 'volumeFraction'}, fn, {}});
+
+                fn = @ActiveMaterial.updateVolumetricSurfaceArea;
+                model = model.registerPropFunction({{itf, 'volumetricSurfaceArea'}, fn, {{sd,'radius'}, {itf, 'volumeFraction'}}});
 
                 fn = @ActiveMaterial.updateMassFlux;
                 model = model.registerPropFunction({'massFlux', fn, {'c'}});
@@ -281,6 +299,15 @@ classdef ActiveMaterial < ElectronicComponent
                     model = model.registerPropFunction({'jFaceCoupling', fn, {}});
                 end
             end
+      
+            fn = @ActiveMaterial.updatePorosity;
+            model = model.registerPropFunction({'porosity', fn, {} });
+
+            fn = @ActiveMaterial.updateEffectiveElectricalConductivity;
+            model = model.registerPropFunction({'EffectiveElectricalConductivity', fn, {'volumeFraction'} });
+
+            
+
             
             %% Function called to assemble accumulation terms (functions takes in fact as arguments not only state but also state0 and dt)
             if model.use_particle_diffusion & strcmp(model.diffusionModelType, 'simple') | ~model.use_particle_diffusion
@@ -379,23 +406,7 @@ classdef ActiveMaterial < ElectronicComponent
         end
         
         
-        function cleanState = addStaticVariables(model, cleanState, state, state0)
-            
-            cleanState = addStaticVariables@BaseModel(model, cleanState, state);
-            
-            itf = 'Interface';
-            
-            cleanState.T = state.T;
-            cleanState.(itf).cElectrolyte   = state.(itf).cElectrolyte;
-            cleanState.(itf).phiElectrolyte = state.(itf).phiElectrolyte;
-            
-            sigma = model.electricalConductivity;
-            vf    = state.volumeFraction;
-            brugg = model.BruggemanCoefficient;
-            
-            cleanState.conductivity = sigma*vf.^brugg;
-            
-        end
+        
 
         
         function [state, report] = updateState(model, state, problem, dx, drivingForces)
@@ -600,15 +611,38 @@ classdef ActiveMaterial < ElectronicComponent
         end
         
         function state = updateRadius(model, state)
-            state.radius = model.rp;
+            rp = model.rp;
+            state.radius = rp;
+            if model.use_particle_diffusion
+                state.SolidDiffusion.radius = rp;
+            end
         end
         
         function state = updateVolumeFraction(model, state)
-            state.volumeFraction = model.volumeFraction;
+            vf = model.volumeFraction;
+            state.volumeFraction = vf;
+            state.Interface.volumeFraction = vf;
+            if model.use_particle_diffusion
+                state.SolidDiffusion.volumeFraction = vf;
+            end
         end
 
         function state = updatePorosity(model, state)
-            state.porosity = model.porosity;
+            porosity = model.porosity;
+            state.porosity = porosity;
+        end
+
+        function state = updateVolumetricSurfaceArea(model, state)
+            vf = model.Interface.volumeFraction;
+            amf = model.activeMaterialFraction;
+            radius = model.SolidDiffusion.radius;
+
+            vsa = 3*vf*amf/radius;
+            state.Interface.volumetricSurfaceArea = vsa;
+
+            if model.use_particle_diffusion
+                state.SolidDiffusion.volumetricSurfaceArea = vsa;
+            end
         end
     end
     

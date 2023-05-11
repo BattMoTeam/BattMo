@@ -56,7 +56,7 @@ classdef ElectronicComponent < BaseModel
             % Current Source at boundary [A] - one value per cell (will be typically set to zero for non-boundary cells)
             varnames{end + 1} = 'jBcSource';
             % Conductivity [S m^-1]
-            varnames{end + 1} = 'conductivity';
+            varnames{end + 1} = 'EffectiveElectricalConductivity';
             % Current density flux [A] - one value per face
             varnames{end + 1} = 'j';
             % Residual for the charge conservation equation
@@ -71,16 +71,16 @@ classdef ElectronicComponent < BaseModel
             end
             
             fn = @ElectronicComponent.updateCurrent;
-            inputnames = {'phi', 'conductivity'};
+            inputnames = {'phi', 'EffectiveElectricalConductivity'};
             model = model.registerPropFunction({'j', fn, inputnames});
 
             fn = @ElectronicComponent.updateChargeConservation;
             inputnames = {'j', 'jBcSource', 'eSource'};
             model = model.registerPropFunction({'chargeCons', fn, inputnames});
             
-            fn = @ElectronicComponent.updateConductivity;
+            fn = @ElectronicComponent.updateEffectiveElectricalConductivity;
             inputnames = {};
-            model = model.registerPropFunction({'conductivity', fn, inputnames});
+            model = model.registerPropFunction({'EffectiveElectricalConductivity', fn, inputnames});
             
             if model.use_thermal
                 
@@ -98,7 +98,7 @@ classdef ElectronicComponent < BaseModel
 
         function state = updateConductivity(model, state)
             % default function to update conductivity
-            state.conductivity = model.EffectiveElectricalConductivity;
+            state.EffectiveElectricalConductivity = model.EffectiveElectricalConductivity;
             
         end
         
@@ -129,7 +129,7 @@ classdef ElectronicComponent < BaseModel
         function state = updateCurrent(model, state)
         % Assemble electrical current which is stored in :code:`state.j` 
 
-            sigma = state.conductivity;
+            sigma = state.EffectiveElectricalConductivity;
             phi   = state.phi;
             
             j = assembleFlux(model, phi, sigma); 

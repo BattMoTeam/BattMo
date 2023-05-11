@@ -33,8 +33,7 @@ classdef SimplifiedSolidDiffusionModel < SolidDiffusionModel
             model = model.registerPropFunction({'D', fn, inputnames});
 
             fn = @ActiveMaterial.assembleSolidDiffusionEquation;
-            inputnames = {'cSurface', 'cAverage', 'Rvol', 'D'};
-
+            inputnames = {'cSurface', 'cAverage', 'Rvol', 'D', 'radius', 'volumetricSurfaceArea'};
             model = model.registerPropFunction({'solidDiffusionEq', fn, inputnames});
             
         end
@@ -48,9 +47,9 @@ classdef SimplifiedSolidDiffusionModel < SolidDiffusionModel
             caver = state.cAverage;
             D     = state.D;
             Rvol  = state.Rvol;
+            rp    = state.radius;
+            vsa   = state.volumetricSurfaceArea;
 
-            rp  = model.rp;
-            vsa = model.volumetricSurfaceArea;
             state.solidDiffusionEq = csurf - caver + (rp.*Rvol)./(5*vsa*D);
             
         end

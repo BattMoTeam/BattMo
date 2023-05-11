@@ -25,7 +25,7 @@
       "BruggemanCoefficient": 1.5,
       "Interface": {
         "isFile": true,
-        "filename": "ParameterData/MaterialProperties/Graphite/graphite.json"
+        "filename": "ParameterData/MaterialProperties/Silicon/silicon.json"
       },
       "diffusionModelType" : "full",
       "SolidDiffusion" : {

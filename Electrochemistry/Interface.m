@@ -46,7 +46,8 @@ classdef Interface < BaseModel
                        'theta100'             , ...               
                        'k0'                   , ...                     
                        'Eak'                  , ...                    
-                       'alpha'};
+                       'alpha'                , ...
+                       };
 
             model = dispatchParams(model, paramobj, fdnames);
 
@@ -98,9 +99,15 @@ classdef Interface < BaseModel
             varnames{end + 1} = 'OCP';
             % Reaction rate coefficient [A m^-2]
             varnames{end + 1} = 'j0';
-            
+            %Volume Fraction
+            varnames{end + 1} = 'volumeFraction';
+            % Volumetric Surface Area [m^2.m^-3]
+            varnames{end + 1} = 'volumetricSurfaceArea';
+
+
             model = model.registerVarNames(varnames);
-            
+
+
             fn = @Interface.updateReactionRateCoefficient;
             if model.useJ0Func
                 inputnames = {'cElectrodeSurface'};
@@ -218,8 +225,7 @@ classdef Interface < BaseModel
             state.eta = (phiElde - phiElyte - OCP - dphi);
 
         end
-        
-            
+                 
         function state = updateReactionRate(model, state)
         % From definition of the overpotential eta, we have that reaction rate R is positive for oxydation.
             n     = model.n;
@@ -236,8 +242,16 @@ classdef Interface < BaseModel
 
         end
         
+    function state = updateVolumetricSurfaceArea(model, state)
+         state.volumetricSurfaceArea = model.volumetricSurfaceArea;
     end
+    
+    end
+
 end
+     
+        
+
 
 %% References
 %   [1] Torchio et al, Journal of The Electrochemical Society, 163 (7)
