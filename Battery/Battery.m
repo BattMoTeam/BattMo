@@ -362,7 +362,6 @@ classdef Battery < BaseModel
                 end
                 
                 model = model.registerPropFunction({{thermal, 'jHeatOhmSource'}, fn, inputnames});
-                model = model.registerPropFunction({{thermal, 'jHeatBcSource'} , fn, inputnames});
                 
                 %% Function that updates the Thermal Chemical Terms
                 fn = @Battery.updateThermalChemicalSourceTerms;

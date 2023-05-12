@@ -272,6 +272,7 @@ classdef ActiveMaterial < ElectronicComponent
             %% Function called to assemble accumulation terms (functions takes in fact as arguments not only state but also state0 and dt)
             if model.use_particle_diffusion & strcmp(model.diffusionModelType, 'simple') | ~model.use_particle_diffusion
                 fn = @ActiveMaterial.assembleAccumTerm;
+                fn = {fn, @(propfunc) PropFunction.accumFuncCallSetupFn(propfunc)};
                 model = model.registerPropFunction({'massAccum', fn, {'c'}});
             end
 
