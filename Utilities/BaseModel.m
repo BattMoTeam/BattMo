@@ -429,7 +429,6 @@ classdef BaseModel < PhysicalModel
             if isfield(state, 'time')
                 cleanState.time = state.time;
             end
-            
         end
         
         function state = copyProp(model, state, refState, names)
