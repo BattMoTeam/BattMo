@@ -8,6 +8,7 @@ classdef ElectronicComponent < BaseModel
         constants % Physical constants
 
         use_thermal
+
         
     end
 
@@ -96,7 +97,7 @@ classdef ElectronicComponent < BaseModel
 
         end
 
-        function state = updateConductivity(model, state)
+        function state = updateEffectiveElectricalConductivity(model, state)
             % default function to update conductivity
             state.EffectiveElectricalConductivity = model.EffectiveElectricalConductivity;
             

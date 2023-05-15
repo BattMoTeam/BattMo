@@ -88,7 +88,11 @@ classdef Electrode < BaseModel
         function am = setupActiveMaterial(model, paramobj)
         % paramobj is instance of ActiveMaterialInputParams
         % standard instantiation (ActiveMaterial is specified in ActiveMaterial instantiation)
-            am = ActiveMaterial(paramobj);
+            if paramobj.isSwellingMaterial
+                am = SwellingMaterial(paramobj);
+            else
+                am = ActiveMaterial(paramobj);
+            end
         end
         
         function cc = setupCurrentCollector(model, paramobj)

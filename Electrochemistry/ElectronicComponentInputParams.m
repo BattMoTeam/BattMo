@@ -13,6 +13,7 @@ classdef ElectronicComponentInputParams < ComponentInputParams
 
         use_thermal
         
+
     end
     
     

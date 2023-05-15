@@ -34,6 +34,10 @@ classdef ActiveMaterialInputParams < ElectronicComponentInputParams
 
         use_particle_diffusion
 
+        isSwellingMaterial  % Boolean equal to 1 if we consider the swelling of the material
+
+        
+
     end
 
     methods

@@ -241,11 +241,13 @@ classdef Interface < BaseModel
             state.R = R/(n*F); % reaction rate in mol/(s*m^2)
 
         end
+
+        function state = updateVolumetricSurfaceArea(model, state)
+           %By default definition
+            state.volumetricSurfaceArea = model.volumetricSurfaceArea;
+        end
         
-    function state = updateVolumetricSurfaceArea(model, state)
-         state.volumetricSurfaceArea = model.volumetricSurfaceArea;
-    end
-    
+        
     end
 
 end

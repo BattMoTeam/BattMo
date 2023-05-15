@@ -23,6 +23,7 @@
       "InterDiffusionCoefficientComment" : "from Ecker 2015",
       "electricalConductivity": 100,
       "BruggemanCoefficient": 1.5,
+      
       "Interface": {
         "isFile": true,
         "filename": "ParameterData/MaterialProperties/Silicon/silicon.json"

@@ -23,6 +23,7 @@
       "InterDiffusionCoefficientComment" : "from Ecker 2015",
       "electricalConductivity": 100,
       "BruggemanCoefficient": 1.5,
+      "isSwellingMaterial": 0,
       "Interface": {
         "isFile": true,
         "filename": "ParameterData/MaterialProperties/Graphite/graphite.json"
@@ -48,6 +49,7 @@
       "InterDiffusionCoefficient": 1e-14,
       "electricalConductivity": 100,
       "BruggemanCoefficient": 1.5,
+      "isSwellingMaterial": 0,
       "Interface": {
         "isFile": true,
         "filename": "ParameterData/MaterialProperties/NMC/nmc111.json"

@@ -33,6 +33,7 @@ classdef FullSolidDiffusionModel < SolidDiffusionModel
                        'activeMaterialFraction'};
 
             model = dispatchParams(model, paramobj, fdnames);
+            model.operators = model.setupOperators();
 
             if ~isempty(paramobj.D)
                 switch paramobj.D.type
@@ -78,20 +79,13 @@ classdef FullSolidDiffusionModel < SolidDiffusionModel
             model = model.registerVarNames(varnames);
 
             fn = @FullSolidDiffusionModel.updateDiffusionCoefficient;
-            
             if model.useDFunc
                 inputnames = {'c'};
-            else            model = model.registerVarNames(varnames);
-
+            else
                 inputnames = {'T'};
             end
             model = model.registerPropFunction({'D', fn, inputnames});
 
-            
-            fn = @FullSolidDiffusionModel.updateMassSource;
-            inputnames = {'Rvol', 'radius', 'volumeFraction'};
-            model = model.registerPropFunction({'massSource', fn, inputnames});
-            
             fn = @FullSolidDiffusionModel.updateFlux;
             inputnames = {'c', 'D'};
             model = model.registerPropFunction({'flux', fn, inputnames});
@@ -100,6 +94,9 @@ classdef FullSolidDiffusionModel < SolidDiffusionModel
             inputnames = {'massAccum', 'flux', 'massSource'};
             model = model.registerPropFunction({'massCons', fn, inputnames});
 
+            fn = @FullSolidDiffusionModel.updateMassSource;
+            model = model.registerPropFunction({'massSource', fn, {'Rvol'}});
+            
             fn = @FullSolidDiffusionModel.updateMassAccum;
             fn = {fn, @(propfunction) PropFunction.accumFuncCallSetupFn(propfunction)};
             model = model.registerPropFunction({'massAccum', fn, {'c'}});
@@ -115,11 +112,11 @@ classdef FullSolidDiffusionModel < SolidDiffusionModel
             
         end
         
-        function state = updateOperators(model, state)
-            np = model.np;
+        function operators = setupOperators(model)
             
+            np = model.np;
             N  = model.N;
-            rp = state.radius;
+            rp = model.rp;
             
             celltbl.cells = (1 : np)';
             celltbl = IndexArray(celltbl);
@@ -259,7 +256,7 @@ classdef FullSolidDiffusionModel < SolidDiffusionModel
 
             vols = map.eval(vols);
 
-            state.operators = struct('div'          , div          , ...
+            operators = struct('div'          , div          , ...
                                'flux'         , flux         , ...
                                'mapFromBc'    , mapFromBc    , ...
                                'mapToParticle', mapToParticle, ...
@@ -271,9 +268,9 @@ classdef FullSolidDiffusionModel < SolidDiffusionModel
 
         function state = updateMassSource(model, state)
             
-            op  = state.operators;
-            rp  = state.radius;
-            vf  = state.volumeFraction;
+            op  = model.operators;
+            rp  = model.rp;
+            vf  = model.volumeFraction;
             amf = model.activeMaterialFraction;
             
             Rvol = state.Rvol;
@@ -314,7 +311,7 @@ classdef FullSolidDiffusionModel < SolidDiffusionModel
 
         function state = updateMassAccum(model, state, state0, dt)
 
-            op = state.operators;
+            op = model.operators;
             
             c = state.c;
             c0 = state0.c;
@@ -325,7 +322,7 @@ classdef FullSolidDiffusionModel < SolidDiffusionModel
         
         function state = updateMassConservation(model, state)
            
-            op = state.operators;
+            op = model.operators;
             
             flux       = state.flux;
             massSource = state.massSource;
@@ -338,7 +335,7 @@ classdef FullSolidDiffusionModel < SolidDiffusionModel
         function state = updateFlux(model, state)
             
             useDFunc = model.useDFunc;
-            op = state.operators;
+            op = model.operators;
             
             c = state.c;
             D = state.D;
@@ -357,7 +354,7 @@ classdef FullSolidDiffusionModel < SolidDiffusionModel
             
         %% TODO : change name of this function
             
-            op       = state.operators;
+            op       = model.operators;
             useDFunc = model.useDFunc;
             
             c     = state.c;
@@ -381,7 +378,7 @@ classdef FullSolidDiffusionModel < SolidDiffusionModel
 
         function state = updateAverageConcentration(model, state)
 
-            op = state.operators;
+            op = model.operators;
             vols = op.vols;
             map = op.mapToParticle;
             
@@ -394,8 +391,11 @@ classdef FullSolidDiffusionModel < SolidDiffusionModel
             
         end
 
-       
+        function state = updateOperators(model, state)
+            state.operators = model.operators;
         end
+        
+    end
     
 end
 
@@ -420,4 +420,3 @@ You should have received a copy of the GNU General Public License
 along with BattMo.  If not, see <http://www.gnu.org/licenses/>.
 %}
     
-
