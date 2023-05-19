@@ -1,4 +1,4 @@
-function sens = computeSensitivitiesAdjointADBattmo(setup, states, param, getObjective, varargin)
+function sens = computeSensitivitiesAdjointADBattmo(setup, states, params, getObjective, varargin)
 % Compute parameter sensitivities using adjoint simulation
 %
 % SYNOPSIS:
@@ -21,7 +21,7 @@ function sens = computeSensitivitiesAdjointADBattmo(setup, states, param, getObj
 %                  memory, it can use `ResultHandler` class to retrieve files
 %                  from the disk.
 %
-%   param        - array of parameters of class ModelParameter
+%   params       - cell array of parameters of class ModelParameter
 %
 %   getObjective - Function handle for getting objective function value
 %                  for a given timestep with derivatives. Format: @(tstep)
@@ -36,7 +36,7 @@ function sens = computeSensitivitiesAdjointADBattmo(setup, states, param, getObj
 %          sens.(paramName) = paramValue
 %
 
-    assert(isa(param{1}, 'ModelParameter'), ...
+    assert(isa(params{1}, 'ModelParameter'), ...
            'Parameters must be initialized using ''ModelParameter''.')
 
     opt = struct('LinearSolver', []);       
@@ -55,20 +55,20 @@ function sens = computeSensitivitiesAdjointADBattmo(setup, states, param, getObj
     end
 
     sens = struct;
-    for k = 1 : numel(param)
-        sens.(param{k}.name) = 0;
+    for k = 1 : numel(params)
+        sens.(params{k}.name) = 0;
     end
     pNames = fieldnames(sens);
 
     % Split parameters in inital state/non-initial state due to different  handling
-    isInitParam = cellfun(@(p)strcmp(p.belongsTo, 'state0'), param);
+    isInitParam = cellfun(@(p)strcmp(p.belongsTo, 'state0'), params);
     if any(isInitParam)
         error('Modification of the initial state is not supported yet.')
-        [initparam, param] = deal(param(isInitParam), param(~isInitParam));
+        [initparam, params] = deal(params(isInitParam), params(~isInitParam));
     end
 
     % inititialize parameters to ADI
-    [modelParam, scheduleParam] = initModelParametersADI(setup, param);
+    [modelParam, scheduleParam] = initModelParametersADI(setup, params);
     
     % Propagate AD in model by compute again the parameters in the model that depend on the AD-parameters that have been
     % set directly above.
@@ -79,6 +79,8 @@ function sens = computeSensitivitiesAdjointADBattmo(setup, states, param, getObj
     getState = @(i) getStateFromInput(setup.schedule, states, setup.state0, i);
     
     % Run adjoint
+    lambdaVec = [];
+    
     for step = nstep : -1 : 1
 
         fprintf('Solving reverse mode step %d of %d\n', nstep - step + 1, nstep);
@@ -87,14 +89,14 @@ function sens = computeSensitivitiesAdjointADBattmo(setup, states, param, getObj
         [lambda, lambdaVec]= setup.model.solveAdjoint(linsolve, getState, getObjective, setup.schedule, lambdaVec, step);
 
         % Compute derivatives of the residual equations with respect to the parameters
-        eqdth = partialWRTparam(modelParam, getState, scheduleParam, step, param);
+        eqdth = partialWRTparam(modelParam, getState, scheduleParam, step, params);
 
         % Assemble the sensitivities using the lagrange multipliers
-        for kp = 1 : numel(param)
-            nm = param{kp}.name;
+        for kp = 1 : numel(params)
+            nm = params{kp}.name;
             for nl = 1 : numel(lambda)
                 if isa(eqdth{nl}, 'ADI')
-                    sens.(nm) = sens.(nm) - eqdth{nl}.jac{kp}'*lambda{nl};
+                    sens.(nm) = sens.(nm) + eqdth{nl}.jac{kp}'*lambda{nl};
                 end
             end
         end
