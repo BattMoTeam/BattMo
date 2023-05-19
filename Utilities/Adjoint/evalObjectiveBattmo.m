@@ -1,12 +1,12 @@
-function [misfitVal, varargout] = evalObjectiveBattmo(pvec, obj, setup, parameters, varargin)
+function [objValue, varargout] = evalObjectiveBattmo(pvec, obj, setup, parameters, varargin)
 % Utility function (for optimization) that simulates a model with parameters obtained 
 % from the vector 'pvec' (scaled parameters) and computes objective
 %
 % SYNOPSIS:
-%  misfitVal                                   = evaluateMatchBattmo(p, obj, setup, parameters, states_ref, ['pn', pv, ...]) 
-%  [misfitVal, sesitivities]                   = evaluateMatchBattmo(...) 
-%  [misfitVal, sesitivities, wellSols, states] = evaluateMatchBattmo(...) 
-%  [misfitVal, ~, wellSols, states]            = evaluateMatchBattmo(...,'Gradient','none')
+%  objValue                                   = evalObjectiveBattmo(p, obj, setup, parameters, states_ref, ['pn', pv, ...]) 
+%  [objValue, sesitivities]                   = evalObjectiveBattmo(...) 
+%  [objValue, sesitivities, wellSols, states] = evalObjectiveBattmo(...) 
+%  [objValue, ~, wellSols, states]            = evalObjectiveBattmo(...,'Gradient','none')
 %
 % DESCRIPTION:
 %   For a given parameter array p, compute mistmach and sesitivities with regards to parameter p
@@ -32,12 +32,12 @@ function [misfitVal, varargout] = evalObjectiveBattmo(pvec, obj, setup, paramete
 %   'Verbose'              - Indicate if extra output is to be printed such as
 %                             detailed convergence reports and so on.
 % RETURNS:
-%   misfitVal    - Diference between states(p) and states_ref
-%   sesitivities - Gradient of misfitVal with respect p
-%   wellSols     - Well solution at each control step (or timestep if
-%                  'OutputMinisteps' is enabled.)
-%   states       - State at each control step (or timestep if
-%                  'OutputMinisteps' is enabled.)
+%   objValue      - Diference between states(p) and states_ref
+%   sensitivities - Gradient of objValue with respect p
+%   wellSols      - Well solution at each control step (or timestep if
+%                   'OutputMinisteps' is enabled.)
+%   states        - State at each control step (or timestep if
+%                   'OutputMinisteps' is enabled.)
 %
 % SEE ALSO:
 % `evalObjective`, `computeSensitivitiesAdjointAD`, `unitBoxBFGS` 
@@ -89,8 +89,8 @@ function [misfitVal, varargout] = evalObjectiveBattmo(pvec, obj, setup, paramete
                                            'NonLinearSolver', opt.NonlinearSolver, ...
                                            'Verbose', opt.Verbose, extra{:});
 
-    misfitVals = obj(setupNew.model, states, setupNew.schedule);
-    misfitVal  = sum(vertcat(misfitVals{:}))/opt.objScaling ;
+    objValues = obj(setupNew.model, states, setupNew.schedule);
+    objValue  = sum(vertcat(objValues{:}))/opt.objScaling ;
 
     if nargout > 1
         objh = @(tstep,model, state) obj(setupNew.model, states, setupNew.schedule, ...
@@ -137,7 +137,7 @@ function [misfitVal, varargout] = evalObjectiveBattmo(pvec, obj, setup, paramete
                                              'objScaling',opt.objScaling, 'enforceBounds',  false);
                 end
             end 
-            gradient= (val - misfitVal)./eps_pert;
+            gradient= (val - objValue)./eps_pert;
             
             scaledGradient = mat2cell(gradient, nparam, 1);            
           otherwise
