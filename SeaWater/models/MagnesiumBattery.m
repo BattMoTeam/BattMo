@@ -142,7 +142,7 @@ classdef MagnesiumBattery < SeaWaterBattery
             
             types = repmat({'cell'}, 1, numel(names));
 
-            primaryVars = model.getPrimaryVariables();
+            primaryVars = model.getPrimaryVariableNames();
 
             %% setup LinearizedProblem that can be processed by MRST Newton API
             problem = LinearizedProblem(eqs, types, names, primaryVars, state, dt);

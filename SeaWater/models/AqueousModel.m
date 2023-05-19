@@ -68,7 +68,7 @@ classdef AqueousModel < BaseModel
             end
             eqs{end + 1} = state.pcs{logspdict('H+')} - log(10^(-pH)*mol/litre);
             
-            primaryVars = model.getPrimaryVariables();
+            primaryVars = model.getPrimaryVariableNames();
             
             nc = numel(eqs);
             types = repmat({'cells'}, 1, nc);
@@ -79,7 +79,7 @@ classdef AqueousModel < BaseModel
             
         end
         
-        function  p = getPrimaryVariables(model, state)
+        function  p = getPrimaryVariableNames(model, state)
 
             qp = arrayfun(@(i) {'qpcs', i}, (1 : model.Electrolyte.nqp)', 'uniformoutput', false);
             pcs = arrayfun(@(i) {'pcs', i}, (1 : model.Electrolyte.nlogsp)', 'uniformoutput', false);

@@ -117,7 +117,7 @@ classdef Electrolyser < BaseModel
             if isempty(model.computationalGraph)
                 model = model.setupComputationalGraph();
                 cgt = model.computationalGraph;
-                model.primaryVarNames = cgt.getPrimaryVariables();
+                model.primaryVarNames = cgt.getPrimaryVariableNames();
                 model.funcCallList = cgt.setOrderedFunctionCallList();
             end
 
@@ -415,7 +415,7 @@ classdef Electrolyser < BaseModel
 
         end
 
-        function primaryvarnames = getPrimaryVariables(model)
+        function primaryvarnames = getPrimaryVariableNames(model)
 
             primaryvarnames = model.primaryVarNames;
 
@@ -566,7 +566,7 @@ classdef Electrolyser < BaseModel
 
             types = repmat({'cell'}, 1, neq);
 
-            primaryVars = model.getPrimaryVariables();
+            primaryVars = model.getPrimaryVariableNames();
 
             %% setup LinearizedProblem that can be processed by MRST Newton API
             problem = LinearizedProblem(eqs, types, names, primaryVars, state, dt);

@@ -583,10 +583,10 @@ classdef SeaWaterBattery < BaseModel
             end
 
             cgt = model.computationalGraph;
-            model.primaryVarNames = cgt.getPrimaryVariables();
+            model.primaryVarNames = cgt.getPrimaryVariableNames();
             model.funcCallList = cgt.setOrderedFunctionCallList();
 
-            primaryvarnames = model.getPrimaryVariables();
+            primaryvarnames = model.getPrimaryVariableNames();
 
             logVariablesIndices = [];
             for ip = 1 : numel(primaryvarnames)
@@ -602,7 +602,7 @@ classdef SeaWaterBattery < BaseModel
 
         end
 
-        function primaryvarnames = getPrimaryVariables(model)
+        function primaryvarnames = getPrimaryVariableNames(model)
 
             primaryvarnames = model.primaryVarNames;
 

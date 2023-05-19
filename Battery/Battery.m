@@ -1145,8 +1145,7 @@ classdef Battery < BaseModel
                 error('control type not recognized')
             end
 
-            primaryVars = model.getPrimaryVariables();
-
+            primaryVars = model.getPrimaryVariableNames();
             
             %% Setup LinearizedProblem that can be processed by MRST Newton API
             problem = LinearizedProblem(eqs, types, names, primaryVars, state, dt);
@@ -1681,7 +1680,7 @@ classdef Battery < BaseModel
             
         end
 
-        function primaryvarnames = getPrimaryVariables(model)
+        function primaryvarnames = getPrimaryVariableNames(model)
 
             primaryvarnames = model.primaryVariableNames;
             

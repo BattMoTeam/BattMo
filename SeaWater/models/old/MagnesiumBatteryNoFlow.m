@@ -202,14 +202,14 @@ classdef MagnesiumBatteryNoFlow < MagnesiumBattery
             names = {names{:}, 'elyte_chargecons', 'ct_galvanostatic', 'an_galvanostatic', 'nucleation', 'electrolyte_vf'};
             types = repmat({'cell'}, 1, numel(names));
 
-            primaryVars = model.getPrimaryVariables();
+            primaryVars = model.getPrimaryVariableNames();
 
             %% setup LinearizedProblem that can be processed by MRST Newton API
             problem = LinearizedProblem(eqs, types, names, primaryVars, state, dt);
 
         end
 
-        function p = getPrimaryVariables(model)
+        function p = getPrimaryVariableNames(model)
             
             qp = arrayfun(@(i) {'Electrolyte', 'qpepscs', i}, (1 : model.Electrolyte.nqp)', 'uniformoutput', false);
             pcs = arrayfun(@(i) {'Electrolyte', 'pcs', i}, (1 : model.Electrolyte.nlogsp)', 'uniformoutput', false);

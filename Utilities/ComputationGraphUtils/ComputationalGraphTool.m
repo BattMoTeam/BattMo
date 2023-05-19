@@ -652,7 +652,7 @@ classdef ComputationalGraphTool
             
         end
 
-        function primvarnames = getPrimaryVariables(cgt)
+        function primvarnames = getPrimaryVariableNames(cgt)
         % Return the primary variables, which are defined as the root variables and not declared or recognized as static.
             
             A = cgt.A;
