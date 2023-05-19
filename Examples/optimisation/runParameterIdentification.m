@@ -52,7 +52,7 @@ simulationSetup = struct('model', model, 'schedule', schedule, 'state0', state0)
 parameters = configToModelParameter(simulationSetup, config);
 
 % Objective function
-objective = @(model, states, schedule, varargin) leastSquaresEI(model, states, schedule, 'statesRef', statesExp, varargin{:});
+objective = @(model, states, schedule, varargin) leastSquaresEI(model, states, statesExp, schedule, varargin{:});
 
 % Debug: the objective function evaluated at the experimental values should be zero
 objval = objective(model, statesExp, schedule);
