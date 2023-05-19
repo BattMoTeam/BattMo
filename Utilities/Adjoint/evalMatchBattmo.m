@@ -1,24 +1,22 @@
-function [misfitVal,varargout] = evalMatchBattmo(pvec, obj, setup, parameters, varargin)
+function [misfitVal, varargout] = evalMatchBattmo(pvec, obj, setup, parameters, varargin)
 % Utility function (for optimization) that simulates a model with parameters obtained 
-% from the vector 'pvec' (scaled parameters) and computes mismatch with respect a 
-% reference output state 'states_ref'
+% from the vector 'pvec' (scaled parameters) and computes objective
 %
 % SYNOPSIS:
-%  misfitVal                                   = evaluateMatch(p, obj, setup, parameters, states_ref, ['pn', pv, ...]) 
-%  [misfitVal, sesitivities]                   = evaluateMatch(...) 
-%  [misfitVal, sesitivities, wellSols, states] = evaluateMatch(...) 
-%  [misfitVal, ~, wellSols, states]            = evaluateMatch(...,'Gradient','none')
+%  misfitVal                                   = evaluateMatchBattmo(p, obj, setup, parameters, states_ref, ['pn', pv, ...]) 
+%  [misfitVal, sesitivities]                   = evaluateMatchBattmo(...) 
+%  [misfitVal, sesitivities, wellSols, states] = evaluateMatchBattmo(...) 
+%  [misfitVal, ~, wellSols, states]            = evaluateMatchBattmo(...,'Gradient','none')
 %
 % DESCRIPTION:
 %   For a given parameter array p, compute mistmach and sesitivities with regards to parameter p
 %
 % REQUIRED PARAMETERS:
 %   pvec         - An array containing the parameters' values scaled in unit-interval [0 ,1]
-%   obj          - Objective function that evaluates the diferences/match between
-%                  states evaluated at parameters p (states(p)) and the reference state states_ref
+%   obj          - Objective function that evaluates the difference states evaluated at parameters p (states(p)) and a reference state states_ref.
+%                  It is passed as a function of states
 %   setup        - Simulation setup structure containing: state0, model, and schedule.
 %   parameters   - cell-array of parameters of class ModelParameter
-%   states_ref   - Physical model states corresponding to the reference.
 %
 % OPTIONAL PARAMETERS:
 %   'Gradient'             - Method to calculate the sensitivities/gradient:
