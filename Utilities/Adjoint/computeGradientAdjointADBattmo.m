@@ -95,14 +95,13 @@ along with MRST.  If not, see <http://www.gnu.org/licenses/>.
     getState = @(i) getStateFromInput(schedule, states, state0, i);
     
     nstep = numel(schedule.step.val);
-    grad = [];
+    lambdaVec = [];
     gradstep = cell(nstep, ncv);
     nt = nstep;
-    for step = nt:-1:1
+    for step = nt : -1 : 1
         fprintf('Solving reverse mode step %d of %d\n', nt - step + 1, nt);
-        [dg, grad, report] = model.solveAdjoint(linsolve, getState, ...
-                                         getObjective, schedule, grad, step);
-        gradstep(step, :) = getRequestedGradients(dg, report, opt.ControlVariables);
+        [lambda, lambdaVec, report] = model.solveAdjoint(linsolve, getState, getObjective, schedule, lambdaVec, step);
+        gradstep(step, :) = getRequestedGradients(lambda, report, opt.ControlVariables);
     end
     
     % Sum up to the control steps
@@ -115,16 +114,17 @@ along with MRST.  If not, see <http://www.gnu.org/licenses/>.
     end
     gradients = cell(ncv, nOut);
     
-    for k = 1:nOut
+    for k = 1 : nOut
         ck = contr == k;
-        for j = 1:ncv
+        for j = 1 : ncv
             tmp = gradstep(ck, j);
             gradients{j, k} = 0;
-            for i = 1:numel(tmp)
+            for i = 1 : numel(tmp)
                 gradients{j, k} = gradients{j, k} + tmp{i};
             end
         end
     end
+    
 end
 
 function state = getStateFromInput(schedule, states, state0, i)
@@ -137,13 +137,13 @@ function state = getStateFromInput(schedule, states, state0, i)
     end
 end
 
-function g = getRequestedGradients(dg, report, wantGradFor)
+function g = getRequestedGradients(lambda, report, wantGradFor)
     if ischar(wantGradFor)
         g = {vertcat(dg{strcmpi(report.Types, wantGradFor)})};
     else
         ng = numel(wantGradFor);
         g = cell(1, ng);
-        for i = 1:ng
+        for i = 1 : ng
             n = wantGradFor{i};
             g{i} = vertcat(dg{strcmpi(report.Types, n)});
         end
