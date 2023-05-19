@@ -2,7 +2,7 @@ function sens = computeSensitivitiesAdjointADBattmo(setup, states, param, getObj
 % Compute parameter sensitivities using adjoint simulation
 %
 % SYNOPSIS:
-%   sens = computeSensitivitiesAdjointAD(state0, states, model, schedule, getObjective, varargin)
+%   sens = computeSensitivitiesAdjointADBattmo(state0, states, model, schedule, getObjective, varargin)
 %
 % DESCRIPTION:
 %   For a given schedule, compute senistivities with regards to parameters
@@ -10,11 +10,10 @@ function sens = computeSensitivitiesAdjointADBattmo(setup, states, param, getObj
 % REQUIRED PARAMETERS:
 %
 %   SimulatorSetup - structure containing:
+%    
 %       state0   - Physical model state at `t = 0`
-%       model    - Subclass of PhysicalModel class such as
-%                  `GenericBlackOilModel` that models the physical
+%       model    - Subclass of PhysicalModel class such as `Battery` that models the physical
 %                  effects we want to study.
-%
 %       schedule - Schedule suitable for `simulateScheduleAD`.
 %
 %   states       - All previous states. Must support the syntax
@@ -36,8 +35,6 @@ function sens = computeSensitivitiesAdjointADBattmo(setup, states, param, getObj
 %   sens - Structure with parameter sensitivites of the form
 %          sens.(paramName) = paramValue
 %
-% SEE ALSO:
-%   `computeGradientAD`
 
     assert(isa(param{1}, 'ModelParameter'), ...
            'Parameters must be initialized using ''ModelParameter''.')
@@ -58,44 +55,56 @@ function sens = computeSensitivitiesAdjointADBattmo(setup, states, param, getObj
     end
 
     sens = struct;
-    for k = 1:numel(param)
+    for k = 1 : numel(param)
         sens.(param{k}.name) = 0;
     end
     pNames = fieldnames(sens);
-    % split parameters in inital state/non-initial state due to different  handling
+
+    % Split parameters in inital state/non-initial state due to different  handling
     isInitParam = cellfun(@(p)strcmp(p.belongsTo, 'state0'), param);
     if any(isInitParam)
+        error('Modification of the initial state is not supported yet.')
         [initparam, param] = deal(param(isInitParam), param(~isInitParam));
     end
 
     % inititialize parameters to ADI
     [modelParam, scheduleParam] = initModelParametersADI(setup, param);
-    % reset discretization/flow functions to account for AD-parameters
+    
+    % Propagate AD in model by compute again the parameters in the model that depend on the AD-parameters that have been
+    % set directly above.
     modelParam = validateModel(modelParam);
 
     nstep    = numel(setup.schedule.step.val);
     lambda   = [];
     getState = @(i) getStateFromInput(setup.schedule, states, setup.state0, i);
     
-    % run adjoint
+    % Run adjoint
     for step = nstep : -1 : 1
+
         fprintf('Solving reverse mode step %d of %d\n', nstep - step + 1, nstep);
-        [lambda, lambdaVec]= setup.model.solveAdjoint(linsolve, getState, ...
-                                                 getObjective, setup.schedule, lambdaVec, step);
+        
+        % Compute Lagrange multipliers for the adjoint formulation
+        [lambda, lambdaVec]= setup.model.solveAdjoint(linsolve, getState, getObjective, setup.schedule, lambdaVec, step);
+
+        % Compute derivatives of the residual equations with respect to the parameters
         eqdth = partialWRTparam(modelParam, getState, scheduleParam, step, param);
-        for kp = 1:numel(param)
+
+        % Assemble the sensitivities using the lagrange multipliers
+        for kp = 1 : numel(param)
             nm = param{kp}.name;
-            for nl = 1:numel(lambda)
+            for nl = 1 : numel(lambda)
                 if isa(eqdth{nl}, 'ADI')
                     sens.(nm) = sens.(nm) - eqdth{nl}.jac{kp}'*lambda{nl};
                 end
             end
         end
+        
     end
 
-    % compute partial derivative of first eq wrt init state and compute initial state sensitivities
+    % Compute partial derivative of first eq wrt init state and compute initial state sensitivities
     if any(isInitParam)
-        
+
+        error('Modification of the initial state is not supported yet.')
         schedule = setup.schedule;
         forces   = setup.model.getDrivingForces(schedule.control(schedule.step.control(1)));
         forces   = merge_options(setup.model.getValidDrivingForces(), forces{:});
@@ -109,8 +118,10 @@ function sens = computeSensitivitiesAdjointADBattmo(setup, states, param, getObj
         linProblem = model.getAdjointEquations(state0, states{1}, dt, forces,...
                                                'iteration', inf,  ...
                                                'reverseMode', true);
+        
         nms    = applyFunction(@lower, pNames(isInitParam));
         varNms = applyFunction(@lower, linProblem.primaryVariables);
+        
         for k = 1 : numel(nms)
             kn = find(strcmp(nms{k}, varNms));
             assert(numel(kn)==1, 'Unable to match initial state parameter name %s\n', nms{k});
@@ -124,6 +135,7 @@ function sens = computeSensitivitiesAdjointADBattmo(setup, states, param, getObj
             end
             sens.(nms{k}) =  initparam{k}.collapseGradient(sens.(nms{k}));
         end
+        
     end       
 
 end
@@ -142,60 +154,17 @@ function eqdth = partialWRTparam(model, getState, schedule, step, params)
     forces  = merge_options(validforces, forces{:});
     model   = model.validateModel(forces);
     
-    % Initial state typically lacks wellSol-field, so add if needed
+    % May be not needed
     if step == 1
         before = model.validateState(before);
     end
 
-    % initialize before-state in case it contains cached properties
+    % Assemble the equations with AD initialization done such that we obtain the derivative with respect to the parameters
     problem = model.getEquations(before, current, dt, forces, 'iteration', inf, 'resOnly', true);
 
-    % We need special treatment of well-control parameters (if present) due to non-diff misc logic in well equations
-    isPolicy      = cellfun(@(p)strcmp(p.controlType, 'policy'), params);
-    isWellControl = cellfun(@(p)any(strcmp(p.controlType, {'bhp', 'rate', 'wrat', 'orat', 'grat'})), params);
-    
-    if any(isPolicy | isWellControl)
-        ws     = current.wellSol;
-        isOpen = vertcat(ws.status);
-        nOpen  = nnz(isOpen);
-        eqNo   = strcmp('closureWells', problem.equationNames);
-        ceq    = problem.equations{eqNo};
-        assert(~isa(ceq, 'ADI'));
-
-        if any(isPolicy) && step > 1
-            % experimental support for policies: 
-            assert(isfield(control.misc, 'policy'));
-            tmp = control.extra.policy.function(before, schedule, [], step-1);
-            ceq = -vertcat(tmp.control(cNo).W(isOpen).val);
-        end
-        
-        if any(isWellControl)
-            % set to AD if not already
-            ceq = setEqToADI(ceq, params);
-            ix = find(isWellControl);
-            for k = 1:numel(ix)
-                pnum     = ix(k);
-                assert(strcmp(params{pnum}.type, 'value'), ...
-                       'Well control parameter of non-value type not supported');
-                cntr     = params{pnum}.controlType;
-                % non-zero gradient only if control is active
-                isActive = isOpen & reshape(strcmp(cntr, {ws.type}), [], 1);
-                jac = - spdiags(double(isActive(isOpen)), 0, nOpen, nOpen);
-                jac = jac(:, params{pnum}.subset);
-                assert(all(size(ceq.jac{pnum}) == size(jac)), 'Problem requires debugging')
-                ceq.jac{pnum} = jac;
-            end
-        end
-        
-        % scaling (idntical to scaling of well eqs)
-        scale = getControlEqScaling({ws.type}, model.FacilityModel);
-        scale = scale(isOpen);
-        problem.equations{eqNo} = scale.*ceq;
-    end             
     eqdth = problem.equations;
+    
 end
-
-%--------------------------------------------------------------------------
 
 function state = getStateFromInput(schedule, states, state0, i)
     if i == 0
@@ -207,7 +176,6 @@ function state = getStateFromInput(schedule, states, state0, i)
     end
 end
 
-%--------------------------------------------------------------------------
 function [modelParam, scheduleParam] = initModelParametersADI(setup, param)
     v  = applyFunction(@(p)p.getParameter(setup), param);
     % use same backend as problem.model
@@ -220,33 +188,6 @@ function [modelParam, scheduleParam] = initModelParametersADI(setup, param)
         setup = param{k}.setParameter(setup, v{k});
     end
     [modelParam, scheduleParam] = deal(setup.model, setup.schedule);
-end
-
-%--------------------------------------------------------------------------
-function eq = setEqToADI(eq, p)
-    if ~isa(eq, 'ADI')
-        % we don't necessarily have sample, so create from scratch 
-        np  = cellfun(@(p)p.nParam, p);
-        neq = numel(eq);
-        jac = applyFunction(@(npk)sparse([],[],[],neq, npk ), np);
-        % use default ADI
-        eq  = ADI(eq, jac);
-    end
-end
-
-%--------------------------------------------------------------------------
-function sc = getControlEqScaling(tp, facility)
-% In order to produce correct gradients, this scaling must be precisely the same as in the control equation. This is rather shaky!
-    sc     = ones(numel(tp), 1);
-    is_bhp = strcmp('bhp', tp);
-    if any(is_bhp)
-        if isfinite(facility.toleranceWellRate) && isfinite(facility.toleranceWellBHP)
-            eqScale = facility.toleranceWellRate/facility.toleranceWellBHP;
-        else
-            eqScale = 1/(day()*barsa());
-        end
-        sc(is_bhp) = eqScale;
-    end
 end
 
 
