@@ -10,6 +10,7 @@ classdef TestRunExamples < matlab.unittest.TestCase
                     'runGittTest',
                     'runJellyRoll',
                     'runSector',
+                    'runBattery1DOptimize',
                     'runSingleParticleSEI'};
 
     end

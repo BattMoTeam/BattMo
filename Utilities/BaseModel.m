@@ -204,7 +204,7 @@ classdef BaseModel < PhysicalModel
         function stateAD = initStateAD(model, state)
         % initialize a new cleaned-up state with AD variables
             
-            pnames  = model.getPrimaryVariables();
+            pnames  = model.getPrimaryVariableNames();
             vars = cell(numel(pnames), 1);
             for i = 1:numel(pnames)
                 vars{i} = model.getProp(state, pnames{i});
@@ -395,7 +395,7 @@ classdef BaseModel < PhysicalModel
 
         function [state, report] = updateState(model, state, problem, dx, drivingForces)
 
-            p = model.getPrimaryVariables();
+            p = model.getPrimaryVariableNames();
 
             for i = 1 : numel(dx)
                 val = model.getProp(state, p{i});
@@ -410,7 +410,7 @@ classdef BaseModel < PhysicalModel
         function [state, report] = updateAfterConvergence(model, state0, state, dt, drivingForces)
 
             [state, report] = updateAfterConvergence@PhysicalModel(model, state0, state, dt, drivingForces);
-            p = model.getPrimaryVariables();
+            p = model.getPrimaryVariableNames();
             cleanState = [];
             for ind = 1 : numel(p)
                 cleanState = model.copyProp(cleanState, state, p{ind});
@@ -424,6 +424,8 @@ classdef BaseModel < PhysicalModel
         end
         
         function cleanState = addStaticVariables(model, cleanState, state)
+        % function to add static variables (not AD) on the cleanState, called in updateAfterConvergence and
+        % initStateAD. Time is added by default here (when it exists)
             if isfield(state, 'time')
                 cleanState.time = state.time;
             end

@@ -272,6 +272,7 @@ classdef ActiveMaterial < ElectronicComponent
             %% Function called to assemble accumulation terms (functions takes in fact as arguments not only state but also state0 and dt)
             if model.use_particle_diffusion & strcmp(model.diffusionModelType, 'simple') | ~model.use_particle_diffusion
                 fn = @ActiveMaterial.assembleAccumTerm;
+                fn = {fn, @(propfunc) PropFunction.accumFuncCallSetupFn(propfunc)};
                 model = model.registerPropFunction({'massAccum', fn, {'c'}});
             end
 
@@ -331,13 +332,13 @@ classdef ActiveMaterial < ElectronicComponent
             
             types = {'cell', 'cell', 'cell'};
 
-            primaryVars = model.getPrimaryVariables();
+            primaryVars = model.getPrimaryVariableNames();
             
             problem = LinearizedProblem(eqs, types, names, primaryVars, state, dt);
 
         end
 
-        function primaryvarnames = getPrimaryVariables(model)
+        function primaryvarnames = getPrimaryVariableNames(model)
             
             sd = 'SolidDiffusion';
             

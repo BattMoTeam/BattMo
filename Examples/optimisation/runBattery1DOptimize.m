@@ -136,7 +136,7 @@ plot(time, E, '*-');
 %% Plot the the output voltage and current
 % gradients to controlmodel.use_thermal =false;
 
-obj = @(model, states, schedule, varargin) EnergyOutput(model, states, schedule,varargin{:});%,'step',step);
+obj = @(model, states, schedule, varargin) EnergyOutput(model, states, schedule, varargin{:});
 vals = obj(model, states, schedule);
 totval = sum([vals{:}]);
 
@@ -197,7 +197,7 @@ end
 
 objmatch = @(model, states, schedule, varargin) EnergyOutput(model, states, schedule, varargin{:});
 fn       = @plotAfterStepIV;
-obj      = @(p) evalMatchBattmo(p, objmatch, SimulatorSetup, parameters, 'objScaling', -totval, 'afterStepFn', fn);
+obj      = @(p) evalObjectiveBattmo(p, objmatch, SimulatorSetup, parameters, 'objScaling', -totval, 'afterStepFn', fn);
 
 doOptimization = true;
 if doOptimization
@@ -213,8 +213,8 @@ doCompareGradient = false;
 if doCompareGradient
     
     p = getScaledParameterVector(SimulatorSetup, parameters);
-    [vad, gad]   = evalMatchBattmo(p, objmatch, SimulatorSetup, parameters, 'Gradient', 'AdjointAD');
-    [vnum, gnum] = evalMatchBattmo(p, objmatch, SimulatorSetup, parameters, 'Gradient', 'PerturbationADNUM', 'PerturbationSize', 1e-5);
+    [vad, gad]   = evalObjectiveBattmo(p, objmatch, SimulatorSetup, parameters, 'Gradient', 'AdjointAD');
+    [vnum, gnum] = evalObjectiveBattmo(p, objmatch, SimulatorSetup, parameters, 'Gradient', 'PerturbationADNUM', 'PerturbationSize', 1e-5);
 
     fprintf('Gradient computed using adjoint:\n');
     display(gad);

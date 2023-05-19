@@ -177,7 +177,7 @@ classdef BatchProcessor
                         elseif dim(1) == 1
                             Tc{ir, ic} = sprintf('[%s]', strjoin(cellstr(num2str(vals(ir, :)')), ', '));
                         elseif dim(2) == 1
-                            Tc{ir, ic} = sprintf('[%s]', strjoin(cellstr(num2str(vals(:, ir))), '; '));
+                            Tc{ir, ic} = sprintf('[%s]', strjoin(cellstr(num2str(vals{ir})), '; '));
                         else
                             error('problem with dimension.');
                         end

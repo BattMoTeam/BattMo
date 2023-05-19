@@ -1,7 +1,32 @@
 function obj = EnergyOutput(model, states, schedule, varargin)
+%
+%
+% SYNOPSIS:
+%   function obj = (model, states, schedule, varargin)
+%
+% DESCRIPTION: Computes the total energy output, sum_{i} ( E_i*I_i*dt_i ). Here, the index i denotes the time step
+    
+%
+%
+% PARAMETERS:
+%   model     - Battery model that is used by the solver
+%   states    - Input states
+%   schedule  - Schedule used for the simulation
+%
+% KEYWORD ARGUMENTS:
+%
+%   tStep           - if set, only the given time steps are handled. Otherwise, the whole schedule is used.
+%   ComputePartials - if true, the derivative of the objective functions are also included, see below
+%
+%   
+% RETURNS:
+%
+%   obj - Objective function cell array. One value per time step : obj{i} = E_i*I_i*dt_i. If the option
+%         'ComputePartials' is set, the derivative of the objective with
+%         respect to state is returned in a format appropriate for the adjoint computation.
+%   
 
-    opt     = struct('Price'          , 1.0  , ...
-                     'ComputePartials', false, ...
+    opt     = struct('ComputePartials', false, ...
                      'tStep'          , []   , ...
                      'state'          , []   , ...
                      'from_states'    , true);
@@ -11,19 +36,20 @@ function obj = EnergyOutput(model, states, schedule, varargin)
 
     tSteps = opt.tStep;
     
-    if isempty(tSteps) %do all
-        time = 0;
+    if isempty(tSteps) % do all
+        time     = 0;
         numSteps = numel(dts);
-        tSteps = (1:numSteps)';
+        tSteps   = (1:numSteps)';
     else
-        time = sum(dts(1:(opt.tStep-1)));
+        time     = sum(dts(1:(opt.tStep-1)));
         numSteps = 1;
-        dts = dts(opt.tStep);
+        dts      = dts(opt.tStep);
     end
 
     obj = repmat({[]}, numSteps, 1);
 
     for step = 1:numSteps
+        
         dt = dts(step);
         state = states{tSteps(step)};
         if opt.ComputePartials
@@ -38,7 +64,7 @@ function obj = EnergyOutput(model, states, schedule, varargin)
             E = state.Control.E;
             I = state.Control.I; 
         end
-        obj{step} = opt.Price*I*E*dt;
+        obj{step} = I*E*dt;
     end
     
 end

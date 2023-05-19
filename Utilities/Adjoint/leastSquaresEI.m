@@ -1,39 +1,70 @@
-function obj = leastSquaresEI(model, states, schedule, varargin)
+function obj = leastSquaresEI(model, states, refStates, schedule, varargin)
+%
+%
+% SYNOPSIS:
+%   function obj = leastSquaresEI(model, states, refStates, schedule, varargin)
+%
+% DESCRIPTION: Computes the least-square difference between a reference state and a given computed state for the voltage and current:
+%              sum_{i} ( (E_i - Eref_i)^2*dt_i + (I_i - Iref_i)^2*dt_i
+%
+%
+% PARAMETERS:
+%   model     - Battery model that is used by the solver
+%   states    - Input states
+%   refStates - Reference states
+%   schedule  - Schedule used for the simulation
+%
+% KEYWORD ARGUMENTS:
+%
+%   tStep           - if set, only the given time steps are handled. Otherwise, the whole schedule is used.
+%   ComputePartials - if true, the derivative of the objective functions are also included, see below
+%
+%   
+% RETURNS:
+%
+%   obj   - Objective function cell array. One value per time step : obj{i} = (E_i - Eref_i)^2*dt_i + (I_i -
+%           Iref_i)^2*dt_i. If the option 'ComputePartials' is set, the derivative of the objective with
+%           respect to state is returned in a format appropriate for the adjoint computation.
+%   
 
+
+
+
+    
     opt = struct('ComputePartials', false, ...
                  'tStep'          , []   , ...
                  'state'          , []   , ...
                  'from_states'    , true , ...
-                 'statesRef'      , []   , ...
                  'relTol'         , 1e-10);
     opt = merge_options(opt, varargin{:});
 
-    statesRef = opt.statesRef;
+    refStates = opt.refStates;
 
     dts = schedule.step.val;
 
     if isempty(opt.tStep) %do all
-        time = cumsum(dts);
+        time     = cumsum(dts);
         numSteps = numel(dts);
-        tSteps = (1:numSteps)';
+        tSteps   = (1:numSteps)';
     else
-        time = sum(dts(1:(opt.tStep)));
+        time     = sum(dts(1:(opt.tStep)));
         numSteps = 1;
-        dts = dts(opt.tStep);
-        tSteps = opt.tStep;
+        dts      = dts(opt.tStep);
+        tSteps   = opt.tStep;
     end
 
     obj = repmat({[]}, numSteps, 1);
 
     relTol = opt.relTol;
 
-    for k = 1:numSteps
-        t = time(k);
+    for k = 1 : numSteps
+        
+        t  = time(k);
         dt = dts(k);
 
         % Find states for time t (given by schedule)
-        state = findState(t, states, dt, relTol);
-        stateRef = findState(t, statesRef, dt, relTol);
+        state    = findState(t, states, dt, relTol);
+        stateRef = findState(t, refStates, dt, relTol);
 
         if opt.ComputePartials
             if (opt.from_states)
