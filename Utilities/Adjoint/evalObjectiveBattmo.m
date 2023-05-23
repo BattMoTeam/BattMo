@@ -30,7 +30,7 @@ function [objValue, varargout] = evalObjectiveBattmo(pvec, obj, setup, parameter
 %   'NonlinearSolver'      - Subclass of `NonLinearSolver` suitable for solving the
 %                            non linear systems of the forward model.
 %   'Verbose'              - Indicate if extra output is to be printed such as
-%                             detailed convergence reports and so on.
+%                            detailed convergence reports and so on.
 % RETURNS:
 %   objValue      - Diference between states(p) and states_ref
 %   sensitivities - Gradient of objValue with respect p
@@ -67,7 +67,7 @@ function [objValue, varargout] = evalObjectiveBattmo(pvec, obj, setup, parameter
                  'AdjointLinearSolver', []            , ...
                  'PerturbationSize'   , 1e-7          , ...
                  'objScaling'         , 1             , ...
-                 'enforceBounds'      ,  true);
+                 'enforceBounds'      , true);
 
     [opt, extra] = merge_options(opt, varargin{:});
 
@@ -81,7 +81,7 @@ function [objValue, varargout] = evalObjectiveBattmo(pvec, obj, setup, parameter
     % Create new setup, and set parameter values
     pval = cell(size(parameters));
     setupNew = setup;
-    for k = 1:numel(parameters)
+    for k = 1 : numel(parameters)
         pval{k}  = parameters{k}.unscale(pvec{k});
         setupNew = parameters{k}.setParameter(setupNew, pval{k});
     end
@@ -93,11 +93,12 @@ function [objValue, varargout] = evalObjectiveBattmo(pvec, obj, setup, parameter
     objValue  = sum(vertcat(objValues{:}))/opt.objScaling ;
 
     if nargout > 1
+        
         objh = @(tstep,model, state) obj(setupNew.model, states, setupNew.schedule, ...
-                                         'ComputePartials', true, ...
-                                         'tStep', tstep, ...
-                                         'state', state);
-        nms = applyFunction(@(x)x.name, parameters);
+                                         'ComputePartials', true , ...
+                                         'tStep'          , tstep, ...
+                                         'state'          , state);
+        nms = applyFunction(@(x) x.name, parameters);
         scaledGradient = cell(numel(nms), 1);
         
         switch opt.Gradient
@@ -112,34 +113,38 @@ function [objValue, varargout] = evalObjectiveBattmo(pvec, obj, setup, parameter
             gradient = computeSensitivitiesAdjointADBattmo(setupNew, states, parameters, objh, ...
                                                            'LinearSolver', opt.AdjointLinearSolver);            
             % do scaling of gradient
-            for k = 1:numel(nms)
-                scaledGradient{k} = parameters{k}.scaleGradient( gradient.(nms{k}), pval{k});
+            for k = 1 : numel(nms)
+                scaledGradient{k} = parameters{k}.scaleGradient(gradient.(nms{k}), pval{k});
             end
             
           case 'PerturbationADNUM'
-            % do manual pertubuation of the defiend control variabels
+            % Do manual pertubuation of the defined control variables
             eps_pert = opt.PerturbationSize;            
-            val=nan(size(p_org));
-            try  % Try parallel loop
-                for i=1:numel(p_org)
-                    val(i) = evalObjectiveBattmo(perturb(p_org,i,eps_pert), ...
-                                             obj,setupNew,parameters, ...
-                                             'Gradient', 'none', ...
-                                             'NonlinearSolver',opt.NonlinearSolver, ...
-                                             'objScaling',opt.objScaling,'enforceBounds',  false);
-                end
-            catch % Try serial loop instead
-                for i=1:numel(p_org)
-                    val(i) = evalObjectiveBattmo(perturb(p_org,i,eps_pert), ...
-                                             obj,setupNew,parameters, ...
-                                             'Gradient', 'none', ...
-                                             'NonlinearSolver',opt.NonlinearSolver, ...
-                                             'objScaling',opt.objScaling, 'enforceBounds',  false);
-                end
-            end 
-            gradient= (val - objValue)./eps_pert;
+            val = nan(size(p_org));
             
-            scaledGradient = mat2cell(gradient, nparam, 1);            
+            try
+                % Try parallel loop
+                parfor i = 1 : numel(p_org)
+                    val(i) = evalObjectiveBattmo(perturb(p_org, i, eps_pert), obj, setupNew, parameters, ...
+                                                 'Gradient'       , 'none'             , ...
+                                                 'NonlinearSolver', opt.NonlinearSolver, ...
+                                                 'objScaling'     , opt.objScaling     , ...
+                                                 'enforceBounds', false);
+                end
+            catch
+                % Try serial loop instead
+                for i = 1 : numel(p_org)
+                    val(i) = evalObjectiveBattmo(perturb(p_org, i, eps_pert), obj, setupNew, parameters, ...
+                                                 'Gradient'       , 'none'             , ...
+                                                 'NonlinearSolver', opt.NonlinearSolver, ...
+                                                 'objScaling'     , opt.objScaling     , ...
+                                                 'enforceBounds'  , false);
+                end
+            end
+            
+            gradient = (val - objValue)./eps_pert;
+            scaledGradient = mat2cell(gradient, nparam, 1);
+            
           otherwise
             error('Greadient method %s is not implemented',opt.Gradient)
         end
@@ -159,9 +164,11 @@ end
 
 
 % Utility function to perturb the parameter array in coordinate i with eps_pert
-function p_pert = perturb(p_org, i, eps_pert) 
+function p_pert = perturb(p_org, i, eps_pert)
+    
     p_pert = p_org;
     p_pert(i) = p_pert(i) + eps_pert;
+    
 end
 
 
