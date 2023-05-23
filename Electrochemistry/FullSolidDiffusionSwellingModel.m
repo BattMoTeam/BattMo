@@ -37,38 +37,41 @@ classdef FullSolidDiffusionSwellingModel < FullSolidDiffusionModel
         
 
         function state = updateMassSource(model, state)
-            %%Modification of mass source
+
+        %% Modification of mass source
            
             op  = model.operators;
-            rp  = state.radius;
             rp0 = model.rp;
-            vf  = state.volumeFraction;
             amf = model.activeMaterialFraction;
             
+            rp   = state.radius;
+            vf   = state.volumeFraction;
             Rvol = state.Rvol;
+            
+            % Rvol and radius are discretized in  celltbl
+            massSource = - Rvol.*((4*pi*rp.^3)./(3*amf.*vf)).*(rp0./rp).^3;
+            massSource = op.mapFromBc*massSource;
 
-            Rvol = op.mapFromBc*Rvol;
+            state.massSource = massSource;
+            
+            % L = length(Rvol.val);
 
-
-            L = length(Rvol.val);
-
-
-            %just to define a generic AD structure for massSource
-            A = model.rp;
-            state.massSource = - Rvol*((4*pi*A^3)/(3*amf*A));
+            % Just to define a generic AD structure for massSource
+            % A = model.rp;
+            % state.massSource = - Rvol*((4*pi*A^3)/(3*amf*A));
 
             % Same expression as in non-swelling material but taking into
             % account the variation of radius and volume fraction as well
             % as a normalisation term at the end as we are in fixed coordinates)
-            for i = 1:L
-                R = Rvol.val(i);
-                n = fix(i/L);
-                radius = rp.val(n+1);
-                volumeFraction = vf.val(n+1);
-                state.massSource.val(i) = - R*((4*pi*radius^3)/(3*amf*volumeFraction))*(rp0/radius)^3;
-            end
+            % for i = 1 : L
+            %     R = Rvol.val(i);
+            %     n = fix(i/L);
+            %     radius = rp.val(n+1);
+            %     volumeFraction = vf.val(n+1);
+            %     state.massSource.val(i) = - R*((4*pi*radius^3)/(3*amf*volumeFraction))*(rp0/radius)^3;
+            % end
 
-
+            % state.massSource = - R.*((4*pi*radius.^3)/(3*amf.*vf))*(rp0./radius).^3;
             
         end
 
