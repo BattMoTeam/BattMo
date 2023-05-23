@@ -226,6 +226,9 @@ initstate = model.setupInitialState();
 %%% Running the simulation
 % Once we have the initial state, the model and the schedule, we can call
 % the simulateScheduleAD function which will actually run the simulation:
+
+model.verbose = true;
+
 [wellSols, states, report] = simulateScheduleAD(initstate, model, schedule); 
 
 %%%
