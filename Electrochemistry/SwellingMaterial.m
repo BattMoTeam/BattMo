@@ -427,7 +427,8 @@ classdef SwellingMaterial < ActiveMaterial
             molarMassSi = 28.0855 * 1E-3;
             molarVolumeSi = molarMassSi/densitySi;
 
-            state.porositySource = a.*R.*(molarVolumeLithiated - 3.75*molarVolumeSi);
+            state.porositySource = -a.*R.*(molarVolumeLithiated - 3.75*molarVolumeSi);
+            
         end
 
          function state = updatePorosityFlux(model, state)
