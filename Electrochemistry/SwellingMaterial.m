@@ -353,25 +353,28 @@ classdef SwellingMaterial < ActiveMaterial
 
         function state = updateRadius(model, state)
 
-
+            radius_0  = model.SolidDiffusion.rp;
+            densitySi = model.density;
+            cmaxLi    = model.Interface.cmax;
+            
             c = state.SolidDiffusion.cAverage;
             
-            radius_0 = model.SolidDiffusion.rp;
-            densitySi = model.density;
-            MolarMassSi = 28.0855 * 1E-3;
+            MolarMassSi   = 28.0855 * 1E-3;
             molarVolumeSi = MolarMassSi/densitySi;
             molarVolumeLi = 8.8 * 1E-6;
-            cmaxLi = model.Interface.cmax;
             
             radius = radius_0 * (1 + (3.75*molarVolumeLi*c)/(cmaxLi*molarVolumeSi))^(1/3);
+
             state.radius = radius;
             
             if model.use_particle_diffusion
                 state.SolidDiffusion.radius = radius;
             end
+            
         end
 
         function state = updateVolumeFraction(model, state)
+
             porosity = state.porosity;
             vf = 1 - porosity;
 
@@ -380,7 +383,8 @@ classdef SwellingMaterial < ActiveMaterial
 
              if model.use_particle_diffusion
                 state.SolidDiffusion.volumeFraction = vf;
-            end
+             end
+             
         end
                
         function state = updateVolumetricSurfaceArea(model, state)
@@ -409,27 +413,33 @@ classdef SwellingMaterial < ActiveMaterial
         end
 
         function state = updateEffectiveElectricalConductivity(model, state)
-            porosity = state.porosity;
-            vf = 1 - porosity;
+            
             brugg = model.BruggemanCoefficient;
+
+            porosity = state.porosity;
+
+            vf = 1 - porosity;
                    
             % setup effective electrical conductivity using Bruggeman approximation
             state.EffectiveElectricalConductivity = model.electricalConductivity.*vf.^brugg;
+            
         end
 
         function state = updatePorosityAccum(model, state, state0, dt)
             
-            state.porosityAccum = (state.porosity-state0.porosity)/dt;
+            state.porosityAccum = (state.porosity - state0.porosity)/dt;
+            
         end
             
         function state = updatePorositySource(model, state)
             
+            molarVolumeLithiated = model.updateMolarVolumeLithiated(state);
+            densitySi            = model.Interface.density;
+
             a = state.Interface.volumetricSurfaceArea;       
             R = state.Interface.R;
-
-            molarVolumeLithiated = model.updateMolarVolumeLithiated(state);
-            densitySi = model.Interface.density;
-            molarMassSi = 28.0855 * 1E-3;
+            
+            molarMassSi   = 28.0855 * 1E-3;
             molarVolumeSi = molarMassSi/densitySi;
 
             state.porositySource = -a.*R.*(molarVolumeLithiated - 3.75*molarVolumeSi);
