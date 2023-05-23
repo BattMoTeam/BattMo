@@ -1848,11 +1848,15 @@ classdef Battery < BaseModel
                     state.(elde).(am).c = min(cmax, state.(elde).(am).c);
                 else
                     state.(elde).(am).(sd).c = max(cmin, state.(elde).(am).(sd).c);
+                    state.(elde).(am).(sd).cSurface = max(cmin, state.(elde).(am).(sd).cSurface);
                     cmax = model.(elde).(am).(itf).cmax;
                     state.(elde).(am).(sd).c = min(cmax, state.(elde).(am).(sd).c);
                 end
             end
-            
+
+            state.(ne).(am).porosity = min(1, state.(ne).(am).porosity);
+            state.(ne).(am).porosity = max(0, state.(ne).(am).porosity);
+
             ctrl = 'Control';            
             state.(ctrl) = model.(ctrl).updateControlState(state.(ctrl));
             
