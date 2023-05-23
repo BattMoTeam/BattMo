@@ -384,22 +384,27 @@ classdef SwellingMaterial < ActiveMaterial
         end
                
         function state = updateVolumetricSurfaceArea(model, state)
-            vf = state.Interface.volumeFraction;
+            
             amf = model.activeMaterialFraction;
+
+            vf     = state.Interface.volumeFraction;
             radius = state.radius;
 
-            vsa = (3.*vf.*amf)./vf;
+            vsa = (3.*vf.*amf)./radius;
 
             state.Interface.volumetricSurfaceArea = vsa;
 
             if model.use_particle_diffusion
-                vf = state.Interface.volumeFraction;
-                amf = model.activeMaterialFraction;
+                
+                amf    = model.activeMaterialFraction;
+
+                vf     = state.Interface.volumeFraction;
                 radius = state.SolidDiffusion.radius;
 
-                vsa = (3.*vf.*amf)./vf;
+                vsa = (3.*vf.*amf)./radius;
 
                 state.SolidDiffusion.volumetricSurfaceArea = vsa;
+                
             end
         end
 
