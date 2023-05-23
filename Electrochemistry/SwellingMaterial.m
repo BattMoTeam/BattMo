@@ -8,7 +8,9 @@ classdef SwellingMaterial < ActiveMaterial
         
         function model = SwellingMaterial(paramobj)
         % ``paramobj`` is instance of :class:`ActiveMaterialInputParams <Electrochemistry.ActiveMaterialInputParams>`
-            model = model@ActiveMaterial(paramobj);
+        %SameFunction as for ActiveMaterial but implemening
+        %FullSolidDiffusionSwelling            
+            model = model@ActiveMaterial(paramobj)
         end
 
         function model = registerVarAndPropfuncNames(model)
@@ -21,15 +23,29 @@ classdef SwellingMaterial < ActiveMaterial
             itf = 'Interface';
             sd  = 'SolidDiffusion';
             
-            varnames = {{sd, 'cAverage'} ,...
-                        'radius'   , ...
+            varnames = {'radius'   , ...
                         'porosity' ,...
-                        'volumeFraction'};
+                        'volumeFraction',...
+                        'porosityAccum',...
+                        'porositySource',...
+                        'porosityFlux' ,...
+                        'volumeCons'};
+
             model = model.registerVarNames(varnames);
       
 
-            fn = @SwellingMaterial.updatePorosity;
-            model = model.registerPropFunction({'porosity', fn, {}});
+            fn = @SwellingMaterial.updatePorosityAccum;
+            model = model.registerPropFunction({'porosityAccum', fn, {'porosity'}});
+
+            fn = @SwellingMaterial.updatePorositySource;
+            model = model.registerPropFunction({'porositySource', fn, {{itf, 'R'}, {itf, 'volumetricSurfaceArea'}}});
+
+             fn = @SwellingMaterial.updatePorosityFlux;
+            model = model.registerPropFunction({'porosityFlux', fn, {}});
+
+            fn = @SwellingMaterial.updateVolumeConservation;
+            model = model.registerPropFunction({'volumeCons', fn, {'porosityAccum', 'porositySource', 'porosityFlux'}});
+
 
             fn = @SwellingMaterial.updateEffectiveElectricalConductivity;
             model = model.registerPropFunction({'EffectiveElectricalConductivity', fn, {'volumeFraction'} });
@@ -48,8 +64,14 @@ classdef SwellingMaterial < ActiveMaterial
 
 
                 fn = @SwellingMaterial.updateVolumetricSurfaceArea;
-                model = model.registerPropFunction({{itf, 'volumetricSurfaceArea'}, fn, {'radius', {itf, 'volumeFraction'}}});
-                model = model.registerPropFunction({{sd, 'volumetricSurfaceArea'}, fn, {{sd, 'radius'},{sd, 'volumeFraction'}}});
+                model = model.registerPropFunction({{itf, 'volumetricSurfaceArea'}, fn, {{'radius'}, {itf, 'volumeFraction'}}});
+                model = model.registerPropFunction({{sd, 'volumetricSurfaceArea'}, fn, {{sd,'radius'},{sd, 'volumeFraction'}}});
+
+                fn =  @SwellingMaterial.updateRvol;
+                model = model.registerPropFunction({{'Rvol'}, fn, {{itf,'R'}, {itf, 'volumetricSurfaceArea'}}});
+                model = model.registerPropFunction({{sd, 'Rvol'}, fn, {{itf,'R'}, {itf, 'volumetricSurfaceArea'}}});
+
+ 
 
                 
             else
@@ -62,18 +84,13 @@ classdef SwellingMaterial < ActiveMaterial
                 model = model.registerPropFunction({{itf, 'volumeFraction'}, fn, {'porosity'}});
 
                 fn = @SwellingMaterial.updateVolumetricSurfaceArea;
-                model = model.registerPropFunction({{itf, 'volumetricSurfaceArea'}, fn, {{sd,'radius'}, {itf, 'volumeFraction'}}});
+                model = model.registerPropFunction({{itf, 'volumetricSurfaceArea'}, fn, {{'radius'}, {itf, 'volumeFraction'}}});
+
+                fn =  @SwellingMaterial.updateRvol;
+                model = model.registerPropFunction({{'Rvol'}, fn, {{itf,'R'}, {itf, 'volumetricSurfaceArea'}}});
 
                 
-            end
-
-
-            fn = @SwellingMaterial.SolidDiffusionModel.updateAverageConcentration;
-            % TODO check definition of update function for cAverage in FullSolidDiffusionModel (updateAverageConcentration)
-            % If it can be used, then Xavier fix that
-            model = model.registerPropFunction({{sd, 'cAverage'}, fn, {{sd, 'c'}}});
-
-            
+            end          
                       
                    
         end
@@ -90,7 +107,6 @@ classdef SwellingMaterial < ActiveMaterial
 
 
             %new
-            state                = model.updatePorosity(state, state0, dt);
             state                = model.updateVolumeFraction(state);
             state                = model.updateEffectiveElectricalConductivity(state)    ;     
            
@@ -104,10 +120,12 @@ classdef SwellingMaterial < ActiveMaterial
             state                = model.updateConcentrations(state);
             
             %new
-            state                = model.updateAverageConcentration(state);
             state                = model.updateRadius(state);
             state                = model.updateVolumetricSurfaceArea(state);
-            state                = model.updateOperators(state.SolidDiffusion);
+            state                = model.updatePorosityAccum(state, state0, dt);
+            state                = model.updatePorositySource(state);
+            state                = model.updateVolumeConservation(state);
+            
 
             state                = model.updatePhi(state);
             state.Interface      = model.Interface.updateReactionRateCoefficient(state.Interface);
@@ -135,12 +153,14 @@ classdef SwellingMaterial < ActiveMaterial
             eqs{end + 1} = state.chargeCons;
             eqs{end + 1} = scalingcoef*state.(sd).massCons;
             eqs{end + 1} = scalingcoef*state.(sd).solidDiffusionEq;
+            eqs{end + 1} = state.volumeCons
             
             names = {'chargeCons', ...
                      'massCons', ...
-                     'solidDiffusionEq'};
+                     'solidDiffusionEq', ...
+                     'volumeCons'};
             
-            types = {'cell', 'cell', 'cell'};
+            types = {'cell', 'cell', 'cell', 'cell'};
 
             primaryVars = model.getPrimaryVariables();
             
@@ -148,14 +168,11 @@ classdef SwellingMaterial < ActiveMaterial
 
         end
 
-
         function [state, report] = updateState(model, state, problem, dx, drivingForces)
 
             [state, report] = updateState@ActiveMaterial(model, state, problem, dx, drivingForces);
             
         end
-
-
 
 
 
@@ -203,18 +220,40 @@ classdef SwellingMaterial < ActiveMaterial
             
         end
 
+        function state = updateRvol(model, state)
 
-        
+            vsa = state.Interface.volumetricSurfaceArea;
+            
+            Rvol = vsa.*state.Interface.R;
+            state.Rvol = Rvol;
+
+            if model.use_particle_diffusion
+                state.SolidDiffusion.Rvol = Rvol;
+            end
+            
+        end
+  
         function state = updateMassConservation(model, state)
         % Used when diffusionModelType == 'simple' or no particle diffusion
             
             flux = state.massFlux;
             source = state.massSource;
             accum = state.massAccum;
-
+            
             cons = assembleConservationEquation(model, flux, 0, source, accum);
             
             state.massCons = cons;
+            
+        end
+
+        function state = updateMassSource(model, state)
+        % used when diffusionModelType == simple
+            
+            vols = model.G.cells.volumes;
+            
+            Rvol = state.Rvol;
+            
+            state.massSource = - Rvol.*vols;
             
         end
         
@@ -261,30 +300,8 @@ classdef SwellingMaterial < ActiveMaterial
         function state = updatejCoupling(model, state)
             state.jCoupling = 0;
             state.jFaceCoupling = 0;
-        end
-
-
-        function state = updateAverageConcentrationSD(model, state)
-            %replaces the function updateAverageConcentration of the
-            %FullSolidDiffusion class
-
-            % shortcut
-            sd  = 'SolidDiffusion';
-
-            op = state.(sd).operators;
-            vols = op.vols;
-            map = op.mapToParticle;
-            
-            c = state.(sd).c;
-
-            m    = map'*(c.*vols); % total amount [mol] in the cell particles
-            vols = map'*(vols);    % volume 
-
-            state.(sd).cAverage = m./vols;
-            
-        end
+        end   
         
-
         function state = updateAverageConcentration(model, state)
 
             % shortcut
@@ -303,7 +320,6 @@ classdef SwellingMaterial < ActiveMaterial
             state.cAverage = cAverage;
             
         end
-        
         
         function state = updateSOC(model, state)
 
@@ -334,9 +350,11 @@ classdef SwellingMaterial < ActiveMaterial
    
 
 %Functions specific to swelling materials
+
         function state = updateRadius(model, state)
 
-            c = state.(sd).cAverage;
+
+            c = state.SolidDiffusion.cAverage;
             
             radius_0 = model.SolidDiffusion.rp;
             densitySi = model.density;
@@ -347,27 +365,11 @@ classdef SwellingMaterial < ActiveMaterial
             
             radius = radius_0 * (1 + (3.75*molarVolumeLi*c)/(cmaxLi*molarVolumeSi))^(1/3);
             state.radius = radius;
-
+            
             if model.use_particle_diffusion
                 state.SolidDiffusion.radius = radius;
             end
-         end
-
-            
-        function state = updatePorosity(model, state, state0, dt)
-            porosity = state0.porosity;
-
-            a = state0.volumetricSurfaceArea;       
-            R = state0.Interface.R;
-
-            molarVolumeLithiated = model.updateMolarVolumeLithiated(state);
-            densitySi = model.Interface.density;
-            molarMassSi = 28.0855 * 1E-3;
-            molarVolumeSi = molarMassSi/densitySi;
-
-            state.porosity = porosity + dt*a*R*(molarVolumeLithiated - 3.75*molarVolumeSi);
         end
-
 
         function state = updateVolumeFraction(model, state)
             porosity = state.porosity;
@@ -380,32 +382,77 @@ classdef SwellingMaterial < ActiveMaterial
                 state.SolidDiffusion.volumeFraction = vf;
             end
         end
-           
-       
+               
         function state = updateVolumetricSurfaceArea(model, state)
             vf = state.Interface.volumeFraction;
             amf = model.activeMaterialFraction;
-            radius = state.SolidDiffusion.radius;
+            radius = state.radius;
 
-            vsa = 3*vf*amf/radius;
+            vsa = (3.*vf.*amf)./vf;
+
             state.Interface.volumetricSurfaceArea = vsa;
 
             if model.use_particle_diffusion
+                vf = state.Interface.volumeFraction;
+                amf = model.activeMaterialFraction;
+                radius = state.SolidDiffusion.radius;
+
+                vsa = (3.*vf.*amf)./vf;
+
                 state.SolidDiffusion.volumetricSurfaceArea = vsa;
             end
         end
 
-
         function state = updateEffectiveElectricalConductivity(model, state)
-            state.EffectiveElectricalConductivity; 
-            vf = 1 - state.porosity;
+            porosity = state.porosity;
+            vf = 1 - porosity;
             brugg = model.BruggemanCoefficient;
                    
             % setup effective electrical conductivity using Bruggeman approximation
             state.EffectiveElectricalConductivity = model.electricalConductivity.*vf.^brugg;
         end
-      
-                
+
+        function state = updatePorosityAccum(model, state, state0, dt)
+            
+            state.porosityAccum = (state.porosity-state0.porosity)/dt;
+        end
+            
+        function state = updatePorositySource(model, state)
+            
+            a = state.Interface.volumetricSurfaceArea;       
+            R = state.Interface.R;
+
+            molarVolumeLithiated = model.updateMolarVolumeLithiated(state);
+            densitySi = model.Interface.density;
+            molarMassSi = 28.0855 * 1E-3;
+            molarVolumeSi = molarMassSi/densitySi;
+
+            state.porositySource = a.*R.*(molarVolumeLithiated - 3.75*molarVolumeSi);
+        end
+
+         function state = updatePorosityFlux(model, state)
+             %no Source. Definition schould be change to something cleaner
+             D = 0.*state.volumeFraction;
+             c = 0.*state.volumeFraction;
+             porosityFlux = assembleFlux(model, c, D);
+            
+            state.porosityFlux = porosityFlux;
+        end
+
+        
+
+        function state = updateVolumeConservation(model, state)
+            
+            flux = state.porosityFlux;
+            source = state.porositySource;
+            accum = state.porosityAccum;
+
+            cons = assembleConservationEquation(model, flux, 0, source, accum);
+            
+            state.volumeCons = cons;
+            
+        end
+                    
         function molarVolumeLitihated = updateMolarVolumeLithiated(model, state)
 
             sd  = 'SolidDiffusion';
@@ -421,219 +468,7 @@ classdef SwellingMaterial < ActiveMaterial
 
             molarVolumeLitihated = 4/15*(molarVolumeSi + 3.75*(c/cmaxLi)*molarVolumeLi);
         end
-        
-        function state = updateOperators(model, state)
-            np = model.SolidDiffusion.np;
-            
-            N  = model.SolidDiffusion.N;
-            rp = state.radius;
-            
-            celltbl.cells = (1 : np)';
-            celltbl = IndexArray(celltbl);
-
-            % Solid particle cells
-            Scelltbl.Scells = (1 : N)';
-            Scelltbl = IndexArray(Scelltbl);
-
-            cellScelltbl = crossIndexArray(celltbl, Scelltbl, {}, 'optpureproduct', true);
-            cellScelltbl = sortIndexArray(cellScelltbl, {'cells', 'Scells'});
-
-            endScelltbl.Scells = N;
-            endScelltbl = IndexArray(endScelltbl);
-            endcellScelltbl = crossIndexArray(cellScelltbl, endScelltbl, {'Scells'});
-
-            G = cartGrid(N, rp); 
-            r = G.nodes.coords;
-
-            G.cells.volumes   = 4/3*pi*(r(2 : end).^3 - r(1 : (end - 1)).^3);
-            G.cells.centroids = (r(2 : end) + r(1 : (end - 1)))./2;
-
-            G.faces.centroids = r;
-            G.faces.areas     = 4*pi*r.^2;
-            G.faces.normals   = G.faces.areas;
-
-            rock.perm = ones(N, 1);
-            rock.poro = ones(N, 1);
-
-            tbls = setupSimpleTables(G);
-            cellfacetbl = tbls.cellfacetbl;
-
-            hT = computeTrans(G, rock); % hT is in cellfacetbl
-
-            cells = cellfacetbl.get('cells');
-            faces = cellfacetbl.get('faces');
-            sgn = 2*(cells == G.faces.neighbors(faces, 1)) - 1; % sgn is in cellfacetbl
-                
-            % We change name of cellfacetbl
-            ScellSfacetbl = cellfacetbl;
-            ScellSfacetbl = replacefield(ScellSfacetbl, {{'cells', 'Scells'}, {'faces', 'Sfaces'}});
-            
-            % Here, we use that we know *apriori* the indexing in G.cells.faces (the last index corresponds to outermost cell-face)
-            Tbc = hT(end); % half-transmissibility for of the boundary face
-            Tbc = repmat(Tbc, np, 1);
-            
-            Sfacetbl.Sfaces = (2 : N)'; % index of the internal faces (correspond to image of C')
-            Sfacetbl = IndexArray(Sfacetbl);
-            cellSfacetbl = crossIndexArray(celltbl, Sfacetbl, {}, 'optpureproduct', true);
-
-            % we consider only the internal faces
-            allScellSfacetbl = ScellSfacetbl;
-            ScellSfacetbl = crossIndexArray(allScellSfacetbl, Sfacetbl, {'Sfaces'});
-
-            cellScellSfacetbl = crossIndexArray(celltbl, ScellSfacetbl, {}, 'optpureproduct', true);
-
-            map = TensorMap();
-            map.fromTbl = allScellSfacetbl;
-            map.toTbl = cellScellSfacetbl;
-            map.mergefds = {'Scells', 'Sfaces'};
-            map = map.setup();            
-
-            hT = map.eval(hT);
-            sgn = map.eval(sgn);
-
-            %% setup of divergence operator
-
-            prod = TensorProd();
-            prod.tbl1 = cellScellSfacetbl;
-            prod.tbl2 = cellSfacetbl;
-            prod.tbl3 = cellScelltbl;
-            prod.mergefds = {'cells'};
-            prod.reducefds = {'Sfaces'};
-            prod = prod.setup();
-
-            divMat = SparseTensor();
-            divMat = divMat.setFromTensorProd(sgn, prod);
-            divMat = divMat.getMatrix();
-
-            div = @(u) (divMat*u);
-            
-            gradMat = -divMat';
-
-            prod = TensorProd();
-            prod.tbl1 = cellScellSfacetbl;
-            prod.tbl2 = cellScelltbl;
-            prod.tbl3 = cellSfacetbl;
-            prod.mergefds = {'cells'};
-            prod.reducefds = {'Scells'};
-            prod = prod.setup();
-
-            invHtMat = SparseTensor();
-            invHtMat = invHtMat.setFromTensorProd(1./hT, prod);
-            invHtMat = invHtMat.getMatrix();
-
-            flux = @(D, c) -(1./(invHtMat*(1./D))).*(gradMat*c);
-
-            %% External flux map (from the boundary conditions)
-
-            map = TensorMap();
-            map.fromTbl = endcellScelltbl;
-            map.toTbl = cellScelltbl;
-            map.mergefds = {'cells', 'Scells'};
-            map = map.setup();
-
-            f = map.eval(ones(endcellScelltbl.num, 1));
-
-            prod = TensorProd();
-            prod.tbl1 = cellScelltbl;
-            prod.tbl2 = celltbl;
-            prod.tbl3 = cellScelltbl;
-            prod.mergefds = {'cells'};
-
-            mapFromBc = SparseTensor();
-            mapFromBc = mapFromBc.setFromTensorProd(f, prod);
-            mapFromBc = mapFromBc.getMatrix();
-
-            mapToBc = mapFromBc';
-
-            %% map from cell (celltbl) to cell-particle (cellScelltbl)
-            map = TensorMap();
-            map.fromTbl = celltbl;
-            map.toTbl = cellScelltbl;
-            map.mergefds = {'cells'};
-            map = map.setup();
-
-            mapToParticle = SparseTensor();
-            mapToParticle = mapToParticle.setFromTensorMap(map);
-            mapToParticle = mapToParticle.getMatrix();
-            
-            vols = G.cells.volumes;
-
-            map = TensorMap();
-            map.fromTbl = Scelltbl;
-            map.toTbl = cellScelltbl;
-            map.mergefds = {'Scells'};
-            map = map.setup();
-
-            vols = map.eval(vols);
-
-            state.SolidDiffusion.operators = struct('div'          , div          , ...
-                               'flux'         , flux         , ...
-                               'mapFromBc'    , mapFromBc    , ...
-                               'mapToParticle', mapToParticle, ...
-                               'mapToBc'      , mapToBc      , ...
-                               'Tbc'          , Tbc          , ...
-                               'vols'         , vols);
-            
-        end
-
-
-        function state = updateFlux(model, state)
-            
-            useDFunc = model.SolidDiffusion.useDFunc;
-            op = state.SolidDiffusion.operators;
-            
-            c = state.SolidDiffusion.c;
-            D = state.SolidDiffusion.D;
-
-            if useDFunc
-                state.SolidDiffusion.flux = op.flux(D, c);
-            else
-                D = op.mapToParticle*D;
-                state.SolidDiffusion.flux = op.flux(D, c);
-            end          
-        end
-
-
-        function state = updateMassSource(model, state)
-            if strcmp(model.diffusionModelType, 'simple')
-            % used when diffusionModelType == simple
-            
-            vols = model.G.cells.volumes;
-            Rvol = state.Rvol;
-            state.massSource = - Rvol.*vols;
-
-            else
-            % used when diffusionModelType == full
-            op  = state.SolidDiffusion.operators;
-            rp  = state.SolidDiffusion.radius;
-            vf  = model.SolidDiffusion.volumeFraction;
-            amf = model.SolidDiffusion.activeMaterialFraction;
-            Rvol = state.SolidDiffusion.Rvol;
-
-            Rvol = op.mapFromBc*Rvol;
-            
-            state.SolidDiffusion.massSource = - Rvol*((4*pi*rp^3)/(3*amf*vf));
-            end
-            
-        end
        
-
-        function state = updateMassAccum(model, state, state0, dt)
-
-            op = state.SolidDiffusion.operators;
-            
-            c = state.c;
-            c0 = state0.c;
-            
-            state.SolidDiffusion.massAccum = 1/dt*op.vols.*(c - c0);
-            
-        end
-        
-
-
-
-
-
 
         
     end

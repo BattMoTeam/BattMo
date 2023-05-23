@@ -219,7 +219,8 @@ schedule = struct('control', control, 'step', step);
 % Here we take the state of charge (SOC) given in the input and calculate
 % equilibrium concentration based on theta0, theta100 and cmax.
 
-initstate = model.setupInitialState(); 
+initstate = model.setupInitialState();
+
 
 
 %%% Running the simulation

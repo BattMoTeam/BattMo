@@ -78,7 +78,11 @@ classdef ActiveMaterial < ElectronicComponent
                 model.use_interparticle_diffusion = true;
               case 'full'
                 paramobj.SolidDiffusion.np = model.G.cells.num;
-                model.SolidDiffusion = FullSolidDiffusionModel(paramobj.SolidDiffusion);
+                if model.isSwellingMaterial == 0
+                    model.SolidDiffusion = FullSolidDiffusionModel(paramobj.SolidDiffusion);
+                else
+                    model.SolidDiffusion = FullSolidDiffusionSwellingModel(paramobj.SolidDiffusion);
+                end
                 model.use_particle_diffusion = true;
                 model.use_interparticle_diffusion = false;
               case 'interParticleOnly'
@@ -218,8 +222,14 @@ classdef ActiveMaterial < ElectronicComponent
                 model = model.registerPropFunction({{sd, 'Rvol'}, fn, {{itf, 'R'}}});
 
                 % Not used in assembly
-                fn = @ActiveMaterial.updateSOC;
-                model = model.registerPropFunction({'SOC', fn, {{sd, 'cAverage'}}});
+                if model.isSwellingMaterial
+                    fn = @SwellingMaterial.updateSOC;
+                    model = model.registerPropFunction({'SOC', fn, {{sd, 'cAverage'}, 'volumeFraction'}});
+
+                else
+                    fn = @ActiveMaterial.updateSOC;
+                    model = model.registerPropFunction({'SOC', fn, {{sd, 'cAverage'}}});
+                end
                 
               case 'interParticleOnly'
 
@@ -278,9 +288,15 @@ classdef ActiveMaterial < ElectronicComponent
             
             %% Function called to assemble accumulation terms (functions takes in fact as arguments not only state but also state0 and dt)
             if model.use_particle_diffusion & strcmp(model.diffusionModelType, 'simple') | ~model.use_particle_diffusion
-                fn = @ActiveMaterial.assembleAccumTerm;
-                fn = {fn, @(propfunc) PropFunction.accumFuncCallSetupFn(propfunc)};
-                model = model.registerPropFunction({'massAccum', fn, {'c'}});
+                if isSwellingMaterial
+                    fn = @SwellingMaterial.assembleAccumTerm;
+                    fn = {fn, @(propfunc) PropFunction.accumFuncCallSetupFn(propfunc)};
+                    model = model.registerPropFunction({'massAccum', fn, {'c', 'volumeFraction'}});
+                else
+                    fn = @ActiveMaterial.assembleAccumTerm;
+                    fn = {fn, @(propfunc) PropFunction.accumFuncCallSetupFn(propfunc)};
+                    model = model.registerPropFunction({'massAccum', fn, {'c'}});
+                end
             end
 
             % we remove this declaration as it is not used in assembly (otherwise it may be computed but not used)
@@ -307,6 +323,7 @@ classdef ActiveMaterial < ElectronicComponent
             state.SolidDiffusion = model.SolidDiffusion.updateFlux(state.SolidDiffusion);
             state                = model.updateConcentrations(state);
             state                = model.updatePhi(state);
+            state.Interface      = model.Interface.updateVolumetricSurfaceArea(state.Interface);
             state.Interface      = model.Interface.updateReactionRateCoefficient(state.Interface);
             state.Interface      = model.Interface.updateOCP(state.Interface);
             state.Interface      = model.Interface.updateEta(state.Interface);

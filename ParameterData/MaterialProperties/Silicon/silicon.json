@@ -5,11 +5,11 @@
   "density": 2330,
   "n" : 1,
   "Eak": 5000,
-  "k0": 5.031e-11,
+  "k0": 2e-9,
   "theta100": 0.88551,
   "theta0": 0.1429,
   "OCP" : {"type": "function",
-           "functionname" : "computeOCP_graphite",
+           "functionname" : "computeOCP_silicon",
            "argumentlist" : ["cElectrode", "T", "cmax"]
           },
   "BruggemanCoefficient": 1.5

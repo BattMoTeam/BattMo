@@ -76,6 +76,7 @@ classdef FullSolidDiffusionModel < SolidDiffusionModel
             % Mass conservation equation
             varnames{end + 1} = 'solidDiffusionEq';
             
+            
             model = model.registerVarNames(varnames);
 
             fn = @FullSolidDiffusionModel.updateDiffusionCoefficient;
@@ -106,9 +107,6 @@ classdef FullSolidDiffusionModel < SolidDiffusionModel
             
             fn = @FullSolidDiffusionModel.updateAverageConcentration;
             model = model.registerPropFunction({'cAverage', fn, {'c'}});
-
-            % we remove this declaration as it is not used in assembly (otherwise it may be computed but not used)
-            model = model.removeVarName('cAverage');
             
         end
         
@@ -160,6 +158,7 @@ classdef FullSolidDiffusionModel < SolidDiffusionModel
             
             % Here, we use that we know *apriori* the indexing in G.cells.faces (the last index corresponds to outermost cell-face)
             Tbc = hT(end); % half-transmissibility for of the boundary face
+            
             Tbc = repmat(Tbc, np, 1);
             
             Sfacetbl.Sfaces = (2 : N)'; % index of the internal faces (correspond to image of C')
@@ -389,10 +388,6 @@ classdef FullSolidDiffusionModel < SolidDiffusionModel
 
             state.cAverage = m./vols;
             
-        end
-
-        function state = updateOperators(model, state)
-            state.operators = model.operators;
         end
         
     end

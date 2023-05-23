@@ -51,8 +51,7 @@ classdef SolidDiffusionModel < BaseModel
             varnames{end + 1} = 'volumeFraction';
             %VolumetricSurfaceArea
             varnames{end + 1} = 'volumetricSurfaceArea';
-            %Operators
-            varnames{end + 1} = 'operators';
+            
 
             model = model.registerVarNames(varnames);
 
@@ -60,9 +59,7 @@ classdef SolidDiffusionModel < BaseModel
             inputnames = {'T'};
             model = model.registerPropFunction({'D', fn, inputnames});
 
-            fn = @SolidDiffusionModel.updateOperators;
-            inputnames = {'radius'};
-            model = model.registerPropFunction({'operators', fn, inputnames});
+            
 
 
         end
