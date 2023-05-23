@@ -1854,8 +1854,10 @@ classdef Battery < BaseModel
                 end
             end
 
-            state.(ne).(am).porosity = min(1, state.(ne).(am).porosity);
-            state.(ne).(am).porosity = max(0, state.(ne).(am).porosity);
+            if model.(ne).(am).isSwellingMaterial
+                state.(ne).(am).porosity = min(1, state.(ne).(am).porosity);
+                state.(ne).(am).porosity = max(0, state.(ne).(am).porosity);
+            end
 
             ctrl = 'Control';            
             state.(ctrl) = model.(ctrl).updateControlState(state.(ctrl));
