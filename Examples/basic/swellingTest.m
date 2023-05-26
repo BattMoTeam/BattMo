@@ -9,6 +9,9 @@
 
 mrstModule add ad-core mrst-gui mpfa agmg linearsolvers
 
+clear all
+close all
+
 %%% Specifying the physical model
 % In this tutorial we will simulate a lithium-ion battery consisting of a 
 % negative electrode, a positive electrode and an electrolyte. *BattMo* 
@@ -108,7 +111,7 @@ paramobj = gen.updateBatteryInputParams(paramobj);
 % The battery model is initialized by sending paramobj to the Battery class
 % constructor. see :class:`Battery <Battery.Battery>`.
 
-model = Battery(paramobj);
+model = BatterySwelling(paramobj);
 
 %%%
 % In BattMo a battery model is actually a collection of submodels: 
@@ -249,18 +252,67 @@ model.verbose = true;
 
 E = cellfun(@(x) x.Control.E, states); 
 I = cellfun(@(x) x.Control.I, states);
+
 time = cellfun(@(x) x.time, states); 
 
 figure()
-subplot(1,2,1)
+subplot(2,2,1)
 plot(time/hour, E)
 xlabel('time [hours]')
 ylabel('Cell Voltage [V]')
 
-subplot(1,2,2)
+subplot(2,2,2)
 plot(time/hour, I)
 xlabel('time [hours]')
 ylabel('Cell Current [A]')
+
+
+
+subplot(2,2,3)
+negativeElectrodeSize = model.NegativeElectrode.G.cells.num;
+L = "x = 1";
+for i = 1:negativeElectrodeSize
+    hold on
+    porosity = cellfun(@(x) x.NegativeElectrode.ActiveMaterial.porosity(i), states);
+    plot(time/hour, porosity);
+    if i > 1
+        L(end+1) = "x = " + int2str(i);
+    end
+end
+xlabel('time [hours]')
+ylabel('Porosity of the Negative Electrode')
+legend(L);
+
+
+
+
+
+subplot(2,2,4)
+negativeElectrodeSize = model.NegativeElectrode.G.cells.num;
+L = "x = 1";
+for i = 1:negativeElectrodeSize
+    hold on
+
+    phi = cellfun(@(x) x.NegativeElectrode.ActiveMaterial.phi(i), states);
+    phiElyte = cellfun(@(x) x.Electrolyte.phi(i), states);
+
+    cSurf = cellfun(@(x) x.NegativeElectrode.ActiveMaterial.SolidDiffusion.cSurface(i), states);
+    cmax = model.NegativeElectrode.ActiveMaterial.Interface.cmax;
+    T = 298.15;
+
+    
+    OCP   = model.NegativeElectrode.ActiveMaterial.Interface.computeOCPFunc(cSurf, T, cmax);
+    eta = phi - phiElyte - OCP;
+    plot(time/hour, eta);
+
+
+    if i > 1
+        L(end+1) = "x = " + int2str(i);
+    end
+end
+xlabel('time [hours]')
+ylabel('Eta of the Negative electrode')
+legend(L);
 
 
 %{

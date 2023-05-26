@@ -19,11 +19,12 @@
     "ActiveMaterial": {
       "specificHeatCapacity": 710,
       "thermalConductivity": 149,
+      "molarMass": 28.0855e-3,
       "InterDiffusionCoefficient": 1e-14,
       "InterDiffusionCoefficientComment" : "from lamda geeks website",
       "electricalConductivity": 1.49e-3,
       "BruggemanCoefficient": 1.5,
-      "isSwellingMaterial": 0,
+      "isSwellingMaterial": 1,
       
       "Interface": {
         "isFile": true,
@@ -33,7 +34,7 @@
       "SolidDiffusion" : {
         "EaD": 5000,
         "D0": 3.9e-14,
-        "comment" : "we used graphite diffusion value - as in Chen"
+        "comment" : "we used graphite diffusion value - as in Chen",
         "rp": 1e-06,
         "N": 10
       }

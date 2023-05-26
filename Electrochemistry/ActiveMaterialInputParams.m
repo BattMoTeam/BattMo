@@ -15,7 +15,8 @@ classdef ActiveMaterialInputParams < ElectronicComponentInputParams
         
         InterDiffusionCoefficient % Interdiffusion coefficient parameter (diffusion between the particles)
         
-        density % Density
+        density                 % Density
+        molarMass               %molar mass of the solid pure component [mol/kg]
 
         thermalConductivity  % Intrinsic Thermal conductivity of the active component
         specificHeatCapacity % Specific Heat capacity of the active component

@@ -189,6 +189,7 @@ classdef Interface < BaseModel
                 T      = state.T;
                 cElyte = state.cElectrolyte;
                 c      = state.cElectrodeSurface;
+
                 
                 % Calculate reaction rate constant
                 k = k0.*exp(-Eak./R.*(1./T - 1/Tref));
@@ -198,6 +199,7 @@ classdef Interface < BaseModel
                 coef = cElyte.*(cmax - c).*c;
                 coef(coef < 0) = 0;
                 j0 = k.*regularizedSqrt(coef, th)*n*F;
+
                 
             end
             
@@ -235,6 +237,7 @@ classdef Interface < BaseModel
             T   = state.T;
             j0  = state.j0;
             eta = state.eta;
+
             
             R = ButlerVolmerEquation(j0, alpha, n, eta, T);
 

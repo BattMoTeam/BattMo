@@ -9,7 +9,7 @@ classdef SwellingMaterial < ActiveMaterial
         function model = SwellingMaterial(paramobj)
         % ``paramobj`` is instance of :class:`ActiveMaterialInputParams <Electrochemistry.ActiveMaterialInputParams>`
         %SameFunction as for ActiveMaterial but implemening
-        %FullSolidDiffusionSwelling            
+        %FullSolidDiffusionSwelling         
             model = model@ActiveMaterial(paramobj)
         end
 
@@ -47,8 +47,8 @@ classdef SwellingMaterial < ActiveMaterial
             model = model.registerPropFunction({'volumeCons', fn, {'porosityAccum', 'porositySource', 'porosityFlux'}});
 
 
-            fn = @SwellingMaterial.updateEffectiveElectricalConductivity;
-            model = model.registerPropFunction({'EffectiveElectricalConductivity', fn, {'volumeFraction'} });
+            fn = @SwellingMaterial.updateConductivity;
+            model = model.registerPropFunction({'conductivity', fn, {'volumeFraction'} });
 
 
             if model.use_particle_diffusion
@@ -106,9 +106,9 @@ classdef SwellingMaterial < ActiveMaterial
             state = updateControl(model, state, drivingForces);
 
 
-            %new
+            %Specific to swelling Materials
             state                = model.updateVolumeFraction(state);
-            state                = model.updateEffectiveElectricalConductivity(state)    ;     
+            state                = model.updateConductivity(state)    ;     
            
            
             state                = model.updateStandalonejBcSource(state);
@@ -119,7 +119,7 @@ classdef SwellingMaterial < ActiveMaterial
             state.SolidDiffusion = model.SolidDiffusion.updateFlux(state.SolidDiffusion);
             state                = model.updateConcentrations(state);
             
-            %new
+            %Specific to swelling Materials
             state                = model.updateRadius(state);
             state                = model.updateVolumetricSurfaceArea(state);
             state                = model.updatePorosityAccum(state, state0, dt);
@@ -210,9 +210,9 @@ classdef SwellingMaterial < ActiveMaterial
         % Used when diffusionModelType == 'simple'
             
             vols   = model.G.cells.volumes;
-            vf     = state.volumeFraction;
             amFrac = model.activeMaterialFraction;
 
+            vf     = state.volumeFraction;
             c  = state.c;
             c0 = state0.c;
 
@@ -232,76 +232,8 @@ classdef SwellingMaterial < ActiveMaterial
             end
             
         end
-  
-        function state = updateMassConservation(model, state)
-        % Used when diffusionModelType == 'simple' or no particle diffusion
-            
-            flux = state.massFlux;
-            source = state.massSource;
-            accum = state.massAccum;
-            
-            cons = assembleConservationEquation(model, flux, 0, source, accum);
-            
-            state.massCons = cons;
-            
-        end
-
-        function state = updateMassSource(model, state)
-        % used when diffusionModelType == simple
-            
-            vols = model.G.cells.volumes;
-            
-            Rvol = state.Rvol;
-            
-            state.massSource = - Rvol.*vols;
-            
-        end
         
-        function state = updateStandalonejBcSource(model, state)
-            
-            state.jBcSource = state.controlCurrentSource;
 
-        end
-
-        function state = updateCurrentSource(model, state)
-            
-            F    = model.Interface.constants.F;
-            vols = model.G.cells.volumes;
-            n    = model.Interface.n;
-
-            Rvol = state.Rvol;
-            
-            state.eSource = - vols.*Rvol*n*F; % C/s
-            
-        end
-        
-        function state = updatePhi(model, state)
-            state.Interface.phiElectrode = state.phi;
-        end         
-        
-        function state = dispatchTemperature(model, state)
-            state.Interface.T = state.T;
-            state.SolidDiffusion.T = state.T;
-        end
-
-        function state = updatejBcSource(model, state)
-            state.jBcSource = state.jCoupling + state.jExternal;
-        end
-        
-        function state = updatejFaceBc(model, state)
-            state.jFaceBc = state.jFaceCoupling + state.jFaceExternal;
-        end
-        
-        function state = updatejExternal(model, state)
-            state.jExternal = 0;
-            state.jFaceExternal = 0;
-        end
-
-        function state = updatejCoupling(model, state)
-            state.jCoupling = 0;
-            state.jFaceCoupling = 0;
-        end   
-        
         function state = updateAverageConcentration(model, state)
 
             % shortcut
@@ -326,14 +258,14 @@ classdef SwellingMaterial < ActiveMaterial
             % shortcut
             itf = 'Interface';
             sd  = 'SolidDiffusion';
-
-            vf       = state.volumeFraction;
+            
             am_frac  = model.activeMaterialFraction;
             vols     = model.G.cells.volumes;
             cmax     = model.(itf).cmax;
             theta100 = model.(itf).theta100;
             theta0   = model.(itf).theta0;
-            
+
+            vf       = state.volumeFraction;
             c = state.(sd).cAverage;
 
             theta = c/cmax;
@@ -348,9 +280,6 @@ classdef SwellingMaterial < ActiveMaterial
             
         end
    
-
-%Functions specific to swelling materials
-
         function state = updateRadius(model, state)
 
             radius_0  = model.SolidDiffusion.rp;
@@ -363,7 +292,7 @@ classdef SwellingMaterial < ActiveMaterial
             molarVolumeSi = MolarMassSi/densitySi;
             molarVolumeLi = 8.8 * 1E-6;
             
-            radius = radius_0 * (1 + (3.75*molarVolumeLi*c)/(cmaxLi*molarVolumeSi))^(1/3);
+            radius = radius_0 .* (1 + (3.75.*molarVolumeLi.*c)./(cmaxLi.*molarVolumeSi)).^(1/3);
 
             state.radius = radius;
             
@@ -412,7 +341,7 @@ classdef SwellingMaterial < ActiveMaterial
             end
         end
 
-        function state = updateEffectiveElectricalConductivity(model, state)
+        function state = updateConductivity(model, state)
             
             brugg = model.BruggemanCoefficient;
 
@@ -421,13 +350,14 @@ classdef SwellingMaterial < ActiveMaterial
             vf = 1 - porosity;
                    
             % setup effective electrical conductivity using Bruggeman approximation
-            state.EffectiveElectricalConductivity = model.electricalConductivity.*vf.^brugg;
+            state.conductivity = model.electricalConductivity.*vf.^brugg;
             
         end
 
+
         function state = updatePorosityAccum(model, state, state0, dt)
             
-            state.porosityAccum = (state.porosity - state0.porosity)/dt;
+            state.porosityAccum = (state.porosity - state0.porosity)./dt;
             
         end
             
@@ -435,14 +365,14 @@ classdef SwellingMaterial < ActiveMaterial
             
             molarVolumeLithiated = model.updateMolarVolumeLithiated(state);
             densitySi            = model.Interface.density;
+            molarMassSi   = model.molarMass;
 
             a = state.Interface.volumetricSurfaceArea;       
             R = state.Interface.R;
             
-            molarMassSi   = 28.0855 * 1E-3;
             molarVolumeSi = molarMassSi/densitySi;
 
-            state.porositySource = -a.*R.*(molarVolumeLithiated - 3.75*molarVolumeSi);
+            state.porositySource = a.*R.*(molarVolumeLithiated - (4/15)*molarVolumeSi);
             
         end
 
@@ -468,21 +398,77 @@ classdef SwellingMaterial < ActiveMaterial
             state.volumeCons = cons;
             
         end
+
+        function state = updateReactionRateCoefficient(model, state)
+            if model.Interface.useJ0Func
+
+                computeJ0 = model.Interface.computeJ0Func;
+                cmax      = model.Interface.cmax;
+                theta0    = model.Interface.theta0;
+                theta100  = model.Interface.theta100;
+                
+                c = state.Interface.cElectrodeSurface;
+
+                cmin = theta0*cmax;
+                cmax = theta100*cmax;
+
+                soc = (c - cmin)./(cmax - cmin);
+                
+                j0 = computeJ0(soc);
+
+            else
+                
+                Tref = 298.15;  % [K]
+
+                cmax = model.Interface.cmax;
+                k0   = model.Interface.k0;
+                Eak  = model.Interface.Eak;
+                n    = model.Interface.n;
+                F    = model.Interface.constants.F;
+                R    = model.Interface.constants.R;
+                radius_0 = model.SolidDiffusion.rp;
+
+                T      = state.Interface.T;
+                cElyte = state.Interface.cElectrolyte;
+                c      = state.Interface.cElectrodeSurface;
+                radius = state.SolidDiffusion.radius;
+
+                %%Necessary to define a c', cf paper Analysis of Lithium Insertion/Deinsertion in a Silicon Electrode
+                %Particle at Room Temperature Rajeswari Chandrasekaran,a,b,*,z Alexandre Magasinski,c Gleb Yushin,c and
+                %Thomas F. Fuller
+                c = c .* (radius/radius_0).^3;
+
+                
+                % Calculate reaction rate constant
+                k = k0.*exp(-Eak./R.*(1./T - 1/Tref));
+
+                % We use regularizedSqrt to regularize the square root function and avoid the blow-up of derivative at zero.
+                th = 1e-3*cmax;
+                coef = cElyte.*(cmax - c).*c;
+                coef(coef < 0) = 0;
+                j0 = k.*regularizedSqrt(coef, th)*n*F;
+
+                
+            end
+            
+            state.Interface.j0 = j0;
+
+        end
+
                     
         function molarVolumeLitihated = updateMolarVolumeLithiated(model, state)
-
-            sd  = 'SolidDiffusion';
-
-            c = state.(sd).cAverage;
+            
+            c = state.SolidDiffusion.cAverage;
 
             densitySi = model.Interface.density;
-            molarMassSi = 28.0855 * 1E-3;
-            molarVolumeSi = molarMassSi/densitySi;
-
-            molarVolumeLi = 8.8 * 1E-6;
+            molarMassSi = model.molarMass;
             cmaxLi = model.Interface.cmax;
 
-            molarVolumeLitihated = 4/15*(molarVolumeSi + 3.75*(c/cmaxLi)*molarVolumeLi);
+            molarVolumeSi = molarMassSi/densitySi;
+            molarVolumeLi = 8.8 * 1E-6;
+            
+
+            molarVolumeLitihated = (4/15)*(molarVolumeSi + 3.75*(c/cmaxLi)*molarVolumeLi);
         end
        
 

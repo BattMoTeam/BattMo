@@ -65,9 +65,18 @@ classdef Battery < BaseModel
             
             model = dispatchParams(model, paramobj, fdnames);
 
+            %define the electrodes (Electrode class allows to define the corresponding ActiveMaterial if the material 
+            % doesn't swell or to define the corresponding swelling material if it is a swelling material.
+
             model.NegativeElectrode = Electrode(paramobj.NegativeElectrode);
             model.PositiveElectrode = Electrode(paramobj.PositiveElectrode);
-            model.Electrolyte       = Electrolyte(paramobj.Electrolyte);
+
+            %define the electrolyte
+            if model.NegativeElectrode.ActiveMaterial.isSwellingMaterial | model.PositiveElectrode.ActiveMaterial.isSwellingMaterial
+                model.Electrolyte       = ElectrolyteSwelling(paramobj.Electrolyte);
+            else
+                model.Electrolyte       = Electrolyte(paramobj.Electrolyte);
+            end
 
             if model.use_thermal
                 model.ThermalModel = ThermalComponent(paramobj.ThermalModel);
@@ -127,19 +136,9 @@ classdef Battery < BaseModel
             varEqTypes ={{elyte, 'c'}   , 'elyte_massCons'  , 'cell'; ...  
                          {elyte, 'phi'} , 'elyte_chargeCons', 'cell'; ...    
                          {ne, am, 'phi'}, 'ne_am_chargeCons', 'cell'; ...    
-                         {pe, am, 'phi'}, 'pe_am_chargeCons', 'cell'; ...
+                         {pe, am, 'phi'}, 'pe_am_chargeCons', 'cell'; ... 
                          {ctrl, 'E'}    , 'EIeq'            , 'ctrl'; ...  
                          {ctrl, 'I'}    , 'controlEq'       , 'ctrl'};
-
-            %Added by Enguerran
-            if model.(pe).(am).isSwellingMaterial
-                newentry = {{pe, am, 'porosity'}, 'pe_am_volumeCons', 'cell'};
-                varEqTypes = vertcat(varEqTypes, newentry);
-            end
-            if model.(ne).(am).isSwellingMaterial
-                newentry = {{ne, am, 'porosity'}, 'ne_am_volumeCons', 'cell'};
-                varEqTypes = vertcat(varEqTypes, newentry);
-            end
             
             if model.use_thermal
                 newentries = {{thermal, 'T'}, 'energyCons', 'cell'};
@@ -360,14 +359,14 @@ classdef Battery < BaseModel
                               {ne, am, 'jFace'}       , ...
                               {pe, am, 'jFace'}       , ...
                               {elyte, 'conductivity'} , ...
-                              {ne, am, 'EffectiveElectricalConductivity'}, ...
-                              {pe, am, 'EffectiveElectricalonductivity'}};
+                              {ne, am, 'conductivity'}, ...
+                              {pe, am, 'conductivity'}};
 
                 if model.include_current_collectors
                     varnames ={{ne, cc, 'jFace'}       , ...
                                {pe, cc, 'jFace'}       , ...
-                               {ne, cc, 'EffectiveElectricalConductivity'}, ...
-                               {pe, cc, 'EffectiveElectricalConductivity'}};
+                               {ne, cc, 'conductivity'}, ...
+                               {pe, cc, 'conductivity'}};
                     inputnames = horzcat(inputnames, varnames);
                 end
                 
@@ -409,14 +408,14 @@ classdef Battery < BaseModel
                 fn = fns{ielde};
                 
                 inputnames = {{elde, am, 'phi'}, ...
-                              {elde, am, 'EffectiveElectricalConductivity'}};
+                              {elde, am, 'conductivity'}};
                 model = model.registerPropFunction({{elde, am, 'jExternal'}, fn, inputnames});
                 if model.use_thermal
                     model = model.registerPropFunction({{elde, am, 'jFaceExternal'}, fn, inputnames});
                 end
                 if model.include_current_collectors
                     inputnames = {{elde, cc, 'phi'}, ...
-                                  {elde, cc, 'EffectiveElectricalConductivity'}};
+                                  {elde, cc, 'conductivity'}};
                     model = model.registerPropFunction({{elde, cc, 'jExternal'}, fn, inputnames});
                     if model.use_thermal
                         model = model.registerPropFunction({{elde, cc, 'jFaceExternal'}, fn, inputnames});
@@ -696,11 +695,6 @@ classdef Battery < BaseModel
                 end
                 
                 initstate.(elde).(am).phi = OCP - ref;
-
-                %Rajouté par Enguerran
-                if model.(elde).(am).isSwellingMaterial
-                    initstate.(elde).(am).porosity = model.(elde).(am).porosity;
-                end
                 
             end
 
@@ -777,8 +771,9 @@ classdef Battery < BaseModel
             end
 
             initstate.time = 0;
-   
+            
         end
+
 
         function state = addVariables(model, state)
             
@@ -832,18 +827,16 @@ classdef Battery < BaseModel
             
             for ielde = 1 : numel(eldes)
                 elde = eldes{ielde};
-
                 switch model.(elde).(am).diffusionModelType
                   case 'full'
-                        state.(elde).(am).(sd)   = model.(elde).(am).(sd).updateAverageConcentration(state.(elde).(am).(sd));
-                        state.(elde).(am)        = model.(elde).(am).updateSOC(state.(elde).(am));
-                        state.(elde).(am)        = model.(elde).(am).updateAverageConcentration(state.(elde).(am));
+                    state.(elde).(am).(sd) = model.(elde).(am).(sd).updateAverageConcentration(state.(elde).(am).(sd));
+                    state.(elde).(am) = model.(elde).(am).updateSOC(state.(elde).(am));
+                    state.(elde).(am) = model.(elde).(am).updateAverageConcentration(state.(elde).(am));
                   case {'simple', 'interParticleOnly'}
                     % do nothing
                   otherwise
                     error('diffusion model type not recognized');
-                end        
-
+                end
             end
 
             if model.use_thermal
@@ -896,22 +889,13 @@ classdef Battery < BaseModel
 
             for ind = 1 : numel(electrodes)
                 elde = electrodes{ind};
-
-                 %added by Enguerran
-                if battery.(elde).(am).isSwellingMaterial 
-                    state.(elde).(am) = battery.(elde).(am).updateVolumeFraction(state.(elde).(am));
-                    state.(elde).(am) = battery.(elde).(am).updateEffectiveElectricalConductivity(state.(elde).(am));
-                end
-
-               
                 % potential and concentration between interface and active material
                 state.(elde).(am) = battery.(elde).(am).updatePhi(state.(elde).(am));
                 if (model.(elde).(am).use_particle_diffusion)
                     state.(elde).(am) = battery.(elde).(am).updateConcentrations(state.(elde).(am));
                 else
                     state.(elde).(am).(itf).cElectrodeSurface = state.(elde).(am).c;
-                end
-
+                end              
             end
             
             %% Accumulation term in elyte
@@ -930,29 +914,20 @@ classdef Battery < BaseModel
                 state.(elde).(am).(itf) = battery.(elde).(am).(itf).updateOCP(state.(elde).(am).(itf));
                 state.(elde).(am).(itf) = battery.(elde).(am).(itf).updateEta(state.(elde).(am).(itf));
                 state.(elde).(am).(itf) = battery.(elde).(am).(itf).updateReactionRate(state.(elde).(am).(itf));
-
-                %added by Enguerran
-                if battery.(elde).(am).isSwellingMaterial
-                    state.(elde).(am).(sd)            = battery.(elde).(am).(sd).updateAverageConcentration(state.(elde).(am).(sd));
-                    state.(elde).(am)                 = battery.(elde).(am).updateRadius(state.(elde).(am));
-                    state.(elde).(am)                 = battery.(elde).(am).updateVolumetricSurfaceArea(state.(elde).(am));
-                end
-
                 state.(elde).(am) = battery.(elde).(am).updateRvol(state.(elde).(am));
             end
 
             %% Update Electrodes -> Electrolyte  coupling
 
             state = battery.updateElectrolyteCoupling(state);
-
-                            
+            
             %% Update coupling within electrodes and external coupling
             
             for ind = 1 : numel(electrodes)
                 elde = electrodes{ind};
-                state.(elde).(am) = model.(elde).(am).updateEffectiveElectricalConductivity(state.(elde).(am));
+                state.(elde).(am) = model.(elde).(am).updateConductivity(state.(elde).(am));
                 if model.include_current_collectors
-                    state.(elde).(cc) = model.(elde).(cc).updateEffectiveElectricalConductivity(state.(elde).(cc));
+                    state.(elde).(cc) = model.(elde).(cc).updateConductivity(state.(elde).(cc));
                 end
                 state.(elde) = battery.(elde).updateCoupling(state.(elde));
                 switch elde
@@ -1002,23 +977,9 @@ classdef Battery < BaseModel
             state.(elyte) = battery.(elyte).updateMassFlux(state.(elyte));
             state.(elyte) = battery.(elyte).updateMassConservation(state.(elyte));
 
-
-            %% Electrodes volume Conservation
-            %added by Enguerran
-           for ind = 1 : numel(electrodes)
-                elde = electrodes{ind}; 
-                if battery.(elde).(am).isSwellingMaterial
-                    state.(elde).(am)                 = battery.(elde).(am).updatePorosityAccum(state.(elde).(am), state0.(elde).(am), dt);
-                    state.(elde).(am)                 = battery.(elde).(am).updatePorositySource(state.(elde).(am));
-                    state.(elde).(am)                 = battery.(elde).(am).updatePorosityFlux(state.(elde).(am));
-                    state.(elde).(am)                 = battery.(elde).(am).updateVolumeConservation(state.(elde).(am));
-                end
-           end
-
             %% update solid diffustion equations
             for ind = 1 : numel(electrodes)
                 elde = electrodes{ind};
-
                     switch model.(elde).(am).diffusionModelType
                       case 'simple'
                         state.(elde).(am).(sd) = battery.(elde).(am).(sd).updateDiffusionCoefficient(state.(elde).(am).(sd));
@@ -1029,9 +990,9 @@ classdef Battery < BaseModel
                         state.(elde).(am).(sd) = battery.(elde).(am).(sd).assembleSolidDiffusionEquation(state.(elde).(am).(sd));
                       case 'full'
                         state.(elde).(am).(sd) = battery.(elde).(am).(sd).updateDiffusionCoefficient(state.(elde).(am).(sd));
-                        state.(elde).(am).(sd) = battery.(elde).(am).(sd).updateMassAccum(state.(elde).(am).(sd), state0.(elde).(am).(sd), dt);
                         state.(elde).(am).(sd) = battery.(elde).(am).(sd).updateMassSource(state.(elde).(am).(sd));
                         state.(elde).(am).(sd) = battery.(elde).(am).(sd).updateFlux(state.(elde).(am).(sd));
+                        state.(elde).(am).(sd) = battery.(elde).(am).(sd).updateMassAccum(state.(elde).(am).(sd), state0.(elde).(am).(sd), dt);
                         state.(elde).(am).(sd) = battery.(elde).(am).(sd).updateMassConservation(state.(elde).(am).(sd));
                         state.(elde).(am).(sd) = battery.(elde).(am).(sd).assembleSolidDiffusionEquation(state.(elde).(am).(sd));
                       case 'interParticleOnly'
@@ -1042,9 +1003,6 @@ classdef Battery < BaseModel
                       otherwise
                         error('diffusionModelType not recognized')
                     end
-
-                    
-     
                 
             end
 
@@ -1111,16 +1069,6 @@ classdef Battery < BaseModel
 
             % Equation name : 'pe_am_chargeCons';
             eqs{ei.pe_am_chargeCons} = state.(pe).(am).chargeCons;
-
-            %Added by Enguerran
-            if battery.(pe).(am).isSwellingMaterial
-                % Equation name : 'pe_am_volumeCons';
-                eqs{ei.pe_am_volumeCons} = state.(pe).(am).volumeCons;
-            end
-            if battery.(ne).(am).isSwellingMaterial
-                % Equation name : 'ne_am_volumeCons';
-                eqs{ei.ne_am_volumeCons} = state.(ne).(am).volumeCons;
-            end
             
             switch model.(ne).(am).diffusionModelType
               case 'simple'
@@ -1130,22 +1078,12 @@ classdef Battery < BaseModel
                 % Equation name : 'ne_am_sd_massCons';
                 n    = model.(ne).(am).(itf).n; % number of electron transfer (equal to 1 for Lithium)
                 F    = model.con.F;
-
-                %modified by Enguerran
-                if battery.(ne).(am).isSwellingMaterial
-                    vol  = model.(ne).(am).operators.pv;
-                    rp   = model.(ne).(am).(sd).rp;
-                    vsf  = model.(ne).(am).(itf).volumetricSurfaceArea;
-                else
-                    vol  = model.(ne).(am).operators.pv;
-                    rp   = model.(ne).(am).(sd).rp;
-                    vsf  = model.(ne).(am).Interface.volumetricSurfaceArea;
-                end
-
+                vol  = model.(ne).(am).operators.pv;
+                rp   = model.(ne).(am).(sd).rp;
+                vsf  = model.(ne).(am).(itf).volumetricSurfaceArea;
                 surfp = 4*pi*rp^2;
                 
                 scalingcoef = (vsf*vol(1)*n*F)/surfp;
-                
                 
                 eqs{ei.ne_am_sd_massCons}    = scalingcoef*state.(ne).(am).(sd).massCons;
                 eqs{ei.ne_am_sd_soliddiffeq} = scalingcoef*state.(ne).(am).(sd).solidDiffusionEq;
@@ -1164,22 +1102,12 @@ classdef Battery < BaseModel
                 % Equation name : 'pe_am_sd_massCons';
                 n    = model.(pe).(am).(itf).n; % number of electron transfer (equal to 1 for Lithium)
                 F    = model.con.F;
-
-                %modified by Enguerran
-                if battery.(pe).(am).isSwellingMaterial
-                    vol  = model.(pe).(am).operators.pv;
-                    rp   = model.(pe).(am).(sd).rp;
-                    vsf  = model.(pe).(am).Interface.volumetricSurfaceArea;
-                else
-                    vol  = model.(pe).(am).operators.pv;
-                    rp   = model.(pe).(am).(sd).rp;
-                    vsf  = model.(pe).(am).(itf).volumetricSurfaceArea;
-                end
-               
+                vol  = model.(pe).(am).operators.pv;
+                rp   = model.(pe).(am).(sd).rp;
+                vsf  = model.(pe).(am).(itf).volumetricSurfaceArea;
                 surfp = 4*pi*rp^2;
                 
                 scalingcoef = (vsf*vol(1)*n*F)/surfp;
-                
 
                 eqs{ei.pe_am_sd_massCons} = scalingcoef*state.(pe).(am).(sd).massCons;
                 eqs{ei.pe_am_sd_soliddiffeq} = scalingcoef*state.(pe).(am).(sd).solidDiffusionEq;
@@ -1228,7 +1156,6 @@ classdef Battery < BaseModel
             end
 
             primaryVars = model.getPrimaryVariables();
-
             
             %% Setup LinearizedProblem that can be processed by MRST Newton API
             problem = LinearizedProblem(eqs, types, names, primaryVars, state, dt);
@@ -1665,7 +1592,7 @@ classdef Battery < BaseModel
                 cc = 'CurrentCollector';
 
                 phi   = state.(ne).(cc).phi;
-                sigma = state.(ne).(cc).EffectiveElectricalConductivity;
+                sigma = state.(ne).(cc).conductivity;
 
                 [jExternal, jFaceExternal] = setupExternalCoupling(model.(ne).(cc), phi, 0, sigma);
                 
@@ -1677,7 +1604,7 @@ classdef Battery < BaseModel
             else
                 
                 phi   = state.(ne).(am).phi;
-                sigma = state.(ne).(am).EffectiveElectricalConductivity;
+                sigma = state.(ne).(am).conductivity;
                 
                 [jExternal, jFaceExternal] = setupExternalCoupling(model.(ne).(am), phi, 0, sigma);
                 
@@ -1704,7 +1631,7 @@ classdef Battery < BaseModel
                 cc   = 'CurrentCollector';
                 
                 phi   = state.(pe).(cc).phi;
-                sigma = state.(pe).(cc).EffectiveElectricalConductivity;
+                sigma = state.(pe).(cc).conductivity;
                 
                 [jExternal, jFaceExternal] = setupExternalCoupling(model.(pe).(cc), phi, E, sigma);
                 
@@ -1715,7 +1642,7 @@ classdef Battery < BaseModel
             else
                 
                 phi   = state.(pe).(am).phi;
-                sigma = state.(pe).(am).EffectiveElectricalConductivity;
+                sigma = state.(pe).(am).conductivity;
                 
                 [jExternal, jFaceExternal] = setupExternalCoupling(model.(pe).(am), phi, E, sigma);
                 
@@ -1848,17 +1775,11 @@ classdef Battery < BaseModel
                     state.(elde).(am).c = min(cmax, state.(elde).(am).c);
                 else
                     state.(elde).(am).(sd).c = max(cmin, state.(elde).(am).(sd).c);
-                    state.(elde).(am).(sd).cSurface = max(cmin, state.(elde).(am).(sd).cSurface);
                     cmax = model.(elde).(am).(itf).cmax;
                     state.(elde).(am).(sd).c = min(cmax, state.(elde).(am).(sd).c);
                 end
             end
-
-            if model.(ne).(am).isSwellingMaterial
-                state.(ne).(am).porosity = min(1, state.(ne).(am).porosity);
-                state.(ne).(am).porosity = max(0, state.(ne).(am).porosity);
-            end
-
+            
             ctrl = 'Control';            
             state.(ctrl) = model.(ctrl).updateControlState(state.(ctrl));
             
@@ -1942,7 +1863,6 @@ classdef Battery < BaseModel
             end
         end
 
-  
     end
     
     methods(Static)
@@ -1955,8 +1875,6 @@ classdef Battery < BaseModel
             [found, varind] = ismember(varname, pvarnames);
 
         end
-
-        
         
     end
     

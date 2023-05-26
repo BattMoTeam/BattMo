@@ -16,6 +16,7 @@ classdef ActiveMaterial < ElectronicComponent
         electricalConductivity        % Electrical conductivity
         InterDiffusionCoefficient     % Inter particle diffusion coefficient parameter (diffusion between the particles)
         density                       %
+        molarMass
         thermalConductivity           % Intrinsic Thermal conductivity of the active component
         specificHeatCapacity          % Specific Heat capacity of the active component
 
@@ -59,7 +60,8 @@ classdef ActiveMaterial < ElectronicComponent
                        'diffusionModelType'    , ...
                        'use_thermal'           , ...
                        'BruggemanCoefficient'  , ...
-                       'isSwellingMaterial'};
+                       'isSwellingMaterial'    ,...
+                       'molarMass'};
             
             model = dispatchParams(model, paramobj, fdnames);
             

@@ -247,15 +247,42 @@ I = cellfun(@(x) x.Control.I, states);
 time = cellfun(@(x) x.time, states); 
 
 figure()
-subplot(1,2,1)
+subplot(1,3,1)
 plot(time/hour, E)
 xlabel('time [hours]')
 ylabel('Cell Voltage [V]')
 
-subplot(1,2,2)
+subplot(1,3,2)
 plot(time/hour, I)
 xlabel('time [hours]')
 ylabel('Cell Current [A]')
+
+subplot(1,3,3)
+negativeElectrodeSize = model.NegativeElectrode.G.cells.num;
+L = "x = 1";
+for i = 1:negativeElectrodeSize
+    hold on
+
+    phi = cellfun(@(x) x.NegativeElectrode.ActiveMaterial.phi(i), states);
+    phiElyte = cellfun(@(x) x.Electrolyte.phi(i), states);
+
+    cSurf = cellfun(@(x) x.NegativeElectrode.ActiveMaterial.SolidDiffusion.cSurface(i), states);
+    cmax = model.NegativeElectrode.ActiveMaterial.Interface.cmax;
+    T = 298.15;
+
+    
+    OCP   = model.NegativeElectrode.ActiveMaterial.Interface.computeOCPFunc(cSurf, T, cmax);
+    eta = phi - phiElyte - OCP;
+    plot(time/hour, eta);
+
+
+    if i > 1
+        L(end+1) = "x = " + int2str(i);
+    end
+end
+xlabel('time [hours]')
+ylabel('Eta of the Negative electrode')
+legend(L);
 
 
 %{

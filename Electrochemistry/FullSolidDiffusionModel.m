@@ -273,7 +273,7 @@ classdef FullSolidDiffusionModel < SolidDiffusionModel
             amf = model.activeMaterialFraction;
             
             Rvol = state.Rvol;
-
+            
             Rvol = op.mapFromBc*Rvol;
             
             state.massSource = - Rvol*((4*pi*rp^3)/(3*amf*vf));
