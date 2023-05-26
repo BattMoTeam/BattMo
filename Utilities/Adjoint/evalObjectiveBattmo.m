@@ -2,11 +2,11 @@ function [objValue, varargout] = evalObjectiveBattmo(pvec, objFunc, setup, param
 %
 % Utility function (for optimization) that simulates a model with parameters obtained from the vector 'pvec' (scaled
 % parameters) and computes objective function with the given parameters. The parameters are described with the cell
-% array of ModelParameter.
+% array of ModelParameter. if nargout > 1, the function returned also the scaled gradient
 %
 % SYNOPSIS:
-%  objValue                  = evalObjectiveBattmo(p, objFunc, setup, parameters, ['pn', pv, ...]) 
-%  [objValue, sensitivities] = evalObjectiveBattmo(...) 
+%  objValue                    = evalObjectiveBattmo(p, objFunc, setup, parameters, ['pn', pv, ...]) 
+%  [objValue, scaledGradients] = evalObjectiveBattmo(...) 
 %
 % DESCRIPTION:
 %
@@ -43,12 +43,10 @@ function [objValue, varargout] = evalObjectiveBattmo(pvec, objFunc, setup, param
 %   'Verbose'              - Indicate if extra output is to be printed such as
 %                            detailed convergence reports and so on.
 % RETURNS:
-%   objValue      - Diference between states(p) and states_ref
-%   sensitivities - Gradient of objValue with respect p
-%   wellSols      - Well solution at each control step (or timestep if
-%                   'OutputMinisteps' is enabled.)
-%   states        - State at each control step (or timestep if
-%                   'OutputMinisteps' is enabled.)
+%   objValue       - value of the objective functiosn
+%   scaledGradient - Scaled gradient of objValue with respect p
+%   states         - State at each control step (or timestep if
+%                    'OutputMinisteps' is enabled.)
 %
 % SEE ALSO:
 % `evalObjective`, `computeSensitivitiesAdjointAD`, `unitBoxBFGS` 
@@ -83,7 +81,6 @@ function [objValue, varargout] = evalObjectiveBattmo(pvec, objFunc, setup, param
     [opt, extra] = merge_options(opt, varargin{:});
 
     nparam = cellfun(@(x)x.nParam, parameters);
-    p_org = pvec;
     if opt.enforceBounds
         pvec = max(0, min(1, pvec));
     end
@@ -92,10 +89,12 @@ function [objValue, varargout] = evalObjectiveBattmo(pvec, objFunc, setup, param
     % Create new setup, and set parameter values
     pval = cell(size(parameters));
     setupNew = setup;
+    
     for k = 1 : numel(parameters)
         pval{k}  = parameters{k}.unscale(pvec{k});
         setupNew = parameters{k}.setParameter(setupNew, pval{k});
     end
+
     [wellSols, states] = simulateScheduleAD(setupNew.state0, setupNew.model, setupNew.schedule, ...
                                            'NonLinearSolver', opt.NonlinearSolver, ...
                                            'Verbose', opt.Verbose, extra{:});
@@ -104,23 +103,26 @@ function [objValue, varargout] = evalObjectiveBattmo(pvec, objFunc, setup, param
     objValue  = sum(vertcat(objValues{:}))/opt.objScaling ;
 
     if nargout > 1
-        
-        objh = @(tstep,model, state) objFunc(setupNew.model, states, setupNew.schedule, ...
-                                         'ComputePartials', true , ...
-                                         'tStep'          , tstep, ...
-                                         'state'          , state);
-        nms = applyFunction(@(x) x.name, parameters);
-        scaledGradient = cell(numel(nms), 1);
-        
+
         switch opt.gradientMethod
             
           case 'None'
+
             if nargout > 2
                 [varargout{2:3}] = deal(wellSols, states);
             end
             return
             
           case 'AdjointAD'
+            
+            objh = @(tstep,model, state) objFunc(setupNew.model, states, setupNew.schedule, ...
+                                                 'ComputePartials', true , ...
+                                                 'tStep'          , tstep, ...
+                                                 'state'          , state);
+            nms = applyFunction(@(x) x.name, parameters);
+
+            scaledGradient = cell(numel(nms), 1);
+
             gradient = computeSensitivitiesAdjointADBattmo(setupNew, states, parameters, objh, ...
                                                            'LinearSolver', opt.AdjointLinearSolver);            
             % do scaling of gradient
@@ -131,8 +133,10 @@ function [objValue, varargout] = evalObjectiveBattmo(pvec, objFunc, setup, param
           case 'PerturbationADNUM'
             % Do manual pertubuation of the defined control variables
             eps_pert = opt.PerturbationSize;            
-            val = nan(size(p_org));
+            p_org    = cell2mat(pval);
             
+            val = nan(size(p_org));
+
             try
                 % Try parallel loop
                 parfor i = 1 : numel(p_org)
@@ -140,7 +144,7 @@ function [objValue, varargout] = evalObjectiveBattmo(pvec, objFunc, setup, param
                                                  'gradientMethod' , 'None'             , ...
                                                  'NonlinearSolver', opt.NonlinearSolver, ...
                                                  'objScaling'     , opt.objScaling     , ...
-                                                 'enforceBounds', false);
+                                                 'enforceBounds'  , false);
                 end
             catch
                 % Try serial loop instead
@@ -154,10 +158,15 @@ function [objValue, varargout] = evalObjectiveBattmo(pvec, objFunc, setup, param
             end
             
             gradient = (val - objValue)./eps_pert;
-            scaledGradient = mat2cell(gradient, nparam, 1);
+            
+            for k = 1 : numel(gradient)
+                scaledGradient{k} = parameters{k}.scaleGradient(gradient(k), pval{k});
+            end
             
           otherwise
-            error('Greadient method %s is not implemented',opt.gradientMethod)
+            
+            error('Greadient method %s is not implemented',opt.gradientMethod);
+            
         end
         
         varargout{1} = vertcat(scaledGradient{:})/opt.objScaling;
@@ -177,7 +186,7 @@ end
 % Utility function to perturb the parameter array in coordinate i with eps_pert
 function p_pert = perturb(p_org, i, eps_pert)
     
-    p_pert = p_org;
+    p_pert    = p_org;
     p_pert(i) = p_pert(i) + eps_pert;
     
 end
