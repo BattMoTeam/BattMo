@@ -132,8 +132,9 @@ function [objValue, varargout] = evalObjectiveBattmo(pvec, objFunc, setup, param
             
           case 'PerturbationADNUM'
             % Do manual pertubuation of the defined control variables
+            
             eps_pert = opt.PerturbationSize;            
-            p_org    = cell2mat(pval);
+            p_org    = cell2mat(pvec);
             
             val = nan(size(p_org));
 
@@ -157,11 +158,8 @@ function [objValue, varargout] = evalObjectiveBattmo(pvec, objFunc, setup, param
                 end
             end
             
-            gradient = (val - objValue)./eps_pert;
-            
-            for k = 1 : numel(gradient)
-                scaledGradient{k} = parameters{k}.scaleGradient(gradient(k), pval{k});
-            end
+            scaledGradient = (val - objValue)./eps_pert;
+            scaledGradient = mat2cell(scaledGradient, numel(scaledGradient), 1);
             
           otherwise
             
