@@ -22,7 +22,7 @@
       "molarMass": 28.0855e-3,
       "InterDiffusionCoefficient": 1e-14,
       "InterDiffusionCoefficientComment" : "from lamda geeks website",
-      "electricalConductivity": 1.49e-3,
+      "electricalConductivity": 33,
       "BruggemanCoefficient": 1.5,
       "isSwellingMaterial": 1,
       
@@ -33,9 +33,9 @@
       "diffusionModelType" : "full",
       "SolidDiffusion" : {
         "EaD": 5000,
-        "D0": 3.9e-14,
+        "D0": 1e-14,
         "comment" : "we used graphite diffusion value - as in Chen",
-        "rp": 1e-06,
+        "rp": 60e-09,
         "N": 10
       }
       

@@ -315,6 +315,11 @@ ylabel('Eta of the Negative electrode')
 legend(L);
 
 
+
+
+
+
+
 %{
 Copyright 2021-2023 SINTEF Industry, Sustainable Energy Technology
 and SINTEF Digital, Mathematics & Cybernetics.

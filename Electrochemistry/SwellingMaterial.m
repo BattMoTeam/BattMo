@@ -266,7 +266,7 @@ classdef SwellingMaterial < ActiveMaterial
             theta0   = model.(itf).theta0;
 
             vf       = state.volumeFraction;
-            c = state.(sd).cAverage;
+            c        = state.(sd).cAverage;
 
             theta = c/cmax;
             m     = (1 ./ (theta100 - theta0));
@@ -433,20 +433,24 @@ classdef SwellingMaterial < ActiveMaterial
                 c      = state.Interface.cElectrodeSurface;
                 radius = state.SolidDiffusion.radius;
 
-                %%Necessary to define a c', cf paper Analysis of Lithium Insertion/Deinsertion in a Silicon Electrode
+                %%Necessary to define a c' and a cmax', cf paper Analysis of Lithium Insertion/Deinsertion in a Silicon Electrode
                 %Particle at Room Temperature Rajeswari Chandrasekaran,a,b,*,z Alexandre Magasinski,c Gleb Yushin,c and
                 %Thomas F. Fuller
-                c = c .* (radius/radius_0).^3;
+
+                
+                scalingCoeff = (radius./radius_0).^3;
+                c = c .* scalingCoeff;
+                cmax = cmax .* scalingCoeff;
 
                 
                 % Calculate reaction rate constant
                 k = k0.*exp(-Eak./R.*(1./T - 1/Tref));
 
                 % We use regularizedSqrt to regularize the square root function and avoid the blow-up of derivative at zero.
-                th = 1e-3*cmax;
+                th = 1e-3* model.Interface.cmax;
                 coef = cElyte.*(cmax - c).*c;
                 coef(coef < 0) = 0;
-                j0 = k.*regularizedSqrt(coef, th)*n*F;
+                j0 = k.*regularizedSqrt(coef, th).*n.*F;
 
                 
             end

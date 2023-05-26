@@ -387,6 +387,7 @@ classdef BatterySwelling < Battery
                     state.(elde).(am)                 = battery.(elde).(am).updateRadius(state.(elde).(am));
                     state.(elde).(am)                 = battery.(elde).(am).updateVolumetricSurfaceArea(state.(elde).(am));
                     state.(elde).(am) = battery.(elde).(am).updateReactionRateCoefficient(state.(elde).(am));
+                    state.(elde).(am).(itf) = battery.(elde).(am).(itf).updateReactionRate(state.(elde).(am).(itf));
                 end
 
                 state.(elde).(am) = battery.(elde).(am).updateRvol(state.(elde).(am));
@@ -587,21 +588,24 @@ classdef BatterySwelling < Battery
                 %modified by Enguerran
                 if battery.(ne).(am).isSwellingMaterial
                     vol  = model.(ne).(am).operators.pv;
-                    rp   = model.(ne).(am).(sd).rp;
-                    vsf  = model.(ne).(am).(itf).volumetricSurfaceArea;
+                    rp   = state.(ne).(am).(sd).radius;
+                    vsf  = state.(ne).(am).(itf).volumetricSurfaceArea;
                 else
                     vol  = model.(ne).(am).operators.pv;
                     rp   = model.(ne).(am).(sd).rp;
                     vsf  = model.(ne).(am).Interface.volumetricSurfaceArea;
                 end
 
-                surfp = 4*pi*rp^2;
                 
-                scalingcoef = (vsf*vol(1)*n*F)/surfp;
+
+                surfp = 4.*pi.*rp.^2;
                 
+                scalingcoef = (vsf.*vol(1).*n.*F)./surfp;
+                eqs{ei.ne_am_sd_soliddiffeq} = scalingcoef.*state.(ne).(am).(sd).solidDiffusionEq;
                 
-                eqs{ei.ne_am_sd_massCons}    = scalingcoef*state.(ne).(am).(sd).massCons;
-                eqs{ei.ne_am_sd_soliddiffeq} = scalingcoef*state.(ne).(am).(sd).solidDiffusionEq;
+                scalingcoef = model.(ne).(am).(sd).operators.mapToParticle*scalingcoef;
+                eqs{ei.ne_am_sd_massCons}    = scalingcoef.*state.(ne).(am).(sd).massCons;
+                
               case 'interParticleOnly'
                 eqs{ei.ne_am_massCons} = state.(ne).(am).massCons*massConsScaling;
               otherwise
@@ -621,21 +625,21 @@ classdef BatterySwelling < Battery
                 %modified by Enguerran
                 if battery.(pe).(am).isSwellingMaterial
                     vol  = model.(pe).(am).operators.pv;
-                    rp   = model.(pe).(am).(sd).rp;
-                    vsf  = model.(pe).(am).Interface.volumetricSurfaceArea;
+                    rp   = state.(pe).(am).(sd).radius;
+                    vsf  = state.(pe).(am).Interface.volumetricSurfaceArea;
                 else
                     vol  = model.(pe).(am).operators.pv;
                     rp   = model.(pe).(am).(sd).rp;
                     vsf  = model.(pe).(am).(itf).volumetricSurfaceArea;
                 end
                
-                surfp = 4*pi*rp^2;
+                surfp = 4.*pi.*rp.^2;
                 
-                scalingcoef = (vsf*vol(1)*n*F)/surfp;
-                
+                scalingcoef = (vsf.*vol(1).*n.*F)./surfp;
+                eqs{ei.pe_am_sd_massCons} = scalingcoef.*state.(pe).(am).(sd).massCons;
 
-                eqs{ei.pe_am_sd_massCons} = scalingcoef*state.(pe).(am).(sd).massCons;
-                eqs{ei.pe_am_sd_soliddiffeq} = scalingcoef*state.(pe).(am).(sd).solidDiffusionEq;
+                scalingcoef = model.(pe).(am).(sd).operators.mapToParticle*scalingcoef;
+                eqs{ei.pe_am_sd_soliddiffeq} = scalingcoef.*state.(pe).(am).(sd).solidDiffusionEq;
               case 'interParticleOnly'
                 eqs{ei.pe_am_massCons} = state.(pe).(am).massCons*massConsScaling;                
               otherwise
