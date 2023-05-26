@@ -13,7 +13,11 @@ function  [model, states, reports, solver, ok] = plotAfterStepIV(model, states, 
     SOC = cumsum(I.*dt);
 
     %%
-    figure(33)
+    try
+        set(0, 'currentFigure', 33);
+    catch
+        figure(33)
+    end
     
     subplot(2, 2, 1)
     hold on
@@ -32,7 +36,12 @@ function  [model, states, reports, solver, ok] = plotAfterStepIV(model, states, 
     plot(SOC, cumsum(E.*I.*dt), '*-')
 
     %%
-    figure(44), 
+    try
+        set(0, 'currentFigure', 44);
+    catch
+        figure(44)
+    end
+
     hold on
     
     subplot(2, 1, 1)
