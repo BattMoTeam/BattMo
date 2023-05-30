@@ -1,7 +1,10 @@
-function output = compareJson(jsonstruct1, jsonstruct2)
+function flatjsonviewer = compareJson(jsonstruct1, jsonstruct2)
 
-    flatjson1 = flattenJson(jsonstruct1);
-    flatjson2 = flattenJson(jsonstruct2);
+    flatjsonviewer1 = flattenJson(jsonstruct1);
+    flatjsonviewer2 = flattenJson(jsonstruct2);
+
+    flatjson1 = flatjsonviewer1.flatjson;
+    flatjson2 = flatjsonviewer2.flatjson;
     
     fd1 = flatjson1(:, 1);
     fd2 = flatjson2(:, 1);
@@ -41,16 +44,31 @@ function output = compareJson(jsonstruct1, jsonstruct2)
         flatjsonmissing{end + 1} = entry;
     end
 
-
     output.flatjson1 = flatjson1;
     output.flatjson2 = flatjson2;
     
-    output.flatjsoncommon    = vertcat(flatjsoncommon{:});
-    output.flatjsondifferent = vertcat(flatjsondifferent{:});
-    output.flatjsonmissing   = vertcat(flatjsonmissing{:});
+    flatjsoncommon    = vertcat(flatjsoncommon{:});
+    flatjsondifferent = vertcat(flatjsondifferent{:});
+    flatjsonmissing   = vertcat(flatjsonmissing{:});
 
-    output.printFunction = @(cellarray) printFunction_(cellarray);
+    output.flatjsoncommon    = flatjsoncommon;
+    output.flatjsondifferent = flatjsondifferent;
+    output.flatjsonmissing   = flatjsonmissing;
 
+    n                 = size(flatjsoncommon, 1);
+    flatjsoncommon    = horzcat(flatjsoncommon, repmat({'equal'}, n, 1));
+    n                 = size(flatjsondifferent, 1);
+    flatjsondifferent = horzcat(flatjsondifferent, repmat({'different'}, n, 1));
+    n                 = size(flatjsonmissing, 1);
+    flatjsonmissing   = horzcat(flatjsonmissing, repmat({'missing'}, n, 1));
+    
+    flatjsonboth = vertcat(flatjsoncommon, flatjsondifferent, flatjsonmissing);
+
+    [~, ia] = sort(flatjsonboth(:, 1));
+    flatjsonboth = flatjsonboth(ia, :);
+    
+    flatjsonviewer = FlatJsonViewer(flatjsonboth);
+    
 end
 
 
@@ -106,8 +124,13 @@ function isequal = compareValue(val1, val2)
 end
 
 
-function printFunction_(cellarray)
+function printFunction_(cellarray, varargin)
 
+    opt = struct('sortindex', [], ...
+                 'columnorder', []);
+
+    opt = merge_options(opt, varargin{:});
+    
     nrow = size(cellarray, 1);
     ncol = size(cellarray, 2);
 
@@ -119,24 +142,37 @@ function printFunction_(cellarray)
             str = formattedDisplayText(cellarray{ijson, col});
             str = strtrim(str);
             str = regexprep(str, '\n', ',');
+            str = convertStringsToChars(str);
             ls(col) = max(strlength(str), ls(col));
             strs{ijson, col} = str;
         end
     end
 
-    switch ncol
-      case 2
-        formatstr = sprintf('%%-%ds, %%-%ds\\n', ls(1), ls(2));
-        for ijson = 1 : nrow
-            fprintf(formatstr, strs{ijson, 1}, strs{ijson, 2});
+    if ~isempty(opt.sortindex)
+        for isort = numel(opt.sortindex) : -1 : 1
+            ind = opt.sortindex(isort);
+            [~, ia] = sort(strs(:, ind));
+            strs = strs(ia, :);
         end
-      case 3
-        formatstr = sprintf('%%-%ds, %%-%ds, %%-%ds\\n', ls(1), ls(2), ls(3));
-        for ijson = 1 : nrow
-            fprintf(formatstr, strs{ijson, 1}, strs{ijson, 2}, strs{ijson, 3});
-        end
-      otherwise
-        error('not yet supported. Should not be hard to implement though...');
+    end
+
+    if ~isempty(opt.columnorder)
+        inds = (1 : ncol);
+        ind1 = opt.columnorder;
+        ind2 = setdiff(inds, ind1);
+        inds = [ind1, ind2];
+        strs = strs(:, inds);
+    end
+    
+    formatstr = sprintf('%%-%ds', ls(1));
+    for icol = 2 : ncol
+        formatstr = sprintf('%s, %%-%ds', formatstr, ls(icol));
+    end
+    formatstr = sprintf('%s\\n', formatstr);    
+    
+    for ijson = 1 : nrow
+        str = strs(ijson, :);
+        fprintf(formatstr, str{:});
     end
         
 end
