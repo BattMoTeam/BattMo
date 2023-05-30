@@ -1,5 +1,8 @@
-function [flatjsondifferent, flatjsoncommon, flatjsonmissing, printFunction] = compareFlattenJson(flatjson1, flatjson2)
+function output = compareJson(jsonstruct1, jsonstruct2)
 
+    flatjson1 = flattenJson(jsonstruct1);
+    flatjson2 = flattenJson(jsonstruct2);
+    
     fd1 = flatjson1(:, 1);
     fd2 = flatjson2(:, 1);
 
@@ -38,11 +41,16 @@ function [flatjsondifferent, flatjsoncommon, flatjsonmissing, printFunction] = c
         flatjsonmissing{end + 1} = entry;
     end
 
-    flatjsoncommon    = vertcat(flatjsoncommon{:});
-    flatjsondifferent = vertcat(flatjsondifferent{:});
-    flatjsonmissing   = vertcat(flatjsonmissing{:});
 
-    printFunction = @(jsondiff) printFunction_(jsondiff);
+    output.flatjson1 = flatjson1;
+    output.flatjson2 = flatjson2;
+    
+    output.flatjsoncommon    = vertcat(flatjsoncommon{:});
+    output.flatjsondifferent = vertcat(flatjsondifferent{:});
+    output.flatjsonmissing   = vertcat(flatjsonmissing{:});
+
+    output.printFunction = @(cellarray) printFunction_(cellarray);
+
 end
 
 
@@ -98,14 +106,17 @@ function isequal = compareValue(val1, val2)
 end
 
 
-function printFunction_(jsondiff)
+function printFunction_(cellarray)
 
-    n = size(jsondiff, 1);
-    strs = cell(n, 3);
-    ls = zeros(3, 1);
-    for ijson = 1 : n
-        for col = 1 : 3
-            str = formattedDisplayText(jsondiff{ijson, col});
+    nrow = size(cellarray, 1);
+    ncol = size(cellarray, 2);
+
+    strs = cell(nrow, ncol);
+    ls   = zeros(ncol, 1);
+    
+    for ijson = 1 : nrow
+        for col = 1 : ncol
+            str = formattedDisplayText(cellarray{ijson, col});
             str = strtrim(str);
             str = regexprep(str, '\n', ',');
             ls(col) = max(strlength(str), ls(col));
@@ -113,9 +124,19 @@ function printFunction_(jsondiff)
         end
     end
 
-    formatstr = sprintf('%%-%ds, %%-%ds, %%-%ds\\n', ls(1), ls(2), ls(3));
-
-    for ijson = 1 : n
-        fprintf(formatstr, strs{ijson, 1}, strs{ijson, 2}, strs{ijson, 3});
+    switch ncol
+      case 2
+        formatstr = sprintf('%%-%ds, %%-%ds\\n', ls(1), ls(2));
+        for ijson = 1 : nrow
+            fprintf(formatstr, strs{ijson, 1}, strs{ijson, 2});
+        end
+      case 3
+        formatstr = sprintf('%%-%ds, %%-%ds, %%-%ds\\n', ls(1), ls(2), ls(3));
+        for ijson = 1 : nrow
+            fprintf(formatstr, strs{ijson, 1}, strs{ijson, 2}, strs{ijson, 3});
+        end
+      otherwise
+        error('not yet supported. Should not be hard to implement though...');
     end
+        
 end
