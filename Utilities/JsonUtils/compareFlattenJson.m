@@ -1,4 +1,4 @@
-function [flatjsondifferent, flatjsoncommon, flatjson1missing, flatjson2missing] = compareFlattenJson(flatjson1, flatjson2)
+function [flatjsondifferent, flatjsoncommon, flatjsonmissing, printFunction] = compareFlattenJson(flatjson1, flatjson2)
 
     fd1 = flatjson1(:, 1);
     fd2 = flatjson2(:, 1);
@@ -7,8 +7,7 @@ function [flatjsondifferent, flatjsoncommon, flatjson1missing, flatjson2missing]
 
     flatjsondifferent = {};
     flatjsoncommon    = {};
-    
-    assert(numel(ia) == numel(ib), 'Looks like I misunderstood something with intersect');
+    flatjsonmissing   = {};
     
     for ii = 1 : numel(ia)
         val1 = flatjson1{ia(ii), 2};
@@ -23,12 +22,27 @@ function [flatjsondifferent, flatjsoncommon, flatjson1missing, flatjson2missing]
         
     end
 
+    ismissing1 = true(numel(fd2), 1);
+    ismissing1(ib) = false;
+    ismissing1 = find(ismissing1);
+    for ii = 1 : numel(ismissing1)
+        entry = {flatjson2{ismissing1(ii), 1}, NaN, flatjson2{ismissing1(ii), 2}};
+        flatjsonmissing{end + 1} = entry;
+    end
+    
+    ismissing2 = true(numel(fd1), 1);
+    ismissing2(ia) = false;
+    ismissing2 = find(ismissing2);
+    for ii = 1 : numel(ismissing2)
+        entry = {flatjson1{ismissing2(ii), 1}, flatjson1{ismissing2(ii), 2}, NaN};
+        flatjsonmissing{end + 1} = entry;
+    end
+
     flatjsoncommon    = vertcat(flatjsoncommon{:});
     flatjsondifferent = vertcat(flatjsondifferent{:});
-    
-    flatjson1missing = [];
-    flatjson2missing = [];
-    
+    flatjsonmissing   = vertcat(flatjsonmissing{:});
+
+    printFunction = @(jsondiff) printFunction_(jsondiff);
 end
 
 
@@ -81,4 +95,27 @@ function isequal = compareValue(val1, val2)
         isequal = false;
     end
 
+end
+
+
+function printFunction_(jsondiff)
+
+    n = size(jsondiff, 1);
+    strs = cell(n, 3);
+    ls = zeros(3, 1);
+    for ijson = 1 : n
+        for col = 1 : 3
+            str = formattedDisplayText(jsondiff{ijson, col});
+            str = strtrim(str);
+            str = regexprep(str, '\n', ',');
+            ls(col) = max(strlength(str), ls(col));
+            strs{ijson, col} = str;
+        end
+    end
+
+    formatstr = sprintf('%%-%ds, %%-%ds, %%-%ds\\n', ls(1), ls(2), ls(3));
+
+    for ijson = 1 : n
+        fprintf(formatstr, strs{ijson, 1}, strs{ijson, 2}, strs{ijson, 3});
+    end
 end
