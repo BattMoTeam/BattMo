@@ -1,4 +1,4 @@
-function  output = runBatteryJson(jsonstruct, varargin)
+function  output = runBatteryJson(jsonstruct)
     
     mrstModule add ad-core mrst-gui mpfa
     
@@ -206,8 +206,12 @@ function  output = runBatteryJson(jsonstruct, varargin)
         && isfield(jsonstruct.Output, 'variables') ...
         && any(ismember({'energy', 'energyDensity', 'specificEnergy'}, jsonstruct.Output.variables))
         
-        % TODO : We could fine tuned output (at the moment we output all the possible extrav variables)
-        mass = computeCellMass(model);
+
+        if ismember('specificEnergy', jsonstruct.Output.variables)
+            mass = computeCellMass(model);
+        else
+            mass = [];
+        end
         vol = sum(model.G.cells.volumes);
         
         [E, I, energyDensity, specificEnergy, energy] = computeEnergyDensity(E, I, time, vol, mass);
