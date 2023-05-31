@@ -1,4 +1,8 @@
 classdef SwellingMaterial < ActiveMaterial
+
+    % Same class as ActiveMaterial but with a new primaryVariable :
+    % porosity and many properties which are no more constants but
+    % dependant on the porosity
     
     properties
 
@@ -7,28 +11,26 @@ classdef SwellingMaterial < ActiveMaterial
     methods
         
         function model = SwellingMaterial(paramobj)
-        % ``paramobj`` is instance of :class:`ActiveMaterialInputParams <Electrochemistry.ActiveMaterialInputParams>`
-        %SameFunction as for ActiveMaterial but implemening
-        %FullSolidDiffusionSwelling         
+        % cf 'if isSwellingMaterial' in the constructor defintion of Active Material
             model = model@ActiveMaterial(paramobj)
         end
 
+        %% Declaration of the Dynamical Variables and Function of the model (setup of varnameList and propertyFunctionList)
+            % Implementation of all the new variables (primaryvariable
+            % porosity and variables depending on porosity)
         function model = registerVarAndPropfuncNames(model)
-
-            %% Declaration of the Dynamical Variables and Function of the model
-            % (setup of varnameList and propertyFunctionList)
 
             model = registerVarAndPropfuncNames@ActiveMaterial(model);
             
             itf = 'Interface';
             sd  = 'SolidDiffusion';
             
-            varnames = {'radius'   , ...
-                        'porosity' ,...
-                        'volumeFraction',...
-                        'porosityAccum',...
-                        'porositySource',...
-                        'porosityFlux' ,...
+            varnames = {'porosity'       ,...
+                        'radius'         ,...
+                        'volumeFraction' ,...
+                        'porosityAccum'  ,...
+                        'porositySource' ,...
+                        'porosityFlux'   ,...
                         'volumeCons'};
 
             model = model.registerVarNames(varnames);
@@ -95,6 +97,7 @@ classdef SwellingMaterial < ActiveMaterial
                    
         end
 
+        %% Similar to ActiveMaterial but adding the updates for the new variables
         function [problem, state] = getEquations(model, state0, state,dt, drivingForces, varargin)
             
             sd  = 'SolidDiffusion';
@@ -168,44 +171,11 @@ classdef SwellingMaterial < ActiveMaterial
 
         end
 
-        function [state, report] = updateState(model, state, problem, dx, drivingForces)
 
-            [state, report] = updateState@ActiveMaterial(model, state, problem, dx, drivingForces);
-            
-        end
+%% Update of the variables which were already defined in ActiveMaterial class but depending on the volumeFraction or the volumetric
+% surface area which are no more constant parameters
 
-
-
-        function state = updateConcentrations(model, state)
-
-            sd  = 'SolidDiffusion';
-            itf = 'Interface';
-            
-            if model.use_particle_diffusion
-            if strcmp(model.diffusionModelType, 'simple')
-                state.(sd).cAverage = state.c;
-            end
-            
-            state.(itf).cElectrodeSurface = state.(sd).cSurface;
-            else
-                state.(itf).cElectrodeSurface = state.c;
-            end
-            
-        end
-
-        function state = updateMassFlux(model, state)
-        % Used when diffusionModelType == 'simple'
-
-            D = model.EffectiveDiffusionCoefficient;
-            
-            c = state.c;
-
-            massflux = assembleFlux(model, c, D);
-            
-            state.massFlux = massflux;
-
-        end
-            
+        %% Same as in Active Material but for a non constant volumeFraction    
         function state = assembleAccumTerm(model, state, state0, dt)
         % Used when diffusionModelType == 'simple'
             
@@ -220,6 +190,7 @@ classdef SwellingMaterial < ActiveMaterial
             
         end
 
+        %% Same as in Active Material but for a non constant volumetricSurfaceArea    
         function state = updateRvol(model, state)
 
             vsa = state.Interface.volumetricSurfaceArea;
@@ -233,16 +204,15 @@ classdef SwellingMaterial < ActiveMaterial
             
         end
         
-
+        %% Same as in Active Material but for a non constant volumeFraction    
         function state = updateAverageConcentration(model, state)
 
-            % shortcut
             sd  = 'SolidDiffusion';
 
-            vf       = state.volumeFraction;
             am_frac  = model.activeMaterialFraction;
             vols     = model.G.cells.volumes;
-            
+
+            vf       = state.volumeFraction;
             c = state.(sd).cAverage;
 
             vols = am_frac*vf.*vols;
@@ -252,10 +222,10 @@ classdef SwellingMaterial < ActiveMaterial
             state.cAverage = cAverage;
             
         end
-        
+
+        %% Same as in Active Material but for a non constant volumeFraction    
         function state = updateSOC(model, state)
 
-            % shortcut
             itf = 'Interface';
             sd  = 'SolidDiffusion';
             
@@ -280,6 +250,9 @@ classdef SwellingMaterial < ActiveMaterial
             
         end
    
+%% Update of the new variables (which are constant parameters in the case of ActiveMaterial)
+
+
         function state = updateRadius(model, state)
 
             radius_0  = model.SolidDiffusion.rp;
@@ -354,51 +327,6 @@ classdef SwellingMaterial < ActiveMaterial
             
         end
 
-
-        function state = updatePorosityAccum(model, state, state0, dt)
-            
-            state.porosityAccum = (state.porosity - state0.porosity)./dt;
-            
-        end
-            
-        function state = updatePorositySource(model, state)
-            
-            molarVolumeLithiated = model.updateMolarVolumeLithiated(state);
-            densitySi            = model.Interface.density;
-            molarMassSi   = model.molarMass;
-
-            a = state.Interface.volumetricSurfaceArea;       
-            R = state.Interface.R;
-            
-            molarVolumeSi = molarMassSi/densitySi;
-
-            state.porositySource = a.*R.*(molarVolumeLithiated - (4/15)*molarVolumeSi);
-            
-        end
-
-         function state = updatePorosityFlux(model, state)
-             %no Source. Definition schould be change to something cleaner
-             D = 0.*state.volumeFraction;
-             c = 0.*state.volumeFraction;
-             porosityFlux = assembleFlux(model, c, D);
-            
-            state.porosityFlux = porosityFlux;
-        end
-
-        
-
-        function state = updateVolumeConservation(model, state)
-            
-            flux = state.porosityFlux;
-            source = state.porositySource;
-            accum = state.porosityAccum;
-
-            cons = assembleConservationEquation(model, flux, 0, source, accum);
-            
-            state.volumeCons = cons;
-            
-        end
-
         function state = updateReactionRateCoefficient(model, state)
             if model.Interface.useJ0Func
 
@@ -459,7 +387,64 @@ classdef SwellingMaterial < ActiveMaterial
 
         end
 
-                    
+
+
+
+   %% Implementation of a new equation : the volume conservation Equation
+   % ref : eq 2 in 'Modelling capacity fade in silicon-graphite composite electrodes for
+   % lithium-ion batteries Shweta Dhillon, Guiomar Hernández, Nils P. Wagner, Ann 
+   % Mari Svensson, Daniel Brandell
+   
+        function state = updatePorosityAccum(model, state, state0, dt)
+            vols = model.G.cells.volumes;
+            
+            state.porosityAccum = vols.*(state.porosity - state0.porosity)./dt;
+            
+        end
+            
+        function state = updatePorositySource(model, state)
+            vols = model.G.cells.volumes;
+            
+            molarVolumeLithiated = model.updateMolarVolumeLithiated(state);
+            densitySi            = model.Interface.density;
+            molarMassSi          = model.molarMass;
+
+            a = state.Interface.volumetricSurfaceArea;       
+            R = state.Interface.R;
+            
+            molarVolumeSi = molarMassSi/densitySi;
+
+            state.porositySource = a.*R.*(molarVolumeLithiated - (4/15)*molarVolumeSi).*vols;
+            
+        end
+
+         function state = updatePorosityFlux(model, state)
+             %no Source. Definition schould be change to something cleaner
+             D = 0.*state.volumeFraction;
+             c = 0.*state.volumeFraction;
+             porosityFlux = assembleFlux(model, c, D);
+            
+            state.porosityFlux = porosityFlux;
+        end
+
+        
+
+        function state = updateVolumeConservation(model, state)
+            
+            flux = state.porosityFlux;
+            source = state.porositySource;
+            accum = state.porosityAccum;
+
+            cons = assembleConservationEquation(model, flux, 0, source, accum);
+            
+            state.volumeCons = cons;
+            
+        end
+
+  
+
+
+   %% Useful Function giving the molar volume of the lithiated silicon depending on its state of lithiation     
         function molarVolumeLitihated = updateMolarVolumeLithiated(model, state)
             
             c = state.SolidDiffusion.cAverage;

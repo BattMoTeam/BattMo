@@ -9,6 +9,9 @@
 
 mrstModule add ad-core mrst-gui mpfa agmg linearsolvers
 
+clear all
+
+
 %%% Specifying the physical model
 % In this tutorial we will simulate a lithium-ion battery consisting of a 
 % negative electrode, a positive electrode and an electrolyte. *BattMo* 
@@ -125,26 +128,26 @@ model = Battery(paramobj);
 T = 298.15;
 elde = {ne,pe};
 
-figure
-hold on
-for i = 1:numel(elde)
-    el_itf = model.(elde{i}).(am).(itf);
-
-    theta100 = el_itf.theta100;
-    theta0   = el_itf.theta0;
-    cmax     = el_itf.cmax;
-
-    soc   = linspace(0, 1);
-    theta = soc*theta100 + (1 - soc)*theta0;
-    c     = theta.*cmax;
-    OCP   = el_itf.computeOCPFunc(c, T, cmax);
-
-    plot(soc, OCP)
-end
-xlabel('SOC [-]')
-ylabel('OCV [V]')
-title('OCV for both electrodes');
-legend(elde)
+%figure
+%hold on
+%for i = 1:numel(elde)
+%    el_itf = model.(elde{i}).(am).(itf);
+%
+%    theta100 = el_itf.theta100;
+%    theta0   = el_itf.theta0;
+%    cmax     = el_itf.cmax;
+%
+%    soc   = linspace(0, 1);
+%    theta = soc*theta100 + (1 - soc)*theta0;
+%    c     = theta.*cmax;
+%    OCP   = el_itf.computeOCPFunc(c, T, cmax);
+%
+%    plot(soc, OCP)
+%end
+%xlabel('SOC [-]')
+%ylabel('OCV [V]')
+%title('OCV for both electrodes');
+%legend(elde)
 
 %%% Controlling the simulation
 % The control model specifies how the simulation is controlled. This can
@@ -247,17 +250,17 @@ I = cellfun(@(x) x.Control.I, states);
 time = cellfun(@(x) x.time, states); 
 
 figure()
-subplot(1,3,1)
+subplot(2,2,1)
 plot(time/hour, E)
 xlabel('time [hours]')
 ylabel('Cell Voltage [V]')
 
-subplot(1,3,2)
+subplot(2,2,2)
 plot(time/hour, I)
 xlabel('time [hours]')
 ylabel('Cell Current [A]')
 
-subplot(1,3,3)
+subplot(2,2,3)
 negativeElectrodeSize = model.NegativeElectrode.G.cells.num;
 L = "x = 1";
 for i = 1:negativeElectrodeSize
@@ -283,6 +286,7 @@ end
 xlabel('time [hours]')
 ylabel('Eta of the Negative electrode')
 legend(L);
+
 
 
 %{

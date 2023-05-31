@@ -17,25 +17,24 @@
   },
   "NegativeElectrode": {
     "ActiveMaterial": {
+      "Comment on the sources" : "Electrical conductivity is from Dhillon, Hernandez, Wagner, Svensson, Brandell 2O21",
       "specificHeatCapacity": 710,
       "thermalConductivity": 149,
       "molarMass": 28.0855e-3,
       "InterDiffusionCoefficient": 1e-14,
-      "InterDiffusionCoefficientComment" : "from lamda geeks website",
       "electricalConductivity": 33,
       "BruggemanCoefficient": 1.5,
-      "isSwellingMaterial": 1,
-      
+      "isSwellingMaterial": 1,     
       "Interface": {
         "isFile": true,
         "filename": "ParameterData/MaterialProperties/Silicon/silicon.json"
       },
       "diffusionModelType" : "full",
       "SolidDiffusion" : {
+        "Comment on the sources" : "We used graphite diffusion value - as in Chen, radius as in Dhillon, Hernandez, Wagner, Svensson, Brandell 2O21",
         "EaD": 5000,
-        "D0": 1e-14,
-        "comment" : "we used graphite diffusion value - as in Chen",
-        "rp": 60e-09,
+        "D0": 1.2e-14,
+        "rp": 1e-06,
         "N": 10
       }
       

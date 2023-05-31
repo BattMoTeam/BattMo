@@ -11,31 +11,52 @@ classdef ElectrolyteSwelling < Electrolyte
             model = model@Electrolyte(paramobj);
         end
 
+%% Declaration of the Dynamical Variables and Function of the model (setup of varnameList and propertyFunctionList)
         function model = registerVarAndPropfuncNames(model)
-            %% Declaration of the Dynamical Variables and Function of the model
-            % (setup of varnameList and propertyFunctionList)
+       
+            model = registerVarAndPropfuncNames@Electrolyte(model);
 
-            model = registerVarAndPropfuncNames@ElectroChemicalComponent(model);
 
-            varnames = {'volumeFraction'  ,...
-                        'convFlux'};
+            varnames = {'volumeFraction'  ,...             % volume fraction of the electrolyte (= porosity of the SwellingMaterial)
+                        'convFlux'};                       % Convective flux
             model = model.registerVarNames(varnames);
 
-            %%Need to add functions in the graph
+
+            fn = @ElectrolyteSwelling.updateAccumTerm;
+            model = model.registerPropFunction({'massAccum', fn, {'c','volumeFraction'}});
+
+            fn = @ElectrolyteSwelling.updateDiffusionCoefficient;
+            model = model.registerPropFunction({'D', fn, {'c','T','vf'}});
+
+            fn = @ElectrolyteSwelling.updateCurrent;
+            model = model.registerPropFunction({'j', fn, {'dmudcs','phi','T','c','conductivity','vf'}});
+
+            fn = @ElectrolyteSwelling.updateMassFlux;
+            model = model.registerPropFunction({'massFlux', fn, {'c','j','D'}});
             
+            fn = @ElectrolyteSwelling.updateConvFlux;
+            model = model.registerPropFunction({'convFlux', fn, {}});
+
+            fn = @ElectrolyteSwelling.updateVolumeFraction;
+            model = model.registerPropFunction({'volumeFraction', fn, {}});
         end
 
-
+    %% Definition of the accumulation term (dc/dt)
         function state = updateAccumTerm(model, state, state0, dt)
 
-            cdotcc  = (state.c - state0.c)/dt;
+            c = state.c;
+            vf = state.volumeFraction;
 
-            effectiveVolumes = state.volumeFraction.*model.G.cells.volumes;
+            c0 = state0.c;
+
+            cdotcc  = (c - c0)/dt;
+            effectiveVolumes = vf.*model.G.cells.volumes;
 
             state.massAccum  = effectiveVolumes.*cdotcc;
             
         end
 
+    %% Update the diffusion coefficient which vary at each step as the volumeFraction is no more constant
         function state = updateDiffusionCoefficient(model, state)
 
             brcoef = model.BruggemanCoefficient; 
@@ -52,6 +73,7 @@ classdef ElectrolyteSwelling < Electrolyte
 
         end
 
+    %% Update the current in the electrolyte (due to the movement of the ions)
         function state  = updateCurrent(model, state)
 
             ncomp  = model.ncomp;
@@ -65,11 +87,10 @@ classdef ElectrolyteSwelling < Electrolyte
             T            = state.T;
             c            = state.c;
             conductivity = state.conductivity;
+            vf = state.volumeFraction;
 
-            % volume fraction of electrolyte
-            volfrac = state.volumeFraction;
             % Compute effective ionic conductivity in porous media
-            conductivityeff = conductivity.*volfrac.^brcoef;
+            conductivityeff = conductivity.*vf.^brcoef;
 
             state.conductivityeff = conductivityeff;
             j = assembleFlux(model, phi, conductivityeff);
@@ -84,6 +105,7 @@ classdef ElectrolyteSwelling < Electrolyte
 
         end
 
+    %% Update the mass flux which is the sum of the three fluxes defines above.
         function state = updateMassFlux(model, state)
 
 
@@ -113,7 +135,7 @@ classdef ElectrolyteSwelling < Electrolyte
 
         end
 
-        %%By default definitions. The real values are set in the battery class (respectively in updateElectrolyteVolumeFraction and
+        %%By default definitions. The real values are set in the BatterySwelling class (respectively in updateElectrolyteVolumeFraction and
         %%updateConvFlux functions)
 
         function state = updateVolumeFraction(model, state)

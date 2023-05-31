@@ -1,6 +1,9 @@
 function [OCP, dUdT] = computeOCP_graphite(c, T, cmax)
-%   Calculate the equilibrium open cirucuit potential of
-%   graphite according to the model used by Li Haoliang, Bo Lu, Yicheng Song anf Junqian Zhang.
+% Calculate the equilibrium open cirucuit potential of silicon according to the model
+% used by Li Haoliang, Bo Lu, Yicheng Song and Junqian Zhang 2017
+
+% The thermal model has not been modified, the values for coeff1 and
+% coeff2 are the one for graphite
 
     
     Tref = 298.15;  % [K]

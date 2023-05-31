@@ -35,10 +35,13 @@ classdef FullSolidDiffusionSwellingModel < FullSolidDiffusionModel
             
         end
         
-
+ %% Modification of mass source according to eq 6 in  Analysis of Lithium Insertion/Deinsertion in a Silicon
+ % Electrode Particle at Room Temperature Rajeswari Chandrasekaran, Alexandre Magasinski, Gleb Yushin, and
+ %Thomas F. Fuller
+ 
         function state = updateMassSource(model, state)
 
-        %% Modification of mass source
+       
            
             op  = model.operators;
             rp0 = model.rp;
@@ -54,7 +57,9 @@ classdef FullSolidDiffusionSwellingModel < FullSolidDiffusionModel
 
             state.massSource = massSource;
             
-        end    
+        end
+
+   %% The other variables are directly updated in methods defined in the class SwellingMaterial
    
     end
     

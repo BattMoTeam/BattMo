@@ -440,7 +440,7 @@ classdef ActiveMaterial < ElectronicComponent
         function state = updateRvol(model, state)
 
             vsa = model.Interface.volumetricSurfaceArea;
-            
+
             Rvol = vsa.*state.Interface.R;
             state.Rvol = Rvol;
 

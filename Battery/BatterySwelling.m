@@ -1,11 +1,8 @@
 classdef BatterySwelling < Battery
 % 
-% The battery model consists of 
-%
-% * an Electrolyte model given in :attr:`Electrolyte` property
-% * a Negative Electrode Model given in :attr:`NegativeElectrode` property
-% * a Positive Electrode Model given in :attr:`PositiveElectrode` property
-% * a Thermal model given in :attr:`ThermalModel` property
+% Used when at least one of the two electrodes is a swelling Material.
+% It functions as the Battery class but implements a new equation necessary because of the particle swelling :
+% the volume Conservation equation 
 %
     properties
 
@@ -17,9 +14,9 @@ classdef BatterySwelling < Battery
             model = model@Battery(paramobj)
         end
 
+    %% Same setup as in the BatteryClass but adding the volumeConservationEquation
         function model = setupSelectedModel(model, varargin)
-
-            %Addition of the volume conservation equation
+            
 
             opt = struct('reduction', []);
             opt = merge_options(opt, varargin{:});
@@ -185,9 +182,9 @@ classdef BatterySwelling < Battery
             
         end
       
+     %% Update at each step the electrolyte volume fractions in the different regions (neg_elde, elyte, pos_elde)
         function state = updateElectrolyteVolumeFraction(model, state)
-        % Assign the electrolyte volume fractions in the different regions;
-        % specific to swelling Materials
+       
 
             elyte = 'Electrolyte';
             ne    = 'NegativeElectrode';
@@ -202,15 +199,15 @@ classdef BatterySwelling < Battery
             state.(elyte).volumeFraction = ones(model.(elyte).G.cells.num, 1);
 
             sep_cells = elyte_cells(model.(elyte).(sep).G.mappings.cellmap); 
-            state.(elyte).volumeFraction = subsasgnAD(model.(elyte).volumeFraction,sep_cells, model.(elyte).(sep).porosity);
+            state.(elyte).volumeFraction = subsasgnAD(state.(elyte).volumeFraction,sep_cells, model.(elyte).(sep).porosity);
+
 
             eldes = {ne, pe};
             for ielde = 1 : numel(eldes)
                 elde = eldes{ielde};
                 if model.(elde).ActiveMaterial.isSwellingMaterial
-                    
+                   
                     state.(elyte).volumeFraction = subsasgnAD(state.(elyte).volumeFraction, elyte_cells(model.(elde).(am).G.mappings.cellmap), state.(elde).(am).porosity.val);
-                    
                 else
                     state.(elyte).volumeFraction = subsasgnAD(state.(elyte).volumeFraction, elyte_cells(model.(elde).(am).G.mappings.cellmap), model.(elde).(am).porosity);
                 end
@@ -222,8 +219,8 @@ classdef BatterySwelling < Battery
 
         end
 
+     %% Assign at each step the convective flux in the electrolyte region
         function state = updateConvFlux(model, state)
-            %Specific to swelling Materials
 
             elyte   = 'Electrolyte';
             ne      = 'NegativeElectrode';
@@ -272,10 +269,9 @@ classdef BatterySwelling < Battery
             end
         end
 
-        
+      %% Same initialisation as for Battery but includes the porosity initialisation
         function initstate = setupInitialState(model)
-        % Same as for Battery but includes the initialisation of the
-        % porosity
+       
 
         initstate = setupInitialState@Battery(model);
 
@@ -295,9 +291,8 @@ classdef BatterySwelling < Battery
             end
         end
 
-        
+      %% Assembly of the governing equation (same as for Battery but taking into account porosity variations)
         function [problem, state] = getEquations(model, state0, state, dt, drivingForces, varargin)
-        % Assembly of the governing equation
             
             opts = struct('ResOnly', false, 'iteration', 0, 'reverseMode', false); 
             opts = merge_options(opts, varargin{:});
@@ -573,7 +568,7 @@ classdef BatterySwelling < Battery
             end
             if battery.(ne).(am).isSwellingMaterial
                 % Equation name : 'ne_am_volumeCons';
-                eqs{ei.ne_am_volumeCons} = state.(ne).(am).volumeCons;
+                eqs{ei.ne_am_volumeCons} = 500000000000 * state.(ne).(am).volumeCons;
             end
             
             switch model.(ne).(am).diffusionModelType
@@ -692,19 +687,14 @@ classdef BatterySwelling < Battery
             
         end
         
-
-        function primaryvarnames = getPrimaryVariables(model)
-
-            primaryvarnames = model.primaryVariableNames;
-            
-        end
         
 
+      %% cap concentrations and porosity to reasonnable values
         function [state, report] = updateState(model, state, problem, dx, drivingForces)
 
             [state, report] = updateState@BaseModel(model, state, problem, dx, drivingForces);
             
-            %% cap concentrations
+            % cap concentrations
             elyte = 'Electrolyte';
             ne    = 'NegativeElectrode';
             pe    = 'PositiveElectrode';
@@ -730,6 +720,8 @@ classdef BatterySwelling < Battery
                     state.(elde).(am).(sd).c = min(cmax, state.(elde).(am).(sd).c);
                 end
             end
+
+            %cap porosity
 
             if model.(ne).(am).isSwellingMaterial
                 state.(ne).(am).porosity = min(1, state.(ne).(am).porosity);

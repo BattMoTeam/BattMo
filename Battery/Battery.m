@@ -566,8 +566,7 @@ classdef Battery < BaseModel
             model.ThermalModel.EffectiveThermalConductivity = hcond;
             
         end
-        
-        
+            
         function model = setupMappings(model)
             
             ne    = 'NegativeElectrode';
@@ -739,6 +738,7 @@ classdef Battery < BaseModel
                   case 'discharging'
                     initstate.(ctrl).I = model.(ctrl).Imax;
                   case 'charging'
+                    %initstate.(ctrl).I = - model.(ctrl).Imax;
                     error('to implement (should be easy...)')
                   otherwise
                     error('initialControl not recognized');
