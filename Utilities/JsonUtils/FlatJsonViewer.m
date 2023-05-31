@@ -33,8 +33,12 @@ classdef FlatJsonViewer
         end
 
 
-        function print(fjv)
+        function print(fjv, filterdesc)
 
+            if nargin > 1
+                fjv = fjv.filter(filterdesc);
+            end
+            
             cell2table(fjv.flatjson, 'VariableNames', fjv.columnnames)
             
         end
