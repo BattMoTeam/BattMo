@@ -196,16 +196,25 @@ step = struct('val', dt*ones(n, 1), 'control', ones(n, 1));
 % between zero and the desired value. Then we assign the
 % rampupSwitchControl function to a variable as an anonymous function.
 
-tup = 0.1; 
-srcfunc = @(time, I, E) rampupSwitchControl(time, tup, I, E, ...
-                                            model.Control.Imax, ...
-                                            model.Control.lowerCutoffVoltage);
+tup = 0.1;
+switch model.Control.controlPolicy
+  case 'IEswitch'
+    srcfunc = @(time, I, E) rampupSwitchControl(time, tup, I, E, ...
+                                                model.Control.Imax, ...
+                                                model.Control.lowerCutoffVoltage);
+    control.IEswitch = true;
+  case 'CC'
+    srcfunc = @(time) rampupControl(time, tup, model.Control.Imax);
+    control.CC = true;
+  otherwise
+    error('control policity not recognized');
+end
 
 %%%
 % We create a control structure containing the source function and
 % specifying that we want to use IESwitch control:
 
-control = struct('src', srcfunc, 'IEswitch', true);
+control.src = srcfunc;
 
 %%%
 % Finally we collect the control and step structures together in a schedule
