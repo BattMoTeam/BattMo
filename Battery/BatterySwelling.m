@@ -196,18 +196,20 @@ classdef BatterySwelling < Battery
             elyte_cells(model.(elyte).G.mappings.cellmap) = (1 : model.(elyte).G.cells.num)';
 
             
-            state.(elyte).volumeFraction = ones(model.(elyte).G.cells.num, 1);
+            % Initialisation of AD for the porosity of the elyte
+            state.(elyte).volumeFraction = 0 * state.(elyte).c;
 
+            % Define the porosity in the separator
             sep_cells = elyte_cells(model.(elyte).(sep).G.mappings.cellmap); 
             state.(elyte).volumeFraction = subsasgnAD(state.(elyte).volumeFraction,sep_cells, model.(elyte).(sep).porosity);
 
 
+            % Define the volumeFraction in the electrodes
             eldes = {ne, pe};
             for ielde = 1 : numel(eldes)
                 elde = eldes{ielde};
                 if model.(elde).ActiveMaterial.isSwellingMaterial
-                   
-                    state.(elyte).volumeFraction = subsasgnAD(state.(elyte).volumeFraction, elyte_cells(model.(elde).(am).G.mappings.cellmap), state.(elde).(am).porosity.val);
+                    state.(elyte).volumeFraction = subsasgnAD(state.(elyte).volumeFraction, elyte_cells(model.(elde).(am).G.mappings.cellmap), state.(elde).(am).porosity);
                 else
                     state.(elyte).volumeFraction = subsasgnAD(state.(elyte).volumeFraction, elyte_cells(model.(elde).(am).G.mappings.cellmap), model.(elde).(am).porosity);
                 end
@@ -548,6 +550,8 @@ classdef BatterySwelling < Battery
             ei = model.equationIndices;
 
             massConsScaling = model.con.F;
+            V_scaling = 10000;
+            %Vscaling = 10000000000;
             
             % Equation name : 'elyte_massCons';
             eqs{ei.elyte_massCons} = state.(elyte).massCons*massConsScaling;
@@ -568,7 +572,7 @@ classdef BatterySwelling < Battery
             end
             if battery.(ne).(am).isSwellingMaterial
                 % Equation name : 'ne_am_volumeCons';
-                eqs{ei.ne_am_volumeCons} = 500000000000 * state.(ne).(am).volumeCons;
+                eqs{ei.ne_am_volumeCons} = V_scaling * state.(ne).(am).volumeCons;
             end
             
             switch model.(ne).(am).diffusionModelType
@@ -583,8 +587,8 @@ classdef BatterySwelling < Battery
                 %modified by Enguerran
                 if battery.(ne).(am).isSwellingMaterial
                     vol  = model.(ne).(am).operators.pv;
-                    rp   = state.(ne).(am).(sd).radius;
-                    vsf  = state.(ne).(am).(itf).volumetricSurfaceArea;
+                    rp   = model.(ne).(am).(sd).rp;
+                    vsf  = model.(ne).(am).(itf).volumetricSurfaceArea;
                 else
                     vol  = model.(ne).(am).operators.pv;
                     rp   = model.(ne).(am).(sd).rp;
@@ -598,7 +602,7 @@ classdef BatterySwelling < Battery
                 scalingcoef = (vsf.*vol(1).*n.*F)./surfp;
                 eqs{ei.ne_am_sd_soliddiffeq} = scalingcoef.*state.(ne).(am).(sd).solidDiffusionEq;
                 
-                scalingcoef = model.(ne).(am).(sd).operators.mapToParticle*scalingcoef;
+                %scalingcoef = model.(ne).(am).(sd).operators.mapToParticle*scalingcoef;
                 eqs{ei.ne_am_sd_massCons}    = scalingcoef.*state.(ne).(am).(sd).massCons;
                 
               case 'interParticleOnly'
@@ -633,7 +637,7 @@ classdef BatterySwelling < Battery
                 scalingcoef = (vsf.*vol(1).*n.*F)./surfp;
                 eqs{ei.pe_am_sd_massCons} = scalingcoef.*state.(pe).(am).(sd).massCons;
 
-                scalingcoef = model.(pe).(am).(sd).operators.mapToParticle*scalingcoef;
+                %scalingcoef = model.(pe).(am).(sd).operators.mapToParticle*scalingcoef;
                 eqs{ei.pe_am_sd_soliddiffeq} = scalingcoef.*state.(pe).(am).(sd).solidDiffusionEq;
               case 'interParticleOnly'
                 eqs{ei.pe_am_massCons} = state.(pe).(am).massCons*massConsScaling;                

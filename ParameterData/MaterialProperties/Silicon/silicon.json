@@ -1,7 +1,7 @@
 {
   "Comment on the sources" : "cmax and k0 are from Dhillon, Hernandez, Wagner, Svensson, Brandell 2O21; volumetricSurfaceArea is not needed",
   "cmax": 278000,
-  "volumeFraction": 0.095,
+  "volumeFraction": 0.2,
   "volumetricSurfaceArea": 723600,
   "density": 2330,
   "n" : 1,

@@ -33,7 +33,7 @@
       "SolidDiffusion" : {
         "Comment on the sources" : "We used graphite diffusion value - as in Chen, radius as in Dhillon, Hernandez, Wagner, Svensson, Brandell 2O21",
         "EaD": 5000,
-        "D0": 1.2e-14,
+        "D0": 1e-14,
         "rp": 1e-06,
         "N": 10
       }

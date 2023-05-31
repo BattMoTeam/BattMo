@@ -53,7 +53,7 @@ function [cap, cap_neg, cap_pos, specificEnergy] = computeCellCapacity(model, va
         
         vol_fraction = ammodel.volumeFraction;
         am_fraction  = ammodel.activeMaterialFraction;
-        
+
         vol = sum(am_fraction*vol_fraction.*ammodel.G.cells.volumes);
         
         cap_usable(ind) = (thetaMax - thetaMin)*cMax*vol*n*F;
@@ -62,6 +62,7 @@ function [cap, cap_neg, cap_pos, specificEnergy] = computeCellCapacity(model, va
     
     cap_neg = cap_usable(1);
     cap_pos = cap_usable(2);
+
 
     cap = min(cap_usable); 
 

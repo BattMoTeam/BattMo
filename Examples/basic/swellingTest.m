@@ -98,7 +98,7 @@ paramobj.(pe).(am).(sd).N = 5;
 % in the class BatteryGenerator1D. Classes for generating other geometries can
 % be found in the BattMo/Battery/BatteryGeometry folder.
 
-gen = BatteryGenerator1D();
+gen = BatteryGenerator1DSwelling();
 
 %%%
 % Now, we update the paramobj with the properties of the mesh. This function
@@ -346,7 +346,7 @@ plot(position, porosity);
 for t = 1:totalTime
     hold on
     %Only draw the curve for timestep multiples
-    timestep = 15;
+    timestep = 10;
     if mod(t,timestep) == 0
         porosity = [];
         for i = 1:negativeElectrodeSize

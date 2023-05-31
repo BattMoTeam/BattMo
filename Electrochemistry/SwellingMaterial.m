@@ -362,7 +362,7 @@ classdef SwellingMaterial < ActiveMaterial
                 radius = state.SolidDiffusion.radius;
 
                 %%Necessary to define a c' and a cmax', cf paper Analysis of Lithium Insertion/Deinsertion in a Silicon Electrode
-                %Particle at Room Temperature Rajeswari Chandrasekaran,a,b,*,z Alexandre Magasinski,c Gleb Yushin,c and
+                %Particle at Room Temperature Rajeswari Chandrasekaran,Alexandre Magasinski, Gleb Yushin,cand
                 %Thomas F. Fuller
 
                 
