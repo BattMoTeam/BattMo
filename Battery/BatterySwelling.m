@@ -381,7 +381,11 @@ classdef BatterySwelling < Battery
                 %added by Enguerran
                 if battery.(elde).(am).isSwellingMaterial
                     state.(elde).(am).(sd)            = battery.(elde).(am).(sd).updateAverageConcentration(state.(elde).(am).(sd));
-                    state.(elde).(am)                 = battery.(elde).(am).updateRadius(state.(elde).(am));
+                    if battery.Control.initialControl == "discharging"
+                        state.(elde).(am)                 = battery.(elde).(am).updateRadius(state.(elde).(am), state0.(elde).(am));
+                    else
+                        error('radius udate not yet implemented for lithiation but easy to do (cf ref in SwellingMaterial')
+                    end
                     state.(elde).(am)                 = battery.(elde).(am).updateVolumetricSurfaceArea(state.(elde).(am));
                     state.(elde).(am) = battery.(elde).(am).updateReactionRateCoefficient(state.(elde).(am));
                     state.(elde).(am).(itf) = battery.(elde).(am).(itf).updateReactionRate(state.(elde).(am).(itf));
@@ -494,7 +498,7 @@ classdef BatterySwelling < Battery
                         error('diffusionModelType not recognized')
                     end
 
-                    
+
      
                 
             end
@@ -550,17 +554,18 @@ classdef BatterySwelling < Battery
             ei = model.equationIndices;
 
             massConsScaling = model.con.F;
-            V_scaling = 10000;
+            V_scaling = 10000000000;
+            M_scaling = 0.1;
             %Vscaling = 10000000000;
             
             % Equation name : 'elyte_massCons';
-            eqs{ei.elyte_massCons} = state.(elyte).massCons*massConsScaling;
+            eqs{ei.elyte_massCons} = M_scaling .*state.(elyte).massCons*massConsScaling;
 
             % Equation name : 'elyte_chargeCons';
             eqs{ei.elyte_chargeCons} = state.(elyte).chargeCons;
             
             % Equation name : 'ne_am_chargeCons';
-            eqs{ei.ne_am_chargeCons} = state.(ne).(am).chargeCons;
+            eqs{ei.ne_am_chargeCons} =  state.(ne).(am).chargeCons;
 
             % Equation name : 'pe_am_chargeCons';
             eqs{ei.pe_am_chargeCons} = state.(pe).(am).chargeCons;
@@ -587,8 +592,8 @@ classdef BatterySwelling < Battery
                 %modified by Enguerran
                 if battery.(ne).(am).isSwellingMaterial
                     vol  = model.(ne).(am).operators.pv;
-                    rp   = model.(ne).(am).(sd).rp;
-                    vsf  = model.(ne).(am).(itf).volumetricSurfaceArea;
+                    rp   = state.(ne).(am).(sd).radius;
+                    vsf  = state.(ne).(am).(itf).volumetricSurfaceArea;
                 else
                     vol  = model.(ne).(am).operators.pv;
                     rp   = model.(ne).(am).(sd).rp;
@@ -602,8 +607,8 @@ classdef BatterySwelling < Battery
                 scalingcoef = (vsf.*vol(1).*n.*F)./surfp;
                 eqs{ei.ne_am_sd_soliddiffeq} = scalingcoef.*state.(ne).(am).(sd).solidDiffusionEq;
                 
-                %scalingcoef = model.(ne).(am).(sd).operators.mapToParticle*scalingcoef;
-                eqs{ei.ne_am_sd_massCons}    = scalingcoef.*state.(ne).(am).(sd).massCons;
+                scalingcoef = model.(ne).(am).(sd).operators.mapToParticle*scalingcoef;
+                eqs{ei.ne_am_sd_massCons}    = M_scaling .* scalingcoef.*state.(ne).(am).(sd).massCons;
                 
               case 'interParticleOnly'
                 eqs{ei.ne_am_massCons} = state.(ne).(am).massCons*massConsScaling;
@@ -635,7 +640,7 @@ classdef BatterySwelling < Battery
                 surfp = 4.*pi.*rp.^2;
                 
                 scalingcoef = (vsf.*vol(1).*n.*F)./surfp;
-                eqs{ei.pe_am_sd_massCons} = scalingcoef.*state.(pe).(am).(sd).massCons;
+                eqs{ei.pe_am_sd_massCons} = M_scaling .* scalingcoef.*state.(pe).(am).(sd).massCons;
 
                 %scalingcoef = model.(pe).(am).(sd).operators.mapToParticle*scalingcoef;
                 eqs{ei.pe_am_sd_soliddiffeq} = scalingcoef.*state.(pe).(am).(sd).solidDiffusionEq;
@@ -647,7 +652,7 @@ classdef BatterySwelling < Battery
             
             % Equation name : 'ne_cc_chargeCons';
             if model.(ne).include_current_collectors
-                eqs{ei.ne_cc_chargeCons} = state.(ne).(cc).chargeCons;
+                eqs{ei.ne_cc_chargeCons} =state.(ne).(cc).chargeCons;
             end
             
             % Equation name : 'pe_cc_chargeCons';
@@ -687,6 +692,7 @@ classdef BatterySwelling < Battery
 
             
             %% Setup LinearizedProblem that can be processed by MRST Newton API
+            
             problem = LinearizedProblem(eqs, types, names, primaryVars, state, dt);
             
         end

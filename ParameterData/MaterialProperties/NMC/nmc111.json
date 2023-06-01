@@ -1,6 +1,6 @@
 {
   "cmax": 55554,
-  "volumeFraction": 0.8ll,
+  "volumeFraction": 0.8,
   "volumetricSurfaceArea": 885000,
   "density": 4650,
   "n" : 1,

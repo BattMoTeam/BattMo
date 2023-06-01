@@ -1,4 +1,4 @@
-%% BattMo Tutorial
+% BattMo Tutorial
 % This tutorial explains how to setup and run a simulation in BattMo
 
 %%% Setting up the environment
@@ -326,18 +326,19 @@ ylabel('Cell Current [A]')
 
 %% Plot the porosity as a function of the position for different times
 subplot(2,2,3)
-negativeElectrodeSize = model.NegativeElectrode.G.cells.num;
+negativeElectrodeSize = gen.xlength(2);
+N_elements_ne = gen.nenx;
+deltaX = (negativeElectrodeSize/(N_elements_ne-1)) * 10^6;
 totalTime = length(time);
 
 position = [];
-for x = 1:negativeElectrodeSize
-    position(end+1) = x;
-
+for x = 1:N_elements_ne
+    position(end+1) = (x-1)*deltaX;
 end
 
 legendTime = "t = 0 hour";
 porosity = [];
-for i = 1:negativeElectrodeSize
+for i = 1:N_elements_ne
             porosity(end+1) = initstate.NegativeElectrode.ActiveMaterial.porosity(i);
 end
 plot(position, porosity);
@@ -346,10 +347,14 @@ plot(position, porosity);
 for t = 1:totalTime
     hold on
     %Only draw the curve for timestep multiples
-    timestep = 10;
+    if t<45
+        timestep = 8;
+    else
+        timestep = 110;
+    end
     if mod(t,timestep) == 0
         porosity = [];
-        for i = 1:negativeElectrodeSize
+        for i = 1:N_elements_ne
             porosity(end+1) = states{t}.NegativeElectrode.ActiveMaterial.porosity(i);
         end
         
@@ -361,89 +366,104 @@ for t = 1:totalTime
         end
     end 
 end
-xlabel('Positon across the Negative Electrode')
+xlabel('Positon across the Negative Electrode (in µm)')
 ylabel('Porosity of the Negative Electrode')
 legend(legendTime);
 
 
-%% Plot the concentration as a function of the position for different times
-%subplot(2,2,4)
-%electrolyteSize = model.Electrolyte.G.cells.num;
-%totalTime = length(time);
-%
-%position = [];
-%for x = 1:electrolyteSize
-%    position(end+1) = x;
-%
-%end
-%
-%legendTime = "t = 0 hour";
-%concentration = [];
-%for i = 1:electrolyteSize
-%            concentration(end+1) = initstate.Electrolyte.c(i);
-%end
-%plot(position, concentration);
-%
-%
-%for t = 1:totalTime
-%    hold on
-%    %Only draw the curve for timestep multiples
-%    timestep = 15;
-%    if mod(t,timestep) == 0
-%        concentration = [];
-%        for i = 1:electrolyteSize
-%            concentration(end+1) = states{t}.Electrolyte.c(i);
-%        end
-%        
-%        plot(position, concentration);
-%
-%        if t > 1
-%            t = time(t)/hour;
-%            legendTime(end+1) = "t = " + num2str(t,2) + " hour";
-%        end
-%    end 
-%end
-%xlabel('Positon across the Electrolyte')
-%ylabel('Concentration of the Electrolyte')
-%legend(legendTime);
 
-%% Plot the porosity near the separator as a function of the state of charge
+
+%% Plot the porosity near the cc as a function of the state of charge
 subplot(2,2,4)
-negativeElectrodeSize = model.NegativeElectrode.G.cells.num;
-totalTime = length(time);
-N = paramobj.(ne).(am).(sd).N;
 
-el_itf = model.NegativeElectrode.(am).(itf);
+el_itf   = model.NegativeElectrode.(am).(itf);
+el_am_sd = model.NegativeElectrode.ActiveMaterial.SolidDiffusion;
+
+totalTime = length(time);
+realTotalTime = states{totalTime}.time;
 
 theta100 = el_itf.theta100;
 theta0   = el_itf.theta0;
 cmax     = el_itf.cmax;
+r0       = el_am_sd.rp;
+F        = model.con.F;
+N        = el_am_sd.N;
+
+%V0_particle = 4/3 * pi * r0 ^ 3 ;
+%Nmax = cmax * V0_particle;
 
 soc = [];
 porosity = [];
 
 for t = 1:totalTime
-
     sumConcentrations = 0;
-    for j = 1:N
-        c        = states{t}.NegativeElectrode.ActiveMaterial.SolidDiffusion.c(50-j+1);
+    for i = 1:N
+        c = states{t}.NegativeElectrode.ActiveMaterial.SolidDiffusion.c(i);
         sumConcentrations = sumConcentrations + c;
     end
     cAverage = sumConcentrations/N;
 
+    x = cAverage/cmax;
+    normalizedSOC = (x-theta0)./(theta100-theta0);
+    poros = states{t}.NegativeElectrode.ActiveMaterial.porosity(1);
 
-    soc(end+1) = ((cAverage/cmax) - theta0) / (theta100 - theta0);
-    porosity(end+1) = states{t}.NegativeElectrode.ActiveMaterial.porosity(1);
+    soc(end+1) = normalizedSOC;
+    porosity(end+1) = poros;
 end
 
 plot(soc, porosity);
 
-xlabel('State of Charge')
-ylabel('Porosity')
+xlabel('State of Charge near the current collector')
+ylabel('Porosity near the current collector')
 
 
-%%
+%% Plot the concentration as a function of the position for different times
+figure
+%subplot(2,2,4)
+negativeElectrodeSize = gen.xlength(2);
+N_elements_ne = gen.nenx;
+deltaX = (negativeElectrodeSize/(N_elements_ne-1)) * 10^6;
+totalTime = length(time);
 
+position = [];
+for x = 1:N_elements_ne
+    position(end+1) = (x-1)*deltaX;
+end
+
+legendTime = "t = 0 hour";
+concentration = [];
+for i = 1:N_elements_ne
+            concentration(end+1) = initstate.Electrolyte.c(i);
+end
+plot(position, concentration);
+
+
+for t = 1:totalTime
+    hold on
+    %Only draw the curve for timestep multiples
+    if t<45
+        timestep = 8;
+    else
+        timestep = 110;
+    end
+
+    if mod(t,timestep) == 0
+        concentration = [];
+        for i = 1:N_elements_ne
+            concentration(end+1) = states{t}.Electrolyte.c(i);
+        end
+        
+        plot(position, concentration);
+
+        if t > 1
+            t = time(t)/hour;
+            legendTime(end+1) = "t = " + num2str(t,2) + " hour";
+        end
+    end 
+end
+xlabel('Positon across the Negative Electrode (in µm)')
+ylabel('Concentration of the Electrolyte')
+legend(legendTime);
 
 
 

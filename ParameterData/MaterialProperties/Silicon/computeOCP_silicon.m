@@ -1,4 +1,4 @@
-function [OCP, dUdT] = computeOCP_graphite(c, T, cmax)
+function [OCP, dUdT] = computeOCP_silicon(c, T, cmax)
 % Calculate the equilibrium open cirucuit potential of silicon according to the model
 % used by Li Haoliang, Bo Lu, Yicheng Song and Junqian Zhang 2017
 

@@ -123,7 +123,7 @@ classdef SwellingMaterial < ActiveMaterial
             state                = model.updateConcentrations(state);
             
             %Specific to swelling Materials
-            state                = model.updateRadius(state);
+            state                = model.updateRadius(state,state0);
             state                = model.updateVolumetricSurfaceArea(state);
             state                = model.updatePorosityAccum(state, state0, dt);
             state                = model.updatePorositySource(state);
@@ -253,19 +253,35 @@ classdef SwellingMaterial < ActiveMaterial
 %% Update of the new variables (which are constant parameters in the case of ActiveMaterial)
 
 
-        function state = updateRadius(model, state)
+        function state = updateRadius(model, state, state0)
 
             radius_0  = model.SolidDiffusion.rp;
             densitySi = model.density;
             cmaxLi    = model.Interface.cmax;
             
             c = state.SolidDiffusion.cAverage;
+
             
-            MolarMassSi   = 28.0855 * 1E-3;
+            MolarMassSi   = model.molarMass;
             molarVolumeSi = MolarMassSi/densitySi;
             molarVolumeLi = 8.8 * 1E-6;
-            
-            radius = radius_0 .* (1 + (3.75.*molarVolumeLi.*c)./(cmaxLi.*molarVolumeSi)).^(1/3);
+
+            % We cannot anymore express <x> as a ratio of between the current and maximal concentrations of Li because the radius of the 
+            % particle is changing. We have to express it as a ratio of matter quantities N/Nmax. The expression above is from a
+            % rearrangement of equations 11 and 14 in 'Analysis of Lithium Insertion/Deinsertion in a Silicon Electrode
+            % Particle at Room Temperature Rajeswari
+            % Chandrasekaran,Alexandre Magasinski, Gleb Yushin, and Thomas F. Fuller'*
+
+
+            % Only delithiation radius evolution is coded here. Schould be
+            % easy to imlement for lithiation (cf equation 11 in the same
+            % paper)
+
+            c_ratio = c/cmaxLi;
+
+            ratio_delith = (3.75.*molarVolumeLi)./(molarVolumeSi+3.75.*molarVolumeLi);
+
+            radius = radius_0 .* ((1-ratio_delith) ./ ((1./3.8) + ratio_delith.*c_ratio)) .^ (1/3);
 
             state.radius = radius;
             
@@ -334,13 +350,23 @@ classdef SwellingMaterial < ActiveMaterial
                 cmax      = model.Interface.cmax;
                 theta0    = model.Interface.theta0;
                 theta100  = model.Interface.theta100;
+                radius0   = model.rp;
                 
                 c = state.Interface.cElectrodeSurface;
+                radius = state.radius;
 
-                cmin = theta0*cmax;
-                cmax = theta100*cmax;
+                %cmin = theta0*cmax;
+                %cmax = theta100*cmax;
 
-                soc = (c - cmin)./(cmax - cmin);
+                % We cannot anymore express the state of charge as ratio of concentrations because the radius of the particle is
+                % changing. We have to express it  in terms of quantities
+                % of matter: x = N/Nmax
+
+                scalingTerm = (radius./radius0) .^3;
+
+                x = (c./cmax) .* scalingTerm;
+
+                soc = (x - xmin)./(xmax - xmin);
                 
                 j0 = computeJ0(soc);
 
@@ -361,20 +387,19 @@ classdef SwellingMaterial < ActiveMaterial
                 c      = state.Interface.cElectrodeSurface;
                 radius = state.SolidDiffusion.radius;
 
-                %%Necessary to define a c' and a cmax', cf paper Analysis of Lithium Insertion/Deinsertion in a Silicon Electrode
-                %Particle at Room Temperature Rajeswari Chandrasekaran,Alexandre Magasinski, Gleb Yushin,cand
-                %Thomas F. Fuller
 
-                
-                scalingCoeff = (radius./radius_0).^3;
-                c = c .* scalingCoeff;
-                cmax = cmax .* scalingCoeff;
-
-                
-                % Calculate reaction rate constant
-                k = k0.*exp(-Eak./R.*(1./T - 1/Tref));
-
-                % We use regularizedSqrt to regularize the square root function and avoid the blow-up of derivative at zero.
+               % Necessary to define a c', cf eq 9 paper Analysis of Lithium Insertion/Deinsertion in a Silicon Electrode
+               % Particle at Room Temperature Rajeswari Chandrasekaran,Alexandre Magasinski, Gleb Yushin,cand
+               % Thomas F. Fuller
+               
+               scalingCoeff = (radius./radius_0).^3;
+               c = c .* scalingCoeff;
+ 
+                  
+               % Calculate reaction rate constant
+               k = k0.*exp(-Eak./R.*(1./T - 1/Tref));
+   
+               %   We use regularizedSqrt to regularize the square root function and avoid the blow-up of derivative at zero.
                 th = 1e-3* model.Interface.cmax;
                 coef = cElyte.*(cmax - c).*c;
                 coef(coef < 0) = 0;

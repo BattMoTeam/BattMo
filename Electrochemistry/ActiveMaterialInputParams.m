@@ -31,7 +31,7 @@ classdef ActiveMaterialInputParams < ElectronicComponentInputParams
 
         volumeFraction % Volume fraction of the whole material (binder and so on included)
         
-        activeMaterialFraction = 1 % Volume fraction occupied only by the active material (default value is 1)
+        activeMaterialFraction = 1 % Volume fraction of the electrode occupied only by the active material (default value is 1)
 
         use_particle_diffusion
 

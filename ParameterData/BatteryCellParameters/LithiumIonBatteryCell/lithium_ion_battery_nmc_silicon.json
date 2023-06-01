@@ -17,24 +17,25 @@
   },
   "NegativeElectrode": {
     "ActiveMaterial": {
-      "Comment on the sources" : "Electrical conductivity is from Dhillon, Hernandez, Wagner, Svensson, Brandell 2O21",
+      "Comment on the sources" : "electricalConductivity is from Analysis of the Lithium-Ion Insertion Silicon Composite Electrode/Separator/Lithium Foil Cell Rajeswari Chandrasekarana, and Thomas F. Fuller",
       "specificHeatCapacity": 710,
       "thermalConductivity": 149,
       "molarMass": 28.0855e-3,
       "InterDiffusionCoefficient": 1e-14,
       "electricalConductivity": 33,
       "BruggemanCoefficient": 1.5,
-      "isSwellingMaterial": 1,     
+      "isSwellingMaterial": 1,
+      "activeMaterialFraction" : 0.397,
       "Interface": {
         "isFile": true,
         "filename": "ParameterData/MaterialProperties/Silicon/silicon.json"
       },
       "diffusionModelType" : "full",
       "SolidDiffusion" : {
-        "Comment on the sources" : "We used graphite diffusion value - as in Chen, radius as in Dhillon, Hernandez, Wagner, Svensson, Brandell 2O21",
+        "Comment on the sources" : "D0 is from Analysis of the Lithium-Ion Insertion Silicon Composite Electrode/Separator/Lithium Foil Cell Rajeswari Chandrasekarana, and Thomas F. Fuller",
         "EaD": 5000,
-        "D0": 1e-14,
-        "rp": 1e-06,
+        "D0": 1e-16,
+        "rp": 0.8e-06,
         "N": 10
       }
       
