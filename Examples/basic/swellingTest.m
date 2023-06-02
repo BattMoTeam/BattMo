@@ -140,7 +140,7 @@ for i = 1:numel(elde)
     soc   = linspace(0, 1);
     theta = soc*theta100 + (1 - soc)*theta0;
     c     = theta.*cmax;
-    OCP   = el_itf.computeOCPFunc(c, T, cmax);
+    OCP = el_itf.computeOCPFunc(c, T, cmax);
 
     plot(soc, OCP)
 end
@@ -239,7 +239,7 @@ initstate = model.setupInitialState();
 % Once we have the initial state, the model and the schedule, we can call
 % the simulateScheduleAD function which will actually run the simulation:
 
-model.verbose = true;
+%model.verbose = true;
 
 [wellSols, states, report] = simulateScheduleAD(initstate, model, schedule); 
 
@@ -339,7 +339,7 @@ end
 legendTime = "t = 0 hour";
 porosity = [];
 for i = 1:N_elements_ne
-            porosity(end+1) = initstate.NegativeElectrode.ActiveMaterial.porosity(i);
+            porosity(end+1) = initstate.NegativeElectrode.ActiveMaterial.porosity(i) - 0.17;
 end
 plot(position, porosity);
 
@@ -347,7 +347,7 @@ plot(position, porosity);
 for t = 1:totalTime
     hold on
     %Only draw the curve for timestep multiples
-    if t<45
+    if t<65
         timestep = 8;
     else
         timestep = 110;
@@ -355,7 +355,7 @@ for t = 1:totalTime
     if mod(t,timestep) == 0
         porosity = [];
         for i = 1:N_elements_ne
-            porosity(end+1) = states{t}.NegativeElectrode.ActiveMaterial.porosity(i);
+            porosity(end+1) = states{t}.NegativeElectrode.ActiveMaterial.porosity(i) - 0.17;
         end
         
         plot(position, porosity);
@@ -405,7 +405,7 @@ for t = 1:totalTime
 
     x = cAverage/cmax;
     normalizedSOC = (x-theta0)./(theta100-theta0);
-    poros = states{t}.NegativeElectrode.ActiveMaterial.porosity(1);
+    poros = states{t}.NegativeElectrode.ActiveMaterial.porosity(1) - 0.17 ;
 
     soc(end+1) = normalizedSOC;
     porosity(end+1) = poros;
@@ -417,31 +417,56 @@ xlabel('State of Charge near the current collector')
 ylabel('Porosity near the current collector')
 
 
-%% Plot the concentration as a function of the position for different times
+%% Plot the concentration as a function of the position in ne and separator for different times
 figure
 %subplot(2,2,4)
 negativeElectrodeSize = gen.xlength(2);
+positiveElectrodeSize = gen.xlength(4);
+separatorSize          = gen.xlength(3);
+
 N_elements_ne = gen.nenx;
-deltaX = (negativeElectrodeSize/(N_elements_ne-1)) * 10^6;
+N_elements_pe = gen.penx;
+N_elements_sep = gen.sepnx;
+
+deltaX_ne  = (negativeElectrodeSize/(N_elements_ne-1)) * 10^6;
+deltaX_pe  = (positiveElectrodeSize/(N_elements_pe-1)) * 10^6;
+deltaX_sep = (separatorSize/(N_elements_sep-1)) * 10^6;
+
 totalTime = length(time);
 
+%constructing the x axis
 position = [];
 for x = 1:N_elements_ne
-    position(end+1) = (x-1)*deltaX;
+    position(end+1) = (x-1)*deltaX_ne;
 end
+for x = 1:N_elements_sep-1
+    position(end+1) = negativeElectrodeSize* 10^6 + x*deltaX_sep;
+end
+for x = 1:N_elements_pe-1
+    position(end+1) = (negativeElectrodeSize + separatorSize) * 10^6 + x*deltaX_pe;
+end
+
 
 legendTime = "t = 0 hour";
 concentration = [];
 for i = 1:N_elements_ne
             concentration(end+1) = initstate.Electrolyte.c(i);
 end
+for i = 1:N_elements_sep-1
+            concentration(end+1) = initstate.Electrolyte.c(N_elements_ne + i);
+end
+for i = 1:N_elements_pe-1
+            concentration(end+1) = initstate.Electrolyte.c(N_elements_ne + N_elements_sep + i);
+end
+
+
 plot(position, concentration);
 
 
 for t = 1:totalTime
     hold on
     %Only draw the curve for timestep multiples
-    if t<45
+    if t<55
         timestep = 8;
     else
         timestep = 110;
@@ -452,6 +477,12 @@ for t = 1:totalTime
         for i = 1:N_elements_ne
             concentration(end+1) = states{t}.Electrolyte.c(i);
         end
+        for i = 1:N_elements_sep-1
+            concentration(end+1) = states{t}.Electrolyte.c(N_elements_ne + i);
+        end
+        for i = 1:N_elements_pe-1
+            concentration(end+1) = states{t}.Electrolyte.c(N_elements_ne + N_elements_sep + i);
+        end
         
         plot(position, concentration);
 
@@ -459,9 +490,15 @@ for t = 1:totalTime
             t = time(t)/hour;
             legendTime(end+1) = "t = " + num2str(t,2) + " hour";
         end
+
     end 
 end
-xlabel('Positon across the Negative Electrode (in µm)')
+
+hold on
+xline(negativeElectrodeSize* 10^6,'red','separator');
+xline((negativeElectrodeSize + separatorSize)* 10^6,'red');
+
+xlabel('Positon across the Electrolyte (in µm)')
 ylabel('Concentration of the Electrolyte')
 legend(legendTime);
 

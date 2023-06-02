@@ -25,7 +25,7 @@
       "electricalConductivity": 33,
       "BruggemanCoefficient": 1.5,
       "isSwellingMaterial": 1,
-      "activeMaterialFraction" : 0.397,
+      "activeMaterialFraction" : 1,
       "Interface": {
         "isFile": true,
         "filename": "ParameterData/MaterialProperties/Silicon/silicon.json"
@@ -35,7 +35,7 @@
         "Comment on the sources" : "D0 is from Analysis of the Lithium-Ion Insertion Silicon Composite Electrode/Separator/Lithium Foil Cell Rajeswari Chandrasekarana, and Thomas F. Fuller",
         "EaD": 5000,
         "D0": 1e-16,
-        "rp": 0.8e-06,
+        "rp": 60e-9,
         "N": 10
       }
       

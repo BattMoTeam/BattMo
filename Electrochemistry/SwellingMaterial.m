@@ -253,11 +253,47 @@ classdef SwellingMaterial < ActiveMaterial
 %% Update of the new variables (which are constant parameters in the case of ActiveMaterial)
 
 
-        function state = updateRadius(model, state, state0)
+        function state = updateRadius_delithiation(model, state)
 
             radius_0  = model.SolidDiffusion.rp;
             densitySi = model.density;
             cmaxLi    = model.Interface.cmax;
+            theta100  = model.Interface.theta100;
+            
+            c = state.SolidDiffusion.cAverage;
+
+            
+            MolarMassSi   = model.molarMass;
+            molarVolumeSi = MolarMassSi/densitySi;
+            molarVolumeLi = 8.8 * 1E-6;
+
+            % We cannot anymore express <x> as a ratio of between the current and maximal concentrations of Li because the radius of the 
+            % particle is changing. We have to express it as a ratio of matter quantities N/Nmax. The expression above is from a
+            % rearrangement of equations 11 and 14 in 'Analysis of Lithium Insertion/Deinsertion in a Silicon Electrode
+            % Particle at Room Temperature Rajeswari
+            % Chandrasekaran,Alexandre Magasinski, Gleb Yushin, and Thomas F. Fuller'*
+
+
+            c_ratio = c./(theta100 .*cmaxLi);
+
+            ratio_delith = (3.75.*molarVolumeLi)./(molarVolumeSi+3.75.*molarVolumeLi);
+
+            radius = radius_0 .* ((1-ratio_delith) ./ ((1./3.8) + ratio_delith.*c_ratio)) .^ (1/3);
+
+            state.radius = radius;
+            
+            if model.use_particle_diffusion
+                state.SolidDiffusion.radius = radius;
+            end
+            
+        end
+
+        function state = updateRadius_lithiation(model, state)
+
+            radius_0  = model.SolidDiffusion.rp;
+            densitySi = model.density;
+            cmaxLi    = model.Interface.cmax;
+            theta100  = model.Interface.theta100;
             
             c = state.SolidDiffusion.cAverage;
 
@@ -277,11 +313,11 @@ classdef SwellingMaterial < ActiveMaterial
             % easy to imlement for lithiation (cf equation 11 in the same
             % paper)
 
-            c_ratio = c/cmaxLi;
+            c_ratio = c./(theta100 .*cmaxLi);
 
-            ratio_delith = (3.75.*molarVolumeLi)./(molarVolumeSi+3.75.*molarVolumeLi);
+            ratio_lith = (3.75.*molarVolumeLi)./(molarVolumeSi);
 
-            radius = radius_0 .* ((1-ratio_delith) ./ ((1./3.8) + ratio_delith.*c_ratio)) .^ (1/3);
+            radius = radius_0 .* (1 ./ (1 - ratio_lith .* c_ratio)) .^ (1/3);
 
             state.radius = radius;
             

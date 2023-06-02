@@ -63,7 +63,6 @@ function [cap, cap_neg, cap_pos, specificEnergy] = computeCellCapacity(model, va
     cap_neg = cap_usable(1);
     cap_pos = cap_usable(2);
 
-
     cap = min(cap_usable); 
 
     

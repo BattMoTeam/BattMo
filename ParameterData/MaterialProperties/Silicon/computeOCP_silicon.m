@@ -5,16 +5,43 @@ function [OCP, dUdT] = computeOCP_silicon(c, T, cmax)
 % The thermal model has not been modified, the values for coeff1 and
 % coeff2 are the one for graphite
 
+% It is a swelling Material --> theta cannot just be expressed by c/cmax,
+% necessary to come back to the real definition in term of matter
+% quantities : N/Nmax; Here, it is only ok for delithiation.
+
     
     Tref = 298.15;  % [K]
-    
-    theta = c./cmax;
 
-    theta100 = 0.88551;
-    theta0 = 0.1429;
+    %reporting useful values from the silicon json file (schould be
+    %improved by directly linking the values)
+
+    theta100 = 0.89943252232;
+    theta0 = 0.03212259;
+    radius0 = 60e-09;
+    MolarMassSi   = 28.0855e-3;
+    densitySi = 2330;
+    molarVolumeLi = 8.8 * 1E-6;
+    pi = 3.141592653589793 ;
+    
+    molarVolumeSi = MolarMassSi/densitySi;
+    % same calcul as done in updateRadius_delithiation in the class
+    % SwellingMaterial.
+    c_ratio = c./(theta100 .*cmax);
+
+    ratio_delith = (3.75.*molarVolumeLi)./(molarVolumeSi+3.75.*molarVolumeLi);
+    radius = radius0 .* ((1-ratio_delith) ./ ((1./3.8) + ratio_delith.*c_ratio)) .^ (1/3);
+
+    N = c .* 4/3 .* pi .* radius .^3;
+    Nmax = cmax .* pi .* radius0 .^3;
+
+    theta = N./Nmax;
+
 
     z = (theta - theta0)/(theta100 - theta0);
-
+    %capping to logical values
+    z = min(z, 1);
+    z = max(z, 0);
+    
     
     % Calculate the open-circuit potential at the reference temperature for the given lithiation
     refOCP = (0.62 ...

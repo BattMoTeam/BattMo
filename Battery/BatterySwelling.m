@@ -382,9 +382,9 @@ classdef BatterySwelling < Battery
                 if battery.(elde).(am).isSwellingMaterial
                     state.(elde).(am).(sd)            = battery.(elde).(am).(sd).updateAverageConcentration(state.(elde).(am).(sd));
                     if battery.Control.initialControl == "discharging"
-                        state.(elde).(am)                 = battery.(elde).(am).updateRadius(state.(elde).(am), state0.(elde).(am));
+                        state.(elde).(am)                 = battery.(elde).(am).updateRadius_delithiation(state.(elde).(am));
                     else
-                        error('radius udate not yet implemented for lithiation but easy to do (cf ref in SwellingMaterial')
+                        state.(elde).(am)                 = battery.(elde).(am).updateRadius_lithiation(state.(elde).(am));
                     end
                     state.(elde).(am)                 = battery.(elde).(am).updateVolumetricSurfaceArea(state.(elde).(am));
                     state.(elde).(am) = battery.(elde).(am).updateReactionRateCoefficient(state.(elde).(am));
@@ -555,7 +555,8 @@ classdef BatterySwelling < Battery
 
             massConsScaling = model.con.F;
             V_scaling = 10000000000;
-            M_scaling = 0.1;
+            M_scaling = 1;
+            pescaling = 1;
             %Vscaling = 10000000000;
             
             % Equation name : 'elyte_massCons';
@@ -568,7 +569,7 @@ classdef BatterySwelling < Battery
             eqs{ei.ne_am_chargeCons} =  state.(ne).(am).chargeCons;
 
             % Equation name : 'pe_am_chargeCons';
-            eqs{ei.pe_am_chargeCons} = state.(pe).(am).chargeCons;
+            eqs{ei.pe_am_chargeCons} = pescaling .* state.(pe).(am).chargeCons;
 
             %Added by Enguerran
             if battery.(pe).(am).isSwellingMaterial
@@ -640,10 +641,10 @@ classdef BatterySwelling < Battery
                 surfp = 4.*pi.*rp.^2;
                 
                 scalingcoef = (vsf.*vol(1).*n.*F)./surfp;
-                eqs{ei.pe_am_sd_massCons} = M_scaling .* scalingcoef.*state.(pe).(am).(sd).massCons;
+                eqs{ei.pe_am_sd_massCons} = pescaling .*M_scaling .* scalingcoef.*state.(pe).(am).(sd).massCons;
 
                 %scalingcoef = model.(pe).(am).(sd).operators.mapToParticle*scalingcoef;
-                eqs{ei.pe_am_sd_soliddiffeq} = scalingcoef.*state.(pe).(am).(sd).solidDiffusionEq;
+                eqs{ei.pe_am_sd_soliddiffeq} = pescaling .*scalingcoef.*state.(pe).(am).(sd).solidDiffusionEq;
               case 'interParticleOnly'
                 eqs{ei.pe_am_massCons} = state.(pe).(am).massCons*massConsScaling;                
               otherwise
