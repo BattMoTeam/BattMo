@@ -69,7 +69,7 @@ function  output = runBatteryJson(jsonstruct)
 
     switch model.Control.controlPolicy
       case 'IEswitch'
-        tup = 0.1; % rampup value for the current function, see rampupSwitchControl
+        tup = model.Control.tup; % rampup value for the current function, see rampupSwitchControl
         srcfunc = @(time, I, E) rampupSwitchControl(time, tup, I, E, ...
                                                     model.Control.Imax, ...
                                                     model.Control.lowerCutoffVoltage);
