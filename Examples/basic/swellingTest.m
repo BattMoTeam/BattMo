@@ -131,16 +131,16 @@ elde = {ne,pe};
 figure
 hold on
 for i = 1:numel(elde)
-    el_itf = model.(elde{i}).(am).(itf);
+    po_itf = model.(elde{i}).(am).(itf);
 
-    theta100 = el_itf.theta100;
-    theta0   = el_itf.theta0;
-    cmax     = el_itf.cmax;
+    theta100 = po_itf.theta100;
+    theta0   = po_itf.theta0;
+    cmax     = po_itf.cmax;
 
     soc   = linspace(0, 1);
     theta = soc*theta100 + (1 - soc)*theta0;
     c     = theta.*cmax;
-    OCP = el_itf.computeOCPFunc(c, T, cmax);
+    OCP = po_itf.computeOCPFunc(c, T, cmax);
 
     plot(soc, OCP)
 end
@@ -239,7 +239,7 @@ initstate = model.setupInitialState();
 % Once we have the initial state, the model and the schedule, we can call
 % the simulateScheduleAD function which will actually run the simulation:
 
-%model.verbose = true;
+model.verbose = true;
 
 [wellSols, states, report] = simulateScheduleAD(initstate, model, schedule); 
 
@@ -262,18 +262,18 @@ initstate = model.setupInitialState();
 E = cellfun(@(x) x.Control.E, states); 
 I = cellfun(@(x) x.Control.I, states);
 
-time = cellfun(@(x) x.time, states); 
+T = cellfun(@(x) x.time, states); 
 
 %% Plot E as a function of the time
 figure()
 subplot(2,2,1)
-plot(time/hour, E)
+plot(T/hour, E)
 xlabel('time [hours]')
 ylabel('Cell Voltage [V]')
 
 %% Plot I as a function of the time
 subplot(2,2,2)
-plot(time/hour, I)
+plot(T/hour, I)
 xlabel('time [hours]')
 ylabel('Cell Current [A]')
 
@@ -329,7 +329,7 @@ subplot(2,2,3)
 negativeElectrodeSize = gen.xlength(2);
 N_elements_ne = gen.nenx;
 deltaX = (negativeElectrodeSize/(N_elements_ne-1)) * 10^6;
-totalTime = length(time);
+totalTime = length(T);
 
 position = [];
 for x = 1:N_elements_ne
@@ -339,7 +339,7 @@ end
 legendTime = "t = 0 hour";
 porosity = [];
 for i = 1:N_elements_ne
-            porosity(end+1) = initstate.NegativeElectrode.ActiveMaterial.porosity(i) - 0.17;
+            porosity(end+1) = initstate.NegativeElectrode.ActiveMaterial.porosity(i);
 end
 plot(position, porosity);
 
@@ -347,7 +347,7 @@ plot(position, porosity);
 for t = 1:totalTime
     hold on
     %Only draw the curve for timestep multiples
-    if t<65
+    if t<80
         timestep = 8;
     else
         timestep = 110;
@@ -355,13 +355,13 @@ for t = 1:totalTime
     if mod(t,timestep) == 0
         porosity = [];
         for i = 1:N_elements_ne
-            porosity(end+1) = states{t}.NegativeElectrode.ActiveMaterial.porosity(i) - 0.17;
+            porosity(end+1) = states{t}.NegativeElectrode.ActiveMaterial.porosity(i);
         end
         
         plot(position, porosity);
 
         if t > 1
-            t = time(t)/hour;
+            t = T(t)/hour;
             legendTime(end+1) = "t = " + num2str(t,2) + " hour";
         end
     end 
@@ -376,21 +376,19 @@ legend(legendTime);
 %% Plot the porosity near the cc as a function of the state of charge
 subplot(2,2,4)
 
-el_itf   = model.NegativeElectrode.(am).(itf);
-el_am_sd = model.NegativeElectrode.ActiveMaterial.SolidDiffusion;
+po_itf   = model.NegativeElectrode.(am).(itf);
+ne_sd = model.NegativeElectrode.ActiveMaterial.SolidDiffusion;
 
-totalTime = length(time);
+totalTime = length(T);
 realTotalTime = states{totalTime}.time;
 
-theta100 = el_itf.theta100;
-theta0   = el_itf.theta0;
-cmax     = el_itf.cmax;
-r0       = el_am_sd.rp;
+theta100 = po_itf.theta100;
+theta0   = po_itf.theta0;
+cmax     = po_itf.cmax;
+r0       = ne_sd.rp;
 F        = model.con.F;
-N        = el_am_sd.N;
+N        = ne_sd.N;
 
-%V0_particle = 4/3 * pi * r0 ^ 3 ;
-%Nmax = cmax * V0_particle;
 
 soc = [];
 porosity = [];
@@ -403,15 +401,21 @@ for t = 1:totalTime
     end
     cAverage = sumConcentrations/N;
 
-    x = cAverage/cmax;
-    normalizedSOC = (x-theta0)./(theta100-theta0);
-    poros = states{t}.NegativeElectrode.ActiveMaterial.porosity(1) - 0.17 ;
+    c_ratio = cAverage/cmax;
 
-    soc(end+1) = normalizedSOC;
+    radius = computeRadius(cAverage,cmax,r0);
+ 
+    theta = c_ratio .* ((radius ./ r0).^3) ./ 3.8125;
+
+    poros = states{t}.NegativeElectrode.ActiveMaterial.porosity(1);
+
+    soc(end+1) = theta;
     porosity(end+1) = poros;
 end
 
 plot(soc, porosity);
+axis([0 1 0 1]);
+axis square;
 
 xlabel('State of Charge near the current collector')
 ylabel('Porosity near the current collector')
@@ -432,7 +436,7 @@ deltaX_ne  = (negativeElectrodeSize/(N_elements_ne-1)) * 10^6;
 deltaX_pe  = (positiveElectrodeSize/(N_elements_pe-1)) * 10^6;
 deltaX_sep = (separatorSize/(N_elements_sep-1)) * 10^6;
 
-totalTime = length(time);
+totalTime = length(T);
 
 %constructing the x axis
 position = [];
@@ -487,7 +491,7 @@ for t = 1:totalTime
         plot(position, concentration);
 
         if t > 1
-            t = time(t)/hour;
+            t = T(t)/hour;
             legendTime(end+1) = "t = " + num2str(t,2) + " hour";
         end
 
@@ -501,6 +505,118 @@ xline((negativeElectrodeSize + separatorSize)* 10^6,'red');
 xlabel('Positon across the Electrolyte (in µm)')
 ylabel('Concentration of the Electrolyte')
 legend(legendTime);
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+figure
+subplot(2,1,1)
+
+ne_itf   = model.NegativeElectrode.(am).(itf);
+ne_sd = model.NegativeElectrode.ActiveMaterial.SolidDiffusion;
+
+totalTime = length(T);
+realTotalTime = states{totalTime}.time;
+
+theta100 = ne_itf.theta100;
+theta0   = ne_itf.theta0;
+cmax     = ne_itf.cmax;
+r0       = ne_sd.rp;
+F        = model.con.F;
+N        = ne_sd.N;
+
+
+Y = [];
+X = [];
+
+for t = 1:totalTime
+    sumConcentrations = 0;
+    for i = 1:N
+        c = states{t}.NegativeElectrode.ActiveMaterial.SolidDiffusion.c(i);
+        sumConcentrations = sumConcentrations + c;
+    end
+    cAverage = sumConcentrations/N;
+
+    c_ratio = cAverage/cmax;
+
+    radius = computeRadius(cAverage,cmax,r0);
+ 
+    theta = c_ratio .* ((radius ./ r0).^3) ./ 3.8125;
+
+    Y(end+1) = theta;
+    X(end+1) = T(t);
+end
+
+plot(X, Y);
+
+ylabel('SOC in the neg elde')
+xlabel('time')
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+subplot(2,1,2)
+
+po_itf   = model.PositiveElectrode.(am).(itf);
+po_sd = model.PositiveElectrode.ActiveMaterial.SolidDiffusion;
+
+totalTime = length(T);
+realTotalTime = states{totalTime}.time;
+
+theta100 = po_itf.theta100;
+theta0   = po_itf.theta0;
+cmax     = po_itf.cmax;
+r0       = po_sd.rp;
+F        = model.con.F;
+N        = po_sd.N;
+
+
+Y = [];
+X = [];
+
+for t = 1:totalTime
+    sumConcentrations = 0;
+    for i = 1:N
+        c = states{t}.PositiveElectrode.ActiveMaterial.SolidDiffusion.c(i);
+        sumConcentrations = sumConcentrations + c;
+    end
+    cAverage = sumConcentrations/N;
+
+    theta = cAverage/cmax;
+
+    soc = (theta-theta100)/(theta0-theta100);
+
+    Y(end+1) = soc;
+    X(end+1) = T(t);
+end
+
+plot(X, Y);
+
+ylabel('SOC in the pos elde')
+xlabel('Time')
+
 
 
 

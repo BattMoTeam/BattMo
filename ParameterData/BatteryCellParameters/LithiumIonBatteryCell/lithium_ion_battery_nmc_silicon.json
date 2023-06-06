@@ -11,7 +11,7 @@
     "initialControl" : "discharging",
     "CRate" : 1,
     "lowerCutoffVoltage" : 2.4,
-    "upperCutoffVoltage" : 4.1,
+    "upperCutoffVoltage" : 4.5,
     "dIdtLimit" : 0.01,
     "dEdtLimit" : 0.01
   },
@@ -32,10 +32,11 @@
       },
       "diffusionModelType" : "full",
       "SolidDiffusion" : {
-        "Comment on the sources" : "D0 is from Analysis of the Lithium-Ion Insertion Silicon Composite Electrode/Separator/Lithium Foil Cell Rajeswari Chandrasekarana, and Thomas F. Fuller",
+        "Sources" : "D0 and rp are from Analysis of Lithium Insertion/Deinsertion in a Silicon Electrode Particle at Room Temperature Rajeswari Chandrasekaran,a,b,*,z Alexandre Magasinski,c Gleb Yushin,c and Thomas F. Fullera,b,**; volumetricSurfaceArea is not needed",
         "EaD": 5000,
-        "D0": 1e-16,
-        "rp": 60e-9,
+        "D0": 1e-18,
+        "rp": 30e-9,
+        "Remark on rp" : "Corresponds to the volume oh the fully unlithiated particle, not necessarily the initial radius",
         "N": 10
       }
       

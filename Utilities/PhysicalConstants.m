@@ -16,7 +16,7 @@ classdef PhysicalConstants
             obj.R = 8.31446261815324;
             obj.F = 96485.3329;
             obj.c0 = 1000;
-            obj.molarVolumeLi = 8.8 * 1E-6;
+            obj.molarVolumeLi = 9 * 1E-6;
         end
     end
 end

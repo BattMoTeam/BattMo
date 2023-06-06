@@ -31,18 +31,16 @@ classdef FullSolidDiffusionSwellingModel < FullSolidDiffusionModel
             
             fn = @FullSolidDiffusionSwellingModel.assembleSolidDiffusionEquation;
             model = model.registerPropFunction({'solidDiffusionEq', fn, {'c', 'cSurface', 'massSource', 'D'}});
-
-            
+           
         end
         
- %% Modification of mass source according to eq 6 in  Analysis of Lithium Insertion/Deinsertion in a Silicon
- % Electrode Particle at Room Temperature Rajeswari Chandrasekaran, Alexandre Magasinski, Gleb Yushin, and
- %Thomas F. Fuller
+
  
         function state = updateMassSource(model, state)
+ % Modification of mass source according to eq 6 in  Analysis of Lithium Insertion/Deinsertion in a Silicon
+ % Electrode Particle at Room Temperature Rajeswari Chandrasekaran, Alexandre Magasinski, Gleb Yushin, and
+ %Thomas F. Fuller ([ref 3])
 
-       
-           
             op  = model.operators;
             rp0 = model.rp;
             amf = model.activeMaterialFraction;
@@ -51,15 +49,19 @@ classdef FullSolidDiffusionSwellingModel < FullSolidDiffusionModel
             vf   = state.volumeFraction;
             Rvol = state.Rvol;
             
-            % Rvol and radius are discretized in  celltbl
-            massSource = - Rvol.*((4*pi*rp.^3)./(3*amf.*vf)).*(rp0./rp).^3;
+            % One can notice that Rvol.*((4*pi*rp0.^2 .* rp)./(3*amf.*vf)) is strictly equal to the reaction 
+            % rate for a non swelling particle (using a = 3*vf*amf/rp), which is the rate i used in the 
+            % equation 6. We then multiply it by the scalingCoeff defined in [ref3]
+            scalingCoeff = (rp0./rp).^3;
+            massSource = - Rvol.*((4*pi*rp0.^2 .* rp)./(3*amf.*vf)).* scalingCoeff;
             massSource = op.mapFromBc*massSource;
 
             state.massSource = massSource;
             
         end
 
-   %% The other variables are directly updated in methods defined in the class SwellingMaterial
+
+   %% The other variables are directly updated in methods defined in the class SwellingMaterial because they need parameters unavailable in this class
    
     end
     

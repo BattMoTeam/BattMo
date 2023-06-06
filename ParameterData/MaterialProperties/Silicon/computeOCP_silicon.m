@@ -1,47 +1,33 @@
 function [OCP, dUdT] = computeOCP_silicon(c, T, cmax)
 % Calculate the equilibrium open cirucuit potential of silicon according to the model
-% used by Li Haoliang, Bo Lu, Yicheng Song and Junqian Zhang 2017
+% given by eq 5 in by Li Haoliang, Bo Lu, Yicheng Song and Junqian Zhang 2017 ([ref 4])
 
 % The thermal model has not been modified, the values for coeff1 and
 % coeff2 are the one for graphite
 
 % It is a swelling Material --> theta cannot just be expressed by c/cmax,
 % necessary to come back to the real definition in term of matter
-% quantities : N/Nmax; Here, it is only ok for delithiation.
+% quantities : N/Nmax.
 
     
     Tref = 298.15;  % [K]
 
-    %reporting useful values from the silicon json file (schould be
-    %improved by directly linking the values)
 
-    theta100 = 0.89943252232;
-    theta0 = 0.03212259;
-    radius0 = 60e-09;
-    MolarMassSi   = 28.0855e-3;
-    densitySi = 2330;
-    molarVolumeLi = 8.8 * 1E-6;
-    pi = 3.141592653589793 ;
+    c_ratio = c./cmax;
     
-    molarVolumeSi = MolarMassSi/densitySi;
-    % same calcul as done in updateRadius_delithiation in the class
-    % SwellingMaterial.
-    c_ratio = c./(theta100 .*cmax);
+    R_delith = 60e-09;
+    molarVolumeSi = 1.2e-05;
+    molarVolumeLi = 9e-06;
 
-    ratio_delith = (3.75.*molarVolumeLi)./(molarVolumeSi+3.75.*molarVolumeLi);
-    radius = radius0 .* ((1-ratio_delith) ./ ((1./3.8) + ratio_delith.*c_ratio)) .^ (1/3);
+    Q = (3.75.*molarVolumeLi)./(molarVolumeSi);
 
-    N = c .* 4/3 .* pi .* radius .^3;
-    Nmax = cmax .* pi .* radius0 .^3;
+    radius = computeRadius(c,cmax,R_delith);
 
-    theta = N./Nmax;
+    soc = c_ratio .* ((radius ./ R_delith).^3) ./(1+Q);
 
 
-    z = (theta - theta0)/(theta100 - theta0);
-    %capping to logical values
-    z = min(z, 1);
-    z = max(z, 0);
-    
+    z = soc;
+
     
     % Calculate the open-circuit potential at the reference temperature for the given lithiation
     refOCP = (0.62 ...
@@ -72,10 +58,12 @@ function [OCP, dUdT] = computeOCP_silicon(c, T, cmax)
              - 385821.1607,...
              + 165705.8597];
     
-    dUdT = 1e-3.*polyval(coeff1(end:-1:1),theta)./ polyval(coeff2(end:-1:1),theta);
+    %dUdT = 1e-3.*polyval(coeff1(end:-1:1),theta)./ polyval(coeff2(end:-1:1),theta);
 
     % Calculate the open-circuit potential of the active material
-    OCP = refOCP + (T - Tref) .* dUdT;
+    %OCP = refOCP + (T - Tref) .* dUdT;
+    dUdT = 0;
+    OCP = refOCP;
     
 end
 

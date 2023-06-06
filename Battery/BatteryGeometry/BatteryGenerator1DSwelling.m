@@ -11,7 +11,7 @@ classdef BatteryGenerator1DSwelling < BatteryGenerator
         % - x(4) : length of positive active material (default = 57 micro meter)
         % - x(5) : length of positive current collector (default = 15 micro meter)
         % 
-        xlength = 1e-6*[25; 25; 25; 90; 15];
+        xlength = 1e-6*[25; 25; 25; 68; 15];
 
         sepnx  = 10; % discretization number for negative current collector (default = 10)
         nenx   = 10; % discretization number for negative active material (default = 10)

@@ -158,7 +158,6 @@ classdef Interface < BaseModel
 
         function state = updateReactionRateCoefficient(model, state)
 
-
             if model.useJ0Func
 
                 computeJ0 = model.computeJ0Func;
@@ -212,6 +211,7 @@ classdef Interface < BaseModel
             phiElyte = state.phiElectrolyte;
             phiElde  = state.phiElectrode;
             OCP      = state.OCP;
+
 
             state.eta = (phiElde - phiElyte - OCP);
 

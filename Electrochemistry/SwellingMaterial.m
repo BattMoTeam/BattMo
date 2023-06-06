@@ -1,8 +1,8 @@
 classdef SwellingMaterial < ActiveMaterial
 
-    % Same class as ActiveMaterial but with a new primaryVariable :
-    % porosity and many properties which are no more constants but
-    % dependant on the porosity
+    % Same class as ActiveMaterial but with a new primaryVariable
+    % (porosity). Some properties depending on porosity are thus no more constant
+
     
     properties
 
@@ -156,7 +156,7 @@ classdef SwellingMaterial < ActiveMaterial
             eqs{end + 1} = state.chargeCons;
             eqs{end + 1} = scalingcoef*state.(sd).massCons;
             eqs{end + 1} = scalingcoef*state.(sd).solidDiffusionEq;
-            eqs{end + 1} = state.volumeCons
+            eqs{end + 1} = state.volumeCons;
             
             names = {'chargeCons', ...
                      'massCons', ...
@@ -172,7 +172,7 @@ classdef SwellingMaterial < ActiveMaterial
         end
 
 
-%% Update of the variables which were already defined in ActiveMaterial class but depending on the volumeFraction or the volumetric
+%% Update for variables already defined in ActiveMaterial but depending on the volumeFraction or the volumetric
 % surface area which are no more constant parameters
 
         %% Same as in Active Material but for a non constant volumeFraction    
@@ -194,14 +194,15 @@ classdef SwellingMaterial < ActiveMaterial
         function state = updateRvol(model, state)
 
             vsa = state.Interface.volumetricSurfaceArea;
+            R   = state.Interface.R;
             
-            Rvol = vsa.*state.Interface.R;
-            state.Rvol = Rvol;
+            Rvol = vsa .* R;
 
+            state.Rvol = Rvol;
+            
             if model.use_particle_diffusion
                 state.SolidDiffusion.Rvol = Rvol;
-            end
-            
+            end           
         end
         
         %% Same as in Active Material but for a non constant volumeFraction    
@@ -213,7 +214,7 @@ classdef SwellingMaterial < ActiveMaterial
             vols     = model.G.cells.volumes;
 
             vf       = state.volumeFraction;
-            c = state.(sd).cAverage;
+            c        = state.(sd).cAverage;
 
             vols = am_frac*vf.*vols;
 
@@ -223,113 +224,37 @@ classdef SwellingMaterial < ActiveMaterial
             
         end
 
-        %% Same as in Active Material but for a non constant volumeFraction    
-        function state = updateSOC(model, state)
-
-            itf = 'Interface';
-            sd  = 'SolidDiffusion';
-            
-            am_frac  = model.activeMaterialFraction;
-            vols     = model.G.cells.volumes;
-            cmax     = model.(itf).cmax;
-            theta100 = model.(itf).theta100;
-            theta0   = model.(itf).theta0;
-
-            vf       = state.volumeFraction;
-            c        = state.(sd).cAverage;
-
-            theta = c/cmax;
-            m     = (1 ./ (theta100 - theta0));
-            b     = -m .* theta0;
-            SOC   = theta*m + b;
-            vol   = am_frac*vf.*vols;
-            
-            SOC = sum(SOC.*vol)/sum(vol);
-
-            state.SOC = SOC;
-            
-        end
    
-%% Update of the new variables (which are constant parameters in the case of ActiveMaterial)
+%% Update of the new variables (variables which are constant parameters in the case of ActiveMaterial)
 
 
-        function state = updateRadius_delithiation(model, state)
+        function state = updateRadius(model, state)
+     %eq 4 in Modelling capacity fade in silicon-graphite composite electrodes for lithium-ion batteries
+     %Shweta Dhillon, Guiomar Hernández, Nils P. Wagner, Ann Mari Svensson, Daniel Brandell ([ref 1])
 
-            radius_0  = model.SolidDiffusion.rp;
-            densitySi = model.density;
-            cmaxLi    = model.Interface.cmax;
-            theta100  = model.Interface.theta100;
-            
-            c = state.SolidDiffusion.cAverage;
+            R_delith = model.SolidDiffusion.rp;
+            cmax     = model.Interface.cmax;
 
-            
-            MolarMassSi   = model.molarMass;
-            molarVolumeSi = MolarMassSi/densitySi;
-            molarVolumeLi = 8.8 * 1E-6;
+            cAverage = state.SolidDiffusion.cAverage;
 
-            % We cannot anymore express <x> as a ratio of between the current and maximal concentrations of Li because the radius of the 
-            % particle is changing. We have to express it as a ratio of matter quantities N/Nmax. The expression above is from a
-            % rearrangement of equations 11 and 14 in 'Analysis of Lithium Insertion/Deinsertion in a Silicon Electrode
-            % Particle at Room Temperature Rajeswari
-            % Chandrasekaran,Alexandre Magasinski, Gleb Yushin, and Thomas F. Fuller'*
+            R_lith   = computeRadius(cAverage, cmax, R_delith);
 
+            if R_lith < R_delith
+                error('Radius inferior to R_delith, not coherent')
+            end
 
-            c_ratio = c./(theta100 .*cmaxLi);
-
-            ratio_delith = (3.75.*molarVolumeLi)./(molarVolumeSi+3.75.*molarVolumeLi);
-
-            radius = radius_0 .* ((1-ratio_delith) ./ ((1./3.8) + ratio_delith.*c_ratio)) .^ (1/3);
-
-            state.radius = radius;
+            state.radius = R_lith;
             
             if model.use_particle_diffusion
-                state.SolidDiffusion.radius = radius;
-            end
-            
+                state.SolidDiffusion.radius = R_lith;
+            end            
         end
 
-        function state = updateRadius_lithiation(model, state)
-
-            radius_0  = model.SolidDiffusion.rp;
-            densitySi = model.density;
-            cmaxLi    = model.Interface.cmax;
-            theta100  = model.Interface.theta100;
-            
-            c = state.SolidDiffusion.cAverage;
-
-            
-            MolarMassSi   = model.molarMass;
-            molarVolumeSi = MolarMassSi/densitySi;
-            molarVolumeLi = 8.8 * 1E-6;
-
-            % We cannot anymore express <x> as a ratio of between the current and maximal concentrations of Li because the radius of the 
-            % particle is changing. We have to express it as a ratio of matter quantities N/Nmax. The expression above is from a
-            % rearrangement of equations 11 and 14 in 'Analysis of Lithium Insertion/Deinsertion in a Silicon Electrode
-            % Particle at Room Temperature Rajeswari
-            % Chandrasekaran,Alexandre Magasinski, Gleb Yushin, and Thomas F. Fuller'*
-
-
-            % Only delithiation radius evolution is coded here. Schould be
-            % easy to imlement for lithiation (cf equation 11 in the same
-            % paper)
-
-            c_ratio = c./(theta100 .*cmaxLi);
-
-            ratio_lith = (3.75.*molarVolumeLi)./(molarVolumeSi);
-
-            radius = radius_0 .* (1 ./ (1 - ratio_lith .* c_ratio)) .^ (1/3);
-
-            state.radius = radius;
-            
-            if model.use_particle_diffusion
-                state.SolidDiffusion.radius = radius;
-            end
-            
-        end
-
+        
         function state = updateVolumeFraction(model, state)
 
             porosity = state.porosity;
+
             vf = 1 - porosity;
 
             state.volumeFraction = vf;
@@ -340,15 +265,20 @@ classdef SwellingMaterial < ActiveMaterial
              end
              
         end
-               
+
+
         function state = updateVolumetricSurfaceArea(model, state)
+     % Geometric result giving the volumetric surface area (cf bottom of
+     % page 3 in Modelling capacity fade in silicon-graphite composite electrodes for
+     % lithium-ion batteries Shweta Dhillon, Guiomar Hernández, Nils P. Wagner, Ann Mari Svensson,
+     % Daniel Brandell ([ref1])
             
-            amf = model.activeMaterialFraction;
+            amf    = model.activeMaterialFraction;
 
             vf     = state.Interface.volumeFraction;
             radius = state.radius;
 
-            vsa = (3.*vf.*amf)./radius;
+            vsa    = (3.*vf.*amf)./radius;
 
             state.Interface.volumetricSurfaceArea = vsa;
 
@@ -359,53 +289,41 @@ classdef SwellingMaterial < ActiveMaterial
                 vf     = state.Interface.volumeFraction;
                 radius = state.SolidDiffusion.radius;
 
-                vsa = (3.*vf.*amf)./radius;
+                vsa    = (3.*vf.*amf)./radius;
 
                 state.SolidDiffusion.volumetricSurfaceArea = vsa;
                 
             end
         end
 
+
         function state = updateConductivity(model, state)
             
             brugg = model.BruggemanCoefficient;
 
-            porosity = state.porosity;
-
-            vf = 1 - porosity;
+            vf    = state.Interface.volumeFraction;
                    
             % setup effective electrical conductivity using Bruggeman approximation
             state.conductivity = model.electricalConductivity.*vf.^brugg;
             
         end
 
+
         function state = updateReactionRateCoefficient(model, state)
             if model.Interface.useJ0Func
 
-                computeJ0 = model.Interface.computeJ0Func;
-                cmax      = model.Interface.cmax;
-                theta0    = model.Interface.theta0;
-                theta100  = model.Interface.theta100;
-                radius0   = model.rp;
+                computeJ0       = model.Interface.computeJ0Func;
+                cmax            = model.Interface.cmax;
+                theta0          = model.Interface.theta0;
+                theta100        = model.Interface.theta100;
+                R_delithiated   = model.SolidDiffusion.rp;
                 
                 c = state.Interface.cElectrodeSurface;
-                radius = state.radius;
+                R = state.radius;
 
-                %cmin = theta0*cmax;
-                %cmax = theta100*cmax;
-
-                % We cannot anymore express the state of charge as ratio of concentrations because the radius of the particle is
-                % changing. We have to express it  in terms of quantities
-                % of matter: x = N/Nmax
-
-                scalingTerm = (radius./radius0) .^3;
-
-                x = (c./cmax) .* scalingTerm;
-
-                soc = (x - xmin)./(xmax - xmin);
+                soc = model.computeSOC(c);
                 
                 j0 = computeJ0(soc);
-
             else
                 
                 Tref = 298.15;  % [K]
@@ -416,21 +334,22 @@ classdef SwellingMaterial < ActiveMaterial
                 n    = model.Interface.n;
                 F    = model.Interface.constants.F;
                 R    = model.Interface.constants.R;
-                radius_0 = model.SolidDiffusion.rp;
+                R_delithiated = model.SolidDiffusion.rp;
 
                 T      = state.Interface.T;
                 cElyte = state.Interface.cElectrolyte;
                 c      = state.Interface.cElectrodeSurface;
                 radius = state.SolidDiffusion.radius;
 
+                molarVolumeSi   = 1.2e-05;
+                molarVolumeLi   = model.constants.molarVolumeLi;
+                Q = (3.75.*molarVolumeLi)./(molarVolumeSi);
 
-               % Necessary to define a c', cf eq 9 paper Analysis of Lithium Insertion/Deinsertion in a Silicon Electrode
-               % Particle at Room Temperature Rajeswari Chandrasekaran,Alexandre Magasinski, Gleb Yushin,cand
-               % Thomas F. Fuller
-               
-               scalingCoeff = (radius./radius_0).^3;
+
+               % Necessary to rescale c and cmax, cf eq 9 in [ref3]               
+               scalingCoeff = (radius./R_delithiated).^3;
                c = c .* scalingCoeff;
- 
+               cmax = (1+Q) * cmax;
                   
                % Calculate reaction rate constant
                k = k0.*exp(-Eak./R.*(1./T - 1/Tref));
@@ -450,37 +369,40 @@ classdef SwellingMaterial < ActiveMaterial
 
 
 
-
    %% Implementation of a new equation : the volume conservation Equation
-   % ref : eq 2 in 'Modelling capacity fade in silicon-graphite composite electrodes for
-   % lithium-ion batteries Shweta Dhillon, Guiomar Hernández, Nils P. Wagner, Ann 
-   % Mari Svensson, Daniel Brandell
+   % Reference : eq 2 in [ref1]
    
         function state = updatePorosityAccum(model, state, state0, dt)
             vols = model.G.cells.volumes;
+            amFrac = model.activeMaterialFraction;
+
+            vf     = state.volumeFraction;
             
-            state.porosityAccum = vols.*(state.porosity - state0.porosity)./dt;
+            state.porosityAccum =  amFrac .* vf .* vols.*(state.porosity - state0.porosity)./dt;
             
         end
             
         function state = updatePorositySource(model, state)
-            vols = model.G.cells.volumes;
-            
-            molarVolumeLithiated = model.updateMolarVolumeLithiated(state);
-            densitySi            = model.Interface.density;
-            molarMassSi          = model.molarMass;
+        % cf eq 2 in [ref1]
+        
+            vols   = model.G.cells.volumes;
+            amFrac = model.activeMaterialFraction;
+            cmax = model.Interface.cmax;
 
-            a = state.Interface.volumetricSurfaceArea;       
-            R = state.Interface.R;
-            
-            molarVolumeSi = molarMassSi/densitySi;
+            vf     = state.volumeFraction;
+            c      = state.SolidDiffusion.cAverage;
+            a      = state.Interface.volumetricSurfaceArea;       
+            R      = state.Interface.R;
 
-            state.porositySource = a.*R.*(molarVolumeLithiated - (4/15)*molarVolumeSi).*vols;
+            molarVolumeLithiated   = model.updateMolarVolumeLithiated(c);
+            molarVolumeDelithiated = model.updateMolarVolumeLithiated(0);
+
+            state.porositySource = a.*R.*(molarVolumeLithiated - molarVolumeDelithiated).*vols .* vf .* amFrac;
             
         end
 
          function state = updatePorosityFlux(model, state)
-             %no Source. Definition schould be change to something cleaner
+         %No source term
              D = 0.*state.volumeFraction;
              c = 0.*state.volumeFraction;
              porosityFlux = assembleFlux(model, c, D);
@@ -505,21 +427,92 @@ classdef SwellingMaterial < ActiveMaterial
   
 
 
-   %% Useful Function giving the molar volume of the lithiated silicon depending on its state of lithiation     
-        function molarVolumeLitihated = updateMolarVolumeLithiated(model, state)
-            
-            c = state.SolidDiffusion.cAverage;
+   %% Useful Functions    
+        function molarVolumeLitihated = updateMolarVolumeLithiated(model, c)
+      % cf equation 2 in [ref1]
 
-            densitySi = model.Interface.density;
-            molarMassSi = model.molarMass;
-            cmaxLi = model.Interface.cmax;
+            molarVolumeSi   = 1.2e-05;
+            molarVolumeLi   = model.constants.molarVolumeLi;
 
-            molarVolumeSi = molarMassSi/densitySi;
-            molarVolumeLi = 8.8 * 1E-6;
-            
+            soc = model.computeSOC(c);
 
-            molarVolumeLitihated = (4/15)*(molarVolumeSi + 3.75*(c/cmaxLi)*molarVolumeLi);
+            molarVolumeLitihated = (4/15)*(molarVolumeSi + 3.75*soc*molarVolumeLi);
         end
+
+        
+        function state = updateSOC(model, state)
+        %not used
+
+            % shortcut
+            itf = 'Interface';
+            sd  = 'SolidDiffusion';
+
+            
+            am_frac  = model.activeMaterialFraction;
+            vols     = model.G.cells.volumes;
+            cmax     = model.(itf).cmax;
+            theta100 = model.(itf).theta100;
+            theta0   = model.(itf).theta0;
+            R_delith = model.(sd).rp;
+            molarVolumeSi = 1.2e-05;
+            molarVolumeLi =  model.constants.molarVolumeLi;
+
+            Q = (3.75.*molarVolumeLi)./(molarVolumeSi);
+            
+            c        = state.(sd).cAverage;
+            vf       = state.volumeFraction;
+
+            c_ratio = c/cmax;       
+
+            R_lith = computeRadius(c,cmax,R_delith);
+
+            theta = c_ratio .* ((R_lith./R_delith).^3) ./ (1+Q);
+
+
+            m     = (1 ./ (theta100 - theta0));
+            b     = -m .* theta0;
+            SOC   = theta*m + b;
+            vol   = am_frac*vf.*vols;
+            
+            SOC = sum(SOC.*vol)/sum(vol);
+
+            state.SOC = SOC;
+            
+        end
+
+
+        function soc = computeSOC(model, c)
+        % Useful fonction, cf expression of the soc in eq16 of [ref3]
+            % shortcut
+            itf = 'Interface';
+            sd  = 'SolidDiffusion';
+
+            
+            am_frac  = model.activeMaterialFraction;
+            vols     = model.G.cells.volumes;
+            cmax     = model.(itf).cmax;
+            theta100 = model.(itf).theta100;
+            theta0   = model.(itf).theta0;
+            R_delith = model.(sd).rp;
+            molarVolumeSi = 1.2e-05;
+            molarVolumeLi =  model.constants.molarVolumeLi;
+
+            Q = (3.75.*molarVolumeLi)./(molarVolumeSi);
+  
+            c_ratio = c/cmax;       
+
+            R_lith = computeRadius(c,cmax,R_delith);
+
+            theta = c_ratio .* ((R_lith./R_delith).^3) ./ (1+Q);
+
+
+            m     = (1 ./ (theta100 - theta0));
+            b     = -m .* theta0;
+            soc   = theta*m + b;
+            
+        end
+
+           
        
 
         

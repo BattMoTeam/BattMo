@@ -242,7 +242,9 @@ classdef BatterySwelling < Battery
                     G = model.(elyte).G;
                     Gp = G.mappings.parentGrid;
 
-                    molarVolumeLithiated = model.(elde).(am).updateMolarVolumeLithiated(state.(elde).(am));
+                    c = state.(elde).(am).SolidDiffusion.cAverage;
+
+                    molarVolumeLithiated = model.(elde).(am).updateMolarVolumeLithiated(c);
                     densitySi            = model.(elde).(am).Interface.density;
                     molarMassSi   = model.(elde).(am).molarMass;
 
@@ -273,25 +275,170 @@ classdef BatterySwelling < Battery
 
       %% Same initialisation as for Battery but includes the porosity initialisation
         function initstate = setupInitialState(model)
-       
+            nc = model.G.cells.num;
 
-        initstate = setupInitialState@Battery(model);
-
+            SOC = model.SOC;
+            T   = model.initT;
             
-            am      = 'ActiveMaterial';
+            bat = model;
+            elyte   = 'Electrolyte';
             ne      = 'NegativeElectrode';
             pe      = 'PositiveElectrode';
+            am      = 'ActiveMaterial';
+            itf     = 'Interface';
+            sd      = 'SolidDiffusion';
+            cc      = 'CurrentCollector';
+            thermal = 'ThermalModel';
+            ctrl    = 'Control';
+            
+            initstate.(thermal).T = T*ones(nc, 1);
+
+            %% Synchronize temperatures
+            initstate = model.updateTemperature(initstate);
+
+            %% Setup initial state for electrodes
             
             eldes = {ne, pe};
             
             for ind = 1 : numel(eldes)
+                
+                elde = eldes{ind};
+                
+                elde_itf = bat.(elde).(am).(itf); 
+
+                theta = SOC*(elde_itf.theta100 - elde_itf.theta0) + elde_itf.theta0;
+                c     = theta*elde_itf.cmax;
+
+                if bat.(elde).(am).isSwellingMaterial
+                %need to rescale the concentration according to the initial size of the particle.
+
+                    cmax     = elde_itf.cmax;
+                    R_delith = bat.(elde).(am).(sd).rp;
+    
+                    %Calculating the initial radius of the particle
+                    molarVolumeSi = 1.2e-05;
+                    molarVolumeLi = bat.(elde).(am).constants.molarVolumeLi;
+                    Q = (3.75*molarVolumeLi)/(molarVolumeSi);
+                    radius = R_delith .* (1 + Q .* SOC)^(1/3);
+
+                    c = cmax .* SOC .* (1+Q) .* (R_delith^3) ./ (radius^3);
+
+                end
+
+                nc    = elde_itf.G.cells.num;
+
+                switch model.(elde).(am).diffusionModelType
+                  case 'simple'
+                    initstate.(elde).(am).(sd).cSurface = c*ones(nc, 1);
+                    initstate.(elde).(am).c = c*ones(nc, 1);
+                  case 'full'
+                    initstate.(elde).(am).(sd).cSurface = c*ones(nc, 1);
+                    N = model.(elde).(am).(sd).N;
+                    np = model.(elde).(am).(sd).np; % Note : we have by construction np = nc
+                    initstate.(elde).(am).(sd).c = c*ones(N*np, 1);
+                  case 'interParticleOnly'
+                    initstate.(elde).(am).c = c*ones(nc, 1);                    
+                  otherwise
+                    error('diffusionModelType not recognized')
+                end
+                
+                initstate.(elde).(am) = model.(elde).(am).updateConcentrations(initstate.(elde).(am));
+                initstate.(elde).(am).(itf) = elde_itf.updateOCP(initstate.(elde).(am).(itf));
+
+                OCP = initstate.(elde).(am).(itf).OCP;
+                if ind == 1
+                    % The value in the first cell is used as reference.
+                    ref = OCP(1);
+                end
+                
+                initstate.(elde).(am).phi = OCP - ref;
+                
+            end
+
+            %% Setup initial Electrolyte state
+
+            initstate.(elyte).phi = zeros(bat.(elyte).G.cells.num, 1)-ref;
+            initstate.(elyte).c = 1000*ones(bat.(elyte).G.cells.num, 1);
+
+            %% Setup initial Current collectors state
+
+            if model.(ne).include_current_collectors
+                OCP = initstate.(ne).(am).(itf).OCP;
+                OCP = OCP(1) .* ones(bat.(ne).(cc).G.cells.num, 1);
+                initstate.(ne).(cc).phi = OCP - ref;
+            end
+            
+            if model.(pe).include_current_collectors
+                OCP = initstate.(pe).(am).(itf).OCP;
+                OCP = OCP(1) .* ones(bat.(pe).(cc).G.cells.num, 1);
+                initstate.(pe).(cc).phi = OCP - ref;
+            end
+            
+            initstate.(ctrl).E = OCP(1) - ref;
+            
+            switch model.(ctrl).controlPolicy
+              case 'CCCV'
+                switch model.(ctrl).initialControl
+                  case 'discharging'
+                    initstate.(ctrl).ctrlType = 'CC_discharge1';
+                    initstate.(ctrl).nextCtrlType = 'CC_discharge1';
+                    initstate.(ctrl).I = model.(ctrl).Imax;
+                  case 'charging'
+                    initstate.(ctrl).ctrlType     = 'CC_charge1';
+                    initstate.(ctrl).nextCtrlType = 'CC_charge1';
+                    initstate.(ctrl).I = - model.(ctrl).Imax;
+                  otherwise
+                    error('initialControl not recognized');
+                end
+              case 'IEswitch'
+                initstate.(ctrl).ctrlType = 'constantCurrent';
+                switch model.(ctrl).initialControl
+                  case 'discharging'
+                    initstate.(ctrl).I = model.(ctrl).Imax;
+                  case 'charging'
+                    %initstate.(ctrl).I = model.(ctrl).Imax;
+                    error('to implement (should be easy...)')
+                  otherwise
+                    error('initialControl not recognized');
+                end
+              case 'powerControl'
+                switch model.(ctrl).initialControl
+                  case 'discharging'
+                    error('to implement (should be easy...)')
+                  case 'charging'
+                    initstate.(ctrl).ctrlType = 'charge';
+                    E = initstate.(ctrl).E;
+                    P = model.(ctrl).chargingPower;
+                    initstate.(ctrl).I = -P/E;
+                  otherwise
+                    error('initialControl not recognized');
+                end
+              case 'CC'
+                % this value will be overwritten after first iteration 
+                initstate.(ctrl).I = 0;
+                switch model.(ctrl).initialControl
+                  case 'discharging'
+                    initstate.(ctrl).ctrlType = 'discharge';
+                  case 'charging'
+                    initstate.(ctrl).ctrlType = 'charge';
+                  otherwise
+                    error('initialControl not recognized');
+                end
+              otherwise
+                error('control policy not recognized');
+            end
+
+            initstate.time = 0;
+            for ind = 1 : numel(eldes)
                 elde = eldes{ind};
                 if model.(elde).(am).isSwellingMaterial
                     initstate.(elde).(am).porosity = model.(elde).(am).porosity;
-                end
-                
+                end   
             end
+            
         end
+
+
 
       %% Assembly of the governing equation (same as for Battery but taking into account porosity variations)
         function [problem, state] = getEquations(model, state0, state, dt, drivingForces, varargin)
@@ -337,13 +484,12 @@ classdef BatterySwelling < Battery
             for ind = 1 : numel(electrodes)
                 elde = electrodes{ind};
 
-                state.(elde).(am) = battery.(elde).(am).updatePhi(state.(elde).(am));
-
-            %% Set the effective electrical conductivity if the electrode is a swelling material. added by Enguerran
+                %% Set the effective electrical conductivity if the electrode is a swelling material. added by Enguerran
                 if battery.(elde).(am).isSwellingMaterial 
                     state.(elde).(am) = battery.(elde).(am).updateVolumeFraction(state.(elde).(am));
-                    state.(elde).(am) = battery.(elde).(am).updateConductivity(state.(elde).(am));
                 end
+
+                state.(elde).(am) = battery.(elde).(am).updatePhi(state.(elde).(am));            
 
                
              %% potential and concentration between interface and active material
@@ -356,7 +502,7 @@ classdef BatterySwelling < Battery
             end
             
 
-            %%Update the electrolyte volume fraction
+            %% Update the electrolyte volume fraction
             state = battery.updateElectrolyteVolumeFraction(state);
             
 
@@ -366,31 +512,27 @@ classdef BatterySwelling < Battery
 
             %% Update Electrolyte -> Electrodes coupling 
             
-            state = battery.updateElectrodeCoupling(state); 
+            state = battery.updateElectrodeCoupling(state);
 
             %% Update reaction rates in both electrodes
 
             for ind = 1 : numel(electrodes)
                 elde = electrodes{ind};
 
-                state.(elde).(am).(itf) = battery.(elde).(am).(itf).updateReactionRateCoefficient(state.(elde).(am).(itf));
+                if battery.(elde).(am).isSwellingMaterial
+                    state.(elde).(am).(sd)            = battery.(elde).(am).(sd).updateAverageConcentration(state.(elde).(am).(sd));
+                    state.(elde).(am)                 = battery.(elde).(am).updateRadius(state.(elde).(am));
+                    state.(elde).(am)                 = battery.(elde).(am).updateVolumetricSurfaceArea(state.(elde).(am));
+                    state.(elde).(am)                 = battery.(elde).(am).updateReactionRateCoefficient(state.(elde).(am));
+                else
+                    state.(elde).(am).(sd)            = battery.(elde).(am).(sd).updateAverageConcentration(state.(elde).(am).(sd));
+                    state.(elde).(am).(itf)           = battery.(elde).(am).(itf).updateReactionRateCoefficient(state.(elde).(am).(itf));
+                    
+                end
+                
                 state.(elde).(am).(itf) = battery.(elde).(am).(itf).updateOCP(state.(elde).(am).(itf));
                 state.(elde).(am).(itf) = battery.(elde).(am).(itf).updateEta(state.(elde).(am).(itf));
                 state.(elde).(am).(itf) = battery.(elde).(am).(itf).updateReactionRate(state.(elde).(am).(itf));
-
-                %added by Enguerran
-                if battery.(elde).(am).isSwellingMaterial
-                    state.(elde).(am).(sd)            = battery.(elde).(am).(sd).updateAverageConcentration(state.(elde).(am).(sd));
-                    if battery.Control.initialControl == "discharging"
-                        state.(elde).(am)                 = battery.(elde).(am).updateRadius_delithiation(state.(elde).(am));
-                    else
-                        state.(elde).(am)                 = battery.(elde).(am).updateRadius_lithiation(state.(elde).(am));
-                    end
-                    state.(elde).(am)                 = battery.(elde).(am).updateVolumetricSurfaceArea(state.(elde).(am));
-                    state.(elde).(am) = battery.(elde).(am).updateReactionRateCoefficient(state.(elde).(am));
-                    state.(elde).(am).(itf) = battery.(elde).(am).(itf).updateReactionRate(state.(elde).(am).(itf));
-                end
-
                 state.(elde).(am) = battery.(elde).(am).updateRvol(state.(elde).(am));
             end
 
@@ -554,9 +696,10 @@ classdef BatterySwelling < Battery
             ei = model.equationIndices;
 
             massConsScaling = model.con.F;
-            V_scaling = 10000000000;
+            V_scaling = 1000000000;
             M_scaling = 1;
             pescaling = 1;
+            sc_ne_sd = 1;
             %Vscaling = 10000000000;
             
             % Equation name : 'elyte_massCons';
@@ -589,26 +732,16 @@ classdef BatterySwelling < Battery
                 % Equation name : 'ne_am_sd_massCons';
                 n    = model.(ne).(am).(itf).n; % number of electron transfer (equal to 1 for Lithium)
                 F    = model.con.F;
-
-                %modified by Enguerran
-                if battery.(ne).(am).isSwellingMaterial
-                    vol  = model.(ne).(am).operators.pv;
-                    rp   = state.(ne).(am).(sd).radius;
-                    vsf  = state.(ne).(am).(itf).volumetricSurfaceArea;
-                else
-                    vol  = model.(ne).(am).operators.pv;
-                    rp   = model.(ne).(am).(sd).rp;
-                    vsf  = model.(ne).(am).Interface.volumetricSurfaceArea;
-                end
-
-                
+               
+                vol  = model.(ne).(am).operators.pv;
+                rp   = model.(ne).(am).(sd).rp;
+                vsf  = model.(ne).(am).Interface.volumetricSurfaceArea;              
 
                 surfp = 4.*pi.*rp.^2;
                 
                 scalingcoef = (vsf.*vol(1).*n.*F)./surfp;
                 eqs{ei.ne_am_sd_soliddiffeq} = scalingcoef.*state.(ne).(am).(sd).solidDiffusionEq;
                 
-                scalingcoef = model.(ne).(am).(sd).operators.mapToParticle*scalingcoef;
                 eqs{ei.ne_am_sd_massCons}    = M_scaling .* scalingcoef.*state.(ne).(am).(sd).massCons;
                 
               case 'interParticleOnly'
@@ -627,23 +760,15 @@ classdef BatterySwelling < Battery
                 n    = model.(pe).(am).(itf).n; % number of electron transfer (equal to 1 for Lithium)
                 F    = model.con.F;
 
-                %modified by Enguerran
-                if battery.(pe).(am).isSwellingMaterial
-                    vol  = model.(pe).(am).operators.pv;
-                    rp   = state.(pe).(am).(sd).radius;
-                    vsf  = state.(pe).(am).Interface.volumetricSurfaceArea;
-                else
-                    vol  = model.(pe).(am).operators.pv;
-                    rp   = model.(pe).(am).(sd).rp;
-                    vsf  = model.(pe).(am).(itf).volumetricSurfaceArea;
-                end
-               
+                vol  = model.(pe).(am).operators.pv;
+                rp   = model.(pe).(am).(sd).rp;
+                vsf  = model.(pe).(am).(itf).volumetricSurfaceArea;
+
                 surfp = 4.*pi.*rp.^2;
                 
                 scalingcoef = (vsf.*vol(1).*n.*F)./surfp;
                 eqs{ei.pe_am_sd_massCons} = pescaling .*M_scaling .* scalingcoef.*state.(pe).(am).(sd).massCons;
 
-                %scalingcoef = model.(pe).(am).(sd).operators.mapToParticle*scalingcoef;
                 eqs{ei.pe_am_sd_soliddiffeq} = pescaling .*scalingcoef.*state.(pe).(am).(sd).solidDiffusionEq;
               case 'interParticleOnly'
                 eqs{ei.pe_am_massCons} = state.(pe).(am).massCons*massConsScaling;                

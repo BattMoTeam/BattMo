@@ -35,7 +35,7 @@ classdef ActiveMaterial < ElectronicComponent
         use_interparticle_diffusion
         standAlone
 
-        isSwellingMaterial  % Boolean equal to 1 if we consider the swelling of the material
+        isSwellingMaterial  % Boolean equal to 1 if the material can swell
 
 
                 
@@ -441,8 +441,15 @@ classdef ActiveMaterial < ElectronicComponent
 
             vsa = model.Interface.volumetricSurfaceArea;
 
+            vol_fraction = model.volumeFraction;%
+            am_fraction  = model.activeMaterialFraction;%
+
+            vols = sum(am_fraction*vol_fraction.*model.G.cells.volumes);%
+
             Rvol = vsa.*state.Interface.R;
             state.Rvol = Rvol;
+
+            TotalReactionPos = Rvol * vols;%
 
             if model.use_particle_diffusion
                 state.SolidDiffusion.Rvol = Rvol;
@@ -522,10 +529,8 @@ classdef ActiveMaterial < ElectronicComponent
             
         end
         
-        function state = updateStandalonejBcSource(model, state)
-            
+        function state = updateStandalonejBcSource(model, state)          
             state.jBcSource = state.controlCurrentSource;
-
         end
 
         function state = updateCurrentSource(model, state)
