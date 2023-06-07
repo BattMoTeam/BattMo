@@ -33,8 +33,10 @@ totV = (vfGr + vfSi);
 vfGr = vfGr/totV;
 vfSi = vfSi/totV;
 
-paramobj.(gr).activeMaterialFraction = vfGr;
-paramobj.(si).activeMaterialFraction = vfSi;
+paramobj.(gr).activeMaterialFraction      = vfGr;
+paramobj.(gr).(sd).activeMaterialFraction = vfGr;
+paramobj.(si).activeMaterialFraction      = vfSi;
+paramobj.(si).(sd).activeMaterialFraction = vfSi;
 
 paramobj.(gr).(itf).theta0 = 0.01;
 paramobj.(si).(itf).theta0 = 0.01;
