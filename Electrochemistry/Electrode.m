@@ -10,6 +10,8 @@ classdef Electrode < BaseModel
         CurrentCollector % instance of :class:`Electrochemistry.CurrentCollector`
 
         couplingTerm
+
+        electrode_case 
         
         include_current_collectors
 
@@ -28,11 +30,18 @@ classdef Electrode < BaseModel
             
             fdnames = {'G', ...
                        'couplingTerm', ...
+                       'electrode_case', ...
                        'use_thermal'};
             model = dispatchParams(model, paramobj, fdnames);
             
-            % Assign the two components
-            model.ActiveMaterial = model.setupActiveMaterial(paramobj.ActiveMaterial);
+            switch paramobj.electrode_case
+              case 'default'
+                model.ActiveMaterial = ActiveMaterial(paramobj.ActiveMaterial);
+              case 'composite'
+                model.ActiveMaterial = CompositeActiveMaterial(paramobj.ActiveMaterial);
+              otherwise
+                error('electrode_case not recognized');
+            end
             
             if paramobj.include_current_collectors
                 model.include_current_collectors = true;
@@ -83,12 +92,6 @@ classdef Electrode < BaseModel
                 
             end
             
-        end
-        
-        function am = setupActiveMaterial(model, paramobj)
-        % paramobj is instance of ActiveMaterialInputParams
-        % standard instantiation (ActiveMaterial is specified in ActiveMaterial instantiation)
-            am = ActiveMaterial(paramobj);
         end
         
         function cc = setupCurrentCollector(model, paramobj)

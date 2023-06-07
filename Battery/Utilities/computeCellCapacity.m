@@ -31,32 +31,74 @@ function [cap, cap_neg, cap_pos, specificEnergy] = computeCellCapacity(model, va
     for ind = 1 : numel(eldes)
         
         elde = eldes{ind};
-        
-        ammodel = model.(elde).(am);
-        itfmodel = ammodel.(itf);
-        
-        n    = itfmodel.n;
-        F    = itfmodel.constants.F;
-        G    = itfmodel.G;
-        cMax = itfmodel.cmax;
 
-        switch elde
-          case 'NegativeElectrode'
-            thetaMax = itfmodel.theta100;
-            thetaMin = itfmodel.theta0;
-          case 'PositiveElectrode'
-            thetaMax = itfmodel.theta0;
-            thetaMin = itfmodel.theta100;            
+        switch model.(elde).electrode_case
+
+          case 'default'
+            
+            ammodel = model.(elde).(am);
+            itfmodel = ammodel.(itf);
+            
+            n    = itfmodel.n;
+            F    = itfmodel.constants.F;
+            G    = itfmodel.G;
+            cMax = itfmodel.cmax;
+
+            switch elde
+              case 'NegativeElectrode'
+                thetaMax = itfmodel.theta100;
+                thetaMin = itfmodel.theta0;
+              case 'PositiveElectrode'
+                thetaMax = itfmodel.theta0;
+                thetaMin = itfmodel.theta100;            
+              otherwise
+                error('Electrode not recognized');
+            end
+            
+            vol_fraction = ammodel.volumeFraction;
+            am_fraction  = ammodel.activeMaterialFraction;
+            
+            vol = sum(am_fraction*vol_fraction.*ammodel.G.cells.volumes);
+            
+            cap_usable(ind) = (thetaMax - thetaMin)*cMax*vol*n*F;
+            
+          case 'composite'
+
+            % we know we deal with a negative electrode
+            ammodel = model.(elde).(am);
+
+            gr = 'FirstMaterial';
+            si = 'SecondMaterial';
+
+            mats = {gr, si};
+
+            cap_usable(ind) = 0;
+            
+            for imat = 1 : numel(mats)
+                
+                mat = mats{imat};
+
+                itfmodel = ammodel.(mat).(itf);
+                n    = itfmodel.n;
+                F    = itfmodel.constants.F;
+                G    = itfmodel.G;
+                cMax = itfmodel.cmax;
+
+                thetaMax = itfmodel.theta100;
+                thetaMin = itfmodel.theta0;
+
+                vol_fraction = ammodel.volumeFraction;
+                am_fraction  = ammodel.(mat).activeMaterialFraction;
+                
+                vol = sum(am_fraction*vol_fraction.*ammodel.G.cells.volumes);
+
+                cap_usable(ind) = cap_usable(ind) + (thetaMax - thetaMin)*cMax*vol*n*F;
+            end
+            
           otherwise
-            error('Electrode not recognized');
+            error('electrode_case not recognized');
         end
-        
-        vol_fraction = ammodel.volumeFraction;
-        am_fraction  = ammodel.activeMaterialFraction;
-        
-        vol = sum(am_fraction*vol_fraction.*ammodel.G.cells.volumes);
-        
-        cap_usable(ind) = (thetaMax - thetaMin)*cMax*vol*n*F;
+           
         
     end
     

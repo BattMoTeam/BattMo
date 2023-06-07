@@ -670,7 +670,7 @@ classdef ComputationalGraphTool
 
         end
         
-        function funcCallList = setOrderedFunctionCallList(cgt)
+        function funcCallList = getOrderedFunctionCallList(cgt)
         % Return a list of strings that corresponds to all the function calls ordered in the right order.
             A              = cgt.A;
             staticprops    = cgt.staticprops;
@@ -716,7 +716,7 @@ classdef ComputationalGraphTool
         function printOrderedFunctionCallList(cgt)
         % Print the function calls ordered in the right order.
             
-            funcCallList = cgt.setOrderedFunctionCallList();
+            funcCallList = cgt.getOrderedFunctionCallList();
             
             fprintf('Function call list\n');
             for ind = 1 : numel(funcCallList)
