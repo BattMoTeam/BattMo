@@ -13,8 +13,8 @@ ne = 'NegativeElectrode';
 pe = 'PositiveElectrode';
 
 am = 'ActiveMaterial';
-gr = 'Graphite';
-si = 'Silicon';
+gr = 'FirstMaterial';
+si = 'SecondMaterial';
 
 sd  = 'SolidDiffusion';
 itf = 'Interface';

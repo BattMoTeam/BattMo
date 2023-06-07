@@ -3,8 +3,8 @@ classdef CompositeActiveMaterial < ElectronicComponent
     properties
 
 
-        Graphite
-        Silicon        
+        FirstMaterial
+        SecondMaterial        
 
         porosity                      % porosity
         volumeFraction                % Volume fraction of the whole material (binder and so on included)
@@ -44,8 +44,8 @@ classdef CompositeActiveMaterial < ElectronicComponent
             model = dispatchParams(model, paramobj, fdnames);
             
 
-            model.Graphite = ActiveMaterial(paramobj.Graphite);
-            model.Silicon = ActiveMaterial(paramobj.Silicon);
+            model.FirstMaterial = ActiveMaterial(paramobj.FirstMaterial);
+            model.SecondMaterial = ActiveMaterial(paramobj.SecondMaterial);
             
             nc = model.G.cells.num;
 
@@ -63,8 +63,8 @@ classdef CompositeActiveMaterial < ElectronicComponent
 
             model = registerVarAndPropfuncNames@ElectronicComponent(model);
             
-            gr = 'Graphite';
-            si = 'Silicon';
+            gr = 'FirstMaterial';
+            si = 'SecondMaterial';
 
             sd  = 'SolidDiffusion';
             itf = 'Interface';
@@ -168,8 +168,8 @@ classdef CompositeActiveMaterial < ElectronicComponent
 
         function [problem, state] = getEquations(model, state0, state,dt, drivingForces, varargin)
 
-            gr = 'Graphite';
-            si = 'Silicon';
+            gr = 'FirstMaterial';
+            si = 'SecondMaterial';
             
             sd  = 'SolidDiffusion';
             itf = 'Interface';
@@ -236,7 +236,7 @@ classdef CompositeActiveMaterial < ElectronicComponent
             eqs{end + 1} = scalingcoef*state.(gr).(sd).massCons;
             eqs{end + 1} = scalingcoef*state.(gr).(sd).solidDiffusionEq;
 
-            % Equations for Silicon
+            % Equations for SecondMaterial
             n     = model.(si).(itf).n; % number of electron transfer (equal to 1 for Lithium)
             F     = model.(si).(sd).constants.F;
             vol   = model.operators.pv;
@@ -265,8 +265,8 @@ classdef CompositeActiveMaterial < ElectronicComponent
 
         function primaryvarnames = getPrimaryVariables(model)
             
-            gr = 'Graphite';
-            si = 'Silicon';
+            gr = 'FirstMaterial';
+            si = 'SecondMaterial';
 
             sd = 'SolidDiffusion';
 
@@ -335,8 +335,8 @@ classdef CompositeActiveMaterial < ElectronicComponent
             G  = model.G;
             vf = model.volumeFraction;
             
-            gr  = 'Graphite';
-            si  = 'Silicon';
+            gr  = 'FirstMaterial';
+            si  = 'SecondMaterial';
 
             nc = G.cells.num;
 
@@ -364,8 +364,8 @@ classdef CompositeActiveMaterial < ElectronicComponent
 
         function state = updateCurrentSource(model, state)
 
-            gr  = 'Graphite';
-            si  = 'Silicon';
+            gr  = 'FirstMaterial';
+            si  = 'SecondMaterial';
             itf = 'Interface';
             
             %% TODO : check whether constants n should always be the same for graphite and silicon (and impose them from parent)
@@ -381,8 +381,8 @@ classdef CompositeActiveMaterial < ElectronicComponent
         
         function state = updatePhi(model, state)
             
-            gr = 'Graphite';
-            si = 'Silicon';
+            gr = 'FirstMaterial';
+            si = 'SecondMaterial';
             
             itf = 'Interface';
 
@@ -393,8 +393,8 @@ classdef CompositeActiveMaterial < ElectronicComponent
         
         function state = dispatchTemperature(model, state)
 
-            gr = 'Graphite';
-            si = 'Silicon';
+            gr = 'FirstMaterial';
+            si = 'SecondMaterial';
             
             state.(gr).T = state.T;
             state.(si).T = state.T;
@@ -404,8 +404,8 @@ classdef CompositeActiveMaterial < ElectronicComponent
 
         function state = updateStandAloneElectrolyte(model, state)
 
-            gr = 'Graphite';
-            si = 'Silicon';
+            gr = 'FirstMaterial';
+            si = 'SecondMaterial';
             
             itf = 'Interface';
 
@@ -437,8 +437,8 @@ classdef CompositeActiveMaterial < ElectronicComponent
 
         function stop = stopfunction(model, state, state0_inner)
             
-            gr = 'Graphite';
-            si = 'Silicon';
+            gr = 'FirstMaterial';
+            si = 'SecondMaterial';
 
             sd  = 'SolidDiffusion';
             itf = 'Interface';

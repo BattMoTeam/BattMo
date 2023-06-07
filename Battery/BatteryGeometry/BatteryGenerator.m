@@ -148,8 +148,8 @@ classdef BatteryGenerator
                 
                 G = genSubGrid(gen.G, params.cellind);
                 paramobj.G          = G;
-                paramobj.Graphite.G = G;
-                paramobj.Silicon.G  = G;
+                paramobj.FirstMaterial.G = G;
+                paramobj.SecondMaterial.G  = G;
                 
               otherwise
                 error('electrode_case not recognized')

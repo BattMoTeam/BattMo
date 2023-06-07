@@ -37,8 +37,8 @@ classdef CompositeBattery < Battery
             thermal = 'ThermalModel';
             ctrl    = 'Control';
 
-            gr = 'Graphite';
-            si = 'Silicon';
+            gr = 'FirstMaterial';
+            si = 'SecondMaterial';
 
             varEqTypes ={{elyte, 'c'}                 , 'elyte_massCons'         , 'cell'; ...  
                          {elyte, 'phi'}               , 'elyte_chargeCons'       , 'cell'; ...    
@@ -105,8 +105,8 @@ classdef CompositeBattery < Battery
             thermal = 'ThermalModel';
             ctrl    = 'Control';
 
-            gr = 'Graphite';
-            si = 'Silicon';
+            gr = 'FirstMaterial';
+            si = 'SecondMaterial';
 
             %%  removing some unused variables
             varnames = {{ne, am, itf, 'phiElectrolyte'},
@@ -168,8 +168,8 @@ classdef CompositeBattery < Battery
             thermal = 'ThermalModel';
             ctrl    = 'Control';
 
-            gr = 'Graphite';
-            si = 'Silicon';
+            gr = 'FirstMaterial';
+            si = 'SecondMaterial';
 
             initstate.(thermal).T = T*ones(nc, 1);
 
@@ -281,8 +281,8 @@ classdef CompositeBattery < Battery
             sd    = 'SolidDiffusion';
             itf   = 'Interface';
             ctrl  = 'Control';
-            gr    = 'Graphite';
-            si    = 'Silicon';
+            gr    = 'FirstMaterial';
+            si    = 'SecondMaterial';
 
             funcCallList = model.funcCallList;
             
@@ -358,8 +358,8 @@ classdef CompositeBattery < Battery
             cc      = 'CurrentCollector';
             thermal = 'ThermalModel';
 
-            gr = 'Graphite';
-            si = 'Silicon';
+            gr = 'FirstMaterial';
+            si = 'SecondMaterial';
             
             % (here we assume that the ThermalModel has the "parent" grid)
             state.(elyte).T   = state.(thermal).T(model.(elyte).G.mappings.cellmap);
@@ -385,8 +385,8 @@ classdef CompositeBattery < Battery
             am    = 'ActiveMaterial';
             itf   = 'Interface';
             
-            gr = 'Graphite';
-            si = 'Silicon';
+            gr = 'FirstMaterial';
+            si = 'SecondMaterial';
 
             vols = battery.(elyte).G.cells.volumes;
             F = battery.con.F;
@@ -476,8 +476,8 @@ classdef CompositeBattery < Battery
             am    = 'ActiveMaterial';
             itf   = 'Interface';
 
-            gr = 'Graphite';
-            si = 'Silicon';
+            gr = 'FirstMaterial';
+            si = 'SecondMaterial';
             
             phi_elyte = state.(elyte).phi;
             c_elyte = state.(elyte).c;

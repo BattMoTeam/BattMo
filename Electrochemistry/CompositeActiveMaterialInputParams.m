@@ -4,9 +4,9 @@ classdef CompositeActiveMaterialInputParams < ElectronicComponentInputParams
 % 
     properties
 
-        Graphite
+        FirstMaterial
 
-        Silicon
+        SecondMaterial
 
         externalCouplingTerm % structure to describe external coupling (used in absence of current collector)
         
@@ -24,8 +24,8 @@ classdef CompositeActiveMaterialInputParams < ElectronicComponentInputParams
 
             pick = @(fd) pickField(jsonstruct, fd);
 
-            paramobj.Graphite = ActiveMaterialInputParams(pick('Graphite'));
-            paramobj.Silicon = ActiveMaterialInputParams(pick('Silicon'));
+            paramobj.FirstMaterial = ActiveMaterialInputParams(pick('FirstMaterial'));
+            paramobj.SecondMaterial = ActiveMaterialInputParams(pick('SecondMaterial'));
 
             paramobj = paramobj.validateInputParams();
             
@@ -33,8 +33,8 @@ classdef CompositeActiveMaterialInputParams < ElectronicComponentInputParams
 
         function paramobj = validateInputParams(paramobj)
 
-            gr = 'Graphite';
-            si = 'Silicon';
+            gr = 'FirstMaterial';
+            si = 'SecondMaterial';
 
             paramobj = mergeParameters(paramobj,  {{gr, 'volumeFraction'}, {'volumeFraction'}});
             paramobj = mergeParameters(paramobj,  {{si, 'volumeFraction'}, {'volumeFraction'}});

@@ -67,8 +67,8 @@ function [cap, cap_neg, cap_pos, specificEnergy] = computeCellCapacity(model, va
             % we know we deal with a negative electrode
             ammodel = model.(elde).(am);
 
-            gr = 'Graphite';
-            si = 'Silicon';
+            gr = 'FirstMaterial';
+            si = 'SecondMaterial';
 
             mats = {gr, si};
 

@@ -24,8 +24,8 @@ classdef CompositeBatteryInputParams < BatteryInputParams
                 ne  = 'NegativeElectrode';
                 pe  = 'PositiveElectrode';
                 am  = 'ActiveMaterial';
-                gr  = 'Graphite';
-                si  = 'Silicon';
+                gr  = 'FirstMaterial';
+                si  = 'SecondMaterial';
                 itf = 'Interface';
 
                 mats = {gr, si};

@@ -5,7 +5,7 @@
   "type": "object",
 
   "properties" : { "Graphite" : { "$ref" : "#/$defs/material"},
-                   "Silicon" : { "$ref" : "#/$defs/material"},
+                   "SecondMaterial" : { "$ref" : "#/$defs/material"},
                    "volumeFraction" : {"type" : "number"},
                    "use_particle_diffusion" : {"type" : "boolean"}
                  },

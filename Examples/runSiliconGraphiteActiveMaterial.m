@@ -10,8 +10,8 @@ mrstModule add ad-core mrst-gui mpfa
 
 %% shortcuts
 
-gr = 'Graphite';
-si = 'Silicon';
+gr = 'FirstMaterial';
+si = 'SecondMaterial';
 
 sd  = 'SolidDiffusion';
 itf = 'Interface';
@@ -178,7 +178,7 @@ for imat = 1 : numel(mats)
     c.(mat).max = cellfun(@(state) max(state.(mat).(sd).c), states);
 end
 
-matnames = {'Graphite', 'Silicon'};
+matnames = {'FirstMaterial', 'SecondMaterial'};
 
 for imat = 1 : numel(mats)
 

@@ -33,8 +33,8 @@ function [mass, masses] = computeCellMass(model, varargin)
 
           case 'composite'
             
-            gr = 'Graphite';
-            si = 'Silicon';
+            gr = 'FirstMaterial';
+            si = 'SecondMaterial';
 
             mats = {gr, si};
             

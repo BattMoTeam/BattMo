@@ -5,8 +5,8 @@ function am = setupActiveMaterial(paramobj)
     switch amName 
       case 'NMC111'
         am = NMC111(paramobj);
-      case 'Graphite'
-        am = Graphite(paramobj);
+      case 'FirstMaterial'
+        am = FirstMaterial(paramobj);
       otherwise
         error('active material not recognized');
     end
