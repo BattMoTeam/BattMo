@@ -144,7 +144,7 @@ classdef CompositeBattery < Battery
             if isempty(model.funcCallList)
                 model = model.setupComputationalGraph();
                 cgt = model.computationalGraph;
-                model.primaryVarNames = cgt.getPrimaryVariables();
+                model.primaryVarNames = cgt.getPrimaryVariableNames();
                 model.funcCallList = cgt.getOrderedFunctionCallList();
             end
             
@@ -341,7 +341,7 @@ classdef CompositeBattery < Battery
             names = model.equationNames;
             types = model.equationTypes;
             
-            primaryVars = model.getPrimaryVariables();
+            primaryVars = model.getPrimaryVariableNames();
             
             %% Setup LinearizedProblem that can be processed by MRST Newton API
             problem = LinearizedProblem(eqs, types, names, primaryVars, state, dt);

@@ -257,13 +257,13 @@ classdef CompositeActiveMaterial < ElectronicComponent
             
             types = {'cell', 'cell', 'cell', 'cell', 'cell'};
 
-            primaryVars = model.getPrimaryVariables();
+            primaryVars = model.getPrimaryVariableNames();
             
             problem = LinearizedProblem(eqs, types, names, primaryVars, state, dt);
 
         end
 
-        function primaryvarnames = getPrimaryVariables(model)
+        function primaryvarnames = getPrimaryVariableNames(model)
             
             gr = 'FirstMaterial';
             si = 'SecondMaterial';
