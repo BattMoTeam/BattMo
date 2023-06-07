@@ -45,13 +45,13 @@ classdef ElectrodeInputParams < ComponentInputParams
             paramobj.(cc) = CurrentCollectorInputParams(pick(cc));
 
             if isempty(paramobj.electrode_case)            
-                paramobj.electrode_case = 'standard';
+                paramobj.electrode_case = 'default';
             end
 
             switch paramobj.electrode_case
               case 'siliconGraphite'
                 paramobj.(am) = SiliconGraphiteActiveMaterialInputParams(paramobj.(am));
-              case 'standard'
+              case 'default'
                 paramobj.(am) = ActiveMaterialInputParams(paramobj.(am));
               otherwise
                 error('electrode_case not recognized');

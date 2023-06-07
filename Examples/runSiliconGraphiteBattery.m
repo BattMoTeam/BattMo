@@ -154,6 +154,8 @@ paramobj = paramobj.validateInputParams();
 model = SiliconGraphiteBattery(paramobj);
 model = model.setupComputationalGraph();
 
+ind = cellfun(@(state) ~isempty(state), states);
+chargeStates = chargeStates(ind);
 initstate = chargeStates{end};
 
 CRate = model.Control.CRate;
