@@ -22,7 +22,7 @@ itf = 'Interface';
 %% Setup the properties of Li-ion battery materials and cell design
 jsonstruct = parseBattmoJson('ParameterData/BatteryCellParameters/LithiumIonBatteryCell/lithium_ion_battery_nmc_silicon_graphite.json');
 
-paramobj = SiliconGraphiteBatteryInputParams(jsonstruct);
+paramobj = CompositeBatteryInputParams(jsonstruct);
 
 rhoGr = paramobj.(ne).(am).(gr).(itf).density;
 rhoSi = paramobj.(ne).(am).(si).(itf).density;
@@ -59,7 +59,7 @@ gen.xlength(4) = 1.8619*gen.xlength(4);
 % Now, we update the paramobj with the properties of the mesh. 
 paramobj = gen.updateBatteryInputParams(paramobj);
 
-model = SiliconGraphiteBattery(paramobj);
+model = CompositeBattery(paramobj);
 model.AutoDiffBackend= AutoDiffBackend();
 
 inspectgraph = false;
@@ -151,7 +151,7 @@ chargeStates = states;
 paramobj.scenario = 'discharge';
 paramobj = paramobj.validateInputParams();
 
-model = SiliconGraphiteBattery(paramobj);
+model = CompositeBattery(paramobj);
 model = model.setupComputationalGraph();
 
 ind = cellfun(@(state) ~isempty(state), states);

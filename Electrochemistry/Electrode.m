@@ -37,8 +37,8 @@ classdef Electrode < BaseModel
             switch paramobj.electrode_case
               case 'default'
                 model.ActiveMaterial = ActiveMaterial(paramobj.ActiveMaterial);
-              case 'siliconGraphite'
-                model.ActiveMaterial = SiliconGraphiteActiveMaterial(paramobj.ActiveMaterial);
+              case 'composite'
+                model.ActiveMaterial = CompositeActiveMaterial(paramobj.ActiveMaterial);
               otherwise
                 error('electrode_case not recognized');
             end

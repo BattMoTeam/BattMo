@@ -1,5 +1,5 @@
 {
-  "$id": "file://battmo/schemas/SiliconGraphiteActiveMaterial",
+  "$id": "file://battmo/schemas/CompositeActiveMaterial",
   "$schema": "http://json-schema.org/draft-07/schema#",
   "description": "Active Material containing a mix of Silicon and Graphite",
   "type": "object",
@@ -17,7 +17,7 @@
                                                                                   "enum" : ["full", "simple"]},
                                                           "activeMaterialFraction" : {"type" : "number"},
                                                           "volumeFraction" : {"type" : "number",
-                                                                              "comment" : "the volume fraction for all material should be the same and match the volume fraction SiliconGraphiteActiveMaterial"},
+                                                                              "comment" : "the volume fraction for all material should be the same and match the volume fraction CompositeActiveMaterial"},
                                                           "BruggemanCoefficient" : {"type" : "number"}
                                                         }
                                         }

@@ -19,7 +19,7 @@ itf = 'Interface';
 %% Setup the properties of Li-ion battery materials and cell design
 jsonstruct = parseBattmoJson(fullfile('Examples', 'jsoninputs', 'silicongraphite.json'));
 
-paramobj = SiliconGraphiteActiveMaterialInputParams(jsonstruct);
+paramobj = CompositeActiveMaterialInputParams(jsonstruct);
 
 rhoGr = paramobj.(gr).(itf).density;
 rhoSi = paramobj.(si).(itf).density;
@@ -54,7 +54,7 @@ paramobj.G = G;
 paramobj.(si).G = G;
 paramobj.(gr).G = G;
 
-model = SiliconGraphiteActiveMaterial(paramobj);
+model = CompositeActiveMaterial(paramobj);
 model.AutoDiffBackend= AutoDiffBackend();
 
 model.use_thermal = false;

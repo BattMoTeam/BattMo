@@ -62,7 +62,7 @@ function [cap, cap_neg, cap_pos, specificEnergy] = computeCellCapacity(model, va
             
             cap_usable(ind) = (thetaMax - thetaMin)*cMax*vol*n*F;
             
-          case 'siliconGraphite'
+          case 'composite'
 
             % we know we deal with a negative electrode
             ammodel = model.(elde).(am);

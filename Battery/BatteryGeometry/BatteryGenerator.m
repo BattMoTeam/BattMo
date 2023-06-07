@@ -144,7 +144,7 @@ classdef BatteryGenerator
                 
                 paramobj.G = genSubGrid(gen.G, params.cellind);
                 
-              case 'siliconGraphite'
+              case 'composite'
                 
                 G = genSubGrid(gen.G, params.cellind);
                 paramobj.G          = G;

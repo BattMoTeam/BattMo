@@ -22,7 +22,7 @@ classdef ElectrodeInputParams < ComponentInputParams
         %
         couplingTerm
         
-        electrode_case % can be set to 'default' or 'siliconGraphite'
+        electrode_case % can be set to 'default' or 'composite'
         %
         % Set to true to include current collector
         %
@@ -49,8 +49,8 @@ classdef ElectrodeInputParams < ComponentInputParams
             end
 
             switch paramobj.electrode_case
-              case 'siliconGraphite'
-                paramobj.(am) = SiliconGraphiteActiveMaterialInputParams(paramobj.(am));
+              case 'composite'
+                paramobj.(am) = CompositeActiveMaterialInputParams(paramobj.(am));
               case 'default'
                 paramobj.(am) = ActiveMaterialInputParams(paramobj.(am));
               otherwise

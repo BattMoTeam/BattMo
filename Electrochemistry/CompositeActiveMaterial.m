@@ -1,4 +1,4 @@
-classdef SiliconGraphiteActiveMaterial < ElectronicComponent
+classdef CompositeActiveMaterial < ElectronicComponent
     
     properties
 
@@ -28,9 +28,9 @@ classdef SiliconGraphiteActiveMaterial < ElectronicComponent
     
     methods
         
-        function model = SiliconGraphiteActiveMaterial(paramobj)
+        function model = CompositeActiveMaterial(paramobj)
         %
-        % ``paramobj`` is instance of :class:`SiliconGraphiteActiveMaterialInputParams <Electrochemistry.SiliconGraphiteActiveMaterialInputParams>`
+        % ``paramobj`` is instance of :class:`CompositeActiveMaterialInputParams <Electrochemistry.CompositeActiveMaterialInputParams>`
         %
             model = model@ElectronicComponent(paramobj);
             
@@ -112,35 +112,35 @@ classdef SiliconGraphiteActiveMaterial < ElectronicComponent
 
             %% register properties
 
-            fn = @SiliconGraphiteActiveMaterial.updatejBcSource;
+            fn = @CompositeActiveMaterial.updatejBcSource;
             model = model.registerPropFunction({'jBcSource', fn, {'jCoupling', 'jExternal'}});
             
             if model.use_thermal
-                fn = @SiliconGraphiteActiveMaterial.updatejFaceBc;
+                fn = @CompositeActiveMaterial.updatejFaceBc;
                 model = model.registerPropFunction({'jFaceBc', fn, {'jFaceCoupling', 'jFaceExternal'}});
             end
 
-            fn = @SiliconGraphiteActiveMaterial.updateConductivity;
+            fn = @CompositeActiveMaterial.updateConductivity;
             model = model.registerPropFunction({'conductivity', fn, {}});
             
-            fn = @SiliconGraphiteActiveMaterial.updateCurrentSource;
+            fn = @CompositeActiveMaterial.updateCurrentSource;
             inputnames = {{si, 'Rvol'}, {gr, 'Rvol'}};
             model = model.registerPropFunction({'eSource', fn, inputnames});
             
-            fn = @SiliconGraphiteActiveMaterial.updatePhi;
+            fn = @CompositeActiveMaterial.updatePhi;
             model = model.registerPropFunction({{si, itf, 'phiElectrode'}, fn, {'phi'}});
             model = model.registerPropFunction({{gr, itf, 'phiElectrode'}, fn, {'phi'}});
             
-            fn = @SiliconGraphiteActiveMaterial.dispatchTemperature;
+            fn = @CompositeActiveMaterial.dispatchTemperature;
             model = model.registerPropFunction({{si, 'T'}, fn, {'T'}});
             model = model.registerPropFunction({{gr, 'T'}, fn, {'T'}});
 
             if model.isRoot
                 
-                fn = @SiliconGraphiteActiveMaterial.updateStandalonejBcSource;
+                fn = @CompositeActiveMaterial.updateStandalonejBcSource;
                 model = model.registerPropFunction({'jBcSource', fn, {'controlCurrentSource'}});
 
-                fn = @SiliconGraphiteActiveMaterial.updateStandAloneElectrolyte;
+                fn = @CompositeActiveMaterial.updateStandAloneElectrolyte;
                 inputnames = {'cElectrolyte', 'phiElectrolyte'};
                 model = model.registerPropFunction({{si, itf, 'cElectrolyte'}, fn, inputnames});
                 model = model.registerPropFunction({{si, itf, 'phiElectrolyte'}, fn, inputnames});
@@ -149,13 +149,13 @@ classdef SiliconGraphiteActiveMaterial < ElectronicComponent
                 
             else
                 
-                fn = @SiliconGraphiteActiveMaterial.updatejExternal;
+                fn = @CompositeActiveMaterial.updatejExternal;
                 model = model.registerPropFunction({'jExternal', fn, {}});
                 if model.use_thermal
                     model = model.registerPropFunction({'jFaceExternal', fn, {}});
                 end
 
-                fn = @SiliconGraphiteActiveMaterial.updatejCoupling;
+                fn = @CompositeActiveMaterial.updatejCoupling;
                 model = model.registerPropFunction({'jCoupling', fn, {}});
                 if model.use_thermal
                     model = model.registerPropFunction({'jFaceCoupling', fn, {}});

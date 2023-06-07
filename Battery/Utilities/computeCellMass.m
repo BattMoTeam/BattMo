@@ -31,7 +31,7 @@ function [mass, masses] = computeCellMass(model, varargin)
             
             masses.(elde).(am).val = sum(rho.*vols.*frac);
 
-          case 'siliconGraphite'
+          case 'composite'
             
             gr = 'Graphite';
             si = 'Silicon';

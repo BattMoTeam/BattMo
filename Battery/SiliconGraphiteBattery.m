@@ -1,4 +1,4 @@
-classdef SiliconGraphiteBattery < Battery
+classdef CompositeBattery < Battery
 
     properties
         
@@ -11,7 +11,7 @@ classdef SiliconGraphiteBattery < Battery
     
     methods
         
-        function model = SiliconGraphiteBattery(paramobj)
+        function model = CompositeBattery(paramobj)
             
             model = model@Battery(paramobj);
 

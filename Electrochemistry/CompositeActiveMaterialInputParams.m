@@ -1,4 +1,4 @@
-classdef SiliconGraphiteActiveMaterialInputParams < ElectronicComponentInputParams
+classdef CompositeActiveMaterialInputParams < ElectronicComponentInputParams
 %
 % Input parameter class for :class:`ActiveMaterial <Electrochemistry.ActiveMaterial>`
 % 
@@ -18,7 +18,7 @@ classdef SiliconGraphiteActiveMaterialInputParams < ElectronicComponentInputPara
 
     methods
 
-        function paramobj = SiliconGraphiteActiveMaterialInputParams(jsonstruct)
+        function paramobj = CompositeActiveMaterialInputParams(jsonstruct)
 
             paramobj = paramobj@ElectronicComponentInputParams(jsonstruct);
 

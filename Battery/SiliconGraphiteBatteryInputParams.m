@@ -1,4 +1,4 @@
-classdef SiliconGraphiteBatteryInputParams < BatteryInputParams
+classdef CompositeBatteryInputParams < BatteryInputParams
 
     properties
 
@@ -8,7 +8,7 @@ classdef SiliconGraphiteBatteryInputParams < BatteryInputParams
     
     methods
         
-        function paramobj = SiliconGraphiteBatteryInputParams(jsonstruct)
+        function paramobj = CompositeBatteryInputParams(jsonstruct)
             
             paramobj = paramobj@BatteryInputParams(jsonstruct);
 

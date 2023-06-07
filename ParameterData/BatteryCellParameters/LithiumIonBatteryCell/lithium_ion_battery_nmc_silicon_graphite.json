@@ -14,7 +14,7 @@
     "dEdtLimit" : 0.01
   },
   "NegativeElectrode": {
-    "electrode_case" : "siliconGraphite",
+    "electrode_case" : "composite",
     "ActiveMaterial": {
       "volumeFraction" : 0.8,
       "Graphite" : {"specificHeatCapacity": 632.0,
