@@ -196,6 +196,8 @@ classdef BatterySwelling < Battery
             elyte_cells(model.(elyte).G.mappings.cellmap) = (1 : model.(elyte).G.cells.num)';
 
             
+
+            
             % Initialisation of AD for the porosity of the elyte
             state.(elyte).volumeFraction = 0 * state.(elyte).c;
 
@@ -376,6 +378,7 @@ classdef BatterySwelling < Battery
             
             initstate.(ctrl).E = OCP(1) - ref;
             
+
             switch model.(ctrl).controlPolicy
               case 'CCCV'
                 switch model.(ctrl).initialControl
@@ -396,8 +399,8 @@ classdef BatterySwelling < Battery
                   case 'discharging'
                     initstate.(ctrl).I = model.(ctrl).Imax;
                   case 'charging'
-                    %initstate.(ctrl).I = model.(ctrl).Imax;
-                    error('to implement (should be easy...)')
+                    initstate.(ctrl).I = model.(ctrl).Imax;
+                    %error('to implement (should be easy...)')
                   otherwise
                     error('initialControl not recognized');
                 end
@@ -432,7 +435,10 @@ classdef BatterySwelling < Battery
             for ind = 1 : numel(eldes)
                 elde = eldes{ind};
                 if model.(elde).(am).isSwellingMaterial
-                    initstate.(elde).(am).porosity = model.(elde).(am).porosity;
+                    vf = model.(elde).(am).(itf).volumeFraction;
+                    amf = model.(elde).(am).activeMaterialFraction;
+                    ADstruc = model.(elde).(am).porosity ./ model.(elde).(am).porosity;
+                    initstate.(elde).(am).porosity = (1 - vf - amf) .* ADstruc;
                 end   
             end
             
@@ -519,21 +525,30 @@ classdef BatterySwelling < Battery
             for ind = 1 : numel(electrodes)
                 elde = electrodes{ind};
 
+                state.(elde).(am).(sd)            = battery.(elde).(am).(sd).updateAverageConcentration(state.(elde).(am).(sd));
+
                 if battery.(elde).(am).isSwellingMaterial
-                    state.(elde).(am).(sd)            = battery.(elde).(am).(sd).updateAverageConcentration(state.(elde).(am).(sd));
+                    % Reaction Rate coefficient has to be normalized
+                    state.(elde).(am)                 = battery.(elde).(am).updateHydrostaticStress(state.(elde).(am));
                     state.(elde).(am)                 = battery.(elde).(am).updateRadius(state.(elde).(am));
                     state.(elde).(am)                 = battery.(elde).(am).updateVolumetricSurfaceArea(state.(elde).(am));
                     state.(elde).(am)                 = battery.(elde).(am).updateReactionRateCoefficient(state.(elde).(am));
                 else
-                    state.(elde).(am).(sd)            = battery.(elde).(am).(sd).updateAverageConcentration(state.(elde).(am).(sd));
                     state.(elde).(am).(itf)           = battery.(elde).(am).(itf).updateReactionRateCoefficient(state.(elde).(am).(itf));
-                    
                 end
                 
                 state.(elde).(am).(itf) = battery.(elde).(am).(itf).updateOCP(state.(elde).(am).(itf));
                 state.(elde).(am).(itf) = battery.(elde).(am).(itf).updateEta(state.(elde).(am).(itf));
-                state.(elde).(am).(itf) = battery.(elde).(am).(itf).updateReactionRate(state.(elde).(am).(itf));
-                state.(elde).(am) = battery.(elde).(am).updateRvol(state.(elde).(am));
+
+                if battery.(elde).(am).isSwellingMaterial
+                    % Reaction rate taking into account the influence of
+                    % stress
+                    state.(elde).(am)       = battery.(elde).(am).updateReactionRate(state.(elde).(am));
+                else
+                    state.(elde).(am).(itf) = battery.(elde).(am).(itf).updateReactionRate(state.(elde).(am).(itf));
+                end
+
+                state.(elde).(am)       = battery.(elde).(am).updateRvol(state.(elde).(am));
             end
 
             
@@ -696,7 +711,7 @@ classdef BatterySwelling < Battery
             ei = model.equationIndices;
 
             massConsScaling = model.con.F;
-            V_scaling = 1000000000;
+            V_scaling = 100000000000;
             M_scaling = 1;
             pescaling = 1;
             sc_ne_sd = 1;

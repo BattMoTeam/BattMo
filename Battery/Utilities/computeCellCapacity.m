@@ -69,8 +69,10 @@ function [cap, cap_neg, cap_pos, specificEnergy] = computeCellCapacity(model, va
 
 
         if ammodel.isSwellingMaterial
+            vol = sum(vol_fraction.*ammodel.G.cells.volumes);
+
             R_delith = ammodel.SolidDiffusion.rp;
-            soc = 0.99;
+            soc = 0.9;
            
             %to get the radius of the particle unlithiated, we tuse the eq
             %11 in Chandrasekaran, Magasinski, Yushin and Fuller
@@ -88,9 +90,9 @@ function [cap, cap_neg, cap_pos, specificEnergy] = computeCellCapacity(model, va
         end
         
     end
-   
-    cap_neg = cap_usable(1);
-    cap_pos = cap_usable(2);
+ 
+    cap_neg = cap_usable(1)
+    cap_pos = cap_usable(2)
 
     cap = min(cap_usable);
 

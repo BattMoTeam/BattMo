@@ -31,7 +31,8 @@ classdef SwellingMaterial < ActiveMaterial
                         'porosityAccum'  ,...
                         'porositySource' ,...
                         'porosityFlux'   ,...
-                        'volumeCons'};
+                        'volumeCons'     ,...
+                        'hydrostaticStress'};
 
             model = model.registerVarNames(varnames);
       
@@ -52,6 +53,9 @@ classdef SwellingMaterial < ActiveMaterial
             fn = @SwellingMaterial.updateConductivity;
             model = model.registerPropFunction({'conductivity', fn, {'volumeFraction'} });
 
+
+            fn = @SwellingMaterial.updateHydrostaticStress
+            model = model.registerPropFunction({'hydrostaticStress', fn, {sd,'cAverage'} });
 
             if model.use_particle_diffusion
                 
@@ -146,8 +150,8 @@ classdef SwellingMaterial < ActiveMaterial
             n     = model.(itf).n; % number of electron transfer (equal to 1 for Lithium)
             F     = model.(sd).constants.F;
             vol   = model.operators.pv;
-            rp    = state.radius;
-            vsf   = state.Interface.volumetricSurfaceArea;
+            rp    = model.radius;
+            vsf   = model.Interface.volumetricSurfaceArea;
             surfp = 4*pi*rp^2;
             
             scalingcoef = (vsf*vol(1)*n*F)/surfp;
@@ -171,26 +175,52 @@ classdef SwellingMaterial < ActiveMaterial
 
         end
 
+        function model = setupDependentProperties(model)           
+
+            amFrac    = model.activeMaterialFraction;
+            model.volumeFraction = 1 - model.porosity - amFrac ;
+            vf = model.volumeFraction;
+            brugg = model.BruggemanCoefficient;
+            
+            % setup effective electrical conductivity using Bruggeman approximation
+            model.EffectiveElectricalConductivity = model.electricalConductivity.*vf.^brugg;
+
+            
+            if model.use_interparticle_diffusion
+                
+                interDiff = model.InterDiffusionCoefficient;
+                
+                
+                model.EffectiveDiffusionCoefficient = interDiff.*(vf).^brugg;
+                
+            end
+
+            if model.use_thermal
+                % setup effective thermal conductivity
+                model.EffectiveThermalConductivity = model.thermalConductivity.*vf.^brugg;
+                model.EffectiveVolumetricHeatCapacity = model.specificHeatCapacity.*vf.*model.density;
+            end
+            
+        end
+
 
 %% Update for variables already defined in ActiveMaterial but depending on the volumeFraction or the volumetric
 % surface area which are no more constant parameters
 
-        %% Same as in Active Material but for a non constant volumeFraction    
+        % Same as in Active Material but for a non constant volumeFraction    
         function state = assembleAccumTerm(model, state, state0, dt)
         % Used when diffusionModelType == 'simple'
             
             vols   = model.G.cells.volumes;
-            amFrac = model.activeMaterialFraction;
-
             vf     = state.volumeFraction;
             c  = state.c;
             c0 = state0.c;
 
-            state.massAccum = vols.*vf.*amFrac.*(c - c0)/dt;
+            state.massAccum = vols.*vf.*(c - c0)/dt;
             
         end
 
-        %% Same as in Active Material but for a non constant volumetricSurfaceArea    
+        % Same as in Active Material but for a non constant volumetricSurfaceArea    
         function state = updateRvol(model, state)
 
             vsa = state.Interface.volumetricSurfaceArea;
@@ -205,109 +235,23 @@ classdef SwellingMaterial < ActiveMaterial
             end           
         end
         
-        %% Same as in Active Material but for a non constant volumeFraction    
+        % Same as in Active Material but for a non constant volumeFraction    
         function state = updateAverageConcentration(model, state)
 
             sd  = 'SolidDiffusion';
 
-            am_frac  = model.activeMaterialFraction;
             vols     = model.G.cells.volumes;
 
             vf       = state.volumeFraction;
             c        = state.(sd).cAverage;
 
-            vols = am_frac*vf.*vols;
+            vols = vf.*vols;
 
             cAverage = sum(c.*vols)/sum(vols);
 
             state.cAverage = cAverage;
             
         end
-
-   
-%% Update of the new variables (variables which are constant parameters in the case of ActiveMaterial)
-
-
-        function state = updateRadius(model, state)
-     %eq 4 in Modelling capacity fade in silicon-graphite composite electrodes for lithium-ion batteries
-     %Shweta Dhillon, Guiomar Hernández, Nils P. Wagner, Ann Mari Svensson, Daniel Brandell ([ref 1])
-
-            R_delith = model.SolidDiffusion.rp;
-            cmax     = model.Interface.cmax;
-
-            cAverage = state.SolidDiffusion.cAverage;
-
-            R_lith   = computeRadius(cAverage, cmax, R_delith);
-
-            if R_lith < R_delith
-                error('Radius inferior to R_delith, not coherent')
-            end
-
-            state.radius = R_lith;
-            
-            if model.use_particle_diffusion
-                state.SolidDiffusion.radius = R_lith;
-            end            
-        end
-
-        
-        function state = updateVolumeFraction(model, state)
-
-            porosity = state.porosity;
-
-            vf = 1 - porosity;
-
-            state.volumeFraction = vf;
-            state.Interface.volumeFraction = vf;
-
-             if model.use_particle_diffusion
-                state.SolidDiffusion.volumeFraction = vf;
-             end
-             
-        end
-
-
-        function state = updateVolumetricSurfaceArea(model, state)
-     % Geometric result giving the volumetric surface area (cf bottom of
-     % page 3 in Modelling capacity fade in silicon-graphite composite electrodes for
-     % lithium-ion batteries Shweta Dhillon, Guiomar Hernández, Nils P. Wagner, Ann Mari Svensson,
-     % Daniel Brandell ([ref1])
-            
-            amf    = model.activeMaterialFraction;
-
-            vf     = state.Interface.volumeFraction;
-            radius = state.radius;
-
-            vsa    = (3.*vf.*amf)./radius;
-
-            state.Interface.volumetricSurfaceArea = vsa;
-
-            if model.use_particle_diffusion
-                
-                amf    = model.activeMaterialFraction;
-
-                vf     = state.Interface.volumeFraction;
-                radius = state.SolidDiffusion.radius;
-
-                vsa    = (3.*vf.*amf)./radius;
-
-                state.SolidDiffusion.volumetricSurfaceArea = vsa;
-                
-            end
-        end
-
-
-        function state = updateConductivity(model, state)
-            
-            brugg = model.BruggemanCoefficient;
-
-            vf    = state.Interface.volumeFraction;
-                   
-            % setup effective electrical conductivity using Bruggeman approximation
-            state.conductivity = model.electricalConductivity.*vf.^brugg;
-            
-        end
-
 
         function state = updateReactionRateCoefficient(model, state)
             if model.Interface.useJ0Func
@@ -368,17 +312,148 @@ classdef SwellingMaterial < ActiveMaterial
         end
 
 
+        function state = updateConductivity(model, state)
+            
+            brugg = model.BruggemanCoefficient;
+
+            vf    = state.Interface.volumeFraction;
+                   
+            % setup effective electrical conductivity using Bruggeman approximation
+            state.conductivity = model.electricalConductivity.*vf.^brugg;
+            
+        end
+
+        function state = updateCurrentSource(model, state)
+            
+            F    = model.Interface.constants.F;
+            vols = model.G.cells.volumes;
+            n    = model.Interface.n;
+
+            Rvol = state.Rvol;
+            
+            r = state.SolidDiffusion.radius;
+            r0 = model.SolidDiffusion.rp;
+            state.eSource = - vols.*Rvol*n*F; % C/s
+            
+        end
+
+         function state = updateReactionRate(model, state)
+        % Same as in the interface class but uses the Butler Volmer
+        % zquation including stress
+            n     = model.Interface.n;
+            F     = model.Interface.constants.F;
+            alpha = model.Interface.alpha;
+
+            T   = state.Interface.T;
+            j0  = state.Interface.j0;
+            eta = state.Interface.eta;
+            sigma = state.hydrostaticStress;
+            
+            R = ButlerVolmerEquation_withStress(j0, alpha, n, eta, sigma,T);
+
+            state.Interface.R = R/(n*F); % reaction rate in mol/(s*m^2)
+
+        end
+
+   
+%% Update of the new variables (variables which are constant parameters in the case of ActiveMaterial)
+
+
+        function state = updateRadius(model, state)
+     %eq 4 in Modelling capacity fade in silicon-graphite composite electrodes for lithium-ion batteries
+     %Shweta Dhillon, Guiomar Hernández, Nils P. Wagner, Ann Mari Svensson, Daniel Brandell ([ref 1])
+
+            R_delith = model.SolidDiffusion.rp;
+            cmax     = model.Interface.cmax;
+
+            cAverage = state.SolidDiffusion.cAverage;
+
+            R_lith   = computeRadius(cAverage, cmax, R_delith);
+
+            if R_lith < R_delith
+                error('Radius inferior to R_delith, not coherent')
+            end
+
+            state.radius = R_lith;
+            
+            if model.use_particle_diffusion
+                state.SolidDiffusion.radius = R_lith;
+            end            
+        end
+
+        
+        function state = updateVolumeFraction(model, state)
+
+            porosity = state.porosity;
+            amf = model.activeMaterialFraction;
+
+            vf = 1 - porosity - amf;
+
+            state.volumeFraction = vf;
+            state.Interface.volumeFraction = vf;
+
+             if model.use_particle_diffusion
+                state.SolidDiffusion.volumeFraction = vf;
+             end
+             
+        end
+
+
+        function state = updateVolumetricSurfaceArea(model, state)
+     % Geometric result giving the volumetric surface area (cf bottom of
+     % page 3 in Modelling capacity fade in silicon-graphite composite electrodes for
+     % lithium-ion batteries Shweta Dhillon, Guiomar Hernández, Nils P. Wagner, Ann Mari Svensson,
+     % Daniel Brandell ([ref1])
+            
+            vf     = state.Interface.volumeFraction;
+            radius = state.radius;
+
+            vsa    = (3.*vf)./radius;
+
+            state.Interface.volumetricSurfaceArea = vsa;
+
+            if model.use_particle_diffusion
+
+                vf     = state.Interface.volumeFraction;
+                radius = state.SolidDiffusion.radius;
+
+                vsa    = (3.*vf)./radius;
+
+                state.SolidDiffusion.volumetricSurfaceArea = vsa;
+                
+            end
+        end
+      
+
+        function state = updateHydrostaticStress(model, state)
+            E = 0;
+            %Uncomment the expression of E  above for taking into account the stress
+            %E         = 1e+11;
+            nu        = 0.27;
+            Omega     = 4.25e-06;
+
+            cSurface  = state.Interface.cElectrodeSurface;
+            cAverage  = state.SolidDiffusion.cAverage;
+
+            sigma = ( (2.* E.* Omega)/(9.*(1-nu)) ) .* (cAverage - cSurface);
+
+            state.hydrostaticStress = sigma;
+        end
+
+       
+
+
+
 
    %% Implementation of a new equation : the volume conservation Equation
    % Reference : eq 2 in [ref1]
    
         function state = updatePorosityAccum(model, state, state0, dt)
             vols = model.G.cells.volumes;
-            amFrac = model.activeMaterialFraction;
 
             vf     = state.volumeFraction;
             
-            state.porosityAccum =  amFrac .* vf .* vols.*(state.porosity - state0.porosity)./dt;
+            state.porosityAccum =  vf .* vols.*(state.porosity - state0.porosity)./dt;
             
         end
             
@@ -386,7 +461,6 @@ classdef SwellingMaterial < ActiveMaterial
         % cf eq 2 in [ref1]
         
             vols   = model.G.cells.volumes;
-            amFrac = model.activeMaterialFraction;
             cmax = model.Interface.cmax;
 
             vf     = state.volumeFraction;
@@ -397,7 +471,10 @@ classdef SwellingMaterial < ActiveMaterial
             molarVolumeLithiated   = model.updateMolarVolumeLithiated(c);
             molarVolumeDelithiated = model.updateMolarVolumeLithiated(0);
 
-            state.porositySource = a.*R.*(molarVolumeLithiated - molarVolumeDelithiated).*vols .* vf .* amFrac;
+            r0 = model.SolidDiffusion.rp;
+            r = computeRadius(c,cmax,r0);
+
+            state.porositySource = a.*R.*(molarVolumeLithiated - molarVolumeDelithiated).*vols .* vf;
             
         end
 
@@ -424,6 +501,8 @@ classdef SwellingMaterial < ActiveMaterial
             
         end
 
+
+
   
 
 
@@ -447,8 +526,7 @@ classdef SwellingMaterial < ActiveMaterial
             itf = 'Interface';
             sd  = 'SolidDiffusion';
 
-            
-            am_frac  = model.activeMaterialFraction;
+
             vols     = model.G.cells.volumes;
             cmax     = model.(itf).cmax;
             theta100 = model.(itf).theta100;
@@ -472,7 +550,7 @@ classdef SwellingMaterial < ActiveMaterial
             m     = (1 ./ (theta100 - theta0));
             b     = -m .* theta0;
             SOC   = theta*m + b;
-            vol   = am_frac*vf.*vols;
+            vol   = vf.*vols;
             
             SOC = sum(SOC.*vol)/sum(vol);
 
@@ -488,8 +566,6 @@ classdef SwellingMaterial < ActiveMaterial
             sd  = 'SolidDiffusion';
 
             
-            am_frac  = model.activeMaterialFraction;
-            vols     = model.G.cells.volumes;
             cmax     = model.(itf).cmax;
             theta100 = model.(itf).theta100;
             theta0   = model.(itf).theta0;
