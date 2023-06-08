@@ -70,13 +70,7 @@ classdef Battery < BaseModel
 
             model.NegativeElectrode = Electrode(paramobj.NegativeElectrode);
             model.PositiveElectrode = Electrode(paramobj.PositiveElectrode);
-
-            %define the electrolyte
-            if model.NegativeElectrode.ActiveMaterial.isSwellingMaterial | model.PositiveElectrode.ActiveMaterial.isSwellingMaterial
-                model.Electrolyte       = ElectrolyteSwelling(paramobj.Electrolyte);
-            else
-                model.Electrolyte       = Electrolyte(paramobj.Electrolyte);
-            end
+            model.Electrolyte       = Electrolyte(paramobj.Electrolyte);
 
             if model.use_thermal
                 model.ThermalModel = ThermalComponent(paramobj.ThermalModel);
@@ -454,7 +448,7 @@ classdef Battery < BaseModel
             end
             
         end
-
+        
         function control = setupControl(model, paramobj)
 
             C = computeCellCapacity(model);
@@ -477,8 +471,6 @@ classdef Battery < BaseModel
               otherwise
                 error('Error controlPolicy not recognized');
             end
-            
-            
             
         end
         

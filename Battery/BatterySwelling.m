@@ -11,12 +11,71 @@ classdef BatterySwelling < Battery
     methods
         
         function model = BatterySwelling(paramobj)
-            model = model@Battery(paramobj)
+            
+            model = model@BaseModel();
+            
+            % All the submodels should have same backend (this is not assigned automaticallly for the moment)
+            model.AutoDiffBackend = SparseAutoDiffBackend('useBlocks', false);
+            
+            %% Setup the model using the input parameters
+            fdnames = {'G'                         , ...
+                       'couplingTerms'             , ...
+                       'initT'                     , ...
+                       'use_thermal'               , ...
+                       'include_current_collectors', ...
+                       'use_thermal'               , ...
+                       'SOC'};
+            
+            model = dispatchParams(model, paramobj, fdnames);
+
+            %define the electrodes (Electrode class allows to define the corresponding ActiveMaterial if the material 
+            % doesn't swell or to define the corresponding swelling material if it is a swelling material.
+
+            model.NegativeElectrode = Electrode(paramobj.NegativeElectrode);
+            model.PositiveElectrode = Electrode(paramobj.PositiveElectrode);
+            model.Electrolyte       = ElectrolyteSwelling(paramobj.Electrolyte);
+
+            if model.use_thermal
+                model.ThermalModel = ThermalComponent(paramobj.ThermalModel);
+            end
+            
+            model.Control = model.setupControl(paramobj.Control);
+           
+            % define shorthands
+            elyte   = 'Electrolyte';
+            ne      = 'NegativeElectrode';
+            pe      = 'PositiveElectrode';
+            am      = 'ActiveMaterial';
+            cc      = 'CurrentCollector';
+            am      = 'ActiveMaterial';
+            itf     = 'Interface';
+            thermal = 'ThermalModel';
+           
+            % setup Electrolyte model (setup electrolyte volume fractions in the different regions)
+            model = model.setupElectrolyteModel();            
+
+            if model.use_thermal
+                % setup Thermal Model by assigning the effective heat capacity and conductivity, which is computed from the sub-models.
+                model = model.setupThermalModel();
+            end
+            
+            % setup couplingNames
+            model.couplingNames = cellfun(@(x) x.name, model.couplingTerms, 'uniformoutput', false);
+            
+            % setup equations and variable names selected in the model
+            model = model.setupSelectedModel();
+            
+            % setup some mappings (mappings from electrodes to electrolyte)
+            model = model.setupMappings();
+            
+            % setup capping
+            model = model.setupCapping();
+
         end
 
-    %% Same setup as in the BatteryClass but adding the volumeConservationEquation
+        %% Same setup as in the BatteryClass but adding the volumeConservationEquation
+
         function model = setupSelectedModel(model, varargin)
-            
 
             opt = struct('reduction', []);
             opt = merge_options(opt, varargin{:});
@@ -275,7 +334,7 @@ classdef BatterySwelling < Battery
             end
         end
 
-      %% Same initialisation as for Battery but includes the porosity initialisation
+        %% Same initialisation as for Battery but includes the porosity initialisation
         function initstate = setupInitialState(model)
             nc = model.G.cells.num;
 
@@ -444,6 +503,31 @@ classdef BatterySwelling < Battery
             
         end
 
+        function control = setupControl(model, paramobj)
+
+            C = computeCellCapacity(model, 'isSwellingMaterial', true);
+
+            switch paramobj.controlPolicy
+              case "IEswitch"
+                control = IEswitchControlModel(paramobj); 
+                CRate = control.CRate;
+                control.Imax = (C/hour)*CRate;
+              case "CCCV"
+                control = CcCvControlModel(paramobj);
+                CRate = control.CRate;
+                control.Imax = (C/hour)*CRate;
+              case "powerControl"
+                control = PowerControlModel(paramobj);
+              case "CC"
+                control = CcControlModel(paramobj);
+                CRate = control.CRate;
+                control.Imax = (C/hour)*CRate;
+              otherwise
+                error('Error controlPolicy not recognized');
+            end
+            
+        end
+        
 
 
       %% Assembly of the governing equation (same as for Battery but taking into account porosity variations)

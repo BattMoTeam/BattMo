@@ -110,10 +110,10 @@ initState.phi = OCP + phiElectrolyte;
 
 %% setup schedule
 
-controlsrc = -1e1;
+controlsrc = -50;
 
-total = (80*hour)/abs(controlsrc);
-n     = 100;
+total = (500*hour)/abs(controlsrc);
+n     = 200;
 dt    = total/n;
 step  = struct('val', dt*ones(n, 1), 'control', ones(n, 1));
 

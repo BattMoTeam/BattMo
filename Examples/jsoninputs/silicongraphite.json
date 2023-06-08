@@ -26,7 +26,7 @@
               "BruggemanCoefficient": 1.5,
               "Interface": {
                 "isFile": true,
-                "filename": "ParameterData/MaterialProperties/Silicon/silicon.json"
+                "filename": "ParameterData/MaterialProperties/Silicon/siliconLi2012.json"
               },
               "diffusionModelType" : "full",
               "SolidDiffusion" : {

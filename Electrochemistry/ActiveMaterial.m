@@ -80,10 +80,10 @@ classdef ActiveMaterial < ElectronicComponent
                 model.use_interparticle_diffusion = true;
               case 'full'
                 paramobj.SolidDiffusion.np = model.G.cells.num;
-                if model.isSwellingMaterial == 0
-                    model.SolidDiffusion = FullSolidDiffusionModel(paramobj.SolidDiffusion);
-                else
+                if model.isSwellingMaterial == 1
                     model.SolidDiffusion = FullSolidDiffusionSwellingModel(paramobj.SolidDiffusion);
+                else
+                    model.SolidDiffusion = FullSolidDiffusionModel(paramobj.SolidDiffusion);
                 end
                 model.use_particle_diffusion = true;
                 model.use_interparticle_diffusion = false;

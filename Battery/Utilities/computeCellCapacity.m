@@ -17,7 +17,8 @@ function [cap, cap_neg, cap_pos, specificEnergy] = computeCellCapacity(model, va
 %
 % SEE ALSO:
 %
-    opt = struct('packingMass', 0);
+    opt = struct('packingMass', 0, ...
+                'isSwellingMaterial', false);
     opt = merge_options(opt, varargin{:});
 
     ne  = 'NegativeElectrode';
@@ -99,13 +100,6 @@ function [cap, cap_neg, cap_pos, specificEnergy] = computeCellCapacity(model, va
             error('electrode_case not recognized');
         end
         
-        vol_fraction = ammodel.volumeFraction;
-        am_fraction  = ammodel.activeMaterialFraction;
-
-        vol = sum(am_fraction*vol_fraction.*ammodel.G.cells.volumes);
-        
-        cap_usable(ind) = (thetaMax - thetaMin)*cMax*vol*n*F;
-
         % Warning : The calculation we did above relies on the initialstate
         % of the activeMaterial (the one defined in the json file).
         % However, for a swelling material, the calculation of the capacity
@@ -116,7 +110,7 @@ function [cap, cap_neg, cap_pos, specificEnergy] = computeCellCapacity(model, va
         % that the real capacity is Nmax_part * NtotParticles with NtotParticles = totalVolume/particleVolume. 
 
 
-        if ammodel.isSwellingMaterial
+        if opt.isSwellingMaterial && ammodel.isSwellingMaterial
             vol = sum(vol_fraction.*ammodel.G.cells.volumes);
 
             R_delith = ammodel.SolidDiffusion.rp;
