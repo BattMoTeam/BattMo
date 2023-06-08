@@ -43,17 +43,10 @@ function flatjsonviewer = compareJson(jsonstruct1, jsonstruct2)
         entry = {flatjson1{ismissing2(ii), 1}, flatjson1{ismissing2(ii), 2}, NaN};
         flatjsonmissing{end + 1} = entry;
     end
-
-    output.flatjson1 = flatjson1;
-    output.flatjson2 = flatjson2;
     
     flatjsoncommon    = vertcat(flatjsoncommon{:});
     flatjsondifferent = vertcat(flatjsondifferent{:});
     flatjsonmissing   = vertcat(flatjsonmissing{:});
-
-    output.flatjsoncommon    = flatjsoncommon;
-    output.flatjsondifferent = flatjsondifferent;
-    output.flatjsonmissing   = flatjsonmissing;
 
     n                 = size(flatjsoncommon, 1);
     flatjsoncommon    = horzcat(flatjsoncommon, repmat({'equal'}, n, 1));
