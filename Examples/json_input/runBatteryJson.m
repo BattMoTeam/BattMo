@@ -1,4 +1,8 @@
 function  output = runBatteryJson(jsonstruct, varargin)
+
+    opt = struct('runSimulation'       , true , ...
+                 'includeGridGenerator', false);
+    opt = merge_options(opt, varargin{:});
     
     mrstModule add ad-core mrst-gui mpfa
     
@@ -69,7 +73,7 @@ function  output = runBatteryJson(jsonstruct, varargin)
 
     switch model.Control.controlPolicy
       case 'IEswitch'
-        tup = 0.1; % rampup value for the current function, see rampupSwitchControl
+        tup = model.Control.tup; % rampup value for the current function, see rampupSwitchControl
         srcfunc = @(time, I, E) rampupSwitchControl(time, tup, I, E, ...
                                                     model.Control.Imax, ...
                                                     model.Control.lowerCutoffVoltage);
@@ -119,7 +123,7 @@ function  output = runBatteryJson(jsonstruct, varargin)
         
         % setup default values
         jsonstruct.NonLinearSolver.maxIterations = 10;
-        jsonstruct.NonLinearSolver.nonlinearTolerance = 1e-5;
+        jsonstruct.NonLinearSolver.nonlinearTolerance = [];
         jsonstruct.NonLinearSolver.verbose = false;
         
         linearSolverSetup.library = "matlab";
@@ -146,10 +150,13 @@ function  output = runBatteryJson(jsonstruct, varargin)
     
     % Change default tolerance for nonlinear solver
     % For the moment, this is hard-coded here
-    if ~isempty(model.Control.Imax)
+    if isfield(jsonstruct.NonLinearSolver, 'nonlinearTolerance')
+        model.nonlinearTolerance = jsonstruct.NonLinearSolver.nonlinearTolerance;
+    elseif ~isempty(model.Control.Imax)
         model.nonlinearTolerance = 1e-3*model.Control.Imax;
     else
-        model.nonlinearTolerance = jsonstruct.NonLinearSolver.nonlinearTolerance;
+        % some default value
+        model.nonlinearTolerance = 1e-5;
     end
     
     % Set verbosity
@@ -161,28 +168,40 @@ function  output = runBatteryJson(jsonstruct, varargin)
     
         
     %% Run the simulation
-    if isfield(jsonstruct, 'Output') && isfield(jsonstruct.Output, 'saveOutput') && jsonstruct.Output.saveOutput
-        saveOptions = jsonstruct.Output.saveOptions;
-        
-        outputDirectory = saveOptions.outputDirectory;
-        name            = saveOptions.name;
-        clearSimulation = saveOptions.clearSimulation;
-        
-        problem = packSimulationProblem(initstate, model, schedule, [], ...
-                                        'Directory'      , outputDirectory, ...
-                                        'Name'           , name      , ...
-                                        'NonLinearSolver', nls);
-        problem.SimulatorSetup.OutputMinisteps = true; 
+    if opt.runSimulation
+        if isfield(jsonstruct, 'Output') && isfield(jsonstruct.Output, 'saveOutput') && jsonstruct.Output.saveOutput
+            saveOptions = jsonstruct.Output.saveOptions;
+            
+            outputDirectory = saveOptions.outputDirectory;
+            name            = saveOptions.name;
+            clearSimulation = saveOptions.clearSimulation;
+            
+            problem = packSimulationProblem(initstate, model, schedule, [], ...
+                                            'Directory'      , outputDirectory, ...
+                                            'Name'           , name      , ...
+                                            'NonLinearSolver', nls);
+            problem.SimulatorSetup.OutputMinisteps = true; 
 
-        if clearSimulation
-            %% clear previously computed simulation
-            clearPackedSimulatorOutput(problem, 'prompt', false);
+            if clearSimulation
+                %% clear previously computed simulation
+                clearPackedSimulatorOutput(problem, 'prompt', false);
+            end
+            simulatePackedProblem(problem);
+            [globvars, states, reports] = getPackedSimulatorOutput(problem);
+            
+        else
+            [~, states, report] = simulateScheduleAD(initstate, model, schedule, 'OutputMinisteps', true, 'NonLinearSolver', nls);
         end
-        simulatePackedProblem(problem);
-        [globvars, states, reports] = getPackedSimulatorOutput(problem);
-        
     else
-        [~, states, report] = simulateScheduleAD(initstate, model, schedule, 'OutputMinisteps', true, 'NonLinearSolver', nls);
+        output = struct('model'    , model    , ...
+                        'paramobj' , paramobj , ... 
+                        'schedule' , schedule , ...
+                        'initstate', initstate);
+        if opt.includeGridGenerator
+            output.gridGenerator = gridGenerator;
+        end
+
+        return;
     end
 
     %% Process output and recover the output voltage and current from the output states.
@@ -194,6 +213,7 @@ function  output = runBatteryJson(jsonstruct, varargin)
     time = cellfun(@(state) state.time, states); 
 
     output = struct('model'    , model    , ...
+                    'paramobj' , paramobj , ...
                     'schedule' , schedule , ... 
                     'initstate', initstate, ...
                     'time'     , time     , ... % Unit : s
@@ -205,9 +225,12 @@ function  output = runBatteryJson(jsonstruct, varargin)
     if isfield(jsonstruct, 'Output') ...
         && isfield(jsonstruct.Output, 'variables') ...
         && any(ismember({'energy', 'energyDensity', 'specificEnergy'}, jsonstruct.Output.variables))
-        
-        % TODO : We could fine tuned output (at the moment we output all the possible extrav variables)
-        mass = computeCellMass(model);
+
+        if ismember('specificEnergy', jsonstruct.Output.variables)
+            mass = computeCellMass(model);
+        else
+            mass = [];
+        end
         vol = sum(model.G.cells.volumes);
         
         [E, I, energyDensity, specificEnergy, energy] = computeEnergyDensity(E, I, time, vol, mass);
@@ -219,7 +242,11 @@ function  output = runBatteryJson(jsonstruct, varargin)
         output.specificEnergy = specificEnergy;  % Unit : J/kg
         
     end
-
+    
+    if opt.includeGridGenerator
+        output.gridGenerator = gridGenerator;
+    end
+    
 end
 
 

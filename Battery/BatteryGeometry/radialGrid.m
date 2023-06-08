@@ -478,6 +478,7 @@ function output = radialGrid(params)
     output.G                       = G;
     output.tag                     = tag;
     output.tagdict                 = tagdict;
+    output.celltbl                 = celltbl;
     output.positiveExtCurrentFaces = positiveExtCurrentFaces;
     output.negativeExtCurrentFaces = negativeExtCurrentFaces;
     output.thermalExchangeFaces    = thermalExchangeFaces;   

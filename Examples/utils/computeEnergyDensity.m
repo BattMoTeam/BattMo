@@ -16,8 +16,12 @@ function [Emid, Imid, energyDensity, specificEnergy, energy] = computeEnergyDens
         energy = energy/hour; % Wh
         energyDensity = energy/vol/1000; %  Wh/L
     end
-    
-    specificEnergy = energy/mass; % J/kg or Wh/kg
+
+    if ~isempty(mass)
+        specificEnergy = energy/mass; % J/kg or Wh/kg
+    else
+        specificEnergy = [];
+    end
 end
 
 

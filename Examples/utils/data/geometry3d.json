@@ -1,0 +1,12 @@
+{ "Geometry" : {"case" : "3D-demo"},
+  "NegativeElectrode": { "ActiveMaterial": { "thickness" : 100e-6,
+                                             "N" : 3},
+                         "CurrentCollector": { "thickness" : 10e-6,
+                                               "N" : 2}},
+  "PositiveElectrode": { "ActiveMaterial": {"thickness" : 80e-6,
+                                            "N" : 3},
+                         "CurrentCollector": { "thickness" : 10e-6,
+                                               "N" : 2}},
+  "Electrolyte": { "Separator" : {"thickness" : 50e-6,
+                                  "N" : 3} }
+}

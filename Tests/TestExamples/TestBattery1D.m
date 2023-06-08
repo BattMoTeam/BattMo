@@ -23,9 +23,9 @@ classdef TestBattery1D < matlab.unittest.TestCase
                       'use_thermal', use_thermal};
 
             if strcmp(diffusionModelType, 'none')
-                params = [params, {'use_particle_diffusion', false}];
+                params = [params, {'NegativeElectrode.ActiveMaterial.diffusionModelType', 'interParticleOnly'}];
+                params = [params, {'PositiveElectrode.ActiveMaterial.diffusionModelType', 'interParticleOnly'}];
             else
-                params = [params, {'use_particle_diffusion', true}];
                 params = [params, {'NegativeElectrode.ActiveMaterial.diffusionModelType', diffusionModelType}];
                 params = [params, {'PositiveElectrode.ActiveMaterial.diffusionModelType', diffusionModelType}];
             end

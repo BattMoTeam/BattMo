@@ -33,7 +33,7 @@ classdef BatteryGenerator1D < BatteryGenerator
         use_thermal
 
         % Face area in the transversal direction (default = 1)
-        faceArea = 1; 
+        faceArea = 2*1.6387e-04;
         
     end
     

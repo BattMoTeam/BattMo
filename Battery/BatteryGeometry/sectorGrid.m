@@ -67,6 +67,19 @@ function output = sectorGrid(params)
     rcells(scells) = [];
     
     [G, cellmap, facemap, nodemap] = removeCells(radG, rcells);
+
+    cutcelltbl.radcells = cellmap;
+    cutcelltbl.cells    = (1 : G.cells.num)';
+    cutcelltbl = IndexArray(cutcelltbl);
+
+    gen = CrossIndexArrayGenerator();
+    gen.tbl1 = cutcelltbl;
+    gen.tbl2 = celltbl;
+    gen.replacefds2 = {{'cells', 'radcells'}};
+    gen.mergefds = {'radcells'};
+
+    celltbl = gen.eval();
+    celltbl = projIndexArray(celltbl, {'cells', 'indR', 'indZ'});
     
     tag = tag(cellmap);
     
@@ -103,6 +116,7 @@ function output = sectorGrid(params)
     output.G                       = G;
     output.tag                     = tag;
     output.tagdict                 = tagdict;
+    output.celltbl                 = celltbl;
     output.positiveExtCurrentFaces = positiveExtCurrentFaces;
     output.negativeExtCurrentFaces = negativeExtCurrentFaces;
     output.thermalExchangeFaces    = thermalExchangeFaces;   

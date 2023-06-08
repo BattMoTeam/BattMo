@@ -126,6 +126,7 @@ classdef BatteryGenerator
             % setup Electrode grid
             paramobj = gen.setupElectrodeGrid(paramobj, params);
             % setup Electrode active component (am)
+            params.(am).electrode_case = paramobj.electrode_case;
             paramobj.(am) = gen.setupActiveMaterialGrid(paramobj.(am), params.(am));
             % setup current collector (cc)
             if paramobj.include_current_collectors
@@ -153,7 +154,23 @@ classdef BatteryGenerator
         % Here, :code:`paramobj` is instance of :class:`ActiveMaterialInputParams <Electrochemistry.ActiveMaterialInputParams>`
             
             paramobj.G = genSubGrid(gen.G, params.cellind);
-            
+
+            switch params.electrode_case
+              case 'default'
+                
+                paramobj.G = genSubGrid(gen.G, params.cellind);
+                
+              case 'composite'
+                
+                G = genSubGrid(gen.G, params.cellind);
+                paramobj.G          = G;
+                paramobj.FirstMaterial.G = G;
+                paramobj.SecondMaterial.G  = G;
+                
+              otherwise
+                error('electrode_case not recognized')
+            end
+
         end
         
         function paramobj = setupCurrentCollector(gen, paramobj, params)

@@ -104,7 +104,7 @@ classdef SEIActiveMaterial < ActiveMaterial
             if isempty(model.computationalGraph)
                 model = model.setupComputationalGraph();
                 cgt = model.computationalGraph;
-                model.primaryVarNames = cgt.getPrimaryVariables();
+                model.primaryVarNames = cgt.getPrimaryVariableNames();
                 model.funcCallList = cgt.setOrderedFunctionCallList();
             end
 
@@ -197,7 +197,7 @@ classdef SEIActiveMaterial < ActiveMaterial
 
         % end
 
-        function primaryvarnames = getPrimaryVariables(model)
+        function primaryvarnames = getPrimaryVariableNames(model)
 
             primaryvarnames = model.primaryVarNames;
             
@@ -321,7 +321,7 @@ classdef SEIActiveMaterial < ActiveMaterial
             
             types = repmat({'cell'}, 1, numel(names));
             
-            primaryVars = model.getPrimaryVariables();
+            primaryVars = model.getPrimaryVariableNames();
             
             problem = LinearizedProblem(eqs, types, names, primaryVars, state, dt);
             

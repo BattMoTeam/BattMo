@@ -1,0 +1,83 @@
+{
+  "G": null,
+  "SOC": 0.99,
+  "Ucut": 2,
+  "initT": 298.15,
+  "use_thermal" : false,
+  "include_current_collectors" : false,
+  "Control" : {
+    "controlPolicy" : "IEswitch",
+    "CRate" : 1,
+    "lowerCutoffVoltage" : 2,
+    "upperCutoffVoltage" : 4.1,
+    "dIdtLimit" : 0.01,
+    "dEdtLimit" : 0.01
+  },
+  "NegativeElectrode": {
+    "electrode_case" : "composite",
+    "ActiveMaterial": {
+      "volumeFraction" : 0.8,
+      "FirstMaterial" : {"specificHeatCapacity": 632.0,
+                    "heatCapacity": 632000.0,
+                    "thermalConductivity": 1.04,
+                    "electricalConductivity": 100,
+                    "activeMaterialFraction" : 0.92,
+                    "BruggemanCoefficient": 1.5,
+                    "Interface": {
+                      "isFile": true,
+                      "filename": "ParameterData/MaterialProperties/Graphite/graphite.json"
+                    },
+                    "diffusionModelType" : "full",
+                    "SolidDiffusion" : {
+                      "EaD": 5000,
+                      "D0": 3.9e-14,
+                      "rp": 1e-06,
+                      "N": 10
+                    }
+                   },
+      "SecondMaterial" : {"specificHeatCapacity": 632.0,
+                   "heatCapacity": 632000.0,
+                   "thermalConductivity": 1.04,
+                   "electricalConductivity": 100,
+                   "activeMaterialFraction" : 0.08,
+                   "BruggemanCoefficient": 1.5,
+                   "Interface": {
+                     "isFile": true,
+                     "filename": "ParameterData/MaterialProperties/Silicon/silicon.json"
+                   },
+                   "diffusionModelType" : "full",
+                   "SolidDiffusion" : {
+                     "EaD": 5000,
+                     "D0": 1e-15,
+                     "rp": 6e-8,
+                     "N": 10
+                   }
+                  }
+    }
+  },
+  "PositiveElectrode": {
+    "ActiveMaterial": {
+      "specificHeatCapacity": 700.0,
+      "heatCapacity": 700000.0,
+      "thermalConductivity": 2.1,
+      "InterDiffusionCoefficient": 1e-14,
+      "electricalConductivity": 100,
+      "BruggemanCoefficient": 1.5,
+      "Interface": {
+        "isFile": true,
+        "filename": "ParameterData/MaterialProperties/NMC/nmc111.json"
+      },
+      "diffusionModelType" : "full",
+      "SolidDiffusion": {
+        "EaD": 5000,
+        "D0": 1e-14,
+        "rp": 1e-06,
+        "N": 10
+      }
+    }
+  },
+  "Electrolyte": {
+    "filename": "ParameterData/MaterialProperties/OrganicLiPF6Solutions/orgLiPF6.json",
+    "isFile": true
+  }
+}

@@ -3,6 +3,7 @@ classdef IEswitchControlModel < ControlModel
     properties
 
         Imax
+        tup
         
     end
     
@@ -12,6 +13,9 @@ classdef IEswitchControlModel < ControlModel
         function model = IEswitchControlModel(paramobj)
             
             model = model@ControlModel(paramobj);
+            
+            fdnames = {'tup'};
+            model = dispatchParams(model, paramobj, fdnames);
             
         end
         

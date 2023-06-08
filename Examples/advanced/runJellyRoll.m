@@ -106,8 +106,6 @@ cc      = 'CurrentCollector';
 jsonstruct.include_current_collectors = true;
 jsonstruct.use_thermal = true;
 
-jsonstruct.use_particle_diffusion = true;
-
 diffusionModelType = 'full';
 
 jsonstruct.(pe).(am).diffusionModelType = diffusionModelType;

@@ -28,7 +28,11 @@
                  },
 
   "defs" : {
-    "IEswitchControlModel" : {"description" : "no more data than default is needed"},
+    "IEswitchControlModel" : {
+      "properties" :
+      {"tup" : {"type" : "number",
+                "description" : "rampup time"}
+      }},
     "CcCvControlModel": {
       "properties" : {
         "dEdtLimit" : {"type" : "number"},

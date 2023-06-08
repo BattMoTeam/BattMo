@@ -307,7 +307,7 @@ classdef ActiveMaterial < ElectronicComponent
             end
 
             % we remove this declaration as it is not used in assembly (otherwise it may be computed but not used)
-            model = model.removeVarName('SOC');
+            model = model.setAsExtraVarName('SOC');
            
         end
         
@@ -363,13 +363,13 @@ classdef ActiveMaterial < ElectronicComponent
             
             types = {'cell', 'cell', 'cell'};
 
-            primaryVars = model.getPrimaryVariables();
+            primaryVars = model.getPrimaryVariableNames();
             
             problem = LinearizedProblem(eqs, types, names, primaryVars, state, dt);
 
         end
 
-        function primaryvarnames = getPrimaryVariables(model)
+        function primaryvarnames = getPrimaryVariableNames(model)
             
             sd = 'SolidDiffusion';
             

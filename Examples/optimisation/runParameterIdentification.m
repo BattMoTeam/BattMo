@@ -52,7 +52,7 @@ simulationSetup = struct('model', model, 'schedule', schedule, 'state0', state0)
 parameters = configToModelParameter(simulationSetup, config);
 
 % Objective function
-objective = @(model, states, schedule, varargin) leastSquaresEI(model, states, schedule, 'statesRef', statesExp, varargin{:});
+objective = @(model, states, schedule, varargin) leastSquaresEI(model, states, statesExp, schedule, varargin{:});
 
 % Debug: the objective function evaluated at the experimental values should be zero
 objval = objective(model, statesExp, schedule);
@@ -61,15 +61,15 @@ assert(max(abs([objval{:}])) == 0.0);
 % Function for gradient computation
 objVals = objective(model, states, schedule);
 objScaling = sum([objVals{:}]);
-objectiveGradient = @(p) evalMatchBattmo(p, objective, simulationSetup, parameters, 'objScaling', objScaling);
+objectiveGradient = @(p) evalObjectiveBattmo(p, objective, simulationSetup, parameters, 'objScaling', objScaling);
 
 %% Debug: Compare gradients using adjoints and finite difference approximation
 pTmp = getScaledParameterVector(simulationSetup, parameters);
 
-[vad, gad] = evalMatchBattmo(pTmp, objective, simulationSetup, parameters, ...
+[vad, gad] = evalObjectiveBattmo(pTmp, objective, simulationSetup, parameters, ...
                              'Gradient', 'AdjointAD');
 
-[vnum, gnum] = evalMatchBattmo(pTmp, objective, simulationSetup, parameters, ...
+[vnum, gnum] = evalObjectiveBattmo(pTmp, objective, simulationSetup, parameters, ...
                                'Gradient', 'PerturbationADNUM', 'PerturbationSize', 1e-7);
 [gad, gnum]
 

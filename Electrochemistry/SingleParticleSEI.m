@@ -362,13 +362,13 @@ classdef SingleParticleSEI < BaseModel
             
             types = repmat({'cell'}, 1, numel(names));
             
-            primaryVars = model.getPrimaryVariables();
+            primaryVars = model.getPrimaryVariableNames();
             
             problem = LinearizedProblem(eqs, types, names, primaryVars, state, dt);
             
         end
 
-        function primaryvarnames = getPrimaryVariables(model)
+        function primaryvarnames = getPrimaryVariableNames(model)
             
             an    = 'Anode';
             ct    = 'Cathode';

@@ -22,7 +22,7 @@ classdef ElectrodeInputParams < ComponentInputParams
         %
         couplingTerm
         
-        
+        electrode_case % can be set to 'default' or 'composite'
         %
         % Set to true to include current collector
         %
@@ -42,8 +42,20 @@ classdef ElectrodeInputParams < ComponentInputParams
             cc = 'CurrentCollector';
             
             pick = @(fd) pickField(jsonstruct, fd);
-            paramobj.(am) = ActiveMaterialInputParams(pick(am));
             paramobj.(cc) = CurrentCollectorInputParams(pick(cc));
+
+            if isempty(paramobj.electrode_case)            
+                paramobj.electrode_case = 'default';
+            end
+
+            switch paramobj.electrode_case
+              case 'composite'
+                paramobj.(am) = CompositeActiveMaterialInputParams(paramobj.(am));
+              case 'default'
+                paramobj.(am) = ActiveMaterialInputParams(paramobj.(am));
+              otherwise
+                error('electrode_case not recognized');
+            end
             
             paramobj = paramobj.validateInputParams();
 

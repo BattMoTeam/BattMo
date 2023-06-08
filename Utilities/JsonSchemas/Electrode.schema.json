@@ -4,8 +4,28 @@
   "description": "Electrode",
   "type": "object",
   
-  "properties" : {"ActiveMaterial" : {"$ref" : "ActiveMaterial"},
-                  "CurrentCollector" : {"$ref" : "CurrentCollector"}
-                 }
+  "properties" : { "electrode_case" : {"type" : "string",
+                                       "enum" : ["standard", "composite"]},
+                   "CurrentCollector" : {"$ref" : "CurrentCollector"},
+                   "include_current_collectors" : {"type" : "boolean"}
+                 },
 
+
+  "anyOf" : [{"properties" : {"electrode_case" : {"const" : "composite"},
+                              "ActiveMaterial" : {"$ref" : "CompositeActiveMaterial"}
+                             }
+             },
+             {"not" : {"properties" : {"electode_case" : {"const" : "composite"}}},
+              "ActiveMaterial" : {"$ref" : "ActiveMaterial"}
+             }
+            ],
+  
+  "anyOf" : [ {"properties" : {"include_current_collectors": {"const": true},
+                               "required": ["CurrentCollector"]
+                              }
+              },
+              {"properties" : {"include_current_collectors": {"const": false}
+                              }
+              }
+            ]
 }
