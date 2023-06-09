@@ -12,67 +12,16 @@ classdef BatterySwelling < Battery
         
         function model = BatterySwelling(paramobj)
             
-            model = model@BaseModel();
+            model = model@Battery(paramobj)
             
-            % All the submodels should have same backend (this is not assigned automaticallly for the moment)
-            model.AutoDiffBackend = SparseAutoDiffBackend('useBlocks', false);
-            
-            %% Setup the model using the input parameters
-            fdnames = {'G'                         , ...
-                       'couplingTerms'             , ...
-                       'initT'                     , ...
-                       'use_thermal'               , ...
-                       'include_current_collectors', ...
-                       'use_thermal'               , ...
-                       'SOC'};
-            
-            model = dispatchParams(model, paramobj, fdnames);
-
-            %define the electrodes (Electrode class allows to define the corresponding ActiveMaterial if the material 
-            % doesn't swell or to define the corresponding swelling material if it is a swelling material.
-
-            model.NegativeElectrode = Electrode(paramobj.NegativeElectrode);
-            model.PositiveElectrode = Electrode(paramobj.PositiveElectrode);
-            model.Electrolyte       = ElectrolyteSwelling(paramobj.Electrolyte);
-
-            if model.use_thermal
-                model.ThermalModel = ThermalComponent(paramobj.ThermalModel);
-            end
-            
-            model.Control = model.setupControl(paramobj.Control);
-           
-            % define shorthands
-            elyte   = 'Electrolyte';
-            ne      = 'NegativeElectrode';
-            pe      = 'PositiveElectrode';
-            am      = 'ActiveMaterial';
-            cc      = 'CurrentCollector';
-            am      = 'ActiveMaterial';
-            itf     = 'Interface';
-            thermal = 'ThermalModel';
-           
-            % setup Electrolyte model (setup electrolyte volume fractions in the different regions)
-            model = model.setupElectrolyteModel();            
-
-            if model.use_thermal
-                % setup Thermal Model by assigning the effective heat capacity and conductivity, which is computed from the sub-models.
-                model = model.setupThermalModel();
-            end
-            
-            % setup couplingNames
-            model.couplingNames = cellfun(@(x) x.name, model.couplingTerms, 'uniformoutput', false);
-            
-            % setup equations and variable names selected in the model
-            model = model.setupSelectedModel();
-            
-            % setup some mappings (mappings from electrodes to electrolyte)
-            model = model.setupMappings();
-            
-            % setup capping
-            model = model.setupCapping();
-
         end
-
+        
+        function model = setupElectrolyte(model, paramobj)
+            
+            model.Electrolyte = ElectrolyteSwelling(paramobj.Electrolyte);
+            
+        end
+        
         %% Same setup as in the BatteryClass but adding the volumeConservationEquation
 
         function model = setupSelectedModel(model, varargin)

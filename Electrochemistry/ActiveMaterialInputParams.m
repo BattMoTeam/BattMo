@@ -33,10 +33,7 @@ classdef ActiveMaterialInputParams < ElectronicComponentInputParams
         
         activeMaterialFraction = 1 % Volume fraction of the electrode occupied only by the active material (default value is 1)
 
-
         isSwellingMaterial  % Boolean equal to 1 if we consider the swelling of the material
-
-        
 
     end
 

@@ -70,7 +70,8 @@ classdef Battery < BaseModel
 
             model.NegativeElectrode = Electrode(paramobj.NegativeElectrode);
             model.PositiveElectrode = Electrode(paramobj.PositiveElectrode);
-            model.Electrolyte       = Electrolyte(paramobj.Electrolyte);
+
+            model = model.setupElectrolyte(paramobj);
 
             if model.use_thermal
                 model.ThermalModel = ThermalComponent(paramobj.ThermalModel);
@@ -108,6 +109,10 @@ classdef Battery < BaseModel
             % setup capping
             model = model.setupCapping();
             
+        end
+
+        function model = setupElectrolyte(model, paramobj)
+            model.Electrolyte = Electrolyte(paramobj.Electrolyte);
         end
 
         function model = setupSelectedModel(model, varargin)

@@ -33,16 +33,9 @@ classdef Electrode < BaseModel
                        'electrode_case', ...
                        'use_thermal'};
             model = dispatchParams(model, paramobj, fdnames);
-            
-            switch paramobj.electrode_case
-              case 'default'
-                model.ActiveMaterial = ActiveMaterial(paramobj.ActiveMaterial);
-              case 'composite'
-                model.ActiveMaterial = CompositeActiveMaterial(paramobj.ActiveMaterial);
-              otherwise
-                error('electrode_case not recognized');
-            end
-            
+
+            model = model.setupActiveMaterial(paramobj);
+
             if paramobj.include_current_collectors
                 model.include_current_collectors = true;
                 assert(~isempty(paramobj.CurrentCollector), 'current collector input data is missing')
@@ -94,14 +87,26 @@ classdef Electrode < BaseModel
             
         end
         
-        function am = setupActiveMaterial(model, paramobj)
+        function model = setupActiveMaterial(model, paramobj)
         % paramobj is instance of ActiveMaterialInputParams
         % standard instantiation (ActiveMaterial is specified in ActiveMaterial instantiation)
-            if paramobj.isSwellingMaterial
-                am = SwellingMaterial(paramobj);
-            else
-                am = ActiveMaterial(paramobj);
+
+            am = 'ActiveMaterial';
+            
+            switch paramobj.electrode_case
+              case 'default'
+                if paramobj.(am).isSwellingMaterial
+                    model.(am) = SwellingMaterial(paramobj.(am));
+                else
+                    model.(am) = ActiveMaterial(paramobj.(am));
+                end
+              case 'composite'
+                model.ActiveMaterial = CompositeActiveMaterial(paramobj.ActiveMaterial);
+              otherwise
+                error('electrode_case not recognized');
             end
+            
+
         end
         
         function cc = setupCurrentCollector(model, paramobj)
