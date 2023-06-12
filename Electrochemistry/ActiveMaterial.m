@@ -97,7 +97,6 @@ classdef ActiveMaterial < ElectronicComponent
         
         function model = setupDependentProperties(model)           
 
-            model.volumeFraction = 1 - model.porosity;
             vf = model.volumeFraction;
             brugg = model.BruggemanCoefficient;
             
