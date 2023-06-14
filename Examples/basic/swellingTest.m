@@ -196,13 +196,25 @@ step = struct('val', dt*ones(n, 1), 'control', ones(n, 1));
 % between zero and the desired value. Then we assign the
 % rampupSwitchControl function to a variable as an anonymous function.
 
+
 tup = 0.1;
 switch model.Control.controlPolicy
   case 'IEswitch'
+      switch model.Control.initialControl
+      case 'discharging'
+        inputI = model.Control.Imax;
+        inputE = model.Control.lowerCutoffVoltage;
+      case {'charging', 'first-charge'}
+        inputI = -model.Control.Imax;
+        inputE = model.Control.upperCutoffVoltage;
+      otherwise
+        error('initCase not recognized')
+    end
     srcfunc = @(time, I, E) rampupSwitchControl(time, tup, I, E, ...
-                                                model.Control.Imax, ...
-                                                model.Control.lowerCutoffVoltage);
+                                                inputI, ...
+                                                inputE);
     control.IEswitch = true;
+    control = struct('src', srcfunc, 'IEswitch', true);
   case 'CC'
     srcfunc = @(time) rampupControl(time, tup, model.Control.Imax);
     control.CC = true;
@@ -239,9 +251,13 @@ initstate = model.setupInitialState();
 % Once we have the initial state, the model and the schedule, we can call
 % the simulateScheduleAD function which will actually run the simulation:
 
-% model.verbose = true;
+%model.verbose = true;
 
-[wellSols, states, report] = simulateScheduleAD(initstate, model, schedule); 
+nls = NonLinearSolver;
+nls.errorOnFailure = false;
+
+
+[wellSols, states, report] = simulateScheduleAD(initstate, model, schedule, 'OutputMinisteps', true, 'NonLinearSolver', nls); 
 
 %%%
 % The outputs from the simulation are:
@@ -323,7 +339,7 @@ legend(L);
 
 
 
-%% Plot the porosity as a function of the position for different times
+% Plot the porosity as a function of the position for different times
 subplot(2,2,4)
 negativeElectrodeSize = gen.xlength(2);
 N_elements_ne = gen.nenx;
@@ -365,61 +381,61 @@ for t = 1:totalTime
         end
     end 
 end
-xlabel('Positon across the Negative Electrode (in µm)')
+xlabel('Position across the Negative Electrode (in µm)')
 ylabel('Porosity of the Negative Electrode')
 legend(legendTime);
-
-
-
-
- %% Plot the porosity near the cc as a function of the state of charge
- 
-%subplot(2,2,4)
-figure
- 
- po_itf   = model.NegativeElectrode.(am).(itf);
- ne_sd = model.NegativeElectrode.ActiveMaterial.SolidDiffusion;
- 
- totalTime = length(T);
- realTotalTime = states{totalTime}.time;
- 
- theta100 = po_itf.theta100;
- theta0   = po_itf.theta0;
- cmax     = po_itf.cmax;
- r0       = ne_sd.rp;
- F        = model.con.F;
- N        = ne_sd.N;
- 
- 
- soc = [];
- porosity = [];
- 
- for t = 1:totalTime
-     sumConcentrations = 0;
-     for i = 1:N
-         c = states{t}.NegativeElectrode.ActiveMaterial.SolidDiffusion.c(i);
-         sumConcentrations = sumConcentrations + c;
-     end
-     cAverage = sumConcentrations/N;
- 
-     c_ratio = cAverage/cmax;
- 
-     radius = computeRadius(cAverage,cmax,r0);
-  
-     theta = c_ratio .* ((radius ./ r0).^3) ./ 3.8125;
- 
-     poros = states{t}.NegativeElectrode.ActiveMaterial.porosity(1);
- 
-     soc(end+1) = theta;
-     porosity(end+1) = poros;
- end
- 
- plot(soc, porosity,'LineWidth',2.0);
- axis([0 1 0 1]);
- axis square;
- 
- xlabel('State of Charge near the current collector')
- ylabel('Porosity near the current collector')
+%
+%
+%
+%
+% %% Plot the porosity near the cc as a function of the state of charge
+% 
+%%subplot(2,2,4)
+%figure
+% 
+% po_itf   = model.NegativeElectrode.(am).(itf);
+% ne_sd = model.NegativeElectrode.ActiveMaterial.SolidDiffusion;
+% 
+% totalTime = length(T);
+% realTotalTime = states{totalTime}.time;
+% 
+% theta100 = po_itf.theta100;
+% theta0   = po_itf.theta0;
+% cmax     = po_itf.cmax;
+% r0       = ne_sd.rp;
+% F        = model.con.F;
+% N        = ne_sd.N;
+% 
+% 
+% soc = [];
+% porosity = [];
+% 
+% for t = 1:totalTime
+%     sumConcentrations = 0;
+%     for i = 1:N
+%         c = states{t}.NegativeElectrode.ActiveMaterial.SolidDiffusion.c(i);
+%         sumConcentrations = sumConcentrations + c;
+%     end
+%     cAverage = sumConcentrations/N;
+% 
+%     c_ratio = cAverage/cmax;
+% 
+%     radius = computeRadius(cAverage,cmax,r0);
+%  
+%     theta = c_ratio .* ((radius ./ r0).^3) ./ 3.8125;
+% 
+%     poros = states{t}.NegativeElectrode.ActiveMaterial.porosity(1);
+% 
+%     soc(end+1) = theta;
+%     porosity(end+1) = poros;
+% end
+% 
+% plot(soc, porosity,'LineWidth',1.2);
+% axis([0 1 0 1]);
+% axis square;
+% 
+% xlabel('State of Charge near the current collector')
+% ylabel('Porosity near the current collector')
 
 
 %% Plot the concentration as a function of the position in ne and separator for different times
@@ -471,7 +487,7 @@ plot(position, concentration);
 for t = 1:totalTime
     hold on
     %Only draw the curve for timestep multiples
-    if t<55
+    if t<75
         timestep = 8;
     else
         timestep = 110;
@@ -503,8 +519,8 @@ hold on
 xline(negativeElectrodeSize* 10^6,'red','separator');
 xline((negativeElectrodeSize + separatorSize)* 10^6,'red');
 
-xlabel('Positon across the Electrolyte (in µm)')
-ylabel('Concentration of the Electrolyte')
+xlabel('Position across the Electrolyte (in µm)')
+ylabel('Concentration of the Electrolyte (in mol/m3')
 legend(legendTime);
 
 
@@ -537,33 +553,42 @@ cmax     = ne_itf.cmax;
 r0       = ne_sd.rp;
 F        = model.con.F;
 N        = ne_sd.N;
+N_elements_ne = gen.nenx;
 
 
 Y = [];
 X = [];
 
 for t = 1:totalTime
-    sumConcentrations = 0;
-    for i = 1:N
-        c = states{t}.NegativeElectrode.ActiveMaterial.SolidDiffusion.c(i);
-        sumConcentrations = sumConcentrations + c;
-    end
-    cAverage = sumConcentrations/N;
 
-    c_ratio = cAverage/cmax;
+    sumTheta = 0;
+        for x = 1:N_elements_ne       
+        sumConcentrations = 0;
+        for i = 1:N
+            c = states{t}.NegativeElectrode.ActiveMaterial.SolidDiffusion.c((x-1)*N +i);
+            sumConcentrations = sumConcentrations + c;
+        end
+        cAverage = sumConcentrations/N;
+    
+        c_ratio = cAverage/cmax;
+    
+        radius = computeRadius(cAverage,cmax,r0);
+     
+        theta = c_ratio .* ((radius ./ r0).^3) ./ 3.8125;
 
-    radius = computeRadius(cAverage,cmax,r0);
- 
-    theta = c_ratio .* ((radius ./ r0).^3) ./ 3.8125;
+        sumTheta = sumTheta + theta;
+        end
+        theta = sumTheta/N_elements_ne;
+
 
     Y(end+1) = theta;
-    X(end+1) = T(t);
+    X(end+1) = T(t)/hour;
 end
 
 plot(X, Y);
 
-ylabel('SOC in the neg elde')
-xlabel('time')
+ylabel('State of Charge in the NEGATIVE ELECTRODE')
+xlabel('Time (in hours)')
 
 
 
@@ -581,31 +606,39 @@ cmax     = po_itf.cmax;
 r0       = po_sd.rp;
 F        = model.con.F;
 N        = po_sd.N;
+N_elements_pe = gen.penx;
 
 
 Y = [];
 X = [];
 
 for t = 1:totalTime
-    sumConcentrations = 0;
-    for i = 1:N
-        c = states{t}.PositiveElectrode.ActiveMaterial.SolidDiffusion.c(i);
-        sumConcentrations = sumConcentrations + c;
-    end
-    cAverage = sumConcentrations/N;
 
-    theta = cAverage/cmax;
+    sumTheta = 0;
+    for x = 1:N_elements_pe
+        sumConcentrations = 0;
+        for i = 1:N
+            c = states{t}.PositiveElectrode.ActiveMaterial.SolidDiffusion.c((x-1)*N + i);
+            sumConcentrations = sumConcentrations + c;
+        end
+        cAverage = sumConcentrations/N;    
+        theta = cAverage/cmax;
+
+        sumTheta = sumTheta + theta;
+    end
+    theta = sumTheta/N_elements_pe;
+
 
     soc = (theta-theta100)/(theta0-theta100);
 
     Y(end+1) = soc;
-    X(end+1) = T(t);
+    X(end+1) = T(t)/hour;
 end
 
 plot(X, Y);
 
-ylabel('SOC in the pos elde')
-xlabel('Time')
+ylabel('State of charge in the POSITIVE ELECTRODE')
+xlabel('Time (in hours)')
 
 
 

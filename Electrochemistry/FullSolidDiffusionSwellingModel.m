@@ -44,15 +44,17 @@ classdef FullSolidDiffusionSwellingModel < FullSolidDiffusionModel
             op   = model.operators;
             rp0  = model.rp;
 
-            rp   = state.radius;
+            radius   = state.radius;
             vf   = state.volumeFraction;
             Rvol = state.Rvol;
             
-            % One can notice that Rvol.*((4*pi*rp0.^2 .* rp)./(3*amf.*vf)) is strictly equal to the reaction 
-            % rate for a non swelling particle (using a = 3*vf*amf/rp), which is the rate i used in the 
+            % One can notice that Rvol.*((4*pi*rp0.^2 .* rp)./(3.*vf)) is strictly equal to the reaction 
+            % rate for a non swelling particle (using a = 3*vf/rp), which is the rate i used in the 
             % equation 6. We then multiply it by the scalingCoeff defined in [ref3]
-            scalingCoeff = (rp0./rp).^3;
-            massSource = - Rvol.*((4*pi* rp0.^2 .* rp)./(3*vf)).* scalingCoeff;
+            %scalingCoeff = (rp0./radius).^3;
+            scalingCoeff = (rp0./radius).^3;
+
+            massSource = - Rvol.*((4*pi* rp0.^2 .* radius)./(3*vf)).* scalingCoeff;
             massSource = op.mapFromBc*massSource;
 
             state.massSource = massSource;

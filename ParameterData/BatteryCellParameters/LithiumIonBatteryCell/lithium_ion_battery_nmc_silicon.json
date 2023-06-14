@@ -1,6 +1,6 @@
 {
   "G": null,
-  "SOC": 0.999,
+  "SOC": 0.01,
   "Ucut": 2,
   "initT": 298.15,
   "use_thermal": true,
@@ -8,10 +8,10 @@
   "use_particle_diffusion": true,
   "Control" : {
     "controlPolicy" : "IEswitch",
-    "initialControl" : "discharging",
+    "initialControl" : "charging",
     "CRate" : 1,
-    "lowerCutoffVoltage" : 2.3,
-    "upperCutoffVoltage" : 4.5,
+    "lowerCutoffVoltage" : 2.4,
+    "upperCutoffVoltage" : 4.2,
     "dIdtLimit" : 0.01,
     "dEdtLimit" : 0.01
   },
@@ -26,7 +26,7 @@
       "BruggemanCoefficient": 1.5,
       "isSwellingMaterial": 1,
       "WARNING!!" : " Here, activeMaterialFraction is the volumetric proportion of non conductive binder. the name has not yet been changed and is still the same as for a non swelling Material",
-      "activeMaterialFraction" : 0,
+      "activeMaterialFraction" : 0.17,
       "Interface": {
         "isFile": true,
         "filename": "ParameterData/MaterialProperties/Silicon/silicon.json"
@@ -37,7 +37,7 @@
         "EaD": 5000,
         "D0": 1e-16,
         "rp": 60e-9,
-        "Remark on rp" : "Corresponds to the volume oh the fully unlithiated particle, not necessarily the initial radius",
+        "Remark on rp" : "Corresponds to the volume of the fully unlithiated particle, not necessarily the initial radius",
         "N": 10
       }
       

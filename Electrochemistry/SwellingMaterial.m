@@ -297,7 +297,9 @@ classdef SwellingMaterial < ActiveMaterial
                   
                % Calculate reaction rate constant
                k = k0.*exp(-Eak./R.*(1./T - 1/Tref));
-   
+
+               %k = k .* (R_delithiated./radius).^2;
+              
                %   We use regularizedSqrt to regularize the square root function and avoid the blow-up of derivative at zero.
                 th = 1e-3* model.Interface.cmax;
                 coef = cElyte.*(cmax - c).*c;
@@ -339,7 +341,7 @@ classdef SwellingMaterial < ActiveMaterial
 
          function state = updateReactionRate(model, state)
         % Same as in the interface class but uses the Butler Volmer
-        % zquation including stress
+        % equation including stress
             n     = model.Interface.n;
             F     = model.Interface.constants.F;
             alpha = model.Interface.alpha;
@@ -348,6 +350,7 @@ classdef SwellingMaterial < ActiveMaterial
             j0  = state.Interface.j0;
             eta = state.Interface.eta;
             sigma = state.hydrostaticStress;
+
             
             R = ButlerVolmerEquation_withStress(j0, alpha, n, eta, sigma,T);
 
@@ -453,7 +456,7 @@ classdef SwellingMaterial < ActiveMaterial
 
             vf     = state.volumeFraction;
             
-            state.porosityAccum =  vf .* vols.*(state.porosity - state0.porosity)./dt;
+            state.porosityAccum = vols.*(state.porosity - state0.porosity)./dt;
             
         end
             
@@ -468,13 +471,13 @@ classdef SwellingMaterial < ActiveMaterial
             a      = state.Interface.volumetricSurfaceArea;       
             R      = state.Interface.R;
 
-            molarVolumeLithiated   = model.updateMolarVolumeLithiated(c);
-            molarVolumeDelithiated = model.updateMolarVolumeLithiated(0);
+            molarVolumeLithiated   = model.computeMolarVolumeLithiated(c);
+            molarVolumeDelithiated = model.computeMolarVolumeLithiated(0.01);
 
             r0 = model.SolidDiffusion.rp;
             r = computeRadius(c,cmax,r0);
 
-            state.porositySource = a.*R.*(molarVolumeLithiated - molarVolumeDelithiated).*vols .* vf;
+            state.porositySource = a.*R.*(molarVolumeLithiated - molarVolumeDelithiated).*vols;
             
         end
 
@@ -507,7 +510,7 @@ classdef SwellingMaterial < ActiveMaterial
 
 
    %% Useful Functions    
-        function molarVolumeLitihated = updateMolarVolumeLithiated(model, c)
+        function molarVolumeLitihated = computeMolarVolumeLithiated(model, c)
       % cf equation 2 in [ref1]
 
             molarVolumeSi   = 1.2e-05;

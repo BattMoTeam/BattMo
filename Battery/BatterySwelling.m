@@ -254,7 +254,7 @@ classdef BatterySwelling < Battery
 
                     c = state.(elde).(am).SolidDiffusion.cAverage;
 
-                    molarVolumeLithiated = model.(elde).(am).updateMolarVolumeLithiated(c);
+                    molarVolumeLithiated = model.(elde).(am).computeMolarVolumeLithiated(c);
                     densitySi            = model.(elde).(am).Interface.density;
                     molarMassSi   = model.(elde).(am).molarMass;
 
@@ -561,7 +561,7 @@ classdef BatterySwelling < Battery
                 state.(elde).(am).(sd)            = battery.(elde).(am).(sd).updateAverageConcentration(state.(elde).(am).(sd));
 
                 if battery.(elde).(am).isSwellingMaterial
-                    % Reaction Rate coefficient has to be normalized
+                    % Reaction Rate coefficient is normalized
                     state.(elde).(am)                 = battery.(elde).(am).updateHydrostaticStress(state.(elde).(am));
                     state.(elde).(am)                 = battery.(elde).(am).updateRadius(state.(elde).(am));
                     state.(elde).(am)                 = battery.(elde).(am).updateVolumetricSurfaceArea(state.(elde).(am));
@@ -744,7 +744,7 @@ classdef BatterySwelling < Battery
             ei = model.equationIndices;
 
             massConsScaling = model.con.F;
-            V_scaling = 100000000000;
+            V_scaling = 100000;
             M_scaling = 1;
             pescaling = 1;
             sc_ne_sd = 1;
@@ -917,8 +917,8 @@ classdef BatterySwelling < Battery
             
             report = [];
             
-        end      
-        
+        end
+
     end
     
 end

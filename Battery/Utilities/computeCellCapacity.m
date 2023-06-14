@@ -114,29 +114,37 @@ function [cap, cap_neg, cap_pos, specificEnergy] = computeCellCapacity(model, va
             vol = sum(vol_fraction.*ammodel.G.cells.volumes);
 
             R_delith = ammodel.SolidDiffusion.rp;
-            soc = 0.9;
+
+            fname = fullfile('ParameterData','BatteryCellParameters',...
+                'LithiumIonBatteryCell','lithium_ion_battery_nmc_silicon.json');
+            jsonstruct = parseBattmoJson(fname);
+            soc = jsonstruct.SOC;
+
+            theta = thetaO + soc .* (theta100 - theta0)
            
-            %to get the radius of the particle unlithiated, we tuse the eq
+            %to get the radius of the particle unlithiated, we use the eq
             %11 in Chandrasekaran, Magasinski, Yushin and Fuller
             molarVolumeSi = 1.2e-05;
             molarVolumeLi = 9e-06;
             Q = (3.75.*molarVolumeLi)./(molarVolumeSi);
 
-            R_initial = R_delith * (1 + Q * soc)^(1/3);
+            R_initial = R_delith * (1 + Q * theta)^(1/3);
 
             Nmax_part = cMax * (4/3) * pi * (1+Q) * R_delith^3;
 
             Npart_tot = vol / ((4/3) * pi * R_initial^3);
 
-            cap_usable(ind) =  Npart_tot *  Nmax_part * n * F ;
-        end
+            
+            cap_usable(ind) = Npart_tot *  Nmax_part * n * F ;
+            end
         
     end
  
     cap_neg = cap_usable(1)
     cap_pos = cap_usable(2)
 
-    cap = min(cap_usable);
+   cap = min(cap_usable);
+
 
     
     if nargout > 3

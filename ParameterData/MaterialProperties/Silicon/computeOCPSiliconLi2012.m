@@ -4,7 +4,17 @@ function [OCP, dUdT] = computeOCPSiliconLi2012(c, T, cmax)
 % Potentiostatic Intermittent Titration Technique for Electrodes Governed by Diffusion and Interfacial Reaction
 % doi : 10.1021/jp207919q
     
-    stoc = c/cmax;
+    c_ratio = c/cmax;
+    R_delith = 60e-09;
+    molarVolumeSi = 1.2e-05;
+    molarVolumeLi = 9e-06;
+
+    Q = (3.75.*molarVolumeLi)./(molarVolumeSi);
+
+    radius = computeRadius(c,cmax,R_delith);
+
+    stoc = c_ratio .* ((radius ./ R_delith).^3) ./(1+Q);
+
     stoc_vals = [0.00476555
                  0.00485132
                  0.00773118
