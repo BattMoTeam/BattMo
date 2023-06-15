@@ -62,9 +62,50 @@ function [cap, cap_neg, cap_pos, specificEnergy] = computeCellCapacity(model, va
             vol = sum(am_fraction*vol_fraction.*ammodel.G.cells.volumes);
             
             cap_usable(ind) = (thetaMax - thetaMin)*cMax*vol*n*F;
+
+         % Warning : The calculation we did above relies on the initialstate
+        % of the activeMaterial (the one defined in the json file).
+        % However, for a swelling material, the calculation of the capacity
+        % is a bit more complicated : if the original soc is not 0, the
+        % particle is already a bit lithiated and thus has already swelled. Therefore, it has no sense to say
+        % that they can host cmx Li atoms; however, it is still true that
+        % they can host Nmax = cmax * 4/3*pi*R_delith^3. Still, we have
+        % that the real capacity is Nmax_part * NtotParticles with NtotParticles = totalVolume/particleVolume. 
+
+            if opt.isSwellingMaterial && ammodel.isSwellingMaterial
+
+                vol = sum(vol_fraction.*ammodel.G.cells.volumes);
+                theta0 = ammodel.(itf).theta0;
+                theta100 = ammodel.(itf).theta100;
+    
+                R_delith = ammodel.SolidDiffusion.rp;
+    
+                fname = fullfile('ParameterData','BatteryCellParameters',...
+                    'LithiumIonBatteryCell','lithium_ion_battery_nmc_silicon.json');
+                jsonstruct = parseBattmoJson(fname);
+                soc = jsonstruct.SOC;
+    
+                theta = theta0 + soc .* (theta100 - theta0);
+               
+                %to get the radius of the particle unlithiated, we use the eq
+                %11 in Chandrasekaran, Magasinski, Yushin and Fuller
+                molarVolumeSi = 1.2e-05;
+                molarVolumeLi = 9e-06;
+                Q = (3.75.*molarVolumeLi)./(molarVolumeSi);
+    
+                R_initial = R_delith * (1 + Q * theta)^(1/3);
+    
+                Nmax_part = cMax * (4/3) * pi * (1+Q) * R_delith^3;
+    
+                Npart_tot = (theta100 - theta0) .* vol / ((4/3) * pi * R_initial^3);
+                
+                cap_usable(ind) = Npart_tot *  Nmax_part * n * F ;
+            end
+
+
             
           case 'composite'
-
+           
             % we know we deal with a negative electrode
             ammodel = model.(elde).(am);
 
@@ -76,6 +117,7 @@ function [cap, cap_neg, cap_pos, specificEnergy] = computeCellCapacity(model, va
             cap_usable(ind) = 0;
             
             for imat = 1 : numel(mats)
+                ammodel = model.(elde).(am);
                 
                 mat = mats{imat};
 
@@ -94,49 +136,45 @@ function [cap, cap_neg, cap_pos, specificEnergy] = computeCellCapacity(model, va
                 vol = sum(am_fraction*vol_fraction.*ammodel.G.cells.volumes);
 
                 cap_usable(ind) = cap_usable(ind) + (thetaMax - thetaMin)*cMax*vol*n*F;
+
+                ammodel = ammodel.(mat);
+
+                if opt.isSwellingMaterial && ammodel.isSwellingMaterial
+
+                    vol = sum(vol_fraction.*ammodel.G.cells.volumes);
+                    theta0 = ammodel.(itf).theta0;
+                    theta100 = ammodel.(itf).theta100;
+        
+                    R_delith = ammodel.SolidDiffusion.rp;
+        
+                    fname = fullfile('ParameterData','BatteryCellParameters',...
+                        'LithiumIonBatteryCell','lithium_ion_battery_nmc_silicon.json');
+                    jsonstruct = parseBattmoJson(fname);
+                    soc = jsonstruct.SOC;
+        
+                    theta = theta0 + soc .* (theta100 - theta0);
+                   
+                    %to get the radius of the particle unlithiated, we use the eq
+                    %11 in Chandrasekaran, Magasinski, Yushin and Fuller
+                    molarVolumeSi = 1.2e-05;
+                    molarVolumeLi = 9e-06;
+                    Q = (3.75.*molarVolumeLi)./(molarVolumeSi);
+        
+                    R_initial = R_delith * (1 + Q * theta)^(1/3);
+        
+                    Nmax_part = cMax * (4/3) * pi * (1+Q) * R_delith^3;
+        
+                    Npart_tot = (theta100 - theta0) .* vol / ((4/3) * pi * R_initial^3);
+                    
+                    cap_usable(ind) = cap_usable(ind) - (thetaMax - thetaMin)*cMax*vol*n*F + Npart_tot *  Nmax_part * n * F ;
+                end
+
             end
-            
+
           otherwise
             error('electrode_case not recognized');
         end
-        
-        % Warning : The calculation we did above relies on the initialstate
-        % of the activeMaterial (the one defined in the json file).
-        % However, for a swelling material, the calculation of the capacity
-        % is a bit more complicated : if the original soc is not 0, the
-        % particle is already a bit lithiated and thus has already swelled. Therefore, it has no sense to say
-        % that they can host cmx Li atoms; however, it is still true that
-        % they can host Nmax = cmax * 4/3*pi*R_delith^3. Still, we have
-        % that the real capacity is Nmax_part * NtotParticles with NtotParticles = totalVolume/particleVolume. 
-
-
-        if opt.isSwellingMaterial && ammodel.isSwellingMaterial
-            vol = sum(vol_fraction.*ammodel.G.cells.volumes);
-
-            R_delith = ammodel.SolidDiffusion.rp;
-
-            fname = fullfile('ParameterData','BatteryCellParameters',...
-                'LithiumIonBatteryCell','lithium_ion_battery_nmc_silicon.json');
-            jsonstruct = parseBattmoJson(fname);
-            soc = jsonstruct.SOC;
-
-            theta = thetaO + soc .* (theta100 - theta0)
-           
-            %to get the radius of the particle unlithiated, we use the eq
-            %11 in Chandrasekaran, Magasinski, Yushin and Fuller
-            molarVolumeSi = 1.2e-05;
-            molarVolumeLi = 9e-06;
-            Q = (3.75.*molarVolumeLi)./(molarVolumeSi);
-
-            R_initial = R_delith * (1 + Q * theta)^(1/3);
-
-            Nmax_part = cMax * (4/3) * pi * (1+Q) * R_delith^3;
-
-            Npart_tot = vol / ((4/3) * pi * R_initial^3);
-
-            
-            cap_usable(ind) = Npart_tot *  Nmax_part * n * F ;
-            end
+      
         
     end
  

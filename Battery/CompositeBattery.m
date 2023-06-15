@@ -1,4 +1,4 @@
-classdef CompositeBattery < Battery
+classdef CompositeBattery < BatterySwelling
 
     properties
         
@@ -13,7 +13,7 @@ classdef CompositeBattery < Battery
         
         function model = CompositeBattery(paramobj)
             
-            model = model@Battery(paramobj);
+            model = model@BatterySwelling(paramobj);
 
             fdnames = {'scenario'};
             model = dispatchParams(model, paramobj, fdnames);
@@ -54,7 +54,14 @@ classdef CompositeBattery < Battery
                          {pe, am, sd, 'cSurface'}     , 'pe_am_sd_soliddiffeq'   , 'cell' ...
                          };
 
+
             addedVariableNames = {};
+
+            if model.(ne).(am).(gr).isSwellingMaterial
+                varEqTypes{end + 1} = {{ne, am, gr, 'porosity'}, 'ne_am_Si_volumeCons', 'cell'};
+            end
+
+
             addedVariableNames{end + 1} = {ctrl, 'ctrlType'};
             
             if strcmp(model.(ctrl).controlPolicy, 'CCCV')

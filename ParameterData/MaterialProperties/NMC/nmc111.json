@@ -8,6 +8,7 @@
   "k0": 2.33e-11,
   "theta100": 0.4955,
   "theta0": 0.99174,
+  "isSwellingMaterial" : 0,
   "OCP" : {"type" : "function",
            "functionname" : "computeOCP_nmc111",
            "argumentlist" : ["cElectrode", "T", "cmax"]},

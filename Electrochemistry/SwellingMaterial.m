@@ -265,7 +265,7 @@ classdef SwellingMaterial < ActiveMaterial
                 c = state.Interface.cElectrodeSurface;
                 R = state.radius;
 
-                soc = model.computeSOC(c);
+                soc = model.computeTheta(c);
                 
                 j0 = computeJ0(soc);
             else
@@ -373,10 +373,6 @@ classdef SwellingMaterial < ActiveMaterial
 
             R_lith   = computeRadius(cAverage, cmax, R_delith);
 
-            if R_lith < R_delith
-                error('Radius inferior to R_delith, not coherent')
-            end
-
             state.radius = R_lith;
             
             if model.use_particle_diffusion
@@ -465,6 +461,7 @@ classdef SwellingMaterial < ActiveMaterial
         
             vols   = model.G.cells.volumes;
             cmax = model.Interface.cmax;
+            theta0 = model.Interface.cmax;
 
             vf     = state.volumeFraction;
             c      = state.SolidDiffusion.cAverage;
@@ -472,7 +469,8 @@ classdef SwellingMaterial < ActiveMaterial
             R      = state.Interface.R;
 
             molarVolumeLithiated   = model.computeMolarVolumeLithiated(c);
-            molarVolumeDelithiated = model.computeMolarVolumeLithiated(0.01);
+            % Expression below schould be improved (cmin corresponding at theta0)
+            molarVolumeDelithiated = model.computeMolarVolumeLithiated(1000);
 
             r0 = model.SolidDiffusion.rp;
             r = computeRadius(c,cmax,r0);
@@ -516,7 +514,7 @@ classdef SwellingMaterial < ActiveMaterial
             molarVolumeSi   = 1.2e-05;
             molarVolumeLi   = model.constants.molarVolumeLi;
 
-            soc = model.computeSOC(c);
+            soc = model.computeTheta(c);
 
             molarVolumeLitihated = (4/15)*(molarVolumeSi + 3.75*soc*molarVolumeLi);
         end
@@ -562,7 +560,7 @@ classdef SwellingMaterial < ActiveMaterial
         end
 
 
-        function soc = computeSOC(model, c)
+        function theta = computeTheta(model, c)
         % Useful fonction, cf expression of the soc in eq16 of [ref3]
             % shortcut
             itf = 'Interface';
@@ -583,11 +581,6 @@ classdef SwellingMaterial < ActiveMaterial
             R_lith = computeRadius(c,cmax,R_delith);
 
             theta = c_ratio .* ((R_lith./R_delith).^3) ./ (1+Q);
-
-
-            m     = (1 ./ (theta100 - theta0));
-            b     = -m .* theta0;
-            soc   = theta*m + b;
             
         end
 

@@ -323,15 +323,20 @@ classdef BatterySwelling < Battery
                 %need to rescale the concentration according to the initial size of the particle.
 
                     cmax     = elde_itf.cmax;
+                    theta0   = elde_itf.theta0;
+                    theta100 = elde_itf.theta100;
                     R_delith = bat.(elde).(am).(sd).rp;
     
                     %Calculating the initial radius of the particle
                     molarVolumeSi = 1.2e-05;
                     molarVolumeLi = bat.(elde).(am).constants.molarVolumeLi;
                     Q = (3.75*molarVolumeLi)/(molarVolumeSi);
-                    radius = R_delith .* (1 + Q .* SOC)^(1/3);
 
-                    c = cmax .* SOC .* (1+Q) .* (R_delith^3) ./ (radius^3);
+                    theta = theta0 + SOC .* (theta100-theta0);
+
+                    radius = R_delith .* (1 + Q .* theta)^(1/3);
+                    
+                    c = cmax .* theta .* (1+Q) .* (R_delith^3) ./ (radius^3);
 
                 end
 

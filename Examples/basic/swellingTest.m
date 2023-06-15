@@ -425,8 +425,10 @@ legend(legendTime);
 %     theta = c_ratio .* ((radius ./ r0).^3) ./ 3.8125;
 % 
 %     poros = states{t}.NegativeElectrode.ActiveMaterial.porosity(1);
+%     
+%     stoc = (theta-theta0)./(theta100-theta0);
 % 
-%     soc(end+1) = theta;
+%     soc(end+1) = stoc;
 %     porosity(end+1) = poros;
 % end
 % 
@@ -580,8 +582,10 @@ for t = 1:totalTime
         end
         theta = sumTheta/N_elements_ne;
 
+        soc = (theta - theta0)/(theta100-theta0);
 
-    Y(end+1) = theta;
+
+    Y(end+1) = soc;
     X(end+1) = T(t)/hour;
 end
 
