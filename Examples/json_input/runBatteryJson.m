@@ -150,7 +150,7 @@ function  output = runBatteryJson(jsonstruct, varargin)
     
     % Change default tolerance for nonlinear solver
     % For the moment, this is hard-coded here
-    if isfield(jsonstruct.NonLinearSolver, 'nonlinearTolerance')
+    if isfield(jsonstruct.NonLinearSolver, 'nonlinearTolerance') && ~isempty(jsonstruct.NonLinearSolver.nonlinearTolerance)
         model.nonlinearTolerance = jsonstruct.NonLinearSolver.nonlinearTolerance;
     elseif ~isempty(model.Control.Imax)
         model.nonlinearTolerance = 1e-3*model.Control.Imax;

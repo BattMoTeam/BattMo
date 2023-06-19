@@ -111,7 +111,6 @@ classdef ActiveMaterial < ElectronicComponent
         
         function model = setupDependentProperties(model)           
 
-            model.volumeFraction = 1 - model.porosity;
             vf = model.volumeFraction;
             brugg = model.BruggemanCoefficient;
             
@@ -214,7 +213,10 @@ classdef ActiveMaterial < ElectronicComponent
                 fn = @ActiveMaterial.updateRvol;
                 model = model.registerPropFunction({'Rvol', fn, {{itf, 'R'}}});
                 model = model.registerPropFunction({{sd, 'Rvol'}, fn, {{itf, 'R'}}});
-
+                
+                fn = @ActiveMaterial.updateSOC;
+                model = model.registerPropFunction({'SOC', fn, {{sd, 'cAverage'}}});
+                
               case 'full'
 
                 fn = @ActiveMaterial.updateConcentrations;
@@ -224,7 +226,6 @@ classdef ActiveMaterial < ElectronicComponent
                 model = model.registerPropFunction({'Rvol', fn, {{itf, 'R'}}});
                 model = model.registerPropFunction({{sd, 'Rvol'}, fn, {{itf, 'R'}}});
 
-                % Not used in assembly
                 if model.isSwellingMaterial
                     fn = @SwellingMaterial.updateSOC;
                     model = model.registerPropFunction({'SOC', fn, {{sd, 'cAverage'}, 'volumeFraction'}});

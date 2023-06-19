@@ -19,17 +19,17 @@ function paramobj = mergeParameters(paramobj, paramnames, varargin)
         iref = iref(1);
         val = vals{iref};
         
-        if ~opt.force & (nnz(ind) > 1)
+        if ~opt.force && (nnz(ind) > 1)
             % We check that all the given values are consistent
             vals = vals(ind);
             if ischar(val)
                 vals = unique(vals);
-            elseif islogical(val)| isnumeric(val)
+            elseif islogical(val) || isnumeric(val)
                 vals = unique([vals{:}]);
             else
-                error('paramter type is not supported by this function');
+                error('parameter type is not supported by this function');
             end
-            assert(numel(vals) == 1, 'inconsistant parameters have been given')
+            assert(numel(vals) == 1, sprintf('inconsistant parameters have been given to paramobj=%s. Relevant paramnames are: %s\n', class(paramobj), parameterArray()));
                 
         end
 
@@ -40,6 +40,16 @@ function paramobj = mergeParameters(paramobj, paramnames, varargin)
         
     end
 
+    function str = parameterArray()
+        str = '';
+        for k = 1:numel(paramnames)
+            p = paramnames{k};
+            for m = 1:numel(p)
+                str = [str, sprintf(' %s', p{m})];
+            end
+        end
+        return 
+    end
     
 end
 
