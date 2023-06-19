@@ -13,10 +13,10 @@ function [paramobj, gridGenerator] = setupBatteryGridFromJson(paramobj, jsonstru
         xlength(4) = jsonstruct.PositiveElectrode.ActiveMaterial.thickness;
 
         if paramobj.NegativeElectrode.include_current_collectors
-            xlength(1) = jsonstruct.NegativeElectrode.ActiveMaterial.thickness;
+            xlength(1) = jsonstruct.NegativeElectrode.CurrentCollector.thickness;
         end
         if paramobj.PositiveElectrode.include_current_collectors
-            xlength(5) = jsonstruct.PositiveElectrode.ActiveMaterial.thickness;
+            xlength(5) = jsonstruct.PositiveElectrode.CurrentCollector.thickness;
         end
 
         gen.xlength = xlength;
