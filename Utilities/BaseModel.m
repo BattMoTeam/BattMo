@@ -244,10 +244,10 @@ classdef BaseModel < PhysicalModel
         
         function model = registerSubModels(model)
 
-            propfuncs   = model.propertyFunctionList;
-            varnames    = model.varNameList;
-            scvarnames  = model.staticVarNameList;
-            addvarnames = model.extraVarNameList;
+            propfuncs     = model.propertyFunctionList;
+            varnames      = model.varNameList;
+            scvarnames    = model.staticVarNameList;
+            extravarnames = model.extraVarNameList;
             
             submodelnames = model.getSubModelNames();
             
@@ -306,22 +306,22 @@ classdef BaseModel < PhysicalModel
                 scvarnames = mergeList(scvarnames, subscvarnames);
 
                 % Register the static variables
-                subaddvarnames = submodel.extraVarNameList;
+                subextravarnames = submodel.extraVarNameList;
                 
-                for isubvar = 1 : numel(subaddvarnames)
-                    subaddvarname = subaddvarnames{isubvar};
+                for isubvar = 1 : numel(subextravarnames)
+                    subaddvarname = subextravarnames{isubvar};
                     subaddvarname.namespace = {submodelname, subaddvarname.namespace{:}};
-                    subaddvarnames{isubvar} = subaddvarname;
+                    subextravarnames{isubvar} = subaddvarname;
                 end
                 
-                addvarnames = mergeList(addvarnames, subaddvarnames);
+                extravarnames = mergeList(extravarnames, subextravarnames);
                 
             end
             
-             model.varNameList           = varnames;
-             model.propertyFunctionList  = propfuncs;
-             model.staticVarNameList     = scvarnames;
-             model.extraVarNameList = addvarnames;
+             model.varNameList          = varnames;
+             model.propertyFunctionList = propfuncs;
+             model.staticVarNameList    = scvarnames;
+             model.extraVarNameList     = extravarnames;
              
         end
         

@@ -622,8 +622,8 @@ classdef ComputationalGraphTool
         function printTailVariables(cgt)
         % Print the tail variables of the computational graph
             
-            A              = cgt.A;
-            nodenames      = cgt.nodenames;
+            A                = cgt.A;
+            nodenames        = cgt.nodenames;
             extravarnameinds = cgt.extraVarNameInds;
             
             tailinds = find(all(A' == 0, 1));
