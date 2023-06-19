@@ -12,42 +12,50 @@ classdef FullSolidDiffusionSwellingModel < FullSolidDiffusionModel
 
         function model = registerVarAndPropfuncNames(model)
 
-            %% Declaration of the Dynamical Variables and Function of the model
-            % (setup of varnameList and propertyFunctionList)
-
             model = registerVarAndPropfuncNames@FullSolidDiffusionModel(model);
-                       
-            fn = @FullSolidDiffusionSwellingModel.updateFlux;
-            inputnames = {'c', 'D'};
-            model = model.registerPropFunction({'flux', fn, inputnames});
-            
+
+            varnames = {'volumeFraction',
+                        'radius'};
+
+            model = model.registerVarNames(varnames);
             
             fn = @FullSolidDiffusionSwellingModel.updateMassSource;
             model = model.registerPropFunction({'massSource', fn, {'radius', 'volumeFraction', 'Rvol'}});
+
+            fn = @FullSolidDiffusionSwellingModel.updateRadius;
+            model = model.registerPropFunction({'radius', fn, {'cAverage'}});
+
             
-            fn = @FullSolidDiffusionSwellingModel.updateMassAccum;
-            fn = {fn, @(propfunction) PropFunction.accumFuncCallSetupFn(propfunction)};
-            model = model.registerPropFunction({'massAccum', fn, {'c'}});
-            
-            fn = @FullSolidDiffusionSwellingModel.assembleSolidDiffusionEquation;
-            model = model.registerPropFunction({'solidDiffusionEq', fn, {'c', 'cSurface', 'massSource', 'D'}});
-           
         end
         
+        function state = updateRadius(model, state)
+        % eq 4 in Modelling capacity fade in silicon-graphite composite electrodes for lithium-ion batteries
+        % Shweta Dhillon, Guiomar Hernández, Nils P. Wagner, Ann Mari Svensson, Daniel Brandell ([ref 1])
+
+            R_delith = model.rp;
+            cmax     = model.cmax;
+
+            cAverage = state.cAverage;
+
+            R_lith   = computeRadius(cAverage, cmax, R_delith);
+
+            state.radius = R_lith;
+            
+        end
 
  
         function state = updateMassSource(model, state)
- % Modification of mass source according to eq 6 in  Analysis of Lithium Insertion/Deinsertion in a Silicon
- % Electrode Particle at Room Temperature Rajeswari Chandrasekaran, Alexandre Magasinski, Gleb Yushin, and
- % Thomas F. Fuller ([ref 3])
+        % Modification of mass source according to eq 6 in  Analysis of Lithium Insertion/Deinsertion in a Silicon
+        % Electrode Particle at Room Temperature Rajeswari Chandrasekaran, Alexandre Magasinski, Gleb Yushin, and
+        % Thomas F. Fuller ([ref 3])
 
-            op   = model.operators;
-            rp0  = model.rp;
+            op  = model.operators;
+            rp0 = model.rp;
             amf = model.activeMaterialFraction;
 
-            radius   = state.radius;
-            vf   = state.volumeFraction;
-            Rvol = state.Rvol;
+            radius = state.radius;
+            vf     = state.volumeFraction;
+            Rvol   = state.Rvol;
             
             % One can notice that Rvol.*((4*pi*rp0.^2 .* rp)./(3.*vf)) is strictly equal to the reaction 
             % rate for a non swelling particle (using a = 3*vf/rp), which is the rate i used in the 
@@ -59,11 +67,9 @@ classdef FullSolidDiffusionSwellingModel < FullSolidDiffusionModel
             massSource = op.mapFromBc*massSource;
 
             state.massSource = massSource;
+            
         end
 
-
-   %% The other variables are directly updated in methods defined in the class SwellingMaterial because they need parameters unavailable in this class
-   
     end
     
 end

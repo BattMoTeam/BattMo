@@ -229,7 +229,7 @@ classdef CompositeActiveMaterial < ElectronicComponent
             F     = model.(gr).(sd).constants.F;
             vol   = model.operators.pv;
             rp    = model.(gr).(sd).rp;
-            vsf   = model.(gr).(sd).volumetricSurfaceArea;
+            vsf   = model.(gr).(itf).volumetricSurfaceArea;
             surfp = 4*pi*rp^2;
             
             scalingcoef = (vsf*vol(1)*n*F)/surfp;
@@ -241,7 +241,7 @@ classdef CompositeActiveMaterial < ElectronicComponent
             F     = model.(si).(sd).constants.F;
             vol   = model.operators.pv;
             rp    = model.(si).(sd).rp;
-            vsf   = model.(si).(sd).volumetricSurfaceArea;
+            vsf   = model.(si).(itf).volumetricSurfaceArea;
             surfp = 4*pi*rp^2;
             
             scalingcoef = (vsf*vol(1)*n*F)/surfp;

@@ -99,10 +99,6 @@ classdef Interface < BaseModel
             varnames{end + 1} = 'OCP';
             % Reaction rate coefficient [A m^-2]
             varnames{end + 1} = 'j0';
-            %Volume Fraction
-            varnames{end + 1} = 'volumeFraction';
-            % Volumetric Surface Area [m^2.m^-3]
-            varnames{end + 1} = 'volumetricSurfaceArea';
 
 
             model = model.registerVarNames(varnames);
@@ -245,13 +241,6 @@ classdef Interface < BaseModel
 
         end
 
-        function state = updateVolumetricSurfaceArea(model, state)
-           %By default definition
-            state.volumetricSurfaceArea = model.volumetricSurfaceArea;
-        end
-        
-        
-        
     end
 
 end

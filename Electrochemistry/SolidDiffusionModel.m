@@ -45,21 +45,12 @@ classdef SolidDiffusionModel < BaseModel
             varnames{end + 1} = 'D';
             % Volumetric reaction rate in mol/(s*m^3)
             varnames{end + 1} = 'Rvol';
-            %Particle radius (m)
-            varnames{end + 1} = 'radius';
-            %volumeFraction
-            varnames{end + 1} = 'volumeFraction';
-            %VolumetricSurfaceArea
-            varnames{end + 1} = 'volumetricSurfaceArea';
-            
 
             model = model.registerVarNames(varnames);
 
             fn = @SolidDiffusionModel.updateDiffusionCoefficient;
             inputnames = {'T'};
             model = model.registerPropFunction({'D', fn, inputnames});
-
-            
 
 
         end

@@ -16,7 +16,6 @@ classdef ActiveMaterial < ElectronicComponent
         electricalConductivity        % Electrical conductivity
         InterDiffusionCoefficient     % Inter particle diffusion coefficient parameter (diffusion between the particles)
         density                       %
-        molarMass
         thermalConductivity           % Intrinsic Thermal conductivity of the active component
         specificHeatCapacity          % Specific Heat capacity of the active component
 
@@ -35,10 +34,6 @@ classdef ActiveMaterial < ElectronicComponent
         use_interparticle_diffusion
         standAlone
 
-        isSwellingMaterial  % Boolean equal to 1 if the material can swell
-
-
-                
     end
     
     methods
@@ -48,8 +43,6 @@ classdef ActiveMaterial < ElectronicComponent
         % ``paramobj`` is instance of :class:`ActiveMaterialInputParams <Electrochemistry.ActiveMaterialInputParams>`
         %
             model = model@ElectronicComponent(paramobj);
-
-           
             
             fdnames = {'activeMaterialFraction', ...
                        'thermalConductivity'   , ...
@@ -59,9 +52,7 @@ classdef ActiveMaterial < ElectronicComponent
                        'externalCouplingTerm'  , ...
                        'diffusionModelType'    , ...
                        'use_thermal'           , ...
-                       'BruggemanCoefficient'  , ...
-                       'isSwellingMaterial'    ,...
-                       'molarMass'};
+                       'BruggemanCoefficient'};
             
             model = dispatchParams(model, paramobj, fdnames);
             
@@ -70,30 +61,7 @@ classdef ActiveMaterial < ElectronicComponent
             
             model.Interface = Interface(paramobj.Interface);
 
-            diffusionModelType = model.diffusionModelType;
-
-            switch model.diffusionModelType
-              case 'simple'
-                model.SolidDiffusion = SimplifiedSolidDiffusionModel(paramobj.SolidDiffusion);
-                model.InterDiffusionCoefficient = paramobj.InterDiffusionCoefficient;
-                model.use_particle_diffusion = true;
-                model.use_interparticle_diffusion = true;
-              case 'full'
-                paramobj.SolidDiffusion.np = model.G.cells.num;
-                if model.isSwellingMaterial == 1
-                    model.SolidDiffusion = FullSolidDiffusionSwellingModel(paramobj.SolidDiffusion);
-                else
-                    model.SolidDiffusion = FullSolidDiffusionModel(paramobj.SolidDiffusion);
-                end
-                model.use_particle_diffusion = true;
-                model.use_interparticle_diffusion = false;
-              case 'interParticleOnly'
-                model.InterDiffusionCoefficient = paramobj.InterDiffusionCoefficient;
-                model.use_particle_diffusion = false;
-                model.use_interparticle_diffusion = true;
-              otherwise
-                error('Unknown diffusionModelType %s', diffusionModelType);
-            end
+            model = model.setupDiffusionModel(paramobj);
             
             nc = model.G.cells.num;
 
@@ -108,6 +76,31 @@ classdef ActiveMaterial < ElectronicComponent
             model.standAlone = false;
             
         end
+
+        function model = setupDiffusionModel(model, paramobj)
+            
+            diffusionModelType = model.diffusionModelType;
+
+            switch model.diffusionModelType
+              case 'simple'
+                model.SolidDiffusion = SimplifiedSolidDiffusionModel(paramobj.SolidDiffusion);
+                model.InterDiffusionCoefficient = paramobj.InterDiffusionCoefficient;
+                model.use_particle_diffusion = true;
+                model.use_interparticle_diffusion = true;
+              case 'full'
+                paramobj.SolidDiffusion.np = model.G.cells.num;
+                model.SolidDiffusion = FullSolidDiffusionModel(paramobj.SolidDiffusion);
+                model.use_particle_diffusion = true;
+                model.use_interparticle_diffusion = false;
+              case 'interParticleOnly'
+                model.InterDiffusionCoefficient = paramobj.InterDiffusionCoefficient;
+                model.use_particle_diffusion = false;
+                model.use_interparticle_diffusion = true;
+              otherwise
+                error('Unknown diffusionModelType %s', diffusionModelType);
+            end
+            
+        end
         
         function model = setupDependentProperties(model)           
 
@@ -117,7 +110,6 @@ classdef ActiveMaterial < ElectronicComponent
             % setup effective electrical conductivity using Bruggeman approximation
             model.EffectiveElectricalConductivity = model.electricalConductivity.*vf.^brugg;
 
-            
             if model.use_interparticle_diffusion
                 
                 interDiff = model.InterDiffusionCoefficient;
@@ -226,14 +218,9 @@ classdef ActiveMaterial < ElectronicComponent
                 model = model.registerPropFunction({'Rvol', fn, {{itf, 'R'}}});
                 model = model.registerPropFunction({{sd, 'Rvol'}, fn, {{itf, 'R'}}});
 
-                if model.isSwellingMaterial
-                    fn = @SwellingMaterial.updateSOC;
-                    model = model.registerPropFunction({'SOC', fn, {{sd, 'cAverage'}, 'volumeFraction'}});
+                fn = @ActiveMaterial.updateSOC;
+                model = model.registerPropFunction({'SOC', fn, {{sd, 'cAverage'}}});
 
-                else
-                    fn = @ActiveMaterial.updateSOC;
-                    model = model.registerPropFunction({'SOC', fn, {{sd, 'cAverage'}}});
-                end
                 
               case 'interParticleOnly'
 
@@ -292,15 +279,9 @@ classdef ActiveMaterial < ElectronicComponent
             
             %% Function called to assemble accumulation terms (functions takes in fact as arguments not only state but also state0 and dt)
             if model.use_particle_diffusion & strcmp(model.diffusionModelType, 'simple') | ~model.use_particle_diffusion
-                if isSwellingMaterial
-                    fn = @SwellingMaterial.assembleAccumTerm;
-                    fn = {fn, @(propfunc) PropFunction.accumFuncCallSetupFn(propfunc)};
-                    model = model.registerPropFunction({'massAccum', fn, {'c', 'volumeFraction'}});
-                else
-                    fn = @ActiveMaterial.assembleAccumTerm;
-                    fn = {fn, @(propfunc) PropFunction.accumFuncCallSetupFn(propfunc)};
-                    model = model.registerPropFunction({'massAccum', fn, {'c'}});
-                end
+                fn = @ActiveMaterial.assembleAccumTerm;
+                fn = {fn, @(propfunc) PropFunction.accumFuncCallSetupFn(propfunc)};
+                model = model.registerPropFunction({'massAccum', fn, {'c'}});
             end
 
             % we remove this declaration as it is not used in assembly (otherwise it may be computed but not used)
@@ -344,7 +325,7 @@ classdef ActiveMaterial < ElectronicComponent
             F     = model.(sd).constants.F;
             vol   = model.operators.pv;
             rp    = model.(sd).rp;
-            vsf   = model.(sd).volumetricSurfaceArea;
+            vsf   = model.(itf).volumetricSurfaceArea;
             surfp = 4*pi*rp^2;
             
             scalingcoef = (vsf*vol(1)*n*F)/surfp;
@@ -443,15 +424,8 @@ classdef ActiveMaterial < ElectronicComponent
 
             vsa = model.Interface.volumetricSurfaceArea;
 
-            vol_fraction = model.volumeFraction;%
-            am_fraction  = model.activeMaterialFraction;%
-
-            vols = sum(am_fraction*vol_fraction.*model.G.cells.volumes);%
-
             Rvol = vsa.*state.Interface.R;
             state.Rvol = Rvol;
-
-            TotalReactionPos = Rvol * vols;%
 
             if model.use_particle_diffusion
                 state.SolidDiffusion.Rvol = Rvol;
@@ -532,7 +506,9 @@ classdef ActiveMaterial < ElectronicComponent
         end
         
         function state = updateStandalonejBcSource(model, state)          
+            
             state.jBcSource = state.controlCurrentSource;
+
         end
 
         function state = updateCurrentSource(model, state)
@@ -622,7 +598,6 @@ classdef ActiveMaterial < ElectronicComponent
             
         end
         
-
         
     end
     

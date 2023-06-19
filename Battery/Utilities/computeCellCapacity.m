@@ -72,7 +72,7 @@ function [cap, cap_neg, cap_pos, specificEnergy] = computeCellCapacity(model, va
         % they can host Nmax = cmax * 4/3*pi*R_delith^3. Still, we have
         % that the real capacity is Nmax_part * NtotParticles with NtotParticles = totalVolume/particleVolume. 
 
-            if opt.isSwellingMaterial && ammodel.isSwellingMaterial
+            if opt.isSwellingMaterial && isa(ammodel, 'SwellingMaterial')
 
                 theta0 = ammodel.(itf).theta0;
                 theta100 = ammodel.(itf).theta100;

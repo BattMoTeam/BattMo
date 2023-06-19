@@ -33,7 +33,7 @@ classdef SimplifiedSolidDiffusionModel < SolidDiffusionModel
             model = model.registerPropFunction({'D', fn, inputnames});
 
             fn = @ActiveMaterial.assembleSolidDiffusionEquation;
-            inputnames = {'cSurface', 'cAverage', 'Rvol', 'D', 'radius', 'volumetricSurfaceArea'};
+            inputnames = {'cSurface', 'cAverage', 'Rvol', 'D'};
             model = model.registerPropFunction({'solidDiffusionEq', fn, inputnames});
             
         end
@@ -43,12 +43,13 @@ classdef SimplifiedSolidDiffusionModel < SolidDiffusionModel
         % We update the surface concentration of the charge carrier in the active material.
         % The surface concentration value is computed following polynomial method, as described in ref1 (see below)
 
+            rp  = model.rp;
+            vsa = model.volumetricSurfaceArea;
+
             csurf = state.cSurface;
             caver = state.cAverage;
             D     = state.D;
             Rvol  = state.Rvol;
-            rp    = state.radius;
-            vsa   = state.volumetricSurfaceArea;
 
             state.solidDiffusionEq = csurf - caver + (rp.*Rvol)./(5*vsa*D);
             
