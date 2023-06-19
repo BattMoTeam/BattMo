@@ -9,7 +9,7 @@
   "Control" : {
     "controlPolicy" : "IEswitch",
     "initialControl" : "charging",
-    "CRate" : 0.1,
+    "CRate" : 1,
     "lowerCutoffVoltage" : 2.2,
     "upperCutoffVoltage" : 4.2,
     "dIdtLimit" : 0.01,
@@ -25,8 +25,7 @@
       "electricalConductivity": 33,
       "BruggemanCoefficient": 1.5,
       "isSwellingMaterial": 1,
-      "WARNING!!" : " Here, activeMaterialFraction is the volumetric proportion of non conductive binder. the name has not yet been changed and is still the same as for a non swelling Material",
-      "activeMaterialFraction" : 0,
+      "activeMaterialFraction" : 1,
       "Interface": {
         "isFile": true,
         "filename": "ParameterData/MaterialProperties/Silicon/silicon.json"

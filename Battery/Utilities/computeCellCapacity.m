@@ -74,7 +74,6 @@ function [cap, cap_neg, cap_pos, specificEnergy] = computeCellCapacity(model, va
 
             if opt.isSwellingMaterial && ammodel.isSwellingMaterial
 
-                vol = sum(vol_fraction.*ammodel.G.cells.volumes);
                 theta0 = ammodel.(itf).theta0;
                 theta100 = ammodel.(itf).theta100;
     
@@ -135,20 +134,20 @@ function [cap, cap_neg, cap_pos, specificEnergy] = computeCellCapacity(model, va
                 
                 vol = sum(am_fraction*vol_fraction.*ammodel.G.cells.volumes);
 
-                cap_usable(ind) = cap_usable(ind) + (thetaMax - thetaMin)*cMax*vol*n*F;
+                cap             = (thetaMax - thetaMin)*cMax*vol*n*F;
+                cap_usable(ind) = cap_usable(ind) + cap;
 
                 ammodel = ammodel.(mat);
 
                 if opt.isSwellingMaterial && ammodel.isSwellingMaterial
 
-                    vol = sum(vol_fraction.*ammodel.G.cells.volumes);
                     theta0 = ammodel.(itf).theta0;
                     theta100 = ammodel.(itf).theta100;
         
                     R_delith = ammodel.SolidDiffusion.rp;
         
                     fname = fullfile('ParameterData','BatteryCellParameters',...
-                        'LithiumIonBatteryCell','lithium_ion_battery_nmc_silicon.json');
+                        'LithiumIonBatteryCell','lithium_ion_battery_nmc_silicon_graphite_Swelling.json');
                     jsonstruct = parseBattmoJson(fname);
                     soc = jsonstruct.SOC;
         
@@ -166,7 +165,7 @@ function [cap, cap_neg, cap_pos, specificEnergy] = computeCellCapacity(model, va
         
                     Npart_tot = (theta100 - theta0) .* vol / ((4/3) * pi * R_initial^3);
                     
-                    cap_usable(ind) = cap_usable(ind) - (thetaMax - thetaMin)*cMax*vol*n*F + Npart_tot *  Nmax_part * n * F ;
+                    cap_usable(ind) = cap_usable(ind) - cap + Npart_tot *  Nmax_part * n * F ;
                 end
 
             end

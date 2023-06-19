@@ -98,12 +98,8 @@ classdef ActiveMaterial < ElectronicComponent
             nc = model.G.cells.num;
 
             model.volumeFraction = paramobj.volumeFraction*ones(nc, 1);
-
-            if model.isSwellingMaterial == 1
-                model.porosity = 1 - model.volumeFraction - model.activeMaterialFraction*ones(nc, 1);
-            else
-                model.porosity = 1 - model.volumeFraction;
-            end
+            
+            model.porosity = 1 - model.volumeFraction;
 
             model = model.setupDependentProperties();
 

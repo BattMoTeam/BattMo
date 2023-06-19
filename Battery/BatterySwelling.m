@@ -449,9 +449,8 @@ classdef BatterySwelling < Battery
                 elde = eldes{ind};
                 if model.(elde).(am).isSwellingMaterial
                     vf = model.(elde).(am).(itf).volumeFraction;
-                    amf = model.(elde).(am).activeMaterialFraction;
                     ADstruc = model.(elde).(am).porosity ./ model.(elde).(am).porosity;
-                    initstate.(elde).(am).porosity = (1 - vf - amf) .* ADstruc;
+                    initstate.(elde).(am).porosity = (1 - vf) .* ADstruc;
                 end   
             end
             
@@ -869,7 +868,7 @@ classdef BatterySwelling < Battery
 
             primaryVars = model.getPrimaryVariables();
 
-            
+           
             %% Setup LinearizedProblem that can be processed by MRST Newton API
             
             problem = LinearizedProblem(eqs, types, names, primaryVars, state, dt);

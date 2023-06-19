@@ -26,10 +26,10 @@ classdef ElectrolyteSwelling < Electrolyte
             model = model.registerPropFunction({'massAccum', fn, {'c','volumeFraction'}});
 
             fn = @ElectrolyteSwelling.updateDiffusionCoefficient;
-            model = model.registerPropFunction({'D', fn, {'c','T','vf'}});
+            model = model.registerPropFunction({'D', fn, {'c','T','volumeFraction'}});
 
             fn = @ElectrolyteSwelling.updateCurrent;
-            model = model.registerPropFunction({'j', fn, {'dmudcs','phi','T','c','conductivity','vf'}});
+            model = model.registerPropFunction({'j', fn, {VarName({}, 'dmudcs', 2),'phi','T','c','conductivity','volumeFraction'}});
 
             fn = @ElectrolyteSwelling.updateMassFlux;
             model = model.registerPropFunction({'massFlux', fn, {'c','j','D'}});

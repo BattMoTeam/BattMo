@@ -49,7 +49,6 @@ classdef SwellingMaterial < ActiveMaterial
             fn = @SwellingMaterial.updateVolumeConservation;
             model = model.registerPropFunction({'volumeCons', fn, {'porosityAccum', 'porositySource', 'porosityFlux'}});
 
-
             fn = @SwellingMaterial.updateConductivity;
             model = model.registerPropFunction({'conductivity', fn, {'volumeFraction'} });
 
@@ -177,13 +176,13 @@ classdef SwellingMaterial < ActiveMaterial
 
         function model = setupDependentProperties(model)           
 
-            amFrac    = model.activeMaterialFraction;
-            model.volumeFraction = 1 - model.porosity - amFrac ;
+            amf    = model.activeMaterialFraction;
+            model.volumeFraction = 1 - model.porosity;
             vf = model.volumeFraction;
             brugg = model.BruggemanCoefficient;
             
             % setup effective electrical conductivity using Bruggeman approximation
-            model.EffectiveElectricalConductivity = model.electricalConductivity.*vf.^brugg;
+            model.EffectiveElectricalConductivity = model.electricalConductivity.*(vf.*amf).^brugg;
 
             
             if model.use_interparticle_diffusion
@@ -191,7 +190,7 @@ classdef SwellingMaterial < ActiveMaterial
                 interDiff = model.InterDiffusionCoefficient;
                 
                 
-                model.EffectiveDiffusionCoefficient = interDiff.*(vf).^brugg;
+                model.EffectiveDiffusionCoefficient = interDiff.*(vf.*amf).^brugg;
                 
             end
 
@@ -223,6 +222,8 @@ classdef SwellingMaterial < ActiveMaterial
         % Same as in Active Material but for a non constant volumetricSurfaceArea    
         function state = updateRvol(model, state)
 
+            am_fraction  = model.activeMaterialFraction;%
+
             vsa = state.Interface.volumetricSurfaceArea;
             R   = state.Interface.R;
             
@@ -241,11 +242,12 @@ classdef SwellingMaterial < ActiveMaterial
             sd  = 'SolidDiffusion';
 
             vols     = model.G.cells.volumes;
+            am_frac  = model.activeMaterialFraction;
 
             vf       = state.volumeFraction;
             c        = state.(sd).cAverage;
 
-            vols = vf.*vols;
+            vols = amf.*vf.*vols;
 
             cAverage = sum(c.*vols)/sum(vols);
 
@@ -339,7 +341,7 @@ classdef SwellingMaterial < ActiveMaterial
             
         end
 
-         function state = updateReactionRate(model, state)
+        function state = updateReactionRate(model, state)
         % Same as in the interface class but uses the Butler Volmer
         % equation including stress
             n     = model.Interface.n;
@@ -356,7 +358,7 @@ classdef SwellingMaterial < ActiveMaterial
 
             state.Interface.R = R/(n*F); % reaction rate in mol/(s*m^2)
 
-        end
+       end
 
    
 %% Update of the new variables (variables which are constant parameters in the case of ActiveMaterial)
@@ -386,7 +388,7 @@ classdef SwellingMaterial < ActiveMaterial
             porosity = state.porosity;
             amf = model.activeMaterialFraction;
 
-            vf = 1 - porosity - amf;
+            vf = 1 - porosity;
 
             state.volumeFraction = vf;
             state.Interface.volumeFraction = vf;
@@ -403,6 +405,8 @@ classdef SwellingMaterial < ActiveMaterial
      % page 3 in Modelling capacity fade in silicon-graphite composite electrodes for
      % lithium-ion batteries Shweta Dhillon, Guiomar Hernández, Nils P. Wagner, Ann Mari Svensson,
      % Daniel Brandell ([ref1])
+
+            amf    = model.SolidDiffusion.activeMaterialFraction;
             
             vf     = state.Interface.volumeFraction;
             radius = state.radius;
@@ -416,7 +420,7 @@ classdef SwellingMaterial < ActiveMaterial
                 vf     = state.Interface.volumeFraction;
                 radius = state.SolidDiffusion.radius;
 
-                vsa    = (3.*vf)./radius;
+                vsa    = (3.*vf.*amf)./radius;
 
                 state.SolidDiffusion.volumetricSurfaceArea = vsa;
                 
@@ -438,11 +442,6 @@ classdef SwellingMaterial < ActiveMaterial
 
             state.hydrostaticStress = sigma;
         end
-
-       
-
-
-
 
    %% Implementation of a new equation : the volume conservation Equation
    % Reference : eq 2 in [ref1]

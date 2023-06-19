@@ -43,6 +43,7 @@ classdef FullSolidDiffusionSwellingModel < FullSolidDiffusionModel
 
             op   = model.operators;
             rp0  = model.rp;
+            amf = model.activeMaterialFraction;
 
             radius   = state.radius;
             vf   = state.volumeFraction;
@@ -54,7 +55,7 @@ classdef FullSolidDiffusionSwellingModel < FullSolidDiffusionModel
             %scalingCoeff = (rp0./radius).^3;
             scalingCoeff = (rp0./radius).^3;
 
-            massSource = - Rvol.*((4*pi* rp0.^2 .* radius)./(3*vf)).* scalingCoeff;
+            massSource = - Rvol.*((4*pi* rp0.^2 .* radius)./(3*vf.*amf)).* scalingCoeff;
             massSource = op.mapFromBc*massSource;
 
             state.massSource = massSource;
