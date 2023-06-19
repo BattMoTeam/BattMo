@@ -199,7 +199,10 @@ classdef ActiveMaterial < ElectronicComponent
                 fn = @ActiveMaterial.updateRvol;
                 model = model.registerPropFunction({'Rvol', fn, {{itf, 'R'}}});
                 model = model.registerPropFunction({{sd, 'Rvol'}, fn, {{itf, 'R'}}});
-
+                
+                fn = @ActiveMaterial.updateSOC;
+                model = model.registerPropFunction({'SOC', fn, {{sd, 'cAverage'}}});
+                
               case 'full'
 
                 fn = @ActiveMaterial.updateConcentrations;
@@ -209,7 +212,6 @@ classdef ActiveMaterial < ElectronicComponent
                 model = model.registerPropFunction({'Rvol', fn, {{itf, 'R'}}});
                 model = model.registerPropFunction({{sd, 'Rvol'}, fn, {{itf, 'R'}}});
 
-                % Not used in assembly
                 fn = @ActiveMaterial.updateSOC;
                 model = model.registerPropFunction({'SOC', fn, {{sd, 'cAverage'}}});
                 
