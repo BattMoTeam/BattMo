@@ -115,6 +115,10 @@ paramobj = gen.updateBatteryInputParams(paramobj);
 
 model = BatterySwelling(paramobj);
 
+% model = model.setupComputationalGraph();
+% cgt = model.computationalGraph;
+% return
+
 %%%
 % In BattMo a battery model is actually a collection of submodels: 
 % Electrolyte, Negative Electrode, Positive Electrode, Thermal Model and Control
