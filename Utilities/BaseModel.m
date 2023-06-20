@@ -101,6 +101,32 @@ classdef BaseModel < PhysicalModel
                 model.extraVarNameList{end + 1} = varname;
             end
         end
+
+        function model = removeFromExtraVarName(model, varname)
+
+        % This function reintroduce a formerly declared extraVarName as a plain VarName. ExtraVarNames are the variables
+        % that are not needed in the residual invaluations and therefor not included in the ordered graph (see
+        % ComputationalGraphTool.getOrderedFunctionCallList)
+                
+            if isa(varname, 'char')
+                varname = VarName({}, varname);
+                model = model.removeFromExtraVarName(varname);
+            elseif isa(varname, 'cell')
+                varname = VarName(varname(1 : end - 1), varname{end});
+                model = model.removeFromExtraVarName(varname);
+            elseif isa(varname, 'VarName')
+                varnames = model.extraVarNameList;
+                nvars = numel(varnames);
+                keep = true(nvars, 1);
+                for ivar = 1 : nvars
+                    [found, keep, varnames{ivar}] = BaseModel.getCleanedUpVarName(varname, varnames{ivar});
+                    if found
+                        break;
+                    end
+                end
+                model.extraVarNameList = varnames(keep);
+            end
+        end
         
         
         function model = removeVarNames(model, varnames)
