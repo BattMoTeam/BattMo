@@ -79,6 +79,8 @@ jsonstruct.(ne).(am).diffusionModelType = 'full';
 % various parts of the simulator during the simulation. This class is
 % instantiated using the jsonstruct we just created:
 
+jsonstruct.(ne).use_swelling_material = true;
+
 paramobj = BatteryInputParams(jsonstruct);
 paramobj = paramobj.validateInputParams();
 

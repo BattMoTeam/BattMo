@@ -259,11 +259,13 @@ classdef SwellingMaterial < ActiveMaterial
 
             sd  = 'SolidDiffusion';
             itf = 'Interface';
+
+            amf = model.activeMaterialFraction
             
             vf     = state.volumeFraction;
             radius = state.(sd).radius;
 
-            vsa = (3.*vf)./radius;
+            vsa = (3.*vf*amf)./radius;
 
             state.(itf).volumetricSurfaceArea = vsa;
             
@@ -354,47 +356,6 @@ classdef SwellingMaterial < ActiveMaterial
             soc = model.computeTheta(c);
 
             molarVolumeLitihated = (4/15)*(molarVolumeSi + 3.75*soc*molarVolumeLi);
-            
-        end
-
-        
-        function state = updateSOC(model, state)
-
-            error('should not be used')
-            
-            % shortcut
-            itf = 'Interface';
-            sd  = 'SolidDiffusion';
-
-
-            vols     = model.G.cells.volumes;
-            cmax     = model.(itf).cmax;
-            theta100 = model.(itf).theta100;
-            theta0   = model.(itf).theta0;
-            R_delith = model.(sd).rp;
-            molarVolumeSi = 1.2e-05;
-            molarVolumeLi =  model.constants.molarVolumeLi;
-
-            Q = (3.75.*molarVolumeLi)./(molarVolumeSi);
-            
-            c        = state.(sd).cAverage;
-            vf       = state.volumeFraction;
-
-            c_ratio = c/cmax;       
-
-            R_lith = computeRadius(c,cmax,R_delith);
-
-            theta = c_ratio .* ((R_lith./R_delith).^3) ./ (1+Q);
-
-
-            m     = (1 ./ (theta100 - theta0));
-            b     = -m .* theta0;
-            SOC   = theta*m + b;
-            vol   = vf.*vols;
-            
-            SOC = sum(SOC.*vol)/sum(vol);
-
-            state.SOC = SOC;
             
         end
 
