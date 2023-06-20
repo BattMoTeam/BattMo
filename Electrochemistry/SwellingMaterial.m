@@ -67,7 +67,7 @@ classdef SwellingMaterial < ActiveMaterial
             model = model.registerPropFunction({'conductivity', fn, {'volumeFraction'}});
                                                
             fn = @SwellingMaterial.updateHydrostaticStress;
-            model = model.registerPropFunction({'hydrostaticStress', fn, {{sd, 'cAverage'}}});
+            model = model.registerPropFunction({'hydrostaticStress', fn, {{sd, 'cAverage'}, {itf, 'cElectrodeSurface'}}});
             
             fn = @SwellingMaterial.updateVolumeFraction;
             model = model.registerPropFunction({{'volumeFraction'}, fn, {'porosity'}});
@@ -83,9 +83,13 @@ classdef SwellingMaterial < ActiveMaterial
             fn  = @SwellingMaterial.updateReactionRate;
             inputnames = {{itf, 'T'}, {itf, 'j0'}, {itf, 'eta'}, 'hydrostaticStress'};
             model = model.registerPropFunction({{itf, 'R'}, fn, inputnames});
+
+            fn  = @SwellingMaterial.updateVolumeFraction;
+            model = model.registerPropFunction({'volumeFraction', fn, {'porosity'}});
+            model = model.registerPropFunction({{sd, 'volumeFraction'}, fn, {'porosity'}});
             
         end
-
+        
 
         function state = updateRvol(model, state)
             
@@ -191,7 +195,7 @@ classdef SwellingMaterial < ActiveMaterial
             
             brugg = model.BruggemanCoefficient;
 
-            vf    = state.Interface.volumeFraction;
+            vf    = state.volumeFraction;
             
             % setup effective electrical conductivity using Bruggeman approximation
             state.conductivity = model.electricalConductivity.*vf.^brugg;
@@ -319,8 +323,8 @@ classdef SwellingMaterial < ActiveMaterial
         function state = updatePorosityFlux(model, state)
         % No Flux term (hack to create one)
             
-            D = 0.*state.volumeFraction;
-            c = 0.*state.volumeFraction;
+            D = 0.*state.porosity;
+            c = 0.*state.porosity;
             porosityFlux = assembleFlux(model, c, D);
             
             state.porosityFlux = porosityFlux;

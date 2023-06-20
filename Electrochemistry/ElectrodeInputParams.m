@@ -30,6 +30,8 @@ classdef ElectrodeInputParams < ComponentInputParams
 
         use_thermal
         
+        use_swelling_material
+        
     end
     
     methods
@@ -52,7 +54,11 @@ classdef ElectrodeInputParams < ComponentInputParams
               case 'composite'
                 paramobj.(am) = CompositeActiveMaterialInputParams(paramobj.(am));
               case 'default'
-                paramobj.(am) = ActiveMaterialInputParams(paramobj.(am));
+                if paramobj.use_swelling_material
+                    paramobj.(am) = SwellingMaterialInputParams(paramobj.(am));
+                else
+                    paramobj.(am) = ActiveMaterialInputParams(paramobj.(am));
+                end
               otherwise
                 error('electrode_case not recognized');
             end

@@ -12,6 +12,8 @@ classdef FullSolidDiffusionSwellingModel < FullSolidDiffusionModel
 
         function model = registerVarAndPropfuncNames(model)
 
+            sd = 'SolidDiffusion';
+
             model = registerVarAndPropfuncNames@FullSolidDiffusionModel(model);
 
             varnames = {'volumeFraction',
@@ -25,6 +27,7 @@ classdef FullSolidDiffusionSwellingModel < FullSolidDiffusionModel
             fn = @FullSolidDiffusionSwellingModel.updateRadius;
             model = model.registerPropFunction({'radius', fn, {'cAverage'}});
 
+            model = model.removeFromExtraVarName('cAverage');
             
         end
         

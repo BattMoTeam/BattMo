@@ -21,6 +21,7 @@ classdef ElectrolyteSwelling < Electrolyte
             model = model.registerVarNames(varnames);
 
             fn = @ElectrolyteSwelling.updateAccumTerm;
+            fn = {fn, @(propfunction) PropFunction.accumFuncCallSetupFn(propfunction)};
             model = model.registerPropFunction({'massAccum', fn, {'c','volumeFraction'}});
 
             fn = @ElectrolyteSwelling.updateDiffusionCoefficient;
@@ -46,7 +47,6 @@ classdef ElectrolyteSwelling < Electrolyte
 
             c = state.c;
             vf = state.volumeFraction;
-
             c0 = state0.c;
 
             cdotcc  = (c - c0)/dt;

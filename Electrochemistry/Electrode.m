@@ -95,7 +95,7 @@ classdef Electrode < BaseModel
             
             switch paramobj.electrode_case
               case 'default'
-                if paramobj.(am).isSwellingMaterial
+                if isa(paramobj.(am), 'SwellingMaterialInputParams')
                     model.(am) = SwellingMaterial(paramobj.(am));
                 else
                     model.(am) = ActiveMaterial(paramobj.(am));
