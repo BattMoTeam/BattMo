@@ -24,7 +24,21 @@ classdef BatterySwelling < Battery
             model.Electrolyte = ElectrolyteSwelling(paramobj.Electrolyte);
             
         end
+
         
+        function model = registerVarAndPropfuncNames(model)
+                    
+            model = registerVarAndPropfuncNames@Battery(model);
+            
+            elyte = 'Electrolyte';
+            ne    = 'NegativeElectrode';
+            am    = 'ActiveMaterial';
+            
+            fn = @BatterySwelling.updateElectrolyteVolumeFraction;
+            inputnames = {{ne, am, 'porosity'}};
+            model = model.registerPropFunction({{elyte, 'volumeFraction'}, fn, inputnames});
+            
+        end
         
         %% Update at each step the electrolyte volume fractions in the different regions (neg_elde, elyte, pos_elde)
         function state = updateElectrolyteVolumeFraction(model, state)
@@ -40,21 +54,19 @@ classdef BatterySwelling < Battery
             elyte_cells(model.(elyte).G.mappings.cellmap) = (1 : model.(elyte).G.cells.num)';
 
             
-
-            
             % Initialisation of AD for the porosity of the elyte
             state.(elyte).volumeFraction = 0 * state.(elyte).c;
 
             % Define the porosity in the separator
             sep_cells = elyte_cells(model.(elyte).(sep).G.mappings.cellmap); 
-            state.(elyte).volumeFraction = subsasgnAD(state.(elyte).volumeFraction,sep_cells, model.(elyte).(sep).porosity);
+            state.(elyte).volumeFraction = subsasgnAD(state.(elyte).volumeFraction, sep_cells, model.(elyte).(sep).porosity);
 
 
             % Define the volumeFraction in the electrodes
             eldes = {ne, pe};
             for ielde = 1 : numel(eldes)
                 elde = eldes{ielde};
-                if model.(elde).ActiveMaterial.isSwellingMaterial
+                if isa(model.(elde).(am), 'SwellingMaterial')
                     state.(elyte).volumeFraction = subsasgnAD(state.(elyte).volumeFraction, elyte_cells(model.(elde).(am).G.mappings.cellmap), state.(elde).(am).porosity);
                 else
                     state.(elyte).volumeFraction = subsasgnAD(state.(elyte).volumeFraction, elyte_cells(model.(elde).(am).G.mappings.cellmap), model.(elde).(am).porosity);
