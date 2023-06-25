@@ -38,11 +38,16 @@ classdef ActiveMaterial < ElectronicComponent
     
     methods
         
-        function model = ActiveMaterial(paramobj)
+        function model = ActiveMaterial(paramobj, length_factor)
         %
         % ``paramobj`` is instance of :class:`ActiveMaterialInputParams <Electrochemistry.ActiveMaterialInputParams>`
         %
+
+            paramobj.G.cells.volumes = paramobj.G.cells.volumes .* length_factor;
+            paramobj.G.cells.length_factor = length_factor;
+            
             model = model@ElectronicComponent(paramobj);
+            
             
             fdnames = {'activeMaterialFraction', ...
                        'thermalConductivity'   , ...

@@ -9,10 +9,14 @@ function operators = localSetupOperators(G, varargin)
 
     hT = computeTrans(G, rock);
 
+    if isfield(G.cells, 'length_factor')
+        hT = hT ./ G.cells.length_factor;
+    end
+    
     tbls = setupSimpleTables(G);
     cellfacetbl = tbls.cellfacetbl;
     celltbl     = tbls.celltbl;
-    facetbl     = tbls.facetbl;
+    %facetbl     = tbls.facetbl;
     intfacetbl  = tbls.intfacetbl;
 
     map = TensorMap();
@@ -40,8 +44,8 @@ function operators = localSetupOperators(G, varargin)
     operators.harmFaceBC = @(cvalue, faces) getFaceHarmBC(G, cvalue, faces);
     
     %% setup the sign for *external* faces
-    cells  = rldecode(1:G.cells.num, diff(G.cells.facePos), 2)';
-    faces  = G.cells.faces(:, 1);
+    % cells  = rldecode(1:G.cells.num, diff(G.cells.facePos), 2)';
+    % faces  = G.cells.faces(:, 1);
     
     extfaces = find(any(G.faces.neighbors == 0, 2));
     extcells = sum(G.faces.neighbors(extfaces, :), 2);
@@ -64,6 +68,12 @@ function [T, cells] = getFaceHarmBC(G, cvalue, faces)
     cells = sum(G.faces.neighbors(faces, :), 2);
     cn = sqrt(sum((G.faces.centroids(faces, :) - G.cells.centroids(cells, :)).^2, 2));
     t = G.faces.areas(faces)./cn;
+
+    if isfield(G.cells, 'length_factor')
+        assert(numel(G.cells.length_factor) == 1);
+        t = t / G.cells.length_factor;
+    end
+
     T = t.*cvalue(cells);
 end
 

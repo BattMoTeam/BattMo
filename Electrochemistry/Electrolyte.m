@@ -30,11 +30,14 @@ classdef Electrolyte < ElectroChemicalComponent
 
     methods
 
-        function model = Electrolyte(paramobj)
+        function model = Electrolyte(paramobj, length_factor, cf_length_factor)
         % paramobj is instance of ElectrolyteInputParams or a derived class
 
-            model = model@ElectroChemicalComponent(paramobj);
+            paramobj.G.cells.volumes = paramobj.G.cells.volumes .* length_factor;
+            paramobj.G.cells.length_factor = cf_length_factor;
 
+            model = model@ElectroChemicalComponent(paramobj);
+            
             model.Separator = Separator(paramobj.Separator);
 
             fdnames = {'sp'                  , ...
