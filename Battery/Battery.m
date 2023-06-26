@@ -43,8 +43,8 @@ classdef Battery < BaseModel
         equationTypes
         equationIndices
 
-        length_factor_ne = 2;
-        length_factor_pe = 2;
+        length_factor_ne = initVariablesADI(2.0);
+        length_factor_pe = initVariablesADI(2.0);
         
     end
     
@@ -74,16 +74,16 @@ classdef Battery < BaseModel
             % Update electrolyte grid (FIXME: Use indices instead of coordinates)
             eldes = {'NegativeElectrode', 'PositiveElectrode'};
             length_factor_elde = {model.length_factor_ne, model.length_factor_pe};
-            length_factor = ones(paramobj.Electrolyte.G.cells.num, 1);
-            cf_length_factor = ones(size(paramobj.Electrolyte.G.cells.faces, 1), 1);
-            set_cells = false(paramobj.Electrolyte.G.cells.num, 1);
+            c_length_factor = ones(paramobj.Electrolyte.G.cells.num, 1) + 0*model.length_factor_pe;
+            cf_length_factor = ones(size(paramobj.Electrolyte.G.cells.faces, 1), 1) + 0*model.length_factor_pe;
+            %set_cells = false(paramobj.Electrolyte.G.cells.num, 1);
             for k = 1:2
                 elde = eldes{k};
                 xmin = min(model.(elde).G.nodes.coords(:,1));
                 xmax = max(model.(elde).G.nodes.coords(:,1));
                 cell_idx = paramobj.Electrolyte.G.cells.centroids(:,1) > xmin & paramobj.Electrolyte.G.cells.centroids(:,1) < xmax;
-                length_factor(cell_idx) = length_factor_elde{k};
-                set_cells(cell_idx) = true;
+                c_length_factor(cell_idx) = length_factor_elde{k};
+                %set_cells(cell_idx) = true;
 
                 ee = find(cell_idx);
                 f = mcolon(paramobj.G.cells.facePos(ee), paramobj.G.cells.facePos(ee+1)-1);
@@ -92,7 +92,7 @@ classdef Battery < BaseModel
             end
             %length_factor(~set_cells) = model.length_factor_sep; % possibility
             
-            model.Electrolyte       = Electrolyte(paramobj.Electrolyte, length_factor, cf_length_factor);
+            model.Electrolyte       = Electrolyte(paramobj.Electrolyte, c_length_factor, cf_length_factor);
 
             if model.use_thermal
                 model.ThermalModel = ThermalComponent(paramobj.ThermalModel);

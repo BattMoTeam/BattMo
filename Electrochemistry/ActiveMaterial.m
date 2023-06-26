@@ -43,11 +43,10 @@ classdef ActiveMaterial < ElectronicComponent
         % ``paramobj`` is instance of :class:`ActiveMaterialInputParams <Electrochemistry.ActiveMaterialInputParams>`
         %
 
-            paramobj.G.cells.volumes = paramobj.G.cells.volumes .* length_factor;
-            paramobj.G.cells.length_factor = length_factor;
+            paramobj.G.cells.c_length_factor = length_factor;
+            paramobj.G.cells.cf_length_factor = length_factor;
             
             model = model@ElectronicComponent(paramobj);
-            
             
             fdnames = {'activeMaterialFraction', ...
                        'thermalConductivity'   , ...

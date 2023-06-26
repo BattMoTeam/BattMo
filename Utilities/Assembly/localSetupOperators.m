@@ -1,7 +1,7 @@
 function operators = localSetupOperators(G, varargin)
     opts = struct('assembleCellFluxOperator', false);
     opts = merge_options(opts, varargin{:});
-    
+
     nc = G.cells.num;
     cst = ones(nc, 1);
     rock = struct('perm', cst, 'poro', cst);
@@ -9,10 +9,21 @@ function operators = localSetupOperators(G, varargin)
 
     hT = computeTrans(G, rock);
 
-    if isfield(G.cells, 'length_factor')
-        hT = hT ./ G.cells.length_factor;
+    if isfield(G.cells, 'c_length_factor')
+        % G.cells.length_factor is scalar for the electrodes, but
+        % array for the electrolyte
+
+        fprintf('%g %g\n', numelValue(G.cells.c_length_factor), numelValue(G.cells.cf_length_factor));
+        
+        operators.pv = operators.pv .* G.cells.c_length_factor;
+        G.cells.volumes = G.cells.volumes .* G.cells.c_length_factor;
+        %hT = hT ./ G.cells.cf_length_factor;
     end
-    
+
+    if ~isfield(G.cells, 'c_length_factor')
+        keyboard;
+    end
+
     tbls = setupSimpleTables(G);
     cellfacetbl = tbls.cellfacetbl;
     celltbl     = tbls.celltbl;
@@ -39,14 +50,14 @@ function operators = localSetupOperators(G, varargin)
     P = P.setFromTensorMap(map);
     P = P.getMatrix;
 
-    operators.harmFace =@(cellvalue) 1./(P*(1./(hT.*(M*cellvalue))));
+    operators.harmFace = @(cellvalue) 1./(P*(1./(hT.*(M*cellvalue))));
 
     operators.harmFaceBC = @(cvalue, faces) getFaceHarmBC(G, cvalue, faces);
-    
+
     %% setup the sign for *external* faces
     % cells  = rldecode(1:G.cells.num, diff(G.cells.facePos), 2)';
     % faces  = G.cells.faces(:, 1);
-    
+
     extfaces = find(any(G.faces.neighbors == 0, 2));
     extcells = sum(G.faces.neighbors(extfaces, :), 2);
 
@@ -56,7 +67,7 @@ function operators = localSetupOperators(G, varargin)
     sgn(extfaces) = extsgn;
 
     operators.sgn = sgn;
-    
+
     %% setup cell flux reconstruction operator
     if opts.assembleCellFluxOperator
         %operators.cellFluxOp = getCellFluxOperators2(G);
@@ -71,7 +82,7 @@ function [T, cells] = getFaceHarmBC(G, cvalue, faces)
 
     if isfield(G.cells, 'length_factor')
         assert(numel(G.cells.length_factor) == 1);
-        t = t / G.cells.length_factor;
+        %t = t / G.cells.cf_length_factor;
     end
 
     T = t.*cvalue(cells);

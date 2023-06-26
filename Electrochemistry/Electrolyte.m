@@ -33,8 +33,8 @@ classdef Electrolyte < ElectroChemicalComponent
         function model = Electrolyte(paramobj, length_factor, cf_length_factor)
         % paramobj is instance of ElectrolyteInputParams or a derived class
 
-            paramobj.G.cells.volumes = paramobj.G.cells.volumes .* length_factor;
-            paramobj.G.cells.length_factor = cf_length_factor;
+            paramobj.G.cells.c_length_factor = length_factor;
+            paramobj.G.cells.cf_length_factor = cf_length_factor;
 
             model = model@ElectroChemicalComponent(paramobj);
             
