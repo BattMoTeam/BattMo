@@ -9,18 +9,51 @@ function operators = localSetupOperators(G, varargin)
 
     hT = computeTrans(G, rock);
 
-    if isfield(G.cells, 'c_length_factor')
-        % G.cells.length_factor is scalar for the electrodes, but
-        % array for the electrolyte
+    if isa(G.cells.c_length_factors, 'cell')
 
-        fprintf('%g %g\n', numelValue(G.cells.c_length_factor), numelValue(G.cells.cf_length_factor));
+        weight = G.cells.c_length_factors{1} + 0 * G.cells.c_length_factors{2};
+        operators.pv = operators.pv .* weight;
+        G.cells.volumes = G.cells.volumes .* weight;
+        hT = hT ./ weight;
+
+        assert(size(operators.pv.jac{1}, 2) == 2);
+        assert(size(G.cells.volumes.jac{1}, 2) == 2);
+        assert(size(hT.jac{1}, 2) == 2);
         
-        operators.pv = operators.pv .* G.cells.c_length_factor;
-        G.cells.volumes = G.cells.volumes .* G.cells.c_length_factor;
-        %hT = hT ./ G.cells.cf_length_factor;
-    end
+    elseif isa(G.cells.c_length_factors, 'struct')
 
-    if ~isfield(G.cells, 'c_length_factor')
+        % Original
+        pv0 = operators.pv;
+        vol0 = G.cells.volumes;
+        hT0 = hT;
+
+        % Initialize
+        ad = G.cells.c_length_factors.NegativeElectrode.length_factor + G.cells.c_length_factors.PositiveElectrode.length_factor;
+        operators.pv = pv0 + 0 * ad;
+        G.cells.volumes = vol0 + 0 * ad;
+        hT = hT0 + 0 * ad;
+        
+        % Weight
+        eldes = {'NegativeElectrode', 'PositiveElectrode'};
+        for k = 1:2
+            elde = eldes{k};
+            k2 = rem(k, 2) + 1;
+            other_elde = eldes{k2};
+            
+            cells  = G.cells.c_length_factors.(elde).cells;
+            cf     = G.cells.cf_length_factors.(elde).cf;
+            weight = G.cells.c_length_factors.(elde).length_factor + 0 * G.cells.c_length_factors.(other_elde).length_factor;
+
+            operators.pv(cells) = pv0(cells) * weight;
+            G.cells.volumes(cells) = vol0(cells) * weight;
+            hT(cf) = hT0(cf) ./ weight;
+        end
+
+        assert(size(operators.pv.jac{1}, 2) == 2);
+        assert(size(G.cells.volumes.jac{1}, 2) == 2);
+        assert(size(hT.jac{1}, 2) == 2);
+
+    else
         keyboard;
     end
 
@@ -80,11 +113,33 @@ function [T, cells] = getFaceHarmBC(G, cvalue, faces)
     cn = sqrt(sum((G.faces.centroids(faces, :) - G.cells.centroids(cells, :)).^2, 2));
     t = G.faces.areas(faces)./cn;
 
-    if isfield(G.cells, 'length_factor')
-        assert(numel(G.cells.length_factor) == 1);
-        %t = t / G.cells.cf_length_factor;
-    end
+    if isa(G.cells.c_length_factors, 'cell')
 
+        weight = G.cells.c_length_factors{1} + 0 * G.cells.c_length_factors{2};
+        t = t ./ weight;
+
+        assert(size(t.jac{1}, 2) == 2);
+        
+    elseif isa(G.cells.c_length_factors, 'struct')
+
+        ad = G.cells.c_length_factors{1} + G.cells.c_length_factors{2};
+        t0 = t + 0 * ad;
+        
+        eldes = {'NegativeElectrode', 'PositiveElectrode'};
+        for k = 1:2
+            elde = eldes{k};
+            other_elde = eldes{k2};
+            cf     = G.cells.cf_length_factors.(elde).cf;
+            weight = G.cells.c_length_factors.(elde).length_factor + 0 * G.cells.c_length_factors.(other_elde).length_factor;
+            t(cf) = t0(cf) ./ weight;
+        end
+            
+        assert(size(t.jac{1}, 2) == 2);
+
+    else
+        keyboard;
+    end
+        
     T = t.*cvalue(cells);
 end
 

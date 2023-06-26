@@ -21,11 +21,13 @@ classdef Electrode < BaseModel
 
     methods
         
-        function model = Electrode(paramobj, length_factor)
+        function model = Electrode(paramobj, length_factors)
         % paramobj is instance of :class:`Electrochemistry.Electrodes.ElectrodeInputParams`
 
         % No need to scale fluxes for electrode
-            paramobj.G.cells.volumes = paramobj.G.cells.volumes * length_factor;
+            weight = length_factors{1} + 0*length_factors{2};
+            paramobj.G.cells.volumes = paramobj.G.cells.volumes * weight;
+            assert(size(paramobj.G.cells.volumes.jac{1}, 2) == 2);
 
             model = model@BaseModel();
 
@@ -39,7 +41,7 @@ classdef Electrode < BaseModel
             
             switch paramobj.electrode_case
               case 'default'
-                model.ActiveMaterial = ActiveMaterial(paramobj.ActiveMaterial, length_factor);
+                model.ActiveMaterial = ActiveMaterial(paramobj.ActiveMaterial, length_factors);
               case 'composite'
                 model.ActiveMaterial = CompositeActiveMaterial(paramobj.ActiveMaterial);
               otherwise
