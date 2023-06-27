@@ -2,17 +2,20 @@ classdef EquilibriumCalibrationSetup
 
     properties
         
+        model % Battery model
+
         F % Faraday Constant
-        exptime
-        expU
-        totalTime
-        I
-        model
-        T % Temperature
+        Temperature = 298.15% Temperature (used in OCP curves)
+
+        % Discharge curve measured experementally at near-equilibrium condition
+        exptime % Time [s]
+        expU    % Voltage [V]
+        expI    % Current [A]
+        totalTime % total time (set as exptime(end))
         
-        packingMass
-        mass
-        masses
+        packingMass = 61*gram % mass of packing 
+
+        variableChoice = 1
         
     end
 
@@ -25,17 +28,10 @@ classdef EquilibriumCalibrationSetup
             ecs.F         = con.F;
             ecs.exptime   = expdata.time;
             ecs.expU      = expdata.U;
-            ecs.I         = expdata.I;
+            ecs.expI      = expdata.I;
             ecs.totalTime = ecs.exptime(end);
             ecs.model     = model;
 
-            ecs.T = 298.15; % default value
-            
-            packingMass = 61*gram; % default value
-
-            ecs = ecs.setPackingMass(packingMass);
-
-            
         end
 
         function ecs = setPackingMass(ecs, packingMass)
@@ -64,13 +60,53 @@ classdef EquilibriumCalibrationSetup
             
             ne  = 'NegativeElectrode';
             pe  = 'PositiveElectrode';
+            am  = 'ActiveMaterial';
+            itf = 'Interface';
 
-            X = nan(4, 1);
-            X(1 : 2) = ecs.getX(ne);
-            X(3 : 4) = ecs.getX(pe);
-            
+            switch ecs.variableChoice
+
+              case 1
+                
+                X = nan(4, 1);
+
+                X(1) = model.(ne).(am).(itf).theta100;
+                vf   = unique(model.(ne).(am).volumeFraction)*model.(ne).(am).activeMaterialFraction;
+                X(2) = vf;
+                
+                X(3) = model.(pe).(am).(itf).theta100;
+                vf   = unique(model.(pe).(am).volumeFraction)*model.(pe).(am).activeMaterialFraction;
+                X(4) = vf;
+
+              case 2
+                
+                X = nan(3, 1);
+
+                X(1) = model.(ne).(am).(itf).theta100;
+                vf   = unique(model.(ne).(am).volumeFraction)*model.(ne).(am).activeMaterialFraction;
+                X(2) = vf;
+                
+                vf   = unique(model.(pe).(am).volumeFraction)*model.(pe).(am).activeMaterialFraction;
+                X(3) = vf;
+                
+              otherwise
+                error('variableChoice not recognized')
+            end
         end
 
+        function printVariableChoice(ecs)
+
+            switch ecs.variableChoice
+              case 1
+                fprintf('\nThe calibration parameters are theta100 and volume fraction for both electrodes\n');
+              case 2
+                fprintf('\nThe calibration parameters are theta100 for the negative electrode\n');
+                fprintf('\nThe volume fractions for both electrodes\n');
+              otherwise
+                error('variableChoice not recognized');
+            end
+            
+               
+        end
         function vals = getPhysicalValues(ecs, X)
 
             model = ecs.model;
@@ -79,39 +115,47 @@ classdef EquilibriumCalibrationSetup
             pe  = 'PositiveElectrode';
             am  = 'ActiveMaterial';
             itf = 'Interface';
-            
+
             eldes = {ne, pe};
+            
+            switch ecs.variableChoice
 
-            for ielde = 1 : numel(eldes)
+              case 1
 
-                elde = eldes{ielde};
+                for ielde = 1 : numel(eldes)
+
+                    elde = eldes{ielde};
+                    
+                    vol  = sum(model.(elde).(am).G.cells.volumes);
+                    cmax = model.(elde).(am).(itf).cmax;
+
+                    vals.(elde).tf             = 0;
+                    vals.(elde).theta          = X(2*ielde - 1);
+                    vals.(elde).alpha          = X(2*ielde)*vol*cmax;
+                    vals.(elde).volumeFraction = X(2*ielde);
+                    
+                end
+
+              case 2
                 
-                vol  = sum(model.(elde).(am).G.cells.volumes);
-                cmax = model.(elde).(am).(itf).cmax;
+                vol  = sum(model.(ne).(am).G.cells.volumes);
+                cmax = model.(ne).(am).(itf).cmax;
+                
+                vals.(ne).tf             = 0;
+                vals.(ne).theta          = X(1);
+                vals.(ne).volumeFraction = X(2);
+                vals.(ne).alpha          = X(2)*vol*cmax;
 
-                vals.(elde).theta100       = X(2*ielde - 1);
-                vals.(elde).alpha          = X(2*ielde)*vol*cmax;
-                vals.(elde).volumeFraction = X(2*ielde);
+                vol  = sum(model.(pe).(am).G.cells.volumes);
+                cmax = model.(pe).(am).(itf).cmax;
+                
+                vals.(pe).volumeFraction = X(3);
+                vals.(pe).alpha          = X(3)*vol*cmax;
+                vals.(pe).tf             = 1;
+                vals.(pe).theta          = 0.99;
                 
             end
-            
-        end
-        
-        function X = getX(ecs, elde)
-
-        % We define some shorthand names for simplicity.
-
-            model = ecs.model;
-            
-            am  = 'ActiveMaterial';
-            itf = 'Interface';
-
-            X = nan(2, 1);
-            
-            X(1) = model.(elde).(am).(itf).theta100;
-            vf   = unique(model.(elde).(am).volumeFraction)*model.(elde).(am).activeMaterialFraction;
-            X(2) = vf;
-
+                
         end
         
         
@@ -123,22 +167,24 @@ classdef EquilibriumCalibrationSetup
         end
 
 
-        function c = conc(ecs, t, elde, theta, alpha)
-
+        function theta = conc(ecs, t, elde, tf, theta_tf, alpha)
+        % theta is lithiation at time tf*totalTimr
+        % returns lithiation
             ne      = 'NegativeElectrode';
             pe      = 'PositiveElectrode';
 
-            I = ecs.I;
+            I = ecs.expI;
             F = ecs.F;
-
+            T = ecs.totalTime;
+            
             switch elde
               case ne
                 sgn = -1;
               case pe
                 sgn = 1;
             end
-            
-            c = theta + t * ((sgn*I)./(F*alpha));
+
+            theta = theta_tf + (t - tf*T)*((sgn*I)./(F*alpha));
             
         end
 
@@ -163,23 +209,25 @@ classdef EquilibriumCalibrationSetup
             thermal = 'ThermalModel';
             ctrl    = 'Control';
             
-            I     = ecs.I;
+            I     = ecs.expI;
             model = ecs.model;
-            T     = ecs.T;
+            T     = ecs.Temperature;
 
             vals = ecs.getPhysicalValues(X);
             
-            theta = vals.(pe).theta100;
-            alpha = vals.(pe).alpha;
+            theta_tf = vals.(pe).theta;
+            tf       = vals.(pe).tf;
+            alpha    = vals.(pe).alpha;
 
-            c = ecs.conc(t, pe, theta, alpha);
-            f = model.(pe).(am).(itf).computeOCPFunc(c, T, 1);
+            theta = ecs.conc(t, pe, tf, theta_tf, alpha);
+            f = model.(pe).(am).(itf).computeOCPFunc(theta, T, 1);
             
-            theta = vals.(ne).theta100;
-            alpha = vals.(ne).alpha;
+            theta_tf = vals.(ne).theta;
+            tf       = vals.(ne).tf;
+            alpha    = vals.(ne).alpha;
             
-            c = ecs.conc(t, ne, theta, alpha);
-            f = f - model.(ne).(am).(itf).computeOCPFunc(c, T, 1);
+            theta = ecs.conc(t, ne, tf, theta_tf, alpha);
+            f = f - model.(ne).(am).(itf).computeOCPFunc(theta, T, 1);
 
         end
 
@@ -215,7 +263,7 @@ classdef EquilibriumCalibrationSetup
 
             model = ecs.model;
             F         = ecs.F;
-            T         = ecs.T;
+            T         = ecs.Temperature;
             totalTime = ecs.totalTime;
             
             props = ecs.getPhysicalValues(X);
@@ -285,7 +333,8 @@ classdef EquilibriumCalibrationSetup
 
             props.energy = energies.(pe) - energies.(ne);
 
-            props.specEnergy = props.energy/ecs.mass;
+            mass = ecs.getMass();
+            props.specEnergy = props.energy/mass;
 
             % props.NPratio = props.(ne).cap/props.(pe).cap;
 
@@ -293,6 +342,15 @@ classdef EquilibriumCalibrationSetup
 
         end
 
+        function mass = getMass(ecs)
+            
+            model       = ecs.model;
+            packingMass = ecs.packingMass;
+            
+            mass = computeCellMass(model, 'packingMass', packingMass);
+
+        end
+        
         function printParameters(ecs, X)
 
             vals = ecs.getPhysicalValues(X);
@@ -303,8 +361,8 @@ classdef EquilibriumCalibrationSetup
             eldes = {ne, pe};
 
             fprintf('%20s%20s%20s\n', '', 'theta100', 'volume fraction');
-            fprintf('%20s%20.5f%20.5f \n', ne, vals.(ne).theta100, vals.(ne).volumeFraction);
-            fprintf('%20s%20.5f%20.5f \n', pe, vals.(pe).theta100, vals.(pe).volumeFraction);
+            fprintf('%20s%20.5f%20.5f \n', ne, vals.(ne).theta, vals.(ne).volumeFraction);
+            fprintf('%20s%20.5f%20.5f \n', pe, vals.(pe).theta, vals.(pe).volumeFraction);
             
         end
 
@@ -312,12 +370,12 @@ classdef EquilibriumCalibrationSetup
 
             props = ecs.computeProperties(X);
 
-            packingMass = ecs.packingMass;
-            mass        = ecs.mass;
-
+            mass = ecs.getMass();
+            
             fprintf('%20s: %g [V]\n','initial voltage', props.U);
             fprintf('%20s: %g [Ah]\n', 'Capacity', props.cap/(1*hour));
             fprintf('%20s: %g [Wh/kg]\n', 'Specific Energy', props.specEnergy/(1*hour));
+            fprintf('%20s: %g [g]\n', 'packing mass (given)', ecs.packingMass/gram);
             % fprintf('%20s: %g [-]\n', 'N/P ratio', props.NPratio);
         end
         
