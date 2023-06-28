@@ -1,16 +1,16 @@
 {
   "Sources" : "cmax (maximal concentration in a particle completely swelled, k0, theta100 and theta0 are from Analysis of the Lithium-Ion Insertion Silicon Composite Electrode/Separator/Lithium Foil Cell Rajeswari Chandrasekarana, and Thomas F. Fuller; volumetricSurfaceArea is not needed",
   "cmax": 81923,
-  "volumeFraction": 0.8,
-  "volumetricSurfaceArea": 10000000,
+  "volumeFraction": 0.4,
+  "volumetricSurfaceArea": 20000000,
   "density": 2330,
   "n" : 1,
   "Eak": 5000,
-  "k0": 1e-13,
+  "k0": 2.5e-13,
   "theta100": 0.9,
-  "theta0": 0.03,
+  "theta0": 0.1,
   "OCP" : {"type": "function",
-           "functionname" : "computeOCPSilicon_Lithiation_Chandresekaran2011",
+           "functionname" : "computeOCPSilicon_Delithiation_Chandresekaran2011",
            "argumentlist" : ["cElectrode", "T", "cmax"]
           },
   "BruggemanCoefficient": 1.5

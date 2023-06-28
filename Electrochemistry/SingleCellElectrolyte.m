@@ -5,6 +5,8 @@ classdef SingleCellElectrolyte < BaseModel
 
         cInit % concentration in electrolyte
         phiInit % concentration in electrolyte
+
+        volumeFraction
         
     end
     
@@ -12,6 +14,10 @@ classdef SingleCellElectrolyte < BaseModel
         
         function model = SingleCellElectrolyte(paramobj)
             model = model@BaseModel();
+
+            model.G     = paramobj.G;
+            model.cInit = paramobj.cInit;
+            model.phiInit = paramobj.phiInit;
         end
 
         function model = registerVarAndPropfuncNames(model)
@@ -35,12 +41,12 @@ classdef SingleCellElectrolyte < BaseModel
             model = model.registerPropFunction({'phi', fn, {}});            
         end
 
-        function model = updateConcentration(model, state)
+        function state = updateConcentration(model, state)
 
             state.c = model.cInit;
         end
         
-        function model = updatePotential(model, state)
+        function state = updatePotential(model, state)
 
             state.phi = model.phiInit;
         end

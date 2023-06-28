@@ -1,6 +1,7 @@
 classdef SingleCellElectrolyteInputParams < InputParams
 
     properties
+        G
         
         cInit
         phiInit

@@ -3,9 +3,6 @@ classdef CompositeBattery < BatterySwelling
     properties
         
         scenario
-
-        primaryVarNames
-        funcCallList
         
     end
     
@@ -57,10 +54,10 @@ classdef CompositeBattery < BatterySwelling
 
             addedVariableNames = {};
 
-            if model.(ne).(am).(gr).isSwellingMaterial
-                varEqTypes{end + 1} = {{ne, am, gr, 'porosity'}, 'ne_am_Si_volumeCons', 'cell'};
+            if isa(model.(ne).(am).(si), 'SwellingMaterial')
+                newentries = {{ne, am, si, 'porosity'}, 'ne_am_Si_volumeCons', 'cell'};
+                varEqTypes = vertcat(varEqTypes, newentries);
             end
-
 
             addedVariableNames{end + 1} = {ctrl, 'ctrlType'};
             
@@ -115,6 +112,22 @@ classdef CompositeBattery < BatterySwelling
             gr = 'FirstMaterial';
             si = 'SecondMaterial';
 
+             varnames = {{elyte, 'volumeFraction'} ,...
+                        {elyte, 'convFlux'}};
+
+            model = model.registerVarNames(varnames);
+
+
+            if isa(model.(ne).(am).(si), 'SwellingMaterial')
+                fn = @CompositeBattery.updateElectrolyteVolumeFraction;
+                inputNames = {{ne,am,si, 'porosity'}};
+                model = model.registerPropFunction({{elyte,'volumeFraction'}, fn, inputNames});
+
+                 fn = @CompositeBattery.updateConvFlux;
+                inputNames = {{elyte, 'j'}, {elyte, 'c'}, {ne,am, si, sd, 'cAverage'}, {ne,am, si, itf, 'volumetricSurfaceArea'}};
+                model = model.registerPropFunction({{elyte,'convFlux'}, fn, inputNames});
+            end
+
             %%  removing some unused variables
             varnames = {{ne, am, itf, 'phiElectrolyte'},
                         {ne, am, itf, 'cElectrolyte'}};
@@ -124,7 +137,7 @@ classdef CompositeBattery < BatterySwelling
             %% Coupling functions
             
             % Dispatch electrolyte concentration and potential in the electrodes
-            fn = @Battery.updateElectrodeCoupling;
+            fn = @BatterySwelling.updateElectrodeCoupling;
             inputnames = {{elyte, 'c'}, ...
                           {elyte, 'phi'}};
             model = model.registerPropFunction({{ne, am, gr, itf, 'phiElectrolyte'}, fn, inputnames});
@@ -135,7 +148,7 @@ classdef CompositeBattery < BatterySwelling
             model = model.registerPropFunction({{pe, am, itf, 'cElectrolyte'}  , fn, inputnames});
             
             % Functions that update the source terms in the electolyte
-            fn = @Battery.updateElectrolyteCoupling;
+            fn = @BatterySwelling.updateElectrolyteCoupling;
             inputnames = {{ne, am, si, 'Rvol'}, ...
                           {ne, am, gr, 'Rvol'}, ...
                           {pe, am, 'Rvol'}};
@@ -262,6 +275,13 @@ classdef CompositeBattery < BatterySwelling
               otherwise
                 error('control policy not recognized');
             end
+
+           
+            vfSi = model.(ne).(am).(si).(itf).volumeFraction;
+            vfGr = model.(ne).(am).(si).(itf).volumeFraction;
+            ADstruc = model.(ne).(am).(si).porosity ./ model.(ne).(am).(si).porosity;
+            initstate.(ne).(am).(si).porosity = (1 - vfSi - vfGr) .* ADstruc;
+            
             
         end
         
@@ -523,6 +543,108 @@ classdef CompositeBattery < BatterySwelling
             
             report = [];
             
+        end
+
+        %% Update at each step the electrolyte volume fractions in the different regions (neg_elde, elyte, pos_elde)
+        function state = updateElectrolyteVolumeFraction(model, state)
+            
+
+            elyte = 'Electrolyte';
+            ne    = 'NegativeElectrode';
+            pe    = 'PositiveElectrode';
+            am    = 'ActiveMaterial';
+            sep   = 'Separator';
+            gr    = 'FirstMaterial';
+            si    = 'SecondMaterial';
+
+            elyte_cells = zeros(model.G.cells.num, 1);
+            elyte_cells(model.(elyte).G.mappings.cellmap) = (1 : model.(elyte).G.cells.num)';
+
+            
+
+            
+            % Initialisation of AD for the porosity of the elyte
+            state.(elyte).volumeFraction = 0 * state.(elyte).c;
+
+            % Define the porosity in the separator
+            sep_cells = elyte_cells(model.(elyte).(sep).G.mappings.cellmap); 
+            state.(elyte).volumeFraction = subsasgnAD(state.(elyte).volumeFraction,sep_cells, model.(elyte).(sep).porosity);
+
+
+            % Define the volumeFraction in the electrodes
+            eldes = {ne, pe};
+            for ielde = 1 : numel(eldes)
+                elde = eldes{ielde};
+                if isa(model.(elde).(am), 'CompositeActiveMaterial')
+                    if isa(model.(elde).(am).(si), 'SwellingMaterial')
+                        state.(elyte).volumeFraction = subsasgnAD(state.(elyte).volumeFraction, elyte_cells(model.(elde).(am).G.mappings.cellmap), model.(elde).(am).(gr).porosity + state.(elde).(am).(si).porosity);
+                    else
+                        state.(elyte).volumeFraction = subsasgnAD(state.(elyte).volumeFraction, elyte_cells(model.(elde).(am).G.mappings.cellmap), model.(elde).(am).(gr).porosity + model.(elde).(am).(si).porosity);
+                    end
+                else
+                    state.(elyte).volumeFraction = subsasgnAD(state.(elyte).volumeFraction, elyte_cells(model.(elde).(am).G.mappings.cellmap), model.(elde).(am).porosity);
+                end
+            end
+
+            if model.use_thermal
+                model.(elyte).EffectiveThermalConductivity = model.(elyte).volumeFraction.*model.(elyte).thermalConductivity;
+            end
+
+        end
+
+        %% Assign at each step the convective flux in the electrolyte region
+        function state = updateConvFlux(model, state)
+
+            elyte   = 'Electrolyte';
+            ne      = 'NegativeElectrode';
+            pe      = 'PositiveElectrode';
+            am      = 'ActiveMaterial';
+            itf     = 'Interface';
+            si      = 'SecondMaterial';
+            eldes = {ne, pe};
+
+            j = state.(elyte).j;
+            state.(elyte).convFlux = 0 .* j;
+
+            for ielde = 1 : numel(eldes)
+                elde = eldes{ielde};
+                if isa(model.(elde).(am), 'CompositeActiveMaterial')
+                    if isa(model.(elde).(am).(si), 'SwellingMaterial')
+
+                        itf_model = model.(elde).(am).(si).(itf);
+                        G = model.(elyte).G;
+                        Gp = G.mappings.parentGrid;
+    
+                        c = state.(elde).(am).(si).SolidDiffusion.cAverage;
+    
+                        molarVolumeLithiated = model.(elde).(am).(si).computeMolarVolumeLithiated(c);
+                        densitySi            = model.(elde).(am).(si).Interface.density;
+                        molarMassSi          = model.(elde).(am).(si).molarMass;
+    
+                        
+                        F       = itf_model.constants.F;
+                        n       = itf_model.n;
+                        s       = -1;
+                        molarVolumeSi = molarMassSi/densitySi;
+    
+                        a = state.(elde).(am).(si).Interface.volumetricSurfaceArea;
+                        j = state.(elyte).j;
+                        j = j(model.(elde).G.mappings.cellmap);
+                        c = state.(elyte).c;
+                        c = c(model.(elde).G.mappings.cellmap);
+    
+                        elyte_cells = zeros(Gp.cells.num-1, 1);
+                        elyte_cells(G.mappings.cellmap) = (1 : model.G.cells.num)';
+                        elyte_cells_elde = elyte_cells(model.(elde).G.mappings.cellmap);
+    
+                        averageVelocity = (s./(n.*F)).*(molarVolumeLithiated - (4/15)*molarVolumeSi).*j;
+                        Flux = c .* averageVelocity;
+    
+    
+                        state.(elyte).convFlux(elyte_cells_elde) = Flux;
+                    end
+                end
+            end
         end
 
         function cleanState = addStaticVariables(model, cleanState, state)

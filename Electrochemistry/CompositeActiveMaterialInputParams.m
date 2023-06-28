@@ -36,8 +36,9 @@ classdef CompositeActiveMaterialInputParams < ElectronicComponentInputParams
             gr = 'FirstMaterial';
             si = 'SecondMaterial';
 
-            paramobj = mergeParameters(paramobj,  {{gr, 'volumeFraction'}, {'volumeFraction'}});
-            paramobj = mergeParameters(paramobj,  {{si, 'volumeFraction'}, {'volumeFraction'}});
+
+            %paramobj = mergeParameters(paramobj,  {{gr, 'volumeFraction'}, {'volumeFraction'}});
+            %paramobj = mergeParameters(paramobj,  {{si, 'volumeFraction'}, {'volumeFraction'}});
 
             paramobj = validateInputParams@ElectronicComponentInputParams(paramobj);
             

@@ -5,7 +5,8 @@ classdef HalfCellInputParams < InputParams
 
     properties
         
-        
+        SOC % Initial state of charge
+
         G     % Computational Grid
         initT % Initial temperature [T]
         

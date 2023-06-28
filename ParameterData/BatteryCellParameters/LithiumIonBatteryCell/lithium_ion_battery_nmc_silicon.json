@@ -3,16 +3,16 @@
   "SOC": 0.01,
   "Ucut": 2,
   "initT": 298.15,
-  "use_thermal": true,
+  "use_thermal": false,
   "include_current_collectors": false,
   "use_particle_diffusion": true,
   "Control" : {
     "controlPolicy" : "IEswitch",
     "initialControl" : "charging",
-    "CRate" : 1,
-    "lowerCutoffVoltage" : 2.2,
+    "CRate" : 0.01,
+    "lowerCutoffVoltage" : 2.4,
     "upperCutoffVoltage" : 4.2,
-    "dIdtLimit" : 0.01,
+    "dIdtLimit" : 1,
     "dEdtLimit" : 0.01
   },
   "NegativeElectrode": {

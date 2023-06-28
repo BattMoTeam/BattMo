@@ -7,6 +7,7 @@ classdef PhysicalConstants
         F       % Faraday constant
         c0      % Standard concentration
         molarVolumeLi   % Molar Volume of pure Li
+        molarVolumeSi
     end
     
     methods
@@ -16,7 +17,8 @@ classdef PhysicalConstants
             obj.R = 8.31446261815324;
             obj.F = 96485.3329;
             obj.c0 = 1000;
-            obj.molarVolumeLi = 9 * 1E-6;
+            obj.molarVolumeLi = 8.8 * 1E-6;
+            obj.molarVolumeSi = 1.2 * 1E-5;
         end
     end
 end
@@ -29,7 +31,7 @@ Copyright 2021-2023 SINTEF Industry, Sustainable Energy Technology
 and SINTEF Digital, Mathematics & Cybernetics.
 
 This file is part of The Battery Modeling Toolbox BattMo
-
+s
 BattMo is free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
 the Free Software Foundation, either version 3 of the License, or

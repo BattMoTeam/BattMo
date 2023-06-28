@@ -65,9 +65,9 @@ model.AutoDiffBackend= AutoDiffBackend();
 inspectgraph = false;
 if inspectgraph
     cgt = ComputationalGraphTool(model);
-    [g, edgelabels] = cgt.getComputationalGraph('includeNodeNames', '[^d]T$', 'oneParentOnly', true);
+    [g, edgelabels] = cgt.getComputationalGraph('includeNodeNames', []);
     figure
-    % h = plot(g, 'edgelabel', edgelabels, 'nodefontsize', 10);
+    h = plot(g, 'edgelabel', edgelabels, 'nodefontsize', 10);
     h = plot(g, 'nodefontsize', 10);
     return
 end

@@ -12,7 +12,7 @@ function [OCP, dUdT] = computeOCPSilicon_Lithiation_Chandresekaran2011(c, T, cma
 
     theta = c_ratio .* ((radius ./ R_delith).^3) ./(1+Q);
 
-    if theta > 0.9
+    if theta > 0.99
         error('Impossible, soc>1 for the Si electrode')
     end
 

@@ -8,7 +8,7 @@
   "Control" : {
     "controlPolicy" : "IEswitch",
     "CRate" : 1,
-    "lowerCutoffVoltage" : 2,
+    "lowerCutoffVoltage" : 2.4,
     "upperCutoffVoltage" : 4.1,
     "dIdtLimit" : 0.01,
     "dEdtLimit" : 0.01
@@ -23,7 +23,7 @@
                     "electricalConductivity": 100,
                     "activeMaterialFraction" : 0.92,
                     "BruggemanCoefficient": 1.5,
-                    "isSwellingMaterial": 0,
+                    "molarMass": 28.0855e-3,
                     "Interface": {
                       "isFile": true,
                       "filename": "ParameterData/MaterialProperties/Graphite/graphite.json"
@@ -31,7 +31,7 @@
                     "diffusionModelType" : "full",
                     "SolidDiffusion" : {
                       "EaD": 5000,
-                      "D0": 3.9e-14,
+                      "D0": 3.9e-16,
                       "rp": 1e-06,
                       "N": 10
                     }
@@ -42,7 +42,7 @@
                    "electricalConductivity": 100,
                    "activeMaterialFraction" : 0.08,
                    "BruggemanCoefficient": 1.5,
-                   "isSwellingMaterial": 1,
+                   "molarMass": 28.0855e-3,
                    "Interface": {
                      "isFile": true,
                      "filename": "ParameterData/MaterialProperties/Silicon/silicon.json"
@@ -50,7 +50,7 @@
                    "diffusionModelType" : "full",
                    "SolidDiffusion" : {
                      "EaD": 5000,
-                     "D0": 1e-15,
+                     "D0": 1e-1,
                      "rp": 6e-8,
                      "N": 10
                    }

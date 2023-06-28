@@ -26,6 +26,7 @@ classdef SwellingMaterial < ActiveMaterial
             model.use_particle_diffusion = true;
             model.use_interparticle_diffusion = false;
             paramobj.SolidDiffusion.np = model.G.cells.num;
+            paramobj.SolidDiffusion.cmax = paramobj.Interface.cmax;
             model.SolidDiffusion = FullSolidDiffusionSwellingModel(paramobj.SolidDiffusion);
             
         end
@@ -52,10 +53,10 @@ classdef SwellingMaterial < ActiveMaterial
             
             fn = @SwellingMaterial.updatePorosityAccum;
             fn = {fn, @(propfunction) PropFunction.accumFuncCallSetupFn(propfunction)};
-            model = model.registerPropFunction({'porosityAccum', fn, {'porosity'}});
+            model = model.registerPropFunction({'porosityAccum', fn, {'porosity','volumeFraction'}});
 
             fn = @SwellingMaterial.updatePorositySource;
-            model = model.registerPropFunction({'porositySource', fn, {{itf, 'R'}, {itf, 'volumetricSurfaceArea'}, {sd, 'cAverage'}}});
+            model = model.registerPropFunction({'porositySource', fn, {{itf, 'R'}, {itf, 'volumetricSurfaceArea'}, {sd, 'cAverage'},{sd,'radius'}}});
 
             fn = @SwellingMaterial.updatePorosityFlux;
             model = model.registerPropFunction({'porosityFlux', fn, {}});
@@ -81,8 +82,13 @@ classdef SwellingMaterial < ActiveMaterial
             model = model.registerPropFunction({{sd, 'Rvol'}, fn, {{itf, 'R'}, {itf, 'volumetricSurfaceArea'}}});
 
             fn  = @SwellingMaterial.updateReactionRate;
-            inputnames = {{itf, 'T'}, {itf, 'j0'}, {itf, 'eta'}, 'hydrostaticStress'};
+            inputnames = {{itf, 'T'}, {itf, 'j0'}, {itf, 'eta'}, {sd, 'radius'}, 'hydrostaticStress'};
             model = model.registerPropFunction({{itf, 'R'}, fn, inputnames});
+            
+            fn  = @SwellingMaterial.updateReactionRateCoefficient;
+            inputnames = {{itf, 'cElectrolyte'}, {itf, 'cElectrodeSurface'}, {sd, 'radius'}, {itf, 'T'}};
+            model = model.registerPropFunction({{itf, 'j0'}, fn, inputnames});
+
 
             fn  = @SwellingMaterial.updateVolumeFraction;
             model = model.registerPropFunction({'volumeFraction', fn, {'porosity'}});
@@ -101,7 +107,7 @@ classdef SwellingMaterial < ActiveMaterial
             vsa = state.(itf).volumetricSurfaceArea;
             R   = state.(itf).R;
             
-            Rvol = vsa.*R;
+            Rvol = am_fraction.*vsa.*R;
 
             state.Rvol = Rvol;
             state.(sd).Rvol = Rvol;
@@ -110,6 +116,7 @@ classdef SwellingMaterial < ActiveMaterial
         
         % Same as in Active Material but for a non constant volumeFraction    
         function state = updateAverageConcentration(model, state)
+            %simple diffusion only
 
             sd  = 'SolidDiffusion';
 
@@ -163,22 +170,22 @@ classdef SwellingMaterial < ActiveMaterial
                 c      = state.Interface.cElectrodeSurface;
                 radius = state.SolidDiffusion.radius;
 
-                molarVolumeSi = 1.2e-05;
+                molarVolumeSi = model.constants.molarVolumeSi;
                 molarVolumeLi = model.constants.molarVolumeLi;
                 
                 Q = (3.75.*molarVolumeLi)./(molarVolumeSi);
 
                 % Necessary to rescale c and cmax, cf eq 9 in [ref3]
-                scalingCoeff = (radius./R_delithiated).^3;
+                scalingCoeff = (radius./(R_delithiated)).^3;
                 c            = c.*scalingCoeff;
                 cmax         = (1 + Q)*cmax;
                 
                 % Calculate reaction rate constant
                 k = k0.*exp(-Eak./R.*(1./T - 1/Tref));
 
-                % k = k .* (R_delithiated./radius).^2;
+                %k = k.*(R_delithiated./radius).^ 2;
                 % We use regularizedSqrt to regularize the square root function and avoid the blow-up of derivative at zero.
-                th = 1e-3* model.Interface.cmax;
+                th = 1e-3* cmax;
                 coef = cElyte.*(cmax - c).*c;
                 coef(coef < 0) = 0;
                 
@@ -234,6 +241,9 @@ classdef SwellingMaterial < ActiveMaterial
             
             R = ButlerVolmerEquation_withStress(j0, alpha, n, eta, sigma, T);
 
+            r = state.SolidDiffusion.radius;
+            r0 = model.SolidDiffusion.rp; %.* (r0./r).^2
+
             state.(itf).R = R/(n*F); % reaction rate in mol/(s*m^2)
 
         end
@@ -260,7 +270,7 @@ classdef SwellingMaterial < ActiveMaterial
             sd  = 'SolidDiffusion';
             itf = 'Interface';
 
-            amf = model.activeMaterialFraction
+            amf = model.activeMaterialFraction;
             
             vf     = state.volumeFraction;
             radius = state.(sd).radius;
@@ -293,17 +303,14 @@ classdef SwellingMaterial < ActiveMaterial
         % Reference : eq 2 in [ref1]
         
         function state = updatePorosityAccum(model, state, state0, dt)
-            
-            vols = model.G.cells.volumes;
 
-            state.porosityAccum = vols.*(state.porosity - state0.porosity)./dt;
+            state.porosityAccum = (state.porosity - state0.porosity)./dt;
             
         end
         
         function state = updatePorositySource(model, state)
         % cf eq 2 in [ref1]
             
-            vols   = model.G.cells.volumes;
             cmax   = model.Interface.cmax;
             theta0 = model.Interface.theta0;
             
@@ -312,13 +319,15 @@ classdef SwellingMaterial < ActiveMaterial
             c  = state.SolidDiffusion.cAverage;
             
             molarVolumeLithiated   = model.computeMolarVolumeLithiated(c);
-            % Expression below schould be improved (cmin corresponding at theta0)
-            molarVolumeDelithiated = model.computeMolarVolumeLithiated(1000);
+            
+            molarVolumeSi = model.constants.molarVolumeSi;
+            molarVolumeLi = model.constants.molarVolumeLi;
+            molarVolumeDelithiated = (4/15)*(molarVolumeSi + 3.75*theta0*molarVolumeLi);
 
             r0 = model.SolidDiffusion.rp;
-            r  = computeRadius(c, cmax, r0);
-
-            state.porositySource = a.*R.*(molarVolumeLithiated - molarVolumeDelithiated).*vols;
+            r  = state.SolidDiffusion.radius;
+            
+            state.porositySource = a.*R.*(molarVolumeLithiated - molarVolumeDelithiated).*(1.56 .* r0./r).^3;
             
         end
 
@@ -347,15 +356,15 @@ classdef SwellingMaterial < ActiveMaterial
 
 
         %% Useful Functions    
-        function molarVolumeLitihated = computeMolarVolumeLithiated(model, c)
+        function molarVolumeLithiated = computeMolarVolumeLithiated(model, c)
         % cf equation 2 in [ref1]
 
-            molarVolumeSi = 1.2e-05;
+            molarVolumeSi = model.constants.molarVolumeSi;
             molarVolumeLi = model.constants.molarVolumeLi;
 
-            soc = model.computeTheta(c);
+            theta = model.computeTheta(c);
 
-            molarVolumeLitihated = (4/15)*(molarVolumeSi + 3.75*soc*molarVolumeLi);
+            molarVolumeLithiated = (4/15)*(molarVolumeSi + 3.75*theta*molarVolumeLi);
             
         end
 
@@ -368,10 +377,8 @@ classdef SwellingMaterial < ActiveMaterial
 
             
             cmax     = model.(itf).cmax;
-            theta100 = model.(itf).theta100;
-            theta0   = model.(itf).theta0;
             R_delith = model.(sd).rp;
-            molarVolumeSi = 1.2e-05;
+            molarVolumeSi = model.constants.molarVolumeSi;
             molarVolumeLi =  model.constants.molarVolumeLi;
 
             Q = (3.75.*molarVolumeLi)./(molarVolumeSi);

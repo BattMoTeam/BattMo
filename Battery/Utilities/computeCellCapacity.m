@@ -89,7 +89,7 @@ function [cap, cap_neg, cap_pos, specificEnergy] = computeCellCapacity(model, va
                 %to get the radius of the particle unlithiated, we use the eq
                 %11 in Chandrasekaran, Magasinski, Yushin and Fuller
                 molarVolumeSi = 1.2e-05;
-                molarVolumeLi = 9e-06;
+                molarVolumeLi = 8.8e-06;
                 Q = (3.75.*molarVolumeLi)./(molarVolumeSi);
     
                 R_initial = R_delith * (1 + Q * theta)^(1/3);
@@ -139,7 +139,7 @@ function [cap, cap_neg, cap_pos, specificEnergy] = computeCellCapacity(model, va
 
                 ammodel = ammodel.(mat);
 
-                if opt.isSwellingMaterial && ammodel.isSwellingMaterial
+                if opt.isSwellingMaterial && isa(ammodel, 'SwellingMaterial')
 
                     theta0 = ammodel.(itf).theta0;
                     theta100 = ammodel.(itf).theta100;

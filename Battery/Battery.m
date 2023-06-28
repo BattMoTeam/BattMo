@@ -771,7 +771,6 @@ classdef Battery < BaseModel
             
         end
 
-
         function state = addVariables(model, state)
             
         % Given a state where only the primary variables are defined, this
@@ -1244,7 +1243,6 @@ classdef Battery < BaseModel
             
         end
         
-
         function state = updateControl(model, state, drivingForces)
             
             ctrl = "Control";
@@ -1546,8 +1544,7 @@ classdef Battery < BaseModel
             state.(thermal).jHeatReactionSource = src;
 
         end
-        
-        
+               
         function state = updateElectrodeCoupling(model, state)
         % Setup the electrode coupling by updating the potential and concentration of the electrolyte in the active
         % component of the electrodes. There, those quantities are considered as input and used to compute the reaction

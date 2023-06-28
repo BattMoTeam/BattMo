@@ -20,10 +20,7 @@ classdef ElectrolyteSwelling < Electrolyte
                         'convFlux'};                       % Convective flux
             model = model.registerVarNames(varnames);
 
-            fn = @ElectrolyteSwelling.updateAccumTerm;
-            fn = {fn, @(propfunction) PropFunction.accumFuncCallSetupFn(propfunction)};
-            model = model.registerPropFunction({'massAccum', fn, {'c','volumeFraction'}});
-
+            
             fn = @ElectrolyteSwelling.updateDiffusionCoefficient;
             model = model.registerPropFunction({'D', fn, {'c','T','volumeFraction'}});
 
@@ -42,19 +39,7 @@ classdef ElectrolyteSwelling < Electrolyte
             
         end
 
-        %% Definition of the accumulation term (dc/dt)
-        function state = updateAccumTerm(model, state, state0, dt)
-
-            c = state.c;
-            vf = state.volumeFraction;
-            c0 = state0.c;
-
-            cdotcc  = (c - c0)/dt;
-            effectiveVolumes = vf.*model.G.cells.volumes;
-
-            state.massAccum  = effectiveVolumes.*cdotcc;
-            
-        end
+        
 
         %% Update the diffusion coefficient which vary at each step as the volumeFraction is no more constant
         function state = updateDiffusionCoefficient(model, state)

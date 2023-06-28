@@ -40,6 +40,7 @@
                    "thermalConductivity": 1.04,
                    "electricalConductivity": 100,
                    "activeMaterialFraction" : 0.08,
+                   "molarMass": 28.0855e-3,
                    "BruggemanCoefficient": 1.5,
                    "Interface": {
                      "isFile": true,

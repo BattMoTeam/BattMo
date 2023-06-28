@@ -45,11 +45,14 @@ classdef CompositeActiveMaterial < ElectronicComponent
             
 
             model.FirstMaterial = ActiveMaterial(paramobj.FirstMaterial);
-            model.SecondMaterial = ActiveMaterial(paramobj.SecondMaterial);
+            model.SecondMaterial = SwellingMaterial(paramobj.SecondMaterial);
+
             
             nc = model.G.cells.num;
 
-            model.volumeFraction = paramobj.volumeFraction*ones(nc, 1);
+            paramobj.volumeFraction = model.FirstMaterial.volumeFraction + model.SecondMaterial.volumeFraction; 
+
+            model.volumeFraction = paramobj.volumeFraction.*ones(nc, 1);
             model.porosity       = 1 - model.volumeFraction;
             
             model.isRoot = false;
