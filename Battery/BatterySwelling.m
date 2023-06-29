@@ -19,8 +19,6 @@ classdef BatterySwelling < Battery
             
         end
 
-        
-
         function model = registerVarAndPropfuncNames(model)
             model = registerVarAndPropfuncNames@Battery(model);
 
@@ -56,18 +54,6 @@ classdef BatterySwelling < Battery
         end
 
         
-        function model = registerVarAndPropfuncNames(model)
-                    
-            model = registerVarAndPropfuncNames@Battery(model);
-            
-            elyte = 'Electrolyte';
-            ne    = 'NegativeElectrode';
-            am    = 'ActiveMaterial';
-            
-            fn = @BatterySwelling.updateElectrolyteVolumeFraction;
-            inputnames = {{ne, am, 'porosity'}};
-            model = model.registerPropFunction({{elyte, 'volumeFraction'}, fn, inputnames});
-
         %% Definition of the accumulation term (dc/dt)
         function state = updateAccumTerm(model, state, state0, dt)
 
