@@ -53,7 +53,6 @@ classdef BatterySwelling < Battery
             
         end
 
-        
         %% Definition of the accumulation term (dc/dt)
         function state = updateAccumTerm(model, state, state0, dt)
 
@@ -136,27 +135,23 @@ classdef BatterySwelling < Battery
                 elde = eldes{ielde};
                 if isa(model.(elde).(am), 'SwellingMaterial')
 
-                    itf_model = model.(elde).(am).(itf);
-                    G = model.(elyte).G;
-                    Gp = G.mappings.parentGrid;
+                    G              = model.(elyte).G;
+                    Gp             = G.mappings.parentGrid;
+
+                    cmax           = model.(elde).(am).(itf).cmax;
+                    theta0         = model.(elde).(am).(itf).theta0;
+                    densitySi      = model.(elde).(am).(itf).density;
+                    molarMassSi    = model.(elde).(am).molarMass;
+                    F              = model.(elde).(am).(itf).constants.F;
+                    s = -1;
+                    n = 1;
 
                     c = state.(elde).(am).SolidDiffusion.cAverage;
 
-                    molarVolumeLithiated = model.(elde).(am).computeMolarVolumeLithiated(c);
-                    densitySi            = model.(elde).(am).(itf).density;
-                    molarMassSi   = model.(elde).(am).molarMass;
-
-                    theta0 = model.(elde).(am).(itf).theta0;
-                    molarVolumeSi = model.(elde).(am).constants.molarVolumeSi;
-                    molarVolumeLi = model.(elde).(am).constants.molarVolumeLi;
-                    molarVolumeDelithiated = (4/15)*(molarVolumeSi + 3.75*theta0*molarVolumeLi);
-                    molarVolumeDelithiated = model.(elde).(am).computeMolarVolumeLithiated(c);
-
+                    theta = c./cmax;
                     
-                    F       = itf_model.constants.F;
-                    n       = itf_model.n;
-                    s       = -1;
-                    molarVolumeSi = molarMassSi/densitySi;
+                    molarVolumeLithiated = model.(elde).(am).computeMolarVolumeLithiated(theta);
+                    molarVolumeDelithiated = model.(elde).(am).computeMolarVolumeLithiated(theta0);
 
                     a = state.(elde).(am).Interface.volumetricSurfaceArea;
                     j = state.(elyte).j;
@@ -212,44 +207,23 @@ classdef BatterySwelling < Battery
                 theta = SOC*(elde_itf.theta100 - elde_itf.theta0) + elde_itf.theta0;
                 c     = theta*elde_itf.cmax;
 
-                    if isa(model.(elde).(am), 'SwellingMaterial')
-                        %Calculating the initial radius of the particle if it
-                        %is swelling
-                        cmax     = elde_itf.cmax;
-                        theta0   = elde_itf.theta0;
-                        theta100 = elde_itf.theta100;
-                        R_delith = bat.(elde).(am).(sd).rp;
-                        
-                        
-                        molarVolumeSi = bat.(elde).(am).constants.molarVolumeSi;
-                        molarVolumeLi = bat.(elde).(am).constants.molarVolumeLi;
-                        Q = (3.75*molarVolumeLi)/(molarVolumeSi);
-    
-                        theta = theta0 + SOC .* (theta100-theta0);
-    
-                        radius = R_delith .* (1 + Q .* theta)^(1/3);
-                        
-                        c = cmax .* theta .* (1+Q) .* (R_delith^3) ./ (radius^3);
-                    end
+                nc    = elde_itf.G.cells.num;
 
+                initstate.(elde).(am).(sd).cSurface = c*ones(nc, 1);
+                N = model.(elde).(am).(sd).N;
+                np = model.(elde).(am).(sd).np; % Note : we have by construction np = nc
+                initstate.(elde).(am).(sd).c = c*ones(N*np, 1);
 
-                    nc    = elde_itf.G.cells.num;
+                initstate.(elde).(am) = model.(elde).(am).updateConcentrations(initstate.(elde).(am));
+                initstate.(elde).(am).(itf) = elde_itf.updateOCP(initstate.(elde).(am).(itf));
 
-                    initstate.(elde).(am).(sd).cSurface = c*ones(nc, 1);
-                    N = model.(elde).(am).(sd).N;
-                    np = model.(elde).(am).(sd).np; % Note : we have by construction np = nc
-                    initstate.(elde).(am).(sd).c = c*ones(N*np, 1);
-
-                    initstate.(elde).(am) = model.(elde).(am).updateConcentrations(initstate.(elde).(am));
-                    initstate.(elde).(am).(itf) = elde_itf.updateOCP(initstate.(elde).(am).(itf));
-
-                    OCP = initstate.(elde).(am).(itf).OCP;
-                    if ind == 1
-                        % The value in the first cell is used as reference.
-                        ref = OCP(1);
-                    end
+                OCP = initstate.(elde).(am).(itf).OCP;
+                if ind == 1
+                     % The value in the first cell is used as reference.
+                     ref = OCP(1);
+                end
                     
-                    initstate.(elde).(am).phi = OCP - ref;
+                initstate.(elde).(am).phi = OCP - ref;
                     
             end
 
@@ -503,16 +477,6 @@ classdef BatterySwelling < Battery
             types = repmat({'cell'}, 1, numel(names));
             
             primaryVars = model.getPrimaryVariables();
-
-
-           if state.(ctrl).E > 4.1
-               theta = model.NegativeElectrode.ActiveMaterial.computeTheta(state.NegativeElectrode.ActiveMaterial.SolidDiffusion.cAverage);
-               theta0 = model.NegativeElectrode.ActiveMaterial.Interface.theta0;
-               theta100 = model.NegativeElectrode.ActiveMaterial.Interface.theta100;
-
-               soc = (theta.val - theta0) ./ (theta100 - theta0);
-               soc = soc(1);
-           end
 
             
             %% Setup LinearizedProblem that can be processed by MRST Newton API

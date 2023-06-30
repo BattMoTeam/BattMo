@@ -83,6 +83,7 @@ function [cap, cap_neg, cap_pos, specificEnergy] = computeCellCapacity(model, va
                     'LithiumIonBatteryCell','lithium_ion_battery_nmc_silicon.json');
                 jsonstruct = parseBattmoJson(fname);
                 soc = jsonstruct.SOC;
+                vf  = jsonstruct.NegativeElectrode.ActiveMaterial.Interface.volumeFraction; 
     
                 theta = theta0 + soc .* (theta100 - theta0);
                
@@ -93,12 +94,15 @@ function [cap, cap_neg, cap_pos, specificEnergy] = computeCellCapacity(model, va
                 Q = (3.75.*molarVolumeLi)./(molarVolumeSi);
     
                 R_initial = R_delith * (1 + Q * theta)^(1/3);
+
+                %vf0 = 0.07;
+                %R_initial = R_delith * (vf/vf0)^(1/3);
+
+                Nmax_part = (theta100 - theta0) .*cMax * (4/3) * pi * R_delith^3;
     
-                Nmax_part = cMax * (4/3) * pi * (1+Q) * R_delith^3;
-    
-                Npart_tot = (theta100 - theta0) .* vol / ((4/3) * pi * R_initial^3);
+                Npart_tot = vol / ((4/3) * pi * R_delith^3);
                 
-                cap_usable(ind) = Npart_tot *  Nmax_part * n * F ;
+                cap_usable(ind) = Npart_tot *  Nmax_part * n * F;
             end
 
 
@@ -150,6 +154,7 @@ function [cap, cap_neg, cap_pos, specificEnergy] = computeCellCapacity(model, va
                         'LithiumIonBatteryCell','lithium_ion_battery_nmc_silicon_graphite_Swelling.json');
                     jsonstruct = parseBattmoJson(fname);
                     soc = jsonstruct.SOC;
+                    
         
                     theta = theta0 + soc .* (theta100 - theta0);
                    
@@ -160,7 +165,7 @@ function [cap, cap_neg, cap_pos, specificEnergy] = computeCellCapacity(model, va
                     Q = (3.75.*molarVolumeLi)./(molarVolumeSi);
         
                     R_initial = R_delith * (1 + Q * theta)^(1/3);
-        
+
                     Nmax_part = cMax * (4/3) * pi * (1+Q) * R_delith^3;
         
                     Npart_tot = (theta100 - theta0) .* vol / ((4/3) * pi * R_initial^3);

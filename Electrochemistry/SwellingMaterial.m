@@ -142,16 +142,13 @@ classdef SwellingMaterial < ActiveMaterial
                 
                 computeJ0       = model.Interface.computeJ0Func;
                 cmax            = model.Interface.cmax;
-                theta0          = model.Interface.theta0;
-                theta100        = model.Interface.theta100;
-                R_delithiated   = model.SolidDiffusion.rp;
                 
                 c = state.Interface.cElectrodeSurface;
                 R = state.radius;
 
-                soc = model.computeTheta(c);
+                theta = c/cmax;
                 
-                j0 = computeJ0(soc);
+                j0 = computeJ0(theta);
                 
             else
                 
@@ -169,21 +166,12 @@ classdef SwellingMaterial < ActiveMaterial
                 cElyte = state.Interface.cElectrolyte;
                 c      = state.Interface.cElectrodeSurface;
                 radius = state.SolidDiffusion.radius;
-
-                molarVolumeSi = model.constants.molarVolumeSi;
-                molarVolumeLi = model.constants.molarVolumeLi;
-                
-                Q = (3.75.*molarVolumeLi)./(molarVolumeSi);
-
-                % Necessary to rescale c and cmax, cf eq 9 in [ref3]
-                scalingCoeff = (radius./(R_delithiated)).^3;
-                c            = c.*scalingCoeff;
-                cmax         = (1 + Q)*cmax;
                 
                 % Calculate reaction rate constant
                 k = k0.*exp(-Eak./R.*(1./T - 1/Tref));
 
-                %k = k.*(R_delithiated./radius).^ 2;
+                %k = k.*(R_delithiated./radius).^2;
+
                 % We use regularizedSqrt to regularize the square root function and avoid the blow-up of derivative at zero.
                 th = 1e-3* cmax;
                 coef = cElyte.*(cmax - c).*c;
@@ -214,12 +202,8 @@ classdef SwellingMaterial < ActiveMaterial
             F    = model.Interface.constants.F;
             vols = model.G.cells.volumes;
             n    = model.Interface.n;
-            r0   = model.SolidDiffusion.rp;
-
             Rvol = state.Rvol;
-            r    = state.SolidDiffusion.radius;
 
-            % xavier : you do not use r?
             state.eSource = - vols.*Rvol*n*F; % C/s
             
         end
@@ -317,17 +301,13 @@ classdef SwellingMaterial < ActiveMaterial
             R  = state.Interface.R;
             a  = state.Interface.volumetricSurfaceArea;       
             c  = state.SolidDiffusion.cAverage;
-            
-            molarVolumeLithiated   = model.computeMolarVolumeLithiated(c);
-            
-            molarVolumeSi = model.constants.molarVolumeSi;
-            molarVolumeLi = model.constants.molarVolumeLi;
-            molarVolumeDelithiated = (4/15)*(molarVolumeSi + 3.75*theta0*molarVolumeLi);
 
-            r0 = model.SolidDiffusion.rp;
-            r  = state.SolidDiffusion.radius;
+            theta = c/cmax;
             
-            state.porositySource = a.*R.*(molarVolumeLithiated - molarVolumeDelithiated).*(1.56 .* r0./r).^3;
+            molarVolumeLithiated   = model.computeMolarVolumeLithiated(theta);
+            molarVolumeDelithiated = model.computeMolarVolumeLithiated(theta0);
+            
+            state.porositySource = 0 .* a.*R.*(molarVolumeLithiated - molarVolumeDelithiated);
             
         end
 
@@ -356,38 +336,13 @@ classdef SwellingMaterial < ActiveMaterial
 
 
         %% Useful Functions    
-        function molarVolumeLithiated = computeMolarVolumeLithiated(model, c)
+        function molarVolumeLithiated = computeMolarVolumeLithiated(model, theta)
         % cf equation 2 in [ref1]
 
             molarVolumeSi = model.constants.molarVolumeSi;
             molarVolumeLi = model.constants.molarVolumeLi;
 
-            theta = model.computeTheta(c);
-
             molarVolumeLithiated = (4/15)*(molarVolumeSi + 3.75*theta*molarVolumeLi);
-            
-        end
-
-
-        function theta = computeTheta(model, c)
-        % Useful fonction, cf expression of the soc in eq16 of [ref3]
-
-            itf = 'Interface';
-            sd  = 'SolidDiffusion';
-
-            
-            cmax     = model.(itf).cmax;
-            R_delith = model.(sd).rp;
-            molarVolumeSi = model.constants.molarVolumeSi;
-            molarVolumeLi =  model.constants.molarVolumeLi;
-
-            Q = (3.75.*molarVolumeLi)./(molarVolumeSi);
-            
-            c_ratio = c/cmax;       
-
-            R_lith = computeRadius(c,cmax,R_delith);
-
-            theta = c_ratio .* ((R_lith./R_delith).^3) ./ (1+Q);
             
         end
 

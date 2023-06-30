@@ -27,6 +27,10 @@ classdef FullSolidDiffusionSwellingModel < FullSolidDiffusionModel
             fn = @FullSolidDiffusionSwellingModel.updateRadius;
             model = model.registerPropFunction({'radius', fn, {'cAverage'}});
 
+            fn = @FullSolidDiffusionSwellingModel.updateFlux;
+            inputnames = {'c', 'D','radius'};
+            model = model.registerPropFunction({'flux', fn, inputnames});
+
             model = model.removeFromExtraVarName('cAverage');
             
         end
@@ -42,7 +46,34 @@ classdef FullSolidDiffusionSwellingModel < FullSolidDiffusionModel
 
             R_lith   = computeRadius(cAverage, cmax, R_delith);
 
+            %vf = state.volumeFraction;
+            %vf0 = 0.07;
+            %R_lith = R_delith .* (vf./vf0).^(1/3);
+
             state.radius = R_lith;
+            
+        end
+
+        function state = updateFlux(model, state)
+            
+            useDFunc = model.useDFunc;
+            op = model.operators;
+            r0 = model.rp;
+            
+            c = state.c;
+            D = state.D;
+            radius = state.radius;
+
+            beta = (radius/r0);
+
+            if useDFunc
+                state.flux = op.flux(((1./beta).^2).* D, c);
+            else
+                D = op.mapToParticle*D;
+                beta = op.mapToParticle*beta;
+                state.flux =  op.flux(((1./beta).^2).*D, c);
+            end
+            
             
         end
 
@@ -56,17 +87,16 @@ classdef FullSolidDiffusionSwellingModel < FullSolidDiffusionModel
             rp0 = model.rp;
             amf = model.activeMaterialFraction;
 
+            vf = state.volumeFraction;
+
             radius = state.radius;
-            vf     = state.volumeFraction;
             Rvol   = state.Rvol;
-            
+
             % One can notice that Rvol.*((4*pi*rp0.^2 .* rp)./(3.*vf)) is strictly equal to the reaction 
             % rate for a non swelling particle (using a = 3*vf/rp), which is the rate i used in the 
             % equation 6. We then multiply it by the scalingCoeff defined in [ref3]
-            %scalingCoeff = (rp0./radius).^3;
-            scalingCoeff = (rp0./radius).^3;
 
-            massSource = - Rvol.*((4*pi* rp0.^2 .* radius)./(3*vf.*amf)).* scalingCoeff;
+            massSource = - Rvol.*((4*pi* radius.^2 .* rp0)./(3*vf.*amf));
             massSource = op.mapFromBc*massSource;
 
             state.massSource = massSource;

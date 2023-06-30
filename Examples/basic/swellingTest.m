@@ -281,6 +281,9 @@ nls.errorOnFailure = false;
 % values Control.E, Control.I and time from each timestep (cell in the cell
 % array) in states. We can then plot the vectors.
 
+ind = cellfun(@(x) ~isempty(x), states);
+states = states(ind);
+
 E = cellfun(@(x) x.Control.E, states); 
 I = cellfun(@(x) x.Control.I, states);
 
@@ -424,11 +427,7 @@ figure
      end
      cAverage = sumConcentrations/N;
  
-     c_ratio = cAverage/cmax;
- 
-     radius = computeRadius(cAverage,cmax,r0);
-  
-     theta = c_ratio .* ((radius ./ r0).^3) ./ 3.8125;
+     theta = cAverage/cmax;
  
      poros = states{t}.NegativeElectrode.ActiveMaterial.porosity(1);
      
@@ -611,25 +610,30 @@ X = [];
 
 for t = 1:totalTime
 
-    sumTheta = 0;
-        for x = 1:N_elements_ne       
-        sumConcentrations = 0;
-        for i = 1:N
-            c = states{t}.NegativeElectrode.ActiveMaterial.SolidDiffusion.c((x-1)*N +i);
-            sumConcentrations = sumConcentrations + c;
-        end
-        cAverage = sumConcentrations/N;
-    
-        c_ratio = cAverage/cmax;
-    
-        radius = computeRadius(cAverage,cmax,r0);
-     
-        theta = c_ratio .* ((radius ./ r0).^3) ./ 3.8125;
 
-        sumTheta = sumTheta + theta;
-        end
-        theta = sumTheta/N_elements_ne;
+    state = states{t};
+    state.NegativeElectrode.ActiveMaterial.SolidDiffusion = model.NegativeElectrode.ActiveMaterial.SolidDiffusion.updateAverageConcentration(state.NegativeElectrode.ActiveMaterial.SolidDiffusion);
+    cAverage = state.NegativeElectrode.ActiveMaterial.SolidDiffusion.cAverage;
 
+    vols = model.NegativeElectrode.ActiveMaterial.G.cells.volumes;
+
+    theta = (sum(vols .* cAverage))./(sum(vols).* cmax);
+
+    %sumTheta = 0;
+    %    for x = 1:N_elements_ne       
+    %    sumConcentrations = 0;
+    %    for i = 1:N
+    %        c = states{t}.NegativeElectrode.ActiveMaterial.SolidDiffusion.c((x-1)*N +i);
+    %        sumConcentrations = sumConcentrations + c;
+    %    end
+    %    cAverage = sumConcentrations/N;
+    %
+    %    theta = cAverage/cmax;
+%
+    %    sumTheta = sumTheta + theta;
+    %    end
+    %    theta = sumTheta/N_elements_ne;
+%
         soc = (theta - theta0)/(theta100-theta0);
 
 
@@ -680,7 +684,6 @@ for t = 1:totalTime
     end
     theta = sumTheta/N_elements_pe;
 
-
     soc = (theta-theta100)/(theta0-theta100);
 
     Y(end+1) = soc;
@@ -691,6 +694,93 @@ plot(X, Y);
 
 ylabel('State of charge in the POSITIVE ELECTRODE')
 xlabel('Time (in hours)')
+
+
+
+
+
+
+%%
+
+figure
+
+ne_itf   = model.NegativeElectrode.(am).(itf);
+ne_sd = model.NegativeElectrode.ActiveMaterial.SolidDiffusion;
+
+totalTime = length(T);
+realTotalTime = states{totalTime}.time;
+
+theta100 = ne_itf.theta100;
+theta0   = ne_itf.theta0;
+cmax     = ne_itf.cmax;
+r0       = ne_sd.rp;
+F        = model.con.F;
+N        = ne_sd.N;
+N_elements_ne = gen.nenx;
+
+
+Y = [];
+X = [];
+
+for t = 1:totalTime
+
+    vf_ne = model.NegativeElectrode.ActiveMaterial.Interface.volumeFraction;
+    vf_pe = model.PositiveElectrode.ActiveMaterial.Interface.volumeFraction;
+    porosElyte = model.Electrolyte.volumeFraction;
+    rp0_ne = model.NegativeElectrode.ActiveMaterial.SolidDiffusion.rp;
+    rp0_pe = model.PositiveElectrode.ActiveMaterial.SolidDiffusion.rp;
+
+
+
+    state = states{t};
+
+    state.NegativeElectrode.ActiveMaterial.SolidDiffusion = model.NegativeElectrode.ActiveMaterial.SolidDiffusion.updateAverageConcentration(state.NegativeElectrode.ActiveMaterial.SolidDiffusion);
+    state.PositiveElectrode.ActiveMaterial.SolidDiffusion = model.PositiveElectrode.ActiveMaterial.SolidDiffusion.updateAverageConcentration(state.PositiveElectrode.ActiveMaterial.SolidDiffusion);
+    
+    cAverageNE = state.NegativeElectrode.ActiveMaterial.SolidDiffusion.cAverage;
+    cAveragePE = state.PositiveElectrode.ActiveMaterial.SolidDiffusion.cAverage;
+    cAverageElyte  = state.Electrolyte.c;
+    
+    vol_part_ne = (4/3).* pi .* rp0_ne .^3;
+    vol_part_pe = (4/3).* pi .* rp0_pe .^3;
+    vols_ne = model.NegativeElectrode.ActiveMaterial.G.cells.volumes;
+    vols_pe = model.PositiveElectrode.ActiveMaterial.G.cells.volumes;
+    volsElyte = model.Electrolyte.G.cells.volumes;
+
+    Npart_ne = vf_ne / ((4/3) .* pi.* rp0_ne.^3);
+    Npart_pe = vf_pe / ((4/3) .* pi.* rp0_pe .^3);
+
+
+    NLi_ne = sum(Npart_ne .* vols_ne .* cAverageNE .* vol_part_ne);
+    NLi_pe = sum(Npart_pe .* vols_pe .* cAveragePE .* vol_part_pe);
+    NLi_elyte = sum(volsElyte .* porosElyte .* cAverageElyte);
+
+
+
+    state.NegativeElectrode.ActiveMaterial = model.NegativeElectrode.ActiveMaterial.updateRvol(state.NegativeElectrode.ActiveMaterial);
+    state.PositiveElectrode.ActiveMaterial = model.PositiveElectrode.ActiveMaterial.updateRvol(state.PositiveElectrode.ActiveMaterial);
+
+    Rvol_ne = state.NegativeElectrode.ActiveMaterial.Rvol;
+    Rvol_pe = state.NegativeElectrode.ActiveMaterial.Rvol;
+
+    Term 
+    
+        Y(end+1) = NLi_ne;
+        X(end+1) = T(t)/hour;
+    end
+    
+
+
+
+    
+    plot(X, Y);
+    
+    ylabel('total lithium quantity')
+    xlabel('Time (in hours)')
+
+     
+
+
 
 
 

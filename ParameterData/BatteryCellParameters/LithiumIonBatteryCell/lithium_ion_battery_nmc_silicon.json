@@ -1,6 +1,6 @@
 {
   "G": null,
-  "SOC": 0.01,
+  "SOC": 1,
   "Ucut": 2,
   "initT": 298.15,
   "use_thermal": false,
@@ -8,12 +8,12 @@
   "use_particle_diffusion": true,
   "Control" : {
     "controlPolicy" : "IEswitch",
-    "initialControl" : "charging",
-    "CRate" : 0.01,
+    "initialControl" : "discharging",
+    "CRate" : 0.1,
     "lowerCutoffVoltage" : 2.4,
     "upperCutoffVoltage" : 4.2,
     "dIdtLimit" : 1,
-    "dEdtLimit" : 0.01
+    "dEdtLimit" : 0.1
   },
   "NegativeElectrode": {
     "ActiveMaterial": {

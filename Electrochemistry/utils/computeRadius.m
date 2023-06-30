@@ -12,18 +12,17 @@ function R_lith = computeRadius(cAverage, cmax, R_delith)
 
             % defining useful quantities
             Q = (3.75.*molarVolumeLi)./(molarVolumeSi);
-            c_ratio = (cAverage./cmax);
+            theta = (cAverage./cmax);
 
-            %lithiation case
-            %denom = 1 - (Q .* c_ratio)/(1+Q);
-            %radius = R_delith ./ (denom .^ (1/3));
+            radius = R_delith.*(1 + Q.*theta).^(1/3);
 
 
-            Q = 3.75.* molarVolumeLi /(molarVolumeSi+3.75.*molarVolumeLi);
-            num = 1-Q;
-            denom = 1 - Q.* c_ratio;
 
-            radius = R_delith * ((3.85 .* num ./ denom).^ (1/3));
+            %Q = 3.75.* molarVolumeLi /(molarVolumeSi+3.75.*molarVolumeLi);
+            %num = 1-Q;
+            %denom = 1 - Q.* c_ratio;
+%
+            %radius = R_delith * ((3.85 .* num ./ denom).^ (1/3));
 
 
             if radius < R_delith
