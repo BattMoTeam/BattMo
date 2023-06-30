@@ -126,7 +126,7 @@ classdef SwellingMaterial < ActiveMaterial
             vf       = state.volumeFraction;
             c        = state.(sd).cAverage;
 
-            vols = amf.*vf.*vols;
+            vols = am_frac.*vf.*vols;
 
             cAverage = sum(c.*vols)/sum(vols);
 
