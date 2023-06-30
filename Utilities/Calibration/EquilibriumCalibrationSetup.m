@@ -15,7 +15,9 @@ classdef EquilibriumCalibrationSetup
         
         packingMass = 61*gram % mass of packing 
 
-        variableChoice = 1
+        calibrationCase = 1
+
+        calibrationCaseParameters 
         
     end
 
@@ -32,8 +34,71 @@ classdef EquilibriumCalibrationSetup
             ecs.totalTime = ecs.exptime(end);
             ecs.model     = model;
 
+            % setup some default
+            data = struct('ne_theta_max', 1);
+            calibrationCaseParameters{1} = data;
+            data = struct('pe_theta', 0.99, ...
+                          'ne_theta_max', 1);
+            calibrationCaseParameters{2} = data;
+
+            ecs.calibrationCaseParameters = calibrationCaseParameters;
+
         end
 
+        function data = getCaseParameters(ecs)
+
+            data = ecs.calibrationCaseParameters{ecs.calibrationCase};
+            
+        end
+
+        function ecs = setCaseParameters(ecs, data)
+
+            ecs.calibrationCaseParameters{ecs.calibrationCase} = data;
+            
+        end
+
+        function linIneq = setupIneqConstraints(ecs)
+
+            data = ecs.getCaseParameters();
+            
+            switch ecs.calibrationCase
+                
+              case 1
+
+                A = -eye(4);
+                b = -0.1*[1, 1, 1, 1]';
+
+                A = [A; 1, 0, 0, 0];
+                b = [b; data.ne_theta_max];
+
+              case 2
+                
+                A = -eye(3);
+                b = -0.1*[1, 1, 1]';
+                
+                A = [A; 1, 0, 0];
+                b = [b; data.ne_theta_max];
+                
+            end
+
+            linIneq.A = A;
+            linIneq.b = b;
+            
+        end
+
+        function params = setupOptimParams(ecs)
+            
+            linIneq = ecs.setupIneqConstraints();
+            params = {'objChangeTol'    , 1e-12, ...
+                      'maximize'        , false, ...
+                      'maxit'           , 1000 , ...
+                      'maxInitialUpdate', 1e-6 , ...
+                      'enforceFeasible' , true , ...
+                      'lineSearchMaxIt' , 10   , ...
+                      'wolfe2'          , 0.99 , ...
+                      'linIneq'         , linIneq};
+        end
+        
         function ecs = setPackingMass(ecs, packingMass)
 
             model = ecs.model;
@@ -63,7 +128,7 @@ classdef EquilibriumCalibrationSetup
             am  = 'ActiveMaterial';
             itf = 'Interface';
 
-            switch ecs.variableChoice
+            switch ecs.calibrationCase
 
               case 1
                 
@@ -89,24 +154,25 @@ classdef EquilibriumCalibrationSetup
                 X(3) = vf;
                 
               otherwise
-                error('variableChoice not recognized')
+                error('calibrationCase not recognized')
             end
         end
 
         function printVariableChoice(ecs)
 
-            switch ecs.variableChoice
+            switch ecs.calibrationCase
               case 1
                 fprintf('\nThe calibration parameters are theta100 and volume fraction for both electrodes\n');
               case 2
                 fprintf('\nThe calibration parameters are theta100 for the negative electrode\n');
                 fprintf('\nThe volume fractions for both electrodes\n');
               otherwise
-                error('variableChoice not recognized');
+                error('calibrationCase not recognized');
             end
             
                
         end
+        
         function vals = getPhysicalValues(ecs, X)
 
             model = ecs.model;
@@ -118,7 +184,7 @@ classdef EquilibriumCalibrationSetup
 
             eldes = {ne, pe};
             
-            switch ecs.variableChoice
+            switch ecs.calibrationCase
 
               case 1
 
@@ -151,8 +217,10 @@ classdef EquilibriumCalibrationSetup
                 
                 vals.(pe).volumeFraction = X(3);
                 vals.(pe).alpha          = X(3)*vol*cmax;
+                
+                data = ecs.getCaseParameters();
                 vals.(pe).tf             = 1;
-                vals.(pe).theta          = 0.99;
+                vals.(pe).theta          = data.pe_theta;
                 
             end
                 
@@ -279,11 +347,13 @@ classdef EquilibriumCalibrationSetup
                 
                 elde = eldes{ielde};
                 
-                cmax     = model.(elde).(am).(itf).cmax;
-                theta100 = props.(elde).theta100;
-                alpha    = props.(elde).alpha;
+                cmax  = model.(elde).(am).(itf).cmax;
+                tf    = props.(elde).tf;
+                theta = props.(elde).theta;
+                alpha = props.(elde).alpha;
                 
-                theta0 = ecs.conc(totalTime, elde, theta100, alpha);
+                theta0   = ecs.conc(totalTime, elde, tf, theta, alpha);
+                theta100 = ecs.conc(0, elde, tf, theta, alpha);
                 
                 switch elde
                   case ne
@@ -296,9 +366,10 @@ classdef EquilibriumCalibrationSetup
 
                 cap = (cM - cm)/cmax*alpha*F;
                 
-                props.(elde).theta0 = theta0;
-                props.(elde).cmax   = cmax;
-                props.(elde).cap    = cap;
+                props.(elde).theta0   = theta0;
+                props.(elde).theta100 = theta100;
+                props.(elde).cmax     = cmax;
+                props.(elde).cap      = cap;
                 
             end
             
@@ -360,9 +431,20 @@ classdef EquilibriumCalibrationSetup
 
             eldes = {ne, pe};
 
-            fprintf('%20s%20s%20s\n', '', 'theta100', 'volume fraction');
-            fprintf('%20s%20.5f%20.5f \n', ne, vals.(ne).theta, vals.(ne).volumeFraction);
-            fprintf('%20s%20.5f%20.5f \n', pe, vals.(pe).theta, vals.(pe).volumeFraction);
+
+            switch ecs.calibrationCase
+              case 1
+                fprintf('%-25s%20s%20s\n', '', 'theta', 'volume fraction');
+                thetastr = sprintf('%6.5f (SOC = %3.0f%%)', vals.(ne).theta , vals.(ne).tf*100);
+                fprintf('%-25s%20s%20.5f \n', ne, thetastr, vals.(ne).volumeFraction);
+                thetastr = sprintf('%6.5f (SOC = %3.0f%%)', vals.(pe).theta , vals.(pe).tf*100);
+                fprintf('%-25s%20s%20.5f \n', pe, thetastr, vals.(pe).volumeFraction);
+              case 2
+                fprintf('%-25s%20s%20s\n', '', 'theta', 'volume fraction');
+                thetastr = sprintf('%6.5f (SOC = %3.0f%%)', vals.(ne).theta , vals.(ne).tf*100);
+                fprintf('%-25s%20s%20.5f \n', ne, thetastr, vals.(ne).volumeFraction);
+                fprintf('%-25s%20s%20.5f \n', pe, '', vals.(pe).volumeFraction);
+            end
             
         end
 
@@ -372,10 +454,19 @@ classdef EquilibriumCalibrationSetup
 
             mass = ecs.getMass();
             
+            ne      = 'NegativeElectrode';
+            pe      = 'PositiveElectrode';
+
             fprintf('%20s: %g [V]\n','initial voltage', props.U);
             fprintf('%20s: %g [Ah]\n', 'Capacity', props.cap/(1*hour));
             fprintf('%20s: %g [Wh/kg]\n', 'Specific Energy', props.specEnergy/(1*hour));
             fprintf('%20s: %g [g]\n', 'packing mass (given)', ecs.packingMass/gram);
+
+
+            fprintf('%-25s%20s%20s\n', '', 'theta100', 'theta0');
+            fprintf('%-25s%20.5f%20.5f \n', ne, props.(ne).theta100, props.(ne).theta0);
+            fprintf('%-25s%20.5f%20.5f \n', pe, props.(pe).theta100, props.(pe).theta0);
+            
             % fprintf('%20s: %g [-]\n', 'N/P ratio', props.NPratio);
         end
         
