@@ -118,7 +118,7 @@ classdef Electrolyser < BaseModel
                 model = model.setupComputationalGraph();
                 cgt = model.computationalGraph;
                 model.primaryVarNames = cgt.getPrimaryVariableNames();
-                model.funcCallList = cgt.setOrderedFunctionCallList();
+                model.funcCallList = cgt.getOrderedFunctionCallList();
             end
 
         end
