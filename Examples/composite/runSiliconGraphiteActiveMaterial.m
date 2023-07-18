@@ -17,7 +17,7 @@ sd  = 'SolidDiffusion';
 itf = 'Interface';
 
 %% Setup the properties of Li-ion battery materials and cell design
-jsonstruct = parseBattmoJson(fullfile('Examples', 'jsoninputs', 'silicongraphite.json'));
+jsonstruct = parseBattmoJson(fullfile('Examples', 'jsondatafiles', 'silicongraphite.json'));
 
 paramobj = CompositeActiveMaterialInputParams(jsonstruct);
 
