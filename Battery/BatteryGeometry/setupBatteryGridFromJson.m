@@ -1,4 +1,11 @@
 function [paramobj, gridGenerator] = setupBatteryGridFromJson(paramobj, jsonstruct)
+    
+    ne    = 'NegativeElectrode';
+    pe    = 'PositiveElectrode';
+    elyte = 'Electrolyte';
+    sep   = 'Separator';
+    am    = 'ActiveMaterial';
+    cc    = 'CurrentCollector';
 
     switch jsonstruct.Geometry.case
 
@@ -38,6 +45,42 @@ function [paramobj, gridGenerator] = setupBatteryGridFromJson(paramobj, jsonstru
 
         % Now, we update the paramobj with the properties of the mesh. 
         [paramobj, gen] = gen.updateBatteryInputParams(paramobj);
+
+      case 'multiLayerPouch'
+
+        geom = 'Geometry';
+        
+        gen = BatteryGeneratorMultilayerPouch();
+
+        gen.unit_cell_thickness = [jsonstruct.(ne).(cc).thickness    ; ...
+                                   jsonstruct.(ne).(am).thickness    ; ...
+                                   jsonstruct.(elyte).(sep).thickness ; ...
+                                   jsonstruct.(pe).(am).thickness    ; ...
+                                   jsonstruct.(pe).(cc).thickness];         
+
+        gen.sep_nz   = jsonstruct.(elyte).(sep).N;
+        gen.ne_am_nz = jsonstruct.(ne).(am).N;
+        gen.pe_am_nz = jsonstruct.(pe).(am).N;
+        gen.ne_cc_nz = jsonstruct.(ne).(cc).N;
+        gen.pe_cc_nz = jsonstruct.(pe).(cc).N;         
+
+        gen.pouch_width = jsonstruct.(geom).width;
+        gen.pouch_height = jsonstruct.(geom).height;
+
+        gen.tab_width     = jsonstruct.(geom).tab.width;
+        gen.ne_tab_height = jsonstruct.(geom).tab.(ne).height;
+        gen.pe_tab_height = jsonstruct.(geom).tab.(pe).height;
+
+        gen.n_layers = jsonstruct.(geom).nLayers;
+
+        gen.elyte_nx  = jsonstruct.(geom).(elyte).Nx;
+        gen.elyte_ny  = jsonstruct.(geom).(elyte).Ny;
+        gen.tab_nx    = jsonstruct.(geom).tab.Nx;
+        gen.ne_tab_ny = jsonstruct.(geom).tab.(ne).Ny;
+        gen.pe_tab_ny = jsonstruct.(geom).tab.(pe).Ny;
+        
+        % Now, we update the paramobj with the properties of the mesh. 
+        [paramobj, gridGenerator] = gen.updateBatteryInputParams(paramobj);
 
       case '2D-demo'
         
@@ -109,10 +152,6 @@ function [paramobj, gridGenerator] = setupBatteryGridFromJson(paramobj, jsonstru
         % Computed number of windings
         nwindings = ceil(dR/dr);
 
-        ne = 'NegativeElectrode';
-        pe = 'PositiveElectrode';
-        cc = 'CurrentCollector';
-        
         params = struct('nwindings', nwindings, ...
                         'rInner'   , rInner   , ...
                         'widthDict', widthDict, ...

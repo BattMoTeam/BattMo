@@ -6,13 +6,15 @@
 
   "properties" : {"Geometry" : {"type" : "object",
                                 "properties" : {"case" : {"type" : "string",
-                                                          "enum" : ["1D", "pouch", "2D-demo", "3D-demo", "jellyRoll", "sectorModel", "coinCell"]}}},
+                                                          "enum" : ["1D", "multiLayerPouch", "2D-demo", "3D-demo", "jellyRoll", "sectorModel", "coinCell"]}}},
                   "NegativeElectrode" : { "$ref" : "#/$defs/particlediscretization"},
                   "PositiveElectrode" : { "$ref" : "#/$defs/particlediscretization"}
                  },
 
   "anyOf" : [{"properties" : {"Geometry" : {"properties" : {"case" : {"const" : "1D"}}}},
               "$ref" : "#/$defs/1D"},
+             {"properties" : {"Geometry" : {"properties" : {"case" : {"const" : "multiLayerPouch"}}}},
+              "$ref" : "#/$defs/multiLayerPouch"},            
              {"properties" : {"Geometry" : {"properties" : {"case" : {"const" : "2D-demo"}}}},
               "$ref" : "#/$defs/2D-demo" },
              {"properties" : {"Geometry" : {"properties" : {"case" : {"const" : "3D-demo"}}}},
@@ -62,6 +64,47 @@
               "faceArea" : {
                 "type" : "number",
                 "description" : "area of the cross-section"}}}}}]},
+
+    "multiLayerPouch" : {
+      "allOf" : [
+        {"$ref" : "#/$defs/layerSpecs"},
+        {"properties" : {
+          "Geometry" : {
+            "properties" : {
+              "nLayers" : {
+                "type" : "number",
+                "description" : "number of layers in the pouch cells"},
+              "width" : { "type" : "number"},
+              "height" : { "type" : "number"},
+              "tab" : {
+                "type" : "object",
+                "description" : "parameters for the tabs"
+                "properties" : {
+                  "width" : {"type" : "number"},
+                  "Nx" : {"type" : "number",
+                          "description" : "Discretization parameter in the width direction"},
+                  "NegativeElectrode" : {
+                    "type" : "object",
+                    "description" : "tab parameter for the negative electrode",
+                    "properties" : {
+                      "height" : {"type" : "number"},
+                      "Ny" : {"type" : "number",
+                              "description" : "Discretization parameter in the height direction"}
+                    }
+                  },
+                  "PositiveElectrode" : {
+                    "type" : "object",
+                    "description" : "tab parameter for the negative electrode",
+                    "properties" : {
+                      "height" : {"type" : "number"},
+                      "Ny" : {"type" : "number",
+                              "description" : "Discretization parameter in the height direction"}}}}},
+              "Electrolyte" : {
+                "type" : "object",
+                "description" : "Discretization parameter for the electrolyte in the width and height directions",
+                "properties" : {
+                  "Nx" : {"type" : "Number"},
+                  "Ny" : {"type" : "Number"}}}}}}}]},    
     
     "2D-demo" : {"$ref" : "#/$defs/layerSpecs",
                  "description" : "In this demo case the dimensions are fixed. Further parametrization should be done using  the grid generator BatteryGenerator2D"},
