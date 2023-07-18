@@ -37,7 +37,7 @@ function [E, energyDensity, energy] = runJsonFunction(jsonfiles, varargin)
     if ~exist('jsonfiles', 'var')
         jsonfiles = { fullfile('ParameterData', 'BatteryCellParameters', 'LithiumIonBatteryCell',...
                                'lithium_ion_battery_nmc_graphite.json'),...
-                      fullfile('Examples', 'utils', 'data', 'geometry1d.json') }; 
+                      fullfile('Examples', 'jsondatafiles', 'geometry1d.json') };
     end
     
     % Parse

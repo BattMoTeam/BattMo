@@ -21,22 +21,22 @@ jsonstruct_material = parseBattmoJson(jsonfilename);
 
 %% Geometry
 % We load the json structure for the geometrical properties
-jsonfilename = fullfile('Examples','utils', 'data', 'geometry1d.json');
+jsonfilename = fullfile('Examples', 'jsondatafiles', 'geometry1d.json');
 jsonstruct_geometry = parseBattmoJson(jsonfilename);
 
 %% Control
 % We load the json structure for the geometrical properties
-jsonfilename = fullfile('Examples','utils', 'data', 'ie_control.json');
+jsonfilename = fullfile('Examples', 'jsondatafiles', 'ie_control.json');
 jsonstruct_control = parseBattmoJson(jsonfilename);
 
 %% Simulation parameters
 % We load the json structure for the simulation parameters
-jsonfilename = fullfile('Examples','utils', 'data', 'simulation_parameters.json');
+jsonfilename = fullfile('Examples', 'jsondatafiles', 'simulation_parameters.json');
 jsonstruct_simparams = parseBattmoJson(jsonfilename);
 
 %% Ouput specificiations
 % We load the json structure for output extra specifications.
-jsonfilename = fullfile('Examples','utils', 'data', 'extra_output.json');
+jsonfilename = fullfile('Examples', 'jsondatafiles', 'extra_output.json');
 jsonstruct_output = parseBattmoJson(jsonfilename);
 
 %%

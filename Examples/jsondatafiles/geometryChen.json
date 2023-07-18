@@ -1,0 +1,11 @@
+{ "Geometry" : {"case" : "1D",
+                "faceArea" : 0.1027},
+  "NegativeElectrode": { "ActiveMaterial": { "thickness" : 8.52e-5,
+                                             "N" : 10,
+                                             "SolidDiffusion" : {"N" : 30}}},
+  "PositiveElectrode": { "ActiveMaterial": {"thickness" : 7.56e-5,
+                                            "N" : 10,
+                                            "SolidDiffusion" : {"N" : 30}}},
+  "Electrolyte": { "Separator" : {"thickness" : 1.2e-5,
+                                  "N" : 10} }
+}
