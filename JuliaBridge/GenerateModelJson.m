@@ -104,6 +104,15 @@ function  output = GenerateModelJson(jsonstruct, varargin)
       otherwise
         error('initializationSetup not recognized');
     end
+    
+    switch initializationSetup
+      case "given SOC"
+        initstate = model.setupInitialState();
+      case "given input"
+        % allready handled
+      otherwise
+        error('initializationSetup not recognized');
+    end
     % This control is used to set up the schedule
     schedule = struct('control', control, 'step', step); 
     output = struct('model', model, ...
