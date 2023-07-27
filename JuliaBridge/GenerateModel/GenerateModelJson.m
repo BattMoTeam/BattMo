@@ -1,4 +1,4 @@
-function  output = GenerateModelJson(jsonstruct, varargin)
+function  output = GenerateModelJson(jsonstruct, generate_reference_solution,varargin)
     
     mrstModule add ad-core mrst-gui mpfa
     
@@ -104,20 +104,94 @@ function  output = GenerateModelJson(jsonstruct, varargin)
       otherwise
         error('initializationSetup not recognized');
     end
-    
-    switch initializationSetup
-      case "given SOC"
-        initstate = model.setupInitialState();
-      case "given input"
-        % allready handled
-      otherwise
-        error('initializationSetup not recognized');
-    end
+
     % This control is used to set up the schedule
     schedule = struct('control', control, 'step', step); 
     output = struct('model', model, ...
                     'schedule',schedule,...
-                    'initstate', initstate);
+                    'state0', initstate);
+    if generate_reference_solution
+        %% Setup the properties of the nonlinear solver 
+        nls = NonLinearSolver();
+    
+        % load from json file or use default value. 
+        if ~isfield(jsonstruct, 'NonLinearSolver')
+            
+            % setup default values
+            jsonstruct.NonLinearSolver.maxIterations = 10;
+            jsonstruct.NonLinearSolver.nonlinearTolerance = 1e-5;
+            jsonstruct.NonLinearSolver.verbose = false;
+            
+            linearSolverSetup.library = "matlab";
+            linearSolverSetup.method = "direct";
+    
+        else
+    
+            linearSolverSetup = jsonstruct.NonLinearSolver.LinearSolver.linearSolverSetup;
+            
+        end
+        
+        nls.maxIterations = jsonstruct.NonLinearSolver.maxIterations;
+        if isfield(jsonstruct.NonLinearSolver, 'verbose')
+            nls.verbose = jsonstruct.NonLinearSolver.verbose;
+        else
+            nls.verbose = false;
+        end
+        
+        % Change default behavior of nonlinear solver, in case of error
+        nls.errorOnFailure = false;
+        nls.timeStepSelector = StateChangeTimeStepSelector('TargetProps', {{'Control','E'}}, 'targetChangeAbs', 0.03);
+    
+        nls.LinearSolver = BatteryLinearSolver('linearSolverSetup', linearSolverSetup);
+        
+        % Change default tolerance for nonlinear solver
+        % For the moment, this is hard-coded here
+        if ~isempty(model.Control.Imax)
+            model.nonlinearTolerance = 1e-3*model.Control.Imax;
+        else
+            model.nonlinearTolerance = jsonstruct.NonLinearSolver.nonlinearTolerance;
+        end
+        
+        % Set verbosity
+        model.verbose = jsonstruct.NonLinearSolver.verbose;
+    
+        if isfield(linearSolverSetup, 'reduction') && linearSolverSetup.reduction.doReduction
+            model = model.setupSelectedModel('reduction', linearSolverSetup.reduction);
+        end
+        
+            
+        %% Run the simulation
+        if isfield(jsonstruct, 'Output') && isfield(jsonstruct.Output, 'saveOutput') && jsonstruct.Output.saveOutput
+            saveOptions = jsonstruct.Output.saveOptions;
+            
+            outputDirectory = saveOptions.outputDirectory;
+            name            = saveOptions.name;
+            clearSimulation = saveOptions.clearSimulation;
+            
+            problem = packSimulationProblem(initstate, model, schedule, [], ...
+                                            'Directory'      , outputDirectory, ...
+                                            'Name'           , name      , ...
+                                            'NonLinearSolver', nls);
+            problem.SimulatorSetup.OutputMinisteps = true; 
+    
+            if clearSimulation
+                %% clear previously computed simulation
+                clearPackedSimulatorOutput(problem, 'prompt', false);
+            end
+            simulatePackedProblem(problem);
+            [globvars, states, reports] = getPackedSimulatorOutput(problem);
+            
+        else
+            [~, states, report] = simulateScheduleAD(initstate, model, schedule, 'OutputMinisteps', true, 'NonLinearSolver', nls);
+        end
+
+        output.states=states;
+    else
+        output.states=[];
+    end
+
+    
+    
 end
 
 
@@ -142,94 +216,6 @@ You should have received a copy of the GNU General Public License
 along with BattMo.  If not, see <http://www.gnu.org/licenses/>.
 %}
 
-
-
-% 
-% 
-%     switch initializationSetup
-%       case "given SOC"
-%         initstate = model.setupInitialState();
-%       case "given input"
-%         % allready handled
-%       otherwise
-%         error('initializationSetup not recognized');
-%     end
-%     
-%     
-%     %% Setup the properties of the nonlinear solver 
-%     nls = NonLinearSolver();
-% 
-%     % load from json file or use default value. 
-%     if ~isfield(jsonstruct, 'NonLinearSolver')
-%         
-%         % setup default values
-%         jsonstruct.NonLinearSolver.maxIterations = 10;
-%         jsonstruct.NonLinearSolver.nonlinearTolerance = 1e-5;
-%         jsonstruct.NonLinearSolver.verbose = false;
-%         
-%         linearSolverSetup.library = "matlab";
-%         linearSolverSetup.method = "direct";
-% 
-%     else
-% 
-%         linearSolverSetup = jsonstruct.NonLinearSolver.LinearSolver.linearSolverSetup;
-%         
-%     end
-%     
-%     nls.maxIterations = jsonstruct.NonLinearSolver.maxIterations;
-%     if isfield(jsonstruct.NonLinearSolver, 'verbose')
-%         nls.verbose = jsonstruct.NonLinearSolver.verbose;
-%     else
-%         nls.verbose = false;
-%     end
-%     
-%     % Change default behavior of nonlinear solver, in case of error
-%     nls.errorOnFailure = false;
-%     nls.timeStepSelector = StateChangeTimeStepSelector('TargetProps', {{'Control','E'}}, 'targetChangeAbs', 0.03);
-% 
-%     nls.LinearSolver = BatteryLinearSolver('linearSolverSetup', linearSolverSetup);
-%     
-%     % Change default tolerance for nonlinear solver
-%     % For the moment, this is hard-coded here
-%     if ~isempty(model.Control.Imax)
-%         model.nonlinearTolerance = 1e-3*model.Control.Imax;
-%     else
-%         model.nonlinearTolerance = jsonstruct.NonLinearSolver.nonlinearTolerance;
-%     end
-%     
-%     % Set verbosity
-%     model.verbose = jsonstruct.NonLinearSolver.verbose;
-% 
-%     if isfield(linearSolverSetup, 'reduction') && linearSolverSetup.reduction.doReduction
-%         model = model.setupSelectedModel('reduction', linearSolverSetup.reduction);
-%     end
-%     
-%         
-%     %% Run the simulation
-%     if isfield(jsonstruct, 'Output') && isfield(jsonstruct.Output, 'saveOutput') && jsonstruct.Output.saveOutput
-%         saveOptions = jsonstruct.Output.saveOptions;
-%         
-%         outputDirectory = saveOptions.outputDirectory;
-%         name            = saveOptions.name;
-%         clearSimulation = saveOptions.clearSimulation;
-%         
-%         problem = packSimulationProblem(initstate, model, schedule, [], ...
-%                                         'Directory'      , outputDirectory, ...
-%                                         'Name'           , name      , ...
-%                                         'NonLinearSolver', nls);
-%         problem.SimulatorSetup.OutputMinisteps = true; 
-% 
-%         if clearSimulation
-%             %% clear previously computed simulation
-%             clearPackedSimulatorOutput(problem, 'prompt', false);
-%         end
-%         simulatePackedProblem(problem);
-%         [globvars, states, reports] = getPackedSimulatorOutput(problem);
-%         
-%     else
-%         [~, states, report] = simulateScheduleAD(initstate, model, schedule, 'OutputMinisteps', true, 'NonLinearSolver', nls);
-%     end
-% 
 %     %% Process output and recover the output voltage and current from the output states.
 %     ind = cellfun(@(x) not(isempty(x)), states); 
 %     states = states(ind);

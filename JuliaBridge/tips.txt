@@ -1,5 +1,0 @@
-To run MATDaemon in dev mode on the server:
-
-create .jlcall manually in MATDaemon/api/
-activate enviroment
-install the local version of MATDaemon in the enviroment

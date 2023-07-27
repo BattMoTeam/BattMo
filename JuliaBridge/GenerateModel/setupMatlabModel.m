@@ -1,4 +1,4 @@
-function [model,schedule,state0] = setupMatlabReference(casename, jsonfolder, varargin)
+function export = setupMatlabModel(casename, jsonfolder, generate_reference_solution,varargin)
 %% Script for BattMo.m to produce reference solution
 % - casename : is used to identify json file name for the input and saved data output
 % - jsonfolder : folder where the json file is fetched
@@ -27,11 +27,7 @@ function [model,schedule,state0] = setupMatlabReference(casename, jsonfolder, va
     %% To run the simulation, you need to install matlab battmo
 
     mrstModule add ad-core mrst-gui mpfa agmg linearsolvers
-    output = GenerateModelJson(jsonstruct);
-    
-    state0   = output.initstate;
-    model    = output.model;
-    schedule = output.schedule;
+    export = GenerateModelJson(jsonstruct,generate_reference_solution);
 
 
     %% Save solution as a matlab struct that can be imported in Julia
@@ -42,8 +38,8 @@ function [model,schedule,state0] = setupMatlabReference(casename, jsonfolder, va
         fprintf('Added %s to Matlab path in order to run class2data\n', adddir);
     end
 
-    model    = class2data(model);
-    schedule = class2data(schedule);
+    export.model    = class2data(export.model);
+    export.schedule = class2data(export.schedule);
 
 %     filename = sprintf('%s.mat', casename);
 %     filename = fullfile(datafolder, filename);
