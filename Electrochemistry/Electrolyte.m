@@ -116,7 +116,12 @@ classdef Electrolyte < ElectroChemicalComponent
             model = model.registerPropFunction({'jBcSource', fn, {}});
             
         end
-
+        
+%IDEA: This is now an AD variable! We can express derivative of this thing
+%         function val=AccumFunc(model,state)
+%             effectiveVolumes = model.volumeFraction.*model.G.cells.volumes;
+%             val=state.c*effectiveVolumes;
+%         end
 
         function state = updateAccumTerm(model, state, state0, dt)
 
