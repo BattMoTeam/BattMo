@@ -20,9 +20,9 @@ JSON.lower(c::BattMo.ControllerCV)=Dict(:policy => c.policy,
 JSON.lower(policy::BattMo.SimpleCVPolicy{<:Real})=Dict(:current_function => policy.current_function, :voltage => policy.voltage)
 JSON.lower(policy::BattMo.NoPolicy)=typeof(policy)
 
-JSON.lower(config::Jutul.JutulConfig)=Dict(:name => name,
-                                           :values => values,
-                                           :options => options)
+JSON.lower(config::Jutul.JutulConfig)=Dict(:name => config.name,
+                                           :values => config.values,
+                                           :options => config.options)
 
 JSON.lower(sim::Jutul.JutulSimulator)=typeof(sim)
 JSON.lower(obj::Nothing)=""
