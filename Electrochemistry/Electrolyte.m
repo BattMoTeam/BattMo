@@ -117,11 +117,11 @@ classdef Electrolyte < ElectroChemicalComponent
             
         end
         
-%IDEA: This is now an AD variable! We can express derivative of this thing
-%         function val=AccumFunc(model,state)
-%             effectiveVolumes = model.volumeFraction.*model.G.cells.volumes;
-%             val=state.c*effectiveVolumes;
-%         end
+        %IDEA: This is now an AD variable! We can express derivative of this thing
+        function func=AccumFunc(model,state)
+            effectiveVolumes = model.volumeFraction.*model.G.cells.volumes;
+            func=state.c.*effectiveVolumes;
+        end
 
         function state = updateAccumTerm(model, state, state0, dt)
 

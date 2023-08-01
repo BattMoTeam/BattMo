@@ -308,6 +308,17 @@ classdef FullSolidDiffusionModel < SolidDiffusionModel
             end
 
         end
+    
+        %Mass accumulation function
+        function func = AccumFunc(model, state)
+
+            op = model.operators;
+            
+            c = state.c;
+            
+            state.massAccum = op.vols.*(c - c0);
+            
+        end
 
         function state = updateMassAccum(model, state, state0, dt)
 
