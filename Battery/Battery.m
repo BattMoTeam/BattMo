@@ -1152,6 +1152,55 @@ classdef Battery < BaseModel
             
         end
         
+        function eqs=getAccumTerms(model,state)
+
+            % Shorthands used in this function
+            battery = model;
+            ne      = 'NegativeElectrode';
+            pe      = 'PositiveElectrode';
+            am      = 'ActiveMaterial';
+            cc      = 'CurrentCollector';
+            elyte   = 'Electrolyte';
+            am      = 'ActiveMaterial';
+            itf     = 'Interface';
+            sd      = "SolidDiffusion";
+            thermal = 'ThermalModel';
+            ctrl    = 'Control';
+
+            %% Set up the governing equations
+
+            eqs = cell(1, numel(model.equationNames));
+
+            ei = model.equationIndices;
+            
+            %Terms that always accumulate
+            eqs{ei.elyte_massCons}=battery.(elyte).AccumFunc(state.(elyte));
+            eqs{ei.ne_am_massCons}=battery.(ne).(am).AccumFunc(state.(ne).(am));
+            eqs{ei.pe_am_massCons}=battery.(pe).(am).AccumFunc(state.(pe).(am));
+
+            %Terms that only accumulate under full model
+            switch model.(ne).(am).diffusionModelType
+                case 'simple'
+                    eqs{ei.ne_am_sd_soliddiffeq}=0.*state.(ne).(am).(sd).cSurface;
+                case 'full'
+                    eqs{ei.ne_am_sd_soliddiffeq}=battery.(ne).(am).(sd).AccumFunc(state.(ne).(am).(sd));
+            end
+
+            switch model.(pe).(am).diffusionModelType
+                case 'simple'
+                    eqs{ei.pe_am_sd_soliddiffeq}=0.*state.(pe).(am).(sd).cSurface;
+                case 'full'
+                    eqs{ei.pe_am_sd_soliddiffeq}=battery.(pe).(am).(sd).AccumFunc(state.(pe).(am).(sd));
+            end
+
+            %Terms that never accumulate SHAPE!!!
+            eqs{ei.elyte_chargeCons}=0.*state.(elyte).phi;
+            eqs{ei.ne_am_chargeCons}=0.*state.(ne).(am).phi;
+            eqs{ei.pe_am_chargeCons}=0.*state.(pe).(am).phi;
+            eqs{ei.EIeq}=0.*state.(ctrl).E;
+            eqs{ei.controlEq}=0.*state.(ctrl).I;
+        end
+
         function state = updateTemperature(model, state)
         % Dispatch the temperature in all the submodels
 

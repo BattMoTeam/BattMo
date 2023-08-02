@@ -3,9 +3,9 @@
 % and run a simple simulation.
 
 % Clear the workspace and close open figures
-clear all
-close all
-clc
+%clear all
+%close all
+%clc
 
 
 %% Import the required modules from MRST

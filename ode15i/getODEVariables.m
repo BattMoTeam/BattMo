@@ -7,7 +7,7 @@ function [y,dims]=getODEVariables(state,model)
         for j = 1:length(varNames{i})
             tmp=tmp.(varNames{i}{j});
         end
-        dims=vertcat(dims,length(tmp.val));
+        dims=vertcat(dims,length(tmp));
         y=vertcat(y,tmp);
     end
 end
