@@ -69,6 +69,8 @@ end
 % simulation. The required discretization parameters are already included
 % in the class BatteryGenerator1D. 
 gen = BatteryGenerator1D();
+gen.fac=0.1;
+gen = gen.applyResolutionFactors();
 
 % Now, we update the paramobj with the properties of the mesh. 
 paramobj = gen.updateBatteryInputParams(paramobj);
@@ -109,7 +111,7 @@ switch model.(ctrl).controlPolicy
   otherwise
     error('control policy not recognized');
 end
-
+%total = 1*hour/CRate;
 n  = 100;
 dt = total/n;
 step = struct('val', dt*ones(n, 1), 'control', ones(n, 1));
