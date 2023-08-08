@@ -1,7 +1,10 @@
-function plotBatteryMesh(model, setstyle)
+function plotBatteryMesh(model, setstyle, fig)
 
     if nargin == 1
         setstyle = true;
+        fig = [];
+    elseif nargin == 2
+        fig = [];
     end
 
     ne    = 'NegativeElectrode';
@@ -12,7 +15,12 @@ function plotBatteryMesh(model, setstyle)
     elyte = 'Electrolyte';
 
     colors = crameri('vik', 5);
-    figure, hold on
+    if isempty(fig)
+        figure
+    else
+        figure(fig);
+    end
+    hold on
     legtext = {};
 
     if model.G.griddim == 1
