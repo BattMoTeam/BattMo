@@ -24,8 +24,6 @@ classdef ElectrolyteInputParams < ElectroChemicalComponentInputParams
 
         BruggemanCoefficient
 
-        initconc
-
     end
 
     methods
