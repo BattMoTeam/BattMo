@@ -1,45 +1,47 @@
 classdef ElectrolyteInputParams < ElectroChemicalComponentInputParams
 %
 % Input parameter class for :code:`Electrolyte` model
-%    
+%
     properties
-        
+
         compnames % Names of the components in the electrolyte
         sp % Structure given properties of each component
-        
+
         %
         % Input parameter for the separator (:class:`SeparatorInputParams
         % <Electrochemistry.SeparatorInputParams>`)
         %
         Separator
-        
+
         thermalConductivity % Intrinsic Thermal conductivity of the electrolyte
         specificHeatCapacity        % Specific Heat capacity of the electrolyte
-        
-        
+
+
         Conductivity
         DiffusionCoefficient
-        
+
         density % Density [kg m^-3] (Note : only of the liquid part, the density of the separator is given there)
 
         BruggemanCoefficient
-        
+
+        initconc
+
     end
-    
+
     methods
 
         function paramobj = ElectrolyteInputParams(jsonstruct)
-            
+
             paramobj = paramobj@ElectroChemicalComponentInputParams(jsonstruct);
-            
+
             pick = @(fd) pickField(jsonstruct, fd);
             paramobj.Separator = SeparatorInputParams(pick('Separator'));
-            
+
             paramobj.EffectiveElectricalConductivity = 'not used';
         end
 
     end
-    
+
 end
 
 
