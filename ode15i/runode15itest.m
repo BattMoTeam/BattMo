@@ -3,9 +3,11 @@
 % and run a simple simulation.
 
 % Clear the workspace and close open figures
-clear all
-close all
-clc
+
+%Andreas: Temporarily!
+%clear all
+%close all
+%clc
 
 
 %% Import the required modules from MRST
@@ -69,7 +71,8 @@ end
 % simulation. The required discretization parameters are already included
 % in the class BatteryGenerator1D. 
 gen = BatteryGenerator1D();
-gen.fac=0.1;
+
+gen.fac=100;
 gen = gen.applyResolutionFactors();
 
 % Now, we update the paramobj with the properties of the mesh. 
@@ -111,6 +114,7 @@ switch model.(ctrl).controlPolicy
   otherwise
     error('control policy not recognized');
 end
+%total = 1*hour/CRate;
 n  = 100;
 dt = total/n;
 step = struct('val', dt*ones(n, 1), 'control', ones(n, 1));
@@ -177,20 +181,27 @@ model.nonlinearTolerance = 1e-3*model.Control.Imax;
 model.verbose = true;
 
 %% Run the simulation
+start=tic;
 [wellSols, states, report] = simulateScheduleAD(initstate, model, schedule, 'OutputMinisteps', true, 'NonLinearSolver', nls); 
+stop=toc(start)
+start=tic;
+%[res,ode_states]= simulateScheduleode15i(initstate,model,schedule);
+stop=toc(start)
 
 %% Process output and recover the output voltage and current from the output states.
-ind = cellfun(@(x) not(isempty(x)), states); 
-states = states(ind);
-E = cellfun(@(x) x.Control.E, states); 
-I = cellfun(@(x) x.Control.I, states);
-Tmax = cellfun(@(x) max(x.ThermalModel.T), states);
-% [SOCN, SOCP] =  cellfun(@(x) model.calculateSOC(x), states);
-time = cellfun(@(x) x.time, states); 
-
-plot(time, E);
-
-
+% ind = cellfun(@(x) not(isempty(x)), states); 
+% states = states(ind);
+% E = cellfun(@(x) x.Control.E, states);
+% I = cellfun(@(x) x.Control.I, states);
+% Tmax = cellfun(@(x) max(x.ThermalModel.T), states);
+% % [SOCN, SOCP] =  cellfun(@(x) model.calculateSOC(x), states);
+% time = cellfun(@(x) x.time, states); 
+% 
+% plot(time, E, "DisplayName","MRST","LineWidth",2);
+% hold on
+% plot(res.x,ode_states.E, "DisplayName","ode15i","LineWidth" ,2)
+% 
+% legend(FontSize=12);
 
 %% Plot the the output voltage and current
 % plotDashboard(model, states, 'step', 0);

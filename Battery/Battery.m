@@ -1159,12 +1159,9 @@ classdef Battery < BaseModel
             ne      = 'NegativeElectrode';
             pe      = 'PositiveElectrode';
             am      = 'ActiveMaterial';
-            cc      = 'CurrentCollector';
             elyte   = 'Electrolyte';
             am      = 'ActiveMaterial';
-            itf     = 'Interface';
             sd      = "SolidDiffusion";
-            thermal = 'ThermalModel';
             ctrl    = 'Control';
 
             %% Set up the governing equations
@@ -1172,11 +1169,12 @@ classdef Battery < BaseModel
             eqs = cell(1, numel(model.equationNames));
 
             ei = model.equationIndices;
-            
+            massConsScaling = model.con.F;
+
             %Terms that always accumulate
-            eqs{ei.elyte_massCons}=battery.(elyte).AccumFunc(state.(elyte));
-            eqs{ei.ne_am_massCons}=battery.(ne).(am).AccumFunc(state.(ne).(am));
-            eqs{ei.pe_am_massCons}=battery.(pe).(am).AccumFunc(state.(pe).(am));
+            eqs{ei.elyte_massCons}=battery.(elyte).AccumFunc(state.(elyte))*massConsScaling;
+            eqs{ei.ne_am_massCons}=battery.(ne).(am).AccumFunc(state.(ne).(am))*massConsScaling;
+            eqs{ei.pe_am_massCons}=battery.(pe).(am).AccumFunc(state.(pe).(am))*massConsScaling;
 
             %Terms that only accumulate under full model
             switch model.(ne).(am).diffusionModelType

@@ -16,9 +16,6 @@ function [eq, eq1,eq2_tmp]=odeEqs(t,y,dy,state0,dims,model,forces)
     %forces=model.getValidDrivingForces();
 
     %Reshape
-
-    %Temp, I don't know what to do with this. IESwitch gives error
-    %model.Control.controlPolicy='None';
     state.time = t;
     tmp = model.getEquations(state,state,dt,forces, 'ResOnly',true); %X
     eq1=EquationVector(tmp.equations);%*1e-5;
@@ -31,7 +28,7 @@ function [eq, eq1,eq2_tmp]=odeEqs(t,y,dy,state0,dims,model,forces)
     %These can become differentiable through AD. This is what we evaluate
     %Solved X
     tmp = model.getAccumTerms(state);
-    eq2_tmp=EquationVector(tmp);%*1e5;
+    eq2_tmp=EquationVector(tmp);
     eq2 = ADI(eq2_tmp.jac{1}*value(dy),eq2_tmp.jac{1});
     eq = value(eq1) + value(eq2); %Value: See AD object
 end
