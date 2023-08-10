@@ -3,11 +3,12 @@ function  jsq = computeCellFluxNorm(model, j)
 % - Compute cell-valued square of the norm of a face-valued flux (j)
 %
     
-    op = model.operators.cellFluxOp;
-
-    j = op.P*j;
+    P = model.operators.cellfluxP;
+    S = model.operators.cellfluxS;
+    
+    j = P*j;
     jsq = j.^2;
-    jsq = op.S*jsq;
+    jsq = S*jsq;
     
 end
 

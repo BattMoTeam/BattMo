@@ -50,6 +50,8 @@ classdef Interface < BaseModel
 
             model = dispatchParams(model, paramobj, fdnames);
 
+            model.operators = Operators(model.G);
+            
             model.computeOCPFunc = str2func(paramobj.OCP.functionname);
 
             if ~isempty(paramobj.j0)

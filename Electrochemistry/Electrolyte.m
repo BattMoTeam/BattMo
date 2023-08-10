@@ -122,7 +122,8 @@ classdef Electrolyte < ElectroChemicalComponent
 
             cdotcc  = (state.c - state0.c)/dt;
 
-            effectiveVolumes = model.volumeFraction.*model.G.cells.volumes;
+            vols = model.operators.getCellVolumes();
+            effectiveVolumes = model.volumeFraction.*vols;
 
             state.massAccum  = effectiveVolumes.*cdotcc;
             

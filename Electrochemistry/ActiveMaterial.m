@@ -358,8 +358,7 @@ classdef ActiveMaterial < ElectronicComponent
 
         function state = updateControl(model, state, drivingForces)
             
-            G = model.G;
-            coef = G.cells.volumes;
+            coef = model.operators.getCellVolumes();
             coef = coef./(sum(coef));
             
             state.controlCurrentSource = drivingForces.src.*coef;
@@ -461,7 +460,7 @@ classdef ActiveMaterial < ElectronicComponent
         function state = assembleAccumTerm(model, state, state0, dt)
         % Used when diffusionModelType == 'simple'
             
-            vols   = model.G.cells.volumes;
+            vols   = model.operators.getCellVolumes();
             vf     = model.volumeFraction;
             amFrac = model.activeMaterialFraction;
 
@@ -475,7 +474,7 @@ classdef ActiveMaterial < ElectronicComponent
         function state = updateMassSource(model, state)
         % used when diffusionModelType == simple
             
-            vols = model.G.cells.volumes;
+            vols = model.operators.getCellVolumes();
             
             Rvol = state.Rvol;
             
@@ -506,7 +505,7 @@ classdef ActiveMaterial < ElectronicComponent
         function state = updateCurrentSource(model, state)
             
             F    = model.Interface.constants.F;
-            vols = model.G.cells.volumes;
+            vols = model.operators.getCellVolumes();
             n    = model.Interface.n;
 
             Rvol = state.Rvol;
@@ -550,7 +549,7 @@ classdef ActiveMaterial < ElectronicComponent
 
             vf       = model.volumeFraction;
             am_frac  = model.activeMaterialFraction;
-            vols     = model.G.cells.volumes;
+            vols     = model.operators.getCellVolumes();
             
             c = state.(sd).cAverage;
 
@@ -571,7 +570,7 @@ classdef ActiveMaterial < ElectronicComponent
 
             vf       = model.volumeFraction;
             am_frac  = model.activeMaterialFraction;
-            vols     = model.G.cells.volumes;
+            vols     = model.operators.getCellVolumes();
             cmax     = model.(itf).cmax;
             theta100 = model.(itf).theta100;
             theta0   = model.(itf).theta0;

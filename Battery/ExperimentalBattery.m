@@ -94,7 +94,8 @@ classdef ExperimentalBattery < Battery
               case 'simple'
                 eqs{end + 1}       = state.(ne).(am).massCons*massConsScaling;
                 names{end + 1} = 'ne_am_massCons';
-                eqs{end + 1} = state.(ne).(am).(sd).solidDiffusionEq.*massConsScaling.*battery.(ne).(am).(itf).G.cells.volumes/dt;
+                vols = battery.(ne).(am).(itf).operators.getCellVolumes();
+                eqs{end + 1} = state.(ne).(am).(sd).solidDiffusionEq.*massConsScaling.*vols/dt;
                 names{end + 1} = 'ne_am_sd_soliddiffeq';
               case 'full'
                 % Equation name : 'ne_am_sd_massCons';
@@ -122,7 +123,8 @@ classdef ExperimentalBattery < Battery
               case 'simple'
                 eqs{end + 1}       = state.(pe).(am).massCons*massConsScaling;
                 names{end + 1} = 'pe_am_massCons';
-                eqs{end + 1} = state.(pe).(am).(sd).solidDiffusionEq.*massConsScaling.*battery.(pe).(am).(itf).G.cells.volumes/dt;
+                vols = battery.(pe).(am).(itf).operators.getCellVolumes();
+                eqs{end + 1} = state.(pe).(am).(sd).solidDiffusionEq.*massConsScaling.*vols/dt;
                 names{end + 1} = 'pe_am_sd_soliddiffeq';
               case 'full'
                 % Equation name : 'pe_am_sd_massCons';
