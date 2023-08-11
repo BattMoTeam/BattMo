@@ -55,7 +55,6 @@ classdef ParameterFitting
     end
     
     methods
-
         
         function pf = ParameterFitting(model)
 
@@ -212,6 +211,11 @@ classdef ParameterFitting
         end
 
         function printParameters(pf, x)
+        % Print the parameters, if x is not given or empty, use the parameters given by the model
+
+            if (nargin < 2) || isempty(x)
+                x = pf.getModelValues();
+            end
 
             [cs, avfs, vfs] = pf.assignFromX(x);
             thetas          = pf.computeThetas(x);
@@ -285,7 +289,6 @@ classdef ParameterFitting
             rs{1} = cap./cap_neg;
             rs{2} = cap./cap_pos;
             
-
             N = 1000;
 
             for ielde = 1 : numel(eldes)
@@ -317,7 +320,7 @@ classdef ParameterFitting
             nLi = Vs.n*avfs.n*vfs.n*cs.n0 + Vs.p*vfs.p*avfs.p*cs.p0;
             resLi = nLi./(Vs.p*vfs.p*avfs.p*cmaxs.p);
 
-            NPratio = cap_pos./cap_neg;
+            NPratio = cap_neg./cap_pos;
 
             U = model.(pe).(am).(itf).computeOCPFunc(cs.p0, 298, cmaxs.p) - model.(ne).(am).(itf).computeOCPFunc(cs.n0, 298, cmaxs.n);
             
@@ -328,6 +331,8 @@ classdef ParameterFitting
                             'dischargeFunc', dischargeFunc, ...
                             'specEnergy'   , specEnergy   , ...
                             'cap'          , cap          , ...
+                            'cap_neg'      , cap_neg      , ...
+                            'cap_pos'      , cap_pos      , ...
                             'specCap_neg'  , specCap_neg  , ...
                             'specCap_pos'  , specCap_pos  , ...
                             'avf_neg'      , avfs.n       , ...
@@ -339,15 +344,24 @@ classdef ParameterFitting
         end
 
         function printSpecifications(pf, x)
-
+        % Print the targets, if x is not given or empty, use the parameters given by the model
+            
             packingMass = pf.packingMass;
             mass        = pf.mass;
+
+            if (nargin < 2) || isempty(x)
+                x = pf.getModelValues();
+            end
             
             output = pf.evaluateTargetValues(x);
 
             fprintf('%20s: %g [mol]\n','total Lithium amount', output.nLi);
             fprintf('%20s: %g [V]\n','initial voltage', output.U);
             fprintf('%20s: %g [Ah]\n', 'Capacity', output.cap/(1*hour));
+            fprintf('%20s: %g [Ah]\n', 'Negative Capacity', output.cap_neg/(1*hour));
+            fprintf('%20s: %g [Ah]\n', 'Positive Capacity', output.cap_pos/(1*hour));
+            fprintf('%20s: %g [Ah/kg]\n', 'Negative Specific Capacity', output.specCap_neg/(1*hour));
+            fprintf('%20s: %g [Ah/kg]\n', 'Positive Specific Capacity', output.specCap_pos/(1*hour));
             fprintf('%20s: %g [Wh/kg]\n', 'Specific Energy', output.specEnergy/(1*hour));
             fprintf('%20s: %g [-]\n', 'N/P ratio', output.NPratio);
             
@@ -506,4 +520,6 @@ classdef ParameterFitting
     end
     
 end
+
+
 
