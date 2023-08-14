@@ -80,7 +80,7 @@ classdef BatteryGeneratorMultilayerPouch < BatteryGenerator
 
             assert(paramobj.include_current_collectors, 'This geometry must include current collectors');
             gen.use_thermal = paramobj.use_thermal;
-            paramobj = gen.setupBatteryInputParams(paramobj, []);
+            [paramobj, gen] = gen.setupBatteryInputParams(paramobj, []);
 
         end
 

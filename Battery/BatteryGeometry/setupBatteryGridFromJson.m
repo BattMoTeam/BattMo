@@ -85,7 +85,7 @@ function [paramobj, gridGenerator] = setupBatteryGridFromJson(paramobj, jsonstru
             gen.cap_tabs = false;            
         end
         % Now, we update the paramobj with the properties of the mesh. 
-        [paramobj, gridGenerator] = gen.updateBatteryInputParams(paramobj);
+        [paramobj, gen] = gen.updateBatteryInputParams(paramobj);
 
       case '2D-demo'
         
