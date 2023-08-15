@@ -37,11 +37,9 @@ function obj = EnergyOutput(model, states, schedule, varargin)
     tSteps = opt.tStep;
     
     if isempty(tSteps) % do all
-        time     = 0;
         numSteps = numel(dts);
         tSteps   = (1:numSteps)';
     else
-        time     = sum(dts(1:(opt.tStep-1)));
         numSteps = 1;
         dts      = dts(opt.tStep);
     end
