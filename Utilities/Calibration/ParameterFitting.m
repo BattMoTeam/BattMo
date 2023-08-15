@@ -157,7 +157,11 @@ classdef ParameterFitting
         end
 
         function [cs, avfs, vfs] = assignFromX(pf, x)
-            
+
+            if (nargin < 2) || isempty(x)
+                x = pf.getModelValues();
+            end
+
             cs.n0  = x(1);
             cs.p0  = x(2);
             cs.nT  = x(3);
@@ -200,6 +204,10 @@ classdef ParameterFitting
         % thetas.nT : $\theta_n^T$, lithiation at final (discharge) time $T$
         % thetas.pT : $\theta_p^T$, lithiation at final (discharge) time $T$
 
+            if (nargin < 2) || isempty(x)
+                x = pf.getModelValues();
+            end
+
             cs    = pf.assignFromX(x);
             cmaxs = pf.cmaxs;
 
@@ -216,7 +224,7 @@ classdef ParameterFitting
             if (nargin < 2) || isempty(x)
                 x = pf.getModelValues();
             end
-
+            
             [cs, avfs, vfs] = pf.assignFromX(x);
             thetas          = pf.computeThetas(x);
             
@@ -253,6 +261,10 @@ classdef ParameterFitting
             pe  = 'PositiveElectrode';
             am  = 'ActiveMaterial';
             itf = 'Interface';
+
+            if (nargin < 2) || isempty(x)
+                x = pf.getModelValues();
+            end
 
             [cs, avfs, vfs] = pf.assignFromX(x);
 
