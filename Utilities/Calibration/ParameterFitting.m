@@ -56,13 +56,15 @@ classdef ParameterFitting
     
     methods
         
-        function pf = ParameterFitting(model)
+        function pf = ParameterFitting(model, varargin)
 
-            pf.con = PhysicalConstants();
+            opt = struct('packingMass', 0);
+            opt = merge_options(opt, varargin{:});
             
-            packingMass = 68*gram;
+            pf.con   = PhysicalConstants();
+            pf.model = model;
             
-            [mass, masses] = computeCellMass(model, 'packingMass', packingMass);
+            pf = pf.setPackingMass(opt.packingMass);
             
             ne  = 'NegativeElectrode';
             pe  = 'PositiveElectrode';
@@ -98,10 +100,6 @@ classdef ParameterFitting
             
             weights = pf.normalizeWeights(weights);
             
-            pf.model       = model;
-            pf.packingMass = packingMass;
-            pf.mass        = mass;
-            pf.masses      = masses;
             pf.Vs          = Vs;
             pf.cmaxs       = cmaxs;
             pf.targets     = targets;
@@ -114,6 +112,18 @@ classdef ParameterFitting
             
         end
 
+        function pf = setPackingMass(pf, packingMass)
+
+            model = pf.model;
+            
+            [mass, masses] = computeCellMass(model, 'packingMass', packingMass);
+
+            pf.packingMass = packingMass;
+            pf.mass        = mass;
+            pf.masses      = masses;
+            
+        end
+        
         function weights = normalizeWeights(pf, weights)
 
             fdnames = pf.used_targets;
