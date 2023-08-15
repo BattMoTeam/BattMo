@@ -151,6 +151,33 @@ classdef BatteryGeneratorMultilayerPouch < BatteryGenerator
             globcelltbl.indy      = indy;
             globcelltbl.indz      = indz;
             globcelltbl = IndexArray(globcelltbl);
+
+            % assign dir index to faces
+            % dir = 1 : perpendicular to x-axis
+            % dir = 2 : perpendicular to y-axis
+            % dir = 3 : perpendicular to z-axis
+
+            tbls = setupSimpleTables(G);
+            globfacetbl = tbls.facetbl;
+            cellfacetbl = tbls.cellfacetbl;
+            cellfacetbl = cellfacetbl.addInd('cartInd', G.cells.faces(:, 2));
+
+            dir = zeros(globfacetbl.num, 1);
+            cartinds = {{[1; 2], 1},
+                        {[3; 4], 2},
+                        {[5; 6], 3},
+                       };
+            for icart = 1 : numel(cartinds)
+               cartind = cartinds{icart}; 
+               clear findtbl
+               findtbl.cartInd = cartind{1};
+               findtbl = IndexArray(findtbl);
+               cellfacecartindtbl = crossIndexArray(cellfacetbl, findtbl, {'cartInd'});
+               selfacetbl = projIndexArray(cellfacecartindtbl, {'faces'});
+               dir(selfacetbl.get('faces')) = cartind{2};
+            end
+            globfacetbl = globfacetbl.addInd('dir', dir);
+            globfacetbl = replacefield(globfacetbl, {{'faces', 'globfaces'}});
             
             % Integer layers
             NZ = [0; cumsum(nzs)] + 1;
@@ -223,7 +250,8 @@ classdef BatteryGeneratorMultilayerPouch < BatteryGenerator
             rcellind = setdiff((1 : G.cells.num)', cellind);
             nGlob = G.cells.num;
             [G, cellmap, facemap] = removeCells(G, rcellind);
-
+            G = computeGeometry(G);
+            
             % Inverse map
             gen.invcellmap = zeros(nGlob, 1);
             gen.invcellmap(cellmap) = (1 : G.cells.num)';
@@ -234,25 +262,35 @@ classdef BatteryGeneratorMultilayerPouch < BatteryGenerator
 
             celltbl = crossIndexArray(celltbl, globcelltbl, {'globcells'});
 
+            facetbl.globfaces = facemap;
+            facetbl.faces = (1 : G.faces.num)';
+            facetbl = IndexArray(facetbl);
+
+            facedirtbl = crossIndexArray(facetbl, globfacetbl, {'globfaces'});
+            facedirtbl = projIndexArray(facedirtbl, {'faces', 'dir'});
+
+            % we setup extfacetbl. It contains the exterior faces orthogonal to y-axis.
+            
             extfaces = find(any(G.faces.neighbors == 0, 2));
-            % we take only the external faces that are orthogonal to y-axis
-            G = computeGeometry(G);
-            normals = G.faces.normals(extfaces, :);
-            areas = G.faces.areas(extfaces);
-            scalproduct = bsxfun(@times, normals./areas, [0, 1, 0]);
-            scalproduct = sum(scalproduct, 2);
-            extfacetbl.faces = extfaces(abs(scalproduct) > 0.1);
+            extfacetbl.faces = extfaces;
             extfacetbl = IndexArray(extfacetbl);
 
+            extfacedirtbl = crossIndexArray(extfacetbl, facedirtbl, {'faces'});
+
+            seldirtbl.dir = 2;
+            seldirtbl = IndexArray(seldirtbl);
+
+            extfacetbl = crossIndexArray(extfacedirtbl, seldirtbl, {'dir'});
+            extfacetbl = projIndexArray(extfacetbl, {'faces'});
+            
             alltbls = setupSimpleTables(G);
 
             cellfacetbl = alltbls.cellfacetbl;
-            facetbl     = alltbls.facetbl;
 
             tbls = struct('celltbl'    , celltbl    , ...
                           'extfacetbl' , extfacetbl , ...
                           'cellfacetbl', cellfacetbl, ...
-                          'facetbl'    , facetbl);
+                          'facedirtbl' , facedirtbl);
             
             paramobj.G = G;
             
@@ -421,49 +459,79 @@ classdef BatteryGeneratorMultilayerPouch < BatteryGenerator
         function paramobj = setupThermalModel(gen, paramobj, ~)
         % paramobj is instance of BatteryInputParams
         %
-        % We recover the external coupling terms for the current collectors
 
             % shorthands
             ne    = 'NegativeElectrode';
             pe    = 'PositiveElectrode';
             cc    = 'CurrentCollector';
 
-            % the cooling is done on the external faces
-            G = gen.G;
-            extfaces = any(G.faces.neighbors == 0, 2);
-            couplingfaces = find(extfaces);
-            couplingcells = sum(G.faces.neighbors(couplingfaces, :), 2);
+            if gen.cap_tabs
 
-            params = struct('couplingfaces', couplingfaces, ...
-                            'couplingcells', couplingcells);
-            paramobj = setupThermalModel@BatteryGenerator(gen, paramobj, params);
+                tbls = gen.tbls;
+                facedirtbl  = tbls.facedirtbl;
+                cellfacetbl = tbls.cellfacetbl;
+                
+                G = gen.G;
+                extfaces = any(G.faces.neighbors == 0, 2);
+                extfacetbl.faces = find(extfaces);
+                extfacetbl = IndexArray(extfacetbl);
 
-            tabcellinds = [gen.allparams.(pe).(cc).cellindtab; gen.allparams.(ne).(cc).cellindtab];
-            tabtbl.cells = tabcellinds;
-            tabtbl = IndexArray(tabtbl);
+                seldirtbl.dir = [1; 2];
+                seldirtbl = IndexArray(seldirtbl);
 
-            tbls = setupSimpleTables(G);
-            cellfacetbl = tbls.cellfacetbl;
+                bcfacetbl = crossIndexArray(facedirtbl, seldirtbl, {'dir'});
+                bcfacetbl = crossIndexArray(bcfacetbl, extfacetbl, {'faces'});
 
-            tabcellfacetbl = crossIndexArray(tabtbl, cellfacetbl, {'cells'});
-            tabfacetbl = projIndexArray(tabcellfacetbl, {'faces'});
+                bccellfacetbl = crossIndexArray(cellfacetbl, bcfacetbl, {'faces'});
 
-            bcfacetbl.faces = couplingfaces;
-            bcfacetbl = IndexArray(bcfacetbl);
+                couplingfaces = bccellfacetbl.get('faces');
+                couplingcells = bccellfacetbl.get('cells');
+                
+                params = struct('couplingfaces', couplingfaces, ...
+                                'couplingcells', couplingcells);
+                paramobj = setupThermalModel@BatteryGenerator(gen, paramobj, params);
 
-            tabbcfacetbl = crossIndexArray(bcfacetbl, tabfacetbl, {'faces'});
+                coef = gen.externalHeatTransferCoefficient*ones(bcfacetbl.num, 1);
+                paramobj.ThermalModel.externalHeatTransferCoefficient = coef;
+                
+            else
+                
+                % the cooling is done on the external faces
+                G = gen.G;
+                extfaces = any(G.faces.neighbors == 0, 2);
+                couplingfaces = find(extfaces);
+                couplingcells = sum(G.faces.neighbors(couplingfaces, :), 2);
 
-            map = TensorMap();
-            map.fromTbl = bcfacetbl;
-            map.toTbl = tabbcfacetbl;
-            map.mergefds = {'faces'};
-            ind = map.getDispatchInd();
+                params = struct('couplingfaces', couplingfaces, ...
+                                'couplingcells', couplingcells);
+                paramobj = setupThermalModel@BatteryGenerator(gen, paramobj, params);
 
-            coef = gen.externalHeatTransferCoefficient*ones(bcfacetbl.num, 1);
-            coef(ind) = gen.externalHeatTransferCoefficientTab;
+                tabcellinds = [gen.allparams.(pe).(cc).cellindtab; gen.allparams.(ne).(cc).cellindtab];
+                tabtbl.cells = tabcellinds;
+                tabtbl = IndexArray(tabtbl);
 
-            paramobj.ThermalModel.externalHeatTransferCoefficient = coef;
+                tbls = setupSimpleTables(G);
+                cellfacetbl = tbls.cellfacetbl;
 
+                tabcellfacetbl = crossIndexArray(tabtbl, cellfacetbl, {'cells'});
+                tabfacetbl = projIndexArray(tabcellfacetbl, {'faces'});
+
+                bcfacetbl.faces = couplingfaces;
+                bcfacetbl = IndexArray(bcfacetbl);
+
+                tabbcfacetbl = crossIndexArray(bcfacetbl, tabfacetbl, {'faces'});
+
+                map = TensorMap();
+                map.fromTbl = bcfacetbl;
+                map.toTbl = tabbcfacetbl;
+                map.mergefds = {'faces'};
+                ind = map.getDispatchInd();
+
+                coef = gen.externalHeatTransferCoefficient*ones(bcfacetbl.num, 1);
+                coef(ind) = gen.externalHeatTransferCoefficientTab;
+
+                paramobj.ThermalModel.externalHeatTransferCoefficient = coef;
+            end
         end
 
     end
