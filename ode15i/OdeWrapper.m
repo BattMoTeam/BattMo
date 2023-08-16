@@ -63,6 +63,22 @@ classdef OdeWrapper
             wrap.currentState=state;
         end
 
+        function eq=odeEqs_alt(wrap,t,X,dX)
+            X = initVariablesADI(X);
+            dX = initVariablesADI(dX);
+            len = length(X.val)/2; %If this is not even something is extremely wrong
+            state=wrap.getStateFromVariables(X.val(len+1:end));
+            dt = 1; % dummy
+            state.time = t;
+            [other_tmp,state]= wrap.model.getEquations(state,state,dt,wrap.forces, 'ResOnly',true); %X
+            other=EquationVector(other_tmp.equations); % R(y)
+
+            accum_tmp = wrap.model.getAccumTerms(state);
+            accum = EquationVector(accum_tmp); %M(y)
+            
+            eq= [dX.val(1:len) + other ; X.val(1:len) - accum];
+        end
+
         function state=getStateFromVariables(wrap,y)
             %Generate a state from a vector of ode variables, these should
             %correspond to the primary variables of the model.
@@ -109,6 +125,23 @@ classdef OdeWrapper
             %options=odeset();
             %Solve problem
             res = ode15i(@odeFun, cumsum(wrap.schedule.step.val),wrap.initVariables.y,wrap.initVariables.dy,options);
+            ret_state= wrap.getStateFromVariables(res.y);
+            ret_state.E=res.y(E_ind,:);
+        end
+
+        function [res,ret_state] = solve_alt(wrap,varargin)
+            accum_tmp = wrap.model.getAccumTerms(wrap.initstate);
+            accum = EquationVector(accum_tmp); %M(y)
+            E_ind=sum(wrap.VariableSizes(1:7)) + length(accum);
+            X0 = [accum ; wrap.initVariables.y];
+
+            [other_tmp,state]= wrap.model.getEquations(wrap.initstate,wrap.initstate,1,wrap.forces, 'ResOnly',true); %X
+            other=EquationVector(other_tmp.equations); % R(y)
+            dX0 = [other .* (-1) ; wrap.initVariables.dy];
+
+            options=odeset();
+            odeFun = @(t,X,dX) wrap.odeEqs_alt(t,X,dX);
+            res = ode15i(odeFun, cumsum(wrap.schedule.step.val),X0,dX0,options);
             ret_state= wrap.getStateFromVariables(res.y);
             ret_state.E=res.y(E_ind,:);
         end

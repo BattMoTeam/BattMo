@@ -37,7 +37,7 @@ ctrl    = 'Control';
 cc      = 'CurrentCollector';
 
 jsonstruct.use_thermal = false;
-jsonstruct.include_current_collectors = false;
+jsonstruct.include_current_collectors = true;
 
 jsonstruct.(pe).(am).diffusionModelType = 'simple';
 jsonstruct.(ne).(am).diffusionModelType = 'simple';
@@ -72,7 +72,7 @@ end
 % in the class BatteryGenerator1D. 
 gen = BatteryGenerator1D();
 
-gen.fac=100;
+gen.fac=0.4;
 gen = gen.applyResolutionFactors();
 
 % Now, we update the paramobj with the properties of the mesh. 
@@ -185,23 +185,31 @@ start=tic;
 [wellSols, states, report] = simulateScheduleAD(initstate, model, schedule, 'OutputMinisteps', true, 'NonLinearSolver', nls); 
 stop=toc(start)
 start=tic;
-%[res,ode_states]= simulateScheduleode15i(initstate,model,schedule);
+[res,ode_states]= simulateScheduleode15i_big(initstate,model,schedule);
 stop=toc(start)
 
+%% Create .mat file
+
+state0=initstate;
+export = struct('model',model,'schedule',schedule,'state0',state0,'ode15i_results',res);
+model=class2data(model);
+schedule=class2data(schedule);
+save("test_model_cc_04","model","schedule","state0","res");
+
 %% Process output and recover the output voltage and current from the output states.
-% ind = cellfun(@(x) not(isempty(x)), states); 
-% states = states(ind);
-% E = cellfun(@(x) x.Control.E, states);
-% I = cellfun(@(x) x.Control.I, states);
-% Tmax = cellfun(@(x) max(x.ThermalModel.T), states);
-% % [SOCN, SOCP] =  cellfun(@(x) model.calculateSOC(x), states);
-% time = cellfun(@(x) x.time, states); 
-% 
-% plot(time, E, "DisplayName","MRST","LineWidth",2);
-% hold on
-% plot(res.x,ode_states.E, "DisplayName","ode15i","LineWidth" ,2)
-% 
-% legend(FontSize=12);
+ind = cellfun(@(x) not(isempty(x)), states); 
+states = states(ind);
+E = cellfun(@(x) x.Control.E, states);
+I = cellfun(@(x) x.Control.I, states);
+Tmax = cellfun(@(x) max(x.ThermalModel.T), states);
+% [SOCN, SOCP] =  cellfun(@(x) model.calculateSOC(x), states);
+time = cellfun(@(x) x.time, states); 
+
+plot(time, E, "DisplayName","MRST","LineWidth",2);
+hold on
+plot(res.x,ode_states.E, "DisplayName","ode15i","LineWidth" ,2)
+
+legend(FontSize=12);
 
 %% Plot the the output voltage and current
 % plotDashboard(model, states, 'step', 0);

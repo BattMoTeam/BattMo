@@ -1160,6 +1160,7 @@ classdef Battery < BaseModel
             pe      = 'PositiveElectrode';
             am      = 'ActiveMaterial';
             elyte   = 'Electrolyte';
+            cc      = 'CurrentCollector';
             am      = 'ActiveMaterial';
             sd      = "SolidDiffusion";
             ctrl    = 'Control';
@@ -1197,6 +1198,20 @@ classdef Battery < BaseModel
             eqs{ei.pe_am_chargeCons}=0.*state.(pe).(am).phi;
             eqs{ei.EIeq}=0.*state.(ctrl).E;
             eqs{ei.controlEq}=0.*state.(ctrl).I;
+            % Equation name : 'ne_cc_chargeCons';
+            if model.(ne).include_current_collectors
+                eqs{ei.ne_cc_chargeCons} = state.(ne).(cc).T .* 0;
+            end
+            
+            % Equation name : 'pe_cc_chargeCons';
+            if model.(pe).include_current_collectors
+                eqs{ei.pe_cc_chargeCons} = state.(pe).(cc).T .* 0;
+            end
+
+            % Equation name : 'energyCons';
+            if model.use_thermal
+                eqs{ei.energyCons} = state.(thermal).energyCons .* 0;
+            end
         end
 
         function state = updateTemperature(model, state)
