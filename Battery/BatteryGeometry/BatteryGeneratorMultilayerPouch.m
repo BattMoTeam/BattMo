@@ -495,42 +495,29 @@ classdef BatteryGeneratorMultilayerPouch < BatteryGenerator
                 paramobj.ThermalModel.externalHeatTransferCoefficient = coef;
                 
             else
-                
-                % the cooling is done on the external faces
-                G = gen.G;
-                extfaces = any(G.faces.neighbors == 0, 2);
-                couplingfaces = find(extfaces);
-                couplingcells = sum(G.faces.neighbors(couplingfaces, :), 2);
 
+                % We use the tab
+                eldes = {ne, pe};
+
+                couplingfaces = [];
+                couplingcells = [];
+                
+                for ielde = 1 : numel(eldes)
+                    elde = eldes{ielde};
+                    cc_couplingfaces = paramobj.(elde).(cc).externalCouplingTerm.couplingfaces;
+                    cc_couplingcells = paramobj.(elde).(cc).externalCouplingTerm.couplingcells;
+                    mappings = paramobj.(elde).(cc).G.mappings;
+                    couplingfaces = [couplingfaces; mappings.facemap(cc_couplingfaces)];
+                    couplingcells = [couplingcells; mappings.cellmap(cc_couplingcells)];
+                end
+                
                 params = struct('couplingfaces', couplingfaces, ...
                                 'couplingcells', couplingcells);
                 paramobj = setupThermalModel@BatteryGenerator(gen, paramobj, params);
 
-                tabcellinds = [gen.allparams.(pe).(cc).cellindtab; gen.allparams.(ne).(cc).cellindtab];
-                tabtbl.cells = tabcellinds;
-                tabtbl = IndexArray(tabtbl);
-
-                tbls = setupSimpleTables(G);
-                cellfacetbl = tbls.cellfacetbl;
-
-                tabcellfacetbl = crossIndexArray(tabtbl, cellfacetbl, {'cells'});
-                tabfacetbl = projIndexArray(tabcellfacetbl, {'faces'});
-
-                bcfacetbl.faces = couplingfaces;
-                bcfacetbl = IndexArray(bcfacetbl);
-
-                tabbcfacetbl = crossIndexArray(bcfacetbl, tabfacetbl, {'faces'});
-
-                map = TensorMap();
-                map.fromTbl = bcfacetbl;
-                map.toTbl = tabbcfacetbl;
-                map.mergefds = {'faces'};
-                ind = map.getDispatchInd();
-
-                coef = gen.externalHeatTransferCoefficient*ones(bcfacetbl.num, 1);
-                coef(ind) = gen.externalHeatTransferCoefficientTab;
-
+                coef = gen.externalHeatTransferCoefficient*ones(numel(couplingfaces), 1);
                 paramobj.ThermalModel.externalHeatTransferCoefficient = coef;
+                
             end
         end
 
