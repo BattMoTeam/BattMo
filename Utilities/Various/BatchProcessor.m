@@ -348,7 +348,11 @@ classdef BatchProcessor
                 if isfield(s, paramname)
                     paramval = s.(paramname);
                     take = false;
-                    if isa(filter, 'numeric') || isa(filter, 'logical')
+                    if isempty(filter)
+                        if isempty(paramval)
+                            take = true;
+                        end
+                    elseif isa(filter, 'numeric') || isa(filter, 'logical')
                         if paramval == filter
                             take = true;
                         end
