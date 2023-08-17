@@ -82,7 +82,7 @@ classdef ParameterFitting
             targets.U          = 4.2;
             targets.specEnergy = 280*watt*hour/kilogram;
             targets.cap        = 26.136*watt*hour;
-            targets.NPratio    = 0.9;
+            targets.NPratio    = 1.1;
             targets.avf_neg    = 0.9;
             targets.avf_pos    = 0.9;
             targets.vf_neg     = 0.75;
