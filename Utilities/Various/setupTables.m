@@ -1,4 +1,4 @@
-function tbls = setupSimpleTables(G)
+function tbls = setupTables(G)
     
     nc = G.cells.num;
     nf = G.faces.num;
