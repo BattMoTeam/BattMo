@@ -18,7 +18,7 @@ function op = getCellFluxOperators2(G)
     
     doOptimized = false;
     
-    tbls = setupSimpleTables(G);
+    tbls = setupTables(G);
 
     celltbl = tbls.celltbl;
     facetbl = tbls.facetbl;

@@ -294,7 +294,7 @@ classdef BatteryGenerator3D < BatteryGenerator
             tabtbl.cells = tabcellinds;
             tabtbl = IndexArray(tabtbl);
 
-            tbls = setupSimpleTables(G);
+            tbls = setupTables(G);
             cellfacetbl = tbls.cellfacetbl;
 
             tabcellfacetbl = crossIndexArray(tabtbl, cellfacetbl, {'cells'});

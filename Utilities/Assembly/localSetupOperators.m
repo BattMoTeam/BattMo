@@ -9,7 +9,7 @@ function operators = localSetupOperators(G, varargin)
 
     hT = computeTrans(G, rock);
 
-    tbls = setupSimpleTables(G);
+    tbls = setupTables(G);
     cellfacetbl = tbls.cellfacetbl;
     celltbl     = tbls.celltbl;
     facetbl     = tbls.facetbl;

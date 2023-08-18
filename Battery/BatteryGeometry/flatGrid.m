@@ -120,7 +120,7 @@ function output = flatGrid(params)
     
     tag = repmat(tag, [nL, 1]);
     
-    tbls = setupSimpleTables(G);
+    tbls = setupTables(G);
     cellfacetbl = tbls.cellfacetbl;
     
     clear extfacetbl

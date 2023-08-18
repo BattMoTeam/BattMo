@@ -83,9 +83,9 @@ function output = sectorGrid(params)
     
     tag = tag(cellmap);
     
-    tbls = setupSimpleTables(radG);
+    tbls = setupTables(radG);
     radfacetbl = tbls.facetbl;
-    tbls = setupSimpleTables(G);
+    tbls = setupTables(G);
     facetbl = tbls.facetbl;
     facetbl = facetbl.addInd('radfaces', facemap);
 

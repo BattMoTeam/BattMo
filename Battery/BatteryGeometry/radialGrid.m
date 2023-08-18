@@ -94,7 +94,7 @@ function output = radialGrid(params)
     cartG.nodes.coords(:, 1) = (rInner + y).*cos(theta);
     cartG.nodes.coords(:, 2) = (rInner + y).*sin(theta);
     
-    tbls = setupSimpleTables(cartG);
+    tbls = setupTables(cartG);
 
     % We add cartesian indexing for the nodes
     nodetbl.nodes = (1 : cartG.nodes.num)';
@@ -275,7 +275,7 @@ function output = radialGrid(params)
     G = computeGeometry(G);
     
     % setup the standard tables
-    tbls = setupSimpleTables(G);
+    tbls = setupTables(G);
     cellfacetbl = tbls.cellfacetbl;
     
     clear extfacetbl

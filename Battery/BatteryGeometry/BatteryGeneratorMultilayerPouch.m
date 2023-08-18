@@ -157,7 +157,7 @@ classdef BatteryGeneratorMultilayerPouch < BatteryGenerator
             % dir = 2 : perpendicular to y-axis
             % dir = 3 : perpendicular to z-axis
 
-            tbls = setupSimpleTables(G);
+            tbls = setupTables(G);
             globfacetbl = tbls.facetbl;
             cellfacetbl = tbls.cellfacetbl;
             cellfacetbl = cellfacetbl.addInd('cartInd', G.cells.faces(:, 2));
@@ -283,7 +283,7 @@ classdef BatteryGeneratorMultilayerPouch < BatteryGenerator
             extfacetbl = crossIndexArray(extfacedirtbl, seldirtbl, {'dir'});
             extfacetbl = projIndexArray(extfacetbl, {'faces'});
             
-            alltbls = setupSimpleTables(G);
+            alltbls = setupTables(G);
 
             cellfacetbl = alltbls.cellfacetbl;
 
@@ -401,7 +401,7 @@ classdef BatteryGeneratorMultilayerPouch < BatteryGenerator
 
             if gen.cap_tabs
 
-                tbls = setupSimpleTables(G);
+                tbls = setupTables(G);
                 celltbl     = tbls.celltbl;
                 facetbl     = tbls.facetbl;
                 cellfacetbl = tbls.cellfacetbl;
