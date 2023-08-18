@@ -1,4 +1,11 @@
-function tbls = setupTables(G)
+function tbls = setupTables(G, varargin)
+
+    opt = struct('includetbls', {});
+    opt = merge_options(opt, varargin{:});
+
+    if ~isempty(opt.includetbls)
+        includetbls = opt.includetbls{1};
+    end
     
     nc = G.cells.num;
     nf = G.faces.num;
@@ -32,6 +39,31 @@ function tbls = setupTables(G)
                   'nodetbl'    , nodetbl    , ...
                   'cellfacetbl', cellfacetbl, ...
                   'facenodetbl', facenodetbl);
+
+    if any(ismember({'intfacetbl', 'cellintfacetbl', 'sign'}, includetbls))
+
+        intfaces = all(G.faces.neighhors> 0, 2)
+        intfacetbl.faces = find(intfaces);
+        intfacetbl = IndexArray(intfacetbl);
+
+        cellintfacetbl = crossIndexArray(intfacetbl, cellfacetbl, {'faces'});
+           
+        tbls.intfacetbl     = intfacetbl;
+        tbls.cellintfacetbl = cellintfacetbl;
+        
+    end
+
+    if ismember('extfacetbl', includetbls)
+
+        extfaces = any(G.faces.neighhors == 0, 2)
+        extfacetbl.faces = find(extfaces);
+        extfacetbl = IndexArray(extfacetbl);
+
+        tbls.extfacetbl = extfacetbl;
+        
+    end
+
+        
 end
 
 
