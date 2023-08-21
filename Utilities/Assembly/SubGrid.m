@@ -69,21 +69,23 @@ classdef SubGrid
 
         function subG = setupOperators(subG);
 
-            tbls = setupTables(topology, {'cellintfacetbl'});
+            tp = subG.topology;
+            tbls = setupTables(tp, 'includetbls', {'cellintfacetbl'});
 
+            celltbl        = tbls.celltbl;
             intfacetbl     = tbls.intfacetbl;
             cellintfacetbl = tbls.cellintfacetbl;
             
             sgn = ones(cellintfacetbl.num, 1);
             f = cellintfacetbl.get('faces');
             c = cellintfacetbl.get('cells');
-            sgn(G.faces.neighbors(f, 1) == c) = -1;
+            sgn(tp.faces.neighbors(f, 1) == c) = -1;
 
-            prod = TensorProd()
+            prod = TensorProd();
             prod.tbl1 = cellintfacetbl;
             prod.tbl2 = intfacetbl;
             prod.tbl3 = celltbl;
-            prod.reducefds = {'cells'};
+            prod.reducefds = {'faces'};
             prod = prod.setup;
 
             divM = SparseTensor();
@@ -106,10 +108,11 @@ classdef SubGrid
             celltbl        = tbls.celltbl;
             facetbl        = tbls.facetbl;
             extfacetbl     = tbls.extfacetbl;
+            intfacetbl     = tbls.intfacetbl;
             cellintfacetbl = tbls.cellintfacetbl;
             
-            cellpcelltbl = celltbl.addInd('pcells', subG.cellmap);
-            facepfacetbl = facetbl.addInd('pfaces', subG.facemap);
+            cellpcelltbl = celltbl.addInd('pcells', subG.mappings.cellmap);
+            facepfacetbl = facetbl.addInd('pfaces', subG.mappings.facemap);
 
             pcellpfacetbl = replacefield(pcellpfacetbl, {{'cells', 'pcells'}, {'faces', 'pfaces'}});
             
@@ -144,7 +147,7 @@ classdef SubGrid
 
             D = map.getMatrix();
             
-            S = TensorMap();
+            map = TensorMap();
             map.fromTbl = cellintfacetbl;
             map.toTbl = intfacetbl;
             map.mergefds = {'faces'};
@@ -161,10 +164,9 @@ classdef SubGrid
             cellextfacepcellpfacetbl = crossIndexArray(extfacepcellpfacetbl, cellpcelltbl, {'pcells'});
 
             map = TensorMap();
-            map.fromTbl = cellextfacepcellpfacetbl;
-            map.toTbl = pcellpfacetbl;
+            map.fromTbl  = pcellpfacetbl;
+            map.toTbl    = cellextfacepcellpfacetbl;
             map.mergefds = {'pcells', 'pfaces'};
-            map = map.setup();
             
             extfaces.faces              = cellextfacepcellpfacetbl.get('faces');
             extfaces.cells              = cellextfacepcellpfacetbl.get('cells');
