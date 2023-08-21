@@ -114,14 +114,16 @@ classdef Grid
         end
 
         function grid = setupHelpers(grid)
-            
-            % setup helpers
+        % setup helpers
 
-            tbls = setupTables(G, 'includetbls', {'intfacetbl', 'extfacetbl'});
+            tp = grid.topology;
+            
+            tbls = setupTables(tp, 'includetbls', {'intfacetbl', 'extfacetbl'});
             intfacetbl     = tbls.intfacetbl;
             cellintfacetbl = tbls.cellintfacetbl;
             cellfacetbl    = tbls.cellfacetbl;
             celltbl        = tbls.celltbl;
+            facetbl        = tbls.facetbl;
             extfacetbl     = tbls.extfacetbl;
             
             map = TensorMap();

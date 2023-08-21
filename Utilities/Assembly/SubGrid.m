@@ -83,7 +83,7 @@ classdef SubGrid
             sgn = ones(cellintfacetbl.num, 1);
             f = cellintfacetbl.get('faces');
             c = cellintfacetbl.get('cells');
-            sgn(tp.faces.neighbors(f, 1) == c) = -1;
+            sgn(subG.topology.faces.neighbors(f, 1) == c) = -1;
 
             prod = TensorProd();
             prod.tbl1 = cellintfacetbl;
