@@ -31,7 +31,7 @@ classdef Grid
         function grid = Grid(G, varargin)
         % We initialize the grid using a MRST grid structure
 
-            opt = struct('faceArea', 1);
+            opt = struct('faceArea', []);
             opt = merge_options(opt, varargin{:});
             
             topology.cells.facePos   = G.cells.facePos;
@@ -47,7 +47,11 @@ classdef Grid
             grid.topology   = topology;
 
             if topology.griddim == 1
-                grid.faceArea = opt.faceArea;
+                if isempty(opt.faceArea)
+                    grid.faceArea = 1;
+                else
+                    grid.faceArea = opt.faceArea;
+                end
             end
 
             % We flatten the coordinate structures
