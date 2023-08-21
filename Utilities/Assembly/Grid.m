@@ -17,6 +17,9 @@ classdef Grid
         % Value of the node coordinates
         nodecoords
 
+        % Value of the face area - only for 1D model
+        faceArea
+
         % Instance of TwoPointFiniteVolumeGeometry (handle)
         % Using topology and nodecoords all the properties of tPFVgeometry can be updated
         tPFVgeometry
@@ -49,11 +52,52 @@ classdef Grid
         end
 
         function updateTPFgeometry(grid)
+
+            G          = grid.topology;
+            nodecoords = grid.nodecoords;
+            d          = grid.topology.griddim;
+
+            G.nodes.coords = reshape(nodecoords, d, [])';
+
+            G.type = 'generic';
+            G = computeGeometry(G);
+            
+            rock.poro = ones(G.cells.num, 1);
+            rock.perm = ones(G.cells.num, 1);
+            hT = computeTrans(G, rock);
+
+            cells.centroids = reshape(G.cells.centroids', [], 1);
+            cells.volumes   = G.cells.volumes;
+            
+            faces.centroids = reshape(G.faces.centroids', [], 1);
+            faces.normals   = reshape(G.faces.normals', [], 1);
+            faces.areas     = G.faces.areas;
+
+            nodes.coords = nodecoords;
+
+            grid.tPFVgeometry.cells = cells; 
+            grid.tPFVgeometry.faces = faces;
+            grid.tPFVgeometry.nodes = nodes;
+            grid.tPFVgeometry.hT    = hT;
             
         end
 
         function G = getMRSTgrid(grid)
 
+            G  = grid.topology;
+            tg = grid.tPFVgeometry;
+
+            d = G.griddim;
+
+            G.type = 'generic';
+
+            G.cells.centroids = reshape(tg.cells.centroids, d, [])';
+            G.cells.volumes   = tg.cells.volumes;
+            G.faces.centroids = reshape(tg.faces.centroids, d, [])';
+            G.faces.normals   = reshape(tg.faces.normals, d, [])';
+            G.faces.areas     = tg.faces.areas;
+            G.nodes.coords    = reshape(tg.nodes.coords, d, [])';
+            
         end
         
     end

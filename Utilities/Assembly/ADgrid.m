@@ -9,31 +9,31 @@ classdef ADgrid < Grid
     
     methods
         
-        function gAD = ADgrid(G)
+        function adgrid = ADgrid(G)
 
-            gAD.G = G;
-            gAD = gAD.setup();
+            adgrid = adgrid@Grid(G);
+            adgrid = adgrid.setup();
             
         end
 
-        function gAD = setup(gAD)
+        function adgrid = setup(adgrid)
 
-            G = gAD.G;
+            tp = adgrid.topology;
             
-            switch G.griddim
+            switch tp.griddim
               case 1
-                gAD = gAD.setup1D();
+                adgrid = adgrid.setup1D();
               case 3
-                gAD = gAD.setup3D();               
+                adgrid = adgrid.setup3D();               
               otherwise
                 error('Grid dimension not implemented yet.')
             end
             
        end
 
-        function gAD = setup1D(gAD)
+        function adgrid = setup1D(adgrid)
 
-            G = gAD.G;
+            G = adgrid.G;
             
             nc = G.cells.num;
             nf = G.faces.num;
@@ -125,18 +125,7 @@ classdef ADgrid < Grid
             matrixop.cellfacedist2 = map2.getMatrix();
             % To run:
             % cellfacedist = abs(map2.eval(faceCentroids) - map1.eval(cellCentroids))
-
-            %% Compute hT(c, f) = 1/cellfacedist(c, f) * K(c) * faceArea
-            prod = TensorProd();
-            prod.tbl1 = cellfacetbl;
-            prod.tbl2 = celltbl;
-            prod.tbl3 = cellfacetbl;
-            prod.mergefds = {'cells'};
-            prod = prod.setup();
-
-            matrixop.hT = prod.getMatrices;
-            % To run:
-            % hT = prod.eval(1./cellfacedist, K)*faceArea
+            % hT = 1./cellfacedist*faceArea
 
             %% We compute transmissibility (only half transmissibility for the boundary faces)
             %% 1/h(f) = 1/h(c, f)
@@ -151,74 +140,25 @@ classdef ADgrid < Grid
             % To run:
             % T = 1./map.eval(1./hT);
 
-            gAD.matrixOperators = matrixop;
+            adgrid.matrixOperators = matrixop;
             
         end
         
-        function gAD = setup3D(gAD)
+        function adgrid = setup3D(adgrid)
 
-            G = gAD.G;
-            
-            nc = G.cells.num;
-            nf = G.faces.num;
-            nn = G.nodes.num;
+            tp = adgrid.topology;
 
-            celltbl.cells = (1 : nc)';
-            celltbl = IndexArray(celltbl);
+            tbls = setupTables(tp, 'includetbls', {'vectbl', 'facenode12tbl'});
 
-            facetbl.faces = (1 : nf)';
-            facetbl = IndexArray(facetbl);
-
-            vectbl.vec = (1 : G.griddim)';
-            vectbl = IndexArray(vectbl);
-
-            nodetbl.nodes = (1 : nn)';
-            nodetbl = IndexArray(nodetbl);
-
-            cellfacetbl.cells = rldecode((1 : nc)', diff(G.cells.facePos));
-            cellfacetbl.faces = G.cells.faces(:, 1);
-            cellfacetbl = IndexArray(cellfacetbl);
-
-            facenodetbl.faces = rldecode((1 : nf)', diff(G.faces.nodePos));
-            facenodetbl.nodes = G.faces.nodes(:, 1);
-            facenodetbl = IndexArray(facenodetbl);
-
-            % Voigt setup
-
-            val = [[1, 1, 1,
-                    2, 2, 2,
-                    3, 3, 3,
-                    4, 2, 3,
-                    5, 1, 3,
-                    6, 1, 2]];
-
-            voigttbl.voigt = val(:, 1);
-            voigttbl = IndexArray(voigttbl);
-            
-            voigtvec12tbl.voigt = val(:, 1);
-            voigtvec12tbl.vec1  = val(:, 2);
-            voigtvec12tbl.vec2  = val(:, 3);
-            voigtvec12tbl = IndexArray(voigtvec12tbl);
-
-            gen = CrossIndexArrayGenerator();
-            gen.tbl1 = vectbl;
-            gen.tbl2 = vectbl;
-            gen.replacefds1 = {{'vec', 'vec1'}};
-            gen.replacefds2 = {{'vec', 'vec2'}};
-            gen.mergefds = {};
-
-            vec12tbl = gen.eval();
+            celltbl       = tbls.celltbl;
+            facetbl       = tbls.facetbl;
+            vectbl        = tbls.vectbl;
+            nodetbl       = tbls.nodetbl;
+            cellfacetbl   = tbls.cellfacetbl;
+            facenodetbl   = tbls.facenodetbl;
+            facenode12tbl = tbls.facenode12tbl;
             
             % Triangles on the faces : facenode12tbl
-
-            p = G.faces.nodePos;
-            f = G.faces.nodes;
-            next = (2 : size(f, 1) + 1) .';
-            next(p(2 : end) - 1) = p(1 : end-1);
-            nextf = f(next);
-
-            facenode12tbl = replacefield(facenodetbl, {{'nodes', 'nodes1'}});
-            facenode12tbl = facenode12tbl.addInd('nodes2', nextf);
 
             % sub-tetrahedra
 
@@ -226,31 +166,14 @@ classdef ADgrid < Grid
 
             % Variants that include spatial index
 
-            facevectbl           = crossIndexArray(facetbl          , vectbl       , {}, 'optpureproduct', true);
-            nodevectbl           = crossIndexArray(nodetbl          , vectbl       , {}, 'optpureproduct', true);
-            cellvectbl           = crossIndexArray(celltbl          , vectbl       , {}, 'optpureproduct', true);
-            cellfacevectbl       = crossIndexArray(cellfacetbl      , vectbl       , {}, 'optpureproduct', true);
-            facenodevectbl       = crossIndexArray(facenodetbl      , vectbl       , {}, 'optpureproduct', true);
+            facevectbl           = tbls.facevectbl;
+            nodevectbl           = tbls.nodevectbl;
+            cellvectbl           = tbls.cellvectbl;
+            cellfacevectbl       = tbls.cellfacevectbl;
+            facenodevectbl       = tbls.facenodevectbl;
+            
             facenode12vectbl     = crossIndexArray(facenode12tbl    , vectbl       , {}, 'optpureproduct', true);
             cellfacenode12vectbl = crossIndexArray(cellfacenode12tbl, vectbl       , {}, 'optpureproduct', true);
-            cellvoigtvec12tbl    = crossIndexArray(celltbl          , voigtvec12tbl, {}, 'optpureproduct', true);
-            cellvec12tbl         = crossIndexArray(celltbl          , vec12tbl     , {}, 'optpureproduct', true);
-            
-            % prepare output for some of the tables
-            tbls = struct('celltbl'          , celltbl          , ...
-                          'facetbl'          , facetbl          , ...
-                          'vectbl'           , vectbl           , ...
-                          'nodetbl'          , nodetbl          , ...
-                          'cellfacetbl'      , cellfacetbl      , ...
-                          'facenodetbl'      , facenodetbl      , ...
-                          'voigtvec12tbl'    , voigtvec12tbl    , ...
-                          'voigttbl'         , voigttbl         , ...
-                          'cellvoigtvec12tbl', cellvoigtvec12tbl, ...
-                          'vec12tbl'         , vec12tbl         , ...
-                          'facevectbl'       , facevectbl       , ...
-                          'nodevectbl'       , nodevectbl       , ...
-                          'cellvectbl'       , cellvectbl       , ...
-                          'cellfacevectbl'   , cellfacevectbl);
             
             % Setup pseudo face centroids : pseudoFaceCentroids(f) = noodeCoords(n, f)/number(n in f)
 
@@ -656,18 +579,6 @@ classdef ADgrid < Grid
             % To run:
             % d = map1.eval(faceCentroids) - map2.eval(cellCentroids)
 
-            %% We map K to cellvec12tbl
-
-            map = TensorMap();
-            map.fromTbl = cellvoigtvec12tbl;
-            map.toTbl = cellvec12tbl;
-            map.mergefds = {'cells', 'vec1', 'vec2'};
-            map = map.setup();
-
-            matrixop.K = map.getMatrix();
-            % To run:
-            % K = map.eval(K)
-
 
             %% We compute the signed normals n(c, f, i) = cellfacesign(c, f)*faceNormals(f, i)
             
@@ -682,26 +593,10 @@ classdef ADgrid < Grid
             % To run:
             % cellfaceNormals = prod.eval(cellfacesign, faceNormals);
             
-            %% We compute Kn(c, f, i) = K(c, i, j)*cellFaceNormals(c, f, j)
-
-            prod = TensorProd();
-            prod.tbl1 = cellvec12tbl;
-            prod.tbl2 = cellfacevectbl;
-            prod.tbl3 = cellfacevectbl;
-            prod.replacefds1 = {{'vec1', 'vec'}};
-            prod.replacefds2 = {{'vec', 'vec2'}};
-            prod.mergefds = {'cells'};
-            prod.reducefds = {'vec2'};
-            prod = prod.setup();
-
-            matrixop.Kn = prod.getMatrices();
-            % To run:
-            % Kn = prod.eval(K, cellfaceNormals);
-
             %% We compute:
-            %% dKn(c, f) = d(c, f, i)*Kn(c, f, i),
-            %% dsq(c, f) = d(c, f, i)*d(c, f, i),
-            %% hT(c, f)  = dKn(c, f)/dsq(c, f)
+            %% dscaln(c, f) = d(c, f, i)*cellfaceNormals(c, f, i),
+            %% dsq(c, f)    = d(c, f, i)*d(c, f, i),
+            %% hT(c, f)     = dKn(c, f)/dsq(c, f)
             
             prod = TensorProd();
             prod.tbl1 = cellfacevectbl;
@@ -711,52 +606,42 @@ classdef ADgrid < Grid
             prod.reducefds = {'vec'};
             prod = prod.setup();
 
-            matrixop.dKn = prod.getMatrices();
-            matrixop.dsq = matrixop.dKn; % for simplicity
-                                         % To run:
-                                         % dKn = prod.eval(d, Kn);
-                                         % dsq = prod.eval(d, d);
-                                         % hT = dKn./dsq;
+            matrixop.dscaln = prod.getMatrices();
+            matrixop.dsq    = matrixop.dscaln; % for simplicity
+                                               % To run:
+                                               % dscaln = prod.eval(d, cellfaceNormals);
+                                               % dsq    = prod.eval(d, d);
+                                               % hT     = dscaln./dsq;
 
-            %% We compute transmissibility (only half transmissibility for the boundary faces)
-            %% 1/h(f) = 1/h(c, f)
-
-            map = TensorMap();
-            map.fromTbl  = cellfacetbl;
-            map.toTbl    = facetbl;
-            map.mergefds = {'faces'};
-            map = map.setup();
-
-            matrixop.T = map.getMatrix();
-            % To run:
-            % T = 1./map.eval(1./hT);
-
-            gAD.matrixOperators = matrixop;
-            gAD.vectorHelpers   = vechelps;
+            adgrid.matrixOperators = matrixop;
+            adgrid.vectorHelpers   = vechelps;
             
         end
 
-        function output = computeGeometryAndTrans(gAD, nodeCoords, K, faceArea)
-            % Argument faceArea is only used for 1D case
+        function updateTPFgeometry(adgrid)
 
-            G = gAD.G;
+            tp = adgrid.topology;
             
-            switch G.griddim
+            switch tp.griddim
               case 1
-                output = computeGeometryAndTrans1D(gAD, nodeCoords, K, faceArea);
+                updateTPFgeometry1D(adgrid);
               case 3
-                output = computeGeometryAndTrans3D(gAD, nodeCoords, K);
+                updateTPFgeometry3D(adgrid);
               otherwise
                 error('Grid dimension not implemented yet.')
             end
             
         end
         
-        function output = computeGeometryAndTrans1D(gAD, nodeCoords, K, faceArea)
+        function output = updateTPFgeometry1D(adgrid)
             
-            m  = gAD.matrixOperators;
-            G  = gAD.G;
-            nf = G.faces.num;
+            m          = adgrid.matrixOperators;
+            tp         = adgrid.topology;
+            tg         = adgrid.tPFVgeometry;
+            faceArea   = adgrid.faceArea;
+            nodeCoords = adgrid.nodeCoords;
+            
+            nf = tp.faces.num;
 
             faceCentroids = nodeCoords;
 
@@ -775,8 +660,7 @@ classdef ADgrid < Grid
 
             cellfacedist = abs(m.cellfacedist2*faceCentroids - m.cellfacedist1*cellCentroids);
 
-            hT = ADgrid.applyProduct(m.hT, 1./cellfacedist, K);
-            hT = faceArea*hT;
+            hT = 1./cellfacedist*faceArea;
             
             T = 1./(m.T*(1./hT));
             
@@ -786,31 +670,33 @@ classdef ADgrid < Grid
 
         end
         
-        function output = computeGeometryAndTrans3D(gAD, nodeCoords, K)
+        function output = updateTPFgeometry3D(adgrid)
             
-            m = gAD.matrixOperators;
-            v = gAD.vectorHelpers;
-            G = gAD.G;
+            tp         = adgrid.topology;
+            tg         = adgrid.tPFVgeometry;
+            m          = adgrid.matrixOperators;
+            v          = adgrid.vectorHelpers;
+            nodecoords = adgrid.nodecoords;
             
-            n = G.griddim;
+            n = tp.griddim;
             
-            nodecoords_facenode = m.nodecoords_facenode*nodeCoords;
+            nodecoords_facenode = m.nodecoords_facenode*nodecoords;
             facevec             = m.facevec*nodecoords_facenode;
             pseudoFaceCentroids = facevec./v.nnode_per_face;
             
-            nfVector  = m.nfVector_2*nodeCoords - m.nfVector_1*pseudoFaceCentroids; 
+            nfVector  = m.nfVector_2*nodecoords - m.nfVector_1*pseudoFaceCentroids; 
 
             nfVector1 = m.nfVector1*nfVector;
             nfVector2 = m.nfVector2*nfVector;
             
             triNormals = m.triNormals1*nfVector1;
-            triNormals = 0.5*gAD.applyProduct(m.triNormals, triNormals, nfVector2);
+            triNormals = 0.5*adgrid.applyProduct(m.triNormals, triNormals, nfVector2);
 
-            triAreas = gAD.applyProduct(m.triAreas, triNormals, triNormals);
+            triAreas = adgrid.applyProduct(m.triAreas, triNormals, triNormals);
             triAreas = triAreas.^0.5;
             
-            n1Coords       = m.n1Coords*nodeCoords;
-            n2Coords       = m.n2Coords*nodeCoords;
+            n1Coords       = m.n1Coords*nodecoords;
+            n2Coords       = m.n2Coords*nodecoords;
             pseudoFaceCentroids = m.pseudoFaceCentroids*pseudoFaceCentroids;
 
             triCentroids = (n1Coords + n2Coords + pseudoFaceCentroids)/3;
@@ -840,33 +726,23 @@ classdef ADgrid < Grid
             
             cellCentroids = pseudoCellCentroids + (m.cellCentroids2*(relativeTetraCentroids.*(m.cellCentroids1*tetraVolumes)))./(m.cellCentroids3*cellVolumes);
 
-            G.cells.volumes   = cellVolumes;
-            G.cells.centroids = cellCentroids;
-
-            G.faces.areas     = faceAreas;
-            G.faces.normals   = faceNormals;
-            G.faces.centroids = faceCentroids;
-
-            G.nodes.coords = nodeCoords;
+            tg.cells.volumes   = cellVolumes;
+            tg.cells.centroids = cellCentroids;
+            tg.faces.areas     = faceAreas;
+            tg.faces.normals   = faceNormals;
+            tg.faces.centroids = faceCentroids;
+            tg.nodes.coords    = nodecoords;
 
             % Computation of transmissibilities
             
             d = m.d1*faceCentroids - m.d2*cellCentroids;
-            K = m.K*K;
 
-            cellfaceNormals = gAD.applyProduct(m.cellfaceNormals, cellfacesign, faceNormals);
+            cellfaceNormals = adgrid.applyProduct(m.cellfaceNormals, cellfacesign, faceNormals);
             
-            Kn  = gAD.applyProduct(m.Kn, K, cellfaceNormals);
-            dKn = gAD.applyProduct(m.dKn, d, Kn);
-            dsq = gAD.applyProduct(m.dsq, d, d);
+            dscaln = adgrid.applyProduct(m.dscaln, d, cellfaceNormals);
+            dsq    = adgrid.applyProduct(m.dsq, d, d);
 
-            hT = dKn./dsq;
-
-            T = 1./(m.T*(1./hT));
-
-            output = struct('G' , G , ...
-                            'hT', hT, ...
-                            'T' , T);
+            tg.hT = dscaln./dsq;
 
         end
         
