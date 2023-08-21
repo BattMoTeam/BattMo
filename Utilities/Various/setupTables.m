@@ -1,11 +1,8 @@
 function tbls = setupTables(G, varargin)
 
-    opt = struct('includetbls', {});
+    opt.includetbls = {'basic set'};
     opt = merge_options(opt, varargin{:});
-
-    if ~isempty(opt.includetbls)
-        includetbls = opt.includetbls{1};
-    end
+    includetbls = opt.includetbls;
     
     nc = G.cells.num;
     nf = G.faces.num;
@@ -40,6 +37,7 @@ function tbls = setupTables(G, varargin)
                   'cellfacetbl', cellfacetbl, ...
                   'facenodetbl', facenodetbl);
 
+
     if any(ismember({'intfacetbl', 'cellintfacetbl', 'sign'}, includetbls))
 
         intfaces = all(G.faces.neighhors> 0, 2)
@@ -62,8 +60,42 @@ function tbls = setupTables(G, varargin)
         tbls.extfacetbl = extfacetbl;
         
     end
+    if ismember('vectbl', includetbls)
 
+        vectbl.vec = (1 : G.griddim)';
+        vectbl = IndexArray(vectbl);
         
+        facevectbl           = crossIndexArray(facetbl          , vectbl       , {}, 'optpureproduct', true);
+        nodevectbl           = crossIndexArray(nodetbl          , vectbl       , {}, 'optpureproduct', true);
+        cellvectbl           = crossIndexArray(celltbl          , vectbl       , {}, 'optpureproduct', true);
+        cellfacevectbl       = crossIndexArray(cellfacetbl      , vectbl       , {}, 'optpureproduct', true);
+        facenodevectbl       = crossIndexArray(facenodetbl      , vectbl       , {}, 'optpureproduct', true);
+
+        tbls.vectbl         = vectbl;
+        tbls.facevectbl     = facevectbl;
+        tbls.nodevectbl     = nodevectbl;
+        tbls.cellvectbl     = cellvectbl;
+        tbls.cellfacevectbl = cellfacevectbl;
+        tbls.facenodevectbl = facenodevectbl;
+
+    end
+
+    if ismember('facenode12tbl', includetbls)
+
+        p = G.faces.nodePos;
+        f = G.faces.nodes;
+        
+        next = (2 : size(f, 1) + 1) .';
+        next(p(2 : end) - 1) = p(1 : end-1);
+        nextf = f(next);
+
+        facenode12tbl = replacefield(facenodetbl, {{'nodes', 'nodes1'}});
+        facenode12tbl = facenode12tbl.addInd('nodes2', nextf);
+
+        tbls.facenode12tbl = facenode12tbl;
+        
+    end
+    
 end
 
 
