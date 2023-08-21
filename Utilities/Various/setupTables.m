@@ -14,11 +14,6 @@ function tbls = setupTables(G, varargin)
     facetbl.faces = (1 : nf)';
     facetbl = IndexArray(facetbl);
 
-    N = G.faces.neighbors;
-    intInx = all(N ~= 0, 2);
-    intfacetbl.faces = find(intInx);
-    intfacetbl = IndexArray(intfacetbl);
-
     nodetbl.nodes = (1 : nn)';
     nodetbl = IndexArray(nodetbl);
     
@@ -32,15 +27,14 @@ function tbls = setupTables(G, varargin)
     
     tbls = struct('celltbl'    , celltbl    , ...
                   'facetbl'    , facetbl    , ...
-                  'intfacetbl' , intfacetbl , ...
                   'nodetbl'    , nodetbl    , ...
                   'cellfacetbl', cellfacetbl, ...
                   'facenodetbl', facenodetbl);
 
 
-    if any(ismember({'intfacetbl', 'cellintfacetbl', 'sign'}, includetbls))
+    if any(ismember({'intfacetbl', 'cellintfacetbl'}, includetbls))
 
-        intfaces = all(G.faces.neighhors> 0, 2)
+        intfaces = all(G.faces.neighbors> 0, 2);
         intfacetbl.faces = find(intfaces);
         intfacetbl = IndexArray(intfacetbl);
 
@@ -53,7 +47,7 @@ function tbls = setupTables(G, varargin)
 
     if ismember('extfacetbl', includetbls)
 
-        extfaces = any(G.faces.neighhors == 0, 2)
+        extfaces = any(G.faces.neighbors == 0, 2);
         extfacetbl.faces = find(extfaces);
         extfacetbl = IndexArray(extfacetbl);
 
