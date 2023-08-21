@@ -54,6 +54,7 @@ function tbls = setupTables(G, varargin)
         tbls.extfacetbl = extfacetbl;
         
     end
+
     if ismember('vectbl', includetbls)
 
         vectbl.vec = (1 : G.griddim)';
