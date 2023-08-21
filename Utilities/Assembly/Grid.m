@@ -19,17 +19,17 @@ classdef Grid
         % properties of tPFVgeometry
         tPFVgeometry
 
-        % Helper structures that are used to extract the half-transmissibilities from the parent structures and assemble the
-        % fluxes, with fields
+        % Helper structures that are used in the computation of the gradient, divergence, harmonic face averages, ...
         % - helpers.diffop.grad                 (sparse matrix used in getGradient)
         % - helpers.diffop.div                  (sparse matrix used in getDiv)
-        % - helpers.trans.D                     (sparse matrix used in getFlux method)
-        % - helpers.trans.P                     (sparse matrix used in getFlux method)
-        % - helpers.trans.S                     (sparse matrix used in getFlux method)
+        % - helpers.trans.D                     (sparse matrix used in getHarmFace method)
+        % - helpers.trans.P                     (sparse matrix used in getHarmFace method)
+        % - helpers.trans.S                     (sparse matrix used in getHarmFace method)
         % - helpers.extfaces.faces              (index of the external faces, sub-grid indexing)
         % - helpers.extfaces.cells              (index of the corresponding cells, sub-grid indexing)
         % - helpers.extfaces.halfTransParentInd (index of the corresponding half-transmissibility values in parent grid indexing)
         % - helpers.faceextfacemap              (mapping from face to extface, sub-grid indexing)
+        % - helpers.sgn                         (face sign in cell-face indexing)
         helpers
 
         % Operators to compute norm of the flux velocity at the cell centers, see getCellFluxNorm
@@ -124,6 +124,25 @@ classdef Grid
             celltbl        = tbls.celltbl;
             facetbl        = tbls.facetbl;
             extfacetbl     = tbls.extfacetbl;
+
+            sgn = ones(cellintfacetbl.num, 1);
+            f = cellintfacetbl.get('faces');
+            c = cellintfacetbl.get('cells');
+            sgn(grid.topology.faces.neighbors(f, 1) == c) = -1;
+
+            prod = TensorProd();
+            prod.tbl1 = cellintfacetbl;
+            prod.tbl2 = intfacetbl;
+            prod.tbl3 = celltbl;
+            prod.reducefds = {'faces'};
+            prod = prod.setup;
+
+            divM = SparseTensor();
+            divM = divM.setFromTensorProd(sgn, prod);
+            divM = divM.getMatrix();
+
+            diffop.div  = divM;
+            diffop.grad = -divM';
             
             map = TensorMap();
             map.fromTbl  = cellfacetbl;
@@ -167,9 +186,11 @@ classdef Grid
             faceextfacemap = zeros(facetbl.num, 1);
             faceextfacemap(extfacetbl.get('faces')) = (1 : extfacetbl.num)';
 
-            grid.helpers = struct('trans'         , trans   , ...
-                                  'extfaces'      , extfaces, ...
-                                  'faceextfacemap', faceextfacemap);
+            grid.helpers = struct('diffop'        , diffop        , ...
+                                  'trans'         , trans         , ...
+                                  'extfaces'      , extfaces      , ...
+                                  'faceextfacemap', faceextfacemap, ...
+                                  'sgn'           , sgn);
         end
 
         function G = getMRSTgrid(grid)
@@ -203,8 +224,14 @@ classdef Grid
             vols = grid.tPFVgeometry.cells.volumes;
             
         end
+
+        function areas = getFaceAreas(grid)
+            
+            areas = grid.tPFVgeometry.faces.areas;
+            
+        end
         
-        function u = getFlux(grid, c)
+        function u = getHarmFace(grid, c)
         % Returns fluxes for each internal faces for the cell-valued vector c
 
             op = grid.helpers.trans;
@@ -214,7 +241,7 @@ classdef Grid
             
         end
         
-        function [bchT, bccells] = getBcFlux(grid, u, bcfaces)
+        function [bchT, bccells] = getBcHarmFlux(grid, u, bcfaces)
         % Returns half transmissibilities and cell indexing for the given boundary faces
 
             hT   = grid.tPFVgeometry.hT;
@@ -237,7 +264,18 @@ classdef Grid
             jsq = S*jsq;
             
         end
-        
+
+        function sgn = getFaceSign(grid)
+            
+            sgn = grid.helpers.sgn;
+            
+        end
+
+        function nc = getNumberOfCells(grid)
+
+            nc = grid.topology.cells.num;
+            
+        end        
     end
     
 end
