@@ -287,8 +287,8 @@ classdef CompositeActiveMaterial < ElectronicComponent
 
         function state = updateControl(model, state, drivingForces, dt)
             
-            G = model.G;
-            coef = G.cells.volumes;
+            op = model.op;
+            coef = op.getCellVolumes();
             coef = coef./(sum(coef));
             
             state.controlCurrentSource = drivingForces.src.*coef;
@@ -369,7 +369,7 @@ classdef CompositeActiveMaterial < ElectronicComponent
             itf = 'Interface';
             
             %% TODO : check whether constants n should always be the same for graphite and silicon (and impose them from parent)
-            vols = model.G.cells.volumes;
+            vols = model.operators.getCellVolumes();
             F    = model.(gr).(itf).constants.F;
             nGr  = model.(gr).(itf).n;
             nSi  = model.(si).(itf).n;

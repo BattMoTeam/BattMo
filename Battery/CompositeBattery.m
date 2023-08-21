@@ -388,7 +388,7 @@ classdef CompositeBattery < Battery
             gr = 'FirstMaterial';
             si = 'SecondMaterial';
 
-            vols = battery.(elyte).G.cells.volumes;
+            vols = battery.(elyte).operators.getCellVolumes();
             F = battery.con.F;
             
             couplingterms = battery.couplingTerms;

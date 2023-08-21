@@ -32,7 +32,7 @@ classdef ThermalComponent < BaseModel
             model = dispatchParams(model, paramobj, fdnames);
             
             % setup discrete differential operators
-            model.operators = localSetupOperators(model.G);
+            model.operators = Operators(model.G, 'assembleCellFluxOperator', true);
             
             if ~isempty(model.EffectiveThermalConductivity)
                 nc = model.G.cells.num;
@@ -130,7 +130,7 @@ classdef ThermalComponent < BaseModel
             T0 = state0.T;
 
             % (here we assume that the ThermalModel has the "parent" grid)
-            vols = model.G.cells.volumes;
+            vols = model.operators.getCellVolumes();
             
             state.accumHeat = vhcap.*vols.*(T - T0)/dt;
             
@@ -189,11 +189,13 @@ classdef ThermalComponent < BaseModel
             
             if isempty(coupfaces)
                 % 1D case (External faces are not available, we consider a volumetric cooling instead)
-                A = G.cells.volumes(coupcells);
+                A = model.operators.getCellVolumes();
+                A = A(coupcells);
                 t_eff = lambda_ext*A;
             else
                 % Face couling (multidimensional case)
-                A = G.faces.areas(coupfaces);
+                A = model.operators.getFaceAreas();
+                A = A(coupfaces);
                 t_ext = lambda_ext.*A;
                 
                 t = model.operators.harmFaceBC(lambda, coupfaces);

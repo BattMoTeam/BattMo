@@ -33,7 +33,7 @@ classdef ElectronicComponent < BaseModel
                 docellflux = true;
             end
             
-            model.operators = localSetupOperators(model.G, 'assembleCellFluxOperator', docellflux);
+            model.operators = Operators(model.G, 'assembleCellFluxOperator', docellflux);
             
             model.constants = PhysicalConstants();
 

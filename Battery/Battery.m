@@ -1063,17 +1063,18 @@ classdef Battery < BaseModel
             switch model.(ne).(am).diffusionModelType
               case 'simple'
                 eqs{ei.ne_am_massCons}       = state.(ne).(am).massCons*massConsScaling;
-                eqs{ei.ne_am_sd_soliddiffeq} = state.(ne).(am).(sd).solidDiffusionEq.*massConsScaling.*battery.(ne).(am).(itf).G.cells.volumes/dt;
+                vols = battery.(ne).(am).(itf).operators.getCellVolumes();
+                eqs{ei.ne_am_sd_soliddiffeq} = state.(ne).(am).(sd).solidDiffusionEq.*massConsScaling.*vols/dt;
               case 'full'
                 % Equation name : 'ne_am_sd_massCons';
                 n    = model.(ne).(am).(itf).n; % number of electron transfer (equal to 1 for Lithium)
                 F    = model.con.F;
-                vol  = model.(ne).(am).operators.pv;
+                vols = model.(ne).(am).operators.getCellVolumes();
                 rp   = model.(ne).(am).(sd).rp;
                 vsf  = model.(ne).(am).(sd).volumetricSurfaceArea;
                 surfp = 4*pi*rp^2;
                 
-                scalingcoef = (vsf*vol(1)*n*F)/surfp;
+                scalingcoef = (vsf*vols(1)*n*F)/surfp;
                 
                 eqs{ei.ne_am_sd_massCons}    = scalingcoef*state.(ne).(am).(sd).massCons;
                 eqs{ei.ne_am_sd_soliddiffeq} = scalingcoef*state.(ne).(am).(sd).solidDiffusionEq;
@@ -1087,12 +1088,13 @@ classdef Battery < BaseModel
             switch model.(pe).(am).diffusionModelType
               case 'simple'
                 eqs{ei.pe_am_massCons}       = state.(pe).(am).massCons*massConsScaling;
-                eqs{ei.pe_am_sd_soliddiffeq} = state.(pe).(am).(sd).solidDiffusionEq.*massConsScaling.*battery.(pe).(am).(itf).G.cells.volumes/dt;
+                vols = battery.(pe).(am).(itf).operators.getCellVolumes();
+                eqs{ei.pe_am_sd_soliddiffeq} = state.(pe).(am).(sd).solidDiffusionEq.*massConsScaling.*vols/dt;
               case 'full'
                 % Equation name : 'pe_am_sd_massCons';
                 n    = model.(pe).(am).(itf).n; % number of electron transfer (equal to 1 for Lithium)
                 F    = model.con.F;
-                vol  = model.(pe).(am).operators.pv;
+                vol  = model.(pe).(am).operators.getCellVolumes();
                 rp   = model.(pe).(am).(sd).rp;
                 vsf  = model.(pe).(am).(sd).volumetricSurfaceArea;
                 surfp = 4*pi*rp^2;
@@ -1188,10 +1190,8 @@ classdef Battery < BaseModel
             am    = 'ActiveMaterial';
             itf   = 'Interface';
             
-            vols = battery.(elyte).G.cells.volumes;
+            vols = battery.(elyte).operators.getCellVolumes();
             F = battery.con.F;
-            
-            
             
             couplingterms = battery.couplingTerms;
 
@@ -1303,7 +1303,7 @@ classdef Battery < BaseModel
                     cc_map   = cc_model.G.mappings.cellmap;
                     cc_j     = state.(elde).(cc).jFace;
                     cc_econd = cc_model.EffectiveElectricalConductivity;
-                    cc_vols  = cc_model.G.cells.volumes;
+                    cc_vols  = cc_model.operators.getCellVolumes();
                     cc_jsq   = computeCellFluxNorm(cc_model, cc_j); 
                     state.(elde).(cc).jsq = cc_jsq;  %store square of current density
                     src = subsetPlus(src,cc_vols.*cc_jsq./cc_econd, cc_map);
@@ -1314,7 +1314,7 @@ classdef Battery < BaseModel
                 am_map   = am_model.G.mappings.cellmap;
                 am_j     = state.(elde).(am).jFace;
                 am_econd = am_model.EffectiveElectricalConductivity;
-                am_vols  = am_model.G.cells.volumes;
+                am_vols  = am_model.operators.getCellVolumes();
                 am_jsq   = computeCellFluxNorm(am_model, am_j);
                 state.(elde).(am).jsq = am_jsq;
                 
@@ -1330,7 +1330,7 @@ classdef Battery < BaseModel
             elyte_bruggman = elyte_model.BruggemanCoefficient;
             elyte_cond     = state.(elyte).conductivity;
             elyte_econd    = elyte_cond.*elyte_vf.^elyte_bruggman;
-            elyte_vols     = elyte_model.G.cells.volumes;
+            elyte_vols     = elyte_model.operators.getCellVolumes();
             elyte_jsq      = computeCellFluxNorm(elyte_model, elyte_j);
             state.(elyte).jsq = elyte_jsq; %store square of current density
             
@@ -1375,7 +1375,7 @@ classdef Battery < BaseModel
             % compute norm of square norm of diffusion flux
             elyte_model   = model.(elyte);
             elyte_map     = elyte_model.G.mappings.cellmap;
-            elyte_vols    = elyte_model.G.cells.volumes;
+            elyte_vols    = elyte_model.operators.getCellVolumes();
             elyte_jchemsq = computeCellFluxNorm(elyte_model, DFaceGradc);
             elyte_src     = elyte_vols.*elyte_jchemsq./D;
             
@@ -1424,7 +1424,7 @@ classdef Battery < BaseModel
                 n       = itf_model.n;
                 itf_map = itf_model.G.mappings.cellmap;
                 vsa     = itf_model.volumetricSurfaceArea;
-                vols    = model.(elde).(am).G.cells.volumes;
+                vols    = model.(elde).(am).operators.getCellVolumes();
 
                 Rvol = locstate.(elde).(am).Rvol;
                 eta  = locstate.(elde).(am).(itf).eta;
@@ -1473,7 +1473,7 @@ classdef Battery < BaseModel
                 n       = itf_model.n;
                 itf_map = itf_model.G.mappings.cellmap;
                 vsa     = itf_model.volumetricSurfaceArea;
-                vols    = model.(elde).(am).G.cells.volumes;
+                vols    = model.(elde).(am).operators.getCellVolumes();
 
                 Rvol = locstate.(elde).(am).Rvol;
                 dUdT = locstate.(elde).(am).(itf).dUdT;
@@ -1524,7 +1524,7 @@ classdef Battery < BaseModel
                 n       = itf_model.n;
                 itf_map = itf_model.G.mappings.cellmap;
                 vsa     = itf_model.volumetricSurfaceArea;
-                vols    = model.(elde).(am).G.cells.volumes;
+                vols    = model.(elde).(am).operators.getCellVolumes();
 
                 Rvol = locstate.(elde).(am).Rvol;
                 dUdT = locstate.(elde).(am).(itf).dUdT;
