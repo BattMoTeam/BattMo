@@ -24,6 +24,17 @@ classdef Grid
         % Using topology and nodecoords all the properties of tPFVgeometry can be updated
         tPFVgeometry
 
+        % Helper structures that are used to extract the half-transmissibilities from the parent structures and assemble the
+        % fluxes, with fields
+        % - helpers.trans.D                     (sparse matrix used in getFlux method)
+        % - helpers.trans.P                     (sparse matrix used in getFlux method)
+        % - helpers.trans.S                     (sparse matrix used in getFlux method)
+        % - helpers.extfaces.faces              (index of the external faces, sub-grid indexing)
+        % - helpers.extfaces.cells              (index of the corresponding cells, sub-grid indexing)
+        % - helpers.extfaces.halfTransParentInd (index of the corresponding half-transmissibility values in parent grid indexing)
+        % - helpers.faceextfacemap              (mapping from face to extface, sub-grid indexing)
+        helpers
+        
     end
 
     methods
@@ -90,7 +101,61 @@ classdef Grid
             grid.tPFVgeometry.faces = faces;
             grid.tPFVgeometry.nodes = nodes;
             grid.tPFVgeometry.hT    = farea*hT;
+
+            % setup helpers
+
+            tbls = setupTables(G, 'includetbls', {'intfacetbl', 'extfacetbl'});
+            intfacetbl     = tbls.intfacetbl;
+            cellintfacetbl = tbls.cellintfacetbl;
+            cellfacetbl    = tbls.cellfacetbl;
+            celltbl        = tbls.celltbl;
+            extfacetbl     = tbls.extfacetbl;
             
+            map = TensorMap();
+            map.fromTbl  = cellfacetbl;
+            map.toTbl    = cellintfacetbl;
+            map.mergefds = {'cells', 'faces'};
+            map = map.setup();
+            
+            P = map.getMatrix();
+
+            map = TensorMap();
+            map.fromTbl = celltbl;
+            map.toTbl = cellintfacetbl;
+            map.mergefds = {'cells'};
+            map = map.setup();
+
+            D = map.getMatrix();
+            
+            map = TensorMap();
+            map.fromTbl = cellintfacetbl;
+            map.toTbl = intfacetbl;
+            map.mergefds = {'faces'};
+            map = map.setup();
+
+            S = map.getMatrix();
+
+            trans = struct('P', P, ...
+                           'D', D, ...
+                           'S', S);
+            
+            cellextfacetbl = crossIndexArray(cellfacetbl, extfacetbl, {'faces'});
+
+            map = TensorMap();
+            map.fromTbl  = cellfacetbl;
+            map.toTbl    = cellextfacetbl;
+            map.mergefds = {'cells', 'faces'};
+            
+            extfaces.faces              = cellextfacetbl.get('faces');
+            extfaces.cells              = cellextfacetbl.get('cells');
+            extfaces.halfTransParentInd = map.getDispatchInd();
+
+            faceextfacemap = zeros(facetbl.num, 1);
+            faceextfacemap(extfacetbl.get('faces')) = (1 : extfacetbl.num)';
+
+            grid.helpers = struct('trans'         , trans   , ...
+                                  'extfaces'      , extfaces, ...
+                                  'faceextfacemap', faceextfacemap);
         end
 
         function G = getMRSTgrid(grid)
@@ -109,6 +174,35 @@ classdef Grid
             G.faces.areas     = tg.faces.areas;
             G.nodes.coords    = reshape(tg.nodes.coords, d, [])';
             
+        end
+
+        function vols = getVolumes(grid)
+            
+            vols = grid.tPFVgeometry.cells.volumes;
+            
+        end
+        
+        function u = getFlux(grid, c)
+        % Returns fluxes for each internal faces for the cell-valued vector c
+
+            op = grid.helpers.trans;
+            hT = grid.tPFVgeometry.hT;
+            
+            u = 1 ./ (op.S * ( 1 ./ (op.D*c .* op.P*hT)));
+            
+        end
+        
+        function [bchT, bccells] = getBcFlux(grid, u, bcfaces)
+        % Returns half transmissibilities and cell indexing for the given boundary faces
+
+            hT   = grid.tPFVgeometry.hT;
+            exf  = grid.helpers.extfaces;
+
+            extfaceind = grid.helpers.faceextfacemap(bcfaces);
+            
+            bccells = exf.cells(extfaceind);
+            bchT    = hT(exf.halfTransParentInd(extfaceind));
+
         end
         
     end
