@@ -40,7 +40,9 @@ classdef BatteryGenerator1D < BatteryGenerator
     methods
         
         function gen = BatteryGenerator1D()
-            gen = gen@BatteryGenerator();  
+            
+            gen = gen@BatteryGenerator();
+            
         end
             
         function [paramobj, gen] = updateBatteryInputParams(gen, paramobj)
@@ -49,33 +51,6 @@ classdef BatteryGenerator1D < BatteryGenerator
             gen.use_thermal = paramobj.use_thermal;
             paramobj = gen.setupBatteryInputParams(paramobj, []);
 
-            % We define some shorthand names for simplicity.
-            ne      = 'NegativeElectrode';
-            pe      = 'PositiveElectrode';
-            elyte   = 'Electrolyte';
-            sep     = 'Separator';
-            thermal = 'ThermalModel';
-            am      = 'ActiveMaterial';
-            cc      = 'CurrentCollector';
-
-            % we update all the grids to adjust grid to faceArea
-            paramobj.G               = gen.adjustGridToFaceArea(paramobj.G);
-            paramobj.(elyte).G       = gen.adjustGridToFaceArea(paramobj.(elyte).G);
-            paramobj.(elyte).(sep).G = gen.adjustGridToFaceArea(paramobj.(elyte).(sep).G);
-            
-            eldes = {ne, pe};
-            for ielde = 1 : numel(eldes)
-                elde = eldes{ielde};
-                paramobj.(elde).(am).G = gen.adjustGridToFaceArea(paramobj.(elde).(am).G);
-                if gen.include_current_collectors
-                    paramobj.(elde).(cc).G = gen.adjustGridToFaceArea(paramobj.(elde).(cc).G);
-                end
-            end
-            
-            if gen.use_thermal
-                paramobj.(thermal).G = gen.adjustGridToFaceArea(paramobj.(thermal).G);                
-            end
-            
         end
 
         function [paramobj, gen] = setupGrid(gen, paramobj, ~)
@@ -100,10 +75,14 @@ classdef BatteryGenerator1D < BatteryGenerator
             x = [0; cumsum(x)];
 
             G = tensorGrid(x);
-            G = computeGeometry(G); 
+
+            parentGrid = Grid(G);
+            parentGrid.tPFVgeometry.faceArea = gen.faceArea;
+
+            parentGrid.updateTPFgeometry();
             
-            paramobj.G = G;
-            gen.G = G;
+            paramobj.G     = parentGrid;
+            gen.parentGrid = parentGrid;
             
         end
 
@@ -203,16 +182,6 @@ classdef BatteryGenerator1D < BatteryGenerator
             
         end
 
-        function G = adjustGridToFaceArea(gen, G);
-            
-            fa = gen.faceArea;
-
-            G.faces.areas   = fa*G.faces.areas;
-            G.faces.normals = fa*G.faces.normals;
-            G.cells.volumes = fa*G.cells.volumes;
-
-        end
-        
     end
     
     

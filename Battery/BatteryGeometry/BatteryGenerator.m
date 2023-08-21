@@ -7,10 +7,9 @@ classdef BatteryGenerator
 % Example : :class:`BatteryGenerator1D <BatteryGeometry.BatteryGenerator1D>`, :class:`BatteryGenerator2D <BatteryGeometry.BatteryGenerator2D>`, :class:`BatteryGenerator3D <BatteryGeometry.BatteryGenerator3D>`
 
     properties
-        % Global grid 
-        % It is stored here because is shared by many setup functions. 
-        % It is constructed by the methode  :meth:`setupGrid`
-        G
+        
+        % Parent grid, instance of Grid
+        parentGrid
         
     end
 
@@ -61,11 +60,13 @@ classdef BatteryGenerator
         function paramobj = setupThermalModel(gen, paramobj, params)
         % Method that setups the grid and the coupling for the thermal model
             
-            paramobj.ThermalModel.G = gen.G;
+            G = genSubGrid(gen.parentGrid, (1 : gen.parentGrid.topology.cells.num)');
+            G = setupCellFluxOperators(G);
             coupTerm = couplingTerm('ThermalConvectiveCooling', {'ThermalModel'});
             coupTerm.couplingcells = params.couplingcells;
             coupTerm.couplingfaces = params.couplingfaces;
             paramobj.ThermalModel.couplingTerm = coupTerm;
+            
         end
         
         function paramobj = setupElectrolyte(gen, paramobj, params)
@@ -82,7 +83,7 @@ classdef BatteryGenerator
         % Here, :code:`paramobj` is instance of :class:`ElectrolyteInputParams <Electrochemistry.ElectrolyteInputParams>`
             
             % Default setup
-            paramobj.G = genSubGrid(gen.G, params.cellind);
+            paramobj.G = genSubGrid(gen.parentGrid, params.cellind);
             
         end
         
@@ -91,7 +92,7 @@ classdef BatteryGenerator
         % Here, :code:`paramobj` is instance of :class:`BatteryInputParams <Battery.BatteryInputParams>`
             
            % Default setup
-            paramobj.G = genSubGrid(gen.G, params.cellind);
+            paramobj.G = genSubGrid(gen.parentGrid, params.cellind);
             
         end
 
@@ -146,23 +147,24 @@ classdef BatteryGenerator
         % Setup the grid for an electrode
         % Here, :code:`paramobj` is instance of :class:`ElectrodeInputParams <Electrochemistry.ElectrodeInputParams>`
             
-            paramobj.G = genSubGrid(gen.G, params.cellind);
+            paramobj.G = genSubGrid(gen.parentGrid, params.cellind);
+            
         end
 
         function paramobj = setupActiveMaterialGrid(gen, paramobj, params)
         % Setup the grid for the active material
         % Here, :code:`paramobj` is instance of :class:`ActiveMaterialInputParams <Electrochemistry.ActiveMaterialInputParams>`
             
-            paramobj.G = genSubGrid(gen.G, params.cellind);
+            paramobj.G = genSubGrid(gen.parentGrid, params.cellind);
 
             switch params.electrode_case
               case 'default'
                 
-                paramobj.G = genSubGrid(gen.G, params.cellind);
+                paramobj.G = genSubGrid(gen.parentGrid, params.cellind);
                 
               case 'composite'
                 
-                G = genSubGrid(gen.G, params.cellind);
+                G = genSubGrid(gen.parentGrid, params.cellind);
                 paramobj.G          = G;
                 paramobj.FirstMaterial.G = G;
                 paramobj.SecondMaterial.G  = G;
@@ -186,7 +188,7 @@ classdef BatteryGenerator
         % Setup a grid for a current collector
         % Here, :code:`paramobj` is instance of :class:`CurrentCollectorInputParams <Electrochemistry.CurrentCollectorInputParams>`
 
-            paramobj.G = genSubGrid(gen.G, params.cellind);
+            paramobj.G = genSubGrid(gen.parentGrid, params.cellind);
             
         end       
 
@@ -201,18 +203,18 @@ classdef BatteryGenerator
             
             couplingTerms = {};
             
-            G_ne = paramobj.(ne).(am).G;
+            G_ne    = paramobj.(ne).(am).G;
             G_elyte = paramobj.(elyte).G;
             
             % parent Grid
-            G = G_ne.mappings.parentGrid;
+            G = G_ne.parentGrid;
             
             % All the cells from NegativeElectrode are coupled with Electrolyte
-            cells1 = (1 : G_ne.cells.num)';
+            cells1 = (1 : G_ne.getNumberOfCells())';
             pcells = G_ne.mappings.cellmap(cells1);
             
-            mapping = zeros(G.cells.num, 1);
-            mapping(G_elyte.mappings.cellmap) = (1 : G_elyte.cells.num)';
+            mapping = zeros(G.getNumberOfCells(), 1);
+            mapping(G_elyte.mappings.cellmap) = (1 : G_elyte.getNumberOfCells())';
             cells2 = mapping(pcells);
             
             compnames = {'NegativeElectrode', 'Electrolyte'};
@@ -225,15 +227,12 @@ classdef BatteryGenerator
             G_pe = paramobj.(pe).(am).G;
             G_elyte = paramobj.(elyte).G;
             
-            % parent Grid
-            G = G_pe.mappings.parentGrid;
-            
             % All the cells from PositiveElectrode are coupled with Electrolyte
-            cells1 = (1 : G_pe.cells.num)';
+            cells1 = (1 : G_pe.getNumberOfCells())';
             pcells = G_pe.mappings.cellmap(cells1);
             
-            mapping = zeros(G.cells.num, 1);
-            mapping(G_elyte.mappings.cellmap) = (1 : G_elyte.cells.num)';
+            mapping = zeros(G.getNumberOfCells(), 1);
+            mapping(G_elyte.mappings.cellmap) = (1 : G_elyte.getNumberOfCells())';
             cells2 = mapping(pcells);
             
             compnames = {'PositiveElectrode', 'Electrolyte'};
@@ -260,12 +259,11 @@ classdef BatteryGenerator
             G_am = paramobj.(am).G;
             G_cc = paramobj.(cc).G;
             
-            cctbl.faces = (1 : G_cc.faces.num)';
+            cctbl.faces = (1 : G_cc.topology.faces.num)';
             cctbl.globfaces = G_cc.mappings.facemap;
             cctbl = IndexArray(cctbl);
             
-            
-            eactbl.faces = (1 : G_am.faces.num)';
+            eactbl.faces = (1 : G_am.topology.faces.num)';
             eactbl.globfaces = G_am.mappings.facemap;
             eactbl = IndexArray(eactbl);
 
