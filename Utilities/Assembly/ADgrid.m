@@ -9,9 +9,9 @@ classdef ADgrid < Grid
     
     methods
         
-        function adgrid = ADgrid(G)
+        function adgrid = ADgrid(G, varargin)
 
-            adgrid = adgrid@Grid(G);
+            adgrid = adgrid@Grid(G, varargin{:});
             adgrid = adgrid.setup();
             
         end
@@ -33,25 +33,16 @@ classdef ADgrid < Grid
 
         function adgrid = setup1D(adgrid)
 
-            G = adgrid.G;
+            tp = adgrid.topology;
+
+            tbls = setupTables(tp);
+
+            celltbl     = tbls.celltbl;
+            facetbl     = tbls.facetbl;
+            cellfacetbl = tbls.cellfacetbl;
+
+            nc = celltbl.num;
             
-            nc = G.cells.num;
-            nf = G.faces.num;
-            nn = G.nodes.num; % In 1D, we have nn = nf
-
-            celltbl.cells = (1 : nc)';
-            celltbl = IndexArray(celltbl);
-
-            facetbl.faces = (1 : nf)';
-            facetbl = IndexArray(facetbl);
-            
-            nodetbl.nodes = (1 : nn)';
-            nodetbl = IndexArray(nodetbl);
-
-            cellfacetbl.cells = rldecode((1 : nc)', diff(G.cells.facePos));
-            cellfacetbl.faces = G.cells.faces(:, 1);
-            cellfacetbl = IndexArray(cellfacetbl);
-
             cellfacetbl2 = sortIndexArray(cellfacetbl, {'cells', 'faces'});
             faces = cellfacetbl2.get('faces');
             faces = reshape(faces, 2, [])';
@@ -126,19 +117,6 @@ classdef ADgrid < Grid
             % To run:
             % cellfacedist = abs(map2.eval(faceCentroids) - map1.eval(cellCentroids))
             % hT = 1./cellfacedist*faceArea
-
-            %% We compute transmissibility (only half transmissibility for the boundary faces)
-            %% 1/h(f) = 1/h(c, f)
-
-            map = TensorMap();
-            map.fromTbl  = cellfacetbl;
-            map.toTbl    = facetbl;
-            map.mergefds = {'faces'};
-            map = map.setup();
-
-            matrixop.T = map.getMatrix();
-            % To run:
-            % T = 1./map.eval(1./hT);
 
             adgrid.matrixOperators = matrixop;
             
@@ -639,34 +617,26 @@ classdef ADgrid < Grid
             tp         = adgrid.topology;
             tg         = adgrid.tPFVgeometry;
             faceArea   = adgrid.faceArea;
-            nodeCoords = adgrid.nodeCoords;
+            nodecoords = adgrid.nodecoords;
             
             nf = tp.faces.num;
 
-            faceCentroids = nodeCoords;
+            faceCentroids = nodecoords;
 
             cellCentroids = m.cellCentroids*faceCentroids;
             
             cellVolumes = m.vols3*(abs(m.vols2*faceCentroids - m.vols1*faceCentroids))*faceArea;
             
-            G.cells.volumes   = cellVolumes;
-            G.cells.centroids = cellCentroids;
-
-            G.faces.areas     = faceArea*ones(nf, 1);
-            G.faces.normals   = G.faces.areas;
-            G.faces.centroids = faceCentroids;
-
-            G.nodes.coords = nodeCoords;
+            tg.cells.volumes   = cellVolumes;
+            tg.cells.centroids = cellCentroids;
+            tg.faces.areas     = faceArea*ones(nf, 1);
+            tg.faces.normals   = faceArea*ones(nf, 1);
+            tg.faces.centroids = faceCentroids;
+            tg.nodes.coords    = nodecoords;
 
             cellfacedist = abs(m.cellfacedist2*faceCentroids - m.cellfacedist1*cellCentroids);
 
-            hT = 1./cellfacedist*faceArea;
-            
-            T = 1./(m.T*(1./hT));
-            
-            output = struct('G' , G , ...
-                            'hT', hT, ...
-                            'T' , T);
+            tg.hT = 1./cellfacedist*faceArea;
 
         end
         

@@ -26,12 +26,14 @@ classdef Grid
 
     end
 
-
     methods
 
-        function grid = Grid(G)
+        function grid = Grid(G, varargin)
         % We initialize the grid using a MRST grid structure
 
+            opt = struct('faceArea', 1);
+            opt = merge_options(opt, varargin{:});
+            
             topology.cells.facePos   = G.cells.facePos;
             topology.cells.faces     = G.cells.faces;
             topology.cells.num       = G.cells.num;
@@ -43,6 +45,10 @@ classdef Grid
             topology.griddim         = G.griddim;
             
             grid.topology   = topology;
+
+            if topology.griddim == 1
+                grid.faceArea = opt.faceArea;
+            end
 
             % We flatten the coordinate structures
             grid.nodecoords = reshape(G.nodes.coords', [], 1);
@@ -56,7 +62,8 @@ classdef Grid
             G          = grid.topology;
             nodecoords = grid.nodecoords;
             d          = grid.topology.griddim;
-
+            farea      = grid.faceArea;
+            
             G.nodes.coords = reshape(nodecoords, d, [])';
 
             G.type = 'generic';
@@ -67,18 +74,18 @@ classdef Grid
             hT = computeTrans(G, rock);
 
             cells.centroids = reshape(G.cells.centroids', [], 1);
-            cells.volumes   = G.cells.volumes;
+            cells.volumes   = farea*G.cells.volumes;
             
             faces.centroids = reshape(G.faces.centroids', [], 1);
-            faces.normals   = reshape(G.faces.normals', [], 1);
-            faces.areas     = G.faces.areas;
+            faces.normals   = farea*reshape(G.faces.normals', [], 1);
+            faces.areas     = farea*G.faces.areas;
 
             nodes.coords = nodecoords;
 
             grid.tPFVgeometry.cells = cells; 
             grid.tPFVgeometry.faces = faces;
             grid.tPFVgeometry.nodes = nodes;
-            grid.tPFVgeometry.hT    = hT;
+            grid.tPFVgeometry.hT    = farea*hT;
             
         end
 
