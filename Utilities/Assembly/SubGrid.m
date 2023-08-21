@@ -24,13 +24,10 @@ classdef SubGrid
         % - mappings.nodemap
         mappings
 
-        % Discrete TPFV differentiation operators with fields
-        % - operators.div
-        % - operators.grad
-        operators
-
         % Helper structures that are used to extract the half-transmissibilities from the parent structures and assemble the
         % fluxes, with fields
+        % - helpers.diffop.grad                 (sparse matrix used in getGradient)
+        % - helpers.diffop.div                  (sparse matrix used in getDiv)
         % - helpers.trans.D                     (sparse matrix used in getFlux method)
         % - helpers.trans.P                     (sparse matrix used in getFlux method)
         % - helpers.trans.S                     (sparse matrix used in getFlux method)
@@ -39,6 +36,11 @@ classdef SubGrid
         % - helpers.extfaces.halfTransParentInd (index of the corresponding half-transmissibility values in parent grid indexing)
         % - helpers.faceextfacemap              (mapping from face to extface, sub-grid indexing)
         helpers
+
+        % Operators to compute norm of the flux velocity at the cell centers, see getCellFlux 
+        % - cellFluxOperators.P
+        % - cellFluxOperators.S
+        cellFluxOperators
         
     end
 
@@ -61,18 +63,20 @@ classdef SubGrid
             subG.parentGrid = parentGrid;
             subG.mappings   = mappings;
 
-            subG = subG.setupOperators();
             subG = subG.setupHelpers();
             
         end
 
 
-        function subG = setupOperators(subG);
+        function subG = setupHelpers(subG)
 
-            tp = subG.topology;
-            tbls = setupTables(tp, 'includetbls', {'cellintfacetbl'});
+            ptbls = setupTables(subG.parentGrid.topology);
+            pcellpfacetbl = ptbls.cellfacetbl;
 
+            tbls  = setupTables(subG.topology, 'includetbls', {'cellintfacetbl', 'extfacetbl'});
             celltbl        = tbls.celltbl;
+            facetbl        = tbls.facetbl;
+            extfacetbl     = tbls.extfacetbl;
             intfacetbl     = tbls.intfacetbl;
             cellintfacetbl = tbls.cellintfacetbl;
             
@@ -92,24 +96,8 @@ classdef SubGrid
             divM = divM.setFromTensorProd(sgn, prod);
             divM = divM.getMatrix();
 
-            op.div  = @(u) divM*u;
-            op.grad = @(c) -divM'*c;
-            
-            subG.operators = op;
-            
-        end
-
-        function subG = setupHelpers(subG)
-
-            ptbls = setupTables(subG.parentGrid.topology);
-            pcellpfacetbl = ptbls.cellfacetbl;
-
-            tbls  = setupTables(subG.topology, 'includetbls', {'cellintfacetbl', 'extfacetbl'});
-            celltbl        = tbls.celltbl;
-            facetbl        = tbls.facetbl;
-            extfacetbl     = tbls.extfacetbl;
-            intfacetbl     = tbls.intfacetbl;
-            cellintfacetbl = tbls.cellintfacetbl;
+            diffop.div  = divM;
+            diffop.grad = -divM';
             
             cellpcelltbl = celltbl.addInd('pcells', subG.mappings.cellmap);
             facepfacetbl = facetbl.addInd('pfaces', subG.mappings.facemap);
@@ -175,7 +163,8 @@ classdef SubGrid
             faceextfacemap = zeros(facetbl.num, 1);
             faceextfacemap(extfacetbl.get('faces')) = (1 : extfacetbl.num)';
             
-            subG.helpers = struct('trans'         , trans   , ...
+            subG.helpers = struct('diffop'        , diffop  , ...
+                                  'trans'         , trans   , ...
                                   'extfaces'      , extfaces, ...
                                   'faceextfacemap', faceextfacemap);
             
@@ -189,6 +178,25 @@ classdef SubGrid
             
             vols = pvols(cmap);
 
+        end
+
+        function v = getGrad(subG, c)
+
+            v = subG.helpers.diffop.grad*c;
+            
+        end
+
+        function u = getDiv(subG, v)
+
+            u = subG.helpers.diffop.div*v;
+            
+        end
+
+        function grid = setupCellFluxOperators(grid)
+
+            G = getMRSTgrid(grid);
+            grid.cellFluxOperators = getCellFluxOperatorsAll(G);
+            
         end
 
         function u = getFlux(subG, c)
@@ -214,7 +222,16 @@ classdef SubGrid
             
         end
 
-
+        function jsq = getCellFluxNorm(subG, u)
+    
+            P = subG.cellFluxOperators.P;
+            S = subG.cellFluxOperators.S;
+    
+            j = P*u;
+            jsq = j.^2;
+            jsq = S*jsq;
+            
+        end
         
     end
     

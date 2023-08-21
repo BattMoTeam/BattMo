@@ -26,6 +26,8 @@ classdef Grid
 
         % Helper structures that are used to extract the half-transmissibilities from the parent structures and assemble the
         % fluxes, with fields
+        % - helpers.diffop.grad                 (sparse matrix used in getGradient)
+        % - helpers.diffop.div                  (sparse matrix used in getDiv)
         % - helpers.trans.D                     (sparse matrix used in getFlux method)
         % - helpers.trans.P                     (sparse matrix used in getFlux method)
         % - helpers.trans.S                     (sparse matrix used in getFlux method)
@@ -34,6 +36,11 @@ classdef Grid
         % - helpers.extfaces.halfTransParentInd (index of the corresponding half-transmissibility values in parent grid indexing)
         % - helpers.faceextfacemap              (mapping from face to extface, sub-grid indexing)
         helpers
+
+        % Operators to compute norm of the flux velocity at the cell centers, see getCellFluxNorm
+        % - cellFluxOperators.P
+        % - cellFluxOperators.S
+        cellFluxOperators
         
     end
 
@@ -69,6 +76,8 @@ classdef Grid
             grid.nodecoords = reshape(G.nodes.coords', [], 1);
             
             grid.tPFVgeometry = TwoPointFiniteVolumeGeometry();
+
+            grid = grid.setupHelpers();
             
         end
 
@@ -102,6 +111,10 @@ classdef Grid
             grid.tPFVgeometry.nodes = nodes;
             grid.tPFVgeometry.hT    = farea*hT;
 
+        end
+
+        function grid = setupHelpers(grid)
+            
             % setup helpers
 
             tbls = setupTables(G, 'includetbls', {'intfacetbl', 'extfacetbl'});
@@ -176,6 +189,14 @@ classdef Grid
             
         end
 
+        function grid = setupCellFluxOperators(grid)
+
+            grid.updateTPFgeometry();
+            G = getMRSTgrid(grid);
+            grid.cellFluxOperators = getCellFluxOperatorsAll(G);
+            
+        end
+        
         function vols = getVolumes(grid)
             
             vols = grid.tPFVgeometry.cells.volumes;
@@ -203,6 +224,17 @@ classdef Grid
             bccells = exf.cells(extfaceind);
             bchT    = hT(exf.halfTransParentInd(extfaceind));
 
+        end
+
+        function jsq = getCellFluxNorm(grid, u)
+    
+            P = grid.cellFluxOperators.P;
+            S = grid.cellFluxOperators.S;
+    
+            j = P*u;
+            jsq = j.^2;
+            jsq = S*jsq;
+            
         end
         
     end
