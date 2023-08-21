@@ -205,12 +205,12 @@ classdef SubGrid
         % Returns half transmissibilities and cell indexing for the given boundary faces (bcfaces is given using subgrid indexing)
 
             hT   = subG.parentGrid.tPFVgeometry.hT;
-            exf  = subGrid.helpers.extfaces;
+            exf  = subG.helpers.extfaces;
 
-            extfaceind = subGrid.helpers.faceextfacemap(bcfaces);
+            extfaceind = subG.helpers.faceextfacemap(bcfaces);
             
-            bccells = ext.cells(extfaceind);
-            bchT    = hT(ext.halfTransParentInd(extfaceind));
+            bccells = exf.cells(extfaceind);
+            bchT    = hT(exf.halfTransParentInd(extfaceind));
             
         end
 
