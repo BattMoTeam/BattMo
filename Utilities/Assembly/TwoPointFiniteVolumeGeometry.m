@@ -19,6 +19,9 @@ classdef TwoPointFiniteVolumeGeometry < handle
 
         % half-transmissibilities on each pair of cell-face
         hT
+
+        % Only for 1d model
+        faceArea
         
     end
     

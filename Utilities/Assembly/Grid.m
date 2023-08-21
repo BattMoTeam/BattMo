@@ -13,15 +13,10 @@ classdef Grid
         % - topology.nodes.num
         % - topology.griddim
         topology
-        
-        % Value of the node coordinates
-        nodecoords
-
-        % Value of the face area - only for 1D model
-        faceArea
 
         % Instance of TwoPointFiniteVolumeGeometry (handle)
-        % Using topology and nodecoords all the properties of tPFVgeometry can be updated
+        % Using topology and the values of the node coordinates (and faceArea in 1D), we can compute all the other
+        % properties of tPFVgeometry
         tPFVgeometry
 
         % Helper structures that are used to extract the half-transmissibilities from the parent structures and assemble the
@@ -64,31 +59,38 @@ classdef Grid
             
             grid.topology   = topology;
 
+            tf = TwoPointFiniteVolumeGeometry();
+
             if topology.griddim == 1
                 if isempty(opt.faceArea)
-                    grid.faceArea = 1;
+                    tf.faceArea = 1;
                 else
-                    grid.faceArea = opt.faceArea;
+                    tf.faceArea = opt.faceArea;
                 end
             end
 
-            % We flatten the coordinate structures
-            grid.nodecoords = reshape(G.nodes.coords', [], 1);
+            % We flatten node coordinates structure
+            tf.nodes.coords = reshape(G.nodes.coords', [], 1);
             
-            grid.tPFVgeometry = TwoPointFiniteVolumeGeometry();
-
+            grid.tPFVgeometry = tf;
+            
             grid = grid.setupHelpers();
             
         end
 
         function updateTPFgeometry(grid)
 
-            G          = grid.topology;
-            nodecoords = grid.nodecoords;
-            d          = grid.topology.griddim;
-            farea      = grid.faceArea;
+            G  = grid.topology;
+            d  = grid.topology.griddim;
+            tf = grid.tPFVgeometry;
             
-            G.nodes.coords = reshape(nodecoords, d, [])';
+            if  G.griddim == 1
+                farea = tf.faceArea;
+            else
+                farea = 1;
+            end
+            
+            G.nodes.coords = reshape(tf.nodes.coords, d, [])';
 
             G.type = 'generic';
             G = computeGeometry(G);
@@ -104,11 +106,8 @@ classdef Grid
             faces.normals   = farea*reshape(G.faces.normals', [], 1);
             faces.areas     = farea*G.faces.areas;
 
-            nodes.coords = nodecoords;
-
             grid.tPFVgeometry.cells = cells; 
             grid.tPFVgeometry.faces = faces;
-            grid.tPFVgeometry.nodes = nodes;
             grid.tPFVgeometry.hT    = farea*hT;
 
         end

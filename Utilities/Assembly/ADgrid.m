@@ -616,8 +616,9 @@ classdef ADgrid < Grid
             m          = adgrid.matrixOperators;
             tp         = adgrid.topology;
             tg         = adgrid.tPFVgeometry;
-            faceArea   = adgrid.faceArea;
-            nodecoords = adgrid.nodecoords;
+
+            faceArea   = tg.faceArea;
+            nodecoords = tg.nodes.coords;
             
             nf = tp.faces.num;
 
@@ -646,7 +647,8 @@ classdef ADgrid < Grid
             tg         = adgrid.tPFVgeometry;
             m          = adgrid.matrixOperators;
             v          = adgrid.vectorHelpers;
-            nodecoords = adgrid.nodecoords;
+
+            nodecoords = tg.nodes.coords;
             
             n = tp.griddim;
             
