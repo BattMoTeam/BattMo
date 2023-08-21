@@ -73,7 +73,6 @@ gen = BatteryGenerator1D();
 % Now, we update the paramobj with the properties of the mesh. 
 paramobj = gen.updateBatteryInputParams(paramobj);
 
-
 %%  Initialize the battery model. 
 % The battery model is initialized by sending paramobj to the Battery class
 % constructor. see :class:`Battery <Battery.Battery>`.

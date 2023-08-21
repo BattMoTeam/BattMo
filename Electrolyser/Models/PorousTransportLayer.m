@@ -452,13 +452,12 @@ classdef PorousTransportLayer < ElectronicComponent
             bd = 'Boundary';
             
             coupterm   = model.externalCouplingTerm;
-            harmFaceBc = model.operators.harmFaceBC;
             mphInd     = model.mobPhaseInd;
             phInd      = model.phaseInd;
             liquidInd  = model.liquidInd;
             gasInd     = model.gasInd;
             perm       = model.permeability;
-            op         = model.operators;
+            G          = model.G;
             tau        = model.tortuosity;
             
             bcfaces = coupterm.couplingfaces;
@@ -473,7 +472,7 @@ classdef PorousTransportLayer < ElectronicComponent
                 pBc  = state.(bd).phasePressures{iph};
                 visc = state.viscosities{imph};
                 vf   = state.volumeFractions{iph};
-                [tc, bccells] = op.harmFaceBC((vf.^tau).*perm./visc, bcfaces);
+                [tc, bccells] = G.getBcHarmFace((vf.^tau).*perm./visc, bcfaces);
                 phaseBcFlux{iph} = tc.*(pBc - p(bccells));
             end
 
@@ -501,7 +500,7 @@ classdef PorousTransportLayer < ElectronicComponent
             % phi   = state.phi;
             % phiBc = state.(bd).phi;
             % kappa = state.conductivity;
-            % tc = op.harmFaceBC(kappa, bcfaces);
+            % tc = G.getBcHarmFace(kappa, bcfaces);
 
             % jBcFlux = tc.*(phiBc - phi(bccells));
 
@@ -515,7 +514,7 @@ classdef PorousTransportLayer < ElectronicComponent
             % z     = model.sp.OH.z;             
             % coef  = (conductivity./F).*(t/z).*dmudc;
 
-            % tc = op.harmFaceBC(coef, bcfaces);
+            % tc = G.getBcHarmFace(coef, bcfaces);
 
             % jBcFlux = jBcFlux + tc.*(cOHbc - cOH);
             %
@@ -530,7 +529,7 @@ classdef PorousTransportLayer < ElectronicComponent
 
             vf = state.volumeFractions{phInd.liquid};
             D  = model.sp.OH.D;
-            tc = op.harmFaceBC((vf.^tau).*D, bcfaces);
+            tc = G.getBcHarmFace((vf.^tau).*D, bcfaces);
             diffOHbcFlux = tc.*(cOHbc - cOH(bccells));
             
             % We compute OH boundary convection flux (should be consistent with what is implemented in method
@@ -856,7 +855,7 @@ classdef PorousTransportLayer < ElectronicComponent
         
         function state = updateOHConvectionFlux(model, state)
 
-            op = model.operators;
+            G = model.G;
 
             cOH = state.concentrations{model.liquidInd.OH};
             v   = state.phaseFluxes{model.phaseInd.liquid};
@@ -865,7 +864,7 @@ classdef PorousTransportLayer < ElectronicComponent
             % state.convOHFlux = assembleUpwindFlux(model, v, cOH);
             
             % non-upwind version
-            state.convOHFlux = (1./op.T).*op.harmFace(cOH).*v;
+            state.convOHFlux = (1./op.T).*G.getHarmFace(cOH).*v;
             
         end
         
@@ -903,8 +902,7 @@ classdef PorousTransportLayer < ElectronicComponent
                 % upwind version
                 % state.compGasFluxes{igas} =  assembleUpwindFlux(model, v, state.compGasMasses{igas}./vf);
                 % non-upwind version : 
-                op = model.operators;
-                state.compGasFluxes{igas} = (1./op.T).*op.harmFace(state.compGasMasses{igas}./vf).*v;
+                state.compGasFluxes{igas} = (1./op.T).*model.G.getHarmFace(state.compGasMasses{igas}./vf).*v;
             end
             
         end
@@ -917,8 +915,7 @@ classdef PorousTransportLayer < ElectronicComponent
             % upwind version
             % state.liquidMassFlux = assembleUpwindFlux(model, v, rho);
             % non upwind version: 
-            op = model.operators;
-            state.liquidMassFlux = (1./op.T).*op.harmFace(rho).*v;
+            state.liquidMassFlux = (1./op.T).*model.G.getHarmFace(rho).*v;
             
         end
 

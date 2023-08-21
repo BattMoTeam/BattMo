@@ -49,8 +49,6 @@ classdef Interface < BaseModel
                        'alpha'};
 
             model = dispatchParams(model, paramobj, fdnames);
-
-            model.operators = Operators(model.G);
             
             model.computeOCPFunc = str2func(paramobj.OCP.functionname);
 

@@ -70,7 +70,7 @@ classdef ActiveMaterial < ElectronicComponent
                 model.use_particle_diffusion = true;
                 model.use_interparticle_diffusion = true;
               case 'full'
-                paramobj.SolidDiffusion.np = model.G.cells.num;
+                paramobj.SolidDiffusion.np = model.G.getNumberOfCells();
                 model.SolidDiffusion = FullSolidDiffusionModel(paramobj.SolidDiffusion);
                 model.use_particle_diffusion = true;
                 model.use_interparticle_diffusion = false;
@@ -82,7 +82,7 @@ classdef ActiveMaterial < ElectronicComponent
                 error('Unknown diffusionModelType %s', diffusionModelType);
             end
             
-            nc = model.G.cells.num;
+            nc = model.G.getNumberOfCells();
 
             model.volumeFraction = paramobj.volumeFraction*ones(nc, 1);
             model.porosity       = 1 - model.volumeFraction;
@@ -315,7 +315,7 @@ classdef ActiveMaterial < ElectronicComponent
             %% Setup equations and add some scaling
             n     = model.(itf).n; % number of electron transfer (equal to 1 for Lithium)
             F     = model.(sd).constants.F;
-            vol   = model.operators.pv;
+            vol   = model.G.getVolumes;
             rp    = model.(sd).rp;
             vsf   = model.(sd).volumetricSurfaceArea;
             surfp = 4*pi*rp^2;
@@ -358,7 +358,7 @@ classdef ActiveMaterial < ElectronicComponent
 
         function state = updateControl(model, state, drivingForces)
             
-            coef = model.operators.getCellVolumes();
+            coef = model.G.getVolumes();
             coef = coef./(sum(coef));
             
             state.controlCurrentSource = drivingForces.src.*coef;
@@ -460,7 +460,7 @@ classdef ActiveMaterial < ElectronicComponent
         function state = assembleAccumTerm(model, state, state0, dt)
         % Used when diffusionModelType == 'simple'
             
-            vols   = model.operators.getCellVolumes();
+            vols   = model.G.getVolumes();
             vf     = model.volumeFraction;
             amFrac = model.activeMaterialFraction;
 
@@ -474,7 +474,7 @@ classdef ActiveMaterial < ElectronicComponent
         function state = updateMassSource(model, state)
         % used when diffusionModelType == simple
             
-            vols = model.operators.getCellVolumes();
+            vols = model.G.getVolumes();
             
             Rvol = state.Rvol;
             
@@ -505,7 +505,7 @@ classdef ActiveMaterial < ElectronicComponent
         function state = updateCurrentSource(model, state)
             
             F    = model.Interface.constants.F;
-            vols = model.operators.getCellVolumes();
+            vols = model.G.getVolumes();
             n    = model.Interface.n;
 
             Rvol = state.Rvol;
@@ -549,7 +549,7 @@ classdef ActiveMaterial < ElectronicComponent
 
             vf       = model.volumeFraction;
             am_frac  = model.activeMaterialFraction;
-            vols     = model.operators.getCellVolumes();
+            vols     = model.G.getVolumes();
             
             c = state.(sd).cAverage;
 
@@ -570,7 +570,7 @@ classdef ActiveMaterial < ElectronicComponent
 
             vf       = model.volumeFraction;
             am_frac  = model.activeMaterialFraction;
-            vols     = model.operators.getCellVolumes();
+            vols     = model.G.getVolumes();
             cmax     = model.(itf).cmax;
             theta100 = model.(itf).theta100;
             theta0   = model.(itf).theta0;

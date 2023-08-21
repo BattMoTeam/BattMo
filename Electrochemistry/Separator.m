@@ -34,7 +34,7 @@ classdef Separator < BaseModel
                        'use_thermal'        , ...
                        'BruggemanCoefficient'};
             model = dispatchParams(model, paramobj, fdnames);
-            model.porosity = model.porosity*ones(model.G.cells.num,1);
+            model.porosity = model.porosity*ones(model.G.getNumberOfCells(),1);
             model = model.setupDependentProperties();
 
         end

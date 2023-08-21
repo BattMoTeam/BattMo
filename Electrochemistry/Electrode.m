@@ -123,8 +123,8 @@ classdef Electrode < BaseModel
                 coupterm = model.couplingTerm;
                 face_cc = coupterm.couplingfaces(:, 1);
                 face_am = coupterm.couplingfaces(:, 2);
-                [teac, bccell_am] = elde.(am).operators.harmFaceBC(am_sigmaeff, face_am);
-                [tcc, bccell_cc] = elde.(cc).operators.harmFaceBC(cc_sigmaeff, face_cc);
+                [teac, bccell_am] = elde.(am).G.getBcHarmFace(am_sigmaeff, face_am);
+                [tcc, bccell_cc] = elde.(cc).G.getBcHarmFace(cc_sigmaeff, face_cc);
 
                 bcphi_am = am_phi(bccell_am);
                 bcphi_cc = cc_phi(bccell_cc);
@@ -136,7 +136,7 @@ classdef Electrode < BaseModel
 
                 G = model.(cc).G;
                 nf = G.faces.num;
-                sgn = model.(cc).operators.sgn;
+                sgn = model.(cc).G.getFaceSign();
                 zeroFaceAD = model.AutoDiffBackend.convertToAD(zeros(nf, 1), cc_phi);
                 cc_jFaceCoupling = zeroFaceAD;
                 cc_jFaceCoupling = subsasgnAD(cc_jFaceCoupling,face_cc, sgn(face_cc).*crosscurrent);
@@ -144,7 +144,7 @@ classdef Electrode < BaseModel
                 
                 G = model.(am).G; 
                 nf = G.faces.num; 
-                sgn = model.(am).operators.sgn; 
+                sgn = model.(am).G.getFaceSign(); 
                 zeroFaceAD = model.AutoDiffBackend.convertToAD(zeros(nf, 1), am_phi); 
                 am_jFaceCoupling = zeroFaceAD; 
                 am_jFaceCoupling = subsasgnAD(am_jFaceCoupling, face_am, -sgn(face_am).*crosscurrent); 
@@ -152,7 +152,7 @@ classdef Electrode < BaseModel
                 
                 % We set here volumetric current source to zero for current collector (could have been done at a more logical place but
                 % let us do it here, for simplicity)
-                state.(cc).eSource = zeros(elde.(cc).G.cells.num, 1);
+                state.(cc).eSource = zeros(elde.(cc).G.getNumberOfCells(), 1);
                 
                 state.(am).jCoupling = am_jCoupling;
                 state.(cc).jCoupling = cc_jCoupling;

@@ -183,8 +183,7 @@ classdef SEIActiveMaterial < ActiveMaterial
         
         function state = updateControl(model, state, drivingForces, dt)
             
-            op = model.op;
-            coef = op.getCellVolumes();
+            coef = model.G.getVolumes();
             coef = coef./(sum(coef));
             
             state.controlCurrentSource = drivingForces.src.*coef;
@@ -309,7 +308,7 @@ classdef SEIActiveMaterial < ActiveMaterial
             names{end + 1} = 'sd_massCons';
             eqs{end + 1}   = 1e9*state.(sd).massCons;
             names{end + 1} = 'sd_solidDiffusionEq';
-            vols = model.(itf).op.getCellVolumes();
+            vols = model.(itf).G.getVolumes();
             eqs{end + 1}   = 1e5*state.(sd).solidDiffusionEq.*massConsScaling.*vols/dt;
             names{end + 1} = 'sei_massCons';
             eqs{end + 1}   = 1e10*state.(sei).massCons;

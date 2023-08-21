@@ -47,7 +47,7 @@ classdef CompositeActiveMaterial < ElectronicComponent
             model.FirstMaterial = ActiveMaterial(paramobj.FirstMaterial);
             model.SecondMaterial = ActiveMaterial(paramobj.SecondMaterial);
             
-            nc = model.G.cells.num;
+            nc = model.G.getNumberOfCells();
 
             model.volumeFraction = paramobj.volumeFraction*ones(nc, 1);
             model.porosity       = 1 - model.volumeFraction;
@@ -227,7 +227,7 @@ classdef CompositeActiveMaterial < ElectronicComponent
             % Equations for graphite
             n     = model.(gr).(itf).n; % number of electron transfer (equal to 1 for Lithium)
             F     = model.(gr).(sd).constants.F;
-            vol   = model.operators.pv;
+            vol   = model.G.getVolumes();
             rp    = model.(gr).(sd).rp;
             vsf   = model.(gr).(sd).volumetricSurfaceArea;
             surfp = 4*pi*rp^2;
@@ -239,7 +239,7 @@ classdef CompositeActiveMaterial < ElectronicComponent
             % Equations for SecondMaterial
             n     = model.(si).(itf).n; % number of electron transfer (equal to 1 for Lithium)
             F     = model.(si).(sd).constants.F;
-            vol   = model.operators.pv;
+            vol   = model.G.getVolumes();
             rp    = model.(si).(sd).rp;
             vsf   = model.(si).(sd).volumetricSurfaceArea;
             surfp = 4*pi*rp^2;
@@ -287,8 +287,7 @@ classdef CompositeActiveMaterial < ElectronicComponent
 
         function state = updateControl(model, state, drivingForces, dt)
             
-            op = model.op;
-            coef = op.getCellVolumes();
+            coef = model.G.getVolumes();
             coef = coef./(sum(coef));
             
             state.controlCurrentSource = drivingForces.src.*coef;
@@ -338,7 +337,7 @@ classdef CompositeActiveMaterial < ElectronicComponent
             gr  = 'FirstMaterial';
             si  = 'SecondMaterial';
 
-            nc = G.cells.num;
+            nc = G.getNumberOfCells();
 
             mats = {gr, si};
 
@@ -369,7 +368,7 @@ classdef CompositeActiveMaterial < ElectronicComponent
             itf = 'Interface';
             
             %% TODO : check whether constants n should always be the same for graphite and silicon (and impose them from parent)
-            vols = model.operators.getCellVolumes();
+            vols = model.G.getVolumes();
             F    = model.(gr).(itf).constants.F;
             nGr  = model.(gr).(itf).n;
             nSi  = model.(si).(itf).n;

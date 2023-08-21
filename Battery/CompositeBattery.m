@@ -154,7 +154,7 @@ classdef CompositeBattery < Battery
         function initstate = setupInitialState(model)
         % Setup the values of the primary variables at initial state
 
-            nc       = model.G.cells.num;
+            nc       = model.G.getNumberOfCells();
             T        = model.initT;
             scenario = model.scenario;
             
@@ -203,7 +203,7 @@ classdef CompositeBattery < Battery
             
             ref = initstate.(ne).(am).(gr).(itf).OCP(1);
 
-            nc = model.(ne).(am).G.cells.num;
+            nc = model.(ne).(am).G.getNumberOfCells();
             
             initstate.(ne).(am).phi = zeros(nc, 1);
             
@@ -233,8 +233,8 @@ classdef CompositeBattery < Battery
             
             %% Setup initial Electrolyte state
 
-            initstate.(elyte).phi = zeros(model.(elyte).G.cells.num, 1) - ref;
-            initstate.(elyte).c   = 1000*ones(model.(elyte).G.cells.num, 1);
+            initstate.(elyte).phi = zeros(model.(elyte).G.getNumberOfCells(), 1) - ref;
+            initstate.(elyte).c   = 1000*ones(model.(elyte).G.getNumberOfCells(), 1);
 
             initstate.(ctrl).E = initstate.(pe).(am).phi(1) - initstate.(ne).(am).phi(1);
             switch scenario
@@ -304,7 +304,7 @@ classdef CompositeBattery < Battery
 
             n    = model.(ne).(am).(gr).(itf).n; % number of electron transfer (equal to 1 for Lithium)
             F    = model.con.F;
-            vol  = model.(ne).(am).(gr).operators.pv;
+            vol  = model.(ne).(am).(gr).G.getVolumes();
             rp   = model.(ne).(am).(gr).(sd).rp;
             vsf  = model.(ne).(am).(gr).(sd).volumetricSurfaceArea;
             surfp = 4*pi*rp^2;
@@ -316,7 +316,7 @@ classdef CompositeBattery < Battery
 
             n    = model.(ne).(am).(si).(itf).n; % number of electron transfer (equal to 1 for Lithium)
             F    = model.con.F;
-            vol  = model.(ne).(am).(si).operators.pv;
+            vol  = model.(ne).(am).(si).G.getVolumes();
             rp   = model.(ne).(am).(si).(sd).rp;
             vsf  = model.(ne).(am).(si).(sd).volumetricSurfaceArea;
             surfp = 4*pi*rp^2;
@@ -328,7 +328,7 @@ classdef CompositeBattery < Battery
 
             n    = model.(pe).(am).(itf).n; % number of electron transfer (equal to 1 for Lithium)
             F    = model.con.F;
-            vol  = model.(pe).(am).operators.pv;
+            vol  = model.(pe).(am).G.getVolumes();
             rp   = model.(pe).(am).(sd).rp;
             vsf  = model.(pe).(am).(sd).volumetricSurfaceArea;
             surfp = 4*pi*rp^2;
@@ -388,13 +388,13 @@ classdef CompositeBattery < Battery
             gr = 'FirstMaterial';
             si = 'SecondMaterial';
 
-            vols = battery.(elyte).operators.getCellVolumes();
+            vols = battery.(elyte).G.getVolumes();
             F = battery.con.F;
             
             couplingterms = battery.couplingTerms;
 
-            elyte_c_source = zeros(battery.(elyte).G.cells.num, 1);
-            elyte_e_source = zeros(battery.(elyte).G.cells.num, 1);
+            elyte_c_source = zeros(battery.(elyte).G.getNumberOfCells(), 1);
+            elyte_e_source = zeros(battery.(elyte).G.getNumberOfCells(), 1);
             
             % setup AD 
             phi = state.(elyte).phi;
@@ -482,8 +482,8 @@ classdef CompositeBattery < Battery
             phi_elyte = state.(elyte).phi;
             c_elyte = state.(elyte).c;
             
-            elyte_cells = zeros(model.G.cells.num, 1);
-            elyte_cells(bat.(elyte).G.mappings.cellmap) = (1 : bat.(elyte).G.cells.num)';
+            elyte_cells = zeros(model.G.getNumberOfCells(), 1);
+            elyte_cells(bat.(elyte).G.mappings.cellmap) = (1 : bat.(elyte).G.getNumberOfCells())';
 
             state.(ne).(am).(si).(itf).phiElectrolyte = phi_elyte(elyte_cells(bat.(ne).(am).(si).G.mappings.cellmap));
             state.(ne).(am).(si).(itf).cElectrolyte   = c_elyte(elyte_cells(bat.(ne).(am).(si).G.mappings.cellmap));

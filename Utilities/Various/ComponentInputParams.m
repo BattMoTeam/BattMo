@@ -1,6 +1,9 @@
 classdef ComponentInputParams < InputParams
     properties
-        G % grid
+
+        % The grid can be given as a genuine MRST grid or as a SubGrid instance
+        G  % Grid or SubGrid instance
+        
     end
     
     methods

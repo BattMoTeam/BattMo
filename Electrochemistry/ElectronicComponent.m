@@ -33,8 +33,6 @@ classdef ElectronicComponent < BaseModel
                 docellflux = true;
             end
             
-            model.operators = Operators(model.G, 'assembleCellFluxOperator', docellflux);
-            
             model.constants = PhysicalConstants();
 
         end
@@ -107,7 +105,7 @@ classdef ElectronicComponent < BaseModel
             
             G = model.G;
             nf = G.faces.num;
-            intfaces = model.operators.internalConn;
+            intfaces = model.G.getIntFaceIndex();
             
             j       = state.j;
             jFaceBc = state.jFaceBc;
@@ -145,7 +143,7 @@ classdef ElectronicComponent < BaseModel
             bcsource = state.jBcSource;
             source   = state.eSource;
             
-            accum    = zeros(model.G.cells.num,1);
+            accum    = zeros(model.G.getNumberOfCells(),1);
             
             chargeCons = assembleConservationEquation(model, flux, bcsource, source, accum);
             

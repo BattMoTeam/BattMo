@@ -134,7 +134,7 @@ switch simcase
     %% We setup the initial state
     initstate = model.setupInitialState(); 
     initElytec = 1*mol/litre;
-    initstate.Electrolyte.c = initElytec*ones(model.Electrolyte.G.cells.num, 1);
+    initstate.Electrolyte.c = initElytec*ones(model.Electrolyte.G.getNumberOfCells(), 1);
     
   case 'charge'
     

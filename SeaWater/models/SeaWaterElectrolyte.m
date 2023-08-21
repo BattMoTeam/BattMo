@@ -189,8 +189,7 @@ classdef SeaWaterElectrolyte < SeaWaterElectrolyteNoPrecipitation
         function state = assembleNucleationEquation(model, state, state0, dt)
                                      
             indi     = model.mainIonIndex;
-            op       = model.operators;
-            vols     = model.G.cells.volumes;
+            vols     = model.G.getVolumes();
             osr      = model.superOversaturationRatio;
             nucMax   = model.nucleationMaximum;
             nucRate  = model.nucleationRate;

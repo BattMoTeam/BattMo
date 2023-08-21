@@ -26,7 +26,7 @@ function [mass, masses] = computeCellMass(model, varargin)
           case 'default'
             
             rho  = model.(elde).(am).(itf).density;
-            vols = model.(elde).(am).operators.getCellVolumes();
+            vols = model.(elde).(am).G.getVolumes();
             frac = model.(elde).(am).volumeFraction;
             
             masses.(elde).(am).val = sum(rho.*vols.*frac);
@@ -44,7 +44,7 @@ function [mass, masses] = computeCellMass(model, varargin)
 
                 mat = mats{imat};
                 rho  = model.(elde).(am).(mat).(itf).density;
-                vols = model.(elde).(am).(mat).operators.getCellVolumes();
+                vols = model.(elde).(am).(mat).G.getVolumes();
                 vf = model.(elde).(am).volumeFraction;
                 amvf = model.(elde).(am).(mat).activeMaterialFraction;
                 
@@ -63,7 +63,7 @@ function [mass, masses] = computeCellMass(model, varargin)
         if model.include_current_collectors
 
             rho  = model.(elde).(cc).density;
-            vols = model.(elde).(cc).operators.getCellVolumes();
+            vols = model.(elde).(cc).G.getVolumes();
             
             masses.(elde).(cc).val = sum(rho.*vols);
             mass = mass + masses.(elde).(cc).val;
@@ -73,14 +73,14 @@ function [mass, masses] = computeCellMass(model, varargin)
     end
     
     rho  = model.(elyte).density;
-    vols = model.(elyte).operators.getCellVolumes();
+    vols = model.(elyte).G.getVolumes();
     frac = model.(elyte).volumeFraction;
     
     masses.(elyte).val = sum(rho.*vols.*frac);
     mass = mass + masses.(elyte).val;
     
     rho  = model.(elyte).(sep).density;
-    vols = model.(elyte).(sep).operators.getCellVolumes();
+    vols = model.(elyte).(sep).G.getVolumes();
     frac = model.(elyte).(sep).volumeFraction;
     
     masses.(elyte).(sep).val = sum(rho.*vols.*frac);

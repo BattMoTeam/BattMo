@@ -144,8 +144,8 @@ G = computeGeometry(G);
    
 %% Mechanical properties
 
-Ev  = repmat(opt.E, G.cells.num, 1);
-nuv = repmat(opt.nu, G.cells.num, 1);
+Ev  = repmat(opt.E, G.getNumberOfCells(), 1);
+nuv = repmat(opt.nu, G.getNumberOfCells(), 1);
 C   = Enu2C(Ev, nuv, G);
 
 %% We setup the boundary conditions for the mechanical problem
@@ -209,8 +209,8 @@ for i = 1 : numel(states)
     
     T = state.ThermalModel.T - state0.ThermalModel.T;
     
-    cna = zeros(G.cells.num, 1); 
-    cpa = zeros(G.cells.num, 1); 
+    cna = zeros(G.getNumberOfCells(), 1); 
+    cpa = zeros(G.getNumberOfCells(), 1); 
     
     ind      = model.NegativeElectrode.ActiveMaterial.G.mappings.cellmap; 
     cna(ind) = state.NegativeElectrode.ActiveMaterial.c - state0.NegativeElectrode.ActiveMaterial.c; 

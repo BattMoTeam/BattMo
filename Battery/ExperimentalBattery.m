@@ -48,7 +48,7 @@ classdef ExperimentalBattery < Battery
             end
             
             %% for now temperature and SOC are kept constant
-            nc = model.G.cells.num;
+            nc = model.G.getNumberOfCells();
             %state.SOC = model.SOC*ones(nc, 1);
             
             % Shorthands used in this function
@@ -94,14 +94,14 @@ classdef ExperimentalBattery < Battery
               case 'simple'
                 eqs{end + 1}       = state.(ne).(am).massCons*massConsScaling;
                 names{end + 1} = 'ne_am_massCons';
-                vols = battery.(ne).(am).(itf).operators.getCellVolumes();
+                vols = battery.(ne).(am).(itf).G.getVolumes();
                 eqs{end + 1} = state.(ne).(am).(sd).solidDiffusionEq.*massConsScaling.*vols/dt;
                 names{end + 1} = 'ne_am_sd_soliddiffeq';
               case 'full'
                 % Equation name : 'ne_am_sd_massCons';
                 n    = model.(ne).(am).(itf).n; % number of electron transfer (equal to 1 for Lithium)
                 F    = model.con.F;
-                vol  = model.(ne).(am).operators.pv;
+                vol  = model.(ne).(am).G.getVolumes();
                 rp   = model.(ne).(am).(sd).rp;
                 vsf  = model.(ne).(am).(sd).volumetricSurfaceArea;
                 surfp = 4*pi*rp^2;
@@ -123,14 +123,14 @@ classdef ExperimentalBattery < Battery
               case 'simple'
                 eqs{end + 1}       = state.(pe).(am).massCons*massConsScaling;
                 names{end + 1} = 'pe_am_massCons';
-                vols = battery.(pe).(am).(itf).operators.getCellVolumes();
+                vols = battery.(pe).(am).(itf).G.getVolumes();
                 eqs{end + 1} = state.(pe).(am).(sd).solidDiffusionEq.*massConsScaling.*vols/dt;
                 names{end + 1} = 'pe_am_sd_soliddiffeq';
               case 'full'
                 % Equation name : 'pe_am_sd_massCons';
                 n    = model.(pe).(am).(itf).n; % number of electron transfer (equal to 1 for Lithium)
                 F    = model.con.F;
-                vol  = model.(pe).(am).operators.pv;
+                vol  = model.(pe).(am).G.getVolumes();
                 rp   = model.(pe).(am).(sd).rp;
                 vsf  = model.(pe).(am).(sd).volumetricSurfaceArea;
                 surfp = 4*pi*rp^2;

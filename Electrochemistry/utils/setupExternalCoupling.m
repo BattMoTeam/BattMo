@@ -6,12 +6,12 @@ function [jExternal, jFaceExternal] = setupExternalCoupling(model, phi, phiExter
     
     faces = coupterm.couplingfaces;
     bcval = phiExternal;
-    [t, cells] = model.operators.harmFaceBC(conductivity, faces);
+    [t, cells] = model.G.getBcHarmFace(conductivity, faces);
     current = t.*(bcval - phi(cells));
     jExternal = subsetPlus(jExternal, current, cells);
     G = model.G;
-    nf = G.faces.num;
-    sgn = model.operators.sgn;
+    nf = G.topology.faces.num;
+    sgn = G.getFaceSign();
     zeroFaceAD = model.AutoDiffBackend.convertToAD(zeros(nf, 1), phi);
     jFaceExternal = zeroFaceAD;
     jFaceExternal = subsasgnAD(jFaceExternal, faces, -sgn(faces).*current);

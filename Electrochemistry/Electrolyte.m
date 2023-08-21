@@ -57,12 +57,12 @@ classdef Electrolyte < ElectroChemicalComponent
 
             % We set the electrolyte volumeFraction based on the porosity of the separator
             G = model.G;
-            Gp = G.mappings.parentGrid;
+            Gp = G.parentGrid;
 
-            model.volumeFraction = NaN(G.cells.num, 1);
+            model.volumeFraction = NaN(G.getNumberOfCells, 1);
 
-            elyte_cells = zeros(Gp.cells.num, 1);
-            elyte_cells(G.mappings.cellmap) = (1 : model.G.cells.num)';
+            elyte_cells = zeros(Gp.getNumberOfCells, 1);
+            elyte_cells(G.mappings.cellmap) = (1 : model.G.getNumberOfCells())';
             elyte_cells_sep = elyte_cells(model.(sep).G.mappings.cellmap);
             model.volumeFraction(elyte_cells_sep) = model.(sep).porosity;
 
@@ -71,7 +71,7 @@ classdef Electrolyte < ElectroChemicalComponent
                 % set up. Here we set up the thermal conductivity of the electrolyte in the separator region (we assume for
                 % the moment constant values for both porosity and thermal conductivity but this can be changed).
 
-                model.EffectiveThermalConductivity = NaN(G.cells.num, 1);
+                model.EffectiveThermalConductivity = NaN(G.getNumberOfCells(), 1);
                 model.EffectiveThermalConductivity(elyte_cells_sep) = model.(sep).porosity.*model.thermalConductivity;
             end
 
@@ -122,7 +122,7 @@ classdef Electrolyte < ElectroChemicalComponent
 
             cdotcc  = (state.c - state0.c)/dt;
 
-            vols = model.operators.getCellVolumes();
+            vols = model.G.getVolumes();
             effectiveVolumes = model.volumeFraction.*vols;
 
             state.massAccum  = effectiveVolumes.*cdotcc;

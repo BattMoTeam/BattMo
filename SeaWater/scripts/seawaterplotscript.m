@@ -104,7 +104,7 @@ while doloop
     % val = state.Electrolyte.solidVolumeFraction;
     % val = min(1, state.Electrolyte.nucleation);
     % val = state.Electrolyte.nucleation;
-    % val = model.(elyte).operators.Div(state.(elyte).qpFluxes{2});
+    % val = model.(elyte).G.getDiv(state.(elyte).qpFluxes{2});
 
     %% plot of precipitation rate
     % val = state.Electrolyte.Rprecipitation;

@@ -62,7 +62,7 @@ classdef TestChen2020 < matlab.unittest.TestCase
 
             %%  We setup the initial state
 
-            nc = model.G.cells.num;
+            nc = model.G.getNumberOfCells();
             T = model.initT;
             initstate.ThermalModel.T = T*ones(nc, 1);
 
@@ -76,7 +76,7 @@ classdef TestChen2020 < matlab.unittest.TestCase
             % We bypass the solid diffusion equation to set directly the particle surface concentration
             c = 29866.0;
             if strcmp(model.(ne).(am).diffusionModelType, 'simple')
-                nenp = model.(ne).(am).G.cells.num;
+                nenp = model.(ne).(am).G.getNumberOfCells();
                 initstate.(ne).(am).c = c*ones(nenp, 1);
             else
                 nenr = model.(ne).(am).(sd).N;
@@ -100,7 +100,7 @@ classdef TestChen2020 < matlab.unittest.TestCase
             c = 17038.0;
 
             if strcmp(model.(pe).(am).diffusionModelType, 'simple')
-                penp = model.(pe).(am).G.cells.num;
+                penp = model.(pe).(am).G.getNumberOfCells();
                 initstate.(pe).(am).c = c*ones(penp, 1);
             else
                 penr = model.(pe).(am).(sd).N;
@@ -116,8 +116,8 @@ classdef TestChen2020 < matlab.unittest.TestCase
 
             initstate.(pe).(am).phi = OCP - ref;
 
-            initstate.(elyte).phi = zeros(bat.(elyte).G.cells.num, 1) - ref;
-            initstate.(elyte).c = 1000*ones(bat.(elyte).G.cells.num, 1);
+            initstate.(elyte).phi = zeros(bat.(elyte).G.getNumberOfCells(), 1) - ref;
+            initstate.(elyte).c = 1000*ones(bat.(elyte).G.getNumberOfCells(), 1);
 
             % setup initial positive electrode external coupling values
 

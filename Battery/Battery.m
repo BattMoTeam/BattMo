@@ -488,7 +488,7 @@ classdef Battery < BaseModel
             eldes = {ne, pe}; % electrodes
             
             G = model.G;
-            nc = G.cells.num;
+            nc = G.getNumberOfCells();
             
             vhcap = zeros(nc, 1); % effective heat capacity
             hcond = zeros(nc, 1); % effective heat conductivity
@@ -568,7 +568,7 @@ classdef Battery < BaseModel
             elyte = 'Electrolyte';
             
             G_elyte = model.(elyte).G;
-            elytecelltbl.cells = (1 : G_elyte.cells.num)';
+            elytecelltbl.cells = (1 : G_elyte.getNumberOfCells())';
             elytecelltbl.globalcells = G_elyte.mappings.cellmap;
             elytecelltbl = IndexArray(elytecelltbl);
 
@@ -579,7 +579,7 @@ classdef Battery < BaseModel
                 elde = eldes{ind};
                 G_elde  = model.(elde).(am).G;
                 clear eldecelltbl;
-                eldecelltbl.cells = (1 : G_elde.cells.num)';
+                eldecelltbl.cells = (1 : G_elde.getNumberOfCells())';
                 eldecelltbl.globalcells = G_elde.mappings.cellmap;
                 eldecelltbl = IndexArray(eldecelltbl);
                 
@@ -607,11 +607,11 @@ classdef Battery < BaseModel
             am    = 'ActiveMaterial';
             sep   = 'Separator';
 
-            elyte_cells = zeros(model.G.cells.num, 1);
-            elyte_cells(model.(elyte).G.mappings.cellmap) = (1 : model.(elyte).G.cells.num)';
+            elyte_cells = zeros(model.G.getNumberOfCells(), 1);
+            elyte_cells(model.(elyte).G.mappings.cellmap) = (1 : model.(elyte).G.getNumberOfCells())';
 
             
-            model.(elyte).volumeFraction = ones(model.(elyte).G.cells.num, 1);
+            model.(elyte).volumeFraction = ones(model.(elyte).G.getNumberOfCells(), 1);
             model.(elyte).volumeFraction = subsasgnAD(model.(elyte).volumeFraction, elyte_cells(model.(ne).(am).G.mappings.cellmap), model.(ne).(am).porosity);
             model.(elyte).volumeFraction = subsasgnAD(model.(elyte).volumeFraction, elyte_cells(model.(pe).(am).G.mappings.cellmap), model.(pe).(am).porosity);
             sep_cells = elyte_cells(model.(elyte).(sep).G.mappings.cellmap); 
@@ -626,7 +626,7 @@ classdef Battery < BaseModel
         function initstate = setupInitialState(model)
         % Setup the values of the primary variables at initial state
 
-            nc = model.G.cells.num;
+            nc = model.G.getNumberOfCells();
 
             SOC = model.SOC;
             T   = model.initT;
@@ -659,7 +659,7 @@ classdef Battery < BaseModel
 
                 theta = SOC*(elde_itf.theta100 - elde_itf.theta0) + elde_itf.theta0;
                 c     = theta*elde_itf.cmax;
-                nc    = elde_itf.G.cells.num;
+                nc    = elde_itf.G.getNumberOfCells();
 
                 switch model.(elde).(am).diffusionModelType
                   case 'simple'
@@ -691,20 +691,20 @@ classdef Battery < BaseModel
 
             %% Setup initial Electrolyte state
 
-            initstate.(elyte).phi = zeros(bat.(elyte).G.cells.num, 1)-ref;
-            initstate.(elyte).c = 1000*ones(bat.(elyte).G.cells.num, 1);
+            initstate.(elyte).phi = zeros(bat.(elyte).G.getNumberOfCells(), 1)-ref;
+            initstate.(elyte).c = 1000*ones(bat.(elyte).G.getNumberOfCells(), 1);
 
             %% Setup initial Current collectors state
 
             if model.(ne).include_current_collectors
                 OCP = initstate.(ne).(am).(itf).OCP;
-                OCP = OCP(1) .* ones(bat.(ne).(cc).G.cells.num, 1);
+                OCP = OCP(1) .* ones(bat.(ne).(cc).G.getNumberOfCells(), 1);
                 initstate.(ne).(cc).phi = OCP - ref;
             end
             
             if model.(pe).include_current_collectors
                 OCP = initstate.(pe).(am).(itf).OCP;
-                OCP = OCP(1) .* ones(bat.(pe).(cc).G.cells.num, 1);
+                OCP = OCP(1) .* ones(bat.(pe).(cc).G.getNumberOfCells(), 1);
                 initstate.(pe).(cc).phi = OCP - ref;
             end
             
@@ -853,7 +853,7 @@ classdef Battery < BaseModel
             end
             
             %% for now temperature and SOC are kept constant
-            nc = model.G.cells.num;
+            nc = model.G.getNumberOfCells();
             %state.SOC = model.SOC*ones(nc, 1);
             
             % Shorthands used in this function
@@ -1063,13 +1063,13 @@ classdef Battery < BaseModel
             switch model.(ne).(am).diffusionModelType
               case 'simple'
                 eqs{ei.ne_am_massCons}       = state.(ne).(am).massCons*massConsScaling;
-                vols = battery.(ne).(am).(itf).operators.getCellVolumes();
+                vols = battery.(ne).(am).(itf).G.getVolumes();
                 eqs{ei.ne_am_sd_soliddiffeq} = state.(ne).(am).(sd).solidDiffusionEq.*massConsScaling.*vols/dt;
               case 'full'
                 % Equation name : 'ne_am_sd_massCons';
                 n    = model.(ne).(am).(itf).n; % number of electron transfer (equal to 1 for Lithium)
                 F    = model.con.F;
-                vols = model.(ne).(am).operators.getCellVolumes();
+                vols = model.(ne).(am).G.getVolumes();
                 rp   = model.(ne).(am).(sd).rp;
                 vsf  = model.(ne).(am).(sd).volumetricSurfaceArea;
                 surfp = 4*pi*rp^2;
@@ -1088,13 +1088,13 @@ classdef Battery < BaseModel
             switch model.(pe).(am).diffusionModelType
               case 'simple'
                 eqs{ei.pe_am_massCons}       = state.(pe).(am).massCons*massConsScaling;
-                vols = battery.(pe).(am).(itf).operators.getCellVolumes();
+                vols = battery.(pe).(am).(itf).G.getVolumes();
                 eqs{ei.pe_am_sd_soliddiffeq} = state.(pe).(am).(sd).solidDiffusionEq.*massConsScaling.*vols/dt;
               case 'full'
                 % Equation name : 'pe_am_sd_massCons';
                 n    = model.(pe).(am).(itf).n; % number of electron transfer (equal to 1 for Lithium)
                 F    = model.con.F;
-                vol  = model.(pe).(am).operators.getCellVolumes();
+                vol  = model.(pe).(am).G.getVolumes();
                 rp   = model.(pe).(am).(sd).rp;
                 vsf  = model.(pe).(am).(sd).volumetricSurfaceArea;
                 surfp = 4*pi*rp^2;
@@ -1190,13 +1190,13 @@ classdef Battery < BaseModel
             am    = 'ActiveMaterial';
             itf   = 'Interface';
             
-            vols = battery.(elyte).operators.getCellVolumes();
+            vols = battery.(elyte).G.getVolumes();
             F = battery.con.F;
             
             couplingterms = battery.couplingTerms;
 
-            elyte_c_source = zeros(battery.(elyte).G.cells.num, 1);
-            elyte_e_source = zeros(battery.(elyte).G.cells.num, 1);
+            elyte_c_source = zeros(battery.(elyte).G.getNumberOfCells(), 1);
+            elyte_e_source = zeros(battery.(elyte).G.getNumberOfCells(), 1);
             
             % setup AD 
             phi = state.(elyte).phi;
@@ -1290,7 +1290,7 @@ classdef Battery < BaseModel
             
             eldes = {ne, pe}; % electrodes
             
-            nc = model.G.cells.num;
+            nc = model.G.getNumberOfCells();
             
             src = zeros(nc, 1);
                         
@@ -1303,7 +1303,7 @@ classdef Battery < BaseModel
                     cc_map   = cc_model.G.mappings.cellmap;
                     cc_j     = state.(elde).(cc).jFace;
                     cc_econd = cc_model.EffectiveElectricalConductivity;
-                    cc_vols  = cc_model.operators.getCellVolumes();
+                    cc_vols  = cc_model.G.getVolumes();
                     cc_jsq   = computeCellFluxNorm(cc_model, cc_j); 
                     state.(elde).(cc).jsq = cc_jsq;  %store square of current density
                     src = subsetPlus(src,cc_vols.*cc_jsq./cc_econd, cc_map);
@@ -1314,7 +1314,7 @@ classdef Battery < BaseModel
                 am_map   = am_model.G.mappings.cellmap;
                 am_j     = state.(elde).(am).jFace;
                 am_econd = am_model.EffectiveElectricalConductivity;
-                am_vols  = am_model.operators.getCellVolumes();
+                am_vols  = am_model.G.getVolumes();
                 am_jsq   = computeCellFluxNorm(am_model, am_j);
                 state.(elde).(am).jsq = am_jsq;
                 
@@ -1330,7 +1330,7 @@ classdef Battery < BaseModel
             elyte_bruggman = elyte_model.BruggemanCoefficient;
             elyte_cond     = state.(elyte).conductivity;
             elyte_econd    = elyte_cond.*elyte_vf.^elyte_bruggman;
-            elyte_vols     = elyte_model.operators.getCellVolumes();
+            elyte_vols     = elyte_model.G.getVolumes();
             elyte_jsq      = computeCellFluxNorm(elyte_model, elyte_j);
             state.(elyte).jsq = elyte_jsq; %store square of current density
             
@@ -1343,16 +1343,16 @@ classdef Battery < BaseModel
         function state = updateThermalChemicalSourceTerms(model, state)
         % Assemble the thermal source term from transport :code:`state.jHeatChemicalSource`, see :cite:t:`Latz2016`
             
-            elyte = 'Electrolyte';
+            elyte   = 'Electrolyte';
             thermal = 'ThermalModel';
             
             % prepare term
-            nc = model.G.cells.num;
+            nc = model.G.getNumberOfCells();
             src = zeros(nc, 1);
             T = state.(thermal).T;
             phi = state.(elyte).phi;
-            nf = model.(elyte).G.faces.num;
-            intfaces = model.(elyte).operators.internalConn;
+            nf = model.(elyte).G.topology.faces.num;
+            intfaces = model.(elyte).G.getIntFaceIndex();
             if isa(T, 'ADI')
                 adsample = getSampleAD(T);
                 adbackend = model.AutoDiffBackend;
@@ -1375,7 +1375,7 @@ classdef Battery < BaseModel
             % compute norm of square norm of diffusion flux
             elyte_model   = model.(elyte);
             elyte_map     = elyte_model.G.mappings.cellmap;
-            elyte_vols    = elyte_model.operators.getCellVolumes();
+            elyte_vols    = elyte_model.G.getVolumes();
             elyte_jchemsq = computeCellFluxNorm(elyte_model, DFaceGradc);
             elyte_src     = elyte_vols.*elyte_jchemsq./D;
             
@@ -1400,7 +1400,7 @@ classdef Battery < BaseModel
             
             eldes = {ne, pe}; % electrodes
             
-            nc = model.G.cells.num;
+            nc = model.G.getNumberOfCells();
             
             src = zeros(nc, 1);
             
@@ -1424,7 +1424,7 @@ classdef Battery < BaseModel
                 n       = itf_model.n;
                 itf_map = itf_model.G.mappings.cellmap;
                 vsa     = itf_model.volumetricSurfaceArea;
-                vols    = model.(elde).(am).operators.getCellVolumes();
+                vols    = model.(elde).(am).G.getVolumes();
 
                 Rvol = locstate.(elde).(am).Rvol;
                 eta  = locstate.(elde).(am).(itf).eta;
@@ -1449,7 +1449,7 @@ classdef Battery < BaseModel
             
             eldes = {ne, pe}; % electrodes
             
-            nc = model.G.cells.num;
+            nc = model.G.getNumberOfCells();
             
             src = zeros(nc, 1);
            
@@ -1473,7 +1473,7 @@ classdef Battery < BaseModel
                 n       = itf_model.n;
                 itf_map = itf_model.G.mappings.cellmap;
                 vsa     = itf_model.volumetricSurfaceArea;
-                vols    = model.(elde).(am).operators.getCellVolumes();
+                vols    = model.(elde).(am).G.getVolumes();
 
                 Rvol = locstate.(elde).(am).Rvol;
                 dUdT = locstate.(elde).(am).(itf).dUdT;
@@ -1500,7 +1500,7 @@ classdef Battery < BaseModel
             
             eldes = {ne, pe}; % electrodes
             
-            nc = model.G.cells.num;
+            nc = model.G.getNumberOfCells();
             
             src = zeros(nc, 1);
            
@@ -1524,7 +1524,7 @@ classdef Battery < BaseModel
                 n       = itf_model.n;
                 itf_map = itf_model.G.mappings.cellmap;
                 vsa     = itf_model.volumetricSurfaceArea;
-                vols    = model.(elde).(am).operators.getCellVolumes();
+                vols    = model.(elde).(am).G.getVolumes();
 
                 Rvol = locstate.(elde).(am).Rvol;
                 dUdT = locstate.(elde).(am).(itf).dUdT;
@@ -1559,8 +1559,8 @@ classdef Battery < BaseModel
             phi_elyte = state.(elyte).phi;
             c_elyte = state.(elyte).c;
             
-            elyte_cells = zeros(model.G.cells.num, 1);
-            elyte_cells(bat.(elyte).G.mappings.cellmap) = (1 : bat.(elyte).G.cells.num)';
+            elyte_cells = zeros(model.G.getNumberOfCells(), 1);
+            elyte_cells(bat.(elyte).G.mappings.cellmap) = (1 : bat.(elyte).G.getNumberOfCells())';
 
             for ind = 1 : numel(eldes)
                 elde = eldes{ind};
@@ -1659,7 +1659,7 @@ classdef Battery < BaseModel
                 coupterm = model.(pe).(cc).externalCouplingTerm;
                 faces    = coupterm.couplingfaces;
                 cond_pcc = model.(pe).(cc).EffectiveElectricalConductivity;
-                [trans_pcc, cells] = model.(pe).(cc).operators.harmFaceBC(cond_pcc, faces);
+                [trans_pcc, cells] = model.(pe).(cc).G.getBcHarmFace(cond_pcc, faces);
                 
                 state.Control.EIequation = sum(trans_pcc.*(state.(pe).(cc).phi(cells) - E)) - I;
 
@@ -1672,7 +1672,7 @@ classdef Battery < BaseModel
                 coupterm = model.(pe).(am).externalCouplingTerm;
                 faces    = coupterm.couplingfaces;
                 cond_pcc = model.(pe).(am).EffectiveElectricalConductivity;
-                [trans_pcc, cells] = model.(pe).(am).operators.harmFaceBC(cond_pcc, faces);
+                [trans_pcc, cells] = model.(pe).(am).G.getBcHarmFace(cond_pcc, faces);
                 
                 state.Control.EIequation = sum(trans_pcc.*(state.(pe).(am).phi(cells) - E)) - I;
 

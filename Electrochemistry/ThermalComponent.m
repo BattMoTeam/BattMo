@@ -31,11 +31,11 @@ classdef ThermalComponent < BaseModel
                        'externalTemperature'};
             model = dispatchParams(model, paramobj, fdnames);
             
-            % setup discrete differential operators
-            model.operators = Operators(model.G, 'assembleCellFluxOperator', true);
+            % setup the cell flux computation structure
+            model.G = model.G.setupCellFluxOperators();
             
             if ~isempty(model.EffectiveThermalConductivity)
-                nc = model.G.cells.num;
+                nc = model.G.getNumberOfCells();
                 model.EffectiveThermalConductivity = model.EffectiveThermalConductivity*ones(nc, 1);
                 model.EffectiveVolumetricHeatCapacity = model.EffectiveVolumetricHeatCapacity*ones(nc, 1);
             end
@@ -130,7 +130,7 @@ classdef ThermalComponent < BaseModel
             T0 = state0.T;
 
             % (here we assume that the ThermalModel has the "parent" grid)
-            vols = model.operators.getCellVolumes();
+            vols = model.G.getVolumes();
             
             state.accumHeat = vhcap.*vols.*(T - T0)/dt;
             
@@ -182,23 +182,23 @@ classdef ThermalComponent < BaseModel
             
             coupcells = coupterm.couplingcells;
             coupfaces = coupterm.couplingfaces;
-            nc = model.G.cells.num;
+            nc = model.G.getNumberOfCells();
               
             T = state.T;
             T = T(coupcells);
             
             if isempty(coupfaces)
                 % 1D case (External faces are not available, we consider a volumetric cooling instead)
-                A = model.operators.getCellVolumes();
+                A = model.G.getVolumes();
                 A = A(coupcells);
                 t_eff = lambda_ext*A;
             else
                 % Face couling (multidimensional case)
-                A = model.operators.getFaceAreas();
+                A = model.G.getFaceAreas();
                 A = A(coupfaces);
                 t_ext = lambda_ext.*A;
                 
-                t = model.operators.harmFaceBC(lambda, coupfaces);
+                t = model.G.getBcHarmFace(lambda, coupfaces);
                 
                 t_eff = 1./(1./t + 1./t_ext);
             end

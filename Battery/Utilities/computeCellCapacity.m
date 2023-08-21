@@ -57,7 +57,7 @@ function [cap, cap_neg, cap_pos, specificEnergy] = computeCellCapacity(model, va
             
             vol_fraction = ammodel.volumeFraction;
             am_fraction  = ammodel.activeMaterialFraction;
-            vols         = ammodel.operators.getCellVolumes();
+            vols         = ammodel.G.getVolumes();
             
             vol = sum(am_fraction*vol_fraction.*vols);
             
@@ -91,7 +91,7 @@ function [cap, cap_neg, cap_pos, specificEnergy] = computeCellCapacity(model, va
                 vol_fraction = ammodel.volumeFraction;
                 am_fraction  = ammodel.(mat).activeMaterialFraction;
 
-                vols = ammodel.operators.getCellVolumes();
+                vols = ammodel.G.getVolumes();
                 vol = sum(am_fraction*vol_fraction.*vols);
 
                 cap_usable(ind) = cap_usable(ind) + (thetaMax - thetaMin)*cMax*vol*n*F;
@@ -132,7 +132,7 @@ function [cap, cap_neg, cap_pos, specificEnergy] = computeCellCapacity(model, va
         
         vol_fraction = ammodel.volumeFraction;
         am_fraction  = ammodel.activeMaterialFraction;
-        vols = ammodel.operators.getCellVolumes();
+        vols = ammodel.G.getVolumes();
         vol = sum(am_fraction*vol_fraction.*vols);
         
         func = @(theta) model.(elde).(am).(itf).computeOCPFunc(theta, 298, 1);
@@ -155,7 +155,7 @@ function [cap, cap_neg, cap_pos, specificEnergy] = computeCellCapacity(model, va
         
         vol_fraction = ammodel.volumeFraction;
         am_fraction  = ammodel.activeMaterialFraction;
-        vols = ammodel.operators.getCellVolumes();
+        vols = ammodel.G.getVolumes();
         vol = sum(am_fraction*vol_fraction.*vols);
         
         func = @(theta) model.(elde).(am).(itf).computeOCPFunc(theta, 298, 1);
