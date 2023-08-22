@@ -57,9 +57,8 @@ classdef Electrolyte < ElectroChemicalComponent
 
             % We set the electrolyte volumeFraction based on the porosity of the separator
             G = model.G;
-            Gp = G.parentGrid;
 
-            model.volumeFraction = NaN(G.getNumberOfCells, 1);
+            model.volumeFraction = NaN(G.getNumberOfCells(), 1);
 
             elyte_cells = model.G.mappings.invcellmap;
             elyte_cells_sep = elyte_cells(model.(sep).G.mappings.cellmap);

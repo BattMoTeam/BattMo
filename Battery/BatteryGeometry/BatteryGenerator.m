@@ -206,16 +206,9 @@ classdef BatteryGenerator
             G_ne    = paramobj.(ne).(am).G;
             G_elyte = paramobj.(elyte).G;
             
-            % parent Grid
-            G = G_ne.parentGrid;
-            
             % All the cells from NegativeElectrode are coupled with Electrolyte
             cells1 = (1 : G_ne.getNumberOfCells())';
-            pcells = G_ne.mappings.cellmap(cells1);
-            
-            mapping = zeros(G.getNumberOfCells(), 1);
-            mapping(G_elyte.mappings.cellmap) = (1 : G_elyte.getNumberOfCells())';
-            cells2 = mapping(pcells);
+            cells2 = G_elyte.mappings.invcellmap(G_ne.mappings.cellmap(cells1));
             
             compnames = {'NegativeElectrode', 'Electrolyte'};
             coupTerm = couplingTerm('NegativeElectrode-Electrolyte', compnames);
@@ -224,16 +217,12 @@ classdef BatteryGenerator
             
             couplingTerms{end + 1} = coupTerm;
             
-            G_pe = paramobj.(pe).(am).G;
+            G_pe    = paramobj.(pe).(am).G;
             G_elyte = paramobj.(elyte).G;
             
             % All the cells from PositiveElectrode are coupled with Electrolyte
             cells1 = (1 : G_pe.getNumberOfCells())';
-            pcells = G_pe.mappings.cellmap(cells1);
-            
-            mapping = zeros(G.getNumberOfCells(), 1);
-            mapping(G_elyte.mappings.cellmap) = (1 : G_elyte.getNumberOfCells())';
-            cells2 = mapping(pcells);
+            cells2 = G_elyte.mappings.invcellmap(G_pe.mappings.cellmap(cells1));
             
             compnames = {'PositiveElectrode', 'Electrolyte'};
             coupTerm = couplingTerm('PositiveElectrode-Electrolyte', compnames);
