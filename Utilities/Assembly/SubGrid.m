@@ -195,7 +195,7 @@ classdef SubGrid
             extfaces.sgn = sgn;
             
             faceextfacemap = zeros(facetbl.num, 1);
-            faceextfacemap(extfacetbl.get('faces')) = (1 : extfacetbl.num)';
+            faceextfacemap(cellextfacepcellpfacetbl.get('faces')) = (1 : cellextfacepcellpfacetbl.num)';
 
             intfaces = intfacetbl.get('faces');
             
