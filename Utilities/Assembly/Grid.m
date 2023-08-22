@@ -29,7 +29,6 @@ classdef Grid
         % - helpers.extfaces.cells              (index of the corresponding cells, sub-grid indexing)
         % - helpers.extfaces.halfTransParentInd (index of the corresponding half-transmissibility values in parent grid indexing)
         % - helpers.faceextfacemap              (mapping from face to extface, sub-grid indexing)
-        % - helpers.sgn                         (face sign in cell-face indexing)
         helpers
 
         % Operators to compute norm of the flux velocity at the cell centers, see getCellFluxNorm
@@ -174,14 +173,22 @@ classdef Grid
             
             cellextfacetbl = crossIndexArray(cellfacetbl, extfacetbl, {'faces'});
 
+            extfaces.faces = cellextfacetbl.get('faces');
+            extfaces.cells = cellextfacetbl.get('cells');
+
             map = TensorMap();
             map.fromTbl  = cellfacetbl;
             map.toTbl    = cellextfacetbl;
             map.mergefds = {'cells', 'faces'};
             
-            extfaces.faces              = cellextfacetbl.get('faces');
-            extfaces.cells              = cellextfacetbl.get('cells');
             extfaces.halfTransParentInd = map.getDispatchInd();
+
+            sgn = ones(cellextfacetbl.num, 1);
+            f = extfaces.faces;
+            c = extfaces.cells;
+            sgn(grid.topology.faces.neighbors(f, 1) == c) = -1;
+
+            extfaces.sgn = sgn;
 
             faceextfacemap = zeros(facetbl.num, 1);
             faceextfacemap(extfacetbl.get('faces')) = (1 : extfacetbl.num)';
@@ -189,8 +196,7 @@ classdef Grid
             grid.helpers = struct('diffop'        , diffop        , ...
                                   'trans'         , trans         , ...
                                   'extfaces'      , extfaces      , ...
-                                  'faceextfacemap', faceextfacemap, ...
-                                  'sgn'           , sgn);
+                                  'faceextfacemap', faceextfacemap);
         end
 
         function G = getMRSTgrid(grid)
@@ -241,7 +247,7 @@ classdef Grid
             
         end
         
-        function [bchT, bccells] = getBcHarmFlux(grid, u, bcfaces)
+        function [bchT, bccells, bcsgn] = getBcHarmFlux(grid, u, bcfaces)
         % Returns half transmissibilities and cell indexing for the given boundary faces
 
             hT   = grid.tPFVgeometry.hT;
@@ -250,8 +256,9 @@ classdef Grid
             extfaceind = grid.helpers.faceextfacemap(bcfaces);
             
             bccells = exf.cells(extfaceind);
+            bcsgn   = exf.sgn(extfaceind);
             bchT    = hT(exf.halfTransParentInd(extfaceind));
-
+            
         end
 
         function jsq = getCellFluxNorm(grid, u)
@@ -262,12 +269,6 @@ classdef Grid
             j = P*u;
             jsq = j.^2;
             jsq = S*jsq;
-            
-        end
-
-        function sgn = getFaceSign(grid)
-            
-            sgn = grid.helpers.sgn;
             
         end
 

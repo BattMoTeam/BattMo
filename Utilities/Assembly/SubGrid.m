@@ -33,9 +33,9 @@ classdef SubGrid
         % - helpers.trans.S                     (sparse matrix used in getHarmFace method)
         % - helpers.extfaces.faces              (index of the external faces, sub-grid indexing)
         % - helpers.extfaces.cells              (index of the corresponding cells, sub-grid indexing)
+        % - helpers.extfaces.sgn                (sign of the corresponding cell-face pair)
         % - helpers.extfaces.halfTransParentInd (index of the corresponding half-transmissibility values in parent grid indexing)
         % - helpers.faceextfacemap              (mapping from face to extface, sub-grid indexing)
-        % - helpers.sgn                         (face sign in cell-face indexing)
         % - helpers.intfaces                    (index of internal faces)
         helpers
 
@@ -153,15 +153,23 @@ classdef SubGrid
             extfacepcellpfacetbl     = crossIndexArray(extfacepfacetbl, pcellpfacetbl, {'pfaces'});
             cellextfacepcellpfacetbl = crossIndexArray(extfacepcellpfacetbl, cellpcelltbl, {'pcells'});
 
+            extfaces.faces = cellextfacepcellpfacetbl.get('faces');
+            extfaces.cells = cellextfacepcellpfacetbl.get('cells');
+
             map = TensorMap();
             map.fromTbl  = pcellpfacetbl;
             map.toTbl    = cellextfacepcellpfacetbl;
             map.mergefds = {'pcells', 'pfaces'};
             
-            extfaces.faces              = cellextfacepcellpfacetbl.get('faces');
-            extfaces.cells              = cellextfacepcellpfacetbl.get('cells');
             extfaces.halfTransParentInd = map.getDispatchInd();
 
+            sgn = ones(cellextfacepcellpfacetbl.num, 1);
+            f = extfaces.faces;
+            c = extfaces.cells;
+            sgn(subG.topology.faces.neighbors(f, 1) == c) = -1;
+
+            extfaces.sgn = sgn;
+            
             faceextfacemap = zeros(facetbl.num, 1);
             faceextfacemap(extfacetbl.get('faces')) = (1 : extfacetbl.num)';
 
@@ -171,7 +179,6 @@ classdef SubGrid
                                   'trans'         , trans         , ...
                                   'extfaces'      , extfaces      , ...
                                   'faceextfacemap', faceextfacemap, ...
-                                  'sgn'           , sgn           , ...
                                   'intfaces'      , intfaces);
             
         end
@@ -196,7 +203,7 @@ classdef SubGrid
             G.cells.volumes   = tg.cells.volumes(m.cellmap);
             
             G.faces.centroids = reshape(tg.faces.centroids, d, [])';
-            G.faces.centroids = G.faces.centroids(m.facemap, :)
+            G.faces.centroids = G.faces.centroids(m.facemap, :);
             G.faces.normals   = reshape(tg.faces.normals, d, [])';
             G.faces.normals = G.faces.normals(m.facemap, :);
             G.faces.areas     = tg.faces.areas(m.facemap);
@@ -250,7 +257,7 @@ classdef SubGrid
             
         end
 
-        function [bchT, bccells] = getBcHarmFace(subG, u, bcfaces)
+        function [bchT, bccells, bcsgn] = getBcHarmFace(subG, u, bcfaces)
         % Returns half transmissibilities and cell indexing for the given boundary faces (bcfaces is given using subgrid indexing)
 
             hT   = subG.parentGrid.tPFVgeometry.hT;
@@ -259,6 +266,7 @@ classdef SubGrid
             extfaceind = subG.helpers.faceextfacemap(bcfaces);
             
             bccells = exf.cells(extfaceind);
+            bcsgn   = exf.sgn(extfaceind);
             bchT    = hT(exf.halfTransParentInd(extfaceind));
             
         end
@@ -273,13 +281,8 @@ classdef SubGrid
             jsq = S*jsq;
             
         end
-        
-        function sgn = getFaceSign(subG)
-            
-            sgn = subG.helpers.sgn;
-            
-        end
 
+        
         function intfaces = getIntFaceIndex(subG)
             
             intfaces = subG.helpers.intfaces;
