@@ -80,8 +80,10 @@ classdef BatteryGenerator1D < BatteryGenerator
             parentGrid.tPFVgeometry.faceArea = gen.faceArea;
 
             parentGrid.updateTPFgeometry();
+
+            G = genSubGrid(parentGrid, (1 : parentGrid.getNumberOfCells())');
             
-            paramobj.G     = parentGrid;
+            paramobj.G     = G;
             gen.parentGrid = parentGrid;
             
         end
