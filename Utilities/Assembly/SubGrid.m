@@ -210,7 +210,7 @@ classdef SubGrid
         function subG = setupCellFluxOperators(subG)
 
             G = getMRSTgrid(subG);
-            subG.cellFluxOperatosrs = getCellFluxOperatorsAll(G);
+            subG.cellFluxOperators = getCellFluxOperatorsAll(G);
             
         end
 
@@ -317,6 +317,12 @@ classdef SubGrid
         function nc = getNumberOfCells(subG)
 
             nc = subG.topology.cells.num;
+            
+        end
+        
+        function nf = getNumberOfFaces(subG)
+
+            nf = subG.topology.faces.num;
             
         end
 

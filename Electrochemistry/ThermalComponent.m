@@ -31,9 +31,6 @@ classdef ThermalComponent < BaseModel
                        'externalTemperature'};
             model = dispatchParams(model, paramobj, fdnames);
             
-            % setup the cell flux computation structure
-            model.G = model.G.setupCellFluxOperators();
-            
             if ~isempty(model.EffectiveThermalConductivity)
                 nc = model.G.getNumberOfCells();
                 model.EffectiveThermalConductivity = model.EffectiveThermalConductivity*ones(nc, 1);

@@ -60,12 +60,12 @@ classdef BatteryGenerator
         function paramobj = setupThermalModel(gen, paramobj, params)
         % Method that setups the grid and the coupling for the thermal model
             
-            G = genSubGrid(gen.parentGrid, (1 : gen.parentGrid.topology.cells.num)');
-            G = setupCellFluxOperators(G);
+            G = paramobj.G; % the grid for the thermal model is the same as the whole model grid (which is different from parent grid).
             coupTerm = couplingTerm('ThermalConvectiveCooling', {'ThermalModel'});
             coupTerm.couplingcells = params.couplingcells;
             coupTerm.couplingfaces = params.couplingfaces;
             paramobj.ThermalModel.couplingTerm = coupTerm;
+            paramobj.ThermalModel.G = G;
             
         end
         

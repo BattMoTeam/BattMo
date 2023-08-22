@@ -1294,7 +1294,7 @@ classdef Battery < BaseModel
                     cc_j     = state.(elde).(cc).jFace;
                     cc_econd = cc_model.EffectiveElectricalConductivity;
                     cc_vols  = cc_model.G.getVolumes();
-                    cc_jsq   = computeCellFluxNorm(cc_model, cc_j); 
+                    cc_jsq   = cc_model.G.getCellFluxNorm(cc_j); 
                     state.(elde).(cc).jsq = cc_jsq;  % store square of current density
                     src = subsetPlus(src, cc_vols.*cc_jsq./cc_econd, cc_map);
                 end
@@ -1304,7 +1304,7 @@ classdef Battery < BaseModel
                 am_j     = state.(elde).(am).jFace;
                 am_econd = am_model.EffectiveElectricalConductivity;
                 am_vols  = am_model.G.getVolumes();
-                am_jsq   = computeCellFluxNorm(am_model, am_j);
+                am_jsq   = am_model.G.getCellFluxNorm(am_j);
                 state.(elde).(am).jsq = am_jsq;  % store square of current density
                 
                 src = subsetPlus(src, am_vols.*am_jsq./am_econd, am_map);
@@ -1320,7 +1320,7 @@ classdef Battery < BaseModel
             elyte_cond     = state.(elyte).conductivity;
             elyte_econd    = elyte_cond.*elyte_vf.^elyte_bruggman;
             elyte_vols     = elyte_model.G.getVolumes();
-            elyte_jsq      = computeCellFluxNorm(elyte_model, elyte_j);
+            elyte_jsq      = elyte_model.G.getCellFluxNorm(elyte_j);
             state.(elyte).jsq = elyte_jsq; %store square of current density
             
             %src(elyte_map) = src(elyte_map) + elyte_vols.*elyte_jsq./elyte_econd;
@@ -1370,7 +1370,7 @@ classdef Battery < BaseModel
             elyte_model   = model.(elyte);
             elyte_map     = invmap(elyte_model.G.mappings.cellmap);
             elyte_vols    = elyte_model.G.getVolumes();
-            elyte_jchemsq = computeCellFluxNorm(elyte_model, DFaceGradc);
+            elyte_jchemsq = elyte_model.G.getCellFluxNorm(DFaceGradc);
             elyte_src     = elyte_vols.*elyte_jchemsq./D;
             
             % This is a bit hacky for the moment (we should any way consider all the species)

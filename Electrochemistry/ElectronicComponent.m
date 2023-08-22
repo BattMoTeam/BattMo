@@ -28,9 +28,8 @@ classdef ElectronicComponent < BaseModel
             model = dispatchParams(model, paramobj, fdnames);
             
             % setup discrete differential operators
-            docellflux = false;
             if model.use_thermal
-                docellflux = true;
+                model.G = model.G.setupCellFluxOperators();
             end
             
             model.constants = PhysicalConstants();
@@ -104,8 +103,9 @@ classdef ElectronicComponent < BaseModel
         function state = updateFaceCurrent(model, state)
             
             G = model.G;
-            nf = G.faces.num;
-            intfaces = model.G.getIntFaceIndex();
+            
+            nf = G.getNumberOfFaces();
+            intfaces = G.getIntFaceIndex();
             
             j       = state.j;
             jFaceBc = state.jFaceBc;
