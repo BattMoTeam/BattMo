@@ -281,8 +281,9 @@ classdef SubGrid
             
         end
 
-        function [bchT, bccells, bcsgn] = getBcHarmFace(subG, u, bcfaces)
-        % Returns half transmissibilities and cell indexing for the given boundary faces (bcfaces is given using subgrid indexing)
+        function [bchT, bccells, bcsgn] = getBcHarmFace(subG, c, bcfaces)
+        % Returns half transmissibilities weighted with values of c and cell indexing for the given boundary faces
+        % (bcfaces is given using subgrid indexing)
 
             hT   = subG.parentGrid.tPFVgeometry.hT;
             exf  = subG.helpers.extfaces;
@@ -291,7 +292,7 @@ classdef SubGrid
             
             bccells = exf.cells(extfaceind);
             bcsgn   = exf.sgn(extfaceind);
-            bchT    = hT(exf.halfTransParentInd(extfaceind));
+            bchT    = hT(exf.halfTransParentInd(extfaceind)).*c(bccells);
             
         end
 
