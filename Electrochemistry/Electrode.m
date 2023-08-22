@@ -117,7 +117,7 @@ classdef Electrode < BaseModel
                 
                 %% We setup the current transfers between CurrentCollector and ActiveMaterial
                 
-                am_jCoupling  = am_phi*0.0; %NB hack to initialize zero ad
+                am_jCoupling = am_phi*0.0; %NB hack to initialize zero ad
                 cc_jCoupling = cc_phi*0.0; %NB hack to initialize zero ad
 
                 coupterm = model.couplingTerm;
@@ -131,8 +131,8 @@ classdef Electrode < BaseModel
 
                 trans = 1./(1./teac + 1./tcc);
                 crosscurrent = trans.*(bcphi_cc - bcphi_am);
-                am_jCoupling = subsasgnAD(am_jCoupling,bccell_am, crosscurrent);
-                cc_jCoupling = subsasgnAD(cc_jCoupling,bccell_cc, -crosscurrent);
+                am_jCoupling = subsasgnAD(am_jCoupling, bccell_am, crosscurrent);
+                cc_jCoupling = subsasgnAD(cc_jCoupling, bccell_cc, -crosscurrent);
 
                 G = model.(cc).G;
                 nf = G.topology.faces.num;

@@ -572,9 +572,7 @@ classdef Battery < BaseModel
             elyte = 'Electrolyte';
             
             G_elyte = model.(elyte).G;
-            elytecelltbl.cells = (1 : G_elyte.getNumberOfCells())';
-            elytecelltbl.globalcells = G_elyte.mappings.cellmap;
-            elytecelltbl = IndexArray(elytecelltbl);
+            invmap  = G_elyte.mappings.invcellmap;
 
             eldes = {ne, pe};
 
@@ -582,19 +580,7 @@ classdef Battery < BaseModel
 
                 elde = eldes{ind};
                 G_elde  = model.(elde).(am).G;
-                clear eldecelltbl;
-                eldecelltbl.cells = (1 : G_elde.getNumberOfCells())';
-                eldecelltbl.globalcells = G_elde.mappings.cellmap;
-                eldecelltbl = IndexArray(eldecelltbl);
-                
-                map = TensorMap();
-                map.fromTbl = elytecelltbl;
-                map.toTbl = eldecelltbl;
-                map.replaceFromTblfds = {{'cells', 'elytecells'}};
-                map.replaceToTblfds = {{'cells', 'eldecells'}};
-                map.mergefds = {'globalcells'};
-                
-                mappings.(elde) = map.getDispatchInd();
+                mappings.(elde) = invmap(G_elde.mappings.cellmap);
                 
             end
             
@@ -1573,8 +1559,8 @@ classdef Battery < BaseModel
             eldes = {ne, pe};
             for ind = 1 : numel(eldes)
                 elde = eldes{ind};
-                state.(elde).(am).(itf).phiElectrolyte = phi_elyte(elyte_cells(model.(elde).(am).G.mappings.cellmap));
-                state.(elde).(am).(itf).cElectrolyte = c_elyte(elyte_cells(model.(elde).(am).G.mappings.cellmap));
+                state.(elde).(am).(itf).phiElectrolyte = phi_elyte(elyte_cells(model.(elde).(am).(itf).G.mappings.cellmap));
+                state.(elde).(am).(itf).cElectrolyte   = c_elyte(elyte_cells(model.(elde).(am).(itf).G.mappings.cellmap));
             end
             
         end
@@ -1595,7 +1581,7 @@ classdef Battery < BaseModel
 
                 [jExternal, jFaceExternal] = setupExternalCoupling(model.(ne).(cc), phi, 0, sigma);
                 
-                state.(ne).(cc).jExternal = jExternal;
+                state.(ne).(cc).jExternal     = jExternal;
                 state.(ne).(cc).jFaceExternal = jFaceExternal;
                 state.(ne).(am).jExternal     = 0;
                 state.(ne).(am).jFaceExternal = 0;
@@ -1607,7 +1593,7 @@ classdef Battery < BaseModel
                 
                 [jExternal, jFaceExternal] = setupExternalCoupling(model.(ne).(am), phi, 0, sigma);
                 
-                state.(ne).(am).jExternal = jExternal;
+                state.(ne).(am).jExternal     = jExternal;
                 state.(ne).(am).jFaceExternal = jFaceExternal;
                 
             end
@@ -1634,10 +1620,11 @@ classdef Battery < BaseModel
                 
                 [jExternal, jFaceExternal] = setupExternalCoupling(model.(pe).(cc), phi, E, sigma);
                 
-                state.(pe).(cc).jExternal = jExternal;
+                state.(pe).(cc).jExternal     = jExternal;
                 state.(pe).(cc).jFaceExternal = jFaceExternal;
                 state.(pe).(am).jExternal     = 0;
                 state.(pe).(am).jFaceExternal = 0;
+                
             else
                 
                 phi   = state.(pe).(am).phi;
@@ -1645,7 +1632,7 @@ classdef Battery < BaseModel
                 
                 [jExternal, jFaceExternal] = setupExternalCoupling(model.(pe).(am), phi, E, sigma);
                 
-                state.(pe).(am).jExternal = jExternal;
+                state.(pe).(am).jExternal     = jExternal;
                 state.(pe).(am).jFaceExternal = jFaceExternal;
                 
             end

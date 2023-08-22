@@ -61,8 +61,7 @@ classdef Electrolyte < ElectroChemicalComponent
 
             model.volumeFraction = NaN(G.getNumberOfCells, 1);
 
-            elyte_cells = zeros(Gp.getNumberOfCells, 1);
-            elyte_cells(G.mappings.cellmap) = (1 : model.G.getNumberOfCells())';
+            elyte_cells = model.G.mappings.invcellmap;
             elyte_cells_sep = elyte_cells(model.(sep).G.mappings.cellmap);
             model.volumeFraction(elyte_cells_sep) = model.(sep).porosity;
 
