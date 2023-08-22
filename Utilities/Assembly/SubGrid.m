@@ -182,6 +182,32 @@ classdef SubGrid
             subG.cellFluxOperatosrs = getCellFluxOperatorsAll(G);
             
         end
+
+        function G = getMRSTgrid(subG)
+
+            G  = subG.topology;
+            m  = subG.mappings;
+            tg = subG.parentGrid.tPFVgeometry();
+
+            d = G.griddim;
+            
+            G.cells.centroids = reshape(tg.cells.centroids, d, [])';
+            G.cells.centroids = G.cells.centroids(m.cellmap, :);
+            G.cells.volumes   = tg.cells.volumes(m.cellmap);
+            
+            G.faces.centroids = reshape(tg.faces.centroids, d, [])';
+            G.faces.centroids = G.faces.centroids(m.facemap, :)
+            G.faces.normals   = reshape(tg.faces.normals, d, [])';
+            G.faces.normals = G.faces.normals(m.facemap, :);
+            G.faces.areas     = tg.faces.areas(m.facemap);
+            
+            G.nodes.coords = reshape(tg.nodes.coords, d, [])';
+            G.nodes.coords = G.nodes.coords(m.nodemap, :);
+            
+            G.type = 'generic';
+            
+        end
+
         
         function vols = getVolumes(subG)
 
