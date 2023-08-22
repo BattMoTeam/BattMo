@@ -18,10 +18,13 @@ classdef SubGrid
         % - topology.griddim        
         topology
         
-        % Mapping structure from sub-grid to parent grid with fields (see function removeCells)
+        % Mapping structure from sub-grid to parent grid with fields (see function removeCells) and inverse
+        % mappings. The inverse mappings are set up in the constructor (they do not have to be given there in the
+        % input). For the moment, we only need invcellmap. It is used to setup the coupling terms.
         % - mappings.cellmap
         % - mappings.facemap
         % - mappings.nodemap
+        % - mappings.invcellmap
         mappings
 
         % Helper structures that are used to extract the half-transmissibilities from the parent structures and assemble the
@@ -65,11 +68,32 @@ classdef SubGrid
             subG.parentGrid = parentGrid;
             subG.mappings   = mappings;
 
+            subG = subG.setupInverseMappings();
             subG = subG.setupHelpers();
             
         end
 
 
+        function subG = setupInverseMappings(subG)
+
+            pnc     = subG.parentGrid.topology.cells.num;
+            nc      = subG.topology.cells.num;
+            cellmap = subG.mappings.cellmap;
+
+            invcellmap = zeros(pnc, 1);
+            invcellmap(cellmap) = (1 : nc)';
+
+            pnc     = subG.parentGrid.topology.cells.num;
+            nc      = subG.topology.cells.num;
+            cellmap = subG.mappings.cellmap;
+
+            invcellmap = zeros(pnc, 1);
+            invcellmap(cellmap) = (1 : nc)';
+
+            subG.mappings.invcellmap = invcellmap;
+            
+        end
+        
         function subG = setupHelpers(subG)
 
             ptbls = setupTables(subG.parentGrid.topology);
