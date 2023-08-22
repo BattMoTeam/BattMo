@@ -68,7 +68,6 @@ classdef BatteryGenerator3D < BatteryGenerator
         
         elyte_nz;
         allparams;
-        invcellmap;
 
         externalHeatTransferCoefficientTab = 1e3; % Heat transfer coefficient at the tab
         externalHeatTransferCoefficient = 1e3; % Heat transfer coefficient for the non-tab regions
@@ -182,16 +181,10 @@ classdef BatteryGenerator3D < BatteryGenerator
 
             cellind = [allparams.(elyte).cellind; allparams.(ne).(am).cellind; allparams.(pe).(am).cellind; allparams.(ne).(cc).cellind; allparams.(pe).(cc).cellind];
 
-            rcellind = setdiff((1 : G.cells.num)', cellind);
+            G = genSubGrid(parentGrid, cellind);
 
-            nGlob = G.cells.num;
-            [G, cellmap, facemap, nodemap] = removeCells(G, rcellind);
-            invcellmap = zeros(nGlob, 1);
-            invcellmap(cellmap) = (1 : G.cells.num)';
+            paramobj.G = G;
 
-            paramobj.G = parentGrid;
-
-            gen.invcellmap = invcellmap;
             gen.allparams  = allparams;
             gen.parentGrid = parentGrid;
 
@@ -224,10 +217,6 @@ classdef BatteryGenerator3D < BatteryGenerator
         function paramobj = setupElectrolyte(gen, paramobj, params)
 
             params = gen.allparams.Electrolyte;
-            imap = gen.invcellmap;
-            params.cellind = imap(params.cellind);
-            params.Separator.cellind = imap(params.Separator.cellind);
-
             paramobj = setupElectrolyte@BatteryGenerator(gen, paramobj, params);
 
         end
@@ -240,15 +229,10 @@ classdef BatteryGenerator3D < BatteryGenerator
             am = 'ActiveMaterial';
 
             params = gen.allparams;
-            imap = gen.invcellmap;
 
-            params.(ne).(am).cellind = imap(params.(ne).(am).cellind);
-            params.(ne).(cc).cellind = imap(params.(ne).(cc).cellind);
             params.(ne).(cc).name = 'negative';
             params.(ne).cellind = [params.(ne).(am).cellind; params.(ne).(cc).cellind];
 
-            params.(pe).(am).cellind = imap(params.(pe).(am).cellind);
-            params.(pe).(cc).cellind = imap(params.(pe).(cc).cellind);
             params.(pe).(cc).name = 'positive';
             params.(pe).cellind = [params.(pe).(am).cellind; params.(pe).(cc).cellind];
 
