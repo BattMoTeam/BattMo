@@ -135,15 +135,15 @@ classdef Electrode < BaseModel
                 cc_jCoupling = subsasgnAD(cc_jCoupling,bccell_cc, -crosscurrent);
 
                 G = model.(cc).G;
-                nf = G.faces.num;
+                nf = G.topology.faces.num;
                 sgn = model.(cc).G.getFaceSign();
                 zeroFaceAD = model.AutoDiffBackend.convertToAD(zeros(nf, 1), cc_phi);
                 cc_jFaceCoupling = zeroFaceAD;
-                cc_jFaceCoupling = subsasgnAD(cc_jFaceCoupling,face_cc, sgn(face_cc).*crosscurrent);
+                cc_jFaceCoupling = subsasgnAD(cc_jFaceCoupling, face_cc, sgn(face_cc).*crosscurrent);
                 assert(~any(isnan(sgn(face_cc))));
                 
                 G = model.(am).G; 
-                nf = G.faces.num; 
+                nf = G.topology.faces.num; 
                 sgn = model.(am).G.getFaceSign(); 
                 zeroFaceAD = model.AutoDiffBackend.convertToAD(zeros(nf, 1), am_phi); 
                 am_jFaceCoupling = zeroFaceAD; 

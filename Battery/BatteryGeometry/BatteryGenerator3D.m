@@ -120,7 +120,10 @@ classdef BatteryGenerator3D < BatteryGenerator
             z = [0; cumsum(z)];
 
             G = tensorGrid(x, y, z);
-
+            
+            parentGrid = Grid(G);
+            parentGrid.updateTPFgeometry();
+            
             nx = sum(nxs);
             ny = sum(nys);
             nz = sum(nzs);
@@ -186,13 +189,11 @@ classdef BatteryGenerator3D < BatteryGenerator
             invcellmap = zeros(nGlob, 1);
             invcellmap(cellmap) = (1 : G.cells.num)';
 
-            G = computeGeometry(G);
-
-            paramobj.G = G;
+            paramobj.G = parentGrid;
 
             gen.invcellmap = invcellmap;
-            gen.allparams = allparams;
-            gen.G = G;
+            gen.allparams  = allparams;
+            gen.parentGrid = parentGrid;
 
         end
 
@@ -258,6 +259,8 @@ classdef BatteryGenerator3D < BatteryGenerator
         function paramobj = setupCurrentCollectorBcCoupTerm(gen, paramobj, params)
 
             G = paramobj.G;
+            G = G.getMRSTgrid();
+            
             yf = G.faces.centroids(:, 2);
 
             switch params.name
@@ -281,10 +284,10 @@ classdef BatteryGenerator3D < BatteryGenerator
             cc    = 'CurrentCollector';
 
             % the cooling is done on the external faces
-            G = gen.G;
-            extfaces = any(G.faces.neighbors == 0, 2);
+            tp = gen.G.topology;
+            extfaces = any(tp.faces.neighbors == 0, 2);
             couplingfaces = find(extfaces);
-            couplingcells = sum(G.faces.neighbors(couplingfaces, :), 2);
+            couplingcells = sum(tp.faces.neighbors(couplingfaces, :), 2);
 
             params = struct('couplingfaces', couplingfaces, ...
                             'couplingcells', couplingcells);
