@@ -6,7 +6,7 @@ classdef SubGrid
         % The parent grid contains the updated TwoPointFiniteVolumeGeometry values (handle)
         parentGrid % Instance of Grid class
 
-        % Description of the topology of the sub-grid using MRST grid structures: The fieds are
+        % Description of the topology of the sub-grid (local indexing) using MRST grid structures: The fieds are
         % - topology.cells.facePos
         % - topology.cells.faces
         % - topology.cells.num
@@ -239,6 +239,7 @@ classdef SubGrid
             
         end
 
+        % API functions which should be used in simulations
         
         function vols = getVolumes(subG)
 

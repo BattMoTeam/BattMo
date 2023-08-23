@@ -92,10 +92,15 @@ classdef Grid
             G.nodes.coords = reshape(tf.nodes.coords, d, [])';
 
             G.type = 'generic';
+
+            % Compute geometrical data
             G = computeGeometry(G);
             
             rock.poro = ones(G.cells.num, 1);
             rock.perm = ones(G.cells.num, 1);
+
+
+            % Compute half transmissibilities
             hT = computeTrans(G, rock);
 
             cells.centroids = reshape(G.cells.centroids', [], 1);
