@@ -2,63 +2,78 @@ classdef LengthSetter1D
 
     properties
         
-        startinds % cell array with node indices of start of each component
-        endinds   % cell array with node indices of end of each component
-        nnodes    % total number of nodes
+        nxs        % number of cells for each component 
+        reflengths % reference lengths for each component
+        compinds   % index of the components
+
     end
     
     methods
         
-        function lsr = LengthSetter1D(gridGenerator)
+        function lengthsetter = LengthSetter1D(gridGenerator, components)
         %  gridGenerator is the BatteryGenerator1D structure
             assert(~gridGenerator.include_current_collectors, 'we do not include current collectors')
 
             gen = gridGenerator; % shortcut
-            
-            startinds{1} = 1;
-            endinds{1}   = startinds{1} + gen.nenx;
-            startinds{2} = endinds{1};
-            endinds{2}   = startinds{2} + gen.sepnx;
-            startinds{3} = endinds{2};
-            endinds{3}   = startinds{3} + gen.penx;
-
-            lsr.startinds = startinds;
-            lsr.endinds   = endinds;
-            lsr.nnodes    = endinds{3};
-            
-        end
-        
-        function model = setLength(lsr, model, v, comp)
-        % v is length value and comp is one component name
 
             ne  = 'NegativeElectrode';
             pe  = 'PositiveElectrode';
             sep = 'Separator';
 
-            ind = ismember({ne, sep, pe}, comp);
+            compinds = ismember({ne, sep, pe}, components);
 
-            startind = lsr.startinds{ind};
-            endind   = lsr.endinds{ind};
-            nnodes   = lsr.nnodes;
+            lengthsetter.reflengths = gen.xlength(2 : 4);
+            lengthsetter.nxs        = [gen.nenx; gen.sepnx; gen.penx];
+            lengthsetter.compinds   = compinds;
             
-            x = model.G.parentGrid.tPFVgeometry.nodes.coords;
-            x = x + 0*v.*x; % Just to make sure x gets AD if v is AD
+        end
+        
+        function model = setLength(lengthsetter, model, v)
+        % v is length value and comp is one component name
+
+            nxs        = lengthsetter.nxs;
+            reflengths = lengthsetter.reflengths;
+            compinds   = lengthsetter.compinds;
             
-            coef = v./(x(endind) - x(startind));    % multiplier coefficient for the component nodes, see below
-            delta = v - (x(endind) - x(startind)); % difference to add for the following components 
+            lgths = reflengths; % The last term used to make sure we get AD if AD is given as input
+            lgths = subsasgnAD(lgths, compinds, v);
+
+            nx = sum(nxs);
             
-            ind = (startind : endind);
-            x(ind) = x(startind) + coef.*(x(ind) - x(startind));
-            
-            ind = ((endind + 1) : nnodes);
-            if any(ind)
-                x(ind) = x(ind) + delta;
+            x = zeros(nx + 1, 1);
+
+            x(1) = 0;
+            startind = 1;
+            for i = 1 : 3
+                dx = lgths(i)/nxs(i).*ones(nxs(i), 1);
+                x = subsasgnAD(x, startind + (1 : nxs(i)), x(startind) + cumsum(dx));
+                startind = startind + nxs(i);
             end
             
             model.G.parentGrid.tPFVgeometry.nodes.coords = x;
-            
             model.G.parentGrid.updateTPFgeometry();
+
+        end
+
+        function v = getLength(lengthsetter, model)
+        % v is length value and comp is one component name
+
+            nxs      = lengthsetter.nxs;
+            compinds = lengthsetter.compinds;
             
+            x = model.G.parentGrid.tPFVgeometry.nodes.coords;
+
+            nxs = cumsum(nxs);
+
+            v = double2ADI(zeros(2, 1), x);
+            xstart = 0;
+            for i = 1 : 3
+                v(i) = x(nxs(i) + 1) - xstart;
+                xstart = x(nxs(i) + 1);
+            end
+
+            v = v(compinds);
+
         end
         
     end
