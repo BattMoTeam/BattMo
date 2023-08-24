@@ -127,6 +127,11 @@ classdef Interface < BaseModel
             inputnames = {'T', 'eta', 'j0'};
             model = model.registerPropFunction({'R', fn, inputnames});
             
+        end
+
+        function model = setTPFVgeometry(model, tPFVgeometry)
+            
+            model.G.parentGrid.tPFVgeometry = tPFVgeometry;
             
         end
         

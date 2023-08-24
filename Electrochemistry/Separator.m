@@ -14,6 +14,7 @@ classdef Separator < BaseModel
         use_thermal
 
         BruggemanCoefficient
+        
     end
     
     methods
@@ -37,6 +38,13 @@ classdef Separator < BaseModel
             model.porosity = model.porosity*ones(model.G.getNumberOfCells(),1);
             model = model.setupDependentProperties();
 
+        end
+
+        function model = setTPFVgeometry(model, tPFVgeometry)
+        % tPFVgeometry should be instance of TwoPointFiniteVolumeGeometry or MutableTwoPointFiniteVolumeGeometry
+
+            model.G.parentGrid.tPFVgeometry = tPFVgeometry;
+            
         end
         
         function model = setupDependentProperties(model)

@@ -93,6 +93,14 @@ classdef ElectronicComponent < BaseModel
 
         end
 
+        function model = setTPFVgeometry(model, tPFVgeometry)
+        % tPFVgeometry should be instance of TwoPointFiniteVolumeGeometry or MutableTwoPointFiniteVolumeGeometry
+
+            model.G.parentGrid.tPFVgeometry = tPFVgeometry;
+            
+        end
+
+        
         function state = updateConductivity(model, state)
             % default function to update conductivity
             state.conductivity = model.EffectiveElectricalConductivity;

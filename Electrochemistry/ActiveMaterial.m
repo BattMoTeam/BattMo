@@ -356,6 +356,18 @@ classdef ActiveMaterial < ElectronicComponent
             
         end
 
+
+        function model = setTPFVgeometry(model, tPFVgeometry)
+        % tPFVgeometry should be instance of TwoPointFiniteVolumeGeometry or MutableTwoPointFiniteVolumeGeometry
+            
+            itf = 'Interface';
+            
+            model = setTPFVgeometry@ElectronicComponent(model, tPFVgeometry);
+            model.(itf) = model.(itf).setTPFVgeometry(model, tPFVgeometry);
+            
+        end
+
+        
         function state = updateControl(model, state, drivingForces)
             
             coef = model.G.getVolumes();

@@ -99,6 +99,23 @@ classdef Electrode < BaseModel
             cc = CurrentCollector(paramobj);
         end
 
+        function model = setTPFVgeometry(model, tPFVgeometry)
+        % tPFVgeometry should be instance of TwoPointFiniteVolumeGeometry or MutableTwoPointFiniteVolumeGeometry
+
+            model.G.parentGrid.tPFVgeometry = tPFVgeometry;
+            
+            am = 'ActiveMaterial';
+            cc = 'CurrentCollector';
+
+            model.(am) = model.(am).setTPFVgeometry(tPFVgeometry);
+
+            if model.include_current_collectors
+                model.(cc) = model.(cc).setTPFVgeometry(tPFVgeometry);
+            end
+            
+        end
+        
+        
         function state = updateCoupling(model, state)
         % setup coupling terms between the current collector and the electrode active component            
             

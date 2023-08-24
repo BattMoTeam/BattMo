@@ -115,6 +115,15 @@ classdef Electrolyte < ElectroChemicalComponent
 
         end
 
+        function model = setTPFVgeometry(model, tPFVgeometry)
+        % tPFVgeometry should be instance of TwoPointFiniteVolumeGeometry or MutableTwoPointFiniteVolumeGeometry
+
+            sep = 'Separator';
+            
+            model = setTPFVgeometry@ElectroChemicalComponent(model, tPFVgeometry);
+            model.(sep) = model.(sep).setTPFVgeometry(model, tPFVgeometry);
+            
+        end
 
         function state = updateAccumTerm(model, state, state0, dt)
 

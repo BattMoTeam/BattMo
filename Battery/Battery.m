@@ -1709,6 +1709,23 @@ classdef Battery < BaseModel
             
         end
 
+        function model = setTPFVgeometry(model, tPFVgeometry)
+        % tPFVgeometry should be instance of TwoPointFiniteVolumeGeometry or MutableTwoPointFiniteVolumeGeometry
+
+            model.G.parentGrid.tPFVgeometry = tPFVgeometry;
+            
+            elyte   = 'Electrolyte';
+            ne      = 'NegativeElectrode';
+            pe      = 'PositiveElectrode';
+            thermal = 'ThermalModel';
+
+            model.(elyte)   = model.(elyte).setTPFVgeometry(tPFVgeometry);
+            model.(ne)      = model.(ne).setTPFVgeometry(tPFVgeometry);
+            model.(pe)      = model.(pe).setTPFVgeometry(tPFVgeometry);
+            model.(thermal) = model.(thermal).setTPFVgeometry(tPFVgeometry);
+            
+        end
+        
         function model = validateModel(model, varargin)
 
             model.PositiveElectrode.ActiveMaterial = model.PositiveElectrode.ActiveMaterial.setupDependentProperties();

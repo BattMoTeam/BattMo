@@ -117,6 +117,13 @@ classdef ThermalComponent < BaseModel
             end
             
         end
+
+        function model = setTPFVgeometry(model, tPFVgeometry)
+        % tPFVgeometry should be instance of TwoPointFiniteVolumeGeometry or MutableTwoPointFiniteVolumeGeometry
+
+            model.G.parentGrid.tPFVgeometry = tPFVgeometry;
+            
+        end
         
         function state = updateAccumTerm(model, state, state0, dt)
         % Assemble the accumulation term for the energy equation
