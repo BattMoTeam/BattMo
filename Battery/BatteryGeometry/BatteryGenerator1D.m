@@ -76,10 +76,7 @@ classdef BatteryGenerator1D < BatteryGenerator
 
             G = tensorGrid(x);
 
-            parentGrid = ADgrid(G);
-            parentGrid.tPFVgeometry.faceArea = gen.faceArea;
-
-            parentGrid.updateTPFgeometry();
+            parentGrid = Grid(G, 'faceArea', gen.faceArea);
 
             G = genSubGrid(parentGrid, (1 : parentGrid.getNumberOfCells())');
             

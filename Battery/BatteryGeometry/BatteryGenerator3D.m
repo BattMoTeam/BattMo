@@ -120,8 +120,7 @@ classdef BatteryGenerator3D < BatteryGenerator
 
             G = tensorGrid(x, y, z);
             
-            parentGrid = ADgrid(G);
-            parentGrid.updateTPFgeometry();
+            parentGrid = Grid(G);
             
             nx = sum(nxs);
             ny = sum(nys);
