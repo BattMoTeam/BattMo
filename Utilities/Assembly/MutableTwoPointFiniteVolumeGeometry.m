@@ -35,7 +35,7 @@ classdef MutableTwoPointFiniteVolumeGeometry < matlab.mixin.Copyable
             tPFVgeometry.nodes = tPFVgeometryInput.nodes;
             tPFVgeometry.hT    = tPFVgeometryInput.hT;
 
-            if isfield(tPFVgeometryInput, 'faceArea') & isprop(tPFVgeometryInput, 'faceArea')
+            if isfield(tPFVgeometryInput, 'faceArea') | isprop(tPFVgeometryInput, 'faceArea')
                 tPFVgeometry.faceArea = tPFVgeometryInput.faceArea;
             end
             

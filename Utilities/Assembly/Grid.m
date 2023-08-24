@@ -62,29 +62,28 @@ classdef Grid
 
                 grid = grid.setupHelpers();
 
-                %  setup initial tPFVgeometry
+                % Setup  tPFVgeometry
                 nodecoords = reshape(G.nodes.coords', [], 1);
                 tPFVgeometry = grid.computeTPFgeometry(nodecoords, opt.faceArea);
-
-                grid = grid.assignTwoPointFiniteVolumeGeometry(tPFVgeometry);
+                grid = grid.initializeTwoPointFiniteVolumeGeometry(tPFVgeometry);
                 
             end
             
         end
 
-        function adgrid = convertToAD(grid)
+        function mgrid = convertToAD(grid)
 
-            adgrid = ADgrid();
+            mgrid = MutableGrid();
             
-            adgrid.topology = grid.topology;
+            mgrid.topology = grid.topology;
             
-            adgrid = adgrid.setupHelpers();
-            adgrid = adgrid.assignTwoPointFiniteVolumeGeometry(grid.tPFVgeometry);
+            mgrid = mgrid.setupHelpers();
+            mgrid = mgrid.initializeTwoPointFiniteVolumeGeometry(grid.tPFVgeometry);
             
         end
         
 
-        function grid = assignTwoPointFiniteVolumeGeometry(grid, tPFVgeometry)
+        function grid = initializeTwoPointFiniteVolumeGeometry(grid, tPFVgeometry)
 
             grid.tPFVgeometry = TwoPointFiniteVolumeGeometry(tPFVgeometry);
 
@@ -243,7 +242,6 @@ classdef Grid
 
         function grid = setupCellFluxOperators(grid)
 
-            grid.updateTPFgeometry();
             G = getMRSTgrid(grid);
             grid.cellFluxOperators = getCellFluxOperatorsAll(G);
             

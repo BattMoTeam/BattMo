@@ -1,4 +1,4 @@
-classdef ADgrid < Grid
+classdef MutableGrid < Grid
     
     properties
         
@@ -8,35 +8,34 @@ classdef ADgrid < Grid
     end
     
     methods
-
         
-        function adgrid = setupHelpers(adgrid)
+        function mgrid = setupHelpers(mgrid)
 
-            adgrid = setupHelpers@Grid(adgrid);
+            mgrid = setupHelpers@Grid(mgrid);
             
-            tp = adgrid.topology;
+            tp = mgrid.topology;
             
             switch tp.griddim
               case 1
-                adgrid = adgrid.setup1D();
+                mgrid = mgrid.setup1D();
               case 3
-                adgrid = adgrid.setup3D();               
+                mgrid = mgrid.setup3D();               
               otherwise
                 error('Grid dimension not implemented yet.')
             end
             
         end
 
-        function grid = assignTwoPointFiniteVolumeGeometry(grid, tPFVgeometry)
+        function grid = initializeTwoPointFiniteVolumeGeometry(grid, tPFVgeometry)
 
             grid.tPFVgeometry = MutableTwoPointFiniteVolumeGeometry(tPFVgeometry);
 
         end
 
         
-        function adgrid = setup1D(adgrid)
+        function mgrid = setup1D(mgrid)
 
-            tp = adgrid.topology;
+            tp = mgrid.topology;
 
             tbls = setupTables(tp);
 
@@ -121,13 +120,13 @@ classdef ADgrid < Grid
             % cellfacedist = abs(map2.eval(faceCentroids) - map1.eval(cellCentroids))
             % hT = 1./cellfacedist*faceArea
 
-            adgrid.matrixOperators = matrixop;
+            mgrid.matrixOperators = matrixop;
             
         end
         
-        function adgrid = setup3D(adgrid)
+        function mgrid = setup3D(mgrid)
 
-            tp = adgrid.topology;
+            tp = mgrid.topology;
 
             tbls = setupTables(tp, 'includetbls', {'vectbl', 'facenode12tbl'});
 
@@ -147,11 +146,11 @@ classdef ADgrid < Grid
 
             % Variants that include spatial index
 
-            facevectbl           = tbls.facevectbl;
-            nodevectbl           = tbls.nodevectbl;
-            cellvectbl           = tbls.cellvectbl;
-            cellfacevectbl       = tbls.cellfacevectbl;
-            facenodevectbl       = tbls.facenodevectbl;
+            facevectbl     = tbls.facevectbl;
+            nodevectbl     = tbls.nodevectbl;
+            cellvectbl     = tbls.cellvectbl;
+            cellfacevectbl = tbls.cellfacevectbl;
+            facenodevectbl = tbls.facenodevectbl;
             
             facenode12vectbl     = crossIndexArray(facenode12tbl    , vectbl       , {}, 'optpureproduct', true);
             cellfacenode12vectbl = crossIndexArray(cellfacenode12tbl, vectbl       , {}, 'optpureproduct', true);
@@ -594,30 +593,49 @@ classdef ADgrid < Grid
                                                % dsq    = prod.eval(d, d);
                                                % hT     = dscaln./dsq;
 
-            adgrid.matrixOperators = matrixop;
-            adgrid.vectorHelpers   = vechelps;
+            mgrid.matrixOperators = matrixop;
+            mgrid.vectorHelpers   = vechelps;
             
         end
 
-        function tPFVgeometry = computeTPFgeometry(adgrid, nodecoords, faceArea)
+
+        function updateTPFgeometry(mgrid)
+        % uses valued stored in tPFVgeometry for nodecoords to update the other properties
+
+            tPFVgeometry = mgrid.tPFVgeometry;
+            
+            nodecoords = tPFVgeometry.nodes.coords;
+            faceArea   = tPFVgeometry.faceArea;
+
+            tp = computeTPFgeometry(mgrid, nodecoords, faceArea);
+
+            % assign the computed values
+            tPFVgeometry.cells = tp.cells;
+            tPFVgeometry.faces = tp.faces;
+            tPFVgeometry.hT    = tp.hT;
+            
+        end
+        
+        function tPFVgeometry = computeTPFgeometry(mgrid, nodecoords, faceArea)
         % The argument faceArea is only needed in 1D case.
-            tp = adgrid.topology;
+            
+            tp = mgrid.topology;
             
             switch tp.griddim
               case 1
-                tPFVgeometry = computeTPFgeometry1D(adgrid, nodecoords, faceArea);
+                tPFVgeometry = computeTPFgeometry1D(mgrid, nodecoords, faceArea);
               case 3
-                tPFVgeometry = computeTPFgeometry3D(adgrid, nodecoords);
+                tPFVgeometry = computeTPFgeometry3D(mgrid, nodecoords);
               otherwise
                 error('Grid dimension not implemented yet.')
             end
             
         end
         
-        function tPFVgeometry = computeTPFgeometry1D(adgrid, nodecoords, faceArea)
+        function tPFVgeometry = computeTPFgeometry1D(mgrid, nodecoords, faceArea)
             
-            m          = adgrid.matrixOperators;
-            tp         = adgrid.topology;
+            m  = mgrid.matrixOperators;
+            tp = mgrid.topology;
 
             nf = tp.faces.num;
 
@@ -638,13 +656,15 @@ classdef ADgrid < Grid
 
             tPFVgeometry.hT = 1./cellfacedist*faceArea;
 
-        end
-        
-        function tPFVgeometry = computeTPFgeometry3D(adgrid, nodecoords)
+            tPFVgeometry.faceArea = faceArea;
             
-            tp         = adgrid.topology;
-            m          = adgrid.matrixOperators;
-            v          = adgrid.vectorHelpers;
+        end
+
+        function tPFVgeometry = computeTPFgeometry3D(mgrid, nodecoords)
+            
+            tp = mgrid.topology;
+            m  = mgrid.matrixOperators;
+            v  = mgrid.vectorHelpers;
 
             n = tp.griddim;
             
@@ -658,9 +678,9 @@ classdef ADgrid < Grid
             nfVector2 = m.nfVector2*nfVector;
             
             triNormals = m.triNormals1*nfVector1;
-            triNormals = 0.5*adgrid.applyProduct(m.triNormals, triNormals, nfVector2);
+            triNormals = 0.5*mgrid.applyProduct(m.triNormals, triNormals, nfVector2);
 
-            triAreas = adgrid.applyProduct(m.triAreas, triNormals, triNormals);
+            triAreas = mgrid.applyProduct(m.triAreas, triNormals, triNormals);
             triAreas = triAreas.^0.5;
             
             n1Coords       = m.n1Coords*nodecoords;
@@ -705,10 +725,10 @@ classdef ADgrid < Grid
             
             d = m.d1*faceCentroids - m.d2*cellCentroids;
 
-            cellfaceNormals = adgrid.applyProduct(m.cellfaceNormals, cellfacesign, faceNormals);
+            cellfaceNormals = mgrid.applyProduct(m.cellfaceNormals, cellfacesign, faceNormals);
             
-            dscaln = adgrid.applyProduct(m.dscaln, d, cellfaceNormals);
-            dsq    = adgrid.applyProduct(m.dsq, d, d);
+            dscaln = mgrid.applyProduct(m.dscaln, d, cellfaceNormals);
+            dsq    = mgrid.applyProduct(m.dsq, d, d);
 
             tPFVgeometry.hT = dscaln./dsq;
 
