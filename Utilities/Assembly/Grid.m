@@ -43,77 +43,96 @@ classdef Grid
         function grid = Grid(G, varargin)
         % We initialize the grid using a MRST grid structure
 
-            opt = struct('faceArea', []);
-            opt = merge_options(opt, varargin{:});
-            
-            topology.cells.facePos   = G.cells.facePos;
-            topology.cells.faces     = G.cells.faces;
-            topology.cells.num       = G.cells.num;
-            topology.faces.nodePos   = G.faces.nodePos;
-            topology.faces.nodes     = G.faces.nodes;
-            topology.faces.num       = G.faces.num;
-            topology.faces.neighbors = G.faces.neighbors;
-            topology.nodes.num       = G.nodes.num;
-            topology.griddim         = G.griddim;
-            
-            grid.topology   = topology;
+            if nargin > 0
+                
+                opt = struct('faceArea', []);
+                opt = merge_options(opt, varargin{:});
+                
+                topology.cells.facePos   = G.cells.facePos;
+                topology.cells.faces     = G.cells.faces;
+                topology.cells.num       = G.cells.num;
+                topology.faces.nodePos   = G.faces.nodePos;
+                topology.faces.nodes     = G.faces.nodes;
+                topology.faces.num       = G.faces.num;
+                topology.faces.neighbors = G.faces.neighbors;
+                topology.nodes.num       = G.nodes.num;
+                topology.griddim         = G.griddim;
+                
+                grid.topology = topology;
 
-            tf = TwoPointFiniteVolumeGeometry();
+                grid = grid.setupHelpers();
 
-            if topology.griddim == 1
-                if isempty(opt.faceArea)
-                    tf.faceArea = 1;
-                else
-                    tf.faceArea = opt.faceArea;
-                end
+                %  setup initial tPFVgeometry
+                nodecoords = reshape(G.nodes.coords', [], 1);
+                tPFVgeometry = grid.computeTPFgeometry(nodecoords, opt.faceArea);
+
+                grid = grid.assignTwoPointFiniteVolumeGeometry(tPFVgeometry);
+                
             end
-
-            % We flatten node coordinates structure
-            tf.nodes.coords = reshape(G.nodes.coords', [], 1);
-            
-            grid.tPFVgeometry = tf;
-            
-            grid = grid.setupHelpers();
             
         end
 
-        function updateTPFgeometry(grid)
+        function adgrid = convertToAD(grid)
 
-            G  = grid.topology;
-            d  = grid.topology.griddim;
-            tf = grid.tPFVgeometry;
+            adgrid = ADgrid();
             
-            if  G.griddim == 1
-                farea = tf.faceArea;
+            adgrid.topology = grid.topology;
+            
+            adgrid = adgrid.setupHelpers();
+            adgrid = adgrid.assignTwoPointFiniteVolumeGeometry(grid.tPFVgeometry);
+            
+        end
+        
+
+        function grid = assignTwoPointFiniteVolumeGeometry(grid, tPFVgeometry)
+
+            grid.tPFVgeometry = TwoPointFiniteVolumeGeometry(tPFVgeometry);
+
+        end
+        
+        function tPFVgeometry = computeTPFgeometry(grid, nodecoords, faceArea)
+        % The argument faceArea is only needed for 1D case
+            
+            mrstG = grid.topology;
+            d = mrstG.griddim;
+            
+            if  mrstG.griddim == 1
+                farea = faceArea;
             else
                 farea = 1;
             end
             
-            G.nodes.coords = reshape(tf.nodes.coords, d, [])';
+            mrstG.nodes.coords = reshape(nodecoords, d, [])';
 
-            G.type = 'generic';
+            mrstG.type = 'generic';
 
             % Compute geometrical data
-            G = computeGeometry(G);
+            mrstG = computeGeometry(mrstG);
             
-            rock.poro = ones(G.cells.num, 1);
-            rock.perm = ones(G.cells.num, 1);
-
+            rock.poro = ones(mrstG.cells.num, 1);
+            rock.perm = ones(mrstG.cells.num, 1);
 
             % Compute half transmissibilities
-            hT = computeTrans(G, rock);
+            hT = computeTrans(mrstG, rock);
 
-            cells.centroids = reshape(G.cells.centroids', [], 1);
-            cells.volumes   = farea*G.cells.volumes;
+            cells.centroids = reshape(mrstG.cells.centroids', [], 1);
+            cells.volumes   = farea*mrstG.cells.volumes;
             
-            faces.centroids = reshape(G.faces.centroids', [], 1);
-            faces.normals   = farea*reshape(G.faces.normals', [], 1);
-            faces.areas     = farea*G.faces.areas;
+            faces.centroids = reshape(mrstG.faces.centroids', [], 1);
+            faces.normals   = farea*reshape(mrstG.faces.normals', [], 1);
+            faces.areas     = farea*mrstG.faces.areas;
 
-            grid.tPFVgeometry.cells = cells; 
-            grid.tPFVgeometry.faces = faces;
-            grid.tPFVgeometry.hT    = farea*hT;
-
+            nodes.coords = nodecoords;
+            
+            tPFVgeometry.cells = cells; 
+            tPFVgeometry.faces = faces;
+            tPFVgeometry.nodes = nodes;
+            tPFVgeometry.hT    = farea*hT;
+            
+            if  mrstG.griddim == 1
+                tPFVgeometry.faceArea = farea;
+            end
+            
         end
 
         function grid = setupHelpers(grid)
