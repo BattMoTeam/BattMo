@@ -49,9 +49,9 @@ CRate = model.Control.CRate;
 
 total = 1.2*hour/CRate;
 
-n     = 40;
-dt    = total*1.4/n;
-step  = struct('val', dt*ones(n, 1), 'control', ones(n, 1));
+n    = 40;
+dt   = total*1.4/n;
+step = struct('val', dt*ones(n, 1), 'control', ones(n, 1));
 
 tup = 0.1; % rampup value for the current function, see rampupSwitchControl
 srcfunc = @(time, I, E) rampupSwitchControl(time, tup, I, E, ...
@@ -90,18 +90,27 @@ model.verbose = true;
 
 lsr = LengthSetter1D(gridgen, {ne, pe});
 
-dosometest = false;
+dosometest = true;
 
 if dosometest
+
     reflengths = lsr.reflengths;
+
+    model2 = model;
+    model2.G.parentGrid.tPFVgeometry = copy(model2.G.parentGrid.tPFVgeometry)
+    
     v = reflengths([1; 3]);
     v = initVariablesADI(v);
 
     model = lsr.setLength(model, v);
-    v = lsr.getLength(model);
 
+    v1 = lsr.getLength(model)
+    v2 = lsr.getLength(model2)
+    
     mass = computeCellMass(model);
     cap = computeCellCapacity(model);
+
+    return
 end
 
 % ind = cellfun(@(x) not(isempty(x)), states); 
@@ -128,31 +137,29 @@ parameters= {};
 parameters{end+1} = ModelParameter(SimulatorSetup, ...
                                    'name'     , 'length'     , ...
                                    'belongsTo', 'model'      , ...
-                                   'location' , {''}      , ...
+                                   'location' , {''}         , ...
                                    'boxLims'  , [40 100]*1e-6, ...
-                                   'getfun'   , getlength   , ...
+                                   'getfun'   , getlength    , ...
                                    'setfun'   , setlength);
 
 
 cutoffVoltage = 3;
 objmatch = @(model, states, schedule, varargin) SpecificEnergyOutput(model, states, schedule, cutoffVoltage, varargin{:});
-a = objmatch(model, states, schedule);
-fn       = @plotAfterStepIV;
-obj      = @(p) evalObjectiveBattmo(p, objmatch, SimulatorSetup, parameters, 'objScaling', totval, 'afterStepFn', fn, 'NonLinearSolver', nls, 'OutputMinisteps', true);
 
-v = parameters{1}.getParameterValue(SimulatorSetup)
-SimulatorSetup = parameters{1}.setParameterValue(SimulatorSetup, v)
-v = parameters{1}.getParameterValue(SimulatorSetup)
-vs = parameters{1}.scale(v)
-v = parameters{1}.unscale(vs)
-b = evalObjectiveBattmo(vs, objmatch, SimulatorSetup, parameters, 'NonLinearSolver', nls, 'OutputMinisteps', true)
-v = parameters{1}.getParameterValue(SimulatorSetup)
+options = {'NonLinearSolver', nls, 'OutputMinisteps', true};
 
-return
+dosmalltest = false;
+if dosmalltest
+    val = objmatch(model, states, schedule);
+    sum([val{:}])
+    v = parameters{1}.getParameterValue(SimulatorSetup)
+    obj = @(p) evalObjectiveBattmo(p, objmatch, SimulatorSetup, parameters, options{:});
+    vs = parameters{1}.scale(v)
+    b = obj(vs)
+end
 
-%%
 
-doOptimization = true;
+doOptimization = false;
 
 if doOptimization
     
@@ -162,13 +169,12 @@ if doOptimization
     
 end
 
-
-doCompareGradient = false;
+doCompareGradient = true;
 if doCompareGradient
     
     p = getScaledParameterVector(SimulatorSetup, parameters);
-    [vad, gad]   = evalObjectiveBattmo(p, objmatch, SimulatorSetup, parameters, 'Gradient', 'AdjointAD');
-    [vnum, gnum] = evalObjectiveBattmo(p, objmatch, SimulatorSetup, parameters, 'Gradient', 'PerturbationADNUM', 'PerturbationSize', 1e-5);
+    [vad, gad]   = evalObjectiveBattmo(p, objmatch, SimulatorSetup, parameters, 'Gradient', 'AdjointAD', options{:});
+    [vnum, gnum] = evalObjectiveBattmo(p, objmatch, SimulatorSetup, parameters, 'Gradient', 'PerturbationADNUM', 'PerturbationSize', 1e-11);
 
     fprintf('Gradient computed using adjoint:\n');
     display(gad);
