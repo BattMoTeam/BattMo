@@ -70,7 +70,7 @@ function sens = computeSensitivitiesAdjointADBattmo(setup, states, params, getOb
     % inititialize parameters to ADI
     [modelParam, scheduleParam] = initModelParametersADI(setup, params);
     
-    % Propagate AD in model by compute again the parameters in the model that depend on the AD-parameters that have been
+    % Propagate AD in model by computing again the parameters in the model that depend on the AD-parameters that have been
     % set directly above.
     modelParam = validateModel(modelParam);
 
