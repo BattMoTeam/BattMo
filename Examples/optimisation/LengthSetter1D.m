@@ -29,13 +29,12 @@ classdef LengthSetter1D
         end
         
         function model = setLength(lengthsetter, model, v)
-        % v is length value and comp is one component name
 
             nxs        = lengthsetter.nxs;
             reflengths = lengthsetter.reflengths;
             compinds   = lengthsetter.compinds;
             
-            lgths = reflengths; % The last term used to make sure we get AD if AD is given as input
+            lgths = reflengths; 
             lgths = subsasgnAD(lgths, compinds, v);
 
             nx = sum(nxs);
