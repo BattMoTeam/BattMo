@@ -573,6 +573,7 @@ classdef BatteryLinearSolver < handle
                 opt.block_size = 1;
             end
 
+            require('linearsolvers');
             [x, extra] =  amgcl(A, b, 'amgcloptions', opt);
 
             flag   = extra.err < opt.solver.tol;

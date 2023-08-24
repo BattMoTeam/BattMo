@@ -78,9 +78,14 @@ function [paramobj, gridGenerator] = setupBatteryGridFromJson(paramobj, jsonstru
         gen.tab_nx    = jsonstruct.(geom).tab.Nx;
         gen.ne_tab_ny = jsonstruct.(geom).tab.(ne).Ny;
         gen.pe_tab_ny = jsonstruct.(geom).tab.(pe).Ny;
-        
+
+        if isfield(jsonstruct.(geom).tab, 'cap_tabs') && jsonstruct.(geom).tab.cap_tabs
+            gen.cap_tabs = true;
+        else
+            gen.cap_tabs = false;            
+        end
         % Now, we update the paramobj with the properties of the mesh. 
-        [paramobj, gridGenerator] = gen.updateBatteryInputParams(paramobj);
+        [paramobj, gen] = gen.updateBatteryInputParams(paramobj);
 
       case '2D-demo'
         

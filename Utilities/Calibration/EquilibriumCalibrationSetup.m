@@ -1,5 +1,8 @@
 classdef EquilibriumCalibrationSetup
-
+%% The goal of this class is to solve the following calibration problem:
+% Given a discharge curve, find the set of parameters that give the better match.
+% By default (calibrationCase = 1), the calibration parameters are theta100 and the volume fraction for both electrodes.
+    
     properties
         
         model % Battery model
@@ -7,7 +10,7 @@ classdef EquilibriumCalibrationSetup
         F % Faraday Constant
         Temperature = 298.15% Temperature (used in OCP curves)
 
-        % Discharge curve measured experementally at near-equilibrium condition
+        % Discharge curve measured experimentally at near-equilibrium condition
         exptime % Time [s]
         expU    % Voltage [V]
         expI    % Current [A]
@@ -16,6 +19,10 @@ classdef EquilibriumCalibrationSetup
         packingMass = 61*gram % mass of packing 
 
         calibrationCase = 1
+        % different calibration case depending on the parameters that are chosen. See method printVariableChoice
+        % At the moment, the following is implemented
+        % case 1 (default) : The calibration parameters are theta100 and volume fraction for both electrodes
+        % case 2           : The calibration parameters are theta100 for the negative electrode, the volume fractions for both electrodes
 
         calibrationCaseParameters 
         

@@ -846,7 +846,7 @@ classdef Battery < BaseModel
             if(not(opts.ResOnly) && not(opts.reverseMode))
                 state = model.initStateAD(state);
             elseif(opts.reverseMode)
-               disp('No AD initatlization in equation old style')
+               dispif(mrstVerbose, 'No AD initialization in equation old style')
                state0 = model.initStateAD(state0);
             else
                 assert(opts.ResOnly);

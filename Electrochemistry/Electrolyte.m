@@ -7,7 +7,7 @@ classdef Electrolyte < ElectroChemicalComponent
         sp % Structure with following fields
            % - z : charge number
            % - t : transference number
-        
+
         volumeFraction
 
         thermalConductivity % intrinsic thermal conductivity value
@@ -114,7 +114,7 @@ classdef Electrolyte < ElectroChemicalComponent
 
             fn = @Electrolyte.updateCurrentBcSource;
             model = model.registerPropFunction({'jBcSource', fn, {}});
-            
+
         end
         
         %IDEA: This is now an AD variable! We can express derivative of this thing
@@ -130,18 +130,18 @@ classdef Electrolyte < ElectroChemicalComponent
             effectiveVolumes = model.volumeFraction.*model.G.cells.volumes;
 
             state.massAccum  = effectiveVolumes.*cdotcc;
-            
+
         end
 
         function state = updateConductivity(model, state)
-            
+
             computeConductivity = model.computeConductivityFunc;
 
             c = state.c;
             T = state.T;
-            
+
             state.conductivity = computeConductivity(c, T);
-            
+
         end
 
         function state = updateDmuDcs(model, state)
@@ -167,14 +167,14 @@ classdef Electrolyte < ElectroChemicalComponent
         function state = updateDiffusionCoefficient(model, state)
 
             brcoef = model.BruggemanCoefficient;
-            
+
             computeD = model.computeDiffusionCoefficientFunc;
 
             c = state.c;
             T = state.T;
-            
+
             D = computeD(c, T);
-            
+
             % set effective coefficient
             state.D = D .* model.volumeFraction .^ brcoef;
 
@@ -193,7 +193,7 @@ classdef Electrolyte < ElectroChemicalComponent
             R      = model.constants.R;
             F      = model.constants.F;
             brcoef = model.BruggemanCoefficient;
-            
+
             dmudcs       = state.dmudcs;
             phi          = state.phi;
             T            = state.T;
@@ -222,7 +222,7 @@ classdef Electrolyte < ElectroChemicalComponent
 
 
             sp = model.sp;
-            
+
             % We assume that the current and the diffusion coefficient D has been updated when this function is called
             c = state.c;
             j = state.j;
