@@ -1,4 +1,13 @@
 classdef Grid
+%
+% Grid structure that can be used for a parent grid in a sub-grid (see SubGrid class).
+%
+% The geometrical properties are all stored in a immutable handle (see TwoPointFiniteVolumeGeometry class).
+%
+% By using handle, we can share the grid as a parent grid between different sub-grid instances.
+%
+% By using immutable properties, we avoid any collateral effects arising from the use of handler.
+%
 
     properties
 
@@ -14,9 +23,7 @@ classdef Grid
         % - topology.griddim
         topology
 
-        % Instance of TwoPointFiniteVolumeGeometry (handle)
-        % Using topology and the values of the node coordinates (and faceArea in 1D), we can compute all the other
-        % properties of tPFVgeometry
+        % Instance of TwoPointFiniteVolumeGeometry (handle with immutable properties)
         tPFVgeometry
 
         % Helper structures that are used in the computation of the gradient, divergence, harmonic face averages, ...
@@ -70,18 +77,6 @@ classdef Grid
             end
             
         end
-
-        function mgrid = convertToAD(grid)
-
-            mgrid = MutableGrid();
-            
-            mgrid.topology = grid.topology;
-            
-            mgrid = mgrid.setupHelpers();
-            mgrid = mgrid.initializeTwoPointFiniteVolumeGeometry(grid.tPFVgeometry);
-            
-        end
-        
 
         function grid = initializeTwoPointFiniteVolumeGeometry(grid, tPFVgeometry)
 
