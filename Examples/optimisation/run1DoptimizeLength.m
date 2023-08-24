@@ -7,7 +7,6 @@
 close all
 clc
 
-
 %% Import the required modules from MRST
 % load MRST modules
 mrstModule add ad-core mrst-gui mpfa optimization
@@ -34,10 +33,10 @@ paramobj = BatteryInputParams(jsonstruct);
 
 %% Setup the geometry and computational mesh
 
-gen = BatteryGenerator1D();
+gridgen = BatteryGenerator1D();
 
 % Now, we update the paramobj with the properties of the mesh. 
-[paramobj, gen] = gen.updateBatteryInputParams(paramobj);
+[paramobj, gridgen] = gridgen.updateBatteryInputParams(paramobj);
 
 %%  Initialize the battery model. 
 
@@ -91,38 +90,36 @@ model.verbose = true;
 
 lsr = LengthSetter1D(gridgen, {ne, pe});
 
-reflengths = lsr.reflengths;
-v = reflengths([1; 3]);
-v = initVariablesADI(v);
+dosometest = false;
 
-model = lsr.setLength(model, v);
-v = lsr.getLength(model);
+if dosometest
+    reflengths = lsr.reflengths;
+    v = reflengths([1; 3]);
+    v = initVariablesADI(v);
 
-mass = computeCellMass(model);
-cap = computeCellCapacity(model);
+    model = lsr.setLength(model, v);
+    v = lsr.getLength(model);
 
-return
+    mass = computeCellMass(model);
+    cap = computeCellCapacity(model);
+end
 
-ind = cellfun(@(x) not(isempty(x)), states); 
-states = states(ind);
+% ind = cellfun(@(x) not(isempty(x)), states); 
+% states = states(ind);
 
-E    = cellfun(@(x) x.Control.E, states); 
-time = cellfun(@(x) x.time, states); 
+% E    = cellfun(@(x) x.Control.E, states); 
+% time = cellfun(@(x) x.time, states); 
 
-plot(time, E, '*-');
+% plot(time, E, '*-');
 
 %%
-
-cutoffVoltage = 3;
-
-obj = @(model, states, schedule, varargin) SpecificEnergyOutput(model, states, schedule, cutoffVoltage, varargin{:});
-vals = obj(model, states, schedule);
-totval = sum([vals{:}]);
 
 state0 = initstate;
 SimulatorSetup = struct('model', model, 'schedule', schedule, 'state0', state0);
 
-lengthsetter = LengthSetter1D(gen, {ne, pe});
+%%
+
+lengthsetter = LengthSetter1D(gridgen, {ne, pe});
 
 getlength = @(model, dummy) lengthsetter.getLength(model);
 setlength = @(model, dummy, v) lengthsetter.setLength(model, v);
@@ -137,9 +134,19 @@ parameters{end+1} = ModelParameter(SimulatorSetup, ...
                                    'setfun'   , setlength);
 
 
+cutoffVoltage = 3;
 objmatch = @(model, states, schedule, varargin) SpecificEnergyOutput(model, states, schedule, cutoffVoltage, varargin{:});
+a = objmatch(model, states, schedule);
 fn       = @plotAfterStepIV;
 obj      = @(p) evalObjectiveBattmo(p, objmatch, SimulatorSetup, parameters, 'objScaling', totval, 'afterStepFn', fn, 'NonLinearSolver', nls, 'OutputMinisteps', true);
+
+v = parameters{1}.getParameterValue(SimulatorSetup)
+SimulatorSetup = parameters{1}.setParameterValue(SimulatorSetup, v)
+v = parameters{1}.getParameterValue(SimulatorSetup)
+vs = parameters{1}.scale(v)
+v = parameters{1}.unscale(vs)
+b = evalObjectiveBattmo(vs, objmatch, SimulatorSetup, parameters, 'NonLinearSolver', nls, 'OutputMinisteps', true)
+v = parameters{1}.getParameterValue(SimulatorSetup)
 
 return
 
