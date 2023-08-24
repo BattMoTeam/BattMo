@@ -1727,27 +1727,39 @@ classdef Battery < BaseModel
         end
         
         function model = validateModel(model, varargin)
+            
+            elyte   = 'Electrolyte';
+            ne      = 'NegativeElectrode';
+            pe      = 'PositiveElectrode';
+            am      = 'ActiveMaterial';
+            cc      = 'CurrentCollector';
+            am      = 'ActiveMaterial';
+            sep     = 'Separator';
+            itf     = 'Interface';
+            thermal = 'ThermalModel';
+            
+            model.(pe).(am) = model.(pe).(am).setupDependentProperties();
+            model.(pe).(am).AutoDiffBackend = model.AutoDiffBackend;
 
-            model.PositiveElectrode.ActiveMaterial = model.PositiveElectrode.ActiveMaterial.setupDependentProperties();
-            model.NegativeElectrode.ActiveMaterial = model.NegativeElectrode.ActiveMaterial.setupDependentProperties();
-            model.Electrolyte.Separator = model.Electrolyte.Separator.setupDependentProperties();
+            model.(ne).(am) = model.(ne).(am).setupDependentProperties();
+            model.(ne).(am).AutoDiffBackend = model.AutoDiffBackend;
             
             model = model.setupElectrolyteModel();
+            model.(elyte).(sep) = model.(elyte).(sep).setupDependentProperties();
+            model.(elyte).AutoDiffBackend = model.AutoDiffBackend;
                 
-            model.PositiveElectrode.ActiveMaterial.AutoDiffBackend= model.AutoDiffBackend;
-            model.PositiveElectrode.ActiveMaterial = model.PositiveElectrode.ActiveMaterial.validateModel(varargin{:});
-            model.NegativeElectrode.ActiveMaterial.AutoDiffBackend= model.AutoDiffBackend;
-            model.NegativeElectrode.ActiveMaterial = model.NegativeElectrode.ActiveMaterial.validateModel(varargin{:});
-            model.Electrolyte.AutoDiffBackend=model.AutoDiffBackend;
-            model.Electrolyte=model.Electrolyte.validateModel(varargin{:});
-            if model.NegativeElectrode.include_current_collectors
-                model.NegativeElectrode.CurrentCollector.AutoDiffBackend= model.AutoDiffBackend;
-                model.NegativeElectrode.CurrentCollector= model.NegativeElectrode.CurrentCollector.validateModel(varargin{:});
+            model.(pe).(am) = model.(pe).(am).validateModel(varargin{:});
+            model.(ne).(am) = model.(ne).(am).validateModel(varargin{:});
+            model.(elyte)   = model.(elyte).validateModel(varargin{:});
+
+            if model.(ne).include_current_collectors
+                model.(ne).CurrentCollector.AutoDiffBackend= model.AutoDiffBackend;
+                model.(ne).CurrentCollector= model.(ne).CurrentCollector.validateModel(varargin{:});
             end
             
-            if model.PositiveElectrode.include_current_collectors
-                model.PositiveElectrode.CurrentCollector.AutoDiffBackend=model.AutoDiffBackend;
-                model.PositiveElectrode.CurrentCollector= model.PositiveElectrode.CurrentCollector.validateModel(varargin{:});
+            if model.(pe).include_current_collectors
+                model.(pe).CurrentCollector.AutoDiffBackend=model.AutoDiffBackend;
+                model.(pe).CurrentCollector= model.(pe).CurrentCollector.validateModel(varargin{:});
             end
             
         end
