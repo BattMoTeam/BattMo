@@ -49,7 +49,7 @@ CRate = model.Control.CRate;
 
 total = 1.2*hour/CRate;
 
-n    = 40;
+n    = 400;
 dt   = total*1.4/n;
 step = struct('val', dt*ones(n, 1), 'control', ones(n, 1));
 
@@ -77,7 +77,7 @@ nls.maxIterations = 10;
 nls.errorOnFailure = false; 
 %nls.timeStepSelector=StateChangeTimeStepSelector('TargetProps', {{'Control','E'}}, 'targetChangeAbs', 0.03);
 % Change default tolerance for nonlinear solver
-nls.timeStepSelector=StateChangeTimeStepSelector('TargetProps', {{'Control','E'}}, 'targetChangeAbs', 0.03);
+% nls.timeStepSelector=StateChangeTimeStepSelector('TargetProps', {{'Control','E'}}, 'targetChangeAbs', 0.03);
 model.nonlinearTolerance = 1e-3*model.Control.Imax;
 % Set verbosity
 model.verbose = true;
@@ -90,7 +90,7 @@ model.verbose = true;
 
 lsr = LengthSetter1D(gridgen, {ne, pe});
 
-dosometest = true;
+dosometest = false;
 
 if dosometest
 
@@ -103,11 +103,14 @@ if dosometest
 
     model2 = lsr.setLength(model2, v);
 
-    v1 = lsr.getLength(model)
+    v = lsr.getLength(model)
     v2 = lsr.getLength(model2)
     
     mass = computeCellMass(model);
-    cap = computeCellCapacity(model);
+    cap  = computeCellCapacity(model);
+
+    mass2 = computeCellMass(model2);
+    cap2  = computeCellCapacity(model2);
 
     return
 end
@@ -142,8 +145,11 @@ parameters{end+1} = ModelParameter(SimulatorSetup, ...
                                    'setfun'   , setlength);
 
 
-cutoffVoltage = 3;
-objmatch = @(model, states, schedule, varargin) SpecificEnergyOutput(model, states, schedule, cutoffVoltage, varargin{:});
+params.E0    = 3;
+params.alpha = 100
+
+objmatch = @(model, states, schedule, varargin) SpecificEnergyOutput(model, states, schedule, params, varargin{:});
+% objmatch = @(model, states, schedule, varargin) EnergyOutput(model, states, schedule, varargin{:});
 
 options = {'NonLinearSolver', nls, 'OutputMinisteps', true};
 
@@ -172,8 +178,8 @@ doCompareGradient = true;
 if doCompareGradient
     
     p = getScaledParameterVector(SimulatorSetup, parameters);
-    [vad, gad]   = evalObjectiveBattmo(p, objmatch, SimulatorSetup, parameters, 'Gradient', 'AdjointAD', options{:});
-    [vnum, gnum] = evalObjectiveBattmo(p, objmatch, SimulatorSetup, parameters, 'Gradient', 'PerturbationADNUM', 'PerturbationSize', 1e-11);
+    [vad, gad]   = evalObjectiveBattmo(p, objmatch, SimulatorSetup, parameters, 'GradientMethod', 'AdjointAD', options{:});
+    [vnum, gnum] = evalObjectiveBattmo(p, objmatch, SimulatorSetup, parameters, 'GradientMethod', 'PerturbationADNUM', 'PerturbationSize', 1e-10);
 
     fprintf('Gradient computed using adjoint:\n');
     display(gad);
