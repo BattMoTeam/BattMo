@@ -97,12 +97,11 @@ if dosometest
     reflengths = lsr.reflengths;
 
     model2 = model;
-    model2.G.parentGrid.tPFVgeometry = copy(model2.G.parentGrid.tPFVgeometry)
     
     v = reflengths([1; 3]);
     v = initVariablesADI(v);
 
-    model = lsr.setLength(model, v);
+    model2 = lsr.setLength(model2, v);
 
     v1 = lsr.getLength(model)
     v2 = lsr.getLength(model2)

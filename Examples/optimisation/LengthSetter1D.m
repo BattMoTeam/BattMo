@@ -48,9 +48,9 @@ classdef LengthSetter1D
                 x = subsasgnAD(x, startind + (1 : nxs(i)), x(startind) + cumsum(dx));
                 startind = startind + nxs(i);
             end
-            
-            model.G.parentGrid.tPFVgeometry.nodes.coords = x;
-            model.G.parentGrid.updateTPFgeometry();
+
+            tPFVgeometry = model.G.parentGrid.computeTPFVgeometry(x);
+            model.G.parentGrid = model.G.parentGrid.assignTPFVgeometry(tPFVgeometry);
 
         end
 
