@@ -1064,8 +1064,8 @@ classdef Battery < BaseModel
                 
                 scalingcoef = (vsf*vols(1)*n*F)/surfp;
                 
-                eqs{ei.ne_am_sd_massCons}    = scalingcoef*state.(ne).(am).(sd).massCons;
-                eqs{ei.ne_am_sd_soliddiffeq} = scalingcoef*state.(ne).(am).(sd).solidDiffusionEq;
+                eqs{ei.ne_am_sd_massCons}    = scalingcoef.*state.(ne).(am).(sd).massCons;
+                eqs{ei.ne_am_sd_soliddiffeq} = scalingcoef.*state.(ne).(am).(sd).solidDiffusionEq;
               case 'interParticleOnly'
                 eqs{ei.ne_am_massCons} = state.(ne).(am).massCons*massConsScaling;
               otherwise
@@ -1075,7 +1075,7 @@ classdef Battery < BaseModel
             
             switch model.(pe).(am).diffusionModelType
               case 'simple'
-                eqs{ei.pe_am_massCons}       = state.(pe).(am).massCons*massConsScaling;
+                eqs{ei.pe_am_massCons}       = state.(pe).(am).massCons.*massConsScaling;
                 vols = battery.(pe).(am).(itf).G.getVolumes();
                 eqs{ei.pe_am_sd_soliddiffeq} = state.(pe).(am).(sd).solidDiffusionEq.*massConsScaling.*vols/dt;
               case 'full'
@@ -1089,8 +1089,8 @@ classdef Battery < BaseModel
                 
                 scalingcoef = (vsf*vol(1)*n*F)/surfp;
 
-                eqs{ei.pe_am_sd_massCons} = scalingcoef*state.(pe).(am).(sd).massCons;
-                eqs{ei.pe_am_sd_soliddiffeq} = scalingcoef*state.(pe).(am).(sd).solidDiffusionEq;
+                eqs{ei.pe_am_sd_massCons} = scalingcoef.*state.(pe).(am).(sd).massCons;
+                eqs{ei.pe_am_sd_soliddiffeq} = scalingcoef.*state.(pe).(am).(sd).solidDiffusionEq;
               case 'interParticleOnly'
                 eqs{ei.pe_am_massCons} = state.(pe).(am).massCons*massConsScaling;                
               otherwise
@@ -1186,35 +1186,25 @@ classdef Battery < BaseModel
 
             elyte_c_source = zeros(battery.(elyte).G.getNumberOfCells(), 1);
             elyte_e_source = zeros(battery.(elyte).G.getNumberOfCells(), 1);
+
             
             % setup AD 
-            phi = state.(elyte).phi;
-            if isa(phi, 'ADI')
-                adsample = getSampleAD(phi);
-                adbackend = model.AutoDiffBackend;
-                elyte_c_source = adbackend.convertToAD(elyte_c_source, adsample);
-            end
-            
-            coupnames = model.couplingNames;
-            
+            phi     = state.(elyte).phi;
             ne_Rvol = state.(ne).(am).Rvol;
-            if isa(ne_Rvol, 'ADI') & ~isa(elyte_c_source, 'ADI')
-                adsample = getSampleAD(ne_Rvol);
+            pe_Rvol = state.(pe).(am).Rvol;
+            
+            if isa(phi, 'ADI') | isa(ne_Rvol, 'ADI') | isa(pe_Rvol, 'ADI') | isa(vols, 'ADI')
+                adsample = getSampleAD(phi, ne_Rvol, pe_Rvol, vols);
                 adbackend = model.AutoDiffBackend;
                 elyte_c_source = adbackend.convertToAD(elyte_c_source, adsample);
             end
+
+            coupnames = model.couplingNames;
             
             coupterm = getCoupTerm(couplingterms, 'NegativeElectrode-Electrolyte', coupnames);
             elytecells = coupterm.couplingcells(:, 2);
             elyte_c_source(elytecells) = ne_Rvol.*vols(elytecells);
-            
-            pe_Rvol = state.(pe).(am).Rvol;
-            if isa(pe_Rvol, 'ADI') & ~isa(elyte_c_source, 'ADI')
-                adsample = getSampleAD(pe_Rvol);
-                adbackend = model.AutoDiffBackend;
-                elyte_c_source = adbackend.convertToAD(elyte_c_source, adsample);
-            end
-            
+
             coupterm = getCoupTerm(couplingterms, 'PositiveElectrode-Electrolyte', coupnames);
             elytecells = coupterm.couplingcells(:, 2);
             elyte_c_source(elytecells) = pe_Rvol.*vols(elytecells);
