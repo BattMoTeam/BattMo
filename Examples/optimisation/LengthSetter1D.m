@@ -49,9 +49,9 @@ classdef LengthSetter1D
                 startind = startind + nxs(i);
             end
 
-            tPFVgeometry = model.G.parentGrid.computeTPFVgeometry(x);
-            model.G.parentGrid = model.G.parentGrid.assignTPFVgeometry(tPFVgeometry);
-
+            [tPFVgeometry, model.G.parentGrid] = model.G.parentGrid.computeTPFVgeometry(x, 'assemblyType', 'AD');
+            model = model.setTPFVgeometry(tPFVgeometry);
+            
         end
 
         function v = getLength(lengthsetter, model)
