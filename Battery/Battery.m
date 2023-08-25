@@ -1722,7 +1722,10 @@ classdef Battery < BaseModel
             model.(elyte)   = model.(elyte).setTPFVgeometry(tPFVgeometry);
             model.(ne)      = model.(ne).setTPFVgeometry(tPFVgeometry);
             model.(pe)      = model.(pe).setTPFVgeometry(tPFVgeometry);
-            model.(thermal) = model.(thermal).setTPFVgeometry(tPFVgeometry);
+
+            if model.use_thermal
+                model.(thermal) = model.(thermal).setTPFVgeometry(tPFVgeometry);
+            end
             
         end
         

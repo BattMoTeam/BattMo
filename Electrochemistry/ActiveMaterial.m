@@ -363,7 +363,7 @@ classdef ActiveMaterial < ElectronicComponent
             itf = 'Interface';
             
             model = setTPFVgeometry@ElectronicComponent(model, tPFVgeometry);
-            model.(itf) = model.(itf).setTPFVgeometry(model, tPFVgeometry);
+            model.(itf) = model.(itf).setTPFVgeometry(tPFVgeometry);
             
         end
 

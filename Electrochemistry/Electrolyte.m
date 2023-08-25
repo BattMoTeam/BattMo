@@ -121,7 +121,7 @@ classdef Electrolyte < ElectroChemicalComponent
             sep = 'Separator';
             
             model = setTPFVgeometry@ElectroChemicalComponent(model, tPFVgeometry);
-            model.(sep) = model.(sep).setTPFVgeometry(model, tPFVgeometry);
+            model.(sep) = model.(sep).setTPFVgeometry(tPFVgeometry);
             
         end
 
