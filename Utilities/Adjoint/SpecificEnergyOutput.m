@@ -1,10 +1,10 @@
-function obj = SpecificEnergyOutput(model, states, schedule, cutoffVoltage, varargin)
+function obj = SpecificEnergyOutput(model, states, schedule, params, varargin)
 %
 %
 % SYNOPSIS:
 %   function obj = SpecificEnergy(model, states, schedule, varargin)
 %
-% DESCRIPTION: Computes the specific energy output, sum_{i} ( E_i*I_i*dt_i ) / mass. Here, the index i denotes the time step.
+% DESCRIPTION: Computes the specific energy output, sum_{i} ( E_i*I_i*dt_i * cutoff(Ei)) / mass. Here, the index i denotes the time step.
 %
 %              This function can only be run using 'IEswitch' control where the lowerCutoffVoltage given there is lower than cutoffVoltage
 %
@@ -12,6 +12,11 @@ function obj = SpecificEnergyOutput(model, states, schedule, cutoffVoltage, vara
 %   model     - Battery model that is used by the solver
 %   states    - Input states
 %   schedule  - Schedule used for the simulation
+%   params    - with fields
+%                - E0
+%                - alpha
+%               which defines the function: cutoff(E) = 0.5 - 1/pi*atan(alpha*(E - E0))
+%
 %
 % KEYWORD ARGUMENTS:
 %
@@ -50,6 +55,8 @@ function obj = SpecificEnergyOutput(model, states, schedule, cutoffVoltage, vara
         dts      = dts(opt.tStep);
     end
 
+    cutoff = @(E) cutoffGeneric(E, params);
+    
     obj = repmat({[]}, numSteps, 1);
 
     for step = 1:numSteps
@@ -69,15 +76,20 @@ function obj = SpecificEnergyOutput(model, states, schedule, cutoffVoltage, vara
             I = state.Control.I; 
         end
 
-        if value(E) > cutoffVoltage
-            obj{step} = I*E*dt;
-        else
-            obj{step} = double2ADI(0, I*E*dt);
-        end
+        obj{step} = I*E*cutoff(E)*dt;
+        
     end
 
 end
 
+function y = cutoffGeneric(E, params)
+
+    E0    = params.E0;
+    alpha = params.alpha;
+    
+    y = 0.5 - 1/pi*atan(alpha*(E - E0));
+    
+end
 
 function isok = checkConsistency(model, schedule, cutoffVoltage)
     
