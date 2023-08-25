@@ -1,4 +1,4 @@
-classdef Grid < handle
+classdef Grid
 %
 % Grid structure that can be used for a parent grid in a sub-grid (see SubGrid class).
 %
@@ -19,7 +19,7 @@ classdef Grid < handle
 % - function jsq                    = getCellFluxNorm(grid, u)        % return norms of flux (no AD compliant version for the moment!)
 
 
-        properties (SetAccess = protected)
+    properties (SetAccess = protected)
 
         % Description of topology using MRST grid structures: The fieds are
         % - topology.cells.facePos
@@ -56,8 +56,6 @@ classdef Grid < handle
         % Helpers for AD assembly
         matrixOperators
         vectorHelpers
-
-        assemblyType = 'MRST';
         
     end
 
@@ -83,69 +81,55 @@ classdef Grid < handle
                 
                 grid.topology = topology;
 
-                grid.setupHelpers();
+                grid = grid.setupHelpers();
 
                 % Setup  tPFVgeometry
                 nodecoords = reshape(G.nodes.coords', [], 1);
-                grid.setTPFVgeometry(nodecoords, opt.faceArea);
+                tPFVgeometry = grid.computeTPFVgeometry(nodecoords, ...
+                                                        'faceArea', opt.faceArea);
+                grid = grid.assignTPFVgeometry(tPFVgeometry);
                 
             end
             
         end
 
-        function assignTPFVgeometry(grid, tPFVgeometry)
+        function grid = assignTPFVgeometry(grid, tPFVgeometry)
         % Assign given TwoPointFiniteVolumeGeometry object given by tPFVgeometry to grid
             
             grid.tPFVgeometry = TwoPointFiniteVolumeGeometry(tPFVgeometry);
             
         end
-
-        function useADassembly(grid)
-        % Switch to AD assembly type and 
-            
-            grid.assemblyType = 'AD';
-            
-            if isempty(grid.matrixOperators)
-
-                grid.setupADhelpers();
-                
-            end
-            
-        end
-
-        function useMrstAssembly(grid)
-        % Switch AD assembly flag to false. We use genuinue MRST functions to compute tPFVgeometry
-            
-            grid.assemblyType = 'MRST';
-            
-        end
-
-        function setTPFVgeometry(grid, nodecoords, faceArea)
-
-            tPFVgeometry = computeTPFVgeometry(grid, nodecoords, faceArea);
-            grid.assignTPFVgeometry(tPFVgeometry);
-            
-        end
         
-        function tPFVgeometry = computeTPFVgeometry(grid, nodecoords, faceArea)
+        function [tPFVgeometry, grid] = computeTPFVgeometry(grid, nodecoords, varargin)
         % Given node coordinates (and faceArea - only required for 1D problem), we return the tPFVgeometry as a
         % TwoPointFiniteVolumeGeometry instance
+
+            opt = struct('faceArea', [], ...
+                         'assemblyType', 'MRST');
+            opt = merge_options(opt, varargin{:});
             
-            switch grid.assemblyType
+            switch opt.assemblyType
 
               case 'MRST'
                 
-                tPFVgeometry = computeTPFVgeometryMRST(grid, nodecoords, faceArea);
+                tPFVgeometry = computeTPFVgeometryMRST(grid, nodecoords, opt.faceArea);
                 
               case 'AD'                
 
-                tPFVgeometry = computeTPFVgeometryAD(grid, nodecoords, faceArea);
+                if isempty(grid.matrixOperators)
+
+                    grid = grid.setupADhelpers();
+                    
+                end
+                
+                tPFVgeometry = computeTPFVgeometryAD(grid, nodecoords, opt.faceArea);
 
               otherwise
                 
                 error('assembly type not recognized');
                 
             end
+            
         end
         
         function tPFVgeometry = computeTPFVgeometryMRST(grid, nodecoords, faceArea)
@@ -213,7 +197,7 @@ classdef Grid < handle
             
         end
         
-        function setupHelpers(grid)
+        function grid = setupHelpers(grid)
         % set the helpers structure.
 
             tp = grid.topology;
@@ -301,14 +285,14 @@ classdef Grid < handle
                                   'faceextfacemap', faceextfacemap);
         end
 
-        function setupCellFluxOperators(grid)
+        function grid = setupCellFluxOperators(grid)
         % Helper operators for CellFluxNorm. Note : those have no AD compliant version for the moment.
             G = getMRSTgrid(grid);
             grid.cellFluxOperators = getCellFluxOperatorsAll(G);
             
         end
 
-        function setupADhelpers(grid)
+        function grid = setupADhelpers(grid)
         % Setup the AD helper structures matrixOperators and vectorHelpers.
         % Those are used to compute the geometrical properties in computeTPFVgeometryAD.
             
@@ -316,9 +300,9 @@ classdef Grid < handle
             
             switch tp.griddim
               case 1
-                grid.setupADhelpers1D();
+                grid = grid.setupADhelpers1D();
               case 3
-                grid.setupADhelpers3D();               
+                grid = grid.setupADhelpers3D();               
               otherwise
                 error('Grid dimension not implemented yet.')
             end
@@ -326,7 +310,7 @@ classdef Grid < handle
         end
         
 
-        function setupADhelpers1D(grid)
+        function grid = setupADhelpers1D(grid)
         % AD helpers in 1D
             
             tp = grid.topology;
@@ -418,7 +402,7 @@ classdef Grid < handle
             
         end
         
-        function setupADhelpers3D(grid)
+        function grid = setupADhelpers3D(grid)
         % AD helpers in 3D
             
             tp = grid.topology;
