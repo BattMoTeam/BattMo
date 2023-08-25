@@ -33,9 +33,6 @@ classdef Grid
         % - topology.griddim
         topology
 
-        % Instance of TwoPointFiniteVolumeGeometry (handle with immutable properties)
-        tPFVgeometry
-
         % Helper structures that are used in the computation of the gradient, divergence, harmonic face averages, ...
         % - helpers.diffop.grad                 (sparse matrix used in getGradient)
         % - helpers.diffop.div                  (sparse matrix used in getDiv)
@@ -58,6 +55,14 @@ classdef Grid
         vectorHelpers
         
     end
+
+    properties
+
+        % Instance of TwoPointFiniteVolumeGeometry (handle with immutable properties)
+        tPFVgeometry
+
+    end
+    
 
     methods
 
@@ -85,14 +90,7 @@ classdef Grid
             nodecoords = reshape(G.nodes.coords', [], 1);
             tPFVgeometry = grid.computeTPFVgeometry(nodecoords, ...
                                                     'faceArea', opt.faceArea);
-            grid = grid.assignTPFVgeometry(tPFVgeometry);
-            
-        end
-
-        function grid = assignTPFVgeometry(grid, tPFVgeometry)
-        % Assign given TwoPointFiniteVolumeGeometry object given by tPFVgeometry to grid
-            
-            grid.tPFVgeometry = TwoPointFiniteVolumeGeometry(tPFVgeometry);
+            grid.tPFVgeometry = tPFVgeometry;
             
         end
         
