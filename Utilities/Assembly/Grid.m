@@ -64,32 +64,28 @@ classdef Grid
         function grid = Grid(G, varargin)
         % We initialize the grid using a MRST grid structure
 
-            if nargin > 0
-                
-                opt = struct('faceArea', []);
-                opt = merge_options(opt, varargin{:});
-                
-                topology.cells.facePos   = G.cells.facePos;
-                topology.cells.faces     = G.cells.faces;
-                topology.cells.num       = G.cells.num;
-                topology.faces.nodePos   = G.faces.nodePos;
-                topology.faces.nodes     = G.faces.nodes;
-                topology.faces.num       = G.faces.num;
-                topology.faces.neighbors = G.faces.neighbors;
-                topology.nodes.num       = G.nodes.num;
-                topology.griddim         = G.griddim;
-                
-                grid.topology = topology;
+            opt = struct('faceArea', []);
+            opt = merge_options(opt, varargin{:});
+            
+            topology.cells.facePos   = G.cells.facePos;
+            topology.cells.faces     = G.cells.faces;
+            topology.cells.num       = G.cells.num;
+            topology.faces.nodePos   = G.faces.nodePos;
+            topology.faces.nodes     = G.faces.nodes;
+            topology.faces.num       = G.faces.num;
+            topology.faces.neighbors = G.faces.neighbors;
+            topology.nodes.num       = G.nodes.num;
+            topology.griddim         = G.griddim;
+            
+            grid.topology = topology;
 
-                grid = grid.setupHelpers();
+            grid = grid.setupHelpers();
 
-                % Setup  tPFVgeometry
-                nodecoords = reshape(G.nodes.coords', [], 1);
-                tPFVgeometry = grid.computeTPFVgeometry(nodecoords, ...
-                                                        'faceArea', opt.faceArea);
-                grid = grid.assignTPFVgeometry(tPFVgeometry);
-                
-            end
+            % Setup  tPFVgeometry
+            nodecoords = reshape(G.nodes.coords', [], 1);
+            tPFVgeometry = grid.computeTPFVgeometry(nodecoords, ...
+                                                    'faceArea', opt.faceArea);
+            grid = grid.assignTPFVgeometry(tPFVgeometry);
             
         end
 
@@ -139,7 +135,7 @@ classdef Grid
             mrstG = grid.topology;
             d = mrstG.griddim;
             
-            if  mrstG.griddim == 1
+            if  mrstG.griddim == 1 & ~isempty(faceArea)
                 farea = faceArea;
             else
                 farea = 1;
@@ -188,6 +184,10 @@ classdef Grid
             
             switch tp.griddim
               case 1
+                if nargin < 3 || isempty(faceArea)
+                    % we use the faceArea stored in current tPFVgeometry
+                    faceArea = grid.tPFVgeometry.faceArea;
+                end
                 tPFVgeometry = computeTPFVgeometryAD_1D(grid, nodecoords, faceArea);
               case 3
                 tPFVgeometry = computeTPFVgeometryAD_3D(grid, nodecoords);
@@ -880,6 +880,10 @@ classdef Grid
         
         function tPFVgeometry = computeTPFVgeometryAD_1D(grid, nodecoords, faceArea)
         % version of computeTPFVgeometryAD in 1D
+
+            if isempty(faceArea)
+                faceArea = 1;
+            end
             
             m  = grid.matrixOperators;
             tp = grid.topology;
