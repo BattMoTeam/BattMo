@@ -42,7 +42,10 @@ function obj = SpecificEnergyOutput(model, states, schedule, params, varargin)
     if opt.checkConsistency
         assert(checkConsistency(model, schedule, cutoffVoltage));
     end
-    
+
+    mass = computeCellMass(model);
+    mass = mass + params.extraMass;
+
     dts   = schedule.step.val;
 
     tSteps = opt.tStep;
@@ -75,8 +78,8 @@ function obj = SpecificEnergyOutput(model, states, schedule, params, varargin)
             E = state.Control.E;
             I = state.Control.I; 
         end
-
-        obj{step} = I*E*cutoff(E)*dt;
+        
+        obj{step} = I*E*cutoff(E)*dt./mass;
         
     end
 
@@ -87,7 +90,7 @@ function y = cutoffGeneric(E, params)
     E0    = params.E0;
     alpha = params.alpha;
     
-    y = 0.5 - 1/pi*atan(alpha*(E - E0));
+    y = 0.5 + 1/pi*atan(alpha*(E  - E0));
     
 end
 
