@@ -72,8 +72,8 @@ classdef ParameterFitting
             itf = 'Interface';
             sd  = 'SolidDiffusion';
 
-            Vs.n = sum(model.(ne).(am).G.cells.volumes);
-            Vs.p = sum(model.(pe).(am).G.cells.volumes);
+            Vs.n = sum(model.(ne).(am).G.getVolumes());
+            Vs.p = sum(model.(pe).(am).G.getVolumes());
 
             cmaxs.n = model.(ne).(am).(itf).cmax;
             cmaxs.p = model.(pe).(am).(itf).cmax;
