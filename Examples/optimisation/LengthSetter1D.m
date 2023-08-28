@@ -54,11 +54,10 @@ classdef LengthSetter1D
             
         end
 
-        function v = getLength(lengthsetter, model)
+        function v = getAllLengths(lengthsetter, model)
         % v is length value and comp is one component name
 
             nxs      = lengthsetter.nxs;
-            compinds = lengthsetter.compinds;
             
             x = model.G.parentGrid.tPFVgeometry.nodes.coords;
 
@@ -71,10 +70,17 @@ classdef LengthSetter1D
                 xstart = x(nxs(i) + 1);
             end
 
-            v = v(compinds);
-
         end
-        
+
+
+        function v = getLength(lengthsetter, model)
+
+            compinds = lengthsetter.compinds;
+
+            v = lengthsetter.getAllLengths(model);
+            v = v(compinds);
+            
+        end
     end
     
 end
