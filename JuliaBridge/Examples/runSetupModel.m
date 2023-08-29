@@ -12,41 +12,38 @@ casenames = casenames{2};
 % casenames = {'4680_case'};
 
 %JSON file folder
-battmo_folder = fileparts(mfilename('fullpath'));
-battmo_jl_folder = fullfile(battmo_folder, '../../../BattMo.jl');
-jsonfolder = fullfile(battmo_jl_folder, 'test/battery/data/jsonfiles/');
+battmo_folder    = battmoDir();
+battmo_jl_folder = '/home/xavier/Julia/BattMo/';
+jsonfolder       = fullfile(battmo_jl_folder, 'test/battery/data/jsonfiles/');
 
-if exist('setupMatlabModel') == 0
-    adddir = fullfile(battmo_folder, '../GenerateModel');
-    addpath(adddir);
-    fprintf('Added %s to Matlab path in order to run setupMatlabModel', adddir);
-end
+
 %% Setup model from Matlab
 
 %If true a reference solution will be generated. 
-generate_reference_solution=true;
+generate_reference_solution = true;
 
-export=setupMatlabModel(casenames, jsonfolder, generate_reference_solution);
+export = setupMatlabModel(casenames, jsonfolder, generate_reference_solution);
 
 %% Setup Julia server
-jlcall(''                                                               , ...
-     'project', strcat(battmo_folder,'/','../Julia_utils/RunFromMatlab'), ... % activate a local Julia Project 
-     'setup'  , strcat(battmo_folder,'/','../Julia_utils/setup.jl')     , ...
-     'modules', {'RunFromMatlab'}                                       , ... % load a custom module 
-     'threads', 'auto'                                                  , ... % use the default number of Julia threads
-     'restart', false                                                   , ... % start a fresh Julia server environment
-     'debug'  ,true                                                     , ...
+jlcall(''                                                                          , ...
+     'project', strcat(battmo_folder, '/', 'JuliaBridge/Julia_utils/RunFromMatlab'), ... % activate a local Julia Project 
+     'setup'  , strcat(battmo_folder, '/', 'JuliaBridge/Julia_utils/setup.jl')     , ...
+     'modules', {'RunFromMatlab'}                                                  , ... % load a custom module 
+     'threads', 'auto'                                                             , ... % use the default number of Julia threads
+     'restart', false                                                              , ... % start a fresh Julia server environment
+     'debug'  , true                                                               , ...
      'source' , '"https://github.com/Erasdna/MATDaemon.jl.git"' ...
      );
 
 %% Call Julia 
 
 %Set up keyword arguments. See run_battery in mrst_utils.jl for details
-kwargs=struct('use_p2d', true , ...
-    'extra_timing'     , false, ...
-    'general_ad'       , true , ...
-    'info_level'       , 0);
-result=jlcall('RunFromMatlab.run_battery_from_matlab', {export, mfilename('fullpath'), generate_reference_solution}, kwargs);
+kwargs=struct('use_p2d'     , true , ...
+              'extra_timing', false, ...
+              'general_ad'  , true , ...
+              'info_level'  , 0);
+
+result = jlcall('RunFromMatlab.run_battery_from_matlab', {export, mfilename('fullpath'), generate_reference_solution}, kwargs);
 
 %% Plot results
 

@@ -1,4 +1,4 @@
-function  output = GenerateModelJson(jsonstruct, generate_reference_solution,varargin)
+function output = GenerateModelJson(jsonstruct, generate_reference_solution, varargin)
     
     mrstModule add ad-core mrst-gui mpfa
     
@@ -189,8 +189,6 @@ function  output = GenerateModelJson(jsonstruct, generate_reference_solution,var
     else
         output.states=[];
     end
-
-    
     
 end
 
@@ -215,38 +213,3 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with BattMo.  If not, see <http://www.gnu.org/licenses/>.
 %}
-
-%     %% Process output and recover the output voltage and current from the output states.
-%     ind = cellfun(@(x) not(isempty(x)), states); 
-%     states = states(ind);
-%     
-%     E    = cellfun(@(state) state.Control.E, states); 
-%     I    = cellfun(@(state) state.Control.I, states);
-%     time = cellfun(@(state) state.time, states); 
-% 
-%     output = struct('model'    , model    , ...
-%                     'schedule' , schedule , ... 
-%                     'initstate', initstate, ...
-%                     'time'     , time     , ... % Unit : s
-%                     'E'        , E        , ... % Unit : V
-%                     'I'        , I); ... % Unit : A
-% 
-%     output.states = states;
-%     
-%     if isfield(jsonstruct, 'Output') ...
-%         && isfield(jsonstruct.Output, 'variables') ...
-%         && any(ismember({'energy', 'energyDensity', 'specificEnergy'}, jsonstruct.Output.variables))
-%         
-%         % TODO : We could fine tuned output (at the moment we output all the possible extrav variables)
-%         mass = computeCellMass(model);
-%         vol = sum(model.G.cells.volumes);
-%         
-%         [E, I, energyDensity, specificEnergy, energy] = computeEnergyDensity(E, I, time, vol, mass);
-% 
-%         output.E              = E;
-%         output.I              = I;
-%         output.energy         = energy;          % Unit : J
-%         output.energyDensity  = energyDensity;   % Unit : J/L
-%         output.specificEnergy = specificEnergy;  % Unit : J/kg
-%         
-%     end

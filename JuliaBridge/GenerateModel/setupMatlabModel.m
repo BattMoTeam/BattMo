@@ -4,8 +4,7 @@ function export = setupMatlabModel(casename, jsonfolder, generate_reference_solu
 % - jsonfolder : folder where the json file is fetched
 % - datafolder : folder where the computed data is saved
     
-    battmo_folder = fileparts(mfilename('fullpath'));
-    battmo_folder = fullfile(battmo_folder, '../..');
+    battmo_folder = battmoDir();
 
     % load json setup file
 
@@ -41,18 +40,19 @@ function export = setupMatlabModel(casename, jsonfolder, generate_reference_solu
     export.model    = class2data(export.model);
     export.schedule = class2data(export.schedule);
 
-%     filename = sprintf('%s.mat', casename);
-%     filename = fullfile(datafolder, filename);
-% 
-%     save(filename, 'model', 'states', 'state0', "schedule")
+    %     filename = sprintf('%s.mat', casename);
+    %     filename = fullfile(datafolder, filename);
+    % 
+    %     save(filename, 'model', 'states', 'state0', "schedule")
     
-%     doplot = true;
-%     if doplot && runSimulation
-%         ind = cellfun(@(x) not(isempty(x)), states); 
-%         states = states(ind);
-%         E = cellfun(@(x) x.Control.E, states); 
-%         I = cellfun(@(x) x.Control.I, states);
-%         time = cellfun(@(x) x.time, states);
-%         plot(time, E)
-%     end
+    %     doplot = true;
+    %     if doplot && runSimulation
+    %         ind = cellfun(@(x) not(isempty(x)), states); 
+    %         states = states(ind);
+    %         E = cellfun(@(x) x.Control.E, states); 
+    %         I = cellfun(@(x) x.Control.I, states);
+    %         time = cellfun(@(x) x.time, states);
+    %         plot(time, E)
+    %     end
+    
 end

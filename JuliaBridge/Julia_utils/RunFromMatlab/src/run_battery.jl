@@ -20,12 +20,15 @@ function run_battery_from_matlab(exported::Dict{String,Any},
                 -exported: Input received by Julia
     """
 
-    #Create input
-    #If state_ref is true the simulation will try to replicate the reference solution generated in matlab
-    #by using the same timesteps, input current and cutoff voltage.
-    init=BattMo.MatlabFile(source_file, exported, state_ref=use_reference)
+    # Create input
+    # If state_ref is true the simulation will try to replicate the reference solution generated in matlab
+    # by using the same timesteps, input current and cutoff voltage.
+    init = BattMo.MatlabFile(source_file, exported, state_ref=use_reference)
+    
+    # Run simulation
     states, reports, extra, exported = BattMo.run_battery(init; kwarg...);
-    #create output
-    ret=Dict("states" => states, "reports" => reports, "extra" => extra, "exported" => exported)
+
+    # Create output
+    ret = Dict("states" => states, "reports" => reports, "extra" => extra, "exported" => exported)
     return ret
 end
