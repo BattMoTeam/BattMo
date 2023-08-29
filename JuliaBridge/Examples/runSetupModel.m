@@ -1,4 +1,3 @@
-clear jlcall_mod
 close all
 
 %% Pick source JSON files for generating model 
@@ -23,6 +22,7 @@ jsonfolder       = fullfile(battmo_jl_folder, 'test/battery/data/jsonfiles/');
 generate_reference_solution = true;
 
 export = setupMatlabModel(casenames, jsonfolder, generate_reference_solution);
+
 
 %% Setup Julia server
 jlcall(''                                                                          , ...
