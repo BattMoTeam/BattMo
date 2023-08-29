@@ -77,7 +77,9 @@ uuid = "2a0f44e3-6c83-55bd-87e4-b1978d98bd5f"
 
 [[deps.BattMo]]
 deps = ["JLD2", "JSON", "Jutul", "MAT", "Polynomials", "PrecompileTools", "StaticArrays", "Test", "Tullio"]
-path = "/home/xavier/Julia/BattMo"
+git-tree-sha1 = "89d22d905f62c3a10a0f3e3a00e7d5d2f6d060ed"
+repo-rev = "main"
+repo-url = "https://github.com/BattMoTeam/BattMo.jl"
 uuid = "6f0c0536-3c2c-4762-a987-c605a8a6f898"
 version = "0.1.2"
 
@@ -567,9 +569,9 @@ version = "2022.10.11"
 
 [[deps.MultiComponentFlash]]
 deps = ["ForwardDiff", "LinearAlgebra", "Roots", "StaticArrays"]
-git-tree-sha1 = "769e2b4ac71c3192909fcebf6f927a6af3126f96"
+git-tree-sha1 = "ea88581855cf4621f4f1fee63cc2f7492a6b1c8e"
 uuid = "35e5bd01-9722-4017-9deb-64a5d32478ff"
-version = "1.1.4"
+version = "1.1.5"
 
 [[deps.NaNMath]]
 deps = ["OpenLibm_jll"]
@@ -828,10 +830,10 @@ uuid = "aedffcd0-7271-4cad-89d0-dc628f76c6d3"
 version = "0.8.8"
 
 [[deps.StaticArrayInterface]]
-deps = ["ArrayInterface", "Compat", "IfElse", "LinearAlgebra", "Requires", "SnoopPrecompile", "SparseArrays", "Static", "SuiteSparse"]
-git-tree-sha1 = "33040351d2403b84afce74dae2e22d3f5b18edcb"
+deps = ["ArrayInterface", "Compat", "IfElse", "LinearAlgebra", "PrecompileTools", "Requires", "SparseArrays", "Static", "SuiteSparse"]
+git-tree-sha1 = "03fec6800a986d191f64f5c0996b59ed526eda25"
 uuid = "0d7ed370-da01-4f52-bd93-41d350b8b718"
-version = "1.4.0"
+version = "1.4.1"
 weakdeps = ["OffsetArrays", "StaticArrays"]
 
     [deps.StaticArrayInterface.extensions]
