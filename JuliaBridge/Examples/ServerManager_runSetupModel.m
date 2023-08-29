@@ -1,5 +1,4 @@
-close all
-
+%clear all
 %% Pick source JSON files for generating model 
 
 %JSON file cases
@@ -29,25 +28,22 @@ export=setupMatlabModel(casenames, jsonfolder, generate_reference_solution);
 
 
 %% Setup Julia server
-jlcall('', ...
-     'project', strcat(battmo_folder,'/','../Julia_utils/RunFromMatlab'), ... % activate a local Julia Project 
-     'setup', strcat(battmo_folder,'/','../Julia_utils/setup.jl'), ...
-     'modules', {'RunFromMatlab'}, ... % load a custom module 
-     'threads', 'auto', ... % use the default number of Julia threads
-     'restart', false, ... % start a fresh Julia server environment
-     'debug',true, ...
-     'source', '"https://github.com/Erasdna/MATDaemon.jl.git"' ...
-     );
+
+%Avoids recompilation
+if ~exist("man")
+    man = ServerManager('debug',true);
+end
 
 %% Call Julia 
 
 %Set up keyword arguments. See run_battery in mrst_utils.jl for details
 kwargs=struct('use_p2d',true, ...
     'extra_timing',false, ...
-    'general_ad',true)
-    %'info_level',0);
-result=jlcall('RunFromMatlab.run_battery_from_matlab', {export,mfilename('fullpath'), generate_reference_solution},kwargs);
-
+    'general_ad',true);%'info_level',0);
+man.load(export,kwargs);
+result=man.run_battery(true,[],[]);
+result=result{1};
+%man.kill()
 %% Plot results
 
 figure()
