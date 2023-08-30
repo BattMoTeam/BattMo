@@ -22,17 +22,14 @@ end
 %% Setup model from Matlab
 
 %If true a reference solution will be generated. 
-generate_reference_solution=false;
+generate_reference_solution=true;
 
 export=setupMatlabModel(casenames, jsonfolder, generate_reference_solution);
 
 
 %% Setup Julia server
 
-%Avoids recompilation
-if ~exist("man")
-    man = ServerManager('debug',true);
-end
+man = ServerManager('debug',true);
 
 %% Call Julia 
 

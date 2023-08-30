@@ -16,7 +16,7 @@ classdef ServerManager < handle
             serverFolder = fileparts(mfilename('fullpath'));
             addParameter(p, 'julia', try_find_julia_runtime, @ischar);
             addParameter(p, 'project', fullfile(serverFolder, 'RunFromMatlab'), @ischar);
-            addParameter(p, 'script_source', fullfile(serverFolder, 'RunFromMatlab/api/DaemonHandler.jl'), @ischar);
+            addParameter(p, 'script_source', fullfile(serverFolder, 'RunFromMatlab','api','DaemonHandler.jl'), @ischar);
             addParameter(p, 'startup_file', 'no', @ischar);
             addParameter(p, 'threads', 'auto', @validate_threads);
             addParameter(p, 'cwd', serverFolder, @ischar);
@@ -32,11 +32,11 @@ classdef ServerManager < handle
             
             %We will save all files related to the execution of the server
             %in a folder on the form Server_id=<port>
-            manager.use_folder = [manager.options.cwd, '/Server_id=',num2str(manager.options.port)];
-            [~,~] = mkdir([manager.use_folder,'/tmp']);
+            manager.use_folder = fullfile(manager.options.cwd, ['Server_id=',num2str(manager.options.port)]);
+            [~,~] = mkdir(fullfile(manager.use_folder,'tmp'));
             %Save options in file to be read in Julia
             op = manager.options;
-            opt_file=[manager.use_folder,'/options.mat'];
+            opt_file=fullfile(manager.use_folder,'options.mat');
             save(opt_file, "op");
        
             %Build DaemonMode call:
@@ -138,7 +138,7 @@ classdef ServerManager < handle
             end
         end
 
-        function delete(manager)
+        function shutdown(manager)
             %Close server if active
             kill_call= ['"using Revise, DaemonMode; sendExitCode(', num2str(manager.options.port), ...
                 ');"'];
