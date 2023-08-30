@@ -20,12 +20,10 @@ jsonfolder       = fullfile(battmo_jl_folder, 'test/battery/data/jsonfiles/');
 generate_reference_solution = false;
 export = setupMatlabModel(casenames, jsonfolder, generate_reference_solution);
 
+
 %% Setup Julia server
 
-% Avoids recompilation
-if ~exist("man")
     man = ServerManager('debug', true);
-end
 
 %% Call Julia 
 
