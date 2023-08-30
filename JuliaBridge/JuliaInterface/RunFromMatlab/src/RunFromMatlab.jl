@@ -1,9 +1,6 @@
 module RunFromMatlab
 
-function output()
-    println("Se her!")
-end
-#include("setup.jl")
+include("JSON_lower_overloads.jl")
 include("run_battery.jl")
 
 
