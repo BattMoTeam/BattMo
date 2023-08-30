@@ -22,7 +22,7 @@ end
 %% Setup model from Matlab
 
 %If true a reference solution will be generated. 
-generate_reference_solution=true;
+generate_reference_solution=false;
 
 export=setupMatlabModel(casenames, jsonfolder, generate_reference_solution);
 
@@ -41,7 +41,7 @@ kwargs=struct('use_p2d',true, ...
     'extra_timing',false, ...
     'general_ad',true);%'info_level',0);
 man.load(export,kwargs);
-result=man.run_battery(true,[],[]);
+result=man.run_battery(generate_reference_solution,true,[],[]);
 result=result{1};
 %man.kill()
 %% Plot results

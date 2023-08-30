@@ -16,7 +16,7 @@ classdef ServerManager < handle
             serverFolder = fileparts(mfilename('fullpath'));
             addParameter(p, 'julia', try_find_julia_runtime, @ischar);
             addParameter(p, 'project', fullfile(serverFolder, 'RunFromMatlab'), @ischar);
-            addParameter(p, 'script_source', fullfile(serverFolder, 'DaemonHandler.jl'), @ischar);
+            addParameter(p, 'script_source', fullfile(serverFolder, 'RunFromMatlab/api/DaemonHandler.jl'), @ischar);
             addParameter(p, 'startup_file', 'no', @ischar);
             addParameter(p, 'threads', 'auto', @validate_threads);
             addParameter(p, 'cwd', serverFolder, @ischar);
@@ -30,20 +30,27 @@ classdef ServerManager < handle
             parse(p, varargin{:});
             manager.options=p.Results;
             
+            %We will save all files related to the execution of the server
+            %in a folder on the form Server_id=<port>
             manager.use_folder = [manager.options.cwd, '/Server_id=',num2str(manager.options.port)];
             [~,~] = mkdir([manager.use_folder,'/tmp']);
-            %Save options in file
+            %Save options in file to be read in Julia
             op = manager.options;
             opt_file=[manager.use_folder,'/options.mat'];
             save(opt_file, "op");
        
             %Build DaemonMode call:
+
             %Manage options
             manager.base_call = [manager.options.julia, ' ', ...
                 '--startup-file=', manager.options.startup_file, ' ', ...
                 '--project=', manager.options.project, ' ', ...
                 '--threads=', manager.options.threads];
             
+            %Ensure that project is instantiated
+            instaniate_call = '"using Pkg; Pkg.instantiate();"';
+            manager.DaemonCall(instaniate_call);
+
             %Start server
             manager.startup();
 
@@ -70,19 +77,24 @@ classdef ServerManager < handle
             manager.DaemonCall(call_load);
         end
 
-        function result=run_battery(manager, use_data, data,kwargs)
+        function result=run_battery(manager, use_state_ref,use_data, data,kwargs)
             %Run battery, either using already loaded data or after loading
             if ~use_data
                 manager.load(data,kwargs);
             end
+            
+            %Load from JSON file
             load_from_file = [fullfile(manager.use_folder,tempname),'.json'];
+            %Call DaemonMode.runargs 
             call_battery = ['"using Revise, DaemonMode; runargs(',num2str(manager.options.port) ,')" ', manager.options.script_source, ...
-                ' -run_battery ', load_from_file];
+                ' -run_battery ', load_from_file, ' ', num2str(use_state_ref)];
             
             if manager.options.debug
                 fprintf("Calling run battery \n")
             end
+
             st=manager.DaemonCall(call_battery);
+            %Read only if system call completed succesfully
             if st
                 %Read julia output
                 fid = fopen(load_from_file); 
@@ -105,8 +117,8 @@ classdef ServerManager < handle
         end
 
         function startup(manager)
-            %Create serve call
-            if ~ping_server(manager.options)
+            if ~ping_server(manager.options) %If server is already live, do nothing
+                %Create DaemonMode.serve call
                 startup_call = ['"using Revise, DaemonMode; serve(', ...
                 num2str(manager.options.port), ', ', jl_bool(manager.options.shared), ...
                 ', print_stack=', jl_bool(manager.options.print_stack), ...
@@ -118,6 +130,8 @@ classdef ServerManager < handle
 
                 manager.DaemonCall(startup_call);
                 
+                %Check if server is active. Ensures that we do not make
+                %calls to the server until it is ready
                 while ~ping_server(manager.options)
                     pause(0.1);
                 end
