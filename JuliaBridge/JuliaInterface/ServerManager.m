@@ -90,7 +90,7 @@ classdef ServerManager < handle
             
         end
 
-        function result=run_battery(manager, use_state_ref,use_data, data,kwargs)
+        function result = run_battery(manager, use_state_ref, use_data, data,kwargs)
             % Run battery, either using already loaded data or after loading
             if ~use_data
                 manager.load(data, kwargs);
@@ -100,7 +100,7 @@ classdef ServerManager < handle
             load_from_file = [fullfile(manager.use_folder, tempname),'.json'];
             %Call DaemonMode.runargs 
             call_battery = ['"using Revise, DaemonMode; runargs(',num2str(manager.options.port) ,')" ', manager.options.script_source, ...
-                ' -run_battery ', load_from_file, ' ', num2str(use_state_ref)];
+                            ' -run_battery ', load_from_file, ' ', num2str(use_state_ref)];
             
             if manager.options.debug
                 fprintf("Calling run battery \n")
