@@ -20,14 +20,13 @@ function export = setupMatlabModel(casename, jsonfolder, generate_reference_solu
 
     CRate = jsonstruct.Control.CRate;
     jsonstruct.TimeStepping.totalTime = 1.4*hour/CRate;
-    jsonstruct.TimeStepping.N = 40;
+    jsonstruct.TimeStepping.N = 100;
 
-
+    
     %% To run the simulation, you need to install matlab battmo
 
     mrstModule add ad-core mrst-gui mpfa agmg linearsolvers
     export = GenerateModelJson(jsonstruct,generate_reference_solution);
-
 
     %% Save solution as a matlab struct that can be imported in Julia
 
