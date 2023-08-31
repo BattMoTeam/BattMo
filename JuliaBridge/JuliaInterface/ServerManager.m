@@ -48,7 +48,7 @@ classdef ServerManager < handle
                 '--threads=', manager.options.threads];
             
             %Ensure that project is instantiated
-            instaniate_call = '"using Pkg; Pkg.instantiate();"';
+            instaniate_call = '"using Pkg; Pkg.instantiate(); Pkg.add(https://github.com/BattMoTeam/BattMo.jl.git)"';
             manager.DaemonCall(instaniate_call);
 
             %Start server
