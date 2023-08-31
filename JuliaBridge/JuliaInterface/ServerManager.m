@@ -33,7 +33,7 @@ classdef ServerManager < handle
             %We will save all files related to the execution of the server
             %in a folder on the form Server_id=<port>
             manager.use_folder = fullfile(manager.options.cwd, ['Server_id=',num2str(manager.options.port)]);
-            [~,~] = mkdir(fullfile(manager.use_folder,'tmp'));
+            [~,~] = mkdir(manager.use_folder);
             %Save options in file to be read in Julia
             op = manager.options;
             opt_file=fullfile(manager.use_folder,'options.mat');
@@ -67,7 +67,7 @@ classdef ServerManager < handle
             %Load data onto server (requires shared=true to make sense)
             %Add warning if shared is false
 
-            write_to_file = [fullfile(manager.use_folder,tempname),'.mat'];
+            write_to_file = [tempname,'.mat'];
             call_load = ['"using Revise, DaemonMode; runargs(', num2str(manager.options.port), ')" ', manager.options.script_source, ...
                 ' -load ', write_to_file];
             save(write_to_file,"data", "kwargs");
@@ -84,7 +84,7 @@ classdef ServerManager < handle
             end
             
             %Load from JSON file
-            load_from_file = [fullfile(manager.use_folder,tempname),'.json'];
+            load_from_file = [tempname,'.json'];
             %Call DaemonMode.runargs 
             call_battery = ['"using Revise, DaemonMode; runargs(',num2str(manager.options.port) ,')" ', manager.options.script_source, ...
                 ' -run_battery ', load_from_file, ' ', num2str(use_state_ref)];

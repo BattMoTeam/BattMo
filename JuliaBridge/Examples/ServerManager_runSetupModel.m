@@ -11,8 +11,8 @@ casenames = casenames{2};
 
 %JSON file folder
 battmo_folder = fileparts(mfilename('fullpath'));
-battmo_jl_folder = fullfile(battmo_folder, '../../../BattMo.jl');
-jsonfolder = fullfile(battmo_jl_folder, 'test/battery/data/jsonfiles/');
+battmo_jl_folder = fullfile(battmo_folder, '..','..','..','BattMo.jl');
+jsonfolder = fullfile(battmo_jl_folder, 'test','battery','data','jsonfiles');
 
 if exist('setupMatlabModel') == 0
         adddir = fullfile(battmo_folder, '../GenerateModel');
@@ -36,11 +36,13 @@ man = ServerManager('debug',true);
 %Set up keyword arguments. See run_battery in mrst_utils.jl for details
 kwargs=struct('use_p2d',true, ...
     'extra_timing',false, ...
-    'general_ad',true);%'info_level',0);
+    'general_ad',true);
+
 man.load(export,kwargs);
+%% Run
 result=man.run_battery(generate_reference_solution,true,[],[]);
 result=result{1};
-%man.kill()
+
 %% Plot results
 
 figure()
