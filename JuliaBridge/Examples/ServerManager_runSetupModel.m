@@ -1,4 +1,14 @@
-%clear all
+clear all
+
+%% Setup Julia server
+
+man = ServerManager('debug', true);
+
+% Set up keyword arguments to be sent to julia solver. See run_battery in mrst_utils.jl for details
+kwargs =struct('use_p2d'     , true , ...
+               'extra_timing', false, ...
+               'general_ad'  , true);
+
 %% Pick source JSON files for generating model 
 
 %JSON file cases
@@ -9,33 +19,44 @@ casenames = casenames{2};
 % casenames = {'3d_demo_case'};
 % casenames = {'4680_case'};
 
-%JSON file folder
+% JSON file folder
 
 battmo_folder    = battmoDir();
-battmo_jl_folder = fullfile(battmo_folder, '..', BattMo.jl');
+% battmo_jl_folder = fullfile(battmo_folder, '..', BattMo.jl');
+battmo_jl_folder = '/home/xavier/Julia/BattMo';
 jsonfolder       = fullfile(battmo_jl_folder, 'test','battery','data','jsonfiles');
 
 %% Setup model from Matlab
 
-%If true a reference solution will be generated. 
-generate_reference_solution = true;
-export = setupMatlabModel(casenames, jsonfolder, generate_reference_solution);
+testCase = 'JSON';
 
-%% Setup Julia server
+switch testCase
 
-man = ServerManager('debug', true);
+  case 'Matlab'
+    
+    % If true a reference solution will be generated. 
+    generate_reference_solution = true;
+    export = setupMatlabModel(casenames, jsonfolder, generate_reference_solution);
 
-%% Call Julia 
+    man.load('data'         , export  , ...
+             'kwargs'       , kwargs  , ...
+             'inputType'    , 'Matlab', ...
+             'use_state_ref', generate_reference_solution);
+    
+  case 'JSON'
+    
+    generate_reference_solution = false;
+    inputFileName = fullfile(jsonfolder, 'p2d_40_jl.json');
 
-%Set up keyword arguments. See run_battery in mrst_utils.jl for details
-kwargs =struct('use_p2d'     , true , ...
-               'extra_timing', false, ...
-               'general_ad'  , true);
-
-man.load('data'         , export  , ...
-         'kwargs'       , kwargs  , ...
-         'inputType'    , 'Matlab', ...
-         'use_state_ref', generate_reference_solution);
+    man.load('kwargs'       , kwargs, ...
+             'inputType'    , 'JSON', ...
+             'inputFileName', inputFileName);
+    
+  otherwise
+    
+    error('testCase not recognized');
+    
+end
 
 result = man.run_battery();
 result = result{1}; 

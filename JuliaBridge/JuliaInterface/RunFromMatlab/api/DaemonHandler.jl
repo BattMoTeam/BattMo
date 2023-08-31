@@ -18,11 +18,13 @@ else
         load_file = ARGS[2]
         dat       = MAT.matread(load_file)
         inputType = dat["inputType"]
-        kwargs = juliafy_kwargs(dat["kwargs"])
+        kwargs    = juliafy_kwargs(dat["kwargs"])
+
         if inputType == "Matlab"
             data          = dat["data"]
             use_state_ref = dat["use_state_ref"]
         end
+        
         inputFileName = dat["inputFileName"]
         
         if opts["gc"]
