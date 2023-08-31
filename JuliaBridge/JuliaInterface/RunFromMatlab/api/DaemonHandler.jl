@@ -4,7 +4,7 @@ using RunFromMatlab
 juliafy_kwargs(xs::Dict{String, Any}) = Pair{Symbol, Any}[Symbol(k) => v for (k, v) in xs]
 
 script = ARGS[1]
-CALLABLE = ["-load","-load_options","-run_battery"];
+CALLABLE = ["-load", "-load_options", "-run_battery"];
 
 if !in(script,CALLABLE)
     
@@ -13,34 +13,44 @@ if !in(script,CALLABLE)
     
 else
     
-    if script=="-load"
+    if script == "-load"
         
         load_file = ARGS[2]
         dat       = MAT.matread(load_file)
-        data      = dat["data"]
-        kwargs    = juliafy_kwargs(dat["kwargs"])
-
-        if opts["debug"]
+        inputType = dat["inputType"]
+        kwargs = juliafy_kwargs(dat["kwargs"])
+        if inputType == "Matlab"
+            data          = dat["data"]
+            use_state_ref = dat["use_state_ref"]
+        end
+        inputFileName = dat["inputFileName"]
+        
+        if opts["gc"]
             rm(load_file)
         end
         
-    elseif script=="-load_options"
+    elseif script == "-load_options"
         
-        load_file =ARGS[2]
-        dat       =MAT.matread(load_file)
-        opts      =dat["op"]
+        load_file = ARGS[2]
+        dat       = MAT.matread(load_file)
+        opts      = dat["op"]
         
-    elseif script ==  "-run_battery"
-        
-        save_file = ARGS[2]
-        #Convert argument to Float
-        use_state_ref = Bool(parse(Float64,ARGS[3]))
-        println(use_state_ref)
-        output = RunFromMatlab.run_battery_from_matlab(data, load_file, use_state_ref ; kwargs ... )
+    elseif script == "-run_battery"
+
+        if inputType == "Matlab"
+            output = RunFromMatlab.run_battery_from_matlab(inputFileName, data, use_state_ref = use_state_ref; kwargs... )
+        elseif inputType == "JSON"
+            output = RunFromMatlab.run_battery_from_matlab(inputFileName; kwargs... )
+        else
+            error("inputType not recognized")
+        end
         stringdata = JSON.json(output)
+        
         # write the file with the stringdata variable information
-        open(save_file, "w") do f
+        outputFileName = ARGS[2]
+        open(outputFileName, "w") do f
             write(f, stringdata)
         end
+        
     end
 end

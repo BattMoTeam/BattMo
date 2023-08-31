@@ -17,13 +17,13 @@ jsonfolder       = fullfile(battmo_jl_folder, 'test/battery/data/jsonfiles/');
 %% Setup model from Matlab
 
 %If true a reference solution will be generated. 
-generate_reference_solution = false;
+generate_reference_solution = true;
 export = setupMatlabModel(casenames, jsonfolder, generate_reference_solution);
 
 
 %% Setup Julia server
 
-    man = ServerManager('debug', true);
+man = ServerManager('debug', true);
 
 %% Call Julia 
 
@@ -31,9 +31,13 @@ export = setupMatlabModel(casenames, jsonfolder, generate_reference_solution);
 kwargs =struct('use_p2d'     , true , ...
                'extra_timing', false, ...
                'general_ad'  , true);
-man.load(export, kwargs);
 
-result = man.run_battery(generate_reference_solution, true, [], []); 
+man.load('data'         , export  , ...
+         'kwargs'       , kwargs  , ...
+         'inputType'    , 'Matlab', ...
+         'use_state_ref', generate_reference_solution);
+
+result = man.run_battery();
 result = result{1}; 
 
 % man.kill()
