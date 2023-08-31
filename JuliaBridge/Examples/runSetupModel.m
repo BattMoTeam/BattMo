@@ -1,5 +1,4 @@
-close all
-
+%clear all
 %% Pick source JSON files for generating model 
 
 %JSON file cases
@@ -12,8 +11,8 @@ casenames = casenames{2};
 
 %JSON file folder
 battmo_folder = fileparts(mfilename('fullpath'));
-battmo_jl_folder = fullfile(battmo_folder, '../../../BattMo.jl');
-jsonfolder = fullfile(battmo_jl_folder, 'test/battery/data/jsonfiles/');
+battmo_jl_folder = fullfile(battmo_folder, '..','..','..','BattMo.jl');
+jsonfolder = fullfile(battmo_jl_folder, 'test','battery','data','jsonfiles');
 
 if exist('setupMatlabModel') == 0
         adddir = fullfile(battmo_folder, '../GenerateModel');
@@ -29,15 +28,8 @@ export=setupMatlabModel(casenames, jsonfolder, generate_reference_solution);
 
 
 %% Setup Julia server
-jlcall('', ...
-     'project', strcat(battmo_folder,'/','../JuliaInterface/RunFromMatlab'), ... % activate a local Julia Project 
-     'setup', strcat(battmo_folder,'/','../JuliaInterface/RunFromMatlab/src/JSON_lower_overloads.jl'), ...
-     'modules', {'RunFromMatlab'}, ... % load a custom module 
-     'threads', 'auto', ... % use the default number of Julia threads
-     'restart', true, ... % start a fresh Julia server environment
-     'debug',true, ...
-     'source', '"https://github.com/Erasdna/MATDaemon.jl.git"' ...
-     );
+
+man = ServerManager('debug',true);
 
 %% Call Julia 
 
@@ -46,7 +38,11 @@ kwargs=struct('use_p2d',true, ...
     'extra_timing',false, ...
     'general_ad',true);
 
-result=jlcall('RunFromMatlab.run_battery_from_matlab', {export,mfilename('fullpath'), generate_reference_solution},kwargs);
+man.load(export,kwargs);
+
+%% Run
+result=man.run_battery(generate_reference_solution,true,[],[]);
+result=result{1};
 
 %% Plot results
 

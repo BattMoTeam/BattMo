@@ -28,10 +28,14 @@ else
         use_state_ref = Bool(parse(Float64,ARGS[3]))
         println(use_state_ref)
         output=RunFromMatlab.run_battery_from_matlab(data, load_file, use_state_ref ; kwargs ... )
-        stringdata = JSON.json(output)
-        # write the file with the stringdata variable information
-        open(save_file, "w") do f
-            write(f, stringdata)
-        end
+        save_output(output,save_file);
+    end
+end
+
+function save_output(output_to_be_saved, save_file)
+    stringdata = JSON.json(output_to_be_saved)
+    # write the file with the stringdata variable information
+    open(save_file, "w") do f
+        write(f, stringdata)
     end
 end
