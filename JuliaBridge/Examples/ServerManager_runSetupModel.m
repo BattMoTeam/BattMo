@@ -10,16 +10,16 @@ casenames = casenames{2};
 % casenames = {'4680_case'};
 
 %JSON file folder
+
 battmo_folder    = battmoDir();
-battmo_jl_folder = '/home/xavier/Julia/BattMo/';
-jsonfolder       = fullfile(battmo_jl_folder, 'test/battery/data/jsonfiles/');
+battmo_jl_folder = fullfile(battmo_folder, '..', BattMo.jl');
+jsonfolder       = fullfile(battmo_jl_folder, 'test','battery','data','jsonfiles');
 
 %% Setup model from Matlab
 
 %If true a reference solution will be generated. 
 generate_reference_solution = true;
 export = setupMatlabModel(casenames, jsonfolder, generate_reference_solution);
-
 
 %% Setup Julia server
 
@@ -39,8 +39,6 @@ man.load('data'         , export  , ...
 
 result = man.run_battery();
 result = result{1}; 
-
-% man.kill()
 
 %% Plot results
 

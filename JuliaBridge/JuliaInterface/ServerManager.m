@@ -39,10 +39,11 @@ classdef ServerManager < handle
             parse(p, varargin{:});
             manager.options=p.Results;
             
-            %We will save all files related to the execution of the server
-            %in a folder on the form Server_id=<port>
+            % We will save all files related to the execution of the server
+            % in a folder on the form Server_id=<port>
             manager.use_folder = fullfile(manager.options.cwd, ['Server_id=', num2str(manager.options.port)]);
-            [~,~] = mkdir(fullfile(manager.use_folder,'tmp'));
+            [~, ~] = mkdir(manager.use_folder);
+            
             %Save options in file to be read in Julia
             op = manager.options;
             opt_file = fullfile(manager.use_folder, 'options.mat');
@@ -57,8 +58,8 @@ classdef ServerManager < handle
                                  '--threads='         , manager.options.threads];
             
             %Ensure that project is instantiated
-            instantiate_call = '"using Pkg; Pkg.instantiate();"';
-            manager.DaemonCall(instantiate_call);
+            instaniate_call = '"using Pkg; Pkg.instantiate(); Pkg.add(https://github.com/BattMoTeam/BattMo.jl.git)"';
+            manager.DaemonCall(instaniate_call);
 
             % Start server
             manager.startup();
@@ -91,7 +92,7 @@ classdef ServerManager < handle
             inputType     = opts.inputType;
             use_state_ref = opts.use_state_ref;
             
-            loadingDataFilename  = [fullfile(manager.use_folder,tempname), '.mat'];
+            loadingDataFilename = [tempname, '.mat'];
             
             switch opts.inputType
               case 'Matlab'
@@ -120,7 +121,7 @@ classdef ServerManager < handle
 
         function result = run_battery(manager)
 
-            outputFileName = [fullfile(manager.use_folder, tempname),'.json'];
+            outputFileName = [tempname,'.json'];
 
             %Call DaemonMode.runargs 
             call_battery = ['"using Revise, DaemonMode; runargs(',num2str(manager.options.port) ,')" ', manager.options.script_source, ...
