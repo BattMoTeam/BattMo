@@ -50,9 +50,16 @@ else
         
         # write the file with the stringdata variable information
         outputFileName = ARGS[2]
-        open(outputFileName, "w") do f
-            write(f, stringdata)
-        end
-        
+        save_output(output, outputFileName);
+
+end
+
+function save_output(output, outputFileName)
+
+    stringdata = JSON.json(output)
+    # write the file with the stringdata variable information
+    open(outputFileName, "w") do f
+        write(f, stringdata)
     end
+    
 end
