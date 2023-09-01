@@ -4,7 +4,7 @@ using RunFromMatlab
 juliafy_kwargs(xs::Dict{String, Any}) = Pair{Symbol, Any}[Symbol(k) => v for (k, v) in xs]
 
 script = ARGS[1]
-CALLABLE = ["-load", "-load_options", "-run_battery"];
+CALLABLE = ["-load", "-load_options", "-run_battery"]
 
 if !in(script,CALLABLE)
     
@@ -52,7 +52,10 @@ else
         outputFileName = ARGS[2]
         save_output(output, outputFileName);
 
+    end
+    
 end
+
 
 function save_output(output, outputFileName)
 

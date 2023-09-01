@@ -28,7 +28,7 @@ jsonfolder       = fullfile(battmo_jl_folder, 'test','battery','data','jsonfiles
 
 %% Setup model from Matlab
 
-testCase = 'JSON';
+testCase = 'Matlab';
 
 switch testCase
 
