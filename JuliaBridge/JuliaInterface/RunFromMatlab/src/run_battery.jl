@@ -25,7 +25,7 @@ function run_battery_from_matlab(inputFileName::String,
     init = BattMo.MatlabFile(inputFileName, data, use_state_ref = use_state_ref)
     states, reports, extra, exported = BattMo.run_battery(init; kwargs...);
     # create output
-    ret = Dict("states" => states, "reports" => reports, "extra" => extra, "exported" => exported)
+    ret = Dict("states" => states, "reports" => reports, "extra" => extra, "exported" => exported, "matlab states" => convert_state_Matlab(states,extra[:model]))
     return ret
 end
 
@@ -34,7 +34,7 @@ function run_battery_from_matlab(inputFileName::String; kwargs...)
     init = BattMo.JSONFile(inputFileName)
     states, reports, extra, exported = BattMo.run_battery(init; kwargs...);
     # create output
-    ret = Dict("states" => states, "reports" => reports, "extra" => extra, "exported" => exported)
+    ret = Dict("states" => states, "reports" => reports, "extra" => extra, "exported" => exported, "matlab states" => convert_state_Matlab(states,extra[:model]))
     return ret
     
 end
