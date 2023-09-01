@@ -24,7 +24,7 @@ JuliaBridge uses <code>DeamonMode.jl</code> to launch a persistent Julia server 
 1. Launch a command prompt window in Windows (NOT the powershell)
 1.5. (Recommended) Use the <code>cd</code> command to the place where RunFromMatlab is stored
 2. Run the following command (example):
-<code> start /b julia --startup-file=no --project=. 'using Revise, DaemonMode; serve(3000, true, call_stack=true, async=true)" </code>
+<code> julia --startup-file=no --project=. -e "using Revise, DaemonMode; serve(3000, true, call_stack=true, async=true)" </code>
 3. Running this command will block the command prompt. The server will remain active until the window is closed or it is deactivated in any other way. Calls to the server can now be made using the <code>ServerManager</code> class.
 
 ## How JuliaBridge works

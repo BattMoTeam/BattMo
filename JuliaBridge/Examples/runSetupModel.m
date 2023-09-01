@@ -14,11 +14,6 @@ battmo_folder = fileparts(mfilename('fullpath'));
 battmo_jl_folder = fullfile(battmo_folder, '..','..','..','BattMo.jl');
 jsonfolder = fullfile(battmo_jl_folder, 'test','battery','data','jsonfiles');
 
-if exist('setupMatlabModel') == 0
-        adddir = fullfile(battmo_folder, '../GenerateModel');
-        addpath(adddir);
-        fprintf('Added %s to Matlab path in order to run setupMatlabModel', adddir);
-end
 %% Setup model from Matlab
 
 %If true a reference solution will be generated. 
