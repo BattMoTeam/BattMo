@@ -457,7 +457,16 @@ classdef ActiveMaterial < ElectronicComponent
             state.massFlux = massflux;
 
         end
-            
+
+        % IDEA: We can now differentiate this guy
+        function func=AccumFunc(model,state)
+            vols   = model.G.cells.volumes;
+            vf     = model.volumeFraction;
+            amFrac = model.activeMaterialFraction;
+
+            func = vols.*vf.*amFrac.*state.c;
+        end
+        
         function state = assembleAccumTerm(model, state, state0, dt)
         % Used when diffusionModelType == 'simple'
             

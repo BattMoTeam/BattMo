@@ -842,7 +842,7 @@ classdef Battery < BaseModel
             opts = struct('ResOnly', false, 'iteration', 0, 'reverseMode', false); 
             opts = merge_options(opts, varargin{:});
             
-            time = state0.time + dt;
+            %time = state0.time + dt;
             if(not(opts.ResOnly) && not(opts.reverseMode))
                 state = model.initStateAD(state);
             elseif(opts.reverseMode)
@@ -1152,6 +1152,68 @@ classdef Battery < BaseModel
             
         end
         
+        function eqs=getAccumTerms(model,state)
+
+            % Shorthands used in this function
+            battery = model;
+            ne      = 'NegativeElectrode';
+            pe      = 'PositiveElectrode';
+            am      = 'ActiveMaterial';
+            elyte   = 'Electrolyte';
+            cc      = 'CurrentCollector';
+            am      = 'ActiveMaterial';
+            sd      = "SolidDiffusion";
+            ctrl    = 'Control';
+
+            %% Set up the governing equations
+
+            eqs = cell(1, numel(model.equationNames));
+
+            ei = model.equationIndices;
+            massConsScaling = model.con.F;
+
+            %Terms that always accumulate
+            eqs{ei.elyte_massCons}=battery.(elyte).AccumFunc(state.(elyte))*massConsScaling;
+            eqs{ei.ne_am_massCons}=battery.(ne).(am).AccumFunc(state.(ne).(am))*massConsScaling;
+            eqs{ei.pe_am_massCons}=battery.(pe).(am).AccumFunc(state.(pe).(am))*massConsScaling;
+
+            %Terms that only accumulate under full model
+            switch model.(ne).(am).diffusionModelType
+                case 'simple'
+                    eqs{ei.ne_am_sd_soliddiffeq}=0.*state.(ne).(am).(sd).cSurface;
+                case 'full'
+                    eqs{ei.ne_am_sd_soliddiffeq}=battery.(ne).(am).(sd).AccumFunc(state.(ne).(am).(sd));
+            end
+
+            switch model.(pe).(am).diffusionModelType
+                case 'simple'
+                    eqs{ei.pe_am_sd_soliddiffeq}=0.*state.(pe).(am).(sd).cSurface;
+                case 'full'
+                    eqs{ei.pe_am_sd_soliddiffeq}=battery.(pe).(am).(sd).AccumFunc(state.(pe).(am).(sd));
+            end
+
+            %Terms that never accumulate SHAPE!!!
+            eqs{ei.elyte_chargeCons}=0.*state.(elyte).phi;
+            eqs{ei.ne_am_chargeCons}=0.*state.(ne).(am).phi;
+            eqs{ei.pe_am_chargeCons}=0.*state.(pe).(am).phi;
+            eqs{ei.EIeq}=0.*state.(ctrl).E;
+            eqs{ei.controlEq}=0.*state.(ctrl).I;
+            % Equation name : 'ne_cc_chargeCons';
+            if model.(ne).include_current_collectors
+                eqs{ei.ne_cc_chargeCons} = state.(ne).(cc).T .* 0;
+            end
+            
+            % Equation name : 'pe_cc_chargeCons';
+            if model.(pe).include_current_collectors
+                eqs{ei.pe_cc_chargeCons} = state.(pe).(cc).T .* 0;
+            end
+
+            % Equation name : 'energyCons';
+            if model.use_thermal
+                eqs{ei.energyCons} = state.(thermal).energyCons .* 0;
+            end
+        end
+
         function state = updateTemperature(model, state)
         % Dispatch the temperature in all the submodels
 
