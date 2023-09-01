@@ -23,8 +23,7 @@ casenames = casenames{2};
 
 battmo_folder    = battmoDir();
 % battmo_jl_folder = fullfile(battmo_folder, '..', BattMo.jl');
-battmo_jl_folder = '/home/xavier/Julia/BattMo';
-jsonfolder       = fullfile(battmo_jl_folder, 'test','battery','data','jsonfiles');
+jsonfolder       = fullfile('JuliaBridge','Examples','jsonfiles');
 
 %% Setup model from Matlab
 
