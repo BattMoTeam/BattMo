@@ -42,21 +42,43 @@ classdef ProtonicMembraneElectrode < BaseModel
             
             varnames = {};
             
-            % Reaction rate for Buttler-Volmer
-            varnames{end + 1} = 'iBV';
-            % Open circuit potential
+            % H+ flux at electrode
+            varnames{end + 1} = 'jHp';
+            % Electronic flux at electrode
+            varnames{end + 1} = 'jEl';
+            % Charge flux at electrode
+            varnames{end + 1} = 'j';
+            % Open circuit potential at electrode
             varnames{end + 1} = 'Eocp';
-            % Electrolyte electronic potential
-            varnames{end + 1} = 'E';
-            % Electrolyte electronic potential
-            varnames{end + 1} = 'phiElectrolyte';
-            
+            % Electrode electrostatic potential
+            varnames{end + 1} = 'phi';
+            % Electrode electromotive potential
+            varnames{end + 1} = 'pi';
+            % over potential
+            varnames{end + 1} = 'eta';
+            % Charge conservation equation (j = jEl + jHp)
+            varnames{end + 1} = 'chargeCons';
+            % Definition equation for jEl
+            varnames{end + 1} = 'jElEquation';
+            % Definition equation for jHpl
+            varnames{end + 1} = 'jHpEquation';
             model = model.registerVarNames(varnames);
         
-            fn = @ProtonicMembraneElectrode.updateButtlerVolmerRate;
-            inputnames = {'Eocp', 'E'};
-            model = model.registerPropFunction({'iBV', fn, inputnames});
-        
+
+            fn = @ProtonicMembraneElectrode.updateChargeCons;
+            inputnames = {'j', 'jEl', 'jHp'};
+            model = model.registerPropFunction({'chargeCons', fn, inputnames});
+
+            fn = @ProtonicMembraneElectrode.updateEta;
+            inputnames = {'Eocp', 'phi', 'pi'};
+            model = model.registerPropFunction({'eta', fn, inputnames});
+            
+            fn = @ProtonicMembraneElectrode.updateJHp;
+            inputnames = {'eta'};
+            model = model.registerPropFunction({'jHp', fn, inputnames});
+
+            model = model.registerStaticVarName('Eocp');
+                    
         end
         
         

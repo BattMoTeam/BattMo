@@ -5,7 +5,10 @@ classdef ProtonicMembraneCellInputParams < ComponentInputParams
         Anode
         Cathode
         Electrolyte
+        Control
+        
         couplingTerms
+        
     end
     
     methods
@@ -17,13 +20,16 @@ classdef ProtonicMembraneCellInputParams < ComponentInputParams
             an    = 'Anode';
             ct    = 'Cathode';
             elyte = 'Electrolyte';
-            
+            ctrl  = 'Control';
+    
             pick = @(fd) pickField(jsonstruct, fd);
             paramobj.(an)    = ProtonicMembraneElectrodeInputParams(pick(an));
             paramobj.(ct)    = ProtonicMembraneElectrodeInputParams(pick(ct));
             paramobj.(elyte) = ProtonicMembraneElectrolyteInputParams(pick(elyte));
+            paramobj.(ctrl)  = ProtonicMembraneElectrolyteInputParams(pick(ctrl));
             
             paramobj.couplingTerms = {};
+            
         end
         
     end

@@ -40,12 +40,16 @@ classdef ProtonicMembraneElectrolyte < BaseModel
             
             varnames = {};
             
-            % H+ potential phi
+            % Electrostatic potential phi
             varnames{end + 1} = 'phi';
-            % Electron potential E
+            % Electromotive potential pi (see Jacobsen and Mogensen paper) or Electrochemical potential
+            varnames{end + 1} = 'pi';
+            % Electronic Chemical potential E
             varnames{end + 1} = 'E';
             % Electronic conductivity
             varnames{end + 1} = 'sigmaEl';
+            % Hp conductivity
+            varnames{end + 1} = 'sigmaHp';
             % H+ source term
             varnames{end + 1} = 'sourceHp';            
             % Electronic source term
@@ -60,7 +64,15 @@ classdef ProtonicMembraneElectrolyte < BaseModel
             varnames{end + 1} = 'chargeConsEl';            
 
             model = model.registerVarNames(varnames);
-        
+
+            fn = @ProtonicMembraneElectrolyte.updateE;
+            inputnames = {'phi', 'pi'};
+            model = model.registerPropFunction({'E', fn, inputnames});
+            
+            fn = @ProtonicMembraneElectrolyte.updateSigmaHp;
+            inputnames = {};
+            model = model.registerPropFunction({'sigmaHp', fn, inputnames});
+
             fn = @ProtonicMembraneElectrolyte.updateHpFlux;
             inputnames = {'phi'};
             model = model.registerPropFunction({'jHp', fn, inputnames});
@@ -70,7 +82,7 @@ classdef ProtonicMembraneElectrolyte < BaseModel
             model = model.registerPropFunction({'sigmaEl', fn, inputnames});
                         
             fn = @ProtonicMembraneElectrolyte.updateElFlux;
-            inputnames = {'sigmaEl', 'phi', 'E'};
+            inputnames = {'sigmaEl', 'pi'};
             model = model.registerPropFunction({'jEl', fn, inputnames});
 
             fn = @ProtonicMembraneElectrolyte.updateChargeConsHp;

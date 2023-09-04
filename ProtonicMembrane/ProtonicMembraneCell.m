@@ -10,11 +10,10 @@ classdef ProtonicMembraneCell < BaseModel
         Anode
         Cathode
         Electrolyte
+        Control
         
         couplingTerms
         couplingnames
-
-        iBV
         
     end
     
@@ -30,6 +29,7 @@ classdef ProtonicMembraneCell < BaseModel
             model.Anode       = ProtonicMembraneElectrode(paramobj.Anode);
             model.Cathode     = ProtonicMembraneElectrode(paramobj.Cathode);
             model.Electrolyte = ProtonicMembraneElectrolyte(paramobj.Electrolyte);
+            model.Control     = ProtonicMembraneControl(paramobj.Control);
             
             % setup couplingNames
             model.couplingnames = cellfun(@(x) x.name, model.couplingTerms, 'uniformoutput', false);
@@ -46,41 +46,42 @@ classdef ProtonicMembraneCell < BaseModel
             an    = 'Anode';
             ct    = 'Cathode';
             elyte = 'Electrolyte';
+            ctrl  = 'Control';
             
             model = registerVarAndPropfuncNames@BaseModel(model);
             
-            varnames = {};
-            % control equations
-            varnames{end + 1} = 'controlEqs';
-            % control equations
-            varnames{end + 1} = 'boundaryEqs';
-            
-            model = model.registerVarNames(varnames);
-        
-            fn = @ProtonicMembraneCell.dispatchE;
-            inputnames = {{elyte, 'E'}};
-            model = model.registerPropFunction({{an, 'E'}, fn, inputnames});
-            model = model.registerPropFunction({{ct, 'E'}, fn, inputnames});
-            
             fn = @ProtonicMembraneCell.setupHpSources;
-            inputnames = {{an, 'phiElectrolyte'}, {ct, 'phiElectrolyte'}, {'elyte', 'phi'}};
+            inputnames = {{an, 'jHp'}, {ct, 'jHp'}};
             model = model.registerPropFunction({{elyte, 'sourceHp'}, fn, inputnames});
             
             fn = @ProtonicMembraneCell.setupElSources;
-            inputnames = {{an, 'E'}, {an, 'phiElectrolyte'}, ...
-                          {ct, 'E'}, {ct, 'phiElectrolyte'}, ...
-                          {elyte, 'E'}, {elyte, 'phi'}, ...
-                          {elyte, 'sigmaEl'}};
+            inputnames = {{an, 'jEl'}, {ct, 'jEl'}};
             model = model.registerPropFunction({{elyte, 'sourceEl'}, fn, inputnames});
 
-            fn = @ProtonicMembraneCell.updateControlEqs;
-            inputnames = {{an, 'iBV'}, {ct, 'E'}};
-            model = model.registerPropFunction({'controlEqs', fn, inputnames});
-            
-            fn = @ProtonicMembraneCell.updateBoundaryEqs;
-            inputnames = {{an, 'iBV'}, {ct, 'iBV'}, {elyte, 'sourceHp'}};
-            model = model.registerPropFunction({'boundaryEqs', fn, inputnames});
+            fn = @ProtonicMembraneCell.updateAnodeJHpEquation;
+            inputnames = {{elyte, 'phi'}, {an, 'phi'}, {elyte, 'sigmaHp'}};
+            model = model.registerPropFunction({{an, 'jHpEquation'}, fn, inputnames});
 
+            fn = @ProtonicMembraneCell.updateAnodeJElEquation;
+            inputnames = {{elyte, 'phi'}, {an, 'phi'}, {elyte, 'sigmaEl'}};
+            model = model.registerPropFunction({{an, 'jElEquation'}, fn, inputnames});
+
+            fn = @ProtonicMembraneCell.updateCathodeJHpEquation;
+            inputnames = {{elyte, 'phi'}, {ct, 'phi'}, {elyte, 'sigmaHp'}};
+            model = model.registerPropFunction({{ct, 'jHpEquation'}, fn, inputnames});
+
+            fn = @ProtonicMembraneCell.updateCathodeJElEquation;
+            inputnames = {{elyte, 'phi'}, {ct, 'phi'}, {elyte, 'sigmaEl'}};
+            model = model.registerPropFunction({{ct, 'jElEquation'}, fn, inputnames});
+            
+            fn = @ProtonicMembraneCell.updateControlVariables;
+            inputnames = {{an, 'phi'}, {ct, 'phi'}, {an, 'j'}};
+            model = model.registerPropFunction({{ctrl, 'U'}, fn, inputnames});                        
+            model = model.registerPropFunction({{ctrl, 'I'}, fn, inputnames});
+
+            fn = @ProtonicMembraneCell.setupCathodeBoundary;
+            inputnames = {};
+            model = model.registerPropFunction({{ct, 'phi'}, fn, inputnames});
             
         end
 
