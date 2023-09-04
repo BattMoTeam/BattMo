@@ -1,10 +1,10 @@
-import MAT, JSON 
+import MAT, JSON, BattMo 
 using RunFromMatlab
 
 juliafy_kwargs(xs::Dict{String, Any}) = Pair{Symbol, Any}[Symbol(k) => v for (k, v) in xs]
 
 script = ARGS[1]
-CALLABLE = ["-load", "-load_options", "-run_battery"]
+CALLABLE = ["-load", "-load_options", "-run_battery","-matlab-sweep"]
 
 if !in(script,CALLABLE)
     
@@ -20,12 +20,15 @@ else
         inputType = dat["inputType"]
         kwargs    = juliafy_kwargs(dat["kwargs"])
 
-        if inputType == "Matlab"
-            data          = dat["data"]
-            use_state_ref = dat["use_state_ref"]
-        end
-        
         inputFileName = dat["inputFileName"]
+
+        if inputType == "Matlab"
+            inputobj = BattMo.MatlabFile(inputFileName, dat["data"], use_state_ref=dat["use_state_ref"])
+        elseif inputType == "JSON"
+            inputobj = BattMo.JSONFile(inputFileName)
+        else
+            println("Invalid input type. Input data could not be read correctly")
+        end
         
         if opts["gc"]
             rm(load_file)
@@ -39,30 +42,35 @@ else
         
     elseif script == "-run_battery"
 
-        if inputType == "Matlab"
-            output = RunFromMatlab.run_battery_from_matlab(inputFileName, data, use_state_ref = use_state_ref; kwargs... )
-        elseif inputType == "JSON"
-            output = RunFromMatlab.run_battery_from_matlab(inputFileName; kwargs... )
-        else
-            error("inputType not recognized")
-        end
+        output = RunFromMatlab.run_battery_from_matlab(init; kwargs)
         stringdata = JSON.json(output)
         
         # write the file with the stringdata variable information
         outputFileName = ARGS[2]
         save_output(output, outputFileName);
 
+    elseif script== "-matlab-sweep"
+        #Iterate input list and modify params
+        params = length(ARGS) #Check even + longer than 2!!!
+        input = deepcopy(inputobj)
+        for i=3:2:params
+            println(ARGS[i], " ", ARGS[i+1])
+            setParameter!(input,ARGS[i],parse(Float64,ARGS[i+1]))
+        end
+        output = RunFromMatlab.run_battery_from_matlab(input; kwargs ...)
+
+        outputFileName = ARGS[2]
+        save_output(output, outputFileName);
     end
     
 end
 
 
 function save_output(output, outputFileName)
-
     stringdata = JSON.json(output)
     # write the file with the stringdata variable information
     open(outputFileName, "w") do f
         write(f, stringdata)
-    end
-    
+    end    
 end
+

@@ -150,9 +150,67 @@ classdef ServerManager < handle
             
         end
         
-        function iterate_values(manager, values)
+        function [f,locations]=iterate_values(manager, param_list)
             %Run parameter values as flags to julia script if shared is
             %true. Possible enable same procedure entirely done in Julia
+            cmd = ['"using Revise, DaemonMode; runargs(',num2str(manager.options.port),')" ', ...
+                manager.options.script_source, ' -matlab-sweep '];
+            param_flags = '';
+            if manager.options.async
+                detach='';
+            else
+                detach='';
+            end
+            
+            locations = manager.parameterSweepInternal(param_list,param_flags,cmd,detach, []);
+            
+            p = parpool('Processes');
+            Q = parallel.pool.DataQueue;
+            for idx = 1:length(locations)
+                f(idx) = parfeval(@findFile,1,locations(idx)); 
+            end
+            updateWaitbar = @(~) waitbar(mean({f.State} == "finished"),h);
+            updateWaitbarFutures = afterEach(f,updateWaitbar,0);
+            afterAll(updateWaitbarFutures,@(~) delete(h),0);
+        end
+
+        function ret = parameterSweepInternal(manager,param_list, param_flags,cmd, detach,out)
+            init = param_flags;
+            for i = 1:length(param_list(1).values)
+                param_flags = [init , ' ', param_list(1).parameter_name, ' ', num2str(param_list(1).values(i))]; 
+                if length(param_list)>1
+                    ret = manager.parameterSweepInternal(param_list(2:end),param_flags,cmd,detach,out);
+                else
+                    tmp = tempname;
+                    manager.DaemonCall([cmd, tmp, '.mat ', param_flags, detach]);
+                    ret=[out; tmp];
+                end
+            end
+        end
+
+        function states = collectParameterSweep(manager,locations, gc)
+            states=[];
+            count = 0;
+            n = length(locations);
+        
+            for i = 1:n
+                if exist(locations(i),'file')
+                    count = count + 1;
+        
+                    %Read file
+                    fid = fopen(locations(i));
+                    raw = fread(fid, inf); 
+                    str = char(raw'); 
+                    fclose(fid); 
+                    states = [states,jsondecode(str)];
+        
+                    if gc
+                        delete(locations(i));
+                    end
+                end
+                waitbar(count/n,"Collecting results...")
+                pause(0.1);
+            end
         end
 
         function startup(manager)
@@ -274,5 +332,34 @@ function succ = ping_server(opts)
         end
     end
 
+end
+
+function count = checkSweepStatus(locations)
+    count = 0;
+    n = length(locations);
+    read = zeros(n);
+
+    while count < n
+        for i = 1:n
+            if exist(locations(i),'file') && ~read(i)
+                count = count + 1;
+                read(i)=true;
+            end
+        end
+        waitbar(count/n,"Parameter sweep progress...")
+    end
+end
+
+function state = findFile(loc)
+    while ~exist(loc,'file')
+        pause(0.1);
+    end
+
+    %Read file
+    fid = fopen(loc);
+    raw = fread(fid, inf); 
+    str = char(raw'); 
+    fclose(fid); 
+    state = jsondecode(str);
 end
 
