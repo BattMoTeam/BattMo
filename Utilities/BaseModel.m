@@ -6,27 +6,17 @@ classdef BaseModel < PhysicalModel
         varNameList          % List of variable names  (VarName instances) for the model
         subModelNameList     % List of submodels for the model
 
+        % The variables listed in staticVarNameList are elements in VarNameList that are declared as static (they are
+        % not depending on the primary variables and are updatedseparatly)
+        staticVarNameList
+
+        
         % The variables listed in extraVarNameList are elements in VarNameList that are not used in assembly of the
         % residuals, those has been typically introduced for post-processing.
         extraVarNameList
        
         computationalGraph
-
-
-        %% The following properties are set when a model is equiped for simulation. It is then a root model (as opposed to the sub-models)
-        % See method equipModelForComputation
-
-        isSimulationModel % boolean if the model is meant to be run for simulation
         
-        funcCallList
-        primaryVarNames
-        equationVarNames
-        equationNames
-        equationTypes
-
-        scalings % cell array. Each element is a cell pair. The first element in the pair is the variable name using the
-                 % syntax of the getProp methods. The second element is the scaling coefficient. See methods applyScaling
-                
     end
         
     methods
@@ -94,7 +84,7 @@ classdef BaseModel < PhysicalModel
         end
 
 
-        function model = setAsStaticVarName(model, varname)
+        function model = registerStaticVarName(model, varname)
         % Register a static variable name. A static variable is a variable that is set up at the beginning of the
         % assembly and does not depend on the primary variables.
 
@@ -113,31 +103,37 @@ classdef BaseModel < PhysicalModel
             end
         end
         
-        function model = setAsStaticVarNames(model, varnames)
-        % Register several static variable name using setAsStaticVarName
+        function model = registerStaticVarNames(model, varnames)
+        % Register several static variable name using registerStaticVarName
 
             for ivarnames = 1 : numel(varnames)
-                model = model.setAsStaticVarName(varnames{ivarnames});
+                model = model.registerStaticVarName(varnames{ivarnames});
+            end
+        end
+
+        
+        function model = registerExtraVarNames(model, varnames)
+        % Register several extra variable name using registerExtraVarName
+            for ivar = 1 : numel(varnames)
+                model = model.registerExtraVarName(varnames{ivar});
             end
             
         end
         
-        function model = setAsExtraVarName(model, varname)
+        function model = registerExtraVarName(model, varname)
+        % Register extra variable name. Such variable, by definition, should not enter in the computation of the
+        % residual equation. Therefore, they are not going to be included in the computational graph that is generated
+        % for the residual assembly. However, they can be computed when a property function is declared for them, see
+        % getProp function.
             
             if isa(varname, 'char')
                 varname = VarName({}, varname);
-                model = model.setAsExtraVarName(varname);
+                model = model.registerExtraVarName(varname);
             elseif isa(varname, 'cell')
                 varname = VarName(varname(1 : end - 1), varname{end});
-                model = model.setAsExtraVarName(varname);
+                model = model.registerExtraVarName(varname);
             elseif isa(varname, 'VarName')
                 model.extraVarNameList = mergeList(model.extraVarNameList, {varname});
-            end
-        end
-        
-        function model = setAsExtraVarNames(model, varnames)
-            for ivar = 1 : numel(varnames)
-                model = model.setAsExtraVarName(varnames{ivar});
             end
         end
         
