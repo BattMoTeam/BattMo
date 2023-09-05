@@ -43,7 +43,7 @@ function [objValue, varargout] = evalObjectiveBattmo(pvec, objFunc, setup, param
 %   'Verbose'              - Indicate if extra output is to be printed such as
 %                            detailed convergence reports and so on.
 % RETURNS:
-%   objValue       - value of the objective functiosn
+%   objValue       - value of the objective function
 %   scaledGradient - Scaled gradient of objValue with respect p
 %   states         - State at each control step (or timestep if
 %                    'OutputMinisteps' is enabled.)
@@ -96,8 +96,9 @@ function [objValue, varargout] = evalObjectiveBattmo(pvec, objFunc, setup, param
     end
 
     [wellSols, states] = simulateScheduleAD(setupNew.state0, setupNew.model, setupNew.schedule, ...
-                                           'NonLinearSolver', opt.NonlinearSolver, ...
-                                           'Verbose', opt.Verbose, extra{:});
+                                           'NonLinearSolver', opt.NonlinearSolver             , ...
+                                            'Verbose'       , opt.Verbose                     , ...
+                                            extra{:});
 
     objValues = objFunc(setupNew.model, states, setupNew.schedule);
     objValue  = sum(vertcat(objValues{:}))/opt.objScaling ;
@@ -182,9 +183,9 @@ end
 
 
 % Utility function to perturb the parameter array in coordinate i with eps_pert
-function p_pert = perturb(p_org, i, eps_pert)
+function p_pert = perturb(p, i, eps_pert)
     
-    p_pert    = p_org;
+    p_pert    = p;
     p_pert(i) = p_pert(i) + eps_pert;
     
 end
