@@ -13,9 +13,10 @@ function obj = SpecificEnergyOutput(model, states, schedule, params, varargin)
 %   states    - Input states
 %   schedule  - Schedule used for the simulation
 %   params    - with fields
+%                - extraMass % Extra mass that is not accounted by the components of the model.
 %                - E0
 %                - alpha
-%               which defines the function: cutoff(E) = 0.5 - 1/pi*atan(alpha*(E - E0))
+%               The two last parameter define the cut-off function: cutoff(E) = 0.5 - 1/pi*atan(alpha*(E - E0))
 %
 %
 % KEYWORD ARGUMENTS:
