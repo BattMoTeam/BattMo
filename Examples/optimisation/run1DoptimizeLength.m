@@ -41,6 +41,7 @@ gridgen = BatteryGenerator1D();
 %%  Initialize the battery model. 
 
 model = Battery(paramobj);
+
 model.AutoDiffBackend= AutoDiffBackend();
 
 %% Compute the nominal cell capacity and choose a C-Rate
@@ -49,7 +50,7 @@ CRate = model.Control.CRate;
 
 total = 1.2*hour/CRate;
 
-n    = 50;
+n    = 60;
 dt   = total*1.4/n;
 step = struct('val', dt*ones(n, 1), 'control', ones(n, 1));
 
@@ -82,38 +83,58 @@ model.nonlinearTolerance = 1e-5*model.Control.Imax;
 % Set verbosity
 model.verbose = true;
 
-%% Run the simulation
 
-% [~, states, ~] = simulateScheduleAD(initstate, model, schedule, 'OutputMinisteps', true, 'NonLinearSolver', nls); 
+%% Set optimization parameters
 
-%% Process output and recover the output voltage and current from the output states.
-
-lsr = LengthSetter1D(gridgen, {ne, pe});
 
 dosometest = false;
 
 if dosometest
 
+    lsr = LengthSetter1D(gridgen, {ne, pe});
+    
     reflengths = lsr.reflengths;
 
-    model2 = model;
+    modelAD = model;
     
     v = reflengths([1; 3]);
     v = initVariablesADI(v);
 
-    model2 = lsr.setLength(model2, v);
+    modelAD = lsr.setLengths(modelAD, v);
 
-    v = lsr.getLength(model)
-    v2 = lsr.getLength(model2)
+    v = lsr.getLengths(model)
+    vAD = lsr.getLengths(modelAD)
     
     mass = computeCellMass(model);
     cap  = computeCellCapacity(model);
 
-    mass2 = computeCellMass(model2);
-    cap2  = computeCellCapacity(model2);
+    massAD = computeCellMass(modelAD);
+    capAD  = computeCellCapacity(modelAD);
 
     return
+    
 end
+
+dosometest = false;
+
+if dosometest
+
+
+    psr = PorositySetter(model, {ne, pe});
+    
+    refvalues = psr.refvalues;
+    v = psr.getPorosities(model);
+
+    v = initVariablesADI(v);
+
+    modelAD = model;
+    modelAD = psr.setPorosities(modelAD, v);
+
+    v = psr.getPorosities(modelAD);
+    
+    return
+end
+
 
 % ind = cellfun(@(x) not(isempty(x)), states); 
 % states = states(ind);
@@ -130,26 +151,50 @@ SimulatorSetup = struct('model', model, 'schedule', schedule, 'state0', state0);
 
 %%
 
-lengthsetter = LengthSetter1D(gridgen, {ne, pe});
-
-getlength = @(model, dummy) lengthsetter.getLength(model);
-setlength = @(model, dummy, v) lengthsetter.setLength(model, v);
-
 parameters= {};
-parameters{end+1} = ModelParameter(SimulatorSetup, ...
-                                   'name'     , 'length'     , ...
-                                   'belongsTo', 'model'      , ...
-                                   'location' , {''}         , ...
-                                   'boxLims'  , [40 100]*1e-6, ...
-                                   'getfun'   , getlength    , ...
-                                   'setfun'   , setlength);
 
+includeLength = true;
+
+if includeLength
+
+    lengthsetter = LengthSetter1D(gridgen, {ne, pe});
+    % lengthsetter = NPlengthSetter1D(model, gridgen, 1.1);
+    
+    getlength = @(model, dummy) lengthsetter.getLengths(model);
+    setlength = @(model, dummy, v) lengthsetter.setLengths(model, v);
+
+    parameters{end+1} = ModelParameter(SimulatorSetup, ...
+                                       'name'     , 'length'     , ...
+                                       'belongsTo', 'model'      , ...
+                                       'location' , {''}         , ...
+                                       'boxLims'  , [40 100]*1e-6, ...
+                                       'getfun'   , getlength    , ...
+                                       'setfun'   , setlength);
+end
+
+includePorosity = true;
+
+if includePorosity
+
+    porosetter = PorositySetter(model, {ne, pe});
+    
+    getporo = @(model, dummy) porosetter.getPorosities(model);
+    setporo = @(model, dummy, v) porosetter.setPorosities(model, v);
+    
+    parameters{end+1} = ModelParameter(SimulatorSetup, ...
+                                       'name'     , 'porosities', ...
+                                       'belongsTo', 'model'     , ...
+                                       'location' , {''}        , ...
+                                       'getfun'   , getporo     , ...
+                                       'setfun'   , setporo);
+    
+end
 
 % setup params
 
 % params for cut-off function
 params.E0    = 3;
-params.alpha = 100;
+params.alpha = 10;
 
 %
 mass = computeCellMass(model);
@@ -188,11 +233,22 @@ if doOptimization
 end
 
 doCompareGradient = true;
+
 if doCompareGradient
     
     p = getScaledParameterVector(SimulatorSetup, parameters);
     [vad, gad]   = evalObjectiveBattmo(p, objmatch, SimulatorSetup, parameters, 'GradientMethod', 'AdjointAD', options{:});
-    [vnum, gnum] = evalObjectiveBattmo(p, objmatch, SimulatorSetup, parameters, 'GradientMethod', 'PerturbationADNUM', 'PerturbationSize', 1e-10, options{:});
+    perturbationSize = {};
+    if includeLength
+        perturbationSize = horzcat(perturbationSize, {1e-10});
+    end
+    if includePorosity
+        perturbationSize = horzcat(perturbationSize, {1e-5});
+    end
+    [vnum, gnum] = evalObjectiveBattmo(p, objmatch, SimulatorSetup, parameters, ...
+                                       'GradientMethod', 'PerturbationADNUM'  , ...
+                                       'PerturbationSize', perturbationSize   , ...
+                                       options{:});
 
     fprintf('Gradient computed using adjoint:\n');
     display(gad);
