@@ -182,8 +182,8 @@ doOptimization = false;
 if doOptimization
     
     p_base = getScaledParameterVector(SimulatorSetup, parameters);
-    p_base = p_base - 0.1;
-    [v, p_opt, history] = unitBoxBFGS(p_base, obj, 'gradTol', 1e-7, 'objChangeTol', 1e-4);
+    obj = @(p) evalObjectiveBattmo(p, objmatch, SimulatorSetup, parameters, 'GradientMethod', 'AdjointAD', options{:});
+    [v, p_opt, history] = unitBoxBFGS(p_base, obj, 'gradTol', 1e-4, 'objChangeTol', 1e-4);
     
 end
 
