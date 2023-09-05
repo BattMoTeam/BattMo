@@ -106,7 +106,9 @@ function sens = computeSensitivitiesAdjointADBattmo(setup, states, params, getOb
                     sens.(nm) = sens.(nm) + eqdth{nl}.jac{kp}'*lambda{nl};
                 end
             end
-            sens.(nm) = sens.(nm) + objth.jac{kp}';
+            if isa(objth, 'ADI')
+                sens.(nm) = sens.(nm) + objth.jac{kp}';
+            end
         end
         
     end
