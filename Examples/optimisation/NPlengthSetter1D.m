@@ -21,7 +21,7 @@ classdef NPlengthSetter1D < LengthSetter1D
             
         end
         
-        function model = setLength(lengthsetter, model, pelength)
+        function model = setLengths(lengthsetter, model, pelength)
 
             alpha = lengthsetter.alpha;
             
@@ -29,11 +29,11 @@ classdef NPlengthSetter1D < LengthSetter1D
             v(1) = alpha*pelength;
             v(2) = pelength;
             
-            model = setLength@LengthSetter1D(lengthsetter, model, v);
+            model = setLengths@LengthSetter1D(lengthsetter, model, v);
             
         end
 
-        function v = getLength(lengthsetter, model)
+        function v = getLengths(lengthsetter, model)
 
             v = lengthsetter.getAllLengths(model);
             v = v(3);

@@ -28,7 +28,7 @@ classdef LengthSetter1D
             
         end
         
-        function model = setLength(lengthsetter, model, v)
+        function model = setLengths(lengthsetter, model, v)
 
             nxs        = lengthsetter.nxs;
             reflengths = lengthsetter.reflengths;
@@ -73,7 +73,7 @@ classdef LengthSetter1D
         end
 
 
-        function v = getLength(lengthsetter, model)
+        function v = getLengths(lengthsetter, model)
 
             compinds = lengthsetter.compinds;
 
