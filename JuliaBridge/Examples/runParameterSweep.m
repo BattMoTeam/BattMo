@@ -2,7 +2,7 @@ clear all
 
 %% Setup Julia server
 
-man = ServerManager('debug', true);
+man = ServerManager('debug', true,'procs',4);
 
 % Set up keyword arguments to be sent to julia solver. See run_battery in mrst_utils.jl for details
 kwargs =struct('use_p2d'     , true , ...
@@ -56,10 +56,14 @@ switch testCase
     
 end
 
-ps = [SweepParameter('nam-volumeFraction', 0.7:0.01:0.9)];
+%p = parpool('Processes',2);
+%ps = [SweepParameter('nam-volumeFraction', 0.75:0.01:0.85)];
 
+v = linspace(0.7,0.9,20);
+man.sweep('Example', [v ; v], 'test2')
 
-[f,locations] = man.iterate_values(ps);
+%p=parpool('Processes',1);
+%[f,locations] = man.iterate_values(ps);
 %result = result{1}; 
 
 %% Plot results

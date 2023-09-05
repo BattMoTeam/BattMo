@@ -53,24 +53,20 @@ else
         #Iterate input list and modify params
         params = length(ARGS) #Check even + longer than 2!!!
         input = deepcopy(inputobj)
-        for i=3:2:params
+
+        for i=4:2:params
             println(ARGS[i], " ", ARGS[i+1])
             setParameter!(input,ARGS[i],parse(Float64,ARGS[i+1]))
         end
         output = RunFromMatlab.run_battery_from_matlab(input; kwargs ...)
 
         outputFileName = ARGS[2]
-        save_output(output, outputFileName);
+        #save_output(output, outputFileName);
+        save_output(Dict("Ferdig!" => ARGS), outputFileName);
     end
     
 end
 
 
-function save_output(output, outputFileName)
-    stringdata = JSON.json(output)
-    # write the file with the stringdata variable information
-    open(outputFileName, "w") do f
-        write(f, stringdata)
-    end    
-end
+
 

@@ -17,7 +17,7 @@ classdef ServerManager < handle
     
     methods
         
-        function manager = ServerManager(varargin)
+        function manager    = ServerManager(varargin)
         % Parse inputs
 
             serverFolder = fileparts(mfilename('fullpath'));
@@ -28,6 +28,7 @@ classdef ServerManager < handle
             addParameter(p, 'script_source', fullfile(serverFolder , 'RunFromMatlab','api','DaemonHandler.jl'), @ischar);
             addParameter(p, 'startup_file' , 'no'                  , @ischar);
             addParameter(p, 'threads'      , 'auto'                , @validate_threads);
+            addParameter(p, 'procs'        , 2                     , @(x) validateattributes(x, {'numeric'}, {'integer'}));
             addParameter(p, 'cwd'          , serverFolder          , @ischar);
             addParameter(p, 'port'         , 3000                  , @(x) validateattributes(x, {'numeric'}, {'scalar', 'integer', 'positive'}));
             addParameter(p, 'shared'       , true                  , @(x) validateattributes(x, {'logical'}, {'scalar'}));
@@ -55,6 +56,7 @@ classdef ServerManager < handle
             manager.base_call = [manager.options.julia, ' '                              , ...
                                  '--startup-file='    , manager.options.startup_file, ' ', ...
                                  '--project='         , manager.options.project     , ' ', ...
+                                 '--procs='           , num2str(manager.options.procs), ' ', ...
                                  '--threads='         , manager.options.threads];
             
             %Ensure that project is instantiated
@@ -156,62 +158,59 @@ classdef ServerManager < handle
             cmd = ['"using Revise, DaemonMode; runargs(',num2str(manager.options.port),')" ', ...
                 manager.options.script_source, ' -matlab-sweep '];
             param_flags = '';
-            if manager.options.async
-                detach='';
-            else
-                detach='';
-            end
+            detach =' &';
             
             locations = manager.parameterSweepInternal(param_list,param_flags,cmd,detach, []);
             
-            p = parpool('Processes');
-            Q = parallel.pool.DataQueue;
-            for idx = 1:length(locations)
-                f(idx) = parfeval(@findFile,1,locations(idx)); 
+            
+            w = waitbar(0,'Please wait ...');
+            for idx = 1:length(locations(:,1))
+                f(idx) = parfeval(@findFile,1,locations(idx,:),true); 
             end
-            updateWaitbar = @(~) waitbar(mean({f.State} == "finished"),h);
-            updateWaitbarFutures = afterEach(f,updateWaitbar,0);
-            afterAll(updateWaitbarFutures,@(~) delete(h),0);
+            afterEach(f,@(~)updateWaitbar(w),0);
+            afterAll(f,@(~)delete(w),0);
         end
 
         function ret = parameterSweepInternal(manager,param_list, param_flags,cmd, detach,out)
+            ret=out;
             init = param_flags;
             for i = 1:length(param_list(1).values)
                 param_flags = [init , ' ', param_list(1).parameter_name, ' ', num2str(param_list(1).values(i))]; 
                 if length(param_list)>1
-                    ret = manager.parameterSweepInternal(param_list(2:end),param_flags,cmd,detach,out);
+                    tmp = manager.parameterSweepInternal(param_list(2:end),param_flags,cmd,detach,ret);
+                    ret = [ret ; tmp];
                 else
-                    tmp = tempname;
-                    manager.DaemonCall([cmd, tmp, '.mat ', param_flags, detach]);
-                    ret=[out; tmp];
+                    tmp = [tempname, '.json'];
+                    manager.DaemonCall([cmd, tmp, ' ', param_flags, detach]);
+                    ret=[ret; tmp];
                 end
             end
         end
 
-        function states = collectParameterSweep(manager,locations, gc)
-            states=[];
-            count = 0;
-            n = length(locations);
-        
-            for i = 1:n
-                if exist(locations(i),'file')
-                    count = count + 1;
-        
-                    %Read file
-                    fid = fopen(locations(i));
-                    raw = fread(fid, inf); 
-                    str = char(raw'); 
-                    fclose(fid); 
-                    states = [states,jsondecode(str)];
-        
-                    if gc
-                        delete(locations(i));
-                    end
-                end
-                waitbar(count/n,"Collecting results...")
-                pause(0.1);
-            end
-        end
+%         function states = collectParameterSweep(manager,locations, gc)
+%             states=[];
+%             count = 0;
+%             n = length(locations);
+%         
+%             for i = 1:n
+%                 if exist(locations(i),'file')
+%                     count = count + 1;
+%         
+%                     %Read file
+%                     fid = fopen(locations(i));
+%                     raw = fread(fid, inf); 
+%                     str = char(raw'); 
+%                     fclose(fid); 
+%                     states = [states,jsondecode(str)];
+%         
+%                     if gc
+%                         delete(locations(i));
+%                     end
+%                 end
+%                 waitbar(count/n,"Collecting results...")
+%                 pause(0.1);
+%             end
+%         end
 
         function startup(manager)
             
@@ -219,8 +218,9 @@ classdef ServerManager < handle
                 % Create DaemonMode.serve call
                 startup_call = ['"using Revise, DaemonMode; serve(', ...
                                 num2str(manager.options.port), ', ', jl_bool(manager.options.shared), ...
-                                ', print_stack=', jl_bool(manager.options.print_stack), ...
-                                ', async=', jl_bool(manager.options.async), ')" &'];
+                                ', print_stack=', jl_bool(manager.options.print_stack),')" &'];
+                %, ...
+                 %               ', async=', jl_bool(manager.options.async),')" &'];
                 
                 if manager.options.debug
                     fprintf("Starting Julia server \n")
@@ -280,6 +280,18 @@ classdef ServerManager < handle
             end
             
             manager.call_history{end+1} = cmd;
+            
+        end
+
+        function sweep(manager,exper,values,name)
+            save_folder = fullfile(manager.use_folder,name);
+            [~,~]=mkdir(save_folder);
+            options_file = [save_folder,'/',name,'.mat'];
+            experiment=exper;
+            save(options_file, "save_folder","experiment","values")
+            sweep_source = fullfile(fileparts(mfilename('fullpath')), 'RunFromMatlab','api','ParameterSweepControl.jl');
+            sweep_call=['"using Revise, DaemonMode; runargs(',num2str(manager.options.port) ,')" ', sweep_source, ' ', options_file, ' &'];
+            manager.DaemonCall(sweep_call)
             
         end
     end
@@ -350,7 +362,7 @@ function count = checkSweepStatus(locations)
     end
 end
 
-function state = findFile(loc)
+function state = findFile(loc,gc)
     while ~exist(loc,'file')
         pause(0.1);
     end
@@ -361,5 +373,24 @@ function state = findFile(loc)
     str = char(raw'); 
     fclose(fid); 
     state = jsondecode(str);
+
+    if gc
+        delete(loc)
+    end
 end
 
+function updateWaitbar(w)
+    % Update a waitbar using the UserData property.
+
+    % Check if the waitbar is a reference to a deleted object
+    if isvalid(w)
+        % Increment the number of completed iterations 
+        w.UserData(1) = w.UserData(1) + 1;
+
+        % Calculate the progress
+        progress = w.UserData(1) / w.UserData(2);
+
+        % Update the waitbar
+        waitbar(progress,w);
+    end
+end

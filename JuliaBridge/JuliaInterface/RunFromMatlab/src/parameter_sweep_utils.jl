@@ -1,6 +1,15 @@
 import BattMo
 
-export setParameter!
+export setParameter!, setParameters!
+
+function setParameters!(file::BattMo.JSONFile, values, experiment::String)
+    if experiment=="Example"
+        file.object["NegativeElectrode"]["ActiveMaterial"]["Interface"]["volumeFraction"]=values[1]
+        file.object["PositiveElectrode"]["ActiveMaterial"]["Interface"]["volumeFraction"]=values[2]
+    else
+        println("Error: Invalid experiment!")
+    end
+end
 
 function setParameter!(file::BattMo.MatlabFile, field::String, value::Real)
     obj = file.object
@@ -32,8 +41,4 @@ function setParameter!(file::BattMo.JSONFile, field::String, value::Real)
     else
         println("ERROR: invalid flag")
     end
-end
-
-function check()
-    
 end
