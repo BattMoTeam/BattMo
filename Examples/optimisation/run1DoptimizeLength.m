@@ -49,7 +49,7 @@ CRate = model.Control.CRate;
 
 total = 1.2*hour/CRate;
 
-n    = 400;
+n    = 50;
 dt   = total*1.4/n;
 step = struct('val', dt*ones(n, 1), 'control', ones(n, 1));
 
@@ -145,13 +145,21 @@ parameters{end+1} = ModelParameter(SimulatorSetup, ...
                                    'setfun'   , setlength);
 
 
+% setup params
+
+% params for cut-off function
 params.E0    = 3;
-params.alpha = 100
+params.alpha = 100;
+
+%
+mass = computeCellMass(model);
+params.extraMass = 0.1*mass;
 
 objmatch = @(model, states, schedule, varargin) SpecificEnergyOutput(model, states, schedule, params, varargin{:});
 % objmatch = @(model, states, schedule, varargin) EnergyOutput(model, states, schedule, varargin{:});
 
 options = {'NonLinearSolver', nls, 'OutputMinisteps', true};
+
 
 dosmalltest = false;
 if dosmalltest
@@ -179,7 +187,7 @@ if doCompareGradient
     
     p = getScaledParameterVector(SimulatorSetup, parameters);
     [vad, gad]   = evalObjectiveBattmo(p, objmatch, SimulatorSetup, parameters, 'GradientMethod', 'AdjointAD', options{:});
-    [vnum, gnum] = evalObjectiveBattmo(p, objmatch, SimulatorSetup, parameters, 'GradientMethod', 'PerturbationADNUM', 'PerturbationSize', 1e-10);
+    [vnum, gnum] = evalObjectiveBattmo(p, objmatch, SimulatorSetup, parameters, 'GradientMethod', 'PerturbationADNUM', 'PerturbationSize', 1e-10, options{:});
 
     fprintf('Gradient computed using adjoint:\n');
     display(gad);

@@ -122,45 +122,54 @@ function [objValue, varargout] = evalObjectiveBattmo(pvec, objFunc, setup, param
                                                                        'state'          , state);
             nms = applyFunction(@(x) x.name, parameters);
 
-            scaledGradient = cell(numel(nms), 1);
+            sens = computeSensitivitiesAdjointADBattmo(setupNew, states, parameters, objh, ...
+                                                       'LinearSolver', opt.AdjointLinearSolver);            
 
-            gradient = computeSensitivitiesAdjointADBattmo(setupNew, states, parameters, objh, ...
-                                                           'LinearSolver', opt.AdjointLinearSolver);            
+            gradient = cellfun(@(nm) sens.(nm), nms, 'uniformoutput', false);
+
             % do scaling of gradient
             for k = 1 : numel(nms)
-                scaledGradient{k} = parameters{k}.scaleGradient(gradient.(nms{k}), pval{k});
+                scaledGradient{k} = parameters{k}.scaleGradient(gradient{k}, pval{k});
             end
+            
+            varargout{1} = vertcat(scaledGradient{:})/opt.objScaling;
             
           case 'PerturbationADNUM'
             % Do manual pertubuation of the defined control variables
             
-            eps_pert = opt.PerturbationSize;            
-            p_org    = cell2mat(pvec);
-            
-            val = nan(size(p_org));
+            eps_pert = opt.PerturbationSize;
 
-            try
-                % Try parallel loop
-                parfor i = 1 : numel(p_org)
-                    val(i) = evalObjectiveBattmo(perturb(p_org, i, eps_pert), objFunc, setupNew, parameters, ...
-                                                 'gradientMethod' , 'None'             , ...
-                                                 'NonlinearSolver', opt.NonlinearSolver, ...
-                                                 'objScaling'     , opt.objScaling     , ...
-                                                 'enforceBounds'  , false);
+            for iparam = 1 : numel(parameters)
+                
+                p = pvec{iparam};
+
+                val = nan(size(p));
+
+                try
+                    % Try parallel loop
+                    parfor i = 1 : numel(p)
+                        val(i) = evalObjectiveBattmo(perturb(p, i, eps_pert), objFunc, setupNew, parameters, ...
+                                                     'gradientMethod' , 'None'             , ...
+                                                     'NonlinearSolver', opt.NonlinearSolver, ...
+                                                     'objScaling'     , opt.objScaling     , ...
+                                                     'enforceBounds'  , false);
+                    end
+                catch
+                    % Try serial loop instead
+                    for i = 1 : numel(p)
+                        val(i) = evalObjectiveBattmo(perturb(p, i, eps_pert), objFunc, setupNew, parameters, ...
+                                                     'gradientMethod' , 'None'             , ...
+                                                     'NonlinearSolver', opt.NonlinearSolver, ...
+                                                     'objScaling'     , opt.objScaling     , ...
+                                                     'enforceBounds'  , false);
+                    end
                 end
-            catch
-                % Try serial loop instead
-                for i = 1 : numel(p_org)
-                    val(i) = evalObjectiveBattmo(perturb(p_org, i, eps_pert), objFunc, setupNew, parameters, ...
-                                                 'gradientMethod' , 'None'             , ...
-                                                 'NonlinearSolver', opt.NonlinearSolver, ...
-                                                 'objScaling'     , opt.objScaling     , ...
-                                                 'enforceBounds'  , false);
-                end
+                
+                scaledGradient{iparam} = (val - objValue)./eps_pert;
+                
             end
-            
-            scaledGradient = (val - objValue)./eps_pert;
-            scaledGradient = mat2cell(scaledGradient, numel(scaledGradient), 1);
+
+            varargout{1} = vertcat(scaledGradient{:});
             
           otherwise
             
@@ -168,7 +177,6 @@ function [objValue, varargout] = evalObjectiveBattmo(pvec, objFunc, setup, param
             
         end
         
-        varargout{1} = vertcat(scaledGradient{:})/opt.objScaling;
         
     end
 
