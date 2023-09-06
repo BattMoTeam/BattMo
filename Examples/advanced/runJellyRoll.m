@@ -132,9 +132,6 @@ paramobj = gen.updateBatteryInputParams(paramobj, spiralparams);
 model = Battery(paramobj); 
 model.AutoDiffBackend= AutoDiffBackend();
 
-[cap, cap_neg, cap_pos, specificEnergy] = computeCellCapacity(model);
-fprintf('ratio : %g, energy : %g\n', cap_neg/cap_pos, specificEnergy/hour);
-
 %% Setup schedule
 CRate = 1;
 
