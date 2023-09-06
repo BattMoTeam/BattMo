@@ -74,7 +74,7 @@ function [capacity, capacities] = computeCellCapacity(model)
 
             mats = {gr, si};
 
-            cap_usable(ind) = 0;
+            cap_usable{ind} = 0;
             
             for imat = 1 : numel(mats)
                 
@@ -95,8 +95,9 @@ function [capacity, capacities] = computeCellCapacity(model)
                 
                 vol = sum(am_fraction*vol_fraction.*vols);
 
-                cap_usable{ind} = cap_usable{ind} + (thetaMax - thetaMin)*cMax*n*F.*vol;
-                
+
+                cap_usable{ind} = cap_usable{ind} + (thetaMax - thetaMin)*cMax*vol*n*F;
+
             end
             
           otherwise
@@ -106,8 +107,8 @@ function [capacity, capacities] = computeCellCapacity(model)
         
     end
     
-    capacities.(ne) = cap_usable(1);
-    capacities.(pe) = cap_usable(2);
+    capacities.(ne) = cap_usable{1};
+    capacities.(pe) = cap_usable{2};
 
     capacity = capacities.(ne);
     ind = value(capacities.(ne)) >= value(capacities.(pe));
