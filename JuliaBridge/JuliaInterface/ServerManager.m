@@ -151,66 +151,6 @@ classdef ServerManager < handle
             end
             
         end
-        
-        function [f,locations]=iterate_values(manager, param_list)
-            %Run parameter values as flags to julia script if shared is
-            %true. Possible enable same procedure entirely done in Julia
-            cmd = ['"using Revise, DaemonMode; runargs(',num2str(manager.options.port),')" ', ...
-                manager.options.script_source, ' -matlab-sweep '];
-            param_flags = '';
-            detach =' &';
-            
-            locations = manager.parameterSweepInternal(param_list,param_flags,cmd,detach, []);
-            
-            
-            w = waitbar(0,'Please wait ...');
-            for idx = 1:length(locations(:,1))
-                f(idx) = parfeval(@findFile,1,locations(idx,:),true); 
-            end
-            afterEach(f,@(~)updateWaitbar(w),0);
-            afterAll(f,@(~)delete(w),0);
-        end
-
-        function ret = parameterSweepInternal(manager,param_list, param_flags,cmd, detach,out)
-            ret=out;
-            init = param_flags;
-            for i = 1:length(param_list(1).values)
-                param_flags = [init , ' ', param_list(1).parameter_name, ' ', num2str(param_list(1).values(i))]; 
-                if length(param_list)>1
-                    tmp = manager.parameterSweepInternal(param_list(2:end),param_flags,cmd,detach,ret);
-                    ret = [ret ; tmp];
-                else
-                    tmp = [tempname, '.json'];
-                    manager.DaemonCall([cmd, tmp, ' ', param_flags, detach]);
-                    ret=[ret; tmp];
-                end
-            end
-        end
-
-%         function states = collectParameterSweep(manager,locations, gc)
-%             states=[];
-%             count = 0;
-%             n = length(locations);
-%         
-%             for i = 1:n
-%                 if exist(locations(i),'file')
-%                     count = count + 1;
-%         
-%                     %Read file
-%                     fid = fopen(locations(i));
-%                     raw = fread(fid, inf); 
-%                     str = char(raw'); 
-%                     fclose(fid); 
-%                     states = [states,jsondecode(str)];
-%         
-%                     if gc
-%                         delete(locations(i));
-%                     end
-%                 end
-%                 waitbar(count/n,"Collecting results...")
-%                 pause(0.1);
-%             end
-%         end
 
         function startup(manager)
             
@@ -264,7 +204,8 @@ classdef ServerManager < handle
         end
 
         function success = DaemonCall(manager, call)
-
+        %Call the DaemonMode server
+            
             cmd = [manager.base_call, ' -e ', call];
             
             if manager.options.debug
@@ -283,20 +224,59 @@ classdef ServerManager < handle
             
         end
 
-        function sweep(manager,exper,values,name)
+        function f=sweep(manager,experiment,values,name)
+        %Perform a parameter sweep
             save_folder = fullfile(manager.use_folder,name);
             [~,~]=mkdir(save_folder);
             options_file = [save_folder,'/',name,'.mat'];
-            experiment=exper;
             save(options_file, "save_folder","experiment","values")
             sweep_source = fullfile(fileparts(mfilename('fullpath')), 'RunFromMatlab','api','ParameterSweepControl.jl');
             sweep_call=['"using Revise, DaemonMode; runargs(',num2str(manager.options.port) ,')" ', sweep_source, ' ', options_file, ' &'];
-            manager.DaemonCall(sweep_call)
-            
+            manager.DaemonCall(sweep_call);
+
+            f= parfeval(@checkSweep,1,experiment,save_folder);
+        end
+
+        function result = collect_results(manager, f, index)
+        %Collect results from a Futures object at given indices
+
+            while f.State == "running"
+                pause(0.1);
+                if manager.options.debug
+                    disp("Waiting for futures object to finish")
+                end
+            end
+            if manager.options.debug
+                disp("Loading data from object")
+            end
+
+            result = f.OutputArguments{1}.Results(index);
+            for i=1:length(index)
+                fid = fopen(result(i).states_location);
+                raw = fread(fid, inf); 
+                str = char(raw'); 
+                fclose(fid); 
+                states = jsondecode(str);
+                result(i).states = states;
+            end
         end
     end
 end
 
+function [result,count ]= checkSweep(experiment,save_folder)
+    output_file = fullfile(save_folder, [experiment,'_output.json']);
+    while ~exist(output_file,'file')
+        count = length(dir(fullfile(save_folder,'*.json')));
+        pause(0.1);
+    end
+
+    %Read file
+    fid = fopen(output_file);
+    raw = fread(fid, inf); 
+    str = char(raw'); 
+    fclose(fid); 
+    result = jsondecode(str);
+end
 
 % Determine correct julia source
 function runtime = try_find_julia_runtime()
@@ -344,53 +324,4 @@ function succ = ping_server(opts)
         end
     end
 
-end
-
-function count = checkSweepStatus(locations)
-    count = 0;
-    n = length(locations);
-    read = zeros(n);
-
-    while count < n
-        for i = 1:n
-            if exist(locations(i),'file') && ~read(i)
-                count = count + 1;
-                read(i)=true;
-            end
-        end
-        waitbar(count/n,"Parameter sweep progress...")
-    end
-end
-
-function state = findFile(loc,gc)
-    while ~exist(loc,'file')
-        pause(0.1);
-    end
-
-    %Read file
-    fid = fopen(loc);
-    raw = fread(fid, inf); 
-    str = char(raw'); 
-    fclose(fid); 
-    state = jsondecode(str);
-
-    if gc
-        delete(loc)
-    end
-end
-
-function updateWaitbar(w)
-    % Update a waitbar using the UserData property.
-
-    % Check if the waitbar is a reference to a deleted object
-    if isvalid(w)
-        % Increment the number of completed iterations 
-        w.UserData(1) = w.UserData(1) + 1;
-
-        % Calculate the progress
-        progress = w.UserData(1) / w.UserData(2);
-
-        % Update the waitbar
-        waitbar(progress,w);
-    end
 end

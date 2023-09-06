@@ -1,6 +1,6 @@
 import BattMo
 
-function run_battery_from_matlab(init::BattMo.MatlabFile, 
+function run_battery_from_matlab(init::BattMo.MatlabFile; 
                                  kwargs...)
     """ 
         Summary: Wrapper method for running run_battery when launched from matlab. 

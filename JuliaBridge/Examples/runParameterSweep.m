@@ -56,15 +56,15 @@ switch testCase
     
 end
 
-%p = parpool('Processes',2);
-%ps = [SweepParameter('nam-volumeFraction', 0.75:0.01:0.85)];
+%This must only be defined ONCE. Must be manually deleted before clear all
+p = parpool('Processes',1);
 
-v = linspace(0.7,0.9,20);
-man.sweep('Example', [v ; v], 'test2')
+v = linspace(0.7,0.9,5);
+f=man.sweep('Example', {v , v}, 'test3');
 
-%p=parpool('Processes',1);
-%[f,locations] = man.iterate_values(ps);
-%result = result{1}; 
+
+%% Collect results
+res=man.collect_results(f, [1,2,3]);
 
 %% Plot results
 

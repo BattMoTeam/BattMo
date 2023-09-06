@@ -42,7 +42,7 @@ else
         
     elseif script == "-run_battery"
 
-        output = RunFromMatlab.run_battery_from_matlab(init; kwargs)
+        output = RunFromMatlab.run_battery_from_matlab(inputobj; kwargs...)
         stringdata = JSON.json(output)
         
         # write the file with the stringdata variable information
