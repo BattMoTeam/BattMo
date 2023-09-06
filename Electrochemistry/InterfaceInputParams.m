@@ -13,7 +13,6 @@ classdef InterfaceInputParams < InputParams
         k0                      % Reference rate constant  [m^2.5 mol^-0.5 s^-1]
         Eak                     % Activation energy [J mol^-1]
         volumetricSurfaceArea   % Volumetric surface area [m2 m^-3]
-        volumeFraction          % Volume fraction of the active material
         density                 % Density of the active material [kg m^-3]
         n                       % number of electron transfer
 

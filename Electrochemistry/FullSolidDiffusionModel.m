@@ -29,12 +29,13 @@ classdef FullSolidDiffusionModel < SolidDiffusionModel
                        'cmax'          , ...
                        'theta0'        , ...
                        'theta100'      , ...
-                       'volumeFraction', ...
                        'activeMaterialFraction'};
 
             model = dispatchParams(model, paramobj, fdnames);
             model.operators = model.setupOperators();
 
+            model.volumeFraction = paramobj.volumeFraction*ones(model.np, 1);
+            
             if ~isempty(paramobj.D)
                 switch paramobj.D.type
                   case 'constant'
@@ -276,8 +277,9 @@ classdef FullSolidDiffusionModel < SolidDiffusionModel
             Rvol = state.Rvol;
 
             Rvol = op.mapFromBc*Rvol;
+            vf   = op.mapToParticle*vf;
             
-            state.massSource = - Rvol*((4*pi*rp^3)/(3*amf*vf));
+            state.massSource = - Rvol.*((4*pi*rp^3)./(3*amf*vf));
             
         end
 

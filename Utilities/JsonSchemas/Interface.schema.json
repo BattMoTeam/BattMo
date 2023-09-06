@@ -8,7 +8,6 @@
               "description" : "maximum concentration" },
     "n" : {"type" : "integer",
            "description" : "number of electron transfer"},
-    "volumeFraction": {"type" : "number"},
     "volumetricSurfaceArea": {"type" : "number"},
     "Eak": {"type" : "number",
             "description" : "reaction activation energy"},
