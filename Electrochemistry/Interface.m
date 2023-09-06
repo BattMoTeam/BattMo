@@ -11,7 +11,6 @@ classdef Interface < BaseModel
         n
 
         % Physicochemical properties
-        volumeFraction
         volumetricSurfaceArea  % Surface area to volume,       [m2 m^-3]
         density                % [kg m^-3]
         theta0                 % Minimum lithiation, 0% SOC    [-]
@@ -39,7 +38,6 @@ classdef Interface < BaseModel
             fdnames = {'G'                    , ...
                        'cmax'                 , ...
                        'n'                    , ...
-                       'volumeFraction'       , ...
                        'volumetricSurfaceArea', ...  
                        'density'              , ...                
                        'theta0'               , ...                 
@@ -51,7 +49,7 @@ classdef Interface < BaseModel
             model = dispatchParams(model, paramobj, fdnames);
             
             model.computeOCPFunc = str2func(paramobj.OCP.functionname);
-
+            
             if ~isempty(paramobj.j0)
                 switch paramobj.j0.type
                   case 'function'
