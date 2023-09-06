@@ -2,6 +2,8 @@
   "cmax": 33133,
   "volumetricSurfaceArea": 384000,
   "n": 1,
+  "density": 2240,
+  "comment" : "The density is set as the one of pure graphite. This should be changed.",
   "Eak": 35000,
   "k0": 6.716e-12,
   "theta100": 0.9014,
