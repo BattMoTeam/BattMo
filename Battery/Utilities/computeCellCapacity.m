@@ -1,9 +1,8 @@
-function [cap, cap_neg, cap_pos, specificEnergy] = computeCellCapacity(model, varargin)
-
+function [capacity, capacities] = computeCellCapacity(model)
 %
 %
 % SYNOPSIS:
-%   function c = computeCellCapacity(model, varargin)
+%   function [capacity, capacities] = computeCellCapacity(model, varargin)
 %
 % DESCRIPTION: computes the cell usable capacity in Coulomb
 %
@@ -11,15 +10,15 @@ function [cap, cap_neg, cap_pos, specificEnergy] = computeCellCapacity(model, va
 %   model - battery model
 %
 % RETURNS:
-%   cap - capacity
+%   capacity   - capacity
+%   capacities - struct with fields
+%      - negativeElectrode
+%      - positiveElectrode
 %
 % EXAMPLE:
 %
 % SEE ALSO:
 %
-    opt = struct('packingMass', 0);
-    opt = merge_options(opt, varargin{:});
-
     ne  = 'NegativeElectrode';
     pe  = 'PositiveElectrode';
     am  = 'ActiveMaterial';
@@ -102,74 +101,13 @@ function [cap, cap_neg, cap_pos, specificEnergy] = computeCellCapacity(model, va
         
     end
     
-    cap_neg = cap_usable(1);
-    cap_pos = cap_usable(2);
-    
-    cap = min(cap_usable); 
+    capacities.(ne) = cap_usable(1);
+    capacities.(pe) = cap_usable(2);
 
-    
-    if nargout > 3
-        
-        r = cap_neg/cap_pos;
-        
-        thetaMinPos = model.(pe).(am).(itf).theta100;
-        thetaMaxPos = model.(pe).(am).(itf).theta0;
-        thetaMinNeg = model.(ne).(am).(itf).theta0;
-        thetaMaxNeg = model.(ne).(am).(itf).theta100;
-        
-        elde = 'PositiveElectrode';
-
-        ammodel = model.(elde).(am);
-        itfmodel = model.(elde).(am).(itf);
-        
-        F = itfmodel.constants.F;
-        G = itfmodel.G;
-        n = itfmodel.n;
-        assert(n == 1, 'not implemented yet');
-        cMax = itfmodel.cmax;
-        
-        vol_fraction = ammodel.volumeFraction;
-        am_fraction  = ammodel.activeMaterialFraction;
-        vol = sum(am_fraction*vol_fraction.*ammodel.G.cells.volumes);
-        
-        func = @(theta) model.(elde).(am).(itf).computeOCPFunc(theta, 298, 1);
-
-        thetaMax = min(thetaMaxPos, thetaMinPos + r*(thetaMaxPos - thetaMinPos));
-
-        theta = linspace(thetaMinPos, thetaMax, 1000);
-        energy = sum(func(theta(1 : end - 1)).*diff(theta)*vol*F*cMax);
-        
-        elde = 'NegativeElectrode';        
-
-        ammodel  = model.(elde).(am);
-        itfmodel = model.(elde).(am).(itf);
-        
-        F = itfmodel.constants.F;
-        G = itfmodel.G;
-        n = itfmodel.n;
-        assert(n == 1, 'not implemented yet');
-        cMax = itfmodel.cmax;
-        
-        vol_fraction = ammodel.volumeFraction;
-        am_fraction  = ammodel.activeMaterialFraction;
-        vol = sum(am_fraction*vol_fraction.*ammodel.G.cells.volumes);
-        
-        func = @(theta) model.(elde).(am).(itf).computeOCPFunc(theta, 298, 1);
-
-        thetaMin = max(thetaMinNeg, thetaMaxNeg - 1/r*(thetaMaxNeg - thetaMinNeg));
-
-        theta = linspace(thetaMin, thetaMaxNeg, 1000);
-
-        energy = energy - sum(func(theta(1 : end - 1)).*diff(theta)*vol*F*cMax);
-        
-        mass = computeCellMass(model, 'packingMass', opt.packingMass);
-        
-        specificEnergy = energy/mass;
-        
-    else
-        
-        specificEnergy = [];
-        
+    capacity = capacities.(ne);
+    ind = value(capacities.(ne)) >= value(capacities.(pe));
+    if any(ind)
+        capacity(ind) = capacities.(pe)(ind);
     end
     
 end

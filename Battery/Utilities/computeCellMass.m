@@ -1,6 +1,7 @@
-function [mass, masses] = computeCellMass(model, varargin)
+function [mass, masses, volumes] = computeCellMass(model, varargin)
 
-    opt = struct('packingMass', 0);
+    opt = struct('packingMass', 0, ...
+                 'packingVolume', 0);
     opt = merge_options(opt, varargin{:});
     
     
@@ -29,8 +30,9 @@ function [mass, masses] = computeCellMass(model, varargin)
             vols = model.(elde).(am).G.cells.volumes;
             frac = model.(elde).(am).volumeFraction;
             
-            masses.(elde).(am).val = sum(rho.*vols.*frac);
-
+            masses.(elde).(am).val  = sum(rho.*vols.*frac);
+            volumes.(elde).(am).val = sum(vols.*frac);
+            
           case 'composite'
             
             gr = 'FirstMaterial';
@@ -38,7 +40,8 @@ function [mass, masses] = computeCellMass(model, varargin)
 
             mats = {gr, si};
             
-            masses.(elde).(am).val = 0;
+            masses.(elde).(am).val  = 0;
+            volumes.(elde).(am).val = 0;
             
             for imat = 1 : numel(mats)
 
@@ -50,6 +53,10 @@ function [mass, masses] = computeCellMass(model, varargin)
                 
                 masses.(elde).(am).(mat).val = sum(rho.*vols.*vf.*amvf);
                 masses.(elde).(am).val = masses.(elde).(am).val + masses.(elde).(am).(mat).val;
+
+                volumes.(elde).(am).(mat).val = sum(vols.*vf.*amvf);
+                volumes.(elde).(am).val = volumes.(elde).(am).val + volumes.(elde).(am).(mat).val;
+
             end
             
           otherwise
@@ -65,7 +72,9 @@ function [mass, masses] = computeCellMass(model, varargin)
             rho  = model.(elde).(cc).density;
             vols = model.(elde).(cc).G.cells.volumes;
             
-            masses.(elde).(cc).val = sum(rho.*vols);
+            masses.(elde).(cc).val  = sum(rho.*vols);
+            volumes.(elde).(cc).val = sum(vols);
+
             mass = mass + masses.(elde).(cc).val;
             
         end
@@ -76,17 +85,23 @@ function [mass, masses] = computeCellMass(model, varargin)
     vols = model.(elyte).G.cells.volumes;
     frac = model.(elyte).volumeFraction;
     
-    masses.(elyte).val = sum(rho.*vols.*frac);
+    masses.(elyte).val  = sum(rho.*vols.*frac);
+    volumes.(elyte).val = sum(vols.*frac);
+    
     mass = mass + masses.(elyte).val;
     
     rho  = model.(elyte).(sep).density;
     vols = model.(elyte).(sep).G.cells.volumes;
     frac = model.(elyte).(sep).volumeFraction;
     
-    masses.(elyte).(sep).val = sum(rho.*vols.*frac);
+    masses.(elyte).(sep).val  = sum(rho.*vols.*frac);
+    volumes.(elyte).(sep).val = sum(vols.*frac);
+
     mass = mass + masses.(elyte).(sep).val;
 
     mass = mass + opt.packingMass;
+
+    volumes.val = sum(model.G.cells.volumes) + opt.packingVolume;
     
 end
 
