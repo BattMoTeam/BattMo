@@ -87,11 +87,21 @@ classdef PorositySetter
             pe    = 'PositiveElectrode';
             elyte = 'Electrolyte';
             am    = 'ActiveMaterial';
+            itf = 'Interface';
+            sd  = 'SolidDiffusion';
             
             switch compname
               case {ne, pe}
-                model.(compname).(am).porosity       = v;
-                model.(compname).(am).volumeFraction = 1 - v;
+                model.(compname).(am).porosity             = v;
+                model.(compname).(am).volumeFraction       = 1 - v;
+                switch model.(compname).(am).diffusionModelType
+                  case {'simple', 'interParticleOnly'}
+                    % nothing to do
+                  case 'full'
+                    model.(compname).(am).(sd).volumeFraction = 1 - v;
+                  otherwise
+                    error('Unknown diffusionModelType %s', diffusionModelType);
+                end
               case sep
                 model.(elyte).(sep).porosity       = v;
                 model.(elyte).(sep).volumeFraction = 1 - v;
