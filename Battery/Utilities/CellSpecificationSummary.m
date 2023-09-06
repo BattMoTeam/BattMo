@@ -24,20 +24,20 @@ classdef CellSpecificationSummary
 
         dischargeFunction % Maximum energy discharge function (voltage versus state of charge)
 
-        Temperature
+        temperature
         
     end
 
     methods
 
-        function css = CellSpecificationSummary(varargin)
+        function css = CellSpecificationSummary(model, varargin)
 
-            opt = struct('packingMass', [],
-                         'Temperature', 298);
+            opt = struct('packingMass', 0, ...
+                         'temperature', 298);
             opt = merge_options(opt, varargin{:});
 
             css.packingMass = opt.packingMass;
-            css.Temperature = opt.Temperature;
+            css.temperature = opt.temperature;
             
             css = css.update(model);
             
@@ -45,12 +45,12 @@ classdef CellSpecificationSummary
         
         function css = update(css, model)
 
-            T           = css.Temperature;
+            temperature = css.temperature;
             packingMass = css.packingMass;
             
-            [mass, masses, volumes] = computeCellMass(model, packingMass);
-            [capacity, capacities]  = computeCellCapacity(model);
-            energy                  = computeCellEnergy(model, 'Temperature', T);
+            [mass, masses, volumes]     = computeCellMass(model, 'packingMass', packingMass);
+            [capacity, capacities]      = computeCellCapacity(model);
+            [energy, dischargeFunction] = computeCellEnergy(model, 'temperature', temperature);
             
             ne  = 'NegativeElectrode';
             pe  = 'PositiveElectrode';
@@ -75,13 +75,13 @@ classdef CellSpecificationSummary
             cmax  = itfmodel.cmax;
             cinit = itfmodel.theta100*cmax;
             
-            U = itfmodel.computeOCPFunc(cinit, T, cmax);
+            U = itfmodel.computeOCPFunc(cinit, temperature, cmax);
             
             itfmodel = model.(pe).(am).(itf);
             cmax  = itfmodel.cmax;
             cinit = itfmodel.theta100*cmax;
             
-            U = U - itfmodel.computeOCPFunc(cinit, T, cmax);
+            U = U - itfmodel.computeOCPFunc(cinit, temperature, cmax);
 
             %  Assign values
             
@@ -95,9 +95,8 @@ classdef CellSpecificationSummary
             css.NPratio           = NPratio;
             css.capacity          = capacity;
             css.capacities        = capacities;
-            css.initialVoltage    = initialVoltage;
+            css.initialVoltage    = U;
             css.dischargeFunction = dischargeFunction;
-            css.Temperature       = Temperature;
         
         end
 

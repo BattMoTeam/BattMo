@@ -3,7 +3,7 @@ function [energy, dischargeFunction] = computeCellEnergy(model, varargin)
 %% The discharge function is the voltage as a function of the state of charge for an infinitely slow discharge.
     
     opt = struct('capacities' , [], ...
-                 'Temperature', 298);
+                 'temperature', 298);
     opt = merge_options(opt, varargin{:});
 
     ne  = 'NegativeElectrode';
@@ -18,7 +18,7 @@ function [energy, dischargeFunction] = computeCellEnergy(model, varargin)
         capacities = opt.capacities
     end
 
-    T = opt.Temperature;
+    T = opt.temperature;
 
     capacity = min(capacities.(ne), capacities.(pe));
 
@@ -56,6 +56,6 @@ function [energy, dischargeFunction] = computeCellEnergy(model, varargin)
     
     energy = (energies{2} - energies{1});
 
-    dischargeFunc = @(s) (fs{2}(s) - fs{1}(s));
+    dischargeFunction = @(s) (fs{2}(s) - fs{1}(s));
 
 end
