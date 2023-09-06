@@ -99,7 +99,7 @@ classdef OdeWrapper
             %% Reset
             wrap.currentState=wrap.initstate;
             %Index of voltage
-            E_ind=sum(wrap.VariableSizes(1:5));
+            E_ind=sum(wrap.VariableSizes(1:7));
 
             %% Functions used in ode15i
             function f = odeFun(t,y,dy)

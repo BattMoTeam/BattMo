@@ -27,15 +27,4 @@ function [res,ode_state]=simulateScheduleode15i(initstate,model,schedule,varargi
 
     solver = OdeWrapper(model,state,forces, schedule);
     [res,ode_state]=solver.solve();
-
-    % %% ode15i setup and preparation
-    % [y,dims] = getODEVariables(state,model);
-    % frcs.src=forces{2};
-    % f1 = @(t,y,dy) odeFun(t,y,dy,state,dims,model,frcs);
-    % f2 = @(t,y,dy) JACodeFun(t,y,dy,state,dims,model,frcs);
-    % 
-    % setupOptions=odeset('Jacobian', f2);
-    % %% Solve semidiscrete problem
-    % res = ode15i(f1,cumsum(schedule.step.val), y, y.*0,setupOptions);
-
 end

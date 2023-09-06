@@ -185,16 +185,8 @@ start=tic;
 [wellSols, states, report] = simulateScheduleAD(initstate, model, schedule, 'OutputMinisteps', true, 'NonLinearSolver', nls); 
 stop=toc(start)
 start=tic;
-[res,ode_states]= simulateScheduleode15i_big(initstate,model,schedule);
+[res,ode_states]= simulateScheduleode15i(initstate,model,schedule);
 stop=toc(start)
-
-%% Create .mat file
-
-state0=initstate;
-export = struct('model',model,'schedule',schedule,'state0',state0,'ode15i_results',res);
-model=class2data(model);
-schedule=class2data(schedule);
-save("test_model_cc_04","model","schedule","state0","res");
 
 %% Process output and recover the output voltage and current from the output states.
 ind = cellfun(@(x) not(isempty(x)), states); 
