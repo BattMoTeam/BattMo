@@ -26,7 +26,7 @@ jsonfolder       = fullfile('JuliaBridge','Examples','jsonfiles');
 
 %% Setup model from Matlab
 
-testCase = 'Matlab';
+testCase = 'JSON';
 
 switch testCase
 

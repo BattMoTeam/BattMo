@@ -22,7 +22,7 @@ function run_battery_from_matlab(init::BattMo.MatlabFile;
     # by using the same timesteps, input current and cutoff voltage.
     states, reports, extra, exported = BattMo.run_battery(init; kwargs...);
     # create output
-    ret = Dict("states" => states, "reports" => reports, "extra" => extra, "exported" => exported, "matlab states" => convert_state_Matlab(states,extra[:model]))
+    ret = Dict("states" => states, "reports" => reports, "extra" => extra, "exported" => exported, "matlab states" => convert_state_Matlab(states,extra[:model],extra[:timesteps]))
     return ret
 end
 
@@ -30,7 +30,7 @@ function run_battery_from_matlab(init::BattMo.JSONFile; kwargs...)
     """ Json version"""
     states, reports, extra, exported = BattMo.run_battery(init; kwargs...);
     # create output
-    ret = Dict("states" => states, "reports" => reports, "extra" => extra, "exported" => exported, "matlab states" => convert_state_Matlab(states,extra[:model]))
+    ret = Dict("states" => states, "reports" => reports, "extra" => extra, "exported" => exported, "matlab states" => convert_state_Matlab(states,extra[:model],extra[:timesteps]))
     return ret
     
 end

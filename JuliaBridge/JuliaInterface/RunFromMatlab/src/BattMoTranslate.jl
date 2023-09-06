@@ -1,9 +1,11 @@
 
 
-function convert_state_Matlab(states::AbstractVector,model)
+function convert_state_Matlab(states::AbstractVector,model,timesteps)
     ret = Array{Dict{String,Any}}(undef,length(states),1)
+    time = cumsum(timesteps)
     for (i,s) in enumerate(states)
         ret[i]=convert_state_Matlab(s,model)
+        ret[i]["time"]=time[i];
     end
     return ret
 end
