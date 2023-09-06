@@ -3,7 +3,7 @@
 % and run a simple simulation.
 
 % clear the workspace and close open figures
-% clear
+clear all
 close all
 clc
 
@@ -35,12 +35,17 @@ paramobj = BatteryInputParams(jsonstruct);
 
 gridgen = BatteryGenerator1D();
 
+gridgen.faceArea = 1;
+
 % Now, we update the paramobj with the properties of the mesh. 
 [paramobj, gridgen] = gridgen.updateBatteryInputParams(paramobj);
 
 %%  Initialize the battery model. 
 
 model = Battery(paramobj);
+
+css = CellSpecificationSummary(model);
+css.printSpecifications();
 
 model.AutoDiffBackend= AutoDiffBackend();
 
@@ -60,7 +65,6 @@ srcfunc = @(time, I, E) rampupSwitchControl(time, tup, I, E, ...
                                             model.Control.lowerCutoffVoltage);
 
 control = struct('src', srcfunc, 'IEswitch', true);
-
 
 schedule = struct('control', control, 'step', step); 
 
@@ -147,7 +151,7 @@ end
 %%
 
 state0 = initstate;
-SimulatorSetup = struct('model', model, 'schedule', schedule, 'state0', state0);
+simulatorSetup = struct('model', model, 'schedule', schedule, 'state0', state0);
 
 %%
 
@@ -157,13 +161,13 @@ includeLength = true;
 
 if includeLength
 
-    lengthsetter = LengthSetter1D(gridgen, {ne, pe});
-    % lengthsetter = NPlengthSetter1D(model, gridgen, 1.1);
+    % lengthsetter = LengthSetter1D(gridgen, {ne, pe});
+    lengthsetter = NPlengthSetter1D(model, gridgen, 1.1);
     
     getlength = @(model, dummy) lengthsetter.getLengths(model);
     setlength = @(model, dummy, v) lengthsetter.setLengths(model, v);
 
-    parameters{end+1} = ModelParameter(SimulatorSetup, ...
+    parameters{end+1} = ModelParameter(simulatorSetup, ...
                                        'name'     , 'length'     , ...
                                        'belongsTo', 'model'      , ...
                                        'location' , {''}         , ...
@@ -181,10 +185,11 @@ if includePorosity
     getporo = @(model, dummy) porosetter.getPorosities(model);
     setporo = @(model, dummy, v) porosetter.setPorosities(model, v);
     
-    parameters{end+1} = ModelParameter(SimulatorSetup, ...
+    parameters{end+1} = ModelParameter(simulatorSetup, ...
                                        'name'     , 'porosities', ...
                                        'belongsTo', 'model'     , ...
                                        'location' , {''}        , ...
+                                       'boxLims'  , [0.1 0.9]   , ...
                                        'getfun'   , getporo     , ...
                                        'setfun'   , setporo);
     
@@ -194,7 +199,7 @@ end
 
 % params for cut-off function
 params.E0    = 3;
-params.alpha = 10;
+params.alpha = 100;
 
 %
 mass = computeCellMass(model);
@@ -206,8 +211,8 @@ objmatch = @(model, states, schedule, varargin) SpecificEnergyOutput(model, stat
 options = {'NonLinearSolver', nls, 'OutputMinisteps', false};
 
 % setup objective function scaling. We use initial value
-p = getScaledParameterVector(SimulatorSetup, parameters);
-v0 = evalObjectiveBattmo(p, objmatch, SimulatorSetup, parameters, 'GradientMethod', 'None', options{:});
+p = getScaledParameterVector(simulatorSetup, parameters);
+v0 = evalObjectiveBattmo(p, objmatch, simulatorSetup, parameters, 'GradientMethod', 'None', options{:});
 
 options = horzcat(options, {'objScaling', v0});
 
@@ -215,29 +220,29 @@ dosmalltest = false;
 if dosmalltest
     val = objmatch(model, states, schedule);
     sum([val{:}])
-    v = parameters{1}.getParameterValue(SimulatorSetup)
-    obj = @(p) evalObjectiveBattmo(p, objmatch, SimulatorSetup, parameters, options{:});
+    v = parameters{1}.getParameterValue(simulatorSetup)
+    obj = @(p) evalObjectiveBattmo(p, objmatch, simulatorSetup, parameters, options{:});
     vs = parameters{1}.scale(v)
     b = obj(vs)
 end
 
 
-doOptimization = false;
+doOptimization = true;
 
 if doOptimization
     
-    p_base = getScaledParameterVector(SimulatorSetup, parameters);
-    obj = @(p) evalObjectiveBattmo(p, objmatch, SimulatorSetup, parameters, 'GradientMethod', 'AdjointAD', options{:});
+    p_base = getScaledParameterVector(simulatorSetup, parameters);
+    obj = @(p) evalObjectiveBattmo(p, objmatch, simulatorSetup, parameters, 'GradientMethod', 'AdjointAD', options{:});
     [v, p_opt, history] = unitBoxBFGS(p_base, obj, 'gradTol', 1e-4, 'objChangeTol', 1e-4);
-    
+
 end
 
-doCompareGradient = true;
+doCompareGradient = false;
 
 if doCompareGradient
     
-    p = getScaledParameterVector(SimulatorSetup, parameters);
-    [vad, gad]   = evalObjectiveBattmo(p, objmatch, SimulatorSetup, parameters, 'GradientMethod', 'AdjointAD', options{:});
+    p = getScaledParameterVector(simulatorSetup, parameters);
+    [vad, gad]   = evalObjectiveBattmo(p, objmatch, simulatorSetup, parameters, 'GradientMethod', 'AdjointAD', options{:});
     perturbationSize = {};
     if includeLength
         perturbationSize = horzcat(perturbationSize, {1e-10});
@@ -245,7 +250,7 @@ if doCompareGradient
     if includePorosity
         perturbationSize = horzcat(perturbationSize, {1e-5});
     end
-    [vnum, gnum] = evalObjectiveBattmo(p, objmatch, SimulatorSetup, parameters, ...
+    [vnum, gnum] = evalObjectiveBattmo(p, objmatch, simulatorSetup, parameters, ...
                                        'GradientMethod', 'PerturbationADNUM'  , ...
                                        'PerturbationSize', perturbationSize   , ...
                                        options{:});
