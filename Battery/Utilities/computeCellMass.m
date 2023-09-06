@@ -101,7 +101,7 @@ function [mass, masses, volumes] = computeCellMass(model, varargin)
 
     mass = mass + opt.packingMass;
 
-    volumes.val = sum(model.G.cells.volumes) + opt.packingVolume;
+    volumes.val = sum(model.G.getVolumes()) + opt.packingVolume;
     
 end
 
