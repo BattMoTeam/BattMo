@@ -181,12 +181,17 @@ model.nonlinearTolerance = 1e-3*model.Control.Imax;
 model.verbose = true;
 
 %% Run the simulation
+
 start=tic;
+%Run MRST ODE solver for comparison
 [wellSols, states, report] = simulateScheduleAD(initstate, model, schedule, 'OutputMinisteps', true, 'NonLinearSolver', nls); 
 stop=toc(start)
 start=tic;
+%ode15i solver
 [res,ode_states]= simulateScheduleode15i(initstate,model,schedule);
 stop=toc(start)
+
+
 
 %% Process output and recover the output voltage and current from the output states.
 ind = cellfun(@(x) not(isempty(x)), states); 

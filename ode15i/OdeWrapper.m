@@ -1,4 +1,5 @@
 classdef OdeWrapper
+    %Wrapper class for using ode15i with MRST
     properties
         model
         schedule
@@ -41,7 +42,9 @@ classdef OdeWrapper
         function [eq,other,accum]=odeEqs(wrap,t,y,dy)
             %Generate the governing equations of the problem and set them
             %up to the compatible with the inputs of ode15i
-
+            %We create the residual dm/dy * dy/dt + R(y) 
+            %R(y) constains div term + source
+ 
             %% Initialize AD variables
             y = initVariablesADI(y);
             dy = initVariablesADI(dy);
@@ -64,6 +67,15 @@ classdef OdeWrapper
         end
 
         function eq=odeEqs_alt(wrap,t,X,dX)
+            %Alternative solution method which does not require you
+            %determine dm/dy directly.
+            %Instead we set up X = [m ; y], dX = [dm/dt ; dy/dt]
+            %We thus solve the system:
+            % dm/dt + R(y) =0
+            % m - M(y) = 0
+            %M(y) is the function calculating the accumulation term based
+            %on primary variables.
+
             X = initVariablesADI(X);
             dX = initVariablesADI(dX);
             len = length(X.val)/2; %If this is not even something is extremely wrong
@@ -130,6 +142,8 @@ classdef OdeWrapper
         end
 
         function [res,ret_state] = solve_alt(wrap,varargin)
+            %Solve the large version of the system, see odeEqs_alt
+            
             accum_tmp = wrap.model.getAccumTerms(wrap.initstate);
             accum = EquationVector(accum_tmp); %M(y)
             E_ind=sum(wrap.VariableSizes(1:7)) + length(accum);

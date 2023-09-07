@@ -24,7 +24,8 @@ function [res,ode_state]=simulateScheduleode15i(initstate,model,schedule,varargi
     dispif(opt.Verbose, 'Validating initial state...\n')
     state = model.validateState(initstate);
     dispif(opt.Verbose, 'Initial state ok. Ready to begin simulation.\n')
-
+    
+    %% Run ode15i
     solver = OdeWrapper(model,state,forces, schedule);
     [res,ode_state]=solver.solve();
 end
