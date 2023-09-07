@@ -1,0 +1,16 @@
+{
+  "cmax": 24358,
+  "volumeFraction": 0.8,
+  "volumetricSurfaceArea": 885000,
+  "density": 4450,
+  "n" : 1,
+  "Eak": 5000,
+  "k0": 2.33e-11,
+  "theta100": 1.4001e-04,
+  "theta0": 0.9811,
+  "OCP" : {"type" : "function",
+           "functionname" : "updateOCPFunc_lnmo_Mao",
+           "argumentlist" : ["concentration", "temperature", "maximum concentration"]
+          },
+  "BruggemanCoefficient": 1.5
+}
