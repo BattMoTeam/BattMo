@@ -10,6 +10,7 @@ function convert_state_Matlab(states::AbstractVector,model,timesteps)
     return ret
 end
 
+#Modified of the setup_state function in BattMo
 function convert_state_Matlab(julia_state,model)
 
     jsonNames = Dict(

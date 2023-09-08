@@ -2,23 +2,6 @@
 @everywhere import ParallelDataTransfer
 import MAT, JSON 
 
-#Debug!
-# dat = MAT.matread("/home/solheim/Documents/SINTEF/BattMo/JuliaBridge/JuliaInterface/RunFromMatlab/example_load.mat")
-# inputType = dat["inputType"]
-# juliafy_kwargs(xs::Dict{String, Any}) = Pair{Symbol, Any}[Symbol(k) => v for (k, v) in xs]
-
-# kwargs    = juliafy_kwargs(dat["kwargs"])
-
-# inputFileName = dat["inputFileName"]
-
-# if inputType == "Matlab"
-#     inputobj = BattMo.MatlabFile(inputFileName, dat["data"], use_state_ref=dat["use_state_ref"])
-# elseif inputType == "JSON"
-#     inputobj = BattMo.JSONFile("/home/solheim/Documents/SINTEF/BattMo/JuliaBridge/Examples/jsonfiles/p2d_40_jl.json")
-# else
-#     println("Invalid input type. Input data could not be read correctly")
-# end
-
 sweep_options = MAT.matread(ARGS[1])
 ParallelDataTransfer.sendto(workers(), init=inputobj, experiment=sweep_options["experiment"], kwargs=kwargs, folder=sweep_options["save_folder"])
 
