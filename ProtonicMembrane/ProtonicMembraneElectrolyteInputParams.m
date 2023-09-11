@@ -1,7 +1,8 @@
 classdef ProtonicMembraneElectrolyteInputParams < ComponentInputParams
     
     properties
-        
+
+        T
         % Equilibrium H2 potential
         EH2_0
         % Equilibrium O2 potential

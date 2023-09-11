@@ -5,16 +5,6 @@ classdef ProtonicMembraneElectrode < BaseModel
         T  % Temperature
         constants
         
-        % coefficient in Buttler-Volmer
-        beta
-        % Exchange current density
-        iBV_0
-        % Limiting current densities
-        anodeLimitingCurrentDensity
-        cathodeLimitingCurrentDensity
-        % charge
-        z
-        
     end
     
     methods
@@ -23,15 +13,9 @@ classdef ProtonicMembraneElectrode < BaseModel
 
             model = model@BaseModel();
 
-            fdnames = {'G', ...
-                       'beta', ...
-                       'iBV_0', ...
-                       'anodeLimitingCurrentDensity', ...
-                       'cathodeLimitingCurrentDensity', ...
-                       'z'};
+            fdnames = {'T'};
+            model = dispatchParams(model, paramobj, fdnames);
             
-            % model.operators = localSetupOperators(model.G);
-
             model.constants = PhysicalConstants();
             
         end
@@ -56,11 +40,11 @@ classdef ProtonicMembraneElectrode < BaseModel
             varnames{end + 1} = 'pi';
             % over potential
             varnames{end + 1} = 'eta';
-            % Charge conservation equation (j = jEl + jHp)
+            % Charge conservation equation (that is j - jEl + jHp = 0)
             varnames{end + 1} = 'chargeCons';
             % Definition equation for jEl
             varnames{end + 1} = 'jElEquation';
-            % Definition equation for jHpl
+            % Definition equation for jHp
             varnames{end + 1} = 'jHpEquation';
             model = model.registerVarNames(varnames);
         
@@ -72,42 +56,31 @@ classdef ProtonicMembraneElectrode < BaseModel
             fn = @ProtonicMembraneElectrode.updateEta;
             inputnames = {'Eocp', 'phi', 'pi'};
             model = model.registerPropFunction({'eta', fn, inputnames});
-            
-            fn = @ProtonicMembraneElectrode.updateJHp;
-            inputnames = {'eta'};
-            model = model.registerPropFunction({'jHp', fn, inputnames});
 
             model = model.registerStaticVarName('Eocp');
                     
         end
         
         
-        function state = updateButtlerVolmerRate(model, state)
-            
-            R  = model.constants.R;
-            F  = model.constants.F;
-            T  = model.T;
-            z  = model.z;
-            ia = model.anodeLimitingCurrentDensity;
-            ic = model.cathodeLimitingCurrentDensity;
-            i0 = model.iBV_0;
-            
-            Eocp = state.Eocp
+        function state = updateChargeCons(model, state)
+
+            j   = state.j;
+            jEl = state.jEl;
+            jHp = state.jHp;
+
+            state.chargeCons = j - jEl - jHp;
+           
+        end
+
+        function state = updateEta(model, state)
+
+            Eocp = state.Eocp;
             E    = state.E;
-            
-            f = F*z/(RT);
-            eta = E - Eocp
-            
-            iBV = i0*(exp(-beta*f*eta) - exp((1 - beta)*f*eta))/(1 + (i0/ic)*exp(-beta*f*eta) - (i0/ia)*exp(-(1 - beta)*f*eta));
-            
-            state.iBV = iBV;
+
+            state.eta = E - Eocp;
             
         end
-        
-        
-        
-        
-        
+
     end
     
 end

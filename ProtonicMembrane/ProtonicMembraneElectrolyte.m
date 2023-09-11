@@ -16,6 +16,18 @@ classdef ProtonicMembraneElectrolyte < BaseModel
         sigmaN_0
         % proton conductivity
         sigmaHp
+
+        d_micro = 30 % thickness in micron
+
+        Y
+        dH_hyd  % kJ/mol
+        dS_hyd  % J / mol / K
+        Ea_prot % Activation energy proton diffusion
+        pH2O_in
+        pH2O_neg
+        SU
+
+        t_p_O2  % tr.nr holes in 1bar humidified oxygen
         
     end
     
@@ -25,12 +37,70 @@ classdef ProtonicMembraneElectrolyte < BaseModel
 
             model = model@BaseModel();
             
-            fdnames = {'G'};
+            fdnames = {'G'       , ...
+                       'T'       , ...
+                       'EH2_0'   , ...
+                       'EO2_0'   , ...
+                       'sigmaN_0', ...
+                       'Y'       , ...
+                       'dH_hyd'  , ...
+                       'dS_hyd'  , ...
+                       'Ea_prot' , ...
+                       'pH2O_in' , ...
+                       'pH2O_neg', ...
+                       'SU'      , ...
+                       't_p_O2' };
+            
             model = dispatchParams(model, paramobj, fdnames);
 
             model.operators = localSetupOperators(model.G);
 
             model.constants = PhysicalConstants();
+
+            con = model.constants;
+
+            % Compute pressures
+            
+            pH2O = model.pH2O_in*(1 - model.SU);
+
+            pH2 = model.pH2O_in;
+
+            pO2 = (1 - model.SU)*model.pH2O_in/2;
+            pO2 = 1;
+
+            % Compute reaction constants
+            
+            Y_mol   = model.Y/((4.22e-8)^3*con.Na);
+            D0_prot = 0.021*38/model.T;       % pre-exp proton diffusion
+            D_prot  = D0_prot*exp(-(model.Ea_prot*1000)/con.R/model.T);
+            
+            K_hyd   = exp((model.dS_hyd/con.R) - model.dH_hyd*1000/(con.R*model.T));
+            K_H     = K_hyd*pH2O;
+            K_H_neg = K_hyd*model.pH2O_neg;
+            
+            Y = model.Y;
+            OH_pos  = ((3*K_H - sqrt(K_H*(9*K_H - 6*K_H*Y + K_H*Y^2 + 24*Y - 4*Y^2)))/(K_H - 4));  % Per formula unit
+            OH_neg = ((3*K_H_neg - sqrt(K_H_neg*(9*K_H_neg - 6*K_H_neg*Y + K_H_neg*Y^2 + 24*Y - 4*Y^2)))/(K_H_neg - 4));
+
+            % Computate sigmaHp
+
+            sigma_prot_pos = (con.F*OH_pos*D_prot);
+            sigma_prot_neg = (con.F*OH_pos*D_prot);
+
+            sigmaHp = (sigma_prot_pos + sigma_prot_neg)/2;
+
+            % Computate sigmaP_0
+
+            t_p_O2  = 0.5; % tr.nr holes in 1bar humidified oxygen
+            K_H_p   = K_hyd*0.027;
+            p_ref   = ((3*K_H_p - sqrt(K_H_p*(9*K_H_p - 6*K_H_p*Y + K_H_p*Y^2 + 24*Y - 4*Y^2)))/(K_H_p - 4)); 
+            sigmaP_0 = (t_p_O2/(1 - t_p_O2))*(con.F*p_ref*D_prot); 
+
+            
+            % Assign the values to the model
+            
+            model.sigmaHp  = sigmaHp;
+            model.sigmaP_0 = sigmaP_0;
             
         end
         
@@ -58,8 +128,8 @@ classdef ProtonicMembraneElectrolyte < BaseModel
             varnames{end + 1} = 'jHp';            
             % Electronic flux
             varnames{end + 1} = 'jEl';
-            % H+ mass conservation (we measure the mass in Coulomb, hence "chargeConsHp")
-            varnames{end + 1} = 'chargeConsHp';
+            % H+ mass conservation (we measure the mass in Coulomb, hence "massConsHp")
+            varnames{end + 1} = 'massConsHp';
             % Charge conservation
             varnames{end + 1} = 'chargeConsEl';            
 
@@ -87,28 +157,38 @@ classdef ProtonicMembraneElectrolyte < BaseModel
 
             fn = @ProtonicMembraneElectrolyte.updateChargeConsHp;
             inputnames = {'sourceHp', 'jHp'};
-            model = model.registerPropFunction({'chargeConsHp', fn, inputnames});
+            model = model.registerPropFunction({'massConsHp', fn, inputnames});
         
-            fn = @ProtonicMembraneElectrolyte.updateChargeConsEl;
+            fn = @ProtonicMembraneElectrolyte.updateMassConsEl;
             inputnames = {'sourceEl', 'jEl'};
             model = model.registerPropFunction({'chargeConsEl', fn, inputnames});
         
         end
-        
+
+        function state = updateE(model, state)
+
+            state.E = state.phi - state.pi;
+            
+        end
+
+        function state = updateSigmaHp(model, state)
+
+            state.sigmaHp = model.sigmaHp;
+        end
         
         function state = updateHpFlux(model, state)
 
-            sigmaHp = model.sigmaHp;
             op = model.operators;
             
-            phi = state.phi;
+            sigmaHp = state.sigmaHp;
+            phi     = state.phi;
             
-            state.jHp = -sigmaHp*op.Grad(phi);
-            
+            state.jHp = assembleFlux(model, phi, sigmaHp);
+
         end
-        
+
         function state = updateElConductivity(model, state)
-            
+
             F = model.constants.F;
             R = model.constants.R;
             T = model.T;
@@ -129,14 +209,14 @@ classdef ProtonicMembraneElectrolyte < BaseModel
         end
         
         function state = updateElFlux(model, state)
-            
+
             sigmaEl = state.sigmaEl;
-            phi     = state.phi;
-            E       = state.E;
+            pi      = state.pi;
             
-            state.jEl = assembleFlux(model, phi + E, sigmaEl);
+            state.jEl = assembleFlux(model, pi, sigmaEl);
             
         end
+
         
         function state = updateChargeConsEl(model, state)
             
@@ -149,14 +229,14 @@ classdef ProtonicMembraneElectrolyte < BaseModel
             
         end
         
-        function state = updateChargeConsHp(model, state)
+        function state = updateMassConsHp(model, state)
             
             op = model.operators;
             
             sourceEl = state.sourceHp;
             jHp      = state.jHp;
             
-            state.chargeConsHp =  op.div(jHp) - sourceHp;
+            state.massConsHp =  op.div(jHp) - sourceHp;
             
         end
         

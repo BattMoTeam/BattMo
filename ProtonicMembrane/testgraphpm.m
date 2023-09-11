@@ -4,7 +4,11 @@ an    = 'Anode';
 ct    = 'Cathode';
 elyte = 'Electrolyte';
 
-paramobj = ProtonicMembraneCellInputParams([]);
+filename = '/home/xavier/Matlab/Projects/battmo/ProtonicMembrane/protonicMembrane.json';
+jsonstruct = fileread(filename);
+jsonstruct = jsondecode(jsonstruct);
+
+paramobj = ProtonicMembraneCellInputParams(jsonstruct);
 
 G = cartGrid(1, 10);
 G = computeGeometry(G);
@@ -36,7 +40,7 @@ cgt = model.computationalGraph;
 cgt.printRootVariables();
 
 % Print tail variables
-cgt.printRootVariables();
+cgt.printTailVariables();
 
 % plot computational graph
 [g, edgelabels] = cgt.getComputationalGraph();

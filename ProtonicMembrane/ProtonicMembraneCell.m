@@ -23,11 +23,12 @@ classdef ProtonicMembraneCell < BaseModel
 
             model = model@BaseModel();
 
-            fdnames = {'couplingTerms'};
+            fdnames = {'T', ...
+                       'couplingTerms'};
             model = dispatchParams(model, paramobj, fdnames);
 
-            model.Anode       = ProtonicMembraneElectrode(paramobj.Anode);
-            model.Cathode     = ProtonicMembraneElectrode(paramobj.Cathode);
+            model.Anode       = ProtonicMembraneAnode(paramobj.Anode);
+            model.Cathode     = ProtonicMembraneCathode(paramobj.Cathode);
             model.Electrolyte = ProtonicMembraneElectrolyte(paramobj.Electrolyte);
             model.Control     = ProtonicMembraneControl(paramobj.Control);
             
@@ -285,7 +286,7 @@ classdef ProtonicMembraneCell < BaseModel
             state         = model.updateControlEqs(state);
             
             eqs = {};
-            eqs{end + 1} = state.(elyte).chargeConsHp;
+            eqs{end + 1} = state.(elyte).massConsHp;
             eqs{end + 1} = state.(elyte).chargeConsEl;
             eqs{end + 1} = state.boundaryEqs;
             eqs{end + 1} = state.controlEqs;

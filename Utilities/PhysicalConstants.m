@@ -1,6 +1,8 @@
 classdef PhysicalConstants
-
-    properties (Constant)
+    %PHYSICALCONSTANTS Summary of this class goes here
+    %   Detailed explanation goes here
+    
+    properties 
         
         R  = 8.31446261815324 % Ideal gas constant
         F  = 96485.3329       % Faraday constant
@@ -8,9 +10,8 @@ classdef PhysicalConstants
         Na = 6.02e23          % Avogadro
         kb = 1.380649e-23     % Boltzmann (J/K)
         eV = 1.602176634e-19  % Electronvolt (J)
-        
     end
-    
+
 end
 
 
