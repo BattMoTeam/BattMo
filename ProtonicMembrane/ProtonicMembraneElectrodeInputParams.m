@@ -3,6 +3,7 @@ classdef ProtonicMembraneElectrodeInputParams < ComponentInputParams
     properties
         
         T
+        Eocp
         
     end
     

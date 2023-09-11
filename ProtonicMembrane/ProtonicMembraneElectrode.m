@@ -2,8 +2,11 @@ classdef ProtonicMembraneElectrode < BaseModel
     
     properties
         
-        T  % Temperature
+        T    % Temperature
+        Eocp % Open circuit potential
+        
         constants
+
         
     end
     
@@ -13,7 +16,8 @@ classdef ProtonicMembraneElectrode < BaseModel
 
             model = model@BaseModel();
 
-            fdnames = {'T'};
+            fdnames = {'T', ...
+                       'Eocp'};
             model = dispatchParams(model, paramobj, fdnames);
             
             model.constants = PhysicalConstants();
@@ -26,11 +30,11 @@ classdef ProtonicMembraneElectrode < BaseModel
             
             varnames = {};
             
-            % H+ flux at electrode
+            % H+ flux at electrode (positif is flux leaving electrode)
             varnames{end + 1} = 'jHp';
-            % Electronic flux at electrode
+            % Electronic flux at electrode (positif is flux leaving electrode)
             varnames{end + 1} = 'jEl';
-            % Charge flux at electrode
+            % Charge flux at electrode (positif is flux leaving electrode)
             varnames{end + 1} = 'j';
             % Open circuit potential at electrode
             varnames{end + 1} = 'Eocp';
@@ -57,7 +61,9 @@ classdef ProtonicMembraneElectrode < BaseModel
             inputnames = {'Eocp', 'phi', 'pi'};
             model = model.registerPropFunction({'eta', fn, inputnames});
 
-            model = model.registerStaticVarName('Eocp');
+            fn = @ProtonicMembraneElectrode.updateEocp;
+            inputnames = {};
+            model = model.registerPropFunction({'Eocp', fn, inputnames});            
                     
         end
         
@@ -75,11 +81,19 @@ classdef ProtonicMembraneElectrode < BaseModel
         function state = updateEta(model, state)
 
             Eocp = state.Eocp;
-            E    = state.E;
-
-            state.eta = E - Eocp;
+            pi   = state.pi;
+            phi  = state.phi;
+            
+            state.eta = pi - phi - Eocp;
             
         end
+
+        function state = updateEocp(model, state)
+
+            state.Eocp = model.Eocp;
+            
+        end
+        
 
     end
     

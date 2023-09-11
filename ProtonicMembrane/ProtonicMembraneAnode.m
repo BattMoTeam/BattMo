@@ -33,7 +33,7 @@ classdef ProtonicMembraneAnode < ProtonicMembraneElectrode
                        'Rct' , ...
                        'n'   , ...
                        'SU'  , ...
-                       'pH20_in'};
+                       'pH2O_in'};
             model = dispatchParams(model, paramobj, fdnames);
             
             model.constants = PhysicalConstants();
@@ -50,7 +50,11 @@ classdef ProtonicMembraneAnode < ProtonicMembraneElectrode
             
             pH2O = model.pH2O_in*(1 - model.SU);
             ila = model.ila0*pH2O;
+
+            % Assign the values
             
+            model.i0   = i0;
+            model.ila  = ila;
             
         end
         
@@ -78,7 +82,7 @@ classdef ProtonicMembraneAnode < ProtonicMembraneElectrode
             
             feta = con.F*model.n/(con.R*model.T).*eta;
             
-            jHo = i0*(exp(-beta*feta) - exp((1 - beta)*feta))/(1 + (i0/ilc)*exp(-beta*feta) - (i0/ila)*exp(-(1 - beta)*feta));
+            jHp = -i0*(exp(-beta*feta) - exp((1 - beta)*feta))./(1 + (i0/ilc)*exp(-beta*feta) - (i0/ila)*exp(-(1 - beta)*feta));
             
             state.jHp = jHp;
             

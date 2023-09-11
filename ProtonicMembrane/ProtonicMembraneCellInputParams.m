@@ -25,16 +25,28 @@ classdef ProtonicMembraneCellInputParams < ComponentInputParams
             ctrl  = 'Control';
     
             pick = @(fd) pickField(jsonstruct, fd);
-            paramobj.(an)    = ProtonicMembraneElectrodeInputParams(pick(an));
-            paramobj.(ct)    = ProtonicMembraneElectrodeInputParams(pick(ct));
+            paramobj.(an)    = ProtonicMembraneAnodeInputParams(pick(an));
+            paramobj.(ct)    = ProtonicMembraneCathodeInputParams(pick(ct));
             paramobj.(elyte) = ProtonicMembraneElectrolyteInputParams(pick(elyte));
-            paramobj.(ctrl)  = ProtonicMembraneElectrolyteInputParams(pick(ctrl));
+            paramobj.(ctrl)  = ProtonicMembraneControlInputParams(pick(ctrl));
 
             paramobj = mergeParameters(paramobj, {{'T'}       , ...
                                                   {elyte, 'T'}, ...
                                                   {an, 'T'}   , ...
                                                   {ct, 'T'}});
             
+            paramobj = mergeParameters(paramobj, {{elyte, 'EO2_0'}, ...
+                                                  {an, 'Eocp'}});
+
+            paramobj = mergeParameters(paramobj, {{elyte, 'EH2_0'}, ...
+                                                  {ct, 'Eocp'}});
+
+            paramobj = mergeParameters(paramobj, {{elyte, 'SU'}, ...
+                                                  {an, 'SU'}});
+
+            paramobj = mergeParameters(paramobj, {{elyte, 'pH2O_in'}, ...
+                                                  {an, 'pH2O_in'}});
+
             paramobj.couplingTerms = {};
             
         end

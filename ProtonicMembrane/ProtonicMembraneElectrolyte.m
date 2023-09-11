@@ -155,11 +155,11 @@ classdef ProtonicMembraneElectrolyte < BaseModel
             inputnames = {'sigmaEl', 'pi'};
             model = model.registerPropFunction({'jEl', fn, inputnames});
 
-            fn = @ProtonicMembraneElectrolyte.updateChargeConsHp;
+            fn = @ProtonicMembraneElectrolyte.updateMassConsHp;
             inputnames = {'sourceHp', 'jHp'};
             model = model.registerPropFunction({'massConsHp', fn, inputnames});
         
-            fn = @ProtonicMembraneElectrolyte.updateMassConsEl;
+            fn = @ProtonicMembraneElectrolyte.updateChargeConsEl;
             inputnames = {'sourceEl', 'jEl'};
             model = model.registerPropFunction({'chargeConsEl', fn, inputnames});
         
@@ -173,7 +173,10 @@ classdef ProtonicMembraneElectrolyte < BaseModel
 
         function state = updateSigmaHp(model, state)
 
-            state.sigmaHp = model.sigmaHp;
+            nc = model.G.cells.num;
+           
+            state.sigmaHp = model.sigmaHp*ones(nc, 1);
+            
         end
         
         function state = updateHpFlux(model, state)
@@ -225,7 +228,7 @@ classdef ProtonicMembraneElectrolyte < BaseModel
             sourceEl = state.sourceEl;
             jEl      = state.jEl;
             
-            state.chargeConsEl =  op.div(jEl) - sourceEl;
+            state.chargeConsEl =  op.Div(jEl) - sourceEl;
             
         end
         
@@ -233,10 +236,10 @@ classdef ProtonicMembraneElectrolyte < BaseModel
             
             op = model.operators;
             
-            sourceEl = state.sourceHp;
+            sourceHp = state.sourceHp;
             jHp      = state.jHp;
             
-            state.massConsHp =  op.div(jHp) - sourceHp;
+            state.massConsHp =  op.Div(jHp) - sourceHp;
             
         end
         

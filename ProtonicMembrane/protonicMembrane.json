@@ -23,5 +23,9 @@
   },
   "Cathode": {
     "R": 0.05
+  },
+  "Control": {
+    "controlType" : "current",
+    "controlValue": 1e-2
   }
 }
