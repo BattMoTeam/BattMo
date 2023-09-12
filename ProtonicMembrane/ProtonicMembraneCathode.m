@@ -23,15 +23,14 @@ classdef ProtonicMembraneCathode < ProtonicMembraneElectrode
             
             fn = @ProtonicMembraneCathode.updateJ;
             inputnames = {'eta'};
-            model = model.registerPropFunction({'j', fn, inputnames});
-
+            model = model.registerPropFunction({'jHp', fn, inputnames});
                     
         end
         
         
         function state = updateJ(model, state)
 
-            state.j = 1/model.R * state.eta;
+            state.jHp = 1/model.R * state.eta;
 
         end
 
