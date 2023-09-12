@@ -132,7 +132,9 @@ classdef ProtonicMembraneElectrolyte < BaseModel
             varnames{end + 1} = 'massConsHp';
             % Charge conservation
             varnames{end + 1} = 'chargeConsEl';            
-
+            % Charge conservation
+            varnames{end + 1} = 'alpha';
+            
             model = model.registerVarNames(varnames);
 
             fn = @ProtonicMembraneElectrolyte.updateE;
@@ -148,7 +150,7 @@ classdef ProtonicMembraneElectrolyte < BaseModel
             model = model.registerPropFunction({'jHp', fn, inputnames});
 
             fn = @ProtonicMembraneElectrolyte.updateElConductivity;
-            inputnames = {'E'};
+            inputnames = {'E', 'alpha'};
             model = model.registerPropFunction({'sigmaEl', fn, inputnames});
                         
             fn = @ProtonicMembraneElectrolyte.updateElFlux;
@@ -201,11 +203,13 @@ classdef ProtonicMembraneElectrolyte < BaseModel
             EH2_0    = model.EH2_0;
             EO2_0    = model.EO2_0;
             
-            E = state.E;
-
-            f = F/(R*T);
+            E     = state.E;
+            alpha = state.alpha;
             
+            f = F/(R*T);
+
             sigmaEl = sigmaP_0*exp(f*(E - EO2_0)) + sigmaN_0*exp(-f*(E - EH2_0));
+            sigmaEl = alpha*sigmaEl + (1 - alpha)*(sigmaP_0 + sigmaN_0);
             
             state.sigmaEl = sigmaEl;
             

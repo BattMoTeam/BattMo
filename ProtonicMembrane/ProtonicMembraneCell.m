@@ -89,17 +89,20 @@ classdef ProtonicMembraneCell < BaseModel
             fn = @ProtonicMembraneCell.updateControl;
             fn = {fn, @(propfunction) PropFunction.drivingForceFuncCallSetupFn(propfunction)};
             model = model.registerPropFunction({{ctrl, 'ctrlVal'}, fn, inputnames});            
-
+            model = model.registerPropFunction({{elyte, 'alpha'}, fn, inputnames});
+            
         end
 
         function state = updateControl(model, state, drivingForces)
             
             ctrl = "Control";
+            elyte = 'Electrolyte';
             
             time = state.time;
-            ctrlVal = drivingForces.src(time);
-
+            [ctrlVal, alpha] = drivingForces.src(time);
+            
             state.(ctrl).ctrlVal = ctrlVal;
+            state.(elyte).alpha  = alpha;
             
         end
         
@@ -300,12 +303,10 @@ classdef ProtonicMembraneCell < BaseModel
             
         end
 
-        function state = addVariables(model, state, src)
+        function state = addVariables(model, state, drivingForces)
                         
             funcCallList = model.funcCallList;
 
-            drivingForces.src = src;
-            
             for ifunc = 1 : numel(funcCallList)
                 eval(funcCallList{ifunc});
             end
@@ -380,7 +381,8 @@ classdef ProtonicMembraneCell < BaseModel
             
             forces = getValidDrivingForces@PhysicalModel(model);
             forces.src = [];
-
+            forces.alpha = [];
+            
         end
 
         function model = validateModel(model, varargin)
