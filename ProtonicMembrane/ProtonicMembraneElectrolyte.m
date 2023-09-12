@@ -112,7 +112,7 @@ classdef ProtonicMembraneElectrolyte < BaseModel
             
             % Electrostatic potential phi
             varnames{end + 1} = 'phi';
-            % Electromotive potential pi (see Jacobsen and Mogensen paper) or Electrochemical potential
+            % Electromotive potential pi (see Jacobsen and Mogensen paper) also called Electrochemical potential
             varnames{end + 1} = 'pi';
             % Electronic Chemical potential E
             varnames{end + 1} = 'E';
