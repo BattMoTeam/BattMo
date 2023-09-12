@@ -3,7 +3,6 @@ classdef ProtonicMembraneControlInputParams < InputParams
     properties
 
         controlType
-        controlValue
         
     end
     

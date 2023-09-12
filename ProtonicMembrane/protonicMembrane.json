@@ -8,6 +8,9 @@
     "n": 1
   },
   "Electrolyte": {
+    "length": 0.5,
+    "faceArea": 0.6,
+    "N": 40,
     "EH2_0": 0,
     "EO2_0": 1.253,
     "T": 600,
@@ -25,7 +28,6 @@
     "R": 0.05
   },
   "Control": {
-    "controlType" : "current",
-    "controlValue": 1e-2
+    "controlType" : "current"
   }
 }

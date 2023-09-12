@@ -84,9 +84,25 @@ classdef ProtonicMembraneCell < BaseModel
             fn = @ProtonicMembraneCell.setupCathodeBoundary;
             inputnames = {};
             model = model.registerPropFunction({{ct, 'phi'}, fn, inputnames});
-            
+                        
+            inputnames = {};
+            fn = @ProtonicMembraneCell.updateControl;
+            fn = {fn, @(propfunction) PropFunction.drivingForceFuncCallSetupFn(propfunction)};
+            model = model.registerPropFunction({{ctrl, 'ctrlVal'}, fn, inputnames});            
+
         end
 
+        function state = updateControl(model, state, drivingForces)
+            
+            ctrl = "Control";
+            
+            time = state.time;
+            ctrlVal = drivingForces.src(time);
+
+            state.(ctrl).ctrlVal = ctrlVal;
+            
+        end
+        
         function state = setupHpSources(model, state)
 
             an    = 'Anode';
@@ -277,21 +293,19 @@ classdef ProtonicMembraneCell < BaseModel
 
             initState.(ctrl).I = 0;
             initState.(ctrl).U = model.(an).Eocp;
+
+            initState.time = 0;
             
         end
 
         
         function [problem, state] = getEquations(model, state0, state,dt, drivingForces, varargin)
 
-            an    = 'Anode';
-            ct    = 'Cathode';
-            elyte = 'Electrolyte';
-            ctrl  = 'Control';
-
             opts = struct('ResOnly', false, 'iteration', 0, 'reverseMode', false); 
             opts = merge_options(opts, varargin{:});
             
             time = state0.time + dt;
+            
             if(not(opts.ResOnly) && not(opts.reverseMode))
                 state = model.initStateAD(state);
             elseif(opts.reverseMode)
@@ -308,7 +322,12 @@ classdef ProtonicMembraneCell < BaseModel
             for ifunc = 1 : numel(funcCallList)
                 eval(funcCallList{ifunc});
             end
-            
+
+            an    = 'Anode';
+            ct    = 'Cathode';
+            elyte = 'Electrolyte';
+            ctrl  = 'Control';
+
             eqs = {};
             eqs{end + 1} = state.(elyte).massConsHp;
             eqs{end + 1} = state.(elyte).chargeConsEl;
@@ -347,22 +366,20 @@ classdef ProtonicMembraneCell < BaseModel
         function forces = getValidDrivingForces(model)
             
             forces = getValidDrivingForces@PhysicalModel(model);
-
-            forces.dummy = [];
+            forces.src = [];
 
         end
 
         function model = validateModel(model, varargin)
 
             if isempty(model.computationalGraph)
-
                 model = model.setupComputationalGraph();
-                cgt = model.computationalGraph;
-                
-                model.primaryVarNames = cgt.getPrimaryVariableNames();
-                model.funcCallList    = cgt.getOrderedFunctionCallList();
-                
             end
+
+            cgt = model.computationalGraph;
+            
+            model.primaryVarNames = cgt.getPrimaryVariableNames();
+            model.funcCallList    = cgt.getOrderedFunctionCallList();
             
         end
         

@@ -12,39 +12,38 @@ jsonstruct = jsondecode(jsonstruct);
 
 paramobj = ProtonicMembraneCellInputParams(jsonstruct);
 
-G = cartGrid(10, 1);
-G = computeGeometry(G);
-
-paramobj.(elyte).G = G;
-
-couplingTerms = {};
-
-coupterm = couplingTerm('Anode-Electrolyte', {an, elyte});
-coupterm.couplingcells = [1, 1];
-coupterm.couplingfaces = [1, 1];
-couplingTerms{end + 1} = coupterm;
-
-coupterm = couplingTerm('Cathode-Electrolyte', {an, elyte});
-coupterm.couplingcells = [1, G.cells.num];
-coupterm.couplingfaces = [1, G.faces.num];
-couplingTerms{end + 1} = coupterm;
-
-paramobj.couplingTerms = couplingTerms;
+paramobj = setupProtonicMembraneCellGrid(paramobj, jsonstruct);
 
 % Setup model
 model = ProtonicMembraneCell(paramobj);
+
+model = model.setupComputationalGraph();
+cgt = model.computationalGraph;
 
 model.verbose = true;
 
 % Setup initial state
 state0 = model.setupInitialState();
 
-% Setup fake schedule (not needed here)
-step = struct('val', 1, 'control', 1);
-control.dummy = [];
+% Setup schedule
+
+T = 1; % This is not a real time scale, as all the model deals with equilibrium
+N = 100;
+dt = T/N;
+
+step.val = dt*ones(N, 1);
+step.control = ones(N, 1);
+
+Imax = 1e-2;
+
+control.src = @(time) time/T*Imax;
+
 schedule = struct('control', control, 'step', step); 
 
-[~, states, report] = simulateScheduleAD(state0, model, schedule); 
+nls = NonLinearSolver();
+nls.maxIterations = 100;
+
+[~, states, report] = simulateScheduleAD(state0, model, schedule, 'NonLinearSolver', nls); 
 
 
 

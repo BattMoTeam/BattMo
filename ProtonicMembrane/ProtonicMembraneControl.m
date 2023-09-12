@@ -3,7 +3,6 @@ classdef ProtonicMembraneControl < BaseModel
     properties
 
         controlType
-        controlValue
         
     end
     
@@ -14,8 +13,7 @@ classdef ProtonicMembraneControl < BaseModel
 
             model = model@BaseModel();
 
-            fdnames = {'controlType', ...
-                       'controlValue'};
+            fdnames = {'controlType'};
             model = dispatchParams(model, paramobj, fdnames);
             
         end
@@ -28,6 +26,8 @@ classdef ProtonicMembraneControl < BaseModel
             varnames{end + 1} = 'U';
             % Current
             varnames{end + 1} = 'I';            
+            % Value of the variable that is controled
+            varnames{end + 1} = 'ctrlVal';
             % Control Equation
             varnames{end + 1} = 'controlEquation';
 
@@ -36,30 +36,28 @@ classdef ProtonicMembraneControl < BaseModel
             fn = @ProtonicMembraneControl.setupControl;
             switch model.controlType
               case 'current'
-                inputnames = {'I'};
+                inputnames = {'I', 'ctrlVal'};
               case 'voltage'
-                inputnames = {'U'};
+                inputnames = {'U', 'ctrlVal'};
               otherwise
                 error('controlType not recognized');
             end
             model = model.registerPropFunction({'controlEquation', fn, inputnames});
-            
+
         end
 
         function state = setupControl(model, state)
 
             switch model.controlType
               case 'current'
-                state.controlEquation = state.I - model.controlValue;
+                state.controlEquation = state.I - state.ctrlVal;
               case 'voltage'
-                state.controlEquation = state.U - model.controlValue;
+                state.controlEquation = state.U - state.ctrlVal;
               otherwise
                 error('control type not recognized');
             end
             
         end
-
-        
         
     end
     
