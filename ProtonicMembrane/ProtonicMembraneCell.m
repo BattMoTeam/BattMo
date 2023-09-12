@@ -298,14 +298,15 @@ classdef ProtonicMembraneCell < BaseModel
             
         end
 
-        function state = addVariables(model, state)
+        function state = addVariables(model, state, src)
                         
-            dt = 1;
-            state0 = state;
-            drivingForces = model.getValidDrivingForces();
-            drivingForces.src = @(time) 1;
+            funcCallList = model.funcCallList;
+
+            drivingForces.src = src;
             
-            [problem, state] = getEquations(model, state0, state, dt, drivingForces, 'ResOnly', true);
+            for ifunc = 1 : numel(funcCallList)
+                eval(funcCallList{ifunc});
+            end
             
         end
         
