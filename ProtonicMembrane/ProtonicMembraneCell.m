@@ -315,7 +315,7 @@ classdef ProtonicMembraneCell < BaseModel
             opts = struct('ResOnly', false, 'iteration', 0, 'reverseMode', false); 
             opts = merge_options(opts, varargin{:});
             
-            time = state0.time + dt;
+            state.time = state0.time + dt;
             
             if(not(opts.ResOnly) && not(opts.reverseMode))
                 state = model.initStateAD(state);
