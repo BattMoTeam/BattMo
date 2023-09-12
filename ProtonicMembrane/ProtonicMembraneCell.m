@@ -278,18 +278,20 @@ classdef ProtonicMembraneCell < BaseModel
             elyte = 'Electrolyte';
             ctrl  = 'Control';
             
-            initState.(ct).pi  = 0;
-            initState.(ct).jEl = 0;
-            initState.(ct).jHp = 0;
-
-            nc = model.(elyte).G.cells.num;
-            initState.(elyte).pi  = zeros(nc, 1);
-            initState.(elyte).phi = zeros(nc, 1);
             
             initState.(an).pi  = model.(an).Eocp;
             initState.(an).phi = 0;
-            initState.(an).j   = 0;
+            initState.(an).jHp = 0;
             initState.(an).jEl = 0;
+            
+            nc = model.(elyte).G.cells.num;
+            initState.(elyte).pi  = zeros(nc, 1);
+            initState.(elyte).phi = zeros(nc, 1);
+
+            initState.(ct).pi  = 0;
+            initState.(ct).jEl = 0;
+            initState.(ct).jHp = 0;
+            initState.(ct).j   = 0;
 
             initState.(ctrl).I = 0;
             initState.(ctrl).U = model.(an).Eocp;
