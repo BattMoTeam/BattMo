@@ -298,8 +298,18 @@ classdef ProtonicMembraneCell < BaseModel
             
         end
 
+        function state = addVariables(model, state)
+                        
+            dt = 1;
+            state0 = state;
+            drivingForces = model.getValidDrivingForces();
+            drivingForces.src = @(time) 1;
+            
+            [problem, state] = getEquations(model, state0, state, dt, drivingForces, 'ResOnly', true);
+            
+        end
         
-        function [problem, state] = getEquations(model, state0, state,dt, drivingForces, varargin)
+        function [problem, state] = getEquations(model, state0, state, dt, drivingForces, varargin)
 
             opts = struct('ResOnly', false, 'iteration', 0, 'reverseMode', false); 
             opts = merge_options(opts, varargin{:});

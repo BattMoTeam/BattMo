@@ -1,4 +1,5 @@
 clear all
+close all
 
 mrstModule add ad-core
 
@@ -18,7 +19,7 @@ paramobj = setupProtonicMembraneCellGrid(paramobj, jsonstruct);
 model = ProtonicMembraneCell(paramobj);
 
 model = model.setupComputationalGraph();
-cgt = model.computationalGraph;
+model = model.validateModel();
 
 model.verbose = true;
 
@@ -45,5 +46,7 @@ nls.maxIterations = 100;
 
 [~, states, report] = simulateScheduleAD(state0, model, schedule, 'NonLinearSolver', nls); 
 
+state = states{end};
+state = model.addVariables(state);
 
 
