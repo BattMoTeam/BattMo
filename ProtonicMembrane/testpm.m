@@ -71,7 +71,7 @@ if dothisplot
         return
     end
     
-    state = states{9};
+    state = states{end};
     state = model.addVariables(state, control);
     figure(1)
     plot(state.(elyte).pi)
