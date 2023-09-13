@@ -73,7 +73,7 @@ classdef ProtonicMembraneCell < BaseModel
             model = model.registerPropFunction({{ct, 'jHpEquation'}, fn, inputnames});
 
             fn = @ProtonicMembraneCell.updateCathodeJElEquation;
-            inputnames = {{elyte, 'phi'}, {ct, 'phi'}, {elyte, 'sigmaEl'}, {ct, 'jEl'}};
+            inputnames = {{elyte, 'pi'}, {ct, 'pi'}, {elyte, 'sigmaEl'}, {ct, 'jEl'}};
             model = model.registerPropFunction({{ct, 'jElEquation'}, fn, inputnames});
             
             fn = @ProtonicMembraneCell.updateFromControl;
