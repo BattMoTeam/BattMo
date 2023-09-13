@@ -207,8 +207,8 @@ classdef ProtonicMembraneElectrolyte < BaseModel
             alpha = state.alpha;
             
             f = F/(R*T);
-            f = alpha*f;
             sigmaEl = sigmaP_0*exp(f*(E - EO2_0)) + sigmaN_0*exp(-f*(E - EH2_0));
+            sigmaEl = (1 - alpha)*(sigmaP_0 + sigmaN_0) + alpha*sigmaEl;
             
             state.sigmaEl = sigmaEl;
             
