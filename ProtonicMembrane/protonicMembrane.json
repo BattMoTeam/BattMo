@@ -8,8 +8,8 @@
     "n": 1
   },
   "Electrolyte": {
-    "length": 0.5,
-    "faceArea": 0.6,
+    "length": 30e-6,
+    "faceArea": 1,
     "N": 40,
     "EH2_0": 0,
     "EO2_0": 1.253,
