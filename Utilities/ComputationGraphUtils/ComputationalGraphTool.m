@@ -389,7 +389,7 @@ classdef ComputationalGraphTool
             end
             
             propfuncinds = max(A(:, varnameinds), [], 1);
-            staticinds = varnameinds(find(propfuncinds == 0));
+            staticinds = varnameinds(propfuncinds == 0);
             propfuncinds = propfuncinds(propfuncinds > 0); % remove the zero elements
 
             [staticinds, staticpropinds] = cgt.findStaticVarNameInds(staticinds);
