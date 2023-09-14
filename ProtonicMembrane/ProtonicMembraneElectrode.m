@@ -44,7 +44,7 @@ classdef ProtonicMembraneElectrode < BaseModel
             varnames{end + 1} = 'pi';
             % over potential
             varnames{end + 1} = 'eta';
-            % Charge conservation equation (that is j - jEl + jHp = 0)
+            % Charge conservation equation (that is j - jEl - jHp = 0)
             varnames{end + 1} = 'chargeCons';
             % Definition equation for jEl
             varnames{end + 1} = 'jElEquation';
