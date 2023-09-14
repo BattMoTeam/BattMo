@@ -1,0 +1,143 @@
+classdef OxideMembraneElectrolyte < BaseModel
+
+    properties
+
+        % Temperature
+        T
+        % Structure with physical constants
+        constants
+        % Diffusion constant for hole
+        Dh
+        % Diffusion constant for electron
+        De
+        % O2- conductivity
+        sigmaO2
+        % Equilibrium Constant
+        Keh
+
+    end
+
+    methods
+
+        function model = OxideMembraneElectrolyte(paramobj)
+
+            model = model@BaseModel();
+
+            fdnames = {'G'      , ...
+                       'T'      , ...
+                       'Dh'     , ...
+                       'De'     , ...
+                       'sigmaO2', ...
+                       'Keh'};
+
+            model = dispatchParams(model, paramobj, fdnames);
+
+            model.operators = localSetupOperators(model.G);
+
+            model.constants = PhysicalConstants();
+
+            con = model.constants;
+
+        end
+
+        function model = registerVarAndPropfuncNames(model)
+
+            model = registerVarAndPropfuncNames@BaseModel(model);
+
+            varnames = {};
+
+            % Electrostatic potential phi
+            varnames{end + 1} = 'phi';
+            % Concentration electron
+            varnames{end + 1} = 'ce';
+            % Concentration hole
+            varnames{end + 1} = 'ch';
+            % Electronic Flux
+            varnames{end + 1} = 'jEl';
+            % Ionic Flux
+            varnames{end + 1} = 'jO2';
+            % H+ source term
+            varnames{end + 1} = 'sourceO2';
+            % Electronic source term
+            varnames{end + 1} = 'sourceEl';
+            % O2 mass conservation (we measure the mass in Coulomb, hence "massConsHp")
+            varnames{end + 1} = 'massConsHp';
+            % Charge conservation
+            varnames{end + 1} = 'chargeConsEl';
+            % Equilibrium equation
+            varnames{end + 1} = 'equilEq';
+            
+            model = model.registerVarNames(varnames);
+
+
+            fn = @OxideMembraneElectrolyte.updateO2Flux;
+            inputnames = {'phi'};
+            model = model.registerPropFunction({'jO2', fn, inputnames});
+
+            fn = @OxideMembraneElectrolyte.updateEquilEquation;
+            inputnames = {'cs', 'ce'};
+            model = model.registerPropFunction({'equilEq', fn, inputnames});
+
+            fn = @OxideMembraneElectrolyte.updateElFlux;
+            inputnames = {'cs', 'ce', 'phi'};
+            model = model.registerPropFunction({'jEl', fn, inputnames});
+
+            fn = @OxideMembraneElectrolyte.updateMassConsO2;
+            inputnames = {'sourceO2', 'jO2'};
+            model = model.registerPropFunction({'massConsO2', fn, inputnames});
+
+            fn = @OxideMembraneElectrolyte.updateChargeConsEl;
+            inputnames = {'sourceEl', 'jEl'};
+            model = model.registerPropFunction({'chargeConsEl', fn, inputnames});
+
+        end
+
+
+        function state = updateO2Flux(model, state)
+
+            op = model.operators;
+
+            sigmaO2 = state.sigmaO2;
+            phi     = state.phi;
+
+            state.jO2 = assembleFlux(model, phi, sigmaO2);
+
+        end
+
+
+        function state = updateElFlux(model, state)
+
+            phi = state.phi;
+            ce  = state.ce;
+            ch  = state.ch;
+            
+            state.jEl = assembleFlux(model, pi, sigmaEl);
+
+        end
+
+
+        function state = updateChargeConsEl(model, state)
+
+            op = model.operators;
+
+            sourceEl = state.sourceEl;
+            jEl      = state.jEl;
+
+            state.chargeConsEl =  op.Div(jEl) - sourceEl;
+
+        end
+
+        function state = updateMassConsO2(model, state)
+
+            op = model.operators;
+
+            sourceO2 = state.sourceO2;
+            jO2      = state.jO2;
+
+            state.massConsO2 =  op.Div(jO2) - sourceO2;
+
+        end
+
+    end
+
+end
