@@ -167,7 +167,7 @@ classdef ProtonicMembraneElectrolyte < BaseModel
 
         function state = updateE(model, state)
 
-            state.E = state.phi - state.pi;
+            state.E = state.pi - state.phi;
             
         end
 
