@@ -95,24 +95,35 @@ classdef OxideMembraneElectrolyte < BaseModel
 
         function state = updateO2Flux(model, state)
 
-            op = model.operators;
+            sigmaO2 = model.sigmaO2;
+            op      = model.operators;
 
-            sigmaO2 = state.sigmaO2;
-            phi     = state.phi;
+            phi = state.phi;
 
-            state.jO2 = assembleFlux(model, phi, sigmaO2);
+            state.jO2 = assembleHomogeneousFlux(model, phi, sigmaO2);
 
         end
 
 
         function state = updateElFlux(model, state)
 
+            c  = model.constants;
+            Dh = model.Dh;
+            De = model.De;
+            
             phi = state.phi;
             ce  = state.ce;
             ch  = state.ch;
             
-            state.jEl = assembleFlux(model, pi, sigmaEl);
+            jch = assembleHomogenousFlux(model, ch, c.F*Dh);
+            jce = assembleHomogenousFlux(model, ce, c.F*De);
 
+            effSigma = (c.F)^2/(c.R*c.T)*(Dh*ch + De*ce);
+
+            jphi = assembleFlux(model, phi, effSigma);
+
+            state.jEl = jch - jce + jphi; 
+            
         end
 
 
@@ -136,6 +147,17 @@ classdef OxideMembraneElectrolyte < BaseModel
 
             state.massConsO2 =  op.Div(jO2) - sourceO2;
 
+        end
+
+        function state = updateEquilibriumReaction(model, state)
+
+            Keh = model.Keh;
+            
+            ch = state.ch;
+            ce = state.ce;
+            
+            state.equilibriumEquation = ch*ce - Keh;
+            
         end
 
     end

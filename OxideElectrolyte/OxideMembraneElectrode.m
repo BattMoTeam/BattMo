@@ -72,7 +72,6 @@ classdef OxideMembraneElectrode < BaseModel
             % Electronic concentration definition equation
             varnames{end + 1} = 'electronConcentrationEquation';
             model = model.registerVarNames(varnames);
-        
 
             fn = @OxideMembraneElectrode.updateChargeCons;
             inputnames = {'j', 'jEl', 'jO2'};
@@ -93,7 +92,6 @@ classdef OxideMembraneElectrode < BaseModel
             fn = @OxideMembraneElectrode.updateEquilibriumReaction;
             inputnames = {'ch', 'ce'};
             model = model.registerPropFunction({'equilibriumEquation', fn, inputnames});
-                                
 
         end
         
@@ -102,29 +100,60 @@ classdef OxideMembraneElectrode < BaseModel
 
             j   = state.j;
             jEl = state.jEl;
-            jHp = state.jHp;
+            jO2 = state.jO2;
 
-            state.chargeCons = j - jEl - jHp;
+            state.chargeCons = j - jEl - jO2;
            
         end
 
-        function state = updateEta(model, state)
+        function state = updateE(model, state)
 
-            Eocp = state.Eocp;
             pi   = state.pi;
             phi  = state.phi;
             
-            state.eta = pi - phi - Eocp;
+            state.E = pi - phi;
             
         end
 
-        function state = updateEocp(model, state)
+        function state = updateCurrentVoltageEquation(model, state)
 
-            state.Eocp = model.Eocp;
+            Eocp = model.Eocp;
+            Rct  = model.Eocp;
+
+            E = state.E;
+            j = state.j;
+            
+            cveq = E - Eocp - j*Rct;
+
+            state.currentVoltageEquation = cveq;
             
         end
+
+        function state = updateElConcEquation(model, state)
+
+            mu0 = model.muEl0;
+            c   = model.constants;
+            
+            ce = state.ce;
+            E  = state.E;
+
+            eceq = E + (1/c.F)*(mu0 + (c.R*c.T)*log(ce));
+
+            state.electronConcentrationEquation = eceq;
+            
+        end
+
         
+        function state = updateEquilibriumReaction(model, state)
 
+            Keh = model.Keh;
+            
+            ch = state.ch;
+            ce = state.ce;
+            
+            state.equilibriumEquation = ch*ce - Keh;
+            
+        end
     end
     
 end
