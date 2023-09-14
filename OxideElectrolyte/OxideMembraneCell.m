@@ -57,25 +57,25 @@ classdef OxideMembraneCell < BaseModel
             
             model = registerVarAndPropfuncNames@BaseModel(model);
             
-            fn = @OxideMembraneCell.setupHpSources;
-            inputnames = {{an, 'jHp'}, {ct, 'jHp'}};
-            model = model.registerPropFunction({{elyte, 'sourceHp'}, fn, inputnames});
+            fn = @OxideMembraneCell.setupO2Sources;
+            inputnames = {{an, 'jO2'}, {ct, 'jO2'}};
+            model = model.registerPropFunction({{elyte, 'sourceO2'}, fn, inputnames});
             
             fn = @OxideMembraneCell.setupElSources;
             inputnames = {{an, 'jEl'}, {ct, 'jEl'}};
             model = model.registerPropFunction({{elyte, 'sourceEl'}, fn, inputnames});
 
-            fn = @OxideMembraneCell.updateAnodeJHpEquation;
-            inputnames = {{elyte, 'phi'}, {an, 'phi'}, {elyte, 'sigmaHp'}, {an, 'jHp'}};
-            model = model.registerPropFunction({{an, 'jHpEquation'}, fn, inputnames});
+            fn = @OxideMembraneCell.updateAnodeJO2Equation;
+            inputnames = {{elyte, 'phi'}, {an, 'phi'}, {elyte, 'sigmaO2'}, {an, 'jO2'}};
+            model = model.registerPropFunction({{an, 'jO2Equation'}, fn, inputnames});
 
             fn = @OxideMembraneCell.updateAnodeJElEquation;
             inputnames = {{elyte, 'phi'}, {an, 'phi'}, {elyte, 'sigmaEl'}, {an, 'jEl'}};
             model = model.registerPropFunction({{an, 'jElEquation'}, fn, inputnames});
 
-            fn = @OxideMembraneCell.updateCathodeJHpEquation;
-            inputnames = {{elyte, 'phi'}, {ct, 'phi'}, {elyte, 'sigmaHp'}, {ct, 'jHp'}};
-            model = model.registerPropFunction({{ct, 'jHpEquation'}, fn, inputnames});
+            fn = @OxideMembraneCell.updateCathodeJO2Equation;
+            inputnames = {{elyte, 'phi'}, {ct, 'phi'}, {elyte, 'sigmaO2'}, {ct, 'jO2'}};
+            model = model.registerPropFunction({{ct, 'jO2Equation'}, fn, inputnames});
 
             fn = @OxideMembraneCell.updateCathodeJElEquation;
             inputnames = {{elyte, 'pi'}, {ct, 'pi'}, {elyte, 'sigmaEl'}, {ct, 'jEl'}};
@@ -111,7 +111,7 @@ classdef OxideMembraneCell < BaseModel
             
         end
         
-        function state = setupHpSources(model, state)
+        function state = setupO2Sources(model, state)
 
             an    = 'Anode';
             ct    = 'Cathode';
@@ -120,22 +120,22 @@ classdef OxideMembraneCell < BaseModel
             coupterms = model.couplingTerms;
             coupnames = model.couplingnames;
                         
-            jHpAnode   = state.(an).jHp;
-            jHpCathode = state.(ct).jHp;
+            jO2Anode   = state.(an).jO2;
+            jO2Cathode = state.(ct).jO2;
             
-            sourceHp = 0*state.(elyte).phi; % initialize AD for sourceHp
+            sourceO2 = 0*state.(elyte).phi; % initialize AD for sourceO2
             
             % Anode part
             coupterm = getCoupTerm(coupterms, 'Anode-Electrolyte', coupnames);
             ccs = coupterm.couplingcells(:, 2);
-            sourceHp(ccs) = jHpAnode;
+            sourceO2(ccs) = jO2Anode;
             
             % Anode part
             coupterm = getCoupTerm(coupterms, 'Cathode-Electrolyte', coupnames);
             ccs = coupterm.couplingcells(:, 2);
-            sourceHp(ccs) = jHpCathode;
+            sourceO2(ccs) = jO2Cathode;
 
-            state.(elyte).sourceHp = sourceHp;
+            state.(elyte).sourceO2 = sourceO2;
             
         end
 
@@ -197,15 +197,15 @@ classdef OxideMembraneCell < BaseModel
             
         end
 
-        function state = updateCathodeJHpEquation(model, state)
+        function state = updateCathodeJO2Equation(model, state)
 
-            state = model.updateJHpEquation(state, 'Cathode');
+            state = model.updateJO2Equation(state, 'Cathode');
             
         end
 
-        function state = updateAnodeJHpEquation(model, state)
+        function state = updateAnodeJO2Equation(model, state)
 
-            state = model.updateJHpEquation(state, 'Anode');
+            state = model.updateJO2Equation(state, 'Anode');
             
         end
         
@@ -244,7 +244,7 @@ classdef OxideMembraneCell < BaseModel
 
         end
 
-        function state = updateJHpEquation(model, state, elde)
+        function state = updateJO2Equation(model, state, elde)
 
             an    = 'Anode';
             ct    = 'Cathode';
@@ -267,14 +267,14 @@ classdef OxideMembraneCell < BaseModel
             ccs = coupTerm.couplingcells;
             cfs = coupTerm.couplingfaces;
             
-            sigmaHp  = state.(elyte).sigmaHp;
+            sigmaO2  = state.(elyte).sigmaO2;
             phiElyte = state.(elyte).phi;
             phiElde  = state.(elde).phi;
-            jHp      = state.(elde).jHp;
+            jO2      = state.(elde).jO2;
 
-            T = op.harmFaceBC(sigmaHp, cfs(:, 2));
+            T = op.harmFaceBC(sigmaO2, cfs(:, 2));
 
-            state.(elde).jHpEquation = jHp - T*(phiElde(ccs(:, 1)) - phiElyte(ccs(:, 2)));
+            state.(elde).jO2Equation = jO2 - T*(phiElde(ccs(:, 1)) - phiElyte(ccs(:, 2)));
 
         end
         
@@ -289,7 +289,7 @@ classdef OxideMembraneCell < BaseModel
             
             initState.(an).pi  = model.(an).Eocp;
             initState.(an).phi = 0;
-            initState.(an).jHp = 0;
+            initState.(an).jO2 = 0;
             initState.(an).jEl = 0;
             
             nc = model.(elyte).G.cells.num;
@@ -298,7 +298,7 @@ classdef OxideMembraneCell < BaseModel
 
             initState.(ct).pi  = 0;
             initState.(ct).jEl = 0;
-            initState.(ct).jHp = 0;
+            initState.(ct).jO2 = 0;
             initState.(ct).j   = 0;
 
             initState.(ctrl).I = 0;
@@ -351,31 +351,31 @@ classdef OxideMembraneCell < BaseModel
 
             dx      = model.dx;
             farea   = model.farea;
-            sigmaHp = model.(elyte).sigmaHp;
+            sigmaO2 = model.(elyte).sigmaO2;
             sigmaEl = model.(elyte).sigmaN_0;
             phi0    = 1;
             
-            sHp = 1/(farea*sigmaHp*phi0/dx);
+            sO2 = 1/(farea*sigmaO2*phi0/dx);
             sEl = 1/(farea*sigmaEl*phi0/dx);
             
-            eqs{end + 1} = sHp*state.(elyte).massConsHp;
+            eqs{end + 1} = sO2*state.(elyte).massConsO2;
             eqs{end + 1} = sEl*state.(elyte).chargeConsEl;
             eqs{end + 1} = sEl*state.(an).chargeCons;
             eqs{end + 1} = sEl*state.(an).jElEquation;
-            eqs{end + 1} = sHp*state.(an).jHpEquation;
+            eqs{end + 1} = sO2*state.(an).jO2Equation;
             eqs{end + 1} = sEl*state.(ct).chargeCons;
             eqs{end + 1} = sEl*state.(ct).jElEquation;
-            eqs{end + 1} = sHp*state.(ct).jHpEquation;
+            eqs{end + 1} = sO2*state.(ct).jO2Equation;
             eqs{end + 1} = sEl*state.(ctrl).controlEquation;
             
-            names = {'elyte_massConsHp'  , ...
+            names = {'elyte_massConsO2'  , ...
                      'elyte_chargeConsEl', ...
                      'an_chargeCons'     , ...
                      'an_jElEquation'    , ...
-                     'an_jHpEquation'    , ...
+                     'an_jO2Equation'    , ...
                      'ct_chargeCons'     , ...
                      'ct_jElEquation'    , ...
-                     'ct_jHpEquation'    , ...
+                     'ct_jO2Equation'    , ...
                      'ctrl_controlEquation'};
 
             types = repmat({'cells'}, 1, numel(names));

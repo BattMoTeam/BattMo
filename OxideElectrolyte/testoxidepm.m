@@ -8,7 +8,7 @@ ct    = 'Cathode';
 elyte = 'Electrolyte';
 ctrl  = 'Control';
 
-filename = '/home/xavier/Matlab/Projects/battmo/OxideMembrane/protonicMembrane.json';
+filename = '/home/xavier/Matlab/Projects/battmo/OxideMembrane/oxidemembrane.json';
 jsonstruct = fileread(filename);
 jsonstruct = jsondecode(jsonstruct);
 

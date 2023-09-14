@@ -4,13 +4,13 @@ an    = 'Anode';
 ct    = 'Cathode';
 elyte = 'Electrolyte';
 
-filename = '/home/xavier/Matlab/Projects/battmo/OxideMembrane/protonicMembrane.json';
+filename = '/home/xavier/Matlab/Projects/battmo/OxideMembrane/oxidemembrane.json';
 jsonstruct = fileread(filename);
 jsonstruct = jsondecode(jsonstruct);
 
 paramobj = OxideMembraneCellInputParams(jsonstruct);
 
-paramobj = setupOxideMembraneCellGrid(paramobj, jsonstruct);
+paramobj = setupProtonicMembraneCellGrid(paramobj, jsonstruct);
 
 % Setup model
 model = OxideMembraneCell(paramobj);
