@@ -28,8 +28,8 @@ classdef OxideMembraneCellInputParams < ComponentInputParams
             ctrl  = 'Control';
     
             pick = @(fd) pickField(jsonstruct, fd);
-            paramobj.(an)    = OxideMembraneAnodeInputParams(pick(an));
-            paramobj.(ct)    = OxideMembraneCathodeInputParams(pick(ct));
+            paramobj.(an)    = OxideMembraneElectrodeInputParams(pick(an));
+            paramobj.(ct)    = OxideMembraneElectrodeInputParams(pick(ct));
             paramobj.(elyte) = OxideMembraneElectrolyteInputParams(pick(elyte));
             paramobj.(ctrl)  = OxideMembraneControlInputParams(pick(ctrl));
 
@@ -38,8 +38,12 @@ classdef OxideMembraneCellInputParams < ComponentInputParams
                                                   {an, 'T'}   , ...
                                                   {ct, 'T'}});
             
-            paramobj = mergeParameters(paramobj, {{ct, 'muElO2'}, ...
-                                                  {an, 'muElO2'}});
+            paramobj = mergeParameters(paramobj, {{ct, 'muEl0'}, ...
+                                                  {an, 'muEl0'}});
+
+            paramobj = mergeParameters(paramobj, {{elyte, 'Keh'}, ...
+                                                  {ct, 'Keh'}   , ...
+                                                  {an, 'Keh'}});
 
 
             paramobj.couplingTerms = {};

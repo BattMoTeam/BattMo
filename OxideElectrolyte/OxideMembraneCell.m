@@ -35,8 +35,8 @@ classdef OxideMembraneCell < BaseModel
                        'couplingTerms'};
             model = dispatchParams(model, paramobj, fdnames);
 
-            model.Anode       = OxideMembraneAnode(paramobj.Anode);
-            model.Cathode     = OxideMembraneCathode(paramobj.Cathode);
+            model.Anode       = OxideMembraneElectrode(paramobj.Anode);
+            model.Cathode     = OxideMembraneElectrode(paramobj.Cathode);
             model.Electrolyte = OxideMembraneElectrolyte(paramobj.Electrolyte);
             model.Control     = OxideMembraneControl(paramobj.Control);
             
@@ -66,19 +66,31 @@ classdef OxideMembraneCell < BaseModel
             model = model.registerPropFunction({{elyte, 'sourceEl'}, fn, inputnames});
 
             fn = @OxideMembraneCell.updateAnodeJO2Equation;
-            inputnames = {{elyte, 'phi'}, {an, 'phi'}, {elyte, 'sigmaO2'}, {an, 'jO2'}};
+            inputnames = {{elyte, 'phi'}, {an, 'phi'}, {an, 'jO2'}};
             model = model.registerPropFunction({{an, 'jO2Equation'}, fn, inputnames});
 
             fn = @OxideMembraneCell.updateAnodeJElEquation;
-            inputnames = {{elyte, 'phi'}, {an, 'phi'}, {elyte, 'sigmaEl'}, {an, 'jEl'}};
+            inputnames = {{elyte, 'phi'}, ...
+                          {elyte, 'ce'} , ...
+                          {elyte, 'ch'} , ...
+                          {an, 'phi'}, ...
+                          {an, 'ce'} , ...
+                          {an, 'ch'} , ...
+                          {an, 'jEl'}};
             model = model.registerPropFunction({{an, 'jElEquation'}, fn, inputnames});
 
             fn = @OxideMembraneCell.updateCathodeJO2Equation;
-            inputnames = {{elyte, 'phi'}, {ct, 'phi'}, {elyte, 'sigmaO2'}, {ct, 'jO2'}};
+            inputnames = {{elyte, 'phi'}, {ct, 'phi'}, {ct, 'jO2'}};
             model = model.registerPropFunction({{ct, 'jO2Equation'}, fn, inputnames});
 
             fn = @OxideMembraneCell.updateCathodeJElEquation;
-            inputnames = {{elyte, 'pi'}, {ct, 'pi'}, {elyte, 'sigmaEl'}, {ct, 'jEl'}};
+            inputnames = {{elyte, 'phi'}, ...
+                          {elyte, 'ce'} , ...
+                          {elyte, 'ch'} , ...
+                          {ct, 'phi'}, ...
+                          {ct, 'ce'} , ...
+                          {ct, 'ch'} , ...
+                          {ct, 'jEl'}};
             model = model.registerPropFunction({{ct, 'jElEquation'}, fn, inputnames});
             
             fn = @OxideMembraneCell.updateFromControl;
@@ -94,7 +106,6 @@ classdef OxideMembraneCell < BaseModel
             fn = @OxideMembraneCell.updateControl;
             fn = {fn, @(propfunction) PropFunction.drivingForceFuncCallSetupFn(propfunction)};
             model = model.registerPropFunction({{ctrl, 'ctrlVal'}, fn, inputnames});            
-            model = model.registerPropFunction({{elyte, 'alpha'}, fn, inputnames});
             
         end
 

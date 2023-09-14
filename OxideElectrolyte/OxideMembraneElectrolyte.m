@@ -61,11 +61,11 @@ classdef OxideMembraneElectrolyte < BaseModel
             % Electronic source term
             varnames{end + 1} = 'sourceEl';
             % O2 mass conservation (we measure the mass in Coulomb, hence "massConsHp")
-            varnames{end + 1} = 'massConsHp';
+            varnames{end + 1} = 'massConsO2';
             % Charge conservation
             varnames{end + 1} = 'chargeConsEl';
-            % Equilibrium equation
-            varnames{end + 1} = 'equilEq';
+            % Equilibrium equation for hole-electron reaction
+            varnames{end + 1} = 'equilibriumEquation';
             
             model = model.registerVarNames(varnames);
 
@@ -75,11 +75,11 @@ classdef OxideMembraneElectrolyte < BaseModel
             model = model.registerPropFunction({'jO2', fn, inputnames});
 
             fn = @OxideMembraneElectrolyte.updateEquilEquation;
-            inputnames = {'cs', 'ce'};
-            model = model.registerPropFunction({'equilEq', fn, inputnames});
+            inputnames = {'ch', 'ce'};
+            model = model.registerPropFunction({'equilibriumEquation', fn, inputnames});
 
             fn = @OxideMembraneElectrolyte.updateElFlux;
-            inputnames = {'cs', 'ce', 'phi'};
+            inputnames = {'ch', 'ce', 'phi'};
             model = model.registerPropFunction({'jEl', fn, inputnames});
 
             fn = @OxideMembraneElectrolyte.updateMassConsO2;

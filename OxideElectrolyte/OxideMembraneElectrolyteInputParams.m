@@ -2,21 +2,16 @@ classdef OxideMembraneElectrolyteInputParams < ComponentInputParams
     
     properties
 
+        % Temperature
         T
-        % Equilibrium H2 potential
-        EH2_0
-        % Equilibrium O2 potential
-        EO2_0
-
-        sigmaN_0
-        Y
-        dH_hyd
-        dS_hyd
-        Ea_prot
-        pH2O_in
-        pH2O_neg
-        SU
-        t_p_O2
+        % Diffusion constant for hole
+        Dh
+        % Diffusion constant for electron
+        De
+        % O2- conductivity
+        sigmaO2
+        % Equilibrium Constant
+        Keh
 
     end
     
