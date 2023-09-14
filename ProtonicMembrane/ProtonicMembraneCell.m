@@ -15,6 +15,9 @@ classdef ProtonicMembraneCell < BaseModel
         couplingTerms
         couplingnames
 
+        dx
+        farea
+
         primaryVarNames
         funcCallList
         
@@ -26,7 +29,9 @@ classdef ProtonicMembraneCell < BaseModel
 
             model = model@BaseModel();
 
-            fdnames = {'T', ...
+            fdnames = {'T'    , ...
+                       'dx'   , ...
+                       'farea', ...
                        'couplingTerms'};
             model = dispatchParams(model, paramobj, fdnames);
 
@@ -343,15 +348,25 @@ classdef ProtonicMembraneCell < BaseModel
             ctrl  = 'Control';
 
             eqs = {};
-            eqs{end + 1} = state.(elyte).massConsHp;
-            eqs{end + 1} = state.(elyte).chargeConsEl;
-            eqs{end + 1} = state.(an).chargeCons;
-            eqs{end + 1} = state.(an).jElEquation;
-            eqs{end + 1} = state.(an).jHpEquation;
-            eqs{end + 1} = state.(ct).chargeCons;
-            eqs{end + 1} = state.(ct).jElEquation;
-            eqs{end + 1} = state.(ct).jHpEquation;
-            eqs{end + 1} = state.(ctrl).controlEquation;
+
+            dx      = model.dx;
+            farea   = model.farea;
+            sigmaHp = model.(elyte).sigmaHp;
+            sigmaEl = model.(elyte).sigmaN_0;
+            phi0    = 1;
+            
+            sHp = 1/(farea*sigmaHp*phi0/dx);
+            sEl = 1/(farea*sigmaEl*phi0/dx);
+            
+            eqs{end + 1} = sHp*state.(elyte).massConsHp;
+            eqs{end + 1} = sEl*state.(elyte).chargeConsEl;
+            eqs{end + 1} = sEl*state.(an).chargeCons;
+            eqs{end + 1} = sEl*state.(an).jElEquation;
+            eqs{end + 1} = sHp*state.(an).jHpEquation;
+            eqs{end + 1} = sEl*state.(ct).chargeCons;
+            eqs{end + 1} = sEl*state.(ct).jElEquation;
+            eqs{end + 1} = sHp*state.(ct).jHpEquation;
+            eqs{end + 1} = sEl*state.(ctrl).controlEquation;
             
             names = {'elyte_massConsHp'  , ...
                      'elyte_chargeConsEl', ...

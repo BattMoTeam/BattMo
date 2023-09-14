@@ -8,6 +8,8 @@ function paramobj = setupProtonicMembraneCellGrid(paramobj, jsonstruct)
     farea = jsonstruct.(elyte).faceArea;
     N     = jsonstruct.(elyte).N;
 
+    dx = lgth/N;
+    
     % setup grid
 
     G = cartGrid(N, lgth);
@@ -36,6 +38,8 @@ function paramobj = setupProtonicMembraneCellGrid(paramobj, jsonstruct)
     % Assign to paramobj
     
     paramobj.G             = G;
+    paramobj.farea         = farea;
+    paramobj.dx            = dx;
     paramobj.(elyte).G     = G;
     paramobj.couplingTerms = couplingTerms;
     

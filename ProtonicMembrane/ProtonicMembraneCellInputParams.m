@@ -10,6 +10,9 @@ classdef ProtonicMembraneCellInputParams < ComponentInputParams
         Control
         
         couplingTerms
+
+        dx
+        farea
         
     end
     
