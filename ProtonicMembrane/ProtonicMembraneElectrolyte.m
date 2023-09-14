@@ -17,8 +17,6 @@ classdef ProtonicMembraneElectrolyte < BaseModel
         % proton conductivity
         sigmaHp
 
-        d_micro = 30 % thickness in micron
-
         Y
         dH_hyd  % kJ/mol
         dS_hyd  % J / mol / K
