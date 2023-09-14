@@ -1,4 +1,4 @@
-clear all
+% clear all
 % close all
 
 mrstModule add ad-core
@@ -12,7 +12,7 @@ filename = '/home/xavier/Matlab/Projects/battmo/ProtonicMembrane/protonicMembran
 jsonstruct = fileread(filename);
 jsonstruct = jsondecode(jsonstruct);
 
-jsonstruct.(elyte).N = 100;
+jsonstruct.(elyte).N = 10000;
 
 paramobj = ProtonicMembraneCellInputParams(jsonstruct);
 
@@ -27,7 +27,7 @@ model = model.setupComputationalGraph();
 model = model.validateModel();
 cgt   = model.computationalGraph;
 
-model.verbose = true;
+model.verbose = false;
 
 % Setup initial state
 state0 = model.setupInitialState();
@@ -37,17 +37,18 @@ state0 = model.setupInitialState();
 tswitch = 1;
 T       = 2; % This is not a real time scale, as all the model deals with equilibrium
 
-N1  = 10;
+N1  = 20;
 dt1 = tswitch/N1;
-N2  = 10;
+N2  = 20;
 dt2 = (T - tswitch)/N2;
 
 step.val = [dt1*ones(N1, 1); dt2*ones(N2, 1)];
 step.control = ones(numel(step.val), 1);
 
-Imax = 1e1;
+% Imax = 0.3*ampere/((centi*meter)^2);
+Imax = 0;
 
-control.src   = @(time) controlfunc(time, Imax, tswitch, T, 'order', 'I-first');
+control.src = @(time) controlfunc(time, Imax, tswitch, T, 'order', 'I-first');
 
 schedule = struct('control', control, 'step', step); 
 
@@ -55,7 +56,7 @@ nls = NonLinearSolver();
 nls.maxIterations = 20;
 nls.errorOnFailure = false;
 
-model.nonlinearTolerance = 1e-7;
+model.nonlinearTolerance = 1e-8;
 
 [~, states, report] = simulateScheduleAD(state0, model, schedule, 'OutputMinisteps', true, 'NonLinearSolver', nls); 
 
@@ -64,6 +65,10 @@ states = states(ind);
 
 %%
 
+set(0, 'defaultlinelinewidth', 3);
+set(0, 'defaultaxesfontsize', 15);
+
+xc = model.(elyte).G.cells.centroids;
 
 dothisplot = true;
 if dothisplot
@@ -74,18 +79,22 @@ if dothisplot
     state = states{end};
     state = model.addVariables(state, control);
     figure(1)
-    plot(state.(elyte).pi)
+    plot(xc, state.(elyte).pi)
     title('pi')
+    xlabel('x [m]')
     figure(2)
-    plot(state.(elyte).pi - state.(elyte).phi)
+    plot(xc, state.(elyte).pi - state.(elyte).phi)
     title('E')
+    xlabel('x [m]')
     figure(3)
-    plot(state.(elyte).sigmaEl)
+    plot(xc, state.(elyte).sigmaEl)
     title('sigmaEl')
+    xlabel('x [m]')
     figure(4)
-    plot(state.(elyte).phi)
+    plot(xc, state.(elyte).phi)
     title('phi')
-
+    xlabel('x [m]')
+    
     fprintf('min E : %g\nmin sigmaEl : %g\n', ...
             min(state.(elyte).pi - state.(elyte).phi), ...
             min(state.(elyte).sigmaEl));
