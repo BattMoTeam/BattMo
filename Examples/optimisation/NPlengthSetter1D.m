@@ -1,49 +1,81 @@
-classdef NPlengthSetter1D < LengthSetter1D
+classdef NPlengthSetter1D 
 
     properties
 
         NPratio % NP ratio
         alpha   % For a given NP ratio, alpha is equal the corresponding ratio between the thicknesses of the electrodes
         
+        lengthSetter
+        porositySetter
+
+        fdnames
+        fdinds
     end
     
     methods
         
-        function lengthsetter = NPlengthSetter1D(model, gridGenerator, NPratio)
+        function nplengthsetter = NPlengthSetter1D(model, gridGenerator, NPratio)
 
             ne  = 'NegativeElectrode';
             pe  = 'PositiveElectrode';
 
-            lengthsetter = lengthsetter@LengthSetter1D(gridGenerator, {ne, pe});
-            lengthsetter.NPratio = NPratio;
+            lengthSetter   = LengthSetter1D(gridGenerator, {ne, pe});
+            porositySetter = PorositySetter(model, {ne, pe});
 
-            lengthsetter.alpha = lengthsetter.computeMultiplicationCoefficient(model);
+
+            fdnames = {'pelength', 'neporo', 'peporo'};
+            for ifd = 1 : numel(fdnames)
+                fdname = fdnames{ifd};
+                fdinds.(fdname) = ifd;
+            end
+            
+            nplengthsetter.NPratio        = NPratio;
+            nplengthsetter.fdinds         = fdinds;
+            nplengthsetter.fdnames        = fdnames;
+            nplengthsetter.alpha          = nplengthsetter.computeMultiplicationCoefficient(model);
+            nplengthsetter.lengthSetter   = lengthSetter;
+            nplengthsetter.porositySetter = porositySetter;
             
         end
         
-        function model = setLengths(lengthsetter, model, pelength)
+        function model = setValues(nplengthsetter, model, values)
 
-            alpha = lengthsetter.alpha;
+            fdinds         = nplengthsetter.fdinds;
+            alpha          = nplengthsetter.alpha;
+            lengthSetter   = nplengthsetter.lengthSetter;
+            porositySetter = nplengthsetter.porositySetter;
+            
+            pelength = values(fdinds.pelength);
+            neporo   = values(fdinds.neporo);
+            peporo   = values(fdinds.peporo);
             
             v = double2ADI(zeros(2, 1), pelength);
-            v(1) = alpha*pelength;
+            v(1) = alpha*(1 - peporo)./(1 - neporo).*pelength;
             v(2) = pelength;
             
-            model = setLengths@LengthSetter1D(lengthsetter, model, v);
+            model = lengthSetter.setLengths(model, v);
+            model = porositySetter.setPorosities(model, [neporo; peporo]);
             
         end
 
-        function v = getLengths(lengthsetter, model)
+        function values = getValues(nplengthsetter, model)
 
-            v = lengthsetter.getAllLengths(model);
-            v = v(3);
+            lengthSetter   = nplengthsetter.lengthSetter;
+            porositySetter = nplengthsetter.porositySetter;
 
+            pelength = lengthSetter.getAllLengths(model);
+            pelength = pelength(3);
+
+            poros = porositySetter.getPorosities(model);
+
+            values = [pelength; poros];
+            
         end
 
 
-        function alpha = computeMultiplicationCoefficient(lengthsetter, model)
+        function alpha = computeMultiplicationCoefficient(nplengthsetter, model)
 
-            NPratio = lengthsetter.NPratio;
+            NPratio = nplengthsetter.NPratio;
             
             ne  = 'NegativeElectrode';
             pe  = 'PositiveElectrode';
@@ -59,11 +91,10 @@ classdef NPlengthSetter1D < LengthSetter1D
                 theta100 = model.(elde).(am).(itf).theta100;
                 theta0   = model.(elde).(am).(itf).theta0;
                 cmax     = model.(elde).(am).(itf).cmax;
-                vf       = unique(model.(elde).(am).volumeFraction);
                 avf      = model.(elde).(am).activeMaterialFraction;
                 F        = model.(elde).(am).constants.F;
 
-                d.(elde) = abs(theta100 - theta0)*cmax*avf*vf*F/hour;
+                d.(elde) = abs(theta100 - theta0)*cmax*avf*F/hour;
 
             end
             
