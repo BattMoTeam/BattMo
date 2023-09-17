@@ -10,7 +10,7 @@
   "theta0": 0.9811,
   "OCP" : {"type" : "function",
            "functionname" : "updateOCPFunc_lnmo_Pron",
-           "argumentlist" : ["concentration", "temperature", "maximum concentration"],
+           "argumentlist" : ["concentration", "temperature", "maximum concentration"]
           },
   "BruggemanCoefficient": 1.5
 }
