@@ -40,6 +40,8 @@ classdef NPlengthSetter1D
         
         function model = setValues(nplengthsetter, model, values)
 
+            ctrl = 'Control';
+            
             fdinds         = nplengthsetter.fdinds;
             alpha          = nplengthsetter.alpha;
             lengthSetter   = nplengthsetter.lengthSetter;
@@ -55,6 +57,11 @@ classdef NPlengthSetter1D
             
             model = lengthSetter.setLengths(model, v);
             model = porositySetter.setPorosities(model, [neporo; peporo]);
+
+            C = computeCellCapacity(model);
+
+            CRate = model.(ctrl).CRate;
+            model.(ctrl).Imax = (C/hour)*CRate;
             
         end
 
