@@ -22,9 +22,11 @@ function [energy, dischargeFunction] = computeCellEnergyGivenCrate(model, CRate,
     end
 
     capacity = computeCellCapacity(model);
-
+    Imax = (capacity/hour)*CRate;
+    
     model.Control.CRate = CRate;
-
+    model.Control.Imax  = Imax;
+    
     assert(strcmp(model.Control.controlPolicy, "IEswitch"), 'The model should be setup with IEswitch control');
     
     totalTime = 1.1*hour/CRate;
