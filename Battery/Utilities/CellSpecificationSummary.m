@@ -25,6 +25,12 @@ classdef CellSpecificationSummary
         dischargeFunction % Maximum energy discharge function (voltage versus state of charge)
 
         temperature
+
+        dischargeSimulations % cell array with struct elements with field
+                             % - CRate
+                             % - energie
+                             % - specificEnergie
+                             % - energyDensitie
         
     end
 
@@ -38,13 +44,23 @@ classdef CellSpecificationSummary
 
             css.packingMass = opt.packingMass;
             css.temperature = opt.temperature;
+            css.dischargeSimulations = {};
             
             css = css.update(model);
             
         end
         
-        function css = update(css, model)
+        function css = update(css, model, varargin)
 
+            opt = struct('resetSimulations', true);
+            opt = merge_options(opt, varargin{:});
+
+            if opt.resetSimulations
+                css.dischargeSimulations = {};
+            end
+            
+           
+            
             temperature = css.temperature;
             packingMass = css.packingMass;
             
@@ -119,10 +135,70 @@ classdef CellSpecificationSummary
             lines = css.addLine(lines, 'Specific Energy'            , 'Wh/kg', css.specificEnergy/hour);
             lines = css.addLine(lines, 'Energy Density'             , 'Wh/L' , (css.energyDensity/hour)*litre);
             lines = css.addLine(lines, 'Initial Voltage'            , 'V'    , css.initialVoltage);
+
+
+            function str = appendCrate(str, crate)
+
+                str = sprintf('%s (CRate = %g)', str, crate);
+                
+            end
+            
+            for isim = 1 : numel(css.dischargeSimulations)
+                
+                simres = css.dischargeSimulations{isim};
+                ac = @(str) appendCrate(str, simres.CRate); 
+                lines = css.addLine(lines, ac('Energy'), 'Wh/kg', simres.energy/hour);
+                lines = css.addLine(lines, ac('Specific Energy'), 'Wh/kg', simres.specificEnergy/hour);
+                lines = css.addLine(lines, ac('Energy Density') , 'Wh/L' , (simres.energyDensity/hour)*litre);
+                
+            end
             
             css.printLines(lines);
             
         end
+
+        function css = addCrates(css, model, CRates, varargin)
+
+            for icrate = 1 : numel(CRates)
+
+                if icrate == 1
+                    reset = true;
+                else
+                    reset = false;
+                end
+
+                CRate = CRates(icrate);
+                
+                css = css.addCrate(model, CRate, 'reset', reset, varargin{:});
+
+            end
+            
+        end
+        
+        function css = addCrate(css, model, CRate, varargin)
+
+            opt = struct('reset', true);
+            [opt, extras] = merge_options(opt, varargin{:});
+
+            if opt.reset
+                css.dischargeSimulations = {};
+                css = css.update(model, 'resetSimulations', true);
+            end
+            
+            energy = computeCellEnergy(model, 'CRate', CRate, extras{:});
+
+            specificEnergy = energy/css.mass;
+            energyDensity  = energy/css.volume;
+
+            simresult = struct('CRate'         , CRate         , ...
+                               'energy'        , energy        , ...
+                               'specificEnergy', specificEnergy, ...
+                               'energyDensity' , energyDensity );
+
+            css.dischargeSimulations{end + 1} = simresult;
+            
+        end
+            
         
     end
 
