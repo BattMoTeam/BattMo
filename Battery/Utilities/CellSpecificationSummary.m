@@ -147,7 +147,7 @@ classdef CellSpecificationSummary
                 
                 simres = css.dischargeSimulations{isim};
                 ac = @(str) appendCrate(str, simres.CRate); 
-                lines = css.addLine(lines, ac('Energy'), 'Wh/kg', simres.energy/hour);
+                lines = css.addLine(lines, ac('Energy'), 'Wh', simres.energy/hour);
                 lines = css.addLine(lines, ac('Specific Energy'), 'Wh/kg', simres.specificEnergy/hour);
                 lines = css.addLine(lines, ac('Energy Density') , 'Wh/L' , (simres.energyDensity/hour)*litre);
                 
