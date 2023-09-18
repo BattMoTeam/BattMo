@@ -9,9 +9,9 @@ function [energy, dischargeFunction] = computeCellEnergyGivenCrate(model, CRate,
     ctrl    = 'Control';
     sep     = 'Separator';
 
-    opt = struct('computationType', 'sharp', ...
-                 'lowerCutoffVoltage', [], ...
-                 'cutoffparams', []);
+    opt = struct('computationType'   , 'sharp', ...
+                 'lowerCutoffVoltage', []     , ...
+                 'cutoffparams'      , []);
     opt = merge_options(opt, varargin{:});
 
 
@@ -66,13 +66,15 @@ function [energy, dischargeFunction] = computeCellEnergyGivenCrate(model, CRate,
     model.nonlinearTolerance = 1e-5*model.Control.Imax;
     model.verbose = false;
 
-    [wellSols, states, report] = simulateScheduleAD(state0, model, schedule, 'OutputMinisteps', true, 'NonLinearSolver', nls); 
+    [wellSols, states, report] = simulateScheduleAD(state0, model, schedule, 'NonLinearSolver', nls); 
 
     ind = cellfun(@(x) not(isempty(x)), states);
     states = states(ind);
     E = cellfun(@(x) x.(ctrl).E, states);
     I = cellfun(@(x) x.(ctrl).I, states);
     time = cellfun(@(x) x.time, states);
+    dt = diff(time);
+    dt = [time(1); dt];
 
     switch opt.computationType
         
