@@ -1,7 +1,10 @@
 classdef CellSpecificationSummary
 
-    properties
-        % Note that all values are in SI (standard units)
+
+    properties (SetAccess = private)
+        % We want the computed values to remain synchronized with the model. To do so we set the "setAccess" property to
+        % private. See function updateModel to change model and updatePackingMass to change the packingMass.
+        model
         
         packingMass
         
@@ -28,9 +31,10 @@ classdef CellSpecificationSummary
 
         dischargeSimulations % cell array with struct elements with field
                              % - CRate
-                             % - energie
-                             % - specificEnergie
-                             % - energyDensitie
+                             % - energy
+                             % - specificEnergy
+                             % - energyDensity
+                             % - dischargeCurve
         
     end
 
@@ -42,24 +46,35 @@ classdef CellSpecificationSummary
                          'temperature', 298);
             opt = merge_options(opt, varargin{:});
 
-            css.packingMass = opt.packingMass;
-            css.temperature = opt.temperature;
+            css.packingMass          = opt.packingMass;
+            css.temperature          = opt.temperature;
             css.dischargeSimulations = {};
-            
-            css = css.update(model);
+            css.model                = model;
+
+            css = css.computeSpecs();
             
         end
-        
-        function css = update(css, model, varargin)
 
-            opt = struct('resetSimulations', true);
-            opt = merge_options(opt, varargin{:});
+        function css = updateModel(css, model)
 
-            if opt.resetSimulations
-                css.dischargeSimulations = {};
-            end
+            css.model = model;
+            css = css.computeSpecs();
+        end
+
+        function css = updatePackingMass(css, packingMass)
+
+            css.packingMass = packingMass;
+            css = css.computeSpecs();
             
-           
+        end
+            
+        
+        function css = computeSpecs(css)
+
+            % Reset the simulations 
+            css.dischargeSimulations = {};
+
+            model = css.model;
             
             temperature = css.temperature;
             packingMass = css.packingMass;
@@ -121,21 +136,30 @@ classdef CellSpecificationSummary
             ne  = 'NegativeElectrode';
             pe  = 'PositiveElectrode';
 
-            lines = {};
-            
-            lines = css.addLine(lines, 'Packing mass'               , 'kg'   , css.packingMass);
-            lines = css.addLine(lines, 'Temperature'                , 'C'    , css.temperature -  273.15);
-            lines = css.addLine(lines, 'Mass'                       , 'kg'   , css.mass);
-            lines = css.addLine(lines, 'Volume'                     , 'L'    , css.volume/litre);
-            lines = css.addLine(lines, 'Total Capacity'             , 'Ah'   , css.capacity/hour);
-            lines = css.addLine(lines, 'Negative Electrode Capacity', 'Ah'   , css.capacities.(ne)/hour);
-            lines = css.addLine(lines, 'Positive Electrode Capacity', 'Ah'   , css.capacities.(pe)/hour);
-            lines = css.addLine(lines, 'N/P ratio'                  , '-'    , css.NPratio);
-            lines = css.addLine(lines, 'Energy'                     , 'Wh'   , css.energy/hour);
-            lines = css.addLine(lines, 'Specific Energy'            , 'Wh/kg', css.specificEnergy/hour);
-            lines = css.addLine(lines, 'Energy Density'             , 'Wh/L' , (css.energyDensity/hour)*litre);
-            lines = css.addLine(lines, 'Initial Voltage'            , 'V'    , css.initialVoltage);
+            function lines = addLine(lines, description, unit, value)
 
+                line.description = description;
+                line.unit        = unit;
+                line.value       = value;
+
+                lines{end + 1} = line;
+                
+            end
+            
+            lines = {};
+
+            lines = addLine(lines, 'Packing mass'               , 'kg'   , css.packingMass);
+            lines = addLine(lines, 'Temperature'                , 'C'    , css.temperature -  273.15);
+            lines = addLine(lines, 'Mass'                       , 'kg'   , css.mass);
+            lines = addLine(lines, 'Volume'                     , 'L'    , css.volume/litre);
+            lines = addLine(lines, 'Total Capacity'             , 'Ah'   , css.capacity/hour);
+            lines = addLine(lines, 'Negative Electrode Capacity', 'Ah'   , css.capacities.(ne)/hour);
+            lines = addLine(lines, 'Positive Electrode Capacity', 'Ah'   , css.capacities.(pe)/hour);
+            lines = addLine(lines, 'N/P ratio'                  , '-'    , css.NPratio);
+            lines = addLine(lines, 'Energy'                     , 'Wh'   , css.energy/hour);
+            lines = addLine(lines, 'Specific Energy'            , 'Wh/kg', css.specificEnergy/hour);
+            lines = addLine(lines, 'Energy Density'             , 'Wh/L' , (css.energyDensity/hour)*litre);
+            lines = addLine(lines, 'Initial Voltage'            , 'V'    , css.initialVoltage);
 
             function str = appendCrate(str, crate)
 
@@ -147,53 +171,65 @@ classdef CellSpecificationSummary
                 
                 simres = css.dischargeSimulations{isim};
                 ac = @(str) appendCrate(str, simres.CRate); 
-                lines = css.addLine(lines, ac('Energy'), 'Wh', simres.energy/hour);
-                lines = css.addLine(lines, ac('Specific Energy'), 'Wh/kg', simres.specificEnergy/hour);
-                lines = css.addLine(lines, ac('Energy Density') , 'Wh/L' , (simres.energyDensity/hour)*litre);
+                lines = addLine(lines, ac('Energy'), 'Wh', simres.energy/hour);
+                lines = addLine(lines, ac('Specific Energy'), 'Wh/kg', simres.specificEnergy/hour);
+                lines = addLine(lines, ac('Energy Density') , 'Wh/L' , (simres.energyDensity/hour)*litre);
                 
             end
             
-            css.printLines(lines);
+            function printLines(lines)
+            %% print lines
+                
+            % Setup format for fprintf
+            % Get maximum string length for the description field
+                descriptions = cellfun(@(line) line.description, lines, 'uniformoutput', false);
+                lgths        = cellfun(@(str) length(str), descriptions);
+                s            = max(lgths);
+
+                fmt = sprintf('%%%ds : %%g [%%s]\n', s);
+
+                for iline = 1 : numel(lines)
+                    line = lines{iline};
+                    fprintf(fmt             , ...
+                            line.description, ...
+                            line.value      , ...
+                            line.unit);
+                end
+                
+            end
+            
+            printLines(lines);
             
         end
 
-        function css = addCrates(css, model, CRates, varargin)
+        function css = addCrates(css, CRates, varargin)
 
             for icrate = 1 : numel(CRates)
 
-                if icrate == 1
-                    reset = true;
-                else
-                    reset = false;
-                end
-
                 CRate = CRates(icrate);
-                
-                css = css.addCrate(model, CRate, 'reset', reset, varargin{:});
+                css = css.addCrate(CRate, varargin{:});
 
             end
             
         end
         
-        function css = addCrate(css, model, CRate, varargin)
+        function css = addCrate(css, CRate, varargin)
 
-            opt = struct('reset', true);
-            [opt, extras] = merge_options(opt, varargin{:});
-
-            if opt.reset
-                css.dischargeSimulations = {};
-                css = css.update(model, 'resetSimulations', true);
-            end
+            % the extras options are passed to computeCellEnergy
+            extras = varargin;
             
-            energy = computeCellEnergy(model, 'CRate', CRate, extras{:});
+            model = css.model;
+            
+            [energy, dischargeFunction] = computeCellEnergy(model, 'CRate', CRate, extras{:});
 
             specificEnergy = energy/css.mass;
             energyDensity  = energy/css.volume;
 
-            simresult = struct('CRate'         , CRate         , ...
-                               'energy'        , energy        , ...
-                               'specificEnergy', specificEnergy, ...
-                               'energyDensity' , energyDensity );
+            simresult = struct('CRate'            , CRate            , ...
+                               'energy'           , energy           , ...
+                               'specificEnergy'   , specificEnergy   , ...
+                               'energyDensity'    , energyDensity    , ...
+                               'dischargeFunction', dischargeFunction);
 
             css.dischargeSimulations{end + 1} = simresult;
             
@@ -204,37 +240,7 @@ classdef CellSpecificationSummary
 
     methods (Static)
 
-        function lines = addLine(lines, description, unit, value)
 
-            line.description = description;
-            line.unit        = unit;
-            line.value       = value;
-
-            lines{end + 1} = line;
-            
-        end
-
-        function printLines(lines)
-        %% print lines
-            
-            % Setup format for fprintf
-            % Get maximum string length for the description field
-            descriptions = cellfun(@(line) line.description, lines, 'uniformoutput', false);
-            lgths        = cellfun(@(str) length(str), descriptions);
-            s            = max(lgths);
-
-            fmt = sprintf('%%%ds : %%g [%%s]\n', s);
-
-            for iline = 1 : numel(lines)
-                line = lines{iline};
-                fprintf(fmt             , ...
-                        line.description, ...
-                        line.value      , ...
-                        line.unit);
-            end
-            
-        end
-        
         
     end
     
