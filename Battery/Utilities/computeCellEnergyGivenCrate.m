@@ -45,9 +45,7 @@ function [energy, dischargeFunction] = computeCellEnergyGivenCrate(model, CRate,
     step  = struct('val', dt, 'control', ones(numel(dt), 1));
 
     tup = 0.1; % rampup value for the current function, see rampupSwitchControl
-    srcfunc = @(time, I, E) rampupSwitchControl(time, tup, I, E, ...
-                                                model.Control.Imax, ...
-                                                model.Control.lowerCutoffVoltage);
+    srcfunc = @(time, I, E, Imax, lowerCutoffVoltage) rampupSwitchControl(time, tup, I, E, Imax, lowerCutoffVoltage);
 
     control = struct('src', srcfunc, 'IEswitch', true);
 
