@@ -17,6 +17,8 @@ classdef ProtonicMembraneElectrolyte < BaseModel
         % proton conductivity
         sigmaHp
 
+        EO2_ref % used in computation of the electronic conductivity
+        
         Y
         dH_hyd  % kJ/mol
         dS_hyd  % J / mol / K
@@ -63,6 +65,7 @@ classdef ProtonicMembraneElectrolyte < BaseModel
 
             pH2 = model.pH2O_in;
 
+            % The O2 pressure is defaulted to 1
             pO2 = (1 - model.SU)*model.pH2O_in/2;
             pO2 = 1;
 
@@ -94,12 +97,17 @@ classdef ProtonicMembraneElectrolyte < BaseModel
             p_ref   = ((3*K_H_p - sqrt(K_H_p*(9*K_H_p - 6*K_H_p*Y + K_H_p*Y^2 + 24*Y - 4*Y^2)))/(K_H_p - 4));
             sigmaP_0 = (t_p_O2/(1 - t_p_O2))*(con.F*p_ref*D_prot);
 
-
+            % Compute reference potential at pO2 = 1 pressure
+            T = model.T
+            c = model.constants;
+            EO2_ref = model.EO2_0 - 0.00024516.*T - c.R.*T./(2*c.F)*log(1./(1^(1/2)));
+            
             % Assign the values to the model
 
             model.sigmaHp  = sigmaHp;
             model.sigmaP_0 = sigmaP_0;
-
+            model.EO2_ref  = EO2_ref;
+            
         end
 
         function model = registerVarAndPropfuncNames(model)
@@ -199,7 +207,7 @@ classdef ProtonicMembraneElectrolyte < BaseModel
             sigmaP_0 = model.sigmaP_0;
             sigmaN_0 = model.sigmaN_0;
             EH2_0    = model.EH2_0;
-            EO2_0    = model.EO2_0;
+            EO2_ref  = model.EO2_ref;
 
             E     = state.E;
             alpha = state.alpha;
@@ -219,7 +227,7 @@ classdef ProtonicMembraneElectrolyte < BaseModel
               case 'exponential coefficient'
 
                 f = f*alpha;
-                sigmaEl = sigmaP_0*exp(f*(E - EO2_0)) + sigmaN_0*exp(-f*(E - EH2_0));
+                sigmaEl = sigmaP_0*exp(f*(E - EO2_ref)) + sigmaN_0*exp(-f*(E - EH2_0));
 
               otherwise
 
