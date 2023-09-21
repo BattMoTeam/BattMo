@@ -95,12 +95,14 @@ classdef ProtonicMembraneCell < BaseModel
             fn = {fn, @(propfunction) PropFunction.drivingForceFuncCallSetupFn(propfunction)};
             model = model.registerPropFunction({{ctrl, 'ctrlVal'}, fn, inputnames});            
             model = model.registerPropFunction({{elyte, 'alpha'}, fn, inputnames});
+            model = model.registerPropFunction({{an, 'alpha'}, fn, inputnames});
             
         end
 
         function state = updateControl(model, state, drivingForces)
             
-            ctrl = "Control";
+            ctrl  = "Control";
+            an    = 'Anode';
             elyte = 'Electrolyte';
             
             time = state.time;
@@ -108,6 +110,7 @@ classdef ProtonicMembraneCell < BaseModel
             
             state.(ctrl).ctrlVal = ctrlVal;
             state.(elyte).alpha  = alpha;
+            state.(an).alpha     = alpha;
             
         end
         

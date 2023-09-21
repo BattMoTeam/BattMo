@@ -42,7 +42,9 @@ classdef ProtonicMembraneCathode < ProtonicMembraneElectrode
         
         function state = updateJHp(model, state)
 
-            state.jHp = 1/model.R * state.eta;
+            R = model.R;
+
+            state.jHp = 1/R * state.eta;
             
         end
 
