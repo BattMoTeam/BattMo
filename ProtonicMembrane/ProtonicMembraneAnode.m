@@ -96,7 +96,7 @@ classdef ProtonicMembraneAnode < ProtonicMembraneElectrode
             
             feta = con.F*model.n/(con.R*model.T).*eta;
             
-            jHp = -i0*(exp(-beta*feta) - exp((1 - beta)*feta))./(1 + (i0/ilc)*exp(-beta*feta) - (i0/ila)*exp(-(1 - beta)*feta));
+            jHp = -i0*(exp(-beta*feta) - exp((1 - beta)*feta))./(1 + (i0/ilc)*exp(-beta*feta) - (i0/ila)*exp((1 - beta)*feta));
 
             % jHp = i0*(exp(feta/2) - exp(-feta/2))/2;
             
