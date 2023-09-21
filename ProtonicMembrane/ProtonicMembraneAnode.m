@@ -107,22 +107,22 @@ classdef ProtonicMembraneAnode < ProtonicMembraneElectrode
             
         end
 
-        function state = updateEta2(model, state)
+        % function state = updateEta2(model, state)
 
-            R = 0.05;
+        %     R = 0.05;
             
-            j = state.j;
-            eta = R*j; 
+        %     j = state.j;
+        %     eta = R*j; 
             
-            state.eta = eta;
+        %     state.eta = eta;
             
-        end
+        % end
 
-        function state = updatePhi2(model, state)
+        % function state = updatePhi2(model, state)
 
-            state.phi = state.pi - state.eta - state.Eocp;
+        %     state.phi = state.pi - state.eta - state.Eocp;
             
-        end
+        % end
 
         
     end

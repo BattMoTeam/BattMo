@@ -49,19 +49,19 @@ classdef ProtonicMembraneCathode < ProtonicMembraneElectrode
         end
 
 
-        function state = updateJ(model, state)
+        % function state = updateJ(model, state)
 
-            state.j = 1/model.R * state.eta;
+        %     state.j = 1/model.R * state.eta;
             
-        end
+        % end
 
 
         
-        function state = updatePi(model, state)
+        % function state = updatePi(model, state)
 
-            state.pi = 0;
+        %     state.pi = 0;
             
-        end
+        % end
         
     end
     

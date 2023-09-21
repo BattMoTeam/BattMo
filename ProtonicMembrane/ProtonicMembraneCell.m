@@ -89,7 +89,11 @@ classdef ProtonicMembraneCell < BaseModel
             fn = @ProtonicMembraneCell.setupCathodeBoundary;
             inputnames = {};
             model = model.registerPropFunction({{ct, 'phi'}, fn, inputnames});
-                        
+
+            fn = @ProtonicMembraneCell.updateAnodeEocp;
+            inputnames = {};
+            model = model.registerPropFunction({{an, 'Eocp'}, fn, inputnames});
+            
             inputnames = {};
             fn = @ProtonicMembraneCell.updateControl;
             fn = {fn, @(propfunction) PropFunction.drivingForceFuncCallSetupFn(propfunction)};
@@ -111,6 +115,16 @@ classdef ProtonicMembraneCell < BaseModel
             state.(ctrl).ctrlVal = ctrlVal;
             state.(elyte).alpha  = alpha;
             state.(an).alpha     = alpha;
+            
+        end
+
+        function state = updateAnodeEocp(model, state)
+
+            an    = 'Anode';
+            ct    = 'Cathode';
+            elyte = 'Electrolyte';
+
+            state.(an).Eocp = model.(elyte).EO2_ref;
             
         end
         

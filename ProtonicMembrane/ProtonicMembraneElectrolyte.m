@@ -98,7 +98,7 @@ classdef ProtonicMembraneElectrolyte < BaseModel
             sigmaP_0 = (t_p_O2/(1 - t_p_O2))*(con.F*p_ref*D_prot);
 
             % Compute reference potential at pO2 = 1 pressure
-            T = model.T
+            T = model.T;
             c = model.constants;
             EO2_ref = model.EO2_0 - 0.00024516.*T - c.R.*T./(2*c.F)*log(1./(1^(1/2)));
             
