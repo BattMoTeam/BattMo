@@ -144,11 +144,11 @@ classdef OxideMembraneElectrolyte < BaseModel
             ch    = state.ch;
             alpha = state.alpha;
 
-            chr = exp(alpha*log(ch));
-            cer = exp(alpha*log(ce));
+            chr = exp((1 - alpha)*log(ch));
+            cer = exp((1 - alpha)*log(ce));
 
-            gConcCs{cinds.ch} = c.F*chr./ch;
-            gConcCs{cinds.ce} = c.F*cer./ce;
+            gConcCs{cinds.ch} = c.F*Dh*(chr./ch);
+            gConcCs{cinds.ce} = c.F*De*(cer./ce);
 
             gPhiC = (c.F)^2/(c.R*T)*(Dh*chr + De*cer);
 
@@ -172,15 +172,16 @@ classdef OxideMembraneElectrolyte < BaseModel
 
         function state = updateElFlux(model, state)
 
-            phi = state.phi;
-            ce  = state.ce;
-            ch  = state.ch;
-
+            cinds = model.compinds;
+            
+            phi     = state.phi;
+            ce      = state.ce;
+            ch      = state.ch;
             gPhiC   = state.gradPhiCoef;
             gConcCs = state.gradConcCoefs;
 
-            jch  = assembleFlux(model, ch, gConcCs{1});
-            jce  = assembleFlux(model, ce, gConcCs{2});
+            jch  = assembleFlux(model, ch, gConcCs{cinds.ch});
+            jce  = assembleFlux(model, ce, gConcCs{cinds.ce});
             jphi = assembleFlux(model, phi, gPhiC);
 
             state.jEl = jch - jce + jphi;
