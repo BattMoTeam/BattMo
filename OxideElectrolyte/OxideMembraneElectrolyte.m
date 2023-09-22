@@ -144,8 +144,8 @@ classdef OxideMembraneElectrolyte < BaseModel
             ch    = state.ch;
             alpha = state.alpha;
 
-            chr = exp((1 - alpha)*log(ch));
-            cer = exp((1 - alpha)*log(ce));
+            chr = exp(alpha*log(ch));
+            cer = exp(alpha*log(ce));
 
             gConcCs{cinds.ch} = c.F*Dh*(chr./ch);
             gConcCs{cinds.ce} = c.F*De*(cer./ce);
