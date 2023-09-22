@@ -86,7 +86,7 @@ classdef OxideMembraneElectrode < BaseModel
             model = model.registerPropFunction({'currentVoltageEquation', fn, inputnames});
 
             fn = @OxideMembraneElectrode.updateElConcEquation;
-            inputnames = {'pi', 'ce', 'phi'};
+            inputnames = {'E', 'ce'};
             model = model.registerPropFunction({'electronConcentrationEquation', fn, inputnames});
 
             fn = @OxideMembraneElectrode.updateEquilibriumReaction;
@@ -133,11 +133,12 @@ classdef OxideMembraneElectrode < BaseModel
 
             mu0 = model.muEl0;
             c   = model.constants;
+            T   = model.T;
             
             ce = state.ce;
             E  = state.E;
 
-            eceq = E + (1/c.F)*(mu0 + (c.R*c.T)*log(ce));
+            eceq = E + (1/c.F)*(mu0 + (c.R*T)*log(ce));
 
             state.electronConcentrationEquation = eceq;
             

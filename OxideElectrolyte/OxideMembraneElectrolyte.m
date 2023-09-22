@@ -15,6 +15,9 @@ classdef OxideMembraneElectrolyte < BaseModel
         % Equilibrium Constant
         Keh
 
+        % Helper
+        compinds
+
     end
 
     methods
@@ -38,6 +41,9 @@ classdef OxideMembraneElectrolyte < BaseModel
 
             con = model.constants;
 
+            compinds.ch = 1;
+            compinds.ce = 2;
+
         end
 
         function model = registerVarAndPropfuncNames(model)
@@ -56,6 +62,10 @@ classdef OxideMembraneElectrolyte < BaseModel
             varnames{end + 1} = 'jEl';
             % Ionic Flux
             varnames{end + 1} = 'jO2';
+            % Coefficient in front of grad(phi) in assembly of jEl
+            varnames{end + 1} = 'gradPhiCoef';
+            % Coefficient in front of grad(ce) and grad(ch) assembly of jEl
+            varnames{end + 1} = VarName({}, 'gradConcCoefs', 2);
             % H+ source term
             varnames{end + 1} = 'sourceO2';
             % Electronic source term
@@ -66,9 +76,8 @@ classdef OxideMembraneElectrolyte < BaseModel
             varnames{end + 1} = 'chargeConsEl';
             % Equilibrium equation for hole-electron reaction
             varnames{end + 1} = 'equilibriumEquation';
-            
-            model = model.registerVarNames(varnames);
 
+            model = model.registerVarNames(varnames);
 
             fn = @OxideMembraneElectrolyte.updateO2Flux;
             inputnames = {'phi'};
@@ -79,7 +88,11 @@ classdef OxideMembraneElectrolyte < BaseModel
             model = model.registerPropFunction({'equilibriumEquation', fn, inputnames});
 
             fn = @OxideMembraneElectrolyte.updateElFlux;
-            inputnames = {'ch', 'ce', 'phi'};
+            inputnames = {VarName({}, 'gradConcCoefs', 2), ...
+                          'gradPhiCoef'                  , ...
+                          'phi'                          , ...
+                          'ce'                           , ...
+                          'ch'};
             model = model.registerPropFunction({'jEl', fn, inputnames});
 
             fn = @OxideMembraneElectrolyte.updateMassConsO2;
@@ -89,6 +102,32 @@ classdef OxideMembraneElectrolyte < BaseModel
             fn = @OxideMembraneElectrolyte.updateChargeConsEl;
             inputnames = {'sourceEl', 'jEl'};
             model = model.registerPropFunction({'chargeConsEl', fn, inputnames});
+
+            fn = @OxideMembraneElectrolyte.updateGradCoefs;
+            inputnames = {'ce', 'ch'};
+            model = model.registerPropFunction({'gradPhiCoef', fn, inputnames});
+            model = model.registerPropFunction({VarName({}, 'gradConcCoefs', 2), fn, inputnames});
+
+        end
+
+        function state = updateGradCoefs(model, state)
+
+            Dh    = model.Dh;
+            De    = model.De;
+            T     = model.T;
+            c     = model.constants;
+            cinds = model.compinds;
+
+            ce = state.ce;
+            ch = state.ch;
+
+            gConcCs{cinds.ch} = c.F*Dh*ch./ch;
+            gConcCs{cinds.ce} = c.F*Dh*ce./ce;
+
+            gPhiC = (c.F)^2/(c.R*c.T)*(Dh*ch + De*ce);
+
+            state.gradConcCoefs = gConcCs;
+            state.gradPhiCoef   = gPhiC;
 
         end
 
@@ -107,23 +146,19 @@ classdef OxideMembraneElectrolyte < BaseModel
 
         function state = updateElFlux(model, state)
 
-            c  = model.constants;
-            Dh = model.Dh;
-            De = model.De;
-            
             phi = state.phi;
             ce  = state.ce;
             ch  = state.ch;
-            
-            jch = assembleHomogenousFlux(model, ch, c.F*Dh);
-            jce = assembleHomogenousFlux(model, ce, c.F*De);
 
-            effSigma = (c.F)^2/(c.R*c.T)*(Dh*ch + De*ce);
+            gPhiC   = state.(elyte).gradPhiCoef;
+            gConcCs = state.(elyte).gradConcCoefs;
 
-            jphi = assembleFlux(model, phi, effSigma);
+            jch  = assembleFlux(model, ch, gPhiCs{1});
+            jce  = assembleFlux(model, ce, gPhiCs{2});
+            jphi = assembleFlux(model, phi, gPhiC);
 
-            state.jEl = jch - jce + jphi; 
-            
+            state.jEl = jch - jce + jphi;
+
         end
 
 
@@ -152,12 +187,12 @@ classdef OxideMembraneElectrolyte < BaseModel
         function state = updateEquilibriumReaction(model, state)
 
             Keh = model.Keh;
-            
+
             ch = state.ch;
             ce = state.ce;
-            
+
             state.equilibriumEquation = ch*ce - Keh;
-            
+
         end
 
     end

@@ -70,12 +70,14 @@ classdef OxideMembraneCell < BaseModel
             model = model.registerPropFunction({{an, 'jO2Equation'}, fn, inputnames});
 
             fn = @OxideMembraneCell.updateAnodeJElEquation;
-            inputnames = {{elyte, 'phi'}, ...
-                          {elyte, 'ce'} , ...
-                          {elyte, 'ch'} , ...
-                          {an, 'phi'}, ...
-                          {an, 'ce'} , ...
-                          {an, 'ch'} , ...
+            inputnames = {{elyte, 'gradPhiCoef'}              , ...
+                          VarName({elyte}, 'gradConcCoefs', 2), ...
+                          {elyte, 'phi'}                      , ...
+                          {elyte, 'ce'}                       , ...
+                          {elyte, 'ch'}                       , ...
+                          {an, 'phi'}                         , ...
+                          {an, 'ce'}                          , ...
+                          {an, 'ch'}                          , ...
                           {an, 'jEl'}};
             model = model.registerPropFunction({{an, 'jElEquation'}, fn, inputnames});
 
@@ -84,12 +86,13 @@ classdef OxideMembraneCell < BaseModel
             model = model.registerPropFunction({{ct, 'jO2Equation'}, fn, inputnames});
 
             fn = @OxideMembraneCell.updateCathodeJElEquation;
-            inputnames = {{elyte, 'phi'}, ...
-                          {elyte, 'ce'} , ...
-                          {elyte, 'ch'} , ...
-                          {ct, 'phi'}, ...
-                          {ct, 'ce'} , ...
-                          {ct, 'ch'} , ...
+            inputnames = {{elyte, 'gradPhiCoef'}              , ...
+                          VarName({elyte}, 'gradConcCoefs', 2), ...
+                          {elyte, 'ce'}                       , ...
+                          {elyte, 'ch'}                       , ...
+                          {ct, 'phi'}                         , ...
+                          {ct, 'ce'}                          , ...
+                          {ct, 'ch'}                          , ...
                           {ct, 'jEl'}};
             model = model.registerPropFunction({{ct, 'jElEquation'}, fn, inputnames});
             
@@ -220,18 +223,18 @@ classdef OxideMembraneCell < BaseModel
             
         end
         
-
         function state = updateJElEquation(model, state, elde)
 
             an    = 'Anode';
             ct    = 'Cathode';
             elyte = 'Electrolyte';
 
-            op = model.(elyte).operators;
+            op    = model.(elyte).operators;
+            cinds = model.(elyte).compinds;
 
             coupterms = model.couplingTerms;
             coupnames = model.couplingnames;
-            
+
             switch elde
               case an
                 coupTerm = getCoupTerm(coupterms, 'Anode-Electrolyte', coupnames);
@@ -244,26 +247,21 @@ classdef OxideMembraneCell < BaseModel
             ccs = coupTerm.couplingcells;
             cfs = coupTerm.couplingfaces;
 
-            c  = model.constants;
-            Dh = model.(elyte).Dh;
-            De = model.(elyte).De;
             
-            phiElde = state.(elde).phi;
-            ceElde  = state.(elde).ce;
-            chElde  = state.(elde).ch;
-
+            phiElde  = state.(elde).phi;
+            ceElde   = state.(elde).ce;
+            chElde   = state.(elde).ch;
             phiElyte = state.(elyte).phi;
             ceElyte  = state.(elyte).ce;
             chElyte  = state.(elyte).ch;
-
+            gPhiC    = state.(elyte).gradPhiCoef;
+            gConcCs  = state.(elyte).gradConcCoefs;
+            
             tcoef = op.halfTransBc(cfs(:, 2));
 
-            jch = c.F*Dh*tcoef.*(chElde(ccs(:, 1)) - chElyte(ccs(:, 2)));
-            jce = c.F*De*tcoef.*(ceElde(ccs(:, 1)) - ceElyte(ccs(:, 2)));
-
-            effSigma = (c.F)^2/(c.R*c.T)*(Dh*chElde(ccs(:, 1)) + De*ceElde(css(:, 1)));
-
-            jphi = effSigma*tcoef.*(phiElde(css(:, 1)) - phiElyte(css(:, 2)));
+            jch  = gConcCs{cinds.ch}*tcoef.*(chElde(ccs(:, 1)) - chElyte(ccs(:, 2)));
+            jce  = gConcCs{cinds.ce}*tcoef.*(ceElde(ccs(:, 1)) - ceElyte(ccs(:, 2)));
+            jphi = gPhiC*tcoef.*(phiElde(css(:, 1)) - phiElyte(css(:, 2)));
 
             state.(elde).jElEquation = jEl - (jch - jce + jphi);
 
@@ -318,6 +316,12 @@ classdef OxideMembraneCell < BaseModel
             initState.(an).jEl = 0;
             
             nc = model.(elyte).G.cells.num;
+            mu0 = model.mulEl0;
+            T   = model.T;
+
+            ce = exp(-mu0/(c.R*T));
+            ch = Keh/ce;
+            
             initState.(elyte).pi  = zeros(nc, 1);
             initState.(elyte).phi = zeros(nc, 1);
 
