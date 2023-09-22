@@ -19,6 +19,7 @@ classdef OxideMembraneCell < BaseModel
         farea
 
         primaryVarNames
+        equationVarNames
         funcCallList
         
     end
@@ -384,41 +385,18 @@ classdef OxideMembraneCell < BaseModel
                 eval(funcCallList{ifunc});
             end
 
-            an    = 'Anode';
-            ct    = 'Cathode';
-            elyte = 'Electrolyte';
-            ctrl  = 'Control';
 
-            eqs = {};
+            eqnvarnames = model.equationVarNames;
+            neq = numel(eqnvarnames);
 
-            dx      = model.dx;
-            farea   = model.farea;
-            sigmaO2 = model.(elyte).sigmaO2;
-            sigmaEl = model.(elyte).sigmaN_0;
-            phi0    = 1;
-            
-            sO2 = 1/(farea*sigmaO2*phi0/dx);
-            sEl = 1/(farea*sigmaEl*phi0/dx);
-            
-            eqs{end + 1} = sO2*state.(elyte).massConsO2;
-            eqs{end + 1} = sEl*state.(elyte).chargeConsEl;
-            eqs{end + 1} = sEl*state.(an).chargeCons;
-            eqs{end + 1} = sEl*state.(an).jElEquation;
-            eqs{end + 1} = sO2*state.(an).jO2Equation;
-            eqs{end + 1} = sEl*state.(ct).chargeCons;
-            eqs{end + 1} = sEl*state.(ct).jElEquation;
-            eqs{end + 1} = sO2*state.(ct).jO2Equation;
-            eqs{end + 1} = sEl*state.(ctrl).controlEquation;
-            
-            names = {'elyte_massConsO2'  , ...
-                     'elyte_chargeConsEl', ...
-                     'an_chargeCons'     , ...
-                     'an_jElEquation'    , ...
-                     'an_jO2Equation'    , ...
-                     'ct_chargeCons'     , ...
-                     'ct_jElEquation'    , ...
-                     'ct_jO2Equation'    , ...
-                     'ctrl_controlEquation'};
+            for ieq = 1 : neq
+
+                varname = eqnvarnames{ieq};
+
+                eqs{ieq}   = model.getProp(state, varname);
+                names{ieq} = strjoin(varname, '.');
+
+            end
 
             types = repmat({'cells'}, 1, numel(names));
             
@@ -450,8 +428,9 @@ classdef OxideMembraneCell < BaseModel
 
             cgt = model.computationalGraph;
             
-            model.primaryVarNames = cgt.getPrimaryVariableNames();
-            model.funcCallList    = cgt.getOrderedFunctionCallList();
+            model.primaryVarNames  = cgt.getPrimaryVariableNames();
+            model.equationVarNames = cgt.getEquationVariableNames();
+            model.funcCallList     = cgt.getOrderedFunctionCallList();
             
         end
         
