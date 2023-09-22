@@ -318,34 +318,35 @@ classdef OxideMembraneCell < BaseModel
             T = model.T;
             c = model.constants;
             
-            % Anode initialization
+            %% Anode initialization
+            % jEl is setup afterwards
             
             Eocp  = model.(an).Eocp;
             mu0   = model.(an).muEl0;
             K     = model.(an).Keh;
             cinds = model.(an).compinds;
             
-            initState.(an).jO2 = 0;
-            initState.(an).jEl = 0;
+            initState.(an).jO2             = 0;
             initState.(an).logcs{cinds.ce} = - (c.F*Eocp + mu0)/(c.R*T);
-            initState.(an).logcs{cinds.ch} = log(K) + (Eocp + mu0)/(c.R*T); % sum of log should be equal to log(K)
-            initState.(an).phi = 0;
+            initState.(an).logcs{cinds.ch} = log(K) + (c.F*Eocp + mu0)/(c.R*T); % sum of log should be equal to log(K)
+            initState.(an).phi             = 0;
             
-            % Cathode initialization            
-
+            %% Cathode initialization
+            %  jEl is setup afterwards
+            
             Eocp  = model.(ct).Eocp;
             mu0   = model.(ct).muEl0;
             K     = model.(ct).Keh;
             cinds = model.(ct).compinds;
 
-            initState.(ct).j   = 0;
-            initState.(ct).jO2 = 0;
-            initState.(ct).jEl = 0;
+            initState.(ct).jO2             = 0;
+            initState.(ct).j               = 0;
             initState.(ct).logcs{cinds.ce} = -(c.F*Eocp + mu0)/(c.R*T);
-            initState.(ct).logcs{cinds.ch} = log(K) + (Eocp + mu0)/(c.R*T); % sum of log should be equal to log(K)
-            initState.(ct).pi  = model.(ct).Eocp;
+            initState.(ct).logcs{cinds.ch} = log(K) + (c.F*Eocp + mu0)/(c.R*T); % sum of log should be equal to log(K)
+            initState.(ct).pi              = model.(ct).Eocp;
 
-            % Electrolyte initialization
+            %% Electrolyte initialization
+            %
             
             nc = model.(elyte).G.cells.num;
             initState.(elyte).phi = zeros(nc, 1);
@@ -366,25 +367,28 @@ classdef OxideMembraneCell < BaseModel
             initState.(elyte).logcs{cinds.ce} = lc;
             initState.(elyte).logcs{cinds.ch} = log(K) - lc; % sum of log should be equal to log(K)
 
-
             initState.time = 0;
 
-            % Evaluate jElEquation and use it to initiate jEl
+            %% Initiate jEl at electrodes using jElEquation
+            %
             
-            function [ctrlVal, alpha] =  src(time)
+            function [ctrlVal, alpha] = src(time)
                 ctrlVal = 0;
                 alpha = 0;
             end
 
             drivingForces.src = @(time) src(time);
-            
+
+            initState.(an).jEl = 0; 
             initState = model.evalVarName(initState, {an, 'jElEquation'}, {{'drivingForces', drivingForces}});
             initState.(an).jEl = -initState.(an).jElEquation;
-            initState.(an).jO2 = 0.5*initState.(an).jEl;
             
+            initState.(ct).jEl = 0;
             initState = model.evalVarName(initState, {ct, 'jElEquation'}, {{'drivingForces', drivingForces}});
             initState.(ct).jEl = -initState.(ct).jElEquation;
-            initState.(ct).jO2 = 0.5*initState.(ct).jEl;
+
+            %% Initiate Control
+            %
 
             initState.(ctrl).I = 0;
             initState.(ctrl).U = model.(an).Eocp;
