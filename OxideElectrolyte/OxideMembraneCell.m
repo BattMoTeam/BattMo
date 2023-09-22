@@ -253,17 +253,18 @@ classdef OxideMembraneCell < BaseModel
             phiElde  = state.(elde).phi;
             ceElde   = state.(elde).ce;
             chElde   = state.(elde).ch;
+            jEl      = state.(elde).jEl;
             phiElyte = state.(elyte).phi;
             ceElyte  = state.(elyte).ce;
             chElyte  = state.(elyte).ch;
             gPhiC    = state.(elyte).gradPhiCoef;
             gConcCs  = state.(elyte).gradConcCoefs;
             
-            tcoef = op.halfTransBc(cfs(:, 2));
+            tcoef = op.halfTransBC(cfs(:, 2));
 
             jch  = gConcCs{cinds.ch}*tcoef.*(chElde(ccs(:, 1)) - chElyte(ccs(:, 2)));
             jce  = gConcCs{cinds.ce}*tcoef.*(ceElde(ccs(:, 1)) - ceElyte(ccs(:, 2)));
-            jphi = gPhiC*tcoef.*(phiElde(css(:, 1)) - phiElyte(css(:, 2)));
+            jphi = gPhiC*tcoef.*(phiElde(ccs(:, 1)) - phiElyte(ccs(:, 2)));
 
             state.(elde).jElEquation = jEl - (jch - jce + jphi);
 
@@ -296,8 +297,9 @@ classdef OxideMembraneCell < BaseModel
 
             phiElyte = state.(elyte).phi;
             phiElde  = state.(elde).phi;
-
-            tcoef = op.halfTransBc(cfs(:, 2));
+            jO2      = state.(elde).jO2;
+            
+            tcoef = op.halfTransBC(cfs(:, 2));
             
             state.(elde).jO2Equation = jO2 - sigmaO2*tcoef.*(phiElde(ccs(:, 1)) - phiElyte(ccs(:, 2)));
 
