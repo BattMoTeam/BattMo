@@ -82,6 +82,7 @@ if dothisplot
     
     state = states{end};
     state = model.addVariables(state, control);
+    
     figure(1)
     plot(xc, state.(elyte).ce)
     title('ce')
@@ -90,7 +91,11 @@ if dothisplot
     plot(xc, state.(elyte).phi)
     title('phi')
     xlabel('x [m]')
-
+    figure(3)
+    plot(xc, state.(elyte).pi)
+    title('pi')
+    xlabel('x [m]')
+    
     return
 end
 
