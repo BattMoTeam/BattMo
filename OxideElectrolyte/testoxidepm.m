@@ -12,7 +12,7 @@ filename = '/home/xavier/Matlab/Projects/battmo/OxideElectrolyte/oxidemembrane.j
 jsonstruct = fileread(filename);
 jsonstruct = jsondecode(jsonstruct);
 
-jsonstruct.(elyte).N = 10000;
+jsonstruct.(elyte).N = 100;
 
 paramobj = OxideMembraneCellInputParams(jsonstruct);
 
@@ -34,6 +34,7 @@ state0 = model.setupInitialState();
 
 % Setup schedule
 
+
 tswitch = 1;
 T       = 2; % This is not a real time scale, as all the model deals with equilibrium
 
@@ -48,7 +49,10 @@ step.control = ones(numel(step.val), 1);
 % Imax = 0.3*ampere/((centi*meter)^2);
 Imax = 0;
 
-control.src = @(time) controlfunc(time, Imax, tswitch, T, 'order', 'I-first');
+step.val = 0;
+step.control = ones(numel(step.val), 1);
+
+control.src = @(time) controlfunc(time, Imax, tswitch, T, 'order', 'alpha-first');
 
 schedule = struct('control', control, 'step', step); 
 
@@ -79,25 +83,13 @@ if dothisplot
     state = states{end};
     state = model.addVariables(state, control);
     figure(1)
-    plot(xc, state.(elyte).pi)
-    title('pi')
+    plot(xc, state.(elyte).ce)
+    title('ce')
     xlabel('x [m]')
     figure(2)
-    plot(xc, state.(elyte).pi - state.(elyte).phi)
-    title('E')
-    xlabel('x [m]')
-    figure(3)
-    plot(xc, state.(elyte).sigmaEl)
-    title('sigmaEl')
-    xlabel('x [m]')
-    figure(4)
     plot(xc, state.(elyte).phi)
     title('phi')
     xlabel('x [m]')
-    
-    fprintf('min E : %g\nmin sigmaEl : %g\n', ...
-            min(state.(elyte).pi - state.(elyte).phi), ...
-            min(state.(elyte).sigmaEl));
 
     return
 end
