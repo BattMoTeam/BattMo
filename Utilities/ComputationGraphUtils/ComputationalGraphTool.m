@@ -781,7 +781,7 @@ classdef ComputationalGraphTool
         function eqvarnames = getEquationVariableNames(cgt)
         % Return the equation variables, which are defined as the tail variables and not declared as extravarnames.
             
-            A                = cgt.adjencyMatrix;
+            A                = cgt.A;
             nodenames        = cgt.nodenames;
             extravarnameinds = cgt.extraVarNameInds;
 
