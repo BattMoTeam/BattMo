@@ -249,7 +249,6 @@ classdef OxideMembraneCell < BaseModel
             ccs = coupTerm.couplingcells;
             cfs = coupTerm.couplingfaces;
 
-            
             phiElde  = state.(elde).phi;
             ceElde   = state.(elde).ce;
             chElde   = state.(elde).ch;
@@ -260,11 +259,14 @@ classdef OxideMembraneCell < BaseModel
             gPhiC    = state.(elyte).gradPhiCoef;
             gConcCs  = state.(elyte).gradConcCoefs;
             
-            tcoef = op.halfTransBC(cfs(:, 2));
+            t    = op.harmFaceBC(gConcCs{cinds.ch}, cfs(:, 2));
+            jch  = t.*(chElde(ccs(:, 1)) - chElyte(ccs(:, 2)));
 
-            jch  = gConcCs{cinds.ch}*tcoef.*(chElde(ccs(:, 1)) - chElyte(ccs(:, 2)));
-            jce  = gConcCs{cinds.ce}*tcoef.*(ceElde(ccs(:, 1)) - ceElyte(ccs(:, 2)));
-            jphi = gPhiC*tcoef.*(phiElde(ccs(:, 1)) - phiElyte(ccs(:, 2)));
+            t    = op.harmFaceBC(gConcCs{cinds.ce}, cfs(:, 2));
+            jce  = t.*(ceElde(ccs(:, 1)) - ceElyte(ccs(:, 2)));
+
+            t    = op.harmFaceBC(gPhiC, cfs(:, 2));
+            jphi = t.*(phiElde(ccs(:, 1)) - phiElyte(ccs(:, 2)));
 
             state.(elde).jElEquation = jEl - (jch - jce + jphi);
 
