@@ -143,7 +143,7 @@ classdef OxideMembraneElectrode < BaseModel
         function state = updateCurrentVoltageEquation(model, state)
 
             Eocp = model.Eocp;
-            Rct  = model.Eocp;
+            Rct  = model.Rct;
 
             E = state.E;
             j = state.j;
