@@ -722,7 +722,7 @@ classdef ComputationalGraphTool
             extravarnameinds = cgt.extraVarNameInds;
             
             tailinds = find(all(A' == 0, 1));
-            isadded = ismember(tailinds, extravarnameinds);
+            isadded  = ismember(tailinds, extravarnameinds);
             tailinds = tailinds(~isadded);
             
             fprintf('Tail variables \n');
@@ -764,6 +764,24 @@ classdef ComputationalGraphTool
             primvarnames = cellfun(@(varname) varname.getPropName(), primVarNameList, 'uniformoutput', false);
 
         end
+
+        function eqvarnames = getEquationVariableNames(cgt)
+        % Return the equation variables, which are defined as the tail variables and not declared as extravarnames.
+            
+            A                = cgt.A;
+            nodenames        = cgt.nodenames;
+            extravarnameinds = cgt.extraVarNameInds;
+
+            eqinds = find(all(A' == 0, 1));
+            isadded  = ismember(eqinds, extravarnameinds);
+            eqinds = eqinds(~isadded);
+
+            equationVarNameList = cgt.varNameList(eqinds);
+            
+            eqvarnames = cellfun(@(varname) varname.getPropName(), equationVarNameList, 'uniformoutput', false);
+
+        end
+
         
         function funcCallList = getOrderedFunctionCallList(cgt)
         % Return a list of strings that corresponds to all the function calls ordered in the right order.
