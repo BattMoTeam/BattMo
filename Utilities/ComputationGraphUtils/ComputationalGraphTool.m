@@ -783,8 +783,12 @@ classdef ComputationalGraphTool
         end
 
         
-        function funcCallList = getOrderedFunctionCallList(cgt)
+        function funcCallList = getOrderedFunctionCallList(cgt, varargin)
         % Return a list of strings that corresponds to all the function calls ordered in the right order.
+
+            opt = struct('removeExtraVariables', true);
+            opt = merge_options(opt, varargin{:});
+            
             A                = cgt.adjencyMatrix;
             staticprops      = cgt.staticprops;
             extraVarNameInds = cgt.extraVarNameInds;
@@ -803,10 +807,12 @@ classdef ComputationalGraphTool
                 
             end
 
-            nA = size(A, 2);
-            ind = true(nA, 1);
-            ind(extraVarNameInds) = false;
-            A = A(ind, ind);
+            if opt.removeExtraVariables
+                nA = size(A, 2);
+                ind = true(nA, 1);
+                ind(extraVarNameInds) = false;
+                A = A(ind, ind);
+            end
             
             for ind = 1 : size(A, 2)
                 iprop = full(A(:, ind));
