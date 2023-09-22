@@ -1,21 +1,23 @@
 classdef OxideMembraneElectrode < BaseModel
-    
+
     properties
 
         constants
-        
+
         T     % Temperature
         Rct   % charge transfer resistance
         Eocp  % Open circuit voltage
         muEl0 % standard value of chemical electron potential
-        Keh   % Equilibrium constant for the hole-electron reaction 
-        
+        Keh   % Equilibrium constant for the hole-electron reaction
+
         pO2   % O2 pressure used to compute Eocp
-        
+
+        % helper structure
+        compinds
     end
-    
+
     methods
-        
+
         function model = OxideMembraneElectrode(paramobj)
 
             model = model@BaseModel();
@@ -30,19 +32,24 @@ classdef OxideMembraneElectrode < BaseModel
             model.constants = PhysicalConstants();
 
             c = model.constants;
-            
+
             Eocp = c.R*model.T/c.F*log(model.pO2);
 
             model.Eocp = Eocp;
-            
+
+            compinds.ch = 1;
+            compinds.ce = 2;
+
+            model.compinds = compinds;
+
         end
-        
+
         function model = registerVarAndPropfuncNames(model)
-        
+
             model = registerVarAndPropfuncNames@BaseModel(model);
-            
+
             varnames = {};
-            
+
             % Electrode electrostatic potential
             varnames{end + 1} = 'phi';
             % Electrode electromotive potential
@@ -53,6 +60,8 @@ classdef OxideMembraneElectrode < BaseModel
             varnames{end + 1} = 'ce';
             % Hole concentration
             varnames{end + 1} = 'ch';
+            % Logarithmic concentrations
+            varnames{end + 1} = VarName({}, 'logcs', 2);
             % Equation for pi - phi
             varnames{end + 1} = 'currentVoltageEquation';
             % Equilibrium equation for hole-electron reaction
@@ -73,6 +82,11 @@ classdef OxideMembraneElectrode < BaseModel
             varnames{end + 1} = 'electronConcentrationEquation';
             model = model.registerVarNames(varnames);
 
+            fn = @OxideMembraneElectrode.updateConcentrations;
+            inputnames = {VarName({}, 'logcs', 2)};
+            model = model.registerPropFunction({'ce', fn, inputnames});
+            model = model.registerPropFunction({'ch', fn, inputnames});
+
             fn = @OxideMembraneElectrode.updateChargeCons;
             inputnames = {'j', 'jEl', 'jO2'};
             model = model.registerPropFunction({'chargeCons', fn, inputnames});
@@ -80,7 +94,7 @@ classdef OxideMembraneElectrode < BaseModel
             fn = @OxideMembraneElectrode.updateE;
             inputnames = {'phi', 'pi'};
             model = model.registerPropFunction({'E', fn, inputnames});
-            
+
             fn = @OxideMembraneElectrode.updateCurrentVoltageEquation;
             inputnames = {'j', 'E'};
             model = model.registerPropFunction({'currentVoltageEquation', fn, inputnames});
@@ -94,8 +108,19 @@ classdef OxideMembraneElectrode < BaseModel
             model = model.registerPropFunction({'equilibriumEquation', fn, inputnames});
 
         end
-        
-        
+
+        function state = updateConcentrations(model, state)
+
+            compinds = model.compinds;
+
+            logcs = state.logcs;
+
+            state.ch = logcs{compinds.ch};
+            state.ce = logcs{compinds.ce};
+
+        end
+
+
         function state = updateChargeCons(model, state)
 
             j   = state.j;
@@ -103,16 +128,16 @@ classdef OxideMembraneElectrode < BaseModel
             jO2 = state.jO2;
 
             state.chargeCons = j - jEl - jO2;
-           
+
         end
 
         function state = updateE(model, state)
 
             pi   = state.pi;
             phi  = state.phi;
-            
+
             state.E = pi - phi;
-            
+
         end
 
         function state = updateCurrentVoltageEquation(model, state)
@@ -122,11 +147,11 @@ classdef OxideMembraneElectrode < BaseModel
 
             E = state.E;
             j = state.j;
-            
+
             cveq = E - Eocp - j*Rct;
 
             state.currentVoltageEquation = cveq;
-            
+
         end
 
         function state = updateElConcEquation(model, state)
@@ -134,27 +159,27 @@ classdef OxideMembraneElectrode < BaseModel
             mu0 = model.muEl0;
             c   = model.constants;
             T   = model.T;
-            
+
             ce = state.ce;
             E  = state.E;
 
             eceq = E + (1/c.F)*(mu0 + (c.R*T)*log(ce));
 
             state.electronConcentrationEquation = eceq;
-            
+
         end
 
-        
+
         function state = updateEquilibriumReaction(model, state)
 
             Keh = model.Keh;
-            
+
             ch = state.ch;
             ce = state.ce;
-            
+
             state.equilibriumEquation = ch*ce - Keh;
-            
+
         end
     end
-    
+
 end

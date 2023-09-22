@@ -44,6 +44,8 @@ classdef OxideMembraneElectrolyte < BaseModel
             compinds.ch = 1;
             compinds.ce = 2;
 
+            model.compinds = compinds;
+
         end
 
         function model = registerVarAndPropfuncNames(model)
@@ -58,6 +60,8 @@ classdef OxideMembraneElectrolyte < BaseModel
             varnames{end + 1} = 'ce';
             % Concentration hole
             varnames{end + 1} = 'ch';
+            % Logarithmic concentrations
+            varnames{end + 1} = VarName({}, 'logcs', 2);
             % Electronic Flux
             varnames{end + 1} = 'jEl';
             % Ionic Flux
@@ -80,6 +84,11 @@ classdef OxideMembraneElectrolyte < BaseModel
             varnames{end + 1} = 'equilibriumEquation';
 
             model = model.registerVarNames(varnames);
+
+            fn = @OxideMembraneElectrode.updateConcentrations;
+            inputnames = {VarName({}, 'logcs', 2)};
+            model = model.registerPropFunction({'ce', fn, inputnames});
+            model = model.registerPropFunction({'ch', fn, inputnames});
 
             fn = @OxideMembraneElectrolyte.updateO2Flux;
             inputnames = {'phi'};
@@ -109,6 +118,17 @@ classdef OxideMembraneElectrolyte < BaseModel
             inputnames = {'ce', 'ch', 'alpha'};
             model = model.registerPropFunction({'gradPhiCoef', fn, inputnames});
             model = model.registerPropFunction({VarName({}, 'gradConcCoefs', 2), fn, inputnames});
+
+        end
+
+        function state = updateConcentrations(model, state)
+
+            compinds = model.compinds;
+
+            logcs = state.logcs;
+
+            state.ch = logcs{compinds.ch};
+            state.ce = logcs{compinds.ce};
 
         end
 
