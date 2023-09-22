@@ -109,6 +109,7 @@ classdef OxideMembraneCell < BaseModel
             fn = @OxideMembraneCell.updateControl;
             fn = {fn, @(propfunction) PropFunction.drivingForceFuncCallSetupFn(propfunction)};
             model = model.registerPropFunction({{ctrl, 'ctrlVal'}, fn, inputnames});            
+            model = model.registerPropFunction({{elyte, 'alpha'}, fn, inputnames});
             
         end
 

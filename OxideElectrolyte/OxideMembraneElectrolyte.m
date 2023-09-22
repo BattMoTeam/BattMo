@@ -68,6 +68,8 @@ classdef OxideMembraneElectrolyte < BaseModel
             varnames{end + 1} = VarName({}, 'gradConcCoefs', 2);
             % H+ source term
             varnames{end + 1} = 'sourceO2';
+            % regularization parameter
+            varnames{end + 1} = 'alpha';
             % Electronic source term
             varnames{end + 1} = 'sourceEl';
             % O2 mass conservation (we measure the mass in Coulomb, hence "massConsHp")
@@ -104,7 +106,7 @@ classdef OxideMembraneElectrolyte < BaseModel
             model = model.registerPropFunction({'chargeConsEl', fn, inputnames});
 
             fn = @OxideMembraneElectrolyte.updateGradCoefs;
-            inputnames = {'ce', 'ch'};
+            inputnames = {'ce', 'ch', 'alpha'};
             model = model.registerPropFunction({'gradPhiCoef', fn, inputnames});
             model = model.registerPropFunction({VarName({}, 'gradConcCoefs', 2), fn, inputnames});
 
@@ -118,13 +120,17 @@ classdef OxideMembraneElectrolyte < BaseModel
             c     = model.constants;
             cinds = model.compinds;
 
-            ce = state.ce;
-            ch = state.ch;
+            ce    = state.ce;
+            ch    = state.ch;
+            alpha = state.alpha;
 
-            gConcCs{cinds.ch} = c.F*Dh*ch./ch;
-            gConcCs{cinds.ce} = c.F*Dh*ce./ce;
+            chr = exp(alpha*log(ch));
+            cer = exp(alpha*log(ce));
 
-            gPhiC = (c.F)^2/(c.R*c.T)*(Dh*ch + De*ce);
+            gConcCs{cinds.ch} = c.F*chr./ch;
+            gConcCs{cinds.ce} = c.F*cer./ce;
+
+            gPhiC = (c.F)^2/(c.R*c.T)*(Dh*chr + De*cer);
 
             state.gradConcCoefs = gConcCs;
             state.gradPhiCoef   = gPhiC;
