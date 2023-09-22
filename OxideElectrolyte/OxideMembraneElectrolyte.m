@@ -14,7 +14,9 @@ classdef OxideMembraneElectrolyte < BaseModel
         sigmaO2
         % Equilibrium Constant
         Keh
-
+        % standard value of chemical electron potential
+        muEl0
+        
         % Helper
         compinds
 
@@ -31,7 +33,8 @@ classdef OxideMembraneElectrolyte < BaseModel
                        'Dh'     , ...
                        'De'     , ...
                        'sigmaO2', ...
-                       'Keh'};
+                       'Keh'    , ...
+                       'muEl0'};
 
             model = dispatchParams(model, paramobj, fdnames);
 
@@ -82,9 +85,15 @@ classdef OxideMembraneElectrolyte < BaseModel
             varnames{end + 1} = 'chargeConsEl';
             % Equilibrium equation for hole-electron reaction
             varnames{end + 1} = 'equilibriumEquation';
-
+            % electromotive potential (not used in assembly of equations)
+            varnames{end + 1} = 'pi';
+            
             model = model.registerVarNames(varnames);
 
+            % The variable pi is not used for the assembly of the residual equations. We register it as such.
+            varname = 'pi';
+            model = model.registerExtraVarName(varname);
+            
             fn = @OxideMembraneElectrode.updateConcentrations;
             inputnames = {VarName({}, 'logcs', 2)};
             model = model.registerPropFunction({'ce', fn, inputnames});
@@ -118,6 +127,10 @@ classdef OxideMembraneElectrolyte < BaseModel
             inputnames = {'ce', 'ch', 'alpha'};
             model = model.registerPropFunction({'gradPhiCoef', fn, inputnames});
             model = model.registerPropFunction({VarName({}, 'gradConcCoefs', 2), fn, inputnames});
+
+            fn = @OxideMembraneElectrolyte.updatePi;
+            inputnames = {'ce', 'phi'};
+            model = model.registerPropFunction({'pi', fn, inputnames});
 
         end
 
@@ -222,6 +235,19 @@ classdef OxideMembraneElectrolyte < BaseModel
 
         end
 
+        function state = updatePi(model, state)
+
+            c   = model.constants;
+            T   = model.T;
+            mu0 = model.muEl0;
+            
+            phi = state.phi;
+            ce  = state.ce;
+            
+            state.pi = 1/c.F*(- mu0 - c.R*T*log(ce)) + phi;
+            
+        end
+        
     end
 
 end

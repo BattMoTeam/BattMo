@@ -12,7 +12,9 @@ classdef OxideMembraneElectrolyteInputParams < ComponentInputParams
         sigmaO2
         % Equilibrium Constant
         Keh
-
+        % standard value of chemical electron potential
+        muEl0
+        
     end
     
     methods

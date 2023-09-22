@@ -14,6 +14,7 @@ classdef OxideMembraneElectrode < BaseModel
 
         % helper structure
         compinds
+        
     end
 
     methods
