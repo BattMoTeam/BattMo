@@ -20,7 +20,8 @@ classdef OxideMembraneCell < BaseModel
 
         primaryVarNames
         equationVarNames
-        funcCallList
+        residualFuncCallList
+        funcCallList        
         
     end
     
@@ -428,7 +429,7 @@ classdef OxideMembraneCell < BaseModel
 
             %% We call the assembly equations ordered from the graph
             
-            funcCallList = model.funcCallList;
+            funcCallList = model.residualFuncCallList;
 
             for ifunc = 1 : numel(funcCallList)
                 eval(funcCallList{ifunc});
@@ -476,9 +477,10 @@ classdef OxideMembraneCell < BaseModel
 
             cgt = model.computationalGraph;
             
-            model.primaryVarNames  = cgt.getPrimaryVariableNames();
-            model.equationVarNames = cgt.getEquationVariableNames();
-            model.funcCallList     = cgt.getOrderedFunctionCallList();
+            model.primaryVarNames      = cgt.getPrimaryVariableNames();
+            model.equationVarNames     = cgt.getEquationVariableNames();
+            model.residualFuncCallList = cgt.getOrderedFunctionCallList();
+            model.funcCallList         = cgt.getOrderedFunctionCallList('removeExtraVariables', false);
             
         end
         
