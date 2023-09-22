@@ -549,7 +549,7 @@ classdef BaseModel < PhysicalModel
             
             funcCallList = cgt.getPropFunctionCallList(varname);
 
-            if (nargin > 3) && ~isempty(extravars)
+            if ~isempty(extravars)
                 for ivar = 1 : numel(extravars)
                     extravar = extravars{ivar};
                     varname  = extravar{1};
