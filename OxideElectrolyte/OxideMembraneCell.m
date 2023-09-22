@@ -318,6 +318,8 @@ classdef OxideMembraneCell < BaseModel
             T = model.T;
             c = model.constants;
             
+            % Anode initialization
+            
             Eocp  = model.(an).Eocp;
             mu0   = model.(an).muEl0;
             K     = model.(an).Keh;
@@ -325,17 +327,12 @@ classdef OxideMembraneCell < BaseModel
             
             initState.(an).jO2 = 0;
             initState.(an).jEl = 0;
-            initState.(an).logcs{cinds.ce} = - (Eocp + mu0)/(c.R*T);
-            initState.(an).logcs{cinds.ch} = K + (Eocp + mu0)/(c.R*T); % sum of log should be equal to K
+            initState.(an).logcs{cinds.ce} = - (c.F*Eocp + mu0)/(c.R*T);
+            initState.(an).logcs{cinds.ch} = log(K) + (Eocp + mu0)/(c.R*T); % sum of log should be equal to log(K)
             initState.(an).phi = 0;
             
-            nc = model.(elyte).G.cells.num;
-            
-            initState.(elyte).phi = zeros(nc, 1);
-            % we initiate with anode values
-            initState.(elyte).logcs{cinds.ce} = -(Eocp + mu0)/(c.R*T)*ones(nc, 1);
-            initState.(elyte).logcs{cinds.ch} = K + (Eocp + mu0)/(c.R*T)*ones(nc, 1); % sum of log should be equal to K
-            
+            % Cathode initialization            
+
             Eocp  = model.(ct).Eocp;
             mu0   = model.(ct).muEl0;
             K     = model.(ct).Keh;
@@ -344,15 +341,54 @@ classdef OxideMembraneCell < BaseModel
             initState.(ct).j   = 0;
             initState.(ct).jO2 = 0;
             initState.(ct).jEl = 0;
-            initState.(ct).logcs{cinds.ce} = -(Eocp + mu0)/(c.R*T);
-            initState.(ct).logcs{cinds.ch} = K + (Eocp + mu0)/(c.R*T); % sum of log should be equal to K
-            initState.(ct).pi  = 0;
+            initState.(ct).logcs{cinds.ce} = -(c.F*Eocp + mu0)/(c.R*T);
+            initState.(ct).logcs{cinds.ch} = log(K) + (Eocp + mu0)/(c.R*T); % sum of log should be equal to log(K)
+            initState.(ct).pi  = model.(ct).Eocp;
+
+            % Electrolyte initialization
+            
+            nc = model.(elyte).G.cells.num;
+            initState.(elyte).phi = zeros(nc, 1);
+
+            % we initiate with a linear interpolation
+
+            lcan = initState.(an).logcs{cinds.ce};
+            lcct = initState.(ct).logcs{cinds.ce};
+
+            G = model.(elyte).G;
+
+            cc   = G.cells.centroids(:, 1);
+            ndan = G.nodes.coords(1, 1);
+            ndct = G.nodes.coords(end, 1);
+
+            lc = interp1([ndan; ndct], [lcan; lcct], cc);
+            
+            initState.(elyte).logcs{cinds.ce} = lc;
+            initState.(elyte).logcs{cinds.ch} = log(K) - lc; % sum of log should be equal to log(K)
+
+
+            initState.time = 0;
+
+            % Evaluate jElEquation and use it to initiate jEl
+            
+            function [ctrlVal, alpha] =  src(time)
+                ctrlVal = 0;
+                alpha = 0;
+            end
+
+            drivingForces.src = @(time) src(time);
+            
+            initState = model.evalVarName(initState, {an, 'jElEquation'}, {{'drivingForces', drivingForces}});
+            initState.(an).jEl = -initState.(an).jElEquation;
+            initState.(an).jO2 = 0.5*initState.(an).jEl;
+            
+            initState = model.evalVarName(initState, {ct, 'jElEquation'}, {{'drivingForces', drivingForces}});
+            initState.(ct).jEl = -initState.(ct).jElEquation;
+            initState.(ct).jO2 = 0.5*initState.(ct).jEl;
 
             initState.(ctrl).I = 0;
             initState.(ctrl).U = model.(an).Eocp;
 
-            initState.time = 0;
-            
         end
 
         function state = addVariables(model, state, drivingForces)
@@ -380,6 +416,11 @@ classdef OxideMembraneCell < BaseModel
             else
                 assert(opts.ResOnly);
             end
+            
+            an    = 'Anode';
+            ct    = 'Cathode';
+            elyte = 'Electrolyte';
+            ctrl  = 'Control';
 
             %% We call the assembly equations ordered from the graph
             
@@ -388,7 +429,6 @@ classdef OxideMembraneCell < BaseModel
             for ifunc = 1 : numel(funcCallList)
                 eval(funcCallList{ifunc});
             end
-
 
             eqnvarnames = model.equationVarNames;
             neq = numel(eqnvarnames);
