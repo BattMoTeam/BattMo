@@ -16,7 +16,7 @@ jsonstruct.(elyte).N = 10000;
 
 paramobj = OxideMembraneCellInputParams(jsonstruct);
 
-paramobj = setupOxideMembraneCellGrid(paramobj, jsonstruct);
+paramobj = setupProtonicMembraneCellGrid(paramobj, jsonstruct);
 
 % Setup model
 model = OxideMembraneCell(paramobj);
