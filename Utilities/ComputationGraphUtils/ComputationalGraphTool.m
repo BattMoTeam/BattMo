@@ -802,7 +802,7 @@ classdef ComputationalGraphTool
             opt = struct('removeExtraVariables', true);
             opt = merge_options(opt, varargin{:});
             
-            A                = cgt.adjencyMatrix;
+            A                = cgt.A;
             staticprops      = cgt.staticprops;
             extraVarNameInds = cgt.extraVarNameInds;
             
