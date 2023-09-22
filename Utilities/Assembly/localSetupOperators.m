@@ -38,7 +38,7 @@ function operators = localSetupOperators(G, varargin)
 
     operators.harmFace    = @(cellvalue) 1./(P*(1./(hT.*(M*cellvalue))));
     operators.harmFaceBC  = @(cvalue, faces) getFaceHarmBC(G, cvalue, faces);
-    operators.halfTransBC = @(cvalue, faces) getHalfTransBC(G, faces);
+    operators.halfTransBC = @(faces) getHalfTransBC(G, faces);
     
     %% setup the sign for *external* faces
     cells  = rldecode(1:G.cells.num, diff(G.cells.facePos), 2)';
