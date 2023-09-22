@@ -115,8 +115,8 @@ classdef OxideMembraneElectrode < BaseModel
 
             logcs = state.logcs;
 
-            state.ch = logcs{compinds.ch};
-            state.ce = logcs{compinds.ce};
+            state.ch = exp(logcs{compinds.ch});
+            state.ce = exp(logcs{compinds.ce});
 
         end
 
@@ -127,7 +127,7 @@ classdef OxideMembraneElectrode < BaseModel
             jEl = state.jEl;
             jO2 = state.jO2;
 
-            state.chargeCons = j - jEl - jO2;
+            state.chargeCons = j - (jEl - 2*jO2);
 
         end
 

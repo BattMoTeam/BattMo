@@ -127,8 +127,8 @@ classdef OxideMembraneElectrolyte < BaseModel
 
             logcs = state.logcs;
 
-            state.ch = logcs{compinds.ch};
-            state.ce = logcs{compinds.ce};
+            state.ch = exp(logcs{compinds.ch});
+            state.ce = exp(logcs{compinds.ce});
 
         end
 
