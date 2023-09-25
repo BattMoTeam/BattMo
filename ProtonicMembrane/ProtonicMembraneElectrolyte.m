@@ -6,29 +6,28 @@ classdef ProtonicMembraneElectrolyte < BaseModel
         T
         % Structure with physical constants
         constants
-        % Equilibrium H2 potential
-        EH2_0
-        % Equilibrium O2 potential
-        EO2_0
         % Equibrium p-type conductivity
-        sigmaP_0
+        sigma_p0
         % Equibrium n-type conductivity
-        sigmaN_0
+        sigma_n0
         % proton conductivity
-        sigmaHp
+        sigma_prot
 
-        EO2_ref % used in computation of the electronic conductivity
+        E_0_ref % used in computation of the electronic conductivity
         
-        Y
-        dH_hyd  % kJ/mol
-        dS_hyd  % J / mol / K
-        Ea_prot % Activation energy proton diffusion
-        pH2O_in
-        pH2O_neg
+
+        % Setup variables
+        dS_hyd     
+        dH_hyd     
+        Y          
+        Am         
+        dH_ox      
+        E_0        
+        steam_ratio
+        Ptot       
         SU
-
-        t_p_O2  % tr.nr holes in 1bar humidified oxygen
-
+        Ea_prot
+        
     end
 
     methods
@@ -37,19 +36,19 @@ classdef ProtonicMembraneElectrolyte < BaseModel
 
             model = model@BaseModel();
 
-            fdnames = {'G'       , ...
-                       'T'       , ...
-                       'EH2_0'   , ...
-                       'EO2_0'   , ...
-                       'sigmaN_0', ...
-                       'Y'       , ...
-                       'dH_hyd'  , ...
-                       'dS_hyd'  , ...
-                       'Ea_prot' , ...
-                       'pH2O_in' , ...
-                       'pH2O_neg', ...
-                       'SU'      , ...
-                       't_p_O2' };
+            fdnames = {'G'          , ...
+                       'T'          , ...
+                       'sigma_n0'   , ...
+                       'dS_hyd'     , ...
+                       'dH_hyd'     , ...
+                       'Y'          , ...
+                       'Am'         , ...
+                       'dH_ox'      , ...
+                       'E_0'        , ...
+                       'steam_ratio', ...
+                       'Ptot'       , ...
+                       'SU'         , ...
+                       'Ea_prot'};
 
             model = dispatchParams(model, paramobj, fdnames);
 
@@ -57,56 +56,49 @@ classdef ProtonicMembraneElectrolyte < BaseModel
 
             model.constants = PhysicalConstants();
 
-            con = model.constants;
-
-            % Compute pressures
-
-            pH2O = model.pH2O_in*(1 - model.SU);
-
-            pH2 = model.pH2O_in;
-
-            % The O2 pressure is defaulted to 1
-            pO2 = (1 - model.SU)*model.pH2O_in/2;
-            pO2 = 1;
-
-            % Compute reaction constants
-
-            Y_mol   = model.Y/((4.22e-8)^3*con.Na);
-            D0_prot = 0.021*38/model.T;       % pre-exp proton diffusion
-            D_prot  = D0_prot*exp(-(model.Ea_prot*1000)/con.R/model.T);
-
-            K_hyd   = exp((model.dS_hyd/con.R) - model.dH_hyd*1000/(con.R*model.T));
-            K_H     = K_hyd*pH2O;
-            K_H_neg = K_hyd*model.pH2O_neg;
-
-            Y = model.Y;
-            OH_pos  = ((3*K_H - sqrt(K_H*(9*K_H - 6*K_H*Y + K_H*Y^2 + 24*Y - 4*Y^2)))/(K_H - 4));  % Per formula unit
-            OH_neg = ((3*K_H_neg - sqrt(K_H_neg*(9*K_H_neg - 6*K_H_neg*Y + K_H_neg*Y^2 + 24*Y - 4*Y^2)))/(K_H_neg - 4));
-
-            % Computate sigmaHp
-
-            sigma_prot_pos = (con.F*OH_pos*D_prot);
-            sigma_prot_neg = (con.F*OH_pos*D_prot);
-
-            sigmaHp = (sigma_prot_pos + sigma_prot_neg)/2;
-
-            % Computate sigmaP_0
-
-            t_p_O2  = 0.5; % tr.nr holes in 1bar humidified oxygen
-            K_H_p   = K_hyd*0.027;
-            p_ref   = ((3*K_H_p - sqrt(K_H_p*(9*K_H_p - 6*K_H_p*Y + K_H_p*Y^2 + 24*Y - 4*Y^2)))/(K_H_p - 4));
-            sigmaP_0 = (t_p_O2/(1 - t_p_O2))*(con.F*p_ref*D_prot);
-
-            % Compute reference potential at pO2 = 1 pressure
-            T = model.T;
             c = model.constants;
-            EO2_ref = model.EO2_0 - 0.00024516.*T - c.R.*T./(2*c.F)*log(1./(1^(1/2)));
-            
-            % Assign the values to the model
 
-            model.sigmaHp  = sigmaHp;
-            model.sigmaP_0 = sigmaP_0;
-            model.EO2_ref  = EO2_ref;
+            % Compute sigma_p0
+            
+            Y = model.Y;
+            T = model.T;
+            
+            K_hyd              = exp((model.dS_hyd/c.R) - model.dH_hyd*1000/(T*c.R));
+            K_H_p              = K_hyd; 
+            p_ref              = ((3*K_H_p - sqrt(K_H_p*(9*K_H_p - 6*K_H_p*Y + K_H_p*Y^2 + 24*Y - 4*Y^2)))/(K_H_p - 4));
+            sigma_p_masoud_std = c.F*(1/T)*(3*(Y - p_ref)/2)^(1/2)*(3)^(- 1/2)*1^(1/4)*model.Am*exp(-model.dH_ox/(c.R.*T));
+            sigma_p0           = sigma_p_masoud_std;
+            
+            % Compute E_0_ref
+
+            E_0_ref = model.E_0 - 0.00024516.*T - c.R.*T./(2*c.F)*log(1./(1^(1/2)));
+
+            % Compute sigma_prot
+
+            pH2O_in = model.steam_ratio*model.Ptot;
+            pH2O = pH2O_in*(1 - model.SU);
+            
+            pH2O_neg = 0.05*model.Ptot;
+            
+            K_H     = K_hyd*pH2O; 
+            K_H_neg = K_hyd*pH2O_neg;
+    
+            OH_pos  = ((3*K_H - sqrt(K_H*(9*K_H - 6*K_H*Y + K_H*Y^2 + 24*Y - 4*Y^2)))/(K_H - 4)); 
+            OH_neg = ((3*K_H_neg - sqrt(K_H_neg*(9*K_H_neg - 6*K_H_neg*Y + K_H_neg*Y^2 + 24*Y - 4*Y^2)))/(K_H_neg - 4)); 
+
+            D0_prot = 0.021*38.1/T; % pre - exp proton diffusion
+            D_prot  = D0_prot*exp(-(model.Ea_prot*1000)/(c.R*T)); 
+            
+            sigma_prot_pos = (c.F*OH_pos*D_prot);
+            sigma_prot_neg = (c.F*OH_neg*D_prot);
+                
+            sigma_prot = (sigma_prot_pos + sigma_prot_neg)/2; 
+
+            % Assign values
+            
+            model.sigma_p0   = sigma_p0;
+            model.sigma_prot = sigma_prot;
+            model.E_0_ref    = E_0_ref;
             
         end
 
@@ -183,7 +175,7 @@ classdef ProtonicMembraneElectrolyte < BaseModel
 
             nc = model.G.cells.num;
 
-            state.sigmaHp = model.sigmaHp*ones(nc, 1);
+            state.sigmaHp = model.sigma_prot*ones(nc, 1);
 
         end
 
@@ -204,10 +196,9 @@ classdef ProtonicMembraneElectrolyte < BaseModel
             R = model.constants.R;
             T = model.T;
 
-            sigmaP_0 = model.sigmaP_0;
-            sigmaN_0 = model.sigmaN_0;
-            EH2_0    = model.EH2_0;
-            EO2_ref  = model.EO2_ref;
+            sigma_p0 = model.sigma_p0;
+            sigma_n0 = model.sigma_n0;
+            E_0_ref  = model.E_0_ref;
 
             E     = state.E;
             alpha = state.alpha;
@@ -222,12 +213,12 @@ classdef ProtonicMembraneElectrolyte < BaseModel
 
               case 'linear'
 
-                sigmaEl = (1 - alpha)*(sigmaP_0 + sigmaN_0) + alpha*sigmaEl;
+                sigmaEl = (1 - alpha)*(sigma_p0 + sigma_n0) + alpha*sigmaEl;
 
               case 'exponential coefficient'
 
                 f = f*alpha;
-                sigmaEl = sigmaP_0*exp(f*(E - EO2_ref)) + sigmaN_0*exp(-f*(E - EH2_0));
+                sigmaEl = sigma_p0*exp(f*(E - E_0_ref)) + sigma_n0*exp(-f*E);
 
               otherwise
 

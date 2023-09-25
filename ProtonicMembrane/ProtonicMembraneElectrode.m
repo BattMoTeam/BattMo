@@ -3,10 +3,10 @@ classdef ProtonicMembraneElectrode < BaseModel
     properties
         
         T    % Temperature
-        Eocp % Open circuit potential
+        E_0   % Standard potential
+        Eocv % Open circuit potential (value depends on conditions at electrode)
         
         constants
-
         
     end
     
@@ -17,7 +17,7 @@ classdef ProtonicMembraneElectrode < BaseModel
             model = model@BaseModel();
 
             fdnames = {'T', ...
-                       'Eocp'};
+                       'E_0'};
             model = dispatchParams(model, paramobj, fdnames);
             
             model.constants = PhysicalConstants();
@@ -37,7 +37,7 @@ classdef ProtonicMembraneElectrode < BaseModel
             % Charge flux at electrode (positif is flux leaving electrode)
             varnames{end + 1} = 'j';
             % Open circuit potential at electrode
-            varnames{end + 1} = 'Eocp';
+            varnames{end + 1} = 'Eocv';
             % Electrode electrostatic potential
             varnames{end + 1} = 'phi';
             % Electrode electromotive potential
@@ -58,12 +58,12 @@ classdef ProtonicMembraneElectrode < BaseModel
             model = model.registerPropFunction({'chargeCons', fn, inputnames});
 
             fn = @ProtonicMembraneElectrode.updateEta;
-            inputnames = {'Eocp', 'phi', 'pi'};
+            inputnames = {'Eocv', 'phi', 'pi'};
             model = model.registerPropFunction({'eta', fn, inputnames});
 
-            fn = @ProtonicMembraneElectrode.updateEocp;
+            fn = @ProtonicMembraneElectrode.updateEocv;
             inputnames = {};
-            model = model.registerPropFunction({'Eocp', fn, inputnames});            
+            model = model.registerPropFunction({'Eocv', fn, inputnames});            
                     
         end
         
@@ -80,17 +80,17 @@ classdef ProtonicMembraneElectrode < BaseModel
 
         function state = updateEta(model, state)
 
-            Eocp = state.Eocp;
+            Eocv = state.Eocv;
             pi   = state.pi;
             phi  = state.phi;
             
-            state.eta = pi - phi - Eocp;
+            state.eta = pi - phi - Eocv;
             
         end
 
-        function state = updateEocp(model, state)
+        function state = updateEocv(model, state)
 
-            state.Eocp = model.Eocp;
+            state.Eocv = model.Eocv;
             
         end
         

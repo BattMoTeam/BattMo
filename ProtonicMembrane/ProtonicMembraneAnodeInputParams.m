@@ -5,18 +5,18 @@ classdef ProtonicMembraneAnodeInputParams < ProtonicMembraneElectrodeInputParams
         % coefficient in Buttler-Volmer
         beta
         
-        % charge-transfer current densigy
-        i0
-
         % Limiting current densities
         ila % Anode
         ilc % Cathode
 
-        Rct
-        ila0
         n
-        SU
-        pH2O_in
+        
+        R_ct_0
+        Ea_ct      
+        SU         
+        O2_conc_feed
+        steam_ratio
+        Ptot
         
     end
     

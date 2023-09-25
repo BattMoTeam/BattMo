@@ -1,33 +1,33 @@
 classdef ProtonicMembraneElectrolyteInputParams < ComponentInputParams
-    
+
     properties
 
         T
-        % Equilibrium H2 potential
-        EH2_0
-        % Equilibrium O2 potential
-        EO2_0
 
-        sigmaN_0
-        Y
-        dH_hyd
+        sigma_n0
+        sigma_prot
+
         dS_hyd
-        Ea_prot
-        pH2O_in
-        pH2O_neg
+        dH_hyd
+        Y
+        Am
+        dH_ox
+        E_0
+        steam_ratio
+        Ptot
         SU
-        t_p_O2
+        Ea_prot
+        
+    end
+
+    methods
+
+        function paramobj = ProtonicMembraneElectrolyteInputParams(jsonstruct)
+
+            paramobj = paramobj@ComponentInputParams(jsonstruct);
+
+        end
 
     end
-    
-    methods
-        
-        function paramobj = ProtonicMembraneElectrolyteInputParams(jsonstruct)
-            
-            paramobj = paramobj@ComponentInputParams(jsonstruct);
-            
-        end
-        
-    end
-    
+
 end

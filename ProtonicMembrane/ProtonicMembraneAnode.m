@@ -5,19 +5,21 @@ classdef ProtonicMembraneAnode < ProtonicMembraneElectrode
         % coefficient in Buttler-Volmer
         beta
         
-        % charge-transfer current densigy
-        i0
+        % charge-transfer current density
+        i_0
 
         % Limiting current densities
         ila % Anode
         ilc % Cathode
 
-        Rct
-        ila0
         n
-        SU
-        pH2O_in
         
+        R_ct_0
+        Ea_ct      
+        SU         
+        O2_conc_feed
+        steam_ratio
+        Ptot
         
     end
     
@@ -27,34 +29,46 @@ classdef ProtonicMembraneAnode < ProtonicMembraneElectrode
 
             model = model@ProtonicMembraneElectrode(paramobj);
 
-            fdnames = {'beta', ...
-                       'ila0', ...
-                       'ilc' , ...
-                       'Rct' , ...
-                       'n'   , ...
-                       'SU'  , ...
-                       'pH2O_in'};
+            fdnames = {'beta'        , ...
+                       'ila'         , ...
+                       'ilc'         , ...
+                       'R_ct_0'      , ...
+                       'Ea_ct'       , ...
+                       'n'           , ...
+                       'SU'          , ...
+                       'O2_conc_feed', ...
+                       'steam_ratio' , ...
+                       'Ptot'};
+            
             model = dispatchParams(model, paramobj, fdnames);
             
             model.constants = PhysicalConstants();
 
-            con = model.constants;
+            c = model.constants;
 
-            f = con.F/(con.R*model.T);
+            T = model.T;
             
-            % Compute i0
+            % compute pressures to setup Eocv
             
-            i0 = 1./(model.Rct.*f.*model.n); % charge-transfer current density
+            pO2_in  = model.O2_conc_feed*(1 - model.steam_ratio)*model.Ptot;
+            pH2O_in = model.steam_ratio*model.Ptot;
 
-            % Compute ila
-            
-            pH2O = model.pH2O_in*(1 - model.SU);
-            ila = model.ila0*pH2O;
+            pO2  = pO2_in + model.SU*pH2O_in/2;
+            pH2O = pH2O_in*(1 - model.SU);
 
-            % Assign the values
+            Eocv = model.E_0 - 0.00024516.*T - c.R.*T./(2*c.F)*log(pH2O./(pO2^(1/2))); 
             
-            model.i0   = i0;
-            model.ila  = ila;
+            % Compute charge-transfer current density
+            
+            R_ct = model.R_ct_0.*exp(model.Ea_ct./(c.R.*T)).*pO2.^(-0.2); 
+            f = c.F/(c.R*T);
+            i_0 = 1./(R_ct.*f.*model.n); % charge-transfer current density
+
+            % Assign the computed values
+            
+            model.i_0   = i_0;
+            model.Eocv = Eocv;
+            
             
         end
         
@@ -89,7 +103,7 @@ classdef ProtonicMembraneAnode < ProtonicMembraneElectrode
             beta = model.beta;
             ila  = model.ila;
             ilc  = model.ilc;
-            i0   = model.i0;
+            i0   = model.i_0;
             
             eta   = state.eta;
             alpha = state.alpha;

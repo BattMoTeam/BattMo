@@ -1,32 +1,40 @@
 {
-  "T" : 873.15,
+  "T": 873.15,
   "Anode": {
-    "Rct": 0.2,
-    "ilc": 10,
-    "ila0": -2,
-    "beta": 0.2,
-    "n": 1
+    "R_ct_0": 2e-07,
+    "ilc": 4,
+    "ila": -2,
+    "beta": 0.4,
+    "n": 1,
+    "E_0": 1.253,
+    "Ea_ct": 101000,
+    "SU": 0.05,
+    "O2_conc_feed": 0.2,
+    "steam_ratio": 0.5,
+    "Ptot": 10
   },
   "Electrolyte": {
-    "length": 30e-6,
+    "length": 2.2e-05,
     "faceArea": 1,
     "N": 40,
-    "EH2_0": 0,
-    "EO2_0": 1.253,
-    "Y": 0.16,
-    "dH_hyd": -115,
+    "sigma_n0": 1e-5,
     "dS_hyd": -119,
-    "Ea_prot": 48,
-    "pH2O_in": 3,
-    "pH2O_neg": 0.027,
-    "SU": 0.2,
-    "sigmaN_0": 1e-05,
-    "t_p_O2": 0.5
+    "dH_hyd": -90,
+    "Y": 0.06,
+    "Am": 88,
+    "dH_ox": 101000,
+    "E_0": 1.253,
+    "steam_ratio": 0.5,
+    "Ptot": 10,
+    "SU": 0.05,
+    "Ea_prot": 47.7     
   },
   "Cathode": {
-    "R": 0.05
+    "E_0": 0,
+    "R_ct_H": 0.01,
+    "Ptot": 10
   },
   "Control": {
-    "controlType" : "current"
+    "controlType": "current"
   }
 }

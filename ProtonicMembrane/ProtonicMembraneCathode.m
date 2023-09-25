@@ -2,7 +2,8 @@ classdef ProtonicMembraneCathode < ProtonicMembraneElectrode
     
     properties
 
-        R
+        R_ct_H
+        Ptot
         
     end
     
@@ -12,8 +13,17 @@ classdef ProtonicMembraneCathode < ProtonicMembraneElectrode
 
             model = model@ProtonicMembraneElectrode(paramobj);
 
-            fdnames = {'R'};
+            fdnames = {'R_ct_H', ...
+                       'Ptot'};
+                       
             model = dispatchParams(model, paramobj, fdnames);
+
+            c = model.constants;
+            
+            pH2O_neg = 0.05*model.Ptot; 
+            pH2      = (model.Ptot - pH2O_neg)./2;
+            
+            model.Eocv = model.E_0 - (c.R*model.T/(2*c.F)).*log(pH2); % cathode half - cell potential
             
         end
         
@@ -42,7 +52,7 @@ classdef ProtonicMembraneCathode < ProtonicMembraneElectrode
         
         function state = updateJHp(model, state)
 
-            R = model.R;
+            R = model.R_ct_H;
 
             state.jHp = 1/R * state.eta;
             

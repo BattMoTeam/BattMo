@@ -2,7 +2,8 @@ classdef ProtonicMembraneCathodeInputParams < ProtonicMembraneElectrodeInputPara
     
     properties
 
-        R
+        R_ct_H
+        Ptot
         
     end
     
