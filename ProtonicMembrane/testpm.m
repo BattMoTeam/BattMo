@@ -45,7 +45,8 @@ dt2 = (T - tswitch)/N2;
 step.val = [dt1*ones(N1, 1); dt2*ones(N2, 1)];
 step.control = ones(numel(step.val), 1);
 
-% Imax = 1e-2*0.3*ampere/((centi*meter)^2);
+% Imax = 1e-2*ampere/((centi*meter)^2);
+% Imax = 1e-1*ampere/((centi*meter)^2);
 Imax = 0;
 
 control.src = @(time) controlfunc(time, Imax, tswitch, T, 'order', 'I-first');
