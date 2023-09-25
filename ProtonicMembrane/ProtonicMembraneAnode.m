@@ -76,12 +76,8 @@ classdef ProtonicMembraneAnode < ProtonicMembraneElectrode
         
             model = registerVarAndPropfuncNames@ProtonicMembraneElectrode(model);
 
-            varnames = {'alpha'};
-
-            model = model.registerVarNames(varnames);
-            
             fn = @ProtonicMembraneAnode.updateJHp;
-            inputnames = {'eta', 'alpha'};
+            inputnames = {'eta'};
             model = model.registerPropFunction({'jHp', fn, inputnames});
             
             % fn = @ProtonicMembraneAnode.updateEta2;
@@ -106,7 +102,6 @@ classdef ProtonicMembraneAnode < ProtonicMembraneElectrode
             i0   = model.i_0;
             
             eta   = state.eta;
-            alpha = state.alpha;
             
             feta = con.F*model.n/(con.R*model.T).*eta;
             
