@@ -691,8 +691,9 @@ classdef Battery < BaseModel
 
             %% Setup initial Electrolyte state
 
-            initstate.(elyte).phi = zeros(bat.(elyte).G.cells.num, 1)-ref;
-            initstate.(elyte).c = 1000*ones(bat.(elyte).G.cells.num, 1);
+            initstate.(elyte).phi = zeros(bat.(elyte).G.cells.num, 1) - ref;
+            initconc = bat.(elyte).initconc;
+            initstate.(elyte).c = initconc * ones(bat.(elyte).G.cells.num, 1);
 
             %% Setup initial Current collectors state
 

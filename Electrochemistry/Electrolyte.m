@@ -22,6 +22,8 @@ classdef Electrolyte < ElectroChemicalComponent
 
         BruggemanCoefficient
 
+        initconc
+
         % helper properties
         compnames
         ncomp
@@ -44,7 +46,8 @@ classdef Electrolyte < ElectroChemicalComponent
                        'specificHeatCapacity', ...
                        'density'             , ...
                        'use_thermal'         , ...
-                       'BruggemanCoefficient'};
+                       'BruggemanCoefficient', ...
+                       'initconc'};
 
             model = dispatchParams(model, paramobj, fdnames);
 

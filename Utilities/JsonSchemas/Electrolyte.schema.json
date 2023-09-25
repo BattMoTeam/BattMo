@@ -1,26 +1,37 @@
 {
-  "$id": "file://battmo/schemas/Electrolyte",
-  "$schema": "http://json-schema.org/draft-07/schema#",
-  "description": "A standard electrolyte",
-  "type": "object",
-
-  "properties" : { "compnames": {"type" : "array"},
-                   "sp": { "type" : "object",
-                           "properties" : {
-                             "z": {"type" : "number",
-                                   "description" : "charge number"},
-                             "t": {"type" : "number",
-                                   "description" : "transference number"}
-                           }
-                         },
-                   "Separator" : {"$ref" : "Separator"},
-                   "density" : {"type" : "number",
-                                "description": "density of the liquid part only. The density of separator is given in the separator input data"},
-                   "Conductivity": {"$ref" : "function",
-                                    "description" : "function to update conductivity"},
-                   "DiffusionCoefficient" : {"$ref" : "function",
-                                             "description" : "function to update diffusion coefficient"},
-                   "BruggemanCoefficient" : {"type" : "number",
-                                             "description": "Bruggeman coefficient for the electrolyte in the whole domain"}
-                 }
+    "$id": "file://battmo/schemas/Electrolyte",
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "description": "A standard electrolyte",
+    "type": "object",
+    "properties": {
+        "compnames": {"type": "array"},
+        "sp": {
+            "type": "object",
+            "properties": {
+                "z": {"type": "number", "description": "charge number"},
+                "t": {"type": "number", "description": "transference number"},
+            },
+        },
+        "Separator": {"$ref": "Separator"},
+        "density": {
+            "type": "number",
+            "description": "density of the liquid part only. The density of separator is given in the separator input data",
+        },
+        "initconc": {
+            "type": "number",
+            "description": "Initial concentration of electrolyte",
+        },
+        "Conductivity": {
+            "$ref": "function",
+            "description": "function to update conductivity",
+        },
+        "DiffusionCoefficient": {
+            "$ref": "function",
+            "description": "function to update diffusion coefficient",
+        },
+        "BruggemanCoefficient": {
+            "type": "number",
+            "description": "Bruggeman coefficient for the electrolyte in the whole domain",
+        },
+    },
 }

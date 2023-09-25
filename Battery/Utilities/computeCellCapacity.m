@@ -5,7 +5,7 @@ function [cap, cap_neg, cap_pos, specificEnergy] = computeCellCapacity(model, va
 % SYNOPSIS:
 %   function c = computeCellCapacity(model, varargin)
 %
-% DESCRIPTION: computes the cell usable capacity in Coulomb
+% DESCRIPTION: computes the cell usable capacity in Coulomb and, optionally, the specific energy in J/kg
 %
 % PARAMETERS:
 %   model - battery model

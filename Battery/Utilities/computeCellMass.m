@@ -1,9 +1,9 @@
-function [mass, masses] = computeCellMass(model, varargin)
+function [mass, masses, volume, volumes] = computeCellMass(model, varargin)
 
     opt = struct('packingMass', 0);
     opt = merge_options(opt, varargin{:});
-    
-    
+
+
     elyte = 'Electrolyte';
     sep   = 'Separator';
     ne    = 'NegativeElectrode';
@@ -11,35 +11,38 @@ function [mass, masses] = computeCellMass(model, varargin)
     am    = 'ActiveMaterial';
     itf   = 'Interface';
     cc    = 'CurrentCollector';
-    
+
     eldes = {ne, pe};
-    
-    mass = 0; % total mass
-    
+
+    mass   = 0; % total mass
+    volume = 0; % total volumes
+
     % We first compute the mass of the electrodes
     for ind = 1 : numel(eldes)
-        
+
         elde = eldes{ind};
 
         switch model.(elde).electrode_case
-            
+
           case 'default'
-            
+
             rho  = model.(elde).(am).(itf).density;
             vols = model.(elde).(am).G.cells.volumes;
             frac = model.(elde).(am).volumeFraction;
-            
+
             masses.(elde).(am).val = sum(rho.*vols.*frac);
+            volumes.(elde).(am).val = sum(vols.*frac);
 
           case 'composite'
-            
+
             gr = 'FirstMaterial';
             si = 'SecondMaterial';
 
             mats = {gr, si};
-            
+
             masses.(elde).(am).val = 0;
-            
+            volumes.(elde).(am).val = 0;
+
             for imat = 1 : numel(mats)
 
                 mat = mats{imat};
@@ -47,47 +50,61 @@ function [mass, masses] = computeCellMass(model, varargin)
                 vols = model.(elde).(am).(mat).G.cells.volumes;
                 vf = model.(elde).(am).volumeFraction;
                 amvf = model.(elde).(am).(mat).activeMaterialFraction;
-                
+
                 masses.(elde).(am).(mat).val = sum(rho.*vols.*vf.*amvf);
                 masses.(elde).(am).val = masses.(elde).(am).val + masses.(elde).(am).(mat).val;
+
+                volumes.(elde).(am).(mat).val = sum(vols.*vf.*amvf);
+                volumes.(elde).(am).val = volumes.(elde).(am).val + volumes.(elde).(am).(mat).val;
+
             end
-            
+
           otherwise
-            
+
             error('electrode_case not recognized');
-            
+
         end
-        
+
         mass = mass + masses.(elde).(am).val;
-        
+        volume = volume + volumes.(elde).(am).val;
+
         if model.include_current_collectors
 
             rho  = model.(elde).(cc).density;
             vols = model.(elde).(cc).G.cells.volumes;
-            
+
             masses.(elde).(cc).val = sum(rho.*vols);
             mass = mass + masses.(elde).(cc).val;
-            
+
+            volumes.(elde).(cc).val = sum(vols);
+            volume = volume + volumes.(elde).(cc).val;
+
         end
-        
+
     end
-    
+
     rho  = model.(elyte).density;
     vols = model.(elyte).G.cells.volumes;
     frac = model.(elyte).volumeFraction;
-    
+
     masses.(elyte).val = sum(rho.*vols.*frac);
     mass = mass + masses.(elyte).val;
-    
+
+    volumes.(elyte).val = sum(vols.*frac);
+    volume = volume + volumes.(elyte).val;
+
     rho  = model.(elyte).(sep).density;
     vols = model.(elyte).(sep).G.cells.volumes;
     frac = model.(elyte).(sep).volumeFraction;
-    
+
     masses.(elyte).(sep).val = sum(rho.*vols.*frac);
     mass = mass + masses.(elyte).(sep).val;
 
+    volumes.(elyte).(sep).val = sum(vols.*frac);
+    volume = volume + volumes.(elyte).(sep).val;
+
     mass = mass + opt.packingMass;
-    
+
 end
 
 

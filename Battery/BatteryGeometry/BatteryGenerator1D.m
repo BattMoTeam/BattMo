@@ -79,6 +79,8 @@ classdef BatteryGenerator1D < BatteryGenerator
         end
 
         function [paramobj, gen] = setupGrid(gen, paramobj, ~)
+
+            gen = gen.applyResolutionFactors();
             
             sepnx  = gen.sepnx;
             nenx   = gen.nenx;
