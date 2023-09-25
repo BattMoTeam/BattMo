@@ -90,10 +90,6 @@ classdef ProtonicMembraneCell < BaseModel
             inputnames = {};
             model = model.registerPropFunction({{ct, 'phi'}, fn, inputnames});
 
-            fn = @ProtonicMembraneCell.updateAnodeEocv;
-            inputnames = {};
-            model = model.registerPropFunction({{an, 'Eocv'}, fn, inputnames});
-            
             inputnames = {};
             fn = @ProtonicMembraneCell.updateControl;
             fn = {fn, @(propfunction) PropFunction.drivingForceFuncCallSetupFn(propfunction)};
@@ -118,15 +114,6 @@ classdef ProtonicMembraneCell < BaseModel
             
         end
 
-        function state = updateAnodeEocv(model, state)
-
-            an    = 'Anode';
-            ct    = 'Cathode';
-            elyte = 'Electrolyte';
-
-            state.(an).Eocv = model.(elyte).EO2_ref;
-            
-        end
         
         function state = setupHpSources(model, state)
 
@@ -368,8 +355,8 @@ classdef ProtonicMembraneCell < BaseModel
 
             dx      = model.dx;
             farea   = model.farea;
-            sigmaHp = model.(elyte).sigmaHp;
-            sigmaEl = model.(elyte).sigmaN_0;
+            sigmaHp = model.(elyte).sigma_prot;
+            sigmaEl = model.(elyte).sigma_n0;
             phi0    = 1;
             
             sHp = 1/(farea*sigmaHp*phi0/dx);
