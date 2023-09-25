@@ -90,9 +90,9 @@ classdef ProtonicMembraneCell < BaseModel
             inputnames = {};
             model = model.registerPropFunction({{ct, 'phi'}, fn, inputnames});
 
-            fn = @ProtonicMembraneCell.updateAnodeEocp;
+            fn = @ProtonicMembraneCell.updateAnodeEocv;
             inputnames = {};
-            model = model.registerPropFunction({{an, 'Eocp'}, fn, inputnames});
+            model = model.registerPropFunction({{an, 'Eocv'}, fn, inputnames});
             
             inputnames = {};
             fn = @ProtonicMembraneCell.updateControl;
@@ -118,13 +118,13 @@ classdef ProtonicMembraneCell < BaseModel
             
         end
 
-        function state = updateAnodeEocp(model, state)
+        function state = updateAnodeEocv(model, state)
 
             an    = 'Anode';
             ct    = 'Cathode';
             elyte = 'Electrolyte';
 
-            state.(an).Eocp = model.(elyte).EO2_ref;
+            state.(an).Eocv = model.(elyte).EO2_ref;
             
         end
         
@@ -304,7 +304,7 @@ classdef ProtonicMembraneCell < BaseModel
             ctrl  = 'Control';
             
             
-            initState.(an).pi  = model.(an).Eocp;
+            initState.(an).pi  = model.(an).Eocv;
             initState.(an).phi = 0;
             initState.(an).jHp = 0;
             initState.(an).jEl = 0;
@@ -319,7 +319,7 @@ classdef ProtonicMembraneCell < BaseModel
             initState.(ct).j   = 0;
 
             initState.(ctrl).I = 0;
-            initState.(ctrl).U = model.(an).Eocp;
+            initState.(ctrl).U = model.(an).Eocv;
 
             initState.time = 0;
             

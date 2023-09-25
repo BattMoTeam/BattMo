@@ -89,7 +89,7 @@ classdef ProtonicMembraneAnode < ProtonicMembraneElectrode
             % model = model.registerPropFunction({'eta', fn, inputnames});
 
             % fn = @ProtonicMembraneAnode.updatePhi2;
-            % inputnames = {'eta', 'pi', 'Eocp'};
+            % inputnames = {'eta', 'pi', 'Eocv'};
             % model = model.registerPropFunction({'phi', fn, inputnames});
 
 
@@ -134,7 +134,7 @@ classdef ProtonicMembraneAnode < ProtonicMembraneElectrode
 
         % function state = updatePhi2(model, state)
 
-        %     state.phi = state.pi - state.eta - state.Eocp;
+        %     state.phi = state.pi - state.eta - state.Eocv;
             
         % end
 
