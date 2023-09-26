@@ -96,9 +96,9 @@ classdef ProtonicMembraneElectrolyte < BaseModel
 
             % Assign values
             
-            model.sigma_p0   = sigma_p0*(1/(centi*meter));
-            model.sigma_n0   = model.sigma_n0*(1/(centi*meter)); % we convert to SI : from Siemens/centimeter to Siemens/meter
-            model.sigma_prot = sigma_prot*(1/(centi*meter));
+            model.sigma_p0   = sigma_p0*(siemens/(centi*meter));
+            model.sigma_n0   = model.sigma_n0;
+            model.sigma_prot = sigma_prot*(siemens/(centi*meter));
 
             model.E_0_ref    = E_0_ref;
             

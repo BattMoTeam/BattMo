@@ -1,9 +1,12 @@
 {
   "T": 873.15,
   "Anode": {
-    "R_ct_0": 2e-07,
-    "ilc": 4,
-    "ila": -2,
+    "R_ct_0": {"value" : 2e-7,
+               "unit" : "ohm*((centi*meter)^2)"},
+    "ilc": { "value" : 4,
+             "unit" : "ampere/((centi*meter)^2)"},
+    "ila": { "value" : -2,
+             "unit" : "ampere/((centi*meter)^2)"},
     "beta": 0.4,
     "n": 1,
     "E_0": 1.253,
@@ -14,10 +17,14 @@
     "Ptot": 10
   },
   "Electrolyte": {
-    "length": 2.2e-05,
+    "length": { "value" : 22,
+                "unit" : "micro*meter"
+              },
     "faceArea": 1,
     "N": 40,
-    "sigma_n0": 1e-5,
+    "sigma_n0": { "value" : 1e-5,
+                  "unit" : "siemens/(centi*meter)"
+                },
     "dS_hyd": -119,
     "dH_hyd": -90,
     "Y": 0.06,
@@ -31,7 +38,8 @@
   },
   "Cathode": {
     "E_0": 0,
-    "R_ct_H": 0.01,
+    "R_ct_H": { "value" : 1e-2,
+                "unit" : "ohm*((centi*meter)^2)"},
     "Ptot": 10
   },
   "Control": {

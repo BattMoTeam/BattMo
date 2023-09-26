@@ -4,7 +4,7 @@ function paramobj = setupProtonicMembraneCellGrid(paramobj, jsonstruct)
     ct    = 'Cathode';
     elyte = 'Electrolyte';
 
-    lgth  = jsonstruct.(elyte).length;
+    lgth  = convertUnitBattMo(jsonstruct.(elyte).length);
     farea = jsonstruct.(elyte).faceArea;
     N     = jsonstruct.(elyte).N;
 
