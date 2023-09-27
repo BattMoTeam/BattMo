@@ -67,9 +67,9 @@ classdef OxideMembraneElectrolyte < BaseModel
             varnames{end + 1} = 'ch';
             % Logarithmic concentrations
             varnames{end + 1} = VarName({}, 'logcs', 2);
-            % Electronic Flux
+            % Electronic Flux in Ampere (multiplied with faceArea)
             varnames{end + 1} = 'jEl';
-            % Ionic Flux
+            % Ionic Flux in Ampere (multiplied with faceArea)
             varnames{end + 1} = 'jO2m';
             % Coefficient in front of grad(phi) in assembly of jEl
             varnames{end + 1} = 'gradPhiCoef';
