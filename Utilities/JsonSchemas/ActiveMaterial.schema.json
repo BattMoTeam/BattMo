@@ -30,7 +30,7 @@
            ],
   
   
-  "required" : ["Interface"],
+  "required" : ["Interface", "SolidDiffusion"],
   
   "anyOf" : [ {"properties" : {"diffusionModelType" : {"const" : "full"},
                                "SolidDiffusion" : {"$ref" : "FullSolidDiffusionModel"}}
