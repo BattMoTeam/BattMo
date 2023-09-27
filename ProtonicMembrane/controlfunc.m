@@ -21,6 +21,10 @@ function [I, alpha] = controlfunc(time, Imax, tswitch, T, varargin)
             % alpha = 0;
             alpha = (time - tswitch)/(T - tswitch);
         end
+      case 'alpha-only'
+        % tswitch is not used. This case is used in OxideElectrolyte where there is no Butler-Volmer at boundary.
+        I = Imax;
+        alpha = time/T;
       otherwise
         error('order not recognized');
     end
