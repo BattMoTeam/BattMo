@@ -180,7 +180,8 @@ classdef OxideMembraneElectrolyte < BaseModel
 
             phi = state.phi;
 
-            state.jO2m = assembleHomogeneousFlux(model, phi, sigmaO2);
+            % Note minus sign in front
+            state.jO2m = - assembleHomogeneousFlux(model, phi, sigmaO2);
 
         end
 
