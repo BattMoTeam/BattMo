@@ -4,32 +4,70 @@
   "description": "interface",
   "type": "object",
   "properties" : {
-    "cmax": { "type" : "number",
-              "description" : "maximum concentration" },
-    "n" : {"type" : "integer",
-           "description" : "number of electron transfer"},
-    "volumetricSurfaceArea": {"type" : "number"},
-    "Eak": {"type" : "number",
-            "description" : "reaction activation energy"},
-    "k0": {"type" : "number",
-           "description" : "reference rate constant"},
-    "j0": {"$ref": "function"},
-    "theta100": {"type" : "number"},
-    "theta0": {"type" : "number"},
-    "density": {"type" : "number"},
+    "saturationConcentration": {
+      "$ref": "#/definitions/PhysicalQuantity",
+      "description": "the saturation concentration of the guest molecule in the host material",
+      "symbol": "cmax"
+    },
+    "numberOfElectronsTransferred" : {
+      "$ref": "#/definitions/PhysicalQuantity",
+      "description": "stoichiometric number of electrons transferred in the electrochemical reaction",
+      "symbol": "n"
+    },
+    "volumeFraction": {
+      "$ref": "#/definitions/PhysicalQuantity",
+      "description": "volume fraction of the active material",
+      "symbol": "varepsilon"
+    },
+    "volumetricSurfaceArea": {
+      "$ref": "#/definitions/PhysicalQuantity",
+      "description": "surface area of the active material - electrolyte interface per volume of electrode"
+    },
+    "activationEnergyOfReaction": {
+      "$ref": "#/definitions/PhysicalQuantity",
+      "description": "the activation energy of the electrochemical reaction",
+      "symbol": "Eak"
+    },
+    "reactionRateConstant": {
+      "$ref": "#/definitions/PhysicalQuantity",
+      "description": "the reaction rate constant of the electrochemical reaction",
+      "symbol": "k0"
+    },
+    "exchangeCurrentDensity": {
+      "$ref": "#/definitions/PhysicalQuantity",
+      "description": "the exchange current at the electrode-electrolyte interface under equilibrium conditions",
+      "symbol": "j0"
+    },
+    "guestStoichiometry100": {
+      "$ref": "#/definitions/PhysicalQuantity",
+      "description": "the ratio of the concentration of the guest molecule to the saturation concentration of the guest molecule in a phase at a cell voltage that is defined as 100% SOC",
+      "symbol": "theta100"
+    },
+    "guestStoichiometry0": {
+      "$ref": "#/definitions/PhysicalQuantity",
+      "description": "the ratio of the concentration of the guest molecule to the saturation concentration of the guest molecule in a phase at a cell voltage that is defined as 0% SOC",
+      "symbol": "theta0"
+    },
+    "density": {
+      "$ref": "#/definitions/PhysicalQuantity",
+      "description": "the mass density of the active material",
+      "symbol": "rho"
+    },
     "name": {"type" : "string"},
-    "updateOCPFunc" : {"$ref" : "function",
-                       "description" : "Function to update OCP"}
+    "openCircuitPotential" : {
+      "$ref" : "function",
+      "description" : "a function to determine the open-circuit potential of the electrode under given conditions"
+    }
   },
   
-  "anyOf" : [{"required" : ["j0"]},
-             {"required" : ["k0"]}],
+  "anyOf" : [{"required" : ["exchangeCurrentDensity"]},
+             {"required" : ["reactionRateConstant"]}],
   
-  "dependentSchemas": {"j0" : {"anyOf" : [{"properties": {"j0" : {"properties": {"type" : {"const" : "constant"}}}},
-                                           "required" : ["k0"]
-                                          },
-                                          {"properties": {"j0" : {"properties": {"type" : {"const" : "function"}}}}}
-                                         ]
-                              }
+  "dependentSchemas": {"exchangeCurrentDensity" : {"anyOf" : [{"properties": {"exchangeCurrentDensity" : {"properties": {"type" : {"const" : "constant"}}}},
+                                                               "required" : ["reactionRateConstant"]
+                                                              },
+                                                              {"properties": {"exchangeCurrentDensity" : {"properties": {"type" : {"const" : "function"}}}}}
+                                                             ]
+                                                  }
                       }
 }

@@ -31,27 +31,25 @@
       "properties" : {
         "NegativeElectrode" : {
           "properties" : {
-            "ActiveMaterial" : {
+            "Coating" : {
               "$ref" : "#/$defs/layerSpec"},
             "CurrentCollector" : {
               "$ref" : "#/$defs/layerSpec"}}},
         "PositiveElectrode" : {
           "properties" : {
-            "ActiveMaterial" : {
+            "Coating" : {
               "$ref" : "#/$defs/layerSpec"},
             "CurrentCollector" : {
               "$ref" : "#/$defs/layerSpec"}}},
-        "Electrolyte" : {
-          "properties" : {
-            "Separator" : {
-              "$ref" : "#/$defs/layerSpec"}}}}},
+        "Separator" : {
+          "$ref" : "#/$defs/layerSpec"}}},
 
     "layerSpec" : {
       "properties" : {
         "thickness" : {
           "type" : "number",
           "description" : "thickness of the component"},
-        "N" : {
+        "numberOfDiscreteCells" : {
           "type" : "number",
           "description" : "discretization parameter"}}},
 
@@ -136,19 +134,19 @@
       "properties" : {
         "Geometry" : {
           "properties" : {
-            "rOuter" : {
+            "outerRadius" : {
               "type" : "number",
               "description" : "outer radius"},
-            "rInner"  : {
+            "innerRadius"  : {
               "type" : "number",
               "description" : "inner radius"},
-            "L" : {
+            "height" : {
               "type" : "number",
               "description" : "height of the battery"},
-            "nL" : {
+            "numberOfDiscreteCellsVertical" : {
               "type" : "integer",
               "description" : "discretization parameter giving the number of grid cells in the vertical direction"},
-            "nas" : {
+            "numberOfDiscreteCellsAngular" : {
               "type" : "integer",
               "description" : "discretisation parameter giving the number of angular sectors of the grid in the horizontal plane"}}},
         "NegativeElectrode" : {
@@ -170,19 +168,19 @@
       "properties" : {
         "Geometry" : {
           "properties" : {
-            "rOuter" : {
+            "outerRadius" : {
               "type" : "number",
               "description" : "outer radius"},
-            "rInner"  : {
+            "innerRadius"  : {
               "type" : "number",
               "description" : "inner radius"},
-            "L" : {
+            "height" : {
               "type" : "number",
               "description" : "height of the battery"},
-            "nL" : {
+            "numberOfDiscreteCellsVertical" : {
               "type" : "integer",
               "description" : "discretization parameter giving the number of grid cells in the vertical direction"},
-            "nas" : {
+            "numberOfDiscreteCellsAngular" : {
               "type" : "integer",
               "description" : "the angle of the sector is computed as 2*pi/nas"}}}},
       "allOf" : [{"$ref" : "#/$defs/layerSpecs"}]},

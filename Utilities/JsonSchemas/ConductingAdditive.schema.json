@@ -1,0 +1,34 @@
+{
+    "$id": "file://battmo/schemas/ConductingAdditive",
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "description": "ConductingAdditive",
+    "type": "object",
+  
+    "allOf": [{"properties" : { "electricalConductivity": {
+                                  "$ref": "#/definitions/PhysicalQuantity",
+                                  "description": "the electronic conductivity of the material",
+                                  "symbol": "sigma"
+                                },
+                                "density" : {
+                                  "$ref": "#/definitions/PhysicalQuantity",
+                                  "description": "the mass density of the material",
+                                  "symbol": "rho"
+                                },
+                                "volumeFraction" : {
+                                  "$ref": "#/definitions/PhysicalQuantity",
+                                  "description": "the ratio of the volume of the material to the total volume",
+                                  "symbol": "varepsilon"
+                                },
+                                "massFraction" : {
+                                  "$ref": "#/definitions/PhysicalQuantity",
+                                  "description": "the ratio of the mass of the material to the total mass of the phase or mixture",
+                                  "symbol": "gamma"
+                                }
+                              }
+              }
+             ],
+    
+    
+    "required" : ["density", "massFraction"]
+  }
+  

@@ -1,0 +1,31 @@
+{
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "type": "object",
+    "title": "PhysicalQuantity",
+    "description": "An object representing a physical quantity with its value, unit, description, and source.",
+    "properties": {
+    "value": {
+        "type": "number",
+        "description": "the numerical value of the physical quantity"
+    },
+    "unit": {
+        "type": "string",
+        "description": "the unit of measurement for the physical quantity"
+    },
+    "symbol": {
+        "type": "string",
+        "description": "symbol used to denote the quantity"
+    },
+    "description": {
+        "type": "string",
+        "description": "a textual description or context for the physical quantity"
+    },
+    "source": {
+        "type": "string",
+        "description": "the source or reference from which the physical quantity was derived or obtained"
+    }
+    },
+    "required": ["value", "unit"]
+}
+
+  

@@ -4,8 +4,25 @@
   "description": "A separator",
   "type": "object",
 
-  "properties" : { "porosity": {"type" : "number"},
-                   "density" : {"type" : "number"},
-                   "BruggemanCoefficient" : {"type" : "number"}
+  "properties" : {  "thickness" : {
+                      "$ref": "#/definitions/PhysicalQuantity",
+                      "description": "the thickness of the separator",
+                      "symbol": "t"
+                    },
+                    "porosity": {
+                      "$ref": "#/definitions/PhysicalQuantity",
+                      "description": "the ratio of the volume free space to the total volume",
+                      "symbol": "varepsilon"
+                    },
+                    "density" : {
+                      "$ref": "#/definitions/PhysicalQuantity",
+                      "description": "the mass density of the material",
+                      "symbol": "rho"
+                    },
+                    "bruggemanCoefficient" : {
+                      "$ref": "#/definitions/PhysicalQuantity",
+                      "description": "coefficient to determine effective transport parameters in porous media",
+                      "symbol": "beta"
+                    }
                  }
 }

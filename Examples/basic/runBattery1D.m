@@ -189,6 +189,7 @@ time = cellfun(@(x) x.time, states);
 
 plot(time, E);
 
+writeOutput(model, states, 'output.h5')
 
 
 %% Plot the the output voltage and current

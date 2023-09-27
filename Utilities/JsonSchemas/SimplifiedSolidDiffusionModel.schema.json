@@ -4,9 +4,15 @@
     "description": "solid diffusion",
     "type": "object",
     "properties" : {
-        "EaD": {"type" : "number",
-                "description" : "Arrhenius coefficient for diffusivity coefficient"},
-        "D0": {"type" : "number",
-               "description" : "reference diffusivity coefficient"}
+        "activationEnergyOfDiffusion": {
+            "$ref": "#/definitions/PhysicalQuantity",
+            "description": "the Arrhenius-type activation energy for diffusion",
+            "symbol": "EaD"
+        },
+        "referenceDiffusionCoefficient": {
+            "$ref": "#/definitions/PhysicalQuantity",
+            "description": "the pre-exponential reference diffusion coefficient in an Arrhenius-type equation",
+            "symbol": "D0"
+        }
     }
 }

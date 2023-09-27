@@ -11,7 +11,9 @@
 
     "PositiveElectrode": {"$ref": "Electrode"},
 
-    "Electrolyte": {"$ref": "Electrolyte"}
+    "Electrolyte": {"$ref": "Electrolyte"},
+
+    "Separator": {"$ref": "Separator"}
 
   },
 

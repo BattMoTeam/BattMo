@@ -4,12 +4,24 @@
     "description": "solid diffusion",
     "type": "object",
     "properties" : {
-        "rp": {"type" : "number",
-               "description" : "particle radius"},
-        "EaD": {"type" : "number",
-                "description" : "Arrhenius coefficient for diffusivity coefficient"},
-        "D0": {"type" : "number",
-               "description" : "reference diffusivity coefficient"},
-        "volumetricSurfaceArea": {"type" : "number"}
+        "particleRadius": {
+            "$ref": "#/definitions/PhysicalQuantity",
+            "description": "the characteristic radius of the particle",
+            "symbol": "rp"
+        },
+        "activationEnergyOfDiffusion": {
+            "$ref": "#/definitions/PhysicalQuantity",
+            "description": "the Arrhenius-type activation energy for diffusion",
+            "symbol": "EaD"
+        },
+        "referenceDiffusionCoefficient": {
+            "$ref": "#/definitions/PhysicalQuantity",
+            "description": "the pre-exponential reference diffusion coefficient in an Arrhenius-type equation",
+            "symbol": "D0"
+        },
+        "volumetricSurfaceArea": {
+            "$ref": "#/definitions/PhysicalQuantity",
+            "description": "surface area of the active material - electrolyte interface per volume of electrode"
+         }
     }
 }

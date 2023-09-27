@@ -6,12 +6,12 @@
 
   "properties" : {"TimeStepping" : {"type" : "object",
                                     "properties" : {"totalTime" : {"type" : "number"},
-                                                    "dt" : {"type" : "number"},
-                                                    "N" : {"type" : "integer"},
+                                                    "timeStepDuration" : {"type" : "number"},
+                                                    "numberOfTimeSteps" : {"type" : "integer"},
                                                     "useRampup" : {"type" : "boolean"},
                                                     "rampupTime" : {"type" : "number"}},
-                                    "oneOf" : [{"required" : ["N", "totalTime"]},
-                                               {"required" : ["dt"]}]
+                                    "oneOf" : [{"required" : ["numberOfTimeSteps", "totalTime"]},
+                                               {"required" : ["timeStepDuration"]}]
                                    }
                  }
 }

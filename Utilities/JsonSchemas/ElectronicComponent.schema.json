@@ -1,8 +1,14 @@
 {
   "$id": "file://battmo/schemas/ElectronicComponent",
   "$schema": "http://json-schema.org/draft-07/schema#",
-  "description": "Active Material",
+  "description": "Electronic Component",
   "type": "object",
 
-  "properties" : {"EffectiveElectricalConductivity": {"type" : "number"}}
+  "properties" : {
+    "effectiveElectronicConductivity": {
+      "$ref": "#/definitions/PhysicalQuantity",
+      "description": "the electronic conductivity of the component, adjusted to consider porous media effects",
+      "symbol": "sigma_eff"
+    }
+  }
 }

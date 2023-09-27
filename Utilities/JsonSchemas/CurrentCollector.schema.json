@@ -4,6 +4,27 @@
   "description": "A current collector",
   "type": "object",
 
-  "$ref": "ElectronicComponent"
+  "allOf": [{"$ref": "ElectronicComponent"},
+              {"properties" : { "thickness" : {
+                                  "$ref": "#/definitions/PhysicalQuantity",
+                                  "description": "the thickness of the coating",
+                                  "symbol": "t"
+                                },
+                                "electronicConductivity": {
+                                  "$ref": "#/definitions/PhysicalQuantity",
+                                  "description": "the electronic conductivity of the material",
+                                  "symbol": "sigma"
+                                },
+                                "bruggemanCoefficient" : {
+                                  "$ref": "#/definitions/PhysicalQuantity",
+                                  "description": "the Bruggeman coefficient for effective transport in porous media",
+                                  "symbol": "beta"
+                                }
+                              }
+              }
+             ],
+    
+    
+    "required" : ["electricalConductivity", "thickness"]
   
 }

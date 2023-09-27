@@ -1,7 +1,7 @@
 {
   "$id": "file://battmo/schemas/Ouput",
   "$schema": "http://json-schema.org/draft-07/schema#",
-  "description": "Input for the choice of outputs the will be returned",
+  "description": "Specification of the outputs the will be returned",
   "type": "object",
 
   "properties" : {
