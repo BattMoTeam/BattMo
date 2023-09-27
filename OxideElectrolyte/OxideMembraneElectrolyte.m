@@ -1,5 +1,7 @@
 classdef OxideMembraneElectrolyte < BaseModel
-
+%
+% ref1 : Jacobsen and Mogensen (2008) : The course of oxygen partial pressure and electric potentials across oxide electrolyte cell
+%
     properties
 
         % Temperature
@@ -184,7 +186,7 @@ classdef OxideMembraneElectrolyte < BaseModel
 
 
         function state = updateElFlux(model, state)
-
+            % Equation (17) in ref1
             cinds = model.compinds;
             
             phi     = state.phi;
