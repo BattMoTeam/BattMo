@@ -11,7 +11,7 @@
     "pO2": 0.2
   },
   "Electrolyte": {
-    "muEl0": 8e4,
+    "muEl0": 7e4,
     "length": {"value" : 200,
                "unit" : "micro*meter"},
     "faceArea": 1,
