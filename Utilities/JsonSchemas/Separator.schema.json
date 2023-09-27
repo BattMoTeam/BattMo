@@ -4,12 +4,7 @@
   "description": "A separator",
   "type": "object",
 
-  "properties" : {  "thickness" : {
-                      "$ref": "#/definitions/PhysicalQuantity",
-                      "description": "the thickness of the separator",
-                      "symbol": "t"
-                    },
-                    "porosity": {
+  "properties" : { "porosity": {
                       "$ref": "#/definitions/PhysicalQuantity",
                       "description": "the ratio of the volume free space to the total volume",
                       "symbol": "varepsilon"

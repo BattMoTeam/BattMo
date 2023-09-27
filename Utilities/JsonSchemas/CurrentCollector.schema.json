@@ -5,12 +5,7 @@
   "type": "object",
 
   "allOf": [{"$ref": "ElectronicComponent"},
-              {"properties" : { "thickness" : {
-                                  "$ref": "#/definitions/PhysicalQuantity",
-                                  "description": "the thickness of the coating",
-                                  "symbol": "t"
-                                },
-                                "electronicConductivity": {
+              {"properties" : { "electronicConductivity": {
                                   "$ref": "#/definitions/PhysicalQuantity",
                                   "description": "the electronic conductivity of the material",
                                   "symbol": "sigma"
@@ -25,6 +20,6 @@
              ],
     
     
-    "required" : ["electricalConductivity", "thickness"]
+    "required" : ["electricalConductivity"]
   
 }

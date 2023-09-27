@@ -47,8 +47,9 @@
     "layerSpec" : {
       "properties" : {
         "thickness" : {
-          "type" : "number",
-          "description" : "thickness of the component"},
+          "$ref": "#/definitions/PhysicalQuantity",
+          "description" : "the thickness of the component",
+          "symbol" : "t"},
         "numberOfDiscreteCells" : {
           "type" : "number",
           "description" : "discretization parameter"}}},
