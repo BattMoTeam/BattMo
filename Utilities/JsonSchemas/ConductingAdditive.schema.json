@@ -14,11 +14,6 @@
                                   "description": "the mass density of the material",
                                   "symbol": "rho"
                                 },
-                                "volumeFraction" : {
-                                  "$ref": "#/definitions/PhysicalQuantity",
-                                  "description": "the ratio of the volume of the material to the total volume",
-                                  "symbol": "varepsilon"
-                                },
                                 "massFraction" : {
                                   "$ref": "#/definitions/PhysicalQuantity",
                                   "description": "the ratio of the mass of the material to the total mass of the phase or mixture",
