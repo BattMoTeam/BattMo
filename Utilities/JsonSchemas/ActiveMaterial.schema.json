@@ -7,7 +7,6 @@
   "allOf": [{"$ref": "ElectronicComponent"},
             {"properties" : { "Interface": {"$ref" : "Interface"},
                               "SolidDiffusion": {"$ref" : "SolidDiffusionModel"},
-                              "use_particle_diffusion": {"type" : "boolean"},
                               "diffusionModelType" : {"type" : "string",
                                                       "enum" : ["full", "simple"]},
                               "electronicConductivity": {
@@ -48,8 +47,6 @@
               },
               {"properties" : {"diffusionModelType" : {"const" : "simple"},
                                "SolidDiffusion" : {"$ref" : "SimplifiedSolidDiffusionModel"}}
-              },
-              {"properties" : {"diffusionModelType" : {"const": "interParticleOnly"}}
               }
             ]
 }
