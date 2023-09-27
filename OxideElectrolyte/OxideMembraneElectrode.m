@@ -70,15 +70,15 @@ classdef OxideMembraneElectrode < BaseModel
             % Electronic flux at electrode (positif is flux leaving electrode)
             varnames{end + 1} = 'jEl';
             % ionix flux at electrode (positif is flux leaving electrode)
-            varnames{end + 1} = 'jO2';
+            varnames{end + 1} = 'jO2m';
             % Charge flux at electrode (positif is flux leaving electrode)
             varnames{end + 1} = 'j';
             % Charge conservation equation (that is j - jEl - jHp = 0)
             varnames{end + 1} = 'chargeCons';
             % Definition equation for jEl
             varnames{end + 1} = 'jElEquation';
-            % Definition equation for jO2
-            varnames{end + 1} = 'jO2Equation';
+            % Definition equation for jO2m
+            varnames{end + 1} = 'jO2mEquation';
             % Electronic concentration definition equation
             varnames{end + 1} = 'electronConcentrationEquation';
             model = model.registerVarNames(varnames);
@@ -89,7 +89,7 @@ classdef OxideMembraneElectrode < BaseModel
             model = model.registerPropFunction({'ch', fn, inputnames});
 
             fn = @OxideMembraneElectrode.updateChargeCons;
-            inputnames = {'j', 'jEl', 'jO2'};
+            inputnames = {'j', 'jEl', 'jO2m'};
             model = model.registerPropFunction({'chargeCons', fn, inputnames});
 
             fn = @OxideMembraneElectrode.updateE;
@@ -126,9 +126,9 @@ classdef OxideMembraneElectrode < BaseModel
 
             j   = state.j;
             jEl = state.jEl;
-            jO2 = state.jO2;
+            jO2m = state.jO2m;
 
-            state.chargeCons = j - (jEl - 2*jO2);
+            state.chargeCons = j - (jEl - 2*jO2m);
 
         end
 

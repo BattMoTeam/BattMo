@@ -60,7 +60,7 @@ classdef OxideMembraneCell < BaseModel
             model = registerVarAndPropfuncNames@BaseModel(model);
             
             fn = @OxideMembraneCell.setupO2Sources;
-            inputnames = {{an, 'jO2'}, {ct, 'jO2'}};
+            inputnames = {{an, 'jO2m'}, {ct, 'jO2m'}};
             model = model.registerPropFunction({{elyte, 'sourceO2'}, fn, inputnames});
             
             fn = @OxideMembraneCell.setupElSources;
@@ -68,8 +68,8 @@ classdef OxideMembraneCell < BaseModel
             model = model.registerPropFunction({{elyte, 'sourceEl'}, fn, inputnames});
 
             fn = @OxideMembraneCell.updateAnodeJO2Equation;
-            inputnames = {{elyte, 'phi'}, {an, 'phi'}, {an, 'jO2'}};
-            model = model.registerPropFunction({{an, 'jO2Equation'}, fn, inputnames});
+            inputnames = {{elyte, 'phi'}, {an, 'phi'}, {an, 'jO2m'}};
+            model = model.registerPropFunction({{an, 'jO2mEquation'}, fn, inputnames});
 
             fn = @OxideMembraneCell.updateAnodeJElEquation;
             inputnames = {{elyte, 'gradPhiCoef'}              , ...
@@ -84,8 +84,8 @@ classdef OxideMembraneCell < BaseModel
             model = model.registerPropFunction({{an, 'jElEquation'}, fn, inputnames});
 
             fn = @OxideMembraneCell.updateCathodeJO2Equation;
-            inputnames = {{elyte, 'phi'}, {ct, 'phi'}, {ct, 'jO2'}};
-            model = model.registerPropFunction({{ct, 'jO2Equation'}, fn, inputnames});
+            inputnames = {{elyte, 'phi'}, {ct, 'phi'}, {ct, 'jO2m'}};
+            model = model.registerPropFunction({{ct, 'jO2mEquation'}, fn, inputnames});
 
             fn = @OxideMembraneCell.updateCathodeJElEquation;
             inputnames = {{elyte, 'gradPhiCoef'}              , ...
@@ -137,20 +137,20 @@ classdef OxideMembraneCell < BaseModel
             coupterms = model.couplingTerms;
             coupnames = model.couplingnames;
                         
-            jO2Anode   = state.(an).jO2;
-            jO2Cathode = state.(ct).jO2;
+            jO2mAnode   = state.(an).jO2m;
+            jO2mCathode = state.(ct).jO2m;
             
             sourceO2 = 0*state.(elyte).phi; % initialize AD for sourceO2
             
             % Anode part
             coupterm = getCoupTerm(coupterms, 'Anode-Electrolyte', coupnames);
             ccs = coupterm.couplingcells(:, 2);
-            sourceO2(ccs) = jO2Anode;
+            sourceO2(ccs) = jO2mAnode;
             
             % Anode part
             coupterm = getCoupTerm(coupterms, 'Cathode-Electrolyte', coupnames);
             ccs = coupterm.couplingcells(:, 2);
-            sourceO2(ccs) = jO2Cathode;
+            sourceO2(ccs) = jO2mCathode;
 
             state.(elyte).sourceO2 = sourceO2;
             
@@ -300,11 +300,11 @@ classdef OxideMembraneCell < BaseModel
 
             phiElyte = state.(elyte).phi;
             phiElde  = state.(elde).phi;
-            jO2      = state.(elde).jO2;
+            jO2m      = state.(elde).jO2m;
             
             tcoef = op.halfTransBC(cfs(:, 2));
             
-            state.(elde).jO2Equation = jO2 - sigmaO2*tcoef.*(phiElde(ccs(:, 1)) - phiElyte(ccs(:, 2)));
+            state.(elde).jO2mEquation = jO2m - sigmaO2*tcoef.*(phiElde(ccs(:, 1)) - phiElyte(ccs(:, 2)));
 
         end
         
@@ -327,7 +327,7 @@ classdef OxideMembraneCell < BaseModel
             K     = model.(an).Keh;
             cinds = model.(an).compinds;
             
-            initState.(an).jO2             = 0;
+            initState.(an).jO2m             = 0;
             initState.(an).logcs{cinds.ce} = - (c.F*Eocp + mu0)/(c.R*T);
             initState.(an).logcs{cinds.ch} = log(K) + (c.F*Eocp + mu0)/(c.R*T); % sum of log should be equal to log(K)
             initState.(an).phi             = 0;
@@ -340,7 +340,7 @@ classdef OxideMembraneCell < BaseModel
             K     = model.(ct).Keh;
             cinds = model.(ct).compinds;
 
-            initState.(ct).jO2             = 0;
+            initState.(ct).jO2m             = 0;
             initState.(ct).j               = 0;
             initState.(ct).logcs{cinds.ce} = -(c.F*Eocp + mu0)/(c.R*T);
             initState.(ct).logcs{cinds.ch} = log(K) + (c.F*Eocp + mu0)/(c.R*T); % sum of log should be equal to log(K)

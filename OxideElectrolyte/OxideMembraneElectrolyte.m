@@ -68,7 +68,7 @@ classdef OxideMembraneElectrolyte < BaseModel
             % Electronic Flux
             varnames{end + 1} = 'jEl';
             % Ionic Flux
-            varnames{end + 1} = 'jO2';
+            varnames{end + 1} = 'jO2m';
             % Coefficient in front of grad(phi) in assembly of jEl
             varnames{end + 1} = 'gradPhiCoef';
             % Coefficient in front of grad(ce) and grad(ch) assembly of jEl
@@ -101,7 +101,7 @@ classdef OxideMembraneElectrolyte < BaseModel
 
             fn = @OxideMembraneElectrolyte.updateO2Flux;
             inputnames = {'phi'};
-            model = model.registerPropFunction({'jO2', fn, inputnames});
+            model = model.registerPropFunction({'jO2m', fn, inputnames});
 
             fn = @OxideMembraneElectrolyte.updateEquilibriumEquation;
             inputnames = {'ch', 'ce'};
@@ -116,7 +116,7 @@ classdef OxideMembraneElectrolyte < BaseModel
             model = model.registerPropFunction({'jEl', fn, inputnames});
 
             fn = @OxideMembraneElectrolyte.updateMassConsO2;
-            inputnames = {'sourceO2', 'jO2'};
+            inputnames = {'sourceO2', 'jO2m'};
             model = model.registerPropFunction({'massConsO2', fn, inputnames});
 
             fn = @OxideMembraneElectrolyte.updateChargeConsEl;
@@ -178,7 +178,7 @@ classdef OxideMembraneElectrolyte < BaseModel
 
             phi = state.phi;
 
-            state.jO2 = assembleHomogeneousFlux(model, phi, sigmaO2);
+            state.jO2m = assembleHomogeneousFlux(model, phi, sigmaO2);
 
         end
 
@@ -218,9 +218,9 @@ classdef OxideMembraneElectrolyte < BaseModel
             op = model.operators;
 
             sourceO2 = state.sourceO2;
-            jO2      = state.jO2;
+            jO2m      = state.jO2m;
 
-            state.massConsO2 =  op.Div(jO2) - sourceO2;
+            state.massConsO2 =  op.Div(jO2m) - sourceO2;
 
         end
 
