@@ -53,7 +53,6 @@
       "description": "the mass density of the active material",
       "symbol": "rho"
     },
-    "name": {"type" : "string"},
     "openCircuitPotential" : {
       "$ref" : "function",
       "description" : "a function to determine the open-circuit potential of the electrode under given conditions"
