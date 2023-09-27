@@ -1,4 +1,4 @@
-% clear all
+clear all
 % close all
 
 mrstModule add ad-core
@@ -27,7 +27,7 @@ model = model.setupComputationalGraph();
 model = model.validateModel();
 cgt   = model.computationalGraph;
 
-model.verbose = false;
+model.verbose = true;
 
 % Setup initial state
 state0 = model.setupInitialState();
@@ -35,24 +35,24 @@ state0 = model.setupInitialState();
 % Setup schedule
 
 
-tswitch = 1;
-T       = 2; % This is not a real time scale, as all the model deals with equilibrium
+T = 1; % This is not a real time scale, as all the model deals with equilibrium
+N = 20;
 
-N1  = 20;
-dt1 = tswitch/N1;
-N2  = 20;
-dt2 = (T - tswitch)/N2;
+dt = T/N;
 
-step.val = [dt1*ones(N1, 1); dt2*ones(N2, 1)];
+step.val = dt*ones(N, 1);
 step.control = ones(numel(step.val), 1);
 
-% Imax = 0.3*ampere/((centi*meter)^2);
+dolineartest = false;
+if dolineartest
+    step.val = 0;
+    step.control = ones(numel(step.val), 1);
+end
+
+% Imax = 1e-2*ampere/((centi*meter)^2);
 Imax = 0;
 
-step.val = 0;
-step.control = ones(numel(step.val), 1);
-
-control.src = @(time) controlfunc(time, Imax, tswitch, T, 'order', 'alpha-first');
+control.src = @(time) controlfunc(time, Imax, [], T, 'order', 'alpha-only');
 
 schedule = struct('control', control, 'step', step); 
 
@@ -95,7 +95,18 @@ if dothisplot
     plot(xc, state.(elyte).pi)
     title('pi')
     xlabel('x [m]')
-    
+    figure(4)
+    plot(xc, state.(elyte).gradConcCoefs{1})
+    title('dch')
+    xlabel('x [m]')    
+    figure(5)
+    plot(xc, state.(elyte).gradConcCoefs{2})
+    title('dce')
+    xlabel('x [m]')
+    figure(6)
+    plot(xc, state.(elyte).ch)
+    title('ch')
+    xlabel('x [m]')
     return
 end
 
@@ -119,7 +130,6 @@ for istate = 1 : numel(states)
     plot(state.(elyte).sigmaEl, '*-')
     title('sigmaEl')
 end
-
 
 return
 
