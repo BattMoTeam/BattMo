@@ -101,7 +101,7 @@ classdef OxideMembraneCell < BaseModel
             fn = @OxideMembraneCell.updateFromControl;
             inputnames = {{ctrl, 'U'}, {ctrl, 'I'}};
             model = model.registerPropFunction({{an, 'pi'}, fn, inputnames});                        
-            model = model.registerPropFunction({{an, 'j'}, fn, inputnames});
+            model = model.registerPropFunction({{an, 'jO2m'}, fn, inputnames});
 
             fn = @OxideMembraneCell.setupCathodeBoundary;
             inputnames = {};
@@ -189,8 +189,8 @@ classdef OxideMembraneCell < BaseModel
             an   = 'Anode';
             ctrl = 'Control';
             
-            state.(an).pi  = state.(ctrl).U; 
-            state.(an).j   = state.(ctrl).I;
+            state.(an).pi   = state.(ctrl).U;
+            state.(an).jO2m = state.(ctrl).I;
             
         end
 
@@ -300,7 +300,7 @@ classdef OxideMembraneCell < BaseModel
 
             phiElyte = state.(elyte).phi;
             phiElde  = state.(elde).phi;
-            jO2m      = state.(elde).jO2m;
+            jO2m     = state.(elde).jO2m;
             
             tcoef = op.halfTransBC(cfs(:, 2));
             
@@ -327,7 +327,8 @@ classdef OxideMembraneCell < BaseModel
             K     = model.(an).Keh;
             cinds = model.(an).compinds;
             
-            initState.(an).jO2m             = 0;
+            initState.(an).jO2m            = 0;
+            initState.(an).j               = 0;
             initState.(an).logcs{cinds.ce} = - (c.F*Eocp + mu0)/(c.R*T);
             initState.(an).logcs{cinds.ch} = log(K) + (c.F*Eocp + mu0)/(c.R*T); % sum of log should be equal to log(K)
             initState.(an).phi             = 0;
@@ -340,7 +341,7 @@ classdef OxideMembraneCell < BaseModel
             K     = model.(ct).Keh;
             cinds = model.(ct).compinds;
 
-            initState.(ct).jO2m             = 0;
+            initState.(ct).jO2m            = 0;
             initState.(ct).j               = 0;
             initState.(ct).logcs{cinds.ce} = -(c.F*Eocp + mu0)/(c.R*T);
             initState.(ct).logcs{cinds.ch} = log(K) + (c.F*Eocp + mu0)/(c.R*T); % sum of log should be equal to log(K)

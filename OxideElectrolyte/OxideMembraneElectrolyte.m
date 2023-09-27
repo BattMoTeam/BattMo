@@ -218,7 +218,7 @@ classdef OxideMembraneElectrolyte < BaseModel
             op = model.operators;
 
             sourceO2 = state.sourceO2;
-            jO2m      = state.jO2m;
+            jO2m     = state.jO2m;
 
             state.massConsO2 =  op.Div(jO2m) - sourceO2;
 
@@ -231,7 +231,7 @@ classdef OxideMembraneElectrolyte < BaseModel
             ch = state.ch;
             ce = state.ce;
 
-            state.equilibriumEquation = ch.*ce - Keh;
+            state.equilibriumEquation = ch.*ce/Keh - 1;
 
         end
 
