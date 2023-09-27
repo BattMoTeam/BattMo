@@ -714,7 +714,7 @@ classdef ComputationalGraphTool
 
         end
 
-        function printTailVariables(cgt)
+        function printTailVariables(cgt, nodename)
         % Print the tail variables of the computational graph
             
             A                = cgt.adjencyMatrix;
@@ -724,12 +724,19 @@ classdef ComputationalGraphTool
             tailinds = find(all(A' == 0, 1));
             isadded  = ismember(tailinds, extravarnameinds);
             tailinds = tailinds(~isadded);
+
+            if nargin > 1
+                inds = cgt.regexpVarNameSelect(nodename);
+                tailinds = intersect(inds, tailinds);
+            end
             
             fprintf('Tail variables \n');
             nodenames(tailinds)
 
-            fprintf('Extra Variables (do not enter in residual evaluation)\n')
-            nodenames(extravarnameinds)
+            if nargin == 1
+                fprintf('Extra Variables (do not enter in residual evaluation)\n')
+                nodenames(extravarnameinds)
+            end
             
         end        
 
