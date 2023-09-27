@@ -149,7 +149,7 @@ classdef OxideMembraneElectrode < BaseModel
             E = state.E;
             j = state.j;
 
-            cveq = E - Eocp - j*Rct;
+            cveq = (E - Eocp)/Rct - j;
 
             state.currentVoltageEquation = cveq;
 
@@ -178,7 +178,7 @@ classdef OxideMembraneElectrode < BaseModel
             ch = state.ch;
             ce = state.ce;
 
-            state.equilibriumEquation = ch*ce - Keh;
+            state.equilibriumEquation = ch*ce/Keh - 1;
 
         end
     end
