@@ -304,7 +304,8 @@ classdef OxideMembraneCell < BaseModel
             
             tcoef = op.halfTransBC(cfs(:, 2));
             
-            state.(elde).jO2mEquation = jO2m - sigmaO2*tcoef.*(phiElde(ccs(:, 1)) - phiElyte(ccs(:, 2)));
+            % Note plus-sign between jO2m and sigmaO2, because O2m is negatively charged.
+            state.(elde).jO2mEquation = jO2m + sigmaO2*tcoef.*(phiElde(ccs(:, 1)) - phiElyte(ccs(:, 2)));
 
         end
         
