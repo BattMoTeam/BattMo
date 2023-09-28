@@ -17,6 +17,7 @@
     "ActiveMaterial": {
       "specificHeatCapacity": 632.0,
       "thermalConductivity": 1.04,
+      "volumeFraction": 0.8,
       "InterDiffusionCoefficient": 1e-14,
       "InterDiffusionCoefficientComment" : "from Ecker 2015",
       "electricalConductivity": 100,
@@ -45,6 +46,7 @@
       "thermalConductivity": 2.1,
       "InterDiffusionCoefficient": 1e-14,
       "electricalConductivity": 100,
+      "volumeFraction": 0.8,
       "BruggemanCoefficient": 1.5,
       "Interface": {
         "isFile": true,
