@@ -1,8 +1,8 @@
 {
   "electricalConductivity": 215,
+  "volumeFraction": 0.75,
   "Interface": {
     "cmax": 30555,
-    "volumeFraction": 0.75,
     "volumetricSurfaceArea": 383959,
     "n": 1,
     "Eak": 35000,
