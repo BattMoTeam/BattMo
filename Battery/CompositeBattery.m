@@ -139,8 +139,6 @@ classdef CompositeBattery < Battery
 
         function model = validateModel(model, varargin)
 
-            model = validateModel@BaseModel(model, varargin{:});
-
             if isempty(model.funcCallList)
                 model = model.setupComputationalGraph();
                 cgt = model.computationalGraph;
