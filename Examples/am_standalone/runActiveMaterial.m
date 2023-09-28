@@ -9,8 +9,7 @@ close all
 mrstModule add ad-core mrst-gui mpfa
 
 %% Setup the properties of Li-ion battery materials and cell design
-jsonstruct = parseBattmoJson(fullfile('Examples', 'am_standalone', 'jsondatafiles', 'amExample.json'));
-
+jsonstruct = parseBattmoJson(fullfile('Examples', 'am_standalone', 'jsoninputs', 'amExample.json'));
 paramobj = ActiveMaterialInputParams(jsonstruct);
 
 xlength = 57e-6; 
