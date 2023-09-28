@@ -242,7 +242,22 @@ end
 if isfield(setup, 'reduction')
     model = model.setupSelectedModel('reduction', setup.reduction);
 end
+%%
 
+if testing
+    % We remove verbosity in case of small model
+    setup.verbose = 0;
+    pcs = setup.preconditioners;
+    for ipc = 1 : numel(pcs)
+        pc = pcs(ipc);
+        pc.solver.verbose = 0;
+        pc.solver.solver.verbose = false;
+        pcs(ipc) = pc;
+    end
+    setup.preconditioners = pcs;
+end
+
+%%
 nls.LinearSolver = BatteryLinearSolver('verbose'          , 0    , ...
                                        'reuse_setup'      , false, ...
                                        'linearSolverSetup', setup);
@@ -250,6 +265,8 @@ nls.LinearSolver = BatteryLinearSolver('verbose'          , 0    , ...
 if isfield(nls.LinearSolver.linearSolverSetup, 'gmres_options')
     nls.LinearSolver.linearSolverSetup.gmres_options.tol = 1e-3*model.Control.Imax;
 end
+
+
 
 % Change default maximum iteration number in nonlinear solver
 nls.maxIterations = 10;
