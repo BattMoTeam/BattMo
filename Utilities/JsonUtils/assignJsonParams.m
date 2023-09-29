@@ -1,16 +1,21 @@
 function paramobj = assignJsonParams(paramobj, jsonstruct)
-    
+
     paramobjFds = properties(paramobj);
 
     for ind = 1 : numel(paramobjFds)
-        
+
         fd = paramobjFds{ind};
         if isfield(jsonstruct, fd)
-            paramobj.(fd) = jsonstruct.(fd);
+            
+            val = jsonstruct.(fd);
+            % convert from given unit to SI, if format is appropriate, see convertUnitBattMo function
+            val = convertUnitBattMo(val);
+            paramobj.(fd) = val;
+
         end
-        
+
     end
-    
+
 end
 
 
