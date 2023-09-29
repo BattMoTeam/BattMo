@@ -3,23 +3,7 @@
   "$schema": "http://json-schema.org/draft-07/schema#",
   "description": "A current collector",
   "type": "object",
-
-  "allOf": [{"$ref": "ElectronicComponent"},
-              {"properties" : { "electronicConductivity": {
-                                  "$ref": "#/definitions/PhysicalQuantity",
-                                  "description": "the electronic conductivity of the material",
-                                  "symbol": "sigma"
-                                },
-                                "bruggemanCoefficient" : {
-                                  "$ref": "#/definitions/PhysicalQuantity",
-                                  "description": "the Bruggeman coefficient for effective transport in porous media",
-                                  "symbol": "beta"
-                                }
-                              }
-              }
-             ],
-    
-    
-    "required" : ["electronicConductivity"]
+  
+  "$ref": "ElectronicComponent"
   
 }

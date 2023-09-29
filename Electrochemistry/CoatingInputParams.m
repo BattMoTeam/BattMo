@@ -14,11 +14,15 @@ classdef CoatingInputParams < ElectronicComponentInputParams
 
         density              % the mass density of the material (symbol: rho)
         bruggemanCoefficient % the Bruggeman coefficient for effective transport in porous media (symbol: beta)
-        
+
         %% Coupling parameters
         
         externalCouplingTerm % structure to describe external coupling (used in absence of current collector)
 
+        %% particle case
+        
+        activematerial_type % 'default' (only one particle type) or 'composite' (two different particles)
+        
     end
 
     methods
@@ -29,7 +33,19 @@ classdef CoatingInputParams < ElectronicComponentInputParams
             
             pick = @(fd) pickField(jsonstruct, fd);
 
-            paramobj.ActiveMaterial     = ActiveMaterialInputParams(pick('ActiveMaterial'));
+            if isempty(paramobj.activematerial_type)            
+                paramobj.activematerial_type = 'default';
+            end
+
+            am = 'ActiveMaterial';
+            switch paramobj.activematerial_type
+              case 'default'
+                paramobj.(am) = ActiveMaterialInputParams(jsonstruct.(am));
+              case 'composite'
+                paramobj.(am) = CompositeActiveMaterialInputParams(jsonstruct.(am));
+              otherwise
+                error('activematerial_type not recognized');
+            end
             paramobj.Binder             = BinderInputParams(pick('Binder'));
             paramobj.ConductingAdditive = ConductingAdditiveInputParams(pick('ConductingAdditive'));
             

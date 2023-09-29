@@ -1,4 +1,4 @@
-classdef ActiveMaterial < ElectronicComponent
+classdef ActiveMaterial < BaseModel
     
     properties
         
@@ -42,7 +42,7 @@ classdef ActiveMaterial < ElectronicComponent
         %
         % ``paramobj`` is instance of :class:`ActiveMaterialInputParams <Electrochemistry.ActiveMaterialInputParams>`
         %
-            model = model@ElectronicComponent(paramobj);
+            model = model@BaseModel();
             
             fdnames = {'electronicConductivity', ... 
                        'density'               , ...                
@@ -55,9 +55,6 @@ classdef ActiveMaterial < ElectronicComponent
 
             model = dispatchParams(model, paramobj, fdnames);
 
-            % Setup Interface component
-            paramobj.Interface.G = model.G;
-            
             model.Interface = Interface(paramobj.Interface);
 
             diffusionModelType = model.diffusionModelType;
@@ -69,13 +66,15 @@ classdef ActiveMaterial < ElectronicComponent
                 model.use_particle_diffusion = true;
                 model.use_interparticle_diffusion = true;
               case 'full'
-                paramobj.SolidDiffusion.np = model.G.cells.num;
+                if isempty(paramobj.SolidDiffusion.np)
+                    paramobj.SolidDiffusion.np = model.G.cells.num;
+                end
                 model.SolidDiffusion = FullSolidDiffusionModel(paramobj.SolidDiffusion);
               otherwise
                 error('Unknown diffusionModelType %s', diffusionModelType);
             end
             
-            nc = model.G.cells.num;
+            % nc = model.G.cells.num;
 
             % model.volumeFraction = paramobj.volumeFraction*ones(nc, 1);
             % model.porosity       = 1 - model.volumeFraction;

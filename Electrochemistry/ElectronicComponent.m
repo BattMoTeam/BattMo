@@ -4,8 +4,9 @@ classdef ElectronicComponent < BaseModel
 % 
     properties
 
-        effectiveElectronicConductivity % Effective electronic conductivity
-
+        electronicConductivity          % electronic conductivity
+        effectiveElectronicConductivity % effective electronic conductivity
+        
         constants % Physical constants
 
         use_thermal
@@ -23,6 +24,7 @@ classdef ElectronicComponent < BaseModel
             model.AutoDiffBackend = SparseAutoDiffBackend('useBlocks', false);
             
             fdnames = {'G'                              , ...
+                       'electronicConductivity'         , ...
                        'effectiveElectronicConductivity', ...
                        'use_thermal'};
             

@@ -10,13 +10,15 @@ classdef CurrentCollectorInputParams < ElectronicComponentInputParams
         specificHeatCapacity % Heat capacity of current collector
 
         density % Density of current collector [kg m^-3]
+        
     end
     
     methods
         
         function paramobj = CurrentCollectorInputParams(jsonstruct)
+            
             paramobj = paramobj@ElectronicComponentInputParams(jsonstruct);
-            paramobj.externalCouplingTerm = struct();
+            
         end
         
     end

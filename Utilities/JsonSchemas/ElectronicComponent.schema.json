@@ -7,8 +7,12 @@
   "properties" : {
     "effectiveElectronicConductivity": {
       "$ref": "#/definitions/PhysicalQuantity",
-      "description": "the electronic conductivity of the component, adjusted to consider porous media effects",
+      "description": "the electronic conductivity of the component, adjusted to consider porous media effects (if any)",
       "symbol": "sigma_eff"
+    },
+    "electronicConductivity": {
+      "$ref": "#/definitions/PhysicalQuantity",
+      "description": "the electronic conductivity of the component",
+      "symbol": "sigma"
     }
-  }
 }

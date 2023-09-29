@@ -4,30 +4,26 @@
   "description": "Active Material",
   "type": "object",
 
-  "allOf": [{"$ref": "ElectronicComponent"},
-            {"properties" : { "Interface": {"$ref" : "Interface"},
-                              "diffusionModelType" : {"type" : "string",
-                                                      "enum" : ["full", "simple"]},
-                              "electronicConductivity": {
-                                "$ref": "#/definitions/PhysicalQuantity",
-                                "properties" : { "rdf_type" : {"const" : "htttp://emmo.info/UUID"}},
-                                "description": "the electronic conductivity of the material",
-                                "symbol": "sigma"
-                              },
-                              "density" : {
-                                "$ref": "#/definitions/PhysicalQuantity",
-                                "description": "the mass density of the material",
-                                "symbol": "rho"
-                              },
-                              "massFraction" : {
-                                "$ref": "#/definitions/PhysicalQuantity",
-                                "description": "the ratio of the mass of the material to the total mass of the phase or mixture",
-                                "symbol": "gamma"
-                              }
-                            }
-            }
-           ],
-  
+  "properties" : { "Interface": {"$ref" : "Interface"},
+                   "diffusionModelType" : {"type" : "string",
+                                           "enum" : ["full", "simple"]},
+                   "electronicConductivity": {
+                     "$ref": "#/definitions/PhysicalQuantity",
+                     "properties" : { "rdf_type" : {"const" : "htttp://emmo.info/UUID"}},
+                     "description": "the electronic conductivity of the material",
+                     "symbol": "sigma"
+                   },
+                   "density" : {
+                     "$ref": "#/definitions/PhysicalQuantity",
+                     "description": "the mass density of the material",
+                     "symbol": "rho"
+                   },
+                   "massFraction" : {
+                     "$ref": "#/definitions/PhysicalQuantity",
+                     "description": "the ratio of the mass of the material to the total mass of the phase or mixture",
+                     "symbol": "gamma"
+                   }
+                 }
   
   "required" : ["Interface", "SolidDiffusion"],
   

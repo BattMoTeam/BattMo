@@ -4,13 +4,9 @@ classdef ElectronicComponentInputParams < ComponentInputParams
 %    
     properties
 
-        %
-        % conductivity (effective value)
-        %
-        % In many models, this value is not given but computed from the other parameters
-        %
-        effectiveElectronicConductivity
-
+        electronicConductivity          % electronic conductivity
+        effectiveElectronicConductivity % effective electronic conductivity
+        
         use_thermal
         
     end

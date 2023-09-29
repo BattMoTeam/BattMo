@@ -10,13 +10,12 @@ classdef Electrode < BaseModel
 
         Coating          % instance of :class:`Electrochemistry.ActiveMaterial`
         CurrentCollector % instance of :class:`Electrochemistry.CurrentCollector`
-
+        
         %% Coupling parameters
        
         couplingTerm
 
         %% Computed parameters at setup
-
         include_current_collectors
         use_thermal
         
@@ -31,21 +30,14 @@ classdef Electrode < BaseModel
             
             model.AutoDiffBackend = SparseAutoDiffBackend('useBlocks', false);
             
-            fdnames = {'G', ...
-                       'couplingTerm', ...
-                       'electrode_case', ...
+            fdnames = {'G'                         , ...
+                       'couplingTerm'              , ...
+                       'include_current_collectors', ...
                        'use_thermal'};
             model = dispatchParams(model, paramobj, fdnames);
-            
-            switch paramobj.electrode_case
-              case 'default'
-                model.ActiveMaterial = ActiveMaterial(paramobj.ActiveMaterial);
-              case 'composite'
-                model.ActiveMaterial = CompositeActiveMaterial(paramobj.ActiveMaterial);
-              otherwise
-                error('electrode_case not recognized');
-            end
-            
+
+            model.Coating = Coating(paramobj.Coating);
+
             if paramobj.include_current_collectors
                 model.include_current_collectors = true;
                 assert(~isempty(paramobj.CurrentCollector), 'current collector input data is missing')
