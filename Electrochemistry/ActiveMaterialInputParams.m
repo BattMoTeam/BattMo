@@ -1,4 +1,4 @@
-classdef ActiveMaterialInputParams < ElectronicComponentInputParams
+classdef ActiveMaterialInputParams < ComponentInputParams
 %
 % Input parameter class for :code:`ActiveMaterial` model
 % 
@@ -13,34 +13,29 @@ classdef ActiveMaterialInputParams < ElectronicComponentInputParams
         %
         SolidDiffusion
         
-        InterDiffusionCoefficient % Interdiffusion coefficient parameter (diffusion between the particles)
-        
-        density % Density
+        %% Standard parameters
 
-        thermalConductivity  % Intrinsic Thermal conductivity of the active component
-        specificHeatCapacity % Specific Heat capacity of the active component
+        electronicConductivity % the electronic conductivity of the material (symbol: sigma)
+        density                % the mass density of the material (symbol: rho)
+        massFraction           % the ratio of the mass of the material to the total mass of the phase or mixture (symbol: gamma)
         
-        electricalConductivity % Electrical conductivity / [S m^-1]
+        thermalConductivity    % the intrinsic Thermal conductivity of the active component
+        specificHeatCapacity   % Specific Heat capacity of the active component
 
+        diffusionModelType     % diffusion model type, either 'full' or 'simplified'
+
+        %% Coupling parameters
+        
         externalCouplingTerm % structure to describe external coupling (used in absence of current collector)
-
-        diffusionModelType % Choose between type of diffusion model ('full' or 'simple'. The default is set to 'full')
-
-        BruggemanCoefficient
-
-        volumeFraction % Volume fraction of the whole material (binder and so on included)
         
-        activeMaterialFraction = 1 % Volume fraction occupied only by the active material (default value is 1)
-
-
     end
 
     methods
 
         function paramobj = ActiveMaterialInputParams(jsonstruct)
 
-            paramobj = paramobj@ElectronicComponentInputParams(jsonstruct);
-
+            paramobj = paramobj@ComponentInputParams(jsonstruct);
+            
             pick = @(fd) pickField(jsonstruct, fd);
 
             paramobj.Interface = InterfaceInputParams(pick('Interface'));
@@ -93,15 +88,18 @@ classdef ActiveMaterialInputParams < ElectronicComponentInputParams
                 
               case 'full'
                 
-                paramobj = mergeParameters(paramobj, {{'volumeFraction'}, {sd, 'volumeFraction'}});
-                paramobj = mergeParameters(paramobj, {{'activeMaterialFraction'}, {sd, 'activeMaterialFraction'}});
                 paramobj = mergeParameters(paramobj, {{itf, 'volumetricSurfaceArea'}, {sd, 'volumetricSurfaceArea'}});
                 
-                if ~isempty(paramobj.(sd).D)
+                if ~isempty(paramobj.(sd).diffusionCoefficient)
                     % we impose that cmax in the solid diffusion model and the interface are consistent
-                    paramobj = mergeParameters(paramobj, {{sd, 'cmax'}, {itf, 'cmax'}}, 'force', false);
-                    paramobj = mergeParameters(paramobj, {{sd, 'theta0'}, {itf, 'theta0'}}, 'force', false);
-                    paramobj = mergeParameters(paramobj, {{sd, 'theta100'}, {itf, 'theta100'}}, 'force', false);
+                    paramnames = {'saturationConcentration', ...
+                                  'guestStoichiometry100', ...
+                                  'guestStoichiometry0'};
+                    for iparam = 1 : numel(paramnames)
+                        paramname = paramnames{iparam};
+                        paramobj = mergeParameters(paramobj, {{sd, paramname}, {itf, paramname}}, 'force', false);
+                    end
+                    
                 end
 
               case 'interParticleOnly'
@@ -115,7 +113,7 @@ classdef ActiveMaterialInputParams < ElectronicComponentInputParams
                 
             end
 
-            paramobj = validateInputParams@ElectronicComponentInputParams(paramobj);
+            paramobj = validateInputParams@ComponentInputParams(paramobj);
             
         end
         

@@ -1,4 +1,4 @@
-classdef ElectrolyteInputParams < ElectroChemicalComponentInputParams
+classdef ElectrolyteInputParams < ComponentInputParams
 %
 % Input parameter class for :code:`Electrolyte` model
 %
@@ -30,12 +30,12 @@ classdef ElectrolyteInputParams < ElectroChemicalComponentInputParams
 
         function paramobj = ElectrolyteInputParams(jsonstruct)
 
-            paramobj = paramobj@ElectroChemicalComponentInputParams(jsonstruct);
+            paramobj = paramobj@ComponentInputParams(jsonstruct);
 
             pick = @(fd) pickField(jsonstruct, fd);
             paramobj.Separator = SeparatorInputParams(pick('Separator'));
 
-            paramobj.EffectiveElectricalConductivity = 'not used';
+            paramobj.effectiveElectronicConductivity = 'not used';
         end
 
     end

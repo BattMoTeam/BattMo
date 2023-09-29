@@ -1,4 +1,6 @@
 classdef ComponentInputParams < InputParams
+% Base class InputParams structure for components that have a grid.
+    
     properties
         G % grid
     end

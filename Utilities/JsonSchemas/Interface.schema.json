@@ -34,7 +34,7 @@
       "symbol": "k0"
     },
     "exchangeCurrentDensity": {
-      "$ref": "#/definitions/PhysicalQuantity",
+      "$ref": "function",
       "description": "the exchange current at the electrode-electrolyte interface under equilibrium conditions",
       "symbol": "j0"
     },
@@ -56,6 +56,11 @@
     "openCircuitPotential" : {
       "$ref" : "function",
       "description" : "a function to determine the open-circuit potential of the electrode under given conditions"
+    },
+    "chargeTransferCoefficient" : {
+      "$ref" : "number",
+      "description" : "the charge transfer coefficient that enters in the Butler-Volmer equation",
+      "symbol" : "alpha"
     }
   },
   

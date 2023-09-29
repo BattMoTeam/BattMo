@@ -6,7 +6,6 @@
 
   "allOf": [{"$ref": "ElectronicComponent"},
             {"properties" : { "Interface": {"$ref" : "Interface"},
-                              "SolidDiffusion": {"$ref" : "SolidDiffusionModel"},
                               "diffusionModelType" : {"type" : "string",
                                                       "enum" : ["full", "simple"]},
                               "electronicConductivity": {

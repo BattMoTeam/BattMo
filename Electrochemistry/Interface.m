@@ -5,24 +5,46 @@ classdef Interface < BaseModel
         % Physical constants
         constants = PhysicalConstants();
 
-        cmax
-        
-        % number of electron transfer
-        n
 
-        % Physicochemical properties
-        volumetricSurfaceArea  % Surface area to volume,       [m2 m^-3]
-        density                % [kg m^-3]
-        theta0                 % Minimum lithiation, 0% SOC    [-]
-        theta100               % Maximum lithiation, 100% SOC  [-]
-        k0                     % Reference rate constant       [m^2.5 mol^-0.5 s^-1]
-        Eak                    % Reaction activation energy    [J mol^-1]
-        alpha                  % coefficient in Butler-Volmer equation
+        %% Input parameters
+
+        % Standard parameters
+        
+        saturationConcentration      % the saturation concentration of the guest molecule in the host material
+        numberOfElectronsTransferred % stoichiometric number of electrons transferred in the electrochemical reaction
+        volumeFraction               % volume fraction of the active material
+        volumetricSurfaceArea        % surface area of the active material - electrolyte interface per volume of electrode
+        activationEnergyOfReaction   % the activation energy of the electrochemical reaction
+        reactionRateConstant         % the reaction rate constant of the electrochemical reaction
+
+        % The exchange current at the electrode-electrolyte interface under equilibrium conditions.
+        % Tf empty, the default expression using the reaction rate constant is used, see method
+        % Interface.updateReactionRateCoefficient. The function is given as a struct with the fields:
+        %   - type = {"function", "constant"} % if "constant" is selected, we use the reactionRateConstant value
+        %   - functionname :  matlab function name (should be available in path)
+        %   - argumentlist = ["cElectrodeSurface", "cmax"]
+        exchangeCurrentDensity
+        
+        guestStoichiometry100 % the ratio of the concentration of the guest molecule to the saturation concentration
+                              % of the guest molecule in a phase at a cell voltage that is defined as 100% SOC
+        guestStoichiometry0   % the ratio of the concentration of the guest molecule to the saturation concentration
+                              % of the guest molecule in a phase at a cell voltage that is defined as 0% SOC
+        density               % the mass density of the active material
+
+        % A function to determine the open-circuit potential of the electrode under given conditions
+        %   - type : "function";
+        %   - functionname :  matlab function name (should be available in path)
+        %   - argumentlist : ["cElectrode", "T", "cmax"]
+        openCircuitPotential
+        
+        chargeTransferCoefficient % the charge transfer coefficient that enters in the Butler-Volmer equation (symbol: alpha)
+
+        
+        %% Computed parameters at model setup
         
         computeOCPFunc % Function handler to compute OCP
-        
-        useJ0Func
-        computeJ0Func % used when useJ0Func is true. Function handler to compute J0 as function of cElectrode, see method updateReactionRateCoefficient
+        useJ0Func      % true if we use a function to compute the function computeJ0Func to compute the exchange current density
+        computeJ0Func  % used when useJ0Func is true. Function handler to compute J0 as function of cElectrode, see method updateReactionRateCoefficient
         
     end
 
@@ -32,25 +54,26 @@ classdef Interface < BaseModel
 
             model = model@BaseModel();
 
-             % OBS : All the submodels should have same backend (this is not assigned automaticallly for the moment)
-            model.AutoDiffBackend = SparseAutoDiffBackend('useBlocks', false);
-
-            fdnames = {'G'                    , ...
-                       'cmax'                 , ...
-                       'n'                    , ...
-                       'volumetricSurfaceArea', ...  
-                       'density'              , ...                
-                       'theta0'               , ...                 
-                       'theta100'             , ...               
-                       'k0'                   , ...                     
-                       'Eak'                  , ...                    
-                       'alpha'};
-
+            fdnames = {'G'                           , ...
+                       'saturationConcentration'     , ...
+                       'numberOfElectronsTransferred', ...
+                       'volumeFraction'              , ...
+                       'volumetricSurfaceArea'       , ...
+                       'activationEnergyOfReaction'  , ...
+                       'reactionRateConstant'        , ...
+                       'exchangeCurrentDensity'      , ...
+                       'guestStoichiometry100'       , ...
+                       'guestStoichiometry0'         , ...
+                       'density'                     , ...
+                       'openCircuitPotential'        , ...
+                       'chargeTransferCoefficient'};
+            
             model = dispatchParams(model, paramobj, fdnames);
 
-            model.computeOCPFunc = str2func(paramobj.OCP.functionname);
-            
-            if ~isempty(paramobj.j0)
+            model.computeOCPFunc = str2func(paramobj.openCircuitPotential.functionname);
+
+            j0 = paramobj.exchangeCurrentDensity;
+            if ~isempty(j0)
                 switch paramobj.j0.type
                   case 'function'
                     model.useJ0Func = true;

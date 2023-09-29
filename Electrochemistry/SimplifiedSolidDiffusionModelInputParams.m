@@ -1,7 +1,8 @@
 classdef SimplifiedSolidDiffusionModelInputParams < SolidDiffusionModelInputParams 
 %
-% See simplified model presented in *Comparison of approximate solution methods for the solid phase diffusion equation in a porous electrode model* by Zhang, Qi and White, Ralph E (
-% Journal of power sources, 2007) :cite:p:`zhang2007comparison`
+% See simplified model presented in *Comparison of approximate solution methods for the solid phase diffusion equation
+% in a porous electrode model* by Zhang, Qi and White, Ralph E ( Journal of power sources, 2007)
+% :cite:p:`zhang2007comparison`
 %
     methods
         

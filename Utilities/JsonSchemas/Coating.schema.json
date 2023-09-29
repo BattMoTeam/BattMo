@@ -8,6 +8,11 @@
               {"properties" : { "ActiveMaterial": {"$ref" : "ActiveMaterial"},
                                 "Binder": {"$ref" : "Binder"},
                                 "ConductingAdditive": {"$ref" : "ConductingAdditive"},
+                                "density" : {
+                                  "$ref": "#/definitions/PhysicalQuantity",
+                                  "description": "the mass density of the material",
+                                  "symbol": "rho"
+                                },
                                 "bruggemanCoefficient" : {
                                   "$ref": "#/definitions/PhysicalQuantity",
                                   "description": "the Bruggeman coefficient for effective transport in porous media",

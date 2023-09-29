@@ -14,26 +14,40 @@
     "dEdtLimit" : 0.01
   },
   "NegativeElectrode": {
-    "ActiveMaterial": {
-      "volumeFraction": 0.8,
-      "specificHeatCapacity": 632.0,
-      "thermalConductivity": 1.04,
-      "InterDiffusionCoefficient": 1e-14,
-      "InterDiffusionCoefficientComment" : "from Ecker 2015",
-      "electricalConductivity": 100,
-      "BruggemanCoefficient": 1.5,
-      "Interface": {
-        "isFile": true,
-        "filename": "ParameterData/MaterialProperties/Graphite/graphite.json"
+    "Coating" : {
+      "density" : 2000,
+      "bruggemanCoefficient": 1.5,
+      "ActiveMaterial": {
+        "massFraction": 0.94,
+        "density": 2240,
+        "specificHeatCapacity": 632.0,
+        "thermalConductivity": 1.04,
+        "InterDiffusionCoefficient": 1e-14,
+        "InterDiffusionCoefficientComment" : "from Ecker 2015",
+        "electronicConductivity": 100,
+        "Interface": {
+          "isFile": true,
+          "filename": "ParameterData/MaterialProperties/Graphite/graphite.json"
+        },
+        "diffusionModelType" : "full",
+        "SolidDiffusion" : {
+          "activationEnergyOfDiffusion": 5000,
+          "referenceDiffusionCoefficient": 3.9e-14,
+          "particleRadius": 1e-06,
+          "N": 10
+        }},
+      "Binder" : {
+        "density" : {"value" : 1.10,
+                     "unit" : "gram/((centi*meter)^3)"},
+        "massFraction" : 0.03,
+        "electronicConductivity" : 100
       },
-      "diffusionModelType" : "full",
-      "SolidDiffusion" : {
-        "EaD": 5000,
-        "D0": 3.9e-14,
-        "rp": 1e-06,
-        "N": 10
+      "ConductingAdditive" : {
+        "density" : {"value" : 1.95,
+                     "unit" : "gram/((centi*meter)^3)"},
+        "massFraction" : 0.03,
+        "electronicConductivity" : 100
       }
-      
     },
     "CurrentCollector": {
       "isFile": true,
@@ -41,25 +55,40 @@
     }
   },
   "PositiveElectrode": {
-    "ActiveMaterial": {
-      "volumeFraction": 0.8,
-      "specificHeatCapacity": 700.0,
-      "thermalConductivity": 2.1,
-      "InterDiffusionCoefficient": 1e-14,
-      "electricalConductivity": 100,
-      "BruggemanCoefficient": 1.5,
-      "Interface": {
-        "isFile": true,
-        "filename": "ParameterData/MaterialProperties/NMC/nmc111.json"
+    "Coating" : {
+      "density" : 4000,
+      "bruggemanCoefficient": 1.5,
+      "ActiveMaterial": {
+        "massFraction": 0.95,
+        "density": 4650,
+        "specificHeatCapacity": 700.0,
+        "thermalConductivity": 2.1,
+        "InterDiffusionCoefficient": 1e-14,
+        "electronicConductivity": 100,
+        "Interface": {
+          "isFile": true,
+          "filename": "ParameterData/MaterialProperties/NMC/nmc111.json"
+        },
+        "diffusionModelType" : "full",
+        "SolidDiffusion": {
+          "activationEnergyOfDiffusion": 5000,
+          "referenceDiffusionCoefficient": 1e-14,
+          "particleRadius": 1e-06,
+          "N": 10
+        }
       },
-      "diffusionModelType" : "full",
-      "SolidDiffusion": {
-        "EaD": 5000,
-        "D0": 1e-14,
-        "rp": 1e-06,
-        "N": 10
-      }
-    },
+      "Binder" : {
+        "density" : {"value" : 1.75,
+                     "unit" : "gram/((centi*meter)^3)"},
+        "massFraction" : 0.25,
+        "electronicConductivity" : 100
+      },
+      "ConductingAdditive" : {
+        "density" : {"value" : 1.83,
+                     "unit" : "gram/((centi*meter)^3)"},
+        "massFraction" : 0.25,
+        "electronicConductivity" : 100
+      }},
     "CurrentCollector": {
       "isFile": true,
       "filename": "ParameterData/MaterialProperties/Aluminium/aluminium.json"

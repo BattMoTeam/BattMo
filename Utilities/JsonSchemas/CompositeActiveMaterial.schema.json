@@ -4,7 +4,7 @@
   "description": "Active Material containing a mix of Silicon and Graphite",
   "type": "object",
 
-  "properties" : { "Graphite" : { "$ref" : "#/$defs/material"},
+  "properties" : { "FirstMaterial" : { "$ref" : "#/$defs/material"},
                    "SecondMaterial" : { "$ref" : "#/$defs/material"},
                    "volumeFraction" : {"type" : "number"},
                    "use_particle_diffusion" : {"type" : "boolean"}
@@ -12,7 +12,7 @@
   "$defs" : {"material" : { "allOf" : [ {"$ref": "thermalParameters"},
                                         {"properties" : { "Interface": {"$ref" : "Interface"},
                                                           "SolidDiffusion": {"$ref" : "SolidDiffusionModel"},
-                                                          "electricalConductivity": {"type" : "number"},
+                                                          "electronicConductivity": {"type" : "number"},
                                                           "diffusionModelType" : {"type" : "string",
                                                                                   "enum" : ["full", "simple"]},
                                                           "activeMaterialFraction" : {"type" : "number"},

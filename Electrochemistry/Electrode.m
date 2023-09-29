@@ -1,20 +1,23 @@
 classdef Electrode < BaseModel
 %
-% The Electrode model is made of two sub-models : an electrode active component (see
-% :class:`Electrochemistry.ActiveMaterial`) and a current collector (see
+% The Electrode model is made of two sub-models : a coating (see
+% :class:`Electrochemistry.Coating`) and a current collector (see
 % :class:`Electrochemistry.CurrentCollector`)
 %
     properties
-        
-        ActiveMaterial   % instance of :class:`Electrochemistry.ActiveMaterial`
+
+        %% Sub-Models
+
+        Coating          % instance of :class:`Electrochemistry.ActiveMaterial`
         CurrentCollector % instance of :class:`Electrochemistry.CurrentCollector`
 
+        %% Coupling parameters
+       
         couplingTerm
 
-        electrode_case 
-        
-        include_current_collectors
+        %% Computed parameters at setup
 
+        include_current_collectors
         use_thermal
         
     end
@@ -112,8 +115,8 @@ classdef Electrode < BaseModel
                 am_phi = state.(am).phi;
                 cc_phi = state.(cc).phi;
 
-                am_sigmaeff = elde.(am).EffectiveElectricalConductivity;
-                cc_sigmaeff = elde.(cc).EffectiveElectricalConductivity;
+                am_sigmaeff = elde.(am).effectiveElectronicConductivity;
+                cc_sigmaeff = elde.(cc).effectiveElectronicConductivity;
                 
                 %% We setup the current transfers between CurrentCollector and ActiveMaterial
                 

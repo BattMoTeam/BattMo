@@ -23,8 +23,8 @@ classdef CurrentCollector < ElectronicComponent
             
             model = dispatchParams(model, paramobj, fdnames);
             
-            % The parameter EffectiveElectricalConductivity in CurrentCollectorInputParams is given as scalar
-            model.EffectiveElectricalConductivity = model.EffectiveElectricalConductivity*ones(model.G.cells.num, 1);
+            % The parameter effectiveElectronicConductivity in CurrentCollectorInputParams is given as scalar
+            model.effectiveElectronicConductivity = model.effectiveElectronicConductivity*ones(model.G.cells.num, 1);
             
         end
         

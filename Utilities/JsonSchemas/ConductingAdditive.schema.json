@@ -4,7 +4,7 @@
     "description": "ConductingAdditive",
     "type": "object",
   
-    "allOf": [{"properties" : { "electricalConductivity": {
+    "allOf": [{"properties" : { "electronicConductivity": {
                                   "$ref": "#/definitions/PhysicalQuantity",
                                   "description": "the electronic conductivity of the material",
                                   "symbol": "sigma"

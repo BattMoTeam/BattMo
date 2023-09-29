@@ -6,33 +6,33 @@ classdef ActiveMaterial < ElectronicComponent
         % instance of :class:`Interface <Electrochemistry.Electrodes.Interface>`
         %
 
+        %% Sub-Models
+        
         Interface
-
         SolidDiffusion        
 
-        porosity                      % porosity
-        volumeFraction                % Volume fraction of the whole material (binder and so on included)
-        activeMaterialFraction        % Volume fraction occupied only by the active material
-        electricalConductivity        % Electrical conductivity
-        InterDiffusionCoefficient     % Inter particle diffusion coefficient parameter (diffusion between the particles)
-        density                       %
-        thermalConductivity           % Intrinsic Thermal conductivity of the active component
-        specificHeatCapacity          % Specific Heat capacity of the active component
+        %% Input parameters
 
-        EffectiveDiffusionCoefficient % 
+        % Standard parameters
 
-        EffectiveThermalConductivity  % Effective Thermal Conductivity of the active component
-        EffectiveVolumetricHeatCapacity % Effective Heat Capacity of the active component
-
-        diffusionModelType
+        electronicConductivity % the electronic conductivity of the material (symbol: sigma)
+        density                % the mass density of the material (symbol: rho)
+        massFraction           % the ratio of the mass of the material to the total mass of the phase or mixture (symbol: gamma)
         
-        externalCouplingTerm          % only used in no current collector
+        thermalConductivity    % the intrinsic Thermal conductivity of the active component
+        specificHeatCapacity   % Specific Heat capacity of the active component
 
-        BruggemanCoefficient
+        % Coupling parameters
+        
+        externalCouplingTerm % structure to describe external coupling (used in absence of current collector)
 
-        use_particle_diffusion
-        use_interparticle_diffusion
-        standAlone
+        % Other parameters
+        
+        standAlone % Set to true if model is used as main model for development purpose (standard use is as a sub-model)
+
+        %% Computed parameters at model setup
+
+        diffusionModelType % either 'full' or 'simple'
         
     end
     
@@ -44,18 +44,17 @@ classdef ActiveMaterial < ElectronicComponent
         %
             model = model@ElectronicComponent(paramobj);
             
-            fdnames = {'activeMaterialFraction', ...
-                       'thermalConductivity'   , ...
-                       'electricalConductivity', ...
-                       'density'               , ...
-                       'specificHeatCapacity'  , ...
+            fdnames = {'electronicConductivity', ... 
+                       'density'               , ...                
+                       'massFraction'          , ...
+                       'thermalConductivity'   , ...    
+                       'specificHeatCapacity'  , ...   
+                       'volumeFraction'        , ... 
                        'externalCouplingTerm'  , ...
-                       'diffusionModelType'    , ...
-                       'use_thermal'           , ...
-                       'BruggemanCoefficient'};
-            
+                       'diffusionModelType'};
+
             model = dispatchParams(model, paramobj, fdnames);
-            
+
             % Setup Interface component
             paramobj.Interface.G = model.G;
             
@@ -72,22 +71,16 @@ classdef ActiveMaterial < ElectronicComponent
               case 'full'
                 paramobj.SolidDiffusion.np = model.G.cells.num;
                 model.SolidDiffusion = FullSolidDiffusionModel(paramobj.SolidDiffusion);
-                model.use_particle_diffusion = true;
-                model.use_interparticle_diffusion = false;
-              case 'interParticleOnly'
-                model.InterDiffusionCoefficient = paramobj.InterDiffusionCoefficient;
-                model.use_particle_diffusion = false;
-                model.use_interparticle_diffusion = true;
               otherwise
                 error('Unknown diffusionModelType %s', diffusionModelType);
             end
             
             nc = model.G.cells.num;
 
-            model.volumeFraction = paramobj.volumeFraction*ones(nc, 1);
-            model.porosity       = 1 - model.volumeFraction;
+            % model.volumeFraction = paramobj.volumeFraction*ones(nc, 1);
+            % model.porosity       = 1 - model.volumeFraction;
 
-            model = model.setupDependentProperties();
+            % model = model.setupDependentProperties();
 
             % standAlone=true for standalone simulation of active material. This flag is used only in
             % registerVarAndPropfuncNames (does not impact simulation). Default is false.
@@ -100,18 +93,8 @@ classdef ActiveMaterial < ElectronicComponent
             vf = model.volumeFraction;
             brugg = model.BruggemanCoefficient;
             
-            % setup effective electrical conductivity using Bruggeman approximation
-            model.EffectiveElectricalConductivity = model.electricalConductivity.*vf.^brugg;
-
-            
-            if model.use_interparticle_diffusion
-                
-                interDiff = model.InterDiffusionCoefficient;
-                amFrac    = model.activeMaterialFraction;
-                
-                model.EffectiveDiffusionCoefficient = interDiff.*(vf.*amFrac).^brugg;
-                
-            end
+            % setup effective electronic conductivity using Bruggeman approximation
+            model.effectiveElectronicConductivity = model.electronicConductivity.*vf.^brugg;
 
             if model.use_thermal
                 % setup effective thermal conductivity
@@ -377,7 +360,7 @@ classdef ActiveMaterial < ElectronicComponent
             cleanState.(itf).cElectrolyte   = state.(itf).cElectrolyte;
             cleanState.(itf).phiElectrolyte = state.(itf).phiElectrolyte;
             
-            sigma = model.electricalConductivity;
+            sigma = model.electronicConductivity;
             vf    = model.volumeFraction;
             brugg = model.BruggemanCoefficient;
             

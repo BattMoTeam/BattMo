@@ -5,11 +5,14 @@ classdef SolidDiffusionModel < BaseModel
         % Physical constants
         constants = PhysicalConstants();
 
-        % Physicochemical properties
-        volumetricSurfaceArea  % Surface area to volume,       [m2 m^-3]
-        rp                     % Particle radius               [m]
-        D0                     % Diffusion coefficient         [m]
-        EaD
+        %% Input parameters
+
+        % Standard input parameters
+        
+        particleRadius                % the characteristic radius of the particle (symbol: rp)
+        activationEnergyOfDiffusion   % the Arrhenius-type activation energy for diffusion (symbol: EaD)
+        referenceDiffusionCoefficient % the pre-exponential reference diffusion coefficient in an Arrhenius-type equation (symbol: D0)
+        volumetricSurfaceArea         % surface area of the active material - electrolyte interface per volume of electrode
 
     end
 
@@ -22,10 +25,10 @@ classdef SolidDiffusionModel < BaseModel
              % OBS : All the submodels should have same backend (this is not assigned automaticallly for the moment)
             model.AutoDiffBackend = SparseAutoDiffBackend('useBlocks', false);
 
-            fdnames = {'rp'                    , ...
-                       'volumetricSurfaceArea' , ...
-                       'EaD'                   , ...
-                       'D0'};
+            fdnames = {'particleRadius'               , ...
+                       'activationEnergyOfDiffusion'  , ...
+                       'referenceDiffusionCoefficient', ...
+                       'volumetricSurfaceArea'};
 
             model = dispatchParams(model, paramobj, fdnames);
         

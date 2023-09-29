@@ -1,4 +1,4 @@
-classdef Electrolyte < ElectroChemicalComponent
+classdef Electrolyte < BaseModel
 
     properties
 

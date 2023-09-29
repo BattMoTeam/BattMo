@@ -20,6 +20,6 @@
              ],
     
     
-    "required" : ["electricalConductivity"]
+    "required" : ["electronicConductivity"]
   
 }
