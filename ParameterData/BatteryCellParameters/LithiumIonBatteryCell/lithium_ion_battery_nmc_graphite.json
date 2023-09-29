@@ -15,6 +15,7 @@
   },
   "NegativeElectrode": {
     "ActiveMaterial": {
+      "volumeFraction": 0.8,
       "specificHeatCapacity": 632.0,
       "thermalConductivity": 1.04,
       "InterDiffusionCoefficient": 1e-14,
@@ -41,6 +42,7 @@
   },
   "PositiveElectrode": {
     "ActiveMaterial": {
+      "volumeFraction": 0.8,
       "specificHeatCapacity": 700.0,
       "thermalConductivity": 2.1,
       "InterDiffusionCoefficient": 1e-14,

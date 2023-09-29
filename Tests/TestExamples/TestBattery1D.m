@@ -8,7 +8,8 @@ classdef TestBattery1D < matlab.unittest.TestCase
         diffusionModelType         = {'simple', 'full'};
         testSize                   = {'short', 'long'};
         createReferenceData        = {false};
-
+        compareWithReferenceData   = {true};
+        
     end
 
     methods
@@ -164,7 +165,14 @@ classdef TestBattery1D < matlab.unittest.TestCase
 
     methods (Test)
 
-        function testBattery(test, controlPolicy, use_thermal, include_current_collectors, diffusionModelType, testSize, createReferenceData)
+        function testBattery(test                      , ...
+                             controlPolicy             , ...
+                             use_thermal               , ...
+                             include_current_collectors, ...
+                             diffusionModelType        , ...
+                             testSize                  , ...
+                             createReferenceData       , ...
+                             compareWithReferenceData)
 
             states = test1d(test, controlPolicy, use_thermal, include_current_collectors, diffusionModelType, testSize);
 
@@ -174,9 +182,11 @@ classdef TestBattery1D < matlab.unittest.TestCase
             if createReferenceData
                 refstate = states{end};
                 save(filename, 'refstate');
-            else
+            elseif compareWithReferenceData
                 load(filename);
                 verifyStruct(test, states{end}, refstate);
+            else
+                % do nothing
             end
 
         end

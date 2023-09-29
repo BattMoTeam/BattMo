@@ -1,6 +1,5 @@
 {
   "cmax": 311307.4,
-  "volumeFraction": 0.8,
   "volumetricSurfaceArea": 723600,
   "density": 2330,
   "comment" : "value of density if for Si atoms",
