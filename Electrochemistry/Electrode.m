@@ -16,6 +16,7 @@ classdef Electrode < BaseModel
         couplingTerm
 
         %% Computed parameters at setup
+        
         include_current_collectors
         use_thermal
         
@@ -58,30 +59,30 @@ classdef Electrode < BaseModel
 
             % define shorthands
             cc = 'CurrentCollector';
-            am = 'ActiveMaterial';
-
+            co = 'Coating';
+            
             if ~model.include_current_collectors
-                model.subModelNameList = {am};
+                model.subModelNameList = {co};
             end
            
             model = registerVarAndPropfuncNames@BaseModel(model);
 
             if ~model.include_current_collectors
-                model = model.registerVarName(VarName({am}, 'jExternal'));
+                model = model.registerVarName({co, 'jExternal'});
             end
             
             
             if model.include_current_collectors
 
                 fn = @Electrode.updateCoupling;
-                inputnames = {{am, 'phi'}, ...
+                inputnames = {{co, 'phi'}, ...
                               {cc , 'phi'}};
-                model = model.registerPropFunction({{am, 'jCoupling'}, fn, inputnames});
+                model = model.registerPropFunction({{co, 'jCoupling'}, fn, inputnames});
                 model = model.registerPropFunction({{cc, 'jCoupling'}, fn, inputnames});
                 model = model.registerPropFunction({{cc, 'eSource'}  , fn, inputnames});
 
                 if model.use_thermal
-                    model = model.registerPropFunction({{am, 'jFaceCoupling'}, fn, inputnames});
+                    model = model.registerPropFunction({{co, 'jFaceCoupling'}, fn, inputnames});
                     model = model.registerPropFunction({{cc, 'jFaceCoupling'}, fn, inputnames});
                 end
                 

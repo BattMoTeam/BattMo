@@ -140,6 +140,91 @@ classdef Coating < ElectronicComponent
             model.ConductingAdditive = ConductingAdditive(paramobj.ConductingAdditive);
             
         end
+
+        function model = registerVarAndPropfuncNames(model)
+
+            %% Declaration of the Dynamical Variables and Function of the model
+            % (setup of varnameList and propertyFunctionList)
+
+            model = registerVarAndPropfuncNames@ElectronicComponent(model);
+
+            am  = 'ActiveMaterial';
+            itf = 'Interface';
+            sd  = 'SolidDiffusion';
+            
+            varnames = {'jCoupling', ...
+                        'jExternal', ...
+                        'SOC'      , ...
+                        'Rvol'};
+
+            model = model.registerVarNames(varnames);            
+
+            if model.use_thermal
+                varnames = {'jFaceCoupling', ...
+                            'jFaceExternal'};
+                model = model.registerVarNames(varnames);
+
+            end
+            
+            fn = @Coating.updateCurrentSource;
+            model = model.registerPropFunction({'eSource', fn, {'Rvol'}});
+            
+            fn = @Coating.updatePhi;
+            model = model.registerPropFunction({{am, itf, 'phiElectrode'}, fn, {'phi'}});
+            
+            fn = @Coating.dispatchTemperature;
+            model = model.registerPropFunction({{am, 'T'}, fn, {'T'}});
+
+            fn = @Coating.updatejBcSource;
+            model = model.registerPropFunction({'jBcSource', fn, {'jCoupling', 'jExternal'}});
+
+            if model.use_thermal
+                fn = @Coating.updatejFaceBc;
+                model = model.registerPropFunction({'jFaceBc', fn, {'jFaceCoupling', 'jFaceExternal'}});
+            end
+            
+            fn = @Coating.updatejExternal;
+            model = model.registerPropFunction({'jExternal', fn, {}});
+            if model.use_thermal
+                model = model.registerPropFunction({'jFaceExternal', fn, {}});
+            end
+            
+            fn = @Coating.updatejCoupling;
+            model = model.registerPropFunction({'jCoupling', fn, {}});
+            if model.use_thermal
+                model = model.registerPropFunction({'jFaceCoupling', fn, {}});
+            end
+
+            fn = @Coating.updateRvol;
+            model = model.registerPropFunction({'Rvol', fn, {{am, itf, 'R'}}});
+            
+            fn = @Coating.updateSOC;
+            model = model.registerPropFunction({'SOC', fn, {{am, sd, 'cAverage'}}});
+
+
+            switch model.(am).diffusionModelType
+                    
+              case 'simple'
+                
+                fn = @Coating.updateMassSource;
+                model = model.registerPropFunction({{am, 'massSource'}, fn, {'Rvol'}});
+
+              case 'full'
+
+                %  nothing extra
+                
+              otherwise
+                
+                error('diffusionModelType not recognized.');
+                
+            end
+
+            
+            % We declare SOC as an extra variable, as it is not used in assembly (otherwise it will be systematically
+            % computed but not used)
+            model = model.setAsExtraVarName('SOC');
+
+        end
         
     end
 end

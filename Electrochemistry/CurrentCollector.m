@@ -37,10 +37,14 @@ classdef CurrentCollector < ElectronicComponent
             model = registerVarAndPropfuncNames@ElectronicComponent(model);
             
             varnames = {'jCoupling', ...
-                        'jExternal', ...
-                        'jFaceCoupling', ...
-                        'jFaceExternal'};
+                        'jExternal'};
             model = model.registerVarNames(varnames);
+
+            if model.use_thermal
+                varnames = {'jFaceCoupling', ...
+                            'jFaceExternal'};
+                model = model.registerVarNames(varnames);
+            end
             
             fn = @CurrentCollector.updatejBcSource;
             model = model.registerPropFunction({'jBcSource', fn, {'jCoupling', 'jExternal'}});

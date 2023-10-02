@@ -108,34 +108,28 @@ classdef ActiveMaterial < BaseModel
             %% Declaration of the Dynamical Variables and Function of the model
             % (setup of varnameList and propertyFunctionList)
 
-            model = registerVarAndPropfuncNames@ElectronicComponent(model);
+            model = registerVarAndPropfuncNames@BaseModel(model);
             
             itf = 'Interface';
             sd  = 'SolidDiffusion';
-            
-            varnames = {'jCoupling', ...
-                        'jExternal', ...
-                        'SOC'      , ...
-                        'Rvol'};
-            model = model.registerVarNames(varnames);            
 
-            if model.use_thermal
-                varnames = {'jFaceCoupling', ...
-                            'jFaceExternal'};
-                model = model.registerVarNames(varnames);
-            end
+            varnames = {'T'};
+            model = model.registerVarNames(varnames);
+
+            fn = @ActiveMaterial.dispatchTemperature;
+            model = model.registerPropFunction({{sd, 'T'}, fn, {'T'}});
+            model = model.registerPropFunction({{itf, 'T'}, fn, {'T'}});
             
-           
             if strcmp(model.diffusionModelType, 'simple')
                 varnames = {'c'        , ...
                             'massCons' , ...
                             'massAccum', ...
-                            'massFlux', ...
                             'massSource'};
                 model = model.registerVarNames(varnames);
             end
             
             if model.standAlone
+                error('to be fixed')
                 varnames = {'controlCurrentSource'};
                 model = model.registerVarNames(varnames);
                 varnames = {{itf, 'SOC'}, ...
@@ -148,18 +142,6 @@ classdef ActiveMaterial < BaseModel
                 model = model.registerStaticVarNames(varnames);
                 
             end
-            
-            fn = @ActiveMaterial.updateCurrentSource;
-            model = model.registerPropFunction({'eSource', fn, {'Rvol'}});
-            
-            fn = @ActiveMaterial.updatePhi;
-            model = model.registerPropFunction({{itf, 'phiElectrode'}, fn, {'phi'}});
-            
-            fn = @ActiveMaterial.dispatchTemperature;
-            model = model.registerPropFunction({{itf, 'T'}, fn, {'T'}});
-            if model.use_particle_diffusion
-                model = model.registerPropFunction({{sd, 'T'}, fn, {'T'}});
-            end
 
             switch model.diffusionModelType
 
@@ -169,50 +151,23 @@ classdef ActiveMaterial < BaseModel
                 model = model.registerPropFunction({{sd, 'cAverage'}, fn, {'c'}});
                 model = model.registerPropFunction({{itf, 'cElectrodeSurface'}, fn, {{sd, 'cSurface'}}});
                 
-                fn = @ActiveMaterial.updateMassFlux;
-                model = model.registerPropFunction({'massFlux', fn, {'c'}});
-
-                fn = @ActiveMaterial.updateMassSource;
-                model = model.registerPropFunction({'massSource', fn, {'Rvol'}});
-
                 fn = @ActiveMaterial.updateMassConservation;
-                model = model.registerPropFunction({'massCons', fn, {'massAccum', 'massFlux', 'massSource'}});
+                model = model.registerPropFunction({'massCons', fn, {'massAccum', 'massSource'}});
 
                 fn = @ActiveMaterial.updateRvol;
-                model = model.registerPropFunction({'Rvol', fn, {{itf, 'R'}}});
                 model = model.registerPropFunction({{sd, 'Rvol'}, fn, {{itf, 'R'}}});
                 
-                fn = @ActiveMaterial.updateSOC;
-                model = model.registerPropFunction({'SOC', fn, {{sd, 'cAverage'}}});
-                
+                fn = @ActiveMaterial.assembleAccumTerm;
+                fn = {fn, @(propfunc) PropFunction.accumFuncCallSetupFn(propfunc)};
+                model = model.registerPropFunction({'massAccum', fn, {'c'}});
+
               case 'full'
 
                 fn = @ActiveMaterial.updateConcentrations;
                 model = model.registerPropFunction({{itf, 'cElectrodeSurface'}, fn, {{sd, 'cSurface'}}});
 
                 fn = @ActiveMaterial.updateRvol;
-                model = model.registerPropFunction({'Rvol', fn, {{itf, 'R'}}});
                 model = model.registerPropFunction({{sd, 'Rvol'}, fn, {{itf, 'R'}}});
-
-                fn = @ActiveMaterial.updateSOC;
-                model = model.registerPropFunction({'SOC', fn, {{sd, 'cAverage'}}});
-                
-              case 'interParticleOnly'
-
-                fn = @ActiveMaterial.updateConcentrations;
-                model = model.registerPropFunction({{itf, 'cElectrodeSurface'}, fn, {'c'}});
-                
-                fn = @ActiveMaterial.updateRvol;
-                model = model.registerPropFunction({'Rvol', fn, {{itf, 'R'}}});
-
-                fn = @ActiveMaterial.updateMassFlux;
-                model = model.registerPropFunction({'massFlux', fn, {'c'}});
-                
-                fn = @ActiveMaterial.updateMassSource;
-                model = model.registerPropFunction({'massSource', fn, {'Rvol'}});
-                
-                fn = @ActiveMaterial.updateMassConservation;
-                model = model.registerPropFunction({'massCons', fn, {'massAccum', 'massFlux', 'massSource'}});
 
               otherwise
                 
@@ -221,6 +176,8 @@ classdef ActiveMaterial < BaseModel
             end
 
             if model.standAlone
+
+                error('to be checked');
                 
                 fn = @ActiveMaterial.updateStandalonejBcSource;
                 model = model.registerPropFunction({'jBcSource', fn, {'controlCurrentSource'}});
@@ -229,39 +186,8 @@ classdef ActiveMaterial < BaseModel
                 fn = {fn, @(propfunction) PropFunction.drivingForceFuncCallSetupFn(propfunction)};
                 model = model.registerPropFunction({'controlCurrentSource', fn, {}});
                 
-            else
-
-                fn = @ActiveMaterial.updatejBcSource;
-                model = model.registerPropFunction({'jBcSource', fn, {'jCoupling', 'jExternal'}});
-
-                if model.use_thermal
-                    fn = @ActiveMaterial.updatejFaceBc;
-                    model = model.registerPropFunction({'jFaceBc', fn, {'jFaceCoupling', 'jFaceExternal'}});
-                end
-                
-                fn = @ActiveMaterial.updatejExternal;
-                model = model.registerPropFunction({'jExternal', fn, {}});
-                if model.use_thermal
-                    model = model.registerPropFunction({'jFaceExternal', fn, {}});
-                end
-                
-                fn = @ActiveMaterial.updatejCoupling;
-                model = model.registerPropFunction({'jCoupling', fn, {}});
-                if model.use_thermal
-                    model = model.registerPropFunction({'jFaceCoupling', fn, {}});
-                end
             end
             
-            %% Function called to assemble accumulation terms (functions takes in fact as arguments not only state but also state0 and dt)
-            if model.use_particle_diffusion & strcmp(model.diffusionModelType, 'simple') | ~model.use_particle_diffusion
-                fn = @ActiveMaterial.assembleAccumTerm;
-                fn = {fn, @(propfunc) PropFunction.accumFuncCallSetupFn(propfunc)};
-                model = model.registerPropFunction({'massAccum', fn, {'c'}});
-            end
-
-            % we remove this declaration as it is not used in assembly (otherwise it may be computed but not used)
-            model = model.setAsExtraVarName('SOC');
-           
         end
         
         

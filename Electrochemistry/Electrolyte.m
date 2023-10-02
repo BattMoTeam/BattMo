@@ -82,14 +82,55 @@ classdef Electrolyte < BaseModel
             %% Declaration of the Dynamical Variables and Function of the model
             % (setup of varnameList and propertyFunctionList)
 
-            model = registerVarAndPropfuncNames@ElectroChemicalComponent(model);
+            model = registerVarAndPropfuncNames@BaseModel(model);
 
-            varnames = { 'D'                      , ...
-                         VarName({}, 'dmudcs', 2) , ...
-                         'conductivity'           , ...
-                         'diffFlux'};
+            varnames = {};
+            
+            % Temperature [K]
+            varnames{end + 1} = 'T';
+            % Electrical potential [V]
+            varnames{end + 1} = 'phi';
+            % Current Source [A] - one value per cell
+            varnames{end + 1} = 'eSource';
+            % Current Source at boundary [A] - one value per cell (will be typically set to zero for non-boundary cells)
+            varnames{end + 1} = 'jBcSource';
+            % Conductivity [S m^-1]
+            varnames{end + 1} = 'conductivity';
+            % Current density flux [A] - one value per face
+            varnames{end + 1} = 'j';
+            % Residual for the charge conservation equation
+            varnames{end + 1} = 'chargeCons';
+            % Concentration
+            varnames{end + 1} = 'c';
+            % Source term in the mass conservation equation
+            varnames{end + 1} = 'massSource';
+            % Flux term in the mass conservation equation
+            varnames{end + 1} = 'massFlux';
+            % Accumulation term in the mass conservation equation
+            varnames{end + 1} = 'massAccum';
+            % Residual of the mass conservation equation
+            varnames{end + 1} = 'massCons';
+            % Diffusion coefficient
+            varnames{end + 1} = 'D';
+            % Derivative of the chemical potential with respect to the concentrations
+            varnames{end + 1} = VarName({}, 'dmudcs', 2);
+            % ionic conductivity
+            varnames{end + 1} = 'conductivity';
+            % diffusion fluzes
+            varnames{end + 1} = 'diffFlux';
+            
             model = model.registerVarNames(varnames);
 
+            if model.use_thermal
+                varnames = {'jFace', ...
+                            'jFaceBc'};
+                model = model.registerVarNames(varnames);                
+            end
+            
+            fn = @Electrolyte.updateChargeConservation;
+            inputnames = {'j', 'jBcSource', 'eSource'};
+            model = model.registerPropFunction({'chargeCons', fn, inputnames});
+            
             fn = @Electrolyte.updateConductivity;
             model = model.registerPropFunction({'conductivity', fn, {'c', 'T'}});
 
@@ -116,6 +157,21 @@ classdef Electrolyte < BaseModel
             fn = @Electrolyte.updateCurrentBcSource;
             model = model.registerPropFunction({'jBcSource', fn, {}});
 
+            fn = @Electrolyte.updateMassConservation;
+            model = model.registerPropFunction({'massCons', fn, {'massFlux', 'massSource', 'massAccum'}});
+            
+            if model.use_thermal
+                
+                fn = @Electrolyte.updateFaceCurrent;
+                inputnames = {'j', 'jFaceBc'};
+                model = model.registerPropFunction({'jFace', fn, inputnames});
+
+                fn = @Electrolyte.updateFaceBcCurrent;
+                inputnames = {};
+                model = model.registerPropFunction({'jFaceBc', fn, inputnames});
+                
+            end
+            
         end
 
 

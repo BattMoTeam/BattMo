@@ -276,9 +276,9 @@ classdef Battery < BaseModel
             elyte   = 'Electrolyte';
             ne      = 'NegativeElectrode';
             pe      = 'PositiveElectrode';
+            co      = 'Coating';
             am      = 'ActiveMaterial';
             cc      = 'CurrentCollector';
-            am      = 'ActiveMaterial';
             itf     = 'Interface';
             sd      = 'SolidDiffusion';
             thermal = 'ThermalModel';
@@ -288,10 +288,6 @@ classdef Battery < BaseModel
                 % we register the temperature variable, as it is not done by the ThermalModel which is empty in this case
                 model = model.registerVarName({thermal, 'T'});
             end
-            
-            varnames = {{ne, am, 'E'}, ...
-                        {ne, am, 'I'}};
-            model = model.removeVarNames(varnames);
 
             eldes = {ne, pe};
 
@@ -303,7 +299,7 @@ classdef Battery < BaseModel
             model = model.registerPropFunction({{elyte, 'T'}  , fn, inputnames});
             for ielde = 1 : numel(eldes)
                 elde = eldes{ielde};
-                model = model.registerPropFunction({{elde, am, 'T'} , fn, inputnames});
+                model = model.registerPropFunction({{elde, co, 'T'} , fn, inputnames});
             end
                   
             %% Coupling functions
@@ -312,15 +308,15 @@ classdef Battery < BaseModel
             fn = @Battery.updateElectrodeCoupling;
             inputnames = {{elyte, 'c'}, ...
                           {elyte, 'phi'}};
-            model = model.registerPropFunction({{ne, am, itf, 'phiElectrolyte'}, fn, inputnames});
-            model = model.registerPropFunction({{ne, am, itf, 'cElectrolyte'}  , fn, inputnames});
-            model = model.registerPropFunction({{pe, am, itf, 'phiElectrolyte'}, fn, inputnames});
-            model = model.registerPropFunction({{pe, am, itf, 'cElectrolyte'}  , fn, inputnames});
+            model = model.registerPropFunction({{ne, co, am, itf, 'phiElectrolyte'}, fn, inputnames});
+            model = model.registerPropFunction({{ne, co, am, itf, 'cElectrolyte'}  , fn, inputnames});
+            model = model.registerPropFunction({{pe, co, am, itf, 'phiElectrolyte'}, fn, inputnames});
+            model = model.registerPropFunction({{pe, co, am, itf, 'cElectrolyte'}  , fn, inputnames});
             
             % Functions that update the source terms in the electolyte
             fn = @Battery.updateElectrolyteCoupling;
-            inputnames = {{ne, am, 'Rvol'}, ...
-                          {pe, am, 'Rvol'}};
+            inputnames = {{ne, co, 'Rvol'}, ...
+                          {pe, co, 'Rvol'}};
             model = model.registerPropFunction({{elyte, 'massSource'}, fn, inputnames});
             model = model.registerPropFunction({{elyte, 'eSource'}, fn, inputnames});
             
@@ -331,7 +327,7 @@ classdef Battery < BaseModel
             if model.include_current_collectors
                 inputnames{end + 1} = {pe, cc, 'phi'};
             else
-                inputnames{end + 1} = {pe, am, 'phi'};
+                inputnames{end + 1} = {pe, co, 'phi'};
             end
             model = model.registerPropFunction({{ctrl, 'EIequation'}, fn, inputnames});
 
@@ -349,11 +345,11 @@ classdef Battery < BaseModel
                 
                 fn = @Battery.updateThermalOhmicSourceTerms;
                 inputnames = {{elyte, 'jFace'}        , ...
-                              {ne, am, 'jFace'}       , ...
-                              {pe, am, 'jFace'}       , ...
+                              {ne, co, 'jFace'}       , ...
+                              {pe, co, 'jFace'}       , ...
                               {elyte, 'conductivity'} , ...
-                              {ne, am, 'conductivity'}, ...
-                              {pe, am, 'conductivity'}};
+                              {ne, co, 'conductivity'}, ...
+                              {pe, co, 'conductivity'}};
 
                 if model.include_current_collectors
                     varnames ={{ne, cc, 'jFace'}       , ...
@@ -374,19 +370,19 @@ classdef Battery < BaseModel
                 
                 %% Function that updates Thermal Reaction Terms
                 fn = @Battery.updateThermalReactionSourceTerms;
-                inputnames = {{thermal, 'T'}       , ...
-                              {ne, am, 'Rvol'}     , ...
-                              {ne, am, itf, 'eta'} , ...
-                              {ne, am, itf, 'dUdT'}, ...
-                              {pe, am, 'Rvol'}     , ...
-                              {pe, am, itf, 'eta'} , ...
-                              {pe, am, itf, 'dUdT'}};
+                inputnames = {{thermal, 'T'}           , ...
+                              {ne, co, 'Rvol'}         , ...
+                              {ne, co, am, itf, 'eta'} , ...
+                              {ne, co, am, itf, 'dUdT'}, ...
+                              {pe, co, 'Rvol'}         , ...
+                              {pe, co, am, itf, 'eta'} , ...
+                              {pe, co, am, itf, 'dUdT'}};
                 model = model.registerPropFunction({{thermal, 'jHeatReactionSource'}, fn, inputnames});
 
             else
                 model = model.removeVarName({elyte, 'diffFlux'});
-                model = model.removeVarName({ne, am, itf, 'dUdT'});
-                model = model.removeVarName({pe, am, itf, 'dUdT'});
+                model = model.removeVarName({ne, co, am, itf, 'dUdT'});
+                model = model.removeVarName({pe, co, am, itf, 'dUdT'});
             end
             
             %% Functions that setup external  coupling for negative electrode
@@ -399,13 +395,13 @@ classdef Battery < BaseModel
 
                 elde = eldes{ielde};
                 fn = fns{ielde};
-                
-                inputnames = {{elde, am, 'phi'}, ...
-                              {elde, am, 'conductivity'}};
-                model = model.registerPropFunction({{elde, am, 'jExternal'}, fn, inputnames});
+
                 warning('fix that')
+                inputnames = {{elde, co, 'phi'}, ...
+                              {elde, co, 'conductivity'}};
+                model = model.registerPropFunction({{elde, co, 'jExternal'}, fn, inputnames});
                 if model.use_thermal
-                    model = model.registerPropFunction({{elde, am, 'jFaceExternal'}, fn, inputnames});
+                    model = model.registerPropFunction({{elde, co, 'jFaceExternal'}, fn, inputnames});
                 end
                 if model.include_current_collectors
                     inputnames = {{elde, cc, 'phi'}, ...
@@ -425,27 +421,6 @@ classdef Battery < BaseModel
             end
             model = model.registerStaticVarNames(varnames);
 
-            %% Declare the variables used for thermal model
-            eldes = {ne, pe};
-
-            if ~model.use_thermal
-
-                for ielde = 1 : numel(eldes)
-                    elde = eldes{ielde};
-                    varnames = {{elde, am, 'jFace'}, ...
-                                {elde, am, 'jFaceCoupling'}, ...
-                                {elde, am, 'jFaceBc'}};
-                    model = model.removeVarNames(varnames);
-
-                    if model.include_current_collectors
-                        varnames = {{elde, cc, 'jFace'}, ...
-                                    {elde, cc, 'jFaceBc'}};
-                        model = model.removeVarNames(varnames);
-                    end
-                        
-                end
-
-            end
             
         end
 
