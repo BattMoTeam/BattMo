@@ -403,6 +403,7 @@ classdef Battery < BaseModel
                 inputnames = {{elde, am, 'phi'}, ...
                               {elde, am, 'conductivity'}};
                 model = model.registerPropFunction({{elde, am, 'jExternal'}, fn, inputnames});
+                warning('fix that')
                 if model.use_thermal
                     model = model.registerPropFunction({{elde, am, 'jFaceExternal'}, fn, inputnames});
                 end
