@@ -2,18 +2,17 @@ classdef Separator < BaseModel
     
     properties
         
-        porosity             % Porosity [-]
-        thermalConductivity  % intrinsic thermal conductivity value
-        specificHeatCapacity % specific heat capacity
-        density              % Density [kg m^-3]
+        porosity             % the ratio of the volume free space to the total volume (symbol: varepsilon)
+        density              % the mass density of the material (symbol: rho)
+        bruggemanCoefficient % coefficient to determine effective transport parameters in porous media (symbol: beta)
         
-        volumeFraction       % Volume fraction [-]
+        thermalConductivity  % Intrinsic Thermal conductivity of the electrolyte
+        specificHeatCapacity % Specific Heat capacity of the electrolyte
         EffectiveThermalConductivity
         EffectiveVolumetricHeatCapacity
 
         use_thermal
 
-        BruggemanCoefficient
     end
     
     methods
@@ -26,13 +25,13 @@ classdef Separator < BaseModel
             % in the case of the separator, probably this does not matter as no computation is actually done on this grid
             model.AutoDiffBackend = SparseAutoDiffBackend('useBlocks', false);
             
-            fdnames = {'G'                  , ...
-                       'porosity'           , ...
-                       'thermalConductivity', ...
-                       'specificHeatCapacity'       , ...
-                       'density'            , ...
-                       'use_thermal'        , ...
-                       'BruggemanCoefficient'};
+            fdnames = {'G'                   , ...
+                       'porosity'            , ...
+                       'density'             , ...
+                       'bruggemanCoefficient', ...
+                       'thermalConductivity' , ...
+                       'specificHeatCapacity', ...
+                       'use_thermal'};
             model = dispatchParams(model, paramobj, fdnames);
             model.porosity = model.porosity*ones(model.G.cells.num,1);
             model = model.setupDependentProperties();

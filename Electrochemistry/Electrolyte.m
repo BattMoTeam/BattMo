@@ -2,17 +2,18 @@ classdef Electrolyte < BaseModel
 
     properties
 
-        Separator
 
+        %% Standard parameters
         sp % Structure with following fields
            % - z : charge number
            % - t : transference number
 
-        volumeFraction
 
-        thermalConductivity % intrinsic thermal conductivity value
-        specificHeatCapacity % specific heat capacity value
-        density % [kg m^-3] (Note : only of the liquid part, the density of the separator is given there)
+        density              % the mass density of the material (symbol: rho)
+        ionicConductivity    % a function to determine the ionic conductivity of the electrolyte under given conditions (symbol: kappa)
+        diffusionCoefficient % a function to determine the diffusion coefficient of a molecule in the electrolyte under given conditions (symbol: D)        
+        bruggemanCoefficient % the coefficient for determining effective transport parameters in porous media (symbol: beta)
+
 
         EffectiveThermalConductivity
         EffectiveVolumetricHeatCapacity
@@ -20,12 +21,15 @@ classdef Electrolyte < BaseModel
         computeConductivityFunc
         computeDiffusionCoefficientFunc
 
-        BruggemanCoefficient
+        %% Advanced parameters
+        volumeFraction
 
         % helper properties
         compnames
         ncomp
 
+        use_thermal
+        
     end
 
     methods
@@ -33,38 +37,34 @@ classdef Electrolyte < BaseModel
         function model = Electrolyte(paramobj)
         % paramobj is instance of ElectrolyteInputParams or a derived class
 
-            model = model@ElectroChemicalComponent(paramobj);
-
-            model.Separator = Separator(paramobj.Separator);
+            model = model@BaseModel();
 
             fdnames = {'sp'                  , ...
                        'compnames'           , ...
-                       'chargeCarrierName'   , ...
-                       'thermalConductivity' , ...
-                       'specificHeatCapacity', ...
                        'density'             , ...
-                       'use_thermal'         , ...
-                       'BruggemanCoefficient'};
+                       'ionicConductivity'   , ...
+                       'diffusionCoefficient', ...
+                       'bruggemanCoefficient', ...
+                       'volumeFraction'      , ...
+                       'use_thermal'};
 
             model = dispatchParams(model, paramobj, fdnames);
 
-            model.computeConductivityFunc = str2func(paramobj.Conductivity.functionname);
-            model.computeDiffusionCoefficientFunc = str2func(paramobj.DiffusionCoefficient.functionname);
+            model.computeConductivityFunc         = str2func(paramobj.ionicConductivity.functionname);
+            model.computeDiffusionCoefficientFunc = str2func(paramobj.diffusionCoefficient.functionname);
 
             model.ncomp = numel(model.compnames);
 
-            sep = 'Separator';
-
             % We set the electrolyte volumeFraction based on the porosity of the separator
-            G = model.G;
-            Gp = G.mappings.parentGrid;
+            % G = model.G;
+            % Gp = G.mappings.parentGrid;
 
-            model.volumeFraction = NaN(G.cells.num, 1);
+            % model.volumeFraction = NaN(G.cells.num, 1);
 
-            elyte_cells = zeros(Gp.cells.num, 1);
-            elyte_cells(G.mappings.cellmap) = (1 : model.G.cells.num)';
-            elyte_cells_sep = elyte_cells(model.(sep).G.mappings.cellmap);
-            model.volumeFraction(elyte_cells_sep) = model.(sep).porosity;
+            % elyte_cells = zeros(Gp.cells.num, 1);
+            % elyte_cells(G.mappings.cellmap) = (1 : model.G.cells.num)';
+            % elyte_cells_sep = elyte_cells(model.(sep).G.mappings.cellmap);
+            % model.volumeFraction(elyte_cells_sep) = model.(sep).porosity;
 
             if model.use_thermal
                 % The effective thermal conductivity in the common region between electrode and electrolyte is setup when the battery is

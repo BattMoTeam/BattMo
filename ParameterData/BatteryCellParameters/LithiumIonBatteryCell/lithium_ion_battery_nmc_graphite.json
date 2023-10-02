@@ -98,6 +98,9 @@
     "filename": "ParameterData/MaterialProperties/OrganicLiPF6Solutions/orgLiPF6.json",
     "isFile": true
   },
+  "Separator": {
+    "filename": "ParameterData/BatteryComponentParameters/celgard2500.json",
+    "isFile": true },
   "ThermalModel": {
     "externalHeatTransferCoefficient": 1000.0,
     "externalTemperature": 298.15

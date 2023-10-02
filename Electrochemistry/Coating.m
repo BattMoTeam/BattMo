@@ -35,29 +35,13 @@ classdef Coating < ElectronicComponent
                        'bruggemanCoefficient'        , ...
                        'activematerial_type'         , ...
                        'effectiveThermalConductivity', ...
+                       'volumeFractions'             , ...
                        'volumeFraction'};
 
             model = dispatchParams(model, paramobj, fdnames);
 
             am = 'ActiveMaterial';
             sd = 'SolidDiffusion';
-            
-            np = model.G.cells.num;
-            switch paramobj.activematerial_type
-              case 'default'
-                if strcmp(paramobj.(am).diffusionModelType, 'full')
-                    paramobj.(am).(sd).np = np;
-                end
-                model.ActiveMaterial = ActiveMaterial(paramobj.ActiveMaterial);
-              case 'composite'
-                model.ActiveMaterial = CompositeActiveMaterial(paramobj.ActiveMaterial);
-              otherwise
-                error('activematerial_type not recognized');
-            end
-            
-            model.Binder             = Binder(paramobj.Binder);
-            model.ConductingAdditive = ConductingAdditive(paramobj.ConductingAdditive);
-            
             am = 'ActiveMaterial';
             bd = 'Binder';
             ad = 'ConductingAdditive';
@@ -71,9 +55,9 @@ classdef Coating < ElectronicComponent
             for icomp = 1 : numel(compnames)
                 compname = compnames{icomp};
                 compInds.(compname) = icomp;
-                if ~isempty(model.(compname))
-                    rho = model.(compname).density;
-                    mf  = model.(compname).massFraction;
+                if ~isempty(paramobj.(compname))
+                    rho = paramobj.(compname).density;
+                    mf  = paramobj.(compname).massFraction;
                     if ~isempty(rho) & ~isempty(mf)
                         specificVolumes(icomp) = mf/rho;
                     else
@@ -108,34 +92,52 @@ classdef Coating < ElectronicComponent
 
             %% We compute volume fraction of coating
             
-            if isempty(model.volumeFraction)
+            if isempty(paramobj.volumeFraction)
                 % If the volumeFraction is given, we use it otherwise it is computed from the density and the specific
                 % volumes of the components
-                model.volumeFraction = sumSpecificVolumes*model.density;
+                model.volumeFraction = sumSpecificVolumes*paramobj.density;
             end
 
             %% We compute the electronic conductivity
 
-            if isempty(model.electronicConductivity)
+            if isempty(paramobj.electronicConductivity)
                 % if electronic conductivity is given, we use it otherwise we compute it as a volume average of the component
                 kappa = 0;
                 for icomp = 1 : numel(compnames)
                     compname = compnames{icomp};
-                    if ~isempty(model.(compname))
-                        assert(~isempty(model.(compname)), 'missing electronic conductivity');
-                        kappa = kappa + model.volumeFractions(icomp)*model.(compname).electronicConductivity;
+                    if ~isempty(paramobj.(compname))
+                        assert(~isempty(paramobj.(compname)), 'missing electronic conductivity');
+                        kappa = kappa + model.volumeFractions(icomp)*paramobj.(compname).electronicConductivity;
                     end
                 end
 
                 model.electronicConductivity = kappa;
             end
 
-            if isempty(model.effectiveElectronicConductivity)
-                kappa = model.electronicConductivity;
-                vf    = model.volumeFraction;
-                bcoef = model.bruggemanCoefficient; 
+            if isempty(paramobj.effectiveElectronicConductivity)
+                kappa = paramobj.electronicConductivity;
+                vf    = paramobj.volumeFraction;
+                bcoef = paramobj.bruggemanCoefficient; 
                 model.effectiveElectronicConductivity = kappa*vf^bcoef;
             end
+
+            %% Setup the submodels
+            
+            np = paramobj.G.cells.num;
+            switch paramobj.activematerial_type
+              case 'default'
+                if strcmp(paramobj.(am).diffusionModelType, 'full')
+                    paramobj.(am).(sd).np = np;
+                end
+                model.ActiveMaterial = ActiveMaterial(paramobj.ActiveMaterial);
+              case 'composite'
+                model.ActiveMaterial = CompositeActiveMaterial(paramobj.ActiveMaterial);
+              otherwise
+                error('activematerial_type not recognized');
+            end
+            
+            model.Binder             = Binder(paramobj.Binder);
+            model.ConductingAdditive = ConductingAdditive(paramobj.ConductingAdditive);
             
         end
         

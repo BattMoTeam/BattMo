@@ -7,22 +7,19 @@ classdef ElectrolyteInputParams < ComponentInputParams
         compnames % Names of the components in the electrolyte
         sp % Structure given properties of each component
 
-        %
-        % Input parameter for the separator (:class:`SeparatorInputParams
-        % <Electrochemistry.SeparatorInputParams>`)
-        %
-        Separator
+        %% Standard parameters
+
+        density              % the mass density of the material (symbol: rho)
+        ionicConductivity    % a function to determine the ionic conductivity of the electrolyte under given conditions (symbol: kappa)
+        diffusionCoefficient % a function to determine the diffusion coefficient of a molecule in the electrolyte under given conditions (symbol: D)        
+        bruggemanCoefficient % the coefficient for determining effective transport parameters in porous media (symbol: beta)
 
         thermalConductivity % Intrinsic Thermal conductivity of the electrolyte
         specificHeatCapacity        % Specific Heat capacity of the electrolyte
 
+        %% Advanced parameters
 
-        Conductivity
-        DiffusionCoefficient
-
-        density % Density [kg m^-3] (Note : only of the liquid part, the density of the separator is given there)
-
-        BruggemanCoefficient
+        volumeFraction
 
     end
 
@@ -32,10 +29,6 @@ classdef ElectrolyteInputParams < ComponentInputParams
 
             paramobj = paramobj@ComponentInputParams(jsonstruct);
 
-            pick = @(fd) pickField(jsonstruct, fd);
-            paramobj.Separator = SeparatorInputParams(pick('Separator'));
-
-            paramobj.effectiveElectronicConductivity = 'not used';
         end
 
     end

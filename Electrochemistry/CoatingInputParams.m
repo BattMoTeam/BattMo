@@ -15,6 +15,11 @@ classdef CoatingInputParams < ElectronicComponentInputParams
         density              % the mass density of the material (symbol: rho)
         bruggemanCoefficient % the Bruggeman coefficient for effective transport in porous media (symbol: beta)
 
+        %% Advanced parameters
+
+        volumeFractions
+        volumeFraction
+        
         %% Coupling parameters
         
         externalCouplingTerm % structure to describe external coupling (used in absence of current collector)

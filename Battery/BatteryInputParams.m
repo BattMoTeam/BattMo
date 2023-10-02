@@ -12,11 +12,12 @@ classdef BatteryInputParams < InputParams
         
         %% parameters for the battery components
         
-        NegativeElectrode % instance of :class:`ElectrodeInputParams <Electrochemistry.ElectrodeInputParams>`
-        PositiveElectrode % instance of :class:`ElectrodeInputParams <Electrochemistry.ElectrodeInputParams>`
-        Electrolyte       % instance of :class:`ElectrolyteInputParams <Electrochemistry.ElectrolyteInputParams>`
-        ThermalModel      % instance of :class:`ThermalComponentInputParams <Electrochemistry.ThermalComponentInputParams>`
-        Control           % instance of :class:`ControlModelInputParams <Utilities.ControlModelInputParams>`
+        NegativeElectrode % Negative Electrode Model, instance of :class:`Electrode <Electrochemistry.Electrodes.Electrode>`
+        PositiveElectrode % Positive Electrode Model, instance of :class:`Electrode <Electrochemistry.Electrodes.Electrode>`
+        Electrolyte       % Electrolyte model, instance of :class:`Electrolyte <Electrochemistry.Electrodes.Electrolyte>`
+        Separator         % Separator model, instance of :class:`Separator <Electrochemistry.Electrodes.Separator>`
+        ThermalModel      % Thermal model, instance of :class:`ThermalComponent <Electrochemistry.ThermalComponent>`
+        Control           % Control Model
         
         couplingTerms % Coupling terms (describe the topological structure of the coupling between the components)
         
@@ -34,6 +35,7 @@ classdef BatteryInputParams < InputParams
             ne      = 'NegativeElectrode';
             pe      = 'PositiveElectrode';
             elyte   = 'Electrolyte';
+            sep     = 'Separator';
             thermal = 'ThermalModel';
             ctrl    = 'Control';            
 
@@ -42,6 +44,7 @@ classdef BatteryInputParams < InputParams
             paramobj.(ne)      = ElectrodeInputParams(pick(ne));
             paramobj.(pe)      = ElectrodeInputParams(pick(pe));
             paramobj.(elyte)   = ElectrolyteInputParams(pick(elyte));
+            paramobj.(sep)     = ElectrolyteInputParams(pick(sep));
             paramobj.(thermal) = ThermalComponentInputParams(pick(thermal));
             switch jsonstruct.(ctrl).controlPolicy
               case 'IEswitch'

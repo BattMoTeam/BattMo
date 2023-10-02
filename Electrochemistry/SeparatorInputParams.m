@@ -4,14 +4,13 @@ classdef SeparatorInputParams < ComponentInputParams
 %    
     properties
         
-        porosity            % Porosity [-]
+        porosity             % the ratio of the volume free space to the total volume (symbol: varepsilon)
+        density              % the mass density of the material (symbol: rho)
+        bruggemanCoefficient % coefficient to determine effective transport parameters in porous media (symbol: beta)
         
         thermalConductivity % Intrinsic Thermal conductivity of the electrolyte
         specificHeatCapacity        % Specific Heat capacity of the electrolyte
 
-        density             % Density [kg m^-3]
-
-        BruggemanCoefficient
     end
     
     methods

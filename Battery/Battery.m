@@ -11,9 +11,10 @@ classdef Battery < BaseModel
         
         con = PhysicalConstants();
 
-        Electrolyte       % Electrolyte model, instance of :class:`Electrolyte <Electrochemistry.Electrodes.Electrolyte>`
         NegativeElectrode % Negative Electrode Model, instance of :class:`Electrode <Electrochemistry.Electrodes.Electrode>`
         PositiveElectrode % Positive Electrode Model, instance of :class:`Electrode <Electrochemistry.Electrodes.Electrode>`
+        Electrolyte       % Electrolyte model, instance of :class:`Electrolyte <Electrochemistry.Electrodes.Electrolyte>`
+        Separator         % Separator model, instance of :class:`Separator <Electrochemistry.Electrodes.Separator>`
         ThermalModel      % Thermal model, instance of :class:`ThermalComponent <Electrochemistry.ThermalComponent>`
         Control           % Control Model
         
@@ -64,11 +65,12 @@ classdef Battery < BaseModel
                        'SOC'};
             
             model = dispatchParams(model, paramobj, fdnames);
-
+            
             model.NegativeElectrode = Electrode(paramobj.NegativeElectrode);
             model.PositiveElectrode = Electrode(paramobj.PositiveElectrode);
             model.Electrolyte       = Electrolyte(paramobj.Electrolyte);
-
+            model.Separator         = Separator(paramobj.Separator);
+            
             if model.use_thermal
                 model.ThermalModel = ThermalComponent(paramobj.ThermalModel);
             end
@@ -604,7 +606,7 @@ classdef Battery < BaseModel
             elyte = 'Electrolyte';
             ne    = 'NegativeElectrode';
             pe    = 'PositiveElectrode';
-            am    = 'ActiveMaterial';
+            co    = 'Coating';
             sep   = 'Separator';
 
             elyte_cells = zeros(model.G.cells.num, 1);
@@ -612,10 +614,9 @@ classdef Battery < BaseModel
 
             
             model.(elyte).volumeFraction = ones(model.(elyte).G.cells.num, 1);
-            model.(elyte).volumeFraction = subsasgnAD(model.(elyte).volumeFraction, elyte_cells(model.(ne).(am).G.mappings.cellmap), model.(ne).(am).porosity);
-            model.(elyte).volumeFraction = subsasgnAD(model.(elyte).volumeFraction, elyte_cells(model.(pe).(am).G.mappings.cellmap), model.(pe).(am).porosity);
-            sep_cells = elyte_cells(model.(elyte).(sep).G.mappings.cellmap); 
-            model.(elyte).volumeFraction = subsasgnAD(model.(elyte).volumeFraction,sep_cells, model.(elyte).(sep).porosity);
+            model.(elyte).volumeFraction = subsasgnAD(model.(elyte).volumeFraction, elyte_cells(model.(ne).(co).G.mappings.cellmap), 1 - model.(ne).(co).volumeFraction);
+            model.(elyte).volumeFraction = subsasgnAD(model.(elyte).volumeFraction, elyte_cells(model.(pe).(co).G.mappings.cellmap), 1 - model.(pe).(co).volumeFraction);
+            model.(elyte).volumeFraction = subsasgnAD(model.(elyte).volumeFraction, elyte_cells(model.(sep).G.mappings.cellmap), model.(sep).porosity);
 
             if model.use_thermal
                 model.(elyte).EffectiveThermalConductivity = model.(elyte).volumeFraction.*model.(elyte).thermalConductivity;
