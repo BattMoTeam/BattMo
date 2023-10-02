@@ -99,7 +99,7 @@ classdef Battery < BaseModel
             model.couplingNames = cellfun(@(x) x.name, model.couplingTerms, 'uniformoutput', false);
             
             % setup equations and variable names selected in the model
-            model = model.setupSelectedModel();
+            % model = model.setupSelectedModel();
             
             % setup some mappings (mappings from electrodes to electrolyte)
             model = model.setupMappings();

@@ -34,18 +34,19 @@ classdef Separator < BaseModel
                        'use_thermal'};
             model = dispatchParams(model, paramobj, fdnames);
             model.porosity = model.porosity*ones(model.G.cells.num,1);
-            model = model.setupDependentProperties();
+            % model = model.setupDependentProperties();
 
         end
         
-        function model = setupDependentProperties(model)
-            model.volumeFraction = 1 - model.porosity;
+        % function model = setupDependentProperties(model)
+        %     model.volumeFraction = 1 - model.porosity;
 
-            if model.use_thermal
-                model.EffectiveThermalConductivity = model.thermalConductivity.*(model.volumeFraction).^model.BruggemanCoefficient;
-                model.EffectiveVolumetricHeatCapacity = model.specificHeatCapacity.*model.volumeFraction*model.density;
-            end
-        end
+        %     if model.use_thermal
+        %         model.EffectiveThermalConductivity = model.thermalConductivity.*(model.volumeFraction).^model.BruggemanCoefficient;
+        %         model.EffectiveVolumetricHeatCapacity = model.specificHeatCapacity.*model.volumeFraction*model.density;
+        %     end
+        % end
+        
     end
     
 end
