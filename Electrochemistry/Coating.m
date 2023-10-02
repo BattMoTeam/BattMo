@@ -13,7 +13,7 @@ classdef Coating < ElectronicComponent
         % Standard parameters
         density              % the mass density of the material (symbol: rho)
         bruggemanCoefficient % the Bruggeman coefficient for effective transport in porous media (symbol: beta)
-        activematerial_type % 'default' (only one particle type) or 'composite' (two different particles)
+        activematerial_type  % 'default' (only one particle type) or 'composite' (two different particles)
         
         % Advanced parameters (used if given, otherwise computed)
         effectiveThermalConductivity

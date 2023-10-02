@@ -44,7 +44,7 @@ classdef BatteryInputParams < InputParams
             paramobj.(ne)      = ElectrodeInputParams(pick(ne));
             paramobj.(pe)      = ElectrodeInputParams(pick(pe));
             paramobj.(elyte)   = ElectrolyteInputParams(pick(elyte));
-            paramobj.(sep)     = ElectrolyteInputParams(pick(sep));
+            paramobj.(sep)     = SeparatorInputParams(pick(sep));
             paramobj.(thermal) = ThermalComponentInputParams(pick(thermal));
             switch jsonstruct.(ctrl).controlPolicy
               case 'IEswitch'

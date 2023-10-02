@@ -33,12 +33,6 @@ classdef ElectrodeInputParams < ComponentInputParams
 
             paramobj.(co) = CoatingInputParams(pick(co));
             paramobj.(cc) = CurrentCollectorInputParams(pick(cc));
-
-            if isempty(paramobj.(cc))
-                paramobj.include_current_collectors = false;
-            else
-                paramobj.include_current_collectors = true;
-            end
             
             paramobj = paramobj.validateInputParams();
 
@@ -47,7 +41,7 @@ classdef ElectrodeInputParams < ComponentInputParams
         function paramobj = validateInputParams(paramobj)
 
             am = 'Coating';
-            cc ='CurrentCollector';
+            cc = 'CurrentCollector';
             
             paramobj = mergeParameters(paramobj, {{'use_thermal'}, {am, 'use_thermal'}});
             paramobj.(am) = paramobj.(am).validateInputParams();

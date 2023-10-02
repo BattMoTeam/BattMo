@@ -565,7 +565,7 @@ classdef Battery < BaseModel
             
             ne    = 'NegativeElectrode';
             pe    = 'PositiveElectrode';
-            am    = 'ActiveMaterial';
+            co    = 'Coating';
             cc    = 'CurrentCollector';
             elyte = 'Electrolyte';
             
@@ -579,7 +579,7 @@ classdef Battery < BaseModel
             for ind = 1 : numel(eldes)
 
                 elde = eldes{ind};
-                G_elde  = model.(elde).(am).G;
+                G_elde  = model.(elde).(co).G;
                 clear eldecelltbl;
                 eldecelltbl.cells = (1 : G_elde.cells.num)';
                 eldecelltbl.globalcells = G_elde.mappings.cellmap;
@@ -1816,11 +1816,12 @@ classdef Battery < BaseModel
             
             ne      = 'NegativeElectrode';
             pe      = 'PositiveElectrode';
+            co      = 'Coating';
             am      = 'ActiveMaterial';
             itf     = 'Interface';
 
-            cmax_ne = model.(ne).(am).(itf).cmax;
-            cmax_pe = model.(pe).(am).(itf).cmax;
+            cmax_ne = model.(ne).(co).(am).(itf).saturationConcentration;
+            cmax_pe = model.(pe).(co).(am).(itf).saturationConcentration;
             model.cmin = 1e-5*max(cmax_ne, cmax_pe);
             
         end

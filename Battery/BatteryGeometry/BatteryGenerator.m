@@ -32,13 +32,13 @@ classdef BatteryGenerator
         % 
             
             [paramobj, gen] = gen.setupGrid(paramobj, params);
-            % We check if params contains some Electrolyte field 
-            if isfield(params, 'Electrolyte')
-                params_electrolyte = params.Electrolyte;
-            else
-                params_electrolyte = [];
-            end
-            paramobj.Electrolyte = gen.setupElectrolyte(paramobj.Electrolyte, params_electrolyte);
+
+            params = pickField(params, 'Electrolyte');
+            paramobj.Electrolyte = gen.setupElectrolyte(paramobj.Electrolyte, params);
+            
+            params = pickField(params, 'Separator');
+            paramobj.Separator = gen.setupSeparator(paramobj.Separator, params);
+            
             paramobj = gen.setupElectrodes(paramobj, params);
             if gen.use_thermal
                 params_thermal = [];
@@ -71,9 +71,13 @@ classdef BatteryGenerator
         function paramobj = setupElectrolyte(gen, paramobj, params)
         % Method that setups the grid and the coupling for the electrolyte model
         % Here, :code:`paramobj` is instance of :class:`ElectrolyteInputParams <Electrochemistry.ElectrolyteInputParams>`
-            
             paramobj = gen.setupElectrolyteGrid(paramobj, params);
-            paramobj.Separator = gen.setupSeparatorGrid(paramobj.Separator, params.Separator);
+        end
+
+        function paramobj = setupSeparator(gen, paramobj, params)
+        % Method that setups the grid for the separator model
+        % Here, :code:`paramobj` is instance of :class:`SeparatorInputParams <Electrochemistry.SeparatorInputParams>`            
+            paramobj = gen.setupSeparatorGrid(paramobj, params);
         end
 
         
@@ -104,8 +108,8 @@ classdef BatteryGenerator
 
             % We add the electrode type to the params structure (This information can be used by derived classes and may
             % then simplify setup)
-            params.(ne).electrodeType = ne;
-            params.(pe).electrodeType = pe;
+            params.(ne).electrode_type = ne;
+            params.(pe).electrode_type = pe;
             
             % setup Negative Electrode
             paramobj.(ne) = gen.setupElectrode(paramobj.(ne), params.(ne));
@@ -120,24 +124,24 @@ classdef BatteryGenerator
         % Here, :code:`paramobj` is instance of :class:`ElectrodeInputParams <Electrochemistry.ElectrodeInputParams>`
             
             % shorthands 
-            am = 'ActiveMaterial';
+            co = 'Coating';
             cc = 'CurrentCollector';
             
             % setup Electrode grid
             paramobj = gen.setupElectrodeGrid(paramobj, params);
-            % setup Electrode active component (am)
-            params.(am).electrode_case = paramobj.electrode_case;
-            paramobj.(am) = gen.setupActiveMaterialGrid(paramobj.(am), params.(am));
+            % setup Electrode coating component (co)
+            params.(co).activematerial_type = paramobj.(co).activematerial_type;
+            paramobj.(co) = gen.setupCoatingGrid(paramobj.(co), params.(co));
             % setup current collector (cc)
             if paramobj.include_current_collectors
                 % We add the electrode type to the params structure. (This information can be used by derived classes
                 % and may then simplify setup)
-                params.(cc).electrodeType = params.electrodeType;
+                params.(cc).electrode_type = params.electrode_type;
                 paramobj.(cc) = gen.setupCurrentCollector(paramobj.(cc), params.(cc));
                 % setup coupling term between am and cc
-                paramobj = gen.setupCurrentCollectorActiveMaterialCoupTerm(paramobj, params);
+                paramobj = gen.setupCurrentCollectorCoatingCoupTerm(paramobj, params);
             else
-                paramobj.(am) = gen.setupActiveMaterialBcCoupTerm(paramobj.(am), params.(am));
+                paramobj.(co) = gen.setupCoatingBcCoupTerm(paramobj.(co), params.(co));
             end
             
         end
@@ -149,27 +153,11 @@ classdef BatteryGenerator
             paramobj.G = genSubGrid(gen.G, params.cellind);
         end
 
-        function paramobj = setupActiveMaterialGrid(gen, paramobj, params)
+        function paramobj = setupCoatingGrid(gen, paramobj, params)
         % Setup the grid for the active material
-        % Here, :code:`paramobj` is instance of :class:`ActiveMaterialInputParams <Electrochemistry.ActiveMaterialInputParams>`
+        % Here, :code:`paramobj` is instance of :class:`CoatingInputParams <Electrochemistry.CoatingInputParams>`
             
             paramobj.G = genSubGrid(gen.G, params.cellind);
-
-            switch params.electrode_case
-              case 'default'
-                
-                paramobj.G = genSubGrid(gen.G, params.cellind);
-                
-              case 'composite'
-                
-                G = genSubGrid(gen.G, params.cellind);
-                paramobj.G          = G;
-                paramobj.FirstMaterial.G = G;
-                paramobj.SecondMaterial.G  = G;
-                
-              otherwise
-                error('electrode_case not recognized')
-            end
 
         end
         
@@ -197,11 +185,11 @@ classdef BatteryGenerator
             ne    = 'NegativeElectrode';
             pe    = 'PositiveElectrode';
             elyte = 'Electrolyte';
-            am   = 'ActiveMaterial';
+            co    = 'Coating';
             
             couplingTerms = {};
             
-            G_ne = paramobj.(ne).(am).G;
+            G_ne = paramobj.(ne).(co).G;
             G_elyte = paramobj.(elyte).G;
             
             % parent Grid
@@ -222,7 +210,7 @@ classdef BatteryGenerator
             
             couplingTerms{end + 1} = coupTerm;
             
-            G_pe = paramobj.(pe).(am).G;
+            G_pe = paramobj.(pe).(co).G;
             G_elyte = paramobj.(elyte).G;
             
             % parent Grid
@@ -247,17 +235,17 @@ classdef BatteryGenerator
 
         end
 
-        function paramobj = setupCurrentCollectorActiveMaterialCoupTerm(gen, paramobj, params)
+        function paramobj = setupCurrentCollectorCoatingCoupTerm(gen, paramobj, params)
         % Setup the coupling term between the current collector and the active material
         % Here, :code:`paramobj` is instance of :class:`ElectrodeInputParams <Electrochemistry.ElectrodeInputParams>`
 
-            am = 'ActiveMaterial';
-            cc  = 'CurrentCollector';
+            co = 'Coating';
+            cc = 'CurrentCollector';
             
-            compnames = {'CurrentCollector', 'ActiveMaterial'};
-            coupTerm = couplingTerm('CurrentCollector-ActiveMaterial', compnames);
+            compnames = {'CurrentCollector', 'Coating'};
+            coupTerm = couplingTerm('CurrentCollector-Coating', compnames);
             
-            G_am = paramobj.(am).G;
+            G_am = paramobj.(co).G;
             G_cc = paramobj.(cc).G;
             
             cctbl.faces = (1 : G_cc.faces.num)';
@@ -303,11 +291,11 @@ classdef BatteryGenerator
             
         end
 
-        function paramobj = setupActiveMaterialBcCoupTerm(gen, paramobj, params)
+        function paramobj = setupCoatingBcCoupTerm(gen, paramobj, params)
         % Setup the boundary locations for the active material (used in the absence of current collectors)
             
             % default setup
-            compname = 'ActiveMaterial';
+            compname = 'Coating';
             compnames = {compname};
             coupname = sprintf('Exterior-%s', compname);
             coupTerm = couplingTerm(coupname, compnames);

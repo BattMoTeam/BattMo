@@ -21,6 +21,7 @@ function [capacity, capacities] = computeCellCapacity(model)
 %
     ne  = 'NegativeElectrode';
     pe  = 'PositiveElectrode';
+    co  = 'Coating';
     am  = 'ActiveMaterial';
     itf = 'Interface';
     sd  = 'SolidDiffusion';
@@ -31,33 +32,34 @@ function [capacity, capacities] = computeCellCapacity(model)
         
         elde = eldes{ind};
 
-        switch model.(elde).electrode_case
+        switch model.(elde).(co).activematerial_type
 
           case 'default'
             
-            ammodel = model.(elde).(am);
-            itfmodel = ammodel.(itf);
+            itfmodel = model.(elde).(co).(am).(itf);
             
-            n    = itfmodel.n;
+            n    = itfmodel.numberOfElectronsTransferred;
             F    = itfmodel.constants.F;
             G    = itfmodel.G;
-            cMax = itfmodel.cmax;
+            cMax = itfmodel.saturationConcentration;
 
             switch elde
               case 'NegativeElectrode'
-                thetaMax = itfmodel.theta100;
-                thetaMin = itfmodel.theta0;
+                thetaMax = itfmodel.guestStoichiometry100;
+                thetaMin = itfmodel.guestStoichiometry0;
               case 'PositiveElectrode'
-                thetaMax = itfmodel.theta0;
-                thetaMin = itfmodel.theta100;            
+                thetaMax = itfmodel.guestStoichiometry0;
+                thetaMin = itfmodel.guestStoichiometry100;            
               otherwise
                 error('Electrode not recognized');
             end
             
-            vol_fraction = ammodel.volumeFraction;
-            am_fraction  = ammodel.activeMaterialFraction;
+            vol_fraction = model.(elde).(co).volumeFraction;
             
-            vol = sum(am_fraction*vol_fraction.*ammodel.G.cells.volumes);
+            amind = model.(elde).(co).compInds.(am);
+            am_fraction  = model.(elde).(co).volumeFractions(ind);
+            
+            vol = sum(am_fraction*vol_fraction.*model.(elde).(co).G.cells.volumes);
             
             cap_usable{ind} = (thetaMax - thetaMin)*cMax*vol*n*F;
             
@@ -83,8 +85,8 @@ function [capacity, capacities] = computeCellCapacity(model)
                 G    = itfmodel.G;
                 cMax = itfmodel.cmax;
 
-                thetaMax = itfmodel.theta100;
-                thetaMin = itfmodel.theta0;
+                thetaMax = itfmodel.guestStoichiometry100;
+                thetaMin = itfmodel.guestStoichiometry0;
 
                 vol_fraction = ammodel.volumeFraction;
                 am_fraction  = ammodel.(mat).activeMaterialFraction;

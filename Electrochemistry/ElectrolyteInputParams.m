@@ -21,6 +21,8 @@ classdef ElectrolyteInputParams < ComponentInputParams
 
         volumeFraction
 
+        use_thermal
+        
     end
 
     methods
