@@ -4,9 +4,16 @@ classdef ElectronicComponentInputParams < ComponentInputParams
 %    
     properties
 
+
+        %% Standard parameters
+        
         electronicConductivity          % electronic conductivity
+
+        %% Advanced parameter
+        
         effectiveElectronicConductivity % effective electronic conductivity
         
+        %% helper parameters
         use_thermal
         
     end

@@ -14,13 +14,15 @@ classdef ElectrolyteInputParams < ComponentInputParams
         diffusionCoefficient % a function to determine the diffusion coefficient of a molecule in the electrolyte under given conditions (symbol: D)        
         bruggemanCoefficient % the coefficient for determining effective transport parameters in porous media (symbol: beta)
 
-        thermalConductivity % Intrinsic Thermal conductivity of the electrolyte
-        specificHeatCapacity        % Specific Heat capacity of the electrolyte
+        thermalConductivity  % Intrinsic Thermal conductivity of the electrolyte
+        specificHeatCapacity % Specific Heat capacity of the electrolyte
 
         %% Advanced parameters
 
         volumeFraction
-
+        effectiveThermalConductivity    % (account for volume fraction)
+        effectiveVolumetricHeatCapacity % (account for volume fraction and density)
+        
         use_thermal
         
     end

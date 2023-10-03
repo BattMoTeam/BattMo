@@ -1,12 +1,24 @@
 classdef CurrentCollector < ElectronicComponent
 
     properties
-        
+
+        %% Input
+
+        % Standard parameters
+
+        thermalConductivity  % Thermal conductivity of current collector
+        specificHeatCapacity % Heat capacity of current collector
+        density              % Density of current collector [kg m^-3]
+
+        % Advanced parameter
+        effectiveVolumetricHeatCapacity % (account for density, if not given computed from specificHeatCapacity)
+
+        % Coupling term
         externalCouplingTerm
 
-        thermalConductivity
-        specificHeatCapacity
-        density
+        %% Helper properties
+        
+        effectiveThermalConductivity    % (for current collector, coincide with thermalConductivity, only assign for conveniance here)
         
     end
     
@@ -18,13 +30,21 @@ classdef CurrentCollector < ElectronicComponent
 
             fdnames = {'externalCouplingTerm', ...
                        'thermalConductivity' , ...
-                       'specificHeatCapacity'        , ...
-                       'density'};
+                       'specificHeatCapacity', ...
+                       'density'             , ...
+                       'effectiveVolumetricHeatCapacity'};
             
             model = dispatchParams(model, paramobj, fdnames);
 
             if isempty(model.effectiveElectronicConductivity)
                 model.effectiveElectronicConductivity = model.electronicConductivity;
+            end
+
+            if model.use_thermal
+                if isempty(model.effectiveVolumetricHeatCapacity)
+                    model.effectiveVolumetricHeatCapacity = model.specificHeatCapacity*model.density;
+                end
+                model.effectiveThermalConductivity = model.thermalConductivity;
             end
             
         end

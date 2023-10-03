@@ -4,12 +4,21 @@ classdef CurrentCollectorInputParams < ElectronicComponentInputParams
 %
     properties
         
+
+        %% Standard parameters
+        
+        thermalConductivity  % Thermal conductivity of current collector
+        specificHeatCapacity % Heat capacity of current collector
+        density              % Density of current collector [kg m^-3]
+
+        %% Advanced parameters
+        
+        effectiveVolumetricHeatCapacity % (account for density, if not given computed from specificHeatCapacity)
+        
+        %% Coupling term
+        
         externalCouplingTerm % coupling term specification of the current collector with external source
 
-        thermalConductivity % Thermal conductivity of current collector
-        specificHeatCapacity % Heat capacity of current collector
-
-        density % Density of current collector [kg m^-3]
         
     end
     

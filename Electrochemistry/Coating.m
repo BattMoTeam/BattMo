@@ -11,16 +11,19 @@ classdef Coating < ElectronicComponent
         %% Input Parameters
 
         % Standard parameters
-        density              % the mass density of the material (symbol: rho)
+        density              % the mass density of the material (symbol: rho). Important : the density is computed with respect to total volume (including the empty pores)
         bruggemanCoefficient % the Bruggeman coefficient for effective transport in porous media (symbol: beta)
         activematerial_type  % 'default' (only one particle type) or 'composite' (two different particles)
         
         % Advanced parameters (used if given, otherwise computed)
-        effectiveThermalConductivity
+        volumeFractions                 % mass fractions of each components (if not given computed subcomponent and density)
         volumeFraction
+        thermalConductivity             % (if not given computed from the subcomponents)
+        specificHeatCapacity            % (if not given computed from the subcomponents)
+        effectiveThermalConductivity    % (account for volume fraction, if not given, computed from thermalConductivity)
+        effectiveVolumetricHeatCapacity % (account for volume fraction and density, if not given, computed from specificHeatCapacity)
         
         %% Computed parameters at model setup
-        volumeFractions     % mass fractions of each components
         compInds            % index of the sub models in the massFractions structure
         
     end
@@ -34,9 +37,12 @@ classdef Coating < ElectronicComponent
             fdnames = {'density'                     , ...
                        'bruggemanCoefficient'        , ...
                        'activematerial_type'         , ...
-                       'effectiveThermalConductivity', ...
                        'volumeFractions'             , ...
-                       'volumeFraction'};
+                       'volumeFraction'              , ...
+                       'thermalConductivity'         , ...
+                       'specificHeatCapacity'        , ...
+                       'effectiveThermalConductivity', ...
+                       'effectiveVolumetricHeatCapacity'};
 
             model = dispatchParams(model, paramobj, fdnames);
 
@@ -48,7 +54,7 @@ classdef Coating < ElectronicComponent
 
             compnames = {am, bd, ad};
 
-            %% We compute the volume fractions of each components
+            %% We setup the volume fractions of each components
             
             % Compute the specific volumes of each component based on the density and mass fraction
             % If components or values are missing, the volume fraction is set to zero
@@ -82,25 +88,31 @@ classdef Coating < ElectronicComponent
             end
 
             % We normalize the volume fractions
-            
-            sumSpecificVolumes = sum(specificVolumes);
-            for icomp = 1 : numel(compnames)
-                volumeFractions(icomp) = specificVolumes(icomp)/sumSpecificVolumes;
+
+            if isempty(model.volumeFractions)
+
+                sumSpecificVolumes = sum(specificVolumes);
+                for icomp = 1 : numel(compnames)
+                    volumeFractions(icomp) = specificVolumes(icomp)/sumSpecificVolumes;
+                end
+
+                model.volumeFractions = volumeFractions;
+                
             end
 
-            model.volumeFractions = volumeFractions;
-
-            %% We compute volume fraction of coating
+            %% We setup the volume fraction of coating
             
-            if isempty(paramobj.volumeFraction)
+            if isempty(model.volumeFraction)
+                
                 % If the volumeFraction is given, we use it otherwise it is computed from the density and the specific
                 % volumes of the components
-                model.volumeFraction = sumSpecificVolumes*paramobj.density;
+                model.volumeFraction = sumSpecificVolumes*model.density;
+                
             end
 
-            %% We compute the electronic conductivity
+            %% We setup the electronic conductivity
 
-            if isempty(paramobj.electronicConductivity)
+            if isempty(model.electronicConductivity)
                 % if electronic conductivity is given, we use it otherwise we compute it as a volume average of the component
                 kappa = 0;
                 for icomp = 1 : numel(compnames)
@@ -114,13 +126,54 @@ classdef Coating < ElectronicComponent
                 model.electronicConductivity = kappa;
             end
 
-            if isempty(paramobj.effectiveElectronicConductivity)
-                kappa = paramobj.electronicConductivity;
-                vf    = paramobj.volumeFraction;
-                bcoef = paramobj.bruggemanCoefficient; 
-                model.effectiveElectronicConductivity = kappa*vf^bcoef;
+            if isempty(model.effectiveElectronicConductivity)
+
+                kappa = model.electronicConductivity;
+                vf    = model.volumeFraction;
+                bg    = model.bruggemanCoefficient;
+                
+                model.effectiveElectronicConductivity = kappa*vf^bg;
+                
             end
 
+            %% We setup the thermal parameters
+            
+            if model.use_thermal
+                
+                %% We setup the thermal conductivities
+                
+                if isempty(model.thermalConductivity)
+                    bg = model.bruggemanCoefficient;
+                    thermalConductivity = 0;
+                    for icomp = 1 : numel(compnames)
+                        compname = compnames{icomp};
+                        thermalConductivity = thermalConductivity + (model.volumeFractions(icomp))^bg*paramobj.(compname).thermalConductivity;
+                    end
+                    model.thermalConductivity = thermalConductivity;
+                end
+
+                if isempty(model.effectiveThermalConductivity)
+                    bg = model.bruggemanCoefficient;
+                    model.effectiveThermalConductivity = (model.volumeFraction).^bg.*model.thermalConductivity;
+                end
+
+                %% We setup the thermal capacities
+
+                if isempty(model.specificHeatCapacity)
+                    specificHeatCapacity = 0;
+                    for icomp = 1 : numel(compnames)
+                        compname = compnames{icomp};
+                        specificHeatCapacity = specificHeatCapacity + paramobj.(compname).massFraction*paramobj.(compname).specificHeatCapacity;
+                    end
+                    model.specificHeatCapacity = specificHeatCapacity;
+                end
+
+                if isempty(model.effectiveVolumetricHeatCapacity)
+                    model.effectiveVolumetricHeatCapacity = model.density*specificHeatCapacity;
+                end
+
+            end
+            
             %% Setup the submodels
             
             np = paramobj.G.cells.num;

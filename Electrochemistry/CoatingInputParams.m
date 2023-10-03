@@ -12,13 +12,17 @@ classdef CoatingInputParams < ElectronicComponentInputParams
         
         %% Standard parameters
 
-        density              % the mass density of the material (symbol: rho)
+        density              % the mass density of the material (symbol: rho). Important : the density is computed with respect to total volume (including the empty pores)
         bruggemanCoefficient % the Bruggeman coefficient for effective transport in porous media (symbol: beta)
 
         %% Advanced parameters
 
         volumeFractions
         volumeFraction
+        thermalConductivity             % (if not given computed from the subcomponents)
+        specificHeatCapacity            % (if not given computed from the subcomponents)
+        effectiveThermalConductivity    % (account for volume fraction)
+        effectiveVolumetricHeatCapacity % (account for volume fraction and density)
         
         %% Coupling parameters
         

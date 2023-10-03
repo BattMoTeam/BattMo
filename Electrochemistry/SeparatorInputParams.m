@@ -8,9 +8,15 @@ classdef SeparatorInputParams < ComponentInputParams
         density              % the mass density of the material (symbol: rho)
         bruggemanCoefficient % coefficient to determine effective transport parameters in porous media (symbol: beta)
         
-        thermalConductivity % Intrinsic Thermal conductivity of the electrolyte
-        specificHeatCapacity        % Specific Heat capacity of the electrolyte
+        thermalConductivity  % Intrinsic Thermal conductivity of the electrolyte
+        specificHeatCapacity % Specific Heat capacity of the electrolyte
 
+        % Advanced parameters
+        effectiveThermalConductivity    % (account for volume fraction)
+        effectiveVolumetricHeatCapacity % (account for volume fraction and density)
+
+        % helper parameters
+        use_thermal
     end
     
     methods

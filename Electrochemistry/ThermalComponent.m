@@ -2,8 +2,8 @@ classdef ThermalComponent < BaseModel
     
     properties
         
-       EffectiveThermalConductivity
-       EffectiveVolumetricHeatCapacity % in [J][K]^-1[m]^-3
+       effectiveThermalConductivity
+       effectiveVolumetricHeatCapacity % in [J][K]^-1[m]^-3
 
        couplingTerm
        externalHeatTransferCoefficient
@@ -24,8 +24,8 @@ classdef ThermalComponent < BaseModel
             model.AutoDiffBackend = SparseAutoDiffBackend('useBlocks', false);
             
             fdnames = {'G', ...
-                       'EffectiveThermalConductivity', ...
-                       'EffectiveVolumetricHeatCapacity', ...
+                       'effectiveThermalConductivity', ...
+                       'effectiveVolumetricHeatCapacity', ...
                        'couplingTerm', ...
                        'externalHeatTransferCoefficient', ...
                        'externalTemperature'};
@@ -33,13 +33,7 @@ classdef ThermalComponent < BaseModel
             
             % setup discrete differential operators
             model.operators = localSetupOperators(model.G);
-            
-            if ~isempty(model.EffectiveThermalConductivity)
-                nc = model.G.cells.num;
-                model.EffectiveThermalConductivity = model.EffectiveThermalConductivity*ones(nc, 1);
-                model.EffectiveVolumetricHeatCapacity = model.EffectiveVolumetricHeatCapacity*ones(nc, 1);
-            end
-            
+
             model = setupMapping(model);
 
         end
@@ -124,7 +118,7 @@ classdef ThermalComponent < BaseModel
         function state = updateAccumTerm(model, state, state0, dt)
         % Assemble the accumulation term for the energy equation
 
-            vhcap = model.EffectiveVolumetricHeatCapacity;
+            vhcap = model.effectiveVolumetricHeatCapacity;
             
             T = state.T;
             T0 = state0.T;
@@ -138,7 +132,7 @@ classdef ThermalComponent < BaseModel
             
         function state = updateHeatFlux(model, state)
 
-            k = model.EffectiveThermalConductivity;
+            k = model.effectiveThermalConductivity;
             T = state.T;
             
             jHeat = assembleFlux(model, T, k); 
@@ -178,7 +172,7 @@ classdef ThermalComponent < BaseModel
             coupterm   = model.couplingTerm;
             T_ext      = model.externalTemperature;
             lambda_ext = model.externalHeatTransferCoefficient;
-            lambda     = model.EffectiveThermalConductivity;
+            lambda     = model.effectiveThermalConductivity;
             
             coupcells = coupterm.couplingcells;
             coupfaces = coupterm.couplingfaces;

@@ -3,31 +3,32 @@ classdef Electrolyte < BaseModel
     properties
 
 
-        %% Standard parameters
+        %% Input parameters
+        
+        % Standard parameters
         sp % Structure with following fields
            % - z : charge number
            % - t : transference number
-
 
         density              % the mass density of the material (symbol: rho)
         ionicConductivity    % a function to determine the ionic conductivity of the electrolyte under given conditions (symbol: kappa)
         diffusionCoefficient % a function to determine the diffusion coefficient of a molecule in the electrolyte under given conditions (symbol: D)        
         bruggemanCoefficient % the coefficient for determining effective transport parameters in porous media (symbol: beta)
+        thermalConductivity  % Intrinsic Thermal conductivity of the electrolyte
+        specificHeatCapacity % Specific Heat capacity of the electrolyte
 
+        % Advanced parameters
 
-        EffectiveThermalConductivity
-        EffectiveVolumetricHeatCapacity
-
-        computeConductivityFunc
-        computeDiffusionCoefficientFunc
-
-        %% Advanced parameters
         volumeFraction
+        effectiveThermalConductivity    % (account for volume fraction)
+        effectiveVolumetricHeatCapacity % (account for volume fraction and density)
 
-        % helper properties
+        %%  helper properties
+        
         compnames
         ncomp
-
+        computeConductivityFunc
+        computeDiffusionCoefficientFunc
         use_thermal
         
     end
@@ -39,14 +40,18 @@ classdef Electrolyte < BaseModel
 
             model = model@BaseModel();
 
-            fdnames = {'G'                   , ...
-                       'sp'                  , ...
-                       'compnames'           , ...
-                       'density'             , ...
-                       'ionicConductivity'   , ...
-                       'diffusionCoefficient', ...
-                       'bruggemanCoefficient', ...
-                       'volumeFraction'      , ...
+            fdnames = {'G'                              , ...
+                       'sp'                             , ...
+                       'compnames'                      , ...
+                       'density'                        , ...
+                       'ionicConductivity'              , ...
+                       'diffusionCoefficient'           , ...
+                       'bruggemanCoefficient'           , ...
+                       'thermalConductivity'            , ...
+                       'specificHeatCapacity'           , ...
+                       'volumeFraction'                 , ...
+                       'effectiveThermalConductivity'   , ...
+                       'effectiveVolumetricHeatCapacity', ...
                        'use_thermal'};
 
             model = dispatchParams(model, paramobj, fdnames);
@@ -56,24 +61,22 @@ classdef Electrolyte < BaseModel
 
             model.ncomp = numel(model.compnames);
 
-            % We set the electrolyte volumeFraction based on the porosity of the separator
-            % G = model.G;
-            % Gp = G.mappings.parentGrid;
-
-            % model.volumeFraction = NaN(G.cells.num, 1);
-
-            % elyte_cells = zeros(Gp.cells.num, 1);
-            % elyte_cells(G.mappings.cellmap) = (1 : model.G.cells.num)';
-            % elyte_cells_sep = elyte_cells(model.(sep).G.mappings.cellmap);
-            % model.volumeFraction(elyte_cells_sep) = model.(sep).porosity;
-
             if model.use_thermal
-                % The effective thermal conductivity in the common region between electrode and electrolyte is setup when the battery is
-                % set up. Here we set up the thermal conductivity of the electrolyte in the separator region (we assume for
-                % the moment constant values for both porosity and thermal conductivity but this can be changed).
+                
+                if isempty(model.effectiveThermalConductivity)
 
-                model.EffectiveThermalConductivity = NaN(G.cells.num, 1);
-                model.EffectiveThermalConductivity(elyte_cells_sep) = model.(sep).porosity.*model.thermalConductivity;
+                    bg = model.bruggemanCoefficient;
+
+                    model.effectiveThermalConductivity = (model.volumeFraction).^bg.*model.thermalConductivity;
+                    
+                end
+                
+                if isempty(model.effectiveVolumetricHeatCapacity)
+                    
+                    model.effectiveVolumetricHeatCapacity = (model.volumeFraction).*model.density.*model.specificHeatCapacity;
+                    
+                end
+                
             end
 
         end
@@ -240,7 +243,6 @@ classdef Electrolyte < BaseModel
 
         function state  = updateCurrent(model, state)
 
-            ncomp  = model.ncomp;
             sp     = model.sp;
             R      = model.constants.R;
             F      = model.constants.F;
