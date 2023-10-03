@@ -40,13 +40,17 @@
         "density" : {"value" : 1.10,
                      "unit" : "gram/((centi*meter)^3)"},
         "massFraction" : 0.03,
-        "electronicConductivity" : 100
+        "electronicConductivity" : 100,
+        "specificHeatCapacity": 632.0,
+        "thermalConductivity": 1.04
       },
       "ConductingAdditive" : {
         "density" : {"value" : 1.95,
                      "unit" : "gram/((centi*meter)^3)"},
         "massFraction" : 0.03,
-        "electronicConductivity" : 100
+        "electronicConductivity" : 100,
+        "specificHeatCapacity": 632.0,
+        "thermalConductivity": 1.04
       }
     },
     "CurrentCollector": {
@@ -80,14 +84,18 @@
       "Binder" : {
         "density" : {"value" : 1.75,
                      "unit" : "gram/((centi*meter)^3)"},
-        "massFraction" : 0.25,
-        "electronicConductivity" : 100
+        "massFraction" : 0.025,
+        "electronicConductivity" : 100,
+        "specificHeatCapacity": 700.0,
+        "thermalConductivity": 2.1
       },
       "ConductingAdditive" : {
         "density" : {"value" : 1.83,
                      "unit" : "gram/((centi*meter)^3)"},
-        "massFraction" : 0.25,
-        "electronicConductivity" : 100
+        "massFraction" : 0.025,
+        "electronicConductivity" : 100,
+        "specificHeatCapacity": 700.0,
+        "thermalConductivity": 2.1
       }},
     "CurrentCollector": {
       "isFile": true,
