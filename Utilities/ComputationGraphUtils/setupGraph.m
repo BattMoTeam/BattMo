@@ -78,7 +78,7 @@ function [g, staticprops, resVarNameList] = setupGraph(model, varargin)
         ind = ismember(allfullvarnames, nodenames);
         if any(~ind)
             undefinedvarnames = allfullvarnames(~ind);
-            fprintf('The following variables are used in function declaration but have not be declared for themselves before\n');
+            fprintf('The following variables are used in function declaration (function name %s) but have not be declared for themselves before:\n', f);
             for ivar = 1 : numel(undefinedvarnames)
                 fprintf('%s\n', undefinedvarnames{ivar});
             end

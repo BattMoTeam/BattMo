@@ -106,7 +106,7 @@ classdef ComputationalGraphTool
 
         function [varnames, varnameinds, propfuncinds, distance] = getDependencyList(cgt, varname)
 
-            A = cgt.adjenctyMatrix;
+            A = cgt.adjencyMatrix;
             
             % for cell-valued variable pick-up a valid index
             if (varname.dim > 1) && (ischar(varname.index))
@@ -143,7 +143,7 @@ classdef ComputationalGraphTool
             elseif isa(varname, 'cell')
                 varname = VarName(varname(1 : end - 1), varname{end});
             elseif isa(varname, 'char')
-                varnameind = cgt.regexpSelect(cgt.nodenames, varname);
+                varnameind = regexpSelect(cgt.nodenames, varname);
                 if numel(varnameind) > 1
                     fprintf('Several variables found:\n\n')
                     for ivar = 1 : numel(varnameind)
@@ -369,7 +369,7 @@ classdef ComputationalGraphTool
         % - a cell which then uses shortcuts for VarName (see implementation below)
         % - a string giving a regexp. It will be used to select varnames by the string name
         %
-        % The function returns a list of PropFunction that updates the input.
+        % The function returns a list of PropFunction that updates the variable given by varname.
             
             nodenames = cgt.nodenames;
             A         = cgt.adjencyMatrix;
@@ -383,13 +383,13 @@ classdef ComputationalGraphTool
                 return
             elseif isa(varname, 'char')
                 selectednodenames = varname;
-                varnameinds = cgt.regexpSelect(cgt.nodenames, varname);
+                varnameinds = regexpSelect(cgt.nodenames, varname);
             else
                 error('input type not recognized');
             end
             
             propfuncinds = max(A(:, varnameinds), [], 1);
-            staticinds = find(propfuncinds == 0);
+            staticinds = varnameinds(find(propfuncinds == 0));
             propfuncinds = propfuncinds(propfuncinds > 0); % remove the zero elements
 
             [staticinds, staticpropinds] = cgt.findStaticVarNameInds(staticinds);
@@ -462,7 +462,7 @@ classdef ComputationalGraphTool
             if nargin < 2
                 nodename = '.';
             end
-            inds = cgt.regexpSelect(cgt.nodenames, nodename);
+            inds = regexpSelect(cgt.nodenames, nodename);
             nodenames = nodenames(inds);
             for ind = 1 : numel(nodenames)
                 fprintf('%s\n', nodenames{ind});
@@ -573,7 +573,7 @@ classdef ComputationalGraphTool
             end
             
             modelnames = cgt.modelnames;
-            inds = cgt.regexpSelect(modelnames, modelname);
+            inds = regexpSelect(modelnames, modelname);
             modelnames = modelnames(inds);
 
             for imodel = 1 : numel(modelnames)
@@ -596,7 +596,7 @@ classdef ComputationalGraphTool
             modelnames = cgt.modelnames;
 
             if nargin > 1
-                inds = cgt.regexpSelect(modelnames, modelname);
+                inds = regexpSelect(modelnames, modelname);
                 A = A(inds, inds);
                 modelnames = modelnames(inds);
             end
@@ -634,16 +634,21 @@ classdef ComputationalGraphTool
             
             if ~isempty(includeNodeNames)
                 
-                nodes = getDependencyVarNameIndsByName(includeNodeNames, nodenames, A, 'oneParentOnly', opt.oneParentOnly);
-
-                nodenames = nodenames(nodes);
-                A = A(nodes, nodes);
+                inds = getDependencyVarNameIndsByName(includeNodeNames, nodenames, A, 'oneParentOnly', opt.oneParentOnly);
+                
+                nodenames = nodenames(inds);
+                A         = A(inds, inds);
                 
                 if ~isempty(excludeNodeNames)
-                    removenodes = regexp(nodenames, excludeNodeNames, 'once');
-                    removenodes = cellfun(@(x) ~isempty(x), removenodes);
-                    nodenames = nodenames(~removenodes);
-                    A = A(~removenodes, ~removenodes);
+
+                    reminds = regexpSelect(nodenames, excludeNodeNames);
+
+                    inds = true(numel(nodenames), 1);
+                    inds(reminds) = false;
+                    
+                    nodenames = nodenames(inds);
+                    A         = A(inds, inds);
+                    
                 end
 
             end
@@ -665,7 +670,6 @@ classdef ComputationalGraphTool
             
             g = digraph(A, nodenames);
 
-
             propinds = g.Edges.Weight;
 
             if nargout > 1
@@ -679,6 +683,10 @@ classdef ComputationalGraphTool
             if opt.doplot
                 figure
                 h = plot(g, 'nodefontsize', 10);
+            end
+
+            if nargout < 1
+                clear g
             end
             
         end
@@ -861,15 +869,6 @@ classdef ComputationalGraphTool
         
         end
 
-        function inds = regexpSelect(names, name)
-        % implementation of regexp where whitespace matches every thing
-            
-            name = regexprep(name, ' +', '.*');
-            inds = regexp(names, name, 'once');
-            inds = cellfun(@(x) ~isempty(x), inds);
-            inds = find(inds);
-            
-        end
     end
 
 
