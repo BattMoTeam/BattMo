@@ -82,13 +82,6 @@ classdef BaseModel < PhysicalModel
             end
         end
 
-        
-        function model = setAsExtraVarNames(model, varnames)
-            for ivar = 1 : numel(varnames)
-                model = model.setAsExtraVarName(varnames{ivar});
-            end
-        end
-        
         function model = setAsExtraVarName(model, varname)
 
             if isa(varname, 'char')
@@ -98,10 +91,15 @@ classdef BaseModel < PhysicalModel
                 varname = VarName(varname(1 : end - 1), varname{end});
                 model = model.setAsExtraVarName(varname);
             elseif isa(varname, 'VarName')
-                model.extraVarNameList{end + 1} = varname;
+                model.extraVarNameList = mergeList(model.extraVarNameList, {varname});
             end
         end
         
+        function model = setAsExtraVarNames(model, varnames)
+            for ivar = 1 : numel(varnames)
+                model = model.setAsExtraVarName(varnames{ivar});
+            end
+        end
         
         function model = removeVarNames(model, varnames)
             for ivar = 1 : numel(varnames)
@@ -123,7 +121,7 @@ classdef BaseModel < PhysicalModel
                 nvars = numel(varnames);
                 keep = true(nvars, 1);
                 for ivar = 1 : nvars
-                    [found, keep(ivar), varnames{ivar}] = BaseModel.getCleanedUpVarName(varname, varnames{ivar});
+                    [found, keep(ivar), varnames{ivar}] = BaseModel.extractVarName(varname, varnames{ivar});
                     if found
                         break;
                     end
@@ -135,10 +133,10 @@ classdef BaseModel < PhysicalModel
                 nprops = numel(propfuncs);
                 keep = true(nprops, 1);
                 for iprop = 1 : nprops
-                    [~, keep(iprop),  propfuncs{iprop}.varname] = BaseModel.getCleanedUpVarName(varname, propfuncs{iprop}.varname);
+                    [~, keep(iprop),  propfuncs{iprop}.varname] = BaseModel.extractVarName(varname, propfuncs{iprop}.varname);
                     inputvarnames = propfuncs{iprop}.inputvarnames;
                     for iinput = 1 : numel(inputvarnames)
-                        [~, keepprop,  inputvarnames{iinput}] = BaseModel.getCleanedUpVarName(varname, inputvarnames{iinput});
+                        [~, keepprop,  inputvarnames{iinput}] = BaseModel.extractVarName(varname, inputvarnames{iinput});
                         keep(iprop) = keepprop & keep(iprop);
                     end
                     propfunctions{iprop}.inputvarnames = inputvarnames;
@@ -518,10 +516,11 @@ classdef BaseModel < PhysicalModel
 
     methods(Static)
 
-        function [found, keep, varname] = getCleanedUpVarName(rvarname, varname)
+        function [found, keep, varname] = extractVarName(rvarname, varname)
 
         % This function supports index, meaning, it handles the case where the rvarname and varname has same name but
         % different indices where the indices of rvarname make a subset of those of varname.
+            
             [isequal, compIndices] = compareVarName(rvarname, varname);
             if isequal
                 keep = false;
