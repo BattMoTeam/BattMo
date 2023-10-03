@@ -10,7 +10,7 @@
                                 "ConductingAdditive": {"$ref" : "ConductingAdditive"},
                                 "density" : {
                                   "$ref": "#/definitions/PhysicalQuantity",
-                                  "description": "the mass density of the material",
+                                  "description": "the mass density of the material. The density is computed with respect to the total volume (i.e. including the empty pores)",
                                   "symbol": "rho"
                                 },
                                 "bruggemanCoefficient" : {
