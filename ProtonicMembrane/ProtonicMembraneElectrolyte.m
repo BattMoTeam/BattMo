@@ -59,18 +59,21 @@ classdef ProtonicMembraneElectrolyte < BaseModel
             c = model.constants;
 
             % Compute sigma_p0
-            
+
+            % Y : acceptor concentration
             Y = model.Y;
             T = model.T;
-            
+
+            % Equilibrium constant for hydratation reaction
             K_hyd              = exp((model.dS_hyd/c.R) - model.dH_hyd*1000/(T*c.R));
             K_H_p              = K_hyd; 
+            % concentration of protons at 1 bar H2O (at equilibrium)
             p_ref              = ((3*K_H_p - sqrt(K_H_p*(9*K_H_p - 6*K_H_p*Y + K_H_p*Y^2 + 24*Y - 4*Y^2)))/(K_H_p - 4));
+            % Data from Amir Masoud at UiO
             sigma_p_masoud_std = c.F*(1/T)*(3*(Y - p_ref)/2)^(1/2)*(3)^(- 1/2)*1^(1/4)*model.Am*exp(-model.dH_ox/(c.R.*T));
             sigma_p0           = sigma_p_masoud_std;
             
-            % Compute E_0_ref
-
+            % Compute E_0_ref at standard pressures (1 bar of everything) at the given temperature
             E_0_ref = model.E_0 - 0.00024516.*T - c.R.*T./(2*c.F)*log(1./(1^(1/2)));
 
             % Compute sigma_prot
@@ -86,7 +89,7 @@ classdef ProtonicMembraneElectrolyte < BaseModel
             OH_pos  = ((3*K_H - sqrt(K_H*(9*K_H - 6*K_H*Y + K_H*Y^2 + 24*Y - 4*Y^2)))/(K_H - 4)); 
             OH_neg = ((3*K_H_neg - sqrt(K_H_neg*(9*K_H_neg - 6*K_H_neg*Y + K_H_neg*Y^2 + 24*Y - 4*Y^2)))/(K_H_neg - 4)); 
 
-            D0_prot = 0.021*38.1/T; % pre - exp proton diffusion
+            D0_prot = 0.021*38.1/T; % pre - exp proton diffusion in cm^2/s
             D_prot  = D0_prot*exp(-(model.Ea_prot*1000)/(c.R*T)); 
             
             sigma_prot_pos = (c.F*OH_pos*D_prot);

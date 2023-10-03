@@ -27,7 +27,7 @@ model = model.setupComputationalGraph();
 model = model.validateModel();
 cgt   = model.computationalGraph;
 
-model.verbose = false;
+model.verbose = true;
 
 % Setup initial state
 state0 = model.setupInitialState();
@@ -47,6 +47,7 @@ step.control = ones(numel(step.val), 1);
 
 % Imax = 1e-2*ampere/((centi*meter)^2);
 % Imax = 0.3*ampere/((centi*meter)^2);
+% Imax = 0.01*ampere/((centi*meter)^2);
 Imax = 0;
 
 control.src = @(time) controlfunc(time, Imax, tswitch, T, 'order', 'I-first');
@@ -56,6 +57,7 @@ schedule = struct('control', control, 'step', step);
 nls = NonLinearSolver();
 nls.maxIterations = 20;
 nls.errorOnFailure = false;
+nls.verbose = true;
 
 model.nonlinearTolerance = 1e-8;
 
@@ -89,8 +91,8 @@ if dothisplot
     title('E')
     xlabel('x [m]')
     figure(3)
-    plot(xc, state.(elyte).sigmaEl)
-    title('sigmaEl')
+    plot(xc, log(state.(elyte).sigmaEl))
+    title('log(sigmaEl)')
     xlabel('x [m]')
     figure(4)
     plot(xc, state.(elyte).phi)
