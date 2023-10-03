@@ -62,13 +62,8 @@ classdef ActiveMaterial < BaseModel
             switch model.diffusionModelType
               case 'simple'
                 model.SolidDiffusion = SimplifiedSolidDiffusionModel(paramobj.SolidDiffusion);
-                model.InterDiffusionCoefficient = paramobj.InterDiffusionCoefficient;
-                model.use_particle_diffusion = true;
-                model.use_interparticle_diffusion = true;
               case 'full'
-                if isempty(paramobj.SolidDiffusion.np)
-                    paramobj.SolidDiffusion.np = model.G.cells.num;
-                end
+                paramobj.SolidDiffusion.np = model.G.cells.num;
                 model.SolidDiffusion = FullSolidDiffusionModel(paramobj.SolidDiffusion);
               otherwise
                 error('Unknown diffusionModelType %s', diffusionModelType);
@@ -120,14 +115,6 @@ classdef ActiveMaterial < BaseModel
             model = model.registerPropFunction({{sd, 'T'}, fn, {'T'}});
             model = model.registerPropFunction({{itf, 'T'}, fn, {'T'}});
             
-            if strcmp(model.diffusionModelType, 'simple')
-                varnames = {'c'        , ...
-                            'massCons' , ...
-                            'massAccum', ...
-                            'massSource'};
-                model = model.registerVarNames(varnames);
-            end
-            
             if model.standAlone
                 error('to be fixed')
                 varnames = {'controlCurrentSource'};
@@ -143,38 +130,12 @@ classdef ActiveMaterial < BaseModel
                 
             end
 
-            switch model.diffusionModelType
-
-              case 'simple'
-
-                fn = @ActiveMaterial.updateConcentrations;
-                model = model.registerPropFunction({{sd, 'cAverage'}, fn, {'c'}});
-                model = model.registerPropFunction({{itf, 'cElectrodeSurface'}, fn, {{sd, 'cSurface'}}});
-                
-                fn = @ActiveMaterial.updateMassConservation;
-                model = model.registerPropFunction({'massCons', fn, {'massAccum', 'massSource'}});
-
-                fn = @ActiveMaterial.updateRvol;
-                model = model.registerPropFunction({{sd, 'Rvol'}, fn, {{itf, 'R'}}});
-                
-                fn = @ActiveMaterial.assembleAccumTerm;
-                fn = {fn, @(propfunc) PropFunction.accumFuncCallSetupFn(propfunc)};
-                model = model.registerPropFunction({'massAccum', fn, {'c'}});
-
-              case 'full'
-
-                fn = @ActiveMaterial.updateConcentrations;
-                model = model.registerPropFunction({{itf, 'cElectrodeSurface'}, fn, {{sd, 'cSurface'}}});
-
-                fn = @ActiveMaterial.updateRvol;
-                model = model.registerPropFunction({{sd, 'Rvol'}, fn, {{itf, 'R'}}});
-
-              otherwise
-                
-                error('diffusionModelType not recognized.');
-                
-            end
-
+            fn = @ActiveMaterial.updateRvol;
+            model = model.registerPropFunction({{sd, 'Rvol'}, fn, {{itf, 'R'}}});
+            
+            fn = @ActiveMaterial.updateConcentrations;
+            model = model.registerPropFunction({{itf, 'cElectrodeSurface'}, fn, {{sd, 'cSurface'}}});
+            
             if model.standAlone
 
                 error('to be checked');
@@ -319,91 +280,29 @@ classdef ActiveMaterial < BaseModel
         end
 
         %% assembly functions use in this model
-         
+
         function state = updateRvol(model, state)
-
-            vsa = model.Interface.volumetricSurfaceArea;
             
-            Rvol = vsa.*state.Interface.R;
-            state.Rvol = Rvol;
-
-            if model.use_particle_diffusion
-                state.SolidDiffusion.Rvol = Rvol;
-            end
+            itf = 'Interface';
+            sd  = 'SolidDiffusion';
             
-        end
+            vsa = model.(itf).volumetricSurfaceArea;
+            
+            Rvol = vsa.*state.(itf).R;
+            
+            state.(sd).Rvol = Rvol;
+            
+        end        
         
         function state = updateConcentrations(model, state)
 
             sd  = 'SolidDiffusion';
             itf = 'Interface';
             
-            if model.use_particle_diffusion
-
-                if strcmp(model.diffusionModelType, 'simple')
-                    state.(sd).cAverage = state.c;
-                end
-                
-                state.(itf).cElectrodeSurface = state.(sd).cSurface;
-            else
-                
-                state.(itf).cElectrodeSurface = state.c;
-                
-            end
+            state.(itf).cElectrodeSurface = state.(sd).cSurface;
             
         end
 
-        function state = updateMassFlux(model, state)
-        % Used when diffusionModelType == 'simple'
-
-            D = model.EffectiveDiffusionCoefficient;
-            
-            c = state.c;
-
-            massflux = assembleFlux(model, c, D);
-            
-            state.massFlux = massflux;
-
-        end
-            
-        function state = assembleAccumTerm(model, state, state0, dt)
-        % Used when diffusionModelType == 'simple'
-            
-            vols   = model.G.cells.volumes;
-            vf     = model.volumeFraction;
-            amFrac = model.activeMaterialFraction;
-
-            c  = state.c;
-            c0 = state0.c;
-
-            state.massAccum = vols.*vf.*amFrac.*(c - c0)/dt;
-            
-        end
-
-        function state = updateMassSource(model, state)
-        % used when diffusionModelType == simple
-            
-            vols = model.G.cells.volumes;
-            
-            Rvol = state.Rvol;
-            
-            state.massSource = - Rvol.*vols;
-            
-        end
-        
-        
-        function state = updateMassConservation(model, state)
-        % Used when diffusionModelType == 'simple' or no particle diffusion
-            
-            flux = state.massFlux;
-            source = state.massSource;
-            accum = state.massAccum;
-
-            cons = assembleConservationEquation(model, flux, 0, source, accum);
-            
-            state.massCons = cons;
-            
-        end
         
         function state = updateStandalonejBcSource(model, state)
             
@@ -411,45 +310,13 @@ classdef ActiveMaterial < BaseModel
 
         end
 
-        function state = updateCurrentSource(model, state)
-            
-            F    = model.Interface.constants.F;
-            vols = model.G.cells.volumes;
-            n    = model.Interface.n;
-
-            Rvol = state.Rvol;
-            
-            state.eSource = - vols.*Rvol*n*F; % C/s
-            
-        end
-        
-        function state = updatePhi(model, state)
-            state.Interface.phiElectrode = state.phi;
-        end         
         
         function state = dispatchTemperature(model, state)
             state.Interface.T = state.T;
             state.SolidDiffusion.T = state.T;
         end
 
-        function state = updatejBcSource(model, state)
-            state.jBcSource = state.jCoupling + state.jExternal;
-        end
-        
-        function state = updatejFaceBc(model, state)
-            state.jFaceBc = state.jFaceCoupling + state.jFaceExternal;
-        end
-        
-        function state = updatejExternal(model, state)
-            state.jExternal = 0;
-            state.jFaceExternal = 0;
-        end
 
-        function state = updatejCoupling(model, state)
-            state.jCoupling = 0;
-            state.jFaceCoupling = 0;
-        end
-        
 
         function state = updateAverageConcentration(model, state)
 
@@ -470,33 +337,6 @@ classdef ActiveMaterial < BaseModel
             
         end
         
-        
-        function state = updateSOC(model, state)
-
-            % shortcut
-            itf = 'Interface';
-            sd  = 'SolidDiffusion';
-
-            vf       = model.volumeFraction;
-            am_frac  = model.activeMaterialFraction;
-            vols     = model.G.cells.volumes;
-            cmax     = model.(itf).cmax;
-            theta100 = model.(itf).theta100;
-            theta0   = model.(itf).theta0;
-            
-            c = state.(sd).cAverage;
-
-            theta = c/cmax;
-            m     = (1 ./ (theta100 - theta0));
-            b     = -m .* theta0;
-            SOC   = theta*m + b;
-            vol   = am_frac*vf.*vols;
-            
-            SOC = sum(SOC.*vol)/sum(vol);
-
-            state.SOC = SOC;
-            
-        end
         
         
     end

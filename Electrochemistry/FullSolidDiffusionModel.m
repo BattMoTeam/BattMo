@@ -76,20 +76,12 @@ classdef FullSolidDiffusionModel < SolidDiffusionModel
             model = registerVarAndPropfuncNames@SolidDiffusionModel(model);
                         
             varnames = {};
-            % concentration
+            % concentration in the particle
             varnames{end + 1} = 'c';
             % Average concentration in the particle (not used in assembly)
             varnames{end + 1} = 'cAverage';
-            % surface concentration
-            varnames{end + 1} = 'cSurface';
-            % Mass accumulation term
-            varnames{end + 1} = 'massAccum';
             % flux term
             varnames{end + 1} = 'flux';
-            % Mass source term
-            varnames{end + 1} = 'massSource';
-            % Mass conservation equation
-            varnames{end + 1} = 'massCons';
             % Mass conservation equation
             varnames{end + 1} = 'solidDiffusionEq';
             

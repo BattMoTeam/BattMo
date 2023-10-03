@@ -207,8 +207,7 @@ classdef Coating < ElectronicComponent
             
             varnames = {'jCoupling', ...
                         'jExternal', ...
-                        'SOC'      , ...
-                        'Rvol'};
+                        'SOC'};
 
             model = model.registerVarNames(varnames);            
 
@@ -220,7 +219,7 @@ classdef Coating < ElectronicComponent
             end
             
             fn = @Coating.updateCurrentSource;
-            model = model.registerPropFunction({'eSource', fn, {'Rvol'}});
+            model = model.registerPropFunction({'eSource', fn, {{am, sd, 'Rvol'}}});
             
             fn = @Coating.updatePhi;
             model = model.registerPropFunction({{am, itf, 'phiElectrode'}, fn, {'phi'}});
@@ -248,30 +247,8 @@ classdef Coating < ElectronicComponent
                 model = model.registerPropFunction({'jFaceCoupling', fn, {}});
             end
 
-            fn = @Coating.updateRvol;
-            model = model.registerPropFunction({'Rvol', fn, {{am, itf, 'R'}}});
-            
             fn = @Coating.updateSOC;
             model = model.registerPropFunction({'SOC', fn, {{am, sd, 'cAverage'}}});
-
-
-            switch model.(am).diffusionModelType
-                    
-              case 'simple'
-                
-                fn = @Coating.updateMassSource;
-                model = model.registerPropFunction({{am, 'massSource'}, fn, {'Rvol'}});
-
-              case 'full'
-
-                %  nothing extra
-                
-              otherwise
-                
-                error('diffusionModelType not recognized.');
-                
-            end
-
             
             % We declare SOC as an extra variable, as it is not used in assembly (otherwise it will be systematically
             % computed but not used)
@@ -279,6 +256,94 @@ classdef Coating < ElectronicComponent
 
         end
         
+        
+        function state = updatejBcSource(model, state)
+            
+            state.jBcSource = state.jCoupling + state.jExternal;
+            
+        end
+        
+        function state = updatejFaceBc(model, state)
+            
+            state.jFaceBc = state.jFaceCoupling + state.jFaceExternal;
+            
+        end
+        
+        function state = updatejExternal(model, state)
+            
+            state.jExternal     = 0;
+            state.jFaceExternal = 0;
+            
+        end
+
+        function state = updatejCoupling(model, state)
+            
+            state.jCoupling     = 0;
+            state.jFaceCoupling = 0;
+            
+        end
+        
+        function state = updateCurrentSource(model, state)
+            
+            am  = 'ActiveMaterial';
+            itf = 'Interface';
+            
+            F    = model.(am).(itf).constants.F;
+            vols = model.G.cells.volumes;
+            n    = model.(am).(itf).numberOfElectronsTransferred;
+
+            Rvol = state.Rvol;
+            
+            state.eSource = - vols.*Rvol*n*F; % C/s
+            
+        end
+        
+        function state = updatePhi(model, state)
+            
+            am  = 'ActiveMaterial';
+            itf = 'Interface';
+            
+            state.(am).(itf).phiElectrode = state.phi;
+            
+        end
+
+        function state = dispatchTemperature(model, state)
+
+            am  = 'ActiveMaterial';
+
+            state.(am).T = state.T;
+            
+        end
+
+        
+        function state = updateSOC(model, state)
+
+            % shortcut
+            am  = 'ActiveMaterial';
+            itf = 'Interface';
+            sd  = 'SolidDiffusion';
+
+            vf       = model.(am).volumeFraction;
+            am_frac  = model.(am).volumeFractions(model.compInds.(am));
+            vols     = model.G.cells.volumes;
+            cmax     = model.(itf).(itf).saturationConcentration;
+            theta100 = model.(itf).(itf).guestStoichiometry100;
+            theta0   = model.(itf).(itf).guestStoichiometry0;
+            
+            c = state.(am).(sd).cAverage;
+
+            theta = c/cmax;
+            m     = (1 ./ (theta100 - theta0));
+            b     = -m .* theta0;
+            SOC   = theta*m + b;
+            vol   = am_frac*vf.*vols;
+            
+            SOC = sum(SOC.*vol)/sum(vol);
+
+            state.SOC = SOC;
+            
+        end
+
     end
 end
 

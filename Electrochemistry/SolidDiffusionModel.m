@@ -42,13 +42,21 @@ classdef SolidDiffusionModel < BaseModel
             model = registerVarAndPropfuncNames@BaseModel(model);
 
             varnames = {};
-            % concentration
+            % Temperature
             varnames{end + 1} = 'T';
+            % Concentration at surface
+            varnames{end + 1} = 'cSurface';
             % Diffusion coefficient
             varnames{end + 1} = 'D';
             % Volumetric reaction rate in mol/(s*m^3)
             varnames{end + 1} = 'Rvol';
-            
+            % Mass accumulation term
+            varnames{end + 1} = 'massAccum';
+            % Mass source term
+            varnames{end + 1} = 'massSource';
+            % Mass conservation equation
+            varnames{end + 1} = 'massCons';
+
             model = model.registerVarNames(varnames);
 
             fn = @SolidDiffusionModel.updateDiffusionCoefficient;

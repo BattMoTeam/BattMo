@@ -314,8 +314,8 @@ classdef Battery < BaseModel
             
             % Functions that update the source terms in the electolyte
             fn = @Battery.updateElectrolyteCoupling;
-            inputnames = {{ne, co, 'Rvol'}, ...
-                          {pe, co, 'Rvol'}};
+            inputnames = {{ne, co, am, sd, 'Rvol'}, ...
+                          {pe, co, am, sd, 'Rvol'}};
             model = model.registerPropFunction({{elyte, 'massSource'}, fn, inputnames});
             model = model.registerPropFunction({{elyte, 'eSource'}, fn, inputnames});
             
@@ -370,10 +370,10 @@ classdef Battery < BaseModel
                 %% Function that updates Thermal Reaction Terms
                 fn = @Battery.updateThermalReactionSourceTerms;
                 inputnames = {{thermal, 'T'}           , ...
-                              {ne, co, 'Rvol'}         , ...
+                              {ne, co, am, sd, 'Rvol'} , ...
                               {ne, co, am, itf, 'eta'} , ...
                               {ne, co, am, itf, 'dUdT'}, ...
-                              {pe, co, 'Rvol'}         , ...
+                              {pe, co, am, sd, 'Rvol'} , ...
                               {pe, co, am, itf, 'eta'} , ...
                               {pe, co, am, itf, 'dUdT'}};
                 model = model.registerPropFunction({{thermal, 'jHeatReactionSource'}, fn, inputnames});
@@ -610,6 +610,7 @@ classdef Battery < BaseModel
             elyte   = 'Electrolyte';
             ne      = 'NegativeElectrode';
             pe      = 'PositiveElectrode';
+            co      = 'Coating';
             am      = 'ActiveMaterial';
             itf     = 'Interface';
             sd      = 'SolidDiffusion';
@@ -630,43 +631,41 @@ classdef Battery < BaseModel
                 
                 elde = eldes{ind};
                 
-                elde_itf = bat.(elde).(am).(itf); 
+                elde_itf = bat.(elde).(co).(am).(itf); 
 
-                theta = SOC*(elde_itf.theta100 - elde_itf.theta0) + elde_itf.theta0;
-                c     = theta*elde_itf.cmax;
-                nc    = elde_itf.G.cells.num;
+                theta = SOC*(elde_itf.guestStoichiometry100 - elde_itf.guestStoichiometry0) + elde_itf.guestStoichiometry0;
+                c     = theta*elde_itf.saturationConcentration;
+                nc    = model.(elde).(co).G.cells.num;
 
-                switch model.(elde).(am).diffusionModelType
+                switch model.(elde).(co).(am).diffusionModelType
                   case 'simple'
-                    initstate.(elde).(am).(sd).cSurface = c*ones(nc, 1);
-                    initstate.(elde).(am).c = c*ones(nc, 1);
+                    initstate.(elde).(co).(am).(sd).cSurface = c*ones(nc, 1);
+                    initstate.(elde).(co).(am).c             = c*ones(nc, 1);
                   case 'full'
-                    initstate.(elde).(am).(sd).cSurface = c*ones(nc, 1);
-                    N = model.(elde).(am).(sd).N;
-                    np = model.(elde).(am).(sd).np; % Note : we have by construction np = nc
-                    initstate.(elde).(am).(sd).c = c*ones(N*np, 1);
-                  case 'interParticleOnly'
-                    initstate.(elde).(am).c = c*ones(nc, 1);                    
+                    initstate.(elde).(co).(am).(sd).cSurface = c*ones(nc, 1);
+                    N = model.(elde).(co).(am).(sd).N;
+                    np = model.(elde).(co).(am).(sd).np; % Note : we have by construction np = nc
+                    initstate.(elde).(co).(am).(sd).c = c*ones(N*np, 1);
                   otherwise
                     error('diffusionModelType not recognized')
                 end
                 
-                initstate.(elde).(am) = model.(elde).(am).updateConcentrations(initstate.(elde).(am));
-                initstate.(elde).(am).(itf) = elde_itf.updateOCP(initstate.(elde).(am).(itf));
+                initstate.(elde).(co).(am)       = model.(elde).(co).(am).updateConcentrations(initstate.(elde).(co).(am));
+                initstate.(elde).(co).(am).(itf) = elde_itf.updateOCP(initstate.(elde).(co).(am).(itf));
 
-                OCP = initstate.(elde).(am).(itf).OCP;
+                OCP = initstate.(elde).(co).(am).(itf).OCP;
                 if ind == 1
                     % The value in the first cell is used as reference.
                     ref = OCP(1);
                 end
                 
-                initstate.(elde).(am).phi = OCP - ref;
+                initstate.(elde).(co).phi = OCP - ref;
                 
             end
 
             %% Setup initial Electrolyte state
 
-            initstate.(elyte).phi = zeros(bat.(elyte).G.cells.num, 1)-ref;
+            initstate.(elyte).phi = zeros(bat.(elyte).G.cells.num, 1) - ref;
             initstate.(elyte).c = 1000*ones(bat.(elyte).G.cells.num, 1);
 
             %% Setup initial Current collectors state
@@ -689,13 +688,13 @@ classdef Battery < BaseModel
               case 'CCCV'
                 switch model.(ctrl).initialControl
                   case 'discharging'
-                    initstate.(ctrl).ctrlType = 'CC_discharge1';
+                    initstate.(ctrl).ctrlType     = 'CC_discharge1';
                     initstate.(ctrl).nextCtrlType = 'CC_discharge1';
-                    initstate.(ctrl).I = model.(ctrl).Imax;
+                    initstate.(ctrl).I            = model.(ctrl).Imax;
                   case 'charging'
                     initstate.(ctrl).ctrlType     = 'CC_charge1';
                     initstate.(ctrl).nextCtrlType = 'CC_charge1';
-                    initstate.(ctrl).I = - model.(ctrl).Imax;
+                    initstate.(ctrl).I            = - model.(ctrl).Imax;
                   otherwise
                     error('initialControl not recognized');
                 end
@@ -1133,22 +1132,23 @@ classdef Battery < BaseModel
             elyte   = 'Electrolyte';
             ne      = 'NegativeElectrode';
             pe      = 'PositiveElectrode';
+            co      = 'Coating';
             am      = 'ActiveMaterial';
             cc      = 'CurrentCollector';
             thermal = 'ThermalModel';
             
             % (here we assume that the ThermalModel has the "parent" grid)
             state.(elyte).T   = state.(thermal).T(model.(elyte).G.mappings.cellmap);
-            state.(ne).(am).T = state.(thermal).T(model.(ne).(am).G.mappings.cellmap);
-            state.(pe).(am).T = state.(thermal).T(model.(pe).(am).G.mappings.cellmap);
+            state.(ne).(co).T = state.(thermal).T(model.(ne).(co).G.mappings.cellmap);
+            state.(pe).(co).T = state.(thermal).T(model.(pe).(co).G.mappings.cellmap);
             if model.include_current_collectors
                 state.(ne).(cc).T = state.(thermal).T(model.(ne).(cc).G.mappings.cellmap);
                 state.(pe).(cc).T = state.(thermal).T(model.(pe).(cc).G.mappings.cellmap);
             end
             
             % Update temperature in the active materials of the electrodes.
-            state.(ne).(am) = model.(ne).(am).dispatchTemperature(state.(ne).(am));
-            state.(pe).(am) = model.(pe).(am).dispatchTemperature(state.(pe).(am));
+            state.(ne).(co) = model.(ne).(co).dispatchTemperature(state.(ne).(co));
+            state.(pe).(co) = model.(pe).(co).dispatchTemperature(state.(pe).(co));
             
         end
         
