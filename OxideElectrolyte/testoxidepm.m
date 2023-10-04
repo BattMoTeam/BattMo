@@ -1,5 +1,5 @@
 clear all
-% close all
+close all
 
 mrstModule add ad-core
 
@@ -107,6 +107,7 @@ if dothisplot
     plot(xc, state.(elyte).ch)
     title('ch')
     xlabel('x [m]')
+    figure(3)
     return
 end
 
