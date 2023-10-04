@@ -63,18 +63,10 @@ classdef ActiveMaterial < BaseModel
               case 'simple'
                 model.SolidDiffusion = SimplifiedSolidDiffusionModel(paramobj.SolidDiffusion);
               case 'full'
-                paramobj.SolidDiffusion.np = model.G.cells.num;
                 model.SolidDiffusion = FullSolidDiffusionModel(paramobj.SolidDiffusion);
               otherwise
                 error('Unknown diffusionModelType %s', diffusionModelType);
             end
-            
-            % nc = model.G.cells.num;
-
-            % model.volumeFraction = paramobj.volumeFraction*ones(nc, 1);
-            % model.porosity       = 1 - model.volumeFraction;
-
-            % model = model.setupDependentProperties();
 
             % standAlone=true for standalone simulation of active material. This flag is used only in
             % registerVarAndPropfuncNames (does not impact simulation). Default is false.
@@ -82,22 +74,6 @@ classdef ActiveMaterial < BaseModel
             
         end
         
-        function model = setupDependentProperties(model)           
-
-            vf = model.volumeFraction;
-            brugg = model.BruggemanCoefficient;
-            
-            % setup effective electronic conductivity using Bruggeman approximation
-            model.effectiveElectronicConductivity = model.electronicConductivity.*vf.^brugg;
-
-            if model.use_thermal
-                % setup effective thermal conductivity
-                model.EffectiveThermalConductivity = model.thermalConductivity.*vf.^brugg;
-                model.EffectiveVolumetricHeatCapacity = model.specificHeatCapacity.*vf.*model.density;
-            end
-            
-        end
-
         function model = registerVarAndPropfuncNames(model)
 
             %% Declaration of the Dynamical Variables and Function of the model
@@ -248,7 +224,7 @@ classdef ActiveMaterial < BaseModel
             
             sigma = model.electronicConductivity;
             vf    = model.volumeFraction;
-            brugg = model.BruggemanCoefficient;
+            brugg = model.bruggemanCoefficient;
             
             cleanState.conductivity = sigma*vf.^brugg;
             

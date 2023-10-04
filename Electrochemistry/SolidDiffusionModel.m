@@ -72,8 +72,8 @@ classdef SolidDiffusionModel < BaseModel
             T = state.T;
 
             R   = model.constants.R;
-            D0  = model.D0;
-            EaD = model.EaD;
+            D0  = model.referenceDiffusionCoefficient;
+            EaD = model.activationEnergyOfDiffusion;
 
             % Calculate solid diffusion coefficient, [m^2 s^-1]
             D = D0.*exp(-EaD./R*(1./T - 1/Tref));

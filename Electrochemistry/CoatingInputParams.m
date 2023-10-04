@@ -24,7 +24,7 @@ classdef CoatingInputParams < ElectronicComponentInputParams
         effectiveThermalConductivity    % (account for volume fraction)
         effectiveVolumetricHeatCapacity % (account for volume fraction and density)
         
-        %% Coupling parameters
+        %% External coupling parameters
         
         externalCouplingTerm % structure to describe external coupling (used in absence of current collector)
 

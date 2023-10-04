@@ -28,6 +28,7 @@ ne      = 'NegativeElectrode';
 pe      = 'PositiveElectrode';
 elyte   = 'Electrolyte';
 thermal = 'ThermalModel';
+co      = 'Coating';
 am      = 'ActiveMaterial';
 itf     = 'Interface';
 sd      = 'SolidDiffusion';
@@ -71,7 +72,7 @@ paramobj = gen.updateBatteryInputParams(paramobj);
 %%  Initialize the battery model. 
 % The battery model is initialized by sending paramobj to the Battery class
 % constructor. see :class:`Battery <Battery.Battery>`.
-model = Battery(paramobj);
+model = ExperimentalBattery(paramobj);
 
 model.AutoDiffBackend= AutoDiffBackend();
 
@@ -79,7 +80,6 @@ inspectgraph = false;
 if inspectgraph
     % plot the computational graph
     cgt = ComputationalGraphTool(model);
-    cgt.getComputationalGraph('doplot', true);
     return
 end
 
@@ -183,7 +183,7 @@ time = cellfun(@(x) x.time, states);
 
 plot(time, E);
 
-writeOutput(model, states, 'output.h5')
+% writeOutput(model, states, 'output.h5')
 
 
 %% Plot the the output voltage and current

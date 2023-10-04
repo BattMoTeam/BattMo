@@ -135,7 +135,7 @@ classdef ElectronicComponent < BaseModel
             sigma = state.conductivity;
             phi   = state.phi;
             
-            j = assembleFlux(model, phi, sigma); 
+            j = assembleFlux(model, phi, sigma);
 
             state.j = j;
             

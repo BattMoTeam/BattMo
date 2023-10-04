@@ -22,6 +22,9 @@ classdef Coating < ElectronicComponent
         specificHeatCapacity            % (if not given computed from the subcomponents)
         effectiveThermalConductivity    % (account for volume fraction, if not given, computed from thermalConductivity)
         effectiveVolumetricHeatCapacity % (account for volume fraction and density, if not given, computed from specificHeatCapacity)
+
+        % external coupling parameters
+        externalCouplingTerm % structure to describe external coupling (used in absence of current collector)
         
         %% Computed parameters at model setup
         compInds            % index of the sub models in the massFractions structure
@@ -34,15 +37,16 @@ classdef Coating < ElectronicComponent
 
             model = model@ElectronicComponent(paramobj);
             
-            fdnames = {'density'                     , ...
-                       'bruggemanCoefficient'        , ...
-                       'activematerial_type'         , ...
-                       'volumeFractions'             , ...
-                       'volumeFraction'              , ...
-                       'thermalConductivity'         , ...
-                       'specificHeatCapacity'        , ...
-                       'effectiveThermalConductivity', ...
-                       'effectiveVolumetricHeatCapacity'};
+            fdnames = {'density'                        , ...
+                       'bruggemanCoefficient'           , ...
+                       'activematerial_type'            , ...
+                       'volumeFractions'                , ...
+                       'volumeFraction'                 , ...
+                       'thermalConductivity'            , ...
+                       'specificHeatCapacity'           , ...
+                       'effectiveThermalConductivity'   , ...
+                       'effectiveVolumetricHeatCapacity', ...
+                       'externalCouplingTerm'};
 
             model = dispatchParams(model, paramobj, fdnames);
 
@@ -180,6 +184,7 @@ classdef Coating < ElectronicComponent
             switch paramobj.activematerial_type
               case 'default'
                 if strcmp(paramobj.(am).diffusionModelType, 'full')
+                    paramobj.(am).(sd).volumeFraction = model.volumeFraction*model.volumeFractions(model.compInds.(am));
                     paramobj.(am).(sd).np = np;
                 end
                 model.ActiveMaterial = ActiveMaterial(paramobj.ActiveMaterial);
@@ -287,12 +292,13 @@ classdef Coating < ElectronicComponent
             
             am  = 'ActiveMaterial';
             itf = 'Interface';
+            sd  = 'SolidDiffusion';
             
             F    = model.(am).(itf).constants.F;
             vols = model.G.cells.volumes;
             n    = model.(am).(itf).numberOfElectronsTransferred;
 
-            Rvol = state.Rvol;
+            Rvol = state.(am).(sd).Rvol;
             
             state.eSource = - vols.*Rvol*n*F; % C/s
             

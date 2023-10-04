@@ -25,6 +25,7 @@ classdef Electrolyte < BaseModel
 
         %%  helper properties
         
+        constants
         compnames
         ncomp
         computeConductivityFunc
@@ -61,6 +62,15 @@ classdef Electrolyte < BaseModel
 
             model.ncomp = numel(model.compnames);
 
+            model.constants = PhysicalConstants();
+
+            docellflux = false;
+            if model.use_thermal
+                docellflux = true;
+            end
+            
+            model.operators = localSetupOperators(model.G, 'assembleCellFluxOperator', docellflux);
+            
             if model.use_thermal
                 
                 if isempty(model.effectiveThermalConductivity)
@@ -177,6 +187,30 @@ classdef Electrolyte < BaseModel
             
         end
 
+        function state = updateMassConservation(model, state)
+
+            accum    = state.massAccum;
+            source   = state.massSource;
+            flux     = state.massFlux;
+            bcsource = 0;
+
+            state.massCons = assembleConservationEquation(model, flux, bcsource, source, accum);
+            
+        end
+
+        function state = updateChargeConservation(model, state)
+
+            flux     = state.j;
+            bcsource = state.jBcSource;
+            source   = state.eSource;
+            
+            accum    = zeros(model.G.cells.num,1);
+            
+            chargeCons = assembleConservationEquation(model, flux, bcsource, source, accum);
+            
+            state.chargeCons = chargeCons;
+            
+        end
 
         function state = updateAccumTerm(model, state, state0, dt)
 
@@ -221,7 +255,7 @@ classdef Electrolyte < BaseModel
 
         function state = updateDiffusionCoefficient(model, state)
 
-            brcoef = model.BruggemanCoefficient;
+            brcoef = model.bruggemanCoefficient;
 
             computeD = model.computeDiffusionCoefficientFunc;
 
@@ -243,27 +277,25 @@ classdef Electrolyte < BaseModel
 
         function state  = updateCurrent(model, state)
 
-            sp     = model.sp;
-            R      = model.constants.R;
-            F      = model.constants.F;
-            brcoef = model.BruggemanCoefficient;
-
+            bg      = model.bruggemanCoefficient;
+            con     = model.constants;
+            sp      = model.sp;
+            volfrac = model.volumeFraction;
+            
             dmudcs       = state.dmudcs;
             phi          = state.phi;
             T            = state.T;
             c            = state.c;
             conductivity = state.conductivity;
 
-            % volume fraction of electrolyte
-            volfrac = model.volumeFraction;
             % Compute effective ionic conductivity in porous media
-            conductivityeff = conductivity.*volfrac.^brcoef;
+            conductivityeff = conductivity.*volfrac.^bg;
 
             state.conductivityeff = conductivityeff;
             j = assembleFlux(model, phi, conductivityeff);
 
             sum_dmudc = dmudcs{1} + dmudcs{2};
-            coef = (1/F)*(1 - sp.t(1))*conductivityeff.*sum_dmudc;
+            coef = (1/con.F)*(1 - sp.t(1))*conductivityeff.*sum_dmudc;
             jchem = assembleFlux(model, c, coef);
 
             j = j - jchem;

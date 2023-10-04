@@ -346,7 +346,7 @@ classdef CompositeActiveMaterial < ElectronicComponent
             for imat = 1 : numel(mats)
                 mat = mats{imat};
                 amvf     = model.(mat).activeMaterialFraction;
-                bg       = model.(mat).BruggemanCoefficient;
+                bg       = model.(mat).bruggemanCoefficient;
                 sigmamat = model.(mat).electronicConductivity;
                 sigma = ((vf.*amvf).^bg).*sigmamat;
             end

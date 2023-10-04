@@ -15,10 +15,10 @@ function config = configBruggeman(jsonExp)
     numVars = numel(config.name);
     config.belongsTo = repmat({'model'}, numVars, 1);
     config.location = {
-        {'NegativeElectrode', 'ActiveMaterial', 'BruggemanCoefficient'};
-        {'Electrolyte', 'BruggemanCoefficient'};
-        {'Electrolyte', 'Separator', 'BruggemanCoefficient'};
-        {'PositiveElectrode', 'ActiveMaterial', 'BruggemanCoefficient'}
+        {'NegativeElectrode', 'ActiveMaterial', 'bruggemanCoefficient'};
+        {'Electrolyte', 'bruggemanCoefficient'};
+        {'Electrolyte', 'Separator', 'bruggemanCoefficient'};
+        {'PositiveElectrode', 'ActiveMaterial', 'bruggemanCoefficient'}
                       };
 
     % Assume Bruggeman coefficients in range

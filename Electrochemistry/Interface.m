@@ -161,7 +161,7 @@ classdef Interface < BaseModel
         function state = updateOCP(model, state)
 
             computeOCP = model.computeOCPFunc;
-            cmax = model.cmax;
+            cmax = model.saturationConcentration;
 
             c = state.cElectrodeSurface;
             T = state.T;
@@ -193,10 +193,10 @@ classdef Interface < BaseModel
                 
                 Tref = 298.15;  % [K]
 
-                cmax = model.cmax;
-                k0   = model.k0;
-                Eak  = model.Eak;
-                n    = model.n;
+                cmax = model.saturationConcentration;
+                k0   = model.reactionRateConstant;
+                Eak  = model.activationEnergyOfReaction;
+                n    = model.numberOfElectronsTransferred;
                 F    = model.constants.F;
                 R    = model.constants.R;
 
@@ -243,9 +243,10 @@ classdef Interface < BaseModel
             
         function state = updateReactionRate(model, state)
         % From definition of the overpotential eta, we have that reaction rate R is positive for oxydation.
-            n     = model.n;
+            
+            n     = model.numberOfElectronsTransferred;
             F     = model.constants.F;
-            alpha = model.alpha;
+            alpha = model.chargeTransferCoefficient;
 
             T   = state.T;
             j0  = state.j0;

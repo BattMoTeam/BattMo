@@ -6,7 +6,6 @@ classdef FullSolidDiffusionModel < SolidDiffusionModel
 
         % Standard Parameters
 
-        volumeFraction % the ratio of the volume of the material to the total volume
 
         % Function to update diffusion coefficient value, given as a struct with fields
         % - type         : element in {'function', 'constant'}. If 'constant' is chosen the value of referenceDiffusionCoefficient defined in parent class is used
@@ -19,9 +18,12 @@ classdef FullSolidDiffusionModel < SolidDiffusionModel
                                 % of the guest molecule in a phase at a cell voltage that is defined as 100% SOC(symbol: theta100)
         guestStoichiometry0     % the ratio of the concentration of the guest molecule to the saturation concentration
                                 % of the guest molecule in a phase at a cell voltage that is defined as 0% SOC (symbol: theta0)
+
+        % Advanced parameters
         
-        np  % Number of particles
-        N   % Discretization parameters in spherical direction
+        volumeFraction % the ratio of the volume of the material to the total volume
+        np             % Number of particles
+        N              % Discretization parameters in spherical direction
         
         
         %% Computed parameters at model setup
@@ -48,8 +50,6 @@ classdef FullSolidDiffusionModel < SolidDiffusionModel
         
             model = dispatchParams(model, paramobj, fdnames);
             model.operators = model.setupOperators();
-
-            % model.volumeFraction = paramobj.volumeFraction*ones(model.np, 1);
 
             D = paramobj.diffusionCoefficient;
             if ~isempty(D)
@@ -278,16 +278,14 @@ classdef FullSolidDiffusionModel < SolidDiffusionModel
         function state = updateMassSource(model, state)
             
             op  = model.operators;
-            rp  = model.rp;
+            rp  = model.particleRadius;
             vf  = model.volumeFraction;
-            amf = model.activeMaterialFraction;
             
             Rvol = state.Rvol;
 
             Rvol = op.mapFromBc*Rvol;
-            vf   = op.mapToParticle*vf;
             
-            state.massSource = - Rvol.*((4*pi*rp^3)./(3*amf*vf));
+            state.massSource = - Rvol.*((4*pi*rp^3)./(3*vf));
             
         end
 

@@ -35,9 +35,9 @@ function operators = localSetupOperators(G, varargin)
     P = P.setFromTensorMap(map);
     P = P.getMatrix;
 
-    operators.harmFace =@(cellvalue) 1./(P*(1./(hT.*(M*cellvalue))));
-
-    operators.harmFaceBC = @(cvalue, faces) getFaceHarmBC(G, cvalue, faces);
+    operators.harmFace    = @(cellvalue) getHarmFace(cellvalue, P, hT, M);
+    operators.harmFaceBC  = @(cvalue, faces) getFaceHarmBC(G, cvalue, faces);
+    operators.transFaceBC = @(faces) getTransFaceBC(G, faces);
     
     %% setup the sign for *external* faces
     cells  = rldecode(1:G.cells.num, diff(G.cells.facePos), 2)';
@@ -60,12 +60,26 @@ function operators = localSetupOperators(G, varargin)
     end
 end
 
+function facevalue = getHarmFace(cellvalue, P, hT, M)
+
+    if numelValue(cellvalue) > 1
+        facevalue = 1./(P*(1./(hT.*(M*cellvalue))));
+    else
+        facevalue = cellvalue;
+    end
+    
+end
 function [T, cells] = getFaceHarmBC(G, cvalue, faces)
+    [t, cells] = getTransFaceBC(G, faces);
+    T = t.*cvalue(cells);
+end
+
+function [t, cells] = getTransFaceBC(G, faces)
     cells = sum(G.faces.neighbors(faces, :), 2);
     cn = sqrt(sum((G.faces.centroids(faces, :) - G.cells.centroids(cells, :)).^2, 2));
     t = G.faces.areas(faces)./cn;
-    T = t.*cvalue(cells);
 end
+
 
 
 %{
