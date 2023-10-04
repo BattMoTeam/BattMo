@@ -3,7 +3,7 @@
 % and run a simple simulation.
 
 % Clear the workspace and close open figures
-clear all
+% clear all
 close all
 clc
 
@@ -50,6 +50,14 @@ paramobj.(ne).(co).volumeFraction = 0.8;
 paramobj.(ne).(co).volumeFractions = [1, 0, 0];
 paramobj.(pe).(co).volumeFraction = 0.8;
 paramobj.(pe).(co).volumeFractions = [1, 0, 0];
+
+paramobj.(ne).(co).density  = 2240;
+paramobj.(ne).(co).thermalConductivity  = 1.04;
+paramobj.(ne).(co).specificHeatCapacity = 632;
+
+paramobj.(pe).(co).density  = 4650;
+paramobj.(pe).(co).thermalConductivity  = 2.1;
+paramobj.(pe).(co).specificHeatCapacity = 700;
 
 paramobj = paramobj.validateInputParams();
 
@@ -185,12 +193,16 @@ ind = cellfun(@(x) not(isempty(x)), states);
 states = states(ind);
 E = cellfun(@(x) x.Control.E, states); 
 I = cellfun(@(x) x.Control.I, states);
+T = cellfun(@(x) max(x.(thermal).T), states);
 Tmax = cellfun(@(x) max(x.ThermalModel.T), states);
 % [SOCN, SOCP] =  cellfun(@(x) model.calculateSOC(x), states);
 time = cellfun(@(x) x.time, states); 
 
+figure
 plot(time, E);
-
+figure
+plot(time, T);
+            
 % writeOutput(model, states, 'output.h5')
 
 
