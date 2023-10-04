@@ -173,7 +173,7 @@ classdef Coating < ElectronicComponent
                 end
 
                 if isempty(model.effectiveVolumetricHeatCapacity)
-                    model.effectiveVolumetricHeatCapacity = model.density*specificHeatCapacity;
+                    model.effectiveVolumetricHeatCapacity = model.volumeFraction*model.density*model.specificHeatCapacity;
                 end
 
             end
