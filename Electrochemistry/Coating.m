@@ -183,8 +183,8 @@ classdef Coating < ElectronicComponent
             np = paramobj.G.cells.num;
             switch paramobj.activematerial_type
               case 'default'
+                paramobj.(am).(sd).volumeFraction = model.volumeFraction*model.volumeFractions(model.compInds.(am));
                 if strcmp(paramobj.(am).diffusionModelType, 'full')
-                    paramobj.(am).(sd).volumeFraction = model.volumeFraction*model.volumeFractions(model.compInds.(am));
                     paramobj.(am).(sd).np = np;
                 end
                 model.ActiveMaterial = ActiveMaterial(paramobj.ActiveMaterial);

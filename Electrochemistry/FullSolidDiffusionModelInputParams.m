@@ -22,10 +22,7 @@ classdef FullSolidDiffusionModelInputParams < SolidDiffusionModelInputParams
         guestStoichiometry0     % the ratio of the concentration of the guest molecule to the saturation concentration
                                 % of the guest molecule in a phase at a cell voltage that is defined as 0% SOC (symbol: theta0)
 
-        %% Advanced parameters
-        
-        volumeFraction % the ratio of the volume of the active material to the total volume (including porous space)
-        
+
         %% Discretization parameters
         
         % Number of discretization intervals in the diffusion model [-]

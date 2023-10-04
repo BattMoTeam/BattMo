@@ -127,9 +127,9 @@ classdef ExperimentalBattery < Battery
                 
               case 'simple'
 
-                eqs{end + 1}   = state.(pe).(co).(am).massCons*massConsScaling;
+                eqs{end + 1}   = state.(pe).(co).(am).(sd).massCons*massConsScaling;
                 names{end + 1} = 'pe_co_am_massCons';
-                eqs{end + 1}   = state.(pe).(co).(am).(sd).solidDiffusionEq.*massConsScaling.*battery.(pe).(co).(am).(itf).G.cells.volumes/dt;
+                eqs{end + 1}   = state.(pe).(co).(am).(sd).solidDiffusionEq.*massConsScaling.*battery.(pe).(co).G.cells.volumes/dt;
                 names{end + 1} = 'pe_co_am_sd_soliddiffeq';
                 
               case 'full'

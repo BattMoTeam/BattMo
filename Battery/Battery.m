@@ -640,7 +640,7 @@ classdef Battery < BaseModel
                 switch model.(elde).(co).(am).diffusionModelType
                   case 'simple'
                     initstate.(elde).(co).(am).(sd).cSurface = c*ones(nc, 1);
-                    initstate.(elde).(co).(am).c             = c*ones(nc, 1);
+                    initstate.(elde).(co).(am).(sd).cAverage = c*ones(nc, 1);
                   case 'full'
                     initstate.(elde).(co).(am).(sd).cSurface = c*ones(nc, 1);
                     N = model.(elde).(co).(am).(sd).N;
@@ -1744,9 +1744,18 @@ classdef Battery < BaseModel
             eldes = {ne, pe};
             for ind = 1 : numel(eldes)
                 elde = eldes{ind};
-                state.(elde).(co).(am).(sd).c = max(cmin, state.(elde).(co).(am).(sd).c);
                 cmax = model.(elde).(co).(am).(itf).saturationConcentration;
-                state.(elde).(co).(am).(sd).c = min(cmax, state.(elde).(co).(am).(sd).c);
+                switch model.(elde).(co).(am).diffusionModelType
+                  case 'simple'
+                    state.(elde).(co).(am).(sd).cAverage = max(cmin, state.(elde).(co).(am).(sd).cAverage);
+                    state.(elde).(co).(am).(sd).cAverage = min(cmax, state.(elde).(co).(am).(sd).cAverage);
+                  case 'full'
+                    state.(elde).(co).(am).(sd).c = max(cmin, state.(elde).(co).(am).(sd).c);
+                    state.(elde).(co).(am).(sd).c = min(cmax, state.(elde).(co).(am).(sd).c);
+                  otherwise
+                    error('diffusionModelType not recognized')
+
+                end
             end
             
             ctrl = 'Control';            

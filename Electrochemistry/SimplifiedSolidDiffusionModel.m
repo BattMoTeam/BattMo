@@ -65,25 +65,21 @@ classdef SimplifiedSolidDiffusionModel < SolidDiffusionModel
 
         function state = assembleAccumTerm(model, state, state0, dt)
 
-            vols   = model.G.cells.volumes;
-            vf     = model.volumeFraction;
-            amFrac = model.activeMaterialFraction;
+            vf = model.volumeFraction;
 
             c  = state.cAverage;
             c0 = state0.cAverage;
 
-            state.massAccum = vols.*vf.*amFrac.*(c - c0)/dt;
+            state.massAccum = vf.*(c - c0)/dt;
 
         end
 
         function state = updateMassSource(model, state)
         % used when diffusionModelType == simple
 
-            vols = model.G.cells.volumes;
-
             Rvol = state.Rvol;
 
-            state.massSource = - Rvol.*vols;
+            state.massSource = - Rvol;
 
         end
 
@@ -92,13 +88,14 @@ classdef SimplifiedSolidDiffusionModel < SolidDiffusionModel
         % We update the surface concentration of the charge carrier in the active material.
         % The surface concentration value is computed following polynomial method, as described in ref1 (see below)
 
+            rp  = model.particleRadius;
+            vsa = model.volumetricSurfaceArea;
+            
             csurf = state.cSurface;
             caver = state.cAverage;
             D     = state.D;
             Rvol  = state.Rvol;
 
-            rp  = model.rp;
-            vsa = model.volumetricSurfaceArea;
             state.solidDiffusionEq = csurf - caver + (rp.*Rvol)./(5*vsa*D);
 
         end

@@ -35,8 +35,10 @@ sd      = 'SolidDiffusion';
 ctrl    = 'Control';
 cc      = 'CurrentCollector';
 
-jsonstruct.use_thermal = false;
+jsonstruct.use_thermal                = false;
 jsonstruct.include_current_collectors = false;
+jsonstruct.(ne).(co).(am).diffusionModelType = 'simple';
+jsonstruct.(pe).(co).(am).diffusionModelType = 'simple';
 
 paramobj = BatteryInputParams(jsonstruct);
 

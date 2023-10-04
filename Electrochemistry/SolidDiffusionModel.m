@@ -14,6 +14,9 @@ classdef SolidDiffusionModel < BaseModel
         referenceDiffusionCoefficient % the pre-exponential reference diffusion coefficient in an Arrhenius-type equation (symbol: D0)
         volumetricSurfaceArea         % surface area of the active material - electrolyte interface per volume of electrode
 
+        % Advanced input parameters
+        volumeFraction % the ratio of the volume of the material to the total volume
+        
     end
 
     methods
@@ -28,7 +31,8 @@ classdef SolidDiffusionModel < BaseModel
             fdnames = {'particleRadius'               , ...
                        'activationEnergyOfDiffusion'  , ...
                        'referenceDiffusionCoefficient', ...
-                       'volumetricSurfaceArea'};
+                       'volumetricSurfaceArea'        , ...
+                       'volumeFraction'};
 
             model = dispatchParams(model, paramobj, fdnames);
         

@@ -21,7 +21,6 @@ classdef FullSolidDiffusionModel < SolidDiffusionModel
 
         % Advanced parameters
         
-        volumeFraction % the ratio of the volume of the material to the total volume
         np             % Number of particles
         N              % Discretization parameters in spherical direction
         
