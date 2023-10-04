@@ -212,6 +212,30 @@ classdef Electrolyte < BaseModel
             
         end
 
+        function state = updateFaceCurrent(model, state)
+            
+            G = model.G;
+            nf = G.faces.num;
+            intfaces = model.operators.internalConn;
+            
+            j       = state.j;
+            jFaceBc = state.jFaceBc;
+            
+            zeroFaceAD = model.AutoDiffBackend.convertToAD(zeros(nf, 1), j);
+            jFace = zeroFaceAD + jFaceBc;
+            jFace(intfaces) = j;
+            
+            state.jFace = jFace;
+            
+        end
+
+        function state = updateFaceBcCurrent(model, state)
+            
+            state.jFaceBc = 0;
+            
+        end
+
+
         function state = updateAccumTerm(model, state, state0, dt)
 
             cdotcc  = (state.c - state0.c)/dt;

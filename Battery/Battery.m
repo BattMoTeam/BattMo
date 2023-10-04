@@ -1263,7 +1263,7 @@ classdef Battery < BaseModel
 
             ne      = 'NegativeElectrode';
             pe      = 'PositiveElectrode';
-            am      = 'ActiveMaterial';
+            co      = 'Coating';
             cc      = 'CurrentCollector';
             elyte   = 'Electrolyte';
             thermal = 'ThermalModel';
@@ -1290,16 +1290,16 @@ classdef Battery < BaseModel
                     %                    src(cc_map) = src(cc_map) + cc_vols.*cc_jsq./cc_econd;
                 end
                 
-                am_model = model.(elde).(am);
-                am_map   = am_model.G.mappings.cellmap;
-                am_j     = state.(elde).(am).jFace;
-                am_econd = am_model.effectiveElectronicConductivity;
-                am_vols  = am_model.G.cells.volumes;
-                am_jsq   = computeCellFluxNorm(am_model, am_j);
-                state.(elde).(am).jsq = am_jsq;
+                co_model = model.(elde).(co);
+                co_map   = co_model.G.mappings.cellmap;
+                co_j     = state.(elde).(co).jFace;
+                co_econd = co_model.effectiveElectronicConductivity;
+                co_vols  = co_model.G.cells.volumes;
+                co_jsq   = computeCellFluxNorm(co_model, co_j);
+                state.(elde).(co).jsq = co_jsq;
                 
-                %src(am_map) = src(am_map) + am_vols.*am_jsq./am_econd;
-                src = subsetPlus(src, am_vols.*am_jsq./am_econd, am_map);
+                %src(co_map) = src(co_map) + co_vols.*co_jsq./co_econd;
+                src = subsetPlus(src, co_vols.*co_jsq./co_econd, co_map);
             end
 
             % Electrolyte
@@ -1473,8 +1473,10 @@ classdef Battery < BaseModel
             
             ne      = 'NegativeElectrode';
             pe      = 'PositiveElectrode';
+            co      = 'Coating';
             am      = 'ActiveMaterial';
             itf     = 'Interface';
+            sd      = 'SolidDiffusion';
             thermal = 'ThermalModel';
             
             
@@ -1485,6 +1487,7 @@ classdef Battery < BaseModel
             src = zeros(nc, 1);
            
             T = state.(thermal).T;
+            
             if isa(T, 'ADI')
                 adsample = getSampleAD(T);
                 adbackend = model.AutoDiffBackend;
@@ -1498,21 +1501,19 @@ classdef Battery < BaseModel
 
                 elde = eldes{ind};
                 
-                itf_model = model.(elde).(am).(itf);
-                
-                F       = itf_model.constants.F;
-                n       = itf_model.n;
-                itf_map = itf_model.G.mappings.cellmap;
-                vsa     = itf_model.volumetricSurfaceArea;
-                vols    = model.(elde).(am).G.cells.volumes;
+                F      = model.(elde).(co).(am).(itf).constants.F;
+                n      = model.(elde).(co).(am).(itf).numberOfElectronsTransferred;
+                co_map = model.(elde).(co).G.mappings.cellmap;
+                vsa    = model.(elde).(co).(am).(itf).volumetricSurfaceArea;
+                vols   = model.(elde).(co).G.cells.volumes;
 
-                Rvol = locstate.(elde).(am).Rvol;
-                dUdT = locstate.(elde).(am).(itf).dUdT;
-                eta  = locstate.(elde).(am).(itf).eta;
+                Rvol = locstate.(elde).(co).(am).(sd).Rvol;
+                dUdT = locstate.(elde).(co).(am).(itf).dUdT;
+                eta  = locstate.(elde).(co).(am).(itf).eta;
                 
-                itf_src = n*F*vols.*Rvol.*(eta + T(itf_map).*dUdT);
+                itf_src = n*F*vols.*Rvol.*(eta + T(co_map).*dUdT);
                 
-                src(itf_map) = src(itf_map) + itf_src;
+                src(co_map) = src(co_map) + itf_src;
                 
             end
 
