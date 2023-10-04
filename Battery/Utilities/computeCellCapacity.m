@@ -57,7 +57,7 @@ function [capacity, capacities] = computeCellCapacity(model)
             vol_fraction = model.(elde).(co).volumeFraction;
             
             amind = model.(elde).(co).compInds.(am);
-            am_fraction  = model.(elde).(co).volumeFractions(ind);
+            am_fraction  = model.(elde).(co).volumeFractions(amind);
             
             vol = sum(am_fraction*vol_fraction.*model.(elde).(co).G.cells.volumes);
             
