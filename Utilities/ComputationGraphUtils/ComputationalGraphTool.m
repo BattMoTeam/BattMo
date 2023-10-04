@@ -603,7 +603,7 @@ classdef ComputationalGraphTool
             
             g = digraph(A, modelnames);
            
-            plot(g)
+            plot(g, 'nodefontsize', 15)
 
             if nargout > 0
                 g2 = g;
