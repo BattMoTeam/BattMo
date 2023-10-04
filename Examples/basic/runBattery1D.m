@@ -37,13 +37,7 @@ cc      = 'CurrentCollector';
 jsonstruct.use_thermal = false;
 jsonstruct.include_current_collectors = false;
 
-jsonstruct.(pe).(am).diffusionModelType = 'simple';
-jsonstruct.(ne).(am).diffusionModelType = 'simple';
-
 paramobj = BatteryInputParams(jsonstruct);
-
-paramobj.(ne).(am).InterDiffusionCoefficient = 0;
-paramobj.(pe).(am).InterDiffusionCoefficient = 0;
 
 % paramobj.(ne).(am).(sd).N = 5;
 % paramobj.(pe).(am).(sd).N = 5;
