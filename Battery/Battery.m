@@ -650,7 +650,7 @@ classdef Battery < BaseModel
             %% Setup initial Electrolyte state
 
             initstate.(elyte).phi = zeros(bat.(elyte).G.cells.num, 1) - ref;
-            initstate.(elyte).c = 1000*ones(bat.(elyte).G.cells.num, 1);
+            initstate.(elyte).c   = 1*mol/litre*ones(bat.(elyte).G.cells.num, 1);
 
             %% Setup initial Current collectors state
 
@@ -1521,9 +1521,7 @@ classdef Battery < BaseModel
             end
 
             cgt = model.computationalGraph;
-            model.primaryVarNames = cgt.getPrimaryVariableNames();
             model.funcCallList = cgt.getOrderedFunctionCallList();
-
 
         end
 
