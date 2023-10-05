@@ -1,6 +1,6 @@
 classdef Battery < BaseModel
-% 
-% The battery model consists of 
+%
+% The battery model consists of
 %
 % * an Electrolyte model given in :attr:`Electrolyte` property
 % * a Negative Electrode Model given in :attr:`NegativeElectrode` property
@@ -8,7 +8,7 @@ classdef Battery < BaseModel
 % * a Thermal model given in :attr:`ThermalModel` property
 %
     properties
-        
+
         con = PhysicalConstants();
 
         NegativeElectrode % Negative Electrode Model, instance of :class:`Electrode <Electrochemistry.Electrodes.Electrode>`
@@ -17,24 +17,24 @@ classdef Battery < BaseModel
         Separator         % Separator model, instance of :class:`Separator <Electrochemistry.Electrodes.Separator>`
         ThermalModel      % Thermal model, instance of :class:`ThermalComponent <Electrochemistry.ThermalComponent>`
         Control           % Control Model
-        
+
         SOC % State Of Charge
 
         initT % Initial temperature
-        
+
         couplingTerms % Coupling terms
         cmin % mininum concentration used in capping
 
-        couplingNames 
-        
+        couplingNames
+
         mappings
-        
+
         % flag that decide the model setup
         use_thermal
         include_current_collectors
 
         funcCallList
-        
+
         primaryVarNames
         equationVarNames
         equationNames
@@ -42,16 +42,16 @@ classdef Battery < BaseModel
         equationIndices
 
     end
-    
+
     methods
-        
+
         function model = Battery(paramobj)
-            
+
             model = model@BaseModel();
-            
+
             % All the submodels should have same backend (this is not assigned automaticallly for the moment)
             model.AutoDiffBackend = SparseAutoDiffBackend('useBlocks', false);
-            
+
             %% Setup the model using the input parameters
             fdnames = {'G'                         , ...
                        'couplingTerms'             , ...
@@ -60,9 +60,9 @@ classdef Battery < BaseModel
                        'include_current_collectors', ...
                        'use_thermal'               , ...
                        'SOC'};
-            
+
             model = dispatchParams(model, paramobj, fdnames);
-            
+
             model.NegativeElectrode = Electrode(paramobj.NegativeElectrode);
             model.PositiveElectrode = Electrode(paramobj.PositiveElectrode);
             model.Separator         = Separator(paramobj.Separator);
@@ -73,9 +73,9 @@ classdef Battery < BaseModel
             if model.use_thermal
                 model.ThermalModel = ThermalComponent(paramobj.ThermalModel);
             end
-            
+
             model.Control = model.setupControl(paramobj.Control);
-           
+
             % define shorthands
             elyte   = 'Electrolyte';
             ne      = 'NegativeElectrode';
@@ -85,34 +85,34 @@ classdef Battery < BaseModel
             am      = 'ActiveMaterial';
             itf     = 'Interface';
             thermal = 'ThermalModel';
-           
+
             if model.use_thermal
                 % setup Thermal Model by assigning the effective heat capacity and conductivity, which is computed from the sub-models.
                 model = model.setupThermalModel();
             end
-            
+
             % setup couplingNames
             model.couplingNames = cellfun(@(x) x.name, model.couplingTerms, 'uniformoutput', false);
-            
+
             % setup equations and variable names selected in the model
             model = model.setupSelectedModel();
-            
+
             % setup some mappings (mappings from electrodes to electrolyte)
             model = model.setupMappings();
-            
+
             % setup capping
             model = model.setupCapping();
-            
+
         end
 
         function model = setupSelectedModel(model, varargin)
         % The system of equation should fullfill a special structure to fit into the iterative linear solver with
         % preconditioner. We create this structure here.
-            
+
             opt = struct('reduction', []);
             opt = merge_options(opt, varargin{:});
             % For the reduction structure format, see battmodDir()/Utilities/JsonSchemas/linearsolver.schema.json and the reduction property
-            
+
             elyte   = 'Electrolyte';
             ne      = 'NegativeElectrode';
             pe      = 'PositiveElectrode';
@@ -122,14 +122,14 @@ classdef Battery < BaseModel
             cc      = 'CurrentCollector';
             ctrl    = 'Control';
             thermal = 'ThermalModel';
-            
+
             addedVarNames = {};
-            
-            varEqTypes ={{elyte, 'c'}   , {elyte,  'massCons'}     , 'cell'; ...  
-                         {elyte, 'phi'} , {elyte,  'chargeCons'}   , 'cell'; ...    
-                         {ne, co, 'phi'}, {ne, co, 'chargeCons'}   , 'cell'; ...    
-                         {pe, co, 'phi'}, {pe, co, 'chargeCons'}   , 'cell'; ...    
-                         {ctrl, 'E'}    , {ctrl, 'EIequation'}     , 'ctrl'; ...  
+
+            varEqTypes ={{elyte, 'c'}   , {elyte,  'massCons'}     , 'cell'; ...
+                         {elyte, 'phi'} , {elyte,  'chargeCons'}   , 'cell'; ...
+                         {ne, co, 'phi'}, {ne, co, 'chargeCons'}   , 'cell'; ...
+                         {pe, co, 'phi'}, {pe, co, 'chargeCons'}   , 'cell'; ...
+                         {ctrl, 'E'}    , {ctrl, 'EIequation'}     , 'ctrl'; ...
                          {ctrl, 'I'}    , {ctrl, 'controlEquation'}, 'ctrl'};
 
             eldes = {ne, pe};
@@ -151,30 +151,30 @@ classdef Battery < BaseModel
                 varEqTypes = vertcat(varEqTypes, newentries);
 
                 if model.include_current_collectors
-                    
+
                     newentries = {{elde, cc, 'phi'}, {elde, cc, 'chargeCons'}, 'cell'};
                     varEqTypes = vertcat(varEqTypes, newentries);
-                    
+
                 end
 
             end
 
             if model.use_thermal
-                
+
                 newentries = {{thermal, 'T'}, {thermal, 'energyCons'}, 'cell'};
                 varEqTypes = vertcat(varEqTypes, newentries);
-                
+
             end
-            
+
             primaryVarNames = varEqTypes(:, 1);
             equationTypes   = varEqTypes(:, 3);
 
             % The variable and equation lists are not a priori ordered (in the sense that we have 'cell' types first and
             % the other types after). It is a requirement in some setup of the linear solver.
             % Note : if you use a direct solver, this is not used.
-            
-            variableReordered = false; 
-            
+
+            variableReordered = false;
+
             if ~isempty(opt.reduction)
                 reduc = opt.reduction;
                 % We set the type of the variable to be reduced as 'reduced' or 'specialReduced' (anything but 'cell')
@@ -212,7 +212,7 @@ classdef Battery < BaseModel
                     inds(einds) = [];
                     inds = [inds; einds];
                     variableReordered = true;
-                    
+
                 end
             end
 
@@ -220,7 +220,7 @@ classdef Battery < BaseModel
                 % We reorder to get first the 'cells' type (required for reduction in iterative solver)
                 iscell = ismember(equationTypes, {'cell'});
                 inds = [find(iscell); find(~iscell)];
-            end                
+            end
 
 
             primaryVarNames  = varEqTypes(inds, 1);
@@ -234,27 +234,27 @@ classdef Battery < BaseModel
                 str = Battery.varToStr(shortvarname);
             end
             equationNames = cellfun(@(varname) setupName(varname), equationVarNames, 'uniformoutput', false);
-            
+
             equationIndices = struct();
             for ieq = 1 : numel(equationNames)
                 equationIndices.(equationNames{ieq}) = ieq;
             end
-            
+
             model.primaryVarNames  = primaryVarNames;
-            model.equationVarNames = equationVarNames; 
+            model.equationVarNames = equationVarNames;
             model.equationNames    = equationNames;
             model.equationTypes    = equationTypes;
             model.equationIndices  = equationIndices;
-            
+
         end
-        
+
         function model = registerVarAndPropfuncNames(model)
-            
+
             %% Declaration of the Dynamical Variables and Function of the model
             % (setup of varnameList and propertyFunctionList)
-            
+
             model = registerVarAndPropfuncNames@BaseModel(model);
-            
+
             % defines shorthands for the submodels
             elyte   = 'Electrolyte';
             ne      = 'NegativeElectrode';
@@ -274,19 +274,19 @@ classdef Battery < BaseModel
 
             eldes = {ne, pe};
 
-            
+
             %% Temperature dispatch functions
             fn = @Battery.updateTemperature;
-            
+
             inputnames = {{thermal, 'T'}};
             model = model.registerPropFunction({{elyte, 'T'}  , fn, inputnames});
             for ielde = 1 : numel(eldes)
                 elde = eldes{ielde};
                 model = model.registerPropFunction({{elde, co, 'T'} , fn, inputnames});
             end
-                  
+
             %% Coupling functions
-            
+
             % Dispatch electrolyte concentration and potential in the electrodes
             fn = @Battery.updateElectrodeCoupling;
             inputnames = {{elyte, 'c'}, ...
@@ -295,18 +295,18 @@ classdef Battery < BaseModel
             model = model.registerPropFunction({{ne, co, am, itf, 'cElectrolyte'}  , fn, inputnames});
             model = model.registerPropFunction({{pe, co, am, itf, 'phiElectrolyte'}, fn, inputnames});
             model = model.registerPropFunction({{pe, co, am, itf, 'cElectrolyte'}  , fn, inputnames});
-            
+
             % Functions that update the source terms in the electolyte
             fn = @Battery.updateElectrolyteCoupling;
             inputnames = {{ne, co, am, sd, 'Rvol'}, ...
                           {pe, co, am, sd, 'Rvol'}};
             model = model.registerPropFunction({{elyte, 'massSource'}, fn, inputnames});
             model = model.registerPropFunction({{elyte, 'eSource'}, fn, inputnames});
-            
+
             % Function that assemble the control equation
             fn = @Battery.setupEIEquation;
             inputnames = {{ctrl, 'E'}, ...
-                          {ctrl, 'I'}}; 
+                          {ctrl, 'I'}};
             if model.include_current_collectors
                 inputnames{end + 1} = {pe, cc, 'phi'};
             else
@@ -318,14 +318,14 @@ classdef Battery < BaseModel
             inputnames = {};
             fn = @Battery.updateControl;
             fn = {fn, @(propfunction) PropFunction.drivingForceFuncCallSetupFn(propfunction)};
-            model = model.registerPropFunction({{ctrl, 'ctrlVal'}, fn, inputnames});            
+            model = model.registerPropFunction({{ctrl, 'ctrlVal'}, fn, inputnames});
             model = model.registerPropFunction({{ctrl, 'ctrlType'}, fn, inputnames});
-            
-            
+
+
             %% Function that update the Thermal Ohmic Terms
-            
+
             if model.use_thermal
-                
+
                 fn = @Battery.updateThermalOhmicSourceTerms;
                 inputnames = {{elyte, 'jFace'}        , ...
                               {ne, co, 'jFace'}       , ...
@@ -341,16 +341,16 @@ classdef Battery < BaseModel
                                {pe, cc, 'conductivity'}};
                     inputnames = horzcat(inputnames, varnames);
                 end
-                
+
                 model = model.registerPropFunction({{thermal, 'jHeatOhmSource'}, fn, inputnames});
-                
+
                 %% Function that updates the Thermal Chemical Terms
                 fn = @Battery.updateThermalChemicalSourceTerms;
                 inputnames = {{elyte, 'diffFlux'}, ...
                               {elyte, 'D'}       , ...
                               VarName({elyte}, 'dmudcs', 2)};
                 model = model.registerPropFunction({{thermal, 'jHeatChemicalSource'}, fn, inputnames});
-                
+
                 %% Function that updates Thermal Reaction Terms
                 fn = @Battery.updateThermalReactionSourceTerms;
                 inputnames = {{thermal, 'T'}           , ...
@@ -367,9 +367,9 @@ classdef Battery < BaseModel
                 model = model.removeVarName({ne, co, am, itf, 'dUdT'});
                 model = model.removeVarName({pe, co, am, itf, 'dUdT'});
             end
-            
+
             %% Functions that setup external  coupling for negative electrode
-            
+
 
             fns{1} = @Battery.setupExternalCouplingNegativeElectrode;
             fns{2} = @Battery.setupExternalCouplingPositiveElectrode;
@@ -384,17 +384,17 @@ classdef Battery < BaseModel
                     inputnames = {{elde, cc, 'phi'}, ...
                                   {elde, cc, 'conductivity'}};
                     model = model.registerPropFunction({{elde, cc, 'jExternal'}, fn, inputnames});
-                    
+
                     if model.use_thermal
                         model = model.registerPropFunction({{elde, cc, 'jFaceExternal'}, fn, inputnames});
                     end
-                    
+
                     inputnames = {{elde, co, 'phi'}, ...
                                   {elde, co, 'conductivity'}};
                     model = model.registerPropFunction({{elde, co, 'jExternal'}, fn, inputnames});
-                    
+
                 else
-                    
+
                     inputnames = {{elde, co, 'phi'}, ...
                                   {elde, co, 'conductivity'}};
                     model = model.registerPropFunction({{elde, co, 'jExternal'}, fn, inputnames});
@@ -402,11 +402,11 @@ classdef Battery < BaseModel
                     if model.use_thermal
                         model = model.registerPropFunction({{elde, co, 'jFaceExternal'}, fn, inputnames});
                     end
-                    
+
                 end
-                
+
             end
-            
+
             %% Declare the "static" variables
             varnames = {};
             if ~model.use_thermal
@@ -414,7 +414,7 @@ classdef Battery < BaseModel
             end
             model = model.registerStaticVarNames(varnames);
 
-            
+
         end
 
         function control = setupControl(model, paramobj)
@@ -423,7 +423,7 @@ classdef Battery < BaseModel
 
             switch paramobj.controlPolicy
               case "IEswitch"
-                control = IEswitchControlModel(paramobj); 
+                control = IEswitchControlModel(paramobj);
                 CRate = control.CRate;
                 control.Imax = (C/hour)*CRate;
               case "CCCV"
@@ -439,15 +439,15 @@ classdef Battery < BaseModel
               otherwise
                 error('Error controlPolicy not recognized');
             end
-            
-            
-            
+
+
+
         end
-        
+
         function model = setupThermalModel(model, paramobj)
         % Setup the thermal model :attr:`ThermalModel`. Here, :code:`paramobj` is instance of
         % :class:`ThermalComponentInputParams <Electrochemistry.ThermalComponentInputParams>`
-            
+
             ne      = 'NegativeElectrode';
             pe      = 'PositiveElectrode';
             co      = 'Coating';
@@ -458,19 +458,19 @@ classdef Battery < BaseModel
             thermal = 'ThermalModel';
 
             eldes = {ne, pe}; % electrodes
-            
+
             G = model.G;
             nc = G.cells.num;
-            
+
             vhcap = zeros(nc, 1); % effective heat capacity
             hcond = zeros(nc, 1); % effective heat conductivity
-            
+
             for ind = 1 : numel(eldes)
 
                 elde = eldes{ind};
-                
+
                 if model.include_current_collectors
-                    
+
                     % The effecive and intrinsic thermal parameters for the current collector are the same.
                     cc_map = model.(elde).(cc).G.mappings.cellmap;
 
@@ -479,57 +479,57 @@ classdef Battery < BaseModel
 
                     hcond(cc_map) = hcond(cc_map) + cc_hcond;
                     vhcap(cc_map) = vhcap(cc_map) + cc_vhcap;
-                    
+
                 end
-                
+
                 % Effective parameters from the Electrode Active Component region.
                 co_map       = model.(elde).(co).G.mappings.cellmap;
-                
+
                 co_hcond     = model.(elde).(co).effectiveThermalConductivity;
                 co_vhcap     = model.(elde).(co).effectiveVolumetricHeatCapacity;
 
                 hcond(co_map) = hcond(co_map) + co_hcond;
                 vhcap(co_map) = vhcap(co_map) + co_vhcap;
-                
+
             end
 
             % Electrolyte
-            
+
             elyte_map   = model.(elyte).G.mappings.cellmap;
 
             elyte_hcond = model.(elyte).effectiveThermalConductivity;
             elyte_vhcap = model.(elyte).effectiveVolumetricHeatCapacity;
-            
+
             vhcap(elyte_map) = vhcap(elyte_map) + elyte_vhcap;
-            hcond(elyte_map) = hcond(elyte_map) + elyte_hcond;            
+            hcond(elyte_map) = hcond(elyte_map) + elyte_hcond;
 
             % Separator
-            
+
             sep_map   = model.(sep).G.mappings.cellmap;
 
             sep_hcond = model.(sep).effectiveThermalConductivity;
             sep_vhcap = model.(sep).effectiveVolumetricHeatCapacity;
-            
+
             vhcap(sep_map) = vhcap(sep_map) + sep_vhcap;
             hcond(sep_map) = hcond(sep_map) + sep_hcond;
 
             % Assign values
-            
+
             model.(thermal).effectiveVolumetricHeatCapacity = vhcap;
             model.(thermal).effectiveThermalConductivity = hcond;
-            
-            
+
+
         end
-        
-        
+
+
         function model = setupMappings(model)
-            
+
             ne    = 'NegativeElectrode';
             pe    = 'PositiveElectrode';
             co    = 'Coating';
             cc    = 'CurrentCollector';
             elyte = 'Electrolyte';
-            
+
             G_elyte = model.(elyte).G;
             elytecelltbl.cells = (1 : G_elyte.cells.num)';
             elytecelltbl.globalcells = G_elyte.mappings.cellmap;
@@ -545,22 +545,22 @@ classdef Battery < BaseModel
                 eldecelltbl.cells = (1 : G_elde.cells.num)';
                 eldecelltbl.globalcells = G_elde.mappings.cellmap;
                 eldecelltbl = IndexArray(eldecelltbl);
-                
+
                 map = TensorMap();
                 map.fromTbl = elytecelltbl;
                 map.toTbl = eldecelltbl;
                 map.replaceFromTblfds = {{'cells', 'elytecells'}};
                 map.replaceToTblfds = {{'cells', 'eldecells'}};
                 map.mergefds = {'globalcells'};
-                
+
                 mappings.(elde) = map.getDispatchInd();
-                
+
             end
-            
+
             model.mappings = mappings;
-            
+
         end
-        
+
         function model = setupElectrolyteModel(model, paramobj)
         % Assign the electrolyte volume fractions in the different regions
 
@@ -572,7 +572,7 @@ classdef Battery < BaseModel
 
             elyte_cells = zeros(model.G.cells.num, 1);
             elyte_cells(paramobj.(elyte).G.mappings.cellmap) = (1 : paramobj.(elyte).G.cells.num)';
-            
+
             paramobj.(elyte).volumeFraction = ones(paramobj.(elyte).G.cells.num, 1);
             paramobj.(elyte).volumeFraction = subsasgnAD(paramobj.(elyte).volumeFraction, elyte_cells(model.(ne).(co).G.mappings.cellmap), 1 - model.(ne).(co).volumeFraction);
             paramobj.(elyte).volumeFraction = subsasgnAD(paramobj.(elyte).volumeFraction, elyte_cells(model.(pe).(co).G.mappings.cellmap), 1 - model.(pe).(co).volumeFraction);
@@ -581,7 +581,7 @@ classdef Battery < BaseModel
             model.(elyte) = Electrolyte(paramobj.(elyte));
 
         end
-        
+
         function initstate = setupInitialState(model)
         % Setup the values of the primary variables at initial state
 
@@ -589,7 +589,7 @@ classdef Battery < BaseModel
 
             SOC = model.SOC;
             T   = model.initT;
-            
+
             bat = model;
             elyte   = 'Electrolyte';
             ne      = 'NegativeElectrode';
@@ -601,21 +601,21 @@ classdef Battery < BaseModel
             cc      = 'CurrentCollector';
             thermal = 'ThermalModel';
             ctrl    = 'Control';
-            
+
             initstate.(thermal).T = T*ones(nc, 1);
 
             %% Synchronize temperatures
             initstate = model.updateTemperature(initstate);
 
             %% Setup initial state for electrodes
-            
+
             eldes = {ne, pe};
-            
+
             for ind = 1 : numel(eldes)
-                
+
                 elde = eldes{ind};
-                
-                elde_itf = bat.(elde).(co).(am).(itf); 
+
+                elde_itf = bat.(elde).(co).(am).(itf);
 
                 theta = SOC*(elde_itf.guestStoichiometry100 - elde_itf.guestStoichiometry0) + elde_itf.guestStoichiometry0;
                 c     = theta*elde_itf.saturationConcentration;
@@ -633,7 +633,7 @@ classdef Battery < BaseModel
                   otherwise
                     error('diffusionModelType not recognized')
                 end
-                
+
                 initstate.(elde).(co).(am)       = model.(elde).(co).(am).updateConcentrations(initstate.(elde).(co).(am));
                 initstate.(elde).(co).(am).(itf) = elde_itf.updateOCP(initstate.(elde).(co).(am).(itf));
 
@@ -642,9 +642,9 @@ classdef Battery < BaseModel
                     % The value in the first cell is used as reference.
                     ref = OCP(1);
                 end
-                
+
                 initstate.(elde).(co).phi = OCP - ref;
-                
+
             end
 
             %% Setup initial Electrolyte state
@@ -655,19 +655,19 @@ classdef Battery < BaseModel
             %% Setup initial Current collectors state
 
             if model.(ne).include_current_collectors
-                OCP = initstate.(ne).(am).(itf).OCP;
+                OCP = initstate.(ne).(co).(am).(itf).OCP;
                 OCP = OCP(1) .* ones(bat.(ne).(cc).G.cells.num, 1);
                 initstate.(ne).(cc).phi = OCP - ref;
             end
-            
+
             if model.(pe).include_current_collectors
-                OCP = initstate.(pe).(am).(itf).OCP;
+                OCP = initstate.(pe).(co).(am).(itf).OCP;
                 OCP = OCP(1) .* ones(bat.(pe).(cc).G.cells.num, 1);
                 initstate.(pe).(cc).phi = OCP - ref;
             end
-            
+
             initstate.(ctrl).E = OCP(1) - ref;
-            
+
             switch model.(ctrl).controlPolicy
               case 'CCCV'
                 switch model.(ctrl).initialControl
@@ -705,7 +705,7 @@ classdef Battery < BaseModel
                     error('initialControl not recognized');
                 end
               case 'CC'
-                % this value will be overwritten after first iteration 
+                % this value will be overwritten after first iteration
                 initstate.(ctrl).I = 0;
                 switch model.(ctrl).initialControl
                   case 'discharging'
@@ -720,19 +720,19 @@ classdef Battery < BaseModel
             end
 
             initstate.time = 0;
-            
+
         end
 
         function state = addVariables(model, state)
-            
+
         % Given a state where only the primary variables are defined, this
         % functions add all the additional variables that are computed in the assembly process and have some physical
         % interpretation.
         %
-        % To do so, we use getEquations function and sends dummy variable for state0, dt and drivingForces 
-            
+        % To do so, we use getEquations function and sends dummy variable for state0, dt and drivingForces
+
         % Values that need to be set to get the function getEquations running
-            
+
             dt = 1;
             state0 = state;
             model.Control = ControlModel([]);
@@ -740,7 +740,7 @@ classdef Battery < BaseModel
             drivingForces = model.getValidDrivingForces();
 
             % We call getEquations to update state
-            
+
             [~, state] = getEquations(model, state0, state, dt, drivingForces, 'ResOnly', true);
 
             % we set to empty the fields we know that are not meaningfull
@@ -767,12 +767,12 @@ classdef Battery < BaseModel
                     state.(elde).(am).(sd).massCons = [];
                   case {'simple', 'interParticleOnly'}
                     state.(elde).(am).massAccum = [];
-                    state.(elde).(am).massCons = [];                    
+                    state.(elde).(am).massCons = [];
                   otherwise
                     error('diffusion model type not recognized');
                 end
             end
-            
+
             for ielde = 1 : numel(eldes)
                 elde = eldes{ielde};
                 switch model.(elde).(am).diffusionModelType
@@ -791,17 +791,17 @@ classdef Battery < BaseModel
                 state = model.updateThermalIrreversibleReactionSourceTerms(state);
                 state = model.updateThermalReversibleReactionSourceTerms(state);
             end
-            
+
         end
-        
+
         function [problem, state] = getEquations(model, state0, state, dt, drivingForces, varargin)
         % Assembly of the governing equation
-            
-            opts = struct('ResOnly', false, 'iteration', 0, 'reverseMode', false); 
+
+            opts = struct('ResOnly', false, 'iteration', 0, 'reverseMode', false);
             opts = merge_options(opts, varargin{:});
-            
+
             time = state0.time + dt;
-            
+
             if(not(opts.ResOnly) && not(opts.reverseMode))
                 state = model.initStateAD(state);
             elseif(opts.reverseMode)
@@ -811,9 +811,9 @@ classdef Battery < BaseModel
                 assert(opts.ResOnly);
             end
 
-            
+
             %% We call the assembly equations ordered from the graph
-            
+
             funcCallList = model.funcCallList;
 
             for ifunc = 1 : numel(funcCallList)
@@ -821,7 +821,7 @@ classdef Battery < BaseModel
             end
 
             %% We apply some scaling
-            
+
             % Shorthands used in this function
             battery = model;
             ne      = 'NegativeElectrode';
@@ -837,44 +837,44 @@ classdef Battery < BaseModel
             ctrl    = 'Control';
 
             eldes = {ne, pe};
-            
+
             massConsScaling = model.con.F;
-            
+
             state.(elyte).massCons = state.(elyte).massCons*massConsScaling;
 
             for ielde = 1 : numel(eldes)
 
                 elde = eldes{ielde};
-                
+
                 switch model.(elde).(co).(am).diffusionModelType
-                    
+
                   case 'simple'
-                    
+
                     state.(elde).(co).(am).(sd).massCons         = massConsScaling*state.(elde).(co).(am).(sd).massCons;
                     state.(elde).(co).(am).(sd).solidDiffusionEq = massConsScaling.*battery.(elde).(co).G.cells.volumes/dt.*state.(elde).(co).(am).(sd).solidDiffusionEq;
-                    
+
                   case 'full'
-                    
+
                     % Equation name : 'ne_am_sd_massCons';
                     n    = model.(elde).(co).(am).(itf).numberOfElectronsTransferred;
                     F    = model.con.F;
                     vol  = model.(elde).(co).operators.pv;
                     rp   = model.(elde).(co).(am).(sd).particleRadius;
                     vsf  = model.(elde).(co).(am).(sd).volumetricSurfaceArea;
-                    
+
                     surfp = 4*pi*rp^2;
-                    
+
                     scalingcoef = (vsf*vol(1)*n*F)/surfp;
-                    
+
                     state.(elde).(co).(am).(sd).massCons         = scalingcoef*state.(elde).(co).(am).(sd).massCons;
                     state.(elde).(co).(am).(sd).solidDiffusionEq = scalingcoef*state.(elde).(co).(am).(sd).solidDiffusionEq;
 
                   otherwise
-                    
+
                     error('diffusionModelType not recognized');
-                    
+
                 end
-                
+
             end
 
             for ieq = 1 : numel(model.equationVarNames)
@@ -889,42 +889,42 @@ classdef Battery < BaseModel
 
             mieq = ei.(Battery.varToStr({'elyte', 'massCons'}));
             cieq = ei.(Battery.varToStr({'elyte', 'chargeCons'}));
-            
+
             eqs{mieq} = eqs{mieq} - model.(elyte).sp.t(1)*eqs{cieq};
 
             names       = model.equationNames;
             types       = model.equationTypes;
             primaryVars = model.primaryVarNames;
-            
-            %% The equations are reordered in a way that is consitent with the linear iterative solver 
+
+            %% The equations are reordered in a way that is consitent with the linear iterative solver
             % (the order of the equation does not matter if we do not use an iterative solver)
             ctrltype = state.Control.ctrlType;
             switch ctrltype
-                
+
               case {'constantCurrent', 'CC_discharge1', 'CC_discharge2', 'CC_charge1', 'charge', 'discharge'}
 
                 eqname = Battery.varToStr({'ctrl', 'EIequation'});
                 types{ei.(eqname)} = 'cell';
-                
+
               case {'constantVoltage', 'CV_charge2'}
 
                 eieqname = Battery.varToStr({'ctrl', 'EIequation'});
                 cteqname = Battery.varToStr({'ctrl', 'controlEquation'});
-                
+
                 eqs([ei.(eieqname), ei.(cteqname)]) = eqs([ei.(cteqname), ei.(eieqname)]);
-                
+
               otherwise
-                
+
                 error('control type not recognized');
-                
+
             end
 
-            
+
             %% Setup LinearizedProblem that can be processed by MRST Newton API
             problem = LinearizedProblem(eqs, types, names, primaryVars, state, dt);
-            
+
         end
-        
+
         function state = updateTemperature(model, state)
         % Dispatch the temperature in all the submodels
 
@@ -935,7 +935,7 @@ classdef Battery < BaseModel
             am      = 'ActiveMaterial';
             cc      = 'CurrentCollector';
             thermal = 'ThermalModel';
-            
+
             % (here we assume that the ThermalModel has the "parent" grid)
             state.(elyte).T   = state.(thermal).T(model.(elyte).G.mappings.cellmap);
 
@@ -947,16 +947,16 @@ classdef Battery < BaseModel
                 if model.include_current_collectors
                     state.(elde).(cc).T = state.(thermal).T(model.(elde).(cc).G.mappings.cellmap);
                 end
-                
+
                 % Update temperature in the active materials of the electrodes.
                 state.(elde).(co) = model.(elde).(co).dispatchTemperature(state.(elde).(co));
                 state.(elde).(co).(am) = model.(elde).(co).(am).dispatchTemperature(state.(elde).(co).(am));
             end
         end
-        
+
         function state = updateElectrolyteCoupling(model, state)
         % Assemble the electrolyte coupling by adding the ion sources from the electrodes
-            
+
             battery = model;
 
             elyte = 'Electrolyte';
@@ -966,61 +966,61 @@ classdef Battery < BaseModel
             am    = 'ActiveMaterial';
             sd    = 'SolidDiffusion';
             itf   = 'Interface';
-            
+
             vols = battery.(elyte).G.cells.volumes;
             F = battery.con.F;
-            
-            
-            
+
+
+
             couplingterms = battery.couplingTerms;
 
             elyte_c_source = zeros(battery.(elyte).G.cells.num, 1);
             elyte_e_source = zeros(battery.(elyte).G.cells.num, 1);
-            
-            % setup AD 
+
+            % setup AD
             phi = state.(elyte).phi;
             if isa(phi, 'ADI')
                 adsample = getSampleAD(phi);
                 adbackend = model.AutoDiffBackend;
                 elyte_c_source = adbackend.convertToAD(elyte_c_source, adsample);
             end
-            
+
             coupnames = model.couplingNames;
-            
+
             ne_Rvol = state.(ne).(co).(am).(sd).Rvol;
             if isa(ne_Rvol, 'ADI') & ~isa(elyte_c_source, 'ADI')
                 adsample = getSampleAD(ne_Rvol);
                 adbackend = model.AutoDiffBackend;
                 elyte_c_source = adbackend.convertToAD(elyte_c_source, adsample);
             end
-            
+
             coupterm = getCoupTerm(couplingterms, 'NegativeElectrode-Electrolyte', coupnames);
             elytecells = coupterm.couplingcells(:, 2);
             elyte_c_source(elytecells) = ne_Rvol.*vols(elytecells);
-            
+
             pe_Rvol = state.(pe).(co).(am).(sd).Rvol;
             if isa(pe_Rvol, 'ADI') & ~isa(elyte_c_source, 'ADI')
                 adsample = getSampleAD(pe_Rvol);
                 adbackend = model.AutoDiffBackend;
                 elyte_c_source = adbackend.convertToAD(elyte_c_source, adsample);
             end
-            
+
             coupterm = getCoupTerm(couplingterms, 'PositiveElectrode-Electrolyte', coupnames);
             elytecells = coupterm.couplingcells(:, 2);
             elyte_c_source(elytecells) = pe_Rvol.*vols(elytecells);
-            
-            elyte_e_source = elyte_c_source.*battery.(elyte).sp.z(1)*F; 
-            
-            state.Electrolyte.massSource = elyte_c_source; 
+
+            elyte_e_source = elyte_c_source.*battery.(elyte).sp.z(1)*F;
+
+            state.Electrolyte.massSource = elyte_c_source;
             state.Electrolyte.eSource = elyte_e_source;
-            
+
         end
-        
+
 
         function state = updateControl(model, state, drivingForces)
-            
+
             ctrl = "Control";
-            
+
             switch model.(ctrl).controlPolicy
 
               case {'CCCV', 'powerControl'}
@@ -1028,35 +1028,35 @@ classdef Battery < BaseModel
                 % nothing to do here
 
               case 'IEswitch'
-                
+
                 E    = state.(ctrl).E;
                 I    = state.(ctrl).I;
                 time = state.time;
-                
+
                 [ctrlVal, ctrltype] = drivingForces.src(time, value(I), value(E));
-                
+
                 state.(ctrl).ctrlVal  = ctrlVal;
                 state.(ctrl).ctrlType = ctrltype;
 
               case 'CC'
-                
+
                 time = state.time;
                 ctrlVal = drivingForces.src(time);
                 state.(ctrl).ctrlVal  = ctrlVal;
-                
+
               case 'None'
-                
+
                 % nothing done here. This case is only used for the addVariables method
-                
+
               otherwise
-                
+
                 error('control type not recognized');
-                
+
             end
-                
-            
+
+
         end
-        
+
         function state = updateThermalOhmicSourceTerms(model, state)
         % Assemble the ohmic source term :code:`state.jHeatOhmSource`, see :cite:t:`Latz2016`
 
@@ -1066,13 +1066,13 @@ classdef Battery < BaseModel
             cc      = 'CurrentCollector';
             elyte   = 'Electrolyte';
             thermal = 'ThermalModel';
-            
+
             eldes = {ne, pe}; % electrodes
-            
+
             nc = model.G.cells.num;
-            
+
             src = zeros(nc, 1);
-                        
+
             for ind = 1 : numel(eldes)
 
                 elde = eldes{ind};
@@ -1083,12 +1083,12 @@ classdef Battery < BaseModel
                     cc_j     = state.(elde).(cc).jFace;
                     cc_econd = cc_model.effectiveElectronicConductivity;
                     cc_vols  = cc_model.G.cells.volumes;
-                    cc_jsq   = computeCellFluxNorm(cc_model, cc_j); 
+                    cc_jsq   = computeCellFluxNorm(cc_model, cc_j);
                     state.(elde).(cc).jsq = cc_jsq;  %store square of current density
                     src = subsetPlus(src,cc_vols.*cc_jsq./cc_econd, cc_map);
                     %                    src(cc_map) = src(cc_map) + cc_vols.*cc_jsq./cc_econd;
                 end
-                
+
                 co_model = model.(elde).(co);
                 co_map   = co_model.G.mappings.cellmap;
                 co_j     = state.(elde).(co).jFace;
@@ -1096,7 +1096,7 @@ classdef Battery < BaseModel
                 co_vols  = co_model.G.cells.volumes;
                 co_jsq   = computeCellFluxNorm(co_model, co_j);
                 state.(elde).(co).jsq = co_jsq;
-                
+
                 %src(co_map) = src(co_map) + co_vols.*co_jsq./co_econd;
                 src = subsetPlus(src, co_vols.*co_jsq./co_econd, co_map);
             end
@@ -1112,19 +1112,19 @@ classdef Battery < BaseModel
             elyte_vols     = elyte_model.G.cells.volumes;
             elyte_jsq      = computeCellFluxNorm(elyte_model, elyte_j);
             state.(elyte).jsq = elyte_jsq; %store square of current density
-            
+
             %src(elyte_map) = src(elyte_map) + elyte_vols.*elyte_jsq./elyte_econd;
             src = subsetPlus(src, elyte_vols.*elyte_jsq./elyte_econd, elyte_map);
             state.(thermal).jHeatOhmSource = src;
-            
+
         end
-        
+
         function state = updateThermalChemicalSourceTerms(model, state)
         % Assemble the thermal source term from transport :code:`state.jHeatChemicalSource`, see :cite:t:`Latz2016`
-            
+
             elyte   = 'Electrolyte';
             thermal = 'ThermalModel';
-            
+
             % prepare term
             nc = model.G.cells.num;
             src = zeros(nc, 1);
@@ -1145,60 +1145,60 @@ classdef Battery < BaseModel
 
             % Compute chemical heat source in electrolyte
             dmudcs = locstate.(elyte).dmudcs;   % Derivative of chemical potential with respect to concentration
-            D      = locstate.(elyte).D;        % Effective diffusion coefficient 
+            D      = locstate.(elyte).D;        % Effective diffusion coefficient
             Dgradc = locstate.(elyte).diffFlux; % Diffusion flux (-D*grad(c))
             DFaceGradc = zeroFace;
             DFaceGradc(intfaces) = Dgradc;
-            
-            
+
+
             % compute norm of square norm of diffusion flux
             elyte_model   = model.(elyte);
             elyte_map     = elyte_model.G.mappings.cellmap;
             elyte_vols    = elyte_model.G.cells.volumes;
             elyte_jchemsq = computeCellFluxNorm(elyte_model, DFaceGradc);
             elyte_src     = elyte_vols.*elyte_jchemsq./D;
-            
+
             % This is a bit hacky for the moment (we should any way consider all the species)
             elyte_src = dmudcs{1}.*elyte_src;
-            
+
             % map to source term at battery level
             src(elyte_map) = src(elyte_map) + elyte_src;
-            
+
             state.(thermal).jHeatChemicalSource = src;
-            
+
         end
 
         function state = updateThermalIrreversibleReactionSourceTerms(model, state)
         % not used in assembly, just as added variable (in addVariables method). Method updateThermalReactionSourceTerms is used in assembly
-            
+
             ne      = 'NegativeElectrode';
             pe      = 'PositiveElectrode';
             am      = 'ActiveMaterial';
             itf     = 'Interface';
             thermal = 'ThermalModel';
-            
+
             eldes = {ne, pe}; % electrodes
-            
+
             nc = model.G.cells.num;
-            
+
             src = zeros(nc, 1);
-            
-            T = state.(thermal).T;           
+
+            T = state.(thermal).T;
             if isa(T, 'ADI')
                 adsample = getSampleAD(T);
                 adbackend = model.AutoDiffBackend;
                 src = adbackend.convertToAD(src, adsample);
                 locstate = state;
             else
-               locstate = value(state); 
+               locstate = value(state);
             end
-            
+
             for ind = 1 : numel(eldes)
 
                 elde = eldes{ind};
-                
+
                 itf_model = model.(elde).(am).(itf);
-                
+
                 F       = itf_model.constants.F;
                 n       = itf_model.n;
                 itf_map = itf_model.G.mappings.cellmap;
@@ -1207,15 +1207,15 @@ classdef Battery < BaseModel
 
                 Rvol = locstate.(elde).(am).Rvol;
                 eta  = locstate.(elde).(am).(itf).eta;
-                
+
                 itf_src = n*F*vols.*Rvol.*eta;
-                
+
                 src(itf_map) = src(itf_map) + itf_src;
-                
+
             end
 
             state.(thermal).jHeatIrrevReactionSource = src;
-            
+
         end
 
         function state = updateThermalReversibleReactionSourceTerms(model, state)
@@ -1225,13 +1225,13 @@ classdef Battery < BaseModel
             am      = 'ActiveMaterial';
             itf     = 'Interface';
             thermal = 'ThermalModel';
-            
+
             eldes = {ne, pe}; % electrodes
-            
+
             nc = model.G.cells.num;
-            
+
             src = zeros(nc, 1);
-           
+
             T = state.(thermal).T;
             if isa(T, 'ADI')
                 adsample = getSampleAD(T);
@@ -1239,15 +1239,15 @@ classdef Battery < BaseModel
                 src = adbackend.convertToAD(src, adsample);
                 locstate = state;
             else
-               locstate = value(state); 
+               locstate = value(state);
             end
-            
+
             for ind = 1 : numel(eldes)
 
                 elde = eldes{ind};
-                
+
                 itf_model = model.(elde).(am).(itf);
-                
+
                 F       = itf_model.constants.F;
                 n       = itf_model.n;
                 itf_map = itf_model.G.mappings.cellmap;
@@ -1258,18 +1258,18 @@ classdef Battery < BaseModel
                 dUdT = locstate.(elde).(am).(itf).dUdT;
 
                 itf_src = n*F*vols.*Rvol.*T(itf_map).*dUdT;
-                
+
                 src(itf_map) = src(itf_map) + itf_src;
-                
+
             end
 
             state.(thermal).jHeatRevReactionSource = src;
-            
+
         end
-        
+
         function state = updateThermalReactionSourceTerms(model, state)
         % Assemble the source term from chemical reaction :code:`state.jHeatReactionSource`, see :cite:t:`Latz2016`
-            
+
             ne      = 'NegativeElectrode';
             pe      = 'PositiveElectrode';
             co      = 'Coating';
@@ -1277,29 +1277,29 @@ classdef Battery < BaseModel
             itf     = 'Interface';
             sd      = 'SolidDiffusion';
             thermal = 'ThermalModel';
-            
-            
+
+
             eldes = {ne, pe}; % electrodes
-            
+
             nc = model.G.cells.num;
-            
+
             src = zeros(nc, 1);
-           
+
             T = state.(thermal).T;
-            
+
             if isa(T, 'ADI')
                 adsample = getSampleAD(T);
                 adbackend = model.AutoDiffBackend;
                 src = adbackend.convertToAD(src, adsample);
                 locstate = state;
             else
-               locstate = value(state); 
+               locstate = value(state);
             end
-            
+
             for ind = 1 : numel(eldes)
 
                 elde = eldes{ind};
-                
+
                 F      = model.(elde).(co).(am).(itf).constants.F;
                 n      = model.(elde).(co).(am).(itf).numberOfElectronsTransferred;
                 co_map = model.(elde).(co).G.mappings.cellmap;
@@ -1309,24 +1309,24 @@ classdef Battery < BaseModel
                 Rvol = locstate.(elde).(co).(am).(sd).Rvol;
                 dUdT = locstate.(elde).(co).(am).(itf).dUdT;
                 eta  = locstate.(elde).(co).(am).(itf).eta;
-                
+
                 itf_src = n*F*vols.*Rvol.*(eta + T(co_map).*dUdT);
-                
+
                 src(co_map) = src(co_map) + itf_src;
-                
+
             end
 
             state.(thermal).jHeatReactionSource = src;
 
         end
-        
-        
+
+
         function state = updateElectrodeCoupling(model, state)
         % Setup the electrode coupling by updating the potential and concentration of the electrolyte in the active
         % component of the electrodes. There, those quantities are considered as input and used to compute the reaction
         % rate.
         %
-            
+
             bat = model;
             elyte = 'Electrolyte';
             ne    = 'NegativeElectrode';
@@ -1335,11 +1335,11 @@ classdef Battery < BaseModel
             am    = 'ActiveMaterial';
             itf   = 'Interface';
             cc    = 'CurrentCollector';
-            
+
             eldes = {ne, pe};
             phi_elyte = state.(elyte).phi;
             c_elyte = state.(elyte).c;
-            
+
             elyte_cells = zeros(model.G.cells.num, 1);
             elyte_cells(bat.(elyte).G.mappings.cellmap) = (1 : bat.(elyte).G.cells.num)';
 
@@ -1348,7 +1348,7 @@ classdef Battery < BaseModel
                 state.(elde).(co).(am).(itf).phiElectrolyte = phi_elyte(elyte_cells(bat.(elde).(co).G.mappings.cellmap));
                 state.(elde).(co).(am).(itf).cElectrolyte   = c_elyte(elyte_cells(bat.(elde).(co).G.mappings.cellmap));
             end
-            
+
         end
 
         function state = setupExternalCouplingNegativeElectrode(model, state)
@@ -1357,115 +1357,113 @@ classdef Battery < BaseModel
         %
             ne = 'NegativeElectrode';
             co = 'Coating';
-            
+
             if model.(ne).include_current_collectors
-                
+
                 cc = 'CurrentCollector';
 
                 phi   = state.(ne).(cc).phi;
                 sigma = state.(ne).(cc).conductivity;
 
                 [jExternal, jFaceExternal] = setupExternalCoupling(model.(ne).(cc), phi, 0, sigma);
-                
+
                 state.(ne).(cc).jExternal = jExternal;
                 state.(ne).(cc).jFaceExternal = jFaceExternal;
                 state.(ne).(co).jExternal     = 0;
                 state.(ne).(co).jFaceExternal = 0;
-                
+
             else
-                
+
                 phi   = state.(ne).(co).phi;
                 sigma = state.(ne).(co).conductivity;
-                
+
                 [jExternal, jFaceExternal] = setupExternalCoupling(model.(ne).(co), phi, 0, sigma);
-                
+
                 state.(ne).(co).jExternal = jExternal;
                 state.(ne).(co).jFaceExternal = jFaceExternal;
-                
+
             end
-            
-            
+
+
         end
-        
+
         function state = setupExternalCouplingPositiveElectrode(model, state)
         %
         % Setup external electronic coupling of the positive electrode at the current collector
-        %            
+        %
             pe   = 'PositiveElectrode';
             ctrl = 'Control';
             co   = 'Coating';
-            
+
             E   = state.(ctrl).E;
 
             if model.(pe).include_current_collectors
-                
+
                 cc   = 'CurrentCollector';
-                
+
                 phi   = state.(pe).(cc).phi;
                 sigma = state.(pe).(cc).conductivity;
-                
+
                 [jExternal, jFaceExternal] = setupExternalCoupling(model.(pe).(cc), phi, E, sigma);
-                
-                state.(pe).(cc).jExternal = jExternal;
+
+                state.(pe).(cc).jExternal     = jExternal;
                 state.(pe).(cc).jFaceExternal = jFaceExternal;
-                state.(pe).(am).jExternal     = 0;
-                state.(pe).(am).jFaceExternal = 0;
+                state.(pe).(co).jExternal     = 0;
+                state.(pe).(co).jFaceExternal = 0;
             else
-                
+
                 phi   = state.(pe).(co).phi;
                 sigma = state.(pe).(co).conductivity;
-                
+
                 [jExternal, jFaceExternal] = setupExternalCoupling(model.(pe).(co), phi, E, sigma);
-                
+
                 state.(pe).(co).jExternal     = jExternal;
                 state.(pe).(co).jFaceExternal = jFaceExternal;
-                
+
             end
-            
+
         end
-        
+
         function state = setupEIEquation(model, state)
-            
+
             pe   = 'PositiveElectrode';
             ctrl = 'Control';
-            
+
             I = state.(ctrl).I;
             E = state.(ctrl).E;
-            
+
             if model.include_current_collectors
 
-                cc   = 'CurrentCollector';
-                
-                phi = state.(pe).(cc).phi;
-                
-                coupterm = model.(pe).(cc).externalCouplingTerm;
-                faces    = coupterm.couplingfaces;
-                cond_pcc = model.(pe).(cc).effectiveElectronicConductivity;
-                [trans_pcc, cells] = model.(pe).(cc).operators.harmFaceBC(cond_pcc, faces);
-                
-                state.Control.EIequation = sum(trans_pcc.*(state.(pe).(cc).phi(cells) - E)) - I;
+                mat   = 'CurrentCollector';
 
             else
-                
-                co   = 'Coating';
-                
-                phi = state.(pe).(co).phi;
-                
-                coupterm = model.(pe).(co).externalCouplingTerm;
-                faces    = coupterm.couplingfaces;
-                cond_pcc = model.(pe).(co).effectiveElectronicConductivity;
-                [trans_pcc, cells] = model.(pe).(co).operators.transFaceBC(faces);
-                
-                state.Control.EIequation = sum(cond_pcc.*trans_pcc.*(state.(pe).(co).phi(cells) - E)) - I;
+
+                mat   = 'Coating';
 
             end
-            
+
+            phi = state.(pe).(mat).phi;
+
+            coupterm = model.(pe).(mat).externalCouplingTerm;
+            faces    = coupterm.couplingfaces;
+            cond_pcc = model.(pe).(mat).effectiveElectronicConductivity;
+            [trans_pcc, cells] = model.(pe).(mat).operators.transFaceBC(faces);
+
+            state.Control.EIequation = sum(cond_pcc.*trans_pcc.*(state.(pe).(mat).phi(cells) - E)) - I;
+
+
+        end
+
+        function primaryvarnames = getPrimaryVariableNames(model)
+
+            primaryvarnames = model.primaryVarNames;
+
         end
 
         function forces = getValidDrivingForces(model)
-            
+
             forces = getValidDrivingForces@PhysicalModel(model);
-            
+
             ctrl = 'Control';
             switch model.(ctrl).controlPolicy
               case 'CCCV'
@@ -1486,7 +1484,7 @@ classdef Battery < BaseModel
             end
             % TODO this is a hack to get thing go
             forces.Imax = [];
-            
+
         end
 
         function model = validateModel(model, varargin)
@@ -1495,42 +1493,45 @@ classdef Battery < BaseModel
             ne    = 'NegativeElectrode';
             pe    = 'PositiveElectrode';
             co    = 'Coating';
+            cc    = 'CurrentCollector';
 
             model.(elyte).AutoDiffBackend   = model.AutoDiffBackend;
             model.(elyte)                   = model.(elyte).validateModel(varargin{:});
 
             eldes = {ne, pe};
-            
+
             for ind = 1 : numel(eldes)
-                
+
                 elde = eldes{ind};
 
                 model.(elde).(co).AutoDiffBackend = model.AutoDiffBackend;
                 model.(elde).(co)                 = model.(elde).(co).validateModel(varargin{:});
 
                 if model.(elde).include_current_collectors
+
                     model.(elde).(cc).AutoDiffBackend = model.AutoDiffBackend;
                     model.(elde).(cc)                 = model.(elde).(cc).validateModel(varargin{:});
+
                 end
-                
+
             end
-            
+
             if isempty(model.computationalGraph)
                 model = model.setupComputationalGraph();
             end
-            
+
             cgt = model.computationalGraph;
             model.primaryVarNames = cgt.getPrimaryVariableNames();
             model.funcCallList = cgt.getOrderedFunctionCallList();
 
 
         end
-        
+
 
         function [state, report] = updateState(model, state, problem, dx, drivingForces)
 
             [state, report] = updateState@BaseModel(model, state, problem, dx, drivingForces);
-            
+
             %% cap concentrations
             elyte = 'Electrolyte';
             ne    = 'NegativeElectrode';
@@ -1541,9 +1542,9 @@ classdef Battery < BaseModel
             itf   = 'Interface';
 
             cmin = model.cmin;
-            
+
             state.(elyte).c = max(cmin, state.(elyte).c);
-            
+
             eldes = {ne, pe};
             for ind = 1 : numel(eldes)
                 elde = eldes{ind};
@@ -1560,50 +1561,50 @@ classdef Battery < BaseModel
 
                 end
             end
-            
-            ctrl = 'Control';            
+
+            ctrl = 'Control';
             state.(ctrl) = model.(ctrl).updateControlState(state.(ctrl));
-            
+
             report = [];
-            
+
         end
 
         function cleanState = addStaticVariables(model, cleanState, state)
         % Variables that are no AD initiated (but should be "carried over")
-            
+
             cleanState = addStaticVariables@BaseModel(model, cleanState, state);
 
-            
-            cleanState.time = state.time;            
-            
+
+            cleanState.time = state.time;
+
             thermal = 'ThermalModel';
             ctrl = 'Control';
-            
-            cleanState.(ctrl).ctrlType = state.(ctrl).ctrlType;            
-            
+
+            cleanState.(ctrl).ctrlType = state.(ctrl).ctrlType;
+
             if ~model.use_thermal
                 thermal = 'ThermalModel';
                 cleanState.(thermal).T = state.(thermal).T;
             end
-            
+
         end
 
         function [model, state] = prepareTimestep(model, state, state0, dt, drivingForces)
-            
+
             [model, state] = prepareTimestep@BaseModel(model, state, state0, dt, drivingForces);
-            
+
             ctrl = 'Control';
 
             if strcmp(model.(ctrl).controlPolicy, 'powerControl')
                 state.(ctrl).time = state.time;
             end
-            
+
             state.(ctrl) = model.(ctrl).prepareStepControl(state.(ctrl), state0.(ctrl), dt, drivingForces);
-            
+
         end
 
         function model = setupCapping(model)
-            
+
             ne      = 'NegativeElectrode';
             pe      = 'PositiveElectrode';
             co      = 'Coating';
@@ -1613,42 +1614,42 @@ classdef Battery < BaseModel
             cmax_ne = model.(ne).(co).(am).(itf).saturationConcentration;
             cmax_pe = model.(pe).(co).(am).(itf).saturationConcentration;
             model.cmin = 1e-5*max(cmax_ne, cmax_pe);
-            
+
         end
-        
+
         function [state, report] = updateAfterConvergence(model, state0, state, dt, drivingForces)
-            
+
              [state, report] = updateAfterConvergence@BaseModel(model, state0, state, dt, drivingForces);
-             
+
              ctrl = 'Control';
              state.(ctrl) = model.(ctrl).updateControlAfterConvergence(state.(ctrl), state0.(ctrl), dt);
         end
-        
-        
+
+
         function outputvars = extractGlobalVariables(model, states)
-            
+
             ns = numel(states);
 
             for i = 1 : ns
                 E    = states{i}.Control.E;
                 I    = states{i}.Control.I;
                 time = states{i}.time;
-                
+
                 outputvars{i} = struct('E'   , E   , ...
                                        'I'   , I   , ...
                                        'time', time);
                 if model.use_thermal
-                    T    = states{i}.ThermalModel.T; 
+                    T    = states{i}.ThermalModel.T;
                     outputvars{i}.Tmax = max(T);
                 end
-            
+
             end
         end
 
     end
-    
+
     methods(Static)
-        
+
         function [found, varind] = getVarIndex(varname, pvarnames)
 
             varname   = Battery.varToStr(varname);
@@ -1661,11 +1662,11 @@ classdef Battery < BaseModel
         function str = varToStr(varname)
 
             str = strjoin(varname, '_');
-            
+
         end
 
         function str = shortenName(name)
-            
+
             namemapping = {'NegativeElectrode', 'ne'      ; ...
                            'PositiveElectrode', 'pe'      ; ...
                            'Coating'          , 'co'      ; ...
@@ -1686,11 +1687,11 @@ classdef Battery < BaseModel
             else
                 str = name;
             end
-            
+
         end
-        
+
     end
-    
+
 end
 
 
