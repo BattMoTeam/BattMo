@@ -112,6 +112,7 @@
   ],
   
   "$defs" : {
+
     "variable" : {
       "type" : "array",
       "items" : {"type" : "string"}},
@@ -131,6 +132,7 @@
         }
       }
     },
+
     "matlab_gmres_options" : {
       "type" : "object",
       "description" : "see matlab documentation for full details. The preconditioners and start vectors are not included here",
