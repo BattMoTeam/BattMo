@@ -35,16 +35,14 @@ sd      = 'SolidDiffusion';
 ctrl    = 'Control';
 cc      = 'CurrentCollector';
 
-jsonstruct.use_thermal = true;
+jsonstruct.use_thermal = false;
 
 jsonstruct.include_current_collectors = false;
-jsonstruct.(ne).(co).(am).diffusionModelType = 'simple';
-jsonstruct.(pe).(co).(am).diffusionModelType = 'simple';
+
+jsonstruct.(ne).(co).(am).diffusionModelType = 'full';
+jsonstruct.(pe).(co).(am).diffusionModelType = 'full';
 
 paramobj = BatteryInputParams(jsonstruct);
-
-% paramobj.(ne).(am).(sd).N = 5;
-% paramobj.(pe).(am).(sd).N = 5;
 
 paramobj.(ne).(co).volumeFraction = 0.8;
 paramobj.(ne).(co).volumeFractions = [1, 0, 0];
@@ -88,17 +86,16 @@ paramobj = gen.updateBatteryInputParams(paramobj);
 %%  Initialize the battery model. 
 % The battery model is initialized by sending paramobj to the Battery class
 % constructor. see :class:`Battery <Battery.Battery>`.
-model = ExperimentalBattery(paramobj);
+model = Battery(paramobj);
 
 model.AutoDiffBackend= AutoDiffBackend();
 
 inspectgraph = false;
 if inspectgraph
-    % plot the computational graph
-    cgt = ComputationalGraphTool(model);
+    model = model.setupComputationalGraph();
+    cgt = model.computationalGraph;
     return
 end
-
 
 %% Compute the nominal cell capacity and choose a C-Rate
 % The nominal capacity of the cell is calculated from the active materials.
