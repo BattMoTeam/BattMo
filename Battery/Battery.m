@@ -32,14 +32,11 @@ classdef Battery < BaseModel
         % flag that decide the model setup
         use_thermal
         include_current_collectors
+
+        funcCallList
         
-        primaryVariableNames
-
-        addedVariableNames
-        % Some variables in some model are "static" meaning that they are not computed, they are set at the beginning of
-        % the computation and stay constants. Their names are given in this addedVariableNames list. An example of such
-        % variable is the temperature when use_thermal is set to false.
-
+        primaryVarNames
+        equationVarNames
         equationNames
         equationTypes
         equationIndices
@@ -98,7 +95,7 @@ classdef Battery < BaseModel
             model.couplingNames = cellfun(@(x) x.name, model.couplingTerms, 'uniformoutput', false);
             
             % setup equations and variable names selected in the model
-            % model = model.setupSelectedModel();
+            model = model.setupSelectedModel();
             
             % setup some mappings (mappings from electrodes to electrolyte)
             model = model.setupMappings();
@@ -109,89 +106,68 @@ classdef Battery < BaseModel
         end
 
         function model = setupSelectedModel(model, varargin)
-
+        % The system of equation should fullfill a special structure to fit into the iterative linear solver with
+        % preconditioner. We create this structure here.
+            
             opt = struct('reduction', []);
             opt = merge_options(opt, varargin{:});
-            % for the reduction structrure format see battmodDir()/Utilities/JsonSchemas/linearsolver.schema.json and /reduction property
+            % For the reduction structure format, see battmodDir()/Utilities/JsonSchemas/linearsolver.schema.json and the reduction property
             
             elyte   = 'Electrolyte';
             ne      = 'NegativeElectrode';
             pe      = 'PositiveElectrode';
+            co      = 'Coating';
             am      = 'ActiveMaterial';
             sd      = 'SolidDiffusion';
             cc      = 'CurrentCollector';
             ctrl    = 'Control';
             thermal = 'ThermalModel';
             
-            addedVariableNames = {};
+            addedVarNames = {};
             
-            varEqTypes ={{elyte, 'c'}   , 'elyte_massCons'  , 'cell'; ...  
-                         {elyte, 'phi'} , 'elyte_chargeCons', 'cell'; ...    
-                         {ne, am, 'phi'}, 'ne_am_chargeCons', 'cell'; ...    
-                         {pe, am, 'phi'}, 'pe_am_chargeCons', 'cell'; ...    
-                         {ctrl, 'E'}    , 'EIeq'            , 'ctrl'; ...  
-                         {ctrl, 'I'}    , 'controlEq'       , 'ctrl'};
-            
+            varEqTypes ={{elyte, 'c'}   , {elyte,  'massCons'}     , 'cell'; ...  
+                         {elyte, 'phi'} , {elyte,  'chargeCons'}   , 'cell'; ...    
+                         {ne, co, 'phi'}, {ne, co, 'chargeCons'}   , 'cell'; ...    
+                         {pe, co, 'phi'}, {pe, co, 'chargeCons'}   , 'cell'; ...    
+                         {ctrl, 'E'}    , {ctrl, 'EIequation'}     , 'ctrl'; ...  
+                         {ctrl, 'I'}    , {ctrl, 'controlEquation'}, 'ctrl'};
+
+            eldes = {ne, pe};
+
+            for ielde = 1 : numel(eldes)
+
+                elde = eldes{ielde};
+
+                switch model.(elde).(co).(am).diffusionModelType
+                  case 'simple'
+                    newentries = {{elde, co, am, sd, 'cAverage'}, {elde, co, am, sd, 'massCons'}        , 'cell'; ...
+                                  {elde, co, am, sd, 'cSurface'}, {elde, co, am, sd, 'solidDiffusionEq'}, 'cell'};
+                  case 'full'
+                    newentries = {{elde, co, am, sd, 'c'}       , {elde, co, am, sd, 'massCons'}        , 'cell'; ...
+                                  {elde, co, am, sd, 'cSurface'}, {elde, co, am, sd, 'solidDiffusionEq'}, 'cell'};
+                  otherwise
+                    error('diffusionModelType not recognized');
+                end
+                varEqTypes = vertcat(varEqTypes, newentries);
+
+                if model.include_current_collectors
+                    
+                    newentries = {{elde, cc, 'phi'}, {elde, cc, 'chargeCons'}, 'cell'};
+                    varEqTypes = vertcat(varEqTypes, newentries);
+                    
+                end
+
+            end
+
             if model.use_thermal
-                newentries = {{thermal, 'T'}, 'energyCons', 'cell'};
-                varEqTypes = vertcat(varEqTypes, newentries);
-            else
-                addedVariableNames{end + 1} = {thermal, 'T'};
-            end
-
-            switch model.(ne).(am).diffusionModelType
-              case 'simple'
-                newentries = {{ne, am, 'c'}, 'ne_am_massCons', 'scell';
-                              {ne, am, sd, 'cSurface'}, 'ne_am_sd_soliddiffeq', 'scell'};
-              case 'full'
-                newentries = {{ne, am, sd, 'c'}, 'ne_am_sd_massCons', 'cell';
-                              {ne, am, sd, 'cSurface'}, 'ne_am_sd_soliddiffeq', 'cell'};
-              case 'interParticleOnly'
-                newentries = {{ne, am, 'c'}, 'ne_am_massCons', 'cell'};
-              otherwise
-                error('diffusionModelType not recognized');
-            end
-            varEqTypes = vertcat(varEqTypes, newentries);
-
-            
-            switch model.(pe).(am).diffusionModelType
-              case 'simple'
-                newentries = {{pe, am, 'c'}, 'pe_am_massCons', 'scell';
-                              {pe, am, sd, 'cSurface'}, 'pe_am_sd_soliddiffeq', 'scell'};
-              case 'full'
-                newentries = {{pe, am, sd, 'c'}, 'pe_am_sd_massCons', 'cell';
-                              {pe, am, sd, 'cSurface'}, 'pe_am_sd_soliddiffeq', 'cell'};
-              case 'interParticleOnly'
-                newentries = {{pe, am, 'c'}, 'pe_am_massCons', 'cell'};
-              otherwise
-                error('diffusionModelType not recognized');
-            end
-            varEqTypes = vertcat(varEqTypes, newentries);
-
-            
-            if model.include_current_collectors
                 
-                newentries = {{ne, cc, 'phi'}, 'ne_cc_chargeCons', 'cell'; ...
-                              {pe, cc, 'phi'}, 'pe_cc_chargeCons', 'cell'};
-                         
+                newentries = {{thermal, 'T'}, {thermal, 'energyCons'}, 'cell'};
                 varEqTypes = vertcat(varEqTypes, newentries);
                 
             end
-
-            switch model.(ctrl).controlPolicy
-              case 'IEswitch'
-                addedVariableNames{end + 1} = {ctrl, 'ctrlType'};
-              case 'CCCV'
-                addedVariableNames{end + 1} = {ctrl, 'ctrlType'};
-                addedVariableNames{end + 1} = {ctrl, 'nextCtrlType'};
-              case 'CC'
-                addedVariableNames{end + 1} = {ctrl, 'ctrlType'};
-              otherwise
-                error('controlPolicy not recognized');
-            end
             
-            primaryVariableNames = varEqTypes(:, 1);
-            equationTypes = varEqTypes(:, 3);
+            primaryVarNames = varEqTypes(:, 1);
+            equationTypes   = varEqTypes(:, 3);
 
             % The variable and equation lists are not a priori ordered (in the sense that we have 'cell' types first and
             % the other types after). It is a requirement in some setup of the linear solver.
@@ -201,8 +177,8 @@ classdef Battery < BaseModel
             
             if ~isempty(opt.reduction)
                 reduc = opt.reduction;
-                % We set the type of the variable to be reduced as 'other' and we move them at the end of list
-                % respecting the order they have been given.
+                % We set the type of the variable to be reduced as 'reduced' or 'specialReduced' (anything but 'cell')
+                % and we move them at the end of list respecting the order in which they have been given.
                 if ~isempty(reduc) && reduc.doReduction
                     neq = numel(equationTypes);
                     equationTypes = cell(neq, 1);
@@ -217,7 +193,7 @@ classdef Battery < BaseModel
                     einds = nan(numel(variables),1);
                     for ivar = 1 : numel(variables)
                         var = variables{ivar};
-                        [found, ind] = Battery.getVarIndex(var.name, primaryVariableNames);
+                        [found, ind] = Battery.getVarIndex(var.name, primaryVarNames);
                         if ~found
                             error('variable to be reduce has not been found');
                         end
@@ -247,20 +223,28 @@ classdef Battery < BaseModel
             end                
 
 
-            primaryVariableNames = varEqTypes(inds, 1);
-            equationNames = varEqTypes(inds, 2);
-            equationTypes = equationTypes(inds);
+            primaryVarNames  = varEqTypes(inds, 1);
+            equationVarNames = varEqTypes(inds, 2);
+            equationTypes    = equationTypes(inds);
+
+            % We use shortened names for easier visualisation and because Matlab also has a limitation on the lenght of
+            % a field name in a structure.
+            function str = setupName(varname)
+                shortvarname = cellfun(@(elt) Battery.shortenName(elt), varname, 'uniformoutput', false);
+                str = Battery.varToStr(shortvarname);
+            end
+            equationNames = cellfun(@(varname) setupName(varname), equationVarNames, 'uniformoutput', false);
             
             equationIndices = struct();
             for ieq = 1 : numel(equationNames)
                 equationIndices.(equationNames{ieq}) = ieq;
             end
             
-            model.addedVariableNames   = addedVariableNames; 
-            model.primaryVariableNames = primaryVariableNames;
-            model.equationNames        = equationNames; 
-            model.equationTypes        = equationTypes;
-            model.equationIndices      = equationIndices;
+            model.primaryVarNames  = primaryVarNames;
+            model.equationVarNames = equationVarNames; 
+            model.equationNames    = equationNames;
+            model.equationTypes    = equationTypes;
+            model.equationIndices  = equationIndices;
             
         end
         
@@ -817,6 +801,7 @@ classdef Battery < BaseModel
             opts = merge_options(opts, varargin{:});
             
             time = state0.time + dt;
+            
             if(not(opts.ResOnly) && not(opts.reverseMode))
                 state = model.initStateAD(state);
             elseif(opts.reverseMode)
@@ -825,15 +810,23 @@ classdef Battery < BaseModel
             else
                 assert(opts.ResOnly);
             end
+
             
-            %% for now temperature and SOC are kept constant
-            nc = model.G.cells.num;
-            %state.SOC = model.SOC*ones(nc, 1);
+            %% We call the assembly equations ordered from the graph
+            
+            funcCallList = model.funcCallList;
+
+            for ifunc = 1 : numel(funcCallList)
+                eval(funcCallList{ifunc});
+            end
+
+            %% We apply some scaling
             
             % Shorthands used in this function
             battery = model;
             ne      = 'NegativeElectrode';
             pe      = 'PositiveElectrode';
+            co      = 'Coating';
             am      = 'ActiveMaterial';
             cc      = 'CurrentCollector';
             elyte   = 'Electrolyte';
@@ -842,284 +835,90 @@ classdef Battery < BaseModel
             sd      = "SolidDiffusion";
             thermal = 'ThermalModel';
             ctrl    = 'Control';
+
+            eldes = {ne, pe};
             
-            electrodes = {ne, pe};
-            electrodecomponents = {am, cc};
-
-            %% Synchronization across components
-
-            % temperature
-            state = battery.updateTemperature(state);
-
-            for ind = 1 : numel(electrodes)
-                elde = electrodes{ind};
-                % potential and concentration between interface and active material
-                state.(elde).(am) = battery.(elde).(am).updatePhi(state.(elde).(am));
-                if (model.(elde).(am).use_particle_diffusion)
-                    state.(elde).(am) = battery.(elde).(am).updateConcentrations(state.(elde).(am));
-                else
-                    state.(elde).(am).(itf).cElectrodeSurface = state.(elde).(am).c;
-                end              
-            end
+            massConsScaling = model.con.F;
             
-            %% Accumulation term in elyte
+            state.(elyte).massCons = state.(elyte).massCons*massConsScaling;
 
-            state.(elyte) = battery.(elyte).updateAccumTerm(state.(elyte), state0.(elyte), dt);
+            for ielde = 1 : numel(eldes)
 
-            %% Update Electrolyte -> Electrodes coupling 
-            
-            state = battery.updateElectrodeCoupling(state); 
-
-            %% Update reaction rates in both electrodes
-
-            for ind = 1 : numel(electrodes)
-                elde = electrodes{ind};
-                state.(elde).(am).(itf) = battery.(elde).(am).(itf).updateReactionRateCoefficient(state.(elde).(am).(itf));
-                state.(elde).(am).(itf) = battery.(elde).(am).(itf).updateOCP(state.(elde).(am).(itf));
-                state.(elde).(am).(itf) = battery.(elde).(am).(itf).updateEta(state.(elde).(am).(itf));
-                state.(elde).(am).(itf) = battery.(elde).(am).(itf).updateReactionRate(state.(elde).(am).(itf));
-                state.(elde).(am) = battery.(elde).(am).updateRvol(state.(elde).(am));
-            end
-
-            %% Update Electrodes -> Electrolyte  coupling
-
-            state = battery.updateElectrolyteCoupling(state);
-            
-            %% Update coupling within electrodes and external coupling
-            
-            for ind = 1 : numel(electrodes)
-                elde = electrodes{ind};
-                state.(elde).(am) = model.(elde).(am).updateConductivity(state.(elde).(am));
-                if model.include_current_collectors
-                    state.(elde).(cc) = model.(elde).(cc).updateConductivity(state.(elde).(cc));
-                end
-                state.(elde) = battery.(elde).updateCoupling(state.(elde));
-                switch elde
-                  case ne
-                    state = model.setupExternalCouplingNegativeElectrode(state);
-                  case pe
-                    state = model.setupExternalCouplingPositiveElectrode(state);
-                end
-                if model.include_current_collectors
-                    state.(elde).(cc) = battery.(elde).(cc).updatejBcSource(state.(elde).(cc));
-                    state.(elde).(am) = battery.(elde).(am).updatejExternal(state.(elde).(am));
-                else
-                    state.(elde).(am) = battery.(elde).(am).updatejCoupling(state.(elde).(am));
-                end
-                state.(elde).(am) = battery.(elde).(am).updatejBcSource(state.(elde).(am));
+                elde = eldes{ielde};
                 
-            end
-            
-            %% elyte charge conservation
+                switch model.(elde).(co).(am).diffusionModelType
+                    
+                  case 'simple'
+                    
+                    state.(elde).(co).(am).(sd).massCons         = massConsScaling*state.(elde).(co).(am).(sd).massCons;
+                    state.(elde).(co).(am).(sd).solidDiffusionEq = massConsScaling.*battery.(elde).(co).G.cells.volumes/dt.*state.(elde).(co).(am).(sd).solidDiffusionEq;
+                    
+                  case 'full'
+                    
+                    % Equation name : 'ne_am_sd_massCons';
+                    n    = model.(elde).(co).(am).(itf).numberOfElectronsTransferred;
+                    F    = model.con.F;
+                    vol  = model.(elde).(co).operators.pv;
+                    rp   = model.(elde).(co).(am).(sd).particleRadius;
+                    vsf  = model.(elde).(co).(am).(sd).volumetricSurfaceArea;
+                    
+                    surfp = 4*pi*rp^2;
+                    
+                    scalingcoef = (vsf*vol(1)*n*F)/surfp;
+                    
+                    state.(elde).(co).(am).(sd).massCons         = scalingcoef*state.(elde).(co).(am).(sd).massCons;
+                    state.(elde).(co).(am).(sd).solidDiffusionEq = scalingcoef*state.(elde).(co).(am).(sd).solidDiffusionEq;
 
-            state.(elyte) = battery.(elyte).updateCurrentBcSource(state.(elyte));
-            state.(elyte) = battery.(elyte).updateConductivity(state.(elyte));
-            state.(elyte) = battery.(elyte).updateDmuDcs(state.(elyte));
-            state.(elyte) = battery.(elyte).updateCurrent(state.(elyte));
-            state.(elyte) = battery.(elyte).updateChargeConservation(state.(elyte));
-
-            %% Electrodes charge conservation - Active material part
-
-            for ind = 1 : numel(electrodes)
-                
-                elde = electrodes{ind};
-                state.(elde).(am) = battery.(elde).(am).updateCurrentSource(state.(elde).(am));
-                state.(elde).(am) = battery.(elde).(am).updateCurrent(state.(elde).(am));
-                state.(elde).(am) = battery.(elde).(am).updateChargeConservation(state.(elde).(am));
-
-                if model.include_current_collectors
-                    %% Electrodes charge conservation - current collector part
-                    state.(elde).(cc) = battery.(elde).(cc).updateCurrent(state.(elde).(cc));
-                    state.(elde).(cc) = battery.(elde).(cc).updateChargeConservation(state.(elde).(cc));
+                  otherwise
+                    
+                    error('diffusionModelType not recognized');
+                    
                 end
                 
             end
-            
-            %% elyte mass conservation
 
-            state.(elyte) = battery.(elyte).updateDiffusionCoefficient(state.(elyte));
-            state.(elyte) = battery.(elyte).updateMassFlux(state.(elyte));
-            state.(elyte) = battery.(elyte).updateMassConservation(state.(elyte));
-
-            %% update solid diffustion equations
-            for ind = 1 : numel(electrodes)
-                elde = electrodes{ind};
-                    switch model.(elde).(am).diffusionModelType
-                      case 'simple'
-                        state.(elde).(am).(sd) = battery.(elde).(am).(sd).updateDiffusionCoefficient(state.(elde).(am).(sd));
-                        state.(elde).(am)      = battery.(elde).(am).assembleAccumTerm(state.(elde).(am), state0.(elde).(am), dt);
-                        state.(elde).(am)      = battery.(elde).(am).updateMassSource(state.(elde).(am));
-                        state.(elde).(am)      = battery.(elde).(am).updateMassFlux(state.(elde).(am));
-                        state.(elde).(am)      = battery.(elde).(am).updateMassConservation(state.(elde).(am));
-                        state.(elde).(am).(sd) = battery.(elde).(am).(sd).assembleSolidDiffusionEquation(state.(elde).(am).(sd));
-                      case 'full'
-                        state.(elde).(am).(sd) = battery.(elde).(am).(sd).updateDiffusionCoefficient(state.(elde).(am).(sd));
-                        state.(elde).(am).(sd) = battery.(elde).(am).(sd).updateMassSource(state.(elde).(am).(sd));
-                        state.(elde).(am).(sd) = battery.(elde).(am).(sd).updateFlux(state.(elde).(am).(sd));
-                        state.(elde).(am).(sd) = battery.(elde).(am).(sd).updateMassAccum(state.(elde).(am).(sd), state0.(elde).(am).(sd), dt);
-                        state.(elde).(am).(sd) = battery.(elde).(am).(sd).updateMassConservation(state.(elde).(am).(sd));
-                        state.(elde).(am).(sd) = battery.(elde).(am).(sd).assembleSolidDiffusionEquation(state.(elde).(am).(sd));
-                      case 'interParticleOnly'
-                        state.(elde).(am) = battery.(elde).(am).assembleAccumTerm(state.(elde).(am), state0.(elde).(am), dt);
-                        state.(elde).(am) = battery.(elde).(am).updateMassFlux(state.(elde).(am));
-                        state.(elde).(am) = battery.(elde).(am).updateMassSource(state.(elde).(am));
-                        state.(elde).(am) = battery.(elde).(am).updateMassConservation(state.(elde).(am));
-                      otherwise
-                        error('diffusionModelType not recognized')
-                    end
-                
+            for ieq = 1 : numel(model.equationVarNames)
+                eqs{ieq} = model.getProp(state, model.equationVarNames{ieq});
             end
-
-            if model.use_thermal
-                
-                %% update Face fluxes
-                for ind = 1 : numel(electrodes)
-                    elde = electrodes{ind};
-                    state.(elde).(am) = battery.(elde).(am).updatejFaceBc(state.(elde).(am));
-                    state.(elde).(am) = battery.(elde).(am).updateFaceCurrent(state.(elde).(am));
-                    if model.include_current_collectors
-                        state.(elde).(cc) = battery.(elde).(cc).updatejFaceBc(state.(elde).(cc));
-                        state.(elde).(cc) = battery.(elde).(cc).updateFaceCurrent(state.(elde).(cc));
-                    end
-                end
-                state.(elyte) = battery.(elyte).updateFaceCurrent(state.(elyte));
-                
-                %% update Thermal source term from electrical resistance
-
-                state = battery.updateThermalOhmicSourceTerms(state);
-                state = battery.updateThermalChemicalSourceTerms(state);
-                state = battery.updateThermalReactionSourceTerms(state);
-                
-                state.(thermal) = battery.(thermal).updateHeatSourceTerm(state.(thermal));
-                state.(thermal) = battery.(thermal).updateThermalBoundarySourceTerms(state.(thermal));
-                
-                %% update Accumulation terms for the energy equation
-                
-                state.(thermal) = battery.(thermal).updateAccumTerm(state.(thermal), state0.(thermal), dt);
-                
-                %% Update energy conservation residual term
-                
-                state.(thermal) = model.(thermal).updateEnergyConservation(state.(thermal));
-                
-            end
-            
-            %% Setup relation between E and I at positive current collectror
-            
-            state = model.setupEIEquation(state);
-            state = model.updateControl(state, drivingForces);
-            state.(ctrl) = model.(ctrl).updateControlEquation(state.(ctrl));
-            
-            %% Set up the governing equations
-
-            eqs = cell(1, numel(model.equationNames));
-            
-            %% We collect the governing equations
-            % The governing equations are the mass and charge conservation equations for the electrolyte and the
-            % electrodes and the solid diffusion model equations and the control equations. The equations are scaled to
-            % a common value.
 
             ei = model.equationIndices;
 
-            massConsScaling = model.con.F;
-            
-            % Equation name : 'elyte_massCons';
-            eqs{ei.elyte_massCons} = state.(elyte).massCons*massConsScaling;
+            % By doing this linear transformation, we remove the direct dependency of the mass conservation equation with
+            % respect to the potential gradien. Only the concentration gradient remains in the equation. This is a special
+            % property when the transferance t is a constant.
 
-            % Equation name : 'elyte_chargeCons';
-            eqs{ei.elyte_chargeCons} = state.(elyte).chargeCons;
+            mieq = ei.(Battery.varToStr({'elyte', 'massCons'}));
+            cieq = ei.(Battery.varToStr({'elyte', 'chargeCons'}));
             
-            % Equation name : 'ne_am_chargeCons';
-            eqs{ei.ne_am_chargeCons} = state.(ne).(am).chargeCons;
+            eqs{mieq} = eqs{mieq} - model.(elyte).sp.t(1)*eqs{cieq};
 
-            % Equation name : 'pe_am_chargeCons';
-            eqs{ei.pe_am_chargeCons} = state.(pe).(am).chargeCons;
-            
-            switch model.(ne).(am).diffusionModelType
-              case 'simple'
-                eqs{ei.ne_am_massCons}       = state.(ne).(am).massCons*massConsScaling;
-                eqs{ei.ne_am_sd_soliddiffeq} = state.(ne).(am).(sd).solidDiffusionEq.*massConsScaling.*battery.(ne).(am).(itf).G.cells.volumes/dt;
-              case 'full'
-                % Equation name : 'ne_am_sd_massCons';
-                n    = model.(ne).(am).(itf).n; % number of electron transfer (equal to 1 for Lithium)
-                F    = model.con.F;
-                vol  = model.(ne).(am).operators.pv;
-                rp   = model.(ne).(am).(sd).rp;
-                vsf  = model.(ne).(am).(sd).volumetricSurfaceArea;
-                surfp = 4*pi*rp^2;
-                
-                scalingcoef = (vsf*vol(1)*n*F)/surfp;
-                
-                eqs{ei.ne_am_sd_massCons}    = scalingcoef*state.(ne).(am).(sd).massCons;
-                eqs{ei.ne_am_sd_soliddiffeq} = scalingcoef*state.(ne).(am).(sd).solidDiffusionEq;
-              case 'interParticleOnly'
-                eqs{ei.ne_am_massCons} = state.(ne).(am).massCons*massConsScaling;
-              otherwise
-                error('diffusionModelType not recognized')                    
-            end
-            
-            
-            switch model.(pe).(am).diffusionModelType
-              case 'simple'
-                eqs{ei.pe_am_massCons}       = state.(pe).(am).massCons*massConsScaling;
-                eqs{ei.pe_am_sd_soliddiffeq} = state.(pe).(am).(sd).solidDiffusionEq.*massConsScaling.*battery.(pe).(am).(itf).G.cells.volumes/dt;
-              case 'full'
-                % Equation name : 'pe_am_sd_massCons';
-                n    = model.(pe).(am).(itf).n; % number of electron transfer (equal to 1 for Lithium)
-                F    = model.con.F;
-                vol  = model.(pe).(am).operators.pv;
-                rp   = model.(pe).(am).(sd).rp;
-                vsf  = model.(pe).(am).(sd).volumetricSurfaceArea;
-                surfp = 4*pi*rp^2;
-                
-                scalingcoef = (vsf*vol(1)*n*F)/surfp;
-
-                eqs{ei.pe_am_sd_massCons} = scalingcoef*state.(pe).(am).(sd).massCons;
-                eqs{ei.pe_am_sd_soliddiffeq} = scalingcoef*state.(pe).(am).(sd).solidDiffusionEq;
-              case 'interParticleOnly'
-                eqs{ei.pe_am_massCons} = state.(pe).(am).massCons*massConsScaling;                
-              otherwise
-                error('diffusionModelType not recognized')
-            end
-            
-            % Equation name : 'ne_cc_chargeCons';
-            if model.(ne).include_current_collectors
-                eqs{ei.ne_cc_chargeCons} = state.(ne).(cc).chargeCons;
-            end
-            
-            % Equation name : 'pe_cc_chargeCons';
-            if model.(pe).include_current_collectors
-                eqs{ei.pe_cc_chargeCons} = state.(pe).(cc).chargeCons;
-            end
-
-            % Equation name : 'energyCons';
-            if model.use_thermal
-                eqs{ei.energyCons} = state.(thermal).energyCons;
-            end
-            
-            % Equation name : 'EIeq';
-            eqs{ei.EIeq} = - state.(ctrl).EIequation;
-            
-            % Equation name : 'controlEq'                                    
-            eqs{ei.controlEq} = state.(ctrl).controlEquation;
-            
-            eqs{ei.elyte_massCons} = eqs{ei.elyte_massCons} - model.Electrolyte.sp.t(1)*eqs{ei.elyte_chargeCons};
-            
-            names = model.equationNames;
-            types = model.equationTypes;
+            names       = model.equationNames;
+            types       = model.equationTypes;
+            primaryVars = model.primaryVarNames;
             
             %% The equations are reordered in a way that is consitent with the linear iterative solver 
             % (the order of the equation does not matter if we do not use an iterative solver)
             ctrltype = state.Control.ctrlType;
             switch ctrltype
+                
               case {'constantCurrent', 'CC_discharge1', 'CC_discharge2', 'CC_charge1', 'charge', 'discharge'}
-                types{ei.EIeq} = 'cell';
+
+                eqname = Battery.varToStr({'ctrl', 'EIequation'});
+                types{ei.(eqname)} = 'cell';
+                
               case {'constantVoltage', 'CV_charge2'}
-                eqs([ei.EIeq, ei.controlEq]) = eqs([ei.controlEq, ei.EIeq]);
-              otherwise 
-                error('control type not recognized')
+
+                eieqname = Battery.varToStr({'ctrl', 'EIequation'});
+                cteqname = Battery.varToStr({'ctrl', 'controlEquation'});
+                
+                eqs([ei.(eieqname), ei.(cteqname)]) = eqs([ei.(cteqname), ei.(eieqname)]);
+                
+              otherwise
+                
+                error('control type not recognized');
+                
             end
 
-            primaryVars = model.getPrimaryVariableNames();
             
             %% Setup LinearizedProblem that can be processed by MRST Newton API
             problem = LinearizedProblem(eqs, types, names, primaryVars, state, dt);
@@ -1663,12 +1462,6 @@ classdef Battery < BaseModel
             
         end
 
-        function primaryvarnames = getPrimaryVariableNames(model)
-
-            primaryvarnames = model.primaryVariableNames;
-            
-        end
-        
         function forces = getValidDrivingForces(model)
             
             forces = getValidDrivingForces@PhysicalModel(model);
@@ -1704,7 +1497,7 @@ classdef Battery < BaseModel
             co    = 'Coating';
 
             model.(elyte).AutoDiffBackend   = model.AutoDiffBackend;
-            model.(elyte)                   =model.(elyte).validateModel(varargin{:});
+            model.(elyte)                   = model.(elyte).validateModel(varargin{:});
 
             eldes = {ne, pe};
             
@@ -1722,6 +1515,15 @@ classdef Battery < BaseModel
                 
             end
             
+            if isempty(model.computationalGraph)
+                model = model.setupComputationalGraph();
+            end
+            
+            cgt = model.computationalGraph;
+            model.primaryVarNames = cgt.getPrimaryVariableNames();
+            model.funcCallList = cgt.getOrderedFunctionCallList();
+
+
         end
         
 
@@ -1849,11 +1651,42 @@ classdef Battery < BaseModel
         
         function [found, varind] = getVarIndex(varname, pvarnames)
 
-            varname = strjoin(varname, '_');
-            pvarnames = cellfun(@(name) strjoin(name, '_'), pvarnames, 'uniformoutput', false);
+            varname   = Battery.varToStr(varname);
+            pvarnames = cellfun(@(name) Battery.varToStr(name), pvarnames, 'uniformoutput', false);
 
             [found, varind] = ismember(varname, pvarnames);
 
+        end
+
+        function str = varToStr(varname)
+
+            str = strjoin(varname, '_');
+            
+        end
+
+        function str = shortenName(name)
+            
+            namemapping = {'NegativeElectrode', 'ne'      ; ...
+                           'PositiveElectrode', 'pe'      ; ...
+                           'Coating'          , 'co'      ; ...
+                           'ActiveMaterial'   , 'am'      ; ...
+                           'CurrentCollector' , 'cc'      ; ...
+                           'Electrolyte'      , 'elyte'   ; ...
+                           'ActiveMaterial'   , 'am'      ; ...
+                           'Interface'        , 'itf'     ; ...
+                           'SolidDiffusion'   , 'sd'      ; ...
+                           'ThermalModel'     , 'thermal' ; ...
+                           'Control'          , 'ctrl'};
+
+
+            [found, ind] = ismember(name, namemapping(:, 1));
+
+            if found
+                str = namemapping{ind, 2};
+            else
+                str = name;
+            end
+            
         end
         
     end
