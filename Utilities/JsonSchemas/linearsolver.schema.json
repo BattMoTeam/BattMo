@@ -32,7 +32,7 @@
               "order" : {"type" : "integer",
                          "description" : "gives order in which reduction should be done"},
               "special" : {"type" : "boolean"},
-              "description" : "If special is true, it reminds  us that some variables such as Control.I and Control.E can  be  reduced or not depending on the type of control that is active"}
+              "description" : "If special is true, it reminds us that some variables such as Control.I and Control.E can be reduced or not depending on the type of control that is active"}
           }
         }
       }
