@@ -15,22 +15,29 @@
    #+begin_src
      pip install sphinxcontrib-bibtex
    #+end_src
-* Command
+   At the moment, it is not working.
+   
+* Workflow for editing
+
+  In the ~Documentation~ directory, run from terminal
   #+BEGIN_SRC sh
   make html
   #+END_SRC
-* Interesting Manuals
-** sphinx manual
-   https://www.sphinx-doc.org/en/master/contents.html
-** reStucturedText (rst) format
-   https://www.sphinx-doc.org/en/master/usage/restructuredtext/basics.html
-** rtd theme manual
-   https://sphinx-rtd-theme.readthedocs.io/en/stable/
-** bibtex extension manual
-   https://sphinxcontrib-bibtex.readthedocs.io/en/latest/index.html
-* Configuratiom file
-  - ~conf.py~ see https://www.sphinx-doc.org/en/master/usage/configuration.html
-* Examples
+
+  The command generates all the files for a static website and writes them in ~Documentation/_build/html~
+
+  All the files in this directory must then be copied to the ~BattMo-doc~ [[https://github.com/BattMoTeam/BattMo-doc][repo]]. From there, make a *force* push. We do
+  not keep track of the history of the ouput files (html), but we of course keep track of the documentation source, directly in the
+  main repo ~BattMo~.
+
+  The deployment of the webpage can be followed from the [[https://github.com/BattMoTeam/BattMo-doc/actions][github pages section]]
+
+  The result can be view at
+
+  https://battmoteam.github.io/BattMo-doc/
+
+  
+* Special workflow for example scripts
 ** Compilation
    - run ~publishExamplesXML~ in ~utils~ directory (see documentation there) : It creates XML outputs
    - run python script ~buildPublishedExamples.py~ : converts XML to rST output
@@ -43,3 +50,14 @@
      comment in the matlab code formatting), start a cell with eventually no title. In Matlab cells start with ~%%~ and
      a title
    - The directive ~.. automodule::~ makes sure a directory is parsed. 
+* Interesting Manuals
+** sphinx manual
+   https://www.sphinx-doc.org/en/master/contents.html
+** reStucturedText (rst) format
+   https://www.sphinx-doc.org/en/master/usage/restructuredtext/basics.html
+** rtd theme manual
+   https://sphinx-rtd-theme.readthedocs.io/en/stable/
+** bibtex extension manual
+   https://sphinxcontrib-bibtex.readthedocs.io/en/latest/index.html
+* Configuratiom file
+  - ~conf.py~ see https://www.sphinx-doc.org/en/master/usage/configuration.html

@@ -333,7 +333,7 @@ Electrolyte
 
 
 Current Collector
------------------
+=================
       
 .. class:: CurrentCollectorInputParams
            
@@ -353,7 +353,7 @@ Current Collector
 
    
 Electronic Component
---------------------
+====================
 
 Base model for all component with a electrical potential and a charge conservation equation
 

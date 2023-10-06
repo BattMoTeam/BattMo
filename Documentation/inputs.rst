@@ -7,9 +7,9 @@ recursively to the models. The input class is named accordingly to the model it 
 in the same folder.
 
 .. toctree::
-
+   :maxdepth: 1
+              
    Battery <batteryinput>
-   Control <controlinput>
 
 
 
