@@ -68,21 +68,17 @@
   \end{tcolorbox}}
 \def\myscaling{1.2}
 
-\def\nudgenumb {1cm}
-
 \def\baselinestretch{0.8}
 \setmainfont{Freemono}[Scale = \myscale]\setsansfont{Freemono}[Scale = \myscale]\setmonofont{Freemono}[Scale = \myscale]
 \begin{tikzpicture}
   \graph [tree layout, sibling sep = 2mm, level distance = 1.5cm, edges={thick, -{Latex[length=2mm, width=2mm]}}, edge=rounded corners, nodes = {outer sep = 0mm, inner sep = 0mm}, ]
-  { battery [as = \myobjnode{2}{\mcodeclass{Battery}}] ->
-    { control [as = \myobjnode{2}{\mcode{Control}\\ (\mcodeclass{ControlModel})}, target edge style = {bend right = 10pt}] ,
-      poselde [as = \myobjnode{2.3}{\mcode{PositiveElectrode}\\ (\mcodeclass{Electrode})}] ,
-      elyte   [as = \myobjnode{2}{\mcode{Electrolyte}\\ (\mcodeclass{Electrolyte})}] ,
-      sep     [as = \myobjnode{2}{\mcode{Separator}\\ (\mcodeclass{Separator})}] ,
-      negelde [as = \myobjnode{2.3}{\mcode{NegativeElectrode}\\ (\mcodeclass{Electrode})}] ,
-      thermal [as = \myobjnode{1.8}{\mcode{Thermal}\\ (\mcodeclass{ThermalModel})}, target edge style = {bend left = 10pt}]
+  { 
+    co [as = \myobjnode{2.8}{\mcode{Coating}\\ (\mcodeclass{ElectronicComponent})}] ->
+    { am [as = \myobjnode{2.8}{\mcode{ActiveMaterial}}],
+      bd [as = \myobjnode{2.8}{\mcode{Binder}}],
+      ca [as = \myobjnode{2.8}{\mcode{ConductingAdditive}}]
     }
-  }; 
+    };
 \end{tikzpicture}
 
 \end{document}

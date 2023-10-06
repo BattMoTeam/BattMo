@@ -32,11 +32,8 @@ autodoc_member_order = 'bysource'
 # Add any Sphinx extension module names here, as strings. They can be
 # extensions coming with Sphinx (named 'sphinx.ext.*') or your custom
 # ones.
-extensions = ['sphinx.ext.autodoc', 'sphinxcontrib.matlab', 'sphinx.ext.napoleon', 'sphinxcontrib.bibtex']
-bibtex_bibfiles = ['refs.bib']
-
-primary_domain = 'mat'
-highlight_language = 'matlab'
+# extensions = ['sphinxcontrib.bibtex']
+# bibtex_bibfiles = ['refs.bib']
 
 # Add any paths that contain templates here, relative to this directory.
 templates_path = ['_templates']
@@ -186,7 +183,7 @@ html_logo = 'battmologo.png'
 #html_file_suffix = None
 
 # Output file base name for HTML help builder.
-htmlhelp_basename = 'MATLABSphinxDocumentationTestdoc'
+# htmlhelp_basename = 'MATLABSphinxDocumentationTestdoc'
 
 
 # -- Options for LaTeX output ---------------------------------------------
@@ -266,27 +263,27 @@ latex_documents = [
 
 # If true, do not generate a @detailmenu in the "Top" node's menu.
 #texinfo_no_detailmenu = False
-napoleon_google_docstring = True
+# napoleon_google_docstring = True
 add_module_names=False
-autodoc_preserve_defaults = True
+# autodoc_preserve_defaults = True
 
-from sphinxcontrib.mat_documenters import MatAttributeDocumenter, MatClassLevelDocumenter
-import sphinx
+# from sphinxcontrib.mat_documenters import MatAttributeDocumenter, MatClassLevelDocumenter
+# import sphinx
 
-def _add_directive_header(self, sig):
-    MatClassLevelDocumenter.add_directive_header(self, sig)
-    if not self.options.annotation:
-        if not self._datadescriptor:
-            try:
-                objrepr = sphinx.util.inspect.object_description(self.object.default)  # display default
-            except ValueError:
-                pass
-            else:
-                self.add_line('   :annotation:', '<autodoc>')
-    elif self.options.annotation is SUPPRESS:
-        pass
-    else:
-        self.add_line('   :annotation: %s' % self.options.annotation,
-                      '<autodoc>')
+# def _add_directive_header(self, sig):
+#     MatClassLevelDocumenter.add_directive_header(self, sig)
+#     if not self.options.annotation:
+#         if not self._datadescriptor:
+#             try:
+#                 objrepr = sphinx.util.inspect.object_description(self.object.default)  # display default
+#             except ValueError:
+#                 pass
+#             else:
+#                 self.add_line('   :annotation:', '<autodoc>')
+#     elif self.options.annotation is SUPPRESS:
+#         pass
+#     else:
+#         self.add_line('   :annotation: %s' % self.options.annotation,
+#                       '<autodoc>')
 
-MatAttributeDocumenter.add_directive_header = _add_directive_header
+# MatAttributeDocumenter.add_directive_header = _add_directive_header

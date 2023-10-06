@@ -73,11 +73,9 @@
 \begin{tikzpicture}
   \graph [tree layout, sibling sep = 2mm, level distance = 1.5cm, edges={thick, -{Latex[length=2mm, width=2mm]}}, edge=rounded corners, nodes = {outer sep = 0mm, inner sep = 0mm}, ]
   { 
-    elde [as = \myobjnode{2.3}{\mcode{Electrode}\\ (\mcodeclass{Electrode})}] ->
-      { am [as = \myobjnode{2.8}{\mcode{ActiveMaterial} \\ \mcodeclass{(ElectronicComponent)}}] -> 
-        { itf [as = \myobjnode{1.7}{\mcode{Interface}\\ \mcodeclass{(Interface)}}], sd [as = \myobjnode{2.7}{\mcode{SolidDiffusion}\\ (\mcodeclass{SolidDiffusionModel})}]
-          },
-        cc [as = \myobjnode{2.8}{\mcode{CurrentCollector} \\ \mcodeclass{(ElectronicComponent)}}] ,
+    elde [as = \myobjnode{2.3}{\mcode{Electrode}}] ->
+      { am [as = \myobjnode{2.8}{\mcode{Coating} \\ \mcodeclass{(ElectronicComponent)}}],
+        cc [as = \myobjnode{2.8}{\mcode{CurrentCollector} \\ \mcodeclass{(ElectronicComponent)}}]
       }
     };
 \end{tikzpicture}

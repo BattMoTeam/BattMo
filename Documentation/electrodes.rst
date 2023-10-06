@@ -2,17 +2,11 @@
 Electrode components
 ====================
 
-.. automodule:: Electrochemistry
+.. module:: Electrochemistry
+            :synopsis: hello
 
-   .. autoclass:: Electrode
-      :members:
-      :exclude-members: Electrode
-      :show-inheritance:
+.. class:: Electrode
          
-   .. autoclass:: ActiveMaterial
-      :members:
-      :exclude-members: ActiveMaterial
-      :show-inheritance:
+.. class:: ActiveMaterial
 
-   .. autoclass:: CurrentCollector
-      :show-inheritance:                  
+.. class:: CurrentCollector

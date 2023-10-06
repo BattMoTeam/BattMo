@@ -2,38 +2,33 @@
 Control models
 ==============
 
-.. automodule:: Utilities
+.. module:: Utilities
 
 Description of the input parameter classes for the control models
 
 Base Control Model
 ------------------
 
-.. autoclass:: ControlModelInputParams
-   :members:
+.. class:: ControlModelInputParams
 
 
 IESwitch Control
 ----------------
 
-.. autoclass:: IEswitchControlModelInputParams
-   :members:
+.. class:: IEswitchControlModelInputParams
 
 
 Constant Current Constant Voltage Control
 -----------------------------------------
 
-.. autoclass:: CcCvControlModelInputParams
-   :members:
+.. class:: CcCvControlModelInputParams
 
 Constant Voltage
 ----------------
 
-.. autoclass:: CvControlModelInputParams
-   :members:
+.. class:: CvControlModelInputParams
 
 Constant Current
 ----------------
 
-.. autoclass:: CcCvControlModelInputParams
-   :members:
+.. class:: CcCvControlModelInputParams

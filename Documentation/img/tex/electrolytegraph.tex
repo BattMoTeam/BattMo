@@ -74,9 +74,7 @@
 \setmainfont{Freemono}[Scale = \myscale]\setsansfont{Freemono}[Scale = \myscale]\setmonofont{Freemono}[Scale = \myscale]
 \begin{tikzpicture}
   \graph [tree layout, sibling sep = 2mm, level distance = 1.5cm, edges={thick, -{Latex[length=2mm, width=2mm]}}, edge=rounded corners, nodes = {outer sep = 0mm, inner sep = 0mm} ]
-  {   elyte   [as = \myobjnode{2}{\mcode{Electrolyte}\\ (\mcodeclass{Electrolyte})}] ->
-      { sep [as = \myobjnode{2}{\mcode{Separator} \\ (\mcodeclass{Separator})}]}
-    }; 
+  { elyte [as = \myobjnode{2}{\mcode{Electrolyte}\\ (\mcodeclass{Electrolyte})}] };
 \end{tikzpicture}
 
 \end{document}
