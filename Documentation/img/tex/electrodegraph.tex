@@ -1,0 +1,89 @@
+\documentclass{standalone}
+
+\usepackage{caladea,carlito}
+\usepackage{amsmath}
+\usepackage{colortbl}
+\input{mrst-code-defs}
+\usepackage{tikz}
+\usetikzlibrary{arrows, positioning, calc, patterns, backgrounds, arrows.meta, matrix}
+\usetikzlibrary{graphs, graphdrawing, graphdrawing.layered}
+\usetikzlibrary{shapes.multipart}
+\usegdlibrary{trees}
+
+%% Improved boxes
+\usepackage[most]{tcolorbox}
+\tcbset{colback=red!5!white,colframe=red!75!black,left=3pt,right=3pt,top=3pt,bottom=3pt}
+
+\usetikzlibrary{shapes.multipart}
+\usetikzlibrary{3d}
+
+\newcommand{\fracpar}[2]{\frac{\partial #1}{\partial #2}}
+\newcommand{\norm}[1]{\left\|#1\right\|}
+\newcommand{\tens}[1]{\ensuremath{\boldsymbol{\mathsf{#1}}}}
+\newcommand{\vect}[1]{\ensuremath{\boldsymbol{#1}}}
+\newcommand{\mat} [1]{\ensuremath{\boldsymbol{#1}}}
+\newcommand{\ddiv }  {\ensuremath{\mathtt{div}}}%
+\newcommand{\dgrad}  {\ensuremath{\mathtt{grad}}}%
+\newcommand{\davg}   {\ensuremath{\mathtt{avg}}}%
+\newcommand{\vv}     {\ensuremath{\vect{v}}}
+\newcommand{\vp}     {\ensuremath{\vect{p}}}
+\newcommand{\vq}     {\ensuremath{\vect{q}}}
+\newcommand{\ad}[1]  {\ensuremath{\left\langle #1 \right\rangle}}
+\newcommand{\trans}{T}
+\newcommand{\dt}{\partial_{t}}
+\newcommand{\abs}[1]{\left| #1\right|}
+\newcommand{\grad}{\nabla}
+\newcommand{\dive}{\grad\cdot }
+\newcommand{\Real}{\mathbb{R}}
+\newcommand{\brac}[1]{\left<#1\right>}
+\newcommand{\trace}{\mathrm{tr}}
+\newcommand{\sym}{\ensuremath{\text{sym}}}
+
+\begin{document}
+
+\def\mynode #1#2{
+  \begin{tcolorbox}[width = #1cm]
+    \begin{center}
+      #2
+    \end{center}
+  \end{tcolorbox}
+}
+\def\myobjnode #1#2{
+  \begin{tcolorbox}[width = #1cm,colback=white,colframe=green!75!black ]
+    \begin{center}
+      #2
+    \end{center}
+  \end{tcolorbox}
+}
+
+\def\myscale{0.7}
+\def\mcode #1{\lstinline[basicstyle={\setmainfont{Freemono}[Scale = \myscale, FakeBold = 1.5]\setsansfont{Freemono}[Scale = \myscale, FakeBold = 1.5]\setmonofont{Freemono}[Scale = \myscale, FakeBold = 1.5]}]|#1|}
+\def\mcodeclass #1{\lstinline[basicstyle={\setmainfont{Freemono}[Scale = \myscale, FakeBold = 1.5]\setsansfont{Freemono}[Scale = \myscale, FakeBold = 1.5]\setmonofont{Freemono}[Scale = \myscale, FakeBold = 1.5]\color{blue}}]|#1|}
+
+\newdimen\mydim
+\def\myobjnode #1#2{\mydim=#1cm\begin{tcolorbox}[leftright skip = 0pt, width=\myscaling\mydim, colback=white,colframe=green!75!black, boxsep=0pt,left=0pt,right=0pt,top=2mm,bottom=2mm]
+    \begin{center}
+      #2
+    \end{center}
+  \end{tcolorbox}}
+\def\myscaling{1.2}
+
+\def\baselinestretch{0.8}
+\setmainfont{Freemono}[Scale = \myscale]\setsansfont{Freemono}[Scale = \myscale]\setmonofont{Freemono}[Scale = \myscale]
+\begin{tikzpicture}
+  \graph [tree layout, sibling sep = 2mm, level distance = 1.5cm, edges={thick, -{Latex[length=2mm, width=2mm]}}, edge=rounded corners, nodes = {outer sep = 0mm, inner sep = 0mm}, ]
+  { 
+    elde [as = \myobjnode{2.3}{\mcode{Electrode}\\ (\mcodeclass{Electrode})}] ->
+      { am [as = \myobjnode{2.8}{\mcode{ActiveMaterial} \\ \mcodeclass{(ElectronicComponent)}}] -> 
+        { itf [as = \myobjnode{1.7}{\mcode{Interface}\\ \mcodeclass{(Interface)}}], sd [as = \myobjnode{2.7}{\mcode{SolidDiffusion}\\ (\mcodeclass{SolidDiffusionModel})}]
+          },
+        cc [as = \myobjnode{2.8}{\mcode{CurrentCollector} \\ \mcodeclass{(ElectronicComponent)}}] ,
+      }
+    };
+\end{tikzpicture}
+
+\end{document}
+
+% Local Variables:
+% TeX-engine: luatex
+% End:
