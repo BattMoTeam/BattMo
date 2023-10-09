@@ -3,7 +3,7 @@ classdef ProtonicMembraneElectrode < BaseModel
     properties
         
         T    % Temperature
-        E_0   % Standard potential
+        E_0  % Standard potential
         Eocv % Open circuit potential (value depends on conditions at electrode)
         
         constants
