@@ -1,6 +1,9 @@
 classdef CellSpecificationSummary
-
-
+% Utility class to compute standard cell specifications (see list in properties below) using the model
+%
+% Energy computation for given CRate can be added using the method addCrate. The results will be stored in the property
+% dischargeSimulations.
+    
     properties (SetAccess = private)
         % We want the computed values to remain synchronized with the model. To do so we set the "setAccess" property to
         % private. See function updateModel to change model and updatePackingMass to change the packingMass.
@@ -85,6 +88,7 @@ classdef CellSpecificationSummary
             
             ne  = 'NegativeElectrode';
             pe  = 'PositiveElectrode';
+            co  = 'Coating';
             am  = 'ActiveMaterial';
             itf = 'Interface';
             sd  = 'SolidDiffusion';
@@ -102,15 +106,15 @@ classdef CellSpecificationSummary
 
             % Compute initial voltage
             
-            itfmodel = model.(ne).(am).(itf);
-            cmax  = itfmodel.cmax;
-            cinit = itfmodel.theta100*cmax;
+            itfmodel = model.(ne).(co).(am).(itf);
+            cmax  = itfmodel.saturationConcentration;
+            cinit = itfmodel.guestStoichiometry100*cmax;
             
             U = -itfmodel.computeOCPFunc(cinit, temperature, cmax);
             
-            itfmodel = model.(pe).(am).(itf);
-            cmax  = itfmodel.cmax;
-            cinit = itfmodel.theta100*cmax;
+            itfmodel = model.(pe).(co).(am).(itf);
+            cmax  = itfmodel.saturationConcentration;
+            cinit = itfmodel.guestStoichiometry100*cmax;
             
             U = U + itfmodel.computeOCPFunc(cinit, temperature, cmax);
 
@@ -238,10 +242,5 @@ classdef CellSpecificationSummary
         
     end
 
-    methods (Static)
-
-
-        
-    end
     
 end
