@@ -15,7 +15,7 @@ classdef SolidDiffusionModel < BaseModel
         volumetricSurfaceArea         % surface area of the active material - electrolyte interface per volume of electrode
 
         % Advanced input parameters
-        volumeFraction % the ratio of the volume of the material to the total volume
+        volumeFraction % the ratio of the volume of the active material to the total volume
         
     end
 
