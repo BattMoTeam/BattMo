@@ -38,6 +38,9 @@ classdef CellSpecificationSummary
                              % - specificEnergy
                              % - energyDensity
                              % - dischargeCurve
+                             % - E    % Voltage output 
+                             % - I    % Current output
+                             % - time % time output
         
     end
 
@@ -82,9 +85,9 @@ classdef CellSpecificationSummary
             temperature = css.temperature;
             packingMass = css.packingMass;
             
-            [mass, masses, volumes]     = computeCellMass(model, 'packingMass', packingMass);
-            [capacity, capacities]      = computeCellCapacity(model);
-            [energy, dischargeFunction] = computeCellEnergy(model, 'temperature', temperature);
+            [mass, masses, volumes] = computeCellMass(model, 'packingMass', packingMass);
+            [capacity, capacities]  = computeCellCapacity(model);
+            [energy, output]        = computeCellEnergy(model, 'temperature', temperature);
             
             ne  = 'NegativeElectrode';
             pe  = 'PositiveElectrode';
@@ -131,7 +134,7 @@ classdef CellSpecificationSummary
             css.capacity          = capacity;
             css.capacities        = capacities;
             css.initialVoltage    = U;
-            css.dischargeFunction = dischargeFunction;
+            css.dischargeFunction = output.dischargeFunction;
         
         end
 
@@ -224,16 +227,19 @@ classdef CellSpecificationSummary
             
             model = css.model;
             
-            [energy, dischargeFunction] = computeCellEnergy(model, 'CRate', CRate, extras{:});
-
+            [energy, output] = computeCellEnergy(model, 'CRate', CRate, extras{:});
+            
             specificEnergy = energy/css.mass;
             energyDensity  = energy/css.volume;
 
-            simresult = struct('CRate'            , CRate            , ...
-                               'energy'           , energy           , ...
-                               'specificEnergy'   , specificEnergy   , ...
-                               'energyDensity'    , energyDensity    , ...
-                               'dischargeFunction', dischargeFunction);
+            simresult = struct('CRate'            , CRate                   , ...
+                               'energy'           , energy                  , ...
+                               'specificEnergy'   , specificEnergy          , ...
+                               'energyDensity'    , energyDensity           , ...
+                               'dischargeFunction', output.dischargeFunction, ...
+                               'E'                , output.E                , ...
+                               'I'                , output.I                , ...
+                               'time'             , output.time);
 
             css.dischargeSimulations{end + 1} = simresult;
             

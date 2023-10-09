@@ -1,19 +1,25 @@
-function [energy, dischargeFunction] = computeCellEnergyGivenCrate(model, CRate, varargin)
+function output = computeCellEnergyGivenCrate(model, CRate, varargin)
+% Given a model and a CRate, compute the produced energy
+% The output consists of the fields
+% - energy
+% - dischargeFunction
+% - E    % Voltage output 
+% - I    % Current output
+% - time % time output
     
-    ne      = 'NegativeElectrode';
-    pe      = 'PositiveElectrode';
-    am      = 'ActiveMaterial';
-    elyte   = 'Electrolyte';
-    itf     = 'Interface';
-    sd      = 'SolidDiffusion';
-    ctrl    = 'Control';
-    sep     = 'Separator';
-
-    opt = struct('computationType', 'sharp', ...
-                 'lowerCutoffVoltage', [], ...
-                 'cutoffparams', []);
+    opt = struct('computationType'   , 'sharp', ...
+                 'lowerCutoffVoltage', []     , ...
+                 'cutoffparams'      , []);
     opt = merge_options(opt, varargin{:});
 
+    ne    = 'NegativeElectrode';
+    pe    = 'PositiveElectrode';
+    am    = 'ActiveMaterial';
+    elyte = 'Electrolyte';
+    itf   = 'Interface';
+    sd    = 'SolidDiffusion';
+    ctrl  = 'Control';
+    sep   = 'Separator';
 
     if isempty(opt.lowerCutoffVoltage)
         lowerCutoffVoltage = model.Control.lowerCutoffVoltage;
@@ -58,7 +64,6 @@ function [energy, dischargeFunction] = computeCellEnergyGivenCrate(model, CRate,
 
     state0 = model.setupInitialState(); 
 
-
     nls = NonLinearSolver(); 
     nls.maxIterations  = 10; 
     nls.errorOnFailure = false; 
@@ -90,13 +95,19 @@ function [energy, dischargeFunction] = computeCellEnergyGivenCrate(model, CRate,
 
         energy = sum(I.*E.*cutoff(E).*dt);
 
+        E = E.*cutoff(E);
+        
       case 'sharp'
         % We detect the lowercutoffvoltage point
 
         ind = find(E <= lowerCutoffVoltage, 1, 'first');
         ind = (1 : ind)';
+
+        I  = I(ind);
+        E  = E(ind);
+        dt = dt(ind);
         
-        energy = sum(I(ind).*E(ind).*dt(ind));
+        energy = sum(I.*E.*dt);
         
       otherwise
         
@@ -108,6 +119,12 @@ function [energy, dischargeFunction] = computeCellEnergyGivenCrate(model, CRate,
 
     dischargeFunction = @(s) interp1(soc, E, s, 'linear');
 
+    output = struct('energy'           , energy           , ...
+                    'dischargeFunction', dischargeFunction, ...
+                    'E'                , E                , ...
+                    'I'                , I                , ...
+                    'time'             , cumsum(dt));
+    
 end
 
 
