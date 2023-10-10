@@ -1,7 +1,7 @@
 classdef EquilibriumCalibrationSetup
 %% The goal of this class is to solve the following calibration problem:
 % Given a discharge curve, find the set of parameters that give the better match.
-% By default (calibrationCase = 1), the calibration parameters are theta100 and the volume fraction for both electrodes.
+% By default (calibrationCase = 1), the calibration parameters are the guest stoichiometry at discharge start and the volume fraction, for both electrodes.
     
     properties
         
@@ -11,12 +11,12 @@ classdef EquilibriumCalibrationSetup
         Temperature = 298.15% Temperature (used in OCP curves)
 
         % Discharge curve measured experimentally at near-equilibrium condition
-        exptime % Time [s]
-        expU    % Voltage [V]
-        expI    % Current [A]
+        exptime   % Time [s]
+        expU      % Voltage [V]
+        expI      % Current [A]
         totalTime % total time (set as exptime(end))
         
-        packingMass = 61*gram % mass of packing 
+        packingMass % mass of packing 
 
         calibrationCase = 1
         % different calibration case depending on the parameters that are chosen. See method printVariableChoice
@@ -132,6 +132,7 @@ classdef EquilibriumCalibrationSetup
             
             ne  = 'NegativeElectrode';
             pe  = 'PositiveElectrode';
+            co  = 'Coating';
             am  = 'ActiveMaterial';
             itf = 'Interface';
 
@@ -141,23 +142,27 @@ classdef EquilibriumCalibrationSetup
                 
                 X = nan(4, 1);
 
-                X(1) = model.(ne).(am).(itf).theta100;
-                vf   = unique(model.(ne).(am).volumeFraction)*model.(ne).(am).activeMaterialFraction;
+                compInds = model.(ne).(co).compInds;
+                X(1) = model.(ne).(co).(am).(itf).guestStoichiometry100;
+                vf   = model.(ne).(co).volumeFraction*model.(ne).(co).volumeFractions(compInds.(am));
                 X(2) = vf;
                 
-                X(3) = model.(pe).(am).(itf).theta100;
-                vf   = unique(model.(pe).(am).volumeFraction)*model.(pe).(am).activeMaterialFraction;
+                compInds = model.(pe).(co).compInds;
+                X(3) = model.(pe).(am).(itf).guestStoichiometry100;
+                vf   = model.(pe).(co).volumeFraction*model.(pe).(co).volumeFractions(compInds.(am));
                 X(4) = vf;
 
               case 2
                 
                 X = nan(3, 1);
 
-                X(1) = model.(ne).(am).(itf).theta100;
-                vf   = unique(model.(ne).(am).volumeFraction)*model.(ne).(am).activeMaterialFraction;
+                compInds = model.(ne).(co).compInds;
+                X(1) = model.(ne).(co).(am).(itf).guestStoichiometry100;
+                vf   = model.(ne).(co).volumeFraction*model.(ne).(co).volumeFractions(compInds.(am));
                 X(2) = vf;
                 
-                vf   = unique(model.(pe).(am).volumeFraction)*model.(pe).(am).activeMaterialFraction;
+                compInds = model.(pe).(co).compInds;
+                vf   = model.(pe).(co).volumeFraction*model.(pe).(co).volumeFractions(compInds.(am));
                 X(3) = vf;
                 
               otherwise
@@ -186,6 +191,7 @@ classdef EquilibriumCalibrationSetup
             
             ne  = 'NegativeElectrode';
             pe  = 'PositiveElectrode';
+            co  = 'Coating';
             am  = 'ActiveMaterial';
             itf = 'Interface';
 
@@ -199,8 +205,8 @@ classdef EquilibriumCalibrationSetup
 
                     elde = eldes{ielde};
                     
-                    vol  = sum(model.(elde).(am).G.cells.volumes);
-                    cmax = model.(elde).(am).(itf).cmax;
+                    vol  = sum(model.(elde).(co).G.cells.volumes);
+                    cmax = model.(elde).(co).(am).(itf).saturationConcentration;
 
                     vals.(elde).tf             = 0;
                     vals.(elde).theta          = X(2*ielde - 1);
@@ -211,16 +217,16 @@ classdef EquilibriumCalibrationSetup
 
               case 2
                 
-                vol  = sum(model.(ne).(am).G.cells.volumes);
-                cmax = model.(ne).(am).(itf).cmax;
+                vol  = sum(model.(ne).(co).G.cells.volumes);
+                cmax = model.(ne).(co).(am).(itf).saturationConcentration;
                 
                 vals.(ne).tf             = 0;
                 vals.(ne).theta          = X(1);
                 vals.(ne).volumeFraction = X(2);
                 vals.(ne).alpha          = X(2)*vol*cmax;
 
-                vol  = sum(model.(pe).(am).G.cells.volumes);
-                cmax = model.(pe).(am).(itf).cmax;
+                vol  = sum(model.(pe).(co).G.cells.volumes);
+                cmax = model.(pe).(co).(am).(itf).saturationConcentration;
                 
                 vals.(pe).volumeFraction = X(3);
                 vals.(pe).alpha          = X(3)*vol*cmax;
@@ -278,6 +284,7 @@ classdef EquilibriumCalibrationSetup
             am      = 'ActiveMaterial';
             cc      = 'CurrentCollector';
             elyte   = 'Electrolyte';
+            co      = 'Coating';
             am      = 'ActiveMaterial';
             itf     = 'Interface';
             sd      = "SolidDiffusion";
@@ -295,14 +302,14 @@ classdef EquilibriumCalibrationSetup
             alpha    = vals.(pe).alpha;
 
             theta = ecs.conc(t, pe, tf, theta_tf, alpha);
-            f = model.(pe).(am).(itf).computeOCPFunc(theta, T, 1);
+            f = model.(pe).(co).(am).(itf).computeOCPFunc(theta, T, 1);
             
             theta_tf = vals.(ne).theta;
             tf       = vals.(ne).tf;
             alpha    = vals.(ne).alpha;
             
             theta = ecs.conc(t, ne, tf, theta_tf, alpha);
-            f = f - model.(ne).(am).(itf).computeOCPFunc(theta, T, 1);
+            f = f - model.(ne).(co).(am).(itf).computeOCPFunc(theta, T, 1);
 
         end
 
@@ -345,6 +352,7 @@ classdef EquilibriumCalibrationSetup
             
             ne  = 'NegativeElectrode';
             pe  = 'PositiveElectrode';
+            co  = 'Coating';
             am  = 'ActiveMaterial';
             itf = 'Interface';
 
@@ -354,7 +362,7 @@ classdef EquilibriumCalibrationSetup
                 
                 elde = eldes{ielde};
                 
-                cmax  = model.(elde).(am).(itf).cmax;
+                cmax  = model.(elde).(co).(am).(itf).saturationConcentration;
                 tf    = props.(elde).tf;
                 theta = props.(elde).theta;
                 alpha = props.(elde).alpha;
@@ -399,13 +407,13 @@ classdef EquilibriumCalibrationSetup
 
                 s = smax.*linspace(0, 1, N + 1)';
                 c = (1 - s).*c0 + s.*cT;
-                f = model.(elde).(am).(itf).computeOCPFunc(c(1 : end - 1), 298, cmax);
+                f = model.(elde).(co).(am).(itf).computeOCPFunc(c(1 : end - 1), 298, cmax);
 
                 props.(elde).dischargeFunc = @(s) model.(elde).(am).(itf).computeOCPFunc((1 - s).*c0 + s.*cT, T, cmax);
                 
                 energies.(elde) = cap*smax/N*sum(props.(elde).dischargeFunc(s));
 
-                props.(elde).U = model.(elde).(am).(itf).computeOCPFunc(c0, T, cmax);
+                props.(elde).U = model.(elde).(co).(am).(itf).computeOCPFunc(c0, T, cmax);
                 
             end
 
@@ -424,7 +432,10 @@ classdef EquilibriumCalibrationSetup
             
             model       = ecs.model;
             packingMass = ecs.packingMass;
-            
+            if isempty(packingMass)
+                warning('Packing Mass is not given, we set it equal to zero')
+                packingMass = 0;
+            end
             mass = computeCellMass(model, 'packingMass', packingMass);
 
         end
