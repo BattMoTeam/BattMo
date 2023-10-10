@@ -130,7 +130,6 @@ classdef BatteryGenerator
             % setup Electrode grid
             paramobj = gen.setupElectrodeGrid(paramobj, params);
             % setup Electrode coating component (co)
-            params.(co).activematerial_type = paramobj.(co).activematerial_type;
             paramobj.(co) = gen.setupCoatingGrid(paramobj.(co), params.(co));
             % setup current collector (cc)
             if paramobj.include_current_collectors

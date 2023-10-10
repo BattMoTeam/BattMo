@@ -11,41 +11,35 @@ mrstModule add ad-core mrst-gui mpfa matlab_bgl
 
 ne = 'NegativeElectrode';
 pe = 'PositiveElectrode';
+co = 'Coating';
 
-am = 'ActiveMaterial';
-gr = 'FirstMaterial';
-si = 'SecondMaterial';
+am1 = 'FirstActiveMaterial';
+am2 = 'SecondActiveMaterial';
+
+bd = 'Binder';
+ad = 'ConductingAdditive';
 
 sd  = 'SolidDiffusion';
 itf = 'Interface';
 
 %% Setup the properties of Li-ion battery materials and cell design
-jsonstruct = parseBattmoJson('ParameterData/BatteryCellParameters/LithiumIonBatteryCell/lithium_ion_battery_nmc_silicon_graphite.json');
+jsonstruct_composite_material = parseBattmoJson('ParameterData/BatteryCellParameters/LithiumIonBatteryCell/lithium_ion_battery_nmc_silicon_graphite.json');
+jsonstruct_cell               = parseBattmoJson('ParameterData/BatteryCellParameters/LithiumIonBatteryCell/lithium_ion_battery_nmc_graphite.json');
 
-paramobj = CompositeBatteryInputParams(jsonstruct);
+jsonstruct_cell.(ne).(co) = rmfield(jsonstruct_cell.(ne).(co), 'ActiveMaterial');
 
-rhoGr = paramobj.(ne).(am).(gr).(itf).density;
-rhoSi = paramobj.(ne).(am).(si).(itf).density;
+jsonstruct = mergeJsonStructs({jsonstruct_composite_material, ...
+                               jsonstruct_cell});
 
-wfGr = 0.92; % weight fraction graphite
-wfSi = 0.08; % weight fraction silicon
+jsonstruct.use_thermal = false;
+jsonstruct.include_current_collectors = false;
 
-vfGr = wfGr/rhoGr;
-vfSi = wfSi/rhoSi;
-totV = (vfGr + vfSi);
-vfGr = vfGr/totV;
-vfSi = vfSi/totV;
+paramobj = BatteryInputParams(jsonstruct);
 
-paramobj.(ne).(am).(gr).activeMaterialFraction = vfGr;
-paramobj.(ne).(am).(si).activeMaterialFraction = vfSi;
-
-% paramobj.(ne).(am).(gr).(itf).theta0 = 0.01;
-% paramobj.(ne).(am).(si).(itf).theta0 = 0.01;
-% paramobj.(si).(sd).D0 = 1e-17;
-% paramobj.(si).(itf).k0 = 1e-12;
-% paramobj.(gr).(sd).D0 = 1e-16;
-
-paramobj.scenario = 'first-charge';
+paramobj.(ne).(co).(am1).massFraction = 0.9;
+paramobj.(ne).(co).(am2).massFraction = 0.08;
+paramobj.(ne).(co).(bd).massFraction  = 0.01;
+paramobj.(ne).(co).(ad).massFraction  = 0.01;
 
 paramobj = paramobj.validateInputParams();
 
@@ -59,16 +53,13 @@ gen.xlength(4) = 1.8619*gen.xlength(4);
 % Now, we update the paramobj with the properties of the mesh. 
 paramobj = gen.updateBatteryInputParams(paramobj);
 
-model = CompositeBattery(paramobj);
+model = Battery(paramobj);
+
 model.AutoDiffBackend= AutoDiffBackend();
 
-inspectgraph = false;
+inspectgraph = true;
 if inspectgraph
     cgt = ComputationalGraphTool(model);
-    [g, edgelabels] = cgt.getComputationalGraph('includeNodeNames', '[^d]T$', 'oneParentOnly', true);
-    figure
-    % h = plot(g, 'edgelabel', edgelabels, 'nodefontsize', 10);
-    h = plot(g, 'nodefontsize', 10);
     return
 end
 

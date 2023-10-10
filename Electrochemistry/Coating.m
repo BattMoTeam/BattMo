@@ -4,16 +4,21 @@ classdef Coating < ElectronicComponent
 
         %% Sub-Models
 
-        ActiveMaterial
+        ActiveMaterial 
         Binder
         ConductingAdditive
+
+        % The two following models are instantiated only when active_material_type == 'composite' and, in this case,
+        % ActiveMaterial model will remain empty. If active_material_type == 'default', then the two models remains empty
+        FirstActiveMaterial
+        SecondActiveMaterial
 
         %% Input Parameters
 
         % Standard parameters
         density              % the mass density of the material (symbol: rho). Important : the density is computed with respect to total volume (including the empty pores)
         bruggemanCoefficient % the Bruggeman coefficient for effective transport in porous media (symbol: beta)
-        activematerial_type  % 'default' (only one particle type) or 'composite' (two different particles)
+        active_material_type % 'default' (only one particle type) or 'composite' (two different particles)
         
         % Advanced parameters (used if given, otherwise computed)
         volumeFractions                 % mass fractions of each components (if not given computed subcomponent and density)
@@ -39,7 +44,7 @@ classdef Coating < ElectronicComponent
             
             fdnames = {'density'                        , ...
                        'bruggemanCoefficient'           , ...
-                       'activematerial_type'            , ...
+                       'active_material_type'           , ...
                        'volumeFractions'                , ...
                        'volumeFraction'                 , ...
                        'thermalConductivity'            , ...
@@ -50,13 +55,25 @@ classdef Coating < ElectronicComponent
 
             model = dispatchParams(model, paramobj, fdnames);
 
-            am = 'ActiveMaterial';
             sd = 'SolidDiffusion';
             am = 'ActiveMaterial';
             bd = 'Binder';
             ad = 'ConductingAdditive';
 
-            compnames = {am, bd, ad};
+            switch model.active_material_type
+              case 'default'
+                am = 'ActiveMaterial';
+                compnames = {am, bd, ad};
+              case 'composite'
+                am1 = 'FirstActiveMaterial';
+                am2 = 'SecondActiveMaterial';
+                compnames = {am1, am2, bd, ad};
+              otherwise
+                error('active_material_type not recognized.');
+            end
+            
+            model.subModelNameList = compnames;
+            
 
             %% We setup the volume fractions of each components
             
@@ -82,13 +99,23 @@ classdef Coating < ElectronicComponent
             
             % We treat special cases
             
-            if all(specificVolumes == 0)
-                % No data has been given, we assume that there is no binder and conducting additive
-                specificVolumes(compInds.(am)) = 1;
-            else
-                if specificVolumes(compInds.(am)) == 0
-                    error('missing density and/or massFraction for the active material. The volume fraction cannot be computed ');
+            switch model.active_material_type
+              case 'default'
+                if all(specificVolumes == 0)
+                    % No data has been given, we assume that there is no binder and conducting additive
+                    specificVolumes(compInds.(am)) = 1;
+                else
+                    if specificVolumes(compInds.(am)) == 0
+                        error('missing density and/or massFraction for the active material. The volume fraction cannot be computed ');
+                    end
                 end
+              case 'composite'
+                if all(specificVolumes([compInds.(am1), compInds.(am2)]) == 0)
+                    assert(~isempty(model.volumeFractions) && ~isempty(model.volumeFraction), ...
+                           'Data in the subcomponents are missing. You can also provide volumeFractions and volumeFraction directly' )
+                end
+              otherwise
+                error('active material type not recognized');
             end
 
             % We normalize the volume fractions
@@ -181,7 +208,7 @@ classdef Coating < ElectronicComponent
             %% Setup the submodels
             
             np = paramobj.G.cells.num;
-            switch paramobj.activematerial_type
+            switch paramobj.active_material_type
               case 'default'
                 paramobj.(am).(sd).volumeFraction = model.volumeFraction*model.volumeFractions(model.compInds.(am));
                 if strcmp(paramobj.(am).diffusionModelType, 'full')
@@ -189,7 +216,15 @@ classdef Coating < ElectronicComponent
                 end
                 model.ActiveMaterial = ActiveMaterial(paramobj.ActiveMaterial);
               case 'composite'
-                model.ActiveMaterial = CompositeActiveMaterial(paramobj.ActiveMaterial);
+                ams = {am1, am2};
+                for iam = 1 : numel(ams)
+                    amc = ams{iam};
+                    paramobj.(amc).(sd).volumeFraction = model.volumeFraction*model.volumeFractions(model.compInds.(amc));
+                    if strcmp(paramobj.(amc).diffusionModelType, 'full')
+                        paramobj.(amc).(sd).np = np;
+                    end
+                    model.(amc) = ActiveMaterial(paramobj.(amc));
+                end
               otherwise
                 error('activematerial_type not recognized');
             end
@@ -206,7 +241,6 @@ classdef Coating < ElectronicComponent
 
             model = registerVarAndPropfuncNames@ElectronicComponent(model);
 
-            am  = 'ActiveMaterial';
             itf = 'Interface';
             sd  = 'SolidDiffusion';
             
@@ -214,8 +248,72 @@ classdef Coating < ElectronicComponent
                         'jExternal', ...
                         'SOC'};
 
+            % Volumetric reaction rate in mol/(s*m^3) for the whole coating
+            varnames{end + 1} = 'Rvol';
+            
             model = model.registerVarNames(varnames);            
 
+            switch model.active_material_type
+
+              case 'default'
+
+                am = 'ActiveMaterial';
+                
+                fn = @Coating.updateRvol;
+                model = model.registerPropFunction({'Rvol', fn, {{am, sd, 'Rvol'}}});
+                
+                fn = @Coating.updatePhi;
+                model = model.registerPropFunction({{am, itf, 'phiElectrode'}, fn, {'phi'}});
+
+                fn = @Coating.dispatchTemperature;
+                model = model.registerPropFunction({{am, 'T'}, fn, {'T'}});
+
+                fn = @Coating.updateSOC;
+                model = model.registerPropFunction({'SOC', fn, {{am, sd, 'cAverage'}}});
+            
+              case 'composite'
+
+                am1 = 'FirstActiveMaterial';
+                am2 = 'SecondActiveMaterial';
+
+                % We remove the dUdT variable (not used for non thermal simulation)
+                varnames = {{am1, itf, 'dUdT'}, ...
+                            {am2, itf, 'dUdT'}};
+
+                model = model.removeVarNames(varnames);
+                
+                fn = @Coating.updateRvol;
+                inputnames = {{am1, sd, 'Rvol'}, ...
+                              {am2, sd, 'Rvol'}};
+                model = model.registerPropFunction({'Rvol', fn, inputnames});
+                
+                fn = @Coating.updatePhi;
+                model = model.registerPropFunction({{am1, itf, 'phiElectrode'}, fn, {'phi'}});
+                model = model.registerPropFunction({{am2, itf, 'phiElectrode'}, fn, {'phi'}});
+
+                fn = @Coating.dispatchTemperature;
+                model = model.registerPropFunction({{am1, 'T'}, fn, {'T'}});
+                model = model.registerPropFunction({{am2, 'T'}, fn, {'T'}});
+                
+                fn = @Coating.updateSOC;
+                inputnames = {{am1, sd, 'cAverage'}, ...
+                              {am2, sd, 'cAverage'}};
+                model = model.registerPropFunction({'SOC', fn, inputnames});
+
+                fn = @Coating.updateRvol;
+                inputnames = {{am1, sd, 'Rvol'}, ...
+                                 {am2, sd, 'Rvol'}};
+                model = model.registerPropFunction({'Rvol', fn, inputnames});
+                
+              otherwise
+
+                error('active material type not recognized.')
+
+            end
+            
+            fn = @Coating.updateCurrentSource;
+            model = model.registerPropFunction({'eSource', fn, {'Rvol'}});
+            
             if model.use_thermal
                 varnames = {'jFaceCoupling', ...
                             'jFaceExternal'};
@@ -223,15 +321,6 @@ classdef Coating < ElectronicComponent
 
             end
             
-            fn = @Coating.updateCurrentSource;
-            model = model.registerPropFunction({'eSource', fn, {{am, sd, 'Rvol'}}});
-            
-            fn = @Coating.updatePhi;
-            model = model.registerPropFunction({{am, itf, 'phiElectrode'}, fn, {'phi'}});
-            
-            fn = @Coating.dispatchTemperature;
-            model = model.registerPropFunction({{am, 'T'}, fn, {'T'}});
-
             fn = @Coating.updatejBcSource;
             model = model.registerPropFunction({'jBcSource', fn, {'jCoupling', 'jExternal'}});
 
@@ -252,9 +341,6 @@ classdef Coating < ElectronicComponent
                 model = model.registerPropFunction({'jFaceCoupling', fn, {}});
             end
 
-            fn = @Coating.updateSOC;
-            model = model.registerPropFunction({'SOC', fn, {{am, sd, 'cAverage'}}});
-            
             % We declare SOC as an extra variable, as it is not used in assembly (otherwise it will be systematically
             % computed but not used)
             model = model.setAsExtraVarName('SOC');
@@ -287,6 +373,16 @@ classdef Coating < ElectronicComponent
             state.jFaceCoupling = 0;
             
         end
+
+        function state = updateRvol(model, state)
+
+            am  = 'ActiveMaterial';
+            sd  = 'SolidDiffusion';
+            
+            state.Rvol = state.(am).(sd).Rvol;
+            
+        end
+
         
         function state = updateCurrentSource(model, state)
             

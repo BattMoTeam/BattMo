@@ -95,7 +95,7 @@ classdef Battery < BaseModel
             model.couplingNames = cellfun(@(x) x.name, model.couplingTerms, 'uniformoutput', false);
 
             % setup equations and variable names selected in the model
-            model = model.setupSelectedModel();
+            % model = model.setupSelectedModel();
 
             % setup some mappings (mappings from electrodes to electrolyte)
             model = model.setupMappings();
@@ -261,6 +261,8 @@ classdef Battery < BaseModel
             pe      = 'PositiveElectrode';
             co      = 'Coating';
             am      = 'ActiveMaterial';
+            am1     = 'FirstActiveMaterial';
+            am2     = 'SecondActiveMaterial';
             cc      = 'CurrentCollector';
             itf     = 'Interface';
             sd      = 'SolidDiffusion';
@@ -288,20 +290,41 @@ classdef Battery < BaseModel
             %% Coupling functions
 
             % Dispatch electrolyte concentration and potential in the electrodes
-            fn = @Battery.updateElectrodeCoupling;
-            inputnames = {{elyte, 'c'}, ...
-                          {elyte, 'phi'}};
-            model = model.registerPropFunction({{ne, co, am, itf, 'phiElectrolyte'}, fn, inputnames});
-            model = model.registerPropFunction({{ne, co, am, itf, 'cElectrolyte'}  , fn, inputnames});
-            model = model.registerPropFunction({{pe, co, am, itf, 'phiElectrolyte'}, fn, inputnames});
-            model = model.registerPropFunction({{pe, co, am, itf, 'cElectrolyte'}  , fn, inputnames});
+            for ielde = 1 : numel(eldes)
+                
+                elde = eldes{ielde};
 
-            % Functions that update the source terms in the electolyte
+                switch model.(elde).(co).active_material_type
+                  case 'default'
+                    ams = {am};
+                  case 'composite'
+                    ams = {am1, am2};
+                  otherwise
+                    error('active_material_type not recognized');
+                end
+
+                for iam = 1 : numel(ams)
+
+                    amc = ams{iam};
+                    
+                    fn = @Battery.updateElectrodeCoupling;
+                    inputnames = {{elyte, 'c'}, ...
+                                  {elyte, 'phi'}};
+                    
+                    model = model.registerPropFunction({{elde, co, amc, itf, 'phiElectrolyte'}, fn, inputnames});
+                    model = model.registerPropFunction({{elde, co, amc, itf, 'cElectrolyte'}  , fn, inputnames});
+
+
+                end
+
+            end
+
             fn = @Battery.updateElectrolyteCoupling;
-            inputnames = {{ne, co, am, sd, 'Rvol'}, ...
-                          {pe, co, am, sd, 'Rvol'}};
+            inputnames = {{ne, co, 'Rvol'}, ...
+                          {pe, co, 'Rvol'}};
             model = model.registerPropFunction({{elyte, 'massSource'}, fn, inputnames});
             model = model.registerPropFunction({{elyte, 'eSource'}, fn, inputnames});
+                    
 
             % Function that assemble the control equation
             fn = @Battery.setupEIEquation;
@@ -1606,12 +1629,51 @@ classdef Battery < BaseModel
             ne      = 'NegativeElectrode';
             pe      = 'PositiveElectrode';
             co      = 'Coating';
-            am      = 'ActiveMaterial';
             itf     = 'Interface';
 
-            cmax_ne = model.(ne).(co).(am).(itf).saturationConcentration;
-            cmax_pe = model.(pe).(co).(am).(itf).saturationConcentration;
-            model.cmin = 1e-5*max(cmax_ne, cmax_pe);
+            eldes = {pe, ne};
+
+            for ielde = 1 : numel(eldes)
+                
+                elde = eldes{ielde};
+
+                switch model.(elde).(co).active_material_type
+
+                  case 'default'
+
+                    am = 'ActiveMaterial';
+                    
+                    cmaxs{ielde} = model.(elde).(co).(am).(itf).saturationConcentration;
+                    
+                  case 'composite'
+                    
+                    am1 = 'FirstActiveMaterial';
+                    am2 = 'SecondActiveMaterial';
+
+                    ams = {am1, am2};
+
+                    cmax = 0;
+                    
+                    for iam = 1 : numel(ams)
+                        
+                        amc = ams{iam};
+                        cmax = max(cmax, model.(elde).(co).(amc).(itf).saturationConcentration);
+                        
+                    end
+                    
+                    cmaxs{ielde} = cmax;
+                    
+                  otherwise
+                    
+                    error('active_material_type not recognized');
+                    
+                end
+                
+
+            end
+            
+            model.cmin = 1e-5*max(cmaxs{1}, cmaxs{2});
+            
 
         end
 

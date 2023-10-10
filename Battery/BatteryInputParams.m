@@ -70,7 +70,7 @@ classdef BatteryInputParams < InputParams
 
             ne      = 'NegativeElectrode';
             pe      = 'PositiveElectrode';
-            am      = 'ActiveMaterial';
+            co      = 'Coating';
             elyte   = 'Electrolyte';
             sep     = 'Separator';
             thermal = 'ThermalModel';
@@ -93,7 +93,14 @@ classdef BatteryInputParams < InputParams
 
             if paramobj.use_thermal
                 paramobj.(thermal) = paramobj.(thermal).validateInputParams();
+
+                % for the moment we do not support thermal simulation with composite material. We check for that here
+                isok = strcmp(paramobj.(ne).(co).active_material_type, 'default');
+                isok = isok & strcmp(paramobj.(ne).(co).active_material_type, 'default');
+                assert(isok, 'We do not support for the moment thermal simulation for composite materials');
+                
             end
+
             
         end
 

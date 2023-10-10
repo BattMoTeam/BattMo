@@ -6,15 +6,21 @@ classdef CoatingInputParams < ElectronicComponentInputParams
 
         %% Sub-Models
         
-        ActiveMaterial
+        ActiveMaterial 
         Binder
         ConductingAdditive
+
+        % The two following models are instantiated only when active_material_type == 'composite' and, in this case,
+        % ActiveMaterial model will remain empty. If active_material_type == 'default', then the two models remains empty
+        FirstActiveMaterial
+        SecondActiveMaterial
         
         %% Standard parameters
 
         density              % the mass density of the material (symbol: rho). Important : the density is computed with respect to total volume (including the empty pores)
         bruggemanCoefficient % the Bruggeman coefficient for effective transport in porous media (symbol: beta)
-
+        active_material_type % 'default' (only one particle type) or 'composite' (two different particles)
+        
         %% Advanced parameters
 
         volumeFractions
@@ -28,10 +34,6 @@ classdef CoatingInputParams < ElectronicComponentInputParams
         
         externalCouplingTerm % structure to describe external coupling (used in absence of current collector)
 
-        %% particle case
-        
-        activematerial_type % 'default' (only one particle type) or 'composite' (two different particles)
-        
     end
 
     methods
@@ -42,18 +44,25 @@ classdef CoatingInputParams < ElectronicComponentInputParams
             
             pick = @(fd) pickField(jsonstruct, fd);
 
-            if isempty(paramobj.activematerial_type)            
-                paramobj.activematerial_type = 'default';
+            if isempty(paramobj.active_material_type)
+                paramobj.active_material_type = 'default';
             end
 
-            am = 'ActiveMaterial';
-            switch paramobj.activematerial_type
+            switch paramobj.active_material_type
               case 'default'
+                
+                am = 'ActiveMaterial';
                 paramobj.(am) = ActiveMaterialInputParams(jsonstruct.(am));
+                
               case 'composite'
-                paramobj.(am) = CompositeActiveMaterialInputParams(jsonstruct.(am));
+
+                am1 = 'FirstActiveMaterial';
+                am2 = 'SecondActiveMaterial';
+                paramobj.(am1) = ActiveMaterialInputParams(jsonstruct.(am1));
+                paramobj.(am2) = ActiveMaterialInputParams(jsonstruct.(am2));
+                
               otherwise
-                error('activematerial_type not recognized');
+                error('active_material_type not recognized');
             end
             paramobj.Binder             = BinderInputParams(pick('Binder'));
             paramobj.ConductingAdditive = ConductingAdditiveInputParams(pick('ConductingAdditive'));
