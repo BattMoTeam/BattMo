@@ -55,9 +55,11 @@ paramobj = gen.updateBatteryInputParams(paramobj);
 
 model = Battery(paramobj);
 
+model = model.validateModel();
+
 model.AutoDiffBackend= AutoDiffBackend();
 
-inspectgraph = true;
+inspectgraph = false;
 if inspectgraph
     cgt = ComputationalGraphTool(model);
     return
