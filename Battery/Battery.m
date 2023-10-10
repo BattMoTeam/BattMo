@@ -95,7 +95,7 @@ classdef Battery < BaseModel
             model.couplingNames = cellfun(@(x) x.name, model.couplingTerms, 'uniformoutput', false);
 
             % setup equations and variable names selected in the model
-            % model = model.setupSelectedModel();
+            model = model.setupSelectedModel();
 
             % setup some mappings (mappings from electrodes to electrolyte)
             model = model.setupMappings();
@@ -118,6 +118,8 @@ classdef Battery < BaseModel
             pe      = 'PositiveElectrode';
             co      = 'Coating';
             am      = 'ActiveMaterial';
+            am1     = 'FirstActiveMaterial';
+            am2     = 'SecondActiveMaterial';
             sd      = 'SolidDiffusion';
             cc      = 'CurrentCollector';
             ctrl    = 'Control';
@@ -134,22 +136,37 @@ classdef Battery < BaseModel
 
             eldes = {ne, pe};
 
+            
             for ielde = 1 : numel(eldes)
 
                 elde = eldes{ielde};
 
-                switch model.(elde).(co).(am).diffusionModelType
-                  case 'simple'
-                    newentries = {{elde, co, am, sd, 'cAverage'}, {elde, co, am, sd, 'massCons'}        , 'cell'; ...
-                                  {elde, co, am, sd, 'cSurface'}, {elde, co, am, sd, 'solidDiffusionEq'}, 'cell'};
-                  case 'full'
-                    newentries = {{elde, co, am, sd, 'c'}       , {elde, co, am, sd, 'massCons'}        , 'cell'; ...
-                                  {elde, co, am, sd, 'cSurface'}, {elde, co, am, sd, 'solidDiffusionEq'}, 'cell'};
+                switch model.(elde).(co).active_material_type
+                  case 'default'
+                    ams = {am};
+                  case 'composite'
+                    ams = {am1, am2};
                   otherwise
-                    error('diffusionModelType not recognized');
+                    error('active_material_type not recognized');
                 end
-                varEqTypes = vertcat(varEqTypes, newentries);
+                
+                for iam = 1 : numel(ams)
+                    amc = ams{iam};
+                    switch model.(elde).(co).(amc).diffusionModelType
+                      case 'simple'
+                        newentries = {{elde, co, amc, sd, 'cAverage'}, {elde, co, amc, sd, 'massCons'}        , 'cell'; ...
+                                      {elde, co, amc, sd, 'cSurface'}, {elde, co, amc, sd, 'solidDiffusionEq'}, 'cell'};
+                      case 'full'
+                        newentries = {{elde, co, amc, sd, 'c'}       , {elde, co, amc, sd, 'massCons'}        , 'cell'; ...
+                                      {elde, co, amc, sd, 'cSurface'}, {elde, co, amc, sd, 'solidDiffusionEq'}, 'cell'};
+                      otherwise
+                        error('diffusionModelType not recognized');
+                    end
+                    
+                    varEqTypes = vertcat(varEqTypes, newentries);
 
+                end
+                
                 if model.include_current_collectors
 
                     newentries = {{elde, cc, 'phi'}, {elde, cc, 'chargeCons'}, 'cell'};
@@ -619,6 +636,8 @@ classdef Battery < BaseModel
             pe      = 'PositiveElectrode';
             co      = 'Coating';
             am      = 'ActiveMaterial';
+            am1     = 'FirstActiveMaterial';
+            am2     = 'SecondActiveMaterial';
             itf     = 'Interface';
             sd      = 'SolidDiffusion';
             cc      = 'CurrentCollector';
@@ -634,34 +653,52 @@ classdef Battery < BaseModel
 
             eldes = {ne, pe};
 
-            for ind = 1 : numel(eldes)
+            for ielde = 1 : numel(eldes)
 
-                elde = eldes{ind};
-
-                elde_itf = bat.(elde).(co).(am).(itf);
-
-                theta = SOC*(elde_itf.guestStoichiometry100 - elde_itf.guestStoichiometry0) + elde_itf.guestStoichiometry0;
-                c     = theta*elde_itf.saturationConcentration;
-                nc    = model.(elde).(co).G.cells.num;
-
-                switch model.(elde).(co).(am).diffusionModelType
-                  case 'simple'
-                    initstate.(elde).(co).(am).(sd).cSurface = c*ones(nc, 1);
-                    initstate.(elde).(co).(am).(sd).cAverage = c*ones(nc, 1);
-                  case 'full'
-                    initstate.(elde).(co).(am).(sd).cSurface = c*ones(nc, 1);
-                    N = model.(elde).(co).(am).(sd).N;
-                    np = model.(elde).(co).(am).(sd).np; % Note : we have by construction np = nc
-                    initstate.(elde).(co).(am).(sd).c = c*ones(N*np, 1);
+                elde = eldes{ielde};
+                
+                switch model.(elde).(co).active_material_type
+                  case 'default'
+                    ams = {am};
+                  case 'composite'
+                    ams = {am1, am2};
                   otherwise
-                    error('diffusionModelType not recognized')
+                    error('active_material_type not recognized');
                 end
 
-                initstate.(elde).(co).(am)       = model.(elde).(co).(am).updateConcentrations(initstate.(elde).(co).(am));
-                initstate.(elde).(co).(am).(itf) = elde_itf.updateOCP(initstate.(elde).(co).(am).(itf));
+                for iam = 1 : numel(ams)
 
-                OCP = initstate.(elde).(co).(am).(itf).OCP;
-                if ind == 1
+                    amc = ams{iam};
+                    
+                    elde_itf = bat.(elde).(co).(amc).(itf);
+
+                    theta = SOC*(elde_itf.guestStoichiometry100 - elde_itf.guestStoichiometry0) + elde_itf.guestStoichiometry0;
+                    c     = theta*elde_itf.saturationConcentration;
+                    nc    = model.(elde).(co).G.cells.num;
+
+                    switch model.(elde).(co).(amc).diffusionModelType
+                      case 'simple'
+                        initstate.(elde).(co).(amc).(sd).cSurface = c*ones(nc, 1);
+                        initstate.(elde).(co).(amc).(sd).cAverage = c*ones(nc, 1);
+                      case 'full'
+                        initstate.(elde).(co).(amc).(sd).cSurface = c*ones(nc, 1);
+                        N = model.(elde).(co).(amc).(sd).N;
+                        np = model.(elde).(co).(amc).(sd).np; % Note : we have by construction np = nc
+                        initstate.(elde).(co).(amc).(sd).c = c*ones(N*np, 1);
+                      otherwise
+                        error('diffusionModelType not recognized')
+                    end
+
+                end
+
+                % In case of two material, we choose first material for the initial OCP
+                amc = ams{1};
+                
+                initstate = model.evalVarName(initstate, {elde, co, amc, itf, 'OCP'});
+
+                OCP = initstate.(elde).(co).(amc).(itf).OCP;
+                
+                if ielde == 1
                     % The value in the first cell is used as reference.
                     ref = OCP(1);
                 end
@@ -678,13 +715,13 @@ classdef Battery < BaseModel
             %% Setup initial Current collectors state
 
             if model.(ne).include_current_collectors
-                OCP = initstate.(ne).(co).(am).(itf).OCP;
+                OCP = initstate.(ne).(co).(amc).(itf).OCP;
                 OCP = OCP(1) .* ones(bat.(ne).(cc).G.cells.num, 1);
                 initstate.(ne).(cc).phi = OCP - ref;
             end
 
             if model.(pe).include_current_collectors
-                OCP = initstate.(pe).(co).(am).(itf).OCP;
+                OCP = initstate.(pe).(co).(amc).(itf).OCP;
                 OCP = OCP(1) .* ones(bat.(pe).(cc).G.cells.num, 1);
                 initstate.(pe).(cc).phi = OCP - ref;
             end
@@ -973,7 +1010,6 @@ classdef Battery < BaseModel
 
                 % Update temperature in the active materials of the electrodes.
                 state.(elde).(co) = model.(elde).(co).dispatchTemperature(state.(elde).(co));
-                state.(elde).(co).(am) = model.(elde).(co).(am).dispatchTemperature(state.(elde).(co).(am));
             end
         end
 

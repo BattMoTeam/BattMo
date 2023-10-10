@@ -412,8 +412,22 @@ classdef Coating < ElectronicComponent
         function state = dispatchTemperature(model, state)
 
             am  = 'ActiveMaterial';
+            am1 = 'FirstActiveMaterial';
+            am2 = 'SecondActiveMaterial';
+            
+            switch model.active_material_type
+              case 'default'
+                ams = {am};
+              case 'composite'
+                ams = {am1, am2};
+              otherwise
+                error('active_material_type not recognized');
+            end
 
-            state.(am).T = state.T;
+            for iam = 1 : numel(ams)
+                amc = ams{iam};
+                state.(amc).T = state.T;
+            end
             
         end
 
