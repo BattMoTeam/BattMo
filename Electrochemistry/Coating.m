@@ -282,16 +282,16 @@ classdef Coating < ElectronicComponent
 
                 model = model.removeVarNames(varnames);
                 
-                fn = @Coating.updateRvol;
+                fn = @Coating.updateCompositeRvol;
                 inputnames = {{am1, sd, 'Rvol'}, ...
                               {am2, sd, 'Rvol'}};
                 model = model.registerPropFunction({'Rvol', fn, inputnames});
                 
-                fn = @Coating.updatePhi;
+                fn = @Coating.updateCompositePhi;
                 model = model.registerPropFunction({{am1, itf, 'phiElectrode'}, fn, {'phi'}});
                 model = model.registerPropFunction({{am2, itf, 'phiElectrode'}, fn, {'phi'}});
 
-                fn = @Coating.dispatchTemperature;
+                fn = @Coating.dispatchCompositeTemperature;
                 model = model.registerPropFunction({{am1, 'T'}, fn, {'T'}});
                 model = model.registerPropFunction({{am2, 'T'}, fn, {'T'}});
                 
@@ -300,11 +300,6 @@ classdef Coating < ElectronicComponent
                               {am2, sd, 'cAverage'}};
                 model = model.registerPropFunction({'SOC', fn, inputnames});
 
-                fn = @Coating.updateRvol;
-                inputnames = {{am1, sd, 'Rvol'}, ...
-                                 {am2, sd, 'Rvol'}};
-                model = model.registerPropFunction({'Rvol', fn, inputnames});
-                
               otherwise
 
                 error('active material type not recognized.')
@@ -374,23 +369,15 @@ classdef Coating < ElectronicComponent
             
         end
 
-        function state = updateRvol(model, state)
+        function state = updateCompositeRvol(model, state)
 
-            am  = 'ActiveMaterial';
             am1 = 'ActiveMaterial1';
             am2 = 'ActiveMaterial2';
-            sd  = 'SolidDiffusion';
             itf = 'Interface';
+            sd  = 'SolidDiffusion';
             
-            switch model.active_material_type
-              case 'default'
-                ams = {am};
-              case 'composite'
-                ams = {am1, am2};
-              otherwise
-                error('active_material_type not recognized');
-            end
-
+            ams = {am1, am2};
+            
             Rvol = 0;
             for iam = 1 : numel(ams)
                 
@@ -402,7 +389,18 @@ classdef Coating < ElectronicComponent
             end 
 
             state.Rvol = Rvol;
-            
+                        
+        end
+        
+        function state = updateRvol(model, state)
+
+            am  = 'ActiveMaterial';
+            sd  = 'SolidDiffusion';
+            itf = 'Interface';
+                
+            n    = model.(am).(itf).numberOfElectronsTransferred;
+            state.Rvol =  n*state.(am).(sd).Rvol;
+
         end
 
         
@@ -415,49 +413,51 @@ classdef Coating < ElectronicComponent
             
         end
         
-        function state = updatePhi(model, state)
-            
-            am  = 'ActiveMaterial';
+        function state = updateCompositePhi(model, state)
+
             am1 = 'ActiveMaterial1';
             am2 = 'ActiveMaterial2';
             itf = 'Interface';
             
-            switch model.active_material_type
-              case 'default'
-                ams = {am};
-              case 'composite'
-                ams = {am1, am2};
-              otherwise
-                error('active_material_type not recognized');
-            end
-            
+            ams = {am1, am2};
+                
             for iam = 1 : numel(ams)
+
                 amc = ams{iam};
                 state.(amc).(itf).phiElectrode = state.phi;
-            end 
+                
+            end
+            
+        end
+            
+        function state = updatePhi(model, state)
+            
+            am  = 'ActiveMaterial';
+            itf = 'Interface';
+            
+            state.(am).(itf).phiElectrode = state.phi;
             
         end
 
-        function state = dispatchTemperature(model, state)
+        function state = dispatchCompositeTemperature(model, state)
 
-            am  = 'ActiveMaterial';
             am1 = 'ActiveMaterial1';
             am2 = 'ActiveMaterial2';
-            
-            switch model.active_material_type
-              case 'default'
-                ams = {am};
-              case 'composite'
-                ams = {am1, am2};
-              otherwise
-                error('active_material_type not recognized');
-            end
+
+            ams = {am1, am2};
 
             for iam = 1 : numel(ams)
+
                 amc = ams{iam};
                 state.(amc).T = state.T;
+                
             end
-            
+
+        end
+
+        function state = dispatchTemperature(model, state)
+            am  = 'ActiveMaterial';
+            state.(am).T = state.T;
         end
 
         
