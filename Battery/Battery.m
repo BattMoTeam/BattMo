@@ -888,7 +888,8 @@ classdef Battery < BaseModel
             pe      = 'PositiveElectrode';
             co      = 'Coating';
             am      = 'ActiveMaterial';
-            cc      = 'CurrentCollector';
+            am1     = 'FirstActiveMaterial';
+            am2     = 'SecondActiveMaterial';
             elyte   = 'Electrolyte';
             am      = 'ActiveMaterial';
             itf     = 'Interface';
@@ -906,35 +907,47 @@ classdef Battery < BaseModel
 
                 elde = eldes{ielde};
 
-                switch model.(elde).(co).(am).diffusionModelType
-
-                  case 'simple'
-
-                    state.(elde).(co).(am).(sd).massCons         = massConsScaling*state.(elde).(co).(am).(sd).massCons;
-                    state.(elde).(co).(am).(sd).solidDiffusionEq = massConsScaling.*battery.(elde).(co).G.cells.volumes/dt.*state.(elde).(co).(am).(sd).solidDiffusionEq;
-
-                  case 'full'
-
-                    % Equation name : 'ne_am_sd_massCons';
-                    n    = model.(elde).(co).(am).(itf).numberOfElectronsTransferred;
-                    F    = model.con.F;
-                    vol  = model.(elde).(co).operators.pv;
-                    rp   = model.(elde).(co).(am).(sd).particleRadius;
-                    vsf  = model.(elde).(co).(am).(sd).volumetricSurfaceArea;
-
-                    surfp = 4*pi*rp^2;
-
-                    scalingcoef = (vsf*vol(1)*n*F)/surfp;
-
-                    state.(elde).(co).(am).(sd).massCons         = scalingcoef*state.(elde).(co).(am).(sd).massCons;
-                    state.(elde).(co).(am).(sd).solidDiffusionEq = scalingcoef*state.(elde).(co).(am).(sd).solidDiffusionEq;
-
+                switch model.(elde).(co).active_material_type
+                  case 'default'
+                    ams = {am};
+                  case 'composite'
+                    ams = {am1, am2};
                   otherwise
-
-                    error('diffusionModelType not recognized');
-
+                    error('active_material_type not recognized');
                 end
 
+                for iam = 1 : numel(ams)
+                    
+                    amc = ams{iam};
+                    
+                    switch model.(elde).(co).(amc).diffusionModelType
+
+                      case 'simple'
+
+                        state.(elde).(co).(amc).(sd).massCons         = massConsScaling*state.(elde).(co).(amc).(sd).massCons;
+                        state.(elde).(co).(amc).(sd).solidDiffusionEq = massConsScaling.*battery.(elde).(co).G.cells.volumes/dt.*state.(elde).(co).(amc).(sd).solidDiffusionEq;
+
+                      case 'full'
+
+                        n    = model.(elde).(co).(amc).(itf).numberOfElectronsTransferred;
+                        F    = model.con.F;
+                        vol  = model.(elde).(co).operators.pv;
+                        rp   = model.(elde).(co).(amc).(sd).particleRadius;
+                        vsf  = model.(elde).(co).(amc).(sd).volumetricSurfaceArea;
+
+                        surfp = 4*pi*rp^2;
+
+                        scalingcoef = (vsf*vol(1)*n*F)/surfp;
+
+                        state.(elde).(co).(amc).(sd).massCons         = scalingcoef*state.(elde).(co).(amc).(sd).massCons;
+                        state.(elde).(co).(amc).(sd).solidDiffusionEq = scalingcoef*state.(elde).(co).(amc).(sd).solidDiffusionEq;
+
+                      otherwise
+
+                        error('diffusionModelType not recognized');
+
+                    end
+                end
             end
 
             for ieq = 1 : numel(model.equationVarNames)
@@ -1022,9 +1035,6 @@ classdef Battery < BaseModel
             ne    = 'NegativeElectrode';
             pe    = 'PositiveElectrode';
             co    = 'Coating';
-            am    = 'ActiveMaterial';
-            sd    = 'SolidDiffusion';
-            itf   = 'Interface';
 
             vols = battery.(elyte).G.cells.volumes;
             F = battery.con.F;
@@ -1046,7 +1056,7 @@ classdef Battery < BaseModel
 
             coupnames = model.couplingNames;
 
-            ne_Rvol = state.(ne).(co).(am).(sd).Rvol;
+            ne_Rvol = state.(ne).(co).Rvol;
             if isa(ne_Rvol, 'ADI') & ~isa(elyte_c_source, 'ADI')
                 adsample = getSampleAD(ne_Rvol);
                 adbackend = model.AutoDiffBackend;
@@ -1057,7 +1067,7 @@ classdef Battery < BaseModel
             elytecells = coupterm.couplingcells(:, 2);
             elyte_c_source(elytecells) = ne_Rvol.*vols(elytecells);
 
-            pe_Rvol = state.(pe).(co).(am).(sd).Rvol;
+            pe_Rvol = state.(pe).(co).Rvol;
             if isa(pe_Rvol, 'ADI') & ~isa(elyte_c_source, 'ADI')
                 adsample = getSampleAD(pe_Rvol);
                 adbackend = model.AutoDiffBackend;
@@ -1392,6 +1402,8 @@ classdef Battery < BaseModel
             pe    = 'PositiveElectrode';
             co    = 'Coating';
             am    = 'ActiveMaterial';
+            am1   = 'FirstActiveMaterial';
+            am2   = 'SecondActiveMaterial';
             itf   = 'Interface';
             cc    = 'CurrentCollector';
 
@@ -1402,10 +1414,28 @@ classdef Battery < BaseModel
             elyte_cells = zeros(model.G.cells.num, 1);
             elyte_cells(bat.(elyte).G.mappings.cellmap) = (1 : bat.(elyte).G.cells.num)';
 
+
+            
             for ind = 1 : numel(eldes)
                 elde = eldes{ind};
-                state.(elde).(co).(am).(itf).phiElectrolyte = phi_elyte(elyte_cells(bat.(elde).(co).G.mappings.cellmap));
-                state.(elde).(co).(am).(itf).cElectrolyte   = c_elyte(elyte_cells(bat.(elde).(co).G.mappings.cellmap));
+
+                switch model.(elde).(co).active_material_type
+                  case 'default'
+                    ams = {am};
+                  case 'composite'
+                    ams = {am1, am2};
+                  otherwise
+                    error('active_material_type not recognized');
+                end
+
+                for iam = 1 : numel(ams)
+                    
+                    amc = ams{iam};
+                    state.(elde).(co).(amc).(itf).phiElectrolyte = phi_elyte(elyte_cells(bat.(elde).(co).G.mappings.cellmap));
+                    state.(elde).(co).(amc).(itf).cElectrolyte   = c_elyte(elyte_cells(bat.(elde).(co).G.mappings.cellmap));
+                    
+                end
+
             end
 
         end
@@ -1595,6 +1625,8 @@ classdef Battery < BaseModel
             pe    = 'PositiveElectrode';
             co    = 'Coating';
             am    = 'ActiveMaterial';
+            am1   = 'FirstActiveMaterial';
+            am2   = 'SecondActiveMaterial';
             sd    = 'SolidDiffusion';
             itf   = 'Interface';
 
@@ -1605,16 +1637,31 @@ classdef Battery < BaseModel
             eldes = {ne, pe};
             for ind = 1 : numel(eldes)
                 elde = eldes{ind};
-                cmax = model.(elde).(co).(am).(itf).saturationConcentration;
-                switch model.(elde).(co).(am).diffusionModelType
-                  case 'simple'
-                    state.(elde).(co).(am).(sd).cAverage = max(cmin, state.(elde).(co).(am).(sd).cAverage);
-                    state.(elde).(co).(am).(sd).cAverage = min(cmax, state.(elde).(co).(am).(sd).cAverage);
-                  case 'full'
-                    state.(elde).(co).(am).(sd).c = max(cmin, state.(elde).(co).(am).(sd).c);
-                    state.(elde).(co).(am).(sd).c = min(cmax, state.(elde).(co).(am).(sd).c);
+
+                switch model.(elde).(co).active_material_type
+                  case 'default'
+                    ams = {am};
+                  case 'composite'
+                    ams = {am1, am2};
                   otherwise
-                    error('diffusionModelType not recognized')
+                    error('active_material_type not recognized');
+                end
+                
+                for iam = 1 : numel(ams)
+                    
+                    amc = ams{iam};
+                    cmax = model.(elde).(co).(amc).(itf).saturationConcentration;
+                    switch model.(elde).(co).(amc).diffusionModelType
+                      case 'simple'
+                        state.(elde).(co).(amc).(sd).cAverage = max(cmin, state.(elde).(co).(amc).(sd).cAverage);
+                        state.(elde).(co).(amc).(sd).cAverage = min(cmax, state.(elde).(co).(amc).(sd).cAverage);
+                      case 'full'
+                        state.(elde).(co).(amc).(sd).c = max(cmin, state.(elde).(co).(amc).(sd).c);
+                        state.(elde).(co).(amc).(sd).c = min(cmax, state.(elde).(co).(amc).(sd).c);
+                      otherwise
+                        error('diffusionModelType not recognized')
+
+                    end
 
                 end
             end

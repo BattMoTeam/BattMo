@@ -377,35 +377,64 @@ classdef Coating < ElectronicComponent
         function state = updateRvol(model, state)
 
             am  = 'ActiveMaterial';
+            am1 = 'FirstActiveMaterial';
+            am2 = 'SecondActiveMaterial';
             sd  = 'SolidDiffusion';
+            itf = 'Interface';
             
-            state.Rvol = state.(am).(sd).Rvol;
+            switch model.active_material_type
+              case 'default'
+                ams = {am};
+              case 'composite'
+                ams = {am1, am2};
+              otherwise
+                error('active_material_type not recognized');
+            end
+
+            Rvol = 0;
+            for iam = 1 : numel(ams)
+                
+                amc = ams{iam};
+                
+                n    = model.(amc).(itf).numberOfElectronsTransferred;
+                Rvol = Rvol + n*state.(amc).(sd).Rvol;
+                
+            end 
+
+            state.Rvol = Rvol;
             
         end
 
         
         function state = updateCurrentSource(model, state)
             
-            am  = 'ActiveMaterial';
-            itf = 'Interface';
-            sd  = 'SolidDiffusion';
-            
-            F    = model.(am).(itf).constants.F;
+            F    = model.constants.F;
             vols = model.G.cells.volumes;
-            n    = model.(am).(itf).numberOfElectronsTransferred;
-
-            Rvol = state.(am).(sd).Rvol;
             
-            state.eSource = - vols.*Rvol*n*F; % C/s
+            state.eSource = - vols.*state.Rvol*F; % C/s
             
         end
         
         function state = updatePhi(model, state)
             
             am  = 'ActiveMaterial';
+            am1 = 'FirstActiveMaterial';
+            am2 = 'SecondActiveMaterial';
             itf = 'Interface';
             
-            state.(am).(itf).phiElectrode = state.phi;
+            switch model.active_material_type
+              case 'default'
+                ams = {am};
+              case 'composite'
+                ams = {am1, am2};
+              otherwise
+                error('active_material_type not recognized');
+            end
+            
+            for iam = 1 : numel(ams)
+                amc = ams{iam};
+                state.(amc).(itf).phiElectrode = state.phi;
+            end 
             
         end
 
