@@ -118,8 +118,8 @@ classdef Battery < BaseModel
             pe      = 'PositiveElectrode';
             co      = 'Coating';
             am      = 'ActiveMaterial';
-            am1     = 'FirstActiveMaterial';
-            am2     = 'SecondActiveMaterial';
+            am1     = 'ActiveMaterial1';
+            am2     = 'ActiveMaterial2';
             sd      = 'SolidDiffusion';
             cc      = 'CurrentCollector';
             ctrl    = 'Control';
@@ -278,8 +278,8 @@ classdef Battery < BaseModel
             pe      = 'PositiveElectrode';
             co      = 'Coating';
             am      = 'ActiveMaterial';
-            am1     = 'FirstActiveMaterial';
-            am2     = 'SecondActiveMaterial';
+            am1     = 'ActiveMaterial1';
+            am2     = 'ActiveMaterial2';
             cc      = 'CurrentCollector';
             itf     = 'Interface';
             sd      = 'SolidDiffusion';
@@ -636,8 +636,8 @@ classdef Battery < BaseModel
             pe      = 'PositiveElectrode';
             co      = 'Coating';
             am      = 'ActiveMaterial';
-            am1     = 'FirstActiveMaterial';
-            am2     = 'SecondActiveMaterial';
+            am1     = 'ActiveMaterial1';
+            am2     = 'ActiveMaterial2';
             itf     = 'Interface';
             sd      = 'SolidDiffusion';
             cc      = 'CurrentCollector';
@@ -888,8 +888,8 @@ classdef Battery < BaseModel
             pe      = 'PositiveElectrode';
             co      = 'Coating';
             am      = 'ActiveMaterial';
-            am1     = 'FirstActiveMaterial';
-            am2     = 'SecondActiveMaterial';
+            am1     = 'ActiveMaterial1';
+            am2     = 'ActiveMaterial2';
             elyte   = 'Electrolyte';
             am      = 'ActiveMaterial';
             itf     = 'Interface';
@@ -1402,8 +1402,8 @@ classdef Battery < BaseModel
             pe    = 'PositiveElectrode';
             co    = 'Coating';
             am    = 'ActiveMaterial';
-            am1   = 'FirstActiveMaterial';
-            am2   = 'SecondActiveMaterial';
+            am1   = 'ActiveMaterial1';
+            am2   = 'ActiveMaterial2';
             itf   = 'Interface';
             cc    = 'CurrentCollector';
 
@@ -1625,8 +1625,8 @@ classdef Battery < BaseModel
             pe    = 'PositiveElectrode';
             co    = 'Coating';
             am    = 'ActiveMaterial';
-            am1   = 'FirstActiveMaterial';
-            am2   = 'SecondActiveMaterial';
+            am1   = 'ActiveMaterial1';
+            am2   = 'ActiveMaterial2';
             sd    = 'SolidDiffusion';
             itf   = 'Interface';
 
@@ -1730,8 +1730,8 @@ classdef Battery < BaseModel
                     
                   case 'composite'
                     
-                    am1 = 'FirstActiveMaterial';
-                    am2 = 'SecondActiveMaterial';
+                    am1 = 'ActiveMaterial1';
+                    am2 = 'ActiveMaterial2';
 
                     ams = {am1, am2};
 

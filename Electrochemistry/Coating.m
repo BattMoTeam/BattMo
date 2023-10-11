@@ -10,8 +10,8 @@ classdef Coating < ElectronicComponent
 
         % The two following models are instantiated only when active_material_type == 'composite' and, in this case,
         % ActiveMaterial model will remain empty. If active_material_type == 'default', then the two models remains empty
-        FirstActiveMaterial
-        SecondActiveMaterial
+        ActiveMaterial1
+        ActiveMaterial2
 
         %% Input Parameters
 
@@ -65,8 +65,8 @@ classdef Coating < ElectronicComponent
                 am = 'ActiveMaterial';
                 compnames = {am, bd, ad};
               case 'composite'
-                am1 = 'FirstActiveMaterial';
-                am2 = 'SecondActiveMaterial';
+                am1 = 'ActiveMaterial1';
+                am2 = 'ActiveMaterial2';
                 compnames = {am1, am2, bd, ad};
               otherwise
                 error('active_material_type not recognized.');
@@ -273,8 +273,8 @@ classdef Coating < ElectronicComponent
             
               case 'composite'
 
-                am1 = 'FirstActiveMaterial';
-                am2 = 'SecondActiveMaterial';
+                am1 = 'ActiveMaterial1';
+                am2 = 'ActiveMaterial2';
 
                 % We remove the dUdT variable (not used for non thermal simulation)
                 varnames = {{am1, itf, 'dUdT'}, ...
@@ -377,8 +377,8 @@ classdef Coating < ElectronicComponent
         function state = updateRvol(model, state)
 
             am  = 'ActiveMaterial';
-            am1 = 'FirstActiveMaterial';
-            am2 = 'SecondActiveMaterial';
+            am1 = 'ActiveMaterial1';
+            am2 = 'ActiveMaterial2';
             sd  = 'SolidDiffusion';
             itf = 'Interface';
             
@@ -418,8 +418,8 @@ classdef Coating < ElectronicComponent
         function state = updatePhi(model, state)
             
             am  = 'ActiveMaterial';
-            am1 = 'FirstActiveMaterial';
-            am2 = 'SecondActiveMaterial';
+            am1 = 'ActiveMaterial1';
+            am2 = 'ActiveMaterial2';
             itf = 'Interface';
             
             switch model.active_material_type
@@ -441,8 +441,8 @@ classdef Coating < ElectronicComponent
         function state = dispatchTemperature(model, state)
 
             am  = 'ActiveMaterial';
-            am1 = 'FirstActiveMaterial';
-            am2 = 'SecondActiveMaterial';
+            am1 = 'ActiveMaterial1';
+            am2 = 'ActiveMaterial2';
             
             switch model.active_material_type
               case 'default'

@@ -12,8 +12,8 @@ classdef CoatingInputParams < ElectronicComponentInputParams
 
         % The two following models are instantiated only when active_material_type == 'composite' and, in this case,
         % ActiveMaterial model will remain empty. If active_material_type == 'default', then the two models remains empty
-        FirstActiveMaterial
-        SecondActiveMaterial
+        ActiveMaterial1
+        ActiveMaterial2
         
         %% Standard parameters
 
@@ -56,8 +56,8 @@ classdef CoatingInputParams < ElectronicComponentInputParams
                 
               case 'composite'
 
-                am1 = 'FirstActiveMaterial';
-                am2 = 'SecondActiveMaterial';
+                am1 = 'ActiveMaterial1';
+                am2 = 'ActiveMaterial2';
                 paramobj.(am1) = ActiveMaterialInputParams(jsonstruct.(am1));
                 paramobj.(am2) = ActiveMaterialInputParams(jsonstruct.(am2));
                 

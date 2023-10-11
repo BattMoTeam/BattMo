@@ -2,7 +2,7 @@
   "NegativeElectrode": {
     "Coating" : {
       "active_material_type" : "composite",
-      "FirstActiveMaterial" : {
+      "ActiveMaterial1" : {
         "specificHeatCapacity": 632.0,
         "heatCapacity": 632000.0,
         "thermalConductivity": 1.04,
@@ -21,7 +21,7 @@
           "N": 10
         }
       },
-      "SecondActiveMaterial" : {
+      "ActiveMaterial2" : {
         "specificHeatCapacity": 632.0,
         "heatCapacity": 632000.0,
         "thermalConductivity": 1.04,

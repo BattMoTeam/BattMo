@@ -66,8 +66,8 @@ function [capacity, capacities] = computeCellCapacity(model)
             
           case 'composite'
 
-            am1 = 'FirstActiveMaterial';
-            am2 = 'SecondActiveMaterial';
+            am1 = 'ActiveMaterial1';
+            am2 = 'ActiveMaterial2';
 
             ams = {am1, am2};
 
