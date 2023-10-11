@@ -41,7 +41,9 @@ paramobj.(ne).(co).(am2).massFraction = 0.08;
 paramobj.(ne).(co).(bd).massFraction  = 0.01;
 paramobj.(ne).(co).(ad).massFraction  = 0.01;
 
-paramobj = paramobj.validateInputParams();
+paramobj.Control.CRate = 0.1;
+
+Paramobj = paramobj.validateInputParams();
 
 gen = BatteryGenerator1D();
 
@@ -61,7 +63,7 @@ model.AutoDiffBackend= AutoDiffBackend();
 
 inspectgraph = false;
 if inspectgraph
-    cgt = ComputationalGraphTool(model);
+    cgt = model.computationalGraph;
     return
 end
 
@@ -108,17 +110,9 @@ step = struct('val', dt*ones(n, 1), 'control', ones(n, 1));
 switch model.Control.controlPolicy
   case 'IEswitch'
     tup = 0.1; % rampup value for the current function, see rampupSwitchControl
-    switch model.scenario
-      case 'discharge'
-        inputI = model.Control.Imax;
-        inputE = model.Control.lowerCutoffVoltage;
-      case {'charge', 'first-charge'}
-        inputI = -model.Control.Imax;
-        inputE = model.Control.upperCutoffVoltage;
-      otherwise
-        error('initCase not recognized')
-    end
-    srcfunc = @(time, I, E) rampupSwitchControl(time, tup, I, E, inputI, inputE);
+    srcfunc = @(time, I, E) rampupSwitchControl(time, tup, I, E, ...
+                                                model.Control.Imax, ...
+                                                model.Control.lowerCutoffVoltage);
     % we setup the control by assigning a source and stop function.
     control = struct('src', srcfunc, 'IEswitch', true);
   case 'CCCV'
@@ -132,24 +126,10 @@ schedule = struct('control', control, 'step', step);
 
 %% Run simulation
 
-model.verbose = true;
+initstate = model.setupInitialState(); 
 
-nls = NonLinearSolver;
-nls.errorOnFailure = false;
-
-[wellSols, states, report] = simulateScheduleAD(initstate, model, schedule, 'OutputMinisteps', true, 'NonLinearSolver', nls); 
-
-chargeStates = states;
-
-paramobj.scenario = 'discharge';
-paramobj = paramobj.validateInputParams();
-
-model = CompositeBattery(paramobj);
-model = model.setupComputationalGraph();
-
-ind = cellfun(@(state) ~isempty(state), states);
-chargeStates = chargeStates(ind);
-initstate = chargeStates{end};
+%% Setup the properties of the nonlinear solver 
+nls = NonLinearSolver();
 
 CRate = model.Control.CRate;
 
@@ -164,53 +144,21 @@ switch model.(ctrl).controlPolicy
     error('control policy not recognized');
 end
 
-n  = 100;
-dt = total/n;
-step = struct('val', dt*ones(n, 1), 'control', ones(n, 1));
-
-% we setup the control by assigning a source and stop function.
-% control = struct('CCCV', true); 
-%  !!! Change this to an entry in the JSON with better variable names !!!
-
-switch model.Control.controlPolicy
-  case 'IEswitch'
-    tup = 0.1; % rampup value for the current function, see rampupSwitchControl
-    switch model.scenario
-      case 'discharge'
-        inputI = model.Control.Imax;
-        inputE = model.Control.lowerCutoffVoltage;
-      case {'charge', 'first-charge'}
-        inputI = -model.Control.Imax;
-        inputE = model.Control.upperCutoffVoltage;
-      otherwise
-        error('initCase not recognized')
-    end
-    srcfunc = @(time, I, E) rampupSwitchControl(time, tup, I, E, inputI, inputE);
-    % we setup the control by assigning a source and stop function.
-    control = struct('src', srcfunc, 'IEswitch', true);
-  case 'CCCV'
-    control = struct('CCCV', true);
-  otherwise
-    error('control policy not recognized');
-end
-
-% This control is used to set up the schedule
-schedule = struct('control', control, 'step', step); 
-
-%% Run simulation
-
+% Change default maximum iteration number in nonlinear solver
+nls.maxIterations = 10;
+% Change default behavior of nonlinear solver, in case of error
+nls.errorOnFailure = false;
+nls.timeStepSelector=StateChangeTimeStepSelector('TargetProps', {{'Control','E'}}, 'targetChangeAbs', 0.03);
+% Change default tolerance for nonlinear solver
+model.nonlinearTolerance = 1e-3*model.Control.Imax;
+% Set verbosity
 model.verbose = true;
 
-nls = NonLinearSolver;
-nls.errorOnFailure = false;
-
+%% Run the simulation
 [wellSols, states, report] = simulateScheduleAD(initstate, model, schedule, 'OutputMinisteps', true, 'NonLinearSolver', nls); 
 
-dischargeStates = states;
 
 %% plotting
-
-states = vertcat(chargeStates, dischargeStates);
 
 set(0, 'defaultlinelinewidth', 3);
 
