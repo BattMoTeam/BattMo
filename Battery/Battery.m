@@ -103,6 +103,9 @@ classdef Battery < BaseModel
             % setup capping
             model = model.setupCapping();
 
+            % setup computational graph
+            model = model.setupComputationalGraph();
+            
         end
 
         function model = setupSelectedModel(model, varargin)
