@@ -1,4 +1,3 @@
-
 % clear the workspace and close open figures
 clear all
 close all
@@ -47,19 +46,11 @@ Paramobj = paramobj.validateInputParams();
 
 gen = BatteryGenerator1D();
 
-gen.xlength(4) = 1.8619*gen.xlength(4);
-
-% gen.fac = 100;
-% gen = gen.applyResolutionFactors();
-
 % Now, we update the paramobj with the properties of the mesh. 
 paramobj = gen.updateBatteryInputParams(paramobj);
 
+% We instantiate the model
 model = Battery(paramobj);
-
-model = model.validateModel();
-
-model.AutoDiffBackend= AutoDiffBackend();
 
 inspectgraph = false;
 if inspectgraph
@@ -103,23 +94,12 @@ n  = 100;
 dt = total/n;
 step = struct('val', dt*ones(n, 1), 'control', ones(n, 1));
 
+tup = 0.1; % rampup value for the current function, see rampupSwitchControl
+srcfunc = @(time, I, E) rampupSwitchControl(time, tup, I, E, ...
+                                            model.Control.Imax, ...
+                                            model.Control.lowerCutoffVoltage);
 % we setup the control by assigning a source and stop function.
-% control = struct('CCCV', true); 
-%  !!! Change this to an entry in the JSON with better variable names !!!
-
-switch model.Control.controlPolicy
-  case 'IEswitch'
-    tup = 0.1; % rampup value for the current function, see rampupSwitchControl
-    srcfunc = @(time, I, E) rampupSwitchControl(time, tup, I, E, ...
-                                                model.Control.Imax, ...
-                                                model.Control.lowerCutoffVoltage);
-    % we setup the control by assigning a source and stop function.
-    control = struct('src', srcfunc, 'IEswitch', true);
-  case 'CCCV'
-    control = struct('CCCV', true);
-  otherwise
-    error('control policy not recognized');
-end
+control = struct('src', srcfunc, 'IEswitch', true);
 
 % This control is used to set up the schedule
 schedule = struct('control', control, 'step', step); 
@@ -155,39 +135,67 @@ model.nonlinearTolerance = 1e-3*model.Control.Imax;
 model.verbose = true;
 
 %% Run the simulation
-tic
-[wellSols, states, report] = simulateScheduleAD(initstate, model, schedule, 'OutputMinisteps', true, 'NonLinearSolver', nls); 
-toc
 
-%% plotting
+[wellSols, states, report] = simulateScheduleAD(initstate, model, schedule, 'OutputMinisteps', true, 'NonLinearSolver', nls); 
+
+dischargeStates = states;
+
+%%
+
+initstate = states{end};
+
+srcfunc = @(time, I, E) rampupSwitchControl(time, tup, I, E, ...
+                                            -model.Control.Imax, ...
+                                            model.Control.upperCutoffVoltage);
+control = struct('src', srcfunc, 'IEswitch', true);
+schedule = struct('control', control, 'step', step); 
+
+[wellSols, states, report] = simulateScheduleAD(initstate, model, schedule, 'OutputMinisteps', true, 'NonLinearSolver', nls);
+
+chargeStates = states;
+
+%%
+
+allStates = vertcat(dischargeStates, chargeStates); 
 
 set(0, 'defaultlinelinewidth', 3);
+set(0, 'DefaultAxesFontSize', 16);
+set(0, 'defaulttextfontsize', 18);
 
-ind = cellfun(@(x) not(isempty(x)), states); 
-states = states(ind);
-E = cellfun(@(x) x.Control.E, states); 
-I = cellfun(@(x) x.Control.I, states);
-Tmax = cellfun(@(x) max(x.ThermalModel.T), states);
-% [SOCN, SOCP] =  cellfun(@(x) model.calculateSOC(x), states);
-time = cellfun(@(x) x.time, states); 
-
-plot(time, E);
-
-%%  energy density for discharge phase
-
-E = cellfun(@(x) x.Control.E, dischargeStates); 
-I = cellfun(@(x) x.Control.I, dischargeStates);
-t = cellfun(@(x) x.time, dischargeStates);
-mass = computeCellMass(model);
-vol = sum(model.G.cells.volumes);
-[Emid, Imid, energyDensity, specificEnergy, energy] = computeEnergyDensity(E, I, t, vol, mass);
+E = cellfun(@(x) x.Control.E, allStates); 
+I = cellfun(@(x) x.Control.I, allStates);
+Tmax = cellfun(@(x) max(x.ThermalModel.T), allStates);
+time = cellfun(@(x) x.time, allStates); 
 
 figure
-plot(energyDensity, Emid);
-xlabel('Energy Density [Wh/L]');
-ylabel('Voltage [V]');
+plot(time/hour, E);
+xlabel('Time / h');
+ylabel('Voltage / V');
+title('Voltage')
 
 figure
-plot(specificEnergy, Emid);
-xlabel('Specific Energy [Wh/kg]');
-ylabel('Voltage [V]');
+plot(time/hour, I);
+xlabel('Time / h');
+ylabel('Current / I');
+title('Current')
+
+figure
+hold on
+
+for istate = 1 : numel(allStates)
+    allStates{istate} = model.evalVarName(allStates{istate}, {ne, co, 'SOC'});
+end
+
+SOC  = cellfun(@(x) x.(ne).(co).SOC, allStates); 
+SOC1 = cellfun(@(x) x.(ne).(co).(am1).SOC, allStates);
+SOC2 = cellfun(@(x) x.(ne).(co).(am2).SOC, allStates);
+
+plot(time/hour, SOC, 'displayname', 'SOC - cumulated');
+plot(time/hour, SOC1, 'displayname', 'SOC - Graphite');
+plot(time/hour, SOC2, 'displayname', 'SOC - Silicon');
+
+xlabel('Time / h');
+ylabel('SOC / -');
+title('SOCs')
+
+legend show

@@ -253,6 +253,10 @@ classdef Coating < ElectronicComponent
             
             model = model.registerVarNames(varnames);            
 
+            % We declare SOC as an extra variable, as it is not used in assembly (otherwise it will be systematically
+            % computed but not used)
+            model = model.setAsExtraVarName('SOC');
+
             switch model.active_material_type
 
               case 'default'
@@ -276,6 +280,12 @@ classdef Coating < ElectronicComponent
                 am1 = 'ActiveMaterial1';
                 am2 = 'ActiveMaterial2';
 
+                varnames = {{am1, 'SOC'}, ...
+                            {am2, 'SOC'}};
+                
+                model = model.registerVarNames(varnames);
+                model = model.setAsExtraVarNames(varnames);
+                
                 % We remove the dUdT variable (not used for non thermal simulation)
                 varnames = {{am1, itf, 'dUdT'}, ...
                             {am2, itf, 'dUdT'}};
@@ -295,11 +305,13 @@ classdef Coating < ElectronicComponent
                 model = model.registerPropFunction({{am1, 'T'}, fn, {'T'}});
                 model = model.registerPropFunction({{am2, 'T'}, fn, {'T'}});
                 
-                fn = @Coating.updateSOC;
+                fn = @Coating.updateCompositeSOC;
                 inputnames = {{am1, sd, 'cAverage'}, ...
                               {am2, sd, 'cAverage'}};
                 model = model.registerPropFunction({'SOC', fn, inputnames});
-
+                model = model.registerPropFunction({{am1, 'SOC'}, fn, inputnames});
+                model = model.registerPropFunction({{am2, 'SOC'}, fn, inputnames});
+                
               otherwise
 
                 error('active material type not recognized.')
@@ -335,10 +347,6 @@ classdef Coating < ElectronicComponent
             if model.use_thermal
                 model = model.registerPropFunction({'jFaceCoupling', fn, {}});
             end
-
-            % We declare SOC as an extra variable, as it is not used in assembly (otherwise it will be systematically
-            % computed but not used)
-            model = model.setAsExtraVarName('SOC');
 
         end
         
@@ -468,12 +476,12 @@ classdef Coating < ElectronicComponent
             itf = 'Interface';
             sd  = 'SolidDiffusion';
 
-            vf       = model.(am).volumeFraction;
-            am_frac  = model.(am).volumeFractions(model.compInds.(am));
+            vf       = model.volumeFraction;
+            am_frac  = model.volumeFractions(model.compInds.(am));
             vols     = model.G.cells.volumes;
-            cmax     = model.(itf).(itf).saturationConcentration;
-            theta100 = model.(itf).(itf).guestStoichiometry100;
-            theta0   = model.(itf).(itf).guestStoichiometry0;
+            cmax     = model.(am).(itf).saturationConcentration;
+            theta100 = model.(am).(itf).guestStoichiometry100;
+            theta0   = model.(am).(itf).guestStoichiometry0;
             
             c = state.(am).(sd).cAverage;
 
@@ -489,6 +497,48 @@ classdef Coating < ElectronicComponent
             
         end
 
+        function state = updateCompositeSOC(model, state)
+
+            am1 = 'ActiveMaterial1';
+            am2 = 'ActiveMaterial2';
+            itf = 'Interface';
+            sd  = 'SolidDiffusion';
+
+            vf    = model.volumeFraction;
+            vols = model.G.cells.volumes;
+
+            ams = {am1, am2};
+            
+            for iam = 1 : numel(ams)
+                
+                amc = ams{iam};
+                
+                am_frac  = model.volumeFractions(model.compInds.(amc));
+                cmax     = model.(amc).(itf).saturationConcentration;
+                theta100 = model.(amc).(itf).guestStoichiometry100;
+                theta0   = model.(amc).(itf).guestStoichiometry0;
+                
+                c = state.(amc).(sd).cAverage;
+
+                vol = am_frac*vf.*vols;
+                
+                molvals(iam)    = sum(c.*vol);
+                molval0s(iam)   = theta0*cmax*sum(vol);
+                molval100s(iam) = theta100*cmax*sum(vol);
+
+                state.(amc).SOC = (molvals(iam) - molval0s(iam))/(molval100s(iam) - molval0s(iam));
+                
+            end
+
+            molval    = sum(molvals);
+            molval0   = sum(molval0s);
+            molval100 = sum(molval100s);
+            
+            state.SOC = (molval - molval0)/(molval100 - molval0);
+                
+        end
+
+        
     end
 end
 

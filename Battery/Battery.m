@@ -105,6 +105,7 @@ classdef Battery < BaseModel
 
             % setup computational graph
             model = model.setupComputationalGraph();
+            model.funcCallList = model.computationalGraph.getOrderedFunctionCallList();
             
         end
 
@@ -806,14 +807,16 @@ classdef Battery < BaseModel
 
             [~, state] = getEquations(model, state0, state, dt, drivingForces, 'ResOnly', true);
 
-            % we set to empty the fields we know that are not meaningfull
+            % We set to empty the fields we know that are not meaningfull
 
             ne      = 'NegativeElectrode';
             pe      = 'PositiveElectrode';
             am      = 'ActiveMaterial';
+            co      = 'Coating';
             cc      = 'CurrentCollector';
             elyte   = 'Electrolyte';
-            am      = 'ActiveMaterial';
+            am1     = 'ActiveMaterial1';
+            am2     = 'ActiveMaterial2';
             itf     = 'Interface';
             sd      = "SolidDiffusion";
             thermal = 'ThermalModel';
@@ -821,33 +824,33 @@ classdef Battery < BaseModel
 
             state.(elyte).massAccum = [];
             state.(elyte).massCons = [];
+            
             eldes = {ne, pe};
+            
             for ielde = 1 : numel(eldes)
-                elde = eldes{ielde};
-                switch model.(elde).(am).diffusionModelType
-                  case 'full'
-                    state.(elde).(am).(sd).massAccum = [];
-                    state.(elde).(am).(sd).massCons = [];
-                  case {'simple', 'interParticleOnly'}
-                    state.(elde).(am).massAccum = [];
-                    state.(elde).(am).massCons = [];
-                  otherwise
-                    error('diffusion model type not recognized');
-                end
-            end
 
-            for ielde = 1 : numel(eldes)
                 elde = eldes{ielde};
-                switch model.(elde).(am).diffusionModelType
-                  case 'full'
-                    state.(elde).(am).(sd) = model.(elde).(am).(sd).updateAverageConcentration(state.(elde).(am).(sd));
-                    state.(elde).(am) = model.(elde).(am).updateSOC(state.(elde).(am));
-                    state.(elde).(am) = model.(elde).(am).updateAverageConcentration(state.(elde).(am));
-                  case {'simple', 'interParticleOnly'}
-                    % do nothing
+                
+                switch model.(elde).(co).active_material_type
+                  case 'default'
+                    ams = {am};
+                  case 'composite'
+                    ams = {am1, am2};
                   otherwise
-                    error('diffusion model type not recognized');
+                    error('active_material_type not recognized');
                 end
+
+                for iam = 1 : numel(ams)
+                    
+                    amc = ams{iam};
+                    
+                    state.(elde).(co).(amc).(sd).massAccum = [];
+                    state.(elde).(co).(amc).(sd).massCons = [];
+
+                end
+
+                state = model.evalVarName(state, {elde, co, 'SOC'});
+                
             end
 
             if model.use_thermal
@@ -1613,7 +1616,7 @@ classdef Battery < BaseModel
             end
 
             cgt = model.computationalGraph;
-            model.funcCallList = cgt.getOrderedFunctionCallList();
+            
 
         end
 
