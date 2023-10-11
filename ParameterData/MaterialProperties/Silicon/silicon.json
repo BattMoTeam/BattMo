@@ -1,9 +1,9 @@
 {
   "saturationConcentration": 311307.4,
   "volumetricSurfaceArea": 723600,
-  "numberOfElectronTransferred" : 1,
+  "numberOfElectronsTransferred" : 1,
   "activationEnergyOfReaction": 5000,
-  "reactionRateConstatn": 5.031e-11,
+  "reactionRateConstant": 5.031e-11,
   "guestStoichiometry100": 0.88551,
   "guestStoichiometry0": 0.1429,
   "chargeTransferCoefficient": 0.5,

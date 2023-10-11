@@ -6,7 +6,7 @@
         "specificHeatCapacity": 632.0,
         "heatCapacity": 632000.0,
         "thermalConductivity": 1.04,
-        "electricalConductivity": 100,
+        "electronicConductivity": 100,
         "massFraction" : 0.92,
         "density": 2240,
         "Interface": {
@@ -25,7 +25,7 @@
         "specificHeatCapacity": 632.0,
         "heatCapacity": 632000.0,
         "thermalConductivity": 1.04,
-        "electricalConductivity": 100,
+        "electronicConductivity": 100,
         "massFraction" : 0.08,
         "density": 2330,        
         "Interface": {
