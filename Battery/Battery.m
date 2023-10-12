@@ -341,8 +341,8 @@ classdef Battery < BaseModel
             end
 
             fn = @Battery.updateElectrolyteCoupling;
-            inputnames = {{ne, co, 'Rvol'}, ...
-                          {pe, co, 'Rvol'}};
+            inputnames = {{ne, co, 'eSource'}, ...
+                          {pe, co, 'eSource'}};
             model = model.registerPropFunction({{elyte, 'massSource'}, fn, inputnames});
             model = model.registerPropFunction({{elyte, 'eSource'}, fn, inputnames});
                     
@@ -1057,37 +1057,37 @@ classdef Battery < BaseModel
             if isa(phi, 'ADI')
                 adsample = getSampleAD(phi);
                 adbackend = model.AutoDiffBackend;
-                elyte_c_source = adbackend.convertToAD(elyte_c_source, adsample);
+                elyte_e_source = adbackend.convertToAD(elyte_e_source, adsample);
             end
 
             coupnames = model.couplingNames;
 
-            ne_Rvol = state.(ne).(co).Rvol;
-            if isa(ne_Rvol, 'ADI') & ~isa(elyte_c_source, 'ADI')
+            ne_esource = state.(ne).(co).eSource;
+            if isa(ne_esource, 'ADI') & ~isa(elyte_e_source, 'ADI')
                 adsample = getSampleAD(ne_Rvol);
                 adbackend = model.AutoDiffBackend;
-                elyte_c_source = adbackend.convertToAD(elyte_c_source, adsample);
+                elyte_e_source = adbackend.convertToAD(elyte_e_source, adsample);
             end
 
             coupterm = getCoupTerm(couplingterms, 'NegativeElectrode-Electrolyte', coupnames);
             elytecells = coupterm.couplingcells(:, 2);
-            elyte_c_source(elytecells) = ne_Rvol.*vols(elytecells);
+            elyte_e_source(elytecells) = - ne_esource(elytecells);
 
-            pe_Rvol = state.(pe).(co).Rvol;
-            if isa(pe_Rvol, 'ADI') & ~isa(elyte_c_source, 'ADI')
-                adsample = getSampleAD(pe_Rvol);
+            pe_esource = state.(pe).(co).eSource;
+            if isa(pe_esource, 'ADI') & ~isa(elyte_e_source, 'ADI')
+                adsample = getSampleAD(pe_esource);
                 adbackend = model.AutoDiffBackend;
-                elyte_c_source = adbackend.convertToAD(elyte_c_source, adsample);
+                elyte_e_source = adbackend.convertToAD(elyte_e_source, adsample);
             end
 
             coupterm = getCoupTerm(couplingterms, 'PositiveElectrode-Electrolyte', coupnames);
             elytecells = coupterm.couplingcells(:, 2);
-            elyte_c_source(elytecells) = pe_Rvol.*vols(elytecells);
+            elyte_e_source(elytecells) = -pe_esource;
 
-            elyte_e_source = elyte_c_source.*battery.(elyte).sp.z(1)*F;
+            elyte_c_source = elyte_e_source./(battery.(elyte).sp.z(1)*F);
 
+            state.Electrolyte.eSource    = elyte_e_source;
             state.Electrolyte.massSource = elyte_c_source;
-            state.Electrolyte.eSource = elyte_e_source;
 
         end
 

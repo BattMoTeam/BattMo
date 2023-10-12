@@ -248,9 +248,6 @@ classdef Coating < ElectronicComponent
                         'jExternal', ...
                         'SOC'};
 
-            % Volumetric reaction rate in mol/(s*m^3) for the whole coating
-            varnames{end + 1} = 'Rvol';
-            
             model = model.registerVarNames(varnames);            
 
             % We declare SOC as an extra variable, as it is not used in assembly (otherwise it will be systematically
@@ -263,8 +260,8 @@ classdef Coating < ElectronicComponent
 
                 am = 'ActiveMaterial';
                 
-                fn = @Coating.updateRvol;
-                model = model.registerPropFunction({'Rvol', fn, {{am, sd, 'Rvol'}}});
+                fn = @Coating.updateEsource;
+                model = model.registerPropFunction({'eSource', fn, {{am, sd, 'Rvol'}}});
                 
                 fn = @Coating.updatePhi;
                 model = model.registerPropFunction({{am, itf, 'phiElectrode'}, fn, {'phi'}});
@@ -292,10 +289,10 @@ classdef Coating < ElectronicComponent
 
                 model = model.removeVarNames(varnames);
                 
-                fn = @Coating.updateCompositeRvol;
+                fn = @Coating.updateCompositeEsource;
                 inputnames = {{am1, sd, 'Rvol'}, ...
                               {am2, sd, 'Rvol'}};
-                model = model.registerPropFunction({'Rvol', fn, inputnames});
+                model = model.registerPropFunction({'eSource', fn, inputnames});
                 
                 fn = @Coating.updateCompositePhi;
                 model = model.registerPropFunction({{am1, itf, 'phiElectrode'}, fn, {'phi'}});
@@ -317,9 +314,6 @@ classdef Coating < ElectronicComponent
                 error('active material type not recognized.')
 
             end
-            
-            fn = @Coating.updateCurrentSource;
-            model = model.registerPropFunction({'eSource', fn, {'Rvol'}});
             
             if model.use_thermal
                 varnames = {'jFaceCoupling', ...
@@ -377,49 +371,47 @@ classdef Coating < ElectronicComponent
             
         end
 
-        function state = updateCompositeRvol(model, state)
+        function state = updateEsource(model, state)
+
+            am  = 'ActiveMaterial';
+            sd  = 'SolidDiffusion';
+            itf = 'Interface';
+
+            F    = model.constants.F;
+            n    = model.(am).(itf).numberOfElectronsTransferred;
+            vols = model.G.cells.volumes;
+            
+            state.eSource =  - n*F*vols.*state.(am).(sd).Rvol;
+
+        end
+
+       function state = updateCompositeEsource(model, state)
 
             am1 = 'ActiveMaterial1';
             am2 = 'ActiveMaterial2';
             itf = 'Interface';
             sd  = 'SolidDiffusion';
+
+            F    = model.constants.F;
+            vols = model.G.cells.volumes;
             
             ams = {am1, am2};
-            
+
             Rvol = 0;
+            
             for iam = 1 : numel(ams)
                 
                 amc = ams{iam};
                 
                 n    = model.(amc).(itf).numberOfElectronsTransferred;
-                Rvol = Rvol + n*state.(amc).(sd).Rvol;
+                Rvol = Rvol + n*F*state.(amc).(sd).Rvol;
                 
             end 
 
-            state.Rvol = Rvol;
+            state.eSource = - vols.*Rvol;
                         
         end
-        
-        function state = updateRvol(model, state)
 
-            am  = 'ActiveMaterial';
-            sd  = 'SolidDiffusion';
-            itf = 'Interface';
-                
-            n    = model.(am).(itf).numberOfElectronsTransferred;
-            state.Rvol =  n*state.(am).(sd).Rvol;
-
-        end
-
-        
-        function state = updateCurrentSource(model, state)
-            
-            F    = model.constants.F;
-            vols = model.G.cells.volumes;
-            
-            state.eSource = - vols.*state.Rvol*F; % C/s
-            
-        end
         
         function state = updateCompositePhi(model, state)
 
