@@ -68,9 +68,8 @@
         }
       }
     },
-      {
-        "if": {
-          "properties": {
+    {  "if": {
+        "properties": {
           "Model": {
             "properties": {
               "include_current_collectors": true
@@ -78,24 +77,19 @@
           }
         }
       },
-        "then": {
-          "properties":{
+      "then": {
+        "properties": {
           "Battery": {
             "properties": {
               "PositiveElectrode": {
-                "required": [
-                  "CurrentCollector"
-                ]
-              },
-              "NegativeElectrode": {
-                "required": [
-                  "CurrentCollector"
-                ]
+                "required": ["CurrentCollector"]
               }
             }
           }
         }
       }
     }
-    ]
+  ]
+
+ 
   }

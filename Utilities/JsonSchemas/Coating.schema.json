@@ -1,30 +1,44 @@
 {
-    "$id": "file://./Coating.schema.json",
-    "$schema": "http://json-schema.org/draft-07/schema#",
-    "description": "Coating",
-    "type": "object",
-  
-    "allOf": [{"$ref": "./ElectronicComponent.schema.json"},
-              {"properties" : { "ActiveMaterial": {"$ref" : "ActiveMaterial.schema.json"},
-                                "Binder": {"$ref" : "Binder.schema.json"},
-                                "ConductingAdditive": {"$ref" : "ConductingAdditive.schema.json"},
-                                "density" : {
-                                  "$ref": "PhysicalQuantity.schema.json",
-                                  "description": "the mass density of the material. The density is computed with respect to the total volume (i.e. including the empty pores)",
-                                  "symbol": "rho"
-                                },
-                                "bruggemanCoefficient" : {
-                                  "$ref": "PhysicalQuantity.schema.json",
-                                  "description": "the Bruggeman coefficient for effective transport in porous media",
-                                  "symbol": "beta"
-                                },
-                                "activematerial_type" : {"type" : "string",
-                                           "enum" : ["default", "composite"]}
-                                }
-                              }
-             ],
-    
-    
-    "required" : ["ActiveMaterial"]
-  }
-  
+  "$id": "file://./Coating.schema.json",
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "description": "Coating",
+  "type": "object",
+  "allOf": [
+    {
+      "$ref": "./ElectronicComponent.schema.json"
+    },
+    {
+      "properties": {
+        "ActiveMaterial": {
+          "$ref": "ActiveMaterial.schema.json"
+        },
+        "Binder": {
+          "$ref": "Binder.schema.json"
+        },
+        "ConductingAdditive": {
+          "$ref": "ConductingAdditive.schema.json"
+        },
+        "density": {
+          "$ref": "PhysicalQuantity.schema.json",
+          "description": "the mass density of the material. The density is computed with respect to the total volume (i.e. including the empty pores)",
+          "symbol": "rho"
+        },
+        "bruggemanCoefficient": {
+          "$ref": "PhysicalQuantity.schema.json",
+          "description": "the Bruggeman coefficient for effective transport in porous media",
+          "symbol": "beta"
+        },
+        "activematerial_type": {
+          "type": "string",
+          "enum": [
+            "default",
+            "composite"
+          ]
+        }
+      }
+    }
+  ],
+  "required": [
+    "ActiveMaterial"
+  ]
+}
