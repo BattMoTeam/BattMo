@@ -22,8 +22,6 @@
         "density": 2240,
         "specificHeatCapacity": 632.0,
         "thermalConductivity": 1.04,
-        "InterDiffusionCoefficient": 1e-14,
-        "InterDiffusionCoefficientComment" : "from Ecker 2015",
         "electronicConductivity": 100,
         "Interface": {
           "isFile": true,
@@ -67,7 +65,6 @@
         "density": 4650,
         "specificHeatCapacity": 700.0,
         "thermalConductivity": 2.1,
-        "InterDiffusionCoefficient": 1e-14,
         "electronicConductivity": 100,
         "Interface": {
           "isFile": true,
