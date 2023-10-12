@@ -110,9 +110,10 @@ classdef ActiveMaterial < BaseModel
 
                 varnames = {};
 
-                % Current density
-                varnames{end + 1} = 'j';
-                % Ootential in Electrode
+                % Volumetric current in A/m^3. It corresponds to the current density multiplied with the volumetric
+                % surface area.
+                varnames{end + 1} = 'I';
+                % Potential in Electrode
                 varnames{end + 1} = 'phi';
                 % Charge Conservation equation
                 varnames{end + 1} = 'chargeCons';
@@ -144,7 +145,7 @@ classdef ActiveMaterial < BaseModel
                 model = model.registerPropFunction({'j', fn, {}});
                 
                 fn = @ActiveMaterial.updateChargeCons;
-                inputnames = {'j', ...
+                inputnames = {'I', ...
                               {sd, 'Rvol'}}
                 model = model.registerPropFunction({'chargeCons', fn, inputnamse});
 
