@@ -9,22 +9,40 @@ close all
 mrstModule add ad-core mrst-gui mpfa
 
 %% Setup the properties of Li-ion battery materials and cell design
-jsonstruct = parseBattmoJson(fullfile('Examples', 'am_standalone', 'jsoninputs', 'amExample.json'));
-paramobj = ActiveMaterialInputParams(jsonstruct);
+jsonstruct = parseBattmoJson(fullfile('ParameterData','BatteryCellParameters','LithiumIonBatteryCell','lithium_ion_battery_nmc_graphite.json'));
 
-xlength = 57e-6; 
-G = cartGrid(1, xlength);
-G = computeGeometry(G);
+% We define some shorthand names for simplicity.
+ne      = 'NegativeElectrode';
+pe      = 'PositiveElectrode';
+elyte   = 'Electrolyte';
+thermal = 'ThermalModel';
+co      = 'Coating';
+am      = 'ActiveMaterial';
+itf     = 'Interface';
+sd      = 'SolidDiffusion';
+ctrl    = 'Control';
+cc      = 'CurrentCollector';
 
-paramobj.G = G;
+jsonstruct.use_thermal = false;
 
-% In order to observe more diffusion effect we use a lower diffusion coefficient
-% paramobj.SolidDiffusion.D0 = 1e-16;
+jsonstruct.include_current_collectors = false;
+
+jsonstruct.(ne).(co).(am).diffusionModelType = 'full';
+jsonstruct.(pe).(co).(am).diffusionModelType = 'full';
+
+paramobj = BatteryInputParams(jsonstruct);
+
+paramobj = paramobj.(ne).(co).(am);
+
+paramobj.standAlone = true;
 
 paramobj = paramobj.validateInputParams();
 
 model = ActiveMaterial(paramobj);
 
+cgt = model.computationalGraph();
+
+return
 %% Setup initial state
 
 % shortcuts

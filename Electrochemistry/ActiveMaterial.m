@@ -22,17 +22,28 @@ classdef ActiveMaterial < BaseModel
         thermalConductivity    % the intrinsic Thermal conductivity of the active component
         specificHeatCapacity   % Specific Heat capacity of the active component
 
+        diffusionModelType     % either 'full' or 'simple'
+        
+        % Advanded parameters
+        
+        standAlone % Set to true if model is used as main model for development purpose (standard use is as a sub-model)
+
         % Coupling parameters
         
         externalCouplingTerm % structure to describe external coupling (used in absence of current collector)
 
-        % Other parameters
+
+        % Others
         
-        standAlone % Set to true if model is used as main model for development purpose (standard use is as a sub-model)
+        % properties needed when model is run in stand-alone mode
+        
+        funcCallList
+        primaryVarNames
+        equationVarNames
+        equationNames
+        equationTypes
+        
 
-        %% Computed parameters at model setup
-
-        diffusionModelType % either 'full' or 'simple'
         
     end
     
@@ -51,7 +62,8 @@ classdef ActiveMaterial < BaseModel
                        'specificHeatCapacity'  , ...   
                        'volumeFraction'        , ... 
                        'externalCouplingTerm'  , ...
-                       'diffusionModelType'};
+                       'diffusionModelType'    , ...
+                       'standAlone'};
 
             model = dispatchParams(model, paramobj, fdnames);
 
@@ -68,9 +80,12 @@ classdef ActiveMaterial < BaseModel
                 error('Unknown diffusionModelType %s', diffusionModelType);
             end
 
-            % standAlone=true for standalone simulation of active material. This flag is used only in
-            % registerVarAndPropfuncNames (does not impact simulation). Default is false.
-            model.standAlone = false;
+            if model.standAlone
+
+                model = model.setupStandAloneModel();
+                
+            end
+            
             
         end
         
@@ -92,13 +107,23 @@ classdef ActiveMaterial < BaseModel
             model = model.registerPropFunction({{itf, 'T'}, fn, {'T'}});
             
             if model.standAlone
-                error('to be fixed')
-                varnames = {'controlCurrentSource'};
+
+                varnames = {};
+
+                % Current density
+                varnames{end + 1} = 'j';
+                % Ootential in Electrode
+                varnames{end + 1} = 'phi';
+                % Charge Conservation equation
+                varnames{end + 1} = 'chargeCons';
+                
                 model = model.registerVarNames(varnames);
-                varnames = {{itf, 'SOC'}, ...
+
+                varnames = {{itf, 'dUdT'}, ...
                             'jCoupling', ...
                             'jExternal'};
                 model = model.removeVarNames(varnames);
+
                 varnames = {'T', ...
                             {itf, 'cElectrolyte'},... 
                             {itf, 'phiElectrolyte'}};
@@ -113,20 +138,33 @@ classdef ActiveMaterial < BaseModel
             model = model.registerPropFunction({{itf, 'cElectrodeSurface'}, fn, {{sd, 'cSurface'}}});
             
             if model.standAlone
-
-                error('to be checked');
                 
-                fn = @ActiveMaterial.updateStandalonejBcSource;
-                model = model.registerPropFunction({'jBcSource', fn, {'controlCurrentSource'}});
-
                 fn = @ActiveMaterial.updateControl;
                 fn = {fn, @(propfunction) PropFunction.drivingForceFuncCallSetupFn(propfunction)};
-                model = model.registerPropFunction({'controlCurrentSource', fn, {}});
+                model = model.registerPropFunction({'j', fn, {}});
                 
+                fn = @ActiveMaterial.updateChargeCons;
+                inputnames = {'j', ...
+                              {sd, 'Rvol'}}
+                model = model.registerPropFunction({'chargeCons', fn, inputnamse});
+
             end
             
         end
         
+
+        function model = setupStandAloneModel(model)
+
+            model = model.setupComputationalGraph();
+
+            % cgt = model.computationalGraph();
+            
+            % model.funcCallList     = cgt.getOrderedFunctionCallList();
+            % model.primaryVarNames  = cgt.getPrimaryVariableNames();
+            % model.equationVarNames = cgt.getEquationVariableNames();
+            
+        end
+
         
         function [problem, state] = getEquations(model, state0, state,dt, drivingForces, varargin)
             

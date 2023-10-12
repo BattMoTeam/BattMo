@@ -24,6 +24,10 @@ classdef ActiveMaterialInputParams < ComponentInputParams
 
         diffusionModelType     % diffusion model type, either 'full' or 'simplified'
 
+        %% Advanced parameters
+
+        standAlone % Set to true if Active Material is used as a stand-alone model (not within a battery cell, see runActiveMaterial example)
+
         %% Coupling parameters
         
         externalCouplingTerm % structure to describe external coupling (used in absence of current collector)
@@ -36,9 +40,16 @@ classdef ActiveMaterialInputParams < ComponentInputParams
 
             paramobj = paramobj@ComponentInputParams(jsonstruct);
             
-            pick = @(fd) pickField(jsonstruct, fd);
+            if isempty(paramobj.standAlone)
+                paramobj.standAlone = false;
+            end
 
-            paramobj.Interface = InterfaceInputParams(pick('Interface'));
+            sd  = 'SolidDiffusion';
+            itf = 'Interface';
+            
+            pick = @(fd) pickField(jsonstruct, fd);
+            
+            paramobj.(itf) = InterfaceInputParams(pick('Interface'));
 
             if isempty(paramobj.diffusionModelType)
                 paramobj.diffusionModelType = 'full';
@@ -50,15 +61,11 @@ classdef ActiveMaterialInputParams < ComponentInputParams
                 
               case 'simple'
                 
-                paramobj.SolidDiffusion = SimplifiedSolidDiffusionModelInputParams(pick('SolidDiffusion'));
+                paramobj.(sd) = SimplifiedSolidDiffusionModelInputParams(pick(sd));
                 
               case 'full'
 
-                paramobj.SolidDiffusion = FullSolidDiffusionModelInputParams(pick('SolidDiffusion'));
-
-              case 'interParticleOnly'
-                
-                paramobj.SolidDiffusion = [];
+                paramobj.(sd) = FullSolidDiffusionModelInputParams(pick(sd));
                 
               otherwise
                 
@@ -79,6 +86,11 @@ classdef ActiveMaterialInputParams < ComponentInputParams
             itf = 'Interface';
             
             paramobj = mergeParameters(paramobj, {{'density'}, {itf, 'density'}});
+
+            if paramobj.standAlone
+                % only one particle in the stand-alone model
+                paramobj.(sd).np = 1;
+            end
             
             switch diffusionModelType
                 
