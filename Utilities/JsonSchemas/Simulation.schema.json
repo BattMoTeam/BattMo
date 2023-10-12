@@ -12,10 +12,6 @@
       "$ref": "Battery.schema.json",
       "description": "Battery Physical Parameters"
     },
-    "ThermalModel": {
-      "$ref": "ThermalComponent.schema.json",
-      "description": "Battery Physical Parameters required for thermal modelling"
-    },
     "ControlModel": {
       "$ref": "ControlModel.schema.json",
       "description": "Input for the control type and the corresponding parameters"
@@ -63,35 +59,43 @@
         }
       },
       "then": {
-        "required": [
-          "ThermalModel"
-        ]
+        "properties": {
+          "Battery": {
+            "required": [
+              "ThermalModel"
+            ]
+          }
+        }
       }
     },
-    {
-      "if": {
-        "Model": {
+      {
+        "if": {
           "properties": {
-            "include_current_collectors": true
+          "Model": {
+            "properties": {
+              "include_current_collectors": true
+            }
           }
         }
       },
-      "then": {
-        "Battery": {
-          "properties": {
-            "PositiveElectrode": {
-              "required": [
-                "CurrentCollector"
-              ]
-            },
-            "NegativeElectrode": {
-              "required": [
-                "CurrentCollector"
-              ]
+        "then": {
+          "properties":{
+          "Battery": {
+            "properties": {
+              "PositiveElectrode": {
+                "required": [
+                  "CurrentCollector"
+                ]
+              },
+              "NegativeElectrode": {
+                "required": [
+                  "CurrentCollector"
+                ]
+              }
             }
           }
         }
       }
     }
-  ]
-}
+    ]
+  }

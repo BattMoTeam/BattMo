@@ -13,7 +13,12 @@
 
     "Electrolyte": {"$ref": "Electrolyte.schema.json"},
 
-    "Separator": {"$ref": "Separator.schema.json"}
+    "Separator": {"$ref": "Separator.schema.json"},
+
+    "ThermalModel": {
+      "$ref": "ThermalComponent.schema.json",
+      "description": "Battery Physical Parameters required for thermal modelling"
+    }
 
   },
 
