@@ -171,7 +171,7 @@ classdef ActiveMaterial < BaseModel
                 str = Battery.varToStr(shortvarname);
             end
             model.equationNames = cellfun(@(varname) setupName(varname), model.equationVarNames, 'uniformoutput', false);
-            model.equationTypes = repmat('cell', numel(model.equationNames));
+            model.equationTypes = repmat({'cell'}, 1, numel(model.equationNames));
             
         end
 
@@ -194,11 +194,23 @@ classdef ActiveMaterial < BaseModel
                 eval(funcCallList{ifunc});
             end
 
+            % some scaling of the equations
+
+            %% Setup equations and add some scaling
+            n  = model.(itf).numberOfElectronsTransferred; % number of electron transfer (equal to 1 for Lithium)
+            F  = model.(sd).constants.F;
+            rp = model.(sd).particleRadius;
+            
+            scalingcoef = n*F/(4*pi*rp^3/3);
+
+            state.(sd).massCons         = scalingcoef*state.(sd).massCons;
+            state.(sd).solidDiffusionEq = scalingcoef*state.(sd).solidDiffusionEq;
             
             for ieq = 1 : numel(model.equationVarNames)
                 eqs{ieq} = model.getProp(state, model.equationVarNames{ieq});
             end
 
+            
             names       = model.equationNames;
             types       = model.equationTypes;
             primaryVars = model.primaryVarNames;
@@ -223,12 +235,14 @@ classdef ActiveMaterial < BaseModel
 
         function state = updateControl(model, state, drivingForces)
             
-            state.controlCurrentSource = drivingForces.src;
+            state.I = drivingForces.src;
             
         end
 
         function state = updatePhi(model, state)
 
+            itf = 'Interface';
+            
             state.(itf).phiElectrode = state.phi;
             
         end
@@ -249,15 +263,14 @@ classdef ActiveMaterial < BaseModel
         % Only used for stand-alone model
 
             sd  = 'SolidDiffusion';
-            itf = 'SolidDiffusion';
+            itf = 'Interface';
             
-            n    = model.(amc).(itf).numberOfElectronsTransferred;
-            F    = model.constants.F;
+            n    = model.(itf).numberOfElectronsTransferred;
+            F    = model.(itf).constants.F;
             
             I = state.I;
             Rvol = state.(sd).Rvol;
 
-            n = model
             state.chargeCons = I + Rvol*n*F;
 
         end

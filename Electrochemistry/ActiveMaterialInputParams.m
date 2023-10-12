@@ -90,6 +90,8 @@ classdef ActiveMaterialInputParams < ComponentInputParams
             if paramobj.standAlone
                 % only one particle in the stand-alone model
                 paramobj.(sd).np = 1;
+                % For the standalone model, we set the volume fraction to one (no other component is present)
+                paramobj.(sd).volumeFraction = 1;
             end
             
             switch diffusionModelType
