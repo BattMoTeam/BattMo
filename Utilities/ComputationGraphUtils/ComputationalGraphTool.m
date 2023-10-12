@@ -81,7 +81,7 @@ classdef ComputationalGraphTool
                 nodename = staticprops{istat}.nodename;
                 [isok, varnameind] = ismember(nodename, nodenames);
                 if ~isok
-                    fprintf('The static variable has not been found in list')
+                    fprintf('The static variable %s has not been found in list\n', nodename);
                     cgt.isok = false;
                     return
                 end
@@ -775,7 +775,7 @@ classdef ComputationalGraphTool
         function eqvarnames = getEquationVariableNames(cgt)
         % Return the equation variables, which are defined as the tail variables and not declared as extravarnames.
             
-            A                = cgt.A;
+            A                = cgt.adjencyMatrix;
             nodenames        = cgt.nodenames;
             extravarnameinds = cgt.extraVarNameInds;
 
