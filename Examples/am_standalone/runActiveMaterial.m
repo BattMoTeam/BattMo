@@ -47,9 +47,9 @@ model = ActiveMaterial(paramobj);
 sd  = 'SolidDiffusion';
 itf = 'Interface';
 
-cElectrolyte     = 5e-1*mol/litre;
-phiElectrolyte   = 0;
-T                = 298;
+cElectrolyte   = 5e-1*mol/litre;
+phiElectrolyte = 0;
+T              = 298;
 
 cElectrodeInit   = (model.(itf).guestStoichiometry100)*(model.(itf).saturationConcentration);
 
@@ -66,7 +66,7 @@ initState.(itf).phiElectrolyte = phiElectrolyte;
 initState = model.evalVarName(initState, {itf, 'OCP'});
 
 OCP = initState.(itf).OCP;
-initState.phi = OCP + phiElectrolyte;
+initState.E = OCP + phiElectrolyte;
 
 %% setup schedule
 
@@ -106,9 +106,9 @@ model.verbose = true;
 ind = cellfun(@(state) ~isempty(state), states);
 states = states(ind);
 
-time = cellfun(@(state) state.time, states);
+time     = cellfun(@(state) state.time, states);
 cSurface = cellfun(@(state) state.(sd).cSurface, states);
-phi = cellfun(@(state) state.phi, states);
+E        = cellfun(@(state) state.E, states);
 
 figure
 plot(time/hour, cSurface/(1/litre));
@@ -116,7 +116,7 @@ xlabel('time [hour]');
 ylabel('Surface concentration [mol/L]');
 
 figure
-plot(time/hour, phi);
+plot(time/hour, E);
 xlabel('time [hour]');
 ylabel('Potential [mol/L]');
 
