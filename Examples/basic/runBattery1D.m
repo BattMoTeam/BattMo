@@ -92,7 +92,6 @@ model.AutoDiffBackend= AutoDiffBackend();
 
 inspectgraph = false;
 if inspectgraph
-    model = model.setupComputationalGraph();
     cgt = model.computationalGraph;
     return
 end
