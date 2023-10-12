@@ -70,28 +70,36 @@ initState.phi = OCP + phiElectrolyte;
 
 %% setup schedule
 
-controlsrc = 1e3;
+% Reference rate which roughly corresponds to 1 hour for the data of this example
+Iref = 0.62*ampere/(1*centi*meter)^3;
 
-total = (10*hour)/controlsrc;
+Imax = 5e1*Iref;
+
+total = 1*hour*(Iref/Imax);
 n     = 100;
 dt    = total/n;
 step  = struct('val', dt*ones(n, 1), 'control', ones(n, 1));
 
-control.src = controlsrc;
+tup = 1*second*(Iref/Imax); % rampup value for the current function, see rampupSwitchControl
+srcfunc = @(time) rampupControl(time, tup, Imax);
 
-cmin = (model.(itf).guestStoichiometry100)*(model.(itf).saturationConcentration);
-vols = model.(sd).operators.vols;
-
-% In following function, we assume that we have only one particle
-computeCaverage = @(c) (sum(vols.*c)/sum(vols));
-control.stopFunction = @(model, state, state0_inner) (computeCaverage(state.(sd).c) <= cmin);
+cmin = (model.(itf).guestStoichiometry0)*(model.(itf).saturationConcentration);
+control.stopFunction = @(model, state, state0_inner) (state.(sd).cSurface <= cmin);
+control.src = srcfunc;
 
 schedule = struct('control', control, 'step', step); 
+
+%% setup non-linear solver
+
+nls = NonLinearSolver();
+nls.errorOnFailure = false;
+
+model.nonlinearTolerance = 1e-2;
 
 %% Run simulation
 
 model.verbose = true;
-[wellSols, states, report] = simulateScheduleAD(initState, model, schedule, 'OutputMinisteps', true); 
+[wellSols, states, report] = simulateScheduleAD(initState, model, schedule, 'OutputMinisteps', true, 'NonLinearSolver', nls); 
 
 %% plotting
 
@@ -115,11 +123,28 @@ ylabel('Potential [mol/L]');
 cmin = cellfun(@(state) min(state.(sd).c), states);
 cmax = cellfun(@(state) max(state.(sd).c), states);
 
+for istate = 1 : numel(states)
+    states{istate} = model.evalVarName(states{istate}, {sd, 'cAverage'});
+end
+
+caver = cellfun(@(state) max(state.(sd).cAverage), states);
+
 figure
 hold on
-plot(time/hour, cmin, 'displayname', 'cmin');
-plot(time/hour, cmax, 'displayname', 'cmax');
+plot(time/hour, cmin /(mol/litre), 'displayname', 'cmin');
+plot(time/hour, cmax /(mol/litre), 'displayname', 'cmax');
+plot(time/hour, caver/(mol/litre), 'displayname', 'total concentration');
+
 legend show
+
+c = states{end}.(sd).c;
+r = linspace(0, model.(sd).particleRadius, model.(sd).N);
+
+figure
+plot(r, c/(mol/litre));
+xlabel('radius / m')
+ylabel('concentration / mol/L')
+title('Particle concentration profile (last time step)')
 
 
 
