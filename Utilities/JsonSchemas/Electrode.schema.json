@@ -1,12 +1,12 @@
 {
-  "$id": "file://battmo/schemas/Electrode",
+  "$id": "file://./Electrode.schema.json",
   "$schema": "http://json-schema.org/draft-07/schema#",
   "description": "Electrode",
   "type": "object",
   
   "properties" : {
-    "Coating" : {"$ref" : "Coating"},
-    "CurrentCollector" : {"$ref" : "CurrentCollector"}
+    "Coating" : {"$ref" : "Coating.schema.json"},
+    "CurrentCollector" : {"$ref" : "CurrentCollector.schema.json"}
   }
 
 }

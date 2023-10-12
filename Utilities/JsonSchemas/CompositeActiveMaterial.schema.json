@@ -1,5 +1,5 @@
 {
-  "$id": "file://battmo/schemas/CompositeActiveMaterial",
+  "$id": "file://./CompositeActiveMateria.schema.json",
   "$schema": "http://json-schema.org/draft-07/schema#",
   "description": "Active Material containing a mix of Silicon and Graphite",
   "type": "object",
@@ -9,9 +9,9 @@
                    "volumeFraction" : {"type" : "number"},
                    "use_particle_diffusion" : {"type" : "boolean"}
                  },
-  "$defs" : {"material" : { "allOf" : [ {"$ref": "thermalParameters"},
-                                        {"properties" : { "Interface": {"$ref" : "Interface"},
-                                                          "SolidDiffusion": {"$ref" : "SolidDiffusionModel"},
+  "$defs" : {"material" : { "allOf" : [ {"$ref": "ThermalComponent.schema.json#thermalParameters"},
+                                        {"properties" : { "Interface": {"$ref" : "Interface.schema.json"},
+                                                          "SolidDiffusion": {"$ref" : "SolidDiffusionModel.schema.json"},
                                                           "electronicConductivity": {"type" : "number"},
                                                           "diffusionModelType" : {"type" : "string",
                                                                                   "enum" : ["full", "simple"]},
@@ -24,10 +24,10 @@
                                       ],
 
                             "anyOf" : [ {"properties" : {"diffusionModelType" : {"const" : "full"},
-                                                         "SolidDiffusion" : {"$ref" : "FullSolidDiffusionModel"}}
+                                                         "SolidDiffusion" : {"$ref" : "FullSolidDiffusionModel.schema.json"}}
                                         },
                                         {"properties" : {"diffusionModelType" : {"const" : "simple"},
-                                                         "SolidDiffusion" : {"$ref" : "SimplifiedSolidDiffusionModel"}}
+                                                         "SolidDiffusion" : {"$ref" : "SimplifiedSolidDiffusionModel.schema.json"}}
                                         },
                                         {"not" : {"properties" : {"diffusionModelType": {"type" : "string"}}}
                                         }

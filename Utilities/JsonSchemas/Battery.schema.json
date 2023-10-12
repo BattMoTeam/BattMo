@@ -1,5 +1,5 @@
 {
-  "$id": "file://battmo/schemas/Battery",
+  "$id": "file://./Battery.schema.json",
   "$schema": "http://json-schema.org/draft-07/schema#",
   "description": "A standard battery",
   "type": "object",
@@ -7,15 +7,15 @@
 
   "properties" : {
 
-    "NegativeElectrode": {"$ref": "Electrode"},
+    "NegativeElectrode": {"$ref": "Electrode.schema.json"},
 
-    "PositiveElectrode": {"$ref": "Electrode"},
+    "PositiveElectrode": {"$ref": "Electrode.schema.json"},
 
-    "Electrolyte": {"$ref": "Electrolyte"},
+    "Electrolyte": {"$ref": "Electrolyte.schema.json"},
 
-    "Separator": {"$ref": "Separator"}
+    "Separator": {"$ref": "Separator.schema.json"}
 
   },
 
-  "anyOf" : [{"$ref": "ThermalComponent"}]
+  "required": ["NegativeElectrode", "PositiveElectrode", "Electrolyte", "Separator"]
 }

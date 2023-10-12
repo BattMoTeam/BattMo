@@ -1,46 +1,13 @@
 {
-  "$id": "file://battmo/schemas/ModelSpecification",
+  "$id": "file://./ModelSpecification.schema.json",
   "$schema": "http://json-schema.org/draft-07/schema#",
   "description": "Overall model specification. Choice of physics and component that will be included in the model",
   "type": "object",
 
   "properties" : { "include_current_collectors" : {"type" : "boolean"},
                    "use_particle_diffusion" : {"type" : "boolean"},
-                   "use_thermal" : {"type" : "boolean"},
-                   "NegativeElectrode" : {"type" : "object",
-                                          "properties": {"include_current_collectors": {"type" : "boolean"}}
-                                         },
-                   "PositiveElectrode" : {"type" : "object",
-                                          "properties": {"include_current_collectors": {"type" : "boolean"}}
-                                         }
-                 },
-
-  "allOf" : [ {"properties": {"NegativeElectrode":{"$ref" : "#/$defs/checkCurrentCollector"}}},
-              {"properties": {"PostiveElectrode": {"$ref" : "#/$defs/checkCurrentCollector"}}},
-              
-              {"anyOf" : [ {"properties" : {"use_thermal": {"const": true}}, "required": ["ThermalModel"]},
-                           {"not" : {"properties" : {"use_thermal": {"const": true}}}}
-                         ],
-               "description" : "if use_thermal is true, then a thermal model is required"},
-
-              {"dependentSchemas": {"include_current_collectors": {"anyOf" : [{"properties" : {"include_current_collectors" : {"const" : true},
-                                                                                               "NegativeElectrode": {"required": ["CurrentCollector"]},
-                                                                                               "PositiveElectrode": {"required": ["CurrentCollector"]}}},
-                                                                              {"properties" : {"include_current_collectors" : {"const" : false}}}]}},
-               "description" : "if include_current_collectors is given, check that both electrodes have current collector"}
-            ],
-  
-  "required" : ["use_thermal", "NegativeElectrode", "PositiveElectrode", "Electrolyte"],
-
-  "$defs" : {"checkCurrentCollector" :
-             {"dependentSchemas" :
-              {"include_current_collectors" :
-               {"anyOf" : [{"properties" : {"include_current_collectors": {"const": true}},
-                            "required" : ["CurrentCollector"]},
-                           {"properties" : {"include_current_collectors": {"const": false}}}]}},
-              "description" : "check that a current collector model is included if include_current_collectors is true"}
-            }
-
+                   "use_thermal" : {"type" : "boolean"}
+                 }
 
 }
 

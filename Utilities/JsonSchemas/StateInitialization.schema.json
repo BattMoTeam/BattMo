@@ -1,5 +1,5 @@
 {
-  "$id": "file://battmo/schemas/StateInitialization",
+  "$id": "file://./StateInitialization.schema.json",
   "$schema": "http://json-schema.org/draft-07/schema#",
   "description": "Input to setup the initial state of the battery",
   "type": "object",
