@@ -262,22 +262,10 @@ classdef ActiveMaterial < BaseModel
 
         end
         
-        function [state, report] = updateState(model, state, problem, dx, drivingForces)
-
-            [state, report] = updateState@BaseModel(model, state, problem, dx, drivingForces);
-            
-        end
-        
-        function [model, state] = prepareTimestep(model, state, state0, dt, drivingForces)
-            
-            [model, state] = prepareTimestep@BaseModel(model, state, state0, dt, drivingForces);
-            
-        end
-        
         function [state, report] = updateAfterConvergence(model, state0, state, dt, drivingForces)
         % [state, report] = updateAfterConvergence@ElectronicComponent(model, state0, state, dt, drivingForces);
 
-        % by not calling the parent method, we do not clean the state s
+        % by not calling the parent method, we do not clean the state 
             report = [];
             
         end
@@ -311,18 +299,11 @@ classdef ActiveMaterial < BaseModel
         end
 
         
-        function state = updateStandalonejBcSource(model, state)
-            
-            state.jBcSource = state.controlCurrentSource;
-
-        end
-
-        
         function state = dispatchTemperature(model, state)
+
             state.Interface.T = state.T;
             state.SolidDiffusion.T = state.T;
         end
-
 
 
         function state = updateAverageConcentration(model, state)
