@@ -150,7 +150,6 @@ classdef ActiveMaterial < BaseModel
                 fn = @ActiveMaterial.updatePhi;
                 model = model.registerPropFunction({{itf, 'phiElectrode'}, fn, {'phi'}});
 
-
             end
             
         end
@@ -183,8 +182,6 @@ classdef ActiveMaterial < BaseModel
             
             time = state0.time + dt;
             state = model.initStateAD(state);
-
-            state = updateControl(model, state, drivingForces);
             
             %% We call the assembly equations ordered from the graph
 
@@ -235,7 +232,7 @@ classdef ActiveMaterial < BaseModel
 
         function state = updateControl(model, state, drivingForces)
             
-            state.I = drivingForces.src;
+            state.I = drivingForces.src(state.time);
             
         end
 
@@ -271,20 +268,18 @@ classdef ActiveMaterial < BaseModel
             I = state.I;
             Rvol = state.(sd).Rvol;
 
-            state.chargeCons = I + Rvol*n*F;
+            state.chargeCons = I - Rvol*n*F;
 
         end
         
         function [state, report] = updateAfterConvergence(model, state0, state, dt, drivingForces)
-        % [state, report] = updateAfterConvergence@ElectronicComponent(model, state0, state, dt, drivingForces);
-
-        % by not calling the parent method, we do not clean the state 
-            report = [];
+            
+            [state, report] = updateAfterConvergence@BaseModel(model, state0, state, dt, drivingForces);
             
         end
          
         function model = validateModel(model, varargin)
-            
+        % 
         end
 
         %% assembly functions use in this model
