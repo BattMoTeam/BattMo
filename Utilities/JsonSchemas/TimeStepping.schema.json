@@ -1,5 +1,5 @@
 {
-  "$id": "file://battmo/schemas/TimeStepping",
+  "$id": "file://./TimeStepping.schema.json",
   "$schema": "http://json-schema.org/draft-07/schema#",
   "description": "Input for the time stepping",
   "type": "object",

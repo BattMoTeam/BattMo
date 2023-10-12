@@ -5,22 +5,22 @@
     "type": "object",
     "properties" : {
         "particleRadius": {
-            "$ref": "#/definitions/PhysicalQuantity",
+            "$ref": "PhysicalQuantity.schema.json",
             "description": "the characteristic radius of the particle",
             "symbol": "rp"
         },
         "activationEnergyOfDiffusion": {
-            "$ref": "#/definitions/PhysicalQuantity",
+            "$ref": "PhysicalQuantity.schema.json",
             "description": "the Arrhenius-type activation energy for diffusion",
             "symbol": "EaD"
         },
         "referenceDiffusionCoefficient": {
-            "$ref": "#/definitions/PhysicalQuantity",
+            "$ref": "PhysicalQuantity.schema.json",
             "description": "the pre-exponential reference diffusion coefficient in an Arrhenius-type equation",
             "symbol": "D0"
         },
         "volumetricSurfaceArea": {
-            "$ref": "#/definitions/PhysicalQuantity",
+            "$ref": "PhysicalQuantity.schema.json",
             "description": "surface area of the active material - electrolyte interface per volume of electrode"
          }
     }
