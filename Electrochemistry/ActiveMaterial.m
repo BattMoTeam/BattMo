@@ -43,8 +43,6 @@ classdef ActiveMaterial < BaseModel
         equationNames
         equationTypes
         
-
-        
     end
     
     methods
@@ -113,7 +111,7 @@ classdef ActiveMaterial < BaseModel
                 % Volumetric current in A/m^3. It corresponds to the current density multiplied with the volumetric
                 % surface area.
                 varnames{end + 1} = 'I';
-                % Potential in Electrode
+                % Potential at Electrode
                 varnames{end + 1} = 'phi';
                 % Charge Conservation equation
                 varnames{end + 1} = 'chargeCons';
@@ -142,12 +140,16 @@ classdef ActiveMaterial < BaseModel
                 
                 fn = @ActiveMaterial.updateControl;
                 fn = {fn, @(propfunction) PropFunction.drivingForceFuncCallSetupFn(propfunction)};
-                model = model.registerPropFunction({'j', fn, {}});
+                model = model.registerPropFunction({'I', fn, {}});
                 
                 fn = @ActiveMaterial.updateChargeCons;
                 inputnames = {'I', ...
-                              {sd, 'Rvol'}}
-                model = model.registerPropFunction({'chargeCons', fn, inputnamse});
+                              {sd, 'Rvol'}};
+                model = model.registerPropFunction({'chargeCons', fn, inputnames});
+
+                fn = @ActiveMaterial.updatePhi;
+                model = model.registerPropFunction({{itf, 'phiElectrode'}, fn, {'phi'}});
+
 
             end
             
@@ -158,11 +160,18 @@ classdef ActiveMaterial < BaseModel
 
             model = model.setupComputationalGraph();
 
-            % cgt = model.computationalGraph();
+            cgt = model.computationalGraph();
             
-            % model.funcCallList     = cgt.getOrderedFunctionCallList();
-            % model.primaryVarNames  = cgt.getPrimaryVariableNames();
-            % model.equationVarNames = cgt.getEquationVariableNames();
+            model.funcCallList     = cgt.getOrderedFunctionCallList();
+            model.primaryVarNames  = cgt.getPrimaryVariableNames();
+            model.equationVarNames = cgt.getEquationVariableNames();
+            
+            function str = setupName(varname)
+                shortvarname = cellfun(@(elt) Battery.shortenName(elt), varname, 'uniformoutput', false);
+                str = Battery.varToStr(shortvarname);
+            end
+            model.equationNames = cellfun(@(varname) setupName(varname), model.equationVarNames, 'uniformoutput', false);
+            model.equationTypes = repmat('cell', numel(model.equationNames));
             
         end
 
@@ -177,62 +186,27 @@ classdef ActiveMaterial < BaseModel
 
             state = updateControl(model, state, drivingForces);
             
-            state                = model.updateStandalonejBcSource(state);
-            state                = model.updateCurrent(state);
-            state.SolidDiffusion = model.SolidDiffusion.updateMassAccum(state.SolidDiffusion, state0.SolidDiffusion, dt);
-            state                = model.dispatchTemperature(state);
-            state.SolidDiffusion = model.SolidDiffusion.updateDiffusionCoefficient(state.SolidDiffusion);
-            state.SolidDiffusion = model.SolidDiffusion.updateFlux(state.SolidDiffusion);
-            state                = model.updateConcentrations(state);
-            state                = model.updatePhi(state);
-            state.Interface      = model.Interface.updateReactionRateCoefficient(state.Interface);
-            state.Interface      = model.Interface.updateOCP(state.Interface);
-            state.Interface      = model.Interface.updateEta(state.Interface);
-            state.Interface      = model.Interface.updateReactionRate(state.Interface);
-            state                = model.updateRvol(state);
-            state                = model.updateCurrentSource(state);
-            state                = model.updateChargeConservation(state);
-            state.SolidDiffusion = model.SolidDiffusion.updateMassSource(state.SolidDiffusion);
-            state.SolidDiffusion = model.SolidDiffusion.assembleSolidDiffusionEquation(state.SolidDiffusion);
-            state.SolidDiffusion = model.SolidDiffusion.updateMassConservation(state.SolidDiffusion);
-            
-            %% Setup equations and add some scaling
-            n     = model.(itf).n; % number of electron transfer (equal to 1 for Lithium)
-            F     = model.(sd).constants.F;
-            vol   = model.operators.pv;
-            rp    = model.(sd).rp;
-            vsf   = model.(sd).volumetricSurfaceArea;
-            surfp = 4*pi*rp^2;
-            
-            scalingcoef = (vsf*vol(1)*n*F)/surfp;
-            
-            eqs = {};
-            eqs{end + 1} = state.chargeCons;
-            eqs{end + 1} = scalingcoef*state.(sd).massCons;
-            eqs{end + 1} = scalingcoef*state.(sd).solidDiffusionEq;
-            
-            names = {'chargeCons', ...
-                     'massCons', ...
-                     'solidDiffusionEq'};
-            
-            types = {'cell', 'cell', 'cell'};
+            %% We call the assembly equations ordered from the graph
 
-            primaryVars = model.getPrimaryVariableNames();
+            funcCallList = model.funcCallList;
+
+            for ifunc = 1 : numel(funcCallList)
+                eval(funcCallList{ifunc});
+            end
+
+            
+            for ieq = 1 : numel(model.equationVarNames)
+                eqs{ieq} = model.getProp(state, model.equationVarNames{ieq});
+            end
+
+            names       = model.equationNames;
+            types       = model.equationTypes;
+            primaryVars = model.primaryVarNames;
             
             problem = LinearizedProblem(eqs, types, names, primaryVars, state, dt);
 
         end
 
-        function primaryvarnames = getPrimaryVariableNames(model)
-            
-            sd = 'SolidDiffusion';
-            
-            primaryvarnames = {{sd, 'c'}, ...
-                               {sd, 'cSurface'}, ...
-                               {'phi'}};
-            
-        end
-        
         function forces = getValidDrivingForces(model)
 
             forces = getValidDrivingForces@PhysicalModel(model);
@@ -240,16 +214,24 @@ classdef ActiveMaterial < BaseModel
             
         end
 
+        function primaryvarnames = getPrimaryVariableNames(model)
+
+            primaryvarnames = model.primaryVarNames;
+
+        end
+
+
         function state = updateControl(model, state, drivingForces)
             
-            G = model.G;
-            coef = G.cells.volumes;
-            coef = coef./(sum(coef));
-            
-            state.controlCurrentSource = drivingForces.src.*coef;
+            state.controlCurrentSource = drivingForces.src;
             
         end
-        
+
+        function state = updatePhi(model, state)
+
+            state.(itf).phiElectrode = state.phi;
+            
+        end
         
         function cleanState = addStaticVariables(model, cleanState, state, state0)
             
@@ -261,14 +243,24 @@ classdef ActiveMaterial < BaseModel
             cleanState.(itf).cElectrolyte   = state.(itf).cElectrolyte;
             cleanState.(itf).phiElectrolyte = state.(itf).phiElectrolyte;
             
-            sigma = model.electronicConductivity;
-            vf    = model.volumeFraction;
-            brugg = model.bruggemanCoefficient;
-            
-            cleanState.conductivity = sigma*vf.^brugg;
-            
         end
+        
+        function state = updateChargeCons(model, state)
+        % Only used for stand-alone model
 
+            sd  = 'SolidDiffusion';
+            itf = 'SolidDiffusion';
+            
+            n    = model.(amc).(itf).numberOfElectronsTransferred;
+            F    = model.constants.F;
+            
+            I = state.I;
+            Rvol = state.(sd).Rvol;
+
+            n = model
+            state.chargeCons = I + Rvol*n*F;
+
+        end
         
         function [state, report] = updateState(model, state, problem, dx, drivingForces)
 
@@ -354,6 +346,34 @@ classdef ActiveMaterial < BaseModel
         
         
         
+    end
+
+    methods (Static)
+
+        function str = varToStr(varname)
+
+            str = strjoin(varname, '_');
+
+        end
+
+        function str = shortenName(name)
+
+            namemapping = {'ActiveMaterial'   , 'am'  ; ...
+                           'ActiveMaterial1'  , 'am1' ; ...
+                           'ActiveMaterial2'  , 'am2' ; ...
+                           'Interface'        , 'itf' ; ...
+                           'SolidDiffusion'   , 'sd'};
+
+            [found, ind] = ismember(name, namemapping(:, 1));
+
+            if found
+                str = namemapping{ind, 2};
+            else
+                str = name;
+            end
+
+        end
+
     end
     
 end

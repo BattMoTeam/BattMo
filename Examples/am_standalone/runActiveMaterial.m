@@ -40,9 +40,6 @@ paramobj = paramobj.validateInputParams();
 
 model = ActiveMaterial(paramobj);
 
-cgt = model.computationalGraph();
-
-return
 %% Setup initial state
 
 % shortcuts
@@ -54,7 +51,7 @@ cElectrolyte     = 5e-1*mol/litre;
 phiElectrolyte   = 0;
 T                = 298;
 
-cElectrodeInit   = (model.(itf).theta100)*(model.(itf).cmax);
+cElectrodeInit   = (model.(itf).guestStoichiometry100)*(model.(itf).saturationConcentration);
 
 % set primary variables
 N = model.(sd).N;
@@ -66,9 +63,7 @@ initState.T = T;
 initState.(itf).cElectrolyte   = cElectrolyte;
 initState.(itf).phiElectrolyte = phiElectrolyte;
 
-initState = model.updateConcentrations(initState);
-initState = model.dispatchTemperature(initState);
-initState.(itf) = model.(itf).updateOCP(initState.(itf));
+initState = model.evalVarName(initState, {itf, 'OCP'});
 
 OCP = initState.(itf).OCP;
 initState.phi = OCP + phiElectrolyte;
@@ -84,8 +79,9 @@ step  = struct('val', dt*ones(n, 1), 'control', ones(n, 1));
 
 control.src = controlsrc;
 
-cmin = (model.(itf).theta0)*(model.(itf).cmax);
+cmin = (model.(itf).guestStoichiometry100)*(model.(itf).saturationConcentration);
 vols = model.(sd).operators.vols;
+
 % In following function, we assume that we have only one particle
 computeCaverage = @(c) (sum(vols.*c)/sum(vols));
 control.stopFunction = @(model, state, state0_inner) (computeCaverage(state.(sd).c) <= cmin);
