@@ -1,0 +1,40 @@
+{
+  "$id": "file://battmo/schemas/SEIActiveMaterial",
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "description": "Active material with a solid electrode unterface ",
+  "type": "object",
+
+  "allOf": [ {"$ref": "ActiveMaterial"}],
+  
+  "properties": {
+    "SolidElectrodeInterface": {
+      "type": "object",
+      "properties": {
+        "molecularWeight": {
+          "$ref": "#/definitions/PhysicalQuantity",
+          "description": "SEI molecular weight"},
+        "density": {
+          "$ref": "#/definitions/PhysicalQuantity",
+          "description": "SEI density"},
+        "diffusionCoefficient": {
+          "$ref": "#/definitions/PhysicalQuantity",
+          "description": "SEI diffusion coefficient [m^2/s]"}
+      }
+    },
+    "SideReaction": {
+      "type": "object"
+      "properties": {
+      "chargeTransferCoefficient": {
+        "$ref": "number",
+        "description": "the charge transfer coefficient that enters in the Butler-Volmer equation for the side reaction",
+        "symbol": "beta"
+      },
+      "reactionRateConstant": {
+      "$ref": "#/definitions/PhysicalQuantity",
+      "description": "the reaction rate constant of the electrochemical reaction",
+      "symbol": "k0"
+      }
+      }
+    }
+  }
+}
