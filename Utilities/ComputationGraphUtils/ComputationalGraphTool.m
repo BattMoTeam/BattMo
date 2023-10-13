@@ -583,7 +583,7 @@ classdef ComputationalGraphTool
         end
 
 
-        function [g2, cgt2] = plotModelGraph(cgt, modelname)
+        function [g2, cgt2] = plotModelGraph(cgt, modelname, varargin)
             
             if isempty(cgt.modelnames)
                 cgt = cgt.setupModelGraph();
@@ -603,7 +603,7 @@ classdef ComputationalGraphTool
             
             g = digraph(A, modelnames);
            
-            plot(g, 'nodefontsize', 15)
+            plot(g, varargin{:});
 
             if nargout > 0
                 g2 = g;
@@ -619,7 +619,7 @@ classdef ComputationalGraphTool
                          'markStaticVars'  , true       , ...
                          'includeNodeNames', []         , ...
                          'excludeNodeNames', []);
-            opt = merge_options(opt, varargin{:});
+            [opt, extras] = merge_options(opt, varargin{:});
 
             propfunctionlist = cgt.model.propertyFunctionList;
             nodenames        = cgt.nodenames;
@@ -679,7 +679,7 @@ classdef ComputationalGraphTool
                 end
             end
 
-            h = plot(g, 'nodefontsize', 10);
+            h = plot(g, extras{:});
 
             if nargout < 1
                 clear g
