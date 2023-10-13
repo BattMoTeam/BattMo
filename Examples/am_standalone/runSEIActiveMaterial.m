@@ -40,12 +40,13 @@ model = SEIActiveMaterial(paramobj);
 doplotgraph = false;
 if doplotgraph
     cgt = model.computationalGraph;
+    if isempty(cgt)
+        model = model.setupComputationalGraph();
+        cgt = model.computationalGraph;
+    end
     cgt.plotComputationalGraph()
     return
 end
-
-% cgt.printTailVariables
-% return
 
 %% Setup initial state
 
