@@ -612,12 +612,11 @@ classdef ComputationalGraphTool
         end
 
         
-        function [g, edgelabels] = getComputationalGraph(cgt, varargin)
+        function [g, edgelabels] = plotComputationalGraph(cgt, varargin)
             
             opt = struct('type'            , 'ascendant', ...
                          'oneParentOnly'   , false      , ...
                          'markStaticVars'  , true       , ...
-                         'doplot'          , false      , ...
                          'includeNodeNames', []         , ...
                          'excludeNodeNames', []);
             opt = merge_options(opt, varargin{:});
@@ -680,10 +679,7 @@ classdef ComputationalGraphTool
                 end
             end
 
-            if opt.doplot
-                figure
-                h = plot(g, 'nodefontsize', 10);
-            end
+            h = plot(g, 'nodefontsize', 10);
 
             if nargout < 1
                 clear g
