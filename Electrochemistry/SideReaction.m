@@ -5,8 +5,8 @@ classdef SideReaction < BaseModel
         % Physical constants
         constants = PhysicalConstants();
 
-        beta         % side reaction buttler-volmer  coefficient [-]
-        k            % side reaction rate constant [m/s]
+        chargeTransferCoefficient % side reaction buttler-volmer  coefficient [-]
+        reactionRateConstant      % side reaction rate constant [m/s]
         
     end
 
@@ -19,8 +19,8 @@ classdef SideReaction < BaseModel
              % OBS : All the submodels should have same backend (this is not assigned automaticallly for the moment)
             model.AutoDiffBackend = SparseAutoDiffBackend('useBlocks', false);
 
-            fdnames = {'beta', ...
-                       'k'};
+            fdnames = {'chargeTransferCoefficient', ...
+                       'reactionRateConstant'};
 
             model = dispatchParams(model, paramobj, fdnames);
 
@@ -60,8 +60,8 @@ classdef SideReaction < BaseModel
 
             F    = model.constants.F;
             R    = model.constants.R;
-            beta = model.beta;
-            k    = model.k;
+            beta = model.chargeTransferCoefficient;
+            k    = model.reactionRateConstant;
 
             T        = state.T;
             c        = state.c;

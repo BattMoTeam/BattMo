@@ -23,12 +23,12 @@
   "SolidElectrodeInterface" : {
     "molecularWeight": 0.162,
     "density": 1690,
+    "conductivity" : 5e-6,
     "D": 6.8e-21,
     "N": 10
   },
   "SideReaction" : {
-    "beta" : 0.5,
-    "k" : 1.36e-12,
-    "conductivity" : 5e-6
+    "chargeTransferCoefficient" : 0.5,
+    "reactionRateConstant" : 1.36e-12
   }
 }

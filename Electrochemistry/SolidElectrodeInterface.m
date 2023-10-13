@@ -6,7 +6,8 @@ classdef SolidElectrodeInterface < BaseModel
         constants = PhysicalConstants();
         
         molecularWeight % SEI molecular weight [kg/mol]
-        density         % SEI densisity [kg/m^3]
+        density         % SEI density [kg/m^3]
+        conductivity    % SEI conductivity
         D               % SEI diffusion coefficient [m^2/s]
         
         np % number of particles
@@ -23,10 +24,11 @@ classdef SolidElectrodeInterface < BaseModel
              % OBS : All the submodels should have same backend (this is not assigned automaticallly for the moment)
             model.AutoDiffBackend = SparseAutoDiffBackend('useBlocks', false);
 
-            fdnames = {'molecularWeight',
-                       'density',
-                       'D', 
-                       'np',
+            fdnames = {'molecularWeight', ...
+                       'density'        , ...
+                       'conductivity'   , ... 
+                       'D'              , ... 
+                       'np'             , ...
                        'N'};
             model = dispatchParams(model, paramobj, fdnames);
             

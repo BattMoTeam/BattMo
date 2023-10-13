@@ -177,7 +177,7 @@ classdef SEIActiveMaterial < ActiveMaterial
             itf = 'Interface';
             sr  = 'SideReaction';           
             
-            kappaSei = model.(sr).conductivity;
+            kappaSei = model.(sei).conductivity;
             F = model.(itf).constants.F;
             
             R     = state.R;
