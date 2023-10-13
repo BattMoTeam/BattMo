@@ -53,7 +53,7 @@
         "properties": {
           "Model": {
             "properties": {
-              "use_thermal": true
+              "use_thermal": {"const": true}
             }
           }
         }
@@ -68,28 +68,46 @@
         }
       }
     },
-    {  "if": {
+    {
+      "if": {
         "properties": {
           "Model": {
             "properties": {
-              "include_current_collectors": true
+              "include_current_collectors": {"const": true}
             }
           }
         }
       },
       "then": {
-        "properties": {
-          "Battery": {
+        "anyOf": [
+          {
             "properties": {
-              "PositiveElectrode": {
-                "required": ["CurrentCollector"]
+              "Battery": {
+                "properties": {
+                  "PositiveElectrode": {
+                    "required": [
+                      "CurrentCollector"
+                    ]
+                  }
+                }
+              }
+            }
+          },
+          {
+            "properties": {
+              "Battery": {
+                "properties": {
+                  "NegativeElectrode": {
+                    "required": [
+                      "CurrentCollector"
+                    ]
+                  }
+                }
               }
             }
           }
-        }
+        ]
       }
     }
   ]
-
- 
-  }
+}

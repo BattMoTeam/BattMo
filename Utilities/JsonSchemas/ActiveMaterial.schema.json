@@ -45,8 +45,8 @@
       "symbol": ""
     }
   },
-  {
-    "allOf": [
+  
+    "allOf": [{
       "if": {
         "properties": {
           "diffusionModelType": {
@@ -63,9 +63,9 @@
         "SolidDiffusion": {
           "$ref": "SimplifiedSolidDiffusionModel.schema.json"
         }
-      }
+      }}
     ]
-  },
+  ,
   "required": [
     "Interface",
     "SolidDiffusion"
