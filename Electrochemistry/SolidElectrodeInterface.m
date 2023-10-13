@@ -4,14 +4,20 @@ classdef SolidElectrodeInterface < BaseModel
 
         % Physical constants
         constants = PhysicalConstants();
+
+        %% Input parameters
+
+        % standard parameters
         
-        molecularWeight % SEI molecular weight [kg/mol]
-        density         % SEI density [kg/m^3]
-        conductivity    % SEI conductivity
-        D               % SEI diffusion coefficient [m^2/s]
+        molecularWeight      % SEI molecular weight [kg/mol]
+        density              % SEI density [kg/m^3]
+        conductivity         % SEI conductivity
+        diffusionCoefficient % SEI diffusion coefficient [m^2/s]
+
+        % Discretization parameters
         
-        np % number of particles
-        N  % discretization parameter for SEI model (planar assumption)
+        N  % Number of discretization intervals in the sei layer model [-]
+        np % Number of computational grid cells (typically set by parent model)
         
     end
 
@@ -24,11 +30,11 @@ classdef SolidElectrodeInterface < BaseModel
              % OBS : All the submodels should have same backend (this is not assigned automaticallly for the moment)
             model.AutoDiffBackend = SparseAutoDiffBackend('useBlocks', false);
 
-            fdnames = {'molecularWeight', ...
-                       'density'        , ...
-                       'conductivity'   , ... 
-                       'D'              , ... 
-                       'np'             , ...
+            fdnames = {'molecularWeight'     , ...
+                       'density'             , ...
+                       'conductivity'        , ... 
+                       'diffusionCoefficient', ... 
+                       'np'                  , ...
                        'N'};
             model = dispatchParams(model, paramobj, fdnames);
             
@@ -50,8 +56,7 @@ classdef SolidElectrodeInterface < BaseModel
             varnames{end + 1} = 'cInterface';
             % external surface concentration
             varnames{end + 1} = 'cExternal';
-            % surface concentration
-            %% FIXME : change name delta to more explicit name (sei width)
+            % SEI width
             varnames{end + 1} = 'delta';
             % SEI growth velocity
             varnames{end + 1} = 'v';
@@ -104,7 +109,7 @@ classdef SolidElectrodeInterface < BaseModel
             
             np = model.np;
             N  = model.N;
-            D  = model.D;
+            D  = model.diffusionCoefficient;
             
             celltbl.cells = (1 : np)';
             celltbl = IndexArray(celltbl);

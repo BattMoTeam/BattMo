@@ -24,7 +24,7 @@
     "molecularWeight": 0.162,
     "density": 1690,
     "conductivity" : 5e-6,
-    "D": 6.8e-21,
+    "diffusionCoefficient": 6.8e-21,
     "N": 10
   },
   "SideReaction" : {

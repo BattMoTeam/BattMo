@@ -16,12 +16,12 @@
         "density": {
           "$ref": "#/definitions/PhysicalQuantity",
           "description": "SEI density"},
-        "diffusionCoefficient": {
-          "$ref": "#/definitions/PhysicalQuantity",
-          "description": "SEI diffusion coefficient [m^2/s]"},
         "conductivity": {
           "$ref": "#/definitions/PhysicalQuantity",
           "description": "SEI conductivity"},
+        "diffusionCoefficient": {
+          "$ref": "#/definitions/PhysicalQuantity",
+          "description": "SEI diffusion coefficient [m^2/s]"}
       }
     },
     "SideReaction": {
