@@ -36,6 +36,8 @@ classdef SideReaction < BaseModel
             model = registerVarAndPropfuncNames@BaseModel(model);
             
             varnames = {};
+            % Temperature
+            varnames{end + 1} = 'T';
             % potential in electrode
             varnames{end + 1} = 'phiElectrode';
             % solvent concentration in SEI film - value at interface
@@ -50,7 +52,7 @@ classdef SideReaction < BaseModel
             model = model.registerVarNames(varnames);
             
             fn = @SideReaction.updateReactionRate;
-            inputnames = {'phiElectrolyte', 'phiElectrode', 'externalPotentialDrop', 'c'};
+            inputnames = {'T', 'phiElectrolyte', 'phiElectrode', 'externalPotentialDrop', 'c'};
             model = model.registerPropFunction({'R', fn, inputnames});
             
         end

@@ -23,6 +23,17 @@ classdef SEIActiveMaterialInputParams < ActiveMaterialInputParams
             paramobj = paramobj.validateInputParams();
             
         end
+
+        function paramobj = validateInputParams(paramobj)
+
+            paramobj = validateInputParams@ActiveMaterialInputParams(paramobj);
+            
+            if paramobj.standAlone
+                % only one particle in the stand-alone model
+                paramobj.SolidElectrodeInterface.np = 1;
+            end
+
+        end
         
     end
     

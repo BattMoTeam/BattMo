@@ -1,7 +1,7 @@
 %% run stand-alone active material model
 
 % clear the workspace and close open figures
-clear
+clear all
 close all
 
 %% Import the required modules from MRST
@@ -21,52 +21,57 @@ sei   = 'SolidElectrodeInterface';
 sr    = 'SideReaction';
 elyte = 'Electrolyte';
 
-%% We setup the battery geometry ("bare" battery with no current collector). We use that to recover the parameters for the active material of the positive electrode, which is instantiate later
 paramobj = SEIActiveMaterialInputParams(jsonstruct);
 
-paramobj.externalCouplingTerm = [];
-paramobj.(sd).N   = 10;
-paramobj.(sd).np  = 1;
-paramobj.(sei).N  = 10;
-paramobj.(sei).np = 1;
-xlength = 57e-6; 
-G = cartGrid(1, xlength);
-G = computeGeometry(G);
-paramobj.G = G;
+paramobj.(sd).N  = 10;
+paramobj.(sei).N = 10;
+
+paramobj.standAlone = true;
+
+paramobj = paramobj.validateInputParams();
 
 model = SEIActiveMaterial(paramobj);
-model.standAlone = true;
+% model = ActiveMaterial(paramobj);
+% model = SolidElectrodeInterface(paramobj.(sei));
+% model = SideReaction(paramobj.(sr));
+% model = Interface(paramobj.(itf));
+% model = FullSolidDiffusionModel(paramobj.(sd));
 
-cgt = ComputationalGraphTool(model);
+doplotgraph = false;
+if doplotgraph
+    cgt = model.computationalGraph;
+    cgt.plotComputationalGraph()
+    return
+end
+
 % cgt.printTailVariables
 % return
 
 %% Setup initial state
 
-Nsd = model.(sd).N;
+Nsd  = model.(sd).N;
 Nsei = model.(sei).N;
 
-cElectrodeInit   = 0.75*model.(itf).cmax;
+cElectrodeInit   = 0.75*model.(itf).saturationConcentration;
 phiElectrodeInit = 0;
 cElectrolyte     = 5e-1*mol/litre;
 T                = 298.15; % reference temperature in Interface.
 
-epsiSEI     = 0.05;                % From Safari
+epsiSEI     = 0.05;            % From Safari
 cECsolution = 4.541*mol/litre; % From Safari
 cECexternal = epsiSEI*cECsolution;
 
 % compute OCP and  phiElectrolyte
-clear state
-state.cElectrodeSurface = cElectrodeInit;
-state.T = T;
-state = model.(itf).updateOCP(state);
-OCP = state.OCP;
+initState.T = T;
+initState.(sd).cSurface = cElectrodeInit;
+initState = model.evalVarName(initState, {itf, 'OCP'});
+
+OCP = initState.(itf).OCP;
 phiElectrolyte = phiElectrodeInit - OCP;
 
 % set primary variables
 initState.E                = phiElectrodeInit;
 initState.(sd).c           = cElectrodeInit*ones(Nsd, 1);
-initState.(sd).cSurface    = cElectrodeInit;
 initState.(sei).c          = cECexternal*ones(Nsei, 1);
 initState.(sei).cInterface = cECexternal;
 initState.(sei).delta      = 5*nano*meter;
@@ -82,36 +87,61 @@ initState.(sei).cExternal      = cECexternal;
 
 %% setup schedule
 
-total = 1*hour;
+% Reference rate which roughly corresponds to 1 hour for the data of this example
+Iref = 1.3e-4*ampere/(1*centi*meter)^2;
+
+Imax = Iref;
+
+total = 1*hour*(Iref/Imax);
 n     = 100;
 dt    = total/n;
 step  = struct('val', dt*ones(n, 1), 'control', ones(n, 1));
 
-control.src = 2e-5;
+tup = 1*second*(Iref/Imax); % rampup value for the current function, see rampupSwitchControl
+srcfunc = @(time) rampupControl(time, tup, Imax);
+
+cmin = (model.(itf).guestStoichiometry0)*(model.(itf).saturationConcentration);
+control.stopFunction = @(model, state, state0_inner) (state.(sd).cSurface <= cmin);
+control.src = srcfunc;
 
 schedule = struct('control', control, 'step', step); 
+
+%% setup non-linear solver
+
+nls = NonLinearSolver();
+nls.errorOnFailure = false;
+
+model.nonlinearTolerance = 1e-2;
 
 %% Run simulation
 
 model.verbose = true;
-
-nls = NonLinearSolver;
-nls.errorOnFailure = false;
-
-dopack = false;
-if dopack
-    dataFolder = 'BattMo';
-    problem = packSimulationProblem(initState, model, schedule, dataFolder, 'Name', 'temp');
-    problem.SimulatorSetup.OutputMinisteps = true; 
-    simulatePackedProblem(problem);
-    [globvars, states, report] = getPackedSimulatorOutput(problem);
-else
-    [wellSols, states, report] = simulateScheduleAD(initState, model, schedule, ...
-                                                    'OutputMinisteps', true, ...
-                                                    'NonLinearSolver', nls); 
-end
+[wellSols, states, report] = simulateScheduleAD(initState, model, schedule, 'OutputMinisteps', true, 'NonLinearSolver', nls);
 
 %% Plotting
+
+ind = cellfun(@(state) ~isempty(state), states);
+states = states(ind);
+
+time     = cellfun(@(state) state.time, states);
+
+cSurface = cellfun(@(state) state.(sd).cSurface, states);
+
+figure
+plot(time/hour, cSurface/(1/litre));
+xlabel('time [hour]');
+ylabel('Surface concentration [mol/L]');
+
+E        = cellfun(@(state) state.E, states);
+
+figure
+plot(time/hour, E);
+xlabel('time [hour]');
+ylabel('Potential / Voltage');
+
+return
+
+%%
 
 
 ind = cellfun(@(state) ~isempty(state), states);
