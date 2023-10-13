@@ -134,7 +134,7 @@ hold on
 plot(time/hour, cmin /(mol/litre), 'displayname', 'cmin');
 plot(time/hour, cmax /(mol/litre), 'displayname', 'cmax');
 plot(time/hour, caver/(mol/litre), 'displayname', 'total concentration');
-
+title('Concentration in particle / mol/L')
 legend show
 
 c = states{end}.(sd).c;
