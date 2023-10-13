@@ -237,7 +237,7 @@ classdef SEIActiveMaterial < ActiveMaterial
             scalingcoef = 0.5*Mw/rho;
             state.(sei).widthEq = (1/scalingcoef)*state.(sei).widthEq;
             
-            deltaref = 1e-2*model.(sd).particleRadius;
+            deltaref = 1*nano*meter;
 
             scalingcoef = deltaref;
             state.(sei).interfaceBoundaryEq = (1/scalingcoef)*state.(sei).interfaceBoundaryEq;

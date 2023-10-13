@@ -7,7 +7,6 @@ classdef SideReaction < BaseModel
 
         beta         % side reaction buttler-volmer  coefficient [-]
         k            % side reaction rate constant [m/s]
-        conductivity % ionic conductivity [S/m]
         
     end
 
@@ -21,8 +20,7 @@ classdef SideReaction < BaseModel
             model.AutoDiffBackend = SparseAutoDiffBackend('useBlocks', false);
 
             fdnames = {'beta', ...
-                       'k'   , ...
-                       'conductivity'};
+                       'k'};
 
             model = dispatchParams(model, paramobj, fdnames);
 

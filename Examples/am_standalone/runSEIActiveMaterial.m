@@ -71,6 +71,7 @@ phiElectrolyte = phiElectrodeInit - OCP;
 
 % set primary variables
 initState.E                = phiElectrodeInit;
+initState.I                = 0;
 initState.(sd).c           = cElectrodeInit*ones(Nsd, 1);
 initState.(sei).c          = cECexternal*ones(Nsei, 1);
 initState.(sei).cInterface = cECexternal;
@@ -90,14 +91,14 @@ initState.(sei).cExternal      = cECexternal;
 % Reference rate which roughly corresponds to 1 hour for the data of this example
 Iref = 1.3e-4*ampere/(1*centi*meter)^2;
 
-Imax = Iref;
+Imax = 1e1*Iref;
 
 total = 1*hour*(Iref/Imax);
 n     = 100;
 dt    = total/n;
 step  = struct('val', dt*ones(n, 1), 'control', ones(n, 1));
 
-tup = 1*second*(Iref/Imax); % rampup value for the current function, see rampupSwitchControl
+tup = dt; % rampup value for the current function, see rampupSwitchControl
 srcfunc = @(time) rampupControl(time, tup, Imax);
 
 cmin = (model.(itf).guestStoichiometry0)*(model.(itf).saturationConcentration);
@@ -111,7 +112,7 @@ schedule = struct('control', control, 'step', step);
 nls = NonLinearSolver();
 nls.errorOnFailure = false;
 
-model.nonlinearTolerance = 1e-2;
+model.nonlinearTolerance = 1e-5;
 
 %% Run simulation
 
@@ -120,66 +121,79 @@ model.verbose = true;
 
 %% Plotting
 
+set(0, 'defaulttextfontsize', 15);
+set(0, 'defaultaxesfontsize', 15);
+set(0, 'defaultlinelinewidth', 3);
+
 ind = cellfun(@(state) ~isempty(state), states);
 states = states(ind);
 
-time     = cellfun(@(state) state.time, states);
+time = cellfun(@(state) state.time, states);
 
 cSurface = cellfun(@(state) state.(sd).cSurface, states);
-
 figure
 plot(time/hour, cSurface/(1/litre));
-xlabel('time [hour]');
-ylabel('Surface concentration [mol/L]');
+xlabel('time / h');
+ylabel('Surface concentration / mol/L');
+title('Surface concentration');
 
-E        = cellfun(@(state) state.E, states);
-
+E = cellfun(@(state) state.E, states);
 figure
 plot(time/hour, E);
-xlabel('time [hour]');
-ylabel('Potential / Voltage');
+xlabel('time / h');
+ylabel('Potential / V');
+title('Potential');
 
-return
+I = cellfun(@(state) state.I, states);
+figure
+plot(time/hour, I);
+xlabel('time / h');
+ylabel('Current density / A/m^2');
+title('Current density');
 
-%%
 
+cmin = cellfun(@(state) min(state.(sd).c), states);
+cmax = cellfun(@(state) max(state.(sd).c), states);
 
-ind = cellfun(@(state) ~isempty(state), states);
-states = states(ind);
-
-doplotconcs = false;
-% concentration evolution in particle
-if doplotconcs
-    figure
-    xr = (model.(sd).rp/model.(sd).N) * (1 : model.(sd).N)';
-    for ind = 1 : numel(states)
-        state = states{ind};
-        cla
-        plot(xr, state.(sd).c)
-        xlabel('r / [m]')
-        ylabel('concentration')
-        title(sprintf('time : %g s', state.time));
-        pause(0.1)
-    end
+for istate = 1 : numel(states)
+    states{istate} = model.evalVarName(states{istate}, {sd, 'cAverage'});
 end
 
-%%
+caver = cellfun(@(state) max(state.(sd).cAverage), states);
 
 figure
-d = cellfun(@(state) state.(sei).delta, states);
-t = cellfun(@(state) state.time, states);
-plot(t, d);
-xlabel('time / [s]');
-ylabel('sie width / [m]');
+hold on
+plot(time/hour, cmin /(mol/litre), 'displayname', 'cmin');
+plot(time/hour, cmax /(mol/litre), 'displayname', 'cmax');
+plot(time/hour, caver/(mol/litre), 'displayname', 'total concentration');
+title('Concentration in particle / mol/L')
+legend show
 
+delta = cellfun(@(state) state.(sei).delta, states);
+figure
+plot(time/hour, delta/(nano*meter));
+xlabel('time [hour]');
+ylabel('thickness / nm');
+title('SEI thickness')
+
+c = states{end}.(sd).c;
+r = linspace(0, model.(sd).particleRadius, model.(sd).N);
 
 figure
-E = cellfun(@(state) state.E, states);
-plot(t, E);
-xlabel('time / [s]');
-ylabel('voltage / [V]');
+plot(r, c/(mol/litre));
+xlabel('radius / m')
+ylabel('concentration / mol/L')
+title('Particle concentration profile (last time step)')
 
+r = states{end}.(sei).delta;
+r = linspace(0, r, model.(sei).N);
+c = states{end}.(sei).c;
 
+figure
+plot(r/(nano*meter), c/(mol/litre));
+xlabel('x / mm')
+ylabel('concentration / mol/L');
+title('Concentration profile in SEI layer (last time step)');
 
 
 
