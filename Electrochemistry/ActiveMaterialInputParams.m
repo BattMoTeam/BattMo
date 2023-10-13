@@ -116,11 +116,6 @@ classdef ActiveMaterialInputParams < ComponentInputParams
                     
                 end
 
-              case 'interParticleOnly'
-
-                paramobj = mergeParameters(paramobj, {{'volumeFraction'}, {itf, 'volumeFraction'}});
-                paramobj.SolidDiffusion = [];
-                
               otherwise
                 
                 error('Unknown diffusionModelType %s', diffusionModelType);

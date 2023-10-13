@@ -112,7 +112,7 @@ classdef ActiveMaterial < BaseModel
                 % surface area.
                 varnames{end + 1} = 'I';
                 % Potential at Electrode
-                varnames{end + 1} = 'phi';
+                varnames{end + 1} = 'E';
                 % Charge Conservation equation
                 varnames{end + 1} = 'chargeCons';
                 
@@ -148,7 +148,7 @@ classdef ActiveMaterial < BaseModel
                 model = model.registerPropFunction({'chargeCons', fn, inputnames});
 
                 fn = @ActiveMaterial.updatePhi;
-                model = model.registerPropFunction({{itf, 'phiElectrode'}, fn, {'phi'}});
+                model = model.registerPropFunction({{itf, 'phiElectrode'}, fn, {'E'}});
 
             end
             
@@ -206,7 +206,6 @@ classdef ActiveMaterial < BaseModel
             for ieq = 1 : numel(model.equationVarNames)
                 eqs{ieq} = model.getProp(state, model.equationVarNames{ieq});
             end
-
             
             names       = model.equationNames;
             types       = model.equationTypes;
@@ -240,7 +239,7 @@ classdef ActiveMaterial < BaseModel
 
             itf = 'Interface';
             
-            state.(itf).phiElectrode = state.phi;
+            state.(itf).phiElectrode = state.E;
             
         end
         
@@ -309,8 +308,9 @@ classdef ActiveMaterial < BaseModel
         
         function state = dispatchTemperature(model, state)
 
-            state.Interface.T = state.T;
+            state.Interface.T      = state.T;
             state.SolidDiffusion.T = state.T;
+            
         end
 
 
