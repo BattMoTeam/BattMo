@@ -15,7 +15,7 @@
   },
   "NegativeElectrode": {
     "Coating" : {
-      "density" : 2000,
+      "density" : 1900,
       "bruggemanCoefficient": 1.5,
       "ActiveMaterial": {
         "massFraction": 0.94,
@@ -58,7 +58,7 @@
   },
   "PositiveElectrode": {
     "Coating" : {
-      "density" : 4000,
+      "density" : 3500,
       "bruggemanCoefficient": 1.5,
       "ActiveMaterial": {
         "massFraction": 0.95,
