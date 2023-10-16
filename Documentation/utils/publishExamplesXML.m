@@ -56,7 +56,7 @@ function publishExamplesXML(varargin)
                 run_publish(filename, publish_opt)
                 fprintf(' Done.\n');
                 count = count + 1;
-            catch 
+            catch e
                 fprintf('\n *** Error in publish example: %s\n', e.message);
             end
             pause(pstatus);

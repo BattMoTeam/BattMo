@@ -42,6 +42,9 @@ def parse_publish_to_xml(exfile):
     else:
         includeRstDescriptionFile = "\n"
 
+    # include link
+    includeLink = ".. _" + tmp[-1].replace('.xml', '') + ":\n\n"
+
     def addIdent(txt):
         return "  ".join(("\n"+txt.lstrip()).splitlines(True)) + "\n"
 
@@ -53,7 +56,11 @@ def parse_publish_to_xml(exfile):
                 ptag = paragraphs.tag;
                 if ptag == "steptitle":
                     # Heading of subsection
-                    sect = "".join(paragraphs.itertext());
+                    if headcount == 0:
+                        sect = includeLink
+                    else:
+                        sect = ""
+                    sect = sect + "".join(paragraphs.itertext());
                     tit_length = len(sect);
                     if headcount == 0:
                         # Make heading
@@ -65,7 +72,7 @@ def parse_publish_to_xml(exfile):
                     if headcount == 0:
                         sect = sect + '*Generated from ' + example_filename + '*\n\n'
                         sect = sect + includeRstDescriptionFile
-                    headcount += 1;
+                        headcount += 1;
                     output += sect
                 elif ptag == "text":
                     # Simply text
