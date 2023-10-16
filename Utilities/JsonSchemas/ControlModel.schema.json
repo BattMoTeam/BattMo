@@ -12,22 +12,35 @@
                                  "lowerCutoffVoltage" : {"type" : "number"},
                                  "upperCutoffVoltage" : {"type" : "number"}
                                },
-                               "anyOf": [
-                                 {"properties": {"controlPolicy" : {"const" : "IEswitch"},
-                                                 "$ref" : "#/$defs/IEswitchControlModel"}},
-                                 {"properties": {"controlPolicy" : {"const" : "CCCV"},
-                                                 "$ref" : "#/$defs/CcCvControlModel"}},
-                                 {"properties": {"controlPolicy" : {"const" : "CV"},
-                                                 "$ref" : "#/$defs/CvControlModel"}},
-                                 {"properties": {"controlPolicy" : {"const" : "CC"},
-                                                 "$ref" : "#/$defs/CcControlModel"}},
-                                 {"properties": {"controlPolicy" : {"const" : "powerControl"},
-                                                 "$ref" : "#/$defs/powerControlModel"}}
+                               "allOf": [
+                                {
+                                "if":
+                                 {"properties": {"controlPolicy" : {"const" : "IEswitch"}},
+                                 "then": {
+                                                 "$ref" : "#/$defs/IEswitchControlModel"}}},
+
+                                 {"if": {"properties": {"controlPolicy" : {"const" : "CCCV"}},
+                                 "then":{
+                                                 "$ref" : "#/$defs/CcCvControlModel"}}},
+
+
+                                 {"if": {"properties": {"controlPolicy" : {"const" : "CV"}},
+                                 "then": {
+                                                 "$ref" : "#/$defs/CvControlModel"}}},
+
+                                 {"if": {"properties": {"controlPolicy" : {"const" : "CC"}},
+                                 "then": {
+                                                 "$ref" : "#/$defs/CcControlModel"}}},
+
+                                 {"if": {"properties": {"controlPolicy" : {"const" : "powerControl"}},
+                                 "then": {
+                                                 "$ref" : "#/$defs/powerControlModel"}}}
+                                
                                ]
                               }
                  },
 
-  "defs" : {
+  "$defs" : {
     "IEswitchControlModel" : {
       "properties" :
       {"tup" : {"type" : "number",
