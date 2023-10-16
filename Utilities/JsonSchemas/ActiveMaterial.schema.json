@@ -43,10 +43,18 @@
       "$ref": "PhysicalQuantity.schema.json",
       "description": "the specificHeatCapacity of the component",
       "symbol": ""
+    },
+    "name": {
+      "type": "string",
+      "description": "name of active material"
     }
   },
-  
-    "allOf": [{
+  "required": [
+    "Interface",
+    "SolidDiffusion"
+  ],
+  "anyOf": [
+    {
       "if": {
         "properties": {
           "diffusionModelType": {
@@ -55,19 +63,19 @@
         }
       },
       "then": {
-        "SolidDiffusion": {
-          "$ref": "FullSolidDiffusionModel.schema.json"
+        "properties": {
+          "SolidDiffusion": {
+            "$ref": "FullSolidDiffusionModel.schema.json"
+          }
         }
       },
       "else": {
-        "SolidDiffusion": {
-          "$ref": "SimplifiedSolidDiffusionModel.schema.json"
+        "properties": {
+          "SolidDiffusion": {
+            "$ref": "SimplifiedSolidDiffusionModel.schema.json"
+          }
         }
-      }}
-    ]
-  ,
-  "required": [
-    "Interface",
-    "SolidDiffusion"
+      }
+    }
   ]
 }
