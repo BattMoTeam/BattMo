@@ -66,4 +66,5 @@ that are available in |battmo|
    publishedExamples/runJsonScript   
    publishedExamples/battMoTutorial
    publishedExamples/runBattery1D
-
+   publishedExamples/runSEIActiveMaterial
+   

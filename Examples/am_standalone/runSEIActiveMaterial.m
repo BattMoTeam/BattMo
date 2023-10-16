@@ -1,4 +1,4 @@
-%% run stand-alone active material model
+%% Particle simulation with SEI layer growth
 
 % clear the workspace and close open figures
 clear all
@@ -26,43 +26,40 @@ paramobj = SEIActiveMaterialInputParams(jsonstruct);
 paramobj.(sd).N  = 10;
 paramobj.(sei).N = 10;
 
+%% Setup the model
+
+% We use a stand alone model for the particle
 paramobj.standAlone = true;
 
 paramobj = paramobj.validateInputParams();
 
+% We initiate the model
 model = SEIActiveMaterial(paramobj);
-% model = ActiveMaterial(paramobj);
-% model = SolidElectrodeInterface(paramobj.(sei));
-% model = SideReaction(paramobj.(sr));
-% model = Interface(paramobj.(itf));
-% model = FullSolidDiffusionModel(paramobj.(sd));
 
-doplotgraph = false;
-if doplotgraph
-    cgt = model.computationalGraph;
-    if isempty(cgt)
-        model = model.setupComputationalGraph();
-        cgt = model.computationalGraph;
-    end
-    cgt.plotComputationalGraph()
-    return
-end
 
 %% Setup initial state
 
 Nsd  = model.(sd).N;
 Nsei = model.(sei).N;
 
+% Initial concentration value at the electrode
 cElectrodeInit   = 0.75*model.(itf).saturationConcentration;
+% Initial value of the potential at the electrode
 phiElectrodeInit = 0;
+% Initial concentration value in the electrolyte
 cElectrolyte     = 5e-1*mol/litre;
-T                = 298.15; % reference temperature in Interface.
+% Temperature
+T                = 298.15; 
 
-epsiSEI     = 0.05;            % From Safari
-cECsolution = 4.541*mol/litre; % From Safari
+% The following datas come from :cite:`Safari_2009`
+% Porosity of the SEI film
+epsiSEI     = 0.05;
+% Solvent concentration in the bulk of the electrolyte
+cECsolution = 4.541*mol/litre; 
+% Solvent concentration in the SEI film
 cECexternal = epsiSEI*cECsolution;
 
-% compute OCP and  phiElectrolyte
+% We compute the OCP from the given data and use it to assign electrical potential in electrolyte
 initState.T = T;
 initState.(sd).cSurface = cElectrodeInit;
 initState = model.evalVarName(initState, {itf, 'OCP'});
@@ -70,7 +67,7 @@ initState = model.evalVarName(initState, {itf, 'OCP'});
 OCP = initState.(itf).OCP;
 phiElectrolyte = phiElectrodeInit - OCP;
 
-% set primary variables
+% From the values computed above we set the values of the initial state
 initState.E                = phiElectrodeInit;
 initState.I                = 0;
 initState.(sd).c           = cElectrodeInit*ones(Nsd, 1);
@@ -79,7 +76,7 @@ initState.(sei).cInterface = cECexternal;
 initState.(sei).delta      = 5*nano*meter;
 initState.R                = 0;
 
-% set static variable fields
+% we set also static variable fields
 initState.T = T;
 initState.(itf).cElectrolyte   = cElectrolyte;
 initState.(itf).phiElectrolyte = phiElectrolyte;
@@ -87,7 +84,7 @@ initState.(sr).phiElectrolyte  = phiElectrolyte;
 initState.(sei).cExternal      = cECexternal;
 
 
-%% setup schedule
+%% Setup schedule
 
 % Reference rate which roughly corresponds to 1 hour for the data of this example
 Iref = 1.3e-4*ampere/(1*centi*meter)^2;
@@ -99,7 +96,8 @@ n     = 100;
 dt    = total/n;
 step  = struct('val', dt*ones(n, 1), 'control', ones(n, 1));
 
-tup = dt; % rampup value for the current function, see rampupSwitchControl
+% rampup value for the current function, see rampupSwitchControl
+tup = dt; 
 srcfunc = @(time) rampupControl(time, tup, Imax);
 
 cmin = (model.(itf).guestStoichiometry0)*(model.(itf).saturationConcentration);
@@ -108,7 +106,7 @@ control.src = srcfunc;
 
 schedule = struct('control', control, 'step', step); 
 
-%% setup non-linear solver
+%% Setup non-linear solver
 
 nls = NonLinearSolver();
 nls.errorOnFailure = false;
@@ -125,6 +123,7 @@ model.verbose = true;
 set(0, 'defaulttextfontsize', 15);
 set(0, 'defaultaxesfontsize', 15);
 set(0, 'defaultlinelinewidth', 3);
+set(0, 'defaultfigureposition', [10, 10, 800, 400]);
 
 ind = cellfun(@(state) ~isempty(state), states);
 states = states(ind);
@@ -144,13 +143,6 @@ plot(time/hour, E);
 xlabel('time / h');
 ylabel('Potential / V');
 title('Potential');
-
-I = cellfun(@(state) state.I, states);
-figure
-plot(time/hour, I);
-xlabel('time / h');
-ylabel('Current density / A/m^2');
-title('Current density');
 
 
 cmin = cellfun(@(state) min(state.(sd).c), states);
@@ -195,10 +187,6 @@ plot(r/(nano*meter), c/(mol/litre));
 xlabel('x / mm')
 ylabel('concentration / mol/L');
 title('Concentration profile in SEI layer (last time step)');
-
-
-
-
 
 
 %{
