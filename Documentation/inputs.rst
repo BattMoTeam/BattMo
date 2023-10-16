@@ -2,10 +2,6 @@
 BattMo Li-ion battery
 =====================
 
-
-Model hierarchy
-===============
-
 We use a multi-model approach. The models are organized in a hierarchy, meaning that a given model can have
 sub-models. A model is supposed to define all the functions and variables that will be needed to simulate a physical
 system separately. At the top, we have a battery model with the submodels:
