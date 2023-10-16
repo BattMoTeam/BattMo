@@ -224,22 +224,12 @@ To get the results we use the matlab cellfun function to extract the values Cont
   xlabel('time [hours]')
   ylabel('Cell Current [A]')
 
-
-.. code-block:: none
-
-  Solving timestep 001/100:                                            -> 50 Seconds, 399 Milliseconds
-  Solving timestep 002/100: 50 Seconds, 399 Milliseconds               -> 100 Seconds, 799 Milliseconds
-  Solving timestep 003/100: 100 Seconds, 799 Milliseconds              -> 151 Seconds, 199 Milliseconds
-  Solving timestep 004/100: 151 Seconds, 199 Milliseconds              -> 201 Seconds, 599 Milliseconds
-  Solving timestep 005/100: 201 Seconds, 599 Milliseconds              -> 252 Seconds
-  Solving timestep 006/100: 252 Seconds                                -> 302 Seconds, 399 Milliseconds
-  Solving timestep 007/100: 302 Seconds, 399 Milliseconds              -> 352 Seconds, 799 Milliseconds
-  Solving timestep 008/100: 352 Seconds, 799 Milliseconds              -> 403 Seconds, 199 Milliseconds
-  ...
-
 .. figure:: battMoTutorial_01.png
   :figwidth: 100%
 
 .. figure:: battMoTutorial_02.png
   :figwidth: 100%
 
+
+
+complete source code can be found :ref:`here<battMoTutorial_source>`

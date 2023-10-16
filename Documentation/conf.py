@@ -114,7 +114,7 @@ html_theme = 'sphinx_rtd_theme'
 # documentation.
 html_theme_options = {
     # Toc options
-    'collapse_navigation': True,
+    'collapse_navigation': False,
     'sticky_navigation': True,
     'navigation_depth': 4,
     'includehidden': True,

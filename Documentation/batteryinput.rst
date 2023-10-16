@@ -79,7 +79,7 @@ The coating contains three components : The active material, a binder and a cond
    :target: _images/coatinggraph.png
    :width: 70%
    :align: center
-           
+
 .. class:: CoatingInputParams
 
    Class used to set the parameters for the coating material

@@ -7,6 +7,7 @@ that are available in |battmo|
 
 * |battmo| supports **json inputs**. The json input is specified in schemas, which also can be used to validate your input
   data. :todo:`Add page for schema and link it here`. Some standard data sets are included :todo:`add page on that and link it here`
+  and add much more
 
   First, we load and parse the json input file using the commands
 
@@ -65,5 +66,4 @@ that are available in |battmo|
    publishedExamples/runJsonScript   
    publishedExamples/battMoTutorial
    publishedExamples/runBattery1D
-
 

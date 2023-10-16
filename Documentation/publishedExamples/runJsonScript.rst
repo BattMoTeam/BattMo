@@ -100,19 +100,6 @@ We use the function :code:`runBatteryJson` to run the simulation with json input
   output = runBatteryJson(jsonstruct);
 
 
-.. code-block:: none
-
-  Solving timestep 01/45:                      -> 3 Seconds, 937 Milliseconds
-  Solving timestep 02/45: 3 Seconds, 937 Milliseconds -> 7 Seconds, 875 Milliseconds
-  Solving timestep 03/45: 7 Seconds, 875 Milliseconds -> 15 Seconds, 750 Milliseconds
-  Solving timestep 04/45: 15 Seconds, 750 Milliseconds -> 31 Seconds, 500 Milliseconds
-  Solving timestep 05/45: 31 Seconds, 500 Milliseconds -> 63 Seconds
-  Solving timestep 06/45: 63 Seconds           -> 126 Seconds
-  Solving timestep 07/45: 126 Seconds          -> 252 Seconds
-  Solving timestep 08/45: 252 Seconds          -> 378 Seconds
-  ...
-
-
 Plotting
 ^^^^^^^^
 
@@ -138,3 +125,6 @@ Plotting
 .. figure:: runJsonScript_01.png
   :figwidth: 100%
 
+
+
+complete source code can be found :ref:`here<runJsonScript_source>`

@@ -34,6 +34,7 @@ BattMo documentation
    BattMo Li-ion battery <inputs>
    Json input description <json>
    Battery Geometries <geometryinput>
+   advancedtopics
    References <bibliography>
    
 Acknowledgements
