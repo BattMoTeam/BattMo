@@ -7,6 +7,7 @@ import jsonschema
 from pathlib import Path
 import resolveFileInputJson as rjson
 import os
+import sys
 
 schema_folder = rjson.getBattMoDir() / Path("Utilities") / Path("JsonSchemas")
 base_uri = "file://battmo/schemas/"
@@ -27,9 +28,8 @@ def addJsonSchema(jsonSchemaName):
 
 
 def validate(jsonfile):
-
     # We collect the schema.json files and add them in the resolver
-    for (dirpath, dirnames, filenames) in os.walk(schema_folder):
+    for dirpath, dirnames, filenames in os.walk(schema_folder):
         for filename in filenames:
             if filename.endswith(".schema.json"):
                 jsonSchemaName = filename.replace(".schema.json", "")
@@ -50,3 +50,8 @@ def validate(jsonfile):
     v.validate(jsonstruct)
 
     return True
+
+
+if __name__ == "__main__":
+    # Allow for command line call
+    validate(sys.argv[1])
