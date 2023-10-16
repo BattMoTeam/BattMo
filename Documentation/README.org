@@ -15,7 +15,10 @@
    #+begin_src
      pip install sphinxcontrib-bibtex
    #+end_src
-   It is at least working with python version 3.11.0
+** globabsubs extension
+   #+begin_src
+     pip install sphinxcontrib-globalsubs
+   #+end_src
    
 * Workflow for editing
 
