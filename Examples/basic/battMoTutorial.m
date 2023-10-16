@@ -47,6 +47,7 @@ ne      = 'NegativeElectrode';
 pe      = 'PositiveElectrode';
 elyte   = 'Electrolyte';
 thermal = 'ThermalModel';
+co      = 'Coating';
 am      = 'ActiveMaterial';
 itf     = 'Interface';
 sd      = 'SolidDiffusion';
@@ -81,8 +82,8 @@ paramobj = paramobj.validateInputParams();
 % model can be found here:
 % :class:`FullSolidDiffusionModelInputParams <Electrochemistry.FullSolidDiffusionModelInputParams>`.
 
-paramobj.(ne).(am).(sd).N = 5;
-paramobj.(pe).(am).(sd).N = 5;
+paramobj.(ne).(co).(am).(sd).N = 5;
+paramobj.(pe).(co).(am).(sd).N = 5;
 
 %%% Setting up the geometry
 % Here, we setup the 1D computational mesh that will be used for the
@@ -118,16 +119,16 @@ model = Battery(paramobj);
 % of each electrode.
 
 T = 298.15;
-elde = {ne,pe};
+elde = {ne, pe};
 
 figure
 hold on
 for i = 1:numel(elde)
-    el_itf = model.(elde{i}).(am).(itf);
+    el_itf = model.(elde{i}).(co).(am).(itf);
 
-    theta100 = el_itf.theta100;
-    theta0   = el_itf.theta0;
-    cmax     = el_itf.cmax;
+    theta100 = el_itf.guestStoichiometry100;
+    theta0   = el_itf.guestStoichiometry0;
+    cmax     = el_itf.saturationConcentration;
 
     soc   = linspace(0, 1);
     theta = soc*theta100 + (1 - soc)*theta0;
@@ -242,7 +243,12 @@ E = cellfun(@(x) x.Control.E, states);
 I = cellfun(@(x) x.Control.I, states);
 time = cellfun(@(x) x.time, states); 
 
+set(0, 'defaultlinelinewidth', 3);
+set(0, 'DefaultAxesFontSize', 16);
+set(0, 'defaulttextfontsize', 18);
+
 figure()
+
 subplot(1,2,1)
 plot(time/hour, E)
 xlabel('time [hours]')

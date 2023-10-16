@@ -7,7 +7,7 @@
 % specific things. To use this functionality we must add these modules to 
 % the matlab path by running:
 
-mrstModule add ad-core mrst-gui mpfa agmg linearsolvers
+mrstModule add ad-core mrst-gui
 
 %% We load the json files
 % When loading a json file using :code:`parseBattmoJson`, the output is the standard matlab structure that is

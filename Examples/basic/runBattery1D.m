@@ -182,9 +182,7 @@ model.nonlinearTolerance = 1e-3*model.Control.Imax;
 model.verbose = true;
 
 %% Run the simulation
-tic
 [wellSols, states, report] = simulateScheduleAD(initstate, model, schedule, 'OutputMinisteps', true, 'NonLinearSolver', nls); 
-toc
 
 %% Process output and recover the output voltage and current from the output states.
 ind = cellfun(@(x) not(isempty(x)), states); 
@@ -198,14 +196,9 @@ time = cellfun(@(x) x.time, states);
 
 figure
 plot(time, E);
-figure
-plot(time, T);
-            
+
 % writeOutput(model, states, 'output.h5')
 
-
-%% Plot the the output voltage and current
-% plotDashboard(model, states, 'step', 0);
 
 %{
 Copyright 2021-2023 SINTEF Industry, Sustainable Energy Technology
