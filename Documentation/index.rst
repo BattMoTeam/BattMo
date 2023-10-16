@@ -23,6 +23,7 @@ BattMo documentation
 =================================
 
 .. toctree::
+   :includehidden: 
               
    Installation <installation>
    Getting started <tutorials>

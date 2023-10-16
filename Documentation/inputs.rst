@@ -1,15 +1,49 @@
-=======================
-Input Parameter Classes
-=======================
+=====================
+BattMo Li-ion battery
+=====================
 
-We need to propagate inputs in each of submodels. To do that we use a hierarchy of input classes that is sent
-recursively to the models. The input class is named accordingly to the model it corresponds to and its source is located
-in the same folder.
+
+Model hierarchy
+===============
+
+We use a multi-model approach. The models are organized in a hierarchy, meaning that a given model can have
+sub-models. A model is supposed to define all the functions and variables that will be needed to simulate a physical
+system separately. At the top, we have a battery model with the submodels:
+
+* Negative electrode model
+* Positive electrode model
+* Electrolyte model
+* Separator model
+* ThermalModel model
+* Control model
+
+
+.. figure:: img/cutbatterygraph.png
+   :target: _images/cutbatterygraph.png
+
+
+The negative and positive electrodes are instances of the same Electrode model. The electrode model has two sub-models:
+
+* Coating model
+* Current Collector model (optional)
+  
+The coating model has four sub-models:
+
+* Active material model
+* Binder
+* Conductive additive model
+
+In the case of a composite material, the coating model will have a different structure with two active material models (see )
 
 .. toctree::
-   :maxdepth: 1
-              
+   :hidden: 
+
    Battery <batteryinput>
+
+
+
+
+
 
 
 

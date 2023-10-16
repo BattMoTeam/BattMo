@@ -1,14 +1,15 @@
+.. toctree::
+                      
 Tutorials
 =========
 
 Here, we present some tutorials and give a short description of the example scripts that are available in :code:`BattMo`.
 
    
-
-Tutorial 1
+Tutorial 2
 ----------
 
-`A first BattMo simulation <publishedExamples/battMoTutorial.html>`_
+A first BattMo simulation :doc:`publishedExamples/battMoTutorial`
 
    .. image:: img/battMoTutorial.png
               :width: 80%
@@ -16,7 +17,11 @@ Tutorial 1
 Tutorial 2
 ----------
 
-`A first BattMo simulation based exclusively on json input <publishedExamples/runJsonScript.html>`_
+A second :doc:`publishedExamples/runBattery1D`
+
+Composite material example
+--------------------------
+
 
 
 More Examples

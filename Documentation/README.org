@@ -15,7 +15,7 @@
    #+begin_src
      pip install sphinxcontrib-bibtex
    #+end_src
-   At the moment, it is not working.
+   It is at least working with python version 3.11.0
    
 * Workflow for editing
 

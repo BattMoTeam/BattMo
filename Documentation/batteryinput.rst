@@ -12,7 +12,7 @@ The convention for the input model class names is to write them using the model 
 property names are in black color while the model they belong to is in blue.
 
 .. figure:: img/cutbatterygraph.png
-   
+   :target: _images/cutbatterygraph.png
 
 .. class:: BatteryInputParams
 
@@ -52,7 +52,10 @@ An electrode consists of an active material, which contains an interface model a
 current collector. Each of those components have a own set of input parameters.
 
 .. figure:: img/electrodegraph.png
-
+   :target: _images/electrodegraph.png
+   :width: 50%
+   :align: center
+           
 .. class:: ElectrodeInputParams
 
    Class used to setup the parameters for the electrode
@@ -74,7 +77,10 @@ Coating
 The coating contains three components : The active material, a binder and a conductive additive
 
 .. figure:: img/coatinggraph.png
-
+   :target: _images/coatinggraph.png
+   :width: 70%
+   :align: center
+           
 .. class:: CoatingInputParams
 
    Class used to set the parameters for the coating material
@@ -97,7 +103,10 @@ Active Material
 ===============
 
 .. figure:: img/activematerialgraph.png
-
+   :target: _images/activematerialgraph.png
+   :width: 50%
+   :align: center
+           
 .. class:: ActiveMaterialInputParams
 
    Class used to setup the active material parameters
