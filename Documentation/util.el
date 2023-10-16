@@ -8,7 +8,17 @@
     )
   )
 
-(defun battmodoc-copy ()
+(defun battmodoc-build-examples ()
+  (interactive)
+  (let ((outputbuffer (get-buffer-create "*publishoutput*"))
+        (directory "/home/xavier/Matlab/Projects/battmo/Documentation/utils/"))
+    (pop-to-buffer outputbuffer)
+    (erase-buffer)
+    (start-process "battmo-publish" outputbuffer "python" (concat directory "buildPublishedExamples.py"))
+    )
+  )
+
+(defun battmodoc-publish ()
   (interactive)
   (let ((default-directory "/home/xavier/Matlab/Projects/battmo/Documentation/"))
     (shell-command "cp -rf _build/html/* /home/xavier/Matlab/Projects/battmo-doc-test/" )
