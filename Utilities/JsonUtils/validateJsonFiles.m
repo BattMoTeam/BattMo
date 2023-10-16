@@ -11,6 +11,7 @@ function is_valid = validateJsonFiles(jsonfiles)
     % Validate using python script
     for k = 1:numel(jsonfiles)
         jsonfile = jsonfiles{k};
+        dispif(mrstVerbose, 'Validating %s\n', jsonfile);
         is_valid{k} = py.validationJsonScript.validate(jsonfile);
         assert(is_valid{k}, 'jsonfile %s is not valid', jsonfile);
     end
