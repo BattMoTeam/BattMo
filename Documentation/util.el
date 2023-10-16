@@ -13,6 +13,11 @@
   (let ((default-directory "/home/xavier/Matlab/Projects/battmo/Documentation/"))
     (shell-command "cp -rf _build/html/* /home/xavier/Matlab/Projects/battmo-doc-test/" )
     )
+  (let ((default-directory "/home/xavier/Matlab/Projects/battmo-doc-test/"))
+    (shell-command "git add *" )
+    (shell-command "git commit -m \"update in doc\"")
+    (shell-command "git push -f" )
+    )  
   )
 
 (defun convert-to-attribute ()
