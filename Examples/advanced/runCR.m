@@ -212,11 +212,8 @@ if doplot
 end
 
 %% Run simulation and save output to folder
-if ~exist('tag')
-    tag = datetime;
-end
-name = sprintf('cr2016-%s', tag);
-dataFolder = sprintf('BattMo_%s', date);
+name = 'runCR';
+dataFolder = 'BattMo';
 problem = packSimulationProblem(initstate, model, schedule, dataFolder, 'Name', name, 'NonLinearSolver', nls);
 problem.SimulatorSetup.OutputMinisteps = true;
 
