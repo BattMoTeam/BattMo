@@ -78,7 +78,7 @@
               "height" : { "type" : "number"},
               "tab" : {
                 "type" : "object",
-                "description" : "parameters for the tabs"
+                "description" : "parameters for the tabs",
                 "properties" : {
                   "cap_tabs" : {"type" : "boolean",
                                 "description" : "If true, the tabs are removed and the parameters are only used to set the current collector external coupling"},
