@@ -13,7 +13,8 @@ function publishExamplesXML(varargin)
 
     if isempty(opt.exampleNames)
         exampleNames = {{'basic', 'battMoTutorial'}, ...
-                        {'json_input', 'runJsonScript'}};
+                        {'json_input', 'runJsonScript'}, ...
+                        {'basic', 'runBattery1D'}};
     else
         exampleNames = opt.exampleNames;
     end
