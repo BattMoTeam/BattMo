@@ -149,7 +149,7 @@ publishedExampleDir = os.path.realpath(__file__)
 publishedExampleDir = os.path.dirname(publishedExampleDir)
 publishedExampleDir = join(publishedExampleDir, '..', 'publishedExamples')
 
-if not sys.argv:
+if len(sys.argv) < 2:
     allfiles = os.walk(publishedExampleDir)
     allfiles = [f[-1] for f in allfiles]
     xmlfiles = [f for f in allfiles[0] if splitext(f)[-1] == '.xml']
