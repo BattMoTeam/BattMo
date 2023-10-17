@@ -35,8 +35,9 @@ BattMo documentation
    Json input description <json>
    Battery Geometries <geometryinput>
    advancedtopics
+   juliabridge
    References <bibliography>
-   
+      
 Acknowledgements
 ================
 

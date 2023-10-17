@@ -5,26 +5,9 @@ Getting Started
 Here, we present some guidelines and tutorials to get started with and give a short description of the example scripts
 that are available in |battmo|
 
-* |battmo| supports **json inputs**. The json input is specified in schemas, which also can be used to validate your input
-  data. :todo:`Add page for schema and link it here`. Some standard data sets are included :todo:`add page on that and link it here`
-  and add much more
+* |battmo| is straightforward to run from a single json, as described in this :ref:`Example<runFirstJsonScript>`. 
 
-  First, we load and parse the json input file using the commands
-
-  .. code:: matlab
-
-     filename = fullfile('ParameterData', 'BatteryCellParameters', 'LithiumIonBatteryCell', 'lithium_ion_battery_nmc_graphite.json')
-     jsonstruct = parseBattmoJson(filename)
-
-  Then, we run it as follows
-  
-  .. code:: matlab
-
-     runBatteryJson(filename)
-
-  To visualize the results, we refer to the :todo:`add link`
-     
-* In this :ref:`json example <runJsonScript>`, we show how to combine different json files
+* In this :ref:`json example <runJsonScript>`, we show how to combine different json files from different sources
   
 * The :ref:`battMoTutorial <battMoTutorial>` describes the different step of a simulation when it is set manually beyond the options that
   are given by the json input format. They consist of
@@ -63,6 +46,7 @@ that are available in |battmo|
 .. toctree::
    :hidden:
 
+   runFirstJsonScript
    publishedExamples/runJsonScript   
    publishedExamples/battMoTutorial
    publishedExamples/runBattery1D
