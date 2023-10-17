@@ -36,6 +36,7 @@ BattMo documentation
    Battery Geometries <geometryinput>
    advancedtopics
    juliabridge
+   gui
    References <bibliography>
       
 Acknowledgements
