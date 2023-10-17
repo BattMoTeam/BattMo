@@ -1,10 +1,11 @@
-===============
-Advanced topics
-===============
+============================
+Advanced examples and topics
+============================
 
 .. toctree::
    :maxdepth: 2
-              
+
+   publishedExamples/runElectrolyser
    MRST <mrst>
    Model initialisation <modelinitialisation>
    Control models <controls>
