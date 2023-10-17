@@ -20,9 +20,10 @@ ad = 'ConductingAdditive';
 sd  = 'SolidDiffusion';
 itf = 'Interface';
 
-%% Setup the properties of Li-ion battery materials and cell design
+%% Setup the properties of the battery
 %
-%_We_load_the_property_of_a_composite silicon graphite electrode, see :ref:`compositeElectrode`
+% We load the property of a composite silicon graphite electrode, see :ref:`compositeElectrode`
+%
 
 jsonstruct_composite_material = parseBattmoJson('ParameterData/BatteryCellParameters/LithiumIonBatteryCell/lithium_ion_battery_nmc_silicon_graphite.json');
 
@@ -74,13 +75,12 @@ paramobj = gen.updateBatteryInputParams(paramobj);
 
 %% Model Instantiation
 % We instantiate the model
+
 model = Battery(paramobj);
 
 
-
-
-%% Setup the time step schedule 
-% We will run two period a discharge followed by a charge
+%% Setup schedule (control and time stepping)
+% We will simulate two consecutive periods: a discharge followed by a charge.
 %
 % We start with the charge period
 
@@ -109,6 +109,7 @@ initstate = model.setupInitialState();
 %% Setup the properties of the nonlinear solver 
 % We adjust some settings for the nonlinear solver 
 nls = NonLinearSolver();
+
 %%
 % Change default maximum iteration number in nonlinear solver
 nls.maxIterations = 10;
@@ -124,6 +125,7 @@ model.nonlinearTolerance = 1e-3*model.Control.Imax;
 %% 
 % We use verbosity
 model.verbose = true;
+
 
 %% Run the simulation for the discharge
 

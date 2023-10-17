@@ -12,26 +12,12 @@ that are available in |battmo|
 * The :ref:`battMoTutorial <battMoTutorial>` describes the different step of a simulation when it is set manually beyond the options that
   are given by the json input format. They consist of
 
-  * Setup model parameters (physical parameters and modeling choice)
-  * Setup the geometry (BattMo supports a variety of geometry)
-  * Initialise the model
-  * Setup a simulation schedule (time stepping and control)
-  * Setup the initial state
-  * Run the simulation
-  * Visualize the results
-    
-
-  .. image:: img/battMoTutorial.png
-             :width: 80%
-
 * In this :ref:`example <runBattery1D>`, more options are used such as some settings of the non-linear solver.
-
-* Composite material example
-
-  :todo:`add here or maybe in gallery`
 
 * More Examples
 
+  :todo:`fix this section`
+        
   In the :code:`Examples` directory examples, the following examples can be found. They should run out of the box (write
   the name of script after :ref:`installing BattMo<installation>`). If not, tell us!
   
@@ -51,4 +37,5 @@ that are available in |battmo|
    publishedExamples/battMoTutorial
    publishedExamples/runBattery1D
    publishedExamples/runSEIActiveMaterial
-   
+   publishedExamples/runSiliconGraphiteBattery
+      
