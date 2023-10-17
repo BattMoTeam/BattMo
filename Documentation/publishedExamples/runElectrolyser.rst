@@ -1,7 +1,7 @@
 
 .. _runElectrolyser:
 
-Alkalyne Membrane Electrolyser
+Alkaline Membrane Electrolyser
 ----------------------------------------------------
 *Generated from runElectrolyser.m*
 
