@@ -1,3 +1,5 @@
+(pyvenv-activate "~/Python/battmodoc-env/")
+
 (defun battmodoc-build ()
   (interactive)
   (let ((outputbuffer (get-buffer-create "*buildoutput*"))
@@ -27,7 +29,9 @@
     (shell-command "git add *" )
     (shell-command "git commit -m \"update in doc\"")
     (shell-command "git push -f" )
-    )  
+    )
+  (browse-url "https://github.com/BattMoTeam/battmo-doc-test/actions")
+  (browse-url "https://battmoteam.github.io/battmo-doc-test/")
   )
 
 (defun convert-to-attribute ()
