@@ -1,9 +1,21 @@
-(pyvenv-activate "~/Python/battmodoc-env/")
+;;; Utils for building BattMo doc
 
+;; Use user-login-name to get user name
+;; (cond '(compare-strings user-login-name "xavier")
+(pyvenv-activate "~/Python/battmodoc-env/")
+(defconst docdir "/home/xavier/Matlab/Projects/battmo/Documentation/")
+(defconst utilsdir "/home/xavier/Matlab/Projects/battmo/Documentation/utils/")
+(defconst testdir "/home/xavier/Matlab/Projects/battmo-doc-test/")
+
+(defconst docdir "/home/august/Projects/Battery/BattMo-dev/Documentation/")
+(defconst utilsdir "/home/august/Projects/Battery/BattMo-dev/Documentation/utils/")
+(defconst testdir "/home/august/Projects/Battery/battmo-doc-test/")
+
+     
 (defun battmodoc-build ()
   (interactive)
   (let ((outputbuffer (get-buffer-create "*buildoutput*"))
-        (default-directory "/home/xavier/Matlab/Projects/battmo/Documentation/"))
+        (default-directory docdir))
     (pop-to-buffer outputbuffer)
     (erase-buffer)
     (start-process "battmo-build" outputbuffer "make" "html")
@@ -13,7 +25,7 @@
 (defun battmodoc-build-examples ()
   (interactive)
   (let ((outputbuffer (get-buffer-create "*publishoutput*"))
-        (directory "/home/xavier/Matlab/Projects/battmo/Documentation/utils/"))
+        (directory utilsdir))
     (pop-to-buffer outputbuffer)
     (erase-buffer)
     (start-process "battmo-publish" outputbuffer "python" (concat directory "buildPublishedExamples.py"))
@@ -22,10 +34,10 @@
 
 (defun battmodoc-publish ()
   (interactive)
-  (let ((default-directory "/home/xavier/Matlab/Projects/battmo/Documentation/"))
-    (shell-command "cp -rf _build/html/* /home/xavier/Matlab/Projects/battmo-doc-test/" )
+  (let ((default-directory docdir))
+    (shell-command (concat "cp -rf _build/html/* " testdir))
     )
-  (let ((default-directory "/home/xavier/Matlab/Projects/battmo-doc-test/"))
+  (let ((default-directory testdir))
     (shell-command "git add *" )
     (shell-command "git commit -m \"update in doc\"")
     (shell-command "git push -f" )
