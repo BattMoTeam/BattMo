@@ -18,6 +18,7 @@
 import os
 import xml.etree.ElementTree
 import re
+import sys
 from os.path import *
 
 def parse_publish_to_xml(exfile):
@@ -148,9 +149,12 @@ publishedExampleDir = os.path.realpath(__file__)
 publishedExampleDir = os.path.dirname(publishedExampleDir)
 publishedExampleDir = join(publishedExampleDir, '..', 'publishedExamples')
 
-allfiles = os.walk(publishedExampleDir)
-allfiles = [f[-1] for f in allfiles]
-xmlfiles = [f for f in allfiles[0] if splitext(f)[-1] == '.xml']
+if not sys.argv:
+    allfiles = os.walk(publishedExampleDir)
+    allfiles = [f[-1] for f in allfiles]
+    xmlfiles = [f for f in allfiles[0] if splitext(f)[-1] == '.xml']
+else:
+    xmlfiles = [join(publishedExampleDir, sys.argv[1] + '.xml')]
 
 for xmlfile in xmlfiles:
     xmlpath = join(publishedExampleDir, xmlfile)
