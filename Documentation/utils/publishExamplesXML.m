@@ -4,7 +4,7 @@ function publishExamplesXML(varargin)
 %
 % To convert the examples from xml to rst format (as needed by documentation), it should be enough to run 
 %    python buildPublishedExamples
-% in terminal (script buildPublishedExamples.py is located in the same directory as publishExamplesXML.m)
+% in a terminal (script buildPublishedExamples.py is located in the same directory as publishExamplesXML.m)
     opt = struct('replace'     , false, ...
                  'extension'   , 'xml', ...
                  'catchError'  , false, ...
@@ -12,20 +12,19 @@ function publishExamplesXML(varargin)
     opt = merge_options(opt, varargin{:});
 
     if isempty(opt.exampleNames)
-        exampleNames = {{'basic', 'battMoTutorial'}    , ...
-                        {'json_input', 'runJsonScript'}, ...
-                        {'basic', 'runBattery1D'}      , ...
-                        {'am_standalone', 'runSEIActiveMaterial'}};
+        exampleNames = {{'Examples', 'basic', 'battMoTutorial'}              , ...
+                        {'Examples', 'json_input', 'runJsonScript'}          , ...
+                        {'Examples', 'basic', 'runBattery1D'}                , ...
+                        {'Examples', 'am_standalone', 'runSEIActiveMaterial'}, ...
+                        {'Electrolyser', 'Examples', 'runElectrolyser'}};
     else
         exampleNames = opt.exampleNames;
     end
 
-    if isempty(exampleNames)
-        error('Please, provide list of examples you want to publish from the Examples directory');
+    if ~iscell(exampleNames)
+        exampleNames = {exampleNames};
     end
-        
-    BattMoExampleDir = fullfile(battmoDir(), 'Examples');
-
+    
     outputDir = fullfile(battmoDir(), 'Documentation', 'publishedExamples');
     if ~exist(outputDir, 'dir')
         mkdir(outputDir);
@@ -41,7 +40,7 @@ function publishExamplesXML(varargin)
         if ischar(exampleName)
             exampleName = {exampleName};
         end
-        filename = fullfile(BattMoExampleDir, exampleName{:});
+        filename = fullfile(battmoDir, exampleName{:});
         
         isOk = isExamplePublished(filename, opt.extension);
 
