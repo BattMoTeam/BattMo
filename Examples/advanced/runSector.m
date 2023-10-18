@@ -8,28 +8,25 @@ end
 
 mrstModule add ad-core mrst-gui mpfa agmg
 
-%% We setup the geometrical parameters for a 4680 battery. 
+%% We setup the geometrical parameters for a 4680 battery.
 %% Those will be gathered in structure spiralparams (see below) and used by SpiralBatteryGenerator to generate the spiral layered geometry of the jelly roll
-
-% Inner radius of the jelly roll
-rInner = 2*milli*meter; 
 
 % widths of each component ordered as
 % - positive current collector
 % - positive electrode
-% - electrolyte separator 
+% - electrolyte separator
 % - negative electrode
 % - negative current collector
 
-widths = [25, 64, 15, 57, 15]*micro*meter; 
+widths = [25, 64, 15, 57, 15]*micro*meter;
 
 widthDict = containers.Map( ...
-    {'ElectrolyteSeparator',... 
+    {'ElectrolyteSeparator',...
      'NegativeActiveMaterial',...
      'NegativeCurrentCollector',...
      'PositiveActiveMaterial',...
      'PositiveCurrentCollector'},...
-    widths); 
+    widths);
 
 nwidths = [widthDict('PositiveActiveMaterial');...
            widthDict('PositiveCurrentCollector');...
@@ -38,33 +35,35 @@ nwidths = [widthDict('PositiveActiveMaterial');...
            widthDict('NegativeActiveMaterial');...
            widthDict('NegativeCurrentCollector');...
            widthDict('NegativeActiveMaterial');...
-           widthDict('ElectrolyteSeparator')]; 
+           widthDict('ElectrolyteSeparator')];
 
 dr = sum(nwidths);
 
-% Outer radius of the jelly roll
+% Radii of the jelly roll
+rInner = 2*milli*meter;
 rOuter = 46*milli*meter/2;
-% Height of the jelly roll
-L = 80*milli*meter; 
+dR = rOuter - rInner;
 
-dR = rOuter - rInner; 
+% Height of the jelly roll
+L = 80*milli*meter;
+
 % Computed number of windings
 nwindings = ceil(dR/dr);
 
-% number of discretization cells in radial direction for each component.
+% Number of discretization cells in radial direction for each component.
 nrDict = containers.Map( ...
-    {'ElectrolyteSeparator',... 
+    {'ElectrolyteSeparator',...
      'NegativeActiveMaterial',...
      'NegativeCurrentCollector',...
      'PositiveActiveMaterial',...
      'PositiveCurrentCollector'},...
-    [3, 3, 3, 3, 3]); 
-
+    [3, 3, 3, 3, 3]);
 
 % Number of discretization cells in the longitudonal
 nL  = 5;
 nas = 3;
-% structure that describes the tab setups (see SpiralBatteryGenerator)
+
+% Structure that describes the tab setups (see SpiralBatteryGenerator)
 tabparams.tabcase   = 'aligned tabs';
 tabparams.width     = 3*milli*meter;
 tabparams.fractions = linspace(0.01, 0.9, 6);
@@ -77,145 +76,132 @@ spiralparams = struct('nwindings'   , nwindings, ...
                       'L'           , L        , ...
                       'nL'          , nL       , ...
                       'tabparams'   , [], ...
-                      'angleuniform', true); 
+                      'angleuniform', true);
 
 % The input material parameters given in json format are used to populate the paramobj object.
 jsonstruct = parseBattmoJson(fullfile('ParameterData','BatteryCellParameters','LithiumIonBatteryCell','lithium_ion_battery_nmc_graphite.json'));
 jsonstruct.include_current_collectors = true;
 
-paramobj = BatteryInputParams(jsonstruct); 
+paramobj = BatteryInputParams(jsonstruct);
 
 th = 'ThermalModel';
 %paramobj.(th).externalHeatTransferCoefficientSideFaces = 100*watt/meter^2;
 %paramobj.(th).externalHeatTransferCoefficientTopFaces = 10*watt/meter^2;
-paramobj.(th).externalHeatTransferCoefficient=10;
-%gen = SpiralBatteryGenerator(); 
-gen = SectorBatteryGenerator(); 
+paramobj.(th).externalHeatTransferCoefficient = 10;
+
+gen = SectorBatteryGenerator();
 
 paramobj = gen.updateBatteryInputParams(paramobj, spiralparams);
 
-model = Battery(paramobj); 
+model = Battery(paramobj);
 
 %% Setup schedule
 CRate = 1;
+fac   = 2;
+total = 1.4*hour/CRate;
+n     = 10;
+dt0   = total*1e-6;
+times = getTimeSteps(dt0, n, total, fac);
 
-fac   = 2; 
-total = 1.4*hour/CRate; 
-n     = 10; 
-dt0   = total*1e-6; 
-times = getTimeSteps(dt0, n, total, fac); 
+% Compute the cell capacity, which used to compute schedule from CRate
+capacity = computeCellCapacity(model);
+inputI   = (capacity/hour)*CRate;
+inputE   = 3;
 
-%% We compute the cell capacity, which used to compute schedule from CRate
-C = computeCellCapacity(model); 
-inputI = (C/hour)*CRate; 
-inputE = 3; 
-
-tt = times(2 : end); 
-
-step = struct('val', diff(times), 'control', ones(numel(tt), 1)); 
-
-tup = 0.1/CRate; 
+tt   = times(2 : end);
+step = struct('val', diff(times), 'control', ones(numel(tt), 1));
+tup  = 0.1/CRate;
 
 simcase = 'discharge';
 
 switch simcase
-    
+
   case 'discharge'
     srcfunc = @(time, I, E) rampupSwitchControl(time, tup, I, E, ...
                                                 model.Control.Imax, ...
                                                 model.Control.lowerCutoffVoltage);
-    % we setup the control by assigning a source and stop function.
+
+    % Setup the control by assigning a source and stop function.
     control = struct('src', srcfunc, 'IEswitch', true);
-    schedule  = struct('control', control, 'step', step); 
+    schedule  = struct('control', control, 'step', step);
 
     %% We setup the initial state
-    initstate = model.setupInitialState(); 
+    initstate = model.setupInitialState();
     initElytec = 1*mol/litre;
     initstate.Electrolyte.c = initElytec*ones(model.Electrolyte.G.cells.num, 1);
-    
+
   case 'charge'
-    
+
     model.SOC = 0.01;
     initstate = model.setupInitialState();
     srcfunc  = @(time, I, E) rampupSwitchControl(time, tup, I, E, ...
                                                  - model.Control.Imax, ...
-                                                 model.Control.lowerCutoffVoltage); 
+                                                 model.Control.lowerCutoffVoltage);
     control = struct('src', srcfunc, 'IEswitch', true);
-    schedule = struct('control', control, 'step', step); 
-    
+    schedule = struct('control', control, 'step', step);
+
   otherwise
     error('simcase not recognized')
 
 end
 
-% Setup nonlinear solver 
-nls = NonLinearSolver(); 
+% Setup nonlinear solver
+nls = NonLinearSolver();
 
 % Change default maximum iteration number in nonlinear solver
-nls.maxIterations = 10; 
+nls.maxIterations = 10;
 % Change default behavior of nonlinear solver, in case of error
-nls.errorOnFailure = false; 
+nls.errorOnFailure = false;
 % Change default tolerance for nonlinear solver
-model.nonlinearTolerance = 1e-4; 
+model.nonlinearTolerance = 1e-4;
 
-use_diagonal_ad = false;
-if(use_diagonal_ad)
-    model.AutoDiffBackend = DiagonalAutoDiffBackend(); 
-    model.AutoDiffBackend.useMex = true; 
-    model.AutoDiffBackend.modifyOperators = true; 
-    model.AutoDiffBackend.rowMajor = true; 
-    model.AutoDiffBackend.deferredAssembly = false; % error with true for now
-else
-    model.AutoDiffBackend = AutoDiffBackend(); 
-end
-
+% Options for experimenting with linear solver
 nls.timeStepSelector = StateChangeTimeStepSelector('TargetProps', {{'Control', 'E'}}, 'targetChangeAbs', 0.03);
 linearsolver = 'direct';
 switch linearsolver
   case 'agmg'
     mrstModule add agmg
-    nls.LinearSolver = AGMGSolverAD('verbose', false, 'reduceToCell', true); 
-    nls.LinearSolver.tolerance = 1e-3; 
-    nls.LinearSolver.maxIterations = 30; 
-    nls.maxIterations = 10; 
+    nls.LinearSolver = AGMGSolverAD('verbose', false, 'reduceToCell', true);
+    nls.LinearSolver.tolerance = 1e-3;
+    nls.LinearSolver.maxIterations = 30;
+    nls.maxIterations = 10;
     nls.verbose = 10;
   case 'direct'
     disp('standard direct solver')
   otherwise
-    error()
+    error('Unknown linear solver %s', linearsolver);
 end
 
-model.nonlinearTolerance = 1e-4; 
-model.verbose = true; 
+model.nonlinearTolerance = 1e-4;
+model.verbose = true;
 
 % Run simulation
 dataFolder = 'BattMo';
 problem = packSimulationProblem(initstate, model, schedule, dataFolder, 'Name', 'jellyroll', 'NonLinearSolver', nls);
-problem.SimulatorSetup.OutputMinisteps = true; 
+problem.SimulatorSetup.OutputMinisteps = true;
 
 clearSimulation = true;
 if clearSimulation
-    %% clear previously computed simulation
+    % clear previously computed simulation
     clearPackedSimulatorOutput(problem, 'prompt', false);
 end
 simulatePackedProblem(problem);
 [globvars, states, report] = getPackedSimulatorOutput(problem);
 
 
-%% plot thermal
-
+%% Plot states
 figure
 plotToolbar(model.G, states);
 view([0,-1,0]);
 
 %%  Process output and recover the output voltage and current from the output states.
 
-ind = cellfun(@(x) not(isempty(x)), states); 
+ind = cellfun(@(x) not(isempty(x)), states);
 states = states(ind);
 ctrl = 'Control';
-E = cellfun(@(x) x.(ctrl).E, states); 
+E = cellfun(@(x) x.(ctrl).E, states);
 I = cellfun(@(x) x.(ctrl).I, states);
-time = cellfun(@(x) x.time, states); 
+time = cellfun(@(x) x.time, states);
 
 figure
 plot(time, E);
