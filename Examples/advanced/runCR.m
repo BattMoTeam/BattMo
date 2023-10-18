@@ -5,7 +5,7 @@
 %%
 
 if mrstPlatform('octave')
-    error('This demo cannot be run from Octave since it does not yet support the use of tables');
+    error('This demo cannot be run from Octave since Octave does not yet support the use of tables');
 end
 
 clear all
@@ -122,7 +122,7 @@ fprintf('Battery mass %f g\n', mass * 1000);
 % operation.
 n         = 24 / 4;
 dt        = [];
-dt        = [dt; repmat(0.5e-4, n, 1).*1.5.^[1 : n]'];
+dt        = [dt; repmat(0.5e-4, n, 1).*1.5.^(1 : n)'];
 totalTime = 2.0*hour/CRate;
 n         = 20;
 dt        = [dt; repmat(totalTime/n, n, 1)];
@@ -212,15 +212,12 @@ if doplot
 end
 
 %% Run simulation and save output to folder
-if ~exist('tag')
-    tag = datetime;
-end
-name = sprintf('cr2016-%s', tag);
-dataFolder = sprintf('BattMo_%s', date);
+name = 'runCR';
+dataFolder = 'BattMo';
 problem = packSimulationProblem(initstate, model, schedule, dataFolder, 'Name', name, 'NonLinearSolver', nls);
 problem.SimulatorSetup.OutputMinisteps = true;
 
-clearSimulation = false
+clearSimulation = false;
 if clearSimulation
     % Clear previously computed simulation
     clearPackedSimulatorOutput(problem, 'prompt', false);
