@@ -170,26 +170,14 @@ nls.maxIterations = 10;
 nls.errorOnFailure = false;
 % Change default tolerance for nonlinear solver
 model.nonlinearTolerance = 1e-4;
-use_diagonal_ad = false;
-if(use_diagonal_ad)
-    model.AutoDiffBackend = DiagonalAutoDiffBackend();
-    model.AutoDiffBackend.useMex = true;
-    model.AutoDiffBackend.modifyOperators = true;
-    model.AutoDiffBackend.rowMajor = true;
-    model.AutoDiffBackend.deferredAssembly = false; % error with true for now
-end
+% Get more or less verbose output
+model.verbose = true;
 
-use_iterative = false;
-if(use_iterative)
-    % nls.LinearSolver = LinearSolverBattery('method', 'iterative');
-    % nls.LinearSolver = LinearSolverBattery('method', 'direct');
+use_amg = false;
+if use_amg
     mrstModule add agmg
-    nls.LinearSolver = LinearSolverBattery('method', 'agmg', 'verbosity', 1);
-    nls.LinearSolver.tol = 1e-3;
-    nls.verbose = 10
+    nls.LinearSolver = LinearSolverBattery('method', 'agmg', 'verbosity', 0);
 end
-model.nonlinearTolerance = 1e-5;
-model.verbose = false;
 
 %% Run simulation
 doprofiling = false;
@@ -201,6 +189,9 @@ end
 [wellSols, states, report] = simulateScheduleAD(initstate, model, schedule,...
                                                 'OutputMinisteps', true,...
                                                 'NonLinearSolver', nls);
+if doprofiling
+    profile viewer
+end
 
 %%  Process output
 
@@ -210,8 +201,11 @@ E = cellfun(@(x) x.(ctrl).E, states);
 I = cellfun(@(x) x.(ctrl).I, states);
 time = cellfun(@(x) x.time, states);
 
+figure
+plot(time, E);
+
 %% Plot an animated summary of the results
-plotDashboard(model, states, 'step', 0);
+% plotDashboard(model, states, 'step', 0);
 
 %{
 Copyright 2021-2023 SINTEF Industry, Sustainable Energy Technology

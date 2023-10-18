@@ -154,26 +154,18 @@ nls.maxIterations = 10;
 nls.errorOnFailure = false;
 % Change default tolerance for nonlinear solver
 model.nonlinearTolerance = 1e-4;
+% Get more or less verbose output
+model.verbose = true;
 
 % Options for experimenting with linear solver
 nls.timeStepSelector = StateChangeTimeStepSelector('TargetProps', {{'Control', 'E'}}, 'targetChangeAbs', 0.03);
-linearsolver = 'direct';
-switch linearsolver
-  case 'agmg'
-    mrstModule add agmg
-    nls.LinearSolver = AGMGSolverAD('verbose', false, 'reduceToCell', true);
-    nls.LinearSolver.tolerance = 1e-3;
-    nls.LinearSolver.maxIterations = 30;
-    nls.maxIterations = 10;
-    nls.verbose = 10;
-  case 'direct'
-    disp('standard direct solver')
-  otherwise
-    error('Unknown linear solver %s', linearsolver);
-end
 
-model.nonlinearTolerance = 1e-4;
-model.verbose = true;
+use_amg = false;
+if use_amg
+    mrstModule add agmg
+    nls.LinearSolver = LinearSolverBattery('method', 'agmg', 'verbosity', 0);
+    nls.maxIterations = 10;
+end
 
 % Run simulation
 dataFolder = 'BattMo';
