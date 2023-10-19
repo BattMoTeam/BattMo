@@ -23,7 +23,7 @@ function [mass, masses, volumes] = computeCellMass(model, varargin)
         
         elde = eldes{ind};
 
-        switch model.(elde).(co).activematerial_type
+        switch model.(elde).(co).active_material_type
             
           case 'default'
             

@@ -226,7 +226,7 @@ classdef Coating < ElectronicComponent
                     model.(amc) = ActiveMaterial(paramobj.(amc));
                 end
               otherwise
-                error('activematerial_type not recognized');
+                error('active_material_type not recognized');
             end
             
             model.Binder             = Binder(paramobj.Binder);
