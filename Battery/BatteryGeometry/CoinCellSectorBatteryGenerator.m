@@ -9,7 +9,7 @@ classdef CoinCellSectorBatteryGenerator < BatteryGenerator
         offset
         numCellLayers
         nR
-        
+
         tag     % cell-valued vector giving component number (indexing is given by tagdict)
         tagdict % dictionary giving the component number
 
@@ -19,9 +19,9 @@ classdef CoinCellSectorBatteryGenerator < BatteryGenerator
         thermalCoolingFaces
         thermalExchangeFaces
         thermalExchangeFacesTag
-        
+
         use_thermal
-        
+
     end
 
     methods
@@ -38,31 +38,29 @@ classdef CoinCellSectorBatteryGenerator < BatteryGenerator
             %gen.offset    = params.offset;
             gen.numCellLayers    = params.numCellLayers;
             gen.nR        = params.nR;
-            
+
             gen.use_thermal = paramobj.use_thermal;
 
             [paramobj, gen] = gen.setupBatteryInputParams(paramobj, []);
 
         end
 
-        function [paramobj, gen] = setupGrid(gen, paramobj, params)
+        function [paramobj, gen] = setupGrid(gen, paramobj, ~)
 
             gen = coinCellSectorGrid(gen);
-
             paramobj.G = gen.G;
 
         end
 
         function paramobj = setupElectrolyte(gen, paramobj, params)
 
-            tagdict = gen.tagdict;
-            tag = gen.tag;
-
-            inds = [tagdict('PositiveActiveMaterial'); tagdict('ElectrolyteSeparator'); tagdict('NegativeActiveMaterial')];
-            cellind = ismember(tag, inds);
+            inds = [gen.tagdict('PositiveActiveMaterial');
+                    gen.tagdict('ElectrolyteSeparator');
+                    gen.tagdict('NegativeActiveMaterial')];
+            cellind = ismember(gen.tag, inds);
             params.cellind = find(cellind);
-            inds = tagdict('ElectrolyteSeparator');
-            cellind = ismember(tag, inds);
+            inds = gen.tagdict('ElectrolyteSeparator');
+            cellind = ismember(gen.tag, inds);
             params.Separator.cellind = find(cellind);
 
             paramobj = setupElectrolyte@BatteryGenerator(gen, paramobj, params);
@@ -77,19 +75,16 @@ classdef CoinCellSectorBatteryGenerator < BatteryGenerator
             cc  = 'CurrentCollector';
             am = 'ActiveMaterial';
 
-            tagdict = gen.tagdict;
-            tag = gen.tag;
-
-            cellind = ismember(tag, tagdict('NegativeActiveMaterial'));
+            cellind = ismember(gen.tag, gen.tagdict('NegativeActiveMaterial'));
             params.(ne).(am).cellind = find(cellind);
-            cellind = ismember(tag, tagdict('NegativeCurrentCollector'));
+            cellind = ismember(gen.tag, gen.tagdict('NegativeCurrentCollector'));
             params.(ne).(cc).cellind = find(cellind);
             params.(ne).(cc).extfaces = gen.negativeExtCurrentFaces;
             params.(ne).cellind = [params.(ne).(am).cellind; params.(ne).(cc).cellind];
 
-            cellind = ismember(tag, tagdict('PositiveActiveMaterial'));
+            cellind = ismember(gen.tag, gen.tagdict('PositiveActiveMaterial'));
             params.(pe).(am).cellind = find(cellind);
-            cellind = ismember(tag, tagdict('PositiveCurrentCollector'));
+            cellind = ismember(gen.tag, gen.tagdict('PositiveCurrentCollector'));
             params.(pe).(cc).cellind = find(cellind);
             params.(pe).(cc).extfaces = gen.positiveExtCurrentFaces;
             params.(pe).cellind = [params.(pe).(am).cellind; params.(pe).(cc).cellind];
@@ -118,7 +113,7 @@ classdef CoinCellSectorBatteryGenerator < BatteryGenerator
 
         end
 
-        function paramobj = setupThermalModel(gen, paramobj, params)
+        function paramobj = setupThermalModel(gen, paramobj, ~)
         % paramobj is instance of BatteryInputParams
 
             G = gen.G;
@@ -129,7 +124,7 @@ classdef CoinCellSectorBatteryGenerator < BatteryGenerator
                             'couplingcells', couplingcells);
             paramobj = setupThermalModel@BatteryGenerator(gen, paramobj, params);
 
-            
+
             couplingfaces = gen.thermalExchangeFaces;
             couplingtags  = gen.thermalExchangeFacesTag;
             couplingcells = sum(G.faces.neighbors(couplingfaces, :), 2);
@@ -140,7 +135,7 @@ classdef CoinCellSectorBatteryGenerator < BatteryGenerator
 
             thermal = 'ThermalModel'; % shorcut
 
-            if isempty(paramobj.(thermal).externalHeatTransferCoefficientTopFaces) | ...
+            if isempty(paramobj.(thermal).externalHeatTransferCoefficientTopFaces) || ...
                     isempty(paramobj.(thermal).externalHeatTransferCoefficientSideFaces)
                 paramobj.(thermal).externalHeatTransferCoefficient = ...
                     paramobj.(thermal).externalHeatTransferCoefficient*ones(numel(couplingfaces), 1);

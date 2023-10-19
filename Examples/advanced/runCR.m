@@ -21,7 +21,8 @@ mrstModule add ad-core mrst-gui mpfa upr
 %% Define some shorthand names for simplicity.
 ne      = 'NegativeElectrode';
 pe      = 'PositiveElectrode';
-eac     = 'ActiveMaterial';
+am      = 'ActiveMaterial';
+co      = 'Coating';
 cc      = 'CurrentCollector';
 elyte   = 'Electrolyte';
 thermal = 'ThermalModel';
@@ -52,20 +53,19 @@ end
 CRdiameter = 20*milli*meter;
 CRthickness = 1.6*milli*meter;
 
-compNames = {'NegativeCurrentCollector', ...
-             'NegativeActiveMaterial', ...
-             'ElectrolyteSeparator', ...
-             'PositiveActiveMaterial', ...
-             'PositiveCurrentCollector'};
-numComponents = numel(compNames);
-compDims = table('rownames', compNames);
+compDims = table('rownames', {'NegativeCurrentCollector', ...
+                              'NegativeCoating', ...
+                              'Separator', ...
+                              'PositiveCoating', ...
+                              'PositiveCurrentCollector'});
+numComponents = numel(compDims.Row);
 
 %% Thickness
 compDims.thickness = zeros(numComponents, 1);
 
-compDims{'PositiveActiveMaterial', 'thickness'} = 67*micro*meter;
-compDims{'ElectrolyteSeparator'  , 'thickness'} = 20*micro*meter;
-compDims{'NegativeActiveMaterial', 'thickness'} = 50*micro*meter;
+compDims{'PositiveCoating'     , 'thickness'} = 67*micro*meter;
+compDims{'Separator', 'thickness'} = 20*micro*meter;
+compDims{'NegativeCoating'     , 'thickness'} = 50*micro*meter;
 
 currentcollectors = {'PositiveCurrentCollector', 'NegativeCurrentCollector'};
 compDims{currentcollectors, 'thickness'} = 0.5*(CRthickness - sum(compDims.thickness));
@@ -74,9 +74,9 @@ compDims{currentcollectors, 'thickness'} = 0.5*(CRthickness - sum(compDims.thick
 compDims.diameter = zeros(numComponents, 1);
 
 compDims{'PositiveCurrentCollector', 'diameter'} = 1;
-compDims{'PositiveActiveMaterial'  , 'diameter'} = 0.8;
-compDims{'ElectrolyteSeparator'    , 'diameter'} = 0.9;
-compDims{'NegativeActiveMaterial'  , 'diameter'} = 0.8;
+compDims{'PositiveCoating'         , 'diameter'} = 0.8;
+compDims{'Separator'               , 'diameter'} = 0.9;
+compDims{'NegativeCoating'         , 'diameter'} = 0.8;
 compDims{'NegativeCurrentCollector', 'diameter'} = 1;
 compDims.diameter = compDims.diameter * CRdiameter;
 
@@ -87,8 +87,10 @@ hz = min(compDims.thickness);
 compDims.numCellLayers = max(2, round(compDims.thickness / hz));
 compDims{currentcollectors, 'numCellLayers'} = ceil(round(0.25 * compDims{currentcollectors, 'numCellLayers'}));
 
-params = struct('compDims', compDims, ...
-                'numRadial', numRadial, ...
+disp(compDims);
+
+params = struct('compDims'  , compDims , ...
+                'numRadial' , numRadial, ...
                 'numAngular', numAngular);
 
 gen = CoinCellBatteryGenerator();
@@ -110,10 +112,10 @@ CRate = 1;
 
 % Compute masses
 [mass, masses] = computeCellMass(model);
-Li_mass = masses.(ne).(am).val;
+Li_mass = masses.(ne).(co).val;
 
-fprintf('Capacity %f mAh\n', C*1000/3600);
-fprintf('Li content %f g\n', Li_mass * 1000);
+fprintf('Capacity %f mAh\n'  , C*1000/3600);
+fprintf('Li content %f g\n'  , Li_mass * 1000);
 fprintf('Battery mass %f g\n', mass * 1000);
 
 %% Setup the time step schedule
@@ -175,41 +177,7 @@ model.nonlinearTolerance = 1e-5;
 model.verbose = true;
 
 %% Plot
-colors = crameri('vik', 6);
-figure
-plotGrid(model.(ne).(cc).G,     'facecolor', colors(1,:), 'edgealpha', 0.5, 'edgecolor', [1, 1, 1]);
-plotGrid(model.(ne).(am).G,     'facecolor', colors(2,:), 'edgealpha', 0.5, 'edgecolor', [1, 1, 1]);
-plotGrid(model.(elyte).(sep).G, 'facecolor', colors(3,:), 'edgealpha', 0.5, 'edgecolor', [1, 1, 1]);
-plotGrid(model.(pe).(am).G,     'facecolor', colors(4,:), 'edgealpha', 0.5, 'edgecolor', [1, 1, 1]);
-plotGrid(model.(pe).(cc).G,     'facecolor', colors(5,:), 'edgealpha', 0.5, 'edgecolor', [1, 1, 1]);
-axis tight;
-legend({'negative electrode current collector' , ...
-        'negative electrode active material'   , ...
-        'separator'                            , ...
-        'positive electrode active material'   , ...
-        'positive electrode current collector'}, ...
-       'location', 'southwest')
-view(-37, 14)
-drawnow
-
-
-%% Additional plots for visualizing the different components
-doplot = false;
-if doplot
-    figure
-    plotGrid(model.(ne).(cc).G,     'facecolor', colors(1,:), 'edgealpha', 0.5, 'edgecolor', [1, 1, 1]);view(3);title('ne cc')
-    figure
-    plotGrid(model.(ne).(am).G,     'facecolor', colors(2,:), 'edgealpha', 0.5, 'edgecolor', [1, 1, 1]);view(3);title('ne am');
-    figure
-    plotGrid(model.(elyte).(sep).G, 'facecolor', colors(3,:), 'edgealpha', 0.5, 'edgecolor', [1, 1, 1]);view(3);title('elyte sep')
-    figure
-    plotGrid(model.(pe).(am).G,     'facecolor', colors(4,:), 'edgealpha', 0.5, 'edgecolor', [1, 1, 1]);view(3);title('pe am')
-    figure
-    plotGrid(model.(pe).(cc).G,     'facecolor', colors(5,:), 'edgealpha', 0.5, 'edgecolor', [1, 1, 1]);view(3);title('pe cc')
-    figure
-    plotGrid(model.(elyte).G,model.(elyte).G.cells.centroids(:, 1)>0,       'facecolor', colors(6,:), 'edgealpha', 0.5, 'edgecolor', [1, 1, 1], 'facealpha', 0.1);view(3);title('elyte')
-    drawnow
-end
+plotBatteryMesh(model)
 
 %% Run simulation and save output to folder
 name = 'runCR';

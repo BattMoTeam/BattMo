@@ -8,9 +8,9 @@ classdef CoinCellBatteryGenerator < BatteryGenerator
         % The format is a `matlab table structure <https://se.mathworks.com/help/matlab/tables.html>`_ where the rows are labeled with
         %
         % - NegativeCurrentCollector
-        % - NegativeActiveMaterial
-        % - ElectrolyteSeparator
-        % - PositiveActiveMaterial
+        % - NegativeCoating
+        % - Separator
+        % - PositiveCoating
         % - PositiveCurrentCollector
         %
         % and the corresponding columns
@@ -21,21 +21,21 @@ classdef CoinCellBatteryGenerator < BatteryGenerator
         %
         % see example :code:`runCR`
         compDims
-        
+
         numRadial % Discretization number in the radial direction
         numAngular % Discretization number if the angular direction
-        
+
         tag
-        tagdict 
+        tagdict
 
         negativeExtCurrentFaces
         positiveExtCurrentFaces
-        
+
         externalHeatTransferCoefficient = 1e3;
 
         include_current_collectors
         use_thermal
-        
+
     end
 
     methods
@@ -48,17 +48,17 @@ classdef CoinCellBatteryGenerator < BatteryGenerator
 
             gen.include_current_collectors = paramobj.include_current_collectors;
             gen.use_thermal = paramobj.use_thermal;
-            
+
             fdnames = {'compDims', ...
                        'numRadial', ...
                        'numAngular'};
             gen = dispatchParams(gen, params, fdnames);
-            
+
             paramobj = gen.setupBatteryInputParams(paramobj, []);
-            
+
         end
 
-        function [paramobj, gen] = setupGrid(gen, paramobj, params)
+        function [paramobj, gen] = setupGrid(gen, paramobj, ~)
 
             gen = coinCellGrid(gen);
             paramobj.G = gen.G;
@@ -67,49 +67,51 @@ classdef CoinCellBatteryGenerator < BatteryGenerator
 
         function paramobj = setupElectrolyte(gen, paramobj, params)
 
-            tagdict = gen.tagdict;
-            tag = gen.tag;
 
-            inds = cell2mat(values(tagdict, {'PositiveActiveMaterial', 'ElectrolyteSeparator', 'NegativeActiveMaterial', 'Electrolyte'}));
-            cellind = ismember(tag, inds);
+            inds = cell2mat(values(gen.tagdict, {'PositiveCoating', 'Separator', 'NegativeCoating', 'Electrolyte'}));
+            cellind = ismember(gen.tag, inds);
             params.cellind = find(cellind);
-
-            inds = tagdict('ElectrolyteSeparator');
-            cellind = ismember(tag, inds);
-            params.Separator.cellind = find(cellind);
 
             paramobj = setupElectrolyte@BatteryGenerator(gen, paramobj, params);
 
         end
 
+        function paramobj = setupSeparator(gen, paramobj, params)
+
+            inds = gen.tagdict('Separator');
+            cellind = ismember(gen.tag, inds);
+
+            params.cellind = find(cellind);
+
+            paramobj = setupSeparator@BatteryGenerator(gen, paramobj, params);
+
+        end
+
         function paramobj = setupElectrodes(gen, paramobj, params)
 
-            ne  = 'NegativeElectrode';
-            pe  = 'PositiveElectrode';
-            cc  = 'CurrentCollector';
-            am = 'ActiveMaterial';
+            ne = 'NegativeElectrode';
+            pe = 'PositiveElectrode';
+            cc = 'CurrentCollector';
+            co = 'Coating';
 
-            tagdict = gen.tagdict;
-            tag = gen.tag;
-
-            cellind = ismember(tag, tagdict('NegativeActiveMaterial'));
-            params.(ne).(am).cellind = find(cellind);
-            cellind = ismember(tag, tagdict('NegativeCurrentCollector'));
+            cellind = ismember(gen.tag, gen.tagdict('NegativeCoating'));
+            params.(ne).(co).cellind = find(cellind);
+            cellind = ismember(gen.tag, gen.tagdict('NegativeCurrentCollector'));
             params.(ne).(cc).cellind = find(cellind);
             params.(ne).(cc).extfaces = gen.negativeExtCurrentFaces;
-            params.(ne).cellind = [params.(ne).(am).cellind; params.(ne).(cc).cellind];
+            params.(ne).cellind = [params.(ne).(co).cellind; params.(ne).(cc).cellind];
 
             params.(ne).bcfaces = pi;
-            
-            cellind = ismember(tag, tagdict('PositiveActiveMaterial'));
-            params.(pe).(am).cellind = find(cellind);
-            cellind = ismember(tag, tagdict('PositiveCurrentCollector'));
+
+            cellind = ismember(gen.tag, gen.tagdict('PositiveCoating'));
+            params.(pe).(co).cellind = find(cellind);
+            cellind = ismember(gen.tag, gen.tagdict('PositiveCurrentCollector'));
             params.(pe).(cc).cellind = find(cellind);
             params.(pe).(cc).extfaces = gen.positiveExtCurrentFaces;
-            params.(pe).cellind = [params.(pe).(am).cellind; params.(pe).(cc).cellind];
+            params.(pe).cellind = [params.(pe).(co).cellind; params.(pe).(cc).cellind];
 
             params.(ne).bcfaces = exp(1);
-            
+
             paramobj = setupElectrodes@BatteryGenerator(gen, paramobj, params);
 
         end
@@ -133,7 +135,7 @@ classdef CoinCellBatteryGenerator < BatteryGenerator
 
         end
 
-        function paramobj = setupThermalModel(gen, paramobj, params)
+        function paramobj = setupThermalModel(gen, paramobj, ~)
 
             [couplingfaces, couplingcells] = boundaryFaces(gen.G);
 
@@ -143,7 +145,7 @@ classdef CoinCellBatteryGenerator < BatteryGenerator
 
             coef = gen.externalHeatTransferCoefficient;
             paramobj.ThermalModel.externalHeatTransferCoefficient = coef;
-            
+
         end
 
     end
