@@ -24,9 +24,9 @@ In order for JuliaBridge to work properly, the following must be done:
     <li> The GenerateModel and JuliaInterface folders must be on the Matlab path </li>
 </ul>
 
-The first point will be automatically done by the <code>ServerManager</code> constructor, while the second point can be completed by running <code>startupJuliaBridge.m</code>.
+The first point will be automatically done by the <code>ServerManager</code> constructor, while the second point is also automatically taken care of by the setup script <code>statupBattMo</code>
 
-For specific use cases please the files provided in the Examples folder. 
+For specific use cases please the files provided in the Examples folder. Julia uses just-in-time compilation. It means that the first time you run a simulation, the code is going to be compiled and it will take relatively a lot of time. However, we use a persistent server model so that this is done only once on the server. The subsequent simulations will not suffer from this compilation slow-down. 
 
 
 ### Additional steps for Windows users:
