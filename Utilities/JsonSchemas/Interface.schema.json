@@ -63,18 +63,7 @@
       "symbol": "alpha"
     }
   },
-  "anyOf": [
-    {
-      "required": [
-        "exchangeCurrentDensity"
-      ]
-    },
-    {
-      "required": [
-        "reactionRateConstant"
-      ]
-    }
-  ],
+"allOf": [{
   "if": {
     "properties": {
       "exchangeCurrentDensity": {
@@ -82,7 +71,8 @@
           "type": {
             "const": "constant"
           }
-        }
+        },
+        "required": ["exchangeCurrentDensity"]
       }
     }
   },
@@ -91,4 +81,5 @@
       "reactionRateConstant"
     ]
   }
+}]
 }

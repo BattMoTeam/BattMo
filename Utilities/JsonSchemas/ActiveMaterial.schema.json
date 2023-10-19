@@ -36,12 +36,12 @@
     },
     "thermalConductivity": {
       "$ref": "PhysicalQuantity.schema.json",
-      "description": "the thermal conductivity of the component",
+      "description": "the intrinsic Thermal conductivity of the active component",
       "symbol": ""
     },
     "specificHeatCapacity": {
       "$ref": "PhysicalQuantity.schema.json",
-      "description": "the specificHeatCapacity of the component",
+      "description": "the Specific Heat capacity of the active component",
       "symbol": ""
     },
     "name": {

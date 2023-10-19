@@ -23,8 +23,10 @@
       "description": "list of arguments ordered as in function call (only for reference)"
     }
   },
+  "allOf": [{"if": {"properties": {"type": {"const":"function"}}},
+  "then":{
   "required": [
     "functionname",
     "argumentlist"
-  ]
+  ]}}]
 }
