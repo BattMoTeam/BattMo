@@ -9,10 +9,9 @@ function plotBatteryMesh(model, setstyle, fig)
 
     ne    = 'NegativeElectrode';
     pe    = 'PositiveElectrode';
-    am    = 'ActiveMaterial';
     cc    = 'CurrentCollector';
     sep   = 'Separator';
-    elyte = 'Electrolyte';
+    co    = 'Coating';
 
     colors = crameri('vik', 5);
     if isempty(fig)
@@ -36,9 +35,9 @@ function plotBatteryMesh(model, setstyle, fig)
         legtext{end+1} = 'positive electrode current collector';
     end
 
-    plotGrid(model.(pe).(am).G,     facecolorname, colors(4,:), edgeparams{:});
-    plotGrid(model.(elyte).(sep).G, facecolorname, colors(3,:), edgeparams{:});
-    plotGrid(model.(ne).(am).G,     facecolorname, colors(2,:), edgeparams{:});
+    plotGrid(model.(pe).(co).G, facecolorname, colors(4,:), edgeparams{:});
+    plotGrid(model.(sep).G,     facecolorname, colors(3,:), edgeparams{:});
+    plotGrid(model.(ne).(co).G, facecolorname, colors(2,:), edgeparams{:});
     legtext = [legtext, {'positive electrode active material', 'separator', 'negative electrode active material'}];
 
     if model.include_current_collectors
