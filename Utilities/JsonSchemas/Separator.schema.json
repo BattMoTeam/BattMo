@@ -1,23 +1,33 @@
 {
-  "$id": "file://battmo/schemas/Separator",
+  "$id": "./Separator.schema.json",
   "$schema": "http://json-schema.org/draft-07/schema#",
   "description": "A separator",
   "type": "object",
-
-  "properties" : { "porosity": {
-                      "$ref": "#/definitions/PhysicalQuantity",
-                      "description": "the ratio of the volume free space to the total volume",
-                      "symbol": "varepsilon"
-                    },
-                    "density" : {
-                      "$ref": "#/definitions/PhysicalQuantity",
-                      "description": "the mass density of the material",
-                      "symbol": "rho"
-                    },
-                    "bruggemanCoefficient" : {
-                      "$ref": "#/definitions/PhysicalQuantity",
-                      "description": "coefficient to determine effective transport parameters in porous media",
-                      "symbol": "beta"
-                    }
-                 }
+  "properties": {
+    "porosity": {
+      "$ref": "PhysicalQuantity.schema.json",
+      "description": "the ratio of the volume free space to the total volume",
+      "symbol": "varepsilon"
+    },
+    "density": {
+      "$ref": "PhysicalQuantity.schema.json",
+      "description": "the mass density of the material",
+      "symbol": "rho"
+    },
+    "bruggemanCoefficient": {
+      "$ref": "PhysicalQuantity.schema.json",
+      "description": "coefficient to determine effective transport parameters in porous media",
+      "symbol": "beta"
+    },
+    "thermalConductivity": {
+      "$ref": "PhysicalQuantity.schema.json",
+      "description": "the thermal conductivity of the component",
+      "symbol": ""
+    },
+    "specificHeatCapacity": {
+      "$ref": "PhysicalQuantity.schema.json",
+      "description": "the specificHeatCapacity of the component",
+      "symbol": ""
+    }
+  }
 }

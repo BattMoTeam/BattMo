@@ -1,5 +1,5 @@
 {
-  "$id": "file://battmo/schemas/linearsolver",
+  "$id": "file://./linearsolver.schema.json",
   "$schema": "http://json-schema.org/draft-07/schema#",
   "description": "linear solver",
   "type": "object",
@@ -105,7 +105,7 @@
     
     
     {"allOf" : [{"properties" : {"library" : {"const" : "amgcl"}}},
-                {"$ref" : "amgclOptions"}
+                {"$ref" : "amgclOptions.schema.json"}
                ]
     }
     

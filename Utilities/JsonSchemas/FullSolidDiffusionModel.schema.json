@@ -1,30 +1,30 @@
 {
-  "$id": "file://battmo/schemas/FullSolidDiffusionModel",
+  "$id": "file://./FullSolidDiffusionModel.schema.json",
   "$schema": "http://json-schema.org/draft-07/schema#",
   "description": "solid diffusion",
   "type": "object",
   "allOf": [
     {
-      "$ref": "SolidDiffusionModel"
+      "$ref": "SolidDiffusionModel.schema.json"
     },
     {
       "properties": {
         "diffusionCoefficient": {
-          "$ref": "function",
+          "$ref": "function.schema.json",
           "description": "Function that is used to compute the diffusion coefficient. Typically, such function depends on the maximum and minimum concentration, which explains why those are required as input"
         },
         "saturationConcentration": {
-          "$ref": "#/definitions/PhysicalQuantity",
+          "$ref": "PhysicalQuantity.schema.json",
           "description": "the saturation concentration of the guest molecule in the host material",
           "symbol": "cmax"
         },
         "guestStoichiometry100": {
-          "$ref": "#/definitions/PhysicalQuantity",
+          "$ref": "PhysicalQuantity.schema.json",
           "description": "the ratio of the concentration of the guest molecule to the saturation concentration of the guest molecule in a phase at a cell voltage that is defined as 100% SOC",
           "symbol": "theta100"
         },
         "guestStoichiometry0": {
-          "$ref": "#/definitions/PhysicalQuantity",
+          "$ref": "PhysicalQuantity.schema.json",
           "description": "the ratio of the concentration of the guest molecule to the saturation concentration of the guest molecule in a phase at a cell voltage that is defined as 0% SOC",
           "symbol": "theta0"
         }
