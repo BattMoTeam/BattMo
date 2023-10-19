@@ -1,15 +1,15 @@
 function output = spiralGrid(params)
 
-    %% Parameters 
-    % 
+    %% Parameters
+    %
     % params structure with following fields
     % - nwindings : number of windings in the spiral
     % - rInner        : "radius" at the middle
     % - widthDict : dictionary of widths for each component. The required key names for the dictionary are
     %                 - 'Separator'
-    %                 - 'NegativeActiveMaterial'
+    %                 - 'NegativeCoating'
     %                 - 'NegativeCurrentCollector'
-    %                 - 'PositiveActiveMaterial'
+    %                 - 'PositiveCoating'
     %                 - 'PositiveCurrentCollector'
     % - nrDict    : dicionary with number of cell in radial direction for each component (same keys as in widthDict).
     % - L         : length of the battery
@@ -22,13 +22,13 @@ function output = spiralGrid(params)
     %        - usetab    : boolean
     %        - fractions : length fraction where the tabs are located (one value per tab), only used if usetab is true
     %        - width     : width of the tabs (for the moment, only a single value), only used if usetab is true
-    %   
+    %
     % RETURNS
     %
     % - G       : grid
     % - tag     : cell-valued vector giving component number (indexing is given by tagdict)
     % - tagdict : dictionary giving the component number
-    
+
     nwindings = params.nwindings;
     rInner    = params.rInner;
     widthDict = params.widthDict ;
@@ -39,9 +39,9 @@ function output = spiralGrid(params)
     unifang   = params.angleuniform;
     tabparams = params.tabparams;
 
-    
+
     %% component names
-    
+
     compnames = {'PositiveCoating1'        , ...
                  'PositiveCurrentCollector', ...
                  'PositiveCoating2'        , ...
@@ -50,11 +50,11 @@ function output = spiralGrid(params)
                  'NegativeCurrentCollector', ...
                  'NegativeCoating1'        , ...
                  'Separator1'};
-    
+
     comptag = (1 : numel(compnames));
     tagdict = containers.Map(compnames, comptag);
-    
-    %% 
+
+    %%
     widths = [widthDict('PositiveCoating')          ; ...
               widthDict('PositiveCurrentCollector') ; ...
               widthDict('PositiveCoating')          ; ...
@@ -63,7 +63,7 @@ function output = spiralGrid(params)
               widthDict('NegativeCurrentCollector') ; ...
               widthDict('NegativeCoating')          ; ...
               widthDict('Separator')];
-    
+
     nrs = [nrDict('PositiveCoating')          ; ...
            nrDict('PositiveCurrentCollector') ; ...
            nrDict('PositiveCoating')          ; ...
@@ -72,7 +72,7 @@ function output = spiralGrid(params)
            nrDict('NegativeCurrentCollector') ; ...
            nrDict('NegativeCoating')          ; ...
            nrDict('Separator')];
-    
+
     %% Grid setup
 
     layerwidth = sum(widths);
@@ -104,21 +104,21 @@ function output = spiralGrid(params)
     % shorcuts
     nx = nas;
     ny = sum(nrs);
-    
+
     celltbl.cells = (1 : cartG.cells.num)';
     celltbl.indi = repmat((1 : nas)', [sum(nrs)*nwindings, 1]);
     celltbl.indj = rldecode((1 : sum(nrs)*nwindings)', nas*ones(sum(nrs)*nwindings, 1));
     celltbl.curvindi = celltbl.indi + nas*floor((celltbl.indj - 1)./ny);
     celltbl.curvindj = repmat(rldecode((1 : ny)', nx*ones(ny, 1)), nwindings, 1);
     celltbl = IndexArray(celltbl);
-    
-    
+
+
     % We roll the domain into a spirale
     x = cartG.nodes.coords(:, 1);
     y = cartG.nodes.coords(:, 2);
 
     theta = x./rInner;
-    
+
     cartG.nodes.coords(:, 1) = (rInner + y + (theta/(2*pi))*layerwidth).*cos(theta);
     cartG.nodes.coords(:, 2) = (rInner + y + (theta/(2*pi))*layerwidth).*sin(theta);
 
@@ -265,7 +265,7 @@ function output = spiralGrid(params)
     faces.nodes = facenodetbl.get('nodes');
     faces.num = newfacetbl.num;
     faces.neighbors = []; % to avoid warning in computeGeometry
-    
+
     clear cells
     [~, ind] = rlencode(cellfacetbl.get('cells'));
     cells.facePos = [1; 1 + cumsum(ind)];
@@ -306,7 +306,7 @@ function output = spiralGrid(params)
         netab = [];
     end
 
-    if ~isempty(petab) | ~isempty(netab) 
+    if ~isempty(petab) | ~isempty(netab)
         clear data
         data.nas     = nas;
         data.nrs     = nrs;
@@ -314,14 +314,14 @@ function output = spiralGrid(params)
         data.G       = G;
         data.tagdict = tagdict;
     end
-    
+
     if ~isempty(petab)
-        
+
         w = widths./nrs;
         w = rldecode(w, nrs);
         indj0 = floor(nrDict('PositiveCoating') + nrDict('PositiveCurrentCollector')/2);
-        cclinewidth = w(indj0);        
-        
+        cclinewidth = w(indj0);
+
         clear cccelltbl;
         cccelltbl.tag = tagdict('PositiveCurrentCollector');
         cccelltbl = IndexArray(cccelltbl);
@@ -329,7 +329,7 @@ function output = spiralGrid(params)
         cccelltbl = crossIndexArray(cccelltbl, celltbl, {'cells'});
 
         fractions = petab.fractions;
-        
+
         windingnumbers = computeWindingNumbers(fractions, rInner, layerwidth, nwindings);
 
         [pe_tabcelltbl, pe_tabwidths] = getTabCellTbl(cccelltbl     , ...
@@ -340,14 +340,14 @@ function output = spiralGrid(params)
                                                       data);
 
     end
-    
+
     if ~isempty(netab)
 
         w = widths./nrs;
         w = rldecode(w, nrs);
         indj0 = floor(nrDict('NegativeCoating') + nrDict('NegativeCurrentCollector')/2);
-        cclinewidth = w(indj0);        
-        
+        cclinewidth = w(indj0);
+
         clear cccelltbl;
         cccelltbl.tag = tagdict('NegativeCurrentCollector');
         cccelltbl = IndexArray(cccelltbl);
@@ -355,7 +355,7 @@ function output = spiralGrid(params)
         cccelltbl = crossIndexArray(cccelltbl, celltbl, {'cells'});
 
         fractions = netab.fractions;
-        
+
         windingnumbers = computeWindingNumbers(fractions, rInner, layerwidth, nwindings);
 
         [ne_tabcelltbl, ne_tabwidths] = getTabCellTbl(cccelltbl     , ...
@@ -366,24 +366,24 @@ function output = spiralGrid(params)
                                                       data);
 
     end
-    
+
     % Extrude battery in z-direction
     zwidths = (L/nL)*ones(nL, 1);
     G = makeLayeredGrid(G, zwidths);
     G = computeGeometry(G);
-    
+
     tag = repmat(tag, [nL, 1]);
 
     % setup the standard tables
     tbls = setupSimpleTables(G);
     cellfacetbl = tbls.cellfacetbl;
-    
+
     clear extfacetbl
     extfacetbl.faces = find(any(G.faces.neighbors == 0, 2));
     extfacetbl = IndexArray(extfacetbl);
     extcellfacetbl = crossIndexArray(extfacetbl, cellfacetbl, {'faces'});
-    
-    
+
+
     %%  recover the external faces that are inside the spiral
     % We get them using the Cartesian indexing
 
@@ -395,7 +395,7 @@ function output = spiralGrid(params)
     celltbl = celltbl.addInd('cells', (1 : G.cells.num)');
 
     % We add vertical (2) and horizontal (1) direction index for the faces (see makeLayeredGrid for the setup)
-    
+
     nf = G.faces.num;
     clear facetbl
     facetbl.faces = (1 : nf)';
@@ -403,83 +403,83 @@ function output = spiralGrid(params)
     dir(1 : (nL + 1)*n*m) = 1;
     facetbl.dir = dir;
     facetbl = IndexArray(facetbl);
-    
+
     %% We extract the faces at the exterior for thermal exchange, using Cartesian indexing
-    
+
     scelltbl.indi = (1: n)';
     scelltbl.indj = 1*ones(n, 1);
     scelltbl.dir  = 2*ones(n, 1);
     scelltbl = IndexArray(scelltbl);
-    
+
     scelltbl = crossIndexArray(celltbl, scelltbl, {'indi', 'indj'});
     scelltbl = projIndexArray(scelltbl, 'cells');
     extscellfacetbl = crossIndexArray(scelltbl, extcellfacetbl, {'cells'});
     sfacetbl = projIndexArray(extscellfacetbl, {'faces'});
-    
+
     sfacetbl = sfacetbl.addInd('dir', 2*ones(sfacetbl.num, 1));
     sfacetbl = crossIndexArray(sfacetbl, facetbl, {'faces', 'dir'});
-    
+
     sfaces = sfacetbl.get('faces'); % external vertical faces of the internal layer (inside the roll). It does not
                                     % include the border of the layer.
-    
+
     clear scelltbl
     nnrs = sum(nrs);
     scelltbl.indi = ones(nnrs, 1);
     scelltbl.indj = (1 : nnrs)';
     scelltbl = IndexArray(scelltbl);
-    
+
     scelltbl = crossIndexArray(celltbl, scelltbl, {'indi', 'indj'});
     scelltbl = projIndexArray(scelltbl, 'cells');
     extscellfacetbl = crossIndexArray(scelltbl, extcellfacetbl, {'cells'});
     sfacetbl = projIndexArray(extscellfacetbl, {'faces'});
-    
+
     sfacetbl = sfacetbl.addInd('dir', 2*ones(sfacetbl.num, 1));
     sfacetbl = crossIndexArray(sfacetbl, facetbl, {'faces', 'dir'});
 
     sfaces = [sfaces; sfacetbl.get('faces')]; % We add the external faces of the border of the internal layer.
-    
+
     % some faces have been taken twice
     sfaces = unique(sfaces);
 
     clear nonthfacetbl
     nonthfacetbl.faces = sfaces;
     nonthfacetbl = IndexArray(nonthfacetbl);
-    
+
     map = TensorMap();
     map.fromTbl = extfacetbl;
     map.toTbl = nonthfacetbl;
     map.mergefds = {'faces'};
-    
+
     ind = map.getDispatchInd();
-    
+
     thermalExchangeFaces = extfacetbl.get('faces');
     thermalExchangeFaces(ind) = [];
-    
-    %% We capture the top faces of the internal 
+
+    %% We capture the top faces of the internal
     clear scelltbl
     topcelltbl.indk = nL;
     topcelltbl = IndexArray(topcelltbl);
-    
+
     topcelltbl = crossIndexArray(topcelltbl, celltbl, {'indk'});
     topcellfacetbl = crossIndexArray(extcellfacetbl, topcelltbl, {'cells'});
     topfacetbl = projIndexArray(topcellfacetbl, {'faces'});
-    
+
     hfacetbl.dir = 1;
     hfacetbl = IndexArray(hfacetbl);
     hfacetbl = crossIndexArray(facetbl, hfacetbl, {'dir'});
-    
+
     topfacetbl = crossIndexArray(topfacetbl, hfacetbl, {'faces'});
-    
+
     thfacetbl.faces = thermalExchangeFaces;
     thfacetbl = IndexArray(thfacetbl);
-    
+
     map = TensorMap();
     map.fromTbl = thfacetbl;
     map.toTbl = topfacetbl;
     map.mergefds =  {'faces'};
-    
+
     ind = map.getDispatchInd();
-    
+
     % Thermal faces tag is equal to 1 if top faces and equal to 2 otherwise.
     thermalExchangeFacesTag = 2*ones(thfacetbl.num, 1);
     thermalExchangeFacesTag(ind) = 1;
@@ -500,30 +500,30 @@ function output = spiralGrid(params)
             cccelltbl = cccelltbl.addInd('indk', 1*ones(cccelltbl.num, 1));
         end
         cccelltbl = crossIndexArray(cccelltbl, celltbl, {'cells', 'indk'});
-        
-        if ~isempty(petab) && strcmp(ccname, 'PositiveCurrentCollector') 
+
+        if ~isempty(petab) && strcmp(ccname, 'PositiveCurrentCollector')
             cccelltbl = crossIndexArray(cccelltbl, pe_tabcelltbl, {'indi', 'indj'});
         end
 
-        if ~isempty(netab) && strcmp(ccname, 'NegativeCurrentCollector') 
+        if ~isempty(netab) && strcmp(ccname, 'NegativeCurrentCollector')
             cccelltbl = crossIndexArray(cccelltbl, ne_tabcelltbl, {'indi', 'indj'});
         end
-            
+
         ccfacetbl = crossIndexArray(cccelltbl, cellfacetbl, {'cells'});
         ccfacetbl = projIndexArray(ccfacetbl, {'faces'});
         ccfacetbl = ccfacetbl.addInd('dir', ones(ccfacetbl.num, 1));
-        
+
         ccfacetbl = crossIndexArray(facetbl, ccfacetbl, {'faces', 'dir'});
         ccfacetbl = crossIndexArray(ccfacetbl, extfacetbl, {'faces'});
-        
+
         ccfaces{ind} = ccfacetbl.get('faces');
 
     end
 
     positiveExtCurrentFaces = ccfaces{1};
     negativeExtCurrentFaces = ccfaces{2};
-    
-    %% 
+
+    %%
     detailedtag = tag;
     detailedtagdict = tagdict;
 
@@ -534,13 +534,13 @@ function output = spiralGrid(params)
          'Separator'               , ...
          'NegativeCoating'         , ...
          'NegativeCurrentCollector'}, [1 : 5]');
-    
+
     mappings = {{'PositiveCoating'          , {'PositiveCoating1', 'PositiveCoating2'}}, ...
                 {'NegativeCoating'          , {'NegativeCoating1', 'NegativeCoating2'}}, ...
                 {'Separator'                , {'Separator1', 'Separator2'}}            , ...
                 {'PositiveCurrentCollector' , {'PositiveCurrentCollector'}}            , ...
                 {'NegativeCurrentCollector' , {'NegativeCurrentCollector'}}};
-    
+
     for ind1 = 1 : numel(mappings)
         mapping = mappings{ind1};
         tagvalue1 = tagdict(mapping{1});
@@ -549,7 +549,7 @@ function output = spiralGrid(params)
             tag(detailedtag == tagvalue2) = tagvalue1;
         end
     end
-    
+
     %% setup output structure
     output = params;
     output.G                       = G;
@@ -557,22 +557,22 @@ function output = spiralGrid(params)
     output.tagdict                 = tagdict;
     output.positiveExtCurrentFaces = positiveExtCurrentFaces;
     output.negativeExtCurrentFaces = negativeExtCurrentFaces;
-    output.thermalExchangeFaces    = thermalExchangeFaces;   
+    output.thermalExchangeFaces    = thermalExchangeFaces;
     output.thermalExchangeFacesTag = thermalExchangeFacesTag;
-    
+
     w = widths./nrs;
     w = rldecode(w, nrs);
     h = L/nL;
     h = repmat(h, nL, 1);
-    
+
     output.widthLayer   = w;
     output.nWidthLayer  = nrs;
     output.heightLayer  = h;
     output.nHeightLayer = nL;
     output.celltbl      = celltbl;
-    
+
 end
-    
+
 
 function [tabcelltbl, tabwidths] = getTabCellTbl(cccelltbl, cclinewidth, indj0, tabparams, windingnumbers, data)
 
@@ -581,35 +581,35 @@ function [tabcelltbl, tabwidths] = getTabCellTbl(cccelltbl, cclinewidth, indj0, 
     celltbl        = data.celltbl;
     G              = data.G;
     tagdict        = data.tagdict;
-    
+
     for ind = 1 : numel(windingnumbers)
-        
+
         indjwinding = indj0 + sum(nrs)*(windingnumbers(ind) - 1);
         clear cclinecelltbl
         cclinecelltbl.indj = repmat(indjwinding, nas, 1);
         cclinecelltbl.indi = (1 : nas)';
         cclinecelltbl = IndexArray(cclinecelltbl);
-        
+
         cclinecelltbl = crossIndexArray(cclinecelltbl, celltbl, {'indi', 'indj'});
-        cclinecelltbl = sortIndexArray(cclinecelltbl,  {'curvindi', 'cells'});            
+        cclinecelltbl = sortIndexArray(cclinecelltbl,  {'curvindi', 'cells'});
 
         c = cclinecelltbl.get('cells');
         o = cclinecelltbl.get('curvindi');
         l = cumsum(G.cells.volumes(c)/cclinewidth);
-        
+
         indl = find(l > tabparams.width, 1, 'first');
         tabwidths(ind) = l(indl);
-        
+
         clear tabcelltbl
         tabcelltbl.curvindi = o(1 : indl);
         tabcelltbl = IndexArray(tabcelltbl);
         tabcelltbl = crossIndexArray(cccelltbl, tabcelltbl, {'curvindi'});
         tabcelltbl = projIndexArray(tabcelltbl, {'indi', 'indj'});
-        
+
         tabcelltbls{ind} = tabcelltbl;
-        
+
     end
-    
+
     clear tabcelltbl
     tabcelltbl = tabcelltbls{1};
     for ind = 2 : numel(tabcelltbls)
