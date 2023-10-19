@@ -73,11 +73,12 @@ classdef Interface < BaseModel
             model.computeOCPFunc = str2func(paramobj.openCircuitPotential.functionname);
 
             j0 = paramobj.exchangeCurrentDensity;
+            
             if ~isempty(j0)
-                switch paramobj.j0.type
+                switch j0.type
                   case 'function'
                     model.useJ0Func = true;
-                    model.computeJ0Func = str2func(paramobj.j0.functionname);
+                    model.computeJ0Func = str2func(j0.functionname);
                   case 'constant'
                     model.useJ0Func = false;
                   otherwise
