@@ -21,7 +21,6 @@ mrstModule add ad-core mrst-gui mpfa upr
 %% Define some shorthand names for simplicity.
 ne      = 'NegativeElectrode';
 pe      = 'PositiveElectrode';
-am      = 'ActiveMaterial';
 co      = 'Coating';
 cc      = 'CurrentCollector';
 elyte   = 'Electrolyte';
@@ -63,9 +62,9 @@ numComponents = numel(compDims.Row);
 %% Thickness
 compDims.thickness = zeros(numComponents, 1);
 
-compDims{'PositiveCoating'     , 'thickness'} = 67*micro*meter;
-compDims{'Separator', 'thickness'} = 20*micro*meter;
-compDims{'NegativeCoating'     , 'thickness'} = 50*micro*meter;
+compDims{'PositiveCoating', 'thickness'} = 67*micro*meter;
+compDims{'Separator'      , 'thickness'} = 20*micro*meter;
+compDims{'NegativeCoating', 'thickness'} = 50*micro*meter;
 
 currentcollectors = {'PositiveCurrentCollector', 'NegativeCurrentCollector'};
 compDims{currentcollectors, 'thickness'} = 0.5*(CRthickness - sum(compDims.thickness));
@@ -202,14 +201,17 @@ Inew = cellfun(@(x) x.(ctrl).I, states);
 time = cellfun(@(x) x.time, states);
 
 %% Plot results
-figure, hold on
-plot(time, Inew, '-'); title('I'); grid on; xlabel 'time (s)'
-figure, hold on
-plot(time, Enew, '-'); title('E'); grid on; xlabel 'time (s)'
+figure
+plot(time/hour, Inew, '-'); grid on; xlabel('time  / h');
+figure
+plot(time/hour, Enew, '-'); grid on; xlabel('time  / h');
 if model.use_thermal
+    % Plot half of the cell
+    cells = model.(thermal).G.cells.centroids(:, 1) > 0;
     figure
-    plotCellData(model.(thermal).G, states{end}.(thermal).T, model.(thermal).G.cells.centroids(:, 1) > 0)
+    plotCellData(model.(thermal).G, states{end}.(thermal).T, cells);
     colorbar
+    view(3), axis square tight
 end
 
 %{
