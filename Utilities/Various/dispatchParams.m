@@ -1,4 +1,6 @@
 function obj = dispatchParams(obj, params, fdnames)
+% Dispatch the parameters in fdnames from params to obj
+
     if iscell(fdnames)
         for ind = 1 : numel(fdnames)
             fdname = fdnames{ind};
@@ -6,7 +8,7 @@ function obj = dispatchParams(obj, params, fdnames)
         end
     elseif ischar(fdnames)
         fdname = fdnames;
-        if isfield(params, fdname) | isprop(params, fdname)
+        if isfield(params, fdname) || isprop(params, fdname)
             obj.(fdname) = params.(fdname);
         end
     else
