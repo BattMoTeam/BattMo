@@ -1071,7 +1071,7 @@ classdef Battery < BaseModel
 
             coupterm = getCoupTerm(couplingterms, 'NegativeElectrode-Electrolyte', coupnames);
             elytecells = coupterm.couplingcells(:, 2);
-            elyte_e_source(elytecells) = - ne_esource(elytecells);
+            elyte_e_source(elytecells) = - ne_esource;
 
             pe_esource = state.(pe).(co).eSource;
             if isa(pe_esource, 'ADI') & ~isa(elyte_e_source, 'ADI')
