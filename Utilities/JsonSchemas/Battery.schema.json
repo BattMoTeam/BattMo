@@ -23,4 +23,7 @@
   },
 
   "required": ["NegativeElectrode", "PositiveElectrode", "Electrolyte", "Separator"]
+
+
+  
 }
