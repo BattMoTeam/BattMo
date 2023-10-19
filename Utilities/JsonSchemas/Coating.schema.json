@@ -12,6 +12,12 @@
         "ActiveMaterial": {
           "$ref": "ActiveMaterial.schema.json"
         },
+        "ActiveMaterial1": {
+          "$ref": "ActiveMaterial.schema.json"
+        },
+        "ActiveMaterial2": {
+          "$ref": "ActiveMaterial.schema.json"
+        },
         "Binder": {
           "$ref": "Binder.schema.json"
         },
@@ -28,7 +34,7 @@
           "description": "the Bruggeman coefficient for effective transport in porous media",
           "symbol": "beta"
         },
-        "activematerial_type": {
+        "active_material_type": {
           "type": "string",
           "enum": [
             "default",
@@ -36,9 +42,38 @@
           ]
         }
       }
+    },
+    {
+      "if": {
+        "properties": {
+          "active_material_type": {
+            "enum": ["default"]
+          }
+        },
+        "required": ["active_material_type"]
+      },
+      "then": {
+        "required": [
+          "ActiveMaterial"
+        ]
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "active_material_type": {
+            "enum": ["composite"]
+          }
+        },
+        "required": ["active_material_type"]
+      },
+      "then": {
+        "required": [
+          "ActiveMaterial1",
+          "ActiveMaterial2"
+        ]
+      }
     }
-  ],
-  "required": [
-    "ActiveMaterial"
+
   ]
 }
