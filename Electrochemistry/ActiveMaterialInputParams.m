@@ -22,7 +22,7 @@ classdef ActiveMaterialInputParams < ComponentInputParams
         thermalConductivity    % the intrinsic Thermal conductivity of the active component
         specificHeatCapacity   % Specific Heat capacity of the active component
 
-        diffusionModelType     % diffusion model type, either 'full' or 'simplified'
+        diffusionModelType     % diffusion model type, either 'full' or 'simple'
 
         %% Advanced parameters
 
