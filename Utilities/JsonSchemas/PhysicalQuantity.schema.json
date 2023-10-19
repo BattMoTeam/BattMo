@@ -11,7 +11,7 @@
     },
     "unit": {
         "type": "string",
-        "description": "A string with unit that can be evaluated in BattMo. We use MRST support for unit, see <battmoDir()/MRST/mrst-core/utils/units/>"
+        "description": "A string with unit that can be evaluated in BattMo. We use MRST support for unit, see <battmoDir()/MRST/mrst-core/utils/units/>. If left empty units are not converted (assumed to be SI)."
     },
     "symbol": {
         "type": "string",
