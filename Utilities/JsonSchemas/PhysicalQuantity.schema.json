@@ -3,7 +3,7 @@
     "$schema": "http://json-schema.org/draft-07/schema#",
 
     "title": "PhysicalQuantity",
-    "description": "An object representing a physical quantity with its value, unit, description, and source.",
+    "description": "Either a number or an object representing a physical quantity with its value, unit, description, and source.",
     "oneOf": 
         [{"type" : "number",
           "description" : "The value is assumed to be given in SI"},
