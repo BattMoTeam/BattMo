@@ -24,9 +24,9 @@
         "ConductingAdditive": {
           "$ref": "ConductingAdditive.schema.json"
         },
-        "density": {
+        "effectiveDensity": {
           "$ref": "PhysicalQuantity.schema.json",
-          "description": "the mass density of the material. The density is computed with respect to the total volume (i.e. including the empty pores)",
+          "description": "the mass density of the material (either in wet or calendared state). The density is computed with respect to the total volume (i.e. including the empty pores)",
           "symbol": "rho"
         },
         "bruggemanCoefficient": {

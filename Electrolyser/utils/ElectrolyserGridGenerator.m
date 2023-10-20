@@ -44,8 +44,8 @@ classdef ElectrolyserGridGenerator
 
             % We add the electrode type to the params structure (This information can be used by derived classes and may
             % then simplify setup)
-            params.(oer).electrodeType = 'Oxygen';
-            params.(her).electrodeType = 'Hydrogen';
+            params.(oer).electrode_type = 'Oxygen';
+            params.(her).electrode_type = 'Hydrogen';
 
             paramobj.(oer) = gen.setupEvolutionElectrode(paramobj.(oer), params.(oer));
             paramobj.(her) = gen.setupEvolutionElectrode(paramobj.(her), params.(her));
@@ -71,7 +71,7 @@ classdef ElectrolyserGridGenerator
             G_ctl = paramobj.(ctl).G;
             G     = G_ctl.mappings.parentGrid;
             cells2 = (1 : G_ctl.cells.num)'; % all the cells of the catalyst layer are coupled to the porous transport layer
-            
+
             mapping = zeros(G.cells.num, 1);
             mapping(G_ptl.mappings.cellmap) = (1 : G_ptl.cells.num)'; % mapping from parent grid to ptl grid;
 
@@ -83,7 +83,7 @@ classdef ElectrolyserGridGenerator
             coupTerm.couplingcells = [cells1, cells2];
 
             paramobj.couplingTerm = coupTerm;
-            
+
             % setup external coupling
 
             compnames = {ptl};
@@ -116,7 +116,7 @@ classdef ElectrolyserGridGenerator
 
             % We setup also ionomer tortuosity
             tortuosity = ones(G_inm.cells.num, 1);
-            
+
             for ielde = 1 : numel(eldes)
 
                 elde = eldes{ielde};
@@ -138,12 +138,12 @@ classdef ElectrolyserGridGenerator
                 couplingTerms{end + 1} = coupTerm;
 
                 tortuosity(cells2) = paramobj.(elde).(ctl).tortuosity;
-                
+
             end
 
             paramobj.couplingTerms = couplingTerms;
             paramobj.(inm).tortuosity = tortuosity;
-            
+
 
         end
 

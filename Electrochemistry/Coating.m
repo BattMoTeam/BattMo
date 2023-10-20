@@ -16,7 +16,7 @@ classdef Coating < ElectronicComponent
         %% Input Parameters
 
         % Standard parameters
-        density              % the mass density of the material (symbol: rho). Important : the density is computed with respect to total volume (including the empty pores)
+        effectiveDensity     % the mass density of the material (symbol: rho). Important : the density is computed with respect to total volume (including the empty pores)
         bruggemanCoefficient % the Bruggeman coefficient for effective transport in porous media (symbol: beta)
         active_material_type % 'default' (only one particle type) or 'composite' (two different particles)
         
@@ -42,7 +42,7 @@ classdef Coating < ElectronicComponent
 
             model = model@ElectronicComponent(paramobj);
             
-            fdnames = {'density'                        , ...
+            fdnames = {'effectiveDensity'               , ...
                        'bruggemanCoefficient'           , ...
                        'active_material_type'           , ...
                        'volumeFractions'                , ...
@@ -137,7 +137,7 @@ classdef Coating < ElectronicComponent
                 
                 % If the volumeFraction is given, we use it otherwise it is computed from the density and the specific
                 % volumes of the components
-                model.volumeFraction = sumSpecificVolumes*model.density;
+                model.volumeFraction = sumSpecificVolumes*model.effectiveDensity;
                 
             end
 
@@ -200,7 +200,7 @@ classdef Coating < ElectronicComponent
                 end
 
                 if isempty(model.effectiveVolumetricHeatCapacity)
-                    model.effectiveVolumetricHeatCapacity = model.volumeFraction*model.density*model.specificHeatCapacity;
+                    model.effectiveVolumetricHeatCapacity = model.volumeFraction*model.effectiveDensity*model.specificHeatCapacity;
                 end
 
             end

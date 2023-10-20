@@ -1,7 +1,7 @@
 function jsonstruct = resolveFileInputJson(jsonstruct)
 % Note that (for the moment), we do not resolve file name if they are included in json arrays (only those included in objects)
-    
-    
+
+
     if isstruct(jsonstruct) & numel(jsonstruct) == 1
 
         if ismember('isFile', fieldnames(jsonstruct))
@@ -10,11 +10,11 @@ function jsonstruct = resolveFileInputJson(jsonstruct)
             fullfilename = resolveFileName(filename);
             jsonsrc = fileread(fullfilename);
             fileJsonstruct = jsondecode(jsonsrc);
-            
+
             % remove the "isFile" and "filename" fields from the jsonstruct
             jsonstruct = rmfield(jsonstruct, 'isFile');
             jsonstruct = rmfield(jsonstruct, 'filename');
-            
+
             fds = fieldnames(fileJsonstruct);
             for ind = 1 : numel(fds)
                 fileJsonstruct.(fds{ind}) = resolveFileInputJson(fileJsonstruct.(fds{ind}));
@@ -22,16 +22,16 @@ function jsonstruct = resolveFileInputJson(jsonstruct)
 
             jsonstruct = mergeJsonStructs({fileJsonstruct, jsonstruct});
 
-            
+
         end
-        
+
         fds = fieldnames(jsonstruct);
         for ind = 1 : numel(fds)
             jsonstruct.(fds{ind}) = resolveFileInputJson(jsonstruct.(fds{ind}));
         end
-        
+
     end
-    
+
 end
 
 

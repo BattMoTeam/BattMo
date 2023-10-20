@@ -1,11 +1,8 @@
-function plotBatteryMesh(model, setstyle, fig)
+function plotBatteryMesh(model, varargin)
 
-    if nargin == 1
-        setstyle = true;
-        fig = [];
-    elseif nargin == 2
-        fig = [];
-    end
+    opt = struct('setstyle', true, ...
+                 'fig', []);
+    opt = merge_options(opt, varargin{:});
 
     ne    = 'NegativeElectrode';
     pe    = 'PositiveElectrode';
@@ -14,10 +11,10 @@ function plotBatteryMesh(model, setstyle, fig)
     co    = 'Coating';
 
     colors = crameri('vik', 5);
-    if isempty(fig)
+    if isempty(opt.fig)
         figure
     else
-        figure(fig);
+        figure(opt.fig);
     end
     hold on
     legtext = {};
@@ -52,7 +49,7 @@ function plotBatteryMesh(model, setstyle, fig)
     legend(legtext, 'location', 'southwest');
     axis tight;
 
-    if setstyle
+    if opt.setstyle
         setFigureStyle('quantity', 'single');
     end
 

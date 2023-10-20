@@ -1,12 +1,12 @@
 classdef CoatingInputParams < ElectronicComponentInputParams
 %
 % Input parameter class for :code:`Coating` model
-% 
+%
     properties
 
         %% Sub-Models
-        
-        ActiveMaterial 
+
+        ActiveMaterial
         Binder
         ConductingAdditive
 
@@ -14,13 +14,13 @@ classdef CoatingInputParams < ElectronicComponentInputParams
         % ActiveMaterial model will remain empty. If active_material_type == 'default', then the two models remains empty
         ActiveMaterial1
         ActiveMaterial2
-        
+
         %% Standard parameters
 
-        density              % the mass density of the material (symbol: rho). Important : the density is computed with respect to total volume (including the empty pores)
+        effectiveDensity     % the mass density of the material (symbol: rho). Important : the density is computed in wet or calendared state (meaning including the volume of the pores)
         bruggemanCoefficient % the Bruggeman coefficient for effective transport in porous media (symbol: beta)
         active_material_type % 'default' (only one particle type) or 'composite' (two different particles)
-        
+
         %% Advanced parameters
 
         volumeFractions
@@ -29,9 +29,9 @@ classdef CoatingInputParams < ElectronicComponentInputParams
         specificHeatCapacity            % (if not given computed from the subcomponents)
         effectiveThermalConductivity    % (account for volume fraction)
         effectiveVolumetricHeatCapacity % (account for volume fraction and density)
-        
+
         %% External coupling parameters
-        
+
         externalCouplingTerm % structure to describe external coupling (used in absence of current collector)
 
     end
@@ -41,7 +41,7 @@ classdef CoatingInputParams < ElectronicComponentInputParams
         function paramobj = CoatingInputParams(jsonstruct)
 
             paramobj = paramobj@ElectronicComponentInputParams(jsonstruct);
-            
+
             pick = @(fd) pickField(jsonstruct, fd);
 
             if isempty(paramobj.active_material_type)
@@ -50,29 +50,29 @@ classdef CoatingInputParams < ElectronicComponentInputParams
 
             switch paramobj.active_material_type
               case 'default'
-                
+
                 am = 'ActiveMaterial';
                 paramobj.(am) = ActiveMaterialInputParams(jsonstruct.(am));
-                
+
               case 'composite'
 
                 am1 = 'ActiveMaterial1';
                 am2 = 'ActiveMaterial2';
                 paramobj.(am1) = ActiveMaterialInputParams(jsonstruct.(am1));
                 paramobj.(am2) = ActiveMaterialInputParams(jsonstruct.(am2));
-                
+
               otherwise
                 error('active_material_type not recognized');
             end
             paramobj.Binder             = BinderInputParams(pick('Binder'));
             paramobj.ConductingAdditive = ConductingAdditiveInputParams(pick('ConductingAdditive'));
-            
+
             paramobj = paramobj.validateInputParams();
-            
+
         end
-        
+
     end
-    
+
 end
 
 

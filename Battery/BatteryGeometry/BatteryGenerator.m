@@ -104,7 +104,6 @@ classdef BatteryGenerator
 
             ne = 'NegativeElectrode';
             pe = 'PositiveElectrode';
-            eldes = {ne, pe};
 
             % We add the electrode type to the params structure (This information can be used by derived classes and may
             % then simplify setup)

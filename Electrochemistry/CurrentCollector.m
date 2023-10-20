@@ -17,15 +17,15 @@ classdef CurrentCollector < ElectronicComponent
         externalCouplingTerm
 
         %% Helper properties
-        
+
         effectiveThermalConductivity    % (for current collector, coincide with thermalConductivity, only assign for conveniance here)
-        
+
     end
-    
+
     methods
-        
+
         function model = CurrentCollector(paramobj)
-            
+
             model = model@ElectronicComponent(paramobj);
 
             fdnames = {'externalCouplingTerm', ...
@@ -33,7 +33,7 @@ classdef CurrentCollector < ElectronicComponent
                        'specificHeatCapacity', ...
                        'density'             , ...
                        'effectiveVolumetricHeatCapacity'};
-            
+
             model = dispatchParams(model, paramobj, fdnames);
 
             if isempty(model.effectiveElectronicConductivity)
@@ -46,16 +46,16 @@ classdef CurrentCollector < ElectronicComponent
                 end
                 model.effectiveThermalConductivity = model.thermalConductivity;
             end
-            
+
         end
-        
+
         function model = registerVarAndPropfuncNames(model)
 
             %% Declaration of the Dynamical Variables and Function of the model
             % (setup of varnameList and propertyFunctionList)
-            
+
             model = registerVarAndPropfuncNames@ElectronicComponent(model);
-            
+
             varnames = {'jCoupling', ...
                         'jExternal'};
             model = model.registerVarNames(varnames);
@@ -65,7 +65,7 @@ classdef CurrentCollector < ElectronicComponent
                             'jFaceExternal'};
                 model = model.registerVarNames(varnames);
             end
-            
+
             fn = @CurrentCollector.updatejBcSource;
             model = model.registerPropFunction({'jBcSource', fn, {'jCoupling', 'jExternal'}});
 
@@ -75,25 +75,25 @@ classdef CurrentCollector < ElectronicComponent
             end
 
             model = model.removeVarName('T');
-            
+
         end
-        
+
         function state = updatejBcSource(model, state)
-            
+
             state.jBcSource = state.jCoupling + state.jExternal;
-            
+
         end
-        
+
         function state = updatejFaceBc(model, state)
-            
+
             state.jFaceBc = state.jFaceCoupling + state.jFaceExternal;
-            
+
         end
-        
+
     end
-    
+
 end
-                             
+
 
 
 %{

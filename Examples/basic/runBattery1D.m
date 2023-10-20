@@ -49,11 +49,11 @@ paramobj.(ne).(co).volumeFractions = [1, 0, 0];
 paramobj.(pe).(co).volumeFraction = 0.8;
 paramobj.(pe).(co).volumeFractions = [1, 0, 0];
 
-paramobj.(ne).(co).density  = 2240;
+paramobj.(ne).(co).effectiveDensity  = 2240;
 paramobj.(ne).(co).thermalConductivity  = 1.04;
 paramobj.(ne).(co).specificHeatCapacity = 632;
 
-paramobj.(pe).(co).density  = 4650;
+paramobj.(pe).(co).effectiveDensity  = 4650;
 paramobj.(pe).(co).thermalConductivity  = 2.1;
 paramobj.(pe).(co).specificHeatCapacity = 700;
 

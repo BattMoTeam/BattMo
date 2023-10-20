@@ -27,7 +27,7 @@ function [mass, masses, volumes] = computeCellMass(model, varargin)
             
           case 'default'
             
-            rho  = model.(elde).(co).density;
+            rho  = model.(elde).(co).effectiveDensity;
             vols = model.(elde).(co).G.cells.volumes;
             frac = model.(elde).(co).volumeFraction;
             
