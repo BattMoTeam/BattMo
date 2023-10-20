@@ -18,7 +18,7 @@ mrstModule add ad-core mrst-gui mpfa agmg linearsolvers
 
 fname = fullfile('ParameterData','BatteryCellParameters',...
     'LithiumIonBatteryCell','example1_lithium_ion_battery_nmc_graphite.json');
-jsonstruct = parseBattmoJson(fname2);
+jsonstruct = parseBattmoJson(fname);
 
 %%%
 % The parseBattmoJson function parses the JSON input and creates a matlab
