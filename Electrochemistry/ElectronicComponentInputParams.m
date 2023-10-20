@@ -1,34 +1,34 @@
 classdef ElectronicComponentInputParams < ComponentInputParams
 %
 % Input parameter class for :code:`ElectronicComponent` model
-%    
+%
     properties
 
 
         %% Standard parameters
-        
+
         electronicConductivity          % electronic conductivity
 
         %% Advanced parameter
-        
+
         effectiveElectronicConductivity % effective electronic conductivity
-        
+
         %% helper parameters
         use_thermal
-        
+
     end
-    
-    
+
+
     methods
 
         function paramobj = ElectronicComponentInputParams(jsonstruct)
             paramobj = paramobj@ComponentInputParams(jsonstruct);
         end
-        
-    end
-    
 
-    
+    end
+
+
+
 end
 
 

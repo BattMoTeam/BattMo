@@ -4,43 +4,42 @@ classdef BatteryInputParams < InputParams
 %
 
     properties
-        
-        
+
         G     % Computational Grid
         SOC   % Initial state of charge [-]
         initT % Initial temperature [T]
-        
+
         %% parameters for the battery components
-        
+
         NegativeElectrode % Negative Electrode Model, instance of :class:`Electrode <Electrochemistry.Electrodes.Electrode>`
         PositiveElectrode % Positive Electrode Model, instance of :class:`Electrode <Electrochemistry.Electrodes.Electrode>`
         Electrolyte       % Electrolyte model, instance of :class:`Electrolyte <Electrochemistry.Electrodes.Electrolyte>`
         Separator         % Separator model, instance of :class:`Separator <Electrochemistry.Electrodes.Separator>`
         ThermalModel      % Thermal model, instance of :class:`ThermalComponent <Electrochemistry.ThermalComponent>`
         Control           % Control Model
-        
+
         couplingTerms % Coupling terms (describe the topological structure of the coupling between the components)
-        
+
         use_thermal            % flag : true if  coupled thermal simulation should be considered
         include_current_collectors
 
     end
-    
+
     methods
-        
+
         function paramobj = BatteryInputParams(jsonstruct)
-            
+
             paramobj = paramobj@InputParams(jsonstruct);
-            
+
             ne      = 'NegativeElectrode';
             pe      = 'PositiveElectrode';
             elyte   = 'Electrolyte';
             sep     = 'Separator';
             thermal = 'ThermalModel';
-            ctrl    = 'Control';            
+            ctrl    = 'Control';
 
             pick = @(fd) pickField(jsonstruct, fd);
-            
+
             paramobj.(ne)      = ElectrodeInputParams(pick(ne));
             paramobj.(pe)      = ElectrodeInputParams(pick(pe));
             paramobj.(elyte)   = ElectrolyteInputParams(pick(elyte));
@@ -61,7 +60,7 @@ classdef BatteryInputParams < InputParams
             paramobj.couplingTerms = {};
 
             paramobj = paramobj.validateInputParams();
-            
+
         end
 
         function paramobj = validateInputParams(paramobj)
@@ -72,19 +71,18 @@ classdef BatteryInputParams < InputParams
             elyte   = 'Electrolyte';
             sep     = 'Separator';
             thermal = 'ThermalModel';
-            ctrl    = 'Control';            
 
             paramobj = mergeParameters(paramobj, {{'use_thermal'}       , ...
                                                   {ne, 'use_thermal'}   , ...
                                                   {pe, 'use_thermal'}   , ...
                                                   {elyte, 'use_thermal'}, ...
                                                   {sep, 'use_thermal'}});
-                            
+
             paramobj = mergeParameters(paramobj, {{'include_current_collectors'}    , ...
                                                   {ne, 'include_current_collectors'}, ...
                                                   {pe, 'include_current_collectors'}});
 
-            
+
             paramobj.(ne)    = paramobj.(ne).validateInputParams();
             paramobj.(pe)    = paramobj.(pe).validateInputParams();
             paramobj.(elyte) = paramobj.(elyte).validateInputParams();
@@ -96,14 +94,14 @@ classdef BatteryInputParams < InputParams
                 isok = strcmp(paramobj.(ne).(co).active_material_type, 'default');
                 isok = isok & strcmp(paramobj.(ne).(co).active_material_type, 'default');
                 assert(isok, 'We do not support for the moment thermal simulation for composite materials');
-                
+
             end
 
-            
+
         end
 
     end
-    
+
 end
 
 

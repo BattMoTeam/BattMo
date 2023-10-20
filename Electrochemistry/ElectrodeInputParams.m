@@ -1,25 +1,25 @@
 classdef ElectrodeInputParams < ComponentInputParams
 %
 % Input parameter class for :code:`Electrode` model
-%        
+%
     properties
-        
+
         %% Sub-Models
-        
+
         Coating
         CurrentCollector
-        
+
         %% Coupling term specification
-        
+
         couplingTerm
-        
+
         %% Parameters assigned at setup
-        
+
         include_current_collectors
         use_thermal
-        
+
     end
-    
+
     methods
 
         function paramobj = ElectrodeInputParams(jsonstruct)
@@ -28,12 +28,12 @@ classdef ElectrodeInputParams < ComponentInputParams
 
             co = 'Coating';
             cc = 'CurrentCollector';
-            
+
             pick = @(fd) pickField(jsonstruct, fd);
 
             paramobj.(co) = CoatingInputParams(pick(co));
             paramobj.(cc) = CurrentCollectorInputParams(pick(cc));
-            
+
             paramobj = paramobj.validateInputParams();
 
         end
@@ -42,7 +42,7 @@ classdef ElectrodeInputParams < ComponentInputParams
 
             am = 'Coating';
             cc = 'CurrentCollector';
-            
+
             paramobj = mergeParameters(paramobj, {{'use_thermal'}, {am, 'use_thermal'}});
             paramobj.(am) = paramobj.(am).validateInputParams();
 
@@ -50,10 +50,10 @@ classdef ElectrodeInputParams < ComponentInputParams
                 paramobj = mergeParameters(paramobj, {{'use_thermal'}, {cc, 'use_thermal'}});
                 paramobj.(cc) = paramobj.(cc).validateInputParams();
             end
-            
+
         end
     end
-    
+
 end
 
 

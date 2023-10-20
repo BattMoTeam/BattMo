@@ -6,7 +6,7 @@ function paramobj = assignJsonParams(paramobj, jsonstruct)
 
         fd = paramobjFds{ind};
         if isfield(jsonstruct, fd)
-            
+
             val = jsonstruct.(fd);
             % convert from given unit to SI, if format is appropriate, see convertUnitBattMo function
             val = convertUnitBattMo(val);

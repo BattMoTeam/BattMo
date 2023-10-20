@@ -11,9 +11,9 @@ classdef BatteryGenerator2D < BatteryGenerator
         % - x(3) : length of separator (default: 50 micrometer)
         % - x(4) : length of positive active material (default: 80 micrometer)
         % - x(5) : length of positive current collector (default: 10 micrometer)
-        %                                  
-        xlength = 1e-6*[10; 100; 50; 80; 10]; 
-                                              
+        %
+        xlength = 1e-6*[10; 100; 50; 80; 10];
+
         ylength = 1e-2; % length in y direction (default: 1 cm)
 
         ccnenx = 10; % discretization number for negative current collector (default: 10)
@@ -36,9 +36,9 @@ classdef BatteryGenerator2D < BatteryGenerator
     methods
 
         function gen = BatteryGenerator2D()
-            
+
             gen = gen@BatteryGenerator();
-            
+
         end
 
         function [paramobj, gen] = updateBatteryInputParams(gen, paramobj)

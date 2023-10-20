@@ -1,20 +1,20 @@
 classdef ComponentInputParams < InputParams
 % Base class InputParams structure for components that have a grid.
-    
+
     properties
         G % grid
     end
-    
+
     methods
 
         function paramobj = ComponentInputParams(jsonstruct)
-            
+
             paramobj = paramobj@InputParams(jsonstruct);
-            
+
         end
-        
+
     end
-    
+
 end
 
 
