@@ -11,14 +11,14 @@ classdef BatteryGenerator3D < BatteryGenerator
         % - x(3) : x-length of last tab (default: 4cm)
         %
         xlength = 1e-2*[0.4; 0.2; 0.4];
-        
+
         %
         % vector of y-lengths
         %
         % - x(1) : y-length of first tab (default : 1mm)
         % - x(2) : y-length between the tabs (default : 2cm)
         % - x(3) : y-length of last tab (default : 1mm)
-        %        
+        %
         ylength = 1e-2*[0.1; 2; 0.1];
 
         %
@@ -29,8 +29,8 @@ classdef BatteryGenerator3D < BatteryGenerator
         % - z(3) : length of separator (default: 50 micrometer)
         % - z(4) : length of positive active material (default: 80 micrometer)
         % - z(5) : length of positive current collector (default: 10 micrometer)
-        %                                  
-        zlength = 1e-6*[10; 100; 50; 80; 10]; 
+        %
+        zlength = 1e-6*[10; 100; 50; 80; 10];
 
         % Shorthands used below
         % ne    : Negative electrode
@@ -65,7 +65,7 @@ classdef BatteryGenerator3D < BatteryGenerator
         pe_cc_ny = 2; % discretization number in y-direction positive tab region (default: 3)
 
         % Utility variables computed once and then shared by methods (should not be set)
-        
+
         elyte_nz;
         allparams;
         invcellmap;
@@ -96,7 +96,7 @@ classdef BatteryGenerator3D < BatteryGenerator
             % shorthands
             ne    = 'NegativeElectrode';
             pe    = 'PositiveElectrode';
-            am    = 'ActiveMaterial';
+            co    = 'Coating';
             cc    = 'CurrentCollector';
             elyte = 'Electrolyte';
             sep   = 'Separator';
@@ -135,19 +135,19 @@ classdef BatteryGenerator3D < BatteryGenerator
 
             startSubGrid = [1; gen.ne_cc_ny + 1; gen.ne_cc_nz + gen.ne_am_nz + 1];
             dimSubGrid   = [nx; gen.elyte_ny; gen.sep_nz];
-            allparams.(elyte).(sep).cellind = pickTensorCells3D(startSubGrid, dimSubGrid, dimGrid);
+            allparams.(sep).cellind = pickTensorCells3D(startSubGrid, dimSubGrid, dimGrid);
 
             %% setup gen.ne_eac
 
             startSubGrid = [1; gen.ne_cc_ny + 1; gen.ne_cc_nz + 1];
             dimSubGrid   = [nx; gen.elyte_ny; gen.ne_am_nz];
-            allparams.(ne).(am).cellind = pickTensorCells3D(startSubGrid, dimSubGrid, dimGrid);
+            allparams.(ne).(co).cellind = pickTensorCells3D(startSubGrid, dimSubGrid, dimGrid);
 
             %% setup gen.pe_eac
 
             startSubGrid = [1; gen.ne_cc_ny + 1; gen.ne_cc_nz + gen.ne_am_nz + gen.sep_nz + 1];
             dimSubGrid   = [nx; gen.elyte_ny; gen.pe_am_nz];
-            allparams.(pe).(am).cellind = pickTensorCells3D(startSubGrid, dimSubGrid, dimGrid);
+            allparams.(pe).(co).cellind = pickTensorCells3D(startSubGrid, dimSubGrid, dimGrid);
 
             %% setup gen.ne_cc
 
@@ -177,7 +177,7 @@ classdef BatteryGenerator3D < BatteryGenerator
 
             allparams.(pe).(cc).cellind = [allparams.(pe).(cc).cellind1; allparams.(pe).(cc).cellindtab];
 
-            cellind = [allparams.(elyte).cellind; allparams.(ne).(am).cellind; allparams.(pe).(am).cellind; allparams.(ne).(cc).cellind; allparams.(pe).(cc).cellind];
+            cellind = [allparams.(elyte).cellind; allparams.(ne).(co).cellind; allparams.(pe).(co).cellind; allparams.(ne).(cc).cellind; allparams.(pe).(cc).cellind];
 
             rcellind = setdiff((1 : G.cells.num)', cellind);
 
@@ -200,23 +200,23 @@ classdef BatteryGenerator3D < BatteryGenerator
 
             facz = gen.facz;
 
-            gen.sep_nz    = facz*gen.sep_nz;
+            gen.sep_nz   = facz*gen.sep_nz;
             gen.ne_am_nz = facz*gen.ne_am_nz;
             gen.pe_am_nz = facz*gen.pe_am_nz;
-            gen.ne_cc_nz  = facz*gen.ne_cc_nz;
-            gen.pe_cc_nz  = facz*gen.pe_cc_nz;
+            gen.ne_cc_nz = facz*gen.ne_cc_nz;
+            gen.pe_cc_nz = facz*gen.pe_cc_nz;
 
             facx = gen.facx;
 
             gen.int_elyte_nx = facx*gen.int_elyte_nx;
-            gen.ne_cc_nx= facx*gen.ne_cc_nx;
-            gen.pe_cc_nx= facx*gen.pe_cc_nx;
+            gen.ne_cc_nx     = facx*gen.ne_cc_nx;
+            gen.pe_cc_nx     = facx*gen.pe_cc_nx;
 
             facy = gen.facy;
 
-            gen.ne_cc_ny= facy*gen.ne_cc_ny;
-            gen.pe_cc_ny= facy*gen.pe_cc_ny;
-            gen.elyte_ny= facy*gen.elyte_ny;
+            gen.ne_cc_ny = facy*gen.ne_cc_ny;
+            gen.pe_cc_ny = facy*gen.pe_cc_ny;
+            gen.elyte_ny = facy*gen.elyte_ny;
 
         end
 
@@ -225,31 +225,41 @@ classdef BatteryGenerator3D < BatteryGenerator
             params = gen.allparams.Electrolyte;
             imap = gen.invcellmap;
             params.cellind = imap(params.cellind);
-            params.Separator.cellind = imap(params.Separator.cellind);
 
             paramobj = setupElectrolyte@BatteryGenerator(gen, paramobj, params);
 
         end
 
+        function paramobj = setupSeparator(gen, paramobj, params)
+
+            params = gen.allparams.Separator;
+            imap = gen.invcellmap;
+            params.cellind = imap(params.cellind);
+
+            paramobj = setupSeparator@BatteryGenerator(gen, paramobj, params);
+
+        end
+
+
         function paramobj = setupElectrodes(gen, paramobj, params)
 
-            ne  = 'NegativeElectrode';
-            pe  = 'PositiveElectrode';
-            cc  = 'CurrentCollector';
-            am = 'ActiveMaterial';
+            ne = 'NegativeElectrode';
+            pe = 'PositiveElectrode';
+            cc = 'CurrentCollector';
+            co = 'Coating';
 
             params = gen.allparams;
             imap = gen.invcellmap;
 
-            params.(ne).(am).cellind = imap(params.(ne).(am).cellind);
+            params.(ne).(co).cellind = imap(params.(ne).(co).cellind);
             params.(ne).(cc).cellind = imap(params.(ne).(cc).cellind);
             params.(ne).(cc).name = 'negative';
-            params.(ne).cellind = [params.(ne).(am).cellind; params.(ne).(cc).cellind];
+            params.(ne).cellind = [params.(ne).(co).cellind; params.(ne).(cc).cellind];
 
-            params.(pe).(am).cellind = imap(params.(pe).(am).cellind);
+            params.(pe).(co).cellind = imap(params.(pe).(co).cellind);
             params.(pe).(cc).cellind = imap(params.(pe).(cc).cellind);
             params.(pe).(cc).name = 'positive';
-            params.(pe).cellind = [params.(pe).(am).cellind; params.(pe).(cc).cellind];
+            params.(pe).cellind = [params.(pe).(co).cellind; params.(pe).(cc).cellind];
 
             paramobj = setupElectrodes@BatteryGenerator(gen, paramobj, params);
 

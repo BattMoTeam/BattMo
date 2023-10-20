@@ -4,7 +4,7 @@
 
 % clear the workspace and close open figures
 clear all
-close all
+%close all
 clc
 
 
@@ -28,7 +28,6 @@ paramobj = BatteryInputParams(jsonstruct);
 % We define some shorthand names for simplicity.
 ne      = 'NegativeElectrode';
 pe      = 'PositiveElectrode';
-eac     = 'ActiveMaterial';
 cc      = 'CurrentCollector';
 elyte   = 'Electrolyte';
 thermal = 'ThermalModel';
@@ -46,22 +45,13 @@ switch modelcase
   case '1D'
 
     gen = BatteryGenerator1D();
-    paramobj = gen.updateBatteryInputParams(paramobj);
-    paramobj.(ne).(cc).EffectiveElectricalConductivity = 100;
-    paramobj.(pe).(cc).EffectiveElectricalConductivity = 100;
-
-    paramobj.(thermal).externalHeatTransferCoefficient = 1000;
-    paramobj.(thermal).externalTemperature = paramobj.initT;
 
   case '2D'
     gen = BatteryGenerator2D();
-    paramobj = gen.updateBatteryInputParams(paramobj);
 
-    paramobj.(ne).(cc).EffectiveElectricalConductivity = 1e5;
-    paramobj.(pe).(cc).EffectiveElectricalConductivity = 1e5;
-
-    paramobj.(thermal).externalTemperature = paramobj.initT;
-    paramobj.SOC = 0.99;
+    % To avoid convergence issues, override the electronic conductivity
+    paramobj.(ne).(cc).effectiveElectronicConductivity = 0.1*paramobj.(ne).(cc).electronicConductivity;
+    paramobj.(pe).(cc).effectiveElectronicConductivity = 0.1*paramobj.(pe).(cc).electronicConductivity;
 
   case '3D'
     gen = BatteryGenerator3D();
@@ -71,16 +61,18 @@ switch modelcase
     gen.facy = fac;
     gen.facz = fac;
     gen = gen.applyResolutionFactors();
-    paramobj = gen.updateBatteryInputParams(paramobj);
-
-    paramobj.(thermal).externalTemperature = paramobj.initT;
 
 end
+
+paramobj = gen.updateBatteryInputParams(paramobj);
 
 %%  Initialize the battery model.
 % The battery model is initialized by sending paramobj to the Battery class
 % constructor. see :class:`Battery <Battery.Battery>`.
 model = Battery(paramobj);
+
+%% Plot
+plotBatteryMesh(model, 'setstyle', false);
 
 %% Compute the nominal cell capacity and choose a C-Rate
 % The nominal capacity of the cell is calculated from the active materials.
@@ -98,7 +90,6 @@ switchTime     = 1*milli*second; % switching time (linear interpolation between 
 dischargeTime  = pulseFraction*CRate*hour; % time of discharging
 
 % Discretization parameters
-numberOfIntervals             = 1/pulseFraction;
 tfac                          = 1;
 intervalsPerGalvanostaticStep = 5*tfac; % Number of time step in galvanostatic phase
 intervalsPerRelaxationStep    = 5*tfac; % Number of time step in relaxation phase
@@ -201,8 +192,14 @@ E = cellfun(@(x) x.(ctrl).E, states);
 I = cellfun(@(x) x.(ctrl).I, states);
 time = cellfun(@(x) x.time, states);
 
-figure
-plot(time, E);
+figure;
+plot(time/hour, E);
+xlabel('time  / h');
+ylabel('voltage  / V');
+title(modelcase);
+grid on
+axis tight
+axis([0 max(time/hour) 3.75 4.15])
 
 %% Plot an animated summary of the results
 % plotDashboard(model, states, 'step', 0);
