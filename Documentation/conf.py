@@ -14,11 +14,14 @@
 from __future__ import unicode_literals
 import sys
 import os
+import docutils
+import errno
+from docutils.parsers.rst import roles
 
 # If extensions (or modules to document with autodoc) are in another directory,
 # add these directories to sys.path here. If the directory is relative to the
 # documentation root, use os.path.abspath to make it absolute, like shown here.
-sys.path.insert(0, os.path.abspath(os.path.join('..', '..')))
+sys.path.insert(0, os.path.abspath(os.path.join('..')))
 matlab_src_dir = os.path.abspath('..')
 
 autoclass_content = 'both'
@@ -303,3 +306,39 @@ add_module_names=False
 #                       '<autodoc>')
 
 # MatAttributeDocumenter.add_directive_header = _add_directive_header
+
+
+repo_url = 'https://github.com/BattMoTeam/BattMo-dev'
+branch_name = 'modelrefac'
+
+
+def find_battmo_file(filename):
+    ignored_dirs = ['output', 'MRST', '.git', 'Documentation']
+    for root, dirs, files in os.walk(matlab_src_dir):
+        for r in ignored_dirs:
+            if r in dirs:
+                dirs.remove(r)
+        if filename in files:
+            return os.path.join(os.path.relpath(root, matlab_src_dir),
+                                filename)
+    raise FileNotFoundError(errno.ENOENT, os.strerror(errno.ENOENT), filename)
+
+
+def battmo_reference_role(role, rawtext, text, lineno, inliner,
+                          options=None, content=None):
+    if "#" in text:
+        funcname, lineno = docutils.utils.unescape(text).split("#", 1)
+    else:
+        funcname, lineno = docutils.utils.unescape(text), None
+    mfuncname = funcname + '.m'
+    fullfuncname = find_battmo_file(mfuncname)
+    ref = repo_url + '/blob/' + branch_name + '/' + fullfuncname
+    if lineno is not None:
+        ref += "#L"+lineno
+    options = roles.normalized_role_options(options)
+    node = docutils.nodes.reference(rawtext, str(funcname), refuri=ref,
+                           **options)
+    return [node], []
+
+
+roles.register_local_role('battmo', battmo_reference_role)

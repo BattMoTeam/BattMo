@@ -19,7 +19,7 @@ BattMo uses functionality from :mod:`MRST <MRSTBattMo>`. This functionality is c
 
 Specifying the physical model
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-In this tutorial we will simulate a lithium-ion battery consisting of a negative electrode, a positive electrode and an electrolyte. BattMo comes with some pre-defined models which can be loaded from JSON files. Here we will load the basic lithium-ion model JSON file which comes with Battmo.
+In this tutorial we will simulate a lithium-ion battery consisting of a negative electrode, a positive electrode and an electrolyte. BattMo comes with some pre-defined models which can be loaded from JSON files. Here we will load the basic lithium-ion model JSON file which comes with Battmo. We use :battmo:`parseBattmoJson` to parse the file, see :todo:`add link to doc`
 
 .. code-block:: matlab
 
@@ -63,14 +63,14 @@ Now we can set the diffusion model type for the active material (am) in the posi
   jsonstruct.(ne).(am).diffusionModelType = 'full';
 
 To see which other types of diffusion model are available one can view :class:`ActiveMaterialInputParams <Electrochemistry.ActiveMaterialInputParams>.
-When running a simulation, BattMo requires that all model parameters are stored in an instance of :class:`BatteryInputParams <Battery.BatteryInputParams>`. This class is used to initialize the simulation and is accessed by various parts of the simulator during the simulation. This class is instantiated using the jsonstruct we just created:
+When running a simulation, BattMo requires that all model parameters are stored in an instance of :battmo:`BatteryInputParams`. This class is used to initialize the simulation and is accessed by various parts of the simulator during the simulation. This class is instantiated using the jsonstruct we just created:
 
 .. code-block:: matlab
 
   paramobj = BatteryInputParams(jsonstruct);
   paramobj = paramobj.validateInputParams();
 
-It is also possible to update the properties of this paramobj in a similar way to updating the jsonstruct. Here we set the discretisation level for the diffusion model. Other input parameters for the full diffusion model can be found here: :class:`FullSolidDiffusionModelInputParams <Electrochemistry.FullSolidDiffusionModelInputParams>`.
+It is also possible to update the properties of this paramobj in a similar way to updating the jsonstruct. Here we set the discretisation level for the diffusion model. Other input parameters for the full diffusion model can be found here: :battmo:`FullSolidDiffusionModelInputParams`.
 
 .. code-block:: matlab
 
@@ -80,7 +80,7 @@ It is also possible to update the properties of this paramobj in a similar way t
 
 Setting up the geometry
 ^^^^^^^^^^^^^^^^^^^^^^^
-Here, we setup the 1D computational mesh that will be used for the simulation. The required discretization parameters are already included in the class BatteryGenerator1D. Classes for generating other geometries can be found in the BattMo/Battery/BatteryGeometry folder.
+Here, we setup the 1D computational mesh that will be used for the simulation. The required discretization parameters are already included in the class :battmo:`BatteryGenerator1D`. Classes for generating other geometries can be found in the BattMo/Battery/BatteryGeometry folder.
 
 .. code-block:: matlab
 
@@ -95,7 +95,7 @@ Now, we update the paramobj with the properties of the mesh. This function will 
 
 Initialising the battery model object
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-The battery model is initialized by sending paramobj to the Battery class constructor. see :class:`Battery <Battery.Battery>`.
+The battery model is initialized by sending paramobj to the Battery class constructor. see :battmo:`Battery`.
 
 .. code-block:: matlab
 

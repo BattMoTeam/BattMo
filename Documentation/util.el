@@ -2,22 +2,22 @@
 
 ;; Use user-login-name to get user name
 ;; (cond '(compare-strings user-login-name "xavier")
-(pyvenv-activate "~/Python/battmodoc-env/")
 
 (pcase (user-login-name)
-    ("xavier" (progn
-                (setq docdir "/home/xavier/Matlab/Projects/battmo/Documentation/")
-                (setq utilsdir "/home/xavier/Matlab/Projects/battmo/Documentation/utils/")
-                (setq testdir "/home/xavier/Matlab/Projects/battmo-doc-test/")))
+  ("xavier" (progn
+              (pyvenv-activate "~/Python/battmodoc-env/")
+              (setq docdir "/home/xavier/Matlab/Projects/battmo/Documentation/")
+              (setq utilsdir "/home/xavier/Matlab/Projects/battmo/Documentation/utils/")
+              (setq testdir "/home/xavier/Matlab/Projects/battmo-doc-test/")))
 
-    ("august" (progn
-                (setq docdir "/home/august/Projects/Battery/BattMo-dev/Documentation/")
-                (setq utilsdir "/home/august/Projects/Battery/BattMo-dev/Documentation/utils/")
-                (setq testdir "/home/august/Projects/Battery/battmo-doc-test/")
-                
-                )
-     )
-    )
+  ("august" (progn
+              (setq docdir "/home/august/Projects/Battery/BattMo-dev/Documentation/")
+              (setq utilsdir "/home/august/Projects/Battery/BattMo-dev/Documentation/utils/")
+              (setq testdir "/home/august/Projects/Battery/battmo-doc-test/")
+              
+              )
+   )
+  )
 
 
      
