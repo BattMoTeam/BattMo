@@ -17,7 +17,7 @@ classdef CoatingInputParams < ElectronicComponentInputParams
 
         %% Standard parameters
 
-        density              % the mass density of the material (symbol: rho). Important : the density is computed with respect to total volume (including the empty pores)
+        effectiveDensity     % the mass density of the material (symbol: rho). Important : the density is computed in wet or calendared state (meaning including the volume of the pores)
         bruggemanCoefficient % the Bruggeman coefficient for effective transport in porous media (symbol: beta)
         active_material_type % 'default' (only one particle type) or 'composite' (two different particles)
 
