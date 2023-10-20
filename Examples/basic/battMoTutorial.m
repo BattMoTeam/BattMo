@@ -14,7 +14,7 @@ mrstModule add ad-core mrst-gui mpfa agmg linearsolvers
 % negative electrode, a positive electrode and an electrolyte. *BattMo* 
 % comes with some pre-defined models which can be loaded from JSON files.
 % Here we will load the basic lithium-ion model JSON file which comes with
-% Battmo.
+% Battmo. We use :battmo:`parseBattmoJson` to parse the file, see :todo:`add link to doc`
 
 fname = fullfile('ParameterData','BatteryCellParameters',...
     'LithiumIonBatteryCell','example1_lithium_ion_battery_nmc_graphite.json');
@@ -67,7 +67,7 @@ jsonstruct.(ne).(am).diffusionModelType = 'full';
 
 %%%
 % When running a simulation, *BattMo* requires that all model parameters
-% are stored in an instance of :class:`BatteryInputParams <Battery.BatteryInputParams>`. 
+% are stored in an instance of :battmo:`BatteryInputParams`. 
 % This class is used to initialize the simulation and is accessed by
 % various parts of the simulator during the simulation. This class is
 % instantiated using the jsonstruct we just created:
@@ -80,7 +80,7 @@ paramobj = paramobj.validateInputParams();
 % similar way to updating the jsonstruct. Here we set the discretisation
 % level for the diffusion model. Other input parameters for the full diffusion
 % model can be found here:
-% :class:`FullSolidDiffusionModelInputParams <Electrochemistry.FullSolidDiffusionModelInputParams>`.
+% :battmo:`FullSolidDiffusionModelInputParams`.
 
 paramobj.(ne).(co).(am).(sd).N = 5;
 paramobj.(pe).(co).(am).(sd).N = 5;
@@ -88,7 +88,7 @@ paramobj.(pe).(co).(am).(sd).N = 5;
 %%% Setting up the geometry
 % Here, we setup the 1D computational mesh that will be used for the
 % simulation. The required discretization parameters are already included
-% in the class BatteryGenerator1D. Classes for generating other geometries can
+% in the class :battmo:`BatteryGenerator1D`. Classes for generating other geometries can
 % be found in the BattMo/Battery/BatteryGeometry folder.
 
 gen = BatteryGenerator1D();
@@ -102,7 +102,7 @@ paramobj = gen.updateBatteryInputParams(paramobj);
 
 %%% Initialising the battery model object
 % The battery model is initialized by sending paramobj to the Battery class
-% constructor. see :class:`Battery <Battery.Battery>`.
+% constructor. see :battmo:`Battery`.
 
 model = Battery(paramobj);
 
