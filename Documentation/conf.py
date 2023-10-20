@@ -309,7 +309,7 @@ add_module_names=False
 
 
 repo_url = 'https://github.com/BattMoTeam/BattMo-dev'
-branchname = 'modelrefac'
+branch_name = 'modelrefac'
 
 
 def find_battmo_file(filename):
@@ -332,7 +332,7 @@ def battmo_reference_role(role, rawtext, text, lineno, inliner,
         funcname, lineno = docutils.utils.unescape(text), None
     mfuncname = funcname + '.m'
     fullfuncname = find_battmo_file(mfuncname)
-    ref = repo_url + '/blob/' + branchname + '/' + fullfuncname
+    ref = repo_url + '/blob/' + branch_name + '/' + fullfuncname
     if lineno is not None:
         ref += "#L"+lineno
     options = roles.normalized_role_options(options)
