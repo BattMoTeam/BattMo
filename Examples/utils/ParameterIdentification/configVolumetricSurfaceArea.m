@@ -1,5 +1,12 @@
 function config = configVolumetricSurfaceArea(jsonExp)
 
+    ne  = 'NegativeElectrode';
+    pe  = 'PositiveElectrode';
+    am  = 'ActiveMaterial';
+    itf = 'Interface';
+    co  = 'Coating';
+    vsa = 'volumetricSurfaceArea';
+
     config = table();
 
     % Variable names
@@ -12,10 +19,8 @@ function config = configVolumetricSurfaceArea(jsonExp)
     % Locations
     numVars = numel(config.name);
     config.belongsTo = repmat({'model'}, numVars, 1);
-    config.location = {
-        {'NegativeElectrode', 'ActiveMaterial', 'Interface', 'volumetricSurfaceArea'};
-        {'PositiveElectrode', 'ActiveMaterial', 'Interface', 'volumetricSurfaceArea'}
-                      };
+    config.location = {{ne, co, am, itf, vsa};
+                       {pe, co, am, itf, vsa}};
 
     % Assume surface areas in range
     config.boxLims = repmat([1e5, 1e7], numVars, 1);

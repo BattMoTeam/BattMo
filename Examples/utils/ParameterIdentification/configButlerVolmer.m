@@ -1,14 +1,11 @@
 function config = configButlerVolmer(jsonExp)
 
-    ne      = 'NegativeElectrode';
-    pe      = 'PositiveElectrode';
-    elyte   = 'Electrolyte';
-    thermal = 'ThermalModel';
-    am      = 'ActiveMaterial';
-    itf     = 'Interface';
-    sd      = 'SolidDiffusion';
-    ctrl    = 'Control';
-    cc      = 'CurrentCollector';
+    ne  = 'NegativeElectrode';
+    pe  = 'PositiveElectrode';
+    am  = 'ActiveMaterial';
+    itf = 'Interface';
+    co  = 'Coating';
+    k0  = 'reactionRateConstant';
 
     config = table();
 
@@ -25,7 +22,8 @@ function config = configButlerVolmer(jsonExp)
 
     % The variables belong to the model at a specific location
     config.belongsTo = repmat({'model'}, numVars, 1);
-    config.location = {{ne, am, itf, 'k0'}; {pe, am, itf, 'k0'}};
+    config.location = {{ne, co, am, itf, k0};
+                       {pe, co, am, itf, k0}};
 
     % Store reference values
     pExp = zeros(numVars, 1);

@@ -1,5 +1,5 @@
 function [paramobj, gridGenerator] = setupBatteryGridFromJson(paramobj, jsonstruct)
-    
+
     ne    = 'NegativeElectrode';
     pe    = 'PositiveElectrode';
     elyte = 'Electrolyte';
@@ -12,9 +12,9 @@ function [paramobj, gridGenerator] = setupBatteryGridFromJson(paramobj, jsonstru
       case '1D'
 
         gen = BatteryGenerator1D();
-        
+
         xlength = gen.xlength;
-        
+
         xlength(2) = jsonstruct.NegativeElectrode.ActiveMaterial.thickness;
         xlength(3) = jsonstruct.Electrolyte.Separator.thickness;
         xlength(4) = jsonstruct.PositiveElectrode.ActiveMaterial.thickness;
@@ -27,7 +27,7 @@ function [paramobj, gridGenerator] = setupBatteryGridFromJson(paramobj, jsonstru
         end
 
         gen.xlength = xlength;
-        
+
         gen.sepnx  = jsonstruct.Electrolyte.Separator.N;
         gen.nenx   = jsonstruct.NegativeElectrode.ActiveMaterial.N;
         gen.penx   = jsonstruct.PositiveElectrode.ActiveMaterial.N;
@@ -38,31 +38,31 @@ function [paramobj, gridGenerator] = setupBatteryGridFromJson(paramobj, jsonstru
         if paramobj.PositiveElectrode.include_current_collectors
             gen.ccpenx = jsonstruct.PositiveElectrode.CurrentCollector.N;
         end
-        
+
         if isfield(jsonstruct.Geometry, 'faceArea')
             gen.faceArea = jsonstruct.Geometry.faceArea;
         end
 
-        % Now, we update the paramobj with the properties of the mesh. 
+        % Now, we update the paramobj with the properties of the mesh.
         [paramobj, gen] = gen.updateBatteryInputParams(paramobj);
 
       case 'multiLayerPouch'
 
         geom = 'Geometry';
-        
+
         gen = BatteryGeneratorMultilayerPouch();
 
         gen.unit_cell_thickness = [jsonstruct.(ne).(cc).thickness    ; ...
                                    jsonstruct.(ne).(am).thickness    ; ...
                                    jsonstruct.(elyte).(sep).thickness ; ...
                                    jsonstruct.(pe).(am).thickness    ; ...
-                                   jsonstruct.(pe).(cc).thickness];         
+                                   jsonstruct.(pe).(cc).thickness];
 
         gen.sep_nz   = jsonstruct.(elyte).(sep).N;
         gen.ne_am_nz = jsonstruct.(ne).(am).N;
         gen.pe_am_nz = jsonstruct.(pe).(am).N;
         gen.ne_cc_nz = jsonstruct.(ne).(cc).N;
-        gen.pe_cc_nz = jsonstruct.(pe).(cc).N;         
+        gen.pe_cc_nz = jsonstruct.(pe).(cc).N;
 
         gen.pouch_width = jsonstruct.(geom).width;
         gen.pouch_height = jsonstruct.(geom).height;
@@ -82,17 +82,17 @@ function [paramobj, gridGenerator] = setupBatteryGridFromJson(paramobj, jsonstru
         if isfield(jsonstruct.(geom).tab, 'cap_tabs') && jsonstruct.(geom).tab.cap_tabs
             gen.cap_tabs = true;
         else
-            gen.cap_tabs = false;            
+            gen.cap_tabs = false;
         end
-        % Now, we update the paramobj with the properties of the mesh. 
+        % Now, we update the paramobj with the properties of the mesh.
         [paramobj, gen] = gen.updateBatteryInputParams(paramobj);
 
       case '2D-demo'
-        
+
       case '3D-demo'
-        
+
         gen = BatteryGenerator3D();
-        
+
         % zlength = gen.zlength;
         % zlength(1) = jsonstruct.NegativeElectrode.ActiveMaterial.thickness;
         % zlength(2) = jsonstruct.NegativeElectrode.ActiveMaterial.thickness;
@@ -105,21 +105,21 @@ function [paramobj, gridGenerator] = setupBatteryGridFromJson(paramobj, jsonstru
         % gen.pe_am_nz = jsonstruct.PositiveElectrode.ActiveMaterial.N;
         % gen.ne_cc_nz = jsonstruct.NegativeElectrode.CurrentCollector.N;
         % gen.pe_cc_nz = jsonstruct.PositiveElectrode.CurrentCollector.N;
-        
-        % Now, we update the paramobj with the properties of the mesh. 
+
+        % Now, we update the paramobj with the properties of the mesh.
         [paramobj, gen] = gen.updateBatteryInputParams(paramobj);
-        
+
       case {'jellyRoll', 'sectorModel'}
 
         % Prepare input for SpiralBatteryGenerator.updateBatteryInputParams using json input
-        
+
         widthDict = containers.Map();
         widthDict('ElectrolyteSeparator')     = jsonstruct.Electrolyte.Separator.thickness;
         widthDict('NegativeActiveMaterial')   = jsonstruct.NegativeElectrode.ActiveMaterial.thickness;
         widthDict('NegativeCurrentCollector') = jsonstruct.NegativeElectrode.CurrentCollector.thickness;
         widthDict('PositiveActiveMaterial')   = jsonstruct.PositiveElectrode.ActiveMaterial.thickness;
         widthDict('PositiveCurrentCollector') = jsonstruct.PositiveElectrode.CurrentCollector.thickness;
-        
+
         nwidths = [widthDict('PositiveActiveMaterial')  ; ...
                    widthDict('PositiveCurrentCollector'); ...
                    widthDict('PositiveActiveMaterial')  ; ...
@@ -127,9 +127,9 @@ function [paramobj, gridGenerator] = setupBatteryGridFromJson(paramobj, jsonstru
                    widthDict('NegativeActiveMaterial')  ; ...
                    widthDict('NegativeCurrentCollector'); ...
                    widthDict('NegativeActiveMaterial')  ; ...
-                   widthDict('ElectrolyteSeparator')]; 
+                   widthDict('ElectrolyteSeparator')];
         dr = sum(nwidths);
-        
+
         rOuter = jsonstruct.Geometry.rOuter;
         rInner = jsonstruct.Geometry.rInner;
         L      = jsonstruct.Geometry.L;
@@ -151,9 +151,9 @@ function [paramobj, gridGenerator] = setupBatteryGridFromJson(paramobj, jsonstru
                    widthDict('NegativeActiveMaterial')  ; ...
                    widthDict('NegativeCurrentCollector'); ...
                    widthDict('NegativeActiveMaterial')  ; ...
-                   widthDict('ElectrolyteSeparator')]; 
+                   widthDict('ElectrolyteSeparator')];
         dr = sum(nwidths);
-        dR = rOuter - rInner; 
+        dR = rOuter - rInner;
         % Computed number of windings
         nwindings = ceil(dR/dr);
 
@@ -163,7 +163,7 @@ function [paramobj, gridGenerator] = setupBatteryGridFromJson(paramobj, jsonstru
                         'nrDict'   , nrDict   , ...
                         'nas'      , nas      , ...
                         'L'        , L        , ...
-                        'nL'       , nL       ); 
+                        'nL'       , nL       );
 
         switch jsonstruct.Geometry.case
 
@@ -175,7 +175,7 @@ function [paramobj, gridGenerator] = setupBatteryGridFromJson(paramobj, jsonstru
             params.angleuniform = true;
 
             gen = SpiralBatteryGenerator();
-            
+
           case 'sectorModel'
 
             gen = SectorBatteryGenerator();
@@ -183,15 +183,15 @@ function [paramobj, gridGenerator] = setupBatteryGridFromJson(paramobj, jsonstru
           otherwise
 
             error('Geometry.case not recognized');
-            
+
         end
-        
+
         [paramobj, gen] = gen.updateBatteryInputParams(paramobj, params);
-        
+
       otherwise
-        
+
         error('Geometry case not recognized')
-        
+
     end
 
     gridGenerator = gen;

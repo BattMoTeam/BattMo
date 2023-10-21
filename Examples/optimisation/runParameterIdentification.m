@@ -1,5 +1,5 @@
 if mrstPlatform('octave')
-    error('This demo cannot be run from Octave since it does not yet support the use of tables');
+    error('This demo cannot be run from Octave since Octave does not yet support the use of tables');
 end
 
 %% Setup
@@ -10,15 +10,30 @@ close all
 
 do_plot = true;
 
+ne      = 'NegativeElectrode';
+pe      = 'PositiveElectrode';
+elyte   = 'Electrolyte';
+thermal = 'ThermalModel';
+am      = 'ActiveMaterial';
+co      = 'Coating';
+itf     = 'Interface';
+sd      = 'SolidDiffusion';
+ctrl    = 'Control';
+
 %% Choose battery type
 
-%json = parseBattmoJson(fullfile('ParameterData', 'BatteryCellParameters', 'LithiumIonBatteryCell', 'lithium_ion_battery_nmc_graphite.json'));
+jsonParams = parseBattmoJson(fullfile('ParameterData', 'BatteryCellParameters', 'LithiumIonBatteryCell', 'lithium_ion_battery_nmc_graphite.json'));
 
-json = parseBattmoJson(fullfile('ParameterData', 'ParameterSets', 'Xu2015', 'lfp.json'));
+% jsonParams = parseBattmoJson(fullfile('ParameterData', 'ParameterSets', 'Xu2015', 'lfp.json'));
+% jsonGeom = parseBattmoJson(fullfile('Examples', 'jsondatafiles', 'geometry1d.json'));
+% json = mergeJsonStructs({jsonParams, jsonGeom});
+
+json = jsonParams;
 
 %% Generate "experimental" data
 jsonExp = json;
 statesExp = runPImodel(jsonExp);
+%outputExp = runBatteryJson(jsonExp);
 
 %% Setup parameter identification problem
 
@@ -44,6 +59,7 @@ for k = 1:numVars
     json0 = setfield(json0, loc{:}, config.initialGuess(k));
 end
 [states, model, schedule, state0] = runPImodel(json0);
+% output = runBatteryJson(json0);
 
 %% Setup optimization
 simulationSetup = struct('model', model, 'schedule', schedule, 'state0', state0);
@@ -90,8 +106,8 @@ end
 
 % Compare with reference parameters
 pExp = cellfun(@(x) x.referenceValue, parameters);
-relErr = abs(pOpt - pExp) ./ pExp
-[pOpt, pExp, relErr]
+relErr = abs(pOpt - pExp) ./ pExp;
+fprintf('%g \t %g \t %g\n', [pOpt, pExp, relErr]');
 
 %% Run model with pOpt parameters
 jsonOpt = json;
@@ -127,16 +143,16 @@ if do_plot
 end
 
 %% Summarize
-fprintf('Initial guess\n');
-p0'
-fprintf('Optimized values\n');
-pOpt
-fprintf('Experimental values\n');
-pExp
-fprintf('Relative error between optimized and experimental values\n')
-relErr
-fprintf('Iterations\n')
-numIt
+fprintf('Initial guess:\n');
+fprintf('%g\n', p0);
+fprintf('Optimized values:\n');
+fprintf('%g\n', pOpt);
+fprintf('Experimental values:\n');
+fprintf('%g\n', pExp);
+fprintf('Relative error between optimized and experimental values:\n')
+fprintf('%g\n', relErr);
+fprintf('Iterations:\n')
+fprintf('%g\n', numIt);
 
 
 

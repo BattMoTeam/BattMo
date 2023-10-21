@@ -1042,14 +1042,10 @@ classdef Battery < BaseModel
             pe    = 'PositiveElectrode';
             co    = 'Coating';
 
-            vols = battery.(elyte).G.cells.volumes;
             F = battery.con.F;
-
-
 
             couplingterms = battery.couplingTerms;
 
-            elyte_c_source = zeros(battery.(elyte).G.cells.num, 1);
             elyte_e_source = zeros(battery.(elyte).G.cells.num, 1);
 
             % setup AD
@@ -1063,18 +1059,18 @@ classdef Battery < BaseModel
             coupnames = model.couplingNames;
 
             ne_esource = state.(ne).(co).eSource;
-            if isa(ne_esource, 'ADI') & ~isa(elyte_e_source, 'ADI')
-                adsample = getSampleAD(ne_Rvol);
+            if isa(ne_esource, 'ADI') && ~isa(elyte_e_source, 'ADI')
+                adsample = getSampleAD(ne_esource);
                 adbackend = model.AutoDiffBackend;
                 elyte_e_source = adbackend.convertToAD(elyte_e_source, adsample);
             end
-
+            
             coupterm = getCoupTerm(couplingterms, 'NegativeElectrode-Electrolyte', coupnames);
             elytecells = coupterm.couplingcells(:, 2);
             elyte_e_source(elytecells) = - ne_esource;
 
             pe_esource = state.(pe).(co).eSource;
-            if isa(pe_esource, 'ADI') & ~isa(elyte_e_source, 'ADI')
+            if isa(pe_esource, 'ADI') && ~isa(elyte_e_source, 'ADI')
                 adsample = getSampleAD(pe_esource);
                 adbackend = model.AutoDiffBackend;
                 elyte_e_source = adbackend.convertToAD(elyte_e_source, adsample);

@@ -1,5 +1,12 @@
 function config = configBruggeman(jsonExp)
 
+    ne    = 'NegativeElectrode';
+    pe    = 'PositiveElectrode';
+    co    = 'Coating';
+    bman    = 'bruggemanCoefficient';
+    elyte = 'Electrolyte';
+    sep   = 'Separator';
+
     config = table();
 
     % Variable names
@@ -14,12 +21,10 @@ function config = configBruggeman(jsonExp)
     % Variable locations
     numVars = numel(config.name);
     config.belongsTo = repmat({'model'}, numVars, 1);
-    config.location = {
-        {'NegativeElectrode', 'ActiveMaterial', 'bruggemanCoefficient'};
-        {'Electrolyte', 'bruggemanCoefficient'};
-        {'Electrolyte', 'Separator', 'bruggemanCoefficient'};
-        {'PositiveElectrode', 'ActiveMaterial', 'bruggemanCoefficient'}
-                      };
+    config.location = {{ne, co, bman};
+                       {elyte, bman};
+                       {sep, bman};
+                       {pe, co, bman}};
 
     % Assume Bruggeman coefficients in range
     config.boxLims = repmat([1, 3], numVars, 1);
