@@ -1,43 +1,51 @@
 {
-  "$id": "file://battmo/schemas/SEIActiveMaterial",
+  "$id": "file://./SEIActiveMaterial",
   "$schema": "http://json-schema.org/draft-07/schema#",
-  "description": "Active material with a solid electrode unterface ",
+  "description": "Active material with a solid electrode interface ",
   "type": "object",
-
-  "allOf": [ {"$ref": "ActiveMaterial"}],
-  
-  "properties": {
-    "SolidElectrodeInterface": {
-      "type": "object",
-      "properties": {
-        "molecularWeight": {
-          "$ref": "#/definitions/PhysicalQuantity",
-          "description": "SEI molecular weight"},
-        "density": {
-          "$ref": "#/definitions/PhysicalQuantity",
-          "description": "SEI density"},
-        "conductivity": {
-          "$ref": "#/definitions/PhysicalQuantity",
-          "description": "SEI conductivity"},
-        "diffusionCoefficient": {
-          "$ref": "#/definitions/PhysicalQuantity",
-          "description": "SEI diffusion coefficient [m^2/s]"}
-      }
+  "allOf": [
+    {
+      "$ref": "ActiveMaterial.schema.json"
     },
-    "SideReaction": {
-      "type": "object"
+    {
       "properties": {
-      "chargeTransferCoefficient": {
-        "$ref": "number",
-        "description": "the charge transfer coefficient that enters in the Butler-Volmer equation for the side reaction",
-        "symbol": "beta"
-      },
-      "reactionRateConstant": {
-      "$ref": "#/definitions/PhysicalQuantity",
-      "description": "the reaction rate constant of the electrochemical reaction",
-      "symbol": "k0"
-      }
+        "SolidElectrodeInterface": {
+          "type": "object",
+          "properties": {
+            "molecularWeight": {
+              "$ref": "PhysicalQuantity.schema.json",
+              "description": "SEI molecular weight"
+            },
+            "density": {
+              "$ref": "PhysicalQuantity.schema.json",
+              "description": "SEI density"
+            },
+            "conductivity": {
+              "$ref": "PhysicalQuantity.schema.json",
+              "description": "SEI conductivity"
+            },
+            "diffusionCoefficient": {
+              "$ref": "PhysicalQuantity.schema.json",
+              "description": "SEI diffusion coefficient [m^2/s]"
+            }
+          }
+        },
+        "SideReaction": {
+          "type": "object",
+          "properties": {
+            "chargeTransferCoefficient": {
+              "$ref": "PhysicalQuantity.schema.json",
+              "description": "the charge transfer coefficient that enters in the Butler-Volmer equation for the side reaction",
+              "symbol": "beta"
+            },
+            "reactionRateConstant": {
+              "$ref": "PhysicalQuantity.schema.json",
+              "description": "the reaction rate constant of the electrochemical reaction",
+              "symbol": "k0"
+            }
+          }
+        }
       }
     }
-  }
+  ]
 }
