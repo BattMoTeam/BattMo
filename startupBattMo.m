@@ -13,7 +13,7 @@ fprintf('BattMo is based on MRST, which will now be initialized.\n\n');
 
 rootdirname = fileparts(mfilename('fullpath'));
 
-run(fullfile(rootdirname, 'MRST', 'mrst-core',  'startup'));
+run(fullfile(rootdirname, 'Externals', 'MRST', 'mrst-core',  'startup'));
 
 names = {'autodiff', ...
          'solvers', ...
