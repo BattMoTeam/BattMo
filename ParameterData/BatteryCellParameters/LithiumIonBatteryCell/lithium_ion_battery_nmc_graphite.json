@@ -4,18 +4,18 @@
   "initT": 298.15,
   "use_thermal": true,
   "include_current_collectors": false,
-  "Control" : {
-    "controlPolicy" : "IEswitch",
-    "initialControl" : "discharging",
-    "CRate" : 1,
-    "lowerCutoffVoltage" : 2.4,
-    "upperCutoffVoltage" : 4.1,
-    "dIdtLimit" : 0.01,
-    "dEdtLimit" : 0.01
+  "Control": {
+    "controlPolicy": "IEswitch",
+    "initialControl": "discharging",
+    "CRate": 1,
+    "lowerCutoffVoltage": 2.4,
+    "upperCutoffVoltage": 4.1,
+    "dIdtLimit": 0.01,
+    "dEdtLimit": 0.01
   },
   "NegativeElectrode": {
-    "Coating" : {
-      "density" : 1900,
+    "Coating": {
+      "effectiveDensity": 1900,
       "bruggemanCoefficient": 1.5,
       "ActiveMaterial": {
         "massFraction": 0.94,
@@ -27,26 +27,31 @@
           "isFile": true,
           "filename": "ParameterData/MaterialProperties/Graphite/graphite.json"
         },
-        "diffusionModelType" : "full",
-        "SolidDiffusion" : {
+        "diffusionModelType": "full",
+        "SolidDiffusion": {
           "activationEnergyOfDiffusion": 5000,
           "referenceDiffusionCoefficient": 3.9e-14,
           "particleRadius": 1e-06,
           "N": 10
-        }},
-      "Binder" : {
-        "density" : {"value" : 1.10,
-                     "unit" : "gram/((centi*meter)^3)"},
-        "massFraction" : 0.03,
-        "electronicConductivity" : 100,
+        }
+      },
+      "Binder": {
+        "density": {
+          "value": 1.1,
+          "unit": "gram/((centi*meter)^3)"
+        },
+        "massFraction": 0.03,
+        "electronicConductivity": 100,
         "specificHeatCapacity": 632.0,
         "thermalConductivity": 1.04
       },
-      "ConductingAdditive" : {
-        "density" : {"value" : 1.95,
-                     "unit" : "gram/((centi*meter)^3)"},
-        "massFraction" : 0.03,
-        "electronicConductivity" : 100,
+      "ConductingAdditive": {
+        "density": {
+          "value": 1.95,
+          "unit": "gram/((centi*meter)^3)"
+        },
+        "massFraction": 0.03,
+        "electronicConductivity": 100,
         "specificHeatCapacity": 632.0,
         "thermalConductivity": 1.04
       }
@@ -57,8 +62,8 @@
     }
   },
   "PositiveElectrode": {
-    "Coating" : {
-      "density" : 3500,
+    "Coating": {
+      "effectiveDensity": 3500,
       "bruggemanCoefficient": 1.5,
       "ActiveMaterial": {
         "massFraction": 0.95,
@@ -70,7 +75,7 @@
           "isFile": true,
           "filename": "ParameterData/MaterialProperties/NMC/nmc111.json"
         },
-        "diffusionModelType" : "full",
+        "diffusionModelType": "full",
         "SolidDiffusion": {
           "activationEnergyOfDiffusion": 5000,
           "referenceDiffusionCoefficient": 1e-14,
@@ -78,22 +83,27 @@
           "N": 10
         }
       },
-      "Binder" : {
-        "density" : {"value" : 1.75,
-                     "unit" : "gram/((centi*meter)^3)"},
-        "massFraction" : 0.025,
-        "electronicConductivity" : 100,
+      "Binder": {
+        "density": {
+          "value": 1.75,
+          "unit": "gram/((centi*meter)^3)"
+        },
+        "massFraction": 0.025,
+        "electronicConductivity": 100,
         "specificHeatCapacity": 700.0,
         "thermalConductivity": 2.1
       },
-      "ConductingAdditive" : {
-        "density" : {"value" : 1.83,
-                     "unit" : "gram/((centi*meter)^3)"},
-        "massFraction" : 0.025,
-        "electronicConductivity" : 100,
+      "ConductingAdditive": {
+        "density": {
+          "value": 1.83,
+          "unit": "gram/((centi*meter)^3)"
+        },
+        "massFraction": 0.025,
+        "electronicConductivity": 100,
         "specificHeatCapacity": 700.0,
         "thermalConductivity": 2.1
-      }},
+      }
+    },
     "CurrentCollector": {
       "isFile": true,
       "filename": "ParameterData/MaterialProperties/Aluminium/aluminium.json"
@@ -105,7 +115,8 @@
   },
   "Separator": {
     "filename": "ParameterData/BatteryComponentParameters/celgard2500.json",
-    "isFile": true },
+    "isFile": true
+  },
   "ThermalModel": {
     "externalHeatTransferCoefficient": 1000.0,
     "externalTemperature": 298.15
