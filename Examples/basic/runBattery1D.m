@@ -70,9 +70,6 @@ paramobj = gen.updateBatteryInputParams(paramobj);
 % constructor. see :class:`Battery <Battery.Battery>`.
 model = Battery(paramobj);
 
-
-keyboard;
-
 model.AutoDiffBackend= AutoDiffBackend();
 
 inspectgraph = false;
