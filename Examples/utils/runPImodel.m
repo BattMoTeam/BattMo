@@ -10,15 +10,7 @@ function [states, model, schedule, initstate] = runPImodel(jsonstruct, varargin)
     opt = merge_options(opt, varargin{:});
 
     % Define shorthand names for simplicity.
-    ne      = 'NegativeElectrode';
-    pe      = 'PositiveElectrode';
-    am      = 'ActiveMaterial';
-    cc      = 'CurrentCollector';
-    elyte   = 'Electrolyte';
-    thermal = 'ThermalModel';
-    itf     = 'Interface';
-    sd      = 'SolidDiffusion';
-    ctrl    = 'Control';
+    ctrl = 'Control';
 
     % Parse json struct
     paramobj = BatteryInputParams(jsonstruct);
@@ -52,19 +44,19 @@ function [states, model, schedule, initstate] = runPImodel(jsonstruct, varargin)
     model.AutoDiffBackend = AutoDiffBackend();
 
     % Get C-rate
-    CRate = model.Control.CRate;
+    CRate = model.(ctrl).CRate;
 
     % Setup schedule parameters
     switch model.(ctrl).controlPolicy
       case 'CCCV'
         total = 3.5*hour/CRate;
       case 'IEswitch'
-        total = 1.2*hour/CRate;
+        total = 1.4*hour/CRate;
       otherwise
         error('control policy %s is not recognized', model.(ctrl).controlPolicy);
     end
     n    = 80 * opt.dtFac;
-    dt   = total*0.7/n;
+    dt   = total/n;
     step = struct('val', dt*ones(n, 1), 'control', ones(n, 1));
 
     % Setup control
@@ -104,7 +96,7 @@ function [states, model, schedule, initstate] = runPImodel(jsonstruct, varargin)
 
     % Change default behavior of nonlinear solver, in case of error
     nls.errorOnFailure = false;
-    nls.timeStepSelector=StateChangeTimeStepSelector('TargetProps', {{'Control','E'}}, 'targetChangeAbs', 0.03);
+    nls.timeStepSelector = StateChangeTimeStepSelector('TargetProps', {{ctrl,'E'}}, 'targetChangeAbs', 0.03);
 
     % Change default tolerance for nonlinear solver
     model.nonlinearTolerance = 1e-3*model.Control.Imax;
