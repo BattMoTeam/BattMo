@@ -5,7 +5,7 @@ function [states, model, schedule, initstate] = runPImodel(jsonstruct, varargin)
     opt = struct('family', '1D', ...
                  'fac', 1, ...
                  'dtFac', 1, ...
-                 'chen', false);
+                 'Chen2020', false);
 
     opt = merge_options(opt, varargin{:});
 
@@ -80,7 +80,7 @@ function [states, model, schedule, initstate] = runPImodel(jsonstruct, varargin)
     schedule = struct('control', control, 'step', step);
 
     % Setup initial state
-    if opt.chen
+    if opt.Chen2020
         c_ne = 29.866*mol/litre; % initial concentration at negative electrode
         c_pe = 17.038*mol/litre; % initial concentration at positive electrode
         initstate = initStateChen2020(model, c_ne, c_pe);
