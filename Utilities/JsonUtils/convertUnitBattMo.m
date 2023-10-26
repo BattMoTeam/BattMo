@@ -3,7 +3,7 @@ function val = convertUnitBattMo(val)
 % val has two fields
 % - value : The numerical value
 % - unit : A string with unit that can be evaluated in BattMo.
-%          we use MRST support for unit, see "battmoDir()/MRST/mrst-core/utils/units/"
+%          we use MRST support for unit, see "battmoDir()/mrst/mrst-core/utils/units/"
 %          An example is "ampere/(centi*meter)^2"
 
     if isfield(val, 'value') && isfield(val, 'unit')

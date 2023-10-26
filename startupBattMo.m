@@ -13,7 +13,7 @@ fprintf('BattMo is based on MRST, which will now be initialized.\n\n');
 
 rootdirname = fileparts(mfilename('fullpath'));
 
-run(fullfile(rootdirname, 'Externals', 'MRST', 'mrst-core',  'startup'));
+run(fullfile(rootdirname, 'Externals', 'mrst', 'mrst-core',  'startup'));
 
 names = {'autodiff', ...
          'solvers', ...
@@ -47,7 +47,7 @@ end
 if mrstPlatform('octave')
 
     % Octave MRST settings
-    run(fullfile('Externals', 'MRST', 'mrst-core', 'utils', 'octave_only', 'startup_octave.m'));
+    run(fullfile('Externals', 'mrst', 'mrst-core', 'utils', 'octave_only', 'startup_octave.m'));
 
     % Disable warnings
     warning('off', 'Octave:possible-matlab-short-circuit-operator');
