@@ -1232,12 +1232,8 @@ classdef Battery < BaseModel
                 E    = state.(ctrl).E;
                 I    = state.(ctrl).I;
                 time = state.time;
-                
-                [ctrlVal, ctrltype] = drivingForces.src(time             , ...
-                                                        value(I)         , ...
-                                                        value(E)         , ...
-                                                        model.(ctrl).Imax, ...
-                                                        model.(ctrl).lowerCutoffVoltage);
+
+                [ctrlVal, ctrltype] = drivingForces.src(time, value(I), value(E));
                 
                 state.(ctrl).ctrlVal  = ctrlVal;
                 state.(ctrl).ctrlType = ctrltype;
