@@ -3,13 +3,15 @@ classdef NPlengthSetter1D
     properties
 
         NPratio % NP ratio
-        alpha   % For a given NP ratio, alpha is equal the corresponding ratio between the thicknesses of the electrodes
         
         lengthSetter
         porositySetter
 
+        % helpers
+        alpha   % For a given NP ratio, alpha is equal the corresponding ratio between the thicknesses of the electrodes
         fdnames
         fdinds
+        
     end
     
     methods

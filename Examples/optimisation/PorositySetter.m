@@ -2,9 +2,11 @@ classdef PorositySetter
 
     properties
         
-        nxs        % number of cells for each component 
-        compnames   % names of the components
-        compinds   % index of the components
+        % helper properties
+        
+        nxs       % number of cells for each component 
+        compnames % names of the components
+        compinds  % index of the components
         elytemaps
         refvalues
         
@@ -87,13 +89,13 @@ classdef PorositySetter
             pe    = 'PositiveElectrode';
             elyte = 'Electrolyte';
             am    = 'ActiveMaterial';
-            itf = 'Interface';
-            sd  = 'SolidDiffusion';
+            itf   = 'Interface';
+            sd    = 'SolidDiffusion';
             
             switch compname
               case {ne, pe}
-                model.(compname).(am).porosity             = v;
-                model.(compname).(am).volumeFraction       = 1 - v;
+                model.(compname).(am).porosity       = v;
+                model.(compname).(am).volumeFraction = 1 - v;
                 switch model.(compname).(am).diffusionModelType
                   case {'simple', 'interParticleOnly'}
                     % nothing to do
