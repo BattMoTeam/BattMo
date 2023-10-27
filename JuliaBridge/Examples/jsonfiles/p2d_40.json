@@ -1,0 +1,167 @@
+{
+  "Geometry": {
+    "case": "1D",
+    "faceArea": 1
+  },
+  "NegativeElectrode": {
+    "ActiveMaterial": {
+      "thickness": 6.4e-05,
+      "N": 10,
+      "specificHeatCapacity": 632,
+      "thermalConductivity": 1.04,
+      "InterDiffusionCoefficient": 1e-14,
+      "InterDiffusionCoefficientComment": "from Ecker 2015",
+      "electricalConductivity": 100,
+      "BruggemanCoefficient": 1.5,
+      "Interface": {
+        "cmax": 30555,
+        "volumeFraction": 0.8,
+        "volumetricSurfaceArea": 723600,
+        "density": 2240,
+        "n": 1,
+        "Eak": 5000,
+        "k0": 5.031e-11,
+        "theta100": 0.88551,
+        "theta0": 0.1429,
+        "OCP": {
+          "type": "function",
+          "functionname": "computeOCP_graphite",
+          "argumentlist": [
+            "cElectrode",
+            "T",
+            "cmax"
+          ]
+        },
+        "BruggemanCoefficient": 1.5
+      },
+      "diffusionModelType": "full",
+      "SolidDiffusion" : {
+        "EaD": 0,
+        "D0": 3.3e-14,
+        "rp": 5.86e-06,
+        "N" : 10
+      }
+      
+    },
+    "CurrentCollector": {
+      "N" : 5,
+      "EffectiveElectricalConductivity": 59600000.0,
+      "thermalConductivity": 398,
+      "specificHeatCapacity": 385,
+      "density": 8960,
+      "thickness" : 25e-6
+    }
+  },
+  "PositiveElectrode": {
+    "ActiveMaterial": {
+      "thickness": 5.7e-05,
+      "N": 10,
+      "specificHeatCapacity": 700,
+      "thermalConductivity": 2.1,
+      "InterDiffusionCoefficient": 1e-14,
+      "electricalConductivity": 100,
+      "BruggemanCoefficient": 1.5,
+      "Interface": {
+        "cmax": 55554,
+        "volumeFraction": 0.8,
+        "volumetricSurfaceArea": 885000,
+        "density": 4650,
+        "n": 1,
+        "Eak": 5000,
+        "k0": 2.33e-11,
+        "theta100": 0.4955,
+        "theta0": 0.99174,
+        "OCP": {
+          "type": "function",
+          "functionname": "computeOCP_nmc111",
+          "argumentlist": [
+            "cElectrode",
+            "T",
+            "cmax"
+          ]
+        },
+        "BruggemanCoefficient": 1.5
+      },
+      "diffusionModelType": "full",
+      "SolidDiffusion": {
+        "EaD": 0,
+        "D0": 4e-15,
+        "rp": 5.22e-6,
+        "N" : 10
+      }
+    },
+    "CurrentCollector": {
+      "N" : 5,
+      "EffectiveElectricalConductivity": 35500000.0,
+      "thermalConductivity": 170,
+      "specificHeatCapacity": 875,
+      "density": 2700,
+      "thickness" : 15e-6
+    }
+  },
+  "Electrolyte": {
+    "Separator": {
+      "thickness": 1.5e-05,
+      "N": 10,
+      "porosity": 0.55,
+      "specificHeatCapacity": 1978,
+      "thermalConductivity": 0.334,
+      "density": 946,
+      "BruggemanCoefficient": 1.5
+    },
+    "specificHeatCapacity": 2055,
+    "thermalConductivity": 0.6,
+    "density": 1200,
+    "Conductivity": {
+      "type": "function",
+      "functionname": "computeElectrolyteConductivity_default",
+      "argumentlist": [
+        "c",
+        "T"
+      ]
+    },
+    "DiffusionCoefficient": {
+      "type": "function",
+      "functionname": "computeDiffusionCoefficient_default",
+      "argumentlist": [
+        "c",
+        "T"
+      ]
+    },
+    "compnames": [
+      "Li",
+      "PF6"
+    ],
+    "sp": {
+      "z": 1,
+      "t": 0.601
+    },
+    "BruggemanCoefficient": 1.5
+  },
+  "G": [],
+  "SOC": 0.99,
+  "Ucut": 2,
+  "initT": 298.15,
+  "use_thermal": false,
+  "include_current_collectors": true,
+  "Control": {
+    "controlPolicy": "IEswitch",
+    "initialControl": "discharging",
+    "CRate": 1,
+    "tup" : 0.1,
+    "lowerCutoffVoltage": 2.4,
+    "upperCutoffVoltage": 4.1,
+    "dIdtLimit": 0.01,
+    "dEdtLimit": 0.01
+  },
+  "ThermalModel": {
+    "externalHeatTransferCoefficient": 1000,
+    "externalTemperature": 298.15
+  },
+  "TimeStepping": {
+    "totalTime": 4000,
+    "N": 40,
+    "useRampup": true,
+    "rampupTime": 10
+  }
+}

@@ -1,0 +1,14 @@
+name = "RunFromMatlab"
+uuid = "589d3d13-612f-4dd0-a9b8-b4da02eaba8e"
+authors = ["Erasdna <solheim.andreas@gmail.com>"]
+version = "0.1.0"
+
+[deps]
+BattMo = "6f0c0536-3c2c-4762-a987-c605a8a6f898"
+DaemonMode = "d749ddd5-2b29-4920-8305-6ff5a704e36e"
+Distributed = "8ba89e20-285c-5b6f-9357-94700520ee1b"
+JSON = "682c06a0-de6a-54ab-a142-c8b1cf79cde6"
+Jutul = "2b460a1a-8a2b-45b2-b125-b5c536396eb9"
+MAT = "23992714-dd62-5051-b70f-ba57cb901cac"
+ParallelDataTransfer = "2dcacdae-9679-587a-88bb-8b444fb7085b"
+Revise = "295af30f-e4ad-537b-8983-00126c2a3abe"

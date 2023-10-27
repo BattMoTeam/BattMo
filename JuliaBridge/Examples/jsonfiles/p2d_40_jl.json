@@ -1,0 +1,132 @@
+{
+  "Geometry": {
+    "case": "1D",
+    "faceArea": 1
+  },
+  "NegativeElectrode": {
+    "ActiveMaterial": {
+      "thickness": 6.4e-05,
+      "N": 10,
+      "electricalConductivity": 100,
+      "BruggemanCoefficient": 1.5,
+      "Interface": {
+        "cmax": 30555,
+        "volumeFraction": 0.8,
+        "n" : 1,
+        "volumetricSurfaceArea": 723600,
+        "Eak": 5000,
+        "k0": 5.031e-11,
+        "theta100": 0.88551,
+        "theta0": 0.1429,
+        "OCP": {
+          "type": "function",
+          "functionname": "compute_ocp_graphite",
+          "argumentlist": [
+            "cElectrode",
+            "T",
+            "cmax"
+          ]
+        },
+        "BruggemanCoefficient": 1.5
+      },
+      "diffusionModelType": "full",
+      "SolidDiffusion" : {
+        "EaD": 0,
+        "D0": 3.3e-14,
+        "rp": 5.86e-06,
+        "N" : 10
+      }
+      
+    },
+    "CurrentCollector": {
+      "N" : 5,
+      "thickness" : 25e-6,
+      "EffectiveElectricalConductivity": 59600000.0
+    }
+  },
+  "PositiveElectrode": {
+    "ActiveMaterial": {
+      "thickness": 5.7e-05,
+      "N": 10,
+      "electricalConductivity": 100,
+      "BruggemanCoefficient": 1.5,
+      "Interface": {
+        "cmax": 55554,
+        "volumeFraction": 0.8,
+        "volumetricSurfaceArea": 885000,
+        "n": 1,
+        "Eak": 5000,
+        "k0": 2.33e-11,
+        "theta100": 0.4955,
+        "theta0": 0.99174,
+        "OCP": {
+          "type": "function",
+          "functionname": "compute_ocp_nmc111",
+          "argumentlist": [
+            "cElectrode",
+            "T",
+            "cmax"
+          ]
+        },
+        "BruggemanCoefficient": 1.5
+      },
+      "diffusionModelType": "full",
+      "SolidDiffusion": {
+        "EaD": 0,
+        "D0": 4e-15,
+        "rp": 5.22e-6,
+        "N" : 10
+      }
+    },
+    "CurrentCollector": {
+      "N" : 5,
+      "thickness" : 15e-6,
+      "EffectiveElectricalConductivity": 35500000.0
+    }
+  },
+  "Electrolyte": {
+    "Separator": {
+      "thickness": 1.5e-05,
+      "N": 10,
+      "porosity": 0.55,
+      "BruggemanCoefficient": 1.5
+    },
+    "Conductivity": {
+      "type": "function",
+      "functionname": "computeElectrolyteConductivity_default",
+      "argumentlist": [
+        "c",
+        "T"
+      ]
+    },
+    "DiffusionCoefficient": {
+      "type": "function",
+      "functionname": "computeDiffusionCoefficient_default",
+      "argumentlist": [
+        "c",
+        "T"
+      ]
+    },
+    "sp": {
+      "z": 1,
+      "t": 0.601
+    },
+    "BruggemanCoefficient": 1.5
+  },
+  "SOC": 0.99,
+  "initT": 298.15,
+  "include_current_collectors": true,
+  "Control": {
+    "controlPolicy": "IEswitch",
+    "initialControl": "discharging",
+    "CRate": 1,
+    "tup" : 0.1,
+    "lowerCutoffVoltage": 2.4
+  },
+  "TimeStepping": {
+    "totalTime": 4000,
+    "N": 40,
+    "useRampup": true,
+    "rampupTime": 10
+  }
+}
