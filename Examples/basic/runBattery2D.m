@@ -2,10 +2,7 @@
 % This example demonstrates how to setup a P3D model of a Li-ion battery
 % and run a simple simulation.
 
-% Clear the workspace and close open figures
-clear all
-close all
-clc
+
 
 %% Import the required modules from MRST
 % load MRST modules
@@ -19,12 +16,16 @@ mrstModule add ad-core mrst-gui mpfa
 % throughout the submodels. The input parameters can be set manually or
 % provided in json format. All the parameters for the model are stored in
 % the paramobj object.
-jsonstruct = parseBattmoJson(fullfile('ParameterData', 'BatteryCellParameters', 'LithiumIonBatteryCell', 'lithium_ion_battery_nmc_graphite.json'));
+% jsonstruct = parseBattmoJson(fullfile('ParameterData', 'BatteryCellParameters', 'LithiumIonBatteryCell', 'lithium_ion_battery_nmc_graphite.json'));
+jsonstruct = parseBattmoJson(fullfile(battmoDir, 'Documentation', 'inputfile.json'));
+jsonstruct.include_current_collectors = 0;
 paramobj = BatteryInputParams(jsonstruct);
+
 
 % We define some shorthand names for simplicity.
 ne      = 'NegativeElectrode';
 pe      = 'PositiveElectrode';
+co      = 'Coating';
 am      = 'ActiveMaterial';
 cc      = 'CurrentCollector';
 elyte   = 'Electrolyte';
@@ -43,8 +44,8 @@ paramobj = gen.updateBatteryInputParams(paramobj);
 
 % change some of the values of the paramaters that were given in the json
 % file to other values. This is done directly on the object paramobj.
-paramobj.(ne).(cc).EffectiveElectricalConductivity = 1e5;
-paramobj.(pe).(cc).EffectiveElectricalConductivity = 1e5;
+paramobj.(ne).(cc).effectiveElectronicConductivity = 1e5;
+paramobj.(pe).(cc).effectiveElectronicConductivity = 1e5;
 
 %%  Initialize the battery model.
 % The battery model is initialized by sending paramobj to the Battery class
@@ -57,9 +58,9 @@ colors = crameri('vik', 5);
 figure
 legtext = {};
 edgeparams = {'edgealpha', 0.5, 'edgecolor', [1, 1, 1]};
-plotGrid(model.(ne).(am).G,     'facecolor', colors(2,:), edgeparams{:});
-plotGrid(model.(elyte).(sep).G, 'facecolor', colors(3,:), edgeparams{:});
-plotGrid(model.(pe).(am).G,     'facecolor', colors(4,:), edgeparams{:});
+plotGrid(model.(ne).(co).G,     'facecolor', colors(2,:), edgeparams{:});
+plotGrid(model.(sep).G, 'facecolor', colors(3,:), edgeparams{:});
+plotGrid(model.(pe).(co).G,     'facecolor', colors(4,:), edgeparams{:});
 legtext = [legtext, {'negative electrode active material', 'separator', 'positive electrode current collector'}];
 if model.include_current_collectors
     plotGrid(model.(ne).(cc).G, 'facecolor', colors(1,:), edgeparams{:});

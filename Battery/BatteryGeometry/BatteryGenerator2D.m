@@ -215,10 +215,10 @@ classdef BatteryGenerator2D < BatteryGenerator
         end
 
 
-        function paramobj = setupActiveMaterialBcCoupTerm(gen, paramobj, params)
+        function paramobj = setupCoatingBcCoupTerm(gen, paramobj, params)
 
             params = gen.findBoundary(paramobj.G, params);
-            paramobj = setupActiveMaterialBcCoupTerm@BatteryGenerator(gen, paramobj, params);
+            paramobj = setupCoatingBcCoupTerm@BatteryGenerator(gen, paramobj, params);
 
         end
 
@@ -235,11 +235,11 @@ classdef BatteryGenerator2D < BatteryGenerator
                 coupterm_pe = paramobj.(pe).(cc).externalCouplingTerm;
                 facemap_pe  = paramobj.(pe).(cc).G.mappings.facemap;
             else
-                am = 'ActiveMaterial';
-                coupterm_ne = paramobj.(ne).(am).externalCouplingTerm;
-                facemap_ne  = paramobj.(ne).(am).G.mappings.facemap;
-                coupterm_pe = paramobj.(pe).(am).externalCouplingTerm;
-                facemap_pe  = paramobj.(pe).(am).G.mappings.facemap;
+                co = 'Coating';
+                coupterm_ne = paramobj.(ne).(co).externalCouplingTerm;
+                facemap_ne  = paramobj.(ne).(co).G.mappings.facemap;
+                coupterm_pe = paramobj.(pe).(co).externalCouplingTerm;
+                facemap_pe  = paramobj.(pe).(co).G.mappings.facemap;
             end
 
             % the cooling is done on the external faces
