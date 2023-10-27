@@ -36,7 +36,7 @@ classdef ServerManager < handle
             addParameter(p, 'print_stack'  , true                  , @(x) validateattributes(x, {'logical'}, {'scalar'}));
             addParameter(p, 'async'        , true                  , @(x) validateattributes(x, {'logical'}, {'scalar'}));
             addParameter(p, 'gc'           , true                  , @(x) validateattributes(x, {'logical'}, {'scalar'}));
-            addParameter(p, 'debug'        , true                 , @(x) validateattributes(x, {'logical'}, {'scalar'}));
+            addParameter(p, 'debug'        , false                 , @(x) validateattributes(x, {'logical'}, {'scalar'}));
 
             parse(p, varargin{:});
             manager.options=p.Results;
