@@ -9,7 +9,6 @@
               (setq docdir "/home/xavier/Matlab/Projects/battmo/Documentation/")
               (setq utilsdir "/home/xavier/Matlab/Projects/battmo/Documentation/utils/")
               (setq testdir "/home/xavier/Matlab/Projects/battmo-doc-test/")))
-
   ("august" (progn
               (setq docdir "/home/august/Projects/Battery/BattMo-dev/Documentation/")
               (setq utilsdir "/home/august/Projects/Battery/BattMo-dev/Documentation/utils/")
@@ -29,6 +28,7 @@
     (erase-buffer)
     (start-process "battmo-build" outputbuffer "make" "html")
     )
+  (browse-url (concat docdir "_build/html/index.html"))
   )
 
 (defun battmodoc-build-examples ()
