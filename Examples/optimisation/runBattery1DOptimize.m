@@ -42,9 +42,6 @@ gen = BatteryGenerator1D();
 % Now, we update the paramobj with the properties of the mesh.
 paramobj = gen.updateBatteryInputParams(paramobj);
 
-paramobj.(ne).(cc).EffectiveElectricalConductivity = 1e5;
-paramobj.(pe).(cc).EffectiveElectricalConductivity = 1e5;
-
 %%  Initialize the battery model.
 
 model = Battery(paramobj);
@@ -66,13 +63,11 @@ switch model.(ctrl).controlPolicy
     error('control policy not recognized');
 end
 
-n     = 40;
-dt    = total*0.7/n;
-step  = struct('val', dt*ones(n, 1), 'control', ones(n, 1));
+n    = 40;
+dt   = total*0.7/n;
+step = struct('val', dt*ones(n, 1), 'control', ones(n, 1));
 
-% we setup the control by assigning a source and stop function.
-% control = struct('CCCV', true);
-%  !!! Change this to an entry in the JSON with better variable names !!!
+% Setup the control by assigning a source and stop function.
 
 switch model.Control.controlPolicy
   case 'IEswitch'
@@ -133,6 +128,7 @@ fig1 = figure;
 plot(time/hour, E, '*-', 'displayname', 'initial');
 xlabel('time  / h');
 ylabel('voltage  / V');
+grid on
 
 %% Plot the the output voltage and current gradients to control
 
@@ -162,27 +158,27 @@ boxLims = [[0.07, 0.5]; ...
            [0.1, 0.9] ; ...
            [0.07, 0.5]];
 
-parameters{end+1} = ModelParameter(SimulatorSetup, ...
-                                   'name'     , 'porosity_sep'           , ...
-                                   'belongsTo', 'model'                  , ...
-                                   'boxLims'  , [0.1, 0.9]                , ...
-                                   'location' , {''} , ...
-                                   'getfun'   , getporo                       , ...
-                                   'setfun'   , setporo);
+parameters = addParameter(parameters, SimulatorSetup, ...
+                          'name'     , 'porosity_sep', ...
+                          'belongsTo', 'model'       , ...
+                          'boxLims'  , [0.1, 0.9]    , ...
+                          'location' , {''}          , ...
+                          'getfun'   , getporo       , ...
+                          'setfun'   , setporo);
 
 setfun = @(x, location, v) struct('Imax', v, ...
                                   'src', @(time, I, E) rampupSwitchControl(time, 0.1, I, E, v, 3.0), ...
                                   'IEswitch', true);
 
 for i = 1 : max(schedule.step.control)
-    parameters{end+1} = ModelParameter(SimulatorSetup, ...
-                                       'name'        , 'Imax'                       , ...
-                                       'belongsTo'   , 'schedule'                   , ...
-                                       'boxLims'     , model.Control.Imax*[0.5, 1.5], ...
-                                       'location'    , {'control', 'Imax'}          , ...
-                                       'getfun'      , []                           , ...
-                                       'setfun'      , setfun                       , ...
-                                       'controlSteps', i);
+    parameters = addParameter(parameters, SimulatorSetup, ...
+                              'name'        , 'Imax'                       , ...
+                              'belongsTo'   , 'schedule'                   , ...
+                              'boxLims'     , model.Control.Imax*[0.5, 1.5], ...
+                              'location'    , {'control', 'Imax'}          , ...
+                              'getfun'      , []                           , ...
+                              'setfun'      , setfun                       , ...
+                              'controlSteps', i);
 end
 
 objmatch = @(model, states, schedule, varargin) EnergyOutput(model, states, schedule, varargin{:});
@@ -206,27 +202,13 @@ if doOptimization
     % Print optimal parameters
     fprintf('Base and optimized parameters:\n');
     for k = 1:numel(parameters)
-        loc = parameters{k}.location;
-
         % Get the original and optimized values
         p0 = parameters{k}.getParameter(SimulatorSetup);
         pu = parameters{k}.getParameter(setup_opt);
 
-        % Did we hit the boxlims?
-        hit = '';
-        tol = 1e-3;
-        if abs(p_opt(k)) < tol || abs(p_opt(k) - 1) < tol
-            hit = '(boxlim hit)';
-        end
-
         % Print
-        space = repmat({'.'}, numel(loc)-1, 1);
-        clear locsp;
-        locsp(1:2:2*numel(loc)) = loc;
-        locsp(2:2:2*numel(loc)-1) = space;
-        loc = [locsp{:}];
-
-        fprintf('%s\t %g\t %g %s\n', loc, p0, pu, hit);
+        fprintf('%s\n', parameters{k}.name);
+        fprintf('%g %g\n', p0, pu);
     end
 
     fprintf('Energy changed from %g to %g Wh\n', totval/hour, totval_opt/hour);
@@ -247,14 +229,15 @@ doCompareGradient = true;
 if doCompareGradient
 
     p = getScaledParameterVector(SimulatorSetup, parameters);
-    [vad, gad]   = evalObjectiveBattmo(p, objmatch, SimulatorSetup, parameters, 'Gradient', 'AdjointAD');
-    [vnum, gnum] = evalObjectiveBattmo(p, objmatch, SimulatorSetup, parameters, 'Gradient', 'PerturbationADNUM', 'PerturbationSize', 1e-5);
+    [vad, gad]   = evalObjectiveBattmo(p, objmatch, SimulatorSetup, parameters, 'gradientMethod', 'AdjointAD');
+    [vnum, gnum] = evalObjectiveBattmo(p, objmatch, SimulatorSetup, parameters, 'gradientMethod', 'PerturbationADNUM', 'PerturbationSize', 1e-5);
 
     fprintf('Gradient computed using adjoint:\n');
     display(gad);
     fprintf('Numerical gradient:\n');
     display(gnum);
-
+    fprintf('Relative error:\n')
+    display(abs(gnum-gad)./abs(gad));
 end
 
 
