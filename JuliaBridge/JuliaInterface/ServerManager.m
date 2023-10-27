@@ -1,22 +1,23 @@
-classdef ServerManager < handle 
+classdef ServerManager < handle
 
     properties
-        
+
         options
         base_call
         use_folder
         call_history = {}
-        
+        file_version = '-v7'
+
     end
-    
+
     properties (Hidden)
-        
+
         cleanup
-        
+
     end
-    
+
     methods
-        
+
         function manager    = ServerManager(varargin)
         % Parse inputs
 
@@ -28,28 +29,28 @@ classdef ServerManager < handle
             addParameter(p, 'script_source', fullfile(serverFolder , 'RunFromMatlab','api','DaemonHandler.jl'), @ischar);
             addParameter(p, 'startup_file' , 'no'                  , @ischar);
             addParameter(p, 'threads'      , 'auto'                , @validate_threads);
-            addParameter(p, 'procs'        , 2                     , @(x) validateattributes(x, {'numeric'}, {'integer'}));
+            addParameter(p, 'procs'        , 1                     , @(x) validateattributes(x, {'numeric'}, {'integer'}));
             addParameter(p, 'cwd'          , serverFolder          , @ischar);
             addParameter(p, 'port'         , 3000                  , @(x) validateattributes(x, {'numeric'}, {'scalar', 'integer', 'positive'}));
             addParameter(p, 'shared'       , true                  , @(x) validateattributes(x, {'logical'}, {'scalar'}));
             addParameter(p, 'print_stack'  , true                  , @(x) validateattributes(x, {'logical'}, {'scalar'}));
             addParameter(p, 'async'        , true                  , @(x) validateattributes(x, {'logical'}, {'scalar'}));
             addParameter(p, 'gc'           , true                  , @(x) validateattributes(x, {'logical'}, {'scalar'}));
-            addParameter(p, 'debug'        , false                 , @(x) validateattributes(x, {'logical'}, {'scalar'}));
+            addParameter(p, 'debug'        , true                 , @(x) validateattributes(x, {'logical'}, {'scalar'}));
 
             parse(p, varargin{:});
             manager.options=p.Results;
-            
+
             % We will save all files related to the execution of the server
             % in a folder on the form Server_id=<port>
             manager.use_folder = fullfile(manager.options.cwd, ['Server_id=', num2str(manager.options.port)]);
             [~, ~] = mkdir(manager.use_folder);
-            
+
             %Save options in file to be read in Julia
             op = manager.options;
             opt_file = fullfile(manager.use_folder, 'options.mat');
-            save(opt_file, "op");
-       
+            save(opt_file, 'op', manager.file_version);
+
             % Build DaemonMode call:
 
             % Manage options
@@ -58,7 +59,7 @@ classdef ServerManager < handle
                                  '--project='         , manager.options.project     , ' ', ...
                                  '--procs='           , num2str(manager.options.procs), ' ', ...
                                  '--threads='         , manager.options.threads];
-            
+
             %Ensure that project is instantiated
             instaniate_call = '"using Pkg; Pkg.instantiate();"';
             manager.DaemonCall(instaniate_call);
@@ -70,17 +71,17 @@ classdef ServerManager < handle
             option_call = ['"using Revise, DaemonMode; runargs(', ...
                            num2str(manager.options.port),')" ', manager.options.script_source, ...
                            ' -load_options ', opt_file];
-            
+
             manager.DaemonCall(option_call);
 
             % Shut down server on cleanup
             manager.cleanup = onCleanup(@() delete(manager));
-            
+
         end
-        
+
         function load(manager, varargin)
-            % Load data onto server (requires shared=true to make sense)
-            % Add warning if shared is false
+        % Load data onto server (requires shared=true to make sense)
+        % Add warning if shared is false
 
             opts = struct('data'         , []      , ...
                           'kwargs'       , []      , ...
@@ -88,14 +89,14 @@ classdef ServerManager < handle
                           'use_state_ref', false   , ...
                           'inputFileName', []);
             opts = merge_options(opts, varargin{:});
-            
+
             data          = opts.data;
             kwargs        = opts.kwargs;
             inputType     = opts.inputType;
             use_state_ref = opts.use_state_ref;
-            
+
             loadingDataFilename = [tempname, '.mat'];
-            
+
             switch opts.inputType
               case 'Matlab'
                 inputFileName = loadingDataFilename;
@@ -104,43 +105,44 @@ classdef ServerManager < handle
               otherwise
                 error('inputType not recognized');
             end
-            
+
             save(loadingDataFilename, ...
                  'data'             , ...
                  'kwargs'           , ...
                  'inputType'        , ...
                  'use_state_ref'    , ...
-                 'inputFileName');
-            
+                 'inputFileName'    , ...
+                 manager.file_version);
+
             call_load = ['"using Revise, DaemonMode; runargs(', num2str(manager.options.port), ')" ', manager.options.script_source, ...
-                ' -load ', loadingDataFilename];
+                         ' -load ', loadingDataFilename];
             if manager.options.debug
                 fprintf("Loading data into Julia \n")
             end
             manager.DaemonCall(call_load);
-            
+
         end
 
         function result = run_battery(manager)
 
             outputFileName = [tempname,'.json'];
 
-            %Call DaemonMode.runargs 
+            %Call DaemonMode.runargs
             call_battery = ['"using Revise, DaemonMode; runargs(',num2str(manager.options.port) ,')" ', manager.options.script_source, ...
                             ' -run_battery ', outputFileName];
-            
+
             if manager.options.debug
                 fprintf("Calling run battery \n")
             end
-            
+
             st = manager.DaemonCall(call_battery);
             %Read only if system call completed succesfully
             if st
                 % Read julia output
                 fid = fopen(outputFileName);
-                raw = fread(fid, inf); 
-                str = char(raw'); 
-                fclose(fid); 
+                raw = fread(fid, inf);
+                str = char(raw');
+                fclose(fid);
                 result = {jsondecode(str)};
 
                 if manager.options.gc
@@ -149,87 +151,87 @@ classdef ServerManager < handle
             else
                 result=[];
             end
-            
+
         end
 
         function startup(manager)
-            
+
             if ~ping_server(manager.options) %If server is already live, do nothing
-                % Create DaemonMode.serve call
+                                             % Create DaemonMode.serve call
                 startup_call = ['"using Revise, DaemonMode; serve(', ...
                                 num2str(manager.options.port), ', ', jl_bool(manager.options.shared), ...
                                 ', print_stack=', jl_bool(manager.options.print_stack),')" &'];
                 %, ...
-                 %               ', async=', jl_bool(manager.options.async),')" &'];
-                
+                %               ', async=', jl_bool(manager.options.async),')" &'];
+
                 if manager.options.debug
                     fprintf("Starting Julia server \n")
                 end
 
                 manager.DaemonCall(startup_call);
-                
+
                 % Check if server is active. Ensures that we do not make
                 % calls to the server until it is ready
                 while ~ping_server(manager.options)
                     pause(0.1);
                 end
             end
-            
+
         end
 
         function shutdown(manager)
         % Close server if active
             kill_call= ['"using Revise, DaemonMode; sendExitCode(', num2str(manager.options.port), ...
-                ');"'];
+                        ');"'];
             cmd = [manager.base_call, ' -e ', kill_call];
             system(cmd)
             if manager.options.debug
                 fprintf("Shutting down server \n");
             end
-            
+
         end
-        
+
         function restart(manager, varargin)
         % Close server and restart
-            
+
             kill_call= ['"using Revise, DaemonMode; sendExitCode(', num2str(manager.options.port), ...
-                ');"'];
+                        ');"'];
             cmd = [manager.base_call, ' -e ', kill_call];
             system(cmd)
             if manager.options.debug
                 fprintf("Shutting down server \n");
             end
             manager.startup()
-            
+
         end
 
         function success = DaemonCall(manager, call)
         %Call the DaemonMode server
-            
+
             cmd = [manager.base_call, ' -e ', call];
-            
+
             if manager.options.debug
                 fprintf("Call to julia: %s \n", cmd);
             end
 
-            try 
+            try
                 st=system(cmd);
                 success=true;
             catch
                 fprintf("System call failed: \n %s", cmd);
                 success=false;
             end
-            
+
             manager.call_history{end+1} = cmd;
-            
+
         end
 
         function f=sweep(manager,experiment,values,name)
         %Perform a parameter sweep
             save_folder = fullfile(manager.use_folder,name);
-            [~,~]=mkdir(save_folder);
+            [~,~] = mkdir(save_folder);
             options_file = [save_folder,'/',name,'.mat'];
-            save(options_file, "save_folder","experiment","values")
+            save(options_file, "save_folder","experiment","values", manager.file_version);
             sweep_source = fullfile(fileparts(mfilename('fullpath')), 'RunFromMatlab','api','ParameterSweepControl.jl');
             sweep_call=['"using Revise, DaemonMode; runargs(',num2str(manager.options.port) ,')" ', sweep_source, ' ', options_file, ' &'];
             manager.DaemonCall(sweep_call);
@@ -253,9 +255,9 @@ classdef ServerManager < handle
             result = f.OutputArguments{1}.Results(index);
             for i=1:length(index)
                 fid = fopen(result(i).states_location);
-                raw = fread(fid, inf); 
-                str = char(raw'); 
-                fclose(fid); 
+                raw = fread(fid, inf);
+                str = char(raw');
+                fclose(fid);
                 states = jsondecode(str);
                 result(i).states = states;
             end
@@ -272,16 +274,16 @@ function [result,count ]= checkSweep(experiment,save_folder)
 
     %Read file
     fid = fopen(output_file);
-    raw = fread(fid, inf); 
-    str = char(raw'); 
-    fclose(fid); 
+    raw = fread(fid, inf);
+    str = char(raw');
+    fclose(fid);
     result = jsondecode(str);
 end
 
 % Determine correct julia source
 function runtime = try_find_julia_runtime()
 
-    % Default value
+% Default value
     runtime = 'julia';
 
     try
@@ -303,18 +305,18 @@ end
 
 function str = jl_bool(bool)
 
-        if bool
-            str = 'true';
-        else
-            str = 'false';
-        end
-    
+    if bool
+        str = 'true';
+    else
+        str = 'false';
+    end
+
 end
 
 function succ = ping_server(opts)
 
     try
-        tcpclient('127.0.0.1', opts.port);
+        obj = tcpclient('127.0.0.1', opts.port); %#ok Octave requires return object
         succ = true;
     catch me
         if strcmpi(me.identifier, 'MATLAB:networklib:tcpclient:cannotCreateObject')
