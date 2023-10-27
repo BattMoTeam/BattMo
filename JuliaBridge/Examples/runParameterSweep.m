@@ -62,8 +62,7 @@ end
 v = linspace(0.7, 0.9, 20);
 f = man.sweep('Example', {v , v}, 'demo');
 
-return
-
+%%
 ind = [1, 20, 300];
 start = tic;
 res = man.collect_results(f, ind);

@@ -247,7 +247,7 @@ classdef ServerManager < handle
         function result = collect_results(manager, f, index)
         %Collect results from a Futures object at given indices
 
-            while f.State == "running"
+            while isprop(f, 'State') && f.State == "running"
                 pause(0.1);
                 if manager.options.debug
                     disp("Waiting for futures object to finish")
@@ -257,7 +257,12 @@ classdef ServerManager < handle
                 disp("Loading data from object")
             end
 
-            result = f.OutputArguments{1}.Results(index);
+            try
+                result = f.OutputArguments{1}.Results(index);
+            catch
+                result = f.Results(index);
+            end
+
             for i = 1:length(index)
                 fid = fopen(result(i).states_location);
                 raw = fread(fid, inf);
