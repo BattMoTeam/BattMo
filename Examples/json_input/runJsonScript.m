@@ -55,7 +55,7 @@ jsonstruct = mergeJsonStructs({jsonstruct_geometry , ...
 
 CRate = jsonstruct.Control.CRate;
 jsonstruct.TimeStepping.totalTime = 1.4*hour/CRate;
-jsonstruct.TimeStepping.N = 40;
+jsonstruct.TimeStepping.numberOfTimeSteps = 40;
 
 %% We start the simulation
 % We use the function :code:`runBatteryJson` to run the simulation with json input structure

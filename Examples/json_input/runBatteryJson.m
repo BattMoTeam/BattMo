@@ -60,7 +60,7 @@ function  output = runBatteryJson(jsonstruct, varargin)
     %% Setup the time step schedule
 
     total = jsonstruct.TimeStepping.totalTime;
-    n = jsonstruct.TimeStepping.N;
+    n = jsonstruct.TimeStepping.numberOfTimeSteps;
 
     dt = total/n;
     dts = rampupTimesteps(total, dt, 5);

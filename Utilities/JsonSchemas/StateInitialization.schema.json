@@ -24,39 +24,34 @@
       "description": "string that when run by matlab eval function return the initial state in the structure initstate"
     }
   },
-  "allOf": [
-    {"if": {
-      "properties": {
-        "initializationSetup": {
-          "const":"given SOC"}
-        },
-        "required": ["initializationSetup"]
-      },
-
-
-    "then": {
+  "oneOf": [
+    {
       "required": [
         "SOC"
+      ],
+      "not": {
+        "properties": {
+          "initializationSetup": {
+            "const": "given input"
+          }
+        },
+        "required": [
+          "initializationSetup"
+        ]
+      }
+    },
+    {
+      "properties": {
+        "initializationSetup": {
+          "const": "given input"
+        }
+      },
+      "required": [
+        "loadStateCmd"
       ]
     }
-  },
-  {"if": {
-    "properties": {
-      "initializationSetup": {
-        "const":"given input"}
-      },
-      "required": ["initializationSetup"]
-    },
-
-
-  "then": {
-    "required": [
-      "loadStateCmd"
-    ]
-  }
-}],
-
+  ],
   "required": [
-    "initT", "initializationSetup"
+    "initT"
   ]
 }
