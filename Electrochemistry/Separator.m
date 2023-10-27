@@ -44,7 +44,6 @@ classdef Separator < BaseModel
                        'effectiveVolumetricHeatCapacity', ...
                        'use_thermal'};
             model = dispatchParams(model, paramobj, fdnames);
-            model.porosity = model.porosity*ones(model.G.cells.num,1);
 
             if model.use_thermal
                 
