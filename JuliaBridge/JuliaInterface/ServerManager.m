@@ -237,12 +237,10 @@ classdef ServerManager < handle
             manager.DaemonCall(sweep_call);
 
             if mrstPlatform('octave')
-                foo = @feval;
+                f = checkSweep(experiment, save_folder);
             else
-                foo = @parfeval;
+                f = parfeval(@checkSweep, 1, experiment, save_folder);
             end
-
-            f = foo(@checkSweep, experiment, save_folder);
 
         end
 
