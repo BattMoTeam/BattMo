@@ -62,5 +62,5 @@
    https://sphinx-rtd-theme.readthedocs.io/en/stable/
 ** bibtex extension manual
    https://sphinxcontrib-bibtex.readthedocs.io/en/latest/index.html
-* Configuratiom file
+* Configuration file
   - ~conf.py~ see https://www.sphinx-doc.org/en/master/usage/configuration.html
