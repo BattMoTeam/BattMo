@@ -4,7 +4,6 @@ classdef PorositySetter
         
         % helper properties
         
-        nxs       % number of cells for each component 
         compnames % names of the components
         compinds  % index of the components
         elytemaps
@@ -20,38 +19,39 @@ classdef PorositySetter
             sep   = 'Separator';
             pe    = 'PositiveElectrode';
             elyte = 'Electrolyte';
-            am    = 'ActiveMaterial';
+            co    = 'Coating';
+
+            if model.use_thermal
+                error('Porisity setter is not implemented for thermal model yet (not difficult but not done...)')
+            end
             
             compnames = {ne, sep, pe};
 
             compinds = ismember({ne, sep, pe}, components);
 
-            elyteinds = zeros(model.(elyte).G.parentGrid.getNumberOfCells(), 1);
-            elyteinds(model.(elyte).G.mappings.cellmap) = (1 : model.(elyte).G.getNumberOfCells())';
+            elyteinds = zeros(model.(elyte).G.mappings.parentGrid.cells.num, 1);
+            elyteinds(model.(elyte).G.mappings.cellmap) = (1 : model.(elyte).G.cells.num)';
             
             for icomp = 1 : numel(compnames)
                 compname = compnames{icomp};
                 switch compname
                   case ne
-                    compmodel = model.(ne).(am);
+                    compmodel = model.(ne).(co);
+                    poro = 1 - compmodel.volumeFraction;
                   case sep
-                    compmodel = model.(elyte).(sep);
+                    compmodel = model.(sep);
+                    poro = compmodel.porosity;
                   case pe
-                    compmodel = model.(pe).(am);
+                    compmodel = model.(pe).(co);
+                    poro = 1 - compmodel.volumeFraction;
                   otherwise
                     error('compname not recognized');
-                end
-                nxs.(compname)  = compmodel.G.getNumberOfCells();
-                poro = unique(compmodel.porosity);
-                if (numel(poro) > 1)
-                    warning('The initial model does not have homogeneous porosity');
                 end
                 refvalues(icomp) = poro;
                 elytemaps.(compname) = elyteinds(compmodel.G.mappings.cellmap);
                 
             end
             
-            porosetter.nxs       = nxs;
             porosetter.compnames = compnames;
             porosetter.compinds  = compinds;
             porosetter.refvalues = refvalues;
@@ -59,9 +59,8 @@ classdef PorositySetter
             
         end
         
-        function model = setPorosities(porosetter, model, v)
+        function model = setValues(porosetter, model, v)
 
-            nxs       = porosetter.nxs;
             compnames = porosetter.compnames;
             compinds  = porosetter.compinds;
             refvalues = porosetter.refvalues;
@@ -79,39 +78,53 @@ classdef PorositySetter
         function model = setComponentPorosity(porosetter, model, poro, compname)
         % We update the porosities and the dependent values.
 
-            nxs       = porosetter.nxs;
             elytemaps = porosetter.elytemaps;
             
-            v = poro.*ones(nxs.(compname), 1);
-
             ne    = 'NegativeElectrode';
             sep   = 'Separator';
             pe    = 'PositiveElectrode';
             elyte = 'Electrolyte';
+            co    = 'Coating';
             am    = 'ActiveMaterial';
             itf   = 'Interface';
             sd    = 'SolidDiffusion';
             
             switch compname
+                
               case {ne, pe}
-                model.(compname).(am).porosity       = v;
-                model.(compname).(am).volumeFraction = 1 - v;
-                switch model.(compname).(am).diffusionModelType
+                
+                model.(compname).(co).volumeFraction = 1 - poro;
+                switch model.(compname).(co).(am).diffusionModelType
                   case {'simple', 'interParticleOnly'}
                     % nothing to do
                   case 'full'
-                    model.(compname).(am).(sd).volumeFraction = 1 - v;
+                    model.(compname).(co).(am).(sd).volumeFraction = 1 - poro;
                   otherwise
                     error('Unknown diffusionModelType %s', diffusionModelType);
                 end
+                
+                % We need to update the effective conductivities
+                
+                kappa = model.(compname).(co).electronicConductivity;
+                vf    = model.(compname).(co).volumeFraction;
+                bg    = model.(compname).(co).bruggemanCoefficient;
+                
+                model.(compname).(co).effectiveElectronicConductivity = kappa*vf^bg;
+                
               case sep
-                model.(elyte).(sep).porosity       = v;
-                model.(elyte).(sep).volumeFraction = 1 - v;
+                
+                model.(sep).porosity = poro;
+                
               otherwise
+                
                 error('compname not recognized');
+                
             end
-            model.(elyte).volumeFraction = subsasgnAD(model.(elyte).volumeFraction, elytemaps.(compname), v);
-
+            
+            poro = poro.*ones(numel(elytemaps.(compname)), 1);
+            model.(elyte).volumeFraction = subsasgnAD(model.(elyte).volumeFraction, elytemaps.(compname), poro);
+            % Note that we do not need to update the electrolyte effective conductivity as it is done dynamically using  state variable.
+            
         end
             
         
@@ -123,6 +136,7 @@ classdef PorositySetter
             sep   = 'Separator';
             pe    = 'PositiveElectrode';
             elyte = 'Electrolyte';
+            co    = 'Coating';
             am    = 'ActiveMaterial';
             
             v = nan(numel(compnames), 1);
@@ -132,9 +146,9 @@ classdef PorositySetter
                 compname = compnames{icomp};
                 switch compname
                   case {ne, pe}
-                    poro = model.(compname).(am).porosity;
+                    poro = 1 - model.(compname).(co).volumeFraction;
                   case sep
-                    poro = model.(elyte).(sep).volumeFraction;
+                    poro = model.(sep).porosity;
                   otherwise
                     error('compname not recognized');
                 end
@@ -145,8 +159,7 @@ classdef PorositySetter
             
         end
 
-
-        function v = getPorosities(porosetter, model)
+        function v = getValues(porosetter, model)
 
             compinds = porosetter.compinds;
 
