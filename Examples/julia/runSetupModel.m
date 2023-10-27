@@ -21,8 +21,8 @@ casenames = casenames{2};
 
 % JSON file folder
 
-battmo_folder    = battmoDir();
-jsonfolder       = fullfile(battmo_folder, 'JuliaBridge','Examples','jsonfiles');
+battmo_folder = battmoDir();
+jsonfolder    = fullfile(battmo_folder, 'Examples', 'julia', 'jsonfiles');
 
 %% Setup model from Matlab
 

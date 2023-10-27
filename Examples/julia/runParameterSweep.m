@@ -2,7 +2,7 @@ clear all
 
 %% Setup Julia server
 
-man = ServerManager('debug', true, 'procs', 8);
+man = ServerManager('debug', false, 'procs', 8);
 
 % Set up keyword arguments to be sent to julia solver. See run_battery in mrst_utils.jl for details
 kwargs = struct('use_p2d'     , true , ...
@@ -22,7 +22,7 @@ casenames = casenames{2};
 % JSON file folder
 
 battmo_folder = battmoDir();
-jsonfolder    = fullfile(battmo_folder, 'JuliaBridge', 'Examples', 'jsonfiles');
+jsonfolder    = fullfile(battmo_folder, 'Examples', 'julia', 'jsonfiles');
 
 %% Setup model from Matlab
 
