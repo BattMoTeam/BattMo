@@ -58,9 +58,21 @@ if mrstPlatform('octave')
         try
             pkg load jsonstuff
         catch
-            pkg install https://github.com/apjanke/octave-jsonstuff/releases/download/v0.3.3/jsonstuff-0.3.3.tar.gz
+            fprintf('Trying to install jsonstuff...\n');
+            pkg install "https://github.com/apjanke/octave-jsonstuff/releases/download/v0.3.3/jsonstuff-0.3.3.tar.gz"
             pkg load jsonstuff
         end
+    end
+
+    % For running Julia from Octave, a tcp client such as
+    % https://gnu-octave.github.io/packages/instrument-control/ is
+    % needed
+    try
+        pkg load instrument-control
+    catch
+        fprintf('Trying to install instrument-control...\n');
+        pkg install "https://downloads.sourceforge.net/project/octave/Octave%20Forge%20Packages/Individual%20Package%20Releases/instrument-control-0.9.1.tar.gz"
+        pkg load instrument-control
     end
 
 end

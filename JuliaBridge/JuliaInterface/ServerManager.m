@@ -226,17 +226,24 @@ classdef ServerManager < handle
 
         end
 
-        function f=sweep(manager,experiment,values,name)
-        %Perform a parameter sweep
-            save_folder = fullfile(manager.use_folder,name);
+        function f = sweep(manager, experiment, values, name)
+        % Perform a parameter sweep
+            save_folder = fullfile(manager.use_folder, name);
             [~,~] = mkdir(save_folder);
-            options_file = [save_folder,'/',name,'.mat'];
-            save(options_file, "save_folder","experiment","values", manager.file_version);
+            options_file = [save_folder, '/', name, '.mat'];
+            save(options_file, 'save_folder', 'experiment', 'values', manager.file_version);
             sweep_source = fullfile(fileparts(mfilename('fullpath')), 'RunFromMatlab','api','ParameterSweepControl.jl');
-            sweep_call=['"using Revise, DaemonMode; runargs(',num2str(manager.options.port) ,')" ', sweep_source, ' ', options_file, ' &'];
+            sweep_call = ['"using Revise, DaemonMode; runargs(', num2str(manager.options.port), ')" ', sweep_source, ' ', options_file, ' &'];
             manager.DaemonCall(sweep_call);
 
-            f= parfeval(@checkSweep,1,experiment,save_folder);
+            if mrstPlatform('octave')
+                foo = @feval;
+            else
+                foo = @parfeval;
+            end
+
+            f = foo(@checkSweep, experiment, save_folder);
+
         end
 
         function result = collect_results(manager, f, index)
@@ -253,7 +260,7 @@ classdef ServerManager < handle
             end
 
             result = f.OutputArguments{1}.Results(index);
-            for i=1:length(index)
+            for i = 1:length(index)
                 fid = fopen(result(i).states_location);
                 raw = fread(fid, inf);
                 str = char(raw');
@@ -265,7 +272,7 @@ classdef ServerManager < handle
     end
 end
 
-function [result,count ]= checkSweep(experiment,save_folder)
+function [result, count] = checkSweep(experiment, save_folder)
     output_file = fullfile(save_folder, [experiment,'_output.json']);
     while ~exist(output_file,'file')
         count = length(dir(fullfile(save_folder,'*.json')));
@@ -319,10 +326,11 @@ function succ = ping_server(opts)
         obj = tcpclient('127.0.0.1', opts.port); %#ok Octave requires return object
         succ = true;
     catch me
-        if strcmpi(me.identifier, 'MATLAB:networklib:tcpclient:cannotCreateObject')
+        if (mrstPlatform('octave') && strcmpi(me.message, 'tcpclient: error on connect : 111 - Connection refused')) || ...
+                (mrstPlatform('matlab') && strcmpi(me.identifier, 'MATLAB:networklib:tcpclient:cannotCreateObject'))
             succ = false;
         else
-            rethrow(me)
+            rethrow(me);
         end
     end
 
