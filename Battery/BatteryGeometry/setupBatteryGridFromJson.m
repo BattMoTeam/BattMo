@@ -16,7 +16,7 @@ function [paramobj, gridGenerator] = setupBatteryGridFromJson(paramobj, jsonstru
         xlength = gen.xlength;
 
         xlength(2) = jsonstruct.NegativeElectrode.Coating.thickness;
-        xlength(3) = jsonstruct.Electrolyte.Separator.thickness;
+        xlength(3) = jsonstruct.Separator.thickness;
         xlength(4) = jsonstruct.PositiveElectrode.Coating.thickness;
 
         if paramobj.NegativeElectrode.include_current_collectors
@@ -28,7 +28,7 @@ function [paramobj, gridGenerator] = setupBatteryGridFromJson(paramobj, jsonstru
 
         gen.xlength = xlength;
 
-        gen.sepnx  = jsonstruct.Electrolyte.Separator.N;
+        gen.sepnx  = jsonstruct.Separator.N;
         gen.nenx   = jsonstruct.NegativeElectrode.Coating.N;
         gen.penx   = jsonstruct.PositiveElectrode.Coating.N;
 
@@ -114,7 +114,7 @@ function [paramobj, gridGenerator] = setupBatteryGridFromJson(paramobj, jsonstru
         % Prepare input for SpiralBatteryGenerator.updateBatteryInputParams using json input
 
         widthDict = containers.Map();
-        widthDict('ElectrolyteSeparator')     = jsonstruct.Electrolyte.Separator.thickness;
+        widthDict('Separator')                = jsonstruct.Separator.thickness;
         widthDict('NegativeCoating')          = jsonstruct.NegativeElectrode.Coating.thickness;
         widthDict('NegativeCurrentCollector') = jsonstruct.NegativeElectrode.CurrentCollector.thickness;
         widthDict('PositiveCoating')          = jsonstruct.PositiveElectrode.Coating.thickness;
@@ -123,11 +123,11 @@ function [paramobj, gridGenerator] = setupBatteryGridFromJson(paramobj, jsonstru
         nwidths = [widthDict('PositiveCoating')          ; ...
                    widthDict('PositiveCurrentCollector') ; ...
                    widthDict('PositiveCoating')          ; ...
-                   widthDict('ElectrolyteSeparator')     ; ...
+                   widthDict('Separator')                ; ...
                    widthDict('NegativeCoating')          ; ...
                    widthDict('NegativeCurrentCollector') ; ...
                    widthDict('NegativeCoating')          ; ...
-                   widthDict('ElectrolyteSeparator')];
+                   widthDict('Separator')];
         dr = sum(nwidths);
 
         rOuter = jsonstruct.Geometry.rOuter;
@@ -137,7 +137,7 @@ function [paramobj, gridGenerator] = setupBatteryGridFromJson(paramobj, jsonstru
         nas    = jsonstruct.Geometry.nas;
 
         nrDict = containers.Map();
-        nrDict('ElectrolyteSeparator')     = jsonstruct.Electrolyte.Separator.N;
+        nrDict('Separator')                = jsonstruct.Separator.N;
         nrDict('NegativeCoating')          = jsonstruct.NegativeElectrode.Coating.N;
         nrDict('NegativeCurrentCollector') = jsonstruct.NegativeElectrode.CurrentCollector.N;
         nrDict('PositiveCoating')          = jsonstruct.PositiveElectrode.Coating.N;
@@ -147,11 +147,11 @@ function [paramobj, gridGenerator] = setupBatteryGridFromJson(paramobj, jsonstru
         nwidths = [widthDict('PositiveCoating')          ; ...
                    widthDict('PositiveCurrentCollector') ; ...
                    widthDict('PositiveCoating')          ; ...
-                   widthDict('ElectrolyteSeparator')     ; ...
+                   widthDict('Separator')                ; ...
                    widthDict('NegativeCoating')          ; ...
                    widthDict('NegativeCurrentCollector') ; ...
                    widthDict('NegativeCoating')          ; ...
-                   widthDict('ElectrolyteSeparator')];
+                   widthDict('Separator')];
         dr = sum(nwidths);
         dR = rOuter - rInner;
         % Computed number of windings
