@@ -799,7 +799,8 @@ classdef Battery < BaseModel
 
             dt = 1;
             state0 = state;
-            model.Control = ControlModel([]);
+            paramobj = ControlModelInputParams([]);
+            model.Control = ControlModel(paramobj);
             model.Control.controlPolicy = 'None';
             drivingForces = model.getValidDrivingForces();
 
@@ -1244,7 +1245,9 @@ classdef Battery < BaseModel
 
             ne      = 'NegativeElectrode';
             pe      = 'PositiveElectrode';
+            co      = 'Coating';
             am      = 'ActiveMaterial';
+            sd      = 'SolidDiffusion';
             itf     = 'Interface';
             thermal = 'ThermalModel';
 
@@ -1268,20 +1271,20 @@ classdef Battery < BaseModel
 
                 elde = eldes{ind};
 
-                itf_model = model.(elde).(am).(itf);
+                F      = model.(elde).(co).(am).(itf).constants.F;
+                n      = model.(elde).(co).(am).(itf).numberOfElectronsTransferred;
+                co_map = model.(elde).(co).G.mappings.cellmap;
+                vsa    = model.(elde).(co).(am).(itf).volumetricSurfaceArea;
+                vols   = model.(elde).(co).G.cells.volumes;
 
-                F       = itf_model.constants.F;
-                n       = itf_model.n;
-                itf_map = itf_model.G.mappings.cellmap;
-                vsa     = itf_model.volumetricSurfaceArea;
-                vols    = model.(elde).(am).G.cells.volumes;
-
-                Rvol = locstate.(elde).(am).Rvol;
-                eta  = locstate.(elde).(am).(itf).eta;
+                Rvol = locstate.(elde).(co).(am).(sd).Rvol;
+                dUdT = locstate.(elde).(co).(am).(itf).dUdT;
+                eta  = locstate.(elde).(co).(am).(itf).eta;
 
                 itf_src = n*F*vols.*Rvol.*eta;
 
-                src(itf_map) = src(itf_map) + itf_src;
+                src(co_map) = src(co_map) + itf_src;
+
 
             end
 
@@ -1291,10 +1294,13 @@ classdef Battery < BaseModel
 
         function state = updateThermalReversibleReactionSourceTerms(model, state)
         % not used in assembly, just as added variable (in addVariables method). Method updateThermalReactionSourceTerms is used in assembly
+
             ne      = 'NegativeElectrode';
             pe      = 'PositiveElectrode';
+            co      = 'Coating';
             am      = 'ActiveMaterial';
             itf     = 'Interface';
+            sd      = 'SolidDiffusion';
             thermal = 'ThermalModel';
 
             eldes = {ne, pe}; % electrodes
@@ -1317,20 +1323,19 @@ classdef Battery < BaseModel
 
                 elde = eldes{ind};
 
-                itf_model = model.(elde).(am).(itf);
+                F      = model.(elde).(co).(am).(itf).constants.F;
+                n      = model.(elde).(co).(am).(itf).numberOfElectronsTransferred;
+                co_map = model.(elde).(co).G.mappings.cellmap;
+                vsa    = model.(elde).(co).(am).(itf).volumetricSurfaceArea;
+                vols   = model.(elde).(co).G.cells.volumes;
 
-                F       = itf_model.constants.F;
-                n       = itf_model.n;
-                itf_map = itf_model.G.mappings.cellmap;
-                vsa     = itf_model.volumetricSurfaceArea;
-                vols    = model.(elde).(am).G.cells.volumes;
+                Rvol = locstate.(elde).(co).(am).(sd).Rvol;
+                dUdT = locstate.(elde).(co).(am).(itf).dUdT;
+                eta  = locstate.(elde).(co).(am).(itf).eta;
 
-                Rvol = locstate.(elde).(am).Rvol;
-                dUdT = locstate.(elde).(am).(itf).dUdT;
+                itf_src = n*F*vols.*Rvol.*T(co_map).*dUdT;
 
-                itf_src = n*F*vols.*Rvol.*T(itf_map).*dUdT;
-
-                src(itf_map) = src(itf_map) + itf_src;
+                src(co_map) = src(co_map) + itf_src;
 
             end
 
