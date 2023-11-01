@@ -61,7 +61,7 @@ classdef ServerManager < handle
                                  '--threads='         , manager.options.threads];
 
             %Ensure that project is instantiated
-            instaniate_call = '"using Pkg; Pkg.instantiate();"';
+            instaniate_call = '"using Pkg; Pkg.update();"';
             manager.DaemonCall(instaniate_call);
 
             % Start server
