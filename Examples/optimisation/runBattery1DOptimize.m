@@ -124,7 +124,7 @@ states = states(ind);
 E    = cellfun(@(x) x.Control.E, states);
 time = cellfun(@(x) x.time, states);
 
-fig1 = figure;
+figure;
 plot(time/hour, E, '*-', 'displayname', 'initial');
 xlabel('time  / h');
 ylabel('voltage  / V');
@@ -210,7 +210,10 @@ if doOptimization
     fprintf('Energy changed from %g to %g Wh\n', totval/hour, totval_opt/hour);
 
     % Plot
-    figure(fig1); hold on
+    figure; hold on; grid on
+    E    = cellfun(@(x) x.Control.E, states);
+    time = cellfun(@(x) x.time, states);
+    plot(time/hour, E, '*-', 'displayname', 'initial');
     E    = cellfun(@(x) x.Control.E, states_opt);
     time = cellfun(@(x) x.time, states_opt);
     plot(time/hour, E, 'r*-', 'displayname', 'optimized');
