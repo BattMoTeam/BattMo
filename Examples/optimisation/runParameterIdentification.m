@@ -24,45 +24,83 @@ sep     = 'Separator';
 %% Choose battery type
 
 jsonParams = parseBattmoJson(fullfile('ParameterData', 'BatteryCellParameters', 'LithiumIonBatteryCell', 'lithium_ion_battery_nmc_graphite.json'));
-
-% jsonParams = parseBattmoJson(fullfile('ParameterData', 'ParameterSets', 'Xu2015', 'lfp.json'));
-% jsonGeom = parseBattmoJson(fullfile('Examples', 'jsondatafiles', 'geometry1d.json'));
-% json = mergeJsonStructs({jsonParams, jsonGeom});
-
-json = jsonParams;
+jsonGeom = parseBattmoJson(fullfile('Examples', 'jsondatafiles', 'geometry1d.json'));
+jsonControl = parseBattmoJson(fullfile('Examples', 'jsondatafiles', 'ie_control.json'));
+jsonSim = parseBattmoJson(fullfile('Examples', 'jsondatafiles', 'simulation_parameters.json'));
+json = mergeJsonStructs({jsonParams, jsonGeom, jsonControl, jsonSim});
 
 %% Run with initial guess
 json0 = json;
-[states0, model, schedule, initstate] = runPImodel(json0);
+output0 = runBatteryJson(json0);
 
-simSetup = struct('model', model, ...
-                  'schedule', schedule, ...
-                  'state0', initstate);
+simSetup = struct('model', output0.model, ...
+                  'schedule', output0.schedule, ...
+                  'state0', output0.initstate);
 
 %% Setup parameters to be optimized
 params = [];
 
 % Bruggeman coefficients
-params = addParameter(params, simSetup, ...
-                      'name', 'ne_co_bruggeman', ...
-                      'belongsTo', 'model', ...
-                      'boxLims', [1, 3], ...
-                      'location', {ne, co, 'bruggemanCoefficient'});
+% params = addParameter(params, simSetup, ...
+%                       'name', 'ne_co_bruggeman', ...
+%                       'belongsTo', 'model', ...
+%                       'boxLims', [1, 3], ...
+%                       'location', {ne, co, 'bruggemanCoefficient'});
+% params = addParameter(params, simSetup, ...
+%                       'name', 'elyte_bruggeman', ...
+%                       'belongsTo', 'model', ...
+%                       'boxLims', [1, 3], ...
+%                       'location', {elyte, 'bruggemanCoefficient'});
+% params = addParameter(params, simSetup, ...
+%                       'name', 'sep_bruggeman', ...
+%                       'belongsTo', 'model', ...
+%                       'boxLims', [1, 3], ...
+%                       'location', {sep, 'bruggemanCoefficient'});
+% params = addParameter(params, simSetup, ...
+%                       'name', 'pe_co_bruggeman', ...
+%                       'belongsTo', 'model', ...
+%                       'boxLims', [1, 3], ...
+%                       'location', {pe, co, 'bruggemanCoefficient'});
+
+%%
+% cgt = ComputationalGraphTool(simSetup.model);
+
+% cgt.printTailVariables
+
+% cgt.printRootVariables
+
+% cgt.printVarNames
+
+% figure
+% cgt.plotModelGraph()
+
+% figure
+% cgt.plotModelGraph('Coating')
+
+
+
+
+%%
+% setfun = @(model, notused, v) setElyteBman(model, v);
+% % getfun = @(model, notused) getElyteBman(model);
+
+% %setfun = @(model, varargin) setfield(model, {'Electrolyte', 'bruggemanCoefficient'}, varargin{end});
+% %getfun = @(model, notused) getfield(model, {'Electrolyte', 'bruggemanCoefficient'});
+% getfun = @(model, notused) model.Electrolyte.bruggemanCoefficient;
+
+% params = addParameter(params, simSetup, ...
+%                       'name', 'elyte_bruggeman', ...
+%                       'belongsTo', 'model', ...
+%                       'boxLims', [1, 3], ...
+%                       'location', {''}, ...
+%                       'setfun', setfun, ...
+%                       'getfun', getfun);
+
 params = addParameter(params, simSetup, ...
                       'name', 'elyte_bruggeman', ...
                       'belongsTo', 'model', ...
                       'boxLims', [1, 3], ...
                       'location', {elyte, 'bruggemanCoefficient'});
-params = addParameter(params, simSetup, ...
-                      'name', 'sep_bruggeman', ...
-                      'belongsTo', 'model', ...
-                      'boxLims', [1, 3], ...
-                      'location', {sep, 'bruggemanCoefficient'});
-params = addParameter(params, simSetup, ...
-                      'name', 'pe_co_bruggeman', ...
-                      'belongsTo', 'model', ...
-                      'boxLims', [1, 3], ...
-                      'location', {pe, co, 'bruggemanCoefficient'});
 
 % Exchange current densities in the Butler-Volmer eqn
 params = addParameter(params, simSetup, ...
@@ -90,28 +128,30 @@ params = addParameter(params, simSetup, ...
                       'boxLims', [1e5, 1e7], ...
                       'location', {pe, co, am, itf, 'volumetricSurfaceArea'});
 
-%% Generate "experimental" data
+%% Generate "experimental" data that we want to match
 jsonExp = json;
+pExp = zeros(numel(params), 1);
 for ip = 1:numel(params)
     loc = params{ip}.location;
-    orig = getfield(jsonExp, loc{:});
+    orig = params{ip}.getfun(simSetup.(params{ip}.belongsTo), loc{:});
     new = mean(params{ip}.boxLims);
-    jsonExp = setfield(jsonExp, loc{:}, new);
+    jsonExp = params{ip}.setfun(jsonExp, loc{:}, new);
+    pExp(ip) = new;
 end
-pExp = cellfun(@(p) getfield(jsonExp, p.location{:}), params)';
-statesExp = runPImodel(jsonExp);
+outputExp = runBatteryJson(jsonExp);
 
 %% Setup the optimization problem
 
 % Objective function
-objective = @(model, states, schedule, varargin) leastSquaresEI(model, states, statesExp, schedule, varargin{:});
+objective = @(model, states, schedule, varargin) leastSquaresEI(model, states, outputExp.states, schedule, varargin{:});
 
-% Debug: the objective function evaluated at the experimental values should be zero
-objval = objective(model, statesExp, schedule);
+% Debug: the objective function evaluated at the experimental values
+% should be zero
+objval = objective(outputExp.model, outputExp.states, outputExp.schedule);
 assert(max(abs([objval{:}])) == 0.0);
 
 % Function for gradient computation
-objVals = objective(model, states0, schedule);
+objVals = objective(output0.model, output0.states, output0.schedule);
 objScaling = sum([objVals{:}]);
 objectiveGradient = @(p) evalObjectiveBattmo(p, objective, simSetup, params, 'objScaling', objScaling);
 
@@ -121,11 +161,15 @@ if debug
     pTmp = getScaledParameterVector(simSetup, params);
 
     [vad, gad] = evalObjectiveBattmo(pTmp, objective, simSetup, params, ...
-                                     'Gradient', 'AdjointAD');
+                                     'gradientMethod', 'AdjointAD');
 
     [vnum, gnum] = evalObjectiveBattmo(pTmp, objective, simSetup, params, ...
-                                       'Gradient', 'PerturbationADNUM', 'PerturbationSize', 1e-7);
-    [gad, gnum, abs(gad-gnum)]
+                                       'gradientMethod', 'PerturbationADNUM', ...
+                                       'PerturbationSize', 1e-7);
+    fprintf('Adjoint and finite difference derivatives and the relative error\n');
+    disp([gad, gnum, abs(gad-gnum)./abs(gad)])
+
+    %return
 end
 
 %% Optimize
@@ -152,12 +196,13 @@ fprintf('%1.3g     \t %1.3g      \t %1.3g\n', [pOpt, pExp, relErr]');
 
 %% Run model with pOpt params
 jsonOpt = json;
+
 for ip = 1:numel(params)
     loc = params{ip}.location;
-    jsonOpt = setfield(jsonOpt, loc{:}, pOpt(ip));
+    jsonOpt = params{ip}.setfun(jsonOpt, loc{:}, pOpt(ip));
 end
 
-[statesOpt, modelOpt] = runPImodel(jsonOpt);
+outputOpt = runBatteryJson(jsonOpt);
 
 %%
 if do_plot
@@ -166,12 +211,12 @@ if do_plot
     getTime = @(states) cellfun(@(state) state.time, states);
     getE = @(states) cellfun(@(state) state.Control.E, states);
 
-    t0 = getTime(states0);
-    E0 = getE(states0);
-    tOpt = getTime(statesOpt);
-    EOpt = getE(statesOpt);
-    tExp = getTime(statesExp);
-    EExp = getE(statesExp);
+    t0 = getTime(output0.states);
+    E0 = getE(output0.states);
+    tOpt = getTime(outputOpt.states);
+    EOpt = getE(outputOpt.states);
+    tExp = getTime(outputExp.states);
+    EExp = getE(outputExp.states);
 
     h = figure; hold on; grid on; axis tight
     plot(t0/hour, E0, 'displayname', 'E_{0}')
@@ -186,14 +231,29 @@ pOrig = cellfun(@(p) p.getParameter(simSetup), params)';
 
 fprintf('Initial guess:\n');
 fprintf('%g\n', pOrig);
-fprintf('\nOptimized values:\n');
-fprintf('%g\n', pOpt);
+
+fprintf('Fitted values (* means we hit the box limit):\n');
+tol = 1e-3;
+for k = 1:numel(params)
+    hit = '';
+    if abs(pOptTmp(k)) < tol || abs(pOptTmp(k)-1) < tol
+        hit = '*';
+    end
+    fprintf('%g %s\n', pOpt(k), hit);
+end
+
 fprintf('\nExperimental values:\n');
 fprintf('%g\n', pExp);
+
 fprintf('\nRelative error between optimized and experimental values:\n')
 fprintf('%g\n', relErr);
+
 fprintf('\nIterations:\n')
 fprintf('%g\n', numIt);
+
+
+
+
 
 %{
 Copyright 2021-2023 SINTEF Industry, Sustainable Energy Technology
