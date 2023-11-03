@@ -153,7 +153,7 @@ switch model.Control.controlPolicy
     error('control policy not recognized');
 end
 
-    
+
 % This control is used to set up the schedule
 schedule = struct('control', control, 'step', step);
 
@@ -176,7 +176,7 @@ model.nonlinearTolerance = 1e-5;
 model.verbose = true;
 
 %% Plot
-plotBatteryMesh(model)
+plotBatteryMesh(model, 'setstyle', false);
 
 %% Run simulation and save output to folder
 name = 'runCR';
