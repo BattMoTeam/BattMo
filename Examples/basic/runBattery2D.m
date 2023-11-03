@@ -53,26 +53,7 @@ paramobj.(pe).(cc).effectiveElectronicConductivity = 1e5;
 model = Battery(paramobj);
 
 %% Plot the mesh
-% The mesh is plotted using the plotGrid() function from MRST.
-colors = crameri('vik', 5);
-figure
-legtext = {};
-edgeparams = {'edgealpha', 0.5, 'edgecolor', [1, 1, 1]};
-plotGrid(model.(ne).(co).G,     'facecolor', colors(2,:), edgeparams{:});
-plotGrid(model.(sep).G, 'facecolor', colors(3,:), edgeparams{:});
-plotGrid(model.(pe).(co).G,     'facecolor', colors(4,:), edgeparams{:});
-legtext = [legtext, {'negative electrode active material', 'separator', 'positive electrode current collector'}];
-if model.include_current_collectors
-    plotGrid(model.(ne).(cc).G, 'facecolor', colors(1,:), edgeparams{:});
-    plotGrid(model.(pe).(cc).G, 'facecolor', colors(5,:), edgeparams{:});
-    legtext{end+1} = 'negative electrode current collector';
-    legtext{end+1} = 'positive electrode current collector';
-end
-legend(legtext, 'location', 'southwest');
-axis tight;
-setFigureStyle('quantity', 'single');
-drawnow();
-pause(0.1);
+plotBatteryMesh(model, 'setstyle', false);
 
 %% Compute the nominal cell capacity and choose a C-Rate
 % The nominal capacity of the cell is calculated from the active materials.
@@ -88,7 +69,7 @@ inputI = (C/hour)*CRate; % current
 % operation.
 n           = 25;
 dt          = [];
-dt          = [dt; repmat(0.5e-4, n, 1).*1.5.^[1:n]'];
+dt          = [dt; repmat(0.5e-4, n, 1).*1.5.^(1:n)'];
 totalTime   = 1.4*hour/CRate;
 n           = 40;
 dt          = [dt; repmat(totalTime/n, n, 1)];
