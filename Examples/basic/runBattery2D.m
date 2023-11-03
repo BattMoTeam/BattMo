@@ -144,9 +144,17 @@ E = cellfun(@(x) x.(ctrl).E, states);
 I = cellfun(@(x) x.(ctrl).I, states);
 time = cellfun(@(x) x.time, states);
 
-%% Plot an animated summary of the results
+figure
+plot(time/hour, E);
+grid on
+xlabel 'time  / h';
+ylabel 'potential  / V';
 
-plotDashboard(model, states, 'step', 0);
+%% Plot an animated summary of the results
+doplot = false;
+if doplot
+    plotDashboard(model, states, 'step', 0);
+end
 
 %{
 Copyright 2021-2023 SINTEF Industry, Sustainable Energy Technology

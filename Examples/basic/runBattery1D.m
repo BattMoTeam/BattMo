@@ -177,9 +177,15 @@ Tmax = cellfun(@(x) max(x.ThermalModel.T), states);
 time = cellfun(@(x) x.time, states);
 
 figure
-plot(time, E);
+plot(time/hour, E);
+grid on
+xlabel 'time  / h';
+ylabel 'potential  / V';
 
-% writeOutput(model, states, 'output.h5')
+writeh5 = false;
+if writeh5
+    writeOutput(model, states, 'output.h5');
+end
 
 
 %{
