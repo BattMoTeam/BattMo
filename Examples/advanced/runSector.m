@@ -84,9 +84,7 @@ jsonstruct.include_current_collectors = true;
 paramobj = BatteryInputParams(jsonstruct);
 
 th = 'ThermalModel';
-%paramobj.(th).externalHeatTransferCoefficientSideFaces = 100*watt/meter^2;
-%paramobj.(th).externalHeatTransferCoefficientTopFaces = 10*watt/meter^2;
-paramobj.(th).externalHeatTransferCoefficient = 10;
+paramobj.(th).externalHeatTransferCoefficient = 10*watt/meter^2;
 
 gen = SectorBatteryGenerator();
 
