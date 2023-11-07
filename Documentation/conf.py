@@ -35,8 +35,16 @@ autodoc_member_order = 'bysource'
 # Add any Sphinx extension module names here, as strings. They can be
 # extensions coming with Sphinx (named 'sphinx.ext.*') or your custom
 # ones.
-extensions = ['sphinxcontrib.globalsubs', 'sphinxcontrib.bibtex']
+extensions = ['sphinxcontrib.globalsubs',
+              'sphinxcontrib.bibtex',
+              'sphinx.ext.intersphinx',
+              'sphinx.ext.autosectionlabel',
+              'sphinxcontrib.youtube',
+              'sphinx_toolbox.collapse',
+              ]
 bibtex_bibfiles = ['refs.bib']
+
+autosectionlabel_prefix_document = True
 
 global_substitutions = {
     'battmo': '**BattMo**'
@@ -335,9 +343,8 @@ def battmo_reference_role(role, rawtext, text, lineno, inliner,
     ref = repo_url + '/blob/' + branch_name + '/' + fullfuncname
     if lineno is not None:
         ref += "#L"+lineno
-    options = roles.normalized_role_options(options)
-    node = docutils.nodes.reference(rawtext, str(funcname), refuri=ref,
-                           **options)
+    # options = roles.normalized_role_options(options)
+    node = docutils.nodes.reference(rawtext, str(funcname), refuri=ref)
     return [node], []
 
 
