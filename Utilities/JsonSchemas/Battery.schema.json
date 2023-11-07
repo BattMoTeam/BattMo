@@ -3,27 +3,80 @@
   "$schema": "http://json-schema.org/draft-07/schema#",
   "description": "A standard battery",
   "type": "object",
-  
-
-  "properties" : {
-
-    "NegativeElectrode": {"$ref": "Electrode.schema.json"},
-
-    "PositiveElectrode": {"$ref": "Electrode.schema.json"},
-
-    "Electrolyte": {"$ref": "Electrolyte.schema.json"},
-
-    "Separator": {"$ref": "Separator.schema.json"},
-
+  "properties": {
+    "NegativeElectrode": {
+      "$ref": "Electrode.schema.json"
+    },
+    "PositiveElectrode": {
+      "$ref": "Electrode.schema.json"
+    },
+    "Electrolyte": {
+      "$ref": "Electrolyte.schema.json"
+    },
+    "Separator": {
+      "$ref": "Separator.schema.json"
+    },
     "ThermalModel": {
       "$ref": "ThermalComponent.schema.json",
       "description": "Battery Physical Parameters required for thermal modelling"
     }
-
   },
-
-  "required": ["NegativeElectrode", "PositiveElectrode", "Electrolyte", "Separator"]
-
-
-  
+  "allOf": [
+    {
+      "required": [
+        "NegativeElectrode",
+        "PositiveElectrode",
+        "Electrolyte",
+        "Separator"
+      ]
+    },
+    {
+      "if": {
+        "properties": {
+          "use_thermal": {
+            "const": true
+          }
+        },
+        "required": [
+          "use_thermal"
+        ]
+      },
+      "then": {
+        "required": [
+          "ThermalModel"
+        ]
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "include_current_collectors": {
+            "const": true
+          }
+        }
+      },
+      "then": {
+        "anyOf": [
+          {
+            "properties": {
+              "NegativeElectrode": {
+                "required": [
+                  "CurrentCollector"
+                ]
+              }
+            }
+          },
+          {
+            "properties": {
+              "PositiveElectrode": {
+                "required": [
+                  "CurrentCollector"
+                ]
+              }
+            }
+          }
+        ]
+      }
+    }
+  ]
 }

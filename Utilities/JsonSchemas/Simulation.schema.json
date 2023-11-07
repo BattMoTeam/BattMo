@@ -35,53 +35,6 @@
     {
       "$ref": "Output.schema.json",
       "description": "Input for the choice of outputs the will be returned"
-    },
-    {
-      "if": {
-        "properties": {
-          "properties": {
-            "use_thermal": {
-              "const": true
-            }
-          }
-        }
-      },
-      "then": {
-        "required": [
-          "ThermalModel"
-        ]
-      }
-    },
-    {
-      "if": {
-        "properties": {
-          "include_current_collectors": {
-            "const": true
-          }
-        }
-      },
-      "then": {
-        "anyOf": [
-          {
-            "properties": {
-              "NegativeElectrode": {
-                "required": [
-                  "CurrentCollector"
-                ]
-              }
-            }
-          },
-          {
-            "properties": {
-              "PositiveElectrode": {
-                "required": [
-                  "CurrentCollector"
-                ]
-              }
-            }
-          }
-        ]
-      }
     }
   ]
 }
