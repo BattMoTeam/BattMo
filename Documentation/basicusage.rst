@@ -7,17 +7,6 @@ In this section, we describe how to run |battmo| using json inputs. The specific
 First Run
 =========
 
-.. container:: toggle
-
-    .. container:: header
-
-       **Show/Hide Code**
-
-    .. code-block:: xml
-       :linenos:
-
-       from plone import api
-
 First, we load and parse the json input file using the commands
 
 .. code:: matlab
@@ -28,12 +17,34 @@ Then, we run it as follows
   
 .. code:: matlab
 
-   output = runBatteryJson(filename)
+   output = runBatteryJson(jsonstruct)
+                      
+The json file :code:`input.json` given :ref:`here <jsoninputfile>` provides the needed data for the simulation. The
+section :ref:`json:Json input specification` gives a complete description of each of the field. We have used long and
+explicit names for a good readability.
 
-.. collapse:: The json file :code:`input.json` provides all the data need to run the whole simulation.
+The :code:`output` structure returns among other thing the model and the states. 
 
-   .. literalinclude:: inputfile.json
-      :language: json
+.. code:: matlab
+
+   model  : [1x1 Battery]
+   states : [1x1 struct]
+          
+We can plot the results using :battmo:`plotDashboard`
+
+.. code:: matlab
+
+   plotDashboard(model, states)
+
+This is a snapshot of the result
+
+
+   
+
+
+
+
+
                  
 :todo:`Describe the output structure (what it contains)`
       
