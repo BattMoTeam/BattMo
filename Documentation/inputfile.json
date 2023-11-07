@@ -4,11 +4,9 @@
     "faceArea": 0.0001
   },
   "NegativeElectrode": {
-    "ActiveMaterial": {
-      "thickness": 6.4e-05,
-      "N": 10
-    },
     "Coating": {
+      "thickness": 6.4e-05,
+      "N": 10,
       "effectiveDensity": 1900,
       "bruggemanCoefficient": 1.5,
       "ActiveMaterial": {
@@ -65,20 +63,12 @@
         "specificHeatCapacity": 632,
         "thermalConductivity": 1.04
       }
-    },
-    "CurrentCollector": {
-      "electronicConductivity": 59600000.0,
-      "thermalConductivity": 398,
-      "specificHeatCapacity": 385,
-      "density": 8960
     }
   },
   "PositiveElectrode": {
-    "ActiveMaterial": {
-      "thickness": 5.7e-05,
-      "N": 10
-    },
     "Coating": {
+      "thickness": 5.7e-05,
+      "N": 10,
       "effectiveDensity": 3500,
       "bruggemanCoefficient": 1.5,
       "ActiveMaterial": {
@@ -135,12 +125,6 @@
         "specificHeatCapacity": 700,
         "thermalConductivity": 2.1
       }
-    },
-    "CurrentCollector": {
-      "electronicConductivity": 35500000.0,
-      "thermalConductivity": 170,
-      "specificHeatCapacity": 875,
-      "density": 2700
     }
   },
   "Electrolyte": {
