@@ -3,6 +3,19 @@
    You can adapt this file completely to your liking, but it should at least
    contain the root `toctree` directive.
 
+.. toctree::
+   :hidden:
+      
+   Installation <installation>
+   basicusage
+   architecture
+   json
+   geometryinput
+   advancedtopics
+   juliabridge
+   gui
+   References <bibliography>
+   
    
 Introduction
 ============
@@ -22,22 +35,6 @@ For the latest information including video tutorials and project gallery, please
 .. note::
   This project is under active development.
 
-BattMo documentation
-====================
-
-.. toctree::
-   :includehidden: 
-              
-   Installation <installation>
-   tutorials
-   Gallery <gallery>
-   BattMo Li-ion battery <inputs>
-   Json input description <json>
-   Battery Geometries <geometryinput>
-   advancedtopics
-   juliabridge
-   gui
-   References <bibliography>
       
 Acknowledgements
 ================

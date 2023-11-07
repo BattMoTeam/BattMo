@@ -19,7 +19,14 @@
    #+begin_src
      pip install sphinxcontrib-globalsubs
    #+end_src
-   
+** youtube
+   #+begin_src shell
+     pip install sphinxcontrib-youtube
+   #+end_src
+** collapse
+   #+begin_src shell
+     python -m pip install sphinx_collapse
+   #+end_src   
 * Workflow for editing
 
   In the ~Documentation~ directory, run from terminal

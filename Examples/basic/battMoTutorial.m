@@ -63,10 +63,7 @@ jsonstruct.(ne).(am).diffusionModelType = 'full';
 
 %%%
 % To see which other types of diffusion model are available one can view
-% :class:`ActiveMaterialInputParams <Electrochemistry.ActiveMaterialInputParams>.
-
-%%%
-% When running a simulation, *BattMo* requires that all model parameters
+% :battmo:`ActiveMaterialInputParams`.  When running a simulation, *BattMo* requires that all model parameters
 % are stored in an instance of :battmo:`BatteryInputParams`.
 % This class is used to initialize the simulation and is accessed by
 % various parts of the simulator during the simulation. This class is

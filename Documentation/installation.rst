@@ -27,6 +27,12 @@ You can check that that your installation is setup correctly by running one of t
 
    runBattery1D
 
+Here is video on how install git
+
+.. youtube:: FMXpZjXhaFY
+   :width: 640
+   :height: 480
+              
    
 For large models, iterative solvers are necessary. The **open source** version from 2012 of the `AGMG
 <http://agmg.eu/>`_ iterative solver from **2012** is provided as a `submodule <https://github.com/batmoTeam/agmg>`_. We
