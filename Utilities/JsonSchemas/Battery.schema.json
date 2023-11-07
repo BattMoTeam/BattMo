@@ -29,54 +29,6 @@
         "Electrolyte",
         "Separator"
       ]
-    },
-    {
-      "if": {
-        "properties": {
-          "use_thermal": {
-            "const": true
-          }
-        },
-        "required": [
-          "use_thermal"
-        ]
-      },
-      "then": {
-        "required": [
-          "ThermalModel"
-        ]
-      }
-    },
-    {
-      "if": {
-        "properties": {
-          "include_current_collectors": {
-            "const": true
-          }
-        }
-      },
-      "then": {
-        "anyOf": [
-          {
-            "properties": {
-              "NegativeElectrode": {
-                "required": [
-                  "CurrentCollector"
-                ]
-              }
-            }
-          },
-          {
-            "properties": {
-              "PositiveElectrode": {
-                "required": [
-                  "CurrentCollector"
-                ]
-              }
-            }
-          }
-        ]
-      }
     }
   ]
 }
