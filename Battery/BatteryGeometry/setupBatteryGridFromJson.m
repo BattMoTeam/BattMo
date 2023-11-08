@@ -93,19 +93,40 @@ function [paramobj, gridGenerator] = setupBatteryGridFromJson(paramobj, jsonstru
 
         gen = BatteryGenerator3D();
 
-        % zlength = gen.zlength;
-        % zlength(1) = jsonstruct.NegativeElectrode.Coating.thickness;
-        % zlength(2) = jsonstruct.NegativeElectrode.Coating.thickness;
-        % zlength(3) = jsonstruct.Electrolyte.Separator.thickness;
-        % zlength(4) = jsonstruct.PositiveElectrode.Coating.thickness;
-        % zlength(5) = jsonstruct.PositiveElectrode.Coating.thickness;
+        zlength = gen.zlength;
+        zlength(1) = jsonstruct.NegativeElectrode.Coating.thickness;
+        zlength(2) = jsonstruct.NegativeElectrode.Coating.thickness;
+        zlength(3) = jsonstruct.Separator.thickness;
+        zlength(4) = jsonstruct.PositiveElectrode.Coating.thickness;
+        zlength(5) = jsonstruct.PositiveElectrode.Coating.thickness;
+        gen.zlength = zlength;
+        
+        gen.sep_nz   = jsonstruct.Separator.N;
+        gen.ne_am_nz = jsonstruct.NegativeElectrode.Coating.N;
+        gen.pe_am_nz = jsonstruct.PositiveElectrode.Coating.N;
+        gen.ne_cc_nz = jsonstruct.NegativeElectrode.CurrentCollector.N;
+        gen.pe_cc_nz = jsonstruct.PositiveElectrode.CurrentCollector.N;
 
-        % gen.sep_nz   = jsonstruct.Electrolyte.Separator.N;
-        % gen.ne_am_nz = jsonstruct.NegativeElectrode.Coating.N;
-        % gen.pe_am_nz = jsonstruct.PositiveElectrode.Coating.N;
-        % gen.ne_cc_nz = jsonstruct.NegativeElectrode.CurrentCollector.N;
-        % gen.pe_cc_nz = jsonstruct.PositiveElectrode.CurrentCollector.N;
+        xlength = gen.xlength;
+        xlength(1) = jsonstruct.NegativeElectrode.CurrentCollector.tab.width;
+        xlength(3) = jsonstruct.PositiveElectrode.CurrentCollector.tab.width;
+        xlength(2) = jsonstruct.Geometry.width - (xlength(1) + xlength(3));
+        gen.xlength = xlength;
+       
+        gen.ne_cc_nx     = jsonstruct.NegativeElectrode.CurrentCollector.tab.Nw;
+        gen.pe_cc_nx     = jsonstruct.PositiveElectrode.CurrentCollector.tab.Nw;
+        gen.int_elyte_nx = jsonstruct.Geometry.Nw - (gen.ne_cc_nx + gen.pe_cc_nx);
 
+        ylength = gen.ylength;
+        ylength(1) = jsonstruct.NegativeElectrode.CurrentCollector.tab.height;
+        ylength(3) = jsonstruct.PositiveElectrode.CurrentCollector.tab.height;
+        ylength(2) = jsonstruct.Geometry.height;
+        gen.ylength = ylength;
+       
+        gen.ne_cc_ny = jsonstruct.NegativeElectrode.CurrentCollector.tab.Nh;
+        gen.pe_cc_ny = jsonstruct.PositiveElectrode.CurrentCollector.tab.Nh;
+        gen.elyte_ny = jsonstruct.Geometry.Nh;
+        
         % Now, we update the paramobj with the properties of the mesh.
         [paramobj, gen] = gen.updateBatteryInputParams(paramobj);
 

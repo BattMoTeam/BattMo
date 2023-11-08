@@ -110,8 +110,54 @@
     "2D-demo" : {"$ref" : "#/$defs/layerSpecs",
                  "description" : "In this demo case the dimensions are fixed. Further parametrization should be done using  the grid generator BatteryGenerator2D"},
 
-    "3D-demo" : {"$ref" : "#/$defs/layerSpecs",
-                 "description" : "In this demo case the dimensions are fixed. Further parametrization should be done using  the grid generator BatteryGenerator3D"},
+    "3D-demo" : {
+      "description" : "In this demo case the dimensions are fixed. Further parametrization should be done using  the grid generator BatteryGenerator3D",
+      "allOf" : [
+        {"$ref" : "#/$defs/layerSpecs"},
+        {"properties" :
+         {"Geometry" : {
+           "properties" : {
+             "width" : {"type" : "number"},
+             "height" : {"type" : "number"},
+             "Nw" : {"type" : "number",
+                     "description" : "discretization number in the width direction"},
+             "Nh" : {"type" : "number",
+                     "description" : "discretization number in the height direction"}
+           }},
+          "NegativeElectrode" : {
+            "CurrentColector" : {
+              "tab" : {
+                "type" : "object",
+                "properties" : {
+                  "width" : {"type" : "number"}, 
+                  "height" : {"type" : "number"},
+                  "Nw" : {"type" : "number",
+                          "description": "discretization number in the width direction"}
+                }
+              }
+            }
+          }
+         },
+         "PositiveElectrode" : {
+            "CurrentColector" : {
+              "tab" : {
+                "type" : "object",
+                "properties" : {
+                  "width" : {"type" : "number"}, 
+                  "height" : {"type" : "number"},
+                  "Nw" : {"type" : "number",
+                          "description": "discretization number in the width direction"}
+                }
+              }
+            }
+          }
+         }
+        }
+         
+        }
+      ]
+
+                },
 
     "particlediscretization" : {
       "properties" : {
