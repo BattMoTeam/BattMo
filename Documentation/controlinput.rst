@@ -31,4 +31,4 @@ Constant Voltage
 Constant Current
 ----------------
 
-.. class:: CcCvControlModelInputParams
+.. class:: CcControlModelInputParams

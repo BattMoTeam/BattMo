@@ -6,7 +6,7 @@
 Json Input file
 ===============
 
-The full json input for the :ref:`first example<basicusage:First Run>`
+The full json input for the :ref:`first example<basicusage:Standard Run>`
 
 .. literalinclude:: inputfile.json
    :language: json

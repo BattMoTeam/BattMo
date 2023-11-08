@@ -23,91 +23,77 @@ The main Simulation schema contains schemas for
 For example a component (say the electolyte) has its geometrical and material properties specified in two separate
 schemas. We think it clarifies the presentation to separate the presentation of those properties and it corresponds also
 to a convenient way to organize the input. We can easily switch between different geometrical models while keeping the
-same material properties. For that, we use the :battmo:`mergeJsonStructs` function, see examples :todo:`add link`.
+same material properties. For that, we use the :battmo:`mergeJsonStructs` function, see example
+:ref:`here<mergeJsonStructs>`.
 
-.. collapse:: Simulation Schema
+This is the schema for the input json file. It uses other separate schemas which takes care of specific parameter sets.
 
-   .. literalinclude:: ../Utilities/JsonSchemas/Simulation.schema.json
-      :language: json
+.. literalinclude:: ../Utilities/JsonSchemas/Simulation.schema.json
+   :language: json
 
+The schemas are available in the directory :battmofile:`JsonSchemas<Utilities/JsonSchemas>`. Here, we present the most
+important ones.
+              
 
 Material Parameters
 ===================
 
-.. collapse:: Battery Model Schema
-
-   .. literalinclude:: ../Utilities/JsonSchemas/Battery.schema.json
-      :language: json
+.. literalinclude:: ../Utilities/JsonSchemas/Battery.schema.json
+   :language: json
 
 Electrolyte
 -----------
 
-.. collapse:: Electrolyte Model Schema
-
-   .. literalinclude:: ../Utilities/JsonSchemas/Battery.schema.json
-      :language: json
+.. literalinclude:: ../Utilities/JsonSchemas/Battery.schema.json
+   :language: json
 
 Electrode
 ---------
 
-.. collapse:: Electrode Model Schema
-
-   .. literalinclude:: ../Utilities/JsonSchemas/Electrode.schema.json
-      :language: json
+.. literalinclude:: ../Utilities/JsonSchemas/Electrode.schema.json
+   :language: json
 
 Coating
 -------
 
-.. collapse:: Coating Model Schema
-
-   .. literalinclude:: ../Utilities/JsonSchemas/Coating.schema.json
-      :language: json
+.. literalinclude:: ../Utilities/JsonSchemas/Coating.schema.json
+   :language: json
 
 
 Interface
 ---------
 
-.. collapse:: Interface Model Schema
-
-   .. literalinclude:: ../Utilities/JsonSchemas/Interface.schema.json
-      :language: json
+.. literalinclude:: ../Utilities/JsonSchemas/Interface.schema.json
+   :language: json
 
 
 Solid Diffusion
 ---------------
 
-.. collapse:: Solid Diffusion Model Schema
-
-   .. literalinclude:: ../Utilities/JsonSchemas/SolidDiffusionModel.schema.json
-      :language: json
+.. literalinclude:: ../Utilities/JsonSchemas/SolidDiffusionModel.schema.json
+   :language: json
 
 
 Current Collector
 -----------------
 
-.. collapse:: Current Collector Model Schema
-
-   .. literalinclude:: ../Utilities/JsonSchemas/CurrentCollector.schema.json
-      :language: json
+.. literalinclude:: ../Utilities/JsonSchemas/CurrentCollector.schema.json
+   :language: json
 
 
 
 Separator
 ---------
 
-.. collapse:: Separator Model Schema
-
-   .. literalinclude:: ../Utilities/JsonSchemas/Separator.schema.json
-      :language: json
+.. literalinclude:: ../Utilities/JsonSchemas/Separator.schema.json
+   :language: json
 
 
 Thermal Model
 -------------
 
-.. collapse:: Thermal Model Schema
-
-   .. literalinclude:: ../Utilities/JsonSchemas/ThermalModel.schema.json
-      :language: json
+.. literalinclude:: ../Utilities/JsonSchemas/ThermalComponent.schema.json
+   :language: json
 
                  
 .. _geometryschema:                 
@@ -115,42 +101,32 @@ Thermal Model
 Geometry Setup
 ==============
 
-.. collapse:: Geometry Schema
-
-   .. literalinclude:: ../Utilities/JsonSchemas/Geometry.schema.json
-      :language: json
+.. literalinclude:: ../Utilities/JsonSchemas/Geometry.schema.json
+   :language: json
                  
 Simulation Control Parameters
 =============================
 
-.. collapse:: Control Schema
-
-   .. literalinclude:: ../Utilities/JsonSchemas/ControlModel.schema.json
-      :language: json
+.. literalinclude:: ../Utilities/JsonSchemas/ControlModel.schema.json
+   :language: json
 
 
 Time Stepping Parameters
 ========================
 
-.. collapse:: TimeStepping Schema
-
-   .. literalinclude:: ../Utilities/JsonSchemas/TimeStepping.schema.json
-      :language: json
+.. literalinclude:: ../Utilities/JsonSchemas/TimeStepping.schema.json
+   :language: json
 
 
 Solver Parameters
 =================
 
-.. collapse:: Solver Schema
-              
-   .. literalinclude:: ../Utilities/JsonSchemas/Solver.schema.json
-      :language: json
+.. literalinclude:: ../Utilities/JsonSchemas/Solver.schema.json
+   :language: json
 
 Output Parameters
-================-
+=================
 
-.. collapse:: Output Schema
-              
-   .. literalinclude:: ../Utilities/JsonSchemas/Output.schema.json
-      :language: json
+.. literalinclude:: ../Utilities/JsonSchemas/Output.schema.json
+   :language: json
                                                                     
