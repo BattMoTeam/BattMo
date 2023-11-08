@@ -317,9 +317,8 @@ add_module_names=False
 # MatAttributeDocumenter.add_directive_header = _add_directive_header
 
 
-repo_url = 'https://github.com/BattMoTeam/BattMo-dev'
+repo_url    = 'https://github.com/BattMoTeam/BattMo-dev'
 branch_name = 'modelrefac'
-
 
 def find_battmo_file(filename):
     ignored_dirs = ['output', 'MRST', '.git', 'Documentation']
@@ -356,9 +355,37 @@ class BattMoFileRole(ReferenceRole):
     def run(self):
         target = self.target
         title = self.title
+        if "#" in target:
+            target, lineno = docutils.utils.unescape(target).split("#", 1)
+        else:
+            lineno = None
         target = repo_url + '/blob/' + branch_name + '/' + target
+        if lineno is not None:
+            target += "#L"+lineno
         node = docutils.nodes.reference(self.rawtext, title, refuri=target)
         return [node], []
 
 
 roles.register_local_role('battmofile', BattMoFileRole())
+
+mrst_repo_url    = 'https://github.com/SINTEF-AppliedCompSci/MRST'
+mrst_branch_name = 'main'
+
+
+class MrstFileRole(ReferenceRole):
+
+    def run(self):
+        target = self.target
+        title = self.title
+        if "#" in target:
+            target, lineno = docutils.utils.unescape(target).split("#", 1)
+        else:
+            lineno = None
+        target = mrst_repo_url + '/blob/' + mrst_branch_name + '/' + target
+        if lineno is not None:
+            target += "#L"+lineno
+        node = docutils.nodes.reference(self.rawtext, title, refuri=target)
+        return [node], []
+
+
+roles.register_local_role('mrstfile', MrstFileRole())
