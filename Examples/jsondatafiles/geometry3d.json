@@ -1,4 +1,5 @@
 {
+  "include_current_collectors" : true,
   "Geometry" : {
     "case" : "3D-demo",
     "width" : 1e-2,
@@ -35,4 +36,5 @@
       }}},
   "Separator" : {
     "thickness" : 50e-6,
-    "N" : 3} }
+    "N" : 3}
+}
