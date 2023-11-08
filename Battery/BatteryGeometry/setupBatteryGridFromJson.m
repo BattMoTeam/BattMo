@@ -126,6 +126,13 @@ function [paramobj, gridGenerator] = setupBatteryGridFromJson(paramobj, jsonstru
         gen.ne_cc_ny = jsonstruct.NegativeElectrode.CurrentCollector.tab.Nh;
         gen.pe_cc_ny = jsonstruct.PositiveElectrode.CurrentCollector.tab.Nh;
         gen.elyte_ny = jsonstruct.Geometry.Nh;
+
+        gen.externalHeatTransferCoefficient = jsonstruct.ThermalModel.externalHeatTransferCoefficient;
+        if isfield(jsonstruct.ThermalModel, 'externalHeatTransferCoefficientTab')
+            gen.externalHeatTransferCoefficientTab = jsonstruct.ThermalModel.externalHeatTransferCoefficientTab;
+        else
+            gen.externalHeatTransferCoefficientTab = gen.externalHeatTransferCoefficient;
+        end
         
         % Now, we update the paramobj with the properties of the mesh.
         [paramobj, gen] = gen.updateBatteryInputParams(paramobj);
