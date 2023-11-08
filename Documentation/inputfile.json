@@ -1,4 +1,5 @@
-{"$schema": "../Utilities/JsonSchemas/Simulation.schema.json",
+{
+  "use_thermal": false,
   "Geometry": {
     "case": "1D",
     "faceArea": 0.0001
@@ -127,11 +128,26 @@
       }
     }
   },
+  "Separator": {
+    "thickness": 1.5e-05,
+    "N": 10,
+    "porosity": 0.55,
+    "specificHeatCapacity": 1978,
+    "thermalConductivity": 0.334,
+    "density": 946,
+    "bruggemanCoefficient": 1.5
+  },
+  "Control": {
+    "controlPolicy": "IEswitch",
+    "initialControl": "discharging",
+    "CRate": 1,
+    "lowerCutoffVoltage": 2.4,
+    "upperCutoffVoltage": 4.1,
+    "dIdtLimit": 0.01,
+    "dEdtLimit": 0.01,
+    "tup": 0.1
+  },
   "Electrolyte": {
-    "Separator": {
-      "thickness": 1.5e-05,
-      "N": 10
-    },
     "specificHeatCapacity": 2055,
     "thermalConductivity": 0.6,
     "density": 1200,
@@ -161,32 +177,6 @@
     },
     "bruggemanCoefficient": 1.5
   },
-  "G": [],
-  "SOC": 0.99,
-  "initT": 298.15,
-  "use_thermal": true,
-  "include_current_collectors": false,
-  "Control": {
-    "controlPolicy": "IEswitch",
-    "initialControl": "discharging",
-    "CRate": 1,
-    "lowerCutoffVoltage": 2.4,
-    "upperCutoffVoltage": 4.1,
-    "dIdtLimit": 0.01,
-    "dEdtLimit": 0.01,
-    "tup": 0.1
-  },
-  "Separator": {
-    "porosity": 0.55,
-    "specificHeatCapacity": 1978,
-    "thermalConductivity": 0.334,
-    "density": 946,
-    "bruggemanCoefficient": 1.5
-  },
-  "ThermalModel": {
-    "externalHeatTransferCoefficient": 1000,
-    "externalTemperature": 298.15
-  },
   "TimeStepping": {
     "totalTime": 5040,
     "numberOfTimeSteps": 40,
@@ -197,5 +187,7 @@
     "variables": [
       "energy"
     ]
-  }
+  },
+  "SOC": 0.99,
+  "initT": 298.15
 }
