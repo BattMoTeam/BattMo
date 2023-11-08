@@ -30,6 +30,7 @@ same material properties. For that, we use the :battmo:`mergeJsonStructs` functi
    .. literalinclude:: ../Utilities/JsonSchemas/Simulation.schema.json
       :language: json
 
+.. _geometryschema:                 
 
 Geometry Setup
 --------------

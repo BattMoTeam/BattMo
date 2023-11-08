@@ -2,8 +2,6 @@
 Battery Geometries
 ==================
 
-.. module:: Battery.BatteryGeometry
-
 Description of the models that are used to setup the geometry
 
 
