@@ -30,27 +30,98 @@ same material properties. For that, we use the :battmo:`mergeJsonStructs` functi
    .. literalinclude:: ../Utilities/JsonSchemas/Simulation.schema.json
       :language: json
 
+
+Material Parameters
+===================
+
+.. collapse:: Battery Model Schema
+
+   .. literalinclude:: ../Utilities/JsonSchemas/Battery.schema.json
+      :language: json
+
+Electrolyte
+-----------
+
+.. collapse:: Electrolyte Model Schema
+
+   .. literalinclude:: ../Utilities/JsonSchemas/Battery.schema.json
+      :language: json
+
+Electrode
+---------
+
+.. collapse:: Electrode Model Schema
+
+   .. literalinclude:: ../Utilities/JsonSchemas/Electrode.schema.json
+      :language: json
+
+Coating
+-------
+
+.. collapse:: Coating Model Schema
+
+   .. literalinclude:: ../Utilities/JsonSchemas/Coating.schema.json
+      :language: json
+
+
+Interface
+---------
+
+.. collapse:: Interface Model Schema
+
+   .. literalinclude:: ../Utilities/JsonSchemas/Interface.schema.json
+      :language: json
+
+
+Solid Diffusion
+---------------
+
+.. collapse:: Solid Diffusion Model Schema
+
+   .. literalinclude:: ../Utilities/JsonSchemas/SolidDiffusionModel.schema.json
+      :language: json
+
+
+Current Collector
+-----------------
+
+.. collapse:: Current Collector Model Schema
+
+   .. literalinclude:: ../Utilities/JsonSchemas/CurrentCollector.schema.json
+      :language: json
+
+
+
+Separator
+---------
+
+.. collapse:: Separator Model Schema
+
+   .. literalinclude:: ../Utilities/JsonSchemas/Separator.schema.json
+      :language: json
+
+
+Thermal Model
+-------------
+
+.. collapse:: Thermal Model Schema
+
+   .. literalinclude:: ../Utilities/JsonSchemas/ThermalModel.schema.json
+      :language: json
+
+                 
 .. _geometryschema:                 
 
 Geometry Setup
---------------
+==============
 
 .. collapse:: Geometry Schema
 
    .. literalinclude:: ../Utilities/JsonSchemas/Geometry.schema.json
       :language: json
-
-
-Material Parameters
--------------------
-
-.. collapse:: Battery Schema
-
-   .. literalinclude:: ../Utilities/JsonSchemas/Battery.schema.json
-      :language: json
-
+                 
 Simulation Control Parameters
------------------------------
+=============================
 
 .. collapse:: Control Schema
 
@@ -59,7 +130,7 @@ Simulation Control Parameters
 
 
 Time Stepping Parameters
-------------------------
+========================
 
 .. collapse:: TimeStepping Schema
 
@@ -68,7 +139,7 @@ Time Stepping Parameters
 
 
 Solver Parameters
------------------
+=================
 
 .. collapse:: Solver Schema
               
@@ -76,7 +147,7 @@ Solver Parameters
       :language: json
 
 Output Parameters
------------------
+================-
 
 .. collapse:: Output Schema
               
