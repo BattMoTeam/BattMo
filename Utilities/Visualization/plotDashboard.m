@@ -46,14 +46,16 @@ function [fig] = plotDashboard(model, states, varargin)
     Enew = cellfun(@(state) state.(ctrl).E, states); 
     Inew = cellfun(@(state) state.(ctrl).I, states);
 
-
     if step ~= 0
         
         timeBar = [  time(step)/hour, 0; ...
                      time(step)/hour, 1000];
         
         if model.G.griddim == 1
-            setFigureStyle('theme', p.Results.theme, 'size', p.Results.size, 'orientation', p.Results.orientation, 'quantity', 'single');
+            
+            style = setFigureStyle('theme', p.Results.theme, 'size', p.Results.size, 'orientation', p.Results.orientation, 'quantity', 'single');
+            style.fontSize = 10;
+            
             switch model.(ne).(co).(am).diffusionModelType
               case 'simple'
                 subplot(2,4,1), plotCellData(model.(ne).(co).G, states{step}.(ne).(co).(am).c ./ 1000, 'linewidth', 3);
@@ -168,6 +170,7 @@ function [fig] = plotDashboard(model, states, varargin)
                 'GridColor', style.fontColor)
 
         else
+            
             style = setFigureStyle('theme', p.Results.theme, 'size', p.Results.size, 'orientation', p.Results.orientation, 'quantity', 'single');
             style.fontSize = 10;
 
