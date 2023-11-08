@@ -4,14 +4,17 @@
   "description": "Input for the time stepping",
   "type": "object",
 
-  "properties" : {"TimeStepping" : {"type" : "object",
-                                    "properties" : {"totalTime" : {"type" : "number"},
-                                                    "timeStepDuration" : {"type" : "number"},
-                                                    "numberOfTimeSteps" : {"type" : "integer"},
-                                                    "useRampup" : {"type" : "boolean"},
-                                                    "rampupTime" : {"type" : "number"}},
-                                    "oneOf" : [{"required" : ["numberOfTimeSteps", "totalTime"]},
-                                               {"required" : ["timeStepDuration"]}]
-                                   }
-                 }
+  "properties" : {
+    "TimeStepping" : {
+      "type" : "object",
+      "properties" : {
+        "totalTime" : {"type" : "number"},
+        "timeStepDuration" : {"type" : "number"},
+        "numberOfTimeSteps" : {"type" : "integer"},
+        "useRampup" : {"type" : "boolean"},
+        "rampupTime" : {"type" : "number"}},
+      "oneOf" : [{"required" : ["numberOfTimeSteps", "totalTime"]},
+                 {"required" : ["timeStepDuration"]}]
+    }
+  }
 }

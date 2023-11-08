@@ -2,44 +2,50 @@
   "$id": "file://./ControlModel.schema.json",
   "$schema": "http://json-schema.org/draft-07/schema#",
   "type": "object",
-  "properties" : {"Control" : {"type" : "object",
-                               "properties" : {
-                                 "controlPolicy": {"type": "string",
-                                                   "enum": ["IEswitch", "CCCV", "CV", "powerControl", "CC"]},
-                                 "CRate" : {"type": "number"},
-                                 "initialControl" : {"type" : "string",
-                                                     "enum" : ["charging", "discharging"]},
-                                 "lowerCutoffVoltage" : {"type" : "number"},
-                                 "upperCutoffVoltage" : {"type" : "number"}
-                               },
-                               "allOf": [
-                                {
-                                "if":
-                                 {"properties": {"controlPolicy" : {"const" : "IEswitch"}},
-                                 "then": {
-                                                 "$ref" : "#/$defs/IEswitchControlModel"}}},
+  "properties" : {
+    "Control" : {
+      "type" : "object",
+      "properties" : {
+        "controlPolicy": {
+          "type": "string",
+          "enum": ["IEswitch", "CCCV", "CV", "powerControl", "CC"]},
+        "CRate" : {
+          "type": "number"},
+        "initialControl" : {
+          "type" : "string",
+          "enum" : ["charging", "discharging"]},
+        "lowerCutoffVoltage" : {
+          "type" : "number"},
+        "upperCutoffVoltage" : {
+          "type" : "number"}
+      },
+      "allOf": [
+        {
+          "if":
+          {"properties": {"controlPolicy" : {"const" : "IEswitch"}},
+           "then": {
+             "$ref" : "#/$defs/IEswitchControlModel"}}},
 
-                                 {"if": {"properties": {"controlPolicy" : {"const" : "CCCV"}},
-                                 "then":{
-                                                 "$ref" : "#/$defs/CcCvControlModel"}}},
+        {"if": {"properties": {"controlPolicy" : {"const" : "CCCV"}},
+                "then":{
+                  "$ref" : "#/$defs/CcCvControlModel"}}},
 
+        {"if": {"properties": {"controlPolicy" : {"const" : "CV"}},
+                "then": {
+                  "$ref" : "#/$defs/CvControlModel"}}},
 
-                                 {"if": {"properties": {"controlPolicy" : {"const" : "CV"}},
-                                 "then": {
-                                                 "$ref" : "#/$defs/CvControlModel"}}},
+        {"if": {"properties": {"controlPolicy" : {"const" : "CC"}},
+                "then": {
+                  "$ref" : "#/$defs/CcControlModel"}}},
 
-                                 {"if": {"properties": {"controlPolicy" : {"const" : "CC"}},
-                                 "then": {
-                                                 "$ref" : "#/$defs/CcControlModel"}}},
-
-                                 {"if": {"properties": {"controlPolicy" : {"const" : "powerControl"}},
-                                 "then": {
-                                                 "$ref" : "#/$defs/powerControlModel"}}}
-                                
-                               ]
-                              }
-                 },
-
+        {"if": {"properties": {"controlPolicy" : {"const" : "powerControl"}},
+                "then": {
+                  "$ref" : "#/$defs/powerControlModel"}}}
+        
+      ]
+    }
+  },
+  
   "$defs" : {
     "IEswitchControlModel" : {
       "properties" :
@@ -62,19 +68,23 @@
         "dischargingPower" : {"type" : "number"},
         "chargingPower" : {"type" : "number"}},
       
-      "anyOf" : [{ "properties" : {"powerControlCase" : {"const" : "time limited"},
-                                   "dischargingTime" : {"type" : "number"},
-                                   "chargingTime" : {"type" : "number"}
-                                  }},
-                 
-                 { "properties" : {"powerControlCase" : {"const" : "voltage limited"}
-                                  }},
-                 
-                 { "properties" : {"powerControlCase" : {"const" : "CPCV"},
-                                   "lowerCutoffPower" : {"type" : "number"},
-                                   "upperCutoffPower" : {"type" : "number"}
-                                  }
-                 }
-                ]}
+      "anyOf" : [
+        { "properties" : {
+          "powerControlCase" : {"const" : "time limited"},
+          "dischargingTime" : {"type" : "number"},
+          "chargingTime" : {"type" : "number"}
+        }},
+        
+        { "properties" : {
+          "powerControlCase" : {"const" : "voltage limited"}
+        }},
+        
+        { "properties" : {
+          "powerControlCase" : {"const" : "CPCV"},
+          "lowerCutoffPower" : {"type" : "number"},
+          "upperCutoffPower" : {"type" : "number"}
+        }
+        }
+      ]}
   }
 }

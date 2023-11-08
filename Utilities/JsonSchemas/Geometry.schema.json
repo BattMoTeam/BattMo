@@ -150,10 +150,17 @@
                 }
               }
             }
-          }
+         },
+         "ThermalModel": {
+           "properties" : {
+             "externalHeatTransferCoefficientTab" : {
+               "$ref": "PhysicalQuantity.schema.json",
+               "description": "the heat transfer coefficient at the tab"
+             }
+           }
          }
         }
-         
+        
         }
       ]
 
