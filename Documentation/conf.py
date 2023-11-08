@@ -17,6 +17,7 @@ import os
 import docutils
 import errno
 from docutils.parsers.rst import roles
+from sphinx.util.docutils import ReferenceRole
 
 # If extensions (or modules to document with autodoc) are in another directory,
 # add these directories to sys.path here. If the directory is relative to the
@@ -343,9 +344,21 @@ def battmo_reference_role(role, rawtext, text, lineno, inliner,
     ref = repo_url + '/blob/' + branch_name + '/' + fullfuncname
     if lineno is not None:
         ref += "#L"+lineno
-    # options = roles.normalized_role_options(options)
     node = docutils.nodes.reference(rawtext, str(funcname), refuri=ref)
     return [node], []
 
 
 roles.register_local_role('battmo', battmo_reference_role)
+
+
+class BattMoFileRole(ReferenceRole):
+
+    def run(self):
+        target = self.target
+        title = self.title
+        target = repo_url + '/blob/' + branch_name + '/' + target
+        node = docutils.nodes.reference(self.rawtext, title, refuri=target)
+        return [node], []
+
+
+roles.register_local_role('battmofile', BattMoFileRole())
