@@ -27,6 +27,11 @@
    #+begin_src shell
      python -m pip install sphinx_collapse
    #+end_src   
+** autosectionlabel
+   - part of default distribution
+   - We use ~autosectionlabel_prefix_document = True~ which means that the internal link must be prefixed by the file
+     name and a semi-column, see [[https://www.sphinx-doc.org/en/master/usage/extensions/autosectionlabel.html][here]].
+   
 * Workflow for editing
 
   In the ~Documentation~ directory, run from terminal
@@ -46,7 +51,6 @@
 
   https://battmoteam.github.io/BattMo-doc/
 
-  
 * Special workflow for example scripts
 ** Compilation
    - run ~publishExamplesXML~ in ~utils~ directory (see documentation there) : It creates XML outputs
