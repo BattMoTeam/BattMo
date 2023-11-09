@@ -3,5 +3,5 @@
     "specificHeatCapacity": 1978,
     "thermalConductivity": 0.334,
     "density": 946,
-    "BruggemanCoefficient": 1.5
+    "bruggemanCoefficient": 1.5
 }

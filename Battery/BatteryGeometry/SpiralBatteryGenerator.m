@@ -11,9 +11,9 @@ classdef SpiralBatteryGenerator < BatteryGenerator
         % Dictionary of widths for each component. The required key names for the dictionary are
         %
         % - 'Separator'
-        % - 'NegativeActiveMaterial'
+        % - 'NegativeCoating'
         % - 'NegativeCurrentCollector'
-        % - 'PositiveActiveMaterial'
+        % - 'PositiveCoating'
         % - 'PositiveCurrentCollector'
         widthDict
         
@@ -204,7 +204,8 @@ classdef SpiralBatteryGenerator < BatteryGenerator
             
             ne    = 'NegativeElectrode';
             pe    = 'PositiveElectrode';
-            am   = 'ActiveMaterial';
+            co    = 'Coating';
+            am    = 'ActiveMaterial';
             cc    = 'CurrentCollector';
             elyte = 'Electrolyte';
             sep   = 'Separator';
@@ -226,11 +227,11 @@ classdef SpiralBatteryGenerator < BatteryGenerator
             compCartG = setupCompCartGrid(gen, compG, compCartG, celltbl);
             Gs.CurrentCollector = compCartG;
             
-            compG = paramobj.(pe).(am).G;
-            comptag = tagdict('PositiveActiveMaterial');
+            compG = paramobj.(pe).(co).G;
+            comptag = tagdict('PositiveCoating');
             compCartG = genSubGrid(cartG, find(tag(cartInd) == comptag));
             compCartG = setupCompCartGrid(gen, compG, compCartG, celltbl);
-            Gs.ActiveMaterial = compCartG;
+            Gs.Coating = compCartG;
             
             UGrids.PositiveElectrode = Gs;
             clear Gs;
@@ -241,17 +242,17 @@ classdef SpiralBatteryGenerator < BatteryGenerator
             compCartG = setupCompCartGrid(gen, compG, compCartG, celltbl);
             Gs.CurrentCollector = compCartG;
             
-            compG = paramobj.(ne).(am).G;
+            compG = paramobj.(ne).(co).G;
             comptag = tagdict('NegativeActiveMaterial');
             compCartG = genSubGrid(cartG, find(tag(cartInd) == comptag));
             compCartG = setupCompCartGrid(gen, compG, compCartG, celltbl);
-            Gs.ActiveMaterial = compCartG;
+            Gs.Coating = compCartG;
             
             UGrids.NegativeElectrode = Gs;
             clear Gs;
             
             compG = paramobj.(elyte).G;
-            comptags = [tagdict('ElectrolyteSeparator'); tagdict('NegativeActiveMaterial'); tagdict('PositiveActiveMaterial')];
+            comptags = [tagdict('Separator'); tagdict('NegativeCoating'); tagdict('PositiveCoating')];
             compCartG = genSubGrid(cartG, find(ismember(tag(cartInd), comptags)));
             compCartG = setupCompCartGrid(gen, compG, compCartG, celltbl);
             UGrids.Electrolyte = compCartG;
@@ -282,20 +283,32 @@ classdef SpiralBatteryGenerator < BatteryGenerator
             compCartG.mappings.ind = ind;
             
         end
-        
+
+
         function paramobj = setupElectrolyte(gen, paramobj, params)
             
             tagdict = gen.tagdict;
             tag = gen.tag;
 
-            inds = [tagdict('PositiveActiveMaterial'); tagdict('ElectrolyteSeparator'); tagdict('NegativeActiveMaterial')];
+            inds = [tagdict('PositiveCoating'); tagdict('Separator'); tagdict('NegativeCoating')];
             cellind = ismember(tag, inds);
             params.cellind = find(cellind);
-            inds = tagdict('ElectrolyteSeparator'); 
-            cellind = ismember(tag, inds);            
-            params.Separator.cellind = find(cellind);
-            
+
             paramobj = setupElectrolyte@BatteryGenerator(gen, paramobj, params);
+            
+        end
+
+        function paramobj = setupSeparator(gen, paramobj, params)
+
+            tagdict = gen.tagdict;
+            tag = gen.tag;
+
+            inds = tagdict('Separator'); 
+            cellind = ismember(tag, inds);
+            
+            params.cellind = find(cellind);
+            
+            paramobj = setupSeparator@BatteryGenerator(gen, paramobj, params);
             
         end
         
@@ -304,24 +317,24 @@ classdef SpiralBatteryGenerator < BatteryGenerator
             ne  = 'NegativeElectrode';
             pe  = 'PositiveElectrode';
             cc  = 'CurrentCollector';
-            am = 'ActiveMaterial';
+            co  = 'Coating';
 
             tagdict = gen.tagdict;
             tag = gen.tag;
             
-            cellind = ismember(tag, tagdict('NegativeActiveMaterial'));
-            params.(ne).(am).cellind = find(cellind);
+            cellind = ismember(tag, tagdict('NegativeCoating'));
+            params.(ne).(co).cellind = find(cellind);
             cellind = ismember(tag, tagdict('NegativeCurrentCollector'));
             params.(ne).(cc).cellind = find(cellind);
             params.(ne).(cc).extfaces = gen.negativeExtCurrentFaces;            
-            params.(ne).cellind = [params.(ne).(am).cellind; params.(ne).(cc).cellind];
+            params.(ne).cellind = [params.(ne).(co).cellind; params.(ne).(cc).cellind];
             
-            cellind = ismember(tag, tagdict('PositiveActiveMaterial'));
-            params.(pe).(am).cellind = find(cellind);
+            cellind = ismember(tag, tagdict('PositiveCoating'));
+            params.(pe).(co).cellind = find(cellind);
             cellind = ismember(tag, tagdict('PositiveCurrentCollector'));
             params.(pe).(cc).cellind = find(cellind);
             params.(pe).(cc).extfaces = gen.positiveExtCurrentFaces;
-            params.(pe).cellind = [params.(pe).(am).cellind; params.(pe).(cc).cellind];
+            params.(pe).cellind = [params.(pe).(co).cellind; params.(pe).(cc).cellind];
 
             paramobj = setupElectrodes@BatteryGenerator(gen, paramobj, params);            
             

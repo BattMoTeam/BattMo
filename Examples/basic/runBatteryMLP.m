@@ -19,7 +19,7 @@ mrstModule add ad-core mrst-gui mpfa
 % throughout the submodels. The input parameters can be set manually or
 % provided in json format. All the parameters for the model are stored in
 % the paramobj object.
-jsonstruct = parseBattmoJson(fullfile('ParameterData','BatteryCellParameters','LithiumIonBatteryCell','lithium_ion_battery_nmc_graphite.json'));
+jsonstruct = parseBattmoJson(fullfile('ParameterData', 'BatteryCellParameters', 'LithiumIonBatteryCell', 'lithium_ion_battery_nmc_graphite.json'));
 jsonstruct.include_current_collectors = true;
 
 paramobj = BatteryInputParams(jsonstruct);
@@ -37,22 +37,24 @@ ctrl    = 'Control';
 %% Setup the geometry and computational mesh
 % Here, we setup the 3D computational mesh that will be used for the
 % simulation. The required discretization parameters are already included
-% in the class BatteryGenerator3D.
+% in the class BatteryGeneratorP4D.
 gen = BatteryGeneratorMultilayerPouch();
 
 % Now, we update the paramobj with the properties of the mesh.
 paramobj = gen.updateBatteryInputParams(paramobj);
 
-%%  Initialize the battery model. 
+%%  Initialize the battery model.
 % The battery model is initialized by sending paramobj to the Battery class
 % constructor. see :class:`Battery <Battery.Battery>`.
 
 model = Battery(paramobj);
 
-%% Setup the time step schedule 
+plotBatteryMesh(model, 'setstyle', false);
+
+%% Setup the time step schedule
 % Smaller time steps are used to ramp up the current from zero to its
 % operational value. Larger time steps are then used for the normal
-% operation. 
+% operation.
 
 CRate = model.Control.CRate;
 
@@ -60,17 +62,17 @@ n           = 25;
 dt          = [];
 dt          = [dt; repmat(0.5e-4, n, 1).*1.5.^(1 : n)'];
 totalTime   = 1.4*hour/CRate;
-n           = 40; 
-dt          = [dt; repmat(totalTime/n, n, 1)]; 
-times       = [0; cumsum(dt)]; 
-tt          = times(2 : end); 
-step        = struct('val', diff(times), 'control', ones(numel(tt), 1)); 
+n           = 40;
+dt          = [dt; repmat(totalTime/n, n, 1)];
+times       = [0; cumsum(dt)];
+tt          = times(2 : end);
+step        = struct('val', diff(times), 'control', ones(numel(tt), 1));
 
 %% Setup the operating limits for the cell
 % The maximum and minimum voltage limits for the cell are defined using
 % stopping and source functions. A stopping function is used to set the
 % lower voltage cutoff limit. A source function is used to set the upper
-% voltage cutoff limit. 
+% voltage cutoff limit.
 tup = 0.1; % rampup value for the current function, see rampupSwitchControl
 srcfunc = @(time, I, E) rampupSwitchControl(time, tup, I, E, ...
                                             model.Control.Imax, ...
@@ -79,41 +81,50 @@ srcfunc = @(time, I, E) rampupSwitchControl(time, tup, I, E, ...
 control = struct('src', srcfunc, 'IEswitch', true);
 
 % This control is used to set up the schedule
-schedule = struct('control', control, 'step', step); 
+schedule = struct('control', control, 'step', step);
 
 %% Setup the initial state of the model
 % The initial state of the model is dispatched using the
-% model.setupInitialState()method. 
-initstate = model.setupInitialState(); 
+% model.setupInitialState()method.
+initstate = model.setupInitialState();
 
-%% Setup the properties of the nonlinear solver 
-nls = NonLinearSolver(); 
+%% Setup the properties of the nonlinear solver
+nls = NonLinearSolver();
 % Change default maximum iteration number in nonlinear solver
-nls.maxIterations = 10; 
+nls.maxIterations = 10;
 % Change default behavior of nonlinear solver, in case of error
-nls.errorOnFailure = false; 
+nls.errorOnFailure = false;
 % Timestep selector
 nls.timeStepSelector = StateChangeTimeStepSelector('TargetProps', ...
                                                   {{ctrl, 'E'}}, ...
                                                   'targetChangeAbs', 0.03);
 
 % Change default tolerance for nonlinear solver
-model.nonlinearTolerance = 1e-5; 
+model.nonlinearTolerance = 1e-5;
 % Set verbosity of the solver (if true, value of the residuals for every equation is given)
 model.verbose = false;
 
 %% Run simulation
-[wellSols, states, report] = simulateScheduleAD(initstate, model, schedule, 'OutputMinisteps', true, 'NonLinearSolver', nls); 
+[wellSols, states, report] = simulateScheduleAD(initstate, model, schedule, 'OutputMinisteps', true, 'NonLinearSolver', nls);
 
 %%  Process output and recover the output voltage and current from the output states.
-ind = cellfun(@(x) not(isempty(x)), states); 
+ind = cellfun(@(x) not(isempty(x)), states);
 states = states(ind);
-E = cellfun(@(x) x.(ctrl).E, states); 
+E = cellfun(@(x) x.(ctrl).E, states);
 I = cellfun(@(x) x.(ctrl).I, states);
-time = cellfun(@(x) x.time, states); 
+time = cellfun(@(x) x.time, states);
+
+figure
+plot(time/hour, E);
+grid on
+xlabel 'time  / h';
+ylabel 'potential  / V';
 
 %% Plot an animated summary of the results
-plotDashboard(model, states, 'step', 0);
+doplot = false;
+if doplot
+    plotDashboard(model, states, 'step', 0);
+end
 
 %{
 Copyright 2021-2022 SINTEF Industry, Sustainable Energy Technology

@@ -1,23 +1,32 @@
 {
-  "$id": "file://battmo/schemas/function",
+  "$id": "file://./function.json.schema",
   "$schema": "http://json-schema.org/draft-07/schema#",
   "description": "A standard function input",
   "type": "object",
-  "properties" : {"type" : {"enum" : ["function", "constant"]}},
-  "anyOf" : [ {"properties" : { "type" : {"const" : "function"},
-                                "functionname" : {"type" : "string",
-                                                  "description" : "The name of the function file (for the moment should be included in path) without the matlab suffix (.m)"},
-                                "argumentlist" : {"type" : "array",
-                                                  "items" : {"type" : "string",
-                                                             "description" : "name of the argument"},
-                                                  "description" : "list of arguments ordered as in function call (only for reference)"
-                                                 }
-                              }
-              },
-              {"properties" : {"type" : {"const": "constant"},
-                               "value" : {"anyOf" : [{"type" : "number"},
-                                                     {"type" : "array"}]}
-                              }
-              }
-            ]
+  "properties": {
+    "type": {
+      "enum": [
+        "function",
+        "constant"
+      ]
+    },
+    "functionname": {
+      "type": "string",
+      "description": "The name of the function file (for the moment should be included in path) without the matlab suffix (.m)"
+    },
+    "argumentlist": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "description": "name of the argument"
+      },
+      "description": "list of arguments ordered as in function call (only for reference)"
+    }
+  },
+  "allOf": [{"if": {"properties": {"type": {"const":"function"}}},
+  "then":{
+  "required": [
+    "functionname",
+    "argumentlist"
+  ]}}]
 }

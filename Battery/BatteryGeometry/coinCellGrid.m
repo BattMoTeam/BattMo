@@ -1,11 +1,11 @@
 function output = coinCellGrid(params)
 
     % Components in order from z=0 (top) to z=zmax (bottom) with the
-    % surrounding electrolyte last
+% surrounding electrolyte last
     compNames = {'NegativeCurrentCollector', ...
-                 'NegativeActiveMaterial', ...
-                 'ElectrolyteSeparator', ...
-                 'PositiveActiveMaterial', ...
+                 'NegativeCoating', ...
+                 'Separator', ...
+                 'PositiveCoating', ...
                  'PositiveCurrentCollector', ...
                  'Electrolyte'};
     assert(numel(intersect(compNames, params.compDims.Row)) == 5);
@@ -31,7 +31,6 @@ function output = coinCell3dGrid(params, compNames, dz, tagdict)
 
     % Extract basic dimensions
     R = 0.5 * max(compDims.diameter);
-    bbox = [-1.2*R, -1.2*R; 1.2*R, -1.2*R; 1.2*R, 1.2*R; -1.2*R, 1.2*R];
     xc0 = [0, 0];
     
     % Radial points
@@ -93,7 +92,6 @@ function output = coinCell3dGrid(params, compNames, dz, tagdict)
     assert(all(tag > -1));
     
     %% Electrode faces where current is applied
-    [bf, bc] = boundaryFaces(G);
     minz = min(G.nodes.coords(:, 3)) + 100*eps;
     maxz = max(G.nodes.coords(:, 3)) - 100*eps;
     fmin = G.faces.centroids(:, 3) <= minz;
@@ -110,9 +108,6 @@ function output = coinCell3dGrid(params, compNames, dz, tagdict)
         negativeExtCurrentFaces = fmax;
         positiveExtCurrentFaces = fmin;
     end
-
-    % Thermal cooling faces on all sides
-    thermalCoolingFaces = bf;
 
     % Output
     output = params;

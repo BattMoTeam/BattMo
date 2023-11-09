@@ -1,4 +1,4 @@
-classdef ActiveMaterial < ElectronicComponent
+classdef ActiveMaterial < BaseModel
     
     properties
         
@@ -6,33 +6,42 @@ classdef ActiveMaterial < ElectronicComponent
         % instance of :class:`Interface <Electrochemistry.Electrodes.Interface>`
         %
 
+        %% Sub-Models
+        
         Interface
-
         SolidDiffusion        
 
-        porosity                      % porosity
-        volumeFraction                % Volume fraction of the whole material (binder and so on included)
-        activeMaterialFraction        % Volume fraction occupied only by the active material
-        electricalConductivity        % Electrical conductivity
-        InterDiffusionCoefficient     % Inter particle diffusion coefficient parameter (diffusion between the particles)
-        density                       %
-        thermalConductivity           % Intrinsic Thermal conductivity of the active component
-        specificHeatCapacity          % Specific Heat capacity of the active component
+        %% Input parameters
 
-        EffectiveDiffusionCoefficient % 
+        % Standard parameters
 
-        EffectiveThermalConductivity  % Effective Thermal Conductivity of the active component
-        EffectiveVolumetricHeatCapacity % Effective Heat Capacity of the active component
-
-        diffusionModelType
+        electronicConductivity % the electronic conductivity of the material (symbol: sigma)
+        density                % the mass density of the material (symbol: rho)
+        massFraction           % the ratio of the mass of the material to the total mass of the phase or mixture (symbol: gamma)
         
-        externalCouplingTerm          % only used in no current collector
+        thermalConductivity    % the intrinsic Thermal conductivity of the active component
+        specificHeatCapacity   % Specific Heat capacity of the active component
 
-        BruggemanCoefficient
+        diffusionModelType     % either 'full' or 'simple'
+        
+        % Advanded parameters
+        
+        standAlone % Set to true if model is used as main model for development purpose (standard use is as a sub-model)
 
-        use_particle_diffusion
-        use_interparticle_diffusion
-        standAlone
+        % Coupling parameters
+        
+        externalCouplingTerm % structure to describe external coupling (used in absence of current collector)
+
+
+        % Others
+        
+        % properties needed when model is run in stand-alone mode
+        
+        funcCallList
+        primaryVarNames
+        equationVarNames
+        equationNames
+        equationTypes
         
     end
     
@@ -42,23 +51,20 @@ classdef ActiveMaterial < ElectronicComponent
         %
         % ``paramobj`` is instance of :class:`ActiveMaterialInputParams <Electrochemistry.ActiveMaterialInputParams>`
         %
-            model = model@ElectronicComponent(paramobj);
+            model = model@BaseModel();
             
-            fdnames = {'activeMaterialFraction', ...
-                       'thermalConductivity'   , ...
-                       'electricalConductivity', ...
-                       'density'               , ...
-                       'specificHeatCapacity'  , ...
+            fdnames = {'electronicConductivity', ... 
+                       'density'               , ...                
+                       'massFraction'          , ...
+                       'thermalConductivity'   , ...    
+                       'specificHeatCapacity'  , ...   
+                       'volumeFraction'        , ... 
                        'externalCouplingTerm'  , ...
                        'diffusionModelType'    , ...
-                       'use_thermal'           , ...
-                       'BruggemanCoefficient'};
-            
+                       'standAlone'};
+
             model = dispatchParams(model, paramobj, fdnames);
-            
-            % Setup Interface component
-            paramobj.Interface.G = model.G;
-            
+
             model.Interface = Interface(paramobj.Interface);
 
             diffusionModelType = model.diffusionModelType;
@@ -66,222 +72,108 @@ classdef ActiveMaterial < ElectronicComponent
             switch model.diffusionModelType
               case 'simple'
                 model.SolidDiffusion = SimplifiedSolidDiffusionModel(paramobj.SolidDiffusion);
-                model.InterDiffusionCoefficient = paramobj.InterDiffusionCoefficient;
-                model.use_particle_diffusion = true;
-                model.use_interparticle_diffusion = true;
               case 'full'
-                paramobj.SolidDiffusion.np = model.G.cells.num;
                 model.SolidDiffusion = FullSolidDiffusionModel(paramobj.SolidDiffusion);
-                model.use_particle_diffusion = true;
-                model.use_interparticle_diffusion = false;
-              case 'interParticleOnly'
-                model.InterDiffusionCoefficient = paramobj.InterDiffusionCoefficient;
-                model.use_particle_diffusion = false;
-                model.use_interparticle_diffusion = true;
               otherwise
                 error('Unknown diffusionModelType %s', diffusionModelType);
             end
+
+            if model.standAlone
+
+                model = model.setupStandAloneModel();
+                
+            end
             
-            nc = model.G.cells.num;
-
-            model.volumeFraction = paramobj.volumeFraction*ones(nc, 1);
-            model.porosity       = 1 - model.volumeFraction;
-
-            model = model.setupDependentProperties();
-
-            % standAlone=true for standalone simulation of active material. This flag is used only in
-            % registerVarAndPropfuncNames (does not impact simulation). Default is false.
-            model.standAlone = false;
             
         end
         
-        function model = setupDependentProperties(model)           
-
-            vf = model.volumeFraction;
-            brugg = model.BruggemanCoefficient;
-            
-            % setup effective electrical conductivity using Bruggeman approximation
-            model.EffectiveElectricalConductivity = model.electricalConductivity.*vf.^brugg;
-
-            
-            if model.use_interparticle_diffusion
-                
-                interDiff = model.InterDiffusionCoefficient;
-                amFrac    = model.activeMaterialFraction;
-                
-                model.EffectiveDiffusionCoefficient = interDiff.*(vf.*amFrac).^brugg;
-                
-            end
-
-            if model.use_thermal
-                % setup effective thermal conductivity
-                model.EffectiveThermalConductivity = model.thermalConductivity.*vf.^brugg;
-                model.EffectiveVolumetricHeatCapacity = model.specificHeatCapacity.*vf.*model.density;
-            end
-            
-        end
-
         function model = registerVarAndPropfuncNames(model)
 
             %% Declaration of the Dynamical Variables and Function of the model
             % (setup of varnameList and propertyFunctionList)
 
-            model = registerVarAndPropfuncNames@ElectronicComponent(model);
+            model = registerVarAndPropfuncNames@BaseModel(model);
             
             itf = 'Interface';
             sd  = 'SolidDiffusion';
-            
-            varnames = {'jCoupling', ...
-                        'jExternal', ...
-                        'SOC'      , ...
-                        'Rvol'};
-            model = model.registerVarNames(varnames);            
 
-            if model.use_thermal
-                varnames = {'jFaceCoupling', ...
-                            'jFaceExternal'};
-                model = model.registerVarNames(varnames);
-            end
-            
-           
-            if strcmp(model.diffusionModelType, 'simple')
-                varnames = {'c'        , ...
-                            'massCons' , ...
-                            'massAccum', ...
-                            'massFlux', ...
-                            'massSource'};
-                model = model.registerVarNames(varnames);
-            end
+            varnames = {'T'};
+            model = model.registerVarNames(varnames);
+
+            fn = @ActiveMaterial.dispatchTemperature;
+            model = model.registerPropFunction({{sd, 'T'}, fn, {'T'}});
+            model = model.registerPropFunction({{itf, 'T'}, fn, {'T'}});
             
             if model.standAlone
-                varnames = {'controlCurrentSource'};
+
+                varnames = {};
+
+                % Volumetric current in A/m^3. It corresponds to the current density multiplied with the volumetric
+                % surface area.
+                varnames{end + 1} = 'I';
+                % Potential at Electrode
+                varnames{end + 1} = 'E';
+                % Charge Conservation equation
+                varnames{end + 1} = 'chargeCons';
+                
                 model = model.registerVarNames(varnames);
-                varnames = {{itf, 'SOC'}, ...
+
+                varnames = {{itf, 'dUdT'}, ...
                             'jCoupling', ...
                             'jExternal'};
                 model = model.removeVarNames(varnames);
+
                 varnames = {'T', ...
                             {itf, 'cElectrolyte'},... 
                             {itf, 'phiElectrolyte'}};
                 model = model.registerStaticVarNames(varnames);
                 
             end
+
+            fn = @ActiveMaterial.updateRvol;
+            model = model.registerPropFunction({{sd, 'Rvol'}, fn, {{itf, 'R'}}});
             
-            fn = @ActiveMaterial.updateCurrentSource;
-            model = model.registerPropFunction({'eSource', fn, {'Rvol'}});
+            fn = @ActiveMaterial.updateConcentrations;
+            model = model.registerPropFunction({{itf, 'cElectrodeSurface'}, fn, {{sd, 'cSurface'}}});
             
-            fn = @ActiveMaterial.updatePhi;
-            model = model.registerPropFunction({{itf, 'phiElectrode'}, fn, {'phi'}});
-            
-            fn = @ActiveMaterial.dispatchTemperature;
-            model = model.registerPropFunction({{itf, 'T'}, fn, {'T'}});
-            if model.use_particle_diffusion
-                model = model.registerPropFunction({{sd, 'T'}, fn, {'T'}});
-            end
-
-            switch model.diffusionModelType
-
-              case 'simple'
-
-                fn = @ActiveMaterial.updateConcentrations;
-                model = model.registerPropFunction({{sd, 'cAverage'}, fn, {'c'}});
-                model = model.registerPropFunction({{itf, 'cElectrodeSurface'}, fn, {{sd, 'cSurface'}}});
-                
-                fn = @ActiveMaterial.updateMassFlux;
-                model = model.registerPropFunction({'massFlux', fn, {'c'}});
-
-                fn = @ActiveMaterial.updateMassSource;
-                model = model.registerPropFunction({'massSource', fn, {'Rvol'}});
-
-                fn = @ActiveMaterial.updateMassConservation;
-                model = model.registerPropFunction({'massCons', fn, {'massAccum', 'massFlux', 'massSource'}});
-
-                fn = @ActiveMaterial.updateRvol;
-                model = model.registerPropFunction({'Rvol', fn, {{itf, 'R'}}});
-                model = model.registerPropFunction({{sd, 'Rvol'}, fn, {{itf, 'R'}}});
-                
-                fn = @ActiveMaterial.updateSOC;
-                model = model.registerPropFunction({'SOC', fn, {{sd, 'cAverage'}}});
-                
-              case 'full'
-
-                fn = @ActiveMaterial.updateConcentrations;
-                model = model.registerPropFunction({{itf, 'cElectrodeSurface'}, fn, {{sd, 'cSurface'}}});
-
-                fn = @ActiveMaterial.updateRvol;
-                model = model.registerPropFunction({'Rvol', fn, {{itf, 'R'}}});
-                model = model.registerPropFunction({{sd, 'Rvol'}, fn, {{itf, 'R'}}});
-
-                fn = @ActiveMaterial.updateSOC;
-                model = model.registerPropFunction({'SOC', fn, {{sd, 'cAverage'}}});
-                
-              case 'interParticleOnly'
-
-                fn = @ActiveMaterial.updateConcentrations;
-                model = model.registerPropFunction({{itf, 'cElectrodeSurface'}, fn, {'c'}});
-                
-                fn = @ActiveMaterial.updateRvol;
-                model = model.registerPropFunction({'Rvol', fn, {{itf, 'R'}}});
-
-                fn = @ActiveMaterial.updateMassFlux;
-                model = model.registerPropFunction({'massFlux', fn, {'c'}});
-                
-                fn = @ActiveMaterial.updateMassSource;
-                model = model.registerPropFunction({'massSource', fn, {'Rvol'}});
-                
-                fn = @ActiveMaterial.updateMassConservation;
-                model = model.registerPropFunction({'massCons', fn, {'massAccum', 'massFlux', 'massSource'}});
-
-              otherwise
-                
-                error('diffusionModelType not recognized.');
-                
-            end
-
             if model.standAlone
                 
-                fn = @ActiveMaterial.updateStandalonejBcSource;
-                model = model.registerPropFunction({'jBcSource', fn, {'controlCurrentSource'}});
-
                 fn = @ActiveMaterial.updateControl;
                 fn = {fn, @(propfunction) PropFunction.drivingForceFuncCallSetupFn(propfunction)};
-                model = model.registerPropFunction({'controlCurrentSource', fn, {}});
+                model = model.registerPropFunction({'I', fn, {}});
                 
-            else
+                fn = @ActiveMaterial.updateChargeCons;
+                inputnames = {'I', ...
+                              {sd, 'Rvol'}};
+                model = model.registerPropFunction({'chargeCons', fn, inputnames});
 
-                fn = @ActiveMaterial.updatejBcSource;
-                model = model.registerPropFunction({'jBcSource', fn, {'jCoupling', 'jExternal'}});
+                fn = @ActiveMaterial.updatePhi;
+                model = model.registerPropFunction({{itf, 'phiElectrode'}, fn, {'E'}});
 
-                if model.use_thermal
-                    fn = @ActiveMaterial.updatejFaceBc;
-                    model = model.registerPropFunction({'jFaceBc', fn, {'jFaceCoupling', 'jFaceExternal'}});
-                end
-                
-                fn = @ActiveMaterial.updatejExternal;
-                model = model.registerPropFunction({'jExternal', fn, {}});
-                if model.use_thermal
-                    model = model.registerPropFunction({'jFaceExternal', fn, {}});
-                end
-                
-                fn = @ActiveMaterial.updatejCoupling;
-                model = model.registerPropFunction({'jCoupling', fn, {}});
-                if model.use_thermal
-                    model = model.registerPropFunction({'jFaceCoupling', fn, {}});
-                end
             end
             
-            %% Function called to assemble accumulation terms (functions takes in fact as arguments not only state but also state0 and dt)
-            if model.use_particle_diffusion & strcmp(model.diffusionModelType, 'simple') | ~model.use_particle_diffusion
-                fn = @ActiveMaterial.assembleAccumTerm;
-                fn = {fn, @(propfunc) PropFunction.accumFuncCallSetupFn(propfunc)};
-                model = model.registerPropFunction({'massAccum', fn, {'c'}});
-            end
-
-            % we remove this declaration as it is not used in assembly (otherwise it may be computed but not used)
-            model = model.setAsExtraVarName('SOC');
-           
         end
         
+
+        function model = setupStandAloneModel(model)
+
+            model = model.setupComputationalGraph();
+
+            cgt = model.computationalGraph();
+            
+            model.funcCallList     = cgt.getOrderedFunctionCallList();
+            model.primaryVarNames  = cgt.getPrimaryVariableNames();
+            model.equationVarNames = cgt.getEquationVariableNames();
+            
+            function str = setupName(varname)
+                shortvarname = cellfun(@(elt) Battery.shortenName(elt), varname, 'uniformoutput', false);
+                str = Battery.varToStr(shortvarname);
+            end
+            model.equationNames = cellfun(@(varname) setupName(varname), model.equationVarNames, 'uniformoutput', false);
+            model.equationTypes = repmat({'cell'}, 1, numel(model.equationNames));
+            
+        end
+
         
         function [problem, state] = getEquations(model, state0, state,dt, drivingForces, varargin)
             
@@ -290,65 +182,39 @@ classdef ActiveMaterial < ElectronicComponent
             
             time = state0.time + dt;
             state = model.initStateAD(state);
+            
+            %% We call the assembly equations ordered from the graph
 
-            state = updateControl(model, state, drivingForces);
-            
-            state                = model.updateStandalonejBcSource(state);
-            state                = model.updateCurrent(state);
-            state.SolidDiffusion = model.SolidDiffusion.updateMassAccum(state.SolidDiffusion, state0.SolidDiffusion, dt);
-            state                = model.dispatchTemperature(state);
-            state.SolidDiffusion = model.SolidDiffusion.updateDiffusionCoefficient(state.SolidDiffusion);
-            state.SolidDiffusion = model.SolidDiffusion.updateFlux(state.SolidDiffusion);
-            state                = model.updateConcentrations(state);
-            state                = model.updatePhi(state);
-            state.Interface      = model.Interface.updateReactionRateCoefficient(state.Interface);
-            state.Interface      = model.Interface.updateOCP(state.Interface);
-            state.Interface      = model.Interface.updateEta(state.Interface);
-            state.Interface      = model.Interface.updateReactionRate(state.Interface);
-            state                = model.updateRvol(state);
-            state                = model.updateCurrentSource(state);
-            state                = model.updateChargeConservation(state);
-            state.SolidDiffusion = model.SolidDiffusion.updateMassSource(state.SolidDiffusion);
-            state.SolidDiffusion = model.SolidDiffusion.assembleSolidDiffusionEquation(state.SolidDiffusion);
-            state.SolidDiffusion = model.SolidDiffusion.updateMassConservation(state.SolidDiffusion);
-            
+            funcCallList = model.funcCallList;
+
+            for ifunc = 1 : numel(funcCallList)
+                eval(funcCallList{ifunc});
+            end
+
+            % some scaling of the equations
+
             %% Setup equations and add some scaling
-            n     = model.(itf).n; % number of electron transfer (equal to 1 for Lithium)
-            F     = model.(sd).constants.F;
-            vol   = model.operators.pv;
-            rp    = model.(sd).rp;
-            vsf   = model.(sd).volumetricSurfaceArea;
-            surfp = 4*pi*rp^2;
+            n  = model.(itf).numberOfElectronsTransferred; % number of electron transfer (equal to 1 for Lithium)
+            F  = model.(sd).constants.F;
+            rp = model.(sd).particleRadius;
             
-            scalingcoef = (vsf*vol(1)*n*F)/surfp;
-            
-            eqs = {};
-            eqs{end + 1} = state.chargeCons;
-            eqs{end + 1} = scalingcoef*state.(sd).massCons;
-            eqs{end + 1} = scalingcoef*state.(sd).solidDiffusionEq;
-            
-            names = {'chargeCons', ...
-                     'massCons', ...
-                     'solidDiffusionEq'};
-            
-            types = {'cell', 'cell', 'cell'};
+            scalingcoef = n*F/(4*pi*rp^3/3);
 
-            primaryVars = model.getPrimaryVariableNames();
+            state.(sd).massCons         = scalingcoef*state.(sd).massCons;
+            state.(sd).solidDiffusionEq = scalingcoef*state.(sd).solidDiffusionEq;
+            
+            for ieq = 1 : numel(model.equationVarNames)
+                eqs{ieq} = model.getProp(state, model.equationVarNames{ieq});
+            end
+            
+            names       = model.equationNames;
+            types       = model.equationTypes;
+            primaryVars = model.primaryVarNames;
             
             problem = LinearizedProblem(eqs, types, names, primaryVars, state, dt);
 
         end
 
-        function primaryvarnames = getPrimaryVariableNames(model)
-            
-            sd = 'SolidDiffusion';
-            
-            primaryvarnames = {{sd, 'c'}, ...
-                               {sd, 'cSurface'}, ...
-                               {'phi'}};
-            
-        end
-        
         function forces = getValidDrivingForces(model)
 
             forces = getValidDrivingForces@PhysicalModel(model);
@@ -356,16 +222,26 @@ classdef ActiveMaterial < ElectronicComponent
             
         end
 
+        function primaryvarnames = getPrimaryVariableNames(model)
+
+            primaryvarnames = model.primaryVarNames;
+
+        end
+
+
         function state = updateControl(model, state, drivingForces)
             
-            G = model.G;
-            coef = G.cells.volumes;
-            coef = coef./(sum(coef));
-            
-            state.controlCurrentSource = drivingForces.src.*coef;
+            state.I = drivingForces.src(state.time);
             
         end
-        
+
+        function state = updatePhi(model, state)
+
+            itf = 'Interface';
+            
+            state.(itf).phiElectrode = state.E;
+            
+        end
         
         function cleanState = addStaticVariables(model, cleanState, state, state0)
             
@@ -374,183 +250,70 @@ classdef ActiveMaterial < ElectronicComponent
             itf = 'Interface';
             
             cleanState.T = state.T;
+            cleanState.I = state.I;
             cleanState.(itf).cElectrolyte   = state.(itf).cElectrolyte;
             cleanState.(itf).phiElectrolyte = state.(itf).phiElectrolyte;
             
-            sigma = model.electricalConductivity;
-            vf    = model.volumeFraction;
-            brugg = model.BruggemanCoefficient;
-            
-            cleanState.conductivity = sigma*vf.^brugg;
-            
-        end
-
-        
-        function [state, report] = updateState(model, state, problem, dx, drivingForces)
-
-            [state, report] = updateState@BaseModel(model, state, problem, dx, drivingForces);
-            
         end
         
-        function [model, state] = prepareTimestep(model, state, state0, dt, drivingForces)
+        function state = updateChargeCons(model, state)
+        % Only used for stand-alone model
+
+            sd  = 'SolidDiffusion';
+            itf = 'Interface';
             
-            [model, state] = prepareTimestep@BaseModel(model, state, state0, dt, drivingForces);
+            n    = model.(itf).numberOfElectronsTransferred;
+            F    = model.(itf).constants.F;
             
+            I = state.I;
+            Rvol = state.(sd).Rvol;
+
+            state.chargeCons = I - Rvol*n*F;
+
         end
         
         function [state, report] = updateAfterConvergence(model, state0, state, dt, drivingForces)
-        % [state, report] = updateAfterConvergence@ElectronicComponent(model, state0, state, dt, drivingForces);
-
-        % by not calling the parent method, we do not clean the state s
-            report = [];
+            
+            [state, report] = updateAfterConvergence@BaseModel(model, state0, state, dt, drivingForces);
             
         end
          
         function model = validateModel(model, varargin)
-            
+        % 
         end
 
         %% assembly functions use in this model
-         
+
         function state = updateRvol(model, state)
-
-            vsa = model.Interface.volumetricSurfaceArea;
             
-            Rvol = vsa.*state.Interface.R;
-            state.Rvol = Rvol;
-
-            if model.use_particle_diffusion
-                state.SolidDiffusion.Rvol = Rvol;
-            end
+            itf = 'Interface';
+            sd  = 'SolidDiffusion';
             
-        end
+            vsa = model.(itf).volumetricSurfaceArea;
+            
+            Rvol = vsa.*state.(itf).R;
+            
+            state.(sd).Rvol = Rvol;
+            
+        end        
         
         function state = updateConcentrations(model, state)
 
             sd  = 'SolidDiffusion';
             itf = 'Interface';
             
-            if model.use_particle_diffusion
-
-                if strcmp(model.diffusionModelType, 'simple')
-                    state.(sd).cAverage = state.c;
-                end
-                
-                state.(itf).cElectrodeSurface = state.(sd).cSurface;
-            else
-                
-                state.(itf).cElectrodeSurface = state.c;
-                
-            end
+            state.(itf).cElectrodeSurface = state.(sd).cSurface;
             
         end
 
-        function state = updateMassFlux(model, state)
-        % Used when diffusionModelType == 'simple'
-
-            D = model.EffectiveDiffusionCoefficient;
-            
-            c = state.c;
-
-            massflux = assembleFlux(model, c, D);
-            
-            state.massFlux = massflux;
-
-        end
-
-        % IDEA: We can now differentiate this guy
-        function func=AccumFunc(model,state)
-            vols   = model.G.cells.volumes;
-            vf     = model.volumeFraction;
-            amFrac = model.activeMaterialFraction;
-
-            func = vols.*vf.*amFrac.*state.c;
-        end
-        
-        function state = assembleAccumTerm(model, state, state0, dt)
-        % Used when diffusionModelType == 'simple'
-            
-            vols   = model.G.cells.volumes;
-            vf     = model.volumeFraction;
-            amFrac = model.activeMaterialFraction;
-
-            c  = state.c;
-            c0 = state0.c;
-
-            state.massAccum = vols.*vf.*amFrac.*(c - c0)/dt;
-            
-        end
-
-        function state = updateMassSource(model, state)
-        % used when diffusionModelType == simple
-            
-            vols = model.G.cells.volumes;
-            
-            Rvol = state.Rvol;
-            
-            state.massSource = - Rvol.*vols;
-            
-        end
-        
-        
-        function state = updateMassConservation(model, state)
-        % Used when diffusionModelType == 'simple' or no particle diffusion
-            
-            flux = state.massFlux;
-            source = state.massSource;
-            accum = state.massAccum;
-
-            cons = assembleConservationEquation(model, flux, 0, source, accum);
-            
-            state.massCons = cons;
-            
-        end
-        
-        function state = updateStandalonejBcSource(model, state)
-            
-            state.jBcSource = state.controlCurrentSource;
-
-        end
-
-        function state = updateCurrentSource(model, state)
-            
-            F    = model.Interface.constants.F;
-            vols = model.G.cells.volumes;
-            n    = model.Interface.n;
-
-            Rvol = state.Rvol;
-            
-            state.eSource = - vols.*Rvol*n*F; % C/s
-            
-        end
-        
-        function state = updatePhi(model, state)
-            state.Interface.phiElectrode = state.phi;
-        end         
         
         function state = dispatchTemperature(model, state)
-            state.Interface.T = state.T;
+
+            state.Interface.T      = state.T;
             state.SolidDiffusion.T = state.T;
+            
         end
 
-        function state = updatejBcSource(model, state)
-            state.jBcSource = state.jCoupling + state.jExternal;
-        end
-        
-        function state = updatejFaceBc(model, state)
-            state.jFaceBc = state.jFaceCoupling + state.jFaceExternal;
-        end
-        
-        function state = updatejExternal(model, state)
-            state.jExternal = 0;
-            state.jFaceExternal = 0;
-        end
-
-        function state = updatejCoupling(model, state)
-            state.jCoupling = 0;
-            state.jFaceCoupling = 0;
-        end
-        
 
         function state = updateAverageConcentration(model, state)
 
@@ -572,34 +335,35 @@ classdef ActiveMaterial < ElectronicComponent
         end
         
         
-        function state = updateSOC(model, state)
+        
+    end
 
-            % shortcut
-            itf = 'Interface';
-            sd  = 'SolidDiffusion';
+    methods (Static)
 
-            vf       = model.volumeFraction;
-            am_frac  = model.activeMaterialFraction;
-            vols     = model.G.cells.volumes;
-            cmax     = model.(itf).cmax;
-            theta100 = model.(itf).theta100;
-            theta0   = model.(itf).theta0;
-            
-            c = state.(sd).cAverage;
+        function str = varToStr(varname)
 
-            theta = c/cmax;
-            m     = (1 ./ (theta100 - theta0));
-            b     = -m .* theta0;
-            SOC   = theta*m + b;
-            vol   = am_frac*vf.*vols;
-            
-            SOC = sum(SOC.*vol)/sum(vol);
+            str = strjoin(varname, '_');
 
-            state.SOC = SOC;
-            
         end
-        
-        
+
+        function str = shortenName(name)
+
+            namemapping = {'ActiveMaterial'   , 'am'  ; ...
+                           'ActiveMaterial1'  , 'am1' ; ...
+                           'ActiveMaterial2'  , 'am2' ; ...
+                           'Interface'        , 'itf' ; ...
+                           'SolidDiffusion'   , 'sd'};
+
+            [found, ind] = ismember(name, namemapping(:, 1));
+
+            if found
+                str = namemapping{ind, 2};
+            else
+                str = name;
+            end
+
+        end
+
     end
     
 end

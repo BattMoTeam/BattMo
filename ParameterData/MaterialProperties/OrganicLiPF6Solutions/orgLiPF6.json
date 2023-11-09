@@ -2,11 +2,11 @@
   "specificHeatCapacity": 2055.0,
   "thermalConductivity": 0.6,
   "density": 1200,
-  "Conductivity" : {"type" : "function",
+  "ionicConductivity" : {"type" : "function",
                     "functionname" : "computeElectrolyteConductivity_default",
                     "argumentlist" : ["c", "T"]
                    },
-  "DiffusionCoefficient" : {"type": "function",
+  "diffusionCoefficient" : {"type": "function",
                             "functionname" : "computeDiffusionCoefficient_default",
                             "argumentlist" : ["c", "T"]
                            },
@@ -16,7 +16,5 @@
   ],
   "sp": { "z": 1,
           "t": 0.2594},
-  "Separator": { "filename": "ParameterData/BatteryComponentParameters/celgard2500.json",
-                   "isFile": true },
-  "BruggemanCoefficient": 1.5
+  "bruggemanCoefficient": 1.5
 }

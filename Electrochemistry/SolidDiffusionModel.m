@@ -5,12 +5,18 @@ classdef SolidDiffusionModel < BaseModel
         % Physical constants
         constants = PhysicalConstants();
 
-        % Physicochemical properties
-        volumetricSurfaceArea  % Surface area to volume,       [m2 m^-3]
-        rp                     % Particle radius               [m]
-        D0                     % Diffusion coefficient         [m]
-        EaD
+        %% Input parameters
 
+        % Standard input parameters
+        
+        particleRadius                % the characteristic radius of the particle (symbol: rp)
+        activationEnergyOfDiffusion   % the Arrhenius-type activation energy for diffusion (symbol: EaD)
+        referenceDiffusionCoefficient % the pre-exponential reference diffusion coefficient in an Arrhenius-type equation (symbol: D0)
+        volumetricSurfaceArea         % surface area of the active material - electrolyte interface per volume of electrode
+
+        % Advanced input parameters
+        volumeFraction % the ratio of the volume of the active material to the total volume
+        
     end
 
     methods
@@ -22,10 +28,11 @@ classdef SolidDiffusionModel < BaseModel
              % OBS : All the submodels should have same backend (this is not assigned automaticallly for the moment)
             model.AutoDiffBackend = SparseAutoDiffBackend('useBlocks', false);
 
-            fdnames = {'rp'                    , ...
-                       'volumetricSurfaceArea' , ...
-                       'EaD'                   , ...
-                       'D0'};
+            fdnames = {'particleRadius'               , ...
+                       'activationEnergyOfDiffusion'  , ...
+                       'referenceDiffusionCoefficient', ...
+                       'volumetricSurfaceArea'        , ...
+                       'volumeFraction'};
 
             model = dispatchParams(model, paramobj, fdnames);
         
@@ -39,13 +46,21 @@ classdef SolidDiffusionModel < BaseModel
             model = registerVarAndPropfuncNames@BaseModel(model);
 
             varnames = {};
-            % concentration
+            % Temperature
             varnames{end + 1} = 'T';
+            % Concentration at surface
+            varnames{end + 1} = 'cSurface';
             % Diffusion coefficient
             varnames{end + 1} = 'D';
             % Volumetric reaction rate in mol/(s*m^3)
             varnames{end + 1} = 'Rvol';
-            
+            % Mass accumulation term
+            varnames{end + 1} = 'massAccum';
+            % Mass source term
+            varnames{end + 1} = 'massSource';
+            % Mass conservation equation
+            varnames{end + 1} = 'massCons';
+
             model = model.registerVarNames(varnames);
 
             fn = @SolidDiffusionModel.updateDiffusionCoefficient;
@@ -61,8 +76,8 @@ classdef SolidDiffusionModel < BaseModel
             T = state.T;
 
             R   = model.constants.R;
-            D0  = model.D0;
-            EaD = model.EaD;
+            D0  = model.referenceDiffusionCoefficient;
+            EaD = model.activationEnergyOfDiffusion;
 
             % Calculate solid diffusion coefficient, [m^2 s^-1]
             D = D0.*exp(-EaD./R*(1./T - 1/Tref));

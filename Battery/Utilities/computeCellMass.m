@@ -1,6 +1,7 @@
-function [mass, masses] = computeCellMass(model, varargin)
+function [mass, masses, volumes] = computeCellMass(model, varargin)
 
-    opt = struct('packingMass', 0);
+    opt = struct('packingMass', 0, ...
+                 'packingVolume', 0);
     opt = merge_options(opt, varargin{:});
     
     
@@ -8,6 +9,7 @@ function [mass, masses] = computeCellMass(model, varargin)
     sep   = 'Separator';
     ne    = 'NegativeElectrode';
     pe    = 'PositiveElectrode';
+    co    = 'Coating';
     am    = 'ActiveMaterial';
     itf   = 'Interface';
     cc    = 'CurrentCollector';
@@ -21,16 +23,17 @@ function [mass, masses] = computeCellMass(model, varargin)
         
         elde = eldes{ind};
 
-        switch model.(elde).electrode_case
+        switch model.(elde).(co).active_material_type
             
           case 'default'
             
-            rho  = model.(elde).(am).(itf).density;
-            vols = model.(elde).(am).G.cells.volumes;
-            frac = model.(elde).(am).volumeFraction;
+            rho  = model.(elde).(co).effectiveDensity;
+            vols = model.(elde).(co).G.cells.volumes;
+            frac = model.(elde).(co).volumeFraction;
             
-            masses.(elde).(am).val = sum(rho.*vols.*frac);
-
+            masses.(elde).(co).val  = sum(rho.*vols.*frac);
+            volumes.(elde).(co).val = sum(vols.*frac);
+            
           case 'composite'
             
             gr = 'FirstMaterial';
@@ -38,7 +41,8 @@ function [mass, masses] = computeCellMass(model, varargin)
 
             mats = {gr, si};
             
-            masses.(elde).(am).val = 0;
+            masses.(elde).(am).val  = 0;
+            volumes.(elde).(am).val = 0;
             
             for imat = 1 : numel(mats)
 
@@ -50,6 +54,10 @@ function [mass, masses] = computeCellMass(model, varargin)
                 
                 masses.(elde).(am).(mat).val = sum(rho.*vols.*vf.*amvf);
                 masses.(elde).(am).val = masses.(elde).(am).val + masses.(elde).(am).(mat).val;
+
+                volumes.(elde).(am).(mat).val = sum(vols.*vf.*amvf);
+                volumes.(elde).(am).val = volumes.(elde).(am).val + volumes.(elde).(am).(mat).val;
+
             end
             
           otherwise
@@ -58,14 +66,16 @@ function [mass, masses] = computeCellMass(model, varargin)
             
         end
         
-        mass = mass + masses.(elde).(am).val;
+        mass = mass + masses.(elde).(co).val;
         
         if model.include_current_collectors
 
             rho  = model.(elde).(cc).density;
             vols = model.(elde).(cc).G.cells.volumes;
             
-            masses.(elde).(cc).val = sum(rho.*vols);
+            masses.(elde).(cc).val  = sum(rho.*vols);
+            volumes.(elde).(cc).val = sum(vols);
+
             mass = mass + masses.(elde).(cc).val;
             
         end
@@ -76,17 +86,23 @@ function [mass, masses] = computeCellMass(model, varargin)
     vols = model.(elyte).G.cells.volumes;
     frac = model.(elyte).volumeFraction;
     
-    masses.(elyte).val = sum(rho.*vols.*frac);
+    masses.(elyte).val  = sum(rho.*vols.*frac);
+    volumes.(elyte).val = sum(vols.*frac);
+    
     mass = mass + masses.(elyte).val;
     
-    rho  = model.(elyte).(sep).density;
-    vols = model.(elyte).(sep).G.cells.volumes;
-    frac = model.(elyte).(sep).volumeFraction;
+    rho  = model.(sep).density;
+    vols = model.(sep).G.cells.volumes;
+    frac = (1 - model.(sep).porosity);
     
-    masses.(elyte).(sep).val = sum(rho.*vols.*frac);
-    mass = mass + masses.(elyte).(sep).val;
+    masses.(sep).val  = sum(rho.*vols.*frac);
+    volumes.(sep).val = sum(vols.*frac);
+
+    mass = mass + masses.(sep).val;
 
     mass = mass + opt.packingMass;
+
+    volumes.val = sum(model.G.cells.volumes) + opt.packingVolume;
     
 end
 

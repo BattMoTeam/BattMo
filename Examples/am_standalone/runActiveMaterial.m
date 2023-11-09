@@ -9,18 +9,32 @@ close all
 mrstModule add ad-core mrst-gui mpfa
 
 %% Setup the properties of Li-ion battery materials and cell design
-jsonstruct = parseBattmoJson(fullfile('Examples', 'am_standalone', 'jsondatafiles', 'amExample.json'));
+jsonstruct = parseBattmoJson(fullfile('ParameterData','BatteryCellParameters','LithiumIonBatteryCell','lithium_ion_battery_nmc_graphite.json'));
 
-paramobj = ActiveMaterialInputParams(jsonstruct);
+% We define some shorthand names for simplicity.
+ne      = 'NegativeElectrode';
+pe      = 'PositiveElectrode';
+elyte   = 'Electrolyte';
+thermal = 'ThermalModel';
+co      = 'Coating';
+am      = 'ActiveMaterial';
+itf     = 'Interface';
+sd      = 'SolidDiffusion';
+ctrl    = 'Control';
+cc      = 'CurrentCollector';
 
-xlength = 57e-6; 
-G = cartGrid(1, xlength);
-G = computeGeometry(G);
+jsonstruct.use_thermal = false;
 
-paramobj.G = G;
+jsonstruct.include_current_collectors = false;
 
-% In order to observe more diffusion effect we use a lower diffusion coefficient
-% paramobj.SolidDiffusion.D0 = 1e-16;
+jsonstruct.(ne).(co).(am).diffusionModelType = 'full';
+jsonstruct.(pe).(co).(am).diffusionModelType = 'full';
+
+paramobj = BatteryInputParams(jsonstruct);
+
+paramobj = paramobj.(ne).(co).(am);
+
+paramobj.standAlone = true;
 
 paramobj = paramobj.validateInputParams();
 
@@ -33,11 +47,11 @@ model = ActiveMaterial(paramobj);
 sd  = 'SolidDiffusion';
 itf = 'Interface';
 
-cElectrolyte     = 5e-1*mol/litre;
-phiElectrolyte   = 0;
-T                = 298;
+cElectrolyte   = 5e-1*mol/litre;
+phiElectrolyte = 0;
+T              = 298;
 
-cElectrodeInit   = (model.(itf).theta100)*(model.(itf).cmax);
+cElectrodeInit   = (model.(itf).guestStoichiometry100)*(model.(itf).saturationConcentration);
 
 % set primary variables
 N = model.(sd).N;
@@ -49,45 +63,52 @@ initState.T = T;
 initState.(itf).cElectrolyte   = cElectrolyte;
 initState.(itf).phiElectrolyte = phiElectrolyte;
 
-initState = model.updateConcentrations(initState);
-initState = model.dispatchTemperature(initState);
-initState.(itf) = model.(itf).updateOCP(initState.(itf));
+initState = model.evalVarName(initState, {itf, 'OCP'});
 
 OCP = initState.(itf).OCP;
-initState.phi = OCP + phiElectrolyte;
+initState.E = OCP + phiElectrolyte;
 
 %% setup schedule
 
-controlsrc = 1e3;
+% Reference rate which roughly corresponds to 1 hour for the data of this example
+Iref = 0.62*ampere/(1*centi*meter)^3;
 
-total = (10*hour)/controlsrc;
+Imax = 5e1*Iref;
+
+total = 1*hour*(Iref/Imax);
 n     = 100;
 dt    = total/n;
 step  = struct('val', dt*ones(n, 1), 'control', ones(n, 1));
 
-control.src = controlsrc;
+tup = 1*second*(Iref/Imax); % rampup value for the current function, see rampupSwitchControl
+srcfunc = @(time) rampupControl(time, tup, Imax);
 
-cmin = (model.(itf).theta0)*(model.(itf).cmax);
-vols = model.(sd).operators.vols;
-% In following function, we assume that we have only one particle
-computeCaverage = @(c) (sum(vols.*c)/sum(vols));
-control.stopFunction = @(model, state, state0_inner) (computeCaverage(state.(sd).c) <= cmin);
+cmin = (model.(itf).guestStoichiometry0)*(model.(itf).saturationConcentration);
+control.stopFunction = @(model, state, state0_inner) (state.(sd).cSurface <= cmin);
+control.src = srcfunc;
 
 schedule = struct('control', control, 'step', step); 
+
+%% setup non-linear solver
+
+nls = NonLinearSolver();
+nls.errorOnFailure = false;
+
+model.nonlinearTolerance = 1e-2;
 
 %% Run simulation
 
 model.verbose = true;
-[wellSols, states, report] = simulateScheduleAD(initState, model, schedule, 'OutputMinisteps', true); 
+[wellSols, states, report] = simulateScheduleAD(initState, model, schedule, 'OutputMinisteps', true, 'NonLinearSolver', nls); 
 
 %% plotting
 
 ind = cellfun(@(state) ~isempty(state), states);
 states = states(ind);
 
-time = cellfun(@(state) state.time, states);
+time     = cellfun(@(state) state.time, states);
 cSurface = cellfun(@(state) state.(sd).cSurface, states);
-phi = cellfun(@(state) state.phi, states);
+E        = cellfun(@(state) state.E, states);
 
 figure
 plot(time/hour, cSurface/(1/litre));
@@ -95,18 +116,35 @@ xlabel('time [hour]');
 ylabel('Surface concentration [mol/L]');
 
 figure
-plot(time/hour, phi);
+plot(time/hour, E);
 xlabel('time [hour]');
 ylabel('Potential [mol/L]');
 
 cmin = cellfun(@(state) min(state.(sd).c), states);
 cmax = cellfun(@(state) max(state.(sd).c), states);
 
+for istate = 1 : numel(states)
+    states{istate} = model.evalVarName(states{istate}, {sd, 'cAverage'});
+end
+
+caver = cellfun(@(state) max(state.(sd).cAverage), states);
+
 figure
 hold on
-plot(time/hour, cmin, 'displayname', 'cmin');
-plot(time/hour, cmax, 'displayname', 'cmax');
+plot(time/hour, cmin /(mol/litre), 'displayname', 'cmin');
+plot(time/hour, cmax /(mol/litre), 'displayname', 'cmax');
+plot(time/hour, caver/(mol/litre), 'displayname', 'total concentration');
+title('Concentration in particle / mol/L')
 legend show
+
+c = states{end}.(sd).c;
+r = linspace(0, model.(sd).particleRadius, model.(sd).N);
+
+figure
+plot(r, c/(mol/litre));
+xlabel('radius / m')
+ylabel('concentration / mol/L')
+title('Particle concentration profile (last time step)')
 
 
 

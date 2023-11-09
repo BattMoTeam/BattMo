@@ -3,39 +3,55 @@
 ** sphinx
    installation instruction described [[https://www.sphinx-doc.org/en/master/usage/installation.html][here]]
    #+begin_src
-     sudo apt install python3-sphinx     
-   #+end_src
-** matlab extension
-   https://pypi.org/project/sphinxcontrib-matlabdomain/
-   #+begin_src 
-     pip3 install -U sphinxcontrib-matlabdomain
+     pip install sphinx
    #+end_src
 ** install sphinx rtd theme
    https://pypi.org/project/sphinx-rtd-theme/
    #+begin_src
-     pip3 install sphinx-rtd-theme
+     pip install sphinx-rtd-theme
    #+end_src
 ** bibtex extension
    https://sphinxcontrib-bibtex.readthedocs.io/en/latest/quickstart.html#installation
    #+begin_src
-     pip3 install sphinxcontrib-bibtex
+     pip install sphinxcontrib-bibtex
    #+end_src
-* Command
+** globabsubs extension
+   #+begin_src
+     pip install sphinxcontrib-globalsubs
+   #+end_src
+** youtube
+   #+begin_src shell
+     pip install sphinxcontrib-youtube
+   #+end_src
+** collapse
+   #+begin_src shell
+     python -m pip install sphinx_collapse
+   #+end_src   
+** autosectionlabel
+   - part of default distribution
+   - We use ~autosectionlabel_prefix_document = True~ which means that the internal link must be prefixed by the file
+     name and a semi-column, see [[https://www.sphinx-doc.org/en/master/usage/extensions/autosectionlabel.html][here]].
+   
+* Workflow for editing
+
+  In the ~Documentation~ directory, run from terminal
   #+BEGIN_SRC sh
   make html
   #+END_SRC
-* Interesting Manuals
-** sphinx manual
-   https://www.sphinx-doc.org/en/master/contents.html
-** reStucturedText (rst) format
-   https://www.sphinx-doc.org/en/master/usage/restructuredtext/basics.html
-** rtd theme manual
-   https://sphinx-rtd-theme.readthedocs.io/en/stable/
-** bibtex extension manual
-   https://sphinxcontrib-bibtex.readthedocs.io/en/latest/index.html
-* Configuratiom file
-  - ~conf.py~ see https://www.sphinx-doc.org/en/master/usage/configuration.html
-* Examples
+
+  The command generates all the files for a static website and writes them in ~Documentation/_build/html~
+
+  All the files in this directory must then be copied to the ~BattMo-doc~ [[https://github.com/BattMoTeam/BattMo-doc][repo]]. From there, make a *force* push. We do
+  not keep track of the history of the ouput files (html), but we of course keep track of the documentation source, directly in the
+  main repo ~BattMo~.
+
+  The deployment of the webpage can be followed from the [[https://github.com/BattMoTeam/BattMo-doc/actions][github pages section]]
+
+  The result can be view at
+
+  https://battmoteam.github.io/BattMo-doc/
+
+* Special workflow for example scripts
 ** Compilation
    - run ~publishExamplesXML~ in ~utils~ directory (see documentation there) : It creates XML outputs
    - run python script ~buildPublishedExamples.py~ : converts XML to rST output
@@ -48,3 +64,14 @@
      comment in the matlab code formatting), start a cell with eventually no title. In Matlab cells start with ~%%~ and
      a title
    - The directive ~.. automodule::~ makes sure a directory is parsed. 
+* Interesting Manuals
+** sphinx manual
+   https://www.sphinx-doc.org/en/master/contents.html
+** reStucturedText (rst) format
+   https://www.sphinx-doc.org/en/master/usage/restructuredtext/basics.html
+** rtd theme manual
+   https://sphinx-rtd-theme.readthedocs.io/en/stable/
+** bibtex extension manual
+   https://sphinxcontrib-bibtex.readthedocs.io/en/latest/index.html
+* Configuration file
+  - ~conf.py~ see https://www.sphinx-doc.org/en/master/usage/configuration.html

@@ -1,24 +1,21 @@
-function plotBatteryMesh(model, setstyle, fig)
-
-    if nargin == 1
-        setstyle = true;
-        fig = [];
-    elseif nargin == 2
-        fig = [];
-    end
+function plotBatteryMesh(model, varargin)
+%% Plot battery components
+    
+    opt = struct('setstyle', true, ...
+                 'fig', []);
+    opt = merge_options(opt, varargin{:});
 
     ne    = 'NegativeElectrode';
     pe    = 'PositiveElectrode';
-    am    = 'ActiveMaterial';
     cc    = 'CurrentCollector';
     sep   = 'Separator';
-    elyte = 'Electrolyte';
+    co    = 'Coating';
 
     colors = crameri('vik', 5);
-    if isempty(fig)
+    if isempty(opt.fig)
         figure
     else
-        figure(fig);
+        figure(opt.fig);
     end
     hold on
     legtext = {};
@@ -36,9 +33,9 @@ function plotBatteryMesh(model, setstyle, fig)
         legtext{end+1} = 'positive electrode current collector';
     end
 
-    plotGrid(model.(pe).(am).G,     facecolorname, colors(4,:), edgeparams{:});
-    plotGrid(model.(elyte).(sep).G, facecolorname, colors(3,:), edgeparams{:});
-    plotGrid(model.(ne).(am).G,     facecolorname, colors(2,:), edgeparams{:});
+    plotGrid(model.(pe).(co).G, facecolorname, colors(4,:), edgeparams{:});
+    plotGrid(model.(sep).G,     facecolorname, colors(3,:), edgeparams{:});
+    plotGrid(model.(ne).(co).G, facecolorname, colors(2,:), edgeparams{:});
     legtext = [legtext, {'positive electrode active material', 'separator', 'negative electrode active material'}];
 
     if model.include_current_collectors
@@ -53,7 +50,7 @@ function plotBatteryMesh(model, setstyle, fig)
     legend(legtext, 'location', 'southwest');
     axis tight;
 
-    if setstyle
+    if opt.setstyle
         setFigureStyle('quantity', 'single');
     end
 

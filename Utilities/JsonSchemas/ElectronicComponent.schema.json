@@ -1,8 +1,32 @@
 {
-  "$id": "file://battmo/schemas/ElectronicComponent",
+  "$id": "file:/./ElectronicComponent.schema.json",
   "$schema": "http://json-schema.org/draft-07/schema#",
-  "description": "Active Material",
+  "description": "Electronic Component",
   "type": "object",
-
-  "properties" : {"EffectiveElectricalConductivity": {"type" : "number"}}
+  "properties": {
+    "name": {
+      "type": "string",
+      "description": "name of electronic component material"
+    },
+    "effectiveElectronicConductivity": {
+      "$ref": "PhysicalQuantity.schema.json",
+      "description": "the electronic conductivity of the component, adjusted to consider porous media effects (if any)",
+      "symbol": "sigma_eff"
+    },
+    "electronicConductivity": {
+      "$ref": "PhysicalQuantity.schema.json",
+      "description": "the electronic conductivity of the component",
+      "symbol": "sigma"
+    },
+    "thermalConductivity": {
+      "$ref": "PhysicalQuantity.schema.json",
+      "description": "the thermal conductivity of the component",
+      "symbol": ""
+    },
+    "specificHeatCapacity": {
+      "$ref": "PhysicalQuantity.schema.json",
+      "description": "the specificHeatCapacity of the component",
+      "symbol": ""
+    }
+  }
 }

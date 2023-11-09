@@ -1,7 +1,7 @@
 function output = radialGrid(params)
-    
-    %% Parameters 
-    % 
+
+    %% Parameters
+    %
     % params structure with following fields
     % - nwindings : number of windings in the spiral
     % - rInner        : "radius" at the middle
@@ -21,7 +21,7 @@ function output = radialGrid(params)
     % - G       : grid
     % - tag     : cell-valued vector giving component number (indexing is given by tagdict)
     % - tagdict : dictionary giving the component number
-    
+
     nwindings = params.nwindings;
     rInner    = params.rInner;
     widthDict = params.widthDict ;
@@ -31,42 +31,39 @@ function output = radialGrid(params)
     nL        = params.nL;
 
     %% component names
-    
-    compnames = {'PositiveActiveMaterial1', ...
+
+    compnames = {'PositiveCoating1'        , ...
                  'PositiveCurrentCollector', ...
-                 'PositiveActiveMaterial2', ...
-                 'ElectrolyteSeparator2', ...
-                 'NegativeActiveMaterial2', ...
+                 'PositiveCoating2'        , ...
+                 'Separator2'              , ...
+                 'NegativeCoating2'        , ...
                  'NegativeCurrentCollector', ...
-                 'NegativeActiveMaterial1', ...
-                 'ElectrolyteSeparator1'};
-    
+                 'NegativeCoating1'        , ...
+                 'Separator1'};
+
     comptag = (1 : numel(compnames));
     tagdict = containers.Map(compnames, comptag);
-    
-    %% 
-    widths = [widthDict('PositiveActiveMaterial'); ...
-              widthDict('PositiveCurrentCollector'); ...
-              widthDict('PositiveActiveMaterial'); ...
-              widthDict('ElectrolyteSeparator'); ...
-              widthDict('NegativeActiveMaterial'); ...
-              widthDict('NegativeCurrentCollector'); ...
-              widthDict('NegativeActiveMaterial'); ...
-              widthDict('ElectrolyteSeparator')];
-    
-    nrs = [nrDict('PositiveActiveMaterial'); ...
-           nrDict('PositiveCurrentCollector'); ...
-           nrDict('PositiveActiveMaterial'); ...
-           nrDict('ElectrolyteSeparator'); ...
-           nrDict('NegativeActiveMaterial'); ...
-           nrDict('NegativeCurrentCollector'); ...
-           nrDict('NegativeActiveMaterial'); ...
-           nrDict('ElectrolyteSeparator')];
 
+    %%
+    widths = [widthDict('PositiveCoating')          ; ...
+              widthDict('PositiveCurrentCollector') ; ...
+              widthDict('PositiveCoating')          ; ...
+              widthDict('Separator')                ; ...
+              widthDict('NegativeCoating')          ; ...
+              widthDict('NegativeCurrentCollector') ; ...
+              widthDict('NegativeCoating')          ; ...
+              widthDict('Separator')];
+
+    nrs = [nrDict('PositiveCoating')          ; ...
+           nrDict('PositiveCurrentCollector') ; ...
+           nrDict('PositiveCoating')          ; ...
+           nrDict('Separator')                ; ...
+           nrDict('NegativeCoating')          ; ...
+           nrDict('NegativeCurrentCollector') ; ...
+           nrDict('NegativeCoating')          ; ...
+           nrDict('Separator')];
 
     %% Grid setup
-    
-    layerwidth = sum(widths);
 
     w = widths./nrs;
     w = rldecode(w, nrs);
@@ -76,14 +73,11 @@ function output = radialGrid(params)
 
     h = linspace(0, 2*pi*rInner, nas + 1);
 
-    nperlayer = sum(nrs);
-
     cartG = tensorGrid(h, w);
+    % plotGrid(cartG);
 
     n = numel(h) - 1;
     m = numel(w) - 1;
-
-    % plotGrid(cartG)
 
     % We roll the domain into a spirale
     x = cartG.nodes.coords(:, 1);
@@ -93,7 +87,7 @@ function output = radialGrid(params)
 
     cartG.nodes.coords(:, 1) = (rInner + y).*cos(theta);
     cartG.nodes.coords(:, 2) = (rInner + y).*sin(theta);
-    
+
     tbls = setupSimpleTables(cartG);
 
     % We add cartesian indexing for the nodes
@@ -182,7 +176,7 @@ function output = radialGrid(params)
     newnodetbl.newnodes = newnodes;
     newnodetbl.nodes = nodes;
     newnodetbl = IndexArray(newnodetbl);
-    
+
     %% We setup the new indexing for the faces
 
     facetoremove = face2tbl.get('faces2');
@@ -237,7 +231,7 @@ function output = radialGrid(params)
     faces.nodes = facenodetbl.get('nodes');
     faces.num = newfacetbl.num;
     faces.neighbors = []; % to avoid warning in computeGeometry
-    
+
     clear cells
     [~, ind] = rlencode(cellfacetbl.get('cells'));
     cells.facePos = [1; 1 + cumsum(ind)];
@@ -250,7 +244,9 @@ function output = radialGrid(params)
     G.griddim = 2;
     G.type = {'radialGrid'};
     G = computeGeometry(G, 'findNeighbors', true);
-    
+
+    % plotGrid(G)
+
     ncomp = numel(widths);
     comptag = rldecode((1 : ncomp)', nrs);
     comptag = repmat(comptag, [nwindings, 1]);
@@ -273,20 +269,20 @@ function output = radialGrid(params)
     zwidths = (L/nL)*ones(nL, 1);
     G = makeLayeredGrid(G, zwidths);
     G = computeGeometry(G);
-    
+
     % setup the standard tables
     tbls = setupSimpleTables(G);
     cellfacetbl = tbls.cellfacetbl;
-    
+
     clear extfacetbl
     extfacetbl.faces = find(any(G.faces.neighbors == 0, 2));
     extfacetbl = IndexArray(extfacetbl);
     extcellfacetbl = crossIndexArray(extfacetbl, cellfacetbl, {'faces'});
-    
+
     %% add cartesian indexing, tag and layer index to the grid
-    
+
     [indi, indj, indk] = ind2sub([n, m, nL], (1 : G.cells.num)');
-    
+
     clear celltbl
     celltbl.cells = (1 : G.cells.num)';
     celltbl.indi = indi;
@@ -306,14 +302,14 @@ function output = radialGrid(params)
     % 1 : vertical
     % 2 : horizontal radial
     % 3 : horizontal angular
-    
+
     nf = G.faces.num;
     faces = (1 : nf)';
     dir = nan(nf, 1);
 
     % We know from the way makeLayeredGrid works, that the first faces are the vertical ones
     dir(1 : (nL + 1)*n*m) = 1;
-    
+
     hfaces = faces(isnan(dir));
 
     rpos = G.faces.centroids(hfaces, 1 : 2);
@@ -328,48 +324,48 @@ function output = radialGrid(params)
     assert(all(~isnan(hdir)), 'the direction of some faces has not been detected');
 
     dir(isnan(dir)) = hdir;
-    
+
     clear facetbl
     facetbl.faces = (1 : nf)';
     facetbl.dir = dir;
     facetbl = IndexArray(facetbl);
 
-    
+
     %%  recover the external faces that are inside the spiral
     % we get them using the Cartesian indexing
 
     scelltbl.indi = (1 : n)';
     scelltbl.indj = 1*ones(n, 1);
     scelltbl = IndexArray(scelltbl);
-    
+
     scelltbl = crossIndexArray(celltbl, scelltbl, {'indi', 'indj'});
     scelltbl = projIndexArray(scelltbl, 'cells');
     extscellfacetbl = crossIndexArray(scelltbl, extcellfacetbl, {'cells'});
     sfacetbl = projIndexArray(extscellfacetbl, {'faces'});
-    
+
     sfacetbl = sfacetbl.addInd('dir', 2*ones(sfacetbl.num, 1));
     sfacetbl = crossIndexArray(sfacetbl, facetbl, {'faces', 'dir'});
-    
+
     sfaces = sfacetbl.get('faces');
 
     clear sfacetbl
     sfacetbl.faces = sfaces;
     sfacetbl = IndexArray(sfacetbl);
-    
+
     map = TensorMap();
     map.fromTbl = extfacetbl;
     map.toTbl = sfacetbl;
     map.mergefds = {'faces'};
-    
+
     ind = map.getDispatchInd();
-    
+
     thermalExchangeFaces = extfacetbl.get('faces');
     thermalExchangeFaces(ind) = [];
-    
-    
+
+
     %% recover faces on top and bottom for the current collector
     % we could do that using cartesian indices (easier)
-    
+
     ccnames = {'PositiveCurrentCollector', 'NegativeCurrentCollector'};
 
     for iccname = 1 : numel(ccnames)
@@ -379,7 +375,7 @@ function output = radialGrid(params)
         cccelltbl = IndexArray(cccelltbl);
         cccelltbl = crossIndexArray(cccelltbl, celltbl, {'tag'});
         cccelltbl = projIndexArray(cccelltbl, {'cells'});
-        
+
         extcccellfacetbl = crossIndexArray(extcellfacetbl, cccelltbl, {'cells'});
         extccfacetbl = projIndexArray(extcccellfacetbl, {'faces'});
 
@@ -415,7 +411,7 @@ function output = radialGrid(params)
         ccfacetbl = projIndexArray(ccfacetbl, {'faces', 'indl'});
         % we add dir
         ccfacetbl = crossIndexArray(ccfacetbl, facetbl, {'faces'});
-        
+
         clear dirtbl
         dirtbl.dir = 3;
         dirtbl = IndexArray(dirtbl);
@@ -440,30 +436,30 @@ function output = radialGrid(params)
         ccfacetbl2 = IndexArray(ccfacetbl2);
 
         ccfacetbl = crossIndexArray(ccfacetbl1, ccfacetbl2, {'faces'});
-    
+
     end
 
     positiveExtCurrentFaces = ccfaces{1};
     negativeExtCurrentFaces = ccfaces{2};
-   
-    %% 
+
+    %%
     detailedtag = celltbl.get('tag');
     detailedtagdict = tagdict;
 
     tag = nan(G.cells.num, 1);
     tagdict = containers.Map(...
-        {'PositiveActiveMaterial'  , ...
+        {'PositiveCoating'         , ...
          'PositiveCurrentCollector', ...
-         'ElectrolyteSeparator'    , ...
-         'NegativeActiveMaterial'  , ...
+         'Separator'               , ...
+         'NegativeCoating'         , ...
          'NegativeCurrentCollector'}, [1 : 5]');
-    
-    mappings = {{'PositiveActiveMaterial', {'PositiveActiveMaterial1', 'PositiveActiveMaterial2'}}, ...
-                {'NegativeActiveMaterial', {'NegativeActiveMaterial1', 'NegativeActiveMaterial2'}}, ...
-                {'ElectrolyteSeparator', {'ElectrolyteSeparator1', 'ElectrolyteSeparator2'}}, ...
-                {'PositiveCurrentCollector', {'PositiveCurrentCollector'}}, ...
-                {'NegativeCurrentCollector', {'NegativeCurrentCollector'}}};
-    
+
+    mappings = {{'PositiveCoating'          , {'PositiveCoating1', 'PositiveCoating2'}}, ...
+                {'NegativeCoating'          , {'NegativeCoating1', 'NegativeCoating2'}}, ...
+                {'Separator'                , {'Separator1', 'Separator2'}}            , ...
+                {'PositiveCurrentCollector' , {'PositiveCurrentCollector'}}            , ...
+                {'NegativeCurrentCollector' , {'NegativeCurrentCollector'}}};
+
     for ind1 = 1 : numel(mappings)
         mapping = mappings{ind1};
         tagvalue1 = tagdict(mapping{1});
@@ -472,7 +468,7 @@ function output = radialGrid(params)
             tag(detailedtag == tagvalue2) = tagvalue1;
         end
     end
-    
+
     %% setup output structure
     output = params;
     output.G                       = G;
@@ -481,7 +477,7 @@ function output = radialGrid(params)
     output.celltbl                 = celltbl;
     output.positiveExtCurrentFaces = positiveExtCurrentFaces;
     output.negativeExtCurrentFaces = negativeExtCurrentFaces;
-    output.thermalExchangeFaces    = thermalExchangeFaces;   
+    output.thermalExchangeFaces    = thermalExchangeFaces;
 
 end
 

@@ -21,7 +21,7 @@ classdef TestChen2020 < matlab.unittest.TestCase
             ctrl  = 'Control';
             
             %% We setup the battery geometry ("bare" battery with no current collector).
-            gen = BareBatteryGenerator3D();
+            gen = BareBatteryGeneratorP4D();
             % We update pamobj with grid data
             paramobj = gen.updateBatteryInputParams(paramobj);
 

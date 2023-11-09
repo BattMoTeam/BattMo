@@ -1,16 +1,15 @@
 {
-  "cmax": 55554,
-  "volumeFraction": 0.8,
+  "saturationConcentration": 55554,
   "volumetricSurfaceArea": 885000,
   "density": 4650,
-  "n" : 1,
-  "Eak": 5000,
-  "k0": 2.33e-11,
-  "theta100": 0.4955,
-  "theta0": 0.99174,
-  "OCP" : {"type" : "function",
-           "functionname" : "computeOCP_nmc111",
-           "argumentlist" : ["cElectrode", "T", "cmax"]},
-  "BruggemanCoefficient": 1.5
+  "numberOfElectronsTransferred" : 1,
+  "activationEnergyOfReaction": 5000,
+  "reactionRateConstant": 2.33e-11,
+  "guestStoichiometry100": 0.4955,
+  "guestStoichiometry0": 0.99174,
+  "chargeTransferCoefficient" : 0.5,
+  "openCircuitPotential" : {"type" : "function",
+                            "functionname" : "computeOCP_nmc111",
+                            "argumentlist" : ["cElectrode", "T", "cmax"]}
 }
 

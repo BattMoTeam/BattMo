@@ -1,12 +1,9 @@
 {
-    "$id": "file://battmo/schemas/SimplifiedSolidDiffusionModel",
-    "$schema": "http://json-schema.org/draft-07/schema#",
-    "description": "solid diffusion",
-    "type": "object",
-    "properties" : {
-        "EaD": {"type" : "number",
-                "description" : "Arrhenius coefficient for diffusivity coefficient"},
-        "D0": {"type" : "number",
-               "description" : "reference diffusivity coefficient"}
-    }
+  "$id": "file://./SimplifiedSolidDiffusionModel.schema.json",
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "description": "solid diffusion",
+  "type": "object",
+  
+  "$ref" : "SolidDiffusionModel.schema.json"
+  
 }

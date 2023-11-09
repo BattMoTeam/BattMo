@@ -1,251 +1,209 @@
-
-% clear the workspace and close open figures
-clear all
-close all
+%% Composite Silicon Graphite electrode
 
 %% Import the required modules from MRST
 % load MRST modules
-mrstModule add ad-core mrst-gui mpfa matlab_bgl
+mrstModule add ad-core matlab_bgl
 
-%% shortcuts
+%% Shortcuts
+% We define shorcuts for the sub-models.
 
 ne = 'NegativeElectrode';
 pe = 'PositiveElectrode';
+co = 'Coating';
 
-am = 'ActiveMaterial';
-gr = 'FirstMaterial';
-si = 'SecondMaterial';
+am1 = 'ActiveMaterial1';
+am2 = 'ActiveMaterial2';
+
+bd = 'Binder';
+ad = 'ConductingAdditive';
 
 sd  = 'SolidDiffusion';
 itf = 'Interface';
 
-%% Setup the properties of Li-ion battery materials and cell design
-jsonstruct = parseBattmoJson('ParameterData/BatteryCellParameters/LithiumIonBatteryCell/lithium_ion_battery_nmc_silicon_graphite.json');
+%% Setup the properties of the battery
+%
+% We load the property of a composite silicon graphite electrode, see :ref:`compositeElectrode`
+%
 
-paramobj = CompositeBatteryInputParams(jsonstruct);
+jsonstruct_composite_material = parseBattmoJson('ParameterData/BatteryCellParameters/LithiumIonBatteryCell/lithium_ion_battery_nmc_silicon_graphite.json');
 
-rhoGr = paramobj.(ne).(am).(gr).(itf).density;
-rhoSi = paramobj.(ne).(am).(si).(itf).density;
+%%
+% For the remaining properties, we consider a standard data set 
+jsonstruct_cell = parseBattmoJson('ParameterData/BatteryCellParameters/LithiumIonBatteryCell/lithium_ion_battery_nmc_graphite.json');
 
-wfGr = 0.92; % weight fraction graphite
-wfSi = 0.08; % weight fraction silicon
+%%
+% We remove form the standard data set the :code:`ActiveMaterial` field. This step is not necessary but is cleaner and
+% we avoid a warning.
+jsonstruct_cell.(ne).(co) = rmfield(jsonstruct_cell.(ne).(co), 'ActiveMaterial');
 
-vfGr = wfGr/rhoGr;
-vfSi = wfSi/rhoSi;
-totV = (vfGr + vfSi);
-vfGr = vfGr/totV;
-vfSi = vfSi/totV;
+%%
+% We merge the two json structures
+jsonstruct = mergeJsonStructs({jsonstruct_composite_material, ...
+                               jsonstruct_cell});
 
-paramobj.(ne).(am).(gr).activeMaterialFraction = vfGr;
-paramobj.(ne).(am).(si).activeMaterialFraction = vfSi;
+%%
+% We do not consider the thermal model and remove the current collector
+jsonstruct.use_thermal = false;
+jsonstruct.include_current_collectors = false;
 
-% paramobj.(ne).(am).(gr).(itf).theta0 = 0.01;
-% paramobj.(ne).(am).(si).(itf).theta0 = 0.01;
-% paramobj.(si).(sd).D0 = 1e-17;
-% paramobj.(si).(itf).k0 = 1e-12;
-% paramobj.(gr).(sd).D0 = 1e-16;
+%%
+% We instantiate the battery :code:`InputParams` object
+paramobj = BatteryInputParams(jsonstruct);
 
-paramobj.scenario = 'first-charge';
+%%
+% We set the mass fractions of the different material in the coating of the negative electrode. This information could
+% have been passed in the json file earlier (:ref:`compositeElectrode`)
 
-paramobj = paramobj.validateInputParams();
+paramobj.(ne).(co).(am1).massFraction = 0.9;
+paramobj.(ne).(co).(am2).massFraction = 0.08;
+paramobj.(ne).(co).(bd).massFraction  = 0.01;
+paramobj.(ne).(co).(ad).massFraction  = 0.01;
 
-gen = BatteryGenerator1D();
+%%
+% We change the given CRate
+paramobj.Control.CRate = 0.1;
 
-gen.xlength(4) = 1.8619*gen.xlength(4);
+%%
+% We validate the :code:`InputParams` using the method :code:`validateInputParams` which belongs to the parent class. This step 
+Paramobj = paramobj.validateInputParams();
 
-% gen.fac = 100;
-% gen = gen.applyResolutionFactors();
+gen = BatteryGeneratorP2D();
 
+%% 
 % Now, we update the paramobj with the properties of the mesh. 
 paramobj = gen.updateBatteryInputParams(paramobj);
 
-model = CompositeBattery(paramobj);
-model.AutoDiffBackend= AutoDiffBackend();
+%% Model Instantiation
+% We instantiate the model
 
-inspectgraph = false;
-if inspectgraph
-    cgt = ComputationalGraphTool(model);
-    [g, edgelabels] = cgt.getComputationalGraph('includeNodeNames', '[^d]T$', 'oneParentOnly', true);
-    figure
-    % h = plot(g, 'edgelabel', edgelabels, 'nodefontsize', 10);
-    h = plot(g, 'nodefontsize', 10);
-    return
-end
+model = Battery(paramobj);
 
-% model.Control.Imax = 1e-1;
+
+%% Setup schedule (control and time stepping)
+% We will simulate two consecutive periods: a discharge followed by a charge.
+%
+% We start with the charge period
+
+CRate = model.Control.CRate;
+
+total = 1.4*hour/CRate;
+
+n  = 100;
+dt = total/n;
+step = struct('val', dt*ones(n, 1), 'control', ones(n, 1));
+
+tup = 0.1; % rampup value for the current function, see rampupSwitchControl
+srcfunc = @(time, I, E) rampupSwitchControl(time, tup, I, E, ...
+                                            model.Control.Imax, ...
+                                            model.Control.lowerCutoffVoltage);
+control = struct('src', srcfunc, 'IEswitch', true);
+
+schedule = struct('control', control, 'step', step); 
 
 %% Setup the initial state of the model
-% The initial state of the model is setup using the model.setupInitialState() method.
+%
+% We use the default initialisation given by a method in the model
 
 initstate = model.setupInitialState();
 
-%% setup schedule
+%% Setup the properties of the nonlinear solver 
+% We adjust some settings for the nonlinear solver 
+nls = NonLinearSolver();
 
-%% Compute the nominal cell capacity and choose a C-Rate
-% The nominal capacity of the cell is calculated from the active materials.
-% This value is then combined with the user-defined C-Rate to set the cell
-% operational current. 
-
-CRate = model.Control.CRate;
-
-%% Setup the time step schedule 
-% Smaller time steps are used to ramp up the current from zero to its
-% operational value. Larger time steps are then used for the normal
-% operation.
-
-ctrl = 'Control';
-
-switch model.(ctrl).controlPolicy
-  case 'CCCV'
-    total = 3.5*hour/CRate;
-  case 'IEswitch'
-    total = 1.4*hour/CRate;
-  otherwise
-    error('control policy not recognized');
-end
-
-n  = 100;
-dt = total/n;
-step = struct('val', dt*ones(n, 1), 'control', ones(n, 1));
-
-% we setup the control by assigning a source and stop function.
-% control = struct('CCCV', true); 
-%  !!! Change this to an entry in the JSON with better variable names !!!
-
-switch model.Control.controlPolicy
-  case 'IEswitch'
-    tup = 0.1; % rampup value for the current function, see rampupSwitchControl
-    switch model.scenario
-      case 'discharge'
-        inputI = model.Control.Imax;
-        inputE = model.Control.lowerCutoffVoltage;
-      case {'charge', 'first-charge'}
-        inputI = -model.Control.Imax;
-        inputE = model.Control.upperCutoffVoltage;
-      otherwise
-        error('initCase not recognized')
-    end
-    srcfunc = @(time, I, E) rampupSwitchControl(time, tup, I, E, inputI, inputE);
-    % we setup the control by assigning a source and stop function.
-    control = struct('src', srcfunc, 'IEswitch', true);
-  case 'CCCV'
-    control = struct('CCCV', true);
-  otherwise
-    error('control policy not recognized');
-end
-
-% This control is used to set up the schedule
-schedule = struct('control', control, 'step', step); 
-
-%% Run simulation
-
+%%
+% Change default maximum iteration number in nonlinear solver
+nls.maxIterations = 10;
+%%
+% Change default behavior of nonlinear solver, in case of error
+nls.errorOnFailure = false;
+%%
+% We use a time step selector based on relative change of a target value, in our case the output voltage
+nls.timeStepSelector=StateChangeTimeStepSelector('TargetProps', {{'Control','E'}}, 'targetChangeAbs', 0.03);
+%%
+% We adjust the nonlinear tolerance
+model.nonlinearTolerance = 1e-3*model.Control.Imax;
+%% 
+% We use verbosity
 model.verbose = true;
 
-nls = NonLinearSolver;
-nls.errorOnFailure = false;
 
-[wellSols, states, report] = simulateScheduleAD(initstate, model, schedule, 'OutputMinisteps', true, 'NonLinearSolver', nls); 
-
-chargeStates = states;
-
-paramobj.scenario = 'discharge';
-paramobj = paramobj.validateInputParams();
-
-model = CompositeBattery(paramobj);
-model = model.setupComputationalGraph();
-
-ind = cellfun(@(state) ~isempty(state), states);
-chargeStates = chargeStates(ind);
-initstate = chargeStates{end};
-
-CRate = model.Control.CRate;
-
-ctrl = 'Control';
-
-switch model.(ctrl).controlPolicy
-  case 'CCCV'
-    total = 3.5*hour/CRate;
-  case 'IEswitch'
-    total = 1.4*hour/CRate;
-  otherwise
-    error('control policy not recognized');
-end
-
-n  = 100;
-dt = total/n;
-step = struct('val', dt*ones(n, 1), 'control', ones(n, 1));
-
-% we setup the control by assigning a source and stop function.
-% control = struct('CCCV', true); 
-%  !!! Change this to an entry in the JSON with better variable names !!!
-
-switch model.Control.controlPolicy
-  case 'IEswitch'
-    tup = 0.1; % rampup value for the current function, see rampupSwitchControl
-    switch model.scenario
-      case 'discharge'
-        inputI = model.Control.Imax;
-        inputE = model.Control.lowerCutoffVoltage;
-      case {'charge', 'first-charge'}
-        inputI = -model.Control.Imax;
-        inputE = model.Control.upperCutoffVoltage;
-      otherwise
-        error('initCase not recognized')
-    end
-    srcfunc = @(time, I, E) rampupSwitchControl(time, tup, I, E, inputI, inputE);
-    % we setup the control by assigning a source and stop function.
-    control = struct('src', srcfunc, 'IEswitch', true);
-  case 'CCCV'
-    control = struct('CCCV', true);
-  otherwise
-    error('control policy not recognized');
-end
-
-% This control is used to set up the schedule
-schedule = struct('control', control, 'step', step); 
-
-%% Run simulation
-
-model.verbose = true;
-
-nls = NonLinearSolver;
-nls.errorOnFailure = false;
+%% Run the simulation for the discharge
 
 [wellSols, states, report] = simulateScheduleAD(initstate, model, schedule, 'OutputMinisteps', true, 'NonLinearSolver', nls); 
 
 dischargeStates = states;
 
-%% plotting
+%% Setup charge schedule
 
-states = vertcat(chargeStates, dischargeStates);
+%% 
+% We use the last computed state of the discharge as the initial state for the charge period.
+initstate = states{end};
 
+%%
+% We use a new control. Note the minus sign in front of :code:`model.Control.Imax`
+srcfunc = @(time, I, E) rampupSwitchControl(time, tup, I, E, ...
+                                            -model.Control.Imax, ...
+                                            model.Control.upperCutoffVoltage);
+control = struct('src', srcfunc, 'IEswitch', true);
+schedule = struct('control', control, 'step', step); 
+
+%% Run the simulation for the charge perios
+[wellSols, states, report] = simulateScheduleAD(initstate, model, schedule, 'OutputMinisteps', true, 'NonLinearSolver', nls);
+
+chargeStates = states;
+
+%% Visualisation
+
+%%
+% We concatenate the states we have computed
+allStates = vertcat(dischargeStates, chargeStates); 
+
+%%
+% Some ploting setup
 set(0, 'defaultlinelinewidth', 3);
+set(0, 'DefaultAxesFontSize', 16);
+set(0, 'defaulttextfontsize', 18);
 
-ind = cellfun(@(x) not(isempty(x)), states); 
-states = states(ind);
-E = cellfun(@(x) x.Control.E, states); 
-I = cellfun(@(x) x.Control.I, states);
-Tmax = cellfun(@(x) max(x.ThermalModel.T), states);
-% [SOCN, SOCP] =  cellfun(@(x) model.calculateSOC(x), states);
-time = cellfun(@(x) x.time, states); 
+%%
+% We extract the voltage, current and time from the simulation output
+E    = cellfun(@(x) x.Control.E, allStates); 
+I    = cellfun(@(x) x.Control.I, allStates);
+time = cellfun(@(x) x.time, allStates); 
 
-plot(time, E);
+%%
+%  We plot the voltage and current
+figure
+subplot(2, 1, 1);
+plot(time/hour, E);
+xlabel('Time / h');
+ylabel('Voltage / V');
+title('Voltage')
+subplot(2, 1, 2);
+plot(time/hour, I);
+xlabel('Time / h');
+ylabel('Current / I');
+title('Current')
 
-%%  energy density for discharge phase
-
-E = cellfun(@(x) x.Control.E, dischargeStates); 
-I = cellfun(@(x) x.Control.I, dischargeStates);
-t = cellfun(@(x) x.time, dischargeStates);
-mass = computeCellMass(model);
-vol = sum(model.G.cells.volumes);
-[Emid, Imid, energyDensity, specificEnergy, energy] = computeEnergyDensity(E, I, t, vol, mass);
+%%
+% We compute and plot the state of charges in the different material
 
 figure
-plot(energyDensity, Emid);
-xlabel('Energy Density [Wh/L]');
-ylabel('Voltage [V]');
+hold on
 
-figure
-plot(specificEnergy, Emid);
-xlabel('Specific Energy [Wh/kg]');
-ylabel('Voltage [V]');
+for istate = 1 : numel(allStates)
+    allStates{istate} = model.evalVarName(allStates{istate}, {ne, co, 'SOC'});
+end
+
+SOC  = cellfun(@(x) x.(ne).(co).SOC, allStates); 
+SOC1 = cellfun(@(x) x.(ne).(co).(am1).SOC, allStates);
+SOC2 = cellfun(@(x) x.(ne).(co).(am2).SOC, allStates);
+
+plot(time/hour, SOC, 'displayname', 'SOC - cumulated');
+plot(time/hour, SOC1, 'displayname', 'SOC - Graphite');
+plot(time/hour, SOC2, 'displayname', 'SOC - Silicon');
+
+xlabel('Time / h');
+ylabel('SOC / -');
+title('SOCs')
+
+legend show

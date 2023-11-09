@@ -37,27 +37,23 @@ paramobj = BatteryInputParams(jsonstruct);
 
 %% Setup the geometry and computational mesh
 
-gen = BatteryGenerator1D();
+gen = BatteryGeneratorP2D();
 
-% Now, we update the paramobj with the properties of the mesh. 
+% Now, we update the paramobj with the properties of the mesh.
 paramobj = gen.updateBatteryInputParams(paramobj);
 
-paramobj.(ne).(cc).EffectiveElectricalConductivity = 1e5;
-paramobj.(pe).(cc).EffectiveElectricalConductivity = 1e5;
-
-%%  Initialize the battery model. 
+%%  Initialize the battery model.
 
 model = Battery(paramobj);
-model.AutoDiffBackend= AutoDiffBackend();
+model.AutoDiffBackend = AutoDiffBackend();
 
-%% Compute the nominal cell capacity and choose a C-Rate
-
-CRate = model.Control.CRate;
-
-%% Setup the time step schedule 
+%% Setup the time step schedule
 % Smaller time steps are used to ramp up the current from zero to its
 % operational value. Larger time steps are then used for the normal
 % operation.
+
+CRate = model.Control.CRate;
+
 switch model.(ctrl).controlPolicy
   case 'CCCV'
     total = 3.5*hour/CRate;
@@ -67,13 +63,11 @@ switch model.(ctrl).controlPolicy
     error('control policy not recognized');
 end
 
-n     = 40;
-dt    = total*0.7/n;
-step  = struct('val', dt*ones(n, 1), 'control', ones(n, 1));
+n    = 40;
+dt   = total*0.7/n;
+step = struct('val', dt*ones(n, 1), 'control', ones(n, 1));
 
-% we setup the control by assigning a source and stop function.
-% control = struct('CCCV', true); 
-%  !!! Change this to an entry in the JSON with better variable names !!!
+% Setup the control by assigning a source and stop function.
 
 switch model.Control.controlPolicy
   case 'IEswitch'
@@ -93,26 +87,25 @@ end
 
 nc = 1;
 nst = numel(step.control);
-ind = floor(([0 : nst - 1]/nst)*nc) + 1;
+ind = floor(((0 : nst - 1)/nst)*nc) + 1;
 
 step.control = ind;
 control.Imax = model.Control.Imax;
 control = repmat(control,nc,1);
-schedule = struct('control', control, 'step', step); 
+schedule = struct('control', control, 'step', step);
 
 %% Setup the initial state of the model
 % The initial state of the model is dispatched using the
-% model.setupInitialState()method. 
+% model.setupInitialState() method.
 
-initstate = model.setupInitialState(); 
+initstate = model.setupInitialState();
 
-%% Setup the properties of the nonlinear solver 
-nls = NonLinearSolver(); 
+%% Setup the properties of the nonlinear solver
+nls = NonLinearSolver();
 % Change default maximum iteration number in nonlinear solver
-nls.maxIterations = 10; 
+nls.maxIterations = 10;
 % Change default behavior of nonlinear solver, in case of error
-nls.errorOnFailure = false; 
-%nls.timeStepSelector=StateChangeTimeStepSelector('TargetProps', {{'Control','E'}}, 'targetChangeAbs', 0.03);
+nls.errorOnFailure = false;
 % Change default tolerance for nonlinear solver
 nls.timeStepSelector = SimpleTimeStepSelector();
 model.nonlinearTolerance = 1e-3*model.Control.Imax;
@@ -121,24 +114,32 @@ model.verbose = true;
 
 %% Run the simulation
 
-[~, states, ~] = simulateScheduleAD(initstate, model, schedule, 'OutputMinisteps', true, 'NonLinearSolver', nls); 
+[~, states, ~] = simulateScheduleAD(initstate, model, schedule, 'OutputMinisteps', true, 'NonLinearSolver', nls);
 
 %% Process output and recover the output voltage and current from the output states.
 
-ind = cellfun(@(x) not(isempty(x)), states); 
+ind = cellfun(@(x) not(isempty(x)), states);
 states = states(ind);
 
-E    = cellfun(@(x) x.Control.E, states); 
-time = cellfun(@(x) x.time, states); 
+E    = cellfun(@(x) x.Control.E, states);
+time = cellfun(@(x) x.time, states);
 
-plot(time, E, '*-');
+figure;
+plot(time/hour, E, '*-', 'displayname', 'initial');
+xlabel('time  / h');
+ylabel('voltage  / V');
+grid on
 
-%% Plot the the output voltage and current
-% gradients to controlmodel.use_thermal =false;
+%% Plot the the output voltage and current gradients to control
 
 obj = @(model, states, schedule, varargin) EnergyOutput(model, states, schedule, varargin{:});
 vals = obj(model, states, schedule);
 totval = sum([vals{:}]);
+
+% Compare with trapezoidal integral: they should be about the same
+I = cellfun(@(x) x.Control.I, states);
+totval_trapz = trapz(time, E.*I);
+fprintf('Rectangle rule: %g Wh, trapezoidal rule: %g Wh\n', totval/hour, totval_trapz/hour);
 
 % The calibration can be improved by taking a large number of iterations,
 % but here we set a limit of 30 iterations
@@ -146,81 +147,96 @@ totval = sum([vals{:}]);
 state0 = initstate;
 SimulatorSetup = struct('model', model, 'schedule', schedule, 'state0', state0);
 
-parameters={};
+parameters = {};
 
-part = ones(model.(elyte).(sep).G.cells.num, 1);
-parameters{end+1} = ModelParameter(SimulatorSetup, ...
-                                   'name'     , 'porosity_sep'           , ...
-                                   'belongsTo', 'model'                  , ...
-                                   'boxLims'  , [0.1 0.9]                , ...
-                                   'lumping'  , part                     , ...
-                                   'location' , {elyte, sep, 'porosity'} , ...
-                                   'getfun'   , []                       , ...
-                                   'setfun'   , []);
+paramsetter = PorositySetter(model, {ne, sep, pe});
 
-part = ones(model.(ne).(am).G.cells.num, 1);
-parameters{end+1} = ModelParameter(SimulatorSetup, ...
-                                   'name'     , 'porosity_nam'      , ...
-                                   'belongsTo', 'model'             , ...
-                                   'boxLims'  , [0.07 0.5]          , ...
-                                   'lumping'  , part                , ...
-                                   'location' , {ne, am, 'porosity'}, ...
-                                   'getfun'   , []                  , ...
-                                   'setfun'   , []);
+getporo = @(model, notused) paramsetter.getValues(model);
+setporo = @(model, notused, v) paramsetter.setValues(model, v);
 
-part = ones(model.(pe).(am).G.cells.num, 1);
-parameters{end+1} = ModelParameter(SimulatorSetup, ...
-                                   'name'     , 'porosity_pam'      , ...
-                                   'belongsTo', 'model'             , ...
-                                   'boxLims'  , [0.07 0.5]          , ...
-                                   'lumping'  , part                , ...
-                                   'location' , {pe, am,'porosity'} , ...
-                                   'getfun'   , []                  , ...
-                                   'setfun'   , []);
+parameters = addParameter(parameters, SimulatorSetup, ...
+                          'name'     , 'porosity_sep', ...
+                          'belongsTo', 'model'       , ...
+                          'boxLims'  , [0.1, 0.9]    , ...
+                          'location' , {''}          , ...
+                          'getfun'   , getporo       , ...
+                          'setfun'   , setporo);
 
 setfun = @(x, location, v) struct('Imax', v, ...
                                   'src', @(time, I, E) rampupSwitchControl(time, 0.1, I, E, v, 3.0), ...
                                   'IEswitch', true);
 
-boxlims = model.Control.Imax*[0.5, 1.5];
-
 for i = 1 : max(schedule.step.control)
-    parameters{end+1} = ModelParameter(SimulatorSetup, ...
-                                       'name'        , 'Imax'             , ...
-                                       'belongsTo'   , 'schedule'         , ...
-                                       'boxLims'     , boxlims            , ...
-                                       'location'    , {'control', 'Imax'}, ...
-                                       'getfun'      , []                 , ...
-                                       'setfun'      , setfun             , ...
-                                       'controlSteps', i);
+    parameters = addParameter(parameters, SimulatorSetup, ...
+                              'name'        , 'Imax'                       , ...
+                              'belongsTo'   , 'schedule'                   , ...
+                              'boxLims'     , model.Control.Imax*[0.5, 2], ...
+                              'location'    , {'control', 'Imax'}          , ...
+                              'getfun'      , []                           , ...
+                              'setfun'      , setfun                       , ...
+                              'controlSteps', i);
 end
 
 objmatch = @(model, states, schedule, varargin) EnergyOutput(model, states, schedule, varargin{:});
 fn       = @plotAfterStepIV;
-obj      = @(p) evalObjectiveBattmo(p, objmatch, SimulatorSetup, parameters, 'objScaling', -totval, 'afterStepFn', fn);
+obj      = @(p) evalObjectiveBattmo(p, objmatch, SimulatorSetup, parameters, 'objScaling', totval, 'afterStepFn', fn);
 
-doOptimization = true;
+%%
+doOptimization = false;
 if doOptimization
-    
+
     p_base = getScaledParameterVector(SimulatorSetup, parameters);
     p_base = p_base - 0.1;
     [v, p_opt, history] = unitBoxBFGS(p_base, obj, 'gradTol', 1e-7, 'objChangeTol', 1e-4);
-    
+
+    % Compute objective at optimum
+    setup_opt = updateSetupFromScaledParameters(SimulatorSetup, parameters, p_opt);
+    [~, states_opt, ~] = simulateScheduleAD(setup_opt.state0, setup_opt.model, setup_opt.schedule, 'OutputMinisteps', true, 'NonLinearSolver', nls);
+    vals_opt = objmatch(setup_opt.model, states_opt, setup_opt.schedule);
+    totval_opt = sum([vals_opt{:}]);
+
+    % Print optimal parameters
+    fprintf('Base and optimized parameters:\n');
+    for k = 1:numel(parameters)
+        % Get the original and optimized values
+        p0 = parameters{k}.getParameter(SimulatorSetup);
+        pu = parameters{k}.getParameter(setup_opt);
+
+        % Print
+        fprintf('%s\n', parameters{k}.name);
+        fprintf('%g %g\n', p0, pu);
+    end
+
+    fprintf('Energy changed from %g to %g Wh\n', totval/hour, totval_opt/hour);
+
+    % Plot
+    figure; hold on; grid on
+    E    = cellfun(@(x) x.Control.E, states);
+    time = cellfun(@(x) x.time, states);
+    plot(time/hour, E, '*-', 'displayname', 'initial');
+    E    = cellfun(@(x) x.Control.E, states_opt);
+    time = cellfun(@(x) x.time, states_opt);
+    plot(time/hour, E, 'r*-', 'displayname', 'optimized');
+    xlabel('time  / h');
+    ylabel('voltage  / V');
+    legend;
 end
 
 
-doCompareGradient = false;
+%%
+doCompareGradient = true;
 if doCompareGradient
-    
+
     p = getScaledParameterVector(SimulatorSetup, parameters);
-    [vad, gad]   = evalObjectiveBattmo(p, objmatch, SimulatorSetup, parameters, 'Gradient', 'AdjointAD');
-    [vnum, gnum] = evalObjectiveBattmo(p, objmatch, SimulatorSetup, parameters, 'Gradient', 'PerturbationADNUM', 'PerturbationSize', 1e-5);
+    [vad, gad]   = evalObjectiveBattmo(p, objmatch, SimulatorSetup, parameters, 'gradientMethod', 'AdjointAD');
+    [vnum, gnum] = evalObjectiveBattmo(p, objmatch, SimulatorSetup, parameters, 'gradientMethod', 'PerturbationADNUM', 'PerturbationSize', 1e-5);
 
     fprintf('Gradient computed using adjoint:\n');
     display(gad);
     fprintf('Numerical gradient:\n');
     display(gnum);
-    
+    fprintf('Relative error:\n')
+    display(abs(gnum-gad)./abs(gad));
 end
 
 

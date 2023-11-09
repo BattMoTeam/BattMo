@@ -2,11 +2,18 @@ classdef SolidElectrodeInterfaceInputParams < InputParams
 
     properties
         
-        molecularWeight % SEI molecular weight [kg/mol]
-        density         % SEI densisity [kg/m^3]
-        D               % SEI diffusion coefficient [m^2/s]
-        N               % Number of discretization intervals in the sei layer model [-]
-        np              % Number of computational grid cells (typically set by parent model)
+        %% Standard parameters
+        
+        molecularWeight      % SEI molecular weight [kg/mol]
+        density              % SEI density [kg/m^3]
+        conductivity         % SEI conductivity
+        diffusionCoefficient % SEI diffusion coefficient [m^2/s]
+
+        %% Discretization parameters
+        
+        N  % Number of discretization intervals in the sei layer model [-]
+        np % Number of computational grid cells (typically set by parent model)
+        
     end
     
     methods

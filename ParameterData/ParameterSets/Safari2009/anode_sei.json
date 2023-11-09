@@ -1,32 +1,34 @@
 {
-  "electricalConductivity": 215,
+  "electronicConductivity": 215,
   "Interface": {
-    "cmax": 30555,
-    "volumeFraction": 0.75,
+    "saturationConcentration": 30555,
     "volumetricSurfaceArea": 383959,
-    "n": 1,
-    "Eak": 35000,
-    "k0": 2.07e-11,
-    "theta100": 0.88,
-    "theta0": 0.15,
-    "OCP" : {"type" : "function",
-             "functionname" : "computeOCP_graphite",
-             "argumentlist" : ["concentration", "temperature", "maximum concentration"]}
+    "numberOfElectronsTransferred": 1,
+    "activationEnergyOfReaction": 35000,
+    "reactionRateConstant": 2.07e-11,
+    "guestStoichiometry100": 0.88,
+    "guestStoichiometry0": 0.15,
+    "chargeTransferCoefficient": 0.5,
+    "openCircuitPotential" : {"type" : "function",
+                              "functionname" : "computeOCP_graphite",
+                              "argumentlist" : ["concentration", "temperature", "maximum concentration"]}
   },
   "diffusionModelType": "full",
   "SolidDiffusion" : {
-    "EaD": 0,
-    "D0": 2e-14,
-    "rp": 2e-6
+    "activationEnergyOfDiffusion": 0,
+    "referenceDiffusionCoefficient": 2e-14,
+    "particleRadius": 2e-6,
+    "N": 10
   },
   "SolidElectrodeInterface" : {
     "molecularWeight": 0.162,
     "density": 1690,
-    "D": 6.8e-21
+    "conductivity" : 5e-6,
+    "diffusionCoefficient": 6.8e-21,
+    "N": 10
   },
   "SideReaction" : {
-    "beta" : 0.5,
-    "k" : 1.36e-12,
-    "conductivity" : 5e-6
+    "chargeTransferCoefficient" : 0.5,
+    "reactionRateConstant" : 1.36e-12
   }
 }

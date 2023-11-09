@@ -1,71 +1,48 @@
 classdef ElectrodeInputParams < ComponentInputParams
 %
 % Input parameter class for :code:`Electrode` model
-%        
+%
     properties
-        
-        %
-        % Input parameter for the electrode active component (:class:`ActiveMaterialInputParams
-        % <Electrochemistry.ActiveMaterialInputParams>`)
-        %
-        ActiveMaterial
-        
-        
-        %
-        % Input parameter for the current collector (:class:`CurrentCollectorInputParams
-        % <Electrochemistry.CurrentCollectorInputParams>`)
-        %
-        CurrentCollector
-        
-        %
-        % Coupling term specification
-        %
-        couplingTerm
-        
-        electrode_case % can be set to 'default' or 'composite'
-        %
-        % Set to true to include current collector
-        %
-        include_current_collectors
 
+        %% Sub-Models
+
+        Coating
+        CurrentCollector
+
+        %% Coupling term specification
+
+        couplingTerm
+
+        %% Parameters assigned at setup
+
+        include_current_collectors
         use_thermal
-        
+
     end
-    
+
     methods
 
         function paramobj = ElectrodeInputParams(jsonstruct)
 
             paramobj = paramobj@ComponentInputParams(jsonstruct);
 
-            am = 'ActiveMaterial';
+            co = 'Coating';
             cc = 'CurrentCollector';
-            
+
             pick = @(fd) pickField(jsonstruct, fd);
+
+            paramobj.(co) = CoatingInputParams(pick(co));
             paramobj.(cc) = CurrentCollectorInputParams(pick(cc));
 
-            if isempty(paramobj.electrode_case)            
-                paramobj.electrode_case = 'default';
-            end
-
-            switch paramobj.electrode_case
-              case 'composite'
-                paramobj.(am) = CompositeActiveMaterialInputParams(paramobj.(am));
-              case 'default'
-                paramobj.(am) = ActiveMaterialInputParams(paramobj.(am));
-              otherwise
-                error('electrode_case not recognized');
-            end
-            
             paramobj = paramobj.validateInputParams();
 
         end
 
         function paramobj = validateInputParams(paramobj)
 
-            am = 'ActiveMaterial';
-            cc  = 'CurrentCollector';
-            
+            am = 'Coating';
+            cc = 'CurrentCollector';
+
             paramobj = mergeParameters(paramobj, {{'use_thermal'}, {am, 'use_thermal'}});
             paramobj.(am) = paramobj.(am).validateInputParams();
 
@@ -73,10 +50,10 @@ classdef ElectrodeInputParams < ComponentInputParams
                 paramobj = mergeParameters(paramobj, {{'use_thermal'}, {cc, 'use_thermal'}});
                 paramobj.(cc) = paramobj.(cc).validateInputParams();
             end
-            
+
         end
     end
-    
+
 end
 
 

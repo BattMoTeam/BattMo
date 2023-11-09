@@ -1,10 +1,9 @@
 function style = setFigureStyle(varargin)
-%SETFIGURESTYLE Sets the style of the open figures according to some
-%pre-defined templates.
-%   Detailed explanation goes here
+% SETFIGURESTYLE Sets the style of the open figures according to some
+% pre-defined templates.
 
 
-%% Parse inputs            
+%% Parse inputs
 defaultTheme        = 'light';
 expectedTheme       = {'dark', 'light', 'blue', 'offwhite'};
 defaultSize         = 'A4';
@@ -95,12 +94,12 @@ for fig = 1 : n
 
     axTitle = get(ax, 'title');
     set(axTitle, 'color', style.fontColor);
-    
+
     if ~isempty(hLegend)
         hLegend.Color = style.backgroundColor;
         hLegend.TextColor = style.fontColor;
     end
-    
+
     if ~isempty(hColorbar)
         for i = 1:length(hColorbar)
             hColorbar(i).Color = style.fontColor;
@@ -113,22 +112,22 @@ for fig = 1 : n
     end
 
     dataObjs = findobj(fig,'-property','YData');
-    
+
     ymin = 0;
     ymax = 1;
     xmin = 0;
     xmax = 1;
-    
+
     for i = 1:length(dataObjs)
         y = get(dataObjs(i), 'YData');
         x = get(dataObjs(i), 'XData');
-        
+
         if i == 1
             ymax = max(max(y));
             ymin = min(min(y));
             xmax = max(max(x));
             xmin = min(min(x));
-            
+
         else
             ymax = max( max(max(y)), ymax);
             ymin = min( min(min(y)), ymin);
@@ -136,8 +135,9 @@ for fig = 1 : n
             xmin = min( min(min(x)), xmin);
         end
     end
-        ylim([ymin, ymax]);
-        xlim([xmin, xmax]);
+
+    ylim([ymin, ymax+eps]); % Hack for 1D
+    xlim([xmin, xmax]);
 end
 
 end

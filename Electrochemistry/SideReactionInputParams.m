@@ -3,9 +3,9 @@ classdef SideReactionInputParams < InputParams
 % Input parameter class for the :code:`ActiveMaterial` model
 %    
     properties
-        beta         % side reaction buttler-volmer  coefficient [-]
-        k            % side reaction rate constant [m/s]
-        conductivity % ionic conductivity [S/m]
+        
+        chargeTransferCoefficient % side reaction buttler-volmer  coefficient [-]
+        reactionRateConstant      % side reaction rate constant [m/s]
 
     end
     

@@ -1,32 +1,42 @@
 {
-  "$id": "file://battmo/schemas/ThermalComponent",
+  "$id": "file://./ThermalComponent.schema.json",
   "$schema": "http://json-schema.org/draft-07/schema#",
   "description": "Thermal model",
   "type" : "object",
   "properties" : {
     "ThermalModel" : {
-      "externalHeatTransferCoefficient": {"type" : "number"},
-      "useWetProperties" : {"type" : "boolean",
-                            "description" : "If set to true, we use wet properties, which means that the thermal properties are measured with the electrolyte. In this case, it corresponds to the effective thermal properties. This property is NOT yet SUPPORTED. It could be set to false or ignored"},
-      "externalTemperature": {
-        "type" : "number"},
-      "EffectiveThermalConductivity" : {
-        "type" : "number",
-        "description": "this value is usually not given but computed from the other components"},
-      "EffectiveHeatCapacity" : {
-        "type" : "number",
-        "description": "this value is usually not given but computed from the other components"},
+      "useWetProperties" : {
+        "type" : "boolean",
+        "description" : "If set to true, we use wet properties, which means that the thermal properties are measured with the electrolyte. In this case, it corresponds to the effective thermal properties. This property is NOT yet SUPPORTED. It could be set to false or ignored"},
+      "externalHeatTransferCoefficient": {
+        "$ref": "PhysicalQuantity.schema.json",
+        "description": "the heat transfer coefficient between the external surface and surroundings"
+      },
       "externalHeatTransferCoefficientTopFaces" :  {
-        "type" : "number",
-        "description": "In some model a different heat transfer coefficient for the top faces can be given and used"},
+        "$ref": "PhysicalQuantity.schema.json",
+        "description": "the heat transfer coefficient between the top surfaces and surroundings"
+      },
       "externalHeatTransferCoefficientSideFaces" : {
-        "type" : "number",
-        "description": "In some model a different heat transfer coefficient for the top faces can be given and used"}},
-
+        "$ref": "PhysicalQuantity.schema.json",
+        "description": "the heat transfer coefficient between the side surfaces and surroundings"
+      },
+      "externalTemperature": {
+        "$ref": "PhysicalQuantity.schema.json",
+        "description": "the temperature of the surroundings"
+      },
+      "effectiveThermalConductivity" : {
+        "$ref": "PhysicalQuantity.schema.json",
+        "description": "the effective thermal conductivity of the domain; this value is usually not given but computed from the other components"
+      },
+      "effectiveHeatCapacity" : {
+        "$ref": "PhysicalQuantity.schema.json",
+        "description": "the effective heat capacity of the domain; this value is usually not given but computed from the other components"
+      }
+    },
     "NegativeElectrode" : {
       "type" : "object",
       "properties" : {
-        "ActiveMaterial" : {
+        "Coating" : {
           "$ref" : "#/$defs/thermalParameters"},
         "CurrentCollector" : {
           "$ref" : "#/$defs/thermalParameters"}}},
@@ -34,7 +44,7 @@
     "PositiveElectrode" : {
       "type" : "object",
       "properties" : {
-        "ActiveMaterial" : {"$ref" : "#/$defs/thermalParameters"},
+        "Coating" : {"$ref" : "#/$defs/thermalParameters"},
         "CurrentCollector" : {"$ref" : "#/$defs/thermalParameters"}}},
 
     "Electrolyte" : {

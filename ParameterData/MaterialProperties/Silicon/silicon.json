@@ -1,17 +1,14 @@
 {
-  "cmax": 311307.4,
-  "volumeFraction": 0.8,
+  "saturationConcentration": 311307.4,
   "volumetricSurfaceArea": 723600,
-  "density": 2330,
-  "comment" : "value of density if for Si atoms",
-  "n" : 1,
-  "Eak": 5000,
-  "k0": 5.031e-11,
-  "theta100": 0.88551,
-  "theta0": 0.1429,
-  "OCP" : {"type": "function",
+  "numberOfElectronsTransferred" : 1,
+  "activationEnergyOfReaction": 5000,
+  "reactionRateConstant": 5.031e-11,
+  "guestStoichiometry100": 0.88551,
+  "guestStoichiometry0": 0.1429,
+  "chargeTransferCoefficient": 0.5,
+  "openCircuitPotential" : {"type": "function",
            "functionname" : "computeOCPSiliconLi2012",
            "argumentlist" : ["cElectrode", "T", "cmax"]
-          },
-  "BruggemanCoefficient": 1.5
+          }
 }

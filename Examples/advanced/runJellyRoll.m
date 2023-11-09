@@ -5,7 +5,7 @@ end
 clear all
 close all
 
-mrstDebug(20);
+% mrstDebug(20);
 
 % Setup mrst modules
 mrstModule add ad-core mrst-gui mpfa agmg linearsolvers
@@ -25,22 +25,22 @@ rInner = 2*milli*meter;
 
 widths = [25, 64, 15, 57, 15]*micro*meter; 
 
-widthDict = containers.Map( ...
-    {'ElectrolyteSeparator',... 
-     'NegativeActiveMaterial',...
-     'NegativeCurrentCollector',...
-     'PositiveActiveMaterial',...
-     'PositiveCurrentCollector'},...
+widthDict = containers.Map(...
+    {'Separator'               , ... 
+     'NegativeCoating'         , ...
+     'NegativeCurrentCollector', ...
+     'PositiveCoating'         , ...
+     'PositiveCurrentCollector'}, ...
     widths); 
 
-nwidths = [widthDict('PositiveActiveMaterial');...
-           widthDict('PositiveCurrentCollector');...
-           widthDict('PositiveActiveMaterial');...
-           widthDict('ElectrolyteSeparator');...
-           widthDict('NegativeActiveMaterial');...
-           widthDict('NegativeCurrentCollector');...
-           widthDict('NegativeActiveMaterial');...
-           widthDict('ElectrolyteSeparator')]; 
+nwidths = [widthDict('PositiveCoating')          ;...
+           widthDict('PositiveCurrentCollector') ;...
+           widthDict('PositiveCoating')          ;...
+           widthDict('Separator')                ;...
+           widthDict('NegativeCoating')          ;...
+           widthDict('NegativeCurrentCollector') ;...
+           widthDict('NegativeCoating')          ;...
+           widthDict('Separator')]; 
 
 dr = sum(nwidths);
 
@@ -54,10 +54,10 @@ dR = rOuter - rInner;
 nwindings = ceil(dR/dr);
 
 % number of discretization cells in radial direction for each component.
-nrDict = containers.Map({'ElectrolyteSeparator'    , ... 
-                         'NegativeActiveMaterial'  , ...
+nrDict = containers.Map({'Separator'               , ... 
+                         'NegativeCoating'         , ...
                          'NegativeCurrentCollector', ...
-                         'PositiveActiveMaterial'  , ...
+                         'PositiveCoating'         , ...
                          'PositiveCurrentCollector'}, ...
                         [3, 3, 3, 3, 3]); 
 
@@ -75,8 +75,11 @@ tabparams.fractions = linspace(0.01, 0.9, 6);
 testing = true;
 if testing
     fprintf('We setup a smaller case for quicker testing\n');
-    rOuter = 10*milli*meter/2;
-    nL = 2;
+    rOuter = rInner + 1*milli*meter;
+dR = rOuter - rInner; 
+% Computed number of windings
+nwindings = ceil(dR/dr);
+nL = 2;
 end
 
 spiralparams = struct('nwindings'   , nwindings, ...
@@ -97,6 +100,7 @@ ne      = 'NegativeElectrode';
 pe      = 'PositiveElectrode';
 elyte   = 'Electrolyte';
 thermal = 'ThermalModel';
+co      = 'Coating';
 am      = 'ActiveMaterial';
 itf     = 'Interface';
 sd      = 'SolidDiffusion';
@@ -104,20 +108,21 @@ ctrl    = 'Control';
 cc      = 'CurrentCollector';
 
 jsonstruct.include_current_collectors = true;
+
 jsonstruct.use_thermal = true;
 
 diffusionModelType = 'full';
 
-jsonstruct.(pe).(am).diffusionModelType = diffusionModelType;
-jsonstruct.(ne).(am).diffusionModelType = diffusionModelType;
+jsonstruct.(pe).(co).(am).diffusionModelType = diffusionModelType;
+jsonstruct.(ne).(co).(am).diffusionModelType = diffusionModelType;
 
 paramobj = BatteryInputParams(jsonstruct); 
 
-paramobj.(ne).(am).InterDiffusionCoefficient = 0;
-paramobj.(pe).(am).InterDiffusionCoefficient = 0;
-
 % paramobj.(ne).(am).(sd).N = 5;
 % paramobj.(pe).(am).(sd).N = 5;
+
+paramobj.(ctrl).lowerCutoffVoltage = 3;
+paramobj.(ctrl).CRate = 0.1;
 
 paramobj = paramobj.validateInputParams();
 
@@ -132,14 +137,11 @@ paramobj = gen.updateBatteryInputParams(paramobj, spiralparams);
 model = Battery(paramobj); 
 model.AutoDiffBackend= AutoDiffBackend();
 
-[cap, cap_neg, cap_pos, specificEnergy] = computeCellCapacity(model);
-fprintf('ratio : %g, energy : %g\n', cap_neg/cap_pos, specificEnergy/hour);
-
 %% Setup schedule
-CRate = 1;
 
+CRate = model.(ctrl).CRate;
 fac   = 2; 
-total = 1.4*hour/CRate; 
+total = 1.1*hour/CRate; 
 n     = 10; 
 dt0   = total*1e-6; 
 times = getTimeSteps(dt0, n, total, fac); 
@@ -147,9 +149,6 @@ times = getTimeSteps(dt0, n, total, fac);
 % times = times(times < 4200);
 
 %% We compute the cell capacity, which used to compute schedule from CRate
-C = computeCellCapacity(model); 
-inputI = (C/hour)*CRate; 
-inputE = 3; 
 
 step = struct('val', diff(times), 'control', ones(numel(times) - 1, 1)); 
 
@@ -160,6 +159,7 @@ simcase = 'discharge';
 switch simcase
     
   case 'discharge'
+    
     srcfunc = @(time, I, E) rampupSwitchControl(time, tup, I, E, ...
                                                 model.Control.Imax, ...
                                                 model.Control.lowerCutoffVoltage);
@@ -192,7 +192,8 @@ nls = NonLinearSolver();
 
 clear setup
 
-casenumber = 4;
+casenumber = 3;
+% casenumber = 3;
 
 switch casenumber
     
@@ -207,20 +208,19 @@ switch casenumber
     setup.options.solverspec.name = 'agmg'; % not used for now
 
   case 3
-    
-    setup.method = 'gmres';
-    setup.options.method = 'separate';
-    solvers = {};
-    solverspec.variable = 'phi';
-    solverspec.solverspec.name = 'direct';
-    solvers{end + 1} = solverspec;
-    solverspec.variable = 'c';
-    solverspec.solverspec.name = 'direct';
-    solvers{end + 1} = solverspec;
-    solverspec.variable = 'T';
-    solverspec.solverspec.name = 'direct';
-    solvers{end + 1} = solverspec;
-    setup.options.solvers = solvers;
+
+    switch diffusionModelType
+      case 'simple'
+        % jsonfilename = fullfile(battmoDir, 'Utilities/JsonSchemas/Tests/linearsolver3.json');
+        jsonfilename = fullfile(battmoDir, 'Utilities/JsonSchemas/Tests/linearsolver5.json');
+      case 'full'
+        jsonfilename = fullfile(battmoDir, 'Utilities/JsonSchemas/Tests/linearsolver4.json');
+      otherwise
+        error('diffusionModelType not covered')
+    end
+    jsonsrc = fileread(jsonfilename);
+    setup = jsondecode(jsonsrc);
+
 
   case 4
 
@@ -235,6 +235,15 @@ switch casenumber
     end
     jsonsrc = fileread(jsonfilename);
     setup = jsondecode(jsonsrc);
+
+    clear solver
+    solver.library = 'matlab';
+    solver.method  = 'direct';
+    for iprec = 1 : numel(setup.preconditioners)
+        setup.preconditioners(iprec).solver =  solver;
+    end
+
+    setup.verbose = 0;
     
   otherwise
     
@@ -246,6 +255,22 @@ if isfield(setup, 'reduction')
     model = model.setupSelectedModel('reduction', setup.reduction);
 end
 
+if testing & (casenumber == 3)
+    % We remove verbosity in case of small model
+    setup.verbose = 0;
+    if isfield(setup, 'preconditioners')
+        pcs = setup.preconditioners;
+        for ipc = 1 : numel(pcs)
+            pc = pcs(ipc);
+            pc.solver.verbose = 0;
+            pc.solver.solver.verbose = false;
+            pcs(ipc) = pc;
+        end
+        setup.preconditioners = pcs;
+    end
+end
+
+%%
 nls.LinearSolver = BatteryLinearSolver('verbose'          , 0    , ...
                                        'reuse_setup'      , false, ...
                                        'linearSolverSetup', setup);
@@ -254,10 +279,11 @@ if isfield(nls.LinearSolver.linearSolverSetup, 'gmres_options')
     nls.LinearSolver.linearSolverSetup.gmres_options.tol = 1e-3*model.Control.Imax;
 end
 
+
 % Change default maximum iteration number in nonlinear solver
-nls.maxIterations = 10;
+nls.maxIterations = 20;
 % Change default behavior of nonlinear solver, in case of error
-nls.errorOnFailure = true;
+nls.errorOnFailure = false;
 % nls.timeStepSelector=StateChangeTimeStepSelector('TargetProps', {{'Control','E'}}, 'targetChangeAbs', 0.03);
 % Change default tolerance for nonlinear solver
 model.nonlinearTolerance = 1e-3*model.Control.Imax;

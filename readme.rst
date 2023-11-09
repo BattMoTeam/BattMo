@@ -37,7 +37,7 @@ Then start MATLAB and in the directory where you cloned the repository, run:
 
 You can check that that your installation is setup correctly by running one of the example scripts :
 
-``runBattery1D``
+``runBatteryP2D``
 
 Iterative solvers
 -----------------

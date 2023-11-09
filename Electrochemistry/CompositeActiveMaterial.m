@@ -9,7 +9,7 @@ classdef CompositeActiveMaterial < ElectronicComponent
         porosity                      % porosity
         volumeFraction                % Volume fraction of the whole material (binder and so on included)
         activeMaterialFraction        % Volume fraction occupied only by the active material
-        electricalConductivity        % Electrical conductivite
+        electronicConductivity        % Electrical conductivite
         InterDiffusionCoefficient     % Inter particle diffusion coefficient parameter (diffusion between the particles)
         thermalConductivity           % Intrinsic Thermal conductivity of the active component
         heatCapacity                  % Intrinsic Heat capacity of the active component
@@ -36,7 +36,7 @@ classdef CompositeActiveMaterial < ElectronicComponent
             
             fdnames = {'volumeFraction'        , ...
                        'thermalConductivity'   , ...
-                       'electricalConductivity', ...
+                       'electronicConductivity', ...
                        'heatCapacity'          , ...
                        'externalCouplingTerm'  , ...
                        'use_thermal'};
@@ -346,8 +346,8 @@ classdef CompositeActiveMaterial < ElectronicComponent
             for imat = 1 : numel(mats)
                 mat = mats{imat};
                 amvf     = model.(mat).activeMaterialFraction;
-                bg       = model.(mat).BruggemanCoefficient;
-                sigmamat = model.(mat).electricalConductivity;
+                bg       = model.(mat).bruggemanCoefficient;
+                sigmamat = model.(mat).electronicConductivity;
                 sigma = ((vf.*amvf).^bg).*sigmamat;
             end
 
