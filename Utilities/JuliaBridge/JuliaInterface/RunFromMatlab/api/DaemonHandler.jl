@@ -18,7 +18,11 @@ else
         load_file = ARGS[2]
         dat       = MAT.matread(load_file)
         inputType = dat["inputType"]
-        kwargs    = juliafy_kwargs(dat["kwargs"])
+        if !isempty(dat["kwargs"])
+            kwargs = juliafy_kwargs(dat["kwargs"])
+        else
+            kwargs = ()
+        end
 
         inputFileName = dat["inputFileName"]
 

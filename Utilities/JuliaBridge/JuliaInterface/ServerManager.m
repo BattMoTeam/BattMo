@@ -141,13 +141,13 @@ classdef ServerManager < handle
                 raw = fread(fid, inf);
                 str = char(raw');
                 fclose(fid);
-                result = {jsondecode(str)};
+                result = jsondecode(str);
 
                 if manager.options.gc
                     delete(outputFileName);
                 end
             else
-                result=[];
+                result = [];
             end
 
         end
