@@ -1,36 +1,36 @@
-:orphan:
 
-.. _runBatteryP2D_source:
+.. _runBatteryP2D:
 
-Source code for runBatteryP2D
-----------------------------
-
-.. code:: matlab
+Pseudo-Two-Dimensional (P2D) Lithium-Ion Battery Model
+------------------------------------------------------
+*Generated from runBatteryP2D.m*
 
 
-  %% Pseudo-Two-Dimensional (P2D) Lithium-Ion Battery Model
-  % This example demonstrates how to setup a P2D model of a Li-ion battery
-  % and run a simple simulation.
-  
+This example demonstrates how to setup a P2D model of a Li-ion battery and run a simple simulation.
+
+.. code-block:: matlab
+
   % Clear the workspace and close open figures
   % clear all
   close all
   clc
-  
-  
-  %% Import the required modules from MRST
-  % load MRST modules
+
+
+Import the required modules from MRST
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+load MRST modules
+
+.. code-block:: matlab
+
   mrstModule add ad-core mrst-gui mpfa agmg linearsolvers
-  
-  %% Setup the properties of Li-ion battery materials and cell design
-  % The properties and parameters of the battery cell, including the
-  % architecture and materials, are set using an instance of
-  % :class:`BatteryInputParams <Battery.BatteryInputParams>`. This class is
-  % used to initialize the simulation and it propagates all the parameters
-  % throughout the submodels. The input parameters can be set manually or
-  % provided in json format. All the parameters for the model are stored in
-  % the paramobj object.
-  
+
+
+Setup the properties of Li-ion battery materials and cell design
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+The properties and parameters of the battery cell, including the architecture and materials, are set using an instance of :class:`BatteryInputParams <Battery.BatteryInputParams>`. This class is used to initialize the simulation and it propagates all the parameters throughout the submodels. The input parameters can be set manually or provided in json format. All the parameters for the model are stored in the paramobj object.
+
+.. code-block:: matlab
+
   jsonstruct = parseBattmoJson(fullfile('ParameterData','BatteryCellParameters','LithiumIonBatteryCell','lithium_ion_battery_nmc_graphite.json'));
   
   % We define some shorthand names for simplicity.
@@ -81,21 +81,26 @@ Source code for runBatteryP2D
       cccvparamobj = CcCvControlModelInputParams(cccvstruct);
       paramobj.Control = cccvparamobj;
   end
-  
-  
-  %% Setup the geometry and computational mesh
-  % Here, we setup the 1D computational mesh that will be used for the
-  % simulation. The required discretization parameters are already included
-  % in the class BatteryGeneratorP2D. 
+
+
+Setup the geometry and computational mesh
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+Here, we setup the 1D computational mesh that will be used for the simulation. The required discretization parameters are already included in the class BatteryGeneratorP2D.
+
+.. code-block:: matlab
+
   gen = BatteryGeneratorP2D();
   
-  % Now, we update the paramobj with the properties of the mesh. 
+  % Now, we update the paramobj with the properties of the mesh.
   paramobj = gen.updateBatteryInputParams(paramobj);
-  
-  
-  %%  Initialize the battery model. 
-  % The battery model is initialized by sending paramobj to the Battery class
-  % constructor. see :class:`Battery <Battery.Battery>`.
+
+
+Initialize the battery model.
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+The battery model is initialized by sending paramobj to the Battery class constructor. see :class:`Battery <Battery.Battery>`.
+
+.. code-block:: matlab
+
   model = Battery(paramobj);
   
   model.AutoDiffBackend= AutoDiffBackend();
@@ -105,18 +110,23 @@ Source code for runBatteryP2D
       cgt = model.computationalGraph;
       return
   end
-  
-  %% Compute the nominal cell capacity and choose a C-Rate
-  % The nominal capacity of the cell is calculated from the active materials.
-  % This value is then combined with the user-defined C-Rate to set the cell
-  % operational current. 
-  
+
+
+Compute the nominal cell capacity and choose a C-Rate
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+The nominal capacity of the cell is calculated from the active materials. This value is then combined with the user-defined C-Rate to set the cell operational current.
+
+.. code-block:: matlab
+
   CRate = model.Control.CRate;
-  
-  %% Setup the time step schedule 
-  % Smaller time steps are used to ramp up the current from zero to its
-  % operational value. Larger time steps are then used for the normal
-  % operation.
+
+
+Setup the time step schedule
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+Smaller time steps are used to ramp up the current from zero to its operational value. Larger time steps are then used for the normal operation.
+
+.. code-block:: matlab
+
   switch model.(ctrl).controlPolicy
     case 'CCCV'
       total = 3.5*hour/CRate;
@@ -131,7 +141,7 @@ Source code for runBatteryP2D
   step = struct('val', dt*ones(n, 1), 'control', ones(n, 1));
   
   % we setup the control by assigning a source and stop function.
-  % control = struct('CCCV', true); 
+  % control = struct('CCCV', true);
   %  !!! Change this to an entry in the JSON with better variable names !!!
   
   switch model.Control.controlPolicy
@@ -149,24 +159,33 @@ Source code for runBatteryP2D
   end
   
   % This control is used to set up the schedule
-  schedule = struct('control', control, 'step', step); 
-  
-  %% Setup the initial state of the model
-  % The initial state of the model is setup using the model.setupInitialState() method.
-  
-  initstate = model.setupInitialState(); 
-  
-  %% Setup the properties of the nonlinear solver 
+  schedule = struct('control', control, 'step', step);
+
+
+Setup the initial state of the model
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+The initial state of the model is setup using the model.setupInitialState() method.
+
+.. code-block:: matlab
+
+  initstate = model.setupInitialState();
+
+
+Setup the properties of the nonlinear solver
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+.. code-block:: matlab
+
   nls = NonLinearSolver();
   
   linearsolver = 'direct';
   switch linearsolver
     case 'agmg'
       mrstModule add agmg
-      nls.LinearSolver = AGMGSolverAD('verbose', true, 'reduceToCell', false); 
-      nls.LinearSolver.tolerance = 1e-3; 
-      nls.LinearSolver.maxIterations = 30; 
-      nls.maxIterations = 10; 
+      nls.LinearSolver = AGMGSolverAD('verbose', true, 'reduceToCell', false);
+      nls.LinearSolver.tolerance = 1e-3;
+      nls.LinearSolver.maxIterations = 30;
+      nls.maxIterations = 10;
       nls.verbose = 10;
     case 'battery'
       nls.LinearSolver = LinearSolverBatteryExtra('verbose'     , false, ...
@@ -190,43 +209,38 @@ Source code for runBatteryP2D
   model.nonlinearTolerance = 1e-3*model.Control.Imax;
   % Set verbosity
   model.verbose = true;
-  
-  %% Run the simulation
-  [wellSols, states, report] = simulateScheduleAD(initstate, model, schedule, 'OutputMinisteps', true, 'NonLinearSolver', nls); 
-  
-  %% Process output and recover the output voltage and current from the output states.
-  ind = cellfun(@(x) not(isempty(x)), states); 
+
+
+Run the simulation
+^^^^^^^^^^^^^^^^^^
+
+.. code-block:: matlab
+
+  [wellSols, states, report] = simulateScheduleAD(initstate, model, schedule, 'OutputMinisteps', true, 'NonLinearSolver', nls);
+
+
+Process output and recover the output voltage and current from the output states.
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+.. code-block:: matlab
+
+  ind = cellfun(@(x) not(isempty(x)), states);
   states = states(ind);
-  E = cellfun(@(x) x.Control.E, states); 
+  E = cellfun(@(x) x.Control.E, states);
   I = cellfun(@(x) x.Control.I, states);
   T = cellfun(@(x) max(x.(thermal).T), states);
   Tmax = cellfun(@(x) max(x.ThermalModel.T), states);
   % [SOCN, SOCP] =  cellfun(@(x) model.calculateSOC(x), states);
-  time = cellfun(@(x) x.time, states); 
+  time = cellfun(@(x) x.time, states);
   
   figure
   plot(time, E);
   
   % writeOutput(model, states, 'output.h5')
-  
-  
-  %{
-  Copyright 2021-2023 SINTEF Industry, Sustainable Energy Technology
-  and SINTEF Digital, Mathematics & Cybernetics.
-  
-  This file is part of The Battery Modeling Toolbox BattMo
-  
-  BattMo is free software: you can redistribute it and/or modify
-  it under the terms of the GNU General Public License as published by
-  the Free Software Foundation, either version 3 of the License, or
-  (at your option) any later version.
-  
-  BattMo is distributed in the hope that it will be useful,
-  but WITHOUT ANY WARRANTY; without even the implied warranty of
-  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-  GNU General Public License for more details.
-  
-  You should have received a copy of the GNU General Public License
-  along with BattMo.  If not, see <http://www.gnu.org/licenses/>.
-  %}
 
+.. figure:: runBatteryP2D_01.png
+  :figwidth: 100%
+
+
+
+complete source code can be found :ref:`here<runBatteryP2D_source>`
