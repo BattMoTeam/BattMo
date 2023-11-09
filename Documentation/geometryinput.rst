@@ -5,33 +5,33 @@ Battery Geometries
 Description of the models that are used to setup the geometry
 
 
-BatteryGenerator1D
+BatteryGeneratorP2D
 ------------------
 
 .. image:: img/1dmodel.png
            :width: 80%
                    
-.. class:: BatteryGenerator1D
+.. class:: BatteryGeneratorP2D
       
 .. _2dgeometry:
          
-BatteryGenerator2D
+BatteryGeneratorP3D
 ------------------
 
 .. image:: img/runbattery2d.png
            :width: 80%
                    
-.. class:: BatteryGenerator2D
+.. class:: BatteryGeneratorP3D
          
 .. _3dgeometry:
       
-BatteryGenerator3D
+BatteryGeneratorP4D
 ------------------
 
 .. image:: img/runbattery3d.png
            :width: 80%
                    
-.. class:: BatteryGenerator3D
+.. class:: BatteryGeneratorP4D
 
 .. _jellyroll:
       

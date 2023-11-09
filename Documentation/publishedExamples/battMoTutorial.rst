@@ -80,11 +80,11 @@ It is also possible to update the properties of this paramobj in a similar way t
 
 Setting up the geometry
 ^^^^^^^^^^^^^^^^^^^^^^^
-Here, we setup the 1D computational mesh that will be used for the simulation. The required discretization parameters are already included in the class :battmo:`BatteryGenerator1D`. Classes for generating other geometries can be found in the BattMo/Battery/BatteryGeometry folder.
+Here, we setup the 1D computational mesh that will be used for the simulation. The required discretization parameters are already included in the class :battmo:`BatteryGeneratorP2D`. Classes for generating other geometries can be found in the BattMo/Battery/BatteryGeometry folder.
 
 .. code-block:: matlab
 
-  gen = BatteryGenerator1D();
+  gen = BatteryGeneratorP2D();
 
 Now, we update the paramobj with the properties of the mesh. This function will update relevent parameters in the paramobj object and make sure we have all the required parameters for the model geometry chosen.
 

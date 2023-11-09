@@ -25,7 +25,7 @@ You can check that that your installation is setup correctly by running one of t
 
 .. code-block:: matlab
 
-   runBattery1D
+   runBatteryP2D
 
 Here is video which guides you through the installation in details
 

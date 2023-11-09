@@ -1,9 +1,9 @@
 
-.. _runBattery1D:
+.. _runBatteryP2D:
 
 Pseudo-Two-Dimensional (P2D) Lithium-Ion Battery Model
 -------------------------------------------------------------------------
-*Generated from runBattery1D.m*
+*Generated from runBatteryP2D.m*
 
 
 This example demonstrates how to setup a P2D model of a Li-ion battery and run a simple simulation.
@@ -85,11 +85,11 @@ The properties and parameters of the battery cell, including the architecture an
 
 Setup the geometry and computational mesh
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-Here, we setup the 1D computational mesh that will be used for the simulation. The required discretization parameters are already included in the class BatteryGenerator1D.
+Here, we setup the 1D computational mesh that will be used for the simulation. The required discretization parameters are already included in the class BatteryGeneratorP2D.
 
 .. code-block:: matlab
 
-  gen = BatteryGenerator1D();
+  gen = BatteryGeneratorP2D();
   
   % Now, we update the paramobj with the properties of the mesh.
   paramobj = gen.updateBatteryInputParams(paramobj);
@@ -238,9 +238,9 @@ Process output and recover the output voltage and current from the output states
   
   % writeOutput(model, states, 'output.h5')
 
-.. figure:: runBattery1D_01.png
+.. figure:: runBatteryP2D_01.png
   :figwidth: 100%
 
 
 
-complete source code can be found :ref:`here<runBattery1D_source>`
+complete source code can be found :ref:`here<runBatteryP2D_source>`

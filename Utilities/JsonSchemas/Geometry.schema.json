@@ -108,10 +108,10 @@
                   "Ny" : {"type" : "Number"}}}}}}}]},    
     
     "2D-demo" : {"$ref" : "#/$defs/layerSpecs",
-                 "description" : "In this demo case the dimensions are fixed. Further parametrization should be done using  the grid generator BatteryGenerator2D"},
+                 "description" : "In this demo case the dimensions are fixed. Further parametrization should be done using  the grid generator BatteryGeneratorP3D"},
 
     "3D-demo" : {
-      "description" : "In this demo case the dimensions are fixed. Further parametrization should be done using  the grid generator BatteryGenerator3D",
+      "description" : "In this demo case the dimensions are fixed. Further parametrization should be done using  the grid generator BatteryGeneratorP4D",
       "allOf" : [
         {"$ref" : "#/$defs/layerSpecs"},
         {"properties" :
