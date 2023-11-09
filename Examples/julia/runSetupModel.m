@@ -2,7 +2,8 @@
 
 %% Setup Julia server
 
-% man = ServerManager();
+man = ServerManager('debug', true, ...
+                    'gc', true);
 
 % Set up keyword arguments to be sent to julia solver. See run_battery in mrst_utils.jl for details
 kwargs =struct('use_p2d'     , true , ...
@@ -26,9 +27,7 @@ jsonfolder    = fullfile(battmo_folder, 'Examples', 'julia', 'jsonfiles');
 
 %% Setup model from Matlab
 
-
 testCase = 'Matlab';
-
 
 switch testCase
 
