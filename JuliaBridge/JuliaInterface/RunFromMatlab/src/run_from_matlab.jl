@@ -1,6 +1,6 @@
 import BattMo
 
-function run_battery_from_matlab(init::BattMo.MatlabFile; 
+function run_from_matlab(init::BattMo.MatlabFile; 
                                  kwargs...)
     """ 
         Summary: Wrapper method for running run_battery when launched from matlab. 
@@ -8,7 +8,7 @@ function run_battery_from_matlab(init::BattMo.MatlabFile;
         Inputs:
             -data: Dict containing fields imported from matlab. 
             -inputFileName: Name of matlab file that generated data
-            -use_state_ref: If true run_battery will use a previous simulation run in matlab as a starting point
+            -use_state_ref: If true a previous simulation run in matlab is used as a starting point
         Output:
             -ret: Dict with fields:
                 -states: States of the simulation
@@ -26,7 +26,7 @@ function run_battery_from_matlab(init::BattMo.MatlabFile;
     return ret
 end
 
-function run_battery_from_matlab(init::BattMo.JSONFile; kwargs...)
+function run_from_matlab(init::BattMo.JSONFile; kwargs...)
     """ Json version"""
     states, reports, extra, exported = BattMo.run_battery(init; kwargs...);
     # create output

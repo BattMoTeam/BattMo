@@ -63,7 +63,7 @@ The <code>ServerManager</code> class in Matlab has two main roles:
 <ul>
     <li> <b>Constructor</b>: Instantiates the RunFromMatlab project and launches a server</li>
     <li> <b>Load</b>: Loads data to the server. If <code>shared=true</code> variables can be accessed across calls to the server. It is recommended to use the function to minimize number of times data is transferred by reading and writing files</li>
-    <li><b>Run_battery</b>: Runs the <code>run_battery</code> function in Matlab using either preloaded data or data passed as an argument</li>
+    <li><b>Run</b>: Use the <code>run</code> function in Matlab with either preloaded data or data passed as an argument</li>
 </ul>
 
 **Please Note**: The DeamonMode server exists as an entity separate from any <code>ServerManager</code> object. Deleting the object will not shut down the server. However, the <code>shutdown</code> method provides a way to close the server. 

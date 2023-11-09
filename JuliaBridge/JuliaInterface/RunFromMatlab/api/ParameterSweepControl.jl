@@ -8,7 +8,7 @@ ParallelDataTransfer.sendto(workers(), init=inputobj, experiment=sweep_options["
 
 @everywhere function run_parameter(parameters)
     RunFromMatlab.setParameters!(init, parameters, experiment) #NB: Init is modified, but values are replaced in the same fields each time!
-    output = RunFromMatlab.run_battery_from_matlab(init; info_level=-1, kwargs ...)
+    output = RunFromMatlab.run_from_matlab(init; info_level=-1, kwargs ...)
     save_location = folder * '/'*randstring(12)*".json";
     RunFromMatlab.save_output(output, save_location)
     return Dict("parameters" => parameters, "states_location" => save_location)

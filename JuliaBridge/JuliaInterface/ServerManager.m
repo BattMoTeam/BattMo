@@ -18,28 +18,27 @@ classdef ServerManager < handle
 
     methods
 
-        function manager    = ServerManager(varargin)
+        function manager = ServerManager(varargin)
         % Parse inputs
 
             serverFolder = fileparts(mfilename('fullpath'));
 
             p = inputParser;
-            addParameter(p, 'julia'        , try_find_julia_runtime, @ischar);
-            addParameter(p, 'project'      , fullfile(serverFolder , 'RunFromMatlab') , @ischar);
-            addParameter(p, 'script_source', fullfile(serverFolder , 'RunFromMatlab','api','DaemonHandler.jl'), @ischar);
-            addParameter(p, 'startup_file' , 'no'                  , @ischar);
-            addParameter(p, 'threads'      , 'auto'                , @validate_threads);
-            addParameter(p, 'procs'        , 1                     , @(x) validateattributes(x, {'numeric'}, {'integer'}));
-            addParameter(p, 'cwd'          , serverFolder          , @ischar);
-            addParameter(p, 'port'         , 3000                  , @(x) validateattributes(x, {'numeric'}, {'scalar', 'integer', 'positive'}));
-            addParameter(p, 'shared'       , true                  , @(x) validateattributes(x, {'logical'}, {'scalar'}));
-            addParameter(p, 'print_stack'  , true                  , @(x) validateattributes(x, {'logical'}, {'scalar'}));
-            addParameter(p, 'async'        , true                  , @(x) validateattributes(x, {'logical'}, {'scalar'}));
-            addParameter(p, 'gc'           , true                  , @(x) validateattributes(x, {'logical'}, {'scalar'}));
-            addParameter(p, 'debug'        , true                 , @(x) validateattributes(x, {'logical'}, {'scalar'}));
+            addParameter(p, 'julia'        , try_find_julia_runtime(), @ischar);
+            addParameter(p, 'project'      , fullfile(serverFolder, 'RunFromMatlab') , @ischar);
+            addParameter(p, 'script_source', fullfile(serverFolder, 'RunFromMatlab','api','DaemonHandler.jl'), @ischar);
+            addParameter(p, 'startup_file' , 'no', @ischar);
+            addParameter(p, 'threads'      , 'auto', @ischar);
+            addParameter(p, 'cwd'          , serverFolder, @ischar);
+            addParameter(p, 'port'         , 3000, @(x) validateattributes(x, {'numeric'}, {'scalar', 'integer', 'positive'}));
+            addParameter(p, 'shared'       , true, @(x) validateattributes(x, {'logical'}, {'scalar'}));
+            addParameter(p, 'print_stack'  , true, @(x) validateattributes(x, {'logical'}, {'scalar'}));
+            addParameter(p, 'async'        , true, @(x) validateattributes(x, {'logical'}, {'scalar'}));
+            addParameter(p, 'gc'           , true, @(x) validateattributes(x, {'logical'}, {'scalar'}));
+            addParameter(p, 'debug'        , false, @(x) validateattributes(x, {'logical'}, {'scalar'}));
 
             parse(p, varargin{:});
-            manager.options=p.Results;
+            manager.options = p.Results;
 
             % We will save all files related to the execution of the server
             % in a folder on the form Server_id=<port>
@@ -57,12 +56,11 @@ classdef ServerManager < handle
             manager.base_call = [manager.options.julia, ' '                              , ...
                                  '--startup-file='    , manager.options.startup_file, ' ', ...
                                  '--project='         , manager.options.project     , ' ', ...
-                                 '--procs='           , num2str(manager.options.procs), ' ', ...
                                  '--threads='         , manager.options.threads];
 
             %Ensure that project is instantiated
-            instaniate_call = '"using Pkg; Pkg.instantiate();"';
-            manager.DaemonCall(instaniate_call);
+            instantiate_call = '"using Pkg; Pkg.update();"';
+            manager.DaemonCall(instantiate_call);
 
             % Start server
             manager.startup();
@@ -123,13 +121,13 @@ classdef ServerManager < handle
 
         end
 
-        function result = run_battery(manager)
+        function result = run(manager)
 
             outputFileName = [tempname,'.json'];
 
             %Call DaemonMode.runargs
-            call_battery = ['"using Revise, DaemonMode; runargs(',num2str(manager.options.port) ,')" ', manager.options.script_source, ...
-                            ' -run_battery ', outputFileName];
+            call_battery = ['"using DaemonMode; runargs(',num2str(manager.options.port) ,')" ', manager.options.script_source, ...
+                            ' -run ', outputFileName];
 
             if manager.options.debug
                 fprintf("Calling run battery \n")
@@ -211,23 +209,30 @@ classdef ServerManager < handle
             cmd = [manager.base_call, ' -e ', call];
 
             if manager.options.debug
+                
                 fprintf("Call to julia: %s \n", cmd);
+                
             end
 
             try
-                st=system(cmd);
-                success=true;
+                
+                st      = system(cmd);
+                success = true;
+                
             catch
+                
                 fprintf("System call failed: \n %s", cmd);
                 success=false;
+                
             end
 
             manager.call_history{end+1} = cmd;
 
         end
 
-        function f=sweep(manager,experiment,values,name)
+        function f = sweep(manager,experiment,values,name)
         %Perform a parameter sweep
+
             save_folder = fullfile(manager.use_folder,name);
             [~,~] = mkdir(save_folder);
             options_file = [save_folder,'/',name,'.mat'];
@@ -236,7 +241,8 @@ classdef ServerManager < handle
             sweep_call=['"using Revise, DaemonMode; runargs(',num2str(manager.options.port) ,')" ', sweep_source, ' ', options_file, ' &'];
             manager.DaemonCall(sweep_call);
 
-            f= parfeval(@checkSweep,1,experiment,save_folder);
+            f = parfeval(@checkSweep,1,experiment,save_folder);
+            
         end
 
         function result = collect_results(manager, f, index)

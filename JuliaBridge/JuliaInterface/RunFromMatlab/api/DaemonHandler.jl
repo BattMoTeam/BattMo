@@ -4,12 +4,12 @@ using RunFromMatlab
 juliafy_kwargs(xs::Dict{String, Any}) = Pair{Symbol, Any}[Symbol(k) => v for (k, v) in xs]
 
 script = ARGS[1]
-CALLABLE = ["-load", "-load_options", "-run_battery","-matlab-sweep"]
-
-if !in(script,CALLABLE)
+CALLABLE = ["-load", "-load_options", "-run", "-matlab-sweep"]
+# 
+if !in(script, CALLABLE)
     
     println("Error: ", script, " is not a valid call option")
-    println("Currently available call options are: \n",CALLABLE)
+    println("Currently available call options are: \n", CALLABLE)
     
 else
     
@@ -40,18 +40,17 @@ else
         dat       = MAT.matread(load_file)
         opts      = dat["op"]
         
-    elseif script == "-run_battery"
+    elseif script == "-run"
 
-        output = RunFromMatlab.run_battery_from_matlab(inputobj; kwargs...)
+        output = RunFromMatlab.run_from_matlab(inputobj; kwargs...)
         stringdata = JSON.json(output)
         
         # write the file with the stringdata variable information
         outputFileName = ARGS[2]
         save_output(output, outputFileName);
+        
     end
-    
+
 end
-
-
 
 
