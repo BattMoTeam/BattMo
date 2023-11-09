@@ -1,4 +1,4 @@
-classdef SeaWaterBatteryGenerator1D < SeaWaterBatteryGenerator
+classdef SeaWaterBatteryGeneratorP2D < SeaWaterBatteryGenerator
 % setup 1D grid 
     properties
         
@@ -11,7 +11,7 @@ classdef SeaWaterBatteryGenerator1D < SeaWaterBatteryGenerator
     
     methods
         
-        function gen = SeaWaterBatteryGenerator1D()
+        function gen = SeaWaterBatteryGeneratorP2D()
           gen = gen@SeaWaterBatteryGenerator();  
         end
             

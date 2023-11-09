@@ -41,7 +41,7 @@ function output = run_magnesium_1D_battery(input, varargin)
     
     %% Setup geometry
 
-    gen = SeaWaterBatteryGenerator1D();
+    gen = SeaWaterBatteryGeneratorP2D();
     % We increase the resolution
     gen.fac = 20;
     gen = gen.applyResolutionFactors();

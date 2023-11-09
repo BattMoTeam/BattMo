@@ -1,4 +1,4 @@
-classdef BatteryGenerator3D < BatteryGenerator
+classdef BatteryGeneratorP4D < BatteryGenerator
 % Setup 3D grid with tab
 
     properties
@@ -79,7 +79,7 @@ classdef BatteryGenerator3D < BatteryGenerator
 
     methods
 
-        function gen = BatteryGenerator3D()
+        function gen = BatteryGeneratorP4D()
             gen = gen@BatteryGenerator();
         end
 

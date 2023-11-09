@@ -73,8 +73,8 @@ end
 %% Setup the geometry and computational mesh
 % Here, we setup the 1D computational mesh that will be used for the
 % simulation. The required discretization parameters are already included
-% in the class BatteryGenerator1D. 
-gen = BatteryGenerator1D();
+% in the class BatteryGeneratorP2D. 
+gen = BatteryGeneratorP2D();
 gen.fac = 100;
 gen = gen.applyResolutionFactors();
 

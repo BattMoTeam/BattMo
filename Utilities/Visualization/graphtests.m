@@ -23,7 +23,7 @@ sr    = 'SideReaction';
             
 
 
-gen = BatteryGenerator1D();
+gen = BatteryGeneratorP2D();
 paramobj = gen.updateBatteryInputParams(paramobj);
 model = Battery(paramobj);
 

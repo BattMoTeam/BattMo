@@ -1,4 +1,4 @@
-classdef TestBattery1D < matlab.unittest.TestCase
+classdef TestBatteryP2D < matlab.unittest.TestCase
 
     properties (TestParameter)
 
@@ -72,8 +72,8 @@ classdef TestBattery1D < matlab.unittest.TestCase
             %% Setup the geometry and computational mesh
             % Here, we setup the 1D computational mesh that will be used for the
             % simulation. The required discretization parameters are already included
-            % in the class BatteryGenerator1D.
-            gen = BatteryGenerator1D();
+            % in the class BatteryGeneratorP2D.
+            gen = BatteryGeneratorP2D();
 
             % Now, we update the paramobj with the properties of the mesh.
             paramobj = gen.updateBatteryInputParams(paramobj);
@@ -176,7 +176,7 @@ classdef TestBattery1D < matlab.unittest.TestCase
 
             states = test1d(test, controlPolicy, use_thermal, include_current_collectors, diffusionModelType, testSize);
 
-            filename = sprintf('TestBattery1D-%s-%d-%d-%s-%s.mat', controlPolicy, use_thermal, include_current_collectors, diffusionModelType, testSize);
+            filename = sprintf('TestBatteryP2D-%s-%d-%d-%s-%s.mat', controlPolicy, use_thermal, include_current_collectors, diffusionModelType, testSize);
             filename = fullfile(battmoDir(), 'Tests', 'TestExamples', 'ReferenceData', filename);
 
             if createReferenceData

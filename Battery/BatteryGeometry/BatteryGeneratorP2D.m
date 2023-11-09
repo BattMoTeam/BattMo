@@ -1,4 +1,4 @@
-classdef BatteryGenerator1D < BatteryGenerator
+classdef BatteryGeneratorP2D < BatteryGenerator
 % setup 1D grid
     properties
 
@@ -39,7 +39,7 @@ classdef BatteryGenerator1D < BatteryGenerator
 
     methods
 
-        function gen = BatteryGenerator1D()
+        function gen = BatteryGeneratorP2D()
             gen = gen@BatteryGenerator();
         end
 

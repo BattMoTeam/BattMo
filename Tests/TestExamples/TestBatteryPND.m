@@ -1,4 +1,4 @@
-classdef TestBatteryND < matlab.unittest.TestCase
+classdef TestBatteryPND < matlab.unittest.TestCase
 
     properties (TestParameter)
 
@@ -19,13 +19,13 @@ classdef TestBatteryND < matlab.unittest.TestCase
             
             switch dim
               case 2
-                gen = BatteryGenerator2D();
+                gen = BatteryGeneratorP3D();
                 paramobj = gen.updateBatteryInputParams(paramobj);
                 paramobj.NegativeElectrode.CurrentCollector.EffectiveElectricalConductivity = 1e5;
                 paramobj.PositiveElectrode.CurrentCollector.EffectiveElectricalConductivity = 1e5;
 
               case 3
-                gen = BatteryGenerator3D();
+                gen = BatteryGeneratorP4D();
                 paramobj = gen.updateBatteryInputParams(paramobj);
 
               otherwise

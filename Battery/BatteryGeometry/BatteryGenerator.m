@@ -4,7 +4,7 @@ classdef BatteryGenerator
 %
 % This class goes through the whole grid setup and is meant to be used as a base class.
 %
-% Example : :class:`BatteryGenerator1D <BatteryGeometry.BatteryGenerator1D>`, :class:`BatteryGenerator2D <BatteryGeometry.BatteryGenerator2D>`, :class:`BatteryGenerator3D <BatteryGeometry.BatteryGenerator3D>`
+% Example : :class:`BatteryGeneratorP2D <BatteryGeometry.BatteryGeneratorP2D>`, :class:`BatteryGeneratorP3D <BatteryGeometry.BatteryGeneratorP3D>`, :class:`BatteryGeneratorP4D <BatteryGeometry.BatteryGeneratorP4D>`
 
     properties
         % Global grid 

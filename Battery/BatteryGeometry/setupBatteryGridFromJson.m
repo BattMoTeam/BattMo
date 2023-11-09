@@ -11,7 +11,7 @@ function [paramobj, gridGenerator] = setupBatteryGridFromJson(paramobj, jsonstru
 
       case '1D'
 
-        gen = BatteryGenerator1D();
+        gen = BatteryGeneratorP2D();
 
         xlength = gen.xlength;
 
@@ -91,7 +91,7 @@ function [paramobj, gridGenerator] = setupBatteryGridFromJson(paramobj, jsonstru
 
       case '3D-demo'
 
-        gen = BatteryGenerator3D();
+        gen = BatteryGeneratorP4D();
 
         zlength = gen.zlength;
         zlength(1) = jsonstruct.NegativeElectrode.Coating.thickness;

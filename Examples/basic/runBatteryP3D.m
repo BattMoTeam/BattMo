@@ -36,8 +36,8 @@ ctrl    = 'Control';
 %% Setup the geometry and computational mesh
 % Here, we setup the 2D computational mesh that will be used for the
 % simulation. The required discretization parameters are already included
-% in the class BatteryGenerator2D.
-gen = BatteryGenerator2D();
+% in the class BatteryGeneratorP3D.
+gen = BatteryGeneratorP3D();
 
 % Now, we update the paramobj with the properties of the mesh.
 paramobj = gen.updateBatteryInputParams(paramobj);

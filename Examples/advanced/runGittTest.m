@@ -44,17 +44,17 @@ modelcase = '2D';
 switch modelcase
   case '1D'
 
-    gen = BatteryGenerator1D();
+    gen = BatteryGeneratorP2D();
 
   case '2D'
-    gen = BatteryGenerator2D();
+    gen = BatteryGeneratorP3D();
 
     % To avoid convergence issues, override the electronic conductivity
     paramobj.(ne).(cc).effectiveElectronicConductivity = 0.1*paramobj.(ne).(cc).electronicConductivity;
     paramobj.(pe).(cc).effectiveElectronicConductivity = 0.1*paramobj.(pe).(cc).electronicConductivity;
 
   case '3D'
-    gen = BatteryGenerator3D();
+    gen = BatteryGeneratorP4D();
 
     fac = 1;
     gen.facx = fac;

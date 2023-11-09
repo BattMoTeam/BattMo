@@ -37,7 +37,7 @@ paramobj = BatteryInputParams(jsonstruct);
 
 %% Setup the geometry and computational mesh
 
-gen = BatteryGenerator1D();
+gen = BatteryGeneratorP2D();
 
 % Now, we update the paramobj with the properties of the mesh.
 paramobj = gen.updateBatteryInputParams(paramobj);
