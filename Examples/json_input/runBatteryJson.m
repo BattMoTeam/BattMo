@@ -3,9 +3,9 @@ function  output = runBatteryJson(jsonstruct, varargin)
     opt = struct('runSimulation'       , true , ...
                  'includeGridGenerator', false);
     opt = merge_options(opt, varargin{:});
-    
+
     mrstModule add ad-core mrst-gui mpfa
-    
+
     % We define some shorthand names for simplicity.
     ne      = 'NegativeElectrode';
     pe      = 'PositiveElectrode';
@@ -18,8 +18,6 @@ function  output = runBatteryJson(jsonstruct, varargin)
     cc      = 'CurrentCollector';
 
     paramobj = BatteryInputParams(jsonstruct);
-
-    paramobj = paramobj.validateInputParams();
 
     [paramobj, gridGenerator] = setupBatteryGridFromJson(paramobj, jsonstruct);
 
@@ -42,8 +40,8 @@ function  output = runBatteryJson(jsonstruct, varargin)
       otherwise
         error('initializationSetup not recognized');
     end
-    
-    %%  Initialize the battery model. 
+
+    %%  Initialize the battery model.
     % The battery model is initialized by sending paramobj to the Battery class
     % constructor. see :class:`Battery <Battery.Battery>`.
 
@@ -53,7 +51,7 @@ function  output = runBatteryJson(jsonstruct, varargin)
     %% Compute the nominal cell capacity and choose a C-Rate
     % The nominal capacity of the cell is calculated from the active materials.
     % This value is then combined with the user-defined C-Rate to set the cell
-    % operational current. 
+    % operational current.
 
     CRate = model.Control.CRate;
 
@@ -64,11 +62,11 @@ function  output = runBatteryJson(jsonstruct, varargin)
 
     dt = total/n;
     dts = rampupTimesteps(total, dt, 5);
-    
+
     step = struct('val', dts, 'control', ones(numel(dts), 1));
 
     % we setup the control by assigning a source and stop function.
-    % control = struct('CCCV', true); 
+    % control = struct('CCCV', true);
     %  !!! Change this to an entry in the JSON with better variable names !!!
 
     switch model.Control.controlPolicy
@@ -102,7 +100,7 @@ function  output = runBatteryJson(jsonstruct, varargin)
     end
 
     % This control is used to set up the schedule
-    schedule = struct('control', control, 'step', step); 
+    schedule = struct('control', control, 'step', step);
 
     switch initializationSetup
       case "given SOC"
@@ -115,21 +113,21 @@ function  output = runBatteryJson(jsonstruct, varargin)
 
     [model, nls] = setupNonLinearSolverFromJson(model, jsonstruct);
 
-        
+
     %% Run the simulation
     if opt.runSimulation
         if isfield(jsonstruct, 'Output') && isfield(jsonstruct.Output, 'saveOutput') && jsonstruct.Output.saveOutput
             saveOptions = jsonstruct.Output.saveOptions;
-            
+
             outputDirectory = saveOptions.outputDirectory;
             name            = saveOptions.name;
             clearSimulation = saveOptions.clearSimulation;
-            
+
             problem = packSimulationProblem(initstate, model, schedule, [], ...
                                             'Directory'      , outputDirectory, ...
                                             'Name'           , name      , ...
                                             'NonLinearSolver', nls);
-            problem.SimulatorSetup.OutputMinisteps = true; 
+            problem.SimulatorSetup.OutputMinisteps = true;
 
             if clearSimulation
                 %% clear previously computed simulation
@@ -137,13 +135,13 @@ function  output = runBatteryJson(jsonstruct, varargin)
             end
             simulatePackedProblem(problem);
             [globvars, states, reports] = getPackedSimulatorOutput(problem);
-            
+
         else
             [~, states, report] = simulateScheduleAD(initstate, model, schedule, 'OutputMinisteps', true, 'NonLinearSolver', nls);
         end
     else
         output = struct('model'    , model    , ...
-                        'paramobj' , paramobj , ... 
+                        'paramobj' , paramobj , ...
                         'schedule' , schedule , ...
                         'initstate', initstate);
         if opt.includeGridGenerator
@@ -154,23 +152,23 @@ function  output = runBatteryJson(jsonstruct, varargin)
     end
 
     %% Process output and recover the output voltage and current from the output states.
-    ind = cellfun(@(x) not(isempty(x)), states); 
+    ind = cellfun(@(x) not(isempty(x)), states);
     states = states(ind);
-    
-    E    = cellfun(@(state) state.Control.E, states); 
+
+    E    = cellfun(@(state) state.Control.E, states);
     I    = cellfun(@(state) state.Control.I, states);
-    time = cellfun(@(state) state.time, states); 
+    time = cellfun(@(state) state.time, states);
 
     output = struct('model'    , model    , ...
                     'paramobj' , paramobj , ...
-                    'schedule' , schedule , ... 
+                    'schedule' , schedule , ...
                     'initstate', initstate, ...
                     'time'     , time     , ... % Unit : s
                     'E'        , E        , ... % Unit : V
                     'I'        , I); ... % Unit : A
 
     output.states = states;
-    
+
     if isfield(jsonstruct, 'Output') ...
         && isfield(jsonstruct.Output, 'variables') ...
         && any(ismember({'energy', 'energyDensity', 'specificEnergy'}, jsonstruct.Output.variables))
@@ -181,7 +179,7 @@ function  output = runBatteryJson(jsonstruct, varargin)
             mass = [];
         end
         vol = sum(model.G.cells.volumes);
-        
+
         [E, I, energyDensity, specificEnergy, energy] = computeEnergyDensity(E, I, time, vol, mass);
 
         output.E              = E;
@@ -189,13 +187,13 @@ function  output = runBatteryJson(jsonstruct, varargin)
         output.energy         = energy;          % Unit : J
         output.energyDensity  = energyDensity;   % Unit : J/L
         output.specificEnergy = specificEnergy;  % Unit : J/kg
-        
+
     end
-    
+
     if opt.includeGridGenerator
         output.gridGenerator = gridGenerator;
     end
-    
+
 end
 
 

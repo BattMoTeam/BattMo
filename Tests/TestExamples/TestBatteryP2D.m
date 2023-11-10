@@ -9,7 +9,7 @@ classdef TestBatteryP2D < matlab.unittest.TestCase
         testSize                   = {'short', 'long'};
         createReferenceData        = {false};
         compareWithReferenceData   = {true};
-        
+
     end
 
     methods
@@ -44,7 +44,6 @@ classdef TestBatteryP2D < matlab.unittest.TestCase
             json = updateJson(json, params, 'validate', validate);
 
             paramobj = BatteryInputParams(json);
-            paramobj = paramobj.validateInputParams();
 
             use_cccv = strcmpi(controlPolicy, 'CCCV');
             if use_cccv

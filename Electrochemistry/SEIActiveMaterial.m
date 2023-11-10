@@ -1,36 +1,37 @@
 classdef SEIActiveMaterial < ActiveMaterial
-    
+
     properties
-        
+
         SolidElectrodeInterface
         SideReaction
-        
+
     end
-    
+
     methods
-        
+
         function model = SEIActiveMaterial(paramobj)
 
             model = model@ActiveMaterial(paramobj);
-            
+            paramobj.validateInputParams();
+
             model.SideReaction = SideReaction(paramobj.SideReaction);
             model.SolidElectrodeInterface = SolidElectrodeInterface(paramobj.SolidElectrodeInterface);
 
             if model.standAlone
                 model = model.setupStandAloneModel();
             end
-            
+
         end
 
         function model = registerVarAndPropfuncNames(model)
 
             model = registerVarAndPropfuncNames@ActiveMaterial(model);
-            
+
             itf = 'Interface';
             sd  = 'SolidDiffusion';
             sei = 'SolidElectrodeInterface';
             sr  = 'SideReaction';
-            
+
             varnames = {};
             % Total reaction rate
             varnames{end + 1} = 'R';
@@ -52,7 +53,7 @@ classdef SEIActiveMaterial < ActiveMaterial
 
             fn = @SEIActiveMaterial.dispatchTemperature;
             model = model.registerPropFunction({{sr, 'T'}, fn, {'T'}});
-            
+
             fn = @SEIActiveMaterial.updatePotentialDrop;
             inputnames = {{'R'}, {'SolidElectrodeInterface', 'delta'}};
             model = model.registerPropFunction({{itf, 'externalPotentialDrop'}, fn, inputnames});
@@ -70,11 +71,11 @@ classdef SEIActiveMaterial < ActiveMaterial
             modelnamespace = {itf};
             propfunction = PropFunction(varname, fn, inputvarnames, modelnamespace);
             model = model.registerPropFunction(propfunction);
-            
+
             fn = @SEIActiveMaterial.dispatchSEIRate;
             inputnames = {{sr, 'R'}};
             model = model.registerPropFunction({{sei, 'R'}, fn, inputnames});
-            
+
             fn = @SEIActiveMaterial.updateSEISurfaceConcentration;
             inputnames = {{sei, 'cInterface'}};
             model = model.registerPropFunction({{sr, 'c'}, fn, inputnames});
@@ -101,108 +102,108 @@ classdef SEIActiveMaterial < ActiveMaterial
             end
 
             model = setupStandAloneModel@ActiveMaterial(model);
-            
+
         end
-        
+
         function state = dispatchTemperature(model, state)
 
             state = dispatchTemperature@ActiveMaterial(model, state);
             state.SideReaction.T = state.T;
-            
+
         end
 
         function state = dispatchE(model, state)
 
             state.phi = state.E;
-            
+
         end
 
         function state = setupControl(model, state)
 
             state.R = state.controlCurrentSource;
-            
+
         end
 
         function state = updateSEISurfaceConcentration(model, state)
 
             sei = 'SolidElectrodeInterface';
             sr  = 'SideReaction';
-            
+
             state.(sr).c = state.(sei).cInterface;
-            
+
         end
 
         function state = updateChargeCons(model, state)
             itf = 'Interface';
             F    = model.(itf).constants.F;
-            
+
             I = state.I;
             R = state.R;
 
             state.chargeCons = I - R*F;
-            
+
         end
-        
+
         function state = dispatchSEIRate(model, state)
 
             sei = 'SolidElectrodeInterface';
             sr  = 'SideReaction';
-            
+
             state.(sei).R = state.(sr).R;
-            
+
         end
 
         function state = updatePhi(model, state)
 
             state = updatePhi@ActiveMaterial(model, state);
             state.SideReaction.phiElectrode = state.E;
-            
-        end         
-        
+
+        end
+
         function state = assembleSEIchargeCons(model, state)
 
             itf = 'Interface';
             sr  = 'SideReaction';
-            
+
             vsa = model.(itf).volumetricSurfaceArea;
-            
+
             Rint = state.(itf).R;
             Rsei = state.(sr).R;
             R = state.R;
-            
+
             state.seiInterfaceChargeCons = R - Rint - Rsei;
-            
+
         end
-        
+
         function state = updatePotentialDrop(model, state)
-            
+
             sei = 'SolidElectrodeInterface';
             itf = 'Interface';
-            sr  = 'SideReaction';           
-            
+            sr  = 'SideReaction';
+
             kappaSei = model.(sei).conductivity;
             F = model.(itf).constants.F;
-            
+
             R     = state.R;
             delta = state.(sei).delta;
-            
+
             dphi = F*delta.*R/kappaSei;
-            
+
             state.(itf).externalPotentialDrop = dphi;
             state.(sr).externalPotentialDrop  = dphi;
-            
+
         end
-        
+
         function cleanState = addStaticVariables(model, cleanState, state, state0)
-            
+
             cleanState = addStaticVariables@ActiveMaterial(model, cleanState, state);
-            
+
             sei = 'SolidElectrodeInterface';
             sr  = 'SideReaction';
-            
+
             cleanState.(sei).cExternal     = state.(sei).cExternal;
             cleanState.(sr).phiElectrolyte = state.(sr).phiElectrolyte;
-            
+
         end
 
         function [problem, state] = getEquations(model, state0, state,dt, drivingForces, varargin)
@@ -211,7 +212,7 @@ classdef SEIActiveMaterial < ActiveMaterial
             sd  = 'SolidDiffusion';
             sei = 'SolidElectrodeInterface';
             sr  = 'SideReaction';
-            
+
             time = state0.time + dt;
             state = model.initStateAD(state);
 
@@ -220,16 +221,16 @@ classdef SEIActiveMaterial < ActiveMaterial
             for ifunc = 1 : numel(funcCallList)
                 eval(funcCallList{ifunc});
             end
-            
+
             %% Setup equations and add some scaling
             F   = model.(sd).constants.F;
 
             scalingcoef = F;
             state.chargeCons = (1/scalingcoef)*state.chargeCons;
-            
+
             rp  = model.(sd).particleRadius;
             vsa = model.(sd).volumetricSurfaceArea;
-            
+
             scalingcoef = vsa*(4*pi*rp^3/3);
             state.(sd).massCons         = (1/scalingcoef)*state.(sd).massCons;
             state.(sd).solidDiffusionEq = (1/scalingcoef)*state.(sd).solidDiffusionEq;
@@ -239,27 +240,27 @@ classdef SEIActiveMaterial < ActiveMaterial
 
             scalingcoef = 0.5*Mw/rho;
             state.(sei).widthEq = (1/scalingcoef)*state.(sei).widthEq;
-            
+
             deltaref = 1*nano*meter;
 
             scalingcoef = deltaref;
             state.(sei).interfaceBoundaryEq = (1/scalingcoef)*state.(sei).interfaceBoundaryEq;
             state.(sei).massCons            = (1/scalingcoef)*state.(sei).massCons;
-            
+
             for ieq = 1 : numel(model.equationVarNames)
                 eqs{ieq} = model.getProp(state, model.equationVarNames{ieq});
-            end            
+            end
 
             names       = model.equationNames;
             types       = model.equationTypes;
             primaryVars = model.primaryVarNames;
-            
+
             problem = LinearizedProblem(eqs, types, names, primaryVars, state, dt);
-            
+
         end
-        
+
     end
-    
+
 end
 
 

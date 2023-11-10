@@ -39,7 +39,6 @@ jsonstruct.use_thermal = false;
 jsonstruct.include_current_collectors = false;
 
 paramobj = BatteryInputParams(jsonstruct);
-paramobj = paramobj.validateInputParams();
 
 use_cccv = false;
 if use_cccv

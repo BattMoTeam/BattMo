@@ -2,15 +2,14 @@ classdef TestChen2020 < matlab.unittest.TestCase
 
     methods
 
-        
+
         function states = testchen2020(test)
-            
+
             jsonstruct = parseBattmoJson(fullfile('ParameterData','ParameterSets','Chen2020','chen2020_lithium_ion_battery.json'));
 
             paramobj = BatteryInputParams(jsonstruct);
             paramobj.include_current_collectors = false;
-            paramobj = paramobj.validateInputParams();
-            
+
             % Some shorthands used for the sub-models
             ne    = 'NegativeElectrode';
             pe    = 'PositiveElectrode';
@@ -19,13 +18,13 @@ classdef TestChen2020 < matlab.unittest.TestCase
             sd    = 'SolidDiffusion';
             elyte = 'Electrolyte';
             ctrl  = 'Control';
-            
+
             %% We setup the battery geometry ("bare" battery with no current collector).
             gen = BareBatteryGeneratorP4D();
             % We update pamobj with grid data
             paramobj = gen.updateBatteryInputParams(paramobj);
 
-            %%  The Battery model is initialized by sending paramobj to the Battery class constructor 
+            %%  The Battery model is initialized by sending paramobj to the Battery class constructor
 
             model = Battery(paramobj);
 
@@ -33,15 +32,15 @@ classdef TestChen2020 < matlab.unittest.TestCase
 
             model.Control.Imax = 5;
 
-            %% We setup the schedule 
+            %% We setup the schedule
             % We use different time step for the activation phase (small time steps) and the following discharging phase
-            % We start with rampup time steps to go through the activation phase 
+            % We start with rampup time steps to go through the activation phase
 
-            fac   = 2; 
-            total = 1.4*hour; 
-            n     = 100; 
-            dt0   = total*1e-6; 
-            times = getTimeSteps(dt0, n, total, fac); 
+            fac   = 2;
+            total = 1.4*hour;
+            n     = 100;
+            dt0   = total*1e-6;
+            times = getTimeSteps(dt0, n, total, fac);
             dt    = diff(times);
             dt    = dt(1 : end);
             step  = struct('val', dt, 'control', ones(size(dt)));
@@ -58,7 +57,7 @@ classdef TestChen2020 < matlab.unittest.TestCase
             control = struct('src', srcfunc, 'IEswitch', true);
 
             % This control is used to set up the schedule
-            schedule = struct('control', control, 'step', step); 
+            schedule = struct('control', control, 'step', step);
 
             %%  We setup the initial state
 
@@ -71,7 +70,7 @@ classdef TestChen2020 < matlab.unittest.TestCase
             initstate = model.updateTemperature(initstate);
 
             % we setup negative electrode initial state
-            nitf = bat.(ne).(am).(itf); 
+            nitf = bat.(ne).(am).(itf);
 
             % We bypass the solid diffusion equation to set directly the particle surface concentration
             c = 29866.0;
@@ -95,7 +94,7 @@ classdef TestChen2020 < matlab.unittest.TestCase
 
             % we setup positive electrode initial state
 
-            pitf = bat.(pe).(am).(itf); 
+            pitf = bat.(pe).(am).(itf);
 
             c = 17038.0;
 
@@ -125,25 +124,25 @@ classdef TestChen2020 < matlab.unittest.TestCase
             initstate.(ctrl).I = 0;
             initstate.(ctrl).ctrlType = 'constantCurrent';
 
-            % Setup nonlinear solver 
-            nls = NonLinearSolver(); 
+            % Setup nonlinear solver
+            nls = NonLinearSolver();
             % Change default maximum iteration number in nonlinear solver
-            nls.maxIterations = 10; 
+            nls.maxIterations = 10;
             % Change default behavior of nonlinear solver, in case of error
-            nls.errorOnFailure = false; 
+            nls.errorOnFailure = false;
             linearsolver = 'direct';
             switch linearsolver
               case 'agmg'
                 mrstModule add agmg
-                nls.LinearSolver = AGMGSolverAD('verbose', true, 'reduceToCell', true); 
-                nls.LinearSolver.tolerance = 1e-3; 
-                nls.LinearSolver.maxIterations = 30; 
-                nls.maxIterations = 10; 
+                nls.LinearSolver = AGMGSolverAD('verbose', true, 'reduceToCell', true);
+                nls.LinearSolver.tolerance = 1e-3;
+                nls.LinearSolver.maxIterations = 30;
+                nls.maxIterations = 10;
                 nls.verbose = 10;
               case 'battery'
                 %nls.LinearSolver = LinearSolverBatteryExtra('verbose', false, 'reduceToCell', true,'verbosity',3,'reuse_setup',false,'method','matlab_p_gs');
                 nls.LinearSolver = LinearSolverBatteryExtra('verbose', false, 'reduceToCell', false,'verbosity',3,'reuse_setup',false,'method','direct');
-                nls.LinearSolver.tolerance=0.5e-4*2;          
+                nls.LinearSolver.tolerance=0.5e-4*2;
               case 'direct'
                 disp('standard direct solver')
               otherwise
@@ -151,17 +150,17 @@ classdef TestChen2020 < matlab.unittest.TestCase
             end
 
             % Change default tolerance for nonlinear solver
-            model.nonlinearTolerance = 1e-5; 
+            model.nonlinearTolerance = 1e-5;
             % Set verbosity
             model.verbose = false;
 
             model.AutoDiffBackend= AutoDiffBackend();
 
             % Run simulation
-            [wellSols, states, report] = simulateScheduleAD(initstate, model, schedule, 'OutputMinisteps', true, 'NonLinearSolver', nls); 
+            [wellSols, states, report] = simulateScheduleAD(initstate, model, schedule, 'OutputMinisteps', true, 'NonLinearSolver', nls);
 
         end
-        
+
     end
 
     methods (Test)
@@ -174,7 +173,7 @@ classdef TestChen2020 < matlab.unittest.TestCase
             loadChenPybammSolution;
             [t1, u1] = deal(t, u);
 
-            ind = cellfun(@(x) not(isempty(x)), states); 
+            ind = cellfun(@(x) not(isempty(x)), states);
             states = states(ind);
             time = cellfun(@(x) x.time, states);
             time = time / hour;
@@ -186,9 +185,9 @@ classdef TestChen2020 < matlab.unittest.TestCase
 
             assert(norm(pb - battmo) / norm(pb) < 0.00285);
         end
-        
+
     end
-    
+
 end
 
 %{

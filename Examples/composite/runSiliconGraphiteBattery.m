@@ -28,7 +28,7 @@ itf = 'Interface';
 jsonstruct_composite_material = parseBattmoJson('ParameterData/BatteryCellParameters/LithiumIonBatteryCell/lithium_ion_battery_nmc_silicon_graphite.json');
 
 %%
-% For the remaining properties, we consider a standard data set 
+% For the remaining properties, we consider a standard data set
 jsonstruct_cell = parseBattmoJson('ParameterData/BatteryCellParameters/LithiumIonBatteryCell/lithium_ion_battery_nmc_graphite.json');
 
 %%
@@ -64,13 +64,8 @@ paramobj.(ne).(co).(ad).massFraction  = 0.01;
 paramobj.Control.CRate = 0.1;
 
 %%
-% We validate the :code:`InputParams` using the method :code:`validateInputParams` which belongs to the parent class. This step 
-Paramobj = paramobj.validateInputParams();
-
+% Now, we update the paramobj with the properties of the mesh.
 gen = BatteryGeneratorP2D();
-
-%% 
-% Now, we update the paramobj with the properties of the mesh. 
 paramobj = gen.updateBatteryInputParams(paramobj);
 
 %% Model Instantiation
@@ -98,7 +93,7 @@ srcfunc = @(time, I, E) rampupSwitchControl(time, tup, I, E, ...
                                             model.Control.lowerCutoffVoltage);
 control = struct('src', srcfunc, 'IEswitch', true);
 
-schedule = struct('control', control, 'step', step); 
+schedule = struct('control', control, 'step', step);
 
 %% Setup the initial state of the model
 %
@@ -106,8 +101,8 @@ schedule = struct('control', control, 'step', step);
 
 initstate = model.setupInitialState();
 
-%% Setup the properties of the nonlinear solver 
-% We adjust some settings for the nonlinear solver 
+%% Setup the properties of the nonlinear solver
+% We adjust some settings for the nonlinear solver
 nls = NonLinearSolver();
 
 %%
@@ -122,20 +117,20 @@ nls.timeStepSelector=StateChangeTimeStepSelector('TargetProps', {{'Control','E'}
 %%
 % We adjust the nonlinear tolerance
 model.nonlinearTolerance = 1e-3*model.Control.Imax;
-%% 
+%%
 % We use verbosity
 model.verbose = true;
 
 
 %% Run the simulation for the discharge
 
-[wellSols, states, report] = simulateScheduleAD(initstate, model, schedule, 'OutputMinisteps', true, 'NonLinearSolver', nls); 
+[wellSols, states, report] = simulateScheduleAD(initstate, model, schedule, 'OutputMinisteps', true, 'NonLinearSolver', nls);
 
 dischargeStates = states;
 
 %% Setup charge schedule
 
-%% 
+%%
 % We use the last computed state of the discharge as the initial state for the charge period.
 initstate = states{end};
 
@@ -145,7 +140,7 @@ srcfunc = @(time, I, E) rampupSwitchControl(time, tup, I, E, ...
                                             -model.Control.Imax, ...
                                             model.Control.upperCutoffVoltage);
 control = struct('src', srcfunc, 'IEswitch', true);
-schedule = struct('control', control, 'step', step); 
+schedule = struct('control', control, 'step', step);
 
 %% Run the simulation for the charge perios
 [wellSols, states, report] = simulateScheduleAD(initstate, model, schedule, 'OutputMinisteps', true, 'NonLinearSolver', nls);
@@ -156,7 +151,7 @@ chargeStates = states;
 
 %%
 % We concatenate the states we have computed
-allStates = vertcat(dischargeStates, chargeStates); 
+allStates = vertcat(dischargeStates, chargeStates);
 
 %%
 % Some ploting setup
@@ -166,9 +161,9 @@ set(0, 'defaulttextfontsize', 18);
 
 %%
 % We extract the voltage, current and time from the simulation output
-E    = cellfun(@(x) x.Control.E, allStates); 
+E    = cellfun(@(x) x.Control.E, allStates);
 I    = cellfun(@(x) x.Control.I, allStates);
-time = cellfun(@(x) x.time, allStates); 
+time = cellfun(@(x) x.time, allStates);
 
 %%
 %  We plot the voltage and current
@@ -194,7 +189,7 @@ for istate = 1 : numel(allStates)
     allStates{istate} = model.evalVarName(allStates{istate}, {ne, co, 'SOC'});
 end
 
-SOC  = cellfun(@(x) x.(ne).(co).SOC, allStates); 
+SOC  = cellfun(@(x) x.(ne).(co).SOC, allStates);
 SOC1 = cellfun(@(x) x.(ne).(co).(am1).SOC, allStates);
 SOC2 = cellfun(@(x) x.(ne).(co).(am2).SOC, allStates);
 

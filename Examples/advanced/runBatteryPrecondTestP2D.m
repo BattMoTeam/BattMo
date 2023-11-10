@@ -55,8 +55,6 @@ paramobj.(pe).(am).InterDiffusionCoefficient = 0;
 % paramobj.(ne).(am).(sd).N = 5;
 % paramobj.(pe).(am).(sd).N = 5;
 
-paramobj = paramobj.validateInputParams();
-
 use_cccv = false;
 if use_cccv
     cccvstruct = struct( 'controlPolicy'     , 'CCCV',  ...
@@ -73,16 +71,16 @@ end
 %% Setup the geometry and computational mesh
 % Here, we setup the 1D computational mesh that will be used for the
 % simulation. The required discretization parameters are already included
-% in the class BatteryGeneratorP2D. 
+% in the class BatteryGeneratorP2D.
 gen = BatteryGeneratorP2D();
 gen.fac = 100;
 gen = gen.applyResolutionFactors();
 
-% Now, we update the paramobj with the properties of the mesh. 
+% Now, we update the paramobj with the properties of the mesh.
 paramobj = gen.updateBatteryInputParams(paramobj);
 
 
-%%  Initialize the battery model. 
+%%  Initialize the battery model.
 % The battery model is initialized by sending paramobj to the Battery class
 % constructor. see :class:`Battery <Battery.Battery>`.
 model = Battery(paramobj);
@@ -100,11 +98,11 @@ end
 %% Compute the nominal cell capacity and choose a C-Rate
 % The nominal capacity of the cell is calculated from the active materials.
 % This value is then combined with the user-defined C-Rate to set the cell
-% operational current. 
+% operational current.
 
 CRate = model.Control.CRate;
 
-%% Setup the time step schedule 
+%% Setup the time step schedule
 % Smaller time steps are used to ramp up the current from zero to its
 % operational value. Larger time steps are then used for the normal
 % operation.
@@ -123,7 +121,7 @@ dt = total/n;
 step = struct('val', dt*ones(n, 1), 'control', ones(n, 1));
 
 % we setup the control by assigning a source and stop function.
-% control = struct('CCCV', true); 
+% control = struct('CCCV', true);
 %  !!! Change this to an entry in the JSON with better variable names !!!
 
 switch model.Control.controlPolicy
@@ -146,9 +144,9 @@ schedule = struct('control', control, 'step', step);
 %% Setup the initial state of the model
 % The initial state of the model is setup using the model.setupInitialState() method.
 
-initstate = model.setupInitialState(); 
+initstate = model.setupInitialState();
 
-%% Setup the properties of the nonlinear solver 
+%% Setup the properties of the nonlinear solver
 nls = NonLinearSolver();
 
 clear setup
@@ -156,20 +154,20 @@ clear setup
 casenumber = 4;
 
 switch casenumber
-    
+
   case 1
-    
+
     setup.library = 'matlab';
     setup.method = 'direct';
 
   case 2
-    
+
     setup.method = 'gmres';
     setup.options.method = 'grouped';
     setup.options.solverspec.name = 'agmg'; % not used for now
 
   case 3
-    
+
     setup.method = 'gmres';
     setup.options.method = 'separate';
     solvers = {};
@@ -196,9 +194,9 @@ switch casenumber
     end
     jsonsrc = fileread(jsonfilename);
     setup = jsondecode(jsonsrc);
-    
+
   otherwise
-    
+
     error('case number not recognized');
 
 end
@@ -229,18 +227,18 @@ model.verbose = true;
 %% Run the simulation
 % profile off
 % profile on
-[wellSols, states, report] = simulateScheduleAD(initstate, model, schedule, 'OutputMinisteps', true, 'NonLinearSolver', nls); 
+[wellSols, states, report] = simulateScheduleAD(initstate, model, schedule, 'OutputMinisteps', true, 'NonLinearSolver', nls);
 % profile off
 % profile viewer
 
 %% Process output and recover the output voltage and current from the output states.
-ind = cellfun(@(x) not(isempty(x)), states); 
+ind = cellfun(@(x) not(isempty(x)), states);
 states = states(ind);
-E = cellfun(@(x) x.Control.E, states); 
+E = cellfun(@(x) x.Control.E, states);
 I = cellfun(@(x) x.Control.I, states);
 Tmax = cellfun(@(x) max(x.ThermalModel.T), states);
 % [SOCN, SOCP] =  cellfun(@(x) model.calculateSOC(x), states);
-time = cellfun(@(x) x.time, states); 
+time = cellfun(@(x) x.time, states);
 
 figure
 plot(time, E);
@@ -262,25 +260,25 @@ switch setup.method
   case "grouped-gmres"
 
     pits = zeros(numel(its.time), 1);
-    
+
     counter = 1;
-    
+
     for icontrol = 1 : numel(report.ControlstepReports)
-        
+
         creport = report.ControlstepReports{icontrol};
 
         for istep = 1 : numel(creport.StepReports)
 
             sreport = creport.StepReports{istep};
-            
+
             for k = 1 : numel(sreport.NonlinearReport);
-                
+
                 nreport = sreport.NonlinearReport{k};
                 try
                     it = nreport.LinearSolver.precondReports.Iterations;
                     pits(counter) = pits(counter) + it;
                 end
-                
+
             end
         end
     end
@@ -289,33 +287,33 @@ switch setup.method
     plot(its.time, pits./its.total);
     xlabel('time');
     title('preconditioner iteration/linear iteration');
-    
+
   case "separate-variable-gmres"
 
     npreconds = numel(setup.preconditioners);
     pits = zeros(numel(its.time), npreconds);
 
     counter = 1;
-    
+
     for icontrol = 1 : numel(report.ControlstepReports)
-        
+
         creport = report.ControlstepReports{icontrol};
 
         for istep = 1 : numel(creport.StepReports)
 
             sreport = creport.StepReports{istep};
-            
+
             for k = 1:numel(sreport.NonlinearReport);
-                
+
                 nreport = sreport.NonlinearReport{k};
-                
+
                 for iprecond = 1 : npreconds
 
                     try
                         it = nreport.LinearSolver.precondReports{iprecond}.Iterations;
                         pits(counter, iprecond) = pits(counter, iprecond) + it;
                     end
-                    
+
                 end
             end
 
@@ -338,7 +336,7 @@ switch setup.method
         end
         titlestr = sprintf('preconditioner iteration/linear iteration - %s', titlestr);
         title(titlestr);
-        
+
     end
 
 end

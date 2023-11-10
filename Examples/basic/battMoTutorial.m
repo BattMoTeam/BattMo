@@ -70,7 +70,6 @@ jsonstruct.(ne).(am).diffusionModelType = 'full';
 % instantiated using the jsonstruct we just created:
 
 paramobj = BatteryInputParams(jsonstruct);
-paramobj = paramobj.validateInputParams();
 
 %%%
 % It is also possible to update the properties of this paramobj in a

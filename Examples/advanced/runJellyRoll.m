@@ -10,28 +10,28 @@ close all
 % Setup mrst modules
 mrstModule add ad-core mrst-gui mpfa agmg linearsolvers
 
-%% We setup the geometrical parameters for a 4680 battery. 
+%% We setup the geometrical parameters for a 4680 battery.
 %% Those will be gathered in structure spiralparams (see below) and used by SpiralBatteryGenerator to generate the spiral layered geometry of the jelly roll
 
 % Inner radius of the jelly roll
-rInner = 2*milli*meter; 
+rInner = 2*milli*meter;
 
 % widths of each component ordered as
 % - positive current collector
 % - positive electrode
-% - electrolyte separator 
+% - electrolyte separator
 % - negative electrode
 % - negative current collector
 
-widths = [25, 64, 15, 57, 15]*micro*meter; 
+widths = [25, 64, 15, 57, 15]*micro*meter;
 
 widthDict = containers.Map(...
-    {'Separator'               , ... 
+    {'Separator'               , ...
      'NegativeCoating'         , ...
      'NegativeCurrentCollector', ...
      'PositiveCoating'         , ...
      'PositiveCurrentCollector'}, ...
-    widths); 
+    widths);
 
 nwidths = [widthDict('PositiveCoating')          ;...
            widthDict('PositiveCurrentCollector') ;...
@@ -40,29 +40,29 @@ nwidths = [widthDict('PositiveCoating')          ;...
            widthDict('NegativeCoating')          ;...
            widthDict('NegativeCurrentCollector') ;...
            widthDict('NegativeCoating')          ;...
-           widthDict('Separator')]; 
+           widthDict('Separator')];
 
 dr = sum(nwidths);
 
 % Outer radius of the jelly roll
 rOuter = 22.36*milli*meter;
 % Height of the jelly roll
-L = 80*milli*meter; 
+L = 80*milli*meter;
 
-dR = rOuter - rInner; 
+dR = rOuter - rInner;
 % Computed number of windings
 nwindings = ceil(dR/dr);
 
 % number of discretization cells in radial direction for each component.
-nrDict = containers.Map({'Separator'               , ... 
+nrDict = containers.Map({'Separator'               , ...
                          'NegativeCoating'         , ...
                          'NegativeCurrentCollector', ...
                          'PositiveCoating'         , ...
                          'PositiveCurrentCollector'}, ...
-                        [3, 3, 3, 3, 3]); 
+                        [3, 3, 3, 3, 3]);
 
 % Number of discretization cells in the angular direction
-nas = 10; 
+nas = 10;
 
 % Number of discretization cells in the longitudonal
 nL = 3;
@@ -76,7 +76,7 @@ testing = true;
 if testing
     fprintf('We setup a smaller case for quicker testing\n');
     rOuter = rInner + 1*milli*meter;
-dR = rOuter - rInner; 
+dR = rOuter - rInner;
 % Computed number of windings
 nwindings = ceil(dR/dr);
 nL = 2;
@@ -90,7 +90,7 @@ spiralparams = struct('nwindings'   , nwindings, ...
                       'L'           , L        , ...
                       'nL'          , nL       , ...
                       'tabparams'   , tabparams, ...
-                      'angleuniform', true); 
+                      'angleuniform', true);
 
 % The input material parameters given in json format are used to populate the paramobj object.
 jsonstruct = parseBattmoJson(fullfile('ParameterData','BatteryCellParameters','LithiumIonBatteryCell','lithium_ion_battery_nmc_graphite.json'));
@@ -116,7 +116,7 @@ diffusionModelType = 'full';
 jsonstruct.(pe).(co).(am).diffusionModelType = diffusionModelType;
 jsonstruct.(ne).(co).(am).diffusionModelType = diffusionModelType;
 
-paramobj = BatteryInputParams(jsonstruct); 
+paramobj = BatteryInputParams(jsonstruct);
 
 % paramobj.(ne).(am).(sd).N = 5;
 % paramobj.(pe).(am).(sd).N = 5;
@@ -124,70 +124,68 @@ paramobj = BatteryInputParams(jsonstruct);
 paramobj.(ctrl).lowerCutoffVoltage = 3;
 paramobj.(ctrl).CRate = 0.1;
 
-paramobj = paramobj.validateInputParams();
-
 % th = 'ThermalModel';
 % paramobj.(th).externalHeatTransferCoefficientSideFaces = 100*watt/meter^2;
 % paramobj.(th).externalHeatTransferCoefficientTopFaces = 10*watt/meter^2;
 
-gen = SpiralBatteryGenerator(); 
+gen = SpiralBatteryGenerator();
 
 paramobj = gen.updateBatteryInputParams(paramobj, spiralparams);
 
-model = Battery(paramobj); 
+model = Battery(paramobj);
 model.AutoDiffBackend= AutoDiffBackend();
 
 %% Setup schedule
 
 CRate = model.(ctrl).CRate;
-fac   = 2; 
-total = 1.1*hour/CRate; 
-n     = 10; 
-dt0   = total*1e-6; 
-times = getTimeSteps(dt0, n, total, fac); 
+fac   = 2;
+total = 1.1*hour/CRate;
+n     = 10;
+dt0   = total*1e-6;
+times = getTimeSteps(dt0, n, total, fac);
 
 % times = times(times < 4200);
 
 %% We compute the cell capacity, which used to compute schedule from CRate
 
-step = struct('val', diff(times), 'control', ones(numel(times) - 1, 1)); 
+step = struct('val', diff(times), 'control', ones(numel(times) - 1, 1));
 
-tup = 0.1/CRate; 
+tup = 0.1/CRate;
 
 simcase = 'discharge';
 
 switch simcase
-    
+
   case 'discharge'
-    
+
     srcfunc = @(time, I, E) rampupSwitchControl(time, tup, I, E, ...
                                                 model.Control.Imax, ...
                                                 model.Control.lowerCutoffVoltage);
     % we setup the control by assigning a source and stop function.
     control = struct('src', srcfunc, 'IEswitch', true);
-    schedule  = struct('control', control, 'step', step); 
+    schedule  = struct('control', control, 'step', step);
 
     %% We setup the initial state
-    initstate = model.setupInitialState(); 
+    initstate = model.setupInitialState();
     initElytec = 1*mol/litre;
     initstate.Electrolyte.c = initElytec*ones(model.Electrolyte.G.cells.num, 1);
-    
+
   case 'charge'
-    
+
     model.SOC = 0.01;
     initstate = model.setupInitialState();
     srcfunc  = @(time, I, E) rampupSwitchControl(time, tup, I, E, ...
                                                  - model.Control.Imax, ...
-                                                 model.Control.lowerCutoffVoltage); 
+                                                 model.Control.lowerCutoffVoltage);
     control = struct('src', srcfunc, 'IEswitch', true);
-    schedule = struct('control', control, 'step', step); 
-    
+    schedule = struct('control', control, 'step', step);
+
   otherwise
     error('simcase not recognized')
 
 end
 
-%% Setup the properties of the nonlinear solver 
+%% Setup the properties of the nonlinear solver
 nls = NonLinearSolver();
 
 clear setup
@@ -196,13 +194,13 @@ casenumber = 3;
 % casenumber = 3;
 
 switch casenumber
-    
+
   case 1
-    
+
     setup.library = 'matlab';
 
   case 2
-    
+
     setup.method = 'gmres';
     setup.options.method = 'grouped';
     setup.options.solverspec.name = 'agmg'; % not used for now
@@ -244,9 +242,9 @@ switch casenumber
     end
 
     setup.verbose = 0;
-    
+
   otherwise
-    
+
     error('case number not recognized');
 
 end
@@ -298,7 +296,7 @@ if dopacked
     problem = packSimulationProblem(initstate, model, schedule, dataFolder, ...
                                     'Name'           , 'jellyroll', ...
                                     'NonLinearSolver', nls);
-    problem.SimulatorSetup.OutputMinisteps = true; 
+    problem.SimulatorSetup.OutputMinisteps = true;
 
     clearSimulation = true;
     if clearSimulation
@@ -309,24 +307,24 @@ if dopacked
     [globvars, states, reports] = getPackedSimulatorOutput(problem);
 
 else
-    
+
     fn = afterStepConvergencePlots(nls);
 
-    [~, states, reports] = simulateScheduleAD(initstate, model, schedule, ... 
+    [~, states, reports] = simulateScheduleAD(initstate, model, schedule, ...
                                               'NonLinearSolver', nls, ...
                                               'afterStepFn'    , fn);
 
     reports = reports.ControlstepReports;
-    
+
 end
 
 %% Process output and recover the output voltage and current from the output states.
 
-ind = cellfun(@(x) not(isempty(x)), states); 
+ind = cellfun(@(x) not(isempty(x)), states);
 states = states(ind);
-E = cellfun(@(x) x.Control.E, states); 
+E = cellfun(@(x) x.Control.E, states);
 I = cellfun(@(x) x.Control.I, states);
-time = cellfun(@(x) x.time, states); 
+time = cellfun(@(x) x.time, states);
 
 figure
 plot(time, E, 'linewidth', 3);
