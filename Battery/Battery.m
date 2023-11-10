@@ -49,6 +49,8 @@ classdef Battery < BaseModel
 
             model = model@BaseModel();
 
+            paramobj.validateInputParams();
+
             % All the submodels should have same backend (this is not assigned automaticallly for the moment)
             model.AutoDiffBackend = SparseAutoDiffBackend('useBlocks', false);
 
@@ -1545,7 +1547,7 @@ classdef Battery < BaseModel
             cond_pcc = model.(pe).(mat).effectiveElectronicConductivity;
             [trans_pcc, cells] = model.(pe).(mat).operators.transFaceBC(faces);
 
-            state.Control.EIequation = sum(cond_pcc.*trans_pcc.*(state.(pe).(mat).phi(cells) - E)) - I;
+            state.Control.EIequation = sum(cond_pcc.*trans_pcc.*(phi(cells) - E)) - I;
 
 
         end
