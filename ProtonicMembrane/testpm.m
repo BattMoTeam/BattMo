@@ -1,5 +1,5 @@
-% clear all
-% close all
+clear all
+close all
 
 mrstModule add ad-core
 

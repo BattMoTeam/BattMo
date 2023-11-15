@@ -26,7 +26,6 @@ cgt.printRootVariables();
 cgt.printTailVariables();
 
 % plot computational graph
-[g, edgelabels] = cgt.getComputationalGraph();
-
 figure
-h = plot(g, 'nodefontsize', 14);
+cgt.plotComputationalGraph('nodefontsize', 14);
+
