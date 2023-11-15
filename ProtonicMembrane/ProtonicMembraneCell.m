@@ -396,7 +396,7 @@ classdef ProtonicMembraneCell < BaseModel
         
         function forces = getValidDrivingForces(model)
             
-            forces = getValidDrivingForces@PhysicalModel(model);
+            forces = getValidDrivingForces@BaseModel(model);
             forces.src = [];
             forces.alpha = [];
             
