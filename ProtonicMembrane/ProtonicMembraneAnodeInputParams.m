@@ -17,6 +17,8 @@ classdef ProtonicMembraneAnodeInputParams < ProtonicMembraneElectrodeInputParams
         O2_conc_feed
         steam_ratio
         Ptot
+
+        gasSupplyType
         
     end
     

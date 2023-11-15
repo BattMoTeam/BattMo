@@ -7,6 +7,10 @@ classdef ProtonicMembraneElectrode < BaseModel
         Eocv % Open circuit potential (value depends on conditions at electrode)
         
         constants
+
+        gasSupplyType % Either 'coupled' or 'notCoupled'
+        nGas          % Number of gas (each of them will have a partial pressure). Only needed when gasSupplyType == 'coupled'
+        gasInd        % Structure whose fieldname give index number of the corresponding gas component.
         
     end
     
@@ -16,9 +20,14 @@ classdef ProtonicMembraneElectrode < BaseModel
 
             model = model@BaseModel();
 
-            fdnames = {'T', ...
-                       'E_0'};
+            fdnames = {'T'  , ...
+                       'E_0', ...
+                       'gasSupplyType'};
             model = dispatchParams(model, paramobj, fdnames);
+
+            if isempty(model.gasSupplyType)
+                model.gasSupplyType = 'notCoupled';
+            end
             
             model.constants = PhysicalConstants();
             
@@ -50,6 +59,16 @@ classdef ProtonicMembraneElectrode < BaseModel
             varnames{end + 1} = 'jElEquation';
             % Definition equation for jHp
             varnames{end + 1} = 'jHpEquation';
+
+            switch model.gasSupplyType
+              case 'notCoupled'
+                % nothing to add
+              case 'coupled'
+                varnames{end + 1} = VarName({}, 'pressures', model.nGas);
+              otherwise
+                error('gasSupplyType');
+            end
+            
             model = model.registerVarNames(varnames);
         
 

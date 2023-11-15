@@ -64,11 +64,17 @@ classdef ProtonicMembraneAnode < ProtonicMembraneElectrode
             f = c.F/(c.R*T);
             i_0 = 1./(R_ct.*f.*model.n); % charge-transfer current density
 
+
+            % Setup the gas components
+            gasInd.H2O = 1;
+            gasInd.O2  = 2;
+            nGas = 2;
+            
             % Assign the computed values
-            
-            model.i_0   = i_0;
-            model.Eocv = Eocv;
-            
+            model.i_0    = i_0;
+            model.Eocv   = Eocv;
+            model.nGas   = nGas;
+            model.gasInd = gasInd;
             
         end
         
@@ -76,9 +82,20 @@ classdef ProtonicMembraneAnode < ProtonicMembraneElectrode
         
             model = registerVarAndPropfuncNames@ProtonicMembraneElectrode(model);
 
+
+            varnames = {};
+            % charge Transfer Current Density
+            varnames{end + 1} = 'chargeTransferCurrentDensity';
+
+            model = model.registerVarNames(varnames);
+            
             fn = @ProtonicMembraneAnode.updateJHp;
             inputnames = {'eta'};
             model = model.registerPropFunction({'jHp', fn, inputnames});
+
+            fn = @ProtonicMembraneAnode.updateI0;
+            inputnames = {};
+            model = model.registerPropFunction({'chargeTransferCurrentDensity', fn, inputnames});
             
             % fn = @ProtonicMembraneAnode.updateEta2;
             % inputnames = {'j', 'alpha'};
@@ -88,9 +105,14 @@ classdef ProtonicMembraneAnode < ProtonicMembraneElectrode
             % inputnames = {'eta', 'pi', 'Eocv'};
             % model = model.registerPropFunction({'phi', fn, inputnames});
 
-
         end
         
+
+        function state = updateI0(model, state)
+
+            state.chargeTransferCurrentDensity = model.i_0;
+            
+        end
         
         function state = updateJHp(model, state)
             
