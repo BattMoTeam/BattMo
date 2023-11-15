@@ -128,10 +128,10 @@ classdef BaseModel < PhysicalModel
             
             if isa(varname, 'char')
                 varname = VarName({}, varname);
-                model = model.registerExtraVarName(varname);
+                model = model.setAsExtraVarName(varname);
             elseif isa(varname, 'cell')
                 varname = VarName(varname(1 : end - 1), varname{end});
-                model = model.registerExtraVarName(varname);
+                model = model.setAsExtraVarName(varname);
             elseif isa(varname, 'VarName')
                 model.extraVarNameList = mergeList(model.extraVarNameList, {varname});
             end
