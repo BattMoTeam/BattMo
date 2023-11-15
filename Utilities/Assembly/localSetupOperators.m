@@ -1,5 +1,4 @@
 function operators = localSetupOperators(G, varargin)
-    
     opts = struct('assembleCellFluxOperator', false);
     opts = merge_options(opts, varargin{:});
     
@@ -59,19 +58,14 @@ function operators = localSetupOperators(G, varargin)
         %operators.cellFluxOp = getCellFluxOperators2(G);
         operators.cellFluxOp = getCellFluxOperatorsAll(G);
     end
-    
-end
-
-function [T, cells] = getHalfTransBC(G, faces)
-    
-    cells = sum(G.faces.neighbors(faces, :), 2);
-    cn    = sqrt(sum((G.faces.centroids(faces, :) - G.cells.centroids(cells, :)).^2, 2));
-    T     = G.faces.areas(faces)./cn;
-    
 end
 
 function [T, cells] = getFaceHarmBC(G, cvalue, faces)
-    
+    [t, cells] = getTransFaceBC(G, faces);
+    T = t.*cvalue(cells);
+end
+
+function [t, cells] = getTransFaceBC(G, faces)
     cells = sum(G.faces.neighbors(faces, :), 2);
     cn = sqrt(sum((G.faces.centroids(faces, :) - G.cells.centroids(cells, :)).^2, 2));
     t = G.faces.areas(faces)./cn;

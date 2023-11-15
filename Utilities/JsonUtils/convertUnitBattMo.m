@@ -8,8 +8,13 @@ function val = convertUnitBattMo(val)
 
     if isfield(val, 'value') & isfield(val, 'unit')
         % This is a numerical parameter that requires a unit conversion
-        str = sprintf('val = %g*%s;', val.value, val.unit);
-        eval(str);
+        if ~isempty(val.unit)
+            str = sprintf('val = %g*%s;', val.value, val.unit);
+            eval(str);
+        else
+            % Empty unit. Assume value is given in SI units
+            val = val.value;
+        end
     end
-    
+
 end
