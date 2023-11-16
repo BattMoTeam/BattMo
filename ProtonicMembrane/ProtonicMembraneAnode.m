@@ -59,8 +59,6 @@ classdef ProtonicMembraneAnode < ProtonicMembraneElectrode
             pO2  = pO2_in + model.SU*pH2O_in/2;
             pH2O = pH2O_in*(1 - model.SU);
 
-            Eocv = model.E_0 - 0.00024516.*T - c.R.*T./(2*c.F)*log(pH2O./(pO2^(1/2))); 
-            
             % Compute charge-transfer current density
             
             R_ct = model.R_ct_0.*exp(model.Ea_ct./(c.R.*T)).*pO2.^(-0.2); 
@@ -80,7 +78,6 @@ classdef ProtonicMembraneAnode < ProtonicMembraneElectrode
             
             % Assign the computed values
             model.i_0    = i_0;
-            model.Eocv   = Eocv;
             model.nGas   = nGas;
             model.gasInd = gasInd;
             model.pO2    = pO2;
@@ -99,7 +96,7 @@ classdef ProtonicMembraneAnode < ProtonicMembraneElectrode
             model = model.registerVarNames(varnames);
             
             fn = @ProtonicMembraneAnode.updateJHp;
-            inputnames = {'eta'};
+            inputnames = {'eta', 'chargeTransferCurrentDensity'};
             model = model.registerPropFunction({'jHp', fn, inputnames});
 
             fn = @ProtonicMembraneAnode.updateI0;
@@ -109,6 +106,11 @@ classdef ProtonicMembraneAnode < ProtonicMembraneElectrode
             fn = @ProtonicMembraneAnode.updatePressures;
             inputnames = {};
             model = model.registerPropFunction({VarName({}, 'pressures', model.nGas), fn, inputnames});
+
+
+            fn = @ProtonicMembraneAnode.updateOcp;
+            inputnames = {VarName({}, 'pressures', model.nGas)};
+            model = model.registerPropFunction({'Eocv', fn, inputnames});
             
             % fn = @ProtonicMembraneAnode.updateEta2;
             % inputnames = {'j', 'alpha'};
@@ -120,7 +122,19 @@ classdef ProtonicMembraneAnode < ProtonicMembraneElectrode
 
         end
 
+        function state = updateOcp(model, state)
 
+            c      = model.constants;
+            gasInd = model.gasInd;
+            T      = model.T;
+
+            pH2O = state.pressures{gasInd.H2O};
+            pO2  = state.pressures{gasInd.O2};
+            
+            state.Eocv = model.E_0 - 0.00024516.*T - c.R.*T./(2*c.F)*log(pH2O./(pO2^(1/2)));
+            
+        end
+        
         function state = updatePressures(model, state)
 
             gasInd = model.gasInd;
@@ -153,9 +167,9 @@ classdef ProtonicMembraneAnode < ProtonicMembraneElectrode
             beta = model.beta;
             ila  = model.ila;
             ilc  = model.ilc;
-            i0   = model.i_0;
             
-            eta   = state.eta;
+            eta = state.eta;
+            i0  = state.chargeTransferCurrentDensity;
             
             feta = con.F*model.n/(con.R*model.T).*eta;
             
