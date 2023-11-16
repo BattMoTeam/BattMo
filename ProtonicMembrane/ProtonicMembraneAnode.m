@@ -130,16 +130,18 @@ classdef ProtonicMembraneAnode < ProtonicMembraneElectrode
             pH2O = state.pressures{gasInd.H2O};
             pO2  = state.pressures{gasInd.O2};
             
-            state.Eocv = model.E_0 - 0.00024516.*T - c.R.*T./(2*c.F)*log(pH2O./(pO2^(1/2)));
+            state.Eocv = model.E_0 - 0.00024516.*T - c.R.*T./(2*c.F)*log(pH2O./(pO2.^(1/2)));
             
         end
         
         function state = updatePressures(model, state)
 
             gasInd = model.gasInd;
+            N = model.N;
 
-            state.pressures{gasInd.H2O} = model.pH2O;
-            state.pressures{gasInd.O2}  = model.pO2;
+            onevec = ones(N, 1);
+            state.pressures{gasInd.H2O} = model.pH2O*onevec;
+            state.pressures{gasInd.O2}  = model.pO2*onevec;
             
         end
 
@@ -172,7 +174,7 @@ classdef ProtonicMembraneAnode < ProtonicMembraneElectrode
             
             feta = con.F*model.n/(con.R*model.T).*eta;
             
-            jHp = -i0*(exp(-beta*feta) - exp((1 - beta)*feta))./(1 + (i0/ilc)*exp(-beta*feta) - (i0/ila)*exp((1 - beta)*feta));
+            jHp = -i0.*(exp(-beta*feta) - exp((1 - beta)*feta))./(1 + (i0./ilc).*exp(-beta*feta) - (i0./ila).*exp((1 - beta)*feta));
 
             % jHp = i0*(exp(feta/2) - exp(-feta/2))/2;
             

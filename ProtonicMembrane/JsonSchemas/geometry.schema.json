@@ -33,10 +33,13 @@
     "2D" : {
       "type" : "object",
       "properties" : {
-        "ylength" : {
-          "type" : "number"},
-        "Ny" : {
-          "type" : "number"},
+        "Geometry" : {
+          "type" : "object",
+          "properties" : {
+            "ylength" : {
+              "type" : "number"},
+            "Ny" : {
+              "type" : "number"}}},
         "Electrolyte" : {
           "type" : "object",
           "properties" : {

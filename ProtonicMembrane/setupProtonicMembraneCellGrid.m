@@ -15,9 +15,20 @@ function paramobj = setupProtonicMembraneCellGrid(paramobj, jsonstruct)
         gen.N        = jsonstruct.(elyte).N;
 
         paramobj = gen.updatePEMinputParams(paramobj);
+
+      case '2D'
+
+        gen  = PEMgridGenerator2D();
+        
+        gen.ylength = convertUnitBattMo(jsonstruct.Geometry.ylength);
+        gen.Ny      = jsonstruct.Geometry.Ny;
+        gen.xlength = convertUnitBattMo(jsonstruct.(elyte).xlength);
+        gen.Nx      = jsonstruct.(elyte).Nx;
+        
+        paramobj = gen.updatePEMinputParams(paramobj);
         
       otherwise
-        
+
         error('Geometry case not recognized');
         
     end

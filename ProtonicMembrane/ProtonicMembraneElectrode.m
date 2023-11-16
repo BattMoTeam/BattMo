@@ -5,6 +5,8 @@ classdef ProtonicMembraneElectrode < BaseModel
         T    % Temperature
         E_0  % Standard potential
         Eocv % Open circuit potential (value depends on conditions at electrode)
+
+        N % discretization constant (number of values)
         
         constants
 
@@ -22,6 +24,7 @@ classdef ProtonicMembraneElectrode < BaseModel
 
             fdnames = {'T'  , ...
                        'E_0', ...
+                       'N'  , ...
                        'gasSupplyType'};
             model = dispatchParams(model, paramobj, fdnames);
 

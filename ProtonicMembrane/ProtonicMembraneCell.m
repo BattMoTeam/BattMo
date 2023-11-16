@@ -11,13 +11,13 @@ classdef ProtonicMembraneCell < BaseModel
         Cathode
         Electrolyte
         Control
-        
+
         couplingTerms
         couplingnames
 
         dx
         faceArea
-
+        
         primaryVarNames
         funcCallList
         
@@ -29,22 +29,32 @@ classdef ProtonicMembraneCell < BaseModel
 
             model = model@BaseModel();
 
-            fdnames = {'T'    , ...
-                       'dx'   , ...
-                       'faceArea', ...
+            fdnames = {'T'       , ...
                        'couplingTerms'};
+            
             model = dispatchParams(model, paramobj, fdnames);
 
             model.Anode       = ProtonicMembraneAnode(paramobj.Anode);
             model.Cathode     = ProtonicMembraneCathode(paramobj.Cathode);
             model.Electrolyte = ProtonicMembraneElectrolyte(paramobj.Electrolyte);
             model.Control     = ProtonicMembraneControl(paramobj.Control);
+
+
+            cps = model.couplingTerms;
+            assert(all(size(cps{1}.couplingcells) == size(cps{2}.couplingcells)), ...
+                   'The coupling terms appear to be badly setup');
+            model.Anode.N   = size(cps{1}.couplingcells, 1);
+            model.Cathode.N = size(cps{1}.couplingcells, 1);
             
             % setup couplingNames
             model.couplingnames = cellfun(@(x) x.name, model.couplingTerms, 'uniformoutput', false);
 
             % setup standard physical constants
             model.constants = PhysicalConstants();
+
+            %% TODO fix that
+            model.dx = 22*micro*meter;
+            model.faceArea = 1;
 
         end
         
@@ -173,9 +183,12 @@ classdef ProtonicMembraneCell < BaseModel
 
             an   = 'Anode';
             ctrl = 'Control';
-            
-            state.(an).pi  = state.(ctrl).U; 
-            state.(an).j   = state.(ctrl).I;
+
+            N = model.(an).N;
+
+            onevec = ones(N, 1);
+            state.(an).pi  = state.(ctrl).U.*onevec; 
+            state.(an).j   = state.(ctrl).I.*onevec;
             
         end
 
@@ -183,7 +196,7 @@ classdef ProtonicMembraneCell < BaseModel
 
             ct   = 'Cathode';
 
-            state.(ct).phi = 0;
+            state.(ct).phi = 0*ones(model.(ct).N, 1);
             
         end
 
@@ -242,7 +255,7 @@ classdef ProtonicMembraneCell < BaseModel
 
             T = op.harmFaceBC(sigmaEl, cfs(:, 2));
 
-            state.(elde).jElEquation = jEl - T*(piElde(ccs(:, 1)) - piElyte(ccs(:, 2)));
+            state.(elde).jElEquation = jEl - T.*(piElde(ccs(:, 1)) - piElyte(ccs(:, 2)));
 
         end
 
@@ -276,7 +289,7 @@ classdef ProtonicMembraneCell < BaseModel
 
             T = op.harmFaceBC(sigmaHp, cfs(:, 2));
 
-            state.(elde).jHpEquation = jHp - T*(phiElde(ccs(:, 1)) - phiElyte(ccs(:, 2)));
+            state.(elde).jHpEquation = jHp - T.*(phiElde(ccs(:, 1)) - phiElyte(ccs(:, 2)));
 
         end
         
@@ -287,26 +300,26 @@ classdef ProtonicMembraneCell < BaseModel
             ct    = 'Cathode';
             elyte = 'Electrolyte';
             ctrl  = 'Control';
+
+            onevec = ones(model.(an).N, 1);
             
-            
-            initState.(an).pi  = model.(an).Eocv;
-            initState.(an).phi = 0;
-            initState.(an).jHp = 0;
-            initState.(an).jEl = 0;
+            initState.(an).phi = 0*onevec;
+            initState.(an).jHp = 0*onevec;
+            initState.(an).jEl = 0*onevec;
             
             nc = model.(elyte).G.cells.num;
             initState.(elyte).pi  = zeros(nc, 1);
             initState.(elyte).phi = zeros(nc, 1);
-
-            initState.(ct).pi  = 0;
-            initState.(ct).jEl = 0;
-            initState.(ct).jHp = 0;
-            initState.(ct).j   = 0;
+            
+            initState.(ct).pi  = 0*onevec;
+            initState.(ct).jEl = 0*onevec;
+            initState.(ct).jHp = 0*onevec;
+            initState.(ct).j   = 0*onevec;
 
             initState.(ctrl).I = 0;
 
             initState = model.evalVarName(initState, {an, 'Eocv'});
-            initState.(ctrl).U = initState.(an).Eocv;
+            initState.(ctrl).U = initState.(an).Eocv(1);
 
             initState.time = 0;
             
