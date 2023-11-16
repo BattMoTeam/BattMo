@@ -304,7 +304,9 @@ classdef ProtonicMembraneCell < BaseModel
             initState.(ct).j   = 0;
 
             initState.(ctrl).I = 0;
-            initState.(ctrl).U = model.(an).Eocv;
+
+            initState = model.evalVarName(initState, {an, 'Eocv'});
+            initState.(ctrl).U = initState.(an).Eocv;
 
             initState.time = 0;
             
