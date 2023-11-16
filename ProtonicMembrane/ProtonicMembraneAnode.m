@@ -107,7 +107,6 @@ classdef ProtonicMembraneAnode < ProtonicMembraneElectrode
             inputnames = {};
             model = model.registerPropFunction({VarName({}, 'pressures', model.nGas), fn, inputnames});
 
-
             fn = @ProtonicMembraneAnode.updateOcp;
             inputnames = {VarName({}, 'pressures', model.nGas)};
             model = model.registerPropFunction({'Eocv', fn, inputnames});

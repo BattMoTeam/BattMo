@@ -16,7 +16,7 @@ classdef ProtonicMembraneCell < BaseModel
         couplingnames
 
         dx
-        farea
+        faceArea
 
         primaryVarNames
         funcCallList
@@ -31,7 +31,7 @@ classdef ProtonicMembraneCell < BaseModel
 
             fdnames = {'T'    , ...
                        'dx'   , ...
-                       'farea', ...
+                       'faceArea', ...
                        'couplingTerms'};
             model = dispatchParams(model, paramobj, fdnames);
 
@@ -354,13 +354,13 @@ classdef ProtonicMembraneCell < BaseModel
             eqs = {};
 
             dx      = model.dx;
-            farea   = model.farea;
+            faceArea   = model.faceArea;
             sigmaHp = model.(elyte).sigma_prot;
             sigmaEl = model.(elyte).sigma_n0;
             phi0    = 1;
             
-            sHp = 1/(farea*sigmaHp*phi0/dx);
-            sEl = 1/(farea*sigmaEl*phi0/dx);
+            sHp = 1/(faceArea*sigmaHp*phi0/dx);
+            sEl = 1/(faceArea*sigmaEl*phi0/dx);
             
             eqs{end + 1} = sHp*state.(elyte).massConsHp;
             eqs{end + 1} = sEl*state.(elyte).chargeConsEl;

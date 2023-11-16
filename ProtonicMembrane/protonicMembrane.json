@@ -1,4 +1,5 @@
 {
+  "Geometry" : {"type" : "1D"},
   "T": 873.15,
   "Anode": {
     "R_ct_0": {"value" : 2e-7,

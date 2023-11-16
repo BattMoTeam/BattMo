@@ -12,7 +12,7 @@ classdef ProtonicMembraneCellInputParams < ComponentInputParams
         couplingTerms
 
         dx
-        farea
+        faceArea
         
     end
     

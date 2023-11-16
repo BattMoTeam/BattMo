@@ -9,8 +9,7 @@ elyte = 'Electrolyte';
 ctrl  = 'Control';
 
 filename = '/home/xavier/Matlab/Projects/battmo/ProtonicMembrane/protonicMembrane.json';
-jsonstruct = fileread(filename);
-jsonstruct = jsondecode(jsonstruct);
+jsonstruct = parseBattmoJson(filename);
 
 jsonstruct.(elyte).N = 10000;
 
