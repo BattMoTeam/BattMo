@@ -20,6 +20,9 @@ classdef ProtonicMembraneAnode < ProtonicMembraneElectrode
         O2_conc_feed
         steam_ratio
         Ptot
+
+        pO2
+        pH2O
         
     end
     
@@ -64,8 +67,13 @@ classdef ProtonicMembraneAnode < ProtonicMembraneElectrode
             f = c.F/(c.R*T);
             i_0 = 1./(R_ct.*f.*model.n); % charge-transfer current density
 
-
             % Setup the gas components
+
+            if strcmp(model.gasSupplyType, 'notCoupled')
+                model.gasSupplyType = 'coupled'
+                fprintf('We switch to gasSupplyType to coupled in Anode model\n');
+            end
+            
             gasInd.H2O = 1;
             gasInd.O2  = 2;
             nGas = 2;
@@ -75,13 +83,14 @@ classdef ProtonicMembraneAnode < ProtonicMembraneElectrode
             model.Eocv   = Eocv;
             model.nGas   = nGas;
             model.gasInd = gasInd;
+            model.pO2    = pO2;
+            model.pH2O   = pH2O;
             
         end
         
         function model = registerVarAndPropfuncNames(model)
         
             model = registerVarAndPropfuncNames@ProtonicMembraneElectrode(model);
-
 
             varnames = {};
             % charge Transfer Current Density
@@ -94,8 +103,12 @@ classdef ProtonicMembraneAnode < ProtonicMembraneElectrode
             model = model.registerPropFunction({'jHp', fn, inputnames});
 
             fn = @ProtonicMembraneAnode.updateI0;
-            inputnames = {};
+            inputnames = {VarName({}, 'pressures', model.nGas)};
             model = model.registerPropFunction({'chargeTransferCurrentDensity', fn, inputnames});
+
+            fn = @ProtonicMembraneAnode.updatePressures;
+            inputnames = {};
+            model = model.registerPropFunction({VarName({}, 'pressures', model.nGas), fn, inputnames});
             
             % fn = @ProtonicMembraneAnode.updateEta2;
             % inputnames = {'j', 'alpha'};
@@ -106,11 +119,30 @@ classdef ProtonicMembraneAnode < ProtonicMembraneElectrode
             % model = model.registerPropFunction({'phi', fn, inputnames});
 
         end
-        
+
+
+        function state = updatePressures(model, state)
+
+            gasInd = model.gasInd;
+
+            state.pressures{gasInd.H2O} = model.pH2O;
+            state.pressures{gasInd.O2}  = model.pO2;
+            
+        end
 
         function state = updateI0(model, state)
-
-            state.chargeTransferCurrentDensity = model.i_0;
+            
+            c      = model.constants;
+            gasInd = model.gasInd;
+            T      = model.T;
+            
+            pO2 = state.pressures{gasInd.O2};
+            
+            R_ct = model.R_ct_0.*exp(model.Ea_ct./(c.R.*T)).*pO2.^(-0.2); 
+            f = c.F/(c.R*T);
+            i0 = 1./(R_ct.*f.*model.n);
+            
+            state.chargeTransferCurrentDensity = i0;
             
         end
         
