@@ -4,10 +4,16 @@ classdef SolidDiffusionModelInputParams < InputParams
 %
     properties
 
-        EaD                         % Activation energy [J mol^-1]
-        D0                          % Diffusion reference constant[ m^2 s^-1]
-        rp                          % Particle radius [m]
-        volumetricSurfaceArea       % Volumetric surface area [m2 m^-3]
+        %% Standard input parameters
+        
+        particleRadius                % the characteristic radius of the particle (symbol: rp)
+        activationEnergyOfDiffusion   % the Arrhenius-type activation energy for diffusion (symbol: EaD)
+        referenceDiffusionCoefficient % the pre-exponential reference diffusion coefficient in an Arrhenius-type equation (symbol: D0)
+        volumetricSurfaceArea         % surface area of the active material - electrolyte interface per volume of electrode
+
+        %% Advanced parameters
+        
+        volumeFraction % the ratio of the volume of the active material to the total volume (including porous space)
         
     end
     

@@ -1,35 +1,81 @@
 {
-  "$id": "file://battmo/schemas/ActiveMaterial",
+  "$id": "file://./ActiveMaterial.schema.json",
   "$schema": "http://json-schema.org/draft-07/schema#",
   "description": "Active Material",
   "type": "object",
-
-  "allOf": [{"$ref": "ElectronicComponent"},
-            {"properties" : { "Interface": {"$ref" : "Interface"},
-                              "SolidDiffusion": {"$ref" : "SolidDiffusionModel"},
-                              "InterDiffusionCoefficient": {"type" : "number"},
-                              "electricalConductivity": {"type" : "number"},
-                              "density" : {"type" : "number"},
-                              "diffusionModelType" : {"type" : "string",
-                                                      "enum" : ["full", "simple", "interParticleOnly"]},
-                              "BruggemanCoefficient" : {"type" : "number"},
-                              "volumeFraction" : {"type" : "number"},
-                              "activeMaterialFraction" : {"type" : "number",
-                                                          "description" : "volume fraction effectively occupied by the active material (the rest could be binder material)"}
-                            }
-            }
-           ],
-  
-  
-  "required" : ["Interface"],
-  
-  "anyOf" : [ {"properties" : {"diffusionModelType" : {"const" : "full"},
-                               "SolidDiffusion" : {"$ref" : "FullSolidDiffusionModel"}}
-              },
-              {"properties" : {"diffusionModelType" : {"const" : "simple"},
-                               "SolidDiffusion" : {"$ref" : "SimplifiedSolidDiffusionModel"}}
-              },
-              {"properties" : {"diffusionModelType" : {"const": "interParticleOnly"}}
-              }
-            ]
+  "properties": {
+    "Interface": {
+      "$ref": "Interface.schema.json"
+    },
+    "diffusionModelType": {
+      "type": "string",
+      "enum": [
+        "full",
+        "simple"
+      ]
+    },
+    "electronicConductivity": {
+      "$ref": "PhysicalQuantity.schema.json",
+      "properties": {
+        "rdf_type": {
+          "const": "htttp://emmo.info/UUID"
+        }
+      },
+      "description": "the electronic conductivity of the material",
+      "symbol": "sigma"
+    },
+    "density": {
+      "$ref": "PhysicalQuantity.schema.json",
+      "description": "the mass density of the material",
+      "symbol": "rho"
+    },
+    "massFraction": {
+      "$ref": "PhysicalQuantity.schema.json",
+      "description": "the ratio of the mass of the material to the total mass of the phase or mixture",
+      "symbol": "gamma"
+    },
+    "thermalConductivity": {
+      "$ref": "PhysicalQuantity.schema.json",
+      "description": "the intrinsic Thermal conductivity of the active component",
+      "symbol": ""
+    },
+    "specificHeatCapacity": {
+      "$ref": "PhysicalQuantity.schema.json",
+      "description": "the Specific Heat capacity of the active component",
+      "symbol": ""
+    },
+    "name": {
+      "type": "string",
+      "description": "name of active material"
+    }
+  },
+  "required": [
+    "Interface",
+    "SolidDiffusion"
+  ],
+  "anyOf": [
+    {
+      "if": {
+        "properties": {
+          "diffusionModelType": {
+            "const": "full"
+          }
+        }
+      },
+      "then": {
+        "properties": {
+          "SolidDiffusion": {
+            "$ref": "FullSolidDiffusionModel.schema.json"
+          }
+        }
+      },
+      "else": {
+        "properties": {
+          "SolidDiffusion": {
+            "$ref": "SimplifiedSolidDiffusionModel.schema.json"
+          }
+        }
+      }
+    }
+  ]
 }

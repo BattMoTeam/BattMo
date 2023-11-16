@@ -19,18 +19,14 @@ function obj = leastSquaresEI(model, states, refStates, schedule, varargin)
 %   tStep           - if set, only the given time steps are handled. Otherwise, the whole schedule is used.
 %   ComputePartials - if true, the derivative of the objective functions are also included, see below
 %
-%   
+%
 % RETURNS:
 %
 %   obj   - Objective function cell array. One value per time step : obj{i} = (E_i - Eref_i)^2*dt_i + (I_i -
 %           Iref_i)^2*dt_i. If the option 'ComputePartials' is set, the derivative of the objective with
 %           respect to state is returned in a format appropriate for the adjoint computation.
-%   
+%
 
-
-
-
-    
     opt = struct('ComputePartials', false, ...
                  'tStep'          , []   , ...
                  'state'          , []   , ...
@@ -38,19 +34,15 @@ function obj = leastSquaresEI(model, states, refStates, schedule, varargin)
                  'relTol'         , 1e-10);
     opt = merge_options(opt, varargin{:});
 
-    refStates = opt.refStates;
-
     dts = schedule.step.val;
 
     if isempty(opt.tStep) %do all
         time     = cumsum(dts);
         numSteps = numel(dts);
-        tSteps   = (1:numSteps)';
     else
         time     = sum(dts(1:(opt.tStep)));
         numSteps = 1;
         dts      = dts(opt.tStep);
-        tSteps   = opt.tStep;
     end
 
     obj = repmat({[]}, numSteps, 1);
@@ -58,7 +50,7 @@ function obj = leastSquaresEI(model, states, refStates, schedule, varargin)
     relTol = opt.relTol;
 
     for k = 1 : numSteps
-        
+
         t  = time(k);
         dt = dts(k);
 
@@ -67,7 +59,7 @@ function obj = leastSquaresEI(model, states, refStates, schedule, varargin)
         stateRef = findState(t, refStates, dt, relTol);
 
         if opt.ComputePartials
-            if (opt.from_states)
+            if opt.from_states
                 state = model.initStateAD(state);
             else
                 state = opt.state;

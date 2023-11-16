@@ -9,6 +9,7 @@ function [mass, masses, volumes] = computeCellMass(model, varargin)
     sep   = 'Separator';
     ne    = 'NegativeElectrode';
     pe    = 'PositiveElectrode';
+    co    = 'Coating';
     am    = 'ActiveMaterial';
     itf   = 'Interface';
     cc    = 'CurrentCollector';
@@ -22,16 +23,16 @@ function [mass, masses, volumes] = computeCellMass(model, varargin)
         
         elde = eldes{ind};
 
-        switch model.(elde).electrode_case
+        switch model.(elde).(co).active_material_type
             
           case 'default'
             
-            rho  = model.(elde).(am).(itf).density;
-            vols = model.(elde).(am).G.cells.volumes;
-            frac = model.(elde).(am).volumeFraction;
+            rho  = model.(elde).(co).effectiveDensity;
+            vols = model.(elde).(co).G.cells.volumes;
+            frac = model.(elde).(co).volumeFraction;
             
-            masses.(elde).(am).val  = sum(rho.*vols.*frac);
-            volumes.(elde).(am).val = sum(vols.*frac);
+            masses.(elde).(co).val  = sum(rho.*vols.*frac);
+            volumes.(elde).(co).val = sum(vols.*frac);
             
           case 'composite'
             
@@ -65,7 +66,7 @@ function [mass, masses, volumes] = computeCellMass(model, varargin)
             
         end
         
-        mass = mass + masses.(elde).(am).val;
+        mass = mass + masses.(elde).(co).val;
         
         if model.include_current_collectors
 
@@ -90,14 +91,14 @@ function [mass, masses, volumes] = computeCellMass(model, varargin)
     
     mass = mass + masses.(elyte).val;
     
-    rho  = model.(elyte).(sep).density;
-    vols = model.(elyte).(sep).G.cells.volumes;
-    frac = model.(elyte).(sep).volumeFraction;
+    rho  = model.(sep).density;
+    vols = model.(sep).G.cells.volumes;
+    frac = (1 - model.(sep).porosity);
     
-    masses.(elyte).(sep).val  = sum(rho.*vols.*frac);
-    volumes.(elyte).(sep).val = sum(vols.*frac);
+    masses.(sep).val  = sum(rho.*vols.*frac);
+    volumes.(sep).val = sum(vols.*frac);
 
-    mass = mass + masses.(elyte).(sep).val;
+    mass = mass + masses.(sep).val;
 
     mass = mass + opt.packingMass;
 

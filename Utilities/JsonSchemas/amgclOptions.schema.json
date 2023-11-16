@@ -1,5 +1,5 @@
 {
-  "$id": "file://battmo/schemas/amgclOptions",
+  "$id": "file://./amgclOptions",
   "$schema": "http://json-schema.org/draft-07/schema#",
   "description": "options for amgcl linear solver, sources are in battmoDir()/MRST/mrst-solvers/linearsolvers/amgcl/dependencies/amgcl-4f260881c7158bc5aede881f5f0ed272df2ab580/ which we call AMGCLDIR in this file",
   "type": "object",

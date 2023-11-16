@@ -3,9 +3,8 @@ function depvarnaminds = getDependencyVarNameIndsByName(regstr, nodenames, A, va
     opt = struct('oneParentOnly', false);
     opt = merge_options(opt, varargin{:});
     
-    varnameinds = regexp(nodenames, regstr, 'once');
-    varnameinds = cellfun(@(x) ~isempty(x), varnameinds);
-    varnameinds = find(varnameinds);
+    varnameinds = regexpSelect(nodenames, regstr);
+    
     depvarnaminds = getDependencyVarNameInds(varnameinds, A, 'oneParentOnly', opt.oneParentOnly);
     depvarnaminds = unique(depvarnaminds);
     

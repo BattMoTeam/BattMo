@@ -2,17 +2,21 @@ classdef BaseModel < PhysicalModel
 
     properties
 
-        propertyFunctionList
-        varNameList
-        subModelNameList
+        propertyFunctionList % List of property functions (PropFunction instances) for the model
+        varNameList          % List of variable names  (VarName instances) for the model
+        subModelNameList     % List of submodels for the model
 
-        % some variables are declared as static (they are not depending on the primarty variables and are updated
-        % separatly)
+        % The variables listed in staticVarNameList are elements in VarNameList that are declared as static (they are
+        % not depending on the primary variables and are updatedseparatly)
         staticVarNameList
 
-        extraVarNameList % properties that are not used in assembly of the residuals, those has been typically introduced for post-processing.
+        
+        % The variables listed in extraVarNameList are elements in VarNameList that are not used in assembly of the
+        % residuals, those has been typically introduced for post-processing.
+        extraVarNameList
        
         computationalGraph
+        
     end
         
     methods
@@ -29,7 +33,25 @@ classdef BaseModel < PhysicalModel
         end
 
         function model = registerVarAndPropfuncNames(model)
-            
+
+        % The function will be overload by the model. First, the submodels are setup. Then, the varNameList and
+        % propertyFunctionList and others lists are populated using the methods
+        %
+        % - registerVarName 
+        % - registerVarNames
+        % - registerPropFunction
+        % - registerStaticVarName
+        % - registerStaticVarNames
+        % - registerExtraVarName
+        % - registerExtraVarNames
+        %
+        % This function can be used to modify the same list but for the submodels.
+        %
+        % Then, we can also use the methods
+        % - removeVarName
+        % - removeVarNames
+        % to remove variables defined in the submodels. The property function using those will then be also removed.
+        %
             model = model.registerSubModels();
             
         end
@@ -63,6 +85,9 @@ classdef BaseModel < PhysicalModel
 
 
         function model = registerStaticVarName(model, varname)
+        % Register a static variable name. A static variable is a variable that is set up at the beginning of the
+        % assembly and does not depend on the primary variables.
+
             if isa(varname, 'VarName')
                 model.staticVarNameList = mergeList(model.staticVarNameList, {varname});
             elseif isa(varname, 'char')
@@ -77,20 +102,15 @@ classdef BaseModel < PhysicalModel
         end
         
         function model = registerStaticVarNames(model, varnames)
+        % Register several static variable name using registerStaticVarName
+
             for ivarnames = 1 : numel(varnames)
                 model = model.registerStaticVarName(varnames{ivarnames});
             end
         end
 
-        
-        function model = setAsExtraVarNames(model, varnames)
-            for ivar = 1 : numel(varnames)
-                model = model.setAsExtraVarName(varnames{ivar});
-            end
-        end
-        
         function model = setAsExtraVarName(model, varname)
-
+            
             if isa(varname, 'char')
                 varname = VarName({}, varname);
                 model = model.setAsExtraVarName(varname);
@@ -98,19 +118,26 @@ classdef BaseModel < PhysicalModel
                 varname = VarName(varname(1 : end - 1), varname{end});
                 model = model.setAsExtraVarName(varname);
             elseif isa(varname, 'VarName')
-                model.extraVarNameList{end + 1} = varname;
+                model.extraVarNameList = mergeList(model.extraVarNameList, {varname});
             end
         end
         
+        function model = setAsExtraVarNames(model, varnames)
+            for ivar = 1 : numel(varnames)
+                model = model.setAsExtraVarName(varnames{ivar});
+            end
+        end
         
         function model = removeVarNames(model, varnames)
+        % Remove several variable name using removeVarName
             for ivar = 1 : numel(varnames)
                 model = model.removeVarName(varnames{ivar});
             end
         end
         
         function model = removeVarName(model, varname)
-
+        % Remove a variable name. It will also remove the property functions where the variable name has been us either
+        % in the input or output.
             if isa(varname, 'char')
                 varname = VarName({}, varname);
                 model = model.removeVarName(varname);
@@ -123,7 +150,7 @@ classdef BaseModel < PhysicalModel
                 nvars = numel(varnames);
                 keep = true(nvars, 1);
                 for ivar = 1 : nvars
-                    [found, keep(ivar), varnames{ivar}] = BaseModel.getCleanedUpVarName(varname, varnames{ivar});
+                    [found, keep(ivar), varnames{ivar}] = BaseModel.extractVarName(varname, varnames{ivar});
                     if found
                         break;
                     end
@@ -135,10 +162,10 @@ classdef BaseModel < PhysicalModel
                 nprops = numel(propfuncs);
                 keep = true(nprops, 1);
                 for iprop = 1 : nprops
-                    [~, keep(iprop),  propfuncs{iprop}.varname] = BaseModel.getCleanedUpVarName(varname, propfuncs{iprop}.varname);
+                    [~, keep(iprop),  propfuncs{iprop}.varname] = BaseModel.extractVarName(varname, propfuncs{iprop}.varname);
                     inputvarnames = propfuncs{iprop}.inputvarnames;
                     for iinput = 1 : numel(inputvarnames)
-                        [~, keepprop,  inputvarnames{iinput}] = BaseModel.getCleanedUpVarName(varname, inputvarnames{iinput});
+                        [~, keepprop,  inputvarnames{iinput}] = BaseModel.extractVarName(varname, inputvarnames{iinput});
                         keep(iprop) = keepprop & keep(iprop);
                     end
                     propfunctions{iprop}.inputvarnames = inputvarnames;
@@ -492,9 +519,9 @@ classdef BaseModel < PhysicalModel
             outputvars = cell(1, ns);
         end
         
-        function state = evalVarName(model, state, varname)
+        function state = evalVarName(model, state, varname, extravars)
         % varname is valid input to method ComputationalGraphTool.getPropFunctionCallList
-            
+
             cgt = model.computationalGraph;
 
             if isempty(cgt)
@@ -508,6 +535,15 @@ classdef BaseModel < PhysicalModel
             
             funcCallList = cgt.getPropFunctionCallList(varname);
 
+            if ~isempty(extravars)
+                for ivar = 1 : numel(extravars)
+                    extravar = extravars{ivar};
+                    varname  = extravar{1};
+                    varvalue = extravar{2};
+                    eval(sprintf('%s = varvalue;', varname));
+                end
+            end
+            
             funcCall = join(funcCallList, '');
             funcCall = funcCall{1};
             eval(funcCall);
@@ -518,10 +554,11 @@ classdef BaseModel < PhysicalModel
 
     methods(Static)
 
-        function [found, keep, varname] = getCleanedUpVarName(rvarname, varname)
+        function [found, keep, varname] = extractVarName(rvarname, varname)
 
         % This function supports index, meaning, it handles the case where the rvarname and varname has same name but
         % different indices where the indices of rvarname make a subset of those of varname.
+            
             [isequal, compIndices] = compareVarName(rvarname, varname);
             if isequal
                 keep = false;

@@ -2,41 +2,36 @@
 Battery Geometries
 ==================
 
-.. automodule:: Battery.BatteryGeometry
-
 Description of the models that are used to setup the geometry
 
 
-BatteryGenerator1D
+BatteryGeneratorP2D
 ------------------
 
 .. image:: img/1dmodel.png
            :width: 80%
                    
-.. autoclass:: BatteryGenerator1D
-   :members:
+.. class:: BatteryGeneratorP2D
       
 .. _2dgeometry:
          
-BatteryGenerator2D
+BatteryGeneratorP3D
 ------------------
 
 .. image:: img/runbattery2d.png
            :width: 80%
                    
-.. autoclass:: BatteryGenerator2D
-   :members:
+.. class:: BatteryGeneratorP3D
          
 .. _3dgeometry:
       
-BatteryGenerator3D
+BatteryGeneratorP4D
 ------------------
 
 .. image:: img/runbattery3d.png
            :width: 80%
                    
-.. autoclass:: BatteryGenerator3D
-   :members:
+.. class:: BatteryGeneratorP4D
 
 .. _jellyroll:
       
@@ -46,8 +41,7 @@ SpiralBatteryGenerator
 .. image:: img/jellyrollmodel.png
            :width: 80%
                    
-.. autoclass:: SpiralBatteryGenerator
-   :members:
+.. class:: SpiralBatteryGenerator
 
 .. _coincell:
       
@@ -57,8 +51,7 @@ CoinCellBatteryGenerator
 .. image:: img/coincell.png
            :width: 80%
                    
-.. autoclass:: CoinCellBatteryGenerator
-   :members:
+.. class:: CoinCellBatteryGenerator
       
          
 BlockBatteryGenerator
@@ -90,6 +83,5 @@ Base class
 This is the base class that gather the methods to setup the different grid. This class will be usefull if you want to
 setup your own tailored grid.
 
-.. autoclass:: Battery.BatteryGeometry.BatteryGenerator
-   :members:
+.. class:: BatteryGenerator
          

@@ -5,9 +5,8 @@ classdef SideReaction < BaseModel
         % Physical constants
         constants = PhysicalConstants();
 
-        beta         % side reaction buttler-volmer  coefficient [-]
-        k            % side reaction rate constant [m/s]
-        conductivity % ionic conductivity [S/m]
+        chargeTransferCoefficient % side reaction buttler-volmer  coefficient [-]
+        reactionRateConstant      % side reaction rate constant [m/s]
         
     end
 
@@ -20,9 +19,8 @@ classdef SideReaction < BaseModel
              % OBS : All the submodels should have same backend (this is not assigned automaticallly for the moment)
             model.AutoDiffBackend = SparseAutoDiffBackend('useBlocks', false);
 
-            fdnames = {'beta', ...
-                       'k'   , ...
-                       'conductivity'};
+            fdnames = {'chargeTransferCoefficient', ...
+                       'reactionRateConstant'};
 
             model = dispatchParams(model, paramobj, fdnames);
 
@@ -36,6 +34,8 @@ classdef SideReaction < BaseModel
             model = registerVarAndPropfuncNames@BaseModel(model);
             
             varnames = {};
+            % Temperature
+            varnames{end + 1} = 'T';
             % potential in electrode
             varnames{end + 1} = 'phiElectrode';
             % solvent concentration in SEI film - value at interface
@@ -50,7 +50,7 @@ classdef SideReaction < BaseModel
             model = model.registerVarNames(varnames);
             
             fn = @SideReaction.updateReactionRate;
-            inputnames = {'phiElectrolyte', 'phiElectrode', 'externalPotentialDrop', 'c'};
+            inputnames = {'T', 'phiElectrolyte', 'phiElectrode', 'externalPotentialDrop', 'c'};
             model = model.registerPropFunction({'R', fn, inputnames});
             
         end
@@ -60,8 +60,8 @@ classdef SideReaction < BaseModel
 
             F    = model.constants.F;
             R    = model.constants.R;
-            beta = model.beta;
-            k    = model.k;
+            beta = model.chargeTransferCoefficient;
+            k    = model.reactionRateConstant;
 
             T        = state.T;
             c        = state.c;

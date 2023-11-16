@@ -16,7 +16,6 @@
       "electricalConductivity": 215,
       "specifiHeatCapacity": 632,
       "thermalConductivity": 6e-05,
-      "InterDiffusionCoefficient": 1e-10,
       "diffusionModelType" : "full",
       "BruggemanCoefficient": 1.5,
       "Interface": {
@@ -36,7 +35,6 @@
       "specificHeatCapacity": 700,
       "thermalConductivity": 6e-05,
       "volumeFraction": 0.665,
-      "InterDiffusionCoefficient": 1e-10,
       "diffusionModelType" : "full",
       "BruggemanCoefficient": 1.5,
       "Interface": {

@@ -2,19 +2,34 @@ classdef FullSolidDiffusionModel < SolidDiffusionModel
 
     properties
 
-        np  % Number of particles
-        N   % Discretization parameters in spherical direction
+        %% Input parameters
 
-        volumeFraction
-        activeMaterialFraction
+        % Standard Parameters
 
+
+        % Function to update diffusion coefficient value, given as a struct with fields
+        % - type         : element in {'function', 'constant'}. If 'constant' is chosen the value of referenceDiffusionCoefficient defined in parent class is used
+        % - functionname : matlab function name (should be available in path)
+        % - argumentlist : should be  ["c", "cmin", "cmax"]
+        diffusionCoefficient
+
+        saturationConcentration % the saturation concentration of the guest molecule in the host material (symbol: cmax)
+        guestStoichiometry100   % the ratio of the concentration of the guest molecule to the saturation concentration
+                                % of the guest molecule in a phase at a cell voltage that is defined as 100% SOC(symbol: theta100)
+        guestStoichiometry0     % the ratio of the concentration of the guest molecule to the saturation concentration
+                                % of the guest molecule in a phase at a cell voltage that is defined as 0% SOC (symbol: theta0)
+
+        % Advanced parameters
+        
+        np             % Number of particles
+        N              % Discretization parameters in spherical direction
+        
+        
+        %% Computed parameters at model setup
+        
         useDFunc
         computeDFunc % used when useDFunc is true. Function handler to compute D as function of cElectrode, see method updateDiffusionCoefficient
 
-        % needed if useDFunc is used
-        cmax     % maximum concentration [mol/m^3]
-        theta0   % Minimum lithiation, 0% SOC    [-]
-        theta100 % Maximum lithiation, 100% SOC  [-]
 
     end
 
@@ -24,19 +39,19 @@ classdef FullSolidDiffusionModel < SolidDiffusionModel
 
             model = model@SolidDiffusionModel(paramobj);
 
-            fdnames = {'np'            , ...
-                       'N'             , ...
-                       'cmax'          , ...
-                       'theta0'        , ...
-                       'theta100'      , ...
-                       'activeMaterialFraction'};
-
+            fdnames = {'volumeFraction'         , ...
+                       'diffusionCoefficient'   , ...
+                       'saturationConcentration', ...
+                       'guestStoichiometry100'  , ...
+                       'guestStoichiometry0'    , ...
+                       'np'                     , ...
+                       'N'};
+        
             model = dispatchParams(model, paramobj, fdnames);
             model.operators = model.setupOperators();
 
-            model.volumeFraction = paramobj.volumeFraction*ones(model.np, 1);
-            
-            if ~isempty(paramobj.D)
+            D = paramobj.diffusionCoefficient;
+            if ~isempty(D)
                 switch paramobj.D.type
                   case 'constant'
                     model.useDFunc = false;
@@ -60,20 +75,12 @@ classdef FullSolidDiffusionModel < SolidDiffusionModel
             model = registerVarAndPropfuncNames@SolidDiffusionModel(model);
                         
             varnames = {};
-            % concentration
+            % concentration in the particle
             varnames{end + 1} = 'c';
             % Average concentration in the particle (not used in assembly)
             varnames{end + 1} = 'cAverage';
-            % surface concentration
-            varnames{end + 1} = 'cSurface';
-            % Mass accumulation term
-            varnames{end + 1} = 'massAccum';
             % flux term
             varnames{end + 1} = 'flux';
-            % Mass source term
-            varnames{end + 1} = 'massSource';
-            % Mass conservation equation
-            varnames{end + 1} = 'massCons';
             % Mass conservation equation
             varnames{end + 1} = 'solidDiffusionEq';
             
@@ -117,7 +124,7 @@ classdef FullSolidDiffusionModel < SolidDiffusionModel
             
             np = model.np;
             N  = model.N;
-            rp = model.rp;
+            rp = model.particleRadius;
             
             celltbl.cells = (1 : np)';
             celltbl = IndexArray(celltbl);
@@ -270,16 +277,14 @@ classdef FullSolidDiffusionModel < SolidDiffusionModel
         function state = updateMassSource(model, state)
             
             op  = model.operators;
-            rp  = model.rp;
+            rp  = model.particleRadius;
             vf  = model.volumeFraction;
-            amf = model.activeMaterialFraction;
             
             Rvol = state.Rvol;
 
             Rvol = op.mapFromBc*Rvol;
-            vf   = op.mapToParticle*vf;
             
-            state.massSource = - Rvol.*((4*pi*rp^3)./(3*amf*vf));
+            state.massSource = - Rvol.*((4*pi*rp^3)./(3*vf));
             
         end
 

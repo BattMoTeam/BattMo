@@ -5,7 +5,7 @@
 %%
 
 if mrstPlatform('octave')
-    error('This demo cannot be run from Octave since it does not yet support the use of tables');
+    error('This demo cannot be run from Octave since Octave does not yet support the use of tables');
 end
 
 clear all
@@ -21,7 +21,7 @@ mrstModule add ad-core mrst-gui mpfa upr
 %% Define some shorthand names for simplicity.
 ne      = 'NegativeElectrode';
 pe      = 'PositiveElectrode';
-eac     = 'ActiveMaterial';
+co      = 'Coating';
 cc      = 'CurrentCollector';
 elyte   = 'Electrolyte';
 thermal = 'ThermalModel';
@@ -52,20 +52,19 @@ end
 CRdiameter = 20*milli*meter;
 CRthickness = 1.6*milli*meter;
 
-compNames = {'NegativeCurrentCollector', ...
-             'NegativeActiveMaterial', ...
-             'ElectrolyteSeparator', ...
-             'PositiveActiveMaterial', ...
-             'PositiveCurrentCollector'};
-numComponents = numel(compNames);
-compDims = table('rownames', compNames);
+compDims = table('rownames', {'NegativeCurrentCollector', ...
+                              'NegativeCoating', ...
+                              'Separator', ...
+                              'PositiveCoating', ...
+                              'PositiveCurrentCollector'});
+numComponents = numel(compDims.Row);
 
 %% Thickness
 compDims.thickness = zeros(numComponents, 1);
 
-compDims{'PositiveActiveMaterial', 'thickness'} = 67*micro*meter;
-compDims{'ElectrolyteSeparator'  , 'thickness'} = 20*micro*meter;
-compDims{'NegativeActiveMaterial', 'thickness'} = 50*micro*meter;
+compDims{'PositiveCoating', 'thickness'} = 67*micro*meter;
+compDims{'Separator'      , 'thickness'} = 20*micro*meter;
+compDims{'NegativeCoating', 'thickness'} = 50*micro*meter;
 
 currentcollectors = {'PositiveCurrentCollector', 'NegativeCurrentCollector'};
 compDims{currentcollectors, 'thickness'} = 0.5*(CRthickness - sum(compDims.thickness));
@@ -74,9 +73,9 @@ compDims{currentcollectors, 'thickness'} = 0.5*(CRthickness - sum(compDims.thick
 compDims.diameter = zeros(numComponents, 1);
 
 compDims{'PositiveCurrentCollector', 'diameter'} = 1;
-compDims{'PositiveActiveMaterial'  , 'diameter'} = 0.8;
-compDims{'ElectrolyteSeparator'    , 'diameter'} = 0.9;
-compDims{'NegativeActiveMaterial'  , 'diameter'} = 0.8;
+compDims{'PositiveCoating'         , 'diameter'} = 0.8;
+compDims{'Separator'               , 'diameter'} = 0.9;
+compDims{'NegativeCoating'         , 'diameter'} = 0.8;
 compDims{'NegativeCurrentCollector', 'diameter'} = 1;
 compDims.diameter = compDims.diameter * CRdiameter;
 
@@ -87,8 +86,10 @@ hz = min(compDims.thickness);
 compDims.numCellLayers = max(2, round(compDims.thickness / hz));
 compDims{currentcollectors, 'numCellLayers'} = ceil(round(0.25 * compDims{currentcollectors, 'numCellLayers'}));
 
-params = struct('compDims', compDims, ...
-                'numRadial', numRadial, ...
+disp(compDims);
+
+params = struct('compDims'  , compDims , ...
+                'numRadial' , numRadial, ...
                 'numAngular', numAngular);
 
 gen = CoinCellBatteryGenerator();
@@ -110,10 +111,10 @@ CRate = 1;
 
 % Compute masses
 [mass, masses] = computeCellMass(model);
-Li_mass = masses.(ne).(am).val;
+Li_mass = masses.(ne).(co).val;
 
-fprintf('Capacity %f mAh\n', C*1000/3600);
-fprintf('Li content %f g\n', Li_mass * 1000);
+fprintf('Capacity %f mAh\n'  , C*1000/3600);
+fprintf('Li content %f g\n'  , Li_mass * 1000);
 fprintf('Battery mass %f g\n', mass * 1000);
 
 %% Setup the time step schedule
@@ -122,7 +123,7 @@ fprintf('Battery mass %f g\n', mass * 1000);
 % operation.
 n         = 24 / 4;
 dt        = [];
-dt        = [dt; repmat(0.5e-4, n, 1).*1.5.^[1 : n]'];
+dt        = [dt; repmat(0.5e-4, n, 1).*1.5.^(1 : n)'];
 totalTime = 2.0*hour/CRate;
 n         = 20;
 dt        = [dt; repmat(totalTime/n, n, 1)];
@@ -152,7 +153,7 @@ switch model.Control.controlPolicy
     error('control policy not recognized');
 end
 
-    
+
 % This control is used to set up the schedule
 schedule = struct('control', control, 'step', step);
 
@@ -175,41 +176,7 @@ model.nonlinearTolerance = 1e-5;
 model.verbose = true;
 
 %% Plot
-colors = crameri('vik', 6);
-figure
-plotGrid(model.(ne).(cc).G,     'facecolor', colors(1,:), 'edgealpha', 0.5, 'edgecolor', [1, 1, 1]);
-plotGrid(model.(ne).(am).G,     'facecolor', colors(2,:), 'edgealpha', 0.5, 'edgecolor', [1, 1, 1]);
-plotGrid(model.(elyte).(sep).G, 'facecolor', colors(3,:), 'edgealpha', 0.5, 'edgecolor', [1, 1, 1]);
-plotGrid(model.(pe).(am).G,     'facecolor', colors(4,:), 'edgealpha', 0.5, 'edgecolor', [1, 1, 1]);
-plotGrid(model.(pe).(cc).G,     'facecolor', colors(5,:), 'edgealpha', 0.5, 'edgecolor', [1, 1, 1]);
-axis tight;
-legend({'negative electrode current collector' , ...
-        'negative electrode active material'   , ...
-        'separator'                            , ...
-        'positive electrode active material'   , ...
-        'positive electrode current collector'}, ...
-       'location', 'southwest')
-view(-37, 14)
-drawnow
-
-
-%% Additional plots for visualizing the different components
-doplot = false;
-if doplot
-    figure
-    plotGrid(model.(ne).(cc).G,     'facecolor', colors(1,:), 'edgealpha', 0.5, 'edgecolor', [1, 1, 1]);view(3);title('ne cc')
-    figure
-    plotGrid(model.(ne).(am).G,     'facecolor', colors(2,:), 'edgealpha', 0.5, 'edgecolor', [1, 1, 1]);view(3);title('ne am');
-    figure
-    plotGrid(model.(elyte).(sep).G, 'facecolor', colors(3,:), 'edgealpha', 0.5, 'edgecolor', [1, 1, 1]);view(3);title('elyte sep')
-    figure
-    plotGrid(model.(pe).(am).G,     'facecolor', colors(4,:), 'edgealpha', 0.5, 'edgecolor', [1, 1, 1]);view(3);title('pe am')
-    figure
-    plotGrid(model.(pe).(cc).G,     'facecolor', colors(5,:), 'edgealpha', 0.5, 'edgecolor', [1, 1, 1]);view(3);title('pe cc')
-    figure
-    plotGrid(model.(elyte).G,model.(elyte).G.cells.centroids(:, 1)>0,       'facecolor', colors(6,:), 'edgealpha', 0.5, 'edgecolor', [1, 1, 1], 'facealpha', 0.1);view(3);title('elyte')
-    drawnow
-end
+plotBatteryMesh(model, 'setstyle', false);
 
 %% Run simulation and save output to folder
 name = 'runCR';
@@ -217,7 +184,7 @@ dataFolder = 'BattMo';
 problem = packSimulationProblem(initstate, model, schedule, dataFolder, 'Name', name, 'NonLinearSolver', nls);
 problem.SimulatorSetup.OutputMinisteps = true;
 
-clearSimulation = false
+clearSimulation = false;
 if clearSimulation
     % Clear previously computed simulation
     clearPackedSimulatorOutput(problem, 'prompt', false);
@@ -234,14 +201,17 @@ Inew = cellfun(@(x) x.(ctrl).I, states);
 time = cellfun(@(x) x.time, states);
 
 %% Plot results
-figure, hold on
-plot(time, Inew, '-'); title('I'); grid on; xlabel 'time (s)'
-figure, hold on
-plot(time, Enew, '-'); title('E'); grid on; xlabel 'time (s)'
+figure
+plot(time/hour, Inew, '-'); grid on; xlabel('time  / h');
+figure
+plot(time/hour, Enew, '-'); grid on; xlabel('time  / h');
 if model.use_thermal
+    % Plot half of the cell
+    cells = model.(thermal).G.cells.centroids(:, 1) > 0;
     figure
-    plotCellData(model.(thermal).G, states{end}.(thermal).T, model.(thermal).G.cells.centroids(:, 1) > 0)
+    plotCellData(model.(thermal).G, states{end}.(thermal).T, cells);
     colorbar
+    view(3), axis square tight
 end
 
 %{

@@ -1,26 +1,62 @@
 {
-  "$id": "file://battmo/schemas/Electrolyte",
-  "$schema": "http://json-schema.org/draft-07/schema#",
-  "description": "A standard electrolyte",
-  "type": "object",
-
-  "properties" : { "compnames": {"type" : "array"},
-                   "sp": { "type" : "object",
-                           "properties" : {
-                             "z": {"type" : "number",
-                                   "description" : "charge number"},
-                             "t": {"type" : "number",
-                                   "description" : "transference number"}
-                           }
-                         },
-                   "Separator" : {"$ref" : "Separator"},
-                   "density" : {"type" : "number",
-                                "description": "density of the liquid part only. The density of separator is given in the separator input data"},
-                   "Conductivity": {"$ref" : "function",
-                                    "description" : "function to update conductivity"},
-                   "DiffusionCoefficient" : {"$ref" : "function",
-                                             "description" : "function to update diffusion coefficient"},
-                   "BruggemanCoefficient" : {"type" : "number",
-                                             "description": "Bruggeman coefficient for the electrolyte in the whole domain"}
-                 }
+      "$id": "file://./Electrolyte",
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "description": "An electrolyte",
+      "type": "object",
+      "properties": {
+            "name": {
+                  "type": "string",
+                  "description": "name of electrolyte material"
+            },
+            "compnames": {
+                  "type": "array"
+            },
+            "sp": {
+                  "type": "object",
+                  "properties": {
+                        "z": {
+                              "type": "number",
+                              "description": "charge number"
+                        },
+                        "t": {
+                              "type": "number",
+                              "description": "transference number"
+                        }
+                  }
+            },
+            "density": {
+                  "$ref": "PhysicalQuantity.schema.json",
+                  "description": "the mass density of the material",
+                  "symbol": "rho"
+            },
+            "ionicConductivity": {
+                  "oneOf": [
+                        {
+                              "$ref": "PhysicalQuantity.schema.json"
+                        },
+                        {
+                              "$ref": "function.schema.json"
+                        }
+                  ],
+                  "description": "a function to determine the ionic conductivity of the electrolyte under given conditions",
+                  "symbol": "kappa"
+            },
+            "diffusionCoefficient": {
+                  "oneOf": [
+                        {
+                              "$ref": "PhysicalQuantity.schema.json"
+                        },
+                        {
+                              "$ref": "function.schema.json"
+                        }
+                  ],
+                  "description": "a function to determine the diffusion coefficient of a molecule in the electrolyte under given conditions",
+                  "symbol": "D"
+            },
+            "bruggemanCoefficient": {
+                  "$ref": "PhysicalQuantity.schema.json",
+                  "description": "the coefficient for determining effective transport parameters in porous media",
+                  "symbol": "beta"
+            }
+      }
 }

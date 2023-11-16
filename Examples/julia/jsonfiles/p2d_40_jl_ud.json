@@ -1,0 +1,206 @@
+{
+  "Geometry": {
+    "case": "1D",
+    "faceArea": 0.0001
+  },
+  "NegativeElectrode": {
+    "Coating": {
+      "thickness": 6.4e-05,
+      "N": 10,
+      "effectiveDensity": 1900,
+      "bruggemanCoefficient": 1.5,
+      "ActiveMaterial": {
+        "massFraction": 0.94,
+        "density": 2240,
+        "specificHeatCapacity": 632,
+        "thermalConductivity": 1.04,
+        "electronicConductivity": 100,
+        "Interface": {
+          "saturationConcentration": 30555,
+          "volumetricSurfaceArea": 723600,
+          "density": 2240,
+          "numberOfElectronsTransferred": 1,
+          "activationEnergyOfReaction": 5000,
+          "reactionRateConstant": 5.031e-11,
+          "guestStoichiometry100": 0.88551,
+          "guestStoichiometry0": 0.1429,
+          "chargeTransferCoefficient": 0.5,
+          "openCircuitPotential": {
+            "type": "function",
+            "function": "0.7222+ 0.1387*(c./cmax) + 0.0290*(c./cmax)^0.5 - 0.0172/(c./cmax) + 0.0019/(c./cmax)^1.5+ 0.2808 * exp(0.9 - 15.0*(c./cmax)) - 0.7984 * exp(0.4465*(c./cmax) - 0.4108)+ (T - refT) * (1e-3 * ( 0.005269056+ 3.299265709 * (c./cmax)- 91.79325798 * (c./cmax)^2+ 1004.911008 * (c./cmax)^3- 5812.278127 * (c./cmax)^4+ 19329.75490 * (c./cmax)*5- 37147.89470 * (c./cmax)*6+ 38379.18127 * (c./cmax)*7- 16515.05308 * (c./cmax)*8 )/ ( 1- 48.09287227 * (c./cmax)+ 1017.234804 * (c./cmax)^2- 10481.80419 * (c./cmax)^3+ 59431.30000 * (c./cmax)^4- 195881.6488 * (c./cmax)*5+ 374577.3152 * (c./cmax)*6- 385821.1607 * (c./cmax)*7+ 165705.8597 * (c./cmax)*8 ))",
+            "argumentlist": [
+              "c",
+              "T",
+              "refT",
+              "cmax"
+            ]
+          }
+        },
+        "diffusionModelType": "full",
+        "SolidDiffusion": {
+          "activationEnergyOfDiffusion": 5000,
+          "referenceDiffusionCoefficient": 3.9e-14,
+          "particleRadius": 1e-06,
+          "N": 10
+        }
+      },
+      "Binder": {
+        "density": 1099.9999999999998,
+        "massFraction": 0.03,
+        "electronicConductivity": 100,
+        "specificHeatCapacity": 632,
+        "thermalConductivity": 1.04
+      },
+      "ConductingAdditive": {
+        "density": 1949.9999999999995,
+        "massFraction": 0.03,
+        "electronicConductivity": 100,
+        "specificHeatCapacity": 632,
+        "thermalConductivity": 1.04
+      }
+    },
+    "CurrentCollector": {
+      "thickness": 1e-05,
+      "N": 5,
+      "electronicConductivity": 59600000.0,
+      "thermalConductivity": 398,
+      "specificHeatCapacity": 385,
+      "density": 8960
+    }
+  },
+  "PositiveElectrode": {
+    "Coating": {
+      "thickness": 5.7e-05,
+      "N": 10,
+      "effectiveDensity": 3500,
+      "bruggemanCoefficient": 1.5,
+      "ActiveMaterial": {
+        "massFraction": 0.95,
+        "density": 4650,
+        "specificHeatCapacity": 700,
+        "thermalConductivity": 2.1,
+        "electronicConductivity": 100,
+        "Interface": {
+          "saturationConcentration": 55554,
+          "volumetricSurfaceArea": 885000,
+          "density": 4650,
+          "numberOfElectronsTransferred": 1,
+          "activationEnergyOfReaction": 5000,
+          "reactionRateConstant": 2.33e-11,
+          "guestStoichiometry100": 0.4955,
+          "guestStoichiometry0": 0.99174,
+          "chargeTransferCoefficient": 0.5,
+          "openCircuitPotential": {
+            "type": "function",
+            "function": "(-4.656 + 0 * (c./cmax) + 88.669 * (c./cmax)^2 + 0 * (c./cmax)^3 - 401.119 * (c./cmax)^4 + 0 * (c./cmax)^5 + 342.909 * (c./cmax)^6 + 0 * (c./cmax)^7 - 462.471 * (c./cmax)^8 + 0 * (c./cmax)^9 + 433.434 * (c./cmax)^10)/(-1 + 0  * (c./cmax)+ 18.933 * (c./cmax)^2+ 0 * (c./cmax)^3- 79.532 * (c./cmax)^4+ 0 * (c./cmax)^5+ 37.311 * (c./cmax)^6+ 0 * (c./cmax)^7- 73.083 * (c./cmax)^8+ 0 * (c./cmax)^9+ 95.960 * (c./cmax)^10)+ (T - refT) * ( -1e-3* ( 0.199521039- 0.928373822 * (c./cmax)+ 1.364550689000003 * (c./cmax)^2- 0.611544893999998 * (c./cmax)^3)/ (1- 5.661479886999997 * (c./cmax)+ 11.47636191 * (c./cmax)^2- 9.82431213599998 * (c./cmax)^3+ 3.048755063 * (c./cmax)^4))",
+            "argumentlist": [
+              "c",
+              "T",
+              "cmax",
+              "refT"
+            ]
+          }
+        },
+        "diffusionModelType": "full",
+        "SolidDiffusion": {
+          "activationEnergyOfDiffusion": 5000,
+          "referenceDiffusionCoefficient": 1e-14,
+          "particleRadius": 1e-06,
+          "N": 10
+        }
+      },
+      "Binder": {
+        "density": 1749.9999999999998,
+        "massFraction": 0.025,
+        "electronicConductivity": 100,
+        "specificHeatCapacity": 700,
+        "thermalConductivity": 2.1
+      },
+      "ConductingAdditive": {
+        "density": 1829.9999999999998,
+        "massFraction": 0.025,
+        "electronicConductivity": 100,
+        "specificHeatCapacity": 700,
+        "thermalConductivity": 2.1
+      }
+    },
+    "CurrentCollector": {
+      "thickness": 1e-05,
+      "N": 5,
+      "electronicConductivity": 35500000.0,
+      "thermalConductivity": 170,
+      "specificHeatCapacity": 875,
+      "density": 2700
+    }
+  },
+  "Separator": {
+    "thickness": 1.5e-05,
+    "N": 10,
+    "porosity": 0.55,
+    "specificHeatCapacity": 1978,
+    "thermalConductivity": 0.334,
+    "density": 946,
+    "bruggemanCoefficient": 1.5
+  },
+  "G": [],
+  "SOC": 0.99,
+  "initT": 298.15,
+  "use_thermal": true,
+  "include_current_collectors": false,
+  "Control": {
+    "controlPolicy": "IEswitch",
+    "initialControl": "discharging",
+    "CRate": 1,
+    "lowerCutoffVoltage": 2.4,
+    "upperCutoffVoltage": 4.1,
+    "dIdtLimit": 0.01,
+    "dEdtLimit": 0.01,
+    "tup": 0.1
+  },
+  "Electrolyte": {
+    "specificHeatCapacity": 2055,
+    "thermalConductivity": 0.6,
+    "density": 1200,
+    "ionicConductivity": {
+      "type": "function",
+      "function": "1e-4*c*((-10.5 + 0.668e-3*c + 0.494e-6*c^2) + (0.074 - 1.78e-5*c - 8.86e-10*c^2)*T + (-6.96e-5 + 2.80e-8*c)*T^2)^2",
+      "argumentlist": [
+        "c",
+        "T"
+      ]
+    },
+    "diffusionCoefficient": {
+      "type": "function",
+      "function": "1e-4 * 10 ^ (-4.43 - 54/(T - 229 - 5*c*1e-3) - 0.22*c*1e-3)",
+      "argumentlist": [
+        "c",
+        "T"
+      ]
+    },
+    "compnames": [
+      "Li",
+      "PF6"
+    ],
+    "sp": {
+      "z": 1,
+      "t": 0.2594
+    },
+    "bruggemanCoefficient": 1.5
+  },
+  "ThermalModel": {
+    "externalHeatTransferCoefficient": 1000,
+    "externalTemperature": 298.15
+  },
+  "TimeStepping": {
+    "totalTime": 5040,
+    "N": 40,
+    "useRampup": true,
+    "rampupTime": 10,
+    "numberOfTimeSteps": 40
+  },
+  "Output": {
+    "variables": [
+      "energy"
+    ]
+  }
+}

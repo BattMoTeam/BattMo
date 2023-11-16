@@ -1,61 +1,87 @@
-function [energy, dischargeFunction] = computeCellEnergy(model, varargin)
-%% Compute the cell theoritcal maximum energy.
-%% The discharge function is the voltage as a function of the state of charge for an infinitely slow discharge.
+function [energy, output] = computeCellEnergy(model, varargin)
+%% Compute the cell energy.
+%
+% If no CRate is given, it corresponds to the maximum theoritical cell energy, at infinitly small CRate. Otherwise,
+% simulate the discharge and gives the corresponding energy.
+%
+% The output structure provides more detailed information with the fields
+% - energy
+% - dischargeFunction % function handler giving the voltage as a function of the state of charge
+% - E                 % Voltage output (raw computation data in case CRate is given)
+% - I                 % Current output (raw computation data in case CRate is given)
+% - time              % time output (raw computation data in case CRate is given)
     
     opt = struct('capacities' , [], ...
-                 'temperature', 298);
-    opt = merge_options(opt, varargin{:});
+                 'temperature', 298, ...
+                 'CRate', []);
+    [opt, extra] = merge_options(opt, varargin{:});
 
     ne  = 'NegativeElectrode';
     pe  = 'PositiveElectrode';
     am  = 'ActiveMaterial';
+    co  = 'Coating';
     itf = 'Interface';
     sd  = 'SolidDiffusion';
 
-    if isempty(opt.capacities)
-        [~, capacities] = computeCellCapacity(model);
+    if isempty(opt.CRate)
+        
+        if isempty(opt.capacities)
+            [~, capacities] = computeCellCapacity(model);
+        else
+            capacities = opt.capacities
+        end
+
+        T = opt.temperature;
+
+        capacity = min(capacities.(ne), capacities.(pe));
+
+
+        th100 = 'guestStoichiometry100';
+        th0   = 'guestStoichiometry0';
+        sc    = 'saturationConcentration';
+
+        N = 1000;
+
+        eldes = {ne, pe};
+        
+        for ielde = 1 : numel(eldes)
+
+            elde = eldes{ielde};
+            
+            smax = capacity./capacities.(elde);
+            
+            itfmodel = model.(elde).(co).(am).(itf);
+            c0 = itfmodel.(th100)*itfmodel.(sc);
+            cT = itfmodel.(th0)*itfmodel.(sc);            
+            
+            s = smax.*linspace(0, 1, N + 1)';
+
+            c    = (1 - s).*c0 + s.*cT;
+            cmax = model.(elde).(co).(am).(itf).(sc);
+            
+            f = model.(elde).(co).(am).(itf).computeOCPFunc(c(1 : end - 1), T, cmax);
+            
+            % function handler
+            fs{ielde} = @(s) model.(elde).(co).(am).(itf).computeOCPFunc((1 - s).*c0 + s.*cT, T, cmax);
+            
+            energies{ielde} = capacities.(elde)*smax/N*sum(f);
+            
+        end
+        
+        energy = (energies{2} - energies{1});
+
+        dischargeFunction = @(s) (fs{2}(s) - fs{1}(s));
+
+        output = struct('energy'           , energy, ...
+                        'dischargeFunction', dischargeFunction);
+        
     else
-        capacities = opt.capacities
-    end
 
-    T = opt.temperature;
-
-    capacity = min(capacities.(ne), capacities.(pe));
-
-    % setup concentration at start and end of discharge for each electrode
-    itfmodel = model.(ne).(am).(itf);
-    c0s{1} = itfmodel.theta100*itfmodel.cmax;
-    cTs{1} = itfmodel.theta0*itfmodel.cmax;
-    itfmodel = model.(pe).(am).(itf);
-    c0s{2} = itfmodel.theta0*itfmodel.cmax;
-    cTs{2} = itfmodel.theta100*itfmodel.cmax;
-
-    N = 1000;
-
-    eldes = {ne, pe};
-    
-    for ielde = 1 : numel(eldes)
-
-        elde = eldes{ielde};
-        
-        smax = capacity./capacities.(elde);
-        
-        s = smax.*linspace(0, 1, N + 1)';
-
-        c    = (1 - s).*c0s{ielde} + s.*cTs{ielde};
-        cmax = model.(elde).(am).(itf).cmax;
-        
-        f = model.(elde).(am).(itf).computeOCPFunc(c(1 : end - 1), T, cmax);
-        
-        % function handler
-        fs{ielde} = @(s) model.(elde).(am).(itf).computeOCPFunc((1 - s).*c0s{ielde} + s.*cTs{ielde}, T, cmax);
-        
-        energies{ielde} = capacities.(elde)*smax/N*sum(f);
+        CRate = opt.CRate;
+        output = computeCellEnergyGivenCrate(model, CRate, extra{:});
         
     end
+
+    energy = output.energy;
     
-    energy = (energies{2} - energies{1});
-
-    dischargeFunction = @(s) (fs{2}(s) - fs{1}(s));
-
 end

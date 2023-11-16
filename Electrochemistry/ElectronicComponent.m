@@ -3,8 +3,10 @@ classdef ElectronicComponent < BaseModel
 % The ElectronicComponent class is model to assemble charge conservation equation
 % 
     properties
+
+        electronicConductivity          % electronic conductivity
+        effectiveElectronicConductivity % effective electronic conductivity
         
-        EffectiveElectricalConductivity % Effective electrical conductivity
         constants % Physical constants
 
         use_thermal
@@ -22,7 +24,8 @@ classdef ElectronicComponent < BaseModel
             model.AutoDiffBackend = SparseAutoDiffBackend('useBlocks', false);
             
             fdnames = {'G'                              , ...
-                       'EffectiveElectricalConductivity', ...
+                       'electronicConductivity'         , ...
+                       'effectiveElectronicConductivity', ...
                        'use_thermal'};
             
             model = dispatchParams(model, paramobj, fdnames);
@@ -98,7 +101,7 @@ classdef ElectronicComponent < BaseModel
 
         function state = updateConductivity(model, state)
             % default function to update conductivity
-            state.conductivity = model.EffectiveElectricalConductivity;
+            state.conductivity = model.effectiveElectronicConductivity;
             
         end
         
@@ -132,7 +135,7 @@ classdef ElectronicComponent < BaseModel
             sigma = state.conductivity;
             phi   = state.phi;
             
-            j = assembleFlux(model, phi, sigma); 
+            j = assembleFlux(model, phi, sigma);
 
             state.j = j;
             

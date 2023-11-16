@@ -6,18 +6,18 @@
  "reduction" : {"doReduction" : true,
                 "variables" : [{"name" : ["Control", "I"], "order" : 1, "special" : true},
                                {"name" : ["Control", "E"], "order" : 2, "special" : true},
-                               {"name" : ["NegativeElectrode", "ActiveMaterial", "c"], "order" :  3},
-                               {"name" : ["PositiveElectrode", "ActiveMaterial", "c"], "order" :  4},
-                               {"name" : ["NegativeElectrode", "ActiveMaterial", "SolidDiffusion", "cSurface"], "order": 5}, 
-                               {"name" : ["PositiveElectrode", "ActiveMaterial", "SolidDiffusion", "cSurface"], "order": 6}
+                               {"name" : ["NegativeElectrode", "Coating", "ActiveMaterial", "SolidDiffusion", "cAverage"], "order" :  3},
+                               {"name" : ["PositiveElectrode", "Coating", "ActiveMaterial", "SolidDiffusion", "cAverage"], "order" :  4},
+                               {"name" : ["NegativeElectrode", "Coating", "ActiveMaterial", "SolidDiffusion", "cSurface"], "order": 5},
+                               {"name" : ["PositiveElectrode", "Coating", "ActiveMaterial", "SolidDiffusion", "cSurface"], "order": 6}
                               ]
                },
  "preconditioners" : [
    {
    "name" : "potential",
    "variables" : [["Electrolyte", "phi"],
-                  ["NegativeElectrode", "ActiveMaterial", "phi"],
-                  ["PositiveElectrode", "ActiveMaterial", "phi"],
+                  ["NegativeElectrode", "Coating", "phi"],
+                  ["PositiveElectrode", "Coating", "phi"],
                   ["NegativeElectrode", "CurrentCollector", "phi"],
                   ["PositiveElectrode", "CurrentCollector", "phi"],
                   ["Control", "E"]

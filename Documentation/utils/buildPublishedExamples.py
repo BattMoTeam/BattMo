@@ -18,6 +18,7 @@
 import os
 import xml.etree.ElementTree
 import re
+import sys
 from os.path import *
 
 def parse_publish_to_xml(exfile):
@@ -35,14 +36,17 @@ def parse_publish_to_xml(exfile):
     e = xml.etree.ElementTree.fromstring(example)
     # e = xml.etree.ElementTree.parse(exfile).getroot()
     # outfile  = open("D:/jobb/bitbucket/mrst-documentation/flowSolverTutorial1.txt", "w")
-    output = ''
+    parsedText = ''
     rstDescriptionFile = tmp[-1].replace('.xml', 'Preamble.rst')
     if exists(rstDescriptionFile):
         includeRstDescriptionFile = ".. include:: " + rstDescriptionFile + "\n\n"
     else:
         includeRstDescriptionFile = "\n"
 
-    def addIdent(txt):
+    # include link
+    examplename = tmp[-1].replace('.xml', '')
+
+    def addIndent(txt):
         return "  ".join(("\n"+txt.lstrip()).splitlines(True)) + "\n"
 
     headcount = 0
@@ -53,7 +57,11 @@ def parse_publish_to_xml(exfile):
                 ptag = paragraphs.tag;
                 if ptag == "steptitle":
                     # Heading of subsection
-                    sect = "".join(paragraphs.itertext());
+                    if headcount == 0:
+                        sect =  ".. _" + examplename + ":\n\n"
+                    else:
+                        sect = ""
+                    sect = sect + "".join(paragraphs.itertext());
                     tit_length = len(sect);
                     if headcount == 0:
                         # Make heading
@@ -65,8 +73,8 @@ def parse_publish_to_xml(exfile):
                     if headcount == 0:
                         sect = sect + '*Generated from ' + example_filename + '*\n\n'
                         sect = sect + includeRstDescriptionFile
-                    headcount += 1;
-                    output += sect
+                        headcount += 1;
+                    parsedText += sect
                 elif ptag == "text":
                     # Simply text
                     for block in paragraphs:
@@ -74,20 +82,20 @@ def parse_publish_to_xml(exfile):
                             # We found text
                             if block.text.strip():
                                 #txt = block.text
-                                #output += txt
-                                #output += "\n"
-                                output += "".join(block.itertext());
+                                #parsedText += txt
+                                #parsedText += "\n"
+                                parsedText += "".join(block.itertext());
                             else:
                                 # This paragraph is an equation
                                 for subblock in block:
                                     if subblock.tag == "equation":
-                                        output += "\n.. math::\n"
+                                        parsedText += "\n.. math::\n"
                                         eq = subblock.get("text")
                                         if eq:
                                             eq = eq.strip("$")
-                                            eq = addIdent(eq)
-                                            output += eq
-                        output += "\n"
+                                            eq = addIndent(eq)
+                                            parsedText += eq
+                        parsedText += "\n"
                 elif ptag == "mcode" or ptag == "mcode-xmlized":
                     # Code block
                     for block in paragraphs:
@@ -102,38 +110,59 @@ def parse_publish_to_xml(exfile):
                             lastalpha = [m.end(0) for m in re.finditer('\w|\)|\;', txt)];
                             if lastalpha:
                                txt = txt[0:lastalpha[-1]]
-                        output += "\n.. code-block:: matlab\n"
-                        txt = addIdent(txt);
-                        output += txt
-                        output += "\n"
-                elif ptag == "mcodeoutput":
+                        parsedText += "\n.. code-block:: matlab\n"
+                        txt = addIndent(txt);
+                        parsedText += txt
+                        parsedText += "\n"
+                elif ptag == "mcodeparsedText":
                     # Another code block?? Slightly different format
-                    output += "\n.. code-block:: none\n"
-                    txt = addIdent(paragraphs.text);
-                    output += txt
-                    output += "\n"
+                    parsedText += "\n.. code-block:: none\n"
+                    txt = addIndent(paragraphs.text);
+                    parsedText += txt
+                    parsedText += "\n"
                 elif ptag == "img":
                     # Image. Use provided relative path.
                     img = paragraphs.get("src")
-                    output += '.. figure:: ' + img + "\n"
-                    output += "  :figwidth: 100%\n"
-                    output += "\n"
-    output = output.replace("XMLLT", "<")
-    output = output.replace("XMLGT", ">")
+                    parsedText += '.. figure:: ' + img + "\n"
+                    parsedText += "  :figwidth: 100%\n"
+                    parsedText += "\n"
+        elif el.tag == "originalCode":
+            sourcecode = ":orphan:\n\n"
+            sourcecode += ".. _" + examplename + "_source:\n\n"
+            title = "Source code for " + examplename
+            sourcecode += title + "\n"
+            sourcecode += len(title)*"-" + "\n\n"
+            sourcecode += ".. code:: matlab\n\n"
+            sourcecode += addIndent(el.text)
+
+    parsedText = parsedText.replace("XMLLT", "<")
+    parsedText = parsedText.replace("XMLGT", ">")
+
+    parsedText += "\n\n"
+    parsedText += "complete source code can be found :ref:`here<" + examplename + "_source>`\n"
+    output = dict()
+    output['parsed'] = parsedText
+    output['source'] = sourcecode
     return output
 
 publishedExampleDir = os.path.realpath(__file__)
 publishedExampleDir = os.path.dirname(publishedExampleDir)
 publishedExampleDir = join(publishedExampleDir, '..', 'publishedExamples')
 
-allfiles = os.walk(publishedExampleDir)
-allfiles = [f[-1] for f in allfiles]
-xmlfiles = [f for f in allfiles[0] if splitext(f)[-1] == '.xml']
+if len(sys.argv) < 2:
+    allfiles = os.walk(publishedExampleDir)
+    allfiles = [f[-1] for f in allfiles]
+    xmlfiles = [f for f in allfiles[0] if splitext(f)[-1] == '.xml']
+else:
+    xmlfiles = [join(publishedExampleDir, sys.argv[1] + '.xml')]
 
 for xmlfile in xmlfiles:
     xmlpath = join(publishedExampleDir, xmlfile)
     examplename = splitext(xmlfile)[0]
-    exampletxt = parse_publish_to_xml(xmlpath)
+    output = parse_publish_to_xml(xmlpath)
     outfile = open(join(publishedExampleDir, examplename + '.rst'), 'w')
-    outfile.write(exampletxt)
+    outfile.write(output['parsed'])
+    outfile.close()
+    outfile = open(join(publishedExampleDir, examplename + '_source.rst'), 'w')
+    outfile.write(output['source'])
     outfile.close()

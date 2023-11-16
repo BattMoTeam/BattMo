@@ -1,19 +1,34 @@
 {
-  "$id": "file://battmo/schemas/Battery",
+  "$id": "file://./Battery.schema.json",
   "$schema": "http://json-schema.org/draft-07/schema#",
   "description": "A standard battery",
   "type": "object",
-  
-
-  "properties" : {
-
-    "NegativeElectrode": {"$ref": "Electrode"},
-
-    "PositiveElectrode": {"$ref": "Electrode"},
-
-    "Electrolyte": {"$ref": "Electrolyte"}
-
+  "properties": {
+    "NegativeElectrode": {
+      "$ref": "Electrode.schema.json"
+    },
+    "PositiveElectrode": {
+      "$ref": "Electrode.schema.json"
+    },
+    "Electrolyte": {
+      "$ref": "Electrolyte.schema.json"
+    },
+    "Separator": {
+      "$ref": "Separator.schema.json"
+    },
+    "ThermalModel": {
+      "$ref": "ThermalComponent.schema.json",
+      "description": "Battery Physical Parameters required for thermal modelling"
+    }
   },
-
-  "anyOf" : [{"$ref": "ThermalComponent"}]
+  "allOf": [
+    {
+      "required": [
+        "NegativeElectrode",
+        "PositiveElectrode",
+        "Electrolyte",
+        "Separator"
+      ]
+    }
+  ]
 }

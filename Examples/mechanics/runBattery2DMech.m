@@ -31,7 +31,7 @@ paramobj = BatteryInputParams(jsonstruct);
 
 %% Setup the geometry and computational mesh
 
-gen = BatteryGenerator2D(); 
+gen = BatteryGeneratorP3D(); 
 
 % We change the properties of the mesh and update paramobj with the results mesh
 gen.ylength = 1e-3;

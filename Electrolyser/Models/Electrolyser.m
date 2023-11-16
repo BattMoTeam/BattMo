@@ -34,6 +34,11 @@ classdef Electrolyser < BaseModel
             % setup couplingNames
             model.couplingNames = cellfun(@(x) x.name, model.couplingTerms, 'uniformoutput', false);
 
+            model = model.setupComputationalGraph();
+            cgt = model.computationalGraph;
+            model.primaryVarNames = cgt.getPrimaryVariableNames();
+            model.funcCallList = cgt.getOrderedFunctionCallList();
+
         end
 
         function model = registerVarAndPropfuncNames(model)
@@ -109,19 +114,6 @@ classdef Electrolyser < BaseModel
             
         end
 
-
-        function model = validateModel(model, varargin)
-
-            model = validateModel@BaseModel(model, varargin{:});
-
-            if isempty(model.computationalGraph)
-                model = model.setupComputationalGraph();
-                cgt = model.computationalGraph;
-                model.primaryVarNames = cgt.getPrimaryVariableNames();
-                model.funcCallList = cgt.getOrderedFunctionCallList();
-            end
-
-        end
 
         function [model, state] = setupBcAndInitialState(model)
 
@@ -463,7 +455,6 @@ classdef Electrolyser < BaseModel
 
 
         end
-
 
 
         function [problem, state] = getEquations(model, state0, state,dt, drivingForces, varargin)
