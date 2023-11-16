@@ -53,7 +53,31 @@ classdef PEMgridGenerator
 
         function paramobj = setupElectrodeElectrolyteCoupTerm(gen, paramobj, params)
 
-            error('Virtual Method')
+
+            an    = 'Anode';
+            ct    = 'Cathode';
+            elyte = 'Electrolyte';
+            
+            G = paramobj.Electrolyte.G;
+
+            params.(an).couplingcells;
+            params.(ct).couplingcells;
+            
+            couplingTerms = {};
+            
+            coupterm = couplingTerm('Anode-Electrolyte', {an, elyte});
+            nc = numel(params.(an).couplingcells);
+            coupterm.couplingcells = [(1 : nc)', params.(an).couplingcells];
+            coupterm.couplingfaces = [(1 : nc)', params.(an).couplingfaces];
+            couplingTerms{end + 1} = coupterm;
+            
+            coupterm = couplingTerm('Cathode-Electrolyte', {ct, elyte});
+            nc = numel(params.(ct).couplingcells);
+            coupterm.couplingcells = [(1 : nc)', params.(ct).couplingcells];
+            coupterm.couplingfaces = [(1 : nc)', params.(ct).couplingfaces];
+            couplingTerms{end + 1} = coupterm;
+
+            paramobj.couplingTerms = couplingTerms;
             
         end
 
