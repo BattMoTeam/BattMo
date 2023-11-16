@@ -1,6 +1,6 @@
 {
   "Geometry" : {"type" : "2D",
-                "Ny" : 3,
+                "Ny" : 4,
                 "ylength" : 1},
   "T": 873.15,
   "Anode": {
@@ -27,7 +27,7 @@
     "xlength": { "value" : 22,
                 "unit" : "micro*meter"
               },
-    "Nx": 40,
+    "Nx": 1000,
     "sigma_n0": { "value" : 1e-5,
                   "unit" : "siemens/(centi*meter)"
                 },

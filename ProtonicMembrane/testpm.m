@@ -70,7 +70,9 @@ states = states(ind);
 set(0, 'defaultlinelinewidth', 3);
 set(0, 'defaultaxesfontsize', 15);
 
-xc = model.(elyte).G.cells.centroids;
+N = model.(elyte).G.cartDims(1);
+
+xc = model.(elyte).G.cells.centroids(1 : N, 1);
 
 dothisplot = true;
 if dothisplot
@@ -81,20 +83,20 @@ if dothisplot
     state = states{end};
     state = model.addVariables(state, control);
     figure(1)
-    plot(xc, state.(elyte).pi)
+    plot(xc, state.(elyte).pi(1 : N))
     title('pi')
     xlabel('x [m]')
     figure(2)
     hold on
-    plot(xc, state.(elyte).pi - state.(elyte).phi)
+    plot(xc, state.(elyte).pi(1 : N) - state.(elyte).phi(1 : N))
     title('E')
     xlabel('x [m]')
     figure(3)
-    plot(xc, log(state.(elyte).sigmaEl))
+    plot(xc, log(state.(elyte).sigmaEl(1 : N)))
     title('log(sigmaEl)')
     xlabel('x [m]')
     figure(4)
-    plot(xc, state.(elyte).phi)
+    plot(xc, state.(elyte).phi(1 : N))
     title('phi')
     xlabel('x [m]')
     
