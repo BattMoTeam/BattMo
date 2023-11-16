@@ -14,12 +14,11 @@ classdef ProtonicMembraneCell < BaseModel
 
         couplingTerms
         couplingnames
-
-        dx
-        faceArea
         
         primaryVarNames
         funcCallList
+
+        scalings
         
     end
     
@@ -52,10 +51,23 @@ classdef ProtonicMembraneCell < BaseModel
             % setup standard physical constants
             model.constants = PhysicalConstants();
 
-            %% TODO fix that
-            model.dx = 22*micro*meter;
-            model.faceArea = 1;
+            an    = 'Anode';
+            ct    = 'Cathode';
+            elyte = 'Electrolyte';
 
+            sigmaHp = model.(elyte).sigma_prot;
+            sigmaEl = model.(elyte).sigma_n0;
+            phi0    = abs(model.(an).E_0 - model.(ct).E_0); % characteristic voltage
+            T       = model.(elyte).operators.T_all(1);
+            
+            sHp = 1/(T*sigmaHp*phi0);
+            sEl = 1/(T*sigmaEl*phi0);
+
+            scalings = struct('Hp', sHp, ...
+                              'El', sEl);
+
+            model.scalings = scalings;
+            
         end
         
         function model = registerVarAndPropfuncNames(model)
@@ -366,14 +378,10 @@ classdef ProtonicMembraneCell < BaseModel
 
             eqs = {};
 
-            dx      = model.dx;
-            faceArea   = model.faceArea;
-            sigmaHp = model.(elyte).sigma_prot;
-            sigmaEl = model.(elyte).sigma_n0;
-            phi0    = 1;
-            
-            sHp = 1/(faceArea*sigmaHp*phi0/dx);
-            sEl = 1/(faceArea*sigmaEl*phi0/dx);
+            scalings = model.scalings;
+            sHp = scalings.Hp;
+            sEl = scalings.El;
+
             
             eqs{end + 1} = sHp*state.(elyte).massConsHp;
             eqs{end + 1} = sEl*state.(elyte).chargeConsEl;
