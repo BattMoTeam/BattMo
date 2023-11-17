@@ -9,12 +9,12 @@ in progress :todo:`add more here`).
 
 The main Simulation schema contains schemas for
 
-* A schema for the geometry
-* A schema for the battery cell material parameters
-* A schema for the initialization of the state of the battery
-* A schema for the time stepping
-* A schema for the solver parameters
-* A schema for the output specification
+* A schema for the **geometry**
+* A schema for the **battery cell material parameters**
+* A schema for the **initialization of the state of the battery**
+* A schema for the **time stepping**
+* A schema for the **solver parameters**
+* A schema for the **output specification**
 
 .. note::
 
@@ -38,9 +38,26 @@ important ones.
 Material Parameters
 ===================
 
+The main schema is given by
+
 .. literalinclude:: ../Utilities/JsonSchemas/Battery.schema.json
    :language: json
 
+It contains references to schemas that are written in separate files
+
+* Electrolyte
+* Electrode
+
+  * Coating
+    
+    * Interface
+    * Solid Diffusion
+  * Current Collector
+* Separator
+* Thermal Model
+
+We give the listing of those here.
+              
 Electrolyte
 -----------
 

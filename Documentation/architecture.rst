@@ -29,7 +29,7 @@ The **negative and positive electrodes** are instances of the same electrode mod
    :align: center
 
 
-The **coating model** has four sub-models:
+The **coating model** has three sub-models:
 
 * Active material model
 * Binder

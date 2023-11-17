@@ -6,7 +6,7 @@ Description of the models that are used to setup the geometry
 
 
 BatteryGeneratorP2D
-------------------
+-------------------
 
 .. image:: img/1dmodel.png
            :width: 80%
@@ -16,7 +16,7 @@ BatteryGeneratorP2D
 .. _2dgeometry:
          
 BatteryGeneratorP3D
-------------------
+-------------------
 
 .. image:: img/runbattery2d.png
            :width: 80%
@@ -26,7 +26,7 @@ BatteryGeneratorP3D
 .. _3dgeometry:
       
 BatteryGeneratorP4D
-------------------
+-------------------
 
 .. image:: img/runbattery3d.png
            :width: 80%
