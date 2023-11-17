@@ -1,7 +1,3 @@
-% load solution
-
-
-
 
 elyte = 'Electrolyte';
 ct    = 'Cathode';
