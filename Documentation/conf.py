@@ -317,8 +317,8 @@ add_module_names=False
 # MatAttributeDocumenter.add_directive_header = _add_directive_header
 
 
-repo_url    = 'https://github.com/BattMoTeam/BattMo-dev'
-branch_name = 'modelrefac'
+repo_url    = 'https://github.com/BattMoTeam/BattMo'
+branch_name = 'dev'
 
 def find_battmo_file(filename):
     ignored_dirs = ['output', 'MRST', '.git', 'Documentation']
