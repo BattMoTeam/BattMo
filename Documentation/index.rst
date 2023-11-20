@@ -17,19 +17,14 @@
    References <bibliography>
    
    
-Introduction
+Welcome
 ============
 
-The Battery Modelling Toolbox (**BattMo**) is a resource for continuum modelling of electrochemical devices in
-MATLAB. The initial development features a pseudo X-dimensional (PXD) framework for the Doyle-Fuller-Newman model of
-lithium-ion battery cells. However, the development plan for BattMo includes extensions to other battery chemistries
-(e.g. metal-air) and eventually hydrogen systems (i.e. electrolyzers and fuel cells).
+Welcome to the Battery Modelling Toolbox (**BattMo**), a comprehensive solution for continuum modelling of electrochemical devices in `MATLAB <https://se.mathworks.com/products/matlab.html>`_ and `Julia <https://julialang.org/>`_!
 
-**BattMo** offers users a flexible framework for building fully coupled electrochemical-thermal simulations of
-electrochemical devices using 1D, 2D, or 3D geometries. **BattMo** is implemented in MATLAB and builds on the
-open-source MATLAB Reservoir Simulation Toolbox (MRST) developed at SINTEF. MRST provides a solid basis for finite
-volume mesh generation of complex geometries and advanced numerical solvers that enable fast simulations for large
-systems.
+**BattMo** facilitates a deep understanding of these devices by simulating cell-level performance in a virtual space. It allows you to calculate dynamic spatial profiles for essential quantities like concentration, electric potential, and temperature. Initially, **BattMo** focuses on the Doyle-Fuller-Newman model for lithium-ion battery cells but has a broader development plan that includes extensions to other battery chemistries such as Na-ion, solid-state, metal-air, and zinc-based systems, along with hydrogen systems like electrolyzers and fuel cells.
+
+Our toolbox offers a flexible framework for building fully coupled electrochemical-thermal simulations with 1D, 2D, or 3D geometries. Powered by the open-source MATLAB Reservoir Simulation Toolbox (MRST), **BattMo** provides efficient finite volume mesh generation and advanced numerical solvers, ensuring swift simulations even for complex systems. Whether you're a researcher or developer, **BattMo** is your gateway to unlocking the potential of continuum modelling for electrochemical devices. Dive into our documentation and explore the possibilities!
 
 For the latest information including video tutorials and project gallery, please visit the project webpage:
 `https://batterymodel.com <https://batterymodel.com/>`_
