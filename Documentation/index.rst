@@ -20,7 +20,7 @@
 Introduction
 ============
 
-The Battery Modelling Toolbox (**Battmo**) is a resource for continuum modelling of electrochemical devices in
+The Battery Modelling Toolbox (**BattMo**) is a resource for continuum modelling of electrochemical devices in
 MATLAB. The initial development features a pseudo X-dimensional (PXD) framework for the Doyle-Fuller-Newman model of
 lithium-ion battery cells. However, the development plan for BattMo includes extensions to other battery chemistries
 (e.g. metal-air) and eventually hydrogen systems (i.e. electrolyzers and fuel cells).
@@ -46,7 +46,8 @@ For the latest information including video tutorials and project gallery, please
 Acknowledgements
 ================
 
-BattMo has received funding from from the European Union’s Horizon 2020 innovation program under grant agreement numbers:
+BattMo has received funding from the European Union’s Horizon 2020 innovation program under grant agreement numbers:
 
-875527 - Hybrid power-energy electrodes for next-generation lithium-ion batteries (HYDRA)
-957189 - Battery interface genome and materials acceleration platform (BIG-MAP)
+- 875527 - Hybrid power-energy electrodes for next-generation lithium-ion batteries (HYDRA)
+- 957189 - Battery interface genome and materials acceleration platform (BIG-MAP) 
+- 101069765 - Innovative and Sustainable High Voltage Li-ion Cells for Next Generation (EV) Batteries (IntelLiGent)
