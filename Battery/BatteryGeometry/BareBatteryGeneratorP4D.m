@@ -65,17 +65,23 @@ classdef BareBatteryGeneratorP4D < BatteryGenerator
         function paramobj = setupElectrolyte(gen, paramobj, params)
             
             params.cellind =  (1 : (gen.nenx + gen.sepnx + gen.penx))';
-            params.Separator.cellind = gen.nenx + (1 : gen.sepnx)';
-            
             paramobj = setupElectrolyte@BatteryGenerator(gen, paramobj, params);
             
         end
         
+        function paramobj = setupSeparator(gen, paramobj, params)
+
+            params.cellind = gen.nenx + (1 : gen.sepnx)';
+            paramobj = setupSeparator@BatteryGenerator(gen, paramobj, params);
+
+        end
+
         function paramobj = setupElectrodes(gen, paramobj, params)
 
             ne  = 'NegativeElectrode';
             pe  = 'PositiveElectrode';
             am  = 'ActiveMaterial';
+            co  = 'Coating';
             sd  = 'SolidDiffusion';
             
             sepnx = gen.sepnx; 
@@ -85,33 +91,33 @@ classdef BareBatteryGeneratorP4D < BatteryGenerator
             %% parameters for negative electrode
 
             params.(ne).cellind = (1 : nenx)';
-            params.(ne).(am).cellind = params.(ne).cellind;
+            params.(ne).(co).cellind = params.(ne).cellind;
             
             % boundary setup for negative electrode
-            params.(ne).(am).bcfaces = 1;
-            params.(ne).(am).bccells = 1;
+            params.(ne).(co).bcfaces = 1;
+            params.(ne).(co).bccells = 1;
             
             %% parameters for positive electrode
             
             pe_indstart = nenx + sepnx;
             params.(pe).cellind =  pe_indstart + (1 :  penx)';
-            params.(pe).(am).cellind = params.(pe).cellind;
+            params.(pe).(co).cellind = params.(pe).cellind;
             
             % boundary setup for positive electode
-            params.(pe).(am).bcfaces = penx + 1;
-            params.(pe).(am).bccells = penx;
+            params.(pe).(co).bcfaces = penx + 1;
+            params.(pe).(co).bccells = penx;
 
             paramobj = setupElectrodes@BatteryGenerator(gen, paramobj, params);
 
             % N and np are parameters for the full diffusion model
-            if strcmp(paramobj.(ne).(am).diffusionModelType, 'full')
-                paramobj.(ne).(am).(sd).N  = gen.nenr;
-                paramobj.(ne).(am).(sd).np = gen.nenx;
+            if strcmp(paramobj.(ne).(co).(am).diffusionModelType, 'full')
+                paramobj.(ne).(co).(am).(sd).N  = gen.nenr;
+                paramobj.(ne).(co).(am).(sd).np = gen.nenx;
             end
             
-            if strcmp(paramobj.(pe).(am).diffusionModelType, 'full')
-                paramobj.(pe).(am).(sd).N  = gen.penr;
-                paramobj.(pe).(am).(sd).np = gen.penx;
+            if strcmp(paramobj.(pe).(co).(am).diffusionModelType, 'full')
+                paramobj.(pe).(co).(am).(sd).N  = gen.penr;
+                paramobj.(pe).(co).(am).(sd).np = gen.penx;
             end
             
         end
