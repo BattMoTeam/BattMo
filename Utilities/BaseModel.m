@@ -579,7 +579,26 @@ classdef BaseModel < PhysicalModel
                 keep = true;
             end
         end
+        
+        function model = equipModelForComputation(model)
 
+            model = model.setupComputationalGraph();
+
+            cgt = model.computationalGraph();
+            
+            model.funcCallList     = cgt.getOrderedFunctionCallList();
+            model.primaryVarNames  = cgt.getPrimaryVariableNames();
+            model.equationVarNames = cgt.getEquationVariableNames();
+            
+            function str = setupName(varname)
+                shortvarname = cellfun(@(elt) Battery.shortenName(elt), varname, 'uniformoutput', false);
+                str = Battery.varToStr(shortvarname);
+            end
+            model.equationNames = cellfun(@(varname) setupName(varname), model.equationVarNames, 'uniformoutput', false);
+            model.equationTypes = repmat({'cell'}, 1, numel(model.equationNames));
+            
+        end
+        
     end
     
 end
