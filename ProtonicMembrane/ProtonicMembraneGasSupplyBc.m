@@ -64,6 +64,12 @@ classdef ProtonicMembraneGasSupplyBc < BaseModel
 
     methods
 
+        function nbc = getNumberBcFaces(model)
+
+            nbc = numel(model.controlHelpers.bcfaces);
+            
+        end
+            
         function state = updateControlEquations(model, state)
 
             controlHelpers = model.controlHelpers;

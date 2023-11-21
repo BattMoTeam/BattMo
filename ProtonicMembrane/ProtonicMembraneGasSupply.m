@@ -18,6 +18,11 @@ classdef ProtonicMembraneGasSupply < BaseModel
         couplingTerms
         
         standalone
+        funcCallList
+        primaryVarNames
+        equationVarNames
+        equationNames
+        equationTypes
         
     end
     
@@ -51,6 +56,22 @@ classdef ProtonicMembraneGasSupply < BaseModel
             
         end
 
+
+        function model = setupStandAlone(model)
+            
+            model.standalone = true;
+
+            shortNames = {'1', 'H2O';
+                          '2', 'O2';
+                          'massConses', 'massCons';
+                          'GasSupplyBc', 'bc';
+                          'controlEquations', 'ctrleq';
+                          'boundaryEquations', 'bceq'};
+            
+            model = BaseModel.equipModelForComputation(model, 'shortNames', shortNames);
+            
+        end
+        
         function model = registerVarAndPropfuncNames(model)
             
             model = registerVarAndPropfuncNames@BaseModel(model);
@@ -78,7 +99,7 @@ classdef ProtonicMembraneGasSupply < BaseModel
 
             fn = @ProtonicMembraneGasSupply.updatePressure;
             inputvarnames = {VarName({}, 'pressures', nGas)};
-            model = model.registerPropFunction({'pressure', fn, inputvarnames})
+            model = model.registerPropFunction({'pressure', fn, inputvarnames});
             
             for igas = 1 : nGas
                 
@@ -124,6 +145,13 @@ classdef ProtonicMembraneGasSupply < BaseModel
             end
         end
 
+        function forces = getValidDrivingForces(model)
+
+            forces = getValidDrivingForces@PhysicalModel(model);
+            forces.src = [];
+            
+        end
+        
         function model = setupControl(model)
 
             % Two components indexed H2O : 1, O2 : 2
