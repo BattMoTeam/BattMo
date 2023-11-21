@@ -10,8 +10,10 @@ paramobj = ProtonicMembraneGasSupplyInputParams(jsonstruct);
 
 nx = 10;
 ny = 7;
+lx = 10;
+ly = 10;
 
-G = cartGrid([nx, ny]);
+G = cartGrid([nx, ny], [lx, ly]);
 G = computeGeometry(G);
 
 tbls = setupSimpleTables(G);
@@ -65,6 +67,8 @@ paramobj.G = G;
 model = ProtonicMembraneGasSupply(paramobj);
 model = model.setupStandAlone();
 
+cgt = model.computationalGraph;
+
 % Setup initial state
 
 nc  = model.G.cells.num;
@@ -82,7 +86,21 @@ initstate.GasSupplyBc.pressures{gasInd.O2}   = pO2 *ones(nbc, 1);
 initstate.GasSupplyBc.massFluxes{gasInd.H2O} = zeros(nbc, 1);
 initstate.GasSupplyBc.massFluxes{gasInd.O2}  = zeros(nbc, 1);
 
-T = 10;
+initstate = model.evalVarName(initstate, VarName({}, 'densities', model.nGas));
+
+%% setup scalings
+
+rho = initstate.densities{1}(1);
+scalFlux     = 1/nx*rho*model.permeability/model.viscosity*pH2O/ly;
+scalPressure = pH2O;
+
+model.scalings = {{{'massConses', 1}, scalFlux}, ...
+                  {{'massConses', 2}, scalFlux}, ...
+                  {{'GasSupplyBc', 'controlEquation'}, scalPressure}, ...
+                  {{'GasSupplyBc', 'boundaryEquations', 1}, scalFlux}, ...
+                  {{'GasSupplyBc', 'boundaryEquations', 2}, scalFlux}};
+
+T = 1*hour;
 N = 10;
 
 dt = T/N;
@@ -103,3 +121,10 @@ model.nonlinearTolerance = 1e-8;
 
 [~, states, report] = simulateScheduleAD(initstate, model, schedule, 'OutputMinisteps', true, 'NonLinearSolver', nls);
 
+%%
+
+close all
+
+ind = cellfun(@(state) ~isempty(state), states);
+states = states(ind);
+plotToolbar(model.G, states);
