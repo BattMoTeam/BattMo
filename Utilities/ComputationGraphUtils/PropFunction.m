@@ -104,7 +104,7 @@ classdef PropFunction
             
         end
 
-        function callstr = litteralFunctionCallSetupFn(propfunction)
+        function callstr = literalFunctionCallSetupFn(propfunction)
 
             [funcstr, statestr, nmstr] = propfunction.setupCallStringElements();
 
