@@ -250,7 +250,6 @@ classdef ActiveMaterial < BaseModel
             itf = 'Interface';
             
             cleanState.T = state.T;
-            cleanState.I = state.I;
             cleanState.(itf).cElectrolyte   = state.(itf).cElectrolyte;
             cleanState.(itf).phiElectrolyte = state.(itf).phiElectrolyte;
             
