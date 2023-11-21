@@ -580,7 +580,10 @@ classdef BaseModel < PhysicalModel
             end
         end
         
-        function model = equipModelForComputation(model)
+        function model = equipModelForComputation(model, varargin)
+
+            opt = struct('shortNames', []);
+            opt = merge_options(opt, varargin{:});
 
             model = model.setupComputationalGraph();
 
@@ -589,11 +592,30 @@ classdef BaseModel < PhysicalModel
             model.funcCallList     = cgt.getOrderedFunctionCallList();
             model.primaryVarNames  = cgt.getPrimaryVariableNames();
             model.equationVarNames = cgt.getEquationVariableNames();
+
+            function str = shortenName(name)
+                [found, ind] = ismember(name, opt.shortNames(:, 1));
+                if found
+                    str = opt.shortNames{ind, 2};
+                else
+                    str = name;
+                end
+            end
             
             function str = setupName(varname)
-                shortvarname = cellfun(@(elt) Battery.shortenName(elt), varname, 'uniformoutput', false);
-                str = Battery.varToStr(shortvarname);
+                
+                if isnumeric(varname{end})
+                    varname{end} = sprintf('%d', varname{end});
+                end
+
+                if ~isempty(opt.shortNames)
+                    varname = cellfun(@(elt) shortenName(elt), varname, 'uniformoutput', false);
+                end
+
+                str = strjoin(varname, '_');
+                
             end
+            
             model.equationNames = cellfun(@(varname) setupName(varname), model.equationVarNames, 'uniformoutput', false);
             model.equationTypes = repmat({'cell'}, 1, numel(model.equationNames));
             
