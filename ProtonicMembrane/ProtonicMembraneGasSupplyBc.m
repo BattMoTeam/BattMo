@@ -4,6 +4,8 @@ classdef ProtonicMembraneGasSupplyBc < BaseModel
 
         nGas   % Number of gas (each of them will have a partial pressure). Only needed when gasSupplyType == 'coupled'
         gasInd % Structure whose fieldname give index number of the corresponding gas component.
+
+        controlHelpers
         
     end
     
@@ -58,6 +60,38 @@ classdef ProtonicMembraneGasSupplyBc < BaseModel
             
         end
         
+    end
+
+    methods
+
+        function state = updateControlEquations(model, state)
+
+            controlHelpers = model.controlHelpers;
+
+            maps = controlHelpers.maps;
+            bcvals = controlHelpers.vals;
+
+            pressures  = state.pressures;
+            massFluxes = state.massFluxes;
+            
+            eqs = {};
+            for icomp = 1 : 2
+                for itype = 1 : 2
+                    switch itype
+                      case 1
+                        val = pressures{icomp};
+                      case 2
+                        val = massFluxes{icomp};
+                      otherwise
+                        error('type index not recognized');
+                    end
+                    eqs{end + 1} = maps{itype, icomp}*val - bcvals{itype, icomp};
+                end
+            end
+
+            state.controlEquations = combineEquations(eqs{:});
+        end
+
     end
     
     methods(Static)

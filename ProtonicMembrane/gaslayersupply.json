@@ -1,0 +1,21 @@
+{"molecularWeights" : [
+  {"value" : 18.01528, 
+   "unit" : "gram/mol"
+  },
+  {"value" : 31.9988,
+   "unit" : "gram/mol"
+  }],
+ "permeability" : 1e-10,
+ "viscosity" : {
+   "value" : 0.018369247,
+   "unit" : "centi*poise"
+ },
+ "T" : 298,
+ "control" : [{"type" : "pressure",
+               "values" : [2e5, 1.5e5]},
+              {"type" : "pressure",
+               "values" : [1e5, 0.5e5]}
+             ]
+}
+  
+

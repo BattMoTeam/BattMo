@@ -10,11 +10,12 @@ classdef ProtonicMembraneGasSupply < BaseModel
         permeability
         viscosity
         T % Temperature
+        control % Control structure
         
         nGas   % Number of gas (each of them will have a partial pressure). Only needed when gasSupplyType == 'coupled'
         gasInd % Structure whose fieldname give index number of the corresponding gas component.
 
-        coupTerms
+        couplingTerms
         
         standalone
         
@@ -30,17 +31,23 @@ classdef ProtonicMembraneGasSupply < BaseModel
                        'molecularWeights', ...
                        'permeability'    , ...
                        'viscosity'       , ...
+                       'control'         , ...
+                       'couplingTerms'   , ...
                        'T'};
             
             model = dispatchParams(model, paramobj, fdnames);
 
             model.GasSupplyBc = ProtonicMembraneGasSupplyBc([]);
+
+            model.operators = localSetupOperators(model.G);
             
             model.constants = PhysicalConstants();
             
             model.gasInd.H2O = 1;
             model.gasInd.O2  = 2;
             model.nGas = 2;
+
+            model = model.setupControl();
             
         end
 
@@ -117,6 +124,114 @@ classdef ProtonicMembraneGasSupply < BaseModel
             end
         end
 
+        function model = setupControl(model)
+
+            % Two components indexed H2O : 1, O2 : 2
+            comptbl.comp = [1; 2];
+            comptbl = IndexArray(comptbl);
+            
+            % Two crontol type indexed 'pressure' : 1, 'flux' : 2
+            typetbl.type = [1; 2];
+            typetbl = IndexArray(typetbl);
+
+            couplingTerms = model.couplingTerms;
+            ctrl          = model.control;
+
+            assert(numel(couplingTerms) == numel(ctrl), 'mismatch between coupling terms input');
+
+            ctrlvals = [];
+            comptypecouptbl = IndexArray([], 'fdnames', {'comp', 'type', 'coup'});
+
+            for icoup = 1 : numel(ctrl)
+
+                ctrlinput = ctrl(icoup);
+                
+                clear typetbl2
+                switch ctrlinput.type
+                  case 'pressure'
+                    typetbl2.type = 1;
+                  case 'flux'
+                    typetbl2.type = 2;
+                  otherwise
+                    error('ctrlinput type not recognized');
+                end
+                typetbl2 = IndexArray(typetbl2);
+                comptypecouptbl2 = crossIndexArray(comptbl, typetbl2, {});
+                comptypecouptbl2 =  comptypecouptbl2.addInd('coup', icoup);
+                vals2 = ctrlinput.values;
+
+                comptypecouptbl = concatIndexArray(comptypecouptbl, comptypecouptbl2, {});
+                ctrlvals = [ctrlvals; vals2];
+            end
+
+            bccellfacecouptbl.faces = [];
+            bccellfacecouptbl.cells = [];
+            bccellfacecouptbl.coup = [];
+            bccellfacecouptbl = IndexArray(bccellfacecouptbl);
+            
+            for icoup = 1 : numel(couplingTerms)
+
+                clear bccellfacecouptbl2;
+                bccellfacecouptbl2.faces = couplingTerms{icoup}.couplingfaces;
+                bccellfacecouptbl2.cells = couplingTerms{icoup}.couplingcells;
+                bccellfacecouptbl2 = IndexArray(bccellfacecouptbl2);
+                nc = bccellfacecouptbl2.num;
+                bccellfacecouptbl2 =  bccellfacecouptbl2.addInd('coup', icoup*ones(nc, 1));
+
+                bccellfacecouptbl = concatIndexArray(bccellfacecouptbl, bccellfacecouptbl2, {});
+
+            end
+
+            bccellfacecomptypecouptbl = crossIndexArray(bccellfacecouptbl, comptypecouptbl, {'coup'});
+
+            bccellfacetbl = projIndexArray(bccellfacecomptypecouptbl, {'cells', 'faces'});
+
+            for itype = 1 : typetbl.num
+                
+                for icomp = 1 : comptbl.num
+                    
+                    clear comptypetbl
+                    comptypetbl.type = itype;
+                    comptypetbl.comp = icomp;
+                    comptypetbl = IndexArray(comptypetbl);
+                    
+                    comptypecouptbl2 = crossIndexArray(comptypecouptbl, comptypetbl, {'comp', 'type'});
+
+                    bccellfacecomptypecouptbl = crossIndexArray(comptypecouptbl2, bccellfacecouptbl, {'coup'});
+                
+                    map = TensorMap();
+                    map.fromTbl = bccellfacetbl;
+                    map.toTbl = bccellfacecomptypecouptbl;
+                    map.mergefds = {'cells', 'faces'};
+                    map = map.setup();
+
+                    controlMap = SparseTensor();
+                    controlMap = controlMap.setFromTensorMap(map);
+                    controlMap = controlMap.getMatrix();
+                    
+                    controlMaps{itype, icomp} = controlMap;
+
+                    map = TensorMap();
+                    map.fromTbl = comptypecouptbl;
+                    map.toTbl = bccellfacecomptypecouptbl;
+                    map.mergefds = {'comp', 'type', 'coup'};
+                    map = map.setup();
+
+                    controlVals{itype, icomp} = map.eval(ctrlvals);
+                    
+                end
+                
+            end
+
+            controlHelpers.maps    = controlMaps;
+            controlHelpers.vals    = controlVals;
+            controlHelpers.bccells = bccellfacetbl.get('cells');
+            controlHelpers.bcfaces = bccellfacetbl.get('faces');
+            
+            model.GasSupplyBc.controlHelpers = controlHelpers;
+            
+        end
+        
         function state = updatePressure(model, state)
 
             nGas = model.nGas;
@@ -128,6 +243,42 @@ classdef ProtonicMembraneGasSupply < BaseModel
             end
 
             state.pressure = p;
+            
+        end
+        
+
+        function state = updateBcFluxTerms(model, state)
+
+            nGas = model.nGas;
+            K    = model.permeability;
+            mu   = model.viscosity;
+            
+            bccells = model.GasSupplyBc.controlHelpers.bccells;
+            bcfaces = model.GasSupplyBc.controlHelpers.bcfaces;
+
+            Tbc = model.operators.transFaceBC(bcfaces);
+            Tbc = K/mu.*Tbc;
+            
+            for igas = 1 : nGas
+
+                pIn   = state.pressures{igas}(bccells);
+                pBc   = state.GasSupplyBc.pressures{igas};
+                rhoIn = state.densities{igas}(bccells);
+                rhoBc = state.GasSupplyBc.densities{igas};
+
+                bcFlux = state.GasSupplyBc.massFluxes{igas};
+                
+                bceqs{igas} = ProtonicMembraneGasSupplyBc.setupBcEquation(model , ...
+                                                                         bcFlux, ...
+                                                                         pIn   , ...
+                                                                         pBc   , ...
+                                                                         rhoIn , ...
+                                                                         rhoBc , ...
+                                                                         Tbc);
+
+            end
+
+            state.GasSupplyBc.boundaryEquations = bceqs;
             
         end
         

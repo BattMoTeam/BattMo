@@ -5,6 +5,10 @@ classdef ProtonicMembraneGasSupplyInputParams < ComponentInputParams
         molecularWeights
         permeability
         viscosity
+        T
+        control
+
+        couplingTerms
 
     end
     
