@@ -108,7 +108,7 @@ For example, if we want to plot the grid associated with the different submodels
    xlabel('Position  /  m')  
 
 Explore the States
-----------------
+------------------
 
 The values of the state quantities at each time step are stored in the :code:`states` `cell array <https://se.mathworks.com/help/matlab/cell-arrays.html>`_. Each entry in the array describes the state of the simulation at a given timestep. 
 
