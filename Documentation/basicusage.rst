@@ -5,10 +5,17 @@ Basic Usage
 .. note::
   This section is still under development.
 
-In this section, we describe how to setup, run, and post-process a basic P2D Li-ion battery simulation in |battmo|.
+Here we introduce the basic usage of |battmo| by showing some simple workflows and highlighting important functions.
+
+A First |battmo| Model
+======================
+
+Let's make your first |battmo| model! 🔋⚡💻 
+
+In this example, we will build, run, and visualize a simple P2D simultion for an NMC-Graphite Li-ion battery cell. We will first introduce how |battmo| handles model parameters, then run the simulation, dashboard the results, and explore the details of the simulation output.
 
 Define Parameters
-=================
+-----------------
 
 |battmo| uses JSON to manage parameters. This allows you to easily save, document, and share complete parameter sets from specific simulations. We have used long and explicit key names for good readability. If you are new to JSON, you can learn more about it `here <https://www.w3schools.com/js/js_json_intro.asp>`_. Details on the BattMo specification are available in the :ref:`json:JSON input specification`.
 
@@ -36,7 +43,7 @@ which returns:
 Unless otherwise specified, BattMo uses `SI base units <https://www.nist.gov/si-redefinition/definitions-si-base-units>`_ for physical quantities.
 
 Run Simulation
-==============
+--------------
 
 We can run the simulation with the command:
   
@@ -44,10 +51,10 @@ We can run the simulation with the command:
 
    output = runBatteryJson(jsonstruct)
                       
-Post-Process Results
-====================
+Show the Dashboard
+------------------
 
-We can plot the results using :battmo:`plotDashboard`. Here, for example at time step 10,
+We can dashboard the main results using :battmo:`plotDashboard`. Here, for example at time step 10,
 
 .. code:: matlab
 
@@ -63,8 +70,8 @@ We can plot the results using :battmo:`plotDashboard`. Here, for example at time
 
 The left 3 columns of the dashboard shows the profiles for the main state quantities (concentration and electric potential) in the negative electrode, electrolyte, and positive electrode. The rightmost column shows the calculated cell current and voltage. In the following subsections, we will explore how to access and plot this data from the simulation output.
 
-Simulation Output
------------------
+Explore the Output
+------------------
 
 The :code:`output` structure returns among other thing the model and the states. 
 
@@ -77,13 +84,13 @@ The :code:`model` contains information about the setup of the model and initial 
 
 Explore the Grid
 ----------------
-One of the most used properties of the model is the grid (or mesh), which can be accessed with the command:
+The grid (or mesh) is one of the most used properties of the model, which can be accessed with the command:
 
 .. code:: matlab
 
    output.model.G
 
-We can see that the grid is stored as a structure with information about the cells, faces, nodes, etc. The values of the state quantities (e.g. concentration and electric potential) are calculated at the nodes. To plot the positions of the nodes, we can use the following commands:
+We can see that the grid is stored as a structure with information about the cells, faces, nodes, etc. The values of the state quantities (e.g. concentration and electric potential) are calculated at the centroids of the cells. To plot the positions of the centroids, we can use the following commands:
 
 .. code:: matlab
 
@@ -107,6 +114,8 @@ For example, if we want to plot the grid associated with the different submodels
    plot(x_pe, zeros(size(x_pe)), 'or')
    xlabel('Position  /  m')  
 
+If you would like more information about the |battmo| model hierarchy, please see [TODO: Link to BattMo Model Hierarchy].
+
 Explore the States
 ------------------
 
@@ -129,7 +138,7 @@ which returns the structure:
                  time: 504
          ThermalModel: [1×1 struct]
 
-There we can see that the time of the state is 504 seconds and there are other structures containing the states of the electrodes and electrolyte. We can look into the state of the electrolyte using the command:
+We see that the time of the state is 504 seconds and there are other structures containing the states of the electrodes and electrolyte. We can look into the state of the electrolyte using the command:
 
 .. code:: matlab
 
@@ -168,30 +177,73 @@ Let's plot the concentration in the electrolyte at timestep 10. We can plot the 
    xlabel('Position  /  m')
    ylabel('Concentration  /  mol \cdot m^{-3}')
 
-Modifying the JSON input directly from Matlab
-=============================================
+Congratulations! 🎉 You are now familiar with the basics of |battmo|! But there are still a lot of exciting features to discover. Let's keep going. 😃
 
-We can modify directly the JSON input by editing in the file. The JSON file is converted in a standard Matlab structure
-using the Matlab in-built function `jsondecode <https://se.mathworks.com/help/matlab/ref/jsondecode.html>`_. We can
-therefore modify it directly in matlab. Here, we modify the CRate values,
+Change Control Parameters
+=========================
+
+Let's try simulating the discharge of the cell at different C-Rates. 
+
+Once the JSON parameter file has been read into MATLAB as a jsonstruct, its properties can be modified programmatically. For example, we can define a vector of different C-Rates and then use a for-loop to replace that value in the jsonstruct and re-run the simulation.
 
 .. code:: matlab
 
-   CRates = [0.8, 1, 2];
+   CRates = [0.5, 1, 2];
+   figure()
    for i = 1 : numel(CRates)
        jsonstruct.Control.CRate = CRates(i);
        output = runBatteryJson(jsonstruct);
-       plotResult(output);
-   end
 
-For this example, we have writting a :code:`plotResult` function which extracts and plots from the output the time and
-voltage values, see :ref:`here <plotResult>`.
+       states = output.states;
+       time = cellfun(@(state) state.time, states); 
+       voltage = cellfun(@(state) state.('Control').E, states);
+       plot((time/hour), voltage, '-', 'linewidth', 3)
+       hold on
+   end
+   hold off
+
+[TODO: fix :code:`plotResult`] For this example, we have written a :code:`plotResult` function which extracts and plots from the output the time and voltage values, see :ref:`here <plotResult>`.
    
 .. figure:: img/crates.png
    :target: _images/crates.png
    :width: 70%
    :align: center   
 
+   A comparison of cell voltage curves at different C-Rates
+
+Change Structural Parameters
+============================
+
+Now let's try changing some structural parameters in the model. 
+
+For example, we could simulate the cell considering different thickness values for the negative electrode coating. We will take the same approach as the previous example, by defining a vector of thickness values and using a for-loop to iterate through and re-run the simulation.
+
+.. code:: matlab
+
+   thickness = [16, 32, 48, 64].*1e-6;
+   figure()
+   for i = 1 : numel(thickness)
+       jsonstruct.NegativeElectrode.Coating.thickness = thickness(i);
+       output = runBatteryJson(jsonstruct);
+
+       states = output.states;
+       time = cellfun(@(state) state.time, states); 
+       voltage = cellfun(@(state) state.('Control').E, states);
+       plot((time/hour), voltage, '-', 'linewidth', 3)
+       hold on
+   end
+   hold off
+
+From these results we can see that for thin negative electrode coatings, the capacity of the cell is limited by the negative electrode. But the capacity of the negative electrode increases with thickness and eventually the positive electrode becomes limiting. 
+
+Change Material Parameters
+==========================
+
+Finally, let's try changing active materials in the model.
+
+The sample JSON input file we provided is for an NMC-Graphite cell, but BattMo contains parameter sets for different active materials that have been collected from the scientific literature. Let's replace the NMC active material with LFP.
+
+The active material parameter sets are stored in their own JSON files. To merge data from a new JSON into our existing model, we can use the |battmo| function :code:`mergeJsonStructs`.
 
 Combining JSON inputs
 =====================
