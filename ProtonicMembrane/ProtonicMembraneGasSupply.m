@@ -18,11 +18,14 @@ classdef ProtonicMembraneGasSupply < BaseModel
         couplingTerms
         
         standalone
+
         funcCallList
         primaryVarNames
         equationVarNames
         equationNames
         equationTypes
+
+        scalings
         
     end
     
@@ -43,7 +46,10 @@ classdef ProtonicMembraneGasSupply < BaseModel
             model = dispatchParams(model, paramobj, fdnames);
 
             model.GasSupplyBc = ProtonicMembraneGasSupplyBc([]);
-
+            
+            model.GasSupplyBc.molecularWeights = model.molecularWeights;
+            model.GasSupplyBc.T                = model.T;
+            
             model.operators = localSetupOperators(model.G);
             
             model.constants = PhysicalConstants();
@@ -53,7 +59,7 @@ classdef ProtonicMembraneGasSupply < BaseModel
             model.nGas = 2;
 
             model = model.setupControl();
-            
+
         end
 
 
@@ -65,7 +71,7 @@ classdef ProtonicMembraneGasSupply < BaseModel
                           '2', 'O2';
                           'massConses', 'massCons';
                           'GasSupplyBc', 'bc';
-                          'controlEquations', 'ctrleq';
+                          'controlEquation', 'ctrleq';
                           'boundaryEquations', 'bceq'};
             
             model = BaseModel.equipModelForComputation(model, 'shortNames', shortNames);
@@ -149,6 +155,21 @@ classdef ProtonicMembraneGasSupply < BaseModel
 
             forces = getValidDrivingForces@PhysicalModel(model);
             forces.src = [];
+            
+        end
+
+        function state = updateMassSources(model, state)
+
+            nGas = model.nGas;
+            bccells = model.GasSupplyBc.controlHelpers.bccells;
+            
+            for igas = 1 : nGas
+                src = 0.*state.pressures{1}; % hacky initialization to get AD
+                src(bccells) = state.GasSupplyBc.massFluxes{igas};
+                srcs{igas} = - src;
+            end
+
+            state.massSources = srcs;
             
         end
         
@@ -259,6 +280,65 @@ classdef ProtonicMembraneGasSupply < BaseModel
             model.GasSupplyBc.controlHelpers = controlHelpers;
             
         end
+
+        function state = applyScaling(model, state)
+            
+            if ~isempty(model.scalings)
+
+                scalings = model.scalings;
+
+                for iscal = 1 : numel(scalings)
+
+                    scaling = scalings{iscal};
+                    name = scaling{1};
+                    coef = scaling{2};
+
+                    val = model.getProp(state, name);
+                    val = 1/coef*val;
+
+                    state = model.setProp(state, name, val);
+                    
+                end
+                
+            end
+            
+        end
+        
+        function [problem, state] = getEquations(model, state0, state,dt, drivingForces, varargin)
+            
+            sd  = 'SolidDiffusion';
+            itf = 'Interface';
+            
+            time = state0.time + dt;
+            state = model.initStateAD(state);
+            
+            %% We call the assembly equations ordered from the graph
+
+            funcCallList = model.funcCallList;
+
+            for ifunc = 1 : numel(funcCallList)
+                eval(funcCallList{ifunc});
+            end
+
+            state = model.applyScaling(state);
+            
+            for ieq = 1 : numel(model.equationVarNames)
+                eqs{ieq} = model.getProp(state, model.equationVarNames{ieq});
+            end
+            
+            names       = model.equationNames;
+            types       = model.equationTypes;
+            primaryVars = model.primaryVarNames;
+            
+            problem = LinearizedProblem(eqs, types, names, primaryVars, state, dt);
+
+        end
+
+        function primaryvarnames = getPrimaryVariableNames(model)
+
+            primaryvarnames = model.primaryVarNames;
+
+        end
         
         function state = updatePressure(model, state)
 
@@ -310,6 +390,13 @@ classdef ProtonicMembraneGasSupply < BaseModel
             
         end
         
+        function cleanState = addStaticVariables(model, cleanState, state, state0)
+            
+            cleanState = addStaticVariables@BaseModel(model, cleanState, state);
+
+            cleanState.densities = state.densities;
+            
+        end
         
         function state = massFluxes(model, state)
 
@@ -352,7 +439,7 @@ classdef ProtonicMembraneGasSupply < BaseModel
 
             for igas = 1 : nGas
 
-                state.massConses{igas} = state.massAccums{igas} + op.div(state.massFluxes{igas}) + state.massSources{igas};
+                state.massConses{igas} = state.massAccums{igas} + op.Div(state.massFluxes{igas}) - state.massSources{igas};
                 
             end
             
@@ -369,6 +456,7 @@ classdef ProtonicMembraneGasSupply < BaseModel
             Mws  = model.molecularWeights;
             T    = model.T;
             nGas = model.nGas;
+            c    = model.constants;
             
             for igas = 1 : nGas
 

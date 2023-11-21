@@ -2,9 +2,14 @@ classdef ProtonicMembraneGasSupplyBc < BaseModel
     
     properties
 
+        molecularWeights
+        T
+        
         nGas   % Number of gas (each of them will have a partial pressure). Only needed when gasSupplyType == 'coupled'
         gasInd % Structure whose fieldname give index number of the corresponding gas component.
 
+        constants
+        
         controlHelpers
         
     end
@@ -18,6 +23,8 @@ classdef ProtonicMembraneGasSupplyBc < BaseModel
             model.gasInd.H2O = 1;
             model.gasInd.O2  = 2;
             model.nGas = 2;
+
+            model.constants = PhysicalConstants();
             
         end
 
@@ -33,12 +40,12 @@ classdef ProtonicMembraneGasSupplyBc < BaseModel
             varnames{end + 1} = VarName({}, 'pressures', nGas);
             % Gas densities  at boundary
             varnames{end + 1} = VarName({}, 'densities', nGas);
-            % Mass Flux terms at boundary
+            % Mass Flux terms at boundary (outward)
             varnames{end + 1} = VarName({}, 'massFluxes', nGas);
             % Boundary Equation relating boundary massFluxes and boundary pressure values
             varnames{end + 1} = VarName({}, 'boundaryEquations', nGas);
             % ControlEquations
-            varnames{end + 1} = VarName({}, 'controlEquations', nGas);
+            varnames{end + 1} = 'controlEquation';
             
             model = model.registerVarNames(varnames);
 
@@ -53,8 +60,7 @@ classdef ProtonicMembraneGasSupplyBc < BaseModel
                 fn = @ProtonicMembraneGasSupplyBc.updateControlEquations;
                 inputvarnames = {VarName({}, 'pressures', nGas, igas), ...
                                  VarName({}, 'massFluxes', nGas, igas)};
-                outputvarname = VarName({}, 'controlEquations', nGas, igas);
-                model = model.registerPropFunction({outputvarname, fn, inputvarnames});
+                model = model.registerPropFunction({'controlEquation', fn, inputvarnames});
                 
             end
             
@@ -95,7 +101,8 @@ classdef ProtonicMembraneGasSupplyBc < BaseModel
                 end
             end
 
-            state.controlEquations = combineEquations(eqs{:});
+            state.controlEquation = vertcat(eqs{:});
+            
         end
 
     end
