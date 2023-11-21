@@ -12,15 +12,14 @@ Define Parameters
 
 |battmo| uses JSON to manage parameters. This allows you to easily save, document, and share complete parameter sets from specific simulations. We have used long and explicit key names for good readability. If you are new to JSON, you can learn more about it `here <https://www.w3schools.com/js/js_json_intro.asp>`_. Details on the BattMo specification are available in the :ref:`json:JSON input specification`.
 
-For this example, we provide a :ref:`sample JSON <jsoninputfile>` file that describes an NMC-Graphite cell.
+For this example, we provide a sample JSON file :battmofile:`sample_input.json<Examples/jsondatafiles/sample_input.json>` that
+describes an NMC-Graphite cell.
 
-First, create an empty JSON file called :code:`input.json` in your MATLAB path. Then copy and paste the contets of the :ref:`sample JSON <jsoninputfile>` into the file and save it.
-
-We can now load and parse the JSON input file into |battmo| using the command:
+We load and parse the JSON input file into |battmo| using the command:
 
 .. code:: matlab
 
-   jsonstruct = parseBattmoJson('input.json')
+   jsonstruct = parseBattmoJson('Examples/jsondatafiles/sample_input.json')
 
 This transforms the parameter data as a `MATLAB structure <https://se.mathworks.com/help/matlab/structures.html>`_ :code:`jsonstruct` that is used to setup the simulation. We can explore the structure within the MATLAB Command Window by navigating the different levels of the structure. For example, if we want to know the thickness of the negative electrode coating, we can give the command:
 
