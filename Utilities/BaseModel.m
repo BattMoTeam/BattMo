@@ -536,10 +536,6 @@ classdef BaseModel < PhysicalModel
         function state = evalVarName(model, state, varname, extravars)
         % varname is valid input to method ComputationalGraphTool.getPropFunctionCallList
 
-            if nargin < 4
-                extravars = {};
-            end
-            
             cgt = model.computationalGraph;
 
             if isempty(cgt)
