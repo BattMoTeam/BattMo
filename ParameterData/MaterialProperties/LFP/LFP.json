@@ -8,8 +8,8 @@
     "guestStoichiometry100": 0.14778,
     "guestStoichiometry0": 0.999,
     "chargeTransferCoefficient": 0.5,
-    "OCP": {"type": "function",
-            "functionname": "computeOCPFunc_LFP_Xu",
-            "argumentlist" : ["concentration", "temperature", "maximum concentration"]
-           }
+    "openCircuitPotential": {"type": "function",
+                             "functionname": "computeOCPFunc_LFP_Xu",
+                             "argumentlist" : ["concentration", "temperature", "maximum concentration"]
+                            }
 }
