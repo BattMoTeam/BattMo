@@ -1,6 +1,6 @@
 clear all
 
-mrstModule add ad-core
+mrstModule add ad-core mrst-gui
 
 filename = '/home/xavier/Matlab/Projects/battmo/ProtonicMembrane/gaslayersupply.json';
 jsonstruct = fileread(filename);
@@ -8,8 +8,8 @@ jsonstruct = jsondecode(jsonstruct);
 
 paramobj = ProtonicMembraneGasSupplyInputParams(jsonstruct);
 
-nx = 10;
-ny = 7;
+nx = 100;
+ny = 70;
 lx = 10;
 ly = 10;
 
@@ -100,7 +100,7 @@ model.scalings = {{{'massConses', 1}, scalFlux}, ...
                   {{'GasSupplyBc', 'boundaryEquations', 1}, scalFlux}, ...
                   {{'GasSupplyBc', 'boundaryEquations', 2}, scalFlux}};
 
-T = 1*hour;
+T = 1*minute;
 N = 10;
 
 dt = T/N;
@@ -127,4 +127,7 @@ close all
 
 ind = cellfun(@(state) ~isempty(state), states);
 states = states(ind);
+
+
+states = cellfun(@(state) model.evalVarName(state, 'pressure'), states, 'un', false);
 plotToolbar(model.G, states);

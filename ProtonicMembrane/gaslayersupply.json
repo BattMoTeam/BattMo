@@ -14,7 +14,7 @@
  "control" : [{"type" : "pressure",
                "values" : [2e5, 1.5e5]},
               {"type" : "pressure",
-               "values" : [1e5, 0.5e5]}
+               "values" : [1e5, 0.7e5]}
              ]
 }
   
