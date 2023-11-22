@@ -7,60 +7,14 @@ jsonstruct = fileread(filename);
 jsonstruct = jsondecode(jsonstruct);
 
 paramobj = ProtonicMembraneGasSupplyInputParams(jsonstruct);
+gen = GasSupplyGridGenerator2D();
 
-nx = 100;
-ny = 70;
-lx = 10;
-ly = 10;
+gen.nx = 100;
+gen.ny = 70;
+gen.lx = 10;
+gen.ly = 10;
 
-G = cartGrid([nx, ny], [lx, ly]);
-G = computeGeometry(G);
-
-tbls = setupSimpleTables(G);
-cellfacetbl = tbls.cellfacetbl;
-
-clear bcfacecouptbl1;
-bcfacecouptbl1.faces = (nx + 1)*ny + (1 : floor(nx/2))';
-bcfacecouptbl1 = IndexArray(bcfacecouptbl1);
-nc = bcfacecouptbl1.num;
-bcfacecouptbl1 =  bcfacecouptbl1.addInd('coup', ones(nc, 1));
-
-clear bcfacecouptbl2;
-bcfacecouptbl2.faces = (nx + 1)*ny + ny*nx + (floor(nx/2) + 1 : nx)';
-bcfacecouptbl2 = IndexArray(bcfacecouptbl2);
-nc = bcfacecouptbl2.num;
-bcfacecouptbl2 =  bcfacecouptbl2.addInd('coup', 2*ones(nc, 1));
-
-bcfacecouptbl = concatIndexArray(bcfacecouptbl1, bcfacecouptbl2, {});
-
-bccellfacecouptbl = crossIndexArray(bcfacecouptbl, cellfacetbl, {'faces'});
-
-coupnames = {'input', 'output'};
-
-couplingTerms = {};
-
-for  icoup = 1 : numel(coupnames)
-
-    coupname = coupnames{icoup};
-    name = sprintf('External %s', coupname);
-    compnames = sprintf('External-%s', coupname);
-    coupTerm = couplingTerm(name, compnames);
-
-    clear couptbl;
-    couptbl.coup =  icoup;
-    couptbl = IndexArray(couptbl);
-
-    tbl =  crossIndexArray(couptbl, bccellfacecouptbl, {'coup'});
-
-    coupTerm.couplingfaces = tbl.get('faces');
-    coupTerm.couplingcells = tbl.get('cells');
-
-    couplingTerms{end + 1} = coupTerm;
-    
-end
-
-paramobj.couplingTerms = couplingTerms;
-paramobj.G = G;
+paramobj = gen.updateInputParams(paramobj);
 
 % Setup model
 
@@ -91,7 +45,7 @@ initstate = model.evalVarName(initstate, VarName({}, 'densities', model.nGas));
 %% setup scalings
 
 rho = initstate.densities{1}(1);
-scalFlux     = 1/nx*rho*model.permeability/model.viscosity*pH2O/ly;
+scalFlux     = 1/gen.nx*rho*model.permeability/model.viscosity*pH2O/gen.ly;
 scalPressure = pH2O;
 
 model.scalings = {{{'massConses', 1}, scalFlux}, ...
