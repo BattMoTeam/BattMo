@@ -116,7 +116,7 @@ classdef ProtonicMembraneGasSupply < BaseModel
                 model = model.registerPropFunction({outputvarname, fn, inputvarnames});
 
                 fn = @ProtonicMembraneGasSupply.massFluxes;
-                inputvarnames = {VarName({}, 'pressures', nGas, igas), 'pressure'};
+                inputvarnames = {VarName({}, 'densities', nGas, igas), 'pressure'};
                 outputvarname = VarName({}, 'massFluxes', nGas, igas);
                 model = model.registerPropFunction({outputvarname, fn, inputvarnames});
                 
