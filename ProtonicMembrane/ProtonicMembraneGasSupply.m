@@ -184,16 +184,30 @@ classdef ProtonicMembraneGasSupply < BaseModel
             typetbl = IndexArray(typetbl);
 
             couplingTerms = model.couplingTerms;
-            ctrl          = model.control;
+            ctrl = model.control;
 
+            
+            
             assert(numel(couplingTerms) == numel(ctrl), 'mismatch between coupling terms input');
 
             ctrlvals = [];
             comptypecouptbl = IndexArray([], 'fdnames', {'comp', 'type', 'coup'});
 
-            for icoup = 1 : numel(ctrl)
+            function icoupterm = findCouplingTerm(ictrl)
+                name = ctrl(ictrl).name;
+                icoupterm = [];
+                for icoup = 1 : numel(couplingTerms)
+                    if strcmp(name, couplingTerms{icoup}.name)
+                        icoupterm = icoup;
+                        return
+                    end
+                end
+                error('couplingTerm structure not found');
+            end
+            
+            for ictrl = 1 : numel(ctrl)
 
-                ctrlinput = ctrl(icoup);
+                ctrlinput = ctrl(ictrl);
                 
                 clear typetbl2
                 switch ctrlinput.type
@@ -206,18 +220,20 @@ classdef ProtonicMembraneGasSupply < BaseModel
                 end
                 typetbl2 = IndexArray(typetbl2);
                 comptypecouptbl2 = crossIndexArray(comptbl, typetbl2, {});
-                comptypecouptbl2 =  comptypecouptbl2.addInd('coup', icoup);
+
+                icoupterm = findCouplingTerm(ictrl);
+                
+                comptypecouptbl2 =  comptypecouptbl2.addInd('coup', icoupterm);
                 vals2 = ctrlinput.values;
 
                 comptypecouptbl = concatIndexArray(comptypecouptbl, comptypecouptbl2, {});
                 ctrlvals = [ctrlvals; vals2];
+                
             end
 
-            bccellfacecouptbl.faces = [];
-            bccellfacecouptbl.cells = [];
-            bccellfacecouptbl.coup = [];
-            bccellfacecouptbl = IndexArray(bccellfacecouptbl);
-            
+
+            bccellfacecouptbl = IndexArray([], 'fdnames', {'faces', 'cells', 'coup'});
+
             for icoup = 1 : numel(couplingTerms)
 
                 clear bccellfacecouptbl2;
@@ -233,8 +249,6 @@ classdef ProtonicMembraneGasSupply < BaseModel
 
             bccellfacecomptypecouptbl = crossIndexArray(bccellfacecouptbl, comptypecouptbl, {'coup'});
 
-            bccellfacetbl = projIndexArray(bccellfacecomptypecouptbl, {'cells', 'faces'});
-
             for itype = 1 : typetbl.num
                 
                 for icomp = 1 : comptbl.num
@@ -249,9 +263,9 @@ classdef ProtonicMembraneGasSupply < BaseModel
                     bccellfacecomptypecouptbl = crossIndexArray(comptypecouptbl2, bccellfacecouptbl, {'coup'});
                 
                     map = TensorMap();
-                    map.fromTbl = bccellfacetbl;
+                    map.fromTbl = bccellfacecouptbl;
                     map.toTbl = bccellfacecomptypecouptbl;
-                    map.mergefds = {'cells', 'faces'};
+                    map.mergefds = {'cells', 'faces', 'coup'};
                     map = map.setup();
 
                     controlMap = SparseTensor();
@@ -272,10 +286,11 @@ classdef ProtonicMembraneGasSupply < BaseModel
                 
             end
 
-            controlHelpers.maps    = controlMaps;
-            controlHelpers.vals    = controlVals;
-            controlHelpers.bccells = bccellfacetbl.get('cells');
-            controlHelpers.bcfaces = bccellfacetbl.get('faces');
+            controlHelpers.maps              = controlMaps;
+            controlHelpers.vals              = controlVals;
+            controlHelpers.bccells           = bccellfacecouptbl.get('cells');
+            controlHelpers.bcfaces           = bccellfacecouptbl.get('faces');
+            controlHelpers.bccellfacecouptbl = bccellfacecouptbl;
             
             model.GasSupplyBc.controlHelpers = controlHelpers;
             

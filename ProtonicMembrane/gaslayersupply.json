@@ -11,9 +11,11 @@
    "unit" : "centi*poise"
  },
  "T" : 298,
- "control" : [{"type" : "pressure",
+ "control" : [{"name" : "External input",
+               "type" : "pressure",
                "values" : [2e5, 1.5e5]},
-              {"type" : "pressure",
+              {"name" : "External output",
+               "type" : "pressure",
                "values" : [1e5, 0.7e5]}
              ]
 }
