@@ -15,6 +15,7 @@ classdef couplingTerm
         
         couplingfaces  % Same as couplingcells but for faces (need not be assigned - it depends on how the coupling is used in
                        % practice)
+        
     end
     
     methods
@@ -23,7 +24,21 @@ classdef couplingTerm
             obj.name = name;
             obj.componentnames = compnames;
         end
-        
+
+    end
+
+    methods(Static)
+
+        function str = getComponentName(componentname)
+        % Get a string representation of the 
+            strlim = VarName.strlim;
+            if iscell(componentname)
+                str = strjoin(componentname, strlim);
+            else
+                str = componentname;
+            end
+        end
+
     end
     
 end
