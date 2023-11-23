@@ -1,20 +1,19 @@
 =========================================
-Installation instruction and requirements
+Installation and First Steps
 =========================================
 
 .. _installation:
 
-BattMo is based on `MRST`_ which provides a general unstructured grid format, generic MATLAB automatic differentiation
-tools and Newton solvers.
+Install BattMo by cloning the git repository using :code:`--recurse-submodules` to also install the `MRST`_ dependencies.
 
-The MRST code source can be installed directlu using git submodules:
+First, open a terminal and navigate to the directory where you would like to install BattMo. Then, clone the repository using the following command:
 
 .. code-block:: shell
 
    git clone --recurse-submodules https://github.com/BattMoTeam/BattMo.git
 
 
-Then start Matlab and in the directory :code:`battmo` where you cloned the repo, run:
+Start MATLAB and in the directory :code:`battmo` where you cloned the repository. In the MATLAB Command Window run:
 
 .. code-block:: matlab
 
@@ -40,4 +39,3 @@ For a detailed guided installation of git, you can consult this `video <https://
    plan to integrate newer open source iterative solvers such as `AMGCL <https://github.com/ddemidov/amgcl>`_
 
 .. _MRST: https://www.sintef.no/Projectweb/MRST/
-

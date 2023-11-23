@@ -19,7 +19,7 @@ Then, we run it as follows
 
    output = runBatteryJson(filename)
 
-The json file :code:`input.json` in this case describes the whole simulation. To get an idea of how such file looks like, get a look :ref:`here<jsoninputfile>`.
+The json file :code:`input.json` in this case describes the whole simulation. To get an idea of how such file looks like, get a look :battmofile:`sample_input.json<Examples/jsondatafiles/sample_input.json>`
 
 :todo:`Describe the output structure (what it contains)`
       

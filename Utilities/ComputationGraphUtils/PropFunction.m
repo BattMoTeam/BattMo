@@ -104,6 +104,24 @@ classdef PropFunction
             
         end
 
+        function callstr = literalFunctionCallSetupFn(propfunction)
+
+            [funcstr, statestr, nmstr] = propfunction.setupCallStringElements();
+
+            callstr1 = sprintf('fn = %s;\n', func2str(propfunction.fn));
+
+            if isempty(nmstr)
+                nmstr = 'model';
+            else
+                nmstr = sprintf('model.%s', nmstr);
+            end
+            callstr2 = sprintf('%s = fn(%s, %s);', statestr, nmstr, statestr);
+
+            callstr = [callstr1, callstr2];
+            
+        end
+
+
     end
     
 end

@@ -1,14 +1,14 @@
 {
-    "cmax": 31540,
+    "saturationConcentration": 31540,
     "volumetricSurfaceArea": 142372, 
     "density": 1852,
-    "n" : 1,
-    "Eak": 4000,
-    "k0": 1.76e-11,
-    "theta100": 0.51873811,
-    "theta0": 0.001,
-    "OCP": {"type": "function",
-            "functionname": "computeOCPFunc_LiC6_Xu",
-            "argumentlist" : ["concentration", "temperature", "maximum concentration"]
-           }
+    "numberOfElectronsTransferred" : 1,
+    "activationEnergyOfReaction": 4000,
+    "reactionRateConstant": 1.76e-11,
+    "guestStoichiometry100": 0.51873811,
+    "guestStoichiometry0": 0.001,
+    "openCircuitPotential": {"type": "function",
+                             "functionname": "computeOCPFunc_LiC6_Xu",
+                             "argumentlist" : ["concentration", "temperature", "maximum concentration"]
+                            }
 }

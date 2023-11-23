@@ -107,8 +107,42 @@ classdef BaseModel < PhysicalModel
             for ivarnames = 1 : numel(varnames)
                 model = model.registerStaticVarName(varnames{ivarnames});
             end
+            
         end
 
+        function model = removeFromStaticVarName(model, varname)
+            if isa(varname, 'VarName')
+                staticvarnames = model.staticVarNameList;
+                rvar = [];
+                for ivar = 1 : numel(staticvarnames)
+                    [found, keep, varname] = BaseModel.extractVarName(varname, staticvarnames{ivar});
+                    if found
+                        while keep & found
+                            staticvarnames{ivar} = varname;
+                            [found, keep, varname] = BaseModel.extractVarName(varname, staticvarnames{ivar});
+                        end
+                        if found
+                            rvar = ivar;
+                            break
+                        end
+                    end
+                end
+                if ~isempty(rvar)
+                    staticvarnames(rvar) = [];
+                end
+            elseif isa(varname, 'char')
+                varname = VarName({}, varname);
+                model = model.removeFromStaticVarName(varname);
+            elseif isa(varname, 'cell')
+                varname = VarName(varname(1 : end - 1), varname{end});
+                model = model.removeFromStaticVarName(varname);
+            else
+                error('varname not recognized');
+            end
+            
+        end
+        
+        
         function model = setAsExtraVarName(model, varname)
             
             if isa(varname, 'char')
@@ -561,10 +595,10 @@ classdef BaseModel < PhysicalModel
             
             [isequal, compIndices] = compareVarName(rvarname, varname);
             if isequal
-                keep = false;
+                keep  = false;
                 found = true;
             elseif isempty(compIndices)
-                keep = true;
+                keep  = true;
                 found = false;
             elseif ~isempty(compIndices.InterInd)
                 found = true;
@@ -576,10 +610,51 @@ classdef BaseModel < PhysicalModel
                 end
             else
                 found = false;
-                keep = true;
+                keep  = true;
             end
         end
+        
+        function model = equipModelForComputation(model, varargin)
 
+            opt = struct('shortNames', []);
+            opt = merge_options(opt, varargin{:});
+
+            model = model.setupComputationalGraph();
+
+            cgt = model.computationalGraph();
+            
+            model.funcCallList     = cgt.getOrderedFunctionCallList();
+            model.primaryVarNames  = cgt.getPrimaryVariableNames();
+            model.equationVarNames = cgt.getEquationVariableNames();
+
+            function str = shortenName(name)
+                [found, ind] = ismember(name, opt.shortNames(:, 1));
+                if found
+                    str = opt.shortNames{ind, 2};
+                else
+                    str = name;
+                end
+            end
+            
+            function str = setupName(varname)
+                
+                if isnumeric(varname{end})
+                    varname{end} = sprintf('%d', varname{end});
+                end
+
+                if ~isempty(opt.shortNames)
+                    varname = cellfun(@(elt) shortenName(elt), varname, 'uniformoutput', false);
+                end
+
+                str = strjoin(varname, '_');
+                
+            end
+            
+            model.equationNames = cellfun(@(varname) setupName(varname), model.equationVarNames, 'uniformoutput', false);
+            model.equationTypes = repmat({'cell'}, 1, numel(model.equationNames));
+            
+        end
+        
     end
     
 end

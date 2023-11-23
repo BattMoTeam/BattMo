@@ -130,8 +130,7 @@ xlabel('time  / h');
 ylabel('voltage  / V');
 grid on
 
-%% Plot the the output voltage and current gradients to control
-
+%% Calculate the energy
 obj = @(model, states, schedule, varargin) EnergyOutput(model, states, schedule, varargin{:});
 vals = obj(model, states, schedule);
 totval = sum([vals{:}]);
@@ -141,9 +140,7 @@ I = cellfun(@(x) x.Control.I, states);
 totval_trapz = trapz(time, E.*I);
 fprintf('Rectangle rule: %g Wh, trapezoidal rule: %g Wh\n', totval/hour, totval_trapz/hour);
 
-% The calibration can be improved by taking a large number of iterations,
-% but here we set a limit of 30 iterations
-
+%% Setup the optimization problem
 state0 = initstate;
 SimulatorSetup = struct('model', model, 'schedule', schedule, 'state0', state0);
 
@@ -155,7 +152,7 @@ getporo = @(model, notused) paramsetter.getValues(model);
 setporo = @(model, notused, v) paramsetter.setValues(model, v);
 
 parameters = addParameter(parameters, SimulatorSetup, ...
-                          'name'     , 'porosity_sep', ...
+                          'name'     , 'porosity', ...
                           'belongsTo', 'model'       , ...
                           'boxLims'  , [0.1, 0.9]    , ...
                           'location' , {''}          , ...
@@ -182,18 +179,25 @@ fn       = @plotAfterStepIV;
 obj      = @(p) evalObjectiveBattmo(p, objmatch, SimulatorSetup, parameters, 'objScaling', totval, 'afterStepFn', fn);
 
 %%
-doOptimization = false;
+doOptimization = true;
 if doOptimization
 
+    % The parameters must be scaled to [0,1]
     p_base = getScaledParameterVector(SimulatorSetup, parameters);
     p_base = p_base - 0.1;
-    [v, p_opt, history] = unitBoxBFGS(p_base, obj, 'gradTol', 1e-7, 'objChangeTol', 1e-4);
+
+    % Solve the optimization problem using BFGS. One can adjust the
+    % tolerances and the maxIt option to see how it effects the
+    % optimum.
+    [v, p_opt, history] = unitBoxBFGS(p_base, obj, 'gradTol', 1e-7, 'objChangeTol', 1e-4, 'maxIt', 20);
 
     % Compute objective at optimum
     setup_opt = updateSetupFromScaledParameters(SimulatorSetup, parameters, p_opt);
     [~, states_opt, ~] = simulateScheduleAD(setup_opt.state0, setup_opt.model, setup_opt.schedule, 'OutputMinisteps', true, 'NonLinearSolver', nls);
-    vals_opt = objmatch(setup_opt.model, states_opt, setup_opt.schedule);
-    totval_opt = sum([vals_opt{:}]);
+    time_opt = cellfun(@(x) x.time, states_opt);
+    E_opt = cellfun(@(x) x.Control.E, states_opt);
+    I_opt = cellfun(@(x) x.Control.I, states_opt);
+    totval_trapz_opt = trapz(time_opt, E_opt.*I_opt);
 
     % Print optimal parameters
     fprintf('Base and optimized parameters:\n');
@@ -207,16 +211,14 @@ if doOptimization
         fprintf('%g %g\n', p0, pu);
     end
 
-    fprintf('Energy changed from %g to %g Wh\n', totval/hour, totval_opt/hour);
+    fprintf('Energy changed from %g to %g Wh\n', totval_trapz/hour, totval_trapz_opt/hour);
 
     % Plot
     figure; hold on; grid on
     E    = cellfun(@(x) x.Control.E, states);
     time = cellfun(@(x) x.time, states);
     plot(time/hour, E, '*-', 'displayname', 'initial');
-    E    = cellfun(@(x) x.Control.E, states_opt);
-    time = cellfun(@(x) x.time, states_opt);
-    plot(time/hour, E, 'r*-', 'displayname', 'optimized');
+    plot(time_opt/hour, E_opt, 'r*-', 'displayname', 'optimized');
     xlabel('time  / h');
     ylabel('voltage  / V');
     legend;
