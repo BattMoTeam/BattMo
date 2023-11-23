@@ -245,5 +245,16 @@ classdef VarName
         
     end
 
+
+    % methods(Static)
+
+    %     function strlim = getStrLim(varname)
+            
+    %         strlim = varname.strlim;
+            
+    %     end
+        
+    % end
+    
 end
 
