@@ -7,7 +7,7 @@ classdef ProtonicMembraneCellWithGasSupplyInputParams < ComponentInputParams
         Cell
         GasSupply
         
-        couplingTerms
+        couplingTerm
 
     end
     

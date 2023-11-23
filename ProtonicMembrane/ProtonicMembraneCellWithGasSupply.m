@@ -10,8 +10,7 @@ classdef ProtonicMembraneCellWithGasSupply < BaseModel
         Cell
         GasSupply
 
-        couplingTerms
-        couplingnames
+        couplingTerm
 
         funcCallList
         primaryVarNames
@@ -30,11 +29,27 @@ classdef ProtonicMembraneCellWithGasSupply < BaseModel
             model = model@BaseModel();
 
             fdnames = {'T'       , ...
-                       'couplingTerms'};
+                       'couplingTerm'};
             
             model = dispatchParams(model, paramobj, fdnames);
 
             model.Cell      = ProtonicMembraneCell(paramobj.Cell);
+
+            % We setup coupling terms for the Gas Supply
+            coupTerm = model.couplingTerm;
+            couplingnames = cellfun(@(name) coupTerm.getComponentName(name), coupTerm.componentnames, 'uniformoutput', false);
+
+            [lia, lib] = ismember('GasSupply', couplingnames);
+
+            assert(lia, 'GasSupply coupling not found');
+            
+            coupTerm.name           = 'External Anode';
+            coupTerm.componentnames = {'External'};
+            coupTerm.couplingcells  = coupTerm.couplingcells(:, lib);
+            coupTerm.couplingfaces  = coupTerm.couplingfaces(:, lib);
+
+            paramobj.GasSupply.couplingTerms{end + 1} = coupTerm;
+            
             model.GasSupply = ProtonicMembraneGasSupply(paramobj.GasSupply);
             
             model.constants = PhysicalConstants();

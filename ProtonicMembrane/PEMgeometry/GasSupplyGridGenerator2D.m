@@ -71,7 +71,7 @@ classdef GasSupplyGridGenerator2D < GasSupplyGridGenerator
 
                 coupname = coupnames{icoup};
                 name = sprintf('External %s', coupname);
-                compnames = sprintf('External-%s', coupname);
+                compnames = {'External'};
                 coupTerm = couplingTerm(name, compnames);
 
                 clear couptbl;

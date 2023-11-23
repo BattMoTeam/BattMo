@@ -29,6 +29,8 @@ classdef GasSupplyPEMgridGenerator
 
             [paramobj.Cell, gen]      = gen.setupCell(paramobj.Cell, params.Cell);
             [paramobj.GasSupply, gen] = gen.setupGasSupply(paramobj.GasSupply, params.GasSupply);
+
+            [paramobj, gen] = gen.setupCellGasSupplyCoupling(paramobj);
             
         end
 
@@ -83,8 +85,8 @@ classdef GasSupplyPEMgridGenerator
             [paramobj, gen] = setupCellGrid(gen, paramobj, params);
             
             cgen = gen.cellGridGenerator;
-            params = pickField(params, 'Electrolyte');
-            paramobj = cgen.setupElectrolyte(paramobj, params);
+            params_elyte = pickField(params, 'Electrolyte');
+            paramobj.Electrolyte = cgen.setupElectrolyte(paramobj.Electrolyte, params_elyte);
             paramobj = cgen.setupElectrodeElectrolyteCoupTerm(paramobj, params);
 
         end

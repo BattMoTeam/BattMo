@@ -12,7 +12,7 @@ classdef GasSupplyPEMgridGenerator2D < GasSupplyPEMgridGenerator
         ny
         lx
         ly
-        
+
     end
 
     methods
@@ -34,18 +34,18 @@ classdef GasSupplyPEMgridGenerator2D < GasSupplyPEMgridGenerator
             ytbl.yind = (1 : ny)';
             ytbl = IndexArray(ytbl);
 
-            tbl = crossIndexArray(ytbl, xtbl, {});
-            tbl = tbl.addInd('cells', (1 : nx*ny)')';
+            carttbl = crossIndexArray(ytbl, xtbl, {});
+            carttbl = carttbl.addInd('cells', (1 : nx*ny)')';
 
             celltbl.xind = nxGasSupply + (1 : nxCell)';
             celltbl = IndexArray(celltbl);
-            celltbl = crossIndexArray(tbl, celltbl, {'xind'});
+            celltbl = crossIndexArray(carttbl, celltbl, {'xind'});
             
             params.Cell.cellinds = celltbl.get('cells');
 
             gassupplytbl.xind = (1 : nxGasSupply)';
             gassupplytbl = IndexArray(gassupplytbl);
-            gassupplytbl = crossIndexArray(tbl, gassupplytbl, {'xind'});
+            gassupplytbl = crossIndexArray(carttbl, gassupplytbl, {'xind'});
                         
             params.GasSupply.cellinds = gassupplytbl.get('cells');
             
@@ -102,6 +102,55 @@ classdef GasSupplyPEMgridGenerator2D < GasSupplyPEMgridGenerator
             
         end
 
+        function [paramobj, gen] = setupCellGasSupplyCoupling(gen, paramobj, params)
+
+
+            coupTerms = paramobj.Cell.couplingTerms;
+
+            for icoup = 1 : numel(coupTerms)
+                coupTerm = coupTerms{icoup};
+                [lia, locb] = ismember('Anode', coupTerm.componentnames);
+                if lia
+                    loc = true(2, 1);
+                    loc(locb) = false;
+                    cfaces = coupTerm.couplingfaces(:, loc);
+                    break
+                end
+            end
+
+            coupcfacetbl.cfaces = cfaces;
+            coupcfacetbl.ind = (1 : numel(cfaces))'; % we keep track of local indexing which is used for the anode structure
+            coupcfacetbl = IndexArray(coupcfacetbl);
+
+            % We setup Cell mapping
+            cG = paramobj.Cell.G;
+            cfacefacetbl.cfaces = (1 : cG.faces.num)';
+            cfacefacetbl.faces = cG.mappings.facemap;
+            cfacefacetbl = IndexArray(cfacefacetbl);
+            % We setup GasSupply mapping
+            gsG = paramobj.GasSupply.G;
+            gfacefacetbl.gfaces = (1 : gsG.faces.num)';
+            gfacefacetbl.faces = gsG.mappings.facemap;
+            gfacefacetbl = IndexArray(gfacefacetbl);
+
+            coupcfacefacetbl      = crossIndexArray(coupcfacetbl, cfacefacetbl, {'cfaces'});
+            coupgfacecfacefacetbl = crossIndexArray(coupcfacefacetbl, gfacefacetbl, {'faces'});
+
+            tbls = setupSimpleTables(gsG);
+            gcellgfacetbl = tbls.cellfacetbl;
+            gcellgfacetbl = replacefield(gcellgfacetbl, {{'cells', 'gcells'}, {'faces', 'gfaces'}});
+            
+
+            coupgcellgfacecfacefacetbl = crossIndexArray(coupgfacecfacefacetbl, gcellgfacetbl, {'gfaces'});
+
+            coupTerm = couplingTerm('Gas Supply - Anode', {'GasSupply', {'Cell', 'Anode'}});
+            tbl = coupgcellgfacecfacefacetbl; % shortcut
+            coupTerm.couplingcells = [tbl.get('gcells'), tbl.get('ind')];
+            coupTerm.couplingfaces = [tbl.get('gfaces'), tbl.get('ind')];
+
+            paramobj.couplingTerm = coupTerm;
+            
+        end        
     end
     
     

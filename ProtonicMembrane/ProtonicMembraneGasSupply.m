@@ -186,10 +186,6 @@ classdef ProtonicMembraneGasSupply < BaseModel
             couplingTerms = model.couplingTerms;
             ctrl = model.control;
 
-            
-            
-            assert(numel(couplingTerms) == numel(ctrl), 'mismatch between coupling terms input');
-
             ctrlvals = [];
             comptypecouptbl = IndexArray([], 'fdnames', {'comp', 'type', 'coup'});
 
