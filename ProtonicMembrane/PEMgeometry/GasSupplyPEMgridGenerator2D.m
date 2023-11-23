@@ -19,9 +19,9 @@ classdef GasSupplyPEMgridGenerator2D < GasSupplyPEMgridGenerator
         
         function [paramobj, gen] = updateInputParams(gen, paramobj, params)
 
-            nxCell     = gen.nxCell;
+            nxCell      = gen.nxCell;
             nxGasSupply = gen.nxGasSupply;
-            ny         = gen.ny;
+            ny          = gen.ny;
             
             nx = nxCell + nxGasSupply;
             lx = gen.lxCell + gen.lxGasSupply;
@@ -43,11 +43,11 @@ classdef GasSupplyPEMgridGenerator2D < GasSupplyPEMgridGenerator
             
             params.Cell.cellinds = celltbl.get('cells');
 
-            gaslayertbl.xind = (1 : nxGasSupply)';
-            gaslayertbl = IndexArray(gaslayertbl);
-            gaslayertbl = crossIndexArray(tbl, gaslayertbl, {'xind'});
+            gassupplytbl.xind = (1 : nxGasSupply)';
+            gassupplytbl = IndexArray(gassupplytbl);
+            gassupplytbl = crossIndexArray(tbl, gassupplytbl, {'xind'});
                         
-            params.GasSupply.cellinds = gaslayertbl.get('cells');
+            params.GasSupply.cellinds = gassupplytbl.get('cells');
             
             [paramobj, gen] = setupInputParams(gen, paramobj, params);
             
@@ -55,12 +55,19 @@ classdef GasSupplyPEMgridGenerator2D < GasSupplyPEMgridGenerator
 
         function [paramobj, gen] = setupGrid(gen, paramobj, params)
             
-            nx = gen.nx;
-            ny = gen.ny;
-            lx = gen.lx;
-            ly = gen.ly;
+            nx1 = gen.nxGasSupply;
+            nx2 = gen.nxCell;
+            lx1 = gen.lxGasSupply;
+            lx2 = gen.lxCell;
+            ny  = gen.ny;
+            ly  = gen.ly;
 
-            G = cartGrid([nx, ny], [lx, ly]);
+            x = [(lx1/nx1)*ones(nx1, 1); (lx2/nx2)*ones(nx2, 1)];
+            x = [0; cumsum(x)];
+            y = (ly/ny)*ones(ny, 1);
+            y = [0; cumsum(y)];
+
+            G = tensorGrid(x, y);
 
             paramobj.G = G;
             gen.G      = G;
@@ -70,14 +77,28 @@ classdef GasSupplyPEMgridGenerator2D < GasSupplyPEMgridGenerator
         function [paramobj, gen] = setupCellGridGenerator(gen, paramobj, params)
         % setup cellGridGenerator
 
-            gen.cellGridGenerator = PEMgridGenerator2D();
+            cgen = PEMgridGenerator2D();
+
+            cgen.xlength = gen.lxCell;
+            cgen.ylength = gen.ly;
+            cgen.Nx      = gen.nxCell;
+            cgen.Ny      = gen.ny;
+
+            gen.cellGridGenerator = cgen;
             
         end
 
         function [paramobj, gen] = setupGasSupplyGridGenerator(gen, paramobj, params)
-        % setup gasLayerGridGenerator
-            
-            gen.gasLayerGridGenerator = GasSupplyGridGenerator2D();
+        % setup gasSupplyGridGenerator
+
+            gsgen = GasSupplyGridGenerator2D();
+
+            gsgen.nx = gen.nxGasSupply;
+            gsgen.ny = gen.ny;
+            gsgen.lx = gen.lxGasSupply;
+            gsgen.ly = gen.ly;
+
+            gen.gasSupplyGridGenerator = gsgen;
             
         end
 

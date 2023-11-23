@@ -6,7 +6,7 @@ classdef GasSupplyPEMgridGenerator
         
         % Use to generate the structure of the internal coupling terms
         cellGridGenerator
-        gasLayerGridGenerator
+        gasSupplyGridGenerator
         
     end
 
@@ -27,8 +27,8 @@ classdef GasSupplyPEMgridGenerator
             [paramobj, gen] = gen.setupCellGridGenerator(paramobj, params);
             [paramobj, gen] = gen.setupGasSupplyGridGenerator(paramobj, params);
 
-            [paramobj.Cell, gen]     = gen.setupCell(paramobj.Cell, params.Cell);
-            [paramobj.GasSupply, gen] = gen.setupGasSupply(paramobj.GasSupply, params.Cell);
+            [paramobj.Cell, gen]      = gen.setupCell(paramobj.Cell, params.Cell);
+            [paramobj.GasSupply, gen] = gen.setupGasSupply(paramobj.GasSupply, params.GasSupply);
             
         end
 
@@ -46,7 +46,7 @@ classdef GasSupplyPEMgridGenerator
         end
 
         function [paramobj, gen] = setupGasSupplyGridGenerator(gen, paramobj, params)
-        % setup gasLayerGridGenerator
+        % setup gasSupplyGridGenerator
             
             error('virtual function');
             
@@ -74,7 +74,7 @@ classdef GasSupplyPEMgridGenerator
             G = genSubGrid(globG, cellinds);
 
             paramobj.G = G;
-            gen.gasLayerGridGenerator.G = G;
+            gen.gasSupplyGridGenerator.G = G;
             
         end
 
@@ -90,13 +90,14 @@ classdef GasSupplyPEMgridGenerator
         end
 
         function [paramobj, gen] = setupGasSupply(gen, paramobj, params)
-
+        % paramobj belongs to GasSupplyInputParams
+            
             [paramobj, gen] = setupGasSupplyGrid(gen, paramobj, params);
             
-            glgen = gen.gasLayerGridGenerator;
+            glgen = gen.gasSupplyGridGenerator;
             [paramobj, glgen] = glgen.setupExternalCoupling(paramobj, params);
             
-            gen.gasLayerGridGenerator = glgen;
+            gen.gasSupplyGridGenerator = glgen;
             
         end
         
