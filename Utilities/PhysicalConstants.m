@@ -8,6 +8,7 @@ classdef PhysicalConstants
         Na = 6.02e23          % Avogadro
         kb = 1.380649e-23     % Boltzmann (J/K)
         eV = 1.602176634e-19  % Electronvolt (J)
+        
     end
     
 end
