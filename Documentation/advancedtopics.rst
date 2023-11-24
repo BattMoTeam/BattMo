@@ -6,10 +6,8 @@ Advanced Usage
    :maxdepth: 2
    :hidden:
 
-   publishedExamples/runElectrolyser
    Model initialisation <modelinitialisation>
-   Control models <controls>
-   Thermal model <thermal>
+   Thermal Simulation <thermal>
    controlinput
    Optimisation <optimisation>
    Parameter sets <parsets>

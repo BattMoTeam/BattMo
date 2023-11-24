@@ -15,12 +15,13 @@
    geometryinput
    juliabridge
    gui
+   Electrolyser simulation <publishedExamples/runElectrolyser>
    seealso
    References <bibliography>
    
    
 Welcome
-============
+=======
 
 Welcome to the Battery Modelling Toolbox (**BattMo**), a comprehensive solution for continuum modelling of electrochemical devices in `MATLAB <https://se.mathworks.com/products/matlab.html>`_ and `Julia <https://julialang.org/>`_!
 
