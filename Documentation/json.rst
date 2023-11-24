@@ -1,5 +1,5 @@
 ========================
-Json input specification
+JSON input specification
 ========================
 
 The specification of the json input is provided through `JSON schemas

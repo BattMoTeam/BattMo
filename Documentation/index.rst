@@ -8,12 +8,14 @@
       
    Installation <installation>
    basicusage
+   intermediate
+   advancedtopics
    architecture
    json
    geometryinput
-   advancedtopics
    juliabridge
    gui
+   seealso
    References <bibliography>
    
    
