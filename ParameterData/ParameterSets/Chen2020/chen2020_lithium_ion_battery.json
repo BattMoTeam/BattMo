@@ -7,15 +7,14 @@
     "controlPolicy": "IEswitch",
     "initialControl": "discharging",
     "CRate": 1,
-    "lowerCutoffVoltage": 2,
+    "lowerCutoffVoltage": 2.5,
     "upperCutoffVoltage": 4.1
   },
   "NegativeElectrode": {
     "Coating": {
       "bruggemanCoefficient": 1.5,
-      "effectiveDensity": 2260,
+      "volumeFraction": 0.75,
       "ActiveMaterial": {
-        "volumeFraction": 0.75,
         "electronicConductivity": 215,
         "Interface": {
           "isFile": true,
@@ -34,10 +33,9 @@
   "PositiveElectrode": {
     "Coating": {
       "bruggemanCoefficient": 1.5,
-      "effectiveDensity": 4950,
+      "volumeFraction": 0.665,
       "ActiveMaterial": {
-        "electronicConductivity": 0.18,
-        "volumeFraction": 0.665,
+        "electronicConductivity": 18,
         "Interface": {
           "isFile": true,
           "filename": "ParameterData/ParameterSets/Chen2020/chen2020_positive_electrode_interface.json"

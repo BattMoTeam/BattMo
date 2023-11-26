@@ -4,8 +4,8 @@
   "numberOfElectronsTransferred": 1,
   "activationEnergyOfReaction": 35000,
   "reactionRateConstant": 6.716e-12,
-  "guestStoichiometry100": 0.9014,
-  "guestStoichiometry0": 0.0279,
+  "guestStoichiometry100": 0.88,
+  "guestStoichiometry0": 0.15,
   "chargeTransferCoefficient": 0.5,
   "openCircuitPotential": {
     "type": "function",

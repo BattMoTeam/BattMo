@@ -100,7 +100,9 @@ classdef Coating < ElectronicComponent
               case 'default'
                 if all(specificVolumes == 0)
                     % No data has been given, we assume that there is no binder and conducting additive
-                    specificVolumes(compInds.(am)) = 1;
+                    model.volumeFractions = zeros(numel(compnames), 1);
+                    model.volumeFractions(compInds.(am)) = 1;
+                    model.(am).massFraction = 1;
                 else
                     if specificVolumes(compInds.(am)) == 0
                         error('missing density and/or massFraction for the active material. The volume fraction cannot be computed ');
@@ -192,7 +194,7 @@ classdef Coating < ElectronicComponent
                     specificHeatCapacity = 0;
                     for icomp = 1 : numel(compnames)
                         compname = compnames{icomp};
-                        specificHeatCapacity = specificHeatCapacity + paramobj.(compname).massFraction*paramobj.(compname).specificHeatCapacity;
+                        specificHeatCapacity = specificHeatCapacity + model.(compname).massFraction*paramobj.(compname).specificHeatCapacity;
                     end
                     model.specificHeatCapacity = specificHeatCapacity;
                 end

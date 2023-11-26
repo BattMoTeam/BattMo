@@ -13,18 +13,42 @@ mrstModule add ad-core mrst-gui mpfa
 % all the parameters through out the submodels.
 
 % The input parameters can be given in json format. The json file is read and used to populate the paramobj object.
-jsonstruct = parseBattmoJson(fullfile('ParameterData','ParameterSets','Chen2020','chen2020_lithium_ion_battery.json'));
+jsonstruct_material = parseBattmoJson(fullfile('ParameterData','ParameterSets','Chen2020','chen2020_lithium_ion_battery.json'));
+jsonstruct_geometry = parseBattmoJson('/home/xavier/Matlab/Projects/battmo/Examples/jsondatafiles/geometry1d.json');
+
+
+elyte   = 'Electrolyte';
+ne      = 'NegativeElectrode';
+pe      = 'PositiveElectrode';
+co      = 'Coating';
+am      = 'ActiveMaterial';
+cc      = 'CurrentCollector';
+am      = 'ActiveMaterial';
+itf     = 'Interface';
+sd      = 'SolidDiffusion';
+thermal = 'ThermalModel';
+
+jsonstruct_geometry.Geometry.faceArea =  1.58*0.065;
+
+xlength = 1e-5*[8.52; 1.2; 7.56];
+jsonstruct_geometry.(ne).(co).thickness = xlength(1);
+jsonstruct_geometry.(pe).(co).thickness = xlength(3);
+jsonstruct_geometry.Separator.thickness = xlength(2);
+
+jsonstruct = mergeJsonStructs({jsonstruct_material, ...
+                               jsonstruct_geometry});
+
+jsonstruct.(ne).(co).(am).(sd).N = 40;
+jsonstruct.(pe).(co).(am).(sd).N = 40;
+
+jsonstruct.(pe).(co).(am).(sd).referenceDiffusionCoefficient = 1e-13;
 
 paramobj = BatteryInputParams(jsonstruct);
 
 
 %% We setup the battery geometry ("bare" battery with no current collector).
 
-gen = BareBatteryGeneratorP4D();
-
-% We update paramobj with grid data
-paramobj = gen.updateBatteryInputParams(paramobj);
-
+paramobj = setupBatteryGridFromJson(paramobj, jsonstruct);
 
 %%  The Battery model is initialized by sending paramobj to the Battery class constructor
 
@@ -32,7 +56,7 @@ model = Battery(paramobj);
 
 %% We fix the input current to 5A
 
-model.Control.Imax = 5*ampere;
+model.Control.Imax = 2*ampere;
 
 %% We setup the schedule
 
@@ -42,7 +66,7 @@ model.Control.Imax = 5*ampere;
 fac   = 2;
 total = 1.4*hour;
 n     = 100;
-dt0   = total*1e-6;
+dt0   = 1e-6;
 times = getTimeSteps(dt0, n, total, fac);
 dt    = diff(times);
 dt    = dt(1 : end);
@@ -97,13 +121,26 @@ end
 % Change default tolerance for nonlinear solver
 model.nonlinearTolerance = 1e-5;
 % Set verbosity
-model.verbose = false;
+model.verbose = true;
 
 model.AutoDiffBackend= AutoDiffBackend();
 
 %% We run simulation
 
 [~, states, ~] = simulateScheduleAD(initstate, model, schedule, 'OutputMinisteps', true, 'NonLinearSolver', nls);
+
+
+ind = cellfun(@(state) ~isempty(state), states);
+states = states(ind);
+
+E1    = cellfun(@(state) state.Control.E, states);
+I1    = cellfun(@(state) state.Control.I, states);
+time1 = cellfun(@(state) state.time, states);
+
+plot(time1, E1);
+
+
+return
 
 % We want to consider the simplified diffusion model and therefore setup a model that can run it.
 
