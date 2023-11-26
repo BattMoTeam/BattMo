@@ -56,7 +56,7 @@ model = Battery(paramobj);
 
 %% We fix the input current to 5A
 
-model.Control.Imax = 2*ampere;
+model.Control.Imax = 5*ampere;
 
 %% We setup the schedule
 
