@@ -1,6 +1,6 @@
-===========
+===============
 Basic Usage
-===========
+===============
 
 .. note::
   This section is still under development.
@@ -12,7 +12,7 @@ A First |battmo| Model
 
 Let's make your first |battmo| model! 🔋⚡💻 
 
-In this example, we will build, run, and visualize a simple P2D simultion for an NMC-Graphite Li-ion battery cell. We will first introduce how |battmo| handles model parameters, then run the simulation, dashboard the results, and explore the details of the simulation output.
+In this example, we will build, run, and visualize a simple P2D simultion for a Li-ion battery cell. We will first introduce how |battmo| handles model parameters, then run the simulation, dashboard the results, and explore the details of the simulation output. Finally, we will discuss how to make some basic changes to the model.
 
 Define Parameters
 -----------------
@@ -20,7 +20,7 @@ Define Parameters
 |battmo| uses JSON to manage parameters. This allows you to easily save, document, and share complete parameter sets from specific simulations. We have used long and explicit key names for good readability. If you are new to JSON, you can learn more about it `here <https://www.w3schools.com/js/js_json_intro.asp>`_. Details on the BattMo specification are available in the :ref:`json:JSON input specification`.
 
 For this example, we provide a sample JSON file :battmofile:`sample_input.json<Examples/jsondatafiles/sample_input.json>` that
-describes an NMC-Graphite cell.
+describes a simple NMC-Graphite cell.
 
 We load and parse the JSON input file into |battmo| using the command:
 
@@ -28,7 +28,9 @@ We load and parse the JSON input file into |battmo| using the command:
 
    jsonstruct = parseBattmoJson('Examples/jsondatafiles/sample_input.json')
 
-This transforms the parameter data as a `MATLAB structure <https://se.mathworks.com/help/matlab/structures.html>`_ :code:`jsonstruct` that is used to setup the simulation. We can explore the structure within the MATLAB Command Window by navigating the different levels of the structure. For example, if we want to know the thickness of the negative electrode coating, we can give the command:
+This transforms the parameter data as a `MATLAB structure <https://se.mathworks.com/help/matlab/structures.html>`_ :code:`jsonstruct` that is used to setup the simulation. We can explore the structure within the MATLAB Command Window by navigating the different levels of the structure. 
+
+For example, if we want to know the thickness of the negative electrode coating, we can give the command:
 
 .. code:: matlab
 
@@ -114,7 +116,7 @@ For example, if we want to plot the grid associated with the different submodels
    plot(x_pe, zeros(size(x_pe)), 'or')
    xlabel('Position  /  m')  
 
-If you would like more information about the |battmo| model hierarchy, please see [TODO: Link to BattMo Model Hierarchy].
+If you would like more information about the |battmo| model hierarchy, please see :ref:`BattMo Model Architecture <architecture:BattMo Model Architecture>`.
 
 Explore the States
 ------------------
@@ -177,7 +179,7 @@ Let's plot the concentration in the electrolyte at timestep 10. We can plot the 
    xlabel('Position  /  m')
    ylabel('Concentration  /  mol \cdot m^{-3}')
 
-Congratulations! 🎉 You are now familiar with the basics of |battmo|! But there are still a lot of exciting features to discover. Let's keep going. 😃
+That's it! 🎉 You have run an post-processed your first simulation! But there are still a lot of exciting features to discover. Let's keep going and explore making chages to the model. 😃
 
 Change Control Parameters
 =========================
@@ -239,144 +241,61 @@ From these results we can see that for thin negative electrode coatings, the cap
 Change Material Parameters
 ==========================
 
+.. note::
+  TODO: Make this easier / more elegnant.
+
 Finally, let's try changing active materials in the model.
 
-The sample JSON input file we provided is for an NMC-Graphite cell, but BattMo contains parameter sets for different active materials that have been collected from the scientific literature. Let's replace the NMC active material with LFP.
+The sample JSON input file we provided is for an NMC-Graphite cell, but BattMo contains parameter sets for different active materials that have been collected from the scientific literature. Let's try to replace the NMC active material with LFP.
 
-The active material parameter sets are stored in their own JSON files. To merge data from a new JSON into our existing model, we can use the |battmo| function :code:`mergeJsonStructs`.
-
-Combining JSON inputs
-=====================
-
-
-There are two mechanisms which can be used to combine JSON input files:
-
-#. Direct insertion using :code:`parseBattmoJson`
-#. Merge function using :code:`mergeJsonStruct`
-
-Direct insertion using :code:`parseBattmoJson`
-----------------------------------------------
-
-The function :battmo:`parseBattmoJson` parses the JSON input to create the corresponding matlab structure, basically
-relying on `jsondecode <https://se.mathworks.com/help/matlab/ref/jsondecode.html>`_. In this process the reserved
-keyword properties :code:`isFile` combined with :code:`filename` are used to fetch and insert in place JSON data located
-in separate files. Here is an example, taken from :battmofile:`lithium_ion_battery_nmc_graphite.json<ParameterData/BatteryCellParameters/LithiumIonBatteryCell/lithium_ion_battery_nmc_graphite.json>` where we have the following lines
-
-.. code:: json
-          
-  "NegativeElectrode": {
-    "Coating": {
-      "ActiveMaterial": {
-        "Interface": {
-          "isFile": true,
-          "filename": "ParameterData/MaterialProperties/Graphite/graphite.json"
-        }}}}
-
-The content of the file :battmofile:`graphite.json<ParameterData/MaterialProperties/Graphite/graphite.json>` is then
-inserted in place. Hence, when we write
+First, we clear the workspace and reload the original parameter set to start from a clean slate:
 
 .. code:: matlab
 
-   filename = fileread('ParameterData/BatteryCellParameters/LithiumIonBatteryCell/lithium_ion_battery_nmc_graphite.json')
-   jsonstruct = parseBattmoJson(filename)
+   clear all
+   close all
+   jsonstruct = parseBattmoJson('Examples/jsondatafiles/sample_input.json');
 
-the :code:`jsonstruct` that is obtained is equivalent to the one where we would have copied and paste the content of
-:battmofile:`graphite.json<ParameterData/MaterialProperties/Graphite/graphite.json>`.
-
-.. collapse:: jsonstruct detail
-
-   .. code:: json
-             
-     "NegativeElectrode": {
-       "Coating": {
-         "ActiveMaterial": {
-           "Interface": {
-             "saturationConcentration": 30555,
-             "volumetricSurfaceArea": 723600,
-             "density": 2240,
-             "numberOfElectronsTransferred" : 1,
-             "activationEnergyOfReaction": 5000,
-             "reactionRateConstant": 5.031e-11,
-             "guestStoichiometry100": 0.88551,
-             "guestStoichiometry0": 0.1429,
-             "chargeTransferCoefficient": 0.5,
-             "openCircuitPotential" : {"type": "function",
-             "functionname" : "computeOCP_graphite",
-             "argumentlist" : ["cElectrode", "T", "cmax"]
-             }}},          
-
-.. _mergeJsonStructs:
-
-Merge function using :code:`mergeJsonStructs`
----------------------------------------------
-
-We have implemented in Matlab a simple function that merge JSON files (feel free to implement it in your favorite
-languages). The function :battmo:`mergeJsonStructs` takes a cell array of JSON structure parsed with `jsondecode
-<https://se.mathworks.com/help/matlab/ref/jsondecode.html>`_ or :battmo:`parseBattmoJson` and merge the fields.
-
-Let us look at an example where we change the geometry.  In :ref:`geometryinput:Battery Geometries`, we give an overview
-of the various geometrical model we support.
-
-We use the same material parameters as in the previous case,
-
-.. code:: matlab
-          
-   jsonfilename = 'ParameterData/BatteryCellParameters/LithiumIonBatteryCell/lithium_ion_battery_nmc_graphite.json';
-   jsonstruct_material = parseBattmoJson(jsonfilename);
-
-Let us consider the :code:`3d-demo` :ref:`case<3dgeometry>`. The 3D model can be found in the :battmofile:`Geometry
-Schema<Utilities/JsonSchemas/Geometry.schema.json#113>`. We use the parameters given in
-:battmofile:`geometry3d.json<Examples/jsondatafiles/geometry3d.json>` and fetch those using
-
-.. code:: matlab
-          
-   jsonfilename = 'Examples/jsondatafiles/geometry3d.json';
-   jsonstruct_geometry = parseBattmoJson(jsonfilename);            
-
-
-We merge the two JSON inputs by calling
+Now we load and parse the LFP material parameters from the |battmo| library and move it to the right place in the model hierarchy:
 
 .. code:: matlab
 
-   jsonstruct = mergeJsonStructs({jsonstruct_geometry , jsonstruct_material})
+   lfp = parseBattmoJson('ParameterData/MaterialProperties/LFP/LFP.json');
+   jsonstruct_lfp.PositiveElectrode.Coating.ActiveMaterial.Interface = lfp;
 
+To merge new parameter data into our existing model, we can use the |battmo| function :code:`mergeJsonStructs`.
 
-Now we have a JSON structure :code:`jsonstruct` that contains material properties and geometry obtained from two
-separate files. After adding the rest of the simulation inputs as done in :battmo:`runJsonScript`, the simulation can be
-run as before by running
+.. code:: matlab
+
+   jsonstruct = mergeJsonStructs({jsonstruct_lfp, ...
+                                 jsonstruct});
+
+We need to be sure that the parameters are consistent across the hierarchy:
+
+.. code:: matlab
+
+   jsonstruct.PositiveElectrode.Coating.ActiveMaterial.density = jsonstruct.PositiveElectrode.Coating.ActiveMaterial.Interface.density;
+
+   jsonstruct.PositiveElectrode.Coating.effectiveDensity = 900;
+
+And now, we can run the simulation and plot the discharge curve:
 
 .. code:: matlab
 
    output = runBatteryJson(jsonstruct);
 
-We plot the model using :battmo:`plotBatteryMesh` (note that the different axis are scaled differently)
+   states = output.states;
+   model  = output.model;
 
-.. code:: matlab
-          
-   model = output.model
-   plotBatteryMesh(model)
+   E = cellfun(@(state) state.Control.E, states);
+   time = cellfun(@(state) state.time, states);
 
-.. figure:: img/3dmodel.png
-   :target: _images/3dmodel.png
-   
-We find a extensive set of plotting functions in `MRST <https://www.sintef.no/Projectweb/MRST/>`_. You may be interested
-to have a look at the `Visualization Tutorial
-<https://www.sintef.no/projectweb/mrst/documentation/tutorials/visualization-tutorial/>`_. Let us use the
-:mrstfile:`plotGrid<core/plotting/plotGrid.m>` and :mrstfile:`plotCellData<core/plotting/plotCellData.m>` to plot the
-surface particle concentrations in both electrode at a given time step.
-          
-..
-   The plots presented below are obtained using the script runExample3D in Documentation/scripts/runExample3D
+   plot(time, E)
 
-.. code:: matlab
-          
-   state = output.states{20};
-   E = state.Control.E
-   plotGrid(model.G, 'facecolor', 'none', 'edgealpha', 0.1)
-   plotCellData(model.NegativeElectrode.Coating.G, state.NegativeElectrode.Coating.ActiveMaterial.SolidDiffusion.cSurface/(mol/litre))
-   plotCellData(model.PositiveElectrode.Coating.G, state.PositiveElectrode.Coating.ActiveMaterial.SolidDiffusion.cSurface/(mol/litre))
-   title('Particle Surface Lithium Concentration');
+Next Steps
+==========
 
-.. figure:: img/3dconc.png
-   :target: _images/3dconc.png
-   
+Congratulations! 🎉 You are now familiar with the |battmo| basics!
+
+This should be enough to allow you to setup and run some basic Li-ion battery simulations using P2D grids. Do you want to do more? The Advanced Usage section gives information about setting up custom parameter sets, running simulations in P3D and P4D grids, and including thermal effects. 
+

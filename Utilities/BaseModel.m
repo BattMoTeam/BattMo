@@ -107,8 +107,42 @@ classdef BaseModel < PhysicalModel
             for ivarnames = 1 : numel(varnames)
                 model = model.registerStaticVarName(varnames{ivarnames});
             end
+            
         end
 
+        function model = removeFromStaticVarName(model, varname)
+            if isa(varname, 'VarName')
+                staticvarnames = model.staticVarNameList;
+                rvar = [];
+                for ivar = 1 : numel(staticvarnames)
+                    [found, keep, varname] = BaseModel.extractVarName(varname, staticvarnames{ivar});
+                    if found
+                        while keep & found
+                            staticvarnames{ivar} = varname;
+                            [found, keep, varname] = BaseModel.extractVarName(varname, staticvarnames{ivar});
+                        end
+                        if found
+                            rvar = ivar;
+                            break
+                        end
+                    end
+                end
+                if ~isempty(rvar)
+                    staticvarnames(rvar) = [];
+                end
+            elseif isa(varname, 'char')
+                varname = VarName({}, varname);
+                model = model.removeFromStaticVarName(varname);
+            elseif isa(varname, 'cell')
+                varname = VarName(varname(1 : end - 1), varname{end});
+                model = model.removeFromStaticVarName(varname);
+            else
+                error('varname not recognized');
+            end
+            
+        end
+        
+        
         function model = setAsExtraVarName(model, varname)
             
             if isa(varname, 'char')
@@ -561,10 +595,10 @@ classdef BaseModel < PhysicalModel
             
             [isequal, compIndices] = compareVarName(rvarname, varname);
             if isequal
-                keep = false;
+                keep  = false;
                 found = true;
             elseif isempty(compIndices)
-                keep = true;
+                keep  = true;
                 found = false;
             elseif ~isempty(compIndices.InterInd)
                 found = true;
@@ -576,7 +610,7 @@ classdef BaseModel < PhysicalModel
                 end
             else
                 found = false;
-                keep = true;
+                keep  = true;
             end
         end
         

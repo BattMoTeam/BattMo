@@ -1,22 +1,15 @@
 classdef PhysicalConstants
-    %PHYSICALCONSTANTS Summary of this class goes here
-    %   Detailed explanation goes here
-    
-    properties
-        R       % Ideal gas constant
-        F       % Faraday constant
-        c0      % Standard concentration
+
+    properties (Constant)
+        
+        R  = 8.31446261815324 % Ideal gas constant
+        F  = 96485.3329       % Faraday constant
+        c0 = 1000             % Standard concentration
+        Na = 6.02e23          % Avogadro
+        kb = 1.380649e-23     % Boltzmann (J/K)
+        eV = 1.602176634e-19  % Electronvolt (J)
     end
     
-    methods
-        function obj = PhysicalConstants()
-            %PHYSICALCONSTANTS Construct an instance of this class
-            %   Detailed explanation goes here
-            obj.R = 8.31446261815324;
-            obj.F = 96485.3329;
-            obj.c0 = 1000;
-        end
-    end
 end
 
 
