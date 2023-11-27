@@ -25,8 +25,9 @@ function initstate = initStateChen2020(model, c_ne, c_pe)
     % We bypass the solid diffusion equation to set directly the particle surface concentration
     switch model.(ne).(co).(am).diffusionModelType
       case 'simple'
-        nenp = model.(ne).(co).(am).G.cells.num;
-        initstate.(ne).(co).(am).c = c_ne*ones(nenp, 1);
+        nenp = model.(ne).(co).G.cells.num;
+        initstate.(ne).(co).(am).(sd).cAverage = c_ne*ones(nenp, 1);
+        initstate.(ne).(co).(am).(sd).cSurface = c_ne*ones(nenp, 1);
       case 'full'
         nenr = model.(ne).(co).(am).(sd).N;
         nenp = model.(ne).(co).(am).(sd).np;
@@ -51,8 +52,9 @@ function initstate = initStateChen2020(model, c_ne, c_pe)
 
     switch model.(ne).(co).(am).diffusionModelType
       case 'simple'
-        penp = model.(pe).(co).(am).G.cells.num;
-        initstate.(pe).(co).(am).c = c_pe*ones(penp, 1);
+        penp = model.(pe).(co).G.cells.num;
+        initstate.(pe).(co).(am).(sd).cAverage = c_pe*ones(penp, 1);
+        initstate.(pe).(co).(am).(sd).cSurface = c_pe*ones(penp, 1);
       case 'full'
         penr = model.(pe).(co).(am).(sd).N;
         penp = model.(pe).(co).(am).(sd).np;
