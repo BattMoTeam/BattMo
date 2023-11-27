@@ -1,4 +1,10 @@
 classdef VarName
+
+    properties (Constant)
+        
+        strlim = '.' % string delimiter when creating variable name for visualization from namespace and name
+        
+    end
     
     properties
         
@@ -6,7 +12,6 @@ classdef VarName
         name
         index
         dim
-        strlim = '.' % string delimiter when creating variable name for visualization from namespace and name
         
     end
     
@@ -207,59 +212,49 @@ classdef VarName
 
             % Same dimension and dimension larger than 1, we have to check indexes
             if (ischar(index1))
-            
-            index = false(dim, 1);
-
-            index1 = index;
-            index1(varname1.index) = true;
-            index2 = index;
-            index2(varname1.index) = true;
-            
-            if (~ischar(index1) & ischar(index2)) | (ischar(index1) & ~ischar(index2))
-                isequal = false;
-                return
-            end
-            
-            if (ischar(index1) & ischar(index2)) && ~strcmp(index1, index2)
-                isequal = false;
-                return
-            end
-            
-            if (isnumeric(index1) & isnumeric(index2))
-
-                index = false()
                 
-                isequal = false;
-                return
+                index = false(dim, 1);
+
+                index1 = index;
+                index1(varname1.index) = true;
+                index2 = index;
+                index2(varname1.index) = true;
+                
+                if (~ischar(index1) & ischar(index2)) | (ischar(index1) & ~ischar(index2))
+                    isequal = false;
+                    return
+                end
+                
+                if (ischar(index1) & ischar(index2)) && ~strcmp(index1, index2)
+                    isequal = false;
+                    return
+                end
+                
+                if (isnumeric(index1) & isnumeric(index2))
+
+                    index = false()
+                    
+                    isequal = false;
+                    return
+                end
+                
             end
             
         end
+
         
     end
-    
-end
 
 
+    % methods(Static)
 
-%{
-Copyright 2021-2023 SINTEF Industry, Sustainable Energy Technology
-and SINTEF Digital, Mathematics & Cybernetics.
-
-This file is part of The Battery Modeling Toolbox BattMo
-
-BattMo is free software: you can redistribute it and/or modify
-it under the terms of the GNU General Public License as published by
-the Free Software Foundation, either version 3 of the License, or
-(at your option) any later version.
-
-BattMo is distributed in the hope that it will be useful,
-but WITHOUT ANY WARRANTY; without even the implied warranty of
-MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-GNU General Public License for more details.
-
-You should have received a copy of the GNU General Public License
-along with BattMo.  If not, see <http://www.gnu.org/licenses/>.
-%}
+    %     function strlim = getStrLim(varname)
+            
+    %         strlim = varname.strlim;
+            
+    %     end
+        
+    % end
     
 end
 

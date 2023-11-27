@@ -1,22 +1,18 @@
-============================
-Advanced examples and topics
-============================
+==============
+Advanced Usage
+==============
 
 .. toctree::
    :maxdepth: 2
    :hidden:
 
-   MRST <mrst>
-   publishedExamples/runElectrolyser
    Model initialisation <modelinitialisation>
-   Control models <controls>
-   Thermal model <thermal>
+   Thermal Simulation <thermal>
    controlinput
    Optimisation <optimisation>
    Parameter sets <parsets>
 
 
-* :ref:`MRST <mrst:MRST>`
 * :ref:`Alkaline Membrane Electrolyser<publishedExamples/runElectrolyser:Alkaline Membrane Electrolyser>`
 * :ref:`Model initialisation <modelinitialisation:Model initialisation>`
 * :ref:`Control models <controls:Control models>`
