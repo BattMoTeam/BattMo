@@ -16,7 +16,6 @@ mrstModule add ad-core mrst-gui mpfa
 jsonstruct_material = parseBattmoJson(fullfile('ParameterData','ParameterSets','Chen2020','chen2020_lithium_ion_battery.json'));
 jsonstruct_geometry = parseBattmoJson('/home/xavier/Matlab/Projects/battmo/Examples/jsondatafiles/geometry1d.json');
 
-
 elyte   = 'Electrolyte';
 ne      = 'NegativeElectrode';
 pe      = 'PositiveElectrode';
@@ -38,17 +37,11 @@ jsonstruct_geometry.Separator.thickness = xlength(2);
 jsonstruct = mergeJsonStructs({jsonstruct_material, ...
                                jsonstruct_geometry});
 
-jsonstruct.(ne).(co).(am).(sd).N = 40;
-jsonstruct.(pe).(co).(am).(sd).N = 40;
-
-jsonstruct.(pe).(co).(am).(sd).referenceDiffusionCoefficient = 1e-13;
-
 paramobj = BatteryInputParams(jsonstruct);
-
 
 %% We setup the battery geometry ("bare" battery with no current collector).
 
-paramobj = setupBatteryGridFromJson(paramobj, jsonstruct);
+[paramobj, gen] = setupBatteryGridFromJson(paramobj, jsonstruct);
 
 %%  The Battery model is initialized by sending paramobj to the Battery class constructor
 
@@ -66,7 +59,7 @@ model.Control.Imax = 5*ampere;
 fac   = 2;
 total = 1.4*hour;
 n     = 100;
-dt0   = 1e-6;
+dt0   = total*1e-6;
 times = getTimeSteps(dt0, n, total, fac);
 dt    = diff(times);
 dt    = dt(1 : end);
@@ -121,26 +114,13 @@ end
 % Change default tolerance for nonlinear solver
 model.nonlinearTolerance = 1e-5;
 % Set verbosity
-model.verbose = true;
+model.verbose = false;
 
 model.AutoDiffBackend= AutoDiffBackend();
 
 %% We run simulation
 
 [~, states, ~] = simulateScheduleAD(initstate, model, schedule, 'OutputMinisteps', true, 'NonLinearSolver', nls);
-
-
-ind = cellfun(@(state) ~isempty(state), states);
-states = states(ind);
-
-E1    = cellfun(@(state) state.Control.E, states);
-I1    = cellfun(@(state) state.Control.I, states);
-time1 = cellfun(@(state) state.time, states);
-
-plot(time1, E1);
-
-
-return
 
 % We want to consider the simplified diffusion model and therefore setup a model that can run it.
 
