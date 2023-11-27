@@ -37,9 +37,6 @@ jsonstruct_geometry.Separator.thickness = xlength(2);
 jsonstruct = mergeJsonStructs({jsonstruct_material, ...
                                jsonstruct_geometry});
 
-jsonstruct.(ne).(co).(am).(sd).N = 40;
-jsonstruct.(pe).(co).(am).(sd).N = 40;
-
 paramobj = BatteryInputParams(jsonstruct);
 
 %% We setup the battery geometry ("bare" battery with no current collector).

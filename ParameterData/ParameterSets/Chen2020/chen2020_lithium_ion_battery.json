@@ -25,7 +25,7 @@
           "activationEnergyOfDiffusion": 0,
           "referenceDiffusionCoefficient": 3.3e-14,
           "particleRadius": 5.86e-06,
-          "N": 10
+          "N": 40
         }
       }
     }
@@ -45,7 +45,7 @@
           "activationEnergyOfDiffusion": 0,
           "referenceDiffusionCoefficient": 4e-15,
           "particleRadius": 5.22e-06,
-          "N": 10
+          "N": 40
         }
       }
     }
