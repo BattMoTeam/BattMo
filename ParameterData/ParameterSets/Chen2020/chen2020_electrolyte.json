@@ -1,24 +1,27 @@
 {
-  "specificHeatCapacity": 2055,
-  "comment" : "check value of specificHeatCapacity",
-  "thermalConductivity": 6e-05,
-  "negativeDomainBruggemanCoefficient" : 1.5,
-  "positiveDomainBruggemanCoefficient" : 1.5,
-  "Conductivity" : {"type" : "function",
-                    "functionname" : "computeElectrolyteConductivity_Nyman2008",
-                    "argumentlist" : ["c", "T"]
-                   },
-  "DiffusionCoefficient" : {"type": "function",
-                            "functionname" : "computeDiffusionCoefficient_Nyman2008",
-                            "argumentlist" : ["c", "T"]
-                           },
+  "ionicConductivity": {
+    "type": "function",
+    "functionname": "computeElectrolyteConductivity_Nyman2008",
+    "argumentlist": [
+      "c",
+      "T"
+    ]
+  },
+  "diffusionCoefficient": {
+    "type": "function",
+    "functionname": "computeDiffusionCoefficient_Nyman2008",
+    "argumentlist": [
+      "c",
+      "T"
+    ]
+  },
   "compnames": [
     "Li",
     "PF6"
   ],
-  "sp": { "z": 1,
-          "t": 0.2594},
-  "Separator": { "filename": "ParameterData/ParameterSets/Chen2020/chen2020_separator.json",
-                   "isFile": true },
-  "BruggemanCoefficient": 1.5
+  "sp": {
+    "z": 1,
+    "t": 0.2594
+  },
+  "bruggemanCoefficient": 1.5
 }

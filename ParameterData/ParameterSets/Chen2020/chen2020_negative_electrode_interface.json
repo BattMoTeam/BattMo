@@ -1,12 +1,19 @@
 {
-  "cmax": 33133,
-  "volumetricSurfaceArea": 384000,
-  "n": 1,
-  "Eak": 35000,
-  "k0": 6.716e-12,
-  "theta100": 0.9014,
-  "theta0": 0.0279,
-  "OCP" : { "type": "function",
-            "functionname" : "computeOCP_graphite_Chen",
-            "argumentlist" : ["cElectrode", "T", "cmax"]}
+  "saturationConcentration": 33133,
+  "volumetricSurfaceArea": 383959,
+  "numberOfElectronsTransferred": 1,
+  "activationEnergyOfReaction": 35000,
+  "reactionRateConstant": 6.716e-12,
+  "guestStoichiometry100": 0.88,
+  "guestStoichiometry0": 0.15,
+  "chargeTransferCoefficient": 0.5,
+  "openCircuitPotential": {
+    "type": "function",
+    "functionname": "computeOCP_graphite_Chen",
+    "argumentlist": [
+      "cElectrode",
+      "T",
+      "cmax"
+    ]
+  }
 }

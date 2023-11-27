@@ -35,7 +35,9 @@ function operators = localSetupOperators(G, varargin)
     P = P.setFromTensorMap(map);
     P = P.getMatrix;
 
-    operators.harmFace    = @(cellvalue) getHarmFace(cellvalue, P, hT, M);
+    T = operators.T;
+    
+    operators.harmFace    = @(cellvalue) getHarmFace(cellvalue, P, hT, T, M);
     operators.harmFaceBC  = @(cvalue, faces) getFaceHarmBC(G, cvalue, faces);
     operators.transFaceBC = @(faces) getTransFaceBC(G, faces);
     
@@ -60,12 +62,12 @@ function operators = localSetupOperators(G, varargin)
     end
 end
 
-function facevalue = getHarmFace(cellvalue, P, hT, M)
+function facevalue = getHarmFace(cellvalue, P, hT, T, M)
 
     if numelValue(cellvalue) > 1
         facevalue = 1./(P*(1./(hT.*(M*cellvalue))));
     else
-        facevalue = cellvalue;
+        facevalue = cellvalue.*T;
     end
     
 end

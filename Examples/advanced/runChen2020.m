@@ -13,18 +13,35 @@ mrstModule add ad-core mrst-gui mpfa
 % all the parameters through out the submodels.
 
 % The input parameters can be given in json format. The json file is read and used to populate the paramobj object.
-jsonstruct = parseBattmoJson(fullfile('ParameterData','ParameterSets','Chen2020','chen2020_lithium_ion_battery.json'));
+jsonstruct_material = parseBattmoJson(fullfile('ParameterData','ParameterSets','Chen2020','chen2020_lithium_ion_battery.json'));
+jsonstruct_geometry = parseBattmoJson('/home/xavier/Matlab/Projects/battmo/Examples/jsondatafiles/geometry1d.json');
+
+elyte   = 'Electrolyte';
+ne      = 'NegativeElectrode';
+pe      = 'PositiveElectrode';
+co      = 'Coating';
+am      = 'ActiveMaterial';
+cc      = 'CurrentCollector';
+am      = 'ActiveMaterial';
+itf     = 'Interface';
+sd      = 'SolidDiffusion';
+thermal = 'ThermalModel';
+
+jsonstruct_geometry.Geometry.faceArea =  1.58*0.065;
+
+xlength = 1e-5*[8.52; 1.2; 7.56];
+jsonstruct_geometry.(ne).(co).thickness = xlength(1);
+jsonstruct_geometry.(pe).(co).thickness = xlength(3);
+jsonstruct_geometry.Separator.thickness = xlength(2);
+
+jsonstruct = mergeJsonStructs({jsonstruct_material, ...
+                               jsonstruct_geometry});
 
 paramobj = BatteryInputParams(jsonstruct);
 
-
 %% We setup the battery geometry ("bare" battery with no current collector).
 
-gen = BareBatteryGeneratorP4D();
-
-% We update paramobj with grid data
-paramobj = gen.updateBatteryInputParams(paramobj);
-
+[paramobj, gen] = setupBatteryGridFromJson(paramobj, jsonstruct);
 
 %%  The Battery model is initialized by sending paramobj to the Battery class constructor
 
@@ -107,8 +124,8 @@ model.AutoDiffBackend= AutoDiffBackend();
 
 % We want to consider the simplified diffusion model and therefore setup a model that can run it.
 
-jsonstruct.NegativeElectrode.ActiveMaterial.diffusionModelType = 'simple';
-jsonstruct.PositiveElectrode.ActiveMaterial.diffusionModelType = 'simple';
+jsonstruct.(ne).(co).(am).diffusionModelType = 'simple';
+jsonstruct.(pe).(co).(am).diffusionModelType = 'simple';
 
 paramobj = BatteryInputParams(jsonstruct);
 paramobj = gen.updateBatteryInputParams(paramobj);
