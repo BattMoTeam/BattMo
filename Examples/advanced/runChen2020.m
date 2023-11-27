@@ -37,6 +37,9 @@ jsonstruct_geometry.Separator.thickness = xlength(2);
 jsonstruct = mergeJsonStructs({jsonstruct_material, ...
                                jsonstruct_geometry});
 
+jsonstruct.(ne).(co).(am).(sd).N = 40;
+jsonstruct.(pe).(co).(am).(sd).N = 40;
+
 paramobj = BatteryInputParams(jsonstruct);
 
 %% We setup the battery geometry ("bare" battery with no current collector).
@@ -124,8 +127,8 @@ model.AutoDiffBackend= AutoDiffBackend();
 
 % We want to consider the simplified diffusion model and therefore setup a model that can run it.
 
-jsonstruct.NegativeElectrode.ActiveMaterial.diffusionModelType = 'simple';
-jsonstruct.PositiveElectrode.ActiveMaterial.diffusionModelType = 'simple';
+jsonstruct.(ne).(co).(am).diffusionModelType = 'simple';
+jsonstruct.(pe).(co).(am).diffusionModelType = 'simple';
 
 paramobj = BatteryInputParams(jsonstruct);
 paramobj = gen.updateBatteryInputParams(paramobj);
