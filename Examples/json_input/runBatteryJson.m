@@ -59,7 +59,7 @@ function  output = runBatteryJson(jsonstruct, varargin)
 
     %% Setup the time step schedule
 
-    total = jsonstruct.TimeStepping.totalTime;
+    total = convertUnitBattMo(jsonstruct.TimeStepping.totalTime);
     n = jsonstruct.TimeStepping.numberOfTimeSteps;
 
     dt = total/n;
@@ -72,25 +72,35 @@ function  output = runBatteryJson(jsonstruct, varargin)
     %  !!! Change this to an entry in the JSON with better variable names !!!
 
     switch model.Control.controlPolicy
+        
       case 'CCDischarge'
+        
         srcfunc  = model.(ctrl).setupControlFunction();
         stopfunc = model.(ctrl).setupStopFunction();
         % we setup the control by assigning a source and stop function.
         control = struct('CCDischarge', true);
         control.src          = srcfunc;
         control.stopFunction = stopfunc;
+        
       case 'CCCharge'
+        
         srcfunc  = model.(ctrl).setupControlFunction();
         stopfunc = model.(ctrl).setupStopFunction();
         % we setup the control by assigning a source and stop function.
         control = struct('CCCharge', true);
         control.src          = srcfunc;
-        control.stopFunction = stopfunc;        
+        control.stopFunction = stopfunc;
+        
       case 'CCCV'
+        
         control = struct('CCCV', true);
+        
       case 'powerControl'
+        
         control = struct('powerControl', true);
+        
       case 'CC'
+        
         tup = dt;
         srcfunc = @(time) model.(ctrl).rampupControl(time, tup);
         switch model.(ctrl).initialControl
@@ -104,7 +114,9 @@ function  output = runBatteryJson(jsonstruct, varargin)
         control = struct('CC', true);
         control.src = srcfunc;
         control.stopFunction = stopFunc;
+        
       otherwise
+        
         error('control policy not recognized');
     end
 
