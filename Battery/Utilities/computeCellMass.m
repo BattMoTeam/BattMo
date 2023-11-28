@@ -23,48 +23,12 @@ function [mass, masses, volumes] = computeCellMass(model, varargin)
         
         elde = eldes{ind};
 
-        switch model.(elde).(co).active_material_type
-            
-          case 'default'
-            
-            rho  = model.(elde).(co).effectiveDensity;
-            vols = model.(elde).(co).G.cells.volumes;
-            frac = model.(elde).(co).volumeFraction;
-            
-            masses.(elde).(co).val  = sum(rho.*vols.*frac);
-            volumes.(elde).(co).val = sum(vols.*frac);
-            
-          case 'composite'
-            
-            gr = 'FirstMaterial';
-            si = 'SecondMaterial';
-
-            mats = {gr, si};
-            
-            masses.(elde).(am).val  = 0;
-            volumes.(elde).(am).val = 0;
-            
-            for imat = 1 : numel(mats)
-
-                mat = mats{imat};
-                rho  = model.(elde).(am).(mat).(itf).density;
-                vols = model.(elde).(am).(mat).G.cells.volumes;
-                vf = model.(elde).(am).volumeFraction;
-                amvf = model.(elde).(am).(mat).activeMaterialFraction;
-                
-                masses.(elde).(am).(mat).val = sum(rho.*vols.*vf.*amvf);
-                masses.(elde).(am).val = masses.(elde).(am).val + masses.(elde).(am).(mat).val;
-
-                volumes.(elde).(am).(mat).val = sum(vols.*vf.*amvf);
-                volumes.(elde).(am).val = volumes.(elde).(am).val + volumes.(elde).(am).(mat).val;
-
-            end
-            
-          otherwise
-            
-            error('electrode_case not recognized');
-            
-        end
+        rho  = model.(elde).(co).effectiveDensity;
+        vols = model.(elde).(co).G.cells.volumes;
+        frac = model.(elde).(co).volumeFraction;
+        
+        masses.(elde).(co).val  = sum(rho.*vols);
+        volumes.(elde).(co).val = sum(vols.*frac);
         
         mass = mass + masses.(elde).(co).val;
         
