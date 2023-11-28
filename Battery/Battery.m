@@ -468,25 +468,39 @@ classdef Battery < BaseModel
             C = computeCellCapacity(model);
 
             switch paramobj.controlPolicy
+                
               case "CCDischarge"
+
                 control = CCDischargeControlModel(paramobj);
                 CRate = control.CRate;
                 control.Imax = (C/hour)*CRate;
+                
+              case 'CCCharge'
+
+                control = CCChargeControlModel(paramobj);
+                CRate = control.CRate;
+                control.Imax = (C/hour)*CRate;
+                
               case "CCCV"
+                
                 control = CcCvControlModel(paramobj);
                 CRate = control.CRate;
                 control.Imax = (C/hour)*CRate;
+                
               case "powerControl"
+                
                 control = PowerControlModel(paramobj);
+                
               case "CC"
+                
                 control = CcControlModel(paramobj);
                 CRate = control.CRate;
                 control.Imax = (C/hour)*CRate;
+                
               otherwise
+                
                 error('Error controlPolicy not recognized');
             end
-
-
 
         end
 
@@ -735,7 +749,19 @@ classdef Battery < BaseModel
             initstate.(ctrl).E = OCP(1) - ref;
 
             switch model.(ctrl).controlPolicy
+                
+              case 'CCDischarge'
+                
+                initstate.(ctrl).ctrlType = 'constantCurrent';
+                initstate.(ctrl).I = model.(ctrl).Imax;
+                
+              case 'CCCharge'
+                
+                initstate.(ctrl).ctrlType = 'constantCurrent';
+                initstate.(ctrl).I = -model.(ctrl).Imax;
+                
               case 'CCCV'
+                
                 switch model.(ctrl).initialControl
                   case 'discharging'
                     initstate.(ctrl).ctrlType     = 'CC_discharge1';
@@ -748,17 +774,9 @@ classdef Battery < BaseModel
                   otherwise
                     error('initialControl not recognized');
                 end
-              case 'CCDischarge'
-                initstate.(ctrl).ctrlType = 'constantCurrent';
-                switch model.(ctrl).initialControl
-                  case 'discharging'
-                    initstate.(ctrl).I = model.(ctrl).Imax;
-                  case 'charging'
-                    error('to implement (should be easy...)')
-                  otherwise
-                    error('initialControl not recognized');
-                end
+                
               case 'powerControl'
+                
                 switch model.(ctrl).initialControl
                   case 'discharging'
                     error('to implement (should be easy...)')
@@ -770,7 +788,9 @@ classdef Battery < BaseModel
                   otherwise
                     error('initialControl not recognized');
                 end
+                
               case 'CC'
+                
                 % this value will be overwritten after first iteration
                 initstate.(ctrl).I = 0;
                 switch model.(ctrl).initialControl
@@ -1101,7 +1121,7 @@ classdef Battery < BaseModel
 
                 % nothing to do here
 
-              case 'CCDischarge'
+              case {'CCDischarge', 'CCCharge'}
 
                 E    = state.(ctrl).E;
                 I    = state.(ctrl).I;
@@ -1574,6 +1594,9 @@ classdef Battery < BaseModel
                 forces.CCCV = true;
               case 'CCDischarge'
                 forces.CCDischarge = true;
+                forces.src = [];
+              case 'CCCharge'
+                forces.CCCharge = true;
                 forces.src = [];
               case 'powerControl'
                 forces.powerControl = true;

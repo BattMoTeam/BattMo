@@ -45,9 +45,12 @@ classdef BatteryInputParams < InputParams
             paramobj.(elyte)   = ElectrolyteInputParams(pick(elyte));
             paramobj.(sep)     = SeparatorInputParams(pick(sep));
             paramobj.(thermal) = ThermalComponentInputParams(pick(thermal));
+            
             switch jsonstruct.(ctrl).controlPolicy
               case 'CCDischarge'
                 paramobj.(ctrl) = CCDischargeControlModelInputParams(pick(ctrl));
+              case 'CCCharge'
+                paramobj.(ctrl) = CCChargeControlModelInputParams(pick(ctrl));
               case 'CCCV'
                 paramobj.(ctrl) = CcCvControlModelInputParams(pick(ctrl));
               case 'powerControl'

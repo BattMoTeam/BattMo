@@ -1,6 +1,5 @@
 {"Control": {
   "controlPolicy": "CCDischarge",
-  "initialControl" : "discharging",
   "CRate": 1,
   "rampupTime" : 0.1,
   "lowerCutoffVoltage": 2.4,

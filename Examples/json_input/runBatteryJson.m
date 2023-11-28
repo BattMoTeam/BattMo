@@ -79,6 +79,13 @@ function  output = runBatteryJson(jsonstruct, varargin)
         control = struct('CCDischarge', true);
         control.src          = srcfunc;
         control.stopFunction = stopfunc;
+      case 'CCCharge'
+        srcfunc  = model.(ctrl).setupControlFunction();
+        stopfunc = model.(ctrl).setupStopFunction();
+        % we setup the control by assigning a source and stop function.
+        control = struct('CCCharge', true);
+        control.src          = srcfunc;
+        control.stopFunction = stopfunc;        
       case 'CCCV'
         control = struct('CCCV', true);
       case 'powerControl'

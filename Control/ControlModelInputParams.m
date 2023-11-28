@@ -52,7 +52,7 @@ classdef ControlModelInputParams < InputParams
         
         function paramobj = set.controlPolicy(paramobj, controlPolicy)
             switch controlPolicy
-              case {'CCDischarge', 'CC'}
+              case {'CCDischarge', 'CCCharge'}
                 % ok in any case
               case 'CCCV'
                 assert(isa(paramobj, 'CcCvControlModelInputParams'), 'The model is not a CcCvControlModelInputParams class')
