@@ -399,7 +399,7 @@
         "externalTemperature": 298.15
     },
     "Control": {
-        "controlPolicy": "IEswitch",
+        "controlPolicy": "CCDischarge",
         "initialControl": "discharging",
         "CRate": 1,
         "lowerCutoffVoltage": 2.4,

@@ -8,60 +8,69 @@
       "properties" : {
         "controlPolicy": {
           "type": "string",
-          "enum": ["IEswitch", "CCCV", "CV", "powerControl", "CC"]},
-        "CRate" : {
-          "type": "number"},
-        "initialControl" : {
-          "type" : "string",
-          "enum" : ["charging", "discharging"]},
-        "lowerCutoffVoltage" : {
-          "type" : "number"},
-        "upperCutoffVoltage" : {
-          "type" : "number"}
-      },
-      "allOf": [
-        {
-          "if":
-          {"properties": {"controlPolicy" : {"const" : "IEswitch"}},
-           "then": {
-             "$ref" : "#/$defs/IEswitchControlModel"}}},
-
-        {"if": {"properties": {"controlPolicy" : {"const" : "CCCV"}},
-                "then":{
-                  "$ref" : "#/$defs/CcCvControlModel"}}},
-
-        {"if": {"properties": {"controlPolicy" : {"const" : "CV"}},
-                "then": {
-                  "$ref" : "#/$defs/CvControlModel"}}},
-
-        {"if": {"properties": {"controlPolicy" : {"const" : "CC"}},
-                "then": {
-                  "$ref" : "#/$defs/CcControlModel"}}},
-
-        {"if": {"properties": {"controlPolicy" : {"const" : "powerControl"}},
-                "then": {
-                  "$ref" : "#/$defs/powerControlModel"}}}
-        
-      ]
-    }
+          "enum": ["CCDischarge",
+                   "CCCHarge",
+                   "CCCV",
+                   "powerControl"]}},
+      "CRate" : {
+        "type": "number"},
+      "lowerCutoffVoltage" : {
+        "type" : "number"},
+      "upperCutoffVoltage" : {
+        "type" : "number"}
+    },
+    "allOf": [
+      {"if": {
+        "properties": {"controlPolicy" : {"const" : "CCDischarge"}},
+        "then": {
+          "$ref" : "#/$defs/CCDischarge"}}},
+      {"if": {
+        "properties": {"controlPolicy" : {"const" : "CCCharge"}},
+        "then": {
+          "$ref" : "#/$defs/CCCharge"}}},      
+      {"if": {
+        "properties": {"controlPolicy" : {"const" : "CCCV"}},
+        "then":{
+          "$ref" : "#/$defs/CCCV"}}},
+      {"if": {
+        "properties": {"controlPolicy" : {"const" : "CV"}},
+        "then": {
+          "$ref" : "#/$defs/CV"}}},
+      {"if": {
+        "properties": {"controlPolicy" : {"const" : "CC"}},
+        "then": {
+          "$ref" : "#/$defs/CC"}}},
+      {"if": {
+        "properties": {"controlPolicy" : {"const" : "powerControl"}},
+        "then": {
+          "$ref" : "#/$defs/power"}}}
+    ]
   },
-  
+
   "$defs" : {
-    "IEswitchControlModel" : {
+    "CCDischarge" : {
       "properties" :
-      {"tup" : {"type" : "number",
-                "description" : "rampup time"}
-      }},
-    "CcCvControlModel": {
+      {"tup" : {
+        "type" : "number",
+        "description" : "rampup time"},
+       "useCVswitcth" : {
+         "type" : "boolean",
+         "description" : "switch to control voltage when the lower cutoff voltage is reached. Default value is false, which means that the simulation stops when the lower voltage is reached."
+       }},
+    "CCCharge" : {
+      "properties" :
+      {"tup" : {
+        "type" : "number",
+        "description" : "rampup time"}}},
+    "CCCV": {
       "properties" : {
         "dEdtLimit" : {"type" : "number"},
         "dIdtLimit" : {"type" : "number"}
       }},
-    "CvControlModel": {  "properties" : {
-      "inputVoltage" : {"type" : "number"}
-    }},
-    "CcControlModel": {},
-    "powerControlModel": {
+    "CV": {
+      "properties" : {
+        "inputVoltage" : {"type" : "number"}}},
+    "powerControl": {
       "properties" : {
         "case" : {"type" : "string",
                   "enum" : ["time limited", "voltage limited", "CPCV"]},

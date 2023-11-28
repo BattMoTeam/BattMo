@@ -138,7 +138,7 @@
     "bruggemanCoefficient": 1.5
   },
   "Control": {
-    "controlPolicy": "IEswitch",
+    "controlPolicy": "CCDischarge",
     "initialControl": "discharging",
     "CRate": 1,
     "lowerCutoffVoltage": 2.4,

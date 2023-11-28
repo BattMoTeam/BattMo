@@ -468,8 +468,8 @@ classdef Battery < BaseModel
             C = computeCellCapacity(model);
 
             switch paramobj.controlPolicy
-              case "IEswitch"
-                control = IEswitchControlModel(paramobj);
+              case "CCDischarge"
+                control = CCDischargeControlModel(paramobj);
                 CRate = control.CRate;
                 control.Imax = (C/hour)*CRate;
               case "CCCV"
@@ -748,7 +748,7 @@ classdef Battery < BaseModel
                   otherwise
                     error('initialControl not recognized');
                 end
-              case 'IEswitch'
+              case 'CCDischarge'
                 initstate.(ctrl).ctrlType = 'constantCurrent';
                 switch model.(ctrl).initialControl
                   case 'discharging'
@@ -1101,7 +1101,7 @@ classdef Battery < BaseModel
 
                 % nothing to do here
 
-              case 'IEswitch'
+              case 'CCDischarge'
 
                 E    = state.(ctrl).E;
                 I    = state.(ctrl).I;
@@ -1566,8 +1566,8 @@ classdef Battery < BaseModel
             switch model.(ctrl).controlPolicy
               case 'CCCV'
                 forces.CCCV = true;
-              case 'IEswitch'
-                forces.IEswitch = true;
+              case 'CCDischarge'
+                forces.CCDischarge = true;
                 forces.src = [];
               case 'powerControl'
                 forces.powerControl = true;

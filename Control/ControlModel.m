@@ -14,7 +14,7 @@ classdef ControlModel < BaseModel
         % Control policy (sring). It can take following values
         %
         % - 'CCCV'
-        % - 'IEswitch'
+        % - 'CCDischarge'
         % - 'CV'
         % - 'CC'
         %

@@ -70,13 +70,13 @@ function  output = runBatteryJson(jsonstruct, varargin)
     %  !!! Change this to an entry in the JSON with better variable names !!!
 
     switch model.Control.controlPolicy
-      case 'IEswitch'
+      case 'CCDischarge'
         tup = model.Control.tup; % rampup value for the current function, see rampupSwitchControl
         srcfunc = @(time, I, E) rampupSwitchControl(time, tup, I, E, ...
                                                     model.Control.Imax, ...
                                                     model.Control.lowerCutoffVoltage);
         % we setup the control by assigning a source and stop function.
-        control = struct('src', srcfunc, 'IEswitch', true);
+        control = struct('src', srcfunc, 'CCDischarge', true);
       case 'CCCV'
         control = struct('CCCV', true);
       case 'powerControl'

@@ -17,7 +17,7 @@ classdef ControlModelInputParams < InputParams
         % Control policy (sring). It can take following values
         %
         % - 'CCCV'
-        % - 'IEswitch'
+        % - 'CCDischarge'
         % - 'CV'
         % - 'CC'
         %
@@ -52,7 +52,7 @@ classdef ControlModelInputParams < InputParams
         
         function paramobj = set.controlPolicy(paramobj, controlPolicy)
             switch controlPolicy
-              case {'IEswitch', 'CC'}
+              case {'CCDischarge', 'CC'}
                 % ok in any case
               case 'CCCV'
                 assert(isa(paramobj, 'CcCvControlModelInputParams'), 'The model is not a CcCvControlModelInputParams class')

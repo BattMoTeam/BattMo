@@ -33,7 +33,7 @@ function output = computeCellEnergyGivenCrate(model, CRate, varargin)
     model.Control.CRate = CRate;
     model.Control.Imax  = Imax;
     
-    assert(strcmp(model.Control.controlPolicy, "IEswitch"), 'The model should be setup with IEswitch control');
+    assert(strcmp(model.Control.controlPolicy, "CCDischarge"), 'The model should be setup with CCDischarge control');
     
     totalTime = 1.1*hour/CRate;
 
@@ -55,7 +55,7 @@ function output = computeCellEnergyGivenCrate(model, CRate, varargin)
                                                 model.Control.Imax, ...
                                                 model.Control.lowerCutoffVoltage);
 
-    control = struct('src', srcfunc, 'IEswitch', true);
+    control = struct('src', srcfunc, 'CCDischarge', true);
 
 
     schedule = struct('control', control, 'step', step); 

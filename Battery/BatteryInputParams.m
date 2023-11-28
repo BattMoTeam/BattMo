@@ -46,8 +46,8 @@ classdef BatteryInputParams < InputParams
             paramobj.(sep)     = SeparatorInputParams(pick(sep));
             paramobj.(thermal) = ThermalComponentInputParams(pick(thermal));
             switch jsonstruct.(ctrl).controlPolicy
-              case 'IEswitch'
-                paramobj.(ctrl) = IEswitchControlModelInputParams(pick(ctrl));
+              case 'CCDischarge'
+                paramobj.(ctrl) = CCDischargeControlModelInputParams(pick(ctrl));
               case 'CCCV'
                 paramobj.(ctrl) = CcCvControlModelInputParams(pick(ctrl));
               case 'powerControl'

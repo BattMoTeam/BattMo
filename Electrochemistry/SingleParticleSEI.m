@@ -103,8 +103,8 @@ classdef SingleParticleSEI < BaseModel
         function control = setupControl(model, paramobj)
 
             switch paramobj.controlPolicy
-              case "IEswitch"
-                control = IEswitchControlModel(paramobj); 
+              case "CCDischarge"
+                control = CCDischargeControlModel(paramobj); 
               case "CCCV"
                 control = seiCcCvControlModel(paramobj);
               case "CV"
@@ -212,7 +212,7 @@ classdef SingleParticleSEI < BaseModel
 
                 % nothing to do here
                 
-              case 'IEswitch'
+              case 'CCDischarge'
                 
                 E    = state.(ctrl).E;
                 I    = state.(ctrl).I;
@@ -401,8 +401,8 @@ classdef SingleParticleSEI < BaseModel
             switch model.(ctrl).controlPolicy
               case 'CCCV'
                 forces.CCCV = true;
-              case 'IEswitch'
-                forces.IEswitch = true;
+              case 'CCDischarge'
+                forces.CCDischarge = true;
                 forces.src = [];
               case 'CV'
                 forces.CV = true;

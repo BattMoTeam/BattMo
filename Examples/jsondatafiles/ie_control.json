@@ -1,5 +1,5 @@
 {"Control": {
-  "controlPolicy": "IEswitch",
+  "controlPolicy": "CCDischarge",
   "initialControl" : "discharging",
   "CRate": 1,
   "tup" : 0.1,

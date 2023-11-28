@@ -162,7 +162,7 @@ switch simcase
                                                 model.Control.Imax, ...
                                                 model.Control.lowerCutoffVoltage);
     % we setup the control by assigning a source and stop function.
-    control = struct('src', srcfunc, 'IEswitch', true);
+    control = struct('src', srcfunc, 'CCDischarge', true);
     schedule  = struct('control', control, 'step', step);
 
     %% We setup the initial state
@@ -177,7 +177,7 @@ switch simcase
     srcfunc  = @(time, I, E) rampupSwitchControl(time, tup, I, E, ...
                                                  - model.Control.Imax, ...
                                                  model.Control.lowerCutoffVoltage);
-    control = struct('src', srcfunc, 'IEswitch', true);
+    control = struct('src', srcfunc, 'CCDischarge', true);
     schedule = struct('control', control, 'step', step);
 
   otherwise

@@ -15,7 +15,7 @@ Base Control Model
 IESwitch Control
 ----------------
 
-.. class:: IEswitchControlModelInputParams
+.. class:: CCDischargeControlModelInputParams
 
 
 Constant Current Constant Voltage Control

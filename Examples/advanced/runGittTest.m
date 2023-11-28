@@ -133,8 +133,8 @@ tup          = 1*milli*second; % rampup time
 srcfunc_init = @(time, I, E) rampupSwitchControl(time, tup, I, E, inputI, inputE);
 srcfunc_gitt = @(time, I, E) tabulatedIControl(time, tpoints, Ipoints);
 
-control(1) = struct('src', srcfunc_init, 'IEswitch', true);
-control(2) = struct('src', srcfunc_gitt, 'IEswitch', true);
+control(1) = struct('src', srcfunc_init, 'CCDischarge', true);
+control(2) = struct('src', srcfunc_gitt, 'CCDischarge', true);
 
 n_init = 5;
 dt_init = rampupTimesteps(time_init, time_init/n_init, 3);
