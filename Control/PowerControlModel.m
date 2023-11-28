@@ -37,7 +37,7 @@ classdef PowerControlModel < ControlModel
             varnames{end + 1} = 'time';
             model = model.registerVarNames(varnames);
             
-            fn = @CcCvControlModel.updateControlEquation;
+            fn = @PowerControlModel.updateControlEquation;
             model = model.registerPropFunction({'controlEquation', fn, {'ctrlType', 'E', 'I'}});
             
         end

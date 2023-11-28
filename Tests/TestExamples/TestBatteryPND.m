@@ -52,7 +52,7 @@ classdef TestBatteryPND < matlab.unittest.TestCase
             srcfunc = @(time, I, E) rampupSwitchControl(time, tup, I, E, ...
                                                         model.Control.Imax, ...
                                                         model.Control.lowerCutoffVoltage);
-            control = struct('src', srcfunc, 'IEswitch', true);
+            control = struct('src', srcfunc, 'CCDischarge', true);
 
             switch testSize
               case 'long'

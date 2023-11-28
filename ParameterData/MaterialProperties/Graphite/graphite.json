@@ -1,7 +1,6 @@
 {
   "saturationConcentration": 30555,
   "volumetricSurfaceArea": 723600,
-  "density": 2240,
   "numberOfElectronsTransferred" : 1,
   "activationEnergyOfReaction": 5000,
   "reactionRateConstant": 5.031e-11,

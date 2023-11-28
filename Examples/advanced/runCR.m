@@ -134,7 +134,7 @@ step      = struct('val', diff(times), 'control', ones(numel(tt), 1));
 %% Setup the operating limits for the cell
 
 switch model.Control.controlPolicy
-  case 'IEswitch'
+  case 'CCDischarge'
     % The maximum and minimum voltage limits for the cell are defined using
     % stopping and source functions. A stopping function is used to set the
     % lower voltage cutoff limit. A source function is used to set the upper
@@ -144,7 +144,7 @@ switch model.Control.controlPolicy
                                                 model.Control.Imax, ...
                                                 model.Control.lowerCutoffVoltage);
     % setup the control by assigning a source and stop function.
-    control = struct('src', srcfunc, 'IEswitch', true);
+    control = struct('src', srcfunc, 'CCDischarge', true);
 
   case 'CCCV'
     control = struct('CCCV', true);

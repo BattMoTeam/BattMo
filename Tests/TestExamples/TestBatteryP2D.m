@@ -2,7 +2,7 @@ classdef TestBatteryP2D < matlab.unittest.TestCase
 
     properties (TestParameter)
 
-        controlPolicy              = {'CCCV', 'IEswitch'};
+        controlPolicy              = {'CCCV', 'CCDischarge'};
         use_thermal                = {true, false};
         include_current_collectors = {true, false};
         diffusionModelType         = {'simple', 'full'};
@@ -97,7 +97,7 @@ classdef TestBatteryP2D < matlab.unittest.TestCase
             switch model.(ctrl).controlPolicy
               case 'CCCV'
                 total = 3.5*hour/CRate;
-              case 'IEswitch'
+              case 'CCDischarge'
                 total = 1.4*hour/CRate;
               otherwise
                 error('control policy not recognized');
@@ -122,13 +122,13 @@ classdef TestBatteryP2D < matlab.unittest.TestCase
             %  !!! Change this to an entry in the JSON with better variable names !!!
 
             switch model.Control.controlPolicy
-              case 'IEswitch'
+              case 'CCDischarge'
                 tup = 0.1; % rampup value for the current function, see rampupSwitchControl
                 srcfunc = @(time, I, E) rampupSwitchControl(time, tup, I, E, ...
                                                             model.Control.Imax, ...
                                                             model.Control.lowerCutoffVoltage);
                 % we setup the control by assigning a source and stop function.
-                control = struct('src', srcfunc, 'IEswitch', true);
+                control = struct('src', srcfunc, 'CCDischarge', true);
               case 'CCCV'
                 control = struct('CCCV', true);
               otherwise

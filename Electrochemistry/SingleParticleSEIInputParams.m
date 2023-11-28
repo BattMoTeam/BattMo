@@ -29,8 +29,8 @@ classdef SingleParticleSEIInputParams < InputParams
             paramobj.(an)   = SEIActiveMaterialInputParams(pick(an));
             paramobj.(ct)   = ActiveMaterialInputParams(pick(ct));
             switch jsonstruct.(ctrl).controlPolicy
-              case 'IEswitch'
-                paramobj.(ctrl) = IEswitchControlModelInputParams(pick(ctrl));
+              case 'CCDischarge'
+                paramobj.(ctrl) = CCDischargeControlModelInputParams(pick(ctrl));
               case 'CCCV'
                 paramobj.(ctrl) = CcCvControlModelInputParams(pick(ctrl));
               case 'CV'

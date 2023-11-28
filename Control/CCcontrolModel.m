@@ -1,20 +1,22 @@
-classdef IEswitchControlModel < ControlModel
+classdef CCcontrolModel < ControlModel
 
     properties
 
         Imax
-        tup
+        rampupTime
+        useCVswitch % default is true
         
     end
     
     
     methods
 
-        function model = IEswitchControlModel(paramobj)
+        function model = CCcontrolModel(paramobj)
             
             model = model@ControlModel(paramobj);
             
-            fdnames = {'tup'};
+            fdnames = {'rampupTime', ...
+                       'useCVswitch'};
             model = dispatchParams(model, paramobj, fdnames);
             
         end
@@ -33,12 +35,11 @@ classdef IEswitchControlModel < ControlModel
 
             model = model.registerVarNames(varnames);
             
-            fn = @IEswitchControlModel.updateControlEquation;
+            fn = @CCDischargeControlModel.updateControlEquation;
             model = model.registerPropFunction({'controlEquation', fn, {'ctrlType', 'ctrlVal', 'E', 'I'}});
             
         end
 
-        
         function state = updateControlEquation(model, state)
             
             Imax = model.Imax;

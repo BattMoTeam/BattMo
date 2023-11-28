@@ -57,7 +57,7 @@ CRate = model.Control.CRate;
 switch model.(ctrl).controlPolicy
   case 'CCCV'
     total = 3.5*hour/CRate;
-  case 'IEswitch'
+  case 'CCDischarge'
     total = 1.2*hour/CRate;
   otherwise
     error('control policy not recognized');
@@ -70,13 +70,13 @@ step = struct('val', dt*ones(n, 1), 'control', ones(n, 1));
 % Setup the control by assigning a source and stop function.
 
 switch model.Control.controlPolicy
-  case 'IEswitch'
+  case 'CCDischarge'
     tup = 0.1; % rampup value for the current function, see rampupSwitchControl
     srcfunc = @(time, I, E) rampupSwitchControl(time, tup, I, E, ...
                                                 model.Control.Imax, ...
                                                 model.Control.lowerCutoffVoltage);
     % we setup the control by assigning a source and stop function.
-    control = struct('src', srcfunc, 'IEswitch', true);
+    control = struct('src', srcfunc, 'CCDischarge', true);
   case 'CCCV'
     control = struct('CCCV', true);
   otherwise
@@ -161,7 +161,7 @@ parameters = addParameter(parameters, SimulatorSetup, ...
 
 setfun = @(x, location, v) struct('Imax', v, ...
                                   'src', @(time, I, E) rampupSwitchControl(time, 0.1, I, E, v, 3.0), ...
-                                  'IEswitch', true);
+                                  'CCDischarge', true);
 
 for i = 1 : max(schedule.step.control)
     parameters = addParameter(parameters, SimulatorSetup, ...

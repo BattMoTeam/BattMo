@@ -54,7 +54,7 @@ classdef TestChen2020 < matlab.unittest.TestCase
                                                         model.Control.Imax, ...
                                                         model.Control.lowerCutoffVoltage);
             % we setup the control by assigning a source and stop function.
-            control = struct('src', srcfunc, 'IEswitch', true);
+            control = struct('src', srcfunc, 'CCDischarge', true);
 
             % This control is used to set up the schedule
             schedule = struct('control', control, 'step', step);

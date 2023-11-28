@@ -130,7 +130,7 @@ Smaller time steps are used to ramp up the current from zero to its operational 
   switch model.(ctrl).controlPolicy
     case 'CCCV'
       total = 3.5*hour/CRate;
-    case 'IEswitch'
+    case 'CCDischarge'
       total = 1.4*hour/CRate;
     otherwise
       error('control policy not recognized');
@@ -145,13 +145,13 @@ Smaller time steps are used to ramp up the current from zero to its operational 
   %  !!! Change this to an entry in the JSON with better variable names !!!
   
   switch model.Control.controlPolicy
-    case 'IEswitch'
+    case 'CCDischarge'
       tup = 0.1; % rampup value for the current function, see rampupSwitchControl
       srcfunc = @(time, I, E) rampupSwitchControl(time, tup, I, E, ...
                                                   model.Control.Imax, ...
                                                   model.Control.lowerCutoffVoltage);
       % we setup the control by assigning a source and stop function.
-      control = struct('src', srcfunc, 'IEswitch', true);
+      control = struct('src', srcfunc, 'CCDischarge', true);
     case 'CCCV'
       control = struct('CCCV', true);
     otherwise

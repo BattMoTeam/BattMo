@@ -1,22 +1,24 @@
-classdef IEswitchControlModelInputParams < ControlModelInputParams
-%
-% IE switch control model. First start with current control and switch to voltage control when lower or upper limit is reached.
-%
-    properties
-
-        tup
-        
-    end
+classdef CCChargeControlModelInputParams < CCcontrolModelInputParams
 
     methods
 
-        function paramobj = IEswitchControlModelInputParams(jsonstruct);
+        function paramobj = CCChargeControlModelInputParams(jsonstruct);
             
-            paramobj = paramobj@ControlModelInputParams(jsonstruct);
-            paramobj.controlPolicy = 'IEswitch';
+            paramobj = paramobj@CCcontrolModelInputParams(jsonstruct);
+            paramobj.controlPolicy = 'CCCharge';
             
         end
 
+        function paramobj = validateInputParams(paramobj)
+
+            if isempty(paramobj.useCVswitch)
+                % Default value is false
+                paramobj.useCVswitch = true;
+            end
+            
+            paramobj = validateInputParams@CCcontrolModelInputParams(paramobj);
+            
+        end
     end
     
 end

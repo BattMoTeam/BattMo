@@ -4,7 +4,7 @@
   "use_thermal": false,
   "include_current_collectors": false,
   "Control": {
-    "controlPolicy": "IEswitch",
+    "controlPolicy": "CCDischarge",
     "initialControl": "discharging",
     "CRate": 1,
     "lowerCutoffVoltage": 2.5,

@@ -143,7 +143,7 @@ legend(elde)
 % also be thought of as the boundary conditions of the simulation.
 
 %%%
-% In the first instance we use IEswitch control policy.
+% In the first instance we use CCDischarge control policy.
 % We set the total time scaled by the CRate in the model.
 % The CRate has been set by the json file. We can access it here:
 
@@ -194,7 +194,7 @@ srcfunc = @(time, I, E) rampupSwitchControl(time, tup, I, E, ...
 % We create a control structure containing the source function and
 % specifying that we want to use IESwitch control:
 
-control = struct('src', srcfunc, 'IEswitch', true);
+control = struct('src', srcfunc, 'CCDischarge', true);
 
 %%%
 % Finally we collect the control and step structures together in a schedule

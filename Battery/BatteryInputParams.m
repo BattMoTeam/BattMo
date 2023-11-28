@@ -45,9 +45,12 @@ classdef BatteryInputParams < InputParams
             paramobj.(elyte)   = ElectrolyteInputParams(pick(elyte));
             paramobj.(sep)     = SeparatorInputParams(pick(sep));
             paramobj.(thermal) = ThermalComponentInputParams(pick(thermal));
+            
             switch jsonstruct.(ctrl).controlPolicy
-              case 'IEswitch'
-                paramobj.(ctrl) = IEswitchControlModelInputParams(pick(ctrl));
+              case 'CCDischarge'
+                paramobj.(ctrl) = CCDischargeControlModelInputParams(pick(ctrl));
+              case 'CCCharge'
+                paramobj.(ctrl) = CCChargeControlModelInputParams(pick(ctrl));
               case 'CCCV'
                 paramobj.(ctrl) = CcCvControlModelInputParams(pick(ctrl));
               case 'powerControl'
@@ -71,7 +74,8 @@ classdef BatteryInputParams < InputParams
             elyte   = 'Electrolyte';
             sep     = 'Separator';
             thermal = 'ThermalModel';
-
+            ctrl    = 'Control';
+            
             paramobj = mergeParameters(paramobj, {{'use_thermal'}       , ...
                                                   {ne, 'use_thermal'}   , ...
                                                   {pe, 'use_thermal'}   , ...
@@ -86,7 +90,8 @@ classdef BatteryInputParams < InputParams
             paramobj.(ne)    = paramobj.(ne).validateInputParams();
             paramobj.(pe)    = paramobj.(pe).validateInputParams();
             paramobj.(elyte) = paramobj.(elyte).validateInputParams();
-
+            paramobj.(ctrl)  = paramobj.(ctrl).validateInputParams();
+            
             if paramobj.use_thermal
                 paramobj.(thermal) = paramobj.(thermal).validateInputParams();
 

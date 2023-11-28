@@ -134,7 +134,7 @@ We start with the charge period
   srcfunc = @(time, I, E) rampupSwitchControl(time, tup, I, E, ...
                                               model.Control.Imax, ...
                                               model.Control.lowerCutoffVoltage);
-  control = struct('src', srcfunc, 'IEswitch', true);
+  control = struct('src', srcfunc, 'CCDischarge', true);
   
   schedule = struct('control', control, 'step', step);
 
@@ -212,7 +212,7 @@ We use a new control. Note the minus sign in front of :code:`model.Control.Imax`
   srcfunc = @(time, I, E) rampupSwitchControl(time, tup, I, E, ...
                                               -model.Control.Imax, ...
                                               model.Control.upperCutoffVoltage);
-  control = struct('src', srcfunc, 'IEswitch', true);
+  control = struct('src', srcfunc, 'CCDischarge', true);
   schedule = struct('control', control, 'step', step);
 
 

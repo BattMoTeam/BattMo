@@ -21,6 +21,8 @@ function  output = runBatteryJson(jsonstruct, varargin)
 
     [paramobj, gridGenerator] = setupBatteryGridFromJson(paramobj, jsonstruct);
 
+    paramobj = paramobj.validateInputParams();
+    
     %% model parameter required for initialization if initializationSetup = "given SOC";
     % The initial state of the model is setup using the model.setupInitialState() method.
 
@@ -57,7 +59,7 @@ function  output = runBatteryJson(jsonstruct, varargin)
 
     %% Setup the time step schedule
 
-    total = jsonstruct.TimeStepping.totalTime;
+    total = convertUnitBattMo(jsonstruct.TimeStepping.totalTime);
     n = jsonstruct.TimeStepping.numberOfTimeSteps;
 
     dt = total/n;
@@ -70,18 +72,35 @@ function  output = runBatteryJson(jsonstruct, varargin)
     %  !!! Change this to an entry in the JSON with better variable names !!!
 
     switch model.Control.controlPolicy
-      case 'IEswitch'
-        tup = model.Control.tup; % rampup value for the current function, see rampupSwitchControl
-        srcfunc = @(time, I, E) rampupSwitchControl(time, tup, I, E, ...
-                                                    model.Control.Imax, ...
-                                                    model.Control.lowerCutoffVoltage);
+        
+      case 'CCDischarge'
+        
+        srcfunc  = model.(ctrl).setupControlFunction();
+        stopfunc = model.(ctrl).setupStopFunction();
         % we setup the control by assigning a source and stop function.
-        control = struct('src', srcfunc, 'IEswitch', true);
+        control = struct('CCDischarge', true);
+        control.src          = srcfunc;
+        control.stopFunction = stopfunc;
+        
+      case 'CCCharge'
+        
+        srcfunc  = model.(ctrl).setupControlFunction();
+        stopfunc = model.(ctrl).setupStopFunction();
+        % we setup the control by assigning a source and stop function.
+        control = struct('CCCharge', true);
+        control.src          = srcfunc;
+        control.stopFunction = stopfunc;
+        
       case 'CCCV'
+        
         control = struct('CCCV', true);
+        
       case 'powerControl'
+        
         control = struct('powerControl', true);
+        
       case 'CC'
+        
         tup = dt;
         srcfunc = @(time) model.(ctrl).rampupControl(time, tup);
         switch model.(ctrl).initialControl
@@ -95,7 +114,9 @@ function  output = runBatteryJson(jsonstruct, varargin)
         control = struct('CC', true);
         control.src = srcfunc;
         control.stopFunction = stopFunc;
+        
       otherwise
+        
         error('control policy not recognized');
     end
 

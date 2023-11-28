@@ -1,31 +1,19 @@
-classdef CcCvControlModelInputParams < ControlModelInputParams
+classdef CCcontrolModelInputParams < ControlModelInputParams
 %
-% Constant-Current-Constant-Voltage Control. We switch between charge and discharge scenarii. The switch occurs when the
-% derivative of the non-controlled variable gets below a given threshold
+% Current control base class model
 %
-    
     properties
 
-        % When voltage control, we wait for the derivative of the current to be below the value of dIdtLimit between we
-        % switch to the following constant current control.
-        dIdtLimit
-
-        % Control used initially. String that can take one of the following values
-        % - 'discharging'
-        % - 'charging'
-        initialControl 
-
-        % Not used for the moment
-        dEdtLimit         
-
+        rampupTime  % Rampup time where  we progressively increase to the given current.
+        useCVswitch % If true, at the end of the discharge, we switch to voltage control. Default value is false.
+        
     end
-    
+
     methods
 
-        function paramobj = CcCvControlModelInputParams(jsonstruct);
+        function paramobj = CCcontrolModelInputParams(jsonstruct);
             
             paramobj = paramobj@ControlModelInputParams(jsonstruct);
-            paramobj.controlPolicy = 'CCCV';
             
         end
 
