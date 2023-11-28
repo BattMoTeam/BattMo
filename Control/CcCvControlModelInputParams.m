@@ -5,16 +5,19 @@ classdef CcCvControlModelInputParams < ControlModelInputParams
 %
     
     properties
-        %
-        % When voltage control, we wait for the derivative of the current to be below the value of dIdtLimit between we switch to the following constant current control.
-        %
+
+        % When voltage control, we wait for the derivative of the current to be below the value of dIdtLimit between we
+        % switch to the following constant current control.
         dIdtLimit
-        
-        %
+
+        % Control used initially. String that can take one of the following values
+        % - 'discharging'
+        % - 'charging'
+        initialControl 
+
         % Not used for the moment
-        %
         dEdtLimit         
-        
+
     end
     
     methods

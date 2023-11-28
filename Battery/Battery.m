@@ -364,9 +364,15 @@ classdef Battery < BaseModel
             inputnames = {};
             fn = @Battery.updateControl;
             fn = {fn, @(propfunction) PropFunction.drivingForceFuncCallSetupFn(propfunction)};
-            model = model.registerPropFunction({{ctrl, 'ctrlVal'}, fn, inputnames});
+            switch model.(ctrl).controlPolicy
+              case {'CCDischarge', 'CCCharge'}
+                model = model.registerPropFunction({{ctrl, 'ctrlVal'}, fn, inputnames});
+              case {'CCCV'}
+                % do nothing
+              otherwise
+                error('controlPolicy not recognized');
+            end
             model = model.registerPropFunction({{ctrl, 'ctrlType'}, fn, inputnames});
-
 
             %% Function that update the Thermal Ohmic Terms
 

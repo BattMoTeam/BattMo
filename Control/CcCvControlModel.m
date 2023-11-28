@@ -64,9 +64,10 @@ classdef CcCvControlModel < ControlModel
               case 'CC_discharge2'
                 ctrleq = I;
               case 'CC_charge1'
-                    ctrleq = I + Imax;
+                ctrleq = I + Imax;
               case 'CV_charge2'
-                ctrleq = (E - Emax);
+                % TODO fix scaling
+                ctrleq = (E - Emax)*1e5;
               otherwise
                 error('ctrlType not recognized');
             end
@@ -129,7 +130,7 @@ classdef CcCvControlModel < ControlModel
               case 'CC_discharge2'
                 
                 nextCtrlType = 'CC_discharge2';
-                if (abs(dIdt) <= dIdtMin)
+                if (abs(dEdt) <= dEdtMin)
                     nextCtrlType = 'CC_charge1';
                 end
             
@@ -151,6 +152,10 @@ classdef CcCvControlModel < ControlModel
                 
                 error('controlType not recognized');
                 
+            end
+
+            if ~strcmp(ctrlType, nextCtrlType)
+                fprintf('Switch control type from %s to %s\n', ctrlType, nextCtrlType);
             end
             
             state.nextCtrlType = nextCtrlType;

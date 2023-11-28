@@ -24,13 +24,6 @@ classdef ControlModelInputParams < InputParams
         controlPolicy
 
         %
-        % Initial control at start. It is a string that can be equal to
-        % - 'charging'
-        % - 'discharging'
-        %
-        initialControl
-
-        %
         % Lower cut-off voltage limit
         %
         lowerCutoffVoltage
