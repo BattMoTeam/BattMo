@@ -50,10 +50,10 @@
   "$defs" : {
     "CCDischarge" : {
       "properties" :
-      {"tup" : {
+      {"rampupTime" : {
         "type" : "number",
         "description" : "rampup time"},
-       "useCVswitcth" : {
+       "useCVswitch" : {
          "type" : "boolean",
          "description" : "switch to control voltage when the lower cutoff voltage is reached. Default value is false, which means that the simulation stops when the lower voltage is reached."
        }},

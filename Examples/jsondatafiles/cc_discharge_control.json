@@ -2,7 +2,7 @@
   "controlPolicy": "CCDischarge",
   "initialControl" : "discharging",
   "CRate": 1,
-  "tup" : 0.1,
+  "rampupTime" : 0.1,
   "lowerCutoffVoltage": 2.4,
   "upperCutoffVoltage": 4.1}}
 

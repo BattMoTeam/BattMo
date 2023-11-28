@@ -26,7 +26,7 @@ jsonstruct_geometry = parseBattmoJson(jsonfilename);
 
 %% Control
 % We load the json structure for the geometrical properties
-jsonfilename = fullfile('Examples', 'jsondatafiles', 'ie_control.json');
+jsonfilename = fullfile('Examples', 'jsondatafiles', 'cc_discharge_control.json');
 jsonstruct_control = parseBattmoJson(jsonfilename);
 
 %% Simulation parameters

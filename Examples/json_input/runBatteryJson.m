@@ -21,6 +21,8 @@ function  output = runBatteryJson(jsonstruct, varargin)
 
     [paramobj, gridGenerator] = setupBatteryGridFromJson(paramobj, jsonstruct);
 
+    paramobj = paramobj.validateInputParams();
+    
     %% model parameter required for initialization if initializationSetup = "given SOC";
     % The initial state of the model is setup using the model.setupInitialState() method.
 
@@ -71,12 +73,12 @@ function  output = runBatteryJson(jsonstruct, varargin)
 
     switch model.Control.controlPolicy
       case 'CCDischarge'
-        tup = model.Control.tup; % rampup value for the current function, see rampupSwitchControl
-        srcfunc = @(time, I, E) rampupSwitchControl(time, tup, I, E, ...
-                                                    model.Control.Imax, ...
-                                                    model.Control.lowerCutoffVoltage);
+        srcfunc  = model.(ctrl).setupControlFunction();
+        stopfunc = model.(ctrl).setupStopFunction();
         % we setup the control by assigning a source and stop function.
-        control = struct('src', srcfunc, 'CCDischarge', true);
+        control = struct('CCDischarge', true);
+        control.src          = srcfunc;
+        control.stopFunction = stopfunc;
       case 'CCCV'
         control = struct('CCCV', true);
       case 'powerControl'

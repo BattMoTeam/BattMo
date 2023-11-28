@@ -1107,10 +1107,16 @@ classdef Battery < BaseModel
                 I    = state.(ctrl).I;
                 time = state.time;
 
-                [ctrlVal, ctrltype] = drivingForces.src(time, value(I), value(E));
-
+                if model.(ctrl).useCVswitch
+                    
+                    [ctrlVal, ctrltype] = drivingForces.src(time, value(I), value(E));
+                    state.(ctrl).ctrlType = ctrltype;
+                    
+                else
+                    ctrlVal = drivingForces.src(time);
+                end
+                
                 state.(ctrl).ctrlVal  = ctrlVal;
-                state.(ctrl).ctrlType = ctrltype;
 
               case 'CC'
 

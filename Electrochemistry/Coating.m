@@ -194,7 +194,7 @@ classdef Coating < ElectronicComponent
                     specificHeatCapacity = 0;
                     for icomp = 1 : numel(compnames)
                         compname = compnames{icomp};
-                        specificHeatCapacity = specificHeatCapacity + model.(compname).massFraction*paramobj.(compname).specificHeatCapacity;
+                        specificHeatCapacity = specificHeatCapacity + paramobj.(compname).massFraction*paramobj.(compname).specificHeatCapacity;
                     end
                     model.specificHeatCapacity = specificHeatCapacity;
                 end

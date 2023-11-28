@@ -11,10 +11,10 @@ classdef ControlModel < BaseModel
         CRate
 
         %
-        % Control policy (sring). It can take following values
+        % Control policy (string). It can take following values
         %
-        % - 'CCCV'
         % - 'CCDischarge'
+        % - 'CCCV'
         % - 'CV'
         % - 'CC'
         %
@@ -91,6 +91,26 @@ classdef ControlModel < BaseModel
         % If the control model includes some static variable (that should be initialized at each Newton step), they can be added here.
         % Base class behaviour is do nothing.
         end
+
+        function func = setupStopFunction(model)
+        % setup and return a "stop function" for the given control, with signature
+        % func = @(model, state, state_prev) ();
+        % Default is no stop function (the simulation ends at the last given time step)
+
+            func = @(model, state, state_prev) (false);
+            
+        end
+
+
+        function func = setupControlFunction(model)
+
+        % Setup and return a "control function". We do not require a special signature for this function. The user
+        % should instead make sure the method :code:`updateControl` in  :code:`Battery` cover the implemented control policy.
+
+            error('virtual method');
+            
+        end
+        
         
     end
     

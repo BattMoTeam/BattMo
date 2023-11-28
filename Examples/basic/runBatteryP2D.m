@@ -7,9 +7,9 @@ clear all
 close all
 clc
 
-
 %% Import the required modules from MRST
 % load MRST modules
+
 mrstModule add ad-core mrst-gui mpfa agmg linearsolvers
 
 %% Setup the properties of Li-ion battery materials and cell design
