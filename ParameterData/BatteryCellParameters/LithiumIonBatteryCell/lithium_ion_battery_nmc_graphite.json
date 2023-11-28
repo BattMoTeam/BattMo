@@ -6,7 +6,7 @@
   "include_current_collectors": false,
   "Control": {
     "controlPolicy": "CCDischarge",
-    "initialControl": "discharging",
+    "rampupTime": 0,
     "CRate": 1,
     "lowerCutoffVoltage": 2.4,
     "upperCutoffVoltage": 4.1,
