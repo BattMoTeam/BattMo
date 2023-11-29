@@ -2,9 +2,6 @@ clear all
 
 mrstModule add ad-core mrst-gui
 
-
-
-
 clear jsonstruct
 
 filename = 'ProtonicMembrane/gas_supply.json';

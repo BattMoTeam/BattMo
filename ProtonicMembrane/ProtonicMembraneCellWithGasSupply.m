@@ -146,45 +146,6 @@ classdef ProtonicMembraneCellWithGasSupply < BaseModel
             
         end
 
-        function initState = setupInitialState(model)
-
-        end
-       
-        function [problem, state] = getEquations(model, state0, state,dt, drivingForces, varargin)
-            
-            sd  = 'SolidDiffusion';
-            itf = 'Interface';
-            
-            time = state0.time + dt;
-            state = model.initStateAD(state);
-            
-            %% We call the assembly equations ordered from the graph
-
-            funcCallList = model.funcCallList;
-
-            for ifunc = 1 : numel(funcCallList)
-                eval(funcCallList{ifunc});
-            end
-
-            state = model.applyScaling(state);
-            
-            for ieq = 1 : numel(model.equationVarNames)
-                eqs{ieq} = model.getProp(state, model.equationVarNames{ieq});
-            end
-            
-            names       = model.equationNames;
-            types       = model.equationTypes;
-            primaryVars = model.primaryVarNames;
-            
-            problem = LinearizedProblem(eqs, types, names, primaryVars, state, dt);
-
-        end
-
-        function primaryvarnames = getPrimaryVariableNames(model)
-
-            primaryvarnames = model.primaryVarNames;
-
-        end
         
     end
     
