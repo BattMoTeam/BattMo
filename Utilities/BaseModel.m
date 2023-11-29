@@ -16,7 +16,22 @@ classdef BaseModel < PhysicalModel
         extraVarNameList
        
         computationalGraph
+
+
+        %% The following properties are set when a model is equiped for simulation. It is then a root model (as opposed to the sub-models)
+        % See method equipModelForComputation
+
+        isSimulationModel % boolean if the model is meant to be run for simulation
         
+        funcCallList
+        primaryVarNames
+        equationVarNames
+        equationNames
+        equationTypes
+
+        scalings % cell array. Each element is a cell pair. The first element in the pair is the variable name using the
+                 % syntax of the getProp methods. The second element is the scaling coefficient. See methods applyScaling
+                
     end
         
     methods
@@ -678,6 +693,37 @@ classdef BaseModel < PhysicalModel
             cgp = ComputationalGraphPlot(model.computationalGraph);
         end
         
+    end
+
+    methods(Static)
+
+        function [found, keep, varname] = extractVarName(rvarname, varname)
+
+        % This function supports index, meaning, it handles the case where the rvarname and varname has same name but
+        % different indices where the indices of rvarname make a subset of those of varname.
+            
+            [isequal, compIndices] = compareVarName(rvarname, varname);
+            if isequal
+                keep  = false;
+                found = true;
+            elseif isempty(compIndices)
+                keep  = true;
+                found = false;
+            elseif ~isempty(compIndices.InterInd)
+                found = true;
+                if isempty(compIndices.OuterInd2)
+                    keep = false;
+                else
+                    keep = true;
+                    varname.index = compIndices.OuterInd2;
+                end
+            else
+                found = false;
+                keep  = true;
+            end
+        end
+        
+
     end
 
     methods(Static)
