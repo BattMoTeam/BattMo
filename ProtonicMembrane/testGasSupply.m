@@ -23,28 +23,18 @@ model = model.setupForSimulation();
 
 cgt = model.computationalGraph;
 
-% Setup initial state
+%% Setup initial state
 
-nc  = model.G.cells.num;
-nbc = model.GasSupplyBc.getNumberBcFaces();
-
-pH2O = jsonstruct.control(2).values(1);
-pO2  = jsonstruct.control(2).values(2);
-
-gasInd = model.gasInd;
-
-initstate.pressures{gasInd.H2O}              = pH2O*ones(nc, 1);
-initstate.pressures{gasInd.O2}               = pO2 *ones(nc, 1);
-initstate.GasSupplyBc.pressures{gasInd.H2O}  = pH2O*ones(nbc, 1);
-initstate.GasSupplyBc.pressures{gasInd.O2}   = pO2 *ones(nbc, 1);
-initstate.GasSupplyBc.massFluxes{gasInd.H2O} = zeros(nbc, 1);
-initstate.GasSupplyBc.massFluxes{gasInd.O2}  = zeros(nbc, 1);
-
-initstate = model.evalVarName(initstate, VarName({}, 'densities', model.nGas));
+initstate = model.setupInitialState();
 
 %% setup scalings
 
-rho = initstate.densities{1}(1);
+gasInd = model.gasInd;
+
+initstate = model.evalVarName(initstate, VarName({}, 'densities', model.nGas));
+
+pH2O         = initstate.pressures{gasInd.H2O}(1);
+rho          = initstate.densities{1}(1);
 scalFlux     = 1/gen.nx*rho*model.permeability/model.viscosity*pH2O/gen.ly;
 scalPressure = pH2O;
 

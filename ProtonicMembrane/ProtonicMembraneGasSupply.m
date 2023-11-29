@@ -297,7 +297,35 @@ classdef ProtonicMembraneGasSupply < BaseModel
             
         end
         
+        function initstate = setupInitialState(model)
 
+            nc      = model.G.cells.num;
+            nbc     = model.GasSupplyBc.getNumberBcFaces();
+            gasInd  = model.gasInd;
+            control = model.control;
+            
+            names = arrayfun(@(ctrl) ctrl.name, control, 'uniformoutput', false);
+            [lia, locb] = ismember('External output', names);
+            assert(lia, 'External output control not found');
+            control = control(locb);
+
+            assert(strcmp(control.type, 'pressure'), 'Here we expect pressure controled output');
+            
+            pressures = control.values;
+
+            pH2O = pressures(gasInd.H2O);
+            pO2 = pressures(gasInd.O2);
+            
+            initstate.pressures{gasInd.H2O}              = pH2O*ones(nc, 1);
+            initstate.pressures{gasInd.O2}               = pO2 *ones(nc, 1);
+            initstate.GasSupplyBc.pressures{gasInd.H2O}  = pH2O*ones(nbc, 1);
+            initstate.GasSupplyBc.pressures{gasInd.O2}   = pO2 *ones(nbc, 1);
+            initstate.GasSupplyBc.massFluxes{gasInd.H2O} = zeros(nbc, 1);
+            initstate.GasSupplyBc.massFluxes{gasInd.O2}  = zeros(nbc, 1);
+            
+        end
+
+        
         function state = updateBcFluxTerms(model, state)
 
             nGas = model.nGas;
