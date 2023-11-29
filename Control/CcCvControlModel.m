@@ -162,6 +162,11 @@ classdef CcCvControlModel < ControlModel
             
         end
             
+        function control = setupScheduleControl(model)
+
+            control.CCCV = true;
+            
+        end
         
     end
     

@@ -110,7 +110,14 @@ classdef ControlModel < BaseModel
             error('virtual method');
             
         end
-        
+
+        function control = setupScheduleControl(model)
+            
+            control.stopFunction = model.setupStopFunction();
+            control.src          = model.setupControlFunction();
+            
+        end
+
         
     end
     

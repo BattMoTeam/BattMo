@@ -52,6 +52,13 @@ classdef CCChargeControlModel < CCcontrolModel
                 
         end
 
+        function control = setupScheduleControl(model)
+
+            control = setupScheduleControl@CCcontrolModel(model);
+            control.CCCharge = true;
+            
+        end
+
     end
         
 end

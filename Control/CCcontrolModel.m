@@ -68,7 +68,7 @@ classdef CCcontrolModel < ControlModel
         function cleanState = addStaticVariables(model, cleanState, state)
             cleanState.ctrlType = state.ctrlType;
         end
-        
+
     end
 
         
