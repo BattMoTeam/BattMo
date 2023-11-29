@@ -116,13 +116,19 @@ diffusionModelType = 'full';
 jsonstruct.(pe).(co).(am).diffusionModelType = diffusionModelType;
 jsonstruct.(ne).(co).(am).diffusionModelType = diffusionModelType;
 
+simcase = 'CCDischarge';
+
+jsonstruct.(ctrl).controlPolicy = simcase;
+
 paramobj = BatteryInputParams(jsonstruct);
 
 % paramobj.(ne).(am).(sd).N = 5;
 % paramobj.(pe).(am).(sd).N = 5;
 
+CRate = 0.1;
 paramobj.(ctrl).lowerCutoffVoltage = 3;
-paramobj.(ctrl).CRate = 0.1;
+paramobj.(ctrl).CRate              = CRate;
+paramobj.(ctrl).rampupTime         = 0.1/CRate;
 
 % th = 'ThermalModel';
 % paramobj.(th).externalHeatTransferCoefficientSideFaces = 100*watt/meter^2;
@@ -150,37 +156,26 @@ times = getTimeSteps(dt0, n, total, fac);
 
 step = struct('val', diff(times), 'control', ones(numel(times) - 1, 1));
 
-tup = 0.1/CRate;
+control = model.(ctrl).setupScheduleControl();
 
-simcase = 'discharge';
+schedule  = struct('control', control, 'step', step);
 
 switch simcase
 
-  case 'discharge'
-
-    srcfunc = @(time, I, E) rampupSwitchControl(time, tup, I, E, ...
-                                                model.Control.Imax, ...
-                                                model.Control.lowerCutoffVoltage);
-    % we setup the control by assigning a source and stop function.
-    control = struct('src', srcfunc, 'CCDischarge', true);
-    schedule  = struct('control', control, 'step', step);
+  case 'CCDischarge'
 
     %% We setup the initial state
     initstate = model.setupInitialState();
     initElytec = 1*mol/litre;
     initstate.Electrolyte.c = initElytec*ones(model.Electrolyte.G.cells.num, 1);
 
-  case 'charge'
+  case 'CCCharge'
 
     model.SOC = 0.01;
     initstate = model.setupInitialState();
-    srcfunc  = @(time, I, E) rampupSwitchControl(time, tup, I, E, ...
-                                                 - model.Control.Imax, ...
-                                                 model.Control.lowerCutoffVoltage);
-    control = struct('src', srcfunc, 'CCDischarge', true);
-    schedule = struct('control', control, 'step', step);
 
   otherwise
+    
     error('simcase not recognized')
 
 end

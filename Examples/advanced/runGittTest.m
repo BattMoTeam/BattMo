@@ -13,6 +13,14 @@ clc
 mrstModule add ad-core mrst-gui mpfa
 mrstVerbose off
 
+% We define some shorthand names for simplicity.
+ne      = 'NegativeElectrode';
+pe      = 'PositiveElectrode';
+cc      = 'CurrentCollector';
+elyte   = 'Electrolyte';
+thermal = 'ThermalModel';
+ctrl    = 'Control';
+
 %% Setup the properties of Li-ion battery materials and cell design
 % The properties and parameters of the battery cell, including the
 % architecture and materials, are set using an instance of
@@ -22,16 +30,11 @@ mrstVerbose off
 % provided in json format. All the parameters for the model are stored in
 % the paramobj object.
 jsonstruct = parseBattmoJson(fullfile('ParameterData','BatteryCellParameters','LithiumIonBatteryCell','lithium_ion_battery_nmc_graphite.json'));
+
 jsonstruct.include_current_collectors = true;
+
 paramobj = BatteryInputParams(jsonstruct);
 
-% We define some shorthand names for simplicity.
-ne      = 'NegativeElectrode';
-pe      = 'PositiveElectrode';
-cc      = 'CurrentCollector';
-elyte   = 'Electrolyte';
-thermal = 'ThermalModel';
-ctrl    = 'Control';
 
 %% Setup the geometry and computational mesh
 % Here, we setup the geometry and computational mesh that will be used for
@@ -65,6 +68,9 @@ switch modelcase
 end
 
 paramobj = gen.updateBatteryInputParams(paramobj);
+
+paramobj.(ctrl).useCVswitch = true;
+
 
 %%  Initialize the battery model.
 % The battery model is initialized by sending paramobj to the Battery class
@@ -129,12 +135,17 @@ Ipoints = inputI*Ipoints; % scales with Iinput
 % stopping and source functions. A stopping function is used to set the
 % lower voltage cutoff limit. A source function is used to set the upper
 % voltage cutoff limit.
-tup          = 1*milli*second; % rampup time
+
+tup = 1*milli*second; % rampup time
 srcfunc_init = @(time, I, E) rampupSwitchControl(time, tup, I, E, inputI, inputE);
 srcfunc_gitt = @(time, I, E) tabulatedIControl(time, tpoints, Ipoints);
 
-control(1) = struct('src', srcfunc_init, 'CCDischarge', true);
-control(2) = struct('src', srcfunc_gitt, 'CCDischarge', true);
+control = model.Control.setupScheduleControl();
+
+control(1)     = control;
+control(1).src = srcfunc_init;
+control(2)     = control;
+control(2).src = srcfunc_gitt;
 
 n_init = 5;
 dt_init = rampupTimesteps(time_init, time_init/n_init, 3);

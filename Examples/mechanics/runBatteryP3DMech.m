@@ -1,7 +1,7 @@
 %% Example where we combine a battery discharge simulation with mechanical simulation
 %  We use a a simple relationship between Lithium concentration and load stress in the electrode
 
-clear all
+% clear all
 close all
 clc
 
@@ -17,15 +17,17 @@ jsonstruct.include_current_collectors = true;
 % We define some shorthand names for simplicity.
 ne      = 'NegativeElectrode';
 pe      = 'PositiveElectrode';
+co      = 'Coating';
 am      = 'ActiveMaterial';
+sd      = 'SolidDiffusion';
 cc      = 'CurrentCollector';
 elyte   = 'Electrolyte';
 sep     = 'Separator';
 thermal = 'ThermalModel';
 ctrl    = 'Control';
 
-jsonstruct.(ne).(am).diffusionModelType = 'simple';
-jsonstruct.(pe).(am).diffusionModelType = 'simple';
+% jsonstruct.(ne).(co).(am).diffusionModelType = 'simple';
+% jsonstruct.(pe).(co).(am).diffusionModelType = 'simple';
 
 paramobj = BatteryInputParams(jsonstruct);
 
@@ -34,12 +36,12 @@ paramobj = BatteryInputParams(jsonstruct);
 gen = BatteryGeneratorP3D(); 
 
 % We change the properties of the mesh and update paramobj with the results mesh
-gen.ylength = 1e-3;
-gen.ny      = 100;
+gen.ylength = 1e-4;
+gen.ny      = 10;
 paramobj    = gen.updateBatteryInputParams(paramobj); 
 
-paramobj.(ne).(cc).EffectiveElectricalConductivity = 1e5; 
-paramobj.(pe).(cc).EffectiveElectricalConductivity = 1e5;
+paramobj.(ne).(cc).effectiveElectronicConductivity = 1e5; 
+paramobj.(pe).(cc).effectiveElectronicConductivity = 1e5;
 
 %%  Initialize the battery model. 
 
@@ -47,27 +49,12 @@ model = Battery(paramobj);
 
 %% Plot the mesh
 
-colors = crameri('vik', 5);
-figure
-plotGrid(model.(ne).(cc).G,     'facecolor', colors(1,:), 'edgealpha', 0.5, 'edgecolor', [1, 1, 1]);
-plotGrid(model.(ne).(am).G,     'facecolor', colors(2,:), 'edgealpha', 0.5, 'edgecolor', [1, 1, 1]);
-plotGrid(model.(elyte).(sep).G, 'facecolor', colors(3,:), 'edgealpha', 0.5, 'edgecolor', [1, 1, 1]);
-plotGrid(model.(pe).(am).G,     'facecolor', colors(4,:), 'edgealpha', 0.5, 'edgecolor', [1, 1, 1]);
-plotGrid(model.(pe).(cc).G,     'facecolor', colors(5,:), 'edgealpha', 0.5, 'edgecolor', [1, 1, 1]);
-axis tight;
-legend({'negative electrode current collector' , ...
-        'negative electrode active material'   , ...
-        'separator'                            , ...
-        'positive electrode active material'   , ...
-        'positive electrode current collector'}, ...
-       'location', 'south west'),
-setFigureStyle('quantity', 'single');
-drawnow();
+plotBatteryMesh(model);
 
 %% Compute the nominal cell capacity and choose a C-Rate
 
 C      = computeCellCapacity(model);
-CRate  = 1;
+CRate  = model.(ctrl).CRate;
 inputI = (C/hour)*CRate; % current 
 
 %% Setup the time step schedule 
@@ -89,14 +76,8 @@ step        = struct('val', diff(times), 'control', ones(numel(tt), 1));
 % function is used to set the lower voltage cutoff limit. A source function is used to set the upper voltage cutoff
 % limit.
 
-stopFunc = @(model, state, state_prev) (state.(ctrl).E < 2.0); 
-tup      = 0.1; % rampup value for the current function, see rampupSwitchControl
-srcfunc  = @(time, I, E) rampupSwitchControl(time, tup, I, E, ...
-                                             model.Control.Imax, ...
-                                             model.Control.lowerCutoffVoltage);
-
 % we setup the control by assigning a source and stop function.
-control = struct('src', srcfunc, 'CCDischarge', true);
+control = model.(ctrl).setupScheduleControl();
 
 % This control is used to set up the schedule
 schedule = struct('control', control, 'step', step); 
@@ -203,19 +184,25 @@ ax      = axis();
 ax(2)   = ax(2)*1.5; 
 ax(end) = ax(end)*1.1;
 
+state0 = model.evalVarName(state0, {ne, co, am, sd, 'cAverage'});
+state0 = model.evalVarName(state0, {pe, co, am, sd, 'cAverage'});
+
 for i = 1 : numel(states)
     
     state = states{i};
+
+    state = model.evalVarName(state, {ne, co, am, sd, 'cAverage'});
+    state = model.evalVarName(state, {pe, co, am, sd, 'cAverage'});
     
     T = state.ThermalModel.T - state0.ThermalModel.T;
     
     cna = zeros(G.cells.num, 1); 
     cpa = zeros(G.cells.num, 1); 
     
-    ind      = model.NegativeElectrode.ActiveMaterial.G.mappings.cellmap; 
-    cna(ind) = state.NegativeElectrode.ActiveMaterial.c - state0.NegativeElectrode.ActiveMaterial.c; 
-    ind      = model.PositiveElectrode.ActiveMaterial.G.mappings.cellmap; 
-    cpa(ind) = state.PositiveElectrode.ActiveMaterial.c - state0.PositiveElectrode.ActiveMaterial.c; 
+    ind      = model.(ne).(co).G.mappings.cellmap; 
+    cna(ind) = state.(ne).(co).(am).(sd).cAverage - state0.(ne).(co).(am).(sd).cAverage; 
+    ind      = model.(pe).(co).G.mappings.cellmap; 
+    cpa(ind) = state.(pe).(co).(am).(sd).cAverage - state0.(pe).(co).(am).(sd).cAverage; 
     
     dc = (cna + cpa*0.5)/1000;
 

@@ -65,16 +65,8 @@ dt    = diff(times);
 dt    = dt(1 : end);
 step  = struct('val', dt, 'control', ones(size(dt)));
 
-% We set up a stopping function. Here, the simulation will stop if the output voltage reach a value smaller than 2. This
-% stopping function will not be triggered in this case as we switch to voltage control when E=3.6 (see value of inputE
-% below).
-
-tup = 0.1; % rampup value for the current function, see rampupSwitchControl
-srcfunc = @(time, I, E) rampupSwitchControl(time, tup, I, E, ...
-                                            model.Control.Imax, ...
-                                            model.Control.lowerCutoffVoltage);
-% we setup the control by assigning a source and stop function.
-control = struct('src', srcfunc, 'CCDischarge', true);
+% we setup the control for the schedule
+control = model.Control.setupScheduleControl();
 
 % This control is used to set up the schedule
 schedule = struct('control', control, 'step', step);
@@ -142,10 +134,13 @@ initstate2 = initStateChen2020(model2, c_ne, c_pe);
 
 %%  We process output and recover the output voltage and current from the output states.
 
+
+states = cleanupStates(states);
 E1    = cellfun(@(state) state.Control.E, states);
 I1    = cellfun(@(state) state.Control.I, states);
 time1 = cellfun(@(state) state.time, states);
 
+states2 = cleanupStates(states2);
 E2    = cellfun(@(state) state.Control.E, states2);
 I2    = cellfun(@(state) state.Control.I, states2);
 time2 = cellfun(@(state) state.time, states2);
@@ -175,6 +170,11 @@ set(gca, 'fontsize', 18);
 title('Cell Voltage / V')
 xlabel('time (hours)')
 legend('fontsize', 18, 'location', 'southwest')
+
+function states = cleanupStates(states)
+    ind = cellfun(@(state) ~isempty(state), states);
+    states = states(ind);
+end
 
 
 %{

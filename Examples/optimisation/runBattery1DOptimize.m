@@ -35,6 +35,8 @@ jsonstruct.(pe).(am).diffusionModelType = 'simple';
 
 paramobj = BatteryInputParams(jsonstruct);
 
+paramobj.(ctrl).useCVswitch = true;
+
 %% Setup the geometry and computational mesh
 
 gen = BatteryGeneratorP2D();
@@ -69,21 +71,7 @@ step = struct('val', dt*ones(n, 1), 'control', ones(n, 1));
 
 % Setup the control by assigning a source and stop function.
 
-switch model.Control.controlPolicy
-  case 'CCDischarge'
-    tup = 0.1; % rampup value for the current function, see rampupSwitchControl
-    srcfunc = @(time, I, E) rampupSwitchControl(time, tup, I, E, ...
-                                                model.Control.Imax, ...
-                                                model.Control.lowerCutoffVoltage);
-    % we setup the control by assigning a source and stop function.
-    control = struct('src', srcfunc, 'CCDischarge', true);
-  case 'CCCV'
-    control = struct('CCCV', true);
-  otherwise
-    error('control policy not recognized');
-end
-
-% This control is used to set up the schedule
+control = model.Control.setupScheduleControl();
 
 nc = 1;
 nst = numel(step.control);
@@ -91,7 +79,8 @@ ind = floor(((0 : nst - 1)/nst)*nc) + 1;
 
 step.control = ind;
 control.Imax = model.Control.Imax;
-control = repmat(control,nc,1);
+control = repmat(control, nc, 1);
+
 schedule = struct('control', control, 'step', step);
 
 %% Setup the initial state of the model
@@ -159,8 +148,9 @@ parameters = addParameter(parameters, SimulatorSetup, ...
                           'getfun'   , getporo       , ...
                           'setfun'   , setporo);
 
-setfun = @(x, location, v) struct('Imax', v, ...
+setfun = @(x, location, v) struct('Imax', v                                                        , ...
                                   'src', @(time, I, E) rampupSwitchControl(time, 0.1, I, E, v, 3.0), ...
+                                  'stopFunction', @(model,state,state_prev)(false)                 , ...
                                   'CCDischarge', true);
 
 for i = 1 : max(schedule.step.control)

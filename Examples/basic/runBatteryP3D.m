@@ -16,9 +16,8 @@ mrstModule add ad-core mrst-gui mpfa
 % throughout the submodels. The input parameters can be set manually or
 % provided in json format. All the parameters for the model are stored in
 % the paramobj object.
-% jsonstruct = parseBattmoJson(fullfile('ParameterData', 'BatteryCellParameters', 'LithiumIonBatteryCell', 'lithium_ion_battery_nmc_graphite.json'));
-jsonstruct = parseBattmoJson(fullfile(battmoDir, 'Documentation', 'inputfile.json'));
-jsonstruct.include_current_collectors = 0;
+jsonstruct = parseBattmoJson(fullfile('ParameterData', 'BatteryCellParameters', 'LithiumIonBatteryCell', 'lithium_ion_battery_nmc_graphite.json'));
+jsonstruct.include_current_collectors = false;
 paramobj = BatteryInputParams(jsonstruct);
 
 
@@ -82,13 +81,9 @@ step        = struct('val', diff(times), 'control', ones(numel(tt), 1));
 % stopping and source functions. A stopping function is used to set the
 % lower voltage cutoff limit. A source function is used to set the upper
 % voltage cutoff limit.
-stopFunc    = @(model, state, state_prev) (state.(ctrl).E < 2.0);
-tup         = 0.1; % rampup value for the current function, see rampupSwitchControl
-srcfunc = @(time, I, E) rampupSwitchControl(time, tup, I, E, ...
-                                            model.Control.Imax, ...
-                                            model.Control.lowerCutoffVoltage);
-% we setup the control by assigning a source and stop function.
-control = struct('src', srcfunc, 'CCDischarge', true);
+control = model.(ctrl).setupScheduleControl();
+
+control.stopFunction = @(model, state, state_prev) (state.(ctrl).E < 2.0);
 
 % This control is used to set up the schedule
 schedule = struct('control', control, 'step', step);
