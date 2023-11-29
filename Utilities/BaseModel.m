@@ -16,7 +16,22 @@ classdef BaseModel < PhysicalModel
         extraVarNameList
        
         computationalGraph
+
+
+        %% The following properties are set when a model is equiped for simulation. It is then a root model (as opposed to the sub-models)
+        % See method equipModelForComputation
+
+        isSimulationModel % boolean if the model is meant to be run for simulation
         
+        funcCallList
+        primaryVarNames
+        equationVarNames
+        equationNames
+        equationTypes
+
+        scalings % cell array. Each element is a cell pair. The first element in the pair is the variable name using the
+                 % syntax of the getProp methods. The second element is the scaling coefficient. See methods applyScaling
+                
     end
         
     methods
@@ -583,37 +598,69 @@ classdef BaseModel < PhysicalModel
             eval(funcCall);
             
         end
+
+        %% Methods used when the model is used as root model for a simulation. Then, the model is equipped for simulation
+        %
         
-    end
-
-    methods(Static)
-
-        function [found, keep, varname] = extractVarName(rvarname, varname)
-
-        % This function supports index, meaning, it handles the case where the rvarname and varname has same name but
-        % different indices where the indices of rvarname make a subset of those of varname.
+        function [problem, state] = getEquations(model, state0, state,dt, drivingForces, varargin)
             
-            [isequal, compIndices] = compareVarName(rvarname, varname);
-            if isequal
-                keep  = false;
-                found = true;
-            elseif isempty(compIndices)
-                keep  = true;
-                found = false;
-            elseif ~isempty(compIndices.InterInd)
-                found = true;
-                if isempty(compIndices.OuterInd2)
-                    keep = false;
-                else
-                    keep = true;
-                    varname.index = compIndices.OuterInd2;
-                end
-            else
-                found = false;
-                keep  = true;
+            sd  = 'SolidDiffusion';
+            itf = 'Interface';
+            
+            time = state0.time + dt;
+            state = model.initStateAD(state);
+            
+            %% We call the assembly equations ordered from the graph
+
+            funcCallList = model.funcCallList;
+
+            for ifunc = 1 : numel(funcCallList)
+                eval(funcCallList{ifunc});
             end
+
+            state = model.applyScaling(state);
+            
+            for ieq = 1 : numel(model.equationVarNames)
+                eqs{ieq} = model.getProp(state, model.equationVarNames{ieq});
+            end
+            
+            names       = model.equationNames;
+            types       = model.equationTypes;
+            primaryVars = model.primaryVarNames;
+            
+            problem = LinearizedProblem(eqs, types, names, primaryVars, state, dt);
+
+        end
+
+        function primaryvarnames = getPrimaryVariableNames(model)
+
+            primaryvarnames = model.primaryVarNames;
+
         end
         
+        function state = applyScaling(model, state)
+            
+            if ~isempty(model.scalings)
+
+                scalings = model.scalings;
+
+                for iscal = 1 : numel(scalings)
+
+                    scaling = scalings{iscal};
+                    name = scaling{1};
+                    coef = scaling{2};
+
+                    val = model.getProp(state, name);
+                    val = 1/coef*val;
+
+                    state = model.setProp(state, name, val);
+                    
+                end
+                
+            end
+            
+        end
+                
         function model = equipModelForComputation(model, varargin)
 
             opt = struct('shortNames', []);
@@ -666,6 +713,37 @@ classdef BaseModel < PhysicalModel
             cgp = ComputationalGraphPlot(model.computationalGraph);
         end
         
+    end
+
+    methods(Static)
+
+        function [found, keep, varname] = extractVarName(rvarname, varname)
+
+        % This function supports index, meaning, it handles the case where the rvarname and varname has same name but
+        % different indices where the indices of rvarname make a subset of those of varname.
+            
+            [isequal, compIndices] = compareVarName(rvarname, varname);
+            if isequal
+                keep  = false;
+                found = true;
+            elseif isempty(compIndices)
+                keep  = true;
+                found = false;
+            elseif ~isempty(compIndices.InterInd)
+                found = true;
+                if isempty(compIndices.OuterInd2)
+                    keep = false;
+                else
+                    keep = true;
+                    varname.index = compIndices.OuterInd2;
+                end
+            else
+                found = false;
+                keep  = true;
+            end
+        end
+        
+
     end
     
 end
