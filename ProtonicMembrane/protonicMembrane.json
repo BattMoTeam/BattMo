@@ -19,7 +19,8 @@
     "description": "Oxygen concentration in balance, that is the other gas then H2O",
     "steam_ratio": 0.5,
     "description" : "fraction of steam in anode gas inlet",
-    "Ptot": 10,
+    "Ptot": {"value" : 10,
+             "unit" : "barsa"},
     "description" : "total pressure",
     "gasSupplyType" : "coupled"
   },
@@ -45,7 +46,8 @@
     "description" : "Standard potential",
     "steam_ratio": 0.5,
     "description" : "fraction of steam in anode gas inlet",
-    "Ptot": 10,
+    "Ptot": {"value" : 10,
+             "unit" : "barsa"},
     "SU": 0.05,
     "description" : "Steam utilization in fraction",
     "Ea_prot": 47.7,
@@ -55,7 +57,8 @@
     "E_0": 0,
     "R_ct_H": { "value" : 1e-2,
                 "unit" : "ohm*((centi*meter)^2)"},
-    "Ptot": 10
+    "Ptot": {"value": 10,
+             "unit" : "barsa"}
   },
   "Control": {
     "controlType": "current"

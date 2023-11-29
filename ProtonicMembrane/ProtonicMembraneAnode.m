@@ -20,9 +20,10 @@ classdef ProtonicMembraneAnode < ProtonicMembraneElectrode
         O2_conc_feed
         steam_ratio
         Ptot
-
+        
         pO2
         pH2O
+        pRef
         
     end
     
@@ -47,6 +48,8 @@ classdef ProtonicMembraneAnode < ProtonicMembraneElectrode
             
             model.constants = PhysicalConstants();
 
+            model.pRef = 1*barsa;
+            
             c = model.constants;
 
             T = model.T;
@@ -59,9 +62,11 @@ classdef ProtonicMembraneAnode < ProtonicMembraneElectrode
             pO2  = pO2_in + model.SU*pH2O_in/2;
             pH2O = pH2O_in*(1 - model.SU);
 
+            pRef = model.pRef;
+            
             % Compute charge-transfer current density
             
-            R_ct = model.R_ct_0.*exp(model.Ea_ct./(c.R.*T)).*pO2.^(-0.2); 
+            R_ct = model.R_ct_0.*exp(model.Ea_ct./(c.R.*T)).*(pO2/pRef).^(-0.2); 
             f = c.F/(c.R*T);
             i_0 = 1./(R_ct.*f.*model.n); % charge-transfer current density
 
@@ -126,11 +131,12 @@ classdef ProtonicMembraneAnode < ProtonicMembraneElectrode
             c      = model.constants;
             gasInd = model.gasInd;
             T      = model.T;
+            pRef   = model.pRef;
 
             pH2O = state.pressures{gasInd.H2O};
             pO2  = state.pressures{gasInd.O2};
             
-            state.Eocv = model.E_0 - 0.00024516.*T - c.R.*T./(2*c.F)*log(pH2O./(pO2.^(1/2)));
+            state.Eocv = model.E_0 - 0.00024516.*T - c.R.*T./(2*c.F)*log((pH2O/pRef)./((pO2/pRef).^(1/2)));
             
         end
         
@@ -150,10 +156,11 @@ classdef ProtonicMembraneAnode < ProtonicMembraneElectrode
             c      = model.constants;
             gasInd = model.gasInd;
             T      = model.T;
+            pRef   = model.pRef;
             
             pO2 = state.pressures{gasInd.O2};
             
-            R_ct = model.R_ct_0.*exp(model.Ea_ct./(c.R.*T)).*pO2.^(-0.2); 
+            R_ct = model.R_ct_0.*exp(model.Ea_ct./(c.R.*T)).*(pO2/pRef).^(-0.2); 
             f = c.F/(c.R*T);
             i0 = 1./(R_ct.*f.*model.n);
             

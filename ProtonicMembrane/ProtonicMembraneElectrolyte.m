@@ -27,6 +27,7 @@ classdef ProtonicMembraneElectrolyte < BaseModel
         Ptot       
         SU
         Ea_prot
+        pRef
         
     end
 
@@ -56,6 +57,8 @@ classdef ProtonicMembraneElectrolyte < BaseModel
 
             model.constants = PhysicalConstants();
 
+            model.pRef = 1*barsa;
+            
             c = model.constants;
 
             % Compute sigma_p0
@@ -82,9 +85,11 @@ classdef ProtonicMembraneElectrolyte < BaseModel
             pH2O = pH2O_in*(1 - model.SU);
             
             pH2O_neg = 0.05*model.Ptot;
+
+            pRef = model.pRef;
             
-            K_H     = K_hyd*pH2O; 
-            K_H_neg = K_hyd*pH2O_neg;
+            K_H     = K_hyd*(pH2O/pRef); 
+            K_H_neg = K_hyd*(pH2O_neg/pRef);
     
             OH_pos  = ((3*K_H - sqrt(K_H*(9*K_H - 6*K_H*Y + K_H*Y^2 + 24*Y - 4*Y^2)))/(K_H - 4)); 
             OH_neg = ((3*K_H_neg - sqrt(K_H_neg*(9*K_H_neg - 6*K_H_neg*Y + K_H_neg*Y^2 + 24*Y - 4*Y^2)))/(K_H_neg - 4)); 

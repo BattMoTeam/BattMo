@@ -5,6 +5,8 @@ classdef ProtonicMembraneCathode < ProtonicMembraneElectrode
         R_ct_H
         Ptot
         
+        pRef
+
     end
     
     methods
@@ -18,12 +20,16 @@ classdef ProtonicMembraneCathode < ProtonicMembraneElectrode
                        
             model = dispatchParams(model, paramobj, fdnames);
 
+            model.pRef = 1*barsa;
+
             c = model.constants;
             
             pH2O_neg = 0.05*model.Ptot; 
             pH2      = (model.Ptot - pH2O_neg)./2;
+
+            pRef = model.pRef;
             
-            model.Eocv = model.E_0 - (c.R*model.T/(2*c.F)).*log(pH2); % cathode half - cell potential
+            model.Eocv = model.E_0 - (c.R*model.T/(2*c.F)).*log(pH2/pRef); % cathode half - cell potential
             
         end
         
