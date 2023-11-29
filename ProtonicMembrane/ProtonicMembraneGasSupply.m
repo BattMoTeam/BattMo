@@ -17,8 +17,6 @@ classdef ProtonicMembraneGasSupply < BaseModel
 
         couplingTerms
         
-        standalone
-        
     end
     
     methods
@@ -55,9 +53,9 @@ classdef ProtonicMembraneGasSupply < BaseModel
         end
 
 
-        function model = setupStandAlone(model)
+        function model = setupForSimulation(model)
             
-            model.standalone = true;
+            model.isSimulationModel = true;
 
             shortNames = {'1', 'H2O';
                           '2', 'O2';

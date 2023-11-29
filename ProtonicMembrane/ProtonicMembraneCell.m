@@ -15,8 +15,6 @@ classdef ProtonicMembraneCell < BaseModel
         couplingTerms
         couplingnames
 
-        standalone
-
     end
 
     methods
@@ -360,9 +358,9 @@ classdef ProtonicMembraneCell < BaseModel
 
         end
 
-        function model = setupStandAlone(model)
+        function model = setupForSimulation(model)
 
-            model.standalone = true;
+            model.isSimulationModel = true;
 
             shortNames = {'Electrolyte', 'elyte';
                           'Anode'      , 'an';

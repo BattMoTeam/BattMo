@@ -19,7 +19,7 @@ paramobj = gen.updateInputParams(paramobj);
 % Setup model
 
 model = ProtonicMembraneGasSupply(paramobj);
-model = model.setupStandAlone();
+model = model.setupForSimulation();
 
 cgt = model.computationalGraph;
 

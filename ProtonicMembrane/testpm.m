@@ -20,7 +20,7 @@ paramobj = setupProtonicMembraneCellGrid(paramobj, jsonstruct);
 % Setup model
 model = ProtonicMembraneCell(paramobj);
 
-model = model.setupStandAlone();
+model = model.setupForSimulation();
 
 cgt   = model.computationalGraph;
 
