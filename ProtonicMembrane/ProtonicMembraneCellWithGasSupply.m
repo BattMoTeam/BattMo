@@ -12,6 +12,8 @@ classdef ProtonicMembraneCellWithGasSupply < BaseModel
 
         couplingTerm
 
+        helpers
+        
         funcCallList
         primaryVarNames
         equationVarNames
@@ -28,12 +30,12 @@ classdef ProtonicMembraneCellWithGasSupply < BaseModel
 
             model = model@BaseModel();
 
-            fdnames = {'T'       , ...
+            fdnames = {'T', ...
                        'couplingTerm'};
             
             model = dispatchParams(model, paramobj, fdnames);
 
-            model.Cell      = ProtonicMembraneCell(paramobj.Cell);
+            model.Cell = ProtonicMembraneCell(paramobj.Cell);
 
             % We setup coupling terms for the Gas Supply
             coupTerm = model.couplingTerm;
@@ -49,8 +51,11 @@ classdef ProtonicMembraneCellWithGasSupply < BaseModel
             coupTerm.couplingfaces  = coupTerm.couplingfaces(:, lib);
 
             paramobj.GasSupply.couplingTerms{end + 1} = coupTerm;
-            
+            ncoup = numel(paramobj.GasSupply.couplingTerms);
+
             model.GasSupply = ProtonicMembraneGasSupply(paramobj.GasSupply);
+            
+            model = setupGasSupplyCellCoupling(model, ncoup);
             
             model.constants = PhysicalConstants();
             

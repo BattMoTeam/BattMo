@@ -78,6 +78,12 @@ classdef ProtonicMembraneCell < BaseModel
             ctrl  = 'Control';
             
             model = registerVarAndPropfuncNames@BaseModel(model);
+
+
+            varnames = {};
+            varnames{end + 1} = 'anodeChargeCons';
+
+            model = model.registerVarNames(varnames);
             
             fn = @ProtonicMembraneCell.setupHpSources;
             inputnames = {{an, 'jHp'}, {ct, 'jHp'}};
@@ -104,10 +110,13 @@ classdef ProtonicMembraneCell < BaseModel
             model = model.registerPropFunction({{ct, 'jElEquation'}, fn, inputnames});
             
             fn = @ProtonicMembraneCell.updateFromControl;
-            inputnames = {{ctrl, 'U'}, {ctrl, 'I'}};
-            model = model.registerPropFunction({{an, 'pi'}, fn, inputnames});                        
-            model = model.registerPropFunction({{an, 'j'}, fn, inputnames});
+            inputnames = {{ctrl, 'U'}};
+            model = model.registerPropFunction({{an, 'pi'}, fn, inputnames});
 
+            fn = @ProtonicMembraneCell.updateAnodeChargeCons;
+            inputnames = {{ctrl, 'I'}, {an, 'j'}};
+            model = model.registerPropFunction({'anodeChargeCons', fn, inputnames});
+            
             fn = @ProtonicMembraneCell.setupCathodeBoundary;
             inputnames = {};
             model = model.registerPropFunction({{ct, 'phi'}, fn, inputnames});
@@ -120,6 +129,12 @@ classdef ProtonicMembraneCell < BaseModel
             
         end
 
+        function state = udpateAnodeChargeCons(model, state)
+
+            state.anodeChargeCons = sum(state.(an).j) - state.(ctrl).I;
+
+        end
+        
         function state = updateControl(model, state, drivingForces)
             
             ctrl  = "Control";
@@ -133,8 +148,6 @@ classdef ProtonicMembraneCell < BaseModel
             state.(elyte).alpha  = alpha;
             
         end
-
-        
         function state = setupHpSources(model, state)
 
             an    = 'Anode';
@@ -200,7 +213,6 @@ classdef ProtonicMembraneCell < BaseModel
 
             onevec = ones(N, 1);
             state.(an).pi  = state.(ctrl).U.*onevec; 
-            state.(an).j   = state.(ctrl).I.*onevec;
             
         end
 

@@ -42,11 +42,11 @@ classdef ProtonicMembraneElectrode < BaseModel
             
             varnames = {};
             
-            % H+ flux at electrode (positif is flux leaving electrode)
+            % H+ flux at electrode (positif is flux leaving electrode). Unit A (one value per cell)
             varnames{end + 1} = 'jHp';
-            % Electronic flux at electrode (positif is flux leaving electrode)
+            % Electronic flux at electrode (positif is flux leaving electrode) Unit A (one value per cell)
             varnames{end + 1} = 'jEl';
-            % Charge flux at electrode (positif is flux leaving electrode)
+            % Charge flux at electrode (positif is flux leaving electrode) Unit A (one value per cell)
             varnames{end + 1} = 'j';
             % Open circuit potential at electrode
             varnames{end + 1} = 'Eocv';
