@@ -20,10 +20,8 @@ paramobj = setupProtonicMembraneCellGrid(paramobj, jsonstruct);
 % Setup model
 model = ProtonicMembraneCell(paramobj);
 
-model = model.setupComputationalGraph();
+model = model.setupStandAlone();
 
-% compute and get computationalGraph (just used for postprocessing)
-model = model.validateModel();
 cgt   = model.computationalGraph;
 
 model.verbose = true;

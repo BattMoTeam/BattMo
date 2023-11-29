@@ -1,7 +1,7 @@
 classdef ProtonicMembraneCell < BaseModel
-    
+
     properties
-        
+
         % Temperature
         T
         % Structure with physical constants
@@ -14,23 +14,20 @@ classdef ProtonicMembraneCell < BaseModel
 
         couplingTerms
         couplingnames
-        
-        primaryVarNames
-        funcCallList
 
-        scalings
-        
+        standalone
+
     end
-    
+
     methods
-        
+
         function model = ProtonicMembraneCell(paramobj)
 
             model = model@BaseModel();
 
             fdnames = {'T'       , ...
                        'couplingTerms'};
-            
+
             model = dispatchParams(model, paramobj, fdnames);
 
             model.Anode       = ProtonicMembraneAnode(paramobj.Anode);
@@ -44,7 +41,7 @@ classdef ProtonicMembraneCell < BaseModel
                    'The coupling terms appear to be badly setup');
             model.Anode.N   = size(cps{1}.couplingcells, 1);
             model.Cathode.N = size(cps{1}.couplingcells, 1);
-            
+
             % setup couplingNames
             model.couplingnames = cellfun(@(x) x.name, model.couplingTerms, 'uniformoutput', false);
 
@@ -54,41 +51,47 @@ classdef ProtonicMembraneCell < BaseModel
             an    = 'Anode';
             ct    = 'Cathode';
             elyte = 'Electrolyte';
+            ctrl  = 'Control';
 
             sigmaHp = model.(elyte).sigma_prot;
             sigmaEl = model.(elyte).sigma_n0;
             phi0    = abs(model.(an).E_0 - model.(ct).E_0); % characteristic voltage
             T       = model.(elyte).operators.T_all(1);
-            
-            sHp = 1/(T*sigmaHp*phi0);
-            sEl = 1/(T*sigmaEl*phi0);
 
-            scalings = struct('Hp', sHp, ...
-                              'El', sEl);
+            sHp = T*sigmaHp*phi0;
+            sEl = T*sigmaEl*phi0;
 
-            model.scalings = scalings;
-            
+            model.scalings =  {{{elyte, 'massConsHp'}     , sHp}, ...
+                               {{elyte, 'chargeConsEl'}   , sEl}, ...
+                               {{an   , 'chargeCons'}     , sEl}, ...
+                               {{an   , 'jElEquation'}    , sEl}, ...
+                               {{an   , 'jHpEquation'}    , sHp}, ...
+                               {{ct   , 'chargeCons'}     , sEl}, ...
+                               {{ct   , 'jElEquation'}    , sEl}, ...
+                               {{ct   , 'jHpEquation'}    , sHp}, ...
+                               {{ctrl , 'controlEquation'}, sEl}, ...
+                               {{'anodeChargeCons'}       , sEl}};
+
         end
-        
+
         function model = registerVarAndPropfuncNames(model)
-            
+
             an    = 'Anode';
             ct    = 'Cathode';
             elyte = 'Electrolyte';
             ctrl  = 'Control';
-            
-            model = registerVarAndPropfuncNames@BaseModel(model);
 
+            model = registerVarAndPropfuncNames@BaseModel(model);
 
             varnames = {};
             varnames{end + 1} = 'anodeChargeCons';
 
             model = model.registerVarNames(varnames);
-            
+
             fn = @ProtonicMembraneCell.setupHpSources;
             inputnames = {{an, 'jHp'}, {ct, 'jHp'}};
             model = model.registerPropFunction({{elyte, 'sourceHp'}, fn, inputnames});
-            
+
             fn = @ProtonicMembraneCell.setupElSources;
             inputnames = {{an, 'jEl'}, {ct, 'jEl'}};
             model = model.registerPropFunction({{elyte, 'sourceEl'}, fn, inputnames});
@@ -108,7 +111,7 @@ classdef ProtonicMembraneCell < BaseModel
             fn = @ProtonicMembraneCell.updateCathodeJElEquation;
             inputnames = {{elyte, 'pi'}, {ct, 'pi'}, {elyte, 'sigmaEl'}, {ct, 'jEl'}};
             model = model.registerPropFunction({{ct, 'jElEquation'}, fn, inputnames});
-            
+
             fn = @ProtonicMembraneCell.updateFromControl;
             inputnames = {{ctrl, 'U'}};
             model = model.registerPropFunction({{an, 'pi'}, fn, inputnames});
@@ -116,7 +119,7 @@ classdef ProtonicMembraneCell < BaseModel
             fn = @ProtonicMembraneCell.updateAnodeChargeCons;
             inputnames = {{ctrl, 'I'}, {an, 'j'}};
             model = model.registerPropFunction({'anodeChargeCons', fn, inputnames});
-            
+
             fn = @ProtonicMembraneCell.setupCathodeBoundary;
             inputnames = {};
             model = model.registerPropFunction({{ct, 'phi'}, fn, inputnames});
@@ -124,30 +127,35 @@ classdef ProtonicMembraneCell < BaseModel
             inputnames = {};
             fn = @ProtonicMembraneCell.updateControl;
             fn = {fn, @(propfunction) PropFunction.drivingForceFuncCallSetupFn(propfunction)};
-            model = model.registerPropFunction({{ctrl, 'ctrlVal'}, fn, inputnames});            
+            model = model.registerPropFunction({{ctrl, 'ctrlVal'}, fn, inputnames});
             model = model.registerPropFunction({{elyte, 'alpha'}, fn, inputnames});
-            
+
         end
 
-        function state = udpateAnodeChargeCons(model, state)
+        function state = updateAnodeChargeCons(model, state)
+
+            an   = 'Anode';
+            ctrl = 'Control';
 
             state.anodeChargeCons = sum(state.(an).j) - state.(ctrl).I;
 
         end
-        
+
         function state = updateControl(model, state, drivingForces)
-            
+
             ctrl  = "Control";
             an    = 'Anode';
             elyte = 'Electrolyte';
-            
+
             time = state.time;
             [ctrlVal, alpha] = drivingForces.src(time);
-            
+
             state.(ctrl).ctrlVal = ctrlVal;
             state.(elyte).alpha  = alpha;
-            
+
+
         end
+
         function state = setupHpSources(model, state)
 
             an    = 'Anode';
@@ -156,52 +164,52 @@ classdef ProtonicMembraneCell < BaseModel
 
             coupterms = model.couplingTerms;
             coupnames = model.couplingnames;
-                        
+
             jHpAnode   = state.(an).jHp;
             jHpCathode = state.(ct).jHp;
-            
+
             sourceHp = 0*state.(elyte).phi; % initialize AD for sourceHp
-            
+
             % Anode part
             coupterm = getCoupTerm(coupterms, 'Anode-Electrolyte', coupnames);
             ccs = coupterm.couplingcells(:, 2);
             sourceHp(ccs) = jHpAnode;
-            
+
             % Anode part
             coupterm = getCoupTerm(coupterms, 'Cathode-Electrolyte', coupnames);
             ccs = coupterm.couplingcells(:, 2);
             sourceHp(ccs) = jHpCathode;
 
             state.(elyte).sourceHp = sourceHp;
-            
+
         end
 
         function state = setupElSources(model, state)
-            
+
             an    = 'Anode';
             ct    = 'Cathode';
             elyte = 'Electrolyte';
 
             coupterms = model.couplingTerms;
             coupnames = model.couplingnames;
-            
+
             jElAnode   = state.(an).jEl;
             jElCathode = state.(ct).jEl;
-            
+
             sourceEl = 0*state.(elyte).phi; % initialize AD for sourceEl
-            
+
             % Anode part
             coupterm = getCoupTerm(coupterms, 'Anode-Electrolyte', coupnames);
             ccs = coupterm.couplingcells(:, 2);
             sourceEl(ccs) = jElAnode;
-            
+
             % Anode part
             coupterm = getCoupTerm(coupterms, 'Cathode-Electrolyte', coupnames);
             ccs = coupterm.couplingcells(:, 2);
             sourceEl(ccs) = jElCathode;
 
             state.(elyte).sourceEl = sourceEl;
-            
+
         end
 
         function state = updateFromControl(model, state)
@@ -212,8 +220,8 @@ classdef ProtonicMembraneCell < BaseModel
             N = model.(an).N;
 
             onevec = ones(N, 1);
-            state.(an).pi  = state.(ctrl).U.*onevec; 
-            
+            state.(an).pi = state.(ctrl).U.*onevec;
+
         end
 
         function state = setupCathodeBoundary(model, state)
@@ -221,33 +229,33 @@ classdef ProtonicMembraneCell < BaseModel
             ct   = 'Cathode';
 
             state.(ct).phi = 0*ones(model.(ct).N, 1);
-            
+
         end
 
         function state = updateCathodeJElEquation(model, state)
 
             state = model.updateJElEquation(state, 'Cathode');
-            
+
         end
 
         function state = updateAnodeJElEquation(model, state)
 
             state = model.updateJElEquation(state, 'Anode');
-            
+
         end
 
         function state = updateCathodeJHpEquation(model, state)
 
             state = model.updateJHpEquation(state, 'Cathode');
-            
+
         end
 
         function state = updateAnodeJHpEquation(model, state)
 
             state = model.updateJHpEquation(state, 'Anode');
-            
+
         end
-        
+
 
         function state = updateJElEquation(model, state, elde)
 
@@ -259,7 +267,7 @@ classdef ProtonicMembraneCell < BaseModel
 
             coupterms = model.couplingTerms;
             coupnames = model.couplingnames;
-            
+
             switch elde
               case an
                 coupTerm = getCoupTerm(coupterms, 'Anode-Electrolyte', coupnames);
@@ -271,7 +279,7 @@ classdef ProtonicMembraneCell < BaseModel
 
             ccs = coupTerm.couplingcells;
             cfs = coupTerm.couplingfaces;
-            
+
             sigmaEl = state.(elyte).sigmaEl;
             piElyte = state.(elyte).pi;
             piElde  = state.(elde).pi;
@@ -293,7 +301,7 @@ classdef ProtonicMembraneCell < BaseModel
 
             coupterms = model.couplingTerms;
             coupnames = model.couplingnames;
-            
+
             switch elde
               case an
                 coupTerm = getCoupTerm(coupterms, 'Anode-Electrolyte', coupnames);
@@ -305,7 +313,7 @@ classdef ProtonicMembraneCell < BaseModel
 
             ccs = coupTerm.couplingcells;
             cfs = coupTerm.couplingfaces;
-            
+
             sigmaHp  = state.(elyte).sigmaHp;
             phiElyte = state.(elyte).phi;
             phiElde  = state.(elde).phi;
@@ -316,25 +324,28 @@ classdef ProtonicMembraneCell < BaseModel
             state.(elde).jHpEquation = jHp - T.*(phiElde(ccs(:, 1)) - phiElyte(ccs(:, 2)));
 
         end
-        
+
 
         function initState = setupInitialState(model)
-            
+
             an    = 'Anode';
             ct    = 'Cathode';
             elyte = 'Electrolyte';
             ctrl  = 'Control';
 
             onevec = ones(model.(an).N, 1);
-            
+
             initState.(an).phi = 0*onevec;
             initState.(an).jHp = 0*onevec;
             initState.(an).jEl = 0*onevec;
-            
+            initState.(an).j   = 0*onevec;
+
             nc = model.(elyte).G.cells.num;
             initState.(elyte).pi  = zeros(nc, 1);
             initState.(elyte).phi = zeros(nc, 1);
-            
+
+            onevec = ones(model.(ct).N, 1);
+
             initState.(ct).pi  = 0*onevec;
             initState.(ct).jEl = 0*onevec;
             initState.(ct).jHp = 0*onevec;
@@ -346,110 +357,41 @@ classdef ProtonicMembraneCell < BaseModel
             initState.(ctrl).U = initState.(an).Eocv(1);
 
             initState.time = 0;
-            
+
         end
+
+        function model = setupStandAlone(model)
+
+            model.standalone = true;
+
+            shortNames = {'Electrolyte', 'elyte';
+                          'Anode'      , 'an';
+                          'Cathode'    , 'ct';
+                          'Control'    , 'ctrl'};
+
+            model = model.equipModelForComputation('shortNames', shortNames);
+
+        end
+
 
         function state = addVariables(model, state, drivingForces)
-                        
-            funcCallList = model.funcCallList;
 
-            for ifunc = 1 : numel(funcCallList)
-                eval(funcCallList{ifunc});
-            end
-            
-        end
-        
-        function [problem, state] = getEquations(model, state0, state, dt, drivingForces, varargin)
-
-            opts = struct('ResOnly', false, 'iteration', 0, 'reverseMode', false); 
-            opts = merge_options(opts, varargin{:});
-            
-            state.time = state0.time + dt;
-            
-            if(not(opts.ResOnly) && not(opts.reverseMode))
-                state = model.initStateAD(state);
-            elseif(opts.reverseMode)
-                disp('No AD initatlization in equation old style')
-                state0 = model.initStateAD(state0);
-            else
-                assert(opts.ResOnly);
-            end
-
-            %% We call the assembly equations ordered from the graph
-            
             funcCallList = model.funcCallList;
 
             for ifunc = 1 : numel(funcCallList)
                 eval(funcCallList{ifunc});
             end
 
-            an    = 'Anode';
-            ct    = 'Cathode';
-            elyte = 'Electrolyte';
-            ctrl  = 'Control';
-
-            eqs = {};
-
-            scalings = model.scalings;
-            sHp = scalings.Hp;
-            sEl = scalings.El;
-
-            
-            eqs{end + 1} = sHp*state.(elyte).massConsHp;
-            eqs{end + 1} = sEl*state.(elyte).chargeConsEl;
-            eqs{end + 1} = sEl*state.(an).chargeCons;
-            eqs{end + 1} = sEl*state.(an).jElEquation;
-            eqs{end + 1} = sHp*state.(an).jHpEquation;
-            eqs{end + 1} = sEl*state.(ct).chargeCons;
-            eqs{end + 1} = sEl*state.(ct).jElEquation;
-            eqs{end + 1} = sHp*state.(ct).jHpEquation;
-            eqs{end + 1} = sEl*state.(ctrl).controlEquation;
-            
-            names = {'elyte_massConsHp'  , ...
-                     'elyte_chargeConsEl', ...
-                     'an_chargeCons'     , ...
-                     'an_jElEquation'    , ...
-                     'an_jHpEquation'    , ...
-                     'ct_chargeCons'     , ...
-                     'ct_jElEquation'    , ...
-                     'ct_jHpEquation'    , ...
-                     'ctrl_controlEquation'};
-
-            types = repmat({'cells'}, 1, numel(names));
-            
-            primaryVars = model.getPrimaryVariables();
-            
-            problem = LinearizedProblem(eqs, types, names, primaryVars, state, dt);
-            
         end
-        
-        function primaryvarnames = getPrimaryVariableNames(model)
 
-            primaryvarnames = model.primaryVarNames;
-            
-        end
-        
         function forces = getValidDrivingForces(model)
-            
+
             forces = getValidDrivingForces@BaseModel(model);
             forces.src = [];
             forces.alpha = [];
-            
+
         end
 
-        function model = validateModel(model, varargin)
-
-            if isempty(model.computationalGraph)
-                model = model.setupComputationalGraph();
-            end
-
-            cgt = model.computationalGraph;
-            
-            model.primaryVarNames = cgt.getPrimaryVariableNames();
-            model.funcCallList    = cgt.getOrderedFunctionCallList();
-            
-        end
-        
     end
-    
+
 end
