@@ -18,14 +18,6 @@ classdef ProtonicMembraneGasSupply < BaseModel
         couplingTerms
         
         standalone
-
-        funcCallList
-        primaryVarNames
-        equationVarNames
-        equationNames
-        equationTypes
-
-        scalings
         
     end
     
@@ -74,7 +66,7 @@ classdef ProtonicMembraneGasSupply < BaseModel
                           'controlEquation', 'ctrleq';
                           'boundaryEquations', 'bceq'};
             
-            model = BaseModel.equipModelForComputation(model, 'shortNames', shortNames);
+            model = model.equipModelForComputation('shortNames', shortNames);
             
         end
         
@@ -292,65 +284,7 @@ classdef ProtonicMembraneGasSupply < BaseModel
             
         end
 
-        function state = applyScaling(model, state)
-            
-            if ~isempty(model.scalings)
 
-                scalings = model.scalings;
-
-                for iscal = 1 : numel(scalings)
-
-                    scaling = scalings{iscal};
-                    name = scaling{1};
-                    coef = scaling{2};
-
-                    val = model.getProp(state, name);
-                    val = 1/coef*val;
-
-                    state = model.setProp(state, name, val);
-                    
-                end
-                
-            end
-            
-        end
-        
-        function [problem, state] = getEquations(model, state0, state,dt, drivingForces, varargin)
-            
-            sd  = 'SolidDiffusion';
-            itf = 'Interface';
-            
-            time = state0.time + dt;
-            state = model.initStateAD(state);
-            
-            %% We call the assembly equations ordered from the graph
-
-            funcCallList = model.funcCallList;
-
-            for ifunc = 1 : numel(funcCallList)
-                eval(funcCallList{ifunc});
-            end
-
-            state = model.applyScaling(state);
-            
-            for ieq = 1 : numel(model.equationVarNames)
-                eqs{ieq} = model.getProp(state, model.equationVarNames{ieq});
-            end
-            
-            names       = model.equationNames;
-            types       = model.equationTypes;
-            primaryVars = model.primaryVarNames;
-            
-            problem = LinearizedProblem(eqs, types, names, primaryVars, state, dt);
-
-        end
-
-        function primaryvarnames = getPrimaryVariableNames(model)
-
-            primaryvarnames = model.primaryVarNames;
-
-        end
-        
         function state = updatePressure(model, state)
 
             nGas = model.nGas;
@@ -455,7 +389,6 @@ classdef ProtonicMembraneGasSupply < BaseModel
             end
             
         end
-
         
         
     end
