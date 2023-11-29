@@ -14,14 +14,6 @@ classdef ProtonicMembraneCellWithGasSupply < BaseModel
 
         helpers
         
-        funcCallList
-        primaryVarNames
-        equationVarNames
-        equationNames
-        equationTypes
-
-        scalings
-        
     end
     
     methods

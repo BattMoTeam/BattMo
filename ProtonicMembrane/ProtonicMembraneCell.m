@@ -373,7 +373,6 @@ classdef ProtonicMembraneCell < BaseModel
 
         end
 
-
         function state = addVariables(model, state, drivingForces)
 
             funcCallList = model.funcCallList;
@@ -392,6 +391,10 @@ classdef ProtonicMembraneCell < BaseModel
 
         end
 
+        function model = validateModel(model, varargin)
+        % do nothing
+        end
+        
     end
 
 end
