@@ -101,6 +101,15 @@ classdef ControlModel < BaseModel
             
         end
 
+        function arefulfilled = checkConstraints(model, state)
+        % Method that can be implemented to check if the constraints that may be part of the control are fulfilled
+
+        % No default behaviour is implemented here
+
+            error('virtual method');
+            
+        end
+
 
         function func = setupControlFunction(model)
 

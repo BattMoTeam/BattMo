@@ -1813,6 +1813,27 @@ classdef Battery < BaseModel
         end
 
 
+        function [state, report] = stepFunction(model, state, state0, dt, drivingForces, linsolver, nonlinsolver, iteration, varargin)
+
+            [state, report] = stepFunction@BaseModel(model, state, state0, dt, drivingForces, linsolver, nonlinsolver, iteration, varargin{:});
+
+            if report.Converged
+
+                if strcmp(model.Control.controlPolicy, 'CCCV')
+                    % we check for the constraints
+
+                    [arefullfilled, state.Control] = model.Control.checkConstraints(state.Control);
+
+                    if ~arefullfilled
+                        report.Converged = false;
+                    end
+
+                end
+                
+            end
+            
+        end
+
         function outputvars = extractGlobalVariables(model, states)
 
             ns = numel(states);

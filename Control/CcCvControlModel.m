@@ -103,6 +103,39 @@ classdef CcCvControlModel < ControlModel
         end
         
 
+        function  [arefulfilled, state] = checkConstraints(model, state)
+
+            Imax    = model.Imax;
+            Emin    = model.lowerCutoffVoltage;
+            Emax    = model.upperCutoffVoltage;
+            
+            E        = state.E;
+            I        = state.I;
+            ctrlType = state.ctrlType;
+
+            arefulfilled = true;
+            switch ctrlType
+              case 'CC_discharge1'
+                if E < Emin
+                    arefulfilled = false;
+                    state.ctrlType = 'CC_discharge2';
+                end
+              case 'CC_discharge2'
+                % do not check anything in this case
+              case 'CC_charge1'
+                if E > Emax
+                    arefulfilled = false;
+                    state.ctrlType = 'CV_charge2';
+                end
+              case 'CV_charge2'
+                % do not check anything in this case
+              otherwise
+                
+                error('controlType not recognized');
+                
+            end            
+        end
+        
         function state = updateControlAfterConvergence(model, state, state0, dt)
 
             Imax    = model.Imax;
