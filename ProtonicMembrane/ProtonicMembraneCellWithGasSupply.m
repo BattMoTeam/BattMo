@@ -52,6 +52,14 @@ classdef ProtonicMembraneCellWithGasSupply < BaseModel
             model.constants = PhysicalConstants();
             
         end
+
+        function initstate = setupInitialState(model)
+
+            model.Cell = model.Cell.setupComputationalGraph();
+            initstate.Cell      = model.Cell.setupInitialState();
+            initstate.GasSupply = model.GasSupply.setupInitialState();
+
+        end
         
         function model = registerVarAndPropfuncNames(model)
 

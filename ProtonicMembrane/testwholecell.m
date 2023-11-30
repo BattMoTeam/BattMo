@@ -47,8 +47,8 @@ end
 
 model = ProtonicMembraneCellWithGasSupply(paramobj);
 
-model = model.setupComputationalGraph();
-cgt = model.computationalGraph;
+initstate = model.setupInitialState();
+
 
 
 
