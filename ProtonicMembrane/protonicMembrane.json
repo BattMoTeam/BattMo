@@ -15,43 +15,67 @@
     "E_0": 1.253,
     "Ea_ct": 101000,
     "SU": 0.05,
-    "O2_conc_feed": 0.2,
-    "description": "Oxygen concentration in balance, that is the other gas then H2O",
-    "steam_ratio": 0.5,
-    "description" : "fraction of steam in anode gas inlet",
+    "O2_conc_feed":{
+      "value" : 0.2,
+      "unit" : "1",
+      "description": "Oxygen concentration in balance, that is the other gas then H2O"},
+    "steam_ratio": {
+      "value" : 0.5,
+      "unit" : "1",
+      "description" : "fraction of steam in anode gas inlet"},
     "Ptot": {"value" : 10,
-             "unit" : "barsa"},
-    "description" : "total pressure",
+             "unit" : "barsa",
+             "description" : "total pressure"},
     "gasSupplyType" : "coupled"
   },
   "Electrolyte": {
-    "xlength": { "value" : 22,
-                "unit" : "micro*meter"
-              },
+    "xlength": {
+      "value" : 22,
+      "unit" : "micro*meter"
+    },
     "Nx": 1000,
-    "sigma_n0": { "value" : 1e-5,
-                  "unit" : "siemens/(centi*meter)"
-                },
-    "dS_hyd": -119,
-    "description" : "Entropy of hydration",
-    "dH_hyd": -90,
-    "description" : "Entalpy of hydration",
-    "Y": 0.06,
-    "description" : "Acceptor concentration",
-    "Am": 88,
-    "description" : "Empirical pre-exponential coefficient for p-type conductivity",
-    "dH_ox": 101000,
-    "description" : "Activation energry for p-type conductivity",
-    "E_0": 1.253,
-    "description" : "Standard potential",
-    "steam_ratio": 0.5,
-    "description" : "fraction of steam in anode gas inlet",
+    "sigma_n0": {
+      "value" : 1e-5,
+      "unit" : "siemens/(centi*meter)"
+    },
+    "dS_hyd": {
+      "value" : -119,
+      "unit" : "1",
+      "description" : "Entropy of hydration"},
+    "dH_hyd": {
+      "value" : -90,
+      "unit" : "1",
+      "description" : "Entalpy of hydration"},
+    "Y": {
+      "value" : 0.06,
+      "unit" : "1",
+      "description" : "Acceptor concentration"},
+    "Am": {
+      "value" : 88,
+      "unit" : "1",
+      "description" : "Empirical pre-exponential coefficient for p-type conductivity"},
+    "dH_ox": {
+      "value" : 101000,
+      "unit" : "1",
+      "description" : "Activation energry for p-type conductivity"},
+    "E_0": {
+      "value" : 1.253,
+      "unit" : "1",
+      "description" : "Standard potential"},
+    "steam_ratio": {
+      "value" : 0.5,
+      "unit" : "1",
+      "description" : "fraction of steam in anode gas inlet"},
     "Ptot": {"value" : 10,
              "unit" : "barsa"},
-    "SU": 0.05,
-    "description" : "Steam utilization in fraction",
-    "Ea_prot": 47.7,
-    "description" : "Activation energy for proton diffusion"
+    "SU": {
+      "value" : 0.05,
+      "unit" : "1",
+      "description" : "Steam utilization in fraction"},
+    "Ea_prot": {
+      "value" : 47.7,
+      "unit" : "1",
+      "description" : "Activation energy for proton diffusion"}
   },
   "Cathode": {
     "E_0": 0,
