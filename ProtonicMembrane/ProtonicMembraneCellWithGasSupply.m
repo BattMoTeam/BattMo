@@ -55,9 +55,26 @@ classdef ProtonicMembraneCellWithGasSupply < BaseModel
 
         function initstate = setupInitialState(model)
 
-            model.Cell = model.Cell.setupComputationalGraph();
-            initstate.Cell      = model.Cell.setupInitialState();
-            initstate.GasSupply = model.GasSupply.setupInitialState();
+            gs = 'GasSupply';
+            ce = 'Cell';
+            an = 'Anode';
+            
+            gasInd  = model.(gs).gasInd;
+
+            initstate.(gs) = model.(gs).setupInitialState();
+            
+            pH2O = initstate.(gs).pressures{gasInd.H2O};
+            pO2  = initstate.(gs).pressures{gasInd.O2};
+
+            model.(ce).(an).pH2O = pH2O(1);
+            model.(ce).(an).pO2  = pO2(1);
+            
+            model.(ce) = model.(ce).setupComputationalGraph();
+
+            initstate.(ce) = model.(ce).setupInitialState();
+
+            initstate = model.evalVarName(initstate, VarName({gs}, 'densities', 2));
+            initstate.time = 0;
 
         end
         
@@ -65,13 +82,23 @@ classdef ProtonicMembraneCellWithGasSupply < BaseModel
 
             model = registerVarAndPropfuncNames@BaseModel(model);
 
+            gs    = 'GasSupply';
+            ce    = 'Cell';
+            an    = 'Anode';
+            ct    = 'Cathode';
+            elyte = 'Electrolyte';
+            ctrl  = 'Control';
+
             nGas = model.GasSupply.nGas;
 
             varnames = {};
 
             % Coupling equations
             varnames{end + 1} = VarName({}, 'massCouplingEquations', nGas);
-
+            % We add time variables to this model and the Cell model. Needed for the control
+            varnames{end + 1} = 'time';
+            varnames{end + 1} = {ce, 'time'};
+            
             model = model.registerVarNames(varnames);
 
             fn =  @ProtonicMembraneCellWithGasSupply.updateBcAnodePressures;
@@ -83,9 +110,21 @@ classdef ProtonicMembraneCellWithGasSupply < BaseModel
             inputvarnames = {{'Cell', 'Anode' 'jHp'}, VarName({'GasSupply', 'GasSupplyBc'}, 'massFluxes', nGas)};
             outputvarname = VarName({}, 'massCouplingEquations', nGas);
             model = model.registerPropFunction({outputvarname, fn, inputvarnames});
+
+            model = model.setAsStaticVarName('time');
+            
+            fn =  @ProtonicMembraneCellWithGasSupply.dispatchTime;
+            model = model.registerPropFunction({{ce, 'time'}, fn, {'time'}});
             
         end
 
+        function state = dispatchTime(model, state)
+
+            state.Cell.time = state.time;
+            
+        end
+            
+        
         function state = updateCouplingEquation(model, state)
 
             nGas   = model.GasSupply.GasSupplyBc.nGas;
@@ -100,12 +139,12 @@ classdef ProtonicMembraneCellWithGasSupply < BaseModel
             % Chemical equation : 1/2*H2O <-> H^+ + e^- + 1/4*O2
             % Flux in the boundary conditions are oritented outwards from GasSupply domain.
             igas = gasInd.H2O;
-            coupeqs{igas} = map*mfluxbc{igas} - 1/2*mws(igas)*F*jHp;
+            coupeqs{igas} = map*mfluxbcs{igas} - 1/2*mws(igas)*F*jHp;
 
             igas = gasInd.O2;
-            coupeqs{igas} = map*mfluxbc{igas} + 1/4*mws(igas)*F*jHp;
+            coupeqs{igas} = map*mfluxbcs{igas} + 1/4*mws(igas)*F*jHp;
 
-            state.massCouplingEquations = eqs;
+            state.massCouplingEquations = coupeqs;
             
         end
 
@@ -154,6 +193,40 @@ classdef ProtonicMembraneCellWithGasSupply < BaseModel
             
         end
 
+        function model = setupForSimulation(model)
+
+            model.isSimulationModel = true;
+
+            shortNames = {'1'                    , 'H2O';
+                          '2'                    , 'O2';
+                          'massConses'           , 'massCons';
+                          'Cell'                 , 'ce';
+                          'GasSupply'            , 'gs';
+                          'GasSupplyBc'          , 'gsBc';
+                          'massCouplingEquations', 'massCoupEqs';
+                          'controlEquation'      , 'ctrlEq';
+                          'boundaryEquations'    , 'bcEqs';
+                          'Electrolyte'          , 'elyte';
+                          'Anode'                , 'an';
+                          'Cathode'              , 'ct';
+                          'Control'              , 'ctrl'};
+
+            model = model.equipModelForComputation('shortNames', shortNames);
+
+        end
+
+        
+        function forces = getValidDrivingForces(model)
+
+            forces = getValidDrivingForces@BaseModel(model);
+            forces.src   = [];
+            
+        end
+
+        function model = validateModel(model, varargin)
+        % do nothing
+        end
+        
         
     end
     

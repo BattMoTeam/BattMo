@@ -83,7 +83,8 @@ classdef ProtonicMembraneCell < BaseModel
 
             varnames = {};
             varnames{end + 1} = 'anodeChargeCons';
-
+            varnames{end + 1} = 'time';
+            
             model = model.registerVarNames(varnames);
 
             fn = @ProtonicMembraneCell.setupHpSources;
@@ -122,12 +123,14 @@ classdef ProtonicMembraneCell < BaseModel
             inputnames = {};
             model = model.registerPropFunction({{ct, 'phi'}, fn, inputnames});
 
-            inputnames = {};
+            inputnames = {'time'};
             fn = @ProtonicMembraneCell.updateControl;
             fn = {fn, @(propfunction) PropFunction.drivingForceFuncCallSetupFn(propfunction)};
             model = model.registerPropFunction({{ctrl, 'ctrlVal'}, fn, inputnames});
             model = model.registerPropFunction({{elyte, 'alpha'}, fn, inputnames});
 
+            model = model.setAsStaticVarName('time');
+            
         end
 
         function state = updateAnodeChargeCons(model, state)
@@ -384,9 +387,8 @@ classdef ProtonicMembraneCell < BaseModel
         function forces = getValidDrivingForces(model)
 
             forces = getValidDrivingForces@BaseModel(model);
-            forces.src = [];
-            forces.alpha = [];
-
+            forces.src   = [];
+            
         end
 
         function model = validateModel(model, varargin)

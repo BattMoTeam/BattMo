@@ -2,6 +2,13 @@ clear all
 
 mrstModule add ad-core mrst-gui
 
+gs    = 'GasSupply';
+ce    = 'Cell';
+an    = 'Anode';
+ct    = 'Cathode';
+elyte = 'Electrolyte';
+ctrl  = 'Control';
+            
 clear jsonstruct
 
 filename = 'ProtonicMembrane/gas_supply.json';
@@ -9,8 +16,13 @@ jsonstruct.GasSupply = parseBattmoJson(filename);
 filename = 'ProtonicMembrane/protonicMembrane.json';
 jsonstruct.Cell = parseBattmoJson(filename);
 
-paramobj = ProtonicMembraneCellWithGasSupplyInputParams(jsonstruct);
+pH2O = 475000;
+pO2  = 112500;
 
+jsonstruct.(gs).control(1).values = [pH2O; pO2];
+jsonstruct.(gs).control(2).values = [pH2O; pO2];
+
+paramobj = ProtonicMembraneCellWithGasSupplyInputParams(jsonstruct);
 
 gen = GasSupplyPEMgridGenerator2D();
 
@@ -47,7 +59,44 @@ end
 
 model = ProtonicMembraneCellWithGasSupply(paramobj);
 
+model = model.setupForSimulation();
+
+%% Setup initial state
+
 initstate = model.setupInitialState();
+
+%% Setup schedule
+
+tswitch = 1;
+T       = 2; % This is not a real time scale, as all the model deals with equilibrium
+
+N1  = 20;
+dt1 = tswitch/N1;
+N2  = 20;
+dt2 = (T - tswitch)/N2;
+
+step.val = [dt1*ones(N1, 1); dt2*ones(N2, 1)];
+step.control = ones(numel(step.val), 1);
+
+Imax = 0;
+
+control.src = @(time) controlfunc(time, Imax, tswitch, T, 'order', 'I-first');
+
+schedule = struct('control', control, 'step', step); 
+
+%% Setup nonlinear solver
+
+nls                = NonLinearSolver();
+nls.maxIterations  = 20;
+nls.errorOnFailure = false;
+nls.verbose        = true;
+
+model.nonlinearTolerance = 1e-8;
+model.verbose = true;
+
+%% Start simulation
+
+[~, states, report] = simulateScheduleAD(initstate, model, schedule, 'OutputMinisteps', true, 'NonLinearSolver', nls); 
 
 
 
