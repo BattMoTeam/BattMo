@@ -40,7 +40,12 @@ function [g, staticprops, resVarNameList] = setupGraph(model, varargin)
         varname = propfunction.varname;
         m = propfunction.modelnamespace;
 
-        f = func2str(propfunction.fn);
+        if isempty(propfunction.fn)
+            f = 'staticUpdate';
+        else
+            f = func2str(propfunction.fn);
+        end
+        
         inputvarnames = propfunction.inputvarnames;
         
         fullinputvarnames = {};

@@ -6,11 +6,6 @@ classdef BaseModel < PhysicalModel
         varNameList          % List of variable names  (VarName instances) for the model
         subModelNameList     % List of submodels for the model
 
-        % The variables listed in staticVarNameList are elements in VarNameList that are declared as static (they are
-        % not depending on the primary variables and are updatedseparatly)
-        staticVarNameList
-
-        
         % The variables listed in extraVarNameList are elements in VarNameList that are not used in assembly of the
         % residuals, those has been typically introduced for post-processing.
         extraVarNameList
@@ -99,64 +94,33 @@ classdef BaseModel < PhysicalModel
         end
 
 
-        function model = registerStaticVarName(model, varname)
+        function model = setAsStaticVarName(model, varname)
         % Register a static variable name. A static variable is a variable that is set up at the beginning of the
         % assembly and does not depend on the primary variables.
 
             if isa(varname, 'VarName')
-                model.staticVarNameList = mergeList(model.staticVarNameList, {varname});
+                fn = [];
+                inputnames = {};
+                model = model.registerPropFunction({varname, fn, inputnames});
             elseif isa(varname, 'char')
                 varname = VarName({}, varname);
-                model = model.registerStaticVarName(varname);
+                model = model.setAsStaticVarName(varname);
             elseif isa(varname, 'cell')
                 varname = VarName(varname(1 : end - 1), varname{end});
-                model = model.registerStaticVarName(varname);
+                model = model.setAsStaticVarName(varname);
             else
                 error('varname not recognized');
             end
         end
         
-        function model = registerStaticVarNames(model, varnames)
-        % Register several static variable name using registerStaticVarName
+        function model = setAsStaticVarNames(model, varnames)
+        % Register several static variable name using setAsStaticVarName
 
             for ivarnames = 1 : numel(varnames)
-                model = model.registerStaticVarName(varnames{ivarnames});
+                model = model.setAsStaticVarName(varnames{ivarnames});
             end
             
         end
-
-        function model = removeFromStaticVarName(model, varname)
-            if isa(varname, 'VarName')
-                staticvarnames = model.staticVarNameList;
-                rvar = [];
-                for ivar = 1 : numel(staticvarnames)
-                    [found, keep, varname] = BaseModel.extractVarName(varname, staticvarnames{ivar});
-                    if found
-                        while keep & found
-                            staticvarnames{ivar} = varname;
-                            [found, keep, varname] = BaseModel.extractVarName(varname, staticvarnames{ivar});
-                        end
-                        if found
-                            rvar = ivar;
-                            break
-                        end
-                    end
-                end
-                if ~isempty(rvar)
-                    staticvarnames(rvar) = [];
-                end
-            elseif isa(varname, 'char')
-                varname = VarName({}, varname);
-                model = model.removeFromStaticVarName(varname);
-            elseif isa(varname, 'cell')
-                varname = VarName(varname(1 : end - 1), varname{end});
-                model = model.removeFromStaticVarName(varname);
-            else
-                error('varname not recognized');
-            end
-            
-        end
-        
         
         function model = setAsExtraVarName(model, varname)
             
@@ -322,7 +286,6 @@ classdef BaseModel < PhysicalModel
 
             propfuncs     = model.propertyFunctionList;
             varnames      = model.varNameList;
-            scvarnames    = model.staticVarNameList;
             extravarnames = model.extraVarNameList;
             
             submodelnames = model.getSubModelNames();
@@ -371,17 +334,6 @@ classdef BaseModel < PhysicalModel
                 propfuncs = mergeList(propfuncs, subpropfuncs);
 
                 % Register the static variables
-                subscvarnames = submodel.staticVarNameList;
-                
-                for isubvar = 1 : numel(subscvarnames)
-                    subscvarname = subscvarnames{isubvar};
-                    subscvarname.namespace = {submodelname, subscvarname.namespace{:}};
-                    subscvarnames{isubvar} = subscvarname;
-                end
-                
-                scvarnames = mergeList(scvarnames, subscvarnames);
-
-                % Register the static variables
                 subextravarnames = submodel.extraVarNameList;
                 
                 for isubvar = 1 : numel(subextravarnames)
@@ -396,7 +348,6 @@ classdef BaseModel < PhysicalModel
             
              model.varNameList          = varnames;
              model.propertyFunctionList = propfuncs;
-             model.staticVarNameList    = scvarnames;
              model.extraVarNameList     = extravarnames;
              
         end
@@ -505,6 +456,17 @@ classdef BaseModel < PhysicalModel
             if isfield(state, 'time')
                 cleanState.time = state.time;
             end
+
+            submodelnames = model.getSubModelNames();
+            
+            for isub = 1 : numel(submodelnames)
+
+                submodelname = submodelnames{isub};
+
+                cleanState.(submodelname) = model.(submodelname).addStaticVariables(cleanState.(submodelname), state.(submodelname));
+
+            end
+            
         end
         
         function state = copyProp(model, state, refState, names)

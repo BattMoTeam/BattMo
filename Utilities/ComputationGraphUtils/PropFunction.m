@@ -23,6 +23,8 @@ classdef PropFunction
 
             if nargin > 4 && ~isempty(functionCallSetupFn)
                 propfunction.functionCallSetupFn = functionCallSetupFn;
+            elseif isempty(fn)
+                propfunction.functionCallSetupFn = @(pfunc) [];
             else
                 propfunction.functionCallSetupFn = @(pfunc) PropFunction.stdFuncCallSetupFn(pfunc);
             end
@@ -44,8 +46,8 @@ classdef PropFunction
         function str = getFunctionCallString(propfunction)
         % We store this function in a function handler that can be changed more dynamically compared to setup a child class
 
-            fn = propfunction.functionCallSetupFn;
-            str = fn(propfunction);
+            fnsetup = propfunction.functionCallSetupFn;
+            str = fnsetup(propfunction);
             
         end
 

@@ -351,9 +351,6 @@ classdef ComputationalGraphTool
 
         function nodestaticnames = getStaticVarNames(cgt)
 
-            varnames = cgt.model.staticVarNameList;
-            nodestaticnames = cgt.getNodeNames(varnames);
-
             % add the variables that are updated with no input arguments
             propfunctions = cgt.model.propertyFunctionList;
             varnames = {};
@@ -364,7 +361,7 @@ classdef ComputationalGraphTool
                 end
             end
             
-            nodestaticnames = horzcat(nodestaticnames, cgt.getNodeNames(varnames));
+            nodestaticnames = cgt.getNodeNames(varnames);
             
         end
         
@@ -487,29 +484,35 @@ classdef ComputationalGraphTool
             end
 
             for iprop = 1 : numel(propfuncs)
-                propfunc = propfuncs{iprop};
-                varname = propfunc.varname;
-                varname_s = varname.resolveIndex();
+
+                propfunc      = propfuncs{iprop};
+                varname       = propfunc.varname;
+                varname_s     = varname.resolveIndex();
                 outputvarstrs = {};
-                for ind = 1 : numel(varname_s)
-                    fullname = varname_s{ind}.getIndexedFieldname();
-                    outputvarstrs{end + 1} = sprintf('state.%s', fullname);
-                end
-                outputvarstr = join(outputvarstrs, {', '});
-                fprintf('%s <-', outputvarstr{1});
-                fprintf(' (%s) ', propfuncs{iprop}.getFunctionCallString());
-                inputvarnames = propfunc.inputvarnames;
-                if isempty(inputvarnames)
-                    fprintf('[no state field is used]\n');
-                else
-                    fprintf(' <- ', propfuncs{iprop}.getFunctionCallString());
-                    inputvarstrs = {};
-                    for ind = 1 : numel(inputvarnames)
-                        varname = inputvarnames{ind};
-                        inputvarstrs{end + 1} = sprintf('state.%s', varname.getFieldname());
+                
+                fncallstr = propfunc.getFunctionCallString();
+
+                if ~isempty(fncallstr)
+                    for ind = 1 : numel(varname_s)
+                        fullname = varname_s{ind}.getIndexedFieldname();
+                        outputvarstrs{end + 1} = sprintf('state.%s', fullname);
                     end
-                    inputvarstr = join(inputvarstrs, {', '});
-                    fprintf('[%s]\n', inputvarstr{1});
+                    outputvarstr = join(outputvarstrs, {', '});
+                    fprintf('%s <-', outputvarstr{1});
+                    fprintf(' (%s) ', fncallstr);
+                    inputvarnames = propfunc.inputvarnames;
+                    if isempty(inputvarnames)
+                        fprintf('[no state field is used]\n');
+                    else
+                        fprintf(' <- ', fncallstr);
+                        inputvarstrs = {};
+                        for ind = 1 : numel(inputvarnames)
+                            varname = inputvarnames{ind};
+                            inputvarstrs{end + 1} = sprintf('state.%s', varname.getFieldname());
+                        end
+                        inputvarstr = join(inputvarstrs, {', '});
+                        fprintf('[%s]\n', inputvarstr{1});
+                    end
                 end
             end
             
@@ -809,7 +812,10 @@ classdef ComputationalGraphTool
 
                     iprop = staticprops{istatic}.propind;
                     propfunction = cgt.model.propertyFunctionList{iprop};
-                    funcCallList{end + 1} = propfunction.getFunctionCallString();
+                    fncallstr = propfunction.getFunctionCallString();
+                    if ~isempty(fncallstr)
+                        funcCallList{end + 1} = fncallstr;
+                    end
 
                 end
                 
@@ -828,7 +834,10 @@ classdef ComputationalGraphTool
                 if ~isempty(iprop)
                     assert(numel(iprop) == 1, 'There should be only one value for a given row');
                     propfunction = cgt.model.propertyFunctionList{iprop};
-                    funcCallList{end + 1} = propfunction.getFunctionCallString();
+                    fncallstr = propfunction.getFunctionCallString();
+                    if ~isempty(fncallstr)
+                        funcCallList{end + 1} = fncallstr;
+                    end
                 end
             end
 
