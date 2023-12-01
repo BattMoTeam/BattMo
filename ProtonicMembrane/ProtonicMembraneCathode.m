@@ -37,14 +37,14 @@ classdef ProtonicMembraneCathode < ProtonicMembraneElectrode
         
             model = registerVarAndPropfuncNames@ProtonicMembraneElectrode(model);
             
-            fn = @ProtonicMembraneCathode.updateJHp;
+            fn = @ProtonicMembraneCathode.updateIHp;
             inputnames = {'eta'};
-            model = model.registerPropFunction({'jHp', fn, inputnames});
+            model = model.registerPropFunction({'iHp', fn, inputnames});
 
 
             % fn = @ProtonicMembraneCathode.updateJ;
             % inputnames = {'eta'};
-            % model = model.registerPropFunction({'j', fn, inputnames});
+            % model = model.registerPropFunction({'i', fn, inputnames});
 
             
             % fn = @ProtonicMembraneCathode.updatePi;
@@ -56,18 +56,18 @@ classdef ProtonicMembraneCathode < ProtonicMembraneElectrode
         end
         
         
-        function state = updateJHp(model, state)
+        function state = updateIHp(model, state)
 
             R = model.R_ct_H;
 
-            state.jHp = 1/R * state.eta;
+            state.iHp = 1/R * state.eta;
             
         end
 
 
         % function state = updateJ(model, state)
 
-        %     state.j = 1/model.R * state.eta;
+        %     state.i = 1/model.R * state.eta;
             
         % end
 

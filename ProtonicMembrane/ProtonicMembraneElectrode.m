@@ -43,11 +43,11 @@ classdef ProtonicMembraneElectrode < BaseModel
             varnames = {};
             
             % H+ flux at electrode (positif is flux leaving electrode). Unit A (one value per cell)
-            varnames{end + 1} = 'jHp';
+            varnames{end + 1} = 'iHp';
             % Electronic flux at electrode (positif is flux leaving electrode) Unit A (one value per cell)
-            varnames{end + 1} = 'jEl';
+            varnames{end + 1} = 'iEl';
             % Charge flux at electrode (positif is flux leaving electrode) Unit A (one value per cell)
-            varnames{end + 1} = 'j';
+            varnames{end + 1} = 'i';
             % Open circuit potential at electrode
             varnames{end + 1} = 'Eocv';
             % Electrode electrostatic potential
@@ -56,12 +56,12 @@ classdef ProtonicMembraneElectrode < BaseModel
             varnames{end + 1} = 'pi';
             % over potential
             varnames{end + 1} = 'eta';
-            % Charge conservation equation (that is j - jEl - jHp = 0)
+            % Charge conservation equation (that is j - iEl - iHp = 0)
             varnames{end + 1} = 'chargeCons';
-            % Definition equation for jEl
-            varnames{end + 1} = 'jElEquation';
-            % Definition equation for jHp
-            varnames{end + 1} = 'jHpEquation';
+            % Definition equation for iEl
+            varnames{end + 1} = 'iElEquation';
+            % Definition equation for iHp
+            varnames{end + 1} = 'iHpEquation';
 
             switch model.gasSupplyType
               case 'notCoupled'
@@ -76,7 +76,7 @@ classdef ProtonicMembraneElectrode < BaseModel
         
 
             fn = @ProtonicMembraneElectrode.updateChargeCons;
-            inputnames = {'j', 'jEl', 'jHp'};
+            inputnames = {'i', 'iEl', 'iHp'};
             model = model.registerPropFunction({'chargeCons', fn, inputnames});
 
             fn = @ProtonicMembraneElectrode.updateEta;
@@ -92,11 +92,11 @@ classdef ProtonicMembraneElectrode < BaseModel
         
         function state = updateChargeCons(model, state)
 
-            j   = state.j;
-            jEl = state.jEl;
-            jHp = state.jHp;
+            i   = state.i;
+            iEl = state.iEl;
+            iHp = state.iHp;
 
-            state.chargeCons = j - jEl - jHp;
+            state.chargeCons = i - iEl - iHp;
            
         end
 

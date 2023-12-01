@@ -100,9 +100,9 @@ classdef ProtonicMembraneAnode < ProtonicMembraneElectrode
 
             model = model.registerVarNames(varnames);
             
-            fn = @ProtonicMembraneAnode.updateJHp;
+            fn = @ProtonicMembraneAnode.updateIHp;
             inputnames = {'eta', 'chargeTransferCurrentDensity'};
-            model = model.registerPropFunction({'jHp', fn, inputnames});
+            model = model.registerPropFunction({'iHp', fn, inputnames});
 
             fn = @ProtonicMembraneAnode.updateI0;
             inputnames = {VarName({}, 'pressures', model.nGas)};
@@ -117,7 +117,7 @@ classdef ProtonicMembraneAnode < ProtonicMembraneElectrode
             model = model.registerPropFunction({'Eocv', fn, inputnames});
             
             % fn = @ProtonicMembraneAnode.updateEta2;
-            % inputnames = {'j', 'alpha'};
+            % inputnames = {'i', 'alpha'};
             % model = model.registerPropFunction({'eta', fn, inputnames});
 
             % fn = @ProtonicMembraneAnode.updatePhi2;
@@ -168,7 +168,7 @@ classdef ProtonicMembraneAnode < ProtonicMembraneElectrode
             
         end
         
-        function state = updateJHp(model, state)
+        function state = updateIHp(model, state)
             
             con  = model.constants;
 
@@ -181,14 +181,14 @@ classdef ProtonicMembraneAnode < ProtonicMembraneElectrode
             
             feta = con.F*model.n/(con.R*model.T).*eta;
             
-            jHp = -i0.*(exp(-beta*feta) - exp((1 - beta)*feta))./(1 + (i0./ilc).*exp(-beta*feta) - (i0./ila).*exp((1 - beta)*feta));
+            iHp = -i0.*(exp(-beta*feta) - exp((1 - beta)*feta))./(1 + (i0./ilc).*exp(-beta*feta) - (i0./ila).*exp((1 - beta)*feta));
 
-            % jHp = i0*(exp(feta/2) - exp(-feta/2))/2;
+            % iHp = i0*(exp(feta/2) - exp(-feta/2))/2;
             
             % R = 5;
-            % jHp = 1/R*eta;
+            % iHp = 1/R*eta;
             
-            state.jHp = jHp;
+            state.iHp = iHp;
             
         end
 
@@ -196,8 +196,8 @@ classdef ProtonicMembraneAnode < ProtonicMembraneElectrode
 
         %     R = 0.05;
             
-        %     j = state.j;
-        %     eta = R*j; 
+        %     i = state.i;
+        %     eta = R*i; 
             
         %     state.eta = eta;
             

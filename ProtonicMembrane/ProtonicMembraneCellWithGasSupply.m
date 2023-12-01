@@ -107,7 +107,7 @@ classdef ProtonicMembraneCellWithGasSupply < BaseModel
             model = model.registerPropFunction({outputvarname, fn, inputvarnames});
 
             fn =  @ProtonicMembraneCellWithGasSupply.updateCouplingEquation;
-            inputvarnames = {{'Cell', 'Anode' 'jHp'}, VarName({'GasSupply', 'GasSupplyBc'}, 'massFluxes', nGas)};
+            inputvarnames = {{'Cell', 'Anode' 'iHp'}, VarName({'GasSupply', 'GasSupplyBc'}, 'massFluxes', nGas)};
             outputvarname = VarName({}, 'massCouplingEquations', nGas);
             model = model.registerPropFunction({outputvarname, fn, inputvarnames});
 
@@ -133,16 +133,16 @@ classdef ProtonicMembraneCellWithGasSupply < BaseModel
             map    = model.helpers.couplingMap;
             F      = PhysicalConstants.F;
             
-            jHp      = state.Cell.Anode.jHp;
+            iHp      = state.Cell.Anode.iHp;
             mfluxbcs = state.GasSupply.GasSupplyBc.massFluxes;
 
             % Chemical equation : 1/2*H2O <-> H^+ + e^- + 1/4*O2
             % Flux in the boundary conditions are oritented outwards from GasSupply domain.
             igas = gasInd.H2O;
-            coupeqs{igas} = map*mfluxbcs{igas} - 1/2*mws(igas)*jHp/F;
+            coupeqs{igas} = map*mfluxbcs{igas} - 1/2*mws(igas)*iHp/F;
 
             igas = gasInd.O2;
-            coupeqs{igas} = map*mfluxbcs{igas} + 1/4*mws(igas)*jHp/F;
+            coupeqs{igas} = map*mfluxbcs{igas} + 1/4*mws(igas)*iHp/F;
 
             state.massCouplingEquations = coupeqs;
             

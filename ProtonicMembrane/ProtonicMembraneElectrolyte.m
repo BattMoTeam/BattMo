@@ -133,9 +133,9 @@ classdef ProtonicMembraneElectrolyte < BaseModel
             % Electronic source term
             varnames{end + 1} = 'sourceEl';
             % H+ flux
-            varnames{end + 1} = 'jHp';
+            varnames{end + 1} = 'iHp';
             % Electronic flux
-            varnames{end + 1} = 'jEl';
+            varnames{end + 1} = 'iEl';
             % H+ mass conservation (we measure the mass in Coulomb, hence "massConsHp")
             varnames{end + 1} = 'massConsHp';
             % Charge conservation
@@ -155,7 +155,7 @@ classdef ProtonicMembraneElectrolyte < BaseModel
 
             fn = @ProtonicMembraneElectrolyte.updateHpFlux;
             inputnames = {'phi'};
-            model = model.registerPropFunction({'jHp', fn, inputnames});
+            model = model.registerPropFunction({'iHp', fn, inputnames});
 
             fn = @ProtonicMembraneElectrolyte.updateElConductivity;
             inputnames = {'E', 'alpha'};
@@ -163,14 +163,14 @@ classdef ProtonicMembraneElectrolyte < BaseModel
 
             fn = @ProtonicMembraneElectrolyte.updateElFlux;
             inputnames = {'sigmaEl', 'pi'};
-            model = model.registerPropFunction({'jEl', fn, inputnames});
+            model = model.registerPropFunction({'iEl', fn, inputnames});
 
             fn = @ProtonicMembraneElectrolyte.updateMassConsHp;
-            inputnames = {'sourceHp', 'jHp'};
+            inputnames = {'sourceHp', 'iHp'};
             model = model.registerPropFunction({'massConsHp', fn, inputnames});
 
             fn = @ProtonicMembraneElectrolyte.updateChargeConsEl;
-            inputnames = {'sourceEl', 'jEl'};
+            inputnames = {'sourceEl', 'iEl'};
             model = model.registerPropFunction({'chargeConsEl', fn, inputnames});
 
         end
@@ -196,7 +196,7 @@ classdef ProtonicMembraneElectrolyte < BaseModel
             sigmaHp = state.sigmaHp;
             phi     = state.phi;
 
-            state.jHp = assembleFlux(model, phi, sigmaHp);
+            state.iHp = assembleFlux(model, phi, sigmaHp);
 
         end
 
@@ -255,7 +255,7 @@ classdef ProtonicMembraneElectrolyte < BaseModel
             sigmaEl = state.sigmaEl;
             pi      = state.pi;
 
-            state.jEl = assembleFlux(model, pi, sigmaEl);
+            state.iEl = assembleFlux(model, pi, sigmaEl);
 
         end
 
@@ -265,9 +265,9 @@ classdef ProtonicMembraneElectrolyte < BaseModel
             op = model.operators;
 
             sourceEl = state.sourceEl;
-            jEl      = state.jEl;
+            iEl      = state.iEl;
 
-            state.chargeConsEl =  op.Div(jEl) - sourceEl;
+            state.chargeConsEl =  op.Div(iEl) - sourceEl;
 
         end
 
@@ -276,9 +276,9 @@ classdef ProtonicMembraneElectrolyte < BaseModel
             op = model.operators;
 
             sourceHp = state.sourceHp;
-            jHp      = state.jHp;
+            iHp      = state.iHp;
 
-            state.massConsHp =  op.Div(jHp) - sourceHp;
+            state.massConsHp =  op.Div(iHp) - sourceHp;
 
         end
 
