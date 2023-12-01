@@ -152,36 +152,35 @@ set(0, 'defaultaxesfontsize', 15);
 N = gen.nxCell;
 xc = model.(ce).(elyte).G.cells.centroids(1 : N, 1);
 
-dothisplot = true;
-if dothisplot
-    if numel(states) == 0
-        return
-    end
-    
-    state = states{end};
-    % state = model.addVariables(state, control);
-    figure(1)
-    plot(xc, state.(ce).(elyte).pi(1 : N))
-    title('pi')
-    xlabel('x [m]')
-    figure(2)
-    hold on
-    plot(xc, state.(ce).(elyte).pi(1 : N) - state.(ce).(elyte).phi(1 : N))
-    title('E')
-    xlabel('x [m]')
-    % figure(3)
-    % plot(xc, log(state.(ce).(elyte).sigmaEl(1 : N)))
-    % title('log(sigmaEl)')
-    % xlabel('x [m]')
-    figure(4)
-    plot(xc, state.(ce).(elyte).phi(1 : N))
-    title('phi')
-    xlabel('x [m]')
-    
-    % fprintf('min E : %g\nmin sigmaEl : %g\n', ...
-    %         min(state.(ce).(elyte).pi - state.(ce).(elyte).phi), ...
-    %         min(state.(ce).(elyte).sigmaEl));
+state = states{end};
 
-    return
-end
+figure
+plot(xc, state.(ce).(elyte).pi(1 : N))
+title('pi')
+xlabel('x [m]')
+
+figure
+plot(xc, state.(ce).(elyte).pi(1 : N) - state.(ce).(elyte).phi(1 : N))
+title('E')
+xlabel('x [m]')
+
+figure
+plot(xc, state.(ce).(elyte).phi(1 : N))
+title('phi')
+xlabel('x [m]')
+
+figure
+plotCellData(model.(ce).(elyte).G, state.Cell.Electrolyte.pi, 'edgecolor', 'none')
+title('Electromotive potential \pi')
+xlabel('x')
+ylabel('y')
+colorbar
+
+figure
+plotCellData(model.(ce).(elyte).G, state.Cell.Electrolyte.phi, 'edgecolor', 'none')
+title('Static potential \phi')
+xlabel('x')
+ylabel('y')
+colorbar
+
 
