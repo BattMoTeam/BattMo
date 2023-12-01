@@ -26,12 +26,12 @@ paramobj = ProtonicMembraneCellWithGasSupplyInputParams(jsonstruct);
 
 gen = GasSupplyPEMgridGenerator2D();
 
-gen.nxCell      = 10;
+gen.nxCell      = 100;
 gen.nxGasSupply = 10;
 gen.lxCell      = 22*micro*meter;
 gen.lxGasSupply = 1*milli*meter;
 
-gen.ny = 10;
+gen.ny = 3;
 gen.ly = 1;
 
 paramobj = gen.updateInputParams(paramobj);
@@ -65,6 +65,54 @@ model = model.setupForSimulation();
 
 initstate = model.setupInitialState();
 
+%% setup scalings
+
+cgt = model.computationalGraph;
+
+setupscaling = false
+
+if setupscaling
+    
+    gasInd = model.(gs).gasInd;
+
+    pH2O         = initstate.(gs).pressures{gasInd.H2O}(1);
+    rho          = initstate.(gs).densities{1}(1);
+    scalFlux     = 1/gen.nxGasSupply*rho*model.(gs).permeability/model.(gs).viscosity*pH2O/gen.ly;
+    scalPressure = pH2O;
+
+    model.scalings = {{{gs, 'massConses', 1}, scalFlux}, ...
+                      {{gs, 'massConses', 2}, scalFlux}, ...
+                      {{gs, 'GasSupplyBc', 'controlEquation'}, scalPressure}, ...
+                      {{gs, 'GasSupplyBc', 'boundaryEquations', 1}, scalFlux}, ...
+                      {{gs, 'GasSupplyBc', 'boundaryEquations', 2}, scalFlux}};
+
+    drivingforces.src = @(time) controlfunc(time, 0, 1, 2, 'order', 'I-first');
+    initstate = model.evalVarName(initstate, {ce, elyte, 'sigmaEl'}, {{'drivingForces', drivingforces}});
+    initstate = model.evalVarName(initstate, {ce, elyte, 'sigmaHp'}, {{'drivingForces', drivingforces}});
+
+    sigmaHp = initstate.(ce).(elyte).sigmaHp(1);
+    sigmaEl = initstate.(ce).(elyte).sigmaEl(1);
+    phi0    = abs(model.(ce).(an).E_0 - model.(ce).(ct).E_0); % characteristic voltage
+    T       = model.(ce).(elyte).operators.T_all(1);
+
+    sHp = T*sigmaHp*phi0;
+    sEl = T*sigmaEl*phi0;
+
+    model.scalings =  horzcat(model.scalings, ...
+                              {{{ce, elyte, 'massConsHp'}     , sHp}, ...
+                               {{ce, elyte, 'chargeConsEl'}   , sEl}, ...
+                               {{ce, an   , 'chargeCons'}     , sEl}, ...
+                               {{ce, an   , 'jElEquation'}    , sEl}, ...
+                               {{ce, an   , 'jHpEquation'}    , sHp}, ...
+                               {{ce, ct   , 'chargeCons'}     , sEl}, ...
+                               {{ce, ct   , 'jElEquation'}    , sEl}, ...
+                               {{ce, ct   , 'jHpEquation'}    , sHp}, ...
+                               {{ce, ctrl , 'controlEquation'}, sEl}, ...
+                               {{ce, 'anodeChargeCons'}       , sEl}});
+
+end
+
+
 %% Setup schedule
 
 tswitch = 1;
@@ -91,13 +139,53 @@ nls.maxIterations  = 20;
 nls.errorOnFailure = false;
 nls.verbose        = true;
 
-model.nonlinearTolerance = 1e-8;
+model.nonlinearTolerance = 1e-5;
 model.verbose = true;
 
 %% Start simulation
 
 [~, states, report] = simulateScheduleAD(initstate, model, schedule, 'OutputMinisteps', true, 'NonLinearSolver', nls); 
 
+%%
 
+close all
 
+set(0, 'defaultlinelinewidth', 3);
+set(0, 'defaultaxesfontsize', 15);
+
+N = gen.nxCell;
+xc = model.(ce).(elyte).G.cells.centroids(1 : N, 1);
+
+dothisplot = true;
+if dothisplot
+    if numel(states) == 0
+        return
+    end
+    
+    state = states{end};
+    % state = model.addVariables(state, control);
+    figure(1)
+    plot(xc, state.(ce).(elyte).pi(1 : N))
+    title('pi')
+    xlabel('x [m]')
+    figure(2)
+    hold on
+    plot(xc, state.(ce).(elyte).pi(1 : N) - state.(ce).(elyte).phi(1 : N))
+    title('E')
+    xlabel('x [m]')
+    % figure(3)
+    % plot(xc, log(state.(ce).(elyte).sigmaEl(1 : N)))
+    % title('log(sigmaEl)')
+    % xlabel('x [m]')
+    figure(4)
+    plot(xc, state.(ce).(elyte).phi(1 : N))
+    title('phi')
+    xlabel('x [m]')
+    
+    % fprintf('min E : %g\nmin sigmaEl : %g\n', ...
+    %         min(state.(ce).(elyte).pi - state.(ce).(elyte).phi), ...
+    %         min(state.(ce).(elyte).sigmaEl));
+
+    return
+end
 
