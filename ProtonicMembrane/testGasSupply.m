@@ -44,7 +44,7 @@ model.scalings = {{{'massConses', 1}, scalFlux}, ...
                   {{'GasSupplyBc', 'boundaryEquations', 1}, scalFlux}, ...
                   {{'GasSupplyBc', 'boundaryEquations', 2}, scalFlux}};
 
-T = 1*minute;
+T = 1*second;
 N = 10;
 
 dt = T/N;

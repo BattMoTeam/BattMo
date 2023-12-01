@@ -5,7 +5,7 @@
   {"value" : 31.9988,
    "unit" : "gram/mol"
   }],
- "permeability" : 1e-10,
+ "permeability" : 1e-8,
  "viscosity" : {
    "value" : 0.018369247,
    "unit" : "centi*poise"
