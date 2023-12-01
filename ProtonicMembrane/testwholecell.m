@@ -1,5 +1,7 @@
 clear all
 
+% mrstDebug(20);
+
 mrstModule add ad-core mrst-gui
 
 gs    = 'GasSupply';
@@ -19,7 +21,7 @@ jsonstruct.Cell = parseBattmoJson(filename);
 pH2O = 475000;
 pO2  = 112500;
 
-jsonstruct.(gs).control(1).values = [pH2O; pO2];
+jsonstruct.(gs).control(1).values = [1.5*pH2O; 1.5*pO2];
 jsonstruct.(gs).control(2).values = [pH2O; pO2];
 
 paramobj = ProtonicMembraneCellWithGasSupplyInputParams(jsonstruct);
@@ -27,11 +29,11 @@ paramobj = ProtonicMembraneCellWithGasSupplyInputParams(jsonstruct);
 gen = GasSupplyPEMgridGenerator2D();
 
 gen.nxCell      = 100;
-gen.nxGasSupply = 10;
+gen.nxGasSupply = 100;
 gen.lxCell      = 22*micro*meter;
 gen.lxGasSupply = 1*milli*meter;
 
-gen.ny = 3;
+gen.ny = 100;
 gen.ly = 1;
 
 paramobj = gen.updateInputParams(paramobj);
@@ -67,50 +69,42 @@ initstate = model.setupInitialState();
 
 %% setup scalings
 
-cgt = model.computationalGraph;
+gasInd = model.(gs).gasInd;
 
-setupscaling = false
+pH2O         = initstate.(gs).pressures{gasInd.H2O}(1);
+rho          = initstate.(gs).densities{1}(1);
+scalFlux     = 1/gen.nxGasSupply*rho*model.(gs).permeability/model.(gs).viscosity*pH2O/gen.ly;
+scalPressure = pH2O;
 
-if setupscaling
-    
-    gasInd = model.(gs).gasInd;
+model.scalings = {{{gs, 'massConses', 1}, scalFlux}, ...
+                  {{gs, 'massConses', 2}, scalFlux}, ...
+                  {{gs, 'GasSupplyBc', 'controlEquation'}, scalPressure}, ...
+                  {{gs, 'GasSupplyBc', 'boundaryEquations', 1}, scalFlux}, ...
+                  {{gs, 'GasSupplyBc', 'boundaryEquations', 2}, scalFlux}};
 
-    pH2O         = initstate.(gs).pressures{gasInd.H2O}(1);
-    rho          = initstate.(gs).densities{1}(1);
-    scalFlux     = 1/gen.nxGasSupply*rho*model.(gs).permeability/model.(gs).viscosity*pH2O/gen.ly;
-    scalPressure = pH2O;
+drivingforces.src = @(time) controlfunc(time, 0, 1, 2, 'order', 'I-first');
+initstate = model.evalVarName(initstate, {ce, elyte, 'sigmaEl'}, {{'drivingForces', drivingforces}});
+initstate = model.evalVarName(initstate, {ce, elyte, 'sigmaHp'}, {{'drivingForces', drivingforces}});
 
-    model.scalings = {{{gs, 'massConses', 1}, scalFlux}, ...
-                      {{gs, 'massConses', 2}, scalFlux}, ...
-                      {{gs, 'GasSupplyBc', 'controlEquation'}, scalPressure}, ...
-                      {{gs, 'GasSupplyBc', 'boundaryEquations', 1}, scalFlux}, ...
-                      {{gs, 'GasSupplyBc', 'boundaryEquations', 2}, scalFlux}};
+sigmaHp = initstate.(ce).(elyte).sigmaHp(1);
+sigmaEl = initstate.(ce).(elyte).sigmaEl(1);
+phi0    = abs(model.(ce).(an).E_0 - model.(ce).(ct).E_0); % characteristic voltage
+T       = model.(ce).(elyte).operators.T_all(1);
 
-    drivingforces.src = @(time) controlfunc(time, 0, 1, 2, 'order', 'I-first');
-    initstate = model.evalVarName(initstate, {ce, elyte, 'sigmaEl'}, {{'drivingForces', drivingforces}});
-    initstate = model.evalVarName(initstate, {ce, elyte, 'sigmaHp'}, {{'drivingForces', drivingforces}});
+sHp = T*sigmaHp*phi0;
+sEl = T*sigmaEl*phi0;
 
-    sigmaHp = initstate.(ce).(elyte).sigmaHp(1);
-    sigmaEl = initstate.(ce).(elyte).sigmaEl(1);
-    phi0    = abs(model.(ce).(an).E_0 - model.(ce).(ct).E_0); % characteristic voltage
-    T       = model.(ce).(elyte).operators.T_all(1);
-
-    sHp = T*sigmaHp*phi0;
-    sEl = T*sigmaEl*phi0;
-
-    model.scalings =  horzcat(model.scalings, ...
-                              {{{ce, elyte, 'massConsHp'}     , sHp}, ...
-                               {{ce, elyte, 'chargeConsEl'}   , sEl}, ...
-                               {{ce, an   , 'chargeCons'}     , sEl}, ...
-                               {{ce, an   , 'jElEquation'}    , sEl}, ...
-                               {{ce, an   , 'jHpEquation'}    , sHp}, ...
-                               {{ce, ct   , 'chargeCons'}     , sEl}, ...
-                               {{ce, ct   , 'jElEquation'}    , sEl}, ...
-                               {{ce, ct   , 'jHpEquation'}    , sHp}, ...
-                               {{ce, ctrl , 'controlEquation'}, sEl}, ...
-                               {{ce, 'anodeChargeCons'}       , sEl}});
-
-end
+model.scalings =  horzcat(model.scalings, ...
+                          {{{ce, elyte, 'massConsHp'}     , sHp}, ...
+                           {{ce, elyte, 'chargeConsEl'}   , sEl}, ...
+                           {{ce, an   , 'chargeCons'}     , sEl}, ...
+                           {{ce, an   , 'jElEquation'}    , sEl}, ...
+                           {{ce, an   , 'jHpEquation'}    , sHp}, ...
+                           {{ce, ct   , 'chargeCons'}     , sEl}, ...
+                           {{ce, ct   , 'jElEquation'}    , sEl}, ...
+                           {{ce, ct   , 'jHpEquation'}    , sHp}, ...
+                           {{ce, ctrl , 'controlEquation'}, sEl}, ...
+                           {{ce, 'anodeChargeCons'}       , sEl}});
 
 
 %% Setup schedule
@@ -145,6 +139,9 @@ model.verbose = true;
 %% Start simulation
 
 [~, states, report] = simulateScheduleAD(initstate, model, schedule, 'OutputMinisteps', true, 'NonLinearSolver', nls); 
+
+ind = cellfun(@(state) ~isempty(state), states);
+states = states(ind);
 
 %%
 

@@ -13,7 +13,7 @@ classdef ProtonicMembraneCellWithGasSupply < BaseModel
         couplingTerm
 
         helpers
-        
+        pmin = 1e-3*barsa % cutoff value used in updateState method
     end
     
     methods
@@ -226,7 +226,30 @@ classdef ProtonicMembraneCellWithGasSupply < BaseModel
         function model = validateModel(model, varargin)
         % do nothing
         end
-        
+
+        function [state, report] = updateState(model, state, problem, dx, drivingForces)
+            
+            [state, report] = updateState@BaseModel(model, state, problem, dx, drivingForces);
+
+            % cutoff the pressures
+
+            gs    = 'GasSupply';
+            ce    = 'Cell';
+            an    = 'Anode';
+            ct    = 'Cathode';
+            elyte = 'Electrolyte';
+            ctrl  = 'Control';
+
+            nGas = model.(gs).nGas;
+
+            pmin = model.pmin;
+            
+            for igas = 1 : nGas
+                state.(gs).pressures{igas} = max(pmin, state.(gs).pressures{igas});
+                state.(gs).GasSupplyBc.pressures{igas} = max(pmin, state.(gs).GasSupplyBc.pressures{igas});
+            end
+
+        end
         
     end
     
