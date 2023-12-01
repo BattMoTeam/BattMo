@@ -139,10 +139,10 @@ classdef ProtonicMembraneCellWithGasSupply < BaseModel
             % Chemical equation : 1/2*H2O <-> H^+ + e^- + 1/4*O2
             % Flux in the boundary conditions are oritented outwards from GasSupply domain.
             igas = gasInd.H2O;
-            coupeqs{igas} = map*mfluxbcs{igas} - 1/2*mws(igas)*F*jHp;
+            coupeqs{igas} = map*mfluxbcs{igas} - 1/2*mws(igas)*jHp/F;
 
             igas = gasInd.O2;
-            coupeqs{igas} = map*mfluxbcs{igas} + 1/4*mws(igas)*F*jHp;
+            coupeqs{igas} = map*mfluxbcs{igas} + 1/4*mws(igas)*jHp/F;
 
             state.massCouplingEquations = coupeqs;
             
