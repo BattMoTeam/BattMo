@@ -430,8 +430,8 @@ classdef ProtonicMembraneGasSupply < BaseModel
             
             for igas = 1 : nGas
 
-                state.densities{igas} = Mws(igas)*state.pressures{igas}.*c.R.*T;
-
+                state.densities{igas} = Mws(igas)*state.pressures{igas}./(c.R.*T);
+                
             end
             
         end
