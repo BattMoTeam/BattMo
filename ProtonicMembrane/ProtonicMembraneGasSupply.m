@@ -105,7 +105,7 @@ classdef ProtonicMembraneGasSupply < BaseModel
                 outputvarname = VarName({}, 'densities', nGas, igas);
                 model = model.registerPropFunction({outputvarname, fn, inputvarnames});
 
-                fn = @ProtonicMembraneGasSupply.massFluxes;
+                fn = @ProtonicMembraneGasSupply.updateMassFluxes;
                 inputvarnames = {VarName({}, 'densities', nGas, igas), 'pressure'};
                 outputvarname = VarName({}, 'massFluxes', nGas, igas);
                 model = model.registerPropFunction({outputvarname, fn, inputvarnames});
@@ -369,7 +369,7 @@ classdef ProtonicMembraneGasSupply < BaseModel
             
         end
         
-        function state = massFluxes(model, state)
+        function state = updateMassFluxes(model, state)
 
             K    = model.permeability;
             mu   = model.viscosity;
