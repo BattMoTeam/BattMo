@@ -17,7 +17,7 @@ mrstModule add ad-core mrst-gui mpfa agmg linearsolvers
 % Battmo. We use :battmo:`parseBattmoJson` to parse the file, see :todo:`add link to doc`
 
 fname = fullfile('ParameterData','BatteryCellParameters',...
-    'LithiumIonBatteryCell','example1_lithium_ion_battery_nmc_graphite.json');
+    'LithiumIonBatteryCell','lithium_ion_battery_nmc_graphite.json');
 jsonstruct = parseBattmoJson(fname);
 
 %%%
@@ -167,9 +167,9 @@ dt = total/n;
 step = struct('val', dt*ones(n, 1), 'control', ones(n, 1));
 
 %%%
-% For the IESwitch control we will switch between controlling the current
-% or the voltage based on some max and min values. We do this using the
-% rampupSwitchControl function.
+% We create a control structure containing the source function and
+% and a stopping criteria. The control parameters have been given in the json file
+% :battmofile:`ParameterData/BatteryCellParameters/LithiumIonBatteryCell/lithium_ion_battery_nmc_graphite.json`
 
 %%%
 % Smaller time steps are used to ramp up the current from zero to its
@@ -177,24 +177,9 @@ step = struct('val', dt*ones(n, 1), 'control', ones(n, 1));
 % operation.
 
 %%%
-% This function also contains the logic about when to switch
-% using constant current to constant voltage.
+% The :code:`setupScheduleControl` method contains the code to setup the control structure that is used in the schedule structure setup below.
 
-%%%
-% First we set a parameter to control how the current values increase
-% between zero and the desired value. Then we assign the
-% rampupSwitchControl function to a variable as an anonymous function.
-
-tup = 0.1;
-srcfunc = @(time, I, E) rampupSwitchControl(time, tup, I, E, ...
-                                            model.Control.Imax, ...
-                                            model.Control.lowerCutoffVoltage);
-
-%%%
-% We create a control structure containing the source function and
-% specifying that we want to use IESwitch control:
-
-control = struct('src', srcfunc, 'CCDischarge', true);
+control = model.Control.setupScheduleControl();
 
 %%%
 % Finally we collect the control and step structures together in a schedule
