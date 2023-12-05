@@ -1,4 +1,4 @@
-classdef ComputationalGraphPlot < handle
+classdef ComputationalGraphPlot
 
     properties (SetAccess = private)
 
