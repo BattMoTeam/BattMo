@@ -28,12 +28,12 @@ paramobj = ProtonicMembraneCellWithGasSupplyInputParams(jsonstruct);
 
 gen = GasSupplyPEMgridGenerator2D();
 
-gen.nxCell      = 100;
-gen.nxGasSupply = 100;
+gen.nxCell      = 1000;
+gen.nxGasSupply = 50;
 gen.lxCell      = 22*micro*meter;
 gen.lxGasSupply = 1*milli*meter;
 
-gen.ny = 100;
+gen.ny = 50;
 gen.ly = 1;
 
 paramobj = gen.updateInputParams(paramobj);
@@ -137,10 +137,27 @@ model.verbose = true;
 
 %% Start simulation
 
-[~, states, report] = simulateScheduleAD(initstate, model, schedule, 'OutputMinisteps', true, 'NonLinearSolver', nls); 
+dopack = true;
+clearSimulation = false;
 
-ind = cellfun(@(state) ~isempty(state), states);
-states = states(ind);
+if dopack
+
+    name = 'testwholecell';
+    problem = packSimulationProblem(initstate, model, schedule, [], ...
+                                    'Name'           , name      , ...
+                                    'NonLinearSolver', nls);
+    if clearSimulation
+        %% clear previously computed simulation
+        clearPackedSimulatorOutput(problem, 'prompt', false);
+    end
+    simulatePackedProblem(problem);
+    [globvars, states, reports] = getPackedSimulatorOutput(problem);
+    
+else
+    
+    [~, states, report] = simulateScheduleAD(initstate, model, schedule, 'OutputMinisteps', true, 'NonLinearSolver', nls); 
+
+end
 
 %%
 
@@ -154,33 +171,36 @@ xc = model.(ce).(elyte).G.cells.centroids(1 : N, 1);
 
 state = states{end};
 
+X = reshape(model.(ce).(elyte).G.cells.centroids(:, 1), N, []);
+Y = reshape(model.(ce).(elyte).G.cells.centroids(:, 2), N, []);
+
 figure
-plot(xc, state.(ce).(elyte).pi(1 : N))
+val = state.(ce).(elyte).pi;
+Z = reshape(val, N, []);
+surf(X, Y, Z, 'edgecolor', 'none');
 title('pi')
 xlabel('x [m]')
+view(20, 15)
+colorbar
 
 figure
-plot(xc, state.(ce).(elyte).pi(1 : N) - state.(ce).(elyte).phi(1 : N))
+val = state.(ce).(elyte).pi - state.(ce).(elyte).phi;
+Z = reshape(val, N, []);
+surf(X, Y, Z, 'edgecolor', 'none');
 title('E')
 xlabel('x [m]')
+view(20, 15)
+colorbar
 
 figure
-plot(xc, state.(ce).(elyte).phi(1 : N))
+val = state.(ce).(elyte).phi;
+Z = reshape(val, N, []);
+surf(X, Y, Z, 'edgecolor', 'none');
 title('phi')
 xlabel('x [m]')
-
-figure
-plotCellData(model.(ce).(elyte).G, state.Cell.Electrolyte.pi, 'edgecolor', 'none')
-title('Electromotive potential \pi')
-xlabel('x')
-ylabel('y')
+view(20, 15)
 colorbar
 
-figure
-plotCellData(model.(ce).(elyte).G, state.Cell.Electrolyte.phi, 'edgecolor', 'none')
-title('Static potential \phi')
-xlabel('x')
-ylabel('y')
-colorbar
+
 
 
