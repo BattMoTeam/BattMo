@@ -54,7 +54,7 @@ classdef GasSupplyGridGenerator2D < GasSupplyGridGenerator
             bcfacecouptbl1 =  bcfacecouptbl1.addInd('coup', ones(nc, 1));
 
             clear bcfacecouptbl2;
-            bcfacecouptbl2.faces = (nx + 1)*ny + ny*nx + (floor(nx/2) + 1 : nx)';
+            bcfacecouptbl2.faces = (nx + 1)*ny + ny*nx + (1 : floor(nx/2))';
             bcfacecouptbl2 = IndexArray(bcfacecouptbl2);
             nc = bcfacecouptbl2.num;
             bcfacecouptbl2 =  bcfacecouptbl2.addInd('coup', 2*ones(nc, 1));
