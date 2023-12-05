@@ -1,7 +1,12 @@
 classdef ComputationalGraphTool
 
-    properties
+    properties (SetAccess = private)
+
         model
+        
+    end
+    
+    properties
         adjencyMatrix    % Adjency matrix for the computational graph
         varNameList      % List of variable names (object of class VarName).
                          % They have been processed model.varNameList so that there exist separate entries for each index in the case of variable names with indices.
