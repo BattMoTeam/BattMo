@@ -12,11 +12,11 @@
  },
  "T" : 298,
  "control" : [{"name" : "External input",
-               "type" : "pressure",
-               "values" : [2e5, 1.5e5]},
+               "type" : "pressure-composition",
+               "values" : [2e5, 0.5]},
               {"name" : "External output",
-               "type" : "pressure",
-               "values" : [1e5, 0.7e5]}
+               "type" : "pressure-composition",
+               "values" : [1e5, 0.5]}
              ]
 }
   

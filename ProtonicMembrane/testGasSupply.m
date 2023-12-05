@@ -31,16 +31,16 @@ initstate = model.setupInitialState();
 
 gasInd = model.gasInd;
 
-initstate = model.evalVarName(initstate, VarName({}, 'densities', model.nGas));
+initstate = model.evalVarName(initstate, 'density');
 
-pH2O         = initstate.pressures{gasInd.H2O}(1);
-rho          = initstate.densities{1}(1);
+pH2O         = initstate.pressure(1);
+rho          = initstate.density(1);
 scalFlux     = 1/gen.nx*rho*model.permeability/model.viscosity*pH2O/gen.ly;
 scalPressure = pH2O;
 
 model.scalings = {{{'massConses', 1}, scalFlux}, ...
                   {{'massConses', 2}, scalFlux}, ...
-                  {{'GasSupplyBc', 'controlEquation'}, scalPressure}, ...
+                  {{'GasSupplyBc', 'controlEquations'}, scalPressure}, ...
                   {{'GasSupplyBc', 'boundaryEquations', 1}, scalFlux}, ...
                   {{'GasSupplyBc', 'boundaryEquations', 2}, scalFlux}};
 

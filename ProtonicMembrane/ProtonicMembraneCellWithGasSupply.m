@@ -204,7 +204,7 @@ classdef ProtonicMembraneCellWithGasSupply < BaseModel
                           'GasSupply'            , 'gs';
                           'GasSupplyBc'          , 'gsBc';
                           'massCouplingEquations', 'massCoupEqs';
-                          'controlEquation'      , 'ctrlEq';
+                          'controlEquations'     , 'ctrlEqs';
                           'boundaryEquations'    , 'bcEqs';
                           'Electrolyte'          , 'elyte';
                           'Anode'                , 'an';

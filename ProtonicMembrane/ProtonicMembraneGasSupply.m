@@ -61,8 +61,8 @@ classdef ProtonicMembraneGasSupply < BaseModel
                           '2', 'O2';
                           'massConses', 'massCons';
                           'GasSupplyBc', 'bc';
-                          'controlEquation', 'ctrleq';
-                          'boundaryEquations', 'bceq'};
+                          'controlEquations', 'ctrleqs';
+                          'boundaryEquations', 'bceqs'};
             
             model = model.equipModelForComputation('shortNames', shortNames);
             
@@ -76,12 +76,12 @@ classdef ProtonicMembraneGasSupply < BaseModel
             
             varnames = {};
 
-            % Gas partial pressures
-            varnames{end + 1} = VarName({}, 'pressures', nGas);
+            % Components volume fractions
+            varnames{end + 1} = VarName({}, 'volumefractions', nGas);
             % Total pressure
             varnames{end + 1} = 'pressure';
             % Gas densities 
-            varnames{end + 1} = VarName({}, 'densities', nGas);
+            varnames{end + 1} = 'density';
             % Mass accumulation terms
             varnames{end + 1} = VarName({}, 'massAccums', nGas);
             % Mass Flux terms
@@ -93,52 +93,56 @@ classdef ProtonicMembraneGasSupply < BaseModel
 
             model = model.registerVarNames(varnames);
 
-            fn = @ProtonicMembraneGasSupply.updatePressure;
-            inputvarnames = {VarName({}, 'pressures', nGas)};
-            model = model.registerPropFunction({'pressure', fn, inputvarnames});
-            
-            for igas = 1 : nGas
+            fn = @ProtonicMembraneGasSupply.updateVolumeFraction;
+            inputvarnames = {VarName({}, 'volumefractions', nGas, 1)};
+            outputvarname = VarName({}, 'volumefractions', nGas, 2);
+            model = model.registerPropFunction({outputvarname, fn, inputvarnames});
                 
-                fn = @(model, state) ProtonicMembraneGasSupply.updateDensities(model, state);
-                fn = {fn, @(prop) PropFunction.literalFunctionCallSetupFn(prop)};
-                inputvarnames = {VarName({}, 'pressures', nGas, igas)};
-                outputvarname = VarName({}, 'densities', nGas, igas);
-                model = model.registerPropFunction({outputvarname, fn, inputvarnames});
+            fn = @(model, state) ProtonicMembraneGasSupply.updateDensity(model, state);
+            fn = {fn, @(prop) PropFunction.literalFunctionCallSetupFn(prop)};
+            inputvarnames = {VarName({}, 'volumefractions', nGas), 'pressure'};
+            model = model.registerPropFunction({'density', fn, inputvarnames});
+
+            fn = @ProtonicMembraneGasSupply.updateBCequations;
+            inputvarnames = {VarName({'GasSupplyBc'}, 'massFluxes', nGas)     , ...
+                             VarName({'GasSupplyBc'}, 'volumefractions', nGas), ...
+                             {'GasSupplyBc', 'pressure'}                      , ...
+                             VarName({}, 'volumefractions', nGas)             , ...
+                             'pressure'                                       , ...
+                             'density'};
+            outputvarname = VarName({'GasSupplyBc'}, 'boundaryEquations', nGas);
+            model = model.registerPropFunction({outputvarname, fn, inputvarnames});
+
+
+            for igas = 1 : nGas
 
                 fn = @ProtonicMembraneGasSupply.updateMassFluxes;
-                inputvarnames = {VarName({}, 'densities', nGas, igas), 'pressure'};
+                inputvarnames = {VarName({}, 'volumefractions', nGas, igas), ...
+                                 'density', 'pressure'};
                 outputvarname = VarName({}, 'massFluxes', nGas, igas);
                 model = model.registerPropFunction({outputvarname, fn, inputvarnames});
                 
                 fn = @ProtonicMembraneGasSupply.updateMassAccums;
                 fn = {fn, @(prop) PropFunction.accumFuncCallSetupFn(prop)};
-                inputvarnames = {VarName({}, 'densities', nGas, igas)};
+                inputvarnames = {VarName({}, 'volumefractions', nGas, igas), ...
+                                 'density'};
                 outputvarname = VarName({}, 'massAccums', nGas, igas);
                 model = model.registerPropFunction({outputvarname, fn, inputvarnames});
                                 
                 fn = @ProtonicMembraneGasSupply.updateMassConses;
-                inputvarnames = {VarName({}, 'massAccums', nGas, igas)  , ...
-                                 VarName({}, 'massFluxes', nGas, igas) , ...
+                inputvarnames = {VarName({}, 'massAccums', nGas, igas), ...
+                                 VarName({}, 'massFluxes', nGas, igas), ...
                                  VarName({}, 'massSources', nGas, igas)};
                 outputvarname = VarName({}, 'massConses', nGas, igas);
-                model = model.registerPropFunction({outputvarname, fn, inputvarnames});
-
-                fn = @ProtonicMembraneGasSupply.updateBcFluxTerms;
-                inputvarnames = {VarName({'GasSupplyBc'}, 'massFluxes', nGas, igas), ...
-                                 VarName({'GasSupplyBc'}, 'densities', nGas, igas) , ...
-                                 VarName({'GasSupplyBc'}, 'pressures', nGas, igas) , ...
-                                 VarName({}, 'densities', nGas, igas)              , ...
-                                 VarName({}, 'pressures', nGas, igas)};
-                outputvarname = VarName({'GasSupplyBc'}, 'boundaryEquations', nGas, igas);
                 model = model.registerPropFunction({outputvarname, fn, inputvarnames});
 
                 fn = @ProtonicMembraneGasSupply.updateMassSources;
                 inputvarnames = {VarName({'GasSupplyBc'}, 'massFluxes', nGas, igas)};
                 outputvarname = VarName({}, 'massSources', nGas, igas);
                 model = model.registerPropFunction({outputvarname, fn, inputvarnames});
-
                 
             end
+            
         end
 
         function forces = getValidDrivingForces(model)
@@ -154,7 +158,7 @@ classdef ProtonicMembraneGasSupply < BaseModel
             bccells = model.GasSupplyBc.controlHelpers.bccells;
             
             for igas = 1 : nGas
-                src = 0.*state.pressures{1}; % hacky initialization to get AD
+                src = 0.*state.pressure; % hacky initialization to get AD
                 src(bccells) = state.GasSupplyBc.massFluxes{igas};
                 srcs{igas} = - src;
             end
@@ -197,7 +201,7 @@ classdef ProtonicMembraneGasSupply < BaseModel
                 
                 clear typetbl2
                 switch ctrlinput.type
-                  case 'pressure'
+                  case 'pressure-composition'
                     typetbl2.type = 1;
                   case 'flux'
                     typetbl2.type = 2;
@@ -283,17 +287,9 @@ classdef ProtonicMembraneGasSupply < BaseModel
         end
 
 
-        function state = updatePressure(model, state)
+        function state = updateVolumeFraction(model, state)
 
-            nGas = model.nGas;
-            
-            p = state.pressures{1};
-
-            for igas = 2 : nGas
-                p = p + state.pressures{2};
-            end
-
-            state.pressure = p;
+            state.volumefractions{2} = 1 - state.volumefractions{1};
             
         end
         
@@ -309,24 +305,25 @@ classdef ProtonicMembraneGasSupply < BaseModel
             assert(lia, 'External output control not found');
             control = control(locb);
 
-            assert(strcmp(control.type, 'pressure'), 'Here we expect pressure controled output');
+            assert(strcmp(control.type, 'pressure-composition'), 'Here we expect pressure controled output');
             
-            pressures = control.values;
+            values = control.values;
 
-            pH2O = pressures(gasInd.H2O);
-            pO2 = pressures(gasInd.O2);
+            p  = values(1);
+            vf = values(2);
             
-            initstate.pressures{gasInd.H2O}              = pH2O*ones(nc, 1);
-            initstate.pressures{gasInd.O2}               = pO2 *ones(nc, 1);
-            initstate.GasSupplyBc.pressures{gasInd.H2O}  = pH2O*ones(nbc, 1);
-            initstate.GasSupplyBc.pressures{gasInd.O2}   = pO2 *ones(nbc, 1);
+            initstate.pressure           = p*ones(nc, 1);
+            initstate.volumefractions{1} = vf *ones(nc, 1);
+            
+            initstate.GasSupplyBc.pressure               = p*ones(nbc, 1);
+            initstate.GasSupplyBc.volumefractions{1}     = vf *ones(nbc, 1);
             initstate.GasSupplyBc.massFluxes{gasInd.H2O} = zeros(nbc, 1);
             initstate.GasSupplyBc.massFluxes{gasInd.O2}  = zeros(nbc, 1);
             
         end
 
         
-        function state = updateBcFluxTerms(model, state)
+        function state = updateBCequations(model, state)
 
             nGas = model.nGas;
             K    = model.permeability;
@@ -337,23 +334,27 @@ classdef ProtonicMembraneGasSupply < BaseModel
 
             Tbc = model.operators.transFaceBC(bcfaces);
             Tbc = K/mu.*Tbc;
-            
+
+            pIn   = state.pressure(bccells);
+            pBc   = state.GasSupplyBc.pressure;
+            rho   = state.density(bccells);
+            vfsIn = state.volumefractions;
+            vfsBc = state.GasSupplyBc.volumefractions;
+
             for igas = 1 : nGas
 
-                pIn   = state.pressures{igas}(bccells);
-                pBc   = state.GasSupplyBc.pressures{igas};
-                rhoIn = state.densities{igas}(bccells);
-                rhoBc = state.GasSupplyBc.densities{igas};
-
+                vfIn   = vfsIn{igas}(bccells);
+                vfBc   = vfsBc{igas};
                 bcFlux = state.GasSupplyBc.massFluxes{igas};
                 
                 bceqs{igas} = ProtonicMembraneGasSupplyBc.setupBcEquation(model , ...
-                                                                         bcFlux, ...
-                                                                         pIn   , ...
-                                                                         pBc   , ...
-                                                                         rhoIn , ...
-                                                                         rhoBc , ...
-                                                                         Tbc);
+                                                                          bcFlux, ...
+                                                                          pIn   , ...
+                                                                          pBc   , ...
+                                                                          rho   , ...
+                                                                          vfIn  , ...
+                                                                          vfBc  , ...
+                                                                          Tbc);
 
             end
 
@@ -365,7 +366,8 @@ classdef ProtonicMembraneGasSupply < BaseModel
             
             cleanState = addStaticVariables@BaseModel(model, cleanState, state);
 
-            cleanState.densities = state.densities;
+            cleanState.volumefractions = state.volumefractions;
+            cleanState.density         = state.density;
             
         end
         
@@ -374,13 +376,16 @@ classdef ProtonicMembraneGasSupply < BaseModel
             K    = model.permeability;
             mu   = model.viscosity;
             nGas = model.nGas;
+
+            p   = state.pressure;
+            vfs = state.volumefractions;
+            rho = state.density;
             
-            v = assembleHomogeneousFlux(model, state.pressure, K/mu);
+            v = assembleFlux(model, p, rho.*K/mu);
             
             for igas = 1 : nGas
 
-                rho = state.densities{igas};
-                state.massFluxes{igas} = assembleUpwindFlux(model, v, rho);
+                state.massFluxes{igas} = assembleUpwindFlux(model, v, vfs{igas});
                 
             end
             
@@ -390,13 +395,15 @@ classdef ProtonicMembraneGasSupply < BaseModel
 
             vols = model.G.cells.volumes;
             nGas = model.nGas;
+
+            vfs  = state.volumefractions;
+            rho  = state.density;
+            vfs0 = state0.volumefractions;
+            rho0 = state.density;
             
             for igas = 1 : nGas
 
-                rho  = state.densities{igas};
-                rho0 = state0.densities{igas};
-
-                state.massAccums{igas} = vols.*(rho - rho0)/dt;
+                state.massAccums{igas} = vols.*(rho.*vfs{igas} - rho0.*vfs0{igas})/dt;
                 
             end
             
@@ -421,18 +428,25 @@ classdef ProtonicMembraneGasSupply < BaseModel
 
     methods(Static)
 
-        function state = updateDensities(model, state)
+        function state = updateDensity(model, state)
 
             Mws  = model.molecularWeights;
             T    = model.T;
             nGas = model.nGas;
             c    = model.constants;
+
+            p   = state.pressure;
+            vfs = state.volumefractions;
+
+            density = 0*p;
             
             for igas = 1 : nGas
 
-                state.densities{igas} = Mws(igas)*state.pressures{igas}./(c.R.*T);
+                density = density + (p.*vfs{igas}.*Mws(igas))./(c.R*T);
                 
             end
+
+            state.density = density;
             
         end
 
