@@ -69,9 +69,4 @@ model.nonlinearTolerance = 1e-8;
 
 close all
 
-ind = cellfun(@(state) ~isempty(state), states);
-states = states(ind);
-
-
-states = cellfun(@(state) model.evalVarName(state, 'pressure'), states, 'un', false);
 plotToolbar(model.G, states);

@@ -366,8 +366,8 @@ classdef ProtonicMembraneGasSupply < BaseModel
             
             cleanState = addStaticVariables@BaseModel(model, cleanState, state);
 
-            cleanState.volumefractions = state.volumefractions;
-            cleanState.density         = state.density;
+            cleanState.volumefractions{2} = state.volumefractions{2};
+            cleanState.density            = state.density;
             
         end
         
@@ -399,7 +399,7 @@ classdef ProtonicMembraneGasSupply < BaseModel
             vfs  = state.volumefractions;
             rho  = state.density;
             vfs0 = state0.volumefractions;
-            rho0 = state.density;
+            rho0 = state0.density;
             
             for igas = 1 : nGas
 
