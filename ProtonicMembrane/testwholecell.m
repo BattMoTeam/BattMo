@@ -1,6 +1,6 @@
 clear all
 
-% mrstDebug(20);
+mrstDebug(20);
 
 mrstModule add ad-core mrst-gui
 
@@ -21,8 +21,11 @@ jsonstruct.Cell = parseBattmoJson(filename);
 pH2O = 475000;
 pO2  = 112500;
 
-jsonstruct.(gs).control(1).values = [1.5*pH2O; 1.5*pO2];
-jsonstruct.(gs).control(2).values = [pH2O; pO2];
+p = pH2O + pO2;
+s = pH2O/p;
+
+jsonstruct.(gs).control(1).values = [1.1*p; s];
+jsonstruct.(gs).control(2).values = [p; s];
 
 paramobj = ProtonicMembraneCellWithGasSupplyInputParams(jsonstruct);
 
@@ -71,14 +74,14 @@ initstate = model.setupInitialState();
 
 gasInd = model.(gs).gasInd;
 
-pH2O         = initstate.(gs).pressures{gasInd.H2O}(1);
-rho          = initstate.(gs).densities{1}(1);
+pH2O         = initstate.(gs).pressure(1);
+rho          = initstate.(gs).density(1);
 scalFlux     = 1/gen.nxGasSupply*rho*model.(gs).permeability/model.(gs).viscosity*pH2O/gen.ly;
 scalPressure = pH2O;
 
 model.scalings = {{{gs, 'massConses', 1}, scalFlux}, ...
                   {{gs, 'massConses', 2}, scalFlux}, ...
-                  {{gs, 'GasSupplyBc', 'controlEquation'}, scalPressure}, ...
+                  {{gs, 'GasSupplyBc', 'controlEquations'}, scalPressure}, ...
                   {{gs, 'GasSupplyBc', 'boundaryEquations', 1}, scalFlux}, ...
                   {{gs, 'GasSupplyBc', 'boundaryEquations', 2}, scalFlux}};
 
@@ -108,13 +111,13 @@ model.scalings =  horzcat(model.scalings, ...
 
 %% Setup schedule
 
-tswitch = 1;
-T       = 2; % This is not a real time scale, as all the model deals with equilibrium
+tswitch = 0.5;
+T       = 2*hour; 
 
 N1  = 20;
-dt1 = tswitch/N1;
+dt1 = tswitch*T/N1;
 N2  = 20;
-dt2 = (T - tswitch)/N2;
+dt2 = T*(1 - tswitch)/N2;
 
 step.val = [dt1*ones(N1, 1); dt2*ones(N2, 1)];
 step.control = ones(numel(step.val), 1);

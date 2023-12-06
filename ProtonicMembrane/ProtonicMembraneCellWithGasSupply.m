@@ -13,7 +13,10 @@ classdef ProtonicMembraneCellWithGasSupply < BaseModel
         couplingTerm
 
         helpers
-        pmin = 1e-3*barsa % cutoff value used in updateState method
+        pmin  = 1e-3*barsa % cutoff value used in updateState method
+        vfmin = 1e-8       % cutoff value used in updateState method
+        vfmax = 1 - 1e-8   % cutoff value used in updateState method
+        
     end
     
     methods
@@ -52,31 +55,6 @@ classdef ProtonicMembraneCellWithGasSupply < BaseModel
             model.constants = PhysicalConstants();
             
         end
-
-        function initstate = setupInitialState(model)
-
-            gs = 'GasSupply';
-            ce = 'Cell';
-            an = 'Anode';
-            
-            gasInd  = model.(gs).gasInd;
-
-            initstate.(gs) = model.(gs).setupInitialState();
-            
-            pH2O = initstate.(gs).pressures{gasInd.H2O};
-            pO2  = initstate.(gs).pressures{gasInd.O2};
-
-            model.(ce).(an).pH2O = pH2O(1);
-            model.(ce).(an).pO2  = pO2(1);
-            
-            model.(ce) = model.(ce).setupComputationalGraph();
-
-            initstate.(ce) = model.(ce).setupInitialState();
-
-            initstate = model.evalVarName(initstate, VarName({gs}, 'densities', 2));
-            initstate.time = 0;
-
-        end
         
         function model = registerVarAndPropfuncNames(model)
 
@@ -102,7 +80,7 @@ classdef ProtonicMembraneCellWithGasSupply < BaseModel
             model = model.registerVarNames(varnames);
 
             fn =  @ProtonicMembraneCellWithGasSupply.updateBcAnodePressures;
-            inputvarnames = {VarName({'GasSupply', 'GasSupplyBc'}, 'pressures', nGas)};
+            inputvarnames = {{'GasSupply', 'pressure'}, VarName({'GasSupply'},'volumefractions', nGas)};
             outputvarname = VarName({'Cell', 'Anode'}, 'pressures', nGas);
             model = model.registerPropFunction({outputvarname, fn, inputvarnames});
 
@@ -116,6 +94,34 @@ classdef ProtonicMembraneCellWithGasSupply < BaseModel
             fn =  @ProtonicMembraneCellWithGasSupply.dispatchTime;
             model = model.registerPropFunction({{ce, 'time'}, fn, {'time'}});
             
+        end
+
+        function initstate = setupInitialState(model)
+
+            gs = 'GasSupply';
+            ce = 'Cell';
+            an = 'Anode';
+            
+            gasInd  = model.(gs).gasInd;
+
+            initstate.(gs) = model.(gs).setupInitialState();
+
+            p = initstate.(gs).pressure;
+            s = initstate.(gs).volumefractions{1};
+            
+            pH2O = s.*p;
+            pO2  = (1 - s).*p;
+
+            model.(ce).(an).pH2O = pH2O(1);
+            model.(ce).(an).pO2  = pO2(1);
+            
+            model.(ce) = model.(ce).setupComputationalGraph();
+
+            initstate.(ce) = model.(ce).setupInitialState();
+
+            initstate = model.evalVarName(initstate, VarName({gs}, 'density'));
+            initstate.time = 0;
+
         end
 
         function state = dispatchTime(model, state)
@@ -153,9 +159,12 @@ classdef ProtonicMembraneCellWithGasSupply < BaseModel
             nGas = model.GasSupply.GasSupplyBc.nGas;
             map  = model.helpers.couplingMap;
 
+            vfs = state.GasSupply.GasSupplyBc.volumefractions;
+            p   = state.GasSupply.GasSupplyBc.pressure;
+            
             for igas = 1 : nGas
 
-                state.Cell.Anode.pressures{igas} = map*state.GasSupply.GasSupplyBc.pressures{igas};
+                state.Cell.Anode.pressures{igas} = map*(p.*vfs{igas});
                 
             end
             
@@ -242,13 +251,19 @@ classdef ProtonicMembraneCellWithGasSupply < BaseModel
 
             nGas = model.(gs).nGas;
 
-            pmin = model.pmin;
+            pmin  = model.pmin;
+            vfmin = model.vfmin;
+            vfmax = model.vfmax;
             
-            for igas = 1 : nGas
-                state.(gs).pressures{igas} = max(pmin, state.(gs).pressures{igas});
-                state.(gs).GasSupplyBc.pressures{igas} = max(pmin, state.(gs).GasSupplyBc.pressures{igas});
-            end
-
+            state.(gs).pressure             = max(pmin, state.(gs).pressure);
+            state.(gs).GasSupplyBc.pressure = max(pmin, state.(gs).GasSupplyBc.pressure);
+            
+            state.(gs).volumefractions{1}             = max(vfmin, state.(gs).volumefractions{1});
+            state.(gs).GasSupplyBc.volumefractions{1} = max(vfmin, state.(gs).GasSupplyBc.volumefractions{1});
+            
+            state.(gs).volumefractions{1}             = min(vfmax, state.(gs).volumefractions{1});
+            state.(gs).GasSupplyBc.volumefractions{1} = min(vfmax, state.(gs).GasSupplyBc.volumefractions{1});
+            
         end
         
     end
