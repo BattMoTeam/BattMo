@@ -24,19 +24,19 @@ pO2  = 112500;
 p = pH2O + pO2;
 s = pH2O/p;
 
-jsonstruct.(gs).control(1).values = [1.1*p; s];
+jsonstruct.(gs).control(1).values = [p; s];
 jsonstruct.(gs).control(2).values = [p; s];
 
 paramobj = ProtonicMembraneCellWithGasSupplyInputParams(jsonstruct);
 
 gen = GasSupplyPEMgridGenerator2D();
 
-gen.nxCell      = 1000;
-gen.nxGasSupply = 50;
+gen.nxCell      = 5;
+gen.nxGasSupply = 5;
 gen.lxCell      = 22*micro*meter;
 gen.lxGasSupply = 1*milli*meter;
 
-gen.ny = 50;
+gen.ny = 1;
 gen.ly = 1;
 
 paramobj = gen.updateInputParams(paramobj);
@@ -112,7 +112,7 @@ model.scalings =  horzcat(model.scalings, ...
 %% Setup schedule
 
 tswitch = 0.5;
-T       = 2*hour; 
+T       = 1;
 
 N1  = 20;
 dt1 = tswitch*T/N1;
@@ -124,7 +124,7 @@ step.control = ones(numel(step.val), 1);
 
 Imax = 0;
 
-control.src = @(time) controlfunc(time, Imax, tswitch, T, 'order', 'I-first');
+control.src = @(time) controlfunc(time, Imax, T*tswitch, T, 'order', 'I-first');
 
 schedule = struct('control', control, 'step', step); 
 

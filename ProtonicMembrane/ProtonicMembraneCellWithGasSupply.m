@@ -75,7 +75,8 @@ classdef ProtonicMembraneCellWithGasSupply < BaseModel
             varnames{end + 1} = VarName({}, 'massCouplingEquations', nGas);
             % We add time variables to this model and the Cell model. Needed for the control
             varnames{end + 1} = 'time';
-            varnames{end + 1} = {ce, 'time'};
+            % Coupling damping variable
+            varnames{end + 1} = 'beta';
             
             model = model.registerVarNames(varnames);
 
@@ -85,17 +86,30 @@ classdef ProtonicMembraneCellWithGasSupply < BaseModel
             model = model.registerPropFunction({outputvarname, fn, inputvarnames});
 
             fn =  @ProtonicMembraneCellWithGasSupply.updateCouplingEquation;
-            inputvarnames = {{'Cell', 'Anode' 'iHp'}, VarName({'GasSupply', 'GasSupplyBc'}, 'massFluxes', nGas)};
+            inputvarnames = {{'Cell', 'Anode' 'iHp'}, VarName({'GasSupply', 'GasSupplyBc'}, 'massFluxes', nGas), 'beta'};
             outputvarname = VarName({}, 'massCouplingEquations', nGas);
             model = model.registerPropFunction({outputvarname, fn, inputvarnames});
-
+            
             model = model.setAsStaticVarName('time');
             
             fn =  @ProtonicMembraneCellWithGasSupply.dispatchTime;
             model = model.registerPropFunction({{ce, 'time'}, fn, {'time'}});
+
+            fn = @ProtonicMembraneCell.updateBeta;
+            fn = {fn, @(propfunction) PropFunction.drivingForceFuncCallSetupFn(propfunction)};
+            model = model.registerPropFunction({'beta', fn, {'time'}});
             
         end
 
+        function state = updateBeta(model, state, drivingForces)
+            
+            time = state.time;
+            [~, ~, beta] = drivingForces.src(time);
+            % state.beta = beta;
+            state.beta = 0;
+            
+        end
+        
         function initstate = setupInitialState(model)
 
             gs = 'GasSupply';
@@ -141,14 +155,15 @@ classdef ProtonicMembraneCellWithGasSupply < BaseModel
             
             iHp      = state.Cell.Anode.iHp;
             mfluxbcs = state.GasSupply.GasSupplyBc.massFluxes;
-
+            beta     = state.beta;
+            
             % Chemical equation : 1/2*H2O <-> H^+ + e^- + 1/4*O2
             % Flux in the boundary conditions are oritented outwards from GasSupply domain.
             igas = gasInd.H2O;
-            coupeqs{igas} = map*mfluxbcs{igas} - 1/2*mws(igas)*iHp/F;
+            coupeqs{igas} = map*mfluxbcs{igas} - beta*1/2*mws(igas)*iHp/F;
 
             igas = gasInd.O2;
-            coupeqs{igas} = map*mfluxbcs{igas} + 1/4*mws(igas)*iHp/F;
+            coupeqs{igas} = map*mfluxbcs{igas} + beta*1/4*mws(igas)*iHp/F;
 
             state.massCouplingEquations = coupeqs;
             

@@ -1,4 +1,4 @@
-function [I, alpha] = controlfunc(time, Imax, tswitch, T, varargin)
+function [I, alpha, beta] = controlfunc(time, Imax, tswitch, T, varargin)
 
     opt = struct('order', 'alpha-first');
     opt = merge_options(opt, varargin{:});
@@ -16,10 +16,12 @@ function [I, alpha] = controlfunc(time, Imax, tswitch, T, varargin)
         if time <= tswitch
             I     = time/tswitch*Imax;
             alpha = 0;
+            beta  = time/tswitch;
         else
             I     = Imax;
             % alpha = 0;
             alpha = (time - tswitch)/(T - tswitch);
+            beta = 1;
         end
       case 'alpha-only'
         % tswitch is not used. This case is used in OxideElectrolyte where there is no Butler-Volmer at boundary.
