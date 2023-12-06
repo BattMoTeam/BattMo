@@ -31,12 +31,12 @@ paramobj = ProtonicMembraneCellWithGasSupplyInputParams(jsonstruct);
 
 gen = GasSupplyPEMgridGenerator2D();
 
-gen.nxCell      = 5;
-gen.nxGasSupply = 5;
+gen.nxCell      = 4;
+gen.nxGasSupply = 6;
 gen.lxCell      = 22*micro*meter;
 gen.lxGasSupply = 1*milli*meter;
 
-gen.ny = 1;
+gen.ny = 5;
 gen.ly = 1;
 
 paramobj = gen.updateInputParams(paramobj);
@@ -140,7 +140,7 @@ model.verbose = true;
 
 %% Start simulation
 
-dopack = true;
+dopack = false;
 clearSimulation = false;
 
 if dopack
