@@ -40,6 +40,8 @@ classdef ProtonicMembraneGasSupplyBc < BaseModel
             varnames{end + 1} = VarName({}, 'volumefractions', nGas);
             % Total pressure
             varnames{end + 1} = 'pressure';
+            % Density
+            varnames{end + 1} = 'density';
             % Mass Flux terms at boundary (outward)
             varnames{end + 1} = VarName({}, 'massFluxes', nGas);
             % Boundary Equation relating boundary massFluxes and boundary pressure values
@@ -59,6 +61,11 @@ classdef ProtonicMembraneGasSupplyBc < BaseModel
                              VarName({}, 'volumefractions', nGas), ...
                              VarName({}, 'massFluxes', nGas)};
             model = model.registerPropFunction({'controlEquations', fn, inputvarnames});
+            
+            fn = @(model, state) ProtonicMembraneGasSupply.updateDensity(model, state);
+            fn = {fn, @(prop) PropFunction.literalFunctionCallSetupFn(prop)};
+            inputvarnames = {VarName({}, 'volumefractions', nGas), 'pressure'};
+            model = model.registerPropFunction({'density', fn, inputvarnames});
             
         end
         
@@ -118,15 +125,15 @@ classdef ProtonicMembraneGasSupplyBc < BaseModel
     
     methods(Static)
 
-        function bceq = setupBcEquation(model, bcFlux, pIn, pBc, rho, vfIn, vfBc, Tbc)
+        function bceq = setupBcEquation(model, bcFlux, pIn, pBc, rhoIn, rhoBc, vfIn, vfBc, Tbc)
         % Tbc constains both transmissibility and (homogeneous) coefficient
             
-            v  = rho.*Tbc.*(pIn - pBc);
+            v  = Tbc.*(pIn - pBc);
             
             isOutward = (v > 0);
 
-            v(isOutward)  = vfIn(isOutward).*v(isOutward);
-            v(~isOutward) = vfBc(~isOutward).*v(~isOutward);
+            v(isOutward)  = rhoIn(isOutward).*vfIn(isOutward).*v(isOutward);
+            v(~isOutward) = rhoBc(~isOutward).*vfBc(~isOutward).*v(~isOutward);
 
             bceq = v - bcFlux;
             
