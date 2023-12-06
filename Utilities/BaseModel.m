@@ -637,7 +637,7 @@ classdef BaseModel < PhysicalModel
             end
             
             function str = setupName(varname)
-                
+
                 if isnumeric(varname{end})
                     varname{end} = sprintf('%d', varname{end});
                 end
@@ -653,6 +653,17 @@ classdef BaseModel < PhysicalModel
             model.equationNames = cellfun(@(varname) setupName(varname), model.equationVarNames, 'uniformoutput', false);
             model.equationTypes = repmat({'cell'}, 1, numel(model.equationNames));
             
+        end
+
+        function cgt = cgt(model)
+        % Shortcut to retrieve the computational graph
+            cgt =  model.computationalGraph;
+            
+        end
+
+        function cgp = cgp(model)
+        % Shortcut to setup and retrieve the computational graph plot 
+            cgp = ComputationalGraphPlot(model.computationalGraph);
         end
         
     end
