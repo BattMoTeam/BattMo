@@ -1,6 +1,6 @@
 clear all
 
-mrstDebug(20);
+% mrstDebug(20);
 
 mrstModule add ad-core mrst-gui
 
@@ -24,20 +24,20 @@ pO2  = 112500;
 p = pH2O + pO2;
 s = pH2O/p;
 
-jsonstruct.(gs).control(1).values = [p; s];
+jsonstruct.(gs).control(1).values = [1.5*p; s];
 jsonstruct.(gs).control(2).values = [p; s];
 
 paramobj = ProtonicMembraneCellWithGasSupplyInputParams(jsonstruct);
 
 gen = GasSupplyPEMgridGenerator2D();
 
-gen.nxCell      = 4;
-gen.nxGasSupply = 6;
+gen.nxCell      = 100;
+gen.nxGasSupply = 50;
 gen.lxCell      = 22*micro*meter;
 gen.lxGasSupply = 1*milli*meter;
 
-gen.ny = 5;
-gen.ly = 1;
+gen.ny = 20;
+gen.ly = 1e-3;
 
 paramobj = gen.updateInputParams(paramobj);
 
@@ -112,7 +112,7 @@ model.scalings =  horzcat(model.scalings, ...
 %% Setup schedule
 
 tswitch = 0.5;
-T       = 1;
+T       = 1e5;
 
 N1  = 20;
 dt1 = tswitch*T/N1;
