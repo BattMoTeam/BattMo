@@ -15,8 +15,8 @@ classdef ProtonicMembraneCellWithGasSupply < BaseModel
 
         helpers
         pmin  = 1e-3*barsa % cutoff value used in updateState method
-        vfmin = 1e-8       % cutoff value used in updateState method
-        vfmax = 1 - 1e-8   % cutoff value used in updateState method
+        vfmin = 1e-2       % cutoff value used in updateState method
+        vfmax = 1 - 1e-2   % cutoff value used in updateState method
         
     end
     
