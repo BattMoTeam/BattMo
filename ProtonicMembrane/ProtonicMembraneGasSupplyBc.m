@@ -10,8 +10,6 @@ classdef ProtonicMembraneGasSupplyBc < BaseModel
 
         constants
         
-        controlHelpers
-        
     end
     
     methods
@@ -19,6 +17,11 @@ classdef ProtonicMembraneGasSupplyBc < BaseModel
         function model = ProtonicMembraneGasSupplyBc(paramobj)
             
             model = model@BaseModel();
+            
+            fdnames = {'molecularWeights', ...
+                       'T'};
+
+            model = dispatchParams(model, paramobj, fdnames);
             
             model.gasInd.H2O = 1;
             model.gasInd.O2  = 2;
@@ -46,8 +49,6 @@ classdef ProtonicMembraneGasSupplyBc < BaseModel
             varnames{end + 1} = VarName({}, 'massFluxes', nGas);
             % Boundary Equation relating boundary massFluxes and boundary pressure values
             varnames{end + 1} = VarName({}, 'boundaryEquations', nGas);
-            % ControlEquations
-            varnames{end + 1} = 'controlEquations';
             
             model = model.registerVarNames(varnames);
 
@@ -56,11 +57,6 @@ classdef ProtonicMembraneGasSupplyBc < BaseModel
             outputvarname = VarName({}, 'volumefractions', nGas, 2);
             model = model.registerPropFunction({outputvarname, fn, inputvarnames});
                 
-            fn = @ProtonicMembraneGasSupplyBc.updateControlEquations;
-            inputvarnames = {'pressure'                          , ...
-                             VarName({}, 'volumefractions', nGas), ...
-                             VarName({}, 'massFluxes', nGas)};
-            model = model.registerPropFunction({'controlEquations', fn, inputvarnames});
             
             fn = @(model, state) ProtonicMembraneGasSupply.updateDensity(model, state);
             fn = {fn, @(prop) PropFunction.literalFunctionCallSetupFn(prop)};
@@ -73,12 +69,6 @@ classdef ProtonicMembraneGasSupplyBc < BaseModel
 
     methods
 
-        function nbc = getNumberBcFaces(model)
-
-            nbc = numel(model.controlHelpers.bcfaces);
-            
-        end
-
 
         function state = updateVolumeFraction(model, state)
 
@@ -86,40 +76,7 @@ classdef ProtonicMembraneGasSupplyBc < BaseModel
             
         end
         
-        function state = updateControlEquations(model, state)
 
-            controlHelpers = model.controlHelpers;
-
-            maps   = controlHelpers.maps;
-            bcvals = controlHelpers.vals;
-
-            pressure   = state.pressure;
-            vf         = state.volumefractions{1};
-            massFluxes = state.massFluxes;
-            
-            eqs = {};
-            for icomp = 1 : 2
-                for itype = 1 : 2
-                    switch itype
-                      case 1
-                        switch icomp
-                          case 1
-                            val = pressure;
-                          case 2
-                            val = vf;
-                        end                            
-                      case 2
-                        val = massFluxes{icomp};
-                      otherwise
-                        error('type index not recognized');
-                    end
-                    eqs{end + 1} = maps{itype, icomp}*val - bcvals{itype, icomp};
-                end
-            end
-
-            state.controlEquations = vertcat(eqs{:});
-            
-        end
 
     end
     
