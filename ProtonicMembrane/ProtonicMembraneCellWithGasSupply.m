@@ -211,8 +211,7 @@ classdef ProtonicMembraneCellWithGasSupply < BaseModel
             
             time = state.time;
             [~, ~, beta] = drivingForces.src(time);
-            % state.beta = beta;
-            state.beta = 0;
+            state.beta = beta;
             
         end
 
