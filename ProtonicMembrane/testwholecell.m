@@ -31,13 +31,13 @@ paramobj = ProtonicMembraneCellWithGasSupplyInputParams(jsonstruct);
 
 gen = GasSupplyPEMgridGenerator2D();
 
-gen.nxCell      = 100;
+gen.nxCell      = 1000;
 gen.nxGasSupply = 50;
 gen.lxCell      = 22*micro*meter;
 gen.lxGasSupply = 1*milli*meter;
 
 gen.ny = 20;
-gen.ly = 1e-3;
+gen.ly = 1.5e-3;
 
 paramobj = gen.updateInputParams(paramobj);
 
@@ -111,20 +111,21 @@ model.scalings =  horzcat(model.scalings, ...
 
 %% Setup schedule
 
-tswitch = 0.5;
-T       = 1e5;
+tswitch   = 0.5;
+totaltime = 1*hour;
 
 N1  = 20;
-dt1 = tswitch*T/N1;
+timeswitch = tswitch*totaltime;
+dt1 = timeswitch/N1;
 N2  = 20;
-dt2 = T*(1 - tswitch)/N2;
+dt2 = (totaltime - timeswitch)/N2;
 
-step.val = [dt1*ones(N1, 1); dt2*ones(N2, 1)];
+step.val = [rampupTimesteps(timeswitch, dt1, 5); dt2*ones(N2, 1)];
 step.control = ones(numel(step.val), 1);
 
-Imax = 0;
+Imax = 1;
 
-control.src = @(time) controlfunc(time, Imax, T*tswitch, T, 'order', 'I-first');
+control.src = @(time) controlfunc(time, Imax, timeswitch, totaltime, 'order', 'I-first');
 
 schedule = struct('control', control, 'step', step); 
 
@@ -140,14 +141,15 @@ model.verbose = true;
 
 %% Start simulation
 
-dopack = false;
+dopack = true;
 clearSimulation = false;
 
 if dopack
 
     name = 'testwholecell';
-    problem = packSimulationProblem(initstate, model, schedule, [], ...
-                                    'Name'           , name      , ...
+    problem = packSimulationProblem(initstate, model, schedule, []             , ...
+                                    'ExtraArguments', {'OutputMinisteps', true}, ...
+                                    'Name'           , name                    , ...
                                     'NonLinearSolver', nls);
     if clearSimulation
         %% clear previously computed simulation
@@ -174,16 +176,16 @@ xc = model.(ce).(elyte).G.cells.centroids(1 : N, 1);
 
 state = states{end};
 
-X = reshape(model.(ce).(elyte).G.cells.centroids(:, 1), N, []);
-Y = reshape(model.(ce).(elyte).G.cells.centroids(:, 2), N, []);
+X = reshape(model.(ce).(elyte).G.cells.centroids(:, 1), N, [])/(milli*meter);
+Y = reshape(model.(ce).(elyte).G.cells.centroids(:, 2), N, [])/(milli*meter);
 
 figure
 val = state.(ce).(elyte).pi;
 Z = reshape(val, N, []);
 surf(X, Y, Z, 'edgecolor', 'none');
 title('pi')
-xlabel('x [m]')
-view(20, 15)
+xlabel('x [mm]')
+view(45, 31)
 colorbar
 
 figure
@@ -191,8 +193,8 @@ val = state.(ce).(elyte).pi - state.(ce).(elyte).phi;
 Z = reshape(val, N, []);
 surf(X, Y, Z, 'edgecolor', 'none');
 title('E')
-xlabel('x [m]')
-view(20, 15)
+xlabel('x [mm]')
+view(45, 31)
 colorbar
 
 figure
@@ -200,10 +202,46 @@ val = state.(ce).(elyte).phi;
 Z = reshape(val, N, []);
 surf(X, Y, Z, 'edgecolor', 'none');
 title('phi')
-xlabel('x [m]')
-view(20, 15)
+xlabel('x [mm]')
+view(73, 12)
 colorbar
 
+N = gen.nxGasSupply;
 
+X = reshape(model.(gs).G.cells.centroids(:, 1), N, [])/(milli*meter);
+Y = reshape(model.(gs).G.cells.centroids(:, 2), N, [])/(milli*meter);
+
+figure('position', [1290, 755, 1275, 559])
+
+val = state.(gs).volumefractions{1};
+Z = reshape(val, N, []);
+
+surf(X, Y, Z, 'edgecolor', 'none');
+colorbar
+title('Volume Fraction H2O');
+xlabel('x [mm]')
+view([50, 51]);
+
+figure('position', [1290, 755, 1275, 559])
+
+val = state.(gs).volumefractions{2};
+Z = reshape(val, N, []);
+
+surf(X, Y, Z, 'edgecolor', 'none');
+colorbar
+title('Volume Fraction O2');
+xlabel('x [mm]')
+view([50, 51]);
+
+figure('position', [1290, 755, 1275, 559])
+
+val = state.(gs).pressure;
+Z = reshape(val, N, []);
+
+surf(X, Y, Z/barsa, 'edgecolor', 'none');
+colorbar
+title('Pressure / bar');
+xlabel('x [mm]')
+view([50, 51]);
 
 
