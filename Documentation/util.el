@@ -6,6 +6,7 @@
 (pcase (user-login-name)
   ("xavier" (progn
               (pyvenv-activate "~/Python/battmodoc-env/")
+              (setq battmodir "/home/xavier/Matlab/Projects/battmo/")
               (setq docdir "/home/xavier/Matlab/Projects/battmo/Documentation/")
               (setq utilsdir "/home/xavier/Matlab/Projects/battmo/Documentation/utils/")
               (setq testdir "/home/xavier/Matlab/Projects/battmo-doc-test/")))
@@ -65,6 +66,23 @@
     (kill-line)
     (insert "   .. attribute:: " att "\n\n")
     (insert "      " com "\n")
+    )
+  )
+
+
+(defun battmo-get-file-url ()
+  (interactive)
+  (let* ((repo-url "https://github.com/BattMoTeam/BattMo")
+         (branch-name "dev")
+         (currentmode (buffer-local-value 'major-mode (current-buffer)))
+         (filename (if (eq 'dired-mode currentmode)
+                       (dired-get-filename)
+                     (buffer-file-name)))
+         (filename (string-remove-prefix battmodir filename))
+         (address (concat repo-url "/blob/" branch-name "/" filename "#L" (number-to-string (line-number-at-pos))))
+         )
+    
+    (kill-new address)
     )
   )
 
