@@ -1,7 +1,7 @@
 %% Particle simulation with SEI layer growth
 
 % clear the workspace and close open figures
-clear all
+clear
 close all
 
 %% Import the required modules from MRST

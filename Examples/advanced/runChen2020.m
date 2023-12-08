@@ -4,7 +4,6 @@
 % clear the workspace and close open figures
 clear
 close all
-clc
 
 % load MRST modules
 mrstModule add ad-core mrst-gui mpfa

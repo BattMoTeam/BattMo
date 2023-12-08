@@ -1,9 +1,9 @@
 %% Example where we combine a battery discharge simulation with mechanical simulation
 %  We use a a simple relationship between Lithium concentration and load stress in the electrode
 
-% clear all
+clear
 close all
-clc
+
 
 %% Import the required modules from MRST
 
@@ -33,17 +33,17 @@ paramobj = BatteryInputParams(jsonstruct);
 
 %% Setup the geometry and computational mesh
 
-gen = BatteryGeneratorP3D(); 
+gen = BatteryGeneratorP3D();
 
 % We change the properties of the mesh and update paramobj with the results mesh
 gen.ylength = 1e-4;
 gen.ny      = 10;
-paramobj    = gen.updateBatteryInputParams(paramobj); 
+paramobj    = gen.updateBatteryInputParams(paramobj);
 
-paramobj.(ne).(cc).effectiveElectronicConductivity = 1e5; 
+paramobj.(ne).(cc).effectiveElectronicConductivity = 1e5;
 paramobj.(pe).(cc).effectiveElectronicConductivity = 1e5;
 
-%%  Initialize the battery model. 
+%%  Initialize the battery model.
 
 model = Battery(paramobj);
 
@@ -55,21 +55,21 @@ plotBatteryMesh(model);
 
 C      = computeCellCapacity(model);
 CRate  = model.(ctrl).CRate;
-inputI = (C/hour)*CRate; % current 
+inputI = (C/hour)*CRate; % current
 
-%% Setup the time step schedule 
+%% Setup the time step schedule
 % Smaller time steps are used to ramp up the current from zero to its operational value. Larger time steps are then used
 % for the normal operation.
 
-n           = 25; 
-dt          = []; 
-dt          = [dt; repmat(0.5e-4, n, 1).*1.5.^[1:n]']; 
+n           = 25;
+dt          = [];
+dt          = [dt; repmat(0.5e-4, n, 1).*1.5.^[1:n]'];
 totalTime   = 1.4*hour/CRate;
-n           = 40; 
-dt          = [dt; repmat(totalTime/n, n, 1)]; 
-times       = [0; cumsum(dt)]; 
-tt          = times(2 : end); 
-step        = struct('val', diff(times), 'control', ones(numel(tt), 1)); 
+n           = 40;
+dt          = [dt; repmat(totalTime/n, n, 1)];
+times       = [0; cumsum(dt)];
+tt          = times(2 : end);
+step        = struct('val', diff(times), 'control', ones(numel(tt), 1));
 
 %% Setup the operating limits for the cell
 % The maximum and minimum voltage limits for the cell are defined using stopping and source functions. A stopping
@@ -80,23 +80,23 @@ step        = struct('val', diff(times), 'control', ones(numel(tt), 1));
 control = model.(ctrl).setupScheduleControl();
 
 % This control is used to set up the schedule
-schedule = struct('control', control, 'step', step); 
+schedule = struct('control', control, 'step', step);
 
 %% Setup the initial state of the model
 
-initstate = model.setupInitialState(); 
+initstate = model.setupInitialState();
 
-%% Setup the properties of the nonlinear solver 
-nls = NonLinearSolver(); 
+%% Setup the properties of the nonlinear solver
+nls = NonLinearSolver();
 % Change default maximum iteration number in nonlinear solver
-nls.maxIterations = 10; 
+nls.maxIterations = 10;
 % Change default behavior of nonlinear solver, in case of error
-nls.errorOnFailure = false; 
+nls.errorOnFailure = false;
 % Timestep selector
 nls.timeStepSelector = StateChangeTimeStepSelector('TargetProps', {{ctrl, 'E'}}, ...
                                                   'targetChangeAbs', 0.03);
 % Change default tolerance for nonlinear solver
-model.nonlinearTolerance = 1e-5; 
+model.nonlinearTolerance = 1e-5;
 % Set verbosity of the solver (if true, value of the residuals for every equation is given)
 model.verbose = true;
 
@@ -104,16 +104,16 @@ model.verbose = true;
 
 [wellSols, states, report] = simulateScheduleAD(initstate, model, schedule, ...
                                                 'OutputMinisteps', true, ...
-                                                'NonLinearSolver', nls); 
+                                                'NonLinearSolver', nls);
 
 %%  Process output and recover the output voltage and current from the output states.
 
-ind = cellfun(@(x) not(isempty(x)), states); 
+ind = cellfun(@(x) not(isempty(x)), states);
 states = states(ind);
 
-E    = cellfun(@(x) x.(ctrl).E, states); 
+E    = cellfun(@(x) x.(ctrl).E, states);
 I    = cellfun(@(x) x.(ctrl).I, states);
-time = cellfun(@(x) x.time, states); 
+time = cellfun(@(x) x.time, states);
 
 %% Setup of the mechanical problem
 
@@ -122,7 +122,7 @@ mrstModule add vemmech
 opt = struct('E',1,'nu',0.3);
 G = createAugmentedGrid(model.G);
 G = computeGeometry(G);
-   
+
 %% Mechanical properties
 
 Ev  = repmat(opt.E, G.cells.num, 1);
@@ -154,8 +154,8 @@ end
 bc = {bc{1}, bc{3}, bc{4}};
 bc{2}.el_bc.disp_bc.mask(:, 1) = 0;
 bc{3}.el_bc.disp_bc.mask(:, 1) = 0;
-nodes = []; 
-faces = []; 
+nodes = [];
+faces = [];
 mask = [];
 
 for i = 1:numel(bc)
@@ -180,30 +180,30 @@ load = @(x) -repmat([0, 0], size(x, 1), 1);
 state0 = initstate;
 figure
 plotGrid(G)
-ax      = axis(); 
-ax(2)   = ax(2)*1.5; 
+ax      = axis();
+ax(2)   = ax(2)*1.5;
 ax(end) = ax(end)*1.1;
 
 state0 = model.evalVarName(state0, {ne, co, am, sd, 'cAverage'});
 state0 = model.evalVarName(state0, {pe, co, am, sd, 'cAverage'});
 
 for i = 1 : numel(states)
-    
+
     state = states{i};
 
     state = model.evalVarName(state, {ne, co, am, sd, 'cAverage'});
     state = model.evalVarName(state, {pe, co, am, sd, 'cAverage'});
-    
+
     T = state.ThermalModel.T - state0.ThermalModel.T;
-    
-    cna = zeros(G.cells.num, 1); 
-    cpa = zeros(G.cells.num, 1); 
-    
-    ind      = model.(ne).(co).G.mappings.cellmap; 
-    cna(ind) = state.(ne).(co).(am).(sd).cAverage - state0.(ne).(co).(am).(sd).cAverage; 
-    ind      = model.(pe).(co).G.mappings.cellmap; 
-    cpa(ind) = state.(pe).(co).(am).(sd).cAverage - state0.(pe).(co).(am).(sd).cAverage; 
-    
+
+    cna = zeros(G.cells.num, 1);
+    cpa = zeros(G.cells.num, 1);
+
+    ind      = model.(ne).(co).G.mappings.cellmap;
+    cna(ind) = state.(ne).(co).(am).(sd).cAverage - state0.(ne).(co).(am).(sd).cAverage;
+    ind      = model.(pe).(co).G.mappings.cellmap;
+    cpa(ind) = state.(pe).(co).(am).(sd).cAverage - state0.(pe).(co).(am).(sd).cAverage;
+
     dc = (cna + cpa*0.5)/1000;
 
     [uVEM, extra] = VEM_linElast(G, C, el_bc, load, ...
@@ -217,11 +217,11 @@ for i = 1 : numel(states)
     plotCellDataDeformed(G, mdiv, uVEM, 'EdgeAlpha',0.04);
     colorbar();
     for k = 1:numel(el_bc)
-        plotFaces2D(G, el_bc.disp_bc.faces); 
+        plotFaces2D(G, el_bc.disp_bc.faces);
     end
     axis(ax)
     pause(0.1)
-    
+
 end
 
 %{

@@ -1,4 +1,4 @@
-% clear all
+clear
 
 %% Setup Julia server
 
@@ -53,7 +53,7 @@ switch testCase
 
     man.load('inputType'    , 'JSON', ...
              'inputFileName', inputFileName);
-    
+
   otherwise
 
     error('testCase not recognized');

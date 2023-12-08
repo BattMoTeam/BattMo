@@ -5,8 +5,6 @@
 % clear the workspace and close open figures
 clear
 close all
-clc
-
 
 %% Import the required modules from MRST
 % load MRST modules

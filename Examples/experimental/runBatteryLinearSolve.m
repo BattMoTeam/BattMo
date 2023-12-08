@@ -2,11 +2,9 @@
 % This example demonstrates how to setup a P2D model of a Li-ion battery
 % and run a simple simulation.
 
-% clear the workspace and close open figures
-%clear
-%close all
-%clc
-
+% Clear the workspace and close open figures
+clear
+close all
 
 %% Import the required modules from MRST
 % load MRST modules
@@ -41,22 +39,22 @@ ctrl    = 'Control';
 %% Setup the geometry and computational mesh
 % Here, we setup the 1D computational mesh that will be used for the
 % simulation. The required discretization parameters are already included
-% in the class BatteryGeneratorP2D. 
+% in the class BatteryGeneratorP2D.
 gen = BatteryGeneratorP2D();
 gen.fac = 1;
 gen = gen.applyResolutionFactors();
 
-% Now, we update the paramobj with the properties of the mesh. 
+% Now, we update the paramobj with the properties of the mesh.
 paramobj = gen.updateBatteryInputParams(paramobj);
 
 % !!! REMOVE THIS. SET THE RIGHT VALUES IN THE JSON !!! In this case, we
 % change some of the values of the paramaters that were given in the json
-% file to other values. This is done directly on the object paramobj. 
+% file to other values. This is done directly on the object paramobj.
 paramobj.(ne).(cc).EffectiveElectricalConductivity = 1e5;
 paramobj.(pe).(cc).EffectiveElectricalConductivity = 1e5;
 paramobj.(thermal).externalTemperature = paramobj.initT;
 
-%%  Initialize the battery model. 
+%%  Initialize the battery model.
 % The battery model is initialized by sending paramobj to the Battery class
 % constructor. see :class:`Battery <Battery.Battery>`.
 paramobj.use_thermal = false;
@@ -69,11 +67,11 @@ model.AutoDiffBackend= AutoDiffBackend();
 %% Compute the nominal cell capacity and choose a C-Rate
 % The nominal capacity of the cell is calculated from the active materials.
 % This value is then combined with the user-defined C-Rate to set the cell
-% operational current. 
+% operational current.
 
 CRate = model.Control.CRate;
 
-%% Setup the time step schedule 
+%% Setup the time step schedule
 % Smaller time steps are used to ramp up the current from zero to its
 % operational value. Larger time steps are then used for the normal
 % operation.
@@ -90,46 +88,32 @@ n     = 10;
 dt    = total*0.7/n;
 step  = struct('val', dt*ones(n, 1), 'control', ones(n, 1));
 
-% we setup the control by assigning a source and stop function.
-% control = struct('CCCV', true); 
-%  !!! Change this to an entry in the JSON with better variable names !!!
+% Setup the control
 
-switch model.Control.controlPolicy
-  case 'CCDischarge'
-    tup = 0.1; % rampup value for the current function, see rampupSwitchControl
-    srcfunc = @(time, I, E) rampupSwitchControl(time, tup, I, E, ...
-                                                model.Control.Imax, ...
-                                                model.Control.lowerCutoffVoltage);
-    % we setup the control by assigning a source and stop function.
-    control = struct('src', srcfunc, 'CCDischarge', true);
-  case 'CCCV'
-    control = struct('CCCV', true);
-  otherwise
-    error('control policy not recognized');
-end
+control = model.Control.setupScheduleControl();
 
 % This control is used to set up the schedule
-%%
+
 nc = 1;
 nst = numel(step.control)
 ind = floor(([0:nst-1]/nst)*nc)+1
-%%
+
 step.control = ind;
 control.Imax = model.Control.Imax;
 control = repmat(control,nc,1);
-schedule = struct('control', control, 'step', step); 
+schedule = struct('control', control, 'step', step);
 
 %% Setup the initial state of the model
 % The initial state of the model is dispatched using the
-% model.setupInitialState()method. 
-initstate = model.setupInitialState(); 
+% model.setupInitialState()method.
+initstate = model.setupInitialState();
 
-%% Setup the properties of the nonlinear solver 
-nls = NonLinearSolver(); 
+%% Setup the properties of the nonlinear solver
+nls = NonLinearSolver();
 % Change default maximum iteration number in nonlinear solver
-nls.maxIterations = 10; 
+nls.maxIterations = 10;
 % Change default behavior of nonlinear solver, in case of error
-nls.errorOnFailure = false; 
+nls.errorOnFailure = false;
 %nls.timeStepSelector=StateChangeTimeStepSelector('TargetProps', {{'Control','E'}}, 'targetChangeAbs', 0.03);
 % Change default tolerance for nonlinear solver
 nls.timeStepSelector = SimpleTimeStepSelector();
@@ -139,13 +123,13 @@ switch linearsolver
         nls.LinearSolver = LinearSolverBatteryExtra('verbose', false, 'reduceToCell', true,'verbosity',3,'reuse_setup',false,'method','matlab_p_gs');
         %nls.LinearSolver = LinearSolverBatteryExtra('verbose', false, 'reduceToCell', true,'verbosity',3,'reuse_setup',false,'method','direct');
        nls.LinearSolver.tolerance=0.5e-4;
-         
+
     case 'agmg'
     mrstModule add agmg
-    nls.LinearSolver = AGMGSolverAD('verbose', false, 'reduceToCell', true); 
-    nls.LinearSolver.tolerance = 1e-3; 
-    nls.LinearSolver.maxIterations = 30; 
-    nls.maxIterations = 20; 
+    nls.LinearSolver = AGMGSolverAD('verbose', false, 'reduceToCell', true);
+    nls.LinearSolver.tolerance = 1e-3;
+    nls.LinearSolver.maxIterations = 30;
+    nls.maxIterations = 20;
     nls.verbose = 10;
   case 'direct'
       nls.LinearSolver = BackslashSolverAD('verbose', false, 'reduceToCell', true);
@@ -153,30 +137,30 @@ switch linearsolver
     error()
 end
 model.nonlinearTolerance = 1e-3*model.Control.Imax;
-model.nonlinearTolerance =  1e-4;nls.maxIterations = 20; 
+model.nonlinearTolerance =  1e-4;nls.maxIterations = 20;
 % Set verbosity
 model.verbose = true;
 
 %% Run the simulation
-[wellSols, states, report] = simulateScheduleAD(initstate, model, schedule, 'OutputMinisteps', true, 'NonLinearSolver', nls); 
+[wellSols, states, report] = simulateScheduleAD(initstate, model, schedule, 'OutputMinisteps', true, 'NonLinearSolver', nls);
 %%
 %%  Process output and recover the output voltage and current from the output states.
-ind = cellfun(@(x) not(isempty(x)), states); 
+ind = cellfun(@(x) not(isempty(x)), states);
 states = states(ind);
-E = cellfun(@(x) x.(ctrl).E, states); 
+E = cellfun(@(x) x.(ctrl).E, states);
 I = cellfun(@(x) x.(ctrl).I, states);
 time = cellfun(@(x) x.time, states);
 figure(1),clf,plot(time,E)
 
 
 %% Process output and recover the output voltage and current from the output states.
-ind = cellfun(@(x) not(isempty(x)), states); 
+ind = cellfun(@(x) not(isempty(x)), states);
 states = states(ind);
-E = cellfun(@(x) x.Control.E, states); 
+E = cellfun(@(x) x.Control.E, states);
 I = cellfun(@(x) x.Control.I, states);
 Tmax = cellfun(@(x) max(x.ThermalModel.T), states);
 [SOCN, SOCP] =  cellfun(@(x) model.calculateSOC(x), states);
-time = cellfun(@(x) x.time, states); 
+time = cellfun(@(x) x.time, states);
 plot(time,E,'*-')
 %%
 its = getReportOutput(report,'type','linearIterations')

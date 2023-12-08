@@ -81,7 +81,7 @@ nt = numel(time);
 
 for ivar = 1 : numel(fds)
     fd = fds{ivar};
-    
+
     varind = cgt.regexpVarNameSelect(fd);
     assert(numel(varind) == 1, ['too many field selected for ' fd]);
     varname = cgt.varNameList{varind};
@@ -89,7 +89,7 @@ for ivar = 1 : numel(fds)
     % should be unique here
     nodename = nodenames{1};
     [ymin, ymax, y] = getvals(nodename, states);
-    
+
     figure
     hold on
     dominmax = false;
@@ -107,7 +107,7 @@ for ivar = 1 : numel(fds)
                 title(nodenames, ' ');
                 if dosave
                     filename = sprintf('%s.png', nodename);
-                    filename = fullfile('/home/xavier/Matlab/Projects/battmo/Electrolyser/img', filename);
+                    filename = fullfile(battmoDir, 'Electrolyser','img', filename);
                     saveas(gcf, filename);
                 end
             end

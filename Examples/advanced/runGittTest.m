@@ -2,10 +2,9 @@
 % This example demonstrates how to apply a GITT protocol in a Li-ion
 % battery simulation.
 
-% clear the workspace and close open figures
-clear all
-%close all
-clc
+% Clear the workspace and close open figures
+clear
+close all
 
 
 %% Import the required modules from MRST

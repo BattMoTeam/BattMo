@@ -2,7 +2,7 @@ function [bp, simlist] = setupSimList(directory)
 
     mrstModule add   mpfa
 
-    dataDirectory =  fullfile('/home/xavier/Matlab/Projects/battmo/mrst/mrst-core/output/', directory);
+    dataDirectory =  fullfile(battmoDir,'Externals','mrst','mrst-core','output', directory);
     dataFolderObjs = dir(dataDirectory);
     dataFolderObjs = dataFolderObjs(3 : end);
     dataFolders = {};
@@ -19,7 +19,7 @@ function [bp, simlist] = setupSimList(directory)
     simlist = {};
 
     for ind = 1 : numel(dataFolders)
-        dataFolder = dataFolders{ind};        
+        dataFolder = dataFolders{ind};
         filename = fullfile(dataDirectory, dataFolder, 'input.mat');
         try
             data = load(filename);
