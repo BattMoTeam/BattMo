@@ -13,19 +13,10 @@ ctrl  = 'Control';
             
 clear jsonstruct
 
-filename = 'ProtonicMembrane/gas_supply.json';
+filename = 'ProtonicMembrane/gas_supply_whole_cell.json';
 jsonstruct.GasSupply = parseBattmoJson(filename);
 filename = 'ProtonicMembrane/protonicMembrane.json';
 jsonstruct.Cell = parseBattmoJson(filename);
-
-pH2O = 475000;
-pO2  = 112500;
-
-p = pH2O + pO2;
-s = pH2O/p;
-
-jsonstruct.(gs).control(1).values = [1.5*p; s];
-jsonstruct.(gs).control(2).values = [p; s];
 
 paramobj = ProtonicMembraneCellWithGasSupplyInputParams(jsonstruct);
 
@@ -34,9 +25,9 @@ gen = GasSupplyPEMgridGenerator2D();
 gen.nxCell      = 1000;
 gen.nxGasSupply = 50;
 gen.lxCell      = 22*micro*meter;
-gen.lxGasSupply = 1*milli*meter;
+gen.lxGasSupply = 0.5*milli*meter;
 
-gen.ny = 20;
+gen.ny = 30;
 gen.ly = 1.5e-3;
 
 paramobj = gen.updateInputParams(paramobj);
@@ -79,9 +70,10 @@ rho          = initstate.(gs).density(1);
 scalFlux     = 1/gen.nxGasSupply*rho*model.(gs).permeability/model.(gs).viscosity*pH2O/gen.ly;
 scalPressure = pH2O;
 
-model.scalings = {{{gs, 'massConses', 1}, scalFlux}, ...
-                  {{gs, 'massConses', 2}, scalFlux}, ...
-                  {{gs, 'GasSupplyBc', 'controlEquations'}, scalPressure}, ...
+model.scalings = {{{gs, 'massConses', 1}, scalFlux}                      , ...
+                  {{gs, 'massConses', 2}, scalFlux}                      , ...
+                  {{gs, 'Control', 'pressureEq'}, scalPressure}          , ...
+                  {{gs, 'Control', 'rateEq'}, gen.nxGasSupply*scalFlux}           , ...
                   {{gs, 'GasSupplyBc', 'boundaryEquations', 1}, scalFlux}, ...
                   {{gs, 'GasSupplyBc', 'boundaryEquations', 2}, scalFlux}};
 
@@ -112,7 +104,7 @@ model.scalings =  horzcat(model.scalings, ...
 %% Setup schedule
 
 tswitch   = 0.5;
-totaltime = 1*hour;
+totaltime = 1e1*hour;
 
 N1  = 20;
 timeswitch = tswitch*totaltime;

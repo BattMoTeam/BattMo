@@ -15,8 +15,8 @@ classdef ProtonicMembraneCellWithGasSupply < BaseModel
 
         helpers
         pmin  = 1e-3*barsa % cutoff value used in updateState method
-        vfmin = 1e-2       % cutoff value used in updateState method
-        vfmax = 1 - 1e-2   % cutoff value used in updateState method
+        vfmin = 1e-6       % cutoff value used in updateState method
+        vfmax = 1 - 1e-6   % cutoff value used in updateState method
         
     end
     
@@ -117,6 +117,8 @@ classdef ProtonicMembraneCellWithGasSupply < BaseModel
             gasInd = model.(gs).gasInd;
             nGas   = model.(gs).nGas;
             
+            model.(gs) = model.(gs).setupComputationalGraph();
+            
             initstate.(gs) = model.(gs).setupInitialState();
 
             p = initstate.(gs).pressure;
@@ -212,6 +214,7 @@ classdef ProtonicMembraneCellWithGasSupply < BaseModel
             time = state.time;
             [~, ~, beta] = drivingForces.src(time);
             state.beta = beta;
+            % state.beta = 0;
             
         end
 
@@ -256,7 +259,7 @@ classdef ProtonicMembraneCellWithGasSupply < BaseModel
         function state = updateGasSupplySource(model, state)
 
             nGas     = model.GasSupply.nGas;
-            bccells  = model.GasSupply.GasSupplyBc.controlHelpers.bccells;
+            bccells  = model.GasSupply.helpers.bccells;
             intcells = model.helpers.interfaceCells;
             
             for igas = 1 : nGas
