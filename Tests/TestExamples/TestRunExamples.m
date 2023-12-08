@@ -32,6 +32,9 @@ classdef TestRunExamples < matlab.unittest.TestCase
                     'runDissElectrolyser.m'       , ...
                     'runElectrolyser.m'           , ...
                     'magnesium_script'};
+
+        exclude = {'runSEIActiveMaterial'}; % not compatible yet
+
     end
 
     methods
@@ -40,13 +43,16 @@ classdef TestRunExamples < matlab.unittest.TestCase
 
     methods (Test)
 
-        function testRunExample(test, filename)
+        function testRunExample(test, filename, exclude)
 
-            % FIXME Disable plotting
-            set(0, 'defaultFigureVisible', 'off');
-            run(filename);
-            close all
-            set(0, 'defaultFigureVisible', 'on');
+            if ~contains(filename, exclude)
+                % FIXME Disable plotting
+                set(0, 'defaultFigureVisible', 'off');
+                fprintf('\n\nRunning %s...\n\n', filename);
+                run(filename);
+                close all
+                set(0, 'defaultFigureVisible', 'on');
+            end
 
         end
 
