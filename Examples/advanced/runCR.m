@@ -8,9 +8,8 @@ if mrstPlatform('octave')
     error('This demo cannot be run from Octave since Octave does not yet support the use of tables');
 end
 
-clear all
+clear
 close all
-clc
 
 mrstVerbose off
 

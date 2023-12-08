@@ -1,7 +1,7 @@
 %% run stand-alone active material model
 
 % clear the workspace and close open figures
-clear all
+clear
 close all
 
 %% Import the required modules from MRST
@@ -25,7 +25,7 @@ ctrl  = 'Control';
 paramobj = SingleParticleSEIInputParams(jsonstruct);
 
 controlPolicy = 'CCCV';
-switch controlPolicy 
+switch controlPolicy
   case 'CCCV'
     paramobj.Control.controlPolicy = 'CCCV';
   case 'CV'
@@ -42,7 +42,7 @@ paramobj.(an).(sd).np  = 1;
 paramobj.(an).(sei).N  = 10;
 paramobj.(an).(sei).np = 1;
 
-xlength = 57e-6; 
+xlength = 57e-6;
 G = cartGrid(1, xlength);
 G = computeGeometry(G);
 paramobj.(an).G = G;
@@ -95,7 +95,7 @@ epsiSEI = 0.05;                % From Safari
 cECsolution = 4.541*mol/litre; % From Safari
 cECexternal = epsiSEI*cECsolution;
 
-% compute OCP at anode and  phiElectrolyte 
+% compute OCP at anode and  phiElectrolyte
 clear an_itf_state
 an_itf_state.cElectrodeSurface = cAnode;
 an_itf_state.T = T;
@@ -103,7 +103,7 @@ an_itf_state = model.(an).(itf).updateOCP(an_itf_state);
 OCP = an_itf_state.OCP;
 phiElectrolyte = phiAnode - OCP;
 
-% compute OCP at cathode and  phiCathode 
+% compute OCP at cathode and  phiCathode
 clear ct_itf_state
 ct_itf_state.cElectrodeSurface = cCathode;
 ct_itf_state.T = T;
@@ -176,33 +176,33 @@ schedule = struct('control', control, 'step', step);
 
 model.verbose = true;
 
-% Setup nonlinear solver 
-nls = NonLinearSolver(); 
+% Setup nonlinear solver
+nls = NonLinearSolver();
 nls.maxTimestepCuts = 10;
 % Change default maximum iteration number in nonlinear solver
-nls.maxIterations = 100; 
+nls.maxIterations = 100;
 % Change default behavior of nonlinear solver, in case of error
-nls.errorOnFailure = false; 
+nls.errorOnFailure = false;
 
 dopack = false;
 if dopack
     dataFolder = 'BattMo';
     problem = packSimulationProblem(initState, model, schedule, dataFolder, 'Name', 'safari3', 'NonlinearSolver', nls);
-    problem.SimulatorSetup.OutputMinisteps = true; 
+    problem.SimulatorSetup.OutputMinisteps = true;
     simulatePackedProblem(problem);
     [globvars, states, report] = getPackedSimulatorOutput(problem);
 else
-    [wellSols, states, report] = simulateScheduleAD(initState, model, schedule, 'OutputMinisteps', true, 'NonlinearSolver', nls); 
+    [wellSols, states, report] = simulateScheduleAD(initState, model, schedule, 'OutputMinisteps', true, 'NonlinearSolver', nls);
 end
 
 %% Process output and recover the output voltage and current from the output states.
 
-ind = cellfun(@(x) not(isempty(x)), states); 
+ind = cellfun(@(x) not(isempty(x)), states);
 states = states(ind);
-E = cellfun(@(x) x.Control.E, states); 
+E = cellfun(@(x) x.Control.E, states);
 I = cellfun(@(x) x.Control.I, states);
 % [SOCN, SOCP] =  cellfun(@(x) model.calculateSOC(x), states);
-time = cellfun(@(x) x.time, states); 
+time = cellfun(@(x) x.time, states);
 
 figure
 plot(time/hour, E);

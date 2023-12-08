@@ -7,9 +7,8 @@ if mrstPlatform('octave')
 end
 
 % Clear the workspace and close open figures
-clear all
+clear
 close all
-clc
 
 mrstDebug(20);
 

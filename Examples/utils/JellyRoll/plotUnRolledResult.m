@@ -4,7 +4,7 @@ catch
     mrstModule add ad-core mrst-gui mpfa
 end
 
-clear all
+clear
 dataSintefDirectory =  '/home/xavier/Sintef-Computer/Matlab/mrst-bitbucket/mrst-core/output/JellyRole';
 dataDirectory =  '/home/xavier/Matlab/mrst-bitbucket/mrst-core/output/JellyRole';
 
@@ -31,10 +31,10 @@ filename = fullfile(dataDirectory, dataFolder, 'simulationInput.mat');
 load(filename);
 
 paramobj = BatteryInputParams(jsonstruct);
-gen = SpiralBatteryGenerator(); 
+gen = SpiralBatteryGenerator();
 
 params = options.params;
-[paramobj, gen] = gen.updateBatteryInputParams(paramobj, params); 
+[paramobj, gen] = gen.updateBatteryInputParams(paramobj, params);
 
 model = Battery(paramobj, ...
                 'use_thermal'        , options.use_thermal, ...
@@ -49,7 +49,7 @@ states = states(:);
 
 UGrids = gen.setupUnRolledGrids(paramobj);
 
-%% 
+%%
 
 for ind = 1 : numel(states)
     states{ind} = addProperties(model, states{ind});

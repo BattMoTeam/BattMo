@@ -1,4 +1,4 @@
-clear all
+clear
 
 %% Setup Julia server
 

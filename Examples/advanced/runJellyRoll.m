@@ -2,7 +2,7 @@ if mrstPlatform('octave')
     error('This demo cannot be run from Octave since it does not support the linear solvers');
 end
 
-clear all
+clear
 close all
 
 % mrstDebug(20);
@@ -175,7 +175,7 @@ switch simcase
     initstate = model.setupInitialState();
 
   otherwise
-    
+
     error('simcase not recognized')
 
 end

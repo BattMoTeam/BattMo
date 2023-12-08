@@ -5,7 +5,7 @@ end
 %% Setup
 mrstModule add ad-core optimization mpfa mrst-gui
 
-clear all
+clear
 close all
 
 do_plot = true;

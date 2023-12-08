@@ -1,7 +1,7 @@
 %% run stand-alone active material model
 
 % clear the workspace and close open figures
-clear all
+clear
 close all
 
 %% Import the required modules from MRST
@@ -87,7 +87,7 @@ cmin = (model.(itf).guestStoichiometry0)*(model.(itf).saturationConcentration);
 control.stopFunction = @(model, state, state0_inner) (state.(sd).cSurface <= cmin);
 control.src = srcfunc;
 
-schedule = struct('control', control, 'step', step); 
+schedule = struct('control', control, 'step', step);
 
 %% setup non-linear solver
 
@@ -99,7 +99,7 @@ model.nonlinearTolerance = 1e-2;
 %% Run simulation
 
 model.verbose = true;
-[wellSols, states, report] = simulateScheduleAD(initState, model, schedule, 'OutputMinisteps', true, 'NonLinearSolver', nls); 
+[wellSols, states, report] = simulateScheduleAD(initState, model, schedule, 'OutputMinisteps', true, 'NonLinearSolver', nls);
 
 %% plotting
 
