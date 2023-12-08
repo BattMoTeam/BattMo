@@ -19,7 +19,11 @@ import os
 import xml.etree.ElementTree
 import re
 import sys
-from os.path import *
+from os.path import join, splitext, exists
+
+publishedExampleDir = os.path.realpath(__file__)
+publishedExampleDir = os.path.dirname(publishedExampleDir)
+publishedExampleDir = join(publishedExampleDir, '..', 'publishedExamples')
 
 def parse_publish_to_xml(exfile):
     tmp = os.path.split(exfile)
@@ -38,7 +42,7 @@ def parse_publish_to_xml(exfile):
     # outfile  = open("D:/jobb/bitbucket/mrst-documentation/flowSolverTutorial1.txt", "w")
     parsedText = ''
     rstDescriptionFile = tmp[-1].replace('.xml', 'Preamble.rst')
-    if exists(rstDescriptionFile):
+    if exists(join(publishedExampleDir, rstDescriptionFile)):
         includeRstDescriptionFile = ".. include:: " + rstDescriptionFile + "\n\n"
     else:
         includeRstDescriptionFile = "\n"
@@ -71,7 +75,7 @@ def parse_publish_to_xml(exfile):
                         ch = '^'
                     sect = '\n' + sect + '\n' + ch * tit_length + '\n'
                     if headcount == 0:
-                        sect = sect + '*Generated from ' + example_filename + '*\n\n'
+                        sect = sect + '*Generated asdas from ' + example_filename + '*\n\n'
                         sect = sect + includeRstDescriptionFile
                         headcount += 1;
                     parsedText += sect
@@ -145,9 +149,7 @@ def parse_publish_to_xml(exfile):
     output['source'] = sourcecode
     return output
 
-publishedExampleDir = os.path.realpath(__file__)
-publishedExampleDir = os.path.dirname(publishedExampleDir)
-publishedExampleDir = join(publishedExampleDir, '..', 'publishedExamples')
+
 
 if len(sys.argv) < 2:
     allfiles = os.walk(publishedExampleDir)

@@ -1,59 +1,58 @@
 classdef CompositeActiveMaterial < ElectronicComponent
-    
+
     properties
 
 
         FirstMaterial
-        SecondMaterial        
+        SecondMaterial
 
         porosity                      % porosity
         volumeFraction                % Volume fraction of the whole material (binder and so on included)
         activeMaterialFraction        % Volume fraction occupied only by the active material
         electronicConductivity        % Electrical conductivite
-        InterDiffusionCoefficient     % Inter particle diffusion coefficient parameter (diffusion between the particles)
         thermalConductivity           % Intrinsic Thermal conductivity of the active component
         heatCapacity                  % Intrinsic Heat capacity of the active component
 
-        EffectiveDiffusionCoefficient % 
+        EffectiveDiffusionCoefficient %
 
         EffectiveThermalConductivity  % Effective Thermal Conductivity of the active component
         EffectiveHeatCapacity         % Effective Heat Capacity of the active component
 
-        
+
         externalCouplingTerm          % only used in no current collector
 
         isRoot
-        
+
     end
-    
+
     methods
-        
+
         function model = CompositeActiveMaterial(paramobj)
         %
         % ``paramobj`` is instance of :class:`CompositeActiveMaterialInputParams <Electrochemistry.CompositeActiveMaterialInputParams>`
         %
             model = model@ElectronicComponent(paramobj);
-            
+
             fdnames = {'volumeFraction'        , ...
                        'thermalConductivity'   , ...
                        'electronicConductivity', ...
                        'heatCapacity'          , ...
                        'externalCouplingTerm'  , ...
                        'use_thermal'};
-            
+
             model = dispatchParams(model, paramobj, fdnames);
-            
+
 
             model.FirstMaterial = ActiveMaterial(paramobj.FirstMaterial);
             model.SecondMaterial = ActiveMaterial(paramobj.SecondMaterial);
-            
+
             nc = model.G.cells.num;
 
             model.volumeFraction = paramobj.volumeFraction*ones(nc, 1);
             model.porosity       = 1 - model.volumeFraction;
-            
+
             model.isRoot = false;
-            
+
         end
 
         function model = registerVarAndPropfuncNames(model)
@@ -62,13 +61,13 @@ classdef CompositeActiveMaterial < ElectronicComponent
             % (setup of varnameList and propertyFunctionList)
 
             model = registerVarAndPropfuncNames@ElectronicComponent(model);
-            
+
             gr = 'FirstMaterial';
             si = 'SecondMaterial';
 
             sd  = 'SolidDiffusion';
             itf = 'Interface';
-            
+
             varnames = {'phi'         , ...
                         'jBcSource'   , ...
                         'eSource'     , ...
@@ -86,7 +85,7 @@ classdef CompositeActiveMaterial < ElectronicComponent
 
             varnames = {'jCoupling', ...
                         'jExternal'};
-            
+
             model = model.registerVarNames(varnames);
 
             if model.use_thermal
@@ -103,18 +102,18 @@ classdef CompositeActiveMaterial < ElectronicComponent
                 varnames = {'jCoupling', ...
                             'jExternal'};
                 model = model.removeVarNames(varnames);
-                varnames = {'cElectrolyte',... 
+                varnames = {'cElectrolyte',...
                             'phiElectrolyte', ...
                             'T'};
                 model = model.registerStaticVarNames(varnames);
-                
+
             end
 
             %% register properties
 
             fn = @CompositeActiveMaterial.updatejBcSource;
             model = model.registerPropFunction({'jBcSource', fn, {'jCoupling', 'jExternal'}});
-            
+
             if model.use_thermal
                 fn = @CompositeActiveMaterial.updatejFaceBc;
                 model = model.registerPropFunction({'jFaceBc', fn, {'jFaceCoupling', 'jFaceExternal'}});
@@ -122,21 +121,21 @@ classdef CompositeActiveMaterial < ElectronicComponent
 
             fn = @CompositeActiveMaterial.updateConductivity;
             model = model.registerPropFunction({'conductivity', fn, {}});
-            
+
             fn = @CompositeActiveMaterial.updateCurrentSource;
             inputnames = {{si, 'Rvol'}, {gr, 'Rvol'}};
             model = model.registerPropFunction({'eSource', fn, inputnames});
-            
+
             fn = @CompositeActiveMaterial.updatePhi;
             model = model.registerPropFunction({{si, itf, 'phiElectrode'}, fn, {'phi'}});
             model = model.registerPropFunction({{gr, itf, 'phiElectrode'}, fn, {'phi'}});
-            
+
             fn = @CompositeActiveMaterial.dispatchTemperature;
             model = model.registerPropFunction({{si, 'T'}, fn, {'T'}});
             model = model.registerPropFunction({{gr, 'T'}, fn, {'T'}});
 
             if model.isRoot
-                
+
                 fn = @CompositeActiveMaterial.updateStandalonejBcSource;
                 model = model.registerPropFunction({'jBcSource', fn, {'controlCurrentSource'}});
 
@@ -146,9 +145,9 @@ classdef CompositeActiveMaterial < ElectronicComponent
                 model = model.registerPropFunction({{si, itf, 'phiElectrolyte'}, fn, inputnames});
                 model = model.registerPropFunction({{gr, itf, 'cElectrolyte'}, fn, inputnames});
                 model = model.registerPropFunction({{gr, itf, 'phiElectrolyte'}, fn, inputnames});
-                
+
             else
-                
+
                 fn = @CompositeActiveMaterial.updatejExternal;
                 model = model.registerPropFunction({'jExternal', fn, {}});
                 if model.use_thermal
@@ -162,23 +161,23 @@ classdef CompositeActiveMaterial < ElectronicComponent
                 end
 
             end
-            
-           
+
+
         end
 
         function [problem, state] = getEquations(model, state0, state,dt, drivingForces, varargin)
 
             gr = 'FirstMaterial';
             si = 'SecondMaterial';
-            
+
             sd  = 'SolidDiffusion';
             itf = 'Interface';
-            
+
             time = state0.time + dt;
             state = model.initStateAD(state);
 
             state = updateControl(model, state, drivingForces, dt);
-            
+
             state = model.updateConductivity(state);
             state = model.updateStandalonejBcSource(state);
             state = model.updateCurrent(state);
@@ -217,10 +216,10 @@ classdef CompositeActiveMaterial < ElectronicComponent
             state.(gr).(sd) = model.(gr).(sd).updateMassSource(state.(gr).(sd));
             state.(gr).(sd) = model.(gr).(sd).assembleSolidDiffusionEquation(state.(gr).(sd));
             state.(gr).(sd) = model.(gr).(sd).updateMassConservation(state.(gr).(sd));
-            
+
             %% Setup equations and add some scaling
 
-            
+
             eqs = {};
             eqs{end + 1} = state.chargeCons;
 
@@ -231,7 +230,7 @@ classdef CompositeActiveMaterial < ElectronicComponent
             rp    = model.(gr).(sd).rp;
             vsf   = model.(gr).(sd).volumetricSurfaceArea;
             surfp = 4*pi*rp^2;
-            
+
             scalingcoef = (vsf*vol(1)*n*F)/surfp;
             eqs{end + 1} = scalingcoef*state.(gr).(sd).massCons;
             eqs{end + 1} = scalingcoef*state.(gr).(sd).solidDiffusionEq;
@@ -243,28 +242,28 @@ classdef CompositeActiveMaterial < ElectronicComponent
             rp    = model.(si).(sd).rp;
             vsf   = model.(si).(sd).volumetricSurfaceArea;
             surfp = 4*pi*rp^2;
-            
+
             scalingcoef = (vsf*vol(1)*n*F)/surfp;
             eqs{end + 1} = scalingcoef*state.(si).(sd).massCons;
             eqs{end + 1} = scalingcoef*state.(si).(sd).solidDiffusionEq;
 
-            
+
             names = {'chargeCons'         , ...
                      'gr_massCons'        , ...
                      'gr_solidDiffusionEq', ...
                      'si_massCons'        , ...
                      'si_solidDiffusionEq'};
-            
+
             types = {'cell', 'cell', 'cell', 'cell', 'cell'};
 
             primaryVars = model.getPrimaryVariableNames();
-            
+
             problem = LinearizedProblem(eqs, types, names, primaryVars, state, dt);
 
         end
 
         function primaryvarnames = getPrimaryVariableNames(model)
-            
+
             gr = 'FirstMaterial';
             si = 'SecondMaterial';
 
@@ -275,66 +274,66 @@ classdef CompositeActiveMaterial < ElectronicComponent
                                {si, sd, 'c'}       , ...
                                {si, sd, 'cSurface'}, ...
                                {'phi'}};
-            
+
         end
-        
+
         function forces = getValidDrivingForces(model)
 
             forces = getValidDrivingForces@PhysicalModel(model);
             forces.src = [];
-            
+
         end
 
         function state = updateControl(model, state, drivingForces, dt)
-            
+
             G = model.G;
             coef = G.cells.volumes;
             coef = coef./(sum(coef));
-            
+
             state.controlCurrentSource = drivingForces.src.*coef;
-            
+
         end
 
         function cleanState = addStaticVariables(model, cleanState, state, state0)
-            
+
             cleanState = addStaticVariables@BaseModel(model, cleanState, state);
-            
+
             cleanState.T = state.T;
             cleanState.cElectrolyte   = state.cElectrolyte;
             cleanState.phiElectrolyte = state.phiElectrolyte;
-            
+
         end
 
 
         function [state, report] = updateState(model, state, problem, dx, drivingForces)
 
             [state, report] = updateState@BaseModel(model, state, problem, dx, drivingForces);
-            
+
         end
-        
+
         function [model, state] = prepareTimestep(model, state, state0, dt, drivingForces)
-            
+
             [model, state] = prepareTimestep@BaseModel(model, state, state0, dt, drivingForces);
-            
+
         end
-        
+
         function [state, report] = updateAfterConvergence(model, state0, state, dt, drivingForces)
         % [state, report] = updateAfterConvergence@ElectronicComponent(model, state0, state, dt, drivingForces);
 
         % by not calling the parent method, we do not clean the state s
             report = [];
-            
+
         end
-         
+
         function model = validateModel(model, varargin)
-            
+
         end
 
         function state = updateConductivity(model, state)
 
             G  = model.G;
             vf = model.volumeFraction;
-            
+
             gr  = 'FirstMaterial';
             si  = 'SecondMaterial';
 
@@ -352,12 +351,12 @@ classdef CompositeActiveMaterial < ElectronicComponent
             end
 
             state.conductivity = sigma;
-            
+
         end
-        
-        
+
+
         function state = updateStandalonejBcSource(model, state)
-            
+
             state.jBcSource = state.controlCurrentSource;
 
         end
@@ -367,38 +366,38 @@ classdef CompositeActiveMaterial < ElectronicComponent
             gr  = 'FirstMaterial';
             si  = 'SecondMaterial';
             itf = 'Interface';
-            
+
             %% TODO : check whether constants n should always be the same for graphite and silicon (and impose them from parent)
             vols = model.G.cells.volumes;
             F    = model.(gr).(itf).constants.F;
             nGr  = model.(gr).(itf).n;
             nSi  = model.(si).(itf).n;
-            
+
             state.eSource = - (nGr*state.(gr).Rvol + nSi*state.(si).Rvol).*vols.*F;
-            
+
         end
-        
-        
+
+
         function state = updatePhi(model, state)
-            
+
             gr = 'FirstMaterial';
             si = 'SecondMaterial';
-            
+
             itf = 'Interface';
 
             state.(gr).(itf).phiElectrode = state.phi;
             state.(si).(itf).phiElectrode = state.phi;
-            
-        end         
-        
+
+        end
+
         function state = dispatchTemperature(model, state)
 
             gr = 'FirstMaterial';
             si = 'SecondMaterial';
-            
+
             state.(gr).T = state.T;
             state.(si).T = state.T;
-            
+
         end
 
 
@@ -406,7 +405,7 @@ classdef CompositeActiveMaterial < ElectronicComponent
 
             gr = 'FirstMaterial';
             si = 'SecondMaterial';
-            
+
             itf = 'Interface';
 
             state.(gr).(itf).cElectrolyte   = state.cElectrolyte;
@@ -415,15 +414,15 @@ classdef CompositeActiveMaterial < ElectronicComponent
             state.(si).(itf).phiElectrolyte = state.phiElectrolyte;
 
         end
-            
+
         function state = updatejBcSource(model, state)
             state.jBcSource = state.jCoupling + state.jExternal;
         end
-        
+
         function state = updatejFaceBc(model, state)
             state.jFaceBc = state.jFaceCoupling + state.jFaceExternal;
         end
-        
+
         function state = updatejExternal(model, state)
             state.jExternal = 0;
             state.jFaceExternal = 0;
@@ -433,20 +432,20 @@ classdef CompositeActiveMaterial < ElectronicComponent
             state.jCoupling = 0;
             state.jFaceCoupling = 0;
         end
-        
+
 
         function stop = stopfunction(model, state, state0_inner)
-            
+
             gr = 'FirstMaterial';
             si = 'SecondMaterial';
 
             sd  = 'SolidDiffusion';
             itf = 'Interface';
-            
+
             mats = {gr, si};
-            
+
             stop = false;
-            
+
             for imat = 1 : numel(mats)
                 mat = mats{imat};
                 cmin = (model.(mat).(itf).theta0)*(model.(mat).(itf).cmax);
@@ -467,7 +466,7 @@ classdef CompositeActiveMaterial < ElectronicComponent
 
 
     end
-    
+
 end
 
 

@@ -70,12 +70,9 @@ step        = struct('val', diff(times), 'control', ones(numel(tt), 1));
 % stopping and source functions. A stopping function is used to set the
 % lower voltage cutoff limit. A source function is used to set the upper
 % voltage cutoff limit.
-tup = 0.1; % rampup value for the current function, see rampupSwitchControl
-srcfunc = @(time, I, E) rampupSwitchControl(time, tup, I, E, ...
-                                            model.Control.Imax, ...
-                                            model.Control.lowerCutoffVoltage);
+
 % we setup the control by assigning a source and stop function.
-control = struct('src', srcfunc, 'CCDischarge', true);
+control = model.(ctrl).setupScheduleControl();
 
 % This control is used to set up the schedule
 schedule = struct('control', control, 'step', step);

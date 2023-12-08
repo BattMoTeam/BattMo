@@ -9,13 +9,7 @@ clc
 % load MRST modules
 mrstModule add ad-core mrst-gui mpfa
 
-% We create an instance of BatteryInputParams. This class is used to initiate the battery simulator and it propagates
-% all the parameters through out the submodels.
-
-% The input parameters can be given in json format. The json file is read and used to populate the paramobj object.
-jsonstruct_material = parseBattmoJson(fullfile('ParameterData','ParameterSets','Chen2020','chen2020_lithium_ion_battery.json'));
-jsonstruct_geometry = parseBattmoJson('/home/xavier/Matlab/Projects/battmo/Examples/jsondatafiles/geometry1d.json');
-
+% Useful abbreviations
 elyte   = 'Electrolyte';
 ne      = 'NegativeElectrode';
 pe      = 'PositiveElectrode';
@@ -27,12 +21,12 @@ itf     = 'Interface';
 sd      = 'SolidDiffusion';
 thermal = 'ThermalModel';
 
-jsonstruct_geometry.Geometry.faceArea =  1.58*0.065;
+% We create an instance of BatteryInputParams. This class is used to initiate the battery simulator and it propagates
+% all the parameters through out the submodels.
 
-xlength = 1e-5*[8.52; 1.2; 7.56];
-jsonstruct_geometry.(ne).(co).thickness = xlength(1);
-jsonstruct_geometry.(pe).(co).thickness = xlength(3);
-jsonstruct_geometry.Separator.thickness = xlength(2);
+% The input parameters can be given in json format. The json file is read and used to populate the paramobj object.
+jsonstruct_material = parseBattmoJson(fullfile('ParameterData','ParameterSets','Chen2020','chen2020_lithium_ion_battery.json'));
+jsonstruct_geometry = parseBattmoJson(fullfile('Examples', 'jsondatafiles', 'geometryChen.json'));
 
 jsonstruct = mergeJsonStructs({jsonstruct_material, ...
                                jsonstruct_geometry});
@@ -65,16 +59,8 @@ dt    = diff(times);
 dt    = dt(1 : end);
 step  = struct('val', dt, 'control', ones(size(dt)));
 
-% We set up a stopping function. Here, the simulation will stop if the output voltage reach a value smaller than 2. This
-% stopping function will not be triggered in this case as we switch to voltage control when E=3.6 (see value of inputE
-% below).
-
-tup = 0.1; % rampup value for the current function, see rampupSwitchControl
-srcfunc = @(time, I, E) rampupSwitchControl(time, tup, I, E, ...
-                                            model.Control.Imax, ...
-                                            model.Control.lowerCutoffVoltage);
-% we setup the control by assigning a source and stop function.
-control = struct('src', srcfunc, 'CCDischarge', true);
+% we setup the control for the schedule
+control = model.Control.setupScheduleControl();
 
 % This control is used to set up the schedule
 schedule = struct('control', control, 'step', step);
@@ -142,10 +128,13 @@ initstate2 = initStateChen2020(model2, c_ne, c_pe);
 
 %%  We process output and recover the output voltage and current from the output states.
 
+
+states = cleanupStates(states);
 E1    = cellfun(@(state) state.Control.E, states);
 I1    = cellfun(@(state) state.Control.I, states);
 time1 = cellfun(@(state) state.time, states);
 
+states2 = cleanupStates(states2);
 E2    = cellfun(@(state) state.Control.E, states2);
 I2    = cellfun(@(state) state.Control.I, states2);
 time2 = cellfun(@(state) state.time, states2);
@@ -175,6 +164,11 @@ set(gca, 'fontsize', 18);
 title('Cell Voltage / V')
 xlabel('time (hours)')
 legend('fontsize', 18, 'location', 'southwest')
+
+function states = cleanupStates(states)
+    ind = cellfun(@(state) ~isempty(state), states);
+    states = states(ind);
+end
 
 
 %{

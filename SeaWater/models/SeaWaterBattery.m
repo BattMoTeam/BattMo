@@ -576,8 +576,6 @@ classdef SeaWaterBattery < BaseModel
 
         function model = validateModel(model, varargin)
 
-            model = validateModel@BaseModel(model, varargin{:});
-
             if isempty(model.computationalGraph)
                 model = model.setupComputationalGraph();
             end

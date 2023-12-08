@@ -45,6 +45,13 @@ classdef CCDischargeControlModel < CCcontrolModel
                 
         end
         
+        function control = setupScheduleControl(model)
+
+            control = setupScheduleControl@CCcontrolModel(model);
+            control.CCDischarge = true;
+            
+        end
+
     end
 
         

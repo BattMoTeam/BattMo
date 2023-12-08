@@ -58,7 +58,7 @@
 ** rST description file
    - Matlab uses own markup language which complicates transformation to rST file and therefore it *should not* be used
    - We offer possibility to include extra rST description file automatically. If the example is named ~myexample.m~,
-     then the extra rST file should be named ~myexample_.rst~ (note the underscore sign)
+     then the extra rST file should be named ~myexamplePreamble.rst~
 ** Guidelines
    - To make sure that a comment you include in matlab example file appears as a comment in rST output (and not at a
      comment in the matlab code formatting), start a cell with eventually no title. In Matlab cells start with ~%%~ and

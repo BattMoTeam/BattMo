@@ -81,6 +81,9 @@ spiralparams = struct('nwindings'   , nwindings, ...
 jsonstruct = parseBattmoJson(fullfile('ParameterData','BatteryCellParameters','LithiumIonBatteryCell','lithium_ion_battery_nmc_graphite.json'));
 jsonstruct.include_current_collectors = true;
 
+simcase = 'CCDischarge';
+jsonstruct.(ctrl).controlPolicy = simcase;
+
 paramobj = BatteryInputParams(jsonstruct);
 
 th = 'ThermalModel';
@@ -89,6 +92,11 @@ paramobj.(th).externalHeatTransferCoefficient = 10*watt/meter^2;
 gen = SectorBatteryGenerator();
 
 paramobj = gen.updateBatteryInputParams(paramobj, spiralparams);
+
+CRate = 0.1;
+paramobj.(ctrl).lowerCutoffVoltage = 3;
+paramobj.(ctrl).CRate              = CRate;
+paramobj.(ctrl).rampupTime         = 0.1/CRate;
 
 model = Battery(paramobj);
 
@@ -107,37 +115,27 @@ inputE   = 3;
 
 tt   = times(2 : end);
 step = struct('val', diff(times), 'control', ones(numel(tt), 1));
-tup  = 0.1/CRate;
 
-simcase = 'discharge';
+control = model.Control.setupScheduleControl();
 
+schedule  = struct('control', control, 'step', step);
+    
 switch simcase
 
-  case 'discharge'
-    srcfunc = @(time, I, E) rampupSwitchControl(time, tup, I, E, ...
-                                                model.Control.Imax, ...
-                                                model.Control.lowerCutoffVoltage);
-
-    % Setup the control by assigning a source and stop function.
-    control = struct('src', srcfunc, 'CCDischarge', true);
-    schedule  = struct('control', control, 'step', step);
+  case 'CCDischarge'
 
     %% We setup the initial state
     initstate = model.setupInitialState();
     initElytec = 1*mol/litre;
     initstate.Electrolyte.c = initElytec*ones(model.Electrolyte.G.cells.num, 1);
 
-  case 'charge'
+  case 'CCCharge'
 
     model.SOC = 0.01;
     initstate = model.setupInitialState();
-    srcfunc  = @(time, I, E) rampupSwitchControl(time, tup, I, E, ...
-                                                 - model.Control.Imax, ...
-                                                 model.Control.lowerCutoffVoltage);
-    control = struct('src', srcfunc, 'CCDischarge', true);
-    schedule = struct('control', control, 'step', step);
 
   otherwise
+    
     error('simcase not recognized')
 
 end

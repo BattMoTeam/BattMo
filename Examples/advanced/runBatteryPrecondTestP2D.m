@@ -49,9 +49,6 @@ jsonstruct.(ne).(am).diffusionModelType = diffusionModelType;
 
 paramobj = BatteryInputParams(jsonstruct);
 
-paramobj.(ne).(am).InterDiffusionCoefficient = 0;
-paramobj.(pe).(am).InterDiffusionCoefficient = 0;
-
 % paramobj.(ne).(am).(sd).N = 5;
 % paramobj.(pe).(am).(sd).N = 5;
 

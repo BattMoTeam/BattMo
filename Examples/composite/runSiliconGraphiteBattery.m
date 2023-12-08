@@ -87,11 +87,7 @@ n  = 100;
 dt = total/n;
 step = struct('val', dt*ones(n, 1), 'control', ones(n, 1));
 
-tup = 0.1; % rampup value for the current function, see rampupSwitchControl
-srcfunc = @(time, I, E) rampupSwitchControl(time, tup, I, E, ...
-                                            model.Control.Imax, ...
-                                            model.Control.lowerCutoffVoltage);
-control = struct('src', srcfunc, 'CCDischarge', true);
+control = model.(ctrl).setupScheduleControl();
 
 schedule = struct('control', control, 'step', step);
 
