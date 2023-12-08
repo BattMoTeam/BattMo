@@ -121,7 +121,7 @@ for ivar = 1 : numel(fds)
                 % should be unique here
                 nnodename = nodenames{1};
                 if ifd == 1
-                    nodename = nnodename; % used later 
+                    nodename = nnodename; % used later
                 end
                 [ymin, ymax, yy] = getvals(nnodename, states);
                 for int = 1 : nt
@@ -142,7 +142,7 @@ for ivar = 1 : numel(fds)
         nodename = nodenames{1};
         [ymin, ymax, y] = getvals(nodename, states);
     end
-    
+
     if ismember(fd, fdsdivs)
         dodiv = true;
     else
@@ -154,7 +154,7 @@ for ivar = 1 : numel(fds)
     else
         dovol = true;
     end
-    
+
     if dodiv | dovol
         submodelname = regexp(nodename, '(.*)\.[^.]*$', 'tokens');
         submodelname = submodelname{1}{1};
@@ -162,7 +162,7 @@ for ivar = 1 : numel(fds)
         vols = submodel.G.cells.volumes;
         op = submodel.operators;
     end
-    
+
     figure
     hold on
     dominmax = false;
@@ -177,7 +177,7 @@ for ivar = 1 : numel(fds)
             elseif dovol
                 h = plot(y{itime}./vols);
             else
-                h = plot(y{itime});                
+                h = plot(y{itime});
             end
             if itime == 1
                 set(h, 'linewidth', 3, 'color', 'b');
@@ -190,7 +190,7 @@ for ivar = 1 : numel(fds)
                 end
                 if dosave
                     filename = sprintf('%s.png', nodename);
-                    filename = fullfile('/home/xavier/Matlab/Projects/battmo/Electrolyser/img', filename);
+                    filename = fullfile(battmoDir, 'Electrolyser','img', filename);
                     saveas(gcf, filename);
                 end
             end
@@ -198,8 +198,8 @@ for ivar = 1 : numel(fds)
     end
 end
 
-    
- 
+
+
 
 
 

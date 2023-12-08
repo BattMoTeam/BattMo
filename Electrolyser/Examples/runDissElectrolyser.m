@@ -2,18 +2,18 @@ mrstModule add ad-core mpfa matlab_bgl
 
 mrstDebug(20);
 
-jsonfilename = '/home/xavier/Matlab/Projects/battmo/Electrolyser/Parameters/alkalineElectrolyser.json';
+jsonfilename = fullfile('Electrolyser','Parameters','alkalineElectrolyser.json');
 jsonstruct_base = parseBattmoJson(jsonfilename);
 
-jsonfilename = '/home/xavier/Matlab/Projects/battmo/Electrolyser/Parameters/dissolution.json';
+jsonfilename = fullfile('Electrolyser','Parameters','dissolution.json');
 jsonstruct_diss = parseBattmoJson(jsonfilename);
 
 jsonstruct = mergeJsonStructs({jsonstruct_base, ...
                                jsonstruct_diss});
-                              
+
 paramobj = ElectrolyserInputParams(jsonstruct);
 
-jsonstring = fileread('/home/xavier/Matlab/Projects/battmo/Electrolyser/Parameters/electrolysergeometry1d.json');
+jsonstring = fileread(fullfile('Electrolyser','Parameters','electrolysergeometry1d.json'));
 jsonstruct = jsondecode(jsonstring);
 
 paramobj = setupElectrolyserGridFromJson(paramobj, jsonstruct);
