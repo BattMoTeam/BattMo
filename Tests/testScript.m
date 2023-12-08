@@ -1,3 +1,6 @@
+clear all
+close all
+
 import matlab.unittest.TestSuite;
 import matlab.unittest.selectors.HasParameter;
 import matlab.unittest.parameters.Parameter;
@@ -8,7 +11,7 @@ if doCreateReferenceData
     % we create a test suite with the parameter 'createReferenceData' that is set to true, as an external parameter
     param = Parameter.fromData("createReferenceData", {true});
     suite = TestSuite.fromClass(?TestBatteryP2D, 'ExternalParameters', param);
-    % This suite can then be run 
+    % This suite can then be run
     suite.run()
 end
 
@@ -37,6 +40,17 @@ if doStopOnFirstFailure
    results = runner.run(suite);
 end
 
+doTestExamples = true;
+if doTestExamples
+    suite = testsuite('TestRunExamples');
+    runner = testrunner('textoutput');
+
+    import matlab.unittest.plugins.StopOnFailuresPlugin
+    runner.addPlugin(StopOnFailuresPlugin)
+    results = runner.run(suite);
+
+    %results = runner.runInParallel(suite);
+end
 
 
 %{

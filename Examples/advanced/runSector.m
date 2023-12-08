@@ -82,7 +82,7 @@ jsonstruct = parseBattmoJson(fullfile('ParameterData','BatteryCellParameters','L
 jsonstruct.include_current_collectors = true;
 
 simcase = 'CCDischarge';
-jsonstruct.(ctrl).controlPolicy = simcase;
+jsonstruct.Control.controlPolicy = simcase;
 
 paramobj = BatteryInputParams(jsonstruct);
 
@@ -94,9 +94,9 @@ gen = SectorBatteryGenerator();
 paramobj = gen.updateBatteryInputParams(paramobj, spiralparams);
 
 CRate = 0.1;
-paramobj.(ctrl).lowerCutoffVoltage = 3;
-paramobj.(ctrl).CRate              = CRate;
-paramobj.(ctrl).rampupTime         = 0.1/CRate;
+paramobj.Control.lowerCutoffVoltage = 3;
+paramobj.Control.CRate              = CRate;
+paramobj.Control.rampupTime         = 0.1/CRate;
 
 model = Battery(paramobj);
 
@@ -119,7 +119,7 @@ step = struct('val', diff(times), 'control', ones(numel(tt), 1));
 control = model.Control.setupScheduleControl();
 
 schedule  = struct('control', control, 'step', step);
-    
+
 switch simcase
 
   case 'CCDischarge'
@@ -135,7 +135,7 @@ switch simcase
     initstate = model.setupInitialState();
 
   otherwise
-    
+
     error('simcase not recognized')
 
 end
@@ -180,14 +180,14 @@ simulatePackedProblem(problem);
 figure
 plotToolbar(model.G, states);
 view([0,-1,0]);
+axis tight
 
 %%  Process output and recover the output voltage and current from the output states.
 
 ind = cellfun(@(x) not(isempty(x)), states);
 states = states(ind);
-ctrl = 'Control';
-E = cellfun(@(x) x.(ctrl).E, states);
-I = cellfun(@(x) x.(ctrl).I, states);
+E = cellfun(@(x) x.Control.E, states);
+I = cellfun(@(x) x.Control.I, states);
 time = cellfun(@(x) x.time, states);
 
 figure

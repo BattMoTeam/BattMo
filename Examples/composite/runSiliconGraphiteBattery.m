@@ -109,7 +109,7 @@ nls.maxIterations = 10;
 nls.errorOnFailure = false;
 %%
 % We use a time step selector based on relative change of a target value, in our case the output voltage
-nls.timeStepSelector=StateChangeTimeStepSelector('TargetProps', {{'Control','E'}}, 'targetChangeAbs', 0.03);
+nls.timeStepSelector = StateChangeTimeStepSelector('TargetProps', {{'Control','E'}}, 'targetChangeAbs', 0.03);
 %%
 % We adjust the nonlinear tolerance
 model.nonlinearTolerance = 1e-3*model.Control.Imax;
@@ -126,16 +126,13 @@ dischargeStates = states;
 
 %% Setup charge schedule
 
-%%
 % We use the last computed state of the discharge as the initial state for the charge period.
 initstate = states{end};
 
-%%
 % We use a new control. Note the minus sign in front of :code:`model.Control.Imax`
-srcfunc = @(time, I, E) rampupSwitchControl(time, tup, I, E, ...
-                                            -model.Control.Imax, ...
-                                            model.Control.upperCutoffVoltage);
-control = struct('src', srcfunc, 'CCDischarge', true);
+control = model.Control.setupScheduleControl();
+
+% Use the control in the schedule
 schedule = struct('control', control, 'step', step);
 
 %% Run the simulation for the charge perios

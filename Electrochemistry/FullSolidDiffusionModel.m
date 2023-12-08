@@ -20,13 +20,13 @@ classdef FullSolidDiffusionModel < SolidDiffusionModel
                                 % of the guest molecule in a phase at a cell voltage that is defined as 0% SOC (symbol: theta0)
 
         % Advanced parameters
-        
+
         np             % Number of particles
         N              % Discretization parameters in spherical direction
-        
-        
+
+
         %% Computed parameters at model setup
-        
+
         useDFunc
         computeDFunc % used when useDFunc is true. Function handler to compute D as function of cElectrode, see method updateDiffusionCoefficient
 
@@ -46,7 +46,7 @@ classdef FullSolidDiffusionModel < SolidDiffusionModel
                        'guestStoichiometry0'    , ...
                        'np'                     , ...
                        'N'};
-        
+
             model = dispatchParams(model, paramobj, fdnames);
             model.operators = model.setupOperators();
 
@@ -64,7 +64,7 @@ classdef FullSolidDiffusionModel < SolidDiffusionModel
             else
                 model.useDFunc = false;
             end
-            
+
         end
 
         function model = registerVarAndPropfuncNames(model)
@@ -73,7 +73,7 @@ classdef FullSolidDiffusionModel < SolidDiffusionModel
             % (setup of varnameList and propertyFunctionList)
 
             model = registerVarAndPropfuncNames@SolidDiffusionModel(model);
-                        
+
             varnames = {};
             % concentration in the particle
             varnames{end + 1} = 'c';
@@ -83,7 +83,7 @@ classdef FullSolidDiffusionModel < SolidDiffusionModel
             varnames{end + 1} = 'flux';
             % Mass conservation equation
             varnames{end + 1} = 'solidDiffusionEq';
-            
+
             model = model.registerVarNames(varnames);
 
             fn = @FullSolidDiffusionModel.updateDiffusionCoefficient;
@@ -97,35 +97,35 @@ classdef FullSolidDiffusionModel < SolidDiffusionModel
             fn = @FullSolidDiffusionModel.updateFlux;
             inputnames = {'c', 'D'};
             model = model.registerPropFunction({'flux', fn, inputnames});
-            
+
             fn = @FullSolidDiffusionModel.updateMassConservation;
             inputnames = {'massAccum', 'flux', 'massSource'};
             model = model.registerPropFunction({'massCons', fn, inputnames});
 
             fn = @FullSolidDiffusionModel.updateMassSource;
             model = model.registerPropFunction({'massSource', fn, {'Rvol'}});
-            
+
             fn = @FullSolidDiffusionModel.updateMassAccum;
             fn = {fn, @(propfunction) PropFunction.accumFuncCallSetupFn(propfunction)};
             model = model.registerPropFunction({'massAccum', fn, {'c'}});
-            
+
             fn = @FullSolidDiffusionModel.assembleSolidDiffusionEquation;
             model = model.registerPropFunction({'solidDiffusionEq', fn, {'c', 'cSurface', 'massSource', 'D'}});
-            
+
             fn = @FullSolidDiffusionModel.updateAverageConcentration;
             model = model.registerPropFunction({'cAverage', fn, {'c'}});
 
             % we remove this declaration as it is not used in assembly (otherwise it may be computed but not used)
             model = model.setAsExtraVarName('cAverage');
-            
+
         end
-        
+
         function operators = setupOperators(model)
-            
+
             np = model.np;
             N  = model.N;
             rp = model.particleRadius;
-            
+
             celltbl.cells = (1 : np)';
             celltbl = IndexArray(celltbl);
 
@@ -140,7 +140,7 @@ classdef FullSolidDiffusionModel < SolidDiffusionModel
             endScelltbl = IndexArray(endScelltbl);
             endcellScelltbl = crossIndexArray(cellScelltbl, endScelltbl, {'Scells'});
 
-            G = cartGrid(N, rp); 
+            G = cartGrid(N, rp);
             r = G.nodes.coords;
 
             G.cells.volumes   = 4/3*pi*(r(2 : end).^3 - r(1 : (end - 1)).^3);
@@ -161,15 +161,15 @@ classdef FullSolidDiffusionModel < SolidDiffusionModel
             cells = cellfacetbl.get('cells');
             faces = cellfacetbl.get('faces');
             sgn = 2*(cells == G.faces.neighbors(faces, 1)) - 1; % sgn is in cellfacetbl
-                
+
             % We change name of cellfacetbl
             ScellSfacetbl = cellfacetbl;
             ScellSfacetbl = replacefield(ScellSfacetbl, {{'cells', 'Scells'}, {'faces', 'Sfaces'}});
-            
+
             % Here, we use that we know *apriori* the indexing in G.cells.faces (the last index corresponds to outermost cell-face)
             Tbc = hT(end); % half-transmissibility for of the boundary face
             Tbc = repmat(Tbc, np, 1);
-            
+
             Sfacetbl.Sfaces = (2 : N)'; % index of the internal faces (correspond to image of C')
             Sfacetbl = IndexArray(Sfacetbl);
             cellSfacetbl = crossIndexArray(celltbl, Sfacetbl, {}, 'optpureproduct', true);
@@ -184,7 +184,7 @@ classdef FullSolidDiffusionModel < SolidDiffusionModel
             map.fromTbl = allScellSfacetbl;
             map.toTbl = cellScellSfacetbl;
             map.mergefds = {'Scells', 'Sfaces'};
-            map = map.setup();            
+            map = map.setup();
 
             hT = map.eval(hT);
             sgn = map.eval(sgn);
@@ -204,7 +204,7 @@ classdef FullSolidDiffusionModel < SolidDiffusionModel
             divMat = divMat.getMatrix();
 
             div = @(u) (divMat*u);
-            
+
             gradMat = -divMat';
 
             prod = TensorProd();
@@ -253,7 +253,7 @@ classdef FullSolidDiffusionModel < SolidDiffusionModel
             mapToParticle = SparseTensor();
             mapToParticle = mapToParticle.setFromTensorMap(map);
             mapToParticle = mapToParticle.getMatrix();
-            
+
             vols = G.cells.volumes;
 
             map = TensorMap();
@@ -271,21 +271,21 @@ classdef FullSolidDiffusionModel < SolidDiffusionModel
                                'mapToBc'      , mapToBc      , ...
                                'Tbc'          , Tbc          , ...
                                'vols'         , vols);
-            
+
         end
 
         function state = updateMassSource(model, state)
-            
+
             op  = model.operators;
             rp  = model.particleRadius;
             vf  = model.volumeFraction;
-            
+
             Rvol = state.Rvol;
 
             Rvol = op.mapFromBc*Rvol;
-            
+
             state.massSource = - Rvol.*((4*pi*rp^3)./(3*vf));
-            
+
         end
 
         function state = updateDiffusionCoefficient(model, state)
@@ -296,22 +296,22 @@ classdef FullSolidDiffusionModel < SolidDiffusionModel
                 cmax     = model.cmax;
                 theta0   = model.theta0;
                 theta100 = model.theta100;
-                
+
                 c = state.c;
 
                 cmin = theta0*cmax;
                 cmax = theta100*cmax;
 
                 soc = (c - cmin)./(cmax - cmin);
-                
+
                 D = computeD(soc);
 
                 state.D = D;
-                
+
             else
-                
+
                 state = updateDiffusionCoefficient@SolidDiffusionModel(model, state);
-                
+
             end
 
         end
@@ -319,31 +319,31 @@ classdef FullSolidDiffusionModel < SolidDiffusionModel
         function state = updateMassAccum(model, state, state0, dt)
 
             op = model.operators;
-            
+
             c = state.c;
             c0 = state0.c;
-            
+
             state.massAccum = 1/dt*op.vols.*(c - c0);
-            
+
         end
-        
+
         function state = updateMassConservation(model, state)
-           
+
             op = model.operators;
-            
+
             flux       = state.flux;
             massSource = state.massSource;
             massAccum  = state.massAccum;
-            
+
             state.massCons = massAccum + op.div(flux) - massSource;
 
         end
-        
+
         function state = updateFlux(model, state)
-            
+
             useDFunc = model.useDFunc;
             op = model.operators;
-            
+
             c = state.c;
             D = state.D;
 
@@ -353,17 +353,17 @@ classdef FullSolidDiffusionModel < SolidDiffusionModel
                 D = op.mapToParticle*D;
                 state.flux = op.flux(D, c);
             end
-            
-            
+
+
         end
-    
+
         function state = assembleSolidDiffusionEquation(model, state)
-            
+
         %% TODO : change name of this function
-            
+
             op       = model.operators;
             useDFunc = model.useDFunc;
-            
+
             c     = state.c;
             D     = state.D;
             cSurf = state.cSurface;
@@ -374,13 +374,13 @@ classdef FullSolidDiffusionModel < SolidDiffusionModel
                 % Here, we first dispatch D on all the particle cells and, then, retain only the value at the boundary.
                 D = op.mapToParticle*D;
             end
-            
+
             D = op.mapToBc*D;
-            
+
             eq = D.*op.Tbc.*(op.mapToBc*c - cSurf) + op.mapToBc*src;
-            
+
             state.solidDiffusionEq = eq;
-            
+
         end
 
         function state = updateAverageConcentration(model, state)
@@ -388,18 +388,18 @@ classdef FullSolidDiffusionModel < SolidDiffusionModel
             op = model.operators;
             vols = op.vols;
             map = op.mapToParticle;
-            
+
             c = state.c;
 
             m    = map'*(c.*vols); % total amount [mol] in the cell particles
-            vols = map'*(vols);    % volume 
+            vols = map'*(vols);    % volume
 
             state.cAverage = m./vols;
-            
+
         end
-        
+
     end
-    
+
 end
 
 
@@ -422,5 +422,3 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with BattMo.  If not, see <http://www.gnu.org/licenses/>.
 %}
-    
-

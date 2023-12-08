@@ -108,7 +108,7 @@ classdef Battery < BaseModel
             % setup computational graph
             model = model.setupComputationalGraph();
             model.funcCallList = model.computationalGraph.getOrderedFunctionCallList();
-            
+
         end
 
         function model = setupSelectedModel(model, varargin)
@@ -142,7 +142,7 @@ classdef Battery < BaseModel
 
             eldes = {ne, pe};
 
-            
+
             for ielde = 1 : numel(eldes)
 
                 elde = eldes{ielde};
@@ -155,7 +155,7 @@ classdef Battery < BaseModel
                   otherwise
                     error('active_material_type not recognized');
                 end
-                
+
                 for iam = 1 : numel(ams)
                     amc = ams{iam};
                     switch model.(elde).(co).(amc).diffusionModelType
@@ -168,11 +168,11 @@ classdef Battery < BaseModel
                       otherwise
                         error('diffusionModelType not recognized');
                     end
-                    
+
                     varEqTypes = vertcat(varEqTypes, newentries);
 
                 end
-                
+
                 if model.include_current_collectors
 
                     newentries = {{elde, cc, 'phi'}, {elde, cc, 'chargeCons'}, 'cell'};
@@ -314,7 +314,7 @@ classdef Battery < BaseModel
 
             % Dispatch electrolyte concentration and potential in the electrodes
             for ielde = 1 : numel(eldes)
-                
+
                 elde = eldes{ielde};
 
                 switch model.(elde).(co).active_material_type
@@ -329,11 +329,11 @@ classdef Battery < BaseModel
                 for iam = 1 : numel(ams)
 
                     amc = ams{iam};
-                    
+
                     fn = @Battery.updateElectrodeCoupling;
                     inputnames = {{elyte, 'c'}, ...
                                   {elyte, 'phi'}};
-                    
+
                     model = model.registerPropFunction({{elde, co, amc, itf, 'phiElectrolyte'}, fn, inputnames});
                     model = model.registerPropFunction({{elde, co, amc, itf, 'cElectrolyte'}  , fn, inputnames});
 
@@ -347,7 +347,7 @@ classdef Battery < BaseModel
                           {pe, co, 'eSource'}};
             model = model.registerPropFunction({{elyte, 'massSource'}, fn, inputnames});
             model = model.registerPropFunction({{elyte, 'eSource'}, fn, inputnames});
-                    
+
 
             % Function that assemble the control equation
             fn = @Battery.setupEIEquation;
@@ -474,37 +474,37 @@ classdef Battery < BaseModel
             C = computeCellCapacity(model);
 
             switch paramobj.controlPolicy
-                
+
               case "CCDischarge"
 
                 control = CCDischargeControlModel(paramobj);
                 CRate = control.CRate;
                 control.Imax = (C/hour)*CRate;
-                
+
               case 'CCCharge'
 
                 control = CCChargeControlModel(paramobj);
                 CRate = control.CRate;
                 control.Imax = (C/hour)*CRate;
-                
+
               case "CCCV"
-                
+
                 control = CcCvControlModel(paramobj);
                 CRate = control.CRate;
                 control.Imax = (C/hour)*CRate;
-                
+
               case "powerControl"
-                
+
                 control = PowerControlModel(paramobj);
-                
+
               case "CC"
-                
+
                 control = CcControlModel(paramobj);
                 CRate = control.CRate;
                 control.Imax = (C/hour)*CRate;
-                
+
               otherwise
-                
+
                 error('Error controlPolicy not recognized');
             end
 
@@ -682,7 +682,7 @@ classdef Battery < BaseModel
             for ielde = 1 : numel(eldes)
 
                 elde = eldes{ielde};
-                
+
                 switch model.(elde).(co).active_material_type
                   case 'default'
                     ams = {am};
@@ -695,7 +695,7 @@ classdef Battery < BaseModel
                 for iam = 1 : numel(ams)
 
                     amc = ams{iam};
-                    
+
                     elde_itf = bat.(elde).(co).(amc).(itf);
 
                     theta = SOC*(elde_itf.guestStoichiometry100 - elde_itf.guestStoichiometry0) + elde_itf.guestStoichiometry0;
@@ -719,11 +719,11 @@ classdef Battery < BaseModel
 
                 % In case of two material, we choose first material for the initial OCP
                 amc = ams{1};
-                
+
                 initstate = model.evalVarName(initstate, {elde, co, amc, itf, 'OCP'});
 
                 OCP = initstate.(elde).(co).(amc).(itf).OCP;
-                
+
                 if ielde == 1
                     % The value in the first cell is used as reference.
                     ref = OCP(1);
@@ -755,19 +755,19 @@ classdef Battery < BaseModel
             initstate.(ctrl).E = OCP(1) - ref;
 
             switch model.(ctrl).controlPolicy
-                
+
               case 'CCDischarge'
-                
+
                 initstate.(ctrl).ctrlType = 'constantCurrent';
                 initstate.(ctrl).I = model.(ctrl).Imax;
-                
+
               case 'CCCharge'
-                
+
                 initstate.(ctrl).ctrlType = 'constantCurrent';
                 initstate.(ctrl).I = -model.(ctrl).Imax;
-                
+
               case 'CCCV'
-                
+
                 switch model.(ctrl).initialControl
                   case 'discharging'
                     initstate.(ctrl).ctrlType     = 'CC_discharge1';
@@ -780,9 +780,9 @@ classdef Battery < BaseModel
                   otherwise
                     error('initialControl not recognized');
                 end
-                
+
               case 'powerControl'
-                
+
                 switch model.(ctrl).initialControl
                   case 'discharging'
                     error('to implement (should be easy...)')
@@ -794,9 +794,9 @@ classdef Battery < BaseModel
                   otherwise
                     error('initialControl not recognized');
                 end
-                
+
               case 'CC'
-                
+
                 % this value will be overwritten after first iteration
                 initstate.(ctrl).I = 0;
                 switch model.(ctrl).initialControl
@@ -853,13 +853,13 @@ classdef Battery < BaseModel
 
             state.(elyte).massAccum = [];
             state.(elyte).massCons = [];
-            
+
             eldes = {ne, pe};
-            
+
             for ielde = 1 : numel(eldes)
 
                 elde = eldes{ielde};
-                
+
                 switch model.(elde).(co).active_material_type
                   case 'default'
                     ams = {am};
@@ -870,16 +870,16 @@ classdef Battery < BaseModel
                 end
 
                 for iam = 1 : numel(ams)
-                    
+
                     amc = ams{iam};
-                    
+
                     state.(elde).(co).(amc).(sd).massAccum = [];
                     state.(elde).(co).(amc).(sd).massCons = [];
 
                 end
 
                 state = model.evalVarName(state, {elde, co, 'SOC'});
-                
+
             end
 
             if model.use_thermal
@@ -952,9 +952,9 @@ classdef Battery < BaseModel
                 end
 
                 for iam = 1 : numel(ams)
-                    
+
                     amc = ams{iam};
-                    
+
                     switch model.(elde).(co).(amc).diffusionModelType
 
                       case 'simple'
@@ -1093,7 +1093,7 @@ classdef Battery < BaseModel
                 adbackend = model.AutoDiffBackend;
                 elyte_e_source = adbackend.convertToAD(elyte_e_source, adsample);
             end
-            
+
             coupterm = getCoupTerm(couplingterms, 'NegativeElectrode-Electrolyte', coupnames);
             elytecells = coupterm.couplingcells(:, 2);
             elyte_e_source(elytecells) = - ne_esource;
@@ -1134,14 +1134,14 @@ classdef Battery < BaseModel
                 time = state.time;
 
                 if model.(ctrl).useCVswitch
-                    
+
                     [ctrlVal, ctrltype] = drivingForces.src(time, value(I), value(E));
                     state.(ctrl).ctrlType = ctrltype;
-                    
+
                 else
                     ctrlVal = drivingForces.src(time);
                 end
-                
+
                 state.(ctrl).ctrlVal  = ctrlVal;
 
               case 'CC'
@@ -1456,7 +1456,7 @@ classdef Battery < BaseModel
             elyte_cells(bat.(elyte).G.mappings.cellmap) = (1 : bat.(elyte).G.cells.num)';
 
 
-            
+
             for ind = 1 : numel(eldes)
                 elde = eldes{ind};
 
@@ -1470,11 +1470,11 @@ classdef Battery < BaseModel
                 end
 
                 for iam = 1 : numel(ams)
-                    
+
                     amc = ams{iam};
                     state.(elde).(co).(amc).(itf).phiElectrolyte = phi_elyte(elyte_cells(bat.(elde).(co).G.mappings.cellmap));
                     state.(elde).(co).(amc).(itf).cElectrolyte   = c_elyte(elyte_cells(bat.(elde).(co).G.mappings.cellmap));
-                    
+
                 end
 
             end
@@ -1654,7 +1654,7 @@ classdef Battery < BaseModel
             end
 
             cgt = model.computationalGraph;
-            
+
 
         end
 
@@ -1690,9 +1690,9 @@ classdef Battery < BaseModel
                   otherwise
                     error('active_material_type not recognized');
                 end
-                
+
                 for iam = 1 : numel(ams)
-                    
+
                     amc = ams{iam};
                     cmax = model.(elde).(co).(amc).(itf).saturationConcentration;
                     switch model.(elde).(co).(amc).diffusionModelType
@@ -1761,7 +1761,7 @@ classdef Battery < BaseModel
             eldes = {pe, ne};
 
             for ielde = 1 : numel(eldes)
-                
+
                 elde = eldes{ielde};
 
                 switch model.(elde).(co).active_material_type
@@ -1769,38 +1769,38 @@ classdef Battery < BaseModel
                   case 'default'
 
                     am = 'ActiveMaterial';
-                    
+
                     cmaxs{ielde} = model.(elde).(co).(am).(itf).saturationConcentration;
-                    
+
                   case 'composite'
-                    
+
                     am1 = 'ActiveMaterial1';
                     am2 = 'ActiveMaterial2';
 
                     ams = {am1, am2};
 
                     cmax = 0;
-                    
+
                     for iam = 1 : numel(ams)
-                        
+
                         amc = ams{iam};
                         cmax = max(cmax, model.(elde).(co).(amc).(itf).saturationConcentration);
-                        
+
                     end
-                    
+
                     cmaxs{ielde} = cmax;
-                    
+
                   otherwise
-                    
+
                     error('active_material_type not recognized');
-                    
+
                 end
-                
+
 
             end
-            
+
             model.cmin = 1e-5*max(cmaxs{1}, cmaxs{2});
-            
+
 
         end
 
@@ -1829,9 +1829,9 @@ classdef Battery < BaseModel
                     end
 
                 end
-                
+
             end
-            
+
         end
 
         function outputvars = extractGlobalVariables(model, states)
