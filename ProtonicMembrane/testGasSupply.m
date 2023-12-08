@@ -27,28 +27,22 @@ cgt = model.computationalGraph;
 
 initstate = model.setupInitialState();
 
-%% setup scalings
+%% Setup scalings
 
-doscaling = false;
+gasInd = model.gasInd;
 
-if doscaling
-    
-    gasInd = model.gasInd;
+pH2O         = initstate.pressure(1);
+rho          = initstate.density(1);
+scalFlux     = 1/gen.nx*rho*model.permeability/model.viscosity*pH2O/gen.ly;
+scalPressure = pH2O;
 
-    initstate = model.evalVarName(initstate, 'density');
-    
-    pH2O         = initstate.pressure(1);
-    rho          = initstate.density(1);
-    scalFlux     = 1/gen.nx*rho*model.permeability/model.viscosity*pH2O/gen.ly;
-    scalPressure = pH2O;
+model.scalings = {{{'massConses', 1}, scalFlux}, ...
+                  {{'massConses', 2}, scalFlux}, ...
+                  {{'Control', 'pressureEq'}, scalPressure}, ...
+                  {{'Control', 'rateEq'}, gen.nx*scalFlux}, ...
+                  {{'GasSupplyBc', 'boundaryEquations', 1}, scalFlux}, ...
+                  {{'GasSupplyBc', 'boundaryEquations', 2}, scalFlux}};
 
-    model.scalings = {{{'massConses', 1}, scalFlux}, ...
-                      {{'massConses', 2}, scalFlux}, ...
-                      {{'GasSupplyBc', 'controlEquations'}, scalPressure}, ...
-                      {{'GasSupplyBc', 'boundaryEquations', 1}, scalFlux}, ...
-                      {{'GasSupplyBc', 'boundaryEquations', 2}, scalFlux}};
-    
-end
 
 T = 1*second;
 N = 10;
@@ -66,6 +60,8 @@ nls = NonLinearSolver();
 nls.maxIterations = 20;
 nls.errorOnFailure = false;
 nls.verbose = true;
+
+model.verbose = true;
 
 model.nonlinearTolerance = 1e-8;
 

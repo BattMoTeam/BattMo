@@ -75,27 +75,7 @@ classdef ProtonicMembraneGasSupplyBc < BaseModel
             state.volumefractions{2} = 1 - state.volumefractions{1};
             
         end
-        
 
-
-    end
-    
-    methods(Static)
-
-        function bceq = setupBcEquation(model, bcFlux, pIn, pBc, rhoIn, rhoBc, vfIn, vfBc, Tbc)
-        % Tbc constains both transmissibility and (homogeneous) coefficient
-            
-            v  = Tbc.*(pIn - pBc);
-            
-            isOutward = (v > 0);
-
-            v(isOutward)  = rhoIn(isOutward).*vfIn(isOutward).*v(isOutward);
-            v(~isOutward) = rhoBc(~isOutward).*vfBc(~isOutward).*v(~isOutward);
-
-            bceq = v - bcFlux;
-            
-        end
-        
     end
     
 end
