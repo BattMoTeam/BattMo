@@ -5,7 +5,7 @@
 
 .. toctree::
    :hidden:
-      
+
    Installation <installation>
    basicusage
    intermediate
@@ -18,8 +18,8 @@
    Electrolyser simulation <publishedExamples/runElectrolyser>
    seealso
    References <bibliography>
-   
-   
+
+
 Welcome
 =======
 
@@ -40,12 +40,13 @@ For the latest information including video tutorials and project gallery, please
 .. note::
   This project is under active development.
 
-      
+
 Acknowledgements
 ================
 
 BattMo has received funding from the European Union’s Horizon 2020 innovation program under grant agreement numbers:
 
 - 875527 - Hybrid power-energy electrodes for next-generation lithium-ion batteries (HYDRA)
-- 957189 - Battery interface genome and materials acceleration platform (BIG-MAP) 
+- 957189 - Battery interface genome and materials acceleration platform (BIG-MAP)
 - 101069765 - Innovative and Sustainable High Voltage Li-ion Cells for Next Generation (EV) Batteries (IntelLiGent)
+- 101104031 - Battery management by multi-X digital twins (BATMAX)
