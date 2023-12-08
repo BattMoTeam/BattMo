@@ -9,13 +9,7 @@ clc
 % load MRST modules
 mrstModule add ad-core mrst-gui mpfa
 
-% We create an instance of BatteryInputParams. This class is used to initiate the battery simulator and it propagates
-% all the parameters through out the submodels.
-
-% The input parameters can be given in json format. The json file is read and used to populate the paramobj object.
-jsonstruct_material = parseBattmoJson(fullfile('ParameterData','ParameterSets','Chen2020','chen2020_lithium_ion_battery.json'));
-jsonstruct_geometry = parseBattmoJson('/home/xavier/Matlab/Projects/battmo/Examples/jsondatafiles/geometry1d.json');
-
+% Useful abbreviations
 elyte   = 'Electrolyte';
 ne      = 'NegativeElectrode';
 pe      = 'PositiveElectrode';
@@ -27,12 +21,12 @@ itf     = 'Interface';
 sd      = 'SolidDiffusion';
 thermal = 'ThermalModel';
 
-jsonstruct_geometry.Geometry.faceArea =  1.58*0.065;
+% We create an instance of BatteryInputParams. This class is used to initiate the battery simulator and it propagates
+% all the parameters through out the submodels.
 
-xlength = 1e-5*[8.52; 1.2; 7.56];
-jsonstruct_geometry.(ne).(co).thickness = xlength(1);
-jsonstruct_geometry.(pe).(co).thickness = xlength(3);
-jsonstruct_geometry.Separator.thickness = xlength(2);
+% The input parameters can be given in json format. The json file is read and used to populate the paramobj object.
+jsonstruct_material = parseBattmoJson(fullfile('ParameterData','ParameterSets','Chen2020','chen2020_lithium_ion_battery.json'));
+jsonstruct_geometry = parseBattmoJson(fullfile('Examples', 'jsondatafiles', 'geometryChen.json'));
 
 jsonstruct = mergeJsonStructs({jsonstruct_material, ...
                                jsonstruct_geometry});
