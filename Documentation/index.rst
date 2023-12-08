@@ -49,4 +49,4 @@ BattMo has received funding from the European Union’s Horizon 2020 innovation 
 - 875527 - Hybrid power-energy electrodes for next-generation lithium-ion batteries (HYDRA)
 - 957189 - Battery interface genome and materials acceleration platform (BIG-MAP)
 - 101069765 - Innovative and Sustainable High Voltage Li-ion Cells for Next Generation (EV) Batteries (IntelLiGent)
-- 101104031 - Battery management by multi-X digital twins (BATMAX)
+- 101104031 - Battery management by multi-X (X=scale/physics/use/domain) digital twins (BATMAX)
