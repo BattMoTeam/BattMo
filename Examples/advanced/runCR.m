@@ -35,18 +35,6 @@ jsonstruct.include_current_collectors = true;
 
 paramobj = BatteryInputParams(jsonstruct);
 
-use_cccv = false;
-if use_cccv
-    cccvstruct = struct('controlPolicy'     , 'CCCV',  ...
-                        'CRate'             , 1         , ...
-                        'lowerCutoffVoltage', 2         , ...
-                        'upperCutoffVoltage', 4.1       , ...
-                        'dIdtLimit'         , 0.01      , ...
-                        'dEdtLimit'         , 0.01);
-    cccvparamobj = CcCvControlModelInputParams(cccvstruct);
-    paramobj.Control = cccvparamobj;
-end
-
 %% Setup the geometry and grid for the components
 CRdiameter = 20*milli*meter;
 CRthickness = 1.6*milli*meter;
@@ -112,9 +100,9 @@ CRate = 1;
 [mass, masses] = computeCellMass(model);
 Li_mass = masses.(ne).(co).val;
 
-fprintf('Capacity %f mAh\n'  , C*1000/3600);
-fprintf('Li content %f g\n'  , Li_mass * 1000);
-fprintf('Battery mass %f g\n', mass * 1000);
+fprintf('Capacity %f mAh\n'  , C/milli/hour);
+fprintf('Li content %f g\n'  , Li_mass / gram);
+fprintf('Battery mass %f g\n', mass / gram);
 
 %% Setup the time step schedule
 % Smaller time steps are used to ramp up the current from zero to its
@@ -139,16 +127,18 @@ schedule = struct('control', control, 'step', step);
 
 %% Setup the initial state of the model
 % The initial state of the model is dispatched using the
-% model.setupInitialState()method.
+% model.setupInitialState() method.
 initstate = model.setupInitialState();
 
 initstate.(ctrl).I = 0;
-initstate.(ctrl).ctrlType = 'constantCurrent';
 
 %% Setup the properties of the nonlinear solver
 nls = NonLinearSolver();
 nls.maxIterations = 10;
 nls.errorOnFailure = false;
+
+% Set up the time step such that we enforce a new time step if the
+% potential changes
 nls.timeStepSelector = StateChangeTimeStepSelector('TargetProps', ...
                                                    {{ctrl, 'E'}}, ...
                                                    'targetChangeAbs', 0.03);
@@ -176,15 +166,15 @@ simulatePackedProblem(problem);
 %%  Process output and recover the output voltage and current from the output states.
 ind = cellfun(@(x) not(isempty(x)), states);
 states = states(ind);
-Enew = cellfun(@(x) x.(ctrl).E, states);
-Inew = cellfun(@(x) x.(ctrl).I, states);
+E = cellfun(@(x) x.(ctrl).E, states);
+I = cellfun(@(x) x.(ctrl).I, states);
 time = cellfun(@(x) x.time, states);
 
 %% Plot results
 figure
-plot(time/hour, Inew, '-'); grid on; xlabel('time  / h');
+plot(time/hour, I, '-'); grid on; xlabel('time  / h');
 figure
-plot(time/hour, Enew, '-'); grid on; xlabel('time  / h');
+plot(time/hour, E, '-'); grid on; xlabel('time  / h');
 if model.use_thermal
     % Plot half of the cell
     cells = model.(thermal).G.cells.centroids(:, 1) > 0;
