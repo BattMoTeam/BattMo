@@ -67,8 +67,8 @@ compDims{'NegativeCurrentCollector', 'diameter'} = 1;
 compDims.diameter = compDims.diameter * CRdiameter;
 
 %% Construct mesh
-numRadial = 10;
-numAngular = 50;
+numRadial = 7;
+numAngular = 30;
 hz = min(compDims.thickness);
 compDims.numCellLayers = max(2, round(compDims.thickness / hz));
 compDims{currentcollectors, 'numCellLayers'} = ceil(round(0.25 * compDims{currentcollectors, 'numCellLayers'}));
@@ -130,8 +130,6 @@ schedule = struct('control', control, 'step', step);
 % model.setupInitialState() method.
 initstate = model.setupInitialState();
 
-initstate.(ctrl).I = 0;
-
 %% Setup the properties of the nonlinear solver
 nls = NonLinearSolver();
 nls.maxIterations = 10;
@@ -143,7 +141,7 @@ nls.timeStepSelector = StateChangeTimeStepSelector('TargetProps', ...
                                                    {{ctrl, 'E'}}, ...
                                                    'targetChangeAbs', 0.03);
 model.nonlinearTolerance = 1e-5;
-model.verbose = true;
+model.verbose = false;
 
 %% Plot
 plotBatteryMesh(model, 'setstyle', false);
@@ -154,7 +152,7 @@ dataFolder = 'BattMo';
 problem = packSimulationProblem(initstate, model, schedule, dataFolder, 'Name', name, 'NonLinearSolver', nls);
 problem.SimulatorSetup.OutputMinisteps = true;
 
-clearSimulation = false;
+clearSimulation = true;
 if clearSimulation
     % Clear previously computed simulation
     clearPackedSimulatorOutput(problem, 'prompt', false);
@@ -172,9 +170,9 @@ time = cellfun(@(x) x.time, states);
 
 %% Plot results
 figure
-plot(time/hour, I, '-'); grid on; xlabel('time  / h');
+plot(time/hour, I/milli, '-'); grid on; xlabel('time  / h'); ylabel('current  / mA');
 figure
-plot(time/hour, E, '-'); grid on; xlabel('time  / h');
+plot(time/hour, E, '-'); grid on; xlabel('time  / h'); ylabel('voltage  / V');
 if model.use_thermal
     % Plot half of the cell
     cells = model.(thermal).G.cells.centroids(:, 1) > 0;
