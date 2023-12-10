@@ -1,7 +1,7 @@
 function output = run_magnesium_1D_battery(input, varargin)
-    
+
     input_default = struct('precipitation', true);
-    
+
     if ~isempty(input)
         fds = fieldnames(input);
         vals = cellfun(@(fd) input.(fd), fds, 'un', false);
@@ -21,8 +21,8 @@ function output = run_magnesium_1D_battery(input, varargin)
     if isfield(input, 'directory')
         opt.directory = input.directory;
     end
-        
-    %% Load json input 
+
+    %% Load json input
     jsonstruct = parseBattmoJson('SeaWater/json_inputs/magnesium_battery.json');
 
     if input.precipitation
@@ -30,7 +30,7 @@ function output = run_magnesium_1D_battery(input, varargin)
     else
         jsonstruct.include_precipitation = false;
     end
-    
+
     paramobj = SeaWaterBatteryInputParams(jsonstruct);
 
     elyte = 'Electrolyte';
@@ -38,7 +38,7 @@ function output = run_magnesium_1D_battery(input, varargin)
     ctam  = 'CathodeActiveMaterial';
     an    = 'Anode';
     anam  = 'AnodeActiveMaterial';
-    
+
     %% Setup geometry
 
     gen = SeaWaterBatteryGeneratorP2D();
@@ -146,36 +146,36 @@ function output = run_magnesium_1D_battery(input, varargin)
     is_prep = model.include_precipitation;
 
     if is_prep
-        
-        dt = []; 
+
+        dt = [];
         n = 30;
         dt = [dt; repmat(1e-6, n, 1).*1.8.^[1 : n]'];
         dT = dt(end);
         T = 0.03*hour; % roughly activation time
         dt = [dt; repmat(dT, floor(T/dT), 1)];
         T = 150*hour;
-        n = 100; 
-        dt = [dt; repmat(T/n, n, 1)]; 
-        T = 7*hour;
-        n = 20; 
+        n = 100;
         dt = [dt; repmat(T/n, n, 1)];
-        
+        T = 7*hour;
+        n = 20;
+        dt = [dt; repmat(T/n, n, 1)];
+
     else
 
-        dt = []; 
+        dt = [];
         n = 30;
         dt = [dt; repmat(1e-5, n, 1).*1.6.^[1 : n]'];
         T = 0.1*hour;
         n = 50;
         dt = [dt; repmat(T/n, n, 1)];
-        
-    end
-    
 
-    step = struct('val', dt, 'control', ones(numel(dt), 1)); 
+    end
+
+
+    step = struct('val', dt, 'control', ones(numel(dt), 1));
 
     ct = 'Cathode';
-    % stopFunc = @(model, state, state_prev) (state.(ct).E < 2.0); 
+    % stopFunc = @(model, state, state_prev) (state.(ct).E < 2.0);
     stopFunc = @(model, state, state_prev) (false);
 
     tup = 0.1;
@@ -185,11 +185,11 @@ function output = run_magnesium_1D_battery(input, varargin)
     % we use a ramp-up function
     srcfunc = @(time) rampupControl(time, tup, inputI);
 
-    control = repmat(struct('src', srcfunc, 'stopFunction', stopFunc), 1, 1); 
-    schedule = struct('control', control, 'step', step); 
+    control = repmat(struct('src', srcfunc, 'stopFunction', stopFunc), 1, 1);
+    schedule = struct('control', control, 'step', step);
 
     %% We setup the nonlinear solver
-    % Setup nonlinear solver 
+    % Setup nonlinear solver
     nls = NonLinearSolver();
     % Change default maximum iteration number in nonlinear solver
     nls.maxIterations   = 15;
@@ -208,9 +208,9 @@ function output = run_magnesium_1D_battery(input, varargin)
 
     output.model = model;
     output.schedule = schedule;
-    
+
     % Run simulation
-    
+
     dopacked = true;
     if dopacked
         simname = md5sum(input);
@@ -245,7 +245,7 @@ function output = run_magnesium_1D_battery(input, varargin)
         [~, states, report] = getPackedSimulatorOutput(problem);
         output.states = states;
     else
-        [wellSols, states, report] = simulateScheduleAD(initstate, model, schedule, 'OutputMinisteps', true, 'NonLinearSolver', ...
+        [~, states, report] = simulateScheduleAD(initstate, model, schedule, 'OutputMinisteps', true, 'NonLinearSolver', ...
                                                         nls);
         output.states = states;
     end

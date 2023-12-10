@@ -148,7 +148,7 @@ model.nonlinearTolerance = 1e-3*model.Control.Imax;
 model.verbose = true;
 
 %% Run the simulation
-[wellSols, states, report] = simulateScheduleAD(initstate, model, schedule, 'OutputMinisteps', true, 'NonLinearSolver', nls);
+[~, states, report] = simulateScheduleAD(initstate, model, schedule, 'OutputMinisteps', true, 'NonLinearSolver', nls);
 
 %% Process output and recover the output voltage and current from the output states.
 ind = cellfun(@(x) not(isempty(x)), states);

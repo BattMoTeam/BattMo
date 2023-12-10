@@ -3,10 +3,10 @@ function output = computeCellEnergyGivenCrate(model, CRate, varargin)
 % The output consists of the fields
 % - energy
 % - dischargeFunction
-% - E    % Voltage output 
+% - E    % Voltage output
 % - I    % Current output
 % - time % time output
-    
+
     opt = struct('computationType'   , 'sharp', ...
                  'lowerCutoffVoltage', []     , ...
                  'cutoffparams'      , []);
@@ -29,12 +29,12 @@ function output = computeCellEnergyGivenCrate(model, CRate, varargin)
 
     capacity = computeCellCapacity(model);
     Imax = (capacity/hour)*CRate;
-    
+
     model.Control.CRate = CRate;
     model.Control.Imax  = Imax;
-    
+
     assert(strcmp(model.Control.controlPolicy, "CCDischarge"), 'The model should be setup with CCDischarge control');
-    
+
     totalTime = 1.1*hour/CRate;
 
     % rampup stage
@@ -58,20 +58,20 @@ function output = computeCellEnergyGivenCrate(model, CRate, varargin)
     control = struct('src', srcfunc, 'CCDischarge', true);
 
 
-    schedule = struct('control', control, 'step', step); 
+    schedule = struct('control', control, 'step', step);
 
     %% Setup the initial state of the model
 
-    state0 = model.setupInitialState(); 
+    state0 = model.setupInitialState();
 
-    nls = NonLinearSolver(); 
-    nls.maxIterations  = 10; 
-    nls.errorOnFailure = false; 
-    
+    nls = NonLinearSolver();
+    nls.maxIterations  = 10;
+    nls.errorOnFailure = false;
+
     model.nonlinearTolerance = 1e-5*model.Control.Imax;
     model.verbose = false;
 
-    [wellSols, states, report] = simulateScheduleAD(state0, model, schedule, 'OutputMinisteps', true, 'NonLinearSolver', nls); 
+    [~, states, report] = simulateScheduleAD(state0, model, schedule, 'OutputMinisteps', true, 'NonLinearSolver', nls);
 
     ind = cellfun(@(x) not(isempty(x)), states);
     states = states(ind);
@@ -80,10 +80,10 @@ function output = computeCellEnergyGivenCrate(model, CRate, varargin)
     time = cellfun(@(x) x.time, states);
 
     switch opt.computationType
-        
+
       case 'smooth'
         % we use a regularization function
-        
+
         if isempty(opt.cutoffparams)
             cutoffparams.E0 = lowerCutoffVoltage;
             cutoffparams.alpha = 100;
@@ -96,7 +96,7 @@ function output = computeCellEnergyGivenCrate(model, CRate, varargin)
         energy = sum(I.*E.*cutoff(E).*dt);
 
         E = E.*cutoff(E);
-        
+
       case 'sharp'
         % We detect the lowercutoffvoltage point
 
@@ -106,15 +106,15 @@ function output = computeCellEnergyGivenCrate(model, CRate, varargin)
         I  = I(ind);
         E  = E(ind);
         dt = dt(ind);
-        
+
         energy = sum(I.*E.*dt);
-        
+
       otherwise
-        
+
         error('computation type not recognized');
-        
+
     end
-    
+
     soc = cumsum(I.*dt)/capacity;
 
     dischargeFunction = @(s) interp1(soc, E, s, 'linear');
@@ -124,7 +124,7 @@ function output = computeCellEnergyGivenCrate(model, CRate, varargin)
                     'E'                , E                , ...
                     'I'                , I                , ...
                     'time'             , cumsum(dt));
-    
+
 end
 
 
@@ -132,7 +132,7 @@ function y = cutoffGeneric(E, cutoffparams)
 
     E0    = cutoffparams.E0;
     alpha = cutoffparams.alpha;
-    
+
     y = 0.5 + 1/pi*atan(alpha*(E  - E0));
-    
+
 end

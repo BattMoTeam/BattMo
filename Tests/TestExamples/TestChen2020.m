@@ -157,7 +157,7 @@ classdef TestChen2020 < matlab.unittest.TestCase
             model.AutoDiffBackend= AutoDiffBackend();
 
             % Run simulation
-            [wellSols, states, report] = simulateScheduleAD(initstate, model, schedule, 'OutputMinisteps', true, 'NonLinearSolver', nls);
+            [~, states, report] = simulateScheduleAD(initstate, model, schedule, 'OutputMinisteps', true, 'NonLinearSolver', nls);
 
         end
 

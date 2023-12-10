@@ -192,7 +192,7 @@ if dopack
     simulatePackedProblem(problem);
     [globvars, states, report] = getPackedSimulatorOutput(problem);
 else
-    [wellSols, states, report] = simulateScheduleAD(initState, model, schedule, 'OutputMinisteps', true, 'NonlinearSolver', nls);
+    [~, states, report] = simulateScheduleAD(initState, model, schedule, 'OutputMinisteps', true, 'NonlinearSolver', nls);
 end
 
 %% Process output and recover the output voltage and current from the output states.

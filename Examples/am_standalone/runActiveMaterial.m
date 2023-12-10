@@ -99,7 +99,7 @@ model.nonlinearTolerance = 1e-2;
 %% Run simulation
 
 model.verbose = true;
-[wellSols, states, report] = simulateScheduleAD(initState, model, schedule, 'OutputMinisteps', true, 'NonLinearSolver', nls);
+[~, states, report] = simulateScheduleAD(initState, model, schedule, 'OutputMinisteps', true, 'NonLinearSolver', nls);
 
 %% plotting
 

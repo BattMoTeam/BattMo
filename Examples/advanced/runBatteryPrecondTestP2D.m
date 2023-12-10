@@ -208,7 +208,7 @@ model.verbose = true;
 %% Run the simulation
 % profile off
 % profile on
-[wellSols, states, report] = simulateScheduleAD(initstate, model, schedule, 'OutputMinisteps', true, 'NonLinearSolver', nls);
+[~, states, report] = simulateScheduleAD(initstate, model, schedule, 'OutputMinisteps', true, 'NonLinearSolver', nls);
 % profile off
 % profile viewer
 

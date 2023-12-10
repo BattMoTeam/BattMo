@@ -64,7 +64,7 @@ nls.errorOnFailure = false;
 
 model.verbose = false;
 
-[wellSols, states, report] = simulateScheduleAD(initstate, model, schedule, 'NonLinearSolver', nls, 'OutputMiniSteps', true);
+[~, states, report] = simulateScheduleAD(initstate, model, schedule, 'NonLinearSolver', nls, 'OutputMiniSteps', true);
 
 ind = cellfun(@(state) ~isempty(state), states);
 states = states(ind);
