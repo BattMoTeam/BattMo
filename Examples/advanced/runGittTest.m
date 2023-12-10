@@ -35,8 +35,8 @@ jsonstruct.include_current_collectors = true;
 paramobj = BatteryInputParams(jsonstruct);
 
 
-%% Setup the geometry and computational mesh
-% Here, we setup the geometry and computational mesh that will be used for
+%% Setup the geometry and computational grid
+% Here, we setup the geometry and computational grid that will be used for
 % the simulation. The user can select the dimensionality of the model. The
 % required discretization parameters are already included in the associated
 % battery generator class.
@@ -77,7 +77,7 @@ paramobj.(ctrl).useCVswitch = true;
 model = Battery(paramobj);
 
 %% Plot
-plotBatteryMesh(model, 'setstyle', false);
+plotBatteryGrid(model, 'setstyle', false);
 
 %% Compute the nominal cell capacity and choose a C-Rate
 % The nominal capacity of the cell is calculated from the active materials.

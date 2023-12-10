@@ -36,15 +36,15 @@ itf     = 'Interface';
 sd      = 'SolidDiffusion';
 ctrl    = 'Control';
 
-%% Setup the geometry and computational mesh
-% Here, we setup the 1D computational mesh that will be used for the
+%% Setup the geometry and computational grid
+% Here, we setup the 1D computational grid that will be used for the
 % simulation. The required discretization parameters are already included
 % in the class BatteryGeneratorP2D.
 gen = BatteryGeneratorP2D();
 gen.fac = 1;
 gen = gen.applyResolutionFactors();
 
-% Now, we update the paramobj with the properties of the mesh.
+% Now, we update the paramobj with the properties of the grid.
 paramobj = gen.updateBatteryInputParams(paramobj);
 
 % !!! REMOVE THIS. SET THE RIGHT VALUES IN THE JSON !!! In this case, we

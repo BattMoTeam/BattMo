@@ -1,6 +1,6 @@
-function plotBatteryMesh(model, varargin)
+function plotBatteryGrid(model, varargin)
 %% Plot battery components
-    
+
     opt = struct('setstyle', true, ...
                  'fig', []);
     opt = merge_options(opt, varargin{:});

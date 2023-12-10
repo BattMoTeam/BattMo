@@ -93,7 +93,7 @@ paramobj.(pe).(co).(am).(sd).N = 5;
 paramobj.(ctrl).lowerCutoffVoltage = 2.5;
 
 %% Setting up the geometry
-% Here, we setup the 1D computational mesh that will be used for the
+% Here, we setup the 1D computational grid that will be used for the
 % simulation. The required discretization parameters are already included
 % in the class :battmo:`BatteryGeneratorP2D`. Classes for generating other geometries can
 % be found in the BattMo/Battery/BatteryGeometry folder.
@@ -101,7 +101,7 @@ paramobj.(ctrl).lowerCutoffVoltage = 2.5;
 gen = BatteryGeneratorP2D();
 
 %%
-% Now, we update the paramobj with the properties of the mesh. This function
+% Now, we update the paramobj with the properties of the grid. This function
 % will update relevent parameters in the paramobj object and make sure we have
 % all the required parameters for the model geometry chosen.
 

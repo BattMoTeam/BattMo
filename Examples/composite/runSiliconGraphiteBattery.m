@@ -7,18 +7,16 @@ mrstModule add ad-core matlab_bgl
 %% Shortcuts
 % We define shorcuts for the sub-models.
 
-ne = 'NegativeElectrode';
-pe = 'PositiveElectrode';
-co = 'Coating';
-
-am1 = 'ActiveMaterial1';
-am2 = 'ActiveMaterial2';
-
-bd = 'Binder';
-ad = 'ConductingAdditive';
-
-sd  = 'SolidDiffusion';
-itf = 'Interface';
+ne   = 'NegativeElectrode';
+pe   = 'PositiveElectrode';
+co   = 'Coating';
+am1  = 'ActiveMaterial1';
+am2  = 'ActiveMaterial2';
+bd   = 'Binder';
+ad   = 'ConductingAdditive';
+sd   = 'SolidDiffusion';
+itf  = 'Interface';
+ctrl = 'Control';
 
 %% Setup the properties of the battery
 %
@@ -64,7 +62,7 @@ paramobj.(ne).(co).(ad).massFraction  = 0.01;
 paramobj.Control.CRate = 0.1;
 
 %%
-% Now, we update the paramobj with the properties of the mesh.
+% Now, we update the paramobj with the properties of the grid.
 gen = BatteryGeneratorP2D();
 paramobj = gen.updateBatteryInputParams(paramobj);
 
@@ -108,7 +106,8 @@ nls.maxIterations = 10;
 % Change default behavior of nonlinear solver, in case of error
 nls.errorOnFailure = false;
 %%
-% We use a time step selector based on relative change of a target value, in our case the output voltage
+% We use a time step selector based on absolute change of a target
+% value, in our case the output voltage
 nls.timeStepSelector = StateChangeTimeStepSelector('TargetProps', {{'Control','E'}}, 'targetChangeAbs', 0.03);
 %%
 % We adjust the nonlinear tolerance
@@ -120,7 +119,7 @@ model.verbose = true;
 
 %% Run the simulation for the discharge
 
-[wellSols, states, report] = simulateScheduleAD(initstate, model, schedule, 'OutputMinisteps', true, 'NonLinearSolver', nls);
+[~, states] = simulateScheduleAD(initstate, model, schedule, 'OutputMinisteps', true, 'NonLinearSolver', nls);
 
 dischargeStates = states;
 
@@ -130,7 +129,15 @@ dischargeStates = states;
 initstate = states{end};
 
 % We use a new control. Note the minus sign in front of :code:`model.Control.Imax`
-control = model.Control.setupScheduleControl();
+tup = 0.1;
+srcfunc = @(time, I, E) rampupSwitchControl(time, tup, I, E, ...
+                                            -model.Control.Imax, ...
+                                            model.Control.upperCutoffVoltage);
+control = struct('src', srcfunc, 'CCDischarge', false);
+
+% model.(ctrl).controlPolicy = 'CCCharge';
+% control = model.(ctrl).setupScheduleControl();
+
 
 % Use the control in the schedule
 schedule = struct('control', control, 'step', step);
@@ -144,6 +151,7 @@ chargeStates = states;
 
 %%
 % We concatenate the states we have computed
+keyboard;
 allStates = vertcat(dischargeStates, chargeStates);
 
 %%
@@ -154,6 +162,8 @@ set(0, 'defaulttextfontsize', 18);
 
 %%
 % We extract the voltage, current and time from the simulation output
+ind = cellfun(@(x) ~isempty(x), allStates);
+allStates = allStates(ind);
 E    = cellfun(@(x) x.Control.E, allStates);
 I    = cellfun(@(x) x.Control.I, allStates);
 time = cellfun(@(x) x.time, allStates);
@@ -167,9 +177,9 @@ xlabel('Time / h');
 ylabel('Voltage / V');
 title('Voltage')
 subplot(2, 1, 2);
-plot(time/hour, I);
+plot(time/hour, I/milli);
 xlabel('Time / h');
-ylabel('Current / I');
+ylabel('Current / mA');
 title('Current')
 
 %%

@@ -31,7 +31,7 @@ mrstPath('addroot', names{:});
 % The open source code of the 2012 version of AGMG is also available as a submodule in the directory ``Externals/agmg/``
 mrstPath('register', 'agmg', fullfile(rootdirname, 'Externals', 'agmg'));
 
-% The UPR module, which is used for meshing, is available in ``Externals/upr``
+% The UPR module, which is used for gridding, is available in ``Externals/upr``
 mrstPath('register', 'upr', fullfile(rootdirname, 'Externals', 'upr'));
 
 %% The BattMo source code directories are now added directly to path

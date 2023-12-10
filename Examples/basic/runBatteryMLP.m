@@ -33,13 +33,13 @@ elyte   = 'Electrolyte';
 thermal = 'ThermalModel';
 ctrl    = 'Control';
 
-%% Setup the geometry and computational mesh
-% Here, we setup the 3D computational mesh that will be used for the
+%% Setup the geometry and computational grid
+% Here, we setup the 3D computational grid that will be used for the
 % simulation. The required discretization parameters are already included
 % in the class BatteryGeneratorP4D.
 gen = BatteryGeneratorMultilayerPouch();
 
-% Now, we update the paramobj with the properties of the mesh.
+% Now, we update the paramobj with the properties of the grid.
 paramobj = gen.updateBatteryInputParams(paramobj);
 
 %%  Initialize the battery model.
@@ -48,7 +48,7 @@ paramobj = gen.updateBatteryInputParams(paramobj);
 
 model = Battery(paramobj);
 
-plotBatteryMesh(model, 'setstyle', false);
+plotBatteryGrid(model, 'setstyle', false);
 
 %% Setup the time step schedule
 % Smaller time steps are used to ramp up the current from zero to its

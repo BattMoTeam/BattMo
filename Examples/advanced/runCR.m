@@ -66,7 +66,7 @@ compDims{'NegativeCoating'         , 'diameter'} = 0.8;
 compDims{'NegativeCurrentCollector', 'diameter'} = 1;
 compDims.diameter = compDims.diameter * CRdiameter;
 
-%% Construct mesh
+%% Construct grid
 numRadial = 7;
 numAngular = 30;
 hz = min(compDims.thickness);
@@ -81,7 +81,7 @@ params = struct('compDims'  , compDims , ...
 
 gen = CoinCellBatteryGenerator();
 
-% Now, we update the paramobj with the properties of the mesh.
+% Now, we update the paramobj with the properties of the grid.
 paramobj = gen.updateBatteryInputParams(paramobj, params);
 
 %%  Initialize the battery model.
@@ -144,7 +144,7 @@ model.nonlinearTolerance = 1e-5;
 model.verbose = false;
 
 %% Plot
-plotBatteryMesh(model, 'setstyle', false);
+plotBatteryGrid(model, 'setstyle', false);
 
 %% Run simulation and save output to folder
 name = 'runCR';

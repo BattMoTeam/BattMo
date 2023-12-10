@@ -32,13 +32,13 @@ sep     = 'Separator';
 thermal = 'ThermalModel';
 ctrl    = 'Control';
 
-%% Setup the geometry and computational mesh
-% Here, we setup the 2D computational mesh that will be used for the
+%% Setup the geometry and computational grid
+% Here, we setup the 2D computational grid that will be used for the
 % simulation. The required discretization parameters are already included
 % in the class BatteryGeneratorP3D.
 gen = BatteryGeneratorP3D();
 
-% Now, we update the paramobj with the properties of the mesh.
+% Now, we update the paramobj with the properties of the grid.
 paramobj = gen.updateBatteryInputParams(paramobj);
 
 % change some of the values of the paramaters that were given in the json
@@ -51,8 +51,8 @@ paramobj.(pe).(cc).effectiveElectronicConductivity = 1e5;
 % constructor. see :class:`Battery <Battery.Battery>`.
 model = Battery(paramobj);
 
-%% Plot the mesh
-plotBatteryMesh(model, 'setstyle', false);
+%% Plot the grid
+plotBatteryGrid(model, 'setstyle', false);
 
 %% Compute the nominal cell capacity and choose a C-Rate
 % The nominal capacity of the cell is calculated from the active materials.

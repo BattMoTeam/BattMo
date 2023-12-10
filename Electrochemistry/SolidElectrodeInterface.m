@@ -132,7 +132,7 @@ classdef SolidElectrodeInterface < BaseModel
             Sfacetbl = IndexArray(Sfacetbl);
             cellSfacetbl = crossIndexArray(celltbl, Sfacetbl, {}, 'optpureproduct', true);
             
-            % The governing equation is setup in a fixed mesh of length 1            
+            % The governing equation is setup in a fixed grid of length 1            
             G = cartGrid(N, 1); 
             G = computeGeometry(G);
             
@@ -337,7 +337,7 @@ classdef SolidElectrodeInterface < BaseModel
             srcExternal = -op.TExtBc.*(c - cext);
             srcExternal = op.mapFromExtBc*srcExternal;
             
-            % Here, we use conversion relation between source terms given in moving and fixed mesh : 
+            % Here, we use conversion relation between source terms given in moving and fixed grid : 
             % xi*v*delta*c_fixed = delta*src_moving - src_fixed (see doc).
             srcInterface = op.mapFromIntBc*(delta.*R);
             state.massSource = srcExternal + srcInterface;

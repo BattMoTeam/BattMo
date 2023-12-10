@@ -35,11 +35,11 @@ paramobj = BatteryInputParams(jsonstruct);
 
 paramobj.(ctrl).useCVswitch = true;
 
-%% Setup the geometry and computational mesh
+%% Setup the geometry and computational grid
 
 gen = BatteryGeneratorP2D();
 
-% Now, we update the paramobj with the properties of the mesh.
+% Now, we update the paramobj with the properties of the grid.
 paramobj = gen.updateBatteryInputParams(paramobj);
 
 %%  Initialize the battery model.

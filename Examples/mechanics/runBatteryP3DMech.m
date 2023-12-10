@@ -31,11 +31,11 @@ ctrl    = 'Control';
 
 paramobj = BatteryInputParams(jsonstruct);
 
-%% Setup the geometry and computational mesh
+%% Setup the geometry and computational grid
 
 gen = BatteryGeneratorP3D();
 
-% We change the properties of the mesh and update paramobj with the results mesh
+% We change the properties of the grid and update paramobj with the results grid
 gen.ylength = 1e-4;
 gen.ny      = 10;
 paramobj    = gen.updateBatteryInputParams(paramobj);
@@ -47,9 +47,9 @@ paramobj.(pe).(cc).effectiveElectronicConductivity = 1e5;
 
 model = Battery(paramobj);
 
-%% Plot the mesh
+%% Plot the grid
 
-plotBatteryMesh(model);
+plotBatteryGrid(model);
 
 %% Compute the nominal cell capacity and choose a C-Rate
 
