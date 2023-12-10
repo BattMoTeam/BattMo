@@ -115,12 +115,11 @@ initstate = model.setupInitialState();
 %% Setup the properties of the nonlinear solver
 nls = NonLinearSolver();
 
-linearsolver = 'direct';
+linearsolver = 'amgcl';
 switch linearsolver
-  case 'agmg'
-    mrstModule add agmg
-    nls.LinearSolver = AGMGSolverAD('verbose', true, 'reduceToCell', false);
-    nls.LinearSolver.tolerance = 1e-3;
+  case 'amgcl'
+    nls.LinearSolver = AMGCLSolverAD('verbose', true, 'reduceToCell', false);
+    nls.LinearSolver.tolerance = 1e-4;
     nls.LinearSolver.maxIterations = 30;
     nls.maxIterations = 10;
     nls.verbose = 10;
@@ -141,7 +140,7 @@ end
 nls.maxIterations = 10;
 % Change default behavior of nonlinear solver, in case of error
 nls.errorOnFailure = false;
-nls.timeStepSelector=StateChangeTimeStepSelector('TargetProps', {{'Control','E'}}, 'targetChangeAbs', 0.03);
+nls.timeStepSelector = StateChangeTimeStepSelector('TargetProps', {{'Control','E'}}, 'targetChangeAbs', 0.03);
 % Change default tolerance for nonlinear solver
 model.nonlinearTolerance = 1e-3*model.Control.Imax;
 % Set verbosity
