@@ -82,7 +82,7 @@
          (address (concat repo-url "/blob/" branch-name "/" filename "#L" (number-to-string (line-number-at-pos))))
          )
     
-    (kill-new address)
+    (kill-new (format "[%s](%s)" filename address))
     )
   )
 
