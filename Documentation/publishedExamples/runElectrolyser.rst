@@ -5,6 +5,7 @@ Alkaline Membrane Electrolyser
 ----------------------------------------------------
 *Generated from runElectrolyser.m*
 
+.. include:: runElectrolyserPreamble.rst
 
 
 .. code-block:: matlab
