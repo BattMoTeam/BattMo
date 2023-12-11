@@ -75,7 +75,7 @@ def parse_publish_to_xml(exfile):
                         ch = '^'
                     sect = '\n' + sect + '\n' + ch * tit_length + '\n'
                     if headcount == 0:
-                        sect = sect + '*Generated asdas from ' + example_filename + '*\n\n'
+                        sect = sect + '*Generated from ' + example_filename + '*\n\n'
                         sect = sect + includeRstDescriptionFile
                         headcount += 1;
                     parsedText += sect
