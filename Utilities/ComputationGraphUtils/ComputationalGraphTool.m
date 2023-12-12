@@ -275,7 +275,9 @@ classdef ComputationalGraphTool
 
                 propfunc = propfuncs{iprop};
                 fncallstr = propfunc.functionCallSetupFn(propfunc);
-                funcCallList{end + 1} = fncallstr;
+                if ~isempty(fncallstr)
+                    funcCallList{end + 1} = fncallstr;
+                end
                 
             end
 
