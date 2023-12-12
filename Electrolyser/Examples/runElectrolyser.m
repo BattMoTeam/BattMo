@@ -1,16 +1,19 @@
 %% Alkaline Membrane Electrolyser 
 
+%% Load MRST modules
+%
+
 mrstModule add ad-core matlab_bgl
 
 %% Setup input
-% Setup the physical properties for the electrolyser using json input file
+% Setup the physical properties for the electrolyser using json input file :battmofile:`alkalineElectrolyser.json<Electrolyser/Parameters/alkalineElectrolyser.json>`
 
 jsonstruct= parseBattmoJson('Electrolyser/Parameters/alkalineElectrolyser.json');
 paramobj = ElectrolyserInputParams(jsonstruct);
 
 %%
-% Setup the grids. We consider a 1D model and the specifications can be read from a json input using
-% :code:`setupElectrolyserGridFromJson`.
+% Setup the grids. We consider a 1D model and the specifications can be read from a json input file, here :battmofile:`electrolysergeometry1d.json<Electrolyser/Parameters/electrolysergeometry1d.json>`, using
+% :battmo:`setupElectrolyserGridFromJson`.
 
 jsonstruct= parseBattmoJson('Electrolyser/Parameters/electrolysergeometry1d.json');
 paramobj = setupElectrolyserGridFromJson(paramobj, jsonstruct);

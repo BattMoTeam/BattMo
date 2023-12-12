@@ -8,6 +8,9 @@ Alkaline Membrane Electrolyser
 .. include:: runElectrolyserPreamble.rst
 
 
+Load MRST modules
+^^^^^^^^^^^^^^^^^
+
 .. code-block:: matlab
 
   mrstModule add ad-core matlab_bgl
@@ -15,14 +18,14 @@ Alkaline Membrane Electrolyser
 
 Setup input
 ^^^^^^^^^^^
-Setup the physical properties for the electrolyser using json input file
+Setup the physical properties for the electrolyser using json input file :battmofile:`alkalineElectrolyser.json<Electrolyser/Parameters/alkalineElectrolyser.json>`
 
 .. code-block:: matlab
 
   jsonstruct= parseBattmoJson('Electrolyser/Parameters/alkalineElectrolyser.json');
   paramobj = ElectrolyserInputParams(jsonstruct);
 
-Setup the grids. We consider a 1D model and the specifications can be read from a json input using :code:`setupElectrolyserGridFromJson`.
+Setup the grids. We consider a 1D model and the specifications can be read from a json input file, here :battmofile:`electrolysergeometry1d.json<Electrolyser/Parameters/electrolysergeometry1d.json>`, using :battmo:`setupElectrolyserGridFromJson`.
 
 .. code-block:: matlab
 
