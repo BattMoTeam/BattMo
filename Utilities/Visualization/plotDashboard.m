@@ -4,7 +4,6 @@ function [fig] = plotDashboard(model, states, varargin)
 %   
 %   fig = plotDashboard(model, states, 'PropertyName1', PropertyValue1)
 
-%
     close all
 
     %% Parse inputs            
@@ -40,7 +39,7 @@ function [fig] = plotDashboard(model, states, varargin)
     
     step = p.Results.step;
 
-    fig = figure;
+    fig = figure();
 
     time = cellfun(@(state) state.time, states); 
     Enew = cellfun(@(state) state.(ctrl).E, states); 
@@ -111,7 +110,14 @@ function [fig] = plotDashboard(model, states, varargin)
             title('Cell Current  /  A')
             xlabel('Time  /  h')
             xlim([min(time/hour), max(time/hour)]);
-            ylim([min(Inew), max(Inew)]);
+            if min(Inew) == max(Inew)
+                Imin = 0;
+                Imax = max(Inew);
+            else
+                Imin = min(Inew);
+                Imax = max(Inew);
+            end
+            ylim([Imin, Imax]);
             set(gca, ...
                 'FontSize' , style.fontSize       , ...
                 'FontName' , style.fontName       , ...
@@ -587,7 +593,7 @@ function [fig] = plotDashboard(model, states, varargin)
                 ylabel(gca, 'Position  /  m')
                 title(gca, 'Negative Electrode Concentration  /  mol \cdot L^{-1}')
                 colormap(crameri('nuuk'));
-                caxis([cmin_ne, cmax_ne])
+                caxis([cmin_ne, cmax_ne]);
                 colorbar
                 axis tight
                 set(gca, ...
@@ -741,6 +747,7 @@ function [fig] = plotDashboard(model, states, varargin)
             
             drawnow
             pause(0.1)
+            hold off
         end
     end
     

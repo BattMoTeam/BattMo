@@ -33,7 +33,7 @@ end
 
 for fig = 1 : n
 
-    set(0, 'CurrentFigure', fig);
+    set(0, 'CurrentFigure', gcf);
     ax = gca;
     hLegend = findobj(gcf, 'Type', 'Legend');
     hColorbar = findobj(gcf, 'Type', 'Colorbar');
