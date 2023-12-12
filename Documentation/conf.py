@@ -332,24 +332,27 @@ def find_battmo_file(filename):
     raise FileNotFoundError(errno.ENOENT, os.strerror(errno.ENOENT), filename)
 
 
-def battmo_reference_role(role, rawtext, text, lineno, inliner,
-                          options=None, content=None):
-    if "#" in text:
-        funcname, lineno = docutils.utils.unescape(text).split("#", 1)
-    else:
-        funcname, lineno = docutils.utils.unescape(text), None
-    mfuncname = funcname + '.m'
-    fullfuncname = find_battmo_file(mfuncname)
-    ref = repo_url + '/blob/' + branch_name + '/' + fullfuncname
-    if lineno is not None:
-        ref += "#L"+lineno
-    node = docutils.nodes.reference(rawtext, str(funcname), refuri=ref)
-    return [node], []
+class BattMoRole(ReferenceRole):
+
+    def run(self):
+        target = self.target
+        title = self.title
+        if "#" in target:
+            target, lineno = docutils.utils.unescape(target).split("#", 1)
+        else:
+            lineno = None
+        mfuncname = target + '.m'
+        target = find_battmo_file(mfuncname)
+        target = repo_url + '/blob/' + branch_name + '/' + target
+        if lineno is not None:
+            target += "#L"+lineno
+        node = docutils.nodes.reference(self.rawtext, title, refuri=target)
+        return [node], []
 
 
-roles.register_local_role('battmo', battmo_reference_role)
+roles.register_local_role('battmo', BattMoRole())
 
-
+    
 class BattMoFileRole(ReferenceRole):
 
     def run(self):
