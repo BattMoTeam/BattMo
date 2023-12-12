@@ -10,13 +10,18 @@ classdef CcCvControlModelInputParams < ControlModelInputParams
         % switch to the following constant current control.
         dIdtLimit
 
+        % When we switch to current control equal to zero after discharge, we wait for the voltage to stabilize and
+        % switch to charge when the derivative of the voltage with respect to time is lower than the threshold given by
+        % dEdtLimit.
+        dEdtLimit
+        
         % Control used initially. String that can take one of the following values
         % - 'discharging'
         % - 'charging'
         initialControl 
 
-        % Not used for the moment
-        dEdtLimit         
+        % Number of cycles
+        numberOfCycles
 
     end
     

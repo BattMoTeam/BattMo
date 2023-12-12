@@ -9,7 +9,8 @@ classdef CcCvControlModel < ControlModel
         Imax
         dIdtLimit
         dEdtLimit
-        
+        numberOfCycles
+        initialControl
     end
     
     
@@ -19,8 +20,10 @@ classdef CcCvControlModel < ControlModel
 
             model = model@ControlModel(paramobj);
             
-            fdnames = {'dEdtLimit', ...
-                       'dIdtLimit'};
+            fdnames = {'dEdtLimit'     , ...
+                       'dIdtLimit'     , ...
+                       'numberOfCycles', ...
+                       'initialControl'};
             model = dispatchParams(model, paramobj, fdnames);
             
         end
@@ -35,9 +38,12 @@ classdef CcCvControlModel < ControlModel
             % - CC_discharge2
             % - CC_charge1
             % - CV_charge2
-            varnames{end + 1} = 'ctrlType';            
+            varnames{end + 1} = 'ctrlType';
+            % Variable to store number of cycles
+            varnames{end + 1} = 'nCycles';
             model = model.registerVarNames(varnames);
-            
+
+            model = model.setAsStaticVarName('nCycles');
             
             fn = @CcCvControlModel.updateControlEquation;
             model = model.registerPropFunction({'controlEquation', fn, {'ctrlType', 'E', 'I'}});

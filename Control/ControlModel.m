@@ -19,11 +19,6 @@ classdef ControlModel < BaseModel
         % - 'CC'
         %
         controlPolicy
-        
-        initialControl
-        % Initial control at start. It is a string that can be equal to
-        % - 'charging'
-        % - 'discharging'
 
         lowerCutoffVoltage
         upperCutoffVoltage

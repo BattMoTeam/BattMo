@@ -66,6 +66,7 @@
       "properties" : {
         "dEdtLimit" : {"type" : "number"},
         "dIdtLimit" : {"type" : "number"},
+        "numberOfCycles" : {"type" : "number"},
         "initialControl" : {"type" : "string",
                             "enum" : ["discharging", "charging"]}
       }},
