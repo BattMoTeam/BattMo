@@ -1,24 +1,18 @@
 :orphan:
    
-===============
-Getting Started
-===============
-           
-Here, we present some guidelines and tutorials to get started with and give a short description of the example scripts
-that are available in |battmo|
+========================
+List of curated examples
+========================
 
-* |battmo| is straightforward to run from a single json, as described in this :ref:`Example<runFirstJsonScript>`. 
+This examples are ready to be published
 
-* In this :ref:`json example <runJsonScript>`, we show how to combine different json files from different sources
+* :ref:`battMoTutorial`
+* :ref:`runJsonScript`
+* :ref:`runBatteryP2D`
+* :ref:`runSEIActiveMaterial`
+* :ref:`runElectrolyser`
   
-* The :ref:`battMoTutorial <battMoTutorial>` describes the different step of a simulation when it is set manually beyond the options that
-  are given by the json input format. They consist of
-
-* In this :ref:`example <runBatteryP2D>`, more options are used such as some settings of the non-linear solver.
-
 * More Examples
-
-  :todo:`fix this section`
         
   In the :code:`Examples` directory examples, the following examples can be found. They should run out of the box (write
   the name of script after :ref:`installing BattMo<installation>`). If not, tell us!
