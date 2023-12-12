@@ -15,6 +15,6 @@ Advanced Usage
 
 * :ref:`Model initialisation <modelinitialisation:Model initialisation>`
 * :ref:`Thermal model <thermal:Thermal model>`
-* :ref:`Control models <controls:Control models>`
+* :ref:`Control models <controlinput:Control models>`
 * :ref:`Optimisation <optimisation:Optimisation>`
 * :ref:`Parameter sets <parsets:Parameter sets>`
