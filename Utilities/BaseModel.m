@@ -463,7 +463,14 @@ classdef BaseModel < PhysicalModel
 
                 submodelname = submodelnames{isub};
 
-                cleanState.(submodelname) = model.(submodelname).addStaticVariables(cleanState.(submodelname), state.(submodelname));
+                if isfield(state, submodelname)
+                    
+                    if ~isfield(cleanState, submodelname)
+                        cleanState.(submodelname) = [];
+                    end
+                    
+                    cleanState.(submodelname) = model.(submodelname).addStaticVariables(cleanState.(submodelname), state.(submodelname));
+                end
 
             end
             

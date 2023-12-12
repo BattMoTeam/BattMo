@@ -236,11 +236,15 @@ classdef ActiveMaterial < BaseModel
             
             cleanState = addStaticVariables@BaseModel(model, cleanState, state);
             
-            itf = 'Interface';
-            
-            cleanState.T = state.T;
-            cleanState.(itf).cElectrolyte   = state.(itf).cElectrolyte;
-            cleanState.(itf).phiElectrolyte = state.(itf).phiElectrolyte;
+            if model.standAlone
+                
+                itf = 'Interface';
+                
+                cleanState.T = state.T;
+                cleanState.(itf).cElectrolyte   = state.(itf).cElectrolyte;
+                cleanState.(itf).phiElectrolyte = state.(itf).phiElectrolyte;
+                
+            end
             
         end
         
