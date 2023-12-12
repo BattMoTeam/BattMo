@@ -39,7 +39,7 @@ jsonstruct.include_current_collectors = false;
 
 paramobj = BatteryInputParams(jsonstruct);
 
-use_cccv = true;
+use_cccv = false;
 if use_cccv
     cccvstruct = struct( 'controlPolicy'     , 'CCCV',  ...
                          'initialControl'    , 'discharging', ...
@@ -115,7 +115,7 @@ initstate = model.setupInitialState();
 %% Setup the properties of the nonlinear solver
 nls = NonLinearSolver();
 
-linearsolver = 'amgcl';
+linearsolver = 'direct';
 switch linearsolver
   case 'amgcl'
     nls.LinearSolver = AMGCLSolverAD('verbose', true, 'reduceToCell', false);

@@ -13,9 +13,8 @@ Advanced Usage
    Parameter sets <parsets>
 
 
-* :ref:`Alkaline Membrane Electrolyser<publishedExamples/runElectrolyser:Alkaline Membrane Electrolyser>`
 * :ref:`Model initialisation <modelinitialisation:Model initialisation>`
-* :ref:`Control models <controls:Control models>`
 * :ref:`Thermal model <thermal:Thermal model>`
+* :ref:`Control models <controls:Control models>`
 * :ref:`Optimisation <optimisation:Optimisation>`
 * :ref:`Parameter sets <parsets:Parameter sets>`

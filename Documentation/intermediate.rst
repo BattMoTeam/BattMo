@@ -83,7 +83,7 @@ Run Simulation
    output = runBatteryJson(jsonstruct);  
 
 Visualize Results
---------------
+-----------------
 
 We plot the model using :battmo:`plotBatteryGrid` (note that the different axis are scaled differently)
 
