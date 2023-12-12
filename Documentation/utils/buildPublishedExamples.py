@@ -168,3 +168,4 @@ for xmlfile in xmlfiles:
     outfile = open(join(publishedExampleDir, examplename + '_source.rst'), 'w')
     outfile.write(output['source'])
     outfile.close()
+    print("parsed {}".format(xmlfile))
