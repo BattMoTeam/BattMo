@@ -9,14 +9,24 @@ function [val, isConverted] = convertUnitBattMo(val)
     isConverted = false;
     
     if isfield(val, 'value') && isfield(val, 'unit')
-        isConverted = true;
-        % This is a numerical parameter that requires a unit conversion
-        if ~isempty(val.unit)
-            str = sprintf('val = %g*%s;', val.value, val.unit);
-            eval(str);
+        if numel(val) == 1
+            isConverted = true;
+            % This is a numerical parameter that requires a unit conversion
+            if ~isempty(val.unit)
+                str = sprintf('val = %g*%s;', val.value, val.unit);
+                eval(str);
+            else
+                % Empty unit. Assume value is given in SI units
+                val = val.value;
+            end
         else
-            % Empty unit. Assume value is given in SI units
-            val = val.value;
+            vals = [];
+            for ival = 1 : numel(val)
+                cval = convertUnitBattMo(val(ival));
+                vals(end + 1) = cval;
+            end
+            isConverted = true;
+            val = vals;
         end
     end
 
