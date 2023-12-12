@@ -32,17 +32,6 @@ classdef ActiveMaterial < BaseModel
         
         externalCouplingTerm % structure to describe external coupling (used in absence of current collector)
 
-
-        % Others
-        
-        % properties needed when model is run in stand-alone mode
-        
-        funcCallList
-        primaryVarNames
-        equationVarNames
-        equationNames
-        equationTypes
-        
     end
     
     methods

@@ -33,12 +33,6 @@ classdef Battery < BaseModel
         use_thermal
         include_current_collectors
 
-        funcCallList
-
-        primaryVarNames
-        equationVarNames
-        equationNames
-        equationTypes
         equationIndices
 
     end
@@ -464,7 +458,7 @@ classdef Battery < BaseModel
             if ~model.use_thermal
                 varnames{end + 1} = {thermal, 'T'};
             end
-            model = model.registerStaticVarNames(varnames);
+            model = model.setAsStaticVarNames(varnames);
 
 
         end
