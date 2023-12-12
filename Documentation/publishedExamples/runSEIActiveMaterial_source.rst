@@ -11,7 +11,7 @@ Source code for runSEIActiveMaterial
   %% Particle simulation with SEI layer growth
   
   % clear the workspace and close open figures
-  clear all
+  clear
   close all
   
   %% Import the required modules from MRST
@@ -41,11 +41,8 @@ Source code for runSEIActiveMaterial
   % We use a stand alone model for the particle
   paramobj.standAlone = true;
   
-  paramobj = paramobj.validateInputParams();
-  
   % We initiate the model
   model = SEIActiveMaterial(paramobj);
-  
   
   %% Setup initial state
   
@@ -59,13 +56,13 @@ Source code for runSEIActiveMaterial
   % Initial concentration value in the electrolyte
   cElectrolyte     = 5e-1*mol/litre;
   % Temperature
-  T                = 298.15; 
+  T                = 298.15;
   
   % The following datas come from :cite:`Safari_2009`
   % Porosity of the SEI film
   epsiSEI     = 0.05;
   % Solvent concentration in the bulk of the electrolyte
-  cECsolution = 4.541*mol/litre; 
+  cECsolution = 4.541*mol/litre;
   % Solvent concentration in the SEI film
   cECexternal = epsiSEI*cECsolution;
   
@@ -107,14 +104,14 @@ Source code for runSEIActiveMaterial
   step  = struct('val', dt*ones(n, 1), 'control', ones(n, 1));
   
   % rampup value for the current function, see rampupSwitchControl
-  tup = dt; 
+  tup = dt;
   srcfunc = @(time) rampupControl(time, tup, Imax);
   
   cmin = (model.(itf).guestStoichiometry0)*(model.(itf).saturationConcentration);
   control.stopFunction = @(model, state, state0_inner) (state.(sd).cSurface <= cmin);
   control.src = srcfunc;
   
-  schedule = struct('control', control, 'step', step); 
+  schedule = struct('control', control, 'step', step);
   
   %% Setup non-linear solver
   
@@ -126,7 +123,7 @@ Source code for runSEIActiveMaterial
   %% Run simulation
   
   model.verbose = true;
-  [wellSols, states, report] = simulateScheduleAD(initState, model, schedule, 'OutputMinisteps', true, 'NonLinearSolver', nls);
+  [~, states, report] = simulateScheduleAD(initState, model, schedule, 'OutputMinisteps', true, 'NonLinearSolver', nls);
   
   %% Plotting
   

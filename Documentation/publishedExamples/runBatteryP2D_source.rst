@@ -13,13 +13,12 @@ Source code for runBatteryP2D
   % and run a simple simulation.
   
   % Clear the workspace and close open figures
-  % clear all
+  clear
   close all
-  clc
-  
   
   %% Import the required modules from MRST
   % load MRST modules
+  
   mrstModule add ad-core mrst-gui mpfa agmg linearsolvers
   
   %% Setup the properties of Li-ion battery materials and cell design
@@ -46,28 +45,9 @@ Source code for runBatteryP2D
   cc      = 'CurrentCollector';
   
   jsonstruct.use_thermal = false;
-  
   jsonstruct.include_current_collectors = false;
   
-  jsonstruct.(ne).(co).(am).diffusionModelType = 'full';
-  jsonstruct.(pe).(co).(am).diffusionModelType = 'full';
-  
   paramobj = BatteryInputParams(jsonstruct);
-  
-  paramobj.(ne).(co).volumeFraction = 0.8;
-  paramobj.(ne).(co).volumeFractions = [1, 0, 0];
-  paramobj.(pe).(co).volumeFraction = 0.8;
-  paramobj.(pe).(co).volumeFractions = [1, 0, 0];
-  
-  paramobj.(ne).(co).density  = 2240;
-  paramobj.(ne).(co).thermalConductivity  = 1.04;
-  paramobj.(ne).(co).specificHeatCapacity = 632;
-  
-  paramobj.(pe).(co).density  = 4650;
-  paramobj.(pe).(co).thermalConductivity  = 2.1;
-  paramobj.(pe).(co).specificHeatCapacity = 700;
-  
-  paramobj = paramobj.validateInputParams();
   
   use_cccv = false;
   if use_cccv
@@ -83,17 +63,17 @@ Source code for runBatteryP2D
   end
   
   
-  %% Setup the geometry and computational mesh
-  % Here, we setup the 1D computational mesh that will be used for the
+  %% Setup the geometry and computational grid
+  % Here, we setup the 1D computational grid that will be used for the
   % simulation. The required discretization parameters are already included
-  % in the class BatteryGeneratorP2D. 
+  % in the class BatteryGeneratorP2D.
   gen = BatteryGeneratorP2D();
   
-  % Now, we update the paramobj with the properties of the mesh. 
+  % Now, we update the paramobj with the properties of the grid.
   paramobj = gen.updateBatteryInputParams(paramobj);
   
   
-  %%  Initialize the battery model. 
+  %%  Initialize the battery model.
   % The battery model is initialized by sending paramobj to the Battery class
   % constructor. see :class:`Battery <Battery.Battery>`.
   model = Battery(paramobj);
@@ -109,11 +89,11 @@ Source code for runBatteryP2D
   %% Compute the nominal cell capacity and choose a C-Rate
   % The nominal capacity of the cell is calculated from the active materials.
   % This value is then combined with the user-defined C-Rate to set the cell
-  % operational current. 
+  % operational current.
   
   CRate = model.Control.CRate;
   
-  %% Setup the time step schedule 
+  %% Setup the time step schedule
   % Smaller time steps are used to ramp up the current from zero to its
   % operational value. Larger time steps are then used for the normal
   % operation.
@@ -131,42 +111,27 @@ Source code for runBatteryP2D
   step = struct('val', dt*ones(n, 1), 'control', ones(n, 1));
   
   % we setup the control by assigning a source and stop function.
-  % control = struct('CCCV', true); 
-  %  !!! Change this to an entry in the JSON with better variable names !!!
   
-  switch model.Control.controlPolicy
-    case 'CCDischarge'
-      tup = 0.1; % rampup value for the current function, see rampupSwitchControl
-      srcfunc = @(time, I, E) rampupSwitchControl(time, tup, I, E, ...
-                                                  model.Control.Imax, ...
-                                                  model.Control.lowerCutoffVoltage);
-      % we setup the control by assigning a source and stop function.
-      control = struct('src', srcfunc, 'CCDischarge', true);
-    case 'CCCV'
-      control = struct('CCCV', true);
-    otherwise
-      error('control policy not recognized');
-  end
+  control = model.Control.setupScheduleControl();
   
   % This control is used to set up the schedule
-  schedule = struct('control', control, 'step', step); 
+  schedule = struct('control', control, 'step', step);
   
   %% Setup the initial state of the model
   % The initial state of the model is setup using the model.setupInitialState() method.
   
-  initstate = model.setupInitialState(); 
+  initstate = model.setupInitialState();
   
-  %% Setup the properties of the nonlinear solver 
+  %% Setup the properties of the nonlinear solver
   nls = NonLinearSolver();
   
   linearsolver = 'direct';
   switch linearsolver
-    case 'agmg'
-      mrstModule add agmg
-      nls.LinearSolver = AGMGSolverAD('verbose', true, 'reduceToCell', false); 
-      nls.LinearSolver.tolerance = 1e-3; 
-      nls.LinearSolver.maxIterations = 30; 
-      nls.maxIterations = 10; 
+    case 'amgcl'
+      nls.LinearSolver = AMGCLSolverAD('verbose', true, 'reduceToCell', false);
+      nls.LinearSolver.tolerance = 1e-4;
+      nls.LinearSolver.maxIterations = 30;
+      nls.maxIterations = 10;
       nls.verbose = 10;
     case 'battery'
       nls.LinearSolver = LinearSolverBatteryExtra('verbose'     , false, ...
@@ -178,36 +143,42 @@ Source code for runBatteryP2D
     case 'direct'
       disp('standard direct solver')
     otherwise
-      error()
+      error('Unknown solver %s', linearsolver);
   end
   
   % Change default maximum iteration number in nonlinear solver
   nls.maxIterations = 10;
   % Change default behavior of nonlinear solver, in case of error
   nls.errorOnFailure = false;
-  nls.timeStepSelector=StateChangeTimeStepSelector('TargetProps', {{'Control','E'}}, 'targetChangeAbs', 0.03);
+  nls.timeStepSelector = StateChangeTimeStepSelector('TargetProps', {{'Control','E'}}, 'targetChangeAbs', 0.03);
   % Change default tolerance for nonlinear solver
   model.nonlinearTolerance = 1e-3*model.Control.Imax;
   % Set verbosity
   model.verbose = true;
   
   %% Run the simulation
-  [wellSols, states, report] = simulateScheduleAD(initstate, model, schedule, 'OutputMinisteps', true, 'NonLinearSolver', nls); 
+  [~, states, report] = simulateScheduleAD(initstate, model, schedule, 'OutputMinisteps', true, 'NonLinearSolver', nls);
   
   %% Process output and recover the output voltage and current from the output states.
-  ind = cellfun(@(x) not(isempty(x)), states); 
+  ind = cellfun(@(x) not(isempty(x)), states);
   states = states(ind);
-  E = cellfun(@(x) x.Control.E, states); 
+  E = cellfun(@(x) x.Control.E, states);
   I = cellfun(@(x) x.Control.I, states);
   T = cellfun(@(x) max(x.(thermal).T), states);
   Tmax = cellfun(@(x) max(x.ThermalModel.T), states);
   % [SOCN, SOCP] =  cellfun(@(x) model.calculateSOC(x), states);
-  time = cellfun(@(x) x.time, states); 
+  time = cellfun(@(x) x.time, states);
   
   figure
-  plot(time, E);
+  plot(time/hour, E);
+  grid on
+  xlabel 'time  / h';
+  ylabel 'potential  / V';
   
-  % writeOutput(model, states, 'output.h5')
+  writeh5 = false;
+  if writeh5
+      writeOutput(model, states, 'output.h5');
+  end
   
   
   %{

@@ -10,7 +10,7 @@ Source code for runElectrolyser
 
   %% Alkaline Membrane Electrolyser 
   
-  %% We load the necessary MRST modules
+  %% Load MRST modules
   %
   
   mrstModule add ad-core matlab_bgl

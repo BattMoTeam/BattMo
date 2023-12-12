@@ -11,43 +11,50 @@ Source code for battMoTutorial
   %% BattMo Tutorial
   % This tutorial explains how to setup and run a simulation in BattMo
   
-  %%% Setting up the environment
-  % BattMo uses functionality from :mod:`MRST <MRSTBattMo>`. This functionality 
-  % is collected into modules where each module contains code for doing 
-  % specific things. To use this functionality we must add these modules to 
+  % First clear variables stored in memory and close all figures
+  clear;
+  close all;
+  
+  % Set thicker line widths and larger font sizes
+  set(0, 'defaultLineLineWidth', 3);
+  set(0, 'defaultAxesFontSize', 16);
+  set(0, 'defaultTextFontSize', 18);
+  
+  %% Setting up the environment
+  % BattMo uses functionality from :mod:`MRST <MRSTBattMo>`. This functionality
+  % is collected into modules where each module contains code for doing
+  % specific things. To use this functionality we must add these modules to
   % the matlab path by running:
   
   mrstModule add ad-core mrst-gui mpfa agmg linearsolvers
   
-  %%% Specifying the physical model
-  % In this tutorial we will simulate a lithium-ion battery consisting of a 
-  % negative electrode, a positive electrode and an electrolyte. *BattMo* 
+  %% Specifying the physical model
+  % In this tutorial we will simulate a lithium-ion battery consisting of a
+  % negative electrode, a positive electrode and an electrolyte. *BattMo*
   % comes with some pre-defined models which can be loaded from JSON files.
   % Here we will load the basic lithium-ion model JSON file which comes with
   % Battmo. We use :battmo:`parseBattmoJson` to parse the file, see :todo:`add link to doc`
   
   fname = fullfile('ParameterData','BatteryCellParameters',...
-      'LithiumIonBatteryCell','lithium_ion_battery_nmc_graphite.json');
+                   'LithiumIonBatteryCell','lithium_ion_battery_nmc_graphite.json');
   jsonstruct = parseBattmoJson(fname);
   
-  %%%
+  %%
   % The parseBattmoJson function parses the JSON input and creates a matlab
-  % structure containing the same fields as the JSON input. This structure 
-  % can be changed to setup the model in the way that we want. 
-  
-  %%%
+  % structure containing the same fields as the JSON input. This structure
+  % can be changed to setup the model in the way that we want.
+  %
   % In this instance we will exclude temperature effects by setting
   % use_thermal to false.
   
   jsonstruct.use_thermal = false;
   
-  %%%
+  %%
   % We will also not use current collectors in this example:
   
   jsonstruct.include_current_collectors = false;
   
-  
-  %%%
+  %%
   % The structure created in the jsonstruct follows the same hierarchy as the
   % fields in the JSON input file. These can be referenced by name in the
   % jsonstruct. To make life easier for ourselves we define some shorthand
@@ -64,28 +71,24 @@ Source code for battMoTutorial
   ctrl    = 'Control';
   cc      = 'CurrentCollector';
   
-  %%%
+  %%
   % Now we can set the diffusion model type for the active material (am) in the
   % positive (pe) and negative (ne) electrodes to 'full'.
   
   jsonstruct.(pe).(am).diffusionModelType = 'full';
   jsonstruct.(ne).(am).diffusionModelType = 'full';
   
-  %%%
-  % To see which other types of diffusion model are available one can view 
-  % :class:`ActiveMaterialInputParams <Electrochemistry.ActiveMaterialInputParams>.
-  
-  %%%
-  % When running a simulation, *BattMo* requires that all model parameters
-  % are stored in an instance of :battmo:`BatteryInputParams`. 
+  %%
+  % To see which other types of diffusion model are available one can view
+  % :battmo:`ActiveMaterialInputParams`.  When running a simulation, *BattMo* requires that all model parameters
+  % are stored in an instance of :battmo:`BatteryInputParams`.
   % This class is used to initialize the simulation and is accessed by
   % various parts of the simulator during the simulation. This class is
   % instantiated using the jsonstruct we just created:
   
   paramobj = BatteryInputParams(jsonstruct);
-  paramobj = paramobj.validateInputParams();
   
-  %%%
+  %%
   % It is also possible to update the properties of this paramobj in a
   % similar way to updating the jsonstruct. Here we set the discretisation
   % level for the diffusion model. Other input parameters for the full diffusion
@@ -95,46 +98,50 @@ Source code for battMoTutorial
   paramobj.(ne).(co).(am).(sd).N = 5;
   paramobj.(pe).(co).(am).(sd).N = 5;
   
-  %%% Setting up the geometry
-  % Here, we setup the 1D computational mesh that will be used for the
+  % We can also change how the battery is operated, for example setting
+  % the cut off voltage.
+  paramobj.(ctrl).lowerCutoffVoltage = 2.5;
+  
+  %% Setting up the geometry
+  % Here, we setup the 1D computational grid that will be used for the
   % simulation. The required discretization parameters are already included
   % in the class :battmo:`BatteryGeneratorP2D`. Classes for generating other geometries can
   % be found in the BattMo/Battery/BatteryGeometry folder.
   
   gen = BatteryGeneratorP2D();
   
-  %%%
-  % Now, we update the paramobj with the properties of the mesh. This function
+  %%
+  % Now, we update the paramobj with the properties of the grid. This function
   % will update relevent parameters in the paramobj object and make sure we have
   % all the required parameters for the model geometry chosen.
   
   paramobj = gen.updateBatteryInputParams(paramobj);
   
-  %%% Initialising the battery model object
+  %% Initialising the battery model object
   % The battery model is initialized by sending paramobj to the Battery class
   % constructor. see :battmo:`Battery`.
+  %
+  % In BattMo a battery model is actually a collection of submodels:
+  % Electrolyte, Negative Electrode, Positive Electrode, Thermal Model and Control
+  % Model. The battery class contains all of these submodels and various other
+  % parameters necessary to run the simulation.
   
   model = Battery(paramobj);
   
-  %%%
-  % In BattMo a battery model is actually a collection of submodels: 
-  % Electrolyte, Negative Electrode, Positive Electrode, Thermal Model and Control
-  % Model. The battery class contains all of these submodels and various other 
-  % parameters necessary to run the simulation.
-  
-  %%% Plotting the OCP curves
+  %% Plotting the OCP curves against state of charge
   % We can inspect the model object to find out which parameters are being
   % used. For instance the information we need to plot the OCP curves for the
   % positive and negative electrodes can be found in the interface structure
   % of each electrode.
   
   T = 298.15;
-  elde = {ne, pe};
+  eldes = {ne, pe};
   
   figure
   hold on
-  for i = 1:numel(elde)
-      el_itf = model.(elde{i}).(co).(am).(itf);
+  
+  for ielde = 1:numel(eldes)
+      el_itf = model.(eldes{ielde}).(co).(am).(itf);
   
       theta100 = el_itf.guestStoichiometry100;
       theta0   = el_itf.guestStoichiometry0;
@@ -147,127 +154,101 @@ Source code for battMoTutorial
   
       plot(soc, OCP)
   end
-  xlabel('SOC [-]')
-  ylabel('OCV [V]')
-  title('OCV for both electrodes');
-  legend(elde)
   
-  %%% Controlling the simulation
-  % The control model specifies how the simulation is controlled. This can
-  % also be thought of as the boundary conditions of the simulation.
+  xlabel('SOC  / -')
+  ylabel('OCP  / V')
+  title('OCP for both electrodes');
+  ylim([0, 5.5])
+  legend(eldes, 'location', 'nw')
   
-  %%%
+  %% Controlling the simulation
+  % The control model specifies how the battery is operated, i.e., how
+  % the simulation is controlled.
+  %
   % In the first instance we use CCDischarge control policy.
   % We set the total time scaled by the CRate in the model.
   % The CRate has been set by the json file. We can access it here:
   
   CRate = model.Control.CRate;
-  total = 1.4*hour/CRate;
+  total = 1.1*hour/CRate;
   
-  %%%
+  %%
   % We want to break this total time into 100 timesteps. To begin with we
-  % will use equal values for each timestep. 
-  
-  %%%
-  % We create a structure containing the length of each step in seconds 
-  % ('val') and also which control to use for each step ('control'). 
-  
-  %%%
-  % In this case we use control 1 for all steps. This means that the functions 
+  % will use equal values for each timestep.
+  %
+  % We create a structure containing the length of each step in seconds
+  % ('val') and also which control to use for each step ('control').
+  %
+  % In this case we use control 1 for all steps. This means that the functions
   % used to setup the control values are the same at each step.
   
   n  = 100;
   dt = total/n;
   step = struct('val', dt*ones(n, 1), 'control', ones(n, 1));
   
-  %%%
-  % For the IESwitch control we will switch between controlling the current
-  % or the voltage based on some max and min values. We do this using the
-  % rampupSwitchControl function. 
-  
-  %%%
-  % Smaller time steps are used to ramp up the current from zero to its
-  % operational value. Larger time steps are then used for the normal
-  % operation. 
-  
-  %%%
-  % This function also contains the logic about when to switch
-  % using constant current to constant voltage.
-  
-  %%%
-  % First we set a parameter to control how the current values increase
-  % between zero and the desired value. Then we assign the
-  % rampupSwitchControl function to a variable as an anonymous function.
-  
-  tup = 0.1; 
-  srcfunc = @(time, I, E) rampupSwitchControl(time, tup, I, E, ...
-                                              model.Control.Imax, ...
-                                              model.Control.lowerCutoffVoltage);
-  
-  %%%
+  %%
   % We create a control structure containing the source function and
-  % specifying that we want to use IESwitch control:
+  % and a stopping criteria. The control parameters have been given in the json file
+  % :battmofile:`ParameterData/BatteryCellParameters/LithiumIonBatteryCell/lithium_ion_battery_nmc_graphite.json`
+  %
+  % The :code:`setupScheduleControl` method contains the code to setup the control structure that is used in the schedule structure setup below.
   
-  control = struct('src', srcfunc, 'CCDischarge', true);
+  control = model.Control.setupScheduleControl();
   
-  %%%
+  %%
   % Finally we collect the control and step structures together in a schedule
   % struct which is the schedule which the simulation will follow:
   
-  schedule = struct('control', control, 'step', step); 
+  schedule = struct('control', control, 'step', step);
   
   
-  %%% Setting the initial state of the battery
+  %% Setting the initial state of the battery
   % To run simulation we need to know the starting point which we will run it
   % from, in terms of the value of the primary variables being modelled at
-  % the start of the simulation. 
+  % the start of the simulation.
   % The initial state of the model is setup using model.setupInitialState()
   % Here we take the state of charge (SOC) given in the input and calculate
   % equilibrium concentration based on theta0, theta100 and cmax.
   
-  initstate = model.setupInitialState(); 
+  initstate = model.setupInitialState();
   
   
-  %%% Running the simulation
+  %% Running the simulation
   % Once we have the initial state, the model and the schedule, we can call
-  % the simulateScheduleAD function which will actually run the simulation:
-  [wellSols, states, report] = simulateScheduleAD(initstate, model, schedule); 
-  
-  %%%
+  % the simulateScheduleAD function which will actually run the simulation.
+  %
   % The outputs from the simulation are:
-  % - wellSols: which provides the current and voltage of the battery at each 
-  % timestep. (This naming convention is a hangover from MRST where we model
-  % reservoir injection via injection wells).
+  % - sols: which provides the current and voltage of the battery at each
+  %   timestep.
   % - states: which contains the values of the primary variables in the model
-  % at each timestep.
+  %   at each timestep.
   % - reports: which contains technical information about the steps used in
-  % the numerical solvers.
+  %   the numerical solvers.
+  
+  [sols, states, report] = simulateScheduleAD(initstate, model, schedule);
   
   
-  %%% Plotting the results
+  %% Plotting the results
   % To get the results we use the matlab cellfun function to extract the
   % values Control.E, Control.I and time from each timestep (cell in the cell
   % array) in states. We can then plot the vectors.
   
-  E = cellfun(@(x) x.Control.E, states); 
+  E = cellfun(@(x) x.Control.E, states);
   I = cellfun(@(x) x.Control.I, states);
-  time = cellfun(@(x) x.time, states); 
-  
-  set(0, 'defaultlinelinewidth', 3);
-  set(0, 'DefaultAxesFontSize', 16);
-  set(0, 'defaulttextfontsize', 18);
+  time = cellfun(@(x) x.time, states);
   
   figure()
   
   subplot(1,2,1)
   plot(time/hour, E)
-  xlabel('time [hours]')
-  ylabel('Cell Voltage [V]')
+  xlabel('time  / h')
+  ylabel('Cell Voltage  / V')
   
   subplot(1,2,2)
   plot(time/hour, I)
-  xlabel('time [hours]')
-  ylabel('Cell Current [A]')
+  ylim([0, 0.02])
+  xlabel('time  / h')
+  ylabel('Cell Current  / A')
   
   
   %{
@@ -289,16 +270,4 @@ Source code for battMoTutorial
   You should have received a copy of the GNU General Public License
   along with BattMo.  If not, see <http://www.gnu.org/licenses/>.
   %}
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
 
