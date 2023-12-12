@@ -1,4 +1,21 @@
-function val = rampupControl(t, tup, inputI, varargin)
+function I = rampupControl(t, tup, inputI, varargin)
+%
+%
+% SYNOPSIS:
+%   function I = rampupControl(t, tup, inputI, varargin)
+%
+% DESCRIPTION: Generate a function that gradually increase the output I to the given inputI over the period given by tup
+%
+% PARAMETERS:
+%   t        - current time value
+%   tup      - rampup time: The value is increased in the interval from zero to tup
+%   inputI   - Target value after rampup
+%   varargin - used to set the rampup profile (sineup is default, can be set to linear)
+%
+% RETURNS:
+%   I - value returned for the current time (the other values being given)
+%
+
 
     opt = struct('rampupcase', 'sineup');
     opt = merge_options(opt, varargin{:});
@@ -8,10 +25,10 @@ function val = rampupControl(t, tup, inputI, varargin)
     switch rampupcase
         
       case 'sineup'
-        val = (t <= tup) .* sineup(0, inputI, 0, tup, t) + (t > tup) .* inputI;
+        I = (t <= tup) .* sineup(0, inputI, 0, tup, t) + (t > tup) .* inputI;
         
       case 'linear'
-        val = (t <= tup).*t./tup .* inputI +  (t > tup) .* inputI;
+        I = (t <= tup).*t./tup .* inputI +  (t > tup) .* inputI;
         
     end
     
