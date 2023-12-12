@@ -117,7 +117,7 @@ classdef FullSolidDiffusionModel < SolidDiffusionModel
 
             % we remove this declaration as it is not used in assembly (otherwise it may be computed but not used)
             model = model.setAsExtraVarName('cAverage');
-            
+
         end
 
         function operators = setupOperators(model)

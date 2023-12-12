@@ -6,11 +6,6 @@ classdef BaseModel < PhysicalModel
         varNameList          % List of variable names  (VarName instances) for the model
         subModelNameList     % List of submodels for the model
 
-        % The variables listed in staticVarNameList are elements in VarNameList that are declared as static (they are
-        % not depending on the primary variables and are updatedseparatly)
-        staticVarNameList
-
-        
         % The variables listed in extraVarNameList are elements in VarNameList that are not used in assembly of the
         % residuals, those has been typically introduced for post-processing.
         extraVarNameList
@@ -99,7 +94,7 @@ classdef BaseModel < PhysicalModel
         end
 
 
-        function model = registerStaticVarName(model, varname)
+        function model = setAsStaticVarName(model, varname)
         % Register a static variable name. A static variable is a variable that is set up at the beginning of the
         % assembly and does not depend on the primary variables.
 
@@ -118,28 +113,16 @@ classdef BaseModel < PhysicalModel
             end
         end
         
-        function model = registerStaticVarNames(model, varnames)
-        % Register several static variable name using registerStaticVarName
+        function model = setAsStaticVarNames(model, varnames)
+        % Register several static variable name using setAsStaticVarName
 
             for ivarnames = 1 : numel(varnames)
-                model = model.registerStaticVarName(varnames{ivarnames});
-            end
-        end
-
-        
-        function model = registerExtraVarNames(model, varnames)
-        % Register several extra variable name using registerExtraVarName
-            for ivar = 1 : numel(varnames)
-                model = model.registerExtraVarName(varnames{ivar});
+                model = model.setAsStaticVarName(varnames{ivarnames});
             end
             
         end
         
-        function model = registerExtraVarName(model, varname)
-        % Register extra variable name. Such variable, by definition, should not enter in the computation of the
-        % residual equation. Therefore, they are not going to be included in the computational graph that is generated
-        % for the residual assembly. However, they can be computed when a property function is declared for them, see
-        % getProp function.
+        function model = setAsExtraVarName(model, varname)
             
             if isa(varname, 'char')
                 varname = VarName({}, varname);
@@ -149,6 +132,12 @@ classdef BaseModel < PhysicalModel
                 model = model.setAsExtraVarName(varname);
             elseif isa(varname, 'VarName')
                 model.extraVarNameList = mergeList(model.extraVarNameList, {varname});
+            end
+        end
+        
+        function model = setAsExtraVarNames(model, varnames)
+            for ivar = 1 : numel(varnames)
+                model = model.setAsExtraVarName(varnames{ivar});
             end
         end
         
@@ -564,7 +553,7 @@ classdef BaseModel < PhysicalModel
             
             funcCallList = cgt.getPropFunctionCallList(varname);
 
-            if ~isempty(extravars)
+            if (nargin > 3) && ~isempty(extravars)
                 for ivar = 1 : numel(extravars)
                     extravar = extravars{ivar};
                     varname  = extravar{1};
@@ -693,37 +682,6 @@ classdef BaseModel < PhysicalModel
             cgp = ComputationalGraphPlot(model.computationalGraph);
         end
         
-    end
-
-    methods(Static)
-
-        function [found, keep, varname] = extractVarName(rvarname, varname)
-
-        % This function supports index, meaning, it handles the case where the rvarname and varname has same name but
-        % different indices where the indices of rvarname make a subset of those of varname.
-            
-            [isequal, compIndices] = compareVarName(rvarname, varname);
-            if isequal
-                keep  = false;
-                found = true;
-            elseif isempty(compIndices)
-                keep  = true;
-                found = false;
-            elseif ~isempty(compIndices.InterInd)
-                found = true;
-                if isempty(compIndices.OuterInd2)
-                    keep = false;
-                else
-                    keep = true;
-                    varname.index = compIndices.OuterInd2;
-                end
-            else
-                found = false;
-                keep  = true;
-            end
-        end
-        
-
     end
 
     methods(Static)

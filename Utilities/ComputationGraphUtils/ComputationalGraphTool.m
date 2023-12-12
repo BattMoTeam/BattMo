@@ -781,7 +781,7 @@ classdef ComputationalGraphTool
         function eqvarnames = getEquationVariableNames(cgt)
         % Return the equation variables, which are defined as the tail variables and not declared as extravarnames.
             
-            A                = cgt.A;
+            A                = cgt.adjencyMatrix;
             nodenames        = cgt.nodenames;
             extravarnameinds = cgt.extraVarNameInds;
 
@@ -802,7 +802,7 @@ classdef ComputationalGraphTool
             opt = struct('removeExtraVariables', true);
             opt = merge_options(opt, varargin{:});
             
-            A                = cgt.A;
+            A                = cgt.adjencyMatrix;
             staticprops      = cgt.staticprops;
             extraVarNameInds = cgt.extraVarNameInds;
             

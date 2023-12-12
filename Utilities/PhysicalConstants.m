@@ -1,6 +1,5 @@
 classdef PhysicalConstants
-    % PHYSICALCONSTANTS Summary of this class goes here
-    
+
     properties (Constant)
         
         R  = 8.31446261815324 % Ideal gas constant
@@ -11,7 +10,7 @@ classdef PhysicalConstants
         eV = 1.602176634e-19  % Electronvolt (J)
         
     end
-
+    
 end
 
 

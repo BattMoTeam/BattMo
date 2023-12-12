@@ -139,7 +139,7 @@ classdef SeaWaterElectrolyte < SeaWaterElectrolyteNoPrecipitation
             inputnames = {'volumeFraction'};
             model = model.registerPropFunction({{'indicator'}, fn, inputnames});
 
-            model = model.registerExtraVarName('indicator');
+            model = model.setAsExtraVarName('indicator');
         
         end
         
