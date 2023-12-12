@@ -85,12 +85,12 @@ Run Simulation
 Visualize Results
 --------------
 
-We plot the model using :battmo:`plotBatteryMesh` (note that the different axis are scaled differently)
+We plot the model using :battmo:`plotBatteryGrid` (note that the different axis are scaled differently)
 
 .. code:: matlab
           
    model = output.model
-   plotBatteryMesh(model)
+   plotBatteryGrid(model)
 
 .. figure:: img/3dmodel.png
    :target: _images/3dmodel.png
