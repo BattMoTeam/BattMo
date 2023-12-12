@@ -11,8 +11,9 @@ classdef SEIActiveMaterial < ActiveMaterial
 
         function model = SEIActiveMaterial(paramobj)
 
+            paramobj = paramobj.validateInputParams();
+
             model = model@ActiveMaterial(paramobj);
-            paramobj.validateInputParams();
 
             model.SideReaction = SideReaction(paramobj.SideReaction);
             model.SolidElectrodeInterface = SolidElectrodeInterface(paramobj.SolidElectrodeInterface);
