@@ -46,7 +46,7 @@ dt  = total/n;
 dts = rampupTimesteps(total, dt, 5);
 
 %%
-% We use the function :code:`rampupControl` to increase the current linearly in time
+% We use the function :battmo:`rampupControl` to increase the current linearly in time
 
 controlI = -3*ampere/(centi*meter)^2; % if negative, O2 and H2 are produced
 tup      = total; 

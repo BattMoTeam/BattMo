@@ -73,7 +73,7 @@ We run the simulation over 10 hours, increasing the input current linearly in ti
   dt  = total/n;
   dts = rampupTimesteps(total, dt, 5);
 
-We use the function :code:`rampupControl` to increase the current linearly in time
+We use the function :battmo:`rampupControl` to increase the current linearly in time
 
 .. code-block:: matlab
 
