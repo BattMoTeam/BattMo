@@ -152,36 +152,22 @@ ylim([0, 5.5])
 legend(eldes, 'location', 'nw')
 
 %% Controlling the simulation
-% The control model specifies how the battery is operated, i.e., how
-% the simulation is controlled.
+% The control model specifies how the battery is operated, i.e., how the simulation is controlled.
 %
-% In the first instance we use CCDischarge control policy.
-% We set the total time scaled by the CRate in the model.
-% The CRate has been set by the json file. We can access it here:
+% The input parameters for the control have been given as part of the json structure
+% :battmofile:`ParameterData/BatteryCellParameters/LithiumIonBatteryCell/lithium_ion_battery_nmc_graphite.json`. The
+% total simulation time is setup for us, computed from the CRate value. We use the method :code:`setupScheduleStep` in
+% :battmo:`ControlModel` to setup the :code:`step` structure.
 
-CRate = model.Control.CRate;
-total = 1.1*hour/CRate;
-
-%%
-% We want to break this total time into 100 timesteps. To begin with we
-% will use equal values for each timestep.
-%
-% We create a structure containing the length of each step in seconds
-% ('val') and also which control to use for each step ('control').
-%
-% In this case we use control 1 for all steps. This means that the functions
-% used to setup the control values are the same at each step.
-
-n  = 100;
-dt = total/n;
-step = struct('val', dt*ones(n, 1), 'control', ones(n, 1));
+step = model.Control.setupScheduleStep();
 
 %%
 % We create a control structure containing the source function and
 % and a stopping criteria. The control parameters have been given in the json file
 % :battmofile:`ParameterData/BatteryCellParameters/LithiumIonBatteryCell/lithium_ion_battery_nmc_graphite.json`
 %
-% The :code:`setupScheduleControl` method contains the code to setup the control structure that is used in the schedule structure setup below.
+% The :code:`setupScheduleControl` method contains the code to setup the control structure that is used in the schedule
+% structure setup below.
 
 control = model.Control.setupScheduleControl();
 
@@ -201,7 +187,6 @@ schedule = struct('control', control, 'step', step);
 % equilibrium concentration based on theta0, theta100 and cmax.
 
 initstate = model.setupInitialState();
-
 
 %% Running the simulation
 % Once we have the initial state, the model and the schedule, we can call
