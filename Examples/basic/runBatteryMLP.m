@@ -55,17 +55,10 @@ plotBatteryGrid(model, 'setstyle', false);
 % operational value. Larger time steps are then used for the normal
 % operation.
 
-CRate = model.Control.CRate;
+timestep.numberOfTimeSteps = 50;
+timestep.useRampup = true;
 
-n           = 25;
-dt          = [];
-dt          = [dt; repmat(0.5e-4, n, 1).*1.5.^(1 : n)'];
-totalTime   = 1.4*hour/CRate;
-n           = 40;
-dt          = [dt; repmat(totalTime/n, n, 1)];
-times       = [0; cumsum(dt)];
-tt          = times(2 : end);
-step        = struct('val', diff(times), 'control', ones(numel(tt), 1));
+step = model.Control.setupScheduleStep(timestep);
 
 % Set the control
 control = model.Control.setupScheduleControl();
