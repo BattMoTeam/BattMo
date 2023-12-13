@@ -78,31 +78,15 @@ classdef CCcontrolModel < ControlModel
         % why we include this method here, for convenience. It can be overloaded by derived classes. The
         % timeSteppingParams structure by default is given by the data described in :battmofile:`Utilities/JsonSchemas/TimeStepping.schema.json`
 
-            paramstemplate = struct('totalTime'          , []   , ...
-                                    'numberOfTimeSteps'  , 100  , ...
-                                    'timeStepDuration'   , []   , ...
-                                    'useRampup'          , false, ...
-                                    'numberOfRampupSteps', 5);
 
-            if (nargin > 1) && ~isempty(timeSteppingParams)
-                
-                params = resolveUnitInputJson(timeSteppingParams);
-
-                vals    = struct2cell(params);
-                fdnames = fieldnames(params);
-
-                params = horzcat(fdnames, vals)';
-                params = params(:);
-
-
-                params = merge_options(paramstemplate, params{:});
-                
+            if (nargin > 1)
+                params = timeSteppingParams;
             else
-                
-                params = paramstemplate;
-                
+                params = [];
             end
 
+            params = model.parseTimeSteppingStruct(params);
+            
             CRate = model.CRate;
 
             if ~isempty(params.totalTime)

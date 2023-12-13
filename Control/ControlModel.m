@@ -138,6 +138,38 @@ classdef ControlModel < BaseModel
         
     end
     
+    methods(Static)
+
+        function params = parseTimeSteppingStruct(params)
+
+            paramstemplate = struct('totalTime'          , []   , ...
+                                    'numberOfTimeSteps'  , 100  , ...
+                                    'timeStepDuration'   , []   , ...
+                                    'useRampup'          , false, ...
+                                    'numberOfRampupSteps', 5);
+
+            if (nargin > 0) && ~isempty(params)
+                
+                params = resolveUnitInputJson(params);
+
+                vals    = struct2cell(params);
+                fdnames = fieldnames(params);
+
+                params = horzcat(fdnames, vals)';
+                params = params(:);
+
+
+                params = merge_options(paramstemplate, params{:});
+                
+            else
+                
+                params = paramstemplate;
+                
+            end
+
+
+        end
+    end
     
         
 end
