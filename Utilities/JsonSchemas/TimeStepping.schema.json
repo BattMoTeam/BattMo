@@ -8,13 +8,14 @@
     "TimeStepping" : {
       "type" : "object",
       "properties" : {
-        "totalTime" : {"type" : "number"},
+        "totalTime" : {"type" : "number",
+                       "description" : "Total time. If not given, may be inferred by some control models"},
         "timeStepDuration" : {"type" : "number"},
-        "numberOfTimeSteps" : {"type" : "integer"},
+        "numberOfTimeSteps" : {"type" : "integer",
+                               "description" : "number of time steps, then we compute the time step duration from total time and number of time steps"},
         "useRampup" : {"type" : "boolean"},
-        "rampupTime" : {"type" : "number"}},
-      "oneOf" : [{"required" : ["numberOfTimeSteps", "totalTime"]},
-                 {"required" : ["timeStepDuration"]}]
+        "numberOfRampupSteps" : {"type" : "number",
+                                 "description" : "if we use rampup, we use at the start time intervals that increases geometrrically until we reach the time step target, see function rampupTimesteps."}}
     }
   }
 }
