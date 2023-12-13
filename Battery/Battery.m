@@ -762,6 +762,8 @@ classdef Battery < BaseModel
 
               case 'CCCV'
 
+                initstate.(ctrl).numberOfCycles = 0;
+                
                 switch model.(ctrl).initialControl
                   case 'discharging'
                     initstate.(ctrl).ctrlType     = 'CC_discharge1';
@@ -1587,23 +1589,20 @@ classdef Battery < BaseModel
         function forces = getValidDrivingForces(model)
 
             forces = getValidDrivingForces@PhysicalModel(model);
-
+            
+            forces.src = [];
             ctrl = 'Control';
             switch model.(ctrl).controlPolicy
               case 'CCCV'
                 forces.CCCV = true;
               case 'CCDischarge'
                 forces.CCDischarge = true;
-                forces.src = [];
               case 'CCCharge'
                 forces.CCCharge = true;
-                forces.src = [];
               case 'powerControl'
                 forces.powerControl = true;
-                forces.src = [];
               case 'CC'
                 forces.CC = true;
-                forces.src = [];
               case 'None'
                 % used only in addVariables
               otherwise
@@ -1720,14 +1719,12 @@ classdef Battery < BaseModel
             cleanState.time = state.time;
 
             thermal = 'ThermalModel';
-            ctrl = 'Control';
-
-            cleanState.(ctrl).ctrlType = state.(ctrl).ctrlType;
 
             if ~model.use_thermal
                 thermal = 'ThermalModel';
                 cleanState.(thermal).T = state.(thermal).T;
             end
+
 
         end
 

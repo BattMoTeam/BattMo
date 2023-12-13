@@ -10,6 +10,10 @@ classdef CcCvControlModel < ControlModel
         dIdtLimit
         dEdtLimit
         numberOfCycles
+
+        % Control used initially. String that can take one of the following values
+        % - 'discharging'
+        % - 'charging'
         initialControl
     end
     
@@ -109,6 +113,13 @@ classdef CcCvControlModel < ControlModel
         end
         
 
+        function cleanState = addStaticVariables(model, cleanState, state)
+
+            cleanState.numberOfCycles = state.numberOfCycles;
+            cleanState.ctrlType       = state.ctrlType;
+            
+        end
+        
         function  [arefulfilled, state] = checkConstraints(model, state)
 
             Imax    = model.Imax;
@@ -144,18 +155,18 @@ classdef CcCvControlModel < ControlModel
         
         function state = updateControlAfterConvergence(model, state, state0, dt)
 
-            Imax    = model.Imax;
-            Emin    = model.lowerCutoffVoltage;
-            Emax    = model.upperCutoffVoltage;
-            dEdtMin = model.dEdtLimit;
-            dIdtMin = model.dIdtLimit;
-            
-            E = state.E;
+            Imax     = model.Imax;
+            Emin     = model.lowerCutoffVoltage;
+            Emax     = model.upperCutoffVoltage;
+            dEdtMin  = model.dEdtLimit;
+            dIdtMin  = model.dIdtLimit;
+            initctrl = model.initialControl;
+            E        = state.E;
+            ctrlType = state.ctrlType;
+            ncycles  = state0.numberOfCycles;
             
             dEdt = (state.E - state0.E)/dt;
             dIdt = (state.I - state0.I)/dt;
-
-            ctrlType = state.ctrlType;
             
             switch ctrlType
               
@@ -171,6 +182,9 @@ classdef CcCvControlModel < ControlModel
                 nextCtrlType = 'CC_discharge2';
                 if (abs(dEdt) <= dEdtMin)
                     nextCtrlType = 'CC_charge1';
+                    if strcmp(initctrl, 'charging')
+                        ncycles = ncycles + 1;
+                    end
                 end
             
               case 'CC_charge1'
@@ -185,6 +199,9 @@ classdef CcCvControlModel < ControlModel
                 nextCtrlType = 'CV_charge2';
                 if (abs(dIdt) < dIdtMin)
                     nextCtrlType = 'CC_discharge1';
+                    if strcmp(initctrl, 'discharging')
+                        ncycles = ncycles + 1;
+                    end
                 end                  
                 
               otherwise
@@ -197,12 +214,27 @@ classdef CcCvControlModel < ControlModel
                 fprintf('Switch control type from %s to %s\n', ctrlType, nextCtrlType);
             end
             
-            state.nextCtrlType = nextCtrlType;
+            state.nextCtrlType   = nextCtrlType;
+            state.numberOfCycles = ncycles;
             
         end
+
+        function func = setupStopFunction(model)
             
+            func = @(mainModel, state, state_prev) (state.Control.numberOfCycles >= mainModel.Control.numberOfCycles);
+            
+        end
+
+        function func = setupControlFunction(model)
+        % There is no control function in the sense that all the switches are automatically turned on and off.
+            
+            func = [];
+            
+        end
+
         function control = setupScheduleControl(model)
 
+            control = setupScheduleControl@ControlModel(model);
             control.CCCV = true;
             
         end
