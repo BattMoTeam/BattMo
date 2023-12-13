@@ -232,8 +232,57 @@ classdef CcCvControlModel < ControlModel
             
         end
 
-        function control = setupScheduleControl(model)
+        function step = setupScheduleStep(model, timeSteppingParams)
+            
+        % Setup and a return the step structure that is part of the schedule which is used as input for
+        % :mrst:`simulateScheduleAD`. For some control type, there is a natural construction for this structure. This is
+        % why we include this method here, for convenience. It can be overloaded by derived classes. The
+        % timeSteppingParams structure by default is given by the data described in :battmofile:`Utilities/JsonSchemas/TimeStepping.schema.json`
 
+            if (nargin > 1)
+                params = timeSteppingParams;
+            else
+                params = [];
+            end
+
+            params = model.parseTimeSteppingStruct(params);
+            
+            CRate   = model.CRate;
+            ncycles = model.numberOfCycles;
+
+            if ~isempty(params.totalTime)
+                if ~isempty(ncycles)
+                    warning('Both the total time and the number of cycles are given. We do not use the given total time value but compute it instead from the number of cycles.');
+                else
+                    totalTime = params.totalTimes;
+                end
+            else
+                totalTime = 2*ncycles*1.1*(1*hour/CRate);
+            end
+
+            if ~isempty(params.timeStepDuration)
+                dt = params.timeStepDuration
+            else
+                n  = params.numberOfTimeSteps;
+                dt = totalTime/n;
+            end
+
+            if params.useRampup
+                n = params.numberOfRampupSteps;
+            else
+                n = 0;
+            end
+
+            dts = rampupTimesteps(totalTime, dt, n);
+            
+            step = struct('val', dts, 'control', ones(numel(dts), 1));
+
+        end
+
+        
+        
+        function control = setupScheduleControl(model)
+            
             control = setupScheduleControl@ControlModel(model);
             control.CCCV = true;
             
