@@ -27,10 +27,10 @@ classdef CcCvControlModelInputParams < ControlModelInputParams
     
     methods
 
-        function paramobj = CcCvControlModelInputParams(jsonstruct);
+        function inputparams = CcCvControlModelInputParams(jsonstruct);
             
-            paramobj = paramobj@ControlModelInputParams(jsonstruct);
-            paramobj.controlPolicy = 'CCCV';
+            inputparams = inputparams@ControlModelInputParams(jsonstruct);
+            inputparams.controlPolicy = 'CCCV';
             
         end
 

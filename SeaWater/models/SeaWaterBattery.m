@@ -56,7 +56,7 @@ classdef SeaWaterBattery < BaseModel
 
     methods
 
-        function model = SeaWaterBattery(paramobj)
+        function model = SeaWaterBattery(inputparams)
 
             model = model@BaseModel();
 
@@ -65,18 +65,18 @@ classdef SeaWaterBattery < BaseModel
                        'couplingTerms'       , ...
                        'include_precipitation', ...
                        'T'};
-            model = dispatchParams(model, paramobj, fdnames);
+            model = dispatchParams(model, inputparams, fdnames);
 
             % Setup Anode
-            model = model.setupAnode(paramobj.Anode);
+            model = model.setupAnode(inputparams.Anode);
             % Setup Anode Active Material            
-            model = model.setupAnodeActiveMaterial(paramobj.AnodeActiveMaterial);
+            model = model.setupAnodeActiveMaterial(inputparams.AnodeActiveMaterial);
             % Setup Electrolyte
-            model = model.setupElectrolyte(paramobj);
+            model = model.setupElectrolyte(inputparams);
             % Setup Cathode Active Material                        
-            model.CathodeActiveMaterial = HydrogenActiveMaterial(paramobj.CathodeActiveMaterial);
+            model.CathodeActiveMaterial = HydrogenActiveMaterial(inputparams.CathodeActiveMaterial);
             % Setup Cathode
-            model.Cathode = HydrogenElectrode(paramobj.Cathode);
+            model.Cathode = HydrogenElectrode(inputparams.Cathode);
 
             model.addedVariableNames = {{'time'}};
 
@@ -103,8 +103,8 @@ classdef SeaWaterBattery < BaseModel
             model.dodebugtext = '';
         end
 
-        function model = setupAnode(model, paramobj)
-            model.Anode = SeaWaterElectrode(paramobj);
+        function model = setupAnode(model, inputparams)
+            model.Anode = SeaWaterElectrode(inputparams);
         end
             
         function model = registerVarAndPropfuncNames(model)

@@ -14,9 +14,9 @@ classdef DissolutionModelInputParams < ComponentInputParams
 
     methods
         
-        function paramobj = DissolutionModelInputParams(jsonstruct)
+        function inputparams = DissolutionModelInputParams(jsonstruct)
 
-            paramobj = paramobj@ComponentInputParams(jsonstruct);
+            inputparams = inputparams@ComponentInputParams(jsonstruct);
             
         end
         

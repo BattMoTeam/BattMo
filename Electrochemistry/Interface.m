@@ -50,7 +50,7 @@ classdef Interface < BaseModel
 
     methods
 
-        function model = Interface(paramobj)
+        function model = Interface(inputparams)
 
             model = model@BaseModel();
 
@@ -68,11 +68,11 @@ classdef Interface < BaseModel
                        'openCircuitPotential'        , ...
                        'chargeTransferCoefficient'};
             
-            model = dispatchParams(model, paramobj, fdnames);
+            model = dispatchParams(model, inputparams, fdnames);
 
-            model.computeOCPFunc = str2func(paramobj.openCircuitPotential.functionname);
+            model.computeOCPFunc = str2func(inputparams.openCircuitPotential.functionname);
 
-            j0 = paramobj.exchangeCurrentDensity;
+            j0 = inputparams.exchangeCurrentDensity;
             
             if ~isempty(j0)
                 switch j0.type

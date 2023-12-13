@@ -11,9 +11,9 @@ classdef ExchangeReactionInputParams < ComponentInputParams
     
     methods
         
-        function paramobj = ExchangeReactionInputParams(jsonstruct)
+        function inputparams = ExchangeReactionInputParams(jsonstruct)
 
-            paramobj = paramobj@ComponentInputParams(jsonstruct);
+            inputparams = inputparams@ComponentInputParams(jsonstruct);
             
         end
         

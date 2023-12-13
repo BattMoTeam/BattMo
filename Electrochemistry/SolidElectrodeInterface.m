@@ -23,7 +23,7 @@ classdef SolidElectrodeInterface < BaseModel
 
     methods
 
-        function model = SolidElectrodeInterface(paramobj)
+        function model = SolidElectrodeInterface(inputparams)
 
             model = model@BaseModel();
 
@@ -36,7 +36,7 @@ classdef SolidElectrodeInterface < BaseModel
                        'diffusionCoefficient', ... 
                        'np'                  , ...
                        'N'};
-            model = dispatchParams(model, paramobj, fdnames);
+            model = dispatchParams(model, inputparams, fdnames);
             
             model.operators = model.setupOperators();
             

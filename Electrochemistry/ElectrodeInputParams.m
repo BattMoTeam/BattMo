@@ -22,33 +22,33 @@ classdef ElectrodeInputParams < ComponentInputParams
 
     methods
 
-        function paramobj = ElectrodeInputParams(jsonstruct)
+        function inputparams = ElectrodeInputParams(jsonstruct)
 
-            paramobj = paramobj@ComponentInputParams(jsonstruct);
+            inputparams = inputparams@ComponentInputParams(jsonstruct);
 
             co = 'Coating';
             cc = 'CurrentCollector';
 
             pick = @(fd) pickField(jsonstruct, fd);
 
-            paramobj.(co) = CoatingInputParams(pick(co));
-            paramobj.(cc) = CurrentCollectorInputParams(pick(cc));
+            inputparams.(co) = CoatingInputParams(pick(co));
+            inputparams.(cc) = CurrentCollectorInputParams(pick(cc));
 
-            paramobj = paramobj.validateInputParams();
+            inputparams = inputparams.validateInputParams();
 
         end
 
-        function paramobj = validateInputParams(paramobj)
+        function inputparams = validateInputParams(inputparams)
 
             am = 'Coating';
             cc = 'CurrentCollector';
 
-            paramobj = mergeParameters(paramobj, {{'use_thermal'}, {am, 'use_thermal'}});
-            paramobj.(am) = paramobj.(am).validateInputParams();
+            inputparams = mergeParameters(inputparams, {{'use_thermal'}, {am, 'use_thermal'}});
+            inputparams.(am) = inputparams.(am).validateInputParams();
 
-            if ~isempty(paramobj.include_current_collectors)
-                paramobj = mergeParameters(paramobj, {{'use_thermal'}, {cc, 'use_thermal'}});
-                paramobj.(cc) = paramobj.(cc).validateInputParams();
+            if ~isempty(inputparams.include_current_collectors)
+                inputparams = mergeParameters(inputparams, {{'use_thermal'}, {cc, 'use_thermal'}});
+                inputparams.(cc) = inputparams.(cc).validateInputParams();
             end
 
         end

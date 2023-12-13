@@ -28,9 +28,9 @@ classdef PorousTransportLayerInputParams < ElectronicComponentInputParams
     
     methods
         
-        function paramobj = PorousTransportLayerInputParams(jsonstruct)
+        function inputparams = PorousTransportLayerInputParams(jsonstruct)
             
-            paramobj = paramobj@ElectronicComponentInputParams(jsonstruct);
+            inputparams = inputparams@ElectronicComponentInputParams(jsonstruct);
             
         end
         

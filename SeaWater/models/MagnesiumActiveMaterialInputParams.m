@@ -8,9 +8,9 @@ classdef MagnesiumActiveMaterialInputParams < SeaWaterActiveMaterialInputParams
     
     methods
 
-        function paramobj = MagnesiumActiveMaterialInputParams(jsonstruct)
+        function inputparams = MagnesiumActiveMaterialInputParams(jsonstruct)
     
-            paramobj = paramobj@SeaWaterActiveMaterialInputParams(jsonstruct);
+            inputparams = inputparams@SeaWaterActiveMaterialInputParams(jsonstruct);
             
         end
         

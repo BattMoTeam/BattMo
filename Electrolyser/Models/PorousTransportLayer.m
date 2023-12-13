@@ -44,11 +44,11 @@ classdef PorousTransportLayer < ElectronicComponent
     
     methods
         
-        function model = PorousTransportLayer(paramobj)
+        function model = PorousTransportLayer(inputparams)
             
-            % paramobj is instance of ElectronicComponentInputParams
-            paramobj.use_thermal = false;
-            model = model@ElectronicComponent(paramobj);
+            % inputparams is instance of ElectronicComponentInputParams
+            inputparams.use_thermal = false;
+            model = model@ElectronicComponent(inputparams);
 
             %% Setup the model using the input parameters
             fdnames = {'G'                   , ...
@@ -60,7 +60,7 @@ classdef PorousTransportLayer < ElectronicComponent
                        'sp'                  , ...
                        'MW'                  , ...
                        'externalCouplingTerm'};
-            model = dispatchParams(model, paramobj, fdnames);
+            model = dispatchParams(model, inputparams, fdnames);
 
             
             compInd.H2Oliquid = 1;
@@ -104,13 +104,13 @@ classdef PorousTransportLayer < ElectronicComponent
             model.liquidInd   = liquidInd;
             model.gasInd      = gasInd;
 
-            paramobj.Boundary.compInd     = compInd;
-            paramobj.Boundary.phaseInd    = phaseInd;
-            paramobj.Boundary.mobPhaseInd = mobPhaseInd;
-            paramobj.Boundary.liquidInd   = liquidInd;
-            paramobj.Boundary.gasInd      = gasInd;
+            inputparams.Boundary.compInd     = compInd;
+            inputparams.Boundary.phaseInd    = phaseInd;
+            inputparams.Boundary.mobPhaseInd = mobPhaseInd;
+            inputparams.Boundary.liquidInd   = liquidInd;
+            inputparams.Boundary.gasInd      = gasInd;
             
-            model.Boundary = PorousTransportLayerBoundary(paramobj.Boundary);
+            model.Boundary = PorousTransportLayerBoundary(inputparams.Boundary);
 
             % initialize helping structures
             sp = model.sp;

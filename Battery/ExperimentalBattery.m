@@ -16,9 +16,9 @@ classdef ExperimentalBattery < Battery
     
     methods
         
-        function model = ExperimentalBattery(paramobj)
+        function model = ExperimentalBattery(inputparams)
 
-            model = model@Battery(paramobj);
+            model = model@Battery(inputparams);
             
         end
         

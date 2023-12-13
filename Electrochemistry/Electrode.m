@@ -24,8 +24,8 @@ classdef Electrode < BaseModel
 
     methods
         
-        function model = Electrode(paramobj)
-        % paramobj is instance of :class:`Electrochemistry.Electrodes.ElectrodeInputParams`
+        function model = Electrode(inputparams)
+        % inputparams is instance of :class:`Electrochemistry.Electrodes.ElectrodeInputParams`
             
             model = model@BaseModel();
             
@@ -35,17 +35,17 @@ classdef Electrode < BaseModel
                        'couplingTerm'              , ...
                        'include_current_collectors', ...
                        'use_thermal'};
-            model = dispatchParams(model, paramobj, fdnames);
+            model = dispatchParams(model, inputparams, fdnames);
 
-            model.Coating = Coating(paramobj.Coating);
+            model.Coating = Coating(inputparams.Coating);
 
-            if paramobj.include_current_collectors
+            if inputparams.include_current_collectors
                 model.include_current_collectors = true;
-                assert(~isempty(paramobj.CurrentCollector), 'current collector input data is missing')
-                model.CurrentCollector = model.setupCurrentCollector(paramobj.CurrentCollector);
+                assert(~isempty(inputparams.CurrentCollector), 'current collector input data is missing')
+                model.CurrentCollector = model.setupCurrentCollector(inputparams.CurrentCollector);
             else
                 model.include_current_collectors = false;
-                % if isempty(paramobj.CurrentCollector.G)
+                % if isempty(inputparams.CurrentCollector.G)
                 %    warning('current collector data is given, but we are not using it, as required by input flag');
                 % end
             end
@@ -90,9 +90,9 @@ classdef Electrode < BaseModel
             
         end
         
-        function cc = setupCurrentCollector(model, paramobj)
+        function cc = setupCurrentCollector(model, inputparams)
         % standard instantiation 
-            cc = CurrentCollector(paramobj);
+            cc = CurrentCollector(inputparams);
         end
 
         function state = updateCoupling(model, state)

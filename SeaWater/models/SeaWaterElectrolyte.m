@@ -16,8 +16,8 @@ classdef SeaWaterElectrolyte < SeaWaterElectrolyteNoPrecipitation
 
     methods
 
-        function model = SeaWaterElectrolyte(paramobj)
-            model = model@SeaWaterElectrolyteNoPrecipitation(paramobj);
+        function model = SeaWaterElectrolyte(inputparams)
+            model = model@SeaWaterElectrolyteNoPrecipitation(inputparams);
             
             fdnames = {'dischargeProductMolarVolume', ...
                        'superOversaturationRatio'   , ...
@@ -26,9 +26,9 @@ classdef SeaWaterElectrolyte < SeaWaterElectrolyteNoPrecipitation
                        'nucleationRate'             , ...
                        'nucleationActivation'       , ...
                        'characteristicPoreDiameter'};
-            model = dispatchParams(model, paramobj, fdnames);
+            model = dispatchParams(model, inputparams, fdnames);
             
-            model = model.setupReactionRates(paramobj);
+            model = model.setupReactionRates(inputparams);
         
             model = model.setupMainIonIndex();
         end

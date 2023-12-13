@@ -6,7 +6,7 @@ mrstModule add ad-core mpfa
 
 jsonstruct = parseBattmoJson(fullfile('ParameterData', 'ParameterSets', 'Chen2020', 'chen2020_lithium_ion_battery.json'));
 
-paramobj = BatteryInputParams(jsonstruct);
+inputparams = BatteryInputParams(jsonstruct);
 
 % Some shorthands used for the sub-models
 ne    = 'NegativeElectrode';
@@ -18,14 +18,14 @@ elyte = 'Electrolyte';
 sei   = 'SolidElectrodeInterface';
 sr    = 'SideReaction';
             
-% paramobj.(ne).(am).diffusionModelType = 'full';
-% paramobj.(pe).(am).diffusionModelType = 'full';
+% inputparams.(ne).(am).diffusionModelType = 'full';
+% inputparams.(pe).(am).diffusionModelType = 'full';
             
 
 
 gen = BatteryGeneratorP2D();
-paramobj = gen.updateBatteryInputParams(paramobj);
-model = Battery(paramobj);
+inputparams = gen.updateBatteryInputParams(inputparams);
+model = Battery(inputparams);
 
 cgt = ComputationalGraphTool(model);
 

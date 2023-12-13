@@ -8,10 +8,10 @@ classdef ElectroChemicalComponent < ElectronicComponent
 
     methods
         
-        function model = ElectroChemicalComponent(paramobj)
-        % Here, :code:`paramobj` is instance of :class:`ElectronicChemicalInputParams <Electrochemistry.ElectronicChemicalInputParams>`
+        function model = ElectroChemicalComponent(inputparams)
+        % Here, :code:`inputparams` is instance of :class:`ElectronicChemicalInputParams <Electrochemistry.ElectronicChemicalInputParams>`
         
-            model = model@ElectronicComponent(paramobj);
+            model = model@ElectronicComponent(inputparams);
 
         end
 

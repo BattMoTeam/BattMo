@@ -14,19 +14,19 @@ classdef SingleParticleSEI < BaseModel
     
     methods
         
-        function model = SingleParticleSEI(paramobj)
+        function model = SingleParticleSEI(inputparams)
 
             model = model@BaseModel();
 
-            model.Anode       = SEIActiveMaterial(paramobj.Anode);
-            model.Cathode     = ActiveMaterial(paramobj.Cathode);
-            model.Electrolyte = SingleCellElectrolyte(paramobj.Electrolyte);
-            model.Control     = model.setupControl(paramobj.Control);
+            model.Anode       = SEIActiveMaterial(inputparams.Anode);
+            model.Cathode     = ActiveMaterial(inputparams.Cathode);
+            model.Electrolyte = SingleCellElectrolyte(inputparams.Electrolyte);
+            model.Control     = model.setupControl(inputparams.Control);
             
             fdnames = {'anodeArea', ...
                        'cathodeArea'};
             
-            model = dispatchParams(model, paramobj, fdnames);
+            model = dispatchParams(model, inputparams, fdnames);
         end
 
         function model = registerVarAndPropfuncNames(model)
@@ -100,15 +100,15 @@ classdef SingleParticleSEI < BaseModel
             
         end
         
-        function control = setupControl(model, paramobj)
+        function control = setupControl(model, inputparams)
 
-            switch paramobj.controlPolicy
+            switch inputparams.controlPolicy
               case "CCDischarge"
-                control = CCDischargeControlModel(paramobj); 
+                control = CCDischargeControlModel(inputparams); 
               case "CCCV"
-                control = seiCcCvControlModel(paramobj);
+                control = seiCcCvControlModel(inputparams);
               case "CV"
-                control = CvControlModel(paramobj);
+                control = CvControlModel(inputparams);
               otherwise
                 error('Error controlPolicy not recognized');
             end

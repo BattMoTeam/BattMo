@@ -9,9 +9,9 @@ classdef CCChargeControlModel < CCcontrolModel
     
     methods
 
-        function model = CCChargeControlModel(paramobj)
+        function model = CCChargeControlModel(inputparams)
             
-            model = model@CCcontrolModel(paramobj);
+            model = model@CCcontrolModel(inputparams);
             
         end
         

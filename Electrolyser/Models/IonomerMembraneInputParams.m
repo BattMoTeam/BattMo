@@ -25,9 +25,9 @@ classdef IonomerMembraneInputParams < ElectronicComponentInputParams
     
     methods
         
-        function paramobj = IonomerMembraneInputParams(jsonstruct)
+        function inputparams = IonomerMembraneInputParams(jsonstruct)
             
-            paramobj = paramobj@ElectronicComponentInputParams(jsonstruct);
+            inputparams = inputparams@ElectronicComponentInputParams(jsonstruct);
             
         end
         

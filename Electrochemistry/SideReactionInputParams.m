@@ -11,9 +11,9 @@ classdef SideReactionInputParams < InputParams
     
     methods
         
-        function paramobj = SideReactionInputParams(jsonstruct)
+        function inputparams = SideReactionInputParams(jsonstruct)
 
-            paramobj = paramobj@InputParams(jsonstruct);
+            inputparams = inputparams@InputParams(jsonstruct);
             
         end
         

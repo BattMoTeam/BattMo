@@ -29,9 +29,9 @@ classdef SeaWaterElectrolyteNoPrecipitationInputParams < ElectronicComponentInpu
     methods
         
         
-        function paramobj = SeaWaterElectrolyteNoPrecipitationInputParams(jsonstruct)
+        function inputparams = SeaWaterElectrolyteNoPrecipitationInputParams(jsonstruct)
             
-            paramobj = paramobj@ElectronicComponentInputParams(jsonstruct);
+            inputparams = inputparams@ElectronicComponentInputParams(jsonstruct);
             
         end
         

@@ -6,32 +6,32 @@ classdef SeaWaterBatteryGenerator < BatteryGenerator
             gen = gen@BatteryGenerator();
         end
         
-        function paramobj = setupBatteryInputParams(gen, paramobj, params)
-            [paramobj, gen] = gen.setupGrid(paramobj, params);
-            paramobj.Electrolyte = gen.setupElectrolyte(paramobj.Electrolyte, params);
-            paramobj = gen.setupElectrodes(paramobj, params);
-            paramobj = gen.setupElectrodeElectrolyteCoupTerm(paramobj);
+        function inputparams = setupBatteryInputParams(gen, inputparams, params)
+            [inputparams, gen] = gen.setupGrid(inputparams, params);
+            inputparams.Electrolyte = gen.setupElectrolyte(inputparams.Electrolyte, params);
+            inputparams = gen.setupElectrodes(inputparams, params);
+            inputparams = gen.setupElectrodeElectrolyteCoupTerm(inputparams);
         end
         
-        function paramobj = setupElectrolyte(gen, paramobj, params)
-            paramobj = gen.setupElectrolyteGrid(paramobj, params);
+        function inputparams = setupElectrolyte(gen, inputparams, params)
+            inputparams = gen.setupElectrolyteGrid(inputparams, params);
         end
         
 
-        function paramobj = setupElectrodes(gen, paramobj, params)
+        function inputparams = setupElectrodes(gen, inputparams, params)
            
             ctde = 'Cathode';
             ande = 'Anode';
             % setup Cathode
-            paramobj.(ctde) = gen.setupElectrodeGrid(paramobj.(ctde), params.(ctde));
-            paramobj.(ctde) = gen.setupElectrodeBcCoupTerm(paramobj.(ctde), params.(ctde));
+            inputparams.(ctde) = gen.setupElectrodeGrid(inputparams.(ctde), params.(ctde));
+            inputparams.(ctde) = gen.setupElectrodeBcCoupTerm(inputparams.(ctde), params.(ctde));
             % setup Anode 
-            paramobj.(ande) = gen.setupElectrodeGrid(paramobj.(ande), params.(ande));
-            paramobj.(ande) = gen.setupElectrodeBcCoupTerm(paramobj.(ande), params.(ande));
+            inputparams.(ande) = gen.setupElectrodeGrid(inputparams.(ande), params.(ande));
+            inputparams.(ande) = gen.setupElectrodeBcCoupTerm(inputparams.(ande), params.(ande));
             
         end
         
-        function paramobj = setupElectrodeBcCoupTerm(gen, paramobj, params)
+        function inputparams = setupElectrodeBcCoupTerm(gen, inputparams, params)
             
             % default setup
             compname = 'Electrode';
@@ -41,23 +41,23 @@ classdef SeaWaterBatteryGenerator < BatteryGenerator
             coupTerm.couplingfaces = params.bcfaces;
             coupTerm.couplingcells = params.bccells;
             
-            paramobj.externalCouplingTerm = coupTerm;
+            inputparams.externalCouplingTerm = coupTerm;
             
         end        
 
                 
 
-        function paramobj = setupElectrodeElectrolyteCoupTerm(gen, paramobj, params)
-        % paramobj is instance of SeaWaterBatteryInputParams
-        % setup paramobj.couplingTerms
+        function inputparams = setupElectrodeElectrolyteCoupTerm(gen, inputparams, params)
+        % inputparams is instance of SeaWaterBatteryInputParams
+        % setup inputparams.couplingTerms
             ctde  = 'Cathode';
             ande  = 'Anode';
             elyte = 'Electrolyte';
             
             couplingTerms = {};
             
-            G_ctde = paramobj.(ctde).G;
-            G_elyte = paramobj.(elyte).G;
+            G_ctde = inputparams.(ctde).G;
+            G_elyte = inputparams.(elyte).G;
             
             % parent Grid
             G = G_ctde.mappings.parentGrid;
@@ -77,8 +77,8 @@ classdef SeaWaterBatteryGenerator < BatteryGenerator
             
             couplingTerms{end + 1} = coupTerm;
             
-            G_ande = paramobj.(ande).G;
-            G_elyte = paramobj.(elyte).G;
+            G_ande = inputparams.(ande).G;
+            G_elyte = inputparams.(elyte).G;
             
             % parent Grid
             G = G_ande.mappings.parentGrid;
@@ -98,21 +98,21 @@ classdef SeaWaterBatteryGenerator < BatteryGenerator
             
             couplingTerms{end + 1} = coupTerm;
             
-            paramobj.couplingTerms = couplingTerms;
+            inputparams.couplingTerms = couplingTerms;
 
         end
 
-        function paramobj = setupCurrentCollectorElectrodeActiveComponentCoupTerm(gen, paramobj, params)
-        % paramobj is instance of ElectrodeInputParams
-        % setup paramobj.couplingTerm
+        function inputparams = setupCurrentCollectorElectrodeActiveComponentCoupTerm(gen, inputparams, params)
+        % inputparams is instance of ElectrodeInputParams
+        % setup inputparams.couplingTerm
             eac = 'ElectrodeActiveComponent';
             cc  = 'CurrentCollector';
             
             compnames = {'CurrentCollector', 'ElectrodeActiveComponent'};
             coupTerm = couplingTerm('CurrentCollector-ElectrodeActiveComponent', compnames);
             
-            G_eac = paramobj.(eac).G;
-            G_cc = paramobj.(cc).G;
+            G_eac = inputparams.(eac).G;
+            G_cc = inputparams.(cc).G;
             
             cctbl.faces = (1 : G_cc.faces.num)';
             cctbl.globfaces = G_cc.mappings.facemap;
@@ -140,13 +140,13 @@ classdef SeaWaterBatteryGenerator < BatteryGenerator
             coupTerm.couplingfaces = [cc_coupfaces, eac_coupfaces];
             coupTerm.couplingcells = [cc_coupcells, eac_coupcells];
             
-            paramobj.couplingTerm = coupTerm;
+            inputparams.couplingTerm = coupTerm;
             
         end
 
-        function paramobj = setupCurrentCollectorBcCoupTerm(gen, paramobj, params)
-        % paramobj is instance of CurrentCollectorInputParams
-        % setup paramobj.couplingTerm
+        function inputparams = setupCurrentCollectorBcCoupTerm(gen, inputparams, params)
+        % inputparams is instance of CurrentCollectorInputParams
+        % setup inputparams.couplingTerm
             
             % default setup
             compnames = {'CurrentCollector'};
@@ -154,7 +154,7 @@ classdef SeaWaterBatteryGenerator < BatteryGenerator
             coupTerm.couplingfaces = params.bcfaces;
             coupTerm.couplingcells = params.bccells;
             
-            paramobj.couplingTerm = coupTerm;
+            inputparams.couplingTerm = coupTerm;
             
         end
 

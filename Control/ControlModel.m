@@ -28,7 +28,7 @@ classdef ControlModel < BaseModel
     
     methods
 
-        function model = ControlModel(paramobj)
+        function model = ControlModel(inputparams)
 
             model = model@BaseModel();
             
@@ -37,7 +37,7 @@ classdef ControlModel < BaseModel
                        'lowerCutoffVoltage', ...
                        'upperCutoffVoltage', ... 
                        'CRate'};
-            model = dispatchParams(model, paramobj, fdnames);
+            model = dispatchParams(model, inputparams, fdnames);
             
         end
         

@@ -15,24 +15,24 @@ classdef TestBatteryPND < matlab.unittest.TestCase
 
             jsonstruct = parseBattmoJson(jsonfile);
             jsonstruct.include_current_collectors = true;
-            paramobj = BatteryInputParams(jsonstruct);
+            inputparams = BatteryInputParams(jsonstruct);
             
             switch dim
               case 2
                 gen = BatteryGeneratorP3D();
-                paramobj = gen.updateBatteryInputParams(paramobj);
-                paramobj.NegativeElectrode.CurrentCollector.EffectiveElectricalConductivity = 1e5;
-                paramobj.PositiveElectrode.CurrentCollector.EffectiveElectricalConductivity = 1e5;
+                inputparams = gen.updateBatteryInputParams(inputparams);
+                inputparams.NegativeElectrode.CurrentCollector.EffectiveElectricalConductivity = 1e5;
+                inputparams.PositiveElectrode.CurrentCollector.EffectiveElectricalConductivity = 1e5;
 
               case 3
                 gen = BatteryGeneratorP4D();
-                paramobj = gen.updateBatteryInputParams(paramobj);
+                inputparams = gen.updateBatteryInputParams(inputparams);
 
               otherwise
                 error('dim should be only 2 or 3, not %d\n', dim);
             end
 
-            model = Battery(paramobj);
+            model = Battery(inputparams);
 
             C      = computeCellCapacity(model);
             CRate  = 1;

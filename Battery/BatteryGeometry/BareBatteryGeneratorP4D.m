@@ -19,16 +19,16 @@ classdef BareBatteryGeneratorP4D < BatteryGenerator
           gen = gen@BatteryGenerator();  
         end
             
-        function [paramobj, gen] = updateBatteryInputParams(gen, paramobj)
-            if paramobj.include_current_collectors
+        function [inputparams, gen] = updateBatteryInputParams(gen, inputparams)
+            if inputparams.include_current_collectors
                 warning('This geometry does not include current collectors but input data has been given for those');
             end
-            paramobj = gen.setupBatteryInputParams(paramobj, []);
+            inputparams = gen.setupBatteryInputParams(inputparams, []);
         end
         
-        function [paramobj, gen] = setupGrid(gen, paramobj, ~)
-        % paramobj is instance of BatteryInputParams
-        % setup paramobj.G
+        function [inputparams, gen] = setupGrid(gen, inputparams, ~)
+        % inputparams is instance of BatteryInputParams
+        % setup inputparams.G
             sepnx = gen.sepnx;
             nenx  = gen.nenx;
             penx  = gen.penx;
@@ -47,7 +47,7 @@ classdef BareBatteryGeneratorP4D < BatteryGenerator
             G = tensorGrid(x, [0; ylength], [0; zlength]);
             G = computeGeometry(G); 
 
-            paramobj.G = G;
+            inputparams.G = G;
             gen.G = G;
             
         end
@@ -62,21 +62,21 @@ classdef BareBatteryGeneratorP4D < BatteryGenerator
             
         end
             
-        function paramobj = setupElectrolyte(gen, paramobj, params)
+        function inputparams = setupElectrolyte(gen, inputparams, params)
             
             params.cellind =  (1 : (gen.nenx + gen.sepnx + gen.penx))';
-            paramobj = setupElectrolyte@BatteryGenerator(gen, paramobj, params);
+            inputparams = setupElectrolyte@BatteryGenerator(gen, inputparams, params);
             
         end
         
-        function paramobj = setupSeparator(gen, paramobj, params)
+        function inputparams = setupSeparator(gen, inputparams, params)
 
             params.cellind = gen.nenx + (1 : gen.sepnx)';
-            paramobj = setupSeparator@BatteryGenerator(gen, paramobj, params);
+            inputparams = setupSeparator@BatteryGenerator(gen, inputparams, params);
 
         end
 
-        function paramobj = setupElectrodes(gen, paramobj, params)
+        function inputparams = setupElectrodes(gen, inputparams, params)
 
             ne  = 'NegativeElectrode';
             pe  = 'PositiveElectrode';
@@ -107,17 +107,17 @@ classdef BareBatteryGeneratorP4D < BatteryGenerator
             params.(pe).(co).bcfaces = penx + 1;
             params.(pe).(co).bccells = penx;
 
-            paramobj = setupElectrodes@BatteryGenerator(gen, paramobj, params);
+            inputparams = setupElectrodes@BatteryGenerator(gen, inputparams, params);
 
             % N and np are parameters for the full diffusion model
-            if strcmp(paramobj.(ne).(co).(am).diffusionModelType, 'full')
-                paramobj.(ne).(co).(am).(sd).N  = gen.nenr;
-                paramobj.(ne).(co).(am).(sd).np = gen.nenx;
+            if strcmp(inputparams.(ne).(co).(am).diffusionModelType, 'full')
+                inputparams.(ne).(co).(am).(sd).N  = gen.nenr;
+                inputparams.(ne).(co).(am).(sd).np = gen.nenx;
             end
             
-            if strcmp(paramobj.(pe).(co).(am).diffusionModelType, 'full')
-                paramobj.(pe).(co).(am).(sd).N  = gen.penr;
-                paramobj.(pe).(co).(am).(sd).np = gen.penx;
+            if strcmp(inputparams.(pe).(co).(am).diffusionModelType, 'full')
+                inputparams.(pe).(co).(am).(sd).N  = gen.penr;
+                inputparams.(pe).(co).(am).(sd).np = gen.penx;
             end
             
         end

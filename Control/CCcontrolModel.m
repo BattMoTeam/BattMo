@@ -11,13 +11,13 @@ classdef CCcontrolModel < ControlModel
     
     methods
 
-        function model = CCcontrolModel(paramobj)
+        function model = CCcontrolModel(inputparams)
             
-            model = model@ControlModel(paramobj);
+            model = model@ControlModel(inputparams);
             
             fdnames = {'rampupTime', ...
                        'useCVswitch'};
-            model = dispatchParams(model, paramobj, fdnames);
+            model = dispatchParams(model, inputparams, fdnames);
             
         end
         

@@ -19,17 +19,17 @@ classdef Electrolyser < BaseModel
 
     methods
 
-        function model = Electrolyser(paramobj)
+        function model = Electrolyser(inputparams)
 
             model = model@BaseModel();
 
             fdnames = {'G' , ...
                        'couplingTerms'};
-            model = dispatchParams(model, paramobj, fdnames);
+            model = dispatchParams(model, inputparams, fdnames);
 
-            model.OxygenEvolutionElectrode   = EvolutionElectrode(paramobj.OxygenEvolutionElectrode);
-            model.HydrogenEvolutionElectrode = EvolutionElectrode(paramobj.HydrogenEvolutionElectrode);
-            model.IonomerMembrane            = IonomerMembrane(paramobj.IonomerMembrane);
+            model.OxygenEvolutionElectrode   = EvolutionElectrode(inputparams.OxygenEvolutionElectrode);
+            model.HydrogenEvolutionElectrode = EvolutionElectrode(inputparams.HydrogenEvolutionElectrode);
+            model.IonomerMembrane            = IonomerMembrane(inputparams.IonomerMembrane);
 
             % setup couplingNames
             model.couplingNames = cellfun(@(x) x.name, model.couplingTerms, 'uniformoutput', false);

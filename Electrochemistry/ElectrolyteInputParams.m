@@ -29,9 +29,9 @@ classdef ElectrolyteInputParams < ComponentInputParams
 
     methods
 
-        function paramobj = ElectrolyteInputParams(jsonstruct)
+        function inputparams = ElectrolyteInputParams(jsonstruct)
 
-            paramobj = paramobj@ComponentInputParams(jsonstruct);
+            inputparams = inputparams@ComponentInputParams(jsonstruct);
 
         end
 

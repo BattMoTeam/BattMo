@@ -12,8 +12,8 @@ classdef MagnesiumElectrolyteNoPrecipitation < SeaWaterElectrolyteNoPrecipitatio
     
     methods
 
-        function model = MagnesiumElectrolyteNoPrecipitation(paramobj)
-            model = model@SeaWaterElectrolyteNoPrecipitation(paramobj);
+        function model = MagnesiumElectrolyteNoPrecipitation(inputparams)
+            model = model@SeaWaterElectrolyteNoPrecipitation(inputparams);
         end
 
         function model = registerVarAndPropfuncNames(model)

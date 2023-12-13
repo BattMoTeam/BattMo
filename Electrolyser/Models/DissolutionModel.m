@@ -18,7 +18,7 @@ classdef DissolutionModel < BaseModel
 
     methods
 
-        function model = DissolutionModel(paramobj)
+        function model = DissolutionModel(inputparams)
             
             model = model@BaseModel();
             
@@ -31,7 +31,7 @@ classdef DissolutionModel < BaseModel
                        'volumeFraction0', ...
                        'volumetricSurfaceArea0'};
 
-            model = dispatchParams(model, paramobj, fdnames);
+            model = dispatchParams(model, inputparams, fdnames);
 
             model.constants = PhysicalConstants();
 

@@ -7,12 +7,12 @@ classdef MagnesiumActiveMaterial < SeaWaterActiveMaterial
     
     methods
 
-        function model = MagnesiumActiveMaterial(paramobj)
+        function model = MagnesiumActiveMaterial(inputparams)
             
-            model = model@SeaWaterActiveMaterial(paramobj);
+            model = model@SeaWaterActiveMaterial(inputparams);
             fdnames = {'Asurf', ...
                        'etaMax'};
-            model = dispatchParams(model, paramobj, fdnames);
+            model = dispatchParams(model, inputparams, fdnames);
             
         end
         

@@ -6,9 +6,9 @@ classdef PlatiniumCatalystLayer < CatalystLayer
     
     methods
         
-        function model = PlatiniumCatalystLayer(paramobj)
+        function model = PlatiniumCatalystLayer(inputparams)
 
-            model = model@CatalystLayer(paramobj);
+            model = model@CatalystLayer(inputparams);
             
         end
         

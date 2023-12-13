@@ -27,12 +27,12 @@ ctrl    = 'Control';
 % used to initialize the simulation and it propagates all the parameters
 % throughout the submodels. The input parameters can be set manually or
 % provided in json format. All the parameters for the model are stored in
-% the paramobj object.
+% the inputparams object.
 jsonstruct = parseBattmoJson(fullfile('ParameterData','BatteryCellParameters','LithiumIonBatteryCell','lithium_ion_battery_nmc_graphite.json'));
 
 jsonstruct.include_current_collectors = true;
 
-paramobj = BatteryInputParams(jsonstruct);
+inputparams = BatteryInputParams(jsonstruct);
 
 
 %% Setup the geometry and computational grid
@@ -52,8 +52,8 @@ switch modelcase
     gen = BatteryGeneratorP3D();
 
     % To avoid convergence issues, override the electronic conductivity
-    paramobj.(ne).(cc).effectiveElectronicConductivity = 0.1*paramobj.(ne).(cc).electronicConductivity;
-    paramobj.(pe).(cc).effectiveElectronicConductivity = 0.1*paramobj.(pe).(cc).electronicConductivity;
+    inputparams.(ne).(cc).effectiveElectronicConductivity = 0.1*inputparams.(ne).(cc).electronicConductivity;
+    inputparams.(pe).(cc).effectiveElectronicConductivity = 0.1*inputparams.(pe).(cc).electronicConductivity;
 
   case '3D'
     gen = BatteryGeneratorP4D();
@@ -66,15 +66,15 @@ switch modelcase
 
 end
 
-paramobj = gen.updateBatteryInputParams(paramobj);
+inputparams = gen.updateBatteryInputParams(inputparams);
 
-paramobj.(ctrl).useCVswitch = true;
+inputparams.(ctrl).useCVswitch = true;
 
 
 %%  Initialize the battery model.
-% The battery model is initialized by sending paramobj to the Battery class
+% The battery model is initialized by sending inputparams to the Battery class
 % constructor. see :class:`Battery <Battery.Battery>`.
-model = Battery(paramobj);
+model = Battery(inputparams);
 
 %% Plot
 plotBatteryGrid(model, 'setstyle', false);

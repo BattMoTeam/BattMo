@@ -19,10 +19,10 @@ classdef PowerControlModelInputParams < ControlModelInputParams
     
     methods
 
-        function paramobj = PowerControlModelInputParams(jsonstruct);
+        function inputparams = PowerControlModelInputParams(jsonstruct);
             
-            paramobj = paramobj@ControlModelInputParams(jsonstruct);
-            paramobj.controlPolicy = 'powerControl';
+            inputparams = inputparams@ControlModelInputParams(jsonstruct);
+            inputparams.controlPolicy = 'powerControl';
             
         end
 

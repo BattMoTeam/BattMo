@@ -18,7 +18,7 @@ classdef PorousTransportLayerBoundary < BaseModel
     
     methods
         
-        function model = PorousTransportLayerBoundary(paramobj)
+        function model = PorousTransportLayerBoundary(inputparams)
             
             model = model@BaseModel();
 
@@ -27,7 +27,7 @@ classdef PorousTransportLayerBoundary < BaseModel
                        'liquidInd'  , ...
                        'mobPhaseInd', ...
                        'gasInd'};
-            model = dispatchParams(model, paramobj, fdnames);
+            model = dispatchParams(model, inputparams, fdnames);
 
             
         end

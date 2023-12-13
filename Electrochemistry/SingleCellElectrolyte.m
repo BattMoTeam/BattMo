@@ -2,7 +2,7 @@ classdef SingleCellElectrolyte < BaseModel
     
     methods
         
-        function model = SingleCellElectrolyte(paramobj)
+        function model = SingleCellElectrolyte(inputparams)
             model = model@BaseModel();
         end
 

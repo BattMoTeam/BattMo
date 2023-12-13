@@ -1,12 +1,12 @@
-function am = setupActiveMaterial(paramobj)
+function am = setupActiveMaterial(inputparams)
 
-    amName = paramobj.name;
+    amName = inputparams.name;
     
     switch amName 
       case 'NMC111'
-        am = NMC111(paramobj);
+        am = NMC111(inputparams);
       case 'FirstMaterial'
-        am = FirstMaterial(paramobj);
+        am = FirstMaterial(inputparams);
       otherwise
         error('active material not recognized');
     end

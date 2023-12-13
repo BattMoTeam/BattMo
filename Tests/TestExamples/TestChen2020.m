@@ -7,8 +7,8 @@ classdef TestChen2020 < matlab.unittest.TestCase
 
             jsonstruct = parseBattmoJson(fullfile('ParameterData','ParameterSets','Chen2020','chen2020_lithium_ion_battery.json'));
 
-            paramobj = BatteryInputParams(jsonstruct);
-            paramobj.include_current_collectors = false;
+            inputparams = BatteryInputParams(jsonstruct);
+            inputparams.include_current_collectors = false;
 
             % Some shorthands used for the sub-models
             ne    = 'NegativeElectrode';
@@ -22,11 +22,11 @@ classdef TestChen2020 < matlab.unittest.TestCase
             %% We setup the battery geometry ("bare" battery with no current collector).
             gen = BareBatteryGeneratorP4D();
             % We update pamobj with grid data
-            paramobj = gen.updateBatteryInputParams(paramobj);
+            inputparams = gen.updateBatteryInputParams(inputparams);
 
-            %%  The Battery model is initialized by sending paramobj to the Battery class constructor
+            %%  The Battery model is initialized by sending inputparams to the Battery class constructor
 
-            model = Battery(paramobj);
+            model = Battery(inputparams);
 
             %% We fix the input current to 5A
 

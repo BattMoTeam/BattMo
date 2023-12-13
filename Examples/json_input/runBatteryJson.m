@@ -17,11 +17,11 @@ function  output = runBatteryJson(jsonstruct, varargin)
     ctrl    = 'Control';
     cc      = 'CurrentCollector';
 
-    paramobj = BatteryInputParams(jsonstruct);
+    inputparams = BatteryInputParams(jsonstruct);
 
-    [paramobj, gridGenerator] = setupBatteryGridFromJson(paramobj, jsonstruct);
+    [inputparams, gridGenerator] = setupBatteryGridFromJson(inputparams, jsonstruct);
 
-    paramobj = paramobj.validateInputParams();
+    inputparams = inputparams.validateInputParams();
     
     %% model parameter required for initialization if initializationSetup = "given SOC";
     % The initial state of the model is setup using the model.setupInitialState() method.
@@ -35,8 +35,8 @@ function  output = runBatteryJson(jsonstruct, varargin)
 
     switch initializationSetup
       case "given SOC"
-        paramobj.initT = jsonstruct.initT;
-        paramobj.SOC = jsonstruct.SOC;
+        inputparams.initT = jsonstruct.initT;
+        inputparams.SOC = jsonstruct.SOC;
       case "given input"
         eval(jsonstruct.loadStateCmd);
       otherwise
@@ -44,10 +44,10 @@ function  output = runBatteryJson(jsonstruct, varargin)
     end
 
     %%  Initialize the battery model.
-    % The battery model is initialized by sending paramobj to the Battery class
+    % The battery model is initialized by sending inputparams to the Battery class
     % constructor. see :class:`Battery <Battery.Battery>`.
 
-    model = Battery(paramobj);
+    model = Battery(inputparams);
     model.AutoDiffBackend= AutoDiffBackend();
 
     %% Compute the nominal cell capacity and choose a C-Rate
@@ -113,7 +113,7 @@ function  output = runBatteryJson(jsonstruct, varargin)
         end
     else
         output = struct('model'    , model    , ...
-                        'paramobj' , paramobj , ...
+                        'inputparams' , inputparams , ...
                         'schedule' , schedule , ...
                         'initstate', initstate);
         if opt.includeGridGenerator
@@ -132,7 +132,7 @@ function  output = runBatteryJson(jsonstruct, varargin)
     time = cellfun(@(state) state.time, states);
 
     output = struct('model'    , model    , ...
-                    'paramobj' , paramobj , ...
+                    'inputparams' , inputparams , ...
                     'schedule' , schedule , ...
                     'initstate', initstate, ...
                     'time'     , time     , ... % Unit : s

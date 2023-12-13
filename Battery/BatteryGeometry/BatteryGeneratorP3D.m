@@ -41,17 +41,17 @@ classdef BatteryGeneratorP3D < BatteryGenerator
 
         end
 
-        function [paramobj, gen] = updateBatteryInputParams(gen, paramobj)
+        function [inputparams, gen] = updateBatteryInputParams(gen, inputparams)
 
             fdnames = {'include_current_collectors', ...
                        'use_thermal'};
 
-            gen = dispatchParams(gen, paramobj, fdnames);
+            gen = dispatchParams(gen, inputparams, fdnames);
 
-            paramobj = gen.setupBatteryInputParams(paramobj, []);
+            inputparams = gen.setupBatteryInputParams(inputparams, []);
         end
 
-        function [paramobj, gen] = setupGrid(gen, paramobj, params)
+        function [inputparams, gen] = setupGrid(gen, inputparams, params)
 
             sepnx  = gen.sepnx;
             nenx   = gen.nenx;
@@ -83,12 +83,12 @@ classdef BatteryGeneratorP3D < BatteryGenerator
             G = tensorGrid(x, y);
             G = computeGeometry(G);
 
-            paramobj.G = G;
+            inputparams.G = G;
             gen.G = G;
 
         end
 
-        function paramobj = setupElectrolyte(gen, paramobj, params)
+        function inputparams = setupElectrolyte(gen, inputparams, params)
 
             sepnx  = gen.sepnx;
             nenx   = gen.nenx;
@@ -111,12 +111,12 @@ classdef BatteryGeneratorP3D < BatteryGenerator
             ni = nenx + sepnx + penx;
             params.cellind = pickTensorCells(istart, ni, nx, ny);
 
-            paramobj = setupElectrolyte@BatteryGenerator(gen, paramobj, params);
+            inputparams = setupElectrolyte@BatteryGenerator(gen, inputparams, params);
 
         end
 
 
-        function paramobj = setupSeparator(gen, paramobj, params)
+        function inputparams = setupSeparator(gen, inputparams, params)
 
             if gen.include_current_collectors
                 ccnenx = gen.ccnenx;
@@ -134,12 +134,12 @@ classdef BatteryGeneratorP3D < BatteryGenerator
             ni = gen.sepnx;
             params.cellind = pickTensorCells(istart, ni, nx, gen.ny);
 
-            paramobj = setupSeparator@BatteryGenerator(gen, paramobj, params);
+            inputparams = setupSeparator@BatteryGenerator(gen, inputparams, params);
 
         end
 
 
-        function paramobj = setupElectrodes(gen, paramobj, params)
+        function inputparams = setupElectrodes(gen, inputparams, params)
 
             ne = 'NegativeElectrode';
             pe = 'PositiveElectrode';
@@ -203,43 +203,43 @@ classdef BatteryGeneratorP3D < BatteryGenerator
                 params.(pe).(co).electrode_type = pe;
             end
 
-            paramobj = setupElectrodes@BatteryGenerator(gen, paramobj, params);
+            inputparams = setupElectrodes@BatteryGenerator(gen, inputparams, params);
 
         end
 
-        function paramobj = setupCurrentCollectorBcCoupTerm(gen, paramobj, params)
+        function inputparams = setupCurrentCollectorBcCoupTerm(gen, inputparams, params)
 
-            params = gen.findBoundary(paramobj.G, params);
-            paramobj = setupCurrentCollectorBcCoupTerm@BatteryGenerator(gen, paramobj, params);
-
-        end
-
-
-        function paramobj = setupCoatingBcCoupTerm(gen, paramobj, params)
-
-            params = gen.findBoundary(paramobj.G, params);
-            paramobj = setupCoatingBcCoupTerm@BatteryGenerator(gen, paramobj, params);
+            params = gen.findBoundary(inputparams.G, params);
+            inputparams = setupCurrentCollectorBcCoupTerm@BatteryGenerator(gen, inputparams, params);
 
         end
 
 
-        function paramobj = setupThermalModel(gen, paramobj, params)
+        function inputparams = setupCoatingBcCoupTerm(gen, inputparams, params)
+
+            params = gen.findBoundary(inputparams.G, params);
+            inputparams = setupCoatingBcCoupTerm@BatteryGenerator(gen, inputparams, params);
+
+        end
+
+
+        function inputparams = setupThermalModel(gen, inputparams, params)
 
             ne    = 'NegativeElectrode';
             pe    = 'PositiveElectrode';
 
             if gen.include_current_collectors
                 cc = 'CurrentCollector';
-                coupterm_ne = paramobj.(ne).(cc).externalCouplingTerm;
-                facemap_ne  = paramobj.(ne).(cc).G.mappings.facemap;
-                coupterm_pe = paramobj.(pe).(cc).externalCouplingTerm;
-                facemap_pe  = paramobj.(pe).(cc).G.mappings.facemap;
+                coupterm_ne = inputparams.(ne).(cc).externalCouplingTerm;
+                facemap_ne  = inputparams.(ne).(cc).G.mappings.facemap;
+                coupterm_pe = inputparams.(pe).(cc).externalCouplingTerm;
+                facemap_pe  = inputparams.(pe).(cc).G.mappings.facemap;
             else
                 co = 'Coating';
-                coupterm_ne = paramobj.(ne).(co).externalCouplingTerm;
-                facemap_ne  = paramobj.(ne).(co).G.mappings.facemap;
-                coupterm_pe = paramobj.(pe).(co).externalCouplingTerm;
-                facemap_pe  = paramobj.(pe).(co).G.mappings.facemap;
+                coupterm_ne = inputparams.(ne).(co).externalCouplingTerm;
+                facemap_ne  = inputparams.(ne).(co).G.mappings.facemap;
+                coupterm_pe = inputparams.(pe).(co).externalCouplingTerm;
+                facemap_pe  = inputparams.(pe).(co).G.mappings.facemap;
             end
 
             % the cooling is done on the external faces
@@ -250,7 +250,7 @@ classdef BatteryGeneratorP3D < BatteryGenerator
 
             params = struct('couplingfaces', couplingfaces, ...
                             'couplingcells', couplingcells);
-            paramobj = setupThermalModel@BatteryGenerator(gen, paramobj, params);
+            inputparams = setupThermalModel@BatteryGenerator(gen, inputparams, params);
 
             % We assign the values different values to the tab
             tabtbl.faces = [facemap_ne(coupterm_ne.couplingfaces);
@@ -268,7 +268,7 @@ classdef BatteryGeneratorP3D < BatteryGenerator
             coef = gen.externalHeatTransferCoefficient*ones(bcfacetbl.num, 1);
             coef(ind) = gen.externalHeatTransferCoefficientTab;
 
-            paramobj.ThermalModel.externalHeatTransferCoefficient = coef;
+            inputparams.ThermalModel.externalHeatTransferCoefficient = coef;
 
         end
 

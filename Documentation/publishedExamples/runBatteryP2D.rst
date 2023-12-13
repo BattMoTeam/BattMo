@@ -26,7 +26,7 @@ load MRST modules
 
 Setup the properties of Li-ion battery materials and cell design
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-The properties and parameters of the battery cell, including the architecture and materials, are set using an instance of :class:`BatteryInputParams <Battery.BatteryInputParams>`. This class is used to initialize the simulation and it propagates all the parameters throughout the submodels. The input parameters can be set manually or provided in json format. All the parameters for the model are stored in the paramobj object.
+The properties and parameters of the battery cell, including the architecture and materials, are set using an instance of :class:`BatteryInputParams <Battery.BatteryInputParams>`. This class is used to initialize the simulation and it propagates all the parameters throughout the submodels. The input parameters can be set manually or provided in json format. All the parameters for the model are stored in the inputparams object.
 
 .. code-block:: matlab
 
@@ -47,7 +47,7 @@ The properties and parameters of the battery cell, including the architecture an
   jsonstruct.use_thermal = false;
   jsonstruct.include_current_collectors = false;
   
-  paramobj = BatteryInputParams(jsonstruct);
+  inputparams = BatteryInputParams(jsonstruct);
   
   use_cccv = false;
   if use_cccv
@@ -59,7 +59,7 @@ The properties and parameters of the battery cell, including the architecture an
                            'dIdtLimit'         , 0.01      , ...
                            'dEdtLimit'         , 0.01);
       cccvparamobj = CcCvControlModelInputParams(cccvstruct);
-      paramobj.Control = cccvparamobj;
+      inputparams.Control = cccvinputparams;
   end
 
 
@@ -71,17 +71,17 @@ Here, we setup the 1D computational grid that will be used for the simulation. T
 
   gen = BatteryGeneratorP2D();
   
-  % Now, we update the paramobj with the properties of the grid.
-  paramobj = gen.updateBatteryInputParams(paramobj);
+  % Now, we update the inputparams with the properties of the grid.
+  inputparams = gen.updateBatteryInputParams(inputparams);
 
 
 Initialize the battery model.
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-The battery model is initialized by sending paramobj to the Battery class constructor. see :class:`Battery <Battery.Battery>`.
+The battery model is initialized by sending inputparams to the Battery class constructor. see :class:`Battery <Battery.Battery>`.
 
 .. code-block:: matlab
 
-  model = Battery(paramobj);
+  model = Battery(inputparams);
   
   model.AutoDiffBackend= AutoDiffBackend();
   

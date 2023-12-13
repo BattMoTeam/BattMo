@@ -1,11 +1,11 @@
-function paramobj = jsonfileToParams(paramobj, filename)
+function inputparams = jsonfileToParams(inputparams, filename)
 
     fileroot = fullfile('..', '..');
     fullfilename = fullfile(fileroot, filename);
     jsonsrc = fileread(filename);
     data = jsondecode(jsonsrc);
 
-    paramobj = assignStructParams(paramobj, data);
+    inputparams = assignStructParams(inputparams, data);
     
 end
 

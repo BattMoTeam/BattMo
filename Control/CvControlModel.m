@@ -7,12 +7,12 @@ classdef CvControlModel < ControlModel
     methods
 
 
-        function model = CvControlModel(paramobj)
+        function model = CvControlModel(inputparams)
             
-            model = model@ControlModel(paramobj);
+            model = model@ControlModel(inputparams);
             
             fdnames = {'inputVoltage'};
-            model = dispatchParams(model, paramobj, fdnames);
+            model = dispatchParams(model, inputparams, fdnames);
             
         end
         

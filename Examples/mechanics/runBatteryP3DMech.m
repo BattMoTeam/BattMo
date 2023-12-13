@@ -29,23 +29,23 @@ ctrl    = 'Control';
 % jsonstruct.(ne).(co).(am).diffusionModelType = 'simple';
 % jsonstruct.(pe).(co).(am).diffusionModelType = 'simple';
 
-paramobj = BatteryInputParams(jsonstruct);
+inputparams = BatteryInputParams(jsonstruct);
 
 %% Setup the geometry and computational grid
 
 gen = BatteryGeneratorP3D();
 
-% We change the properties of the grid and update paramobj with the results grid
+% We change the properties of the grid and update inputparams with the results grid
 gen.ylength = 1e-4;
 gen.ny      = 10;
-paramobj    = gen.updateBatteryInputParams(paramobj);
+inputparams    = gen.updateBatteryInputParams(inputparams);
 
-paramobj.(ne).(cc).effectiveElectronicConductivity = 1e5;
-paramobj.(pe).(cc).effectiveElectronicConductivity = 1e5;
+inputparams.(ne).(cc).effectiveElectronicConductivity = 1e5;
+inputparams.(pe).(cc).effectiveElectronicConductivity = 1e5;
 
 %%  Initialize the battery model.
 
-model = Battery(paramobj);
+model = Battery(inputparams);
 
 %% Plot the grid
 

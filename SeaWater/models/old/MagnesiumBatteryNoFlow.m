@@ -2,9 +2,9 @@ classdef MagnesiumBatteryNoFlow < MagnesiumBattery
 
     methods
 
-        function model = MagnesiumBatteryNoFlow(paramobj)
+        function model = MagnesiumBatteryNoFlow(inputparams)
 
-            model = model@MagnesiumBattery(paramobj);
+            model = model@MagnesiumBattery(inputparams);
 
         end
         

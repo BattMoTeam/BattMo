@@ -5,9 +5,9 @@ classdef SimplifiedSolidDiffusionModel < SolidDiffusionModel
 %
     methods
 
-        function model = SimplifiedSolidDiffusionModel(paramobj)
+        function model = SimplifiedSolidDiffusionModel(inputparams)
 
-            model = model@SolidDiffusionModel(paramobj);
+            model = model@SolidDiffusionModel(inputparams);
 
         end
 

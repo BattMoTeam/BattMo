@@ -6,7 +6,7 @@ classdef SectorBatteryGenerator < SpiralBatteryGenerator
             gen = gen@SpiralBatteryGenerator();
         end
 
-        function [paramobj, gen] = updateBatteryInputParams(gen, paramobj, params)
+        function [inputparams, gen] = updateBatteryInputParams(gen, inputparams, params)
 
             gen.nwindings    = params.nwindings;
             gen.rInner       = params.rInner;
@@ -16,16 +16,16 @@ classdef SectorBatteryGenerator < SpiralBatteryGenerator
             gen.L            = params.L;
             gen.nL           = params.nL;
 
-            gen.use_thermal = paramobj.use_thermal;
+            gen.use_thermal = inputparams.use_thermal;
 
-            [paramobj, gen] = gen.setupBatteryInputParams(paramobj, []);
+            [inputparams, gen] = gen.setupBatteryInputParams(inputparams, []);
 
         end
 
-        function [paramobj, gen] = setupGrid(gen, paramobj, ~)
+        function [inputparams, gen] = setupGrid(gen, inputparams, ~)
 
             gen = sectorGrid(gen);
-            paramobj.G = gen.G;
+            inputparams.G = gen.G;
 
         end
 

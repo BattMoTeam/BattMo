@@ -2,9 +2,9 @@ classdef MagnesiumElectrode < SeaWaterElectrode
 
     methods
         
-        function model = MagnesiumElectrode(paramobj)
+        function model = MagnesiumElectrode(inputparams)
             
-            model = model@SeaWaterElectrode(paramobj);
+            model = model@SeaWaterElectrode(inputparams);
             
         end
         

@@ -13,14 +13,14 @@ classdef ExchangeReaction < BaseModel
 
     methods
 
-        function model = ExchangeReaction(paramobj)
+        function model = ExchangeReaction(inputparams)
 
             model = model@BaseModel();
             
             fdnames = {'kxch', ...
                        'OH'  , ...
                        'kML' };
-            model = dispatchParams(model, paramobj, fdnames);
+            model = dispatchParams(model, inputparams, fdnames);
 
             model.constants = PhysicalConstants;
             

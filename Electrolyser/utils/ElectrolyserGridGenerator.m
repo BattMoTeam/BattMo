@@ -10,34 +10,34 @@ classdef ElectrolyserGridGenerator
 
     methods
 
-        function [paramobj, gen] = updateElectrolyserInputParams(gen, paramobj, params)
-        % this function is the main class function as it returns an updated paramobj object with grid structure
+        function [inputparams, gen] = updateElectrolyserInputParams(gen, inputparams, params)
+        % this function is the main class function as it returns an updated inputparams object with grid structure
             error('virtual function');
         end
 
-        function [paramobj, gen] = setupElectrolyserInputParams(gen, paramobj, params)
-        % main function : add grid and coupling to paramobj structure
+        function [inputparams, gen] = setupElectrolyserInputParams(gen, inputparams, params)
+        % main function : add grid and coupling to inputparams structure
             inm = 'IonomerMembrane';
 
-            [paramobj, gen] = gen.setupGrid(paramobj, params);
-            paramobj.(inm)  = gen.setupIonomerGrid(paramobj.(inm), params.(inm));
-            paramobj = gen.setupEvolutionElectrodes(paramobj, params);
-            paramobj = setupElectrodeIonomerCoupTerm(gen, paramobj, params);
+            [inputparams, gen] = gen.setupGrid(inputparams, params);
+            inputparams.(inm)  = gen.setupIonomerGrid(inputparams.(inm), params.(inm));
+            inputparams = gen.setupEvolutionElectrodes(inputparams, params);
+            inputparams = setupElectrodeIonomerCoupTerm(gen, inputparams, params);
 
         end
 
-        function [paramobj, gen] = setupGrid(gen, paramobj, params)
-        % paramobj is instance of BatteryInputParams
+        function [inputparams, gen] = setupGrid(gen, inputparams, params)
+        % inputparams is instance of BatteryInputParams
             error('virtual function');
         end
 
-        function paramobj = setupIonomerGrid(gen, paramobj, params)
+        function inputparams = setupIonomerGrid(gen, inputparams, params)
 
-            paramobj.G = genSubGrid(gen.G, params.cellind);
+            inputparams.G = genSubGrid(gen.G, params.cellind);
 
         end
 
-        function paramobj = setupEvolutionElectrodes(gen, paramobj, params)
+        function inputparams = setupEvolutionElectrodes(gen, inputparams, params)
 
             oer = 'OxygenEvolutionElectrode';
             her = 'HydrogenEvolutionElectrode';
@@ -47,28 +47,28 @@ classdef ElectrolyserGridGenerator
             params.(oer).electrode_type = 'Oxygen';
             params.(her).electrode_type = 'Hydrogen';
 
-            paramobj.(oer) = gen.setupEvolutionElectrode(paramobj.(oer), params.(oer));
-            paramobj.(her) = gen.setupEvolutionElectrode(paramobj.(her), params.(her));
+            inputparams.(oer) = gen.setupEvolutionElectrode(inputparams.(oer), params.(oer));
+            inputparams.(her) = gen.setupEvolutionElectrode(inputparams.(her), params.(her));
 
         end
 
-        function paramobj = setupEvolutionElectrode(gen, paramobj, params)
+        function inputparams = setupEvolutionElectrode(gen, inputparams, params)
 
             ptl = 'PorousTransportLayer';
             ctl = 'CatalystLayer';
 
-            paramobj.G       = genSubGrid(gen.G, params.cellind);
-            paramobj.(ptl).G = genSubGrid(gen.G, params.(ptl).cellind);
-            paramobj.(ctl).G = genSubGrid(gen.G, params.(ctl).cellind);
+            inputparams.G       = genSubGrid(gen.G, params.cellind);
+            inputparams.(ptl).G = genSubGrid(gen.G, params.(ptl).cellind);
+            inputparams.(ctl).G = genSubGrid(gen.G, params.(ctl).cellind);
 
-            if paramobj.(ctl).include_dissolution
+            if inputparams.(ctl).include_dissolution
                 dm = 'DissolutionModel';
-                paramobj.(ctl).(dm).G = paramobj.(ctl).G;
+                inputparams.(ctl).(dm).G = inputparams.(ctl).G;
             end
 
             %  setup coupling between catalyst layer and porous transport layer;
-            G_ptl = paramobj.(ptl).G;
-            G_ctl = paramobj.(ctl).G;
+            G_ptl = inputparams.(ptl).G;
+            G_ctl = inputparams.(ctl).G;
             G     = G_ctl.mappings.parentGrid;
             cells2 = (1 : G_ctl.cells.num)'; % all the cells of the catalyst layer are coupled to the porous transport layer
 
@@ -82,7 +82,7 @@ classdef ElectrolyserGridGenerator
             coupTerm = couplingTerm(sprintf('%s-%s', ptl, ctl), compnames);
             coupTerm.couplingcells = [cells1, cells2];
 
-            paramobj.couplingTerm = coupTerm;
+            inputparams.couplingTerm = coupTerm;
 
             % setup external coupling
 
@@ -92,12 +92,12 @@ classdef ElectrolyserGridGenerator
             coupTerm.couplingfaces = params.bcfaces;
             coupTerm.couplingcells = params.bccells;
 
-            paramobj.(ptl).externalCouplingTerm = coupTerm;
+            inputparams.(ptl).externalCouplingTerm = coupTerm;
 
         end
 
 
-        function paramobj = setupElectrodeIonomerCoupTerm(gen, paramobj, params)
+        function inputparams = setupElectrodeIonomerCoupTerm(gen, inputparams, params)
 
             oer = 'OxygenEvolutionElectrode';
             her = 'HydrogenEvolutionElectrode';
@@ -106,8 +106,8 @@ classdef ElectrolyserGridGenerator
 
             couplingTerms = {};
 
-            G     = paramobj.G;
-            G_inm = paramobj.(inm).G;
+            G     = inputparams.G;
+            G_inm = inputparams.(inm).G;
 
             mapping = zeros(G.cells.num, 1);
             mapping(G_inm.mappings.cellmap) = (1 : G_inm.cells.num)';
@@ -121,7 +121,7 @@ classdef ElectrolyserGridGenerator
 
                 elde = eldes{ielde};
 
-                G_ctl = paramobj.(elde).(ctl).G;
+                G_ctl = inputparams.(elde).(ctl).G;
 
                 G = G_ctl.mappings.parentGrid;
 
@@ -137,12 +137,12 @@ classdef ElectrolyserGridGenerator
 
                 couplingTerms{end + 1} = coupTerm;
 
-                tortuosity(cells2) = paramobj.(elde).(ctl).tortuosity;
+                tortuosity(cells2) = inputparams.(elde).(ctl).tortuosity;
 
             end
 
-            paramobj.couplingTerms = couplingTerms;
-            paramobj.(inm).tortuosity = tortuosity;
+            inputparams.couplingTerms = couplingTerms;
+            inputparams.(inm).tortuosity = tortuosity;
 
 
         end

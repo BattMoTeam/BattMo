@@ -3,9 +3,9 @@ classdef IridiumCatalystLayer < CatalystLayer
     
     methods
         
-        function model = IridiumCatalystLayer(paramobj)
+        function model = IridiumCatalystLayer(inputparams)
 
-            model = model@CatalystLayer(paramobj);
+            model = model@CatalystLayer(inputparams);
             
         end
         

@@ -15,8 +15,8 @@ classdef ElectronicComponent < BaseModel
 
     methods
         
-        function model = ElectronicComponent(paramobj)
-        % Here, :code:`paramobj` is instance of :class:`ElectronicComponentInputParams <Electrochemistry.ElectronicComponentInputParams>`
+        function model = ElectronicComponent(inputparams)
+        % Here, :code:`inputparams` is instance of :class:`ElectronicComponentInputParams <Electrochemistry.ElectronicComponentInputParams>`
 
             model = model@BaseModel();
             
@@ -28,7 +28,7 @@ classdef ElectronicComponent < BaseModel
                        'effectiveElectronicConductivity', ...
                        'use_thermal'};
             
-            model = dispatchParams(model, paramobj, fdnames);
+            model = dispatchParams(model, inputparams, fdnames);
             
             % setup discrete differential operators
             docellflux = false;

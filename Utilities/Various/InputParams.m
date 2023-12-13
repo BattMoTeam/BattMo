@@ -2,59 +2,59 @@ classdef InputParams
 
     methods
 
-        function paramobj = InputParams(jsonstruct)
-            paramobj = assignJsonParams(paramobj, jsonstruct);
+        function inputparams = InputParams(jsonstruct)
+            inputparams = assignJsonParams(inputparams, jsonstruct);
         end
 
-        function paramobj = setParam(paramobj, names, val)
+        function inputparams = setParam(inputparams, names, val)
         % Note : same syntax as setProp in BaseModel
             if iscell(names) && (numel(names) > 1)
                 name = names{1};
                 names = names(2 : end);
-                paramobj.(name) = setParam(paramobj.(name), names, val);
+                inputparams.(name) = setParam(inputparams.(name), names, val);
             elseif iscell(names) && (numel(names) == 1)
                 name = names{1};
                 if isnumeric(name)
-                    paramobj{name} = val;
+                    inputparams{name} = val;
                 else
-                    paramobj.(name) = val;
+                    inputparams.(name) = val;
                 end
             else
                 error('format not recognized');
             end
         end
 
-        function var = getParam(paramobj, names)
+        function var = getParam(inputparams, names)
         % Note : same syntax as getProp in BaseModel
             if iscell(names) && (numel(names) > 1)
                 name = names{1};
                 names = names(2 : end);
-                var = getParam(paramobj.(name), names);
+                var = getParam(inputparams.(name), names);
             elseif iscell(names) && (numel(names) == 1)
                 name = names{1};
                 if isnumeric(name)
-                    var = paramobj{name};
+                    var = inputparams{name};
                 else
-                    var = paramobj.(name);
+                    var = inputparams.(name);
                 end
             else
                 error('format not recognized');
             end
         end
 
-        function paramobj = validateInputParams(paramobj)
+        function inputparams = validateInputParams(inputparams)
 
-        % Default automatic behaviour is that all the properties of paramobj that belong to class InputParams get
+        % Default automatic behaviour is that all the properties of inputparams that belong to class InputParams get
         % validated.
 
-            paramobjFds = propertynames(paramobj);
+            inputparamsFds = propertynames(inputparams);
 
-            for ind = 1 : numel(paramobjFds)
+            for ind = 1 : numel(inputparamsFds)
 
-                fd = paramobjFds{ind};
+                fd = inputparamsFds{ind};
 
-                if isa(paramobj.(fd), 'InputParams')
-                    paramobj.(fd) = paramobj.(fd).validateInputParams();
+                if isa(inputparams.(fd), 'InputParams')
+                    inputparams.(fd) = inputparams.(fd).validateInputParams();
                 end
 
             end

@@ -10,31 +10,31 @@ classdef MagnesiumBattery < SeaWaterBattery
     
     methods
 
-        function model = MagnesiumBattery(paramobj)
+        function model = MagnesiumBattery(inputparams)
             
-            model = model@SeaWaterBattery(paramobj);
+            model = model@SeaWaterBattery(inputparams);
 
         end
         
-        function model = setupElectrolyte(model, paramobj)
+        function model = setupElectrolyte(model, inputparams)
 
-            if paramobj.include_precipitation
-                model.Electrolyte = MagnesiumElectrolyte(paramobj.Electrolyte);
+            if inputparams.include_precipitation
+                model.Electrolyte = MagnesiumElectrolyte(inputparams.Electrolyte);
             else
-                model.Electrolyte = MagnesiumElectrolyteNoPrecipitation(paramobj.Electrolyte);
+                model.Electrolyte = MagnesiumElectrolyteNoPrecipitation(inputparams.Electrolyte);
             end
                 
         end
 
-        function model = setupAnode(model, paramobj)
+        function model = setupAnode(model, inputparams)
             
-            model.Anode = MagnesiumElectrode(paramobj);
+            model.Anode = MagnesiumElectrode(inputparams);
             
         end
         
-        function model = setupAnodeActiveMaterial(model, paramobj)
+        function model = setupAnodeActiveMaterial(model, inputparams)
             
-            model.AnodeActiveMaterial = MagnesiumActiveMaterial(paramobj);
+            model.AnodeActiveMaterial = MagnesiumActiveMaterial(inputparams);
             
         end
             

@@ -43,7 +43,7 @@ classdef TestBatteryP2D < matlab.unittest.TestCase
             validate = serial & has_python;
             json = updateJson(json, params, 'validate', validate);
 
-            paramobj = BatteryInputParams(json);
+            inputparams = BatteryInputParams(json);
 
             use_cccv = strcmpi(controlPolicy, 'CCCV');
             if use_cccv
@@ -54,8 +54,8 @@ classdef TestBatteryP2D < matlab.unittest.TestCase
                                      'upperCutoffVoltage', 4.1          , ...
                                      'dIdtLimit'         , 0.01         , ...
                                      'dEdtLimit'         , 0.01);
-                cccvparamobj = CcCvControlModelInputParams(cccvstruct);
-                paramobj.Control = cccvparamobj;
+                cccvinputparams = CcCvControlModelInputParams(cccvstruct);
+                inputparams.Control = cccvinputparams;
             end
 
             % We define some shorthand names for simplicity.
@@ -74,13 +74,13 @@ classdef TestBatteryP2D < matlab.unittest.TestCase
             % in the class BatteryGeneratorP2D.
             gen = BatteryGeneratorP2D();
 
-            % Now, we update the paramobj with the properties of the grid.
-            paramobj = gen.updateBatteryInputParams(paramobj);
+            % Now, we update the inputparams with the properties of the grid.
+            inputparams = gen.updateBatteryInputParams(inputparams);
 
             %%  Initialize the battery model.
-            % The battery model is initialized by sending paramobj to the Battery class
+            % The battery model is initialized by sending inputparams to the Battery class
             % constructor. see :class:`Battery <Battery.Battery>`.
-            model = Battery(paramobj);
+            model = Battery(inputparams);
             model.AutoDiffBackend = AutoDiffBackend();
 
             %% Compute the nominal cell capacity and choose a C-Rate

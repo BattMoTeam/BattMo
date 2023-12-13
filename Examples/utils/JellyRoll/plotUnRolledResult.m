@@ -30,13 +30,13 @@ end
 filename = fullfile(dataDirectory, dataFolder, 'simulationInput.mat');
 load(filename);
 
-paramobj = BatteryInputParams(jsonstruct);
+inputparams = BatteryInputParams(jsonstruct);
 gen = SpiralBatteryGenerator();
 
 params = options.params;
-[paramobj, gen] = gen.updateBatteryInputParams(paramobj, params);
+[inputparams, gen] = gen.updateBatteryInputParams(inputparams, params);
 
-model = Battery(paramobj, ...
+model = Battery(inputparams, ...
                 'use_thermal'        , options.use_thermal, ...
                 'use_solid_diffusion', options.use_solid_diffusion);
 
@@ -47,7 +47,7 @@ states = states(:);
 
 %%
 
-UGrids = gen.setupUnRolledGrids(paramobj);
+UGrids = gen.setupUnRolledGrids(inputparams);
 
 %%
 

@@ -15,13 +15,13 @@ classdef SeaWaterBatteryGeneratorP2D < SeaWaterBatteryGenerator
           gen = gen@SeaWaterBatteryGenerator();  
         end
             
-        function paramobj = updateBatteryInputParams(gen, paramobj)
-            paramobj = gen.setupBatteryInputParams(paramobj, []);
+        function inputparams = updateBatteryInputParams(gen, inputparams)
+            inputparams = gen.setupBatteryInputParams(inputparams, []);
         end
         
-        function [paramobj, gen] = setupGrid(gen, paramobj, ~)
-        % paramobj is instance of BatteryInputParams
-        % setup paramobj.G
+        function [inputparams, gen] = setupGrid(gen, inputparams, ~)
+        % inputparams is instance of BatteryInputParams
+        % setup inputparams.G
         
             andenx = gen.andenx;
             ctdenx = gen.ctdenx;
@@ -39,7 +39,7 @@ classdef SeaWaterBatteryGeneratorP2D < SeaWaterBatteryGenerator
             G = tensorGrid(x);
             G = computeGeometry(G); 
 
-            paramobj.G = G;
+            inputparams.G = G;
             gen.G = G;
             
         end
@@ -54,15 +54,15 @@ classdef SeaWaterBatteryGeneratorP2D < SeaWaterBatteryGenerator
             
         end
             
-        function paramobj = setupElectrolyte(gen, paramobj, params)
+        function inputparams = setupElectrolyte(gen, inputparams, params)
             
             % In this case we setup the electrolyte as a subgrid of the background, even if it the two in fact
             % coincides. It is unecessary but we do it to keep the approach generic.
             params.cellind = (1 : (gen.andenx + gen.sepnx + gen.ctdenx))';
-            paramobj = setupElectrolyte@SeaWaterBatteryGenerator(gen, paramobj, params);
+            inputparams = setupElectrolyte@SeaWaterBatteryGenerator(gen, inputparams, params);
         end
         
-        function paramobj = setupElectrodes(gen, paramobj, params)
+        function inputparams = setupElectrodes(gen, inputparams, params)
 
             ande  = 'Anode';
             ctde  = 'Cathode';
@@ -81,7 +81,7 @@ classdef SeaWaterBatteryGeneratorP2D < SeaWaterBatteryGenerator
             params.(ctde).bcfaces = ctdenx + 1;
             params.(ctde).bccells = ctdenx;
             
-            paramobj = setupElectrodes@SeaWaterBatteryGenerator(gen, paramobj, params);
+            inputparams = setupElectrodes@SeaWaterBatteryGenerator(gen, inputparams, params);
             
 
         end            I

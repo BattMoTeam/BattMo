@@ -21,8 +21,8 @@ classdef SeparatorInputParams < ComponentInputParams
     
     methods
 
-        function paramobj = SeparatorInputParams(jsonstruct)
-            paramobj = paramobj@ComponentInputParams(jsonstruct);
+        function inputparams = SeparatorInputParams(jsonstruct)
+            inputparams = inputparams@ComponentInputParams(jsonstruct);
         end
         
     end

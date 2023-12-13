@@ -6,11 +6,11 @@ classdef HydrogenActiveMaterial < SeaWaterActiveMaterial
     
     methods
         
-        function model = HydrogenActiveMaterial(paramobj)
+        function model = HydrogenActiveMaterial(inputparams)
             
-            model = model@SeaWaterActiveMaterial(paramobj);
+            model = model@SeaWaterActiveMaterial(inputparams);
             fdnames = {'Asurf'};
-            model = dispatchParams(model, paramobj, fdnames);
+            model = dispatchParams(model, inputparams, fdnames);
             
         end
         

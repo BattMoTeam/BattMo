@@ -12,16 +12,16 @@ classdef PowerControlModel < ControlModel
     
     methods
 
-        function model = PowerControlModel(paramobj)
+        function model = PowerControlModel(inputparams)
 
-            model = model@ControlModel(paramobj);
+            model = model@ControlModel(inputparams);
             
             fdnames = {'dischargingPower', ...
                        'chargingPower'   , ...
                        'dischargingTime' , ...
                        'chargingTime'};
             
-            model = dispatchParams(model, paramobj, fdnames);
+            model = dispatchParams(model, inputparams, fdnames);
             
         end
 

@@ -18,7 +18,7 @@ mrstModule add ad-core mrst-gui mpfa agmg linearsolvers
 % used to initialize the simulation and it propagates all the parameters
 % throughout the submodels. The input parameters can be set manually or
 % provided in json format. All the parameters for the model are stored in
-% the paramobj object.
+% the inputparams object.
 
 jsonstruct = parseBattmoJson(fullfile('ParameterData','BatteryCellParameters','LithiumIonBatteryCell','lithium_ion_battery_nmc_graphite.json'));
 
@@ -37,7 +37,7 @@ cc      = 'CurrentCollector';
 jsonstruct.use_thermal = false;
 jsonstruct.include_current_collectors = false;
 
-paramobj = BatteryInputParams(jsonstruct);
+inputparams = BatteryInputParams(jsonstruct);
 
 use_cccv = false;
 if use_cccv
@@ -49,8 +49,8 @@ if use_cccv
                          'upperCutoffVoltage', 4.1          , ...
                          'dIdtLimit'         , 0.01         , ...
                          'dEdtLimit'         , 0.01);
-    cccvparamobj = CcCvControlModelInputParams(cccvstruct);
-    paramobj.Control = cccvparamobj;
+    cccvinputparams = CcCvControlModelInputParams(cccvstruct);
+    inputparams.Control = cccvinputparams;
 end
 
 
@@ -60,14 +60,14 @@ end
 % in the class BatteryGeneratorP2D.
 gen = BatteryGeneratorP2D();
 
-% Now, we update the paramobj with the properties of the grid.
-paramobj = gen.updateBatteryInputParams(paramobj);
+% Now, we update the inputparams with the properties of the grid.
+inputparams = gen.updateBatteryInputParams(inputparams);
 
 
 %%  Initialize the battery model.
-% The battery model is initialized by sending paramobj to the Battery class
+% The battery model is initialized by sending inputparams to the Battery class
 % constructor. see :class:`Battery <Battery.Battery>`.
-model = Battery(paramobj);
+model = Battery(inputparams);
 
 model.AutoDiffBackend= AutoDiffBackend();
 

@@ -23,22 +23,22 @@ thermal = 'ThermalModel';
 % We create an instance of BatteryInputParams. This class is used to initiate the battery simulator and it propagates
 % all the parameters through out the submodels.
 
-% The input parameters can be given in json format. The json file is read and used to populate the paramobj object.
+% The input parameters can be given in json format. The json file is read and used to populate the inputparams object.
 jsonstruct_material = parseBattmoJson(fullfile('ParameterData','ParameterSets','Chen2020','chen2020_lithium_ion_battery.json'));
 jsonstruct_geometry = parseBattmoJson(fullfile('Examples', 'jsondatafiles', 'geometryChen.json'));
 
 jsonstruct = mergeJsonStructs({jsonstruct_material, ...
                                jsonstruct_geometry});
 
-paramobj = BatteryInputParams(jsonstruct);
+inputparams = BatteryInputParams(jsonstruct);
 
 %% We setup the battery geometry ("bare" battery with no current collector).
 
-[paramobj, gen] = setupBatteryGridFromJson(paramobj, jsonstruct);
+[inputparams, gen] = setupBatteryGridFromJson(inputparams, jsonstruct);
 
-%%  The Battery model is initialized by sending paramobj to the Battery class constructor
+%%  The Battery model is initialized by sending inputparams to the Battery class constructor
 
-model = Battery(paramobj);
+model = Battery(inputparams);
 
 %% We fix the input current to 5A
 
@@ -112,10 +112,10 @@ model.AutoDiffBackend= AutoDiffBackend();
 jsonstruct.(ne).(co).(am).diffusionModelType = 'simple';
 jsonstruct.(pe).(co).(am).diffusionModelType = 'simple';
 
-paramobj = BatteryInputParams(jsonstruct);
-paramobj = gen.updateBatteryInputParams(paramobj);
+inputparams = BatteryInputParams(jsonstruct);
+inputparams = gen.updateBatteryInputParams(inputparams);
 
-model2 = Battery(paramobj);
+model2 = Battery(inputparams);
 
 % setup initial state (the variables are different for the simplified model and therfore the initialization is not the same)
 

@@ -72,15 +72,15 @@ classdef BatteryGeneratorMultilayerPouch < BatteryGenerator
 
         end
 
-        function [paramobj, gen] = updateBatteryInputParams(gen, paramobj)
+        function [inputparams, gen] = updateBatteryInputParams(gen, inputparams)
 
-            assert(paramobj.include_current_collectors, 'This geometry must include current collectors');
-            gen.use_thermal = paramobj.use_thermal;
-            [paramobj, gen] = gen.setupBatteryInputParams(paramobj, []);
+            assert(inputparams.include_current_collectors, 'This geometry must include current collectors');
+            gen.use_thermal = inputparams.use_thermal;
+            [inputparams, gen] = gen.setupBatteryInputParams(inputparams, []);
 
         end
 
-        function [paramobj, gen] = setupGrid(gen, paramobj, ~)
+        function [inputparams, gen] = setupGrid(gen, inputparams, ~)
 
             % shorthands
             ne    = 'NegativeElectrode';
@@ -288,7 +288,7 @@ classdef BatteryGeneratorMultilayerPouch < BatteryGenerator
                           'cellfacetbl', cellfacetbl, ...
                           'facedirtbl' , facedirtbl);
 
-            paramobj.G = G;
+            inputparams.G = G;
 
             gen.G    = G;
             gen.tbls = tbls;
@@ -312,25 +312,25 @@ classdef BatteryGeneratorMultilayerPouch < BatteryGenerator
 
         end
 
-        function paramobj = setupElectrolyte(gen, paramobj, ~)
+        function inputparams = setupElectrolyte(gen, inputparams, ~)
 
             params = gen.allparams.Electrolyte;
             imap = gen.invcellmap;
             params.cellind = imap(params.cellind);
-            paramobj = setupElectrolyte@BatteryGenerator(gen, paramobj, params);
+            inputparams = setupElectrolyte@BatteryGenerator(gen, inputparams, params);
 
         end
 
-        function paramobj = setupSeparator(gen, paramobj, ~)
+        function inputparams = setupSeparator(gen, inputparams, ~)
 
             params = gen.allparams.Separator;
             imap = gen.invcellmap;
             params.cellind = imap(params.cellind);
-            paramobj = setupSeparator@BatteryGenerator(gen, paramobj, params);
+            inputparams = setupSeparator@BatteryGenerator(gen, inputparams, params);
 
         end
 
-        function paramobj = setupElectrodes(gen, paramobj, ~)
+        function inputparams = setupElectrodes(gen, inputparams, ~)
 
             % shorthands
             ne = 'NegativeElectrode';
@@ -394,13 +394,13 @@ classdef BatteryGeneratorMultilayerPouch < BatteryGenerator
 
             end
 
-            paramobj = setupElectrodes@BatteryGenerator(gen, paramobj, params);
+            inputparams = setupElectrodes@BatteryGenerator(gen, inputparams, params);
 
         end
 
-        function paramobj = setupCurrentCollectorBcCoupTerm(gen, paramobj, params)
+        function inputparams = setupCurrentCollectorBcCoupTerm(gen, inputparams, params)
 
-            G = paramobj.G;
+            G = inputparams.G;
 
             if gen.cap_tabs
 
@@ -409,8 +409,8 @@ classdef BatteryGeneratorMultilayerPouch < BatteryGenerator
                 facetbl     = tbls.facetbl;
                 cellfacetbl = tbls.cellfacetbl;
 
-                celltbl = celltbl.addInd('globcells', paramobj.G.mappings.cellmap);
-                facetbl = facetbl.addInd('globfaces', paramobj.G.mappings.facemap);
+                celltbl = celltbl.addInd('globcells', inputparams.G.mappings.cellmap);
+                facetbl = facetbl.addInd('globfaces', inputparams.G.mappings.facemap);
 
                 cellfacetbl = crossIndexArray(cellfacetbl, facetbl, {'faces'});
                 cellfacetbl = crossIndexArray(cellfacetbl, celltbl, {'cells'});
@@ -455,12 +455,12 @@ classdef BatteryGeneratorMultilayerPouch < BatteryGenerator
 
             end
 
-            paramobj = setupCurrentCollectorBcCoupTerm@BatteryGenerator(gen, paramobj, params);
+            inputparams = setupCurrentCollectorBcCoupTerm@BatteryGenerator(gen, inputparams, params);
 
         end
 
-        function paramobj = setupThermalModel(gen, paramobj, ~)
-        % paramobj is instance of BatteryInputParams
+        function inputparams = setupThermalModel(gen, inputparams, ~)
+        % inputparams is instance of BatteryInputParams
         %
 
             % shorthands
@@ -492,7 +492,7 @@ classdef BatteryGeneratorMultilayerPouch < BatteryGenerator
 
                 params = struct('couplingfaces', couplingfaces, ...
                                 'couplingcells', couplingcells);
-                paramobj = setupThermalModel@BatteryGenerator(gen, paramobj, params);
+                inputparams = setupThermalModel@BatteryGenerator(gen, inputparams, params);
 
             else
 
@@ -504,16 +504,16 @@ classdef BatteryGeneratorMultilayerPouch < BatteryGenerator
 
                 for ielde = 1 : numel(eldes)
                     elde = eldes{ielde};
-                    cc_couplingfaces = paramobj.(elde).(cc).externalCouplingTerm.couplingfaces;
-                    cc_couplingcells = paramobj.(elde).(cc).externalCouplingTerm.couplingcells;
-                    mappings = paramobj.(elde).(cc).G.mappings;
+                    cc_couplingfaces = inputparams.(elde).(cc).externalCouplingTerm.couplingfaces;
+                    cc_couplingcells = inputparams.(elde).(cc).externalCouplingTerm.couplingcells;
+                    mappings = inputparams.(elde).(cc).G.mappings;
                     couplingfaces = [couplingfaces; mappings.facemap(cc_couplingfaces)];
                     couplingcells = [couplingcells; mappings.cellmap(cc_couplingcells)];
                 end
 
                 params = struct('couplingfaces', couplingfaces, ...
                                 'couplingcells', couplingcells);
-                paramobj = setupThermalModel@BatteryGenerator(gen, paramobj, params);
+                inputparams = setupThermalModel@BatteryGenerator(gen, inputparams, params);
 
             end
         end

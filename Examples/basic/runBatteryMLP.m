@@ -17,11 +17,11 @@ mrstModule add ad-core mrst-gui mpfa
 % used to initialize the simulation and it propagates all the parameters
 % throughout the submodels. The input parameters can be set manually or
 % provided in json format. All the parameters for the model are stored in
-% the paramobj object.
+% the inputparams object.
 jsonstruct = parseBattmoJson(fullfile('ParameterData', 'BatteryCellParameters', 'LithiumIonBatteryCell', 'lithium_ion_battery_nmc_graphite.json'));
 jsonstruct.include_current_collectors = true;
 
-paramobj = BatteryInputParams(jsonstruct);
+inputparams = BatteryInputParams(jsonstruct);
 
 % We define some shorthand names for simplicity.
 ne      = 'NegativeElectrode';
@@ -39,14 +39,14 @@ ctrl    = 'Control';
 % in the class BatteryGeneratorP4D.
 gen = BatteryGeneratorMultilayerPouch();
 
-% Now, we update the paramobj with the properties of the grid.
-paramobj = gen.updateBatteryInputParams(paramobj);
+% Now, we update the inputparams with the properties of the grid.
+inputparams = gen.updateBatteryInputParams(inputparams);
 
 %%  Initialize the battery model.
-% The battery model is initialized by sending paramobj to the Battery class
+% The battery model is initialized by sending inputparams to the Battery class
 % constructor. see :class:`Battery <Battery.Battery>`.
 
-model = Battery(paramobj);
+model = Battery(inputparams);
 
 plotBatteryGrid(model, 'setstyle', false);
 

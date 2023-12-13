@@ -31,7 +31,7 @@ function output = run_magnesium_1D_battery(input, varargin)
         jsonstruct.include_precipitation = false;
     end
 
-    paramobj = SeaWaterBatteryInputParams(jsonstruct);
+    inputparams = SeaWaterBatteryInputParams(jsonstruct);
 
     elyte = 'Electrolyte';
     ct    = 'Cathode';
@@ -46,11 +46,11 @@ function output = run_magnesium_1D_battery(input, varargin)
     gen.fac = 20;
     gen = gen.applyResolutionFactors();
 
-    paramobj = gen.updateBatteryInputParams(paramobj);
+    inputparams = gen.updateBatteryInputParams(inputparams);
 
     %% Setup model
 
-    model = MagnesiumBattery(paramobj);
+    model = MagnesiumBattery(inputparams);
     model = model.setupComputationalGraph(); % needed later to evaluate values using evalVarName (we want only to setup it once)
 
     %% Setup Electrolyte initial content

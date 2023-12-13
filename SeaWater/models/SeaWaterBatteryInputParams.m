@@ -17,30 +17,30 @@ classdef SeaWaterBatteryInputParams < ComponentInputParams
     
     methods
 
-        function paramobj = SeaWaterBatteryInputParams(jsonstruct)
+        function inputparams = SeaWaterBatteryInputParams(jsonstruct)
 
-            paramobj = paramobj@ComponentInputParams(jsonstruct);
+            inputparams = inputparams@ComponentInputParams(jsonstruct);
             
-            paramobj.Cathode               = HydrogenElectrodeInputParams(jsonstruct.Cathode);
-            paramobj.CathodeActiveMaterial = HydrogenActiveMaterialInputParams(jsonstruct.CathodeActiveMaterial);
-            paramobj.Anode                 = SeaWaterElectrodeInputParams(jsonstruct.Anode);
-            paramobj.AnodeActiveMaterial   = MagnesiumActiveMaterialInputParams(jsonstruct.AnodeActiveMaterial);
-            if paramobj.include_precipitation
-                paramobj.Electrolyte = SeaWaterElectrolyteInputParams(jsonstruct.Electrolyte);
+            inputparams.Cathode               = HydrogenElectrodeInputParams(jsonstruct.Cathode);
+            inputparams.CathodeActiveMaterial = HydrogenActiveMaterialInputParams(jsonstruct.CathodeActiveMaterial);
+            inputparams.Anode                 = SeaWaterElectrodeInputParams(jsonstruct.Anode);
+            inputparams.AnodeActiveMaterial   = MagnesiumActiveMaterialInputParams(jsonstruct.AnodeActiveMaterial);
+            if inputparams.include_precipitation
+                inputparams.Electrolyte = SeaWaterElectrolyteInputParams(jsonstruct.Electrolyte);
             else
-                paramobj.Electrolyte = SeaWaterElectrolyteNoPrecipitationInputParams(jsonstruct.Electrolyte);
+                inputparams.Electrolyte = SeaWaterElectrolyteNoPrecipitationInputParams(jsonstruct.Electrolyte);
             end
             
-            paramobj.couplingTerms = {};
+            inputparams.couplingTerms = {};
 
-            paramobj = paramobj.validateInputParams();
+            inputparams = inputparams.validateInputParams();
             
         end
 
-        function paramobj = validateInputParams(paramobj)
+        function inputparams = validateInputParams(inputparams)
 
-            if paramobj.include_precipitation
-                assert(isa(paramobj.Electrolyte, 'SeaWaterElectrolyteInputParams'), 'The input class SeaWaterElectrolyteNoPrecipitationInputParams is used. The input parameters for the electrolyte may include precipitation data.');
+            if inputparams.include_precipitation
+                assert(isa(inputparams.Electrolyte, 'SeaWaterElectrolyteInputParams'), 'The input class SeaWaterElectrolyteNoPrecipitationInputParams is used. The input parameters for the electrolyte may include precipitation data.');
             end
             
         end

@@ -2,9 +2,9 @@ classdef CCDischargeControlModel < CCcontrolModel
 
     methods
 
-        function model = CCDischargeControlModel(paramobj)
+        function model = CCDischargeControlModel(inputparams)
             
-            model = model@CCcontrolModel(paramobj);
+            model = model@CCcontrolModel(inputparams);
             
         end
         

@@ -36,8 +36,8 @@ classdef Electrolyte < BaseModel
 
     methods
 
-        function model = Electrolyte(paramobj)
-        % paramobj is instance of ElectrolyteInputParams or a derived class
+        function model = Electrolyte(inputparams)
+        % inputparams is instance of ElectrolyteInputParams or a derived class
 
             model = model@BaseModel();
 
@@ -55,10 +55,10 @@ classdef Electrolyte < BaseModel
                        'effectiveVolumetricHeatCapacity', ...
                        'use_thermal'};
 
-            model = dispatchParams(model, paramobj, fdnames);
+            model = dispatchParams(model, inputparams, fdnames);
 
-            model.computeConductivityFunc         = str2func(paramobj.ionicConductivity.functionname);
-            model.computeDiffusionCoefficientFunc = str2func(paramobj.diffusionCoefficient.functionname);
+            model.computeConductivityFunc         = str2func(inputparams.ionicConductivity.functionname);
+            model.computeDiffusionCoefficientFunc = str2func(inputparams.diffusionCoefficient.functionname);
 
             model.ncomp = numel(model.compnames);
 

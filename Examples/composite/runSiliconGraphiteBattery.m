@@ -51,34 +51,34 @@ jsonstruct.include_current_collectors = false;
 
 %%
 % We instantiate the battery :code:`InputParams` object
-paramobj = BatteryInputParams(jsonstruct);
+inputparams = BatteryInputParams(jsonstruct);
 
 %%
 % We set the mass fractions of the different material in the coating
 % of the negative electrode. This information could have been passed
 % in the json file earlier (:ref:`compositeElectrode`)
 
-paramobj.(ne).(co).(am1).massFraction = 0.9;
-paramobj.(ne).(co).(am2).massFraction = 0.08;
-paramobj.(ne).(co).(bd).massFraction  = 0.01;
-paramobj.(ne).(co).(ad).massFraction  = 0.01;
+inputparams.(ne).(co).(am1).massFraction = 0.9;
+inputparams.(ne).(co).(am2).massFraction = 0.08;
+inputparams.(ne).(co).(bd).massFraction  = 0.01;
+inputparams.(ne).(co).(ad).massFraction  = 0.01;
 
 %%
 % We change the given CRate
-paramobj.Control.CRate = 0.1;
+inputparams.Control.CRate = 0.1;
 
 %%
-% Now, we update the paramobj with the properties of the grid.
+% Now, we update the inputparams with the properties of the grid.
 gen = BatteryGeneratorP2D();
-paramobj = gen.updateBatteryInputParams(paramobj);
+inputparams = gen.updateBatteryInputParams(inputparams);
 
 % Allow for switching to voltage control
-paramobj.(ctrl).useCVswitch = true;
+inputparams.(ctrl).useCVswitch = true;
 
 %% Model Instantiation
 % We instantiate the model
 
-model = Battery(paramobj);
+model = Battery(inputparams);
 
 
 %% Setup schedule (control and time stepping)

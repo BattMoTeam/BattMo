@@ -9,9 +9,9 @@ classdef SeaWaterActiveMaterialInputParams < ComponentInputParams
     
     methods
 
-        function paramobj = SeaWaterActiveMaterialInputParams(jsonstruct)
+        function inputparams = SeaWaterActiveMaterialInputParams(jsonstruct)
 
-            paramobj = paramobj@ComponentInputParams(jsonstruct);
+            inputparams = inputparams@ComponentInputParams(jsonstruct);
             
         end
         

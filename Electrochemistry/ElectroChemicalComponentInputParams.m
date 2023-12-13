@@ -8,8 +8,8 @@ classdef ElectroChemicalComponentInputParams < ElectronicComponentInputParams
     
     methods
 
-        function paramobj = ElectroChemicalComponentInputParams(jsonstruct)
-            paramobj = paramobj@ElectronicComponentInputParams(jsonstruct);
+        function inputparams = ElectroChemicalComponentInputParams(jsonstruct)
+            inputparams = inputparams@ElectronicComponentInputParams(jsonstruct);
         end
         
     end

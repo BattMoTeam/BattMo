@@ -36,9 +36,9 @@ classdef ActiveMaterial < BaseModel
     
     methods
         
-        function model = ActiveMaterial(paramobj)
+        function model = ActiveMaterial(inputparams)
         %
-        % ``paramobj`` is instance of :class:`ActiveMaterialInputParams <Electrochemistry.ActiveMaterialInputParams>`
+        % ``inputparams`` is instance of :class:`ActiveMaterialInputParams <Electrochemistry.ActiveMaterialInputParams>`
         %
             model = model@BaseModel();
             
@@ -52,17 +52,17 @@ classdef ActiveMaterial < BaseModel
                        'diffusionModelType'    , ...
                        'standAlone'};
 
-            model = dispatchParams(model, paramobj, fdnames);
+            model = dispatchParams(model, inputparams, fdnames);
 
-            model.Interface = Interface(paramobj.Interface);
+            model.Interface = Interface(inputparams.Interface);
 
             diffusionModelType = model.diffusionModelType;
 
             switch model.diffusionModelType
               case 'simple'
-                model.SolidDiffusion = SimplifiedSolidDiffusionModel(paramobj.SolidDiffusion);
+                model.SolidDiffusion = SimplifiedSolidDiffusionModel(inputparams.SolidDiffusion);
               case 'full'
-                model.SolidDiffusion = FullSolidDiffusionModel(paramobj.SolidDiffusion);
+                model.SolidDiffusion = FullSolidDiffusionModel(inputparams.SolidDiffusion);
               otherwise
                 error('Unknown diffusionModelType %s', diffusionModelType);
             end

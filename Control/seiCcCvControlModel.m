@@ -11,13 +11,13 @@ classdef seiCcCvControlModel < ControlModel
     
     methods
 
-        function model = seiCcCvControlModel(paramobj)
+        function model = seiCcCvControlModel(inputparams)
 
-            model = model@ControlModel(paramobj);
+            model = model@ControlModel(inputparams);
             
             fdnames = {'dEdtLimit', ...
                        'dIdtLimit'};
-            model = dispatchParams(model, paramobj, fdnames);
+            model = dispatchParams(model, inputparams, fdnames);
             
         end
 

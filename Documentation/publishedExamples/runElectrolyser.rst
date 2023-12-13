@@ -23,14 +23,14 @@ Setup the physical properties for the electrolyser using json input file :battmo
 .. code-block:: matlab
 
   jsonstruct= parseBattmoJson('Electrolyser/Parameters/alkalineElectrolyser.json');
-  paramobj = ElectrolyserInputParams(jsonstruct);
+  inputparams = ElectrolyserInputParams(jsonstruct);
 
 Setup the grids. We consider a 1D model and the specifications can be read from a json input file, here :battmofile:`electrolysergeometry1d.json<Electrolyser/Parameters/electrolysergeometry1d.json>`, using :battmo:`setupElectrolyserGridFromJson`.
 
 .. code-block:: matlab
 
   jsonstruct= parseBattmoJson('Electrolyser/Parameters/electrolysergeometry1d.json');
-  paramobj = setupElectrolyserGridFromJson(paramobj, jsonstruct);
+  inputparams = setupElectrolyserGridFromJson(inputparams, jsonstruct);
 
 We define shortcuts for the different submodels.
 
@@ -49,7 +49,7 @@ Setup model
 
 .. code-block:: matlab
 
-  model = Electrolyser(paramobj);
+  model = Electrolyser(inputparams);
 
 
 Setup the initial condition

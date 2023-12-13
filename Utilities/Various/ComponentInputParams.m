@@ -7,9 +7,9 @@ classdef ComponentInputParams < InputParams
 
     methods
 
-        function paramobj = ComponentInputParams(jsonstruct)
+        function inputparams = ComponentInputParams(jsonstruct)
 
-            paramobj = paramobj@InputParams(jsonstruct);
+            inputparams = inputparams@InputParams(jsonstruct);
 
         end
 

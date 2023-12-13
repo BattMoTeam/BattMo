@@ -37,26 +37,26 @@ classdef ControlModelInputParams < InputParams
     
     methods
 
-        function paramobj = ControlModelInputParams(jsonstruct);
+        function inputparams = ControlModelInputParams(jsonstruct);
             
-            paramobj = paramobj@InputParams(jsonstruct);
+            inputparams = inputparams@InputParams(jsonstruct);
             
         end
         
-        function paramobj = set.controlPolicy(paramobj, controlPolicy)
+        function inputparams = set.controlPolicy(inputparams, controlPolicy)
             switch controlPolicy
               case {'CCDischarge', 'CCCharge'}
                 % ok in any case
               case 'CCCV'
-                assert(isa(paramobj, 'CcCvControlModelInputParams'), 'The model is not a CcCvControlModelInputParams class')
+                assert(isa(inputparams, 'CcCvControlModelInputParams'), 'The model is not a CcCvControlModelInputParams class')
               case 'CV'
-                assert(isa(paramobj, 'CvControlModelInputParams'), 'The model is not a CvControlModelInputParams class')
+                assert(isa(inputparams, 'CvControlModelInputParams'), 'The model is not a CvControlModelInputParams class')
               case 'powerControl'
-                assert(isa(paramobj, 'PowerControlModelInputParams'), 'The model is not a PowerControlInputParams class')
+                assert(isa(inputparams, 'PowerControlModelInputParams'), 'The model is not a PowerControlInputParams class')
               otherwise
                 error('controlPolicy not recognized');
             end
-            paramobj.controlPolicy = controlPolicy;                
+            inputparams.controlPolicy = controlPolicy;                
         end
         
     end

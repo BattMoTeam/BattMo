@@ -92,7 +92,7 @@ spiralparams = struct('nwindings'   , nwindings, ...
                       'tabparams'   , tabparams, ...
                       'angleuniform', true);
 
-% The input material parameters given in json format are used to populate the paramobj object.
+% The input material parameters given in json format are used to populate the inputparams object.
 jsonstruct = parseBattmoJson(fullfile('ParameterData','BatteryCellParameters','LithiumIonBatteryCell','lithium_ion_battery_nmc_graphite.json'));
 
 % We define some shorthand names for simplicity.
@@ -120,25 +120,25 @@ simcase = 'CCDischarge';
 
 jsonstruct.(ctrl).controlPolicy = simcase;
 
-paramobj = BatteryInputParams(jsonstruct);
+inputparams = BatteryInputParams(jsonstruct);
 
-% paramobj.(ne).(am).(sd).N = 5;
-% paramobj.(pe).(am).(sd).N = 5;
+% inputparams.(ne).(am).(sd).N = 5;
+% inputparams.(pe).(am).(sd).N = 5;
 
 CRate = 0.1;
-paramobj.(ctrl).lowerCutoffVoltage = 3;
-paramobj.(ctrl).CRate              = CRate;
-paramobj.(ctrl).rampupTime         = 0.1/CRate;
+inputparams.(ctrl).lowerCutoffVoltage = 3;
+inputparams.(ctrl).CRate              = CRate;
+inputparams.(ctrl).rampupTime         = 0.1/CRate;
 
 % th = 'ThermalModel';
-% paramobj.(th).externalHeatTransferCoefficientSideFaces = 100*watt/meter^2;
-% paramobj.(th).externalHeatTransferCoefficientTopFaces = 10*watt/meter^2;
+% inputparams.(th).externalHeatTransferCoefficientSideFaces = 100*watt/meter^2;
+% inputparams.(th).externalHeatTransferCoefficientTopFaces = 10*watt/meter^2;
 
 gen = SpiralBatteryGenerator();
 
-paramobj = gen.updateBatteryInputParams(paramobj, spiralparams);
+inputparams = gen.updateBatteryInputParams(inputparams, spiralparams);
 
-model = Battery(paramobj);
+model = Battery(inputparams);
 model.AutoDiffBackend= AutoDiffBackend();
 
 %% Setup schedule

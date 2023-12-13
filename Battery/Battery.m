@@ -39,11 +39,11 @@ classdef Battery < BaseModel
 
     methods
 
-        function model = Battery(paramobj)
+        function model = Battery(inputparams)
 
             model = model@BaseModel();
 
-            paramobj.validateInputParams();
+            inputparams.validateInputParams();
 
             % All the submodels should have same backend (this is not assigned automaticallly for the moment)
             model.AutoDiffBackend = SparseAutoDiffBackend('useBlocks', false);
@@ -57,20 +57,20 @@ classdef Battery < BaseModel
                        'use_thermal'               , ...
                        'SOC'};
 
-            model = dispatchParams(model, paramobj, fdnames);
+            model = dispatchParams(model, inputparams, fdnames);
 
-            model.NegativeElectrode = Electrode(paramobj.NegativeElectrode);
-            model.PositiveElectrode = Electrode(paramobj.PositiveElectrode);
-            model.Separator         = Separator(paramobj.Separator);
+            model.NegativeElectrode = Electrode(inputparams.NegativeElectrode);
+            model.PositiveElectrode = Electrode(inputparams.PositiveElectrode);
+            model.Separator         = Separator(inputparams.Separator);
 
             % We setup the electrolyte model (in particular we compute the volume fraction from the other components)
-            model = model.setupElectrolyteModel(paramobj);
+            model = model.setupElectrolyteModel(inputparams);
 
             if model.use_thermal
-                model.ThermalModel = ThermalComponent(paramobj.ThermalModel);
+                model.ThermalModel = ThermalComponent(inputparams.ThermalModel);
             end
 
-            model.Control = model.setupControl(paramobj.Control);
+            model.Control = model.setupControl(inputparams.Control);
 
             % define shorthands
             elyte   = 'Electrolyte';
@@ -463,37 +463,37 @@ classdef Battery < BaseModel
 
         end
 
-        function control = setupControl(model, paramobj)
+        function control = setupControl(model, inputparams)
 
             C = computeCellCapacity(model);
 
-            switch paramobj.controlPolicy
+            switch inputparams.controlPolicy
 
               case "CCDischarge"
 
-                control = CCDischargeControlModel(paramobj);
+                control = CCDischargeControlModel(inputparams);
                 CRate = control.CRate;
                 control.Imax = (C/hour)*CRate;
 
               case 'CCCharge'
 
-                control = CCChargeControlModel(paramobj);
+                control = CCChargeControlModel(inputparams);
                 CRate = control.CRate;
                 control.Imax = (C/hour)*CRate;
 
               case "CCCV"
 
-                control = CcCvControlModel(paramobj);
+                control = CcCvControlModel(inputparams);
                 CRate = control.CRate;
                 control.Imax = (C/hour)*CRate;
 
               case "powerControl"
 
-                control = PowerControlModel(paramobj);
+                control = PowerControlModel(inputparams);
 
               case "CC"
 
-                control = CcControlModel(paramobj);
+                control = CcControlModel(inputparams);
                 CRate = control.CRate;
                 control.Imax = (C/hour)*CRate;
 
@@ -504,8 +504,8 @@ classdef Battery < BaseModel
 
         end
 
-        function model = setupThermalModel(model, paramobj)
-        % Setup the thermal model :attr:`ThermalModel`. Here, :code:`paramobj` is instance of
+        function model = setupThermalModel(model, inputparams)
+        % Setup the thermal model :attr:`ThermalModel`. Here, :code:`inputparams` is instance of
         % :class:`ThermalComponentInputParams <Electrochemistry.ThermalComponentInputParams>`
 
             ne      = 'NegativeElectrode';
@@ -621,7 +621,7 @@ classdef Battery < BaseModel
 
         end
 
-        function model = setupElectrolyteModel(model, paramobj)
+        function model = setupElectrolyteModel(model, inputparams)
         % Assign the electrolyte volume fractions in the different regions
 
             elyte = 'Electrolyte';
@@ -631,14 +631,14 @@ classdef Battery < BaseModel
             sep   = 'Separator';
 
             elyte_cells = zeros(model.G.cells.num, 1);
-            elyte_cells(paramobj.(elyte).G.mappings.cellmap) = (1 : paramobj.(elyte).G.cells.num)';
+            elyte_cells(inputparams.(elyte).G.mappings.cellmap) = (1 : inputparams.(elyte).G.cells.num)';
 
-            paramobj.(elyte).volumeFraction = ones(paramobj.(elyte).G.cells.num, 1);
-            paramobj.(elyte).volumeFraction = subsasgnAD(paramobj.(elyte).volumeFraction, elyte_cells(model.(ne).(co).G.mappings.cellmap), 1 - model.(ne).(co).volumeFraction);
-            paramobj.(elyte).volumeFraction = subsasgnAD(paramobj.(elyte).volumeFraction, elyte_cells(model.(pe).(co).G.mappings.cellmap), 1 - model.(pe).(co).volumeFraction);
-            paramobj.(elyte).volumeFraction = subsasgnAD(paramobj.(elyte).volumeFraction, elyte_cells(model.(sep).G.mappings.cellmap), model.(sep).porosity);
+            inputparams.(elyte).volumeFraction = ones(inputparams.(elyte).G.cells.num, 1);
+            inputparams.(elyte).volumeFraction = subsasgnAD(inputparams.(elyte).volumeFraction, elyte_cells(model.(ne).(co).G.mappings.cellmap), 1 - model.(ne).(co).volumeFraction);
+            inputparams.(elyte).volumeFraction = subsasgnAD(inputparams.(elyte).volumeFraction, elyte_cells(model.(pe).(co).G.mappings.cellmap), 1 - model.(pe).(co).volumeFraction);
+            inputparams.(elyte).volumeFraction = subsasgnAD(inputparams.(elyte).volumeFraction, elyte_cells(model.(sep).G.mappings.cellmap), model.(sep).porosity);
 
-            model.(elyte) = Electrolyte(paramobj.(elyte));
+            model.(elyte) = Electrolyte(inputparams.(elyte));
 
         end
 
@@ -823,8 +823,8 @@ classdef Battery < BaseModel
 
             dt = 1;
             state0 = state;
-            paramobj = ControlModelInputParams([]);
-            model.Control = ControlModel(paramobj);
+            inputparams = ControlModelInputParams([]);
+            model.Control = ControlModel(inputparams);
             model.Control.controlPolicy = 'None';
             drivingForces = model.getValidDrivingForces();
 

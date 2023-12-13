@@ -12,31 +12,31 @@ classdef EvolutionElectrode < BaseModel
 
     methods
 
-        function model = EvolutionElectrode(paramobj)
+        function model = EvolutionElectrode(inputparams)
 
             fdnames = {'G',
                        'couplingTerm'};
-            model = dispatchParams(model, paramobj, fdnames);            
+            model = dispatchParams(model, inputparams, fdnames);            
             
-            switch paramobj.porousTransportLayerType
+            switch inputparams.porousTransportLayerType
               case 'Hydrogen'
-                model.PorousTransportLayer = HydrogenPorousTransportLayer(paramobj.PorousTransportLayer);
+                model.PorousTransportLayer = HydrogenPorousTransportLayer(inputparams.PorousTransportLayer);
               case 'Oxygen'
-                model.PorousTransportLayer = OxygenPorousTransportLayer(paramobj.PorousTransportLayer);
+                model.PorousTransportLayer = OxygenPorousTransportLayer(inputparams.PorousTransportLayer);
               otherwise
                 error('porousTransportLayerType not recognized')
             end
             
-            switch paramobj.catalystLayerType
+            switch inputparams.catalystLayerType
               case 'Iridium'
-                model.CatalystLayer = IridiumCatalystLayer(paramobj.CatalystLayer);
+                model.CatalystLayer = IridiumCatalystLayer(inputparams.CatalystLayer);
               case 'Platinium'
-                model.CatalystLayer = PlatiniumCatalystLayer(paramobj.CatalystLayer);
+                model.CatalystLayer = PlatiniumCatalystLayer(inputparams.CatalystLayer);
               otherwise
                 error('catalystLayerType not recognized')
             end
             
-            model.ExchangeReaction = ExchangeReaction(paramobj.ExchangeReaction);
+            model.ExchangeReaction = ExchangeReaction(inputparams.ExchangeReaction);
             
         end
 

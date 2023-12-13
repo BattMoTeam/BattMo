@@ -16,7 +16,7 @@ classdef Binder < BaseModel
 
     methods
         
-        function model = Binder(paramobj)
+        function model = Binder(inputparams)
             
             model = model@BaseModel();
             
@@ -26,7 +26,7 @@ classdef Binder < BaseModel
                        'thermalConductivity'   , ...
                        'specificHeatCapacity'};
 
-            model = dispatchParams(model, paramobj, fdnames);
+            model = dispatchParams(model, inputparams, fdnames);
         end
 
     end

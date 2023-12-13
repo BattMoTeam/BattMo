@@ -33,7 +33,7 @@ jsonstruct = parseBattmoJson(fullfile('ParameterData','BatteryCellParameters','L
 jsonstruct.use_thermal = false;
 jsonstruct.include_current_collectors = true;
 
-paramobj = BatteryInputParams(jsonstruct);
+inputparams = BatteryInputParams(jsonstruct);
 
 %% Setup the geometry and grid for the components
 CRdiameter = 20*milli*meter;
@@ -81,13 +81,13 @@ params = struct('compDims'  , compDims , ...
 
 gen = CoinCellBatteryGenerator();
 
-% Now, we update the paramobj with the properties of the grid.
-paramobj = gen.updateBatteryInputParams(paramobj, params);
+% Now, we update the inputparams with the properties of the grid.
+inputparams = gen.updateBatteryInputParams(inputparams, params);
 
 %%  Initialize the battery model.
-% The battery model is initialized by sending paramobj to the Battery class
+% The battery model is initialized by sending inputparams to the Battery class
 % constructor. see :class:`Battery <Battery.Battery>`.
-model = Battery(paramobj);
+model = Battery(inputparams);
 
 %% Compute the nominal cell capacity and choose a C-Rate
 % The nominal capacity of the cell is calculated from the active materials.

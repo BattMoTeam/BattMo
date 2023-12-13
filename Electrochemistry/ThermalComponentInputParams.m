@@ -16,8 +16,8 @@ classdef ThermalComponentInputParams < ComponentInputParams
     
     methods
 
-        function paramobj = ThermalComponentInputParams(jsonstruct)
-            paramobj = paramobj@ComponentInputParams(jsonstruct);
+        function inputparams = ThermalComponentInputParams(jsonstruct)
+            inputparams = inputparams@ComponentInputParams(jsonstruct);
         end
         
     end

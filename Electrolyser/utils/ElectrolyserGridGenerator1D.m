@@ -26,7 +26,7 @@ classdef ElectrolyserGridGenerator1D < ElectrolyserGridGenerator
 
         end
 
-        function [paramobj, gen] = updateElectrolyserInputParams(gen, paramobj)
+        function [inputparams, gen] = updateElectrolyserInputParams(gen, inputparams)
 
             xs  = gen.xs;
             cxs = gen.cxs;
@@ -54,12 +54,12 @@ classdef ElectrolyserGridGenerator1D < ElectrolyserGridGenerator
             params.(her).bcfaces = sum(nxs(4 : 5)) + 1; % index in own grid
             params.(her).bccells = sum(nxs(4 : 5)); % index in own grid
 
-            [paramobj, gen] = gen.setupElectrolyserInputParams(paramobj, params);
+            [inputparams, gen] = gen.setupElectrolyserInputParams(inputparams, params);
             
         end
 
 
-        function [paramobj, gen] = setupGrid(gen, paramobj, ~)
+        function [inputparams, gen] = setupGrid(gen, inputparams, ~)
 
             xs = gen.xs;
             nxs = gen.nxs;
@@ -71,7 +71,7 @@ classdef ElectrolyserGridGenerator1D < ElectrolyserGridGenerator
             G = tensorGrid(x);
             G = computeGeometry(G);
 
-            paramobj.G = G;
+            inputparams.G = G;
             gen.G = G;
 
         end

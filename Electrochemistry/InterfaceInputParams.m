@@ -39,9 +39,9 @@ classdef InterfaceInputParams < InputParams
     
     methods
         
-        function paramobj = InterfaceInputParams(jsonstruct)
+        function inputparams = InterfaceInputParams(jsonstruct)
 
-            paramobj = paramobj@InputParams(jsonstruct);
+            inputparams = inputparams@InputParams(jsonstruct);
             
         end
         

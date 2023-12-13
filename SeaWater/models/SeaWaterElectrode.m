@@ -7,13 +7,13 @@ classdef SeaWaterElectrode < ElectronicComponent
     
     methods
 
-        function model = SeaWaterElectrode(paramobj)
+        function model = SeaWaterElectrode(inputparams)
             
-            model = model@ElectronicComponent(paramobj);
+            model = model@ElectronicComponent(inputparams);
             
             fdnames = {'V', ...
                        'externalCouplingTerm'};
-            model = dispatchParams(model, paramobj, fdnames);
+            model = dispatchParams(model, inputparams, fdnames);
             
             model.operators = localSetupOperators(model.G);
             

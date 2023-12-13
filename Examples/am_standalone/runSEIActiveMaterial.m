@@ -21,18 +21,18 @@ sei   = 'SolidElectrodeInterface';
 sr    = 'SideReaction';
 elyte = 'Electrolyte';
 
-paramobj = SEIActiveMaterialInputParams(jsonstruct);
+inputparams = SEIActiveMaterialInputParams(jsonstruct);
 
-paramobj.(sd).N  = 10;
-paramobj.(sei).N = 10;
+inputparams.(sd).N  = 10;
+inputparams.(sei).N = 10;
 
 %% Setup the model
 
 % We use a stand alone model for the particle
-paramobj.standAlone = true;
+inputparams.standAlone = true;
 
 % We initiate the model
-model = SEIActiveMaterial(paramobj);
+model = SEIActiveMaterial(inputparams);
 
 
 %% Setup initial state

@@ -22,23 +22,23 @@ sei   = 'SolidElectrodeInterface';
 sr    = 'SideReaction';
 elyte = 'Electrolyte';
 
-paramobj = SingleParticleSEIInputParams(jsonstruct);
+inputparams = SingleParticleSEIInputParams(jsonstruct);
 
-paramobj.(an).(sd).N   = 10;
-paramobj.(an).(sd).np  = 1;
-paramobj.(an).(sei).N  = 10;
-paramobj.(an).(sei).np = 1;
+inputparams.(an).(sd).N   = 10;
+inputparams.(an).(sd).np  = 1;
+inputparams.(an).(sei).N  = 10;
+inputparams.(an).(sei).np = 1;
 
 xlength = 57e-6; 
 G = cartGrid(1, xlength);
 G = computeGeometry(G);
-paramobj.(an).G = G;
+inputparams.(an).G = G;
 
-paramobj.(ct).(sd).N   = 10;
-paramobj.(ct).(sd).np  = 1;
-paramobj.(ct).G = G;
+inputparams.(ct).(sd).N   = 10;
+inputparams.(ct).(sd).np  = 1;
+inputparams.(ct).G = G;
 
-model = SingleParticleSEI(paramobj);
+model = SingleParticleSEI(inputparams);
 
 model = model.registerVarAndPropfuncNames();
 [g, edgelabels] = setupGraph(model);

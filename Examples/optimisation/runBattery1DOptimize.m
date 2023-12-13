@@ -31,20 +31,20 @@ sep     = 'Separator';
 jsonstruct.(ne).(am).diffusionModelType = 'simple';
 jsonstruct.(pe).(am).diffusionModelType = 'simple';
 
-paramobj = BatteryInputParams(jsonstruct);
+inputparams = BatteryInputParams(jsonstruct);
 
-paramobj.(ctrl).useCVswitch = true;
+inputparams.(ctrl).useCVswitch = true;
 
 %% Setup the geometry and computational grid
 
 gen = BatteryGeneratorP2D();
 
-% Now, we update the paramobj with the properties of the grid.
-paramobj = gen.updateBatteryInputParams(paramobj);
+% Now, we update the inputparams with the properties of the grid.
+inputparams = gen.updateBatteryInputParams(inputparams);
 
 %%  Initialize the battery model.
 
-model = Battery(paramobj);
+model = Battery(inputparams);
 model.AutoDiffBackend = AutoDiffBackend();
 
 %% Setup the time step schedule

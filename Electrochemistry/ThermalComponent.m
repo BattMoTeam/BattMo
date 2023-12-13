@@ -16,7 +16,7 @@ classdef ThermalComponent < BaseModel
     
     methods
         
-        function model = ThermalComponent(paramobj)
+        function model = ThermalComponent(inputparams)
             
             model = model@BaseModel();
             
@@ -29,7 +29,7 @@ classdef ThermalComponent < BaseModel
                        'couplingTerm', ...
                        'externalHeatTransferCoefficient', ...
                        'externalTemperature'};
-            model = dispatchParams(model, paramobj, fdnames);
+            model = dispatchParams(model, inputparams, fdnames);
             
             % setup discrete differential operators
             model.operators = localSetupOperators(model.G);

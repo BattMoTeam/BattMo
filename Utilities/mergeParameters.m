@@ -1,4 +1,4 @@
-function paramobj = mergeParameters(paramobj, paramnames, varargin)
+function inputparams = mergeParameters(inputparams, paramnames, varargin)
 
 % paramnames is a list of parameter names. The function assign all empty values to the given non-empty ones
 
@@ -9,7 +9,7 @@ function paramobj = mergeParameters(paramobj, paramnames, varargin)
     opt = struct('force', false); 
     opt = merge_options(opt, varargin{:});
     
-    vals = cellfun(@(paramname) paramobj.getParam(paramname), paramnames, 'uniformoutput', false);
+    vals = cellfun(@(paramname) inputparams.getParam(paramname), paramnames, 'uniformoutput', false);
 
     ind = cellfun(@(val) ~isempty(val), vals);
 
@@ -29,13 +29,13 @@ function paramobj = mergeParameters(paramobj, paramnames, varargin)
             else
                 error('parameter type is not supported by this function');
             end
-            assert(numel(vals) == 1, sprintf('inconsistant parameters have been given to paramobj=%s. Relevant paramnames are: %s\n', class(paramobj), parameterArray()));
+            assert(numel(vals) == 1, sprintf('inconsistant parameters have been given to inputparams=%s. Relevant paramnames are: %s\n', class(inputparams), parameterArray()));
                 
         end
 
         for iparam = 1 : numel(paramnames)
             paramname = paramnames{iparam};
-            paramobj = paramobj.setParam(paramname, val);
+            inputparams = inputparams.setParam(paramname, val);
         end
         
     end

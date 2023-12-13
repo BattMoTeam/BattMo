@@ -2,9 +2,9 @@ classdef HydrogenElectrodeInputParams < SeaWaterElectrodeInputParams
     
     methods
         
-        function paramobj = HydrogenElectrodeInputParams(jsonstruct)
+        function inputparams = HydrogenElectrodeInputParams(jsonstruct)
             
-            paramobj = paramobj@SeaWaterElectrodeInputParams(jsonstruct);
+            inputparams = inputparams@SeaWaterElectrodeInputParams(jsonstruct);
             
         end
 

@@ -24,9 +24,9 @@ classdef CurrentCollectorInputParams < ElectronicComponentInputParams
 
     methods
 
-        function paramobj = CurrentCollectorInputParams(jsonstruct)
+        function inputparams = CurrentCollectorInputParams(jsonstruct)
 
-            paramobj = paramobj@ElectronicComponentInputParams(jsonstruct);
+            inputparams = inputparams@ElectronicComponentInputParams(jsonstruct);
 
         end
 

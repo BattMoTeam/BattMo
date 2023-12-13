@@ -9,14 +9,14 @@ classdef SEIActiveMaterial < ActiveMaterial
 
     methods
 
-        function model = SEIActiveMaterial(paramobj)
+        function model = SEIActiveMaterial(inputparams)
 
-            paramobj = paramobj.validateInputParams();
+            inputparams = inputparams.validateInputParams();
 
-            model = model@ActiveMaterial(paramobj);
+            model = model@ActiveMaterial(inputparams);
 
-            model.SideReaction = SideReaction(paramobj.SideReaction);
-            model.SolidElectrodeInterface = SolidElectrodeInterface(paramobj.SolidElectrodeInterface);
+            model.SideReaction = SideReaction(inputparams.SideReaction);
+            model.SolidElectrodeInterface = SolidElectrodeInterface(inputparams.SolidElectrodeInterface);
 
             if model.standAlone
                 model = model.setupStandAloneModel();

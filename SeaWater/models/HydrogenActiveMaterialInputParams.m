@@ -8,9 +8,9 @@ classdef HydrogenActiveMaterialInputParams < SeaWaterActiveMaterialInputParams
 
     methods
 
-        function paramobj = HydrogenActiveMaterialInputParams(jsonstruct)
+        function inputparams = HydrogenActiveMaterialInputParams(jsonstruct)
             
-            paramobj = paramobj@SeaWaterActiveMaterialInputParams(jsonstruct);
+            inputparams = inputparams@SeaWaterActiveMaterialInputParams(jsonstruct);
             
         end
         

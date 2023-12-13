@@ -22,36 +22,36 @@ sr    = 'SideReaction';
 elyte = 'Electrolyte';
 ctrl  = 'Control';
 
-paramobj = SingleParticleSEIInputParams(jsonstruct);
+inputparams = SingleParticleSEIInputParams(jsonstruct);
 
 controlPolicy = 'CCCV';
 switch controlPolicy
   case 'CCCV'
-    paramobj.Control.controlPolicy = 'CCCV';
+    inputparams.Control.controlPolicy = 'CCCV';
   case 'CV'
-    paramobj_control = CvControlModelInputParams([]);
-    paramobj_control.inputVoltage = 4.5;
-    paramobj_control.CRate = 0.5; % not used in this case
-    paramobj.Control = paramobj_control;
+    inputparams_control = CvControlModelInputParams([]);
+    inputparams_control.inputVoltage = 4.5;
+    inputparams_control.CRate = 0.5; % not used in this case
+    inputparams.Control = inputparams_control;
   otherwise
     error('control policy not recognized')
 end
 
-paramobj.(an).(sd).N   = 10;
-paramobj.(an).(sd).np  = 1;
-paramobj.(an).(sei).N  = 10;
-paramobj.(an).(sei).np = 1;
+inputparams.(an).(sd).N   = 10;
+inputparams.(an).(sd).np  = 1;
+inputparams.(an).(sei).N  = 10;
+inputparams.(an).(sei).np = 1;
 
 xlength = 57e-6;
 G = cartGrid(1, xlength);
 G = computeGeometry(G);
-paramobj.(an).G = G;
+inputparams.(an).G = G;
 
-paramobj.(ct).(sd).N  = 10;
-paramobj.(ct).(sd).np = 1;
-paramobj.(ct).G = G;
+inputparams.(ct).(sd).N  = 10;
+inputparams.(ct).(sd).np = 1;
+inputparams.(ct).G = G;
 
-model = SingleParticleSEI(paramobj);
+model = SingleParticleSEI(inputparams);
 
 % Normally in CCCV control, the current value is computed from CRate but, here, we set it up directly
 if strcmp(model.(ctrl).controlPolicy, 'CCCV')

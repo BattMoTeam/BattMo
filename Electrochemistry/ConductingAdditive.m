@@ -16,7 +16,7 @@ classdef ConductingAdditive < BaseModel
 
     methods
         
-        function model = ConductingAdditive(paramobj)
+        function model = ConductingAdditive(inputparams)
             
             model = model@BaseModel();
             
@@ -26,7 +26,7 @@ classdef ConductingAdditive < BaseModel
                        'thermalConductivity'   , ...
                        'specificHeatCapacity'};
 
-            model = dispatchParams(model, paramobj, fdnames);
+            model = dispatchParams(model, inputparams, fdnames);
 
         end
         

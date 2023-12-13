@@ -21,7 +21,7 @@ classdef SolidDiffusionModel < BaseModel
 
     methods
 
-        function model = SolidDiffusionModel(paramobj)
+        function model = SolidDiffusionModel(inputparams)
 
             model = model@BaseModel();
 
@@ -34,7 +34,7 @@ classdef SolidDiffusionModel < BaseModel
                        'volumetricSurfaceArea'        , ...
                        'volumeFraction'};
 
-            model = dispatchParams(model, paramobj, fdnames);
+            model = dispatchParams(model, inputparams, fdnames);
         
         end
         

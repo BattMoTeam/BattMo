@@ -25,19 +25,19 @@ classdef IonomerMembrane < ElectronicComponent
     
     methods
         
-        function model = IonomerMembrane(paramobj)
+        function model = IonomerMembrane(inputparams)
 
-            paramobj.use_thermal = false;
-            model = model@ElectronicComponent(paramobj);
+            inputparams.use_thermal = false;
+            model = model@ElectronicComponent(inputparams);
 
             fdnames = {'volumeFraction', ...
                        'H2O'           , ...
                        'OH'            , ...
                        'V'             , ...
                        'tortuosity'};
-            model = dispatchParams(model, paramobj, fdnames);
+            model = dispatchParams(model, inputparams, fdnames);
 
-            cT = paramobj.cT;
+            cT = inputparams.cT;
             nc = model.G.cells.num;
             model.cT = cT*ones(nc, 1);
             

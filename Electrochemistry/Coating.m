@@ -39,9 +39,9 @@ classdef Coating < ElectronicComponent
 
     methods
 
-        function model = Coating(paramobj)
+        function model = Coating(inputparams)
 
-            model = model@ElectronicComponent(paramobj);
+            model = model@ElectronicComponent(inputparams);
 
             fdnames = {'effectiveDensity'               , ...
                        'bruggemanCoefficient'           , ...
@@ -54,7 +54,7 @@ classdef Coating < ElectronicComponent
                        'effectiveVolumetricHeatCapacity', ...
                        'externalCouplingTerm'};
 
-            model = dispatchParams(model, paramobj, fdnames);
+            model = dispatchParams(model, inputparams, fdnames);
 
             sd = 'SolidDiffusion';
             am = 'ActiveMaterial';
@@ -84,9 +84,9 @@ classdef Coating < ElectronicComponent
             for icomp = 1 : numel(compnames)
                 compname = compnames{icomp};
                 compInds.(compname) = icomp;
-                if ~isempty(paramobj.(compname))
-                    rho = paramobj.(compname).density;
-                    mf  = paramobj.(compname).massFraction;
+                if ~isempty(inputparams.(compname))
+                    rho = inputparams.(compname).density;
+                    mf  = inputparams.(compname).massFraction;
                     if ~isempty(rho) & ~isempty(mf)
                         specificVolumes(icomp) = mf/rho;
                     end
@@ -162,8 +162,8 @@ classdef Coating < ElectronicComponent
                 kappa = 0;
                 for icomp = 1 : numel(compnames)
                     compname = compnames{icomp};
-                    if ~isempty(paramobj.(compname)) && ~isempty(paramobj.(compname).electronicConductivity)
-                        kappa = kappa + model.volumeFractions(icomp)*paramobj.(compname).electronicConductivity;
+                    if ~isempty(inputparams.(compname)) && ~isempty(inputparams.(compname).electronicConductivity)
+                        kappa = kappa + model.volumeFractions(icomp)*inputparams.(compname).electronicConductivity;
                     end
                 end
                 assert(abs(kappa) > 0, 'The electronicConductivity must be provided for at least one component');
@@ -191,7 +191,7 @@ classdef Coating < ElectronicComponent
                     thermalConductivity = 0;
                     for icomp = 1 : numel(compnames)
                         compname = compnames{icomp};
-                        thermalConductivity = thermalConductivity + (model.volumeFractions(icomp))^bg*paramobj.(compname).thermalConductivity;
+                        thermalConductivity = thermalConductivity + (model.volumeFractions(icomp))^bg*inputparams.(compname).thermalConductivity;
                     end
                     model.thermalConductivity = thermalConductivity;
                 end
@@ -207,7 +207,7 @@ classdef Coating < ElectronicComponent
                     specificHeatCapacity = 0;
                     for icomp = 1 : numel(compnames)
                         compname = compnames{icomp};
-                        specificHeatCapacity = specificHeatCapacity + paramobj.(compname).massFraction*paramobj.(compname).specificHeatCapacity;
+                        specificHeatCapacity = specificHeatCapacity + inputparams.(compname).massFraction*inputparams.(compname).specificHeatCapacity;
                     end
                     model.specificHeatCapacity = specificHeatCapacity;
                 end
@@ -220,30 +220,30 @@ classdef Coating < ElectronicComponent
 
             %% Setup the submodels
 
-            np = paramobj.G.cells.num;
-            switch paramobj.active_material_type
+            np = inputparams.G.cells.num;
+            switch inputparams.active_material_type
               case 'default'
-                paramobj.(am).(sd).volumeFraction = model.volumeFraction*model.volumeFractions(model.compInds.(am));
-                if strcmp(paramobj.(am).diffusionModelType, 'full')
-                    paramobj.(am).(sd).np = np;
+                inputparams.(am).(sd).volumeFraction = model.volumeFraction*model.volumeFractions(model.compInds.(am));
+                if strcmp(inputparams.(am).diffusionModelType, 'full')
+                    inputparams.(am).(sd).np = np;
                 end
-                model.ActiveMaterial = ActiveMaterial(paramobj.ActiveMaterial);
+                model.ActiveMaterial = ActiveMaterial(inputparams.ActiveMaterial);
               case 'composite'
                 ams = {am1, am2};
                 for iam = 1 : numel(ams)
                     amc = ams{iam};
-                    paramobj.(amc).(sd).volumeFraction = model.volumeFraction*model.volumeFractions(model.compInds.(amc));
-                    if strcmp(paramobj.(amc).diffusionModelType, 'full')
-                        paramobj.(amc).(sd).np = np;
+                    inputparams.(amc).(sd).volumeFraction = model.volumeFraction*model.volumeFractions(model.compInds.(amc));
+                    if strcmp(inputparams.(amc).diffusionModelType, 'full')
+                        inputparams.(amc).(sd).np = np;
                     end
-                    model.(amc) = ActiveMaterial(paramobj.(amc));
+                    model.(amc) = ActiveMaterial(inputparams.(amc));
                 end
               otherwise
                 error('active_material_type not recognized');
             end
 
-            model.Binder             = Binder(paramobj.Binder);
-            model.ConductingAdditive = ConductingAdditive(paramobj.ConductingAdditive);
+            model.Binder             = Binder(inputparams.Binder);
+            model.ConductingAdditive = ConductingAdditive(inputparams.ConductingAdditive);
 
             if updateMassFractions
                 

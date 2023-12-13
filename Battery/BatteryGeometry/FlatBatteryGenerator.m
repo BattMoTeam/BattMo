@@ -10,14 +10,14 @@ classdef FlatBatteryGenerator < SpiralBatteryGenerator
             gen = gen@SpiralBatteryGenerator();  
         end
         
-        function [paramobj, gen] = setupGrid(gen, paramobj, params)
+        function [inputparams, gen] = setupGrid(gen, inputparams, params)
     
             gen = flatGrid(gen);
-            paramobj.G = gen.G;
+            inputparams.G = gen.G;
             
         end
 
-        function [paramobj, gen] = updateBatteryInputParams(gen, paramobj, params)
+        function [inputparams, gen] = updateBatteryInputParams(gen, inputparams, params)
                     
             gen.nwindings = params.nwindings;
             gen.depth     = params.depth;
@@ -27,7 +27,7 @@ classdef FlatBatteryGenerator < SpiralBatteryGenerator
             gen.L         = params.L;
             gen.nL        = params.nL;
             
-            paramobj = gen.setupBatteryInputParams(paramobj, []);
+            inputparams = gen.setupBatteryInputParams(inputparams, []);
             
         end
         

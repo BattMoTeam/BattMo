@@ -27,11 +27,11 @@ classdef CompositeActiveMaterial < ElectronicComponent
 
     methods
 
-        function model = CompositeActiveMaterial(paramobj)
+        function model = CompositeActiveMaterial(inputparams)
         %
-        % ``paramobj`` is instance of :class:`CompositeActiveMaterialInputParams <Electrochemistry.CompositeActiveMaterialInputParams>`
+        % ``inputparams`` is instance of :class:`CompositeActiveMaterialInputParams <Electrochemistry.CompositeActiveMaterialInputParams>`
         %
-            model = model@ElectronicComponent(paramobj);
+            model = model@ElectronicComponent(inputparams);
 
             fdnames = {'volumeFraction'        , ...
                        'thermalConductivity'   , ...
@@ -40,15 +40,15 @@ classdef CompositeActiveMaterial < ElectronicComponent
                        'externalCouplingTerm'  , ...
                        'use_thermal'};
 
-            model = dispatchParams(model, paramobj, fdnames);
+            model = dispatchParams(model, inputparams, fdnames);
 
 
-            model.FirstMaterial = ActiveMaterial(paramobj.FirstMaterial);
-            model.SecondMaterial = ActiveMaterial(paramobj.SecondMaterial);
+            model.FirstMaterial = ActiveMaterial(inputparams.FirstMaterial);
+            model.SecondMaterial = ActiveMaterial(inputparams.SecondMaterial);
 
             nc = model.G.cells.num;
 
-            model.volumeFraction = paramobj.volumeFraction*ones(nc, 1);
+            model.volumeFraction = inputparams.volumeFraction*ones(nc, 1);
             model.porosity       = 1 - model.volumeFraction;
 
             model.isRoot = false;

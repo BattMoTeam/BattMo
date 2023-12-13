@@ -1,4 +1,4 @@
-function paramobj = setupElectrolyserGridFromJson(paramobj, jsonstruct)
+function inputparams = setupElectrolyserGridFromJson(inputparams, jsonstruct)
 
     inm = 'IonomerMembrane';
     her = 'HydrogenEvolutionElectrode';
@@ -25,11 +25,11 @@ function paramobj = setupElectrolyserGridFromJson(paramobj, jsonstruct)
                jsonstruct.(her).(ptl).cellsize];
 
        gen = ElectrolyserGridGenerator1D(xs, cxs);
-       paramobj = gen.updateElectrolyserInputParams(paramobj);
+       inputparams = gen.updateElectrolyserInputParams(inputparams);
 
        % We add the solid volume fraction 
 
-       vf_inm = ones(paramobj.(inm).G.cells.num, 1);
+       vf_inm = ones(inputparams.(inm).G.cells.num, 1);
 
        eldes = {oer, her};
        
@@ -37,9 +37,9 @@ function paramobj = setupElectrolyserGridFromJson(paramobj, jsonstruct)
            
            elde = eldes{ielde};
            svf_elde = jsonstruct.(elde).(ptl).widthFraction;
-           svf_elde = svf_elde*ones(paramobj.(elde).(ptl).G.cells.num, 1);
+           svf_elde = svf_elde*ones(inputparams.(elde).(ptl).G.cells.num, 1);
            
-           coupterm = paramobj.(elde).couplingTerm;
+           coupterm = inputparams.(elde).couplingTerm;
            w_elde = jsonstruct.(elde).(ctl).widthFraction;
            switch elde
              case oer
@@ -50,17 +50,17 @@ function paramobj = setupElectrolyserGridFromJson(paramobj, jsonstruct)
            w_inm = jsonstruct.(inm).widthFractions.(side);
            svf_elde(coupterm.couplingcells(:, 1)) = w_elde + w_inm;
            
-           coupterms = paramobj.couplingTerms;
+           coupterms = inputparams.couplingTerms;
            coupnames = cellfun(@(x) x.name, coupterms, 'uniformoutput', false);
            coupterm = getCoupTerm(coupterms, sprintf('%s-%s', elde, inm), coupnames);
            
            vf_inm(coupterm.couplingcells(:, 2)) = w_inm;
 
-           paramobj.(elde).(ptl).solidVolumeFraction = svf_elde;
+           inputparams.(elde).(ptl).solidVolumeFraction = svf_elde;
            
        end
 
-       paramobj.(inm).volumeFraction = vf_inm;
+       inputparams.(inm).volumeFraction = vf_inm;
        
       otherwise
         

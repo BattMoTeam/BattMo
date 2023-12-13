@@ -11,8 +11,8 @@ classdef FunctionInputParams < InputParams
     
     methods
 
-        function paramobj = FunctionInputParams(jsonstruct)
-            paramobj = paramobj@InputParams(jsonstruct);
+        function inputparams = FunctionInputParams(jsonstruct)
+            inputparams = inputparams@InputParams(jsonstruct);
         end
         
     end

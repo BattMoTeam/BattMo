@@ -6,8 +6,8 @@ classdef SimplifiedSolidDiffusionModelInputParams < SolidDiffusionModelInputPara
 %
     methods
         
-        function paramobj = SimplifiedSolidDiffusionModelInputParams(jsonstruct)
-            paramobj = paramobj@SolidDiffusionModelInputParams(jsonstruct);
+        function inputparams = SimplifiedSolidDiffusionModelInputParams(jsonstruct)
+            inputparams = inputparams@SolidDiffusionModelInputParams(jsonstruct);
         end
         
     end

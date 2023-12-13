@@ -11,13 +11,13 @@ classdef SeaWaterActiveMaterial < BaseModel
     
     methods
         
-        function model = SeaWaterActiveMaterial(paramobj)
+        function model = SeaWaterActiveMaterial(inputparams)
 
             model = model@BaseModel();
             fdnames = {'chargeCarrierName', ...
                        'stochElectron', ...
                        'etaMax'};
-            model = dispatchParams(model, paramobj, fdnames);
+            model = dispatchParams(model, inputparams, fdnames);
             
         end
 

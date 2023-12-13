@@ -2,21 +2,21 @@ classdef CCChargeControlModelInputParams < CCcontrolModelInputParams
 
     methods
 
-        function paramobj = CCChargeControlModelInputParams(jsonstruct);
+        function inputparams = CCChargeControlModelInputParams(jsonstruct);
             
-            paramobj = paramobj@CCcontrolModelInputParams(jsonstruct);
-            paramobj.controlPolicy = 'CCCharge';
+            inputparams = inputparams@CCcontrolModelInputParams(jsonstruct);
+            inputparams.controlPolicy = 'CCCharge';
             
         end
 
-        function paramobj = validateInputParams(paramobj)
+        function inputparams = validateInputParams(inputparams)
 
-            if isempty(paramobj.useCVswitch)
+            if isempty(inputparams.useCVswitch)
                 % Default value is false
-                paramobj.useCVswitch = true;
+                inputparams.useCVswitch = true;
             end
             
-            paramobj = validateInputParams@CCcontrolModelInputParams(paramobj);
+            inputparams = validateInputParams@CCcontrolModelInputParams(inputparams);
             
         end
     end

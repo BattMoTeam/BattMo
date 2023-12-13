@@ -17,29 +17,29 @@ classdef ElectrolyserInputParams < InputParams
     
     methods
         
-        function paramobj = ElectrolyserInputParams(jsonstruct)
+        function inputparams = ElectrolyserInputParams(jsonstruct)
 
-            paramobj = paramobj@InputParams(jsonstruct);
+            inputparams = inputparams@InputParams(jsonstruct);
             
             pick = @(fd) pickField(jsonstruct, fd);
 
-            paramobj.IonomerMembrane = IonomerMembraneInputParams(pick('IonomerMembrane'));
-            paramobj.HydrogenEvolutionElectrode = EvolutionElectrodeInputParams(pick('HydrogenEvolutionElectrode'));
-            paramobj.OxygenEvolutionElectrode = EvolutionElectrodeInputParams(pick('OxygenEvolutionElectrode'));
+            inputparams.IonomerMembrane = IonomerMembraneInputParams(pick('IonomerMembrane'));
+            inputparams.HydrogenEvolutionElectrode = EvolutionElectrodeInputParams(pick('HydrogenEvolutionElectrode'));
+            inputparams.OxygenEvolutionElectrode = EvolutionElectrodeInputParams(pick('OxygenEvolutionElectrode'));
 
-            paramobj = paramobj.validateInputParams();
+            inputparams = inputparams.validateInputParams();
         end
 
-        function paramobj = validateInputParams(paramobj)
+        function inputparams = validateInputParams(inputparams)
 
-            assert(strcmp(paramobj.HydrogenEvolutionElectrode.porousTransportLayerType, 'Hydrogen'), 'Expected porous transport layer is hydrogen');
-            assert(strcmp(paramobj.OxygenEvolutionElectrode.porousTransportLayerType, 'Oxygen'), 'Expected porous transport layer is oxygen');
+            assert(strcmp(inputparams.HydrogenEvolutionElectrode.porousTransportLayerType, 'Hydrogen'), 'Expected porous transport layer is hydrogen');
+            assert(strcmp(inputparams.OxygenEvolutionElectrode.porousTransportLayerType, 'Oxygen'), 'Expected porous transport layer is oxygen');
 
-            paramobj = mergeParameters(paramobj, {{'Eref'}                                               , ...
+            inputparams = mergeParameters(inputparams, {{'Eref'}                                               , ...
                                                   {'HydrogenEvolutionElectrode', 'CatalystLayer', 'Eref'}, ...
                                                   {'OxygenEvolutionElectrode', 'CatalystLayer', 'Eref'}});
             
-            paramobj = validateInputParams@InputParams(paramobj);
+            inputparams = validateInputParams@InputParams(inputparams);
             
         end
         

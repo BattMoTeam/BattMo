@@ -2,9 +2,9 @@ classdef MagnesiumBatteryNoPrecipitation < MagnesiumBattery
 
     methods
 
-        function model = MagnesiumBatteryNoPrecipitation(paramobj)
+        function model = MagnesiumBatteryNoPrecipitation(inputparams)
 
-            model = model@MagnesiumBattery(paramobj);
+            model = model@MagnesiumBattery(inputparams);
 
         end
         

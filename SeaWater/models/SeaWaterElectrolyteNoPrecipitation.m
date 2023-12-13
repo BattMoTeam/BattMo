@@ -45,25 +45,25 @@ classdef SeaWaterElectrolyteNoPrecipitation < ElectronicComponent
     methods
         
         
-        function model = SeaWaterElectrolyteNoPrecipitation(paramobj)
+        function model = SeaWaterElectrolyteNoPrecipitation(inputparams)
             
-            model = model@ElectronicComponent(paramobj);
+            model = model@ElectronicComponent(inputparams);
             
             fdnames = {'species'             , ...
                        'kappa'};
-            model = dispatchParams(model, paramobj, fdnames);
+            model = dispatchParams(model, inputparams, fdnames);
             
-            model = model.getAqueousMixtureComposition(paramobj);
+            model = model.getAqueousMixtureComposition(inputparams);
             
-            model = model.setupReactionRates(paramobj);
+            model = model.setupReactionRates(inputparams);
         
             model = model.setupMainIonIndex();
 
         end
 
         
-        function model = setupReactionRates(model, paramobj)
-            Kdata = paramobj.K;
+        function model = setupReactionRates(model, inputparams)
+            Kdata = inputparams.K;
             
             for ind = 1 : numel(Kdata)
                 value  = Kdata(ind).value;
@@ -185,13 +185,13 @@ classdef SeaWaterElectrolyteNoPrecipitation < ElectronicComponent
             
         end
                 
-        function model = getAqueousMixtureComposition(model, paramobj)
+        function model = getAqueousMixtureComposition(model, inputparams)
             
-            species        = arrayfun(@(sp) sp.name, paramobj.species, 'uniformoutput', false);
-            quasiparticles = arrayfun(@(qp) qp.name, paramobj.quasiparticles, 'uniformoutput', false);
-            solutes        = paramobj.solutes;
-            logspecies     = paramobj.logspecies;
-            solids         = paramobj.solids;
+            species        = arrayfun(@(sp) sp.name, inputparams.species, 'uniformoutput', false);
+            quasiparticles = arrayfun(@(qp) qp.name, inputparams.quasiparticles, 'uniformoutput', false);
+            solutes        = inputparams.solutes;
+            logspecies     = inputparams.logspecies;
+            solids         = inputparams.solids;
             
             nsp     = numel(species);
             nqp     = numel(quasiparticles);
@@ -226,7 +226,7 @@ classdef SeaWaterElectrolyteNoPrecipitation < ElectronicComponent
 
             
             qpmatrix = zeros(nqp, nsp);
-            qp = paramobj.quasiparticles;
+            qp = inputparams.quasiparticles;
             for iqp = 1 : numel(qp)
                 comp = qp(iqp).composition;
                 for ic = 1 : numel(comp)

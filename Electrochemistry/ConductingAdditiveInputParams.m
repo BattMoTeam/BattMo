@@ -16,9 +16,9 @@ classdef ConductingAdditiveInputParams < InputParams
     
     methods
         
-        function paramobj = ConductingAdditiveInputParams(jsonstruct)
+        function inputparams = ConductingAdditiveInputParams(jsonstruct)
 
-            paramobj = paramobj@InputParams(jsonstruct);
+            inputparams = inputparams@InputParams(jsonstruct);
             
         end
         

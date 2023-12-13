@@ -12,8 +12,8 @@ classdef MagnesiumElectrolyte < SeaWaterElectrolyte
     
     methods
 
-        function model = MagnesiumElectrolyte(paramobj)
-            model = model@SeaWaterElectrolyte(paramobj);
+        function model = MagnesiumElectrolyte(inputparams)
+            model = model@SeaWaterElectrolyte(inputparams);
         end
 
         function model = registerVarAndPropfuncNames(model)

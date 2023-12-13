@@ -18,9 +18,9 @@ classdef SolidElectrodeInterfaceInputParams < InputParams
     
     methods
         
-        function paramobj = SolidElectrodeInterfaceInputParams(jsonstruct)
+        function inputparams = SolidElectrodeInterfaceInputParams(jsonstruct)
 
-            paramobj = paramobj@InputParams(jsonstruct);
+            inputparams = inputparams@InputParams(jsonstruct);
             
         end
         

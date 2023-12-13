@@ -2,9 +2,9 @@ classdef simpleCcCvControlModel < CcCvControlModel
     
     methods
 
-        function model = simpleCcCvControlModel(paramobj)
+        function model = simpleCcCvControlModel(inputparams)
 
-            model = model@CcCvControlModel(paramobj);
+            model = model@CcCvControlModel(inputparams);
         
         end
         

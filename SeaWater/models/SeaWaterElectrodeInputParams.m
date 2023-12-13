@@ -11,9 +11,9 @@ classdef SeaWaterElectrodeInputParams < ElectronicComponentInputParams
     
     methods
         
-        function paramobj = SeaWaterElectrodeInputParams(jsonstruct)
+        function inputparams = SeaWaterElectrodeInputParams(jsonstruct)
             
-            paramobj = paramobj@ElectronicComponentInputParams(jsonstruct);
+            inputparams = inputparams@ElectronicComponentInputParams(jsonstruct);
             
         end
 

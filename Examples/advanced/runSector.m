@@ -77,28 +77,28 @@ spiralparams = struct('nwindings'   , nwindings, ...
                       'tabparams'   , [], ...
                       'angleuniform', true);
 
-% The input material parameters given in json format are used to populate the paramobj object.
+% The input material parameters given in json format are used to populate the inputparams object.
 jsonstruct = parseBattmoJson(fullfile('ParameterData','BatteryCellParameters','LithiumIonBatteryCell','lithium_ion_battery_nmc_graphite.json'));
 jsonstruct.include_current_collectors = true;
 
 simcase = 'CCDischarge';
 jsonstruct.Control.controlPolicy = simcase;
 
-paramobj = BatteryInputParams(jsonstruct);
+inputparams = BatteryInputParams(jsonstruct);
 
 th = 'ThermalModel';
-paramobj.(th).externalHeatTransferCoefficient = 10*watt/meter^2;
+inputparams.(th).externalHeatTransferCoefficient = 10*watt/meter^2;
 
 gen = SectorBatteryGenerator();
 
-paramobj = gen.updateBatteryInputParams(paramobj, spiralparams);
+inputparams = gen.updateBatteryInputParams(inputparams, spiralparams);
 
 CRate = 0.1;
-paramobj.Control.lowerCutoffVoltage = 3;
-paramobj.Control.CRate              = CRate;
-paramobj.Control.rampupTime         = 0.1/CRate;
+inputparams.Control.lowerCutoffVoltage = 3;
+inputparams.Control.CRate              = CRate;
+inputparams.Control.rampupTime         = 0.1/CRate;
 
-model = Battery(paramobj);
+model = Battery(inputparams);
 
 %% Setup schedule
 CRate = 1;

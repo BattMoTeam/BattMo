@@ -9,9 +9,9 @@ classdef HydrogenPorousTransportLayer < PorousTransportLayer
     
     methods
         
-        function model = HydrogenPorousTransportLayer(paramobj)
+        function model = HydrogenPorousTransportLayer(inputparams)
 
-            model = model@PorousTransportLayer(paramobj);
+            model = model@PorousTransportLayer(inputparams);
 
             % add the H2 component in the indexing structures
             model.compInd.H2 = model.compInd.activeGas;

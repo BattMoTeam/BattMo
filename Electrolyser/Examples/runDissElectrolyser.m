@@ -11,12 +11,12 @@ jsonstruct_diss = parseBattmoJson(jsonfilename);
 jsonstruct = mergeJsonStructs({jsonstruct_base, ...
                                jsonstruct_diss});
 
-paramobj = ElectrolyserInputParams(jsonstruct);
+inputparams = ElectrolyserInputParams(jsonstruct);
 
 jsonstring = fileread(fullfile('Electrolyser','Parameters','electrolysergeometry1d.json'));
 jsonstruct = jsondecode(jsonstring);
 
-paramobj = setupElectrolyserGridFromJson(paramobj, jsonstruct);
+inputparams = setupElectrolyserGridFromJson(inputparams, jsonstruct);
 
 inm = 'IonomerMembrane';
 her = 'HydrogenEvolutionElectrode';
@@ -26,7 +26,7 @@ exr = 'ExchangeReaction';
 ctl = 'CatalystLayer';
 dm  = 'DissolutionModel';
 
-model = Electrolyser(paramobj);
+model = Electrolyser(inputparams);
 
 doplotgraph = false;
 if doplotgraph

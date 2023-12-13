@@ -11,9 +11,9 @@ classdef CCcontrolModelInputParams < ControlModelInputParams
 
     methods
 
-        function paramobj = CCcontrolModelInputParams(jsonstruct);
+        function inputparams = CCcontrolModelInputParams(jsonstruct);
             
-            paramobj = paramobj@ControlModelInputParams(jsonstruct);
+            inputparams = inputparams@ControlModelInputParams(jsonstruct);
             
         end
 

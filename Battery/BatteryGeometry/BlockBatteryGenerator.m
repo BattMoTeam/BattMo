@@ -7,10 +7,10 @@ classdef BlockBatteryGenerator < SpiralBatteryGenerator
         end
         
 
-        function [paramobj, gen] = setupGrid(gen, paramobj, params)
+        function [inputparams, gen] = setupGrid(gen, inputparams, params)
     
             gen = flatGrid(gen);
-            paramobj.G = gen.G;
+            inputparams.G = gen.G;
             
         end
 

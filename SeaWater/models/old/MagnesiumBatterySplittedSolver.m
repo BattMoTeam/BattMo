@@ -10,13 +10,13 @@ classdef MagnesiumBatterySplittedSolver < BaseModel
     
     methods
 
-        function model = MagnesiumBatterySplittedSolver(paramobj)
+        function model = MagnesiumBatterySplittedSolver(inputparams)
             
             model = model@BaseModel();
             
-            model.noPrecModel = MagnesiumBatteryNoPrecipitation(paramobj);
-            model.noFlowModel = MagnesiumBatteryNoFlow(paramobj);
-            model.fullModel   = MagnesiumBattery(paramobj);
+            model.noPrecModel = MagnesiumBatteryNoPrecipitation(inputparams);
+            model.noFlowModel = MagnesiumBatteryNoFlow(inputparams);
+            model.fullModel   = MagnesiumBattery(inputparams);
 
         end
 

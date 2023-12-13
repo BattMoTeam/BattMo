@@ -30,15 +30,15 @@ jsonstruct.include_current_collectors = false;
 jsonstruct.(ne).(co).(am).diffusionModelType = 'full';
 jsonstruct.(pe).(co).(am).diffusionModelType = 'full';
 
-paramobj = BatteryInputParams(jsonstruct);
+inputparams = BatteryInputParams(jsonstruct);
 
-paramobj = paramobj.(ne).(co).(am);
+inputparams = inputparams.(ne).(co).(am);
 
-paramobj.standAlone = true;
+inputparams.standAlone = true;
 
-paramobj = paramobj.validateInputParams();
+inputparams = inputparams.validateInputParams();
 
-model = ActiveMaterial(paramobj);
+model = ActiveMaterial(inputparams);
 
 %% Setup initial state
 

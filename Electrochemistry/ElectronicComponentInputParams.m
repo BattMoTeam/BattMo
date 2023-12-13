@@ -21,8 +21,8 @@ classdef ElectronicComponentInputParams < ComponentInputParams
 
     methods
 
-        function paramobj = ElectronicComponentInputParams(jsonstruct)
-            paramobj = paramobj@ComponentInputParams(jsonstruct);
+        function inputparams = ElectronicComponentInputParams(jsonstruct)
+            inputparams = inputparams@ComponentInputParams(jsonstruct);
         end
 
     end

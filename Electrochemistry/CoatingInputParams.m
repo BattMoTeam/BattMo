@@ -38,36 +38,36 @@ classdef CoatingInputParams < ElectronicComponentInputParams
 
     methods
 
-        function paramobj = CoatingInputParams(jsonstruct)
+        function inputparams = CoatingInputParams(jsonstruct)
 
-            paramobj = paramobj@ElectronicComponentInputParams(jsonstruct);
+            inputparams = inputparams@ElectronicComponentInputParams(jsonstruct);
 
             pick = @(fd) pickField(jsonstruct, fd);
 
-            if isempty(paramobj.active_material_type)
-                paramobj.active_material_type = 'default';
+            if isempty(inputparams.active_material_type)
+                inputparams.active_material_type = 'default';
             end
 
-            switch paramobj.active_material_type
+            switch inputparams.active_material_type
               case 'default'
 
                 am = 'ActiveMaterial';
-                paramobj.(am) = ActiveMaterialInputParams(jsonstruct.(am));
+                inputparams.(am) = ActiveMaterialInputParams(jsonstruct.(am));
 
               case 'composite'
 
                 am1 = 'ActiveMaterial1';
                 am2 = 'ActiveMaterial2';
-                paramobj.(am1) = ActiveMaterialInputParams(jsonstruct.(am1));
-                paramobj.(am2) = ActiveMaterialInputParams(jsonstruct.(am2));
+                inputparams.(am1) = ActiveMaterialInputParams(jsonstruct.(am1));
+                inputparams.(am2) = ActiveMaterialInputParams(jsonstruct.(am2));
 
               otherwise
                 error('active_material_type not recognized');
             end
-            paramobj.Binder             = BinderInputParams(pick('Binder'));
-            paramobj.ConductingAdditive = ConductingAdditiveInputParams(pick('ConductingAdditive'));
+            inputparams.Binder             = BinderInputParams(pick('Binder'));
+            inputparams.ConductingAdditive = ConductingAdditiveInputParams(pick('ConductingAdditive'));
 
-            paramobj = paramobj.validateInputParams();
+            inputparams = inputparams.validateInputParams();
 
         end
 

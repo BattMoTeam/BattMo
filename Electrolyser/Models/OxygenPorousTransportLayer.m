@@ -10,9 +10,9 @@ classdef OxygenPorousTransportLayer < PorousTransportLayer
     
     methods
         
-        function model = OxygenPorousTransportLayer(paramobj)
+        function model = OxygenPorousTransportLayer(inputparams)
 
-            model = model@PorousTransportLayer(paramobj);
+            model = model@PorousTransportLayer(inputparams);
             
             % add the  O2 component in the indexing structures            
             model.compInd.O2 = model.compInd.activeGas;

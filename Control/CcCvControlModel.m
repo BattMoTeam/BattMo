@@ -20,15 +20,15 @@ classdef CcCvControlModel < ControlModel
     
     methods
 
-        function model = CcCvControlModel(paramobj)
+        function model = CcCvControlModel(inputparams)
 
-            model = model@ControlModel(paramobj);
+            model = model@ControlModel(inputparams);
             
             fdnames = {'dEdtLimit'     , ...
                        'dIdtLimit'     , ...
                        'numberOfCycles', ...
                        'initialControl'};
-            model = dispatchParams(model, paramobj, fdnames);
+            model = dispatchParams(model, inputparams, fdnames);
             
         end
 

@@ -76,21 +76,21 @@ jsonstruct.(ne).(am).diffusionModelType = 'full';
 % various parts of the simulator during the simulation. This class is
 % instantiated using the jsonstruct we just created:
 
-paramobj = BatteryInputParams(jsonstruct);
+inputparams = BatteryInputParams(jsonstruct);
 
 %%
-% It is also possible to update the properties of this paramobj in a
+% It is also possible to update the properties of this inputparams in a
 % similar way to updating the jsonstruct. Here we set the discretisation
 % level for the diffusion model. Other input parameters for the full diffusion
 % model can be found here:
 % :battmo:`FullSolidDiffusionModelInputParams`.
 
-paramobj.(ne).(co).(am).(sd).N = 5;
-paramobj.(pe).(co).(am).(sd).N = 5;
+inputparams.(ne).(co).(am).(sd).N = 5;
+inputparams.(pe).(co).(am).(sd).N = 5;
 
 % We can also change how the battery is operated, for example setting
 % the cut off voltage.
-paramobj.(ctrl).lowerCutoffVoltage = 2.5;
+inputparams.(ctrl).lowerCutoffVoltage = 2.5;
 
 %% Setting up the geometry
 % Here, we setup the 1D computational grid that will be used for the
@@ -101,14 +101,14 @@ paramobj.(ctrl).lowerCutoffVoltage = 2.5;
 gen = BatteryGeneratorP2D();
 
 %%
-% Now, we update the paramobj with the properties of the grid. This function
-% will update relevent parameters in the paramobj object and make sure we have
+% Now, we update the inputparams with the properties of the grid. This function
+% will update relevent parameters in the inputparams object and make sure we have
 % all the required parameters for the model geometry chosen.
 
-paramobj = gen.updateBatteryInputParams(paramobj);
+inputparams = gen.updateBatteryInputParams(inputparams);
 
 %% Initialising the battery model object
-% The battery model is initialized by sending paramobj to the Battery class
+% The battery model is initialized by sending inputparams to the Battery class
 % constructor. see :battmo:`Battery`.
 %
 % In BattMo a battery model is actually a collection of submodels:
@@ -116,7 +116,7 @@ paramobj = gen.updateBatteryInputParams(paramobj);
 % Model. The battery class contains all of these submodels and various other
 % parameters necessary to run the simulation.
 
-model = Battery(paramobj);
+model = Battery(inputparams);
 
 %% Plotting the OCP curves against state of charge
 % We can inspect the model object to find out which parameters are being

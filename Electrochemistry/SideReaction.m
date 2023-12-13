@@ -12,7 +12,7 @@ classdef SideReaction < BaseModel
 
     methods
 
-        function model = SideReaction(paramobj)
+        function model = SideReaction(inputparams)
 
             model = model@BaseModel();
 
@@ -22,7 +22,7 @@ classdef SideReaction < BaseModel
             fdnames = {'chargeTransferCoefficient', ...
                        'reactionRateConstant'};
 
-            model = dispatchParams(model, paramobj, fdnames);
+            model = dispatchParams(model, inputparams, fdnames);
 
         end
 

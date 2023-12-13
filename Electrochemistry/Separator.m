@@ -26,7 +26,7 @@ classdef Separator < BaseModel
     
     methods
 
-        function model = Separator(paramobj)
+        function model = Separator(inputparams)
             
             model = model@BaseModel();
 
@@ -43,7 +43,7 @@ classdef Separator < BaseModel
                        'effectiveThermalConductivity'   , ...
                        'effectiveVolumetricHeatCapacity', ...
                        'use_thermal'};
-            model = dispatchParams(model, paramobj, fdnames);
+            model = dispatchParams(model, inputparams, fdnames);
 
             if model.use_thermal
                 

@@ -14,10 +14,10 @@ classdef CvControlModelInputParams < ControlModelInputParams
     
     methods
 
-        function paramobj = CvControlModelInputParams(jsonstruct);
+        function inputparams = CvControlModelInputParams(jsonstruct);
             
-            paramobj = paramobj@ControlModelInputParams(jsonstruct);
-            paramobj.controlPolicy = 'CV';
+            inputparams = inputparams@ControlModelInputParams(jsonstruct);
+            inputparams.controlPolicy = 'CV';
             
         end
 

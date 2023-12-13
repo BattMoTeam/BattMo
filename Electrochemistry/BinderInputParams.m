@@ -16,9 +16,9 @@ classdef BinderInputParams < InputParams
     
     methods
         
-        function paramobj = BinderInputParams(jsonstruct)
+        function inputparams = BinderInputParams(jsonstruct)
 
-            paramobj = paramobj@InputParams(jsonstruct);
+            inputparams = inputparams@InputParams(jsonstruct);
             
         end
         
