@@ -58,67 +58,16 @@ function  output = runBatteryJson(jsonstruct, varargin)
     CRate = model.Control.CRate;
 
     %% Setup the time step schedule
-
-    total = convertUnitBattMo(jsonstruct.TimeStepping.totalTime);
-    n = jsonstruct.TimeStepping.numberOfTimeSteps;
-
-    dt = total/n;
-    dts = rampupTimesteps(total, dt, 5);
-
-    step = struct('val', dts, 'control', ones(numel(dts), 1));
-
-    % we setup the control by assigning a source and stop function.
-    % control = struct('CCCV', true);
-    %  !!! Change this to an entry in the JSON with better variable names !!!
-
-    switch model.Control.controlPolicy
-        
-      case 'CCDischarge'
-        
-        srcfunc  = model.(ctrl).setupControlFunction();
-        stopfunc = model.(ctrl).setupStopFunction();
-        % we setup the control by assigning a source and stop function.
-        control = struct('CCDischarge', true);
-        control.src          = srcfunc;
-        control.stopFunction = stopfunc;
-        
-      case 'CCCharge'
-        
-        srcfunc  = model.(ctrl).setupControlFunction();
-        stopfunc = model.(ctrl).setupStopFunction();
-        % we setup the control by assigning a source and stop function.
-        control = struct('CCCharge', true);
-        control.src          = srcfunc;
-        control.stopFunction = stopfunc;
-        
-      case 'CCCV'
-        
-        control = struct('CCCV', true);
-        
-      case 'powerControl'
-        
-        control = struct('powerControl', true);
-        
-      case 'CC'
-        
-        tup = dt;
-        srcfunc = @(time) model.(ctrl).rampupControl(time, tup);
-        switch model.(ctrl).initialControl
-          case 'discharging'
-            stopFunc = @(model, state, state_prev) (state.(ctrl).E < model.(ctrl).lowerCutoffVoltage);
-          case 'charging'
-            stopFunc = @(model, state, state_prev) (state.(ctrl).E > model.(ctrl).upperCutoffVoltage);
-          otherwise
-            error('initial control not recognized');
-        end
-        control = struct('CC', true);
-        control.src = srcfunc;
-        control.stopFunction = stopFunc;
-        
-      otherwise
-        
-        error('control policy not recognized');
+    %
+    
+    if isfield(jsonstruct, 'TimeStepping')
+        timeSteppingParams = jsonstruct.TimeStepping;
+    else
+        timeSteppingParams = [];
     end
+    
+    step    = model.(ctrl).setupScheduleStep(timeSteppingParams);
+    control = model.(ctrl).setupScheduleControl();
 
     % This control is used to set up the schedule
     schedule = struct('control', control, 'step', step);
@@ -134,9 +83,11 @@ function  output = runBatteryJson(jsonstruct, varargin)
 
     [model, nls] = setupNonLinearSolverFromJson(model, jsonstruct);
 
-
     %% Run the simulation
+    %
+    
     if opt.runSimulation
+        
         if isfield(jsonstruct, 'Output') && isfield(jsonstruct.Output, 'saveOutput') && jsonstruct.Output.saveOutput
             saveOptions = jsonstruct.Output.saveOptions;
 
