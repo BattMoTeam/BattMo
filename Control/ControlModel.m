@@ -60,6 +60,11 @@ classdef ControlModel < BaseModel
 
         end
 
+        function cleanState = addStaticVariables(model, cleanState, state)
+        % If the control model includes some static variable (that should be initialized at each Newton step), they can be added here.
+        % Base class behaviour is do nothing.
+        end
+
         function state = prepareStepControl(model, state, state0, dt, drivingForces)
         % Attach to state the values necessary for the control. This is run only once at the beginning of a time step
         % Base class behaviour is do nothing.
@@ -82,10 +87,6 @@ classdef ControlModel < BaseModel
                 
         end
 
-        function cleanState = addStaticVariables(model, cleanState, state)
-        % If the control model includes some static variable (that should be initialized at each Newton step), they can be added here.
-        % Base class behaviour is do nothing.
-        end
 
         function func = setupStopFunction(model)
         % setup and return a "stop function" for the given control, with signature
@@ -107,7 +108,6 @@ classdef ControlModel < BaseModel
 
 
         function func = setupControlFunction(model)
-
         % Setup and return a "control function". We do not require a special signature for this function. The user
         % should instead make sure the method :code:`updateControl` in  :code:`Battery` cover the implemented control policy.
 
@@ -115,7 +115,20 @@ classdef ControlModel < BaseModel
             
         end
 
+        function step = setupScheduleStep(model, timeSteppingParams)
+            
+        % Setup and a return the step structure that is part of the schedule which is used as input for
+        % :mrst:`simulateScheduleAD`. For some control type, there is a natural construction for this structure. This is
+        % why we include this method here, for convenience. It can be overloaded by derived classes. The
+        % timeSteppingParams structure by default is given by the data described in :battmofile:`Utilities/JsonSchemas/TimeStepping.schema.json`
+
+            error('virtual method')
+
+            
+        end
+
         function control = setupScheduleControl(model)
+        % Setup and return the control structure that is sent to :mrst:`simulateScheduleAD`
             
             control.stopFunction = model.setupStopFunction();
             control.src          = model.setupControlFunction();

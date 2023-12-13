@@ -64,13 +64,73 @@ classdef CCcontrolModel < ControlModel
             state.controlEquation = ctrleq;
                         
         end
-    
+        
         function cleanState = addStaticVariables(model, cleanState, state)
+
             cleanState.ctrlType = state.ctrlType;
+            
+        end
+        
+        function step = setupScheduleStep(model, timeSteppingParams)
+            
+        % Setup and a return the step structure that is part of the schedule which is used as input for
+        % :mrst:`simulateScheduleAD`. For some control type, there is a natural construction for this structure. This is
+        % why we include this method here, for convenience. It can be overloaded by derived classes. The
+        % timeSteppingParams structure by default is given by the data described in :battmofile:`Utilities/JsonSchemas/TimeStepping.schema.json`
+
+            paramstemplate = struct('totalTime'          , []   , ...
+                                    'numberOfTimeSteps'  , 100  , ...
+                                    'timeStepDuration'   , []   , ...
+                                    'useRampup'          , false, ...
+                                    'numberOfRampupSteps', 5);
+
+            if (nargin > 1) && ~isempty(timeSteppingParams)
+                
+                params = resolveUnitInputJson(timeSteppingParams);
+
+                vals    = struct2cell(params);
+                fdnames = fieldnames(params);
+
+                params = horzcat(fdnames, vals)';
+                params = params(:);
+
+
+                params = merge_options(paramstemplate, params{:});
+                
+            else
+                
+                params = paramstemplate;
+                
+            end
+
+            CRate = model.CRate;
+
+            if ~isempty(params.totalTime)
+                totalTime = params.totalTime;
+            else
+                totalTime = 1.4*(1*hour/CRate);
+            end
+
+            if ~isempty(params.timeStepDuration)
+                dt = params.timeStepDuration
+            else
+                n  = params.numberOfTimeSteps;
+                dt = totalTime/n;
+            end
+
+            if params.useRampup
+                n = params.numberOfRampupSteps;
+            else
+                n = 0;
+            end
+
+            dts = rampupTimesteps(totalTime, dt, n);
+            
+            step = struct('val', dts, 'control', ones(numel(dts), 1));
+
         end
 
     end
-
         
 end
 
