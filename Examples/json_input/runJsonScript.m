@@ -29,11 +29,6 @@ jsonstruct_geometry = parseBattmoJson(jsonfilename);
 jsonfilename = fullfile('Examples', 'jsondatafiles', 'cc_discharge_control.json');
 jsonstruct_control = parseBattmoJson(jsonfilename);
 
-%% Simulation parameters
-% We load the json structure for the simulation parameters
-jsonfilename = fullfile('Examples', 'jsondatafiles', 'simulation_parameters.json');
-jsonstruct_simparams = parseBattmoJson(jsonfilename);
-
 %% Ouput specificiations
 % We load the json structure for output extra specifications.
 jsonfilename = fullfile('Examples', 'jsondatafiles', 'extra_output.json');
@@ -45,17 +40,9 @@ jsonstruct_output = parseBattmoJson(jsonfilename);
 jsonstruct = mergeJsonStructs({jsonstruct_geometry , ...
                                jsonstruct_material , ...
                                jsonstruct_control  , ...
-                               jsonstruct_simparams, ...
                                jsonstruct_output   , ...                               
                               });
 
-
-%%
-% We adjust the total time with respect to the given CRate.
-
-CRate = jsonstruct.Control.CRate;
-jsonstruct.TimeStepping.totalTime = 1.4*hour/CRate;
-jsonstruct.TimeStepping.numberOfTimeSteps = 40;
 
 %% We start the simulation
 % We use the function :code:`runBatteryJson` to run the simulation with json input structure
