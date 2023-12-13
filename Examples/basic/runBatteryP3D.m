@@ -66,24 +66,15 @@ inputI = (C/hour)*CRate; % current
 % Smaller time steps are used to ramp up the current from zero to its
 % operational value. Larger time steps are then used for the normal
 % operation.
-n           = 25;
-dt          = [];
-dt          = [dt; repmat(0.5e-4, n, 1).*1.5.^(1:n)'];
-totalTime   = 1.4*hour/CRate;
-n           = 40;
-dt          = [dt; repmat(totalTime/n, n, 1)];
-times       = [0; cumsum(dt)];
-tt          = times(2 : end);
-step        = struct('val', diff(times), 'control', ones(numel(tt), 1));
+
+timestep.numberOfTimeSteps = 50;
+timestep.useRampup = true;
+
+step = model.(ctrl).setupScheduleStep(timestep);
 
 %% Setup the operating limits for the cell
-% The maximum and minimum voltage limits for the cell are defined using
-% stopping and source functions. A stopping function is used to set the
-% lower voltage cutoff limit. A source function is used to set the upper
-% voltage cutoff limit.
+% The maximum and minimum voltage limits for the cell are defined using stopping and source functions.
 control = model.(ctrl).setupScheduleControl();
-
-control.stopFunction = @(model, state, state_prev) (state.(ctrl).E < 2.0);
 
 % This control is used to set up the schedule
 schedule = struct('control', control, 'step', step);
