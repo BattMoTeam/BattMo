@@ -12,7 +12,12 @@ function  [model, states, reports, solver, ok] = plotAfterStepIV(model, states, 
     SOC = cumsum(I.*dt);
 
     %%
-    figure(33)
+    if ~ishandle(33)
+        figure(33)
+    else
+        % Avoid stealing focus if figure already exists
+        set(0, 'CurrentFigure', 33);
+    end
 
     subplot(2, 2, 1)
     hold on; grid on
