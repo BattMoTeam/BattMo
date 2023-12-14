@@ -29,7 +29,11 @@ classdef CcCvControlModel < ControlModel
                        'numberOfCycles', ...
                        'initialControl'};
             model = dispatchParams(model, inputparams, fdnames);
-            
+
+            if isempty(model.numberOfCycles)
+                warning('Number of cycles has not been given in CCCV control. We use numberOfCycles = 1.');
+                model.numberOfCycles = 1;
+            end
         end
 
         function model = registerVarAndPropfuncNames(model)
