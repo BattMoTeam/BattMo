@@ -4,6 +4,6 @@
   "description": "A current collector",
   "type": "object",
   
-  "$ref": "ElectronicComponent.schema.json"
+  "$ref": "./ElectronicComponent.schema.json"
   
 }
