@@ -16,6 +16,8 @@ classdef TestBatteryP2D < matlab.unittest.TestCase
 
         function states = test1d(test, controlPolicy, use_thermal, include_current_collectors, diffusionModelType, testSize, varargin)
 
+            run('/home/xavier/Matlab/Projects/battmo/startupBattMo.m')
+            
             mrstModule add ad-core mrst-gui mpfa
             
             jsonfile = fullfile('ParameterData','BatteryCellParameters','LithiumIonBatteryCell','lithium_ion_battery_nmc_graphite.json');

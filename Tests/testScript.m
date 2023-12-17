@@ -24,7 +24,7 @@ if doRunTestInParallel
     suite = suite.selectIf(HasParameter('Property', 'use_thermal', 'Value', false));
     suite = suite.selectIf(HasParameter('Property', 'include_current_collectors', 'Value', false));
     runner = TestRunner.withTextOutput();
-    result = runner.run(suite);
+    result = runner.runInParallel(suite);
 end
 
 doRunFilteredSuite = false;
