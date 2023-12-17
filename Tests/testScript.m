@@ -18,9 +18,13 @@ end
 doRunTestInParallel = false;
 if doRunTestInParallel
     % We run the test suite in parallel
-    suite = TestSuite.fromClass(?TestBatteryP2D);
-    runner = TestRunner.withNoPlugins();
-    result = runner.runInParallel(suite);
+    param = Parameter.fromData('compareWithReferenceData', {false});
+    suite = TestSuite.fromClass(?TestBatteryP2D, 'ExternalParameters', param);
+    suite = suite.selectIf(HasParameter('Property', 'controlPolicy', 'Value', 'CCDischarge'));
+    suite = suite.selectIf(HasParameter('Property', 'use_thermal', 'Value', false));
+    suite = suite.selectIf(HasParameter('Property', 'include_current_collectors', 'Value', false));
+    runner = TestRunner.withTextOutput();
+    result = runner.run(suite);
 end
 
 doRunFilteredSuite = false;
