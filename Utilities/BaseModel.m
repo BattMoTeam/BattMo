@@ -573,11 +573,17 @@ classdef BaseModel < PhysicalModel
         
         function [problem, state] = getEquations(model, state0, state,dt, drivingForces, varargin)
             
+            opt = struct('ResOnly', false, 'iteration', 0, 'reverseMode', false);
+            opt = merge_options(opt, varargin{:});
+            
             sd  = 'SolidDiffusion';
             itf = 'Interface';
             
             time = state0.time + dt;
-            state = model.initStateAD(state);
+
+            if ~opt.ResOnly
+                state = model.initStateAD(state);
+            end
             
             %% We call the assembly equations ordered from the graph
 
