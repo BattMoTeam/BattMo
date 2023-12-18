@@ -237,3 +237,35 @@ xlabel('x [mm]')
 view([50, 51]);
 
 
+% Current in anode
+
+i = state.Cell.Anode.i;
+
+ind   = model.Cell.couplingTerms{1}.couplingfaces(:, 2);
+yc    = model.Cell.Electrolyte.G.faces.centroids(ind, 2);
+areas = model.Cell.Electrolyte.G.faces.areas(ind);
+
+i = (i./areas)/(1/(centi*meter))
+
+figure
+plot(yc/(milli*meter), i);
+title('Current in Anode / A/cm')
+xlabel('height / mm')
+
+% Faradic effect in Anode
+
+drivingForces.src = @(time) controlfunc(time, Imax, timeswitch, totaltime, 'order', 'I-first');
+state = model.evalVarName(state, 'Cell.Anode.iHp', {{'drivingForces', drivingForces}});
+
+i   = state.Cell.Anode.i;
+iHp = state.Cell.Anode.iHp;
+
+ind = model.Cell.couplingTerms{1}.couplingfaces(:, 2);
+yc  = model.Cell.Electrolyte.G.faces.centroids(ind, 2);
+
+figure
+plot(yc/(milli*meter), iHp./i);
+title('Faradic effect')
+xlabel('height / mm')
+
+
