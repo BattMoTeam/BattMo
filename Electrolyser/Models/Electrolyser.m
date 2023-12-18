@@ -12,8 +12,6 @@ classdef Electrolyser < BaseModel
         couplingTerms
         couplingNames
 
-        primaryVarNames
-        funcCallList
 
     end
 
@@ -34,11 +32,8 @@ classdef Electrolyser < BaseModel
             % setup couplingNames
             model.couplingNames = cellfun(@(x) x.name, model.couplingTerms, 'uniformoutput', false);
 
-            model = model.setupComputationalGraph();
-            cgt = model.computationalGraph;
-            model.primaryVarNames = cgt.getPrimaryVariableNames();
-            model.funcCallList = cgt.getOrderedFunctionCallList();
-
+            model = model.setupForSimulation();
+            
         end
 
         function model = registerVarAndPropfuncNames(model)
@@ -103,7 +98,7 @@ classdef Electrolyser < BaseModel
                             };
             model = model.registerPropFunction({VarName({}, 'controlEqs', 2), fn, inputvarnames});
 
-            model = model.registerStaticVarNames({{inm, 'jBcSource'}     , ...
+            model = model.setAsStaticVarNames({{inm, 'jBcSource'}     , ...
                                                   {oer, ptl, 'jBcSource'}, ...
                                                   {her, ptl, 'jBcSource'}, ...
                                                   'T'});
@@ -287,6 +282,41 @@ classdef Electrolyser < BaseModel
 
         end
 
+        function model = setupForSimulation(model)
+
+            shortNames = {'IonomerMembrane'           , 'inm';
+                          'HydrogenEvolutionElectrode', 'her';
+                          'OxygenEvolutionElectrode'  , 'oer';
+                          'CatalystLayer'             , 'ctl';
+                          'ExchangeReaction'          , 'exr';
+                          'PorousTransportLayer'      , 'ptl';
+                          'Boundary'                  , 'bd' ;
+                          'DissolutionModel'          , 'dm'};
+
+            model = model.equipModelForComputation('shortNames', shortNames);
+
+            F = model.con.F;
+
+            
+            inm = 'IonomerMembrane';
+            her = 'HydrogenEvolutionElectrode';
+            oer = 'OxygenEvolutionElectrode';
+
+            ctl = 'CatalystLayer';
+            exr = 'ExchangeReaction';
+            ptl = 'PorousTransportLayer';
+
+            scalings = {{{inm, 'chargeCons'}, F}, ...
+                        {{her, ptl, 'chargeCons'}, F}};
+
+            if model.(oer).(ctl).include_dissolution
+                scalings = horzcat(scalings, ...
+                                   {{{oer, ctl, dm, 'massCons'}, 1e5}});
+            end
+
+        end
+        
+        
         function state = setupControl(model, state, drivingForces)
 
             oer = 'OxygenEvolutionElectrode';
@@ -407,11 +437,6 @@ classdef Electrolyser < BaseModel
 
         end
 
-        function primaryvarnames = getPrimaryVariableNames(model)
-
-            primaryvarnames = model.primaryVarNames;
-
-        end
 
         function cleanState = addStaticVariables(model, cleanState, state)
 
@@ -456,113 +481,6 @@ classdef Electrolyser < BaseModel
 
         end
 
-
-        function [problem, state] = getEquations(model, state0, state,dt, drivingForces, varargin)
-
-            opts = struct('ResOnly', false, 'iteration', 0);
-            opts = merge_options(opts, varargin{:});
-
-            inm = 'IonomerMembrane';
-            her = 'HydrogenEvolutionElectrode';
-            oer = 'OxygenEvolutionElectrode';
-            ctl = 'CatalystLayer';
-            exr = 'ExchangeReaction';
-            ptl = 'PorousTransportLayer';
-            bd  = 'Boundary';
-            dm  = 'DissolutionModel';
-
-            time = state0.time + dt;
-            if(not(opts.ResOnly))
-                state = model.initStateAD(state);
-            end
-
-            funcCallList = model.funcCallList;
-
-            for ifunc = 1 : numel(funcCallList)
-                eval(funcCallList{ifunc});
-            end
-
-            %% Set up the governing equations
-
-            eqs = {};
-            names = {};
-
-            F = model.con.F;
-
-            eqs{end + 1}   = 1/F*state.(inm).chargeCons;
-            names{end + 1} = 'inm_chargeCons';
-            eqs{end + 1}   = state.(inm).H2OmassCons;
-            names{end + 1} = 'inm_H2OmassCons';
-            eqs{end + 1}   = state.(inm).activityEquation;
-            names{end + 1} = 'inm_activityEquation';
-            eqs{end + 1}   = state.(oer).(ptl).(bd).bcEquations{1};
-            names{end + 1} = 'oer_ptl_bd_bcEquations_1';
-            eqs{end + 1}   = state.(oer).(ptl).(bd).bcEquations{2};
-            names{end + 1} = 'oer_ptl_bd_bcEquations_2';
-            eqs{end + 1}   = state.(oer).(ptl).(bd).bcEquations{3};
-            names{end + 1} = 'oer_ptl_bd_bcEquations_3';
-            eqs{end + 1}   = state.(oer).(ptl).(bd).bcEquations{4};
-            names{end + 1} = 'oer_ptl_bd_bcEquations_4';
-            eqs{end + 1}   = state.(oer).(ptl).(bd).bcControlEquations{1};
-            names{end + 1} = 'oer_ptl_bd_bcControlEquations_1';
-            eqs{end + 1}   = state.(oer).(ptl).(bd).bcControlEquations{2};
-            names{end + 1} = 'oer_ptl_bd_bcControlEquations_2';
-            eqs{end + 1}   = 1/F*state.(oer).(ptl).chargeCons;
-            names{end + 1} = 'oer_ptl_chargeCons';
-            eqs{end + 1}   = state.(oer).(ptl).compGasMassCons{1};
-            names{end + 1} = 'oer_ptl_compGasMassCons_1';
-            eqs{end + 1}   = state.(oer).(ptl).compGasMassCons{2};
-            names{end + 1} = 'oer_ptl_compGasMassCons_2';
-            eqs{end + 1}   = state.(oer).(ptl).liquidMassCons;
-            names{end + 1} = 'oer_ptl_liquidMassCons';
-            eqs{end + 1}   = state.(oer).(ptl).OHMassCons;
-            names{end + 1} = 'oer_ptl_OHMassCons';
-            eqs{end + 1}   = state.(oer).(ptl).liquidStateEquation;
-            names{end + 1} = 'oer_ptl_liquidStateEquation';
-            eqs{end + 1}   = state.(her).(ptl).(bd).bcEquations{1};
-            names{end + 1} = 'her_ptl_bd_bcEquations_1';
-            eqs{end + 1}   = state.(her).(ptl).(bd).bcEquations{2};
-            names{end + 1} = 'her_ptl_bd_bcEquations_2';
-            eqs{end + 1}   = state.(her).(ptl).(bd).bcEquations{3};
-            names{end + 1} = 'her_ptl_bd_bcEquations_3';
-            eqs{end + 1}   = state.(her).(ptl).(bd).bcEquations{4};
-            names{end + 1} = 'her_ptl_bd_bcEquations_4';
-            eqs{end + 1}   = state.(her).(ptl).(bd).bcControlEquations{1};
-            names{end + 1} = 'her_ptl_bd_bcControlEquations_1';
-            eqs{end + 1}   = state.(her).(ptl).(bd).bcControlEquations{2};
-            names{end + 1} = 'her_ptl_bd_bcControlEquations_2';
-            eqs{end + 1}   = 1/F*state.(her).(ptl).chargeCons;
-            names{end + 1} = 'her_ptl_chargeCons';
-            eqs{end + 1}   = state.(her).(ptl).compGasMassCons{1};
-            names{end + 1} = 'her_ptl_compGasMassCons_1';
-            eqs{end + 1}   = state.(her).(ptl).compGasMassCons{2};
-            names{end + 1} = 'her_ptl_compGasMassCons_2';
-            eqs{end + 1}   = state.(her).(ptl).liquidMassCons;
-            names{end + 1} = 'her_ptl_liquidMassCons';
-            eqs{end + 1}   = state.(her).(ptl).OHMassCons;
-            names{end + 1} = 'her_ptl_OHMassCons';
-            eqs{end + 1}   = state.(her).(ptl).liquidStateEquation;
-            names{end + 1} = 'her_ptl_liquidStateEquation';
-            eqs{end + 1}   = state.controlEqs{1};
-            names{end + 1} = 'controlEqs_1';
-            eqs{end + 1}   = state.controlEqs{2};
-            names{end + 1} = 'controlEqs_2';
-
-            if model.(oer).(ctl).include_dissolution
-                eqs{end + 1}   = 1e5*state.(oer).(ctl).(dm).massCons;
-                names{end + 1} = 'oer_ctl_dm_massCons';
-            end
-            
-            neq = numel(eqs);
-
-            types = repmat({'cell'}, 1, neq);
-
-            primaryVars = model.getPrimaryVariableNames();
-
-            %% setup LinearizedProblem that can be processed by MRST Newton API
-            problem = LinearizedProblem(eqs, types, names, primaryVars, state, dt);
-
-        end
 
         function [state, report] = updateState(model, state, problem, dx, drivingForces)
             
