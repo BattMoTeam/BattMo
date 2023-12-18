@@ -22,8 +22,6 @@ classdef SeaWaterBattery < BaseModel
         % implementation).
         T
 
-        addedVariableNames
-
         indexAnodeChargeCarrier
         indexCathodeChargeCarrier
     
@@ -34,8 +32,6 @@ classdef SeaWaterBattery < BaseModel
         dodebugplot = false;
         dodebugtext
 
-        primaryVarNames
-        funcCallList
 
         %% Parameter variable for Newton API methods
         
@@ -78,8 +74,6 @@ classdef SeaWaterBattery < BaseModel
             % Setup Cathode
             model.Cathode = HydrogenElectrode(inputparams.Cathode);
 
-            model.addedVariableNames = {{'time'}};
-
             elyte = 'Electrolyte';
             ctam  = 'CathodeActiveMaterial';
             anam  = 'AnodeActiveMaterial';            
@@ -101,6 +95,7 @@ classdef SeaWaterBattery < BaseModel
             model = model.setupUtilities();
 
             model.dodebugtext = '';
+
         end
 
         function model = setupAnode(model, inputparams)
@@ -199,14 +194,14 @@ classdef SeaWaterBattery < BaseModel
                                           {ct, 'T'},
                                          });
 
-            model = model.registerStaticVarName('T');
+            model = model.setAsStaticVarName('T');
 
             if ~model.include_precipitation
                 melyte = model.(elyte);
-                model = model.registerStaticVarNames({{an, 'volumeFraction'},
-                                                      {ct, 'volumeFraction'},
-                                                      {elyte, 'volumeFraction'},
-                                                      VarName({elyte}, 'cs', melyte.indsolidsp, melyte.nsp)});
+                model = model.setAsStaticVarNames({{an, 'volumeFraction'},
+                                                   {ct, 'volumeFraction'},
+                                                   {elyte, 'volumeFraction'},
+                                                   VarName({elyte}, 'cs', melyte.indsolidsp, melyte.nsp)});
                 varnames = {'accumTerm', 'sourceTerm', 'massCons'};
                 eldes = {an, ct};
                 for ielde = 1 : numel(eldes)
@@ -571,7 +566,9 @@ classdef SeaWaterBattery < BaseModel
         end
 
         function validforces = getValidDrivingForces(model)
-            validforces=struct('src', [], 'stopFunction', []);
+            
+            validforces = struct('src', [], 'stopFunction', []);
+            
         end
 
         function model = validateModel(model, varargin)
@@ -597,12 +594,6 @@ classdef SeaWaterBattery < BaseModel
             end
 
             model.logVariablesIndices = logVariablesIndices;
-
-        end
-
-        function primaryvarnames = getPrimaryVariableNames(model)
-
-            primaryvarnames = model.primaryVarNames;
 
         end
 
