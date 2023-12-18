@@ -23,10 +23,6 @@ classdef ActiveMaterial < BaseModel
         specificHeatCapacity   % Specific Heat capacity of the active component
 
         diffusionModelType     % either 'full' or 'simple'
-        
-        % Advanded parameters
-        
-        standAlone % Set to true if model is used as main model for development purpose (standard use is as a sub-model)
 
         % Coupling parameters
         
@@ -50,7 +46,7 @@ classdef ActiveMaterial < BaseModel
                        'volumeFraction'        , ... 
                        'externalCouplingTerm'  , ...
                        'diffusionModelType'    , ...
-                       'standAlone'};
+                       'isRootSimulationModel'};
 
             model = dispatchParams(model, inputparams, fdnames);
 
@@ -67,12 +63,6 @@ classdef ActiveMaterial < BaseModel
                 error('Unknown diffusionModelType %s', diffusionModelType);
             end
 
-            if model.standAlone
-
-                model = model.setupStandAloneModel();
-                
-            end
-            
             
         end
         
@@ -93,7 +83,7 @@ classdef ActiveMaterial < BaseModel
             model = model.registerPropFunction({{sd, 'T'}, fn, {'T'}});
             model = model.registerPropFunction({{itf, 'T'}, fn, {'T'}});
             
-            if model.standAlone
+            if model.isRootSimulationModel
 
                 varnames = {};
 
@@ -115,7 +105,7 @@ classdef ActiveMaterial < BaseModel
                 varnames = {'T', ...
                             {itf, 'cElectrolyte'},... 
                             {itf, 'phiElectrolyte'}};
-                model = model.registerStaticVarNames(varnames);
+                model = model.setAsStaticVarNames(varnames);
                 
             end
 
@@ -125,7 +115,7 @@ classdef ActiveMaterial < BaseModel
             fn = @ActiveMaterial.updateConcentrations;
             model = model.registerPropFunction({{itf, 'cElectrodeSurface'}, fn, {{sd, 'cSurface'}}});
             
-            if model.standAlone
+            if model.isRootSimulationModel
                 
                 fn = @ActiveMaterial.updateControl;
                 fn = {fn, @(propfunction) PropFunction.drivingForceFuncCallSetupFn(propfunction)};
@@ -236,7 +226,7 @@ classdef ActiveMaterial < BaseModel
             
             cleanState = addStaticVariables@BaseModel(model, cleanState, state);
             
-            if model.standAlone
+            if model.isRootSimulationModel
                 
                 itf = 'Interface';
                 

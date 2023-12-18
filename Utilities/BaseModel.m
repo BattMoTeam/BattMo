@@ -16,7 +16,7 @@ classdef BaseModel < PhysicalModel
         %% The following properties are set when a model is equiped for simulation. It is then a root model (as opposed to the sub-models)
         % See method equipModelForComputation
 
-        isSimulationModel % boolean if the model is meant to be run for simulation
+        isRootSimulationModel % boolean if the model is meant to be run for simulation
         
         funcCallList
         primaryVarNames

@@ -26,7 +26,7 @@ classdef ActiveMaterialInputParams < ComponentInputParams
 
         %% Advanced parameters
 
-        standAlone % Set to true if Active Material is used as a stand-alone model (not within a battery cell, see runActiveMaterial example)
+        isRootSimulationModel % Set to true if Active Material is used as a stand-alone model (not within a battery cell, see runActiveMaterial for an example)
 
         %% Coupling parameters
         
@@ -40,8 +40,8 @@ classdef ActiveMaterialInputParams < ComponentInputParams
 
             inputparams = inputparams@ComponentInputParams(jsonstruct);
             
-            if isempty(inputparams.standAlone)
-                inputparams.standAlone = false;
+            if isempty(inputparams.isRootSimulationModel)
+                inputparams.isRootSimulationModel = false;
             end
 
             sd  = 'SolidDiffusion';
@@ -87,7 +87,7 @@ classdef ActiveMaterialInputParams < ComponentInputParams
             
             inputparams = mergeParameters(inputparams, {{'density'}, {itf, 'density'}});
 
-            if inputparams.standAlone
+            if inputparams.isRootSimulationModel
                 % only one particle in the stand-alone model
                 inputparams.(sd).np = 1;
                 % For the standalone model, we set the volume fraction to one (no other component is present)

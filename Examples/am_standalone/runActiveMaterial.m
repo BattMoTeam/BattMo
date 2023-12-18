@@ -34,7 +34,7 @@ inputparams = BatteryInputParams(jsonstruct);
 
 inputparams = inputparams.(ne).(co).(am);
 
-inputparams.standAlone = true;
+inputparams.isRootSimulationModel = true;
 
 inputparams = inputparams.validateInputParams();
 

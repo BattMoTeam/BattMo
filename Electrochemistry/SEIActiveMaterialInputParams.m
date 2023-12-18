@@ -28,7 +28,7 @@ classdef SEIActiveMaterialInputParams < ActiveMaterialInputParams
 
             inputparams = validateInputParams@ActiveMaterialInputParams(inputparams);
             
-            if inputparams.standAlone
+            if inputparams.isRootSimulationModel
                 % only one particle in the stand-alone model
                 inputparams.SolidElectrodeInterface.np = 1;
             end
