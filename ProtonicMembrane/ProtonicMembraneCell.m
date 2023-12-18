@@ -100,7 +100,7 @@ classdef ProtonicMembraneCell < BaseModel
             model = model.registerPropFunction({{an, 'iHpEquation'}, fn, inputnames});
 
             fn = @ProtonicMembraneCell.updateAnodeIElEquation;
-            inputnames = {{elyte, 'phi'}, {an, 'phi'}, {elyte, 'sigmaEl'}, {an, 'iEl'}};
+            inputnames = {{elyte, 'pi'}, {an, 'pi'}, {elyte, 'sigmaEl'}, {an, 'iEl'}};
             model = model.registerPropFunction({{an, 'iElEquation'}, fn, inputnames});
 
             fn = @ProtonicMembraneCell.updateCathodeIHpEquation;
