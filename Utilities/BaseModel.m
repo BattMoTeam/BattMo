@@ -673,8 +673,10 @@ classdef BaseModel < PhysicalModel
 
         function cgt = cgt(model)
         % Shortcut to retrieve the computational graph
+            if isempty(model.computationalGraph)
+                model = model.setupComputationalGraph();
+            end
             cgt =  model.computationalGraph;
-            
         end
 
         function cgp = cgp(model)
