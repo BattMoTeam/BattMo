@@ -92,14 +92,51 @@ classdef SEIActiveMaterial < ActiveMaterial
         end
 
 
-        function model = setupStandAloneModel(model)
+        function model = setupForSimulation(model)
 
-            if isempty(model.SideReaction)
-                return
-            end
+            model = model.equipModelForComputation();
 
-            model = setupStandAloneModel@ActiveMaterial(model);
+            itf = 'Interface';
+            sd  = 'SolidDiffusion';
+            sei = 'SolidElectrodeInterface';
+            sr  = 'SideReaction';
 
+            % add scaling 
+            F = model.(sd).constants.F;
+            scalingcoef = F;
+
+            scalings = {{{'chargeCons'}, scalingcoef}};
+
+            % add scaling
+            rp  = model.(sd).particleRadius;
+            vsa = model.(sd).volumetricSurfaceArea;
+            scalingcoef = vsa*(4*pi*rp^3/3);
+
+            scalings = horzcat(scalings, ...
+                               {{{sd, 'massCons'}, scalingcoef}, ...
+                                {{sd, 'solidDiffusionEq'}, scalingcoef}});
+
+            % add scaling
+            
+            Mw  = model.(sei).molecularWeight;
+            rho = model.(sei).density;
+            scalingcoef = 0.5*Mw/rho;
+
+            scalings = horzcat(scalings, ...
+                               {{{sei, 'widthEq'}, scalingcoef}});
+
+            % add scaling
+
+            deltaref = 1*nano*meter;
+            scalingcoef = deltaref;
+            
+            scalings = horzcat(scalings, ...
+                               {{{sei, 'interfaceBoundaryEq'}, scalingcoef}, ...
+                                {{sei, 'massCons'}, scalingcoef}});
+
+
+            model.scalings = scalings;
+            
         end
 
         function state = dispatchTemperature(model, state)
@@ -198,62 +235,12 @@ classdef SEIActiveMaterial < ActiveMaterial
             sei = 'SolidElectrodeInterface';
             sr  = 'SideReaction';
 
-            cleanState.(sei).cExternal     = state.(sei).cExternal;
-            cleanState.(sr).phiElectrolyte = state.(sr).phiElectrolyte;
+            if model.isRootSimulationModel
+                
+                cleanState.(sei).cExternal     = state.(sei).cExternal;
+                cleanState.(sr).phiElectrolyte = state.(sr).phiElectrolyte;
 
-        end
-
-        function [problem, state] = getEquations(model, state0, state,dt, drivingForces, varargin)
-
-            itf = 'Interface';
-            sd  = 'SolidDiffusion';
-            sei = 'SolidElectrodeInterface';
-            sr  = 'SideReaction';
-
-            time = state0.time + dt;
-            state = model.initStateAD(state);
-
-            funcCallList = model.funcCallList;
-
-            for ifunc = 1 : numel(funcCallList)
-                eval(funcCallList{ifunc});
             end
-
-            %% Setup equations and add some scaling
-            F   = model.(sd).constants.F;
-
-            scalingcoef = F;
-            state.chargeCons = (1/scalingcoef)*state.chargeCons;
-
-            rp  = model.(sd).particleRadius;
-            vsa = model.(sd).volumetricSurfaceArea;
-
-            scalingcoef = vsa*(4*pi*rp^3/3);
-            state.(sd).massCons         = (1/scalingcoef)*state.(sd).massCons;
-            state.(sd).solidDiffusionEq = (1/scalingcoef)*state.(sd).solidDiffusionEq;
-
-            Mw  = model.(sei).molecularWeight;
-            rho = model.(sei).density;
-
-            scalingcoef = 0.5*Mw/rho;
-            state.(sei).widthEq = (1/scalingcoef)*state.(sei).widthEq;
-
-            deltaref = 1*nano*meter;
-
-            scalingcoef = deltaref;
-            state.(sei).interfaceBoundaryEq = (1/scalingcoef)*state.(sei).interfaceBoundaryEq;
-            state.(sei).massCons            = (1/scalingcoef)*state.(sei).massCons;
-
-            for ieq = 1 : numel(model.equationVarNames)
-                eqs{ieq} = model.getProp(state, model.equationVarNames{ieq});
-            end
-
-            names       = model.equationNames;
-            types       = model.equationTypes;
-            primaryVars = model.primaryVarNames;
-
-            problem = LinearizedProblem(eqs, types, names, primaryVars, state, dt);
-
         end
 
     end

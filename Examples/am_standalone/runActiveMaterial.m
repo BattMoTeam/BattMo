@@ -39,6 +39,7 @@ inputparams.isRootSimulationModel = true;
 inputparams = inputparams.validateInputParams();
 
 model = ActiveMaterial(inputparams);
+model = model.setupForSimulation();
 
 %% Setup initial state
 

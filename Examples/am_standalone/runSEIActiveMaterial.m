@@ -33,7 +33,7 @@ inputparams.isRootSimulationModel = true;
 
 % We initiate the model
 model = SEIActiveMaterial(inputparams);
-
+model = model.setupForSimulation();
 
 %% Setup initial state
 

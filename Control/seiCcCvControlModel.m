@@ -5,6 +5,11 @@ classdef seiCcCvControlModel < ControlModel
         Imax
         dIdtLimit
         dEdtLimit
+
+        % Control used initially. String that can take one of the following values
+        % - 'discharging'
+        % - 'charging'
+        initialControl
         
     end
     
@@ -16,7 +21,8 @@ classdef seiCcCvControlModel < ControlModel
             model = model@ControlModel(inputparams);
             
             fdnames = {'dEdtLimit', ...
-                       'dIdtLimit'};
+                       'dIdtLimit', ...
+                       'initialControl'};
             model = dispatchParams(model, inputparams, fdnames);
             
         end

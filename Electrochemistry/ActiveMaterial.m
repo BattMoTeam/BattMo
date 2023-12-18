@@ -98,12 +98,12 @@ classdef ActiveMaterial < BaseModel
                 model = model.registerVarNames(varnames);
 
                 varnames = {{itf, 'dUdT'}, ...
-                            'jCoupling', ...
+                            'jCoupling'  , ...
                             'jExternal'};
                 model = model.removeVarNames(varnames);
 
-                varnames = {'T', ...
-                            {itf, 'cElectrolyte'},... 
+                varnames = {'T'                  , ...
+                            {itf, 'cElectrolyte'}, ... 
                             {itf, 'phiElectrolyte'}};
                 model = model.setAsStaticVarNames(varnames);
                 
@@ -132,65 +132,22 @@ classdef ActiveMaterial < BaseModel
             end
             
         end
-        
 
-        function model = setupStandAloneModel(model)
+        function model = setupForSimulation(model)
+            
+            model = model.equipModelForComputation();
 
-            model = model.setupComputationalGraph();
-
-            cgt = model.computationalGraph();
-            
-            model.funcCallList     = cgt.getOrderedFunctionCallList();
-            model.primaryVarNames  = cgt.getPrimaryVariableNames();
-            model.equationVarNames = cgt.getEquationVariableNames();
-            
-            function str = setupName(varname)
-                shortvarname = cellfun(@(elt) Battery.shortenName(elt), varname, 'uniformoutput', false);
-                str = Battery.varToStr(shortvarname);
-            end
-            model.equationNames = cellfun(@(varname) setupName(varname), model.equationVarNames, 'uniformoutput', false);
-            model.equationTypes = repmat({'cell'}, 1, numel(model.equationNames));
-            
-        end
-
-        
-        function [problem, state] = getEquations(model, state0, state,dt, drivingForces, varargin)
-            
-            sd  = 'SolidDiffusion';
             itf = 'Interface';
-            
-            time = state0.time + dt;
-            state = model.initStateAD(state);
-            
-            %% We call the assembly equations ordered from the graph
+            sd  = 'SolidDiffusion';
 
-            funcCallList = model.funcCallList;
-
-            for ifunc = 1 : numel(funcCallList)
-                eval(funcCallList{ifunc});
-            end
-
-            % some scaling of the equations
-
-            %% Setup equations and add some scaling
             n  = model.(itf).numberOfElectronsTransferred; % number of electron transfer (equal to 1 for Lithium)
             F  = model.(sd).constants.F;
             rp = model.(sd).particleRadius;
-            
-            scalingcoef = n*F/(4*pi*rp^3/3);
+            scalingcoef = 1/(n*F/(4*pi*rp^3/3));
+            scalings = {{{sd, 'massCons'}, scalingcoef}, ...
+                        {{sd, 'solidDiffusionEq'}, scalingcoef}};
 
-            state.(sd).massCons         = scalingcoef*state.(sd).massCons;
-            state.(sd).solidDiffusionEq = scalingcoef*state.(sd).solidDiffusionEq;
-            
-            for ieq = 1 : numel(model.equationVarNames)
-                eqs{ieq} = model.getProp(state, model.equationVarNames{ieq});
-            end
-            
-            names       = model.equationNames;
-            types       = model.equationTypes;
-            primaryVars = model.primaryVarNames;
-            
-            problem = LinearizedProblem(eqs, types, names, primaryVars, state, dt);
+            model.scalings = scalings;
 
         end
 
@@ -199,12 +156,6 @@ classdef ActiveMaterial < BaseModel
             forces = getValidDrivingForces@PhysicalModel(model);
             forces.src = [];
             
-        end
-
-        function primaryvarnames = getPrimaryVariableNames(model)
-
-            primaryvarnames = model.primaryVarNames;
-
         end
 
 
@@ -254,11 +205,6 @@ classdef ActiveMaterial < BaseModel
 
         end
         
-        function [state, report] = updateAfterConvergence(model, state0, state, dt, drivingForces)
-            
-            [state, report] = updateAfterConvergence@BaseModel(model, state0, state, dt, drivingForces);
-            
-        end
          
         function model = validateModel(model, varargin)
         % 

@@ -52,6 +52,7 @@ inputparams.(ct).(sd).np = 1;
 inputparams.(ct).G = G;
 
 model = SingleParticleSEI(inputparams);
+model = model.equipModelForComputation();
 
 % Normally in CCCV control, the current value is computed from CRate but, here, we set it up directly
 if strcmp(model.(ctrl).controlPolicy, 'CCCV')
@@ -79,10 +80,10 @@ end
 
 NanodeSd  = model.(an).(sd).N;
 NanodeSEI = model.(an).(sei).N;
-cAnodeMax = model.(an).(itf).cmax;
+cAnodeMax = model.(an).(itf).saturationConcentration;
 
 NcathodeSd  = model.(ct).(sd).N;
-cCathodeMax = model.(ct).(itf).cmax;
+cCathodeMax = model.(ct).(itf).saturationConcentration;
 
 x0 = 0.75; % Initial stochiometry from Safari
 cAnode = x0*cAnodeMax;
@@ -135,7 +136,8 @@ initState.(ct).(itf).externalPotentialDrop = 0;
 
 switch model.(ctrl).controlPolicy
   case 'CCCV'
-    initState.(ctrl).ctrlType = 'CV_charge2';
+    initState.(ctrl).E = 0;
+    initState.(ctrl).ctrlType     = 'CV_charge2';
     initState.(ctrl).nextCtrlType = 'CV_charge2';
   case 'CV'
     % ok. nothing to do
@@ -143,14 +145,16 @@ switch model.(ctrl).controlPolicy
     error('control policy not recognized');
 end
 
+initstate.time = 0;
+
 %% setup schedule
 
 total = 800*hour;
 n     = 50*800;
 dt    = total/n;
 
-n = 400;
-dt    = dt*ones(n, 1);
+n  = 400;
+dt = dt*ones(n, 1);
 
 
 if strcmp(model.Control.controlPolicy, 'CV')
