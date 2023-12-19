@@ -46,8 +46,8 @@ classdef TestRunExamples < matlab.unittest.TestCase
         function testRunExample(test, filename)
 
             run(fullfile(battmoDir, 'startupBattMo.m'));
-
-            if ~contains(filename, exclude)
+            
+            if ~contains(filename, test.exclude)
                 % FIXME Disable plotting
                 set(0, 'defaultFigureVisible', 'off');
                 fprintf('\n\nRunning %s...\n\n', filename);
