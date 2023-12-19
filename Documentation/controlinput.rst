@@ -131,17 +131,23 @@ The script used to generate the figures is available :battmofile:`here <Document
 Control model description
 =========================
 
-The most fundamental structure to setup control is a schedule structure, which is sent to :mrstfile:`simulateScheduleAD
-<autodiff/ad-core/simulators/simulateScheduleAD.m>`. From there, we find the specification of the :code:`schedule`
-structure that is expected. It contains two fields:
+Beside json input, the function :mrstfile:`simulateScheduleAD
+<autodiff/ad-core/simulators/simulateScheduleAD.m>` is used to run a simulation. It requires
+
+* A **model**, which knows how to setup and solve the governing equations of our problem,
+* An **initial state**,
+* A **schedule**, which provides the time stepping and can also contain setup for control
+
+The :code:`schedule` contains two fields
 
 * :code:`control`: It is a struct array containing fields that the model knows how to process.  Typically, this
   will be the fields such as `src` for input current.
 * :code:`step`: It contains two arrays of equal size named :code:`val` and :code:`control`. Control is a index into the
-  :code:`schedule.control` array, indicating which control is to be used for the timestep.`schedule.step.val` is the
+  :code:`schedule.control` array, indicating which control is to be used for the timestep. :code:`schedule.step.val` is the
   timestep used for that control step.
 
-Let us set up a control with a given current control source function.
+Let us set up a control with a given current control source function. In this case, we choose a sinusoidal current
+control.
 
 .. code:: matlab
 
@@ -160,11 +166,10 @@ Let us set up a control with a given current control source function.
    schedule.control = control;
 
 We have to setup a model and an initial state. We use the function :battmo:`setupModelFromJson` to setup the model from
-a given json input. We load our sample input function, see source
+a given json input. We load the sample input function we have used before, see source
 :battmofile:`here<Examples/jsondatafiles/sample_input.json>`. We replace the :code:`Control` field with a structure with
-a :code:`controlPolicy` given by a control current. The control model used here will then be :battmo:`ControlModel`. We
-change the initial state of charge value so that we do not hit the upper current voltage value (the one given in the
-sample json is 0.99).
+a :code:`controlPolicy` given by a current control (:code:`CC`). We change the initial state of charge value (SOC) to
+0.5 so that we do not hit the upper current voltage value (the SOC given in the sample json is 0.99).
 
 .. code:: matlab
 
@@ -185,6 +190,13 @@ We use the default state initialisation method given by the method :code:`setupI
 
 Now, we can run the simulation for the given schedule, model and initial state using :mrstfile:`simulateScheduleAD
 <autodiff/ad-core/simulators/simulateScheduleAD.m>`
+
+.. code:: matlab
+
+   [~, states] = simulateScheduleAD(initstate, model, schedule);
+
+The complete source can be found here :battmofile:`exampleControl<Documentation/scripts/exampleControl.m>`.
+
 
 .. figure:: img/exampleControl.png
    :target: _images/exampleControl.png
