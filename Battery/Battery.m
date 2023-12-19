@@ -359,7 +359,7 @@ classdef Battery < BaseModel
             fn = @Battery.updateControl;
             fn = {fn, @(propfunction) PropFunction.drivingForceFuncCallSetupFn(propfunction)};
             switch model.(ctrl).controlPolicy
-              case {'CCDischarge', 'CCCharge'}
+              case {'CCDischarge', 'CCCharge', 'CC'}
                 model = model.registerPropFunction({{ctrl, 'ctrlVal'}, fn, inputnames});
               case {'CCCV'}
                 % do nothing
@@ -493,9 +493,7 @@ classdef Battery < BaseModel
 
               case "CC"
 
-                control = CcControlModel(inputparams);
-                CRate = control.CRate;
-                control.Imax = (C/hour)*CRate;
+                control = CCcontrolModel(inputparams);
 
               otherwise
 
@@ -758,16 +756,16 @@ classdef Battery < BaseModel
 
             switch model.(ctrl).controlPolicy
 
-              case 'CCDischarge'
+              case {'CCDischarge', 'CCCharge'}
 
                 initstate.(ctrl).ctrlType = 'constantCurrent';
                 initstate.(ctrl).I = model.(ctrl).Imax;
 
-              case 'CCCharge'
+              case 'CC'
 
                 initstate.(ctrl).ctrlType = 'constantCurrent';
-                initstate.(ctrl).I = -model.(ctrl).Imax;
-
+                initstate.(ctrl).I = 0;
+                
               case 'CCCV'
 
                 initstate.(ctrl).numberOfCycles = 0;

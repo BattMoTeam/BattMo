@@ -14,14 +14,11 @@ classdef ControlModel < BaseModel
         % Control policy (string). It can take following values
         %
         % - 'CCDischarge'
-        % - 'CCCV'
-        % - 'CV'
+        % - 'CCCharge'
         % - 'CC'
+        % - 'CCCV'
         %
         controlPolicy
-
-        lowerCutoffVoltage
-        upperCutoffVoltage
         
     end
     
@@ -32,9 +29,7 @@ classdef ControlModel < BaseModel
 
             model = model@BaseModel();
             
-            fdnames = {'controlPolicy'     , ...
-                       'lowerCutoffVoltage', ...
-                       'upperCutoffVoltage', ... 
+            fdnames = {'controlPolicy', ...
                        'CRate'};
             model = dispatchParams(model, inputparams, fdnames);
             

@@ -6,6 +6,9 @@ classdef CcCvControlModelInputParams < ControlModelInputParams
     
     properties
 
+        lowerCutoffVoltage
+        upperCutoffVoltage
+
         % When voltage control, we wait for the derivative of the current to be below the value of dIdtLimit between we
         % switch to the following constant current control.
         dIdtLimit

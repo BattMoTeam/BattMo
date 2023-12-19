@@ -1,11 +1,27 @@
 classdef CCDischargeControlModel < CCcontrolModel
 
+
+    properties
+
+        Imax
+        rampupTime
+        useCVswitch
+        lowerCutoffVoltage
+        
+    end
+    
     methods
 
         function model = CCDischargeControlModel(inputparams)
             
             model = model@CCcontrolModel(inputparams);
             
+            fdnames = {'rampupTime', ...
+                       'useCVswitch', ...
+                       'lowerCutoffVoltage'};
+
+            model = dispatchParams(model, inputparams, fdnames);            
+
         end
         
 

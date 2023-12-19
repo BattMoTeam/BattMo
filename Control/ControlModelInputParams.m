@@ -3,10 +3,7 @@ classdef ControlModelInputParams < InputParams
 % Base class for input parameters for control model
 %
     
-    
     properties
-
-        
 
         %
         % C Rate
@@ -16,23 +13,13 @@ classdef ControlModelInputParams < InputParams
         %
         % Control policy (sring). It can take following values
         %
-        % - 'CCCV'
         % - 'CCDischarge'
-        % - 'CV'
+        % - 'CCCharge'
         % - 'CC'
+        % - 'CCCV'
         %
         controlPolicy
 
-        %
-        % Lower cut-off voltage limit
-        %
-        lowerCutoffVoltage
-
-        %
-        % Lower cut-off voltage limit
-        %
-        upperCutoffVoltage
-        
     end
     
     methods
@@ -41,22 +28,6 @@ classdef ControlModelInputParams < InputParams
             
             inputparams = inputparams@InputParams(jsonstruct);
             
-        end
-        
-        function inputparams = set.controlPolicy(inputparams, controlPolicy)
-            switch controlPolicy
-              case {'CCDischarge', 'CCCharge'}
-                % ok in any case
-              case 'CCCV'
-                assert(isa(inputparams, 'CcCvControlModelInputParams'), 'The model is not a CcCvControlModelInputParams class')
-              case 'CV'
-                assert(isa(inputparams, 'CvControlModelInputParams'), 'The model is not a CvControlModelInputParams class')
-              case 'powerControl'
-                assert(isa(inputparams, 'PowerControlModelInputParams'), 'The model is not a PowerControlInputParams class')
-              otherwise
-                error('controlPolicy not recognized');
-            end
-            inputparams.controlPolicy = controlPolicy;                
         end
         
     end

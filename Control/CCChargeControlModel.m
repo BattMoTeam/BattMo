@@ -4,6 +4,10 @@ classdef CCChargeControlModel < CCcontrolModel
 
         % For the CCChargeControlModel, the value of Imax is positive, even if the sign convention in the simulation
         % gives us a negative current. This sign conversion is done in the setupControlFunction below.
+        Imax
+        rampupTime
+        useCVswitch
+        upperCutoffVoltage
         
     end
     
@@ -12,6 +16,12 @@ classdef CCChargeControlModel < CCcontrolModel
         function model = CCChargeControlModel(inputparams)
             
             model = model@CCcontrolModel(inputparams);
+
+            fdnames = {'rampupTime', ...
+                       'useCVswitch', ...
+                       'upperCutoffVoltage'};
+
+            model = dispatchParams(model, inputparams, fdnames);
             
         end
         

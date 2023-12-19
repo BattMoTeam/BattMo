@@ -10,6 +10,7 @@
           "type": "string",
           "enum": ["CCDischarge",
                    "CCCHarge",
+                   "CC",
                    "CCCV",
                    "powerControl"]}},
       "CRate" : {"type": "number"}
@@ -22,7 +23,7 @@
       {"if": {
         "properties": {"controlPolicy" : {"const" : "CCCharge"}},
         "then": {
-          "$ref" : "#/$defs/CCCharge"}}},      
+          "$ref" : "#/$defs/CCCharge"}}},
       {"if": {
         "properties": {"controlPolicy" : {"const" : "CCCV"}},
         "then":{
@@ -39,7 +40,7 @@
       {"rampupTime" : {
         "type" : "number",
         "description" : "rampup time"},
-      "lowerCutoffVoltage" : {
+       "lowerCutoffVoltage" : {
         "type" : "number"},
        "useCVswitch" : {
          "type" : "boolean",
@@ -51,11 +52,19 @@
         "type" : "number",
         "description" : "rampup time"},
        "upperCutoffVoltage" : {
-         "type" : "number"}
+         "type" : "number"},
+       "useCVswitch" : {
+         "type" : "boolean",
+         "description" : "Switch to control voltage when the upper cutoff voltage is reached. Default value is true."
+       }
       }
     },
     "CCCV": {
       "properties" : {
+        "lowerCutoffVoltage" : {
+          "type" : "number"},
+        "upperCutoffVoltage" : {
+          "type" : "number"}
         "dEdtLimit" : {"type" : "number"},
         "dIdtLimit" : {"type" : "number"},
         "numberOfCycles" : {"type" : "number"},

@@ -51,6 +51,8 @@ classdef BatteryInputParams < InputParams
                 inputparams.(ctrl) = CCDischargeControlModelInputParams(pick(ctrl));
               case 'CCCharge'
                 inputparams.(ctrl) = CCChargeControlModelInputParams(pick(ctrl));
+              case 'CC'
+                inputparams.(ctrl) = CCcontrolModelInputParams(pick(ctrl));
               case 'CCCV'
                 inputparams.(ctrl) = CcCvControlModelInputParams(pick(ctrl));
               case 'powerControl'

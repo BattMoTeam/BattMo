@@ -7,8 +7,13 @@ classdef CcCvControlModel < ControlModel
     properties
         
         Imax
+
+        lowerCutoffVoltage
+        upperCutoffVoltage
+
         dIdtLimit
         dEdtLimit
+
         numberOfCycles
 
         % Control used initially. String that can take one of the following values
@@ -24,10 +29,13 @@ classdef CcCvControlModel < ControlModel
 
             model = model@ControlModel(inputparams);
             
-            fdnames = {'dEdtLimit'     , ...
-                       'dIdtLimit'     , ...
-                       'numberOfCycles', ...
+            fdnames = {'lowerCutoffVoltage', ...
+                       'upperCutoffVoltage', ...
+                       'dEdtLimit'         , ...
+                       'dIdtLimit'         , ...
+                       'numberOfCycles'    , ...
                        'initialControl'};
+            
             model = dispatchParams(model, inputparams, fdnames);
 
             if isempty(model.numberOfCycles)
@@ -254,13 +262,12 @@ classdef CcCvControlModel < ControlModel
             CRate   = model.CRate;
             ncycles = model.numberOfCycles;
 
-            if ~isempty(params.totalTime)
-                if ~isempty(ncycles)
-                    warning('Both the total time and the number of cycles are given. We do not use the given total time value but compute it instead from the number of cycles.');
-                else
-                    totalTime = params.totalTimes;
-                end
+            if ~isempty(params.totalTime) & isempty(ncycles)
+                totalTime = params.totalTimes;
             else
+                if ~isempty(ncycles)
+                    warning('Both the total time and the number of cycles are given.\nWe do not use the given total time value but compute it instead from the number of cycles.');
+                end
                 totalTime = 2*ncycles*1.1*(1*hour/CRate);
             end
 

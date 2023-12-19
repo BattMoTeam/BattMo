@@ -2,18 +2,12 @@ classdef CCcontrolModelInputParams < ControlModelInputParams
 %
 % Current control base class model
 %
-    properties
-
-        rampupTime  % Rampup time where  we progressively increase to the given current.
-        useCVswitch % If true, at the end of the discharge, we switch to voltage control. Default value is false.
-        
-    end
-
     methods
 
         function inputparams = CCcontrolModelInputParams(jsonstruct);
             
             inputparams = inputparams@ControlModelInputParams(jsonstruct);
+            inputparams.controlPolicy = 'CC';
             
         end
 

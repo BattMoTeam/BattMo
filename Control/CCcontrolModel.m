@@ -1,23 +1,11 @@
 classdef CCcontrolModel < ControlModel
 
-    properties
-
-        Imax
-        rampupTime
-        useCVswitch % default is true
-        
-    end
-    
     
     methods
 
         function model = CCcontrolModel(inputparams)
             
             model = model@ControlModel(inputparams);
-            
-            fdnames = {'rampupTime', ...
-                       'useCVswitch'};
-            model = dispatchParams(model, inputparams, fdnames);
             
         end
         
@@ -42,10 +30,6 @@ classdef CCcontrolModel < ControlModel
 
         function state = updateControlEquation(model, state)
             
-            Imax = model.Imax;
-            Emin = model.lowerCutoffVoltage;
-            Emax = model.upperCutoffVoltage;
-
             E        = state.E;
             I        = state.I;            
             ctrlVal  = state.ctrlVal;

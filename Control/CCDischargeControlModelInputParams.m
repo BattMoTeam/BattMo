@@ -1,5 +1,16 @@
 classdef CCDischargeControlModelInputParams < CCcontrolModelInputParams
 
+    
+    properties
+
+        Imax
+        rampupTime
+        useCVswitch
+        lowerCutoffVoltage
+        
+    end
+
+
     methods
 
         function inputparams = CCDischargeControlModelInputParams(jsonstruct);
