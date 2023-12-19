@@ -3,5 +3,5 @@
                  "value" : 1.5},
   "numberOfTimeSteps" : 40,
   "useRampup" : true,
-  "rampupTime" : 10}
+  "numberOfRampupSteps" : 5}
 }
