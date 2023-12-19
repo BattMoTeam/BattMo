@@ -239,7 +239,7 @@ function output = run_magnesium_1D_battery(input, varargin)
         end
         save(inputfilename, 'input');
         if opt.clearSimulation
-            clearPackedSimulatorOutput(problem);
+            clearPackedSimulatorOutput(problem, 'Prompt', false);
         end
         simulatePackedProblem(problem);
         [~, states, report] = getPackedSimulatorOutput(problem);
