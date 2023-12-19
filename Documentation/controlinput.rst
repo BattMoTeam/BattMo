@@ -11,11 +11,13 @@ At a **given time**, there are in general two control types:
 * Total current
 * Voltage  
 
-Given a control type, the control *value* can change in time.
+Given a control type, the control *value* can change in time. For the most standard control types, the json interface
+can be used. We plan to include there more control models. Below, we give some short explanations on how a control model
+can be implemented.
 
 
-Json input interface
-====================
+Json input control interface
+============================
 
 
 The most standard controls can be called from BattMo using the json interface:
@@ -122,4 +124,72 @@ following result.
    :align: center
 
    CCCV control
+
 The script used to generate the figures is available :battmofile:`here <Documentation/scripts/plotControlExamples.m>`.
+
+
+Control model description
+=========================
+
+The most fundamental structure to setup control is a schedule structure, which is sent to :mrstfile:`simulateScheduleAD
+<autodiff/ad-core/simulators/simulateScheduleAD.m>`. From there, we find the specification of the :code:`schedule`
+structure that is expected. It contains two fields:
+
+* :code:`control`: It is a struct array containing fields that the model knows how to process.  Typically, this
+  will be the fields such as `src` for input current.
+* :code:`step`: It contains two arrays of equal size named :code:`val` and :code:`control`. Control is a index into the
+  :code:`schedule.control` array, indicating which control is to be used for the timestep.`schedule.step.val` is the
+  timestep used for that control step.
+
+Let us set up a control with a given current control source function.
+
+.. code:: matlab
+
+   dt = 1*second;
+   T  = 3*minute;
+   N  = T/dt;
+
+   step.val = dt*ones(N, 1);
+   step.control = ones(N, 1);
+
+   period = 1*minute;
+   control.src = @(time) (1e-2*ampere*sin(2*pi*time/period));
+   control.CC = true;
+
+   schedule.step = step;
+   schedule.control = control;
+
+We have to setup a model and an initial state. We use the function :battmo:`setupModelFromJson` to setup the model from
+a given json input. We load our sample input function, see source
+:battmofile:`here<Examples/jsondatafiles/sample_input.json>`. We replace the :code:`Control` field with a structure with
+a :code:`controlPolicy` given by a control current. The control model used here will then be :battmo:`ControlModel`. We
+change the initial state of charge value so that we do not hit the upper current voltage value (the one given in the
+sample json is 0.99).
+
+.. code:: matlab
+
+   jsonstruct = parseBattmoJson('Examples/jsondatafiles/sample_input.json');
+
+   jsonstruct.Control = [];
+   jsonstruct.Control.controlPolicy = 'CC';
+
+   jsonstruct.SOC = 0.5;
+
+   model = setupModelFromJson(jsonstruct);
+
+We use the default state initialisation method given by the method :code:`setupInitialState` in the :battmo:`Battery` model.
+
+.. code:: matlab
+
+   initstate = model.setupInitialState(jsonstruct);
+
+Now, we can run the simulation for the given schedule, model and initial state using :mrstfile:`simulateScheduleAD
+<autodiff/ad-core/simulators/simulateScheduleAD.m>`
+
+.. figure:: img/exampleControl.png
+   :target: _images/exampleControl.png
+   :width: 70%
+   :align: center
+
+
+   
