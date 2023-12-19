@@ -17,14 +17,10 @@ function  output = runBatteryJson(jsonstruct, varargin)
     ctrl    = 'Control';
     cc      = 'CurrentCollector';
 
-    % We convert all the numerical value to SI unit.
-    jsonstruct = resolveUnitInputJson(jsonstruct);
-    
-    inputparams = BatteryInputParams(jsonstruct);
+    %%  Initialize the battery model.
+    % The battery model is setup using :battmo:`setupModelFromJson`
 
-    [inputparams, gridGenerator] = setupBatteryGridFromJson(inputparams, jsonstruct);
-
-    inputparams = inputparams.validateInputParams();
+    [model, inputparams, jsonstruct] = setupModelFromJson(jsonstruct);
     
     %% model parameter required for initialization if initializationSetup = "given SOC";
     % The initial state of the model is setup using the model.setupInitialState() method.
@@ -45,13 +41,6 @@ function  output = runBatteryJson(jsonstruct, varargin)
       otherwise
         error('initializationSetup not recognized');
     end
-
-    %%  Initialize the battery model.
-    % The battery model is initialized by sending inputparams to the Battery class
-    % constructor. see :class:`Battery <Battery.Battery>`.
-
-    model = Battery(inputparams);
-    model.AutoDiffBackend= AutoDiffBackend();
 
     %% Compute the nominal cell capacity and choose a C-Rate
     % The nominal capacity of the cell is calculated from the active materials.
