@@ -642,9 +642,17 @@ classdef Battery < BaseModel
 
         end
 
-        function initstate = setupInitialState(model)
+        function initstate = setupInitialState(model, jsonstruct)
         % Setup the values of the primary variables at initial state
+        %
+        % The jsonstruct structure (standard matlab struct type) contains some parameters for the initialization. For
+        % the moment, it includes only the initial electrolyte concentration
+        %
 
+            if nargin < 2 | isempty(jsonstruct)
+                jsonstruct.Electrolyte.initialConcentration = 1*mol/litre;
+            end
+                
             nc = model.G.cells.num;
 
             SOC = model.SOC;
@@ -730,7 +738,7 @@ classdef Battery < BaseModel
             %% Setup initial Electrolyte state
 
             initstate.(elyte).phi = zeros(bat.(elyte).G.cells.num, 1) - ref;
-            initstate.(elyte).c   = 1*mol/litre*ones(bat.(elyte).G.cells.num, 1);
+            initstate.(elyte).c   = jsonstruct.Electrolyte.initialConcentration*ones(bat.(elyte).G.cells.num, 1);
 
             %% Setup initial Current collectors state
 

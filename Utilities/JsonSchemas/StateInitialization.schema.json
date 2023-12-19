@@ -19,10 +19,18 @@
       "$ref": "PhysicalQuantity.schema.json",
       "description": "Initial state of charge"
     },
+    "Electrolyte" : {
+      "type" : "object",
+      "properties" : {
+        "initialConcentration" : {
+          "$ref" : "PhysicalQuantity.schema.json",
+          "description" : "Initial Lithium concentration in the electrolyte. This is not used if a given input is given through loadStateCmd. The default value is 1 mol/Liter"
+        }}},
     "loadStateCmd": {
       "type": "string",
       "description": "string that when run by matlab eval function return the initial state in the structure initstate"
-    }
+    },
+
   },
   "oneOf": [
     {

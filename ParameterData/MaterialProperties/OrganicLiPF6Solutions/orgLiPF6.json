@@ -2,6 +2,8 @@
   "specificHeatCapacity": 2055.0,
   "thermalConductivity": 0.6,
   "density": 1200,
+  "initialConcentration" : {"value" : 1,
+                            "unit" : "mol/litre"},
   "ionicConductivity" : {"type" : "function",
                     "functionname" : "computeElectrolyteConductivity_default",
                     "argumentlist" : ["c", "T"]

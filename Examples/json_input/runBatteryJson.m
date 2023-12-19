@@ -17,6 +17,9 @@ function  output = runBatteryJson(jsonstruct, varargin)
     ctrl    = 'Control';
     cc      = 'CurrentCollector';
 
+    % We convert all the numerical value to SI unit.
+    jsonstruct = resolveUnitInputJson(jsonstruct);
+    
     inputparams = BatteryInputParams(jsonstruct);
 
     [inputparams, gridGenerator] = setupBatteryGridFromJson(inputparams, jsonstruct);
@@ -74,7 +77,12 @@ function  output = runBatteryJson(jsonstruct, varargin)
 
     switch initializationSetup
       case "given SOC"
-        initstate = model.setupInitialState();
+        if isfield(jsonstruct, 'Electrolyte') && isfield(jsonstruct.Electrolyte, 'initialConcentration')
+            jsonstructInit.Electrolyte.initialConcentration = jsonstruct.Electrolyte.initialConcentration;
+        else
+            jsonstructInit = [];
+        end
+        initstate = model.setupInitialState(jsonstructInit);
       case "given input"
         % allready handled
       otherwise
