@@ -330,6 +330,8 @@
     },
     "Electrolyte": {
         "name": "orgLiPF6",
+        "initialConcentration": {"value" : 1,
+                                 "unit" : "mol/litre"},
         "specificHeatCapacity": {
             "value": 2055.0,
             "unit": ""

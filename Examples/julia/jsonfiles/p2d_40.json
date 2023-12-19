@@ -156,6 +156,7 @@
     "tup": 0.1
   },
   "Electrolyte": {
+    "initialConcentration": 1000,
     "specificHeatCapacity": 2055,
     "thermalConductivity": 0.6,
     "density": 1200,

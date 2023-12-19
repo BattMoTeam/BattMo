@@ -147,6 +147,8 @@
     "rampupTime": 0.1
   },
   "Electrolyte": {
+    "initialConcentration": {"value" : 1,
+                             "unit" : "mol/litre"},
     "specificHeatCapacity": 2055,
     "thermalConductivity": 0.6,
     "density": 1200,
