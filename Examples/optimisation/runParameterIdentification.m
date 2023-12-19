@@ -8,8 +8,6 @@ mrstModule add ad-core optimization mpfa mrst-gui
 clear
 close all
 
-do_plot = true;
-
 ne      = 'NegativeElectrode';
 pe      = 'PositiveElectrode';
 elyte   = 'Electrolyte';
@@ -29,6 +27,8 @@ jsonControl = parseBattmoJson(fullfile('Examples', 'jsondatafiles', 'cc_discharg
 jsonSim     = parseBattmoJson(fullfile('Examples', 'jsondatafiles', 'simulation_parameters.json'));
 
 json = mergeJsonStructs({jsonParams, jsonGeom, jsonControl, jsonSim});
+
+json.Control.useCVswitch = true;
 
 %% Run with initial guess
 json0 = json;
@@ -151,6 +151,7 @@ end
 outputOpt = runBatteryJson(jsonOpt);
 
 %%
+do_plot = false;
 if do_plot
     set(0, 'defaultlinelinewidth', 2)
 
@@ -196,9 +197,6 @@ fprintf('%g\n', relErr);
 
 fprintf('\nIterations:\n')
 fprintf('%g\n', numIt);
-
-
-
 
 
 %{
