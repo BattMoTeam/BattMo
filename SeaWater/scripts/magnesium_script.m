@@ -10,7 +10,9 @@ clearSimulation = true;
 
 input.precipitation = false;
 
-output = run_magnesium_1D_battery(input, 'runSimulation', runSimulation, 'clearSimulation', clearSimulation);
+output = run_magnesium_1D_battery(input, ...
+                                  'runSimulation', runSimulation, ...
+                                  'clearSimulation', clearSimulation);
 
 model  = output.model;
 states = output.states;
