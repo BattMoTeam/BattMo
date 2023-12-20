@@ -5,15 +5,15 @@ clear
 man = ServerManager('debug', true, ...
                     'gc', true);
 
-% Set up keyword arguments to be sent to julia solver. See run_battery in mrst_utils.jl for details
-kwargs =struct('use_p2d'     , true , ...
-               'extra_timing', false, ...
-               'general_ad'  , true);
+% Set up keyword arguments to be sent to julia solver. See run_battery for details
+kwargs = struct('use_p2d'     , true , ...
+                'extra_timing', false, ...
+                'general_ad'  , true);
 
 %% Pick source JSON files for generating model
 
 %JSON file cases
-casenames = {'p1d_40',
+casenames = {'p1d_40', ...
              'p2d_40'};
 casenames = casenames{2};
 
@@ -23,7 +23,7 @@ casenames = casenames{2};
 % JSON file folder
 
 battmo_folder = battmoDir();
-jsonfolder    = fullfile(battmo_folder, 'Examples', 'julia', 'jsonfiles');
+jsonfolder    = fullfile(battmo_folder, 'Examples', 'JsonDataFiles');
 
 %% Setup model from Matlab
 
