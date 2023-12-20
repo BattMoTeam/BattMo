@@ -15,9 +15,9 @@ classdef BatteryGeneratorP4D < BatteryGenerator
         %
         % vector of y-lengths
         %
-        % - x(1) : y-length of first tab (default : 1mm)
-        % - x(2) : y-length between the tabs (default : 2cm)
-        % - x(3) : y-length of last tab (default : 1mm)
+        % - y(1) : y-length of first tab (default : 1mm)
+        % - y(2) : y-length between the tabs (default : 2cm)
+        % - y(3) : y-length of last tab (default : 1mm)
         %
         ylength = 1e-2*[0.1; 2; 0.1];
 

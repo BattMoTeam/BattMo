@@ -16,8 +16,6 @@ classdef BatteryGeneratorP2D < BatteryGenerator
         sepnx  = 10; % discretization number for negative current collector (default = 10)
         nenx   = 10; % discretization number for negative active material (default = 10)
         penx   = 10; % discretization number for separator (default = 10)
-        nenr   = 10; % discretization for solid diffusion (default = 10)
-        penr   = 10; % discretization for solid diffusion (default = 10)
         ccnenx = 10; % discretization number for positive current collector (default = 10)
         ccpenx = 10; % discretization number for positive active material (default = 10)
 
