@@ -32,12 +32,12 @@ classdef CoinCellSectorBatteryGenerator < BatteryGenerator
 
         function [inputparams, gen] = updateBatteryInputParams(gen, inputparams, params)
 
-            gen.thickness = params.thickness;
-            gen.diameter  = params.diameter;
-            gen.angle     = params.angle;
-            %gen.offset    = params.offset;
-            gen.numCellLayers    = params.numCellLayers;
-            gen.nR        = params.nR;
+            gen.thickness     = params.thickness;
+            gen.diameter      = params.diameter;
+            gen.angle         = params.angle;
+            %gen.offset       = params.offset;
+            gen.numCellLayers = params.numCellLayers;
+            gen.nR            = params.nR;
 
             gen.use_thermal = inputparams.use_thermal;
 

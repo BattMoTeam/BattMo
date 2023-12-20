@@ -46,30 +46,6 @@ Description of the models that are used to setup the geometry
 
 .. image:: img/coincell.png
            :width: 80%
-                   
-      
-         
-:battmo:`BlockBatteryGenerator`
--------------------------------
-
-not yet documented
-         
-:battmo:`CoinCellSectorBatteryGenerator`
-----------------------------------------
-
-not yet documented
-
-         
-:battmo:`FlatBatteryGenerator`
-------------------------------
-
-not yet documented
-
-         
-:battmo:`SectorBatteryGenerator`
---------------------------------
-
-not yet documented
 
          
 :battmo:`Base class<BatteryGenerator>`
