@@ -63,14 +63,16 @@ inputparams.(ne).(co).(am2).massFraction = 0.08;
 inputparams.(ne).(co).(bd).massFraction  = 0.01;
 inputparams.(ne).(co).(ad).massFraction  = 0.01;
 
-%%
-% We change the given CRate
-inputparams.Control.CRate = 0.1;
 
 %%
 % Now, we update the inputparams with the properties of the grid.
 gen = BatteryGeneratorP2D();
 inputparams = gen.updateBatteryInputParams(inputparams);
+
+%% We change the given CRate
+
+CRate = 0.1;
+inputparams.(ctrl).CRate = CRate;
 
 % Allow for switching to voltage control
 inputparams.(ctrl).useCVswitch = true;
@@ -87,14 +89,7 @@ model = Battery(inputparams);
 %
 % We start with the charge period
 
-CRate = model.Control.CRate;
-
-total = 1.4*hour/CRate;
-
-n  = 50;
-dt = total/n;
-step = struct('val', dt*ones(n, 1), 'control', ones(n, 1));
-
+step    = model.(ctrl).setupScheduleStep();
 control = model.(ctrl).setupScheduleControl();
 
 schedule = struct('control', control, 'step', step);
@@ -139,16 +134,17 @@ dischargeStates = states;
 % for the charge period.
 initstate = states{end};
 
-% We use a new control. Note the minus sign in front of
-% :code:`model.Control.Imax`, and that we use the upperCutoffVoltage
-% directly from the json file, since the original control was for
-% charging.
-tup = 0.1;
-upperCutoffVoltage = jsonstruct.Control.upperCutoffVoltage;
-srcfunc = @(time, I, E) rampupSwitchControl(time, tup, I, E, ...
-                                            -model.Control.Imax, ...
-                                            upperCutoffVoltage);
-control = struct('src', srcfunc, 'CCDischarge', false);
+% We use a new control model.
+
+inputparams.Control = CCChargeControlModelInputParams(jsonstruct.Control);
+inputparams.(ctrl).CRate = CRate;
+
+inputparams = inputparams.validateInputParams();
+
+model = Battery(inputparams);
+
+step    = model.(ctrl).setupScheduleStep();
+control = model.(ctrl).setupScheduleControl();
 
 % Use the control in the schedule
 schedule = struct('control', control, 'step', step);
