@@ -57,7 +57,7 @@ classdef CCChargeControlModel < CCcontrolModel
                 
                 func = @(time) rampupControl(time, ...
                                              tup , ...
-                                             Imax);
+                                             -Imax);
             end
                 
         end
