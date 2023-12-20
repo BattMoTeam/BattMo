@@ -216,11 +216,9 @@ classdef ServerManager < handle
 
             [st, result] = system(cmd);
 
-            if st == 0
-                success = true;
-            else
-                error("System call failed: \n %s \nSystem call returned: %s\n", cmd, result);
-            end
+            assert(st == 0, "System call failed: \n %s \nSystem call returned:\n %s\n", cmd, result);
+
+            success = true;
 
             manager.call_history{end+1} = cmd;
 
