@@ -209,21 +209,17 @@ classdef ServerManager < handle
             cmd = [manager.base_call, ' -e ', call];
 
             if manager.options.debug
-                
+
                 fprintf("Call to julia: %s \n", cmd);
-                
+
             end
 
-            try
-                
-                st      = system(cmd);
+            [st, result] = system(cmd);
+
+            if st == 0
                 success = true;
-                
-            catch
-                
-                fprintf("System call failed: \n %s", cmd);
-                success=false;
-                
+            else
+                error("System call failed: \n %s \nSystem call returned: %s\n", cmd, result);
             end
 
             manager.call_history{end+1} = cmd;
