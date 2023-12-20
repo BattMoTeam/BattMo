@@ -7,7 +7,7 @@ jsonfilename = fullfile('ParameterData', 'BatteryCellParameters', 'LithiumIonBat
 
 jsonstruct_material = parseBattmoJson(jsonfilename);
 
-jsonfilename = fullfile('Examples', 'jsondatafiles', 'geometry1d.json');
+jsonfilename = fullfile('Examples', 'JsonDataFiles', 'geometry1d.json');
 jsonstruct_geometry = parseBattmoJson(jsonfilename);
 
 jsonstruct = mergeJsonStructs({jsonstruct_geometry , ...
@@ -71,7 +71,7 @@ E    = cellfun(@(state) state.Control.E, states);
 plot(time/hour, E);
 xlabel('time / h');
 ylabel('Voltage / h');
-    
+
 
 %% Setup Constant Current Constant Voltage control and run the simulation
 
@@ -102,4 +102,3 @@ E    = cellfun(@(state) state.Control.E, states);
 plot(time/hour, E);
 xlabel('time / h');
 ylabel('Voltage / h');
-    

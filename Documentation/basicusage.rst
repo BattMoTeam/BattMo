@@ -10,7 +10,7 @@ Here we introduce the basic usage of |battmo| by showing some simple workflows a
 A First |battmo| Model
 ======================
 
-Let's make your first |battmo| model! 🔋⚡💻 
+Let's make your first |battmo| model! 🔋⚡💻
 
 In this example, we will build, run, and visualize a simple P2D simultion for a Li-ion battery cell. We will first introduce how |battmo| handles model parameters, then run the simulation, dashboard the results, and explore the details of the simulation output. Finally, we will discuss how to make some basic changes to the model.
 
@@ -19,16 +19,16 @@ Define Parameters
 
 |battmo| uses JSON to manage parameters. This allows you to easily save, document, and share complete parameter sets from specific simulations. We have used long and explicit key names for good readability. If you are new to JSON, you can learn more about it `here <https://www.w3schools.com/js/js_json_intro.asp>`_. Details on the BattMo specification are available in the :ref:`json:JSON input specification`.
 
-For this example, we provide a sample JSON file :battmofile:`sample_input.json<Examples/jsondatafiles/sample_input.json>` that
+For this example, we provide a sample JSON file :battmofile:`sample_input.json<Examples/JsonDataFiles/sample_input.json>` that
 describes a simple NMC-Graphite cell.
 
 We load and parse the JSON input file into |battmo| using the command:
 
 .. code:: matlab
 
-   jsonstruct = parseBattmoJson('Examples/jsondatafiles/sample_input.json')
+   jsonstruct = parseBattmoJson('Examples/JsonDataFiles/sample_input.json')
 
-This transforms the parameter data as a `MATLAB structure <https://se.mathworks.com/help/matlab/structures.html>`_ :code:`jsonstruct` that is used to setup the simulation. We can explore the structure within the MATLAB Command Window by navigating the different levels of the structure. 
+This transforms the parameter data as a `MATLAB structure <https://se.mathworks.com/help/matlab/structures.html>`_ :code:`jsonstruct` that is used to setup the simulation. We can explore the structure within the MATLAB Command Window by navigating the different levels of the structure.
 
 For example, if we want to know the thickness of the negative electrode coating, we can give the command:
 
@@ -48,11 +48,11 @@ Run Simulation
 --------------
 
 We can run the simulation with the command:
-  
+
 .. code:: matlab
 
    output = runBatteryJson(jsonstruct)
-                      
+
 Show the Dashboard
 ------------------
 
@@ -75,13 +75,13 @@ The left 3 columns of the dashboard shows the profiles for the main state quanti
 Explore the Output
 ------------------
 
-The :code:`output` structure returns among other thing the model and the states. 
+The :code:`output` structure returns among other thing the model and the states.
 
 .. code:: matlab
 
    model  : [1x1 Battery]
    states : [1x1 struct]
-          
+
 The :code:`model` contains information about the setup of the model and initial conditions, while :code:`states` contains the results of the simulation at each timestep. Plotting the simulation results requires information about the grid (i.e. what is the position where the quantity is calculated?) and the state (i.e. what is the value of the quantity in that position at a given time?).
 
 Explore the Grid
@@ -100,7 +100,7 @@ We can see that the grid is stored as a structure with information about the cel
    plot(x, zeros(size(x)), 'o')
    xlabel('Position  /  m')
 
-This shows the overall grid that is used for the model. However, |battmo| models use a modular hierarchy where the overall cell model is composed of smaller submodels for electrodes, electrolyte, and current collectors. Each of these submodels has its own grid. 
+This shows the overall grid that is used for the model. However, |battmo| models use a modular hierarchy where the overall cell model is composed of smaller submodels for electrodes, electrolyte, and current collectors. Each of these submodels has its own grid.
 
 For example, if we want to plot the grid associated with the different submodels in different colors, we can use the following commands:
 
@@ -114,14 +114,14 @@ For example, if we want to plot the grid associated with the different submodels
    hold on
    plot(x_sep, zeros(size(x_sep)), 'ok')
    plot(x_pe, zeros(size(x_pe)), 'or')
-   xlabel('Position  /  m')  
+   xlabel('Position  /  m')
 
 If you would like more information about the |battmo| model hierarchy, please see :ref:`BattMo Model Architecture <architecture:BattMo Model Architecture>`.
 
 Explore the States
 ------------------
 
-The values of the state quantities at each time step are stored in the :code:`states` `cell array <https://se.mathworks.com/help/matlab/cell-arrays.html>`_. Each entry in the array describes the state of the simulation at a given timestep. 
+The values of the state quantities at each time step are stored in the :code:`states` `cell array <https://se.mathworks.com/help/matlab/cell-arrays.html>`_. Each entry in the array describes the state of the simulation at a given timestep.
 
 For example, we can look at the state of the simulation at timestep 10 (shown in the dashboard plot above) using the command:
 
@@ -153,7 +153,7 @@ which shows that there are two quantities there:
      c: [30×1 double]
    phi: [30×1 double]
 
-We see that the size of the state quantity vectors match the size of the grid vector. 
+We see that the size of the state quantity vectors match the size of the grid vector.
 
 Plot a Result
 -------------
@@ -161,7 +161,7 @@ Plot a Result
 Let's plot the concentration in the electrolyte at timestep 10. We can plot the results using basic MATLAB commands this way:
 
 .. code:: matlab
-   
+
    x = output.model.G.cells.centroids
    c = output.states{10}.Electrolyte.c
 
@@ -184,7 +184,7 @@ That's it! 🎉 You have run an post-processed your first simulation! But there 
 Change Control Parameters
 =========================
 
-Let's try simulating the discharge of the cell at different C-Rates. 
+Let's try simulating the discharge of the cell at different C-Rates.
 
 Once the JSON parameter file has been read into MATLAB as a jsonstruct, its properties can be modified programmatically. For example, we can define a vector of different C-Rates and then use a for-loop to replace that value in the jsonstruct and re-run the simulation.
 
@@ -197,7 +197,7 @@ Once the JSON parameter file has been read into MATLAB as a jsonstruct, its prop
        output = runBatteryJson(jsonstruct);
 
        states = output.states;
-       time = cellfun(@(state) state.time, states); 
+       time = cellfun(@(state) state.time, states);
        voltage = cellfun(@(state) state.('Control').E, states);
        plot((time/hour), voltage, '-', 'linewidth', 3)
        hold on
@@ -205,18 +205,18 @@ Once the JSON parameter file has been read into MATLAB as a jsonstruct, its prop
    hold off
 
 [TODO: fix :code:`plotResult`] For this example, we have written a :code:`plotResult` function which extracts and plots from the output the time and voltage values, see :ref:`here <plotResult>`.
-   
+
 .. figure:: img/crates.png
    :target: _images/crates.png
    :width: 70%
-   :align: center   
+   :align: center
 
    A comparison of cell voltage curves at different C-Rates
 
 Change Structural Parameters
 ============================
 
-Now let's try changing some structural parameters in the model. 
+Now let's try changing some structural parameters in the model.
 
 For example, we could simulate the cell considering different thickness values for the negative electrode coating. We will take the same approach as the previous example, by defining a vector of thickness values and using a for-loop to iterate through and re-run the simulation.
 
@@ -229,14 +229,14 @@ For example, we could simulate the cell considering different thickness values f
        output = runBatteryJson(jsonstruct);
 
        states = output.states;
-       time = cellfun(@(state) state.time, states); 
+       time = cellfun(@(state) state.time, states);
        voltage = cellfun(@(state) state.('Control').E, states);
        plot((time/hour), voltage, '-', 'linewidth', 3)
        hold on
    end
    hold off
 
-From these results we can see that for thin negative electrode coatings, the capacity of the cell is limited by the negative electrode. But the capacity of the negative electrode increases with thickness and eventually the positive electrode becomes limiting. 
+From these results we can see that for thin negative electrode coatings, the capacity of the cell is limited by the negative electrode. But the capacity of the negative electrode increases with thickness and eventually the positive electrode becomes limiting.
 
 Change Material Parameters
 ==========================
@@ -254,7 +254,7 @@ First, we clear the workspace and reload the original parameter set to start fro
 
    clear all
    close all
-   jsonstruct = parseBattmoJson('Examples/jsondatafiles/sample_input.json');
+   jsonstruct = parseBattmoJson('Examples/JsonDataFiles/sample_input.json');
 
 Now we load and parse the LFP material parameters from the |battmo| library and move it to the right place in the model hierarchy:
 
@@ -297,5 +297,4 @@ Next Steps
 
 Congratulations! 🎉 You are now familiar with the |battmo| basics!
 
-This should be enough to allow you to setup and run some basic Li-ion battery simulations using P2D grids. Do you want to do more? The Advanced Usage section gives information about setting up custom parameter sets, running simulations in P3D and P4D grids, and including thermal effects. 
-
+This should be enough to allow you to setup and run some basic Li-ion battery simulations using P2D grids. Do you want to do more? The Advanced Usage section gives information about setting up custom parameter sets, running simulations in P3D and P4D grids, and including thermal effects.

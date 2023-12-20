@@ -2,9 +2,9 @@
 % This script shows an example where we setup a simulation using exclusively json input files.
 
 %% Setting up the environment
-% BattMo uses functionality from :mod:`MRST <MRSTBattMo>`. This functionality 
-% is collected into modules where each module contains code for doing 
-% specific things. To use this functionality we must add these modules to 
+% BattMo uses functionality from :mod:`MRST <MRSTBattMo>`. This functionality
+% is collected into modules where each module contains code for doing
+% specific things. To use this functionality we must add these modules to
 % the matlab path by running:
 
 mrstModule add ad-core mrst-gui
@@ -21,22 +21,22 @@ jsonstruct_material = parseBattmoJson(jsonfilename);
 
 %% Geometry
 % We load the json structure for the geometrical properties
-jsonfilename = fullfile('Examples', 'jsondatafiles', 'geometry3d.json');
+jsonfilename = fullfile('Examples', 'JsonDataFiles', 'geometry3d.json');
 jsonstruct_geometry = parseBattmoJson(jsonfilename);
 
 %% Control
 % We load the json structure for the geometrical properties
-jsonfilename = fullfile('Examples', 'jsondatafiles', 'cc_discharge_control.json');
+jsonfilename = fullfile('Examples', 'JsonDataFiles', 'cc_discharge_control.json');
 jsonstruct_control = parseBattmoJson(jsonfilename);
 
 %% Simulation parameters
 % We load the json structure for the simulation parameters
-jsonfilename = fullfile('Examples', 'jsondatafiles', 'simulation_parameters.json');
+jsonfilename = fullfile('Examples', 'JsonDataFiles', 'simulation_parameters.json');
 jsonstruct_simparams = parseBattmoJson(jsonfilename);
 
 %% Ouput specificiations
 % We load the json structure for output extra specifications.
-jsonfilename = fullfile('Examples', 'jsondatafiles', 'extra_output.json');
+jsonfilename = fullfile('Examples', 'JsonDataFiles', 'extra_output.json');
 jsonstruct_output = parseBattmoJson(jsonfilename);
 
 %%
@@ -46,7 +46,7 @@ jsonstruct = mergeJsonStructs({jsonstruct_geometry , ...
                                jsonstruct_material , ...
                                jsonstruct_control  , ...
                                jsonstruct_simparams, ...
-                               jsonstruct_output   , ...                               
+                               jsonstruct_output   , ...
                               });
 
 
@@ -69,9 +69,9 @@ end
 
 states = output.states;
 
-E = cellfun(@(x) x.Control.E, states); 
+E = cellfun(@(x) x.Control.E, states);
 I = cellfun(@(x) x.Control.I, states);
-time = cellfun(@(x) x.time, states); 
+time = cellfun(@(x) x.time, states);
 
 figure()
 subplot(1,2,1)

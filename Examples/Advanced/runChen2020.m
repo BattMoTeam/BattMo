@@ -25,7 +25,7 @@ thermal = 'ThermalModel';
 
 % The input parameters can be given in json format. The json file is read and used to populate the inputparams object.
 jsonstruct_material = parseBattmoJson(fullfile('ParameterData','ParameterSets','Chen2020','chen2020_lithium_ion_battery.json'));
-jsonstruct_geometry = parseBattmoJson(fullfile('Examples', 'jsondatafiles', 'geometryChen.json'));
+jsonstruct_geometry = parseBattmoJson(fullfile('Examples', 'JsonDataFiles', 'geometryChen.json'));
 
 jsonstruct = mergeJsonStructs({jsonstruct_material, ...
                                jsonstruct_geometry});

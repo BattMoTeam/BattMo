@@ -22,9 +22,9 @@ sep     = 'Separator';
 %% Choose battery type
 
 jsonParams  = parseBattmoJson(fullfile('ParameterData', 'BatteryCellParameters', 'LithiumIonBatteryCell', 'lithium_ion_battery_nmc_graphite.json'));
-jsonGeom    = parseBattmoJson(fullfile('Examples', 'jsondatafiles', 'geometry1d.json'));
-jsonControl = parseBattmoJson(fullfile('Examples', 'jsondatafiles', 'cc_discharge_control.json'));
-jsonSim     = parseBattmoJson(fullfile('Examples', 'jsondatafiles', 'simulation_parameters.json'));
+jsonGeom    = parseBattmoJson(fullfile('Examples', 'JsonDataFiles', 'geometry1d.json'));
+jsonControl = parseBattmoJson(fullfile('Examples', 'JsonDataFiles', 'cc_discharge_control.json'));
+jsonSim     = parseBattmoJson(fullfile('Examples', 'JsonDataFiles', 'simulation_parameters.json'));
 
 json = mergeJsonStructs({jsonParams, jsonGeom, jsonControl, jsonSim});
 

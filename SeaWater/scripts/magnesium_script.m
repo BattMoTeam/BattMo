@@ -19,9 +19,9 @@ states = output.states;
 
 %% plot voltage curve
 
-time = cellfun(@(x) x.time, states); 
-Enew = cellfun(@(x) x.Cathode.E, states); 
-% CatEnernst = cellfun(@(x) x.CathodeActiveMaterial.ENernst, states); 
+time = cellfun(@(x) x.time, states);
+Enew = cellfun(@(x) x.Cathode.E, states);
+% CatEnernst = cellfun(@(x) x.CathodeActiveMaterial.ENernst, states);
 
 figure
 plot((time/hour), Enew, '*-', 'linewidth', 3)
@@ -48,16 +48,20 @@ if model.include_precipitation
                  'nucleation'       , ...
                  'cSat'             , ...
                  'volumeFractions'};
-    
+
 end
 
-for icase = 1 : numel(casenames)
-    h = figure();
-    casename = casenames{icase};
-    for istate = 1 : numel(states)
-        simoutput.ind = istate;
-        plot1DOutputFunc(simoutput, 'casename', casename, 'fignum', h.Number);
+doplot = false;
+
+if doplot
+
+    for icase = 1 : numel(casenames)
+        h = figure();
+        casename = casenames{icase};
+        for istate = 1 : numel(states)
+            simoutput.ind = istate;
+            plot1DOutputFunc(simoutput, 'casename', casename, 'fignum', h.Number);
+        end
     end
+
 end
-
-

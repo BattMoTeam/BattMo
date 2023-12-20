@@ -38,7 +38,7 @@ We load the json structure for the geometrical properties
 
 .. code-block:: matlab
 
-  jsonfilename = fullfile('Examples', 'jsondatafiles', 'geometry1d.json');
+  jsonfilename = fullfile('Examples', 'JsonDataFiles', 'geometry1d.json');
   jsonstruct_geometry = parseBattmoJson(jsonfilename);
 
 
@@ -48,7 +48,7 @@ We load the json structure for the geometrical properties
 
 .. code-block:: matlab
 
-  jsonfilename = fullfile('Examples', 'jsondatafiles', 'cc_discharge_control.json');
+  jsonfilename = fullfile('Examples', 'JsonDataFiles', 'cc_discharge_control.json');
   jsonstruct_control = parseBattmoJson(jsonfilename);
 
 
@@ -58,7 +58,7 @@ We load the json structure for the simulation parameters
 
 .. code-block:: matlab
 
-  jsonfilename = fullfile('Examples', 'jsondatafiles', 'simulation_parameters.json');
+  jsonfilename = fullfile('Examples', 'JsonDataFiles', 'simulation_parameters.json');
   jsonstruct_simparams = parseBattmoJson(jsonfilename);
 
 
@@ -68,7 +68,7 @@ We load the json structure for output extra specifications.
 
 .. code-block:: matlab
 
-  jsonfilename = fullfile('Examples', 'jsondatafiles', 'extra_output.json');
+  jsonfilename = fullfile('Examples', 'JsonDataFiles', 'extra_output.json');
   jsonstruct_output = parseBattmoJson(jsonfilename);
 
 We merge the json structures. The function issues a warning if a parameter is set with different values in the given structures. The rule is that the first value takes precedence.
@@ -106,17 +106,17 @@ Plotting
 .. code-block:: matlab
 
   states = output.states;
-  
+
   E = cellfun(@(x) x.Control.E, states);
   I = cellfun(@(x) x.Control.I, states);
   time = cellfun(@(x) x.time, states);
-  
+
   figure()
   subplot(1,2,1)
   plot(time/hour, E)
   xlabel('time [hours]')
   ylabel('Cell Voltage [V]')
-  
+
   subplot(1,2,2)
   plot(time/hour, I)
   xlabel('time [hours]')
