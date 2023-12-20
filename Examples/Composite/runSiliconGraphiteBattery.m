@@ -140,11 +140,14 @@ dischargeStates = states;
 initstate = states{end};
 
 % We use a new control. Note the minus sign in front of
-% :code:`model.Control.Imax`
+% :code:`model.Control.Imax`, and that we use the upperCutoffVoltage
+% directly from the json file, since the original control was for
+% charging.
 tup = 0.1;
+upperCutoffVoltage = jsonstruct.Control.upperCutoffVoltage;
 srcfunc = @(time, I, E) rampupSwitchControl(time, tup, I, E, ...
                                             -model.Control.Imax, ...
-                                            model.Control.upperCutoffVoltage);
+                                            upperCutoffVoltage);
 control = struct('src', srcfunc, 'CCDischarge', false);
 
 % Use the control in the schedule
