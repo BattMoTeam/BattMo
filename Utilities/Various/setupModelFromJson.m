@@ -9,9 +9,6 @@ function [model, inputparams, gridGenerator, jsonstruct] = setupModelFromJson(js
     % Setup the geometry
     [inputparams, gridGenerator] = setupBatteryGridFromJson(inputparams, jsonstruct);
 
-    % Check the consistency of the parameters.
-    inputparams = inputparams.validateInputParams();
-
     model = Battery(inputparams);
     
 end
