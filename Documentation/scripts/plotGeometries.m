@@ -1,5 +1,66 @@
 
-doplot.coincell = false;
+doplot.coincell       = false;
+doplot.jellyroll      = false;
+doplot.illustration1D = false;
+doplot.illustration3D = true;
+
+if doplot.illustration1D
+
+    % We fake a 1D model
+
+    jsonstruct_material = parseBattmoJson(fullfile('ParameterData','BatteryCellParameters','LithiumIonBatteryCell','lithium_ion_battery_nmc_graphite.json'));
+    jsonstruct_material.include_current_collectors = true;
+
+    paramobj = BatteryInputParams(jsonstruct_material);
+
+    gen = FakeBatteryGeneratorP2D();
+
+    paramobj = gen.updateBatteryInputParams(paramobj);
+
+    model = Battery(paramobj);
+
+    plotBatteryGrid(model);
+    
+end
+
+if doplot.illustration3D
+
+    % We fake a 1D model
+
+    jsonstruct_material = parseBattmoJson(fullfile('ParameterData','BatteryCellParameters','LithiumIonBatteryCell','lithium_ion_battery_nmc_graphite.json'));
+    jsonstruct_material.include_current_collectors = true;
+
+    paramobj = BatteryInputParams(jsonstruct_material);
+
+    gen = BatteryGeneratorP4D();
+
+    paramobj = gen.updateBatteryInputParams(paramobj);
+
+    model = Battery(paramobj);
+
+    plotBatteryGrid(model);
+    
+end
+
+
+
+if doplot.jellyroll
+    
+    jsonstruct_material = parseBattmoJson(fullfile('ParameterData','BatteryCellParameters','LithiumIonBatteryCell','lithium_ion_battery_nmc_graphite.json'));
+    jsonstruct_material.include_current_collectors = true;    
+    
+    % load json struct for geometry
+    jsonstruct_geometry = parseBattmoJson('Examples/JsonDataFiles/4680-geometry.json');
+    
+    jsonstruct = mergeJsonStructs({jsonstruct_material, jsonstruct_geometry});
+
+    [model, inputparams, gridGenerator, jsonstruct] = setupModelFromJson(jsonstruct);
+
+    figure
+    plotGrid(model.G, 'edgealpha', 0.1);
+    
+end
+
 
 if doplot.coincell
     
