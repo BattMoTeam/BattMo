@@ -132,7 +132,7 @@ Control model description
 =========================
 
 Beside json input, the function :mrstfile:`simulateScheduleAD
-<autodiff/ad-core/simulators/simulateScheduleAD.m>` is used to run a simulation. It requires
+<mrst-autodiff/ad-core/simulators/simulateScheduleAD.m>` is used to run a simulation. It requires
 
 * A **model**, which knows how to setup and solve the governing equations of our problem,
 * An **initial state**,
@@ -189,7 +189,7 @@ We use the default state initialisation method given by the method :code:`setupI
    initstate = model.setupInitialState(jsonstruct);
 
 Now, we can run the simulation for the given schedule, model and initial state using :mrstfile:`simulateScheduleAD
-<autodiff/ad-core/simulators/simulateScheduleAD.m>`
+<mrst-autodiff/ad-core/simulators/simulateScheduleAD.m>`
 
 .. code:: matlab
 

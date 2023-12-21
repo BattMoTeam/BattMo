@@ -46,6 +46,8 @@ In the case of a composite material, the coating model will have a different str
 (see :todo:`add link`)
 
 
+.. _ArchitectureActiveMaterial:
+   
 The **Active Material** is organized two sub-models
 
 * Interface

@@ -6,15 +6,17 @@ Advanced Usage
    :maxdepth: 2
    :hidden:
 
-   Model initialisation <modelinitialisation>
-   Thermal Simulation <thermal>
+   architecture
+   modelinitialisation
    controlinput
-   Optimisation <optimisation>
-   Parameter sets <parsets>
-
-
-* :ref:`Model initialisation <modelinitialisation:Model initialisation>`
-* :ref:`Thermal model <thermal:Thermal model>`
+   parsets
+   Thermal Simulation <thermal>
+   optimisation
+   
+* :ref:`BattMo Model Architecture<architecture:BattMo Model Architecture>`
+* :ref:`Advanced Simulation Setup<modelinitialisation:Advanced Simulation Setup>`
 * :ref:`Control models <controlinput:Control models>`
-* :ref:`Optimisation <optimisation:Optimisation>`
 * :ref:`Parameter sets <parsets:Parameter sets>`
+* :ref:`Thermal model <thermal:Thermal model>`
+* :ref:`Optimisation <optimisation:Optimisation>`
+  
