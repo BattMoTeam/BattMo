@@ -1,6 +1,6 @@
-============
-Julia bridge
-============
+===================
+BattMo Julia bridge
+===================
 
 Introduction
 ============
