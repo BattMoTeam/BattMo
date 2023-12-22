@@ -10,16 +10,16 @@
               (setq utilsdir "/home/xavier/Matlab/Projects/battmo/Documentation/utils/")
               (setq testdir "/home/xavier/Matlab/Projects/battmo-doc-test/")))
   ("august" (progn
-              (setq docdir "/home/august/Projects/Battery/BattMo-dev/Documentation/")
-              (setq utilsdir "/home/august/Projects/Battery/BattMo-dev/Documentation/utils/")
+              (setq docdir "/home/august/Projects/Battery/BattMo/Documentation/")
+              (setq utilsdir "/home/august/Projects/Battery/BattMo/Documentation/utils/")
               (setq testdir "/home/august/Projects/Battery/battmo-doc-test/")
-              
+
               )
    )
   )
 
 
-     
+
 (defun battmodoc-build ()
   (interactive)
   (let ((outputbuffer (get-buffer-create "*buildoutput*"))
@@ -67,4 +67,3 @@
     (insert "      " com "\n")
     )
   )
-
