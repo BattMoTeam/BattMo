@@ -1,4 +1,4 @@
-function [model, inputparams, gridGenerator, jsonstruct] = setupModelFromJson(jsonstruct)
+function [model, inputparams, jsonstruct, gridGenerator] = setupModelFromJson(jsonstruct)
 % We setup a model from a json structure
     
     % We convert all the numerical value to SI unit.
@@ -10,5 +10,5 @@ function [model, inputparams, gridGenerator, jsonstruct] = setupModelFromJson(js
     [inputparams, gridGenerator] = setupBatteryGridFromJson(inputparams, jsonstruct);
 
     model = Battery(inputparams);
-    
+
 end

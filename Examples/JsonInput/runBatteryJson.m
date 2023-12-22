@@ -20,7 +20,7 @@ function  output = runBatteryJson(jsonstruct, varargin)
     %%  Initialize the battery model.
     % The battery model is setup using :battmo:`setupModelFromJson`
 
-    [model, inputparams, jsonstruct] = setupModelFromJson(jsonstruct);
+    [model, inputparams, jsonstruct, gridGenerator] = setupModelFromJson(jsonstruct);
     
     %% model parameter required for initialization if initializationSetup = "given SOC";
     % The initial state of the model is setup using the model.setupInitialState() method.
@@ -35,7 +35,7 @@ function  output = runBatteryJson(jsonstruct, varargin)
     switch initializationSetup
       case "given SOC"
         inputparams.initT = jsonstruct.initT;
-        inputparams.SOC = jsonstruct.SOC;
+        inputparams.SOC   = jsonstruct.SOC;
       case "given input"
         eval(jsonstruct.loadStateCmd);
       otherwise

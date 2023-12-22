@@ -54,7 +54,7 @@ if doplot.jellyroll
     
     jsonstruct = mergeJsonStructs({jsonstruct_material, jsonstruct_geometry});
 
-    [model, inputparams, gridGenerator, jsonstruct] = setupModelFromJson(jsonstruct);
+    [model, inputparams, jsonstruct, gridGenerator] = setupModelFromJson(jsonstruct);
 
     figure
     plotGrid(model.G, 'edgealpha', 0.1);
