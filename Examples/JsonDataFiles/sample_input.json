@@ -60,7 +60,7 @@
           "unit": "gram/((centi*meter)^3)"
         },
         "massFraction": 0.03,
-        "electronicConductivity": 100,
+        "electronicConductivity": 110,
         "specificHeatCapacity": 632,
         "thermalConductivity": 1.04
       }

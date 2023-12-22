@@ -1,6 +1,6 @@
-=========================
-Advanced Simulation Setup
-=========================
+============================
+The Battery Simulation Model
+============================
 
 In the previous sections, we have seen how to run a simulation from a single json input. In this section, we detail the
 simulation process. This is useful for a more advanced usage where a direct access to the solver is required, for
@@ -10,7 +10,8 @@ To run a simulation, we need:
 
 * A :battmo:`Battery` **model**, which knows how to setup and solve the governing equations of our problem,
 * An **initial state** and
-* A **schedule**, which provides the time stepping and can also contain setup for control.
+* A **schedule**, which provides the time stepping and can also contain setup for control (covered in :ref:`an other
+  section<controlinput:Control model description>`).
 
 We use the governing equations provided in the serie of papers :cite:`Latz2011,Latz2013,Latz2016`. They correspond to
 the standard PXD model. The equations are **non-linear**. The charge and mass conservation equations are partial
@@ -30,8 +31,8 @@ In this function, the model has the task of assemblying the discrete residual eq
 time step, and send them to a Newton solver.
 
 
-Initialisation a battery simulation model
------------------------------------------
+Initialisation of a battery simulation model
+============================================
 
 To initialise a model using json input, we can use the function :battmo:`setupModelFromJson`. For example,
 
@@ -107,21 +108,166 @@ run it separately. Finally, we use our input parameter object to instantiate our
    model = Battery(inputparams)
 
 
-Calculating intial concentration
---------------------------------
+Inspection of the model
+=======================
 
-Concentration is calculated using the intial SOC of the battery.
-
-Initial concentration and potential in the model can be calculated based on equilibrium values for the given input
-paramaters. This can be done by calling initialiseState on a BatteryModel object:
+The model contains all the parameters of the battery. You can inspect simply using the command window. There are
+properties that are used by the solver that will remain obscure for a standard user. Yet, most of the names are explicit
+enough and match with the :ref:`json schema definition<json:JSON input specification>` so that their meaning will be
+clear. For example,
 
 .. code:: matlab
 
-    model.initialiseState()
+   >> model
+   
+   model = 
+   
+     Battery with properties:
+   
+                              con: [1x1 PhysicalConstants]
+                NegativeElectrode: [1x1 Electrode]
+                PositiveElectrode: [1x1 Electrode]
+                      Electrolyte: [1x1 Electrolyte]
+                        Separator: [1x1 Separator]
+                     ThermalModel: [1x1 ThermalComponent]
+                          Control: [1x1 CCDischargeControlModel]
+                              SOC: 0.9900
+                            initT: 298.1500
+   ...
+   
+   
+Here, we recognize the :ref:`battery model architecture<architecture:BattMo Model Architecture>`. Just as an example, we
+can look at the properties of the active material in the negative electrode
 
-Alternatively a state structure contatining concentration and potential for all the relevant submodels can be given.
 
+.. code:: matlab
 
+   >> model.NegativeElectrode.Coating.ActiveMaterial
 
-Calculating initial potential
------------------------------
+   ans = 
+   
+     ActiveMaterial with properties:
+   
+                    Interface: [1x1 Interface]
+               SolidDiffusion: [1x1 FullSolidDiffusionModel]
+       electronicConductivity: 100
+                      density: 2240
+                 massFraction: 0.9400
+          thermalConductivity: 1.0400
+         specificHeatCapacity: 632
+
+and we recognize the property names and values given in the :battmofile:`input json
+file<Examples/JsonDataFiles/sample_input.json#13>` that is used in this example.
+
+Some properties of the model are computed at initialisation. This is the case for example of the effective electronic
+conducitivities. Therefore,
+
+.. warning::
+
+   In general, you should never change the properties of the model directly. You can do so if you know the model in
+   details.
+
+   The reason is that some parameters are used to compute other dependent parameters. This computation is done at the
+   model setup.
+
+  
+To change a model parameter, you can either do it in your json input structure or, as described earlier, using the
+matlab input parameter object (:code:`inputparams`). The effectrive electronic conductivity of the coating in the
+negative electrode is
+
+.. code:: matlab
+
+   >> model.NegativeElectrode.Coating
+   
+   ans = 
+   
+     Coating with properties:
+   
+                        ActiveMaterial     : [1x1 ActiveMaterial]
+                        Binder             : [1x1 Binder]
+                        ConductingAdditive : [1x1 ConductingAdditive]
+
+                        ...
+                        
+                electronicConductivity     : 100.3328
+       effectiveElectronicConductivity     : 82.5961          
+
+                        ...
+
+The intrinsic electronic conductivity of the coating is computed from the electronic conductivity of its constituent
+(active material, binder, conducting additive). Then the *effective* electronic conductivity, which is used in the
+charge conservation equation, takes into account the coating volume fraction and the Bruggeman coefficient.
+
+Let us change the conductivity of the active material from 100 to 120 (remember we always use SI inside the code so that
+those values are in Siemens/cm^2). We can proceed as follows
+
+.. code:: matlab
+          
+   jsonstruct = parseBattmoJson('JsonDataFiles/sample_input.json');
+   [model, inputparams] = setupModelFromJson(jsonstruct);
+   % Change the value the electronic conductivity
+   inputparams.NegativeElectrode.Coating.ActiveMaterial.electronicConductivity = 120;
+   model = Battery(inputparams);
+
+Then, 
+
+.. code:: matlab
+
+   >> model.NegativeElectrode.Coating
+   
+   ans = 
+   
+     Coating with properties:
+   
+                electronicConductivity: 118.4873
+       effectiveElectronicConductivity: 97.5413
+
+Computing and inspecting some standard static properties of the model
+=====================================================================
+
+For a battery cell, utility functions are available to compute the standard properties listed below
+
+* :battmo:`computeCellMass` computes the **mass** of the battery and its components
+* :battmo:`computeCellCapacity` computes the **capacity** of the the electrodes
+* :battmo:`computeCellEnergy` computes the **total energy** of the battery when discharged at equilibrium conditions.
+  It means that the transport effects are totally neglicted and corresponds to the case of an infinitly small CRate.
+
+To print to screen all these properties, we can use conveniently an instance of the :battmo:`CellSpecificationSummary`
+as shown below.
+
+.. code:: matlab
+
+   jsonstruct = parseBattmoJson('JsonDataFiles/sample_input.json');
+   model = setupModelFromJson(jsonstruct);
+
+   css = CellSpecificationSummary(model);
+
+Then, using the :code:`printSpecifications` method, we get
+
+.. code:: matlab
+
+   >> css.printSpecifications
+   
+                  Packing mass : 0 [kg]
+                   Temperature : 24.85 [C]
+                          Mass : 3.59526e-05 [kg]
+                        Volume : 1.36e-05 [L]
+                Total Capacity : 0.00301148 [Ah]
+   Negative Electrode Capacity : 0.00310324 [Ah]
+   Positive Electrode Capacity : 0.00301148 [Ah]
+                     N/P ratio : 1.03047 [-]
+                        Energy : 0.0115753 [Wh]
+               Specific Energy : 321.958 [Wh/kg]
+                Energy Density : 851.122 [Wh/L]
+               Initial Voltage : 4.17686 [V]   
+   
+We can also mention here the utility function :battmo:`computeCellEnergyGivenCrate`, even it is not a *static* property.
+The function computes the energy produced by a cell for a given CRate.
+
+.. code:: matlab
+
+   >> output = computeCellEnergyGivenCrate(model, 2);
+   >> fprintf('Energy at Crate=2 : %g [Wh]', output.energy / (watt*hour));
+   
+   Energy at Crate = 2 : 0.0110781 [Wh]
+

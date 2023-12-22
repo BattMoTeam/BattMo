@@ -14,7 +14,7 @@ Advanced Usage
    optimisation
    
 * :ref:`BattMo Model Architecture<architecture:BattMo Model Architecture>`
-* :ref:`Advanced Simulation Setup<modelinitialisation:Advanced Simulation Setup>`
+* :ref:`The battery simulation model<modelinitialisation:The Battery Simulation Model>`
 * :ref:`Control models <controlinput:Control models>`
 * :ref:`Parameter sets <parsets:Parameter sets>`
 * :ref:`Thermal model <thermal:Thermal model>`
