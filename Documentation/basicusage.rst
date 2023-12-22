@@ -295,6 +295,11 @@ And now, we can run the simulation and plot the discharge curve:
 Notebooks
 =========
 
+We have written and published some matlab notebook in the `Live Code File Format <https://se.mathworks.com/help/matlab/matlab_prog/live-script-file-format.html>`_ (:code:`.mlx`) . They are located in the :battmofile:`Examples/Basic` directory.
+
+They are also available in a python notebook format:
+
+
 .. list-table::
    
    * - Tutorial 1
@@ -315,8 +320,6 @@ Notebooks
      - :battmofile:`Simulate a Multilayer Pouch Cell<Documentation/notebooks/tutorial_8_simulate_a_multilayer_pouch_cell_live.ipynb>`
    * - Tutorial 9
      - :battmofile:`Simulate a Cylindrical Cell<Documentation/notebooks/tutorial_9_simulate_a_cylindrical_cell_live.ipynb>`
-
-
 
    
 Next Steps
