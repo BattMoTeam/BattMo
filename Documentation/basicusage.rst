@@ -292,6 +292,33 @@ And now, we can run the simulation and plot the discharge curve:
 
    plot(time, E)
 
+Notebooks
+=========
+
+.. list-table::
+   
+   * - Tutorial 1
+     - :battmofile:`Your First BattMo Model<Documentation/notebooks/tutorial_1_a_simple_p2d_model_live.ipynb>`
+   * - Tutorial 2
+     - :battmofile:`Change the Control Protocol<Documentation/notebooks/tutorial_2_changing_control_protocol_live.ipynb>`
+   * - Tutorial 3
+     - :battmofile:`Modify Structural Parameters<Documentation/notebooks/tutorial_3_modify_structural_parameters_live.ipynb>`
+   * - Tutorial 4
+     - :battmofile:`Modify Material Parameters<Documentation/notebooks/tutorial_4_modify_material_parameters_live.ipynb>`
+   * - Tutorial 5
+     - :battmofile:`Simulate CC-CV Cycling<Documentation/notebooks/tutorial_5_simulate_CCCV_cycling_live.ipynb>`
+   * - Tutorial 6
+     - :battmofile:`Simulate Thermal Performance<Documentation/notebooks/tutorial_6_simulate_thermal_performance_live.ipynb>`
+   * - Tutorial 7
+     - :battmofile:`A Simple P4D Simulation<Documentation/notebooks/tutorial_7_a_simple_p4d_model_live.ipynb>`
+   * - Tutorial 8
+     - :battmofile:`Simulate a Multilayer Pouch Cell<Documentation/notebooks/tutorial_8_simulate_a_multilayer_pouch_cell_live.ipynb>`
+   * - Tutorial 9
+     - :battmofile:`Simulate a Cylindrical Cell<Documentation/notebooks/tutorial_9_simulate_a_cylindrical_cell_live.ipynb>`
+
+
+
+   
 Next Steps
 ==========
 
