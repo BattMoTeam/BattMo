@@ -6,7 +6,6 @@
     "height" : 2e-2,
     "Nw" : 10,
     "Nh" : 10},
-  
   "NegativeElectrode": {
     "Coating": {
       "thickness" : 100e-6,
@@ -36,5 +35,9 @@
       }}},
   "Separator" : {
     "thickness" : 50e-6,
-    "N" : 3}
+    "N" : 3},
+  "ThermalModel" : {
+    "externalHeatTransferCoefficientTab" : 1e3,
+    "externalHeatTransferCoefficient" : 1e2
+  }
 }
