@@ -371,8 +371,8 @@ class BattMoFileRole(ReferenceRole):
 
 roles.register_local_role('battmofile', BattMoFileRole())
 
-mrst_repo_url    = 'https://github.com/SINTEF-AppliedCompSci/MRST'
-mrst_branch_name = 'main'
+mrst_repo_url    = 'https://bitbucket.org/mrst/'
+mrst_branch_name = 'battmo-dev'
 
 
 class MrstFileRole(ReferenceRole):
@@ -384,9 +384,12 @@ class MrstFileRole(ReferenceRole):
             target, lineno = docutils.utils.unescape(target).split("#", 1)
         else:
             lineno = None
-        target = mrst_repo_url + '/blob/' + mrst_branch_name + '/' + target
+        reponame = target.split('/')
+        target = '/'.join(reponame[1:])
+        reponame = reponame[0]
+        target = mrst_repo_url + reponame + '/src/' + mrst_branch_name + '/' + target
         if lineno is not None:
-            target += "#L"+lineno
+            target += "#lines-"+lineno
         node = docutils.nodes.reference(self.rawtext, title, refuri=target)
         return [node], []
 

@@ -10,7 +10,6 @@
    basicusage
    intermediate
    advancedtopics
-   architecture
    json
    geometryinput
    juliabridge

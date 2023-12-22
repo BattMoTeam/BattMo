@@ -24,6 +24,8 @@ On the `MRST`_ webpage, you can find `documentations <https://www.sintef.no/proj
 We recommend the following tutorials which deal with grid visualization and grid generation will be usefull for BattMo
 users.
 
+.. _mrst page:
+
 `Visualization Tutorial <https://www.sintef.no/projectweb/mrst/documentation/tutorials/visualization-tutorial/>`_
 -----------------------------------------------------------------------------------------------------------------
 
