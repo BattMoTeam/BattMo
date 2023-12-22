@@ -71,7 +71,7 @@ classdef BatteryGeneratorP4D < BatteryGenerator
         invcellmap;
 
         externalHeatTransferCoefficientTab = 1e3; % Heat transfer coefficient at the tab
-        externalHeatTransferCoefficient = 1e3; % Heat transfer coefficient for the non-tab regions
+        externalHeatTransferCoefficient = 1e2;    % Heat transfer coefficient for the non-tab regions
 
         use_thermal
 
@@ -301,7 +301,7 @@ classdef BatteryGeneratorP4D < BatteryGenerator
             inputparams = setupThermalModel@BatteryGenerator(gen, inputparams, params);
 
             tabcellinds = [gen.allparams.(pe).(cc).cellindtab; gen.allparams.(ne).(cc).cellindtab];
-            tabtbl.cells = tabcellinds;
+            tabtbl.cells = gen.invcellmap(tabcellinds);
             tabtbl = IndexArray(tabtbl);
 
             tbls = setupSimpleTables(G);
