@@ -87,6 +87,7 @@ if mrstPlatform('octave')
 
 end
 
+mrstModule add ad-core mpfa
 end
 
 %{
