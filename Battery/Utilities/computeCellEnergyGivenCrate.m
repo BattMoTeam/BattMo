@@ -3,8 +3,8 @@ function output = computeCellEnergyGivenCrate(model, CRate, varargin)
 % The output consists of the fields
 % - energy
 % - dischargeFunction
-% - E    % Voltage output
-% - I    % Current output
+% - E    % Voltage output (as function of time)
+% - I    % Current output (as function of time)
 % - time % time output
 
     opt = struct('computationType'   , 'sharp', ...
@@ -27,37 +27,18 @@ function output = computeCellEnergyGivenCrate(model, CRate, varargin)
         lowerCutoffVoltage = opt.lowerCutoffVoltage;
     end
 
+    assert(strcmp(model.Control.controlPolicy, "CCDischarge"), 'The model should be setup with CCDischarge control');
+
     capacity = computeCellCapacity(model);
     Imax = (capacity/hour)*CRate;
 
-    model.Control.CRate = CRate;
-    model.Control.Imax  = Imax;
+    model.Control.CRate       = CRate;
+    model.Control.Imax        = Imax;
+    model.Control.useCVswitch = true;
 
-    assert(strcmp(model.Control.controlPolicy, "CCDischarge"), 'The model should be setup with CCDischarge control');
-
-    totalTime = 1.1*hour/CRate;
-
-    % rampup stage
-    n  = 10;
-    dt = [];
-    dt = [dt; repmat(1e-4, n, 1).*1.5.^(1 : n)'];
-
-    % discharge stage
-    n     = 100;
-    dt    = [dt; repmat(totalTime/n, n, 1)];
-
-    times = [0; cumsum(dt)];
-    dt    = diff(times);
-    step  = struct('val', dt, 'control', ones(numel(dt), 1));
-
-    tup = 0.1; % rampup value for the current function, see rampupSwitchControl
-    srcfunc = @(time, I, E) rampupSwitchControl(time, tup, I, E, ...
-                                                model.Control.Imax, ...
-                                                model.Control.lowerCutoffVoltage);
-
-    control = struct('src', srcfunc, 'CCDischarge', true);
-
-
+    step    = model.Control.setupScheduleStep();
+    control = model.Control.setupScheduleControl();
+    
     schedule = struct('control', control, 'step', step);
 
     %% Setup the initial state of the model
@@ -105,7 +86,9 @@ function output = computeCellEnergyGivenCrate(model, CRate, varargin)
 
         I  = I(ind);
         E  = E(ind);
-        dt = dt(ind);
+        dt = time(ind);
+        dt = diff(dt);
+        dt = [time(1); dt];
 
         energy = sum(I.*E.*dt);
 
