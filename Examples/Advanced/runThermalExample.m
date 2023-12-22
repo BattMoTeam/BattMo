@@ -40,7 +40,8 @@ val(extfaceind) = model.ThermalModel.externalHeatTransferCoefficient;
 
 figure
 plotFaceData(G, val, 'edgecolor', 'black');
-view([50, 50]);
+axis equal
+view([50, 20]);
 title('External Heat Transfer Coefficient / W/s/m^2')
 colorbar
 
