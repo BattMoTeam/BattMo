@@ -64,32 +64,32 @@
         "lowerCutoffVoltage" : {
           "type" : "number"},
         "upperCutoffVoltage" : {
-          "type" : "number"}
+	  "type" : "number"},
         "dEdtLimit" : {"type" : "number"},
         "dIdtLimit" : {"type" : "number"},
         "numberOfCycles" : {"type" : "number"},
         "initialControl" : {"type" : "string",
                             "enum" : ["discharging", "charging"]}
       }},
- 
+
     "powerControl": {
       "properties" : {
         "case" : {"type" : "string",
                   "enum" : ["time limited", "voltage limited", "CPCV"]},
         "dischargingPower" : {"type" : "number"},
         "chargingPower" : {"type" : "number"}},
-      
+
       "anyOf" : [
         { "properties" : {
           "powerControlCase" : {"const" : "time limited"},
           "dischargingTime" : {"type" : "number"},
           "chargingTime" : {"type" : "number"}
         }},
-        
+
         { "properties" : {
           "powerControlCase" : {"const" : "voltage limited"}
         }},
-        
+
         { "properties" : {
           "powerControlCase" : {"const" : "CPCV"},
           "lowerCutoffPower" : {"type" : "number"},

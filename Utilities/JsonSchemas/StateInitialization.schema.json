@@ -29,8 +29,7 @@
     "loadStateCmd": {
       "type": "string",
       "description": "string that when run by matlab eval function return the initial state in the structure initstate"
-    },
-
+    }
   },
   "oneOf": [
     {
