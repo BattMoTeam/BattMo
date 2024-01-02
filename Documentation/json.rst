@@ -47,12 +47,14 @@ It contains references to schemas that are written in separate files
 
 * Electrolyte
 * Electrode
-
+  
   * Coating
     
     * Interface
     * Solid Diffusion
+      
   * Current Collector
+    
 * Separator
 * Thermal Model
 
@@ -76,13 +78,17 @@ Coating
 .. literalinclude:: ../Utilities/JsonSchemas/Coating.schema.json
    :language: json
 
+Active Material
+---------------
 
+.. literalinclude::  ../Utilities/JsonSchemas/ActiveMaterial.schema.json
+   :language: json
+              
 Interface
 ---------
 
 .. literalinclude:: ../Utilities/JsonSchemas/Interface.schema.json
    :language: json
-
 
 Solid Diffusion
 ---------------
@@ -90,6 +96,17 @@ Solid Diffusion
 .. literalinclude:: ../Utilities/JsonSchemas/SolidDiffusionModel.schema.json
    :language: json
 
+Binder
+------
+
+.. literalinclude::  ../Utilities/JsonSchemas/Binder.schema.json
+   :language: json
+              
+Conducting Additive
+-------------------
+
+.. literalinclude::  ../Utilities/JsonSchemas/ConductingAdditive.schema.json
+   :language: json
 
 Current Collector
 -----------------

@@ -9,9 +9,10 @@
    Installation <installation>
    basicusage
    intermediate
-   advancedtopics
+   architecture
    json
    geometryinput
+   advancedtopics
    juliabridge
    gui
    Electrolyser simulation <publishedExamples/runElectrolyser>
