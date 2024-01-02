@@ -18,20 +18,26 @@
    )
   )
 
-
+(defun battmodoc-local-open ()
+  "Open locally built documentation in browser"
+  (interactive)
+  (browse-url (concat docdir "_build/html/index.html"))
+  )
 
 (defun battmodoc-build ()
+  "Build BattMo documentation"
   (interactive)
-  (let ((outputbuffer (get-buffer-create "*buildoutput*"))
-        (default-directory docdir))
+  (let* ((default-directory docdir)
+         (outputbuffer (get-buffer-create "*buildoutput*"))
+         )
     (pop-to-buffer outputbuffer)
     (erase-buffer)
     (start-process "battmo-build" outputbuffer "make" "html")
     )
-  (browse-url (concat docdir "_build/html/index.html"))
   )
 
 (defun battmodoc-build-examples ()
+  "Run python publish script"
   (interactive)
   (let ((outputbuffer (get-buffer-create "*publishoutput*"))
         (directory utilsdir))
@@ -42,6 +48,7 @@
   )
 
 (defun battmodoc-publish ()
+  "Copy and paste build directory in doc repo and push the result. Then open in a browser the action page in the repo and the published page"
   (interactive)
   (let ((default-directory docdir))
     (shell-command (concat "cp -rf _build/html/* " testdir))
