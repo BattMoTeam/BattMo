@@ -10,7 +10,7 @@ import os
 import sys
 
 schema_folder = rjson.getBattMoDir() / Path("Utilities") / Path("JsonSchemas")
-base_uri = "file://battmo/schemas/"
+base_uri = "file://./"
 resolver = jsonschema.RefResolver(base_uri=base_uri, referrer={})
 verbose = False
 
@@ -23,7 +23,7 @@ def addJsonSchema(jsonSchemaName):
         print(schema_filename)
     with open(schema_filename) as schema_file:
         refschema = json.load(schema_file)
-    key = base_uri + jsonSchemaName
+    key = base_uri + jsonSchemaFilename
     resolver.store[key] = refschema
 
 
