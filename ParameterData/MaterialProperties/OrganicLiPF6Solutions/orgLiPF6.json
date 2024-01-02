@@ -2,21 +2,33 @@
   "specificHeatCapacity": 2055.0,
   "thermalConductivity": 0.6,
   "density": 1200,
-  "initialConcentration" : {"value" : 1,
-                            "unit" : "mol/litre"},
-  "ionicConductivity" : {"type" : "function",
-                    "functionname" : "computeElectrolyteConductivity_default",
-                    "argumentlist" : ["c", "T"]
-                   },
-  "diffusionCoefficient" : {"type": "function",
-                            "functionname" : "computeDiffusionCoefficient_default",
-                            "argumentlist" : ["c", "T"]
-                           },
+  "initialConcentration": {
+    "value": 1,
+    "unit": "mol/litre"
+  },
+  "ionicConductivity": {
+    "type": "function",
+    "functionname": "computeElectrolyteConductivity_default",
+    "argumentlist": [
+      "conctentration",
+      "temperature"
+    ]
+  },
+  "diffusionCoefficient": {
+    "type": "function",
+    "functionname": "computeDiffusionCoefficient_default",
+    "argumentlist": [
+      "concentration",
+      "temperature"
+    ]
+  },
   "compnames": [
     "Li",
     "PF6"
   ],
-  "sp": { "z": 1,
-          "t": 0.2594},
+  "sp": {
+    "z": 1,
+    "t": 0.2594
+  },
   "bruggemanCoefficient": 1.5
 }

@@ -1,65 +1,68 @@
 {
-      "$id": "file://./Electrolyte",
-      "$schema": "http://json-schema.org/draft-07/schema#",
-      "description": "An electrolyte",
+  "$id": "file://./Electrolyte",
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "description": "An electrolyte",
+  "type": "object",
+  "properties": {
+    "ionicConductivity": {
+      "oneOf": [
+        {
+          "$ref": "PhysicalQuantity.schema.json"
+        },
+        {
+          "$ref": "function.schema.json"
+        }
+      ],
+      "description": "a function to determine the ionic conductivity of the electrolyte under given conditions",
+      "symbol": "kappa"
+    },
+    "diffusionCoefficient": {
+      "allOf": [
+        {"$ref": "function.schema.json"},
+        { "properties" : {
+          "argumentlist": {"type" : "array",
+                           "prefixItems": [{"const": "concentration"},
+                                           {"const": "temperature"}]
+                          },
+          "symbol": {"const" : "D"}}}
+        ],
+      "description": "a function to determine the diffusion coefficient of a molecule in the electrolyte under given conditions"
+    },
+    "compnames": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "description": "Name of the ion"
+      },
+      "description": "List of the ions contained in the electrolyte. For the moment, we support only binary electrolyte so that this data is in practice only used directly in the code"
+    },
+    "species": {
       "type": "object",
+      "description": "Property for the positive ion (Lithium). In case of non-binary electrolyte, it would require adjustment.",
       "properties": {
-            "name": {
-                  "type": "string",
-                  "description": "name of electrolyte material"
-            },
-            "compnames": {
-                  "type": "array"
-            },
-            "species": {
-                  "type": "object",
-                  "properties": {
-                        "chargeNumber": {
-                              "type": "number",
-                              "description": "charge number"
-                        },
-                        "transferenceNumber": {
-                              "type": "number",
-                              "description": "transference number"
-                        },
-                    "nominalConcentration" : {
-                      "type" : "number",
-                      "description" : "nominal concentration used as initial concentration in a simulation"
-                    }
-                  },
-            "density": {
-                  "$ref": "PhysicalQuantity.schema.json",
-                  "description": "the mass density of the material",
-                  "symbol": "rho"
-            },
-            "ionicConductivity": {
-                  "oneOf": [
-                        {
-                              "$ref": "PhysicalQuantity.schema.json"
-                        },
-                        {
-                              "$ref": "function.schema.json"
-                        }
-                  ],
-                  "description": "a function to determine the ionic conductivity of the electrolyte under given conditions",
-                  "symbol": "kappa"
-            },
-            "diffusionCoefficient": {
-                  "oneOf": [
-                        {
-                              "$ref": "PhysicalQuantity.schema.json"
-                        },
-                        {
-                              "$ref": "function.schema.json"
-                        }
-                  ],
-                  "description": "a function to determine the diffusion coefficient of a molecule in the electrolyte under given conditions",
-                  "symbol": "D"
-            },
-            "bruggemanCoefficient": {
-                  "$ref": "PhysicalQuantity.schema.json",
-                  "description": "the coefficient for determining effective transport parameters in porous media",
-                  "symbol": "beta"
-            }
+        "chargeNumber": {
+          "type": "number",
+          "description": "charge number"
+        },
+        "transferenceNumber": {
+          "type": "number",
+          "description": "transference number"
+        },
+        "nominalConcentration": {
+          "$ref": "PhysicalQuantity.schema.json",
+          "description": "nominal concentration used as initial concentration in a simulation"
+        }
       }
-}}
+    },
+    "density": {
+      "$ref": "PhysicalQuantity.schema.json",
+      "description": "the mass density of the material",
+      "symbol": "rho"
+    },
+    "bruggemanCoefficient": {
+      "$ref": "PhysicalQuantity.schema.json",
+      "description": "the coefficient for determining effective transport parameters in porous media",
+      "symbol": "beta"
+    }
+  }
+}
