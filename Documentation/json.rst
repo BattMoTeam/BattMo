@@ -18,27 +18,33 @@ The main Simulation schema contains schemas for
 
 .. note::
 
-   The schemas may have common property fields. In the validation process, each schema is handled parallelly.
+   The different schemas may have common object. In the validation process, each schema is handled parallelly. The
+   function :battmofile:`mergeJsonStructs` can be used to compose different json files.
 
 For example a component (say the electolyte) has its geometrical and material properties specified in two separate
-schemas. We think it clarifies the presentation to separate the presentation of those properties and it corresponds also
-to a convenient way to organize the input. We can easily switch between different geometrical models while keeping the
-same material properties. For that, we use the :battmo:`mergeJsonStructs` function, see example
-:ref:`here<mergeJsonStructs>`.
+schemas. Having separate schemas clarify the presentation and corresponds also to a convenient way to organize the
+input. We can easily switch between different geometrical models while keeping the same material properties. For that,
+we use the :battmo:`mergeJsonStructs` function, see the example :ref:`here<mergeJsonStructs>`.
 
-This is the schema for the input json file. It uses other separate schemas which takes care of specific parameter sets.
+
+Simulation Schema
+=================
+
+This is the main schema for the input json file. It uses other separate schemas which takes care of specific parameter sets.
 
 .. literalinclude:: ../Utilities/JsonSchemas/Simulation.schema.json
    :language: json
 
 The schemas are available in the directory :battmofile:`JsonSchemas<Utilities/JsonSchemas>`. Here, we present the most
-important ones.
+important schemas.
               
 
 Material Parameters
 ===================
 
-The main schema is given by
+The main schema for the material parameter is reproduced below
+(:battmofile:`source<Utilities/JsonSchemas/Battery.schema.json>`). We recognize the battery model structure presented
+:ref:`here<architecture:BattMo Model Architecture>`.
 
 .. literalinclude:: ../Utilities/JsonSchemas/Battery.schema.json
    :language: json
@@ -63,7 +69,10 @@ We give the listing of those here.
 Electrolyte
 -----------
 
-.. literalinclude:: ../Utilities/JsonSchemas/Battery.schema.json
+The ionic conductivity and the diffusion coefficient can be given as a function or a constant. When a function is given,
+the json file should contain the function name that is used. The *signature* of the function is given in the schema.
+
+.. literalinclude:: ../Utilities/JsonSchemas/Electrolyte.schema.json
    :language: json
 
 Electrode
