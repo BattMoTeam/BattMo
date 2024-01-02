@@ -3,8 +3,12 @@ BattMo Model Architecture
 =========================
 
 We use a multi-model approach. The models are organized in a hierarchy, meaning that a given model can have
-sub-models. A model is supposed to define all the functions and variables that will be needed to simulate a physical
-system separately. At the top, we have a battery model (see :ref:`schema <json:Material Parameters>`) with the submodels:
+sub-models. A model corresponds to a given physical system and defines the functions and variables that will be needed
+to assemble the discretized governing equations of the system.
+
+For the simulation of Lithium-ion battery, we have at the top of the model hierarchy the the battery model (see
+:ref:`schema <json:Material Parameters>` for the description of the standard input parameters). The battery model
+contains the following sub-models:
 
 * Negative electrode model :ref:`(schema) <json:Electrode>`
 * Positive electrode model :ref:`(schema) <json:Electrode>`
@@ -16,12 +20,11 @@ system separately. At the top, we have a battery model (see :ref:`schema <json:M
 .. figure:: img/cutbatterygraph.png
    :target: _images/cutbatterygraph.png
 
-
 The **negative and positive electrodes** are instances of the same electrode model. The standard input parameters for
 electrode model are given in its :ref:`schema <json:Electrode>`. The electrode model has two sub-models:
 
 * Coating model :ref:`(schema) <json:Coating>`
-* Current Collector model (optional, :ref:`schema <json:Current Collector>`)
+* Current Collector model :ref:`(schema) <json:Current Collector>`
 
 
 .. figure:: img/electrodegraph.png
@@ -30,6 +33,8 @@ electrode model are given in its :ref:`schema <json:Electrode>`. The electrode m
    :align: center
 
 
+The current collector model is optional. In particular, for the 1D model it is common to not include it.
+           
 The standard input parameters of the **coating model** are given in the associated :ref:`schema <json:Coating>`. The
 coating model has three sub-models:
 
