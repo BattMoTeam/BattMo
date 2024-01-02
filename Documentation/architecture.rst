@@ -44,9 +44,7 @@ coating model has three sub-models:
    :class: with-border
 
            
-In the case of a composite material, the coating model will have a different structure with two active material models
-(see :todo:`add link`)
-
+In the case of a composite material, the coating model will have a different structure with two active material models.
 
 .. _ArchitectureActiveMaterial:
    
@@ -61,8 +59,7 @@ organized in two sub-models
    :width: 50%
    :align: center
 
-           
-We have implemented two solid diffusion model :todo:`add more`
+We have implemented two solid diffusion model, see :ref:`here <soliddiffusion:Solid Diffusion Models>`.
 
 The **Control** :ref:`(schema) <json:Simulation Control Parameters>`, **Separator** :ref:`(schema) <json:Separator>` and
 **Thermal** :ref:`(schema) <json:Thermal Model>` models do not have sub-models.

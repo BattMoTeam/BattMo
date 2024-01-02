@@ -31,7 +31,7 @@ BattMo uses functionality from :mod:`MRST <MRSTBattMo>`. This functionality is c
 
 Specifying the physical model
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-In this tutorial we will simulate a lithium-ion battery consisting of a negative electrode, a positive electrode and an electrolyte. BattMo comes with some pre-defined models which can be loaded from JSON files. Here we will load the basic lithium-ion model JSON file which comes with Battmo. We use :battmo:`parseBattmoJson` to parse the file, see :todo:`add link to doc`
+In this tutorial we will simulate a lithium-ion battery consisting of a negative electrode, a positive electrode and an electrolyte. BattMo comes with some pre-defined models which can be loaded from JSON files. Here we will load the basic lithium-ion model JSON file which comes with Battmo. We use :battmo:`parseBattmoJson` to parse the file.
 
 .. code-block:: matlab
 
