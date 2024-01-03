@@ -10,6 +10,6 @@
     "chargeTransferCoefficient": 0.5,
     "openCircuitPotential": {"type": "function",
                              "functionname": "computeOCPFunc_LFP_Xu",
-                             "argumentlist" : ["concentration", "temperature", "maximum concentration"]
+                             "argumentlist" : ["concentration", "temperature", "cmax"]
                             }
 }

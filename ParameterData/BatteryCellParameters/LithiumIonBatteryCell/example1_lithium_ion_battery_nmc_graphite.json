@@ -70,8 +70,8 @@
                         "type": "function",
                         "functionname": "computeOCP_graphite",
                         "argumentlist": [
-                            "cElectrode",
-                            "T",
+                            "concentration",
+                            "temperature",
                             "cmax"
                         ]
                     }
@@ -231,8 +231,8 @@
                         "type": "function",
                         "functionname": "computeOCP_nmc111",
                         "argumentlist": [
-                            "cElectrode",
-                            "T",
+                            "concentration",
+                            "temperature",
                             "cmax"
                         ]
                     }
@@ -348,16 +348,16 @@
             "type": "function",
             "functionname": "computeElectrolyteConductivity_default",
             "argumentlist": [
-                "c",
-                "T"
+                "concentration",
+                "temperature"
             ]
         },
         "diffusionCoefficient": {
             "type": "function",
             "functionname": "computeDiffusionCoefficient_default",
             "argumentlist": [
-                "c",
-                "T"
+                "concentration",
+                "temperature"
             ]
         },
         "compnames": [

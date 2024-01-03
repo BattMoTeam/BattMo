@@ -12,7 +12,7 @@
                   "numberOfElectronsTransferred" : 1,
                   "openCircuitPotential" : {"type" : "function",
                            "functionname" : "computeOCP_nmc111",
-                           "argumentlist" : ["concentration", "temperature", "maximum concentration"]}
+                           "argumentlist" : ["concentration", "temperature", "cmax"]}
                   
                 },
   "SolidDiffusion" : {

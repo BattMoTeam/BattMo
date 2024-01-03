@@ -5,16 +5,16 @@
     "type": "function",
     "functionname": "computeElectrolyteConductivity_Nyman2008",
     "argumentlist": [
-      "c",
-      "T"
+      "concentration",
+      "temperature"
     ]
   },
   "diffusionCoefficient": {
     "type": "function",
     "functionname": "computeDiffusionCoefficient_Nyman2008",
     "argumentlist": [
-      "c",
-      "T"
+      "concentration",
+      "temperature"
     ]
   },
   "compnames": [

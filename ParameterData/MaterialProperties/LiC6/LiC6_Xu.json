@@ -9,6 +9,6 @@
     "guestStoichiometry0": 0.001,
     "openCircuitPotential": {"type": "function",
                              "functionname": "computeOCPFunc_LiC6_Xu",
-                             "argumentlist" : ["concentration", "temperature", "maximum concentration"]
+                             "argumentlist" : ["concentration", "temperature", "cmax"]
                             }
 }

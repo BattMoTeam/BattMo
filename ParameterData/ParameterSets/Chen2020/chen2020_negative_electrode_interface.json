@@ -11,8 +11,8 @@
     "type": "function",
     "functionname": "computeOCP_graphite_Chen",
     "argumentlist": [
-      "cElectrode",
-      "T",
+      "concentration",
+      "temperature",
       "cmax"
     ]
   }
