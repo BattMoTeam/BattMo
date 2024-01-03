@@ -11,8 +11,6 @@ classdef TestJsonFiles < matlab.unittest.TestCase
 
     properties
 
-        jsonlintFails = system('which jsonlint-php');
-
         exclude = { fullfile('ParameterData', 'ParameterSets', 'Xu2015', 'lfp.json') };
 
     end
@@ -21,11 +19,11 @@ classdef TestJsonFiles < matlab.unittest.TestCase
 
         function testJsonLint(test, jsonlintfile)
 
-            if ~test.jsonlintFails && ~contains(jsonlintfile, test.exclude)
-                s = sprintf('jsonlint-php %s', jsonlintfile);
-                %disp(s);
-                [st, res] = system(s);
-                assert(st == 0, res);
+            if ~contains(jsonlintfile, test.exclude)
+                % fprintf('Linting %s\n', jsonlintfile);
+                loadModule('checkLint');
+                is_valid = py.checkLint.check(jsonlintfile);
+                assert(is_valid, jsonlintfile);
             end
 
         end
@@ -33,7 +31,7 @@ classdef TestJsonFiles < matlab.unittest.TestCase
         function testJson(test, jsonfile)
 
             if ~contains(jsonfile, test.exclude)
-                %fprintf('Testing %s\n', jsonfile);
+                % fprintf('Validating %s\n', jsonfile);
                 loadModule('validationJsonScript')
                 is_valid = py.validationJsonScript.validate(jsonfile);
                 assert(is_valid);
