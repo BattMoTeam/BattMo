@@ -35,7 +35,7 @@ This is the main schema for the input json file. It uses other separate schemas 
 .. literalinclude:: ../Utilities/JsonSchemas/Simulation.schema.json
    :language: json
 
-The schemas are available in the directory :battmofile:`JsonSchemas<Utilities/JsonSchemas>`. Here, we present the most
+The schemas are available in the directory :battmofile:`JsonSchemas<Utilities/JsonSchemas>`.
 important schemas.
               
 
@@ -64,7 +64,6 @@ It contains references to schemas that are written in separate files
 * Separator
 * Thermal Model
 
-We give the listing of those here.
               
 Electrolyte
 -----------
@@ -108,8 +107,17 @@ Active Material
 ---------------
 
 The active material input data contains the conductivity, the thermal data and the input data for the interface and
-solid diffusion. The interface refers to the processes that occur there, i.e. the chemical reactions.
+solid diffusion. The interface refers to the processes that occur there, i.e. the chemical reactions, see below. The
+property :code:`diffusionModelType` is used to choose between the different diffusion model available, see also
+:ref:`here<soliddiffusion:Solid Diffusion Models>`.
 
+.. note::
+
+   The *model switch* for the diffusion model (i.e. :code:`diffusionModelType`) is provided in the model *above* the
+   diffusion model itself, in this case the active material model. When we initialise a sub-model, we need to know its
+   type. By having the *model switch* in the model above, we can directly choose and start the corresponding
+   initializaton. This design choice is in fact used consistently in BattMo.
+   
 .. literalinclude::  ../Utilities/JsonSchemas/ActiveMaterial.schema.json
    :language: json
               
@@ -118,7 +126,7 @@ Interface
 
 The interface input data gives the specification of the chemical reaction occuring there. In particular, we find the
 definition of open circuit potential (:code:`openCircuitPotential`). As mentioned
-:ref:`above<note-on-future-function-support>`, we plan to include support for tabulated and string data input for
+:ref:`above<note-on-future-function-support>`, we plan to include support for tabulated and string input for
 functions.
 
 .. literalinclude:: ../Utilities/JsonSchemas/Interface.schema.json
@@ -127,17 +135,42 @@ functions.
 Solid Diffusion
 ---------------
 
+The solid diffusion input data contains in particular the particle radius, the volumetric surface area and the reference
+diffusion coefficient. We use an Arrhenius-type of equation to compute the diffusion coefficient. In the case of the
+full diffusion model, we can provide a diffusion coefficient that depends on the concentration, see below.
+
 .. literalinclude:: ../Utilities/JsonSchemas/SolidDiffusionModel.schema.json
    :language: json
 
+Full Solid Diffusion
+--------------------
+
+We can specify the diffusion coefficient as a function of the state of charge. To compute the state of charge, we need
+the guest stoichiometries and the saturation concentration.
+
+.. note::
+
+   The guest stoichiometries and the saturation concentration are also input data for the
+   :ref:`interface<json:Interface>`. The given values should then be the same. However, the submodels are initiated
+   parallelly at the model level. For that reason, we use a validation mechanism that checks the consistency of the data
+   of the submodels, when needed, see :battmo:`here <ActiveMaterialInputParams#107>` for an example.
+
+
+.. literalinclude:: ../Utilities/JsonSchemas/FullSolidDiffusionModel.schema.json
+   :language: json              
+
 Binder
 ------
+
+The conductivity of the binder and conductiving additive are used to compute the overall conductivity of the coating.
 
 .. literalinclude::  ../Utilities/JsonSchemas/Binder.schema.json
    :language: json
               
 Conducting Additive
 -------------------
+
+The conductivity of the binder and conductiving additive are used to compute the overall conductivity of the coating.
 
 .. literalinclude::  ../Utilities/JsonSchemas/ConductingAdditive.schema.json
    :language: json
@@ -149,9 +182,10 @@ Current Collector
    :language: json
 
 
-
 Separator
 ---------
+
+The porosity of the separator gives the volume fraction of the electrolyte in that region.
 
 .. literalinclude:: ../Utilities/JsonSchemas/Separator.schema.json
    :language: json
@@ -159,6 +193,8 @@ Separator
 
 Thermal Model
 -------------
+
+The thermal parameters are essentially the thermal conductivity and heat capacity for each component.
 
 .. literalinclude:: ../Utilities/JsonSchemas/ThermalComponent.schema.json
    :language: json
@@ -169,11 +205,21 @@ Thermal Model
 Geometry Setup
 ==============
 
+BattMo supports very general grid structures. However, the geometrical models must be *constructed*. Typically, in the
+manufacturing industry, this operation is done using `CAD software
+<https://en.wikipedia.org/wiki/Computer-aided_design>`_. For batteries, there exist standard designs which can be
+parameterized by a small set of parameters, see the :ref:`dedicated page<geometryinput:Battery Geometries>`.
+
+For each design, the parameters are described in the schema.
+
 .. literalinclude:: ../Utilities/JsonSchemas/Geometry.schema.json
    :language: json
                  
 Simulation Control Parameters
 =============================
+
+The control options are presented :ref:`here<controlinput:Control models>`. A description of each parameters for the
+various control models can be read from the schema.
 
 .. literalinclude:: ../Utilities/JsonSchemas/ControlModel.schema.json
    :language: json
@@ -182,6 +228,8 @@ Simulation Control Parameters
 Time Stepping Parameters
 ========================
 
+The description of the time stepping parameters can be read from the schema. Default parameters depending on the chose control model are provided.
+
 .. literalinclude:: ../Utilities/JsonSchemas/TimeStepping.schema.json
    :language: json
 
@@ -189,11 +237,18 @@ Time Stepping Parameters
 Solver Parameters
 =================
 
+Default parameters for the solver are provided. There exist a json interface to modify those and the corresponding
+parameters are desribed in the schema. Many more options are available at the matlab level, which we do not document
+here .
+
 .. literalinclude:: ../Utilities/JsonSchemas/Solver.schema.json
    :language: json
 
 Output Parameters
 =================
+
+Some extra post-processed parameters can be asked for already at the json level. Otherwise, it is always possible to
+compute those afterwards (see function :battmo:`computeEnergyDensity` for example).
 
 .. literalinclude:: ../Utilities/JsonSchemas/Output.schema.json
    :language: json
