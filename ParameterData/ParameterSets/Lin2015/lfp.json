@@ -23,7 +23,7 @@
 	"electricalConductivity": 2,
 	"Interface": {
           "isFile": true,
-          "filename": "ParameterData/MaterialProperties/LiC6/LiC6_Xu.json"
+          "filename": "ParameterData/MaterialProperties/LiC6/LiC6_Lin.json"
 	},
 	"diffusionModelType" : "full",
 	"SolidDiffusion" : {
@@ -36,7 +36,7 @@
     },
     "CurrentCollector": {
       "isFile": true,
-      "filename": "ParameterData/MaterialProperties/Copper/copper_Xu.json"
+      "filename": "ParameterData/MaterialProperties/Copper/copper_Lin.json"
     }
   },
   "PositiveElectrode": {
@@ -62,16 +62,15 @@
     },
     "CurrentCollector": {
       "isFile": true,
-      "filename": "ParameterData/MaterialProperties/Aluminium/aluminium_Xu.json"
+      "filename": "ParameterData/MaterialProperties/Aluminium/aluminium_Lin.json"
     }
   },
   "Electrolyte": {
-    "filename": "ParameterData/MaterialProperties/OrganicLiPF6Solutions/orgLiPF6_Xu.json",
+    "filename": "ParameterData/MaterialProperties/OrganicLiPF6Solutions/orgLiPF6_Lin.json",
     "isFile": true
   },
   "Separator": {
-    "comment": "Specification of separator not found in reference",
-    "filename": "ParameterData/BatteryComponentParameters/celgard2500.json",
+    "filename": "ParameterData/BatteryComponentParameters/celgard2500_Lin.json",
     "isFile": true
   },
   "ThermalModel": {

@@ -3,7 +3,7 @@ Parameter sets
 ==============
 
 The following parameter sets are available directly through the installation. They are convenient for testing. They are
-listed in the directory :battmofile:`ParameterSets<ParameterData/ParameterSets>`. 
+listed in the directory :battmofile:`ParameterSets<ParameterData/ParameterSets>`.
 
 .. list-table:: Parameter sets
    :header-rows: 1
@@ -19,11 +19,11 @@ listed in the directory :battmofile:`ParameterSets<ParameterData/ParameterSets>`
    * - Safari et al
      - 2009
      - :cite:`Safari_2009`
-     - :battmofile:`Safari2009<ParameterData/ParameterSets/Safari2009>`       
-   * - Lin, Xu et al
-     - 2009
+     - :battmofile:`Safari2009<ParameterData/ParameterSets/Safari2009>`
+   * - Lin et al
+     - 2015
      - :cite:`LIN2015633`
-     - :battmofile:`Xu2015<ParameterData/ParameterSets/Xu2015>`
+     - :battmofile:`Lin2015<ParameterData/ParameterSets/Lin2015>`
 
 
 Otherwise, separate input json files corresponding to different part of a battery model are included in the directory

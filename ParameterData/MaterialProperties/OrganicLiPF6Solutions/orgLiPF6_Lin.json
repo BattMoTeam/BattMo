@@ -5,11 +5,11 @@
   "initialConcentration": {"value" : 1,
                            "unit" : "mol/litre"},
   "Conductivity" : {"type": "function",
-                    "functionname" : "computeElectrolyteConductivityFunc_Xu",
+                    "functionname" : "computeElectrolyteConductivityFunc_Lin",
                     "argumentlist" : ["concentration", "temperature"]
                    },
   "DiffusionCoefficient" : {"type": "function",
-                            "functionname" : "computeDiffusionCoefficientFunc_Xu",
+                            "functionname" : "computeDiffusionCoefficientFunc_Lin",
                             "argumentlist" : ["concentration", "temperature"]
                            },
   "compnames": [
@@ -18,7 +18,7 @@
   ],
   "sp": { "z": 1,
           "t": 0.2594},
-  "Separator": { "filename": "ParameterData/BatteryComponentParameters/celgard2500_Xu.json",
+  "Separator": { "filename": "ParameterData/BatteryComponentParameters/celgard2500_Lin.json",
                  "isFile": true },
   "BruggemanCoefficient": 1.5
 }
