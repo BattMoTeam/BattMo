@@ -70,7 +70,18 @@ Electrolyte
 -----------
 
 The ionic conductivity and the diffusion coefficient can be given as a function or a constant. When a function is given,
-the json file should contain the function name that is used. The *signature* of the function is given in the schema.
+the json file should contain the function name that is used. The *signature* of the function is given in the schema in
+form of a *argument list*. For example, below, we can read that that the :code:`ionicConductivity` is a function of
+concentration and temperature, see examples :battmofile:`here<ParameterData/MaterialProperties/OrganicLiPF6Solutions>`.
+
+.. _note-on-future-function-support:
+
+.. note::
+
+   At the moment, only function implemented in matlab are supported. To add a function, the user must therefore create
+   it in matlab, with the right signature, and make sure it is in the path. We plan to add very soon a pure json
+   interface, where a function can be given either as string (which is evaluated to obtain the value) or as a
+   table. When given as a table, the value of the function is interpolated from the data points.
 
 .. literalinclude:: ../Utilities/JsonSchemas/Electrolyte.schema.json
    :language: json
@@ -78,11 +89,17 @@ the json file should contain the function name that is used. The *signature* of 
 Electrode
 ---------
 
+The electrode input data contains essentially the input data for the coating and the current collector. The current collector is optional.
+
 .. literalinclude:: ../Utilities/JsonSchemas/Electrode.schema.json
    :language: json
 
 Coating
 -------
+
+In the coating input data, we find input data for the active material, the binder and the conducting additive. In the
+case where we have a composite material (:code:`active_material_type` is set to :code:`composite`), then we have to
+provide the data for the two active materials (:code:`ActiveMaterial1` and :code:`ActiveMaterial1`).
 
 .. literalinclude:: ../Utilities/JsonSchemas/Coating.schema.json
    :language: json
@@ -90,11 +107,19 @@ Coating
 Active Material
 ---------------
 
+The active material input data contains the conductivity, the thermal data and the input data for the interface and
+solid diffusion. The interface refers to the processes that occur there, i.e. the chemical reactions.
+
 .. literalinclude::  ../Utilities/JsonSchemas/ActiveMaterial.schema.json
    :language: json
               
 Interface
 ---------
+
+The interface input data gives the specification of the chemical reaction occuring there. In particular, we find the
+definition of open circuit potential (:code:`openCircuitPotential`). As mentioned
+:ref:`above<note-on-future-function-support>`, we plan to include support for tabulated and string data input for
+functions.
 
 .. literalinclude:: ../Utilities/JsonSchemas/Interface.schema.json
    :language: json
