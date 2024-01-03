@@ -12,19 +12,19 @@ import sys
 
 schema_folder = rjson.getBattMoDir() / Path("Utilities") / Path("JsonSchemas")
 base_uri = "file://./"
-resolver = jsonschema.RefResolver(base_uri=base_uri, referrer={})
 verbose = False
 
 
 def addJsonSchema(registry, jsonSchemaFilename):
-    """Add the jsonschema in the resolver"""
+    """Add the jsonschema in the registry"""
     schema_filename = schema_folder / jsonSchemaFilename
     if verbose:
         print(schema_filename)
     with open(schema_filename) as schema_file:
         schema = json.load(schema_file)
     resource = Resource.from_contents(schema)
-    registry = resource @ registry
+    uri = base_uri + jsonSchemaFilename
+    registry = registry.with_resource(uri=uri, resource=resource)
     return registry
 
 
@@ -42,7 +42,7 @@ def validate(jsonfile):
         mainschema = json.load(schema_file)
     if verbose:
         print("Validate main schema", mainschema)
-    v = jsonschema.Draft202012Validator(mainschema, resolver=resolver)
+    v = jsonschema.Draft202012Validator(mainschema, registry=registry)
 
     # Validate the input jsonfile
     if verbose:
