@@ -3,7 +3,9 @@ classdef TestJsonFiles < matlab.unittest.TestCase
     properties (TestParameter)
 
         jsonfile = {fullfile('ParameterData', 'BatteryCellParameters', 'LithiumIonBatteryCell', 'lithium_ion_battery_nmc_graphite.json'), ...
-                    fullfile('ParameterData', 'ParameterSets', 'Chen2020', 'chen2020_lithium_ion_battery.json')};
+                    fullfile('ParameterData', 'ParameterSets', 'Chen2020', 'chen2020_lithium_ion_battery.json'), ...
+                    fullfile('ParameterData', 'ParameterSets', 'Xu2015', 'lfp.json')
+                   };
 
         jsonlintfile = arrayfun(@(s) fullfile(s.folder, s.name), dir(fullfile(battmoDir(), '**', '*.json')), 'uniformoutput', false);
 
@@ -11,7 +13,7 @@ classdef TestJsonFiles < matlab.unittest.TestCase
 
     properties
 
-        exclude = { fullfile('ParameterData', 'ParameterSets', 'Xu2015', 'lfp.json') };
+        exclude = { };
 
     end
 
