@@ -3,6 +3,7 @@
 # calling `terminate(pyenv)` or using the reloadModule script.
 
 import json
+from referencing import Registry, Resource
 import jsonschema
 from pathlib import Path
 import resolveFileInputJson as rjson
@@ -15,25 +16,25 @@ resolver = jsonschema.RefResolver(base_uri=base_uri, referrer={})
 verbose = False
 
 
-def addJsonSchema(jsonSchemaName):
+def addJsonSchema(registry, jsonSchemaFilename):
     """Add the jsonschema in the resolver"""
-    jsonSchemaFilename = jsonSchemaName + ".schema.json"
     schema_filename = schema_folder / jsonSchemaFilename
     if verbose:
         print(schema_filename)
     with open(schema_filename) as schema_file:
-        refschema = json.load(schema_file)
-    key = base_uri + jsonSchemaFilename
-    resolver.store[key] = refschema
+        schema = json.load(schema_file)
+    resource = Resource.from_contents(schema)
+    registry = resource @ registry
+    return registry
 
 
 def validate(jsonfile):
     # We collect the schema.json files and add them in the resolver
+    registry = Registry()
     for dirpath, dirnames, filenames in os.walk(schema_folder):
         for filename in filenames:
             if filename.endswith(".schema.json"):
-                jsonSchemaName = filename.replace(".schema.json", "")
-                addJsonSchema(jsonSchemaName)
+                registry = addJsonSchema(registry, filename)
 
     # We validate the battery schema
     schema_filename = schema_folder / "Simulation.schema.json"
