@@ -1,6 +1,7 @@
-# Call from MATLAB as py.validationJsonScript(filename). Remember to
-# restart the pyenv for changes to be seen by MATLAB. This is done by
-# calling `terminate(pyenv)` or using the reloadModule script.
+# Call from MATLAB as py.validationJsonScript.validate(filename).
+# Remember to restart the pyenv for changes to be seen by MATLAB. This
+# is done by calling `terminate(pyenv)` or using the loadModule
+# script.
 
 import json
 from referencing import Registry, Resource
