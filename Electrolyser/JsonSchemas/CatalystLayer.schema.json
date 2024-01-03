@@ -20,13 +20,13 @@
                   "n" : {"type" : "number",
                          "description" : "Number of electron transfer"},
                   "alpha" : {"type" : "number",
-                             "description" : "Coefficient in the exponent in Butler-Volmer equation"}
+                             "description" : "Coefficient in the exponent in Butler-Volmer equation"},
                   "Xinmr" : {"type" : "number",
                              "description" : "Fraction of specific area that is coversed with ionomer"},
                   "volumetricSurfaceArea0" : {"type" : "number",
                                              "description" : "volumetric surface area (or initial if it is changing)"},
                   "tortuosity" : {"type" : "number",
-                                  "description" : "tortuosity"}
+                                  "description" : "tortuosity"},
                   "includeDissolution" : {"type" : "boolean",
                                           "description" : "true if dissolution model is included"}
                  }

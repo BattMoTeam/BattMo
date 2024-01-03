@@ -48,7 +48,7 @@
       "BruggemanCoefficient": 1.5,
       "Interface": {
         "isFile": true,
-        "filename": "ParameterData/MaterialProperties/LiFePO/LiFePO.json"
+        "filename": "ParameterData/MaterialProperties/LFP/LFP.json"
       },
       "diffusionModelType" : "full",
       "SolidDiffusion": {

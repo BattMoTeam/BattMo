@@ -13,7 +13,7 @@
                "c0" : {"type"  : "number",
                        "description" : "Reference concentration"},
                "D" : {"type"  : "number",
-                      "description" : "diffusion coefficient for water"}
+                      "description" : "diffusion coefficient for water"},
                "V0" : {"type"  : "number",
                       "description" : "partial molar volume (needed for function groupHydration which is only needed in setup of initial condition and not for assembly)"}
              }},
@@ -27,7 +27,7 @@
                       "description" : "transference number"}
              }},
     "cT" : {"type" : "number",
-            "description" : "Total concentration of charged group"}
+            "description" : "Total concentration of charged group"},
 
     "V" : {"type" : "number",
            "description" : "molar volume (needed for function groupHydration which is only needed in setup of initial condition and not for assembly)"}
