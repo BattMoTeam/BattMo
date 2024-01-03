@@ -44,9 +44,21 @@ if doStopOnFirstFailure
    results = runner.run(suite);
 end
 
-doTestExamples = true;
+doTestExamples = false;
 if doTestExamples
     suite = testsuite('TestRunExamples');
+    runner = testrunner('textoutput');
+
+    import matlab.unittest.plugins.StopOnFailuresPlugin
+    runner.addPlugin(StopOnFailuresPlugin)
+    results = runner.run(suite);
+
+    %results = runner.runInParallel(suite);
+end
+
+doTestJsonFiles = true;
+if doTestJsonFiles
+    suite = testsuite('TestJsonFiles');
     runner = testrunner('textoutput');
 
     import matlab.unittest.plugins.StopOnFailuresPlugin
