@@ -1,6 +1,6 @@
 {
     "$id": "file://./PhysicalQuantity.schema.json",
-    "$schema": "http://json-schema.org/draft-07/schema#",
+    "$schema": "https://json-schema.org/draft/2020-12/schema",
 
     "title": "PhysicalQuantity",
     "description": "Either a number or an object representing a physical quantity with its value, unit, description, and source.",
