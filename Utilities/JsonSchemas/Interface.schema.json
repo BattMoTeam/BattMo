@@ -42,7 +42,7 @@
                           },
           "symbol": {"const" : "j0"}}}
         ],      
-      "description": "The exchange current at the electrode-electrolyte interface under equilibrium conditions. If not given, it is computed from the reaction rate constant",
+      "description": "The exchange current at the electrode-electrolyte interface under equilibrium conditions. If not given, it is computed from the reaction rate constant"
     },
     "guestStoichiometry100": {
       "$ref": "PhysicalQuantity.schema.json",
