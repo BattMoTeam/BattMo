@@ -10,7 +10,7 @@
     "type": "function",
     "functionname": "computeElectrolyteConductivity_default",
     "argumentlist": [
-      "conctentration",
+      "concentration",
       "temperature"
     ]
   },
