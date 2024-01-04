@@ -20,34 +20,32 @@ function loadModule(modulename)
             end
 
             % Try to add directory to the python path
-            try
+            dirname = fullfile(battmoDir(), 'Utilities', 'JsonUtils');
 
-                dirname = fullfile(battmoDir(), 'Utilities', 'JsonUtils');
+            if count(py.sys.path, dirname) == 0
+                dispif(mrstVerbose, 'Directory %s not found in py path, trying to insert it', dirname);
 
+                insert(py.sys.path, int32(0), dirname);
                 if count(py.sys.path, dirname) == 0
-                    dispif(mrstVerbose, 'Directory %s not found in py path, trying to insert it', dirname);
-
-                    insert(py.sys.path, int32(0), dirname);
-                    if count(py.sys.path, dirname) == 0
-                        insert(py.sys.path, int64(0), dirname);
-                    end
-                    if count(py.sys.path, dirname) == 0
-                        py.sys.path.insert(int32(0), dirname);
-                    end
-                    if count(py.sys.path, dirname) == 0
-                        py.sys.path.insert(int64(0), dirname);
-                    end
-
-                    assert(count(py.sys.path, dirname))
+                    insert(py.sys.path, int64(0), dirname);
+                end
+                if count(py.sys.path, dirname) == 0
+                    py.sys.path.insert(int32(0), dirname);
+                end
+                if count(py.sys.path, dirname) == 0
+                    py.sys.path.insert(int64(0), dirname);
                 end
 
-            catch e
-
-                warning('Could not add directory to Python path. This may be due to an incompability between the MATLAB and Python versions, or that the correct libpython package is installed (eg. libpython3.10). See also https://se.mathworks.com/support/requirements/python-compatibility.html.');
-                e.message
-                e.ExceptionObject
-
+                assert(count(py.sys.path, dirname))
             end
+
+            % catch e
+
+            %     warning('Could not add directory to Python path. This may be due to an incompability between the MATLAB and Python versions, or that the correct libpython package is installed (eg. libpython3.10). See also https://se.mathworks.com/support/requirements/python-compatibility.html.');
+            %     e.message
+            %     e.ExceptionObject
+
+            % end
         end
 
     else
