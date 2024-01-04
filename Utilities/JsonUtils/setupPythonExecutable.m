@@ -1,28 +1,30 @@
-function ok = setupPythonExecutable(varargin)
+function ok = setupPythonExecutable(exec)
 
-% Low level tool for setting the Python executable.
+% Low level tool for setting the Python executable if needed
 
-    opt = struct('executable', '');
-    opt = merge_options(opt, varargin{:});
+    if pyenv().Version == ""
 
-    if isempty(opt.executable)
+        if nargin == 0 || isempty(exec)
 
-        % FIXME Base selection on MATLAB version and operating system.
-        % https://se.mathworks.com/support/requirements/python-compatibility.html
+            % FIXME Base selection on MATLAB version and operating system.
+            % https://se.mathworks.com/support/requirements/python-compatibility.html
 
-        executables = {'/usr/bin/python3.10', '/usr/bin/python3.9'};
+            executables = {'/usr/bin/python3.10', '/usr/bin/python3.9'};
 
-        for k = 1:numel(executables)
-            ok = setExec(executables{k});
-            if ok
-                return;
+            for k = 1:numel(executables)
+                ok = setExec(executables{k});
+                if ok
+                    return;
+                end
             end
+        else
+            ok = setExec(exec);
         end
-    else
-        ok = setExec(opt.executable);
+
     end
 
-    assert(ok, 'Unable to set Python executable');
+    assert(pyenv().Version ~= "", 'No valid Python executable set');
+    dispif(mrstVerbose, 'Python executable is %s\n', pyenv().Executable);
 
 end
 

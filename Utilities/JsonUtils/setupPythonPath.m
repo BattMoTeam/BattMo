@@ -36,6 +36,7 @@ function setupPythonPath(dirs)
         end
 
         assert(count(py.sys.path, dirname), 'Unable to add directory %s to the Python path');
+        dispif(mrstVerbose, 'Directory %s is in the Python path\n', dirname);
 
     end
 

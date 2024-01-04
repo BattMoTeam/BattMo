@@ -4,18 +4,20 @@ function loadModule(modulename, varargin)
 % custom Python executable and custom Python paths).
 
     opt = struct('setupPython', true, ...
-                 'dir', fullfile(battmoDir(), 'Utilities', 'JsonUtils'));
-    [opt, extra] = merge_options(opt, varargin{:});
+                 'dir', fullfile(battmoDir(), 'Utilities', 'JsonUtils'), ...
+                 'exec', '');
+    opt = merge_options(opt, varargin{:});
 
     if mrstPlatform('matlab')
 
         if opt.setupPython
-            setupPythonExecutable(extra{:});
+            setupPythonExecutable(opt.exec);
             setupPythonPath(opt.dir);
         end
 
         try
             py.importlib.import_module(modulename);
+            dispif(mrstVerbose, 'Loading module %s\n', modulename);
         catch e
             disp(e);
             error('Failed to load module %s', modulename);
