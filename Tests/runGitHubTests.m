@@ -29,7 +29,7 @@ run('../startupBattMo.m')
 
 %% Run tests
 
-doTestJsonFiles = false;
+doTestJsonFiles = true;
 stopOnError = false;
 
 if doTestJsonFiles
