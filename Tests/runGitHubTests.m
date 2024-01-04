@@ -20,7 +20,10 @@ for k = 1:numel(dirs)
 end
 
 disp(pyenv)
-disp(py.sys.path)
+try
+    % Requires working py env, which may have not been set up
+    disp(py.sys.path)
+end
 
 %% Setup BattMo
 global MRST_BATCH
