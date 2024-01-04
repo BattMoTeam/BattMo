@@ -56,7 +56,7 @@ function loadModule(modulename)
 
     % Try to load module
     try
-
+        dispif(mrstVerbose, py.sys.path)
         py.importlib.import_module(modulename);
         % mod = py.importlib.import_module(modulename);
         % py.importlib.reload(mod);
