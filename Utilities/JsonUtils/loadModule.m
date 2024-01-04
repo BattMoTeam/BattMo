@@ -1,71 +1,28 @@
-function loadModule(modulename)
+function loadModule(modulename, varargin)
 
-    % Setup python environment
+% Top level script for loading Python modules and (optionally) setup
+% custom Python executable and custom Python paths).
+
+    opt = struct('setupPython', true, ...
+                 'dir', fullfile(battmoDir(), 'Utilities', 'JsonUtils'));
+    [opt, extra] = merge_options(opt, varargin{:});
+
     if mrstPlatform('matlab')
-        penv = pyenv;
 
-        if penv.Version == ""
+        if opt.setupPython
+            setupPythonExecutable(extra{:});
+            setupPythonPath(opt.dir);
+        end
 
-            % Try to setup python
-            try
-
-                pyenv('Version', '/usr/bin/python3.10');
-
-            catch e
-
-                warning('Cannot load module %s because no python installation is found. Try setting it manually, for example as pyenv(''Version'', ''/usr/bin/python3.10'');. You may have to install the correct libpython package (eg. libpython3.10) separately. To find the path to the executable you may use ''which python3''.\n', modulename);
-                e.message
-                e.ExceptionObject
-
-            end
-
-            % Try to add directory to the python path
-            dirname = fullfile(battmoDir(), 'Utilities', 'JsonUtils');
-
-            if count(py.sys.path, dirname) == 0
-                dispif(mrstVerbose, 'Directory %s not found in py path, trying to insert it', dirname);
-
-                insert(py.sys.path, int32(0), dirname);
-                if count(py.sys.path, dirname) == 0
-                    insert(py.sys.path, int64(0), dirname);
-                end
-                if count(py.sys.path, dirname) == 0
-                    py.sys.path.insert(int32(0), dirname);
-                end
-                if count(py.sys.path, dirname) == 0
-                    py.sys.path.insert(int64(0), dirname);
-                end
-
-                assert(count(py.sys.path, dirname))
-            end
-
-            % catch e
-
-            %     warning('Could not add directory to Python path. This may be due to an incompability between the MATLAB and Python versions, or that the correct libpython package is installed (eg. libpython3.10). See also https://se.mathworks.com/support/requirements/python-compatibility.html.');
-            %     e.message
-            %     e.ExceptionObject
-
-            % end
+        try
+            py.importlib.import_module(modulename);
+        catch e
+            disp(e);
+            error('Failed to load module %s', modulename);
         end
 
     else
-        warning('Calling python is not supported on this platform (%s). Only MATLAB is supported.', mrstPlatform('platform'));
-    end
-
-    dispif(mrstVerbose, [char(py.sys.path), '\n']);
-
-    % Try to load module
-    try
-        py.importlib.import_module(modulename);
-        % mod = py.importlib.import_module(modulename);
-        % py.importlib.reload(mod);
-
-    catch e
-
-        warning('Failed to load module %s', modulename);
-        e.message
-        e.ExceptionObject
-
+        warning('Calling Python is not supported on this platform (%s). Only MATLAB is supported.', mrstPlatform('platform'));
     end
 
 end

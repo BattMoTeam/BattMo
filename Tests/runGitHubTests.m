@@ -31,10 +31,33 @@ MRST_BATCH = true;
 
 run('../startupBattMo.m')
 
-%% Run tests
-
+%% Run python setup tests
 mrstVerbose 'on';
+doTestPython = true;
+stopOnError = false;
 
+if doTestPython
+    suite = testsuite('TestPython');
+    runner = testrunner('textoutput');
+
+    if stopOnError
+        import matlab.unittest.plugins.StopOnFailuresPlugin
+        runner.addPlugin(StopOnFailuresPlugin)
+    end
+
+    results = runner.run(suite);
+
+    % Display results
+    t = table(results);
+    disp(t)
+
+    assertSuccess(results);
+end
+
+return
+
+%% Run json file testing
+mrstVerbose 'on';
 doTestJsonFiles = true;
 stopOnError = false;
 
