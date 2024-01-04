@@ -1,38 +1,52 @@
 function loadModule(modulename)
 
-    if nargin == 0
-        modulename = 'validationJsonScript';
-    end
-
-    % Setup python
+    % Setup python environment
     if mrstPlatform('matlab')
-        pe = pyenv;
+        penv = pyenv;
 
-        if pe.Version == ""
+        if penv.Version == ""
 
             % Try to setup python
             try
+
                 pyenv('Version', '/usr/bin/python3.10');
-            catch
+
+            catch e
+
                 warning('Cannot load module %s because no python installation is found. Try setting it manually, for example as pyenv(''Version'', ''/usr/bin/python3.10'');. You may have to install the correct libpython package (eg. libpython3.10) separately. To find the path to the executable you may use ''which python3''.\n', modulename);
+                e.message
+                e.ExceptionObject
+
             end
 
-            % Try to add the path
+            % Try to add directory to the python path
             try
-                rootdirname = fileparts(mfilename('fullpath'));
-                dirname = fullfile(rootdirname);
-                pypath = cell(py.sys.path);
-                found = false;
-                for k = 1:numel(pypath)
-                    if strcmpi(char(pypath{k}), dirname)
-                        found = true;
-                    end
-                end
-                if ~found
+
+                dirname = fullfile(battmoDir(), 'Utilities', 'JsonUtils');
+
+                if count(py.sys.path, dirname) == 0
+                    dispif(mrstVerbose, 'Directory %s not found in py path, trying to insert it', dirname);
+
                     insert(py.sys.path, int32(0), dirname);
+                    if count(py.sys.path, dirname) == 0
+                        insert(py.sys.path, int64(0), dirname);
+                    end
+                    if count(py.sys.path, dirname) == 0
+                        py.sys.path.insert(int32(0), dirname);
+                    end
+                    if count(py.sys.path, dirname) == 0
+                        py.sys.path.insert(int64(0), dirname);
+                    end
+
+                    assert(count(py.sys.path, dirname))
                 end
-            catch
+
+            catch e
+
                 warning('Could not add directory to Python path. This may be due to an incompability between the MATLAB and Python versions, or that the correct libpython package is installed (eg. libpython3.10). See also https://se.mathworks.com/support/requirements/python-compatibility.html.');
+                e.message
+                e.ExceptionObject
+
             end
         end
 
@@ -42,14 +56,20 @@ function loadModule(modulename)
 
     % Try to load module
     try
-        mod = py.importlib.import_module(modulename);
-        py.importlib.reload(mod);
-    catch
+
+        py.importlib.import_module(modulename);
+        % mod = py.importlib.import_module(modulename);
+        % py.importlib.reload(mod);
+
+    catch e
+
         warning('Failed to load module %s', modulename);
+        e.message
+        e.ExceptionObject
+
     end
 
 end
-
 
 
 %{
