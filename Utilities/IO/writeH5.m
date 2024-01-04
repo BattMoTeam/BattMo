@@ -1,4 +1,4 @@
-function writeOutput(model, states, name)
+function writeH5(model, states, name)
 % WRITEOUTPUT Summary of this function goes here
 %   Detailed explanation goes here
 
