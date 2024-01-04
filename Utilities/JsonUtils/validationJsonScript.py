@@ -11,12 +11,10 @@ import resolveFileInputJson as rjson
 import os
 import sys
 
-schema_folder = rjson.getBattMoDir() / Path("Utilities") / Path("JsonSchemas")
-base_uri = "file://./"
-verbose = False
+verbose = True
 
 
-def addJsonSchema(registry, jsonSchemaFilename):
+def addJsonSchema(schema_folder, registry, jsonSchemaFilename):
     """Add the jsonschema in the registry"""
     schema_filename = schema_folder / jsonSchemaFilename
     if verbose:
@@ -24,18 +22,23 @@ def addJsonSchema(registry, jsonSchemaFilename):
     with open(schema_filename) as schema_file:
         schema = json.load(schema_file)
     resource = Resource.from_contents(schema)
+    base_uri = "file://./"
     uri = base_uri + jsonSchemaFilename
     registry = registry.with_resource(uri=uri, resource=resource)
     return registry
 
 
-def validate(jsonfile):
+def validate(battmoDir, jsonfile):
+    schema_folder = battmoDir / Path("Utilities") / Path("JsonSchemas")
+    if verbose:
+        print(f"{schema_folder=}")
+
     # We collect the schema.json files and add them in the resolver
     registry = Registry()
     for dirpath, dirnames, filenames in os.walk(schema_folder):
         for filename in filenames:
             if filename.endswith(".schema.json"):
-                registry = addJsonSchema(registry, filename)
+                registry = addJsonSchema(schema_folder, registry, filename)
 
     # We validate the battery schema
     schema_filename = schema_folder / "Simulation.schema.json"
@@ -48,7 +51,7 @@ def validate(jsonfile):
     # Validate the input jsonfile
     if verbose:
         print("Validate input file", jsonfile)
-    jsonstruct = rjson.loadJsonBattmo(jsonfile)
+    jsonstruct = rjson.loadJsonBattmo(battmoDir, jsonfile)
     v.validate(jsonstruct)
 
     return True
@@ -56,4 +59,4 @@ def validate(jsonfile):
 
 if __name__ == "__main__":
     # Allow for command line call
-    validate(sys.argv[1])
+    validate(sys.argv[1], sys.argv[2])

@@ -29,6 +29,8 @@ run('../startupBattMo.m')
 
 %% Run tests
 
+mrstVerbose 'on';
+
 doTestJsonFiles = true;
 stopOnError = false;
 
