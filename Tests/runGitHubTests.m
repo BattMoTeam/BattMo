@@ -20,6 +20,7 @@ for k = 1:numel(dirs)
 end
 
 disp(pyenv)
+disp(py.sys.path)
 
 %% Setup BattMo
 global MRST_BATCH
@@ -27,18 +28,27 @@ MRST_BATCH = true;
 
 run('../startupBattMo.m')
 
+%% Test dispif
+
+disp('Standard disp');
+mrstVerbose 'off';
+dispif(mrstVerbose, 'dispif with mrstVerbose off');
+mrstVerbose 'on';
+dispif(mrstVerbose, 'dispif with mrstVerbose on');
+
+return
+
 %% Run tests
 
 mrstVerbose 'on';
 
 doTestJsonFiles = true;
-stopOnError = false;
+stopOnError = true;
 
 if doTestJsonFiles
     suite = testsuite('TestJsonFiles');
     runner = testrunner('textoutput');
 
-    % If stop on error
     if stopOnError
         import matlab.unittest.plugins.StopOnFailuresPlugin
         runner.addPlugin(StopOnFailuresPlugin)
