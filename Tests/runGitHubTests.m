@@ -28,16 +28,6 @@ MRST_BATCH = true;
 
 run('../startupBattMo.m')
 
-%% Test dispif
-
-disp('Standard disp');
-mrstVerbose 'off';
-dispif(mrstVerbose, 'dispif with mrstVerbose off');
-mrstVerbose 'on';
-dispif(mrstVerbose, 'dispif with mrstVerbose on');
-
-return
-
 %% Run tests
 
 mrstVerbose 'on';
