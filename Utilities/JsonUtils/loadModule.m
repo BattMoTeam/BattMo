@@ -54,9 +54,10 @@ function loadModule(modulename)
         warning('Calling python is not supported on this platform (%s). Only MATLAB is supported.', mrstPlatform('platform'));
     end
 
+    dispif(mrstVerbose, py.sys.path)
+
     % Try to load module
     try
-        dispif(mrstVerbose, py.sys.path)
         py.importlib.import_module(modulename);
         % mod = py.importlib.import_module(modulename);
         % py.importlib.reload(mod);
