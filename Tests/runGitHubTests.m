@@ -36,7 +36,7 @@ run('../startupBattMo.m')
 mrstVerbose 'on';
 
 doTestJsonFiles = true;
-stopOnError = true;
+stopOnError = false;
 
 if doTestJsonFiles
     suite = testsuite('TestJsonFiles');
