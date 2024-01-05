@@ -22,20 +22,13 @@ jobs:
         with:
           lfs: true
 
-      # # Checkout submodules
-      # - name: Checkout submodules
-      #   uses: actions/checkout@v3
-      #   with:
-      #     submodules: recursive
+      # Python dependencies
+      - name: Install Python dependencies
+        run: pip3 install referencing
 
       # Use the submodules' remote-tracking branches
       - name: Update submodules
         run: git submodule update --init --recursive --remote
-
-      # # LFS (should not be required to do this explicitly
-      # https://stackoverflow.com/questions/73421750/integrate-git-lfs-with-github-continuous-integration
-      # - name: Checkout LFS
-      #   run: git lfs checkout
 
       # Set up MATLAB on the GitHub Actions runner
       - name: Setup MATLAB
