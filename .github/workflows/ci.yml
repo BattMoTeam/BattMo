@@ -5,7 +5,7 @@ name: MATLAB Build
 on:
   # Triggers the workflow on push or pull request events
   push:
-    branches: [ august/cont-int2 ]
+    branches: [ contint2 ]
   pull_request:
     branches: [ main ]
 
