@@ -5,26 +5,6 @@
 .. image:: https://zenodo.org/badge/410005581.svg
    :target: https://zenodo.org/badge/latestdoi/410005581
 
-actions both
-[![MATLAB Build](https://github.com/BattMoTeam/BattMo/actions/workflows/ci.yml/badge.svg?branch=contint2)](https://github.com/BattMoTeam/BattMo/actions/workflows/ci.yml)
-
-[![MATLAB Build](https://github.com/BattMoTeam/BattMo/actions/workflows/ci.yml/badge.svg?branch=contint2)](https://github.com/BattMoTeam/BattMo/actions/workflows/ci.yml)
-
-no actions first
-[![MATLAB Build](https://github.com/BattMoTeam/BattMo/workflows/ci.yml/badge.svg?branch=contint2)](https://github.com/BattMoTeam/BattMo/actions/workflows/ci.yml)
-
-[![MATLAB Build](https://github.com/BattMoTeam/BattMo/workflows/ci.yml/badge.svg?branch=contint2)](https://github.com/BattMoTeam/BattMo/actions/workflows/ci.yml)
-
-no actions last
-[![MATLAB Build](https://github.com/BattMoTeam/BattMo/actions/workflows/ci.yml/badge.svg?branch=contint2)](https://github.com/BattMoTeam/BattMo/workflows/ci.yml)
-
-[![MATLAB Build](https://github.com/BattMoTeam/BattMo/actions/workflows/ci.yml/badge.svg?branch=contint2)](https://github.com/BattMoTeam/BattMo/workflows/ci.yml)
-
-no actions at all
-[![MATLAB Build](https://github.com/BattMoTeam/BattMo/workflows/ci.yml/badge.svg?branch=contint2)](https://github.com/BattMoTeam/BattMo/workflows/ci.yml)
-
-[![MATLAB Build](https://github.com/BattMoTeam/BattMo/workflows/ci.yml/badge.svg?branch=contint2)](https://github.com/BattMoTeam/BattMo/workflows/ci.yml)
-
 The Battery Modelling Toolbox (**BattMo**) is a resource for continuum modelling of electrochemical devices in MATLAB. The initial development features a pseudo X-dimensional (PXD) framework for the Doyle-Fuller-Newman model of lithium-ion battery cells. However, the development plan for BattMo includes extensions to other battery chemistries (e.g. metal-air) and eventually hydrogen systems (i.e. electrolyzers and fuel cells).
 
 **BattMo** offers users a flexible framework for building fully coupled electrochemical-thermal simulations of electrochemical devices using 1D, 2D, or 3D geometries. **BattMo** is implemented in MATLAB and builds on the open-source MATLAB Reservoir Simulation Toolbox (MRST) developed at SINTEF. MRST provides a solid basis for finite volume grid generation of complex geometries and advanced numerical solvers that enable fast simulations for large systems.
