@@ -1,9 +1,10 @@
 ========================================================================
- BattMo is framework for continuum modelling of electrochemical devices.
+ BattMo is a framework for continuum modelling of electrochemical devices.
 ========================================================================
 
 .. image:: https://zenodo.org/badge/410005581.svg
    :target: https://zenodo.org/badge/latestdoi/410005581
+[![MATLAB Build](https://github.com/BattMoTeam/BattMo/actions/workflows/ci.yml/badge.svg)](https://github.com/BattMoTeam/BattMo/actions/workflows/ci.yml)
 
 The Battery Modelling Toolbox (**BattMo**) is a resource for continuum modelling of electrochemical devices in MATLAB. The initial development features a pseudo X-dimensional (PXD) framework for the Doyle-Fuller-Newman model of lithium-ion battery cells. However, the development plan for BattMo includes extensions to other battery chemistries (e.g. metal-air) and eventually hydrogen systems (i.e. electrolyzers and fuel cells).
 
@@ -22,7 +23,7 @@ preliminary stage, you may be interested in having a look at it.
 Installation
 ------------
 
-Before cloning this reposity you must make sure you have **Git LFS** installed. See `https://git-lfs.com` for instructions on downloading and installation. 
+Before cloning this reposity you must make sure you have **Git LFS** installed. See `https://git-lfs.com` for instructions on downloading and installation.
 
 BattMo is based on `MRST <https://www.sintef.no/Projectweb/MRST/>`_, which provides a general unstructured grid format,
 generic MATLAB automatic differentiation tools and Newton solvers. The MRST code source wil be installed directly via
@@ -54,24 +55,24 @@ Tutorials are presented in `documentation <https://BattMoTeam.github.io/BattMo-d
 
 Naming Conventions (TBC)
 ------------------------
-Class names are nouns in UpperCamelCase.  
-Function names are verbs or phrases in lowerCamelCase.  
-Instance names are nouns in lower_snake_case.  
-Common variable names are represented by Latin letters (case set according to convention) or spelled-out lowercase Greek letters (e.g. phi).  
-Other variable names may be nouns in lowerCamelCase.  
+Class names are nouns in UpperCamelCase.
+Function names are verbs or phrases in lowerCamelCase.
+Instance names are nouns in lower_snake_case.
+Common variable names are represented by Latin letters (case set according to convention) or spelled-out lowercase Greek letters (e.g. phi).
+Other variable names may be nouns in lowerCamelCase.
 
 Conntributors, in alphabetical order
 -----------------------------------
 
-* Dr. Simon Clark, SINTEF Industry  
-* Dr. Mike Gerhardt, SINTEF Industry  
+* Dr. Simon Clark, SINTEF Industry
+* Dr. Mike Gerhardt, SINTEF Industry
 * Dr. Halvor Møll Nilsen, SINTEF Digital
-* Dr. Xavier Raynaud, SINTEF Digital  
-* Dr. Roberto Scipioni, SINTEF Industry  
+* Dr. Xavier Raynaud, SINTEF Digital
+* Dr. Roberto Scipioni, SINTEF Industry
 
 Acknowledgements
 -----------------
 BattMo has received funding from the European Union’s Horizon 2020 innovation program under grant agreement numbers:
 
-* 875527 HYDRA  
-* 957189 BIG-MAP  
+* 875527 HYDRA
+* 957189 BIG-MAP
