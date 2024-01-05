@@ -24,7 +24,7 @@ jobs:
 
       # Python dependencies
       - name: Install Python dependencies
-        run: pip3 install referencing
+        run: pip3 install -U referencing jsonschema
 
       # Use the submodules' remote-tracking branches
       - name: Update submodules
