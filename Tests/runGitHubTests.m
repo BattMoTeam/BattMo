@@ -32,7 +32,7 @@ MRST_BATCH = true;
 run('../startupBattMo.m')
 
 %% Run python setup tests
-mrstVerbose 'on';
+mrstVerbose 'off';
 doTestPython = true;
 stopOnError = false;
 
@@ -54,10 +54,8 @@ if doTestPython
     assertSuccess(results);
 end
 
-return
-
 %% Run json file testing
-mrstVerbose 'on';
+mrstVerbose 'off';
 doTestJsonFiles = true;
 stopOnError = false;
 

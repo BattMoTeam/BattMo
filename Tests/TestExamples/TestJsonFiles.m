@@ -22,8 +22,9 @@ classdef TestJsonFiles < matlab.unittest.TestCase
 
             if ~contains(jsonlintfile, test.exclude)
                 dispif(mrstVerbose, 'Linting %s\n', jsonlintfile);
-                loadModule('checkLint');
-                is_valid = py.checkLint.check(jsonlintfile);
+                modname = 'checkLint';
+                loadModule(modname);
+                is_valid = py.(modname).check(jsonlintfile);
                 assert(is_valid, jsonlintfile);
             end
 
@@ -33,8 +34,9 @@ classdef TestJsonFiles < matlab.unittest.TestCase
 
             if ~contains(jsonfile, test.exclude)
                 dispif(mrstVerbose, 'Validating %s\n', jsonfile);
-                loadModule('validationJsonScript')
-                is_valid = py.validationJsonScript.validate(battmoDir(), jsonfile);
+                modname = 'validateJsonFiles';
+                loadModule(modname)
+                is_valid = py.(modname).validate(battmoDir(), jsonfile);
                 assert(is_valid);
             end
 

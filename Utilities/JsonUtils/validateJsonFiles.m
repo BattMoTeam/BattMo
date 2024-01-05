@@ -6,13 +6,14 @@ function is_valid = validateJsonFiles(jsonfiles)
 
     % Load module
     % FIXME Don't load the module every time
-    loadModule('validationJsonScript');
+    modname = 'validateJsonFiles';
+    loadModule(modname);
 
     % Validate using python script
     for k = 1:numel(jsonfiles)
         jsonfile = jsonfiles{k};
         dispif(mrstVerbose, 'Validating %s\n', jsonfile);
-        is_valid{k} = py.validationJsonScript.validate(jsonfile);
+        is_valid{k} = py.(modname).validate(jsonfile); %#ok
         assert(is_valid{k}, 'jsonfile %s is not valid', jsonfile);
     end
 

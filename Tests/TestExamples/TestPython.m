@@ -3,7 +3,7 @@ classdef TestPython < matlab.unittest.TestCase
     properties(TestParameter)
 
         module = {'checkLint',  ...
-                  'validateJsonScript'};
+                  'validateJsonFiles'};
 
     end
 
