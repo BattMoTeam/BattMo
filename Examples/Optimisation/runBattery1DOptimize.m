@@ -46,6 +46,9 @@ inputparams = gen.updateBatteryInputParams(inputparams);
 
 model = Battery(inputparams);
 
+model.AutoDiffBackend = SparseAutoDiffBackend('useBlocks', true);
+
+
 %% Setup the time step schedule
 % Smaller time steps are used to ramp up the current from zero to its
 % operational value. Larger time steps are then used for the normal
