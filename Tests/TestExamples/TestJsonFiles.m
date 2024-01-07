@@ -14,16 +14,18 @@ classdef TestJsonFiles < matlab.unittest.TestCase
                        fullfile('Examples'     , 'JsonDataFiles'        , 'simulation_parameters.json'), ...
                       };
 
-        jsonDataFile = {{'4680-geometry.json'          , 'Geometry'}    , ...
-                        {'geometry1d.json'             , 'Geometry'}    , ...
-                        {'geometry3d.json'             , 'Geometry'}    , ...
-                        {'geometryChen.json'           , 'Geometry'}    , ...
-                        {'geometryMultiLayerPouch.json', 'Geometry'}    , ...
-                        {'cccv_control.json'           , 'ControlModel'}, ...
-                        {'cc_discharge_control.json'   , 'ControlModel'}, ...
-                        {'extra_output.json'           , 'Output'}      , ...
-                        {'linear_solver_setup.json'    , 'Linearsolver'}, ...
-                        {'silicongraphite.json'        , ''}};
+        jsonDataFile = {
+            {'4680-geometry.json'          , 'Geometry'}    , ...
+            {'geometry1d.json'             , 'Geometry'}    , ...
+            {'geometry3d.json'             , 'Geometry'}    , ...
+            {'geometryChen.json'           , 'Geometry'}    , ...
+            {'geometryMultiLayerPouch.json', 'Geometry'}    , ...
+            {'cccv_control.json'           , 'ControlModel'}, ...
+            {'cc_discharge_control.json'   , 'ControlModel'}, ...
+            {'extra_output.json'           , 'Output'}      , ...
+            {'linear_solver_setup.json'    , 'Linearsolver'}, ...
+            {'silicongraphite.json'        , ''}
+                       };
 
     end
 
@@ -31,7 +33,7 @@ classdef TestJsonFiles < matlab.unittest.TestCase
 
         excludeJsonLintFile = {};
         excludeJsonDataSet  = {'p2d', 'sample_input', 'simulation_parameters'};
-        excludeJsonDataFile = {};
+        excludeJsonDataFile = {'geometryMultiLayerPouch', 'linear_solver_setup', 'silicongraphite'};
         lintModule = 'checkLint';
         validateModule = 'validateJsonFiles';
 
@@ -67,17 +69,17 @@ classdef TestJsonFiles < matlab.unittest.TestCase
 
         end
 
-        % function testJsonDataFile(test, jsonDataFile)
+        function testJsonDataFile(test, jsonDataFile)
 
-        %     jsonfile = fullfile(battmoDir(), 'Examples', 'JsonDataFiles', jsonDataFile{1});
-        %     schemafile = [jsonDataFile{2}, '.schema.json'];
+            jsonfile = fullfile(battmoDir(), 'Examples', 'JsonDataFiles', jsonDataFile{1});
+            schemafile = [jsonDataFile{2}, '.schema.json'];
 
-        %     dispif(mrstVerbose, 'Validating %s against %s\n', jsonfile, schemafile);
-        %     test.assumeFalse(contains(jsonfile, test.excludeJsonDataFile));
-        %     ok = py.(test.validateModule).validateAgainstSchema(battmoDir(), jsonfile, schemafile);
-        %     assert(ok);
+            dispif(mrstVerbose, 'Validating %s against %s\n', jsonfile, schemafile);
+            test.assumeFalse(contains(jsonfile, test.excludeJsonDataFile));
+            ok = py.(test.validateModule).validate(battmoDir(), jsonfile, schemafile);
+            assert(ok);
 
-        % end
+        end
 
     end
 
