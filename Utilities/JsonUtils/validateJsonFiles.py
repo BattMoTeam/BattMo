@@ -4,66 +4,57 @@
 # script.
 
 import json
-from referencing import Registry, Resource
-import jsonschema
-from pathlib import Path
-import resolveFileInputJson as rjson
 import os
 import sys
+from pathlib import Path
+import jsonschema
+from referencing import Registry, Resource
+import resolveFileInputJson as rjson
 
-verbose = True
+VERBOSE = False
 
 
-def addJsonSchema(schema_folder, registry, jsonSchemaFilename):
+def addSchema(schemaFolder, registry, schemaFilename):
     """Add the jsonschema in the registry"""
-    schema_filename = schema_folder / jsonSchemaFilename
-    if verbose:
-        print(schema_filename)
-    with open(schema_filename) as schema_file:
-        schema = json.load(schema_file)
+    schemaFullFile = schemaFolder / schemaFilename
+    if VERBOSE:
+        print(schemaFullFile)
+    with open(schemaFullFile) as fid:
+        schema = json.load(fid)
     resource = Resource.from_contents(schema)
-    base_uri = "file://./"
-    uri = base_uri + jsonSchemaFilename
+    baseUri = "file://./"
+    uri = baseUri + schemaFilename
     registry = registry.with_resource(uri=uri, resource=resource)
     return registry
 
 
-def validate(battmoDir, jsonfile):
-    schema_folder = battmoDir / Path("Utilities") / Path("JsonSchemas")
-    if verbose:
-        print(f"{schema_folder=}")
+def validate(battmoDir, jsonfile, schemaFilename="Simulation.schema.json"):
+    schemaFolder = battmoDir / Path("Utilities") / Path("JsonSchemas")
+    if VERBOSE:
+        print(f"{schemaFolder=}")
 
     # We collect the schema.json files and add them in the resolver
     registry = Registry()
-    for dirpath, dirnames, filenames in os.walk(schema_folder):
+    for _, _, filenames in os.walk(schemaFolder):
         for filename in filenames:
-            if filename.endswith(".schema.json"):
-                registry = addJsonSchema(schema_folder, registry, filename)
+            if filename.endswith(".schema.json") and filename != schemaFilename:
+                registry = addSchema(schemaFolder, registry, filename)
 
     # We validate the battery schema
-    schema_filename = schema_folder / "Simulation.schema.json"
-    with open(schema_filename) as schema_file:
-        mainschema = json.load(schema_file)
-    if verbose:
+    schemaFullFile = schemaFolder / schemaFilename
+    with open(schemaFullFile) as fid:
+        mainschema = json.load(fid)
+    if VERBOSE:
         print("Validate main schema", mainschema)
-    v = jsonschema.Draft202012Validator(mainschema, registry=registry)
+    validator = jsonschema.Draft202012Validator(mainschema, registry=registry)
 
     # Validate the input jsonfile
-    if verbose:
+    if VERBOSE:
         print("Validate input file", jsonfile)
     jsonstruct = rjson.loadJsonBattmo(battmoDir, jsonfile)
-    v.validate(jsonstruct)
+    validator.validate(jsonstruct)
 
     return True
-
-
-def validateAgainstSchema(battmoDir, jsonfile, schemafile):
-    # Validate against schema without sub-schemas
-    registry = Registry()
-    registry = addJsonSchema(schema_folder(battmoDir), registry, schemafile)
-    v = jsonschema.Draft202012Validator(mainschema, registry=registry)
-    jsonstruct = rjson.loadJsonBattmo(battmoDir, jsonfile)
-    v.validate(jsonstruct)
 
 
 if __name__ == "__main__":
@@ -74,7 +65,9 @@ if __name__ == "__main__":
     if len(sys.argv) == 3:
         validate(battmoDir, jsonfile)
     elif len(sys.argv) == 4:
-        schemafile = sys.argv[3]
-        validateAgainstStandaloneSchema(battmoDir, jsonfile, schemafile)
+        schemaFilename = sys.argv[3]
+        validate(battmoDir, jsonfile, schemaFilename)
     else:
-        RuntimeError("Use either 2 or 3 arguments, right now it was", len(sys.argv))
+        raise RuntimeError(
+            "Use either 2 or 3 arguments, right now it was", len(sys.argv)
+        )
