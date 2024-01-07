@@ -2,17 +2,38 @@ classdef TestJsonFiles < matlab.unittest.TestCase
 
     properties (TestParameter)
 
-        jsonfile = {fullfile('ParameterData', 'BatteryCellParameters', 'LithiumIonBatteryCell', 'lithium_ion_battery_nmc_graphite.json'), ...
-                    fullfile('ParameterData', 'ParameterSets', 'Chen2020', 'chen2020_lithium_ion_battery.json'), ...
-                    fullfile('ParameterData', 'ParameterSets', 'Lin2015', 'lfp.json')};
+        jsonLintFile = arrayfun(@(s) fullfile(s.folder, s.name), dir(fullfile(battmoDir(), '**', '*.json')), 'uniformoutput', false);
 
-        jsonlintfile = arrayfun(@(s) fullfile(s.folder, s.name), dir(fullfile(battmoDir(), '**', '*.json')), 'uniformoutput', false);
+        jsonDataSet = {fullfile('ParameterData', 'BatteryCellParameters', 'LithiumIonBatteryCell'      , 'lithium_ion_battery_nmc_graphite.json'), ...
+                       fullfile('ParameterData', 'ParameterSets'        , 'Chen2020'                   , 'chen2020_lithium_ion_battery.json')    , ...
+                       fullfile('ParameterData', 'ParameterSets'        , 'Lin2015'                    , 'lfp.json')                             , ...
+                       fullfile('Examples'     , 'JsonDataFiles'        , 'p2d_40_jl.json')            , ...
+                       fullfile('Examples'     , 'JsonDataFiles'        , 'p2d_40_jl_ud.json')         , ...
+                       fullfile('Examples'     , 'JsonDataFiles'        , 'p2d_40.json')               , ...
+                       fullfile('Examples'     , 'JsonDataFiles'        , 'sample_input.json')         , ...
+                       fullfile('Examples'     , 'JsonDataFiles'        , 'simulation_parameters.json'), ...
+                      };
+
+        jsonDataFile = {{'4680-geometry.json'          , 'Geometry'}    , ...
+                        {'geometry1d.json'             , 'Geometry'}    , ...
+                        {'geometry3d.json'             , 'Geometry'}    , ...
+                        {'geometryChen.json'           , 'Geometry'}    , ...
+                        {'geometryMultiLayerPouch.json', 'Geometry'}    , ...
+                        {'cccv_control.json'           , 'ControlModel'}, ...
+                        {'cc_discharge_control.json'   , 'ControlModel'}, ...
+                        {'extra_output.json'           , 'Output'}      , ...
+                        {'linear_solver_setup.json'    , 'Linearsolver'}, ...
+                        {'silicongraphite.json'        , ''}};
 
     end
 
     properties
 
-        exclude = { };
+        excludeJsonLintFile = {};
+        excludeJsonDataSet  = {'p2d', 'sample_input', 'simulation_parameters'};
+        excludeJsonDataFile = {};
+        lintModule = 'checkLint';
+        validateModule = 'validateJsonFiles';
 
     end
 
@@ -23,31 +44,40 @@ classdef TestJsonFiles < matlab.unittest.TestCase
             setupPythonExecutable();
             setupPythonPath();
 
-        end
-
-        function testJsonLint(test, jsonlintfile)
-
-            if ~contains(jsonlintfile, test.exclude)
-                dispif(mrstVerbose, 'Linting %s\n', jsonlintfile);
-                modname = 'checkLint';
-                loadModule(modname, 'setupPython', false);
-                is_valid = py.(modname).check(jsonlintfile);
-                assert(is_valid, jsonlintfile);
-            end
+            modulenames = {test.lintModule, test.validateModule};
+            loadModule(modulenames, 'setupPython', false);
 
         end
 
-        function testJson(test, jsonfile)
+        function testJsonLint(test, jsonLintFile)
 
-            if ~contains(jsonfile, test.exclude)
-                dispif(mrstVerbose, 'Validating %s\n', jsonfile);
-                modname = 'validateJsonFiles';
-                loadModule(modname, 'setupPython', false)
-                is_valid = py.(modname).validate(battmoDir(), jsonfile);
-                assert(is_valid);
-            end
+            dispif(mrstVerbose, 'Linting %s\n', jsonLintFile);
+            test.assumeFalse(contains(jsonLintFile, test.excludeJsonLintFile));
+            ok = py.(test.lintModule).check(jsonLintFile);
+            assert(ok);
 
         end
+
+        function testJsonDataSet(test, jsonDataSet)
+
+            dispif(mrstVerbose, 'Validating %s\n', jsonDataSet);
+            test.assumeFalse(contains(jsonDataSet, test.excludeJsonDataSet));
+            ok = py.(test.validateModule).validate(battmoDir(), jsonDataSet);
+            assert(ok);
+
+        end
+
+        % function testJsonDataFile(test, jsonDataFile)
+
+        %     jsonfile = fullfile(battmoDir(), 'Examples', 'JsonDataFiles', jsonDataFile{1});
+        %     schemafile = [jsonDataFile{2}, '.schema.json'];
+
+        %     dispif(mrstVerbose, 'Validating %s against %s\n', jsonfile, schemafile);
+        %     test.assumeFalse(contains(jsonfile, test.excludeJsonDataFile));
+        %     ok = py.(test.validateModule).validateAgainstSchema(battmoDir(), jsonfile, schemafile);
+        %     assert(ok);
+
+        % end
 
     end
 

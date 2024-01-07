@@ -1,4 +1,4 @@
-function loadModule(modulename, varargin)
+function loadModule(modulenames, varargin)
 
 % Top level script for loading Python modules and (optionally) setup
 % custom Python executable and custom Python paths).
@@ -15,12 +15,19 @@ function loadModule(modulename, varargin)
             setupPythonPath(opt.dir);
         end
 
-        try
-            py.importlib.import_module(modulename);
-            dispif(mrstVerbose, 'Loading module %s\n', modulename);
-        catch e
-            disp(e);
-            error('Failed to load module %s', modulename);
+        if ~iscell(modulenames)
+            modulenames = {modulenames};
+        end
+
+        for k = 1:numel(modulenames)
+            modulename = modulenames{k};
+            try
+                py.importlib.import_module(modulename);
+                dispif(mrstVerbose, 'Loading module %s\n', modulename);
+            catch e
+                disp(e);
+                error('Failed to load module %s', modulename);
+            end
         end
 
     else

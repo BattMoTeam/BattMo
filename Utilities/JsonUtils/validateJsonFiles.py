@@ -57,6 +57,24 @@ def validate(battmoDir, jsonfile):
     return True
 
 
+def validateAgainstSchema(battmoDir, jsonfile, schemafile):
+    # Validate against schema without sub-schemas
+    registry = Registry()
+    registry = addJsonSchema(schema_folder(battmoDir), registry, schemafile)
+    v = jsonschema.Draft202012Validator(mainschema, registry=registry)
+    jsonstruct = rjson.loadJsonBattmo(battmoDir, jsonfile)
+    v.validate(jsonstruct)
+
+
 if __name__ == "__main__":
     # Allow for command line call
-    validate(sys.argv[1], sys.argv[2])
+    battmoDir = sys.argv[1]
+    jsonfile = sys.argv[2]
+
+    if len(sys.argv) == 3:
+        validate(battmoDir, jsonfile)
+    elif len(sys.argv) == 4:
+        schemafile = sys.argv[3]
+        validateAgainstStandaloneSchema(battmoDir, jsonfile, schemafile)
+    else:
+        RuntimeError("Use either 2 or 3 arguments, right now it was", len(sys.argv))

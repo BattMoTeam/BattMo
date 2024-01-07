@@ -13,7 +13,13 @@ function is_valid = validateJsonFiles(jsonfiles)
     for k = 1:numel(jsonfiles)
         jsonfile = jsonfiles{k};
         dispif(mrstVerbose, 'Validating %s\n', jsonfile);
-        is_valid{k} = py.(modname).validate(jsonfile); %#ok
+        try
+            %is_valid{k} = py.(modname).validate(battmoDir(), jsonfile); %#ok
+            py.(modname).validate(battmoDir(), jsonfile); %#ok
+        catch e
+            disp(e);
+            error('Error when running the validation');
+        end
         assert(is_valid{k}, 'jsonfile %s is not valid', jsonfile);
     end
 

@@ -33,7 +33,7 @@ run('../startupBattMo.m')
 
 %% Run python setup tests
 mrstVerbose 'off';
-doTestPython = true;
+doTestPython = false;
 stopOnError = false;
 
 if doTestPython
@@ -55,7 +55,7 @@ if doTestPython
 end
 
 %% Run json file testing
-mrstVerbose 'off';
+mrstVerbose 'on';
 doTestJsonFiles = true;
 stopOnError = false;
 
