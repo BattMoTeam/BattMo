@@ -55,7 +55,7 @@ if doTestPython
 end
 
 %% Run json file testing
-mrstVerbose 'on';
+mrstVerbose 'off';
 doTestJsonFiles = true;
 stopOnError = false;
 
