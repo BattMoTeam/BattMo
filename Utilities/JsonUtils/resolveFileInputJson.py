@@ -3,7 +3,7 @@ import os.path
 
 
 def resolveFileInputJson(battmoDir, jsoninput):
-    if type(jsoninput) is dict:
+    if isinstance(jsoninput, dict):
         if "isFile" in jsoninput:
             filename = jsoninput["filename"]
             fullfilename = os.path.join(battmoDir, filename)

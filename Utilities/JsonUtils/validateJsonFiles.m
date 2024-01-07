@@ -1,4 +1,4 @@
-function is_valid = validateJsonFiles(jsonfiles)
+function isValid = validateJsonFiles(jsonfiles)
 
     if ~iscell(jsonfiles)
         jsonfiles = {jsonfiles};
@@ -14,17 +14,16 @@ function is_valid = validateJsonFiles(jsonfiles)
         jsonfile = jsonfiles{k};
         dispif(mrstVerbose, 'Validating %s\n', jsonfile);
         try
-            %is_valid{k} = py.(modname).validate(battmoDir(), jsonfile); %#ok
-            py.(modname).validate(battmoDir(), jsonfile); %#ok
+            isValid{k} = py.(modname).validate(battmoDir(), jsonfile); %#ok
         catch e
             disp(e);
             error('Error when running the validation');
         end
-        assert(is_valid{k}, 'jsonfile %s is not valid', jsonfile);
+        assert(isValid{k}, 'jsonfile %s is not valid', jsonfile);
     end
 
     if numel(jsonfiles) == 1
-        is_valid = is_valid{1};
+        isValid = isValid{1};
     end
 
 end

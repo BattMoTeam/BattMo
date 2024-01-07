@@ -1,10 +1,11 @@
 import json
+import sys
 
 
 def check(filename):
     try:
-        with open(filename) as f:
-            lf = json.load(f)
+        with open(filename) as fid:
+            json.load(fid)
             return True
     except:
         return False
