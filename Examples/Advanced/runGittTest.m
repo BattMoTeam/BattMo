@@ -86,7 +86,7 @@ plotBatteryGrid(model, 'setstyle', false);
 C      = computeCellCapacity(model);
 CRate  = 2;
 inputI = (C/hour)*CRate;
-inputE = model.Control.upperCutoffVoltage;
+inputE = jsonstruct.Control.upperCutoffVoltage;
 
 %% Setup the parameters of the GITT protocol
 pulseFraction  = 0.01;
