@@ -69,8 +69,6 @@ inputparams = gen.updateBatteryInputParams(inputparams);
 % constructor. see :class:`Battery <Battery.Battery>`.
 model = Battery(inputparams);
 
-model.AutoDiffBackend= AutoDiffBackend();
-
 inspectgraph = false;
 if inspectgraph
     cgt = model.computationalGraph;

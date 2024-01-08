@@ -1,28 +1,28 @@
 classdef ThermalComponent < BaseModel
-    
+
     properties
-        
+
        effectiveThermalConductivity
        effectiveVolumetricHeatCapacity % in [J][K]^-1[m]^-3
 
        couplingTerm
        externalHeatTransferCoefficient
        externalTemperature
-       
+
        bcfacecellmap
        bccells
-       
+
     end
-    
+
     methods
-        
+
         function model = ThermalComponent(inputparams)
-            
+
             model = model@BaseModel();
-            
+
             % OBS : All the models should have same backend (this is not assigned automaticallly for the moment)
-            model.AutoDiffBackend = SparseAutoDiffBackend('useBlocks', false);
-            
+            model.AutoDiffBackend = SparseAutoDiffBackend('useBlocks', true);
+
             fdnames = {'G', ...
                        'effectiveThermalConductivity', ...
                        'effectiveVolumetricHeatCapacity', ...
@@ -30,20 +30,20 @@ classdef ThermalComponent < BaseModel
                        'externalHeatTransferCoefficient', ...
                        'externalTemperature'};
             model = dispatchParams(model, inputparams, fdnames);
-            
+
             % setup discrete differential operators
             model.operators = localSetupOperators(model.G);
 
             model = setupMapping(model);
 
         end
-        
+
         function model = registerVarAndPropfuncNames(model)
             %% Declaration of the Dynamical Variables and Function of the model
             % (setup of varnameList and propertyFunctionList)
 
             model = registerVarAndPropfuncNames@BaseModel(model);
-            
+
             varnames = {'T', ...
                         'jHeatBcSource'       , ...
                         'jHeatOhmSource'      , ...
@@ -55,16 +55,16 @@ classdef ThermalComponent < BaseModel
                         'energyCons'};
 
             model = model.registerVarNames(varnames);
-            
+
             fn = @ThermalComponent.updateHeatFlux;
             model = model.registerPropFunction({'jHeat', fn, {'T'}});
-            
+
             fn = @ThermalComponent.updateHeatSourceTerm;
             inputnames = {'jHeatOhmSource', ...
                           'jHeatChemicalSource', ...
                           'jHeatReactionSource'};
             model = model.registerPropFunction({'jHeatSource', fn, inputnames});
-            
+
             fn = @ThermalComponent.updateEnergyConservation;
             inputnames = {'jHeatBcSource', ...
                           'jHeatSource'  , ...
@@ -75,95 +75,95 @@ classdef ThermalComponent < BaseModel
             fn = @ThermalComponent.updateThermalBoundarySourceTerms;
             inputnames = {'T'};
             model = model.registerPropFunction({'jHeatBcSource', fn, inputnames});
-            
+
             %% Function called to assemble accumulation terms (functions takes in fact as arguments not only state but also state0 and dt)
             fn = @ThermalComponent.updateAccumTerm;
             fn = {fn, @(propfunc) PropFunction.accumFuncCallSetupFn(propfunc)};
             model = model.registerPropFunction({'accumHeat', fn, {'T'}});
 
 
-            
+
         end
-        
+
         function model = setupMapping(model)
         % Aggregate face contribution to cell
-            
+
             if isempty(model.couplingTerm.couplingfaces)
                 % this corresponds the the 1D case where the heat transfer with the exterior is given as a volumetric transfer and not a
                 % transfer across external faces
                 model.bccells = model.couplingTerm.couplingcells;
                 model.bcfacecellmap = speye(numel(model.bccells));
-                
+
             else
                 bccellfacetbl.cells = model.couplingTerm.couplingcells;
                 bccellfacetbl.faces = model.couplingTerm.couplingfaces;
                 bccellfacetbl = IndexArray(bccellfacetbl);
                 bccelltbl = projIndexArray(bccellfacetbl, {'cells'});
-                
+
                 map = TensorMap();
                 map.fromTbl = bccellfacetbl;
                 map.toTbl = bccelltbl;
                 map.mergefds = {'cells'};
-                
+
                 bcfacecellmap = SparseTensor();
                 bcfacecellmap = bcfacecellmap.setFromTensorMap(map);
                 bcfacecellmap = bcfacecellmap.getMatrix();
-                
+
                 model.bcfacecellmap = bcfacecellmap;
                 model.bccells = bccelltbl.get('cells');
             end
-            
+
         end
-        
+
         function state = updateAccumTerm(model, state, state0, dt)
         % Assemble the accumulation term for the energy equation
 
             vhcap = model.effectiveVolumetricHeatCapacity;
-            
+
             T = state.T;
             T0 = state0.T;
 
             % (here we assume that the ThermalModel has the "parent" grid)
             vols = model.G.cells.volumes;
-            
+
             state.accumHeat = vhcap.*vols.*(T - T0)/dt;
-            
+
         end
-            
+
         function state = updateHeatFlux(model, state)
 
             k = model.effectiveThermalConductivity;
             T = state.T;
-            
-            jHeat = assembleFlux(model, T, k); 
+
+            jHeat = assembleFlux(model, T, k);
 
             state.jHeat = jHeat;
-            
+
         end
-        
+
         function state = updateHeatSourceTerm(model, state)
         % sum up the heat source terms
             state.jHeatSource = state.jHeatOhmSource + state.jHeatChemicalSource + state.jHeatReactionSource;
-            
+
         end
-            
+
         function state = updateEnergyConservation(model, state)
         % Here, we assume that the fields are updated
         % - jHeatBcSource
-        % - jHeatSource 
+        % - jHeatSource
         % - accumHeat
-            
+
             state = model.updateHeatFlux(state);
-            
+
             flux     = state.jHeat;
             bcsource = state.jHeatBcSource;
             source   = state.jHeatSource;
             accum    = state.accumHeat;
-            
+
             energyCons = assembleConservationEquation(model, flux, bcsource, source, accum);
-            
+
             state.energyCons = energyCons;
-            
+
         end
 
         function state = updateThermalBoundarySourceTerms(model, state)
@@ -173,14 +173,14 @@ classdef ThermalComponent < BaseModel
             T_ext      = model.externalTemperature;
             lambda_ext = model.externalHeatTransferCoefficient;
             lambda     = model.effectiveThermalConductivity;
-            
+
             coupcells = coupterm.couplingcells;
             coupfaces = coupterm.couplingfaces;
             nc = model.G.cells.num;
-              
+
             T = state.T;
             T = T(coupcells);
-            
+
             if isempty(coupfaces)
                 % 1D case (External faces are not available, we consider a volumetric cooling instead)
                 A = G.cells.volumes(coupcells);
@@ -189,27 +189,27 @@ classdef ThermalComponent < BaseModel
                 % Face couling (multidimensional case)
                 A = G.faces.areas(coupfaces);
                 t_ext = lambda_ext.*A;
-                
+
                 t = model.operators.harmFaceBC(lambda, coupfaces);
-                
+
                 t_eff = 1./(1./t + 1./t_ext);
             end
-            
+
             jHeatBcSource = zeros(nc, 1);
             if isa(T, 'ADI')
                 adsample = getSampleAD(T);
                 adbackend = model.AutoDiffBackend;
                 jHeatBcSource = adbackend.convertToAD(jHeatBcSource, adsample);
             end
-            
+
             jHeatBcSource(model.bccells) = model.bcfacecellmap*(t_eff.*(T_ext - T));
-            
+
             state.jHeatBcSource = jHeatBcSource;
-            
+
         end
-        
+
     end
-    
+
 end
 
 

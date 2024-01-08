@@ -46,7 +46,7 @@ classdef Battery < BaseModel
             inputparams = inputparams.validateInputParams();
 
             % All the submodels should have same backend (this is not assigned automaticallly for the moment)
-            model.AutoDiffBackend = SparseAutoDiffBackend('useBlocks', false);
+            model.AutoDiffBackend = SparseAutoDiffBackend('useBlocks', true);
 
             %% Setup the model using the input parameters
             fdnames = {'G'                         , ...
@@ -650,7 +650,7 @@ classdef Battery < BaseModel
             if nargin < 2 | isempty(jsonstruct)
                 jsonstruct.Electrolyte.initialConcentration = 1*mol/litre;
             end
-                
+
             nc = model.G.cells.num;
 
             SOC = model.SOC;
@@ -765,11 +765,11 @@ classdef Battery < BaseModel
 
                 initstate.(ctrl).ctrlType = 'constantCurrent';
                 initstate.(ctrl).I = 0;
-                
+
               case 'CCCV'
 
                 initstate.(ctrl).numberOfCycles = 0;
-                
+
                 switch model.(ctrl).initialControl
                   case 'discharging'
                     initstate.(ctrl).ctrlType     = 'CC_discharge1';
@@ -1595,7 +1595,7 @@ classdef Battery < BaseModel
         function forces = getValidDrivingForces(model)
 
             forces = getValidDrivingForces@PhysicalModel(model);
-            
+
             forces.src = [];
             ctrl = 'Control';
             switch model.(ctrl).controlPolicy

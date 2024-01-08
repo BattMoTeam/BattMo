@@ -139,7 +139,6 @@ gen = SpiralBatteryGenerator();
 inputparams = gen.updateBatteryInputParams(inputparams, spiralparams);
 
 model = Battery(inputparams);
-model.AutoDiffBackend= AutoDiffBackend();
 
 %% Setup schedule
 

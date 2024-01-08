@@ -101,8 +101,6 @@ model.nonlinearTolerance = 1e-5;
 % Set verbosity
 model.verbose = false;
 
-model.AutoDiffBackend= AutoDiffBackend();
-
 %% We run simulation
 
 [~, states, ~] = simulateScheduleAD(initstate, model, schedule, 'OutputMinisteps', true, 'NonLinearSolver', nls);

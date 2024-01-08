@@ -80,7 +80,6 @@ inputparams = gen.updateBatteryInputParams(inputparams);
 % The battery model is initialized by sending inputparams to the Battery class
 % constructor. see :class:`Battery <Battery.Battery>`.
 model = Battery(inputparams);
-model.AutoDiffBackend= AutoDiffBackend();
 
 inspectgraph = false;
 if inspectgraph

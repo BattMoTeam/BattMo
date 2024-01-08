@@ -45,7 +45,9 @@ inputparams = gen.updateBatteryInputParams(inputparams);
 %%  Initialize the battery model.
 
 model = Battery(inputparams);
-model.AutoDiffBackend = AutoDiffBackend();
+
+model.AutoDiffBackend = SparseAutoDiffBackend('useBlocks', true);
+
 
 %% Setup the time step schedule
 % Smaller time steps are used to ramp up the current from zero to its
