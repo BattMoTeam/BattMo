@@ -13,7 +13,6 @@ elyte   = 'Electrolyte';
 ne      = 'NegativeElectrode';
 pe      = 'PositiveElectrode';
 co      = 'Coating';
-am      = 'ActiveMaterial';
 cc      = 'CurrentCollector';
 am      = 'ActiveMaterial';
 itf     = 'Interface';
@@ -151,8 +150,8 @@ set(0, 'defaultFigurePosition', [671 510 900 600]);
 l = lines(4);
 figure
 hold on
-plot(t1, u1, 'linewidth', 3, 'color', l(1, :), 'displayname', 'pybamm - solid diffusion')
-plot(t2, u2, 'linewidth', 3, 'color', l(2, :), 'displayname', 'pybamm - instantaneous solid diffusion')
+plot(t1, u1, 'linewidth', 3, 'color', l(1, :), 'linestyle', '--', 'displayname', 'pybamm - solid diffusion')
+plot(t2, u2, 'linewidth', 3, 'color', l(2, :), 'linestyle', '--', 'displayname', 'pybamm - instantaneous solid diffusion')
 plot((time1/hour), E1,'-', 'linewidth', 3, 'color', l(3, :), 'displayname', 'battmo')
 plot((time2/hour), E2,'-', 'linewidth', 3, 'color', l(4, :), 'displayname', 'battmo - simplified diffusion model')
 

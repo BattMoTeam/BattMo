@@ -56,7 +56,7 @@ if doTestExamples
     %results = runner.runInParallel(suite);
 end
 
-doTestJsonFiles = true;
+doTestJsonFiles = false;
 if doTestJsonFiles
     suite = testsuite('TestJsonFiles');
     runner = testrunner('textoutput');
@@ -66,6 +66,18 @@ if doTestJsonFiles
     results = runner.run(suite);
 
     %results = runner.runInParallel(suite);
+end
+
+doTestChen2020 = true;
+if doTestChen2020
+
+    suite = testsuite('TestChen2020');
+    runner = testrunner('textoutput');
+
+    import matlab.unittest.plugins.StopOnFailuresPlugin
+    runner.addPlugin(StopOnFailuresPlugin)
+    results = runner.run(suite);
+
 end
 
 
