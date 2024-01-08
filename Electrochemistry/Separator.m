@@ -1,39 +1,39 @@
 classdef Separator < BaseModel
-    
+
     properties
-        
+
 
         %% Input parameters
-        
+
         % Standard parameters
         porosity             % the ratio of the volume free space to the total volume (symbol: varepsilon)
         density              % the mass density of the material (symbol: rho)
         bruggemanCoefficient % coefficient to determine effective transport parameters in porous media (symbol: beta)
-        
+
         thermalConductivity  % Intrinsic Thermal conductivity of the electrolyte
         specificHeatCapacity % Specific Heat capacity of the electrolyte
 
         % Advanced parameters
-        
+
         effectiveThermalConductivity
         effectiveVolumetricHeatCapacity
 
         %% Helper properties
-        
+
         use_thermal
 
     end
-    
+
     methods
 
         function model = Separator(inputparams)
-            
+
             model = model@BaseModel();
 
             % OBS : All the models should have same backend (this is not assigned automaticallly for the moment)
             % in the case of the separator, probably this does not matter as no computation is actually done on this grid
-            model.AutoDiffBackend = SparseAutoDiffBackend('useBlocks', false);
-            
+            model.AutoDiffBackend = SparseAutoDiffBackend('useBlocks', true);
+
             fdnames = {'G'                              , ...
                        'porosity'                       , ...
                        'density'                        , ...
@@ -46,31 +46,31 @@ classdef Separator < BaseModel
             model = dispatchParams(model, inputparams, fdnames);
 
             if model.use_thermal
-                
+
                 if isempty(model.effectiveThermalConductivity)
 
                     bg = model.bruggemanCoefficient;
                     vf = 1 - model.porosity;
-                    
+
                     model.effectiveThermalConductivity = vf.^bg.*model.thermalConductivity;
-                    
+
                 end
 
                 if isempty(model.effectiveVolumetricHeatCapacity)
-                    
+
                     vf = 1 - model.porosity;
-                    
+
                     model.effectiveVolumetricHeatCapacity = vf.*model.density.*model.specificHeatCapacity;
-                    
+
                 end
 
             end
-            
+
 
         end
-        
+
     end
-    
+
 end
 
 
