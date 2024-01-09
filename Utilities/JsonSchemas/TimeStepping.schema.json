@@ -24,7 +24,7 @@
         },
         "numberOfRampupSteps": {
           "type": "number",
-          "description": "if we use rampup, we use at the start time intervals that increases geometrrically until we reach the time step target, see function rampupTimesteps."
+          "description": "if we use rampup, we use at the start time intervals that increases geometrically until we reach the time step target, see function rampupTimesteps."
         }
       }
     }
