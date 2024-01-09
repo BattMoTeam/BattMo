@@ -1,5 +1,6 @@
 {
   "use_thermal": false,
+  "include_current_collectors": false,
   "Geometry": {
     "case": "1D",
     "faceArea": 0.0001

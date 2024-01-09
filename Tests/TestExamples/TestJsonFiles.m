@@ -33,7 +33,7 @@ classdef TestJsonFiles < matlab.unittest.TestCase
     properties
 
         excludeJsonLintFile = {};
-        excludeJsonDataSet  = {'p2d', 'sample_input'};
+        excludeJsonDataSet  = {'p2d'};
         excludeJsonDataFile = {'geometryMultiLayerPouch', 'linear_solver_setup', 'silicongraphite'};
         lintModule = 'checkLint';
         validateModule = 'validateJsonFiles';
