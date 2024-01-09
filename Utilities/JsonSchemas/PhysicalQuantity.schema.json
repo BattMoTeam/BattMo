@@ -1,36 +1,41 @@
 {
-    "$id": "file://./PhysicalQuantity.schema.json",
-    "$schema": "https://json-schema.org/draft/2020-12/schema",
-
-    "title": "PhysicalQuantity",
-    "description": "Either a number or an object representing a physical quantity with its value, unit, description, and source.",
-    "oneOf": 
-        [{"type" : "number",
-          "description" : "The value is assumed to be given in SI"},
-         {"type": "object",
-          "properties": {
-            "value": {
-              "type": "number",
-              "description": "the numerical value of the physical quantity"
-            },
-            "unit": {
-              "type": "string",
-              "description": "A string with unit that can be evaluated in BattMo. We use MRST support for unit, see <battmoDir()/MRST/mrst-core/utils/units/>. If left empty units are not converted (assumed to be SI)."
-            },
-            "symbol": {
-              "type": "string",
-              "description": "symbol used to denote the quantity"
-            },
-            "description": {
-              "type": "string",
-              "description": "a textual description or context for the physical quantity"
-            },
-            "source": {
-              "type": "string",
-              "description": "the source or reference from which the physical quantity was derived or obtained"
-            }
-          },
-          "required": ["value", "unit"]
-         }
-        ]
-      }
+  "$id": "file://./PhysicalQuantity.schema.json",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "PhysicalQuantity",
+  "description": "Either a number or an object representing a physical quantity with its value, unit, description, and source.",
+  "oneOf": [
+    {
+      "type": "number",
+      "description": "The value is assumed to be given in SI"
+    },
+    {
+      "type": "object",
+      "properties": {
+        "value": {
+          "type": "number",
+          "description": "the numerical value of the physical quantity"
+        },
+        "unit": {
+          "type": "string",
+          "description": "A string with unit that can be evaluated in BattMo. We use MRST support for unit, see <battmoDir()/Externals/mrst/mrst-core/utils/units/>. If left empty units are not converted (assumed to be SI)."
+        },
+        "symbol": {
+          "type": "string",
+          "description": "symbol used to denote the quantity"
+        },
+        "description": {
+          "type": "string",
+          "description": "a textual description or context for the physical quantity"
+        },
+        "source": {
+          "type": "string",
+          "description": "the source or reference from which the physical quantity was derived or obtained"
+        }
+      },
+      "required": [
+        "value",
+        "unit"
+      ]
+    }
+  ]
+}
