@@ -1,7 +1,8 @@
 function  output = runBatteryJson(jsonstruct, varargin)
 
     opt = struct('runSimulation'       , true , ...
-                 'includeGridGenerator', false);
+                 'includeGridGenerator', false, ...
+                 'validateJson'        , false);
     opt = merge_options(opt, varargin{:});
 
     mrstModule add ad-core mrst-gui mpfa
@@ -17,11 +18,16 @@ function  output = runBatteryJson(jsonstruct, varargin)
     ctrl    = 'Control';
     cc      = 'CurrentCollector';
 
+    %% Validate
+    if opt.validateJson
+        validateJsonStruct(jsonstruct);
+    end
+
     %%  Initialize the battery model.
     % The battery model is setup using :battmo:`setupModelFromJson`
 
     [model, inputparams, jsonstruct, gridGenerator] = setupModelFromJson(jsonstruct);
-    
+
     %% model parameter required for initialization if initializationSetup = "given SOC";
     % The initial state of the model is setup using the model.setupInitialState() method.
 
@@ -51,13 +57,13 @@ function  output = runBatteryJson(jsonstruct, varargin)
 
     %% Setup the time step schedule
     %
-    
+
     if isfield(jsonstruct, 'TimeStepping')
         timeSteppingParams = jsonstruct.TimeStepping;
     else
         timeSteppingParams = [];
     end
-    
+
     step    = model.(ctrl).setupScheduleStep(timeSteppingParams);
     control = model.(ctrl).setupScheduleControl();
 
@@ -82,9 +88,9 @@ function  output = runBatteryJson(jsonstruct, varargin)
 
     %% Run the simulation
     %
-    
+
     if opt.runSimulation
-        
+
         if isfield(jsonstruct, 'Output') && isfield(jsonstruct.Output, 'saveOutput') && jsonstruct.Output.saveOutput
             saveOptions = jsonstruct.Output.saveOptions;
 
