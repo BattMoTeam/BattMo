@@ -23,14 +23,14 @@ jsonControl = parseBattmoJson(fullfile('Examples', 'JsonDataFiles', 'cc_discharg
 jsonSim     = parseBattmoJson(fullfile('Examples', 'JsonDataFiles', 'simulation_parameters.json'));
 
 json = mergeJsonStructs({jsonParams, jsonGeom, jsonControl, jsonSim});
-%json = mergeJsonStructs({jsonParams, jsonGeom, jsonSim});
 
 json.Control.useCVswitch = true;
 
-% Test finer time disc
-json.TimeStepping.numberOfTimeSteps = 80;
-json.TimeStepping.numberOfRampupSteps = 10;
+% % Test finer time discretization
+% json.TimeStepping.numberOfTimeSteps = 80;
+% json.TimeStepping.numberOfRampupSteps = 10;
 
+% Optionally validate the json struct
 validateJson = false;
 
 %% Run with initial guess
@@ -43,7 +43,6 @@ simSetup = struct('model'   , output0.model   , ...
 
 %% Setup parameters to be optimized
 params = [];
-
 
 params = addParameter(params, simSetup, ...
                       'name', 'elyte_bruggeman', ...
@@ -124,7 +123,8 @@ end
 %% Optimize
 p0scaled = getScaledParameterVector(simSetup, params);
 gradTol = 1e-7;
-objChangeTol = 1e-4*1e-3;
+objChangeTol = 1e-4;
+%objChangeTol = 1e-7;
 maxIt = 25;
 [v, pOptTmp, history] = unitBoxBFGS(p0scaled      , objectiveGradient, ...
                                     'maximize'    , false            , ...
