@@ -1,7 +1,3 @@
-if mrstPlatform('octave')
-    error('This demo cannot be run from Octave');
-end
-
 %% Setup
 mrstModule add ad-core optimization mpfa mrst-gui
 
@@ -27,12 +23,19 @@ jsonControl = parseBattmoJson(fullfile('Examples', 'JsonDataFiles', 'cc_discharg
 jsonSim     = parseBattmoJson(fullfile('Examples', 'JsonDataFiles', 'simulation_parameters.json'));
 
 json = mergeJsonStructs({jsonParams, jsonGeom, jsonControl, jsonSim});
+%json = mergeJsonStructs({jsonParams, jsonGeom, jsonSim});
 
 json.Control.useCVswitch = true;
 
+% Test finer time disc
+json.TimeStepping.numberOfTimeSteps = 80;
+json.TimeStepping.numberOfRampupSteps = 10;
+
+validateJson = false;
+
 %% Run with initial guess
 json0 = json;
-output0 = runBatteryJson(json0);
+output0 = runBatteryJson(json0, 'validateJson', validateJson);
 
 simSetup = struct('model'   , output0.model   , ...
                   'schedule', output0.schedule, ...
@@ -84,7 +87,7 @@ for ip = 1:numel(params)
     jsonExp = params{ip}.setfun(jsonExp, loc{:}, new);
     pExp(ip) = new;
 end
-outputExp = runBatteryJson(jsonExp);
+outputExp = runBatteryJson(jsonExp, 'validateJson', validateJson);
 
 %% Setup the optimization problem
 
@@ -121,11 +124,13 @@ end
 %% Optimize
 p0scaled = getScaledParameterVector(simSetup, params);
 gradTol = 1e-7;
-objChangeTol = 1e-4;
+objChangeTol = 1e-4*1e-3;
+maxIt = 25;
 [v, pOptTmp, history] = unitBoxBFGS(p0scaled      , objectiveGradient, ...
                                     'maximize'    , false            , ...
                                     'gradTol'     , gradTol          , ...
                                     'objChangeTol', objChangeTol     , ...
+                                    'maxIt'       , maxIt            , ...
                                     'logplot'     , true);
 numIt = numel(history.val);
 
@@ -148,10 +153,10 @@ for ip = 1:numel(params)
     jsonOpt = params{ip}.setfun(jsonOpt, loc{:}, pOpt(ip));
 end
 
-outputOpt = runBatteryJson(jsonOpt);
+outputOpt = runBatteryJson(jsonOpt, 'validateJson', validateJson);
 
 %%
-do_plot = false;
+do_plot = true;
 if do_plot
     set(0, 'defaultlinelinewidth', 2)
 
@@ -168,7 +173,7 @@ if do_plot
     h = figure; hold on; grid on; axis tight
     plot(t0/hour, E0, 'displayname', 'E_{0}')
     plot(tExp/hour, EExp, '--', 'displayname', 'E_{exp}');
-    plot(tOpt/hour, EOpt, 'displayname', 'E_{opt}')
+    plot(tOpt/hour, EOpt, ':', 'displayname', 'E_{opt}')
     legend;
 
 end
