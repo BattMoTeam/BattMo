@@ -3,19 +3,30 @@
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "description": "Input for the time stepping",
   "type": "object",
-
-  "properties" : {
-    "TimeStepping" : {
-      "type" : "object",
-      "properties" : {
-        "totalTime" : {"type" : "number",
-                       "description" : "Total time. If not given, may be inferred by some control models"},
-        "timeStepDuration" : {"type" : "number"},
-        "numberOfTimeSteps" : {"type" : "integer",
-                               "description" : "number of time steps, then we compute the time step duration from total time and number of time steps"},
-        "useRampup" : {"type" : "boolean"},
-        "numberOfRampupSteps" : {"type" : "number",
-                                 "description" : "if we use rampup, we use at the start time intervals that increases geometrrically until we reach the time step target, see function rampupTimesteps."}}
+  "properties": {
+    "TimeStepping": {
+      "type": "object",
+      "properties": {
+        "totalTime": {
+          "$ref": "PhysicalQuantity.schema.json",
+          "description": "Total time. If not given, may be inferred by some control models",
+          "symmbol": ""
+        },
+        "timeStepDuration": {
+          "type": "number"
+        },
+        "numberOfTimeSteps": {
+          "type": "integer",
+          "description": "number of time steps, then we compute the time step duration from total time and number of time steps"
+        },
+        "useRampup": {
+          "type": "boolean"
+        },
+        "numberOfRampupSteps": {
+          "type": "number",
+          "description": "if we use rampup, we use at the start time intervals that increases geometrrically until we reach the time step target, see function rampupTimesteps."
+        }
+      }
     }
   }
 }
