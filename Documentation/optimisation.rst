@@ -374,4 +374,308 @@ the `boxLim` for `ne_k0`, why a next step could be to change this.
 Optimization example
 ====================
 
-In progress.
+Here we will present an example illustrating how the energy output of
+a battery in one cycle can maximized by adjusting the porosity and the
+operating current. The complete code is available at
+:battmofile:`runBattery1DOptimize<Examples/Optimisation/runBattery1DOptimize.m>`.
+
+We start by clearing the workspace, closing figures and initializing the MRST modules.
+
+.. code:: matlab
+
+	  % Clear the workspace and close open figures
+	  clear
+	  close all
+
+	  % Load MRST modules
+	  mrstModule add ad-core mrst-gui mpfa optimization
+
+For this example we set up a standard Li-ion battery with an NMC
+cathode and graphite anode without currect collectors. At the moment,
+we do not take into account thermal effects, and we use a simple
+diffusion model. This means that the diffusion in the active material
+is determined by evaluating an analytical function, in contrast to the
+standard approach, where the diffusion is determined by solving a 1D
+differential equation. The difference should not be that significant
+in this case, and the ambitious reader is encouraged to investigate
+this.
+
+.. code:: matlab
+
+	  jsonstruct = parseBattmoJson(fullfile('ParameterData','BatteryCellParameters','LithiumIonBatteryCell','lithium_ion_battery_nmc_graphite.json'));
+	  jsonstruct.include_current_collectors = false;
+	  jsonstruct.use_thermal = false;
+
+	  % We define some shorthand names for simplicity.
+	  ne      = 'NegativeElectrode';
+	  pe      = 'PositiveElectrode';
+	  am      = 'ActiveMaterial';
+	  cc      = 'CurrentCollector';
+	  elyte   = 'Electrolyte';
+	  thermal = 'ThermalModel';
+	  itf     = 'Interface';
+	  sd      = 'SolidDiffusion';
+	  ctrl    = 'Control';
+	  sep     = 'Separator';
+
+	  jsonstruct.(ne).(am).diffusionModelType = 'simple';
+	  jsonstruct.(pe).(am).diffusionModelType = 'simple';
+
+	  inputparams = BatteryInputParams(jsonstruct);
+
+	  inputparams.(ctrl).useCVswitch = true;
+
+To avoid too much computational cost, we set up a P2D model.
+
+.. code:: matlab
+
+	  gen = BatteryGeneratorP2D();
+
+	  % Now, we update the inputparams with the properties of the grid.
+	  inputparams = gen.updateBatteryInputParams(inputparams);
+
+	  %  Initialize the battery model.
+
+	  model = Battery(inputparams);
+
+To avoid an initial strong shock to the system, we ramp-up the current
+to the prescribed current using small time steps. An appropriate
+default control (the procedures for how the battery is to be operated)
+that does this is set up automatically by the built-in function
+`setupScheduleControl`.
+
+.. code:: matlab
+
+	  % Smaller time steps are used to ramp up the current from zero to its
+	  % operational value. Larger time steps are then used for the normal
+	  % operation.
+
+	  CRate = model.Control.CRate;
+	  total = 1.2*hour/CRate;
+
+	  n    = 40;
+	  dt   = total*0.7/n;
+	  step = struct('val', dt*ones(n, 1), 'control', ones(n, 1));
+
+	  % Setup the control by assigning a source and stop function.
+
+	  control = model.Control.setupScheduleControl();
+
+	  nc = 1;
+	  nst = numel(step.control);
+	  ind = floor(((0 : nst - 1)/nst)*nc) + 1;
+
+	  step.control = ind;
+	  control.Imax = model.Control.Imax;
+	  control = repmat(control, nc, 1);
+
+	  schedule = struct('control', control, 'step', step);
+
+Then we set up the nonlinear solver. To illustrate the capabilities of
+the nonlinear solver we lower the default maximum number of iterations
+and set a tolerance depending on the input current. The solver will
+cut the time steps in half if the nonlinear system fails to converge,
+resulting in so-called "ministeps". When running the simulation, we
+have the option to return values at these ministeps (see the call to
+`simulateScheduleAD` below).
+
+.. code:: matlab
+
+	  nls = NonLinearSolver();
+
+	  % Change the number of maximum nonlinear iterations
+	  nls.maxIterations = 10;
+
+	  % Change default behavior of nonlinear solver, in case of error
+	  nls.errorOnFailure = false;
+
+	  % Change tolerance for the nonlinear iterations
+	  model.nonlinearTolerance = 1e-3*model.Control.Imax;
+
+	  % Set verbosity
+	  model.verbose = false;
+
+Given an initial state, we can now solve the system. Note that we pass
+our nonlinear solver object and set `OutputMinisteps=true` as
+options. We may also plot the resulting potential.
+
+.. code:: matlab
+
+	  % Setup the initial state
+	  initstate = model.setupInitialState();
+
+	  % Run the simulation
+	  [~, states, ~] = simulateScheduleAD(initstate, model, schedule, 'OutputMinisteps', true, 'NonLinearSolver', nls)
+
+	  ind = cellfun(@(x) not(isempty(x)), states);
+	  states = states(ind);
+
+	  E    = cellfun(@(x) x.Control.E, states);
+	  I    = cellfun(@(x) x.Control.I, states);
+	  time = cellfun(@(x) x.time, states);
+
+	  doPlot = false;
+
+	  if doPlot
+	      figure;
+	      plot(time/hour, E, '*-', 'displayname', 'initial');
+	      xlabel('time  / h');
+	      ylabel('voltage  / V');
+	      grid on
+	  end
+
+The energy of the cell is calculated by calling the `EnergyOutput`
+function or simply by evaluating the integral E*I*dt using the
+trapezoidal rule. The reason for introducing the `EnergyOutput`
+function is that this will be used as objective function in the
+optimization below.
+
+.. code:: matlab
+
+	  obj = @(model, states, schedule, varargin) EnergyOutput(model, states, schedule, varargin{:});
+	  vals = obj(model, states, schedule);
+	  totval = sum([vals{:}]);
+
+	  % Compare with trapezoidal integral: they should be about the same
+	  totval_trapz = trapz(time, E.*I);
+	  fprintf('Rectangle rule: %g Wh, trapezoidal rule: %g Wh\n', totval/hour, totval_trapz/hour);
+
+Now we are ready to set up the free parameters in the optimization
+problem. First we have the porosities of three parts of the battery:
+the negative electrode, the separator and the positive
+electrode. Since BattMo uses volume fractions instead of porisities,
+we use a small class to update these, namely the `PorositySetter`
+class. For each part, this class will set the corresponding volume
+fraction (as well as update the effective electronic conductivities in
+the case of the electrodes, since these depend on the volume fractions
+as well). We will not discuss this class in more detail and use to the
+set/get routines from this class to update the parameters:
+
+.. code:: matlab
+
+	  state0 = initstate;
+	  SimulatorSetup = struct('model', model, 'schedule', schedule, 'state0', state0);
+
+	  parameters = {};
+
+	  paramsetter = PorositySetter(model, {ne, sep, pe});
+
+	  getporo = @(model, notused) paramsetter.getValues(model);
+	  setporo = @(model, notused, v) paramsetter.setValues(model, v);
+
+	  parameters = addParameter(parameters, SimulatorSetup, ...
+				    'name'     , 'porosity', ...
+				    'belongsTo', 'model'       , ...
+				    'boxLims'  , [0.1, 0.9]    , ...
+				    'location' , {''}          , ...
+				    'getfun'   , getporo       , ...
+				    'setfun'   , setporo);
+
+In addition to the three porosities, we will also have the maximum
+current `Imax` as a parameter in the optimization problem. This
+parameter belongs to the `schedule` object. We use a ramp-up function
+similar to the one setup by default (see `schedule.control`), but
+with `Imax` to be set (variable `v`). Note also the range of `Imax`
+set by the `boxLims`.
+
+.. code:: matlab
+
+	  setfun = @(x, location, v) struct('Imax', v, ...
+					    'src', @(time, I, E) rampupSwitchControl(time, model.Control.rampupTime, I, E, v, model.Control.lowerCutoffVoltage), ...
+					    'stopFunction', schedule.control.stopFunction, ...
+					    'CCDischarge', true);
+
+	  parameters = addParameter(parameters, SimulatorSetup, ...
+				    'name'        , 'Imax'                       , ...
+				    'belongsTo'   , 'schedule'                   , ...
+				    'boxLims'     , model.Control.Imax*[0.5, 2], ...
+				    'location'    , {'control', 'Imax'}          , ...
+				    'getfun'      , []                           , ...
+				    'setfun'      , setfun);
+
+Now we construct the function handle to the `EnergyOutput` function as objective functional. We also include a so-called hook -- a function that is called after each optimization step which here plots the current, voltage, power and energy. The objective function also evaluates the gradient, as will perform a gradient-based optimization to reduce the number of costly model evalutations. The gradients are obtained by solving an adjoint problem.
+
+.. code:: matlab
+
+	  objmatch = @(model, states, schedule, varargin) EnergyOutput(model, states, schedule, varargin{:});
+	  if doPlot
+	      fn = @plotAfterStepIV;
+	  else
+	      fn = [];
+	  end
+	  obj = @(p) evalObjectiveBattmo(p, objmatch, SimulatorSetup, parameters, 'objScaling', totval, 'afterStepFn', fn);
+
+The optimization routines require scaling or the parameters to `[0, 1]`. Here we simply use the original parameter values scaled, minus a constant. Worth noting that optimization problems may be sensitive to the initial parameters
+
+.. code:: matlab
+
+	  p_base = getScaledParameterVector(SimulatorSetup, parameters);
+	  p_base = p_base - 0.1;
+
+Now we can perform the optimization by calling BFGS, a well-tested, effective gradient-based optimization algorithm. After performing the optimization, we evaluate the optimal voltage discharge profile and print the optimized parameters.
+
+.. code:: matlab
+
+	  % Solve the optimization problem using BFGS. One can adjust the
+	  % tolerances and the maxIt option to see how it effects the
+	  % optimum.
+	  [v, p_opt, history] = unitBoxBFGS(p_base, obj, 'gradTol', 1e-7, 'objChangeTol', 1e-4, 'maxIt', 200);
+
+	  % Compute objective at optimum
+	  setup_opt = updateSetupFromScaledParameters(SimulatorSetup, parameters, p_opt);
+	  [~, states_opt, ~] = simulateScheduleAD(setup_opt.state0, setup_opt.model, setup_opt.schedule, 'OutputMinisteps', true, 'NonLinearSolver', nls);
+	  time_opt = cellfun(@(x) x.time, states_opt);
+	  E_opt = cellfun(@(x) x.Control.E, states_opt);
+	  I_opt = cellfun(@(x) x.Control.I, states_opt);
+	  totval_trapz_opt = trapz(time_opt, E_opt.*I_opt);
+
+	  % Print optimal parameters
+	  fprintf('Base and optimized parameters:\n');
+	  for k = 1:numel(parameters)
+	      % Get the original and optimized values
+	      p0 = parameters{k}.getParameter(SimulatorSetup);
+	      pu = parameters{k}.getParameter(setup_opt);
+
+	      % Print
+	      fprintf('%s\n', parameters{k}.name);
+	      fprintf('%g %g\n', p0, pu);
+	  end
+
+	  fprintf('Energy changed from %g to %g mWh\n', totval_trapz/hour/milli, totval_trapz_opt/hour/milli);
+
+At the time of writing, we obtain (initial values in the left column, optimized values in the right column):
+
+.. code:: matlab
+
+	  porosity of NE, separator and PE
+	  0.12163 0.55
+	  0.187132 0.152395
+	  0.472783 0.100268
+	  Imax
+	  0.00986981 0.0147641
+
+The energy changes from 30.8822 to 44.0736 mWh.
+
+Finally we may plot the voltage curves to compare the result from the
+optimization procedure with the original.
+
+.. code:: matlab
+
+	  if doPlot
+	     % Plot
+	     figure; hold on; grid on
+	     E    = cellfun(@(x) x.Control.E, states);
+	     time = cellfun(@(x) x.time, states);
+	     plot(time/hour, E, '*-', 'displayname', 'initial');
+	     plot(time_opt/hour, E_opt, 'r*-', 'displayname', 'optimized');
+	     xlabel('time  / h');
+	     ylabel('voltage  / V');
+	     legend;
+	 end
+
+The result is shown in the figure below.
+
+..  figure:: img/runBattery1DOptimize.png
+    :target: _images/runBattery1DOptimize.png
+    :width: 100%
+    :align: center

@@ -1,13 +1,10 @@
-%% Pseudo-Two-Dimensional (P2D) Lithium-Ion Battery Model
-% This example demonstrates how to setup a P2D model of a Li-ion battery
-% and run a simple simulation.
+%% Setup
 
-% clear the workspace and close open figures
+% Clear the workspace and close open figures
 clear
 close all
 
-%% Import the required modules from MRST
-% load MRST modules
+% Load MRST modules
 mrstModule add ad-core mrst-gui mpfa optimization
 
 %% Setup the properties of Li-ion battery materials and cell design
@@ -42,12 +39,9 @@ gen = BatteryGeneratorP2D();
 % Now, we update the inputparams with the properties of the grid.
 inputparams = gen.updateBatteryInputParams(inputparams);
 
-%%  Initialize the battery model.
+%  Initialize the battery model.
 
 model = Battery(inputparams);
-
-model.AutoDiffBackend = SparseAutoDiffBackend('useBlocks', true);
-
 
 %% Setup the time step schedule
 % Smaller time steps are used to ramp up the current from zero to its
@@ -55,15 +49,7 @@ model.AutoDiffBackend = SparseAutoDiffBackend('useBlocks', true);
 % operation.
 
 CRate = model.Control.CRate;
-
-switch model.(ctrl).controlPolicy
-  case 'CCCV'
-    total = 3.5*hour/CRate;
-  case 'CCDischarge'
-    total = 1.2*hour/CRate;
-  otherwise
-    error('control policy not recognized');
-end
+total = 1.2*hour/CRate;
 
 n    = 40;
 dt   = total*0.7/n;
@@ -83,27 +69,31 @@ control = repmat(control, nc, 1);
 
 schedule = struct('control', control, 'step', step);
 
-%% Setup the initial state of the model
-% The initial state of the model is dispatched using the
-% model.setupInitialState() method.
+%% Setup the nonlinear solver
 
-initstate = model.setupInitialState();
-
-%% Setup the properties of the nonlinear solver
 nls = NonLinearSolver();
-% Change default maximum iteration number in nonlinear solver
+
+% Change the number of maximum nonlinear iterations
 nls.maxIterations = 10;
+
 % Change default behavior of nonlinear solver, in case of error
 nls.errorOnFailure = false;
-% Change default tolerance for nonlinear solver
-nls.timeStepSelector = SimpleTimeStepSelector();
+
+% Change tolerance for the nonlinear iterations
 model.nonlinearTolerance = 1e-3*model.Control.Imax;
+
 % Set verbosity
-model.verbose = true;
+model.verbose = false;
 
-%% Run the simulation
+%% Setup the initial state and solve
 
+% Setup the initial state
+initstate = model.setupInitialState();
+
+% Run the simulation
 [~, states, ~] = simulateScheduleAD(initstate, model, schedule, 'OutputMinisteps', true, 'NonLinearSolver', nls);
+
+model0 = model;
 
 %% Process output and recover the output voltage and current from the output states.
 
@@ -111,13 +101,18 @@ ind = cellfun(@(x) not(isempty(x)), states);
 states = states(ind);
 
 E    = cellfun(@(x) x.Control.E, states);
+I    = cellfun(@(x) x.Control.I, states);
 time = cellfun(@(x) x.time, states);
 
-figure;
-plot(time/hour, E, '*-', 'displayname', 'initial');
-xlabel('time  / h');
-ylabel('voltage  / V');
-grid on
+doPlot = false;
+
+if doPlot
+    figure;
+    plot(time/hour, E, '*-', 'displayname', 'initial');
+    xlabel('time  / h');
+    ylabel('voltage  / V');
+    grid on
+end
 
 %% Calculate the energy
 obj = @(model, states, schedule, varargin) EnergyOutput(model, states, schedule, varargin{:});
@@ -125,7 +120,6 @@ vals = obj(model, states, schedule);
 totval = sum([vals{:}]);
 
 % Compare with trapezoidal integral: they should be about the same
-I = cellfun(@(x) x.Control.I, states);
 totval_trapz = trapz(time, E.*I);
 fprintf('Rectangle rule: %g Wh, trapezoidal rule: %g Wh\n', totval/hour, totval_trapz/hour);
 
@@ -148,61 +142,68 @@ parameters = addParameter(parameters, SimulatorSetup, ...
                           'getfun'   , getporo       , ...
                           'setfun'   , setporo);
 
-setfun = @(x, location, v) struct('Imax', v                                                        , ...
-                                  'src', @(time, I, E) rampupSwitchControl(time, 0.1, I, E, v, 3.0), ...
-                                  'stopFunction', @(model,state,state_prev)(false)                 , ...
+setfun = @(x, location, v) struct('Imax', v, ...
+                                  'src', @(time, I, E) rampupSwitchControl(time, model.Control.rampupTime, I, E, v, model.Control.lowerCutoffVoltage), ...
+                                  'stopFunction', schedule.control.stopFunction, ...
                                   'CCDischarge', true);
 
-for i = 1 : max(schedule.step.control)
-    parameters = addParameter(parameters, SimulatorSetup, ...
-                              'name'        , 'Imax'                       , ...
-                              'belongsTo'   , 'schedule'                   , ...
-                              'boxLims'     , model.Control.Imax*[0.5, 2], ...
-                              'location'    , {'control', 'Imax'}          , ...
-                              'getfun'      , []                           , ...
-                              'setfun'      , setfun                       , ...
-                              'controlSteps', i);
-end
+
+parameters = addParameter(parameters, SimulatorSetup, ...
+                          'name'        , 'Imax'                       , ...
+                          'belongsTo'   , 'schedule'                   , ...
+                          'boxLims'     , model.Control.Imax*[0.5, 2], ...
+                          'location'    , {'control', 'Imax'}          , ...
+                          'getfun'      , []                           , ...
+                          'setfun'      , setfun);
+
+%% Setup the objective function and auxiliary plotting
 
 objmatch = @(model, states, schedule, varargin) EnergyOutput(model, states, schedule, varargin{:});
-fn       = @plotAfterStepIV;
-obj      = @(p) evalObjectiveBattmo(p, objmatch, SimulatorSetup, parameters, 'objScaling', totval, 'afterStepFn', fn);
+if doPlot
+    fn = @plotAfterStepIV;
+else
+    fn = [];
+end
+obj = @(p) evalObjectiveBattmo(p, objmatch, SimulatorSetup, parameters, 'objScaling', totval, 'afterStepFn', fn);
 
-%%
-doOptimization = true;
-if doOptimization
+%% Setup initial parameters
 
-    % The parameters must be scaled to [0,1]
-    p_base = getScaledParameterVector(SimulatorSetup, parameters);
-    p_base = p_base - 0.1;
+% The parameters must be scaled to [0,1]
+p_base = getScaledParameterVector(SimulatorSetup, parameters);
+p_base = p_base - 0.1;
 
-    % Solve the optimization problem using BFGS. One can adjust the
-    % tolerances and the maxIt option to see how it effects the
-    % optimum.
-    [v, p_opt, history] = unitBoxBFGS(p_base, obj, 'gradTol', 1e-7, 'objChangeTol', 1e-4, 'maxIt', 20);
+%% Optimize
 
-    % Compute objective at optimum
-    setup_opt = updateSetupFromScaledParameters(SimulatorSetup, parameters, p_opt);
-    [~, states_opt, ~] = simulateScheduleAD(setup_opt.state0, setup_opt.model, setup_opt.schedule, 'OutputMinisteps', true, 'NonLinearSolver', nls);
-    time_opt = cellfun(@(x) x.time, states_opt);
-    E_opt = cellfun(@(x) x.Control.E, states_opt);
-    I_opt = cellfun(@(x) x.Control.I, states_opt);
-    totval_trapz_opt = trapz(time_opt, E_opt.*I_opt);
+% Solve the optimization problem using BFGS. One can adjust the
+% tolerances and the maxIt option to see how it effects the
+% optimum.
+[v, p_opt, history] = unitBoxBFGS(p_base, obj, 'gradTol', 1e-7, 'objChangeTol', 1e-4, 'maxIt', 20);
 
-    % Print optimal parameters
-    fprintf('Base and optimized parameters:\n');
-    for k = 1:numel(parameters)
-        % Get the original and optimized values
-        p0 = parameters{k}.getParameter(SimulatorSetup);
-        pu = parameters{k}.getParameter(setup_opt);
+% Compute objective at optimum
+setup_opt = updateSetupFromScaledParameters(SimulatorSetup, parameters, p_opt);
+[~, states_opt, ~] = simulateScheduleAD(setup_opt.state0, setup_opt.model, setup_opt.schedule, 'OutputMinisteps', true, 'NonLinearSolver', nls);
+time_opt = cellfun(@(x) x.time, states_opt);
+E_opt = cellfun(@(x) x.Control.E, states_opt);
+I_opt = cellfun(@(x) x.Control.I, states_opt);
+totval_trapz_opt = trapz(time_opt, E_opt.*I_opt);
 
-        % Print
-        fprintf('%s\n', parameters{k}.name);
-        fprintf('%g %g\n', p0, pu);
-    end
+% Print optimal parameters
+fprintf('Base and optimized parameters:\n');
+for k = 1:numel(parameters)
+    % Get the original and optimized values
+    p0 = parameters{k}.getParameter(SimulatorSetup);
+    pu = parameters{k}.getParameter(setup_opt);
 
-    fprintf('Energy changed from %g to %g Wh\n', totval_trapz/hour, totval_trapz_opt/hour);
+    % Print
+    fprintf('%s\n', parameters{k}.name);
+    fprintf('%g %g\n', p0, pu);
+end
 
+fprintf('Energy changed from %g to %g mWh\n', totval_trapz/hour/milli, totval_trapz_opt/hour/milli);
+
+%% Plot
+
+if doPlot
     % Plot
     figure; hold on; grid on
     E    = cellfun(@(x) x.Control.E, states);
@@ -214,9 +215,8 @@ if doOptimization
     legend;
 end
 
-
 %%
-doCompareGradient = true;
+doCompareGradient = false;
 if doCompareGradient
 
     p = getScaledParameterVector(SimulatorSetup, parameters);
