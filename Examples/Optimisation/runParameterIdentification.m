@@ -141,9 +141,9 @@ for k = 1:numel(pOpt)
 end
 
 % Compare with experimental params to see if we match
-relErr = abs(pOpt - pExp) ./ pExp;
-fprintf('pOpt             pExp            Rel err\n');
-fprintf('%1.3g     \t %1.3g      \t %1.3g\n', [pOpt, pExp, relErr]');
+names = cellfun(@(p) p.name, params, 'uniformoutput', false)';
+t = {names, pOpt, pExp};
+disp(table(t{:}, 'VariableNames', {'name', 'pOpt', 'pExp'}))
 
 %% Run model with pOpt params
 jsonOpt = json;
