@@ -305,39 +305,39 @@ The notebooks can be found in the :battmofile:`Examples/Basic` directory or down
 .. list-table::
    
    * - Tutorial 1
-     - Your first BattMo model
+     - **Your first BattMo model**
      - `view <_static/notebooks/tutorial_1_a_simple_p2d_model_live.html>`__
      - :battmorawfile:`download <Examples/Basic/tutorial_1_a_simple_p2d_model_live.mlx>`
    * - Tutorial 2
-     - Change the Control Protocol
+     - **Change the Control Protocol**
      - `view <_static/notebooks/tutorial_2_changing_control_protocol_live.html>`__
      - :battmorawfile:`download <Examples/Basic/tutorial_2_changing_control_protocol_live.mlx>`
    * - Tutorial 3
-     - Modify Structural Parameters
+     - **Modify Structural Parameters**
      - `view <_static/notebooks/tutorial_3_modify_structural_parameters_live.html>`__
      - :battmorawfile:`download <Examples/Basic/tutorial_3_modify_structural_parameters_live.mlx>`
    * - Tutorial 4
-     - Modify Material Parameters
+     - **Modify Material Parameters**
      - `view <_static/notebooks/tutorial_4_modify_material_parameters_live.html>`__
      - :battmorawfile:`download <Examples/Basic/tutorial_4_modify_material_parameters_live.mlx>`
    * - Tutorial 5
-     - Simulate CC-CV cycling
+     - **Simulate CC-CV cycling**
      - `view <_static/notebooks/tutorial_5_simulate_CCCV_cycling_live.html>`__
      - :battmorawfile:`download <Examples/Basic/tutorial_5_simulate_CCCV_cycling_live.mlx>`
    * - Tutorial 6
-     - Simulate Thermal Performance
+     - **Simulate Thermal Performance**
      - `view <_static/notebooks/tutorial_6_simulate_thermal_performance_live.html>`__
      - :battmorawfile:`download <Examples/Basic/tutorial_6_simulate_thermal_performance_live.mlx>`
    * - Tutorial 7
-     - A Simple P4D Simulation
+     - **A Simple P4D Simulation**
      - `view <_static/notebooks/tutorial_7_a_simple_p4d_model_live.html>`__
      - :battmorawfile:`download <Examples/Basic/tutorial_7_a_simple_p4d_model_live.mlx>`
    * - Tutorial 8
-     - Simulate a Multi-Layer Pouch cell
+     - **Simulate a Multi-Layer Pouch cell**
      - `view <_static/notebooks/tutorial_8_simulate_a_multilayer_pouch_cell_live.html>`__
      - :battmorawfile:`download <Examples/Basic/tutorial_8_simulate_a_multilayer_pouch_cell_live.mlx>`
    * - Tutorial 9
-     - Simulate a Cylindrical Cell
+     - **Simulate a Cylindrical Cell**
      - `view <_static/notebooks/tutorial_9_simulate_a_cylindrical_cell_live.html>`__
      - :battmorawfile:`download <Examples/Basic/tutorial_9_simulate_a_cylindrical_cell_live.mlx>`
 
