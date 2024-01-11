@@ -73,7 +73,7 @@ Unit conversion is demonstrated below.
 
     1
 
-.. note:: If a string is given which is not supported, BattMo will return an error. However, care must be taken as a string which is supported but used in error will not throw an error.
+.. note:: If a string is given which is not supported, BattMo will return an error. However, care must be taken as all supported strings will work, even if they are used by mistake. i.e. make sure you do not write milli if you mean centi!
 
 
 
