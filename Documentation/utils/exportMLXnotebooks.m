@@ -18,6 +18,8 @@ outputdir = fullfile(battmoDir(), 'Documentation', '_static', 'notebooks');
 options = {'format', 'html', ...
            'run', false};
 
+% To run and update the mlx notebook programmatically, it is possible to use: matlab.internal.liveeditor.executeAndSave('fullpathnameto.mlx')
+
 for inote = 1 : numel(notebooknames)
 
     notebookname = notebooknames{inote};
