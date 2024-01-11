@@ -39,7 +39,7 @@
       "properties" :
       {"rampupTime" : {
         "type" : "number",
-        "description" : "rampup time"},
+        "description" : "Rampup time where the current is increased linearly from zero to target value. In this way, we can avoid convergence issues in case of high current."},
        "lowerCutoffVoltage" : {
         "type" : "number"},
        "useCVswitch" : {
@@ -50,7 +50,7 @@
       "properties" :
       {"rampupTime" : {
         "type" : "number",
-        "description" : "rampup time"},
+        "description" : "Rampup time where the current is increased linearly from zero to target value. In this way, we can avoid convergence issues in case of high current."},
        "upperCutoffVoltage" : {
          "type" : "number"},
        "useCVswitch" : {
