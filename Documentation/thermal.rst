@@ -141,7 +141,9 @@ We run the computation again and obtain higher temperature.
 
 .. image:: img/temperature_evolution2.png
 
-We note also that there is less temperature gradient. We have the temperature distribution for all the cells in the model. Let us plot it for the last time step. To do so we run
+We note also that the temperature is more uniform in the battery as the minimum and maximum values are closer to each
+other. We have access to the temperature distribution for all the cells in the model. Let us plot the temperature field
+for the last time step. To do so, we run
 
 .. code:: matlab
           
