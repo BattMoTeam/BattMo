@@ -295,31 +295,51 @@ And now, we can run the simulation and plot the discharge curve:
 Notebooks
 =========
 
-We have written and published some matlab notebook in the `Live Code File Format <https://se.mathworks.com/help/matlab/matlab_prog/live-script-file-format.html>`_ (:code:`.mlx`) . They are located in the :battmofile:`Examples/Basic` directory.
+We have written and published matlab notebooks in the `Live Code File Format
+<https://se.mathworks.com/help/matlab/matlab_prog/live-script-file-format.html>`_ (:code:`.mlx`) .
 
-They are also available in a python notebook format:
+They basically go through the material described above in the interactive manner.
 
+The notebooks can be found in the :battmofile:`Examples/Basic` directory or downloaded from here.
 
 .. list-table::
    
    * - Tutorial 1
-     - :battmofile:`Your First BattMo Model<Documentation/notebooks/tutorial_1_a_simple_p2d_model_live.ipynb>`
+     - Your first BattMo model
+     - `view <_static/notebooks/tutorial_1_a_simple_p2d_model_live.html>`__
+     - :battmorawfile:`download <Examples/Basic/tutorial_1_a_simple_p2d_model_live.mlx>`
    * - Tutorial 2
-     - :battmofile:`Change the Control Protocol<Documentation/notebooks/tutorial_2_changing_control_protocol_live.ipynb>`
+     - Change the Control Protocol
+     - `view <_static/notebooks/tutorial_2_changing_control_protocol_live.html>`__
+     - :battmorawfile:`download <Examples/Basic/tutorial_2_changing_control_protocol_live.mlx>`
    * - Tutorial 3
-     - :battmofile:`Modify Structural Parameters<Documentation/notebooks/tutorial_3_modify_structural_parameters_live.ipynb>`
+     - Modify Structural Parameters
+     - `view <_static/notebooks/tutorial_3_modify_structural_parameters_live.html>`__
+     - :battmorawfile:`download <Examples/Basic/tutorial_3_modify_structural_parameters_live.mlx>`
    * - Tutorial 4
-     - :battmofile:`Modify Material Parameters<Documentation/notebooks/tutorial_4_modify_material_parameters_live.ipynb>`
+     - Modify Material Parameters
+     - `view <_static/notebooks/tutorial_4_modify_material_parameters_live.html>`__
+     - :battmorawfile:`download <Examples/Basic/tutorial_4_modify_material_parameters_live.mlx>`
    * - Tutorial 5
-     - :battmofile:`Simulate CC-CV Cycling<Documentation/notebooks/tutorial_5_simulate_CCCV_cycling_live.ipynb>`
+     - Simulate CC-CV cycling
+     - `view <_static/notebooks/tutorial_5_simulate_CCCV_cycling_live.html>`__
+     - :battmorawfile:`download <Examples/Basic/tutorial_5_simulate_CCCV_cycling_live.mlx>`
    * - Tutorial 6
-     - :battmofile:`Simulate Thermal Performance<Documentation/notebooks/tutorial_6_simulate_thermal_performance_live.ipynb>`
+     - Simulate Thermal Performance
+     - `view <_static/notebooks/tutorial_6_simulate_thermal_performance_live.html>`__
+     - :battmorawfile:`download <Examples/Basic/tutorial_6_simulate_thermal_performance_live.mlx>`
    * - Tutorial 7
-     - :battmofile:`A Simple P4D Simulation<Documentation/notebooks/tutorial_7_a_simple_p4d_model_live.ipynb>`
+     - A Simple P4D Simulation
+     - `view <_static/notebooks/tutorial_7_a_simple_p4d_model_live.html>`__
+     - :battmorawfile:`download <Examples/Basic/tutorial_7_a_simple_p4d_model_live.mlx>`
    * - Tutorial 8
-     - :battmofile:`Simulate a Multilayer Pouch Cell<Documentation/notebooks/tutorial_8_simulate_a_multilayer_pouch_cell_live.ipynb>`
+     - Simulate a Multi-Layer Pouch cell
+     - `view <_static/notebooks/tutorial_8_simulate_a_multilayer_pouch_cell_live.html>`__
+     - :battmorawfile:`download <Examples/Basic/tutorial_8_simulate_a_multilayer_pouch_cell_live.mlx>`
    * - Tutorial 9
-     - :battmofile:`Simulate a Cylindrical Cell<Documentation/notebooks/tutorial_9_simulate_a_cylindrical_cell_live.ipynb>`
+     - Simulate a Cylindrical Cell
+     - `view <_static/notebooks/tutorial_9_simulate_a_cylindrical_cell_live.html>`__
+     - :battmorawfile:`download <Examples/Basic/tutorial_9_simulate_a_cylindrical_cell_live.mlx>`
 
    
 Next Steps

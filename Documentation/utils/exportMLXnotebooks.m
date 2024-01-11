@@ -15,16 +15,15 @@ outputdir = fullfile(battmoDir(), 'Documentation', 'notebooks');
 
 %% setup options
 % Most of the options are in fact the default options.
-options = {'format', 'ipynb', ...
-           'run', false     , ...
-           'embedImages', true};
+options = {'format', 'html', ...
+           'run', false};
 
 for inote = 1 : numel(notebooknames)
 
     notebookname = notebooknames{inote};
     inputfile = fullfile(inputdir, notebookname);
     
-    notebookname = strrep(notebookname, '.mlx', '.ipynb');
+    notebookname = strrep(notebookname, '.mlx', '.html');
     outputfile = fullfile(outputdir, notebookname);
     
     export(inputfile, outputfile, options{:});

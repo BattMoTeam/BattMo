@@ -371,6 +371,25 @@ class BattMoFileRole(ReferenceRole):
 
 roles.register_local_role('battmofile', BattMoFileRole())
 
+class BattMoRawFileRole(ReferenceRole):
+
+    def run(self):
+        target = self.target
+        title = self.title
+        if "#" in target:
+            target, lineno = docutils.utils.unescape(target).split("#", 1)
+        else:
+            lineno = None
+        target = repo_url + '/raw/' + branch_name + '/' + target
+        if lineno is not None:
+            target += "#L"+lineno
+        node = docutils.nodes.reference(self.rawtext, title, refuri=target)
+        return [node], []
+
+
+roles.register_local_role('battmorawfile', BattMoRawFileRole())
+
+
 mrst_repo_url    = 'https://bitbucket.org/mrst/'
 mrst_branch_name = 'battmo-dev'
 
