@@ -47,7 +47,7 @@ The thermal parameters are given for each component. They typically consists of
 * Specific Heat Capacity
 * Thermal Conducitivty
 
-From those, we comput **effective** quantities. For the coating, it is done by processing the corresponding properties
+From those, we compute **effective** quantities. For the coating, it is done by processing the corresponding properties
 of the constituents. The effective thermal conductivity takes into account the volume fraction.
 
 The parameters needed to compute the heat exchange with the exterior are
@@ -57,8 +57,8 @@ The parameters needed to compute the heat exchange with the exterior are
 
 The external heat transfer coefficient can take different values for each external face of the model. It will then
 depend on the chosen geometrical domain. For our simple 3D model, the json interface gives us the possibility to set two
-values : A default value used for all external faces with is overwritten by the value given for the tabs. We use in our
-example 100 W/m²/s and 1000 W/m²/s, respectively.
+values : A default value used for all external faces which is overwritten by the value given for the tabs. In our
+example we use 100 W/m²/s and 1000 W/m²/s, respectively.
 
 Let us visualize those values. We run the following
 
@@ -94,7 +94,7 @@ We obtain the standard discharge curve
 
 .. image:: img/discharge_voltage_temperature_example.png
 
-Then, we extract from the output the temperatue results and extract the minimum and maximum value
+Then, we extract the temperature results and the minimum and maximum values from the output
 
 .. code:: matlab
 
@@ -127,7 +127,7 @@ and obtain
 We notice that there is very little temperature variation. The reason is that we have a small cell which is very thin,
 with a lot of external contact where heat can be released.
 
-Let use different heat exchange coefficient. We set the default heat exchange to zero so that heat exchange can only
+Let us use a different heat exchange coefficient. We set the default heat exchange to zero so that heat exchange can only
 occur through the tabs.
 
 .. code:: matlab
@@ -136,13 +136,12 @@ occur through the tabs.
    jsonstruct.ThermalModel.externalHeatTransferCoefficient = 0;          
 
 
-We run again the computation and obtain higher temperature.
+We run the computation again and obtain higher temperature.
 
 
 .. image:: img/temperature_evolution2.png
 
-We note also that there is less temperature gradient. We have the temperature distribution for the whole cells. Let us
-plot it for the last time step. To do so we run
+We note also that there is less temperature gradient. We have the temperature distribution for all the cells in the model. Let us plot it for the last time step. To do so we run
 
 .. code:: matlab
           
