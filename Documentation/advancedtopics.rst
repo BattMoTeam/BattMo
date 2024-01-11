@@ -10,13 +10,15 @@ Advanced Usage
    controlinput
    soliddiffusion
    parsets
+   units
    thermal
    optimisation
    
-* :ref:`The battery simulation model<modelinitialisation:The Battery Simulation Model>`
+* :ref:`The Battery Simulation Model<modelinitialisation:The Battery Simulation Model>`
 * :ref:`Control models <controlinput:Control models>`
 * :ref:`Solid diffusion models <soliddiffusion:Solid Diffusion Models>`
 * :ref:`Parameter sets <parsets:Parameter sets>`
+* :ref:`Units <units:Units>`
 * :ref:`Thermal simulation <thermal:Thermal Simulation>`
-* :ref:`Optimisation <optimisation:Optimisation>`
+* :ref:`Optimisation <optimisation:Optimization>`
   
