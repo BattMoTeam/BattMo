@@ -1,18 +1,17 @@
-function [A, staticprops, resolvedVarNameList, nodenames] = setupGraph(model, varargin)
+function [A, staticprops, resolvedVarNameList, nodenames] = setupGraph2(model, varargin)
     
     opt = struct('resolveIndex', true);
     opt = merge_options(opt, varargin{:});
     
-    g = digraph();
-    
-    ss = {}; % source nodes
-    ts = {}; % target nodes
-    fs = {}; % edge function name
-    ps = {}; % property function index in property list
+    ss = []; % source nodes
+    ts = []; % target nodes
+    fs = []; % edge function name
+    ps = []; % property function index in property list
     
     varnames  = model.varNameList;
     propfuncs = model.propertyFunctionList;
 
+    nodenames = {};
     resolvedVarNameList = {};
     for ind = 1 : numel(varnames)
         varname = varnames{ind};
@@ -20,24 +19,23 @@ function [A, staticprops, resolvedVarNameList, nodenames] = setupGraph(model, va
             varname_s = varname.resolveIndex();
             for ind = 1 : numel(varname_s)
                 fullname = varname_s{ind}.getIndexedFieldname();
-                g = addnode(g, fullname);
+                nodenames{end + 1} = fullname;
             end
             resolvedVarNameList = horzcat(resolvedVarNameList, varname_s);
         else
             fullname = varname.getFieldname;
-            g = addnode(g, fullname);
+            nodenames{end + 1} = fullname;            
         end
     end
-    
-    nodenames = g.Nodes.Variables;
     
     staticprops = {};
     
     for ipropfunc = 1 : numel(propfuncs)
 
         propfunction = propfuncs{ipropfunc};
+        
         varname = propfunction.varname;
-        m = propfunction.modelnamespace;
+        m       = propfunction.modelnamespace;
 
         inputvarnames = propfunction.inputvarnames;
         
@@ -92,26 +90,37 @@ function [A, staticprops, resolvedVarNameList, nodenames] = setupGraph(model, va
             end
             
         else
+
+            [~, indv] = ismember(fullvarnames, nodenames);
+            [~, indi] = ismember(fullinputvarnames, nodenames);
+
+            clear sourcetbl
+            sourcetbl.source = indi';
+            sourcetbl = IndexArray(sourcetbl);
+            clear targettbl
+            targettbl.target = indv';
+            targettbl = IndexArray(targettbl);
             
-            indv = rldecode((1 : nv)', ni*ones(nv, 1))';
-            indi = repmat((1 : ni), 1, nv);
+            sourcetargettbl = crossIndexArray(sourcetbl, targettbl, {});
+            sourcetargettbl = sortIndexArray(sourcetargettbl, {'source', 'target'});
             
-            s = fullinputvarnames(indi);
-            t = fullvarnames(indv);
-            p = repmat({ipropfunc}, 1, nv*ni);
+            s = sourcetargettbl.get('source');
+            t = sourcetargettbl.get('target');
+
+            p = repmat(ipropfunc, nv*ni, 1);
             
-            ss = horzcat(ss, s);
-            ts = horzcat(ts, t);
-            ps = horzcat(ps, p);
+            ss = vertcat(ss, s);
+            ts = vertcat(ts, t);
+            ps = vertcat(ps, p);
             
         end
         
     end
-    
-    g = addedge(g, ss, ts, [ps{:}]);
 
-    A = adjacency(g, 'weighted');
-    nodenames = g.Nodes.Variables;
+    n = numel(nodenames);
+    
+    A = sparse(ss, ts, ps, n, n);
+    
 end
 
 
