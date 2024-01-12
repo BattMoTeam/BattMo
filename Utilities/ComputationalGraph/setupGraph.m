@@ -1,4 +1,4 @@
-function [g, staticprops, resVarNameList] = setupGraph(model, varargin)
+function [A, staticprops, resolvedVarNameList, nodenames] = setupGraph(model, varargin)
     
     opt = struct('resolveIndex', true);
     opt = merge_options(opt, varargin{:});
@@ -8,13 +8,12 @@ function [g, staticprops, resVarNameList] = setupGraph(model, varargin)
     ss = {}; % source nodes
     ts = {}; % target nodes
     fs = {}; % edge function name
-    ms = {}; % edge model name    
     ps = {}; % property function index in property list
     
     varnames  = model.varNameList;
     propfuncs = model.propertyFunctionList;
 
-    resVarNameList = {};
+    resolvedVarNameList = {};
     for ind = 1 : numel(varnames)
         varname = varnames{ind};
         if opt.resolveIndex
@@ -23,7 +22,7 @@ function [g, staticprops, resVarNameList] = setupGraph(model, varargin)
                 fullname = varname_s{ind}.getIndexedFieldname();
                 g = addnode(g, fullname);
             end
-            resVarNameList = horzcat(resVarNameList, varname_s);
+            resolvedVarNameList = horzcat(resolvedVarNameList, varname_s);
         else
             fullname = varname.getFieldname;
             g = addnode(g, fullname);
@@ -40,12 +39,6 @@ function [g, staticprops, resVarNameList] = setupGraph(model, varargin)
         varname = propfunction.varname;
         m = propfunction.modelnamespace;
 
-        if isempty(propfunction.fn)
-            f = 'staticUpdate';
-        else
-            f = func2str(propfunction.fn);
-        end
-        
         inputvarnames = propfunction.inputvarnames;
         
         fullinputvarnames = {};
@@ -90,33 +83,35 @@ function [g, staticprops, resVarNameList] = setupGraph(model, varargin)
         end
         
         if ni == 0
+            
             staticprop.propind = ipropfunc;
             for inv = 1 : nv
                 nodename = fullvarnames{inv};
                 staticprop.nodename = nodename;
                 staticprops{end + 1} = staticprop;
             end
+            
         else
+            
             indv = rldecode((1 : nv)', ni*ones(nv, 1))';
             indi = repmat((1 : ni), 1, nv);
             
             s = fullinputvarnames(indi);
             t = fullvarnames(indv);
-            f = repmat({f}, 1, nv*ni);
-            m = repmat({m}, 1, nv*ni);
             p = repmat({ipropfunc}, 1, nv*ni);
             
             ss = horzcat(ss, s);
             ts = horzcat(ts, t);
-            fs = horzcat(fs, f);
             ps = horzcat(ps, p);
-            ms = horzcat(ms, m);
+            
         end
         
     end
     
     g = addedge(g, ss, ts, [ps{:}]);
-    
+
+    A = adjacency(g, 'weighted');
+    nodenames = g.Nodes.Variables;
 end
 
 

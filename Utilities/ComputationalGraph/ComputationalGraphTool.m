@@ -32,17 +32,17 @@ classdef ComputationalGraphTool
                 model = model.registerVarAndPropfuncNames();
             end
             cgt.model = model;
-            [g, staticprops, varNameList] = setupGraph(model);
+            [A, staticprops, varNameList, nodenames] = setupGraph(model);
+            
             % In adjacency matrix A, 
             % - column index      : output variable index (as in cgt.varNameList)
             % - row index         : input variable (as in cgt.varNameList)
             % - coefficient value : property function index as in model.propertyFunctionList
-            A = adjacency(g, 'weighted');
 
             cgt.adjencyMatrix = A;
-            cgt.varNameList = varNameList;
-            cgt.nodenames   = g.Nodes.Variables;
-            cgt.staticprops = staticprops;
+            cgt.varNameList   = varNameList;
+            cgt.nodenames     = nodenames;
+            cgt.staticprops   = staticprops;
             cgt.isok        = false;
             if size(A, 1) == numel(varNameList)
                 try
