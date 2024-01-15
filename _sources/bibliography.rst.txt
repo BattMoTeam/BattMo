@@ -1,0 +1,6 @@
+===============
+Reference lists
+===============
+
+.. bibliography::
+   :all:
