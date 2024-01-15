@@ -1,6 +1,6 @@
-========================================================================
- BattMo is framework for continuum modelling of electrochemical devices.
-========================================================================
+==========================================================================
+ BattMo is a framework for continuum modelling of electrochemical devices.
+==========================================================================
 
 .. image:: https://zenodo.org/badge/410005581.svg
    :target: https://zenodo.org/badge/latestdoi/410005581
