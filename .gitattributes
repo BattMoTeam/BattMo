@@ -1,8 +1,5 @@
 *.mat filter=lfs diff=lfs merge=lfs -text
-*.png filter=lfs diff=lfs merge=lfs -text
 *.pdf filter=lfs diff=lfs merge=lfs -text
-
-Documentation/**/*.png filter= diff= merge= text
 
 *.mlx binary
 *.ipynb binary
