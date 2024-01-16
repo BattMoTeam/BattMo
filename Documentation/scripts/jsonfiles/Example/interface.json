@@ -1,0 +1,20 @@
+{
+
+  "saturationConcentration": 30555,
+  "numberOfElectronsTransferred": 1,
+  "volumetricSurfaceArea": 723600,
+  "activationEnergyOfReaction": 5000,
+  "reactionRateConstant": 5.031e-11,
+  "guestStoichiometry100": 0.88551,
+  "guestStoichiometry0": 0.1429,
+  "chargeTransferCoefficient": 0.5,
+  "openCircuitPotential": {
+    "type": "function",
+    "functionname": "computeOCP_graphite",
+    "argumentlist": [
+      "concentration",
+      "temperature",
+      "cmax"
+    ]
+
+  }

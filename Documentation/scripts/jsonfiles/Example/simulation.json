@@ -1,0 +1,11 @@
+{
+  "isFile" : true,
+  "filenames": ["modelspecification.json",
+                "battery.json",
+                "controlmodel.json",
+                "geometry.json",
+                "stateinitialization.json",
+                "timestepping.json",
+                "solver.json",
+                "output.json"]
+}

@@ -1,0 +1,5 @@
+{
+
+  "include_current_collectors": true
+  "use_thermal": true
+}

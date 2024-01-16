@@ -1,0 +1,47 @@
+{
+  "Geometry": {
+    "case": "3D-demo",
+    "width": 0.01,
+    "height": 0.02,
+    "Nw": 10,
+    "Nh": 10
+  },
+  "NegativeElectrode": {
+    "Coating": {
+      "thickness": 0.0001,
+      "N": 3,
+      "ActiveMaterial": {
+        "SolidDiffusion": {
+          "N": 10 }}},
+    "CurrentCollector": {
+      "thickness": 1e-05,
+      "N": 2,
+      "tab": {
+        "width": 0.004,
+        "height": 0.001,
+        "Nw": 3,
+        "Nh": 3 }}},
+  "PositiveElectrode": {
+    "Coating": {
+      "thickness": 8e-05,
+      "N": 3,
+      "ActiveMaterial": {
+        "SolidDiffusion": {
+          "N": 10
+        }}},
+    "CurrentCollector": {
+      "thickness": 1e-05,
+      "N": 2,
+      "tab": {
+        "width": 0.004,
+        "height": 0.001,
+        "Nw": 3,
+        "Nh": 3}}},
+  "Separator": {
+    "thickness": 5e-05,
+    "N": 3 },
+  "ThermalModel": {
+    "externalHeatTransferCoefficientTab": 1000,
+    "externalHeatTransferCoefficient": 100
+  }
+}
