@@ -995,12 +995,14 @@ classdef Battery < BaseModel
 
             % By doing this linear transformation, we remove the direct dependency of the mass conservation equation with
             % respect to the potential gradien. Only the concentration gradient remains in the equation. This is a special
-            % property when the transferance t is a constant.
+            % property when the transference t is a constant.
 
             mieq = ei.(Battery.varToStr({'elyte', 'massCons'}));
             cieq = ei.(Battery.varToStr({'elyte', 'chargeCons'}));
 
-            eqs{mieq} = eqs{mieq} - model.(elyte).sp.t(1)*eqs{cieq};
+            t = model.Electrolyte.species.transferenceNumber;
+            
+            eqs{mieq} = eqs{mieq} - t*eqs{cieq};
 
             names       = model.equationNames;
             types       = model.equationTypes;
@@ -1075,6 +1077,9 @@ classdef Battery < BaseModel
 
             F = battery.con.F;
 
+            sp = battery.Electrolyte.species;
+            z = sp.chargeNumber;
+            
             couplingterms = battery.couplingTerms;
 
             elyte_e_source = zeros(battery.(elyte).G.cells.num, 1);
@@ -1111,7 +1116,7 @@ classdef Battery < BaseModel
             elytecells = coupterm.couplingcells(:, 2);
             elyte_e_source(elytecells) = -pe_esource;
 
-            elyte_c_source = elyte_e_source./(battery.(elyte).sp.z(1)*F);
+            elyte_c_source = elyte_e_source./(z*F);
 
             state.Electrolyte.eSource    = elyte_e_source;
             state.Electrolyte.massSource = elyte_c_source;

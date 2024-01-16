@@ -4,9 +4,8 @@ classdef ElectrolyteInputParams < ComponentInputParams
 %
     properties
 
-        compnames % Names of the components in the electrolyte
-        sp % Structure given properties of each component
-
+        species % Structure given properties of the main ion (Lithium)
+        
         %% Standard parameters
 
         density              % the mass density of the material (symbol: rho)

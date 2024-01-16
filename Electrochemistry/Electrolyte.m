@@ -6,9 +6,9 @@ classdef Electrolyte < BaseModel
         %% Input parameters
         
         % Standard parameters
-        sp % Structure with following fields
-           % - z : charge number
-           % - t : transference number
+        species % Structure with following fields
+                % - chargeNumber : charge number
+                % - transferenceNumber : transference number
 
         density              % the mass density of the material (symbol: rho)
         ionicConductivity    % a function to determine the ionic conductivity of the electrolyte under given conditions (symbol: kappa)
@@ -26,8 +26,6 @@ classdef Electrolyte < BaseModel
         %%  helper properties
         
         constants
-        compnames
-        ncomp
         computeConductivityFunc
         computeDiffusionCoefficientFunc
         use_thermal
@@ -42,8 +40,7 @@ classdef Electrolyte < BaseModel
             model = model@BaseModel();
 
             fdnames = {'G'                              , ...
-                       'sp'                             , ...
-                       'compnames'                      , ...
+                       'species'                        , ...
                        'density'                        , ...
                        'ionicConductivity'              , ...
                        'diffusionCoefficient'           , ...
@@ -59,8 +56,6 @@ classdef Electrolyte < BaseModel
 
             model.computeConductivityFunc         = str2func(inputparams.ionicConductivity.functionname);
             model.computeDiffusionCoefficientFunc = str2func(inputparams.diffusionCoefficient.functionname);
-
-            model.ncomp = numel(model.compnames);
 
             model.constants = PhysicalConstants();
 
@@ -259,8 +254,6 @@ classdef Electrolyte < BaseModel
 
         function state = updateDmuDcs(model, state)
 
-            ncomp = model.ncomp; % number of components
-
             c   = state.c;   % concentration of Li+
             T   = state.T;   % temperature
             phi = state.phi; % potential
@@ -268,7 +261,10 @@ classdef Electrolyte < BaseModel
             % calculate the concentration derivative of the chemical potential for each species in the electrolyte
             % In the case of a binary electrolyte, we could have simplified those expressions.
             R = model.constants.R;
-            dmudcs = cell(2, 1);
+
+            % We consider only binary electrolytes with two components.
+            ncomp = 2; 
+            dmudcs = cell(ncomp, 1);
             for ind = 1 : ncomp
                 dmudcs{ind} = R .* T ./ c;
             end
@@ -303,8 +299,10 @@ classdef Electrolyte < BaseModel
 
             bg      = model.bruggemanCoefficient;
             con     = model.constants;
-            sp      = model.sp;
+            sp      = model.species;
             volfrac = model.volumeFraction;
+
+            t = sp.transferenceNumber;
             
             dmudcs       = state.dmudcs;
             phi          = state.phi;
@@ -319,7 +317,7 @@ classdef Electrolyte < BaseModel
             j = assembleFlux(model, phi, conductivityeff);
 
             sum_dmudc = dmudcs{1} + dmudcs{2};
-            coef = (1/con.F)*(1 - sp.t(1))*conductivityeff.*sum_dmudc;
+            coef = (1/con.F)*(1 - t)*conductivityeff.*sum_dmudc;
             jchem = assembleFlux(model, c, coef);
 
             j = j - jchem;
@@ -331,7 +329,10 @@ classdef Electrolyte < BaseModel
         function state = updateMassFlux(model, state)
 
 
-            sp = model.sp;
+            sp = model.species;
+
+            t = sp.transferenceNumber;
+            z = sp.chargeNumber;
 
             % We assume that the current and the diffusion coefficient D has been updated when this function is called
             c = state.c;
@@ -344,7 +345,7 @@ classdef Electrolyte < BaseModel
 
             %% 2. Flux from electrical forces
             F = model.constants.F;
-            fluxE = sp.t ./ (sp.z .* F) .* j;
+            fluxE = t ./ (z .* F) .* j;
 
             %% 3. Sum the two flux contributions
             flux = diffFlux + fluxE;
