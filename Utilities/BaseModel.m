@@ -562,8 +562,7 @@ classdef BaseModel < PhysicalModel
                 end
             end
             
-            funcCall = join(funcCallList, '');
-            funcCall = funcCall{1};
+            funcCall = strjoin(funcCallList, '');
             eval(funcCall);
             
         end

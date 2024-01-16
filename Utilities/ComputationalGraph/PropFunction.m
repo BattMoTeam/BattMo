@@ -55,9 +55,8 @@ classdef PropFunction
             
             fn = propfunction.fn;
             nmstr = propfunction.modelnamespace;
-            nmstr = join(nmstr, '.');
+            nmstr = strjoin(nmstr, '.');
             if ~isempty(nmstr)
-                nmstr = nmstr{1};
                 statestr = sprintf('state.%s', nmstr);
             else
                 statestr = 'state';
@@ -66,8 +65,7 @@ classdef PropFunction
             funcstr = regexp(funcstr, "\.([^.]*)$", 'tokens');
             funcstr = funcstr{1}{1};
             funcstr = horzcat(nmstr, {funcstr});
-            funcstr = join(funcstr, '.');
-            funcstr = funcstr{1};
+            funcstr = strjoin(funcstr, '.');
             funcstr = sprintf('model.%s', funcstr);
             
         end

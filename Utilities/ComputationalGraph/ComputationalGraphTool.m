@@ -430,14 +430,12 @@ classdef ComputationalGraphTool
 
             fn = propfunc.fn;
             mn = propfunc.modelnamespace;
-            mn = join(mn, '.');
+            mn = strjoin(mn, '.');
             fnname = func2str(fn);
             fnname = regexp(fnname, "\.(.*)", 'tokens');
             fnname = fnname{1}{1};
             fnname = sprintf('%s([])', fnname);
-            fnname = horzcat(mn, {fnname});
-            fnname = join(fnname, '.');
-            fnname = fnname{1};
+            fnname = strjoin({mn, fnname}, '.');
             fnname = sprintf('cgt.model.%s', fnname);
 
             try
@@ -499,8 +497,8 @@ classdef ComputationalGraphTool
                         fullname = varname_s{ind}.getIndexedFieldname();
                         outputvarstrs{end + 1} = sprintf('state.%s', fullname);
                     end
-                    outputvarstr = join(outputvarstrs, {', '});
-                    fprintf('%s <-', outputvarstr{1});
+                    outputvarstr = strjoin(outputvarstrs, {', '});
+                    fprintf('%s <-', outputvarstr);
                     fprintf(' (%s) ', fncallstr);
                     inputvarnames = propfunc.inputvarnames;
                     if isempty(inputvarnames)
@@ -512,8 +510,8 @@ classdef ComputationalGraphTool
                             varname = inputvarnames{ind};
                             inputvarstrs{end + 1} = sprintf('state.%s', varname.getFieldname());
                         end
-                        inputvarstr = join(inputvarstrs, {', '});
-                        fprintf('[%s]\n', inputvarstr{1});
+                        inputvarstr = strjoin(inputvarstrs, {', '});
+                        fprintf('[%s]\n', inputvarstr);
                     end
                 end
             end

@@ -78,9 +78,8 @@ for ind = 1 : numel(p)
         propfunction = model.propertyFunctionList{iprop};
         fn = propfunction.fn;
         mn = propfunction.modelnamespace;
-        mn = join(mn, '.');
+        mn = strjoin(mn, '.');
         if ~isempty(mn)
-            mn = mn{1};
             statename = sprintf('state.%s', mn);
         else
             statename = 'state';
@@ -89,8 +88,7 @@ for ind = 1 : numel(p)
         fnname = regexp(fnname, "\.(.*)", 'tokens');
         fnname = fnname{1}{1};
         fnname = horzcat(mn, {fnname});
-        fnname = join(fnname, '.');
-        fnname = fnname{1};
+        fnname = strjoin(fnname, '.');
 
         funcCallList{end + 1} = sprintf('%s = model.%s(%s);', statename, fnname, statename);
     end
