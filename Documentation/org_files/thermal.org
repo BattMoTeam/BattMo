@@ -1,4 +1,0 @@
-#+TITLE: Thermal model
-#+AUTHOR:
-#+OPTIONS: num:nil toc:nil
-#+EXPORT_FILE_NAME: ../thermal

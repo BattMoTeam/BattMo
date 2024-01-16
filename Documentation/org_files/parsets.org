@@ -1,9 +1,0 @@
-#+TITLE: Parameter sets
-#+AUTHOR:
-#+OPTIONS: num:nil toc:nil
-#+EXPORT_FILE_NAME: ../parsets
-* Chen 2020
-
-* Safari 2009
-
-* Lin 2015

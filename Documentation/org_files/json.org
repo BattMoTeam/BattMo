@@ -1,5 +1,0 @@
-#+TITLE: Json input
-#+AUTHOR:
-#+OPTIONS: num:nil toc:nil
-#+EXPORT_FILE_NAME: ../json
-
