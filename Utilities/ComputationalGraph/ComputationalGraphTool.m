@@ -8,6 +8,9 @@ classdef ComputationalGraphTool
     
     properties
         adjencyMatrix    % Adjency matrix for the computational graph
+                         % - column index      : output variable index (as in cgt.varNameList)
+                         % - row index         : input variable (as in cgt.varNameList)
+                         % - coefficient value : property function index as in model.propertyFunctionList
         varNameList      % List of variable names (object of class VarName).
                          % They have been processed model.varNameList so that there exist separate entries for each index in the case of variable names with indices.
         nodenames        % The node names in the graph are unique string representations of the variable names in varNameList.
@@ -173,7 +176,7 @@ classdef ComputationalGraphTool
 
         function [propfuncs, propfuncinds, varnameinds] = getPropFunctionList(cgt, propfunc)
 
-        % Get the list of property functions and the corresponding indices (with respecto to
+        % Get the list of property functions and the corresponding indices (with respect to
         % cgt.model.propertyFunctionList) that should be call so that the variable of propfunc get updated.
             
             A           = cgt.adjencyMatrix;
@@ -248,11 +251,11 @@ classdef ComputationalGraphTool
         % setup the list of function call (as list of cell of strings) that will be run to update the property function propfunc.
 
             if isa(propfunc, 'PropFunction')
-                [propfuncs, ~, varnameinds] = cgt.getPropFunctionList(propfunc);
+                propfuncs = cgt.getPropFunctionList(propfunc);
             elseif isa(propfunc, 'VarName')
                 % We set up a propfunction with onlyt the varname
                 propfunc = PropFunction(propfunc, [], [], []);
-                [propfuncs, ~, varnameinds] = cgt.getPropFunctionList(propfunc);                
+                propfuncs = cgt.getPropFunctionList(propfunc);                
             else
                 
                 varname = propfunc;
@@ -261,11 +264,9 @@ classdef ComputationalGraphTool
                     selectedpropfuncs = {selectedpropfuncs};
                 end
                 propfuncs   = {};
-                varnameinds = [];
                 for isel = 1 : numel(selectedpropfuncs)
-                    [deppropfuncs, ~, depvarnameinds] = cgt.getPropFunctionList(selectedpropfuncs{isel});
+                    deppropfuncs = cgt.getPropFunctionList(selectedpropfuncs{isel});
                     propfuncs   = horzcat(propfuncs, deppropfuncs);
-                    varnameinds = vertcat(varnameinds, depvarnameinds);
                 end
             end
             
