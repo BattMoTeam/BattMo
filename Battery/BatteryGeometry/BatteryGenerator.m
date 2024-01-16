@@ -1,5 +1,5 @@
 classdef BatteryGenerator
-% Base class that add grids and coupling terms to a inputparams instance of BatteryInputParams (through method 
+% Base class that add grids and coupling terms to a inputparams instance of BatteryInputParams (through method
 % updateBatteryInputParams)
 %
 % This class goes through the whole grid setup and is meant to be used as a base class.
@@ -7,38 +7,37 @@ classdef BatteryGenerator
 % Example : :class:`BatteryGeneratorP2D <BatteryGeometry.BatteryGeneratorP2D>`, :class:`BatteryGeneratorP3D <BatteryGeometry.BatteryGeneratorP3D>`, :class:`BatteryGeneratorP4D <BatteryGeometry.BatteryGeneratorP4D>`
 
     properties
-        % Global grid 
-        % It is stored here because is shared by many setup functions. 
-        % It is constructed by the methode  :meth:`setupGrid`
-        G
-        
+        % Global parent grid
+        % It is stored here because is shared by many setup functions.
+        parentGrid
+
     end
 
     methods
-        
+
         function [inputparams, gen] = updateBatteryInputParams(gen, inputparams, params)
         %
         % This function is the main class function as it returns an updated :code:`inputparams` object with grid structure
         %
-            
+
             error('virtual function');
-            
+
         end
-        
+
         function [inputparams, gen] = setupBatteryInputParams(gen, inputparams, params)
         % This is the main function which should be called by the derived class at the end of the :meth:`updateBatteryInputParams` method
         % The function set up the grid and the coupling terms and add those in the :code:`inputparams` structure which is
         % an instance of :class:`BatteryInputParams <Battery.BatteryInputParams>`
-        % 
-            
+        %
+
             [inputparams, gen] = gen.setupGrid(inputparams, params);
 
             params = pickField(params, 'Electrolyte');
             inputparams.Electrolyte = gen.setupElectrolyte(inputparams.Electrolyte, params);
-            
+
             params = pickField(params, 'Separator');
             inputparams.Separator = gen.setupSeparator(inputparams.Separator, params);
-            
+
             inputparams = gen.setupElectrodes(inputparams, params);
             if gen.use_thermal
                 params_thermal = [];
@@ -53,21 +52,23 @@ classdef BatteryGenerator
         function [inputparams, gen] = setupGrid(gen, inputparams, params)
         % setup :code:`inputparams.G` and update  :attr:`G`
         % Here, :code:`inputparams` is an instance of :class:`BatteryInputParams <Battery.BatteryInputParams>`
-            
+
             error('virtual function');
-            
+
         end
-        
+
         function inputparams = setupThermalModel(gen, inputparams, params)
         % Method that setups the grid and the coupling for the thermal model
-            
-            inputparams.ThermalModel.G = gen.G;
+
+            G = inputparams.G; % the grid for the thermal model is the same as the whole model grid (which is different from parent grid).
             coupTerm = couplingTerm('ThermalConvectiveCooling', {'ThermalModel'});
             coupTerm.couplingcells = params.couplingcells;
             coupTerm.couplingfaces = params.couplingfaces;
             inputparams.ThermalModel.couplingTerm = coupTerm;
+            inputparams.ThermalModel.G = G;
+
         end
-        
+
         function inputparams = setupElectrolyte(gen, inputparams, params)
         % Method that setups the grid and the coupling for the electrolyte model
         % Here, :code:`inputparams` is instance of :class:`ElectrolyteInputParams <Electrochemistry.ElectrolyteInputParams>`
@@ -76,27 +77,27 @@ classdef BatteryGenerator
 
         function inputparams = setupSeparator(gen, inputparams, params)
         % Method that setups the grid for the separator model
-        % Here, :code:`inputparams` is instance of :class:`SeparatorInputParams <Electrochemistry.SeparatorInputParams>`            
+        % Here, :code:`inputparams` is instance of :class:`SeparatorInputParams <Electrochemistry.SeparatorInputParams>`
             inputparams = gen.setupSeparatorGrid(inputparams, params);
         end
 
-        
+
         function inputparams = setupElectrolyteGrid(gen, inputparams, params)
         % Setup the grid for the electrolyte
         % Here, :code:`inputparams` is instance of :class:`ElectrolyteInputParams <Electrochemistry.ElectrolyteInputParams>`
-            
+
             % Default setup
-            inputparams.G = genSubGrid(gen.G, params.cellind);
-            
+            inputparams.G = genSubGrid(gen.parentGrid, params.cellind);
+
         end
-        
+
         function inputparams = setupSeparatorGrid(gen, inputparams, params)
         % Setup the grid for the separator
         % Here, :code:`inputparams` is instance of :class:`BatteryInputParams <Battery.BatteryInputParams>`
-            
+
            % Default setup
-            inputparams.G = genSubGrid(gen.G, params.cellind);
-            
+            inputparams.G = genSubGrid(gen.parentGrid, params.cellind);
+
         end
 
         function inputparams = setupElectrodes(gen, inputparams, params)
@@ -109,23 +110,23 @@ classdef BatteryGenerator
             % then simplify setup)
             params.(ne).electrode_type = ne;
             params.(pe).electrode_type = pe;
-            
+
             % setup Negative Electrode
             inputparams.(ne) = gen.setupElectrode(inputparams.(ne), params.(ne));
             % setup Positive Electrode
             inputparams.(pe) = gen.setupElectrode(inputparams.(pe), params.(pe));
 
-            
+
         end
-                
+
         function inputparams = setupElectrode(gen, inputparams, params)
         % Method that setups the grid and the coupling terms for an electrode
         % Here, :code:`inputparams` is instance of :class:`ElectrodeInputParams <Electrochemistry.ElectrodeInputParams>`
-            
-            % shorthands 
+
+            % shorthands
             co = 'Coating';
             cc = 'CurrentCollector';
-            
+
             % setup Electrode grid
             inputparams = gen.setupElectrodeGrid(inputparams, params);
             % setup Electrode coating component (co)
@@ -141,94 +142,81 @@ classdef BatteryGenerator
             else
                 inputparams.(co) = gen.setupCoatingBcCoupTerm(inputparams.(co), params.(co));
             end
-            
+
         end
-        
+
         function inputparams = setupElectrodeGrid(gen, inputparams, params)
         % Setup the grid for an electrode
         % Here, :code:`inputparams` is instance of :class:`ElectrodeInputParams <Electrochemistry.ElectrodeInputParams>`
-            
-            inputparams.G = genSubGrid(gen.G, params.cellind);
+
+            inputparams.G = genSubGrid(gen.parentGrid, params.cellind);
+
         end
 
         function inputparams = setupCoatingGrid(gen, inputparams, params)
         % Setup the grid for the active material
         % Here, :code:`inputparams` is instance of :class:`CoatingInputParams <Electrochemistry.CoatingInputParams>`
-            
-            inputparams.G = genSubGrid(gen.G, params.cellind);
+
+            inputparams.G = genSubGrid(gen.parentGrid, params.cellind);
 
         end
-        
+
         function inputparams = setupCurrentCollector(gen, inputparams, params)
         % Method that setups the grid and coupling terms for the current collectors
         % Here, :code:`inputparams` is instance of :class:`CurrentCollectorInputParams <Electrochemistry.CurrentCollectorInputParams>`
 
             inputparams = gen.setupCurrentCollectorGrid(inputparams, params);
             inputparams = gen.setupCurrentCollectorBcCoupTerm(inputparams, params);
-            
+
         end
 
         function inputparams = setupCurrentCollectorGrid(gen, inputparams, params)
         % Setup a grid for a current collector
         % Here, :code:`inputparams` is instance of :class:`CurrentCollectorInputParams <Electrochemistry.CurrentCollectorInputParams>`
 
-            inputparams.G = genSubGrid(gen.G, params.cellind);
-            
-        end       
+            inputparams.G = genSubGrid(gen.parentGrid, params.cellind);
+
+        end
 
         function inputparams = setupElectrodeElectrolyteCoupTerm(gen, inputparams, params)
         % Setup the coupling terms between the electrode and electrolyte
         % Here, :code:`inputparams` is instance of :class:`BatteryInputParams <Battery.BatteryInputParams>`
-            
+
             ne    = 'NegativeElectrode';
             pe    = 'PositiveElectrode';
             elyte = 'Electrolyte';
             co    = 'Coating';
-            
+
             couplingTerms = {};
-            
+
             G_ne = inputparams.(ne).(co).G;
             G_elyte = inputparams.(elyte).G;
-            
-            % parent Grid
-            G = G_ne.mappings.parentGrid;
-            
+
             % All the cells from NegativeElectrode are coupled with Electrolyte
-            cells1 = (1 : G_ne.cells.num)';
-            pcells = G_ne.mappings.cellmap(cells1);
-            
-            mapping = zeros(G.cells.num, 1);
-            mapping(G_elyte.mappings.cellmap) = (1 : G_elyte.cells.num)';
-            cells2 = mapping(pcells);
-            
+            cells1 = (1 : G_ne.getNumberOfCells())';
+            cells2 = G_elyte.mappings.invcellmap(G_ne.mappings.cellmap(cells1));
+
             compnames = {'NegativeElectrode', 'Electrolyte'};
             coupTerm = couplingTerm('NegativeElectrode-Electrolyte', compnames);
             coupTerm.couplingcells =  [cells1, cells2];
             coupTerm.couplingfaces = []; % no coupling throug faces. We set it as empty
-            
+
             couplingTerms{end + 1} = coupTerm;
-            
+
             G_pe = inputparams.(pe).(co).G;
             G_elyte = inputparams.(elyte).G;
-            
-            % parent Grid
-            G = G_pe.mappings.parentGrid;
-            
+
             % All the cells from PositiveElectrode are coupled with Electrolyte
-            cells1 = (1 : G_pe.cells.num)';
-            pcells = G_pe.mappings.cellmap(cells1);
-            
-            mapping = zeros(G.cells.num, 1);
-            mapping(G_elyte.mappings.cellmap) = (1 : G_elyte.cells.num)';
-            cells2 = mapping(pcells);
-            
+            cells1 = (1 : G_pe.getNumberOfCells())';
+            cells2 = G_elyte.mappings.invcellmap(G_pe.mappings.cellmap(cells1));
+
             compnames = {'PositiveElectrode', 'Electrolyte'};
             coupTerm = couplingTerm('PositiveElectrode-Electrolyte', compnames);
             coupTerm.couplingcells =  [cells1, cells2];
             coupTerm.couplingfaces = []; % no coupling throug faces. We set it as empty
-            
+
             couplingTerms{end + 1} = coupTerm;
-            
+
             inputparams.couplingTerms = couplingTerms;
 
         end
@@ -239,18 +227,18 @@ classdef BatteryGenerator
 
             co = 'Coating';
             cc = 'CurrentCollector';
-            
+
             compnames = {'CurrentCollector', 'Coating'};
             coupTerm = couplingTerm('CurrentCollector-Coating', compnames);
-            
+
             G_am = inputparams.(co).G;
             G_cc = inputparams.(cc).G;
-            
+
             cctbl.faces = (1 : G_cc.faces.num)';
             cctbl.globfaces = G_cc.mappings.facemap;
             cctbl = IndexArray(cctbl);
-            
-            
+
+
             eactbl.faces = (1 : G_am.faces.num)';
             eactbl.globfaces = G_am.mappings.facemap;
             eactbl = IndexArray(eactbl);
@@ -262,36 +250,36 @@ classdef BatteryGenerator
             gen.replacefds2 = {{'faces', 'faces2'}};
             gen.mergefds = {'globfaces'};
             tbl = gen.eval();
-            
+
             cc_coupfaces = tbl.get('faces1');
             am_coupfaces = tbl.get('faces2');
-            
+
             cc_coupcells = sum(G_cc.faces.neighbors(cc_coupfaces, :), 2);
             am_coupcells = sum(G_am.faces.neighbors(am_coupfaces, :), 2);
-            
+
             coupTerm.couplingfaces = [cc_coupfaces, am_coupfaces];
             coupTerm.couplingcells = [cc_coupcells, am_coupcells];
-            
+
             inputparams.couplingTerm = coupTerm;
-            
+
         end
 
         function inputparams = setupCurrentCollectorBcCoupTerm(gen, inputparams, params)
         % Setup the boundary locations for the current collector
-            
+
             % default setup
             compnames = {'CurrentCollector'};
             coupTerm = couplingTerm('bc-CurrentCollector', compnames);
             coupTerm.couplingfaces = params.bcfaces;
             coupTerm.couplingcells = params.bccells;
-            
+
             inputparams.externalCouplingTerm = coupTerm;
-            
+
         end
 
         function inputparams = setupCoatingBcCoupTerm(gen, inputparams, params)
         % Setup the boundary locations for the active material (used in the absence of current collectors)
-            
+
             % default setup
             compname = 'Coating';
             compnames = {compname};
@@ -299,14 +287,14 @@ classdef BatteryGenerator
             coupTerm = couplingTerm(coupname, compnames);
             coupTerm.couplingfaces = params.bcfaces;
             coupTerm.couplingcells = params.bccells;
-            
+
             inputparams.externalCouplingTerm = coupTerm;
-            
-        end        
+
+        end
 
     end
-    
-    
+
+
 end
 
 

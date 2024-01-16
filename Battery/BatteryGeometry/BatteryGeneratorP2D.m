@@ -47,32 +47,37 @@ classdef BatteryGeneratorP2D < BatteryGenerator
             gen.use_thermal = inputparams.use_thermal;
             inputparams = gen.setupBatteryInputParams(inputparams, []);
 
-            % We define some shorthand names for simplicity.
-            ne      = 'NegativeElectrode';
-            pe      = 'PositiveElectrode';
-            elyte   = 'Electrolyte';
-            sep     = 'Separator';
-            thermal = 'ThermalModel';
-            co      = 'Coating';
-            cc      = 'CurrentCollector';
+            % fixme
+%             % We define some shorthand names for simplicity.
+%             ne      = 'NegativeElectrode';
+%             pe      = 'PositiveElectrode';
+%             elyte   = 'Electrolyte';
+%             sep     = 'Separator';
+%             thermal = 'ThermalModel';
+%             co      = 'Coating';
+%             cc      = 'CurrentCollector';
 
-            % we update all the grids to adjust grid to faceArea
-            inputparams.G         = gen.adjustGridToFaceArea(inputparams.G);
-            inputparams.(elyte).G = gen.adjustGridToFaceArea(inputparams.(elyte).G);
-            inputparams.(sep).G   = gen.adjustGridToFaceArea(inputparams.(sep).G);
+%             % we update all the grids to adjust grid to faceArea
 
-            eldes = {ne, pe};
-            for ielde = 1 : numel(eldes)
-                elde = eldes{ielde};
-                inputparams.(elde).(co).G = gen.adjustGridToFaceArea(inputparams.(elde).(co).G);
-                if gen.include_current_collectors
-                    inputparams.(elde).(cc).G = gen.adjustGridToFaceArea(inputparams.(elde).(cc).G);
-                end
-            end
+% % do this with parent grid
+% keyboard
 
-            if gen.use_thermal
-                inputparams.(thermal).G = gen.adjustGridToFaceArea(inputparams.(thermal).G);
-            end
+%             inputparams.G         = gen.adjustGridToFaceArea(inputparams.G);
+%             inputparams.(elyte).G = gen.adjustGridToFaceArea(inputparams.(elyte).G);
+%             inputparams.(sep).G   = gen.adjustGridToFaceArea(inputparams.(sep).G);
+
+%             eldes = {ne, pe};
+%             for ielde = 1 : numel(eldes)
+%                 elde = eldes{ielde};
+%                 inputparams.(elde).(co).G = gen.adjustGridToFaceArea(inputparams.(elde).(co).G);
+%                 if gen.include_current_collectors
+%                     inputparams.(elde).(cc).G = gen.adjustGridToFaceArea(inputparams.(elde).(cc).G);
+%                 end
+%             end
+
+%             if gen.use_thermal
+%                 inputparams.(thermal).G = gen.adjustGridToFaceArea(inputparams.(thermal).G);
+%             end
 
         end
 
@@ -98,10 +103,13 @@ classdef BatteryGeneratorP2D < BatteryGenerator
             x = [0; cumsum(x)];
 
             G = tensorGrid(x);
-            G = computeGeometry(G);
 
-            inputparams.G = G;
-            gen.G = G;
+            parentGrid = Grid(G, 'faceArea', gen.faceArea);
+
+            G = genSubGrid(parentGrid, (1 : parentGrid.getNumberOfCells())');
+
+            inputparams.G  = G;
+            gen.parentGrid = parentGrid;
 
         end
 

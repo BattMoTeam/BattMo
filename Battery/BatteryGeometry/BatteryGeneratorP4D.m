@@ -121,6 +121,8 @@ classdef BatteryGeneratorP4D < BatteryGenerator
 
             G = tensorGrid(x, y, z);
 
+            parentGrid = Grid(G);
+            
             nx = sum(nxs);
             ny = sum(nys);
             nz = sum(nzs);
@@ -179,20 +181,12 @@ classdef BatteryGeneratorP4D < BatteryGenerator
 
             cellind = [allparams.(elyte).cellind; allparams.(ne).(co).cellind; allparams.(pe).(co).cellind; allparams.(ne).(cc).cellind; allparams.(pe).(cc).cellind];
 
-            rcellind = setdiff((1 : G.cells.num)', cellind);
+            G = genSubGrid(parentGrid, cellind);
 
-            nGlob = G.cells.num;
-            [G, cellmap, facemap, nodemap] = removeCells(G, rcellind);
-            invcellmap = zeros(nGlob, 1);
-            invcellmap(cellmap) = (1 : G.cells.num)';
+            paramobj.G = G;
 
-            G = computeGeometry(G);
-
-            inputparams.G = G;
-
-            gen.invcellmap = invcellmap;
             gen.allparams = allparams;
-            gen.G = G;
+            gen.parentGrid = parentGrid;
 
         end
 
@@ -267,7 +261,9 @@ classdef BatteryGeneratorP4D < BatteryGenerator
 
         function inputparams = setupCurrentCollectorBcCoupTerm(gen, inputparams, params)
 
-            G = inputparams.G;
+            G = paramobj.G;
+            G = G.getMRSTgrid();
+            
             yf = G.faces.centroids(:, 2);
 
             switch params.name
@@ -291,27 +287,34 @@ classdef BatteryGeneratorP4D < BatteryGenerator
             cc    = 'CurrentCollector';
 
             % the cooling is done on the external faces
-            G = gen.G;
-            extfaces = any(G.faces.neighbors == 0, 2);
+            tp = paramobj.G.topology;
+            extfaces = any(tp.faces.neighbors == 0, 2);
             couplingfaces = find(extfaces);
-            couplingcells = sum(G.faces.neighbors(couplingfaces, :), 2);
+            couplingcells = sum(tp.faces.neighbors(couplingfaces, :), 2);
 
             params = struct('couplingfaces', couplingfaces, ...
                             'couplingcells', couplingcells);
             inputparams = setupThermalModel@BatteryGenerator(gen, inputparams, params);
 
             tabcellinds = [gen.allparams.(pe).(cc).cellindtab; gen.allparams.(ne).(cc).cellindtab];
-            tabtbl.cells = gen.invcellmap(tabcellinds);
+            tabtbl.pcells = tabcellinds;
             tabtbl = IndexArray(tabtbl);
 
-            tbls = setupSimpleTables(G);
-            cellfacetbl = tbls.cellfacetbl;
-
-            tabcellfacetbl = crossIndexArray(tabtbl, cellfacetbl, {'cells'});
-            tabfacetbl = projIndexArray(tabcellfacetbl, {'faces'});
+            tbls = setupTables(gen.parentGrid.topology);
+            pcellpfacetbl = tbls.cellfacetbl;
+            pcellpfacetbl = replacefield(pcellpfacetbl, {{'cells', 'pcells'}, {'faces', 'pfaces'}});
+            tabpcellpfacetbl = crossIndexArray(tabtbl, pcellpfacetbl, {'pcells'});
+            tabpfacetbl = projIndexArray(tabpcellpfacetbl, {'pfaces'});
 
             bcfacetbl.faces = couplingfaces;
             bcfacetbl = IndexArray(bcfacetbl);
+
+            facepfacetbl.faces = (1 : tp.faces.num)';
+            facepfacetbl.pfaces = paramobj.G.mappings.facemap;
+            facepfacetbl = IndexArray(facepfacetbl);
+
+            tabfacepfacetbl = crossIndexArray(facepfacetbl, tabpfacetbl, {'pfaces'});
+            tabfacetbl = projIndexArray(tabfacepfacetbl, {'faces'});
 
             tabbcfacetbl = crossIndexArray(bcfacetbl, tabfacetbl, {'faces'});
 

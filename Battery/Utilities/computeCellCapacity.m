@@ -24,24 +24,24 @@ function [capacity, capacities] = computeCellCapacity(model)
     co  = 'Coating';
     itf = 'Interface';
     sd  = 'SolidDiffusion';
-    
+
     eldes = {ne, pe};
-    
+    cap_usable = cell(1, numel(eldes));
+
     for ielde = 1 : numel(eldes)
-        
+
         elde = eldes{ielde};
 
         switch model.(elde).(co).active_material_type
 
           case 'default'
-            
+
             am  = 'ActiveMaterial';
-            
+
             itfmodel = model.(elde).(co).(am).(itf);
-            
+
             n    = itfmodel.numberOfElectronsTransferred;
             F    = itfmodel.constants.F;
-            G    = itfmodel.G;
             cMax = itfmodel.saturationConcentration;
 
             switch elde
@@ -50,20 +50,19 @@ function [capacity, capacities] = computeCellCapacity(model)
                 thetaMin = itfmodel.guestStoichiometry0;
               case 'PositiveElectrode'
                 thetaMax = itfmodel.guestStoichiometry0;
-                thetaMin = itfmodel.guestStoichiometry100;            
+                thetaMin = itfmodel.guestStoichiometry100;
               otherwise
                 error('Electrode not recognized');
             end
-            
+
             vol_fraction = model.(elde).(co).volumeFraction;
-            
             amind = model.(elde).(co).compInds.(am);
             am_fraction  = model.(elde).(co).volumeFractions(amind);
-            
-            vol = sum(am_fraction*vol_fraction.*model.(elde).(co).G.cells.volumes);
-            
-            cap_usable{ielde} = (thetaMax - thetaMin)*cMax*vol*n*F;
-            
+            vols = model.(elde).(co).G.getVolumes();
+            vol = sum(am_fraction*vol_fraction.*vols);
+
+            cap_usable{ielde} = vol.*(thetaMax - thetaMin)*cMax*n*F;
+
           case 'composite'
 
             am1 = 'ActiveMaterial1';
@@ -72,18 +71,17 @@ function [capacity, capacities] = computeCellCapacity(model)
             ams = {am1, am2};
 
             cap_usable{ielde} = 0;
-            
+
             vol_fraction = model.(elde).(co).volumeFraction;
-            
+
             for iam = 1 : numel(ams)
-                
+
                 amc = ams{iam};
 
                 itfmodel = model.(elde).(co).(amc).(itf);
-                
+
                 n    = itfmodel.numberOfElectronsTransferred;
                 F    = itfmodel.constants.F;
-                G    = itfmodel.G;
                 cMax = itfmodel.saturationConcentration;
 
                 switch elde
@@ -92,29 +90,29 @@ function [capacity, capacities] = computeCellCapacity(model)
                     thetaMin = itfmodel.guestStoichiometry0;
                   case 'PositiveElectrode'
                     thetaMax = itfmodel.guestStoichiometry0;
-                    thetaMin = itfmodel.guestStoichiometry100;            
+                    thetaMin = itfmodel.guestStoichiometry100;
                   otherwise
                     error('Electrode not recognized');
                 end
-                
+
                 amind = model.(elde).(co).compInds.(amc);
-                am_fraction  = model.(elde).(co).volumeFractions(amind);
-                
-                vol = sum(am_fraction*vol_fraction.*model.(elde).(co).G.cells.volumes);
-                
-                cap_usable{ielde} = cap_usable{ielde} + (thetaMax - thetaMin)*cMax*vol*n*F;
+                am_fraction = model.(elde).(co).volumeFractions(amind);
+                vols = model.(elde).(co).G.getVolumes();
+                vol = sum(am_fraction*vol_fraction.*vols);
+
+                cap_usable{ielde} = cap_usable{ielde} + vol.*(thetaMax - thetaMin)*cMax*n*F;
 
             end
-            
+
           otherwise
-            
+
             error('active_material_type not recognized');
-            
+
         end
-           
-        
+
+
     end
-    
+
     capacities.(ne) = cap_usable{1};
     capacities.(pe) = cap_usable{2};
 
@@ -123,7 +121,7 @@ function [capacity, capacities] = computeCellCapacity(model)
     if any(ind)
         capacity(ind) = capacities.(pe)(ind);
     end
-    
+
 end
 
 

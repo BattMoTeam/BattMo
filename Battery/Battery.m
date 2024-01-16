@@ -9,7 +9,7 @@ classdef Battery < BaseModel
 %
     properties
 
-        con = PhysicalConstants();
+        constants = PhysicalConstants();
 
         NegativeElectrode % Negative Electrode Model, instance of :class:`Electrode <Electrochemistry.Electrodes.Electrode>`
         PositiveElectrode % Positive Electrode Model, instance of :class:`Electrode <Electrochemistry.Electrodes.Electrode>`
@@ -62,9 +62,7 @@ classdef Battery < BaseModel
             model.NegativeElectrode = Electrode(inputparams.NegativeElectrode);
             model.PositiveElectrode = Electrode(inputparams.PositiveElectrode);
             model.Separator         = Separator(inputparams.Separator);
-
-            % We setup the electrolyte model (in particular we compute the volume fraction from the other components)
-            model = model.setupElectrolyteModel(inputparams);
+            model.Electrolyte       = Electrolyte(inputparams.Electrolyte);
 
             if model.use_thermal
                 model.ThermalModel = ThermalComponent(inputparams.ThermalModel);
@@ -72,19 +70,15 @@ classdef Battery < BaseModel
 
             model.Control = model.setupControl(inputparams.Control);
 
-            % define shorthands
-            elyte   = 'Electrolyte';
-            ne      = 'NegativeElectrode';
-            pe      = 'PositiveElectrode';
-            am      = 'ActiveMaterial';
-            cc      = 'CurrentCollector';
-            am      = 'ActiveMaterial';
-            itf     = 'Interface';
-            thermal = 'ThermalModel';
+            % Setup the electrolyte model (in particular we compute the volume fraction from the other components)
+            model = model.setupElectrolyteModel(inputparams);
 
             if model.use_thermal
                 % setup Thermal Model by assigning the effective heat capacity and conductivity, which is computed from the sub-models.
                 model = model.setupThermalModel();
+            else
+                % We need the grid for the mappings
+                model.ThermalModel.G = model.G;
             end
 
             % setup couplingNames
@@ -582,40 +576,42 @@ classdef Battery < BaseModel
 
         function model = setupMappings(model)
 
-            ne    = 'NegativeElectrode';
-            pe    = 'PositiveElectrode';
-            co    = 'Coating';
-            cc    = 'CurrentCollector';
-            elyte = 'Electrolyte';
+            % ne    = 'NegativeElectrode';
+            % pe    = 'PositiveElectrode';
+            % co    = 'Coating';
+            % cc    = 'CurrentCollector';
+            % elyte = 'Electrolyte';
 
-            G_elyte = model.(elyte).G;
-            elytecelltbl.cells = (1 : G_elyte.cells.num)';
-            elytecelltbl.globalcells = G_elyte.mappings.cellmap;
-            elytecelltbl = IndexArray(elytecelltbl);
+            % G_elyte = model.(elyte).G;
+            % elytecelltbl.cells = (1 : G_elyte.cells.num)';
+            % elytecelltbl.globalcells = G_elyte.mappings.cellmap;
+            % elytecelltbl = IndexArray(elytecelltbl);
 
-            eldes = {ne, pe};
+            % eldes = {ne, pe};
 
-            for ind = 1 : numel(eldes)
+            % for ind = 1 : numel(eldes)
 
-                elde = eldes{ind};
-                G_elde  = model.(elde).(co).G;
-                clear eldecelltbl;
-                eldecelltbl.cells = (1 : G_elde.cells.num)';
-                eldecelltbl.globalcells = G_elde.mappings.cellmap;
-                eldecelltbl = IndexArray(eldecelltbl);
+            %     elde = eldes{ind};
+            %     G_elde  = model.(elde).(co).G;
+            %     clear eldecelltbl;
+            %     eldecelltbl.cells = (1 : G_elde.cells.num)';
+            %     eldecelltbl.globalcells = G_elde.mappings.cellmap;
+            %     eldecelltbl = IndexArray(eldecelltbl);
 
-                map = TensorMap();
-                map.fromTbl = elytecelltbl;
-                map.toTbl = eldecelltbl;
-                map.replaceFromTblfds = {{'cells', 'elytecells'}};
-                map.replaceToTblfds = {{'cells', 'eldecells'}};
-                map.mergefds = {'globalcells'};
+            %     map = TensorMap();
+            %     map.fromTbl = elytecelltbl;
+            %     map.toTbl = eldecelltbl;
+            %     map.replaceFromTblfds = {{'cells', 'elytecells'}};
+            %     map.replaceToTblfds = {{'cells', 'eldecells'}};
+            %     map.mergefds = {'globalcells'};
 
-                mappings.(elde) = map.getDispatchInd();
+            %     mappings.(elde) = map.getDispatchInd();
 
-            end
+            % end
 
-            model.mappings = mappings;
+            % model.mappings = mappings;
+
+            model.mappings = [];
 
         end
 
@@ -628,10 +624,9 @@ classdef Battery < BaseModel
             co    = 'Coating';
             sep   = 'Separator';
 
-            elyte_cells = zeros(model.G.cells.num, 1);
-            elyte_cells(inputparams.(elyte).G.mappings.cellmap) = (1 : inputparams.(elyte).G.cells.num)';
+            elyte_cells = model.(elyte).G.mappings.invcellmap;
 
-            inputparams.(elyte).volumeFraction = ones(inputparams.(elyte).G.cells.num, 1);
+            inputparams.(elyte).volumeFraction = ones(inputparams.(elyte).G.getNumberOfCells(), 1);
             inputparams.(elyte).volumeFraction = subsasgnAD(inputparams.(elyte).volumeFraction, elyte_cells(model.(ne).(co).G.mappings.cellmap), 1 - model.(ne).(co).volumeFraction);
             inputparams.(elyte).volumeFraction = subsasgnAD(inputparams.(elyte).volumeFraction, elyte_cells(model.(pe).(co).G.mappings.cellmap), 1 - model.(pe).(co).volumeFraction);
             inputparams.(elyte).volumeFraction = subsasgnAD(inputparams.(elyte).volumeFraction, elyte_cells(model.(sep).G.mappings.cellmap), model.(sep).porosity);
@@ -647,11 +642,11 @@ classdef Battery < BaseModel
         % the moment, it includes only the initial electrolyte concentration
         %
 
-            if nargin < 2 | isempty(jsonstruct)
+            if nargin < 2 || isempty(jsonstruct)
                 jsonstruct.Electrolyte.initialConcentration = 1*mol/litre;
             end
 
-            nc = model.G.cells.num;
+            nc = model.G.getNumberOfCells();
 
             SOC = model.SOC;
             T   = model.initT;
@@ -700,7 +695,7 @@ classdef Battery < BaseModel
 
                     theta = SOC*(elde_itf.guestStoichiometry100 - elde_itf.guestStoichiometry0) + elde_itf.guestStoichiometry0;
                     c     = theta*elde_itf.saturationConcentration;
-                    nc    = model.(elde).(co).G.cells.num;
+                    nc    = model.(elde).(co).G.getNumberOfCells();
 
                     switch model.(elde).(co).(amc).diffusionModelType
                       case 'simple'
@@ -735,8 +730,8 @@ classdef Battery < BaseModel
 
             %% Setup initial Electrolyte state
 
-            initstate.(elyte).phi = zeros(bat.(elyte).G.cells.num, 1) - ref;
-            initstate.(elyte).c   = jsonstruct.Electrolyte.initialConcentration*ones(bat.(elyte).G.cells.num, 1);
+            initstate.(elyte).phi = zeros(bat.(elyte).G.getNumberOfCells(), 1) - ref;
+            initstate.(elyte).c   = jsonstruct.Electrolyte.initialConcentration*ones(bat.(elyte).G.getNumberOfCells(), 1);
 
             %% Setup initial Current collectors state
 
@@ -1618,6 +1613,28 @@ classdef Battery < BaseModel
             forces.Imax = [];
 
         end
+
+
+        function model = setTPFVgeometry(model, tPFVgeometry)
+        % tPFVgeometry should be instance of TwoPointFiniteVolumeGeometry or MutableTwoPointFiniteVolumeGeometry
+
+            model.G.parentGrid.tPFVgeometry = tPFVgeometry;
+
+            elyte   = 'Electrolyte';
+            ne      = 'NegativeElectrode';
+            pe      = 'PositiveElectrode';
+            thermal = 'ThermalModel';
+
+            model.(elyte)   = model.(elyte).setTPFVgeometry(tPFVgeometry);
+            model.(ne)      = model.(ne).setTPFVgeometry(tPFVgeometry);
+            model.(pe)      = model.(pe).setTPFVgeometry(tPFVgeometry);
+
+            if model.use_thermal
+                model.(thermal) = model.(thermal).setTPFVgeometry(tPFVgeometry);
+            end
+
+        end
+
 
         function model = validateModel(model, varargin)
 
