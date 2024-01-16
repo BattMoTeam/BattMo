@@ -28,17 +28,9 @@
         ],
       "description": "a function to determine the diffusion coefficient of a molecule in the electrolyte under given conditions"
     },
-    "compnames": {
-      "type": "array",
-      "items": {
-        "type": "string",
-        "description": "Name of the ion"
-      },
-      "description": "List of the ions contained in the electrolyte. For the moment, we support only binary electrolyte so that this data is in practice only used directly in the code"
-    },
     "species": {
       "type": "object",
-      "description": "Property for the positive ion (Lithium). In case of non-binary electrolyte, it would require adjustment.",
+      "description": "Property for the positive ion (Lithium). We support for the moment only binary electrolyte.",
       "properties": {
         "chargeNumber": {
           "type": "number",

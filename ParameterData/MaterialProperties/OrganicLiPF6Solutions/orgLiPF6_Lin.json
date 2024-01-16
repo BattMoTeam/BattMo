@@ -12,12 +12,8 @@
                             "functionname" : "computeDiffusionCoefficientFunc_Lin",
                             "argumentlist" : ["concentration", "temperature"]
                            },
-  "compnames": [
-    "Li",
-    "PF6"
-  ],
-  "sp": { "z": 1,
-          "t": 0.2594},
+  "species": { "chargeNumber": 1,
+               "transferenceNumber": 0.2594},
   "Separator": { "filename": "ParameterData/BatteryComponentParameters/celgard2500_Lin.json",
                  "isFile": true },
   "BruggemanCoefficient": 1.5

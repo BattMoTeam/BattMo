@@ -4,10 +4,6 @@
   "description": "Electronic Component",
   "type": "object",
   "properties": {
-    "name": {
-      "type": "string",
-      "description": "name of electronic component material"
-    },
     "effectiveElectronicConductivity": {
       "$ref": "PhysicalQuantity.schema.json",
       "description": "the electronic conductivity of the component, adjusted to consider porous media effects (if any)",
@@ -27,6 +23,11 @@
       "$ref": "PhysicalQuantity.schema.json",
       "description": "the specificHeatCapacity of the component",
       "symbol": ""
+    },
+    "density": {
+      "$ref": "PhysicalQuantity.schema.json",
+      "description": "the mass density of the material",
+      "symbol": "rho"
     }
   }
 }

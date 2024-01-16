@@ -9,7 +9,8 @@
       "enum": [
         "given SOC",
         "given input"
-      ]
+      ],
+      "description": "Choice of initialization between a given state of charge (\"given SOC\") or a given input function (\"given input\"). If this property is not given, the default is a given SOC"
     },
     "initT": {
       "$ref": "PhysicalQuantity.schema.json",
@@ -17,7 +18,7 @@
     },
     "SOC": {
       "$ref": "PhysicalQuantity.schema.json",
-      "description": "Initial state of charge"
+      "description": "Initial state of charge."
     },
     "Electrolyte" : {
       "type" : "object",

@@ -43,10 +43,6 @@
       "$ref": "PhysicalQuantity.schema.json",
       "description": "the Specific Heat capacity of the active component",
       "symbol": ""
-    },
-    "name": {
-      "type": "string",
-      "description": "name of active material"
     }
   },
   "required": [

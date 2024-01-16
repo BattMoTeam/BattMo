@@ -1,5 +1,4 @@
 {
-
   "saturationConcentration": 30555,
   "numberOfElectronsTransferred": 1,
   "volumetricSurfaceArea": 723600,
@@ -14,7 +13,4 @@
     "argumentlist": [
       "concentration",
       "temperature",
-      "cmax"
-    ]
-
-  }
+      "cmax"]}}
