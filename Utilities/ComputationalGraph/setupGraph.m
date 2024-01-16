@@ -1,4 +1,4 @@
-function [A, staticprops, resolvedVarNameList, nodenames] = setupGraph2(model, varargin)
+function [A, staticprops, resolvedVarNameList, nodenames] = setupGraph(model, varargin)
     
     opt = struct('resolveIndex', true);
     opt = merge_options(opt, varargin{:});
