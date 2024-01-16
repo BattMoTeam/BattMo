@@ -123,7 +123,7 @@ classdef Coating < ElectronicComponent
             if isempty(model.volumeFractions)
 
                 updateMassFractions = false;
-                
+
                 volumeFractions = zeros(numel(compnames), 1);
                 sumSpecificVolumes = sum(specificVolumes);
                 for icomp = 1 : numel(compnames)
@@ -131,7 +131,7 @@ classdef Coating < ElectronicComponent
                 end
 
                 model.volumeFractions = volumeFractions;
-                
+
             else
 
                 updateMassFractions = true;
@@ -143,7 +143,7 @@ classdef Coating < ElectronicComponent
             if isempty(model.volumeFraction)
 
                 updateEffectiveDensity = false;
-                
+
                 % If the volumeFraction is given, we use it otherwise it is computed from the density and the specific
                 % volumes of the components
                 assert(~isempty(model.effectiveDensity), 'At this point we need an effective density in the model');
@@ -152,7 +152,7 @@ classdef Coating < ElectronicComponent
             else
 
                 updateEffectiveDensity = true;
-                
+
             end
 
             %% We setup the electronic conductivity
@@ -220,7 +220,7 @@ classdef Coating < ElectronicComponent
 
             %% Setup the submodels
 
-            np = inputparams.G.cells.num;
+            np = inputparams.G.getNumberOfCells();
             switch inputparams.active_material_type
               case 'default'
                 inputparams.(am).(sd).volumeFraction = model.volumeFraction*model.volumeFractions(model.compInds.(am));
@@ -246,19 +246,19 @@ classdef Coating < ElectronicComponent
             model.ConductingAdditive = ConductingAdditive(inputparams.ConductingAdditive);
 
             if updateMassFractions
-                
-                model = model.updateMassFractions();
-                
-            end
-            
-            if updateEffectiveDensity
-                
-                model = model.updateEffectiveDensity();
-                
-            end
-            
 
-            
+                model = model.updateMassFractions();
+
+            end
+
+            if updateEffectiveDensity
+
+                model = model.updateEffectiveDensity();
+
+            end
+
+
+
         end
 
         function model = registerVarAndPropfuncNames(model)
@@ -390,15 +390,15 @@ classdef Coating < ElectronicComponent
             for icomp = 1 : numel(compnames)
                 compname = compnames{icomp};
                 model.(compname).massFraction = massfractions(icomp);
-            end            
-            
+            end
+
         end
-        
+
         function model = updateEffectiveDensity(model)
 
             compnames = model.compnames;
             vf = model.volumeFraction;
-            
+
             for icomp = 1 : numel(compnames)
                 compname = compnames{icomp};
                 if ~isempty(model.(compname).density)
@@ -411,9 +411,9 @@ classdef Coating < ElectronicComponent
             rho = sum(massfractions)*vf;
 
             model.effectiveDensity = rho;
-            
+
         end
-        
+
         function state = updatejBcSource(model, state)
 
             state.jBcSource = state.jCoupling + state.jExternal;

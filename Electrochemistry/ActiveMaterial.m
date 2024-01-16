@@ -1,15 +1,15 @@
 classdef ActiveMaterial < BaseModel
-    
+
     properties
-        
+
         %
         % instance of :class:`Interface <Electrochemistry.Electrodes.Interface>`
         %
 
         %% Sub-Models
-        
+
         Interface
-        SolidDiffusion        
+        SolidDiffusion
 
         %% Input parameters
 
@@ -18,32 +18,32 @@ classdef ActiveMaterial < BaseModel
         electronicConductivity % the electronic conductivity of the material (symbol: sigma)
         density                % the mass density of the material (symbol: rho)
         massFraction           % the ratio of the mass of the material to the total mass of the phase or mixture (symbol: gamma)
-        
+
         thermalConductivity    % the intrinsic Thermal conductivity of the active component
         specificHeatCapacity   % Specific Heat capacity of the active component
 
         diffusionModelType     % either 'full' or 'simple'
 
         % Coupling parameters
-        
+
         externalCouplingTerm % structure to describe external coupling (used in absence of current collector)
 
     end
-    
+
     methods
-        
+
         function model = ActiveMaterial(inputparams)
         %
         % ``inputparams`` is instance of :class:`ActiveMaterialInputParams <Electrochemistry.ActiveMaterialInputParams>`
         %
             model = model@BaseModel();
-            
-            fdnames = {'electronicConductivity', ... 
-                       'density'               , ...                
+
+            fdnames = {'electronicConductivity', ...
+                       'density'               , ...
                        'massFraction'          , ...
-                       'thermalConductivity'   , ...    
-                       'specificHeatCapacity'  , ...   
-                       'volumeFraction'        , ... 
+                       'thermalConductivity'   , ...
+                       'specificHeatCapacity'  , ...
+                       'volumeFraction'        , ...
                        'externalCouplingTerm'  , ...
                        'diffusionModelType'    , ...
                        'isRootSimulationModel'};
@@ -63,16 +63,16 @@ classdef ActiveMaterial < BaseModel
                 error('Unknown diffusionModelType %s', diffusionModelType);
             end
 
-            
+
         end
-        
+
         function model = registerVarAndPropfuncNames(model)
 
             %% Declaration of the Dynamical Variables and Function of the model
             % (setup of varnameList and propertyFunctionList)
 
             model = registerVarAndPropfuncNames@BaseModel(model);
-            
+
             itf = 'Interface';
             sd  = 'SolidDiffusion';
 
@@ -82,7 +82,7 @@ classdef ActiveMaterial < BaseModel
             fn = @ActiveMaterial.dispatchTemperature;
             model = model.registerPropFunction({{sd, 'T'}, fn, {'T'}});
             model = model.registerPropFunction({{itf, 'T'}, fn, {'T'}});
-            
+
             if model.isRootSimulationModel
 
                 varnames = {};
@@ -94,7 +94,7 @@ classdef ActiveMaterial < BaseModel
                 varnames{end + 1} = 'E';
                 % Charge Conservation equation
                 varnames{end + 1} = 'chargeCons';
-                
+
                 model = model.registerVarNames(varnames);
 
                 varnames = {{itf, 'dUdT'}, ...
@@ -103,24 +103,24 @@ classdef ActiveMaterial < BaseModel
                 model = model.removeVarNames(varnames);
 
                 varnames = {'T'                  , ...
-                            {itf, 'cElectrolyte'}, ... 
+                            {itf, 'cElectrolyte'}, ...
                             {itf, 'phiElectrolyte'}};
                 model = model.setAsStaticVarNames(varnames);
-                
+
             end
 
             fn = @ActiveMaterial.updateRvol;
             model = model.registerPropFunction({{sd, 'Rvol'}, fn, {{itf, 'R'}}});
-            
+
             fn = @ActiveMaterial.updateConcentrations;
             model = model.registerPropFunction({{itf, 'cElectrodeSurface'}, fn, {{sd, 'cSurface'}}});
-            
+
             if model.isRootSimulationModel
-                
+
                 fn = @ActiveMaterial.updateControl;
                 fn = {fn, @(propfunction) PropFunction.drivingForceFuncCallSetupFn(propfunction)};
                 model = model.registerPropFunction({'I', fn, {}});
-                
+
                 fn = @ActiveMaterial.updateChargeCons;
                 inputnames = {'I', ...
                               {sd, 'Rvol'}};
@@ -130,11 +130,11 @@ classdef ActiveMaterial < BaseModel
                 model = model.registerPropFunction({{itf, 'phiElectrode'}, fn, {'E'}});
 
             end
-            
+
         end
 
         function model = setupForSimulation(model)
-            
+
             model = model.equipModelForComputation();
 
             itf = 'Interface';
@@ -155,91 +155,102 @@ classdef ActiveMaterial < BaseModel
 
             forces = getValidDrivingForces@PhysicalModel(model);
             forces.src = [];
-            
+
+        end
+
+
+        function model = setTPFVgeometry(model, tPFVgeometry)
+        % tPFVgeometry should be instance of TwoPointFiniteVolumeGeometry or MutableTwoPointFiniteVolumeGeometry
+
+            itf = 'Interface';
+
+            model.G.parentGrid.tPFVgeometry = tPFVgeometry;
+            model.(itf) = model.(itf).setTPFVgeometry(tPFVgeometry);
+
         end
 
 
         function state = updateControl(model, state, drivingForces)
-            
+
             state.I = drivingForces.src(state.time);
-            
+
         end
 
         function state = updatePhi(model, state)
 
             itf = 'Interface';
-            
+
             state.(itf).phiElectrode = state.E;
-            
+
         end
-        
+
         function cleanState = addStaticVariables(model, cleanState, state, state0)
-            
+
             cleanState = addStaticVariables@BaseModel(model, cleanState, state);
-            
+
             if model.isRootSimulationModel
-                
+
                 itf = 'Interface';
-                
+
                 cleanState.T = state.T;
                 cleanState.(itf).cElectrolyte   = state.(itf).cElectrolyte;
                 cleanState.(itf).phiElectrolyte = state.(itf).phiElectrolyte;
-                
+
             end
-            
+
         end
-        
+
         function state = updateChargeCons(model, state)
         % Only used for stand-alone model
 
             sd  = 'SolidDiffusion';
             itf = 'Interface';
-            
+
             n    = model.(itf).numberOfElectronsTransferred;
             F    = model.(itf).constants.F;
-            
+
             I = state.I;
             Rvol = state.(sd).Rvol;
 
             state.chargeCons = I - Rvol*n*F;
 
         end
-        
-         
+
+
         function model = validateModel(model, varargin)
-        % 
+        %
         end
 
         %% assembly functions use in this model
 
         function state = updateRvol(model, state)
-            
+
             itf = 'Interface';
             sd  = 'SolidDiffusion';
-            
+
             vsa = model.(itf).volumetricSurfaceArea;
-            
+
             Rvol = vsa.*state.(itf).R;
-            
+
             state.(sd).Rvol = Rvol;
-            
-        end        
-        
+
+        end
+
         function state = updateConcentrations(model, state)
 
             sd  = 'SolidDiffusion';
             itf = 'Interface';
-            
+
             state.(itf).cElectrodeSurface = state.(sd).cSurface;
-            
+
         end
 
-        
+
         function state = dispatchTemperature(model, state)
 
             state.Interface.T      = state.T;
             state.SolidDiffusion.T = state.T;
-            
+
         end
 
 
@@ -251,7 +262,7 @@ classdef ActiveMaterial < BaseModel
             vf       = model.volumeFraction;
             am_frac  = model.activeMaterialFraction;
             vols     = model.G.cells.volumes;
-            
+
             c = state.(sd).cAverage;
 
             vols = am_frac*vf.*vols;
@@ -259,11 +270,11 @@ classdef ActiveMaterial < BaseModel
             cAverage = sum(c.*vols)/sum(vols);
 
             state.cAverage = cAverage;
-            
+
         end
-        
-        
-        
+
+
+
     end
 
     methods (Static)
@@ -293,7 +304,7 @@ classdef ActiveMaterial < BaseModel
         end
 
     end
-    
+
 end
 
 

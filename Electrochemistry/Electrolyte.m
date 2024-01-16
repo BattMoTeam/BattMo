@@ -4,7 +4,7 @@ classdef Electrolyte < BaseModel
 
 
         %% Input parameters
-        
+
         % Standard parameters
         sp % Structure with following fields
            % - z : charge number
@@ -12,7 +12,7 @@ classdef Electrolyte < BaseModel
 
         density              % the mass density of the material (symbol: rho)
         ionicConductivity    % a function to determine the ionic conductivity of the electrolyte under given conditions (symbol: kappa)
-        diffusionCoefficient % a function to determine the diffusion coefficient of a molecule in the electrolyte under given conditions (symbol: D)        
+        diffusionCoefficient % a function to determine the diffusion coefficient of a molecule in the electrolyte under given conditions (symbol: D)
         bruggemanCoefficient % the coefficient for determining effective transport parameters in porous media (symbol: beta)
         thermalConductivity  % Intrinsic Thermal conductivity of the electrolyte
         specificHeatCapacity % Specific Heat capacity of the electrolyte
@@ -24,14 +24,14 @@ classdef Electrolyte < BaseModel
         effectiveVolumetricHeatCapacity % (account for volume fraction and density)
 
         %%  helper properties
-        
+
         constants
         compnames
         ncomp
         computeConductivityFunc
         computeDiffusionCoefficientFunc
         use_thermal
-        
+
     end
 
     methods
@@ -64,29 +64,22 @@ classdef Electrolyte < BaseModel
 
             model.constants = PhysicalConstants();
 
-            docellflux = false;
             if model.use_thermal
-                docellflux = true;
-            end
-            
-            model.operators = localSetupOperators(model.G, 'assembleCellFluxOperator', docellflux);
-            
-            if model.use_thermal
-                
+
                 if isempty(model.effectiveThermalConductivity)
 
                     bg = model.bruggemanCoefficient;
 
                     model.effectiveThermalConductivity = (model.volumeFraction).^bg.*model.thermalConductivity;
-                    
+
                 end
-                
+
                 if isempty(model.effectiveVolumetricHeatCapacity)
-                    
+
                     model.effectiveVolumetricHeatCapacity = (model.volumeFraction).*model.density.*model.specificHeatCapacity;
-                    
+
                 end
-                
+
             end
 
         end
@@ -98,7 +91,7 @@ classdef Electrolyte < BaseModel
             model = registerVarAndPropfuncNames@BaseModel(model);
 
             varnames = {};
-            
+
             % Temperature [K]
             varnames{end + 1} = 'T';
             % Electrical potential [V]
@@ -131,19 +124,19 @@ classdef Electrolyte < BaseModel
             varnames{end + 1} = 'conductivity';
             % diffusion fluzes
             varnames{end + 1} = 'diffFlux';
-            
+
             model = model.registerVarNames(varnames);
 
             if model.use_thermal
                 varnames = {'jFace', ...
                             'jFaceBc'};
-                model = model.registerVarNames(varnames);                
+                model = model.registerVarNames(varnames);
             end
-            
+
             fn = @Electrolyte.updateChargeConservation;
             inputnames = {'j', 'jBcSource', 'eSource'};
             model = model.registerPropFunction({'chargeCons', fn, inputnames});
-            
+
             fn = @Electrolyte.updateConductivity;
             model = model.registerPropFunction({'conductivity', fn, {'c', 'T'}});
 
@@ -172,9 +165,9 @@ classdef Electrolyte < BaseModel
 
             fn = @Electrolyte.updateMassConservation;
             model = model.registerPropFunction({'massCons', fn, {'massFlux', 'massSource', 'massAccum'}});
-            
+
             if model.use_thermal
-                
+
                 fn = @Electrolyte.updateFaceCurrent;
                 inputnames = {'j', 'jFaceBc'};
                 model = model.registerPropFunction({'jFace', fn, inputnames});
@@ -182,9 +175,9 @@ classdef Electrolyte < BaseModel
                 fn = @Electrolyte.updateFaceBcCurrent;
                 inputnames = {};
                 model = model.registerPropFunction({'jFaceBc', fn, inputnames});
-                
+
             end
-            
+
         end
 
         function state = updateMassConservation(model, state)
@@ -195,7 +188,7 @@ classdef Electrolyte < BaseModel
             bcsource = 0;
 
             state.massCons = assembleConservationEquation(model, flux, bcsource, source, accum);
-            
+
         end
 
         function state = updateChargeConservation(model, state)
@@ -203,38 +196,44 @@ classdef Electrolyte < BaseModel
             flux     = state.j;
             bcsource = state.jBcSource;
             source   = state.eSource;
-            
+
             accum    = zeros(model.G.cells.num,1);
-            
+
             chargeCons = assembleConservationEquation(model, flux, bcsource, source, accum);
-            
+
             state.chargeCons = chargeCons;
-            
+
         end
 
         function state = updateFaceCurrent(model, state)
-            
+
             G = model.G;
             nf = G.faces.num;
             intfaces = model.operators.internalConn;
-            
+
             j       = state.j;
             jFaceBc = state.jFaceBc;
-            
+
             zeroFaceAD = model.AutoDiffBackend.convertToAD(zeros(nf, 1), j);
             jFace = zeroFaceAD + jFaceBc;
             jFace(intfaces) = j;
-            
+
             state.jFace = jFace;
-            
+
         end
 
         function state = updateFaceBcCurrent(model, state)
-            
+
             state.jFaceBc = 0;
-            
+
         end
 
+        function model = setTPFVgeometry(model, tPFVgeometry)
+        % tPFVgeometry should be instance of TwoPointFiniteVolumeGeometry or MutableTwoPointFiniteVolumeGeometry
+
+            model.G.parentGrid.tPFVgeometry = tPFVgeometry;
+
+        end
 
         function state = updateAccumTerm(model, state, state0, dt)
 
@@ -305,7 +304,7 @@ classdef Electrolyte < BaseModel
             con     = model.constants;
             sp      = model.sp;
             volfrac = model.volumeFraction;
-            
+
             dmudcs       = state.dmudcs;
             phi          = state.phi;
             T            = state.T;

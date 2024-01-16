@@ -36,8 +36,6 @@ classdef ElectronicComponent < BaseModel
                 docellflux = true;
             end
 
-            model.operators = localSetupOperators(model.G, 'assembleCellFluxOperator', docellflux);
-
             model.constants = PhysicalConstants();
 
         end
@@ -98,6 +96,15 @@ classdef ElectronicComponent < BaseModel
             end
 
         end
+
+
+        function model = setTPFVgeometry(model, tPFVgeometry)
+        % tPFVgeometry should be instance of TwoPointFiniteVolumeGeometry or MutableTwoPointFiniteVolumeGeometry
+
+            model.G.parentGrid.tPFVgeometry = tPFVgeometry;
+
+        end
+
 
         function state = updateConductivity(model, state)
             % default function to update conductivity
