@@ -4,9 +4,9 @@ MRST
 BattMo is based on the open-source sofware MRST.
 
 .. image:: img/mrst.png
-   :target: `MRST`_
+   :target: `MRSTwebpage`_
       
-`MRST`_ is primarly dedicated to reservoir modelling and simulation and has been developed essentially by the
+`MRSTwebpage`_ is primarly dedicated to reservoir modelling and simulation and has been developed essentially by the
 `Computational Geosciences group
 <https://www.sintef.no/en/digital/departments-new/applied-mathematics/computational-geoscience/>`_ in the `Department of
 Mathematics and Cybernetics at SINTEF Digital
@@ -18,13 +18,11 @@ Mathematics and Cybernetics at SINTEF Digital
 
 which BattMo relies heavily on.
   
-On the `MRST`_ webpage, you can find `documentations <https://www.sintef.no/projectweb/mrst/documentation/>`_ and
+On the `MRSTwebpage`_ webpage, you can find `documentations <https://www.sintef.no/projectweb/mrst/documentation/>`_ and
 `tutorials <https://www.sintef.no/projectweb/mrst/documentation/tutorials/>`_.
 
 We recommend the following tutorials which deal with grid visualization and grid generation will be usefull for BattMo
 users.
-
-.. _mrst page:
 
 `Visualization Tutorial <https://www.sintef.no/projectweb/mrst/documentation/tutorials/visualization-tutorial/>`_
 -----------------------------------------------------------------------------------------------------------------
@@ -37,5 +35,5 @@ users.
    .. image:: img/gridfact.png
 
               
-.. _MRST: https://www.sintef.no/Projectweb/MRST/
+.. _MRSTwebpage: https://www.sintef.no/Projectweb/MRSTwebpage/
 
