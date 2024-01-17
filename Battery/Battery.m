@@ -931,7 +931,7 @@ classdef Battery < BaseModel
 
             eldes = {ne, pe};
 
-            massConsScaling = model.con.F;
+            massConsScaling = model.constants.F;
 
             state.(elyte).massCons = state.(elyte).massCons*massConsScaling;
 
@@ -962,8 +962,8 @@ classdef Battery < BaseModel
                       case 'full'
 
                         n    = model.(elde).(co).(amc).(itf).numberOfElectronsTransferred;
-                        F    = model.con.F;
-                        vol  = model.(elde).(co).operators.pv;
+                        F    = model.constants.F;
+                        vol  = model.(elde).(co).G.getVolumes();
                         rp   = model.(elde).(co).(amc).(sd).particleRadius;
                         vsf  = model.(elde).(co).(amc).(sd).volumetricSurfaceArea;
 
@@ -1068,11 +1068,11 @@ classdef Battery < BaseModel
             pe    = 'PositiveElectrode';
             co    = 'Coating';
 
-            F = battery.con.F;
+            F = battery.constants.F;
 
             couplingterms = battery.couplingTerms;
 
-            elyte_e_source = zeros(battery.(elyte).G.cells.num, 1);
+            elyte_e_source = zeros(battery.(elyte).G.getNumberOfCells(), 1);
 
             % setup AD
             phi = state.(elyte).phi;
@@ -1443,16 +1443,12 @@ classdef Battery < BaseModel
             am1   = 'ActiveMaterial1';
             am2   = 'ActiveMaterial2';
             itf   = 'Interface';
-            cc    = 'CurrentCollector';
 
             eldes = {ne, pe};
             phi_elyte = state.(elyte).phi;
             c_elyte = state.(elyte).c;
 
-            elyte_cells = zeros(model.G.cells.num, 1);
-            elyte_cells(bat.(elyte).G.mappings.cellmap) = (1 : bat.(elyte).G.cells.num)';
-
-
+            elyte_cells = model.(elyte).G.mappings.invcellmap;
 
             for ind = 1 : numel(eldes)
                 elde = eldes{ind};

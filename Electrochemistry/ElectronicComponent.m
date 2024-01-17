@@ -155,7 +155,7 @@ classdef ElectronicComponent < BaseModel
             bcsource = state.jBcSource;
             source   = state.eSource;
 
-            accum    = zeros(model.G.cells.num,1);
+            accum    = zeros(model.G.getNumberOfCells(), 1);
 
             chargeCons = assembleConservationEquation(model, flux, bcsource, source, accum);
 

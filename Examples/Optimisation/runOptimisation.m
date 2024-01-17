@@ -171,6 +171,7 @@ if doOptimization
 
 end
 
+%%
 doCompareGradient = true;
 
 if doCompareGradient

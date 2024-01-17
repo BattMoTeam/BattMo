@@ -2,7 +2,7 @@ classdef SubGrid
 
     properties
 
-        % Parent grid 
+        % Parent grid
         % The parent grid contains the updated TwoPointFiniteVolumeGeometry values (handle)
         parentGrid % Instance of Grid class
 
@@ -15,9 +15,9 @@ classdef SubGrid
         % - topology.faces.num
         % - topology.faces.neighbors
         % - topology.nodes.num
-        % - topology.griddim        
+        % - topology.griddim
         topology
-        
+
         % Mapping structure from sub-grid to parent grid with fields (see function removeCells) and inverse
         % mappings. The inverse mappings are set up in the constructor (they do not have to be given there in the
         % input). For the moment, we only need invcellmap. It is used to setup the coupling terms.
@@ -42,11 +42,11 @@ classdef SubGrid
         % - helpers.intfaces                    (index of internal faces)
         helpers
 
-        % Operators to compute norm of the flux velocity at the cell centers, see getCellFlux 
+        % Operators to compute norm of the flux velocity at the cell centers, see getCellFlux
         % - cellFluxOperators.P
         % - cellFluxOperators.S
         cellFluxOperators
-        
+
     end
 
     methods
@@ -63,14 +63,14 @@ classdef SubGrid
             topology.faces.neighbors = G.faces.neighbors;
             topology.nodes.num       = G.nodes.num;
             topology.griddim         = G.griddim;
-            
+
             subG.topology   = topology;
             subG.parentGrid = parentGrid;
             subG.mappings   = mappings;
 
             subG = subG.setupInverseMappings();
             subG = subG.setupHelpers();
-            
+
         end
 
 
@@ -91,9 +91,9 @@ classdef SubGrid
             invcellmap(cellmap) = (1 : nc)';
 
             subG.mappings.invcellmap = invcellmap;
-            
+
         end
-        
+
         function subG = setupHelpers(subG)
 
             ptbls = setupTables(subG.parentGrid.topology);
@@ -105,7 +105,7 @@ classdef SubGrid
             extfacetbl     = tbls.extfacetbl;
             intfacetbl     = tbls.intfacetbl;
             cellintfacetbl = tbls.cellintfacetbl;
-            
+
             sgn = ones(cellintfacetbl.num, 1);
             f = cellintfacetbl.get('faces');
             c = cellintfacetbl.get('cells');
@@ -124,12 +124,12 @@ classdef SubGrid
 
             diffop.div  = divM;
             diffop.grad = -divM';
-            
+
             cellpcelltbl = celltbl.addInd('pcells', subG.mappings.cellmap);
             facepfacetbl = facetbl.addInd('pfaces', subG.mappings.facemap);
 
             pcellpfacetbl = replacefield(pcellpfacetbl, {{'cells', 'pcells'}, {'faces', 'pfaces'}});
-            
+
             cellpcellpfacetbl     = crossIndexArray(pcellpfacetbl, cellpcelltbl, {'pcells'});
             cellpcellfacepfacetbl = crossIndexArray(cellpcellpfacetbl, facepfacetbl, {'pfaces'});
 
@@ -142,7 +142,7 @@ classdef SubGrid
             map1 = map1.setup();
 
             P1 = map1.getMatrix();
-            
+
             map2 = TensorMap();
             map2.fromTbl = cellpcellfacepfacetbl;
             map2.toTbl = cellintfacetbl;
@@ -152,7 +152,7 @@ classdef SubGrid
             P2 = map2.getMatrix();
 
             P = P2*P1;
-            
+
             map = TensorMap();
             map.fromTbl = celltbl;
             map.toTbl = cellintfacetbl;
@@ -160,7 +160,7 @@ classdef SubGrid
             map = map.setup();
 
             D = map.getMatrix();
-            
+
             map = TensorMap();
             map.fromTbl = cellintfacetbl;
             map.toTbl = intfacetbl;
@@ -184,7 +184,7 @@ classdef SubGrid
             map.fromTbl  = pcellpfacetbl;
             map.toTbl    = cellextfacepcellpfacetbl;
             map.mergefds = {'pcells', 'pfaces'};
-            
+
             extfaces.halfTransParentInd = map.getDispatchInd();
 
             sgn = ones(cellextfacepcellpfacetbl.num, 1);
@@ -193,25 +193,25 @@ classdef SubGrid
             sgn(subG.topology.faces.neighbors(f, 2) == c) = -1;
 
             extfaces.sgn = sgn;
-            
+
             faceextfacemap = zeros(facetbl.num, 1);
             faceextfacemap(cellextfacepcellpfacetbl.get('faces')) = (1 : cellextfacepcellpfacetbl.num)';
 
             intfaces = intfacetbl.get('faces');
-            
+
             subG.helpers = struct('diffop'        , diffop        , ...
                                   'trans'         , trans         , ...
                                   'extfaces'      , extfaces      , ...
                                   'faceextfacemap', faceextfacemap, ...
                                   'intfaces'      , intfaces);
-            
+
         end
 
         function subG = setupCellFluxOperators(subG)
 
             G = getMRSTgrid(subG);
             subG.cellFluxOperators = getCellFluxOperatorsAll(G);
-            
+
         end
 
         function G = getMRSTgrid(subG)
@@ -221,31 +221,31 @@ classdef SubGrid
             tg = subG.parentGrid.tPFVgeometry();
 
             d = G.griddim;
-            
+
             G.cells.centroids = reshape(tg.cells.centroids, d, [])';
             G.cells.centroids = G.cells.centroids(m.cellmap, :);
             G.cells.volumes   = tg.cells.volumes(m.cellmap);
-            
+
             G.faces.centroids = reshape(tg.faces.centroids, d, [])';
             G.faces.centroids = G.faces.centroids(m.facemap, :);
             G.faces.normals   = reshape(tg.faces.normals, d, [])';
             G.faces.normals = G.faces.normals(m.facemap, :);
             G.faces.areas     = tg.faces.areas(m.facemap);
-            
+
             G.nodes.coords = reshape(tg.nodes.coords, d, [])';
             G.nodes.coords = G.nodes.coords(m.nodemap, :);
-            
+
             G.type = 'generic';
-            
+
         end
 
         % API functions which should be used in simulations
-        
+
         function vols = getVolumes(subG)
 
             pvols = subG.parentGrid.tPFVgeometry.cells.volumes;
             cmap  = subG.mappings.cellmap;
-            
+
             vols = pvols(cmap);
 
         end
@@ -254,21 +254,21 @@ classdef SubGrid
 
             pareas = subG.parentGrid.tPFVgeometry.faces.areas;
             fmap  = subG.mappings.facemap;
-            
+
             areas = pareas(fmap);
 
         end
-            
+
         function v = getGrad(subG, c)
 
             v = subG.helpers.diffop.grad*c;
-            
+
         end
 
         function u = getDiv(subG, v)
 
             u = subG.helpers.diffop.div*v;
-            
+
         end
 
 
@@ -277,9 +277,9 @@ classdef SubGrid
 
             t = subG.helpers.trans;
             hT = subG.parentGrid.tPFVgeometry.hT;
-            
+
             u = 1 ./ (t.S * ( 1 ./ ((t.D*c) .* (t.P*hT))));
-            
+
         end
 
         function [bchT, bccells, bcsgn] = getBcHarmFace(subG, c, bcfaces)
@@ -290,43 +290,48 @@ classdef SubGrid
             exf  = subG.helpers.extfaces;
 
             extfaceind = subG.helpers.faceextfacemap(bcfaces);
-            
+
             bccells = exf.cells(extfaceind);
             bcsgn   = exf.sgn(extfaceind);
-            bchT    = hT(exf.halfTransParentInd(extfaceind)).*c(bccells);
-            
+
+            if (isa(c, 'ADI') && isscalar(c.val)) || (~isa(c, 'ADI') && isscalar(c))
+                bchT = hT(exf.halfTransParentInd(extfaceind)).*c;
+            else
+                bchT = hT(exf.halfTransParentInd(extfaceind)).*c(bccells);
+            end
+
         end
 
         function jsq = getCellFluxNorm(subG, u)
-    
+
             P = subG.cellFluxOperators.P;
             S = subG.cellFluxOperators.S;
-    
+
             j = P*u;
             jsq = j.^2;
             jsq = S*jsq;
-            
+
         end
 
-        
+
         function intfaces = getIntFaceIndex(subG)
-            
+
             intfaces = subG.helpers.intfaces;
-            
+
         end
 
         function nc = getNumberOfCells(subG)
 
             nc = subG.topology.cells.num;
-            
+
         end
-        
+
         function nf = getNumberOfFaces(subG)
 
             nf = subG.topology.faces.num;
-            
+
         end
 
     end
-    
+
 end

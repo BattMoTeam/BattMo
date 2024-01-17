@@ -448,7 +448,7 @@ classdef Coating < ElectronicComponent
 
             F    = model.constants.F;
             n    = model.(am).(itf).numberOfElectronsTransferred;
-            vols = model.G.cells.volumes;
+            vols = model.G.getVolumes();
 
             state.eSource =  - n*F*vols.*state.(am).(sd).Rvol;
 

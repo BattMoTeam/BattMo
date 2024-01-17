@@ -24,7 +24,7 @@ function sens = computeSensitivitiesAdjointADBattmo(setup, states, params, getOb
 %   params       - cell array of parameters of class ModelParameter
 %
 %   getObjective - Function handle for getting objective function value
-%                  for a given timestep with derivatives. Format: @(tstep)
+%                  for a given timestep with derivatives. signature: @(tstep, model, state, computeStatePartial)
 %
 % OPTIONAL PARAMETERS:
 %
@@ -68,27 +68,35 @@ function sens = computeSensitivitiesAdjointADBattmo(setup, states, params, getOb
     end
 
     % inititialize parameters to ADI
-    [modelParam, scheduleParam] = initModelParametersADI(setup, params);
+    setupParam = initModelParametersADI(setup, params);
 
-    % Propagate AD in model by compute again the parameters in the model that depend on the AD-parameters that have been
+    % Propagate AD in model by computing again the parameters in the model that depend on the AD-parameters that have been
     % set directly above.
+    modelParam    = setupParam.model;
+    scheduleParam = setupParam.schedule;
+
     modelParam = validateModel(modelParam);
 
     nstep    = numel(setup.schedule.step.val);
+    lambda   = [];
     getState = @(i) getStateFromInput(setup.schedule, states, setup.state0, i);
+
+    getObjectiveState = @(tstep, model, state) getObjective(tstep, model, state, true);
+    getObjectiveModel = @(tstep, model, state) getObjective(tstep, model, state, false);
 
     % Run adjoint
     lambdaVec = [];
+
 
     for step = nstep : -1 : 1
 
         fprintf('Solving reverse mode step %d of %d\n', nstep - step + 1, nstep);
 
         % Compute Lagrange multipliers for the adjoint formulation
-        [lambda, lambdaVec]= setup.model.solveAdjoint(linsolve, getState, getObjective, setup.schedule, lambdaVec, step);
+        [lambda, lambdaVec]= setup.model.solveAdjoint(linsolve, getState, getObjectiveState, setup.schedule, lambdaVec, step);
 
         % Compute derivatives of the residual equations with respect to the parameters
-        eqdth = partialWRTparam(modelParam, getState, scheduleParam, step);
+        [eqdth, objth] = partialWRTparam(modelParam, getState, scheduleParam, step, getObjectiveModel, params);
 
         % Assemble the sensitivities using the lagrange multipliers
         for kp = 1 : numel(params)
@@ -97,6 +105,9 @@ function sens = computeSensitivitiesAdjointADBattmo(setup, states, params, getOb
                 if isa(eqdth{nl}, 'ADI')
                     sens.(nm) = sens.(nm) + eqdth{nl}.jac{kp}'*lambda{nl};
                 end
+            end
+            if isa(objth, 'ADI')
+                sens.(nm) = sens.(nm) + objth.jac{kp}';
             end
         end
 
@@ -141,7 +152,7 @@ function sens = computeSensitivitiesAdjointADBattmo(setup, states, params, getOb
 
 end
 
-function eqdth = partialWRTparam(model, getState, schedule, step)
+function [eqdth, obj] = partialWRTparam(model, getState, schedule, step, getObjective, params)
 
     validforces = model.getValidDrivingForces();
     current     = getState(step);
@@ -165,6 +176,9 @@ function eqdth = partialWRTparam(model, getState, schedule, step)
 
     eqdth = problem.equations;
 
+    obj = getObjective(step, model, current);
+    obj = obj{1};
+
 end
 
 function state = getStateFromInput(schedule, states, state0, i)
@@ -177,7 +191,10 @@ function state = getStateFromInput(schedule, states, state0, i)
     end
 end
 
-function [modelParam, scheduleParam] = initModelParametersADI(setup, param)
+function setupParam = initModelParametersADI(setup, param)
+
+    setupParam = setup;
+
     v  = applyFunction(@(p)p.getParameter(setup), param);
     % use same backend as problem.model
     if isfield(setup, 'model') && isprop(setup.model, 'AutoDiffBackend')
@@ -185,10 +202,11 @@ function [modelParam, scheduleParam] = initModelParametersADI(setup, param)
     else
         [v{:}] = initVariablesADI(v{:});
     end
+
     for k = 1 : numel(v)
-        setup = param{k}.setParameter(setup, v{k});
+        setupParam = param{k}.setParameter(setupParam, v{k});
     end
-    [modelParam, scheduleParam] = deal(setup.model, setup.schedule);
+
 end
 
 
