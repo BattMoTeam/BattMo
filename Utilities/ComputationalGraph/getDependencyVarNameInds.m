@@ -1,5 +1,5 @@
 function depvarnameinds = getDependencyVarNameInds(varnameinds, A, varargin)
-% for given list of index varnameinds, returns a list with index of nodes (or v
+% for given list of index varnameinds, returns a list with index of nodes
 
     opt = struct('oneParentOnly', false);
     opt = merge_options(opt, varargin{:});

@@ -188,12 +188,12 @@ classdef ComputationalGraphPlot < handle
                 
               case 'addParents'
 
-                nodeinds = getDependencyVarNameInds(cgp.nodeinds, A);
+                nodeinds = getDependencyVarNameInds2(cgp.nodeinds, A);
                 cgp.nodeinds = unique(nodeinds);
                 
               case 'addChildren'
 
-                nodeinds = getDependencyVarNameInds(cgp.nodeinds, A');
+                nodeinds = getDependencyVarNameInds2(cgp.nodeinds, A');
                 cgp.nodeinds = unique(nodeinds);
 
               otherwise
@@ -227,6 +227,33 @@ classdef ComputationalGraphPlot < handle
                 
         end
         
+        function h = plotModelGraph(cgp, modelname)
+
+            cgt = cgp.computationalGraphTool;
+            
+            if isempty(cgt.modelnames)
+                cgt = cgt.setupModelGraph();
+                cgp.computationalGraphTool = cgt;
+            end
+
+            A          = cgt.modelAdjencyMatrix;
+            modelnames = cgt.modelnames;
+
+            if nargin > 1
+                inds = regexpSelect(modelnames, modelname);
+                A = A(inds, inds);
+                modelnames = modelnames(inds);
+            end
+
+            g = digraph(A, modelnames);
+           
+            h = plot(g);
+
+            if nargout < 1
+                clear h
+            end
+            
+        end
     end
     
 end

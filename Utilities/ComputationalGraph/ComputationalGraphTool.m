@@ -67,13 +67,7 @@ classdef ComputationalGraphTool
             nodenames    = cgt.nodenames;
             staticprops  = cgt.staticprops;
             
-            try
-                p = topological_order(A);
-            catch
-                fprintf('You need to install matlab BGL\n');
-                cgt.isok = false
-                return
-            end
+            p = compatible_topological_order(A);
 
             if isempty(p)
                 fprintf('The graph contains cycles. It implies that some variables cannot be evaluated.\n')
@@ -193,25 +187,13 @@ classdef ComputationalGraphTool
             
             varnameind = cgt.getVarNameIndex(varname);
 
-            varnameinds = dfs(A', varnameind);
-            varnameinds = find(varnameinds >= 0);
-            varnameinds = sort(varnameinds);
-
-            propfuncinds = max(A(:, varnameinds), [], 1);
-            staticinds = find(propfuncinds == 0);
-            staticinds = varnameinds(staticinds);
-            [~, ia, ic] = unique(propfuncinds, 'first');
-            ia = sort(ia);
-            propfuncinds = propfuncinds(ia);
-            varnameinds = varnameinds(ia);
-            varnameinds = varnameinds(propfuncinds > 0);
-            propfuncinds = propfuncinds(propfuncinds > 0);
+            [~, propfuncinds, propvarnameinds, staticinds] = getDependencyVarNameInds2(varnameind, A);
             
             [staticinds, staticpropinds] = cgt.findStaticVarNameInds(staticinds);
 
             if ~isempty(staticinds)
-                propfuncinds = [staticpropinds, propfuncinds];
-                varnameinds  = [staticinds; varnameinds];
+                propfuncinds = [staticpropinds; propfuncinds];
+                varnameinds  = [staticinds; propvarnameinds];
             end
 
             propfuncs = cgt.model.propertyFunctionList(propfuncinds);
@@ -253,7 +235,7 @@ classdef ComputationalGraphTool
             if isa(propfunc, 'PropFunction')
                 propfuncs = cgt.getPropFunctionList(propfunc);
             elseif isa(propfunc, 'VarName')
-                % We set up a propfunction with onlyt the varname
+                % We set up a propfunction with only the varname
                 propfunc = PropFunction(propfunc, [], [], []);
                 propfuncs = cgt.getPropFunctionList(propfunc);                
             else
@@ -591,110 +573,6 @@ classdef ComputationalGraphTool
             
         end
 
-
-        function [g2, cgt2] = plotModelGraph(cgt, modelname, varargin)
-            
-            if isempty(cgt.modelnames)
-                cgt = cgt.setupModelGraph();
-                if nargout > 1
-                    cgt2 = cgt;
-                end
-            end
-
-            A          = cgt.modelAdjencyMatrix;
-            modelnames = cgt.modelnames;
-
-            if nargin > 1
-                inds = regexpSelect(modelnames, modelname);
-                A = A(inds, inds);
-                modelnames = modelnames(inds);
-            end
-            
-            g = digraph(A, modelnames);
-           
-            plot(g, varargin{:});
-
-            if nargout > 0
-                g2 = g;
-            end
-            
-        end
-
-        
-        function [g, edgelabels] = plotComputationalGraph(cgt, varargin)
-            
-            opt = struct('type'            , 'ascendant', ...
-                         'oneParentOnly'   , false      , ...
-                         'markStaticVars'  , true       , ...
-                         'includeNodeNames', []         , ...
-                         'excludeNodeNames', []);
-            [opt, extras] = merge_options(opt, varargin{:});
-
-            propfunctionlist = cgt.model.propertyFunctionList;
-            nodenames        = cgt.nodenames;
-            includeNodeNames = opt.includeNodeNames;
-            excludeNodeNames = opt.excludeNodeNames;
-
-            A = cgt.adjencyMatrix;
-            if strcmp(opt.type, 'descendant')
-                A = A';
-            end
-            
-            if ~isempty(includeNodeNames)
-                
-                inds = getDependencyVarNameIndsByName(includeNodeNames, nodenames, A, 'oneParentOnly', opt.oneParentOnly);
-                
-                nodenames = nodenames(inds);
-                A         = A(inds, inds);
-                
-                if ~isempty(excludeNodeNames)
-
-                    reminds = regexpSelect(nodenames, excludeNodeNames);
-
-                    inds = true(numel(nodenames), 1);
-                    inds(reminds) = false;
-                    
-                    nodenames = nodenames(inds);
-                    A         = A(inds, inds);
-                    
-                end
-
-            end
-            
-            if strcmp(opt.type, 'descendant')
-                A = A';
-            end
-            
-            if opt.markStaticVars
-                
-                staticnames = cgt.getStaticVarNames();
-                ind = ismember(nodenames, staticnames);
-
-                if nnz(ind)
-                    nodenames(ind) = cellfun(@(str) sprintf('%s (static)', str), nodenames(ind), 'un', false);
-                end
-                
-            end
-            
-            g = digraph(A, nodenames);
-
-            propinds = g.Edges.Weight;
-
-            if nargout > 1
-                edgelabels = {};
-                for iprop = 1 : numel(propinds)
-                    propind = propinds(iprop);
-                    edgelabels{end + 1} = func2str(propfunctionlist{propind}.fn);
-                end
-            end
-
-            h = plot(g, extras{:});
-
-            if nargout < 1
-                clear g
-            end
-            
-        end
         
         function printRootVariables(cgt)
         % Print the root variables in computational graph 
