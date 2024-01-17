@@ -187,7 +187,7 @@ classdef ComputationalGraphTool
             
             varnameind = cgt.getVarNameIndex(varname);
 
-            [~, propfuncinds, propvarnameinds, staticinds] = getDependencyVarNameInds2(varnameind, A);
+            [~, propfuncinds, propvarnameinds, staticinds] = getDependencyVarNameInds(varnameind, A);
             
             [staticinds, staticpropinds] = cgt.findStaticVarNameInds(staticinds);
 

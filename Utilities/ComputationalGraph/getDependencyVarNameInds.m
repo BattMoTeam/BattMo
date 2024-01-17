@@ -1,26 +1,45 @@
-function depvarnameinds = getDependencyVarNameInds(varnameinds, A, varargin)
-% for given list of index varnameinds, returns a list with index of nodes
-
-    opt = struct('oneParentOnly', false);
-    opt = merge_options(opt, varargin{:});
+function [depvarnameinds, propfuncinds, propvarnameinds, staticinds] = getDependencyVarNameInds(varnameinds, A)
     
-    depvarnameinds = [];
-    for inode = 1 : numel(varnameinds)
-        node = varnameinds(inode);
-        depvarnameinds = vertcat(depvarnameinds, node);
-        parentnodes = find(A(:, node)');
-        if any(parentnodes)
-            if ~(opt.oneParentOnly)
-                depvarnameinds = vertcat(depvarnameinds, getDependencyVarNameInds(parentnodes, A));
-            else
-                depvarnameinds = vertcat(depvarnameinds, parentnodes');
-            end
-        end
-    end        
+    [propfuncinds, propvarnameinds, staticinds] = getDependencyVarNameIndsRecursive(varnameinds, [], [], [], A);
+
+    depvarnameinds = [staticinds; propvarnameinds];
+    
 end
 
+function [propfuncinds, propvarnameinds, staticinds] = getDependencyVarNameIndsRecursive(varnameinds, propfuncinds, propvarnameinds, staticinds, A)
+% for given list of index varnameinds, returns a list with index of nodes
 
+    depvarnameinds = [];
 
+    for ivar = 1 : numel(varnameinds)
+
+        varnameind = varnameinds(ivar);
+        c = A(:, varnameind);
+
+        if all(c == 0)
+            %  no dependency
+            staticinds = vertcat(staticinds, varnameind);
+        else
+            % the non-zero entry in the column is is unique and give the index of the property function
+            
+            propfuncind = max(c);
+
+            depvarnameinds  = vertcat(depvarnameinds, find(c));
+            propfuncinds    = vertcat(propfuncind, propfuncinds);
+            propvarnameinds = vertcat(varnameind, propvarnameinds);
+            
+        end
+        
+    end        
+    
+    if ~isempty(depvarnameinds)
+
+        varnameinds = depvarnameinds;
+        [propfuncinds, propvarnameinds, staticinds] = getDependencyVarNameIndsRecursive(varnameinds, propfuncinds, propvarnameinds, staticinds, A);
+        
+    end
+    
+end
 
 
 %{

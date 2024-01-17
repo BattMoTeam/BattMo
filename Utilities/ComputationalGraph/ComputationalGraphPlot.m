@@ -188,12 +188,12 @@ classdef ComputationalGraphPlot < handle
                 
               case 'addParents'
 
-                nodeinds = getDependencyVarNameInds2(cgp.nodeinds, A);
+                nodeinds = getDependencyVarNameInds(cgp.nodeinds, A);
                 cgp.nodeinds = unique(nodeinds);
                 
               case 'addChildren'
 
-                nodeinds = getDependencyVarNameInds2(cgp.nodeinds, A');
+                nodeinds = getDependencyVarNameInds(cgp.nodeinds, A');
                 cgp.nodeinds = unique(nodeinds);
 
               otherwise
