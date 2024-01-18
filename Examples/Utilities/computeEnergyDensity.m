@@ -1,4 +1,4 @@
-function [Emid, Imid, energyDensity, specificEnergy, energy] = computeEnergyDensity(E, I, t, vol, mass, varargin)
+function [energyDensity, specificEnergy, energy, Emid, Imid, timeMid] = computeEnergyDensity(E, I, t, vol, mass, varargin)
 % Given time, voltage (E) and current (I), compute the energy that has been produced as a function of time.
 % In addition, returns the energyDensity and specificEnergy that are computed using the volume and mass of the cell.
     
@@ -6,8 +6,9 @@ function [Emid, Imid, energyDensity, specificEnergy, energy] = computeEnergyDens
     opt = merge_options(opt, varargin{:});
     
     dt = diff(t);
-    Emid = (E(2:end) + E(1:end - 1))/2.0; 
-    Imid = (I(2:end) + I(1:end - 1))/2.0; 
+    Emid    = (E(2:end) + E(1:end - 1))/2.0; 
+    Imid    = (I(2:end) + I(1:end - 1))/2.0; 
+    timeMid = (t(2:end) + t(1:end - 1))/2.0;
     energy = cumsum((Emid.*Imid).*dt); % J
 
     if opt.SIoutput

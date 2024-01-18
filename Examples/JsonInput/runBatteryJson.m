@@ -155,10 +155,8 @@ function  output = runBatteryJson(jsonstruct, varargin)
         end
         vol = sum(model.G.cells.volumes);
 
-        [E, I, energyDensity, specificEnergy, energy] = computeEnergyDensity(E, I, time, vol, mass);
+        [energyDensity, specificEnergy, energy] = computeEnergyDensity(E, I, time, vol, mass);
 
-        output.E              = E;
-        output.I              = I;
         output.energy         = energy;          % Unit : J
         output.energyDensity  = energyDensity;   % Unit : J/L
         output.specificEnergy = specificEnergy;  % Unit : J/kg
