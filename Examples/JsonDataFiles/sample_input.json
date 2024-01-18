@@ -65,6 +65,14 @@
         "specificHeatCapacity": 632,
         "thermalConductivity": 1.04
       }
+    },
+    "CurrentCollector": {
+      "thickness": 1e-05,
+      "N": 10,
+      "electronicConductivity": 59600000.0,
+      "thermalConductivity": 398,
+      "specificHeatCapacity": 385,
+      "density": 8960
     }
   },
   "PositiveElectrode": {
@@ -127,6 +135,14 @@
         "specificHeatCapacity": 700,
         "thermalConductivity": 2.1
       }
+    },
+    "CurrentCollector": {
+      "thickness": 1e-05,
+      "N": 10,
+      "electronicConductivity": 35500000.0,
+      "thermalConductivity": 170,
+      "specificHeatCapacity": 875.0,
+      "density": 2700
     }
   },
   "Separator": {
@@ -175,6 +191,10 @@
       "nominalConcentration": 1000
     },
     "bruggemanCoefficient": 1.5
+  },
+  "ThermalModel": {
+    "externalHeatTransferCoefficient": 1000.0,
+    "externalTemperature": 298.15
   },
   "TimeStepping": {
     "totalTime": 5040,
