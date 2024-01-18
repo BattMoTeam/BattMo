@@ -42,7 +42,7 @@
         },
         "nominalConcentration": {
           "$ref": "PhysicalQuantity.schema.json",
-          "description": "nominal concentration used as initial concentration in a simulation"
+          "description": "nominal concentration used as initial concentration in a simulation, if the later is not given explicitely, see StateInitialization.schema.json"
         }
       }
     },

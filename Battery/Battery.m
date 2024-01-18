@@ -648,7 +648,7 @@ classdef Battery < BaseModel
         %
 
             if nargin < 2 | isempty(jsonstruct)
-                jsonstruct.Electrolyte.initialConcentration = 1*mol/litre;
+                jsonstruct.Electrolyte.initialConcentration = model.Electrolyte.species.nominalConcentration;
             end
 
             nc = model.G.cells.num;

@@ -362,7 +362,8 @@
         },
         "species": {
             "chargeNumber": 1,
-            "transferenceNumber": 0.2594
+            "transferenceNumber": 0.2594,
+          "nominalConcentration": 1000
         },
         "bruggemanCoefficient": {
             "value": 1.5,
