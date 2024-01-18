@@ -5,8 +5,8 @@ JSON input specification
 
 The specification of the json input is provided through `JSON schemas
 <https://json-schema.org/understanding-json-schema>`_. In the Json schema, we added extra properties that are not part
-of the syntax but bring additional information such as a :code:`description` field and references to the onthology (work
-in progress :todo:`add more here`).
+of the syntax but bring additional information such as a :code:`description` field and references to the onthology (see
+`BattInfo <https://emmo-repo.github.io/domain-electrochemistry/index.html>`_ ).
 
 The main Simulation schema contains schemas for
 
@@ -144,7 +144,7 @@ functions.
 
 .. literalinclude:: ../Utilities/JsonSchemas/Interface.schema.json
    :language: json
-
+   
 See json :ref:`input example<jsonexample:Interface>`
               
 Solid Diffusion
@@ -220,7 +220,11 @@ See json :ref:`input example<jsonexample:Separator>`
 Thermal Model
 -------------
 
-The thermal parameters are essentially the thermal conductivity and heat capacity for each component.
+The thermal parameters such as thermal capacity and conductivity are part of the material parameters. In the thermal
+model, we include the external temperature and the heat transfer paremeters with the exterior domain. The later depend
+often on the geometry, and they are in fact also included in the schema there, see below. We have included a flag to
+indicate if we consider wet or dry properties. This flag is not yet supported and we always consider dry properties,
+from which the effective wet properties are computed.
 
 .. literalinclude:: ../Utilities/JsonSchemas/ThermalComponent.schema.json
    :language: json

@@ -14,7 +14,6 @@
    geometryinput
    advancedtopics
    juliabridge
-   gui
    Electrolyser simulation <publishedExamples/runElectrolyser>
    seealso
    References <bibliography>

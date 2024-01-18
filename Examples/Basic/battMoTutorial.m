@@ -23,7 +23,7 @@ mrstModule add ad-core mrst-gui mpfa agmg linearsolvers
 % negative electrode, a positive electrode and an electrolyte. *BattMo*
 % comes with some pre-defined models which can be loaded from JSON files.
 % Here we will load the basic lithium-ion model JSON file which comes with
-% Battmo. We use :battmo:`parseBattmoJson` to parse the file, see :todo:`add link to doc`
+% Battmo. We use :battmo:`parseBattmoJson` to parse the file.
 
 fname = fullfile('ParameterData','BatteryCellParameters',...
                  'LithiumIonBatteryCell','lithium_ion_battery_nmc_graphite.json');

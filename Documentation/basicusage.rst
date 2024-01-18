@@ -186,7 +186,9 @@ Change Control Parameters
 
 Let's try simulating the discharge of the cell at different C-Rates.
 
-Once the JSON parameter file has been read into MATLAB as a jsonstruct, its properties can be modified programmatically. For example, we can define a vector of different C-Rates and then use a for-loop to replace that value in the jsonstruct and re-run the simulation.
+Once the JSON parameter file has been read into MATLAB as a jsonstruct, its properties can be modified
+programmatically. For example, we can define a vector of different C-Rates and then use a for-loop to replace that value
+in the jsonstruct and re-run the simulation.
 
 .. code:: matlab
 
@@ -198,13 +200,11 @@ Once the JSON parameter file has been read into MATLAB as a jsonstruct, its prop
 
        states = output.states;
        time = cellfun(@(state) state.time, states);
-       voltage = cellfun(@(state) state.('Control').E, states);
+       voltage = cellfun(@(state) state.Control.E, states);
        plot((time/hour), voltage, '-', 'linewidth', 3)
        hold on
    end
    hold off
-
-[TODO: fix :code:`plotResult`] For this example, we have written a :code:`plotResult` function which extracts and plots from the output the time and voltage values, see :ref:`here <plotResult>`.
 
 .. figure:: img/crates.png
    :target: _images/crates.png
@@ -213,6 +213,7 @@ Once the JSON parameter file has been read into MATLAB as a jsonstruct, its prop
 
    A comparison of cell voltage curves at different C-Rates
 
+   
 Change Structural Parameters
 ============================
 
@@ -240,9 +241,6 @@ From these results we can see that for thin negative electrode coatings, the cap
 
 Change Material Parameters
 ==========================
-
-.. note::
-  TODO: Make this easier / more elegnant.
 
 Finally, let's try changing active materials in the model.
 
