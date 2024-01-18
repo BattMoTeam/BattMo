@@ -67,12 +67,12 @@ ylabel('voltage / V');
 
 %% Plot the minimum and maximum values of the temperature
 
-Tabs = PhysicalConstants.Tabs;
+T0 = PhysicalConstants.absoluteTemperature;
 
 states = output.states;
 
-Tmin = cellfun(@(state) min(state.ThermalModel.T + Tabs), states);
-Tmax = cellfun(@(state) max(state.ThermalModel.T + Tabs), states);
+Tmin = cellfun(@(state) min(state.ThermalModel.T + T0), states);
+Tmax = cellfun(@(state) max(state.ThermalModel.T + T0), states);
 
 figure
 hold on
@@ -95,8 +95,8 @@ output = runBatteryJson(jsonstruct);
 
 states = output.states;
 
-Tmin = cellfun(@(state) min(state.ThermalModel.T + Tabs), states);
-Tmax = cellfun(@(state) max(state.ThermalModel.T + Tabs), states);
+Tmin = cellfun(@(state) min(state.ThermalModel.T + T0), states);
+Tmax = cellfun(@(state) max(state.ThermalModel.T + T0), states);
 time = output.time;
 
 figure
@@ -114,7 +114,7 @@ legend show
 state = states{end}
 figure
 plotCellData(model.ThermalModel.G, ...
-             state.ThermalModel.T + Tabs);
+             state.ThermalModel.T + T0);
 colorbar
 title('Temperature / C');
 view([50, 50]);
