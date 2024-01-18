@@ -124,7 +124,7 @@ classdef ThermalComponent < BaseModel
             T0 = state0.T;
 
             % (here we assume that the ThermalModel has the "parent" grid)
-            vols = model.G.cells.volumes;
+            vols = model.G.getVolumes();
 
             state.accumHeat = vhcap.*vols.*(T - T0)/dt;
 
@@ -135,7 +135,7 @@ classdef ThermalComponent < BaseModel
             k = model.effectiveThermalConductivity;
             T = state.T;
 
-            jHeat = assembleFlux(model, T, k);
+            jHeat = assembleHomogeneousFlux(model, T, k);
 
             state.jHeat = jHeat;
 
@@ -176,14 +176,14 @@ classdef ThermalComponent < BaseModel
 
             coupcells = coupterm.couplingcells;
             coupfaces = coupterm.couplingfaces;
-            nc = model.G.cells.num;
+            nc = model.G.getNumberOfCells();
 
             T = state.T;
             T = T(coupcells);
 
             if isempty(coupfaces)
                 % 1D case (External faces are not available, we consider a volumetric cooling instead)
-                A = G.cells.volumes(coupcells);
+                A = G.getVolumes()(coupcells);
                 t_eff = lambda_ext*A;
             else
                 % Face couling (multidimensional case)

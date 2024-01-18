@@ -66,7 +66,7 @@ classdef SeaWaterBatteryGenerator < BatteryGenerator
             cells1 = (1 : G_ctde.cells.num)';
             pcells = G_ctde.mappings.cellmap(cells1);
             
-            mapping = zeros(G.cells.num, 1);
+            mapping = zeros(G.getNumberOfCells(), 1);
             mapping(G_elyte.mappings.cellmap) = (1 : G_elyte.cells.num)';
             cells2 = mapping(pcells);
             
@@ -87,7 +87,7 @@ classdef SeaWaterBatteryGenerator < BatteryGenerator
             cells1 = (1 : G_ande.cells.num)';
             pcells = G_ande.mappings.cellmap(cells1);
             
-            mapping = zeros(G.cells.num, 1);
+            mapping = zeros(G.getNumberOfCells(), 1);
             mapping(G_elyte.mappings.cellmap) = (1 : G_elyte.cells.num)';
             cells2 = mapping(pcells);
             

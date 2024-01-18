@@ -15,7 +15,7 @@ classdef Grid
 % - function vols                   = getVolumes(grid)                % returns cells volumes
 % - function areas                  = getFaceAreas(grid)              % return face areas
 % - function u                      = getHarmFace(grid, c)            % return harmonic average on the face from cell values
-% - function [bchT, bccells, bcsgn] = getBcHarmFlux(grid, u, bcfaces) % return weighted half-transmissibilities form 
+% - function [bchT, bccells, bcsgn] = getBcHarmFlux(grid, u, bcfaces) % return weighted half-transmissibilities form
 % - function jsq                    = getCellFluxNorm(grid, u)        % return norms of flux (no AD compliant version for the moment!)
 
 
@@ -53,7 +53,7 @@ classdef Grid
         % Helpers for AD assembly
         matrixOperators
         vectorHelpers
-        
+
     end
 
     properties
@@ -62,7 +62,7 @@ classdef Grid
         tPFVgeometry
 
     end
-    
+
 
     methods
 
@@ -71,7 +71,7 @@ classdef Grid
 
             opt = struct('faceArea', []);
             opt = merge_options(opt, varargin{:});
-            
+
             topology.cells.facePos   = G.cells.facePos;
             topology.cells.faces     = G.cells.faces;
             topology.cells.num       = G.cells.num;
@@ -81,7 +81,7 @@ classdef Grid
             topology.faces.neighbors = G.faces.neighbors;
             topology.nodes.num       = G.nodes.num;
             topology.griddim         = G.griddim;
-            
+
             grid.topology = topology;
 
             grid = grid.setupHelpers();
@@ -91,9 +91,9 @@ classdef Grid
             tPFVgeometry = grid.computeTPFVgeometry(nodecoords, ...
                                                     'faceArea', opt.faceArea);
             grid.tPFVgeometry = tPFVgeometry;
-            
+
         end
-        
+
         function [tPFVgeometry, grid] = computeTPFVgeometry(grid, nodecoords, varargin)
         % Given node coordinates (and faceArea - only required for 1D problem), we return the tPFVgeometry as a
         % TwoPointFiniteVolumeGeometry instance
@@ -101,51 +101,51 @@ classdef Grid
             opt = struct('faceArea', [], ...
                          'assemblyType', 'MRST');
             opt = merge_options(opt, varargin{:});
-            
+
             switch opt.assemblyType
 
               case 'MRST'
-                
+
                 tPFVgeometry = computeTPFVgeometryMRST(grid, nodecoords, opt.faceArea);
-                
-              case 'AD'                
+
+              case 'AD'
 
                 if isempty(grid.matrixOperators)
 
                     grid = grid.setupADhelpers();
-                    
+
                 end
-                
+
                 tPFVgeometry = computeTPFVgeometryAD(grid, nodecoords, opt.faceArea);
 
               otherwise
-                
+
                 error('assembly type not recognized');
-                
+
             end
-            
+
         end
-        
+
         function tPFVgeometry = computeTPFVgeometryMRST(grid, nodecoords, faceArea)
         % Compute the geometrical properties using genuine MRST functions. The input can only be vector of double (no AD support)
         % The argument faceArea is only needed for 1D case
-            
+
             mrstG = grid.topology;
             d = mrstG.griddim;
-            
-            if  mrstG.griddim == 1 & ~isempty(faceArea)
+
+            if  mrstG.griddim == 1 && ~isempty(faceArea)
                 farea = faceArea;
             else
                 farea = 1;
             end
-            
+
             mrstG.nodes.coords = reshape(nodecoords, d, [])';
 
             mrstG.type = 'generic';
 
             % Compute geometrical data
             mrstG = computeGeometry(mrstG);
-            
+
             rock.poro = ones(mrstG.cells.num, 1);
             rock.perm = ones(mrstG.cells.num, 1);
 
@@ -154,32 +154,32 @@ classdef Grid
 
             cells.centroids = reshape(mrstG.cells.centroids', [], 1);
             cells.volumes   = farea*mrstG.cells.volumes;
-            
+
             faces.centroids = reshape(mrstG.faces.centroids', [], 1);
             faces.normals   = farea*reshape(mrstG.faces.normals', [], 1);
             faces.areas     = farea*mrstG.faces.areas;
 
             nodes.coords = nodecoords;
-            
-            tPFVgeometry.cells = cells; 
+
+            tPFVgeometry.cells = cells;
             tPFVgeometry.faces = faces;
             tPFVgeometry.nodes = nodes;
             tPFVgeometry.hT    = farea*hT;
-            
+
             if  mrstG.griddim == 1
                 tPFVgeometry.faceArea = farea;
             end
 
             tPFVgeometry = TwoPointFiniteVolumeGeometry(tPFVgeometry);
-            
-        end        
+
+        end
 
         function tPFVgeometry = computeTPFVgeometryAD(grid, nodecoords, faceArea)
         % Compute the geometrical properties using function that can handle AD input for nodecoords and faceArea
         % The argument faceArea is only needed in 1D case.
-            
+
             tp = grid.topology;
-            
+
             switch tp.griddim
               case 1
                 if nargin < 3 || isempty(faceArea)
@@ -192,14 +192,14 @@ classdef Grid
               otherwise
                 error('Grid dimension not implemented yet.')
             end
-            
+
         end
-        
+
         function grid = setupHelpers(grid)
         % set the helpers structure.
 
             tp = grid.topology;
-            
+
             tbls = setupTables(tp, 'includetbls', {'intfacetbl', 'extfacetbl'});
             intfacetbl     = tbls.intfacetbl;
             cellintfacetbl = tbls.cellintfacetbl;
@@ -226,13 +226,13 @@ classdef Grid
 
             diffop.div  = divM;
             diffop.grad = -divM';
-            
+
             map = TensorMap();
             map.fromTbl  = cellfacetbl;
             map.toTbl    = cellintfacetbl;
             map.mergefds = {'cells', 'faces'};
             map = map.setup();
-            
+
             P = map.getMatrix();
 
             map = TensorMap();
@@ -242,7 +242,7 @@ classdef Grid
             map = map.setup();
 
             D = map.getMatrix();
-            
+
             map = TensorMap();
             map.fromTbl = cellintfacetbl;
             map.toTbl = intfacetbl;
@@ -254,7 +254,7 @@ classdef Grid
             trans = struct('P', P, ...
                            'D', D, ...
                            'S', S);
-            
+
             cellextfacetbl = crossIndexArray(cellfacetbl, extfacetbl, {'faces'});
 
             extfaces.faces = cellextfacetbl.get('faces');
@@ -264,7 +264,7 @@ classdef Grid
             map.fromTbl  = cellfacetbl;
             map.toTbl    = cellextfacetbl;
             map.mergefds = {'cells', 'faces'};
-            
+
             extfaces.halfTransParentInd = map.getDispatchInd();
 
             sgn = ones(cellextfacetbl.num, 1);
@@ -287,30 +287,30 @@ classdef Grid
         % Helper operators for CellFluxNorm. Note : those have no AD compliant version for the moment.
             G = getMRSTgrid(grid);
             grid.cellFluxOperators = getCellFluxOperatorsAll(G);
-            
+
         end
 
         function grid = setupADhelpers(grid)
         % Setup the AD helper structures matrixOperators and vectorHelpers.
         % Those are used to compute the geometrical properties in computeTPFVgeometryAD.
-            
+
             tp = grid.topology;
-            
+
             switch tp.griddim
               case 1
                 grid = grid.setupADhelpers1D();
               case 3
-                grid = grid.setupADhelpers3D();               
+                grid = grid.setupADhelpers3D();
               otherwise
                 error('Grid dimension not implemented yet.')
             end
-            
+
         end
-        
+
 
         function grid = setupADhelpers1D(grid)
         % AD helpers in 1D
-            
+
             tp = grid.topology;
 
             tbls = setupTables(tp);
@@ -320,16 +320,16 @@ classdef Grid
             cellfacetbl = tbls.cellfacetbl;
 
             nc = celltbl.num;
-            
+
             cellfacetbl2 = sortIndexArray(cellfacetbl, {'cells', 'faces'});
             faces = cellfacetbl2.get('faces');
             faces = reshape(faces, 2, [])';
-            
+
             cellface12tbl.cells = (1 : nc)';
             cellface12tbl.faces1 = faces(:, 1);
             cellface12tbl.faces2 = faces(:, 2);
             cellface12tbl = IndexArray(cellface12tbl);
-            
+
             % faceCentroids = nodeCoords
 
             prod = TensorProd();
@@ -349,7 +349,7 @@ classdef Grid
             % cellCentroids = prod.eval(p, faceCentroids)
 
             %% Compute volumes(c, f1, f2) = abs(faceCentroids(f2) - faceCentroids(f1))*faceArea
-            
+
             map1 = TensorMap();
             map1.fromTbl = facetbl;
             map1.toTbl = cellface12tbl;
@@ -377,13 +377,13 @@ classdef Grid
             % vols = map3.eval(map2.eval(faceCentroids) - map1.eval(faceCentroids))*faceArea
 
             %% Compute cellfacedist(c, f) = faceCentroids(f) - cellCentroids(c)
-            
+
             map1 = TensorMap();
             map1.fromTbl = celltbl;
             map1.toTbl = cellfacetbl;
             map1.mergefds = {'cells'};
             map1 = map1.setup();
-                        
+
             map2 = TensorMap();
             map2.fromTbl = facetbl;
             map2.toTbl = cellfacetbl;
@@ -397,12 +397,12 @@ classdef Grid
             % hT = 1./cellfacedist*faceArea
 
             grid.matrixOperators = matrixop;
-            
+
         end
-        
+
         function grid = setupADhelpers3D(grid)
         % AD helpers in 3D
-            
+
             tp = grid.topology;
 
             tbls = setupTables(tp, 'includetbls', {'vectbl', 'facenode12tbl'});
@@ -414,7 +414,7 @@ classdef Grid
             cellfacetbl   = tbls.cellfacetbl;
             facenodetbl   = tbls.facenodetbl;
             facenode12tbl = tbls.facenode12tbl;
-            
+
             % Triangles on the faces : facenode12tbl
 
             % sub-tetrahedra
@@ -428,10 +428,10 @@ classdef Grid
             cellvectbl     = tbls.cellvectbl;
             cellfacevectbl = tbls.cellfacevectbl;
             facenodevectbl = tbls.facenodevectbl;
-            
+
             facenode12vectbl     = crossIndexArray(facenode12tbl    , vectbl       , {}, 'optpureproduct', true);
             cellfacenode12vectbl = crossIndexArray(cellfacenode12tbl, vectbl       , {}, 'optpureproduct', true);
-            
+
             % Setup pseudo face centroids : pseudoFaceCentroids(f) = noodeCoords(n, f)/number(n in f)
 
             map = TensorMap();
@@ -442,7 +442,7 @@ classdef Grid
 
             matrixop.nodecoords_facenode = map.getMatrix();
             % To run:
-            % nodecoords_facenode = map.eval(nodeCoords);  
+            % nodecoords_facenode = map.eval(nodeCoords);
 
             map = TensorMap();
             map.fromTbl = facenodevectbl;
@@ -453,7 +453,7 @@ classdef Grid
             matrixop.facevec = map.getMatrix();
             % To run:
             % facevec = map.eval(nodecoords_facenode); % to be modified later
-            
+
             map = TensorMap();
             map.fromTbl = facenodetbl;
             map.toTbl = facetbl;
@@ -523,7 +523,7 @@ classdef Grid
             matrixop.nfVector1 = map.getMatrix();
             % To run:
             % nfVector1 = map.eval(nfVector);
-            
+
             map = TensorMap();
             map.fromTbl = facenodevectbl;
             map.toTbl = facenode12vectbl;
@@ -591,7 +591,7 @@ classdef Grid
             matrixop.n1Coords = map.getMatrix();
             % To run:
             % n1Coords = map.eval(nodeCoords);
-            
+
             map = TensorMap();
             map.fromTbl = nodevectbl;
             map.toTbl = facenode12vectbl;
@@ -602,7 +602,7 @@ classdef Grid
             matrixop.n2Coords = map.getMatrix();
             % To run:
             % n2Coords = map.eval(nodeCoords);
-            
+
             map = TensorMap();
             map.fromTbl = facevectbl;
             map.toTbl = facenode12vectbl;
@@ -626,7 +626,7 @@ classdef Grid
             matrixop.faceNormals = map.getMatrix();
             % To run:
             % faceNormals = map.eval(triNormals);
-            
+
             %% We compute faceAreas(f) = sum( triAreas(n1, n2, f))
 
             map = TensorMap();
@@ -660,21 +660,21 @@ classdef Grid
             matrixop.faceCentroids2 = map.getMatrix();
             % To run:
             % faceCentroids = prod.eval(triCentroids, triAreas)./map.eval(faceAreas);
-            
+
             %% We compute pseudoCellCentroids(c, i) = sum(faceCentroids(f, i))/number_faces_per_cell
 
             map = TensorMap();
             map.fromTbl = facevectbl;
-            map.toTbl = cellfacevectbl; 
+            map.toTbl = cellfacevectbl;
             map.mergefds = {'faces', 'vec'};
             map = map.setup();
 
             matrixop.pseudoCellCentroids1 = map.getMatrix();
             % To run:
             % pseudoCellCentroids = map.eval(faceCentroids); % temporary value
-            
+
             map = TensorMap();
-            map.fromTbl = cellfacevectbl; 
+            map.fromTbl = cellfacevectbl;
             map.toTbl = cellvectbl;
             map.mergefds = {'cells', 'vec'};
             map = map.setup();
@@ -682,7 +682,7 @@ classdef Grid
             matrixop.pseudoCellCentroids = map.getMatrix();
             % To run:
             % pseudoCellCentroids = map.eval(pseudoCellCentroids); % temporary value
-            
+
             number_faces_per_cell = ones(cellfacevectbl.num, 1); % temporary values
             number_faces_per_cell = map.eval(number_faces_per_cell);
 
@@ -757,7 +757,7 @@ classdef Grid
             matrixop.tetraVolumes = map.getMatrix();
             % To run:
             % tetraVolumes = map.eval(tetraVolumes);
-            
+
             % We compute cell volumes cellVolumes(c) = sum( tetraVolumes(c, f, n1, n2))
 
             map = TensorMap();
@@ -769,7 +769,7 @@ classdef Grid
             matrixop.cellVolumes = map.getMatrix();
             % To run:
             % cellVolumes = map.eval(tetraVolumes);
-            
+
             %% We adjust the centroids with relativeTetraCentroids(c, f, n1, n2, i) = 3/4*sum( triCentroids(f, n1, n2, i) - pseudoCellCentroids(c, i) )
 
             map1 = TensorMap();
@@ -788,7 +788,7 @@ classdef Grid
             matrixop.relativeTetraCentroids2 = map2.getMatrix();
             % To run:
             % relativeTetraCentroids = 3/4*(map1.eval(triCentroids) - map2.eval(pseudoCellCentroids));
-            
+
             %% We define cellCentroids(c, i) = pseudoCellCentroids(c, i) + sum(relativeTetraCentroids(c, f, n1, n2, i)*tetraVolumes(c, f, n1, n2))/V(c)
 
             map1 = TensorMap();
@@ -838,7 +838,7 @@ classdef Grid
 
 
             %% We compute the signed normals n(c, f, i) = cellfacesign(c, f)*faceNormals(f, i)
-            
+
             prod = TensorProd();
             prod.tbl1 = cellfacetbl;
             prod.tbl2 = facevectbl;
@@ -849,12 +849,12 @@ classdef Grid
             matrixop.cellfaceNormals = prod.getMatrices();
             % To run:
             % cellfaceNormals = prod.eval(cellfacesign, faceNormals);
-            
+
             %% We compute:
             %% dscaln(c, f) = d(c, f, i)*cellfaceNormals(c, f, i),
             %% dsq(c, f)    = d(c, f, i)*d(c, f, i),
             %% hT(c, f)     = dKn(c, f)/dsq(c, f)
-            
+
             prod = TensorProd();
             prod.tbl1 = cellfacevectbl;
             prod.tbl2 = cellfacevectbl;
@@ -872,17 +872,17 @@ classdef Grid
 
             grid.matrixOperators = matrixop;
             grid.vectorHelpers   = vechelps;
-            
+
         end
 
-        
+
         function tPFVgeometry = computeTPFVgeometryAD_1D(grid, nodecoords, faceArea)
         % version of computeTPFVgeometryAD in 1D
 
             if isempty(faceArea)
                 faceArea = 1;
             end
-            
+
             m  = grid.matrixOperators;
             tp = grid.topology;
 
@@ -891,9 +891,9 @@ classdef Grid
             faceCentroids = nodecoords;
 
             cellCentroids = m.cellCentroids*faceCentroids;
-            
+
             cellVolumes = m.vols3*(abs(m.vols2*faceCentroids - m.vols1*faceCentroids))*faceArea;
-            
+
             tPFVgeometry.cells.volumes   = cellVolumes;
             tPFVgeometry.cells.centroids = cellCentroids;
             tPFVgeometry.faces.areas     = faceArea*ones(nf, 1);
@@ -906,35 +906,35 @@ classdef Grid
             tPFVgeometry.hT = 1./cellfacedist*faceArea;
 
             tPFVgeometry.faceArea = faceArea;
-            
+
             tPFVgeometry = TwoPointFiniteVolumeGeometry(tPFVgeometry);
 
         end
 
         function tPFVgeometry = computeTPFVgeometryAD_3D(grid, nodecoords)
         % version of computeTPFVgeometryAD in 1D
-            
+
             tp = grid.topology;
             m  = grid.matrixOperators;
             v  = grid.vectorHelpers;
 
             n = tp.griddim;
-            
+
             nodecoords_facenode = m.nodecoords_facenode*nodecoords;
             facevec             = m.facevec*nodecoords_facenode;
             pseudoFaceCentroids = facevec./v.nnode_per_face;
-            
-            nfVector  = m.nfVector_2*nodecoords - m.nfVector_1*pseudoFaceCentroids; 
+
+            nfVector  = m.nfVector_2*nodecoords - m.nfVector_1*pseudoFaceCentroids;
 
             nfVector1 = m.nfVector1*nfVector;
             nfVector2 = m.nfVector2*nfVector;
-            
+
             triNormals = m.triNormals1*nfVector1;
             triNormals = 0.5*grid.applyProduct(m.triNormals, triNormals, nfVector2);
 
             triAreas = grid.applyProduct(m.triAreas, triNormals, triNormals);
             triAreas = triAreas.^0.5;
-            
+
             n1Coords       = m.n1Coords*nodecoords;
             n2Coords       = m.n2Coords*nodecoords;
             pseudoFaceCentroids = m.pseudoFaceCentroids*pseudoFaceCentroids;
@@ -946,10 +946,10 @@ classdef Grid
 
             D1 = m.faceCentroids1.D1;
             D2 = m.faceCentroids1.D2;
-            S  = m.faceCentroids1.S;            
+            S  = m.faceCentroids1.S;
 
             faceCentroids = (S*((D1*triCentroids).*(D2*triAreas)))./(m.faceCentroids2*faceAreas);
-            
+
             pseudoCellCentroids = m.pseudoCellCentroids1*faceCentroids;
             pseudoCellCentroids = m.pseudoCellCentroids*pseudoCellCentroids;
             pseudoCellCentroids = pseudoCellCentroids./v.number_faces_per_cell;
@@ -958,12 +958,12 @@ classdef Grid
             scalprod = m.scalprod*scalprod;
             scalprod = value(scalprod);
             cellfacesign = (scalprod > 0) - (scalprod < 0);
-            
+
             tetraVolumes           = 1/3*(m.tetraVolumes1*triCentroids - m.tetraVolumes2*pseudoCellCentroids).*(m.tetraVolumes1*triNormals).*(m.tetraVolumes3*cellfacesign);
             tetraVolumes           = m.tetraVolumes*tetraVolumes;
             cellVolumes            = m.cellVolumes*tetraVolumes;
             relativeTetraCentroids = 3/4*(m.relativeTetraCentroids1*triCentroids - m.relativeTetraCentroids2*pseudoCellCentroids);
-            
+
             cellCentroids = pseudoCellCentroids + (m.cellCentroids2*(relativeTetraCentroids.*(m.cellCentroids1*tetraVolumes)))./(m.cellCentroids3*cellVolumes);
 
             tPFVgeometry.cells.volumes   = cellVolumes;
@@ -974,23 +974,23 @@ classdef Grid
             tPFVgeometry.nodes.coords    = nodecoords;
 
             % Computation of transmissibilities
-            
+
             d = m.d1*faceCentroids - m.d2*cellCentroids;
 
             cellfaceNormals = grid.applyProduct(m.cellfaceNormals, cellfacesign, faceNormals);
-            
+
             dscaln = grid.applyProduct(m.dscaln, d, cellfaceNormals);
             dsq    = grid.applyProduct(m.dsq, d, d);
 
             tPFVgeometry.hT = dscaln./dsq;
-            
+
             tPFVgeometry = TwoPointFiniteVolumeGeometry(tPFVgeometry);
-            
+
         end
 
         function G = getMRSTgrid(grid)
         % Returns MRST grid that can be used for plotting
-            
+
             G  = grid.topology;
             tg = grid.tPFVgeometry;
 
@@ -1004,32 +1004,32 @@ classdef Grid
             G.faces.normals   = reshape(tg.faces.normals, d, [])';
             G.faces.areas     = tg.faces.areas;
             G.nodes.coords    = reshape(tg.nodes.coords, d, [])';
-            
+
         end
 
 
         function vols = getVolumes(grid)
-            
+
             vols = grid.tPFVgeometry.cells.volumes;
-            
+
         end
 
         function areas = getFaceAreas(grid)
-            
+
             areas = grid.tPFVgeometry.faces.areas;
-            
+
         end
-        
+
         function u = getHarmFace(grid, c)
         % Returns fluxes for each internal faces for the cell-valued vector c
 
             op = grid.helpers.trans;
             hT = grid.tPFVgeometry.hT;
-            
+
             u = 1 ./ (op.S * ( 1 ./ (op.D*c .* op.P*hT)));
-            
+
         end
-        
+
         function [bchT, bccells, bcsgn] = getBcHarmFlux(grid, u, bcfaces)
         % Returns half transmissibilities and cell indexing for the given boundary faces
 
@@ -1037,43 +1037,44 @@ classdef Grid
             exf  = grid.helpers.extfaces;
 
             extfaceind = grid.helpers.faceextfacemap(bcfaces);
-            
+
             bccells = exf.cells(extfaceind);
             bcsgn   = exf.sgn(extfaceind);
             bchT    = hT(exf.halfTransParentInd(extfaceind));
-            
+            error('This function is missing something impoartant...')
+
         end
 
         function jsq = getCellFluxNorm(grid, u)
-    
+
             P = grid.cellFluxOperators.P;
             S = grid.cellFluxOperators.S;
-    
+
             j = P*u;
             jsq = j.^2;
             jsq = S*jsq;
-            
+
         end
 
         function nc = getNumberOfCells(grid)
 
             nc = grid.topology.cells.num;
-            
-        end        
+
+        end
     end
 
     methods(Static)
 
         function value = applyProduct(matrixOperator, arg1, arg2)
         % Function that assembly product structure (two dispatches followed by one reduction)
-            
+
             D1 = matrixOperator.D1;
             D2 = matrixOperator.D2;
             S  = matrixOperator.S;
 
             value = S*((D1*arg1).*(D2*arg2));
-            
+
         end
-    end    
-    
+    end
+
 end

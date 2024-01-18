@@ -48,7 +48,7 @@ classdef ExperimentalBattery < Battery
             end
             
             %% for now temperature and SOC are kept constant
-            nc = model.G.cells.num;
+            nc = model.G.getNumberOfCells();
             %state.SOC = model.SOC*ones(nc, 1);
             
             % Shorthands used in this function
@@ -97,7 +97,7 @@ classdef ExperimentalBattery < Battery
                 
                 eqs{end + 1}   = state.(ne).(co).(am).(sd).massCons*massConsScaling;
                 names{end + 1} = 'ne_co_am_sd_massCons';
-                eqs{end + 1}   = state.(ne).(co).(am).(sd).solidDiffusionEq.*massConsScaling.*battery.(ne).(co).G.cells.volumes/dt;
+                eqs{end + 1}   = state.(ne).(co).(am).(sd).solidDiffusionEq.*massConsScaling.*battery.(ne).(co).G.getVolumes()/dt;
                 names{end + 1} = 'ne_co_am_sd_soliddiffeq';
                 
               case 'full'
@@ -129,7 +129,7 @@ classdef ExperimentalBattery < Battery
 
                 eqs{end + 1}   = state.(pe).(co).(am).(sd).massCons*massConsScaling;
                 names{end + 1} = 'pe_co_am_massCons';
-                eqs{end + 1}   = state.(pe).(co).(am).(sd).solidDiffusionEq.*massConsScaling.*battery.(pe).(co).G.cells.volumes/dt;
+                eqs{end + 1}   = state.(pe).(co).(am).(sd).solidDiffusionEq.*massConsScaling.*battery.(pe).(co).G.getVolumes()/dt;
                 names{end + 1} = 'pe_co_am_sd_soliddiffeq';
                 
               case 'full'

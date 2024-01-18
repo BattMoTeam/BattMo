@@ -207,7 +207,7 @@ function output = radialGrid(params)
 
     cellfacetbl = tbls.cellfacetbl;
     % we store the order previous to mapping. Here we just assumed that the grid is cartesian for simplicity
-    cellfacetbl = cellfacetbl.addInd('order', repmat((1 : 4)', cartG.cells.num, 1));
+    cellfacetbl = cellfacetbl.addInd('order', repmat((1 : 4)', cartG.getNumberOfCells(), 1));
 
     cellfacetbl = crossIndexArray(cellfacetbl, allnewfacetbl, {'faces'});
     cellfacetbl = sortIndexArray(cellfacetbl, {'cells', 'order' 'newfaces'});
@@ -236,7 +236,7 @@ function output = radialGrid(params)
     [~, ind] = rlencode(cellfacetbl.get('cells'));
     cells.facePos = [1; 1 + cumsum(ind)];
     cells.faces = cellfacetbl.get('faces');
-    cells.num = cartG.cells.num;
+    cells.num = cartG.getNumberOfCells();
 
     G.cells = cells;
     G.faces = faces;
@@ -255,7 +255,7 @@ function output = radialGrid(params)
     comptagtbl.indj = (1 : (sum(nrs)*nwindings))';
     comptagtbl = IndexArray(comptagtbl);
 
-    celltbl.cells = (1 : cartG.cells.num)';
+    celltbl.cells = (1 : cartG.getNumberOfCells())';
     celltbl.indi = repmat((1 : nas)', [sum(nrs)*nwindings, 1]);
     celltbl.indl = rldecode((1 : nwindings)', nas*sum(nrs)*ones(nwindings, 1));
     celltbl.indj = rldecode((1 : sum(nrs)*nwindings)', nas*ones(sum(nrs)*nwindings, 1));
@@ -281,10 +281,10 @@ function output = radialGrid(params)
 
     %% add cartesian indexing, tag and layer index to the grid
 
-    [indi, indj, indk] = ind2sub([n, m, nL], (1 : G.cells.num)');
+    [indi, indj, indk] = ind2sub([n, m, nL], (1 : G.getNumberOfCells())');
 
     clear celltbl
-    celltbl.cells = (1 : G.cells.num)';
+    celltbl.cells = (1 : G.getNumberOfCells())';
     celltbl.indi = indi;
     celltbl.indj = indj;
     celltbl.indk = indk;
@@ -446,7 +446,7 @@ function output = radialGrid(params)
     detailedtag = celltbl.get('tag');
     detailedtagdict = tagdict;
 
-    tag = nan(G.cells.num, 1);
+    tag = nan(G.getNumberOfCells(), 1);
     tagdict = containers.Map(...
         {'PositiveCoating'         , ...
          'PositiveCurrentCollector', ...

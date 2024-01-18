@@ -103,7 +103,7 @@ classdef PlatiniumCatalystLayer < CatalystLayer
         % Here, the direction of the reaction that is indicated by the repeated arrow symbol corresponds to a positive computed reaction rate
 
             F = model.constants.F;
-            vols = model.G.cells.volumes;
+            vols = model.G.getVolumes();
             
             elyteR = state.elyteReactionRate;
             inmrR  = state.inmrReactionRate;

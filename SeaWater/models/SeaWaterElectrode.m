@@ -55,7 +55,7 @@ classdef SeaWaterElectrode < ElectronicComponent
 
         function state = updateAccumTerm(model, state, state0, dt)
 
-            vols = model.G.cells.volumes;
+            vols = model.G.getVolumes();
             state.accumTerm = 1/dt*vols.*(state.volumeFraction - state0.volumeFraction);
             
         end

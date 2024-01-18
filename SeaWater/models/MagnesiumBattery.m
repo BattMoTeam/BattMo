@@ -96,9 +96,9 @@ classdef MagnesiumBattery < SeaWaterBattery
             ct    = 'Cathode';
             an    = 'Anode';
 
-            anvols    = model.(an).G.cells.volumes;
-            ctvols    = model.(ct).G.cells.volumes;
-            elytevols = model.(elyte).G.cells.volumes;
+            anvols    = model.(an).G.getVolumes();
+            ctvols    = model.(ct).G.getVolumes();
+            elytevols = model.(elyte).G.getVolumes();
             F         = model.con.F;
             nqp       = model.(elyte).nqp;
             is_prep   = model.include_precipitation;
@@ -129,8 +129,8 @@ classdef MagnesiumBattery < SeaWaterBattery
             coupDict  = model.couplingCellDict;
             qpdict    = model.Electrolyte.qpdict;
             nqp       = model.Electrolyte.nqp;
-            nc        = model.Electrolyte.G.cells.num;
-            vols      = model.Electrolyte.G.cells.volumes;
+            nc        = model.Electrolyte.G.getNumberOfCells();
+            vols      = model.Electrolyte.G.getVolumes();
             adbackend = model.AutoDiffBackend;
             
             cathR    = state.CathodeActiveMaterial.R;
@@ -164,7 +164,7 @@ classdef MagnesiumBattery < SeaWaterBattery
 
             I = drivingForces.src(t);
             F = model.con.F;
-            vols = model.(ct).G.cells.volumes;
+            vols = model.(ct).G.getVolumes();
 
             state.(ct).galvanostatic = I + sum(2*F*R.*vols);
 

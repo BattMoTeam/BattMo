@@ -48,8 +48,8 @@ function output = sectorGrid(params)
     negativeExtCurrentFaces = output.negativeExtCurrentFaces;
     thermalExchangeFaces    = output.thermalExchangeFaces;
 
-    [indA, indR, indZ] = ind2sub([nas, nR, nL], (1 : radG.cells.num)');
-    celltbl.cells = (1 : radG.cells.num)';
+    [indA, indR, indZ] = ind2sub([nas, nR, nL], (1 : radG.getNumberOfCells())');
+    celltbl.cells = (1 : radG.getNumberOfCells())';
     celltbl.indA = indA;
     celltbl.indR = indR;
     celltbl.indZ = indZ;
@@ -62,13 +62,13 @@ function output = sectorGrid(params)
 
     scells = scelltbl.get('cells');
 
-    rcells = (1 : radG.cells.num)';
+    rcells = (1 : radG.getNumberOfCells())';
     rcells(scells) = [];
 
     [G, cellmap, facemap] = removeCells(radG, rcells);
 
     cutcelltbl.radcells = cellmap;
-    cutcelltbl.cells    = (1 : G.cells.num)';
+    cutcelltbl.cells    = (1 : G.getNumberOfCells())';
     cutcelltbl = IndexArray(cutcelltbl);
 
     gen = CrossIndexArrayGenerator();

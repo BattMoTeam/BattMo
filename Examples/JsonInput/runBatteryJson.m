@@ -153,7 +153,7 @@ function  output = runBatteryJson(jsonstruct, varargin)
         else
             mass = [];
         end
-        vol = sum(model.G.cells.volumes);
+        vol = sum(model.G.getVolumes());
 
         [E, I, energyDensity, specificEnergy, energy] = computeEnergyDensity(E, I, time, vol, mass);
 

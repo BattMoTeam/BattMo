@@ -73,7 +73,7 @@ function output = coinCell3dGrid(params, compNames, dz, tagdict)
     thickness = compDims.thickness;
     thickness_accum = [0; cumsum(thickness)];
     zc = G.cells.centroids(:, 3);
-    tag = tagdict('Electrolyte') * ones(G.cells.num, 1);
+    tag = tagdict('Electrolyte') * ones(G.getNumberOfCells(), 1);
 
     for k = 1:numel(compNames) 
         key = compNames{k};

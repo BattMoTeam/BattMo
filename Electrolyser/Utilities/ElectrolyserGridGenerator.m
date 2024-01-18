@@ -72,7 +72,7 @@ classdef ElectrolyserGridGenerator
             G     = G_ctl.mappings.parentGrid;
             cells2 = (1 : G_ctl.cells.num)'; % all the cells of the catalyst layer are coupled to the porous transport layer
 
-            mapping = zeros(G.cells.num, 1);
+            mapping = zeros(G.getNumberOfCells(), 1);
             mapping(G_ptl.mappings.cellmap) = (1 : G_ptl.cells.num)'; % mapping from parent grid to ptl grid;
 
             pcells = G_ctl.mappings.cellmap(cells2); % ctl cells indexed in parent grid
@@ -109,7 +109,7 @@ classdef ElectrolyserGridGenerator
             G     = inputparams.G;
             G_inm = inputparams.(inm).G;
 
-            mapping = zeros(G.cells.num, 1);
+            mapping = zeros(G.getNumberOfCells(), 1);
             mapping(G_inm.mappings.cellmap) = (1 : G_inm.cells.num)';
 
             eldes = {oer, her};

@@ -128,7 +128,7 @@ classdef Electrolyser < BaseModel
 
             state.(inm) = model.(inm).setupOHconcentration();
 
-            nc = model.G.cells.num;
+            nc = model.G.getNumberOfCells();
             state.T = T*ones(nc, 1);
 
             state = model.dispatchTemperature(state);
@@ -145,7 +145,7 @@ classdef Electrolyser < BaseModel
                 liqrho = model.(elde).(ptl).density(cOH, T);
                 Vs     = model.(elde).(ptl).partialMolarVolume(cOH, liqrho, T);
 
-                nc = model.(elde).(ptl).G.cells.num;
+                nc = model.(elde).(ptl).G.getNumberOfCells();
 
                 fun = @(s) leverett(model.(elde).(ptl).leverettCoefficients, s); % Define Leverett function handle
                 sLiquid = fzero(fun, 0.7); % Solve equilibrium liquid saturation
@@ -195,10 +195,10 @@ classdef Electrolyser < BaseModel
 
             end
 
-            nc = model.(inm).G.cells.num;
+            nc = model.(inm).G.getNumberOfCells();
 
             % We use water activity in oer to setup activity
-            nc_inm = model.(inm).G.cells.num;
+            nc_inm = model.(inm).G.getNumberOfCells();
 
             aw = state.(oer).(ptl).H2Oa(1);
             state.(inm).H2Oa = aw*ones(nc_inm, 1);
@@ -216,8 +216,8 @@ classdef Electrolyser < BaseModel
             Eelyte_her = state.(her).(ctl).Eelyte(1);
             Einmr_her  = state.(her).(ctl).Einmr(1);
 
-            nc_her = model.(her).(ptl).G.cells.num;
-            nc_oer = model.(oer).(ptl).G.cells.num;
+            nc_her = model.(her).(ptl).G.getNumberOfCells();
+            nc_oer = model.(oer).(ptl).G.getNumberOfCells();
 
             state.(her).(ptl).E   = 0;
             state.(her).(ptl).phi = - Eelyte_her*ones(nc_her, 1);
@@ -273,7 +273,7 @@ classdef Electrolyser < BaseModel
             if model.(oer).(ctl).include_dissolution
                 
                 dm = 'DissolutionModel';
-                nc = model.(oer).(ctl).(dm).G.cells.num;
+                nc = model.(oer).(ctl).(dm).G.getNumberOfCells();
                 
                 state.(oer).(ctl).(dm).volumeFraction = model.(oer).(ctl).(dm).volumeFraction0*ones(nc, 1);
                 
@@ -364,7 +364,7 @@ classdef Electrolyser < BaseModel
                 elde = eldes{ielde};
 
                 % setup initial value for the variable that also takes care of AD.
-                nc = model.(elde).(ctl).G.cells.num;
+                nc = model.(elde).(ctl).G.getNumberOfCells();
                 initval = nan(nc, 1);
                 [adsample, isAD] = getSampleAD(state.(inm).phi);
                 if isAD
@@ -406,7 +406,7 @@ classdef Electrolyser < BaseModel
             OHsource  = 0*state.(inm).H2Oceps;
             H2OSource = 0*state.(inm).H2Oceps;
             
-            vols = model.(inm).G.cells.volumes;
+            vols = model.(inm).G.getVolumes();
 
             eldes = {her, oer};
             

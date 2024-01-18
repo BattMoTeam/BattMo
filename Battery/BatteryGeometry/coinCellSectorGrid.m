@@ -59,7 +59,7 @@ function output = coinCellSectorGrid(params)
     comptag = (1 : numel(components));
     tagdict = containers.Map(components, comptag);
 
-    tag = -1*ones(G.cells.num, 1);
+    tag = -1*ones(G.getNumberOfCells(), 1);
     zc = G.cells.centroids(:, 3);
     z = [-1 cumsum(thickness)];
     for k = 1:numel(z)-1

@@ -26,7 +26,7 @@ function op = getCellFluxOperators(G, varargin)
     [smap, sortind] = sortrows(map);
     
     %% 
-    nc     = G.cells.num;
+    nc     = G.getNumberOfCells();
     dims   = G.griddim;
     m      = accumarray(smap(:, 1), 1, [nc, 1]);
     n      = G.griddim*ones(nc, 1);

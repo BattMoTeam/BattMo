@@ -462,7 +462,7 @@ classdef Coating < ElectronicComponent
             sd  = 'SolidDiffusion';
 
             F    = model.constants.F;
-            vols = model.G.cells.volumes;
+            vols = model.G.getVolumes();
 
             ams = {am1, am2};
 
@@ -539,7 +539,7 @@ classdef Coating < ElectronicComponent
 
             vf       = model.volumeFraction;
             am_frac  = model.volumeFractions(model.compInds.(am));
-            vols     = model.G.cells.volumes;
+            vols     = model.G.getVolumes();
             cmax     = model.(am).(itf).saturationConcentration;
             theta100 = model.(am).(itf).guestStoichiometry100;
             theta0   = model.(am).(itf).guestStoichiometry0;
@@ -566,7 +566,7 @@ classdef Coating < ElectronicComponent
             sd  = 'SolidDiffusion';
 
             vf    = model.volumeFraction;
-            vols = model.G.cells.volumes;
+            vols = model.G.getVolumes();
 
             ams = {am1, am2};
 

@@ -29,7 +29,7 @@ function inputparams = setupElectrolyserGridFromJson(inputparams, jsonstruct)
 
        % We add the solid volume fraction 
 
-       vf_inm = ones(inputparams.(inm).G.cells.num, 1);
+       vf_inm = ones(inputparams.(inm).G.getNumberOfCells(), 1);
 
        eldes = {oer, her};
        
@@ -37,7 +37,7 @@ function inputparams = setupElectrolyserGridFromJson(inputparams, jsonstruct)
            
            elde = eldes{ielde};
            svf_elde = jsonstruct.(elde).(ptl).widthFraction;
-           svf_elde = svf_elde*ones(inputparams.(elde).(ptl).G.cells.num, 1);
+           svf_elde = svf_elde*ones(inputparams.(elde).(ptl).G.getNumberOfCells(), 1);
            
            coupterm = inputparams.(elde).couplingTerm;
            w_elde = jsonstruct.(elde).(ctl).widthFraction;

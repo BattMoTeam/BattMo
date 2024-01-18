@@ -27,7 +27,7 @@ classdef MagnesiumElectrode < SeaWaterElectrode
         function state = updatePotential(model, state)
         % this is a special setup : We impose given potential and assume infinite conductivity in hydrogen electrode
         % (likely to change later)
-            nc = model.G.cells.num;
+            nc = model.G.getNumberOfCells();
             
             E = state.E;
             

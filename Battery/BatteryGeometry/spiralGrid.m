@@ -105,7 +105,7 @@ function output = spiralGrid(params)
     nx = nas;
     ny = sum(nrs);
 
-    celltbl.cells = (1 : cartG.cells.num)';
+    celltbl.cells = (1 : cartG.getNumberOfCells())';
     celltbl.indi = repmat((1 : nas)', [sum(nrs)*nwindings, 1]);
     celltbl.indj = rldecode((1 : sum(nrs)*nwindings)', nas*ones(sum(nrs)*nwindings, 1));
     celltbl.curvindi = celltbl.indi + nas*floor((celltbl.indj - 1)./ny);
@@ -241,7 +241,7 @@ function output = spiralGrid(params)
 
     cellfacetbl = tbls.cellfacetbl;
     % we store the order previous to mapping. Here we just assumed that the grid is cartesian for simplicity
-    cellfacetbl = cellfacetbl.addInd('order', repmat((1 : 4)', cartG.cells.num, 1));
+    cellfacetbl = cellfacetbl.addInd('order', repmat((1 : 4)', cartG.getNumberOfCells(), 1));
 
     cellfacetbl = crossIndexArray(cellfacetbl, allnewfacetbl, {'faces'});
     cellfacetbl = sortIndexArray(cellfacetbl, {'cells', 'order' 'newfaces'});
@@ -270,7 +270,7 @@ function output = spiralGrid(params)
     [~, ind] = rlencode(cellfacetbl.get('cells'));
     cells.facePos = [1; 1 + cumsum(ind)];
     cells.faces = cellfacetbl.get('faces');
-    cells.num = cartG.cells.num;
+    cells.num = cartG.getNumberOfCells();
 
     G.cells = cells;
     G.faces = faces;
@@ -392,7 +392,7 @@ function output = spiralGrid(params)
     celltbl = celltbl.removeInd({'cells'});
     celltbl = crossIndexArray(cellindktbl, celltbl, {});
     celltbl = sortIndexArray(celltbl, {'indk', 'indj', 'indi', 'curvindi', 'curvindj'});
-    celltbl = celltbl.addInd('cells', (1 : G.cells.num)');
+    celltbl = celltbl.addInd('cells', (1 : G.getNumberOfCells())');
 
     % We add vertical (2) and horizontal (1) direction index for the faces (see makeLayeredGrid for the setup)
 
@@ -527,7 +527,7 @@ function output = spiralGrid(params)
     detailedtag = tag;
     detailedtagdict = tagdict;
 
-    tag = nan(G.cells.num, 1);
+    tag = nan(G.getNumberOfCells(), 1);
     tagdict = containers.Map(...
         {'PositiveCoating'         , ...
          'PositiveCurrentCollector', ...
@@ -595,7 +595,7 @@ function [tabcelltbl, tabwidths] = getTabCellTbl(cccelltbl, cclinewidth, indj0, 
 
         c = cclinecelltbl.get('cells');
         o = cclinecelltbl.get('curvindi');
-        l = cumsum(G.cells.volumes(c)/cclinewidth);
+        l = cumsum(G.getVolumes()(c)/cclinewidth);
 
         indl = find(l > tabparams.width, 1, 'first');
         tabwidths(ind) = l(indl);

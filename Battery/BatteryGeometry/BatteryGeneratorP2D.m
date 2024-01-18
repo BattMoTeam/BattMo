@@ -215,7 +215,7 @@ classdef BatteryGeneratorP2D < BatteryGenerator
         function inputparams = setupThermalModel(gen, inputparams, params)
 
             params.couplingfaces = [];
-            params.couplingcells = (1 : gen.G.cells.num)';
+            params.couplingcells = (1 : gen.G.getNumberOfCells())';
             inputparams = setupThermalModel@BatteryGenerator(gen, inputparams, params);
 
         end

@@ -1,12 +1,7 @@
 function flux = assembleFlux(model, potential, fluxCoefficient)
 
     subG = model.G;
-
-    if (isa(fluxCoefficient, 'ADI') && isscalar(fluxCoefficient.val)) || (~isa(fluxCoefficient, 'ADI') && isscalar(fluxCoefficient))
-        flux = - fluxCoefficient.*subG.getGrad(potential);
-    else
-        flux = - subG.getHarmFace(fluxCoefficient).*subG.getGrad(potential);
-    end
+    flux = - subG.getHarmFace(fluxCoefficient).*subG.getGrad(potential);
 
 end
 

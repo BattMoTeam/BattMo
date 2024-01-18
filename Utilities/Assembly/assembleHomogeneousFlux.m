@@ -1,7 +1,7 @@
 function flux = assembleHomogeneousFlux(model, potential, fluxCoefficient)
     
     op = model.operators;
-    flux = - fluxCoefficient*op.T.*op.Grad(potential);
+    flux = - fluxCoefficient .* op.T .* op.Grad(potential);
     
 end
 

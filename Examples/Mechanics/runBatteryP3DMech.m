@@ -211,7 +211,7 @@ for i = 1 : numel(states)
                                  'experimental_scaling',false);
 
     vdiv = VEM_div(G);
-    mdiv = vdiv*reshape(uVEM', [], 1)./G.cells.volumes;
+    mdiv = vdiv*reshape(uVEM', [], 1)./G.getVolumes();
 
     clf
     plotCellDataDeformed(G, mdiv, uVEM, 'EdgeAlpha',0.04);

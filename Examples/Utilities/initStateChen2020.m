@@ -11,7 +11,7 @@ function initstate = initStateChen2020(model, c_ne, c_pe)
     co      = 'Coating';
     thermal = 'ThermalModel';
 
-    nc = model.G.cells.num;
+    nc = model.G.getNumberOfCells();
     T = model.initT;
     initstate.(thermal).T = T*ones(nc, 1);
 
@@ -25,7 +25,7 @@ function initstate = initStateChen2020(model, c_ne, c_pe)
     % We bypass the solid diffusion equation to set directly the particle surface concentration
     switch model.(ne).(co).(am).diffusionModelType
       case 'simple'
-        nenp = model.(ne).(co).G.cells.num;
+        nenp = model.(ne).(co).G.getNumberOfCells();
         initstate.(ne).(co).(am).(sd).cAverage = c_ne*ones(nenp, 1);
         initstate.(ne).(co).(am).(sd).cSurface = c_ne*ones(nenp, 1);
       case 'full'
@@ -52,7 +52,7 @@ function initstate = initStateChen2020(model, c_ne, c_pe)
 
     switch model.(ne).(co).(am).diffusionModelType
       case 'simple'
-        penp = model.(pe).(co).G.cells.num;
+        penp = model.(pe).(co).G.getNumberOfCells();
         initstate.(pe).(co).(am).(sd).cAverage = c_pe*ones(penp, 1);
         initstate.(pe).(co).(am).(sd).cSurface = c_pe*ones(penp, 1);
       case 'full'
@@ -72,8 +72,8 @@ function initstate = initStateChen2020(model, c_ne, c_pe)
     OCP = initstate.(pe).(co).(am).(itf).OCP;
     initstate.(pe).(co).phi = OCP - ref;
 
-    initstate.(elyte).phi = zeros(bat.(elyte).G.cells.num, 1) - ref;
-    initstate.(elyte).c = 1000*ones(bat.(elyte).G.cells.num, 1);
+    initstate.(elyte).phi = zeros(bat.(elyte).G.getNumberOfCells(), 1) - ref;
+    initstate.(elyte).c = 1000*ones(bat.(elyte).G.getNumberOfCells(), 1);
 
     % setup initial positive electrode external coupling values
 

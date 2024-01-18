@@ -255,7 +255,7 @@ classdef SeaWaterBattery < BaseModel
         %% Assembly functions
         
         function state = initializeTemperature(model, state)
-            state.T = model.T*ones(model.G.cells.num, 1);
+            state.T = model.T*ones(model.G.getNumberOfCells(), 1);
         end
 
 
@@ -349,7 +349,7 @@ classdef SeaWaterBattery < BaseModel
             
             c = state.(elyte).cs{indcc};
 
-            cElectrolyte = zeros(model.(ct).G.cells.num, 1);
+            cElectrolyte = zeros(model.(ct).G.getNumberOfCells(), 1);
             cElectrolyte = adbackend.convertToAD(cElectrolyte, c);
 
             coupcells = coupDict('Cathode-Electrolyte');
@@ -397,7 +397,7 @@ classdef SeaWaterBattery < BaseModel
             
             c = state.(elyte).cs{indcc};
 
-            cElectrolyte = zeros(model.(an).G.cells.num, 1);
+            cElectrolyte = zeros(model.(an).G.getNumberOfCells(), 1);
             cElectrolyte = adbackend.convertToAD(cElectrolyte, c);
 
             coupcells = coupDict('Anode-Electrolyte');
@@ -414,7 +414,7 @@ classdef SeaWaterBattery < BaseModel
 
             spdict    = model.(elyte).spdict;
             coupDict  = model.couplingCellDict;
-            nc        = model.(an).G.cells.num;
+            nc        = model.(an).G.getNumberOfCells();
             adbackend = model.(an).AutoDiffBackend;
             
             anphi    = state.(an).phi;
@@ -444,7 +444,7 @@ classdef SeaWaterBattery < BaseModel
             elyte = 'Electrolyte';
 
             V    = model.Anode.V;
-            vols = model.Anode.G.cells.volumes;
+            vols = model.Anode.G.getVolumes();
             F    = model.con.F;
             z    = model.stochAnodeElectron;
             
@@ -458,7 +458,7 @@ classdef SeaWaterBattery < BaseModel
         % Update cathode source term
 
             % V = model.Cathode.V;
-            % vols = model.Anode.G.cells.volumes;
+            % vols = model.Anode.G.getVolumes();
             % R = state.CathodeActiveMaterial.R;
             % state.Cathode.sourceTerm = -R.*vols.*V;
                 
@@ -470,7 +470,7 @@ classdef SeaWaterBattery < BaseModel
         % Update Electrolyte Current source
             elyte = 'Electrolyte';
 
-            vols     = model.(elyte).G.cells.volumes;
+            vols     = model.(elyte).G.getVolumes();
             zan      = model.stochAnodeElectron;
             zct      = model.stochCathodeElectron;
             coupDict = model.couplingCellDict;

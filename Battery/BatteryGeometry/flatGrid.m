@@ -96,7 +96,7 @@ function output = flatGrid(params)
     comptagtbl.indj = (1 : (sum(nrs)*nwindings))';
     comptagtbl = IndexArray(comptagtbl);
 
-    celltbl.cells = (1 : G.cells.num)';
+    celltbl.cells = (1 : G.getNumberOfCells())';
     celltbl.indi = repmat((1 : nas)', [sum(nrs)*nwindings, 1]);
     celltbl.indj = rldecode((1 : sum(nrs)*nwindings)', nas*ones(sum(nrs)*nwindings, 1));
     celltbl = IndexArray(celltbl);
@@ -130,10 +130,10 @@ function output = flatGrid(params)
 
     %% We set up Cartesian indexing for the cells
 
-    [indi, indj, indk] = ind2sub([n, m, nL], (1 : G.cells.num)');
+    [indi, indj, indk] = ind2sub([n, m, nL], (1 : G.getNumberOfCells())');
     
     clear celltbl
-    celltbl.cells = (1 : G.cells.num)';
+    celltbl.cells = (1 : G.getNumberOfCells())';
     celltbl.indi = indi;
     celltbl.indj = indj;
     celltbl.indk = indk;
@@ -225,7 +225,7 @@ function output = flatGrid(params)
     detailedtag = tag;
     detailedtagdict = tagdict;
 
-    tag = nan(G.cells.num, 1);
+    tag = nan(G.getNumberOfCells(), 1);
     tagdict = containers.Map(...
         {'PositiveActiveMaterial'  , ...
          'PositiveCurrentCollector', ...

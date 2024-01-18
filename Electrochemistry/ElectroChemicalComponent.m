@@ -46,7 +46,7 @@ classdef ElectroChemicalComponent < ElectronicComponent
             
             c = state.c;
 
-            massflux = assembleFlux(model, c, D);
+            massflux = assembleHomogeneousFlux(model, c, D);
             
             state.massFlux = massflux;
             

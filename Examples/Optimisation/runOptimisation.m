@@ -48,22 +48,22 @@ css = css.updatePackingMass(60*gram);
 %% setup default schedule
 % We chose a time that should cover the battery life for all the parameters that will be tried.
 
-CRate = model.Control.CRate;
+% CRate = model.Control.CRate;
 
-totalTime = 1.4*hour/CRate;
+% totalTime = 1.4*hour/CRate;
 
-% rampup stage
-n  = 10;
-dt = [];
-dt = [dt; repmat(1e-4, n, 1).*1.5.^(1 : n)'];
+% % rampup stage
+% n  = 10;
+% dt = [];
+% dt = [dt; repmat(1e-4, n, 1).*1.5.^(1 : n)'];
 
-% discharge stage
-n     = 100;
-dt    = [dt; repmat(totalTime/n, n, 1)];
+% % discharge stage
+% n     = 100;
+% dt    = [dt; repmat(totalTime/n, n, 1)];
 
-times = [0; cumsum(dt)];
-dt    = diff(times);
-step  = struct('val', dt, 'control', ones(numel(dt), 1));
+% times = [0; cumsum(dt)];
+% dt    = diff(times);
+% step  = struct('val', dt, 'control', ones(numel(dt), 1));
 
 % tup = 0.1; % rampup value for the current function, see rampupSwitchControl
 % srcfunc = @(time, I, E, Imax, lowerCutoffVoltage) rampupSwitchControl(time, ....
@@ -75,9 +75,16 @@ step  = struct('val', dt, 'control', ones(numel(dt), 1));
 
 % control = struct('src', srcfunc, 'IEswitch', true);
 
-control = model.Control.setupScheduleControl();
+%control = model.Control.setupScheduleControl();
 
-schedule = struct('control', control, 'step', step);
+%schedule = struct('control', control, 'step', step);
+
+model.(ctrl).useCVswitch = true;
+schedule = output.schedule;
+tup = 0.1;
+%schedule.control.src = @(time,I,E,Imax,lowerCutoffVoltage) rampupSwitchControl(time,tup,I,E,Imax,lowerCutoffVoltage);
+schedule.control.src = @(time,I,E) rampupSwitchControl(time,tup,I,E,model.(ctrl).Imax,model.(ctrl).lowerCutoffVoltage);
+
 
 %% Setup the initial state of the model
 
@@ -90,9 +97,9 @@ nls.maxIterations  = 10;
 nls.errorOnFailure = false;
 
 model.nonlinearTolerance = 1e-5*model.Control.Imax;
-model.verbose            = true;
+model.verbose            = false;
 
-dorunstartup = false;
+dorunstartup = true;
 
 if dorunstartup
 
@@ -107,6 +114,9 @@ if dorunstartup
 
     figure
     plot(time, E)
+
+    figure
+    plot(time, I)
 
     return
 
@@ -169,10 +179,24 @@ if doOptimization
 
     vals = parameters{1}.getParameter(optimSetup);
 
+    % dump
+    for k = 1:numel(parameters)
+        p0 = parameters{k}.getParameter(simulatorSetup);
+        pu = parameters{k}.getParameter(optimSetup);
+        p0
+        pu
+    end
+
+    obj = @(p) evalObjectiveBattmo(p, objmatch, simulatorSetup, parameters, options{:});
+    specEnergy0 = obj(p_base);
+    specEnergyOpt = obj(p_opt);
+    disp(specEnergy0);
+    disp(specEnergyOpt);
+
 end
 
 %%
-doCompareGradient = true;
+doCompareGradient = false;
 
 if doCompareGradient
 

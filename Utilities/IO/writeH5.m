@@ -83,11 +83,11 @@ function writeH5(model, states, name)
     h5create(file_name, '/global/specification/cRate', size(CRate));
 
     % Instantiate global grid properties
-    h5create(file_name, '/global/grid/cells/num', size(model.G.cells.num));
+    h5create(file_name, '/global/grid/cells/num', size(model.G.getNumberOfCells()));
     h5create(file_name, '/global/grid/cells/facePos', size(model.G.cells.facePos));
     h5create(file_name, '/global/grid/cells/indexMap', size(model.G.cells.indexMap));
     h5create(file_name, '/global/grid/cells/faces', size(model.G.cells.faces));
-    h5create(file_name, '/global/grid/cells/volumes', size(model.G.cells.volumes));
+    h5create(file_name, '/global/grid/cells/volumes', size(model.G.getVolumes()));
     h5create(file_name, '/global/grid/cells/centroids', size(model.G.cells.centroids));
     h5create(file_name, '/global/grid/faces/num', size(model.G.faces.num));
     h5create(file_name, '/global/grid/faces/nodePos', size(model.G.faces.nodePos));
@@ -102,11 +102,11 @@ function writeH5(model, states, name)
     h5create(file_name, '/global/grid/griddim', size(model.G.griddim));
 
     % Instantiate negative electrode grid properties
-    h5create(file_name, '/local/NegativeElectrode/grid/cells/num', size(model.(ne).G.cells.num));
+    h5create(file_name, '/local/NegativeElectrode/grid/cells/num', size(model.(ne).G.getNumberOfCells()));
     h5create(file_name, '/local/NegativeElectrode/grid/cells/facePos', size(model.(ne).G.cells.facePos));
     h5create(file_name, '/local/NegativeElectrode/grid/cells/indexMap', size(model.(ne).G.cells.indexMap));
     h5create(file_name, '/local/NegativeElectrode/grid/cells/faces', size(model.(ne).G.cells.faces));
-    h5create(file_name, '/local/NegativeElectrode/grid/cells/volumes', size(model.(ne).G.cells.volumes));
+    h5create(file_name, '/local/NegativeElectrode/grid/cells/volumes', size(model.(ne).G.getVolumes()));
     h5create(file_name, '/local/NegativeElectrode/grid/cells/centroids', size(model.(ne).G.cells.centroids));
     h5create(file_name, '/local/NegativeElectrode/grid/faces/num', size(model.(ne).G.faces.num));
     h5create(file_name, '/local/NegativeElectrode/grid/faces/nodePos', size(model.(ne).G.faces.nodePos));
@@ -121,11 +121,11 @@ function writeH5(model, states, name)
     h5create(file_name, '/local/NegativeElectrode/grid/griddim', size(model.(ne).G.griddim));
 
     % Instantiate positive electrode grid properties
-    h5create(file_name, '/local/PositiveElectrode/grid/cells/num', size(model.(pe).G.cells.num));
+    h5create(file_name, '/local/PositiveElectrode/grid/cells/num', size(model.(pe).G.getNumberOfCells()));
     h5create(file_name, '/local/PositiveElectrode/grid/cells/facePos', size(model.(pe).G.cells.facePos));
     h5create(file_name, '/local/PositiveElectrode/grid/cells/indexMap', size(model.(pe).G.cells.indexMap));
     h5create(file_name, '/local/PositiveElectrode/grid/cells/faces', size(model.(pe).G.cells.faces));
-    h5create(file_name, '/local/PositiveElectrode/grid/cells/volumes', size(model.(pe).G.cells.volumes));
+    h5create(file_name, '/local/PositiveElectrode/grid/cells/volumes', size(model.(pe).G.getVolumes()));
     h5create(file_name, '/local/PositiveElectrode/grid/cells/centroids', size(model.(pe).G.cells.centroids));
     h5create(file_name, '/local/PositiveElectrode/grid/faces/num', size(model.(pe).G.faces.num));
     h5create(file_name, '/local/PositiveElectrode/grid/faces/nodePos', size(model.(pe).G.faces.nodePos));
@@ -140,11 +140,11 @@ function writeH5(model, states, name)
     h5create(file_name, '/local/PositiveElectrode/grid/griddim', size(model.(pe).G.griddim));
 
     % Instantiate electrolyte grid properties
-    h5create(file_name, '/local/Electrolyte/grid/cells/num', size(model.(elyte).G.cells.num));
+    h5create(file_name, '/local/Electrolyte/grid/cells/num', size(model.(elyte).G.getNumberOfCells()));
     h5create(file_name, '/local/Electrolyte/grid/cells/facePos', size(model.(elyte).G.cells.facePos));
     h5create(file_name, '/local/Electrolyte/grid/cells/indexMap', size(model.(elyte).G.cells.indexMap));
     h5create(file_name, '/local/Electrolyte/grid/cells/faces', size(model.(elyte).G.cells.faces));
-    h5create(file_name, '/local/Electrolyte/grid/cells/volumes', size(model.(elyte).G.cells.volumes));
+    h5create(file_name, '/local/Electrolyte/grid/cells/volumes', size(model.(elyte).G.getVolumes()));
     h5create(file_name, '/local/Electrolyte/grid/cells/centroids', size(model.(elyte).G.cells.centroids));
     h5create(file_name, '/local/Electrolyte/grid/faces/num', size(model.(elyte).G.faces.num));
     h5create(file_name, '/local/Electrolyte/grid/faces/nodePos', size(model.(elyte).G.faces.nodePos));
@@ -179,11 +179,11 @@ function writeH5(model, states, name)
     h5write(file_name, '/global/specification/cRate', CRate);
 
     % Write global grid properties
-    h5write(file_name, '/global/grid/cells/num', model.G.cells.num);
+    h5write(file_name, '/global/grid/cells/num', model.G.getNumberOfCells());
     h5write(file_name, '/global/grid/cells/facePos', model.G.cells.facePos);
     h5write(file_name, '/global/grid/cells/indexMap', model.G.cells.indexMap);
     h5write(file_name, '/global/grid/cells/faces', model.G.cells.faces);
-    h5write(file_name, '/global/grid/cells/volumes', model.G.cells.volumes);
+    h5write(file_name, '/global/grid/cells/volumes', model.G.getVolumes());
     h5write(file_name, '/global/grid/cells/centroids', model.G.cells.centroids);
     h5write(file_name, '/global/grid/faces/num', model.G.faces.num);
     h5write(file_name, '/global/grid/faces/nodePos', model.G.faces.nodePos);
@@ -198,11 +198,11 @@ function writeH5(model, states, name)
     h5write(file_name, '/global/grid/griddim', model.G.griddim);
 
     % Write negative electrode grid properties
-    h5write(file_name, '/local/NegativeElectrode/grid/cells/num', model.(ne).G.cells.num);
+    h5write(file_name, '/local/NegativeElectrode/grid/cells/num', model.(ne).G.getNumberOfCells());
     h5write(file_name, '/local/NegativeElectrode/grid/cells/facePos', model.(ne).G.cells.facePos);
     h5write(file_name, '/local/NegativeElectrode/grid/cells/indexMap', model.(ne).G.cells.indexMap);
     h5write(file_name, '/local/NegativeElectrode/grid/cells/faces', model.(ne).G.cells.faces);
-    h5write(file_name, '/local/NegativeElectrode/grid/cells/volumes', model.(ne).G.cells.volumes);
+    h5write(file_name, '/local/NegativeElectrode/grid/cells/volumes', model.(ne).G.getVolumes());
     h5write(file_name, '/local/NegativeElectrode/grid/cells/centroids', model.(ne).G.cells.centroids);
     h5write(file_name, '/local/NegativeElectrode/grid/faces/num', model.(ne).G.faces.num);
     h5write(file_name, '/local/NegativeElectrode/grid/faces/nodePos', model.(ne).G.faces.nodePos);
@@ -217,11 +217,11 @@ function writeH5(model, states, name)
     h5write(file_name, '/local/NegativeElectrode/grid/griddim', model.(ne).G.griddim);
 
     % Write positive electrode grid properties
-    h5write(file_name, '/local/PositiveElectrode/grid/cells/num', model.(pe).G.cells.num);
+    h5write(file_name, '/local/PositiveElectrode/grid/cells/num', model.(pe).G.getNumberOfCells());
     h5write(file_name, '/local/PositiveElectrode/grid/cells/facePos', model.(pe).G.cells.facePos);
     h5write(file_name, '/local/PositiveElectrode/grid/cells/indexMap', model.(pe).G.cells.indexMap);
     h5write(file_name, '/local/PositiveElectrode/grid/cells/faces', model.(pe).G.cells.faces);
-    h5write(file_name, '/local/PositiveElectrode/grid/cells/volumes', model.(pe).G.cells.volumes);
+    h5write(file_name, '/local/PositiveElectrode/grid/cells/volumes', model.(pe).G.getVolumes());
     h5write(file_name, '/local/PositiveElectrode/grid/cells/centroids', model.(pe).G.cells.centroids);
     h5write(file_name, '/local/PositiveElectrode/grid/faces/num', model.(pe).G.faces.num);
     h5write(file_name, '/local/PositiveElectrode/grid/faces/nodePos', model.(pe).G.faces.nodePos);
@@ -236,11 +236,11 @@ function writeH5(model, states, name)
     h5write(file_name, '/local/PositiveElectrode/grid/griddim', model.(pe).G.griddim);
 
     % Write electrolyte grid properties
-    h5write(file_name, '/local/Electrolyte/grid/cells/num', model.(elyte).G.cells.num);
+    h5write(file_name, '/local/Electrolyte/grid/cells/num', model.(elyte).G.getNumberOfCells());
     h5write(file_name, '/local/Electrolyte/grid/cells/facePos', model.(elyte).G.cells.facePos);
     h5write(file_name, '/local/Electrolyte/grid/cells/indexMap', model.(elyte).G.cells.indexMap);
     h5write(file_name, '/local/Electrolyte/grid/cells/faces', model.(elyte).G.cells.faces);
-    h5write(file_name, '/local/Electrolyte/grid/cells/volumes', model.(elyte).G.cells.volumes);
+    h5write(file_name, '/local/Electrolyte/grid/cells/volumes', model.(elyte).G.getVolumes());
     h5write(file_name, '/local/Electrolyte/grid/cells/centroids', model.(elyte).G.cells.centroids);
     h5write(file_name, '/local/Electrolyte/grid/faces/num', model.(elyte).G.faces.num);
     h5write(file_name, '/local/Electrolyte/grid/faces/nodePos', model.(elyte).G.faces.nodePos);

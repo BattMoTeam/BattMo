@@ -36,6 +36,8 @@ classdef ElectronicComponent < BaseModel
                 docellflux = true;
             end
 
+            model.operators = localSetupOperators(model.G.getMRSTgrid(), 'assembleCellFluxOperator', docellflux);
+
             model.constants = PhysicalConstants();
 
         end
@@ -142,7 +144,7 @@ classdef ElectronicComponent < BaseModel
             sigma = state.conductivity;
             phi   = state.phi;
 
-            j = assembleFlux(model, phi, sigma);
+            j = assembleHomogeneousFlux(model, phi, sigma);
 
             state.j = j;
 

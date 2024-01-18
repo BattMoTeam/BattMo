@@ -168,7 +168,7 @@ classdef DissolutionModel < BaseModel
 
             function state = updateMassAccum(model, state, state0, dt)
 
-                vols = model.G.cells.volumes;
+                vols = model.G.getVolumes();
                 
                 vf  = state.volumeFraction;
                 vf0 = state0.volumeFraction;
@@ -182,7 +182,7 @@ classdef DissolutionModel < BaseModel
 
                 V    = model.V;
                 F    = model.constants.F;
-                vols = model.G.cells.volumes;
+                vols = model.G.getVolumes();
                 
                 rRate = state.reactionRate;
 

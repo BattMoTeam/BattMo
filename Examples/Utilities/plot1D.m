@@ -76,7 +76,7 @@ for i = 1 : numel(states)
     % plot temperature
     subplot(2, 3, 5);
     cc = model.G.cells.centroids(:, 1);
-    vols = model.G.cells.volumes;
+    vols = model.G.getVolumes();
     plot(cc, state.(thermal).T, '* - ');
     if doFixedTempScale
         axis([min(c), max(c), tm, tM]);

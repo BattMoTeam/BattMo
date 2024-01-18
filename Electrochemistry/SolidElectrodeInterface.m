@@ -305,7 +305,7 @@ classdef SolidElectrodeInterface < BaseModel
             map = map.setup();
 
             cellCentroids = map.eval(G.cells.centroids);
-            vols = map.eval(G.cells.volumes);
+            vols = map.eval(G.getVolumes());
 
             operators = struct('div'          , div          , ...
                                'diffFlux'     , diffFlux     , ...

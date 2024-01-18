@@ -152,7 +152,7 @@ classdef EvolutionElectrode < BaseModel
             E    = state.(ptl).E;
 
             % initialization of the variables (takes care of AD)
-            nc = model.(ctl).G.cells.num;
+            nc = model.(ctl).G.getNumberOfCells();
             initval = nan(nc, 1);
             [adsample, isAD] = getSampleAD(phi);
             if isAD
@@ -194,7 +194,7 @@ classdef EvolutionElectrode < BaseModel
             gInd     = model.(ptl).gasInd;
             coupterm = model.couplingTerm;
             gasMW    = model.(ptl).gasMW;
-            vols     = model.(ptl).G.cells.volumes;
+            vols     = model.(ptl).G.getVolumes();
             
             coupcells = coupterm.couplingcells;
 

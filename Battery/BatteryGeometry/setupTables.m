@@ -3,11 +3,11 @@ function tbls = setupTables(G, varargin)
     opt.includetbls = {'basic set'};
     opt = merge_options(opt, varargin{:});
     includetbls = opt.includetbls;
-    
+
     nc = G.cells.num;
     nf = G.faces.num;
     nn = G.nodes.num;
-    
+
     celltbl.cells = (1 : nc)';
     celltbl = IndexArray(celltbl);
 
@@ -16,15 +16,15 @@ function tbls = setupTables(G, varargin)
 
     nodetbl.nodes = (1 : nn)';
     nodetbl = IndexArray(nodetbl);
-    
+
     cellfacetbl.cells = rldecode((1 : nc)', diff(G.cells.facePos));
     cellfacetbl.faces = G.cells.faces(:, 1);
     cellfacetbl = IndexArray(cellfacetbl);
-    
+
     facenodetbl.faces = rldecode((1 : nf)', diff(G.faces.nodePos));
     facenodetbl.nodes = G.faces.nodes(:, 1);
     facenodetbl = IndexArray(facenodetbl);
-    
+
     tbls = struct('celltbl'    , celltbl    , ...
                   'facetbl'    , facetbl    , ...
                   'nodetbl'    , nodetbl    , ...
@@ -39,10 +39,10 @@ function tbls = setupTables(G, varargin)
         intfacetbl = IndexArray(intfacetbl);
 
         cellintfacetbl = crossIndexArray(intfacetbl, cellfacetbl, {'faces'});
-           
+
         tbls.intfacetbl     = intfacetbl;
         tbls.cellintfacetbl = cellintfacetbl;
-        
+
     end
 
     if ismember('extfacetbl', includetbls)
@@ -52,14 +52,14 @@ function tbls = setupTables(G, varargin)
         extfacetbl = IndexArray(extfacetbl);
 
         tbls.extfacetbl = extfacetbl;
-        
+
     end
 
     if ismember('vectbl', includetbls)
 
         vectbl.vec = (1 : G.griddim)';
         vectbl = IndexArray(vectbl);
-        
+
         facevectbl           = crossIndexArray(facetbl          , vectbl       , {}, 'optpureproduct', true);
         nodevectbl           = crossIndexArray(nodetbl          , vectbl       , {}, 'optpureproduct', true);
         cellvectbl           = crossIndexArray(celltbl          , vectbl       , {}, 'optpureproduct', true);
@@ -79,7 +79,7 @@ function tbls = setupTables(G, varargin)
 
         p = G.faces.nodePos;
         f = G.faces.nodes;
-        
+
         next = (2 : size(f, 1) + 1) .';
         next(p(2 : end) - 1) = p(1 : end-1);
         nextf = f(next);
@@ -88,9 +88,9 @@ function tbls = setupTables(G, varargin)
         facenode12tbl = facenode12tbl.addInd('nodes2', nextf);
 
         tbls.facenode12tbl = facenode12tbl;
-        
+
     end
-    
+
 end
 
 

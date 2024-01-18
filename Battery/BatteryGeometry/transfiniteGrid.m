@@ -187,7 +187,7 @@ function G = transfiniteGrid(u, v, f1, f2, g1, g2, varargin)
 
         % Fill the hole with a single cell
         assert(opt.closed)
-        G.cells.num = G.cells.num + 1;
+        G.getNumberOfCells() = G.getNumberOfCells() + 1;
         f = 1:Nu:(Nv-1)*Nu;
         G.cells.faces = [G.cells.faces; f'];
         G.cells.facePos(end+1) = G.cells.facePos(end) + numel(f);
@@ -211,7 +211,7 @@ function debugPlot(G)
     plot(G.faces.centroids(:,1), G.faces.centroids(:,2), 'r.')
     text(G.faces.centroids(:,1), G.faces.centroids(:,2), num2str((1:G.faces.num)'), 'color', 'r');
     plot(G.cells.centroids(:,1), G.cells.centroids(:,2), 'b.')
-    text(G.cells.centroids(:,1), G.cells.centroids(:,2), num2str((1:G.cells.num)'), 'color', 'b');
+    text(G.cells.centroids(:,1), G.cells.centroids(:,2), num2str((1:G.getNumberOfCells())'), 'color', 'b');
 
 end
 

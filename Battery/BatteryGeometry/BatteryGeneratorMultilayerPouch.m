@@ -140,7 +140,7 @@ classdef BatteryGeneratorMultilayerPouch < BatteryGenerator
             G = tensorGrid(x, y, z);
 
             % Setup index array for global grid with carthesian indices.
-            nc = G.cells.num;
+            nc = G.getNumberOfCells();
             [indx, indy, indz] = ind2sub([numel(x) - 1, numel(y) - 1, numel(z) - 1], (1 : nc)');
             globcelltbl.globcells = (1 : nc)';
             globcelltbl.indx      = indx;
@@ -243,17 +243,17 @@ classdef BatteryGeneratorMultilayerPouch < BatteryGenerator
                        gen.allparams.(pe).(co).cellind;
                        gen.allparams.(ne).(cc).cellind;
                        gen.allparams.(pe).(cc).cellind];
-            rcellind = setdiff((1 : G.cells.num)', cellind);
-            nGlob = G.cells.num;
+            rcellind = setdiff((1 : G.getNumberOfCells())', cellind);
+            nGlob = G.getNumberOfCells();
             [G, cellmap, facemap] = removeCells(G, rcellind);
             G = computeGeometry(G);
 
             % Inverse map
             gen.invcellmap = zeros(nGlob, 1);
-            gen.invcellmap(cellmap) = (1 : G.cells.num)';
+            gen.invcellmap(cellmap) = (1 : G.getNumberOfCells())';
 
             celltbl.globcells = cellmap;
-            celltbl.cells = (1 : G.cells.num)';
+            celltbl.cells = (1 : G.getNumberOfCells())';
             celltbl = IndexArray(celltbl);
 
             celltbl = crossIndexArray(celltbl, globcelltbl, {'globcells'});

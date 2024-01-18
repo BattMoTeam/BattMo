@@ -102,11 +102,11 @@ classdef SpiralBatteryGenerator < BatteryGenerator
             vecttbl.vect = (1 : cartG.griddim)';
             vecttbl = IndexArray(vecttbl)';
 
-            [indi, indj, indk] = ind2sub([nas*nwindings, sum(nWidthLayer), nL], (1 : cartG.cells.num)');
+            [indi, indj, indk] = ind2sub([nas*nwindings, sum(nWidthLayer), nL], (1 : cartG.getNumberOfCells())');
             cartcelltbl.indi = indi;
             cartcelltbl.indj = indj;
             cartcelltbl.indk = indk;
-            cartcelltbl.cells = (1 : cartG.cells.num)';
+            cartcelltbl.cells = (1 : cartG.getNumberOfCells())';
             cartcelltbl = IndexArray(cartcelltbl);
 
             cellindjtbl.indj = (1 : sum(nWidthLayer))';
@@ -131,7 +131,7 @@ classdef SpiralBatteryGenerator < BatteryGenerator
 
             h = map.eval(heightLayer);
 
-            vol = G.cells.volumes;
+            vol = G.getVolumes();
 
             celltbl = celltbl.removeInd({'cells', 'indi', 'indj'});
 
@@ -214,7 +214,7 @@ classdef SpiralBatteryGenerator < BatteryGenerator
             tag     = gen.tag;
             
             clear celltbl
-            celltbl.cartcells = (1 : cartG.cells.num)';
+            celltbl.cartcells = (1 : cartG.getNumberOfCells())';
             celltbl.cells = cartInd;
             celltbl = IndexArray(celltbl);            
 
@@ -263,13 +263,13 @@ classdef SpiralBatteryGenerator < BatteryGenerator
         
         function compCartG = setupCompCartGrid(gen, compG, compCartG, celltbl)
 
-            compcelltbl.loccells = (1 : compG.cells.num)';
+            compcelltbl.loccells = (1 : compG.getNumberOfCells())';
             compcelltbl.cells = compG.mappings.cellmap;
             compcelltbl = IndexArray(compcelltbl);
             compcelltbl = crossIndexArray(compcelltbl, celltbl, {'cells'});
             compcelltbl = compcelltbl.removeInd({'cells'});
 
-            compcartcelltbl.cartloccells = (1 : compCartG.cells.num)';
+            compcartcelltbl.cartloccells = (1 : compCartG.getNumberOfCells())';
             compcartcelltbl.cartcells = compCartG.mappings.cellmap;
             compcartcelltbl = IndexArray(compcartcelltbl);
 

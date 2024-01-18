@@ -22,7 +22,7 @@ classdef HydrogenElectrode < SeaWaterElectrode
         function state = updatePotential(model, state)
         % this is a special setup : We impose given potential and assume infinite conductivity in hydrogen electrode
         % (likely to change later)
-            nc = model.G.cells.num;
+            nc = model.G.getNumberOfCells();
             
             E = state.E;
             
@@ -30,7 +30,7 @@ classdef HydrogenElectrode < SeaWaterElectrode
         end
         
         function state = updateVolumeFraction(model, state)
-            nc = model.G.cells.num;
+            nc = model.G.getNumberOfCells();
             
             state.volumeFraction = model.volumeFraction*ones(nc, 1);
         end

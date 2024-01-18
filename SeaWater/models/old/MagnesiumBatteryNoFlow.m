@@ -160,7 +160,7 @@ classdef MagnesiumBatteryNoFlow < MagnesiumBattery
             I = drivingForces.src(time);
             R = state.(ctam).R;
             F = model.con.F;
-            vols = model.(ct).G.cells.volumes;
+            vols = model.(ct).G.getVolumes();
             ctGalvanostatic = I + sum(2*F*R.*vols);
 
             % at the anode we impose zero potential
@@ -170,9 +170,9 @@ classdef MagnesiumBatteryNoFlow < MagnesiumBattery
             nqp = model.(elyte).nqp;
             
             
-            anvols    = model.(an).G.cells.volumes;
-            ctvols    = model.(an).G.cells.volumes;
-            elytevols = model.(elyte).G.cells.volumes;
+            anvols    = model.(an).G.getVolumes();
+            ctvols    = model.(an).G.getVolumes();
+            elytevols = model.(elyte).G.getVolumes();
             F = model.con.F;
             
             eqs = {};

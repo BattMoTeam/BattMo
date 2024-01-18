@@ -99,7 +99,7 @@ classdef IridiumCatalystLayer < CatalystLayer
         % Reaction in Membrane :    H2O + 2*e- + 0.5*O2 <<-> 2(OH-)_inmr
         % Here, the direction of the reaction that is indicated by the repeated arrow symbol corresponds to a positive computed reaction rate
             F    = model.constants.F;
-            vols = model.G.cells.volumes;
+            vols = model.G.getVolumes();
             
             elyteR = state.elyteReactionRate;
             inmrR  = state.inmrReactionRate;
