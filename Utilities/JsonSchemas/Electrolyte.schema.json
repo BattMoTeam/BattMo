@@ -55,6 +55,16 @@
       "$ref": "PhysicalQuantity.schema.json",
       "description": "the coefficient for determining effective transport parameters in porous media",
       "symbol": "beta"
+    },
+    "thermalConductivity": {
+      "$ref": "PhysicalQuantity.schema.json",
+      "description": "the intrinsic Thermal conductivity of the active component",
+      "symbol": ""
+    },
+    "specificHeatCapacity": {
+      "$ref": "PhysicalQuantity.schema.json",
+      "description": "the Specific Heat capacity of the active component",
+      "symbol": ""
     }
   }
 }
