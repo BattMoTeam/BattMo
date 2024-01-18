@@ -144,7 +144,6 @@
 <li class="toctree-l2"><a class="reference internal" href="juliabridge.html#setup-and-use">Setup and Use</a></li>
 </ul>
 </li>
-<li class="toctree-l1"><a class="reference internal" href="gui.html">BattMo GUI</a></li>
 <li class="toctree-l1"><a class="reference internal" href="publishedExamples/runElectrolyser.html">Electrolyser simulation</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="publishedExamples/runElectrolyser.html#load-mrst-modules">Load MRST modules</a></li>
 <li class="toctree-l2"><a class="reference internal" href="publishedExamples/runElectrolyser.html#setup-input">Setup input</a></li>
@@ -196,8 +195,8 @@
   <section id="json-input-specification">
 <h1>JSON input specification<a class="headerlink" href="#json-input-specification" title="Permalink to this heading"></a></h1>
 <p>The specification of the json input is provided through <a class="reference external" href="https://json-schema.org/understanding-json-schema">JSON schemas</a>. In the Json schema, we added extra properties that are not part
-of the syntax but bring additional information such as a <code class="code docutils literal notranslate"><span class="pre">description</span></code> field and references to the onthology (work
-in progress <span class="todo">add more here</span>).</p>
+of the syntax but bring additional information such as a <code class="code docutils literal notranslate"><span class="pre">description</span></code> field and references to the onthology (see
+<a class="reference external" href="https://emmo-repo.github.io/domain-electrochemistry/index.html">BattInfo</a> ).</p>
 <p>The main Simulation schema contains schemas for</p>
 <ul class="simple">
 <li><p>A schema for the <strong>geometry</strong></p></li>
@@ -382,7 +381,7 @@ table. When given as a table, the value of the function is interpolated from the
 <span class="w">        </span><span class="p">},</span>
 <span class="w">        </span><span class="nt">&quot;nominalConcentration&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
 <span class="w">          </span><span class="nt">&quot;$ref&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;PhysicalQuantity.schema.json&quot;</span><span class="p">,</span>
-<span class="w">          </span><span class="nt">&quot;description&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;nominal concentration used as initial concentration in a simulation&quot;</span>
+<span class="w">          </span><span class="nt">&quot;description&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;nominal concentration used as initial concentration in a simulation, if the later is not given explicitely, see StateInitialization.schema.json&quot;</span>
 <span class="w">        </span><span class="p">}</span>
 <span class="w">      </span><span class="p">}</span>
 <span class="w">    </span><span class="p">},</span>
@@ -395,6 +394,16 @@ table. When given as a table, the value of the function is interpolated from the
 <span class="w">      </span><span class="nt">&quot;$ref&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;PhysicalQuantity.schema.json&quot;</span><span class="p">,</span>
 <span class="w">      </span><span class="nt">&quot;description&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;the coefficient for determining effective transport parameters in porous media&quot;</span><span class="p">,</span>
 <span class="w">      </span><span class="nt">&quot;symbol&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;beta&quot;</span>
+<span class="w">    </span><span class="p">},</span>
+<span class="w">    </span><span class="nt">&quot;thermalConductivity&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<span class="w">      </span><span class="nt">&quot;$ref&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;PhysicalQuantity.schema.json&quot;</span><span class="p">,</span>
+<span class="w">      </span><span class="nt">&quot;description&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;the intrinsic Thermal conductivity of the active component&quot;</span><span class="p">,</span>
+<span class="w">      </span><span class="nt">&quot;symbol&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;&quot;</span>
+<span class="w">    </span><span class="p">},</span>
+<span class="w">    </span><span class="nt">&quot;specificHeatCapacity&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<span class="w">      </span><span class="nt">&quot;$ref&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;PhysicalQuantity.schema.json&quot;</span><span class="p">,</span>
+<span class="w">      </span><span class="nt">&quot;description&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;the Specific Heat capacity of the active component&quot;</span><span class="p">,</span>
+<span class="w">      </span><span class="nt">&quot;symbol&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;&quot;</span>
 <span class="w">    </span><span class="p">}</span>
 <span class="w">  </span><span class="p">}</span>
 <span class="p">}</span>
@@ -624,11 +633,6 @@ functions.</p>
 <span class="w">      </span><span class="nt">&quot;$ref&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;PhysicalQuantity.schema.json&quot;</span><span class="p">,</span>
 <span class="w">      </span><span class="nt">&quot;description&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;stoichiometric number of electrons transferred in the electrochemical reaction&quot;</span><span class="p">,</span>
 <span class="w">      </span><span class="nt">&quot;symbol&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;n&quot;</span>
-<span class="w">    </span><span class="p">},</span>
-<span class="w">    </span><span class="nt">&quot;volumeFraction&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
-<span class="w">      </span><span class="nt">&quot;$ref&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;PhysicalQuantity.schema.json&quot;</span><span class="p">,</span>
-<span class="w">      </span><span class="nt">&quot;description&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;volume fraction of the active material&quot;</span><span class="p">,</span>
-<span class="w">      </span><span class="nt">&quot;symbol&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;varepsilon&quot;</span>
 <span class="w">    </span><span class="p">},</span>
 <span class="w">    </span><span class="nt">&quot;volumetricSurfaceArea&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
 <span class="w">      </span><span class="nt">&quot;$ref&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;PhysicalQuantity.schema.json&quot;</span><span class="p">,</span>
@@ -951,7 +955,11 @@ of the submodels, when needed, see <a class="reference external" href="https://g
 </section>
 <section id="thermal-model">
 <h3>Thermal Model<a class="headerlink" href="#thermal-model" title="Permalink to this heading"></a></h3>
-<p>The thermal parameters are essentially the thermal conductivity and heat capacity for each component.</p>
+<p>The thermal parameters such as thermal capacity and conductivity are part of the material parameters. In the thermal
+model, we include the external temperature and the heat transfer paremeters with the exterior domain. The later depend
+often on the geometry, and they are in fact also included in the schema there, see below. We have included a flag to
+indicate if we consider wet or dry properties. This flag is not yet supported and we always consider dry properties,
+from which the effective wet properties are computed.</p>
 <div class="highlight-json notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
 <span class="w">  </span><span class="nt">&quot;$id&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;file://./ThermalComponent.schema.json&quot;</span><span class="p">,</span>
 <span class="w">  </span><span class="nt">&quot;$schema&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;https://json-schema.org/draft/2020-12/schema&quot;</span><span class="p">,</span>

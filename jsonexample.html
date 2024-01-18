@@ -142,7 +142,6 @@
 <li class="toctree-l2"><a class="reference internal" href="juliabridge.html#setup-and-use">Setup and Use</a></li>
 </ul>
 </li>
-<li class="toctree-l1"><a class="reference internal" href="gui.html">BattMo GUI</a></li>
 <li class="toctree-l1"><a class="reference internal" href="publishedExamples/runElectrolyser.html">Electrolyser simulation</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="publishedExamples/runElectrolyser.html#load-mrst-modules">Load MRST modules</a></li>
 <li class="toctree-l2"><a class="reference internal" href="publishedExamples/runElectrolyser.html#setup-input">Setup input</a></li>
@@ -194,16 +193,6 @@
   <section id="json-input-example">
 <h1>Json input example<a class="headerlink" href="#json-input-example" title="Permalink to this heading"></a></h1>
 <p>In this page, we present an example of a json input</p>
-<section id="todo">
-<h2>TODO<a class="headerlink" href="#todo" title="Permalink to this heading"></a></h2>
-<ul class="simple">
-<li><p>comment on volumeFraction entry in interface.json</p></li>
-<li><p>change density from interface to active material</p></li>
-<li><p>fix nominal concentration</p></li>
-<li><p>fix thermal property in electrolyte</p></li>
-<li><p>remove thermal model.</p></li>
-</ul>
-</section>
 <section id="simulation">
 <h2>Simulation<a class="headerlink" href="#simulation" title="Permalink to this heading"></a></h2>
 <div class="highlight-json notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
@@ -461,7 +450,7 @@
 <span class="w">  </span><span class="nt">&quot;species&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
 <span class="w">    </span><span class="nt">&quot;chargeNumber&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">1</span><span class="p">,</span>
 <span class="w">    </span><span class="nt">&quot;transferenceNumber&quot;</span><span class="p">:</span><span class="w"> </span><span class="mf">0.2594</span><span class="p">,</span>
-<span class="w">    </span><span class="nt">&quot;nominalConcentration&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{}</span>
+<span class="w">    </span><span class="nt">&quot;nominalConcentration&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">1000</span>
 <span class="w">  </span><span class="p">},</span>
 <span class="w">  </span><span class="nt">&quot;bruggemanCoefficient&quot;</span><span class="p">:</span><span class="w"> </span><span class="mf">1.5</span><span class="p">,</span>
 <span class="w">  </span><span class="nt">&quot;specificHeatCapacity&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">2055</span><span class="p">,</span>
@@ -493,7 +482,7 @@
 <span class="w">  </span><span class="nt">&quot;species&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
 <span class="w">    </span><span class="nt">&quot;chargeNumber&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">1</span><span class="p">,</span>
 <span class="w">    </span><span class="nt">&quot;transferenceNumber&quot;</span><span class="p">:</span><span class="w"> </span><span class="mf">0.2594</span><span class="p">,</span>
-<span class="w">    </span><span class="nt">&quot;nominalConcentration&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{}</span>
+<span class="w">    </span><span class="nt">&quot;nominalConcentration&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">1000</span>
 <span class="w">  </span><span class="p">},</span>
 <span class="w">  </span><span class="nt">&quot;bruggemanCoefficient&quot;</span><span class="p">:</span><span class="w"> </span><span class="mf">1.5</span><span class="p">,</span>
 <span class="w">  </span><span class="nt">&quot;specificHeatCapacity&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">2055</span><span class="p">,</span>

@@ -144,7 +144,6 @@
 <li class="toctree-l2"><a class="reference internal" href="juliabridge.html#setup-and-use">Setup and Use</a></li>
 </ul>
 </li>
-<li class="toctree-l1"><a class="reference internal" href="gui.html">BattMo GUI</a></li>
 <li class="toctree-l1"><a class="reference internal" href="publishedExamples/runElectrolyser.html">Electrolyser simulation</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="publishedExamples/runElectrolyser.html#load-mrst-modules">Load MRST modules</a></li>
 <li class="toctree-l2"><a class="reference internal" href="publishedExamples/runElectrolyser.html#setup-input">Setup input</a></li>
@@ -333,7 +332,9 @@ describes a simple NMC-Graphite cell.</p>
 <section id="change-control-parameters">
 <h2>Change Control Parameters<a class="headerlink" href="#change-control-parameters" title="Permalink to this heading"></a></h2>
 <p>Let’s try simulating the discharge of the cell at different C-Rates.</p>
-<p>Once the JSON parameter file has been read into MATLAB as a jsonstruct, its properties can be modified programmatically. For example, we can define a vector of different C-Rates and then use a for-loop to replace that value in the jsonstruct and re-run the simulation.</p>
+<p>Once the JSON parameter file has been read into MATLAB as a jsonstruct, its properties can be modified
+programmatically. For example, we can define a vector of different C-Rates and then use a for-loop to replace that value
+in the jsonstruct and re-run the simulation.</p>
 <div class="highlight-matlab notranslate"><div class="highlight"><pre><span></span><span class="n">CRates</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="p">[</span><span class="mf">0.5</span><span class="p">,</span><span class="w"> </span><span class="mi">1</span><span class="p">,</span><span class="w"> </span><span class="mi">2</span><span class="p">];</span>
 <span class="nb">figure</span><span class="p">()</span>
 <span class="k">for</span><span class="w"> </span><span class="nb">i</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="mi">1</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="nb">numel</span><span class="p">(</span><span class="n">CRates</span><span class="p">)</span>
@@ -342,14 +343,13 @@ describes a simple NMC-Graphite cell.</p>
 
 <span class="w">    </span><span class="n">states</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="n">output</span><span class="p">.</span><span class="n">states</span><span class="p">;</span>
 <span class="w">    </span><span class="nb">time</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="nb">cellfun</span><span class="p">(@(</span><span class="n">state</span><span class="p">)</span><span class="w"> </span><span class="n">state</span><span class="p">.</span><span class="n">time</span><span class="p">,</span><span class="w"> </span><span class="n">states</span><span class="p">);</span>
-<span class="w">    </span><span class="n">voltage</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="nb">cellfun</span><span class="p">(@(</span><span class="n">state</span><span class="p">)</span><span class="w"> </span><span class="n">state</span><span class="p">.(</span><span class="s">&#39;Control&#39;</span><span class="p">).</span><span class="n">E</span><span class="p">,</span><span class="w"> </span><span class="n">states</span><span class="p">);</span>
+<span class="w">    </span><span class="n">voltage</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="nb">cellfun</span><span class="p">(@(</span><span class="n">state</span><span class="p">)</span><span class="w"> </span><span class="n">state</span><span class="p">.</span><span class="n">Control</span><span class="p">.</span><span class="n">E</span><span class="p">,</span><span class="w"> </span><span class="n">states</span><span class="p">);</span>
 <span class="w">    </span><span class="nb">plot</span><span class="p">((</span><span class="nb">time</span><span class="o">/</span><span class="nb">hour</span><span class="p">),</span><span class="w"> </span><span class="n">voltage</span><span class="p">,</span><span class="w"> </span><span class="s">&#39;-&#39;</span><span class="p">,</span><span class="w"> </span><span class="s">&#39;linewidth&#39;</span><span class="p">,</span><span class="w"> </span><span class="mi">3</span><span class="p">)</span>
 <span class="w">    </span><span class="nb">hold</span><span class="w"> </span><span class="n">on</span>
 <span class="k">end</span>
 <span class="nb">hold</span><span class="w"> </span><span class="n">off</span>
 </pre></div>
 </div>
-<p>[TODO: fix <code class="code docutils literal notranslate"><span class="pre">plotResult</span></code>] For this example, we have written a <code class="code docutils literal notranslate"><span class="pre">plotResult</span></code> function which extracts and plots from the output the time and voltage values, see <a class="reference internal" href="plotResult.html#plotresult"><span class="std std-ref">here</span></a>.</p>
 <figure class="align-center" id="id2">
 <a class="reference external image-reference" href="_images/crates.png"><img alt="_images/crates.png" src="_images/crates.png" style="width: 70%;" /></a>
 <figcaption>
@@ -380,10 +380,6 @@ describes a simple NMC-Graphite cell.</p>
 </section>
 <section id="change-material-parameters">
 <h2>Change Material Parameters<a class="headerlink" href="#change-material-parameters" title="Permalink to this heading"></a></h2>
-<div class="admonition note">
-<p class="admonition-title">Note</p>
-<p>TODO: Make this easier / more elegnant.</p>
-</div>
 <p>Finally, let’s try changing active materials in the model.</p>
 <p>The sample JSON input file we provided is for an NMC-Graphite cell, but BattMo contains parameter sets for different active materials that have been collected from the scientific literature. Let’s try to replace the NMC active material with LFP.</p>
 <p>First, we clear the workspace and reload the original parameter set to start from a clean slate:</p>
