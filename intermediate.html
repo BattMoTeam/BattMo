@@ -70,16 +70,13 @@
 </ul>
 </li>
 <li class="toctree-l1 current"><a class="current reference internal" href="#">Intermediate usage</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="#pseudo-four-dimensional-p4d-model">Pseudo-Four-Dimensional (P4D) Model</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#setup-a-p4d-model-using-mergejsonstructs">Setup a P4D Model using <code class="code docutils literal notranslate"><span class="pre">mergeJsonStructs</span></code></a><ul>
 <li class="toctree-l3"><a class="reference internal" href="#define-parameters">Define Parameters</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#run-simulation">Run Simulation</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#visualize-results">Visualize Results</a></li>
 </ul>
 </li>
-<li class="toctree-l2"><a class="reference internal" href="#direct-insertion-using-parsebattmojson">Direct insertion using <code class="code docutils literal notranslate"><span class="pre">parseBattmoJson</span></code></a><ul>
-<li class="toctree-l3"><a class="reference internal" href="#merge-function-using-mergejsonstructs">Merge function using <code class="code docutils literal notranslate"><span class="pre">mergeJsonStructs</span></code></a></li>
-</ul>
-</li>
+<li class="toctree-l2"><a class="reference internal" href="#file-links-and-insertions-with-parsebattmojson">File links and insertions with <code class="code docutils literal notranslate"><span class="pre">parseBattmoJson</span></code></a></li>
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="architecture.html">BattMo Model Architecture</a></li>
@@ -198,12 +195,8 @@
              
   <section id="intermediate-usage">
 <h1>Intermediate usage<a class="headerlink" href="#intermediate-usage" title="Permalink to this heading"></a></h1>
-<div class="admonition note">
-<p class="admonition-title">Note</p>
-<p>This section is still under development.</p>
-</div>
-<section id="pseudo-four-dimensional-p4d-model">
-<h2>Pseudo-Four-Dimensional (P4D) Model<a class="headerlink" href="#pseudo-four-dimensional-p4d-model" title="Permalink to this heading"></a></h2>
+<section id="setup-a-p4d-model-using-mergejsonstructs">
+<span id="mergejsonstructs"></span><h2>Setup a P4D Model using <code class="code docutils literal notranslate"><span class="pre">mergeJsonStructs</span></code><a class="headerlink" href="#setup-a-p4d-model-using-mergejsonstructs" title="Permalink to this heading"></a></h2>
 <p>Let’s build a pseudo-four-dimensional Li-ion battery model and explore more about how to mix-and-match <strong>BattMo</strong> parameter definitions!</p>
 <p>P4D simulations provide the most spatial detail for battery simulations. They can consider the effects of complex shapes like current collector tabs, jelly rolls, or multi-layer cells on overall performance. However, they are also the most computationally expensive simulations to run. They are therefore usually reserved for specicial cases when geometric effects play a significant role.</p>
 <p>P4D models can be setup using a similar JSON parameter definition as described in the section on Basic Usage.</p>
@@ -287,17 +280,20 @@ surface particle concentrations in both electrode at a given time step.</p>
 </figure>
 </section>
 </section>
-<section id="direct-insertion-using-parsebattmojson">
-<h2>Direct insertion using <code class="code docutils literal notranslate"><span class="pre">parseBattmoJson</span></code><a class="headerlink" href="#direct-insertion-using-parsebattmojson" title="Permalink to this heading"></a></h2>
+<section id="file-links-and-insertions-with-parsebattmojson">
+<h2>File links and insertions with <code class="code docutils literal notranslate"><span class="pre">parseBattmoJson</span></code><a class="headerlink" href="#file-links-and-insertions-with-parsebattmojson" title="Permalink to this heading"></a></h2>
 <p>There are two mechanisms which can be used to combine JSON input files:</p>
 <ol class="arabic simple">
-<li><p>Direct insertion using <code class="code docutils literal notranslate"><span class="pre">parseBattmoJson</span></code></p></li>
 <li><p>Merge function using <code class="code docutils literal notranslate"><span class="pre">mergeJsonStruct</span></code></p></li>
+<li><p>Direct insertion using <code class="code docutils literal notranslate"><span class="pre">parseBattmoJson</span></code></p></li>
 </ol>
-<p>The function <a class="reference external" href="https://github.com/BattMoTeam/BattMo/blob/dev/Utilities/JsonUtils/parseBattmoJson.m">parseBattmoJson</a> parses the JSON input to create the corresponding matlab structure, basically
-relying on <a class="reference external" href="https://se.mathworks.com/help/matlab/ref/jsondecode.html">jsondecode</a>. In this process the reserved
-keyword properties <code class="code docutils literal notranslate"><span class="pre">isFile</span></code> combined with <code class="code docutils literal notranslate"><span class="pre">filename</span></code> are used to fetch and insert in place JSON data located
-in separate files. Here is an example, taken from <a class="reference external" href="https://github.com/BattMoTeam/BattMo/blob/dev/ParameterData/BatteryCellParameters/LithiumIonBatteryCell/lithium_ion_battery_nmc_graphite.json">lithium_ion_battery_nmc_graphite.json</a> where we have the following lines</p>
+<p>We have just seen an example of the first mechanism, which can be used within Matlab when we setup the simulation.</p>
+<p>The function <a class="reference external" href="https://github.com/BattMoTeam/BattMo/blob/dev/Utilities/JsonUtils/parseBattmoJson.m">parseBattmoJson</a> is used to parse a JSON input and create the corresponding matlab structure. It
+basically relies on <a class="reference external" href="https://se.mathworks.com/help/matlab/ref/jsondecode.html">jsondecode</a>.</p>
+<p>In this process the reserved keyword properties <code class="code docutils literal notranslate"><span class="pre">isFile</span></code> combined with <code class="code docutils literal notranslate"><span class="pre">filename</span></code> are used to fetch and
+insert in place JSON data located in separate files. Here is an example, taken from
+<a class="reference external" href="https://github.com/BattMoTeam/BattMo/blob/dev/ParameterData/BatteryCellParameters/LithiumIonBatteryCell/lithium_ion_battery_nmc_graphite.json">lithium_ion_battery_nmc_graphite.json</a>
+where we have the following lines</p>
 <div class="highlight-json notranslate"><div class="highlight"><pre><span></span><span class="nt">&quot;NegativeElectrode&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
 <span class="w">  </span><span class="nt">&quot;Coating&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
 <span class="w">    </span><span class="nt">&quot;ActiveMaterial&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
@@ -316,7 +312,7 @@ inserted in place. Hence, when we write</p>
 <p>the <code class="code docutils literal notranslate"><span class="pre">jsonstruct</span></code> that is obtained is equivalent to the one where we would have copied and paste the content of
 <a class="reference external" href="https://github.com/BattMoTeam/BattMo/blob/dev/ParameterData/MaterialProperties/Graphite/graphite.json">graphite.json</a>.</p>
 <div class="sphinx_collapse docutils container">
-<input class="sphinx_collapse__input" id="8ab7e9d2-43d1-4cc5-9098-410a30c13621" name="8ab7e9d2-43d1-4cc5-9098-410a30c13621" type="checkbox"><label class="sphinx_collapse__label" for="8ab7e9d2-43d1-4cc5-9098-410a30c13621"><i class="sphinx_collapse__icon"></i>jsonstruct detail</label><div class="sphinx_collapse__content docutils container">
+<input class="sphinx_collapse__input" id="cc94ef31-73a5-433b-93c4-29425955352d" name="cc94ef31-73a5-433b-93c4-29425955352d" type="checkbox"><label class="sphinx_collapse__label" for="cc94ef31-73a5-433b-93c4-29425955352d"><i class="sphinx_collapse__icon"></i>jsonstruct detail</label><div class="sphinx_collapse__content docutils container">
 <div class="highlight-json notranslate"><div class="highlight"><pre><span></span><span class="nt">&quot;NegativeElectrode&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
 <span class="w">  </span><span class="nt">&quot;Coating&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
 <span class="w">    </span><span class="nt">&quot;ActiveMaterial&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
@@ -338,9 +334,6 @@ inserted in place. Hence, when we write</p>
 </div>
 </div>
 </div>
-<section id="merge-function-using-mergejsonstructs">
-<span id="mergejsonstructs"></span><h3>Merge function using <code class="code docutils literal notranslate"><span class="pre">mergeJsonStructs</span></code><a class="headerlink" href="#merge-function-using-mergejsonstructs" title="Permalink to this heading"></a></h3>
-</section>
 </section>
 </section>
 

@@ -1,3 +1,4 @@
+        
 ========================
 JSON input specification
 ========================
@@ -26,6 +27,8 @@ schemas. Having separate schemas clarify the presentation and corresponds also t
 input. We can easily switch between different geometrical models while keeping the same material properties. For that,
 we use the :battmo:`mergeJsonStructs` function, see the example :ref:`here<mergeJsonStructs>`.
 
+Here, we give an :ref:`Example<jsonexample:Json input example>`
+
 
 Simulation Schema
 =================
@@ -35,8 +38,9 @@ This is the main schema for the input json file. It uses other separate schemas 
 .. literalinclude:: ../Utilities/JsonSchemas/Simulation.schema.json
    :language: json
 
-The schemas are available in the directory :battmofile:`JsonSchemas<Utilities/JsonSchemas>`.
-important schemas.
+The schemas are available in the directory
+:battmofile:`JsonSchemas<Utilities/JsonSchemas>`. :ref:`Here<jsonexample:Simulation>` is an example of the main input
+file where the inputs are given in separate files using the :code:`isFile` key.
               
 
 Material Parameters
@@ -64,6 +68,7 @@ It contains references to schemas that are written in separate files
 * Separator
 * Thermal Model
 
+See json :ref:`input example<jsonexample:Battery>`.  
               
 Electrolyte
 -----------
@@ -85,6 +90,8 @@ concentration and temperature, see examples :battmofile:`here<ParameterData/Mate
 .. literalinclude:: ../Utilities/JsonSchemas/Electrolyte.schema.json
    :language: json
 
+See json :ref:`input example<jsonexample:Electrolyte>`.
+
 Electrode
 ---------
 
@@ -93,6 +100,8 @@ The electrode input data contains essentially the input data for the coating and
 .. literalinclude:: ../Utilities/JsonSchemas/Electrode.schema.json
    :language: json
 
+See json :ref:`input example<jsonexample:Negative Electrode>` and also :ref:`here<jsonexample:Positive Electrode>`.
+              
 Coating
 -------
 
@@ -102,6 +111,8 @@ provide the data for the two active materials (:code:`ActiveMaterial1` and :code
 
 .. literalinclude:: ../Utilities/JsonSchemas/Coating.schema.json
    :language: json
+
+See json :ref:`input example<jsonexample:Coating>`
 
 Active Material
 ---------------
@@ -120,7 +131,9 @@ property :code:`diffusionModelType` is used to choose between the different diff
    
 .. literalinclude::  ../Utilities/JsonSchemas/ActiveMaterial.schema.json
    :language: json
-              
+
+See json :ref:`input example<jsonexample:Active Material>`
+
 Interface
 ---------
 
@@ -132,6 +145,8 @@ functions.
 .. literalinclude:: ../Utilities/JsonSchemas/Interface.schema.json
    :language: json
 
+See json :ref:`input example<jsonexample:Interface>`
+              
 Solid Diffusion
 ---------------
 
@@ -142,6 +157,8 @@ full diffusion model, we can provide a diffusion coefficient that depends on the
 .. literalinclude:: ../Utilities/JsonSchemas/SolidDiffusionModel.schema.json
    :language: json
 
+See json :ref:`input example<jsonexample:Solid Diffusion>`
+              
 Full Solid Diffusion
 --------------------
 
@@ -157,8 +174,10 @@ the guest stoichiometries and the saturation concentration.
 
 
 .. literalinclude:: ../Utilities/JsonSchemas/FullSolidDiffusionModel.schema.json
-   :language: json              
-
+   :language: json
+              
+See json :ref:`input example<jsonexample:Solid Diffusion>`
+              
 Binder
 ------
 
@@ -166,7 +185,9 @@ The conductivity of the binder and conductiving additive are used to compute the
 
 .. literalinclude::  ../Utilities/JsonSchemas/Binder.schema.json
    :language: json
-              
+
+See json :ref:`input example<jsonexample:Binder>`
+
 Conducting Additive
 -------------------
 
@@ -175,12 +196,15 @@ The conductivity of the binder and conductiving additive are used to compute the
 .. literalinclude::  ../Utilities/JsonSchemas/ConductingAdditive.schema.json
    :language: json
 
+See json :ref:`input example<jsonexample:Conducting Additive>`
+              
 Current Collector
 -----------------
 
 .. literalinclude:: ../Utilities/JsonSchemas/CurrentCollector.schema.json
    :language: json
 
+See json :ref:`input example<jsonexample:Current Collector>`
 
 Separator
 ---------
@@ -189,6 +213,8 @@ The porosity of the separator gives the volume fraction of the electrolyte in th
 
 .. literalinclude:: ../Utilities/JsonSchemas/Separator.schema.json
    :language: json
+
+See json :ref:`input example<jsonexample:Separator>`
 
 
 Thermal Model
@@ -199,7 +225,8 @@ The thermal parameters are essentially the thermal conductivity and heat capacit
 .. literalinclude:: ../Utilities/JsonSchemas/ThermalComponent.schema.json
    :language: json
 
-                 
+See json :ref:`input example<jsonexample:Thermal Model>`
+
 .. _geometryschema:                 
 
 Geometry Setup
@@ -214,6 +241,9 @@ For each design, the parameters are described in the schema.
 
 .. literalinclude:: ../Utilities/JsonSchemas/Geometry.schema.json
    :language: json
+
+See json :ref:`input example<jsonexample:Geometry>`
+
                  
 Simulation Control Parameters
 =============================
@@ -224,6 +254,8 @@ various control models can be read from the schema.
 .. literalinclude:: ../Utilities/JsonSchemas/ControlModel.schema.json
    :language: json
 
+See json :ref:`input example<jsonexample:Control>`
+              
 
 Time Stepping Parameters
 ========================
@@ -233,7 +265,8 @@ The description of the time stepping parameters can be read from the schema. Def
 .. literalinclude:: ../Utilities/JsonSchemas/TimeStepping.schema.json
    :language: json
 
-
+See json :ref:`input example<jsonexample:Time Stepping>`
+              
 Solver Parameters
 =================
 

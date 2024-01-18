@@ -70,16 +70,13 @@
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="intermediate.html">Intermediate usage</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="intermediate.html#pseudo-four-dimensional-p4d-model">Pseudo-Four-Dimensional (P4D) Model</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="intermediate.html#setup-a-p4d-model-using-mergejsonstructs">Setup a P4D Model using <code class="code docutils literal notranslate"><span class="pre">mergeJsonStructs</span></code></a><ul>
 <li class="toctree-l3"><a class="reference internal" href="intermediate.html#define-parameters">Define Parameters</a></li>
 <li class="toctree-l3"><a class="reference internal" href="intermediate.html#run-simulation">Run Simulation</a></li>
 <li class="toctree-l3"><a class="reference internal" href="intermediate.html#visualize-results">Visualize Results</a></li>
 </ul>
 </li>
-<li class="toctree-l2"><a class="reference internal" href="intermediate.html#direct-insertion-using-parsebattmojson">Direct insertion using <code class="code docutils literal notranslate"><span class="pre">parseBattmoJson</span></code></a><ul>
-<li class="toctree-l3"><a class="reference internal" href="intermediate.html#merge-function-using-mergejsonstructs">Merge function using <code class="code docutils literal notranslate"><span class="pre">mergeJsonStructs</span></code></a></li>
-</ul>
-</li>
+<li class="toctree-l2"><a class="reference internal" href="intermediate.html#file-links-and-insertions-with-parsebattmojson">File links and insertions with <code class="code docutils literal notranslate"><span class="pre">parseBattmoJson</span></code></a></li>
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="architecture.html">BattMo Model Architecture</a></li>
@@ -219,6 +216,7 @@ function <a class="reference external" href="https://github.com/BattMoTeam/BattM
 schemas. Having separate schemas clarify the presentation and corresponds also to a convenient way to organize the
 input. We can easily switch between different geometrical models while keeping the same material properties. For that,
 we use the <a class="reference external" href="https://github.com/BattMoTeam/BattMo/blob/dev/Utilities/JsonUtils/mergeJsonStructs.m">mergeJsonStructs</a> function, see the example <a class="reference internal" href="intermediate.html#mergejsonstructs"><span class="std std-ref">here</span></a>.</p>
+<p>Here, we give an <a class="reference internal" href="jsonexample.html#json-input-example"><span class="std std-ref">Example</span></a></p>
 <section id="simulation-schema">
 <h2>Simulation Schema<a class="headerlink" href="#simulation-schema" title="Permalink to this heading"></a></h2>
 <p>This is the main schema for the input json file. It uses other separate schemas which takes care of specific parameter sets.</p>
@@ -264,8 +262,9 @@ we use the <a class="reference external" href="https://github.com/BattMoTeam/Bat
 <span class="p">}</span>
 </pre></div>
 </div>
-<p>The schemas are available in the directory <a class="reference external" href="https://github.com/BattMoTeam/BattMo/blob/dev/Utilities/JsonSchemas">JsonSchemas</a>.
-important schemas.</p>
+<p>The schemas are available in the directory
+<a class="reference external" href="https://github.com/BattMoTeam/BattMo/blob/dev/Utilities/JsonSchemas">JsonSchemas</a>. <a class="reference internal" href="jsonexample.html#simulation"><span class="std std-ref">Here</span></a> is an example of the main input
+file where the inputs are given in separate files using the <code class="code docutils literal notranslate"><span class="pre">isFile</span></code> key.</p>
 </section>
 <section id="material-parameters">
 <h2>Material Parameters<a class="headerlink" href="#material-parameters" title="Permalink to this heading"></a></h2>
@@ -325,6 +324,7 @@ important schemas.</p>
 <li><p>Separator</p></li>
 <li><p>Thermal Model</p></li>
 </ul>
+<p>See json <a class="reference internal" href="jsonexample.html#battery"><span class="std std-ref">input example</span></a>.</p>
 <section id="electrolyte">
 <h3>Electrolyte<a class="headerlink" href="#electrolyte" title="Permalink to this heading"></a></h3>
 <p>The ionic conductivity and the diffusion coefficient can be given as a function or a constant. When a function is given,
@@ -400,6 +400,7 @@ table. When given as a table, the value of the function is interpolated from the
 <span class="p">}</span>
 </pre></div>
 </div>
+<p>See json <a class="reference internal" href="jsonexample.html#electrolyte"><span class="std std-ref">input example</span></a>.</p>
 </section>
 <section id="electrode">
 <h3>Electrode<a class="headerlink" href="#electrode" title="Permalink to this heading"></a></h3>
@@ -418,6 +419,7 @@ table. When given as a table, the value of the function is interpolated from the
 <span class="p">}</span>
 </pre></div>
 </div>
+<p>See json <a class="reference internal" href="jsonexample.html#negative-electrode"><span class="std std-ref">input example</span></a> and also <a class="reference internal" href="jsonexample.html#positive-electrode"><span class="std std-ref">here</span></a>.</p>
 </section>
 <section id="coating">
 <h3>Coating<a class="headerlink" href="#coating" title="Permalink to this heading"></a></h3>
@@ -505,6 +507,7 @@ provide the data for the two active materials (<code class="code docutils litera
 <span class="p">}</span>
 </pre></div>
 </div>
+<p>See json <a class="reference internal" href="jsonexample.html#coating"><span class="std std-ref">input example</span></a></p>
 </section>
 <section id="active-material">
 <h3>Active Material<a class="headerlink" href="#active-material" title="Permalink to this heading"></a></h3>
@@ -598,6 +601,7 @@ initializaton. This design choice is in fact used consistently in BattMo.</p>
 <span class="p">}</span>
 </pre></div>
 </div>
+<p>See json <a class="reference internal" href="jsonexample.html#active-material"><span class="std std-ref">input example</span></a></p>
 </section>
 <section id="interface">
 <h3>Interface<a class="headerlink" href="#interface" title="Permalink to this heading"></a></h3>
@@ -707,6 +711,7 @@ functions.</p>
 <span class="p">}</span>
 </pre></div>
 </div>
+<p>See json <a class="reference internal" href="jsonexample.html#interface"><span class="std std-ref">input example</span></a></p>
 </section>
 <section id="solid-diffusion">
 <h3>Solid Diffusion<a class="headerlink" href="#solid-diffusion" title="Permalink to this heading"></a></h3>
@@ -742,6 +747,7 @@ full diffusion model, we can provide a diffusion coefficient that depends on the
 <span class="p">}</span>
 </pre></div>
 </div>
+<p>See json <a class="reference internal" href="jsonexample.html#solid-diffusion"><span class="std std-ref">input example</span></a></p>
 </section>
 <section id="full-solid-diffusion">
 <h3>Full Solid Diffusion<a class="headerlink" href="#full-solid-diffusion" title="Permalink to this heading"></a></h3>
@@ -797,6 +803,7 @@ of the submodels, when needed, see <a class="reference external" href="https://g
 <span class="p">}</span>
 </pre></div>
 </div>
+<p>See json <a class="reference internal" href="jsonexample.html#solid-diffusion"><span class="std std-ref">input example</span></a></p>
 </section>
 <section id="binder">
 <h3>Binder<a class="headerlink" href="#binder" title="Permalink to this heading"></a></h3>
@@ -840,6 +847,7 @@ of the submodels, when needed, see <a class="reference external" href="https://g
 <span class="p">}</span>
 </pre></div>
 </div>
+<p>See json <a class="reference internal" href="jsonexample.html#binder"><span class="std std-ref">input example</span></a></p>
 </section>
 <section id="conducting-additive">
 <h3>Conducting Additive<a class="headerlink" href="#conducting-additive" title="Permalink to this heading"></a></h3>
@@ -884,6 +892,7 @@ of the submodels, when needed, see <a class="reference external" href="https://g
 <span class="p">}</span>
 </pre></div>
 </div>
+<p>See json <a class="reference internal" href="jsonexample.html#conducting-additive"><span class="std std-ref">input example</span></a></p>
 </section>
 <section id="current-collector">
 <h3>Current Collector<a class="headerlink" href="#current-collector" title="Permalink to this heading"></a></h3>
@@ -898,6 +907,7 @@ of the submodels, when needed, see <a class="reference external" href="https://g
 <span class="p">}</span>
 </pre></div>
 </div>
+<p>See json <a class="reference internal" href="jsonexample.html#current-collector"><span class="std std-ref">input example</span></a></p>
 </section>
 <section id="separator">
 <h3>Separator<a class="headerlink" href="#separator" title="Permalink to this heading"></a></h3>
@@ -937,6 +947,7 @@ of the submodels, when needed, see <a class="reference external" href="https://g
 <span class="p">}</span>
 </pre></div>
 </div>
+<p>See json <a class="reference internal" href="jsonexample.html#separator"><span class="std std-ref">input example</span></a></p>
 </section>
 <section id="thermal-model">
 <h3>Thermal Model<a class="headerlink" href="#thermal-model" title="Permalink to this heading"></a></h3>
@@ -976,6 +987,7 @@ of the submodels, when needed, see <a class="reference external" href="https://g
 <span class="p">}</span>
 </pre></div>
 </div>
+<p>See json <a class="reference internal" href="jsonexample.html#thermal-model"><span class="std std-ref">input example</span></a></p>
 </section>
 </section>
 <section id="geometry-setup">
@@ -1269,6 +1281,7 @@ parameterized by a small set of parameters, see the <a class="reference internal
 <span class="w">                </span><span class="nt">&quot;const&quot;</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="kc">false</span><span class="p">}}}]}}}}}</span>
 </pre></div>
 </div>
+<p>See json <a class="reference internal" href="jsonexample.html#geometry"><span class="std std-ref">input example</span></a></p>
 </section>
 <section id="simulation-control-parameters">
 <h2>Simulation Control Parameters<a class="headerlink" href="#simulation-control-parameters" title="Permalink to this heading"></a></h2>
@@ -1377,6 +1390,7 @@ various control models can be read from the schema.</p>
 <span class="p">}</span>
 </pre></div>
 </div>
+<p>See json <a class="reference internal" href="jsonexample.html#control"><span class="std std-ref">input example</span></a></p>
 </section>
 <section id="time-stepping-parameters">
 <h2>Time Stepping Parameters<a class="headerlink" href="#time-stepping-parameters" title="Permalink to this heading"></a></h2>
@@ -1415,6 +1429,7 @@ various control models can be read from the schema.</p>
 <span class="p">}</span>
 </pre></div>
 </div>
+<p>See json <a class="reference internal" href="jsonexample.html#time-stepping"><span class="std std-ref">input example</span></a></p>
 </section>
 <section id="solver-parameters">
 <h2>Solver Parameters<a class="headerlink" href="#solver-parameters" title="Permalink to this heading"></a></h2>
