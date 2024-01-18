@@ -14,11 +14,6 @@
       "description": "stoichiometric number of electrons transferred in the electrochemical reaction",
       "symbol": "n"
     },
-    "volumeFraction": {
-      "$ref": "PhysicalQuantity.schema.json",
-      "description": "volume fraction of the active material",
-      "symbol": "varepsilon"
-    },
     "volumetricSurfaceArea": {
       "$ref": "PhysicalQuantity.schema.json",
       "description": "surface area of the active material - electrolyte interface per volume of electrode"

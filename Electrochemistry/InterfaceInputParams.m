@@ -8,7 +8,6 @@ classdef InterfaceInputParams < InputParams
 
         saturationConcentration      % the saturation concentration of the guest molecule in the host material
         numberOfElectronsTransferred % stoichiometric number of electrons transferred in the electrochemical reaction
-        volumeFraction               % volume fraction of the active material
         volumetricSurfaceArea        % surface area of the active material - electrolyte interface per volume of electrode
         activationEnergyOfReaction   % the activation energy of the electrochemical reaction
         reactionRateConstant         % the reaction rate constant of the electrochemical reaction
