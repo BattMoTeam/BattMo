@@ -7,6 +7,7 @@
   ("xavier" (progn
               (pyvenv-activate "~/Python/battmodoc-env/")
               (setq docdir "/home/xavier/Matlab/Projects/battmo/Documentation/")
+              (setq rootdir "/home/xavier/Matlab/Projects/battmo/")
               (setq utilsdir "/home/xavier/Matlab/Projects/battmo/Documentation/utils/")
               (setq testdir "/home/xavier/Matlab/Projects/battmo-doc-test/")))
   ("august" (progn
@@ -74,3 +75,30 @@
     (insert "      " com "\n")
     )
   )
+
+(defun battmodoc-matlab-include-link ()
+  (interactive)
+  (let* ((url "https://github.com/BattMoTeam/BattMo")
+        (branch-name "dev")
+        (fullfilename (battmo-counsel-fzf "" rootdir))
+        (filename (file-name-nondirectory fullfilename))
+        (p (make-marker)))
+    (insert (concat "<" url "/blob/" branch-name "/" fullfilename "  "))
+    (set-marker p (point))
+    (insert (concat filename ">"))
+    (goto-char p)
+    )
+  )
+
+(defun battmo-counsel-fzf (initial-input initial-directory)
+  (counsel-require-program counsel-fzf-cmd)
+  (setq counsel--fzf-dir  initial-directory)
+  (ivy-read "file to link:"
+            #'counsel-fzf-function
+            :initial-input initial-input
+            :re-builder #'ivy--regex-fuzzy
+            :dynamic-collection t
+            :action #'identity
+            :caller 'counsel-fzf))
+
+
