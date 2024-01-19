@@ -10,7 +10,7 @@ notebooknames = {'tutorial_1_a_simple_p2d_model_live.mlx'              , ...
                  'tutorial_8_simulate_a_multilayer_pouch_cell_live.mlx', ...
                  'tutorial_9_simulate_a_cylindrical_cell_live.mlx'};
 
-inputdir  = fullfile(battmoDir(), 'Examples', 'Basic');
+inputdir  = fullfile(battmoDir(), 'Examples', 'NoteBooks');
 outputdir = fullfile(battmoDir(), 'Documentation', '_static', 'notebooks');
 
 %% setup options

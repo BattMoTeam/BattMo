@@ -8,12 +8,11 @@ which includes a mesh for all the components (Coatings, sepators, current collec
 as the main output.
 
 To create our grids, we rely essentially on the grid generation functions provided by `MRST
-<https://www.sintef.no/Projectweb/MRST/>`_. We use also the visualization tools available there, see :ref:`here <mrst
-page>`.
+<https://www.sintef.no/Projectweb/MRST/>`_. We use also the visualization tools available there, see :ref:`here <visualization>`.
 
 Standard geometries can often be parameterized, meaning that a small set parameters is enough to construct the whole
 geometrical model. We have implemented some standard geometries and provide here examples with an illustration and a
-list of the parameters used to produce this illustration. The parameters can be passed through json interface and are
+list of the parameters used to produce this illustration. The parameters can be passed through json interface and aref
 described in some more detail in the :battmofile:`geometry json schema<Utilities/JsonSchemas/Geometry.schema.json>`.
 
 

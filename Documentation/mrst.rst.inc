@@ -1,3 +1,5 @@
+:orphan:
+   
 MRST
 ====
 
@@ -24,6 +26,8 @@ On the `MRSTwebpage`_ webpage, you can find `documentations <https://www.sintef.
 We recommend the following tutorials which deal with grid visualization and grid generation will be usefull for BattMo
 users.
 
+.. _visualization:
+
 `Visualization Tutorial <https://www.sintef.no/projectweb/mrst/documentation/tutorials/visualization-tutorial/>`_
 -----------------------------------------------------------------------------------------------------------------
 
@@ -34,6 +38,8 @@ users.
 
    .. image:: img/gridfact.png
 
+
+see :ref:`here<visualization>`.              
               
 .. _MRSTwebpage: https://www.sintef.no/Projectweb/MRSTwebpage/
 
