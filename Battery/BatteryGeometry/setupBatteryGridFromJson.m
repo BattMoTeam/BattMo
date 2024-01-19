@@ -52,20 +52,21 @@ function [inputparams, gridGenerator] = setupBatteryGridFromJson(inputparams, js
 
         gen = BatteryGeneratorMultilayerPouch();
 
-        gen.unit_cell_thickness = [jsonstruct.(ne).(cc).thickness     ; ...
-                                   jsonstruct.(ne).(am).thickness     ; ...
-                                   jsonstruct.(elyte).(sep).thickness ; ...
-                                   jsonstruct.(pe).(am).thickness     ; ...
+        gen.pouch_width  = jsonstruct.(geom).width;
+        gen.pouch_height = jsonstruct.(geom).height;
+
+        gen.unit_cell_thickness = [jsonstruct.(ne).(cc).thickness ; ...
+                                   jsonstruct.(ne).(co).thickness ; ...
+                                   jsonstruct.(sep).thickness     ; ...
+                                   jsonstruct.(pe).(co).thickness ; ...
                                    jsonstruct.(pe).(cc).thickness];
 
-        gen.sep_nz   = jsonstruct.(elyte).(sep).N;
-        gen.ne_am_nz = jsonstruct.(ne).(am).N;
-        gen.pe_am_nz = jsonstruct.(pe).(am).N;
+        gen.sep_nz   = jsonstruct.(sep).N;
+        gen.ne_co_nz = jsonstruct.(ne).(co).N;
+        gen.pe_co_nz = jsonstruct.(pe).(co).N;
         gen.ne_cc_nz = jsonstruct.(ne).(cc).N;
         gen.pe_cc_nz = jsonstruct.(pe).(cc).N;
 
-        gen.pouch_width = jsonstruct.(geom).width;
-        gen.pouch_height = jsonstruct.(geom).height;
 
         gen.tab_width     = jsonstruct.(geom).tab.width;
         gen.ne_tab_height = jsonstruct.(geom).tab.(ne).height;
@@ -102,8 +103,8 @@ function [inputparams, gridGenerator] = setupBatteryGridFromJson(inputparams, js
         gen.zlength = zlength;
 
         gen.sep_nz   = jsonstruct.Separator.N;
-        gen.ne_am_nz = jsonstruct.NegativeElectrode.Coating.N;
-        gen.pe_am_nz = jsonstruct.PositiveElectrode.Coating.N;
+        gen.ne_co_nz = jsonstruct.NegativeElectrode.Coating.N;
+        gen.pe_co_nz = jsonstruct.PositiveElectrode.Coating.N;
         gen.ne_cc_nz = jsonstruct.NegativeElectrode.CurrentCollector.N;
         gen.pe_cc_nz = jsonstruct.PositiveElectrode.CurrentCollector.N;
 
