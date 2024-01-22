@@ -153,7 +153,7 @@
     "upperCutoffVoltage": 4.1,
     "dIdtLimit": 0.01,
     "dEdtLimit": 0.01,
-    "rampupTime": 0.1
+    "rampupTime": 10
   },
   "Electrolyte": {
     "initialConcentration": 1000,
@@ -189,9 +189,9 @@
   },
   "TimeStepping": {
     "totalTime": 5040,
-    "N": 40,
+    "numberOfTimeSteps": 40,
     "useRampup": true,
-    "numberOfTimeSteps": 40
+    "numberOfRampupSteps": 5
   },
   "Output": {
     "variables": [

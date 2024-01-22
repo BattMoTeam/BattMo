@@ -143,8 +143,8 @@
   "G": [],
   "SOC": 0.99,
   "initT": 298.15,
-  "use_thermal": true,
-  "include_current_collectors": false,
+  "use_thermal": false,
+  "include_current_collectors": true,
   "Control": {
     "controlPolicy": "CCDischarge",
     "initialControl": "discharging",
@@ -189,9 +189,9 @@
   },
   "TimeStepping": {
     "totalTime": 5040,
-    "N": 40,
+    "numberOfTimeSteps": 40,
     "useRampup": true,
-    "numberOfTimeSteps": 40
+    "numberOfRampupSteps": 5
   },
   "Output": {
     "variables": [
