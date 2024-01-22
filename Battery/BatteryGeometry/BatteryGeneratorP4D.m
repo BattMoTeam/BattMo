@@ -43,8 +43,8 @@ classdef BatteryGeneratorP4D < BatteryGenerator
         facz = 1;
 
         sep_nz   = 3; % discretization number in z-direction for separator (default: 3)
-        ne_am_nz = 3; % discretization number in z-direction for positive active material (default: 3)
-        pe_am_nz = 3; % discretization number in z-direction for negative active material (default: 3)
+        ne_co_nz = 3; % discretization number in z-direction for positive active material (default: 3)
+        pe_co_nz = 3; % discretization number in z-direction for negative active material (default: 3)
         ne_cc_nz = 2; % discretization number in z-direction for negative current collector (default: 3)
         pe_cc_nz = 2; % discretization number in z-direction for positive current collector (default: 3)
 
@@ -105,7 +105,7 @@ classdef BatteryGeneratorP4D < BatteryGenerator
 
             nxs = [gen.ne_cc_nx; gen.int_elyte_nx; gen.pe_cc_nx];
             nys = [gen.ne_cc_ny; gen.elyte_ny; gen.pe_cc_ny];
-            nzs = [gen.ne_cc_nz; gen.ne_am_nz; gen.sep_nz; gen.ne_am_nz; gen.pe_cc_nz];
+            nzs = [gen.ne_cc_nz; gen.ne_co_nz; gen.sep_nz; gen.pe_co_nz; gen.pe_cc_nz];
 
             x = gen.xlength./nxs;
             x = rldecode(x, nxs);
@@ -127,26 +127,26 @@ classdef BatteryGeneratorP4D < BatteryGenerator
 
             dimGrid = [nx; ny; nz];
 
-            gen.elyte_nz = gen.sep_nz + gen.ne_am_nz + gen.pe_am_nz;
+            gen.elyte_nz = gen.sep_nz + gen.ne_co_nz + gen.pe_co_nz;
 
             startSubGrid = [1; gen.ne_cc_ny + 1; gen.ne_cc_nz + 1];
             dimSubGrid   = [nx; gen.elyte_ny; gen.elyte_nz];
             allparams.(elyte).cellind = pickTensorCells3D(startSubGrid, dimSubGrid, dimGrid);
 
-            startSubGrid = [1; gen.ne_cc_ny + 1; gen.ne_cc_nz + gen.ne_am_nz + 1];
+            startSubGrid = [1; gen.ne_cc_ny + 1; gen.ne_cc_nz + gen.ne_co_nz + 1];
             dimSubGrid   = [nx; gen.elyte_ny; gen.sep_nz];
             allparams.(sep).cellind = pickTensorCells3D(startSubGrid, dimSubGrid, dimGrid);
 
             %% setup gen.ne_eac
 
             startSubGrid = [1; gen.ne_cc_ny + 1; gen.ne_cc_nz + 1];
-            dimSubGrid   = [nx; gen.elyte_ny; gen.ne_am_nz];
+            dimSubGrid   = [nx; gen.elyte_ny; gen.ne_co_nz];
             allparams.(ne).(co).cellind = pickTensorCells3D(startSubGrid, dimSubGrid, dimGrid);
 
             %% setup gen.pe_eac
 
-            startSubGrid = [1; gen.ne_cc_ny + 1; gen.ne_cc_nz + gen.ne_am_nz + gen.sep_nz + 1];
-            dimSubGrid   = [nx; gen.elyte_ny; gen.pe_am_nz];
+            startSubGrid = [1; gen.ne_cc_ny + 1; gen.ne_cc_nz + gen.ne_co_nz + gen.sep_nz + 1];
+            dimSubGrid   = [nx; gen.elyte_ny; gen.pe_co_nz];
             allparams.(pe).(co).cellind = pickTensorCells3D(startSubGrid, dimSubGrid, dimGrid);
 
             %% setup gen.ne_cc
@@ -201,8 +201,8 @@ classdef BatteryGeneratorP4D < BatteryGenerator
             facz = gen.facz;
 
             gen.sep_nz   = facz*gen.sep_nz;
-            gen.ne_am_nz = facz*gen.ne_am_nz;
-            gen.pe_am_nz = facz*gen.pe_am_nz;
+            gen.ne_co_nz = facz*gen.ne_co_nz;
+            gen.pe_co_nz = facz*gen.pe_co_nz;
             gen.ne_cc_nz = facz*gen.ne_cc_nz;
             gen.pe_cc_nz = facz*gen.pe_cc_nz;
 
