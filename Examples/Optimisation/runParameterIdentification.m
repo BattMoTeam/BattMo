@@ -197,9 +197,6 @@ end
 fprintf('\nExperimental values:\n');
 fprintf('%g\n', pExp);
 
-fprintf('\nRelative error between optimized and experimental values:\n')
-fprintf('%g\n', relErr);
-
 fprintf('\nIterations:\n')
 fprintf('%g\n', numIt);
 
