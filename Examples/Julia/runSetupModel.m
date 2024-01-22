@@ -45,7 +45,7 @@ switch testCase
   case 'JSON'
 
     generate_reference_solution = false;
-    inputFileName = fullfile(jsonfolder, 'p2d_40_jl_ud.json');
+    inputFileName = fullfile(jsonfolder, 'p2d_40_jl.json');
 
     % man.load('kwargs'       , kwargs, ...
              % 'inputType'    , 'JSON', ...
@@ -76,7 +76,7 @@ if generate_reference_solution
     hold on
     E = cellfun(@(state) state.Control.E, export.states);
     time = cellfun(@(state) state.time, export.states);
-    plot(time, E, "DisplayName", "BattMo Matlab", LineWidth = 2, LineStyle = " -- ")
+    plot(time/hour, E, "DisplayName", "BattMo Matlab", LineWidth = 2, LineStyle = " -- ")
 end
 
 legend
