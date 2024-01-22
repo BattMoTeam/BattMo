@@ -213,7 +213,7 @@ classdef ComputationalGraphTool
             [isok, ia] = ismember(varnameinds, allstaticinds);
             
             if any(isok)
-                staticpropinds = allstaticpropinds(ia(isok));
+                staticpropinds = allstaticpropinds(ia(isok))';
                 staticinds = allstaticinds(ia(isok))'; %
             else
                 staticpropinds = {};
