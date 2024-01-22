@@ -2,9 +2,9 @@ clear all
 close all
 
 import matlab.unittest.TestSuite;
-import matlab.unittest.selectors.HasParameter;
+import matlab.unittest.selectors.*;
 import matlab.unittest.parameters.Parameter;
-import matlab.unittest.TestRunner
+import matlab.unittest.TestRunner;
 
 doCreateReferenceData = false;
 if doCreateReferenceData
@@ -31,7 +31,10 @@ doRunFilteredSuite = false;
 if doRunFilteredSuite
     % We using a subset of a suite based on parameter selection
     suite = TestSuite.fromClass(?TestBatteryP2D);
-    suite = suite.selectIf(HasParameter('Property', 'testSize', 'Value', 'short'));
+    selector1 = HasParameter('Property', 'testSize', 'Value', 'short');
+    selector2 = HasParameter('Property', 'use_thermal', 'Value', false);
+    selector = selector1 & selector2;
+    suite = suite.selectIf(selector);
     suite.run();
 end
 
