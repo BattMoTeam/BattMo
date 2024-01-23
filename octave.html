@@ -4,7 +4,7 @@
   <meta charset="utf-8" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>List of curated examples &mdash; BattMo  documentation</title>
+  <title>Note on Octave Support &mdash; BattMo  documentation</title>
       <link rel="stylesheet" type="text/css" href="_static/pygments.css" />
       <link rel="stylesheet" type="text/css" href="_static/css/theme.css" />
       <link rel="stylesheet" type="text/css" href="_static/sphinx_collapse.css" />
@@ -24,7 +24,9 @@
         <script src="_static/sphinx_highlight.js"></script>
     <script src="_static/js/theme.js"></script>
     <link rel="index" title="Index" href="genindex.html" />
-    <link rel="search" title="Search" href="search.html" /> 
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="BattMo Julia bridge" href="juliabridge.html" />
+    <link rel="prev" title="Optimization" href="optimisation.html" /> 
 </head>
 
 <body class="wy-body-for-nav"> 
@@ -47,7 +49,7 @@
   </form>
 </div>
         </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
-              <ul>
+              <ul class="current">
 <li class="toctree-l1"><a class="reference internal" href="installation.html">Installation</a></li>
 <li class="toctree-l1"><a class="reference internal" href="basicusage.html">Basic Usage</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="basicusage.html#a-first-battmo-model">A First <strong>BattMo</strong> Model</a><ul>
@@ -110,7 +112,7 @@
 <li class="toctree-l2"><a class="reference internal" href="geometryinput.html#coincellbatterygenerator">CoinCellBatteryGenerator</a></li>
 </ul>
 </li>
-<li class="toctree-l1"><a class="reference internal" href="advancedtopics.html">Advanced Usage</a><ul>
+<li class="toctree-l1 current"><a class="reference internal" href="advancedtopics.html">Advanced Usage</a><ul class="current">
 <li class="toctree-l2"><a class="reference internal" href="modelinitialisation.html">The Battery Simulation Model</a><ul>
 <li class="toctree-l3"><a class="reference internal" href="modelinitialisation.html#initialisation-of-a-battery-simulation-model">Initialisation of a battery simulation model</a></li>
 <li class="toctree-l3"><a class="reference internal" href="modelinitialisation.html#inspection-of-the-model">Inspection of the model</a></li>
@@ -135,7 +137,7 @@
 <li class="toctree-l3"><a class="reference internal" href="optimisation.html#optimization-example">Optimization example</a></li>
 </ul>
 </li>
-<li class="toctree-l2"><a class="reference internal" href="octave.html">Octave</a></li>
+<li class="toctree-l2 current"><a class="current reference internal" href="#">Octave</a></li>
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="juliabridge.html">BattMo Julia bridge</a><ul>
@@ -181,9 +183,10 @@
           <div role="navigation" aria-label="Page navigation">
   <ul class="wy-breadcrumbs">
       <li><a href="index.html" class="icon icon-home" aria-label="Home"></a></li>
-      <li class="breadcrumb-item active">List of curated examples</li>
+          <li class="breadcrumb-item"><a href="advancedtopics.html">Advanced Usage</a></li>
+      <li class="breadcrumb-item active">Note on Octave Support</li>
       <li class="wy-breadcrumbs-aside">
-            <a href="_sources/tutorials.rst.txt" rel="nofollow"> View page source</a>
+            <a href="_sources/octave.rst.txt" rel="nofollow"> View page source</a>
       </li>
   </ul>
   <hr/>
@@ -191,36 +194,29 @@
           <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
            <div itemprop="articleBody">
              
-  <section id="list-of-curated-examples">
-<h1>List of curated examples<a class="headerlink" href="#list-of-curated-examples" title="Permalink to this heading"></a></h1>
-<p>This examples are ready to be published</p>
-<ul>
-<li><p><a class="reference internal" href="publishedExamples/battMoTutorial.html#battmotutorial"><span class="std std-ref">BattMo Tutorial</span></a></p></li>
-<li><p><a class="reference internal" href="publishedExamples/runJsonScript.html#runjsonscript"><span class="std std-ref">BattMo example Json input</span></a></p></li>
-<li><p><a class="reference internal" href="publishedExamples/runBatteryP2D.html#runbatteryp2d"><span class="std std-ref">Pseudo-Two-Dimensional (P2D) Lithium-Ion Battery Model</span></a></p></li>
-<li><p><a class="reference internal" href="publishedExamples/runSEIActiveMaterial.html#runseiactivematerial"><span class="std std-ref">Particle simulation with SEI layer growth</span></a></p></li>
-<li><p><a class="reference internal" href="publishedExamples/runElectrolyser.html#runelectrolyser"><span class="std std-ref">Alkaline Membrane Electrolyser</span></a></p></li>
-<li><p>More Examples</p>
-<p>In the <code class="code docutils literal notranslate"><span class="pre">Examples</span></code> directory examples, the following examples can be found. They should run out of the box (write
-the name of script after <a class="reference internal" href="installation.html#installation"><span class="std std-ref">installing BattMo</span></a>). If not, tell us!</p>
-<ul class="simple">
-<li><p><code class="code docutils literal notranslate"><span class="pre">runBatteryP3D</span></code> : 2D example using <a class="reference internal" href="geometryinput.html#dgeometry"><span class="std std-ref">2D model geometry</span></a></p></li>
-<li><p><code class="code docutils literal notranslate"><span class="pre">runBatteryP4D</span></code> : 3D example using <a class="reference internal" href="geometryinput.html#id1"><span class="std std-ref">3D model geometry</span></a></p></li>
-<li><p><code class="code docutils literal notranslate"><span class="pre">runChen2020</span></code> : Example using Chen data including a comparison with <a class="reference external" href="https://www.pybamm.org/">pybamm</a></p></li>
-<li><p><code class="code docutils literal notranslate"><span class="pre">runCR</span></code> : Example running for a coin cell</p></li>
-<li><p><code class="code docutils literal notranslate"><span class="pre">runGittTest</span></code> : Example running a Gitt test</p></li>
-<li><p><code class="code docutils literal notranslate"><span class="pre">runJellyRoll</span></code> : Example running a <a class="reference internal" href="geometryinput.html#jellyroll"><span class="std std-ref">jelly roll geometry</span></a></p></li>
-</ul>
-</li>
-</ul>
-<div class="toctree-wrapper compound">
-</div>
+  <section id="note-on-octave-support">
+<h1>Note on Octave Support<a class="headerlink" href="#note-on-octave-support" title="Permalink to this heading"></a></h1>
+<p><a class="reference external" href="https://octave.org/">GNU Octave</a> is an open source scientific programming language. The language syntax is by design
+compatible with Matlab and the Octave developpers strive to maintain this compatibility (<em>drop-in compatibility</em>). Thus,
+Octave can be used as a free alternative to Matlab.</p>
+<p>In BattMo, we use only the matlab core functionalities meaning that none of the matlab toolboxes are required. We also
+favor standard data structures and functions. It is easier to maintain and likely more robust. Then, it is not hard to
+make BattMo compatible with Octave.</p>
+<p>Indeed, BattMo solvers can be run with Octave and we <strong>aim at maintaining this compatibility</strong>. It means that scripts
+that takes json input, compute the solutions and return the solution for each time step, will be supported. The generic
+script <a class="reference external" href="https://github.com/BattMoTeam/BattMo/blob/dev/Examples/JsonInput/runJsonScript.m">runJsonScript</a> runs in Octave.</p>
+<p><strong>However</strong>, we have met some difficulties with 3D-plotting in Octave and we do not have the resources to solve
+those. Octave user may therefore have to develop their own visualization support. Note that 1d-plotting should not be an
+issue.</p>
 </section>
 
 
            </div>
           </div>
-          <footer>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="optimisation.html" class="btn btn-neutral float-left" title="Optimization" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="juliabridge.html" class="btn btn-neutral float-right" title="BattMo Julia bridge" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
 
   <hr/>
 

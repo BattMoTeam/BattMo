@@ -13,6 +13,7 @@ Advanced Usage
    units
    thermal
    optimisation
+   Octave <octave>
    
 * :ref:`The Battery Simulation Model<modelinitialisation:The Battery Simulation Model>`
 * :ref:`Control models <controlinput:Control models>`
@@ -21,4 +22,5 @@ Advanced Usage
 * :ref:`Units <units:Units>`
 * :ref:`Thermal simulation <thermal:Thermal Simulation>`
 * :ref:`Optimisation <optimisation:Optimization>`
-  
+* :ref:`Octave Support <octave:Note on Octave Support>`
+
