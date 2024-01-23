@@ -34,7 +34,6 @@ function op = getCellFluxOperatorsAll(G, varargin)
     
     %%
     if mrstPlatform('octave')
-        warning('Octave does not yet use c-accelerated blockInverter');
         opt = struct('invertBlocks', 'matlab');
         opt = merge_options(opt, varargin{:});
         bi = blockInverter(opt);
