@@ -14,7 +14,7 @@ jsonstruct = mergeJsonStructs({jsonstruct_base, ...
 inputparams = ElectrolyserInputParams(jsonstruct);
 
 jsonstring = fileread(fullfile('Electrolyser','Parameters','electrolysergeometry1d.json'));
-jsonstruct = jsondecode(jsonstring);
+jsonstruct = battMojsondecode(jsonstring);
 
 inputparams = setupElectrolyserGridFromJson(inputparams, jsonstruct);
 

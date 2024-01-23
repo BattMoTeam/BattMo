@@ -141,7 +141,7 @@ classdef ServerManager < handle
                 raw = fread(fid, inf);
                 str = char(raw');
                 fclose(fid);
-                result = jsondecode(str);
+                result = battMojsondecode(str);
 
                 if manager.options.gc
                     delete(outputFileName);
@@ -266,7 +266,7 @@ classdef ServerManager < handle
                 raw = fread(fid, inf);
                 str = char(raw');
                 fclose(fid);
-                states = jsondecode(str);
+                states = battMojsondecode(str);
                 result(i).states = states;
             end
         end
@@ -285,7 +285,7 @@ function [result, count] = checkSweep(experiment, save_folder)
     raw = fread(fid, inf);
     str = char(raw');
     fclose(fid);
-    result = jsondecode(str);
+    result = battMojsondecode(str);
 end
 
 % Determine correct julia source

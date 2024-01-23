@@ -173,7 +173,7 @@ switch casenumber
         error('diffusionModelType not covered')
     end
     jsonsrc = fileread(jsonfilename);
-    setup = jsondecode(jsonsrc);
+    setup = battMojsondecode(jsonsrc);
 
   otherwise
 

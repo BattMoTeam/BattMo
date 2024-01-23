@@ -211,7 +211,7 @@ switch casenumber
         error('diffusionModelType not covered')
     end
     jsonsrc = fileread(jsonfilename);
-    setup = jsondecode(jsonsrc);
+    setup = battMojsondecode(jsonsrc);
 
 
   case 4
@@ -226,7 +226,7 @@ switch casenumber
         error('diffusionModelType not covered')
     end
     jsonsrc = fileread(jsonfilename);
-    setup = jsondecode(jsonsrc);
+    setup = battMojsondecode(jsonsrc);
 
     clear solver
     solver.library = 'matlab';

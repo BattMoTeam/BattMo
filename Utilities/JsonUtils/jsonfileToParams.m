@@ -3,7 +3,7 @@ function inputparams = jsonfileToParams(inputparams, filename)
     fileroot = fullfile('..', '..');
     fullfilename = fullfile(fileroot, filename);
     jsonsrc = fileread(filename);
-    data = jsondecode(jsonsrc);
+    data = battMojsondecode(jsonsrc);
 
     inputparams = assignStructParams(inputparams, data);
     
