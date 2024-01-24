@@ -101,7 +101,7 @@ to have a look at the `Visualization Tutorial
 surface particle concentrations in both electrode at a given time step.
           
 ..
-   The plots presented below are obtained using the script runExample3D in Documentation/scripts/runExample3D
+   The plots presented below are obtained using the script runExample3D_doc 
 
 .. code:: matlab
           
