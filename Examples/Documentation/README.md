@@ -1,2 +1,3 @@
-In this directory, we collect the BattMo scripts that are used in the documentation but not included in the repo
-otherwise.
+In this directory, we collect BattMo scripts that are used in the documentation.
+
+The scripts are not particularly curated.
