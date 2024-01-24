@@ -85,7 +85,7 @@ We add the geometry using the function :battmo:`setupBatteryGridFromJson` which 
 Now the object :code:`inputparams` contains also the grids for each of the submodels. In general, the grids are
 generated using so-called grid generator, see the :ref:`dedicated section<geometryinput:Battery Geometries>`. When we
 use a standard parameterized geometry, then the grid parameters can be pass in the json structure (an example is given
-:battmofile:`here<Documentation/scripts/jsonfiles/4680-geometry.json>` for a :ref:`Jelly Roll geometry<jellyroll>`). The
+:battmofile:`here<Examples/Documentation/jsonfiles/4680-geometry.json>` for a :ref:`Jelly Roll geometry<jellyroll>`). The
 function :battmo:`setupBatteryGridFromJson` then takes care of calling the appropriate grid generator with the
 parameter, as given in the json input file.
 

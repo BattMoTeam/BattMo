@@ -262,7 +262,7 @@ model. Typically, the property of the object corresponds to the property of the 
 <p>Now the object <code class="code docutils literal notranslate"><span class="pre">inputparams</span></code> contains also the grids for each of the submodels. In general, the grids are
 generated using so-called grid generator, see the <a class="reference internal" href="geometryinput.html#battery-geometries"><span class="std std-ref">dedicated section</span></a>. When we
 use a standard parameterized geometry, then the grid parameters can be pass in the json structure (an example is given
-<a class="reference external" href="https://github.com/BattMoTeam/BattMo/blob/dev/Documentation/scripts/jsonfiles/4680-geometry.json">here</a> for a <a class="reference internal" href="geometryinput.html#jellyroll"><span class="std std-ref">Jelly Roll geometry</span></a>). The
+<a class="reference external" href="https://github.com/BattMoTeam/BattMo/blob/dev/Examples/Documentation/jsonfiles/4680-geometry.json">here</a> for a <a class="reference internal" href="geometryinput.html#jellyroll"><span class="std std-ref">Jelly Roll geometry</span></a>). The
 function <a class="reference external" href="https://github.com/BattMoTeam/BattMo/blob/dev/Battery/BatteryGeometry/setupBatteryGridFromJson.m">setupBatteryGridFromJson</a> then takes care of calling the appropriate grid generator with the
 parameter, as given in the json input file.</p>
 <p>The input parameter object can now be validated. This step is important. In the <a class="reference internal" href="architecture.html#battmo-model-architecture"><span class="std std-ref">BattMo Model Architecture</span></a>, sub-models can use the same parameters. However, the submodels are instantiate in a parallel manner. The

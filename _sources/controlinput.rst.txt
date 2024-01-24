@@ -125,7 +125,7 @@ following result.
 
    CCCV control
 
-The script used to generate the figures is available :battmofile:`here <Documentation/scripts/plotControlExamples.m>`.
+The script used to generate the figures is available :battmo:`here <plotControlExamples_doc>`.
 
 
 Control model description
@@ -195,7 +195,7 @@ Now, we can run the simulation for the given schedule, model and initial state u
 
    [~, states] = simulateScheduleAD(initstate, model, schedule);
 
-The complete source can be found here :battmofile:`exampleControl<Documentation/scripts/exampleControl.m>`.
+The complete source can be found here :battmo:`exampleControl_doc`.
 
 
 .. figure:: img/exampleControl.png

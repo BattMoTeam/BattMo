@@ -270,7 +270,7 @@ A geometry model for jelly rolls. Here, we have used parameters corresponding to
 
 There are parameters for the tabs that we do not detail here, see :battmofile:`json
 schema<Utilities/JsonSchemas/Geometry.schema.json#242>`. The json source is available
-:battmofile:`here<Documentation/scripts/jsonfiles/4680-geometry.json>`.
+:battmofile:`here<Examples/Documentation/jsonfiles/4680-geometry.json>`.
 
 .. _coincell:
       
