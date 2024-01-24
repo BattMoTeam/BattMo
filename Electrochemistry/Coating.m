@@ -372,7 +372,7 @@ classdef Coating < ElectronicComponent
         end
 
         function model = setTPFVgeometry(model, tPFVgeometry)
-        % tPFVgeometry should be instance of TwoPointFiniteVolumeGeometry or MutableTwoPointFiniteVolumeGeometry
+        % tPFVgeometry should be instance of TwoPointFiniteVolumeGeometry
 
             model = setTPFVgeometry@ElectronicComponent(model, tPFVgeometry);
 

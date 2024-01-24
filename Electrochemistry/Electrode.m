@@ -96,7 +96,7 @@ classdef Electrode < BaseModel
         end
 
         function model = setTPFVgeometry(model, tPFVgeometry)
-        % tPFVgeometry should be instance of TwoPointFiniteVolumeGeometry or MutableTwoPointFiniteVolumeGeometry
+        % tPFVgeometry should be instance of TwoPointFiniteVolumeGeometry
 
             co = 'Coating';
 

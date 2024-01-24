@@ -98,7 +98,7 @@ classdef ElectronicComponent < BaseModel
         end
 
         function model = setTPFVgeometry(model, tPFVgeometry)
-        % tPFVgeometry should be instance of TwoPointFiniteVolumeGeometry or MutableTwoPointFiniteVolumeGeometry
+        % tPFVgeometry should be instance of TwoPointFiniteVolumeGeometry
 
             model.G.parentGrid.tPFVgeometry = tPFVgeometry;
 
