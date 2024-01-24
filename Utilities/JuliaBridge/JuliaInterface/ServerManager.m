@@ -53,13 +53,16 @@ classdef ServerManager < handle
             % Build DaemonMode call:
 
             % Manage options
-            manager.base_call = ['env -u LD_LIBRARY_PATH '                               , ...
-                                 manager.options.julia, ' '                              , ...
+            manager.base_call = [manager.options.julia, ' '                              , ...
                                  '--startup-file='    , manager.options.startup_file, ' ', ...
                                  '--project='         , manager.options.project     , ' ', ...
                                  '--threads='         , manager.options.threads];
 
-            %Ensure that project is instantiated
+            if isunix
+                manager.base_call = ['env -u LD_LIBRARY_PATH ', manager.base_call];
+            end
+            
+            % Ensure that project is instantiated
             instantiate_call = '"using Pkg; Pkg.update();"';
             manager.DaemonCall(instantiate_call);
 
@@ -157,22 +160,46 @@ classdef ServerManager < handle
 
             if ~ping_server(manager.options) %If server is already live, do nothing
                                              % Create DaemonMode.serve call
-                startup_call = ['"using Revise, DaemonMode; serve(', ...
-                                num2str(manager.options.port), ', ', jl_bool(manager.options.shared), ...
-                                ', print_stack=', jl_bool(manager.options.print_stack),')" &'];
-                %, ...
-                %               ', async=', jl_bool(manager.options.async),')" &'];
 
-                if manager.options.debug
-                    fprintf("Starting Julia server \n")
-                end
+                if ispc
 
-                manager.DaemonCall(startup_call);
+                    message = ['You are running on a Windows machine.'                                                           , ...
+                               ' In this case Matlab cannot start a process in the background and you will have to '             , ...
+                               'proceed manually as follows\n\n'                                                                 , ...
+                               'First, julia should be installed, see https://julialang.org . '                                  , ...
+                               'Then, open a terminal (NOT a powershell) and run:\n\n'                                           , ...
+                               'julia --startup-file=no --project=/path/to/RunFromMatlab'                                        , ...
+                               ' -e "using Revise, DaemonMode; serve(3000, true, call_stack=true, async=true)"\n\n'              , ...
+                               'where /path/to/RunFromMatlab.m is the path to the directory '                                    , ...
+                               '/Utilities/JuliaBridge/JuliaInterface/RunFromMatlab in you BattMo installation folder\n\n'       , ...
+                               'Running this command will block the command prompt. '                                            , ...
+                               'The server will remain active until the window is closed or it is deactivated in any other way. ', ...
+                               'Calls to the server can now be made using the ServerManager\n\n'                                 , ...
+                              ]
 
-                % Check if server is active. Ensures that we do not make
-                % calls to the server until it is ready
-                while ~ping_server(manager.options)
-                    pause(0.1);
+                    fprint('message');
+
+
+                else
+                    
+                    startup_call = ['"using Revise, DaemonMode; serve(', ...
+                                    num2str(manager.options.port), ', ', jl_bool(manager.options.shared), ...
+                                    ', print_stack=', jl_bool(manager.options.print_stack),')" &'];
+                    %, ...
+                    %               ', async=', jl_bool(manager.options.async),')" &'];
+
+                    if manager.options.debug
+                        fprintf("Starting Julia server \n")
+                    end
+
+                    manager.DaemonCall(startup_call);
+
+                    % Check if server is active. Ensures that we do not make
+                    % calls to the server until it is ready
+                    while ~ping_server(manager.options)
+                        pause(0.1);
+                    end
+
                 end
             end
 
