@@ -125,7 +125,7 @@ following result.
 
    CCCV control
 
-The script used to generate the figures is available :battmo:`here <plotControlExamples_doc.m>`.
+The script used to generate the figures is available :battmo:`here <plotControlExamples_doc>`.
 
 
 Control model description

@@ -321,7 +321,7 @@ repo_url    = 'https://github.com/BattMoTeam/BattMo'
 branch_name = 'dev'
 
 def find_battmo_file(filename):
-    ignored_dirs = ['output', 'MRST', '.git', 'Documentation']
+    ignored_dirs = ['output', 'Externals', '.git', '.github']
     for root, dirs, files in os.walk(matlab_src_dir):
         for r in ignored_dirs:
             if r in dirs:
