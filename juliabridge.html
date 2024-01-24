@@ -142,7 +142,10 @@
 </li>
 <li class="toctree-l1 current"><a class="current reference internal" href="#">BattMo Julia bridge</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="#introduction">Introduction</a></li>
-<li class="toctree-l2"><a class="reference internal" href="#setup-and-use">Setup and Use</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#start-server">Start Server</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#send-simulation-parameters">Send simulation parameters</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#run-the-simulation">Run the simulation</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#post-process-the-output">Post process the output</a></li>
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="publishedExamples/runElectrolyser.html">Electrolyser simulation</a><ul>
@@ -206,20 +209,43 @@ different ways in a compiled code such as Julia. Our julia implementation relies
 retrieve the results directly from within matlab. The Julia Bridge uses julia package management system to install
 BattMo.jl without further user intervention.</p>
 </section>
-<section id="setup-and-use">
-<h2>Setup and Use<a class="headerlink" href="#setup-and-use" title="Permalink to this heading"></a></h2>
+<section id="start-server">
+<h2>Start Server<a class="headerlink" href="#start-server" title="Permalink to this heading"></a></h2>
 <p>To run simulation with Julia, we use a server. To communicate with the server we create a server manager from Matlab</p>
 <div class="highlight-matlab notranslate"><div class="highlight"><pre><span></span><span class="n">man</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="n">ServerManager</span><span class="p">();</span>
 </pre></div>
 </div>
 <p>This command starts the Julia server and return a manager <code class="code docutils literal notranslate"><span class="pre">man</span></code> which we use to pass data and run simulations.</p>
-<div class="admonition note">
-<p class="admonition-title">Note</p>
+<div class="admonition important">
+<p class="admonition-title">Important</p>
 <p>Julia uses <em>just-in-time</em> compilation. It means that when we run a function for the first time in a julia session,
 the code is going to be compiled. The compilation may take time (more than 10s). When using Julia Bridge, you will
-notice it at the start. But, by starting a Julia server in the background where the compilation is done only once, Julia
+notice it at the start.</p>
+<p>But, <strong>by starting a Julia server in the background</strong> where the compilation is done only once, Julia
 Bridge makes it possible to use the <strong>BattMo</strong> julia solver at expected speed.</p>
+<p>It is important to start the server only once and reuse it for further simulation, as described below</p>
 </div>
+<div class="admonition attention">
+<p class="admonition-title">Attention</p>
+<p>We could not start a persistent process from Matlab in Windows. The step must then be done manually, as follows</p>
+<ul>
+<li><p>Launch a command prompt window in Windows (NOT the powershell)</p></li>
+<li><p>Run the following command:</p>
+<div class="highlight-matlab notranslate"><div class="highlight"><pre><span></span><span class="n">julia</span><span class="w"> </span><span class="o">--</span><span class="nb">startup</span><span class="o">-</span><span class="n">file</span><span class="p">=</span><span class="n">no</span><span class="w"> </span><span class="o">--</span><span class="n">project</span><span class="p">=</span><span class="o">\</span><span class="nb">path</span><span class="o">\</span><span class="n">to</span><span class="o">\</span><span class="n">RunMatlab</span><span class="o">\</span><span class="n">directory</span><span class="w"> </span><span class="o">-</span><span class="n">e</span><span class="w"> </span><span class="s">&quot;using Revise, DaemonMode; serve(3000, true, call_stack=true, async=true)&quot;</span>
+</pre></div>
+</div>
+<p>Replace <code class="code docutils literal notranslate"><span class="pre">/path/to/RunMatlab/directory</span></code> with the path to the
+<a class="reference external" href="https://github.com/BattMoTeam/BattMo/blob/dev/Utilities/JuliaBridge/JuliaInterface/RunFromMatlab/">RunFromMatlab</a> directory, that is
+<code class="code docutils literal notranslate"><span class="pre">Utilities\JuliaBridge\JuliaInterface\RunFromMatlab</span></code> if your current directory is BattMo root installation
+directory.</p>
+</li>
+<li><p>Running this command will block the command prompt. The server will remain active until the window is closed or it
+is deactivated in any other way. Calls to the server can now be made using the <code class="code docutils literal notranslate"><span class="pre">ServerManager</span></code> class.</p></li>
+</ul>
+</div>
+</section>
+<section id="send-simulation-parameters">
+<h2>Send simulation parameters<a class="headerlink" href="#send-simulation-parameters" title="Permalink to this heading"></a></h2>
 <p>We pass data to the server using the <code class="code docutils literal notranslate"><span class="pre">load</span></code> method.</p>
 <div class="highlight-matlab notranslate"><div class="highlight"><pre><span></span><span class="n">inputFileName</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="nb">fullfile</span><span class="p">(</span><span class="n">battmoDir</span><span class="p">(),</span><span class="w"> </span><span class="k">...</span>
 <span class="w">                         </span><span class="s">&#39;Examples&#39;</span><span class="w"> </span><span class="p">,</span><span class="w"> </span><span class="k">...</span>
@@ -251,10 +277,16 @@ snippet above) should be written with a Julia syntax, as it is passed directly t
 big issue for Matlab users because the Julia syntax is very close to Matlab for such arithmetic expressions. We plan to
 implement json support for tabulated data. Tabulated data give more flexibility and could be used both in Matlab and
 Julia.</p>
+</section>
+<section id="run-the-simulation">
+<h2>Run the simulation<a class="headerlink" href="#run-the-simulation" title="Permalink to this heading"></a></h2>
 <p>Finally, we run the simulation</p>
 <div class="highlight-matlab notranslate"><div class="highlight"><pre><span></span><span class="n">result</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="n">man</span><span class="p">.</span><span class="n">run</span><span class="p">();</span>
 </pre></div>
 </div>
+</section>
+<section id="post-process-the-output">
+<h2>Post process the output<a class="headerlink" href="#post-process-the-output" title="Permalink to this heading"></a></h2>
 <p>The matlab structure contains the simulation output, which can be processed in Matlab. For example,</p>
 <div class="highlight-matlab notranslate"><div class="highlight"><pre><span></span><span class="n">voltage</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="nb">cellfun</span><span class="p">(@(</span><span class="n">x</span><span class="p">)</span><span class="w"> </span><span class="n">x</span><span class="p">.</span><span class="n">Phi</span><span class="p">,</span><span class="w"> </span><span class="p">{</span><span class="n">result</span><span class="p">.</span><span class="n">states</span><span class="p">.</span><span class="n">BPP</span><span class="p">});</span>
 <span class="nb">time</span><span class="w">    </span><span class="p">=</span><span class="w"> </span><span class="nb">cumsum</span><span class="p">(</span><span class="n">result</span><span class="p">.</span><span class="n">extra</span><span class="p">.</span><span class="n">timesteps</span><span class="p">);</span>

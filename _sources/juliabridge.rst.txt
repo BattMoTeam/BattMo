@@ -20,8 +20,8 @@ BattMo.jl without further user intervention.
 
 
 
-Setup and Use
-=============
+Start Server
+============
 
 To run simulation with Julia, we use a server. To communicate with the server we create a server manager from Matlab
 
@@ -31,12 +31,38 @@ To run simulation with Julia, we use a server. To communicate with the server we
 
 This command starts the Julia server and return a manager :code:`man` which we use to pass data and run simulations.
 
-.. note::
+.. important::
 
    Julia uses *just-in-time* compilation. It means that when we run a function for the first time in a julia session,
    the code is going to be compiled. The compilation may take time (more than 10s). When using Julia Bridge, you will
-   notice it at the start. But, by starting a Julia server in the background where the compilation is done only once, Julia
+   notice it at the start.
+
+   But, **by starting a Julia server in the background** where the compilation is done only once, Julia
    Bridge makes it possible to use the |battmo| julia solver at expected speed.
+
+   It is important to start the server only once and reuse it for further simulation, as described below
+
+.. attention::
+
+   We could not start a persistent process from Matlab in Windows. The step must then be done manually, as follows
+
+   * Launch a command prompt window in Windows (NOT the powershell)
+   * Run the following command:
+
+     .. code:: matlab
+
+        julia --startup-file=no --project=\path\to\RunMatlab\directory -e "using Revise, DaemonMode; serve(3000, true, call_stack=true, async=true)"
+
+     Replace :code:`/path/to/RunMatlab/directory` with the path to the
+     :battmofile:`RunFromMatlab<Utilities/JuliaBridge/JuliaInterface/RunFromMatlab/>` directory, that is
+     :code:`Utilities\\JuliaBridge\\JuliaInterface\\RunFromMatlab` if your current directory is BattMo root installation
+     directory.
+     
+   * Running this command will block the command prompt. The server will remain active until the window is closed or it
+     is deactivated in any other way. Calls to the server can now be made using the :code:`ServerManager` class.
+
+Send simulation parameters
+==========================
    
 We pass data to the server using the :code:`load` method.
 
@@ -75,12 +101,18 @@ big issue for Matlab users because the Julia syntax is very close to Matlab for 
 implement json support for tabulated data. Tabulated data give more flexibility and could be used both in Matlab and
 Julia.
 
+Run the simulation
+==================
+
 Finally, we run the simulation
 
 .. code:: matlab
 
    result = man.run();
 
+Post process the output
+=======================
+   
 The matlab structure contains the simulation output, which can be processed in Matlab. For example,
 
 .. code:: matlab
