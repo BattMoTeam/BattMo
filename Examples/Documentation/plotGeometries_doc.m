@@ -1,8 +1,7 @@
-
-doplot.coincell       = false;
-doplot.jellyroll      = false;
-doplot.illustration1D = false;
+doplot.illustration1D = true;
 doplot.illustration3D = true;
+doplot.jellyroll      = true;
+doplot.coincell       = true;
 
 if doplot.illustration1D
 
@@ -13,7 +12,7 @@ if doplot.illustration1D
 
     paramobj = BatteryInputParams(jsonstruct_material);
 
-    gen = FakeBatteryGeneratorP2D();
+    gen = FakeBatteryGeneratorP2D_doc();
 
     paramobj = gen.updateBatteryInputParams(paramobj);
 

@@ -1,4 +1,4 @@
-classdef FakeBatteryGeneratorP2D < BatteryGeneratorP2D
+classdef FakeBatteryGeneratorP2D_doc < BatteryGeneratorP2D
 
 
     methods
@@ -29,10 +29,14 @@ classdef FakeBatteryGeneratorP2D < BatteryGeneratorP2D
             z = [0; d];
             
             G = tensorGrid(x, y, z);
-            G = computeGeometry(G);
 
-            inputparams.G = G;
-            gen.G = G;
+            parentGrid = Grid(G, 'faceArea', gen.faceArea);
+
+            G = genSubGrid(parentGrid, (1 : parentGrid.getNumberOfCells())');
+
+            inputparams.G  = G;
+            gen.parentGrid = parentGrid;
+
 
         end
 
