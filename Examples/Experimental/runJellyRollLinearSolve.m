@@ -265,7 +265,7 @@ plot(nits.total)
 tt = getReportOutput(report,'type','nonlinearSolverTime')
 tt = getReportOutput(report,'type','linearSolverTime')
 %{
-Copyright 2021-2023 SINTEF Industry, Sustainable Energy Technology
+Copyright 2021-2024 SINTEF Industry, Sustainable Energy Technology
 and SINTEF Digital, Mathematics & Cybernetics.
 
 This file is part of The Battery Modeling Toolbox BattMo
