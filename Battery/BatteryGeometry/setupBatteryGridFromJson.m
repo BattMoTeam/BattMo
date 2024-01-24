@@ -43,6 +43,11 @@ function [inputparams, gridGenerator] = setupBatteryGridFromJson(inputparams, js
             gen.faceArea = jsonstruct.Geometry.faceArea;
         end
 
+        if isfield(jsonstruct.Geometry, 'resolutionFactor')
+            gen.resolutionFactor = jsonstruct.Geometry.resolutionFactor;
+            gen = gen.applyResolutionFactors();
+        end
+
         % Now, we update the inputparams with the properties of the grid.
         [inputparams, gen] = gen.updateBatteryInputParams(inputparams);
 

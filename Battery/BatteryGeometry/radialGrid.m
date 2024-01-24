@@ -1,4 +1,4 @@
-function output = radialGrid(params)
+function [output, G] = radialGrid(params)
 
     %% Parameters
     %
@@ -214,7 +214,7 @@ function output = radialGrid(params)
     cellfacetbl = replacefield(cellfacetbl, {{'newfaces', 'faces'}});
 
     facenodetbl = tbls.facenodetbl;
-    % facenodetbl = facenodetbl.addInd('order', repmat((1 : 2)', cartG.faces.num, 1));
+    facenodetbl = facenodetbl.addInd('order', repmat((1 : 2)', cartG.faces.num, 1));
     facenodetbl = crossIndexArray(facenodetbl, newfacetbl, {'faces'});
     facenodetbl = crossIndexArray(facenodetbl, newnodetbl, {'nodes'});
 
@@ -469,9 +469,13 @@ function output = radialGrid(params)
         end
     end
 
+    parentGrid = Grid(G);
+
+    G = genSubGrid(parentGrid, (1 : parentGrid.getNumberOfCells())');
+
     %% setup output structure
     output = params;
-    output.G                       = G;
+    output.parentGrid              = parentGrid;
     output.tag                     = tag;
     output.tagdict                 = tagdict;
     output.celltbl                 = celltbl;

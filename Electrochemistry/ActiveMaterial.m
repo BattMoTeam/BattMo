@@ -250,7 +250,7 @@ classdef ActiveMaterial < BaseModel
 
             vf       = model.volumeFraction;
             am_frac  = model.activeMaterialFraction;
-            vols     = model.G.cells.volumes;
+            vols     = model.G.getVolumes();
             
             c = state.(sd).cAverage;
 

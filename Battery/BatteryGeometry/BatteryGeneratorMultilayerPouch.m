@@ -208,11 +208,11 @@ classdef BatteryGeneratorMultilayerPouch < BatteryGenerator
                 if strcmp(nzs_tag{k}{1}, ne) && strcmp(nzs_tag{k}{2}, cc)
                     % NE tab
                     [I, J, K] = ndgrid((gen.elyte_nx + 1) : (G.cartDims(1) - gen.elyte_nx), 1 : (gen.ne_tab_ny+1), NZ(k) : (NZ(k+1) - 1));
-                    create_tab = true & ~(gen.cap_tabs);
+                    create_tab = ~gen.cap_tabs;
                 elseif strcmp(nzs_tag{k}{1}, pe) && strcmp(nzs_tag{k}{2}, cc)
                     % PE tab
                     [I, J, K] = ndgrid((gen.elyte_nx+1):(G.cartDims(1)-gen.elyte_nx), (G.cartDims(2)-gen.pe_tab_ny-1):G.cartDims(2), NZ(k):NZ(k+1)-1);
-                    create_tab = true & ~(gen.cap_tabs);
+                    create_tab = ~gen.cap_tabs;
                 end
 
                 if create_tab
@@ -246,7 +246,6 @@ classdef BatteryGeneratorMultilayerPouch < BatteryGenerator
             rcellind = setdiff((1 : G.cells.num)', cellind);
             nGlob = G.cells.num;
             [G, cellmap, facemap] = removeCells(G, rcellind);
-            G = computeGeometry(G);
 
             % Inverse map
             gen.invcellmap = zeros(nGlob, 1);
@@ -288,10 +287,14 @@ classdef BatteryGeneratorMultilayerPouch < BatteryGenerator
                           'cellfacetbl', cellfacetbl, ...
                           'facedirtbl' , facedirtbl);
 
+            parentGrid = Grid(G);
+
+            G = genSubGrid(parentGrid, (1 : parentGrid.getNumberOfCells())');
+
             inputparams.G = G;
 
-            gen.G    = G;
-            gen.tbls = tbls;
+            gen.parentGrid = parentGrid;
+            gen.tbls       = tbls;
 
         end
 
@@ -341,13 +344,12 @@ classdef BatteryGeneratorMultilayerPouch < BatteryGenerator
             params  = gen.allparams;
             imap    = gen.invcellmap;
             tbls    = gen.tbls;
-            G       = gen.G;
 
             celltbl = tbls.celltbl;
 
             params.(ne).(co).cellind = imap(params.(ne).(co).cellind);
             params.(ne).(cc).cellind = imap(params.(ne).(cc).cellind);
-            params.(ne).(cc).name = 'negative';
+            params.(ne).(cc).name = ne;
             params.(ne).cellind = [params.(ne).(co).cellind; params.(ne).(cc).cellind];
 
             % setup current collector external coupling when cap_tabs is true.
@@ -371,7 +373,7 @@ classdef BatteryGeneratorMultilayerPouch < BatteryGenerator
 
             params.(pe).(co).cellind = imap(params.(pe).(co).cellind);
             params.(pe).(cc).cellind = imap(params.(pe).(cc).cellind);
-            params.(pe).(cc).name = 'positive';
+            params.(pe).(cc).name = pe;
             params.(pe).cellind = [params.(pe).(co).cellind; params.(pe).(cc).cellind];
 
             if gen.cap_tabs
@@ -404,7 +406,7 @@ classdef BatteryGeneratorMultilayerPouch < BatteryGenerator
 
             if gen.cap_tabs
 
-                tbls = setupSimpleTables(G);
+                tbls = setupSimpleTables(G.getMRSTgrid());
                 celltbl     = tbls.celltbl;
                 facetbl     = tbls.facetbl;
                 cellfacetbl = tbls.cellfacetbl;
@@ -441,17 +443,18 @@ classdef BatteryGeneratorMultilayerPouch < BatteryGenerator
 
             else
 
-                yf = G.faces.centroids(:, 2);
+                fc = G.getFaceCentroids();
+                yf = fc(:, 2);
 
                 switch params.name
-                  case 'negative'
+                  case 'NegativeElectrode'
                     myf = min(yf);
-                  case 'positive'
+                  case 'PositiveElectrode'
                     myf = max(yf);
                 end
 
                 params.bcfaces = find(abs(yf - myf) < eps*1000);
-                params.bccells = sum(G.faces.neighbors(params.bcfaces, :), 2);
+                params.bccells = sum(G.topology.faces.neighbors(params.bcfaces, :), 2);
 
             end
 
@@ -474,8 +477,8 @@ classdef BatteryGeneratorMultilayerPouch < BatteryGenerator
                 facedirtbl  = tbls.facedirtbl;
                 cellfacetbl = tbls.cellfacetbl;
 
-                G = gen.G;
-                extfaces = any(G.faces.neighbors == 0, 2);
+                G = gen.parentGrid;
+                extfaces = any(G.topology.faces.neighbors == 0, 2);
                 extfacetbl.faces = find(extfaces);
                 extfacetbl = IndexArray(extfacetbl);
 
@@ -506,7 +509,8 @@ classdef BatteryGeneratorMultilayerPouch < BatteryGenerator
                     elde = eldes{ielde};
                     cc_couplingfaces = inputparams.(elde).(cc).externalCouplingTerm.couplingfaces;
                     cc_couplingcells = inputparams.(elde).(cc).externalCouplingTerm.couplingcells;
-                    mappings = inputparams.(elde).(cc).G.mappings;
+
+                    mappings = inputparams.G.mappings;
                     couplingfaces = [couplingfaces; mappings.facemap(cc_couplingfaces)];
                     couplingcells = [couplingcells; mappings.cellmap(cc_couplingcells)];
                 end

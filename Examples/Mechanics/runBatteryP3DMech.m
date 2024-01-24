@@ -119,8 +119,9 @@ time = cellfun(@(x) x.time, states);
 
 mrstModule add vemmech
 
-opt = struct('E',1,'nu',0.3);
-G = createAugmentedGrid(model.G);
+opt = struct('E', 1, 'nu', 0.3);
+G = model.G.getMRSTgrid();
+G = createAugmentedGrid(G);
 G = computeGeometry(G);
 
 %% Mechanical properties
@@ -131,22 +132,20 @@ C   = Enu2C(Ev, nuv, G);
 
 %% We setup the boundary conditions for the mechanical problem
 
-bc  = cell(2*G.griddim, 1);
-if(G.griddim == 2)
-    oside = {'Left', 'Right', 'Back', 'Front'};
-else
-    oside = {'Left', 'Right', 'Back', 'Front', 'Bottom', 'Top'};
-end
+bc = cell(2*G.griddim, 1);
 
-for i = 1:numel(oside);
-    bc{i} = pside([], G, oside{i}, 0);
+xmin = min(G.nodes.coords) + 1e-6;
+xmax = max(G.nodes.coords) - 1e-6;
+bc{1} = addBC([], find(G.faces.centroids(:,1) < xmin(1) ) , 'pressure', 0);
+bc{2} = addBC([], find(G.faces.centroids(:,1) > xmax(1)), 'pressure', 0);
+bc{3} = addBC([], find(G.faces.centroids(:,2) < xmin(2)), 'pressure', 0);
+bc{4} = addBC([], find(G.faces.centroids(:,2) > xmax(2)), 'pressure', 0);
+
+for i = 1:numel(bc)
     bc{i} = rmfield(bc{i}, 'type');
     bc{i} = rmfield(bc{i}, 'sat');
-end
-
-for i = 1:numel(bc);
     inodes = mcolon(G.faces.nodePos(bc{i}.face), G.faces.nodePos(bc{i}.face+1)-1);
-    nodes = unique(G.faces.nodes(inodes));
+    nodes  = unique(G.faces.nodes(inodes));
     bc{i}.el_bc = struct('disp_bc', struct('nodes', nodes, 'uu', 0, 'faces', bc{i}.face, 'uu_face', 0, 'mask', true(numel(nodes), G.griddim)), ...
         'force_bc', []);
 end
@@ -164,7 +163,7 @@ for i = 1:numel(bc)
     mask  = [mask; bc{i}.el_bc.disp_bc.mask];
 end
 
-bcdisp =@(x) x*0;
+bcdisp = @(x) x*0;
 disp_node = bcdisp(G.nodes.coords(nodes, :));
 disp_faces = bcdisp(G.faces.centroids(faces, :));
 el_bc = struct('disp_bc', struct('nodes'  , nodes     , ...
@@ -186,6 +185,8 @@ ax(end) = ax(end)*1.1;
 
 state0 = model.evalVarName(state0, {ne, co, am, sd, 'cAverage'});
 state0 = model.evalVarName(state0, {pe, co, am, sd, 'cAverage'});
+
+doplot = true;
 
 for i = 1 : numel(states)
 
@@ -213,14 +214,16 @@ for i = 1 : numel(states)
     vdiv = VEM_div(G);
     mdiv = vdiv*reshape(uVEM', [], 1)./G.cells.volumes;
 
-    clf
-    plotCellDataDeformed(G, mdiv, uVEM, 'EdgeAlpha',0.04);
-    colorbar();
-    for k = 1:numel(el_bc)
-        plotFaces2D(G, el_bc.disp_bc.faces);
+    if doplot
+        clf
+        plotCellDataDeformed(G, mdiv, uVEM, 'EdgeAlpha',0.04);
+        colorbar();
+        for k = 1:numel(el_bc)
+            plotFaces2D(G, el_bc.disp_bc.faces);
+        end
+        axis(ax)
+        pause(0.1)
     end
-    axis(ax)
-    pause(0.1)
 
 end
 

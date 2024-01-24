@@ -32,7 +32,7 @@ classdef ThermalComponent < BaseModel
             model = dispatchParams(model, inputparams, fdnames);
 
             % setup discrete differential operators
-            model.operators = localSetupOperators(model.G);
+            model.operators = localSetupOperators(model.G.getMRSTgrid());
 
             model = setupMapping(model);
 
@@ -124,7 +124,7 @@ classdef ThermalComponent < BaseModel
             T0 = state0.T;
 
             % (here we assume that the ThermalModel has the "parent" grid)
-            vols = model.G.cells.volumes;
+            vols = model.G.getVolumes();
 
             state.accumHeat = vhcap.*vols.*(T - T0)/dt;
 
@@ -176,18 +176,20 @@ classdef ThermalComponent < BaseModel
 
             coupcells = coupterm.couplingcells;
             coupfaces = coupterm.couplingfaces;
-            nc = model.G.cells.num;
+            nc = model.G.getNumberOfCells();
 
             T = state.T;
             T = T(coupcells);
 
             if isempty(coupfaces)
                 % 1D case (External faces are not available, we consider a volumetric cooling instead)
-                A = G.cells.volumes(coupcells);
+                vols = G.getVolumes();
+                A = vols(coupcells);
                 t_eff = lambda_ext*A;
             else
                 % Face couling (multidimensional case)
-                A = G.faces.areas(coupfaces);
+                areas = G.getFaceAreas();
+                A = areas(coupfaces);
                 t_ext = lambda_ext.*A;
 
                 t = model.operators.harmFaceBC(lambda, coupfaces);

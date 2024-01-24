@@ -55,7 +55,7 @@ classdef ElectrolyserGridGenerator1D < ElectrolyserGridGenerator
             params.(her).bccells = sum(nxs(4 : 5)); % index in own grid
 
             [inputparams, gen] = gen.setupElectrolyserInputParams(inputparams, params);
-            
+
         end
 
 
@@ -69,10 +69,13 @@ classdef ElectrolyserGridGenerator1D < ElectrolyserGridGenerator
             x = [0; cumsum(x)];
 
             G = tensorGrid(x);
-            G = computeGeometry(G);
 
-            inputparams.G = G;
-            gen.G = G;
+            parentGrid = Grid(G);
+
+            G = genSubGrid(parentGrid, (1 : parentGrid.getNumberOfCells())');
+
+            inputparams.G  = G;
+            gen.parentGrid = parentGrid;
 
         end
 

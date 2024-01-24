@@ -95,6 +95,22 @@ classdef Electrode < BaseModel
             cc = CurrentCollector(inputparams);
         end
 
+        function model = setTPFVgeometry(model, tPFVgeometry)
+        % tPFVgeometry should be instance of TwoPointFiniteVolumeGeometry or MutableTwoPointFiniteVolumeGeometry
+
+            co = 'Coating';
+
+            model.G.parentGrid.tPFVgeometry = tPFVgeometry;
+
+            model.(co) = model.(co).setTPFVgeometry(tPFVgeometry);
+
+            if model.include_current_collectors
+                cc = 'CurrentCollector';
+                model.(cc) = model.(cc).setTPFVgeometry(tPFVgeometry);
+            end
+
+        end
+
         function state = updateCoupling(model, state)
         % setup coupling terms between the current collector and the electrode active component
 
@@ -133,7 +149,7 @@ classdef Electrode < BaseModel
                 cc_jCoupling = subsasgnAD(cc_jCoupling,bccell_cc, -crosscurrent);
 
                 G = model.(cc).G;
-                nf = G.faces.num;
+                nf = G.getNumberOfFaces();
                 sgn = model.(cc).operators.sgn;
                 zeroFaceAD = model.AutoDiffBackend.convertToAD(zeros(nf, 1), cc_phi);
                 cc_jFaceCoupling = zeroFaceAD;
@@ -141,7 +157,7 @@ classdef Electrode < BaseModel
                 assert(~any(isnan(sgn(face_cc))));
 
                 G = model.(co).G;
-                nf = G.faces.num;
+                nf = G.getNumberOfFaces();
                 sgn = model.(co).operators.sgn;
                 zeroFaceAD = model.AutoDiffBackend.convertToAD(zeros(nf, 1), co_phi);
                 co_jFaceCoupling = zeroFaceAD;
@@ -150,7 +166,7 @@ classdef Electrode < BaseModel
 
                 % We set here volumetric current source to zero for current collector (could have been done at a more
                 % logical place but let us do it here, for simplicity)
-                state.(cc).eSource = zeros(elde.(cc).G.cells.num, 1);
+                state.(cc).eSource = zeros(elde.(cc).G.getNumberOfCells(), 1);
 
                 state.(co).jCoupling = co_jCoupling;
                 state.(cc).jCoupling = cc_jCoupling;

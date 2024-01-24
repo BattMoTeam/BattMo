@@ -31,12 +31,10 @@ classdef ElectronicComponent < BaseModel
             model = dispatchParams(model, inputparams, fdnames);
 
             % setup discrete differential operators
-            docellflux = false;
+            model.operators = localSetupOperators(model.G.getMRSTgrid());
             if model.use_thermal
-                docellflux = true;
+                model.G = model.G.setupCellFluxOperators();
             end
-
-            model.operators = localSetupOperators(model.G, 'assembleCellFluxOperator', docellflux);
 
             model.constants = PhysicalConstants();
 
@@ -99,6 +97,13 @@ classdef ElectronicComponent < BaseModel
 
         end
 
+        function model = setTPFVgeometry(model, tPFVgeometry)
+        % tPFVgeometry should be instance of TwoPointFiniteVolumeGeometry or MutableTwoPointFiniteVolumeGeometry
+
+            model.G.parentGrid.tPFVgeometry = tPFVgeometry;
+
+        end
+
         function state = updateConductivity(model, state)
             % default function to update conductivity
             state.conductivity = model.effectiveElectronicConductivity;
@@ -109,7 +114,7 @@ classdef ElectronicComponent < BaseModel
         function state = updateFaceCurrent(model, state)
 
             G = model.G;
-            nf = G.faces.num;
+            nf = G.getNumberOfFaces();
             intfaces = model.operators.internalConn;
 
             j       = state.j;
@@ -135,7 +140,7 @@ classdef ElectronicComponent < BaseModel
             sigma = state.conductivity;
             phi   = state.phi;
 
-            j = assembleFlux(model, phi, sigma);
+            j = assembleHomogeneousFlux(model, phi, sigma);
 
             state.j = j;
 
@@ -148,7 +153,7 @@ classdef ElectronicComponent < BaseModel
             bcsource = state.jBcSource;
             source   = state.eSource;
 
-            accum    = zeros(model.G.cells.num,1);
+            accum    = zeros(model.G.getNumberOfCells(),1);
 
             chargeCons = assembleConservationEquation(model, flux, bcsource, source, accum);
 

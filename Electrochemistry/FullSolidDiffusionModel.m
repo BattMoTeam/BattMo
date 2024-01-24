@@ -153,7 +153,7 @@ classdef FullSolidDiffusionModel < SolidDiffusionModel
             rock.perm = ones(N, 1);
             rock.poro = ones(N, 1);
 
-            tbls = setupSimpleTables(G);
+            tbls = setupTables(G);
             cellfacetbl = tbls.cellfacetbl;
 
             hT = computeTrans(G, rock); % hT is in cellfacetbl

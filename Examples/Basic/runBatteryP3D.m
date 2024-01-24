@@ -2,7 +2,9 @@
 % This example demonstrates how to setup a P3D model of a Li-ion battery
 % and run a simple simulation.
 
-
+% Clear the workspace and close open figures
+clear
+close all
 
 %% Import the required modules from MRST
 % load MRST modules

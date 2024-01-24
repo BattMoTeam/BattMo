@@ -86,7 +86,11 @@ classdef BatteryGeneratorP4D < BatteryGenerator
         function [inputparams, gen] = updateBatteryInputParams(gen, inputparams)
 
             assert(inputparams.include_current_collectors, 'This geometry must include current collectors');
-            gen.use_thermal = inputparams.use_thermal;
+
+            fdnames = {'use_thermal'};
+
+            gen = dispatchParams(gen, inputparams, fdnames);
+
             inputparams = gen.setupBatteryInputParams(inputparams, []);
 
         end
@@ -186,13 +190,15 @@ classdef BatteryGeneratorP4D < BatteryGenerator
             invcellmap = zeros(nGlob, 1);
             invcellmap(cellmap) = (1 : G.cells.num)';
 
-            G = computeGeometry(G);
+            parentGrid = Grid(G);
+
+            G = genSubGrid(parentGrid, (1 : parentGrid.getNumberOfCells())');
 
             inputparams.G = G;
 
             gen.invcellmap = invcellmap;
-            gen.allparams = allparams;
-            gen.G = G;
+            gen.allparams  = allparams;
+            gen.parentGrid = parentGrid;
 
         end
 
@@ -268,7 +274,8 @@ classdef BatteryGeneratorP4D < BatteryGenerator
         function inputparams = setupCurrentCollectorBcCoupTerm(gen, inputparams, params)
 
             G = inputparams.G;
-            yf = G.faces.centroids(:, 2);
+            fc = G.getFaceCentroids();
+            yf = fc(:, 2);
 
             switch params.name
               case 'negative'
@@ -278,7 +285,7 @@ classdef BatteryGeneratorP4D < BatteryGenerator
             end
 
             params.bcfaces = find(abs(yf - myf) < eps*1000);
-            params.bccells = sum(G.faces.neighbors(params.bcfaces, :), 2);
+            params.bccells = sum(G.parentGrid.topology.faces.neighbors(params.bcfaces, :), 2);
 
             inputparams = setupCurrentCollectorBcCoupTerm@BatteryGenerator(gen, inputparams, params);
 
@@ -291,10 +298,10 @@ classdef BatteryGeneratorP4D < BatteryGenerator
             cc    = 'CurrentCollector';
 
             % the cooling is done on the external faces
-            G = gen.G;
-            extfaces = any(G.faces.neighbors == 0, 2);
+            pG = gen.parentGrid;
+            extfaces = any(pG.topology.faces.neighbors == 0, 2);
             couplingfaces = find(extfaces);
-            couplingcells = sum(G.faces.neighbors(couplingfaces, :), 2);
+            couplingcells = sum(pG.topology.faces.neighbors(couplingfaces, :), 2);
 
             params = struct('couplingfaces', couplingfaces, ...
                             'couplingcells', couplingcells);
@@ -304,7 +311,7 @@ classdef BatteryGeneratorP4D < BatteryGenerator
             tabtbl.cells = gen.invcellmap(tabcellinds);
             tabtbl = IndexArray(tabtbl);
 
-            tbls = setupSimpleTables(G);
+            tbls = setupSimpleTables(pG.getMRSTgrid());
             cellfacetbl = tbls.cellfacetbl;
 
             tabcellfacetbl = crossIndexArray(tabtbl, cellfacetbl, {'cells'});

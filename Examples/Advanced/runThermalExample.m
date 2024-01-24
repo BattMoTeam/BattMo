@@ -31,7 +31,7 @@ model = setupModelFromJson(jsonstruct);
 % We index of the faces that are coupled to thermally to the exterior
 extfaceind = model.ThermalModel.couplingTerm.couplingfaces;
 G          = model.ThermalModel.G;
-nf         = model.ThermalModel.G.faces.num;
+nf         = model.ThermalModel.G.getNumberOfFaces();
 
 % We create a vector with one value per face with value equal to the external heat transfer coefficient for the external
 % face

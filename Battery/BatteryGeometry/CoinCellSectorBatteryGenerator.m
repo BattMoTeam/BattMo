@@ -103,8 +103,8 @@ classdef CoinCellSectorBatteryGenerator < BatteryGenerator
             clear params
             globG = G.mappings.parentGrid;
             facemap = G.mappings.facemap;
-            invfacemap = zeros(globG.faces.num, 1);
-            invfacemap(facemap) = (1 : G.faces.num)';
+            invfacemap = zeros(globG.getNumberOfFaces(), 1);
+            invfacemap(facemap) = (1 : G.getNumberOfFaces())';
 
             params.bcfaces = invfacemap(extfaces);
             params.bccells = sum(G.faces.neighbors(params.bcfaces, :), 2);

@@ -1,4 +1,4 @@
-function output = sectorGrid(params)
+function [output, G] = sectorGrid(params)
 
     %% Parameters
     %
@@ -41,15 +41,15 @@ function output = sectorGrid(params)
 
     nR = sum(nrs)*nwindings;
 
-    radG                    = output.G;
+    radG                    = output.parentGrid;
     tag                     = output.tag;
     tagdict                 = output.tagdict;
     positiveExtCurrentFaces = output.positiveExtCurrentFaces;
     negativeExtCurrentFaces = output.negativeExtCurrentFaces;
     thermalExchangeFaces    = output.thermalExchangeFaces;
 
-    [indA, indR, indZ] = ind2sub([nas, nR, nL], (1 : radG.cells.num)');
-    celltbl.cells = (1 : radG.cells.num)';
+    [indA, indR, indZ] = ind2sub([nas, nR, nL], (1 : radG.getNumberOfCells())');
+    celltbl.cells = (1 : radG.getNumberOfCells())';
     celltbl.indA = indA;
     celltbl.indR = indR;
     celltbl.indZ = indZ;
@@ -62,10 +62,11 @@ function output = sectorGrid(params)
 
     scells = scelltbl.get('cells');
 
-    rcells = (1 : radG.cells.num)';
+    rcells = (1 : radG.getNumberOfCells())';
     rcells(scells) = [];
 
-    [G, cellmap, facemap] = removeCells(radG, rcells);
+    mradG = radG.getMRSTgrid();
+    [G, cellmap, facemap] = removeCells(mradG, rcells);
 
     cutcelltbl.radcells = cellmap;
     cutcelltbl.cells    = (1 : G.cells.num)';
@@ -82,7 +83,7 @@ function output = sectorGrid(params)
 
     tag = tag(cellmap);
 
-    tbls = setupSimpleTables(radG);
+    tbls = setupSimpleTables(mradG);
     radfacetbl = tbls.facetbl;
     tbls = setupSimpleTables(G);
     facetbl = tbls.facetbl;
@@ -110,9 +111,13 @@ function output = sectorGrid(params)
     sfaces = map.eval(sfaces);
     thermalExchangeFaces = find(sfaces);
 
+    parentGrid = Grid(G);
+
+    G = genSubGrid(parentGrid, (1 : parentGrid.getNumberOfCells())');
+
     %% setup output structure
     output = params;
-    output.G                       = G;
+    output.parentGrid              = parentGrid;
     output.tag                     = tag;
     output.tagdict                 = tagdict;
     output.celltbl                 = celltbl;

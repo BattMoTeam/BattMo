@@ -1,4 +1,4 @@
-function output = spiralGrid(params)
+function [output, G] = spiralGrid(params)
 
     %% Parameters
     %
@@ -38,7 +38,6 @@ function output = spiralGrid(params)
     nL        = params.nL;
     unifang   = params.angleuniform;
     tabparams = params.tabparams;
-
 
     %% component names
 
@@ -248,7 +247,7 @@ function output = spiralGrid(params)
     cellfacetbl = replacefield(cellfacetbl, {{'newfaces', 'faces'}});
 
     facenodetbl = tbls.facenodetbl;
-    % facenodetbl = facenodetbl.addInd('order', repmat((1 : 2)', cartG.faces.num, 1));
+    % facenodetbl = facenodetbl.addInd('order', repmat((1 : 2)', cartG.getNumberOfFaces(), 1));
     facenodetbl = crossIndexArray(facenodetbl, newfacetbl, {'faces'});
     facenodetbl = crossIndexArray(facenodetbl, newnodetbl, {'nodes'});
 
@@ -306,7 +305,7 @@ function output = spiralGrid(params)
         netab = [];
     end
 
-    if ~isempty(petab) | ~isempty(netab)
+    if ~isempty(petab) || ~isempty(netab)
         clear data
         data.nas     = nas;
         data.nrs     = nrs;
@@ -317,10 +316,7 @@ function output = spiralGrid(params)
 
     if ~isempty(petab)
 
-        w = widths./nrs;
-        w = rldecode(w, nrs);
         indj0 = floor(nrDict('PositiveCoating') + nrDict('PositiveCurrentCollector')/2);
-        cclinewidth = w(indj0);
 
         clear cccelltbl;
         cccelltbl.tag = tagdict('PositiveCurrentCollector');
@@ -332,21 +328,17 @@ function output = spiralGrid(params)
 
         windingnumbers = computeWindingNumbers(fractions, rInner, layerwidth, nwindings);
 
-        [pe_tabcelltbl, pe_tabwidths] = getTabCellTbl(cccelltbl     , ...
-                                                      cclinewidth   , ...
-                                                      indj0         , ...
-                                                      petab         , ...
-                                                      windingnumbers, ...
-                                                      data);
+        pe_tabcelltbl = getTabCellTbl(cccelltbl     , ...
+                                      indj0         , ...
+                                      petab         , ...
+                                      windingnumbers, ...
+                                      data);
 
     end
 
     if ~isempty(netab)
 
-        w = widths./nrs;
-        w = rldecode(w, nrs);
         indj0 = floor(nrDict('NegativeCoating') + nrDict('NegativeCurrentCollector')/2);
-        cclinewidth = w(indj0);
 
         clear cccelltbl;
         cccelltbl.tag = tagdict('NegativeCurrentCollector');
@@ -358,12 +350,11 @@ function output = spiralGrid(params)
 
         windingnumbers = computeWindingNumbers(fractions, rInner, layerwidth, nwindings);
 
-        [ne_tabcelltbl, ne_tabwidths] = getTabCellTbl(cccelltbl     , ...
-                                                      cclinewidth   , ...
-                                                      indj0         , ...
-                                                      netab         , ...
-                                                      windingnumbers, ...
-                                                      data);
+        ne_tabcelltbl = getTabCellTbl(cccelltbl     , ...
+                                      indj0         , ...
+                                      netab         , ...
+                                      windingnumbers, ...
+                                      data);
 
     end
 
@@ -487,6 +478,7 @@ function output = spiralGrid(params)
     %% recover faces on top and bottom for the current collector
 
     ccnames = {'PositiveCurrentCollector', 'NegativeCurrentCollector'};
+    ccfaces = cell(numel(ccnames), 1);
 
     for ind = 1 : numel(ccnames)
 
@@ -533,7 +525,7 @@ function output = spiralGrid(params)
          'PositiveCurrentCollector', ...
          'Separator'               , ...
          'NegativeCoating'         , ...
-         'NegativeCurrentCollector'}, [1 : 5]');
+         'NegativeCurrentCollector'}, (1 : 5)');
 
     mappings = {{'PositiveCoating'          , {'PositiveCoating1', 'PositiveCoating2'}}, ...
                 {'NegativeCoating'          , {'NegativeCoating1', 'NegativeCoating2'}}, ...
@@ -550,9 +542,13 @@ function output = spiralGrid(params)
         end
     end
 
+    parentGrid = Grid(G);
+
+    G = genSubGrid(parentGrid, (1 : parentGrid.getNumberOfCells())');
+
     %% setup output structure
     output = params;
-    output.G                       = G;
+    output.parentGrid              = parentGrid;
     output.tag                     = tag;
     output.tagdict                 = tagdict;
     output.positiveExtCurrentFaces = positiveExtCurrentFaces;
@@ -574,13 +570,16 @@ function output = spiralGrid(params)
 end
 
 
-function [tabcelltbl, tabwidths] = getTabCellTbl(cccelltbl, cclinewidth, indj0, tabparams, windingnumbers, data)
+function [tabcelltbl, tabwidths] = getTabCellTbl(cccelltbl, indj0, tabparams, windingnumbers, data)
 
-    nas            = data.nas;
-    nrs            = data.nrs;
-    celltbl        = data.celltbl;
-    G              = data.G;
-    tagdict        = data.tagdict;
+    error('This function has not been updated to conform with grids of the Grid and SubGrid classes');
+
+    nas         = data.nas;
+    nrs         = data.nrs;
+    celltbl     = data.celltbl;
+    G           = data.G;
+    tabcelltbls = cell(numel(windingnumbers), 1);
+    tabwidths   = zeros(numel(windingnumbers), 1);
 
     for ind = 1 : numel(windingnumbers)
 
@@ -593,7 +592,6 @@ function [tabcelltbl, tabwidths] = getTabCellTbl(cccelltbl, cclinewidth, indj0, 
         cclinecelltbl = crossIndexArray(cclinecelltbl, celltbl, {'indi', 'indj'});
         cclinecelltbl = sortIndexArray(cclinecelltbl,  {'curvindi', 'cells'});
 
-        c = cclinecelltbl.get('cells');
         o = cclinecelltbl.get('curvindi');
         l = cumsum(G.cells.volumes(c)/cclinewidth);
 

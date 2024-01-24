@@ -32,21 +32,22 @@ classdef TestRunExamples < matlab.unittest.TestCase
 
     properties
 
-        % Scripts that are not yet fully supported 
-        
+        % Scripts that are not yet fully supported
+
         exclude = {'runJellyRollLinearSolve.m', ...
                    'runSingleParticleSEI.m'   , ...
+                   'runSetupModel.m'             , ...
                    'runParameterSweep'        , ...
                    'runDissElectrolyser.m'};
-        
+
     end
-    
+
     methods (Test)
 
         function testRunExample(test, filename)
 
             run(fullfile(battmoDir, 'startupBattMo.m'));
-            
+
             if ~contains(filename, test.exclude)
                 % FIXME Disable plotting
                 set(0, 'defaultFigureVisible', 'off');

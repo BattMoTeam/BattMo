@@ -205,7 +205,7 @@ classdef EquilibriumCalibrationSetup
 
                     elde = eldes{ielde};
                     
-                    vol  = sum(model.(elde).(co).G.cells.volumes);
+                    vol  = sum(model.(elde).(co).G.getVolumes());
                     cmax = model.(elde).(co).(am).(itf).saturationConcentration;
 
                     vals.(elde).tf             = 0;
@@ -217,7 +217,7 @@ classdef EquilibriumCalibrationSetup
 
               case 2
                 
-                vol  = sum(model.(ne).(co).G.cells.volumes);
+                vol  = sum(model.(ne).(co).G.getVolumes());
                 cmax = model.(ne).(co).(am).(itf).saturationConcentration;
                 
                 vals.(ne).tf             = 0;
@@ -225,7 +225,7 @@ classdef EquilibriumCalibrationSetup
                 vals.(ne).volumeFraction = X(2);
                 vals.(ne).alpha          = X(2)*vol*cmax;
 
-                vol  = sum(model.(pe).(co).G.cells.volumes);
+                vol  = sum(model.(pe).(co).G.getVolumes());
                 cmax = model.(pe).(co).(am).(itf).saturationConcentration;
                 
                 vals.(pe).volumeFraction = X(3);

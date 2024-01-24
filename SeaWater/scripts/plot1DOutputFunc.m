@@ -77,9 +77,9 @@ function plot1DOutputFunc(simoutput, varargin)
     qpdict = model.(elyte).qpdict;
     spdict = model.(elyte).spdict;
     
-    anvols    = model.(an).G.cells.volumes;
-    ctvols    = model.(an).G.cells.volumes;
-    elytevols = model.(elyte).G.cells.volumes;
+    anvols    = model.(an).G.getVolumes();
+    ctvols    = model.(an).G.getVolumes();
+    elytevols = model.(elyte).G.getVolumes();
     F = model.con.F;
     
     switch opt.casename

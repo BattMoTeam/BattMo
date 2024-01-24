@@ -86,7 +86,7 @@ function output = run_magnesium_1D_battery(input, varargin)
     aqmodel = AqueousModel(melyte, totals, totalnames, pH);
     stateelyte = aqmodel.solveAqueousMixture(stateelyteguess);
 
-    nc = model.(elyte).G.cells.num;
+    nc = model.(elyte).G.getNumberOfCells();
     state.(elyte).qpcs = cellfun(@(val) val*ones(nc, 1), stateelyte.qpcs, 'uniformoutput', false);
     state.(elyte).pcs  = cellfun(@(val) val*ones(nc, 1), stateelyte.pcs , 'uniformoutput', false);
     for ind = 1 : numel(stateelyte.cs)
@@ -100,8 +100,8 @@ function output = run_magnesium_1D_battery(input, varargin)
 
     %% setup initial volume fractions
 
-    state.(an).volumeFraction = 0.3*ones(model.(an).G.cells.num, 1);
-    state.(ct).volumeFraction = 0.8*ones(model.(ct).G.cells.num, 1);
+    state.(an).volumeFraction = 0.3*ones(model.(an).G.getNumberOfCells(), 1);
+    state.(ct).volumeFraction = 0.8*ones(model.(ct).G.getNumberOfCells(), 1);
 
     indsolid = model.(elyte).indsolidsp(1);
     state.(elyte).cs{indsolid} = zeros(nc, 1);
@@ -121,7 +121,7 @@ function output = run_magnesium_1D_battery(input, varargin)
 
     state = model.initializeTemperature(state);
 
-    state.(elyte).phi = zeros(model.Electrolyte.G.cells.num, 1);
+    state.(elyte).phi = zeros(model.Electrolyte.G.getNumberOfCells(), 1);
 
     state = model.evalVarName(state, {ctam, 'ENernst'});
 
@@ -136,8 +136,8 @@ function output = run_magnesium_1D_battery(input, varargin)
 
     %% Initialize nucleation value
 
-    state.(elyte).nucleation = zeros(model.(elyte).G.cells.num, 1);
-    state.(elyte).indicator = ones(model.(elyte).G.cells.num, 1);
+    state.(elyte).nucleation = zeros(model.(elyte).G.getNumberOfCells(), 1);
+    state.(elyte).indicator = ones(model.(elyte).G.getNumberOfCells(), 1);
 
     initstate = state;
 

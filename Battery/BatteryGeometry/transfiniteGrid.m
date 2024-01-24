@@ -211,7 +211,7 @@ function debugPlot(G)
     plot(G.faces.centroids(:,1), G.faces.centroids(:,2), 'r.')
     text(G.faces.centroids(:,1), G.faces.centroids(:,2), num2str((1:G.faces.num)'), 'color', 'r');
     plot(G.cells.centroids(:,1), G.cells.centroids(:,2), 'b.')
-    text(G.cells.centroids(:,1), G.cells.centroids(:,2), num2str((1:G.cells.num)'), 'color', 'b');
+    text(G.cells.centroids(:,1), G.cells.centroids(:,2), num2str((1:G.getNumberOfCells())'), 'color', 'b');
 
 end
 

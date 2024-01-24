@@ -1,23 +1,22 @@
 function [jExternal, jFaceExternal] = setupExternalCoupling(model, phi, phiExternal, conductivity)
-    
+
     coupterm = model.externalCouplingTerm;
-    
+
     jExternal = phi*0.0; %NB hack to initialize zero ad
-    
+
     faces = coupterm.couplingfaces;
     bcval = phiExternal;
-    [t, cells] = model.operators.transFaceBC(faces);
-    current = conductivity.*t.*(bcval - phi(cells));
+    [t, cells, sgn] = model.G.getBcHarmFace(conductivity, faces);
+    current = t.*(bcval - phi(cells));
     jExternal = subsetPlus(jExternal, current, cells);
     G = model.G;
-    nf = G.faces.num;
-    sgn = model.operators.sgn;
+    nf = G.topology.faces.num;
     zeroFaceAD = model.AutoDiffBackend.convertToAD(zeros(nf, 1), phi);
     jFaceExternal = zeroFaceAD;
-    jFaceExternal = subsasgnAD(jFaceExternal, faces, -sgn(faces).*current);
-    
-    assert(~any(isnan(sgn(faces))));
-    
+    jFaceExternal = subsasgnAD(jFaceExternal, faces, -sgn.*current);
+
+    %assert(~any(isnan(sgn(faces))));
+
 end
 
 

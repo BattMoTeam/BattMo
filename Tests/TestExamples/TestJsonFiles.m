@@ -42,7 +42,7 @@ classdef TestJsonFiles < matlab.unittest.TestCase
 
     methods (Test)
 
-        function test = TestJsonFiles(test)
+        function test = TestJsonFiles()
 
             setupPythonExecutable();
             setupPythonPath();

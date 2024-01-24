@@ -2,9 +2,10 @@ classdef ElectrolyserGridGenerator
 
 
     properties
+
         % Global grid
         % It is stored here because it is shared by many setup functions
-        G
+        parentGrid
 
     end
 
@@ -33,7 +34,7 @@ classdef ElectrolyserGridGenerator
 
         function inputparams = setupIonomerGrid(gen, inputparams, params)
 
-            inputparams.G = genSubGrid(gen.G, params.cellind);
+            inputparams.G = genSubGrid(gen.parentGrid, params.cellind);
 
         end
 
@@ -57,9 +58,9 @@ classdef ElectrolyserGridGenerator
             ptl = 'PorousTransportLayer';
             ctl = 'CatalystLayer';
 
-            inputparams.G       = genSubGrid(gen.G, params.cellind);
-            inputparams.(ptl).G = genSubGrid(gen.G, params.(ptl).cellind);
-            inputparams.(ctl).G = genSubGrid(gen.G, params.(ctl).cellind);
+            inputparams.G       = genSubGrid(gen.parentGrid, params.cellind);
+            inputparams.(ptl).G = genSubGrid(gen.parentGrid, params.(ptl).cellind);
+            inputparams.(ctl).G = genSubGrid(gen.parentGrid, params.(ctl).cellind);
 
             if inputparams.(ctl).include_dissolution
                 dm = 'DissolutionModel';
@@ -69,11 +70,11 @@ classdef ElectrolyserGridGenerator
             %  setup coupling between catalyst layer and porous transport layer;
             G_ptl = inputparams.(ptl).G;
             G_ctl = inputparams.(ctl).G;
-            G     = G_ctl.mappings.parentGrid;
-            cells2 = (1 : G_ctl.cells.num)'; % all the cells of the catalyst layer are coupled to the porous transport layer
+            G     = G_ctl.parentGrid;
+            cells2 = (1 : G_ctl.getNumberOfCells())'; % all the cells of the catalyst layer are coupled to the porous transport layer
 
-            mapping = zeros(G.cells.num, 1);
-            mapping(G_ptl.mappings.cellmap) = (1 : G_ptl.cells.num)'; % mapping from parent grid to ptl grid;
+            mapping = zeros(G.getNumberOfCells(), 1);
+            mapping(G_ptl.mappings.cellmap) = (1 : G_ptl.getNumberOfCells())'; % mapping from parent grid to ptl grid;
 
             pcells = G_ctl.mappings.cellmap(cells2); % ctl cells indexed in parent grid
             cells1 = mapping(pcells); % ptl cells that are coupled.
@@ -109,13 +110,13 @@ classdef ElectrolyserGridGenerator
             G     = inputparams.G;
             G_inm = inputparams.(inm).G;
 
-            mapping = zeros(G.cells.num, 1);
-            mapping(G_inm.mappings.cellmap) = (1 : G_inm.cells.num)';
+            mapping = zeros(G.getNumberOfCells(), 1);
+            mapping(G_inm.mappings.cellmap) = (1 : G_inm.getNumberOfCells())';
 
             eldes = {oer, her};
 
             % We setup also ionomer tortuosity
-            tortuosity = ones(G_inm.cells.num, 1);
+            tortuosity = ones(G_inm.getNumberOfCells(), 1);
 
             for ielde = 1 : numel(eldes)
 
@@ -123,9 +124,9 @@ classdef ElectrolyserGridGenerator
 
                 G_ctl = inputparams.(elde).(ctl).G;
 
-                G = G_ctl.mappings.parentGrid;
+                G = G_ctl.parentGrid;
 
-                cells1 = (1 : G_ctl.cells.num)';
+                cells1 = (1 : G_ctl.getNumberOfCells())';
                 pcells = G_ctl.mappings.cellmap(cells1);
 
                 cells2 = mapping(pcells);

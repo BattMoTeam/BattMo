@@ -49,9 +49,10 @@ classdef BatteryGeneratorP3D < BatteryGenerator
             gen = dispatchParams(gen, inputparams, fdnames);
 
             inputparams = gen.setupBatteryInputParams(inputparams, []);
+
         end
 
-        function [inputparams, gen] = setupGrid(gen, inputparams, params)
+        function [inputparams, gen] = setupGrid(gen, inputparams, ~)
 
             sepnx  = gen.sepnx;
             nenx   = gen.nenx;
@@ -81,10 +82,13 @@ classdef BatteryGeneratorP3D < BatteryGenerator
             y = [0; cumsum(y)];
 
             G = tensorGrid(x, y);
-            G = computeGeometry(G);
 
-            inputparams.G = G;
-            gen.G = G;
+            parentGrid = Grid(G);
+
+            G = genSubGrid(parentGrid, (1 : parentGrid.getNumberOfCells())');
+
+            inputparams.G  = G;
+            gen.parentGrid = parentGrid;
 
         end
 
@@ -223,7 +227,7 @@ classdef BatteryGeneratorP3D < BatteryGenerator
         end
 
 
-        function inputparams = setupThermalModel(gen, inputparams, params)
+        function inputparams = setupThermalModel(gen, inputparams, ~)
 
             ne    = 'NegativeElectrode';
             pe    = 'PositiveElectrode';
@@ -242,11 +246,11 @@ classdef BatteryGeneratorP3D < BatteryGenerator
                 facemap_pe  = inputparams.(pe).(co).G.mappings.facemap;
             end
 
-            % the cooling is done on the external faces
-            G = gen.G;
-            extfaces = any(G.faces.neighbors == 0, 2);
+            % The cooling is done on the external faces
+            pG = gen.parentGrid;
+            extfaces = any(pG.topology.faces.neighbors == 0, 2);
             couplingfaces = find(extfaces);
-            couplingcells = sum(G.faces.neighbors(couplingfaces, :), 2);
+            couplingcells = sum(pG.topology.faces.neighbors(couplingfaces, :), 2);
 
             params = struct('couplingfaces', couplingfaces, ...
                             'couplingcells', couplingcells);
@@ -281,7 +285,8 @@ classdef BatteryGeneratorP3D < BatteryGenerator
 
             ne = 'NegativeElectrode';
             pe = 'PositiveElectrode';
-            xf = G.faces.centroids(:, 1);
+            fc = G.getFaceCentroids();
+            xf = fc(:, 1);
 
             switch params.electrode_type
               case ne
@@ -291,7 +296,7 @@ classdef BatteryGeneratorP3D < BatteryGenerator
             end
 
             params.bcfaces = find(abs(xf - x0) < eps*1000);
-            params.bccells = sum(G.faces.neighbors(params.bcfaces, :), 2);
+            params.bccells = sum(G.topology.faces.neighbors(params.bcfaces, :), 2);
 
         end
 

@@ -24,8 +24,8 @@ classdef SectorBatteryGenerator < SpiralBatteryGenerator
 
         function [inputparams, gen] = setupGrid(gen, inputparams, ~)
 
-            gen = sectorGrid(gen);
-            inputparams.G = gen.G;
+            [gen, G] = sectorGrid(gen);
+            inputparams.G = G;
 
         end
 

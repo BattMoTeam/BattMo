@@ -1,10 +1,10 @@
 classdef SpiralBatteryGenerator < BatteryGenerator
 % Setup a grid Jelly Roll model
-    
+
     properties
-            
+
         nwindings % number of windings in the spiral
-        
+
         rInner    % Inner Radius correspoding to the empty space in the middle
 
         %
@@ -16,20 +16,20 @@ classdef SpiralBatteryGenerator < BatteryGenerator
         % - 'PositiveCoating'
         % - 'PositiveCurrentCollector'
         widthDict
-        
+
         % dicionary with number of cell in radial direction for each component (same keys as in widthDict).
-        nrDict    
+        nrDict
 
         L            % length of the battery
         nas          % number of cells in the angular direction
         nL           % number of discretization cells in the longitudonal
-        angleuniform 
+        angleuniform
 
         tag     % cell-valued vector giving component number (indexing is given by tagdict)
         tagdict % dictionary giving the component number
-    
+
         tabparams % parameters for the tab on the positive current collector
-        
+
         positiveExtCurrentFaces
         negativeExtCurrentFaces
         thermalExchangeFaces
@@ -42,26 +42,28 @@ classdef SpiralBatteryGenerator < BatteryGenerator
         nHeightLayer
 
         % computed tab width (due to discretization, we cannot enforce the tab widths)
-        
+
         tabwidths
 
         % for the tabs (implemented only for aligned tabs now)
-        
-        windingnumbers 
-        
+
+        windingnumbers
+
         use_thermal
     end
-    
+
+
     methods
-        
+
         function gen = SpiralBatteryGenerator()
 
             gen = gen@BatteryGenerator();
-            
+
         end
-        
+
+
         function [inputparams, gen] = updateBatteryInputParams(gen, inputparams, params)
-            
+
             gen.nwindings    = params.nwindings;
             gen.rInner       = params.rInner;
             gen.widthDict    = params.widthDict;
@@ -71,22 +73,24 @@ classdef SpiralBatteryGenerator < BatteryGenerator
             gen.nL           = params.nL;
             gen.tabparams    = params.tabparams;
             gen.angleuniform = params.angleuniform;
-            
+
             gen.use_thermal = inputparams.use_thermal;
-            
+
             [inputparams, gen] = gen.setupBatteryInputParams(inputparams, []);
-            
-        end
-        
-        function [inputparams, gen] = setupGrid(gen, inputparams, params)
-    
-            gen = spiralGrid(gen);
-            inputparams.G = gen.G;
-            
+
         end
 
+
+        function [inputparams, gen] = setupGrid(gen, inputparams, ~)
+
+            [gen, G] = spiralGrid(gen);
+            inputparams.G = G;
+
+        end
+
+
         function UGrids = setupUnRolledGrids(gen, inputparams)
-            
+
             G            = gen.G;
             widthLayer   = gen.widthLayer;
             nWidthLayer  = gen.nWidthLayer;
@@ -96,17 +100,17 @@ classdef SpiralBatteryGenerator < BatteryGenerator
             nL           = gen.nL;
             nwindings    = gen.nwindings;
             celltbl      = gen.celltbl;
-            
+
             cartG = cartGrid([nas*nwindings, sum(nWidthLayer), nL]);
 
             vecttbl.vect = (1 : cartG.griddim)';
             vecttbl = IndexArray(vecttbl)';
 
-            [indi, indj, indk] = ind2sub([nas*nwindings, sum(nWidthLayer), nL], (1 : cartG.cells.num)');
+            [indi, indj, indk] = ind2sub([nas*nwindings, sum(nWidthLayer), nL], (1 : cartG.getNumberOfCells())');
             cartcelltbl.indi = indi;
             cartcelltbl.indj = indj;
             cartcelltbl.indk = indk;
-            cartcelltbl.cells = (1 : cartG.cells.num)';
+            cartcelltbl.cells = (1 : cartG.getNumberOfCells())';
             cartcelltbl = IndexArray(cartcelltbl);
 
             cellindjtbl.indj = (1 : sum(nWidthLayer))';
@@ -131,7 +135,7 @@ classdef SpiralBatteryGenerator < BatteryGenerator
 
             h = map.eval(heightLayer);
 
-            vol = G.cells.volumes;
+            vol = G.getVolumes();
 
             celltbl = celltbl.removeInd({'cells', 'indi', 'indj'});
 
@@ -144,7 +148,7 @@ classdef SpiralBatteryGenerator < BatteryGenerator
             cartInd = map.getDispatchInd();
 
             map = map.setup();
-            
+
             vol = map.eval(vol);
             l = vol./(h.*w);
 
@@ -156,7 +160,7 @@ classdef SpiralBatteryGenerator < BatteryGenerator
 
             nodetbl.nodes = (1 : cartG.nodes.num)';
             nodetbl.indi = indi;
-            nodetbl.indj = indj; 
+            nodetbl.indj = indj;
             nodetbl.indk = indk;
             nodetbl = IndexArray(nodetbl);
 
@@ -199,9 +203,9 @@ classdef SpiralBatteryGenerator < BatteryGenerator
 
             cartG.nodes.coords = [xnode, ynode, znode];
             cartG = computeGeometry(cartG);
-            
+
             %% we setup the mappings between the different grids
-            
+
             ne    = 'NegativeElectrode';
             pe    = 'PositiveElectrode';
             co    = 'Coating';
@@ -209,67 +213,68 @@ classdef SpiralBatteryGenerator < BatteryGenerator
             cc    = 'CurrentCollector';
             elyte = 'Electrolyte';
             sep   = 'Separator';
-            
+
             tagdict = gen.tagdict;
             tag     = gen.tag;
-            
+
             clear celltbl
-            celltbl.cartcells = (1 : cartG.cells.num)';
+            celltbl.cartcells = (1 : cartG.getNumberOfCells())';
             celltbl.cells = cartInd;
-            celltbl = IndexArray(celltbl);            
+            celltbl = IndexArray(celltbl);
 
             UGrids.G = cartG;
-            UGrids.G.mappings.ind = cartInd;            
-            
+            UGrids.G.mappings.ind = cartInd;
+
             compG = inputparams.(pe).(cc).G;
             comptag = tagdict('PositiveCurrentCollector');
             compCartG = genSubGrid(cartG, find(tag(cartInd) == comptag));
             compCartG = setupCompCartGrid(gen, compG, compCartG, celltbl);
             Gs.CurrentCollector = compCartG;
-            
+
             compG = inputparams.(pe).(co).G;
             comptag = tagdict('PositiveCoating');
             compCartG = genSubGrid(cartG, find(tag(cartInd) == comptag));
             compCartG = setupCompCartGrid(gen, compG, compCartG, celltbl);
             Gs.Coating = compCartG;
-            
+
             UGrids.PositiveElectrode = Gs;
             clear Gs;
-            
+
             compG = inputparams.(ne).(cc).G;
             comptag = tagdict('NegativeCurrentCollector');
             compCartG = genSubGrid(cartG, find(tag(cartInd) == comptag));
             compCartG = setupCompCartGrid(gen, compG, compCartG, celltbl);
             Gs.CurrentCollector = compCartG;
-            
+
             compG = inputparams.(ne).(co).G;
             comptag = tagdict('NegativeActiveMaterial');
             compCartG = genSubGrid(cartG, find(tag(cartInd) == comptag));
             compCartG = setupCompCartGrid(gen, compG, compCartG, celltbl);
             Gs.Coating = compCartG;
-            
+
             UGrids.NegativeElectrode = Gs;
             clear Gs;
-            
+
             compG = inputparams.(elyte).G;
             comptags = [tagdict('Separator'); tagdict('NegativeCoating'); tagdict('PositiveCoating')];
             compCartG = genSubGrid(cartG, find(ismember(tag(cartInd), comptags)));
             compCartG = setupCompCartGrid(gen, compG, compCartG, celltbl);
             UGrids.Electrolyte = compCartG;
-            
+
             UGrids.ThermalModel = UGrids.G;
 
         end
-        
+
+
         function compCartG = setupCompCartGrid(gen, compG, compCartG, celltbl)
 
-            compcelltbl.loccells = (1 : compG.cells.num)';
+            compcelltbl.loccells = (1 : compG.getNumberOfCells())';
             compcelltbl.cells = compG.mappings.cellmap;
             compcelltbl = IndexArray(compcelltbl);
             compcelltbl = crossIndexArray(compcelltbl, celltbl, {'cells'});
             compcelltbl = compcelltbl.removeInd({'cells'});
 
-            compcartcelltbl.cartloccells = (1 : compCartG.cells.num)';
+            compcartcelltbl.cartloccells = (1 : compCartG.getNumberOfCells())';
             compcartcelltbl.cartcells = compCartG.mappings.cellmap;
             compcartcelltbl = IndexArray(compcartcelltbl);
 
@@ -279,14 +284,14 @@ classdef SpiralBatteryGenerator < BatteryGenerator
             map.mergefds = {'cartcells'};
 
             ind = map.getDispatchInd();
-            
+
             compCartG.mappings.ind = ind;
-            
+
         end
 
 
         function inputparams = setupElectrolyte(gen, inputparams, params)
-            
+
             tagdict = gen.tagdict;
             tag = gen.tag;
 
@@ -295,23 +300,25 @@ classdef SpiralBatteryGenerator < BatteryGenerator
             params.cellind = find(cellind);
 
             inputparams = setupElectrolyte@BatteryGenerator(gen, inputparams, params);
-            
+
         end
+
 
         function inputparams = setupSeparator(gen, inputparams, params)
 
             tagdict = gen.tagdict;
             tag = gen.tag;
 
-            inds = tagdict('Separator'); 
+            inds = tagdict('Separator');
             cellind = ismember(tag, inds);
-            
+
             params.cellind = find(cellind);
-            
+
             inputparams = setupSeparator@BatteryGenerator(gen, inputparams, params);
-            
+
         end
-        
+
+
         function inputparams = setupElectrodes(gen, inputparams, params)
 
             ne  = 'NegativeElectrode';
@@ -321,14 +328,14 @@ classdef SpiralBatteryGenerator < BatteryGenerator
 
             tagdict = gen.tagdict;
             tag = gen.tag;
-            
+
             cellind = ismember(tag, tagdict('NegativeCoating'));
             params.(ne).(co).cellind = find(cellind);
             cellind = ismember(tag, tagdict('NegativeCurrentCollector'));
             params.(ne).(cc).cellind = find(cellind);
-            params.(ne).(cc).extfaces = gen.negativeExtCurrentFaces;            
+            params.(ne).(cc).extfaces = gen.negativeExtCurrentFaces;
             params.(ne).cellind = [params.(ne).(co).cellind; params.(ne).(cc).cellind];
-            
+
             cellind = ismember(tag, tagdict('PositiveCoating'));
             params.(pe).(co).cellind = find(cellind);
             cellind = ismember(tag, tagdict('PositiveCurrentCollector'));
@@ -336,59 +343,67 @@ classdef SpiralBatteryGenerator < BatteryGenerator
             params.(pe).(cc).extfaces = gen.positiveExtCurrentFaces;
             params.(pe).cellind = [params.(pe).(co).cellind; params.(pe).(cc).cellind];
 
-            inputparams = setupElectrodes@BatteryGenerator(gen, inputparams, params);            
-            
+            inputparams = setupElectrodes@BatteryGenerator(gen, inputparams, params);
+
         end
+
 
         function inputparams = setupCurrentCollectorBcCoupTerm(gen, inputparams, params)
-            
-            G = inputparams.G; % grid of the current collector
+
+            % grid of the current collector
+            G = inputparams.G;
             extfaces = params.extfaces;
-            
-            clear params
-            globG = G.mappings.parentGrid;
+
             facemap = G.mappings.facemap;
-            invfacemap = zeros(globG.faces.num, 1);
-            invfacemap(facemap) = (1 : G.faces.num)';
-            
+            invfacemap = zeros(G.parentGrid.topology.faces.num, 1);
+            invfacemap(facemap) = (1 : G.topology.faces.num)';
+
+            clear params
             params.bcfaces = invfacemap(extfaces);
-            params.bccells = sum(G.faces.neighbors(params.bcfaces, :), 2);
+            params.bccells = sum(G.topology.faces.neighbors(params.bcfaces, :), 2);
 
             inputparams = setupCurrentCollectorBcCoupTerm@BatteryGenerator(gen, inputparams, params);
-        
+
         end
 
-        function inputparams = setupThermalModel(gen, inputparams, params)
+
+        function inputparams = setupThermalModel(gen, inputparams, ~)
         % inputparams is instance of BatteryInputParams
-        % 
+        %
         % We recover the external coupling terms for the current collectors
 
-            G = gen.G;
-            
+            pG = gen.parentGrid;
+
             couplingfaces = gen.thermalExchangeFaces;
             couplingtags  = gen.thermalExchangeFacesTag;
-            couplingcells = sum(G.faces.neighbors(couplingfaces, :), 2);
-            
+            couplingcells = sum(pG.topology.faces.neighbors(couplingfaces, :), 2);
+
             params = struct('couplingfaces', couplingfaces, ...
                             'couplingcells', couplingcells);
             inputparams = setupThermalModel@BatteryGenerator(gen, inputparams, params);
-           
-            thermal = 'ThermalModel'; % shortcut
-            
-            if isempty(inputparams.(thermal).externalHeatTransferCoefficientTopFaces) | ...
-                    isempty(inputparams.(thermal).externalHeatTransferCoefficientSideFaces) 
+
+            thermal = 'ThermalModel';
+
+            if isempty(inputparams.(thermal).externalHeatTransferCoefficientTopFaces) || ...
+                    isempty(inputparams.(thermal).externalHeatTransferCoefficientSideFaces)
+
                 inputparams.(thermal).externalHeatTransferCoefficient = ...
                     inputparams.(thermal).externalHeatTransferCoefficient*ones(numel(couplingfaces), 1);
+
             else
+
                 externalHeatTransferCoefficient = nan(numel(couplingfaces), 1);
                 externalHeatTransferCoefficient(couplingtags == 1) = inputparams.(thermal).externalHeatTransferCoefficientTopFaces;
                 externalHeatTransferCoefficient(couplingtags == 2) = inputparams.(thermal).externalHeatTransferCoefficientSideFaces;
                 inputparams.(thermal).externalHeatTransferCoefficient = externalHeatTransferCoefficient;
-            end         
+
+            end
+
         end
-        
+
+
     end
-    
+
 end
 
 

@@ -159,7 +159,7 @@ for ivar = 1 : numel(fds)
         submodelname = regexp(nodename, '(.*)\.[^.]*$', 'tokens');
         submodelname = submodelname{1}{1};
         eval(sprintf('submodel = model.%s;', submodelname));
-        vols = submodel.G.cells.volumes;
+        vols = submodel.G.getVolumes();
         op = submodel.operators;
     end
 

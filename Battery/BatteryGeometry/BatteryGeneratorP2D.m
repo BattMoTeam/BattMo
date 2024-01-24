@@ -23,7 +23,7 @@ classdef BatteryGeneratorP2D < BatteryGenerator
         % refinement factor (can be used to easily increase discretization refinement)
         % see applyResolutionFactors method
         %
-        fac = 1;
+        resolutionFactor = 1;
 
         % boolean : true if grid for current collectors should be included
         include_current_collectors
@@ -37,9 +37,11 @@ classdef BatteryGeneratorP2D < BatteryGenerator
 
     methods
 
+
         function gen = BatteryGeneratorP2D()
             gen = gen@BatteryGenerator();
         end
+
 
         function [inputparams, gen] = updateBatteryInputParams(gen, inputparams)
 
@@ -47,34 +49,8 @@ classdef BatteryGeneratorP2D < BatteryGenerator
             gen.use_thermal = inputparams.use_thermal;
             inputparams = gen.setupBatteryInputParams(inputparams, []);
 
-            % We define some shorthand names for simplicity.
-            ne      = 'NegativeElectrode';
-            pe      = 'PositiveElectrode';
-            elyte   = 'Electrolyte';
-            sep     = 'Separator';
-            thermal = 'ThermalModel';
-            co      = 'Coating';
-            cc      = 'CurrentCollector';
-
-            % we update all the grids to adjust grid to faceArea
-            inputparams.G         = gen.adjustGridToFaceArea(inputparams.G);
-            inputparams.(elyte).G = gen.adjustGridToFaceArea(inputparams.(elyte).G);
-            inputparams.(sep).G   = gen.adjustGridToFaceArea(inputparams.(sep).G);
-
-            eldes = {ne, pe};
-            for ielde = 1 : numel(eldes)
-                elde = eldes{ielde};
-                inputparams.(elde).(co).G = gen.adjustGridToFaceArea(inputparams.(elde).(co).G);
-                if gen.include_current_collectors
-                    inputparams.(elde).(cc).G = gen.adjustGridToFaceArea(inputparams.(elde).(cc).G);
-                end
-            end
-
-            if gen.use_thermal
-                inputparams.(thermal).G = gen.adjustGridToFaceArea(inputparams.(thermal).G);
-            end
-
         end
+
 
         function [inputparams, gen] = setupGrid(gen, inputparams, ~)
 
@@ -98,16 +74,20 @@ classdef BatteryGeneratorP2D < BatteryGenerator
             x = [0; cumsum(x)];
 
             G = tensorGrid(x);
-            G = computeGeometry(G);
 
-            inputparams.G = G;
-            gen.G = G;
+            parentGrid = Grid(G, 'faceArea', gen.faceArea);
+
+            G = genSubGrid(parentGrid, (1 : parentGrid.getNumberOfCells())');
+
+            inputparams.G  = G;
+            gen.parentGrid = parentGrid;
 
         end
 
+
         function gen = applyResolutionFactors(gen)
 
-            fac = gen.fac;
+            fac = gen.resolutionFactor;
 
             gen.sepnx  = gen.sepnx*fac;
             gen.nenx   = gen.nenx*fac;
@@ -117,6 +97,7 @@ classdef BatteryGeneratorP2D < BatteryGenerator
 
         end
 
+
         function inputparams = setupElectrolyte(gen, inputparams, params)
 
             if gen.include_current_collectors
@@ -125,6 +106,7 @@ classdef BatteryGeneratorP2D < BatteryGenerator
                 params.cellind = (1 : (gen.nenx + gen.sepnx + gen.penx))';
             end
             inputparams = setupElectrolyte@BatteryGenerator(gen, inputparams, params);
+
         end
 
 
@@ -204,21 +186,23 @@ classdef BatteryGeneratorP2D < BatteryGenerator
 
         end
 
+
         function inputparams = setupThermalModel(gen, inputparams, params)
 
             params.couplingfaces = [];
-            params.couplingcells = (1 : gen.G.cells.num)';
+            params.couplingcells = (1 : gen.parentGrid.getNumberOfCells())';
             inputparams = setupThermalModel@BatteryGenerator(gen, inputparams, params);
 
         end
 
-        function G = adjustGridToFaceArea(gen, G);
+
+        function G = adjustGridToFaceArea(gen, G)
 
             fa = gen.faceArea;
 
             G.faces.areas   = fa*G.faces.areas;
             G.faces.normals = fa*G.faces.normals;
-            G.cells.volumes = fa*G.cells.volumes;
+            G.cells.volumes = fa*G.getVolumes();
 
         end
 

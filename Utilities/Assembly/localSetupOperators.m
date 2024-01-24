@@ -1,7 +1,7 @@
 function operators = localSetupOperators(G, varargin)
     opts = struct('assembleCellFluxOperator', false);
     opts = merge_options(opts, varargin{:});
-    
+
     nc = G.cells.num;
     cst = ones(nc, 1);
     rock = struct('perm', cst, 'poro', cst);
@@ -36,15 +36,15 @@ function operators = localSetupOperators(G, varargin)
     P = P.getMatrix;
 
     T = operators.T;
-    
+
     operators.harmFace    = @(cellvalue) getHarmFace(cellvalue, P, hT, T, M);
     operators.harmFaceBC  = @(cvalue, faces) getFaceHarmBC(G, cvalue, faces);
     operators.transFaceBC = @(faces) getTransFaceBC(G, faces);
-    
+
     %% setup the sign for *external* faces
     cells  = rldecode(1:G.cells.num, diff(G.cells.facePos), 2)';
     faces  = G.cells.faces(:, 1);
-    
+
     extfaces = find(any(G.faces.neighbors == 0, 2));
     extcells = sum(G.faces.neighbors(extfaces, :), 2);
 
@@ -54,7 +54,7 @@ function operators = localSetupOperators(G, varargin)
     sgn(extfaces) = extsgn;
 
     operators.sgn = sgn;
-    
+
     %% setup cell flux reconstruction operator
     if opts.assembleCellFluxOperator
         %operators.cellFluxOp = getCellFluxOperators2(G);
@@ -69,7 +69,7 @@ function facevalue = getHarmFace(cellvalue, P, hT, T, M)
     else
         facevalue = cellvalue.*T;
     end
-    
+
 end
 function [T, cells] = getFaceHarmBC(G, cvalue, faces)
     [t, cells] = getTransFaceBC(G, faces);
