@@ -213,7 +213,7 @@ in the jsonstruct and re-run the simulation.
 
    A comparison of cell voltage curves at different C-Rates
 
-   
+
 Change Structural Parameters
 ============================
 
@@ -298,10 +298,10 @@ We have written and published matlab notebooks in the `Live Code File Format
 
 They basically go through the material described above in the interactive manner.
 
-The notebooks can be found in the :battmofile:`Examples/Basic` directory or downloaded from here.
+The notebooks can be found in the :battmofile:`Examples/Notebooks` directory or downloaded from here.
 
 .. list-table::
-   
+
    * - Tutorial 1
      - **Your first BattMo model**
      - `view <_static/notebooks/tutorial_1_a_simple_p2d_model_live.html>`__
@@ -339,7 +339,7 @@ The notebooks can be found in the :battmofile:`Examples/Basic` directory or down
      - `view <_static/notebooks/tutorial_9_simulate_a_cylindrical_cell_live.html>`__
      - :battmorawfile:`download <Examples/NoteBooks/tutorial_9_simulate_a_cylindrical_cell_live.mlx>`
 
-   
+
 Next Steps
 ==========
 
