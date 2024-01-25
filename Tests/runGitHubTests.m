@@ -31,52 +31,42 @@ MRST_BATCH = true;
 
 run('../startupBattMo.m')
 
-%% Run python setup tests
+%% Run tests
+
+% Setup
 mrstVerbose 'off';
-doTestPython = false;
 stopOnError = false;
+runTestsInParallel = true;
+doAssertSuccess = true;
 
-if doTestPython
-    suite = testsuite('TestPython');
-    runner = testrunner('textoutput');
+% Define which test cases to run
+testCases = {
+    'TestJsonFiles', ...
+    'TestChen2020', ...
+    'TestRunExamples'
+            };
 
-    if stopOnError
-        import matlab.unittest.plugins.StopOnFailuresPlugin
-        runner.addPlugin(StopOnFailuresPlugin)
-    end
+% Execute tests
+suite = testsuite(testCases);
+runner = testrunner('textoutput');
 
-    results = runner.run(suite);
-
-    % Display results
-    t = table(results);
-    disp(t)
-
-    assertSuccess(results);
+if stopOnError
+    import matlab.unittest.plugins.StopOnFailuresPlugin;
+    runner.addPlugin(StopOnFailuresPlugin)
 end
 
-%% Run json file testing
-mrstVerbose 'off';
-doTestJsonFiles = true;
-stopOnError = false;
-
-if doTestJsonFiles
-    suite = testsuite('TestJsonFiles');
-    runner = testrunner('textoutput');
-
-    if stopOnError
-        import matlab.unittest.plugins.StopOnFailuresPlugin
-        runner.addPlugin(StopOnFailuresPlugin)
-    end
-
+if runTestsInParallel
+    results = runner.runInParallel(suite);
+else
     results = runner.run(suite);
-
-    % Display results
-    t = table(results);
-    disp(t)
-
-    assertSuccess(results);
 end
 
+t = table(results);
+disp(t);
+
+if doAssertSuccess
+    assertSuccess(results);
+end
 
 
 %{
