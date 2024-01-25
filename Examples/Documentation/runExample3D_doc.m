@@ -88,7 +88,7 @@ figure
 
 model = output.model
 istate = 20;
-plotCellData(model.G, states{istate}.ThermalModel.T)
+plotCellData(model.G.getMRSTgrid, states{istate}.ThermalModel.T)
 
 %%
 
@@ -97,9 +97,9 @@ figure
 ind = 20;
 state = states{ind},
 E = states{ind}.Control.E
-plotGrid(model.G, 'facecolor', 'none', 'edgealpha', 0.1)
-plotCellData(model.NegativeElectrode.Coating.G, states{ind}.NegativeElectrode.Coating.ActiveMaterial.SolidDiffusion.cSurface/(mol/litre))
-plotCellData(model.PositiveElectrode.Coating.G, states{ind}.PositiveElectrode.Coating.ActiveMaterial.SolidDiffusion.cSurface/(mol/litre))
+plotGrid(model.G.getMRSTgrid, 'facecolor', 'none', 'edgealpha', 0.1)
+plotCellData(model.NegativeElectrode.Coating.G.getMRSTgrid, states{ind}.NegativeElectrode.Coating.ActiveMaterial.SolidDiffusion.cSurface/(mol/litre))
+plotCellData(model.PositiveElectrode.Coating.G.getMRSTgrid, states{ind}.PositiveElectrode.Coating.ActiveMaterial.SolidDiffusion.cSurface/(mol/litre))
 title('Particle Surface Lithium Concentration');
 hcb = colorbar
 title(hcb, 'mol/L')

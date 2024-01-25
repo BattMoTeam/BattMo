@@ -1,3 +1,4 @@
+%% Simple plot script used in documentation
 
 close all
 figure
