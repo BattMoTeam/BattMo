@@ -125,46 +125,54 @@ initstate2 = initStateChen2020(model2, c_ne, c_pe);
 %%  We process output and recover the output voltage and current from the output states.
 
 
-states = cleanupStates(states);
-E1    = cellfun(@(state) state.Control.E, states);
-I1    = cellfun(@(state) state.Control.I, states);
-time1 = cellfun(@(state) state.time, states);
+ind     = cellfun(@(x) not(isempty(x)), states);
+states  = states(ind);
+E1      = cellfun(@(state) state.Control.E, states);
+I1      = cellfun(@(state) state.Control.I, states);
+time1   = cellfun(@(state) state.time, states);
+time1   = time1/hour;
 
-states2 = cleanupStates(states2);
-E2    = cellfun(@(state) state.Control.E, states2);
-I2    = cellfun(@(state) state.Control.I, states2);
-time2 = cellfun(@(state) state.time, states2);
+ind     = cellfun(@(x) not(isempty(x)), states2);
+states2 = states2(ind);
+E2      = cellfun(@(state) state.Control.E, states2);
+I2      = cellfun(@(state) state.Control.I, states2);
+time2   = cellfun(@(state) state.time, states2);
+time2   = time2/hour;
 
+%% We plot the the output voltage and current and compare with PyBaMM results
 
-%% We plot the the output voltage and current and compare with pybamm results
-
-% We load the pybamm results
+% We load the PyBaMM results
 loadChenPybammSolution
 [t1, u1] = deal(t, u);
 [t2, u2] = deal(t_infdiff, u_infdiff);
 
-% We plot the solutions
+doplot = false;
 
-set(0, 'defaultFigurePosition', [671 510 900 600]);
+if doplot
 
-l = lines(4);
-figure
-hold on
-plot(t1, u1, 'linewidth', 3, 'color', l(1, :), 'linestyle', '--', 'displayname', 'pybamm - solid diffusion')
-plot(t2, u2, 'linewidth', 3, 'color', l(2, :), 'linestyle', '--', 'displayname', 'pybamm - instantaneous solid diffusion')
-plot((time1/hour), E1,'-', 'linewidth', 3, 'color', l(3, :), 'displayname', 'battmo')
-plot((time2/hour), E2,'-', 'linewidth', 3, 'color', l(4, :), 'displayname', 'battmo - simplified diffusion model')
+    % We plot the solutions
+    l = lines(4);
+    figure
+    hold on
+    plot(t1, u1, 'linewidth', 3, 'color', l(1, :), 'linestyle', '--', 'displayname', 'pybamm - solid diffusion')
+    plot(t2, u2, 'linewidth', 3, 'color', l(2, :), 'linestyle', '--', 'displayname', 'pybamm - instantaneous solid diffusion')
+    plot(time1, E1,'-', 'linewidth', 3, 'color', l(3, :), 'displayname', 'battmo')
+    plot(time2, E2,'-', 'linewidth', 3, 'color', l(4, :), 'displayname', 'battmo - simplified diffusion model')
 
+    set(gca, 'fontsize', 18);
+    title('Cell Voltage / V')
+    xlabel('time (hours)')
+    legend('fontsize', 18, 'location', 'southwest')
 
-set(gca, 'fontsize', 18);
-title('Cell Voltage / V')
-xlabel('time (hours)')
-legend('fontsize', 18, 'location', 'southwest')
-
-function states = cleanupStates(states)
-    ind = cellfun(@(state) ~isempty(state), states);
-    states = states(ind);
 end
+
+% Make sure BattMo and PyBaMM match
+N = 1000;
+x = linspace(time1(1), t1(end), N);
+pb = interp1(t1, u1, x);
+battmo = interp1(time1, E1, x);
+assert(norm(pb - battmo) / norm(pb) < 1e-3);
+
 
 
 %{
