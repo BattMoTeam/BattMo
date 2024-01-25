@@ -83,7 +83,29 @@ classdef SpiralBatteryGenerator < BatteryGenerator
 
         function [inputparams, gen] = setupGrid(gen, inputparams, ~)
 
-            [gen, G] = spiralGrid(gen);
+            output = spiralGrid(gen);
+
+            G = output.G;
+            
+            % Transform to differentiable Grid structure.
+            parentGrid = Grid(G);
+            G          = genSubGrid(parentGrid, (1 : parentGrid.getNumberOfCells())');
+
+            gen.parentGrid = parentGrid;
+            
+            % Assign properties
+            gen.tag                     = output.tag;
+            gen.tagdict                 = output.tagdict;
+            gen.positiveExtCurrentFaces = output.positiveExtCurrentFaces;
+            gen.negativeExtCurrentFaces = output.negativeExtCurrentFaces;
+            gen.thermalExchangeFaces    = output.thermalExchangeFaces;
+            gen.thermalExchangeFacesTag = output.thermalExchangeFacesTag;
+            gen.widthLayer              = output.widthLayer;
+            gen.nWidthLayer             = output.nWidthLayer;
+            gen.heightLayer             = output.heightLayer;
+            gen.nHeightLayer            = output.nHeightLayer;
+            gen.celltbl                 = output.celltbl;
+
             inputparams.G = G;
 
         end

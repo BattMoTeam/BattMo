@@ -1,4 +1,4 @@
-function [output, G] = spiralGrid(params)
+function output = spiralGrid(params)
 
     %% Parameters
     %
@@ -25,9 +25,19 @@ function [output, G] = spiralGrid(params)
     %
     % RETURNS
     %
-    % - G       : grid
-    % - tag     : cell-valued vector giving component number (indexing is given by tagdict)
-    % - tagdict : dictionary giving the component number
+    % - output structure with fields
+    %    - G
+    %    - tag
+    %    - tagdict
+    %    - positiveExtCurrentFaces
+    %    - negativeExtCurrentFaces
+    %    - thermalExchangeFaces
+    %    - thermalExchangeFacesTag
+    %    - widthLayer
+    %    - nWidthLayer
+    %    - heightLayer
+    %    - nHeightLayer
+    %    - celltbl
 
     nwindings = params.nwindings;
     rInner    = params.rInner;
@@ -247,7 +257,7 @@ function [output, G] = spiralGrid(params)
     cellfacetbl = replacefield(cellfacetbl, {{'newfaces', 'faces'}});
 
     facenodetbl = tbls.facenodetbl;
-    % facenodetbl = facenodetbl.addInd('order', repmat((1 : 2)', cartG.getNumberOfFaces(), 1));
+    % facenodetbl = facenodetbl.addInd('order', repmat((1 : 2)', cartG.faces.num, 1));
     facenodetbl = crossIndexArray(facenodetbl, newfacetbl, {'faces'});
     facenodetbl = crossIndexArray(facenodetbl, newnodetbl, {'nodes'});
 
@@ -316,7 +326,10 @@ function [output, G] = spiralGrid(params)
 
     if ~isempty(petab)
 
+        w = widths./nrs;
+        w = rldecode(w, nrs);
         indj0 = floor(nrDict('PositiveCoating') + nrDict('PositiveCurrentCollector')/2);
+        cclinewidth = w(indj0);
 
         clear cccelltbl;
         cccelltbl.tag = tagdict('PositiveCurrentCollector');
@@ -329,6 +342,7 @@ function [output, G] = spiralGrid(params)
         windingnumbers = computeWindingNumbers(fractions, rInner, layerwidth, nwindings);
 
         pe_tabcelltbl = getTabCellTbl(cccelltbl     , ...
+                                      cclinewidth   , ...
                                       indj0         , ...
                                       petab         , ...
                                       windingnumbers, ...
@@ -338,7 +352,10 @@ function [output, G] = spiralGrid(params)
 
     if ~isempty(netab)
 
+        w = widths./nrs;
+        w = rldecode(w, nrs);
         indj0 = floor(nrDict('NegativeCoating') + nrDict('NegativeCurrentCollector')/2);
+        cclinewidth = w(indj0);
 
         clear cccelltbl;
         cccelltbl.tag = tagdict('NegativeCurrentCollector');
@@ -351,6 +368,7 @@ function [output, G] = spiralGrid(params)
         windingnumbers = computeWindingNumbers(fractions, rInner, layerwidth, nwindings);
 
         ne_tabcelltbl = getTabCellTbl(cccelltbl     , ...
+                                      cclinewidth   , ...
                                       indj0         , ...
                                       netab         , ...
                                       windingnumbers, ...
@@ -542,13 +560,8 @@ function [output, G] = spiralGrid(params)
         end
     end
 
-    parentGrid = Grid(G);
-
-    G = genSubGrid(parentGrid, (1 : parentGrid.getNumberOfCells())');
-
     %% setup output structure
-    output = params;
-    output.parentGrid              = parentGrid;
+    output.G                       = G;
     output.tag                     = tag;
     output.tagdict                 = tagdict;
     output.positiveExtCurrentFaces = positiveExtCurrentFaces;
@@ -570,16 +583,12 @@ function [output, G] = spiralGrid(params)
 end
 
 
-function [tabcelltbl, tabwidths] = getTabCellTbl(cccelltbl, indj0, tabparams, windingnumbers, data)
+function tabcelltbl = getTabCellTbl(cccelltbl, cclinewidth, indj0, tabparams, windingnumbers, data)
 
-    error('This function has not been updated to conform with grids of the Grid and SubGrid classes');
-
-    nas         = data.nas;
-    nrs         = data.nrs;
-    celltbl     = data.celltbl;
-    G           = data.G;
-    tabcelltbls = cell(numel(windingnumbers), 1);
-    tabwidths   = zeros(numel(windingnumbers), 1);
+    nas     = data.nas;
+    nrs     = data.nrs;
+    celltbl = data.celltbl;
+    G       = data.G;
 
     for ind = 1 : numel(windingnumbers)
 
@@ -592,11 +601,14 @@ function [tabcelltbl, tabwidths] = getTabCellTbl(cccelltbl, indj0, tabparams, wi
         cclinecelltbl = crossIndexArray(cclinecelltbl, celltbl, {'indi', 'indj'});
         cclinecelltbl = sortIndexArray(cclinecelltbl,  {'curvindi', 'cells'});
 
+        c = cclinecelltbl.get('cells');
         o = cclinecelltbl.get('curvindi');
         l = cumsum(G.cells.volumes(c)/cclinewidth);
 
         indl = find(l > tabparams.width, 1, 'first');
-        tabwidths(ind) = l(indl);
+
+        % We can compute tabwidths as follows (commented because not used)
+        % tabwidths(ind) = l(indl);
 
         clear tabcelltbl
         tabcelltbl.curvindi = o(1 : indl);
