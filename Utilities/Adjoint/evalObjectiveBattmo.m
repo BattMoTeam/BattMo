@@ -142,32 +142,26 @@ function [objValue, varargout] = evalObjectiveBattmo(pvec, objFunc, setup, param
 
             pertsize = opt.PerturbationSize;
             if isempty(pertsize)
-                usedefault = true;
-                % default value is 1e-7
-            else
-                usedefault = false;
+                pertsize = repmat({1e-7}, numel(parameters), 1);
             end
+
+            scaledGradient = cell(numel(parameters), 1);
 
             parfor iparam = 1 : numel(parameters)
 
-                if usedefault
-                    eps_pert = 1e-7;
-                else
-                    eps_pert = pertsize{iparam};
-                end
-
+                eps_pert = pertsize{iparam};
                 np = numel(pvec{iparam});
                 val = nan(np, 1);
 
-                    for i = 1 : np
-                        pert_pvec = perturb(pvec, iparam, i, eps_pert);
-                        val(i) = evalObjectiveBattmo(pert_pvec, objFunc, setupNew, parameters, ...
-                                                     'gradientMethod' , 'None'             , ...
-                                                     'NonlinearSolver', opt.NonlinearSolver, ...
-                                                     'objScaling'     , opt.objScaling     , ...
-                                                     'enforceBounds'  , false);
-                    end
+                for i = 1 : np
+                    pert_pvec = perturb(pvec, iparam, i, eps_pert);
 
+                    val(i) = evalObjectiveBattmo(pert_pvec, objFunc, setupNew, parameters, ...
+                                                 'gradientMethod' , 'None'             , ...
+                                                 'NonlinearSolver', opt.NonlinearSolver, ...
+                                                 'objScaling'     , opt.objScaling     , ...
+                                                 'enforceBounds'  , false);
+                end
 
                 scaledGradient{iparam} = (val - objValue)./eps_pert;
 

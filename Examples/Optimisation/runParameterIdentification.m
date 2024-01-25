@@ -112,9 +112,9 @@ if debug
                                      'gradientMethod', 'AdjointAD');
 
     [vnum, gnum] = evalObjectiveBattmo(pTmp, objective, simSetup, params, ...
-                                       'gradientMethod', 'PerturbationADNUM', ...
-                                       'PerturbationSize', 1e-7);
-    fprintf('Adjoint and finite difference derivatives and the relative error\n');
+                                       'gradientMethod', 'PerturbationADNUM');
+
+    fprintf('Adjoint and finite difference derivatives and the relative error:\n');
     disp([gad, gnum, abs(gad-gnum)./abs(gad)])
 
     %return
