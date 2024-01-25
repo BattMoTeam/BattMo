@@ -28,7 +28,6 @@ classdef TwoPointFiniteVolumeGeometry
     methods
 
         function tPFVgeometry = TwoPointFiniteVolumeGeometry(tPFVgeometryInput)
-        % create handle
 
             tPFVgeometry.cells = tPFVgeometryInput.cells;
             tPFVgeometry.faces = tPFVgeometryInput.faces;
