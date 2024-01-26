@@ -1,19 +1,11 @@
 classdef TestChen2020 < matlab.unittest.TestCase
 
-    methods
-
-        function states = runChen2020(test)
-
-            run(fullfile(battmoDir(), 'Examples', 'Advanced', 'runChen2020'));
-
-        end
-    end
-
     methods (Test)
 
-        function testChen2020(test)
+        function testChen2020(~)
 
-            test.runChen2020();
+            run('../startupBattMo.m'); % required for parallel run
+            run(fullfile(battmoDir(), 'Examples', 'Advanced', 'runChen2020'));
 
         end
 
