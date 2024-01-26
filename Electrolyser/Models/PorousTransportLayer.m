@@ -471,7 +471,7 @@ classdef PorousTransportLayer < ElectronicComponent
                 pBc  = state.(bd).phasePressures{iph};
                 visc = state.viscosities{imph};
                 vf   = state.volumeFractions{iph};
-                [tc, bccells] = model.G.getBcHarmFace((vf.^tau).*perm./visc, bcfaces);
+                [tc, bccells] = model.G.getTransBcHarmFace((vf.^tau).*perm./visc, bcfaces);
                 phaseBcFlux{iph} = tc.*(pBc - p(bccells));
             end
 
@@ -864,7 +864,7 @@ classdef PorousTransportLayer < ElectronicComponent
             % state.convOHFlux = assembleUpwindFlux(model, v, cOH);
 
             % non-upwind version
-            state.convOHFlux = (1./G.getTrans()).*G.getHarmFace(cOH).*v;
+            state.convOHFlux = (1./G.getTrans()).*G.getTransHarmFace(cOH).*v;
 
         end
 
@@ -904,7 +904,7 @@ classdef PorousTransportLayer < ElectronicComponent
                 % upwind version
                 % state.compGasFluxes{igas} =  assembleUpwindFlux(model, v, state.compGasMasses{igas}./vf);
                 % non-upwind version :
-                state.compGasFluxes{igas} = (1./G.getTrans()).*G.getHarmFace(state.compGasMasses{igas}./vf).*v;
+                state.compGasFluxes{igas} = (1./G.getTrans()).*G.getTransHarmFace(state.compGasMasses{igas}./vf).*v;
             end
 
         end

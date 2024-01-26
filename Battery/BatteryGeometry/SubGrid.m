@@ -31,9 +31,9 @@ classdef SubGrid
         % fluxes, with fields
         % - helpers.diffop.grad                 (sparse matrix used in getGradient)
         % - helpers.diffop.div                  (sparse matrix used in getDiv)
-        % - helpers.trans.D                     (sparse matrix used in getHarmFace method)
-        % - helpers.trans.P                     (sparse matrix used in getHarmFace method)
-        % - helpers.trans.S                     (sparse matrix used in getHarmFace method)
+        % - helpers.trans.D                     (sparse matrix used in getTransHarmFace method)
+        % - helpers.trans.P                     (sparse matrix used in getTransHarmFace method)
+        % - helpers.trans.S                     (sparse matrix used in getTransHarmFace method)
         % - helpers.extfaces.faces              (index of the external faces, sub-grid indexing)
         % - helpers.extfaces.cells              (index of the corresponding cells, sub-grid indexing)
         % - helpers.extfaces.sgn                (sign of the corresponding cell-face pair)
@@ -54,12 +54,14 @@ classdef SubGrid
         % - getGrad
         % - getDiv
         % - getTrans
-        % - getHarmFace
-        % - getBcHarmFace
+        % - getTransHarmFace
+        % - getTransBcHarmFace
         % - getCellFluxNorm
         % - getIntFaceIndex
         % - getNumberOfCells
         % - getNumberOfFaces
+
+    end
 
     methods
 
@@ -301,7 +303,7 @@ classdef SubGrid
             
         end
 
-        function u = getHarmFace(subG, c)
+        function u = getTransHarmFace(subG, c)
         % Returns fluxes for each internal faces for the cell-valued vector c
 
             t = subG.helpers.trans;
@@ -311,7 +313,7 @@ classdef SubGrid
 
         end
 
-        function [bchT, bccells, bcsgn] = getBcHarmFace(subG, c, bcfaces)
+        function [bchT, bccells, bcsgn] = getTransBcHarmFace(subG, c, bcfaces)
         % Returns half transmissibilities weighted with values of c and cell indexing for the given boundary faces
         % (bcfaces is given using subgrid indexing)
 

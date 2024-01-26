@@ -135,8 +135,8 @@ classdef Electrode < BaseModel
                 coupterm = model.couplingTerm;
                 face_cc = coupterm.couplingfaces(:, 1);
                 face_co = coupterm.couplingfaces(:, 2);
-                [teac, bccell_co, bcsgn_co] = elde.(co).G.getBcHarmFace(co_sigmaeff, face_co);
-                [tcc, bccell_cc, bcsgn_cc]  = elde.(cc).G.getBcHarmFace(cc_sigmaeff, face_cc);
+                [teac, bccell_co, bcsgn_co] = elde.(co).G.getTransBcHarmFace(co_sigmaeff, face_co);
+                [tcc, bccell_cc, bcsgn_cc]  = elde.(cc).G.getTransBcHarmFace(cc_sigmaeff, face_cc);
 
                 bcphi_co = co_phi(bccell_co);
                 bcphi_cc = cc_phi(bccell_cc);

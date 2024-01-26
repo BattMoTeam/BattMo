@@ -6,7 +6,7 @@ function [jExternal, jFaceExternal] = setupExternalCoupling(model, phi, phiExter
 
     faces = coupterm.couplingfaces;
     bcval = phiExternal;
-    [t, cells, sgn] = model.G.getBcHarmFace(conductivity, faces);
+    [t, cells, sgn] = model.G.getTransBcHarmFace(conductivity, faces);
     current = t.*(bcval - phi(cells));
     jExternal = subsetPlus(jExternal, current, cells);
     G = model.G;

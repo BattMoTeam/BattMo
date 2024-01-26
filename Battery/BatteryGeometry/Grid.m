@@ -14,7 +14,7 @@ classdef Grid
 % - function nc                     = getNumberOfCells(grid)          % returns number of cells
 % - function vols                   = getVolumes(grid)                % returns cells volumes
 % - function areas                  = getFaceAreas(grid)              % return face areas
-% - function u                      = getHarmFace(grid, c)            % return harmonic average on the face from cell values
+% - function u                      = getTransHarmFace(grid, c)            % return harmonic average on the face from cell values
 % - function [bchT, bccells, bcsgn] = getBcHarmFlux(grid, u, bcfaces) % return weighted half-transmissibilities form
 % - function jsq                    = getCellFluxNorm(grid, u)        % return norms of flux (no AD compliant version for the moment!)
 
@@ -36,9 +36,9 @@ classdef Grid
         % Helper structures that are used in the computation of the gradient, divergence, harmonic face averages, ...
         % - helpers.diffop.grad                 (sparse matrix used in getGradient)
         % - helpers.diffop.div                  (sparse matrix used in getDiv)
-        % - helpers.trans.D                     (sparse matrix used in getHarmFace method)
-        % - helpers.trans.P                     (sparse matrix used in getHarmFace method)
-        % - helpers.trans.S                     (sparse matrix used in getHarmFace method)
+        % - helpers.trans.D                     (sparse matrix used in getTransHarmFace method)
+        % - helpers.trans.P                     (sparse matrix used in getTransHarmFace method)
+        % - helpers.trans.S                     (sparse matrix used in getTransHarmFace method)
         % - helpers.extfaces.faces              (index of the external faces, sub-grid indexing)
         % - helpers.extfaces.cells              (index of the corresponding cells, sub-grid indexing)
         % - helpers.extfaces.halfTransParentInd (index of the corresponding half-transmissibility values in parent grid indexing)
@@ -1036,7 +1036,7 @@ classdef Grid
 
         end
 
-        function u = getHarmFace(grid, c)
+        function u = getTransHarmFace(grid, c)
         % Returns fluxes for each internal faces for the cell-valued vector c
 
             op = grid.helpers.trans;

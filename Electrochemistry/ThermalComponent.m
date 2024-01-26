@@ -196,7 +196,7 @@ classdef ThermalComponent < BaseModel
                 A = areas(coupfaces);
                 t_ext = lambda_ext.*A;
 
-                t = model.G.getBcHarmFace(lambda, coupfaces);
+                t = model.G.getTransBcHarmFace(lambda, coupfaces);
 
                 t_eff = 1./(1./t + 1./t_ext);
             end
