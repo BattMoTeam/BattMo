@@ -968,7 +968,7 @@ classdef Battery < BaseModel
 
                         n    = model.(elde).(co).(amc).(itf).numberOfElectronsTransferred;
                         F    = model.con.F;
-                        vol  = model.(elde).(co).operators.pv;
+                        vol  = model.(elde).(co).G.getVolumes();
                         rp   = model.(elde).(co).(amc).(sd).particleRadius;
                         vsf  = model.(elde).(co).(amc).(sd).volumetricSurfaceArea;
 
@@ -1244,7 +1244,7 @@ classdef Battery < BaseModel
             T = state.(thermal).T;
             phi = state.(elyte).phi;
             nf = model.(elyte).G.getNumberOfFaces();
-            intfaces = model.(elyte).operators.internalConn;
+            intfaces = model.(elyte).G.getIntFaceIndex;
             if isa(T, 'ADI')
                 adsample = getSampleAD(T);
                 adbackend = model.AutoDiffBackend;
@@ -1582,9 +1582,9 @@ classdef Battery < BaseModel
 
             coupterm = model.(pe).(mat).externalCouplingTerm;
             faces    = coupterm.couplingfaces;
-            cond_pcc = model.(pe).(mat).effectiveElectronicConductivity;
-            [trans_pcc, cells] = model.(pe).(mat).operators.transFaceBC(faces);
-
+            cond_pcc = model.(pe).(am).EffectiveElectricalConductivity;
+            [trans_pcc, cells] = model.(pe).(mat).G.getBcHarmFace(cond_pcc, faces);
+            
             state.Control.EIequation = sum(cond_pcc.*trans_pcc.*(phi(cells) - E)) - I;
 
 

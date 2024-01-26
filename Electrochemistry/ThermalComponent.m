@@ -31,9 +31,6 @@ classdef ThermalComponent < BaseModel
                        'externalTemperature'};
             model = dispatchParams(model, inputparams, fdnames);
 
-            % setup discrete differential operators
-            model.operators = localSetupOperators(model.G.getMRSTgrid());
-
             model = setupMapping(model);
 
         end
@@ -115,6 +112,13 @@ classdef ThermalComponent < BaseModel
 
         end
 
+        function model = setTPFVgeometry(model, tPFVgeometry)
+        % tPFVgeometry should be instance of TwoPointFiniteVolumeGeometry or MutableTwoPointFiniteVolumeGeometry
+
+            model.G.parentGrid.tPFVgeometry = tPFVgeometry;
+            
+        end
+        
         function state = updateAccumTerm(model, state, state0, dt)
         % Assemble the accumulation term for the energy equation
 
@@ -192,7 +196,7 @@ classdef ThermalComponent < BaseModel
                 A = areas(coupfaces);
                 t_ext = lambda_ext.*A;
 
-                t = model.operators.harmFaceBC(lambda, coupfaces);
+                t = model.G.getBcHarmFace(lambda, coupfaces);
 
                 t_eff = 1./(1./t + 1./t_ext);
             end

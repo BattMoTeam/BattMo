@@ -135,10 +135,8 @@ classdef Electrode < BaseModel
                 coupterm = model.couplingTerm;
                 face_cc = coupterm.couplingfaces(:, 1);
                 face_co = coupterm.couplingfaces(:, 2);
-                [teac, bccell_co] = elde.(co).operators.transFaceBC(face_co);
-                teac = co_sigmaeff*teac;
-                [tcc, bccell_cc] = elde.(cc).operators.transFaceBC( face_cc);
-                tcc = cc_sigmaeff*teac;
+                [teac, bccell_co, bcsgn_co] = elde.(co).G.getBcHarmFace(co_sigmaeff, face_co);
+                [tcc, bccell_cc, bcsgn_cc]  = elde.(cc).G.getBcHarmFace(cc_sigmaeff, face_cc);
 
                 bcphi_co = co_phi(bccell_co);
                 bcphi_cc = cc_phi(bccell_cc);
@@ -150,19 +148,15 @@ classdef Electrode < BaseModel
 
                 G = model.(cc).G;
                 nf = G.getNumberOfFaces();
-                sgn = model.(cc).operators.sgn;
                 zeroFaceAD = model.AutoDiffBackend.convertToAD(zeros(nf, 1), cc_phi);
                 cc_jFaceCoupling = zeroFaceAD;
-                cc_jFaceCoupling = subsasgnAD(cc_jFaceCoupling,face_cc, sgn(face_cc).*crosscurrent);
-                assert(~any(isnan(sgn(face_cc))));
+                cc_jFaceCoupling = subsasgnAD(cc_jFaceCoupling, face_cc, bcsgn_cc.*crosscurrent);
 
                 G = model.(co).G;
                 nf = G.getNumberOfFaces();
-                sgn = model.(co).operators.sgn;
                 zeroFaceAD = model.AutoDiffBackend.convertToAD(zeros(nf, 1), co_phi);
                 co_jFaceCoupling = zeroFaceAD;
-                co_jFaceCoupling = subsasgnAD(co_jFaceCoupling, face_co, -sgn(face_co).*crosscurrent);
-                assert(~any(isnan(sgn(face_co))));
+                co_jFaceCoupling = subsasgnAD(co_jFaceCoupling, face_co, -bcsgn_co.*crosscurrent);
 
                 % We set here volumetric current source to zero for current collector (could have been done at a more
                 % logical place but let us do it here, for simplicity)

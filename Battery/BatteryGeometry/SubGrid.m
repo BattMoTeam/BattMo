@@ -47,7 +47,19 @@ classdef SubGrid
         % - cellFluxOperators.S
         cellFluxOperators
 
-    end
+        % API functions are
+        % - getVolumes
+        % - getFaceAreas
+        % - getFaceCentroids
+        % - getGrad
+        % - getDiv
+        % - getTrans
+        % - getHarmFace
+        % - getBcHarmFace
+        % - getCellFluxNorm
+        % - getIntFaceIndex
+        % - getNumberOfCells
+        % - getNumberOfFaces
 
     methods
 

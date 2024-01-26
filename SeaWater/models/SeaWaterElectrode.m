@@ -15,8 +15,6 @@ classdef SeaWaterElectrode < ElectronicComponent
                        'externalCouplingTerm'};
             model = dispatchParams(model, inputparams, fdnames);
 
-            model.operators = localSetupOperators(model.G.getMRSTgrid());
-
         end
 
         function model = registerVarAndPropfuncNames(model)

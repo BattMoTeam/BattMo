@@ -30,8 +30,6 @@ classdef ElectronicComponent < BaseModel
 
             model = dispatchParams(model, inputparams, fdnames);
 
-            % setup discrete differential operators
-            model.operators = localSetupOperators(model.G.getMRSTgrid());
             if model.use_thermal
                 model.G = model.G.setupCellFluxOperators();
             end

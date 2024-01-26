@@ -452,7 +452,6 @@ classdef PorousTransportLayer < ElectronicComponent
             bd = 'Boundary';
 
             coupterm   = model.externalCouplingTerm;
-            harmFaceBc = model.operators.harmFaceBC;
             mphInd     = model.mobPhaseInd;
             phInd      = model.phaseInd;
             liquidInd  = model.liquidInd;

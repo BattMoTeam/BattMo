@@ -59,9 +59,6 @@ classdef Electrolyte < BaseModel
 
             model.constants = PhysicalConstants();
 
-            % setup discrete differential operators
-            model.operators = localSetupOperators(model.G.getMRSTgrid());
-
             if model.use_thermal
 
                 model.G = model.G.setupCellFluxOperators();
