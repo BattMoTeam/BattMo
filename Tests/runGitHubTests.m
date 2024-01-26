@@ -1,4 +1,5 @@
 %% Script for running tests using github actions
+% This file must be run in the directory battmoDir()/Tests
 
 % Display matlab version
 disp(version)
@@ -52,7 +53,7 @@ runner = testrunner('textoutput');
 
 if stopOnError
     import matlab.unittest.plugins.StopOnFailuresPlugin;
-    runner.addPlugin(StopOnFailuresPlugin)
+    runner.addPlugin(StopOnFailuresPlugin);
 end
 
 if runTestsInParallel
