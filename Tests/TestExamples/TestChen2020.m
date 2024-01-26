@@ -4,7 +4,7 @@ classdef TestChen2020 < matlab.unittest.TestCase
 
         function testChen2020(~)
 
-            run('../startupBattMo.m'); % required for parallel run
+            run(fullfile(battmoDir(), 'startupBattMo.m')); % required for parallel run
             run(fullfile(battmoDir(), 'Examples', 'Advanced', 'runChen2020'));
 
         end
