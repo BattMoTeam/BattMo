@@ -69,7 +69,7 @@ end
 % simulation. The required discretization parameters are already included
 % in the class BatteryGeneratorP2D.
 gen = BatteryGeneratorP2D();
-gen.fac = 100;
+gen.resolutionFactor = 100;
 gen = gen.applyResolutionFactors();
 
 % Now, we update the inputparams with the properties of the grid.
