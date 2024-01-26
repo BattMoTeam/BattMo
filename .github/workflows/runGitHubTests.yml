@@ -1,5 +1,5 @@
 # See https://github.com/matlab-actions/overview for more information
-name: MATLAB Build
+name: Running runGitHubTests
 
 # Controls when the action will run.
 on:
