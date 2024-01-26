@@ -457,7 +457,6 @@ classdef PorousTransportLayer < ElectronicComponent
             liquidInd  = model.liquidInd;
             gasInd     = model.gasInd;
             perm       = model.permeability;
-            op         = model.operators;
             tau        = model.tortuosity;
 
             bcfaces = coupterm.couplingfaces;
@@ -472,7 +471,7 @@ classdef PorousTransportLayer < ElectronicComponent
                 pBc  = state.(bd).phasePressures{iph};
                 visc = state.viscosities{imph};
                 vf   = state.volumeFractions{iph};
-                [tc, bccells] = op.harmFaceBC((vf.^tau).*perm./visc, bcfaces);
+                [tc, bccells] = model.G.getBcHarmFace((vf.^tau).*perm./visc, bcfaces);
                 phaseBcFlux{iph} = tc.*(pBc - p(bccells));
             end
 
@@ -855,8 +854,9 @@ classdef PorousTransportLayer < ElectronicComponent
 
         function state = updateOHConvectionFlux(model, state)
 
-            op = model.operators;
 
+            G = model.G;
+            
             cOH = state.concentrations{model.liquidInd.OH};
             v   = state.phaseFluxes{model.phaseInd.liquid};
 
@@ -864,7 +864,7 @@ classdef PorousTransportLayer < ElectronicComponent
             % state.convOHFlux = assembleUpwindFlux(model, v, cOH);
 
             % non-upwind version
-            state.convOHFlux = (1./op.T).*op.harmFace(cOH).*v;
+            state.convOHFlux = (1./G.getTrans()).*G.getHarmFace(cOH).*v;
 
         end
 
@@ -895,6 +895,8 @@ classdef PorousTransportLayer < ElectronicComponent
         function state = updateGasFluxes(model, state)
         % assemble convection fluxes
 
+            G = model.G;
+            
             vf = state.volumeFractions{model.phaseInd.gas};
             v  = state.phaseFluxes{model.phaseInd.gas};
 
@@ -902,8 +904,7 @@ classdef PorousTransportLayer < ElectronicComponent
                 % upwind version
                 % state.compGasFluxes{igas} =  assembleUpwindFlux(model, v, state.compGasMasses{igas}./vf);
                 % non-upwind version :
-                op = model.operators;
-                state.compGasFluxes{igas} = (1./op.T).*op.harmFace(state.compGasMasses{igas}./vf).*v;
+                state.compGasFluxes{igas} = (1./G.getTrans()).*G.getHarmFace(state.compGasMasses{igas}./vf).*v;
             end
 
         end

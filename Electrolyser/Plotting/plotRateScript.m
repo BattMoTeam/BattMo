@@ -160,7 +160,6 @@ for ivar = 1 : numel(fds)
         submodelname = submodelname{1}{1};
         eval(sprintf('submodel = model.%s;', submodelname));
         vols = submodel.G.getVolumes();
-        op = submodel.operators;
     end
 
     figure
@@ -173,7 +172,7 @@ for ivar = 1 : numel(fds)
         imax = numel(time);
         for itime = 1 : imax
             if dodiv
-                h = plot(op.Div(y{itime})./vols);
+                h = plot(submodel.G.getDiv(y{itime})./vols);
             elseif dovol
                 h = plot(y{itime}./vols);
             else

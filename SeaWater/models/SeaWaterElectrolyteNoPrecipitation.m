@@ -59,6 +59,11 @@ classdef SeaWaterElectrolyteNoPrecipitation < ElectronicComponent
 
             model = model.setupMainIonIndex();
 
+            % TODO : We need to setup operators structure for upstream. We should fix that.
+            rock.perm = 1;
+            rock.poro = 1;            
+            model.operators = setupOperatorsTPFA(G, rock);
+            
         end
 
 

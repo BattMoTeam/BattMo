@@ -189,7 +189,6 @@ classdef SeaWaterElectrolyte < SeaWaterElectrolyteNoPrecipitation
         function state = assembleNucleationEquation(model, state, state0, dt)
 
             indi     = model.mainIonIndex;
-            op       = model.operators;
             vols     = model.G.getVolumes();
             osr      = model.superOversaturationRatio;
             nucMax   = model.nucleationMaximum;
@@ -296,7 +295,6 @@ classdef SeaWaterElectrolyte < SeaWaterElectrolyteNoPrecipitation
             if includeDiffusion
 
                 indsolid = model.indsolidsp(1);
-                op       = model.operators;
 
                 c        = state.cs{indsolid};
 
@@ -324,7 +322,7 @@ classdef SeaWaterElectrolyte < SeaWaterElectrolyteNoPrecipitation
 
                 end
 
-                divTerm = op.Div(flux);
+                divTerm = model.G.getDiv(flux);
 
             else
 

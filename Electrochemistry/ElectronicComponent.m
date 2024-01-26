@@ -112,8 +112,9 @@ classdef ElectronicComponent < BaseModel
         function state = updateFaceCurrent(model, state)
 
             G = model.G;
-            nf = G.getNumberOfFaces();
-            intfaces = model.operators.internalConn;
+            
+            nf       = G.getNumberOfFaces();
+            intfaces = model.getIntFaceIndex();
 
             j       = state.j;
             jFaceBc = state.jFaceBc;
