@@ -1,6 +1,6 @@
 function tbls = setupTables(G, varargin)
 
-    opt.includetbls = {'basic set'};
+    opt.includetbls = {};
     opt = merge_options(opt, varargin{:});
     includetbls = opt.includetbls;
 
