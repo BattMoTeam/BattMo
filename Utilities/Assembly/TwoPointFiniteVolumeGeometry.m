@@ -20,6 +20,9 @@ classdef TwoPointFiniteVolumeGeometry
         % half-transmissibilities on each pair of cell-face
         hT
 
+        % Transmissibility for internal faces (with uniform "diffusion" coefficient equation to one)
+        T
+        
         % Only for 1d model
         faceArea
         
@@ -33,7 +36,8 @@ classdef TwoPointFiniteVolumeGeometry
             tPFVgeometry.faces = tPFVgeometryInput.faces;
             tPFVgeometry.nodes = tPFVgeometryInput.nodes;
             tPFVgeometry.hT    = tPFVgeometryInput.hT;
-
+            tPFVgeometry.T     = tPFVgeometryInput.T ;
+            
             if isfield(tPFVgeometryInput, 'faceArea') | isprop(tPFVgeometryInput, 'faceArea')
                 tPFVgeometry.faceArea = tPFVgeometryInput.faceArea;
             end

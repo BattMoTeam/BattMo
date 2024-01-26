@@ -161,11 +161,27 @@ classdef Grid
 
             nodes.coords = nodecoords;
 
+            % Compute transmissibility
+
+            tbls = setupTables(mrstG, 'includetbls', {'intfacetbl'});
+
+            cellfacetbl = tbls.cellfacetbl;
+            intfacetbl  = tbls.intfacetbl;
+            
+            map = TensorMap();
+            map.fromTbl  = 'cellfacetbl';
+            map.toTbl    = 'intfacetbl';
+            map.mergefds = {'faces'};
+            map = map.setup();
+
+            T = 1./map.eval(1./hT);
+            
             tPFVgeometry.cells = cells;
             tPFVgeometry.faces = faces;
             tPFVgeometry.nodes = nodes;
             tPFVgeometry.hT    = farea*hT;
-
+            tPFVgeometry.T     = farea*T;
+            
             if  mrstG.griddim == 1
                 tPFVgeometry.faceArea = farea;
             end

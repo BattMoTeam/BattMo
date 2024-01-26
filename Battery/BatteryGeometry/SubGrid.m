@@ -214,7 +214,7 @@ classdef SubGrid
 
         end
 
-        function G = getMRSTgrid(subG)
+        function G = mrstFormat(subG)
 
             G  = subG.topology;
             m  = subG.mappings;
@@ -280,6 +280,14 @@ classdef SubGrid
 
         end
 
+        function u = getTrans(subG)
+
+            ind = subG.helpers.intfaces;
+            T   = subG.parentGrid.tPFVgeometry.T;
+            
+            u = T(ind);
+            
+        end
 
         function u = getHarmFace(subG, c)
         % Returns fluxes for each internal faces for the cell-valued vector c

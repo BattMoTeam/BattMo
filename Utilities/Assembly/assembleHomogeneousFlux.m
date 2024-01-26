@@ -1,7 +1,8 @@
 function flux = assembleHomogeneousFlux(model, potential, fluxCoefficient)
 
-    op = model.operators;
-    flux = - fluxCoefficient .* op.T .* op.Grad(potential);
+    subG = model.G;
+    
+    flux = - fluxCoefficient .* subG.getTrans() .* subG.getGrad(potential);
 
 end
 
