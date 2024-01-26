@@ -40,7 +40,7 @@ classdef TestJsonFiles < matlab.unittest.TestCase
 
     end
 
-    methods (Test)
+    methods
 
         function test = TestJsonFiles()
 
@@ -51,6 +51,10 @@ classdef TestJsonFiles < matlab.unittest.TestCase
             loadModule(modulenames, 'setupPython', false);
 
         end
+
+    end
+
+    methods (Test)
 
         function testJsonLint(test, jsonLintFile)
 
