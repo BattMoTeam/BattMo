@@ -143,6 +143,8 @@ function [objValue, varargout] = evalObjectiveBattmo(pvec, objFunc, setup, param
             pertsize = opt.PerturbationSize;
             if isempty(pertsize)
                 pertsize = repmat({1e-7}, numel(parameters), 1);
+            elseif ~iscell(pertsize) && numel(pertsize) == 1 % scalar value
+                pertsize = repmat({pertsize}, numel(parameters), 1);
             end
 
             scaledGradient = cell(numel(parameters), 1);
