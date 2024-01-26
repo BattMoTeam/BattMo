@@ -5,9 +5,7 @@ name: MATLAB Build
 on:
   # Triggers the workflow on push or pull request events
   push:
-    branches: [ contint2 ]
-  pull_request:
-    branches: [ main ]
+    branches: [ main, dev ]
 
 jobs:
   # This workflow contains a single job called "build"
