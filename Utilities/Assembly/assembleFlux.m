@@ -1,7 +1,7 @@
 function flux = assembleFlux(model, potential, fluxCoefficient)
     
-    op = model.operators;
-    flux = - op.harmFace(fluxCoefficient).*op.Grad(potential);
+    subG = model.G;
+    flux = - subG.getHarmFace(fluxCoefficient).*subG.getGrad(potential);
     
 end
 
