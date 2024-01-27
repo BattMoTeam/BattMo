@@ -1,7 +1,7 @@
 %% Setup
 
 % Clear the workspace and close open figures
-clear
+clear all
 close all
 
 % Load MRST modules
