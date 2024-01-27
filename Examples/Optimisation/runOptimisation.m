@@ -1,4 +1,4 @@
-clear
+clear all
 close all
 
 mrstModule add optimization

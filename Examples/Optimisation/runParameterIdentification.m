@@ -1,7 +1,7 @@
 %% Setup
 mrstModule add ad-core optimization mpfa mrst-gui
 
-clear
+clear all
 close all
 
 ne      = 'NegativeElectrode';
@@ -104,7 +104,7 @@ objScaling = sum([objVals{:}]);
 objectiveGradient = @(p) evalObjectiveBattmo(p, objective, simSetup, params, 'objScaling', objScaling);
 
 %% Optional debug: Compare gradients using adjoints and finite difference approximation
-debug = true;
+debug = false;
 if debug
     pTmp = getScaledParameterVector(simSetup, params);
 
