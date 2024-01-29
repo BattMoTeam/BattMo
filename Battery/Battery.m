@@ -1582,7 +1582,7 @@ classdef Battery < BaseModel
 
             coupterm = model.(pe).(mat).externalCouplingTerm;
             faces    = coupterm.couplingfaces;
-            cond_pcc = model.(pe).(am).EffectiveElectricalConductivity;
+            cond_pcc = model.(pe).(mat).effectiveElectronicConductivity;
             [trans_pcc, cells] = model.(pe).(mat).G.getTransBcHarmFace(cond_pcc, faces);
             
             state.Control.EIequation = sum(cond_pcc.*trans_pcc.*(phi(cells) - E)) - I;

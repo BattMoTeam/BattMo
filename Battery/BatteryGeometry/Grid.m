@@ -169,8 +169,8 @@ classdef Grid
             intfacetbl  = tbls.intfacetbl;
             
             map = TensorMap();
-            map.fromTbl  = 'cellfacetbl';
-            map.toTbl    = 'intfacetbl';
+            map.fromTbl  = cellfacetbl;
+            map.toTbl    = intfacetbl;
             map.mergefds = {'faces'};
             map = map.setup();
 
