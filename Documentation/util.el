@@ -63,6 +63,43 @@
   (browse-url "https://battmoteam.github.io/battmo-doc-test/")
   )
 
+(defun check-broken-links (url)
+  
+  (let* ((base-url "https://battmoteam.github.io/BattMo/")
+         (url (concat base-url url))
+         (wget-buffer (pop-to-buffer "*battmo check link*"))
+         (broken-links nil))
+
+    ;;  The following are the basic flags you'll need:
+    ;;
+    ;;  --spider stops wget from downloading the page.
+    ;;  -r makes wget recursively follow each link on the page.
+    ;;  -nd, short for --no-directories, prevents wget from creating a hierarchy of directories on your server (even when it is configured to spider only).
+    ;;  -nv, short for --no-verbose, stops wget from outputting extra information that is unnecessary for identifying broken links.
+    ;;
+    ;;  The following are optional parameters which you can use to customize your search:
+    ;;  
+    ;;  -H, short for --span-hosts,makes wget crawl to subdomains and domains other than the primary one (i.e. external sites).
+    ;;  -l 1 is short for --level. By default, wget crawls up to five levels deep from the initial URL, but here we set it to one. You may need to play with this parameter depending on the organization of your website.
+    ;;  -w 2, short for --wait, instructs wget to wait 2 seconds between requests to avoid bombarding the server, minimizing any performance impact.
+    ;;  -o run1.log saves wget’s output to a file called run1.log instead of displaying it in your terminal.
+    (with-current-buffer wget-buffer
+      (erase-buffer)
+      (call-process  "wget" nil wget-buffer t "--spider" "-r" "-nd" "-nv" "-H" "-l 1" "-w 0.01" url)
+      (beginning-of-buffer)
+      (while (re-search-forward (rx "Remote file does not exist -- broken link!!!") nil t)
+        (save-excursion
+          (previous-line)
+          (push (buffer-substring-no-properties (line-beginning-position) (line-end-position)) broken-links)
+          )
+        )
+      )
+    broken-links
+    )
+  )
+
+;; (setq res (check-broken-links "basicusage.html"))
+
 (defun convert-to-attribute ()
   (interactive)
   (re-search-forward (rx (group (1+ (any word))) (0+ space) "%" (0+ space) (group (0+ nonl))))
