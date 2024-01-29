@@ -1,4 +1,4 @@
-clear
+clear all
 close all
 
 mrstModule add optimization
@@ -120,7 +120,7 @@ if doCompareGradient
 
     p = getScaledParameterVector(simulatorSetup, parameters);
     [vad, gad]   = evalObjectiveBattmo(p, objmatch, simulatorSetup, parameters, 'GradientMethod', 'AdjointAD', options{:});
-    perturbationSize = {1e-10, 1e-5};
+    perturbationSize = 1e-10;
     [vnum, gnum] = evalObjectiveBattmo(p, objmatch, simulatorSetup, parameters, ...
                                        'GradientMethod', 'PerturbationADNUM'  , ...
                                        'PerturbationSize', perturbationSize   , ...

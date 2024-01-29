@@ -1,7 +1,7 @@
 %% Setup
 mrstModule add ad-core optimization mpfa mrst-gui
 
-clear
+clear all
 close all
 
 ne      = 'NegativeElectrode';

@@ -6,19 +6,19 @@
   "properties": {
     "ionicConductivity": {
       "allOf": [
-        {"$ref": "function.schema.json"},
+        {"$ref": "Function.schema.json"},
         { "properties" : {
           "argumentlist": {"type" : "array",
                            "prefixItems": [{"const": "concentration"},
                                            {"const": "temperature"}]
                           },
           "symbol": {"const" : "kappa"}}}
-        ],      
+        ],
       "description": "a function to determine the ionic conductivity of the electrolyte under given conditions"
     },
     "diffusionCoefficient": {
       "allOf": [
-        {"$ref": "function.schema.json"},
+        {"$ref": "Function.schema.json"},
         { "properties" : {
           "argumentlist": {"type" : "array",
                            "prefixItems": [{"const": "concentration"},

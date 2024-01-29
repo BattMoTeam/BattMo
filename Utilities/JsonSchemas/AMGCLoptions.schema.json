@@ -1,5 +1,5 @@
 {
-  "$id": "file://./amgclOptions",
+  "$id": "file://./AMGCLoptions",
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "description": "options for amgcl linear solver, sources are in battmoDir()/MRST/mrst-solvers/linearsolvers/amgcl/dependencies/amgcl-4f260881c7158bc5aede881f5f0ed272df2ab580/ which we call AMGCLDIR in this file",
   "type": "object",
@@ -12,7 +12,7 @@
                      "enum" : ["regular", "cpr", "reset"],
 
                      "anyOf" : [{"const" : "regular"}]
-                     
+
                     },
 
     "QUESTION" : "Shall we keep the following properties or clean-up the mrst interface amgcl_matlab_simple?",
@@ -23,25 +23,25 @@
     "write_params" : {"type" : "boolean"},
     "reuse_mode"   : {"type" : "integer",
                       "description" : "1 : no reuse, 2 : reuse"},
-    
+
     "solver" : {"type" : "object",
                 "properties" : {
                   "type" : {"type" : "string",
                             "description" : "The type is processed through a wrapper described in AMGCLDIR/amgcl/solver/runtime.hpp.",
                             "description2" : "We only describe a subset here",
-                            "enum" : ["cg",         
-                                      "bicgstab",   
-                                      "bicgstabl",  
-                                      "gmres",      
-                                      "lgmres",     
-                                      "fgmres",     
-                                      "idrs",       
-                                      "richardson", 
+                            "enum" : ["cg",
+                                      "bicgstab",
+                                      "bicgstabl",
+                                      "gmres",
+                                      "lgmres",
+                                      "fgmres",
+                                      "idrs",
+                                      "richardson",
                                       "preonly"
                                      ]
                            }
                 },
-                  
+
                 "anyOf" : [
                   {"$ref": "#/$defs/gmres"},
                   {"$ref": "#/$defs/lgmres"}
@@ -61,18 +61,18 @@
                  "anyOf" : [
                      {"$ref": "#/$defs/amg"}
                  ]
-                   
+
                 }
   },
-  
+
   "$defs" : {
-    
+
     "gmres" : {
       "type" : "object",
 
       "description" : "parameters for gmres, full description in AMGCLDIR/amgcl/solver/gmres.hpp",
-      
-      "properties" : { 
+
+      "properties" : {
 
         "type" : {"const" : "gmres"},
         "M" : {"type" : "integer",
@@ -96,7 +96,7 @@
         "verbose" : {"type" : "boolean",
                      "description" : "verbose output",
                      "default" : false}
-        
+
       }
     },
 
@@ -104,9 +104,9 @@
       "type" : "object",
 
       "description" : "parameters for lgmres, full description in AMGCLDIR/amgcl/solver/lgmres.hpp",
-      
+
       "properties" : {
-        
+
         "type" : {"const" : "lgmres"},
         "M" : {"type" : "integer",
                "description" : "number of inner GMRES iterations per each outer iteration"},
@@ -122,14 +122,14 @@
         "tol" : {"type" : "number",
                  "description" : "target relative residual error"},
         "abstol" : {"type" : "number",
-                    "description" : "target absolute residual error"},                               
+                    "description" : "target absolute residual error"},
         "ns_search" : {"type" : "boolean",
                        "description" : "ignore the trivial solution x=0 when rhs is zero"},
         "verbose" : {"type" : "boolean",
                      "description" : "verbose output"}
       }
     },
-    
+
 
     "amg" : {
       "type" : "object",
@@ -141,7 +141,7 @@
         "class" : {"const" : "amg"},
 
         "coarsening" : {"$ref" : "#/$defs/coarsening"},
-        
+
         "relax" : {"$ref" : "#/$defs/relax"},
 
         "coarse_enough"  : {"type" : "integer",
@@ -163,7 +163,7 @@
         "pre_cycles"     : {"type" : "integer",
                             "description" : "number of cycles to make as part of preconditioning",
                             "default" : 1}
-        
+
       }
     },
 
@@ -182,9 +182,9 @@
       "anyOf" : [{"$ref" : "#/$defs/ruge_stuben"},
                  {"$ref" : "#/$defs/aggregation"},
                  {"$ref" : "#/$defs/smoothed_aggregation"}
-                ] 
+                ]
     },
-    
+
     "relax": {
       "type" : "object",
       "properties" : {"type" : {"type" : "string",
@@ -220,12 +220,12 @@
         "description" : "no parameters, see AMGCLDIR/amgcl/relaxation/spai0.hpp"
       }
     },
-    
-    
+
+
     "ruge_stuben" : {
       "type" : "object",
       "properties" : {
-        
+
         "type" : {"const" : "ruge_stuben",
                   "description" : "parameters are fully described in AMGCLDIR/amgcl/coarsening/ruge_stuben.hpp"},
 
@@ -242,7 +242,7 @@
                         "default" : 0.2}
       }
     },
-    
+
 
     "aggregation" : {
       "type" : "object",
@@ -270,7 +270,7 @@
                         }
       }
     },
-    
+
 
     "smoothed_aggregation" : {
       "type" : "object",
@@ -301,6 +301,3 @@
     }
   }
 }
-
-
-
