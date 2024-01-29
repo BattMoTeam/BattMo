@@ -216,7 +216,7 @@ classdef Electrolyte < BaseModel
             G = model.G;
             
             nf       = G.getNumberOfFaces();
-            intfaces = G.getIntFaceIndex();
+            intfaces = G.getIntFaces();
 
             j       = state.j;
             jFaceBc = state.jFaceBc;

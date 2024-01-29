@@ -15,10 +15,12 @@ classdef GenericGrid
 % - getVolumes
 % - getNumberOfCells
 % - getNumberOfFaces
+% - getIntFaces()
 % - getFaceAreas
 % - getGrad
 % - getDiv
 % - getTransHarmFace
+% - getBcTrans
 % - getTransBcHarmFace
 % - getTrans
 % - getCellFluxNorm
@@ -132,6 +134,12 @@ classdef GenericGrid
 
         end
 
+        function intfaces = getIntFaces(grid)
+
+            intfaces = grid.helpers.intfaces;
+            
+        end
+        
         function areas = getFaceAreas(grid)
 
             tpfaGeometry = grid.getTPFVgeometry();

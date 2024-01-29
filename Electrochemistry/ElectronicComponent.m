@@ -114,7 +114,7 @@ classdef ElectronicComponent < BaseModel
             G = model.G;
             
             nf       = G.getNumberOfFaces();
-            intfaces = model.getIntFaceIndex();
+            intfaces = G.getIntFaces();
 
             j       = state.j;
             jFaceBc = state.jFaceBc;

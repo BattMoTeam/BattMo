@@ -129,19 +129,23 @@ classdef Electrode < BaseModel
 
                 %% We setup the current transfers between CurrentCollector and ActiveMaterial
 
-                co_jCoupling  = co_phi*0.0; %NB hack to initialize zero ad
+                co_jCoupling = co_phi*0.0; %NB hack to initialize zero ad
                 cc_jCoupling = cc_phi*0.0; %NB hack to initialize zero ad
 
                 coupterm = model.couplingTerm;
                 face_cc = coupterm.couplingfaces(:, 1);
                 face_co = coupterm.couplingfaces(:, 2);
-                [teac, bccell_co, bcsgn_co] = elde.(co).G.getTransBcHarmFace(co_sigmaeff, face_co);
-                [tcc, bccell_cc, bcsgn_cc]  = elde.(cc).G.getTransBcHarmFace(cc_sigmaeff, face_cc);
-
+                
+                [tco, bccell_co, bcsgn_co] = elde.(co).G.getBcTrans(face_co);
+                tco = co_sigmaeff*tco;
+                
+                [tcc, bccell_cc, bcsgn_cc]  = elde.(cc).G.getBcTrans(face_cc);
+                tcc = cc_sigmaeff*tcc;
+                
                 bcphi_co = co_phi(bccell_co);
                 bcphi_cc = cc_phi(bccell_cc);
 
-                trans = 1./(1./teac + 1./tcc); % Harmonic average
+                trans = 1./(1./tco + 1./tcc); % Harmonic average
                 crosscurrent = trans.*(bcphi_cc - bcphi_co);
                 co_jCoupling = subsasgnAD(co_jCoupling,bccell_co, crosscurrent);
                 cc_jCoupling = subsasgnAD(cc_jCoupling,bccell_cc, -crosscurrent);

@@ -238,19 +238,19 @@ classdef Grid < GenericGrid
             extfaces.faces = cellextfacetbl.get('faces');
             extfaces.cells = cellextfacetbl.get('cells');
 
-            map = TensorMap();
-            map.fromTbl  = cellfacetbl;
-            map.toTbl    = cellextfacetbl;
-            map.mergefds = {'cells', 'faces'};
-
-            extfaces.halfTransParentInd = map.getDispatchInd();
-
             sgn = ones(cellextfacetbl.num, 1);
             f = extfaces.faces;
             c = extfaces.cells;
             sgn(grid.topology.faces.neighbors(f, 2) == c) = -1;
 
             extfaces.sgn = sgn;
+
+            map = TensorMap();
+            map.fromTbl  = cellfacetbl;
+            map.toTbl    = cellextfacetbl;
+            map.mergefds = {'cells', 'faces'};
+
+            extfaces.cellfacemap = map.getDispatchInd();
 
             faceextfacemap = zeros(facetbl.num, 1);
             faceextfacemap(extfacetbl.get('faces')) = (1 : extfacetbl.num)';

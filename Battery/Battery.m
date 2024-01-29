@@ -1244,7 +1244,7 @@ classdef Battery < BaseModel
             T = state.(thermal).T;
             phi = state.(elyte).phi;
             nf = model.(elyte).G.getNumberOfFaces();
-            intfaces = model.(elyte).G.getIntFaceIndex;
+            intfaces = model.(elyte).G.getIntFaces;
             if isa(T, 'ADI')
                 adsample = getSampleAD(T);
                 adbackend = model.AutoDiffBackend;
