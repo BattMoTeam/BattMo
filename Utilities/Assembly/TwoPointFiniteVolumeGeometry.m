@@ -1,4 +1,4 @@
-classdef TwoPointFiniteVolumeGeometry
+classdef TwoPointFiniteVolumeGeometry < handle
 
     properties (SetAccess = immutable)
 

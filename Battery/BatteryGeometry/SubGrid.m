@@ -1,4 +1,6 @@
-classdef SubGrid
+classdef SubGrid < GenericGrid
+
+% API functions, see GenericGrid
 
     properties
 
@@ -6,61 +8,17 @@ classdef SubGrid
         % The parent grid contains the updated TwoPointFiniteVolumeGeometry values (handle)
         parentGrid % Instance of Grid class
 
-        % Description of the topology of the sub-grid (local indexing) using MRST grid structures: The fieds are
-        % - topology.cells.facePos
-        % - topology.cells.faces
-        % - topology.cells.num
-        % - topology.faces.nodePos
-        % - topology.faces.nodes
-        % - topology.faces.num
-        % - topology.faces.neighbors
-        % - topology.nodes.num
-        % - topology.griddim
-        topology
-
         % Mapping structure from sub-grid to parent grid with fields (see function removeCells) and inverse
         % mappings. The inverse mappings are set up in the constructor (they do not have to be given there in the
         % input). For the moment, we only need invcellmap. It is used to setup the coupling terms.
         % - mappings.cellmap
         % - mappings.facemap
+        % - mappings.cellfacemap (mapping for cell-face indexing)
+        % - mappings.intfacemap
         % - mappings.nodemap
         % - mappings.invcellmap
         mappings
-
-        % Helper structures that are used to extract the half-transmissibilities from the parent structures and assemble the
-        % fluxes, with fields
-        % - helpers.diffop.grad                 (sparse matrix used in getGradient)
-        % - helpers.diffop.div                  (sparse matrix used in getDiv)
-        % - helpers.trans.D                     (sparse matrix used in getTransHarmFace method)
-        % - helpers.trans.P                     (sparse matrix used in getTransHarmFace method)
-        % - helpers.trans.S                     (sparse matrix used in getTransHarmFace method)
-        % - helpers.extfaces.faces              (index of the external faces, sub-grid indexing)
-        % - helpers.extfaces.cells              (index of the corresponding cells, sub-grid indexing)
-        % - helpers.extfaces.sgn                (sign of the corresponding cell-face pair)
-        % - helpers.extfaces.halfTransParentInd (index of the corresponding half-transmissibility values in parent grid indexing)
-        % - helpers.faceextfacemap              (mapping from face to extface, sub-grid indexing)
-        % - helpers.intfaces                    (index of internal faces)
-        helpers
-
-        % Operators to compute norm of the flux velocity at the cell centers, see getCellFlux
-        % - cellFluxOperators.P
-        % - cellFluxOperators.S
-        cellFluxOperators
-
-        % API functions are
-        % - getVolumes
-        % - getFaceAreas
-        % - getFaceCentroids
-        % - getGrad
-        % - getDiv
-        % - getTrans
-        % - getTransHarmFace
-        % - getTransBcHarmFace
-        % - getCellFluxNorm
-        % - getIntFaceIndex
-        % - getNumberOfCells
-        % - getNumberOfFaces
-
+        
     end
 
     methods
@@ -82,18 +40,23 @@ classdef SubGrid
             subG.parentGrid = parentGrid;
             subG.mappings   = mappings;
 
-            subG = subG.setupInverseMappings();
+            subG = subG.setupExtraMappings();
             subG = subG.setupHelpers();
 
         end
 
 
-        function subG = setupInverseMappings(subG)
+        function subG = setupExtraMappings(subG)
 
-            pnc     = subG.parentGrid.topology.cells.num;
-            nc      = subG.topology.cells.num;
-            cellmap = subG.mappings.cellmap;
+            pnc       = subG.parentGrid.topology.cells.num;
+            nc        = subG.topology.cells.num;
+            cellmap   = subG.mappings.cellmap;
+            facemap   = subG.mappings.facemap;
+            pintfaces = subG.parentGrid.helpers.intfaces;
 
+            intfaces = all(subG.topology.faces.neighbors> 0, 2);
+            intfaces = find(intfaces);
+            
             invcellmap = zeros(pnc, 1);
             invcellmap(cellmap) = (1 : nc)';
 
@@ -104,8 +67,51 @@ classdef SubGrid
             invcellmap = zeros(pnc, 1);
             invcellmap(cellmap) = (1 : nc)';
 
-            subG.mappings.invcellmap = invcellmap;
+            intfacefacetbl.faces    = intfaces;
+            intfacefacetbl.intfaces = (1 : numel(intfaces))';
+            intfacefacetbl = IndexArray(intfacefacetbl);
+            
+            facepfacetbl.pfaces = facemap;
+            facepfacetbl.faces = (1 : numel(facemap))';
+            facepfacetbl = IndexArray(facepfacetbl);
 
+            pintfacepfacetbl.pfaces = pintfaces;
+            pintfacepfacetbl.pintfaces = (1 : numel(pintfaces))';
+            pintfacepfacetbl = IndexArray(pintfacepfacetbl);
+            
+            intfacefacepfacetbl = crossIndexArray(intfacefacetbl, facepfacetbl, {'faces'});
+            intfacefacepfacepintfacetbl = crossIndexArray(intfacefacepfacetbl, pintfacepfacetbl, {'pfaces'});
+
+            intfacepintfacetbl = sortIndexArray(intfacefacepfacepintfacetbl, {'intfaces', 'pintfaces'});
+
+            intfacemap = intfacepintfacetbl.get('pintfaces');
+
+            cellpcelltbl.pcells = cellmap;
+            cellpcelltbl.cells = (1 : numel(cellmap));
+            cellpcelltbl = IndexArray(cellpcelltbl);
+
+            tbls = setupTables(subG.topology);
+            cellfacetbl = tbls.cellfacetbl;
+            cellfacetbl = cellfacetbl.addInd('cellfaces', (1 : cellfacetbl.num)');
+            
+            tbls = setupTables(subG.parentGrid.topology);
+            pcellpfacetbl = tbls.cellfacetbl;
+            pcellpfacetbl = replacefield(pcellpfacetbl, {{'faces', 'pfaces'}, {'cells', 'pcells'}});
+            pcellpfacetbl = pcellpfacetbl.addInd('pcellfaces', (1 : pcellpfacetbl.num)');
+
+            % We take cross products to obtain the pairing between cellfaces and pcellfaces.
+            tbl = crossIndexArray(cellfacetbl, facepfacetbl, {'faces'});
+            tbl = crossIndexArray(tbl, cellpcelltbl, {'cells'});
+            tbl = crossIndexArray(tbl, pcellpfacetbl, {'pcells', 'pfaces'});
+            
+            tbl = sortIndexArray(tbl, {'cellfaces', 'pcellfaces'});
+
+            cellfacemap = tbl.get('pcellfaces');
+
+            subG.mappings.intfacemap  = intfacemap;
+            subG.mappings.cellfacemap = cellfacemap;
+            subG.mappings.invcellmap  = invcellmap;
+            
         end
 
         function subG = setupHelpers(subG)
@@ -119,7 +125,8 @@ classdef SubGrid
             extfacetbl     = tbls.extfacetbl;
             intfacetbl     = tbls.intfacetbl;
             cellintfacetbl = tbls.cellintfacetbl;
-
+            cellfacetbl    = tbls.cellfacetbl;
+            
             sgn = ones(cellintfacetbl.num, 1);
             f = cellintfacetbl.get('faces');
             c = cellintfacetbl.get('cells');
@@ -194,19 +201,19 @@ classdef SubGrid
             extfaces.faces = cellextfacepcellpfacetbl.get('faces');
             extfaces.cells = cellextfacepcellpfacetbl.get('cells');
 
-            map = TensorMap();
-            map.fromTbl  = pcellpfacetbl;
-            map.toTbl    = cellextfacepcellpfacetbl;
-            map.mergefds = {'pcells', 'pfaces'};
-
-            extfaces.halfTransParentInd = map.getDispatchInd();
-
             sgn = ones(cellextfacepcellpfacetbl.num, 1);
             f = extfaces.faces;
             c = extfaces.cells;
             sgn(subG.topology.faces.neighbors(f, 2) == c) = -1;
 
             extfaces.sgn = sgn;
+
+            map = TensorMap();
+            map.fromTbl  = cellfacetbl;
+            map.toTbl    = cellextfacepcellpfacetbl;
+            map.mergefds = {'cells', 'faces'};
+
+            extfaces.cellfacemap = map.getDispatchInd();
 
             faceextfacemap = zeros(facetbl.num, 1);
             faceextfacemap(cellextfacepcellpfacetbl.get('faces')) = (1 : cellextfacepcellpfacetbl.num)';
@@ -223,7 +230,7 @@ classdef SubGrid
 
         function subG = setupCellFluxOperators(subG)
 
-            G = getMRSTgrid(subG);
+            G = subG.mrstFormat();
             subG.cellFluxOperators = getCellFluxOperatorsAll(G);
 
         end
@@ -243,7 +250,7 @@ classdef SubGrid
             G.faces.centroids = reshape(tg.faces.centroids, d, [])';
             G.faces.centroids = G.faces.centroids(m.facemap, :);
             G.faces.normals   = reshape(tg.faces.normals, d, [])';
-            G.faces.normals = G.faces.normals(m.facemap, :);
+            G.faces.normals   = G.faces.normals(m.facemap, :);
             G.faces.areas     = tg.faces.areas(m.facemap);
 
             G.nodes.coords = reshape(tg.nodes.coords, d, [])';
@@ -253,111 +260,63 @@ classdef SubGrid
 
         end
 
-        % API functions which should be used in simulations
 
-        function vols = getVolumes(subG)
+        function vols = getVolumes(grid)
 
-            pvols = subG.parentGrid.tPFVgeometry.cells.volumes;
-            cmap  = subG.mappings.cellmap;
+            tpfvGeometry = grid.getTPFVgeometry();
+            vols = tpfvGeometry.cells.volumes;
+            cmap = grid.mappings.cellmap;
 
-            vols = pvols(cmap);
-
-        end
-
-        function areas = getFaceAreas(subG)
-
-            pareas = subG.parentGrid.tPFVgeometry.faces.areas;
-            fmap  = subG.mappings.facemap;
-
-            areas = pareas(fmap);
+            vols = vols(cmap);
 
         end
 
-        function c = getFaceCentroids(subG)
+        function tpfvGeometry = getTPFVgeometry(grid)
+            tpfvGeometry = grid.parentGrid.tPFVgeometry;
+        end
+                
+        function areas = getFaceAreas(grid)
 
-            d = subG.parentGrid.topology.griddim;
-            c0 = reshape(subG.parentGrid.tPFVgeometry.faces.centroids, d, [])';
-            fmap = subG.mappings.facemap;
-            c = c0(fmap,:);
+            tpfvGeometry = grid.getTPFVgeometry();
+            areas = tpfvGeometry.faces.areas;
+            fmap  = grid.mappings.facemap;
+
+            areas = areas(fmap);
 
         end
 
-        function v = getGrad(subG, c)
-
-            v = subG.helpers.diffop.grad*c;
-
-        end
-
-        function u = getDiv(subG, v)
-
-            u = subG.helpers.diffop.div*v;
-
-        end
-
-        function u = getTrans(subG)
-
-            ind = subG.helpers.intfaces;
-            T   = subG.parentGrid.tPFVgeometry.T;
-            
-            u = T(ind);
-            
-        end
-
-        function u = getTransHarmFace(subG, c)
-        % Returns fluxes for each internal faces for the cell-valued vector c
-
-            t = subG.helpers.trans;
-            hT = subG.parentGrid.tPFVgeometry.hT;
-
-            u = 1 ./ (t.S * ( 1 ./ ((t.D*c) .* (t.P*hT))));
-
-        end
-
-        function [bchT, bccells, bcsgn] = getTransBcHarmFace(subG, c, bcfaces)
+        function [bchT, bccells, bcsgn] = getBcTrans(grid, bcfaces)
         % Returns half transmissibilities weighted with values of c and cell indexing for the given boundary faces
         % (bcfaces is given using subgrid indexing)
+            
+            tpfvGeometry = grid.getTPFVgeometry();
+            hT           = tpfvGeometry.hT;
+            cfmap        = grid.mappings.cellfacemap;
+            exf          = grid.helpers.extfaces;
 
-            hT   = subG.parentGrid.tPFVgeometry.hT;
-            exf  = subG.helpers.extfaces;
-
-            extfaceind = subG.helpers.faceextfacemap(bcfaces);
+            extfaceind = grid.helpers.faceextfacemap(bcfaces);
 
             bccells = exf.cells(extfaceind);
             bcsgn   = exf.sgn(extfaceind);
-            bchT    = hT(exf.halfTransParentInd(extfaceind)).*c;
+
+            hTind = exf.cellfacemap(extfaceind);
+            hTind = cfmap(hTind);
+            
+            bchT = hT(hTind);
 
         end
 
-        function jsq = getCellFluxNorm(subG, u)
+        function T = getTrans(grid)
 
-            P = subG.cellFluxOperators.P;
-            S = subG.cellFluxOperators.S;
+            tpfvGeometry = grid.getTPFVgeometry();
+            T            = tpfvGeometry.T;
+            
+            intfmap = grid.mappings.intfacemap;
 
-            j = P*u;
-            jsq = j.^2;
-            jsq = S*jsq;
-
-        end
-
-
-        function intfaces = getIntFaceIndex(subG)
-
-            intfaces = subG.helpers.intfaces;
+            T = T(intfmap);
 
         end
-
-        function nc = getNumberOfCells(subG)
-
-            nc = subG.topology.cells.num;
-
-        end
-
-        function nf = getNumberOfFaces(subG)
-
-            nf = subG.topology.faces.num;
-
-        end
-
+        
     end
 
 end
