@@ -14,7 +14,7 @@
   "anyOf" : [{"properties" : {"Geometry" : {"properties" : {"case" : {"const" : "1D"}}}},
               "$ref" : "#/$defs/1D"},
              {"properties" : {"Geometry" : {"properties" : {"case" : {"const" : "multiLayerPouch"}}}},
-              "$ref" : "#/$defs/multiLayerPouch"},            
+              "$ref" : "#/$defs/multiLayerPouch"},
              {"properties" : {"Geometry" : {"properties" : {"case" : {"const" : "2D-demo"}}}},
               "$ref" : "#/$defs/2D-demo" },
              {"properties" : {"Geometry" : {"properties" : {"case" : {"const" : "3D-demo"}}}},
@@ -26,7 +26,7 @@
             ],
 
   "$defs" : {
-    
+
     "layerSpecs" : {
       "properties" : {
         "NegativeElectrode" : {
@@ -104,9 +104,9 @@
                 "type" : "object",
                 "description" : "Discretization parameter for the electrolyte in the width and height directions",
                 "properties" : {
-                  "Nx" : {"type" : "Number"},
-                  "Ny" : {"type" : "Number"}}}}}}}]},    
-    
+                  "Nx" : {"type" : "number"},
+                  "Ny" : {"type" : "number"}}}}}}}]},
+
     "2D-demo" : {"$ref" : "#/$defs/layerSpecs",
                  "description" : "In this demo case the dimensions are fixed. Further parametrization should be done using the grid generator BatteryGeneratorP3D"},
 
@@ -129,7 +129,7 @@
               "tab" : {
                 "type" : "object",
                 "properties" : {
-                  "width" : {"type" : "number"}, 
+                  "width" : {"type" : "number"},
                   "height" : {"type" : "number"},
                   "Nw" : {"type" : "number",
                           "description": "discretization number in the width direction"}
@@ -143,7 +143,7 @@
               "tab" : {
                 "type" : "object",
                 "properties" : {
-                  "width" : {"type" : "number"}, 
+                  "width" : {"type" : "number"},
                   "height" : {"type" : "number"},
                   "Nw" : {"type" : "number",
                           "description": "discretization number in the width direction"}
@@ -160,8 +160,8 @@
            }
          }
         }
-        
-        
+
+
       ]
 
                 },
@@ -183,7 +183,7 @@
               "properties" : {
                 "diffusionModelType" : {
                   "const" : "full"}}}}]}}},
-    
+
     "jellyRoll" : {
       "properties" : {
         "Geometry" : {
@@ -238,7 +238,7 @@
               "type" : "integer",
               "description" : "the angle of the sector is computed as 2*pi/nas"}}}},
       "allOf" : [{"$ref" : "#/$defs/layerSpecs"}]},
-    
+
     "tabparams" : {
       "type" : "object",
       "description" : "Parameters for the tabs",
@@ -281,7 +281,3 @@
             {"properties" : {
               "usetab" : {
                 "const" : false}}}]}}}}}
-
-
-
-

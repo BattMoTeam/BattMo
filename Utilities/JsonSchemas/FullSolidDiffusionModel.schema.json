@@ -11,13 +11,13 @@
       "properties": {
         "diffusionCoefficient": {
           "allOf": [
-            {"$ref": "function.schema.json"},
+            {"$ref": "Function.schema.json"},
             { "properties" : {
               "argumentlist": {"type" : "array",
                                "prefixItems": [{"const": "soc"}]
                               },
               "symbol": {"const" : "D"}}}
-          ],      
+          ],
           "description": "Function that is used to compute the diffusion coefficient. If not given, we use a constant diffusion coefficient as computed in SolidDiffusionModel."
         },
         "saturationConcentration": {
@@ -39,4 +39,3 @@
     }
   ]
 }
-
