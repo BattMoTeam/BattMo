@@ -20,7 +20,7 @@ function plotBatteryGrid(model, varargin)
     hold on
     legtext = {};
 
-    G = model.G.getMRSTgrid();
+    G = model.G.mrstFormat();
 
     if G.griddim == 1
         edgeparams = {'linewidth', 2};
@@ -31,17 +31,17 @@ function plotBatteryGrid(model, varargin)
     end
 
     if model.include_current_collectors
-        plotGrid(model.(pe).(cc).G.getMRSTgrid(), facecolorname, colors(5,:), edgeparams{:});
+        plotGrid(model.(pe).(cc).G.mrstFormat(), facecolorname, colors(5,:), edgeparams{:});
         legtext{end+1} = 'positive electrode current collector';
     end
 
-    plotGrid(model.(pe).(co).G.getMRSTgrid(), facecolorname, colors(4,:), edgeparams{:});
-    plotGrid(model.(sep).G.getMRSTgrid(),     facecolorname, colors(3,:), edgeparams{:});
-    plotGrid(model.(ne).(co).G.getMRSTgrid(), facecolorname, colors(2,:), edgeparams{:});
+    plotGrid(model.(pe).(co).G.mrstFormat(), facecolorname, colors(4,:), edgeparams{:});
+    plotGrid(model.(sep).G.mrstFormat(),     facecolorname, colors(3,:), edgeparams{:});
+    plotGrid(model.(ne).(co).G.mrstFormat(), facecolorname, colors(2,:), edgeparams{:});
     legtext = [legtext, {'positive electrode active material', 'separator', 'negative electrode active material'}];
 
     if model.include_current_collectors
-        plotGrid(model.(ne).(cc).G.getMRSTgrid(), facecolorname, colors(1,:), edgeparams{:});
+        plotGrid(model.(ne).(cc).G.mrstFormat(), facecolorname, colors(1,:), edgeparams{:});
         legtext{end+1} = 'negative electrode current collector';
     end
 

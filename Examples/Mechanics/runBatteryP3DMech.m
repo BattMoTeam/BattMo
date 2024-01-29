@@ -120,7 +120,7 @@ time = cellfun(@(x) x.time, states);
 mrstModule add vemmech
 
 opt = struct('E', 1, 'nu', 0.3);
-G = model.G.getMRSTgrid();
+G = model.G.mrstFormat();
 G = createAugmentedGrid(G);
 G = computeGeometry(G);
 

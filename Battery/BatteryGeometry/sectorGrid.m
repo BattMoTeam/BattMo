@@ -65,7 +65,7 @@ function [output, G] = sectorGrid(params)
     rcells = (1 : radG.getNumberOfCells())';
     rcells(scells) = [];
 
-    mradG = radG.getMRSTgrid();
+    mradG = radG.mrstFormat();
     [G, cellmap, facemap] = removeCells(mradG, rcells);
 
     cutcelltbl.radcells = cellmap;

@@ -56,7 +56,7 @@ if doplot.jellyroll
     [model, inputparams, jsonstruct, gridGenerator] = setupModelFromJson(jsonstruct);
 
     figure
-    plotGrid(model.G.getMRSTgrid(), 'edgealpha', 0.1);
+    plotGrid(model.G.mrstFormat(), 'edgealpha', 0.1);
     
 end
 

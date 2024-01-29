@@ -406,7 +406,7 @@ classdef BatteryGeneratorMultilayerPouch < BatteryGenerator
 
             if gen.cap_tabs
 
-                tbls = setupSimpleTables(G.getMRSTgrid());
+                tbls = setupSimpleTables(G.mrstFormat());
                 celltbl     = tbls.celltbl;
                 facetbl     = tbls.facetbl;
                 cellfacetbl = tbls.cellfacetbl;

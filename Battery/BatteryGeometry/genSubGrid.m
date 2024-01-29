@@ -4,7 +4,7 @@ function subG = genSubGrid(parentGrid, cells)
     rcells = (1 : nc)';
     rcells(cells) = [];
 
-    pG = parentGrid.getMRSTgrid();
+    pG = parentGrid.mrstFormat();
     
     [G, cellmap, facemap, nodemap] = removeCells(pG, rcells);
 
