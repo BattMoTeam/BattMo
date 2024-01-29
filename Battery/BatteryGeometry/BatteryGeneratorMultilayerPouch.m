@@ -443,7 +443,8 @@ classdef BatteryGeneratorMultilayerPouch < BatteryGenerator
 
             else
 
-                fc = G.getFaceCentroids();
+                mrstG = G.mrstFormat();
+                fc = mrstG.faces.centroids;
                 yf = fc(:, 2);
 
                 switch params.name

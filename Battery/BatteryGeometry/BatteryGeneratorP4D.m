@@ -274,7 +274,9 @@ classdef BatteryGeneratorP4D < BatteryGenerator
         function inputparams = setupCurrentCollectorBcCoupTerm(gen, inputparams, params)
 
             G = inputparams.G;
-            fc = G.getFaceCentroids();
+            mrstG = G.mrstFormat();
+            fc = mrstG.faces.centroids;
+            
             yf = fc(:, 2);
 
             switch params.name

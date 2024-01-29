@@ -285,7 +285,8 @@ classdef BatteryGeneratorP3D < BatteryGenerator
 
             ne = 'NegativeElectrode';
             pe = 'PositiveElectrode';
-            fc = G.getFaceCentroids();
+            mrstG = G.mrstFormat();
+            fc = mrstG.faces.centroids;
             xf = fc(:, 1);
 
             switch params.electrode_type
