@@ -1,5 +1,5 @@
 {
-  "$id": "file://./function.json.schema",
+  "$id": "file://./Function.json.schema",
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "description": "A standard function input",
   "type": "object",

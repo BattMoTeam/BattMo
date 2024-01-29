@@ -1,5 +1,5 @@
 {
-  "$id": "file://./linearsolverreport.schema.json",
+  "$id": "file://./LinearSolverReport.schema.json",
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "description": "linear solver report",
   "type" : "object",
@@ -40,7 +40,7 @@
           "method" : {"const" : "separate-variable-gmres"}
          }}}}}
   ],
-  
+
   "$defs" : {
 
     "StepReportItem" : {"type" : "object",
@@ -77,15 +77,15 @@
 
                              }
                             },
-    
+
     "LinearSolver" : {"type" : "object",
                       "properties" : {
                         "Iterations"         : {"type" : "integer"},
-                        "Residual"           : {"type" : "number"}, 
-                        "SolverTime"         : {"type" : "number"}, 
-                        "LinearSolutionTime" : {"type" : "number"}, 
-                        "PreparationTime"    : {"type" : "number"}, 
-                        "PostProcessTime"    : {"type" : "number"}, 
+                        "Residual"           : {"type" : "number"},
+                        "SolverTime"         : {"type" : "number"},
+                        "LinearSolutionTime" : {"type" : "number"},
+                        "PreparationTime"    : {"type" : "number"},
+                        "PostProcessTime"    : {"type" : "number"},
                         "Converged"          : {"type" : "boolean"}
                       }
                      },
@@ -99,7 +99,3 @@
                       }
             }
 }
-
-
-
-

@@ -30,13 +30,13 @@
     },
     "exchangeCurrentDensity": {
       "allOf": [
-        {"$ref": "function.schema.json"},
+        {"$ref": "Function.schema.json"},
         { "properties" : {
           "argumentlist": {"type" : "array",
                            "prefixItems": [{"const": "soc"}]
                           },
           "symbol": {"const" : "j0"}}}
-        ],      
+        ],
       "description": "The exchange current at the electrode-electrolyte interface under equilibrium conditions. If not given, it is computed from the reaction rate constant"
     },
     "guestStoichiometry100": {
@@ -56,7 +56,7 @@
     },
     "openCircuitPotential": {
       "allOf": [
-        {"$ref": "function.schema.json"},
+        {"$ref": "Function.schema.json"},
         { "properties" : {
           "argumentlist": {"type" : "array",
                            "prefixItems": [{"const": "concentration"},

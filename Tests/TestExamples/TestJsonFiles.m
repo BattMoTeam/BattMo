@@ -23,8 +23,8 @@ classdef TestJsonFiles < matlab.unittest.TestCase
             {'cccv_control.json'           , 'ControlModel'}, ...
             {'cc_discharge_control.json'   , 'ControlModel'}, ...
             {'extra_output.json'           , 'Output'}      , ...
-            {'linear_solver_setup.json'    , 'Linearsolver'}, ...
-            {'silicongraphite.json'        , ''}, ...
+            {'linear_solver_setup.json'    , 'LinearSolver'}, ...
+            {'silicongraphite.json'        , 'Coating'}, ...
             {'simulation_parameters.json'  , 'TimeStepping'}, ...
             };
 
@@ -33,13 +33,12 @@ classdef TestJsonFiles < matlab.unittest.TestCase
     properties
 
         excludeJsonLintFile = {};
-        excludeJsonDataSet  = {''};
-        %excludeJsonDataFile = {'geometryMultiLayerPouch', 'linear_solver_setup', 'silicongraphite'};
-        excludeJsonDataFile = {'linear_solver_setup', 'silicongraphite'};
+        excludeJsonDataSet  = {'p2d_40_jl_ud'};
+        excludeJsonDataFile = {};
 
         lintModule = 'checkLint';
         validateModule = 'validateJsonFiles';
-        isPyOk;
+        isPySetup;
 
     end
 
@@ -53,10 +52,10 @@ classdef TestJsonFiles < matlab.unittest.TestCase
 
                 modulenames = {test.lintModule, test.validateModule};
                 loadModule(modulenames, 'setupPython', false);
-                test.isPyOk = true;
+                test.isPySetup = true;
 
             catch
-                test.isPyOk = false;
+                test.isPySetup = false;
             end
 
         end
@@ -69,7 +68,7 @@ classdef TestJsonFiles < matlab.unittest.TestCase
 
             ok = false;
 
-            if test.isPyOk
+            if test.isPySetup
                 dispif(mrstVerbose, 'Linting %s\n', jsonLintFile);
                 test.assumeFalse(contains(jsonLintFile, test.excludeJsonLintFile));
                 ok = py.(test.lintModule).check(jsonLintFile);
@@ -83,7 +82,7 @@ classdef TestJsonFiles < matlab.unittest.TestCase
 
             ok = false;
 
-            if test.isPyOk
+            if test.isPySetup
                 dispif(mrstVerbose, 'Validating %s\n', jsonDataSet);
                 test.assumeFalse(contains(jsonDataSet, test.excludeJsonDataSet));
                 ok = py.(test.validateModule).validate(battmoDir(), jsonDataSet);
@@ -97,7 +96,7 @@ classdef TestJsonFiles < matlab.unittest.TestCase
 
             ok = false;
 
-            if test.isPyOk
+            if test.isPySetup
                 jsonfile = fullfile(battmoDir(), 'Examples', 'JsonDataFiles', jsonDataFile{1});
                 schemafile = [jsonDataFile{2}, '.schema.json'];
 
