@@ -187,25 +187,13 @@ classdef ComputationalGraphTool
 
             varnameind = cgt.getVarNameIndex(varname);
 
-            varnameinds = dfs(A', varnameind);
-            varnameinds = find(varnameinds >= 0);
-            varnameinds = sort(varnameinds);
-
-            propfuncinds = max(A(:, varnameinds), [], 1);
-            staticinds = find(propfuncinds == 0);
-            staticinds = varnameinds(staticinds);
-            [~, ia, ic] = unique(propfuncinds, 'first');
-            ia = sort(ia);
-            propfuncinds = propfuncinds(ia);
-            varnameinds = varnameinds(ia);
-            varnameinds = varnameinds(propfuncinds > 0);
-            propfuncinds = propfuncinds(propfuncinds > 0);
+            [~, propfuncinds, propvarnameinds, staticinds] = getDependencyVarNameInds(varnameind, A);
 
             [staticinds, staticpropinds] = cgt.findStaticVarNameInds(staticinds);
 
             if ~isempty(staticinds)
-                propfuncinds = [staticpropinds, propfuncinds];
-                varnameinds  = [staticinds; varnameinds];
+                propfuncinds = [staticpropinds; propfuncinds];
+                varnameinds  = [staticinds; propvarnameinds];
             end
 
             propfuncs = cgt.model.propertyFunctionList(propfuncinds);
@@ -225,7 +213,7 @@ classdef ComputationalGraphTool
             [isok, ia] = ismember(varnameinds, allstaticinds);
 
             if any(isok)
-                staticpropinds = allstaticpropinds(ia(isok));
+                staticpropinds = allstaticpropinds(ia(isok))';
                 staticinds = allstaticinds(ia(isok))'; %
             else
                 staticpropinds = {};
@@ -812,7 +800,7 @@ end
 
 
 %{
-Copyright 2021-2024 SINTEF Industry, Sustainable Energy Technology
+Copyright 2021-2023 SINTEF Industry, Sustainable Energy Technology
 and SINTEF Digital, Mathematics & Cybernetics.
 
 This file is part of The Battery Modeling Toolbox BattMo
