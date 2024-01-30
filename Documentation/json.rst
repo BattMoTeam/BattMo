@@ -20,7 +20,7 @@ The main Simulation schema contains schemas for
 .. note::
 
    The different schemas may have common object. In the validation process, each schema is handled parallelly. The
-   function :battmofile:`mergeJsonStructs` can be used to compose different json files.
+   function :battmo:`mergeJsonStructs` can be used to compose different json files.
 
 For example a component (say the electolyte) has its geometrical and material properties specified in two separate
 schemas. Having separate schemas clarify the presentation and corresponds also to a convenient way to organize the

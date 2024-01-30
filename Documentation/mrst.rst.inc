@@ -39,5 +39,5 @@ users.
 
 see :ref:`here<visualization>`.              
               
-.. _MRSTwebpage: https://www.sintef.no/Projectweb/MRSTwebpage/
+.. _MRSTwebpage: https://www.sintef.no/projectweb/mrst/
 

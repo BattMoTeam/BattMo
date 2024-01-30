@@ -91,7 +91,7 @@ In this example we will fit five parameters:
 
 To set up these parameters in the fitting, we use the `ModelParameter`
 class in MRST. As can be seen in the source code found at
-:battmofile:`ModelParameter<Externals/mrst/mrst-autodiff/optimization/utils/ModelParameter.m>`,
+:mrstfile:`ModelParameter<mrst-autodiff/optimization/utils/ModelParameter.m>`,
 there are a several options that can be set. The most important ones are the ones used here:
 
 * the name of the parameter (arbitrary)

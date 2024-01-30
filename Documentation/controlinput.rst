@@ -167,7 +167,7 @@ control.
 
 We have to setup a model and an initial state. We use the function :battmo:`setupModelFromJson` to setup the model from
 a given json input. We load the sample input function we have used before, see source
-:battmofile:`here<Examples/jsondatafiles/sample_input.json>`. We replace the :code:`Control` field with a structure with
+:battmofile:`here<Examples/JsonDataFiles/sample_input.json>`. We replace the :code:`Control` field with a structure with
 a :code:`controlPolicy` given by a current control (:code:`CC`). We change the initial state of charge value (SOC) to
 0.5 so that we do not hit the upper current voltage value (the SOC given in the sample json is 0.99).
 

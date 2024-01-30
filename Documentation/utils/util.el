@@ -26,12 +26,12 @@ Temp."
 
 ;; example
 (defun editfunc ()
-  (while (re-search-forward (rx "Introduction") nil t)
-    (replace-match "hello")
+  (while (re-search-forward (rx "plotBatteryMesh") nil t)
+    (replace-match "plotBatteryGrid")
     )
   )
 
 ;; example
-;; (edit-mlx "../../Examples/NoteBooks/tutorial_2_changing_control_protocol_live.mlx" #'editfunc)
+(edit-mlx "../../Examples/Notebooks/tutorial_7_a_simple_p4d_model_live.mlx" #'editfunc)
 
 
