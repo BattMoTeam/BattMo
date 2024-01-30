@@ -511,7 +511,7 @@ classdef BatteryGeneratorMultilayerPouch < BatteryGenerator
                     cc_couplingfaces = inputparams.(elde).(cc).externalCouplingTerm.couplingfaces;
                     cc_couplingcells = inputparams.(elde).(cc).externalCouplingTerm.couplingcells;
 
-                    mappings = inputparams.G.mappings;
+                    mappings = inputparams.(elde).(cc).G.mappings;
                     couplingfaces = [couplingfaces; mappings.facemap(cc_couplingfaces)];
                     couplingcells = [couplingcells; mappings.cellmap(cc_couplingcells)];
                 end
