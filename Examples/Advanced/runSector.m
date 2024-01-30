@@ -4,6 +4,9 @@ if mrstPlatform('octave')
     end
 end
 
+clear
+close all
+
 % Setup mrst modules
 
 mrstModule add ad-core mrst-gui mpfa agmg
