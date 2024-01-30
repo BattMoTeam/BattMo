@@ -313,7 +313,7 @@ classdef BatteryGeneratorP4D < BatteryGenerator
             tabtbl.cells = gen.invcellmap(tabcellinds);
             tabtbl = IndexArray(tabtbl);
 
-            tbls = setupSimpleTables(pG.mrstFormat());
+            tbls = setupTables(pG.mrstFormat());
             cellfacetbl = tbls.cellfacetbl;
 
             tabcellfacetbl = crossIndexArray(tabtbl, cellfacetbl, {'cells'});

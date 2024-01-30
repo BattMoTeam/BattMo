@@ -131,7 +131,7 @@ function output = spiralGrid(params)
     cartG.nodes.coords(:, 1) = (rInner + y + (theta/(2*pi))*layerwidth).*cos(theta);
     cartG.nodes.coords(:, 2) = (rInner + y + (theta/(2*pi))*layerwidth).*sin(theta);
 
-    tbls = setupSimpleTables(cartG);
+    tbls = setupTables(cartG);
 
     % We add cartesian indexing for the nodes
     nodetbl.nodes = (1 : cartG.nodes.num)';
@@ -384,7 +384,7 @@ function output = spiralGrid(params)
     tag = repmat(tag, [nL, 1]);
 
     % setup the standard tables
-    tbls = setupSimpleTables(G);
+    tbls = setupTables(G);
     cellfacetbl = tbls.cellfacetbl;
 
     clear extfacetbl
