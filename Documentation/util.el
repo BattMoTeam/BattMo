@@ -63,14 +63,14 @@
   (browse-url "https://battmoteam.github.io/battmo-doc-test/")
   )
 
-(defun check-broken-links (url)
+(defun get-broken-links (url)
   
   (let* ((base-url "https://battmoteam.github.io/BattMo/")
          (url (concat base-url url))
          (wget-buffer (pop-to-buffer "*battmo check link*"))
          (broken-links nil))
 
-    ;;  The following are the basic flags you'll need:
+    ;;  The following are the basic flags you'll need for the wget commandd:
     ;;
     ;;  --spider stops wget from downloading the page.
     ;;  -r makes wget recursively follow each link on the page.
@@ -96,6 +96,31 @@
       )
     broken-links
     )
+  )
+
+(defun collect-all-broken-links ()
+  (let* ((build-dir (concat docdir "_build/html/"))
+         (html-files (cl-loop for file in (directory-files-recursively build-dir (rx ".html" eol)) collect (string-replace build-dir "" file)))
+         )
+    (cl-loop for file in html-files collect (list file (get-broken-links file)))
+    ))
+
+(setq results (collect-all-broken-links))
+
+(with-current-buffer (find-file-noselect "temp.org")
+  (erase-buffer)
+  (cl-loop for res in results do
+           (pcase res
+             (`(,file ,links) (if links
+                                  (progn
+                                    (insert "* " file "\n")
+                                    (cl-loop for link in links do (insert " - " link "\n"))
+                                    )
+                                )
+              )
+             )
+           )
+  (save-buffer)
   )
 
 ;; (setq res (check-broken-links "basicusage.html"))
