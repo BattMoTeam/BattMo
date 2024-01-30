@@ -528,7 +528,7 @@ classdef PorousTransportLayer < ElectronicComponent
 
             vf = state.volumeFractions{phInd.liquid};
             D  = model.sp.OH.D;
-            tc = op.harmFaceBC((vf.^tau).*D, bcfaces);
+            tc = model.G.getTransBcHarmFace((vf.^tau).*D, bcfaces);
             diffOHbcFlux = tc.*(cOHbc - cOH(bccells));
 
             % We compute OH boundary convection flux (should be consistent with what is implemented in method
@@ -911,14 +911,16 @@ classdef PorousTransportLayer < ElectronicComponent
 
         function state = updateLiquidMassFlux(model, state)
 
+            G = model.G;
+            
             rho = state.liqrho;
             v   = state.phaseFluxes{model.phaseInd.liquid};
 
             % upwind version
             % state.liquidMassFlux = assembleUpwindFlux(model, v, rho);
             % non upwind version:
-            op = model.operators;
-            state.liquidMassFlux = (1./op.T).*op.harmFace(rho).*v;
+            
+            state.liquidMassFlux = (1./G.getTrans).*G.getTransHarmFace(rho).*v;
 
         end
 
