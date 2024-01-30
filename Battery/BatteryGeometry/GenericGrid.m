@@ -24,9 +24,9 @@ classdef GenericGrid
 % - getTransBcHarmFace
 % - getTrans
 % - getCellFluxNorm
-    
-    
-    
+
+
+
 
     properties (SetAccess = protected)
 
@@ -92,7 +92,7 @@ classdef GenericGrid
         function tpfvGeometry = getTPFVgeometry()
             error('abstract method')
         end
-        
+
 
         function G = mrstFormat(grid)
         % Returns MRST grid that can be used for plotting
@@ -113,7 +113,7 @@ classdef GenericGrid
 
         end
 
-        
+
         function vols = getVolumes(grid)
 
             tpfaGeometry = grid.getTPFVgeometry();
@@ -122,14 +122,14 @@ classdef GenericGrid
         end
 
         function nc = getNumberOfCells(grid)
-            
+
             nc = grid.topology.cells.num;
-            
+
         end
 
 
         function nf = getNumberOfFaces(grid)
-            
+
             nf = grid.topology.faces.num;
 
         end
@@ -137,9 +137,9 @@ classdef GenericGrid
         function intfaces = getIntFaces(grid)
 
             intfaces = grid.helpers.intfaces;
-            
+
         end
-        
+
         function areas = getFaceAreas(grid)
 
             tpfaGeometry = grid.getTPFVgeometry();
@@ -148,7 +148,7 @@ classdef GenericGrid
         end
 
         function v = getGrad(grid, c)
-            
+
             v = grid.helpers.diffop.grad*c;
 
         end
@@ -156,6 +156,17 @@ classdef GenericGrid
         function u = getDiv(grid, v)
 
             u = grid.helpers.diffop.div*v;
+
+        end
+
+        function v = getFaceUpstream(grid, flag, x)
+
+            intfaces = grid.helpers.intfaces;
+            N        = grid.topology.faces.neighbors;
+            nc       = grid.getNumberOfCells();
+            nf       = numel(intfaces);
+
+            v = faceUpstr(flag, x, N(intfaces, :), [nf, nc]);
 
         end
 
@@ -174,7 +185,7 @@ classdef GenericGrid
 
             tpfvGeometry = grid.getTPFVgeometry();
             hT           = tpfvGeometry.hT;
-            
+
             exf = grid.helpers.extfaces;
 
             extfaceind = grid.helpers.faceextfacemap(bcfaces);
@@ -182,27 +193,27 @@ classdef GenericGrid
             bccells = exf.cells(extfaceind);
             bcsgn   = exf.sgn(extfaceind);
             hTind   = exf.cellfacemap(extfaceind);
-            
+
             bchT = hT(hTind);
-            
+
         end
-        
+
         function [bchT, bccells, bcsgn] = getTransBcHarmFace(grid, c, bcfaces)
 
             [bchT, bccells, bcsgn] = grid.getBcTrans(bcfaces);
-            
+
             bchT = bchT.*c(bccells);
 
         end
-        
+
         function T = getTrans(grid)
 
             tpfvGeometry = grid.getTPFVgeometry();
             T = tpfvGeometry.T;
-            
+
         end
 
-        
+
         function jsq = getCellFluxNorm(grid, u)
 
             P = grid.cellFluxOperators.P;

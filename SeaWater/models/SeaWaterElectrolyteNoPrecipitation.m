@@ -62,7 +62,6 @@ classdef SeaWaterElectrolyteNoPrecipitation < ElectronicComponent
             % TODO : We need to setup operators structure for upstream. We should fix that.
             rock.perm = 1;
             rock.poro = 1;            
-            model.operators = setupOperatorsTPFA(G, rock);
             
         end
 
@@ -363,8 +362,8 @@ classdef SeaWaterElectrolyteNoPrecipitation < ElectronicComponent
 
 
         function state = updateMigFluxes(model, state)
+
             species = model.species;
-            op      = model.operators;
             C       = model.qpCompositionMatrix;
             F       = model.con.F;
 
@@ -382,7 +381,7 @@ classdef SeaWaterElectrolyteNoPrecipitation < ElectronicComponent
                         migcoef_n = migcoef_n + C(indqp, indsp).*transNums{indsol}./(species(indsp).z.*F);
                     end
                 end
-                qpMigFluxes{indqp} = (op.faceUpstr(j > 0, migcoef_p) + op.faceUpstr(j < 0, migcoef_n)).*j;
+                qpMigFluxes{indqp} = (model.G.getFaceUpstream(j > 0, migcoef_p) + model.G.getFaceUpstream(j < 0, migcoef_n)).*j;
             end
 
             state.qpMigFluxes = qpMigFluxes;
