@@ -48,11 +48,6 @@ classdef ComputationalGraphTool
             cgt.staticprops   = staticprops;
             cgt.isok        = false;
             if size(A, 1) == numel(varNameList)
-                try
-                    require('matlab_bgl');
-                catch
-                    mrstModule add matlab_bgl
-                end
                 cgt = cgt.setupComputationalGraph();
             else
                 fprintf('\nThe graph could not be ordered properly due a mismatch in the variable declarations\nFix that before using the graph in computations\n');

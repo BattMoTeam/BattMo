@@ -1,4 +1,4 @@
-mrstModule add ad-core mpfa matlab_bgl
+mrstModule add ad-core mpfa
 
 mrstDebug(20);
 

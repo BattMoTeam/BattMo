@@ -8,8 +8,6 @@ close all
 % load MRST modules
 mrstModule add ad-core mrst-gui mpfa
 
-addpath(genpath('/home/xavier/Programs/matlab_bgl/'));
-
 %% Setup the properties of Li-ion battery materials and cell design
 jsonstruct = parseBattmoJson('ParameterData/ParameterSets/Safari2009/fullmodel.json');
 

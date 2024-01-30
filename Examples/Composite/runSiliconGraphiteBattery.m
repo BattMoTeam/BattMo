@@ -4,7 +4,7 @@ close all
 
 %% Import the required modules from MRST
 % load MRST modules
-mrstModule add ad-core matlab_bgl
+mrstModule add ad-core
 
 %% Shortcuts
 % We define shorcuts for the sub-models.
