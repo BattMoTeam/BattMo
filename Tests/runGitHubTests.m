@@ -32,13 +32,22 @@ MRST_BATCH = true;
 
 run('../startupBattMo.m')
 
+% mrstSettings('set', 'allowDL', true);
+% mrstSettings('set', 'promptDL', false);
+
+import matlab.unittest.TestSuite;
+import matlab.unittest.selectors.*;
+import matlab.unittest.parameters.Parameter;
+import matlab.unittest.TestRunner
+
+
 %% Run tests
 
 % Setup
 mrstVerbose 'off';
-stopOnError = false;
+stopOnError        = false;
 runTestsInParallel = false;
-doAssertSuccess = true;
+doAssertSuccess    = true;
 
 % Define which test cases to run
 testCases = {
@@ -49,6 +58,13 @@ testCases = {
 
 % Execute tests
 suite = testsuite(testCases);
+
+% import matlab.unittest.TestSuite;
+% import matlab.unittest.selectors.*;
+% suite = TestSuite.fromClass(?TestRunExamples);
+% selector = HasParameter('Property', 'filename', 'Value', 'runJellyRoll');
+% suite = suite.selectIf(selector);
+
 runner = testrunner('textoutput');
 
 if stopOnError
