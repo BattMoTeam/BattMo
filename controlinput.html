@@ -333,7 +333,7 @@ control.</p>
 </div>
 <p>We have to setup a model and an initial state. We use the function <a class="reference external" href="https://github.com/BattMoTeam/BattMo/blob/dev/Utilities/JsonUtils/setupModelFromJson.m">setupModelFromJson</a> to setup the model from
 a given json input. We load the sample input function we have used before, see source
-<a class="reference external" href="https://github.com/BattMoTeam/BattMo/blob/dev/Examples/jsondatafiles/sample_input.json">here</a>. We replace the <code class="code docutils literal notranslate"><span class="pre">Control</span></code> field with a structure with
+<a class="reference external" href="https://github.com/BattMoTeam/BattMo/blob/dev/Examples/JsonDataFiles/sample_input.json">here</a>. We replace the <code class="code docutils literal notranslate"><span class="pre">Control</span></code> field with a structure with
 a <code class="code docutils literal notranslate"><span class="pre">controlPolicy</span></code> given by a current control (<code class="code docutils literal notranslate"><span class="pre">CC</span></code>). We change the initial state of charge value (SOC) to
 0.5 so that we do not hit the upper current voltage value (the SOC given in the sample json is 0.99).</p>
 <div class="highlight-matlab notranslate"><div class="highlight"><pre><span></span><span class="n">jsonstruct</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="n">parseBattmoJson</span><span class="p">(</span><span class="s">&#39;Examples/jsondatafiles/sample_input.json&#39;</span><span class="p">);</span>

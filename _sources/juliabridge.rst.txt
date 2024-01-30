@@ -94,7 +94,7 @@ The json input :code:`p2d_40_jl_ud.json` contains functional parameters. For exa
              "c",
              "T"]}} 
 
-The full listing is available :battmofile:`here<Examples/julia/jsonfiles/p2d_40_jl_ud.json>`. For the :code:`function`
+The full listing is available :battmofile:`here<Examples/JsonDataFiles/p2d_40_jl_ud.json>`. For the :code:`function`
 property, the string that is given to compute the corresponding value (ionic conductivity in the electrolyte in the
 snippet above) should be written with a Julia syntax, as it is passed directly to the julia solver. This should not be a
 big issue for Matlab users because the Julia syntax is very close to Matlab for such arithmetic expressions. We plan to
