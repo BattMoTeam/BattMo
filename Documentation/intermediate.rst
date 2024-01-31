@@ -97,7 +97,7 @@ We plot the model using :battmo:`plotBatteryGrid` (note that the different axis 
 We find a extensive set of plotting functions in `MRST <https://www.sintef.no/Projectweb/MRST/>`_. You may be interested
 to have a look at the `Visualization Tutorial
 <https://www.sintef.no/projectweb/mrst/documentation/tutorials/visualization-tutorial/>`_. Let us use the
-:mrstfile:`plotGrid<core/plotting/plotGrid.m>` and :mrstfile:`plotCellData<mrst-core/plotting/plotCellData.m>` to plot the
+:mrstfile:`plotGrid<mrst-core/plotting/plotGrid.m>` and :mrstfile:`plotCellData<mrst-core/plotting/plotCellData.m>` to plot the
 surface particle concentrations in both electrode at a given time step.
           
 ..
