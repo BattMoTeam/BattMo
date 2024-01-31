@@ -318,7 +318,7 @@ add_module_names=False
 
 
 repo_url    = 'https://github.com/BattMoTeam/BattMo'
-branch_name = 'dev'
+branch_name = 'main'
 
 def find_battmo_file(filename):
     ignored_dirs = ['output', 'Externals', '.git', '.github']
@@ -391,7 +391,7 @@ roles.register_local_role('battmorawfile', BattMoRawFileRole())
 
 
 mrst_repo_url    = 'https://bitbucket.org/mrst/'
-mrst_branch_name = 'battmo-dev'
+mrst_branch_name = 'battmo'
 
 
 class MrstFileRole(ReferenceRole):
