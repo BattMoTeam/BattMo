@@ -201,16 +201,16 @@
   <section id="battery-geometries">
 <h1>Battery Geometries<a class="headerlink" href="#battery-geometries" title="Permalink to this heading"></a></h1>
 <p>We support multidimensional geometries (from 1D to 3D). The geometry is part of the input data and must be setup up
-before a simulation. The base class <a class="reference external" href="https://github.com/BattMoTeam/BattMo/blob/dev/Battery/BatteryGeometry/BatteryGenerator.m">BatteryGenerator</a> provides a template to construct the battery geometry,
+before a simulation. The base class <a class="reference external" href="https://github.com/BattMoTeam/BattMo/blob/main/Battery/BatteryGeometry/BatteryGenerator.m">BatteryGenerator</a> provides a template to construct the battery geometry,
 which includes a mesh for all the components (Coatings, sepators, current collectors…) and the coupling between those
 as the main output.</p>
 <p>To create our grids, we rely essentially on the grid generation functions provided by <a class="reference external" href="https://www.sintef.no/Projectweb/MRST/">MRST</a>. We use also the visualization tools available there, see <a class="reference internal" href="seealso.html#visualization"><span class="std std-ref">here</span></a>.</p>
 <p>Standard geometries can often be parameterized, meaning that a small set parameters is enough to construct the whole
 geometrical model. We have implemented some standard geometries and provide here examples with an illustration and a
 list of the parameters used to produce this illustration. The parameters can be passed through json interface and aref
-described in some more detail in the <a class="reference external" href="https://github.com/BattMoTeam/BattMo/blob/dev/Utilities/JsonSchemas/Geometry.schema.json">geometry json schema</a>.</p>
+described in some more detail in the <a class="reference external" href="https://github.com/BattMoTeam/BattMo/blob/main/Utilities/JsonSchemas/Geometry.schema.json">geometry json schema</a>.</p>
 <section id="batterygeneratorp2d">
-<h2><a class="reference external" href="https://github.com/BattMoTeam/BattMo/blob/dev/Battery/BatteryGeometry/BatteryGeneratorP2D.m">BatteryGeneratorP2D</a><a class="headerlink" href="#batterygeneratorp2d" title="Permalink to this heading"></a></h2>
+<h2><a class="reference external" href="https://github.com/BattMoTeam/BattMo/blob/main/Battery/BatteryGeometry/BatteryGeneratorP2D.m">BatteryGeneratorP2D</a><a class="headerlink" href="#batterygeneratorp2d" title="Permalink to this heading"></a></h2>
 <p>The geometrical model is 1D. Here, for the sake of the illustration, we plot a corresponding 3D model.</p>
 <a class="reference internal image-reference" href="_images/1dmodel.png"><img alt="_images/1dmodel.png" src="_images/1dmodel.png" style="width: 80%;" /></a>
 <table class="docutils align-default" id="id2">
@@ -275,7 +275,7 @@ described in some more detail in the <a class="reference external" href="https:/
 </table>
 </section>
 <section id="batterygeneratorp3d">
-<span id="dgeometry"></span><h2><a class="reference external" href="https://github.com/BattMoTeam/BattMo/blob/dev/Battery/BatteryGeometry/BatteryGeneratorP3D.m">BatteryGeneratorP3D</a><a class="headerlink" href="#batterygeneratorp3d" title="Permalink to this heading"></a></h2>
+<span id="dgeometry"></span><h2><a class="reference external" href="https://github.com/BattMoTeam/BattMo/blob/main/Battery/BatteryGeometry/BatteryGeneratorP3D.m">BatteryGeneratorP3D</a><a class="headerlink" href="#batterygeneratorp3d" title="Permalink to this heading"></a></h2>
 <p>The geometrical model is 2D.</p>
 <a class="reference internal image-reference" href="_images/runbattery2d.png"><img alt="_images/runbattery2d.png" src="_images/runbattery2d.png" style="width: 80%;" /></a>
 <table class="docutils align-default" id="id3">
@@ -344,7 +344,7 @@ described in some more detail in the <a class="reference external" href="https:/
 </table>
 </section>
 <section id="batterygeneratorp4d">
-<span id="id1"></span><h2><a class="reference external" href="https://github.com/BattMoTeam/BattMo/blob/dev/Battery/BatteryGeometry/BatteryGeneratorP4D.m">BatteryGeneratorP4D</a><a class="headerlink" href="#batterygeneratorp4d" title="Permalink to this heading"></a></h2>
+<span id="id1"></span><h2><a class="reference external" href="https://github.com/BattMoTeam/BattMo/blob/main/Battery/BatteryGeometry/BatteryGeneratorP4D.m">BatteryGeneratorP4D</a><a class="headerlink" href="#batterygeneratorp4d" title="Permalink to this heading"></a></h2>
 <p>A 3D geometrical model consising only of one layer with one tab on each current collector.</p>
 <a class="reference internal image-reference" href="_images/runbattery3d.png"><img alt="_images/runbattery3d.png" src="_images/runbattery3d.png" style="width: 80%;" /></a>
 <p>An illustration with different scalings for each axes which shows the different component:</p>
@@ -455,7 +455,7 @@ described in some more detail in the <a class="reference external" href="https:/
 </table>
 </section>
 <section id="spiralbatterygenerator">
-<span id="jellyroll"></span><h2><a class="reference external" href="https://github.com/BattMoTeam/BattMo/blob/dev/Battery/BatteryGeometry/SpiralBatteryGenerator.m">SpiralBatteryGenerator</a><a class="headerlink" href="#spiralbatterygenerator" title="Permalink to this heading"></a></h2>
+<span id="jellyroll"></span><h2><a class="reference external" href="https://github.com/BattMoTeam/BattMo/blob/main/Battery/BatteryGeometry/SpiralBatteryGenerator.m">SpiralBatteryGenerator</a><a class="headerlink" href="#spiralbatterygenerator" title="Permalink to this heading"></a></h2>
 <p>A geometry model for jelly rolls. Here, we have used parameters corresponding to th 4680 model.</p>
 <a class="reference internal image-reference" href="_images/jellyrollmodel.png"><img alt="_images/jellyrollmodel.png" src="_images/jellyrollmodel.png" style="width: 80%;" /></a>
 <table class="docutils align-default" id="id5">
@@ -537,12 +537,12 @@ described in some more detail in the <a class="reference external" href="https:/
 </tr>
 </tbody>
 </table>
-<p>There are parameters for the tabs that we do not detail here, see <a class="reference external" href="https://github.com/BattMoTeam/BattMo/blob/dev/Utilities/JsonSchemas/Geometry.schema.json#L242">json
+<p>There are parameters for the tabs that we do not detail here, see <a class="reference external" href="https://github.com/BattMoTeam/BattMo/blob/main/Utilities/JsonSchemas/Geometry.schema.json#L242">json
 schema</a>. The json source is available
-<a class="reference external" href="https://github.com/BattMoTeam/BattMo/blob/dev/Examples/Documentation/jsonfiles/4680-geometry.json">here</a>.</p>
+<a class="reference external" href="https://github.com/BattMoTeam/BattMo/blob/main/Examples/Documentation/jsonfiles/4680-geometry.json">here</a>.</p>
 </section>
 <section id="coincellbatterygenerator">
-<span id="coincell"></span><h2><a class="reference external" href="https://github.com/BattMoTeam/BattMo/blob/dev/Battery/BatteryGeometry/CoinCellBatteryGenerator.m">CoinCellBatteryGenerator</a><a class="headerlink" href="#coincellbatterygenerator" title="Permalink to this heading"></a></h2>
+<span id="coincell"></span><h2><a class="reference external" href="https://github.com/BattMoTeam/BattMo/blob/main/Battery/BatteryGeometry/CoinCellBatteryGenerator.m">CoinCellBatteryGenerator</a><a class="headerlink" href="#coincellbatterygenerator" title="Permalink to this heading"></a></h2>
 <p>A geometrical model for a coin cell.</p>
 <a class="reference internal image-reference" href="_images/coincell.png"><img alt="_images/coincell.png" src="_images/coincell.png" style="width: 80%;" /></a>
 <table class="docutils align-default" id="id7">

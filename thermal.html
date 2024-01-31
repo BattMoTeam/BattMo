@@ -201,7 +201,7 @@
              
   <section id="thermal-simulation">
 <h1>Thermal Simulation<a class="headerlink" href="#thermal-simulation" title="Permalink to this heading"></a></h1>
-<p>BattMo support simulations with thermal coupling. Here, we look at the example given in <a class="reference external" href="https://github.com/BattMoTeam/BattMo/blob/dev/Examples/Advanced/runThermalExample.m">runThermalExample</a></p>
+<p>BattMo support simulations with thermal coupling. Here, we look at the example given in <a class="reference external" href="https://github.com/BattMoTeam/BattMo/blob/main/Examples/Advanced/runThermalExample.m">runThermalExample</a></p>
 <p>First we setup our model, in the same way as before, by merging different json inputs. We use a <a class="reference internal" href="geometryinput.html#id1"><span class="std std-ref">simple 3D
 model</span></a> mainly used for demonstration.</p>
 <div class="highlight-matlab notranslate"><div class="highlight"><pre><span></span><span class="c">%% Setup material properties</span>
@@ -234,7 +234,7 @@ model</span></a> mainly used for demonstration.</p>
 </pre></div>
 </div>
 <p>In the json structure
-<a class="reference external" href="https://github.com/BattMoTeam/BattMo/blob/dev/ParameterData/BatteryCellParameters/LithiumIonBatteryCell/lithium_ion_battery_nmc_graphite.json#L4">lithium_ion_battery_nmc_graphite.json</a>,
+<a class="reference external" href="https://github.com/BattMoTeam/BattMo/blob/main/ParameterData/BatteryCellParameters/LithiumIonBatteryCell/lithium_ion_battery_nmc_graphite.json#L4">lithium_ion_battery_nmc_graphite.json</a>,
 the flag <code class="code docutils literal notranslate"><span class="pre">use_thermal</span></code> is set to <code class="code docutils literal notranslate"><span class="pre">true</span></code>, which means that the simulation will include thermal effects.</p>
 <p>The thermal parameters are given for each component. They typically consists of</p>
 <ul class="simple">
