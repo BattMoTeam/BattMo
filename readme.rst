@@ -50,7 +50,7 @@ of freedom. The 2012 **open source** version of the `AGMG
 Tutorials
 ---------
 
-Tutorials are presented in `documentation <https://BattMoTeam.github.io/BattMo-doc/>`_.
+Tutorials are presented in `documentation <https://BattMoTeam.github.io/BattMo/>`_.
 
 Acknowledgements
 -----------------
