@@ -12,7 +12,7 @@ The Battery Modelling Toolbox (**BattMo**) is a resource for continuum modelling
 For the latest information including video tutorials and project gallery, please visit the project webpage:
 `https://batterymodel.com <https://batterymodel.com/>`_
 
-The documentation is found at the `documentation webpage <https://battmoteam.github.io/BattMo-doc/>`_. We try to do our best to keep it up-to-date.
+The documentation is found at the `documentation webpage <https://battmoteam.github.io/BattMo/>`_. We try to do our best to keep it up-to-date.
 
 .. raw:: html
 
