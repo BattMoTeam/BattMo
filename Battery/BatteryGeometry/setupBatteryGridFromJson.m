@@ -58,7 +58,7 @@ function [inputparams, gridGenerator] = setupBatteryGridFromJson(inputparams, js
         gen = BatteryGeneratorMultilayerPouch();
 
         gen.pouch_width  = jsonstruct.(geom).width;
-        gen.pouch_height = jsonstruct.(geom).height;
+        gen.pouch_height = jsonstruct.(geom).length;
 
         gen.unit_cell_thickness = [jsonstruct.(ne).(cc).thickness ; ...
                                    jsonstruct.(ne).(co).thickness ; ...
@@ -74,8 +74,8 @@ function [inputparams, gridGenerator] = setupBatteryGridFromJson(inputparams, js
 
 
         gen.tab_width     = jsonstruct.(geom).tab.width;
-        gen.ne_tab_height = jsonstruct.(geom).tab.(ne).height;
-        gen.pe_tab_height = jsonstruct.(geom).tab.(pe).height;
+        gen.ne_tab_height = jsonstruct.(geom).tab.(ne).length;
+        gen.pe_tab_height = jsonstruct.(geom).tab.(pe).length;
 
         gen.n_layers = jsonstruct.(geom).nLayers;
 

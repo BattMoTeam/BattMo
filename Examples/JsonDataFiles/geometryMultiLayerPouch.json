@@ -3,16 +3,16 @@
     "case": "multiLayerPouch",
     "nLayers": 5,
     "width": 0.1,
-    "height": 0.1,
+    "length": 0.1,
     "tab": {
       "width": 0.05,
       "Nx": 3,
       "NegativeElectrode": {
-        "height": 0.04,
+        "length": 0.04,
         "Ny": 2
       },
       "PositiveElectrode": {
-        "height": 0.02,
+        "length": 0.02,
         "Ny": 2
       }
     },
