@@ -31,11 +31,5 @@ Here is video which guides you through the installation in details
 .. youtube:: -XVppzyNSs0
               
 For a detailed guided installation of git, you can consult this `video <https://www.youtube.com/watch?v=FMXpZjXhaFY>`_
-            
-.. note::
-   
-   For large models, iterative solvers are necessary. The **open source** version from 2012 of the `AGMG
-   <http://agmg.eu/>`_ iterative solver from **2012** is provided as a `submodule <https://github.com/batmoTeam/agmg>`_. We
-   plan to integrate newer open source iterative solvers such as `AMGCL <https://github.com/ddemidov/amgcl>`_
 
 .. _MRST: https://www.sintef.no/Projectweb/MRST/
