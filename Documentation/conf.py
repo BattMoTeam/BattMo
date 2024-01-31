@@ -41,8 +41,9 @@ extensions = ['sphinxcontrib.globalsubs',
               'sphinx.ext.intersphinx',
               'sphinx.ext.autosectionlabel',
               'sphinxcontrib.youtube',
-              'sphinx_collapse'
-              ]
+              'sphinx_collapse',
+              'sphinx_design']
+
 bibtex_bibfiles = ['refs.bib']
 
 autosectionlabel_prefix_document = True
