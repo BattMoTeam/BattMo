@@ -1,7 +1,8 @@
-doplot.illustration1D = true;
-doplot.illustration3D = true;
-doplot.jellyroll      = true;
-doplot.coincell       = true;
+doplot.illustration1D  = false;
+doplot.illustration3D  = false;
+doplot.jellyroll       = false;
+doplot.coincell        = false;
+doplot.multilayerpouch = true;
 
 if doplot.illustration1D
 
@@ -57,6 +58,22 @@ if doplot.jellyroll
 
     figure
     plotGrid(model.G.mrstFormat(), 'edgealpha', 0.1);
+    
+end
+
+if doplot.multilayerpouch
+
+    jsonstruct_material = parseBattmoJson(fullfile('ParameterData','BatteryCellParameters','LithiumIonBatteryCell','lithium_ion_battery_nmc_graphite.json'));
+    jsonstruct_material.include_current_collectors = true;    
+    
+    % load json struct for geometry
+    jsonstruct_geometry = parseBattmoJson('Examples/JsonDataFiles/geometryMultiLayerPouch.json');
+    
+    jsonstruct = mergeJsonStructs({jsonstruct_material, jsonstruct_geometry});
+
+    [model, inputparams, jsonstruct, gridGenerator] = setupModelFromJson(jsonstruct);
+
+    plotBatteryGrid(model);
     
 end
 
