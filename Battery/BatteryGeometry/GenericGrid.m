@@ -66,7 +66,7 @@ classdef GenericGrid
 
     methods
 
-        function grid = Grid(G, varargin)
+        function grid = GenericGrid(G)
         % We initialize the grid using a MRST grid structure
 
             topology.cells.facePos   = G.cells.facePos;
@@ -79,6 +79,8 @@ classdef GenericGrid
             topology.nodes.num       = G.nodes.num;
             topology.griddim         = G.griddim;
 
+            grid.topology = topology;
+            
         end
 
 

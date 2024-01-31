@@ -141,7 +141,7 @@ Source code for runElectrolyser
       fd       = fields{ifield};
       submodel = models{ifield};
   
-      x    = submodel.G.cells.centroids;
+      x    = submodel.grid.cells.centroids;
       
       for itimes = 1 : numel(times);
           

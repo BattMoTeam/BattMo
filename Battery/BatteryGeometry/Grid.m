@@ -31,20 +31,10 @@ classdef Grid < GenericGrid
         function grid = Grid(G, varargin)
         % We initialize the grid using a MRST grid structure
 
+            grid = grid@GenericGrid(G);
+
             opt = struct('faceArea', []);
             opt = merge_options(opt, varargin{:});
-
-            topology.cells.facePos   = G.cells.facePos;
-            topology.cells.faces     = G.cells.faces;
-            topology.cells.num       = G.cells.num;
-            topology.faces.nodePos   = G.faces.nodePos;
-            topology.faces.nodes     = G.faces.nodes;
-            topology.faces.num       = G.faces.num;
-            topology.faces.neighbors = G.faces.neighbors;
-            topology.nodes.num       = G.nodes.num;
-            topology.griddim         = G.griddim;
-
-            grid.topology = topology;
 
             grid = grid.setupHelpers();
 

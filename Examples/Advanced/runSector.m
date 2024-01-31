@@ -181,7 +181,7 @@ simulatePackedProblem(problem);
 
 %% Plot states
 figure
-plotToolbar(model.G.mrstFormat(), states);
+plotToolbar(model.grid, states);
 view([0,-1,0]);
 axis tight
 

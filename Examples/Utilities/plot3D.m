@@ -1,5 +1,5 @@
 thermal = 'ThermalModel';
-G = model.G;
+G = model.grid;
 
 
 h = figure(); 

@@ -1,5 +1,3 @@
-G = model.G;
-
 ne    = 'NegativeElectrode';
 pe    = 'PositiveElectrode';
 eac   = 'ActiveMaterial';
@@ -28,19 +26,19 @@ for ind = 1 : numel(states)
     figure(h);
     
     subplot(2, 2, 1);
-    plotCellData(model.(elyte).G, state.(elyte).c);
+    plotCellData(model.(elyte).grid, state.(elyte).c);
     colorbar
     view([30, 32]);
     title('cLi (elyte)');
     
     subplot(2, 2, 2);
-    plotCellData(model.(ne).(am).G, state.(ne).(am).c);
+    plotCellData(model.(ne).(am).grid, state.(ne).(am).c);
     colorbar
     view([30, 32]);
     title('cLi (negative elde)');
     
     subplot(2, 2, 3);
-    plotCellData(model.(pe).(am).G, state.(pe).(am).c);
+    plotCellData(model.(pe).(am).grid, state.(pe).(am).c);
     colorbar
     view([30, 32]);
     title('cLi (positive elde)');

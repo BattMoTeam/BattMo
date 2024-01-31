@@ -7,7 +7,6 @@ elyte   = 'Electrolyte';
 cc      = 'CurrentCollector';
 
 Ts = cellfun(@(state) state.(thermal).T, states, 'uniformoutput', false);
-G = model.G;
 
 if strcmp(modelcase, '1D')
 
@@ -68,10 +67,10 @@ if strcmp(modelcase, '1D')
                 end
                 
                 if (k < 3)
-                    plot(submodel.G.cells.centroids(:, 1), var, '* - ')
+                    plot(submodel.grid.cells.centroids(:, 1), var, '* - ')
                 else
-                    iface = all(submodel.G.faces.neighbors > 0, 2); 
-                    plot(submodel.G.faces.centroids(iface, 1), var, '* - ')
+                    iface = all(submodel.grid.faces.neighbors > 0, 2); 
+                    plot(submodel.grid.faces.centroids(iface, 1), var, '* - ')
                 end
                 
                 subtitle(ffield)
@@ -81,8 +80,8 @@ if strcmp(modelcase, '1D')
      
         % plot temperature
         subplot(2, 3, 5);
-        cc = model.G.cells.centroids(:, 1);
-        vols = model.G.getVolumes();
+        cc = model.grid.cells.centroids(:, 1);
+        vols = model.grid.cells.volumes;
         plot(cc, state.(thermal).T, '* - ');
         if doFixedTempScale
             axis([min(c), max(c), tm, tM]);
@@ -135,7 +134,7 @@ tm = tm - 1e-1*(tM - tm);
         
 for i = 1 : numel(Ts)
     clf        
-    plotCellData(G, Ts{i}, 'edgealpha', 0.1)
+    plotCellData(model.grid, Ts{i}, 'edgealpha', 0.1)
     caxis([tm, tM]);
     titlestr = sprintf('Temperature, time = %g hour', states{i}.time/hour);
     title(titlestr)

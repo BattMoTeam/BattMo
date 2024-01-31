@@ -107,9 +107,9 @@ surface particle concentrations in both electrode at a given time step.
           
    state = output.states{20};
    E = state.Control.E
-   plotGrid(model.G, 'facecolor', 'none', 'edgealpha', 0.1)
-   plotCellData(model.NegativeElectrode.Coating.G, state.NegativeElectrode.Coating.ActiveMaterial.SolidDiffusion.cSurface/(mol/litre))
-   plotCellData(model.PositiveElectrode.Coating.G, state.PositiveElectrode.Coating.ActiveMaterial.SolidDiffusion.cSurface/(mol/litre))
+   plotGrid(model.grid, 'facecolor', 'none', 'edgealpha', 0.1)
+   plotCellData(model.NegativeElectrode.Coating.grid, state.NegativeElectrode.Coating.ActiveMaterial.SolidDiffusion.cSurface/(mol/litre))
+   plotCellData(model.PositiveElectrode.Coating.grid, state.PositiveElectrode.Coating.ActiveMaterial.SolidDiffusion.cSurface/(mol/litre))
    title('Particle Surface Lithium Concentration');
 
 .. figure:: img/3dconc.png

@@ -90,13 +90,13 @@ The grid (or mesh) is one of the most used properties of the model, which can be
 
 .. code:: matlab
 
-   output.model.G
+   output.model.grid
 
 We can see that the grid is stored as a structure with information about the cells, faces, nodes, etc. The values of the state quantities (e.g. concentration and electric potential) are calculated at the centroids of the cells. To plot the positions of the centroids, we can use the following commands:
 
 .. code:: matlab
 
-   x = output.model.G.cells.centroids;
+   x = output.model.grid.cells.centroids;
    plot(x, zeros(size(x)), 'o')
    xlabel('Position  /  m')
 
@@ -106,9 +106,9 @@ For example, if we want to plot the grid associated with the different submodels
 
 .. code:: matlab
 
-   x_ne = output.model.NegativeElectrode.G.cells.centroids;
-   x_sep = output.model.Separator.G.cells.centroids;
-   x_pe = output.model.PositiveElectrode.G.cells.centroids;
+   x_ne  = output.model.NegativeElectrode.grid.cells.centroids;
+   x_sep = output.model.Separator.grid.cells.centroids;
+   x_pe  = output.model.PositiveElectrode.grid.cells.centroids;
 
    plot(x_ne, zeros(size(x_ne)), 'o')
    hold on
@@ -162,7 +162,7 @@ Let's plot the concentration in the electrolyte at timestep 10. We can plot the 
 
 .. code:: matlab
 
-   x = output.model.G.cells.centroids
+   x = output.model.grid.cells.centroids
    c = output.states{10}.Electrolyte.c
 
    plot(x,c)
@@ -175,7 +175,7 @@ Let's plot the concentration in the electrolyte at timestep 10. We can plot the 
 
    timestep = 10
 
-   plotCellData(output.model.G, output.states{timestep}.Electrolyte.c)
+   plotCellData(output.model.grid, output.states{timestep}.Electrolyte.c)
    xlabel('Position  /  m')
    ylabel('Concentration  /  mol \cdot m^{-3}')
 

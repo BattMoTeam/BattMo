@@ -1,7 +1,7 @@
-doplot.illustration1D  = false;
-doplot.illustration3D  = false;
-doplot.jellyroll       = false;
-doplot.coincell        = false;
+doplot.illustration1D  = true;
+doplot.illustration3D  = true;
+doplot.jellyroll       = true;
+doplot.coincell        = true;
 doplot.multilayerpouch = true;
 
 if doplot.illustration1D
@@ -57,7 +57,7 @@ if doplot.jellyroll
     [model, inputparams, jsonstruct, gridGenerator] = setupModelFromJson(jsonstruct);
 
     figure
-    plotGrid(model.G.mrstFormat(), 'edgealpha', 0.1);
+    plotGrid(model.grid, 'edgealpha', 0.1);
     
 end
 

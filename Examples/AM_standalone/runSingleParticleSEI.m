@@ -44,12 +44,11 @@ inputparams.(an).(sei).np = 1;
 
 xlength = 57e-6;
 G = cartGrid(1, xlength);
-G = computeGeometry(G);
-inputparams.(an).G = G;
+inputparams.(an).G = Grid(G);
 
 inputparams.(ct).(sd).N  = 10;
 inputparams.(ct).(sd).np = 1;
-inputparams.(ct).G = G;
+inputparams.(ct).G = Grid(G);
 
 model = SingleParticleSEI(inputparams);
 model = model.equipModelForComputation();
