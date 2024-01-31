@@ -68,8 +68,8 @@ for itestcase = 1 : numel(testCases)
     if strcmp(testCase, 'TestRunExamples')
     
         selector = HasParameter('Property', 'filename', 'Value', 'runJellyRoll');
-        selector = HasParameter('Property', 'filename', 'Value', 'runBatteryLinearSolve') & selector;
-        selector = HasParameter('Property', 'filename', 'Value', 'runBatteryPrecondTestP2D') & selector;
+        selector = HasParameter('Property', 'filename', 'Value', 'runBatteryLinearSolve') | selector;
+        selector = HasParameter('Property', 'filename', 'Value', 'runBatteryPrecondTestP2D') | selector;
         suite = suite.selectIf(~selector);
     end
     
