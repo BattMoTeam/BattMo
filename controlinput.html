@@ -202,7 +202,7 @@
              
   <section id="control-models">
 <h1>Control models<a class="headerlink" href="#control-models" title="Permalink to this heading"></a></h1>
-<p>The battery <a class="reference external" href="https://github.com/BattMoTeam/BattMo/blob/main/Battery/Battery.m#L19">model</a> contains a <em>Control</em> sub-model, see the overall model structure
+<p>The battery <a class="reference external" href="https://github.com/BattMoTeam/BattMo/blob/dev/Battery/Battery.m#L19">model</a> contains a <em>Control</em> sub-model, see the overall model structure
 <a class="reference internal" href="architecture.html#battmo-model-architecture"><span class="std std-ref">description</span></a>. The Control model determine the control <em>values</em> and <em>type</em>.</p>
 <p>At a <strong>given time</strong>, there are in general two control types:</p>
 <ul class="simple">
@@ -220,7 +220,7 @@ can be implemented.</p>
 <li><p>Constant Current Charge (CCCharge)</p></li>
 <li><p>Constant Current Constant Voltage (CCCV)</p></li>
 </ul>
-<p>The parameters for each of the model are described in the json schema <a class="reference external" href="https://github.com/BattMoTeam/BattMo/blob/main/Utilities/JsonSchemas/ControlModel.schema.json">ControlModel.schema.json</a>. Let us review them by looking at examples. For all controls, we have
+<p>The parameters for each of the model are described in the json schema <a class="reference external" href="https://github.com/BattMoTeam/BattMo/blob/dev/Utilities/JsonSchemas/ControlModel.schema.json">ControlModel.schema.json</a>. Let us review them by looking at examples. For all controls, we have
 a given <code class="code docutils literal notranslate"><span class="pre">CRate</span></code>. The property <code class="code docutils literal notranslate"><span class="pre">controlPolicy</span></code> is used to set the control model.</p>
 <p><strong>Constant Current Discharge</strong></p>
 <p>Before the simulation starts, the capacity of the battery is computed. The battery capacity value is used to compute the
@@ -237,7 +237,7 @@ where the current is gradually increased from zero to the targeted given input c
 <span class="p">}</span>
 </pre></div>
 </div>
-<p>For the dataset given <a class="reference external" href="https://github.com/BattMoTeam/BattMo/blob/main/ParameterData/BatteryCellParameters/LithiumIonBatteryCell/lithium_ion_battery_nmc_graphite.json">here</a>, we obtain the
+<p>For the dataset given <a class="reference external" href="https://github.com/BattMoTeam/BattMo/blob/dev/ParameterData/BatteryCellParameters/LithiumIonBatteryCell/lithium_ion_battery_nmc_graphite.json">here</a>, we obtain the
 following result.</p>
 <figure class="align-center" id="id1">
 <a class="reference external image-reference" href="_images/controlExampleCCDischarge.png"><img alt="_images/controlExampleCCDischarge.png" src="_images/controlExampleCCDischarge.png" style="width: 70%;" /></a>
@@ -257,7 +257,7 @@ this case, we can include a rampup time. As an example,</p>
 <span class="p">}</span>
 </pre></div>
 </div>
-<p>For the dataset given <a class="reference external" href="https://github.com/BattMoTeam/BattMo/blob/main/ParameterData/BatteryCellParameters/LithiumIonBatteryCell/lithium_ion_battery_nmc_graphite.json">here</a>, we obtain the
+<p>For the dataset given <a class="reference external" href="https://github.com/BattMoTeam/BattMo/blob/dev/ParameterData/BatteryCellParameters/LithiumIonBatteryCell/lithium_ion_battery_nmc_graphite.json">here</a>, we obtain the
 following result.</p>
 <figure class="align-center" id="id2">
 <a class="reference external image-reference" href="_images/controlExampleCCCharge.png"><img alt="_images/controlExampleCCCharge.png" src="_images/controlExampleCCCharge.png" style="width: 70%;" /></a>
@@ -290,7 +290,7 @@ the lower cutoff voltage limit is reached. Then we switch to constant voltage co
 <li><p>We use a constant voltage given by the cutoff value and monitor the current derivative <span class="math notranslate nohighlight">\(\frac{dI}{dt}\)</span>. When
 this value is lower than <code class="code docutils literal notranslate"><span class="pre">dIdtLimit</span></code>, we start again the discharge by going to step 1.</p></li>
 </ol>
-<p>We iterate this process for the given number of cycles. For the dataset given <a class="reference external" href="https://github.com/BattMoTeam/BattMo/blob/main/ParameterData/BatteryCellParameters/LithiumIonBatteryCell/lithium_ion_battery_nmc_graphite.json">here</a>, we obtain the
+<p>We iterate this process for the given number of cycles. For the dataset given <a class="reference external" href="https://github.com/BattMoTeam/BattMo/blob/dev/ParameterData/BatteryCellParameters/LithiumIonBatteryCell/lithium_ion_battery_nmc_graphite.json">here</a>, we obtain the
 following result.</p>
 <figure class="align-center" id="id3">
 <a class="reference external image-reference" href="_images/controlExampleCCCV.png"><img alt="_images/controlExampleCCCV.png" src="_images/controlExampleCCCV.png" style="width: 70%;" /></a>
@@ -298,11 +298,11 @@ following result.</p>
 <p><span class="caption-text">CCCV control</span><a class="headerlink" href="#id3" title="Permalink to this image"></a></p>
 </figcaption>
 </figure>
-<p>The script used to generate the figures is available <a class="reference external" href="https://github.com/BattMoTeam/BattMo/blob/main/Examples/Documentation/plotControlExamples_doc.m">here</a>.</p>
+<p>The script used to generate the figures is available <a class="reference external" href="https://github.com/BattMoTeam/BattMo/blob/dev/Examples/Documentation/plotControlExamples_doc.m">here</a>.</p>
 </section>
 <section id="control-model-description">
 <h2>Control model description<a class="headerlink" href="#control-model-description" title="Permalink to this heading"></a></h2>
-<p>Beside json input, the function <a class="reference external" href="https://bitbucket.org/mrst/mrst-autodiff/src/battmo/ad-core/simulators/simulateScheduleAD.m">simulateScheduleAD</a> is used to run a simulation. It requires</p>
+<p>Beside json input, the function <a class="reference external" href="https://bitbucket.org/mrst/mrst-autodiff/src/battmo-dev/ad-core/simulators/simulateScheduleAD.m">simulateScheduleAD</a> is used to run a simulation. It requires</p>
 <ul class="simple">
 <li><p>A <strong>model</strong>, which knows how to setup and solve the governing equations of our problem,</p></li>
 <li><p>An <strong>initial state</strong>,</p></li>
@@ -333,9 +333,9 @@ control.</p>
 <span class="n">schedule</span><span class="p">.</span><span class="n">control</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="n">control</span><span class="p">;</span>
 </pre></div>
 </div>
-<p>We have to setup a model and an initial state. We use the function <a class="reference external" href="https://github.com/BattMoTeam/BattMo/blob/main/Utilities/JsonUtils/setupModelFromJson.m">setupModelFromJson</a> to setup the model from
+<p>We have to setup a model and an initial state. We use the function <a class="reference external" href="https://github.com/BattMoTeam/BattMo/blob/dev/Utilities/JsonUtils/setupModelFromJson.m">setupModelFromJson</a> to setup the model from
 a given json input. We load the sample input function we have used before, see source
-<a class="reference external" href="https://github.com/BattMoTeam/BattMo/blob/main/Examples/JsonDataFiles/sample_input.json">here</a>. We replace the <code class="code docutils literal notranslate"><span class="pre">Control</span></code> field with a structure with
+<a class="reference external" href="https://github.com/BattMoTeam/BattMo/blob/dev/Examples/JsonDataFiles/sample_input.json">here</a>. We replace the <code class="code docutils literal notranslate"><span class="pre">Control</span></code> field with a structure with
 a <code class="code docutils literal notranslate"><span class="pre">controlPolicy</span></code> given by a current control (<code class="code docutils literal notranslate"><span class="pre">CC</span></code>). We change the initial state of charge value (SOC) to
 0.5 so that we do not hit the upper current voltage value (the SOC given in the sample json is 0.99).</p>
 <div class="highlight-matlab notranslate"><div class="highlight"><pre><span></span><span class="n">jsonstruct</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="n">parseBattmoJson</span><span class="p">(</span><span class="s">&#39;Examples/jsondatafiles/sample_input.json&#39;</span><span class="p">);</span>
@@ -348,15 +348,15 @@ a <code class="code docutils literal notranslate"><span class="pre">controlPolic
 <span class="n">model</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="n">setupModelFromJson</span><span class="p">(</span><span class="n">jsonstruct</span><span class="p">);</span>
 </pre></div>
 </div>
-<p>We use the default state initialisation method given by the method <code class="code docutils literal notranslate"><span class="pre">setupInitialState</span></code> in the <a class="reference external" href="https://github.com/BattMoTeam/BattMo/blob/main/Battery/Battery.m">Battery</a> model.</p>
+<p>We use the default state initialisation method given by the method <code class="code docutils literal notranslate"><span class="pre">setupInitialState</span></code> in the <a class="reference external" href="https://github.com/BattMoTeam/BattMo/blob/dev/Battery/Battery.m">Battery</a> model.</p>
 <div class="highlight-matlab notranslate"><div class="highlight"><pre><span></span><span class="n">initstate</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="n">model</span><span class="p">.</span><span class="n">setupInitialState</span><span class="p">(</span><span class="n">jsonstruct</span><span class="p">);</span>
 </pre></div>
 </div>
-<p>Now, we can run the simulation for the given schedule, model and initial state using <a class="reference external" href="https://bitbucket.org/mrst/mrst-autodiff/src/battmo/ad-core/simulators/simulateScheduleAD.m">simulateScheduleAD</a></p>
+<p>Now, we can run the simulation for the given schedule, model and initial state using <a class="reference external" href="https://bitbucket.org/mrst/mrst-autodiff/src/battmo-dev/ad-core/simulators/simulateScheduleAD.m">simulateScheduleAD</a></p>
 <div class="highlight-matlab notranslate"><div class="highlight"><pre><span></span><span class="p">[</span><span class="o">~</span><span class="p">,</span><span class="w"> </span><span class="n">states</span><span class="p">]</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="n">simulateScheduleAD</span><span class="p">(</span><span class="n">initstate</span><span class="p">,</span><span class="w"> </span><span class="n">model</span><span class="p">,</span><span class="w"> </span><span class="n">schedule</span><span class="p">);</span>
 </pre></div>
 </div>
-<p>The complete source can be found here <a class="reference external" href="https://github.com/BattMoTeam/BattMo/blob/main/Examples/Documentation/exampleControl_doc.m">exampleControl_doc</a>.</p>
+<p>The complete source can be found here <a class="reference external" href="https://github.com/BattMoTeam/BattMo/blob/dev/Examples/Documentation/exampleControl_doc.m">exampleControl_doc</a>.</p>
 <figure class="align-center">
 <a class="reference external image-reference" href="_images/exampleControl.png"><img alt="_images/exampleControl.png" src="_images/exampleControl.png" style="width: 70%;" /></a>
 </figure>
