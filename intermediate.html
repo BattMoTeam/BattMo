@@ -8,6 +8,7 @@
       <link rel="stylesheet" type="text/css" href="_static/pygments.css" />
       <link rel="stylesheet" type="text/css" href="_static/css/theme.css" />
       <link rel="stylesheet" type="text/css" href="_static/sphinx_collapse.css" />
+      <link rel="stylesheet" type="text/css" href="_static/design-style.1e8bd061cd6da7fc9cf755528e8ffc24.min.css" />
       <link rel="stylesheet" type="text/css" href="_static/css/custom.css" />
 
   
@@ -22,6 +23,7 @@
         <script src="_static/_sphinx_javascript_frameworks_compat.js"></script>
         <script src="_static/doctools.js"></script>
         <script src="_static/sphinx_highlight.js"></script>
+        <script src="_static/design-tabs.js"></script>
     <script src="_static/js/theme.js"></script>
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
@@ -268,7 +270,7 @@
 </figure>
 <p>We find a extensive set of plotting functions in <a class="reference external" href="https://www.sintef.no/Projectweb/MRST/">MRST</a>. You may be interested
 to have a look at the <a class="reference external" href="https://www.sintef.no/projectweb/mrst/documentation/tutorials/visualization-tutorial/">Visualization Tutorial</a>. Let us use the
-<a class="reference external" href="https://bitbucket.org/mrst/core/src/battmo/plotting/plotGrid.m">plotGrid</a> and <a class="reference external" href="https://bitbucket.org/mrst/mrst-core/src/battmo/plotting/plotCellData.m">plotCellData</a> to plot the
+<a class="reference external" href="https://bitbucket.org/mrst/mrst-core/src/battmo/plotting/plotGrid.m">plotGrid</a> and <a class="reference external" href="https://bitbucket.org/mrst/mrst-core/src/battmo/plotting/plotCellData.m">plotCellData</a> to plot the
 surface particle concentrations in both electrode at a given time step.</p>
 <div class="highlight-matlab notranslate"><div class="highlight"><pre><span></span><span class="n">state</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="n">output</span><span class="p">.</span><span class="n">states</span><span class="p">{</span><span class="mi">20</span><span class="p">};</span>
 <span class="n">E</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="n">state</span><span class="p">.</span><span class="n">Control</span><span class="p">.</span><span class="n">E</span>
@@ -314,8 +316,8 @@ inserted in place. Hence, when we write</p>
 </div>
 <p>the <code class="code docutils literal notranslate"><span class="pre">jsonstruct</span></code> that is obtained is equivalent to the one where we would have copied and paste the content of
 <a class="reference external" href="https://github.com/BattMoTeam/BattMo/blob/main/ParameterData/MaterialProperties/Graphite/graphite.json">graphite.json</a>.</p>
-<div class="sphinx_collapse docutils container">
-<input class="sphinx_collapse__input" id="04c87220-4189-4672-93b5-8877fedc0184" name="04c87220-4189-4672-93b5-8877fedc0184" type="checkbox"><label class="sphinx_collapse__label" for="04c87220-4189-4672-93b5-8877fedc0184"><i class="sphinx_collapse__icon"></i>jsonstruct detail</label><div class="sphinx_collapse__content docutils container">
+<div class="sphinx_collapse docutils">
+<input class="sphinx_collapse__input" id="89c278f3-45da-4106-b621-d0fe196f6646" name="89c278f3-45da-4106-b621-d0fe196f6646" type="checkbox"><label class="sphinx_collapse__label" for="89c278f3-45da-4106-b621-d0fe196f6646"><i class="sphinx_collapse__icon"></i>jsonstruct detail</label><div class="sphinx_collapse__content docutils">
 <div class="highlight-json notranslate"><div class="highlight"><pre><span></span><span class="nt">&quot;NegativeElectrode&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
 <span class="w">  </span><span class="nt">&quot;Coating&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
 <span class="w">    </span><span class="nt">&quot;ActiveMaterial&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
