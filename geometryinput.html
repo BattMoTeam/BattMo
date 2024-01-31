@@ -112,6 +112,7 @@
 <li class="toctree-l2"><a class="reference internal" href="#batterygeneratorp4d">BatteryGeneratorP4D</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#spiralbatterygenerator">SpiralBatteryGenerator</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#coincellbatterygenerator">CoinCellBatteryGenerator</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#batterygeneratormultilayerpouch">BatteryGeneratorMultilayerPouch</a></li>
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="advancedtopics.html">Advanced Usage</a><ul>
@@ -556,7 +557,7 @@ schema</a>. The json source is available
 </colgroup>
 <thead>
 <tr class="row-odd"><th class="head"><p>Component</p></th>
-<th class="head"><p>Name</p></th>
+<th class="head"><p>Key name</p></th>
 <th class="head"><p>Thickness</p></th>
 <th class="head"><p>Diameter</p></th>
 <th class="head"><p>Nl</p></th>
@@ -619,6 +620,107 @@ schema</a>. The json source is available
 </tr>
 </tbody>
 </table>
+</section>
+<section id="batterygeneratormultilayerpouch">
+<h2><a class="reference external" href="https://github.com/BattMoTeam/BattMo/blob/main/Battery/BatteryGeometry/BatteryGeneratorMultilayerPouch.m">BatteryGeneratorMultilayerPouch</a><a class="headerlink" href="#batterygeneratormultilayerpouch" title="Permalink to this heading"></a></h2>
+<p>A geometrical model for a multi-layer pouch cell.</p>
+<a class="reference internal image-reference" href="img/multilayerpouch.png"><img alt="img/multilayerpouch.png" src="img/multilayerpouch.png" style="width: 80%;" /></a>
+<table class="docutils align-default" id="id9">
+<caption><span class="caption-text">Parameters for each component : thickness and number of cell (Nl) for a layer, with the values used in the plot above</span><a class="headerlink" href="#id9" title="Permalink to this table"></a></caption>
+<colgroup>
+<col style="width: 25%" />
+<col style="width: 25%" />
+<col style="width: 25%" />
+<col style="width: 25%" />
+</colgroup>
+<thead>
+<tr class="row-odd"><th class="head"><p>Component</p></th>
+<th class="head"><p>Name</p></th>
+<th class="head"><p>Thickness</p></th>
+<th class="head"><p>Nl</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p>Negative electrode current collector</p></td>
+<td><p><code class="code docutils literal notranslate"><span class="pre">NegativeCurrentCollector</span></code></p></td>
+<td><p>10 µm</p></td>
+<td><p>2</p></td>
+</tr>
+<tr class="row-odd"><td><p>Negative electrode coating</p></td>
+<td><p><code class="code docutils literal notranslate"><span class="pre">NegativeCoating</span></code></p></td>
+<td><p>100 µm</p></td>
+<td><p>3</p></td>
+</tr>
+<tr class="row-even"><td><p>Separator</p></td>
+<td><p><code class="code docutils literal notranslate"><span class="pre">Separator</span></code></p></td>
+<td><p>50 μm</p></td>
+<td><p>3</p></td>
+</tr>
+<tr class="row-odd"><td><p>Positive electrode coating</p></td>
+<td><p><code class="code docutils literal notranslate"><span class="pre">PositiveCoating</span></code></p></td>
+<td><p>80 μm</p></td>
+<td><p>3</p></td>
+</tr>
+<tr class="row-even"><td><p>Positive electrode current collector</p></td>
+<td><p><code class="code docutils literal notranslate"><span class="pre">PositiveCurrentCollector</span></code></p></td>
+<td><p>10 µm</p></td>
+<td><p>2</p></td>
+</tr>
+</tbody>
+</table>
+<table class="docutils align-default" id="id10">
+<caption><span class="caption-text">Other parameters, with values used in plot above</span><a class="headerlink" href="#id10" title="Permalink to this table"></a></caption>
+<colgroup>
+<col style="width: 33%" />
+<col style="width: 33%" />
+<col style="width: 33%" />
+</colgroup>
+<thead>
+<tr class="row-odd"><th class="head"><p>Parameter</p></th>
+<th class="head"><p>Name</p></th>
+<th class="head"><p>Value</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p>Number of Layers</p></td>
+<td><p><code class="code docutils literal notranslate"><span class="pre">nLayers</span></code></p></td>
+<td><p>5</p></td>
+</tr>
+<tr class="row-odd"><td><p>Width of the cell</p></td>
+<td><p><code class="code docutils literal notranslate"><span class="pre">width</span></code></p></td>
+<td><p>10 cm</p></td>
+</tr>
+<tr class="row-even"><td><p>Length of the cell</p></td>
+<td><p><code class="code docutils literal notranslate"><span class="pre">length</span></code></p></td>
+<td><p>10 cm</p></td>
+</tr>
+<tr class="row-odd"><td><p>Discretization number for width</p></td>
+<td><p><code class="code docutils literal notranslate"><span class="pre">Electrolyte.Nx</span></code></p></td>
+<td><p>2</p></td>
+</tr>
+<tr class="row-even"><td><p>Discretization number for length outside the tab</p></td>
+<td><p><code class="code docutils literal notranslate"><span class="pre">Electrolyte.Ny</span></code></p></td>
+<td><p>2</p></td>
+</tr>
+<tr class="row-odd"><td><p>Tabs width (same for negative and positive)</p></td>
+<td><p><code class="code docutils literal notranslate"><span class="pre">tab.width</span></code></p></td>
+<td><p>5 cm</p></td>
+</tr>
+<tr class="row-even"><td><p>Tabs discretization number</p></td>
+<td><p><code class="code docutils literal notranslate"><span class="pre">tab.Nx</span></code></p></td>
+<td><p>3</p></td>
+</tr>
+<tr class="row-odd"><td><p>Tab lenght of negative electrode</p></td>
+<td><p><code class="code docutils literal notranslate"><span class="pre">tab.NegativeElectrode.length</span></code></p></td>
+<td><p>4 cm</p></td>
+</tr>
+<tr class="row-even"><td><p>Tab length of positive electrode</p></td>
+<td><p><code class="code docutils literal notranslate"><span class="pre">tab.PositiveElectrode.length</span></code></p></td>
+<td><p>2 cm</p></td>
+</tr>
+</tbody>
+</table>
+<p>See <a class="reference external" href="https://github.com/BattMoTeam/BattMo/blob/main/Examples/JsonDataFiles/geometryMultiLayerPouch.json">json source file</a> for this example.</p>
 </section>
 </section>
 
